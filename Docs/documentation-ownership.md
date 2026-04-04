@@ -7,7 +7,7 @@
 
 | Surface | Owns | Does NOT own |
 |---------|------|--------------|
-| **Obsidian vault** (`TheFantasyWorldSimulator/`) | Domain model: systems, mechanics, relationships, terminology definitions | Task tracking, implementation rationale, project status |
+| **Obsidian vault** (`TheFantasyWorldSimulator/`) | Domain model: systems, mechanics, relationships, terminology definitions. Plus LLM KB infrastructure: `Index.md` (comprehensive catalog), `log.md` (change journal), `raw/` (source materials), `output/` (generated reports) | Task tracking, implementation rationale, project status |
 | **Repo** (`Docs/`, `.planning/`) | Implementation rationale, design plans, changelog, UI patterns, project status, backlog, milestone roadmaps | System definitions |
 | **`CLAUDE.md`** | Session workflow, architectural decisions, non-functional priorities, skill routing, rejected approaches | Anything duplicated from the above — link, don't copy |
 
@@ -37,9 +37,12 @@
 ## What Lives Where — Quick Reference
 
 ### Obsidian
-- All wikilinked system notes (`Index.md` as entry point)
+- All wikilinked system notes (`Index.md` as entry point — comprehensive catalog of all pages)
 - Cosmology, reaches, actor types, relationship types
 - Content strategy and narrative archetypes
+- `log.md` — Append-only vault change journal (ingests, queries, lints, updates)
+- `raw/` — Immutable source materials for LLM ingest (design docs, research, web clips)
+- `output/` — LLM-generated reports, query results, audit outputs
 
 ### Repo — `.planning/`
 - `BACKLOG.md` — prioritized future work (migrated from Notion 2026-03-22). Completed ✅ items archived to `BACKLOG_HISTORY.md`.

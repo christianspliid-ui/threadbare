@@ -97,8 +97,11 @@ function generateYamlFrontmatter(
 ): string {
   const frontmatter: Record<string, any> = {
     tags: [node.category, 'generated'],
+    aliases: [node.name],
     id: node.id,
     category: node.category,
+    status: 'complete',
+    'last-generated': new Date().toISOString().split('T')[0],
   };
 
   // Flatten properties into frontmatter
@@ -287,58 +290,12 @@ export async function generateVault(options: GenerateVaultOptions = {}) {
     noteCount++;
   }
 
-  // Generate Index.md
-  const indexLines = [
-    '# The Fantasy World Simulator — Obsidian Vault Index',
-    '',
-    'This vault is the system specification for the simulation. All entities, relationships, and mechanics are defined as interconnected concept notes.',
-    '',
-    '## Navigation by Category',
-    '',
-  ];
-
-  // Group by top-level folder
-  const topLevelFolders = new Set<string>();
-  for (const [category] of Object.entries(nodesByCategory)) {
-    const folder = getCategoryFolder(category, {});
-    const topLevel = folder.split('/')[0];
-    topLevelFolders.add(topLevel);
-  }
-
-  const sortedFolders = Array.from(topLevelFolders).sort();
-  for (const folder of sortedFolders) {
-    indexLines.push(
-      `- [${folder}](${folder.replace(/ /g, '%20')}/)`
-    );
-  }
-
-  indexLines.push('', '## System Categories', '');
-  for (const category of modelData.meta.categories) {
-    const nodes = nodesByCategory[category] || [];
-    if (nodes.length > 0) {
-      indexLines.push(
-        `### ${category} (${nodes.length} node${nodes.length !== 1 ? 's' : ''})`
-      );
-      indexLines.push('');
-      for (const node of nodes.slice(0, 5)) {
-        indexLines.push(`- [[${node.name}]]`);
-      }
-      if (nodes.length > 5) {
-        indexLines.push(`- ... and ${nodes.length - 5} more`);
-      }
-      indexLines.push('');
-    }
-  }
-
-  const indexContent = indexLines.join('\n');
-  generatedFiles.push({
-    path: path.join(vaultRoot, 'Index.md'),
-    content: indexContent,
-  });
+  // Index.md is now LLM-maintained (not auto-generated).
+  // Use scripts/rebuild-index.ts for one-time rebuilds.
 
   // Summary
   console.log(`\n📋 Vault Generation Plan`);
-  console.log(`Validating and generating ${noteCount} notes + Index.md`);
+  console.log(`Validating and generating ${noteCount} notes (Index.md is LLM-maintained)`);
   console.log(`Total files to write: ${generatedFiles.length}`);
 
   if (dryRun) {

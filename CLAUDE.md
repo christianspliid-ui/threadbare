@@ -23,6 +23,7 @@ npm run dev    # start Vite dev server with hot reload
 | `npm run validate-model` | Validate world-model.json integrity |
 | `npm run generate-vault` | Regenerate Obsidian vault from world-model.json |
 | `npm run generate-hex` | Generate a hex tile image (requires Python + API key) |
+| `npm run rebuild-index` | Rebuild Obsidian vault Index.md from all vault pages |
 | `npm run cli` | Interactive REPL for headless game testing (see below) |
 
 **Dev Quick-Start URLs** (append to `http://localhost:5173`):
@@ -110,6 +111,52 @@ Three surfaces, each with a distinct purpose. Full ownership rules and duplicati
 - **Repo `Docs/`** — Implementation rationale (`plans/`), changelog, UI patterns, project status
 
 *Notion has some unmigrated content but is not used for active tracking.*
+
+### Obsidian Vault as LLM Knowledge Base
+
+The vault follows the Karpathy LLM Knowledge Base pattern — a persistent, compounding artifact where the LLM maintains the wiki and humans provide direction and raw sources.
+
+**Three layers:**
+- **`raw/`** — Immutable source materials (design docs, research, web clips). LLM reads but never modifies.
+- **Wiki** (Systems/, Cosmology/, etc.) — LLM-compiled and maintained pages. The LLM owns this content.
+- **`output/`** — Generated reports, query results, audit outputs filed back into the vault.
+
+**Infrastructure files:**
+- **`Index.md`** — Comprehensive catalog of ALL vault pages with one-line summaries. LLM-maintained. Read this first to navigate.
+- **`log.md`** — Append-only chronological record of ingests, queries, lints, and updates.
+
+**Core workflows** (via skills):
+| Workflow | Skill | What it does |
+|----------|-------|-------------|
+| Ingest | `vault-ingest` | Compile raw sources into wiki pages, update index, log |
+| Query | `vault-query` | Ask questions against the vault (3 depth tiers) |
+| Lint | `vault-lint` | Audit vault health: orphans, broken links, stale content |
+| Enrich | `vault-enrich` | Improve pages: add cross-refs, expand content, fix issues |
+
+**Vault maintenance scripts:**
+| Script | What it does |
+|--------|-------------|
+| `npm run generate-vault` | Regenerate graph-node pages from world-model.json (does NOT touch Index.md or Systems/) |
+| `npm run rebuild-index` | One-time rebuild of Index.md from all vault files |
+| `npm run enhance-frontmatter` | One-time bulk update of frontmatter on hand-curated files |
+
+**Frontmatter conventions:**
+```yaml
+# Auto-generated files (from world-model.json):
+tags: [<category>, generated]
+aliases: [<node name>]
+id: <node-id>
+category: <category>
+status: complete
+last-generated: YYYY-MM-DD
+
+# Hand-curated files (Systems/, Brainstorms/, etc.):
+tags: [<category>, <subcategory>]
+aliases: [<alternative names>]
+status: stub | draft | complete | deprecated
+created: YYYY-MM-DD
+updated: YYYY-MM-DD
+```
 
 ## Key Links
 
@@ -216,6 +263,7 @@ When modifying Obsidian vault notes:
 
 - **In the document:** Dated inline note near the change (date, what, why — one line).
 - **In the changelog:** Append to `Docs/changelog.md` (format: `| date | where | what changed | why |`).
+- **In the vault log:** Append to `log.md` via Obsidian MCP (format: `- **<type>** | <description>`).
 
 ## Debugging Protocol: Verify the Noun Before the Verb
 
@@ -246,11 +294,12 @@ Work is not "done" until it is deployed and documented. Do all of these automati
 
 - [ ] Read this file for orientation
 - [ ] **Check `.planning/HANDOVER.md`** — act on pending Cowork handovers before starting new work
-- [ ] Read Obsidian `Index.md` via MCP → follow links to the relevant system
+- [ ] Read Obsidian `Index.md` via MCP → follow links to the relevant system. Index.md is the comprehensive catalog — use it as the LLM's navigation system.
 - [ ] Check `.planning/BACKLOG.md` + `.planning/ROADMAP.md` for priorities
 - [ ] Read relevant design doc in `Docs/plans/` before writing code
 - [ ] **Upstream health check** — if the feature depends on upstream pipeline throughput, verify the pipeline is producing output before coding. A feature wired to a dead pipeline is wasted work.
 - [ ] After completing work, follow the **Definition of Done** above
+- [ ] **Update vault log** — Append to `log.md` via Obsidian MCP what was changed in this session
 
 ## Domain Skills
 
@@ -275,6 +324,10 @@ Context for specific problem types lives in on-demand skills. **Always load `sta
 | Blender → HexMap pipeline | `blender-to-hexmap` | Building 3D models in Blender MCP and importing GLB into HexMapV2. Palette, merge, bake rotation, export, Three.js wiring. |
 | Creative fiction writing | `cw-*` (platform) | `cw-brainstorming` for story ideas, `cw-prose-writing` for narrative fiction drafts, `cw-official-docs` for lore wikis, `cw-story-critique` for review. Use *instead of* prose skills only for pure narrative fiction unrelated to the game engine. |
 | Post-implementation docs | `gamedocumenter` | Obsidian/changelog/backlog updates after completing work |
+| Vault — ingest sources | `vault-ingest` | Compile raw sources into wiki pages. `/kb-ingest` |
+| Vault — query knowledge | `vault-query` | Ask questions against the vault. `/kb-query <question>` |
+| Vault — health audit | `vault-lint` | Audit vault for orphans, broken links, stale content. `/kb-lint` |
+| Vault — enrich pages | `vault-enrich` | Add cross-refs, expand content, fix issues. `/kb-enrich [page]` |
 | Image manipulation | `image-manipulation` | Geometric clipping, alpha masks, hex tile pipeline |
 | QA sweeps | `qa-orchestrator` | Systematic UI/UX/frontend QA |
 | Testing & contracts | `testing-patterns` | Writing tests for engine or HexMapV2 changes. Contract test patterns, dependency maps, anti-patterns, coverage gap reference. |
