@@ -551,18 +551,22 @@ export function phaseAgentDecision(
               newEncounterProgress.push(progress);
             }
 
-            // B.1: Track familiarity — increment attempt count for this template
-            const existingFamiliarity = (actor.properties?.familiarityRecord as FamiliarityRecord | undefined) ?? { attemptCount: {} };
-            const updatedFamiliarity: FamiliarityRecord = {
-              attemptCount: {
-                ...existingFamiliarity.attemptCount,
-                [sel.entry.templateId]: (existingFamiliarity.attemptCount[sel.entry.templateId] ?? 0) + 1,
-              },
-            };
-            // Reset idle counter on any non-idle decision
-            graph.updateNode(agentId, {
-              properties: { ...actor.properties, familiarityRecord: updatedFamiliarity, consecutiveIdleTicks: 0 },
-            });
+            // B.1: Track familiarity — direct property write, not spread.
+            // Using a fresh node ref avoids clobbering updates made by earlier phases
+            // in the same tick (same pattern as the whisperAvailable fix below).
+            {
+              const freshForFamiliarity = graph.getNode(agentId);
+              if (freshForFamiliarity) {
+                const existingFamiliarity = (freshForFamiliarity.properties?.familiarityRecord as FamiliarityRecord | undefined) ?? { attemptCount: {} };
+                freshForFamiliarity.properties.familiarityRecord = {
+                  attemptCount: {
+                    ...existingFamiliarity.attemptCount,
+                    [sel.entry.templateId]: (existingFamiliarity.attemptCount[sel.entry.templateId] ?? 0) + 1,
+                  },
+                };
+                freshForFamiliarity.properties.consecutiveIdleTicks = 0;
+              }
+            }
             // Reset whisperAvailable — non-generic encounters consume the Whisper.
             // Generic encounters (questPriority <= 1.0) do NOT reset the flag.
             // Direct property write to avoid stale-snapshot issues.
