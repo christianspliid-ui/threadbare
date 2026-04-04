@@ -24,6 +24,8 @@ import { RENDER_ORDER, LAYER_Z } from './RenderLayers';
 import { hexToWorld } from '../../../lib/worldPosition';
 import { HEX_CONSTANTS } from './HexFillMesh';
 import { FACTION_HERALDIC_COLORS } from '../agents/agentSpriteTypes';
+import { generateCoatOfArmsSvg, buildCoatOfArmsConfig } from '../../icons';
+import { FACTION_DEFINITIONS } from '../../../data/faction-definitions';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -52,6 +54,8 @@ export const ARMY_HIGHLIGHT_OPACITY = 0.35;
 export interface ArmyRenderData {
   /** Army actor node ID */
   id: string;
+  /** Faction definition ID (extracted from faction node ID, e.g. "ironmongers") — used for coat of arms lookup */
+  factionDefId: string | null;
   /** Hex column derived from located_at → location.properties.hexCol */
   hexCol: number;
   /** Hex row */
@@ -122,6 +126,63 @@ function getArmyTexture(factionColor: string, size: 'warband' | 'regiment' | 'ho
   return texture;
 }
 
+// ── Coat of Arms texture cache ───────────────────────────────────────────────
+
+/** Cached coat of arms textures by faction definition ID */
+const coaTextureCache = new Map<string, THREE.CanvasTexture | 'pending' | 'failed'>();
+
+/**
+ * Attempt to get a coat of arms texture for a faction.
+ * Uses async Image loading with caching. Returns null if not ready yet
+ * (caller should fall back to the colored circle).
+ *
+ * NFP #4 (fail-soft): Missing definitions or failed loads return null.
+ */
+function getCoatOfArmsTexture(factionDefId: string, texSize: number): THREE.CanvasTexture | null {
+  const cached = coaTextureCache.get(factionDefId);
+  if (cached === 'failed') return null;
+  if (cached === 'pending') return null;
+  if (cached) return cached;
+
+  const def = FACTION_DEFINITIONS.get(factionDefId);
+  if (!def) {
+    coaTextureCache.set(factionDefId, 'failed');
+    return null;
+  }
+
+  const config = buildCoatOfArmsConfig(def);
+  const svgStr = generateCoatOfArmsSvg(config, texSize);
+
+  // Mark as pending to avoid duplicate loading
+  coaTextureCache.set(factionDefId, 'pending');
+
+  // Async rasterization via Image + data URI
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    const vbW = 120; // SHIELD_VIEWBOX.width from CoatOfArms
+    const vbH = 150; // SHIELD_VIEWBOX.height from CoatOfArms
+    canvas.width = texSize;
+    canvas.height = Math.round((texSize * vbH) / vbW);
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      coaTextureCache.set(factionDefId, 'failed');
+      return;
+    }
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
+    coaTextureCache.set(factionDefId, texture);
+    // Note: the texture will be picked up on the next layer rebuild
+  };
+  img.onerror = () => {
+    coaTextureCache.set(factionDefId, 'failed');
+  };
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgStr);
+
+  return null; // Not ready yet on first call
+}
+
 // ── Faction color helper ──────────────────────────────────────────────────────
 
 /**
@@ -172,6 +233,14 @@ export function buildArmyRenderData(graph: WorldGraph): ArmyRenderData[] {
     const factionId = memEdges.length > 0 ? memEdges[0].target : null;
     const factionColor = factionId ? factionColorFromId(factionId) : ARMY_FALLBACK_COLOR;
 
+    // Extract faction definition ID for coat of arms lookup
+    // factionId format: "faction_def_{defId}" or "faction_def_{defId}_{suffix}"
+    let factionDefId: string | null = null;
+    if (factionId) {
+      const defMatch = factionId.match(/^faction_def_(.+?)(?:_\d+)?$/);
+      if (defMatch) factionDefId = defMatch[1];
+    }
+
     // Read size from armyState property
     const armyState = army.properties.armyState as { size?: string } | undefined;
     const rawSize = armyState?.size;
@@ -180,7 +249,7 @@ export function buildArmyRenderData(graph: WorldGraph): ArmyRenderData[] {
       : rawSize === 'host' ? 'host'
       : 'warband';
 
-    result.push({ id: army.id, hexCol, hexRow, size, factionColor });
+    result.push({ id: army.id, factionDefId, hexCol, hexRow, size, factionColor });
   }
 
   return result;
@@ -219,7 +288,9 @@ export function createArmyLayer(armies: ArmyRenderData[]): ArmyLayerGroup {
       HEX_CONSTANTS.HEX_SIZE,
     );
 
-    const texture = getArmyTexture(army.factionColor, army.size);
+    // Try coat of arms texture first, fall back to colored circle
+    const coaTexture = army.factionDefId ? getCoatOfArmsTexture(army.factionDefId, ARMY_TEXTURE_SIZE) : null;
+    const texture = coaTexture ?? getArmyTexture(army.factionColor, army.size);
     const mat = new THREE.SpriteMaterial({
       map: texture,
       transparent: true,
