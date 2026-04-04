@@ -26,6 +26,15 @@ import { HEX_CONSTANTS } from './HexFillMesh';
 import { FACTION_HERALDIC_COLORS } from '../agents/agentSpriteTypes';
 import { generateCoatOfArmsSvg, buildCoatOfArmsConfig } from '../../icons';
 import { FACTION_DEFINITIONS } from '../../../data/faction-definitions';
+import { MONSTER_FACTION_DEFINITIONS } from '../../../data/monster-faction-definitions';
+import type { FactionDefinition } from '../../../types/faction';
+
+/** Combined lookup of all faction definitions (regular + monster) by ID */
+const ALL_FACTION_DEFS: ReadonlyMap<string, FactionDefinition> = (() => {
+  const map = new Map<string, FactionDefinition>(FACTION_DEFINITIONS);
+  for (const def of MONSTER_FACTION_DEFINITIONS) map.set(def.id, def);
+  return map;
+})();
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -140,7 +149,7 @@ const coaTextureCache = new Map<string, THREE.CanvasTexture | 'failed'>();
  */
 export async function preloadCoatOfArmsTextures(texSize: number): Promise<void> {
   const promises: Promise<void>[] = [];
-  for (const [defId, def] of FACTION_DEFINITIONS) {
+  for (const [defId, def] of ALL_FACTION_DEFS) {
     if (coaTextureCache.has(defId)) continue;
 
     const config = buildCoatOfArmsConfig(def);
