@@ -48,6 +48,9 @@ export function isCompulsionEligible(
   agentId: string,
 ): boolean {
   if (!ascendantId) return false;
+  // Only actors qualify for compulsion — not factions, locations, etc.
+  const agentNode = graph.getNode(agentId);
+  if (!agentNode || agentNode.type !== 'actor') return false;
   const edges = graph.getOutgoingEdges(ascendantId, 'thread');
   const threadEdge = edges.find(e => e.target === agentId);
   if (!threadEdge) return false;

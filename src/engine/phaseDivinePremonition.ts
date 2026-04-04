@@ -229,7 +229,9 @@ export function phaseDivinePremonition(
   const newPremonitions: PremonitionEvent[] = [];
 
   const { graph, ascendantId } = state;
-  const threadedAgents = getThreadedAgents(graph, ascendantId);
+  const threadedNodes = getThreadedAgents(graph, ascendantId);
+  // Filter to actor nodes only — factions, locations, etc. are threaded but not premonition targets
+  const threadedAgents = threadedNodes.filter(n => n.type === 'actor');
 
   if (threadedAgents.length === 0) return { tickEvents: events };
 
