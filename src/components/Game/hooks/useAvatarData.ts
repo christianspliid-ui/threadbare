@@ -109,9 +109,10 @@ export function useAvatarData({
   const [debugPanelPreferredViewMode, setDebugPanelPreferredViewMode] = useState<string | undefined>(undefined);
   const [debugPanelPreferredViewNonce, setDebugPanelPreferredViewNonce] = useState(0);
 
-  const handleToggleDebug = useCallback((forceOpen?: boolean) => {
+  const handleToggleDebug = useCallback((forceOpen?: boolean | unknown) => {
     setDebugPanelOpen(prev => {
-      const next = forceOpen !== undefined ? forceOpen : !prev;
+      // Guard: React onClick passes the event object as the first arg — treat non-boolean as "toggle"
+      const next = typeof forceOpen === 'boolean' ? forceOpen : !prev;
       if (next === prev) return prev;
       if (next) enableTracing();
       else disableTracing();
