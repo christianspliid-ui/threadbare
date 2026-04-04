@@ -12,6 +12,8 @@
 import type { WorldGraph } from '../../../../engine/graph';
 import { autoLinkNarrative, collectSupportBundleEntities } from '../narrativeLinker';
 import { resolveStepDefinition } from '../../../../engine/unifiedActionLifecycle';
+import { getPortraitUrl } from '../../../../data/portrait-assets';
+import { getAttachmentGlyph } from '../../attachmentGlyphs';
 import type {
   EncounterSupportActorSpec,
   EncounterSupportBinding,
@@ -21,13 +23,16 @@ import {
   isActionStepBranch,
   isStepSuccess,
   type ActionStep,
+  type AftermathVariant,
+  type BranchAwareAftermathConfig,
   type UnifiedAction,
   type UnifiedActionTemplate,
 } from '../../../../types/unifiedAction';
 import type { ThreadTier } from '../../TieredEncounterModal';
 import type {
   EncounterCastRole,
-  EncounterStageAftermathChangeModel,
+  EncounterStageAftermathActorModel,
+  EncounterStageAftermathHighlightModel,
   EncounterStageAftermathReactionModel,
   EncounterStageChoiceModel,
   EncounterStageCastModel,
@@ -258,7 +263,12 @@ function buildHistory(
     let afterimage: string | undefined;
     if (isResolved) {
       const outcome = activeAction.stepOutcomes[index];
-      afterimage = isStepSuccess(outcome) ? 'Succeeded' : 'Failed';
+      const success = isStepSuccess(outcome);
+      // Use authored afterimage text if available, otherwise fall back to bare status
+      const resolvedStep = resolveStepDefinition(template, index, activeAction.choiceHistory);
+      afterimage = success
+        ? (resolvedStep.successAfterimage ?? 'Succeeded')
+        : (resolvedStep.failureAfterimage ?? 'Failed');
     }
 
     return {
@@ -270,22 +280,139 @@ function buildHistory(
   });
 }
 
+/** Map polarity to mark tone */
+function polarityToTone(polarity: string): 'gain' | 'loss' | 'info' {
+  if (polarity === 'gain') return 'gain';
+  if (polarity === 'loss') return 'loss';
+  return 'info';
+}
+
+/** Glyph for non-attachment change kinds */
+const KIND_GLYPHS: Record<string, string> = {
+  future_hook: '◇',
+  reputation: '◈',
+  reputation_tally: '◈',
+  faction_reputation: '◈',
+  growth: '↑',
+  shell_state: '⬡',
+};
+
+/**
+ * Resolve the authored aftermath variant from the template's aftermathConfig,
+ * bypassing the engine-merged summary.changes which includes raw mechanical deltas.
+ */
+function resolveAuthoredAftermath(
+  config: BranchAwareAftermathConfig,
+  choiceHistory?: readonly { stepIndex: number; choiceId: string }[],
+): AftermathVariant {
+  const branchChoice = choiceHistory?.find(c => c.stepIndex === config.branchOnStep);
+  if (!branchChoice) return config.fallback;
+  return config.variants[branchChoice.choiceId] ?? config.fallback;
+}
+
 function buildAftermath(
   args: BuildUnifiedEncounterStageModelArgs,
 ): EncounterStageModel['aftermath'] {
-  const { activeAction } = args;
+  const { activeAction, template, graph } = args;
   const summary = activeAction.aftermathSummary;
   if (!summary) return undefined;
 
-  const changes: EncounterStageAftermathChangeModel[] = summary.changes.map((change) => ({
-    id: change.id,
-    kind: change.kind,
-    title: change.title,
-    detail: change.detail,
-    polarity: change.polarity,
-  }));
+  // When the template has an aftermathConfig, use ONLY its authored changes.
+  // The engine-merged summary.changes includes raw mechanical deltas (growth,
+  // reputation shifts) that we want to suppress in favor of curated content.
+  const authoredVariant = template.aftermathConfig
+    ? resolveAuthoredAftermath(template.aftermathConfig, activeAction.choiceHistory)
+    : undefined;
+  const displayChanges = authoredVariant?.changes ?? summary.changes;
+  const displayOverview = authoredVariant?.overview ?? summary.overview;
 
-  const reactions: EncounterStageAftermathReactionModel[] | undefined = summary.reactions?.map(
+  // Build actor name → support binding lookup from support bundle
+  const bindings = activeAction.supportBindings ?? [];
+  const actorNameToBinding = new Map<string, EncounterSupportBinding>();
+  const actorNameToSpec = new Map<string, EncounterSupportActorSpec>();
+  if (template.supportBundle) {
+    for (const spec of template.supportBundle) {
+      if (spec.kind !== 'actor') continue;
+      const actorSpec = spec as EncounterSupportActorSpec;
+      const binding = bindings.find(b => b.key === spec.key);
+      if (!binding) continue;
+      const node = graph.getNode(binding.nodeId);
+      const name = node?.name ?? actorSpec.spawnName ?? spec.key;
+      actorNameToBinding.set(name, binding);
+      actorNameToBinding.set(name.toLowerCase(), binding);
+      actorNameToSpec.set(name, actorSpec);
+      actorNameToSpec.set(name.toLowerCase(), actorSpec);
+      if (actorSpec.spawnName && actorSpec.spawnName !== name) {
+        actorNameToBinding.set(actorSpec.spawnName, binding);
+        actorNameToBinding.set(actorSpec.spawnName.toLowerCase(), binding);
+        actorNameToSpec.set(actorSpec.spawnName, actorSpec);
+        actorNameToSpec.set(actorSpec.spawnName.toLowerCase(), actorSpec);
+      }
+    }
+  }
+
+  // Group authored changes into actor moments and highlights
+  const actorMoments = new Map<string, EncounterStageAftermathActorModel>();
+  const highlights: EncounterStageAftermathHighlightModel[] = [];
+
+  for (const change of displayChanges) {
+    // Check if this change's title matches an actor name
+    const binding = actorNameToBinding.get(change.title) ?? actorNameToBinding.get(change.title.toLowerCase());
+
+    if (binding && change.kind === 'reputation') {
+      // Actor-centered change — group under actor moment
+      const key = binding.nodeId;
+      if (!actorMoments.has(key)) {
+        const node = graph.getNode(binding.nodeId);
+        const archetypeId = node?.properties?.narrativeArchetype as string | undefined;
+        actorMoments.set(key, {
+          id: key,
+          actorName: change.title,
+          portraitUrl: getPortraitUrl(archetypeId),
+          summaryLines: [],
+          marks: [],
+        });
+      }
+      const moment = actorMoments.get(key)!;
+      moment.summaryLines.push(change.detail);
+
+      // Add a mark with icon glyph
+      moment.marks!.push({
+        id: change.id,
+        label: change.polarity === 'gain' ? 'Favorable' : change.polarity === 'loss' ? 'Damaged' : 'Changed',
+        iconGlyph: KIND_GLYPHS[change.kind] ?? '◈',
+        tone: polarityToTone(change.polarity),
+      });
+    } else if (change.kind === 'future_hook') {
+      // Future hook — highlight
+      highlights.push({
+        id: change.id,
+        title: change.title,
+        detail: change.detail,
+        tone: change.polarity === 'gain' ? 'gain' : change.polarity === 'loss' ? 'loss' : 'info',
+      });
+    } else if (change.kind === 'item' || change.kind === 'reputation_tally') {
+      // Trait/condition — try to find actor, add as mark
+      // Fall through to highlight if no actor match
+      highlights.push({
+        id: change.id,
+        title: change.title,
+        detail: change.detail,
+        tone: change.polarity === 'gain' ? 'gain' : change.polarity === 'loss' ? 'loss' : 'mixed',
+      });
+    } else {
+      // Other changes — highlight
+      highlights.push({
+        id: change.id,
+        title: change.title,
+        detail: change.detail,
+        tone: change.polarity === 'gain' ? 'gain' : change.polarity === 'loss' ? 'loss' : 'info',
+      });
+    }
+  }
+
+  const displayReactions = authoredVariant?.reactions ?? summary.reactions;
+  const reactions: EncounterStageAftermathReactionModel[] | undefined = displayReactions?.map(
     (reaction) => ({
       id: reaction.id,
       label: reaction.label,
@@ -293,11 +420,15 @@ function buildAftermath(
     }),
   );
 
+  const actorMomentArray = Array.from(actorMoments.values());
+
   return {
     title: 'Aftermath',
-    overview: summary.overview,
-    changes: changes.length > 0 ? changes : undefined,
-    reactionPrompt: summary.reactionPrompt,
+    overview: displayOverview,
+    // Use actorMoments + highlights instead of raw changes — suppresses mechanical deltas
+    actorMoments: actorMomentArray.length > 0 ? actorMomentArray : undefined,
+    highlights: highlights.length > 0 ? highlights : undefined,
+    reactionPrompt: authoredVariant?.reactionPrompt ?? summary.reactionPrompt,
     reactions: reactions && reactions.length > 0 ? reactions : undefined,
   };
 }

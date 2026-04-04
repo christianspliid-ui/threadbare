@@ -226,6 +226,10 @@ export interface ActionStep {
   readonly narrativeTemplate?: string;
   readonly successMetadata?: ActionStepOutcomeMetadata;
   readonly failureMetadata?: ActionStepOutcomeMetadata;
+  /** Narrative afterimage shown in Scene So Far on success (replaces bare "Succeeded"). */
+  readonly successAfterimage?: string;
+  /** Narrative afterimage shown in Scene So Far on failure (replaces bare "Failed"). */
+  readonly failureAfterimage?: string;
 }
 
 // ─── Branching step support ────────────────────────────────────

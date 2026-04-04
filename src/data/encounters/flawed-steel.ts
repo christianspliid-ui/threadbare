@@ -111,6 +111,8 @@ const step0TheReckoning: ActionStep = {
     'And beneath it all, the question the settlement had not yet asked itself — how many ' +
     'other blades bearing Maren\'s stamp had already gone into the world carrying the same ' +
     'flaw, and how many of those blades had already failed in hands that trusted them.',
+  successAfterimage: 'The god perceived the threads of the forge and chose how to pull.',
+  failureAfterimage: 'The god perceived the threads of the forge but could not find purchase.',
 };
 
 /**
@@ -165,6 +167,8 @@ const step1ForgeTheTruth: ActionStep = {
   failureMetadata: {
     reputationDelta: -0.20,
   },
+  successAfterimage: 'Maren faced the Greycloaks with a full accounting. The truth was painful, but Torve respected the honesty.',
+  failureAfterimage: 'Maren tried to face the Greycloaks openly, but the negotiation collapsed under the weight of the full disclosure.',
 };
 
 /**
@@ -223,6 +227,8 @@ const step1TemperTheNarrative: ActionStep = {
   failureMetadata: {
     reputationDelta: -0.25,
   },
+  successAfterimage: 'The managed truth held. Torve accepted the framing and the forge survived without burning the relationship.',
+  failureAfterimage: 'Torve saw through the managed truth. The attempted deception stung worse than the original fraud.',
 };
 
 /**
@@ -267,6 +273,8 @@ const step1KeepYourHandFolded: ActionStep = {
   failureMetadata: {
     reputationDelta: -0.10,
   },
+  successAfterimage: 'The settlement resolved its own crisis — messily, but without divine interference.',
+  failureAfterimage: 'Without divine guidance, the negotiation collapsed into recrimination and armed tension.',
 };
 
 const step1Branch: ActionStepBranch = {
