@@ -46,8 +46,8 @@ describe('renderBorder', () => {
     expect(svg).toContain('stroke-dasharray');
   });
 
-  it('base border uses stroke-width 2.5', () => {
+  it('base border uses stroke-width 4', () => {
     const svg = renderBorder('base', '#ffffff');
-    expect(svg).toContain('2.5');
+    expect(svg).toContain('stroke-width="4"');
   });
 });

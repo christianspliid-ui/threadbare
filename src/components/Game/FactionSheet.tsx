@@ -35,7 +35,7 @@ export const FactionSheet = React.memo(function FactionSheet({ factionId, name, 
   return (
     <Modal open={true} onClose={onClose} aria-label={`${name} profile`}>
       <Modal.Header onClose={onClose}>
-        <CoatOfArms definition={definition} size={48} />{' '}
+        <CoatOfArms definition={definition} size={64} />{' '}
         {name}
       </Modal.Header>
       <Modal.Body>

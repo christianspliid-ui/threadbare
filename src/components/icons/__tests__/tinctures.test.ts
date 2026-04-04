@@ -56,8 +56,8 @@ describe('deriveTinctures', () => {
   });
 
   it('charge color is either dark navy or off-white for contrast', () => {
-    const darkCharge = '#1a1a2e';
-    const lightCharge = '#e0ddd4';
+    const darkCharge = '#0f0f1e';
+    const lightCharge = '#f0e8d0';
     for (const reach of REACH_DOMAINS) {
       const t = deriveTinctures(reach);
       expect([darkCharge, lightCharge], `${reach} charge should be one of the two contrast values`).toContain(t.charge);

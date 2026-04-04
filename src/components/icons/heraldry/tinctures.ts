@@ -38,6 +38,7 @@ export function deriveTinctures(reach: ReachDomain): TinctureSet {
   const foundation = SPHERE_COLORS[foundationSphere];
   const [r, g, b] = hexToRgb(primary);
   const lum = luminance(r, g, b);
-  const charge = lum > 0.25 ? '#1a1a2e' : '#e0ddd4';
+  // High-contrast charge: bright gold on dark fields, deep navy on light fields
+  const charge = lum > 0.3 ? '#0f0f1e' : '#f0e8d0';
   return { primary, secondary, foundation, charge };
 }
