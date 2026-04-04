@@ -161,6 +161,9 @@ export interface GameState {
   // Encounter notifications — queued by encounter visibility phase, consumed by UI
   encounterNotifications?: import('./encounterVisibility').EncounterNotification[];
 
+  // Clearance gates — runtime state for checkpoint/scrutiny encounter shells
+  clearanceGateStates?: Map<string, import('./contentShells').ClearanceGateRuntimeState>;
+
   // Control effects — sustained divine effects with per-tick costs, ticked by phaseControlEffects
   controlEffects?: ControlEffect[];
 

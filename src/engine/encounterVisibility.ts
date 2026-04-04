@@ -30,6 +30,8 @@ import {
 import { getThreadsFrom, getAgentLocation } from './graphQueries';
 import { emitTrace } from './traceBuffer';
 import { getAnyEncounterById } from '../data/encounter-content';
+import { getUnifiedTemplateById } from '../data/unified-action-templates';
+import { resolveStepDefinition } from './unifiedActionLifecycle';
 
 // ─── Notification Generation ───────────────────────────────────────
 
@@ -128,6 +130,7 @@ export function buildEncounterNotification(
   courtPosition: CourtPosition | null,
   attentionMode: 'pause' | 'auto_resolve',
   tick: number,
+  metadata?: Partial<Pick<EncounterNotification, 'kind' | 'sourceSystem' | 'stepIndex' | 'actionId' | 'stepId'>>,
 ): EncounterNotification | null {
   const depth = getVisibilityDepth(courtPosition);
   if (depth === 'none') return null;
@@ -146,6 +149,8 @@ export function buildEncounterNotification(
     courtPosition,
     encounterId,
     encounterName,
+    kind: metadata?.kind ?? 'encounter',
+    ...metadata,
     prose,
     choices,
     createdTick: tick,
@@ -294,7 +299,7 @@ export function phaseEncounterVisibility(
   const existingNotifKeys = new Set(
     (state.encounterNotifications ?? [])
       .filter(n => !n.resolved)
-      .map(n => `${n.agentId}:${n.encounterId}`),
+      .map(n => `${n.kind ?? 'encounter'}:${n.sourceSystem ?? 'legacy_encounter'}:${n.agentId}:${n.encounterId}:${n.actionId ?? 'legacy'}:${n.stepIndex ?? 0}`),
   );
 
   // Agent encounters live in encounterProgress (the old-style NPC encounter pipeline).
@@ -305,7 +310,8 @@ export function phaseEncounterVisibility(
     if (!threadInfo) continue;
 
     // Skip if we already have a pending notification for this agent + encounter
-    const notifKey = `${ep.actorId}:${ep.encounterId}`;
+    const stepIndex = ep.currentEncounterIndex;
+    const notifKey = `encounter:legacy_encounter:${ep.actorId}:${ep.encounterId}:legacy:${stepIndex}`;
     if (existingNotifKeys.has(notifKey)) continue;
 
     // The First gets both journey beat vignettes (doom-clock) AND encounter-step notifications
@@ -331,6 +337,10 @@ export function phaseEncounterVisibility(
       courtPosition,
       threadInfo.props.attentionMode ?? defaultMode,
       tick,
+      {
+        sourceSystem: 'legacy_encounter',
+        stepIndex,
+      },
     );
 
     if (notification) {
@@ -343,6 +353,113 @@ export function phaseEncounterVisibility(
         message: `${agentNode.name} enters an encounter`,
         significance: courtPosition === 'retinue' ? 0.7 : 0.4,
         actorId: ep.actorId,
+      });
+    }
+  }
+
+  for (const action of state.unifiedActions ?? []) {
+    if (action.resolved) continue;
+
+    const encounter = getAnyEncounterById(action.templateId);
+    const unifiedTemplate = getUnifiedTemplateById(action.templateId);
+    if (!encounter || !unifiedTemplate) continue;
+
+    const threadInfo = threadedAgents.get(action.actorId);
+    if (!threadInfo) continue;
+
+    const stepIndex = action.currentStep;
+    const notifKey = `encounter:unified_action:${action.actorId}:${action.templateId}:${action.actionId}:${stepIndex}`;
+    if (existingNotifKeys.has(notifKey)) continue;
+
+    const agentNode = graph.getNode(action.actorId);
+    if (!agentNode) continue;
+
+    const locationNode = getAgentLocation(graph, action.actorId);
+    const locationName = locationNode?.name ?? 'unknown location';
+    const courtPosition = threadInfo.props.courtPosition ?? 'retinue';
+    const defaultMode = VISIBILITY_BY_POSITION[courtPosition]?.defaultAttentionMode ?? 'auto_resolve';
+    const currentStep = resolveStepDefinition(unifiedTemplate, stepIndex, action.choiceHistory);
+
+    const notification = buildEncounterNotification(
+      action.actorId,
+      agentNode.name,
+      action.templateId,
+      encounter.name,
+      locationName,
+      courtPosition,
+      threadInfo.props.attentionMode ?? defaultMode,
+      tick,
+      {
+        sourceSystem: 'unified_action',
+        stepIndex,
+        actionId: action.actionId,
+        stepId: currentStep.id,
+      },
+    );
+
+    if (notification) {
+      notifications.push(notification);
+      events.push({
+        id: `evt_enc_vis_unified_${action.actorId}_${stepIndex}_${tick}`,
+        tick,
+        type: 'journey_beat',
+        message: `${agentNode.name} enters ${encounter.name} step ${stepIndex + 1}`,
+        significance: courtPosition === 'retinue' ? 0.7 : 0.4,
+        actorId: action.actorId,
+      });
+    }
+  }
+
+  for (const action of state.unifiedActions ?? []) {
+    if (!action.resolved || !action.aftermathSummary) continue;
+
+    const encounter = getAnyEncounterById(action.templateId);
+    if (!encounter) continue;
+
+    const threadInfo = threadedAgents.get(action.actorId);
+    if (!threadInfo) continue;
+
+    const notifKey = `aftermath:unified_action:${action.actorId}:${action.templateId}:${action.actionId}:${action.currentStep}`;
+    if (existingNotifKeys.has(notifKey)) continue;
+
+    const agentNode = graph.getNode(action.actorId);
+    if (!agentNode) continue;
+
+    const locationNode = getAgentLocation(graph, action.actorId);
+    const locationName = locationNode?.name ?? 'unknown location';
+    const courtPosition = threadInfo.props.courtPosition ?? 'retinue';
+    const defaultMode = VISIBILITY_BY_POSITION[courtPosition]?.defaultAttentionMode ?? 'auto_resolve';
+
+    const notification = buildEncounterNotification(
+      action.actorId,
+      agentNode.name,
+      action.templateId,
+      encounter.name,
+      locationName,
+      courtPosition,
+      threadInfo.props.attentionMode ?? defaultMode,
+      tick,
+      {
+        kind: 'aftermath',
+        sourceSystem: 'unified_action',
+        stepIndex: action.currentStep,
+        actionId: action.actionId,
+      },
+    );
+
+    if (notification) {
+      notifications.push({
+        ...notification,
+        prose: action.aftermathSummary.overview,
+        choices: [],
+      });
+      events.push({
+        id: `evt_enc_aftermath_${action.actorId}_${tick}`,
+        tick,
+        type: 'journey_beat',
+        message: `${agentNode.name} lives with the aftermath of ${encounter.name}`,
+        significance: courtPosition === 'retinue' ? 0.7 : 0.4,
+        actorId: action.actorId,
       });
     }
   }

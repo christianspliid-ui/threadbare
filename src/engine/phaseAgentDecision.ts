@@ -21,6 +21,7 @@ import type { EncounterCacheEntry } from './encounterCache';
 import type { DistanceMatrix } from './distanceMatrix';
 import { getDistance } from './distanceMatrix';
 import type { EncounterProgress } from '../types/encounter';
+import type { UnifiedAction } from '../types/unifiedAction';
 import {
   ENCOUNTER_ABANDON_COOLDOWN,
   ENCOUNTER_COMPLETION_COOLDOWN,
@@ -30,6 +31,7 @@ import { scoreAndSelect, type FamiliarityRecord } from './encounterScoring';
 import { resolveIdleBehavior } from './idleBehavior';
 import { isEncounterOccupied } from './encounter';
 import { getAnyEncounterById } from '../data/encounter-content';
+import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import { generateSocialCandidates } from './socialEncounterGeneration';
 import { generateFactionQuestCandidates, generateFactionLifecycleCandidates } from './factionQuestGeneration';
 import { initMovementState } from './movementExecution';
@@ -48,6 +50,9 @@ import { resolveLocationToHex } from './encounterAwareness';
 import { hexDistance } from '../lib/hexMath';
 import type { SimulationRuntime } from './simulationRuntime';
 import { recordBalanceEvent } from './balanceTelemetry';
+import { prepareEncounterSupportBundle } from './encounterSupportBundle';
+import { initializeClearanceGates } from './clearanceGate';
+import { createUnifiedAction } from './unifiedActionLifecycle';
 
 /**
  * Compute effective cooldown scaled by available template pool size.
@@ -70,6 +75,7 @@ function filterByCooldown(
   candidates: EncounterCacheEntry[],
   agentId: string,
   encounterProgress: readonly EncounterProgress[],
+  unifiedActions: readonly UnifiedAction[],
   tick: number,
   availableTemplateCount: number,
 ): EncounterCacheEntry[] {
@@ -91,6 +97,12 @@ function filterByCooldown(
     }
   }
 
+  for (const action of unifiedActions) {
+    if (action.actorId !== agentId || !action.resolved) continue;
+    const completedAt = action.completedAtTick ?? action.startTick;
+    cooldownEnd.set(action.templateId, completedAt + effectiveComplete);
+  }
+
   if (cooldownEnd.size === 0) return candidates;
 
   return candidates.filter(c => {
@@ -110,6 +122,10 @@ export function phaseAgentDecision(
   const allEntries = encounterCache.getAllEntries();
   const newEvents: TickEvent[] = [];
   const newEncounterProgress: EncounterProgress[] = [];
+  const newUnifiedActions: UnifiedAction[] = [];
+  let nextClearanceGateStates = state.clearanceGateStates
+    ? new Map(state.clearanceGateStates)
+    : undefined;
 
   // Derive map dimensions for edge hex awareness bonus
   let mapCols = 0;
@@ -141,7 +157,10 @@ export function phaseAgentDecision(
 
     try {
       // Skip if already active (unified action)
-      if (state.unifiedActions.some((a) => a.actorId === agentId && !a.resolved)) {
+      if (
+        state.unifiedActions.some((a) => a.actorId === agentId && !a.resolved)
+        || newUnifiedActions.some((a) => a.actorId === agentId && !a.resolved)
+      ) {
         continue;
       }
 
@@ -382,6 +401,7 @@ export function phaseAgentDecision(
         rawCandidates,
         agentId,
         state.encounterProgress,
+        [...state.unifiedActions, ...newUnifiedActions],
         state.tick,
         rawCandidates.length,
       );
@@ -443,21 +463,51 @@ export function phaseAgentDecision(
         });
 
         if (sel.action === 'start_local' || sel.action === 'attempt_remote') {
-          // Start the encounter — create EncounterProgress
           const template = getAnyEncounterById(sel.entry.templateId);
           if (template) {
-            const firstStepDuration = template.steps[0]?.duration ?? 1;
-            const progress: EncounterProgress = {
-              encounterId: sel.entry.templateId,
-              actorId: agentId,
-              ...(sel.entry.targetAgentId ? { targetAgentId: sel.entry.targetAgentId } : {}),
-              currentEncounterIndex: 0,
-              history: [],
-              status: 'active',
-              startedTick: state.tick,
-              occupiedUntilTick: state.tick + firstStepDuration,
-            };
-            newEncounterProgress.push(progress);
+            const unifiedTemplate = getUnifiedTemplateById(sel.entry.templateId);
+            if (unifiedTemplate) {
+              const supportBindings = prepareEncounterSupportBundle(
+                state,
+                unifiedTemplate,
+                sel.entry.targetAgentId ?? sel.entry.locationId,
+                sel.entry.locationId,
+              );
+              const gateInit = initializeClearanceGates(
+                nextClearanceGateStates,
+                unifiedTemplate,
+                supportBindings,
+                sel.entry.locationId,
+                state.tick,
+              );
+              nextClearanceGateStates = gateInit.clearanceGateStates;
+              const action = createUnifiedAction({
+                actorId: agentId,
+                templateId: unifiedTemplate.id,
+                targetId: sel.entry.targetAgentId ?? sel.entry.locationId,
+                scale: unifiedTemplate.scale,
+                source: 'agent',
+                tick: state.tick,
+                template: unifiedTemplate,
+                rng,
+                supportBindings,
+                clearanceGateIds: gateInit.gateIds,
+              });
+              newUnifiedActions.push(action);
+            } else {
+              const firstStepDuration = template.steps[0]?.duration ?? 1;
+              const progress: EncounterProgress = {
+                encounterId: sel.entry.templateId,
+                actorId: agentId,
+                ...(sel.entry.targetAgentId ? { targetAgentId: sel.entry.targetAgentId } : {}),
+                currentEncounterIndex: 0,
+                history: [],
+                status: 'active',
+                startedTick: state.tick,
+                occupiedUntilTick: state.tick + firstStepDuration,
+              };
+              newEncounterProgress.push(progress);
+            }
 
             // B.1: Track familiarity — increment attempt count for this template
             const existingFamiliarity = (actor.properties?.familiarityRecord as FamiliarityRecord | undefined) ?? { attemptCount: {} };
@@ -758,5 +808,7 @@ export function phaseAgentDecision(
   return {
     tickEvents: [...state.tickEvents, ...newEvents],
     encounterProgress: [...state.encounterProgress, ...newEncounterProgress],
+    unifiedActions: [...state.unifiedActions, ...newUnifiedActions],
+    clearanceGateStates: nextClearanceGateStates ?? state.clearanceGateStates,
   };
 }

@@ -2,7 +2,7 @@
  * Encounter Type System — defines the shape of narrative encounters
  * that agents undergo at sublocations for growth and evolution.
  *
- * Encounters are linear sequences (2-4 steps) using
+ * Encounters are linear sequences (1-5 steps) using
  * sigmoid → d100 resolution. Cultural vocabulary overlays
  * vary the flavor without changing structure.
  */
@@ -10,6 +10,7 @@ import type { SphereName, LocationSubtype } from './index';
 import type { ReachDomain } from './traits';
 import type { ValuePair } from './agent';
 import type { RewardPoolRecipe } from './attachments';
+import type { ClearanceGateConfig } from './contentShells';
 
 // ─── Encounter Types & Threat Ratings ───────────────────────────
 
@@ -57,7 +58,7 @@ export const ENCOUNTER_TYPE_MOTIVATIONS: Record<EncounterType, ValuePair[]> = {
 // ─── Tunable Constants ──────────────────────────────────────────
 
 /** Maximum steps per encounter template */
-export const ENCOUNTER_MAX_STEPS = 4;
+export const ENCOUNTER_MAX_STEPS = 5;
 
 /** Base difficulty for encounter resolution (0-100 scale) */
 export const ENCOUNTER_BASE_DIFFICULTY = 40;
@@ -179,6 +180,83 @@ export interface EncounterTemplate {
    * When absent, derived from encounterType heuristic or agent axiological profile.
    */
   reputationPolarity?: 'positive' | 'negative';
+  /** Optional encounter-network support that should be resolved at action start. */
+  supportBundle?: EncounterSupportBundle;
+  /** Optional scrutiny/proof shell configs used by richer checkpoint encounters. */
+  clearanceGates?: readonly ClearanceGateConfig[];
+}
+
+// ─── Encounter Support Bundle Types ────────────────────────────
+
+/** Persistence contract for encounter support objects. */
+export type EncounterSupportPersistence = 'must-persist' | 'scene-only';
+
+/** Delivery mode for encounter support objects. */
+export type EncounterSupportDelivery =
+  | 'pre-seeded'
+  | 'lazy-materialize-on-trigger'
+  | 'blocked-primitive';
+
+/** Actor support spec — defines an NPC to bind or materialize for an encounter. */
+export interface EncounterSupportActorSpec {
+  readonly kind: 'actor';
+  readonly key: string;
+  readonly delivery: EncounterSupportDelivery;
+  readonly persistence: EncounterSupportPersistence;
+  /** NPC roles to check for reuse before materializing. */
+  readonly reuseNpcRoles?: readonly string[];
+  /** Role label for the support cast member. */
+  readonly supportRole: string;
+  /** NPC role to assign if materializing a new actor. */
+  readonly spawnNpcRole: string;
+  /** Display name if materializing a new actor. */
+  readonly spawnName?: string;
+  /** Key of a location spec in the same bundle to place this actor at. */
+  readonly preferredLocationKey?: string;
+  /** Faction definition ID for faction membership on spawn. */
+  readonly factionDefId?: string;
+}
+
+/** Location support spec — defines a sublocation to bind or materialize for an encounter. */
+export interface EncounterSupportLocationSpec {
+  readonly kind: 'location';
+  readonly key: string;
+  readonly delivery: EncounterSupportDelivery;
+  readonly persistence: EncounterSupportPersistence;
+  /** Sublocation type ID to search for or create. */
+  readonly sublocationTypeId: string;
+  /** Fallback display name if materializing. */
+  readonly fallbackName?: string;
+}
+
+/** Union of all support spec types. */
+export type EncounterSupportSpec = EncounterSupportActorSpec | EncounterSupportLocationSpec;
+
+/** A support bundle is an ordered array of support specs. */
+export type EncounterSupportBundle = readonly EncounterSupportSpec[];
+
+/** Runtime binding from a support spec key to a resolved graph node. */
+export interface EncounterSupportBinding {
+  readonly key: string;
+  readonly nodeId: string;
+  readonly kind: 'actor' | 'location';
+  readonly delivery: EncounterSupportDelivery;
+  readonly persistence: EncounterSupportPersistence;
+  readonly reused: boolean;
+}
+
+// ─── Encounter Choice Memory ────────────────────────────────────
+
+/** Records a player's encounter intervention choice for a specific step. */
+export interface EncounterChoiceMemory {
+  readonly stepIndex: number;
+  readonly stepId: string;
+  readonly choiceId: string;
+  readonly choiceText: string;
+  readonly interventionType: string;
+  readonly essenceSpent: number;
+  readonly probabilityBoost: number;
+  readonly tick: number;
 }
 
 // ─── Encounter Progress (Runtime State) ─────────────────────────

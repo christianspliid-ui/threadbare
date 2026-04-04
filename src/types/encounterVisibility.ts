@@ -52,6 +52,16 @@ export interface EncounterNotification {
   encounterId: string;
   /** Encounter template name */
   encounterName: string;
+  /** Encounter beat vs. finished aftermath summary. */
+  kind?: 'encounter' | 'aftermath';
+  /** Runtime source for the encounter notification. */
+  sourceSystem?: 'legacy_encounter' | 'unified_action';
+  /** Current step index when the notification was emitted. */
+  stepIndex?: number;
+  /** Unified action id when sourced from a unified action. */
+  actionId?: string;
+  /** Concrete step id when known. */
+  stepId?: string;
   /** Prose description (depth varies by court position) */
   prose: string;
   /** Choices available (empty for watched/none) */
