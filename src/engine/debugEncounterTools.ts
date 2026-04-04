@@ -93,6 +93,34 @@ function findAgent(state: GameState, agentQuery: string) {
 function resolveTemplate(templateQuery: string): EncounterTemplate | undefined {
   const exact = getAnyEncounterById(templateQuery);
   if (exact) return exact;
+
+  // Also check unified action templates — they can be spawned as encounters
+  // if they have multi-step or support bundle configurations.
+  const unified = getUnifiedTemplateById(templateQuery);
+  if (unified) {
+    // Adapt unified template to the EncounterTemplate shape expected downstream.
+    // This is a lightweight shim — the real spawn path at line 297+ already
+    // checks getUnifiedTemplateById and uses the unified path when found.
+    return {
+      id: unified.id,
+      name: unified.name,
+      steps: unified.steps.map((s, i) => {
+        const step = 'branchOnStep' in s ? s.fallback : s;
+        return {
+          id: `${unified.id}.${i}`,
+          reach: step.reach,
+          difficulty: Math.round(step.difficulty * 100),
+          duration: step.duration.min,
+          onSuccess: { narrative: step.narrativeTemplate ?? unified.narrativeTemplates.success },
+          onFailure: { narrative: step.narrativeTemplate ?? unified.narrativeTemplates.failure },
+        };
+      }),
+      threatRating: 'moderate' as const,
+      encounterType: 'assist' as const,
+      supportBundle: unified.supportBundle,
+    } as EncounterTemplate;
+  }
+
   return undefined;
 }
 
