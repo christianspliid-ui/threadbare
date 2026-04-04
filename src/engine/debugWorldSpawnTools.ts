@@ -4,7 +4,7 @@ import type { LocationSubtype } from '../types';
 import type { NpcRole, SpotlightTier } from '../types/npc';
 import { NPC_ROLE_SUBLOCATION_MAP } from '../types/npc';
 import { DEFAULT_REPUTATION } from '../types/disposition';
-import { getAgentLocationId, getAllActorsAtLocation, getSublocationsAt } from './graphQueries';
+import { getAgentLocationId, getAllActorsAtLocation, getSublocationsAt, getAvatarsOf } from './graphQueries';
 import { selectDefaultTrackedHero } from './balanceTelemetry';
 import { instantiateReward, REWARD_INSTANTIATE_PREFIX } from './rewardPool';
 
@@ -92,6 +92,8 @@ function findAgentNode(state: GameState, query: string): GraphNode | undefined {
   const actors = state.graph.getNodesByType('actor');
   const normalized = normalize(query);
   if (normalized === '@hero') {
+    const avatars = getAvatarsOf(state.graph, state.ascendantId);
+    if (avatars.length > 0) return avatars[0];
     const heroCandidates = actors.filter(node => node.properties.actorType === 'individual');
     const heroId = selectDefaultTrackedHero(heroCandidates.map(node => node.id));
     return heroCandidates.find(node => node.id === heroId) ?? heroCandidates[0];

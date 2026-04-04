@@ -7,7 +7,7 @@ import { buildEncounterNotification } from './encounterVisibility';
 import { VISIBILITY_BY_POSITION } from '../types/encounterVisibility';
 import { getAnyEncounterById } from '../data/encounter-content';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
-import { getAgentLocationId } from './graphQueries';
+import { getAgentLocationId, getAvatarsOf } from './graphQueries';
 import { prepareEncounterSupportBundle, prepareEncounterSupportBundleForContext } from './encounterSupportBundle';
 import { initializeClearanceGates } from './clearanceGate';
 import { createUnifiedAction } from './unifiedActionLifecycle';
@@ -74,6 +74,8 @@ function findAgent(state: GameState, agentQuery: string) {
   const query = agentQuery.trim().toLowerCase();
 
   if (query === '@hero') {
+    const avatars = getAvatarsOf(state.graph, state.ascendantId);
+    if (avatars.length > 0) return avatars[0];
     const heroCandidates = actors.filter(node => node.properties.actorType === 'individual');
     const heroId = selectDefaultTrackedHero(heroCandidates.map(node => node.id));
     return heroCandidates.find(node => node.id === heroId) ?? heroCandidates[0];
