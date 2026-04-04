@@ -2,6 +2,7 @@ import React from 'react';
 import type { AgentDetail } from '../../engine/agentDetail';
 import type { ReachDomain } from '../../types/traits';
 import type { CooperationStrategy } from '../../types/disposition';
+import { ReachIcon } from '../icons';
 import { TIER_COLORS, ARCHETYPE_DOT_COLOR, FACTION_TAG_COLOR, FACTION_TAG_BACKGROUND, FACTION_TAG_BORDER, SENTIMENT_GREEN, SENTIMENT_RED } from '../../data/uiColorPalette';
 import { AttachmentRow } from './AttachmentRow';
 import { IntentSection } from './IntentSection';
@@ -206,10 +207,11 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
               return (
                 <div key={domain} className="flex flex-col">
                   <span
-                    className={`text-xs font-medium mb-1 ${
+                    className={`inline-flex items-center gap-1 text-xs font-medium mb-1 ${
                       isAffinity ? 'text-amber-100' : 'text-amber-400/70'
                     }`}
                   >
+                    <ReachIcon reach={domain} size={14} />
                     {DOMAIN_NAMES[domain]}
                   </span>
                   <div className="bg-stone-700 rounded h-1.5 overflow-hidden">

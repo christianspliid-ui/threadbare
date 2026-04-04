@@ -9,6 +9,7 @@
 
 import { memo, useState, useMemo, useCallback } from 'react';
 import { Modal } from '../shared/Modal';
+import { ReachIcon } from '../icons';
 import type { WorldGraph } from '../../engine/graph';
 import type { SphereName } from '../../types/index';
 import type { ReachDomain } from '../../types/traits';
@@ -39,11 +40,6 @@ import {
 import type { MeetingEncounterResult } from '../../types/meetingEncounter';
 
 // ─── Reach Display ────────────────────────────────────────────────
-
-const REACH_ICONS: Record<ReachDomain, string> = {
-  iron: '⚔', gold: '⚖', shadow: '🗝', veil: '✦',
-  heart: '♥', eye: '◉', stone: '⛰', star: '★',
-};
 
 const SPHERE_LABELS: Record<string, string> = {
   force: 'Force', matter: 'Matter', energy: 'Energy', life: 'Life',
@@ -171,7 +167,10 @@ function StepSeekingThreads({
             }}
             disabled={secondaryReach === opt.reach}
           >
-            {REACH_ICONS[opt.reach]} {opt.label}
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+              <ReachIcon reach={opt.reach} size={14} />
+              {opt.label}
+            </span>
           </button>
         ))}
       </div>
@@ -193,7 +192,10 @@ function StepSeekingThreads({
                   fontSize: 'var(--text-xs)',
                 }}
               >
-                {REACH_ICONS[reach]} {reach.charAt(0).toUpperCase() + reach.slice(1)}
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <ReachIcon reach={reach} size={14} />
+                  {reach.charAt(0).toUpperCase() + reach.slice(1)}
+                </span>
               </button>
             ))}
           </div>
@@ -425,8 +427,9 @@ function StepSpark({
             }}
           >
             <span style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', fontStyle: 'italic' }}>{opt.text}</span>
-            <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)', marginLeft: 8 }}>
-              {REACH_ICONS[opt.reach]} {opt.reach.charAt(0).toUpperCase() + opt.reach.slice(1)}
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: 'var(--text-muted)', fontSize: 'var(--text-xs)', marginLeft: 8 }}>
+              <ReachIcon reach={opt.reach} size={14} />
+              {opt.reach.charAt(0).toUpperCase() + opt.reach.slice(1)}
             </span>
           </button>
         ))}

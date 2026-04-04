@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import type { AgentInfoCardData } from '../../engine/agentDetail';
 import type { WorldGraph } from '../../engine/graph';
 import type { ReachDomain } from '../../types/traits';
+import { ReachIcon } from '../icons';
 import { Tooltip } from '../shared/Tooltip';
 import { generateEntityProse } from '../../engine/proseGenerator';
 import { CATEGORY_GLYPHS, CATEGORY_COLORS } from '../../data/ambition-categories';
@@ -326,7 +327,8 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
             </h3>
             <div className="space-y-1">
               {card.domains.map((dom, idx) => (
-                <div key={idx} style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
+                <div key={idx} className="flex items-center gap-1" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
+                  <ReachIcon reach={dom.domain} size={14} />
                   {dom.word} in <Tooltip id={`reach.${dom.domain}`}><span className="underline decoration-dotted cursor-help">{DOMAIN_NAMES[dom.domain]}</span></Tooltip>
                 </div>
               ))}

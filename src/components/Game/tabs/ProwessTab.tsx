@@ -1,5 +1,6 @@
 import type { AgentInfoCardData } from '../../../engine/agentDetail';
 import type { AgentKnowledge } from '../../../types/agentKnowledge';
+import { ReachIcon } from '../../icons';
 import {
   POSSESSION_ACTIVITY_TICKS,
   POSSESSION_PROVISIONS_TICKS,
@@ -233,7 +234,8 @@ export function ProwessTab({ card, knowledge, onAttachmentClick }: ProwessTabPro
                   style={{ backgroundColor: 'var(--bg-raised)' }}
                 >
                   <Tooltip id={`reach.${domain}`}>
-                    <p className="text-xs font-medium underline decoration-dotted cursor-help" style={{ color: 'var(--accent-gold)' }}>
+                    <p className="inline-flex items-center justify-center gap-1 text-xs font-medium underline decoration-dotted cursor-help" style={{ color: 'var(--accent-gold)' }}>
+                      <ReachIcon reach={domain} size={14} />
                       {DOMAIN_NAMES[domain]}
                     </p>
                   </Tooltip>

@@ -17,6 +17,7 @@ import { NARRATIVE_LEXICON, REACH_DOMAINS } from '../../types/traits';
 import type { GameState } from '../../types/gameState';
 import { Modal } from '../shared/Modal';
 import { SphereIcon } from '../shared/SphereIcon';
+import { ReachIcon } from '../icons';
 import { SectionHeading } from '../shared/SectionHeading';
 import { ProseKeyword } from '../ProseKeyword';
 import { Tooltip } from '../shared/Tooltip';
@@ -293,7 +294,8 @@ export function AscendantSheet({
                     style={{ backgroundColor: 'var(--bg-raised)' }}
                   >
                     <Tooltip id={`reach.${reach}`}>
-                      <p className="text-xs font-medium underline decoration-dotted cursor-help" style={{ color: 'var(--accent-gold)' }}>
+                      <p className="inline-flex items-center justify-center gap-1 text-xs font-medium underline decoration-dotted cursor-help" style={{ color: 'var(--accent-gold)' }}>
+                        <ReachIcon reach={reach} size={14} />
                         {DOMAIN_NAMES[reach]}
                       </p>
                     </Tooltip>

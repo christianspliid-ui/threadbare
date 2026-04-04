@@ -3,7 +3,7 @@ import { Modal } from '../shared/Modal';
 import { FACTION_DEFINITIONS } from '../../data/faction-definitions';
 import type { FactionDefinition, FactionRankTier } from '../../types/faction';
 import { REACH_DOMAINS } from '../../types/traits';
-import { CoatOfArms } from '../icons';
+import { CoatOfArms, ReachIcon } from '../icons';
 
 interface FactionSheetProps {
   factionId: string;
@@ -94,7 +94,10 @@ export const FactionSheet = React.memo(function FactionSheet({ factionId, name, 
                   const weight = definition.reachWeights[domain] ?? 0;
                   return (
                     <div key={domain} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--text-xs)' }}>
-                      <span style={{ width: '48px', color: 'var(--text-tertiary)', textTransform: 'capitalize' }}>{domain}</span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', width: '64px', color: 'var(--text-tertiary)', textTransform: 'capitalize' }}>
+                        <ReachIcon reach={domain} size={14} />
+                        {domain}
+                      </span>
                       <div style={{ flex: 1, height: '6px', backgroundColor: 'var(--bg-raised)', borderRadius: '3px', overflow: 'hidden' }}>
                         <div style={{ width: `${weight * 100}%`, height: '100%', backgroundColor: definition.themeColor, borderRadius: '3px', opacity: 0.7 }} />
                       </div>
