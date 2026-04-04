@@ -2396,9 +2396,20 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
             onAcknowledgeAftermath={handleEncounterAcknowledgeAftermath}
             onAftermathReaction={handleEncounterAftermathReaction}
             onCommitChoice={(choiceId) => {
+              // Check notification choices first, then fall back to authored choices on the template
               const choice = tieredEncounterState.notification.choices.find(c => c.id === choiceId);
-              if (!choice) return;
-              handleEncounterCommitAndContinue(choiceId, choice.essenceCost ?? 0);
+              if (choice) {
+                handleEncounterCommitAndContinue(choiceId, choice.essenceCost ?? 0);
+                return;
+              }
+              // Authored choices may have different IDs than the notification's generic choices
+              const activeAction = (gameState.unifiedActions ?? []).find(a => a.actionId === tieredEncounterState.encounter.actionId);
+              const template = activeAction ? getUnifiedTemplateById(activeAction.templateId) : undefined;
+              const authoredCard = template?.authoredChoices?.[activeAction?.currentStep ?? 0]?.find(c => c.id === choiceId);
+              if (authoredCard) {
+                handleEncounterCommitAndContinue(choiceId, authoredCard.essenceCost ?? 0);
+                return;
+              }
             }}
           model={encounterStageModel}
         />
