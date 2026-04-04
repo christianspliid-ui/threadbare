@@ -107,6 +107,8 @@ export interface DebugBridge {
   exportBalanceTelemetry: () => Promise<Record<string, unknown> | null>;
   /** @internal GameView registers the SimulationRuntime provider for balance telemetry access */
   _registerRuntimeProvider: (fn: () => import('./engine/simulationRuntime').SimulationRuntime | null) => void;
+  /** @internal GameView registers encounter spawn / world-spawn callbacks here */
+  _registerEncounterBridge: (callbacks: Record<string, (...args: unknown[]) => unknown>) => void;
   getEncounterLogAll: () => Promise<EncounterLogSummary>;
   exportEncounterLogAll: (agentNames?: Record<string, string>, seed?: string) => Promise<EncounterLogExportResult>;
 }

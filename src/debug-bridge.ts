@@ -22,6 +22,8 @@ if (import.meta.env.DEV) {
   let _gameStateProvider: (() => import('./types/gameState').GameState | null) | null = null;
   // GameView registers a provider for the live SimulationRuntime (for balance telemetry)
   let _runtimeProvider: (() => import('./engine/simulationRuntime').SimulationRuntime | null) | null = null;
+  // GameView registers encounter spawn/world-spawn callbacks here
+  let _encounterBridge: Record<string, (...args: unknown[]) => unknown> | null = null;
 
   window.__DEBUG = {
     // Debug panel control — called from browser console or Playwright
@@ -44,6 +46,8 @@ if (import.meta.env.DEV) {
     _registerGameStateProvider: (fn: () => import('./types/gameState').GameState | null) => { _gameStateProvider = fn; },
     /** @internal GameView registers the SimulationRuntime provider for balance telemetry access */
     _registerRuntimeProvider: (fn: () => import('./engine/simulationRuntime').SimulationRuntime | null) => { _runtimeProvider = fn; },
+    /** @internal GameView registers encounter spawn / world-spawn callbacks here */
+    _registerEncounterBridge: (cb: Record<string, (...args: unknown[]) => unknown>) => { _encounterBridge = cb; },
     /**
      * Inspect the encounter notification pipeline for a threaded agent.
      * Pass an agent name/id fragment to filter, or omit to see all threaded agents.
