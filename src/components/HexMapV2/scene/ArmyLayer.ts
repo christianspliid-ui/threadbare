@@ -39,12 +39,12 @@ const ALL_FACTION_DEFS: ReadonlyMap<string, FactionDefinition> = (() => {
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
-/** Base radius for warband — smallest army size (in world units) */
-export const ARMY_DOT_RADIUS_WARBAND = 5;
+/** Base radius for warband — smallest army size (in world units). Hex radius is 10. */
+export const ARMY_DOT_RADIUS_WARBAND = 2.5;
 /** Base radius for regiment */
-export const ARMY_DOT_RADIUS_REGIMENT = 7;
-/** Base radius for host — largest army size */
-export const ARMY_DOT_RADIUS_HOST = 10;
+export const ARMY_DOT_RADIUS_REGIMENT = 3.5;
+/** Base radius for host — largest army size. Must fit inside hex (radius 10). */
+export const ARMY_DOT_RADIUS_HOST = 4.5;
 
 /** Vertical offset from hex center so armies don't overlap agent dots */
 export const ARMY_VERTICAL_OFFSET = -4;
