@@ -49,6 +49,8 @@ import { getDefaultBalanceTargets } from '../src/engine/balanceTargets';
 
 import type { GameState, TickEvent } from '../src/types/gameState';
 import { SPHERE_NAMES } from '../src/types/index';
+import { getUnifiedTemplateById, UNIFIED_ACTION_TEMPLATES } from '../src/data/unified-action-templates';
+import { createUnifiedAction } from '../src/engine/unifiedActionLifecycle';
 
 // ─── CLI Argument Parsing ─────────────────────────────────────────
 
@@ -290,7 +292,8 @@ function printEncounters(): void {
   const actions = state.unifiedActions;
   console.log(header(`Unified Actions (${actions.length})`));
   for (const a of actions.slice(0, 20)) {
-    console.log(`  ${dim(a.id.slice(0, 8))}  ${a.templateId}  progress:${a.currentStep}/${a.totalSteps}  status:${a.status ?? 'active'}`);
+    const status = a.resolved ? `resolved:${a.outcome ?? 'unknown'}` : `step:${a.currentStep} progress:${a.stepProgress}/${a.stepDuration}`;
+    console.log(`  ${dim(a.actionId.slice(0, 8))}  ${a.templateId}  ${status}`);
   }
   if (actions.length > 20) {
     console.log(dim(`  ... and ${actions.length - 20} more`));
@@ -461,10 +464,89 @@ function printHelp(): void {
   console.log(`  ${BOLD}balance targets${RESET}  Show target bands`);
   console.log(`  ${BOLD}balance recent${RESET} [N] Show last N balance events`);
   console.log(`  ${BOLD}balance agent${RESET} <id> Show agent journey`);
+  console.log(`  ${BOLD}spawn encounter${RESET} <agent|@hero> <templateId>  Spawn an encounter on an agent`);
   console.log(`  ${BOLD}seed${RESET}             Print current seed`);
   console.log(`  ${BOLD}eval${RESET} <expr>      Evaluate JS with 'state' in scope`);
   console.log(`  ${BOLD}help${RESET}             This help`);
   console.log(`  ${BOLD}quit${RESET} / ${BOLD}exit${RESET}     Exit`);
+}
+
+// ─── Spawn Helpers ───────────────────────────────────────────────
+
+function handleSpawnEncounter(agentQuery: string, templateId: string): void {
+  // Resolve @hero to the ascendant
+  let resolvedQuery = agentQuery;
+  if (agentQuery === '@hero') {
+    const heroNode = state.ascendantId ? state.graph.getNode(state.ascendantId) : undefined;
+    if (!heroNode) {
+      console.log(`${RED}No hero/ascendant found in current game state${RESET}`);
+      return;
+    }
+    resolvedQuery = heroNode.id;
+  }
+
+  // Find agent by partial name/id match
+  const agents = state.graph.getNodesByType('actor')
+    .filter(n => n.properties.actorType === 'individual' || n.properties.actorType === 'ascendant');
+
+  const match = agents.find(a =>
+    a.id === resolvedQuery ||
+    a.id.includes(resolvedQuery) ||
+    (a.properties.name as string ?? '').toLowerCase().includes(resolvedQuery.toLowerCase())
+  );
+
+  if (!match) {
+    console.log(`${RED}No agent matching "${agentQuery}"${RESET}`);
+    return;
+  }
+
+  // Find template by exact ID or partial match
+  let template = getUnifiedTemplateById(templateId);
+  if (!template) {
+    // Try partial match
+    const lowerQuery = templateId.toLowerCase();
+    template = UNIFIED_ACTION_TEMPLATES.find(t =>
+      t.id.toLowerCase().includes(lowerQuery) ||
+      t.name.toLowerCase().includes(lowerQuery)
+    );
+  }
+
+  if (!template) {
+    console.log(`${RED}No template matching "${templateId}"${RESET}`);
+    const encounterTemplates = UNIFIED_ACTION_TEMPLATES
+      .filter(t => t.supportBundle !== undefined)
+      .map(t => t.id)
+      .slice(0, 10);
+    if (encounterTemplates.length > 0) {
+      console.log(`Encounter templates: ${encounterTemplates.join(', ')}`);
+    }
+    return;
+  }
+
+  // Create the action
+  const action = createUnifiedAction({
+    actorId: match.id,
+    templateId: template.id,
+    targetId: match.id,
+    scale: template.scale,
+    source: 'system',
+    tick: state.tick,
+    template,
+    rng: () => Math.random(),
+  });
+
+  // Add to state
+  state = {
+    ...state,
+    unifiedActions: [...state.unifiedActions, action],
+  };
+
+  console.log(`${GREEN}✓${RESET} Spawned "${template.name}" on ${match.properties.name ?? match.id}`);
+  console.log(`  template: ${template.id}`);
+  console.log(`  action:   ${action.actionId}`);
+  console.log(`  steps:    ${template.steps.length}`);
+  console.log(`  duration: ${action.stepDuration} ticks`);
+  console.log(`  Advance with: tick ${action.stepDuration}`);
 }
 
 // ─── REPL ─────────────────────────────────────────────────────────
@@ -560,6 +642,15 @@ function handleCommand(line: string): boolean {
       // sub-commands: summary (default), eval, targets, recent [N], agent <id>
       const subParts = arg ? arg.split(/\s+/) : [];
       printBalance(subParts[0], subParts[1]);
+      break;
+    }
+    case 'spawn': {
+      const subParts = arg.split(/\s+/);
+      if (subParts[0] === 'encounter' && subParts.length >= 3) {
+        handleSpawnEncounter(subParts[1], subParts.slice(2).join(' '));
+      } else {
+        console.log(`${RED}Usage: spawn encounter <agent|@hero> <templateId>${RESET}`);
+      }
       break;
     }
     case 'seed':

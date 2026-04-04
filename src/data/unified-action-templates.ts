@@ -37,6 +37,7 @@ import { DECAY_CONSTANTS } from '../engine/decayCurve';
 import { INTERVENTION_DEFINITIONS } from './dream-content';
 import { NPC_ACTION_TEMPLATES } from './npc-action-templates';
 import { RIVAL_SHRINE_BETRAYAL_TEMPLATE } from './encounters/rival-shrine-betrayal';
+import { WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE } from './encounters/wandering-healer-shrine-access';
 
 // ─── Migration: ActionTemplateData → UnifiedActionTemplate ─────────
 
@@ -3166,6 +3167,7 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...THREAD_CREATION_TEMPLATES,
   ...NPC_ACTION_TEMPLATES,
   RIVAL_SHRINE_BETRAYAL_TEMPLATE,
+  WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE,
 ];
 
 /**
