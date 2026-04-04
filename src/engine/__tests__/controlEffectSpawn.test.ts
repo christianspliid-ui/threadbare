@@ -416,7 +416,7 @@ describe('controlEffectSpawn', () => {
         templateId: template.id,
         targetId: 'hex_5_3',
         scale: 'local',
-        source: 'player',
+        source: 'agent',
         tick: 9,
         template,
         rng: failureRng,

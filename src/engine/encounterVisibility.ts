@@ -27,7 +27,7 @@ import {
   ATTENTION_MODE_CHANGE_COST,
   VISIBILITY_BY_POSITION,
 } from '../types/encounterVisibility';
-import { getThreadsFrom, getAgentLocation } from './graphQueries';
+import { getThreadsFrom, getAgentLocation, getAvatarsOf } from './graphQueries';
 import { emitTrace } from './traceBuffer';
 import { getAnyEncounterById } from '../data/encounter-content';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
@@ -284,7 +284,6 @@ export function phaseEncounterVisibility(
 
   // Get all threads from the ascendant
   const threads = getThreadsFrom(graph, ascendantId);
-  if (threads.length === 0) return { notifications, events };
 
   // Build a map of threaded agent IDs → thread info.
   // Include all threaded agents regardless of courtPosition;
@@ -294,6 +293,24 @@ export function phaseEncounterVisibility(
     const props = edge.properties as ThreadEdgeProperties;
     threadedAgents.set(edge.target, { threadEdgeId: edge.id, props });
   }
+
+  // Always include the ascendant's own avatar actor(s) at 'the_first' court position.
+  // The avatar is connected via avatar_of, not a thread edge, so it never appears in
+  // threadedAgents — but the ascendant must always see their own character's encounters.
+  for (const avatarNode of getAvatarsOf(graph, ascendantId)) {
+    if (!threadedAgents.has(avatarNode.id)) {
+      threadedAgents.set(avatarNode.id, {
+        threadEdgeId: '',
+        props: {
+          tier: 5,
+          courtPosition: 'the_first',
+          attentionMode: 'pause',
+        } as ThreadEdgeProperties,
+      });
+    }
+  }
+
+  if (threadedAgents.size === 0) return { notifications, events };
 
   // Build a set of already-pending notification keys to avoid duplicates.
   // For aftermath notifications, include RESOLVED ones too — otherwise a dismissed

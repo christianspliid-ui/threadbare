@@ -16,6 +16,7 @@ import { generateRivals, createRivalState } from '../rival';
 import { generateDoomClock, createDoomClockState } from '../doomClock';
 import { recalcVisibility, collectLOSSources } from '../visibility';
 import { getEncountersByLocationType } from '../../data/encounter-content';
+import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 
 function balancedCosmology(): CosmologyProfile {
   const c = {} as CosmologyProfile;
@@ -131,9 +132,13 @@ function createTestGameState(seed: number = 42): GameState {
   };
 }
 
-/** Find encounters available at a 'town' location type (used by tests). */
+/** Find encounters available at a 'town' location type that are NOT unified templates.
+ * phaseEncounterProgressionV2 skips encounters that are unified templates (handled by a separate phase).
+ */
 function getTestEncounters() {
-  return getEncountersByLocationType('town');
+  return getEncountersByLocationType('town').filter(
+    e => getUnifiedTemplateById(e.id) === undefined,
+  );
 }
 
 describe('phaseEncounterProgressionV2 — retinue notifications', () => {

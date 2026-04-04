@@ -1662,10 +1662,8 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseEventCounts['stealth'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
-  // Phase 5: Narrative
-  s = { ...s, ...phaseNarrative(s) };
-  phaseEventCounts['narrative'] = s.tickEvents.length - prevEventCount;
-  prevEventCount = s.tickEvents.length;
+  // ─── Resources & Divine ───────────────────────────────────────────────────────
+  // What the player earns and spends this tick.
 
   // Phase 6: Essence
   s = { ...s, ...phaseEssence(s) };
@@ -1676,6 +1674,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   s = { ...s, ...phaseControlEffects(s) };
   phaseEventCounts['control_effects'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
+
+  // ─── Decay ─────────────────────────────────────────────────────────────────────
+  // Entropy pulls everything toward zero. Reputation, influence, trade, and magic
+  // all fade without reinforcement.
 
   // Phase 6.5: Reputation Decay
   s = { ...s, ...phaseReputationDecay(s) };
@@ -1703,6 +1705,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   s = { ...s, ...phaseTradeRouteDecay(s) };
   phaseEventCounts['trade_route_decay'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
+
+  // ─── World State Evolution ──────────────────────────────────────────────────────
+  // Dynamics that reshape the map: prosperity, settlement tiers, hex mutations,
+  // sphere pressure resolution, quintessence, and sublocation lifecycle.
 
   // Phase 6.63: Settlement Prosperity (economic pulse for all settlements)
   s = { ...s, ...phaseProsperity(s) };
@@ -1775,6 +1781,9 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseEventCounts['economic_chronicle'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
+  // ─── Long-term Progress ─────────────────────────────────────────────────────────
+  // Slow-moving systems: ambitions, faction strategy, population dynamics.
+
   // Phase 6.65: Ambition Progress (milestones, completion, abandonment, re-evaluation)
   s = { ...s, ...phaseAmbitionProgress(s) };
   phaseEventCounts['ambition_progress'] = s.tickEvents.length - prevEventCount;
@@ -1787,6 +1796,17 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   s = { ...s, ...phaseAgentLifecycle(s, nextEventId) };
   phaseEventCounts['agent_lifecycle'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
+
+  // ─── Narrative ─────────────────────────────────────────────────────────────────
+  // Runs after all event-generating phases so that deaths, mandate milestones,
+  // economic changes, and ambition completions all get the full chronicle treatment.
+
+  // Phase 5: Narrative (moved here from before economy — now captures ALL tick events)
+  s = { ...s, ...phaseNarrative(s) };
+  phaseEventCounts['narrative'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // ─── Victory & Defeat ──────────────────────────────────────────────────────────
 
   // Phase 7: Mandate
   s = { ...s, ...phaseMandate(s) };
