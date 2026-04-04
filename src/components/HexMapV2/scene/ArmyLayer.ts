@@ -194,6 +194,7 @@ export async function preloadCoatOfArmsTextures(texSize: number): Promise<void> 
  */
 function getCoatOfArmsTexture(factionDefId: string): THREE.CanvasTexture | null {
   const cached = coaTextureCache.get(factionDefId);
+  console.debug('[CoA] getCoatOfArmsTexture', factionDefId, 'cached=', cached ? (cached === 'failed' ? 'failed' : 'texture') : 'miss', 'allDefs has?', ALL_FACTION_DEFS.has(factionDefId));
   if (!cached || cached === 'failed') return null;
   return cached;
 }

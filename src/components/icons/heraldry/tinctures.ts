@@ -30,12 +30,22 @@ function darken(hex: string): string {
   return rgbToHex(r * 0.3, g * 0.3, b * 0.3);
 }
 
+/** Neutral fallback tinctures when reach/sphere lookup fails */
+const FALLBACK_TINCTURES: TinctureSet = {
+  primary: '#888888',
+  secondary: '#282828',
+  foundation: '#666666',
+  charge: '#f0e8d0',
+};
+
 export function deriveTinctures(reach: ReachDomain): TinctureSet {
   const sphere = REACH_TO_SPHERE[reach];
+  if (!sphere) return FALLBACK_TINCTURES;
   const foundationSphere = SPHERE_TO_FOUNDATION[sphere];
   const primary = SPHERE_COLORS[sphere];
+  if (!primary) return FALLBACK_TINCTURES;
   const secondary = darken(primary);
-  const foundation = SPHERE_COLORS[foundationSphere];
+  const foundation = SPHERE_COLORS[foundationSphere] ?? '#666666';
   const [r, g, b] = hexToRgb(primary);
   const lum = luminance(r, g, b);
   // High-contrast charge: bright gold on dark fields, deep navy on light fields

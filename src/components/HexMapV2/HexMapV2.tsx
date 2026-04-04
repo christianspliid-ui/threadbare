@@ -1051,6 +1051,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       // Preload coat of arms textures (instant if already cached), then build layer
       void preloadCoatOfArmsTextures(ARMY_TEXTURE_SIZE).then(() => {
         if (!sceneRef.current) return;
+        console.debug('[ArmyLayer] Building army layer for', armies.length, 'armies after texture preload');
         const armyLayerGroup = createArmyLayer(armies);
         sceneRef.current.add(armyLayerGroup.group);
         armyLayerRef.current = armyLayerGroup;

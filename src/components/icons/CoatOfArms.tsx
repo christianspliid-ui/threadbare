@@ -40,7 +40,11 @@ export function buildCoatOfArmsConfig(
   prominenceLevel: ProminenceLevel = 'base',
 ): CoatOfArmsConfig {
   const weights = def.reachWeights;
-  const entries = Object.entries(weights) as [ReachDomain, number][];
+  // Filter to valid ReachDomain keys only — some definitions (e.g. monster factions)
+  // may include sphere names like 'force' in reachWeights which aren't valid reaches
+  const validReaches = new Set<string>(Object.keys(REACH_TO_SPHERE));
+  const entries = (Object.entries(weights) as [string, number][])
+    .filter(([key]) => validReaches.has(key)) as [ReachDomain, number][];
 
   if (entries.length === 0) {
     return {
