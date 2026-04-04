@@ -360,6 +360,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
       // NPCs (ambient/notable spotlight tiers) only appear in location rosters.
       const actorType = n.properties.actorType as string | undefined;
       if (actorType !== 'individual' && actorType !== 'group') continue;
+      // Army nodes are rendered by the army layer, not the agent sprite system.
+      if (n.properties.armyState != null) continue;
       if (actorType === 'individual') {
         const tier = (n.properties.spotlightTier as string) ?? 'spotlight';
         if (tier !== 'spotlight') continue;
@@ -2007,7 +2009,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
                   onHexClick={handleHexClickFull}
                   onHexHover={setHoveredHex}
                   onAgentClick={(agentId) => handleThreadNodeSelect(agentId, 'agent')}
-                  onArmyClick={(armyId) => handleThreadNodeSelect(armyId, 'army')}
+                  onArmyClick={(armyId) => handleOpenProfileModal(armyId, 'army')}
                 />
 
                 <AvatarHUD
