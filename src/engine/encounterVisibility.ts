@@ -365,7 +365,7 @@ export function phaseEncounterVisibility(
 
     const encounter = getAnyEncounterById(action.templateId);
     const unifiedTemplate = getUnifiedTemplateById(action.templateId);
-    if (!encounter || !unifiedTemplate) continue;
+    if (!encounter && !unifiedTemplate) continue;
 
     const threadInfo = threadedAgents.get(action.actorId);
     if (!threadInfo) continue;
@@ -381,13 +381,17 @@ export function phaseEncounterVisibility(
     const locationName = locationNode?.name ?? 'unknown location';
     const courtPosition = threadInfo.props.courtPosition ?? 'retinue';
     const defaultMode = VISIBILITY_BY_POSITION[courtPosition]?.defaultAttentionMode ?? 'auto_resolve';
-    const currentStep = resolveStepDefinition(unifiedTemplate, stepIndex, action.choiceHistory);
+    const encounterName = encounter?.name ?? unifiedTemplate?.name ?? action.templateId;
+    const resolvedTemplate = unifiedTemplate ?? undefined;
+    const currentStep = resolvedTemplate
+      ? resolveStepDefinition(resolvedTemplate, stepIndex, action.choiceHistory)
+      : undefined;
 
     const notification = buildEncounterNotification(
       action.actorId,
       agentNode.name,
       action.templateId,
-      encounter.name,
+      encounterName,
       locationName,
       courtPosition,
       threadInfo.props.attentionMode ?? defaultMode,
@@ -396,7 +400,7 @@ export function phaseEncounterVisibility(
         sourceSystem: 'unified_action',
         stepIndex,
         actionId: action.actionId,
-        stepId: currentStep.id,
+        stepId: currentStep?.id,
       },
     );
 
@@ -406,7 +410,7 @@ export function phaseEncounterVisibility(
         id: `evt_enc_vis_unified_${action.actorId}_${stepIndex}_${tick}`,
         tick,
         type: 'journey_beat',
-        message: `${agentNode.name} enters ${encounter.name} step ${stepIndex + 1}`,
+        message: `${agentNode.name} enters ${encounterName} step ${stepIndex + 1}`,
         significance: courtPosition === 'retinue' ? 0.7 : 0.4,
         actorId: action.actorId,
       });
@@ -417,7 +421,9 @@ export function phaseEncounterVisibility(
     if (!action.resolved || !action.aftermathSummary) continue;
 
     const encounter = getAnyEncounterById(action.templateId);
-    if (!encounter) continue;
+    const unifiedTemplate = !encounter ? getUnifiedTemplateById(action.templateId) : undefined;
+    if (!encounter && !unifiedTemplate) continue;
+    const encounterName = encounter?.name ?? unifiedTemplate?.name ?? action.templateId;
 
     const threadInfo = threadedAgents.get(action.actorId);
     if (!threadInfo) continue;
@@ -437,7 +443,7 @@ export function phaseEncounterVisibility(
       action.actorId,
       agentNode.name,
       action.templateId,
-      encounter.name,
+      encounterName,
       locationName,
       courtPosition,
       threadInfo.props.attentionMode ?? defaultMode,
@@ -460,7 +466,7 @@ export function phaseEncounterVisibility(
         id: `evt_enc_aftermath_${action.actorId}_${tick}`,
         tick,
         type: 'journey_beat',
-        message: `${agentNode.name} lives with the aftermath of ${encounter.name}`,
+        message: `${agentNode.name} lives with the aftermath of ${encounterName}`,
         significance: courtPosition === 'retinue' ? 0.7 : 0.4,
         actorId: action.actorId,
       });
