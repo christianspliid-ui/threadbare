@@ -371,7 +371,6 @@ export function EncounterStage({
                     overflow: 'hidden',
                     border: '1px solid var(--border-gold)',
                     background: 'var(--bg-deep)',
-                    maxHeight: 280,
                   }}
                 >
                   <img
