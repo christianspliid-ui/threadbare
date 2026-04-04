@@ -134,7 +134,6 @@ export function EncounterStage({
   const { enabled: narrationEnabled, isLoading, isSpeaking, speak, stop } = useNarration();
   const [activeNarrationId, setActiveNarrationId] = useState<string | null>(null);
   const [selectedChoiceId, setSelectedChoiceId] = useState<string | null>(null);
-  const [isSubmittingChoice, setIsSubmittingChoice] = useState(false);
   const currentStepId = useMemo(
     () => model.history.find(item => item.status === 'current')?.stepId ?? null,
     [model.history],
@@ -158,8 +157,7 @@ export function EncounterStage({
 
   useEffect(() => {
     setSelectedChoiceId(null);
-    setIsSubmittingChoice(false);
-  }, [currentStepId, open, model]);
+  }, [currentStepId, open]);
 
   const getParagraphNarrationText = useCallback((paragraph: EncounterStageModel['narrative']['paragraphs'][number]) => {
     return paragraph.segments.map(segment => segment.text).join('').replace(/\s+/g, ' ').trim();
@@ -232,9 +230,9 @@ export function EncounterStage({
 
   const handleSelectChoice = useCallback((choiceId: string) => {
     const choice = model.choices.find(entry => entry.id === choiceId);
-    if (!choice || !choice.affordable || isSubmittingChoice) return;
+    if (!choice || !choice.affordable) return;
     setSelectedChoiceId(choiceId);
-  }, [isSubmittingChoice, model.choices]);
+  }, [model.choices]);
 
   const handleAdvance = useCallback(() => {
     // Always stop narration when the button is clicked, even if the advance is blocked
@@ -242,10 +240,9 @@ export function EncounterStage({
       stop();
       setActiveNarrationId(null);
     }
-    if (!selectedChoice || !selectedChoice.affordable || isSubmittingChoice) return;
-    setIsSubmittingChoice(true);
+    if (!selectedChoice || !selectedChoice.affordable) return;
     onCommitChoice(selectedChoice.id);
-  }, [isSubmittingChoice, isSpeaking, onCommitChoice, selectedChoice, stop]);
+  }, [isSpeaking, onCommitChoice, selectedChoice, stop]);
 
   const handleAftermathExit = useCallback(() => {
     if (isSpeaking) {
@@ -698,7 +695,7 @@ export function EncounterStage({
                 <div style={{ display: 'grid', gap: 10 }}>
                   {model.choices.map(choice => {
                     const isSelected = selectedChoiceId === choice.id;
-                    const isDisabled = !choice.affordable || isSubmittingChoice;
+                    const isDisabled = !choice.affordable;
                     return (
                     <div
                       key={choice.id}
@@ -876,14 +873,14 @@ export function EncounterStage({
               <button
                 type="button"
                 onClick={handleAdvance}
-                disabled={!selectedChoice || isSubmittingChoice}
+                disabled={!selectedChoice}
                 style={{
                   padding: '8px 16px',
                   borderRadius: 8,
-                  background: !selectedChoice || isSubmittingChoice ? 'var(--bg-abyss)' : 'var(--accent-gold)',
-                  color: !selectedChoice || isSubmittingChoice ? 'var(--text-muted)' : '#16120b',
+                  background: !selectedChoice ? 'var(--bg-abyss)' : 'var(--accent-gold)',
+                  color: !selectedChoice ? 'var(--text-muted)' : '#16120b',
                   border: '1px solid var(--border-gold)',
-                  cursor: !selectedChoice || isSubmittingChoice ? 'not-allowed' : 'pointer',
+                  cursor: !selectedChoice ? 'not-allowed' : 'pointer',
                   fontWeight: 600,
                 }}
               >
