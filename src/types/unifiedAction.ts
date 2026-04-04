@@ -42,6 +42,43 @@ export interface ActionStepOutcomeMetadata {
   readonly reputationDelta?: number;
 }
 
+// ─── Structured Intelligence ────────────────────────────────────────────────
+
+/** Category of intelligence record held by an agent. */
+export type IntelligenceCategory =
+  | 'shrine_location'
+  | 'agent_network'
+  | 'trade_route'
+  | 'military_position'
+  | 'political_secret'
+  | 'cultural_knowledge';
+
+/**
+ * A queryable intelligence record held by an agent — structured knowledge
+ * gained through encounter aftermath that future encounters can reference.
+ *
+ * Intelligence records live on GameState.intelligenceRecords (not on graph nodes)
+ * so they are queryable without graph traversal.
+ */
+export interface IntelligenceRecord {
+  readonly recordId: string;
+  readonly category: IntelligenceCategory;
+  /** Human-readable label for what this intelligence represents. */
+  readonly label: string;
+  /** Narrative description of what is known. */
+  readonly detail: string;
+  /** Geographic relevance — which region this intelligence is about. */
+  readonly targetRegion?: string;
+  /** Specific entity this intelligence concerns. */
+  readonly targetEntityId?: string;
+  readonly sourceEncounterId: string;
+  /** Agent who holds this intelligence. */
+  readonly agentId: string;
+  readonly acquiredTick: number;
+  /** Reliability 0-1; how trustworthy this intelligence is. */
+  readonly reliability: number;
+}
+
 // ─── Hidden Marks ───────────────────────────────────────────────────────────
 
 /** Category of concealed consequence placed on an agent. */
@@ -133,6 +170,16 @@ export type EncounterAftermathReactionEffect =
     readonly severity: number;
     readonly label: string;
     readonly revealFamilies?: readonly string[];
+  }
+  | {
+    readonly kind: 'intelligence';
+    readonly category: IntelligenceCategory;
+    readonly label: string;
+    readonly detail: string;
+    readonly targetRegion?: string;
+    readonly targetEntityId?: string;
+    /** Reliability 0-1; defaults to 0.8 if omitted. */
+    readonly reliability?: number;
   };
 
 export interface PendingEncounterSeed {

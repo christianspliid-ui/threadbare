@@ -364,6 +364,7 @@ export function initializeGameState(
     unifiedActions: [],
     pendingEncounterSeeds: [],
     hiddenMarks: [],
+    intelligenceRecords: [],
     worldSoul: {
       fundament,
       resonance: createResonanceState(),

@@ -1,7 +1,7 @@
 import type { GameState, TickEvent } from '../types/gameState';
 import { MAX_RECENT_EVENTS } from '../types/gameState';
 import { DEFAULT_REPUTATION } from '../types/disposition';
-import type { EncounterAftermathReaction, HiddenMark, PendingEncounterSeed, UnifiedAction } from '../types/unifiedAction';
+import type { EncounterAftermathReaction, HiddenMark, IntelligenceRecord, PendingEncounterSeed, UnifiedAction } from '../types/unifiedAction';
 
 function clamp01(value: number): number {
   return Math.max(0, Math.min(1, value));
@@ -28,6 +28,7 @@ export function applyEncounterAftermathReaction(
   let touchedClearanceGateStates = false;
   let nextSeeds: PendingEncounterSeed[] = [];
   let nextHiddenMarks: HiddenMark[] = [];
+  let nextIntelligenceRecords: IntelligenceRecord[] = [];
 
   for (let i = 0; i < reaction.effects.length; i++) {
     const effect = reaction.effects[i];
@@ -135,6 +136,35 @@ export function applyEncounterAftermathReaction(
         nextRecentEvents = appendRecentEvent(nextRecentEvents, markEvent);
         break;
       }
+
+      case 'intelligence': {
+        const agentId = action?.actorId ?? '';
+        const record: IntelligenceRecord = {
+          recordId: `intel_${action?.actionId ?? 'unknown'}_${reaction.id}_${i}`,
+          category: effect.category,
+          label: effect.label,
+          detail: effect.detail,
+          targetRegion: effect.targetRegion,
+          targetEntityId: effect.targetEntityId,
+          sourceEncounterId: action?.templateId ?? 'unknown',
+          agentId,
+          acquiredTick: tick,
+          reliability: effect.reliability ?? 0.8,
+        };
+        nextIntelligenceRecords = [...nextIntelligenceRecords, record];
+        // Medium-significance chronicle event — intelligence is meant to be known to the player
+        const intelEvent: TickEvent = {
+          id: `${record.recordId}_acquired`,
+          tick,
+          type: 'narrative',
+          message: `Intelligence acquired: ${effect.label}`,
+          significance: 0.6,
+          actorId: agentId,
+        };
+        nextTickEvents = [...nextTickEvents, intelEvent];
+        nextRecentEvents = appendRecentEvent(nextRecentEvents, intelEvent);
+        break;
+      }
     }
   }
 
@@ -149,5 +179,8 @@ export function applyEncounterAftermathReaction(
     hiddenMarks: nextHiddenMarks.length > 0
       ? [...(state.hiddenMarks ?? []), ...nextHiddenMarks]
       : state.hiddenMarks,
+    intelligenceRecords: nextIntelligenceRecords.length > 0
+      ? [...(state.intelligenceRecords ?? []), ...nextIntelligenceRecords]
+      : state.intelligenceRecords,
   };
 }
