@@ -54,7 +54,7 @@ export function parseDebugCommand(input: string): ParsedDebugCommand | { error: 
 
   if (head === 'spawn' && second === 'encounter-context') {
     if (rest.length < 1) {
-      return { error: 'Usage: spawn encounter-context <encounterId> [--agent <agent|@hero>] [--at <location|actor>] [--hex <col> <row>] [--no-move-agent]' };
+      return { error: 'Usage: spawn encounter-context <encounterId> [--agent <agent|@hero|@avatar>] [--at <location|actor>] [--hex <col> <row>] [--no-move-agent]' };
     }
 
     const [templateId, ...flags] = rest;
@@ -82,7 +82,7 @@ export function parseDebugCommand(input: string): ParsedDebugCommand | { error: 
         const parsedCol = Number.parseInt(colValue ?? '', 10);
         const parsedRow = Number.parseInt(rowValue ?? '', 10);
         if (Number.isNaN(parsedCol) || Number.isNaN(parsedRow)) {
-          return { error: 'Usage: spawn encounter-context <encounterId> [--agent <agent|@hero>] [--at <location|actor>] [--hex <col> <row>] [--no-move-agent]' };
+          return { error: 'Usage: spawn encounter-context <encounterId> [--agent <agent|@hero|@avatar>] [--at <location|actor>] [--hex <col> <row>] [--no-move-agent]' };
         }
         col = parsedCol;
         row = parsedRow;
@@ -103,7 +103,7 @@ export function parseDebugCommand(input: string): ParsedDebugCommand | { error: 
 
   if (head === 'spawn' && second === 'attachment') {
     if (rest.length < 2) {
-      return { error: 'Usage: spawn attachment <agent|@hero> <templateId|name> [--tick <n>]' };
+      return { error: 'Usage: spawn attachment <agent|@hero|@avatar> <templateId|name> [--tick <n>]' };
     }
 
     const [agentQuery, templateQuery, ...flags] = rest;
@@ -276,7 +276,7 @@ export function parseDebugCommand(input: string): ParsedDebugCommand | { error: 
 
   if (head === 'move' && second === 'agent') {
     if (rest.length < 1) {
-      return { error: 'Usage: move agent <agent|@hero> (--to <location|actor|@ascendant> | --hex <col> <row>)' };
+      return { error: 'Usage: move agent <agent|@hero|@avatar> (--to <location|actor|@ascendant> | --hex <col> <row>)' };
     }
 
     const [agentQuery, ...flags] = rest;
@@ -297,7 +297,7 @@ export function parseDebugCommand(input: string): ParsedDebugCommand | { error: 
         const parsedCol = Number.parseInt(colValue ?? '', 10);
         const parsedRow = Number.parseInt(rowValue ?? '', 10);
         if (Number.isNaN(parsedCol) || Number.isNaN(parsedRow)) {
-          return { error: 'Usage: move agent <agent|@hero> (--to <location|actor|@ascendant> | --hex <col> <row>)' };
+          return { error: 'Usage: move agent <agent|@hero|@avatar> (--to <location|actor|@ascendant> | --hex <col> <row>)' };
         }
         col = parsedCol;
         row = parsedRow;

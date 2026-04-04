@@ -73,7 +73,14 @@ function findAgent(state: GameState, agentQuery: string) {
   const actors = state.graph.getNodesByType('actor');
   const query = agentQuery.trim().toLowerCase();
 
+  if (query === '@avatar') {
+    // @avatar — strictly the ascendant's avatar actor via avatar_of edge.
+    const avatars = getAvatarsOf(state.graph, state.ascendantId);
+    return avatars[0];
+  }
+
   if (query === '@hero') {
+    // @hero — prefers avatar, falls back to heuristic individual selection.
     const avatars = getAvatarsOf(state.graph, state.ascendantId);
     if (avatars.length > 0) return avatars[0];
     const heroCandidates = actors.filter(node => node.properties.actorType === 'individual');
@@ -274,6 +281,13 @@ function makeUiProgress(template: EncounterTemplate, actorId: string, tick: numb
   };
 }
 
+/** Build a resolution note showing what a query resolved to, so misresolution is visible. */
+function resolutionNote(query: string, resolvedId: string, resolvedName: string): string {
+  const q = query.trim().toLowerCase();
+  if (q === resolvedId.toLowerCase() || q === resolvedName.toLowerCase()) return '';
+  return ` (resolved '${query}' → ${resolvedName} [${resolvedId}])`;
+}
+
 export function prepareDebugEncounterSpawn(
   state: GameState,
   agentQuery: string,
@@ -295,6 +309,7 @@ export function prepareDebugEncounterSpawn(
       message: `No encounter template matching '${templateQuery}'. Use the exact encounter id for now.`,
     };
   }
+  const agentNote = resolutionNote(agentQuery, agent.id, agent.name);
 
   const locationId = getAgentLocationId(state.graph, agent.id);
   if (!locationId) {
@@ -350,7 +365,7 @@ export function prepareDebugEncounterSpawn(
 
     return {
       success: true,
-      message: `Spawned '${template.name}' on '${agent.name}'`,
+      message: `Spawned '${template.name}' on '${agent.name}'${agentNote}`,
       mode: 'unified',
       agent: { id: agent.id, name: agent.name },
       template,
@@ -365,7 +380,7 @@ export function prepareDebugEncounterSpawn(
 
   return {
     success: true,
-    message: `Spawned '${template.name}' on '${agent.name}'`,
+    message: `Spawned '${template.name}' on '${agent.name}'${agentNote}`,
     mode: 'legacy',
     agent: { id: agent.id, name: agent.name },
     template,
@@ -413,11 +428,13 @@ export function prepareDebugEncounterContext(
   let movedAgent = false;
   let agentId: string | undefined;
   let agentName: string | undefined;
+  let agentNote = '';
   if (options.agentQuery) {
     const agent = findAgent(state, options.agentQuery);
     if (agent) {
       agentId = agent.id;
       agentName = agent.name;
+      agentNote = resolutionNote(options.agentQuery, agent.id, agent.name);
       if (options.moveAgent ?? true) {
         const moveResult: DebugWorldSpawnResult = moveDebugAgent(state, options.agentQuery, {
           locationQuery: anchor.locationId,
@@ -438,7 +455,8 @@ export function prepareDebugEncounterContext(
     reused > 0 ? `${reused} reused` : null,
     materialized > 0 ? `${materialized} materialized` : null,
     anchor.createdAnchor ? 'anchor created' : null,
-    movedAgent ? `moved ${agentName ?? 'agent'}` : null,
+    movedAgent ? `moved ${agentName ?? 'agent'}${agentNote}` : null,
+    !movedAgent && agentNote ? `agent${agentNote}` : null,
     blockedKeys.length > 0 ? `blocked: ${blockedKeys.join(', ')}` : null,
     unresolvedKeys.length > 0 ? `unresolved: ${unresolvedKeys.join(', ')}` : null,
   ].filter(Boolean);

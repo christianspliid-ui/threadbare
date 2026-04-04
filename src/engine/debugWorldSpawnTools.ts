@@ -8,6 +8,13 @@ import { getAgentLocationId, getAllActorsAtLocation, getSublocationsAt, getAvata
 import { selectDefaultTrackedHero } from './balanceTelemetry';
 import { instantiateReward, REWARD_INSTANTIATE_PREFIX } from './rewardPool';
 
+/** Build a resolution note showing what a query resolved to, so misresolution is visible. */
+function resolutionNote(query: string, resolvedId: string, resolvedName: string): string {
+  const q = query.trim().toLowerCase();
+  if (q === resolvedId.toLowerCase() || q === resolvedName.toLowerCase()) return '';
+  return ` (resolved '${query}' → ${resolvedName} [${resolvedId}])`;
+}
+
 export interface DebugWorldSpawnResult {
   success: boolean;
   kind?: 'location' | 'sublocation' | 'npc' | 'agent' | 'attachment';
@@ -91,6 +98,10 @@ function bestTopLevelLocationAtHex(state: GameState, col: number, row: number): 
 function findAgentNode(state: GameState, query: string): GraphNode | undefined {
   const actors = state.graph.getNodesByType('actor');
   const normalized = normalize(query);
+  if (normalized === '@avatar') {
+    const avatars = getAvatarsOf(state.graph, state.ascendantId);
+    return avatars[0];
+  }
   if (normalized === '@hero') {
     const avatars = getAvatarsOf(state.graph, state.ascendantId);
     if (avatars.length > 0) return avatars[0];
@@ -111,7 +122,7 @@ function findAgentNode(state: GameState, query: string): GraphNode | undefined {
 function findActorNode(state: GameState, query: string): GraphNode | undefined {
   const actors = state.graph.getNodesByType('actor');
   const normalized = normalize(query);
-  if (normalized === '@hero' || normalized === '@ascendant') {
+  if (normalized === '@avatar' || normalized === '@hero' || normalized === '@ascendant') {
     return findAgentNode(state, query);
   }
   return actors.find(node =>
@@ -501,6 +512,7 @@ export function moveDebugAgent(
     };
   }
 
+  const actorNote = resolutionNote(agentQuery, actor.id, actor.name);
   const currentLocationId = getAgentLocationId(state.graph, actor.id);
   if (currentLocationId === destination.id) {
     return {
@@ -511,7 +523,7 @@ export function moveDebugAgent(
       locationId: destination.id,
       locationName: destination.name,
       reused: true,
-      message: `${actor.name} is already at '${destination.name}'.`,
+      message: `${actor.name} is already at '${destination.name}'.${actorNote}`,
     };
   }
 
@@ -525,7 +537,7 @@ export function moveDebugAgent(
     locationId: destination.id,
     locationName: destination.name,
     reused: false,
-    message: `Moved '${actor.name}' to '${options.destinationLabel ?? destination.name}'.`,
+    message: `Moved '${actor.name}' to '${options.destinationLabel ?? destination.name}'.${actorNote}`,
   };
 }
 
@@ -543,6 +555,7 @@ export function spawnDebugAttachment(
     };
   }
 
+  const actorNote = resolutionNote(agentQuery, actor.id, actor.name);
   const template = resolveAttachmentTemplate(state, templateQuery);
   if (!template) {
     return {
@@ -556,7 +569,7 @@ export function spawnDebugAttachment(
   if (!instantiated) {
     return {
       success: false,
-      message: `Could not instantiate '${template.name}' on '${actor.name}'.`,
+      message: `Could not instantiate '${template.name}' on '${actor.name}'.${actorNote}`,
     };
   }
 
@@ -566,6 +579,6 @@ export function spawnDebugAttachment(
     nodeId: instantiated.instanceId,
     nodeName: instantiated.displayName,
     reused: false,
-    message: `Spawned ${instantiated.category} '${instantiated.displayName}' on '${actor.name}' from '${template.name}'.`,
+    message: `Spawned ${instantiated.category} '${instantiated.displayName}' on '${actor.name}' from '${template.name}'.${actorNote}`,
   };
 }

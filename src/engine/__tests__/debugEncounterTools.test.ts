@@ -261,3 +261,59 @@ describe('prepareDebugEncounterSpawn', () => {
     }
   });
 });
+
+describe('alias resolution and output clarity', () => {
+  function makeStateWithAvatar(): GameState {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'asc_1', type: 'actor', name: 'The Ascendant', properties: { actorType: 'ascendant' } });
+    graph.addNode({ id: 'avatar_1', type: 'actor', name: 'Ashara', properties: { actorType: 'individual', spotlightTier: 'spotlight' } });
+    graph.addNode({ id: 'other_ind', type: 'actor', name: 'Alpha Guard', properties: { actorType: 'individual', spotlightTier: 'ambient' } });
+    graph.addNode({ id: 'loc_1', type: 'location', name: 'Village', properties: { locationSubtype: 'hamlet', hexCol: 1, hexRow: 1 } });
+    graph.addEdge({ id: 'avatar_of_edge', source: 'avatar_1', target: 'asc_1', type: 'avatar_of', properties: {} });
+    graph.addEdge({ id: 'avatar_1_loc', source: 'avatar_1', target: 'loc_1', type: 'located_at', properties: {} });
+    graph.addEdge({ id: 'other_ind_loc', source: 'other_ind', target: 'loc_1', type: 'located_at', properties: {} });
+    graph.addEdge({ id: 'thread_avatar', source: 'asc_1', target: 'avatar_1', type: 'thread', properties: { courtPosition: 'the_first', attentionMode: 'pause', tier: 5 } });
+    return makeState(graph);
+  }
+
+  it('@hero resolves to the avatar, not an alphabetically-earlier individual', () => {
+    const state = makeStateWithAvatar();
+    const template = BORDERLAND_ENCOUNTER_TEMPLATES[0];
+    if (!template) return; // skip if no templates available
+    const result = prepareDebugEncounterSpawn(state, '@hero', template.id);
+    expect(result.success).toBe(true);
+    expect(result.agent?.id).toBe('avatar_1');
+    expect(result.agent?.name).toBe('Ashara');
+  });
+
+  it('@avatar resolves to the avatar via avatar_of edge', () => {
+    const state = makeStateWithAvatar();
+    const template = BORDERLAND_ENCOUNTER_TEMPLATES[0];
+    if (!template) return;
+    const result = prepareDebugEncounterSpawn(state, '@avatar', template.id);
+    expect(result.success).toBe(true);
+    expect(result.agent?.id).toBe('avatar_1');
+  });
+
+  it('resolution echo appears in message when query is an alias', () => {
+    const state = makeStateWithAvatar();
+    const template = BORDERLAND_ENCOUNTER_TEMPLATES[0];
+    if (!template) return;
+    const result = prepareDebugEncounterSpawn(state, '@hero', template.id);
+    expect(result.success).toBe(true);
+    // The message should show what @hero resolved to
+    expect(result.message).toContain('resolved');
+    expect(result.message).toContain('Ashara');
+    expect(result.message).toContain('avatar_1');
+  });
+
+  it('no resolution echo when agent name matches exactly', () => {
+    const state = makeStateWithAvatar();
+    const template = BORDERLAND_ENCOUNTER_TEMPLATES[0];
+    if (!template) return;
+    const result = prepareDebugEncounterSpawn(state, 'Ashara', template.id);
+    expect(result.success).toBe(true);
+    // Exact name match — no resolution note needed
+    expect(result.message).not.toContain('resolved');
+  });
+});
