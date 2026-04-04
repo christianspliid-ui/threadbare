@@ -3180,3 +3180,40 @@ export function getUnifiedTemplateById(id: string): UnifiedActionTemplate | unde
   const legacyEncounter = getAnyEncounterById(id);
   return legacyEncounter?.supportBundle ? migrateEncounterTemplate(legacyEncounter) : undefined;
 }
+
+/**
+ * Convert a UnifiedActionTemplate to a minimal EncounterTemplate shape for UI display.
+ * Used so encounter modals can open for unified-only templates that have no legacy entry.
+ */
+export function unifiedToEncounterTemplate(ut: UnifiedActionTemplate): EncounterTemplate {
+  return {
+    id: ut.id,
+    name: ut.name,
+    steps: ut.steps.map((s, i) => {
+      const step = 'branchOnStep' in s ? s.fallback : s;
+      return {
+        id: `${ut.id}.step${i}`,
+        reach: step.reach,
+        difficulty: Math.round(step.difficulty * 100),
+        duration: step.duration.min,
+        onSuccess: { narrative: step.narrativeTemplate ?? ut.narrativeTemplates.success },
+        onFailure: { narrative: step.narrativeTemplate ?? ut.narrativeTemplates.failure },
+      };
+    }),
+    threatRating: 'moderate' as const,
+    encounterType: 'assist' as const,
+    supportBundle: ut.supportBundle,
+    locationTypes: [],
+  } as EncounterTemplate;
+}
+
+/**
+ * Resolve an EncounterTemplate by ID, trying legacy content first then unified templates.
+ * Prefer this over getAnyEncounterById when the caller must handle unified-only templates.
+ */
+export function resolveEncounterTemplate(id: string): EncounterTemplate | undefined {
+  const legacy = getAnyEncounterById(id);
+  if (legacy) return legacy;
+  const unified = UNIFIED_ACTION_TEMPLATES.find(t => t.id === id);
+  return unified ? unifiedToEncounterTemplate(unified) : undefined;
+}

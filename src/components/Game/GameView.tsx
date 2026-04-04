@@ -111,7 +111,7 @@ import { buildHexTargetContext, buildLocationTargetContext } from '../../engine/
 import { useTargetActions } from './hooks/useTargetActions';
 import { templateIdFromSlotId } from '../../engine/targetActions';
 import type { WheelSlot } from '../../engine/wheel';
-import { getUnifiedTemplateById, UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
+import { getUnifiedTemplateById, UNIFIED_ACTION_TEMPLATES, resolveEncounterTemplate } from '../../data/unified-action-templates';
 import { createUnifiedAction } from '../../engine/unifiedActionLifecycle';
 import { mulberry32 } from '../../lib/prng';
 import { DIVINE_INFLUENCE_CONSTANTS } from '../../data/intervention-feedback-content';
@@ -722,7 +722,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
   // ── Encounter notification surfacing (TB-040 / TB-055) ──
   /** Open the tiered encounter modal from a notification (toast click or auto-interrupt) */
   const handleOpenEncounterFromNotification = useCallback((notif: EncounterNotification) => {
-    const template = getAnyEncounterById(notif.encounterId);
+    const template = resolveEncounterTemplate(notif.encounterId);
     if (!template) return;
     const { encounter, activeAction } = selectEncounterRuntimeForNotification(
       notif,
@@ -874,7 +874,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
 
     for (const action of gameState.unifiedActions) {
       if (action.resolved) continue;
-      if (!getAnyEncounterById(action.templateId)) continue;
+      if (!resolveEncounterTemplate(action.templateId)) continue;
       if (!actorAtFocusedLocation(action.actorId)) continue;
       activeByActor.set(action.actorId, buildActiveEncounterDisplayFromUnifiedAction(action, gameState.tick));
     }
@@ -1220,7 +1220,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     const map = new Map<string, { encounter: ActiveEncounterDisplay; template: EncounterTemplate }>();
     for (const p of gameState.encounterProgress) {
       if (p.status !== 'active') continue;
-      const tmpl = getAnyEncounterById(p.encounterId);
+      const tmpl = resolveEncounterTemplate(p.encounterId);
       if (tmpl) {
         map.set(p.actorId, {
           encounter: buildActiveEncounterDisplayFromLegacyProgress(p),
@@ -1230,7 +1230,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     }
     for (const action of gameState.unifiedActions) {
       if (action.resolved) continue;
-      const tmpl = getAnyEncounterById(action.templateId);
+      const tmpl = resolveEncounterTemplate(action.templateId);
       if (!tmpl) continue;
       map.set(action.actorId, {
         encounter: buildActiveEncounterDisplayFromUnifiedAction(action, gameState.tick),
@@ -2138,7 +2138,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
                 activeEncounters={locationEncounters.active}
                 getAgentName={getAgentName}
                 onEncounterClick={handleEncounterClick}
-                getEncounterTemplate={getAnyEncounterById}
+                getEncounterTemplate={resolveEncounterTemplate}
                 graph={gameState.graph}
                 seed={gameState.seed}
                 tick={gameState.tick}
