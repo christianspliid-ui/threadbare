@@ -46,6 +46,8 @@ function makeStep(overrides: Partial<ActionStep> = {}): ActionStep {
 function make3StepTemplate(overrides: Partial<UnifiedActionTemplate> = {}): UnifiedActionTemplate {
   return {
     id: 'encounter.multi-step',
+    rarityTier: 1,
+    intrinsicTier: 'background',
     name: 'Multi-Step Encounter',
     reach: 'shadow',
     crudType: 'read',

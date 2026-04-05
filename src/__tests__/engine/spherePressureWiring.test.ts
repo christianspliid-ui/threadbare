@@ -18,6 +18,7 @@ import { WorldGraph } from '../../engine/graph';
 import type { GameState } from '../../types/gameState';
 import type { SphereName } from '../../types/index';
 import type { SpherePressureEvent } from '../../types/sphereAffinity';
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import {
   CONTROL_PRESSURE_PER_TICK,
   ACTION_PRESSURE_SUCCESS,
@@ -165,24 +166,28 @@ describe('spherePressureWiring: phaseUnifiedActionProgress', () => {
     };
 
     // Template: single step, guaranteed success (difficulty 0), with sphere affinity
-    const template = {
+    const template: UnifiedActionTemplate = {
       id: 'sphere_action',
       name: 'Sphere Action',
-      reach: 'iron' as const,
-      crudType: 'create' as const,
-      scale: 'local' as const,
+      rarityTier: 1,
+      intrinsicTier: 'background',
+      reach: 'iron',
+      crudType: 'create',
+      scale: 'local',
       steps: [{
-        reach: 'iron' as const,
+        reach: 'iron',
         duration: { min: 5, max: 5 },
         difficulty: 0,     // divine: always success
         onSuccess: [],
         onFailure: [],
-        failBehavior: 'fail_action' as const,
+        failBehavior: 'fail_action',
       }],
       apCost: 1,
-      actorAffinities: ['individual' as const],
+      actorAffinities: ['individual'],
       sphereAffinity: 'force' as SphereName,   // sphere tagged
-      durationMode: 'instant' as const,
+      durationMode: 'instant',
+      motivations: [],
+      narrativeTemplates: { initiation: '', success: '', failure: '' },
     };
 
     const rng = () => 0.5;
@@ -222,24 +227,28 @@ describe('spherePressureWiring: phaseUnifiedActionProgress', () => {
     };
 
     // Template: difficulty 1.0 = impossible, will always fail
-    const template = {
+    const template: UnifiedActionTemplate = {
       id: 'hard_action',
       name: 'Hard Action',
-      reach: 'iron' as const,
-      crudType: 'update' as const,
-      scale: 'local' as const,
+      rarityTier: 1,
+      intrinsicTier: 'background',
+      reach: 'iron',
+      crudType: 'update',
+      scale: 'local',
       steps: [{
-        reach: 'iron' as const,
+        reach: 'iron',
         duration: { min: 3, max: 3 },
         difficulty: 1.0,   // impossible: always failure
         onSuccess: [],
         onFailure: [],
-        failBehavior: 'fail_action' as const,
+        failBehavior: 'fail_action',
       }],
       apCost: 1,
-      actorAffinities: ['individual' as const],
+      actorAffinities: ['individual'],
       sphereAffinity: 'matter' as SphereName,
-      durationMode: 'instant' as const,
+      durationMode: 'instant',
+      motivations: [],
+      narrativeTemplates: { initiation: '', success: '', failure: '' },
     };
 
     // RNG returning 0.99 (high roll) ensures failure against difficulty 1.0
@@ -278,24 +287,28 @@ describe('spherePressureWiring: phaseUnifiedActionProgress', () => {
       stepOutcomes: [],   // required by UnifiedAction type
     };
 
-    const template = {
+    const template: UnifiedActionTemplate = {
       id: 'generic_action',
       name: 'Generic Action',
-      reach: 'iron' as const,
-      crudType: 'read' as const,
-      scale: 'local' as const,
+      rarityTier: 1,
+      intrinsicTier: 'background',
+      reach: 'iron',
+      crudType: 'read',
+      scale: 'local',
       steps: [{
-        reach: 'iron' as const,
+        reach: 'iron',
         duration: { min: 2, max: 2 },
         difficulty: 0,
         onSuccess: [],
         onFailure: [],
-        failBehavior: 'fail_action' as const,
+        failBehavior: 'fail_action',
       }],
       apCost: 1,
-      actorAffinities: ['individual' as const],
+      actorAffinities: ['individual'],
       // No sphereAffinity — no pressure should be emitted
-      durationMode: 'instant' as const,
+      durationMode: 'instant',
+      motivations: [],
+      narrativeTemplates: { initiation: '', success: '', failure: '' },
     };
 
     const rng = () => 0.5;

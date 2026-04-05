@@ -6,6 +6,7 @@ describe('quest encounter fields', () => {
     const template: EncounterTemplate = {
       id: 'quest_test',
       name: 'Test Quest',
+      intrinsicTier: 'background',
       locationTypes: ['hamlet'],
       steps: [],
       reachPrimary: 'iron',

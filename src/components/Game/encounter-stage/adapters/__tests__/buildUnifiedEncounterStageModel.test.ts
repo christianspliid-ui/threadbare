@@ -11,6 +11,7 @@ import { buildUnifiedEncounterStageModel } from '../buildUnifiedEncounterStageMo
 const LINEAR_TEMPLATE: UnifiedActionTemplate = {
   id: 'test.linear_encounter',
   rarityTier: 1,
+  intrinsicTier: 'background',
   name: 'The River Crossing',
   reach: 'iron',
   crudType: 'read',

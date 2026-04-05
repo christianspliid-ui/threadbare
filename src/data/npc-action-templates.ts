@@ -25,6 +25,8 @@ export const NPC_ACTION_TEMPLATES: readonly UnifiedActionTemplate[] = [
 
   {
     id: 'npc_ask_information',
+    rarityTier: 1,
+    intrinsicTier: 'background',
     name: 'Ask for Information',
     spellName: 'Open Ear',
     description: 'Draw out what this soul knows. A gentle nudge — the mortal believes the impulse to speak freely was their own.',
@@ -53,6 +55,8 @@ export const NPC_ACTION_TEMPLATES: readonly UnifiedActionTemplate[] = [
 
   {
     id: 'npc_eavesdrop',
+    rarityTier: 1,
+    intrinsicTier: 'background',
     name: 'Eavesdrop',
     spellName: 'Shadow Ear',
     description: 'Turn the ambient noise of their life into signal. Every muttered worry and half-spoken name rises to your attention.',
@@ -81,6 +85,8 @@ export const NPC_ACTION_TEMPLATES: readonly UnifiedActionTemplate[] = [
 
   {
     id: 'npc_read_intentions',
+    rarityTier: 1,
+    intrinsicTier: 'background',
     name: 'Read Intentions',
     spellName: 'Unveiled Motive',
     description: "Peer beneath the social mask into the tangle of want and fear underneath. Their next move becomes readable before they make it.",
@@ -111,6 +117,8 @@ export const NPC_ACTION_TEMPLATES: readonly UnifiedActionTemplate[] = [
 
   {
     id: 'npc_befriend',
+    rarityTier: 1,
+    intrinsicTier: 'background',
     name: 'Befriend',
     spellName: 'Warm Regard',
     description: 'A quiet warmth settles over them in your presence. Not love — not yet — but the beginning of loyalty without a name.',
@@ -139,6 +147,8 @@ export const NPC_ACTION_TEMPLATES: readonly UnifiedActionTemplate[] = [
 
   {
     id: 'npc_intimidate',
+    rarityTier: 1,
+    intrinsicTier: 'background',
     name: 'Intimidate',
     spellName: 'Iron Presence',
     description: "Compliance through fear is cheap coin, but it spends. Let your weight settle on them until cooperation is the path of least resistance.",
@@ -167,6 +177,8 @@ export const NPC_ACTION_TEMPLATES: readonly UnifiedActionTemplate[] = [
 
   {
     id: 'npc_bribe',
+    rarityTier: 1,
+    intrinsicTier: 'background',
     name: 'Bribe',
     spellName: 'Gold Persuasion',
     description: 'Coin as argument. Most mouths open for enough of it. The transaction is clean, at least.',
@@ -196,6 +208,8 @@ export const NPC_ACTION_TEMPLATES: readonly UnifiedActionTemplate[] = [
 
   {
     id: 'npc_recruit',
+    rarityTier: 1,
+    intrinsicTier: 'background',
     name: 'Recruit',
     spellName: 'Sworn Purpose',
     description: 'Bind this soul to a cause larger than themselves. The best recruits never feel recruited — they feel chosen.',
@@ -225,6 +239,8 @@ export const NPC_ACTION_TEMPLATES: readonly UnifiedActionTemplate[] = [
 
   {
     id: 'npc_charm',
+    rarityTier: 1,
+    intrinsicTier: 'background',
     name: 'Charm',
     spellName: 'Gilded Tongue',
     description: 'A small miracle of likability. You become, for the moment, exactly what they wished to encounter.',
@@ -256,6 +272,8 @@ export const NPC_ACTION_TEMPLATES: readonly UnifiedActionTemplate[] = [
 
   {
     id: 'npc_trade_goods',
+    rarityTier: 1,
+    intrinsicTier: 'background',
     name: 'Trade Goods',
     spellName: 'Fair Exchange',
     description: 'Commerce is the oldest language. Let it pass between you without complication.',
@@ -284,6 +302,8 @@ export const NPC_ACTION_TEMPLATES: readonly UnifiedActionTemplate[] = [
 
   {
     id: 'npc_commission_craft',
+    rarityTier: 1,
+    intrinsicTier: 'background',
     name: 'Commission Craft',
     spellName: 'Forged Intent',
     description: 'Set a skilled hand to work. What they make will carry the shape of your desire into the world.',
@@ -313,6 +333,8 @@ export const NPC_ACTION_TEMPLATES: readonly UnifiedActionTemplate[] = [
 
   {
     id: 'npc_seek_healing',
+    rarityTier: 1,
+    intrinsicTier: 'background',
     name: 'Seek Healing',
     spellName: 'Mending Touch',
     description: 'Wounds of the flesh or the spirit. A healer who knows their trade can close what you cannot.',
@@ -341,6 +363,8 @@ export const NPC_ACTION_TEMPLATES: readonly UnifiedActionTemplate[] = [
 
   {
     id: 'npc_request_shelter',
+    rarityTier: 1,
+    intrinsicTier: 'background',
     name: 'Request Shelter',
     spellName: 'Haven Given',
     description: 'A roof, a fire, a moment of safety. What an innkeeper provides is small and irreplaceable in equal measure.',
@@ -369,6 +393,8 @@ export const NPC_ACTION_TEMPLATES: readonly UnifiedActionTemplate[] = [
 
   {
     id: 'npc_hire_guide',
+    rarityTier: 1,
+    intrinsicTier: 'background',
     name: 'Hire Guide',
     spellName: 'Pathfinder\'s Compact',
     description: 'The land ahead keeps its secrets from outsiders. A guide who knows its moods is worth more than any map.',
@@ -400,6 +426,8 @@ export const NPC_ACTION_TEMPLATES: readonly UnifiedActionTemplate[] = [
 
   {
     id: 'npc_bless',
+    rarityTier: 1,
+    intrinsicTier: 'background',
     name: 'Bless',
     spellName: 'Divine Favour',
     description: 'Mark this mortal as favoured. Fortune will lean toward them in small but consistent ways — a door that opens, a blade that does not find them, a child that does not die.',
@@ -429,6 +457,8 @@ export const NPC_ACTION_TEMPLATES: readonly UnifiedActionTemplate[] = [
 
   {
     id: 'npc_curse',
+    rarityTier: 1,
+    intrinsicTier: 'background',
     name: 'Curse',
     spellName: 'Ill-Starred Mark',
     description: 'Turn your eye against them. The world will not conspire to destroy them — only to disappoint, at every small turn, until something gives.',
@@ -458,6 +488,8 @@ export const NPC_ACTION_TEMPLATES: readonly UnifiedActionTemplate[] = [
 
   {
     id: 'npc_promote_to_agent',
+    rarityTier: 1,
+    intrinsicTier: 'background',
     name: 'Elevate to Agent',
     spellName: 'Ascendant\'s Chosen',
     description: 'This soul is more than background noise. Invest them with divine attention, elevate their thread in the world-fabric, and make them a true instrument of your will.',

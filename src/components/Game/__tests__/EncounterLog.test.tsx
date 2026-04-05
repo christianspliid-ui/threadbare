@@ -7,6 +7,7 @@ import type { EncounterTemplate, EncounterProgress } from '../../../types/encoun
 const mockTemplate: EncounterTemplate = {
   id: 'encounter.test_quest',
   name: 'Test Quest',
+  intrinsicTier: 'background',
   locationTypes: ['ruins'],
   steps: [
     {

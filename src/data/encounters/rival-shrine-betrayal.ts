@@ -450,6 +450,7 @@ const REFUSE_AFTERMATH = {
 export const RIVAL_SHRINE_BETRAYAL_TEMPLATE: UnifiedActionTemplate = {
   id: 'broker.quest.rival_shrine_betrayal',
   rarityTier: 2,
+  intrinsicTier: 'shaping',
   name: "The Broker's Ledger",
   reach: 'shadow',
   crudType: 'read',

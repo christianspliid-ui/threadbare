@@ -304,6 +304,7 @@ const TURN_CHAOS_AFTERMATH = {
 export const ROAD_AMBUSH_TEMPLATE: UnifiedActionTemplate = {
   id: 'liminal.quest.road_ambush',
   rarityTier: 2,
+  intrinsicTier: 'shaping',
   name: 'Road Ambush',
   reach: 'iron',
   crudType: 'update',

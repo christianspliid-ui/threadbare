@@ -34,6 +34,8 @@ function createEmptyPool(): EssencePool {
 function makeSustainedTemplate(overrides: Partial<UnifiedActionTemplate> = {}): UnifiedActionTemplate {
   return {
     id: 'action.control.bless-sustain',
+    rarityTier: 1,
+    intrinsicTier: 'background',
     name: 'Sustain Blessing',
     reach: 'gold',
     crudType: 'update',
@@ -74,6 +76,8 @@ function makeSustainedTemplate(overrides: Partial<UnifiedActionTemplate> = {}): 
 function makeInstantTemplate(): UnifiedActionTemplate {
   return {
     id: 'action.instant.test',
+    rarityTier: 1,
+    intrinsicTier: 'background',
     name: 'Instant Action',
     reach: 'iron',
     crudType: 'update',

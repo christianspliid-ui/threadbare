@@ -20,6 +20,7 @@ import { vi } from 'vitest';
 const MULTI_TICK_TEMPLATE: EncounterTemplate = {
   id: 'encounter.multi_tick_test',
   name: 'Multi-Tick Test',
+  intrinsicTier: 'background',
   locationTypes: ['town'],
   reachPrimary: 'iron',
   reachSecondary: 'heart',

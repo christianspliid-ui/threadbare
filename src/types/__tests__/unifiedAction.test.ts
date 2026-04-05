@@ -15,6 +15,8 @@ describe('UnifiedAction types', () => {
   it('can construct a minimal 1-step template', () => {
     const template: UnifiedActionTemplate = {
       id: 'action.iron.raise-force',
+      rarityTier: 1,
+      intrinsicTier: 'background',
       name: 'Raise Force',
       reach: 'iron',
       crudType: 'create',
@@ -43,6 +45,8 @@ describe('UnifiedAction types', () => {
   it('can construct a multi-step template', () => {
     const template: UnifiedActionTemplate = {
       id: 'encounter.raid-caravan',
+      rarityTier: 1,
+      intrinsicTier: 'background',
       name: 'Raid Caravan',
       reach: 'shadow',
       crudType: 'read',
@@ -67,6 +71,8 @@ describe('UnifiedAction types', () => {
   it('can construct a divine template with essenceCost', () => {
     const template: UnifiedActionTemplate = {
       id: 'divine.inspire',
+      rarityTier: 1,
+      intrinsicTier: 'background',
       name: 'Inspire',
       reach: 'heart',
       crudType: 'update',

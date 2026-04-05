@@ -14,6 +14,8 @@ import { WorldGraph } from '../graph';
 function makeTemplate(overrides: Partial<UnifiedActionTemplate> = {}): UnifiedActionTemplate {
   return {
     id: 'test.action',
+    rarityTier: 1,
+    intrinsicTier: 'background',
     name: 'Test Action',
     reach: 'iron',
     crudType: 'update',
@@ -93,6 +95,8 @@ describe('getActivitySummary', () => {
   it('returns step label for multi-step action', () => {
     const multiTemplate = makeTemplate({
       id: 'multi.step',
+      rarityTier: 1,
+      intrinsicTier: 'background',
       name: 'Multi Step',
       steps: [
         { reach: 'iron', duration: { min: 2, max: 2 }, difficulty: 0.3, onSuccess: [], onFailure: [], failBehavior: 'fail_action' },

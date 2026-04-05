@@ -49,6 +49,8 @@ function locationTarget(overrides?: Partial<TargetContext>): TargetContext {
 
 function makeTemplate(overrides: Partial<UnifiedActionTemplate> & Pick<UnifiedActionTemplate, 'id' | 'name'>): UnifiedActionTemplate {
   return {
+    rarityTier: 1,
+    intrinsicTier: 'background',
     reach: 'iron',
     crudType: 'update',
     scale: 'local',
@@ -528,6 +530,8 @@ describe('Phase 17: spellName and technicalDescription population', () => {
     const templates = [
       makeTemplate({
         id: 'act.desc',
+        rarityTier: 1,
+        intrinsicTier: 'background',
         name: 'Describe Action',
         description: 'Grants the target a boon of clarity, sharpening their perception of hidden truths.',
         targetCategories: ['actor'],
@@ -563,6 +567,8 @@ describe('Phase 17: spellName and technicalDescription population', () => {
     const templates = [
       makeTemplate({
         id: 'act.both',
+        rarityTier: 1,
+        intrinsicTier: 'background',
         name: 'Both Fields',
         description: 'Technical mechanical description.',
         targetCategories: ['actor'],

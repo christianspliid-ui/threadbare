@@ -14,6 +14,8 @@ import { WorldGraph } from '../graph';
 function makeTemplate(overrides: Partial<UnifiedActionTemplate> = {}): UnifiedActionTemplate {
   return {
     id: 'test.template',
+    rarityTier: 1,
+    intrinsicTier: 'background',
     name: 'Test Template',
     reach: 'iron',
     crudType: 'update',

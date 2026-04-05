@@ -231,6 +231,7 @@ const STEADY_COURIER_AFTERMATH = {
 export const SOUL_FERRYMAN_TEMPLATE: UnifiedActionTemplate = {
   id: 'liminal.quest.soul_ferryman',
   rarityTier: 2,
+  intrinsicTier: 'shaping',
   name: 'Soul Ferryman',
   reach: 'heart',
   crudType: 'update',

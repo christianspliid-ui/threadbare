@@ -116,6 +116,7 @@ const LINEAR_AFTERMATH = {
 export const WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE: UnifiedActionTemplate = {
   id: 'healer.quest.wandering_healer_shrine_access',
   rarityTier: 1,
+  intrinsicTier: 'background',
   name: 'The Healer at the Ward-Gate',
   reach: 'heart',
   crudType: 'update',

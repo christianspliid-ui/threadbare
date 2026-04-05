@@ -37,6 +37,7 @@ function makeTemplate(overrides: Partial<EncounterTemplate> = {}): EncounterTemp
   return {
     id: 'test.template',
     name: 'Test Template',
+    intrinsicTier: 'background' as const,
     locationTypes: ['town'],
     steps: [
       {

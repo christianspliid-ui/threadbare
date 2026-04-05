@@ -32,6 +32,8 @@ const failureRng = () => 0.99;
 function make1StepTemplate(overrides: Partial<UnifiedActionTemplate> = {}): UnifiedActionTemplate {
   return {
     id: 'action.iron.test',
+    rarityTier: 1,
+    intrinsicTier: 'background',
     name: 'Test Action',
     reach: 'iron',
     crudType: 'update',
@@ -63,6 +65,8 @@ function make1StepTemplate(overrides: Partial<UnifiedActionTemplate> = {}): Unif
 function make3StepTemplate(): UnifiedActionTemplate {
   return {
     id: 'encounter.test-multi',
+    rarityTier: 1,
+    intrinsicTier: 'background',
     name: 'Multi-Step Test',
     reach: 'shadow',
     crudType: 'read',

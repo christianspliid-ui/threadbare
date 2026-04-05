@@ -19,6 +19,8 @@ import { WorldGraph } from '../graph';
 
 const SIEGE_TEMPLATE: UnifiedActionTemplate = {
   id: 'warfare.siege_city',
+  rarityTier: 1,
+  intrinsicTier: 'background',
   name: 'Siege City',
   reach: 'iron',
   crudType: 'update',
@@ -45,6 +47,8 @@ const SIEGE_TEMPLATE: UnifiedActionTemplate = {
 
 const DEFEND_TEMPLATE: UnifiedActionTemplate = {
   id: 'warfare.defend_city',
+  rarityTier: 1,
+  intrinsicTier: 'background',
   name: 'Defend City',
   reach: 'iron',
   crudType: 'update',
@@ -71,6 +75,8 @@ const DEFEND_TEMPLATE: UnifiedActionTemplate = {
 
 const TRADE_TEMPLATE: UnifiedActionTemplate = {
   id: 'economy.trade',
+  rarityTier: 1,
+  intrinsicTier: 'background',
   name: 'Trade Goods',
   reach: 'gold',
   crudType: 'update',

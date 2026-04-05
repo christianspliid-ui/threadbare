@@ -39,6 +39,8 @@ import type { ResolutionInput } from '../../types/resolution';
 function makeTemplate(overrides?: Partial<UnifiedActionTemplate>): UnifiedActionTemplate {
   return {
     id: 'test.template',
+    rarityTier: 1,
+    intrinsicTier: 'background',
     name: 'Test Template',
     reach: 'heart',
     crudType: 'update',

@@ -593,6 +593,7 @@ const WITHDRAWN_AFTERMATH = {
 export const FLAWED_STEEL_TEMPLATE: UnifiedActionTemplate = {
   id: 'crafting.quest.flawed_steel',
   rarityTier: 2,
+  intrinsicTier: 'shaping',
   name: 'Flawed Steel',
   reach: 'heart',
   crudType: 'update',
