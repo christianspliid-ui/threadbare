@@ -1,6 +1,6 @@
 # Attachment Primitive Reference Card
 
-Quick-lookup for agents authoring attachments. Find your narrative pattern, grab the primitive, fill in the fields.
+Quick-lookup for agents designing attachment mechanics. Find the narrative pattern that fits your concept, then configure the primitive's fields to match.
 
 Types: `src/types/effects.ts` | Constants: `src/data/effect-constants.ts` | Caps: per-item 0.15, global 0.30
 
@@ -9,144 +9,126 @@ Types: `src/types/effects.ts` | Constants: `src/data/effect-constants.ts` | Caps
 ## Story Pattern → Primitive
 
 ### "It gets stronger the more you use it"
-**stacking** — accumulates bonus per trigger event, up to a cap.
-```json
-{ "type": "stacking", "reach": "iron", "valuePerStack": 0.02, "maxStacks": 5, "stackOn": "combat_success", "decayPerTick": 0.01 }
-```
-Triggers: `combat_success`, `combat_failure`, `social_success`, `any_encounter`, `per_tick`, `on_damaged`, `on_kill`, `on_heal`
+**stacking** — bonus accumulates each time a trigger fires, up to a cap. Optionally decays when idle.
+- `reach` — which domain benefits
+- `valuePerStack` — how much each stack adds
+- `maxStacks` — ceiling (2-10)
+- `stackOn` — what earns a stack: `combat_success`, `combat_failure`, `social_success`, `any_encounter`, `per_tick`, `on_damaged`, `on_kill`, `on_heal`
+- `decayPerTick` — (optional) stacks lost per idle tick
 
 ### "It fades over time"
-**decay** — starts strong, weakens each tick. Optionally self-destructs.
-```json
-{ "type": "decay", "reach": "veil", "startValue": 0.12, "changePerTick": -0.01, "limitValue": 0.03, "destroyAtLimit": false }
-```
+**decay** — starts at a high value and shrinks each tick toward a floor. Can self-destruct at the limit.
+- `reach` — which domain
+- `startValue` — initial strength
+- `changePerTick` — how much it loses per tick (negative number)
+- `limitValue` — floor it decays toward
+- `destroyAtLimit` — destroy the attachment when floor is reached?
 
 ### "It only works in certain situations"
-**conditional** — bonus activates when a predicate is true, otherwise inert.
-```json
-{ "type": "conditional", "condition": "in_combat", "reach": "iron", "value": 0.08 }
-```
-Predicates: `in_combat`, `in_social`, `in_exploration`, `in_mystical`, `at_home_territory`, `in_enemy_territory`, `in_wilderness`, `health_low`, `health_high`, `alone`, `outnumbered`, `near_water`, `biome:{type}`, `has_trait:{tag}`, `lacks_trait:{tag}`, `reach_above:{reach}:{value}`, `faction_rank:{rank}`
+**conditional** — bonus is active only when a predicate is true, otherwise completely inert.
+- `condition` — when it activates (see predicate list below)
+- `reach` — which domain benefits
+- `value` — how much
 
 ### "It's powerful but needs to recharge"
-**cooldown** — on for N ticks, off for M ticks. Cycles automatically.
-```json
-{ "type": "cooldown", "activeTicks": 3, "cooldownTicks": 7, "reach": "eye", "value": 0.10 }
-```
+**cooldown** — cycles between active and dormant phases automatically.
+- `activeTicks` — how long it's on
+- `cooldownTicks` — how long it rests
+- `reach` — which domain
+- `value` — bonus while active
 
 ### "It has limited uses, then it's gone"
-**consumable_charge** — N charges. Each use fires the effect and burns a charge.
-```json
-{ "type": "consumable_charge", "charges": 3, "onUse": { "reach": "flesh", "value": 0.12 }, "destroyOnEmpty": true }
-```
+**consumable_charge** — N uses. Each use fires an effect and burns a charge. Optionally destroys itself when empty.
+- `charges` — how many uses
+- `onUse` — what fires per charge: `{ reach, value }`
+- `destroyOnEmpty` — remove attachment at 0 charges?
 
 ### "It gives you something but costs you something else"
-**tradeoff** — bonus to one reach, penalty to another. Always-on tension.
-```json
-{ "type": "tradeoff", "bonus": { "reach": "iron", "value": 0.08 }, "penalty": { "reach": "heart", "value": 0.04 } }
-```
+**tradeoff** — permanent tension: one reach boosted, another penalized. Always on.
+- `bonus` — `{ reach, value }` — the upside
+- `penalty` — `{ reach, value }` — the cost
 
 ### "It saves you when things go wrong"
-**test_shaper** — after a roll, shift the result. Reroll, nudge up, or swap reach.
-```json
-{ "type": "test_shaper", "reach": "iron", "condition": "in_combat", "trigger": "near_miss", "maxMargin": 8, "steps": 1 }
-```
-Triggers: `near_miss` (close failure), `failure` (any failure), `success` (upgrade to crit), `any`
+**test_shaper** — after a roll resolves, nudge the outcome. Turn a near-miss into a success, reroll, or swap which reach was tested.
+- `reach` — which domain this applies to
+- `condition` — (optional) situational gate
+- `trigger` — when it fires: `near_miss` (close failure), `failure`, `success` (upgrade to crit), `any`
+- `maxMargin` — how close the roll must be to qualify
+- `steps` — how many bands to shift the outcome
 
-**prevent_loss** — absorb a loss event (quintessence drain, condition infliction).
-```json
-{ "type": "prevent_loss", "channel": "quintessence", "amount": 0.08, "consumeOnPrevent": true }
-```
-Channels: `quintessence`, `condition`
+**prevent_loss** — absorb a loss event before it lands. Can consume self.
+- `channel` — what it protects: `quintessence`, `condition`
+- `amount` — how much it absorbs
+- `consumeOnPrevent` — destroy after saving you?
 
 ### "It changes into something else"
-**transform** — on trigger event, the attachment replaces itself with a different template.
-```json
-{ "type": "transform", "trigger": "take_damage", "probability": 0.3, "intoTemplate": "scar_old_wound", "narrativeTemplate": "{name} darkens and cracks." }
-```
-Triggers: `enter_combat`, `leave_combat`, `take_damage`, `rest`, `encounter_complete`, `faction_change`, `dawn_cycle`, `doom_threshold`
+**transform** — on trigger, the attachment replaces itself with a different template. Wounds become scars, dormant blades awaken, pacts come due.
+- `trigger` — what causes it: `enter_combat`, `leave_combat`, `take_damage`, `rest`, `encounter_complete`, `faction_change`, `dawn_cycle`, `doom_threshold`
+- `probability` — chance of transformation (0-1)
+- `intoTemplate` — ID of the replacement attachment
+- `narrativeTemplate` — prose shown when it happens (supports `{name}` substitution)
 
 ### "It reacts when something happens to you"
-**reactive** — fires a nested effect when a trigger event occurs.
-```json
-{ "type": "reactive", "trigger": "damaged", "effect": { "type": "duration", "ticks": 3, "reach": "iron", "value": 0.06, "destroyOnExpiry": false }, "cooldown": 10 }
-```
-Triggers: `attacked`, `damaged`, `healed`, `cursed`, `blessed`, `entered_hex`, `encounter_started`, `ally_damaged`
+**reactive** — fires a nested effect when a trigger occurs. The nested effect can be any other primitive (duration buff, condition, etc.).
+- `trigger` — what event: `attacked`, `damaged`, `healed`, `cursed`, `blessed`, `entered_hex`, `encounter_started`, `ally_damaged`
+- `effect` — any other primitive to fire (typically a short `duration` buff)
+- `cooldown` — (optional) minimum ticks between firings
+- `duration` — (optional) how long the nested effect lasts
 
 ### "It grants a capability, not a number"
-**trait_grant** — while attached, the agent has a named trait. Enables qualitative gating.
-```json
-{ "type": "trait_grant", "grantedTrait": "night_vision" }
-```
+**trait_grant** — while attached, the agent has a named trait. Useful for prerequisite gating and qualitative capabilities.
+- `grantedTrait` — trait identifier to grant
 
 ### "It lasts until something specific happens"
-**until_event** — bonus persists until a game event fires, then expires.
-```json
-{ "type": "until_event", "event": "enter_combat", "reach": "shadow", "value": 0.10, "destroyOnEvent": false }
-```
+**until_event** — bonus persists indefinitely until a game event fires, then expires or self-destructs.
+- `event` — what ends it: `enter_combat`, `leave_combat`, `take_damage`, `rest`, `encounter_complete`, `faction_change`, `dawn_cycle`, `doom_threshold`
+- `reach` — which domain
+- `value` — bonus while active
+- `destroyOnEvent` — destroy attachment when event fires?
 
-### "It's just a flat bonus" (use sparingly)
-**passive** — always-on, no conditions. Use as a base layer under something interesting, not alone.
-```json
-{ "type": "passive", "reach": "gold", "value": 0.04 }
-```
+### "It's just a flat bonus" (use sparingly — prefer something with texture)
+**passive** — always-on, unconditional. Best used as one layer in a multi-effect composition, not as the sole effect.
+- `reach` — which domain
+- `value` — how much
 
 ---
 
 ## On-Use Triggers (post-encounter)
 
-Add `onUseTriggers` to fire effects after encounter resolution. Good for breakage, lucky saves, curse spreading.
+Separate from effects. Added via `onUseTriggers[]` on the attachment. Fire after encounter resolution based on outcome.
 
-```json
-{
-  "triggerCondition": "critical_failure",
-  "probability": 0.25,
-  "effect": { "type": "remove_possession" },
-  "narrativeTemplate": "{item_name} snaps against the blow."
-}
-```
-Conditions: `critical_failure`, `failure`, `success`, `critical_success`, `any_use`, `first_use`
-Effects: `add_condition`, `remove_condition`, `remove_possession`, `spawn_actor`, `add_possession`, `modify_relationship`
+- `triggerCondition` — when: `critical_failure`, `failure`, `success`, `critical_success`, `any_use`, `first_use`
+- `probability` — chance of firing (0-1)
+- `effect.type` — what happens: `add_condition`, `remove_condition`, `remove_possession`, `spawn_actor`, `add_possession`, `modify_relationship`
+- `narrativeTemplate` — prose shown (supports `{item_name}`, `{agent_name}`)
+
+Good for: weapons that might break on critical failure, cursed items that spread conditions, lucky charms that trigger on first use.
 
 ---
 
-## Composition Examples
+## Predicates (for conditional effects)
 
-**T2 — "grows with you"**: conditional + stacking
-```json
-"effects": [
-  { "type": "conditional", "condition": "in_combat", "reach": "iron", "value": 0.04 },
-  { "type": "stacking", "reach": "iron", "valuePerStack": 0.015, "maxStacks": 3, "stackOn": "combat_success" }
-]
-```
+Simple: `in_combat`, `in_social`, `in_exploration`, `in_mystical`, `at_home_territory`, `in_enemy_territory`, `in_wilderness`, `health_low`, `health_high`, `alone`, `outnumbered`, `near_water`
 
-**T3 — "powerful but costs you"**: cooldown + tradeoff
-```json
-"effects": [
-  { "type": "cooldown", "activeTicks": 3, "cooldownTicks": 8, "reach": "veil", "value": 0.10 },
-  { "type": "tradeoff", "bonus": { "reach": "veil", "value": 0.05 }, "penalty": { "reach": "flesh", "value": 0.03 } }
-]
-```
-
-**T4 — "legendary with a dark side"**: conditional + stacking + reactive + transform
-```json
-"effects": [
-  { "type": "conditional", "condition": "in_combat", "reach": "iron", "value": 0.06 },
-  { "type": "stacking", "reach": "iron", "valuePerStack": 0.02, "maxStacks": 4, "stackOn": "on_kill" },
-  { "type": "reactive", "trigger": "damaged", "effect": { "type": "duration", "ticks": 3, "reach": "iron", "value": 0.05, "destroyOnExpiry": false }, "cooldown": 10 },
-  { "type": "transform", "trigger": "doom_threshold", "probability": 0.5, "intoTemplate": "cursed_blade_of_ruin", "narrativeTemplate": "The blade drinks deep and will not be sheathed." }
-]
-```
+Parameterized: `biome:{type}`, `has_trait:{tag}`, `lacks_trait:{tag}`, `reach_above:{reach}:{value}`, `faction_rank:{rank}`
 
 ---
 
-## Quick Constraints
+## Composition Guidelines
 
-- **T1**: 1 effect, value 0.03-0.05
-- **T2**: 1-2 effects, value 0.05-0.08
-- **T3**: 2-3 effects, value 0.08-0.12
-- **T4**: 3-4 effects, value 0.10-0.15
-- Per-item cap: 0.15 total across all reaches
-- Loss conditions by subcategory: arms→breakable, provisions→consumable, relics→permanent/cursed, tools→breakable, vestments→breakable/stealable, mounts→permanent, tomes→stealable
-- Tags: always include `#<primary_reach>`, `#<subcategory>`, optionally `#<sphere>`
-- Nine reaches: iron, gold, shadow, veil, heart, eye, stone, star, flesh
+Combine primitives to create texture. Complexity scales with tier:
+
+- **T1** (common): 1 effect, total value 0.03-0.05. A conditional or a decay — one interesting thing.
+- **T2** (uncommon): 1-2 effects, total value 0.05-0.08. A conditional + stacking, or a cooldown alone.
+- **T3** (rare): 2-3 effects, total value 0.08-0.12. Tradeoffs, test shapers, reactive triggers.
+- **T4** (legendary): 3-4 effects, total value 0.10-0.15. Complex interplay — items with personality.
+
+Per-item cap: 0.15 total across all reaches. No single effect should exceed this.
+
+---
+
+## Quick Reference
+
+Nine reaches: iron, gold, shadow, veil, heart, eye, stone, star, flesh
+Loss conditions: arms→breakable, provisions→consumable, relics→permanent/cursed, tools→breakable, vestments→breakable/stealable, mounts→permanent, tomes→stealable
+Tags: always `#<primary_reach>`, `#<subcategory>`, optionally `#<sphere>`
