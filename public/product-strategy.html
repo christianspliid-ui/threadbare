@@ -746,7 +746,7 @@
     <img src="/screens/title-screen.png" alt="The Fantasy World Simulator — cosmic energy streams through ancient ruins" loading="eager">
   </div>
   <h1>Build the world first.<br>Find the <em>game</em> inside it.</h1>
-  <div class="subtitle">Product Strategy &mdash; Updated 30 March 2026</div>
+  <div class="subtitle">Product Strategy &mdash; Updated 5 April 2026</div>
   <div class="divider"></div>
   <div class="thesis">
     The Fantasy World Simulator is a systemic god-game where <strong>emergent narrative</strong> comes from the collision of deep, interconnected systems &mdash; not from scripted events. Like CK3 and Stellaris, the simulation comes first. The game emerges from watching systems interact in surprising ways.
@@ -860,26 +860,31 @@
 
   <div class="devlog-current fade-in">
     <h4>Currently in progress</h4>
-    <div class="wip-item">Encounter tuning pass &mdash; born-later agent spawning near content, difficulty escalation by game phase, multi-stage encounter chains (Scholar's Path, Rise Through the Ranks, Merchant's Gambit)</div>
-    <div class="wip-item">Graph-native encounter lifecycle &mdash; promoting encounter outcomes from ephemeral state to durable graph nodes, enabling queryable history for prose enrichment and agent biography</div>
-    <div class="wip-item">M3 economy design &mdash; encounter-to-economy feedback loops, wealth spending crossovers between Reaches</div>
+    <div class="wip-item">v1.1 Phase 22: Code Hygiene &mdash; DebugPanel sub-components, lodash consolidation, action template required-property constraints</div>
+    <div class="wip-item">TB-104 Procedural Content Component Library &mdash; second foundation slice (resource_delta, action_trigger, choice_set, stateful shells)</div>
+    <div class="wip-item">TB-105–108 Thematic Pressure & Living World Pass &mdash; omen agendas, cool-failure outcomes, doom identity, intent/activity visibility</div>
   </div>
 
   <div class="devlog">
     <div class="devlog-entry devlog-system fade-in">
-      <div class="devlog-date">29 March 2026</div>
-      <h4>Encounter Tuning & Agent Variety &mdash; Sessions 1-2</h4>
-      <p>Overhauled encounter scoring: template coverage raised to 8+ per location type, dynamic cooldowns prevent repetition, familiarity discount rewards exploration over staying put, personality amplification makes agents behaviorally distinct. Score display bug fixed.</p>
+      <div class="devlog-date">4 April 2026</div>
+      <h4>Coat of Arms & Icon System</h4>
+      <p>Procedural SVG heraldry generator for all 90+ factions: shield shape, six heraldic divisions (per faction type), eight charge symbols (per reach), tinctures from cosmology palette. SphereIcon (12 foundation/creation symbols) and ReachIcon (8 domain icons). Integrated into FactionSheet, FactionEntry chronicle, and ArmyLayer hex map sprites. 82 tests.</p>
+    </div>
+    <div class="devlog-entry devlog-soul fade-in">
+      <div class="devlog-date">3 April 2026</div>
+      <h4>TB-104 Procedural Content Component Library &mdash; Foundation Slice 1</h4>
+      <p>First reusable effect primitives shipped: test_shaper (for resolution filtering), prevent_loss (quintessence rescue), content_grant (reward provisioning). Wired through shared resolution service. Immediate service reward resolution. Four proof-pack support objects: Duelist's Luck Token, Hearthglass Ward, Letters of Introduction, Patron's Backing. Foundation for all future content authoring.</p>
     </div>
     <div class="devlog-entry devlog-system fade-in">
-      <div class="devlog-date">29 March 2026</div>
-      <h4>Ascendant Character Sheet</h4>
-      <p>Character sheet modal for the player's god &mdash; creation and foundation sphere affinities, essence reserves, intervention history, and domain influence at a glance.</p>
+      <div class="devlog-date">3 April 2026</div>
+      <h4>Agent Success Redesign Phase 4 &mdash; Planner Forecast Rewrite</h4>
+      <p>plannerForecast.ts adapter derives expected utility from 5-tier outcome ladder with exact success_at_cost math. Wired into encounter scoring: positive EU drives valuePerTick, binary fallback for incapable agents. Push-aware planner suppresses risky templates when quintessence low. Resist-aware planner factors downgrade value. Forecast drift telemetry tracks completion-rate gap. 29 new tests.</p>
     </div>
-    <div class="devlog-entry devlog-conflict fade-in">
-      <div class="devlog-date">29 March 2026</div>
-      <h4>Conflict & Destruction Engine &mdash; All 7 Phases</h4>
-      <p>The full M2 conflict pipeline in a single day: mercenary companies form within factions, faction ambitions drive war goals, armies spawn and march with quintessence attrition, battles resolve through multi-step spotlight encounters, sieges escalate over ticks, and sacking destroys infrastructure with lasting consequences. 102 new tests.</p>
+    <div class="devlog-entry devlog-system fade-in">
+      <div class="devlog-date">2 April 2026</div>
+      <h4>Agent Success Redesign Phase 3 &mdash; Unified Action Outcome Expansion</h4>
+      <p>5-tier outcome ladder (clear_success, success_at_cost, near_miss, complication, failure) with push/resist quintessence spend seams. Proving-slice consequences operationalized. 35 comprehensive outcome tests across resolution pipeline.</p>
     </div>
     <div class="devlog-entry devlog-soul fade-in">
       <div class="devlog-date">28 March 2026</div>
@@ -1063,7 +1068,7 @@
 
 <!-- ═══════════════════════════════════════ FOOTER ═══ -->
 <footer>
-  Threadbearer &middot; Product Strategy &middot; Last updated 30 March 2026 &middot; Build the world, find the game
+  Threadbearer &middot; Product Strategy &middot; Last updated 5 April 2026 &middot; Build the world, find the game
 </footer>
 
 <script>
