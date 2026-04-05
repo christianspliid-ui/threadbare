@@ -7,6 +7,7 @@ import type { GraphOp } from './graphOp';
 import type { TargetCategory } from './targetContext';
 import type { ControlSpec } from './controlEffect';
 import type { RarityTier } from './rarity';
+import type { AttentionTier } from './attention';
 import type { RewardPoolRecipe } from './attachments';
 import type { EncounterChoiceMemory, EncounterSupportBinding, EncounterSupportBundle } from './encounter';
 import type { ClearanceGateConfig } from './contentShells';
@@ -285,6 +286,8 @@ export interface UnifiedActionTemplate {
   readonly id: string;
   /** Narrative significance tier. Drives visual treatment and TB-100 unlock system. */
   readonly rarityTier: RarityTier;
+  /** Attention tier classification — controls how this action surfaces to the player. */
+  readonly intrinsicTier: AttentionTier;
   readonly name: string;
   readonly reach: ReachDomain;
   readonly crudType: 'create' | 'read' | 'update' | 'delete';
@@ -517,6 +520,8 @@ export interface UnifiedAction {
   readonly choiceHistory?: readonly EncounterChoiceMemory[];
   /** Player has chosen to stop interfering; remaining beats resolve on mortal terms. */
   readonly disregardRemaining?: boolean;
+  /** Effective attention tier — computed at action creation, may be promoted mid-encounter. */
+  readonly effectiveTier?: AttentionTier | 'invisible';
   /** Reuse-first binding of encounter support cast/places resolved at action start. */
   readonly supportBindings?: readonly EncounterSupportBinding[];
   /** Persistent clearance/scrutiny shell instances bound at action start. */

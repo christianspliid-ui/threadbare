@@ -11,6 +11,7 @@ import type { ReachDomain } from './traits';
 import type { ValuePair } from './agent';
 import type { RewardPoolRecipe } from './attachments';
 import type { ClearanceGateConfig } from './contentShells';
+import type { AttentionTier } from './attention';
 
 // ─── Encounter Types & Threat Ratings ───────────────────────────
 
@@ -141,6 +142,9 @@ export interface EncounterTemplate {
   encounterType: EncounterType;
   /** Threat rating */
   threatRating: ThreatRating;
+  /** Attention tier classification — controls how this encounter surfaces to the player.
+   *  Effective tier computed at runtime via resolveEffectiveTier(). */
+  intrinsicTier: AttentionTier;
   /** Value pairs relevant to this encounter */
   motivations: ValuePair[];
   /** Optional sphere affinity for filtering */
@@ -286,4 +290,6 @@ export interface EncounterProgress {
    * Undefined = not currently occupied (step resolves immediately).
    */
   occupiedUntilTick?: number;
+  /** Effective attention tier — computed at initiation, may be promoted mid-encounter. */
+  effectiveTier?: AttentionTier | 'invisible';
 }

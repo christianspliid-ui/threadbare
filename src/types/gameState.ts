@@ -30,6 +30,7 @@ import type { WorldGraph } from '../engine/graph';
 import type { VisibilityMap } from './visibility';
 import type { FamiliarityMap } from './familiarity';
 import type { AgentKnowledge } from './agentKnowledge';
+import type { DigestEntry, ThreadTug, QueuedStoryBeat } from './attention';
 
 // ─── Game Phase ─────────────────────────────────────────────────
 
@@ -162,6 +163,13 @@ export interface GameState {
 
   // Encounter notifications — queued by encounter visibility phase, consumed by UI
   encounterNotifications?: import('./encounterVisibility').EncounterNotification[];
+
+  /** Silently accumulated encounter outcomes for Read the Threads. Append-only, pruned on read. */
+  digestBuffer?: DigestEntry[];
+  /** Active thread tugs awaiting player attention. Managed by phaseAttention. */
+  activeThreadTugs?: ThreadTug[];
+  /** Queued story beats awaiting pacing governor clearance. Max depth: STORY_BEAT_QUEUE_MAX. */
+  storyBeatQueue?: QueuedStoryBeat[];
 
   // Divine premonitions — queued by phaseDivinePremonition + phaseAgentDecision, consumed by UI
   premonitionQueue?: import('./premonition').PremonitionEvent[];
