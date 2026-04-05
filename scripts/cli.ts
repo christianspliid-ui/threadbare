@@ -46,6 +46,8 @@ import { setTrackedAgents, getBalanceEvents, selectDefaultTrackedHero } from '..
 import { buildBalanceRunSummary, buildBalanceAgentJourneySummary } from '../src/engine/balanceSummary';
 import { evaluateBalanceSummary, evaluateAgentJourney, formatEvaluationReport } from '../src/engine/balanceEvaluator';
 import { getDefaultBalanceTargets } from '../src/engine/balanceTargets';
+import { getAttentionVisualState } from '../src/engine/attentionPool';
+import { ATTENTION_BASE_CAPACITY, ATTENTION_BASE_REGEN } from '../src/data/attention-constants';
 
 import type { GameState, TickEvent } from '../src/types/gameState';
 import type { GraphNode } from '../src/types/graph';
@@ -462,6 +464,11 @@ function printHelp(): void {
   console.log(`  ${BOLD}encounters${RESET}       Active unified actions`);
   console.log(`  ${BOLD}factions${RESET}         List factions`);
   console.log(`  ${BOLD}traces${RESET} [N]       Show last N traces (default 10)`);
+  console.log(`  ${BOLD}attention${RESET}        Ascendant attention pool state (alias: attn)`);
+  console.log(`  ${BOLD}digest${RESET} [N]       Last N digest buffer entries (default 10)`);
+  console.log(`  ${BOLD}tugs${RESET}             Active thread tugs`);
+  console.log(`  ${BOLD}storybeats${RESET}       Story beat queue (alias: beats)`);
+  console.log(`  ${BOLD}threads${RESET}          Divine thread edges by court position`);
   console.log(`  ${BOLD}balance${RESET}          Balance summary (alias: bal)`);
   console.log(`  ${BOLD}balance eval${RESET}     Evaluate session vs. targets`);
   console.log(`  ${BOLD}balance targets${RESET}  Show target bands`);
@@ -473,6 +480,165 @@ function printHelp(): void {
   console.log(`  ${BOLD}eval${RESET} <expr>      Evaluate JS with 'state' in scope`);
   console.log(`  ${BOLD}help${RESET}             This help`);
   console.log(`  ${BOLD}quit${RESET} / ${BOLD}exit${RESET}     Exit`);
+}
+
+// ─── Attention Debug Commands ────────────────────────────────────
+
+function printAttention(): void {
+  const ascendant = state.ascendantId ? state.graph.getNode(state.ascendantId) : undefined;
+  if (!ascendant) {
+    console.log(`${RED}No ascendant node found in graph.${RESET}`);
+    return;
+  }
+  const props = ascendant.properties;
+  const pool     = (props.attentionPool     as number) ?? ATTENTION_BASE_CAPACITY;
+  const capacity = (props.attentionCapacity as number) ?? ATTENTION_BASE_CAPACITY;
+  const regen    = (props.attentionRegen    as number) ?? ATTENTION_BASE_REGEN;
+  const visualState = getAttentionVisualState({ attentionPool: pool, attentionCapacity: capacity, attentionRegen: regen });
+  const pct = capacity > 0 ? ((pool / capacity) * 100).toFixed(0) : '0';
+
+  console.log(header('Attention Pool'));
+  console.log(`  Pool:  ${pool.toFixed(2)} / ${capacity.toFixed(2)} (${pct}%)`);
+  console.log(`  Regen: ${regen.toFixed(2)}/tick`);
+  console.log(`  State: ${visualState}`);
+}
+
+function printDigest(n: number = 10): void {
+  const buffer = state.digestBuffer ?? [];
+  const total = buffer.length;
+  const entries = buffer.slice().reverse().slice(0, n);
+
+  console.log(header(`Digest Buffer (last ${entries.length} of ${total} entries)`));
+  if (entries.length === 0) {
+    console.log(dim('  (empty — no background encounters resolved yet)'));
+    return;
+  }
+
+  for (const e of entries) {
+    const outcome = e.success ? `${GREEN}Success${RESET}` : `${RED}Failed${RESET}`;
+    const notable = e.isNotable ? `  ${YELLOW}*NOTABLE*${RESET}` : '';
+    const pos = e.isDormantAgent ? 'Dormant' : e.sourceType === 'location' ? 'Location' : 'Agent';
+    // Shorten reach to capitalised first letter of domain for compact display
+    const reach = e.reachPrimary ? e.reachPrimary.charAt(0).toUpperCase() + e.reachPrimary.slice(1, 4) : '???';
+    const capDeltas = Object.entries(e.capabilityChanges ?? {})
+      .filter(([, v]) => v !== 0)
+      .map(([k, v]) => `${v > 0 ? '+' : ''}${v.toFixed(1)} ${k}`)
+      .join(', ');
+    const deltaStr = capDeltas ? `  (${capDeltas})` : '';
+
+    console.log(
+      `  ${dim(`t${e.tick}`)}  [${reach}/${pos}]  ${BOLD}${e.agentName}${RESET}: ${e.encounterName}. ${outcome}.${deltaStr}${notable}`
+    );
+  }
+}
+
+function printTugs(): void {
+  const tugs = state.activeThreadTugs ?? [];
+  console.log(header(`Active Thread Tugs (${tugs.length})`));
+  if (tugs.length === 0) {
+    console.log(dim('  (no active tugs)'));
+    return;
+  }
+
+  tugs
+    .slice()
+    .sort((a, b) => b.curationScore - a.curationScore)
+    .forEach((tug, i) => {
+      const agentNode = state.graph.getNode(tug.agentId);
+      const agentName = (agentNode?.name as string) ?? (agentNode?.properties.name as string) ?? tug.agentId.slice(0, 8);
+      console.log(
+        `  [${i + 1}] Agent: ${BOLD}${agentName}${RESET}` +
+        `  | Reach: ${tug.reachPrimary} (${tug.threatLevel})` +
+        `  | Expires: t${tug.expiresTick}` +
+        `  | Score: ${tug.curationScore.toFixed(2)}` +
+        `  | Court: ${tug.courtPosition}`
+      );
+    });
+}
+
+function printStoryBeats(): void {
+  const queue = state.storyBeatQueue ?? [];
+  console.log(header('Story Beat Queue'));
+
+  // No active beat tracking in GameState yet — note it
+  console.log(`  Active: ${dim('(not yet tracked in GameState)')}`);
+  console.log(`  Queue (${queue.length}):`);
+
+  if (queue.length === 0) {
+    console.log(dim('    (empty)'));
+    return;
+  }
+
+  queue.forEach((beat, i) => {
+    const agentNode = state.graph.getNode(beat.agentId);
+    const agentName = (agentNode?.name as string) ?? (agentNode?.properties.name as string) ?? beat.agentId.slice(0, 8);
+    console.log(
+      `    [${i + 1}] ${YELLOW}${beat.priority}${RESET}` +
+      `  | enc:${beat.encounterId.slice(0, 12)}` +
+      `  | agent:${agentName}` +
+      `  | at (${beat.hexCol},${beat.hexRow})` +
+      `  | queued t${beat.queuedTick}`
+    );
+  });
+}
+
+function printThreads(): void {
+  if (!state.ascendantId) {
+    console.log(`${RED}No ascendant in current game state.${RESET}`);
+    return;
+  }
+
+  const threadEdges = state.graph.getOutgoingEdges(state.ascendantId, 'thread');
+  console.log(header(`Divine Threads (${threadEdges.length})`));
+
+  if (threadEdges.length === 0) {
+    console.log(dim('  (no thread edges from ascendant)'));
+    return;
+  }
+
+  // Group by court position
+  const groups: Record<string, Array<{ name: string; location: string }>> = {
+    the_first: [],
+    retinue:   [],
+    watched:   [],
+    dormant:   [],
+    unset:     [],
+  };
+
+  for (const edge of threadEdges) {
+    const target = state.graph.getNode(edge.target);
+    if (!target) continue;
+    const name = (target.name as string) ?? (target.properties.name as string) ?? edge.target.slice(0, 8);
+
+    // Resolve location
+    const locEdges = state.graph.getOutgoingEdges(edge.target, 'located_at');
+    let location = '???';
+    if (locEdges.length > 0) {
+      const locNode = state.graph.getNode(locEdges[0].target);
+      location = (locNode?.name as string) ?? (locNode?.properties.name as string) ?? locEdges[0].target.slice(0, 8);
+    }
+
+    const courtPos = (edge.properties?.courtPosition as string) ?? 'unset';
+    const bucket = courtPos in groups ? courtPos : 'unset';
+    groups[bucket].push({ name, location });
+  }
+
+  const LABELS: Record<string, string> = {
+    the_first: 'THE FIRST',
+    retinue:   'RETINUE',
+    watched:   'WATCHED',
+    dormant:   'DORMANT',
+    unset:     '(no position)',
+  };
+
+  for (const [key, members] of Object.entries(groups)) {
+    if (members.length === 0) continue;
+    const label = LABELS[key] ?? key.toUpperCase();
+    const formatted = members
+      .map(m => `${BOLD}${m.name}${RESET} ${dim(`(at ${m.location})`)}`)
+      .join(', ');
+    console.log(`  ${CYAN}${label.padEnd(12)}${RESET} ${formatted}`);
+  }
 }
 
 // ─── Spawn Helpers ───────────────────────────────────────────────
@@ -709,6 +875,25 @@ function handleCommand(line: string): boolean {
       printTraces(isNaN(n) ? 10 : n);
       break;
     }
+    case 'attention':
+    case 'attn':
+      printAttention();
+      break;
+    case 'digest': {
+      const n = parseInt(arg, 10);
+      printDigest(isNaN(n) ? 10 : n);
+      break;
+    }
+    case 'tugs':
+      printTugs();
+      break;
+    case 'storybeats':
+    case 'beats':
+      printStoryBeats();
+      break;
+    case 'threads':
+      printThreads();
+      break;
     case 'balance':
     case 'bal': {
       // sub-commands: summary (default), eval, targets, recent [N], agent <id>
