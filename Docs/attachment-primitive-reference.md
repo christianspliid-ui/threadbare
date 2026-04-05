@@ -167,6 +167,44 @@ Good for:
 - **Claim territory**: create_edge controls between agent and location
 - **Recruit retainer**: create_node actor + create_edge bonded_to
 
+### "It rewrites the rules"
+**modify_rules** — temporarily changes how game systems work within a scope. The world itself behaves differently.
+- `rule` — which system to override: `encounter_reach_override`, `movement_cost_multiplier`, `death_prevented`, `healing_multiplier`, `spawn_rate_multiplier`, `awareness_range_bonus`, `tier_advancement_cost_multiplier`, `faction_influence_multiplier`, `cooldown_multiplier`, `backlash_severity_multiplier`, `doom_rate_multiplier`, `reward_tier_bonus`, `encounter_difficulty_modifier`
+- `value` — the override value (multiplier or additive depending on rule)
+- `scope` — where it applies: `self`, `hex`, `radius:{N}`, `region`, `faction`, `global`
+- `duration` — (optional) how many ticks the override lasts
+
+Good for: divine edicts (halve doom rate globally), cursed ground (double encounter difficulty on hex), blessed territory (healing multiplier in region), time distortion (cooldown multiplier for faction), divine protection (death_prevented on self).
+
+### "It forces someone's hand"
+**compel** — overrides another agent's decision-making. Bypasses Maslow pipeline for the compelled behavior.
+- `override` — what to force: `movement_target`, `faction_loyalty`, `avoid_hex`, `attack_target`, `protect_target`, `flee`, `maslow_weight`
+- `target` — who is compelled: `other_agent`, `all_on_hex`, `faction:{id}`
+- `value` — target location/agent/hex for directional overrides, or weight multiplier for maslow_weight
+- `duration` — how many ticks the compulsion lasts
+- `resistible` — can the target resist via Veil/Heart check? (true/false)
+
+Good for: mind control spells (attack_target), divine commands (movement_target), terror effects (flee), loyalty curses (faction_loyalty), obsession (maslow_weight override to fixate on one need).
+
+### "It reshapes faction politics"
+**faction_manipulate** — directly modifies faction relationships and structure. Political magic.
+- `action` — what to do: `shift_relationship`, `transfer_control`, `splinter`, `absorb`, `declare_war`, `force_peace`
+- `factionA` — first faction (ID or `self_faction`)
+- `factionB` — (optional) second faction for relationship actions
+- `value` — (optional) magnitude for relationship shifts
+- `target` — (optional) location/territory for transfer_control
+
+Good for: divine diplomacy (force_peace between warring factions), corruption (shift_relationship to hostile), conquest spells (transfer_control of a settlement), schism curses (splinter a faction), imperial magic (absorb a weaker faction).
+
+### "It triggers a chain reaction"
+**cascade** — fires a sequence of other effects in order. The output of one can feed the next. Enables complex multi-step abilities from a single attachment.
+- `steps` — ordered array of other primitives to fire in sequence
+- `delay` — (optional) ticks between steps (0 = all at once)
+- `condition` — (optional) predicate to gate the entire cascade
+- `stopOnFail` — (optional) if a step fails, stop the chain?
+
+Good for: ritual sequences (drain quintessence → spawn creature → create binding edge), curse chains (inflict condition → decay stats → transform on death), divine interventions (modify rules → compel agent → cascade aftermath), combo items (buff self → debuff enemy → spawn encounter).
+
 ### "It's slowly changing who you are"
 **axiological_drift** — gradually shifts the agent's value profile and Maslow priorities over time. Unlike behavior_weight (static preference), drift accumulates tick by tick — a slow corruption, enlightenment, or transformation the agent doesn't choose.
 - `dimension` — what shifts: `aggression`, `caution`, `greed`, `compassion`, `curiosity`, `devotion`, `ambition`, `isolation`
