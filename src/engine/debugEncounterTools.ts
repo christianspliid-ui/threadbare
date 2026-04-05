@@ -363,13 +363,28 @@ export function prepareDebugEncounterSpawn(
       clearanceGateIds: gateInit.gateIds,
     });
 
+    // Rebuild notification with unified_action metadata so the dedup key matches
+    // what phaseEncounterVisibility generates next tick — prevents the first step
+    // firing twice (once from spawn, once from visibility phase).
+    const unifiedNotification = buildEncounterNotification(
+      agent.id,
+      agent.name,
+      template.id,
+      template.name,
+      locationName,
+      courtPosition,
+      attentionMode,
+      state.tick,
+      { sourceSystem: 'unified_action', stepIndex: 0, actionId: action.actionId },
+    ) ?? notification;
+
     return {
       success: true,
       message: `Spawned '${template.name}' on '${agent.name}'${agentNote}`,
       mode: 'unified',
       agent: { id: agent.id, name: agent.name },
       template,
-      notification,
+      notification: unifiedNotification,
       unifiedAction: action,
       clearanceGateStates: gateInit.clearanceGateStates,
     };
