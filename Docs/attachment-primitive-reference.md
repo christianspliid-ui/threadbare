@@ -111,6 +111,40 @@ Good for: reputation traits (Feared → intimidation, Beloved → trust), scars 
 
 Good for: trait restrictions (Pacifist blocks Iron duel actions), equipment prerequisites (Ritual Tome unlocks veil rituals), conditions (Blinded blocks Eye actions), destiny traits (Prophesied unlocks a specific quest action).
 
+### "It removes a curse, disease, or binding"
+**dispel** — removes active conditions, attachments, or effects matching specific tags or tiers. The "cure" and "contract-breaker" primitive.
+- `target` — what to remove: `condition`, `attachment`, `spell`, `aura`
+- `tags` — (optional) only remove things with these tags (e.g., `["#disease", "#poison"]` or `["#dark", "#binding"]`)
+- `tierMax` — (optional) can only dispel effects up to this tier
+
+Good for: healing spells (cleanse #disease/#poison), exorcism (dispel #curse), contract-breaking rituals (break #binding agreements), purification (remove all #corruption conditions).
+
+### "It makes you immune to certain effects"
+**tag_immunity** — while active, the agent cannot receive conditions or effects with specified tags. Incoming effects that match are simply blocked.
+- `immuneTo` — tag patterns that are blocked: `["#poison"]`, `["#fire", "#heat"]`, `["#curse"]`
+- `condition` — (optional) predicate for when immunity is active
+
+Good for: magical wards (#fire immunity), blessed states (#curse immunity), antidotes (#poison immunity), divine protection (#dark immunity). Combine with `duration` or `cooldown` for temporary wards.
+
+### "It affects the land, not the person"
+**hex_effect** — applies a lingering effect to a hex tile's state (divineInfluence, corruption, magicalSaturation) rather than to an agent. The terrain itself is changed.
+- `property` — which hex state: `divineInfluence`, `corruption`, `magicalSaturation`
+- `value` — how much to apply (positive or negative)
+- `radius` — how many hexes from the source (0 = single hex)
+- `duration` — (optional) ticks before effect fades (if absent, uses natural hex decay)
+
+Good for: consecration rituals (boost divineInfluence), blight spells (increase corruption), ley line tapping (boost magicalSaturation), purification (reduce corruption), warding a territory.
+
+### "It drains or restores life force directly"
+**resource_manipulate** — directly modifies an agent's essence (health) or quintessence (sanity/mana) pools, bypassing normal resolution.
+- `resource` — which pool: `essence`, `quintessence`
+- `value` — amount to add (positive = restore, negative = drain)
+- `target` — who: `self`, `other_agent`, `all_on_hex`
+- `condition` — (optional) predicate for when it fires
+- `perTick` — (optional) if true, applies every tick instead of once
+
+Good for: healing spells (restore essence), psychic attacks (drain quintessence), poison (per-tick essence drain), meditation (per-tick quintessence restore), vampiric effects (drain target, restore self).
+
 ### "It's slowly changing who you are"
 **axiological_drift** — gradually shifts the agent's value profile and Maslow priorities over time. Unlike behavior_weight (static preference), drift accumulates tick by tick — a slow corruption, enlightenment, or transformation the agent doesn't choose.
 - `dimension` — what shifts: `aggression`, `caution`, `greed`, `compassion`, `curiosity`, `devotion`, `ambition`, `isolation`
