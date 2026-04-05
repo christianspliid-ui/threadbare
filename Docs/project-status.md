@@ -1,10 +1,10 @@
 # Project Status
 
-> Updated 2026-04-04.
+> Updated 2026-04-05.
 
 ## Current Focus
 
-**Coat of Arms & Icon System** — Complete. Procedural SVG heraldry for all factions (shield + divisions + charges derived from faction type, sphere alignment, reach weights). SphereIcon (12) and ReachIcon (8) with canonical cosmology colors. Integrated into FactionSheet, FactionEntry chronicle, and ArmyLayer hex map. 82 tests.
+**Effect Primitive Architecture — All 5 Phases Complete.** Full implementation of the 5-phase effect handler system: shared infrastructure (walker/predicates), query handler (7 queries wired to 5 game systems), event handler (reactive/stacking/until_event/transform on encounter+doom events), tick primitives (axiological_drift/hex_effect/resource_manipulate), transform wiring, and modify_rules integration (doom_rate_multiplier, encounter_difficulty_modifier).
 
 ## Milestone Status
 
@@ -13,6 +13,17 @@
 - **v1.2 Social Systems Expansion:** Designed — 5 expansions. Design doc: `Docs/plans/2026-03-31-social-systems-expansion-design.md`
 - **Agent Success Redesign:** Phase 1 ✅, Phase 2 ✅, Phase 3 ✅, Phase 4 ✅ corrected (2026-04-03)
 - **Next:** Phase 5 (encounter migration and early-game retune), or v1.2 Social Systems
+
+## Recent Completions (2026-04-05)
+
+- **Effect Primitive Architecture — Phase 5:**
+  - `axiological_drift` tick handler: mutates agent axiologicalProfile axis toward limitValue each tick
+  - `hex_effect` tick handler: produces HexMutation entries collected by orchestrator → phaseHexState
+  - `resource_manipulate (per_tick)` tick handler: drains/restores agent essence/quintessence each tick
+  - Transform execution: phaseDoom + phaseEncounterProgressionV2 now call `instantiateReward` for transform requests after `applyEffectEventResult`
+  - `doom_rate_multiplier` wired into phaseDoom: aggregates from all agents, applies via accelerate/decelerateDoomClock
+  - `encounter_difficulty_modifier` wired into computeResolutionModifiers: new `ruleModifier` field on ModifierBreakdown
+  - All phases verified: tsc clean, 8323 tests pass (23 pre-existing failures unrelated), vite build clean
 
 ## Recent Completions (2026-04-04)
 

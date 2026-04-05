@@ -4,6 +4,8 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
 ### Recent Changes
 
+| 2026-04-05 | src/engine/effectTick.ts, src/engine/phaseDoom.ts, src/engine/orchestrator.ts, src/engine/resolutionModifiers.ts | Phase 5 of effect primitive architecture: axiological_drift/hex_effect/resource_manipulate tick handlers; transform request execution via instantiateReward in encounter and doom phases; doom_rate_multiplier modify_rules wired into phaseDoom; encounter_difficulty_modifier wired into computeResolutionModifiers | Complete the 5-phase effect primitive implementation plan (swirling-dazzling-journal.md) |
+
 | Date | Where | What changed | Why |
 | 2026-04-04 | src/engine/encounterVisibility.ts | Fixed step re-emission bug (impediment #26): unified_action resolved notifications now stay in the dedup set so the same step never re-fires each tick. | Intermediate step notifications were marked resolved when the modal closed; next tick they dropped from `existingNotifKeys` and regenerated, flooding the player with 5 modals instead of 3. |
 | 2026-04-04 | src/components/icons/ (new directory, 10 files); src/components/Game/FactionSheet.tsx; src/components/Game/chronicle/FactionEntry.tsx; src/components/HexMapV2/scene/ArmyLayer.ts | Coat of Arms & Icon System — procedural SVG generator for faction heraldry (shield shape + field divisions + charges from reach/sphere), SphereIcon (12 geometric symbols), ReachIcon (8 domain icons). Integrated into FactionSheet (48px), FactionEntry (24px), ArmyLayer hex map sprites. 82 new tests. | Factions, kingdoms, and armies need visual identity beyond Unicode glyphs. Canonical cosmology colors from cosmology-symmetry.html drive all palette choices. |
