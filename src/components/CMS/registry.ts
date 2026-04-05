@@ -188,6 +188,13 @@ export const ATTACHMENT_SUBCATEGORY_COLORS: Record<string, string> = {
   bestowed:  '#4338ca',  // indigo
 };
 
+export const ACTION_SCALE_COLORS: Record<string, string> = {
+  cosmic:   '#7c2d12', // orange-dark — divine/cosmic
+  regional: '#1e3a8a', // blue — faction/settlement scale
+  local:    '#166534', // green — location scale
+  personal: '#57534e', // stone — individual scale
+};
+
 export const ENCOUNTER_TYPE_COLORS: Record<string, string> = {
   explore: '#60a5fa', acquire: '#fbbf24', create: '#4ade80', hire: '#a78bfa',
   duel: '#f87171', steal: '#f59e0b', trade: '#34d399', assist: '#818cf8',
@@ -360,6 +367,9 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
       { key: 'reachSecondary', label: 'Secondary', render: 'badge', badgeColors: REACH_BADGE_COLORS },
       { key: 'locationTypes', label: 'Locations', render: 'tags' },
       { key: 'steps.length', label: 'Steps', render: 'number' },
+      { key: 'questPriority', label: 'Priority', render: 'number' },
+      { key: 'requiredTraits', label: 'Req. Traits', render: 'json' },
+      { key: 'blockedByTraits', label: 'Blocked By', render: 'tags' },
     ],
     searchFields: ['id', 'name', 'encounterType', 'threatRating'],
     sourceFile: 'src/data/encounter-content.ts',
@@ -377,7 +387,10 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
       { key: 'encounterType', label: 'Type', render: 'badge', badgeColors: ENCOUNTER_TYPE_COLORS },
       { key: 'threatRating', label: 'Threat', render: 'badge', badgeColors: THREAT_BADGE_COLORS },
       { key: 'reachPrimary', label: 'Primary', render: 'badge', badgeColors: REACH_BADGE_COLORS },
+      { key: 'reachSecondary', label: 'Secondary', render: 'badge', badgeColors: REACH_BADGE_COLORS },
       { key: 'locationTypes', label: 'Locations', render: 'tags' },
+      { key: 'questPriority', label: 'Priority', render: 'number' },
+      { key: 'requiredTraits', label: 'Req. Traits', render: 'json' },
     ],
     searchFields: ['id', 'name', 'encounterType'],
     sourceFile: 'src/data/social-encounter-content.ts',
@@ -422,8 +435,10 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
       { key: 'name', label: 'Name' },
       { key: 'reach', label: 'Reach', render: 'badge', badgeColors: REACH_BADGE_COLORS },
       { key: 'crudType', label: 'CRUD', render: 'badge' },
+      { key: 'rarityTier', label: 'Rarity', render: 'number' },
       { key: 'difficulty', label: 'Difficulty', render: 'number' },
       { key: 'durationRange', label: 'Duration', render: 'json' },
+      { key: 'sphereAffinity', label: 'Sphere', render: 'badge' },
       { key: 'motivations', label: 'Motivations', render: 'tags' },
     ],
     searchFields: ['id', 'name', 'reach', 'crudType'],
@@ -1047,10 +1062,14 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
     columns: [
       { key: 'id', label: 'ID' },
       { key: 'name', label: 'Name' },
+      { key: 'scale', label: 'Scale', render: 'badge', badgeColors: ACTION_SCALE_COLORS },
       { key: 'reach', label: 'Reach', render: 'badge', badgeColors: REACH_BADGE_COLORS },
       { key: 'crudType', label: 'CRUD', render: 'badge' },
+      { key: 'essenceCost', label: 'Essence', render: 'number' },
+      { key: 'targetCategories', label: 'Targets', render: 'tags' },
+      { key: 'narrativeLayer', label: 'Layer', render: 'badge' },
     ],
-    searchFields: ['id', 'name', 'reach'],
+    searchFields: ['id', 'name', 'reach', 'scale'],
     sourceFile: 'src/data/unified-action-templates.ts',
   },
 
@@ -1116,6 +1135,7 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
       { key: 'id', label: 'ID' },
       { key: 'name', label: 'Name' },
       { key: 'properties.subcategory', label: 'Category', render: 'badge', badgeColors: TRAIT_CATEGORY_COLORS },
+      { key: 'properties.domainContributions', label: 'Domain Effect', render: 'json' },
       { key: 'properties.description', label: 'Description' },
       { key: 'properties.visibility', label: 'Visibility', render: 'badge' },
       { key: 'properties.tags', label: 'Tags', render: 'tags' },
@@ -1145,8 +1165,10 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
       { key: 'id', label: 'ID' },
       { key: 'name', label: 'Name' },
       { key: 'type', label: 'Type', render: 'badge' },
+      { key: 'sphereAffinities', label: 'Spheres', render: 'tags' },
+      { key: 'description', label: 'Description' },
     ],
-    searchFields: ['id', 'name'],
+    searchFields: ['id', 'name', 'description'],
     sourceFile: 'src/data/mandate-content.ts',
   },
   {
@@ -1553,6 +1575,7 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
       { key: 'id', label: 'ID' },
       { key: 'name', label: 'Name' },
       { key: 'properties.tier', label: 'Tier', render: 'number' },
+      { key: 'properties.domainContributions', label: 'Domain Bonus', render: 'json' },
       { key: 'properties.description', label: 'Description' },
       { key: 'properties.visibility', label: 'Visibility', render: 'badge' },
       { key: 'properties.tags', label: 'Tags', render: 'tags' },
@@ -1572,6 +1595,7 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
       { key: 'name', label: 'Name' },
       { key: 'properties.subcategory', label: 'Type', render: 'badge', badgeColors: ATTACHMENT_SUBCATEGORY_COLORS },
       { key: 'properties.tier', label: 'Tier', render: 'number' },
+      { key: 'properties.domainContributions', label: 'Domain Effect', render: 'json' },
       { key: 'properties.description', label: 'Description' },
       { key: 'properties.tags', label: 'Tags', render: 'tags' },
     ],
@@ -1628,6 +1652,7 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
       { key: 'name', label: 'Name' },
       { key: 'properties.subcategory', label: 'Type', render: 'badge', badgeColors: ATTACHMENT_SUBCATEGORY_COLORS },
       { key: 'properties.tier', label: 'Tier', render: 'number' },
+      { key: 'properties.domainContributions', label: 'Domain Effect', render: 'json' },
       { key: 'properties.description', label: 'Description' },
       { key: 'properties.tags', label: 'Tags', render: 'tags' },
     ],
