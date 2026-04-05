@@ -16,6 +16,13 @@
 
 ## Recent Completions (2026-04-05)
 
+- **Attention Tier Classification — Task 10:**
+  - Added `intrinsicTier` field to every `UnifiedActionTemplate` and `EncounterTemplate` in data files and test factories
+  - Classification rules: rarityTier 1→background, 2→shaping, 3/4→story_beat; CRUD override forces background on any single-step template
+  - Fixed `unifiedToEncounterTemplate()` to pass through `intrinsicTier`, `reachPrimary`, `reachSecondary`, and `motivations`
+  - Fixed `migrateActionTemplate()` and all 16 NPC action templates (added missing `rarityTier`/`intrinsicTier`)
+  - 24 files changed; tsc clean, all modified-file tests pass
+
 - **Effect Primitive Architecture — Phase 5:**
   - `axiological_drift` tick handler: mutates agent axiologicalProfile axis toward limitValue each tick
   - `hex_effect` tick handler: produces HexMutation entries collected by orchestrator → phaseHexState
