@@ -39,6 +39,7 @@ import { NPC_ACTION_TEMPLATES } from './npc-action-templates';
 import { RIVAL_SHRINE_BETRAYAL_TEMPLATE } from './encounters/rival-shrine-betrayal';
 import { WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE } from './encounters/wandering-healer-shrine-access';
 import { FLAWED_STEEL_TEMPLATE } from './encounters/flawed-steel';
+import { SOUL_FERRYMAN_TEMPLATE } from './encounters/soul-ferryman';
 
 // ─── Migration: ActionTemplateData → UnifiedActionTemplate ─────────
 
@@ -3170,6 +3171,7 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   RIVAL_SHRINE_BETRAYAL_TEMPLATE,
   WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE,
   FLAWED_STEEL_TEMPLATE,
+  SOUL_FERRYMAN_TEMPLATE,
 ];
 
 /**

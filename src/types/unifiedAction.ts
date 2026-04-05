@@ -87,7 +87,9 @@ export type HiddenMarkCategory =
   | 'debt'
   | 'secret_knowledge'
   | 'concealed_action'
-  | 'forbidden_contact';
+  | 'forbidden_contact'
+  | 'soul_diminishment'
+  | 'mystical_contract';
 
 /**
  * A persistent hidden mark on an agent — a concealed consequence that can be
