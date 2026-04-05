@@ -137,9 +137,14 @@ export interface NotabilityInput {
   hasWound?: boolean;
 }
 
-// Tunability constants (NFP #1)
-const NOTABLE_QUINTESSENCE_LOSS_THRESHOLD = -0.3;
-const NOTABLE_REPUTATION_MAGNITUDE_THRESHOLD = 0.3;
+import {
+  NOTABLE_QUINTESSENCE_LOSS,
+  NOTABLE_REPUTATION_DELTA,
+} from '../data/attention-constants';
+
+// Tunability: sourced from attention-constants.ts (NFP #1)
+const NOTABLE_QUINTESSENCE_LOSS_THRESHOLD = -NOTABLE_QUINTESSENCE_LOSS;
+const NOTABLE_REPUTATION_MAGNITUDE_THRESHOLD = NOTABLE_REPUTATION_DELTA;
 
 /**
  * Determine whether a digest entry qualifies as notable for highlight treatment.
