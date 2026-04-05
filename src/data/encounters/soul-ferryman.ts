@@ -262,6 +262,34 @@ export const SOUL_FERRYMAN_TEMPLATE: UnifiedActionTemplate = {
   illustrationAlt: 'A gaunt ferryman stands on a dark punt in thick fog, pole in hand, while a courier hesitates at the waterline',
 
   authoredChoices: {
+    1: [
+      {
+        id: 'thread_the_fog_gently',
+        label: 'Thread the Fog Gently',
+        intent:
+          'The god acts with precision and restraint. Whether severing the contract or steadying ' +
+          'the courier, the touch is light — barely a breath of divine will. The fog may resist ' +
+          'less, but the intervention carries less certainty.',
+        essenceCost: 1,
+        likelyBurden:
+          'A gentle touch may not be enough. The river has held this contract for thirty-one years, ' +
+          'and the courier\'s fear has had an hour to take root.',
+        interventionType: 'supportive',
+      },
+      {
+        id: 'press_through_the_current',
+        label: 'Press Through the Current',
+        intent:
+          'The god reaches through the fog with full divine authority. The intervention is forceful, ' +
+          'undeniable. Vesik will feel it. The river will feel it. What was subtle becomes a ' +
+          'statement — and the Silt does not forget gods who announce themselves.',
+        essenceCost: 3,
+        likelyBurden:
+          'Force draws attention. The river remembers interference. Vesik may react to the weight ' +
+          'of the god\'s hand rather than the intent behind it.',
+        interventionType: 'coercive',
+      },
+    ],
     0: [
       {
         id: 'break_the_bargain',

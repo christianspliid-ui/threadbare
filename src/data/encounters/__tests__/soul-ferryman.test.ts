@@ -304,6 +304,49 @@ describe('Soul Ferryman — authored choices', () => {
       expect(choice.likelyBurden).toBeTruthy();
     }
   });
+
+  it('has authored choices for step 1', () => {
+    expect(template.authoredChoices![1]).toBeDefined();
+  });
+
+  it('has exactly 2 choices at step 1', () => {
+    expect(template.authoredChoices![1]).toHaveLength(2);
+  });
+
+  it('first step 1 choice is thread_the_fog_gently (supportive, 1 essence)', () => {
+    const choice = template.authoredChoices![1][0];
+    expect(choice.id).toBe('thread_the_fog_gently');
+    expect(choice.label).toBe('Thread the Fog Gently');
+    expect(choice.essenceCost).toBe(1);
+    expect(choice.interventionType).toBe('supportive');
+  });
+
+  it('second step 1 choice is press_through_the_current (coercive, 3 essence)', () => {
+    const choice = template.authoredChoices![1][1];
+    expect(choice.id).toBe('press_through_the_current');
+    expect(choice.label).toBe('Press Through the Current');
+    expect(choice.essenceCost).toBe(3);
+    expect(choice.interventionType).toBe('coercive');
+  });
+
+  it('step 1 choices have intent and likelyBurden prose', () => {
+    for (const choice of template.authoredChoices![1]) {
+      expect(choice.intent).toBeTruthy();
+      expect(choice.likelyBurden).toBeTruthy();
+    }
+  });
+
+  it('step 1 gentle choice intent references fog and restraint', () => {
+    const choice = template.authoredChoices![1][0];
+    expect(choice.intent).toContain('fog');
+    expect(choice.intent).toContain('restraint');
+  });
+
+  it('step 1 forceful choice intent references divine authority and the Silt', () => {
+    const choice = template.authoredChoices![1][1];
+    expect(choice.intent).toContain('divine authority');
+    expect(choice.intent).toContain('Silt');
+  });
 });
 
 // ─── GraphOps Tests ───────────────────────────────────────────────
