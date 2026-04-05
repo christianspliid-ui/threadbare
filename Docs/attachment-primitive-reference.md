@@ -145,6 +145,28 @@ Good for: consecration rituals (boost divineInfluence), blight spells (increase 
 
 Good for: healing spells (restore essence), psychic attacks (drain quintessence), poison (per-tick essence drain), meditation (per-tick quintessence restore), vampiric effects (drain target, restore self).
 
+### "It changes the world graph"
+**graph_mutation** — creates, destroys, or modifies nodes and edges in the world graph. The most powerful primitive — handles everything from spawning allies to razing settlements.
+- `operation` — what to do: `create_node`, `destroy_node`, `create_edge`, `destroy_edge`, `modify_property`
+- `nodeType` — (for create/destroy node) what kind: `actor`, `location`, `sublocation`, `encounter`, `artifact`, `faction`
+- `edgeType` — (for create/destroy edge) what kind: `possesses`, `located_at`, `allied_with`, `controls`, `trades_with`, `has_trait`, etc.
+- `template` — (for create) template ID to instantiate
+- `target` — what it acts on: `self`, `target`, `hex`, `nearest:{nodeType}`
+- `condition` — (optional) predicate for when it fires
+- `probability` — (optional) chance per trigger (0-1)
+
+Good for:
+- **Kill agent**: destroy_node on self when essence=0 (death by curse/poison)
+- **Summon ally**: create_node actor from template at self hex
+- **Found settlement**: create_node sublocation at hex (founding charter)
+- **Raze structure**: destroy_node location/sublocation on target
+- **Create trade route**: create_edge trades_with between two locations
+- **Break alliance**: destroy_edge allied_with
+- **Spawn encounter**: create_node encounter at hex (cursed artifact attracts trouble)
+- **Corrupt location**: modify_property on location (prosperity, unrest, magicalSaturation)
+- **Claim territory**: create_edge controls between agent and location
+- **Recruit retainer**: create_node actor + create_edge bonded_to
+
 ### "It's slowly changing who you are"
 **axiological_drift** — gradually shifts the agent's value profile and Maslow priorities over time. Unlike behavior_weight (static preference), drift accumulates tick by tick — a slow corruption, enlightenment, or transformation the agent doesn't choose.
 - `dimension` — what shifts: `aggression`, `caution`, `greed`, `compassion`, `curiosity`, `devotion`, `ambition`, `isolation`
