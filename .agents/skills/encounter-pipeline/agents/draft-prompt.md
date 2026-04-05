@@ -68,17 +68,22 @@ Write a complete encounter packet to `Docs/plans/encounters/{{SLUG}}-draft.md` w
 
 10. **Sample Opening Paragraph** — Continuous prose. Must feel like a scene already in motion. Must have cadence, atmosphere, and tension. This is not a summary — it is fiction.
 
-11. **Branch-Dependent Later Paragraph(s)** — If the encounter branches (count 2+), write **one later-paragraph variant per declared branch**. A 2-branch encounter needs 2 variants. A 3-branch encounter needs 3 variants. Every branch must prove itself in scene prose, not just in a label or summary — the editorial reviewer will use these to assess branch seduction, and an unwritten branch cannot be evaluated. If the encounter is linear (branch count 0), write a single later paragraph instead and label it "Linear continuation."
+11. **Approach Cards Per Step** — For EVERY step that presents choices to the player, write authored approach cards. The runtime shows choices at every step, not just the branch-selection step. If you don't author them, the player sees generic god-verbs.
+   - **Step 0 (branch selection):** One card per branch. Each card has: scene-specific label, full prose paragraph (the `intent`), essence cost with narrative justification, narrative risk (the `likelyBurden`), and intervention type (supportive/coercive/withdrawn).
+   - **Step 1+ (branch resolution):** For each branch variant, write 2-3 approach cards describing how the god executes that specific intervention. These are branch-specific — the approach cards for "Break the Bargain" should be different from the approach cards for "Steady the Courier". Each card follows the same format: scene-specific label, prose paragraph, cost, risk, type.
+   - **Linear encounters (branch count 0):** Write 2-3 approach cards for the single resolution step.
 
-12. **Aftermath Paragraph** — Landing prose for how the encounter resolves. Must feel like payoff, not admin.
+12. **Branch-Dependent Later Paragraph(s)** — If the encounter branches (count 2+), write **one later-paragraph variant per declared branch**. A 2-branch encounter needs 2 variants. A 3-branch encounter needs 3 variants. Every branch must prove itself in scene prose, not just in a label or summary — the editorial reviewer will use these to assess branch seduction, and an unwritten branch cannot be evaluated. If the encounter is linear (branch count 0), write a single later paragraph instead and label it "Linear continuation."
 
-13. **Aftermath Reaction Choices** — Only if justified by the encounter. If included, each choice must explain what future thread the player is preserving. If not justified, explicitly say "No reaction choices — consequence is clean."
+13. **Aftermath Paragraph** — Landing prose for how the encounter resolves. Must feel like payoff, not admin.
 
-14. **Aftermath Kit Summary** — Curated visible changes, notable marks/conditions, what the world remembers.
+14. **Aftermath Reaction Choices** — Only if justified by the encounter. If included, each choice must explain what future thread the player is preserving. If not justified, explicitly say "No reaction choices — consequence is clean."
 
-15. **Support Bundle Contract** — Table with: support object, delivery mode (pre-seeded / lazy-materialize-on-trigger / blocked-primitive), source, persistence contract (must-persist / scene-only / blocked-primitive), future references, status.
+15. **Aftermath Kit Summary** — Curated visible changes, notable marks/conditions, what the world remembers.
 
-16. **Self-Audit** — Check your own packet against the encounter-building-checklist Definition of Done. List each item as PASS or FLAG with a note.
+16. **Support Bundle Contract** — Table with: support object, delivery mode (pre-seeded / lazy-materialize-on-trigger / blocked-primitive), source, persistence contract (must-persist / scene-only / blocked-primitive), future references, status.
+
+17. **Self-Audit** — Check your own packet against the encounter-building-checklist Definition of Done. List each item as PASS or FLAG with a note.
 
 ## Quality Standards
 
@@ -93,7 +98,7 @@ Write a complete encounter packet to `Docs/plans/encounters/{{SLUG}}-draft.md` w
 These are not aspirations — they are hard requirements. If your packet fails any of these, revise before submitting.
 
 - **Scene prose must have narrative voice.** The god's perspective should be felt, not stated. If the opening reads like a briefing — "A healer sits outside a gate. Inside, a child is sick." — rewrite it until the player is inside a moment. Cadence, atmosphere, tension. The scene is already in motion.
-- **Approach cards must have prose bodies.** Each choice gets a full paragraph describing what the intervention feels like from the god's perspective. A title + tag word ("supportive") is a menu item, not an approach card. Write the feeling of pulling this thread — what it costs in sensation, not just in numbers.
+- **Approach cards must have prose bodies at EVERY player-facing step.** The runtime presents choices at every step — not just the branch-selection step. If the encounter has a choice step (step 0) and a resolution step (step 1), BOTH steps need authored approach cards. Step 0 cards are the branch choices ("Break the Bargain" / "Steady the Courier"). Step 1 cards are the approach choices within the chosen branch — how the god executes the chosen intervention. These must be branch-specific: a "Break the Bargain" resolution step might offer "Sever it gently" (supportive) vs "Rip the contract apart" (coercive). Without authored cards at the resolution step, the player sees generic god-verbs ("Tip the scales" / "Pour divine power" / "Let it play out") which destroys the authored quality of the encounter.
 - **Costs must be narratively justified.** "Cost: 1 essence" is mechanical. "Barely a breath of essence to steady her" is fiction. Every approach must explain through prose why this thread is cheaper or harder to pull.
 - **Risks must be narrative.** Each approach card must include what might cling, shift, or recoil from the intervention. "Her panic may cling to you afterward as strain" — not just a probability.
 - **Choice labels must be scene-specific.** "Steady the Courier" not "Help them." "Force the Captain" not "Tip the scales." Generic god-verbs are a quality failure.
@@ -118,6 +123,7 @@ Before submitting your packet, answer every question below YES or NO. **If ANY a
 7. Does each approach card include a narrative risk — what might cling, shift, or recoil from this intervention?
 8. Are the choice labels scene-specific rather than generic god-verbs? ("Steady the Courier" not "Help them"; "Force the Captain" not "Tip the scales")
 9. Do the choices feel like graduated options with different intervention philosophies, not a binary help/ignore toggle?
+9b. Does EVERY player-facing step have authored approach cards? The runtime shows choices at every step — if a resolution step after branching has no authored cards, the player sees generic god-verbs ("Tip the scales" / "Pour divine power" / "Let it play out"), destroying the authored quality.
 
 **Aftermath & Consequence**
 10. Does the aftermath have its own prose — a reflective landing that wraps the experience before showing mechanics?

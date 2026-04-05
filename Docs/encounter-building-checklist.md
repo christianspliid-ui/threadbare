@@ -113,6 +113,21 @@ List the required objects explicitly:
 - step 2 usually executes or escalates
 - later steps, if present, resolve price, transformation, or aftermath pressure
 
+### 4-step. Per-Step Approach Cards
+
+**Critical:** The runtime presents player choices at EVERY step of an encounter, not just the branch-selection step. If a step has no `authoredChoices`, the player sees generic god-verbs: "Tip the scales in their favor" / "Pour divine power into the encounter" / "Let it play out." This destroys the authored quality of the encounter.
+
+Every player-facing step must have authored approach cards:
+- **Branch-selection steps (typically step 0):** One card per branch. Label, intent prose, cost, risk, intervention type.
+- **Branch-resolution steps (typically step 1+):** 2-3 approach cards per branch variant, describing how the god executes the chosen intervention. These must be branch-specific — the approach cards inside "Break the Bargain" should be different from those inside "Steady the Courier."
+- **Linear steps:** 2-3 approach cards for each step.
+
+A step without authored approach cards is an incomplete step — same severity as a step without prose.
+
+Hard rule:
+- do not ship an encounter where any player-facing step falls back to generic approach choices
+- the editorial agent will flag generic god-verbs at any step as an automatic REVISE trigger
+
 ### 4a. Presentation Kit
 Decide how the encounter is experienced, not just how it resolves.
 
@@ -517,6 +532,7 @@ Do not call the encounter done until all of these are true:
 - The branching profile is declared.
 - The branching template choice is declared for serious encounters.
 - The prose meets the scene-quality bar instead of only communicating state.
+- Every player-facing step has authored approach cards — no step falls back to generic god-verbs.
 - A distinct editorial review has happened for serious encounters.
 - The outcome ladder is authored with real forward pressure.
 - The aftermath kit is complete for serious encounters.

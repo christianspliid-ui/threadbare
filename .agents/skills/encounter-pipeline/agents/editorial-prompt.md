@@ -167,6 +167,7 @@ The following conditions **MUST** result in a `REVISE BEFORE CONTINUING` verdict
 4. **Missing aftermath reaction choices.** For medium+ scale, if the aftermath has no player-facing consequence choices where the player decides which thread to carry forward, verdict is REVISE.
 5. **Reporter prose.** If the opening paragraph tells the player what happened ("A healer sits outside a gate") rather than placing them inside a moment with cadence, voice, and atmosphere, verdict is REVISE.
 6. **No concept art recommendation.** If the Presentation Kit section doesn't address whether the encounter opening wants concept art at all, verdict is REVISE.
+7. **Missing per-step approach cards.** If any player-facing step beyond the branch-selection step lacks authored approach cards, verdict is REVISE. The runtime presents choices at EVERY step — if a resolution step has no authored cards, the player sees generic god-verbs ("Tip the scales" / "Pour divine power" / "Let it play out"), which destroys the authored quality. Every step in the encounter must have authored approach cards with scene-specific labels, intent prose, and narrative risk.
 
 ## Experience Differentiator Gate
 
