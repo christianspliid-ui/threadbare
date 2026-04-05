@@ -108,6 +108,7 @@ export function phaseIdleSelection(
             SELECTION_CONFIG,
             state.tick,
             rng(),
+            state.effectStates,
           );
 
           const template = getUnifiedTemplateById(result.selected.templateId);

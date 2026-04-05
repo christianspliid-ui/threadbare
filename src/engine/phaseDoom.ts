@@ -19,10 +19,11 @@
 import type { GameState, TickEvent } from '../types/gameState';
 import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { DOOM_PRESSURE_PER_TIER } from '../types/sphereAffinity';
-import { advanceDoomClock, accelerateDoomClock, decelerateDoomClock } from './doomClock';
+import { advanceDoomClock } from './doomClock';
 import { processEffectEvent, applyEffectEventResult } from './effects/effectEvents';
+import { executeEffect } from './effectExecutors';
 import { instantiateReward } from './rewardPool';
-import { getActiveRuleOverride } from './effects/effectQueries';
+import { collectAttachmentEffects } from './effects/effectWalker';
 import { emitTrace } from './traceBuffer';
 import type { TraceEntry } from '../types/trace';
 
@@ -42,22 +43,29 @@ function nextEventId(tick: number): string {
 export function phaseDoom(state: GameState): Partial<GameState> {
   const oldStage = state.doomClock.currentStage;
 
-  // Apply doom_rate_multiplier from modify_rules effects on all agents.
-  // Sum the multiplier overrides and accelerate/decelerate the clock accordingly.
-  // Fail-soft: no agents or no overrides → tickModifier unchanged.
-  const effectStates = state.effectStates;
+  // Apply doom_rate_multiplier from modify_rules effects.
+  // Values are MULTIPLICATIVE: 0.5 halves doom rate, 3.0 triples it.
+  // Only global-scoped effects affect the doom clock (doom is inherently global).
+  // Fail-soft: no matching effects → multiplier = 1.0, tickModifier unchanged.
+  let doomRateMultiplier = 1.0;
   const agents = state.graph.getNodesByType('actor')
     .filter(n => n.properties.actorType === 'individual' || n.properties.actorType === 'ascendant');
-  let doomRateOverride = 0;
   for (const agent of agents) {
-    doomRateOverride += getActiveRuleOverride(state.graph, agent.id, 'doom_rate_multiplier', effectStates);
+    for (const entry of collectAttachmentEffects(state.graph, agent.id, state.effectStates)) {
+      if (entry.runtimeState?.suppressed) continue;
+      if (entry.effect.type !== 'modify_rules') continue;
+      if (entry.effect.rule !== 'doom_rate_multiplier') continue;
+      // Scope guard: only global-scoped effects affect the doom clock
+      if (entry.effect.scope.scope !== 'global') continue;
+      const val = entry.effect.value;
+      if (typeof val === 'number' && val > 0) {
+        doomRateMultiplier *= val;
+      }
+    }
   }
-  let clockForAdvance = state.doomClock;
-  if (doomRateOverride > 0) {
-    clockForAdvance = accelerateDoomClock(state.doomClock, doomRateOverride);
-  } else if (doomRateOverride < 0) {
-    clockForAdvance = decelerateDoomClock(state.doomClock, -doomRateOverride);
-  }
+  const clockForAdvance = doomRateMultiplier !== 1.0
+    ? { ...state.doomClock, tickModifier: state.doomClock.tickModifier * doomRateMultiplier }
+    : state.doomClock;
 
   const newDoom = advanceDoomClock(clockForAdvance);
   const newStage = newDoom.currentStage;
@@ -115,6 +123,17 @@ export function phaseDoom(state: GameState): Partial<GameState> {
       // Execute transform requests from doom_threshold triggers
       for (const req of eventResult.transformRequests) {
         instantiateReward(state.graph, req.intoTemplate, agent.id, state.tick);
+      }
+      // Execute reactive nested effects
+      for (const fired of eventResult.reactivesFired) {
+        const execResult = executeEffect(fired.nestedEffect, {
+          casterId: fired.agentId,
+          tick: state.tick,
+          graph: state.graph,
+        });
+        for (const trace of execResult.traces) {
+          emitTrace(trace as unknown as TraceEntry);
+        }
       }
       for (const trace of eventResult.traces) {
         emitTrace(trace as unknown as TraceEntry);

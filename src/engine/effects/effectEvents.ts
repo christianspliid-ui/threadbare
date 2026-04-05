@@ -81,11 +81,12 @@ export interface EffectEventResult {
   destroyedAttachments: string[];
   /** Transform requests — attachment should be replaced with a new template (Phase 5) */
   transformRequests: Array<{ attachmentId: string; intoTemplate: string }>;
-  /** Reactive effect payloads pending execution (Phase 5 mutation wiring) */
+  /** Reactive effect payloads pending execution — includes full nested effect for orchestrator */
   reactivesFired: Array<{
     attachmentId: string;
     attachmentName: string;
-    nestedEffectType: string;
+    agentId: string;
+    nestedEffect: import('../../types/effects').AttachmentEffect;
   }>;
   /** Trace entries for inspectability */
   traces: EffectTickTrace[];
@@ -248,7 +249,8 @@ export function processEffectEvent(
         reactivesFired.push({
           attachmentId,
           attachmentName,
-          nestedEffectType: effect.effect.type,
+          agentId,
+          nestedEffect: effect.effect,
         });
 
         traces.push({
@@ -256,7 +258,7 @@ export function processEffectEvent(
           tick,
           agentId,
           attachmentId,
-          action: 'stack', // reuse 'stack' action as closest semantic match
+          action: 'reactive',
           details: {
             trigger: event.type,
             reactiveTrigger: effect.trigger,

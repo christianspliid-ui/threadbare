@@ -42,6 +42,7 @@ import { phaseAgentLifecycle } from './agentLifecycle';
 import { emitTrace } from './traceBuffer';
 import { tickEffects } from './effectTick';
 import { processEffectEvent, applyEffectEventResult } from './effects/effectEvents';
+import { executeEffect } from './effectExecutors';
 import type { TraceEntry } from '../types/trace';
 import {
   resolveEncounter,
@@ -324,6 +325,17 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
         // instantiate the new template and attach it to the agent.
         for (const req of eventResult.transformRequests) {
           instantiateReward(state.graph, req.intoTemplate, progress.actorId, state.tick);
+        }
+        // Execute reactive nested effects via the generic dispatcher
+        for (const fired of eventResult.reactivesFired) {
+          const execResult = executeEffect(fired.nestedEffect, {
+            casterId: fired.agentId,
+            tick: state.tick,
+            graph: state.graph,
+          });
+          for (const trace of execResult.traces) {
+            emitTrace(trace as unknown as TraceEntry);
+          }
         }
         for (const trace of eventResult.traces) {
           emitTrace(trace as unknown as TraceEntry);

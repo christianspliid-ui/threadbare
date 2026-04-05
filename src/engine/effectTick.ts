@@ -367,7 +367,12 @@ function tickResourceManipulate(
   if (effect.target !== 'self') return {}; // 'other_agent' targeting not handled per-tick
 
   const current = (agentNode.properties[effect.resource] as number) ?? 0;
-  const next = Math.max(0, current + effect.amount);
+  // Clamp to [0, max]. Quintessence has a max capacity; essence has no defined max.
+  const max = effect.resource === 'quintessence'
+    ? (agentNode.properties.quintessenceMax as number | undefined) ?? 1.0
+    : Infinity;
+  const next = Math.max(0, Math.min(max, current + effect.amount));
+  if (next === current) return {};
 
   agentNode.properties[effect.resource] = next;
 

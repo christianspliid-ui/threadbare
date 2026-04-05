@@ -42,7 +42,7 @@ export {
   getBehaviorWeights,
   computeBehaviorWeightMultiplier,
   getSocialModifiers,
-  computeSocialCoopeartionBias,
+  computeSocialCooperationBias,
   isImmuneToTag,
   getRangeModifiers,
   getActiveRuleOverride,

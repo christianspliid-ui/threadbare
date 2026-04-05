@@ -78,12 +78,16 @@ export function evaluatePredicate(
 
 /**
  * Evaluate an optional condition. Returns true if no condition is specified.
+ * Fail-soft: if a condition exists but no context is available, returns false
+ * (skip the effect rather than crashing on undefined context).
  */
 export function evaluateOptionalCondition(
   condition: EffectPredicate | undefined,
-  ctx: PredicateContext,
+  ctx?: PredicateContext,
 ): boolean {
-  return condition ? evaluatePredicate(condition, ctx) : true;
+  if (!condition) return true;
+  if (!ctx) return false; // fail-soft: can't evaluate condition without context
+  return evaluatePredicate(condition, ctx);
 }
 
 // ═══════════════════════════════════════════════════════════════════

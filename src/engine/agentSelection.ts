@@ -20,6 +20,8 @@ import { getDivineInfluences, buildValueOverlay } from './interventionEffects';
 import type { DivineInfluenceEntry } from '../types/dream';
 import { applyAmbitionBoost, type ActiveAmbitionForScoring } from './ambitionBoost';
 import type { ReachDomain } from '../types/traits';
+import type { EffectRuntimeState } from '../types/effects';
+import { getSocialModifiers, computeSocialCooperationBias } from './effects/effectQueries';
 
 /**
  * Score candidates based on alignment with the actor's axiological profile.
@@ -162,6 +164,7 @@ export function runSelectionPipeline(
   config: SelectionConfig,
   tick: number = 0,
   deterministicRoll?: number,
+  effectStates?: ReadonlyMap<string, EffectRuntimeState>,
 ): SelectionResult {
   const actorNode = graph.getNode(actorId);
   if (!actorNode) throw new Error(`Actor not found: ${actorId}`);
@@ -227,12 +230,20 @@ export function runSelectionPipeline(
       const rawReputation = perceiveReputation(graph, actorId, targetId);
       const targetReputation = (rawReputation + 1) / 2;
 
+      // Compute social bias from social_modifier effects on this actor
+      const socialModifiers = effectStates !== undefined
+        ? getSocialModifiers(graph, actorId, effectStates) : [];
+      // Determine target relationship for social modifier filtering
+      const targetRelationship: 'ally' | 'enemy' | 'any' = 'any'; // TODO: resolve from graph
+      const socialBias = computeSocialCooperationBias(socialModifiers, targetRelationship);
+
       // Apply modifier to these candidates
       const modified = applyDispositionModifier(
         targetCandidates,
         cooperationStrategy,
         history,
-        targetReputation
+        targetReputation,
+        socialBias,
       );
 
       // Replace the candidates in the scored list with modified versions

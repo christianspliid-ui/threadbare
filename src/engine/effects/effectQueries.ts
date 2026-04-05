@@ -235,7 +235,7 @@ export function getSocialModifiers(
  * @param modifiers - pre-fetched from getSocialModifiers
  * @param targetRelationship - how the target relates to the agent
  */
-export function computeSocialCoopeartionBias(
+export function computeSocialCooperationBias(
   modifiers: SocialModifier[],
   targetRelationship: 'ally' | 'enemy' | 'same_faction' | 'different_faction',
 ): number {
