@@ -1492,7 +1492,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   {
     const effectStates = s.effectStates ?? new Map();
     const agents = s.graph.getNodesByType('actor')
-      .filter(n => n.properties.actorType === 'individual');
+      .filter(n => n.properties.actorType === 'individual' || n.properties.actorType === 'ascendant');
     let updatedEffectStates = new Map(effectStates);
     for (const agent of agents) {
       const result = tickEffects(s.graph, agent.id, s.tick, updatedEffectStates);

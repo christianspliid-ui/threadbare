@@ -885,6 +885,104 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       flavorText: 'The liquid is perfectly clear but casts no reflection. Those who drink it see the world peeled back.',
     } as PossessionNodeProperties,
   },
+
+  // ─── Effect Primitive Exercisers (verify all P1 primitives work) ────
+  {
+    id: 'reward_arms_ember_edge',
+    type: 'artifact',
+    name: 'Ember Edge',
+    properties: {
+      subcategory: 'arms',
+      tier: 2,
+      tags: ['#iron', '#weapon', '#melee', '#combat', '#force'],
+      mechanicalSummary: '+0.06 Iron in combat only, fades if unused',
+      lossCondition: 'breakable',
+      flavorText: 'The blade glows faintly at the edge. It cools between fights.',
+      effects: [
+        { type: 'conditional', condition: 'in_combat' as const, reach: 'iron' as const, value: 0.06 },
+      ],
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_relics_talismans_moonstone_pendant',
+    type: 'artifact',
+    name: 'Moonstone Pendant',
+    properties: {
+      subcategory: 'relics_talismans',
+      tier: 2,
+      tags: ['#veil', '#relic', '#magic', '#spirit'],
+      mechanicalSummary: '+0.08 Veil for 3 ticks, then dormant 7 ticks',
+      lossCondition: 'permanent',
+      flavorText: 'It pulses with a rhythm that has nothing to do with your heartbeat.',
+      effects: [
+        { type: 'cooldown', activeTicks: 3, cooldownTicks: 7, reach: 'veil' as const, value: 0.08 },
+      ],
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_arms_veterans_shield',
+    type: 'artifact',
+    name: "Veteran's Shield",
+    properties: {
+      subcategory: 'arms',
+      tier: 2,
+      tags: ['#iron', '#weapon', '#shield', '#combat'],
+      mechanicalSummary: '+0.015 Iron per combat survived, max 4 stacks',
+      lossCondition: 'breakable',
+      flavorText: 'Each dent tells a story. The shield remembers what you survived.',
+      effects: [
+        { type: 'stacking', reach: 'iron' as const, valuePerStack: 0.015, maxStacks: 4, stackOn: 'combat_success' as const, decayPerTick: 0 },
+      ],
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_provisions_battle_salve',
+    type: 'artifact',
+    name: 'Battle Salve',
+    properties: {
+      subcategory: 'provisions',
+      tier: 1,
+      tags: ['#flesh', '#consumable', '#healing', '#life'],
+      mechanicalSummary: '3 charges: +0.10 Flesh per use, destroyed when empty',
+      lossCondition: 'consumable',
+      flavorText: 'Smells of pine tar and something sharper. Three doses, no more.',
+      effects: [
+        { type: 'consumable_charge', charges: 3, onUse: { reach: 'flesh' as const, value: 0.10 }, destroyOnEmpty: true },
+      ],
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_tomes_scrolls_fading_ward',
+    type: 'artifact',
+    name: 'Fading Ward',
+    properties: {
+      subcategory: 'tomes_scrolls',
+      tier: 2,
+      tags: ['#veil', '#scroll', '#magic', '#ward', '#entropy'],
+      mechanicalSummary: '+0.10 Veil decaying 0.01/tick to floor of 0.03',
+      lossCondition: 'stealable',
+      flavorText: 'The ink is already lifting from the page. Use it before the words forget themselves.',
+      effects: [
+        { type: 'decay', reach: 'veil' as const, startValue: 0.10, changePerTick: -0.01, limitValue: 0.03, destroyAtLimit: false },
+      ],
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_arms_double_edged_blade',
+    type: 'artifact',
+    name: 'Double-Edged Blade',
+    properties: {
+      subcategory: 'arms',
+      tier: 3,
+      tags: ['#iron', '#shadow', '#weapon', '#melee', '#combat'],
+      mechanicalSummary: '+0.08 Iron, -0.04 Heart (cuts both ways)',
+      lossCondition: 'breakable',
+      flavorText: 'The grip is wrapped in black leather. It draws blood from the wielder as easily as the target.',
+      effects: [
+        { type: 'tradeoff', bonus: { reach: 'iron' as const, value: 0.08 }, penalty: { reach: 'heart' as const, value: -0.04 } },
+      ],
+    } as PossessionNodeProperties,
+  },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════

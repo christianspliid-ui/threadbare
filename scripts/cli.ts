@@ -48,9 +48,12 @@ import { evaluateBalanceSummary, evaluateAgentJourney, formatEvaluationReport } 
 import { getDefaultBalanceTargets } from '../src/engine/balanceTargets';
 
 import type { GameState, TickEvent } from '../src/types/gameState';
+import type { GraphNode } from '../src/types/graph';
 import { SPHERE_NAMES } from '../src/types/index';
 import { getUnifiedTemplateById, UNIFIED_ACTION_TEMPLATES } from '../src/data/unified-action-templates';
 import { createUnifiedAction } from '../src/engine/unifiedActionLifecycle';
+import { REWARD_POSSESSIONS, REWARD_CONDITIONS, REWARD_BESTOWED_POWERS } from '../src/data/reward-attachment-catalog';
+import { STARTER_POSSESSIONS, STARTER_CONDITIONS } from '../src/data/starter-attachments';
 
 // ─── CLI Argument Parsing ─────────────────────────────────────────
 
@@ -465,6 +468,7 @@ function printHelp(): void {
   console.log(`  ${BOLD}balance recent${RESET} [N] Show last N balance events`);
   console.log(`  ${BOLD}balance agent${RESET} <id> Show agent journey`);
   console.log(`  ${BOLD}spawn encounter${RESET} <agent|@hero> <templateId>  Spawn an encounter on an agent`);
+  console.log(`  ${BOLD}spawn attachment${RESET} <agent|@hero> <templateId> Attach an item/trait to an agent`);
   console.log(`  ${BOLD}seed${RESET}             Print current seed`);
   console.log(`  ${BOLD}eval${RESET} <expr>      Evaluate JS with 'state' in scope`);
   console.log(`  ${BOLD}help${RESET}             This help`);
@@ -472,6 +476,74 @@ function printHelp(): void {
 }
 
 // ─── Spawn Helpers ───────────────────────────────────────────────
+
+const ALL_ATTACHMENT_TEMPLATES: GraphNode[] = [
+  ...REWARD_POSSESSIONS, ...REWARD_CONDITIONS, ...REWARD_BESTOWED_POWERS,
+  ...STARTER_POSSESSIONS, ...STARTER_CONDITIONS,
+];
+
+function handleSpawnAttachment(agentQuery: string, templateQuery: string): void {
+  // Resolve @hero
+  let resolvedQuery = agentQuery;
+  if (agentQuery === '@hero') {
+    const heroNode = state.ascendantId ? state.graph.getNode(state.ascendantId) : undefined;
+    if (!heroNode) {
+      console.log(`${RED}No hero/ascendant found in current game state${RESET}`);
+      return;
+    }
+    resolvedQuery = heroNode.id;
+  }
+
+  // Find agent
+  const agents = state.graph.getNodesByType('actor')
+    .filter(n => n.properties.actorType === 'individual' || n.properties.actorType === 'ascendant');
+  const agent = agents.find(n =>
+    n.id === resolvedQuery || n.id.includes(resolvedQuery) ||
+    (n.name ?? '').toLowerCase().includes(resolvedQuery.toLowerCase()),
+  );
+  if (!agent) {
+    console.log(`${RED}Agent not found: ${agentQuery}${RESET}`);
+    return;
+  }
+
+  // Find attachment template by id or partial name match
+  const template = ALL_ATTACHMENT_TEMPLATES.find(t =>
+    t.id === templateQuery || t.id.includes(templateQuery) ||
+    (t.name ?? '').toLowerCase().includes(templateQuery.toLowerCase()),
+  );
+  if (!template) {
+    console.log(`${RED}Attachment template not found: ${templateQuery}${RESET}`);
+    console.log(`${dim}Available: ${ALL_ATTACHMENT_TEMPLATES.length} templates. Try a partial id or name.${RESET}`);
+    return;
+  }
+
+  // Clone the template node into the graph with a unique id
+  const instanceId = `${template.id}_${Date.now()}`;
+  state.graph.addNode({
+    id: instanceId,
+    type: template.type,
+    name: template.name,
+    properties: { ...template.properties },
+  });
+
+  // Create the appropriate edge (possesses for artifacts, has_trait for traits)
+  const edgeType = template.type === 'artifact' || template.type === 'artifact_legendary'
+    ? 'possesses' : 'has_trait';
+  state.graph.addEdge({
+    id: `edge_${edgeType}_${instanceId}`,
+    source: agent.id,
+    target: instanceId,
+    type: edgeType,
+    properties: {},
+  });
+
+  const hasEffects = Array.isArray(template.properties.effects) && template.properties.effects.length > 0;
+  const effectInfo = hasEffects
+    ? ` (${template.properties.effects.length} effects: ${(template.properties.effects as Array<{type: string}>).map(e => e.type).join(', ')})`
+    : ' (legacy reachBonus)';
+
+  console.log(`${GREEN}✓${RESET} Attached ${BOLD}${template.name}${RESET} to ${agent.name ?? agent.id} via ${edgeType}${effectInfo}`);
+}
 
 function handleSpawnEncounter(agentQuery: string, templateId: string): void {
   // Resolve @hero to the ascendant
@@ -648,8 +720,10 @@ function handleCommand(line: string): boolean {
       const subParts = arg.split(/\s+/);
       if (subParts[0] === 'encounter' && subParts.length >= 3) {
         handleSpawnEncounter(subParts[1], subParts.slice(2).join(' '));
+      } else if (subParts[0] === 'attachment' && subParts.length >= 3) {
+        handleSpawnAttachment(subParts[1], subParts.slice(2).join(' '));
       } else {
-        console.log(`${RED}Usage: spawn encounter <agent|@hero> <templateId>${RESET}`);
+        console.log(`${RED}Usage: spawn encounter|attachment <agent|@hero> <templateId>${RESET}`);
       }
       break;
     }
