@@ -77,7 +77,12 @@
       "WebFetch(domain:stitch.withgoogle.com)",
       "mcp__playwright__browser_snapshot",
       "mcp__playwright__browser_evaluate",
-      "mcp__playwright__browser_run_code"
+      "mcp__playwright__browser_run_code",
+      "Bash(ls src/types/encounter*)",
+      "Bash(grep -v \"^$\")",
+      "Bash(grep -v \"^\\\\[WorldGen\\\\]\\\\|^\\\\[2mBalance\\\\|^$\")",
+      "Bash(grep -n \"kind === ''aftermath''\" /c/Users/chris/Dev/Projects/TheFantasyWorldSimulator/src/components/Game/GameView.tsx)",
+      "Bash(python3 -c:*)"
     ]
   }
 }

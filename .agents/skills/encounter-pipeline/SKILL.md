@@ -1,12 +1,12 @@
 ---
 name: encounter-pipeline
-description: Automated encounter-authoring pipeline. Runs draft -> editorial review -> systems audit -> final merge for high-quality encounter packets. Use when authoring a new encounter, revising an encounter, or running the full pipeline. Triggers on "encounter pipeline", "draft encounter", "run encounter pipeline", "author encounter", or "/encounter-pipeline".
+description: Automated encounter pipeline. Runs draft -> editorial -> systems audit -> final merge -> implementation for complete encounter delivery. Use when authoring a new encounter, revising an encounter, or running the full pipeline. Triggers on "encounter pipeline", "draft encounter", "run encounter pipeline", "author encounter", or "/encounter-pipeline".
 model: opus
 ---
 
 # Encounter Pipeline
 
-Automated 4-pass encounter authoring pipeline that enforces scale discipline, branch-count restraint, editorial review, and systems audit before any encounter reaches implementation.
+Automated 5-pass encounter pipeline that takes an encounter from premise to deployed code: draft → editorial review → systems audit → final merge → implementation. Enforces scale discipline, branch-count restraint, editorial quality gates, systems feasibility, and verified TypeScript implementation.
 
 ## Quality Exemplar
 
@@ -36,7 +36,7 @@ Examples:
 /encounter-pipeline long signature encounter about a contested divine relic emerging from a collapsed shrine
 ```
 
-If the user says only "draft" (e.g., `/encounter-pipeline draft short about X`), run only Pass 1 and stop. Otherwise run all 4 passes.
+If the user says only "draft" (e.g., `/encounter-pipeline draft short about X`), run only Pass 1 and stop. If the user says "design" or "design only", run passes 1-4 (no implementation). Otherwise run all 5 passes — the default is full delivery including implementation.
 
 ## Slug Generation
 
@@ -118,7 +118,7 @@ If editorial verdict is `PASS WITH REVISIONS`:
 ### Pass 3: Systems Audit
 
 **Agent type:** `general-purpose`
-**Model:** `opus` — needs to assess runtime feasibility in the context of prose-rich, strongly-threaded encounter designs
+**Model:** `sonnet` — systems audit is structural/code analysis, not prose judgment; Sonnet is strong at codebase awareness and faster/cheaper at scale
 **Persona:** Systems auditor — runtime-focused, honest about gaps
 **Reads:** `<slug>-revised.md` (the editorially-approved version), `<slug>-editorial.md` (for context on what changed), relevant source files (encounter types, unified action types, game state)
 **Writes:** `Docs/plans/encounters/<slug>-systems.md`
@@ -161,6 +161,37 @@ Read `<slug>-revised.md`, `<slug>-editorial.md`, and `<slug>-systems.md`. Then:
   - Systems verdict and file list
   - Any caveats or backlog items
 
+### Pass 5: Implementation
+
+**Agent type:** `general-purpose`
+**Model:** `sonnet` — implementation is code translation, not creative writing; the prose is already authored and editorially reviewed. Sonnet is fast, accurate at TypeScript, and cost-efficient for high-volume encounter production.
+**Persona:** Implementation engineer — faithful translator of design into code
+**Reads:** `<slug>-final.md`, canonical examples (`src/data/encounters/flawed-steel.ts`, `src/data/encounters/rival-shrine-betrayal.ts`), type definitions (`src/types/unifiedAction.ts`)
+**Creates:** `src/data/encounters/<slug>.ts`, `src/data/encounters/__tests__/<slug>.test.ts`
+**Modifies:** `src/data/unified-action-templates.ts` (import + array entry)
+
+Dispatch this as a sub-agent with the prompt from `agents/implementation-prompt.md`, injecting the slug.
+
+**Only run this pass when:**
+- The final merge (Pass 4) produced a status of `READY FOR IMPLEMENTATION` or `READY WITH CAVEATS`
+- The user has NOT specified "design only" or "design"
+
+**Do NOT run this pass when:**
+- Systems verdict was `BLOCKED`
+- Editorial verdict was `REVISE BEFORE CONTINUING`
+- The user explicitly requested design-only output
+
+The implementation agent must:
+1. Create the encounter template file with all prose copied verbatim from the design doc
+2. Register it in the unified action template array
+3. Write structural tests
+4. Run verification: `npx tsc --noEmit`, `npm test`, `npx vite build`
+5. Fix any issues and re-verify
+
+**Prose fidelity rule:** The implementation agent copies prose from the design document verbatim. It does not rewrite, summarize, or "improve" authored prose. The prose was the most expensive part of the pipeline (Opus draft + Opus editorial). Sonnet's job is to wrap it in correct TypeScript, not to touch it.
+
+**Verification gate:** The encounter is not implemented until all three checks pass (type check, tests, build). If any fail, the implementation agent must fix the issue and re-run. The orchestrator should report failures to the user if the agent cannot self-correct.
+
 ## Re-running Individual Passes
 
 The user can re-run a single pass:
@@ -168,6 +199,7 @@ The user can re-run a single pass:
 - `/encounter-pipeline editorial <slug>` — re-run only editorial (reads existing draft), then re-run revision consolidation to produce updated revised file
 - `/encounter-pipeline systems <slug>` — re-run only systems audit (reads existing revised file; errors if no revised file exists — run editorial first)
 - `/encounter-pipeline merge <slug>` — re-run only the merge (reads revised + editorial + systems files)
+- `/encounter-pipeline implement <slug>` — re-run only implementation (reads existing final file; errors if no final file exists or if status is BLOCKED)
 
 ## Scale Enforcement
 
@@ -218,17 +250,37 @@ If Obsidian MCP is unavailable, the draft agent should note which pages it would
 ```
 encounter-building-checklist.md ──┐
 encounter-branching-templates.md ──┤
-Obsidian inspiration library ──────┤──→ Pass 1 (Draft) ──→ <slug>-draft.md
-User premise + scale ──────────────┘                              │
-                                                                   ├──→ Pass 2 (Editorial) ──→ <slug>-editorial.md
-encounter-branching-templates.md ──────────────────────────────────┘            │
-                                                                                │
-<slug>-draft.md + <slug>-editorial.md ─────────────────────────────────────────→ Pass 2b (Revision Consolidation) ──→ <slug>-revised.md
-                                                                                                                            │
-<slug>-revised.md ─────────────────────────────────────────────────────────────────────────────────────────────────────────→ Pass 3 (Systems) ──→ <slug>-systems.md
-src/types/encounter.ts ────────────────────────────────────────────────────────────────────────────────────────────────────┘            │
-src/types/unifiedAction.ts ────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-src/engine/encounter.ts ───────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-                                                                                                                                        │
-<slug>-revised.md + <slug>-editorial.md + <slug>-systems.md ──────────────────────────────────────────────────────────────────────────→ Pass 4 (Merge) ──→ <slug>-final.md
+Obsidian inspiration library ──────┤──→ Pass 1 (Draft, Opus) ──→ <slug>-draft.md
+User premise + scale ──────────────┘                                    │
+                                                                         ├──→ Pass 2 (Editorial, Opus) ──→ <slug>-editorial.md
+encounter-branching-templates.md ────────────────────────────────────────┘            │
+                                                                                      │
+<slug>-draft.md + <slug>-editorial.md ───────────────────────────────────────────────→ Pass 2b (Revision, Orchestrator) ──→ <slug>-revised.md
+                                                                                                                                  │
+<slug>-revised.md ───────────────────────────────────────────────────────────────────────────────────────────────────────────────→ Pass 3 (Systems, Sonnet) ──→ <slug>-systems.md
+src/types/unifiedAction.ts ──────────────────────────────────────────────────────────────────────────────────────────────────────┘            │
+src/engine/ ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                                                                                                              │
+<slug>-revised.md + <slug>-editorial.md + <slug>-systems.md ────────────────────────────────────────────────────────────────────────────────→ Pass 4 (Merge, Orchestrator) ──→ <slug>-final.md
+                                                                                                                                                                                    │
+<slug>-final.md ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────→ Pass 5 (Implementation, Sonnet)
+src/data/encounters/flawed-steel.ts (pattern) ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘    │
+src/types/unifiedAction.ts ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                                                                                                                                                          │
+                                                                                                                                              Creates: src/data/encounters/<slug>.ts
+                                                                                                                                              Creates: src/data/encounters/__tests__/<slug>.test.ts
+                                                                                                                                              Modifies: src/data/unified-action-templates.ts
 ```
+
+## Model Assignment Rationale
+
+| Pass | Model | Why |
+|------|-------|-----|
+| Pass 1: Draft | **Opus** | Prose quality is the primary output. Smaller models produce structurally valid but experientially flat encounters. |
+| Pass 2: Editorial | **Opus** | Must catch prose weakness and enforce the Experience Differentiator Gate. A smaller model may rubber-stamp flat prose. |
+| Pass 2b: Revision | Orchestrator | Mechanical text surgery — no model dispatch needed. |
+| Pass 3: Systems | **Sonnet** | Structural/code analysis, not prose judgment. Sonnet is strong at codebase awareness and 20% cheaper/faster. |
+| Pass 4: Merge | Orchestrator | Assembly — no model dispatch needed. |
+| Pass 5: Implementation | **Sonnet** | Code translation of already-authored prose into TypeScript. Fast, accurate, cost-efficient for high-volume production. |
+
+This split puts Opus where creative judgment matters (draft + editorial) and Sonnet where code/systems analysis matters (systems audit + implementation). For a full pipeline run, 2 of 3 agent dispatches use the cheaper model.

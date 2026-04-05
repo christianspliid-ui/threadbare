@@ -1,0 +1,14 @@
+{
+  "eval_id": 2,
+  "eval_name": "single-hex-clip",
+  "prompt": "I have an image at Design/hex-crops-v2/ocean.png that's a flat-top hexagonal tile (120x104px). I need to cut it into a clean hexagon shape with transparency outside the hex. The image has a ~4px black border I want to exclude. Save it as ocean_clipped.png and show me it's correct.",
+  "assertions": [
+    {"text": "Output file ocean_clipped.png exists", "type": "programmatic"},
+    {"text": "Output has RGBA mode with alpha channel", "type": "programmatic"},
+    {"text": "Corner pixels are fully transparent", "type": "programmatic"},
+    {"text": "Center pixel is fully opaque", "type": "programmatic"},
+    {"text": "No black border remnants (no dark pixels in edge region with alpha > 200)", "type": "programmatic"},
+    {"text": "Transparency ratio between 35-50%", "type": "programmatic"},
+    {"text": "Validation results are shown/reported to user", "type": "qualitative"}
+  ]
+}

@@ -1,0 +1,38 @@
+<h2>Divine Premonition System — Approaches</h2>
+<p class="subtitle">How should Whisper and Compulsion integrate into the tick loop and UI?</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Hook into existing phase pipeline</h3>
+      <p><strong>Whisper</strong> fires as a new sub-phase after idle detection in <code>phaseAgentDecision</code>. <strong>Compulsion</strong> fires between scoring and commitment — a pause point injected into the existing decision flow.</p>
+      <p style="margin-top:8px;opacity:0.7">Pros: Tight integration, no new orchestrator phases. Scoring data already in scope for Compulsion.</p>
+      <p style="opacity:0.7">Cons: Makes phaseAgentDecision more complex. Both types coupled to one phase.</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Dedicated orchestrator phase + scoring hook (Recommended)</h3>
+      <p>New <code>phaseDivinePremonition</code> runs before <code>phaseAgentDecision</code>. Checks idle agents for Whisper eligibility, emits premonition events. Compulsion hooks narrowly into <code>phaseAgentDecision</code> between score and commit.</p>
+      <p style="margin-top:8px;opacity:0.7">Pros: Clean separation. Whisper is self-contained. Compulsion stays close to scoring data. Easy to test independently.</p>
+      <p style="opacity:0.7">Cons: Two integration points. Minimal tick overhead.</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Event-driven with notification queue</h3>
+      <p>Both types emit events into a <code>premonitionQueue</code> on GameState. UI reads the queue and pops modals. No new phase — piggybacks on existing hooks.</p>
+      <p style="margin-top:8px;opacity:0.7">Pros: Decoupled. Easy to add new premonition types later.</p>
+      <p style="opacity:0.7">Cons: Queue management adds state. Risk of stale events if agent state changes between emit and display.</p>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:24px;padding:16px;border-left:3px solid rgba(255,255,255,0.2);opacity:0.85">
+  <p><strong>Recommendation: B</strong> — Whisper is narratively and mechanically distinct enough for its own phase. Clean boundaries, testable, extensible for future premonition types.</p>
+</div>

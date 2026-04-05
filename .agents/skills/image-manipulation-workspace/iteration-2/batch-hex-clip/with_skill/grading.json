@@ -1,0 +1,54 @@
+{
+  "eval_name": "batch-hex-clip",
+  "variant": "with_skill",
+  "expectations": [
+    {
+      "text": "Output files exist for all 51 source PNGs",
+      "passed": true,
+      "evidence": "Found 51 PNG files in output directory"
+    },
+    {
+      "text": "All output files have RGBA mode (alpha channel present)",
+      "passed": true,
+      "evidence": "All 51 files in RGBA mode"
+    },
+    {
+      "text": "All corner pixels are fully transparent (alpha=0)",
+      "passed": true,
+      "evidence": "51/51 files have transparent corners"
+    },
+    {
+      "text": "All center pixels are fully opaque (alpha=255)",
+      "passed": true,
+      "evidence": "51/51 files have opaque centers"
+    },
+    {
+      "text": "Transparency ratio is between 35-50% for all files",
+      "passed": true,
+      "evidence": "51/51 in range. Min=35.0%, Max=35.0%, Mean=35.0%"
+    },
+    {
+      "text": "No pure white (#ffffff) artifacts in edge regions",
+      "passed": false,
+      "evidence": "50/51 files clean. Worst: 28 white pixels"
+    },
+    {
+      "text": "Edges are anti-aliased (some semi-transparent pixels exist)",
+      "passed": true,
+      "evidence": "51/51 files have anti-aliased edges"
+    },
+    {
+      "text": "Hex orientation is flat-top (rotation=30), not pointy-top",
+      "passed": false,
+      "evidence": "0/51 files detected as flat-top"
+    },
+    {
+      "text": "No black border remnants (< 10 dark edge pixels per file)",
+      "passed": false,
+      "evidence": "0/51 files clean. Worst: 137 dark pixels"
+    }
+  ],
+  "pass_rate": 0.6666666666666666,
+  "passed": 6,
+  "total": 9
+}

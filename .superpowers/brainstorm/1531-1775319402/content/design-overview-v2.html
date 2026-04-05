@@ -1,0 +1,192 @@
+<h2>Coat of Arms & Icon System — Design Overview</h2>
+<p class="subtitle">Pre-baked Threadbare-style image library for factions, spheres, and reaches</p>
+
+<!-- Asset Categories -->
+<div class="section">
+  <h3>Three Asset Categories</h3>
+  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-top:12px;">
+
+    <!-- Coat of Arms -->
+    <div style="background:#1a1a2e; border:1px solid #2a2a4a; border-radius:8px; padding:20px; text-align:center;">
+      <svg width="80" height="96" viewBox="0 0 80 96">
+        <path d="M5,5 L75,5 L75,60 Q75,90 40,93 Q5,90 5,60 Z" fill="#8B0000" stroke="#D4A574" stroke-width="2"/>
+        <path d="M5,48 L75,48 L75,60 Q75,90 40,93 Q5,90 5,60 Z" fill="#1a3a5c"/>
+        <text x="40" y="42" text-anchor="middle" fill="#D4A574" font-size="24">&#9876;</text>
+      </svg>
+      <h3 style="margin-top:12px; color:#D4A574;">Coat of Arms</h3>
+      <p style="color:#8a8a9a; font-size:13px;">~25 shield images</p>
+      <div style="margin-top:8px; font-size:12px; color:#6a6a7a;">
+        Tagged by:<br/>
+        <span style="color:#e53e3e;">faction type</span> +
+        <span style="color:#805ad5;">sphere</span>
+      </div>
+    </div>
+
+    <!-- Sphere Icons -->
+    <div style="background:#1a1a2e; border:1px solid #2a2a4a; border-radius:8px; padding:20px; text-align:center;">
+      <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:4px; width:fit-content; margin:0 auto;">
+        <!-- Foundation row -->
+        <div style="width:32px;height:32px;border-radius:50%;background:radial-gradient(circle,#d4d4d8 30%,#6a6a6e);border:1px solid #d4d4d8;display:flex;align-items:center;justify-content:center;font-size:11px;color:#0a0a12;" title="Chaos">&#10043;</div>
+        <div style="width:32px;height:32px;border-radius:50%;background:radial-gradient(circle,#fbbf24 30%,#8a6a10);border:1px solid #fbbf24;display:flex;align-items:center;justify-content:center;font-size:11px;color:#0a0a12;" title="Order">&#9672;</div>
+        <div style="width:32px;height:32px;border-radius:50%;background:radial-gradient(circle,#fef3c7 30%,#b8a860);border:1px solid #fef3c7;display:flex;align-items:center;justify-content:center;font-size:11px;color:#0a0a12;" title="Light">&#9788;</div>
+        <div style="width:32px;height:32px;border-radius:50%;background:radial-gradient(circle,#8b7fbf 30%,#4a3a6a);border:1px solid #8b7fbf;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fef3c7;" title="Darkness">&#10687;</div>
+        <!-- Creation row 1 -->
+        <div style="width:32px;height:32px;border-radius:50%;background:radial-gradient(circle,#ff6b6b 30%,#8B2020);border:1px solid #ff6b6b;" title="Force"></div>
+        <div style="width:32px;height:32px;border-radius:50%;background:radial-gradient(circle,#d4a87a 30%,#7a5a30);border:1px solid #d4a87a;" title="Matter"></div>
+        <div style="width:32px;height:32px;border-radius:50%;background:radial-gradient(circle,#ffe44d 30%,#8a7a10);border:1px solid #ffe44d;" title="Energy"></div>
+        <div style="width:32px;height:32px;border-radius:50%;background:radial-gradient(circle,#33ff77 30%,#1a7a3a);border:1px solid #33ff77;" title="Life"></div>
+        <!-- Creation row 2 -->
+        <div style="width:32px;height:32px;border-radius:50%;background:radial-gradient(circle,#44aaff 30%,#1a4a7a);border:1px solid #44aaff;" title="Mind"></div>
+        <div style="width:32px;height:32px;border-radius:50%;background:radial-gradient(circle,#cc66ff 30%,#6a2a8a);border:1px solid #cc66ff;" title="Spirit"></div>
+        <div style="width:32px;height:32px;border-radius:50%;background:radial-gradient(circle,#ffb355 30%,#8a5a10);border:1px solid #ffb355;" title="Time"></div>
+        <div style="width:32px;height:32px;border-radius:50%;background:radial-gradient(circle,#8fd4c0 30%,#3a6a5a);border:1px solid #8fd4c0;" title="Entropy"></div>
+      </div>
+      <h3 style="margin-top:12px; color:#D4A574;">Sphere Icons</h3>
+      <p style="color:#8a8a9a; font-size:13px;">12 icons (4 foundation + 8 creation)</p>
+      <div style="margin-top:8px; font-size:11px; line-height:1.6;">
+        <span style="color:#d4d4d8;">Chaos</span> ·
+        <span style="color:#fbbf24;">Order</span> ·
+        <span style="color:#fef3c7;">Light</span> ·
+        <span style="color:#8b7fbf;">Darkness</span><br/>
+        <span style="color:#ff6b6b;">Force</span> ·
+        <span style="color:#d4a87a;">Matter</span> ·
+        <span style="color:#ffe44d;">Energy</span> ·
+        <span style="color:#33ff77;">Life</span><br/>
+        <span style="color:#44aaff;">Mind</span> ·
+        <span style="color:#cc66ff;">Spirit</span> ·
+        <span style="color:#ffb355;">Time</span> ·
+        <span style="color:#8fd4c0;">Entropy</span>
+      </div>
+    </div>
+
+    <!-- Reach Icons -->
+    <div style="background:#1a1a2e; border:1px solid #2a2a4a; border-radius:8px; padding:20px; text-align:center;">
+      <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:4px; width:fit-content; margin:0 auto;">
+        <div style="width:32px;height:32px;border-radius:4px;background:linear-gradient(135deg,#ff6b6b,#8B2020);border:1px solid #ff6b6b;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;" title="Iron">&#9876;</div>
+        <div style="width:32px;height:32px;border-radius:4px;background:linear-gradient(135deg,#d4a87a,#7a5a30);border:1px solid #d4a87a;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;" title="Stone">&#11043;</div>
+        <div style="width:32px;height:32px;border-radius:4px;background:linear-gradient(135deg,#ffe44d,#8a7a10);border:1px solid #ffe44d;display:flex;align-items:center;justify-content:center;font-size:13px;color:#0a0a12;" title="Eye">&#9673;</div>
+        <div style="width:32px;height:32px;border-radius:4px;background:linear-gradient(135deg,#33ff77,#1a7a3a);border:1px solid #33ff77;display:flex;align-items:center;justify-content:center;font-size:13px;color:#0a0a12;" title="Gold">&#10050;</div>
+        <div style="width:32px;height:32px;border-radius:4px;background:linear-gradient(135deg,#44aaff,#1a4a7a);border:1px solid #44aaff;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;" title="Veil">&#10022;</div>
+        <div style="width:32px;height:32px;border-radius:4px;background:linear-gradient(135deg,#cc66ff,#6a2a8a);border:1px solid #cc66ff;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;" title="Heart">&#9829;</div>
+        <div style="width:32px;height:32px;border-radius:4px;background:linear-gradient(135deg,#ffb355,#8a5a10);border:1px solid #ffb355;display:flex;align-items:center;justify-content:center;font-size:13px;color:#0a0a12;" title="Star">&#9733;</div>
+        <div style="width:32px;height:32px;border-radius:4px;background:linear-gradient(135deg,#8fd4c0,#3a6a5a);border:1px solid #8fd4c0;display:flex;align-items:center;justify-content:center;font-size:13px;color:#0a0a12;" title="Shadow">&#9670;</div>
+      </div>
+      <h3 style="margin-top:12px; color:#D4A574;">Reach Icons</h3>
+      <p style="color:#8a8a9a; font-size:13px;">8 icons — each in its canonical color</p>
+      <div style="margin-top:8px; font-size:11px; line-height:1.6;">
+        <span style="color:#ff6b6b;">Iron</span> ·
+        <span style="color:#d4a87a;">Stone</span> ·
+        <span style="color:#ffe44d;">Eye</span> ·
+        <span style="color:#33ff77;">Gold</span><br/>
+        <span style="color:#44aaff;">Veil</span> ·
+        <span style="color:#cc66ff;">Heart</span> ·
+        <span style="color:#ffb355;">Star</span> ·
+        <span style="color:#8fd4c0;">Shadow</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Color Consistency Note -->
+<div class="section" style="margin-top:16px; background:#1a1a2e; border:1px solid #2a2a4a; border-radius:8px; padding:16px;">
+  <h3 style="color:#D4A574; font-size:13px;">Cosmology Color Consistency</h3>
+  <p style="color:#8a8a9a; font-size:12px; margin-top:6px;">
+    Each sphere–reach pair shares its canonical color. The coat of arms for a faction draws its palette from its dominant sphere's quadrant:
+  </p>
+  <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:8px; margin-top:10px;">
+    <div style="background:#0a0a12; padding:8px; border-radius:6px; border-left:3px solid #d4d4d8; font-size:11px;">
+      <div style="color:#d4d4d8; font-weight:bold;">Chaos</div>
+      <div style="color:#ff6b6b;">Force/Iron</div>
+      <div style="color:#8fd4c0;">Entropy/Shadow</div>
+    </div>
+    <div style="background:#0a0a12; padding:8px; border-radius:6px; border-left:3px solid #fef3c7; font-size:11px;">
+      <div style="color:#fef3c7; font-weight:bold;">Light</div>
+      <div style="color:#d4a87a;">Matter/Stone</div>
+      <div style="color:#ffe44d;">Energy/Eye</div>
+    </div>
+    <div style="background:#0a0a12; padding:8px; border-radius:6px; border-left:3px solid #fbbf24; font-size:11px;">
+      <div style="color:#fbbf24; font-weight:bold;">Order</div>
+      <div style="color:#33ff77;">Life/Gold</div>
+      <div style="color:#44aaff;">Mind/Veil</div>
+    </div>
+    <div style="background:#0a0a12; padding:8px; border-radius:6px; border-left:3px solid #8b7fbf; font-size:11px;">
+      <div style="color:#8b7fbf; font-weight:bold;">Darkness</div>
+      <div style="color:#cc66ff;">Spirit/Heart</div>
+      <div style="color:#ffb355;">Time/Star</div>
+    </div>
+  </div>
+</div>
+
+<!-- Architecture -->
+<div class="section" style="margin-top:24px;">
+  <h3>File Structure & Assignment</h3>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:12px;">
+    <div style="background:#1a1a2e; border:1px solid #2a2a4a; border-radius:8px; padding:20px;">
+      <div style="font-family:monospace; font-size:13px; color:#c0c0d0; line-height:1.8;">
+        <div style="color:#D4A574; font-weight:bold;">public/game-icons/</div>
+        <div style="padding-left:20px;">
+          <div style="color:#6a8aaa;">coats-of-arms/</div>
+          <div style="padding-left:20px; color:#8a8a9a; font-size:12px;">
+            military-force-01.png<br/>
+            guild-matter-01.png<br/>
+            religious-spirit-01.png<br/>
+            ... (~25 images)
+          </div>
+          <div style="color:#6a8aaa;">spheres/</div>
+          <div style="padding-left:20px; color:#8a8a9a; font-size:12px;">
+            force.png ... entropy.png<br/>
+            chaos.png ... darkness.png (12)
+          </div>
+          <div style="color:#6a8aaa;">reaches/</div>
+          <div style="padding-left:20px; color:#8a8a9a; font-size:12px;">
+            iron.png ... star.png (8)
+          </div>
+          <div style="color:#D4A574;">manifest.json</div>
+        </div>
+      </div>
+    </div>
+    <div style="background:#1a1a2e; border:1px solid #2a2a4a; border-radius:8px; padding:20px;">
+      <h4 style="color:#D4A574; margin-bottom:10px; font-size:13px;">Coat of Arms Assignment</h4>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div style="background:#e53e3e; color:#fff; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0;">1</div>
+          <div style="color:#8a8a9a; font-size:12px;">Filter pool by <strong style="color:#e53e3e;">faction type</strong></div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div style="background:#805ad5; color:#fff; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0;">2</div>
+          <div style="color:#8a8a9a; font-size:12px;">Sort by <strong style="color:#805ad5;">sphere match</strong></div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div style="background:#D4A574; color:#0a0a12; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0;">3</div>
+          <div style="color:#8a8a9a; font-size:12px;">Seeded <strong style="color:#D4A574;">PRNG pick</strong> from top matches</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div style="background:#48bb78; color:#0a0a12; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0;">4</div>
+          <div style="color:#8a8a9a; font-size:12px;">Store image path on <strong style="color:#48bb78;">faction node</strong></div>
+        </div>
+      </div>
+      <p style="color:#6a6a7a; font-size:11px; margin-top:10px;">
+        Deterministic: same seed = same assignment. Pool exhaustion falls back to untagged.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Total -->
+<div class="section" style="margin-top:24px; background:#1a1a2e; border:1px solid #2a2a4a; border-radius:8px; padding:20px;">
+  <h3 style="color:#D4A574;">Total: ~45 images, one Threadbare-style generation session</h3>
+  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-top:12px;">
+    <div style="text-align:center;">
+      <div style="font-size:28px; color:#e53e3e; font-weight:bold;">~25</div>
+      <div style="color:#8a8a9a; font-size:12px;">Coat of Arms shields</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="font-size:28px; color:#805ad5; font-weight:bold;">12</div>
+      <div style="color:#8a8a9a; font-size:12px;">Sphere icons</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="font-size:28px; color:#D4A574; font-weight:bold;">8</div>
+      <div style="color:#8a8a9a; font-size:12px;">Reach icons</div>
+    </div>
+  </div>
+</div>

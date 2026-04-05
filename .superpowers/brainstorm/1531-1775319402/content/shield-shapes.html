@@ -1,0 +1,85 @@
+<h2>Shield Shape & Composition</h2>
+<p class="subtitle">What elements should a coat of arms include? Pick the complexity level that fits.</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Shield Only</h3>
+      <p>A single shield with field divisions, tinctures, and a central charge (animal/symbol). Clean and scalable — works at small hex-map sizes and large UI panels alike.</p>
+      <div style="margin-top:12px; padding:16px; background:#1a1a2e; border-radius:8px; text-align:center;">
+        <svg width="120" height="140" viewBox="0 0 120 140">
+          <!-- Shield shape -->
+          <path d="M10,10 L110,10 L110,90 Q110,130 60,135 Q10,130 10,90 Z" fill="#8B0000" stroke="#D4A574" stroke-width="2"/>
+          <!-- Horizontal division -->
+          <path d="M10,70 L110,70 L110,90 Q110,130 60,135 Q10,130 10,90 Z" fill="#1a3a5c"/>
+          <!-- Central charge (lion rampant silhouette) -->
+          <g transform="translate(60,72) scale(0.35)" fill="#D4A574" opacity="0.9">
+            <path d="M0,-80 C-20,-75 -35,-55 -30,-35 C-40,-25 -45,-10 -40,5 C-50,15 -45,35 -30,40 L-35,70 L-15,60 L0,75 L15,60 L35,70 L30,40 C45,35 50,15 40,5 C45,-10 40,-25 30,-35 C35,-55 20,-75 0,-80Z"/>
+          </g>
+        </svg>
+        <div style="color:#8a8a9a; font-size:12px; margin-top:8px;">Shield + division + charge</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Shield + Supporters</h3>
+      <p>Shield with flanking creatures/figures and a motto scroll beneath. More ornate — great for UI panels, may need simplified version for hex map.</p>
+      <div style="margin-top:12px; padding:16px; background:#1a1a2e; border-radius:8px; text-align:center;">
+        <svg width="200" height="160" viewBox="0 0 200 160">
+          <!-- Left supporter (simplified creature) -->
+          <ellipse cx="35" cy="80" rx="20" ry="40" fill="#D4A574" opacity="0.3" stroke="#D4A574" stroke-width="1"/>
+          <text x="35" y="85" text-anchor="middle" fill="#D4A574" font-size="24">🦁</text>
+          <!-- Shield -->
+          <path d="M70,15 L130,15 L130,85 Q130,120 100,125 Q70,120 70,85 Z" fill="#1a3a5c" stroke="#D4A574" stroke-width="2"/>
+          <path d="M70,15 L130,15 L130,55 L70,55 Z" fill="#8B0000"/>
+          <text x="100" y="90" text-anchor="middle" fill="#D4A574" font-size="20">⚔</text>
+          <!-- Right supporter -->
+          <ellipse cx="165" cy="80" rx="20" ry="40" fill="#D4A574" opacity="0.3" stroke="#D4A574" stroke-width="1"/>
+          <text x="165" y="85" text-anchor="middle" fill="#D4A574" font-size="24">🦅</text>
+          <!-- Motto scroll -->
+          <path d="M50,135 Q100,145 150,135" fill="none" stroke="#D4A574" stroke-width="1.5"/>
+          <text x="100" y="152" text-anchor="middle" fill="#8a8a9a" font-size="10" font-style="italic">Per Aspera Ad Astra</text>
+        </svg>
+        <div style="color:#8a8a9a; font-size:12px; margin-top:8px;">Shield + supporters + motto</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Full Achievement</h3>
+      <p>Complete heraldic achievement: shield, helm/crown, mantling, supporters, motto, and compartment. Maximum visual impact for UI — hex map would use shield-only extract.</p>
+      <div style="margin-top:12px; padding:16px; background:#1a1a2e; border-radius:8px; text-align:center;">
+        <svg width="200" height="180" viewBox="0 0 200 180">
+          <!-- Crown/helm -->
+          <path d="M75,20 L125,20 L130,35 L70,35 Z" fill="#D4A574" stroke="#8a8a9a" stroke-width="1"/>
+          <circle cx="100" cy="15" r="8" fill="#D4A574" stroke="#8a8a9a" stroke-width="1"/>
+          <!-- Mantling -->
+          <path d="M70,35 Q40,50 35,80 Q45,70 55,75" fill="none" stroke="#8B0000" stroke-width="2" opacity="0.5"/>
+          <path d="M130,35 Q160,50 165,80 Q155,70 145,75" fill="none" stroke="#8B0000" stroke-width="2" opacity="0.5"/>
+          <!-- Supporters -->
+          <text x="30" y="105" text-anchor="middle" fill="#D4A574" font-size="28">🐉</text>
+          <text x="170" y="105" text-anchor="middle" fill="#D4A574" font-size="28">🦅</text>
+          <!-- Shield -->
+          <path d="M65,40 L135,40 L135,105 Q135,135 100,140 Q65,135 65,105 Z" fill="#1a3a5c" stroke="#D4A574" stroke-width="2"/>
+          <!-- Quartered -->
+          <line x1="100" y1="40" x2="100" y2="140" stroke="#D4A574" stroke-width="1" opacity="0.5"/>
+          <line x1="65" y1="85" x2="135" y2="85" stroke="#D4A574" stroke-width="1" opacity="0.5"/>
+          <text x="82" y="70" text-anchor="middle" fill="#D4A574" font-size="16">⚔</text>
+          <text x="118" y="70" text-anchor="middle" fill="#8B0000" font-size="16">🏰</text>
+          <text x="82" y="115" text-anchor="middle" fill="#8B0000" font-size="16">🌙</text>
+          <text x="118" y="115" text-anchor="middle" fill="#D4A574" font-size="16">🦁</text>
+          <!-- Motto -->
+          <path d="M40,155 Q100,168 160,155" fill="none" stroke="#D4A574" stroke-width="1.5"/>
+          <text x="100" y="172" text-anchor="middle" fill="#8a8a9a" font-size="10" font-style="italic">Virtus et Honor</text>
+        </svg>
+        <div style="color:#8a8a9a; font-size:12px; margin-top:8px;">Full achievement — crown, mantling, supporters, quartered shield, motto</div>
+      </div>
+    </div>
+  </div>
+</div>
