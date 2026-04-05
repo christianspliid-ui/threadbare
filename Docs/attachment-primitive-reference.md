@@ -86,6 +86,31 @@ Types: `src/types/effects.ts` | Constants: `src/data/effect-constants.ts` | Caps
 - `value` — bonus while active
 - `destroyOnEvent` — destroy attachment when event fires?
 
+### "It changes what the agent wants to do"
+**behavior_weight** — modifies action selection scores in the Maslow pipeline. Makes the agent more or less likely to choose certain encounter types or action categories. Doesn't prevent anything — just shifts preference.
+- `encounterType` — (optional) which encounter types to weight: `explore`, `acquire`, `create`, `hire`, `duel`, `steal`, `trade`, `assist`, `build`, `lead`
+- `reach` — (optional) which reach-category actions to weight
+- `weight` — multiplier on selection score (>1 = prefer, <1 = avoid, 0 = never choose voluntarily)
+
+Good for: personality traits (Cowardly avoids duel, Greedy prefers trade/acquire), cultural traits (Scholarly prefers explore), conditions (Wounded avoids combat).
+
+### "It changes how others see you"
+**social_modifier** — modifies how other agents interact with this agent. Affects encounter initiation, disposition, and faction standing.
+- `dimension` — what it affects: `intimidation`, `trust`, `attraction`, `avoidance`, `faction_standing`
+- `value` — strength of the effect (positive or negative)
+- `target` — who it affects: `all`, `allies`, `enemies`, `faction:{id}`, `same_hex`
+- `condition` — (optional) predicate for when it's active
+
+Good for: reputation traits (Feared → intimidation, Beloved → trust), scars (Disfigured → avoidance), titles (Guild Master → faction_standing).
+
+### "It prevents or unlocks specific actions"
+**action_gate** — hard gate on action types. Blocks or unlocks actions regardless of capability score.
+- `actionPattern` — what to gate: action ID, reach category, encounter type, or tag pattern
+- `gate` — `block` (cannot attempt) or `unlock` (can attempt, was previously unavailable)
+- `condition` — (optional) predicate for when the gate is active
+
+Good for: trait restrictions (Pacifist blocks Iron duel actions), equipment prerequisites (Ritual Tome unlocks veil rituals), conditions (Blinded blocks Eye actions), destiny traits (Prophesied unlocks a specific quest action).
+
 ### "It's just a flat bonus" (use sparingly — prefer something with texture)
 **passive** — always-on, unconditional. Best used as one layer in a multi-effect composition, not as the sole effect.
 - `reach` — which domain
