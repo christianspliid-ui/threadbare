@@ -137,6 +137,7 @@ import { recordBalanceEvent } from './balanceTelemetry';
 import { checkMidEncounterPromotion, isNotableEntry } from './attentionTier';
 import type { EncounterPromotionTrace, DigestEntry } from '../types/attention';
 import { appendDigestEntry } from './digestBuffer';
+import { phaseAttention } from './phaseAttention';
 
 // ─── Legacy Decision Cache (backward-compat shim for tests) ───────
 //
@@ -1643,6 +1644,12 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   };
   phaseEventCounts['encounter_visibility'] = encVisResult.notifications.length;
   prevEventCount = s.tickEvents.length;
+
+  // Phase 2a.65: Attention Pool — regen pool, expire tugs, generate new tugs for shaping encounters
+  {
+    const attentionRng = mulberry32(state.seed + state.tick * 71);
+    s = { ...s, ...phaseAttention(s, UNIFIED_ACTION_TEMPLATES, attentionRng) };
+  }
 
   // Phase 2a.8: Evaluate encounter seeds planted by aftermath reactions
   {
