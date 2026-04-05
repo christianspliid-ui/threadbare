@@ -6,10 +6,25 @@ Types: `src/types/effects.ts` | Constants: `src/data/effect-constants.ts` | Caps
 
 ---
 
+## Usage Tags
+
+Each primitive is tagged with which game components can use it. Tags are suggestions, not hard limits — a legendary artifact could use any primitive.
+
+| Tag | Meaning |
+|-----|---------|
+| `#item` | Possessions — arms, vestments, tomes, tools, relics, mounts, provisions |
+| `#trait` | Actor traits — innate, mastery, reputation, scar, cultural, destiny |
+| `#condition` | Temporary states — wounds, diseases, blessings, curses |
+| `#power` | Bestowed powers — spells, divine gifts, supernatural abilities |
+| `#agreement` | Pacts, debts, favors, oaths, bargains |
+| `#divine` | God/Ascendant actions — interventions, edicts, cosmic effects |
+
+---
+
 ## Story Pattern → Primitive
 
 ### "It gets stronger the more you use it"
-**stacking** — bonus accumulates each time a trigger fires, up to a cap. Optionally decays when idle.
+**stacking** `#item` `#trait` `#power` — bonus accumulates each time a trigger fires, up to a cap. Optionally decays when idle.
 - `reach` — which domain benefits
 - `valuePerStack` — how much each stack adds
 - `maxStacks` — ceiling (2-10)
@@ -17,7 +32,7 @@ Types: `src/types/effects.ts` | Constants: `src/data/effect-constants.ts` | Caps
 - `decayPerTick` — (optional) stacks lost per idle tick
 
 ### "It fades over time"
-**decay** — starts at a high value and shrinks each tick toward a floor. Can self-destruct at the limit.
+**decay** `#item` `#condition` `#power` — starts at a high value and shrinks each tick toward a floor. Can self-destruct at the limit.
 - `reach` — which domain
 - `startValue` — initial strength
 - `changePerTick` — how much it loses per tick (negative number)
@@ -25,69 +40,69 @@ Types: `src/types/effects.ts` | Constants: `src/data/effect-constants.ts` | Caps
 - `destroyAtLimit` — destroy the attachment when floor is reached?
 
 ### "It only works in certain situations"
-**conditional** — bonus is active only when a predicate is true, otherwise completely inert.
+**conditional** `#item` `#trait` `#condition` `#power` `#agreement` — bonus is active only when a predicate is true, otherwise completely inert.
 - `condition` — when it activates (see predicate list below)
 - `reach` — which domain benefits
 - `value` — how much
 
 ### "It's powerful but needs to recharge"
-**cooldown** — cycles between active and dormant phases automatically.
+**cooldown** `#item` `#power` — cycles between active and dormant phases automatically.
 - `activeTicks` — how long it's on
 - `cooldownTicks` — how long it rests
 - `reach` — which domain
 - `value` — bonus while active
 
 ### "It has limited uses, then it's gone"
-**consumable_charge** — N uses. Each use fires an effect and burns a charge. Optionally destroys itself when empty.
+**consumable_charge** `#item` `#power` — N uses. Each use fires an effect and burns a charge. Optionally destroys itself when empty.
 - `charges` — how many uses
 - `onUse` — what fires per charge: `{ reach, value }`
 - `destroyOnEmpty` — remove attachment at 0 charges?
 
 ### "It gives you something but costs you something else"
-**tradeoff** — permanent tension: one reach boosted, another penalized. Always on.
+**tradeoff** `#item` `#trait` `#power` `#agreement` — permanent tension: one reach boosted, another penalized. Always on.
 - `bonus` — `{ reach, value }` — the upside
 - `penalty` — `{ reach, value }` — the cost
 
 ### "It saves you when things go wrong"
-**test_shaper** — after a roll resolves, nudge the outcome. Turn a near-miss into a success, reroll, or swap which reach was tested.
+**test_shaper** `#item` `#power` `#trait` — after a roll resolves, nudge the outcome. Turn a near-miss into a success, reroll, or swap which reach was tested.
 - `reach` — which domain this applies to
 - `condition` — (optional) situational gate
 - `trigger` — when it fires: `near_miss` (close failure), `failure`, `success` (upgrade to crit), `any`
 - `maxMargin` — how close the roll must be to qualify
 - `steps` — how many bands to shift the outcome
 
-**prevent_loss** — absorb a loss event before it lands. Can consume self.
+**prevent_loss** `#item` `#power` — absorb a loss event before it lands. Can consume self.
 - `channel` — what it protects: `quintessence`, `condition`
 - `amount` — how much it absorbs
 - `consumeOnPrevent` — destroy after saving you?
 
 ### "It changes into something else"
-**transform** — on trigger, the attachment replaces itself with a different template. Wounds become scars, dormant blades awaken, pacts come due.
+**transform** `#item` `#condition` `#agreement` — on trigger, the attachment replaces itself with a different template. Wounds become scars, dormant blades awaken, pacts come due.
 - `trigger` — what causes it: `enter_combat`, `leave_combat`, `take_damage`, `rest`, `encounter_complete`, `faction_change`, `dawn_cycle`, `doom_threshold`
 - `probability` — chance of transformation (0-1)
 - `intoTemplate` — ID of the replacement attachment
 - `narrativeTemplate` — prose shown when it happens (supports `{name}` substitution)
 
 ### "It reacts when something happens to you"
-**reactive** — fires a nested effect when a trigger occurs. The nested effect can be any other primitive (duration buff, condition, etc.).
+**reactive** `#item` `#trait` `#power` `#condition` — fires a nested effect when a trigger occurs. The nested effect can be any other primitive (duration buff, condition, etc.).
 - `trigger` — what event: `attacked`, `damaged`, `healed`, `cursed`, `blessed`, `entered_hex`, `encounter_started`, `ally_damaged`
 - `effect` — any other primitive to fire (typically a short `duration` buff)
 - `cooldown` — (optional) minimum ticks between firings
 - `duration` — (optional) how long the nested effect lasts
 
 ### "It grants a capability, not a number"
-**trait_grant** — while attached, the agent has a named trait. Useful for prerequisite gating and qualitative capabilities.
+**trait_grant** `#item` `#power` `#agreement` — while attached, the agent has a named trait. Useful for prerequisite gating and qualitative capabilities.
 - `grantedTrait` — trait identifier to grant
 
 ### "It lasts until something specific happens"
-**until_event** — bonus persists indefinitely until a game event fires, then expires or self-destructs.
+**until_event** `#condition` `#power` `#agreement` — bonus persists indefinitely until a game event fires, then expires or self-destructs.
 - `event` — what ends it: `enter_combat`, `leave_combat`, `take_damage`, `rest`, `encounter_complete`, `faction_change`, `dawn_cycle`, `doom_threshold`
 - `reach` — which domain
 - `value` — bonus while active
 - `destroyOnEvent` — destroy attachment when event fires?
 
 ### "It changes what the agent wants to do"
-**behavior_weight** — modifies action selection scores in the Maslow pipeline. Makes the agent more or less likely to choose certain encounter types or action categories. Doesn't prevent anything — just shifts preference.
+**behavior_weight** `#trait` `#condition` `#power` — modifies action selection scores in the Maslow pipeline. Makes the agent more or less likely to choose certain encounter types or action categories. Doesn't prevent anything — just shifts preference.
 - `encounterType` — (optional) which encounter types to weight: `explore`, `acquire`, `create`, `hire`, `duel`, `steal`, `trade`, `assist`, `build`, `lead`
 - `reach` — (optional) which reach-category actions to weight
 - `weight` — multiplier on selection score (>1 = prefer, <1 = avoid, 0 = never choose voluntarily)
@@ -95,7 +110,7 @@ Types: `src/types/effects.ts` | Constants: `src/data/effect-constants.ts` | Caps
 Good for: personality traits (Cowardly avoids duel, Greedy prefers trade/acquire), cultural traits (Scholarly prefers explore), conditions (Wounded avoids combat).
 
 ### "It changes how others see you"
-**social_modifier** — modifies how other agents interact with this agent. Affects encounter initiation, disposition, and faction standing.
+**social_modifier** `#trait` `#condition` `#power` — modifies how other agents interact with this agent. Affects encounter initiation, disposition, and faction standing.
 - `dimension` — what it affects: `intimidation`, `trust`, `attraction`, `avoidance`, `faction_standing`
 - `value` — strength of the effect (positive or negative)
 - `target` — who it affects: `all`, `allies`, `enemies`, `faction:{id}`, `same_hex`
@@ -104,7 +119,7 @@ Good for: personality traits (Cowardly avoids duel, Greedy prefers trade/acquire
 Good for: reputation traits (Feared → intimidation, Beloved → trust), scars (Disfigured → avoidance), titles (Guild Master → faction_standing).
 
 ### "It prevents or unlocks specific actions"
-**action_gate** — hard gate on action types. Blocks or unlocks actions regardless of capability score.
+**action_gate** `#trait` `#condition` `#item` — hard gate on action types. Blocks or unlocks actions regardless of capability score.
 - `actionPattern` — what to gate: action ID, reach category, encounter type, or tag pattern
 - `gate` — `block` (cannot attempt) or `unlock` (can attempt, was previously unavailable)
 - `condition` — (optional) predicate for when the gate is active
@@ -112,7 +127,7 @@ Good for: reputation traits (Feared → intimidation, Beloved → trust), scars 
 Good for: trait restrictions (Pacifist blocks Iron duel actions), equipment prerequisites (Ritual Tome unlocks veil rituals), conditions (Blinded blocks Eye actions), destiny traits (Prophesied unlocks a specific quest action).
 
 ### "It removes a curse, disease, or binding"
-**dispel** — removes active conditions, attachments, or effects matching specific tags or tiers. The "cure" and "contract-breaker" primitive.
+**dispel** `#power` `#divine` — removes active conditions, attachments, or effects matching specific tags or tiers. The "cure" and "contract-breaker" primitive.
 - `target` — what to remove: `condition`, `attachment`, `spell`, `aura`
 - `tags` — (optional) only remove things with these tags (e.g., `["#disease", "#poison"]` or `["#dark", "#binding"]`)
 - `tierMax` — (optional) can only dispel effects up to this tier
@@ -120,14 +135,14 @@ Good for: trait restrictions (Pacifist blocks Iron duel actions), equipment prer
 Good for: healing spells (cleanse #disease/#poison), exorcism (dispel #curse), contract-breaking rituals (break #binding agreements), purification (remove all #corruption conditions).
 
 ### "It makes you immune to certain effects"
-**tag_immunity** — while active, the agent cannot receive conditions or effects with specified tags. Incoming effects that match are simply blocked.
+**tag_immunity** `#item` `#power` `#condition` — while active, the agent cannot receive conditions or effects with specified tags. Incoming effects that match are simply blocked.
 - `immuneTo` — tag patterns that are blocked: `["#poison"]`, `["#fire", "#heat"]`, `["#curse"]`
 - `condition` — (optional) predicate for when immunity is active
 
 Good for: magical wards (#fire immunity), blessed states (#curse immunity), antidotes (#poison immunity), divine protection (#dark immunity). Combine with `duration` or `cooldown` for temporary wards.
 
 ### "It affects the land, not the person"
-**hex_effect** — applies a lingering effect to a hex tile's state (divineInfluence, corruption, magicalSaturation) rather than to an agent. The terrain itself is changed.
+**hex_effect** `#power` `#divine` `#item` — applies a lingering effect to a hex tile's state (divineInfluence, corruption, magicalSaturation) rather than to an agent. The terrain itself is changed.
 - `property` — which hex state: `divineInfluence`, `corruption`, `magicalSaturation`
 - `value` — how much to apply (positive or negative)
 - `radius` — how many hexes from the source (0 = single hex)
@@ -136,7 +151,7 @@ Good for: magical wards (#fire immunity), blessed states (#curse immunity), anti
 Good for: consecration rituals (boost divineInfluence), blight spells (increase corruption), ley line tapping (boost magicalSaturation), purification (reduce corruption), warding a territory.
 
 ### "It drains or restores life force directly"
-**resource_manipulate** — directly modifies an agent's essence (health) or quintessence (sanity/mana) pools, bypassing normal resolution.
+**resource_manipulate** `#power` `#condition` `#divine` — directly modifies an agent's essence (health) or quintessence (sanity/mana) pools, bypassing normal resolution.
 - `resource` — which pool: `essence`, `quintessence`
 - `value` — amount to add (positive = restore, negative = drain)
 - `target` — who: `self`, `other_agent`, `all_on_hex`
@@ -146,7 +161,7 @@ Good for: consecration rituals (boost divineInfluence), blight spells (increase 
 Good for: healing spells (restore essence), psychic attacks (drain quintessence), poison (per-tick essence drain), meditation (per-tick quintessence restore), vampiric effects (drain target, restore self).
 
 ### "It changes the world graph"
-**graph_mutation** — creates, destroys, or modifies nodes and edges in the world graph. The most powerful primitive — handles everything from spawning allies to razing settlements.
+**graph_mutation** `#power` `#divine` `#item` `#agreement` — creates, destroys, or modifies nodes and edges in the world graph. The most powerful primitive — handles everything from spawning allies to razing settlements.
 - `operation` — what to do: `create_node`, `destroy_node`, `create_edge`, `destroy_edge`, `modify_property`
 - `nodeType` — (for create/destroy node) what kind: `actor`, `location`, `sublocation`, `encounter`, `artifact`, `faction`
 - `edgeType` — (for create/destroy edge) what kind: `possesses`, `located_at`, `allied_with`, `controls`, `trades_with`, `has_trait`, etc.
@@ -168,7 +183,7 @@ Good for:
 - **Recruit retainer**: create_node actor + create_edge bonded_to
 
 ### "It rewrites the rules"
-**modify_rules** — temporarily changes how game systems work within a scope. The world itself behaves differently.
+**modify_rules** `#divine` `#power` — temporarily changes how game systems work within a scope. The world itself behaves differently.
 - `rule` — which system to override: `encounter_reach_override`, `movement_cost_multiplier`, `death_prevented`, `healing_multiplier`, `spawn_rate_multiplier`, `awareness_range_bonus`, `tier_advancement_cost_multiplier`, `faction_influence_multiplier`, `cooldown_multiplier`, `backlash_severity_multiplier`, `doom_rate_multiplier`, `reward_tier_bonus`, `encounter_difficulty_modifier`
 - `value` — the override value (multiplier or additive depending on rule)
 - `scope` — where it applies: `self`, `hex`, `radius:{N}`, `region`, `faction`, `global`
@@ -177,7 +192,7 @@ Good for:
 Good for: divine edicts (halve doom rate globally), cursed ground (double encounter difficulty on hex), blessed territory (healing multiplier in region), time distortion (cooldown multiplier for faction), divine protection (death_prevented on self).
 
 ### "It forces someone's hand"
-**compel** — overrides another agent's decision-making. Bypasses Maslow pipeline for the compelled behavior.
+**compel** `#power` `#divine` — overrides another agent's decision-making. Bypasses Maslow pipeline for the compelled behavior.
 - `override` — what to force: `movement_target`, `faction_loyalty`, `avoid_hex`, `attack_target`, `protect_target`, `flee`, `maslow_weight`
 - `target` — who is compelled: `other_agent`, `all_on_hex`, `faction:{id}`
 - `value` — target location/agent/hex for directional overrides, or weight multiplier for maslow_weight
@@ -187,7 +202,7 @@ Good for: divine edicts (halve doom rate globally), cursed ground (double encoun
 Good for: mind control spells (attack_target), divine commands (movement_target), terror effects (flee), loyalty curses (faction_loyalty), obsession (maslow_weight override to fixate on one need).
 
 ### "It reshapes faction politics"
-**faction_manipulate** — directly modifies faction relationships and structure. Political magic.
+**faction_manipulate** `#power` `#divine` `#agreement` — directly modifies faction relationships and structure. Political magic.
 - `action` — what to do: `shift_relationship`, `transfer_control`, `splinter`, `absorb`, `declare_war`, `force_peace`
 - `factionA` — first faction (ID or `self_faction`)
 - `factionB` — (optional) second faction for relationship actions
@@ -197,7 +212,7 @@ Good for: mind control spells (attack_target), divine commands (movement_target)
 Good for: divine diplomacy (force_peace between warring factions), corruption (shift_relationship to hostile), conquest spells (transfer_control of a settlement), schism curses (splinter a faction), imperial magic (absorb a weaker faction).
 
 ### "It triggers a chain reaction"
-**cascade** — fires a sequence of other effects in order. The output of one can feed the next. Enables complex multi-step abilities from a single attachment.
+**cascade** `#power` `#divine` `#item` — fires a sequence of other effects in order. The output of one can feed the next. Enables complex multi-step abilities from a single attachment.
 - `steps` — ordered array of other primitives to fire in sequence
 - `delay` — (optional) ticks between steps (0 = all at once)
 - `condition` — (optional) predicate to gate the entire cascade
@@ -206,7 +221,7 @@ Good for: divine diplomacy (force_peace between warring factions), corruption (s
 Good for: ritual sequences (drain quintessence → spawn creature → create binding edge), curse chains (inflict condition → decay stats → transform on death), divine interventions (modify rules → compel agent → cascade aftermath), combo items (buff self → debuff enemy → spawn encounter).
 
 ### "It's slowly changing who you are"
-**axiological_drift** — gradually shifts the agent's value profile and Maslow priorities over time. Unlike behavior_weight (static preference), drift accumulates tick by tick — a slow corruption, enlightenment, or transformation the agent doesn't choose.
+**axiological_drift** `#trait` `#condition` `#item` — gradually shifts the agent's value profile and Maslow priorities over time. Unlike behavior_weight (static preference), drift accumulates tick by tick — a slow corruption, enlightenment, or transformation the agent doesn't choose.
 - `dimension` — what shifts: `aggression`, `caution`, `greed`, `compassion`, `curiosity`, `devotion`, `ambition`, `isolation`
 - `rate` — how much per tick (small numbers — this is a slow burn)
 - `cap` — maximum drift before it plateaus
@@ -215,7 +230,7 @@ Good for: ritual sequences (drain quintessence → spawn creature → create bin
 Good for: cursed items that corrupt the wielder, divine blessings that slowly shift alignment, prolonged exposure effects (living in darkness → more Shadow-oriented), addiction mechanics.
 
 ### "It changes how far you can reach"
-**range_modifier** — adjusts movement cost or awareness range.
+**range_modifier** `#item` `#trait` `#condition` — adjusts movement cost or awareness range.
 - `dimension` — what changes: `movement_cost`, `awareness_range`
 - `value` — modifier amount (movement: multiplier where <1 = faster, >1 = slower; awareness: additive hex count)
 - `condition` — (optional) predicate for when it's active
@@ -224,7 +239,7 @@ Good for: cursed items that corrupt the wielder, divine blessings that slowly sh
 Good for: mounts (reduce movement cost), wounds (increase movement cost), magical senses (expand awareness), blindness conditions (reduce awareness), terrain-specialist traits (Mountain Goat reduces mountain cost).
 
 ### "It's just a flat bonus" (use sparingly — prefer something with texture)
-**passive** — always-on, unconditional. Best used as one layer in a multi-effect composition, not as the sole effect.
+**passive** `#item` `#trait` `#condition` `#power` `#agreement` — always-on, unconditional. Best used as one layer in a multi-effect composition, not as the sole effect.
 - `reach` — which domain
 - `value` — how much
 
