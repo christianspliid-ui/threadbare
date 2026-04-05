@@ -141,6 +141,19 @@ If any verification step fails, read the error, fix the code, and re-run. Do not
 
 6. **Choice IDs are kebab-to-snake.** Design doc labels like "Break the Bargain" become `break_the_bargain`.
 
+## Concept Art Generation
+
+If the design document includes a **Concept Art Direction** section (subject, palette, mood, composition), you MUST generate the encounter's opening art before declaring implementation complete.
+
+1. Use the `generate_image` tool with the concept art direction from the design doc
+2. Use `16:9` aspect ratio, `quality` preset, and a filename matching the encounter slug
+3. Copy the generated image to `public/concept-art/encounters/<slug>.jpg`
+4. The template's `illustrationUrl` should already reference `/concept-art/encounters/<slug>.jpg`
+
+If the design doc says "no concept art" or omits the section entirely, skip this step.
+
+**This is not optional.** The Presentation Kit section of the encounter building checklist requires a concept art decision. If the design doc specifies art direction, the image must ship with the encounter.
+
 ## What You Must NOT Do
 
 - Do not rewrite prose. Copy it faithfully.
