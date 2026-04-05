@@ -163,6 +163,31 @@ export const THREAT_BADGE_COLORS: Record<string, string> = {
   trivial: '#4ade80', easy: '#60a5fa', moderate: '#fbbf24', hard: '#f87171', deadly: '#d946ef',
 };
 
+export const POSSESSION_SUBCATEGORY_COLORS: Record<string, string> = {
+  arms:              '#b91c1c', // red — Iron
+  mounts_beasts:     '#166534', // green — Flesh/Life
+  vestments:         '#1e3a8a', // blue — Heart
+  tomes_scrolls:     '#581c87', // purple — Veil
+  relics_talismans:  '#7c2d12', // orange — Star
+  tools_instruments: '#57534e', // stone — Stone
+  provisions:        '#92400e', // amber — Gold
+};
+
+export const LOSS_CONDITION_COLORS: Record<string, string> = {
+  consumable: '#92400e', // amber
+  breakable:  '#b91c1c', // red
+  stealable:  '#134e4a', // teal
+  cursed:     '#581c87', // purple
+  permanent:  '#166534', // green
+};
+
+export const ATTACHMENT_SUBCATEGORY_COLORS: Record<string, string> = {
+  condition: '#6b21a8',  // purple
+  blessing:  '#166534',  // green
+  curse:     '#991b1b',  // red
+  bestowed:  '#4338ca',  // indigo
+};
+
 export const ENCOUNTER_TYPE_COLORS: Record<string, string> = {
   explore: '#60a5fa', acquire: '#fbbf24', create: '#4ade80', hire: '#a78bfa',
   duel: '#f87171', steal: '#f59e0b', trade: '#34d399', assist: '#818cf8',
@@ -1491,7 +1516,7 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
   {
     id: 'attachment-tier-constants',
     label: 'Attachment Tier Constants',
-    category: 'Configuration',
+    category: 'Attachments',
     description: 'Tier advancement costs, durations, and scaling factors.',
     data: constants(
       ['MAX_ATTACHMENT_TIER', attachmentTier.MAX_ATTACHMENT_TIER, 'Maximum attachment tier level'],
@@ -1520,71 +1545,93 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
   {
     id: 'reward-bestowed-powers',
     label: 'Bestowed Powers',
-    category: 'Configuration',
-    description: 'Available bestowed power rewards for agents.',
+    category: 'Attachments',
+    description: 'Available bestowed power rewards for agents — divine gifts and supernatural abilities.',
     data: REWARD_BESTOWED_POWERS,
     viewer: 'table',
     columns: [
       { key: 'id', label: 'ID' },
-      { key: 'properties.label', label: 'Label' },
+      { key: 'name', label: 'Name' },
+      { key: 'properties.tier', label: 'Tier', render: 'number' },
+      { key: 'properties.description', label: 'Description' },
+      { key: 'properties.visibility', label: 'Visibility', render: 'badge' },
+      { key: 'properties.tags', label: 'Tags', render: 'tags' },
     ],
-    searchFields: ['id'],
+    searchFields: ['id', 'name', 'properties.description'],
     sourceFile: 'src/data/reward-attachment-catalog.ts',
   },
   {
     id: 'reward-conditions',
     label: 'Reward Conditions',
-    category: 'Configuration',
-    description: 'Available condition rewards for agents.',
+    category: 'Attachments',
+    description: 'Available condition rewards for agents — wounds, diseases, blessings, and curses.',
     data: REWARD_CONDITIONS,
     viewer: 'table',
     columns: [
       { key: 'id', label: 'ID' },
-      { key: 'properties.label', label: 'Label' },
+      { key: 'name', label: 'Name' },
+      { key: 'properties.subcategory', label: 'Type', render: 'badge', badgeColors: ATTACHMENT_SUBCATEGORY_COLORS },
+      { key: 'properties.tier', label: 'Tier', render: 'number' },
+      { key: 'properties.description', label: 'Description' },
+      { key: 'properties.tags', label: 'Tags', render: 'tags' },
     ],
-    searchFields: ['id'],
+    searchFields: ['id', 'name', 'properties.description'],
     sourceFile: 'src/data/reward-attachment-catalog.ts',
   },
   {
     id: 'reward-possessions',
     label: 'Reward Possessions',
-    category: 'Configuration',
-    description: 'Available possession rewards for agents.',
+    category: 'Attachments',
+    description: 'Available possession rewards for agents — weapons, armor, relics, and gear.',
     data: REWARD_POSSESSIONS,
     viewer: 'table',
     columns: [
       { key: 'id', label: 'ID' },
-      { key: 'properties.label', label: 'Label' },
+      { key: 'name', label: 'Name' },
+      { key: 'properties.subcategory', label: 'Subcategory', render: 'badge', badgeColors: POSSESSION_SUBCATEGORY_COLORS },
+      { key: 'properties.tier', label: 'Tier', render: 'number' },
+      { key: 'properties.mechanicalSummary', label: 'Effect' },
+      { key: 'properties.lossCondition', label: 'Loss', render: 'badge', badgeColors: LOSS_CONDITION_COLORS },
+      { key: 'properties.tags', label: 'Tags', render: 'tags' },
     ],
-    searchFields: ['id'],
+    searchFields: ['id', 'name', 'properties.mechanicalSummary'],
     sourceFile: 'src/data/reward-attachment-catalog.ts',
   },
   {
     id: 'starter-possessions',
     label: 'Starter Possessions',
-    category: 'Configuration',
+    category: 'Attachments',
     description: 'Initial possessions available for agent starting equipment.',
     data: STARTER_POSSESSIONS,
     viewer: 'table',
     columns: [
       { key: 'id', label: 'ID' },
-      { key: 'properties.label', label: 'Label' },
+      { key: 'name', label: 'Name' },
+      { key: 'properties.subcategory', label: 'Subcategory', render: 'badge', badgeColors: POSSESSION_SUBCATEGORY_COLORS },
+      { key: 'properties.tier', label: 'Tier', render: 'number' },
+      { key: 'properties.mechanicalSummary', label: 'Effect' },
+      { key: 'properties.lossCondition', label: 'Loss', render: 'badge', badgeColors: LOSS_CONDITION_COLORS },
+      { key: 'properties.tags', label: 'Tags', render: 'tags' },
     ],
-    searchFields: ['id'],
+    searchFields: ['id', 'name', 'properties.mechanicalSummary'],
     sourceFile: 'src/data/starter-attachments.ts',
   },
   {
     id: 'starter-conditions',
     label: 'Starter Conditions',
-    category: 'Configuration',
+    category: 'Attachments',
     description: 'Initial conditions available for agent starting state.',
     data: STARTER_CONDITIONS,
     viewer: 'table',
     columns: [
       { key: 'id', label: 'ID' },
-      { key: 'properties.label', label: 'Label' },
+      { key: 'name', label: 'Name' },
+      { key: 'properties.subcategory', label: 'Type', render: 'badge', badgeColors: ATTACHMENT_SUBCATEGORY_COLORS },
+      { key: 'properties.tier', label: 'Tier', render: 'number' },
+      { key: 'properties.description', label: 'Description' },
+      { key: 'properties.tags', label: 'Tags', render: 'tags' },
     ],
-    searchFields: ['id'],
+    searchFields: ['id', 'name', 'properties.description'],
     sourceFile: 'src/data/starter-attachments.ts',
   },
 
