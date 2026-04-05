@@ -48,6 +48,7 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'duel',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     steps: [
       {
@@ -98,6 +99,7 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'duel',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     steps: [
       {
@@ -152,6 +154,7 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'duel',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['courage_prudence', 'honesty_cunning'],
     steps: [
       {
@@ -202,6 +205,7 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'steal',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['honesty_cunning', 'courage_prudence'],
     steps: [
       {
@@ -256,6 +260,7 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'duel',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['mercy_ruthlessness', 'courage_prudence'],
     steps: [
       {
@@ -306,6 +311,7 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'duel',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['courage_prudence', 'loyalty_ambition'],
     steps: [
       {
@@ -360,6 +366,7 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'steal',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['honesty_cunning', 'asceticism_extravagance'],
     steps: [
       {
@@ -418,6 +425,7 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'duel',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     steps: [
       {
@@ -468,6 +476,7 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'duel',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     steps: [
       {
@@ -523,6 +532,7 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'duel',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     steps: [
       {
@@ -573,6 +583,7 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'shadow',
     encounterType: 'duel',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     steps: [
       {
@@ -628,6 +639,7 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'explore',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['courage_prudence', 'revelation_discretion'],
     steps: [
       {
@@ -682,6 +694,7 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'duel',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     steps: [
       {
@@ -736,6 +749,7 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'duel',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     steps: [
       {
@@ -790,6 +804,7 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'shadow',
     encounterType: 'duel',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['courage_prudence', 'honesty_cunning'],
     steps: [
       {
@@ -845,6 +860,7 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'veil',
     encounterType: 'duel',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['courage_prudence', 'mercy_ruthlessness'],
     sphereAffinity: 'entropy',
     steps: [
@@ -900,6 +916,7 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'veil',
     encounterType: 'explore',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['revelation_discretion', 'courage_prudence'],
     sphereAffinity: 'spirit',
     steps: [
@@ -951,6 +968,7 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'duel',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     steps: [
       {
@@ -1001,6 +1019,7 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'duel',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['courage_prudence', 'sacrifice_survival'],
     sphereAffinity: 'entropy',
     steps: [
@@ -1057,6 +1076,7 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'duel',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['courage_prudence', 'loyalty_ambition'],
     steps: [
       {

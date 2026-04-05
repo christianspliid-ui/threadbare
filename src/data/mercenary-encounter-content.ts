@@ -77,6 +77,7 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'lead',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     questPriority: 3.0,
   },
@@ -124,6 +125,7 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'trade',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
     questPriority: 3.0,
   },
@@ -171,6 +173,7 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'shadow',
     encounterType: 'duel',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     questPriority: 3.0,
   },
@@ -205,6 +208,7 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'stone',
     encounterType: 'build',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.build,
     questPriority: 3.0,
   },
@@ -241,6 +245,7 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'lead',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
     questPriority: 4.0,
   },
@@ -275,6 +280,7 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'lead',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
     questPriority: 4.0,
   },
@@ -321,6 +327,7 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'lead',
     threatRating: 'deadly',
+    intrinsicTier: 'story_beat',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
     questPriority: 5.0,
   },
@@ -361,6 +368,7 @@ export const MERCENARY_SOCIAL_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'duel',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
   },
 
@@ -390,6 +398,7 @@ export const MERCENARY_SOCIAL_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'assist',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.assist,
   },
 
@@ -425,6 +434,7 @@ export const MERCENARY_SOCIAL_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'trade',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
   },
 ];
@@ -451,6 +461,7 @@ export const MC_JOIN_TEMPLATE: EncounterTemplate = {
   reachSecondary: 'heart',
   encounterType: 'duel',
   threatRating: 'easy',
+  intrinsicTier: 'background',
   motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
 };
 
@@ -474,6 +485,7 @@ export const MC_PROMOTION_TEMPLATE: EncounterTemplate = {
   reachSecondary: 'heart',
   encounterType: 'duel',
   threatRating: 'moderate',
+  intrinsicTier: 'shaping',
   motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
 };
 

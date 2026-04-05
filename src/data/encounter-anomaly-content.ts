@@ -42,6 +42,7 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'stone',
     encounterType: 'explore',
     threatRating: 'easy',
+    intrinsicTier: 'shaping',
     motivations: ['asceticism_extravagance', 'loyalty_ambition'],
     sphereAffinity: 'matter',
     steps: [
@@ -93,6 +94,7 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'veil',
     encounterType: 'explore',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ['courage_prudence', 'loyalty_ambition'],
     sphereAffinity: 'energy',
     steps: [
@@ -160,6 +162,7 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'explore',
     threatRating: 'easy',
+    intrinsicTier: 'shaping',
     motivations: ['tradition_innovation', 'asceticism_extravagance'],
     sphereAffinity: 'life',
     steps: [
@@ -211,6 +214,7 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'explore',
     threatRating: 'trivial',
+    intrinsicTier: 'shaping',
     motivations: ['tradition_innovation', 'asceticism_extravagance'],
     sphereAffinity: 'life',
     steps: [
@@ -262,6 +266,7 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'veil',
     encounterType: 'explore',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ['courage_prudence', 'tradition_innovation'],
     sphereAffinity: 'time',
     steps: [
@@ -329,6 +334,7 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'explore',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ['courage_prudence', 'asceticism_extravagance'],
     sphereAffinity: 'entropy',
     steps: [
@@ -396,6 +402,7 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'stone',
     encounterType: 'explore',
     threatRating: 'easy',
+    intrinsicTier: 'shaping',
     motivations: ['tradition_innovation', 'courage_prudence'],
     sphereAffinity: 'time',
     steps: [
@@ -447,6 +454,7 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'stone',
     encounterType: 'explore',
     threatRating: 'easy',
+    intrinsicTier: 'shaping',
     motivations: ['courage_prudence', 'loyalty_ambition'],
     sphereAffinity: 'force',
     steps: [
@@ -498,6 +506,7 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'star',
     encounterType: 'explore',
     threatRating: 'easy',
+    intrinsicTier: 'shaping',
     motivations: ['tradition_innovation', 'asceticism_extravagance'],
     sphereAffinity: 'spirit',
     steps: [
@@ -549,6 +558,7 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'veil',
     encounterType: 'explore',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ['courage_prudence', 'tradition_innovation'],
     sphereAffinity: 'mind',
     steps: [

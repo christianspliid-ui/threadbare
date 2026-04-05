@@ -36,6 +36,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'assist',
     threatRating: 'easy',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.assist,
     steps: [
       {
@@ -91,6 +92,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'shadow',
     encounterType: 'hire',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.hire,
     steps: [
       {
@@ -138,6 +140,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'shadow',
     encounterType: 'explore',
     threatRating: 'trivial',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.explore,
     steps: [
       {
@@ -188,6 +191,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'steal',
     threatRating: 'easy',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.steal,
     steps: [
       {
@@ -242,6 +246,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'trade',
     threatRating: 'easy',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
     steps: [
       {
@@ -296,6 +301,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'shadow',
     encounterType: 'assist',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.assist,
     steps: [
       {
@@ -351,6 +357,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'lead',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
     steps: [
       {
@@ -397,6 +404,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'steal',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.steal,
     steps: [
       {
@@ -451,6 +459,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'duel',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     steps: [
       {
@@ -522,6 +531,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'steal',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.steal,
     steps: [
       {
@@ -592,6 +602,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'shadow',
     encounterType: 'steal',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.steal,
     steps: [
       {
@@ -646,6 +657,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'lead',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
     steps: [
       {
@@ -709,6 +721,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'lead',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
     steps: [
       {
@@ -772,6 +785,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'shadow',
     encounterType: 'build',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.build,
     remoteAttempt: true,
     steps: [

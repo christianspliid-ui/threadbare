@@ -127,6 +127,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'shadow',
     encounterType: 'explore',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ['courage_prudence', 'loyalty_ambition'],
     steps: [
       {
@@ -198,6 +199,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'stone',
     encounterType: 'create',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ['courage_prudence', 'loyalty_ambition'],
     steps: [
       {
@@ -266,6 +268,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'explore',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ['courage_prudence', 'loyalty_ambition'],
     steps: [
       {
@@ -336,6 +339,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'trade',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ['courage_prudence', 'loyalty_ambition'],
     steps: [
       {
@@ -404,6 +408,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'star',
     encounterType: 'steal',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ['courage_prudence', 'loyalty_ambition'],
     steps: [
       {
@@ -474,6 +479,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'veil',
     encounterType: 'explore',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ['courage_prudence', 'loyalty_ambition'],
     steps: [
       {
@@ -542,6 +548,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'stone',
     encounterType: 'duel',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ['courage_prudence', 'loyalty_ambition'],
     steps: [
       {
@@ -611,6 +618,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'assist',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ['courage_prudence', 'loyalty_ambition'],
     steps: [
       {
@@ -680,6 +688,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'lead',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ['courage_prudence', 'loyalty_ambition'],
     steps: [
       {
@@ -743,6 +752,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'veil',
     encounterType: 'explore',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ['courage_prudence', 'loyalty_ambition'],
     steps: [
       {
@@ -817,6 +827,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'acquire',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.acquire,
     steps: [
       {
@@ -886,6 +897,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'shadow',
     encounterType: 'acquire',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.acquire,
     steps: [
       {
@@ -954,6 +966,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'stone',
     encounterType: 'acquire',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.acquire,
     steps: [
       {
@@ -1024,6 +1037,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'acquire',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.acquire,
     steps: [
       {
@@ -1093,6 +1107,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'shadow',
     encounterType: 'acquire',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.acquire,
     steps: [
       {
@@ -1161,6 +1176,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'acquire',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.acquire,
     steps: [
       {
@@ -1229,6 +1245,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'acquire',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.acquire,
     steps: [
       {
@@ -1299,6 +1316,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'veil',
     encounterType: 'acquire',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.acquire,
     steps: [
       {
@@ -1372,6 +1390,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'veil',
     encounterType: 'create',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.create,
     steps: [
       {
@@ -1442,6 +1461,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'create',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.create,
     steps: [
       {
@@ -1512,6 +1532,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'create',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.create,
     steps: [
       {
@@ -1580,6 +1601,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'veil',
     encounterType: 'create',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.create,
     steps: [
       {
@@ -1650,6 +1672,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'star',
     encounterType: 'create',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.create,
     steps: [
       {
@@ -1721,6 +1744,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'hire',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.hire,
     steps: [
       {
@@ -1783,6 +1807,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'hire',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.hire,
     steps: [
       {
@@ -1845,6 +1870,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'hire',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.hire,
     steps: [
       {
@@ -1907,6 +1933,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'veil',
     encounterType: 'hire',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.hire,
     steps: [
       {
@@ -1969,6 +1996,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'hire',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.hire,
     steps: [
       {
@@ -2031,6 +2059,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'hire',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.hire,
     steps: [
       {
@@ -2096,6 +2125,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'duel',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     steps: [
       {
@@ -2164,6 +2194,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'duel',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     steps: [
       {
@@ -2234,6 +2265,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'star',
     encounterType: 'duel',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     steps: [
       {
@@ -2302,6 +2334,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'duel',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     steps: [
       {
@@ -2370,6 +2403,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'duel',
     threatRating: 'deadly',
+    intrinsicTier: 'story_beat',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     steps: [
       {
@@ -2438,6 +2472,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'duel',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     steps: [
       {
@@ -2509,6 +2544,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'steal',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.steal,
     steps: [
       {
@@ -2577,6 +2613,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'steal',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.steal,
     steps: [
       {
@@ -2645,6 +2682,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'steal',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.steal,
     steps: [
       {
@@ -2715,6 +2753,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'steal',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.steal,
     steps: [
       {
@@ -2783,6 +2822,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'steal',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.steal,
     steps: [
       {
@@ -2856,6 +2896,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'star',
     encounterType: 'trade',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
     steps: [
       {
@@ -2924,6 +2965,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'trade',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
     steps: [
       {
@@ -2992,6 +3034,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'shadow',
     encounterType: 'trade',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
     steps: [
       {
@@ -3062,6 +3105,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'trade',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
     steps: [
       {
@@ -3130,6 +3174,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'trade',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
     steps: [
       {
@@ -3200,6 +3245,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'veil',
     encounterType: 'trade',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
     steps: [
       {
@@ -3273,6 +3319,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'assist',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.assist,
     steps: [
       {
@@ -3341,6 +3388,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'assist',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.assist,
     steps: [
       {
@@ -3409,6 +3457,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'assist',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.assist,
     steps: [
       {
@@ -3477,6 +3526,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'assist',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.assist,
     steps: [
       {
@@ -3545,6 +3595,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'assist',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.assist,
     steps: [
       {
@@ -3616,6 +3667,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'build',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.build,
     steps: [
       {
@@ -3678,6 +3730,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'build',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.build,
     steps: [
       {
@@ -3740,6 +3793,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'build',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.build,
     steps: [
       {
@@ -3802,6 +3856,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'veil',
     encounterType: 'build',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.build,
     steps: [
       {
@@ -3864,6 +3919,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'build',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.build,
     steps: [
       {
@@ -3929,6 +3985,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'lead',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
     steps: [
       {
@@ -3991,6 +4048,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'lead',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
     steps: [
       {
@@ -4053,6 +4111,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'lead',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
     steps: [
       {
@@ -4115,6 +4174,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'lead',
     threatRating: 'deadly',
+    intrinsicTier: 'story_beat',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
     steps: [
       {
@@ -4177,6 +4237,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'build',
     threatRating: 'deadly',
+    intrinsicTier: 'story_beat',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.build,
     steps: [
       {
@@ -4239,6 +4300,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'stone',
     encounterType: 'build',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.build,
     steps: [
       {
@@ -4301,6 +4363,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'lead',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
     steps: [
       {
@@ -4363,6 +4426,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'build',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.build,
     steps: [
       {
@@ -4431,6 +4495,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'trade',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
     steps: [
       {
@@ -4500,6 +4565,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'trade',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
     steps: [
       {
@@ -4554,6 +4620,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'stone',
     encounterType: 'acquire',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.acquire,
     steps: [
       {
@@ -4625,6 +4692,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'lead',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
     steps: [
       {
@@ -4673,6 +4741,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'trade',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
     steps: [
       {
@@ -4725,6 +4794,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'duel',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     steps: [
       {
@@ -4798,6 +4868,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'assist',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.assist,
     steps: [
       {
@@ -4850,6 +4921,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'hire',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.hire,
     steps: [
       {
@@ -4898,6 +4970,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'shadow',
     encounterType: 'steal',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.steal,
     steps: [
       {
@@ -4952,6 +5025,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'steal',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.steal,
     steps: [
       {
@@ -5006,6 +5080,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'lead',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
     steps: [
       {
@@ -5052,6 +5127,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'hire',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.hire,
     steps: [
       {
@@ -5123,6 +5199,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'hire',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ['mercy_ruthlessness', 'loyalty_ambition'],
     steps: [
       {
@@ -5169,6 +5246,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'create',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ['preservation_transformation', 'asceticism_extravagance'],
     steps: [
       {
@@ -5223,6 +5301,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'shadow',
     encounterType: 'lead',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ['honesty_cunning', 'loyalty_ambition'],
     steps: [
       {
@@ -5286,6 +5365,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'assist',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ['mercy_ruthlessness', 'asceticism_extravagance'],
     steps: [
       {
@@ -5340,6 +5420,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'explore',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ['tradition_novelty', 'loyalty_ambition'],
     steps: [
       {
@@ -5394,6 +5475,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'assist',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ['mercy_ruthlessness', 'revelation_discretion'],
     steps: [
       {
@@ -5450,6 +5532,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'star',
     encounterType: 'build',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ['mercy_ruthlessness', 'preservation_transformation'],
     steps: [
       {
@@ -5496,6 +5579,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'acquire',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ['honesty_cunning', 'mercy_ruthlessness'],
     steps: [
       {
@@ -5542,6 +5626,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'build',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ['preservation_transformation', 'sacrifice_survival'],
     steps: [
       {
@@ -5590,6 +5675,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'explore',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ['courage_prudence', 'revelation_discretion'],
     steps: [
       {
@@ -5661,6 +5747,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'veil',
     encounterType: 'explore',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ['revelation_discretion', 'tradition_novelty'],
     steps: [
       {
@@ -5715,6 +5802,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'assist',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ['mercy_ruthlessness', 'tradition_novelty'],
     steps: [
       {
@@ -5769,6 +5857,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'acquire',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ['preservation_transformation', 'asceticism_extravagance'],
     steps: [
       {
@@ -5823,6 +5912,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'build',
     threatRating: 'deadly',
+    intrinsicTier: 'story_beat',
     motivations: ['courage_prudence', 'sacrifice_survival'],
     steps: [
       {
@@ -5888,6 +5978,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'acquire',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ['mercy_ruthlessness', 'courage_prudence'],
     steps: [
       {
@@ -5942,6 +6033,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'stone',
     encounterType: 'explore',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ['revelation_discretion', 'asceticism_extravagance'],
     steps: [
       {
@@ -5996,6 +6088,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'explore',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ['loyalty_ambition', 'revelation_discretion'],
     steps: [
       {
@@ -6050,6 +6143,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'shadow',
     encounterType: 'duel',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ['courage_prudence', 'mercy_ruthlessness'],
     steps: [
       {
@@ -6104,6 +6198,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'explore',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ['preservation_transformation', 'asceticism_extravagance'],
     steps: [
       {
@@ -6160,6 +6255,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'explore',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ['tradition_novelty', 'courage_prudence'],
     steps: [
       {
@@ -6214,6 +6310,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'veil',
     encounterType: 'explore',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ['revelation_discretion', 'tradition_novelty'],
     steps: [
       {
@@ -6268,6 +6365,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'explore',
     threatRating: 'deadly',
+    intrinsicTier: 'story_beat',
     motivations: ['courage_prudence', 'tradition_novelty'],
     steps: [
       {
@@ -6341,6 +6439,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'veil',
     encounterType: 'duel',
     threatRating: 'deadly',
+    intrinsicTier: 'story_beat',
     motivations: ['courage_prudence', 'sacrifice_survival'],
     steps: [
       {
@@ -6395,6 +6494,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'build',
     threatRating: 'deadly',
+    intrinsicTier: 'story_beat',
     motivations: ['courage_prudence', 'preservation_transformation'],
     steps: [
       {
@@ -6441,6 +6541,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'star',
     encounterType: 'duel',
     threatRating: 'deadly',
+    intrinsicTier: 'story_beat',
     motivations: ['mercy_ruthlessness', 'sacrifice_survival'],
     steps: [
       {
@@ -6524,6 +6625,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'shadow',
     encounterType: 'lead',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['courage_prudence', 'justice_mercy'],
     steps: [
       {
@@ -6568,6 +6670,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'stone',
     encounterType: 'build',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['tradition_progress', 'courage_prudence'],
     steps: [
       {
@@ -6615,6 +6718,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'trade',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['loyalty_ambition', 'justice_mercy'],
     steps: [
       {
@@ -6663,6 +6767,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'trade',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['tradition_progress', 'loyalty_ambition'],
     steps: [
       {
@@ -6714,6 +6819,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'lead',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['courage_prudence', 'justice_mercy'],
     steps: [
       {
@@ -6758,6 +6864,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'explore',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['tradition_progress', 'justice_mercy'],
     steps: [
       {
@@ -6813,6 +6920,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'star',
     encounterType: 'build',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['tradition_progress', 'courage_prudence'],
     steps: [
       {
@@ -6857,6 +6965,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'explore',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['tradition_progress', 'justice_mercy'],
     steps: [
       {
@@ -6912,6 +7021,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'create',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['tradition_progress', 'loyalty_ambition'],
     steps: [
       {
@@ -6964,6 +7074,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'star',
     encounterType: 'assist',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['justice_mercy', 'loyalty_ambition'],
     steps: [
       {
@@ -7015,6 +7126,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'veil',
     encounterType: 'explore',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['tradition_progress', 'justice_mercy'],
     steps: [
       {
@@ -7067,6 +7179,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'explore',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['tradition_progress', 'loyalty_ambition'],
     steps: [
       {
@@ -7122,6 +7235,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'build',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['tradition_progress', 'courage_prudence'],
     steps: [
       {
@@ -7166,6 +7280,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'build',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['tradition_progress', 'loyalty_ambition'],
     steps: [
       {
@@ -7213,6 +7328,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'veil',
     encounterType: 'create',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['tradition_progress', 'loyalty_ambition'],
     steps: [
       {
@@ -7265,6 +7381,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'assist',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['justice_mercy', 'tradition_progress'],
     steps: [
       {
@@ -7319,6 +7436,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'stone',
     encounterType: 'assist',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['courage_prudence', 'loyalty_ambition'],
     steps: [
       {
@@ -7367,6 +7485,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'stone',
     encounterType: 'explore',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['loyalty_ambition', 'justice_mercy'],
     steps: [
       {
@@ -7425,6 +7544,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'explore',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['preservation_transformation', 'revelation_discretion'],
     steps: [
       {
@@ -7474,6 +7594,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'explore',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['loyalty_ambition', 'courage_prudence'],
     steps: [
       {
@@ -7523,6 +7644,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'shadow',
     encounterType: 'explore',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['loyalty_ambition', 'honesty_cunning'],
     steps: [
       {
@@ -7572,6 +7694,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'assist',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['mercy_ruthlessness', 'revelation_discretion'],
     steps: [
       {
@@ -7621,6 +7744,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'explore',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['revelation_discretion', 'courage_prudence'],
     steps: [
       {
@@ -7676,6 +7800,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'trade',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['asceticism_extravagance', 'loyalty_ambition'],
     steps: [
       {
@@ -7730,6 +7855,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'assist',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ['mercy_ruthlessness', 'courage_prudence'],
     steps: [
       {
@@ -7776,6 +7902,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'veil',
     encounterType: 'explore',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ['revelation_discretion', 'tradition_novelty'],
     steps: [
       {
@@ -7830,6 +7957,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'lead',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ['sacrifice_survival', 'loyalty_ambition'],
     steps: [
       {
@@ -7876,6 +8004,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'star',
     encounterType: 'lead',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ['mercy_ruthlessness', 'loyalty_ambition'],
     steps: [
       {
@@ -7922,6 +8051,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'steal',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ['honesty_cunning', 'courage_prudence'],
     steps: [
       {
@@ -7978,6 +8108,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'create',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ['preservation_transformation', 'asceticism_extravagance'],
     steps: [
       {
@@ -8032,6 +8163,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'veil',
     encounterType: 'duel',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ['courage_prudence', 'sacrifice_survival'],
     steps: [
       {
@@ -8086,6 +8218,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'shadow',
     encounterType: 'lead',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ['loyalty_ambition', 'honesty_cunning'],
     steps: [
       {
@@ -8149,6 +8282,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'explore',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ['tradition_novelty', 'revelation_discretion'],
     steps: [
       {
@@ -8214,6 +8348,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'explore',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['revelation_discretion', 'tradition_progress'],
     steps: [
       {
@@ -8280,6 +8415,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'star',
     encounterType: 'create',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['tradition_progress', 'revelation_discretion'],
     steps: [
       {
@@ -8346,6 +8482,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'create',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['justice_mercy', 'tradition_progress'],
     steps: [
       {
@@ -8412,6 +8549,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'explore',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['revelation_discretion', 'courage_prudence'],
     steps: [
       {
@@ -8483,6 +8621,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'create',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['tradition_progress', 'justice_mercy'],
     steps: [
       {
@@ -8549,6 +8688,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'explore',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['revelation_discretion', 'tradition_progress'],
     steps: [
       {
@@ -8615,6 +8755,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'assist',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['justice_mercy', 'tradition_progress'],
     steps: [
       {
@@ -8685,6 +8826,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'veil',
     encounterType: 'create',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['tradition_progress', 'justice_mercy'],
     steps: [
       {
@@ -8760,6 +8902,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'build',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['tradition_progress', 'courage_prudence'],
     steps: [
       {
@@ -8822,6 +8965,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'build',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['justice_mercy', 'tradition_progress'],
     steps: [
       {
@@ -8884,6 +9028,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'build',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['tradition_progress', 'courage_prudence'],
     steps: [
       {
@@ -8955,6 +9100,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'lead',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['courage_prudence', 'loyalty_ambition'],
     steps: [
       {
@@ -9017,6 +9163,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'duel',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['courage_prudence', 'loyalty_ambition'],
     steps: [
       {
@@ -9088,6 +9235,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'explore',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['revelation_discretion', 'loyalty_ambition'],
     steps: [
       {
@@ -9154,6 +9302,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'trade',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['revelation_discretion', 'loyalty_ambition'],
     steps: [
       {
@@ -9225,6 +9374,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'explore',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['courage_prudence', 'tradition_progress'],
     steps: [
       {
@@ -9295,6 +9445,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'build',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['tradition_progress', 'courage_prudence'],
     steps: [
       {
@@ -9357,6 +9508,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'stone',
     encounterType: 'explore',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['revelation_discretion', 'tradition_progress'],
     steps: [
       {
@@ -9423,6 +9575,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'veil',
     encounterType: 'explore',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['revelation_discretion', 'tradition_progress'],
     steps: [
       {
@@ -9493,6 +9646,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'stone',
     encounterType: 'acquire',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['tradition_progress', 'justice_mercy'],
     steps: [
       {
@@ -9559,6 +9713,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'stone',
     encounterType: 'explore',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['revelation_discretion', 'asceticism_extravagance'],
     steps: [
       {
@@ -9625,6 +9780,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'build',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['tradition_progress', 'courage_prudence'],
     steps: [
       {
@@ -9687,6 +9843,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'trade',
     threatRating: 'easy',
+    intrinsicTier: 'background',
     motivations: ['justice_mercy', 'loyalty_ambition'],
     steps: [
       {
@@ -9757,6 +9914,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'shadow',
     encounterType: 'explore',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['revelation_discretion', 'loyalty_ambition'],
     steps: [
       {
@@ -9823,6 +9981,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'assist',
     threatRating: 'trivial',
+    intrinsicTier: 'background',
     motivations: ['justice_mercy', 'tradition_progress'],
     steps: [
       {

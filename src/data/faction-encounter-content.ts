@@ -127,6 +127,7 @@ export const FACTION_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'explore',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.explore,
     questPriority: 3.0,
   },
@@ -174,6 +175,7 @@ export const FACTION_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'duel',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     questPriority: 3.0,
   },
@@ -221,6 +223,7 @@ export const FACTION_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'explore',
     threatRating: 'easy',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.explore,
     questPriority: 2.0,
   },
@@ -268,6 +271,7 @@ export const FACTION_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'assist',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.assist,
     questPriority: 2.5,
   },
@@ -325,6 +329,7 @@ export const FACTION_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'shadow',
     encounterType: 'acquire',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.acquire,
     questPriority: 4.0,
   },
@@ -384,6 +389,7 @@ export const FACTION_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'explore',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.explore,
     questPriority: 5.0,
   },
@@ -431,6 +437,7 @@ export const FACTION_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'duel',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     questPriority: 5.0,
   },
@@ -478,6 +485,7 @@ export const FACTION_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'create',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.create,
     questPriority: 4.0,
   },
@@ -537,6 +545,7 @@ export const FACTION_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'stone',
     encounterType: 'explore',
     threatRating: 'deadly',
+    intrinsicTier: 'story_beat',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.explore,
     questPriority: 8.0,
   },
@@ -594,6 +603,7 @@ export const FACTION_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'shadow',
     encounterType: 'explore',
     threatRating: 'deadly',
+    intrinsicTier: 'story_beat',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.explore,
     questPriority: 8.0,
   },
@@ -636,6 +646,7 @@ export const FACTION_JOIN_TEMPLATE: EncounterTemplate = {
   reachSecondary: 'eye',
   encounterType: 'hire',
   threatRating: 'easy',
+  intrinsicTier: 'shaping',
   motivations: ENCOUNTER_TYPE_MOTIVATIONS.hire,
   questPriority: 6.0, // High priority — joining a faction is an important life event
 };
@@ -675,6 +686,7 @@ export const FACTION_PROMOTION_TEMPLATE: EncounterTemplate = {
   reachSecondary: 'heart',
   encounterType: 'lead',
   threatRating: 'moderate',
+  intrinsicTier: 'shaping',
   motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
   questPriority: 7.0, // Very high — promotion is a major milestone
 };
@@ -699,6 +711,7 @@ export const FACTION_SOCIAL_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'duel',
     threatRating: 'easy',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     questPriority: 2.0,
     steps: [
@@ -749,6 +762,7 @@ export const FACTION_SOCIAL_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'assist',
     threatRating: 'trivial',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.assist,
     questPriority: 1.5,
     steps: [
@@ -791,6 +805,7 @@ export const FACTION_SOCIAL_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'assist',
     threatRating: 'easy',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.assist,
     questPriority: 2.5,
     steps: [
@@ -841,6 +856,7 @@ export const FACTION_SOCIAL_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'lead',
     threatRating: 'easy',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
     questPriority: 2.5,
     steps: [
@@ -876,6 +892,7 @@ export const FACTION_SOCIAL_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'trade',
     threatRating: 'trivial',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
     questPriority: 1.5,
     steps: [
@@ -918,6 +935,7 @@ export const FACTION_SOCIAL_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'duel',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     questPriority: 3.0,
     steps: [

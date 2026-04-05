@@ -68,6 +68,7 @@ export const MONSTER_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'duel',
     threatRating: 'easy',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     questPriority: 3.0,
     steps: [
@@ -123,6 +124,7 @@ export const MONSTER_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'shadow',
     encounterType: 'duel',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     questPriority: 5.0,
     steps: [
@@ -194,6 +196,7 @@ export const MONSTER_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'shadow',
     encounterType: 'duel',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     steps: [
       {
@@ -248,6 +251,7 @@ export const MONSTER_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'stone',
     encounterType: 'lead',
     threatRating: 'hard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
     steps: [
       {
@@ -302,6 +306,7 @@ export const MONSTER_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'stone',
     encounterType: 'lead',
     threatRating: 'deadly',
+    intrinsicTier: 'story_beat',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
     steps: [
       {

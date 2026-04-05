@@ -83,6 +83,7 @@ export const ARMY_RAISE_TEMPLATE: EncounterTemplate = {
   reachSecondary: 'gold',
   encounterType: 'lead',
   threatRating: 'hard',
+  intrinsicTier: 'story_beat',
   motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
 };
 
@@ -119,6 +120,7 @@ export const ARMY_THRESHOLD_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'trade',
     threatRating: 'moderate',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
   },
 
@@ -152,6 +154,7 @@ export const ARMY_THRESHOLD_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'iron',
     encounterType: 'lead',
     threatRating: 'hard',
+    intrinsicTier: 'story_beat',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
   },
 
@@ -185,6 +188,7 @@ export const ARMY_THRESHOLD_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'lead',
     threatRating: 'deadly',
+    intrinsicTier: 'story_beat',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
   },
 
@@ -208,6 +212,7 @@ export const ARMY_THRESHOLD_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'lead',
     threatRating: 'deadly',
+    intrinsicTier: 'story_beat',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
   },
 ];
@@ -257,6 +262,7 @@ export const REFUGEE_AFTERMATH_TEMPLATE: EncounterTemplate = {
   reachSecondary: 'gold',
   encounterType: 'discovery',
   threatRating: 'moderate',
+  intrinsicTier: 'shaping',
   motivations: ENCOUNTER_TYPE_MOTIVATIONS.discovery,
 };
 
