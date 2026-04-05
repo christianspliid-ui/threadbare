@@ -333,6 +333,11 @@ export function phaseEncounterVisibility(
     const threadInfo = threadedAgents.get(ep.actorId);
     if (!threadInfo) continue;
 
+    // Skip digest-only tiers — notifications are suppressed; outcome goes to digest buffer only.
+    // Undefined effectiveTier (old records) preserves existing notification behavior.
+    const epTier = ep.effectiveTier;
+    if (epTier === 'invisible' || epTier === 'background') continue;
+
     // Skip if we already have a pending notification for this agent + encounter
     const stepIndex = ep.currentEncounterIndex;
     const notifKey = `encounter:legacy_encounter:${ep.actorId}:${ep.encounterId}:legacy:${stepIndex}`;
@@ -390,6 +395,11 @@ export function phaseEncounterVisibility(
 
     const threadInfo = threadedAgents.get(action.actorId);
     if (!threadInfo) continue;
+
+    // Skip digest-only tiers — notifications are suppressed; outcome goes to digest buffer only.
+    // Undefined effectiveTier (old records) preserves existing notification behavior.
+    const actionTier = action.effectiveTier;
+    if (actionTier === 'invisible' || actionTier === 'background') continue;
 
     const stepIndex = action.currentStep;
     const notifKey = `encounter:unified_action:${action.actorId}:${action.templateId}:${action.actionId}:${stepIndex}`;
@@ -461,6 +471,11 @@ export function phaseEncounterVisibility(
 
     const threadInfo = threadedAgents.get(action.actorId);
     if (!threadInfo) continue;
+
+    // Skip digest-only tiers — aftermath notifications suppressed for invisible/background.
+    // Undefined effectiveTier (old records) preserves existing notification behavior.
+    const aftermathTier = action.effectiveTier;
+    if (aftermathTier === 'invisible' || aftermathTier === 'background') continue;
 
     const notifKey = `aftermath:unified_action:${action.actorId}:${action.templateId}:${action.actionId}:${action.currentStep}`;
     if (existingNotifKeys.has(notifKey)) continue;
