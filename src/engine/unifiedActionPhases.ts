@@ -96,6 +96,7 @@ export function phaseIdleSelection(
       const candidates = generateUnifiedCandidates(
         state.graph, actor.id, locationId, UNIFIED_ACTION_TEMPLATES,
         state.unifiedActions ?? [],
+        state.effectStates,
       );
 
       if (candidates.length > 0) {

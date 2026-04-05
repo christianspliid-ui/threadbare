@@ -45,7 +45,8 @@ export function phaseDoom(state: GameState): Partial<GameState> {
 
   // Apply doom_rate_multiplier from modify_rules effects.
   // Values are MULTIPLICATIVE: 0.5 halves doom rate, 3.0 triples it.
-  // Only global-scoped effects affect the doom clock (doom is inherently global).
+  // All scopes are accepted — the doom clock is a single global resource, so any
+  // attachment carrying this rule key contributes regardless of authored scope.
   // Fail-soft: no matching effects → multiplier = 1.0, tickModifier unchanged.
   let doomRateMultiplier = 1.0;
   const agents = state.graph.getNodesByType('actor')
@@ -55,8 +56,6 @@ export function phaseDoom(state: GameState): Partial<GameState> {
       if (entry.runtimeState?.suppressed) continue;
       if (entry.effect.type !== 'modify_rules') continue;
       if (entry.effect.rule !== 'doom_rate_multiplier') continue;
-      // Scope guard: only global-scoped effects affect the doom clock
-      if (entry.effect.scope.scope !== 'global') continue;
       const val = entry.effect.value;
       if (typeof val === 'number' && val > 0) {
         doomRateMultiplier *= val;
@@ -131,6 +130,14 @@ export function phaseDoom(state: GameState): Partial<GameState> {
           tick: state.tick,
           graph: state.graph,
         });
+        for (const mut of execResult.mutations) {
+          try {
+            if (mut.type === 'add_node' && mut.data) state.graph.addNode(mut.data as import('../types/graph').GraphNode);
+            else if (mut.type === 'remove_node' && mut.nodeId) state.graph.removeNode(mut.nodeId);
+            else if (mut.type === 'add_edge' && mut.data) state.graph.addEdge(mut.data as import('../types/graph').GraphEdge);
+            else if (mut.type === 'remove_edge' && mut.edgeId) state.graph.removeEdge(mut.edgeId);
+          } catch { /* fail-soft */ }
+        }
         for (const trace of execResult.traces) {
           emitTrace(trace as unknown as TraceEntry);
         }

@@ -22,6 +22,7 @@ import { applyAmbitionBoost, type ActiveAmbitionForScoring } from './ambitionBoo
 import type { ReachDomain } from '../types/traits';
 import type { EffectRuntimeState } from '../types/effects';
 import { getSocialModifiers, computeSocialCooperationBias } from './effects/effectQueries';
+import { getAgentFaction } from './graphQueries';
 
 /**
  * Score candidates based on alignment with the actor's axiological profile.
@@ -233,8 +234,14 @@ export function runSelectionPipeline(
       // Compute social bias from social_modifier effects on this actor
       const socialModifiers = effectStates !== undefined
         ? getSocialModifiers(graph, actorId, effectStates) : [];
-      // Determine target relationship for social modifier filtering
-      const targetRelationship: 'ally' | 'enemy' | 'any' = 'any'; // TODO: resolve from graph
+      // Resolve target relationship from graph: faction membership + reputation
+      const actorFaction = getAgentFaction(graph, actorId);
+      const targetFaction = getAgentFaction(graph, targetId);
+      let targetRelationship: 'ally' | 'enemy' | 'same_faction' | 'different_faction' =
+        rawReputation > 0.3 ? 'ally' : rawReputation < -0.3 ? 'enemy' : 'different_faction';
+      if (actorFaction && targetFaction && actorFaction.faction.id === targetFaction.faction.id) {
+        targetRelationship = 'same_faction';
+      }
       const socialBias = computeSocialCooperationBias(socialModifiers, targetRelationship);
 
       // Apply modifier to these candidates

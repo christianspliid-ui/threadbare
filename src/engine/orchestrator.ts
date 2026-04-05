@@ -333,6 +333,15 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
             tick: state.tick,
             graph: state.graph,
           });
+          // Apply graph mutations from the nested effect
+          for (const mut of execResult.mutations) {
+            try {
+              if (mut.type === 'add_node' && mut.data) state.graph.addNode(mut.data as import('../types/graph').GraphNode);
+              else if (mut.type === 'remove_node' && mut.nodeId) state.graph.removeNode(mut.nodeId);
+              else if (mut.type === 'add_edge' && mut.data) state.graph.addEdge(mut.data as import('../types/graph').GraphEdge);
+              else if (mut.type === 'remove_edge' && mut.edgeId) state.graph.removeEdge(mut.edgeId);
+            } catch { /* fail-soft: skip invalid mutations */ }
+          }
           for (const trace of execResult.traces) {
             emitTrace(trace as unknown as TraceEntry);
           }
