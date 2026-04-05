@@ -52,70 +52,23 @@ import type {
 import {
   EFFECT_MODIFIER_CAP,
   EFFECT_PER_ITEM_CAP,
-  CONDITIONAL_EVALUATION_CAP,
-  HEALTH_LOW_THRESHOLD,
-  HEALTH_HIGH_THRESHOLD,
 } from '../data/effect-constants';
+import { collectAttachmentEffects, hasEffectsFormat as _hasEffectsFormat } from './effects/effectWalker';
+import {
+  evaluatePredicate as _evaluatePredicate,
+  evaluateOptionalCondition as _evaluateOptionalCondition,
+  buildPredicateContext as _buildPredicateContext,
+} from './effects/effectPredicates';
 
 // ═══════════════════════════════════════════════════════════════════
 // Predicate Evaluation
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * Evaluate a single condition predicate against the current context.
- * Returns true if the condition is met, false otherwise.
- * Unknown predicates return false (fail-soft).
+ * Re-export from shared effectPredicates module.
+ * Kept here for backward compatibility — existing consumers import from this file.
  */
-export function evaluatePredicate(
-  predicate: EffectPredicate,
-  ctx: PredicateContext,
-): boolean {
-  // Simple predicates
-  switch (predicate) {
-    case 'in_combat': return ctx.inCombat;
-    case 'in_social': return ctx.inSocial;
-    case 'in_exploration': return ctx.inExploration;
-    case 'in_mystical': return ctx.inMystical;
-    case 'at_home_territory': return ctx.atHomeTerritory;
-    case 'in_enemy_territory': return ctx.inEnemyTerritory;
-    case 'in_wilderness': return ctx.inWilderness;
-    case 'health_low': return ctx.healthLow;
-    case 'health_high': return ctx.healthHigh;
-    case 'alone': return ctx.alone;
-    case 'outnumbered': return ctx.outnumbered;
-    case 'near_water': return ctx.nearWater;
-  }
-
-  // Parameterized predicates
-  if (predicate.startsWith('biome:')) {
-    const biomeType = predicate.slice('biome:'.length);
-    return ctx.biome === biomeType;
-  }
-  if (predicate.startsWith('has_trait:')) {
-    const tag = predicate.slice('has_trait:'.length);
-    return ctx.agentTraits.has(tag);
-  }
-  if (predicate.startsWith('lacks_trait:')) {
-    const tag = predicate.slice('lacks_trait:'.length);
-    return !ctx.agentTraits.has(tag);
-  }
-  if (predicate.startsWith('reach_above:')) {
-    const parts = predicate.slice('reach_above:'.length).split(':');
-    if (parts.length < 2) return false;
-    const reach = parts[0] as ReachDomain;
-    const threshold = parseFloat(parts[1]);
-    if (isNaN(threshold)) return false;
-    return (ctx.reachValues[reach] ?? 0) > threshold;
-  }
-  if (predicate.startsWith('faction_rank:')) {
-    const minRank = parseInt(predicate.slice('faction_rank:'.length), 10);
-    if (isNaN(minRank)) return false;
-    return ctx.factionRank >= minRank;
-  }
-
-  // Unknown predicate — fail-soft: treat as false
-  return false;
-}
+export const evaluatePredicate = _evaluatePredicate;
 
 // ═══════════════════════════════════════════════════════════════════
 // Effect Value Extraction — get modifier value from a single effect
@@ -254,8 +207,7 @@ function isEffectActive(
   return true;
 }
 
-const ATTACHMENT_EDGE_TYPES = ['possesses', 'bonded_to', 'has_trait'] as const;
-
+/** Wrapper that adds the `active` field needed by this resolver. */
 interface AttachmentEffectEntry {
   attachmentId: string;
   attachmentName: string;
@@ -264,47 +216,18 @@ interface AttachmentEffectEntry {
   active: boolean;
 }
 
-function collectAttachmentEffects(
+function collectActiveEffects(
   graph: WorldGraph,
   agentId: string,
   effectStates?: ReadonlyMap<string, EffectRuntimeState>,
 ): AttachmentEffectEntry[] {
-  const entries: AttachmentEffectEntry[] = [];
-
-  for (const edgeType of ATTACHMENT_EDGE_TYPES) {
-    const edges = graph.getOutgoingEdges(agentId, edgeType);
-    for (const edge of edges) {
-      const node = graph.getNode(edge.target);
-      if (!node) continue;
-
-      const effects = node.properties.effects as AttachmentEffect[] | undefined;
-      if (!effects || !Array.isArray(effects)) continue;
-
-      const attachmentName = node.name ?? node.id;
-      const runtimeState = effectStates?.get(node.id);
-      const effectsToEvaluate = effects.slice(0, CONDITIONAL_EVALUATION_CAP * 2);
-
-      for (const effect of effectsToEvaluate) {
-        entries.push({
-          attachmentId: node.id,
-          attachmentName,
-          effect,
-          runtimeState,
-          active: isEffectActive(effect, runtimeState),
-        });
-      }
-    }
-  }
-
-  return entries;
+  return collectAttachmentEffects(graph, agentId, effectStates).map(entry => ({
+    ...entry,
+    active: isEffectActive(entry.effect, entry.runtimeState),
+  }));
 }
 
-function evaluateOptionalCondition(
-  condition: EffectPredicate | undefined,
-  ctx: PredicateContext,
-): boolean {
-  return condition ? evaluatePredicate(condition, ctx) : true;
-}
+const evaluateOptionalCondition = _evaluateOptionalCondition;
 
 export function collectTestShapers(
   graph: WorldGraph,
@@ -315,7 +238,7 @@ export function collectTestShapers(
 ): ResolvedTestShaper[] {
   const shapers: ResolvedTestShaper[] = [];
 
-  for (const entry of collectAttachmentEffects(graph, agentId, effectStates)) {
+  for (const entry of collectActiveEffects(graph, agentId, effectStates)) {
     if (!entry.active || entry.effect.type !== 'test_shaper') continue;
     if (entry.effect.reach && entry.effect.reach !== reach) continue;
     if (!evaluateOptionalCondition(entry.effect.condition, ctx)) continue;
@@ -346,7 +269,7 @@ export function collectPreventLossEffects(
 ): ActivePreventLoss[] {
   const preventLoss: ActivePreventLoss[] = [];
 
-  for (const entry of collectAttachmentEffects(graph, agentId, effectStates)) {
+  for (const entry of collectActiveEffects(graph, agentId, effectStates)) {
     if (!entry.active || entry.effect.type !== 'prevent_loss') continue;
     if (entry.effect.channel !== channel) continue;
     if (!evaluateOptionalCondition(entry.effect.condition, ctx)) continue;
@@ -401,7 +324,7 @@ export function resolveEffectModifiers(
   const preventLoss = collectPreventLossEffects(graph, agentId, 'quintessence', ctx, effectStates);
   let total = 0;
 
-  for (const entry of collectAttachmentEffects(graph, agentId, effectStates)) {
+  for (const entry of collectActiveEffects(graph, agentId, effectStates)) {
     const { attachmentId, attachmentName, effect, runtimeState, active } = entry;
 
     const trait = getGrantedTrait(effect);
@@ -452,161 +375,11 @@ export function resolveEffectModifiers(
 }
 
 /**
- * Check whether an agent has any attachments with the new effects[] format.
- * Used to determine whether to use the new resolver or legacy path.
+ * Re-export from shared effectWalker module.
  */
-export function hasEffectsFormat(
-  graph: WorldGraph,
-  agentId: string,
-): boolean {
-  const edgeTypes = ['possesses', 'bonded_to', 'has_trait'] as const;
-
-  for (const edgeType of edgeTypes) {
-    const edges = graph.getOutgoingEdges(agentId, edgeType);
-    for (const edge of edges) {
-      const node = graph.getNode(edge.target);
-      if (!node) continue;
-      const effects = node.properties.effects;
-      if (effects && Array.isArray(effects) && effects.length > 0) {
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
+export const hasEffectsFormat = _hasEffectsFormat;
 
 /**
- * Build a PredicateContext from graph state for a given agent.
- * Used by encounter resolution to populate the context for predicate evaluation.
+ * Re-export from shared effectPredicates module.
  */
-export function buildPredicateContext(
-  graph: WorldGraph,
-  agentId: string,
-  stepReach?: ReachDomain,
-  encounterType?: string,
-): PredicateContext {
-  const agentNode = graph.getNode(agentId);
-
-  // Determine encounter type flags
-  const inCombat = stepReach === 'iron' || encounterType === 'combat';
-  const inSocial = stepReach === 'heart' || stepReach === 'gold' || encounterType === 'social';
-  const inExploration = stepReach === 'eye' || stepReach === 'stone' || encounterType === 'exploration';
-  const inMystical = stepReach === 'veil' || stepReach === 'star' || encounterType === 'mystical';
-
-  // Resolve agent hex via located_at → parent location → hex
-  let hexCol = -1;
-  let hexRow = -1;
-  let biome = 'unknown';
-
-  const locatedAtEdges = graph.getOutgoingEdges(agentId, 'located_at');
-  if (locatedAtEdges.length > 0) {
-    const locationNode = graph.getNode(locatedAtEdges[0].target);
-    if (locationNode) {
-      hexCol = (locationNode.properties.hexCol as number) ?? -1;
-      hexRow = (locationNode.properties.hexRow as number) ?? -1;
-      biome = (locationNode.properties.terrain as string) ?? 'unknown';
-
-      // If sublocation, resolve up to parent location
-      if (hexCol === -1 && locationNode.properties.parentLocationId) {
-        const parentId = locationNode.properties.parentLocationId as string;
-        const parentNode = graph.getNode(parentId);
-        if (parentNode) {
-          hexCol = (parentNode.properties.hexCol as number) ?? -1;
-          hexRow = (parentNode.properties.hexRow as number) ?? -1;
-          biome = (parentNode.properties.terrain as string) ?? biome;
-        }
-      }
-    }
-  }
-
-  // Territory status
-  const agentFaction = agentNode?.properties.factionId as string | undefined;
-  let atHomeTerritory = false;
-  let inEnemyTerritory = false;
-  let inWilderness = true;
-
-  if (agentFaction && hexCol >= 0) {
-    // Check hex control - look for faction control edges or hex tile properties
-    // Simplified: check if any location on this hex is controlled by agent's faction
-    const locationEdges = graph.getOutgoingEdges(agentId, 'located_at');
-    for (const le of locationEdges) {
-      const locNode = graph.getNode(le.target);
-      if (!locNode) continue;
-      const controllingFaction = locNode.properties.controllingFactionId as string | undefined;
-      if (controllingFaction) {
-        inWilderness = false;
-        if (controllingFaction === agentFaction) {
-          atHomeTerritory = true;
-        } else {
-          // Check if hostile
-          inEnemyTerritory = true;
-        }
-      }
-    }
-  }
-
-  // Health status
-  const doom = (agentNode?.properties.doom as number) ?? 0;
-  const maxDoom = (agentNode?.properties.maxDoom as number) ?? 100;
-  const doomFraction = maxDoom > 0 ? doom / maxDoom : 0;
-  const healthLow = doomFraction >= HEALTH_LOW_THRESHOLD;
-  const healthHigh = doomFraction <= HEALTH_HIGH_THRESHOLD;
-
-  // Alone / outnumbered — check co-located agents
-  let allyCount = 0;
-  let enemyCount = 0;
-  // Simplified: would need hex-level agent lookup for full implementation
-  const alone = allyCount === 0 && enemyCount === 0;
-  const outnumbered = enemyCount > (allyCount + 1);
-
-  // Near water
-  const nearWater = biome === 'coastal' || biome === 'river' || biome === 'lake'
-    || biome === 'swamp' || biome === 'archipelago';
-
-  // Agent traits
-  const agentTraits = new Set<string>();
-  const traitEdges = graph.getOutgoingEdges(agentId, 'has_trait');
-  for (const te of traitEdges) {
-    const traitNode = graph.getNode(te.target);
-    if (!traitNode) continue;
-    const tags = traitNode.properties.tags as string[] | undefined;
-    if (tags) {
-      for (const tag of tags) agentTraits.add(tag);
-    }
-    const traitName = traitNode.properties.name as string | undefined;
-    if (traitName) agentTraits.add(traitName);
-  }
-
-  // Reach values
-  const reachValues: Partial<Record<ReachDomain, number>> = {};
-  const domainCapability = agentNode?.properties.domainCapability as
-    Partial<Record<ReachDomain, number>> | undefined;
-  if (domainCapability) {
-    for (const [key, val] of Object.entries(domainCapability)) {
-      reachValues[key as ReachDomain] = val;
-    }
-  }
-
-  // Faction rank
-  const factionRank = (agentNode?.properties.factionRank as number) ?? 0;
-
-  return {
-    inCombat,
-    inSocial,
-    inExploration,
-    inMystical,
-    atHomeTerritory,
-    inEnemyTerritory,
-    inWilderness,
-    healthLow,
-    healthHigh,
-    alone,
-    outnumbered,
-    nearWater,
-    biome,
-    agentTraits,
-    reachValues,
-    factionRank,
-  };
-}
+export const buildPredicateContext = _buildPredicateContext;
