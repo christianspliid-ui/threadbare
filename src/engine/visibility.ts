@@ -112,11 +112,15 @@ export function collectLOSSources(
     });
   }
 
-  // Retinue agents (thread edges with tier >= 1)
+  // Retinue agents (thread edges with tier >= 1, non-dormant)
   const threadEdges = graph.getOutgoingEdges(ascendantId, 'thread');
   for (const edge of threadEdges) {
     const tier = edge.properties.tier as number | undefined;
     if (tier === undefined || tier < 1) continue;
+
+    // Dormant agents contribute no LOS — they are suspended from active court engagement
+    const courtPos = edge.properties.courtPosition as string | undefined;
+    if (courtPos === 'dormant') continue;
 
     const agentId = edge.target;
     const agent = graph.getNode(agentId);

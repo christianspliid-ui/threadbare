@@ -288,9 +288,11 @@ export function phaseEncounterVisibility(
   // Build a map of threaded agent IDs → thread info.
   // Include all threaded agents regardless of courtPosition;
   // agents without an explicit position default to 'retinue' behaviour.
+  // Dormant agents are excluded — they generate no notifications.
   const threadedAgents = new Map<string, { threadEdgeId: string; props: ThreadEdgeProperties }>();
   for (const edge of threads) {
     const props = edge.properties as ThreadEdgeProperties;
+    if (props.courtPosition === 'dormant') continue; // dormant = no notifications
     threadedAgents.set(edge.target, { threadEdgeId: edge.id, props });
   }
 

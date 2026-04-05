@@ -130,6 +130,13 @@ export const VISIBILITY_BY_POSITION: Record<CourtPosition, VisibilityConfig> = {
     autoInterrupt: false,
     defaultAttentionMode: 'auto_resolve',
   },
+  dormant: {
+    // Dormant agents are temporarily suspended — no visibility, no notifications.
+    proseDepth: 'none',
+    maxChoices: 0,
+    autoInterrupt: false,
+    defaultAttentionMode: 'auto_resolve',
+  },
 };
 
 // ─── Trace Types ───────────────────────────────────────────────────
