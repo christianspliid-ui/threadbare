@@ -628,6 +628,39 @@ export const FLAWED_STEEL_TEMPLATE: UnifiedActionTemplate = {
   illustrationAlt: 'The interior of a cold forge at dawn — racks of finished blades, an anvil with a demand letter, and the forge-master standing with her back to a bolted coal shed door.',
 
   authoredChoices: {
+    1: [
+      {
+        id: 'temper_the_moment',
+        label: 'Temper the Moment',
+        intent:
+          'The god moves with a craftsperson\'s restraint — a light hand on the bellows, ' +
+          'not a hammer blow. The intervention arrives as a current of steadiness rather ' +
+          'than a command: Maren\'s voice settles, Dalla\'s chin lifts a fraction, Torve\'s ' +
+          'expression reads the room and finds it coherent. The god shapes the conditions ' +
+          'of the scene without rewriting it. What the mortal does next remains theirs to own.',
+        essenceCost: 1,
+        likelyBurden:
+          'A light touch may not hold under scrutiny. Torve is a professional and Maren\'s ' +
+          'composure is not the same thing as her honesty — the forge-master still has to carry the weight herself.',
+        interventionType: 'supportive',
+      },
+      {
+        id: 'strike_while_the_iron_burns',
+        label: 'Strike While the Iron Burns',
+        intent:
+          'The god reaches through the morning air with unmistakable divine force — not a nudge ' +
+          'but a strike on hot metal, reshaping the scene while it is still malleable. Whatever ' +
+          'path was chosen at the anvil, the god now makes it land with full authority. Torve ' +
+          'will sense something beyond the mortal. Maren will feel herself carried on a current ' +
+          'that is not entirely her own. The outcome becomes nearly inevitable — and the god\'s ' +
+          'fingerprints are left in the cooling steel.',
+        essenceCost: 3,
+        likelyBurden:
+          'Force at the forge leaves marks. Maren may come to rely on the god\'s hand rather than ' +
+          'her own resolve, and Torve Ashgrip does not forget the feeling of being steered.',
+        interventionType: 'coercive',
+      },
+    ],
     0: [
       {
         id: 'forge_the_truth',
