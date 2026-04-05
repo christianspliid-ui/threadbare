@@ -15,7 +15,7 @@
 
 | Surface | Status | What happened |
 |---------|--------|---------------|
-| **Notion** (`Development Backlog`) | Archived 2026-03-22 | Pending items migrated to `.planning/BACKLOG.md`. Some content not yet migrated to Obsidian. |
+| **Notion** (`Development Backlog`) | Archived 2026-04-04 | Backlog migrated to `.planning/BACKLOG.md` (2026-03-22). Design docs, archetypes, and reference content migrated to Obsidian vault (2026-04-04). Dilemma templates remain pending TypeScript import. |
 | **Obsidian** `Build Status` note | Deprecated 2026-03-22 | Was frozen at 2026-03-05. Project status lives in `Docs/project-status.md` + `Docs/project-history.md`. |
 | **Paper** | Archived 2026-03-29 | Was planned for visual documentation (component anatomy, style tiles, asset registry). Never actively maintained. Visual docs live in `STYLE.md` and `Design/style-tile.html`. |
 

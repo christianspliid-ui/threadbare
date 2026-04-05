@@ -200,24 +200,25 @@ All output files use this header:
 ---
 ```
 
-## Notion Library Access
+## Inspiration Library Access
 
-The draft agent must consult these Notion pages via search:
-- `Inspirational Catalogue — Worldbuilding Reference Wiki` (for foundation pages)
-- `Tonal Bible`
-- `Thematic Pillars`
-- `Anti-Patterns`
-- `Dilemma Content Library (TB-038)` (when choice-heavy)
-- At least one relevant archetype page for the encounter family
+The draft agent must consult these Obsidian vault pages via MCP:
+- [[Inspirational Catalogue]] (for foundation pages and worldbuilding reference)
+- [[Thematic Pillars]]
+- [[Anti-Patterns]]
+- [[Content Creator Cheat Sheet]] (Threadbare tone guidelines)
+- At least one relevant archetype page: [[Character Archetypes]], [[Region Archetypes]], [[Place Archetypes]], [[Event Archetypes]], [[Ordeal Archetypes]]
 
-If Notion MCP is unavailable, the draft agent should note which pages it would have consulted and proceed with best-effort authoring. The editorial agent should flag any inspiration anchors that feel generic or ungrounded.
+Use `obsidian_get_file_contents` with paths like `TheFantasyWorldSimulator/Archetypes/Character Archetypes.md` or `TheFantasyWorldSimulator/Systems/Thematic Pillars.md`.
+
+If Obsidian MCP is unavailable, the draft agent should note which pages it would have consulted and proceed with best-effort authoring. The editorial agent should flag any inspiration anchors that feel generic or ungrounded.
 
 ## File Dependencies
 
 ```
 encounter-building-checklist.md ──┐
 encounter-branching-templates.md ──┤
-Notion inspiration library ────────┤──→ Pass 1 (Draft) ──→ <slug>-draft.md
+Obsidian inspiration library ──────┤──→ Pass 1 (Draft) ──→ <slug>-draft.md
 User premise + scale ──────────────┘                              │
                                                                    ├──→ Pass 2 (Editorial) ──→ <slug>-editorial.md
 encounter-branching-templates.md ──────────────────────────────────┘            │

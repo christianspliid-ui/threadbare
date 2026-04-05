@@ -1,10 +1,10 @@
 This folder contains The Fantasy World Simulator — a systemic god-game/rogue-lite narrative simulation built in React + TypeScript + Vite.
 
-## Cowork vs Claude Code — Read This First
+## Cowork vs Codex — Read This First
 
-**If you are running in Cowork mode:** You must NOT write code or run git commands. You CAN write to `.planning/` coordination files (BACKLOG.md, HANDOVER.md, ROADMAP.md) — **snapshot before every write** (see `Docs/cowork-ways-of-working.md` → "Coordination File Versioning"). Your job is design, research, documentation (via MCP), and implementation plans. Hand coding tasks to Claude Code with a plan link.
+**If you are running in Cowork mode:** You must NOT write code or run git commands. You CAN write to `.planning/` coordination files (BACKLOG.md, HANDOVER.md, ROADMAP.md) — **snapshot before every write** (see `Docs/cowork-ways-of-working.md` → "Coordination File Versioning"). Your job is design, research, documentation (via MCP), and implementation plans. Hand coding tasks to Codex with a plan link.
 
-**If you are running in Claude Code:** You do the coding, testing, committing, and pushing. Check for implementation plans in `Docs/plans/` before starting work.
+**If you are running in Codex:** You do the coding, testing, committing, and pushing. Check for implementation plans in `Docs/plans/` before starting work.
 
 ## Running the Prototype
 
@@ -23,7 +23,6 @@ npm run dev    # start Vite dev server with hot reload
 | `npm run validate-model` | Validate world-model.json integrity |
 | `npm run generate-vault` | Regenerate Obsidian vault from world-model.json |
 | `npm run generate-hex` | Generate a hex tile image (requires Python + API key) |
-| `npm run rebuild-index` | Rebuild Obsidian vault Index.md from all vault pages |
 | `npm run cli` | Interactive REPL for headless game testing (see below) |
 
 **Dev Quick-Start URLs** (append to `http://localhost:5173`):
@@ -37,7 +36,7 @@ npm run dev    # start Vite dev server with hot reload
 
 **For all testing, use `?view=game`** — this skips the multi-click entry flow and loads the full game with HexMapV2. Only test the worldgen/selection screens when those screens are the subject of the test.
 
-**Note for Cowork/Claude sessions:** The sandbox VM has isolated networking. Use `npx tsc --noEmit`, `npx vite build`, and `npm test` to verify. The user must run `npm run dev` on their own machine.
+**Note for Cowork/Codex sessions:** The sandbox VM has isolated networking. Use `npx tsc --noEmit`, `npx vite build`, and `npm test` to verify. The user must run `npm run dev` on their own machine.
 
 ### Headless CLI (`npm run cli`)
 
@@ -48,7 +47,7 @@ npm run cli                          # default seed 42, medium map
 npm run cli -- --seed 99 --map small # custom seed + map size
 ```
 
-Key commands at the `fws>` prompt: `tick [N]` (advance ticks), `run [N]` (auto-run at N ticks/sec), `pause`, `status` (game overview), `agents`, `agent <name>` (inspect one), `events [N]`, `doom`, `mandate`, `essence`, `encounters [agent]`, `spawn encounter <agent|@hero> <encounterId> [--courtPosition X]`, `spawn encounter-context <encounterId> [--agent <agent|@hero>] [--at <location|actor>] [--hex <col> <row>]`, `spawn attachment <agent|@hero> <templateId|name> [--tick N]`, `spawn location <subtype> --hex <col> <row> [--name "..."]`, `spawn sublocation <typeId> (--at <location|actor|@hero> | --hex <col> <row>)`, `spawn npc <role> (--at <location|actor|@hero> | --hex <col> <row>) [--name "..."] [--faction <factionDefId>]`, `move agent <agent|@hero> (--to <location|actor> | --hex <col> <row>)`, `factions`, `traces [N]`, `graph` (node counts), `eval <expr>` (JS with `state` in scope). Type `help` for the full list.
+Key commands at the `fws>` prompt: `tick [N]` (advance ticks), `run [N]` (auto-run at N ticks/sec), `pause`, `status` (game overview), `agents`, `agent <name>` (inspect one), `events [N]`, `doom`, `mandate`, `essence`, `encounters`, `factions`, `traces [N]`, `graph` (node counts), `eval <expr>` (JS with `state` in scope). Type `help` for the full list.
 
 **When to use the CLI:**
 - After modifying tick phases or orchestrator logic — run `tick 30` and check `status` + `events`
@@ -62,10 +61,6 @@ Dev-only API exposed on `window.__DEBUG` (tree-shaken in prod). Use from `previe
 
 ```javascript
 // Debug panel control (opens panel + enables tracing automatically):
-// Keyboard shortcuts in-game:
-// - `F1` opens the Debug Panel directly to the CLI tab
-// - backtick (`) toggles the Debug Panel normally
-// The in-game CLI also supports pasted multi-line batches (one command per line).
 window.__DEBUG.openDebugPanel()
 window.__DEBUG.closeDebugPanel()
 window.__DEBUG.toggleDebugPanel()
@@ -112,52 +107,6 @@ Three surfaces, each with a distinct purpose. Full ownership rules and duplicati
 
 *Notion content migrated to Obsidian 2026-04-04. Dilemma templates remain in Notion pending TypeScript import.*
 
-### Obsidian Vault as LLM Knowledge Base
-
-The vault follows the Karpathy LLM Knowledge Base pattern — a persistent, compounding artifact where the LLM maintains the wiki and humans provide direction and raw sources.
-
-**Three layers:**
-- **`raw/`** — Immutable source materials (design docs, research, web clips). LLM reads but never modifies.
-- **Wiki** (Systems/, Cosmology/, etc.) — LLM-compiled and maintained pages. The LLM owns this content.
-- **`output/`** — Generated reports, query results, audit outputs filed back into the vault.
-
-**Infrastructure files:**
-- **`Index.md`** — Comprehensive catalog of ALL vault pages with one-line summaries. LLM-maintained. Read this first to navigate.
-- **`log.md`** — Append-only chronological record of ingests, queries, lints, and updates.
-
-**Core workflows** (via skills):
-| Workflow | Skill | What it does |
-|----------|-------|-------------|
-| Ingest | `vault-ingest` | Compile raw sources into wiki pages, update index, log |
-| Query | `vault-query` | Ask questions against the vault (3 depth tiers) |
-| Lint | `vault-lint` | Audit vault health: orphans, broken links, stale content |
-| Enrich | `vault-enrich` | Improve pages: add cross-refs, expand content, fix issues |
-
-**Vault maintenance scripts:**
-| Script | What it does |
-|--------|-------------|
-| `npm run generate-vault` | Regenerate graph-node pages from world-model.json (does NOT touch Index.md or Systems/) |
-| `npm run rebuild-index` | One-time rebuild of Index.md from all vault files |
-| `npm run enhance-frontmatter` | One-time bulk update of frontmatter on hand-curated files |
-
-**Frontmatter conventions:**
-```yaml
-# Auto-generated files (from world-model.json):
-tags: [<category>, generated]
-aliases: [<node name>]
-id: <node-id>
-category: <category>
-status: complete
-last-generated: YYYY-MM-DD
-
-# Hand-curated files (Systems/, Brainstorms/, etc.):
-tags: [<category>, <subcategory>]
-aliases: [<alternative names>]
-status: stub | draft | complete | deprecated
-created: YYYY-MM-DD
-updated: YYYY-MM-DD
-```
-
 ## Key Links
 
 - Backlog: `.planning/BACKLOG.md` · Completed items: `.planning/BACKLOG_HISTORY.md`
@@ -197,7 +146,7 @@ The game fills exactly one viewport. **Nothing scrolls. Nothing renders below th
 - **CSS enforcement:** `html, body, #root` have `height: 100dvh; overflow: hidden` in `index.css`. Never remove this.
 - **Layout rule:** Every full-screen layout must use `h-screen flex flex-col overflow-hidden`. Child panels use `flex-1 overflow-y-auto` for internal scroll.
 - **Preview verification:** Always run `preview_resize` to 1920×1080 (or the user's specified resolution) **before** taking screenshots. The default Playwright/preview viewport is not 1920×1080 — it can be any size.
-- **WebGL/Three.js verification:** Playwright `preview_snapshot` and `preview_inspect` cannot see WebGL canvas content — they only see a blank `<canvas>` element. For visual verification of the hex map (HexMapV2) or any Three.js/WebGL content, use **Claude in Chrome** (`mcp__Claude_in_Chrome__*` tools): `tabs_context_mcp` → `navigate` → `computer` with `action: "screenshot"` or `action: "zoom"`. Playwright is still useful for console errors, network requests, and DOM-based UI around the canvas.
+- **WebGL/Three.js verification:** Playwright `preview_snapshot` and `preview_inspect` cannot see WebGL canvas content — they only see a blank `<canvas>` element. For visual verification of the hex map (HexMapV2) or any Three.js/WebGL content, use **Codex in Chrome** (`mcp__Claude_in_Chrome__*` tools): `tabs_context_mcp` → `navigate` → `computer` with `action: "screenshot"` or `action: "zoom"`. Playwright is still useful for console errors, network requests, and DOM-based UI around the canvas.
 - **Modal/overlay rule:** Modals use `max-height: 85vh` (already in Modal primitive). Absolute-positioned overlays (InterventionConfirm, AgendaPicker) must use `inset: 0` within their parent, never exceed the parent's bounds.
 - **Test for it:** If a component renders off-screen at 1920×1080, that's a bug — same severity as a broken interaction.
 
@@ -263,17 +212,6 @@ When modifying Obsidian vault notes:
 
 - **In the document:** Dated inline note near the change (date, what, why — one line).
 - **In the changelog:** Append to `Docs/changelog.md` (format: `| date | where | what changed | why |`).
-- **In the vault log:** Append to `log.md` via Obsidian MCP (format: `- **<type>** | <description>`).
-
-## Debugging Protocol: Verify the Noun Before the Verb
-
-When debugging "system X doesn't produce output for entity Y":
-
-1. **Verify entity identity first.** Inspect the actual `actorId`, `templateId`, `locationId`, or `actionId` in state before modifying the producing system. Use the CLI (`eval state.unifiedActions[...]`) or debug bridge to confirm the entity is what you think it is.
-2. **Check alias resolution.** If you used `@hero`, a partial name, or any fuzzy match, confirm what it resolved to. Debug spawn commands now print resolution notes — read them.
-3. **Only then trace the system.** Once you've confirmed the input data is correct, trace why the system didn't process it.
-
-This protocol exists because: a bug where `@hero` resolved to the wrong actor was misdiagnosed as a visibility system bug, resulting in two correct-but-non-causal fixes before the real cause (identity mismatch) was found. The wasted work was avoidable with a single `eval` command.
 
 ## Definition of Done
 
@@ -294,12 +232,11 @@ Work is not "done" until it is deployed and documented. Do all of these automati
 
 - [ ] Read this file for orientation
 - [ ] **Check `.planning/HANDOVER.md`** — act on pending Cowork handovers before starting new work
-- [ ] Read Obsidian `Index.md` via MCP → follow links to the relevant system. Index.md is the comprehensive catalog — use it as the LLM's navigation system.
+- [ ] Read Obsidian `Index.md` via MCP → follow links to the relevant system
 - [ ] Check `.planning/BACKLOG.md` + `.planning/ROADMAP.md` for priorities
 - [ ] Read relevant design doc in `Docs/plans/` before writing code
 - [ ] **Upstream health check** — if the feature depends on upstream pipeline throughput, verify the pipeline is producing output before coding. A feature wired to a dead pipeline is wasted work.
 - [ ] After completing work, follow the **Definition of Done** above
-- [ ] **Update vault log** — Append to `log.md` via Obsidian MCP what was changed in this session
 
 ## Domain Skills
 
@@ -315,7 +252,6 @@ Context for specific problem types lives in on-demand skills. **Always load `sta
 | Prose — resolver architecture | `prose-pipeline` | Implementing new resolvers, modifying the prose pipeline, understanding graph-walking prose generation. Includes Threadbare aesthetic and authoring checklist. |
 | Prose — content authoring | `prose-content-systems` | Adding encounter templates, narrative event prose, faction content, spell flavor, content tables. High-volume daily work. |
 | Prose — dynamic systems | `prose-vignettes-and-enrichment` | Enrichment placeholders `{name}/{artifact}/{ally}`, vignette authoring, backstory strata, encounter history → prose. |
-| Encounter authoring pipeline | `encounter-pipeline` | Automated 4-pass encounter authoring: draft → editorial → systems audit → final merge. Run with `/encounter-pipeline <scale> <premise>`. |
 | Content systems & worldbuilding | `content-worldbuilding` | Content packages, graph data, constraint layers, world-model.json |
 | Hex map — architecture | `hexmap-core` | Always before any HexMapV2 work. Coordinates, zoom, render layers, camera, Three.js color, performance, lessons learned. |
 | Hex map — features | `hexmap-layers` | Building/modifying/testing/debugging signifiers, agents, fog, labels, click handlers, trails. Load alongside `hexmap-core`. |
@@ -324,10 +260,6 @@ Context for specific problem types lives in on-demand skills. **Always load `sta
 | Blender → HexMap pipeline | `blender-to-hexmap` | Building 3D models in Blender MCP and importing GLB into HexMapV2. Palette, merge, bake rotation, export, Three.js wiring. |
 | Creative fiction writing | `cw-*` (platform) | `cw-brainstorming` for story ideas, `cw-prose-writing` for narrative fiction drafts, `cw-official-docs` for lore wikis, `cw-story-critique` for review. Use *instead of* prose skills only for pure narrative fiction unrelated to the game engine. |
 | Post-implementation docs | `gamedocumenter` | Obsidian/changelog/backlog updates after completing work |
-| Vault — ingest sources | `vault-ingest` | Compile raw sources into wiki pages. `/kb-ingest` |
-| Vault — query knowledge | `vault-query` | Ask questions against the vault. `/kb-query <question>` |
-| Vault — health audit | `vault-lint` | Audit vault for orphans, broken links, stale content. `/kb-lint` |
-| Vault — enrich pages | `vault-enrich` | Add cross-refs, expand content, fix issues. `/kb-enrich [page]` |
 | Image manipulation | `image-manipulation` | Geometric clipping, alpha masks, hex tile pipeline |
 | QA sweeps | `qa-orchestrator` | Systematic UI/UX/frontend QA |
 | Testing & contracts | `testing-patterns` | Writing tests for engine or HexMapV2 changes. Contract test patterns, dependency maps, anti-patterns, coverage gap reference. |

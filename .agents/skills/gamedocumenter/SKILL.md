@@ -164,7 +164,7 @@ Commit all repo-level docs: AGENTS.md, `Docs/changelog.md`, `Docs/project-status
 | `obsidian_list_files_in_dir` | Check what notes exist | Use before creating to avoid duplicates |
 | `git commit` | Commit doc changes | AGENTS.md + Docs/ + .planning/BACKLOG.md |
 
-> **Note:** Notion has some remaining content (not yet migrated to Obsidian) but is not used for active tracking. All backlog and status tracking lives in repo markdown files.
+> **Note:** Design vision docs and archetype libraries were migrated from Notion to Obsidian (2026-04-04). Dilemma templates remain in Notion pending TypeScript import. All backlog and status tracking lives in repo markdown files.
 
 ## Common Mistakes
 
