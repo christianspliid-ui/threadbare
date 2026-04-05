@@ -36,7 +36,7 @@ export type InfluenceTier = 0 | 1 | 2 | 3 | 4;
 // ─── Influence Relationship Properties ───────────────────────────────
 
 /** Court position within the divine court spectrum. */
-export type CourtPosition = 'the_first' | 'retinue' | 'watched';
+export type CourtPosition = 'the_first' | 'retinue' | 'watched' | 'dormant';
 
 /** Campbellian journey phase for The First's hero arc. */
 export type CampbellianPhase = 'call' | 'road_of_trials' | 'crisis' | 'ordeal' | 'return';
