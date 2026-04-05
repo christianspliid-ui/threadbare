@@ -313,12 +313,14 @@ export function phaseEncounterVisibility(
   if (threadedAgents.size === 0) return { notifications, events };
 
   // Build a set of already-pending notification keys to avoid duplicates.
-  // For aftermath notifications, include RESOLVED ones too — otherwise a dismissed
-  // aftermath modal regenerates every tick because the resolved key drops out of the
-  // set and the same aftermathSummary action re-qualifies.
+  // Include RESOLVED notifications for aftermath (otherwise dismissed aftermath modals
+  // regenerate every tick) AND for unified_action steps (otherwise a player committing a
+  // choice on an intermediate step resolves the notification, it drops out of the dedup
+  // set, and the next tick generates a fresh notification for the same step — re-emitting
+  // the modal on every tick until the step duration elapses).
   const existingNotifKeys = new Set(
     (state.encounterNotifications ?? [])
-      .filter(n => !n.resolved || n.kind === 'aftermath')
+      .filter(n => !n.resolved || n.kind === 'aftermath' || n.sourceSystem === 'unified_action')
       .map(n => `${n.kind ?? 'encounter'}:${n.sourceSystem ?? 'legacy_encounter'}:${n.agentId}:${n.encounterId}:${n.actionId ?? 'legacy'}:${n.stepIndex ?? 0}`),
   );
 
