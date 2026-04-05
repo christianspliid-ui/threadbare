@@ -43,6 +43,7 @@ import type { EffectModifierResult, EffectRuntimeState } from '../types/effects'
 import { SPHERE_OPPOSITIONS } from './cosmology';
 import { getDivineAttention } from './divineAttention';
 import { resolveEffectModifiers, buildPredicateContext, hasEffectsFormat } from './effectResolver';
+import { getActiveRuleOverride } from './effects/effectQueries';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {
@@ -85,6 +86,8 @@ export interface ModifierBreakdown {
   effectResult?: EffectModifierResult;
   /** Tactical resolution shapers surfaced by the effect system for this step */
   testShapers?: EffectModifierResult['testShapers'];
+  /** Modifier from modify_rules encounter_difficulty_modifier on the agent */
+  ruleModifier: number;
   totalModifier: number;
 }
 
@@ -351,13 +354,17 @@ export function computeResolutionModifiers(
     traitBonus = computeTraitBonus(graph, agentId, stepReach);
   }
 
+  // Rule override: modify_rules encounter_difficulty_modifier shifts the agent's effective difficulty
+  const ruleModifier = getActiveRuleOverride(graph, agentId, 'encounter_difficulty_modifier', effectStates);
+
   const totalModifier =
     sphereAlignmentBonus +
     equipmentModifier +
     terrainModifier +
     traitBonus +
     divineInterventionModifier +
-    effectModifier;
+    effectModifier +
+    ruleModifier;
 
   return {
     sphereAlignmentBonus,
@@ -368,6 +375,7 @@ export function computeResolutionModifiers(
     effectModifier,
     effectResult,
     testShapers: effectResult?.testShapers ?? [],
+    ruleModifier,
     totalModifier,
   };
 }

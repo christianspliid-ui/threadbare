@@ -19,8 +19,10 @@
 import type { GameState, TickEvent } from '../types/gameState';
 import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { DOOM_PRESSURE_PER_TIER } from '../types/sphereAffinity';
-import { advanceDoomClock } from './doomClock';
+import { advanceDoomClock, accelerateDoomClock, decelerateDoomClock } from './doomClock';
 import { processEffectEvent, applyEffectEventResult } from './effects/effectEvents';
+import { instantiateReward } from './rewardPool';
+import { getActiveRuleOverride } from './effects/effectQueries';
 import { emitTrace } from './traceBuffer';
 import type { TraceEntry } from '../types/trace';
 
@@ -39,7 +41,25 @@ function nextEventId(tick: number): string {
 
 export function phaseDoom(state: GameState): Partial<GameState> {
   const oldStage = state.doomClock.currentStage;
-  const newDoom = advanceDoomClock(state.doomClock);
+
+  // Apply doom_rate_multiplier from modify_rules effects on all agents.
+  // Sum the multiplier overrides and accelerate/decelerate the clock accordingly.
+  // Fail-soft: no agents or no overrides → tickModifier unchanged.
+  const effectStates = state.effectStates;
+  const agents = state.graph.getNodesByType('actor')
+    .filter(n => n.properties.actorType === 'individual' || n.properties.actorType === 'ascendant');
+  let doomRateOverride = 0;
+  for (const agent of agents) {
+    doomRateOverride += getActiveRuleOverride(state.graph, agent.id, 'doom_rate_multiplier', effectStates);
+  }
+  let clockForAdvance = state.doomClock;
+  if (doomRateOverride > 0) {
+    clockForAdvance = accelerateDoomClock(state.doomClock, doomRateOverride);
+  } else if (doomRateOverride < 0) {
+    clockForAdvance = decelerateDoomClock(state.doomClock, -doomRateOverride);
+  }
+
+  const newDoom = advanceDoomClock(clockForAdvance);
   const newStage = newDoom.currentStage;
   const events: TickEvent[] = [];
   const pressures: SpherePressureEvent[] = [...(state.pendingSpherePressures ?? [])];
@@ -92,6 +112,10 @@ export function phaseDoom(state: GameState): Partial<GameState> {
         state.tick,
       );
       states = applyEffectEventResult(state.graph, eventResult);
+      // Execute transform requests from doom_threshold triggers
+      for (const req of eventResult.transformRequests) {
+        instantiateReward(state.graph, req.intoTemplate, agent.id, state.tick);
+      }
       for (const trace of eventResult.traces) {
         emitTrace(trace as unknown as TraceEntry);
       }

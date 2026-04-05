@@ -8,6 +8,9 @@
  * - Tick-based stack accumulation + decay
  * - Consumable charge tracking
  * - Event-based expiry checks
+ * - Axiological drift (slow value axis shift toward limit)
+ * - Hex effect (per-tick property delta on agent's current hex tile)
+ * - Resource manipulate in per_tick mode (drain/restore essence/quintessence)
  *
  * Called once per agent per tick from phaseEffectTick in the orchestrator.
  *
@@ -22,12 +25,17 @@
  * Emits EffectTickTrace for each state change.
  *
  * ─── Fail-soft ──────────────────────────────────────────────────
- * | Failure case                    | Fallback                    |
- * |---------------------------------|-----------------------------|
- * | Missing runtime state           | Initialize default state    |
- * | Negative charges                | Clamp to 0                  |
- * | Destroyed attachment not found  | Skip silently               |
- * | Unknown effect type             | Skip silently               |
+ * | Failure case                         | Fallback                              |
+ * |--------------------------------------|---------------------------------------|
+ * | Missing runtime state                | Initialize default state              |
+ * | Negative charges                     | Clamp to 0                            |
+ * | Destroyed attachment not found       | Skip silently                         |
+ * | Unknown effect type                  | Skip silently                         |
+ * | axiological_drift: missing profile   | Skip silently                         |
+ * | hex_effect: mode != 'add'            | Skip (set mode not supported via tick) |
+ * | hex_effect: property not in enum     | Skip silently                         |
+ * | hex_effect: missing hex coords       | Skip silently                         |
+ * | resource_manipulate: mode != per_tick| Skip (one_shot handled by events)     |
  *
  * ─── PRNG ───────────────────────────────────────────────────────
  * None — all tick operations are deterministic arithmetic.
@@ -36,15 +44,18 @@
  */
 
 import type { WorldGraph } from './graph';
+import type { GraphNode } from '../types/graph';
 import type {
   AttachmentEffect,
   EffectRuntimeState,
   EffectTickTrace,
 } from '../types/effects';
+import type { HexMutation } from '../types/hexMutation';
 import {
   STACKING_GLOBAL_CAP,
   COOLDOWN_MINIMUM_TICKS,
 } from '../data/effect-constants';
+import { getAgentLocation } from './graphQueries';
 
 // ═══════════════════════════════════════════════════════════════════
 // Effect Tick Result
@@ -55,6 +66,8 @@ export interface EffectTickResult {
   updatedStates: Map<string, EffectRuntimeState>;
   /** Attachment IDs that should be destroyed (removed from graph) */
   destroyedAttachments: string[];
+  /** Hex tile mutations produced by hex_effect primitives this tick */
+  hexMutations: HexMutation[];
   /** Trace entries for inspectability */
   traces: EffectTickTrace[];
 }
@@ -260,6 +273,113 @@ function tickConsumable(
   return { state: { ...state, chargesRemaining: charges }, destroy: false };
 }
 
+/** Valid hex tile mutable property keys that can be targeted by hex_effect */
+const HEX_EFFECT_VALID_FIELDS: ReadonlySet<string> = new Set([
+  'divineInfluence',
+  'corruption',
+  'explorationAttraction',
+]);
+
+/**
+ * Axiological drift — shift one value axis toward a limit per tick.
+ * Mutates agent node properties.axiologicalProfile in place.
+ */
+function tickAxiologicalDrift(
+  effect: { type: 'axiological_drift'; axis: string; ratePerTick: number; limitValue: number },
+  agentNode: GraphNode,
+  attachmentId: string,
+  agentId: string,
+  tick: number,
+): { trace?: EffectTickTrace } {
+  const profile = agentNode.properties.axiologicalProfile as Record<string, number> | undefined;
+  if (!profile) return {};
+
+  const current = profile[effect.axis] ?? 0;
+  let next: number;
+
+  // Drift toward limitValue: rate is signed — positive drifts up, negative drifts down
+  if (effect.ratePerTick >= 0) {
+    next = Math.min(current + effect.ratePerTick, effect.limitValue);
+  } else {
+    next = Math.max(current + effect.ratePerTick, effect.limitValue);
+  }
+
+  // Clamp to [-1, 1] axiological range
+  next = Math.max(-1, Math.min(1, next));
+
+  if (next === current) return {};
+
+  // Mutate in place — same pattern as other graph node property mutations
+  profile[effect.axis] = next;
+
+  return {
+    trace: {
+      type: 'effect_tick', tick, agentId, attachmentId,
+      action: 'decay',
+      details: { effectType: 'axiological_drift', axis: effect.axis, previousValue: current, currentValue: next },
+    },
+  };
+}
+
+/**
+ * Hex effect — produce a HexMutation for the agent's current hex tile.
+ * Only 'add' mode is supported (delta-based, matches HexMutation contract).
+ * Fail-soft: returns empty if agent has no location, hex coords, or unsupported property.
+ */
+function tickHexEffect(
+  effect: { type: 'hex_effect'; property: string; value: number | string | boolean; mode: 'set' | 'add'; radius?: number },
+  agentLocationNode: GraphNode | undefined,
+  attachmentId: string,
+): { hexMutation?: HexMutation } {
+  // Only numeric 'add' deltas are supported through HexMutation
+  if (effect.mode !== 'add' || typeof effect.value !== 'number') return {};
+  if (!agentLocationNode) return {};
+  if (!HEX_EFFECT_VALID_FIELDS.has(effect.property)) return {};
+
+  const col = agentLocationNode.properties.hexCol as number | undefined;
+  const row = agentLocationNode.properties.hexRow as number | undefined;
+  if (col === undefined || row === undefined) return {};
+
+  return {
+    hexMutation: {
+      col,
+      row,
+      field: effect.property as HexMutation['field'],
+      delta: effect.value,
+      source: attachmentId,
+    },
+  };
+}
+
+/**
+ * Resource manipulate (per_tick mode) — drain or restore essence/quintessence each tick.
+ * Mutates agent node property in place. Clamps to [0, ∞).
+ * one_shot mode is handled by the event handler (processEffectEvent), not here.
+ */
+function tickResourceManipulate(
+  effect: { type: 'resource_manipulate'; resource: 'essence' | 'quintessence'; target: string; amount: number; mode: 'per_tick' | 'one_shot' },
+  agentNode: GraphNode,
+  attachmentId: string,
+  agentId: string,
+  tick: number,
+): { trace?: EffectTickTrace } {
+  if (effect.mode !== 'per_tick') return {};
+  if (effect.target !== 'self') return {}; // 'other_agent' targeting not handled per-tick
+
+  const current = (agentNode.properties[effect.resource] as number) ?? 0;
+  const next = Math.max(0, current + effect.amount);
+
+  agentNode.properties[effect.resource] = next;
+
+  return {
+    trace: {
+      type: 'effect_tick', tick, agentId, attachmentId,
+      action: 'decay',
+      details: { effectType: 'resource_manipulate', resource: effect.resource, previousValue: current, currentValue: next },
+    },
+  };
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // Main Tick Function
 // ═══════════════════════════════════════════════════════════════════
@@ -284,7 +404,12 @@ export function tickEffects(
 ): EffectTickResult {
   const updatedStates = new Map(effectStates);
   const destroyedAttachments: string[] = [];
+  const hexMutations: HexMutation[] = [];
   const traces: EffectTickTrace[] = [];
+
+  // Resolve agent node and location once — needed for axiological_drift, hex_effect, resource_manipulate
+  const agentNode = graph.getNode(agentId);
+  const agentLocationNode = agentNode ? getAgentLocation(graph, agentId) : undefined;
 
   const edgeTypes = ['possesses', 'bonded_to', 'has_trait'] as const;
 
@@ -342,6 +467,25 @@ export function tickEffects(
             }
             break;
           }
+          case 'axiological_drift': {
+            if (agentNode) {
+              const r = tickAxiologicalDrift(effect, agentNode, node.id, agentId, tick);
+              if (r.trace) traces.push(r.trace);
+            }
+            break;
+          }
+          case 'hex_effect': {
+            const r = tickHexEffect(effect, agentLocationNode, node.id);
+            if (r.hexMutation) hexMutations.push(r.hexMutation);
+            break;
+          }
+          case 'resource_manipulate': {
+            if (agentNode) {
+              const r = tickResourceManipulate(effect, agentNode, node.id, agentId, tick);
+              if (r.trace) traces.push(r.trace);
+            }
+            break;
+          }
           // Non-time-based effects: no tick processing needed
           default:
             break;
@@ -356,7 +500,7 @@ export function tickEffects(
     }
   }
 
-  return { updatedStates, destroyedAttachments, traces };
+  return { updatedStates, destroyedAttachments, hexMutations, traces };
 }
 
 /**

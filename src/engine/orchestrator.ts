@@ -314,6 +314,11 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
           encRng,
         );
         runningEffectStates = applyEffectEventResult(state.graph, eventResult);
+        // Execute transform requests: old attachment already destroyed by applyEffectEventResult;
+        // instantiate the new template and attach it to the agent.
+        for (const req of eventResult.transformRequests) {
+          instantiateReward(state.graph, req.intoTemplate, progress.actorId, state.tick);
+        }
         for (const trace of eventResult.traces) {
           emitTrace(trace as unknown as TraceEntry);
         }
@@ -1512,15 +1517,19 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     }
   }
 
-  // Phase 2a.4: Effect Tick — per-agent effect bookkeeping (duration, cooldown, decay, stacking)
+  // Phase 2a.4: Effect Tick — per-agent effect bookkeeping (duration, cooldown, decay, stacking,
+  //             axiological_drift, hex_effect, resource_manipulate)
   {
     const effectStates = s.effectStates ?? new Map();
     const agents = s.graph.getNodesByType('actor')
       .filter(n => n.properties.actorType === 'individual' || n.properties.actorType === 'ascendant');
     let updatedEffectStates = new Map(effectStates);
+    const effectHexMutations: import('../types/hexMutation').HexMutation[] = [];
     for (const agent of agents) {
       const result = tickEffects(s.graph, agent.id, s.tick, updatedEffectStates);
       updatedEffectStates = result.updatedStates;
+      // Collect hex mutations from hex_effect primitives — passed to phaseHexState below
+      for (const mut of result.hexMutations) effectHexMutations.push(mut);
       // Remove destroyed attachments from graph
       for (const attachId of result.destroyedAttachments) {
         const edges = s.graph.getIncomingEdges(attachId);
@@ -1534,7 +1543,9 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
         emitTrace(trace as unknown as TraceEntry);
       }
     }
-    s = { ...s, effectStates: updatedEffectStates };
+    const existingHexMutations = s.pendingHexMutations ?? [];
+    s = { ...s, effectStates: updatedEffectStates,
+      pendingHexMutations: [...existingHexMutations, ...effectHexMutations] };
   }
 
   // Phase 2a.5: Encounter Progression — advance active encounters whose current step has elapsed
