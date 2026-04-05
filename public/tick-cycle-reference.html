@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Fantasy World Simulator — Tick Cycle Reference</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --parchment: #f4edd8;
+    --parchment-dark: #e8dfc8;
+    --ink: #2c1810;
+    --ink-light: #5a3d2b;
+    --ink-faint: #8a7060;
+    --gold: #b8860b;
+    --gold-light: #daa520;
+    --red: #8b2500;
+    --red-light: #c04030;
+    --blue: #1a3a5c;
+    --blue-light: #2d5f8a;
+    --green: #2d5a27;
+    --green-light: #3d7a35;
+    --purple: #4a2d6a;
+    --purple-light: #6a4d8a;
+    --teal: #1a5a5a;
+    --teal-light: #2a7a7a;
+    --orange: #8a4a00;
+    --orange-light: #b06000;
+    --charcoal: #3a3530;
+
+    --act-doom: #6b1a1a;
+    --act-resolve: #1a3a6b;
+    --act-agents: #2d5a27;
+    --act-social: #6a4a1a;
+    --act-knowledge: #4a2d6a;
+    --act-opposition: #6b1a3a;
+    --act-resources: #1a5a2a;
+    --act-decay: #5a4a3a;
+    --act-worldstate: #8a4a00;
+    --act-progress: #3a1a6b;
+    --act-narrative: #1a5a5a;
+    --act-endgame: #4a0a0a;
+    --act-cleanup: #3a3530;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.5;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(184,134,11,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 30%, rgba(139,37,0,0.03) 0%, transparent 50%);
+  }
+
+  .page-wrapper {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 32px 60px;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 2px solid var(--gold);
+    position: relative;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 1px;
+    background: var(--gold-light);
+  }
+  .header h1 {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 2.4rem;
+    color: var(--ink);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .header .subtitle {
+    font-family: 'Cinzel', serif;
+    font-weight: 400;
+    font-size: 1.1rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .header .description {
+    margin-top: 16px;
+    font-size: 1.05rem;
+    color: var(--ink-light);
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    font-style: italic;
+  }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    justify-content: center;
+    margin-bottom: 36px;
+    padding: 16px 24px;
+    background: rgba(255,255,255,0.3);
+    border: 1px solid var(--parchment-dark);
+    border-radius: 6px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    color: var(--ink-light);
+    font-family: 'Crimson Text', serif;
+  }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── Data flow banner ── */
+  .data-flow-banner {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 40px;
+    padding: 16px;
+    background: rgba(44,24,16,0.04);
+    border: 1px dashed var(--ink-faint);
+    border-radius: 6px;
+  }
+  .data-flow-item {
+    text-align: center;
+    font-size: 0.85rem;
+  }
+  .data-flow-item strong {
+    display: block;
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+  .data-flow-item span {
+    color: var(--ink-light);
+    font-size: 0.82rem;
+  }
+
+  /* ── Act (group) ── */
+  .act {
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .act:not(.collapsed) {
+    margin-bottom: 28px;
+  }
+
+  .act-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .act-header:hover .act-title { text-decoration: underline; text-underline-offset: 3px; }
+
+  .act-number {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: white;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+
+  .act-title-block {
+    flex: 1;
+  }
+  .act-title {
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    font-size: 1.25rem;
+    letter-spacing: 0.04em;
+  }
+  .act-summary {
+    font-size: 0.9rem;
+    color: var(--ink-faint);
+    font-style: italic;
+  }
+
+  .act-toggle {
+    font-size: 1.2rem;
+    color: var(--ink-faint);
+    transition: transform 0.2s;
+  }
+  .act.collapsed .act-toggle { transform: rotate(-90deg); }
+  .act.collapsed .act-body { display: none; }
+
+  /* ── Phase cards ── */
+  .act-body {
+    display: grid;
+    gap: 8px;
+    padding-left: 22px;
+    border-left: 3px solid var(--parchment-dark);
+    margin-left: 22px;
+  }
+
+  .phase-card {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 0 14px;
+    padding: 10px 14px;
+    background: white;
+    border: 1px solid var(--parchment-dark);
+    border-radius: 5px;
+    transition: box-shadow 0.15s, border-color 0.15s;
+    position: relative;
+  }
+  .phase-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border-color: var(--gold-light);
+  }
+
+  .phase-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--ink-faint);
+    padding-top: 2px;
+  }
+
+  .phase-content { min-width: 0; }
+
+  .phase-name {
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+
+  .phase-desc {
+    font-size: 0.88rem;
+    color: var(--ink-light);
+    line-height: 1.45;
+  }
+
+  .phase-tags {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 6px;
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+    line-height: 1.6;
+  }
+  .tag-reads { background: #e8f0e8; color: var(--green); }
+  .tag-writes { background: #fce8e0; color: var(--red); }
+  .tag-system { background: #e8e4f0; color: var(--purple); }
+  .tag-rng { background: #e0ecf4; color: var(--blue); border: 1px dashed var(--blue-light); }
+
+  /* ── Flow connector between acts ── */
+  .act-connector {
+    display: flex;
+    justify-content: center;
+    padding: 4px 0;
+    color: var(--ink-faint);
+    font-size: 1.1rem;
+    opacity: 0.5;
+  }
+
+  /* ── Post-tick section ── */
+  .post-tick {
+    margin-top: 32px;
+    padding: 20px 24px;
+    background: rgba(58,53,48,0.12);
+    border: 2px solid var(--charcoal);
+    border-radius: 6px;
+  }
+  .post-tick h3 {
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    font-size: 1.05rem;
+    margin-bottom: 10px;
+    color: var(--charcoal);
+  }
+  .post-tick-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 8px;
+  }
+  .post-tick-item {
+    padding: 8px 12px;
+    background: white;
+    border: 1px solid var(--parchment-dark);
+    border-radius: 4px;
+    font-size: 0.85rem;
+  }
+  .post-tick-item strong {
+    display: block;
+    font-family: 'Cinzel', serif;
+    font-size: 0.8rem;
+    color: var(--charcoal);
+    margin-bottom: 2px;
+  }
+  .post-tick-item span { color: var(--ink-light); }
+
+  /* ── Key concepts sidebar ── */
+  .concepts {
+    margin-top: 40px;
+    padding: 24px;
+    background: rgba(184,134,11,0.1);
+    border: 2px solid var(--gold);
+    border-radius: 6px;
+  }
+  .concepts h3 {
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--gold);
+    margin-bottom: 14px;
+    letter-spacing: 0.06em;
+  }
+  .concepts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .concept {
+    padding: 10px 14px;
+    background: white;
+    border-radius: 4px;
+    border-left: 3px solid var(--gold);
+  }
+  .concept dt {
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .concept dd {
+    font-size: 0.83rem;
+    color: var(--ink-light);
+  }
+
+  /* ── Search / filter ── */
+  .search-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .search-bar input {
+    flex: 1;
+    padding: 8px 14px;
+    font-family: 'Crimson Text', serif;
+    font-size: 1rem;
+    border: 1px solid var(--parchment-dark);
+    border-radius: 4px;
+    background: white;
+    color: var(--ink);
+    outline: none;
+  }
+  .search-bar input:focus { border-color: var(--gold); }
+  .search-bar input::placeholder { color: var(--ink-faint); font-style: italic; }
+  .search-bar .count {
+    display: flex;
+    align-items: center;
+    font-size: 0.85rem;
+    color: var(--ink-faint);
+    white-space: nowrap;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+  }
+
+  .phase-card.dimmed { opacity: 0.25; }
+  .act.all-dimmed .act-header { opacity: 0.35; }
+
+  /* ── Print styles ── */
+  @media print {
+    body { font-size: 11px; }
+    .search-bar { display: none; }
+    .act.collapsed .act-body { display: grid !important; }
+    .phase-card { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+  <header class="header">
+    <h1>Tick Cycle Reference</h1>
+    <div class="subtitle">The Fantasy World Simulator</div>
+    <p class="description">
+      Each tick is one heartbeat of the world. Every phase runs in sequence,
+      reading from shared state and writing events that downstream phases consume.
+      Like a board game round: world clock, then resolve, then decide, then upkeep.
+    </p>
+  </header>
+
+  <div class="cross-link" style="display:flex;justify-content:center;gap:24px;margin-bottom:32px;padding:12px 20px;background:rgba(184,134,11,0.08);border:1px solid var(--gold-light);border-radius:6px;font-family:'Cinzel',serif;font-size:0.88rem;letter-spacing:0.04em;">
+    <span style="color:var(--ink-faint);">You are here: Tick Cycle Reference</span>
+    <span style="color:var(--ink-faint);">|</span>
+    <a href="encounters-agents-reference.html" style="color:var(--gold);text-decoration:none;">Encounters, Agents &amp; Resolution &#8594;</a>
+  </div>
+
+  <div class="legend" id="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--act-doom)"></div> World Clock</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--act-resolve)"></div> Action Resolution</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--act-agents)"></div> Decisions &amp; Movement</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--act-social)"></div> Social &amp; Discovery</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--act-knowledge)"></div> Knowledge</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--act-opposition)"></div> Opposition</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--act-resources)"></div> Resources &amp; Divine</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--act-decay)"></div> Decay</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--act-worldstate)"></div> World State</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--act-progress)"></div> Long-term Progress</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--act-narrative)"></div> Narrative</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--act-endgame)"></div> Victory &amp; Defeat</div>
+  </div>
+
+  <div class="data-flow-banner">
+    <div class="data-flow-item">
+      <strong>State In</strong>
+      <span>GameState snapshot from previous tick</span>
+    </div>
+    <div class="data-flow-item">
+      <strong>Event Accumulator</strong>
+      <span>tickEvents[] grows through all phases</span>
+    </div>
+    <div class="data-flow-item">
+      <strong>Sphere Pressure</strong>
+      <span>Batched from all phases, resolved once in Act VIII</span>
+    </div>
+    <div class="data-flow-item">
+      <strong>Determinism</strong>
+      <span>Seeded PRNG per phase: seed + tick * N</span>
+    </div>
+  </div>
+
+  <div class="search-bar">
+    <input type="text" id="search" placeholder="Filter phases... (e.g. encounter, doom, prosperity, army)" />
+    <div class="count" id="count">42 phases</div>
+  </div>
+
+  <div id="acts"></div>
+
+  <div class="post-tick">
+    <h3>Post-Tick Bookkeeping</h3>
+    <div class="post-tick-grid">
+      <div class="post-tick-item">
+        <strong>Visibility Recalc</strong>
+        <span>Recompute fog-of-war from ascendant's line-of-sight and scry targets. Auto-reveal land layer for newly-visible hexes.</span>
+      </div>
+      <div class="post-tick-item">
+        <strong>Recent Events Buffer</strong>
+        <span>Merge tickEvents into recentEvents ring buffer (max 100 entries) for UI consumption.</span>
+      </div>
+      <div class="post-tick-item">
+        <strong>Tick Summary Trace</strong>
+        <span>Emit diagnostic trace: tick #, event count, agents processed, doom stage, essence, mandate progress.</span>
+      </div>
+      <div class="post-tick-item">
+        <strong>State Cleanup</strong>
+        <span>Prune old encounter notifications (&gt;50 ticks), stamp completedAtTick on resolved actions, remove stale actions (&gt;100 ticks).</span>
+      </div>
+      <div class="post-tick-item">
+        <strong>Health Validation</strong>
+        <span>validateTickOutput() checks for invariant violations. Failures logged to trace buffer but never throw.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="concepts">
+    <h3>Key Concepts Glossary</h3>
+    <div class="concepts-grid">
+      <dl class="concept">
+        <dt>Unified Action</dt>
+        <dd>A 1-6 step action lifecycle: queued, executing, blocking, fallback, resolved. Deterministic progression each tick.</dd>
+      </dl>
+      <dl class="concept">
+        <dt>Encounter</dt>
+        <dd>A multi-step narrative event an agent participates in. Steps have duration, outcomes grant growth and sphere pressure.</dd>
+      </dl>
+      <dl class="concept">
+        <dt>Sphere Pressure</dt>
+        <dd>Cosmic energy (9 Spheres) accumulated by phases — doom, encounters, battles, rivals — then batch-applied once per tick.</dd>
+      </dl>
+      <dl class="concept">
+        <dt>Domain Capability</dt>
+        <dd>Agent competence across Nine Reaches (activity types). Sigmoid-mapped 0-1 score used by the resolution service.</dd>
+      </dl>
+      <dl class="concept">
+        <dt>Quintessence</dt>
+        <dd>Actor power reserve (current/max). Passive regen, erosion from failure, dissolution at zero. Five threshold states.</dd>
+      </dl>
+      <dl class="concept">
+        <dt>Doom Clock</dt>
+        <dd>World-level countdown. Advances every tick. Tier crossings escalate entropy. Expiry = game over.</dd>
+      </dl>
+      <dl class="concept">
+        <dt>Essence</dt>
+        <dd>The player's divine resource. Generated from controlled locations. Spent on interventions (actions on agents/hexes).</dd>
+      </dl>
+      <dl class="concept">
+        <dt>Mandate</dt>
+        <dd>The player's divine quest. Stage thresholds checked each tick. Completion grants essence and narrative rewards.</dd>
+      </dl>
+      <dl class="concept">
+        <dt>Maslow Pipeline</dt>
+        <dd>Agent decision model: 6 need layers (survival to self-actualization). Higher layers only activate when lower needs are met.</dd>
+      </dl>
+      <dl class="concept">
+        <dt>Familiarity</dt>
+        <dd>What an agent knows about entities. Gained by proximity, thread-binding, and encounter participation. Gates available actions.</dd>
+      </dl>
+      <dl class="concept">
+        <dt>Colocation</dt>
+        <dd>When agents share the same hex/location after movement. Triggers revelations, relationship updates, encounter opportunities.</dd>
+      </dl>
+      <dl class="concept">
+        <dt>Trace</dt>
+        <dd>Structured debug event emitted by every decision point. Visible in the debug panel (backtick key). The engine's audit trail.</dd>
+      </dl>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const ACTS = [
+  {
+    num: 'I',
+    title: 'World Clock',
+    color: 'var(--act-doom)',
+    summary: 'The world advances — doom ticks, narrative beats fire',
+    phases: [
+      { id: '1', name: 'Doom Advance', fn: 'phaseDoom()', desc: 'Advance the doom clock by one tick. On tier crossing, escalate entropy and push sphere pressure to all locations.', reads: ['doomClock', 'doomDefinition'], writes: ['doomClock', 'tickEvents', 'pendingSpherePressures'], tags: [] },
+      { id: '1.5', name: 'Journey Beat', fn: 'phaseJourneyBeat()', desc: 'Check if doom clock crossed a narrative beat threshold for The First. Emit milestone events that mark story progression.', reads: ['doomClock', 'JOURNEY_BEAT_TEMPLATES'], writes: ['tickEvents'], tags: [] }
+    ]
+  },
+  {
+    num: 'II',
+    title: 'Action Resolution',
+    color: 'var(--act-resolve)',
+    summary: 'Resolve in-flight actions, progress encounters, seed new ones',
+    phases: [
+      { id: '2a', name: 'Unified Action Progress', fn: 'phaseUnifiedActionProgress()', desc: 'Progress all queued unified actions through their 1-6 step lifecycle: execution, blocking, fallback, resolution. Uses shared resolution service.', reads: ['unifiedActions', 'graph', 'encounterCache'], writes: ['unifiedActions', 'tickEvents', 'pendingSpherePressures'], tags: ['rng: seed+tick*31'] },
+      { id: '2a.1', name: 'Thread-Bind Familiarity', fn: 'inline', desc: 'When a bind_thread action resolves, immediately grant matching worship familiarity so the agent\'s knowledge updates this tick.', reads: ['unifiedActions (prev vs curr)'], writes: ['familiarityMap'], tags: [] },
+      { id: '2a.4', name: 'Effect Tick', fn: 'tickEffects()', desc: 'Per-agent effect bookkeeping: decrement durations, tick cooldowns, apply decay curves, enforce stacking rules, destroy expired attachments.', reads: ['effectStates', 'graph (actors)'], writes: ['effectStates', 'graph (remove nodes/edges)'], tags: ['traces'] },
+      { id: '2a.5', name: 'Encounter Progression', fn: 'phaseEncounterProgressionV2()', desc: 'Advance active encounters whose current step has elapsed. Resolve outcome, apply growth/tier promotion, advance to next step or complete.', reads: ['encounterProgress', 'graph', 'capabilities'], writes: ['encounterProgress', 'tickEvents', 'pendingSpherePressures', 'graph'], tags: ['rng: seed+tick*43+hash(actorId)', 'balance telemetry'] },
+      { id: '2a.7', name: 'Encounter Revelations', fn: 'emitEncounterRevelations()', desc: 'Emit knowledge facets for nearby entities observing encounter outcomes. Agents learn about what happened around them.', reads: ['tickEvents', 'graph'], writes: ['tickEvents'], tags: [] },
+      { id: '2a.6', name: 'Encounter Visibility', fn: 'phaseEncounterVisibility()', desc: 'Notify threaded agents (those with divine thread edges) about encounter activity in their awareness range.', reads: ['encounterProgress', 'graph (thread edges)'], writes: ['tickEvents', 'encounterNotifications'], tags: [] },
+      { id: '2a.8', name: 'Encounter Seeding', fn: 'evaluateEncounterSeeds()', desc: 'Evaluate encounter seeds planted by aftermath reactions. Successful primary encounters can spawn secondary follow-up encounters.', reads: ['pending seeds', 'encounter definitions'], writes: ['tickEvents', 'encounterProgress'], tags: ['rng: seed+tick*53'] },
+      { id: '2a.9', name: 'Divine Premonition', fn: 'phaseDivinePremonition()', desc: 'Subconscious whisper nudges for idle threaded agents. Gentle hints toward nearby available encounters or decisions.', reads: ['idle threaded agents', 'encounter candidates'], writes: ['tickEvents'], tags: ['rng: seed+tick*67'] }
+    ]
+  },
+  {
+    num: 'III',
+    title: 'Decisions & Movement',
+    color: 'var(--act-agents)',
+    summary: 'Agents choose what to do, then everyone moves — including armies',
+    phases: [
+      { id: '2b', name: 'Agent Decision', fn: 'phaseAgentDecision()', desc: 'Maslow-based decision pipeline for each idle agent. Filter encounters, score candidates, choose: start encounter, queue movement, attempt remote action, or drift/stay.', reads: ['idle agents', 'encounterCache', 'distanceMatrix', 'cooldowns', 'familiarity'], writes: ['tickEvents', 'movementStates', 'encounterProgress'], tags: ['rng: seed+tick*37', 'Maslow pipeline', 'pathfinding'] },
+      { id: '2.35', name: 'Agent Movement', fn: 'phaseMovement()', desc: 'Execute goal-directed pathfinding. Advance each moving agent one hex along their queued path toward their destination.', reads: ['movementStates', 'graph (locations)'], writes: ['graph (location edges)', 'tickEvents'], tags: ['pathfinding'] },
+      { id: '2.352', name: 'Army Movement', fn: 'phaseArmyMovement()', desc: 'Armies advance toward their military objectives along planned march routes.', reads: ['army definitions', 'objectives'], writes: ['army locations'], tags: ['military'] },
+      { id: '2.355', name: 'Army Attrition', fn: 'phaseArmyAttrition()', desc: 'Quintessence degradation during march. Armies lose morale and power over time while traveling.', reads: ['army quintessence', 'march duration'], writes: ['army quintessence pools'], tags: ['military', 'quintessence'] },
+      { id: '2.356', name: 'Battle Detection', fn: 'phaseBattleDetection()', desc: 'Detect hostile army colocation. When enemy armies share a hex, create a battle node to begin combat resolution.', reads: ['army locations', 'faction relationships'], writes: ['graph (battle nodes)'], tags: ['military'] },
+      { id: '2.357', name: 'Battle Tick', fn: 'phaseBattleTick()', desc: 'Process active battles: attrition rolls, momentum shifts, resolution checks. Outcomes: victory, routing, or stalemate.', reads: ['battle nodes', 'army stats'], writes: ['army health', 'battle outcomes'], tags: ['military'] },
+      { id: '2.3575', name: 'Lair Escalation', fn: 'phaseLairEscalation()', desc: 'Tier upgrades for lair locations based on battle history. Victories grant sphere feedback; losses spawn reinforcement armies.', reads: ['lair nodes', 'victory/loss history'], writes: ['lair tiers', 'spawned armies'], tags: ['military'] },
+      { id: '2.358', name: 'Army Notifications', fn: 'phaseArmyNotifications()', desc: 'Convert army and battle traces into tickEvents for the UI notification pipeline.', reads: ['army/battle trace buffers'], writes: ['tickEvents'], tags: ['military'] }
+    ]
+  },
+  {
+    num: 'IV',
+    title: 'Social & Discovery',
+    color: 'var(--act-social)',
+    summary: 'Agents meet, learn about each other, places dissolve, dilemmas emerge',
+    phases: [
+      { id: '2.36', name: 'Colocation Detection', fn: 'phaseColocationDetection()', desc: 'After movement: detect when agents or agent/NPC share the same location. Fires only after movement so arrivals are caught.', reads: ['agent locations (post-move)', 'graph'], writes: ['tickEvents', 'colocation records'], tags: [] },
+      { id: '2.37', name: 'Colocation Revelations', fn: 'emitColocationRevelations()', desc: 'Emit revelation events for first-sighting. Possession reveals, faction bond auto-reveals when agents meet face-to-face.', reads: ['colocation events', 'graph (bonds, possessions)'], writes: ['tickEvents'], tags: [] },
+      { id: '2.38', name: 'NPC Graduation', fn: 'phaseNpcGraduation()', desc: 'Promote NPCs that cross experience/reputation thresholds. Background characters can become full actors in the simulation.', reads: ['NPC experience', 'reputation'], writes: ['tickEvents', 'NPC promotion edges'], tags: [] },
+      { id: '2.4', name: 'Sublocation Dissolution', fn: 'inline', desc: 'Check for expired sublocations (shrines, hideouts). Dissolve them and mark displaced agents\' encounters as abandoned.', reads: ['sublocation nodes (expiry)', 'encounterProgress'], writes: ['tickEvents', 'encounterProgress'], tags: [] },
+      { id: '2.5', name: 'Dilemma Detection', fn: 'phaseDilemmaDetection()', desc: 'Detect resource conflicts between agents. Resolve via game-theory payoff matrix (Prisoner\'s Dilemma). Updates trust and relationship sentiment.', reads: ['resolved action events', 'strategies', 'relationships'], writes: ['tickEvents', 'graph (relationships)'], tags: ['rng', 'trust mechanics'] },
+      { id: '2.55', name: 'Dilemma Revelations', fn: 'emitDilemmaRevelations()', desc: 'Emit revelation events for agents who witness contested dilemma outcomes nearby.', reads: ['dilemma events', 'agent proximity'], writes: ['tickEvents'], tags: [] }
+    ]
+  },
+  {
+    num: 'V',
+    title: 'Knowledge & Learning',
+    color: 'var(--act-knowledge)',
+    summary: 'Agents gain familiarity from proximity and deepen relationships',
+    phases: [
+      { id: '2.75', name: 'Familiarity Gain', fn: 'phaseFamiliarityGain()', desc: 'Grant familiarity to agents at the same location — passive learning through proximity. Being near something means learning about it.', reads: ['colocation events', 'familiarity thresholds'], writes: ['familiarityMap'], tags: [] },
+      { id: '2.76', name: 'Interaction Depth', fn: 'phaseInteractionDepth()', desc: 'Accumulate intimacy/depth metric from encounters and colocations. Tracks how well agents know each other over time.', reads: ['interaction history', 'encounter outcomes'], writes: ['graph (agent intimacy)'], tags: [] }
+    ]
+  },
+  {
+    num: 'VI',
+    title: 'Opposition',
+    color: 'var(--act-opposition)',
+    summary: 'Rival gods act, stealth fades',
+    phases: [
+      { id: '3', name: 'Rival Actions', fn: 'phaseRivalActions()', desc: 'Rival gods act on 8-13 tick cycles. Behaviors: recruit followers, intervene in encounters, expand influence, attack holdings. Pushes sphere pressure.', reads: ['rival definitions', 'rival states'], writes: ['rival states', 'tickEvents', 'pendingSpherePressures'], tags: ['rng: seed+tick*37'] },
+      { id: '4', name: 'Stealth Decay', fn: 'phaseStealth()', desc: 'Linear decay of stealth exposure. Agents gradually become visible again after covert actions.', reads: ['stealthExposure'], writes: ['stealthExposure'], tags: [] }
+    ]
+  },
+  {
+    num: 'VII',
+    title: 'Resources & Divine',
+    color: 'var(--act-resources)',
+    summary: 'What the player earns and spends this tick',
+    phases: [
+      { id: '6', name: 'Essence Generation', fn: 'phaseEssence()', desc: 'Generate divine essence from controlled locations. Per-sphere generation rates. Capped at max capacity. Reports every 10 ticks.', reads: ['ascendant', 'controlEffects', 'sphere rates'], writes: ['essencePool', 'tickEvents'], tags: [] },
+      { id: '6.1', name: 'Control Effects', fn: 'phaseControlEffects()', desc: 'Process sustained divine interventions: essence drain, income, threshold checks, lapse rules. Ongoing magical effects cost resources.', reads: ['controlEffects', 'essencePool'], writes: ['essencePool', 'tickEvents', 'effect states'], tags: [] }
+    ]
+  },
+  {
+    num: 'VIII',
+    title: 'Decay',
+    color: 'var(--act-decay)',
+    summary: 'Entropy pulls everything toward zero without reinforcement',
+    phases: [
+      { id: '6.5', name: 'Reputation Decay', fn: 'phaseReputationDecay()', desc: 'Decay individual agent reputationScore and trust on all relationship edges. Universal entropy pull on social standing.', reads: ['actor nodes', 'relates_to edges'], writes: ['reputationScore', 'trust values'], tags: [] },
+      { id: '6.55', name: 'Faction Reputation Decay', fn: 'phaseFactionReputationDecay()', desc: 'Faction-level reputation decays independently from individual reputation. Organizations slowly lose standing without reinforcement.', reads: ['faction reputation entries'], writes: ['faction reputation pools'], tags: [] },
+      { id: '6.6', name: 'Divine Influence Decay', fn: 'phaseDivineInfluenceDecay()', desc: 'Decay active divine influences on agents using strength curves. Remove expired influences (strength <= 0). Your touch fades over time.', reads: ['agent divineInfluences', 'decay curves'], writes: ['agent divineInfluences'], tags: ['traces'] },
+      { id: '6.62', name: 'Trade Route Decay', fn: 'phaseTradeRouteDecay()', desc: 'Decay trade route volume. Remove dead routes (volume reaches zero). Trade links need constant economic activity to survive.', reads: ['trade route nodes/edges'], writes: ['trade volume', 'graph (remove stale routes)'], tags: [] },
+      { id: '6.638', name: 'Magical Saturation', fn: 'phaseMagicalSaturation()', desc: 'Decay lingering magical saturation on hexes from divine interventions. Spell residue fades over time.', reads: ['hex saturation values'], writes: ['hex saturation'], tags: [] }
+    ]
+  },
+  {
+    num: 'IX',
+    title: 'World State Evolution',
+    color: 'var(--act-worldstate)',
+    summary: 'Dynamics that reshape the map — prosperity, settlements, spheres, terrain',
+    phases: [
+      { id: '6.63', name: 'Settlement Prosperity', fn: 'phaseProsperity()', desc: 'Economic pulse for all settlements. Compute prosperity from trade, military, population. Can trigger prosperity shocks (booms/busts).', reads: ['settlements', 'trade routes', 'military presence'], writes: ['prosperity values', 'prosperityShocks'], tags: [] },
+      { id: '6.632', name: 'Economic Traits', fn: 'phaseEconomicTraits()', desc: 'Grant mastery/reputation/scar traits from economic activity. Successful merchants gain trade mastery, etc.', reads: ['trade participation', 'crafting history'], writes: ['agent traits', 'tickEvents'], tags: [] },
+      { id: '6.64a', name: 'Reputation Traits', fn: 'phaseReputationTraits()', desc: 'Grant reach-polarity reputation traits from encounter accumulation. Fame and infamy crystallize from repeated behavior.', reads: ['encounter history', 'reputation accumulators'], writes: ['agent traits', 'tickEvents'], tags: [] },
+      { id: '6.635', name: 'Settlement Promotion', fn: 'phaseSettlementPromotion()', desc: 'Promote/demote settlements (hamlet <> town <> city) based on sustained prosperity. Changes locationSubtype which affects encounter scoring.', reads: ['settlement prosperity', 'tier history'], writes: ['locationSubtype', 'tickEvents'], tags: ['bumps structuralCacheVersion'] },
+      { id: '6.636', name: 'Hex State', fn: 'phaseHexState()', desc: 'Apply accumulated hex mutations (divine influence, corruption) from all previous phases. Terrain transformation via threshold lookup table.', reads: ['hex tiles', 'pendingHexMutations'], writes: ['hex tile properties'], tags: [] },
+      { id: '6.637', name: 'Unrest', fn: 'phaseUnrest()', desc: 'Decay settlement unrest. Apply prosperity damper (prosperity reduces unrest). Emit threshold events when unrest spikes.', reads: ['settlement unrest', 'prosperity'], writes: ['settlement unrest', 'tickEvents'], tags: [] },
+      { id: '6.639', name: 'Sphere Pressure Resolution', fn: 'phaseSpherePressure()', desc: 'Consume ALL pending sphere pressures batched from upstream phases (doom, encounters, battles, rivals). Single application point per tick.', reads: ['pendingSpherePressures'], writes: ['entity sphere scores', 'tickEvents'], tags: ['central accumulator'] },
+      { id: '6.6396', name: 'Quintessence Tick', fn: 'phaseQuintessence()', desc: 'Process pending quintessence erosion/recovery. Passive regen per entity. Dissolution when quintessence depletes to zero.', reads: ['quintessence pools', 'erosion events'], writes: ['quintessence values', 'tickEvents'], tags: ['quintessence'] },
+      { id: '6.6395', name: 'Sphere Aggregation', fn: 'phaseSphereAggregation()', desc: 'Compute the global World-Soul from all entity sphere scores. The world\'s cosmic mood — feeds prophecy and fate systems.', reads: ['all entity sphere scores'], writes: ['world-level sphere state'], tags: [] },
+      { id: '6.64b', name: 'Influence Tier Promotion', fn: 'phaseInfluenceTierPromotion()', desc: 'Check for influence tier promotions when ascendant influence on an entity crosses thresholds. Unlock backstory chapters.', reads: ['ascendant influence', 'tier history'], writes: ['tickEvents', 'unlocked backstories'], tags: [] },
+      { id: '6.65a', name: 'Sublocation Spawning', fn: 'phaseSublocations()', desc: 'Conditionally spawn or dissolve sublocations (shrines, hideouts, marketplaces) based on settlement prosperity and wealth.', reads: ['settlement prosperity', 'wealth', 'sublocation rules'], writes: ['graph (sublocation nodes)', 'tickEvents'], tags: ['bumps structuralCacheVersion', 'invalidates encounterCache'] },
+      { id: '6.66', name: 'Economic Chronicle', fn: 'phaseEconomicChronicle()', desc: 'Generate chronicle entries for economic state changes: trade booms, famines, inflation spikes. The economy tells its own story.', reads: ['trade volumes', 'prosperity shocks'], writes: ['chronicleEntries'], tags: [] }
+    ]
+  },
+  {
+    num: 'X',
+    title: 'Long-term Progress',
+    color: 'var(--act-progress)',
+    summary: 'Ambitions advance, factions scheme, agents are born and die',
+    phases: [
+      { id: '6.65b', name: 'Ambition Progress', fn: 'phaseAmbitionProgress()', desc: 'Progress agent ambitions: milestone checks, completion, abandonment, re-evaluation. Long-term goals that span many ticks.', reads: ['agent ambitions', 'progress trackers'], writes: ['ambition status', 'tickEvents'], tags: [] },
+      { id: '6.651', name: 'Faction Ambitions', fn: 'phaseFactionAmbitions()', desc: 'Faction-level ambition creation and update. Military objectives, territorial goals, strategic planning at organizational scale.', reads: ['faction state', 'military capabilities'], writes: ['faction ambition data'], tags: ['military'] },
+      { id: '6.75', name: 'Agent Lifecycle', fn: 'phaseAgentLifecycle()', desc: 'Population dynamics: agent death (age, disease, combat), birth (natural growth), migration (seeking better conditions). The circle of life.', reads: ['agent age', 'health', 'location conditions'], writes: ['graph (create/remove agents)', 'tickEvents'], tags: [] }
+    ]
+  },
+  {
+    num: 'XI',
+    title: 'Narrative',
+    color: 'var(--act-narrative)',
+    summary: 'Now captures ALL events — deaths, mandates, economy, everything',
+    phases: [
+      { id: '5', name: 'Chronicle Generation', fn: 'phaseNarrative()', desc: 'Convert high-significance tick events (>= 0.8) into chronicle entries with narrative context and mood. Moved to end of event-generating phases so deaths, mandates, and economic events all get the full narrative treatment.', reads: ['tickEvents (all phases)', 'graph (context)'], writes: ['chronicleEntries'], tags: [] }
+    ]
+  },
+  {
+    num: 'XII',
+    title: 'Victory & Defeat',
+    color: 'var(--act-endgame)',
+    summary: 'Check the player\'s divine quest and the world\'s countdown',
+    phases: [
+      { id: '7', name: 'Mandate Progress', fn: 'phaseMandate()', desc: 'Progress the divine mandate: check stage thresholds, emit stage completion events, reward progress. The player\'s win condition advances.', reads: ['mandateState', 'mandate definition', 'ascendant actions'], writes: ['mandateState', 'tickEvents', 'essence rewards'], tags: ['rng'] },
+      { id: '8', name: 'Doom Expiry', fn: 'phaseDoomExpiry()', desc: 'Final check: has the doom clock reached max stage? If yes, emit game-over. The world\'s lose condition.', reads: ['doomClock', 'doom definition'], writes: ['tickEvents (game_over)', 'gameEnded flag'], tags: [] }
+    ]
+  }
+];
+
+// ── Render ──
+const container = document.getElementById('acts');
+const searchInput = document.getElementById('search');
+const countEl = document.getElementById('count');
+
+function renderActs() {
+  let html = '';
+  ACTS.forEach((act, i) => {
+    html += `<div class="act" data-act="${i}">`;
+    html += `<div class="act-header" onclick="toggleAct(${i})">`;
+    html += `<div class="act-number" style="background:${act.color}">${act.num}</div>`;
+    html += `<div class="act-title-block">`;
+    html += `<div class="act-title">${act.title}</div>`;
+    html += `<div class="act-summary">${act.summary}</div>`;
+    html += `</div>`;
+    html += `<div class="act-toggle">&#9662;</div>`;
+    html += `</div>`;
+    html += `<div class="act-body" style="border-left-color:${act.color}">`;
+    act.phases.forEach(p => {
+      const tagsHtml = [
+        ...p.reads.map(r => `<span class="tag tag-reads">reads: ${r}</span>`),
+        ...p.writes.map(w => `<span class="tag tag-writes">writes: ${w}</span>`),
+        ...p.tags.map(t => t.startsWith('rng') ? `<span class="tag tag-rng">${t}</span>` : `<span class="tag tag-system">${t}</span>`)
+      ].join('');
+      html += `<div class="phase-card" data-search="${(p.name + ' ' + p.desc + ' ' + p.fn + ' ' + p.reads.join(' ') + ' ' + p.writes.join(' ') + ' ' + p.tags.join(' ')).toLowerCase()}">`;
+      html += `<div class="phase-id">${p.id}</div>`;
+      html += `<div class="phase-content">`;
+      html += `<div class="phase-name">${p.name}</div>`;
+      html += `<div class="phase-desc">${p.desc}</div>`;
+      html += `</div>`;
+      if (tagsHtml) html += `<div class="phase-tags">${tagsHtml}</div>`;
+      html += `</div>`;
+    });
+    html += `</div></div>`;
+    if (i < ACTS.length - 1) {
+      html += `<div class="act-connector">&#8595;</div>`;
+    }
+  });
+  container.innerHTML = html;
+}
+
+function toggleAct(i) {
+  const el = document.querySelector(`[data-act="${i}"]`);
+  el.classList.toggle('collapsed');
+}
+
+// ── Search ──
+let totalPhases = ACTS.reduce((s, a) => s + a.phases.length, 0);
+countEl.textContent = `${totalPhases} phases`;
+
+searchInput.addEventListener('input', () => {
+  const q = searchInput.value.toLowerCase().trim();
+  let visible = 0;
+  document.querySelectorAll('.act').forEach(actEl => {
+    const cards = actEl.querySelectorAll('.phase-card');
+    let actVisible = 0;
+    cards.forEach(card => {
+      const match = !q || card.dataset.search.includes(q);
+      card.classList.toggle('dimmed', !match);
+      if (match) { actVisible++; visible++; }
+    });
+    actEl.classList.toggle('all-dimmed', actVisible === 0 && q);
+    // expand matching acts
+    if (q && actVisible > 0) actEl.classList.remove('collapsed');
+  });
+  countEl.textContent = q ? `${visible}/${totalPhases} matching` : `${totalPhases} phases`;
+});
+
+renderActs();
+</script>
+</body>
+</html>

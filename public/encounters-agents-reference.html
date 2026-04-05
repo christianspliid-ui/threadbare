@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Fantasy World Simulator — Encounters, Agents &amp; Resolution</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --parchment: #f4edd8;
+    --parchment-dark: #e8dfc8;
+    --ink: #2c1810;
+    --ink-light: #5a3d2b;
+    --ink-faint: #8a7060;
+    --gold: #b8860b;
+    --gold-light: #daa520;
+    --red: #8b2500;
+    --red-light: #c04030;
+    --blue: #1a3a5c;
+    --blue-light: #2d5f8a;
+    --green: #2d5a27;
+    --green-light: #3d7a35;
+    --purple: #4a2d6a;
+    --purple-light: #6a4d8a;
+    --teal: #1a5a5a;
+    --teal-light: #2a7a7a;
+    --orange: #8a4a00;
+    --orange-light: #b06000;
+    --charcoal: #3a3530;
+
+    --ch-reaches: #1a3a5c;
+    --ch-capability: #2d5a27;
+    --ch-species: #6a4a1a;
+    --ch-traits: #4a2d6a;
+    --ch-attachments: #8a4a00;
+    --ch-encounters: #6b1a1a;
+    --ch-resolution: #1a5a5a;
+    --ch-divine: #6b1a3a;
+    --ch-decision: #3a1a6b;
+
+    --tier-mundane: #8a8078;
+    --tier-storied: #a06830;
+    --tier-mythic: #4a2d6a;
+    --tier-legendary: #b8860b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.5;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(184,134,11,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 30%, rgba(139,37,0,0.03) 0%, transparent 50%);
+  }
+
+  .page-wrapper {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 32px 60px;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 2px solid var(--gold);
+    position: relative;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 1px;
+    background: var(--gold-light);
+  }
+  .header h1 {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 2.4rem;
+    color: var(--ink);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .header .subtitle {
+    font-family: 'Cinzel', serif;
+    font-weight: 400;
+    font-size: 1.1rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .header .description {
+    margin-top: 16px;
+    font-size: 1.05rem;
+    color: var(--ink-light);
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    font-style: italic;
+  }
+
+  /* ── Cross-link banner ── */
+  .cross-link {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 32px;
+    padding: 12px 20px;
+    background: rgba(184,134,11,0.08);
+    border: 1px solid var(--gold-light);
+    border-radius: 6px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.88rem;
+    letter-spacing: 0.04em;
+  }
+  .cross-link a {
+    color: var(--gold);
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  .cross-link a:hover { color: var(--red); text-decoration: underline; text-underline-offset: 3px; }
+  .cross-link .separator { color: var(--ink-faint); }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    justify-content: center;
+    margin-bottom: 36px;
+    padding: 16px 24px;
+    background: rgba(255,255,255,0.3);
+    border: 1px solid var(--parchment-dark);
+    border-radius: 6px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    color: var(--ink-light);
+    font-family: 'Crimson Text', serif;
+  }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── Data flow banner ── */
+  .data-flow-banner {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 40px;
+    padding: 16px;
+    background: rgba(44,24,16,0.04);
+    border: 1px dashed var(--ink-faint);
+    border-radius: 6px;
+  }
+  .data-flow-item {
+    text-align: center;
+    font-size: 0.85rem;
+  }
+  .data-flow-item strong {
+    display: block;
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+  .data-flow-item span {
+    color: var(--ink-light);
+    font-size: 0.82rem;
+  }
+
+  /* ── Chapter (group) ── */
+  .chapter {
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .chapter:not(.collapsed) {
+    margin-bottom: 28px;
+  }
+
+  .chapter-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .chapter-header:hover .chapter-title { text-decoration: underline; text-underline-offset: 3px; }
+
+  .chapter-number {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: white;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+
+  .chapter-title-block { flex: 1; }
+  .chapter-title {
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    font-size: 1.25rem;
+    letter-spacing: 0.04em;
+  }
+  .chapter-summary {
+    font-size: 0.9rem;
+    color: var(--ink-faint);
+    font-style: italic;
+  }
+
+  .chapter-toggle {
+    font-size: 1.2rem;
+    color: var(--ink-faint);
+    transition: transform 0.2s;
+  }
+  .chapter.collapsed .chapter-toggle { transform: rotate(-90deg); }
+  .chapter.collapsed .chapter-body { display: none; }
+
+  /* ── Rule cards ── */
+  .chapter-body {
+    display: grid;
+    gap: 8px;
+    padding-left: 22px;
+    border-left: 3px solid var(--parchment-dark);
+    margin-left: 22px;
+  }
+
+  .rule-card {
+    padding: 12px 16px;
+    background: white;
+    border: 1px solid var(--parchment-dark);
+    border-radius: 5px;
+    transition: box-shadow 0.15s, border-color 0.15s;
+    position: relative;
+  }
+  .rule-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border-color: var(--gold-light);
+  }
+
+  .rule-name {
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  .rule-desc {
+    font-size: 0.88rem;
+    color: var(--ink-light);
+    line-height: 1.5;
+  }
+
+  .rule-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 8px;
+  }
+
+  /* ── Tables inside cards ── */
+  .rule-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 0.82rem;
+  }
+  .rule-table th {
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+    text-align: left;
+    padding: 5px 8px;
+    border-bottom: 2px solid var(--parchment-dark);
+  }
+  .rule-table td {
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--parchment-dark);
+    color: var(--ink-light);
+    vertical-align: top;
+  }
+  .rule-table tr:last-child td { border-bottom: none; }
+  .rule-table .num { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; }
+  .rule-table .highlight { color: var(--ink); font-weight: 600; }
+
+  /* ── Formula blocks ── */
+  .formula {
+    display: block;
+    margin: 8px 0;
+    padding: 8px 14px;
+    background: rgba(44,24,16,0.04);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 4px 4px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--ink);
+    line-height: 1.6;
+    white-space: pre-wrap;
+  }
+
+  /* ── Tags ── */
+  .tag {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+    line-height: 1.6;
+  }
+  .tag-reach { background: #e0ecf4; color: var(--blue); }
+  .tag-sphere { background: #e8e4f0; color: var(--purple); }
+  .tag-cap { background: #fce8e0; color: var(--red); }
+  .tag-constant { background: #e8f0e8; color: var(--green); }
+  .tag-rng { background: #e0ecf4; color: var(--blue); border: 1px dashed var(--blue-light); }
+  .tag-tier { background: #f0e8d0; color: var(--orange); }
+  .tag-system { background: #e8e4f0; color: var(--purple); }
+
+  /* ── Reach domain badges ── */
+  .reach-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    color: white;
+  }
+  .reach-iron { background: #5a3a30; }
+  .reach-gold { background: #8a6a10; }
+  .reach-shadow { background: #3a3050; }
+  .reach-veil { background: #4a3070; }
+  .reach-heart { background: #7a2a40; }
+  .reach-eye { background: #2a4a6a; }
+  .reach-stone { background: #5a5a40; }
+  .reach-star { background: #6a5a20; }
+  .reach-flesh { background: #6a3a30; }
+
+  /* ── Tier badges ── */
+  .tier-badge {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 3px;
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    font-size: 0.7rem;
+    letter-spacing: 0.03em;
+  }
+  .tier-mundane { background: #e8e4e0; color: var(--tier-mundane); }
+  .tier-storied { background: #f0e0d0; color: var(--tier-storied); }
+  .tier-mythic { background: #e8e0f0; color: var(--tier-mythic); }
+  .tier-legendary { background: #f0e8c8; color: var(--tier-legendary); border: 1px solid var(--gold-light); }
+
+  /* ── Connector ── */
+  .chapter-connector {
+    display: flex;
+    justify-content: center;
+    padding: 4px 0;
+    color: var(--ink-faint);
+    font-size: 1.1rem;
+    opacity: 0.5;
+  }
+
+  /* ── Key Concepts ── */
+  .concepts {
+    margin-top: 40px;
+    padding: 24px;
+    background: rgba(184,134,11,0.1);
+    border: 2px solid var(--gold);
+    border-radius: 6px;
+  }
+  .concepts h3 {
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--gold);
+    margin-bottom: 14px;
+    letter-spacing: 0.06em;
+  }
+  .concepts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .concept {
+    padding: 10px 14px;
+    background: white;
+    border-radius: 4px;
+    border-left: 3px solid var(--gold);
+  }
+  .concept dt {
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .concept dd {
+    font-size: 0.83rem;
+    color: var(--ink-light);
+  }
+
+  /* ── Search ── */
+  .search-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .search-bar input {
+    flex: 1;
+    padding: 8px 14px;
+    font-family: 'Crimson Text', serif;
+    font-size: 1rem;
+    border: 1px solid var(--parchment-dark);
+    border-radius: 4px;
+    background: white;
+    color: var(--ink);
+    outline: none;
+  }
+  .search-bar input:focus { border-color: var(--gold); }
+  .search-bar input::placeholder { color: var(--ink-faint); font-style: italic; }
+  .search-bar .count {
+    display: flex;
+    align-items: center;
+    font-size: 0.85rem;
+    color: var(--ink-faint);
+    white-space: nowrap;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+  }
+
+  .rule-card.dimmed { opacity: 0.25; }
+  .chapter.all-dimmed .chapter-header { opacity: 0.35; }
+
+  /* ── Print ── */
+  @media print {
+    body { font-size: 11px; }
+    .search-bar { display: none; }
+    .cross-link { display: none; }
+    .chapter.collapsed .chapter-body { display: grid !important; }
+    .rule-card { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+  <header class="header">
+    <h1>Encounters, Agents &amp; Resolution</h1>
+    <div class="subtitle">The Fantasy World Simulator</div>
+    <p class="description">
+      How agents are measured, what they carry, and how the world tests them.
+      Read this like a board game rulebook: stats first, then equipment, then the encounters that use them.
+    </p>
+  </header>
+
+  <div class="cross-link">
+    <a href="tick-cycle-reference.html">&#8592; Tick Cycle Reference</a>
+    <span class="separator">|</span>
+    <span style="color: var(--ink-faint);">You are here: Encounters, Agents &amp; Resolution</span>
+  </div>
+
+  <div class="legend" id="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--ch-reaches)"></div> Nine Reaches</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--ch-capability)"></div> Domain Capability</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--ch-species)"></div> Species</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--ch-traits)"></div> Traits &amp; Mastery</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--ch-attachments)"></div> Attachments</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--ch-encounters)"></div> Encounters</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--ch-resolution)"></div> Resolution</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--ch-divine)"></div> Divine Intervention</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--ch-decision)"></div> Agent Decisions</div>
+  </div>
+
+  <div class="data-flow-banner">
+    <div class="data-flow-item">
+      <strong>Agent Identity</strong>
+      <span>Species origin + traits + attachments = who you are</span>
+    </div>
+    <div class="data-flow-item">
+      <strong>Domain Capability</strong>
+      <span>Sigmoid-mapped 0&ndash;1 score across Nine Reaches</span>
+    </div>
+    <div class="data-flow-item">
+      <strong>Encounter</strong>
+      <span>Multi-step test at a location, gated by threat &amp; motivation</span>
+    </div>
+    <div class="data-flow-item">
+      <strong>Resolution</strong>
+      <span>Base capability + 5 modifiers vs. difficulty &rarr; outcome</span>
+    </div>
+  </div>
+
+  <div class="search-bar">
+    <input type="text" id="search" placeholder="Filter rules... (e.g. iron, sigmoid, artifact, duel, mastery, divine)" />
+    <div class="count" id="count"></div>
+  </div>
+
+  <div id="chapters"></div>
+
+  <div class="concepts">
+    <h3>Quick Reference Glossary</h3>
+    <div class="concepts-grid">
+      <dl class="concept">
+        <dt>Reach</dt>
+        <dd>One of nine activity domains (Iron, Gold, Shadow, Veil, Heart, Eye, Stone, Star, Flesh). What you <em>do</em>.</dd>
+      </dl>
+      <dl class="concept">
+        <dt>Sphere</dt>
+        <dd>One of eight cosmic energies (Force, Matter, Energy, Life, Mind, Spirit, Time, Entropy). What <em>fuels</em> it.</dd>
+      </dl>
+      <dl class="concept">
+        <dt>Domain Capability</dt>
+        <dd>A 0&ndash;1 score per Reach, computed from traits + attachments via a sigmoid curve. The agent's "stat sheet."</dd>
+      </dl>
+      <dl class="concept">
+        <dt>Fate Forecast</dt>
+        <dd>The predicted outcome tier (Doomed &rarr; Fated) shown before an encounter step resolves. Based on the full resolution formula.</dd>
+      </dl>
+      <dl class="concept">
+        <dt>Attachment</dt>
+        <dd>Anything an agent carries, suffers, or is bound by. Six categories: possessions, conditions, blessings/curses, bestowed powers, agreements, retainers.</dd>
+      </dl>
+      <dl class="concept">
+        <dt>Rarity Tier</dt>
+        <dd>Four levels of narrative weight: Mundane (grey), Storied (copper), Mythic (indigo), Legendary (gold). Scales modifiers and rewards.</dd>
+      </dl>
+      <dl class="concept">
+        <dt>Quintessence</dt>
+        <dd>An actor's life force (current/max). Depletes from failure and erosion. At zero: dissolution (death or dispersal).</dd>
+      </dl>
+      <dl class="concept">
+        <dt>Threat Rating</dt>
+        <dd>Encounter difficulty band: Trivial, Easy, Moderate, Hard, Deadly. Agents self-select encounters within &plusmn;1 tier of their power.</dd>
+      </dl>
+      <dl class="concept">
+        <dt>Encounter Step</dt>
+        <dd>One test within a multi-step encounter (2&ndash;4 steps). Each step has its own Reach, difficulty, and duration.</dd>
+      </dl>
+      <dl class="concept">
+        <dt>Divine Thread</dt>
+        <dd>A bond between the player-god and an agent. Tiers 0&ndash;4 (Unbonded &rarr; Aspect). Higher tiers = cheaper intervention, deeper influence.</dd>
+      </dl>
+      <dl class="concept">
+        <dt>Influence Essence</dt>
+        <dd>The player's divine resource. Generated from controlled locations. Spent on interventions, nudges, and divine actions.</dd>
+      </dl>
+      <dl class="concept">
+        <dt>Maslow Pipeline</dt>
+        <dd>Agent decision model: 6 need layers (survival &rarr; self-actualization). Higher layers activate only when lower needs are met.</dd>
+      </dl>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const CHAPTERS = [
+  {
+    num: 'I',
+    title: 'The Nine Reaches',
+    color: 'var(--ch-reaches)',
+    summary: 'Nine domains of activity \u2014 what an agent can do in the world',
+    rules: [
+      {
+        name: 'Reaches and Spheres',
+        desc: 'Reaches are <em>what you do</em> (activity categories). Spheres are <em>what fuels it</em> (cosmic energies). They combine freely \u2014 the same Reach at different Sphere alignments produces different action flavors. Neither subsumes the other.',
+        tags: ['architectural decision']
+      },
+      {
+        name: 'The Nine Reaches',
+        desc: 'Every test, every encounter step, and every action in the simulation is categorized under one of these nine domains.',
+        table: {
+          headers: ['Reach', 'Sphere', 'Theme', 'Examples'],
+          rows: [
+            ['<span class="reach-badge reach-iron">Iron</span>', 'Force', 'Warfare, martial prowess, direct conflict', 'Duels, sieges, military campaigns'],
+            ['<span class="reach-badge reach-gold">Gold</span>', 'Matter', 'Trade, wealth, commerce, economic power', 'Merchant deals, resource control, contracts'],
+            ['<span class="reach-badge reach-shadow">Shadow</span>', 'Mind', 'Stealth, espionage, deception, secrets', 'Assassination, spying, hidden influence'],
+            ['<span class="reach-badge reach-veil">Veil</span>', 'Energy', 'Magic, enchantment, arcane forces', 'Spell-casting, rituals, supernatural phenomena'],
+            ['<span class="reach-badge reach-heart">Heart</span>', 'Spirit', 'Social bonds, loyalty, love, betrayal', 'Alliances, negotiations, emotional influence'],
+            ['<span class="reach-badge reach-eye">Eye</span>', 'Mind', 'Knowledge, discovery, investigation', 'Research, revelation, truth-seeking'],
+            ['<span class="reach-badge reach-stone">Stone</span>', 'Matter', 'Construction, fortification, infrastructure', 'Building, permanent works, engineering'],
+            ['<span class="reach-badge reach-star">Star</span>', 'Spirit', 'Faith, divinity, fate, destiny', 'Prayer, prophecy, religious devotion'],
+            ['<span class="reach-badge reach-flesh">Flesh</span>', 'Life', 'Biology, healing, disease, bodily power', 'Medicine, poison, transformation']
+          ]
+        },
+        tags: ['9 reaches']
+      },
+      {
+        name: 'Sphere Alignments',
+        desc: 'Each Reach has a primary Sphere (weight 1.0) and sometimes a secondary (weight 0.7). Sphere alignment affects encounter bonuses and essence costs.',
+        table: {
+          headers: ['Reach', 'Primary Sphere (1.0)', 'Secondary Sphere (0.7)'],
+          rows: [
+            ['Iron', 'Force', '\u2014'],
+            ['Gold', 'Matter', '\u2014'],
+            ['Shadow', 'Mind', '\u2014'],
+            ['Veil', 'Energy', 'Mind'],
+            ['Heart', 'Spirit', 'Life'],
+            ['Eye', 'Mind', 'Time'],
+            ['Stone', 'Matter', 'Force'],
+            ['Star', 'Spirit', 'Entropy'],
+            ['Flesh', 'Life', '\u2014']
+          ]
+        },
+        tags: ['spheres', 'alignment']
+      }
+    ]
+  },
+  {
+    num: 'II',
+    title: 'Domain Capability',
+    color: 'var(--ch-capability)',
+    summary: 'How agent stats are computed \u2014 the sigmoid curve from traits to a 0\u20131 score',
+    rules: [
+      {
+        name: 'The Sigmoid Formula',
+        desc: 'Every agent has a capability score (0.0\u20131.0) in each Reach, computed by walking their graph neighborhood and mapping through a sigmoid curve. This is the agent\'s "stat sheet."',
+        formula: 'capability = 1 / (1 + e^(-k \u00d7 (raw_score - midpoint)))\n\nclamped to [0.05, 0.95]',
+        tags: ['formula', 'cap: 0.05\u20130.95']
+      },
+      {
+        name: 'Raw Score Contributors',
+        desc: 'The raw score is built by walking the agent\'s graph edges and summing contributions from all connected nodes:',
+        table: {
+          headers: ['Source', 'Contribution', 'Persistence'],
+          rows: [
+            ['<strong>Origin traits</strong>', 'Fixed baseline per species', 'Permanent'],
+            ['<strong>Mastery traits</strong>', 'Scaled by level (\u00d71, \u00d72, \u00d73)', 'Decays without reinforcement'],
+            ['<strong>Scar traits</strong>', 'Fixed per scar', 'Permanent'],
+            ['<strong>Reputation traits</strong>', 'Evolves with behavior', 'Shifts over time'],
+            ['<strong>Condition traits</strong>', 'Fixed while active', 'Temporary (tick-based)'],
+            ['<strong>Destiny traits</strong>', 'Hidden, divine-visible', 'Conditional'],
+            ['<strong>Common artifacts</strong>', 'Fixed per artifact', 'While possessed'],
+            ['<strong>Legendary artifacts</strong>', 'Variable (own trait graph)', 'While bonded'],
+            ['<strong>Enchantments/Curses</strong>', 'Fixed per enchantment', 'Duration-based'],
+            ['<strong>Controlled resources</strong>', 'Fixed while controlled', 'While control edge exists'],
+            ['<strong>Consumables</strong>', 'One-time boost', 'Destroyed on use']
+          ]
+        },
+        tags: ['graph walk']
+      },
+      {
+        name: 'The 10-Tier Narrative Lexicon',
+        desc: 'Capability scores map to a tier number and a domain-specific adjective used in prose and UI. Each Reach has its own vocabulary.',
+        table: {
+          headers: ['Tier', 'Range', 'Iron', 'Gold', 'Shadow', 'Veil', 'Heart', 'Eye', 'Stone', 'Star', 'Flesh'],
+          rows: [
+            ['<span class="num">1</span>', '<span class="num">0.0\u20130.1</span>', 'Frail', 'Destitute', 'Exposed', 'Mundane', 'Hollow', 'Blind', 'Rootless', 'Godless', 'Frail'],
+            ['<span class="num">2</span>', '<span class="num">0.1\u20130.2</span>', 'Soft', 'Poor', 'Clumsy', 'Dull', 'Cold', 'Dim', 'Loose', 'Doubting', 'Weak'],
+            ['<span class="num">3</span>', '<span class="num">0.2\u20130.3</span>', 'Sturdy', 'Thrifty', 'Cautious', 'Touched', 'Warm', 'Keen', 'Grounded', 'Pious', 'Hardy'],
+            ['<span class="num">4</span>', '<span class="num">0.3\u20130.4</span>', 'Trained', 'Comfortable', 'Sly', 'Sensitive', 'Kind', 'Alert', 'Settled', 'Faithful', 'Tough'],
+            ['<span class="num">5</span>', '<span class="num">0.4\u20130.5</span>', 'Steeled', 'Prosperous', 'Veiled', 'Gifted', 'Devoted', 'Perceptive', 'Rooted', 'Devoted', 'Vigorous'],
+            ['<span class="num">6</span>', '<span class="num">0.5\u20130.6</span>', 'Tempered', 'Wealthy', 'Shadowed', 'Adept', 'Inspiring', 'Watchful', 'Entrenched', 'Blessed', 'Robust'],
+            ['<span class="num">7</span>', '<span class="num">0.6\u20130.7</span>', 'Fearsome', 'Affluent', 'Masked', 'Arcane', 'Radiant', 'Prescient', 'Enduring', 'Anointed', 'Mighty'],
+            ['<span class="num">8</span>', '<span class="num">0.7\u20130.8</span>', 'Dread', 'Magnate', 'Spectral', 'Eldritch', 'Luminous', 'Oracular', 'Immovable', 'Exalted', 'Titanic'],
+            ['<span class="num">9</span>', '<span class="num">0.8\u20130.9</span>', 'Ruinous', 'Sovereign', 'Invisible', 'Transcendent', 'Incandescent', 'Omniscient', 'Eternal', 'Sacred', 'Undying'],
+            ['<span class="num">10</span>', '<span class="num">0.9\u20131.0</span>', 'Cataclysmic', 'Imperial', 'Void', 'Mythic', 'Absolute', 'All-Seeing', 'Primordial', 'Divine', 'Deathless']
+          ]
+        },
+        tags: ['10 tiers', 'prose']
+      },
+      {
+        name: 'Expected Tier by Actor Profile',
+        desc: 'Rules of thumb for where different actors land on the capability scale:',
+        table: {
+          headers: ['Actor Profile', 'Raw Score', 'Expected Tier'],
+          rows: [
+            ['Mortal, origin traits only', '<span class="num">2\u20134</span>', '3\u20134 (Sturdy\u2013Trained)'],
+            ['Mortal + 2\u20133 mastery traits', '<span class="num">6\u201310</span>', '5\u20136 (Steeled\u2013Tempered)'],
+            ['Veteran + artifacts', '<span class="num">10\u201315</span>', '6\u20137 (Tempered\u2013Fearsome)'],
+            ['Legendary figure', '<span class="num">15\u201325</span>', '8\u20139 (Dread\u2013Ruinous)'],
+            ['God-tier entity', '<span class="num">25+</span>', '9\u201310 (Ruinous\u2013Cataclysmic)']
+          ]
+        },
+        tags: ['balance']
+      }
+    ]
+  },
+  {
+    num: 'III',
+    title: 'Origin Species',
+    color: 'var(--ch-species)',
+    summary: 'Baseline domain profiles by species \u2014 where every agent starts',
+    rules: [
+      {
+        name: 'Species Domain Profiles',
+        desc: 'Each species has innate origin traits that set baseline domain contributions. These are permanent and form the foundation of the agent\'s capability profile.',
+        table: {
+          headers: ['Species', 'Iron', 'Gold', 'Shadow', 'Veil', 'Heart', 'Eye', 'Stone', 'Star', 'Flesh', 'Signature'],
+          rows: [
+            ['<strong>Dwarf</strong>',   '<span class="num">+3</span>', '<span class="num">+3</span>', '<span class="num">+0</span>', '<span class="num">+0</span>', '<span class="num">+1</span>', '<span class="num">+1</span>', '<span class="num highlight">+4</span>', '<span class="num">+2</span>', '<span class="num">+2</span>', 'Rooted at Stone'],
+            ['<strong>Elf</strong>',     '<span class="num">+0</span>', '<span class="num">+1</span>', '<span class="num">+1</span>', '<span class="num highlight">+4</span>', '<span class="num">+2</span>', '<span class="num highlight">+4</span>', '<span class="num">+0</span>', '<span class="num">+2</span>', '<span class="num">+3</span>', 'Perceptive at Eye'],
+            ['<strong>Human</strong>',   '<span class="num">+2</span>', '<span class="num">+2</span>', '<span class="num">+2</span>', '<span class="num">+1</span>', '<span class="num">+2</span>', '<span class="num">+2</span>', '<span class="num">+2</span>', '<span class="num">+1</span>', '<span class="num">+2</span>', 'Trained at everything'],
+            ['<strong>Orc</strong>',     '<span class="num highlight">+4</span>', '<span class="num">+0</span>', '<span class="num">+1</span>', '<span class="num">+0</span>', '<span class="num">+2</span>', '<span class="num">+1</span>', '<span class="num">+2</span>', '<span class="num">+1</span>', '<span class="num highlight">+4</span>', 'Fearsome at Iron'],
+            ['<strong>Fey</strong>',     '<span class="num">+0</span>', '<span class="num">+1</span>', '<span class="num">+3</span>', '<span class="num highlight">+5</span>', '<span class="num">+3</span>', '<span class="num">+2</span>', '<span class="num">+0</span>', '<span class="num">+2</span>', '<span class="num">+1</span>', 'Adept at Veil'],
+            ['<strong>Dragon</strong>',  '<span class="num highlight">+5</span>', '<span class="num">+2</span>', '<span class="num">+1</span>', '<span class="num highlight">+5</span>', '<span class="num">+0</span>', '<span class="num highlight">+4</span>', '<span class="num">+3</span>', '<span class="num">+3</span>', '<span class="num highlight">+5</span>', 'Mythic beings'],
+            ['<strong>Treant</strong>',  '<span class="num">+1</span>', '<span class="num">+0</span>', '<span class="num">+0</span>', '<span class="num">+2</span>', '<span class="num">+3</span>', '<span class="num">+2</span>', '<span class="num highlight">+5</span>', '<span class="num highlight">+4</span>', '<span class="num">+3</span>', 'Eternal at Stone'],
+            ['<strong>Undead</strong>',  '<span class="num">+2</span>', '<span class="num">+0</span>', '<span class="num">+3</span>', '<span class="num">+2</span>', '<span class="num" style="color:var(--red)">\u22122</span>', '<span class="num">+1</span>', '<span class="num">+1</span>', '<span class="num" style="color:var(--red)">\u22121</span>', '<span class="num highlight">+4</span>', 'Hollow at Heart'],
+            ['<strong>Goblin</strong>',  '<span class="num">+1</span>', '<span class="num">+3</span>', '<span class="num">+3</span>', '<span class="num">+0</span>', '<span class="num">+1</span>', '<span class="num">+2</span>', '<span class="num">+1</span>', '<span class="num">+0</span>', '<span class="num">+2</span>', 'Sly at Shadow']
+          ]
+        },
+        tags: ['9 species', 'origin traits']
+      }
+    ]
+  },
+  {
+    num: 'IV',
+    title: 'Traits & Mastery',
+    color: 'var(--ch-traits)',
+    summary: 'Six trait categories shape who an agent becomes \u2014 some permanent, some fleeting',
+    rules: [
+      {
+        name: 'Trait Categories',
+        desc: 'Every trait on an agent belongs to one of six categories, each with different persistence rules:',
+        table: {
+          headers: ['Category', 'Persistence', 'How Acquired', 'Visibility'],
+          rows: [
+            ['<strong>Innate</strong>', 'Permanent', 'Assigned at creation (species origin)', 'Public'],
+            ['<strong>Mastery</strong>', 'Decaying', 'Earned from repeated actions in a domain', 'Public'],
+            ['<strong>Reputation</strong>', 'Evolving', 'Shifts based on observed behavior', 'Public'],
+            ['<strong>Scar</strong>', 'Permanent', 'Earned from pivotal events (critical failures, battles)', 'Public'],
+            ['<strong>Condition</strong>', 'Temporary', 'Applied by actions, spells, encounters', 'Public'],
+            ['<strong>Destiny</strong>', 'Conditional', 'Assigned by divine forces', 'Divine-only']
+          ]
+        },
+        tags: ['6 categories']
+      },
+      {
+        name: 'Trait Effects',
+        desc: 'Traits produce four kinds of mechanical effects:',
+        table: {
+          headers: ['Effect Type', 'What It Does'],
+          rows: [
+            ['<strong>Action Modifier</strong>', 'Changes probability, availability, or outcome of actions'],
+            ['<strong>Stat Modifier</strong>', 'Adjusts domain capability scores directly'],
+            ['<strong>Axiological Drift</strong>', 'Gradually shifts the agent\'s value profile (affects motivation over time)'],
+            ['<strong>Range Modifier</strong>', 'Adjusts geographic or social range of operations']
+          ]
+        },
+        tags: ['4 effect types']
+      },
+      {
+        name: 'Mastery Traits',
+        desc: 'Mastery traits are earned through repeated actions in a domain. They have 3 levels, scale contributions by level, and decay without reinforcement.',
+        table: {
+          headers: ['Mastery', 'Domains', 'Acquisition', 'Decay'],
+          rows: [
+            ['<strong>Battle-Hardened</strong>', 'Iron +2, Flesh +1 per level', '3+ military engagements', '\u22121 / 3 seasons no combat'],
+            ['<strong>Intrigue</strong>', 'Shadow +2, Eye +1', '5+ covert actions / 4 seasons', '\u22121 / 2 seasons no intrigue'],
+            ['<strong>Lorekeeper</strong>', 'Eye +2, Veil +1', '4+ knowledge actions', '\u22121 / 4 seasons no study'],
+            ['<strong>Trade Baron</strong>', 'Gold +2, Heart +1', '3+ trade routes + wealth threshold', '\u22121 / 2 seasons no trade'],
+            ['<strong>Arcane Adept</strong>', 'Veil +3', '5+ magical actions across 2+ domains', '\u22121 / 3 seasons no magic'],
+            ['<strong>Stonewarden</strong>', 'Stone +2, Iron +1', '3+ fortification/territorial actions', '\u22121 / 3 seasons no building'],
+            ['<strong>Faith Keeper</strong>', 'Star +2, Heart +1', '4+ spiritual actions', '\u22121 / 3 seasons no devotion'],
+            ['<strong>Healer</strong>', 'Flesh +2, Heart +1', '3+ healing/restoration actions', '\u22121 / 3 seasons no healing'],
+            ['<strong>Diplomat</strong>', 'Heart +2, Shadow +1', '4+ successful negotiations', '\u22121 / 2 seasons no diplomacy']
+          ]
+        },
+        tags: ['9 masteries', 'max level 3', 'decay']
+      },
+      {
+        name: 'Trait Stacking',
+        desc: 'Traits stack independently. An agent with both "Blessed" (+0.15 Iron) and "Cursed" (\u22120.10 Iron) receives both modifiers, netting +0.05 Iron. If the <em>same source</em> applies opposing traits to the same target, they annul each other (both removed). Different sources stack normally. No hard cap on trait count \u2014 soft cap via narrative importance weight. UI shows top 5\u20137 traits; all apply mechanically.',
+        tags: ['stacking rule']
+      }
+    ]
+  },
+  {
+    num: 'V',
+    title: 'Attachments',
+    color: 'var(--ch-attachments)',
+    summary: 'Everything an agent carries, suffers, or is bound by \u2014 six categories, four rarity tiers',
+    rules: [
+      {
+        name: 'Six Attachment Categories',
+        desc: 'A unified, tag-based model covering everything an agent can acquire. All use existing graph infrastructure (edges, modifiers, traits).',
+        table: {
+          headers: ['Category', 'Graph Structure', 'Persistence', 'Example'],
+          rows: [
+            ['<strong>Possessions</strong>', 'Artifact node + <code>possesses</code> edge', 'Until lost, broken, consumed, stolen', 'Iron Blade, Warhorse'],
+            ['<strong>Conditions</strong>', 'Trait node (condition) + <code>has_trait</code> edge', 'Tick-based or permanent', 'Bruised Ribs, Plague-Touched'],
+            ['<strong>Blessings/Curses</strong>', 'Trait node + <code>has_trait</code> edge', 'Duration-based', 'Sun-Touched, Divine Ward'],
+            ['<strong>Bestowed Powers</strong>', 'Trait node (bestowed) + <code>has_trait</code> edge', 'While source relationship holds', 'Turn Undead, Flame Ward'],
+            ['<strong>Agreements</strong>', 'Enriched <code>relates_to</code> edge', 'Permanent or time-limited', 'Dark Pact, Favour Owed'],
+            ['<strong>Retainers</strong>', 'Actor node + <code>member_of</code> edge', 'Until killed, dismissed, or lured away', 'Scribe, Bodyguard']
+          ]
+        },
+        tags: ['6 categories', 'graph-native']
+      },
+      {
+        name: 'Rarity Tiers',
+        desc: 'Every attachment has a tier (1\u20134) that affects rewards, difficulty, modifier scaling, and narrative weight.',
+        table: {
+          headers: ['Tier', 'Name', 'Visual', 'Description'],
+          rows: [
+            ['<span class="num">1</span>', '<span class="tier-badge tier-mundane">Mundane</span>', 'Pale silver border', 'Ordinary and useful. Common gear, minor conditions.'],
+            ['<span class="num">2</span>', '<span class="tier-badge tier-storied">Storied</span>', 'Copper border', 'Has history. Named items, notable afflictions.'],
+            ['<span class="num">3</span>', '<span class="tier-badge tier-mythic">Mythic</span>', 'Indigo border', 'Changes what\'s possible. Powerful and rare.'],
+            ['<span class="num">4</span>', '<span class="tier-badge tier-legendary">Legendary</span>', 'Gold radiant border', 'World-shaping. Artifact-tier, one of a kind.']
+          ]
+        },
+        tags: ['4 tiers', 'cap: tier 4 max']
+      },
+      {
+        name: 'Possession Subcategories',
+        desc: 'Physical possessions divide into seven types, each with a distinct icon and typical Reach affinity:',
+        table: {
+          headers: ['Type', 'Primary Reach', 'Examples'],
+          rows: [
+            ['<strong>Arms</strong>', 'Iron', 'Named sword, war banner, siege bow'],
+            ['<strong>Mounts & Beasts</strong>', 'Iron / Flesh', 'Warhorse, trained hawk, dire wolf'],
+            ['<strong>Vestments</strong>', 'Star / Veil', 'Blessed robes, warded armor'],
+            ['<strong>Tomes & Scrolls</strong>', 'Eye / Veil', 'Forbidden grimoire, ancient map'],
+            ['<strong>Relics & Talismans</strong>', 'Star / Veil', 'Saint\'s fingerbone, cursed amulet'],
+            ['<strong>Tools & Instruments</strong>', 'Stone / Gold', 'Forge-key, merchant scales, healer\'s kit'],
+            ['<strong>Provisions</strong>', 'Flesh / Gold', 'Rations, healing flask, dreamwine (consumable)']
+          ]
+        },
+        tags: ['7 subcategories']
+      },
+      {
+        name: 'Equipment Modifier Mechanics',
+        desc: 'During encounter resolution, the engine walks <code>possesses</code>/<code>bonded_to</code> edges and sums <code>reachBonus</code> values for the relevant Reach. These bonuses are added to the base domain capability as a contextual modifier.',
+        formula: 'Per-item cap:  EQUIPMENT_PER_ITEM_CAP  = 0.08\nTotal cap:     EQUIPMENT_MODIFIER_CAP  = 0.15',
+        tags: ['cap: 0.08/item', 'cap: 0.15 total', 'resolution modifier']
+      },
+      {
+        name: 'Tier Advancement',
+        desc: 'Possessions can be upgraded via Enchant/Empower actions, advancing their tier and scaling all numeric modifiers.',
+        formula: 'Modifier scaling: TIER_MODIFIER_SCALE_FACTOR = 1.5\u00d7 per tier (stacks multiplicatively)',
+        table: {
+          headers: ['Upgrade', 'Essence Cost', 'Difficulty'],
+          rows: [
+            ['Mundane \u2192 Storied', '<span class="num">4</span>', '<span class="num">0.20</span> (Easy)'],
+            ['Storied \u2192 Mythic', '<span class="num">8</span>', '<span class="num">0.35</span> (Moderate)'],
+            ['Mythic \u2192 Legendary', '<span class="num">14</span>', '<span class="num">0.50</span> (Hard)']
+          ]
+        },
+        tags: ['tier advancement', 'essence cost']
+      },
+      {
+        name: 'On-Use Triggers',
+        desc: 'Attachments can carry triggers that fire when conditions are met during encounters. Each trigger specifies a condition (critical failure, success, any use, first use), a probability, and an effect.',
+        table: {
+          headers: ['Example Item', 'Trigger', 'Chance', 'Effect'],
+          rows: [
+            ['Iron Blade', 'On critical failure', '<span class="num">25%</span>', 'Blade breaks, agent gains "Disarmed" for 5 ticks'],
+            ['Whispering Eye', 'On any use', '<span class="num">15%</span>', 'Grants "Drained" condition (Heart \u22120.05, 10 ticks)'],
+            ['Burned Codex', 'On first use', '<span class="num">100%</span>', 'Grants "Revelation" condition (Star +0.15, 20 ticks)']
+          ]
+        },
+        tags: ['triggers', 'rng: per trigger roll']
+      },
+      {
+        name: 'Loss Conditions',
+        desc: 'How possessions can be lost:',
+        table: {
+          headers: ['Condition', 'Mechanism'],
+          rows: [
+            ['<strong>Consumable</strong>', 'Removed on use (provisions, one-shot items)'],
+            ['<strong>Breakable</strong>', 'Destroyed via on-use trigger on critical failure'],
+            ['<strong>Stealable</strong>', 'Can be taken by another agent (theft, conquest)'],
+            ['<strong>Cursed</strong>', 'Cannot be willingly discarded; must be dispelled'],
+            ['<strong>Permanent</strong>', 'Never lost (legendary weapons, god-touched items)']
+          ]
+        },
+        tags: ['5 loss types']
+      },
+      {
+        name: 'Tags as Gameplay Mechanics',
+        desc: 'Tags are load-bearing mechanics, not just metadata. They enable cross-cutting effects without hardcoding: encounter filters ("requires a #mount"), healing spells ("cures all #disease conditions"), ritual breakers ("breaks all #dark #binding agreements"). Tag vocabulary includes Reach tags (#iron, #gold...), Sphere tags (#force, #matter...), effect tags (#disease, #wound, #curse, #blessing), item tags (#weapon, #mount, #armor, #consumable), and narrative tags (#cursed, #ancient, #forbidden).',
+        tags: ['tag system', 'content-extensible']
+      }
+    ]
+  },
+  {
+    num: 'VI',
+    title: 'Encounters',
+    color: 'var(--ch-encounters)',
+    summary: 'Multi-step narrative events that test agents \u2014 the core gameplay loop',
+    rules: [
+      {
+        name: 'Encounter Structure',
+        desc: 'An encounter is a 2\u20134 step narrative event at a location. Each step has its own Reach domain, difficulty, and tick duration. Steps resolve sequentially \u2014 success or failure at each step shapes the narrative and determines rewards.',
+        tags: ['2\u20134 steps', 'sequential']
+      },
+      {
+        name: 'Ten Encounter Types',
+        desc: 'Every encounter belongs to one of ten types, each driven by different agent motivations:',
+        table: {
+          headers: ['Type', 'Primary Motivation', 'Secondary Motivation', 'What Happens'],
+          rows: [
+            ['<strong>Explore</strong>', 'courage / prudence', 'ambition / contentment', 'Venture into the unknown, discover secrets'],
+            ['<strong>Acquire</strong>', 'greed / generosity', 'ambition / contentment', 'Claim resources, treasures, territory'],
+            ['<strong>Create</strong>', 'tradition / innovation', 'devotion / independence', 'Build something new \u2014 art, magic, structures'],
+            ['<strong>Hire</strong>', 'dominance / humility', 'loyalty / treachery', 'Recruit allies, servants, followers'],
+            ['<strong>Duel</strong>', 'wrath / patience', 'courage / prudence', 'Single combat, ritual challenge'],
+            ['<strong>Steal</strong>', 'cunning / honesty', 'greed / generosity', 'Theft, sabotage, covert acquisition'],
+            ['<strong>Trade</strong>', 'greed / generosity', 'cunning / honesty', 'Commerce, negotiation, exchange'],
+            ['<strong>Assist</strong>', 'cruelty / compassion', 'loyalty / treachery', 'Help another agent or community'],
+            ['<strong>Build</strong>', 'tradition / innovation', 'devotion / independence', 'Construct, repair, fortify'],
+            ['<strong>Lead</strong>', 'dominance / humility', 'ambition / contentment', 'Command, organize, inspire groups']
+          ]
+        },
+        tags: ['10 types', 'motivation-driven']
+      },
+      {
+        name: 'Threat Ratings',
+        desc: 'Five difficulty bands define how dangerous an encounter is. Agents self-select encounters within \u00b11 tier of their own power.',
+        table: {
+          headers: ['Rating', 'Capability Range', 'Who Attempts It'],
+          rows: [
+            ['<strong>Trivial</strong>', '<span class="num">0\u201320</span>', 'Anyone can \u2014 most won\'t bother'],
+            ['<strong>Easy</strong>', '<span class="num">15\u201340</span>', 'Newcomers, cautious agents'],
+            ['<strong>Moderate</strong>', '<span class="num">30\u201360</span>', 'Experienced agents, the bread and butter'],
+            ['<strong>Hard</strong>', '<span class="num">50\u201380</span>', 'Veterans, the ambitious'],
+            ['<strong>Deadly</strong>', '<span class="num">70\u2013100</span>', 'Legends only. High risk, high reward.']
+          ]
+        },
+        tags: ['5 threat bands']
+      },
+      {
+        name: 'Threat Filtering by Personality',
+        desc: 'Agent personality modifies which encounters they\'ll attempt:',
+        table: {
+          headers: ['Personality', 'Condition', 'Effect'],
+          rows: [
+            ['<strong>Default</strong>', '\u2014', 'Attempt encounters \u00b11 tier of capability'],
+            ['<strong>Courageous</strong>', 'courage_prudence > 0.3', 'Expand upward by one tier (reach harder encounters)'],
+            ['<strong>Prudent</strong>', 'courage_prudence < \u22120.3', 'Restrict downward by one tier (safer choices)'],
+            ['<strong>Divine nudge</strong>', 'Player intervention', 'Bypasses threat filtering entirely']
+          ]
+        },
+        tags: ['personality filter']
+      },
+      {
+        name: 'Location \u2192 Encounter Coverage',
+        desc: 'Each location subtype supports a minimum of 3 encounter types. Where you are determines what can happen to you.',
+        table: {
+          headers: ['Location', 'Available Encounters'],
+          rows: [
+            ['<strong>Hamlet</strong>', 'trade, assist, hire, build'],
+            ['<strong>Town</strong>', 'trade, acquire, hire, create, steal'],
+            ['<strong>City</strong>', 'trade, acquire, steal, lead, create, duel'],
+            ['<strong>Capital</strong>', 'lead, trade, duel, hire, acquire'],
+            ['<strong>Camp</strong>', 'explore, assist, build, hire'],
+            ['<strong>Castle</strong>', 'duel, lead, hire, acquire'],
+            ['<strong>Fort</strong>', 'duel, lead, build, hire'],
+            ['<strong>Tower</strong>', 'explore, create, acquire'],
+            ['<strong>Shrine</strong>', 'explore, assist, create'],
+            ['<strong>Temple</strong>', 'explore, assist, lead, create'],
+            ['<strong>Ruins</strong>', 'explore, acquire, steal, duel'],
+            ['<strong>Wilderness</strong>', 'explore, build, assist'],
+            ['<strong>Battleground</strong>', 'duel, lead, explore, assist'],
+            ['<strong>Mining</strong>', 'build, acquire, trade, create'],
+            ['<strong>Oasis</strong>', 'trade, assist, hire, explore']
+          ]
+        },
+        tags: ['15+ subtypes', 'min 3 per location']
+      },
+      {
+        name: 'Reward Pool',
+        desc: 'After resolution, rewards are drawn from a weighted pool. The encounter template specifies category weights and tag filters. Outcome quality determines rarity curve:',
+        table: {
+          headers: ['Outcome', 'Tier 1', 'Tier 2', 'Tier 3', 'Tier 4', 'Bad Outcome'],
+          rows: [
+            ['<strong>Critical Success</strong>', '<span class="num">10%</span>', '<span class="num">40%</span>', '<span class="num">40%</span>', '<span class="num">10%</span>', '<span class="num">0%</span>'],
+            ['<strong>Success</strong>', '<span class="num">40%</span>', '<span class="num">40%</span>', '<span class="num">15%</span>', '<span class="num">5%</span>', '<span class="num">5%</span>'],
+            ['<strong>Failure</strong>', '<span class="num">20%</span>', '<span class="num">10%</span>', '<span class="num">5%</span>', '<span class="num">0%</span>', '<span class="num">65%</span>'],
+            ['<strong>Critical Failure</strong>', '<span class="num">5%</span>', '<span class="num">5%</span>', '<span class="num">5%</span>', '<span class="num">0%</span>', '<span class="num">85%</span>']
+          ]
+        },
+        tags: ['reward pool', 'rng: seeded draw']
+      }
+    ]
+  },
+  {
+    num: 'VII',
+    title: 'Resolution Pipeline',
+    color: 'var(--ch-resolution)',
+    summary: 'The formula that determines success or failure \u2014 five modifiers on top of base capability',
+    rules: [
+      {
+        name: 'The Resolution Formula',
+        desc: 'When an encounter step resolves, the engine computes a success probability from six components. The result is clamped to ensure nothing is ever guaranteed or impossible.',
+        formula: 'P = base_capability\n  + sphereAlignmentBonus\n  + equipmentModifier\n  + terrainModifier\n  + traitBonus\n  + divineInterventionModifier\n  \u2212 difficulty\n\nclamped to [0.05, 0.95]',
+        tags: ['master formula', 'cap: 0.05\u20130.95']
+      },
+      {
+        name: 'Modifier Breakdown',
+        desc: 'Each modifier has defined caps and sources:',
+        table: {
+          headers: ['Modifier', 'Source', 'Range', 'Cap'],
+          rows: [
+            ['<strong>Base Capability</strong>', 'Agent\'s domain score in step\'s Reach', '<span class="num">0.0\u20131.0</span>', '\u2014'],
+            ['<strong>Sphere Alignment</strong>', 'Match/oppose between agent\'s sphere and encounter\'s sphere', '<span class="num">\u22120.15 to +0.15</span>', '<span class="num">\u00b10.15</span>'],
+            ['<strong>Equipment</strong>', 'Sum of reachBonus from possessed artifacts', '<span class="num">0.0 to +0.15</span>', '<span class="num">+0.15</span>'],
+            ['<strong>Terrain</strong>', 'Location advantage, control bonus', '<span class="num">\u22120.10 to +0.10</span>', '<span class="num">\u00b10.10</span>'],
+            ['<strong>Trait Bonus</strong>', 'Reach/type-specific bonuses from traits', '<span class="num">\u22120.15 to +0.15</span>', '<span class="num">~\u00b10.15</span>'],
+            ['<strong>Divine Intervention</strong>', 'Player spends essence', '<span class="num">0.0 to ~+0.15</span>', 'Practical: ~+0.15']
+          ]
+        },
+        tags: ['5 modifiers', 'all capped']
+      },
+      {
+        name: 'Fate Forecast',
+        desc: 'Before resolution, the computed probability is shown to the player as a narrative forecast tier:',
+        table: {
+          headers: ['P Range', 'Forecast', 'Meaning'],
+          rows: [
+            ['<span class="num">0.05\u20130.20</span>', '<strong style="color:var(--red)">Doomed</strong>', 'Almost certain to fail'],
+            ['<span class="num">0.20\u20130.40</span>', '<strong style="color:var(--orange)">Perilous</strong>', 'The odds are against it'],
+            ['<span class="num">0.40\u20130.60</span>', '<strong style="color:var(--ink-faint)">Uncertain</strong>', 'Could go either way'],
+            ['<span class="num">0.60\u20130.80</span>', '<strong style="color:var(--blue)">Favorable</strong>', 'The odds are with it'],
+            ['<span class="num">0.80\u20130.95</span>', '<strong style="color:var(--green)">Fated</strong>', 'Almost certain to succeed']
+          ]
+        },
+        tags: ['5 forecast tiers', 'player-facing']
+      },
+      {
+        name: 'Outcome Bands',
+        desc: 'The d100 roll against the probability P produces four possible outcomes:',
+        table: {
+          headers: ['Roll vs P', 'Outcome', 'Effect'],
+          rows: [
+            ['Roll \u2264 P \u00d7 0.1', '<strong style="color:var(--green)">Critical Success</strong>', 'Exceptional result. Best rewards, dramatic narrative.'],
+            ['Roll \u2264 P', '<strong style="color:var(--blue)">Success</strong>', 'Standard success. Good rewards, capability growth.'],
+            ['Roll > P', '<strong style="color:var(--orange)">Failure</strong>', 'Standard failure. Reduced rewards, possible complications.'],
+            ['Roll \u2265 95', '<strong style="color:var(--red)">Critical Failure</strong>', 'Catastrophic. Bad outcomes, scar traits, item breakage.']
+          ]
+        },
+        tags: ['d100 resolution', 'rng: seeded']
+      },
+      {
+        name: 'Contested Actions',
+        desc: 'When two or more agents target the same resource in the same tick window, it becomes a contested action. Initiative determines order:',
+        formula: 'initiative = actor_tier_bonus + domain_stat + random(1\u201320)',
+        table: {
+          headers: ['Step', 'What Happens'],
+          rows: [
+            ['1. Detect', 'Group actions by target node \u2014 find conflicts'],
+            ['2. Oppose', 'Each contestant rolls: score = stat + modifiers + d100'],
+            ['3. Winner', 'Highest score succeeds normally'],
+            ['4. Losers', 'Fail with a template complication (new narrative hook)']
+          ]
+        },
+        tags: ['contested', 'complications']
+      },
+      {
+        name: 'Post-Resolution Attribution',
+        desc: 'After resolution, the engine identifies the <em>marginal factor</em> that tipped the outcome for narrative focus. Close outcomes (\u00b110% of threshold) highlight the decisive modifier: "The enchanted blade made the difference" or "If only she\'d had allies nearby." Decisive outcomes (far from threshold) are overdetermined \u2014 no single factor is highlighted. Critical success/failure always generates a dramatic narrative beat.',
+        tags: ['narrative', 'prose']
+      }
+    ]
+  },
+  {
+    num: 'VIII',
+    title: 'Divine Intervention',
+    color: 'var(--ch-divine)',
+    summary: 'The player-god\'s tools for nudging fate \u2014 essence, threads, and the Dream Interface',
+    rules: [
+      {
+        name: 'Nudge Levels',
+        desc: 'During encounter resolution, the player can spend Influence Essence to shift probabilities. Stronger nudges cost more and are more visible to the world.',
+        table: {
+          headers: ['Level', 'P Shift', 'Essence', 'Detection Risk', 'Narrative Flavor'],
+          rows: [
+            ['<strong>Nudge</strong>', '<span class="num">\u00b10.05</span>', 'Low', 'Minimal', '"A strange coincidence..."'],
+            ['<strong>Amplify</strong>', '<span class="num">\u00b10.10</span>', 'Moderate', 'Noticeable', '"Fortune seemed to favor..."'],
+            ['<strong>Force</strong>', '<span class="num">\u00b10.20</span>', 'High', 'Significant', '"As if guided by an unseen hand..."'],
+            ['<strong>Block</strong>', 'Cancel action', 'Very High', 'Extreme', '"Fate itself intervened."']
+          ]
+        },
+        tags: ['4 nudge levels', 'essence cost']
+      },
+      {
+        name: 'Divine Thread Tiers',
+        desc: 'The bond between the player-god and an agent. Higher tiers make intervention cheaper and grant deeper influence over the agent\'s decisions.',
+        table: {
+          headers: ['Tier', 'Name', 'Essence Efficiency', 'Maintenance', 'Unlocks'],
+          rows: [
+            ['<span class="num">0</span>', 'Unbonded', '<span class="num">20%</span> (2.0\u00d7 cost)', 'Free', 'Observe if in range'],
+            ['<span class="num">1</span>', 'Touched', '<span class="num">40%</span> (1.5\u00d7 cost)', '<span class="num">~0.5/tick</span>', 'Motivation viewing, Whisper'],
+            ['<span class="num">2</span>', 'Devoted', '<span class="num">70%</span> (1.0\u00d7 cost)', '<span class="num">~1/tick</span>', 'Dream Interface, Inspire/Suppress'],
+            ['<span class="num">3</span>', 'Champion', '<span class="num">90%</span> (0.7\u00d7 cost)', '<span class="num">~2/tick</span>', 'Deep influence, Reshape/Implant'],
+            ['<span class="num">4</span>', 'Aspect', '<span class="num">100%</span> (0.5\u00d7 cost)', '<span class="num">~4/tick</span>', 'Near-total alignment, Command']
+          ]
+        },
+        tags: ['5 bond tiers', 'maintenance cost']
+      },
+      {
+        name: 'Dream Interface Actions',
+        desc: 'At thread tier 2+, the player gains access to the Dream Interface \u2014 direct influence over an agent\'s thoughts and decisions.',
+        table: {
+          headers: ['Action', 'Effect', 'Essence', 'Min Tier', 'Risk'],
+          rows: [
+            ['<strong>Whisper</strong>', 'Nudge probability +10\u201315%', '<span class="num">1</span>', '<span class="num">1</span>', 'None'],
+            ['<strong>Inspire</strong>', 'Boost +25\u201330%', '<span class="num">2</span>', '<span class="num">2</span>', 'Low'],
+            ['<strong>Suppress</strong>', 'Reduce \u221220%', '<span class="num">2</span>', '<span class="num">2</span>', 'Low'],
+            ['<strong>Reshape</strong>', 'Morph action into variation', '<span class="num">3</span>', '<span class="num">3</span>', 'Medium'],
+            ['<strong>Implant</strong>', 'Insert new intention', '<span class="num">5</span>', '<span class="num">3</span>', 'High'],
+            ['<strong>Command</strong>', 'Force specific action', '<span class="num">8+</span>', '<span class="num">4</span>', 'Very high']
+          ]
+        },
+        tags: ['6 dream actions']
+      },
+      {
+        name: 'Alignment Cost Multiplier',
+        desc: 'The cost of influencing an agent depends on whether your nudge aligns with their values:',
+        formula: 'final_cost = base_cost \u00d7 alignment_factor \u00d7 tier_modifier',
+        table: {
+          headers: ['Alignment', 'Cost Multiplier', 'Target Type', 'Tier Modifier'],
+          rows: [
+            ['With agent\'s values', '<span class="num">1.0\u00d7</span>', 'Individual', '<span class="num">1.0\u00d7</span>'],
+            ['Neutral', '<span class="num">2.0\u00d7</span>', 'Group', '<span class="num">1.5\u00d7</span>'],
+            ['Against values', '<span class="num">3.0\u20135.0\u00d7</span>', 'Faction', '<span class="num">2.0\u00d7</span>'],
+            ['\u2014', '\u2014', 'Culture', '<span class="num">3.0\u00d7</span>'],
+            ['\u2014', '\u2014', 'God', '<span class="num">10.0\u00d7</span>']
+          ]
+        },
+        tags: ['cost scaling']
+      },
+      {
+        name: 'Encounter Notification Tiers',
+        desc: 'Not all encounters demand the player\'s attention. The notification system tiers encounters by importance:',
+        table: {
+          headers: ['Tier', 'Condition', 'Notification', 'Intervention Cost'],
+          rows: [
+            ['<strong>Tier 1 \u2014 Critical</strong>', 'Agent\'s life at risk, critical milestone', 'Auto-notify with full vignette', 'Full cost table'],
+            ['<strong>Tier 2 \u2014 Notable</strong>', 'Bonded agents (tier 2+), significant events', 'Optional in narrative log', 'Standard cost'],
+            ['<strong>Tier 3 \u2014 Background</strong>', 'Everything else in divine awareness', 'Silent chronicle only', 'High cost + unbonded multiplier']
+          ]
+        },
+        tags: ['3 notification tiers']
+      },
+      {
+        name: 'Essence Generation',
+        desc: 'The player earns +1 essence per tick (day) as a baseline, plus bonus from three scaling paths:',
+        table: {
+          headers: ['Path', 'Mechanism', 'Gameplay Pattern'],
+          rows: [
+            ['<strong>Cult growth</strong>', 'More worshippers \u2192 bonus essence/tick', 'Social/political: build a religion'],
+            ['<strong>Places of power</strong>', 'Control significant locations \u2192 bonus essence', 'Military: capture and hold sites'],
+            ['<strong>Sphere dominance</strong>', 'Aligned spheres dominate regions \u2192 bonus', 'Strategic: shape the world\'s cosmology']
+          ]
+        },
+        tags: ['+1 base/tick', '3 scaling paths']
+      }
+    ]
+  },
+  {
+    num: 'IX',
+    title: 'Agent Decisions',
+    color: 'var(--ch-decision)',
+    summary: 'How agents choose what to do \u2014 the Maslow pipeline and action economy',
+    rules: [
+      {
+        name: 'The Maslow Pipeline',
+        desc: 'Every idle agent runs through a 6-layer need hierarchy each tick. Higher layers only activate when lower needs are met. The first unsatisfied layer drives the agent\'s decision.',
+        table: {
+          headers: ['Layer', 'Need', 'Drives'],
+          rows: [
+            ['<span class="num">1</span>', '<strong>Survival</strong>', 'Flee danger, find shelter, heal wounds'],
+            ['<span class="num">2</span>', '<strong>Safety</strong>', 'Secure location, avoid threats, find allies'],
+            ['<span class="num">3</span>', '<strong>Belonging</strong>', 'Join groups, build relationships, find community'],
+            ['<span class="num">4</span>', '<strong>Esteem</strong>', 'Earn reputation, prove skill, gain recognition'],
+            ['<span class="num">5</span>', '<strong>Purpose</strong>', 'Pursue ambitions, fulfill destiny, advance goals'],
+            ['<span class="num">6</span>', '<strong>Self-Actualization</strong>', 'Create legacy, explore the unknown, transcend']
+          ]
+        },
+        tags: ['6 layers', 'priority cascade']
+      },
+      {
+        name: 'Decision Outcomes',
+        desc: 'After evaluating needs, an agent chooses one of four actions:',
+        table: {
+          headers: ['Choice', 'When'],
+          rows: [
+            ['<strong>Start encounter</strong>', 'Best candidate encounter passes threat filter and motivation check'],
+            ['<strong>Queue movement</strong>', 'Better opportunities exist at a different location'],
+            ['<strong>Attempt remote action</strong>', 'Can act on something without traveling (diplomacy, magic)'],
+            ['<strong>Drift / Stay</strong>', 'No pressing needs, no good candidates \u2014 idle observation']
+          ]
+        },
+        tags: ['4 choices']
+      },
+      {
+        name: 'Action Points & Duration',
+        desc: 'Actors have limited action capacity. Larger entities can sustain more parallel activities.',
+        table: {
+          headers: ['Actor Type', 'Base AP', 'Scale'],
+          rows: [
+            ['God / Primordial', '<span class="num">1</span>', 'Cosmic (one massive action)'],
+            ['Ascendant / Demigod', '<span class="num">1\u20132</span>', 'Regional'],
+            ['Faction / Organization', '<span class="num">2\u20133</span>', 'Regional \u2192 Local'],
+            ['Culture / Nation', '<span class="num">1\u20132</span>', 'Regional'],
+            ['Group / Party', '<span class="num">1\u20132</span>', 'Local \u2192 Personal'],
+            ['Individual', '<span class="num">1</span>', 'Local \u2192 Personal']
+          ]
+        },
+        tags: ['action points']
+      },
+      {
+        name: 'Action Duration Categories',
+        desc: 'How long actions take, in game-ticks (each tick = 1 day):',
+        table: {
+          headers: ['Category', 'Tick Range', 'Feel'],
+          rows: [
+            ['<strong>Days</strong>', '<span class="num">1\u20137</span>', 'Quick resolution, immediate impact'],
+            ['<strong>Weeks</strong>', '<span class="num">7\u201330</span>', 'Visible progress, resolves within a season'],
+            ['<strong>Months</strong>', '<span class="num">30\u201390</span>', 'Major undertaking, spans a significant season portion'],
+            ['<strong>Seasons</strong>', '<span class="num">60\u2013120</span>', 'Transformative, nearly an entire season']
+          ]
+        },
+        tags: ['4 duration bands', '1 tick = 1 day']
+      },
+      {
+        name: 'Quintessence & Actor Vitality',
+        desc: 'Every actor has a quintessence pool (current/max) representing their life force. It regenerates passively, erodes from failure and hardship, and at zero triggers dissolution (death or dispersal). Five threshold states govern behavior as quintessence depletes.',
+        tags: ['quintessence', 'dissolution at zero']
+      }
+    ]
+  }
+];
+
+// ── Render ──
+const container = document.getElementById('chapters');
+const searchInput = document.getElementById('search');
+const countEl = document.getElementById('count');
+
+function renderChapters() {
+  let html = '';
+  CHAPTERS.forEach((ch, i) => {
+    html += `<div class="chapter" data-chapter="${i}">`;
+    html += `<div class="chapter-header" onclick="toggleChapter(${i})">`;
+    html += `<div class="chapter-number" style="background:${ch.color}">${ch.num}</div>`;
+    html += `<div class="chapter-title-block">`;
+    html += `<div class="chapter-title">${ch.title}</div>`;
+    html += `<div class="chapter-summary">${ch.summary}</div>`;
+    html += `</div>`;
+    html += `<div class="chapter-toggle">&#9662;</div>`;
+    html += `</div>`;
+    html += `<div class="chapter-body" style="border-left-color:${ch.color}">`;
+    ch.rules.forEach(r => {
+      const searchText = (r.name + ' ' + r.desc + ' ' + (r.tags || []).join(' ') + ' ' + (r.formula || '')).toLowerCase();
+      html += `<div class="rule-card" data-search="${searchText}">`;
+      html += `<div class="rule-name">${r.name}</div>`;
+      html += `<div class="rule-desc">${r.desc}</div>`;
+      if (r.formula) {
+        html += `<div class="formula">${r.formula}</div>`;
+      }
+      if (r.table) {
+        html += '<table class="rule-table"><thead><tr>';
+        r.table.headers.forEach(h => html += `<th>${h}</th>`);
+        html += '</tr></thead><tbody>';
+        r.table.rows.forEach(row => {
+          html += '<tr>';
+          row.forEach(cell => html += `<td>${cell}</td>`);
+          html += '</tr>';
+        });
+        html += '</tbody></table>';
+      }
+      if (r.tags && r.tags.length) {
+        html += '<div class="rule-tags">';
+        r.tags.forEach(t => {
+          const cls = t.startsWith('cap') ? 'tag-cap' :
+                      t.startsWith('rng') ? 'tag-rng' :
+                      t.match(/formula|sigmoid/) ? 'tag-constant' :
+                      t.match(/\d+ /) ? 'tag-tier' :
+                      'tag-system';
+          html += `<span class="tag ${cls}">${t}</span>`;
+        });
+        html += '</div>';
+      }
+      html += '</div>';
+    });
+    html += '</div></div>';
+    if (i < CHAPTERS.length - 1) {
+      html += '<div class="chapter-connector">&#8595;</div>';
+    }
+  });
+  container.innerHTML = html;
+}
+
+function toggleChapter(i) {
+  const el = document.querySelector(`[data-chapter="${i}"]`);
+  el.classList.toggle('collapsed');
+}
+
+// ── Search ──
+let totalRules = CHAPTERS.reduce((s, ch) => s + ch.rules.length, 0);
+countEl.textContent = `${totalRules} rules`;
+
+searchInput.addEventListener('input', () => {
+  const q = searchInput.value.toLowerCase().trim();
+  let visible = 0;
+  document.querySelectorAll('.chapter').forEach(chEl => {
+    const cards = chEl.querySelectorAll('.rule-card');
+    let chVisible = 0;
+    cards.forEach(card => {
+      const match = !q || card.dataset.search.includes(q);
+      card.classList.toggle('dimmed', !match);
+      if (match) { chVisible++; visible++; }
+    });
+    chEl.classList.toggle('all-dimmed', chVisible === 0 && q);
+    if (q && chVisible > 0) chEl.classList.remove('collapsed');
+  });
+  countEl.textContent = q ? `${visible}/${totalRules} matching` : `${totalRules} rules`;
+});
+
+renderChapters();
+</script>
+</body>
+</html>
