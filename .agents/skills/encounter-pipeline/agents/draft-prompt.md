@@ -28,7 +28,7 @@ Write a complete encounter packet to `Docs/plans/encounters/{{SLUG}}-draft.md` w
 ```
 # Encounter Pipeline: {{TITLE}}
 > Scale: {{SCALE}} | Slug: {{SLUG}} | Pass: draft
-> Date: {{DATE}} | Pipeline version: 1.0
+> Date: {{DATE}} | Pipeline version: 2.0
 ```
 
 ### Required Sections (in order)
