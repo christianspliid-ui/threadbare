@@ -111,6 +111,24 @@ Good for: reputation traits (Feared → intimidation, Beloved → trust), scars 
 
 Good for: trait restrictions (Pacifist blocks Iron duel actions), equipment prerequisites (Ritual Tome unlocks veil rituals), conditions (Blinded blocks Eye actions), destiny traits (Prophesied unlocks a specific quest action).
 
+### "It's slowly changing who you are"
+**axiological_drift** — gradually shifts the agent's value profile and Maslow priorities over time. Unlike behavior_weight (static preference), drift accumulates tick by tick — a slow corruption, enlightenment, or transformation the agent doesn't choose.
+- `dimension` — what shifts: `aggression`, `caution`, `greed`, `compassion`, `curiosity`, `devotion`, `ambition`, `isolation`
+- `rate` — how much per tick (small numbers — this is a slow burn)
+- `cap` — maximum drift before it plateaus
+- `condition` — (optional) predicate for when drift is active (e.g., only drifts while held/attached)
+
+Good for: cursed items that corrupt the wielder, divine blessings that slowly shift alignment, prolonged exposure effects (living in darkness → more Shadow-oriented), addiction mechanics.
+
+### "It changes how far you can reach"
+**range_modifier** — adjusts movement cost or awareness range.
+- `dimension` — what changes: `movement_cost`, `awareness_range`
+- `value` — modifier amount (movement: multiplier where <1 = faster, >1 = slower; awareness: additive hex count)
+- `condition` — (optional) predicate for when it's active
+- `terrainType` — (optional, movement only) restrict to specific terrain
+
+Good for: mounts (reduce movement cost), wounds (increase movement cost), magical senses (expand awareness), blindness conditions (reduce awareness), terrain-specialist traits (Mountain Goat reduces mountain cost).
+
 ### "It's just a flat bonus" (use sparingly — prefer something with texture)
 **passive** — always-on, unconditional. Best used as one layer in a multi-effect composition, not as the sole effect.
 - `reach` — which domain
