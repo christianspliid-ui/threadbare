@@ -1742,7 +1742,7 @@ const CATEGORY_ORDER = [
   'World & Geography', 'Locations & Sublocations', 'Encounters', 'Actions',
   'Agents & Archetypes', 'Traits', 'Culture & Society', 'Factions & Military',
   'Economy & Trade', 'Cosmology & Divine', 'Rivals & Opposition',
-  'Narrative & Prose', 'Configuration',
+  'Narrative & Prose', 'Attachments', 'Configuration',
 ];
 
 export function getCategories(): ContentCategory[] {
