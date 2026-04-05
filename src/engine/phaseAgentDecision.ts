@@ -55,6 +55,7 @@ import { initializeClearanceGates } from './clearanceGate';
 import { createUnifiedAction } from './unifiedActionLifecycle';
 import { isCompulsionEligible, buildCompulsionEvent } from './premonitionCompulsion';
 import type { PremonitionEvent } from '../types/premonition';
+import { resolveEffectiveTier } from './attentionTier';
 
 /**
  * Compute effective cooldown scaled by available template pool size.
@@ -523,21 +524,68 @@ export function phaseAgentDecision(
                 state.tick,
               );
               nextClearanceGateStates = gateInit.clearanceGateStates;
-              const action = createUnifiedAction({
-                actorId: agentId,
-                templateId: unifiedTemplate.id,
-                targetId: sel.entry.targetAgentId ?? sel.entry.locationId,
-                scale: unifiedTemplate.scale,
-                source: 'agent',
-                tick: state.tick,
-                template: unifiedTemplate,
-                rng,
-                supportBindings,
-                clearanceGateIds: gateInit.gateIds,
-              });
+              // Resolve effectiveTier for unified action — same court position logic.
+              const uaThreadEdges = state.ascendantId
+                ? state.graph.getOutgoingEdges(state.ascendantId, 'thread')
+                : [];
+              const uaPrimaryThread = uaThreadEdges.find(e => e.target === agentId);
+              const uaPrimaryPos = (uaPrimaryThread?.properties?.courtPosition as import('../types/influence').CourtPosition | undefined) ?? null;
+              let uaCourtPos = uaPrimaryPos;
+              if (sel.entry.targetAgentId) {
+                const uaTargetThread = uaThreadEdges.find(e => e.target === sel.entry.targetAgentId);
+                const uaTargetPos = (uaTargetThread?.properties?.courtPosition as import('../types/influence').CourtPosition | undefined) ?? null;
+                const UA_COURT_RANK: Record<string, number> = { the_first: 3, retinue: 2, watched: 1, dormant: 0 };
+                const uaPrimaryRank = uaPrimaryPos ? (UA_COURT_RANK[uaPrimaryPos] ?? -1) : -1;
+                const uaTargetRank = uaTargetPos ? (UA_COURT_RANK[uaTargetPos] ?? -1) : -1;
+                if (uaTargetRank > uaPrimaryRank) uaCourtPos = uaTargetPos;
+              }
+              const uaEffectiveTier = resolveEffectiveTier(
+                unifiedTemplate.intrinsicTier ?? 'background',
+                uaCourtPos,
+              );
+
+              const action = {
+                ...createUnifiedAction({
+                  actorId: agentId,
+                  templateId: unifiedTemplate.id,
+                  targetId: sel.entry.targetAgentId ?? sel.entry.locationId,
+                  scale: unifiedTemplate.scale,
+                  source: 'agent',
+                  tick: state.tick,
+                  template: unifiedTemplate,
+                  rng,
+                  supportBindings,
+                  clearanceGateIds: gateInit.gateIds,
+                }),
+                effectiveTier: uaEffectiveTier,
+              };
               newUnifiedActions.push(action);
             } else {
               const firstStepDuration = template.steps[0]?.duration ?? 1;
+
+              // Resolve effectiveTier at creation time.
+              // Use HIGHEST court position among participants (primary + target agent).
+              const COURT_RANK: Record<string, number> = {
+                the_first: 3, retinue: 2, watched: 1, dormant: 0,
+              };
+              const threadEdges = state.ascendantId
+                ? state.graph.getOutgoingEdges(state.ascendantId, 'thread')
+                : [];
+              const primaryThread = threadEdges.find(e => e.target === agentId);
+              const primaryPos = (primaryThread?.properties?.courtPosition as import('../types/influence').CourtPosition | undefined) ?? null;
+              let courtPos = primaryPos;
+              if (sel.entry.targetAgentId) {
+                const targetThread = threadEdges.find(e => e.target === sel.entry.targetAgentId);
+                const targetPos = (targetThread?.properties?.courtPosition as import('../types/influence').CourtPosition | undefined) ?? null;
+                const primaryRank = primaryPos ? (COURT_RANK[primaryPos] ?? -1) : -1;
+                const targetRank = targetPos ? (COURT_RANK[targetPos] ?? -1) : -1;
+                if (targetRank > primaryRank) courtPos = targetPos;
+              }
+              const effectiveTier = resolveEffectiveTier(
+                template.intrinsicTier ?? 'background',
+                courtPos,
+              );
+
               const progress: EncounterProgress = {
                 encounterId: sel.entry.templateId,
                 actorId: agentId,
@@ -547,6 +595,7 @@ export function phaseAgentDecision(
                 status: 'active',
                 startedTick: state.tick,
                 occupiedUntilTick: state.tick + firstStepDuration,
+                effectiveTier,
               };
               newEncounterProgress.push(progress);
             }

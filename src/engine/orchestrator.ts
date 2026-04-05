@@ -134,6 +134,8 @@ import {
   ensureDistanceMatrix,
 } from './simulationRuntime';
 import { recordBalanceEvent } from './balanceTelemetry';
+import { checkMidEncounterPromotion } from './attentionTier';
+import type { EncounterPromotionTrace } from '../types/attention';
 
 // ─── Legacy Decision Cache (backward-compat shim for tests) ───────
 //
@@ -322,6 +324,36 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
         for (const trace of eventResult.traces) {
           emitTrace(trace as unknown as TraceEntry);
         }
+      }
+    }
+
+    // ── Mid-encounter tier promotion ─────────────────────────────────
+    // Only runs when effectiveTier is set (i.e. created after Task 15 wiring).
+    // Never demotes — checkMidEncounterPromotion handles the ceiling logic.
+    if (progress.effectiveTier && progress.effectiveTier !== 'invisible') {
+      const promotionTriggers = {
+        // Tier promotion: capability tier crossed during this step
+        tierPromotion: !!result.growth?.tierCrossed,
+        // Wound: encounter step failed (damage taken) — conservative proxy
+        wound: !result.success,
+      };
+      const newTier = checkMidEncounterPromotion(
+        progress.effectiveTier,
+        promotionTriggers,
+      );
+      if (newTier !== null) {
+        const fromTier = progress.effectiveTier;
+        progress.effectiveTier = newTier;
+        const promotionTrace: EncounterPromotionTrace = {
+          type: 'encounter_promotion',
+          tick: state.tick,
+          encounterId: progress.encounterId,
+          agentId: progress.actorId,
+          fromTier,
+          toTier: newTier,
+          reason: promotionTriggers.tierPromotion ? 'tierPromotion' : 'wound',
+        };
+        emitTrace(promotionTrace as unknown as TraceEntry);
       }
     }
 
