@@ -105,7 +105,10 @@ These are not aspirations — they are hard requirements. If your packet fails a
 - **Threads must be discoverable in scene prose.** The scene text names the people, objects, and tensions that become choices. The player discovers them by reading — not by scrolling past the scene to a separate menu.
 - **Aftermath reaction choices are required for medium+ scale.** The player decides which consequence thread to carry forward. Each choice represents a different philosophical stance about consequence — not a mechanical variant. "Follow the Rumor While It Is Still Warm" / "Keep the Captain in Your Sights" / "Let the District Decide What It Remembers."
 - **Aftermath outcomes must be actor-centered.** Named agents with faces and specific attachments ("Ashara gained Ill Luck"), not anonymous stat deltas ("Heart grew 0.05").
-- **Concept art must be addressed.** The Presentation Kit must state whether the encounter opening wants concept art and describe the scene composition for prompt construction.
+- **Concept art must be evocative, not illustrative.** The art should evoke the encounter's emotional themes, not depict the scene the prose already describes. Use the two-question method:
+  1. *What emotions does this story convey?* (e.g., exhaustion, broken promises, the weight of discarded people)
+  2. *What image evokes those emotions while staying within the encounter's world?* (e.g., a faded tabard on a waymarker stone, not a fight scene)
+  The art sets mood before the first word lands. It should show residue, not events — aftermath rather than action, absence rather than presence. No people unless their absence would be wrong. The player reads the scene; the art makes them feel something the prose hasn't said yet.
 
 ## Experience Differentiator Gate
 
@@ -132,7 +135,7 @@ Before submitting your packet, answer every question below YES or NO. **If ANY a
 13. Do aftermath reaction choices represent different philosophical stances about consequence, not just mechanical variants?
 
 **Presentation**
-14. Does the Presentation Kit specify whether the encounter opening wants concept art, and if so, describe the scene composition?
+14. Does the Concept Art Direction use the two-question method (emotions → evocative image) rather than describing the scene the prose already depicts? Art should show residue/absence/mood, not illustrate the action.
 
 Include your completed gate assessment (all 14 answers) at the end of your packet, after the Self-Audit section.
 

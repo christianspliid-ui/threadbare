@@ -154,16 +154,27 @@ If any verification step fails, read the error, fix the code, and re-run. Do not
 
 ## Concept Art Generation
 
-If the design document includes a **Concept Art Direction** section (subject, palette, mood, composition), you MUST generate the encounter's opening art before declaring implementation complete.
+If the design document includes a **Concept Art Direction** section, you MUST generate the encounter's opening art before declaring implementation complete.
 
-1. Use the `generate_image` tool with the concept art direction from the design doc
-2. Use `16:9` aspect ratio, `quality` preset, and a filename matching the encounter slug
-3. Copy the generated image to `public/concept-art/encounters/<slug>.jpg`
-4. The template's `illustrationUrl` should already reference `/concept-art/encounters/<slug>.jpg`
+**The art must be evocative, not illustrative.** The design doc's Concept Art Direction uses a two-question method:
+1. What emotions does the story convey?
+2. What image evokes those emotions within the encounter's world?
+
+The resulting image should show **residue, not events** — aftermath rather than action, absence rather than presence, mood rather than scene. No people unless their absence would be wrong. The art sets the emotional tone before the player reads the first word of prose. It should NOT depict what the prose already describes.
+
+**Bad:** A fight scene with bandits attacking a caravan (illustrates the prose — redundant)
+**Good:** A faded military tabard caught on a roadside thorn beside a weathered waymarker stone on an empty road (evokes the encounter's themes — broken promises, discarded people, exhaustion)
+
+Generation steps:
+1. Read the Concept Art Direction section carefully — it contains the emotional analysis and the evocative subject
+2. Use the `generate_image` tool with the evocative description as the prompt
+3. Include in the prompt: "No people visible" (unless the design doc explicitly says otherwise), "painterly style, muted tones, threadbare fantasy aesthetic", the mood/emotion keywords from the design doc
+4. Use `16:9` aspect ratio, `quality` preset, filename matching the encounter slug
+5. Copy the generated image to `public/concept-art/encounters/<slug>.jpg`
 
 If the design doc says "no concept art" or omits the section entirely, skip this step.
 
-**This is not optional.** The Presentation Kit section of the encounter building checklist requires a concept art decision. If the design doc specifies art direction, the image must ship with the encounter.
+**This is not optional.** If the design doc specifies art direction, the image must ship with the encounter.
 
 ## What You Must NOT Do
 

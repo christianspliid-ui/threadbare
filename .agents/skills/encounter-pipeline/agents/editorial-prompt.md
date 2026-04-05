@@ -63,7 +63,7 @@ You write TWO files:
    13. Reaction choices represent philosophical stances?
 
    **Presentation**
-   14. Concept art direction specified?
+   14. Concept art direction uses two-question method (emotions → evocative image), not scene illustration?
 
 9. **Verdict** — One of:
    - **PASS** — Editorially sound. You will copy the draft as-is to the revised file.
@@ -103,7 +103,7 @@ These are non-negotiable — if ANY are present, verdict MUST be `REVISE BEFORE 
 3. **No thread integration.** Threads only in menus, not discoverable in scene prose.
 4. **Missing aftermath reaction choices.** Medium+ scale without player consequence choices.
 5. **Reporter prose.** Opening briefing rather than scene-in-motion.
-6. **No concept art recommendation.** Presentation Kit doesn't address art.
+6. **Missing or illustrative concept art direction.** If the Concept Art Direction is absent, verdict is REVISE. If the art direction describes the scene the prose depicts (illustrative) instead of evoking the encounter's emotional themes (evocative), verdict is REVISE. Art should show residue/absence/mood — not the action.
 7. **Missing per-step approach cards.** Any player-facing step lacks authored approach cards. The runtime shows choices at EVERY step — generic fallback destroys authored quality.
 
 ## What You Must NOT Do
