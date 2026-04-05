@@ -60,6 +60,8 @@ import { getChainProgress, computeChainBonus } from './encounterChains';
 import { getNodeSphereAffinity, getDominantSphere, SPHERE_AXIOLOGICAL_MAP, applyAxiologicalShift } from './sphereAffinity';
 import { SPHERE_OPPOSITES } from './cosmology';
 import { SPHERE_NAMES } from '../types/index';
+import type { EffectRuntimeState } from '../types/effects';
+import { getBehaviorWeights, computeBehaviorWeightMultiplier } from './effects/effectQueries';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {
@@ -679,6 +681,7 @@ export function scoreAndSelect(
   tick: number,
   fundament?: FundamentState,
   tiles?: readonly HexTile[],
+  effectStates?: ReadonlyMap<string, EffectRuntimeState>,
 ): DecisionResult {
   // Fail-soft: missing agent → null result
   const agentNode = graph.getNode(agentId);
@@ -700,6 +703,11 @@ export function scoreAndSelect(
   }
 
   const profile = resolveProfile(graph, agentId, tick, fundament);
+
+  // Pre-fetch behavior weights once per agent (behavior_weight effects)
+  const behaviorWeights = effectStates !== undefined
+    ? getBehaviorWeights(graph, agentId, effectStates)
+    : [];
 
   // Read agent tracking records (fail-soft: treat missing as empty)
   const familiarityRecord = agentNode.properties?.familiarityRecord as FamiliarityRecord | undefined;
@@ -800,6 +808,9 @@ export function scoreAndSelect(
       const bondMod = computeBondModifier(graph, agentId, entry.targetAgentId);
       desireMultiplier *= (1.0 + bondMod);
     }
+
+    // D.2: Behavior weight multiplier (behavior_weight effects on the agent)
+    desireMultiplier *= computeBehaviorWeightMultiplier(behaviorWeights, entry.reachPrimary);
 
     // 10. Faction scoring boost (TB-062) — additive for faction encounters
     const factionScoringBoost = getScoringBoost(graph, agentId, entry.templateId);

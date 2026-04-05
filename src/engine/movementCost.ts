@@ -21,6 +21,8 @@ import {
   MIN_EDGE_COST,
 } from '../data/movement-content';
 import type { TerrainType, LocationSubtype } from '../types';
+import type { EffectRuntimeState } from '../types/effects';
+import { getRangeModifiers } from './effects/effectQueries';
 
 /**
  * Compute the tick cost to traverse from source to destination.
@@ -41,6 +43,7 @@ export function computeEdgeCost(
   agentId: string,
   sourceId: string,
   destId: string,
+  effectStates?: ReadonlyMap<string, EffectRuntimeState>,
 ): MovementEdgeCost {
   // 2-edge model: each hop = departure edge + arrival edge
   const baseCost = 2 * BASE_EDGE_TRAVERSAL_COST;
@@ -96,11 +99,16 @@ export function computeEdgeCost(
     }
   }
 
+  // --- Range Modifier (range_modifier effects on the agent) ---
+  const rangeMultiplier = effectStates !== undefined
+    ? getRangeModifiers(graph, agentId, effectStates).movementCostMultiplier
+    : 1.0;
+
   // --- Total Cost ---
-  // Floor at MIN_EDGE_COST (0.5) to ensure no zero-cost or negative traversals
+  // Range multiplier applied to the full pre-floor cost, then floored at MIN_EDGE_COST
   const totalCost = Math.max(
     MIN_EDGE_COST,
-    baseCost + terrainTax + locationTax + speedModifier,
+    (baseCost + terrainTax + locationTax + speedModifier) * rangeMultiplier,
   );
 
   return {

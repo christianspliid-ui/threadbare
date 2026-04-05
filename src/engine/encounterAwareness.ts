@@ -60,6 +60,8 @@ import {
 } from '../data/agent-behavior-constants';
 
 import { hexNeighbors } from '../lib/hexMath';
+import type { EffectRuntimeState } from '../types/effects';
+import { getRangeModifiers } from './effects/effectQueries';
 
 // ─── Hex resolution helpers ─────────────────────────────────────
 
@@ -135,6 +137,7 @@ export function filterByAwareness(
   graph: WorldGraph,
   mapCols?: number,
   mapRows?: number,
+  effectStates?: ReadonlyMap<string, EffectRuntimeState>,
 ): EncounterCacheEntry[] {
   // Fail-soft: agent must exist and have a location
   if (!agentLocationId) return [];
@@ -146,6 +149,11 @@ export function filterByAwareness(
 
   // Edge hex bonus: agents on map borders get extra awareness to compensate
   const edgeBonus = isEdgeHex(agentHex, mapCols, mapRows) ? EDGE_HEX_AWARENESS_BONUS : 0;
+
+  // Range modifier bonus from range_modifier effects
+  const effectAwarenessBonus = effectStates !== undefined
+    ? getRangeModifiers(graph, agentId, effectStates).awarenessRangeBonus
+    : 0;
 
   // Pre-compute a cache of locationId → hex coords to avoid repeated lookups
   const hexCache = new Map<string, { col: number; row: number } | null>();
@@ -184,7 +192,7 @@ export function filterByAwareness(
     const secondaryRange = entry.reachSecondary
       ? computeAwarenessHops(secondaryCap, entry.reachSecondary)
       : 0;
-    const maxRange = Math.max(primaryRange, secondaryRange) + edgeBonus;
+    const maxRange = Math.max(primaryRange, secondaryRange) + edgeBonus + effectAwarenessBonus;
 
     if (dist <= maxRange) {
       result.push(entry);

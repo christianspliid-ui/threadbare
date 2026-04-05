@@ -539,7 +539,109 @@ export interface CascadeEffect {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// Discriminated Union — all 29 effect types
+// QUERY-LAYER Effects (types 30–38) — read by effectQueries.ts
+// These affect agent behavior and capabilities; the query handler
+// makes them available to action selection, movement, awareness,
+// disposition, and condition application systems.
+// ═══════════════════════════════════════════════════════════════════
+
+/** Type 30: Multiplies desire scores for all encounters of a given reach */
+export interface BehaviorWeightEffect {
+  readonly type: 'behavior_weight';
+  /** Which reach domain to amplify or suppress */
+  readonly reach: ReachDomain;
+  /** Score multiplier — 1.5 = 50% more likely, 0.5 = 50% less likely */
+  readonly multiplier: number;
+  readonly condition?: EffectPredicate;
+}
+
+/** Type 31: Adjusts cooperation disposition toward specific agent categories */
+export interface SocialModifierEffect {
+  readonly type: 'social_modifier';
+  /** Which social context this modifier applies to */
+  readonly targetFilter: 'ally' | 'enemy' | 'any' | 'same_faction' | 'different_faction';
+  /** Additive shift on cooperation disposition (-1 = always defect, +1 = always cooperate) */
+  readonly cooperationBias: number;
+  readonly condition?: EffectPredicate;
+}
+
+/** Type 32: Hard blocks or unlocks actions in a given reach domain */
+export interface ActionGateEffect {
+  readonly type: 'action_gate';
+  readonly mode: 'block' | 'unlock';
+  /** Reach domain whose actions are blocked or unlocked */
+  readonly reach: ReachDomain;
+  readonly condition?: EffectPredicate;
+}
+
+/** Type 33: Slowly drifts an agent's axiological value profile each tick */
+export interface AxiologicalDriftEffect {
+  readonly type: 'axiological_drift';
+  /** Axiological pair key, e.g. 'loyalty_ambition', 'mercy_ruthlessness' */
+  readonly axis: string;
+  /** Value change per tick — positive = toward the "ambition/progress/ruthlessness" pole */
+  readonly ratePerTick: number;
+  /** Maximum absolute drift from neutral (0); clamps the running total */
+  readonly limitValue: number;
+}
+
+/** Type 34: Modifies movement tick cost and/or awareness hex range */
+export interface RangeModifierEffect {
+  readonly type: 'range_modifier';
+  /** Multiplier on total movement tick cost — 0.8 = 20% faster, 1.2 = 20% slower */
+  readonly movementCostMultiplier?: number;
+  /** Additive bonus to hex hops of awareness range (integer) */
+  readonly awarenessRangeBonus?: number;
+  readonly condition?: EffectPredicate;
+}
+
+/** Type 35: Blocks incoming conditions whose tags match the listed tags */
+export interface TagImmunityEffect {
+  readonly type: 'tag_immunity';
+  /** Condition tags that are blocked — e.g. ['fear', 'poison', 'cold'] */
+  readonly tags: readonly string[];
+  readonly condition?: EffectPredicate;
+}
+
+/** Type 36: Per-tick or one-shot drain/restore of essence or quintessence */
+export interface ResourceManipulateEffect {
+  readonly type: 'resource_manipulate';
+  readonly resource: 'essence' | 'quintessence';
+  readonly target: 'self' | 'other_agent';
+  /** Amount per application — positive = restore, negative = drain */
+  readonly amount: number;
+  /** 'per_tick' = every tick, 'one_shot' = fires once then marks consumed */
+  readonly mode: 'per_tick' | 'one_shot';
+  readonly condition?: EffectPredicate;
+}
+
+/** Type 37: Modifies a property on the agent's current hex tile each tick */
+export interface HexEffectEffect {
+  readonly type: 'hex_effect';
+  /** Property key on the HexTile node to modify */
+  readonly property: string;
+  readonly value: number | string | boolean;
+  /** 'set' = overwrite, 'add' = numeric add to existing value */
+  readonly mode: 'set' | 'add';
+  /** Hex radius to affect (0 = own hex only) */
+  readonly radius?: number;
+}
+
+/** Type 38: Direct world graph CRUD — add/remove edges or set node properties */
+export interface GraphMutationEffect {
+  readonly type: 'graph_mutation';
+  readonly operation: 'add_edge' | 'remove_edge' | 'set_property' | 'remove_node';
+  /** Which node to operate on — 'self', 'target', or explicit node id */
+  readonly nodeId: 'self' | 'target' | string;
+  readonly edgeType?: string;
+  readonly targetNodeId?: string;
+  readonly propertyKey?: string;
+  readonly propertyValue?: unknown;
+  readonly condition?: EffectPredicate;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Discriminated Union — all 38 effect types
 // ═══════════════════════════════════════════════════════════════════
 
 export type AttachmentEffect =
@@ -584,7 +686,17 @@ export type AttachmentEffect =
   | DestroyStructureEffect
   | ModifyRulesEffect
   | FactionManipulateEffect
-  | CascadeEffect;
+  | CascadeEffect
+  // Query-layer effects (30–38)
+  | BehaviorWeightEffect
+  | SocialModifierEffect
+  | ActionGateEffect
+  | AxiologicalDriftEffect
+  | RangeModifierEffect
+  | TagImmunityEffect
+  | ResourceManipulateEffect
+  | HexEffectEffect
+  | GraphMutationEffect;
 
 // ═══════════════════════════════════════════════════════════════════
 // Spell Framework

@@ -186,6 +186,7 @@ export function applyDispositionModifier(
   strategy: CooperationStrategy,
   history: InteractionRecord[],
   targetReputation: number,
+  socialBias: number = 0,
 ): ActionCandidate[] {
   // Early exit: if no social candidates exist, return unchanged
   const hasSocial = candidates.some(
@@ -203,9 +204,10 @@ export function applyDispositionModifier(
   // Factor in target reputation: shift disposition toward or away from cooperation
   // reputation [0, 1] → reputationFactor [-0.2, +0.2]
   const reputationFactor = (targetReputation - 0.5) * 0.4;
+  // socialBias from social_modifier effects — additive nudge to final disposition
   const finalDisposition = Math.max(
     -1,
-    Math.min(1, disposition + reputationFactor),
+    Math.min(1, disposition + reputationFactor + socialBias),
   );
 
   // Apply modifier to each candidate

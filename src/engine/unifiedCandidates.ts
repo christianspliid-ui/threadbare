@@ -18,6 +18,8 @@
 import type { WorldGraph } from './graph';
 import type { ActionCandidate } from '../types/agent';
 import type { UnifiedAction, UnifiedActionTemplate } from '../types/unifiedAction';
+import type { EffectRuntimeState } from '../types/effects';
+import { getActionGates } from './effects/effectQueries';
 
 // ─── Constants ──────────────────────────────────────────────────
 
@@ -48,6 +50,7 @@ export function generateUnifiedCandidates(
   locationId: string,
   templates: readonly UnifiedActionTemplate[],
   activeActions: readonly UnifiedAction[] = [],
+  effectStates?: ReadonlyMap<string, EffectRuntimeState>,
 ): ActionCandidate[] {
   const actorNode = graph.getNode(actorId);
   if (!actorNode) return [];
@@ -66,9 +69,19 @@ export function generateUnifiedCandidates(
     }
   }
 
+  // Effect-gated reach domains: action_gate blocks/unlocks entire reach domains
+  const actionGates = effectStates !== undefined
+    ? getActionGates(graph, actorId, effectStates)
+    : { blocked: [] as import('../types/traits').ReachDomain[], unlocked: [] as import('../types/traits').ReachDomain[] };
+  const blockedReaches = new Set(actionGates.blocked);
+
   const candidates: ActionCandidate[] = [];
 
   for (const template of templates) {
+    // Action gate: skip templates whose reach domain is blocked by an effect
+    if (blockedReaches.has(template.reach)) {
+      continue;
+    }
     // Scale gate: skip cosmic/regional templates — agents only do personal/local
     if (template.scale === 'cosmic' || template.scale === 'regional') {
       continue;

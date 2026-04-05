@@ -26,3 +26,19 @@ export {
   evaluateOptionalCondition,
   buildPredicateContext,
 } from './effectPredicates';
+
+// Query handler — read-only capability queries for game systems
+export {
+  hasGrantedTrait,
+  getActionGates,
+  getBehaviorWeights,
+  computeBehaviorWeightMultiplier,
+  getSocialModifiers,
+  computeSocialCoopeartionBias,
+  isImmuneToTag,
+  getRangeModifiers,
+  getActiveRuleOverride,
+  type BehaviorWeight,
+  type SocialModifier,
+  type ActionGateEntry,
+} from './effectQueries';
