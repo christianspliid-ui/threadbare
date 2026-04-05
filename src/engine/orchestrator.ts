@@ -134,8 +134,9 @@ import {
   ensureDistanceMatrix,
 } from './simulationRuntime';
 import { recordBalanceEvent } from './balanceTelemetry';
-import { checkMidEncounterPromotion } from './attentionTier';
-import type { EncounterPromotionTrace } from '../types/attention';
+import { checkMidEncounterPromotion, isNotableEntry } from './attentionTier';
+import type { EncounterPromotionTrace, DigestEntry } from '../types/attention';
+import { appendDigestEntry } from './digestBuffer';
 
 // ─── Legacy Decision Cache (backward-compat shim for tests) ───────
 //
@@ -285,6 +286,8 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
   const spherePressures: SpherePressureEvent[] = [];
   const graduationChronicles: ChronicleEntry[] = [];
   let updatedProgress = [...state.encounterProgress];
+  // Digest buffer: accumulate background/invisible encounter outcomes for Read the Threads.
+  const digestBuffer: DigestEntry[] = [...(state.digestBuffer ?? [])];
   // Running effectStates — updated as encounter events fire reactive/stacking/until_event effects
   let runningEffectStates = new Map(state.effectStates ?? new Map());
 
@@ -878,6 +881,43 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
       }
     }
 
+    // ── Digest Buffer: accumulate background/invisible encounter outcomes ──
+    // Only runs on completion or abandonment (not mid-step). Fail-soft: missing
+    // template or agent node → use defaults. Only accumulates if effectiveTier
+    // was set at initiation (encounters created before Task 15 have no tier).
+    if (
+      (progress.status === 'completed' || progress.status === 'abandoned') &&
+      (progress.effectiveTier === 'background' || progress.effectiveTier === 'invisible')
+    ) {
+      const digestAgentNode = state.graph.getNode(progress.actorId);
+      const digestTemplate = getAnyEncounterById(progress.encounterId);
+      const digestEntry: DigestEntry = {
+        agentId: progress.actorId,
+        agentName: digestAgentNode?.properties?.name ?? digestAgentNode?.name ?? 'Unknown',
+        encounterId: progress.encounterId,
+        encounterName: digestTemplate?.name ?? 'Unknown Encounter',
+        encounterType: digestTemplate?.encounterType ?? 'explore',
+        reachPrimary: digestTemplate?.reachPrimary ?? 'iron',
+        tick: state.tick,
+        success: result.success,
+        significantOutcomes: [],
+        capabilityChanges: result.growth ? { [digestTemplate?.reachPrimary ?? 'iron']: result.growth.delta ?? 0 } : {},
+        attachmentsGained: [],
+        attachmentsLost: [],
+        quintessenceDelta: 0,
+        isNotable: false,
+        wasCuratedOut: false,
+        isDormantAgent: progress.effectiveTier === 'invisible',
+        sourceType: 'agent',
+      };
+      digestEntry.isNotable = isNotableEntry({
+        quintessenceDelta: digestEntry.quintessenceDelta,
+        attachmentsLost: digestEntry.attachmentsLost,
+        tierPromoted: !!result.promotion?.traitGranted,
+      });
+      appendDigestEntry(digestBuffer, digestEntry);
+    }
+
     // Generate event based on outcome
     const actorNode = state.graph.getNode(progress.actorId);
     const agentName = actorNode?.name ?? 'An agent';
@@ -934,6 +974,7 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
     tickEvents: [...state.tickEvents, ...events],
     encounterProgress: updatedProgress,
     effectStates: runningEffectStates,
+    digestBuffer,
     ...(spherePressures.length > 0
       ? { pendingSpherePressures: [...(state.pendingSpherePressures ?? []), ...spherePressures] }
       : {}),

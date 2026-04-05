@@ -94,6 +94,9 @@ import { getEffectiveUnifiedActionChoiceMemory } from './encounterChoiceMemory';
 import type { EncounterChoiceMemory } from '../types/encounter';
 import type { ClearanceGateRuntimeState, ClearanceGateState } from '../types/contentShells';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
+import { appendDigestEntry } from './digestBuffer';
+import { isNotableEntry } from './attentionTier';
+import type { DigestEntry } from '../types/attention';
 
 // ─── Phase 1: Progress ──────────────────────────────────────────
 
@@ -1375,6 +1378,8 @@ export function phaseUnifiedActionProgress(
   const revelationMutations: RevelationMutation[] = [];
   const spawnedEffects: ControlEffect[] = [];
   const spherePressures: SpherePressureEvent[] = [];
+  // Digest buffer: accumulate background/invisible action outcomes for Read the Threads.
+  const digestBuffer: DigestEntry[] = [...(state.digestBuffer ?? [])];
 
   // Phase 1: Progress all (defensive: state may not have unifiedActions yet)
   let actions = progressAllActions(state.unifiedActions ?? []);
@@ -1638,6 +1643,40 @@ export function phaseUnifiedActionProgress(
       });
     }
 
+    // ── Digest Buffer: accumulate background/invisible unified action outcomes ──
+    // Only runs when the action is fully resolved. Fail-soft: missing template or
+    // agent node → use defaults. Only accumulates if effectiveTier was set at creation.
+    if (
+      updatedAction.resolved &&
+      (completing_action.effectiveTier === 'background' || completing_action.effectiveTier === 'invisible')
+    ) {
+      const digestAgentNode = state.graph.getNode(completing_action.actorId);
+      const digestEntry: DigestEntry = {
+        agentId: completing_action.actorId,
+        agentName: digestAgentNode?.properties?.name ?? digestAgentNode?.name ?? 'Unknown',
+        encounterId: completing_action.templateId,
+        encounterName: template.name ?? 'Unknown Action',
+        encounterType: 'explore',
+        reachPrimary: template.reach ?? 'iron',
+        tick: state.tick,
+        success: isActionSuccess(updatedAction.outcome),
+        significantOutcomes: [],
+        capabilityChanges: {},
+        attachmentsGained: [],
+        attachmentsLost: [],
+        quintessenceDelta: 0,
+        isNotable: false,
+        wasCuratedOut: false,
+        isDormantAgent: completing_action.effectiveTier === 'invisible',
+        sourceType: 'agent',
+      };
+      digestEntry.isNotable = isNotableEntry({
+        quintessenceDelta: digestEntry.quintessenceDelta,
+        attachmentsLost: digestEntry.attachmentsLost,
+      });
+      appendDigestEntry(digestBuffer, digestEntry);
+    }
+
     // Replace action in array
     actions = actions.map((a) =>
       a.actionId === updatedAction.actionId ? updatedAction : a,
@@ -1649,6 +1688,7 @@ export function phaseUnifiedActionProgress(
   return {
     unifiedActions: actions,
     tickEvents: [...state.tickEvents, ...events],
+    digestBuffer,
     pendingHexMutations: [
       ...(state.pendingHexMutations ?? []),
       ...hexMutations,
