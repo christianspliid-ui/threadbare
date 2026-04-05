@@ -27,9 +27,14 @@ export interface CurationCandidate {
   matchesAmbition: boolean;
 }
 
+export interface ScoredCandidate {
+  candidate: CurationCandidate;
+  score: number;
+}
+
 export interface CurationResult {
-  selected: CurationCandidate[];
-  demoted: CurationCandidate[];
+  selected: ScoredCandidate[];
+  demoted: ScoredCandidate[];
 }
 
 // ── Scoring weights ───────────────────────────────────────────────────────────
@@ -153,8 +158,8 @@ export function scoreCurationCandidates(
   // Sort descending by score
   scored.sort((a, b) => b.score - a.score);
 
-  const selected = scored.slice(0, maxTugs).map((s) => s.candidate);
-  const demoted = scored.slice(maxTugs).map((s) => s.candidate);
+  const selected = scored.slice(0, maxTugs);
+  const demoted = scored.slice(maxTugs);
 
   return { selected, demoted };
 }

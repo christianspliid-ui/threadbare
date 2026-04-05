@@ -36,21 +36,21 @@ describe('scoreCurationCandidates', () => {
     const watched = makeCandidate({ encounterId: 'enc-watched', agentId: 'agent-b', courtPosition: 'watched' });
     const result = scoreCurationCandidates([watched, first], new Map(), null, 10, 8, makeRng());
     // the_first should appear first in selected (higher score)
-    expect(result.selected[0].encounterId).toBe('enc-first');
+    expect(result.selected[0].candidate.encounterId).toBe('enc-first');
   });
 
   it('deadly threat scores higher than trivial', () => {
     const deadly = makeCandidate({ encounterId: 'enc-deadly', agentId: 'agent-a', threatRating: 'deadly' });
     const trivial = makeCandidate({ encounterId: 'enc-trivial', agentId: 'agent-b', threatRating: 'trivial' });
     const result = scoreCurationCandidates([trivial, deadly], new Map(), null, 10, 8, makeRng());
-    expect(result.selected[0].encounterId).toBe('enc-deadly');
+    expect(result.selected[0].candidate.encounterId).toBe('enc-deadly');
   });
 
   it('final chain stage scores higher than non-chain', () => {
     const finalChain = makeCandidate({ encounterId: 'enc-final', agentId: 'agent-a', isChainStage: true, isFinalChainStage: true });
     const nonChain = makeCandidate({ encounterId: 'enc-none', agentId: 'agent-b', isChainStage: false, isFinalChainStage: false });
     const result = scoreCurationCandidates([nonChain, finalChain], new Map(), null, 10, 8, makeRng());
-    expect(result.selected[0].encounterId).toBe('enc-final');
+    expect(result.selected[0].candidate.encounterId).toBe('enc-final');
   });
 
   it('same reach as last tug gets penalized relative to different reach', () => {
@@ -58,7 +58,7 @@ describe('scoreCurationCandidates', () => {
     const diffReach = makeCandidate({ encounterId: 'enc-diff', agentId: 'agent-b', reachPrimary: 'diplomacy' });
     // last tug was 'combat'
     const result = scoreCurationCandidates([sameReach, diffReach], new Map(), 'combat', 10, 8, makeRng());
-    expect(result.selected[0].encounterId).toBe('enc-diff');
+    expect(result.selected[0].candidate.encounterId).toBe('enc-diff');
   });
 
   it('caps selection at MAX_CONCURRENT_TUGS (3)', () => {
@@ -86,9 +86,11 @@ describe('scoreCurationCandidates', () => {
     ];
     const result = scoreCurationCandidates(candidates, new Map(), null, 10, 8, makeRng());
     // the_first + deadly should be top
-    expect(result.selected[0].encounterId).toBe('enc-first');
-    // Each consecutive pair: first score >= second score (we verify ordering holds)
-    // Since we don't expose scores, just verify the enc-first is first
+    expect(result.selected[0].candidate.encounterId).toBe('enc-first');
+    // Verify scores are exposed and in descending order
     expect(result.selected.length).toBeGreaterThan(0);
+    for (let i = 1; i < result.selected.length; i++) {
+      expect(result.selected[i - 1].score).toBeGreaterThanOrEqual(result.selected[i].score);
+    }
   });
 });
