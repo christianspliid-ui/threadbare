@@ -20,6 +20,9 @@ import type { GameState, TickEvent } from '../types/gameState';
 import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { DOOM_PRESSURE_PER_TIER } from '../types/sphereAffinity';
 import { advanceDoomClock } from './doomClock';
+import { processEffectEvent, applyEffectEventResult } from './effects/effectEvents';
+import { emitTrace } from './traceBuffer';
+import type { TraceEntry } from '../types/trace';
 
 // ─── Helpers ──────────────────────────────────────────────────────
 
@@ -40,6 +43,9 @@ export function phaseDoom(state: GameState): Partial<GameState> {
   const newStage = newDoom.currentStage;
   const events: TickEvent[] = [];
   const pressures: SpherePressureEvent[] = [...(state.pendingSpherePressures ?? [])];
+
+  // Running effectStates — updated when doom threshold effects fire on escalation
+  let runningEffectStates: Map<string, import('../types/effects').EffectRuntimeState> | null = null;
 
   if (newStage > oldStage) {
     const stageName = state.doomDefinition.stages[newStage - 1]?.name ?? `Stage ${newStage}`;
@@ -71,11 +77,32 @@ export function phaseDoom(state: GameState): Partial<GameState> {
         sourceId: `doom-tier-${newStage}`,
       });
     }
+
+    // Fire doom_threshold effect events on all agents
+    // Triggers until_event('doom_threshold') expiry and transform effects
+    let states = new Map(state.effectStates ?? new Map());
+    const agents = state.graph.getNodesByType('actor')
+      .filter(n => n.properties.actorType === 'individual' || n.properties.actorType === 'ascendant');
+    for (const agent of agents) {
+      const eventResult = processEffectEvent(
+        state.graph,
+        agent.id,
+        { type: 'doom_threshold', stage: newStage },
+        states,
+        state.tick,
+      );
+      states = applyEffectEventResult(state.graph, eventResult);
+      for (const trace of eventResult.traces) {
+        emitTrace(trace as unknown as TraceEntry);
+      }
+    }
+    runningEffectStates = states;
   }
 
   return {
     doomClock: newDoom,
     tickEvents: [...state.tickEvents, ...events],
     pendingSpherePressures: pressures,
+    ...(runningEffectStates !== null ? { effectStates: runningEffectStates } : {}),
   };
 }

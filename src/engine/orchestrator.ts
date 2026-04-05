@@ -41,6 +41,7 @@ import {
 import { phaseAgentLifecycle } from './agentLifecycle';
 import { emitTrace } from './traceBuffer';
 import { tickEffects } from './effectTick';
+import { processEffectEvent, applyEffectEventResult } from './effects/effectEvents';
 import type { TraceEntry } from '../types/trace';
 import {
   resolveEncounter,
@@ -282,6 +283,8 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
   const spherePressures: SpherePressureEvent[] = [];
   const graduationChronicles: ChronicleEntry[] = [];
   let updatedProgress = [...state.encounterProgress];
+  // Running effectStates — updated as encounter events fire reactive/stacking/until_event effects
+  let runningEffectStates = new Map(state.effectStates ?? new Map());
 
   const activeEncounters = updatedProgress.filter(p => p.status === 'active');
   for (const progress of activeEncounters) {
@@ -296,6 +299,26 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
     const resolvedStepIndex = progress.currentEncounterIndex;
     // Advance encounter (mutates progress in place)
     advanceEncounter(state, progress, result.success, state.tick);
+
+    // Effect events — fire reactive/stacking/until_event effects for encounter outcome
+    {
+      const encounterForEvent = getAnyEncounterById(progress.encounterId);
+      const stepForEvent = encounterForEvent?.steps[resolvedStepIndex];
+      if (stepForEvent) {
+        const eventResult = processEffectEvent(
+          state.graph,
+          progress.actorId,
+          { type: 'encounter_outcome', reach: stepForEvent.reach, success: result.success },
+          runningEffectStates,
+          state.tick,
+          encRng,
+        );
+        runningEffectStates = applyEffectEventResult(state.graph, eventResult);
+        for (const trace of eventResult.traces) {
+          emitTrace(trace as unknown as TraceEntry);
+        }
+      }
+    }
 
     // Balance telemetry: step_resolved (legacy encounter)
     if (runtime) {
@@ -873,6 +896,7 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
   return {
     tickEvents: [...state.tickEvents, ...events],
     encounterProgress: updatedProgress,
+    effectStates: runningEffectStates,
     ...(spherePressures.length > 0
       ? { pendingSpherePressures: [...(state.pendingSpherePressures ?? []), ...spherePressures] }
       : {}),

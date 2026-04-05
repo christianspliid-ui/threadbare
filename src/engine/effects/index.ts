@@ -27,6 +27,14 @@ export {
   buildPredicateContext,
 } from './effectPredicates';
 
+// Event handler — fires effects in response to game events
+export {
+  processEffectEvent,
+  applyEffectEventResult,
+  type EffectEvent,
+  type EffectEventResult,
+} from './effectEvents';
+
 // Query handler — read-only capability queries for game systems
 export {
   hasGrantedTrait,
