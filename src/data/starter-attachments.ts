@@ -204,8 +204,12 @@ export const STARTER_CONDITIONS: GraphNode[] = [
       description: 'Cracked bones protest every swing.',
       maxLevel: 1,
       visibility: 'public',
-      domainContributions: {},
+      mechanicalSummary: '-0.03 Iron (decays fast, gone in ~12 ticks), -0.02 Iron extra in combat',
       flavorText: 'Every breath is a reminder of the blow you survived.',
+      effects: [
+        { type: 'decay', reach: 'iron', startValue: -0.03, changePerTick: 0.0025, limitValue: 0, destroyAtLimit: true },
+        { type: 'conditional', condition: 'in_combat', reach: 'iron', value: -0.02 },
+      ],
     } as TraitDefinitionProperties,
   },
 
