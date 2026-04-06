@@ -14,6 +14,7 @@ import { useScry } from './hooks/useScry';
 import { useAgentInteraction } from './hooks/useAgentInteraction';
 import { useViewNavigation } from './hooks/useViewNavigation';
 import { hexToPixel } from '../../lib/hexMath';
+import { hexToWorld } from '../../lib/worldPosition';
 import { getSphereColor } from '../../data/sphereIcons';
 import { ANOMALY_SPHERE_MAP } from '../../components/HexMapV2/scene/anomalyConstants';
 export type { ViewLevel } from './hooks/useViewNavigation';
@@ -29,6 +30,13 @@ import type { ArmyRenderData } from '../HexMapV2/scene/ArmySpriteMesh';
 import { ARMY_SIZE_SMALL_MAX } from '../HexMapV2/scene/ArmySpriteMesh';
 import type { BattleRenderData } from '../HexMapV2/scene/BattleIndicatorMesh';
 import type { SiegeRenderData } from '../HexMapV2/scene/SiegeIndicatorMesh';
+import type { ThreadLineData } from '../HexMapV2/scene/ThreadLineMesh';
+import type { ActivityIconData } from '../HexMapV2/scene/ActivityIconMesh';
+import {
+  ACTIVITY_ICON_OPACITY_BACKGROUND,
+  ACTIVITY_ICON_OPACITY_SHAPING,
+  ACTIVITY_ICON_OPACITY_STORY,
+} from '../../data/attention-constants';
 import type { ArmyState } from '../../types/army';
 import type { BattleState } from '../../types/battle';
 import { extractRoadPaths } from '../../engine/roadNetwork';
@@ -413,6 +421,104 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     }
     return result;
   }, [actors, gameState.graph, runtime.worldVersion, gameState.ascendantId, avatarNodeId, sphereColor, archetype.sphereAlignment.primary]);
+
+  // ── Thread line render data (ascendant → threaded agents) ──
+  // Rebuilds on every worldVersion tick so line positions track moving agents.
+  const threadLineData = useMemo<ThreadLineData[]>(() => {
+    const avatarPos = avatarNodeId
+      ? (() => {
+          const n = gameState.graph.getNode(avatarNodeId);
+          if (!n) return null;
+          let col = n.properties.hexCol as number | undefined;
+          let row = n.properties.hexRow as number | undefined;
+          if (col == null || row == null) {
+            const locEdges = gameState.graph.getOutgoingEdges(avatarNodeId, 'located_at');
+            if (locEdges.length > 0) {
+              const loc = gameState.graph.getNode(locEdges[0].target);
+              col = loc?.properties.hexCol as number | undefined;
+              row = loc?.properties.hexRow as number | undefined;
+            }
+          }
+          return col != null && row != null ? { col, row } : null;
+        })()
+      : null;
+
+    if (!avatarPos) return [];
+    const fromWorld = hexToWorld(avatarPos, HEX_CONSTANTS.HEX_SIZE);
+    const threadEdges = gameState.graph.getOutgoingEdges(gameState.ascendantId, 'thread');
+    const result: ThreadLineData[] = [];
+
+    for (const edge of threadEdges) {
+      const agentNode = gameState.graph.getNode(edge.target);
+      if (!agentNode) continue;
+      let hexCol = agentNode.properties.hexCol as number | undefined;
+      let hexRow = agentNode.properties.hexRow as number | undefined;
+      if (hexCol == null || hexRow == null) {
+        const locEdges = gameState.graph.getOutgoingEdges(edge.target, 'located_at');
+        if (locEdges.length > 0) {
+          const loc = gameState.graph.getNode(locEdges[0].target);
+          hexCol = loc?.properties.hexCol as number | undefined;
+          hexRow = loc?.properties.hexRow as number | undefined;
+        }
+      }
+      if (hexCol == null || hexRow == null) continue;
+
+      const toWorld = hexToWorld({ col: hexCol, row: hexRow }, HEX_CONSTANTS.HEX_SIZE);
+      const courtPosition = (edge.properties as Record<string, unknown>)['courtPosition'] as string | undefined;
+      result.push({
+        agentId: edge.target,
+        courtPosition: courtPosition ?? 'watched',
+        fromX: fromWorld.x,
+        fromY: fromWorld.y,
+        toX: toWorld.x,
+        toY: toWorld.y,
+      });
+    }
+    return result;
+  }, [gameState.graph, gameState.ascendantId, avatarNodeId, runtime.worldVersion]);
+
+  // ── Activity icon render data (active encounters → per-agent reach icons) ──
+  // Rebuilds on worldVersion so icons appear/disappear as encounters start/end.
+  const activityIconData = useMemo<ActivityIconData[]>(() => {
+    const result: ActivityIconData[] = [];
+
+    for (const action of gameState.unifiedActions) {
+      if (action.resolved) continue;
+
+      const agentNode = gameState.graph.getNode(action.actorId);
+      if (!agentNode) continue;
+      let hexCol = agentNode.properties.hexCol as number | undefined;
+      let hexRow = agentNode.properties.hexRow as number | undefined;
+      if (hexCol == null || hexRow == null) {
+        const locEdges = gameState.graph.getOutgoingEdges(action.actorId, 'located_at');
+        if (locEdges.length > 0) {
+          const loc = gameState.graph.getNode(locEdges[0].target);
+          hexCol = loc?.properties.hexCol as number | undefined;
+          hexRow = loc?.properties.hexRow as number | undefined;
+        }
+      }
+      if (hexCol == null || hexRow == null) continue;
+
+      const template = getUnifiedTemplateById(action.templateId);
+      if (!template) continue;
+
+      const worldPos = hexToWorld({ col: hexCol, row: hexRow }, HEX_CONSTANTS.HEX_SIZE);
+      const tier = action.effectiveTier ?? template.intrinsicTier;
+      const tierOpacity =
+        tier === 'story_beat'  ? ACTIVITY_ICON_OPACITY_STORY :
+        tier === 'shaping'     ? ACTIVITY_ICON_OPACITY_SHAPING :
+        ACTIVITY_ICON_OPACITY_BACKGROUND;
+
+      result.push({
+        agentId: action.actorId,
+        worldX: worldPos.x,
+        worldY: worldPos.y,
+        reachPrimary: template.reach,
+        tierOpacity,
+      });
+    }
+    return result;
+  }, [gameState.unifiedActions, gameState.graph, runtime.worldVersion]);
 
   // ── Location render data adapter (graph → LocationNode[]) ──
   // TB-086: Key off structuralCacheVersion (not worldVersion) — locationSubtype
@@ -2003,6 +2109,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   armies={armyRenderData}
                   battles={battleRenderData}
                   sieges={siegeRenderData}
+                  threadLines={threadLineData}
+                  activityIcons={activityIconData}
                   visibilityMap={fogDisabled ? undefined : effectiveVisibilityMap}
                   fogEnabled={!fogDisabled}
                   showOrganicShore={showOrganicShore}

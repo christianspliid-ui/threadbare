@@ -35,6 +35,11 @@ import type { ArmyRenderData } from './scene/ArmySpriteMesh';
 import { createBattleIndicatorLayer, tickBattleIndicators } from './scene/BattleIndicatorLayer';
 import type { BattleIndicatorLayerGroup } from './scene/BattleIndicatorLayer';
 import type { BattleIndicatorData } from './scene/BattleIndicatorLayer';
+import { createThreadLineMesh } from './scene/ThreadLineMesh';
+import type { ThreadLineData, ThreadLineLayer } from './scene/ThreadLineMesh';
+import { createActivityIconLayer } from './scene/ActivityIconMesh';
+import type { ActivityIconData, ActivityIconLayer } from './scene/ActivityIconMesh';
+import { ACTIVITY_ICON_ZOOM_HIDE_THRESHOLD } from '../../data/attention-constants';
 import { createAnomalyShimmerLayer, tickAnomalyShimmers, triggerAnomalyRevealFlash } from './scene/AnomalyShimmerMesh';
 import type { AnomalyShimmerLayerGroup } from './scene/AnomalyShimmerMesh';
 import { tickAgentAnimations } from './agents/agentAnimationState';
@@ -162,6 +167,10 @@ export interface HexMapV2Props {
   armies?: ArmyRenderData[];
   /** Battle/siege indicator data for combat overlays (Plan 12-07+) */
   battles?: BattleIndicatorData[];
+  /** Thread line data — avatar-to-agent relationship lines (Attention UI) */
+  threadLines?: ThreadLineData[];
+  /** Activity icon data — reach micro-icons for active encounters (Attention UI) */
+  activityIcons?: ActivityIconData[];
   /** Fog-of-war visibility map — keyed by "col,row". undefined = fog disabled (Plan 07-03+) */
   visibilityMap?: VisibilityMap;
   /** Whether the fog-of-war system is active. Default false. (Plan 07-03+) */
@@ -291,7 +300,7 @@ function createHoverOverlayMesh(size: number): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, battles, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false },
+    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, battles, threadLines, activityIcons, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -316,6 +325,10 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const armyLayerRef = useRef<ArmyLayerGroup | null>(null);
     const battleIndicatorLayerRef = useRef<BattleIndicatorLayerGroup | null>(null);
     const anomalyShimmerLayerRef = useRef<AnomalyShimmerLayerGroup | null>(null);
+
+    // Thread line and activity icon layer refs (Attention UI)
+    const threadLineLayerRef = useRef<ThreadLineLayer | null>(null);
+    const activityIconLayerRef = useRef<ActivityIconLayer | null>(null);
 
     // Particle burst ref — active bursts ticked each frame, consumed by tickParticleBursts
     const activeBurstsRef = useRef<ActiveBurst[]>([]);
@@ -643,6 +656,18 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         scene.add(battleIndicatorGroup.group);
         battleIndicatorLayerRef.current = battleIndicatorGroup;
 
+        // Build thread line layer — avatar-to-agent relationship lines (Attention UI)
+        // Renders at RENDER_ORDER.THREADS (9.5), below agent sprites.
+        const threadLineLayer = createThreadLineMesh();
+        scene.add(threadLineLayer.group);
+        threadLineLayerRef.current = threadLineLayer;
+
+        // Build activity icon layer — reach micro-icons for active encounters (Attention UI)
+        // Renders at RENDER_ORDER.ACTIVITY_ICONS (10.9), above battle indicators, below events.
+        const activityIconLayer = createActivityIconLayer();
+        scene.add(activityIconLayer.group);
+        activityIconLayerRef.current = activityIconLayer;
+
         // Build anomaly shimmer/halo layer — undiscovered glow + discovered ring
         if (anomalies && anomalies.length > 0) {
           const anomalyLayer = createAnomalyShimmerLayer(anomalies);
@@ -773,6 +798,18 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           const anomalyLayer = anomalyShimmerLayerRef.current;
           if (anomalyLayer) {
             tickAnomalyShimmers(anomalyLayer, clock.getElapsedTime());
+          }
+          // Tick thread lines and activity icons (Attention UI)
+          const threadLineLayer = threadLineLayerRef.current;
+          const activityIconLayer = activityIconLayerRef.current;
+          if (threadLineLayer || activityIconLayer) {
+            const elapsedS = clock.getElapsedTime();
+            if (threadLineLayer) {
+              threadLineLayer.tick(elapsedS, 1.0);
+            }
+            if (activityIconLayer) {
+              activityIconLayer.tick(elapsedS);
+            }
           }
           // Tick sphere-colored particle bursts (action activation feedback)
           if (activeBurstsRef.current.length > 0) {
@@ -943,6 +980,14 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             anomalyShimmerLayerRef.current.dispose();
             anomalyShimmerLayerRef.current = null;
           }
+          if (threadLineLayerRef.current) {
+            threadLineLayerRef.current.dispose();
+            threadLineLayerRef.current = null;
+          }
+          if (activityIconLayerRef.current) {
+            activityIconLayerRef.current.dispose();
+            activityIconLayerRef.current = null;
+          }
           // Dispose agent sprite groups
           agentSpriteGroup.dispose();
           agentSpriteGroupRef.current = null;
@@ -1089,6 +1134,21 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       canvasRef,
       cameraRef,
     });
+
+    // ── Thread line layer rebuild when threadLines prop changes ──
+    useEffect(() => {
+      threadLineLayerRef.current?.rebuild(threadLines ?? []);
+    }, [threadLines]);
+
+    // ── Activity icon layer rebuild when activityIcons prop changes ──
+    useEffect(() => {
+      activityIconLayerRef.current?.rebuild(activityIcons ?? []);
+    }, [activityIcons]);
+
+    // ── Activity icon zoom visibility ──
+    useEffect(() => {
+      activityIconLayerRef.current?.setVisible(zoomK >= ACTIVITY_ICON_ZOOM_HIDE_THRESHOLD);
+    }, [zoomK]);
 
     // ── Mouse event handlers ───────────────────────────────────────
 
