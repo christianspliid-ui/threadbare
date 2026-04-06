@@ -6,6 +6,7 @@ import {
   buildOriginalColorCache,
   updateFogColors,
   computeVisibilityFromSources,
+  toSepia,
 } from '../FogCulling';
 import type { FogLayer } from '../FogCulling';
 import type { VisibilityMap, HexVisibility } from '../../../../types/visibility';
@@ -293,5 +294,35 @@ describe('computeVisibilityFromSources', () => {
         20,
       ),
     ).not.toThrow();
+  });
+});
+
+describe('toSepia', () => {
+  it('returns an RGB triple in [0,1] range', () => {
+    const [r, g, b] = toSepia(0.5, 0.3, 0.2);
+    expect(r).toBeGreaterThanOrEqual(0);
+    expect(r).toBeLessThanOrEqual(1);
+    expect(g).toBeGreaterThanOrEqual(0);
+    expect(g).toBeLessThanOrEqual(1);
+    expect(b).toBeGreaterThanOrEqual(0);
+    expect(b).toBeLessThanOrEqual(1);
+  });
+
+  it('clamps values that would exceed 1.0', () => {
+    const [r, g, b] = toSepia(1.0, 1.0, 1.0);
+    expect(r).toBeLessThanOrEqual(1);
+    expect(g).toBeLessThanOrEqual(1);
+    expect(b).toBeLessThanOrEqual(1);
+  });
+
+  it('produces warmer (higher r, lower b) output than input', () => {
+    const [r, , b] = toSepia(0.4, 0.4, 0.4);
+    expect(r).toBeGreaterThanOrEqual(b);
+  });
+
+  it('is deterministic — same input produces same output', () => {
+    const a = toSepia(0.3, 0.5, 0.2);
+    const b2 = toSepia(0.3, 0.5, 0.2);
+    expect(a).toEqual(b2);
   });
 });

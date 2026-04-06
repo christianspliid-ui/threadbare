@@ -4,6 +4,11 @@ import { hexToWorld } from '../../../lib/worldPosition';
 import { getHexColor } from '../palette/colorUtils';
 import { RENDER_ORDER } from './RenderLayers';
 import { isWaterTerrain } from '../../../engine/coastline';
+import {
+  PARCHMENT_FOG_CONSTANTS,
+  FOG_VERTEX_SHADER,
+  FOG_FRAGMENT_SHADER,
+} from './fogShader';
 
 /**
  * Grid and hex sizing constants.
@@ -29,6 +34,10 @@ export interface HexFillMeshResult {
   landTileIndices: number[];
   /** Global tile index (into tiles[]) for each water mesh instance */
   waterTileIndices: number[];
+  /** Per-instance fog state buffer for land mesh */
+  landFogState: Float32Array;
+  /** Per-instance fog state buffer for water mesh */
+  waterFogState: Float32Array;
 }
 
 /**
@@ -71,6 +80,25 @@ export function buildHexGeometry(size: number): THREE.BufferGeometry {
 }
 
 /**
+ * Creates the ShaderMaterial for parchment fog hex fill.
+ * Accepts an optional parchment texture — if null, the shader uses a solid fallback color.
+ *
+ * NFP #4: Fail-soft — null texture → solid parchment color fallback.
+ */
+export function createFogHexMaterial(parchmentTexture: THREE.Texture | null): THREE.ShaderMaterial {
+  const fallbackColor = new THREE.Color(PARCHMENT_FOG_CONSTANTS.PARCHMENT_FALLBACK_COLOR);
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      uParchmentTex: { value: parchmentTexture },
+      uParchmentFallback: { value: fallbackColor },
+      uHasTexture: { value: parchmentTexture ? 1.0 : 0.0 },
+    },
+    vertexShader: FOG_VERTEX_SHADER,
+    fragmentShader: FOG_FRAGMENT_SHADER,
+  });
+}
+
+/**
  * Creates two InstancedMeshes for hex tiles — one for land (stencil-tested) and one for water (normal).
  *
  * Land mesh uses GPU stencil testing: only renders where the stencil buffer = 1.
@@ -90,6 +118,7 @@ export function createHexFillMesh(
   tiles: HexTile[],
   seed: number,
   lakeIds?: Int16Array,
+  parchmentTexture?: THREE.Texture | null,
 ): HexFillMeshResult {
   const geo = buildHexGeometry(HEX_CONSTANTS.HEX_SIZE);
 
@@ -111,17 +140,35 @@ export function createHexFillMesh(
   // Land mesh — renders full hex shapes (no stencil on InstancedMesh — Three.js limitation).
   // Organic coastline clipping is handled by CoastlineMesh water-colored overlay
   // that uses inverse stencil test on a regular Mesh (where stencil DOES work).
-  const landMat = new THREE.MeshBasicMaterial({ vertexColors: false });
+  const landMat = createFogHexMaterial(parchmentTexture ?? null);
 
   const landMesh = new THREE.InstancedMesh(geo, landMat, landTileIndices.length);
   landMesh.renderOrder = RENDER_ORDER.HEX_FILL;
   landMesh.frustumCulled = true;
 
   // Water mesh — no stencil constraints; renders as full hexagonal shapes
-  const waterMat = new THREE.MeshBasicMaterial({ vertexColors: false });
+  const waterMat = createFogHexMaterial(parchmentTexture ?? null);
   const waterMesh = new THREE.InstancedMesh(geo, waterMat, waterTileIndices.length);
   waterMesh.renderOrder = RENDER_ORDER.HEX_FILL;
   waterMesh.frustumCulled = true;
+
+  // Create per-instance fog state buffers (default: visible = 1.0)
+  const landFogState = new Float32Array(landTileIndices.length).fill(
+    PARCHMENT_FOG_CONSTANTS.FOG_STATE_VISIBLE,
+  );
+  const waterFogState = new Float32Array(waterTileIndices.length).fill(
+    PARCHMENT_FOG_CONSTANTS.FOG_STATE_VISIBLE,
+  );
+
+  // Attach fog state as instanced buffer attribute
+  landMesh.geometry.setAttribute(
+    'aFogState',
+    new THREE.InstancedBufferAttribute(landFogState, 1),
+  );
+  waterMesh.geometry.setAttribute(
+    'aFogState',
+    new THREE.InstancedBufferAttribute(waterFogState, 1),
+  );
 
   const matrix = new THREE.Matrix4();
   const color  = new THREE.Color();
@@ -166,7 +213,7 @@ export function createHexFillMesh(
   waterMesh.instanceMatrix.needsUpdate = true;
   if (waterMesh.instanceColor) waterMesh.instanceColor.needsUpdate = true;
 
-  return { landMesh, waterMesh, landTileIndices, waterTileIndices };
+  return { landMesh, waterMesh, landTileIndices, waterTileIndices, landFogState, waterFogState };
 }
 
 /**

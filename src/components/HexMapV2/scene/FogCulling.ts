@@ -18,6 +18,7 @@ import { getActivePalette } from '../palette/activePalette';
 import { hexNeighbors } from '../../../lib/hexMath';
 import type { HexVisibilityState, VisibilityMap, LOSSource } from '../../../types/visibility';
 import { visKey } from '../../../types/visibility';
+import { PARCHMENT_FOG_CONSTANTS } from './fogShader';
 
 // ── Fog Constants ─────────────────────────────────────────────────────────────
 
@@ -53,6 +54,37 @@ function getFogColor(): THREE.Color {
 import { onPaletteChange } from '../palette/activePalette';
 onPaletteChange(() => { _fogColor = null; });
 const _restoreColor = new THREE.Color();
+
+// ── Sepia Tint ──────────────────────────────────────────────────────────────
+
+/**
+ * Converts an RGB color to sepia-tinted version for remembered hexes.
+ * Uses the standard photographic sepia matrix, blended with original color
+ * at SEPIA_STRENGTH, then dimmed by SEPIA_BRIGHTNESS_SCALE.
+ *
+ * NFP #1: Strength and brightness constants are in PARCHMENT_FOG_CONSTANTS.
+ * NFP #3: Pure function — deterministic, no side effects.
+ *
+ * @param r - Red channel (0-1)
+ * @param g - Green channel (0-1)
+ * @param b - Blue channel (0-1)
+ * @returns [r, g, b] sepia-tinted color, each in [0, 1]
+ */
+export function toSepia(r: number, g: number, b: number): [number, number, number] {
+  const { SEPIA_STRENGTH, SEPIA_BRIGHTNESS_SCALE } = PARCHMENT_FOG_CONSTANTS;
+
+  // Standard sepia matrix
+  const sr = Math.min(1, r * 0.393 + g * 0.769 + b * 0.189);
+  const sg = Math.min(1, r * 0.349 + g * 0.686 + b * 0.168);
+  const sb = Math.min(1, r * 0.272 + g * 0.534 + b * 0.131);
+
+  // Blend: lerp(original, sepia, strength) * brightness
+  const outR = (r + (sr - r) * SEPIA_STRENGTH) * SEPIA_BRIGHTNESS_SCALE;
+  const outG = (g + (sg - g) * SEPIA_STRENGTH) * SEPIA_BRIGHTNESS_SCALE;
+  const outB = (b + (sb - b) * SEPIA_STRENGTH) * SEPIA_BRIGHTNESS_SCALE;
+
+  return [outR, outG, outB];
+}
 
 // ── Fog Layer Type ───────────────────────────────────────────────────────────
 

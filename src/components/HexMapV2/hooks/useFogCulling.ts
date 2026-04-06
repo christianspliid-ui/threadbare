@@ -14,7 +14,8 @@ import * as THREE from 'three';
 import type { HexTile } from '../../../types';
 import type { VisibilityMap } from '../../../types/visibility';
 import type { HexFillMeshResult } from '../scene/HexFillMesh';
-import { isLayerVisibleForHex } from '../scene/FogCulling';
+import { isLayerVisibleForHex, toSepia } from '../scene/FogCulling';
+import { PARCHMENT_FOG_CONSTANTS } from '../scene/fogShader';
 import type { SignifierGroupMeta } from '../scene/SignifierMesh';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -29,6 +30,30 @@ export interface UseFogCullingParams {
   tileIndexByKey: React.MutableRefObject<Map<string, number> | null>;
   signifierGroup: React.MutableRefObject<THREE.Group | null>;
   locationGroup: React.MutableRefObject<THREE.Group | null>;
+  /** Per-instance fog state buffer for land mesh (from HexFillMeshResult) */
+  landFogState: React.MutableRefObject<Float32Array | null>;
+  /** Per-instance fog state buffer for water mesh (from HexFillMeshResult) */
+  waterFogState: React.MutableRefObject<Float32Array | null>;
+}
+
+// ── Helpers ─────────────────────────────────────────────────────────────────
+
+/**
+ * Writes fog state value to the correct mesh's fog state buffer.
+ */
+function setFogStateForInstance(
+  entry: { mesh: THREE.InstancedMesh; instanceIdx: number },
+  fogState: number,
+  landFogState: Float32Array | null,
+  waterFogState: Float32Array | null,
+  landMesh: THREE.InstancedMesh,
+  waterMesh: THREE.InstancedMesh,
+): void {
+  if (entry.mesh === landMesh && landFogState) {
+    landFogState[entry.instanceIdx] = fogState;
+  } else if (entry.mesh === waterMesh && waterFogState) {
+    waterFogState[entry.instanceIdx] = fogState;
+  }
 }
 
 // ── Hook ─────────────────────────────────────────────────────────────────────
@@ -47,6 +72,8 @@ export function useFogCulling({
   tileIndexByKey,
   signifierGroup,
   locationGroup,
+  landFogState,
+  waterFogState,
 }: UseFogCullingParams): void {
   useEffect(() => {
     const land = landMesh.current;
@@ -72,9 +99,16 @@ export function useFogCulling({
           THREE.SRGBColorSpace,
         );
         entry.mesh.setColorAt(entry.instanceIdx, color);
+        setFogStateForInstance(entry, PARCHMENT_FOG_CONSTANTS.FOG_STATE_VISIBLE, landFogState.current, waterFogState.current, land, water);
       }
       if (land.instanceColor) land.instanceColor.needsUpdate = true;
       if (water.instanceColor) water.instanceColor.needsUpdate = true;
+
+      // Mark fog state attributes for upload
+      const landFogAttr = land.geometry.getAttribute('aFogState') as THREE.InstancedBufferAttribute | undefined;
+      const waterFogAttr = water.geometry.getAttribute('aFogState') as THREE.InstancedBufferAttribute | undefined;
+      if (landFogAttr) landFogAttr.needsUpdate = true;
+      if (waterFogAttr) waterFogAttr.needsUpdate = true;
 
       // Reset signifier fog alphas to fully visible
       const sigGroupReset = signifierGroup.current as (THREE.Group & { meta?: SignifierGroupMeta }) | null;
@@ -87,8 +121,10 @@ export function useFogCulling({
       return;
     }
 
-    // Apply fog colors to both meshes
-    const FOG_COLOR = new THREE.Color(0x0a0a0c);
+    // Apply fog state + colors to both meshes
+    const { FOG_STATE_UNEXPLORED, FOG_STATE_REMEMBERED, FOG_STATE_VISIBLE } = PARCHMENT_FOG_CONSTANTS;
+    const parchmentFallback = new THREE.Color(PARCHMENT_FOG_CONSTANTS.PARCHMENT_FALLBACK_COLOR);
+
     for (const [key, hexVis] of visibilityMap) {
       const idx = indexByKey.get(key);
       if (idx === undefined) continue;
@@ -96,7 +132,16 @@ export function useFogCulling({
       if (!entry) continue;
 
       if (hexVis.state === 'unexplored') {
-        entry.mesh.setColorAt(entry.instanceIdx, FOG_COLOR);
+        entry.mesh.setColorAt(entry.instanceIdx, parchmentFallback);
+        setFogStateForInstance(entry, FOG_STATE_UNEXPLORED, landFogState.current, waterFogState.current, land, water);
+      } else if (hexVis.state === 'remembered') {
+        const r = colors[idx * 3 + 0];
+        const g = colors[idx * 3 + 1];
+        const b = colors[idx * 3 + 2];
+        const [sr, sg, sb] = toSepia(r, g, b);
+        color.setRGB(sr, sg, sb, THREE.SRGBColorSpace);
+        entry.mesh.setColorAt(entry.instanceIdx, color);
+        setFogStateForInstance(entry, FOG_STATE_REMEMBERED, landFogState.current, waterFogState.current, land, water);
       } else {
         color.setRGB(
           colors[idx * 3 + 0],
@@ -105,10 +150,17 @@ export function useFogCulling({
           THREE.SRGBColorSpace,
         );
         entry.mesh.setColorAt(entry.instanceIdx, color);
+        setFogStateForInstance(entry, FOG_STATE_VISIBLE, landFogState.current, waterFogState.current, land, water);
       }
     }
     if (land.instanceColor) land.instanceColor.needsUpdate = true;
     if (water.instanceColor) water.instanceColor.needsUpdate = true;
+
+    // Mark fog state attributes for GPU upload
+    const landFogAttr = land.geometry.getAttribute('aFogState') as THREE.InstancedBufferAttribute | undefined;
+    const waterFogAttr = water.geometry.getAttribute('aFogState') as THREE.InstancedBufferAttribute | undefined;
+    if (landFogAttr) landFogAttr.needsUpdate = true;
+    if (waterFogAttr) waterFogAttr.needsUpdate = true;
 
     // Per-hex fog alpha for instanced signifier meshes
     const sigGroup = signifierGroup.current as (THREE.Group & { meta?: SignifierGroupMeta }) | null;
