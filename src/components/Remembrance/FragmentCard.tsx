@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 interface FragmentCardProps {
   prose: string;
@@ -18,47 +18,64 @@ export function FragmentCard({
   testId,
 }: FragmentCardProps) {
   const handleClick = useCallback(() => onClick(), [onClick]);
+  const [hovered, setHovered] = useState(false);
+
+  const isActive = selected || hovered;
 
   return (
     <button
       type="button"
       onClick={handleClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       data-testid={testId}
-      className="text-left transition-all duration-300 cursor-pointer group flex-1 min-w-0"
+      className="text-left cursor-pointer flex-1 min-w-0 relative transition-all duration-500"
       style={{
-        background: selected
-          ? `linear-gradient(180deg, ${accentColor}20, ${accentColor}08)`
-          : 'rgba(255,255,255,0.03)',
-        border: `1px solid ${selected ? accentColor : 'rgba(255,255,255,0.1)'}`,
-        borderRadius: '16px',
-        overflow: 'hidden',
-        transform: selected ? 'scale(1.02)' : 'scale(1)',
-        boxShadow: selected ? `0 4px 40px ${accentColor}25` : 'none',
+        background: 'transparent',
+        border: 'none',
+        padding: 0,
+        opacity: selected ? 1 : hovered ? 0.9 : 0.55,
+        filter: selected ? 'brightness(1.15)' : hovered ? 'brightness(1.05)' : 'brightness(0.75)',
       }}
     >
-      {/* Large 16:9 image area — hero of the card */}
+      {/* Image with dissolved edges — no borders, no corners */}
       <div
         className="w-full bg-cover bg-center"
         style={{
           aspectRatio: '16/9',
           backgroundImage: `url(${imageAssetPath})`,
           background: `linear-gradient(135deg, ${accentColor}18, rgba(255,255,255,0.04), ${accentColor}10)`,
-          borderBottom: `1px solid ${selected ? `${accentColor}40` : 'rgba(255,255,255,0.06)'}`,
+          maskImage: 'linear-gradient(to bottom, black 50%, transparent 95%), linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
+          maskComposite: 'intersect',
+          WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 95%), linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
+          WebkitMaskComposite: 'source-in',
         }}
       />
-      {/* Prose underneath the image */}
-      <div className="p-5">
+
+      {/* Prose floating beneath the dissolved image */}
+      <div className="px-2 pt-4 pb-2">
         <p
-          className="text-sm leading-relaxed italic"
-          style={{ color: selected ? '#e8e0f0' : '#a09090' }}
+          className="leading-relaxed transition-colors duration-500"
+          style={{
+            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontStyle: 'italic',
+            fontSize: '0.9rem',
+            color: isActive ? `${accentColor}cc` : 'rgba(180,170,160,0.5)',
+            lineHeight: '1.7',
+          }}
         >
           {prose}
         </p>
       </div>
+
+      {/* Selected glow — a faint line of light, not a border */}
       {selected && (
         <div
-          className="h-0.5 rounded-full mx-5 mb-4 transition-all duration-500"
-          style={{ backgroundColor: accentColor, opacity: 0.6 }}
+          className="absolute bottom-0 left-4 right-4 transition-opacity duration-700"
+          style={{
+            height: '1px',
+            background: `linear-gradient(to right, transparent, ${accentColor}60, transparent)`,
+          }}
         />
       )}
     </button>

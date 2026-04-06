@@ -29,11 +29,13 @@ export function RevealBeat({
   onComplete,
 }: RevealBeatProps) {
   const [divineName, setDivineName] = useState('');
-  const [visible, setVisible] = useState(false);
+  const [phase, setPhase] = useState(0); // 0=hidden, 1=image, 2=mortal, 3=origin, 4=drive, 5=hunger, 6=spheres, 7=naming
 
+  // Staggered reveal — each line materializes from darkness
   useEffect(() => {
-    const timer = setTimeout(() => setVisible(true), 100);
-    return () => clearTimeout(timer);
+    const delays = [300, 1200, 2200, 3200, 4200, 5200, 6200];
+    const timers = delays.map((d, i) => setTimeout(() => setPhase(i + 1), d));
+    return () => timers.forEach(clearTimeout);
   }, []);
 
   const handleAscend = useCallback(() => {
@@ -43,53 +45,78 @@ export function RevealBeat({
 
   const primaryColor = getSphereColor(hunger.sphereAlignment.primary);
 
+  const lineStyle = (idx: number, color: string) => ({
+    fontFamily: 'Georgia, "Times New Roman", serif' as const,
+    fontStyle: 'italic' as const,
+    color,
+    opacity: phase >= idx ? 1 : 0,
+    transform: phase >= idx ? 'translateY(0)' : 'translateY(8px)',
+    transition: 'opacity 1s ease, transform 1s ease',
+  });
+
   return (
-    <div
-      className="flex flex-col items-center h-screen transition-opacity duration-1000 overflow-hidden"
-      style={{ background: 'var(--bg-abyss, #0a0a0f)', opacity: visible ? 1 : 0 }}
-    >
-      {/* Hero image — wide 16:9 cinematic banner */}
+    <div className="h-screen flex flex-col items-center justify-center overflow-hidden"
+         style={{ background: '#0a0a0f' }}>
+
+      {/* Hero image — dissolved edges, no container */}
       <div
-        className="flex-shrink-0 bg-cover bg-center"
+        className="bg-cover bg-center mb-6"
         style={{
-          width: 'min(1200px, 90vw)',
-          aspectRatio: '16/9',
-          maxHeight: '35vh',
+          width: 'min(1000px, 80vw)',
+          aspectRatio: '16/7',
+          maxHeight: '30vh',
           backgroundImage: `url(${hunger.imageAssetPath})`,
-          background: `radial-gradient(ellipse at center, ${primaryColor}25, ${primaryColor}08, rgba(10,10,15,1))`,
-          boxShadow: `inset 0 -40px 60px rgba(10,10,15,0.9), 0 0 80px ${primaryColor}15`,
-          borderRadius: '16px',
+          background: `radial-gradient(ellipse at center, ${primaryColor}20, ${primaryColor}06, transparent)`,
+          maskImage: 'radial-gradient(ellipse 90% 90% at center, black 30%, transparent 90%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 90% 90% at center, black 30%, transparent 90%)',
+          opacity: phase >= 1 ? 1 : 0,
+          transition: 'opacity 1.5s ease',
         }}
       />
 
-      {/* Identity narrative — centered below the image */}
-      <div className="flex-1 flex flex-col items-center justify-center px-8 -mt-8">
-        <div className="max-w-2xl text-center space-y-4 mb-8">
-          <p className="text-base italic" style={{ color: '#8a8a8a' }}>
-            You were called <strong className="text-lg" style={{ color: '#e8e0f0' }}>{mortalName}</strong>.
-          </p>
-          <p className="text-sm italic leading-relaxed" style={{ color: '#8a8a8a' }}>
-            {originFragment.prose}
-          </p>
-          <p className="text-sm italic leading-relaxed" style={{ color: '#b88c9a' }}>
-            {driveFragment.prose}
-          </p>
-          <div className="pt-2">
-            <p className="text-lg italic" style={{ color: '#d4c48a' }}>
-              Now you hunger to <strong>{hunger.name}</strong>.
-            </p>
-            <p className="text-sm italic mt-1" style={{ color: '#b4a48a' }}>
-              {hunger.mandateDirection}.
-            </p>
-          </div>
-          <p className="text-base" style={{ color: primaryColor }}>
-            {hunger.sphereAlignment.primary} and {hunger.sphereAlignment.secondary} pour through you.
-            Your court is {COURT_LABELS[courtType] ?? courtType}.
-          </p>
-        </div>
+      {/* Identity lines — each materializes separately */}
+      <div className="max-w-2xl text-center" style={{ lineHeight: '2.2' }}>
 
-        {/* Divine naming */}
-        <p className="text-sm italic mb-3" style={{ color: '#8a7a9a' }}>
+        <p className="mb-3" style={{ ...lineStyle(2, 'rgba(138,138,138,0.5)'), fontSize: '1.05rem' }}>
+          You were called <strong style={{ color: '#e8e0f0', fontWeight: 'normal', fontSize: '1.2rem' }}>{mortalName}</strong>.
+        </p>
+
+        <p className="mb-3" style={{ ...lineStyle(3, 'rgba(138,138,138,0.4)'), fontSize: '0.9rem', lineHeight: '1.8' }}>
+          {originFragment.prose}
+        </p>
+
+        <p className="mb-5" style={{ ...lineStyle(4, 'rgba(184,140,154,0.45)'), fontSize: '0.9rem', lineHeight: '1.8' }}>
+          {driveFragment.prose}
+        </p>
+
+        <p className="mb-1" style={{ ...lineStyle(5, 'rgba(212,196,138,0.6)'), fontSize: '1.15rem' }}>
+          Now you hunger to <strong style={{ fontWeight: 'normal' }}>{hunger.name}</strong>.
+        </p>
+        <p className="mb-5" style={{ ...lineStyle(5, 'rgba(180,164,138,0.35)'), fontSize: '0.85rem' }}>
+          {hunger.mandateDirection}.
+        </p>
+
+        <p style={{ ...lineStyle(6, primaryColor), fontSize: '1rem', opacity: phase >= 6 ? 0.6 : 0 }}>
+          {hunger.sphereAlignment.primary} and {hunger.sphereAlignment.secondary} pour through you.
+          Your court is {COURT_LABELS[courtType] ?? courtType}.
+        </p>
+      </div>
+
+      {/* Divine naming — appears last, floating in the void */}
+      <div className="mt-10 text-center transition-all duration-1000"
+           style={{
+             opacity: phase >= 7 ? 1 : 0,
+             transform: phase >= 7 ? 'translateY(0)' : 'translateY(12px)',
+             pointerEvents: phase >= 7 ? 'auto' : 'none',
+           }}>
+        <p className="mb-4"
+           style={{
+             fontFamily: 'Georgia, "Times New Roman", serif',
+             fontStyle: 'italic',
+             fontSize: '0.95rem',
+             color: 'rgba(138,122,154,0.4)',
+             letterSpacing: '0.06em',
+           }}>
           The mortals will need a name for what you are.
         </p>
         <input
@@ -98,17 +125,33 @@ export function RevealBeat({
           onChange={e => setDivineName(e.target.value)}
           placeholder={suggestedDivineName}
           data-testid="divine-name-input"
-          className="w-96 bg-transparent border rounded-lg px-4 py-3 text-center text-lg outline-none transition-colors mb-4"
-          style={{ borderColor: `${primaryColor}40`, color: '#e8e0f0' }}
+          className="block mx-auto mb-6 text-center text-lg outline-none"
+          style={{
+            width: '380px',
+            background: 'transparent',
+            border: 'none',
+            borderBottom: `1px solid ${primaryColor}30`,
+            padding: '12px 0',
+            color: '#e8e0f0',
+            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontStyle: 'italic',
+            letterSpacing: '0.04em',
+          }}
         />
         <button
           type="button"
           onClick={handleAscend}
           data-testid="ascend-button"
-          className="py-3 px-14 rounded-lg text-base font-medium transition-all duration-300 cursor-pointer"
+          className="cursor-pointer transition-all duration-500"
           style={{
-            background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}80)`,
-            color: '#1a1a1a',
+            background: 'transparent',
+            border: 'none',
+            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontStyle: 'italic',
+            fontSize: '1.1rem',
+            color: primaryColor,
+            opacity: 0.6,
+            letterSpacing: '0.1em',
           }}
         >
           Ascend
