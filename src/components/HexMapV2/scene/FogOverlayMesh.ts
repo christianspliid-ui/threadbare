@@ -168,8 +168,8 @@ export function createFogOverlayMesh(
   // Center the plane on the map center
   const centerX = (cols - 1) * HEX_CONSTANTS.HEX_SIZE * HEX_SCALE_X / 2;
   const centerY = -((rows - 1) * HEX_CONSTANTS.HEX_SIZE * HEX_SCALE_Y / 2);
-  backgroundPlane.position.set(centerX, centerY, LAYER_Z.FOG_OVERLAY - 0.001); // Slightly behind hex overlay
-  backgroundPlane.renderOrder = RENDER_ORDER.FOG - 0.1; // Render just before hex overlay
+  backgroundPlane.position.set(centerX, centerY, -0.1); // Behind all hex content
+  backgroundPlane.renderOrder = RENDER_ORDER.STENCIL_WRITE - 1; // Render before everything else
 
   return { mesh, backgroundPlane, alphaBuffer, indexByKey };
 }
