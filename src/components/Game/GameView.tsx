@@ -1865,7 +1865,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     isMeetTheFirstAvailable(gameState.graph, gameState.ascendantId, gameState.tick),
   [gameState.graph, gameState.ascendantId, gameState.tick]);
 
-  // ── Auto-trigger Meet The First on first populated location ──
+  // ── Auto-trigger Meet The First early in the game ──
+  // The meeting encounter generates candidates from scratch — it doesn't
+  // need pre-existing agents at the location. Fire as soon as the avatar
+  // is at any location and Meet The First is available.
   useEffect(() => {
     if (gameState.tick < 2) return; // let the world settle
     if (gameState.meetTheFirstAutoTriggered) return;
@@ -1877,16 +1880,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (!avatarLocEdge) return;
     const locationId = avatarLocEdge.target;
 
-    // Check if the location has agents (populated)
-    const hasAgents = gameState.graph.getIncomingEdges(locationId, 'located_at')
-      .some(e => {
-        const node = gameState.graph.getNode(e.source);
-        return node?.properties?.actorType === 'individual';
-      });
-    if (!hasAgents) return;
-
     // All conditions met — auto-trigger once
-    // Mutate in place to avoid spreading GameState (which strips WorldGraph prototype)
     gameState.meetTheFirstAutoTriggered = true;
     handleStartMeeting(locationId);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1896,7 +1890,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const enrichedNonAgentSlots = useMemo(() => {
     const base = nonAgentSlots ?? [];
     if (viewLevel !== 'location' || !meetTheFirstAvailable || !focusedLocation) return base;
-    if (focusedLocationAgents.length === 0) return base;
     const meetSlot: WheelSlot = {
       id: MEET_THE_FIRST_SLOT_ID,
       label: 'Meet The First',
