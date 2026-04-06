@@ -50,6 +50,8 @@ import type { ActiveBurst } from './scene/ParticleBurstMesh';
 import { useAgentAnimations } from './hooks/useAgentAnimations';
 import type { AgentPrevPosition } from './hooks/useAgentAnimations';
 import { useFogCulling } from './hooks/useFogCulling';
+import { createFogOverlayMesh, updateFogOverlayTexture } from './scene/FogOverlayMesh';
+import type { FogOverlayResult } from './scene/FogOverlayMesh';
 import { useZoomLayerVisibility } from './hooks/useZoomLayerVisibility';
 import { RENDER_ORDER } from './scene/RenderLayers';
 import * as d3 from 'd3';
@@ -370,6 +372,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const landFogStateRef      = useRef<Float32Array | null>(null);
     const waterFogStateRef     = useRef<Float32Array | null>(null);
     const parchmentTextureRef  = useRef<THREE.Texture | null>(null);
+    const fogOverlayRef        = useRef<FogOverlayResult | null>(null);
     // Visibility map ref — kept in sync with prop for use without closure staleness
     const visibilityMapRef     = useRef<VisibilityMap | undefined>(visibilityMap);
     const fogEnabledRef        = useRef<boolean>(fogEnabled);
@@ -398,6 +401,10 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           if (water?.material && 'uniforms' in water.material) {
             (water.material as THREE.ShaderMaterial).uniforms.uParchmentTex.value = tex;
             (water.material as THREE.ShaderMaterial).uniforms.uHasTexture.value = 1.0;
+          }
+          // Update fog overlay texture too
+          if (fogOverlayRef.current) {
+            updateFogOverlayTexture(fogOverlayRef.current, tex);
           }
         },
         undefined,
@@ -541,6 +548,11 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         waterMeshRef.current = fillResult.waterMesh;
         landFogStateRef.current = fillResult.landFogState;
         waterFogStateRef.current = fillResult.waterFogState;
+
+        // Build fog overlay mesh — parchment layer floating above all scene content
+        const fogOverlay = createFogOverlayMesh(tiles, parchmentTextureRef.current);
+        scene.add(fogOverlay.mesh);
+        fogOverlayRef.current = fogOverlay;
 
         // Build global-to-mesh routing map for fog update (avoids re-scanning index arrays each fog update)
         const globalToMeshMap = new Map<number, { mesh: THREE.InstancedMesh; instanceIdx: number }>();
@@ -1088,6 +1100,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       locationGroup: locationGroupRef,
       landFogState: landFogStateRef,
       waterFogState: waterFogStateRef,
+      fogOverlay: fogOverlayRef,
     });
 
     // ── Zoom layer visibility — delegated to useZoomLayerVisibility hook ──

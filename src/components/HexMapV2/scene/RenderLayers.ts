@@ -55,4 +55,5 @@ export const LAYER_Z = {
   ACTIVITY_ICONS:    6.090,  // Reach micro-icons — above combat indicators, below events
   PARTICLE_BURST:    6.060,  // Sphere-colored particle effects above battles, below events
   EVENTS:            6.100,
+  FOG_OVERLAY:       6.500,  // Parchment fog overlay — above all scene content including 3D models
 } as const;

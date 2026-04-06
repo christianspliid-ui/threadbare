@@ -16,6 +16,8 @@ import type { VisibilityMap } from '../../../types/visibility';
 import type { HexFillMeshResult } from '../scene/HexFillMesh';
 import { isLayerVisibleForHex, toSepia } from '../scene/FogCulling';
 import { PARCHMENT_FOG_CONSTANTS } from '../scene/fogShader';
+import { setFogOverlayAlpha, flushFogOverlay } from '../scene/FogOverlayMesh';
+import type { FogOverlayResult } from '../scene/FogOverlayMesh';
 import type { SignifierGroupMeta } from '../scene/SignifierMesh';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -34,6 +36,8 @@ export interface UseFogCullingParams {
   landFogState: React.MutableRefObject<Float32Array | null>;
   /** Per-instance fog state buffer for water mesh (from HexFillMeshResult) */
   waterFogState: React.MutableRefObject<Float32Array | null>;
+  /** Fog overlay mesh floating above the scene — parchment on unexplored hexes */
+  fogOverlay: React.MutableRefObject<FogOverlayResult | null>;
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -74,6 +78,7 @@ export function useFogCulling({
   locationGroup,
   landFogState,
   waterFogState,
+  fogOverlay,
 }: UseFogCullingParams): void {
   useEffect(() => {
     const land = landMesh.current;
@@ -126,6 +131,12 @@ export function useFogCulling({
           child.visible = true;
         }
       }
+
+      // Hide fog overlay entirely when fog is disabled
+      const overlay = fogOverlay.current;
+      if (overlay) {
+        overlay.mesh.visible = false;
+      }
       return;
     }
 
@@ -169,6 +180,16 @@ export function useFogCulling({
     const waterFogAttr = water.geometry.getAttribute('aFogState') as THREE.InstancedBufferAttribute | undefined;
     if (landFogAttr) landFogAttr.needsUpdate = true;
     if (waterFogAttr) waterFogAttr.needsUpdate = true;
+
+    // Update fog overlay — opaque on unexplored hexes, transparent on remembered/visible
+    const overlay = fogOverlay.current;
+    if (overlay) {
+      overlay.mesh.visible = true;
+      for (const [key, hexVis] of visibilityMap) {
+        setFogOverlayAlpha(overlay, key, hexVis.state === 'unexplored' ? 1.0 : 0.0);
+      }
+      flushFogOverlay(overlay);
+    }
 
     // Per-hex fog alpha for instanced signifier meshes
     const sigGroup = signifierGroup.current as (THREE.Group & { meta?: SignifierGroupMeta }) | null;
