@@ -146,56 +146,89 @@ const DESTINATION_MARKER_CONSTANTS = {
   /** Pulse speed in radians per second */
   PULSE_SPEED: 2.8,
   /** Minimum opacity during pulse */
-  PULSE_MIN: 0.25,
+  PULSE_MIN: 0.3,
   /** Maximum opacity during pulse */
   PULSE_MAX: 1.0,
-  /** X arm length as a fraction of HEX_SIZE */
-  X_ARM_RATIO: 0.38,
-  /** Ring color — white so it contrasts with the gold selection ring */
-  COLOR: 0xffffff,
+  /** Arm reach as a fraction of HEX_SIZE — controls cross + ring sizing */
+  ARM_RATIO: 0.40,
+  /** Thick stroke width as a fraction of arm length (calligraphy downstroke) */
+  THICK_WIDTH_RATIO: 0.50,
+  /** Thin stroke width as a fraction of arm length (calligraphy upstroke) */
+  THIN_WIDTH_RATIO: 0.14,
+  /** Ring color — white to contrast with the gold selection ring */
+  RING_COLOR: 0xffffff,
+  /** Cross color — black ink, calligraphy style */
+  CROSS_COLOR: 0x000000,
 } as const;
 
 /**
+ * Diamond-shaped (lozenge) mesh — sharp tips, widest in the middle.
+ * Used for calligraphy strokes: thick for the downstroke, thin for the upstroke.
+ */
+function createLozengeMesh(length: number, width: number, color: number): THREE.Mesh {
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute([
+    0,          length / 2, 0,   // top tip
+   -width / 2,  0,          0,   // left widest
+    width / 2,  0,          0,   // right widest
+    0,         -length / 2, 0,   // bottom tip
+  ], 3));
+  geo.setIndex([0, 1, 2,  1, 3, 2]);
+  return new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
+    color,
+    transparent: true,
+    opacity: DESTINATION_MARKER_CONSTANTS.PULSE_MAX,
+    depthTest: false,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+  }));
+}
+
+/**
  * Builds the destination marker for the ascendant's move order target:
- * a white hex outline ring + an X cross, both pulsed each frame.
+ * white hex outline ring + black calligraphy X (thick downstroke, thin upstroke).
+ * The whole group pulses in opacity each frame.
  */
 function createDestinationMarkerGroup(size: number): THREE.Group {
   const group = new THREE.Group();
+  const arm = size * DESTINATION_MARKER_CONSTANTS.ARM_RATIO;
 
-  // Hex outline — same shape as the selection ring, different color
+  // White hex outline ring
   const ringPoints: THREE.Vector3[] = [];
   for (let i = 0; i < 6; i++) {
     const angle = (Math.PI / 180) * (60 * i);
     ringPoints.push(new THREE.Vector3(size * Math.cos(angle), size * Math.sin(angle), 0));
   }
-  const ringGeo = new THREE.BufferGeometry().setFromPoints(ringPoints);
-  const ringMat = new THREE.LineBasicMaterial({
-    color: DESTINATION_MARKER_CONSTANTS.COLOR,
-    transparent: true,
-    opacity: DESTINATION_MARKER_CONSTANTS.PULSE_MAX,
-  });
-  const ring = new THREE.LineLoop(ringGeo, ringMat);
+  const ring = new THREE.LineLoop(
+    new THREE.BufferGeometry().setFromPoints(ringPoints),
+    new THREE.LineBasicMaterial({
+      color: DESTINATION_MARKER_CONSTANTS.RING_COLOR,
+      transparent: true,
+      opacity: DESTINATION_MARKER_CONSTANTS.PULSE_MAX,
+    }),
+  );
   ring.renderOrder = RENDER_ORDER.GRID + 1;
   group.add(ring);
 
-  // X cross — two diagonal line segments
-  const arm = size * DESTINATION_MARKER_CONSTANTS.X_ARM_RATIO;
-  const xGeo = new THREE.BufferGeometry();
-  xGeo.setAttribute(
-    'position',
-    new THREE.Float32BufferAttribute([
-      -arm,  arm, 0,   arm, -arm, 0,   // \ diagonal
-       arm,  arm, 0,  -arm, -arm, 0,   // / diagonal
-    ], 3),
+  // Thick calligraphy stroke — the \ diagonal (downstroke, broadest face of the pen)
+  const thick = createLozengeMesh(
+    arm * 1.85,
+    arm * DESTINATION_MARKER_CONSTANTS.THICK_WIDTH_RATIO,
+    DESTINATION_MARKER_CONSTANTS.CROSS_COLOR,
   );
-  const xMat = new THREE.LineBasicMaterial({
-    color: DESTINATION_MARKER_CONSTANTS.COLOR,
-    transparent: true,
-    opacity: DESTINATION_MARKER_CONSTANTS.PULSE_MAX,
-  });
-  const cross = new THREE.LineSegments(xGeo, xMat);
-  cross.renderOrder = RENDER_ORDER.GRID + 1;
-  group.add(cross);
+  thick.rotation.z = Math.PI / 4;   // 45° → \ diagonal in y-up space
+  thick.renderOrder = RENDER_ORDER.GRID + 1;
+  group.add(thick);
+
+  // Thin calligraphy stroke — the / diagonal (upstroke, narrow edge of the pen)
+  const thin = createLozengeMesh(
+    arm * 1.85,
+    arm * DESTINATION_MARKER_CONSTANTS.THIN_WIDTH_RATIO,
+    DESTINATION_MARKER_CONSTANTS.CROSS_COLOR,
+  );
+  thin.rotation.z = -Math.PI / 4;  // -45° → / diagonal in y-up space
+  thin.renderOrder = RENDER_ORDER.GRID + 1;
+  group.add(thin);
 
   group.visible = false;
   return group;
@@ -927,7 +960,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
               + (DESTINATION_MARKER_CONSTANTS.PULSE_MAX - DESTINATION_MARKER_CONSTANTS.PULSE_MIN)
               * (0.5 + 0.5 * Math.sin(t * DESTINATION_MARKER_CONSTANTS.PULSE_SPEED));
             for (const child of destMarker.children) {
-              (child as THREE.LineLoop | THREE.LineSegments).material.opacity = pulse;
+              // Works for both LineBasicMaterial (ring) and MeshBasicMaterial (lozenges)
+              ((child as THREE.LineLoop | THREE.Mesh).material as THREE.Material & { opacity: number }).opacity = pulse;
             }
           }
           // Pulse battle/siege indicators
