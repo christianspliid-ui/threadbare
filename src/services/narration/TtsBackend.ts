@@ -6,7 +6,13 @@ export type NarrationStatus = 'idle' | 'loading' | 'available' | 'ready' | 'spea
 export interface TtsBackend {
   readonly type: 'server' | 'worker';
   init(onProgress?: (progress: number) => void): Promise<void>;
-  generateAudio(sections: string[], voice: string, speed: number, signal: AbortSignal): Promise<ArrayBuffer>;
+  generateAudio(
+    sections: string[],
+    voice: string,
+    speed: number,
+    signal: AbortSignal,
+    onChunk?: (audio: Float32Array, sampleRate: number) => void,
+  ): Promise<ArrayBuffer | null>;
   stop(): void;
   dispose(): void;
 }

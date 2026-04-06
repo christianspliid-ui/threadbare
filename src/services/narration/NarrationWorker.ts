@@ -1,6 +1,7 @@
 // ── Narration Web Worker ────────────────────────────────────────────
-// Runs Kokoro TTS inference off the main thread so it doesn't block
-// the Three.js render loop or React UI.
+// Runs Kokoro TTS inference off the main thread using the streaming API.
+// Yields audio per-sentence via audio-chunk messages so playback can
+// start before the full text is synthesized.
 //
 // Message protocol:
 //   Main → Worker: { type: 'init', modelId, dtype, device }
@@ -9,7 +10,8 @@
 //   Worker → Main: { type: 'init-progress', progress }
 //   Worker → Main: { type: 'init-done' }
 //   Worker → Main: { type: 'init-error', error }
-//   Worker → Main: { type: 'audio', audio: Float32Array, sampleRate, id }
+//   Worker → Main: { type: 'audio-chunk', audio: Float32Array, sampleRate, id }
+//   Worker → Main: { type: 'audio-done', id }
 //   Worker → Main: { type: 'speak-error', error, id }
 //   Worker → Main: { type: 'stopped', id }
 
@@ -51,25 +53,29 @@ self.onmessage = async (e: MessageEvent) => {
       aborted = false;
 
       try {
-        const result = await tts.generate(msg.text, {
+        const stream = tts.stream(msg.text, {
           voice: msg.voice,
           speed: msg.speed,
         });
 
-        if (aborted) {
-          self.postMessage({ type: 'stopped', id: msg.id });
-          return;
+        for await (const chunk of stream) {
+          if (aborted) {
+            self.postMessage({ type: 'stopped', id: msg.id });
+            return;
+          }
+
+          const audioData = chunk.audio.audio;
+          const sampleRate = chunk.audio.sampling_rate;
+
+          self.postMessage(
+            { type: 'audio-chunk', audio: audioData, sampleRate, id: msg.id },
+            [audioData.buffer],
+          );
         }
 
-        // RawAudio has .audio (Float32Array) and .sampling_rate
-        const audioData = result.audio;
-        const sampleRate = result.sampling_rate;
-
-        self.postMessage(
-          { type: 'audio', audio: audioData, sampleRate, id: msg.id },
-          // Transfer the underlying buffer for zero-copy
-          [audioData.buffer],
-        );
+        if (!aborted) {
+          self.postMessage({ type: 'audio-done', id: msg.id });
+        }
       } catch (err) {
         if (!aborted) {
           self.postMessage({ type: 'speak-error', error: String(err), id: msg.id });

@@ -21,6 +21,7 @@ export class ServerBackend implements TtsBackend {
     voice: string,
     speed: number,
     signal: AbortSignal,
+    _onChunk?: (audio: Float32Array, sampleRate: number) => void,
   ): Promise<ArrayBuffer> {
     const res = await fetch(this.serverUrl, {
       method: 'POST',

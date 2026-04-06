@@ -9,7 +9,6 @@ class MockWorker {
   postMessage = vi.fn();
   terminate = vi.fn();
 
-  // Test helper: simulate worker posting back
   simulateMessage(data: unknown) {
     this.onmessage?.(new MessageEvent('message', { data }));
   }
@@ -24,7 +23,6 @@ describe('WorkerBackend', () => {
 
   beforeEach(() => {
     mockWorker = new MockWorker();
-    // WorkerBackend accepts an optional worker factory for testing
     backend = new WorkerBackend(() => mockWorker as unknown as Worker);
   });
 
@@ -63,36 +61,42 @@ describe('WorkerBackend', () => {
     });
   });
 
-  describe('generateAudio', () => {
+  describe('generateAudio (streaming)', () => {
     beforeEach(async () => {
       const p = backend.init();
       mockWorker.simulateMessage({ type: 'init-done' });
       await p;
     });
 
-    it('sends speak message and returns WAV ArrayBuffer', async () => {
+    it('relays audio chunks via onChunk callback and resolves to null', async () => {
+      const chunks: { audio: Float32Array; sampleRate: number }[] = [];
       const signal = new AbortController().signal;
-      const genPromise = backend.generateAudio(['Hello world'], 'bm_george', 0.87, signal);
+      const genPromise = backend.generateAudio(
+        ['Hello world'], 'bm_george', 0.87, signal,
+        (audio, sampleRate) => chunks.push({ audio, sampleRate }),
+      );
 
-      // Worker sends back audio for the section
-      const audioData = new Float32Array([0.1, 0.2, 0.3]);
       const speakCall = mockWorker.postMessage.mock.calls.find(
         (c) => c[0].type === 'speak',
       );
       expect(speakCall).toBeTruthy();
 
+      // Simulate two streamed chunks
+      const chunk1 = new Float32Array([0.1, 0.2, 0.3]);
+      const chunk2 = new Float32Array([0.4, 0.5]);
       mockWorker.simulateMessage({
-        type: 'audio',
-        audio: audioData,
-        sampleRate: 24000,
-        id: speakCall![0].id,
+        type: 'audio-chunk', audio: chunk1, sampleRate: 24000, id: speakCall![0].id,
       });
+      mockWorker.simulateMessage({
+        type: 'audio-chunk', audio: chunk2, sampleRate: 24000, id: speakCall![0].id,
+      });
+      mockWorker.simulateMessage({ type: 'audio-done', id: speakCall![0].id });
 
       const result = await genPromise;
-      expect(result).toBeInstanceOf(ArrayBuffer);
-      // Should be a valid WAV (starts with RIFF header)
-      const view = new DataView(result);
-      expect(String.fromCharCode(view.getUint8(0), view.getUint8(1), view.getUint8(2), view.getUint8(3))).toBe('RIFF');
+      expect(result).toBeNull(); // streaming returns null
+      expect(chunks).toHaveLength(2);
+      expect(chunks[0].audio).toEqual(chunk1);
+      expect(chunks[1].audio).toEqual(chunk2);
     });
 
     it('rejects on speak-error', async () => {
@@ -104,9 +108,7 @@ describe('WorkerBackend', () => {
       );
 
       mockWorker.simulateMessage({
-        type: 'speak-error',
-        error: 'Inference failed',
-        id: speakCall![0].id,
+        type: 'speak-error', error: 'Inference failed', id: speakCall![0].id,
       });
 
       await expect(genPromise).rejects.toThrow('Inference failed');

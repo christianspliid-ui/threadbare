@@ -2,10 +2,14 @@
 // Dual-mode TTS: probes local Python server on localhost, falls back to
 // browser-side Web Worker (kokoro-js) on deployed origins. Player must
 // opt-in to the ~92MB model download.
+//
+// Streaming playback: worker backend streams audio chunks per sentence.
+// Each chunk is queued and played sequentially — the player hears audio
+// within 1-2 seconds while the rest generates in the background.
 
 import type { TtsBackend, NarrationStatus } from './TtsBackend';
 import { ServerBackend } from './ServerBackend';
-import { WorkerBackend } from './WorkerBackend';
+import { WorkerBackend, encodeWav } from './WorkerBackend';
 import {
   NARRATION_VOICE,
   NARRATION_SPEED,
@@ -35,6 +39,13 @@ class NarrationServiceImpl {
   private currentSpeakId = 0;
   private backend: TtsBackend | null = null;
 
+  /** Queue of WAV buffers waiting to be played (streaming mode). */
+  private chunkQueue: ArrayBuffer[] = [];
+  /** True while a chunk is currently playing. */
+  private isPlayingChunk = false;
+  /** True when generateAudio has resolved (no more chunks coming). */
+  private streamDone = false;
+
   private _status: NarrationStatus = 'idle';
   private _loadProgress = 0;
   private _error: string | null = null;
@@ -51,7 +62,6 @@ class NarrationServiceImpl {
   get isSpeaking(): boolean { return this._status === 'speaking'; }
   get backendType(): 'server' | 'worker' | null { return this.backend?.type ?? null; }
 
-  /** Returns a cached snapshot — same reference if nothing changed (required by useSyncExternalStore). */
   getState(): NarrationState {
     return this._cachedState;
   }
@@ -82,19 +92,15 @@ class NarrationServiceImpl {
 
   // ── Init ──────────────────────────────────────────────────────
 
-  /** Check if the TTS server is available. On non-localhost, skip server probe. */
   async init(): Promise<void> {
     if (this._status === 'loading' || this._status === 'ready') return;
 
-    // On non-localhost origins, skip the server probe entirely.
-    // A fetch to http://localhost:3001 from HTTPS is mixed-content-blocked.
     const hostname = window.location.hostname;
     if (!LOCAL_HOSTNAMES.includes(hostname)) {
       this.setStatus('available');
       return;
     }
 
-    // On localhost, probe the Python server
     this.setStatus('loading');
     this._loadProgress = 0.5;
     this.notify();
@@ -110,7 +116,6 @@ class NarrationServiceImpl {
     }
   }
 
-  /** Opt-in: download the browser TTS model and initialize the worker backend. */
   async initWorker(): Promise<void> {
     if (this._status === 'ready' || this._status === 'loading') return;
 
@@ -133,7 +138,6 @@ class NarrationServiceImpl {
     }
   }
 
-  /** Ensure AudioContext exists — call from a user gesture to satisfy autoplay policy. */
   ensureAudioContext(): void {
     if (!this.audioCtx) {
       this.audioCtx = new AudioContext();
@@ -145,12 +149,10 @@ class NarrationServiceImpl {
 
   // ── Speak ─────────────────────────────────────────────────────
 
-  /** Speak a single text block. */
   async speak(text: string, voice = NARRATION_VOICE, speed = NARRATION_SPEED): Promise<void> {
     return this.speakSections([text], voice, speed);
   }
 
-  /** Speak multiple text sections. */
   async speakSections(sections: string[], voice = NARRATION_VOICE, speed = NARRATION_SPEED): Promise<void> {
     this.ensureAudioContext();
 
@@ -170,19 +172,41 @@ class NarrationServiceImpl {
     this.abortController?.abort();
     this.abortController = new AbortController();
 
+    // Reset streaming state
+    this.chunkQueue = [];
+    this.isPlayingChunk = false;
+    this.streamDone = false;
+
     try {
-      const wavBuffer = await this.backend.generateAudio(
+      const result = await this.backend.generateAudio(
         filtered, voice, speed, this.abortController.signal,
+        // onChunk callback — only used by WorkerBackend (streaming)
+        (audio: Float32Array, sampleRate: number) => {
+          if (id !== this.currentSpeakId) return;
+          const wavBuffer = encodeWav(audio, sampleRate);
+          this.chunkQueue.push(wavBuffer);
+          this.playNextChunk(id);
+        },
       );
 
       if (id !== this.currentSpeakId) return;
 
-      await this.playWav(wavBuffer);
+      if (result) {
+        // Non-streaming path (ServerBackend returns full WAV)
+        await this.playWav(result);
+      } else {
+        // Streaming path — mark stream as done so playNextChunk
+        // knows to set status=ready after the last chunk finishes
+        this.streamDone = true;
+        // If nothing is playing and queue is empty, we're done
+        if (!this.isPlayingChunk && this.chunkQueue.length === 0) {
+          this.setStatus('ready');
+        }
+      }
     } catch (err) {
       if (id !== this.currentSpeakId) return;
       if ((err as Error).name === 'AbortError') return;
       if ((err as Error).message === 'Stopped') {
-        // Best-effort stop from worker — not an error
         this.setStatus('ready');
         return;
       }
@@ -203,6 +227,11 @@ class NarrationServiceImpl {
   }
 
   private stopPlayback() {
+    // Clear chunk queue
+    this.chunkQueue = [];
+    this.isPlayingChunk = false;
+    this.streamDone = false;
+
     if (this.currentSource) {
       try {
         this.currentSource.stop();
@@ -215,6 +244,7 @@ class NarrationServiceImpl {
 
   // ── Audio playback ────────────────────────────────────────────
 
+  /** Play a single complete WAV buffer (non-streaming path: ServerBackend). */
   private async playWav(wavBuffer: ArrayBuffer): Promise<void> {
     if (!this.audioCtx) return;
 
@@ -236,6 +266,54 @@ class NarrationServiceImpl {
 
     this.currentSource = source;
     source.start();
+  }
+
+  /** Play the next queued chunk (streaming path: WorkerBackend). */
+  private async playNextChunk(speakId: number): Promise<void> {
+    if (this.isPlayingChunk) return; // Already playing, will chain via onended
+    if (speakId !== this.currentSpeakId) return;
+
+    const wavBuffer = this.chunkQueue.shift();
+    if (!wavBuffer) {
+      // No chunks available — if stream is done, we're finished
+      if (this.streamDone) {
+        this.isPlayingChunk = false;
+        this.setStatus('ready');
+      }
+      return;
+    }
+
+    if (!this.audioCtx) return;
+
+    if (this.audioCtx.state === 'suspended') {
+      await this.audioCtx.resume();
+    }
+
+    this.isPlayingChunk = true;
+
+    try {
+      const audioBuffer = await this.audioCtx.decodeAudioData(wavBuffer);
+
+      if (speakId !== this.currentSpeakId) return;
+
+      const source = this.audioCtx.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(this.audioCtx.destination);
+      source.onended = () => {
+        if (this.currentSource === source) {
+          this.currentSource = null;
+          this.isPlayingChunk = false;
+          this.playNextChunk(speakId);
+        }
+      };
+
+      this.currentSource = source;
+      source.start();
+    } catch (err) {
+      console.warn('[Narration] Chunk decode failed:', err);
+      this.isPlayingChunk = false;
+      this.playNextChunk(speakId); // Skip bad chunk, try next
+    }
   }
 
   // ── Cleanup ───────────────────────────────────────────────────
