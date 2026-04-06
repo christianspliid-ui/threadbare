@@ -26,7 +26,6 @@ import { DEFAULT_DOOM_TICKS } from '../types/gameState';
 import { recalcVisibility, collectLOSSources } from './visibility';
 import { generateMandate } from './mandateGenerator';
 import { createMandateState } from './mandate';
-import { FAMILIARITY_GAINS } from '../types/familiarity';
 import { ACTION_TEMPLATES } from '../data/action-template-content';
 import {
   seedHexSphereAffinity,
@@ -66,10 +65,6 @@ export const DEFAULT_COLS = MAP_SIZE_PRESETS[DEFAULT_MAP_SIZE].cols;
 export const DEFAULT_ROWS = MAP_SIZE_PRESETS[DEFAULT_MAP_SIZE].rows;
 export const DEFAULT_TICKS_PER_SEASON = 90;
 
-/** How many seeded individuals start as initial worshippers of the ascendant. */
-export const INITIAL_WORSHIPPER_COUNT = { min: 3, max: 5 };
-/** Starting influence tier for initial worshippers. */
-export const INITIAL_WORSHIPPER_TIER = 1;
 
 // ─── Game Initialization ──────────────────────────────────────────
 
@@ -248,73 +243,11 @@ export function initializeGameState(
     },
   });
 
-  // ── Seed initial threads ─────────────────────────────────
-  // Give the player a starting retinue so the action wheel is usable from tick 0.
-  // Pick 3-5 random individuals and establish thread edges at tier 1.
-  // Direction: ascendant → mortal (the god reaches down).
-  {
-    // Use a deterministic sub-PRNG so this doesn't change existing seeding
-    let ws = (seed + 13337) | 0;
-    const threadRng = () => {
-      ws = (ws + 0x6d2b79f5) | 0;
-      let t = Math.imul(ws ^ (ws >>> 15), 1 | ws);
-      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
+  // No initial threads — the ascendant starts alone with no retinue.
+  // Threads are established through gameplay (Meet The First, divine actions, etc.)
 
-    const count = INITIAL_WORSHIPPER_COUNT.min +
-      Math.floor(threadRng() * (INITIAL_WORSHIPPER_COUNT.max - INITIAL_WORSHIPPER_COUNT.min + 1));
-    const candidates = [...individualIds];
-    // Shuffle candidates deterministically
-    for (let i = candidates.length - 1; i > 0; i--) {
-      const j = Math.floor(threadRng() * (i + 1));
-      [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
-    }
-    const threadedAgents = candidates.slice(0, Math.min(count, candidates.length));
-    for (const indId of threadedAgents) {
-      graph.addEdge({
-        id: `edge_thread_init_${indId}`,
-        source: ascendantId,
-        target: indId,
-        type: 'thread',
-        properties: { tier: INITIAL_WORSHIPPER_TIER, devotion: 50 },
-      });
-    }
-
-    // ── Seed faction threads for testing ─────────────────────
-    // Give the player starting threads to the Adventuring Guild and one
-    // mercenary company so faction interactions are testable from tick 0.
-    const INITIAL_FACTION_THREADS = [
-      'faction_def_adventuring_guild',
-      'faction_def_mercenary_company_0',
-    ];
-    for (const factionId of INITIAL_FACTION_THREADS) {
-      if (graph.getNode(factionId)) {
-        graph.addEdge({
-          id: `edge_thread_init_${factionId}`,
-          source: ascendantId,
-          target: factionId,
-          type: 'thread',
-          properties: { tier: 1, devotion: 30 },
-        });
-      }
-    }
-  }
-
-  // Initialize familiarity map and populate with initial thread familiarity
+  // Initialize empty familiarity map — populated as threads are formed
   const familiarityMap = new Map<string, number>();
-  {
-    const threadEdges = graph.getEdgesByType('thread');
-    for (const edge of threadEdges) {
-      const mortalId = edge.target;
-      const tier = (edge.properties?.tier ?? 1) as number;
-      // Map tier to familiarity gain: tier 1 = 0.3, tier 2 = 0.5, tier 3 = 0.7
-      const initialFamiliarity = FAMILIARITY_GAINS[
-        `worship_tier_${tier}` as keyof typeof FAMILIARITY_GAINS
-      ] ?? FAMILIARITY_GAINS.worship_tier_1;
-      familiarityMap.set(mortalId, initialFamiliarity);
-    }
-  }
 
   // Generate rival gods
   const rivalDefs = generateRivals(cosmology, seed);

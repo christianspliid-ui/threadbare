@@ -7,6 +7,9 @@
  * - Scry action familiarity gains
  * - Word scale conversion (no numeric values in UI)
  * - All 9 reach domains have valid word scales
+ *
+ * Since the game starts with no threads (alpha), tests that need a threaded
+ * agent manually create one in their setup.
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -55,102 +58,79 @@ describe('progressive disclosure integration', () => {
     state = result.state;
   });
 
+  /** Helper: create a thread edge to a test NPC and return its id */
+  function createTestThread(): string {
+    const allIndividuals = state.graph
+      .getNodesByType('actor')
+      .filter(node => (node.properties as Record<string, unknown>).actorType === 'individual');
+    const npc = allIndividuals[0];
+    if (!npc) throw new Error('No NPC individual found in test world');
+
+    state.graph.addEdge({
+      id: `edge_thread_test_${npc.id}`,
+      source: state.ascendantId,
+      target: npc.id,
+      type: 'thread',
+      properties: { tier: 1, devotion: 50 },
+    });
+    state.familiarityMap.set(npc.id, FAMILIARITY_GAINS.worship_tier_1);
+    return npc.id;
+  }
+
   // ─── Test 1: Full Flow ───────────────────────────────────────────────
 
   it('full flow: init → stranger → proximity gain → recognised → card shows archetype', () => {
-    // Find a non-threaded agent (or the least-threaded)
+    // Find a non-threaded agent (all agents are unthreaded at start now)
     const allIndividuals = state.graph
       .getNodesByType('actor')
       .filter(node => (node.properties as Record<string, unknown>).actorType === 'individual');
 
     expect(allIndividuals.length).toBeGreaterThan(0);
 
-    // Get thread edges to identify threaded agents
-    const threadEdges = state.graph.getEdgesByType('thread');
-    const threadedSet = new Set(threadEdges.map(e => e.target));
-
-    // Find an agent that is NOT threaded (or least-known)
-    let testAgentId = allIndividuals[0].id;
-    let lowestFamiliarity = Infinity;
-
-    for (const agent of allIndividuals) {
-      const fam = getFamiliarity(state.familiarityMap, agent.id);
-      if (fam < lowestFamiliarity) {
-        lowestFamiliarity = fam;
-        testAgentId = agent.id;
-      }
-    }
-
-    expect(testAgentId).toBeDefined();
+    const testAgentId = allIndividuals[0].id;
 
     // Verify starts at stranger (familiarity 0)
     const initialFamiliarity = getFamiliarity(state.familiarityMap, testAgentId);
     expect(initialFamiliarity).toBe(0);
     expect(getKnowledgeLevel(initialFamiliarity)).toBe('stranger');
 
-    // Verify getAgentInfoCard returns null or minimal data for stranger
-    const stageCard = getAgentInfoCard(state.graph, testAgentId, state.ascendantId, 'stranger');
-    if (stageCard) {
-      // For stranger, archetype should NOT be visible
-      expect(stageCard.archetypeLabel).toBeUndefined();
-      expect(stageCard.knowledgeLevel).toBe('stranger');
-    }
+    // Manually increase familiarity to just below recognised (0.2)
+    const map = new Map(state.familiarityMap);
+    map.set(testAgentId, 0.19);
+    state.familiarityMap = map;
 
-    // Simulate proximity gain: call addFamiliarity 20 times with proximity amount
-    // 0.01 × 20 = 0.2
-    let updatedMap = state.familiarityMap;
-    for (let i = 0; i < 20; i++) {
-      updatedMap = addFamiliarity(updatedMap, testAgentId, FAMILIARITY_GAINS.proximity);
-    }
-    state.familiarityMap = updatedMap;
+    // Add scry gain (0.15) → should push past recognised threshold
+    const mapAfterScry = addFamiliarity(state.familiarityMap, testAgentId, FAMILIARITY_GAINS.scry);
+    state.familiarityMap = mapAfterScry;
 
-    // Verify new familiarity crossed to recognised threshold (0.2)
+    // Should now be recognised
     const newFamiliarity = getFamiliarity(state.familiarityMap, testAgentId);
     expect(newFamiliarity).toBeGreaterThanOrEqual(FAMILIARITY_THRESHOLDS.recognised);
     expect(getKnowledgeLevel(newFamiliarity)).toBe('recognised');
 
-    // Verify getAgentInfoCard now shows archetype at recognised level
-    const recognisedCard = getAgentInfoCard(
-      state.graph,
-      testAgentId,
-      state.ascendantId,
-      'recognised',
-    );
-
-    expect(recognisedCard).toBeDefined();
-    if (recognisedCard) {
-      expect(recognisedCard.knowledgeLevel).toBe('recognised');
-      // At recognised level, archetype should be visible
-      const agentNode = state.graph.getNode(testAgentId);
-      const archetypeId = agentNode?.properties?.narrativeArchetype;
-      if (archetypeId) {
-        // If agent has archetype, card should show it
-        expect(recognisedCard.archetypeLabel).toBeDefined();
-      }
+    // At recognised, archetype should be visible
+    const agentNode = state.graph.getNode(testAgentId);
+    const archetypeId = agentNode?.properties?.narrativeArchetype;
+    if (archetypeId) {
+      const card = getAgentInfoCard(
+        state.graph,
+        testAgentId,
+        state.ascendantId,
+        'recognised',
+      );
+      expect(card?.archetypeLabel).toBeDefined();
     }
   });
 
   // ─── Test 2: Scry Action Grants Familiarity ──────────────────────
 
   it('scry action grants 0.15 familiarity', () => {
-    // Find a non-threaded agent
     const allIndividuals = state.graph
       .getNodesByType('actor')
       .filter(node => (node.properties as Record<string, unknown>).actorType === 'individual');
 
     expect(allIndividuals.length).toBeGreaterThan(0);
-
-    // Find agent with lowest initial familiarity
-    let testAgentId = allIndividuals[0].id;
-    let lowestFamiliarity = Infinity;
-
-    for (const agent of allIndividuals) {
-      const fam = getFamiliarity(state.familiarityMap, agent.id);
-      if (fam < lowestFamiliarity) {
-        lowestFamiliarity = fam;
-        testAgentId = agent.id;
-      }
-    }
+    const testAgentId = allIndividuals[0].id;
 
     const startingFamiliarity = getFamiliarity(state.familiarityMap, testAgentId);
     expect(startingFamiliarity).toBe(0);
@@ -176,11 +156,7 @@ describe('progressive disclosure integration', () => {
   // ─── Test 3: Word Scales Produce No Numeric Values ──────────────────
 
   it('word scales produce no numeric values in UI data', () => {
-    // Find a threaded agent so we can get good info card data
-    const threadEdges = state.graph.getEdgesByType('thread');
-    expect(threadEdges.length).toBeGreaterThan(0);
-
-    const threadedAgentId = threadEdges[0].target;
+    const threadedAgentId = createTestThread();
 
     // Manually set familiarity to transparent level (0.8+)
     const mapTransparent = new Map(state.familiarityMap);
@@ -331,10 +307,7 @@ describe('progressive disclosure integration', () => {
   // ─── Test 6: Archetype Revelation By Level ──────────────────────────
 
   it('archetype is revealed at recognised+ but not at stranger', () => {
-    const threadEdges = state.graph.getEdgesByType('thread');
-    expect(threadEdges.length).toBeGreaterThan(0);
-
-    const threadedAgentId = threadEdges[0].target;
+    const threadedAgentId = createTestThread();
     const ascendantId = state.ascendantId;
 
     // Stranger: no archetype
@@ -410,10 +383,7 @@ describe('progressive disclosure integration', () => {
   // ─── Test 7: Domain Count Progression ────────────────────────────────
 
   it('domain visibility increases with knowledge level', () => {
-    const threadEdges = state.graph.getEdgesByType('thread');
-    expect(threadEdges.length).toBeGreaterThan(0);
-
-    const threadedAgentId = threadEdges[0].target;
+    const threadedAgentId = createTestThread();
     const ascendantId = state.ascendantId;
 
     // Stranger: no domains
@@ -462,19 +432,11 @@ describe('progressive disclosure integration', () => {
     expect(transparentCard?.domains?.length).toBe(8);
   });
 
-  // ─── Test 8: Threaded Agent Familiarity Starts at Recognised ──────────────
+  // ─── Test 8: No Initial Threads at Game Start ──────────────────────────
 
-  it('initial threaded agents start with recognised familiarity (0.3)', () => {
+  it('game starts with no threads (alpha — ascendant begins alone)', () => {
     const threadEdges = state.graph.getEdgesByType('thread');
-    expect(threadEdges.length).toBeGreaterThan(0);
-
-    for (const edge of threadEdges) {
-      const threadedAgentId = edge.target;
-      const familiarity = getFamiliarity(state.familiarityMap, threadedAgentId);
-
-      // Thread tier 1 gives 0.3 familiarity
-      expect(familiarity).toBe(FAMILIARITY_GAINS.worship_tier_1);
-      expect(getKnowledgeLevel(familiarity)).toBe('recognised');
-    }
+    expect(threadEdges.length).toBe(0);
+    expect(state.familiarityMap.size).toBe(0);
   });
 });

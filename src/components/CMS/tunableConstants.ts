@@ -115,10 +115,6 @@ export const TUNABLE_GROUPS: TunableGroup[] = [
         'How many ticks make one in-game season. Affects pacing of seasonal events.',
         'src/engine/gameInit.ts', [10, 500],
         'gameInit → season/calendar tracking'),
-      n('INITIAL_WORSHIPPER_TIER', init.INITIAL_WORSHIPPER_TIER,
-        'Starting influence tier of initial worshippers (0=unbonded, 4=exalted).',
-        'src/engine/gameInit.ts', [0, 4],
-        'gameInit → starting worshippers'),
     ],
   },
 

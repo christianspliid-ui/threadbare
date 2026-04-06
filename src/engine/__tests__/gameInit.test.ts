@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { initializeGameState, DEFAULT_COLS, DEFAULT_ROWS, INITIAL_WORSHIPPER_COUNT, INITIAL_WORSHIPPER_TIER, MAP_SIZE_PRESETS, DEFAULT_MAP_SIZE } from '../gameInit';
+import { initializeGameState, DEFAULT_COLS, DEFAULT_ROWS, MAP_SIZE_PRESETS, DEFAULT_MAP_SIZE } from '../gameInit';
 import type { MapSizePreset } from '../gameInit';
-import { getRetinueAgents } from '../retinue';
 import type { AscendantArchetype } from '../../types/influence';
 import type { CosmologyProfile } from '../../types';
 import { SPHERE_NAMES } from '../../types';
@@ -190,42 +189,12 @@ describe('Game Initialization', () => {
     expect(state.stealthExposure).toBe(0);
   });
 
-  // ── Initial Worshippers (Action Wheel prerequisite) ──────────────
+  // ── No initial threads (alpha) ──────────────────────────────
 
-  it('seeds initial worshippers so retinue is non-empty at game start', () => {
+  it('starts with no threads — ascendant begins alone', () => {
     const { state } = initializeGameState(testArchetype, 'Avatar Name', testCosmology, 42);
-    const retinue = getRetinueAgents(state.graph, state.ascendantId);
-    expect(retinue.length).toBeGreaterThanOrEqual(INITIAL_WORSHIPPER_COUNT.min);
-    expect(retinue.length).toBeLessThanOrEqual(INITIAL_WORSHIPPER_COUNT.max);
-  });
-
-  it('initial worshippers have correct tier', () => {
-    const { state } = initializeGameState(testArchetype, 'Avatar Name', testCosmology, 42);
-    const retinue = getRetinueAgents(state.graph, state.ascendantId);
-    for (const agent of retinue) {
-      expect(agent.tier).toBe(INITIAL_WORSHIPPER_TIER);
-    }
-  });
-
-  it('initial worshippers are seeded deterministically', () => {
-    const { state: s1 } = initializeGameState(testArchetype, 'Avatar Name', testCosmology, 42);
-    const { state: s2 } = initializeGameState(testArchetype, 'Avatar Name', testCosmology, 42);
-    const r1 = getRetinueAgents(s1.graph, s1.ascendantId);
-    const r2 = getRetinueAgents(s2.graph, s2.ascendantId);
-    expect(r1.map(a => a.id)).toEqual(r2.map(a => a.id));
-  });
-
-  it('different seeds produce different initial worshippers', () => {
-    const { state: s1 } = initializeGameState(testArchetype, 'Avatar Name', testCosmology, 42);
-    const { state: s2 } = initializeGameState(testArchetype, 'Avatar Name', testCosmology, 99);
-    const r1 = getRetinueAgents(s1.graph, s1.ascendantId);
-    const r2 = getRetinueAgents(s2.graph, s2.ascendantId);
-    // Different seeds should pick different worshippers (or at least differ in some way)
-    const ids1 = r1.map(a => a.id).sort();
-    const ids2 = r2.map(a => a.id).sort();
-    // With different seeds, at least the count or members should differ
-    expect(ids1.length > 0).toBe(true);
-    expect(ids2.length > 0).toBe(true);
+    const threadEdges = state.graph.getEdgesByType('thread');
+    expect(threadEdges.length).toBe(0);
   });
 
   it('MAP_SIZE_PRESETS has all expected keys with valid dimensions', () => {

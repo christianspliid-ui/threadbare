@@ -3,11 +3,14 @@
  *
  * Verifies that familiarityMap is initialized, populated, and updated
  * through the game lifecycle.
+ *
+ * Since the game starts with no threads (alpha), tests manually create
+ * a thread edge to exercise the familiarity pipeline.
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { initializeGameState } from '../gameInit';
-import { runTick } from '../orchestrator';
+import { runTick, phaseFamiliarityGain } from '../orchestrator';
 import { getTraces, clearTraces, enableTracing } from '../traceBuffer';
 import type { GameState } from '../../types/gameState';
 import { FAMILIARITY_GAINS } from '../../types/familiarity';
@@ -15,6 +18,7 @@ import { getFamiliarity } from '../familiarity';
 
 describe('familiarity integration', () => {
   let state: GameState;
+  let testRetinueMemberId: string;
 
   beforeEach(() => {
     clearTraces();
@@ -45,34 +49,46 @@ describe('familiarity integration', () => {
     );
     state = result.state;
 
-    // Ensure at least one retinue member is co-located with the avatar.
-    // World generation doesn't guarantee this, so we move a retinue member into the avatar's hex.
+    // Manually create a thread edge to an NPC and place them at the avatar's hex.
+    // Game starts with no threads; this simulates establishing one.
     const avatarEdges = state.graph.getIncomingEdges(state.ascendantId, 'avatar_of');
-    if (avatarEdges.length > 0) {
-      const avatarId = avatarEdges[0].source;
-      const avatarLocEdges = state.graph.getOutgoingEdges(avatarId, 'located_at');
-      if (avatarLocEdges.length > 0) {
-        const avatarLocationId = avatarLocEdges[0].target;
-        const threadEdges = state.graph.getEdgesByType('thread');
-        if (threadEdges.length > 0) {
-          const retinueMemberId = threadEdges[0].target;
-          // Update retinue member's locationId property to point to the avatar's location
-          state.graph.updateNode(retinueMemberId, { properties: { locationId: avatarLocationId } });
-          // Also update the located_at edge to point to the avatar's location
-          const retinueMemberLocEdges = state.graph.getOutgoingEdges(retinueMemberId, 'located_at');
-          for (const edge of retinueMemberLocEdges) {
-            state.graph.removeEdge(edge.id);
-          }
-          state.graph.addEdge({
-            id: `edge_retinue_at_avatar_hex_${retinueMemberId}`,
-            source: retinueMemberId,
-            target: avatarLocationId,
-            type: 'located_at',
-            properties: {},
-          });
-        }
-      }
+    const avatarId = avatarEdges[0].source;
+    const avatarLocEdges = state.graph.getOutgoingEdges(avatarId, 'located_at');
+    const avatarLocationId = avatarLocEdges[0].target;
+
+    // Find an NPC individual to thread
+    const allNodes = state.graph.getNodesByType('actor');
+    const individual = allNodes.find(
+      n => n.properties?.actorType === 'individual' && n.id !== avatarId,
+    );
+    if (!individual) throw new Error('No NPC individual found in test world');
+    testRetinueMemberId = individual.id;
+
+    // Create thread edge
+    state.graph.addEdge({
+      id: `edge_thread_test_${testRetinueMemberId}`,
+      source: state.ascendantId,
+      target: testRetinueMemberId,
+      type: 'thread',
+      properties: { tier: 1, devotion: 50 },
+    });
+
+    // Set initial familiarity (normally done at thread creation time)
+    state.familiarityMap.set(testRetinueMemberId, FAMILIARITY_GAINS.worship_tier_1);
+
+    // Move the NPC to the avatar's location
+    state.graph.updateNode(testRetinueMemberId, { properties: { locationId: avatarLocationId } });
+    const memberLocEdges = state.graph.getOutgoingEdges(testRetinueMemberId, 'located_at');
+    for (const edge of memberLocEdges) {
+      state.graph.removeEdge(edge.id);
     }
+    state.graph.addEdge({
+      id: `edge_retinue_at_avatar_hex_${testRetinueMemberId}`,
+      source: testRetinueMemberId,
+      target: avatarLocationId,
+      type: 'located_at',
+      properties: {},
+    });
   });
 
   it('initializes familiarity map in GameState', () => {
@@ -80,114 +96,91 @@ describe('familiarity integration', () => {
     expect(state.familiarityMap instanceof Map).toBe(true);
   });
 
-  it('initial retinue members start at recognised (0.3)', () => {
-    const threadEdges = state.graph.getEdgesByType('thread');
-    expect(threadEdges.length).toBeGreaterThan(0);
-
-    for (const edge of threadEdges) {
-      const retinueMemberId = edge.target;
-      const familiarity = getFamiliarity(state.familiarityMap, retinueMemberId);
-      // Thread tier 1 should grant FAMILIARITY_GAINS.worship_tier_1 = 0.3
-      expect(familiarity).toBe(FAMILIARITY_GAINS.worship_tier_1);
-    }
+  it('game starts with empty familiarity map (no initial threads)', () => {
+    // Re-init without our manual thread setup
+    const result = initializeGameState(
+      {
+        title: 'Test Ascendant',
+        sphereAlignment: { force: 0.5, matter: 0.5 },
+      },
+      'Test Avatar',
+      {
+        foundationChaos: 0.5,
+        foundationLight: 0.5,
+        creationSpheres: {
+          force: 0.3,
+          matter: 0.3,
+          energy: 0.15,
+          life: 0.15,
+          mind: 0,
+          spirit: 0,
+          time: 0,
+          entropy: 0,
+        },
+      },
+      42,
+      20,
+      15,
+    );
+    expect(result.state.familiarityMap.size).toBe(0);
+    expect(result.state.graph.getEdgesByType('thread').length).toBe(0);
   });
 
-  it('proximity tick increases familiarity for agents in avatar hex', () => {
-    // Find a retinue member that is in the same hex as the avatar
-    const avatarEdges = state.graph.getIncomingEdges(state.ascendantId, 'avatar_of');
-    expect(avatarEdges.length).toBeGreaterThan(0);
-    const avatarId = avatarEdges[0].source;
-    const locEdges = state.graph.getOutgoingEdges(avatarId, 'located_at');
-    expect(locEdges.length).toBeGreaterThan(0);
-    const avatarLocation = state.graph.getNode(locEdges[0].target);
-    const avatarHexCol = avatarLocation?.properties?.hexCol as number;
-    const avatarHexRow = avatarLocation?.properties?.hexRow as number;
+  it('threaded retinue member has correct familiarity', () => {
+    const familiarity = getFamiliarity(state.familiarityMap, testRetinueMemberId);
+    expect(familiarity).toBe(FAMILIARITY_GAINS.worship_tier_1);
+  });
 
-    const threadEdges = state.graph.getEdgesByType('thread');
-    const inHexRetinueMember = threadEdges.find(edge => {
-      const memberId = edge.target;
-      const member = state.graph.getNode(memberId);
-      const locationId = member?.properties?.locationId as string | undefined;
-      if (!locationId) return false;
-      const location = state.graph.getNode(locationId);
-      return location?.properties?.hexCol === avatarHexCol && location?.properties?.hexRow === avatarHexRow;
-    });
-    expect(inHexRetinueMember).toBeDefined();
-
-    const retinueMemberId = inHexRetinueMember!.target;
-    const oldFamiliarity = getFamiliarity(state.familiarityMap, retinueMemberId);
+  it('proximity phase increases familiarity for agents in avatar hex', () => {
+    const oldFamiliarity = getFamiliarity(state.familiarityMap, testRetinueMemberId);
     expect(oldFamiliarity).toBe(0.3); // Initial thread tier
 
-    // Run 1 tick (should add proximity familiarity)
-    const newState = runTick(state);
+    // Run the proximity phase directly (avoids movement phase relocating the NPC)
+    const partial = phaseFamiliarityGain(state);
+    const newMap = partial.familiarityMap!;
 
-    const newFamiliarity = getFamiliarity(newState.familiarityMap, retinueMemberId);
+    const newFamiliarity = getFamiliarity(newMap, testRetinueMemberId);
     // Should be 0.3 + 0.01 (proximity gain)
     expect(newFamiliarity).toBeCloseTo(0.3 + FAMILIARITY_GAINS.proximity, 5);
   });
 
   it('familiarity gain emits trace', () => {
-    const threadEdges = state.graph.getEdgesByType('thread');
-    expect(threadEdges.length).toBeGreaterThan(0);
-
     clearTraces();
-    // Run 1 tick to trigger proximity gain
-    const newState = runTick(state);
+    // Run the proximity phase directly
+    phaseFamiliarityGain(state);
 
     const traces = getTraces();
     const familiarityTraces = traces.filter((t: any) => t.category === 'familiarity_change');
 
-    // Should have at least one familiarity_change trace
-    expect(familiarityTraces.length).toBeGreaterThan(0);
-
-    // Verify structure of a familiarity trace
-    const trace = familiarityTraces[0] as any;
-    expect(trace.category).toBe('familiarity_change');
-    expect(trace.source).toBe('proximity');
-    expect(trace.oldFamiliarity).toBe(0.3);
-    expect(trace.newFamiliarity).toBeCloseTo(0.31, 5);
-    expect(trace.levelChanged).toBe(false); // 0.3→0.31 doesn't cross threshold
+    // Should have at least one familiarity_change trace for our test agent
+    const agentTrace = familiarityTraces.find((t: any) => t.actorId === testRetinueMemberId) as any;
+    expect(agentTrace).toBeDefined();
+    expect(agentTrace.category).toBe('familiarity_change');
+    expect(agentTrace.source).toBe('proximity');
+    expect(agentTrace.oldFamiliarity).toBe(0.3);
+    expect(agentTrace.newFamiliarity).toBeCloseTo(0.31, 5);
+    expect(agentTrace.levelChanged).toBe(false); // 0.3→0.31 doesn't cross threshold
   });
 
   it('familiarity threshold crossing emits levelChanged flag', () => {
-    // Find a retinue member in the avatar's hex (same approach as proximity test)
-    const avatarEdges = state.graph.getIncomingEdges(state.ascendantId, 'avatar_of');
-    const avatarId = avatarEdges[0].source;
-    const locEdges = state.graph.getOutgoingEdges(avatarId, 'located_at');
-    const avatarLocation = state.graph.getNode(locEdges[0].target);
-    const avatarHexCol = avatarLocation?.properties?.hexCol as number;
-    const avatarHexRow = avatarLocation?.properties?.hexRow as number;
-    const threadEdges = state.graph.getEdgesByType('thread');
-    const inHexRetinueMember = threadEdges.find(edge => {
-      const memberId = edge.target;
-      const member = state.graph.getNode(memberId);
-      const locationId = member?.properties?.locationId as string | undefined;
-      if (!locationId) return false;
-      const location = state.graph.getNode(locationId);
-      return location?.properties?.hexCol === avatarHexCol && location?.properties?.hexRow === avatarHexRow;
-    });
-    expect(inHexRetinueMember).toBeDefined();
-    const retinueMemberId = inHexRetinueMember!.target;
-
     const map = new Map(state.familiarityMap);
-    map.set(retinueMemberId, 0.35); // Just below "known" threshold
+    map.set(testRetinueMemberId, 0.35); // Just below "known" threshold
     state.familiarityMap = map;
 
-    // Run a tick (proximity gain of 0.01 will push it to 0.36 - still below)
+    // Run proximity phase (0.01 gain → 0.36, still below 0.4 "known" threshold)
     clearTraces();
-    let newState = runTick(state);
+    phaseFamiliarityGain(state);
     let traces = getTraces();
-    const trace1 = traces.find((t: any) => t.category === 'familiarity_change' && t.actorId === retinueMemberId) as any;
+    const trace1 = traces.find((t: any) => t.category === 'familiarity_change' && t.actorId === testRetinueMemberId) as any;
     expect(trace1?.levelChanged).toBe(false); // 0.35→0.36
 
-    // Bump to 0.39, then tick should cross to 0.40 (known threshold)
-    newState.familiarityMap.set(retinueMemberId, 0.39);
+    // Bump to 0.39, then proximity gain should cross to 0.40 (known threshold)
+    state.familiarityMap.set(testRetinueMemberId, 0.39);
     clearTraces();
-    newState = runTick(newState);
+    phaseFamiliarityGain(state);
     traces = getTraces();
-    const familiarityTraces2 = traces.filter((t: any) => t.category === 'familiarity_change');
-    expect(familiarityTraces2.length).toBeGreaterThan(0);
-    const trace2 = familiarityTraces2.find((t: any) => t.actorId === retinueMemberId) as any;
+    const trace2 = traces.find((t: any) => t.category === 'familiarity_change' && t.actorId === testRetinueMemberId) as any;
+    expect(trace2).toBeDefined();
     expect(trace2?.oldFamiliarity).toBeCloseTo(0.39, 5);
     expect(trace2?.newFamiliarity).toBeCloseTo(0.40, 5);
     expect(trace2?.levelChanged).toBe(true);
@@ -195,50 +188,14 @@ describe('familiarity integration', () => {
   });
 
   it('agents in avatar hex gain proximity familiarity', () => {
-    const threadEdges = state.graph.getEdgesByType('thread');
-    expect(threadEdges.length).toBeGreaterThan(0);
+    // Retinue member is already at avatar's hex from beforeEach
+    expect(getFamiliarity(state.familiarityMap, testRetinueMemberId)).toBe(0.3);
 
-    // Get avatar's hex position to determine which retinue members are in it
-    const avatarEdges = state.graph.getIncomingEdges(state.ascendantId, 'avatar_of');
-    expect(avatarEdges.length).toBeGreaterThan(0);
+    // Run proximity phase directly
+    const partial = phaseFamiliarityGain(state);
+    const newMap = partial.familiarityMap!;
 
-    const avatarId = avatarEdges[0].source;
-    const locEdges = state.graph.getOutgoingEdges(avatarId, 'located_at');
-    expect(locEdges.length).toBeGreaterThan(0);
-
-    const avatarLocation = state.graph.getNode(locEdges[0].target);
-    const avatarHex = {
-      col: avatarLocation?.properties?.hexCol as number,
-      row: avatarLocation?.properties?.hexRow as number,
-    };
-
-    // Find retinue members in the same hex as avatar
-    const retinueInHex = [];
-    for (const edge of threadEdges) {
-      const memberId = edge.target;
-      const member = state.graph.getNode(memberId);
-      const locationId = member?.properties?.locationId as string | undefined;
-      if (locationId) {
-        const location = state.graph.getNode(locationId);
-        if (location?.properties?.hexCol === avatarHex.col && location?.properties?.hexRow === avatarHex.row) {
-          retinueInHex.push(memberId);
-        }
-      }
-    }
-
-    expect(retinueInHex.length).toBeGreaterThan(0);
-
-    // All retinue members in avatar's hex should start at 0.3
-    for (const id of retinueInHex) {
-      expect(getFamiliarity(state.familiarityMap, id)).toBe(0.3);
-    }
-
-    // Run 1 tick
-    const newState = runTick(state);
-
-    // All in-hex retinue members should now be at 0.31 (0.3 + 0.01 proximity)
-    for (const id of retinueInHex) {
-      expect(getFamiliarity(newState.familiarityMap, id)).toBeCloseTo(0.31, 5);
-    }
+    // Should now be at 0.31 (0.3 + 0.01 proximity)
+    expect(getFamiliarity(newMap, testRetinueMemberId)).toBeCloseTo(0.31, 5);
   });
 });
