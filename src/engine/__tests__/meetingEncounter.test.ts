@@ -17,6 +17,8 @@ import type { MeetingEncounterState, DilemmaChoiceRecord, MeetingEncounterResult
 import { MEETING_CANDIDATE_COUNT, INTENT_OPTIONS } from '../../types/meetingEncounter';
 import { VALUE_PAIRS } from '../../types/agent';
 import { REACH_DOMAINS } from '../../types/traits';
+import { buildStubAscendantLens } from '../../types/hunger';
+import type { SphereName } from '../../types/index';
 
 // ─── Helpers ──────────────────────────────────────────────────────
 
@@ -305,6 +307,53 @@ describe('createMeetingEncounterState', () => {
     expect(state.locationId).toBe('loc_village');
     expect(state.ascendantId).toBe('asc');
     expect(state.startedTick).toBe(10);
+  });
+
+  it('auto-derives intent from AscendantLens when provided', () => {
+    const lens = buildStubAscendantLens('life', 'spirit');
+    const state = createMeetingEncounterState('loc.1', 'asc.1', 10, lens, 'life' as SphereName, 42);
+    expect(state.intentPrimaryReach).toBeDefined();
+    expect(state.intentSecondaryReach).toBeDefined();
+    expect(state.intentSphere).toBe('life');
+  });
+
+  it('does not set intent fields when lens is not provided', () => {
+    const state = createMeetingEncounterState('loc.1', 'asc.1', 10);
+    expect(state.intentPrimaryReach).toBeUndefined();
+    expect(state.intentSecondaryReach).toBeUndefined();
+    expect(state.intentSphere).toBeUndefined();
+  });
+
+  it('derived intent is deterministic with same seed', () => {
+    const lens = buildStubAscendantLens('life', 'spirit');
+    const a = createMeetingEncounterState('loc.1', 'asc.1', 10, lens, 'life' as SphereName, 42);
+    const b = createMeetingEncounterState('loc.1', 'asc.1', 10, lens, 'life' as SphereName, 42);
+    expect(a.intentPrimaryReach).toBe(b.intentPrimaryReach);
+    expect(a.intentSecondaryReach).toBe(b.intentSecondaryReach);
+    expect(a.intentSphere).toBe(b.intentSphere);
+  });
+
+  it('derived intent varies with different seeds', () => {
+    const lens = buildStubAscendantLens('life', 'spirit');
+    const seeds = [42, 99, 123, 456, 789];
+    const results = seeds.map(s =>
+      createMeetingEncounterState('loc.1', 'asc.1', 10, lens, 'life' as SphereName, s)
+    );
+    // At least one should differ (extremely unlikely all are identical across 5 seeds)
+    const primary = results.map(r => r.intentPrimaryReach);
+    const secondary = results.map(r => r.intentSecondaryReach);
+    const allSamePrimary = primary.every(p => p === primary[0]);
+    const allSameSecondary = secondary.every(s => s === secondary[0]);
+    // Both being identical across all seeds is possible but extremely unlikely
+    expect(allSamePrimary && allSameSecondary).toBe(false);
+  });
+
+  it('derived intent reaches come from the hunger candidateReachBias', () => {
+    const lens = buildStubAscendantLens('life', 'spirit');
+    const bias = lens.hunger.candidateReachBias;
+    const state = createMeetingEncounterState('loc.1', 'asc.1', 10, lens, 'life' as SphereName, 42);
+    expect(bias).toContain(state.intentPrimaryReach);
+    expect(bias).toContain(state.intentSecondaryReach);
   });
 });
 

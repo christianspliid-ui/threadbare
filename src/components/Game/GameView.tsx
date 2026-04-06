@@ -144,6 +144,9 @@ import {
   recordEncounterChoiceMemory,
   recordUnifiedActionChoiceMemory,
 } from '../../engine/encounterChoiceMemory';
+import { AttentionPoolIndicator } from './AttentionPoolIndicator';
+import { ReadTheThreadsPanel } from './ReadTheThreadsPanel';
+import { useLastViewedTick } from '../../hooks/useLastViewedTick';
 
 interface GameViewProps {
   archetype: AscendantArchetype;
@@ -162,6 +165,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
   // ── Scry state (lifted here so simulation + navigation can use it for LOS) ──
   const [scryState, setScryState] = useState<ScryState>(createScryState);
+
+  // ── Read the Threads panel state ──
+  const [readThreadsOpen, setReadThreadsOpen] = useState(false);
+
+  // ── Last viewed tick tracking (drives "new" badges on digest entries) ──
+  const { markViewed, getLastViewedTick } = useLastViewedTick();
 
   // ── Use simulation hook ──
   const {
@@ -297,6 +306,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     },
     runtime,
   });
+
+  // ── Mark agent as viewed when detail panel opens ──
+  useEffect(() => {
+    if (selectedAgentId) {
+      markViewed(selectedAgentId, gameState.tick);
+    }
+  }, [selectedAgentId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Composite hex click: move avatar if moveMode is active, otherwise select hex ──
   // moveMode is activated by handleAvatarMoveClick; once a destination is picked (or Escape pressed)
@@ -1740,9 +1756,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
   const handleStartMeeting = useCallback((locationId: string) => {
     if (!isMeetTheFirstAvailable(gameState.graph, gameState.ascendantId, gameState.tick)) return;
-    const state = createMeetingEncounterState(locationId, gameState.ascendantId, gameState.tick);
+    const state = createMeetingEncounterState(
+      locationId, gameState.ascendantId, gameState.tick,
+      ascendantLens, archetype.sphereAlignment.primary, gameState.seed,
+    );
     setMeetingState(state);
-  }, [gameState.graph, gameState.ascendantId, gameState.tick]);
+  }, [gameState.graph, gameState.ascendantId, gameState.tick, ascendantLens, archetype.sphereAlignment.primary, gameState.seed]);
 
   const handleMeetingComplete = useCallback((result: MeetingEncounterResult) => {
     const agentId = createAgentFromMeeting(gameState.graph, result, gameState.ascendantId, gameState.tick);
@@ -2021,6 +2040,24 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               <WorldSoulIndicator aggregate={gameState.worldSoul.aggregate} />
             </>
           )}
+
+          {/* Attention pool indicator — shows how much focused attention the ascendant has left */}
+          {(() => {
+            const ascNode = gameState.graph.getNode(gameState.ascendantId);
+            const attentionPool = (ascNode?.properties?.attentionPool as number) ?? 6;
+            const attentionCapacity = (ascNode?.properties?.attentionCapacity as number) ?? 6;
+            const attentionRegen = (ascNode?.properties?.attentionRegen as number) ?? 0.4;
+            return (
+              <>
+                <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
+                <AttentionPoolIndicator
+                  attentionPool={attentionPool}
+                  attentionCapacity={attentionCapacity}
+                  attentionRegen={attentionRegen}
+                />
+              </>
+            );
+          })()}
         </div>
 
         {/* Group divider */}
@@ -2076,6 +2113,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           <RivalsButton
             definitions={gameState.rivalDefinitions}
             states={gameState.rivalStates}
+          />
+          {/* Read the Threads — divine digest review */}
+          <IconButton
+            icon={<span>📖</span>}
+            active={readThreadsOpen}
+            onClick={() => setReadThreadsOpen(true)}
+            title="Read the Threads"
+            aria-label="Read the Threads"
           />
           <div className="flex items-center gap-1" style={{ position: 'relative' }}>
             <IconButton

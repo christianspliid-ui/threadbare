@@ -10,7 +10,8 @@
  * defaults derived from the current archetype system's sphere pair.
  */
 
-import type { CreationSphereName } from './index';
+import type { CreationSphereName, SphereName } from './index';
+import type { ReachDomain } from './traits';
 
 // ─── Hunger IDs ──────────────────────────────────────────────────
 
@@ -202,5 +203,57 @@ export function buildStubAscendantLens(
     driveTags: [...hunger.dilemmaResonanceTags.slice(0, 3)],
     timeSinceAscension: 'ancient',
     mortalName: 'the Forgotten',
+  };
+}
+
+// ─── Intent Derivation ──────────────────────────────────────────
+
+/** Result of deriving intent from the Hunger lens. */
+export interface DerivedIntent {
+  primaryReach: ReachDomain;
+  secondaryReach: ReachDomain;
+  sphere: SphereName;
+}
+
+/**
+ * Derive meeting encounter intent from the Ascendant's Hunger.
+ *
+ * The Hunger's `candidateReachBias` provides an ordered list of preferred
+ * reaches. We pick primary and secondary from that list using a seeded
+ * PRNG to add slight variety across meetings while staying on-theme.
+ * The sphere comes from the ascendant's sphere alignment.
+ *
+ * NFP #3: Determinism — seeded PRNG ensures same seed = same result.
+ */
+export function deriveIntentFromHunger(
+  lens: AscendantLens,
+  ascendantSphere: SphereName,
+  seed: number,
+): DerivedIntent {
+  const biasReaches = lens.hunger.candidateReachBias;
+
+  // Simple seeded PRNG (same algorithm as meetingEncounter.ts)
+  let s = seed;
+  s = ((s << 5) - s + 0x48756e67) | 0; // salt: "Hung"
+  const rng = () => {
+    s = (s + 0x6d2b79f5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+
+  // Pick primary from first two bias reaches (weighted toward first)
+  const primaryIdx = rng() < 0.7 ? 0 : Math.min(1, biasReaches.length - 1);
+  const primaryReach = biasReaches[primaryIdx] as ReachDomain;
+
+  // Pick secondary from remaining bias reaches (avoiding primary)
+  const remaining = biasReaches.filter((_, i) => i !== primaryIdx);
+  const secondaryIdx = Math.floor(rng() * remaining.length);
+  const secondaryReach = (remaining[secondaryIdx] ?? biasReaches[0]) as ReachDomain;
+
+  return {
+    primaryReach,
+    secondaryReach,
+    sphere: ascendantSphere,
   };
 }
