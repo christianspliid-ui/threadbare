@@ -1,15 +1,18 @@
 // ── NarrationService ────────────────────────────────────────────────
-// Calls the local Kokoro TTS server (tts-server.py) for GPU-accelerated
-// speech synthesis. Falls back to error state if server is unavailable.
+// Dual-mode TTS: probes local Python server on localhost, falls back to
+// browser-side Web Worker (kokoro-js) on deployed origins. Player must
+// opt-in to the ~92MB model download.
 
+import type { TtsBackend, NarrationStatus } from './TtsBackend';
+import { ServerBackend } from './ServerBackend';
+import { WorkerBackend } from './WorkerBackend';
 import {
   NARRATION_VOICE,
   NARRATION_SPEED,
-  NARRATION_MAX_TEXT_LENGTH,
   NARRATION_TTS_SERVER_URL,
 } from './narrationConstants';
 
-export type NarrationStatus = 'idle' | 'loading' | 'ready' | 'speaking' | 'error';
+export type { NarrationStatus };
 
 export type NarrationListener = (state: NarrationState) => void;
 
@@ -17,7 +20,10 @@ export interface NarrationState {
   status: NarrationStatus;
   loadProgress: number;
   error: string | null;
+  backendType: 'server' | 'worker' | null;
 }
+
+const LOCAL_HOSTNAMES = ['localhost', '127.0.0.1'];
 
 let instance: NarrationServiceImpl | null = null;
 
@@ -27,11 +33,14 @@ class NarrationServiceImpl {
   private abortController: AbortController | null = null;
   private speakCounter = 0;
   private currentSpeakId = 0;
+  private backend: TtsBackend | null = null;
 
   private _status: NarrationStatus = 'idle';
   private _loadProgress = 0;
   private _error: string | null = null;
-  private _cachedState: NarrationState = { status: 'idle', loadProgress: 0, error: null };
+  private _cachedState: NarrationState = {
+    status: 'idle', loadProgress: 0, error: null, backendType: null,
+  };
   private listeners = new Set<NarrationListener>();
 
   // ── Public state ──────────────────────────────────────────────
@@ -40,6 +49,7 @@ class NarrationServiceImpl {
   get loadProgress(): number { return this._loadProgress; }
   get error(): string | null { return this._error; }
   get isSpeaking(): boolean { return this._status === 'speaking'; }
+  get backendType(): 'server' | 'worker' | null { return this.backend?.type ?? null; }
 
   /** Returns a cached snapshot — same reference if nothing changed (required by useSyncExternalStore). */
   getState(): NarrationState {
@@ -52,7 +62,12 @@ class NarrationServiceImpl {
   }
 
   private notify() {
-    this._cachedState = { status: this._status, loadProgress: this._loadProgress, error: this._error };
+    this._cachedState = {
+      status: this._status,
+      loadProgress: this._loadProgress,
+      error: this._error,
+      backendType: this.backend?.type ?? null,
+    };
     const state = this._cachedState;
     for (const listener of this.listeners) {
       listener(state);
@@ -67,24 +82,54 @@ class NarrationServiceImpl {
 
   // ── Init ──────────────────────────────────────────────────────
 
-  /** Check if the TTS server is available. */
+  /** Check if the TTS server is available. On non-localhost, skip server probe. */
   async init(): Promise<void> {
     if (this._status === 'loading' || this._status === 'ready') return;
 
+    // On non-localhost origins, skip the server probe entirely.
+    // A fetch to http://localhost:3001 from HTTPS is mixed-content-blocked.
+    const hostname = window.location.hostname;
+    if (!LOCAL_HOSTNAMES.includes(hostname)) {
+      this.setStatus('available');
+      return;
+    }
+
+    // On localhost, probe the Python server
     this.setStatus('loading');
     this._loadProgress = 0.5;
     this.notify();
 
     try {
-      const res = await fetch(`${NARRATION_TTS_SERVER_URL}/health`, {
-        signal: AbortSignal.timeout(5000),
-      });
-      if (!res.ok) throw new Error(`Server returned ${res.status}`);
+      const serverBackend = new ServerBackend(NARRATION_TTS_SERVER_URL);
+      await serverBackend.init();
+      this.backend = serverBackend;
       this._loadProgress = 1;
       this.setStatus('ready');
     } catch {
-      // Server not running — that's OK, narration just won't work
-      this.setStatus('error', 'TTS server not available. Start it with: .venv/Scripts/python.exe tts-server.py');
+      this.setStatus('available');
+    }
+  }
+
+  /** Opt-in: download the browser TTS model and initialize the worker backend. */
+  async initWorker(): Promise<void> {
+    if (this._status === 'ready' || this._status === 'loading') return;
+
+    this.setStatus('loading');
+    this._loadProgress = 0;
+    this.notify();
+
+    try {
+      const workerBackend = new WorkerBackend();
+      await workerBackend.init((progress) => {
+        this._loadProgress = progress;
+        this.notify();
+      });
+      this.backend = workerBackend;
+      this._loadProgress = 1;
+      this.setStatus('ready');
+    } catch (err) {
+      console.warn('[Narration] Worker init failed:', err);
+      this.setStatus('available', String(err));
     }
   }
 
@@ -105,53 +150,43 @@ class NarrationServiceImpl {
     return this.speakSections([text], voice, speed);
   }
 
-  /** Speak multiple text sections with pauses between them. */
+  /** Speak multiple text sections. */
   async speakSections(sections: string[], voice = NARRATION_VOICE, speed = NARRATION_SPEED): Promise<void> {
     this.ensureAudioContext();
 
     if (this._status === 'loading') return;
-    if (this._status === 'idle' || this._status === 'error') {
-      await this.init();
-      if (this._status !== 'ready') return;
-    }
+    if (this._status !== 'ready' && this._status !== 'speaking') return;
+    if (!this.backend) return;
 
     const filtered = sections.map(s => s.trim()).filter(Boolean);
     if (filtered.length === 0) return;
 
-    // Stop any current playback
     this.stopPlayback();
 
     const id = ++this.speakCounter;
     this.currentSpeakId = id;
     this.setStatus('speaking');
 
-    // Cancel any in-flight request
     this.abortController?.abort();
     this.abortController = new AbortController();
 
     try {
-      const res = await fetch(`${NARRATION_TTS_SERVER_URL}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sections: filtered, voice, speed }),
-        signal: this.abortController.signal,
-      });
+      const wavBuffer = await this.backend.generateAudio(
+        filtered, voice, speed, this.abortController.signal,
+      );
 
-      if (id !== this.currentSpeakId) return; // Stale
+      if (id !== this.currentSpeakId) return;
 
-      if (!res.ok) {
-        const errText = await res.text().catch(() => 'Unknown error');
-        throw new Error(`TTS server error ${res.status}: ${errText}`);
-      }
-
-      const arrayBuffer = await res.arrayBuffer();
-      if (id !== this.currentSpeakId) return; // Stale
-
-      await this.playWav(arrayBuffer);
+      await this.playWav(wavBuffer);
     } catch (err) {
       if (id !== this.currentSpeakId) return;
       if ((err as Error).name === 'AbortError') return;
-      console.error('[NarrationService] Speak failed:', err);
+      if ((err as Error).message === 'Stopped') {
+        // Best-effort stop from worker — not an error
+        this.setStatus('ready');
+        return;
+      }
+      console.warn('[Narration] Speak failed:', err);
       this.setStatus('ready');
     }
   }
@@ -161,6 +196,7 @@ class NarrationServiceImpl {
   stop(): void {
     this.stopPlayback();
     this.abortController?.abort();
+    this.backend?.stop();
     if (this._status === 'speaking') {
       this.setStatus('ready');
     }
@@ -206,6 +242,8 @@ class NarrationServiceImpl {
 
   dispose() {
     this.stop();
+    this.backend?.dispose();
+    this.backend = null;
     if (this.audioCtx) {
       this.audioCtx.close();
       this.audioCtx = null;
@@ -222,4 +260,10 @@ export function getNarrationService(): NarrationServiceImpl {
     instance = new NarrationServiceImpl();
   }
   return instance;
+}
+
+/** Reset the singleton — for testing only. */
+export function _resetNarrationService(): void {
+  instance?.dispose();
+  instance = null;
 }
