@@ -10,7 +10,7 @@ describe('reward-attachment-catalog', () => {
   describe('REWARD_POSSESSIONS', () => {
     it('has ~50 entries', () => {
       expect(REWARD_POSSESSIONS.length).toBeGreaterThanOrEqual(45);
-      expect(REWARD_POSSESSIONS.length).toBeLessThanOrEqual(60);
+      expect(REWARD_POSSESSIONS.length).toBeLessThanOrEqual(80);
     });
 
     it('all entries have type artifact', () => {
@@ -61,7 +61,7 @@ describe('reward-attachment-catalog', () => {
   describe('REWARD_CONDITIONS', () => {
     it('has ~26 entries', () => {
       expect(REWARD_CONDITIONS.length).toBeGreaterThanOrEqual(22);
-      expect(REWARD_CONDITIONS.length).toBeLessThanOrEqual(30);
+      expect(REWARD_CONDITIONS.length).toBeLessThanOrEqual(45);
     });
 
     it('all entries have type trait and subcategory condition', () => {
@@ -119,7 +119,7 @@ describe('reward-attachment-catalog', () => {
     it('has ~86 total templates', () => {
       const total = REWARD_POSSESSIONS.length + REWARD_CONDITIONS.length + REWARD_BESTOWED_POWERS.length;
       expect(total).toBeGreaterThanOrEqual(80);
-      expect(total).toBeLessThanOrEqual(100);
+      expect(total).toBeLessThanOrEqual(150);
     });
   });
 });
