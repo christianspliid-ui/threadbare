@@ -579,6 +579,14 @@ export const HexChronicle = memo(function HexChronicle({
           letterSpacing: '0.12em',
         }}>
           {heroSubtitle}
+          {(() => {
+            const archetypeName = locations[0]?.properties?.archetypeName as string | undefined;
+            return archetypeName ? (
+              <span style={{ fontStyle: 'italic', opacity: 0.8, textTransform: 'none', letterSpacing: 'normal' }}>
+                {' — '}{archetypeName}
+              </span>
+            ) : null;
+          })()}
         </div>
         <div style={{
           margin: '16px auto 0',

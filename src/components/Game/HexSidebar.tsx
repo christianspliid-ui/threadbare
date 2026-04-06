@@ -331,8 +331,8 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
                 const locTier = clampRarityTier(rawTier || 1);
                 const showBadge = locTier >= 2;
                 return (
+                  <div key={loc.id} style={{ display: 'flex', flexDirection: 'column' }}>
                   <button
-                    key={loc.id}
                     style={{
                       background: 'transparent',
                       border: 'none',
@@ -356,6 +356,19 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
                     <span>{loc.name}</span>
                     {showBadge && <RarityBadge tier={locTier} opacity={0.75} />}
                   </button>
+                  {loc.properties?.archetypeName && (
+                    <div style={{
+                      fontSize: 'var(--text-xs)',
+                      fontStyle: 'italic',
+                      opacity: 0.7,
+                      marginTop: '2px',
+                      paddingLeft: '4px',
+                      color: 'var(--text-tertiary)',
+                    }}>
+                      {loc.properties.archetypeName as string}
+                    </div>
+                  )}
+                </div>
                 );
               })}
             </div>
