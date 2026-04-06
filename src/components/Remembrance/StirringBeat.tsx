@@ -9,68 +9,80 @@ interface StirringBeatProps {
 
 export function StirringBeat({ images, onSelect }: StirringBeatProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [fading, setFading] = useState(false);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const handleSelect = useCallback((image: StirringImage) => {
     setSelectedId(image.id);
-    setFading(true);
-    setTimeout(() => onSelect(image), 600);
+    setTimeout(() => onSelect(image), 800);
   }, [onSelect]);
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen p-8"
-         style={{ background: 'var(--bg-abyss, #0a0a0f)' }}>
-      <p className="text-xl italic mb-8 transition-opacity duration-500"
-         style={{ color: '#8a7a9a', opacity: fading ? 0 : 1 }}>
+    <div className="h-screen flex flex-col items-center justify-center"
+         style={{ background: '#0a0a0f' }}>
+
+      <p className="text-xl mb-16 text-center transition-opacity duration-700"
+         style={{
+           color: 'rgba(160,140,180,0.6)',
+           fontStyle: 'italic',
+           fontFamily: 'Georgia, "Times New Roman", serif',
+           letterSpacing: '0.05em',
+           opacity: selectedId ? 0 : 1,
+         }}>
         Something stirs in the void. What echoes?
       </p>
 
-      {/* Large 2x2 grid filling most of the viewport */}
-      <div className="grid grid-cols-2 gap-4 transition-opacity duration-500"
+      <div className="grid grid-cols-2 gap-1"
            style={{
-             opacity: fading && !selectedId ? 0 : 1,
-             width: 'min(1100px, 90vw)',
-             height: 'min(600px, 65vh)',
+             width: 'min(1200px, 88vw)',
+             opacity: selectedId ? 0 : 1,
+             transition: 'opacity 0.8s ease',
            }}>
         {images.map(image => {
           const placeholder = STIRRING_PLACEHOLDERS[image.id];
-          const isSelected = selectedId === image.id;
-          const isOther = selectedId !== null && !isSelected;
+          const isHovered = hoveredId === image.id;
           return (
             <button
               key={image.id}
               type="button"
               onClick={() => handleSelect(image)}
+              onMouseEnter={() => setHoveredId(image.id)}
+              onMouseLeave={() => setHoveredId(null)}
               data-testid={`stirring-${image.id}`}
-              className="relative overflow-hidden rounded-2xl cursor-pointer transition-all duration-500"
+              className="relative cursor-pointer transition-all duration-700"
               style={{
-                opacity: isOther ? 0 : 1,
-                transform: isSelected ? 'scale(1.03)' : 'scale(1)',
-                boxShadow: isSelected ? '0 0 60px rgba(200,180,240,0.25)' : '0 0 0 rgba(0,0,0,0)',
-                border: isSelected
-                  ? '2px solid rgba(200,180,240,0.4)'
-                  : '1px solid rgba(255,255,255,0.1)',
+                aspectRatio: '16/9',
+                background: 'transparent',
+                border: 'none',
+                padding: 0,
+                opacity: isHovered ? 1 : 0.65,
+                filter: isHovered ? 'brightness(1.2)' : 'brightness(0.8)',
               }}
             >
+              {/* Image with dissolved edges */}
               <div
-                className="w-full h-full bg-cover bg-center flex items-end justify-center"
+                className="absolute inset-0 bg-cover bg-center"
                 style={{
                   backgroundImage: `url(${image.imageAssetPath})`,
-                  background: placeholder?.gradient ?? 'rgba(255,255,255,0.05)',
+                  background: placeholder?.gradient ?? 'rgba(255,255,255,0.03)',
+                  maskImage: 'radial-gradient(ellipse 85% 80% at center, black 40%, transparent 100%)',
+                  WebkitMaskImage: 'radial-gradient(ellipse 85% 80% at center, black 40%, transparent 100%)',
                 }}
-              >
-                {placeholder && (
-                  <span
-                    className="text-base italic pb-4"
-                    style={{
-                      color: 'rgba(255,255,255,0.3)',
-                      textShadow: '0 2px 8px rgba(0,0,0,0.5)',
-                    }}
-                  >
-                    {placeholder.label}
-                  </span>
-                )}
-              </div>
+              />
+              {/* Label — barely visible, emerges on hover */}
+              {placeholder && (
+                <span
+                  className="absolute bottom-6 left-0 right-0 text-center transition-opacity duration-500"
+                  style={{
+                    fontFamily: 'Georgia, "Times New Roman", serif',
+                    fontStyle: 'italic',
+                    fontSize: '0.85rem',
+                    color: 'rgba(255,255,255,0.15)',
+                    opacity: isHovered ? 1 : 0,
+                    letterSpacing: '0.08em',
+                  }}>
+                  {placeholder.label}
+                </span>
+              )}
             </button>
           );
         })}
