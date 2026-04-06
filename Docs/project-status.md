@@ -18,30 +18,21 @@ Design: `Docs/plans/2026-04-05-attention-tier-model-design.md`. Plan: `Docs/plan
 
 ## Recent Completions (2026-04-06)
 
+- **Ambient Sound System:** 3-channel audio (Music/Background/UI). BackgroundChannel 4-priority stack driven by terrain/location/encounter context via `useAmbientContext`. MusicChannel replaces themeAudio.ts with encounter track swap. Volume sliders + master mute in SettingsPanel. `onCameraCenterHex` prop added to HexMapV2.
+
 - **Game Codex:** Browsable content catalog at `?view=codex`. 5 categories (Divine Actions, Mortal Actions, Possessions, Conditions, Agreements), 171 entries. Sidebar tree with subcategory filtering, responsive card grid, detail panel with prose and mechanics. Lazy-loaded, no game state dependency.
 
 - **Attachment Slot System:** Per-slot caps (13 possession + 5 condition slots), SlotBonusEffect (type 39) slot expansion, edge-backed agreement effects on `relates_to` edges, fixed-point cascade deactivation, disposal timeout, condition overflow checks (wound/disease/curse/blessing/bestowed), grouped slot-aware AttachmentsTab UI. 6 new engine modules, 1 data file, 47 new tests. Design: `Docs/plans/2026-04-06-attachment-slot-system-design.md`.
 
 - **Dual-Mode TTS:** Browser-side kokoro-js Web Worker backend alongside Python GPU server. Auto-fallback on deployed origins; explicit ~92MB model download opt-in. COOP/COEP headers for WASM threading. 19 new tests. Design: `Docs/plans/2026-04-06-dual-mode-tts-design.md`.
 
-- **Three-Tier Attention Model — Engine Foundation:**
-  - 8 new engine modules, 4 new type files, ~500 templates classified
-  - Tier resolution (resolveEffectiveTier matrix), mid-encounter promotion, notable detection
-  - Digest buffer, attention pool, curator (7-factor scoring), pacing governor (priority queue)
-  - phaseAttention wired into orchestrator, effectiveTier routing in notifications, dormant handling
-  - Code review: all P1/P2/P3 findings fixed (phase ordering, notification routing, pacing wiring, rarity mapping, tug pipeline, trace types)
-  - 93+ new tests (unit) + integration tests
+- **Three-Tier Attention Model — Engine Foundation:** 8 new engine modules, ~500 templates classified, attention pool + curator scoring + pacing governor + digest buffer + dormant handling, 93+ tests. Design: `Docs/plans/2026-04-05-attention-tier-model-design.md`.
 
-- **Ascendant Remembrance Flow V1:**
-  - Narrative creation: Stirring (abstract images) → Origin (mortal memory + name) → Drive (obsession) → Transformation (hunger + court + sphere reveal) → Reveal (identity + divine name)
-  - Filtering funnel engine with seeded PRNG, cosmology derivation, personality biasing
-  - 6 new components, 3 data files, 1 engine module, 18 tests
-  - Old cosmology-slider flow preserved as "Advanced World Setup"
+- **Ascendant Remembrance Flow V1:** Stirring/Origin/Drive/Transformation/Reveal narrative creation, filtering funnel, dual naming, 6 components, 18 tests. Old cosmology-slider flow preserved as "Advanced World Setup".
 
-## Previous Completions (2026-04-05)
+## Previous Completions (see project-history.md)
 
-- **Effect Primitive Architecture — Phase 5:** All tick handlers + transform + modify_rules wired. See project-history.md.
-- **Coat of Arms & Icon System:** Procedural SVG heraldry, SphereIcon, ReachIcon, 82 tests. See project-history.md.
+Effect Primitive Architecture Phase 5, Coat of Arms & Icon System, TB-104 Content Primitives, Agent Success Redesign Phases 2-4, Balance-Eval Phase 1.
 
 ## Earlier (see project-history.md)
 

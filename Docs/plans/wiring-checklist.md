@@ -2,7 +2,7 @@
 
 > **Living document.** Every design plan must include a wiring section that maps new modules to entries on this checklist. Every implementation must verify all listed connections before marking work complete. Maintaining this checklist is part of the Definition of Done for both design and implementation phases.
 >
-> **Last updated:** 2026-04-03 (component-library foundation slice runtime seams)
+> **Last updated:** 2026-04-06 (ambient sound system — 3-channel audio wiring)
 
 ---
 
@@ -89,6 +89,18 @@ Every engine module that produces per-tick state changes must be called from a p
 
 **Verification:** `grep -c 'phase[A-Z]' src/engine/orchestrator.ts` — count should match this table.
 
+**Ambient sound wiring (2026-04-06):**
+
+| Module | Integration surface | Notes |
+|--------|-------------------|-------|
+| `BackgroundChannel` | `useAmbientContext` hook mounted in `GameView.tsx` | Not orchestrator-driven; driven by React state (camera hex, active encounter, active location) |
+| `MusicChannel` | `useAmbientContext` hook mounted in `GameView.tsx` | Encounter track swap triggered by encounter notification state |
+| `UiChannel` | Fire-and-forget; called at SFX trigger sites | No persistent state; no orchestrator phase |
+| `AudioMaster` | `useAmbientContext` — exposes global mute/unmute | Consumed by SettingsPanel master mute toggle |
+| `useAmbientContext` | Mounted in `GameView.tsx`; receives `centerHex`, `activeEncounter`, `activeLocation` | Drives all three channel instances |
+
+---
+
 ### 2. GameView Modal & Overlay Rendering (`src/components/Game/GameView.tsx`)
 
 Every player-facing modal or overlay must appear in the GameView JSX return block. An import without a `<Component />` element means the feature is invisible.
@@ -134,6 +146,7 @@ Engine phases write to GameState fields. UI components must read them. An engine
 | `pendingHexMutations` | `phaseHexState` | Cleared after use (internal) | ✅ Internal |
 | `prosperityShocks` | `phaseProsperity` | Cleared after use (internal) | ✅ Internal |
 | `effectStates` | Orchestrator Phase 2a.4 (`tickEffects`) | No dedicated player UI; currently engine/runtime only | ⚠️ Debug visibility should improve before shell-heavy effect features land |
+| `EncounterTemplate.backgroundTrack` / `.musicTrack` | Authored encounter templates | `useAmbientContext` reads active encounter's track fields to override BackgroundChannel/MusicChannel | ✅ (2026-04-06) |
 
 **Verification:** For each new GameState field in your feature, name the component that reads it and how the data reaches the player.
 
@@ -177,6 +190,10 @@ Engine capabilities that are player-toggleable need UI controls. An engine funct
 | Decision vector overlay | DebugPanel checkbox | ✅ |
 | Attention mode toggle | `toggleAttentionMode()` in encounterVisibility.ts | ✅ RetinuePanel per-agent toggle (TB-040) |
 | Meet The First action | `handleStartMeeting()` in GameView | ✅ Rendered in JSX (TB-035 Phase 1) |
+| Music volume | SettingsPanel Music slider | ✅ (2026-04-06) |
+| Background/ambient volume | SettingsPanel Ambient slider | ✅ (2026-04-06) |
+| UI SFX volume | SettingsPanel UI slider | ✅ (2026-04-06) |
+| Master mute | SettingsPanel master mute toggle | ✅ (2026-04-06) |
 
 **Verification:** For each player-facing toggle or action in your feature, name the UI element that triggers it.
 

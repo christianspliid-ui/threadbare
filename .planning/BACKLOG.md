@@ -12,6 +12,12 @@
 
 ---
 
+## ✅ TB-114 · Ambient Sound System (2026-04-06)
+
+Three independent audio channels (Music, Background, UI) with context-sensitive ambient sound. BackgroundChannel has 4-priority stack driven by terrain/location/encounter state. MusicChannel replaces themeAudio.ts with encounter track swap. Volume sliders + master mute in SettingsPanel.
+
+---
+
 ## 📐▶ TB-110 · Attention Tier Model — Phase 6 UI (2026-04-06)
 
 **Milestone: Attention & Notification Tiers**

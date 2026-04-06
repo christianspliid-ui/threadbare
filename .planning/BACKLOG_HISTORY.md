@@ -6,6 +6,12 @@
 
 ---
 
+## ✅ TB-114 · Ambient Sound System (2026-04-06)
+
+Three independent audio channels (Music, Background, UI) with context-sensitive ambient sound. BackgroundChannel has 4-priority stack driven by terrain/location/encounter state. MusicChannel replaces themeAudio.ts with encounter track swap. Volume sliders + master mute in SettingsPanel. 5 new test files. HexMapV2 gains `onCameraCenterHex` prop feeding camera center to ambient context hook `useAmbientContext`. EncounterTemplate gains `backgroundTrack?` and `musicTrack?` for per-encounter audio overrides.
+
+---
+
 ## ✅ TB-031 · Culture Seeding — Territory-Aware Placement Phase 1 (2026-03-25, complete 2026-03-31)
 
 Cultures now get geographic homelands via the province flood-fill system. Pipeline reordered: cultures generated before worldgen, passed to province seeder, then locations and actors inherit culture from their province. Fixed preferredBiomes/toleratedBiomes bug in composeCultureIdentity. Added homeland/border strength differentiation, diaspora mechanics (~10%), borderland dual-culture chance (40%). All backward-compatible via optional params.
