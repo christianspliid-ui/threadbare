@@ -1,12 +1,15 @@
 // ── useNarration React Hook ─────────────────────────────────────────
 // Exposes NarrationService state to React components with automatic
-// subscription management.
+// subscription management. Dual-mode: server or browser worker backend.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getNarrationService, type NarrationState } from './NarrationService';
+import type { NarrationStatus } from './TtsBackend';
 import { NARRATION_ENABLED } from './narrationConstants';
 
-const DISABLED_STATE: NarrationState = { status: 'idle', loadProgress: 0, error: null };
+const DISABLED_STATE: NarrationState = {
+  status: 'idle', loadProgress: 0, error: null, backendType: null,
+};
 
 export function useNarration() {
   const service = useRef(getNarrationService());
@@ -15,7 +18,6 @@ export function useNarration() {
     return service.current.getState();
   });
 
-  // Subscribe to service state changes
   useEffect(() => {
     if (!NARRATION_ENABLED) return;
     const unsubscribe = service.current.subscribe((newState) => {
@@ -24,7 +26,7 @@ export function useNarration() {
     return unsubscribe;
   }, []);
 
-  // Probe the TTS server on mount so the button shows ready/error state
+  // Auto-probe on mount (checks origin, probes server on localhost)
   useEffect(() => {
     if (!NARRATION_ENABLED) return;
     service.current.init();
@@ -39,60 +41,61 @@ export function useNarration() {
     };
   }, []);
 
-  /** Initialize (probe TTS server). */
   const init = useCallback(async () => {
     if (!NARRATION_ENABLED) return;
     await service.current.init();
   }, []);
 
-  /** Narrate a single text block via the TTS server. */
+  /** Opt-in: download the ~92MB browser TTS model. */
+  const initWorker = useCallback(async () => {
+    if (!NARRATION_ENABLED) return;
+    service.current.ensureAudioContext();
+    await service.current.initWorker();
+  }, []);
+
   const speak = useCallback(async (text: string) => {
     if (!NARRATION_ENABLED) return;
-    const svc = service.current;
-    svc.ensureAudioContext();
-    await svc.speak(text);
+    service.current.ensureAudioContext();
+    await service.current.speak(text);
   }, []);
 
-  /** Narrate multiple text sections with pauses between them. */
   const speakSections = useCallback(async (sections: string[]) => {
     if (!NARRATION_ENABLED) return;
-    const svc = service.current;
-    svc.ensureAudioContext();
-    await svc.speakSections(sections);
+    service.current.ensureAudioContext();
+    await service.current.speakSections(sections);
   }, []);
 
-  /** Stop current narration. */
   const stop = useCallback(() => {
     service.current.stop();
   }, []);
 
-  /**
-   * Extract and concatenate chronicle text from a container element.
-   * Reads innerText from .chronicle-prose paragraphs and joins with pauses.
-   */
   const narrateChronicle = useCallback(async (containerEl: HTMLElement | null) => {
     if (!containerEl || !NARRATION_ENABLED) return;
-
     const proseElements = containerEl.querySelectorAll('.chronicle-prose');
     const sections: string[] = [];
     for (const el of proseElements) {
       const text = (el as HTMLElement).innerText?.trim();
       if (text) sections.push(text);
     }
-
     if (sections.length === 0) return;
-
     await speakSections(sections);
   }, [speakSections]);
 
+  // Derived: enabled means feature flag is on AND status is not terminal error
+  const enabled = NARRATION_ENABLED && state.status !== 'error';
+  const status: NarrationStatus = state.status;
+
   return {
-    enabled: NARRATION_ENABLED,
-    status: state.status,
+    enabled,
+    status,
+    backendType: state.backendType,
     loadProgress: state.loadProgress,
     error: state.error,
     isSpeaking: state.status === 'speaking',
     isLoading: state.status === 'loading',
+    isAvailable: state.status === 'available',
     init,
+    initWorker,
     speak,
     speakSections,
     stop,
