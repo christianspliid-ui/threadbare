@@ -8,18 +8,19 @@ import { TESTING_TRANSITION_IN, TESTING_BETWEEN_DILEMMAS } from '../../data/meet
 interface TestingBeatProps {
   candidate: NarrativeCandidate;
   dilemmas: DilemmaInstance[];
+  locationName: string;
   godVoiceOverride?: string;
   onComplete: (choices: DilemmaChoiceRecord[]) => void;
 }
 
 const SCENE_BG = '#0a0a0f';
 
-/** Replace {agent.name} placeholders with the candidate's actual name. */
-function fillName(text: string, name: string): string {
-  return text.replace(/\{agent\.name\}/g, name);
+/** Replace {agent.name} and {agent.location} placeholders with actual values. */
+function fillProse(text: string, name: string, location: string): string {
+  return text.replace(/\{agent\.name\}/g, name).replace(/\{agent\.location\}/g, location);
 }
 
-export function TestingBeat({ candidate, dilemmas, godVoiceOverride, onComplete }: TestingBeatProps) {
+export function TestingBeat({ candidate, dilemmas, locationName, godVoiceOverride, onComplete }: TestingBeatProps) {
   const [currentDilemmaIdx, setCurrentDilemmaIdx] = useState(-1); // -1 = transition in
   const [choices, setChoices] = useState<DilemmaChoiceRecord[]>([]);
   const [fadeState, setFadeState] = useState<'in' | 'visible' | 'out'>('in');
@@ -130,7 +131,7 @@ export function TestingBeat({ candidate, dilemmas, godVoiceOverride, onComplete 
                   lineHeight: 1.6,
                 }}
               >
-                {fillName(godVoiceOverride ?? currentDilemma.godVoice, candidate.name)}
+                {fillProse(godVoiceOverride ?? currentDilemma.godVoice, candidate.name, locationName)}
               </p>
 
               {/* Setup prose */}
@@ -143,7 +144,7 @@ export function TestingBeat({ candidate, dilemmas, godVoiceOverride, onComplete 
                   lineHeight: 1.7,
                 }}
               >
-                {fillName(currentDilemma.setup, candidate.name)}
+                {fillProse(currentDilemma.setup, candidate.name, locationName)}
               </p>
 
               {/* Choices as prose fragments */}
@@ -177,7 +178,7 @@ export function TestingBeat({ candidate, dilemmas, godVoiceOverride, onComplete 
                       e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)';
                     }}
                   >
-                    {fillName(choice.text, candidate.name)}
+                    {fillProse(choice.text, candidate.name, locationName)}
                   </button>
                 ))}
               </div>

@@ -45,6 +45,7 @@ export function MeetTheFirstFlow({
   const hungerId = ascendantIdentity.hungerId;
   const primarySphere = ascendantIdentity.sphereAlignment.primary;
   const locationNode = graph.getNode(locationId);
+  const locationName = locationNode?.name ?? 'the settlement';
   const cultureId = (locationNode?.properties.cultureId as string) ?? 'default';
   const locationSubtype = (locationNode?.properties.locationSubtype as string) ?? 'village';
 
@@ -129,6 +130,7 @@ export function MeetTheFirstFlow({
         <TestingBeat
           candidate={selectedCandidate}
           dilemmas={dilemmas}
+          locationName={locationName}
           onComplete={handleTestingComplete}
         />
       )}
