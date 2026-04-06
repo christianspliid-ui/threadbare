@@ -22,9 +22,11 @@ import {
 } from '../data/premonition-constants';
 import {
   COMPULSION_VIGNETTE_TEMPLATES,
-  COMPULSION_ENCOUNTER_HOOKS,
   getQuintessenceProseTier,
+  composeRetconLine,
 } from '../data/premonition-content';
+import { resolveLocationToHex } from './encounterAwareness';
+import { hexDistance } from '../lib/hexMath';
 
 // ─── Helper: seeded pick from array ─────────────────────────────
 
@@ -89,8 +91,18 @@ export function buildCompulsionEvent(
   const quintessence = (agentNode.properties?.quintessence as number | undefined) ?? 1.0;
   if (quintessence <= 0) return null;
 
-  // Take top N candidates
-  const candidates = topCandidates.slice(0, COMPULSION_CANDIDATE_COUNT);
+  // Take top N candidates, dedup by templateId (keep highest-scored)
+  const seen = new Set<string>();
+  const deduped = topCandidates.filter(c => {
+    if (seen.has(c.entry.templateId)) return false;
+    seen.add(c.entry.templateId);
+    return true;
+  });
+  const candidates = deduped.slice(0, COMPULSION_CANDIDATE_COUNT);
+
+  // Resolve agent hex once for distance computation
+  const agentLocationId = graph.getOutgoingEdges(agentId, 'located_at')[0]?.target ?? null;
+  const agentHex = agentLocationId ? resolveLocationToHex(graph, agentLocationId) : null;
 
   // Build CompulsionCandidate entries
   const compulsionCandidates: CompulsionCandidate[] = candidates.map(c => {
@@ -101,23 +113,36 @@ export function buildCompulsionEvent(
     const locationNode = graph.getNode(c.entry.locationId);
     const locationName = locationNode?.name ?? 'unknown';
 
+    // Hex distance: same algorithm as encounterScoring.ts
+    const entryHex = resolveLocationToHex(graph, c.entry.locationId);
+    const dist = (agentHex && entryHex) ? hexDistance(agentHex, entryHex) : 0;
+
     // Essence cost scales with threat
     const threatNorm = threatToNorm(c.entry.threatRating);
     const essenceCost = Math.round(
       COMPULSION_ESSENCE_COST_MIN + threatNorm * (COMPULSION_ESSENCE_COST_MAX - COMPULSION_ESSENCE_COST_MIN),
     );
 
-    // Encounter hook prose
-    const hooks = COMPULSION_ENCOUNTER_HOOKS[reach] ?? COMPULSION_ENCOUNTER_HOOKS.iron;
-    const hook = resolvePronouns(seededPick(hooks, rng), agentName);
+    // Retcon prose: composable data-driven hook
+    const hook = composeRetconLine(rng, {
+      encounterType: c.entry.encounterType,
+      reach,
+      threatRating: c.entry.threatRating,
+      hexDistance: dist,
+      requiresPresence: c.entry.requiresPresence,
+      locationName,
+      agentName,
+    });
 
     return {
       templateId: c.entry.templateId,
       encounterName,
       encounterHook: hook,
+      encounterType: c.entry.encounterType,
       reach,
       sphere,
       threatRating: c.entry.threatRating,
+      hexDistance: dist,
       score: c.finalScore,
       essenceCost,
       locationId: c.entry.locationId,

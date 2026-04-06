@@ -107,19 +107,17 @@ function CompulsionOptionRow({
       disabled={!affordable}
       onClick={onClick}
     >
-      <div className="flex justify-between items-center">
-        <span className="text-sm" style={{ color: `${color}dd` }}>
-          {candidate.encounterName}
-        </span>
-        <span className="text-xs opacity-50">
-          {capitalize(candidate.reach)} &middot; Threat {candidate.threatRating}
-        </span>
+      {/* Retcon prose — the main content */}
+      <div className="text-sm leading-relaxed italic opacity-70">
+        {candidate.encounterHook}
       </div>
-      <div className="flex justify-between items-center mt-1">
-        <span className="text-xs opacity-50">
-          {candidate.encounterHook}
+      {/* Mechanical footer */}
+      <div className="flex justify-between items-center mt-2">
+        <span className="text-xs opacity-40">
+          {capitalize(candidate.encounterType)}
+          {candidate.hexDistance > 0 ? ` · ${candidate.hexDistance} hex away` : ''}
         </span>
-        <span className="text-xs ml-2 whitespace-nowrap" style={{ color }}>
+        <span className="text-xs whitespace-nowrap" style={{ color }}>
           {candidate.essenceCost} essence
         </span>
       </div>
@@ -184,14 +182,14 @@ export function PremonitionModal({
           </div>
         </div>
 
-        {/* Context line */}
-        <div className="px-6 pb-3">
-          <div className="text-xs opacity-50">
-            {isWhisper
-              ? 'You sense currents pulling at your mortal:'
-              : 'They weigh their options. You may tip the scales:'}
+        {/* Context line — whisper only; compulsion vignette already explains the mechanic */}
+        {isWhisper && (
+          <div className="px-6 pb-3">
+            <div className="text-xs opacity-50">
+              You sense currents pulling at your mortal:
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Options */}
         <div className="px-6 pb-4 flex flex-col gap-2.5">

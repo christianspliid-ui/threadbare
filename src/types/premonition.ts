@@ -9,6 +9,7 @@
 
 import type { SphereName } from './index';
 import type { ReachDomain } from './traits';
+import type { EncounterType } from './encounter';
 
 // ─── Nudge Categories ───────────────────────────────────────────
 
@@ -44,14 +45,18 @@ export interface CompulsionCandidate {
   templateId: string;
   /** Human-readable encounter name */
   encounterName: string;
-  /** One-line prose hook */
+  /** Retcon prose: data-driven line explaining why the agent considers this */
   encounterHook: string;
+  /** Encounter type (explore, duel, trade, etc.) */
+  encounterType: EncounterType;
   /** Primary reach of the encounter */
   reach: ReachDomain;
   /** Dominant sphere affinity of the encounter */
   sphere: SphereName;
   /** Encounter threat rating label */
   threatRating: string;
+  /** Hex distance from agent to encounter location */
+  hexDistance: number;
   /** Score from the scoring pipeline */
   score: number;
   /** Essence cost to compel this choice */

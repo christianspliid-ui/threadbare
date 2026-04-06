@@ -11,6 +11,8 @@
  */
 
 import type { WhisperNudgeCategory } from '../types/premonition';
+import type { EncounterType } from '../types/encounter';
+import type { ReachDomain } from '../types/traits';
 
 // ─── Quintessence Tiers ─────────────────────────────────────────
 
@@ -166,69 +168,152 @@ export const AMBITION_DREAM_IMAGERY: Record<AmbitionProseCategory, string[]> = {
 
 export const COMPULSION_VIGNETTE_TEMPLATES: Record<QuintessenceProseTier, string[]> = {
   healthy: [
-    'A certainty seized {name} — sudden as a blade, sure as sunrise. The world narrowed to a single point. {pronoun} could not say why, but {pronoun} *must* choose.',
-    '{name} stood at the crossroads. Three paths stretched before {pronoun}, but one burned brighter than the rest — pulling like a tide that would not be refused.',
-    'The thread tightened. {name} felt the full weight of divine attention settle upon {pronoun} — not a whisper this time, but a voice.',
+    'You pull at the thread binding you to {name} and feel {possessive} mind turning. {Pronoun} stand at a crossroads, weighing paths forward. You could tip the balance — or let {pronoun} find {possessive} own way.',
+    'The thread hums taut. Through it, you sense {name} deliberating — futures branching, narrowing. Your will could shape which path {pronoun} take.',
+    'You reach through the thread and catch {name} mid-thought, turning over what comes next. The connection is strong. You could guide {possessive} hand.',
   ],
   moderate: [
-    'A pressure built behind {possessive} eyes. {name} felt the god\'s gaze, direct and unblinking. The choices lay before {pronoun}, and each one thrummed with consequence.',
-    '{name} paused mid-step. Something vast and certain pressed against {possessive} will — not hostile, but unyielding. A direction. A demand.',
+    'You reach for {name} through the thinning thread. {Pronoun} are deliberating — you sense the weight of choices ahead. Your influence could still sway {pronoun}.',
+    'The thread to {name} holds, though it strains. Through it you catch {pronoun} weighing {possessive} next move. You may still guide {pronoun} — carefully.',
   ],
   strained: [
-    'The compulsion came like a wave through tired bones. {name} swayed under the weight of it — the god\'s will, insistent even now, even weakened.',
-    'Through the haze of exhaustion, a single thread of divine purpose remained. {name} grasped it, or it grasped {pronoun}.',
+    'The thread to {name} frays, but holds. Through it you glimpse {pronoun} wrestling with what comes next. You may have enough strength to guide {possessive} hand.',
+    'A faltering connection — but enough. {name} is at a decision point, and through the fading thread, you sense {possessive} uncertainty. One nudge might be all you can manage.',
   ],
   critical: [
-    'At the edge of dissolution, the god\'s command burned through like light through cracked glass. {name} barely had the strength to obey — but the thread demanded.',
-    'The world was fraying. But through the fractures, one path blazed with borrowed certainty. {name} had no choice but to follow, or break entirely.',
+    'Barely a whisper of connection remains. But through it, you catch {name} at a decision point. One last nudge — if you can manage it.',
+    'The thread is almost gone. Yet through the thinning dark, {name} hesitates — and in that hesitation, a sliver of divine will might still reach {pronoun}.',
   ],
 };
 
-// ─── Compulsion Encounter Hook Templates ────────────────────────
+// ─── Compulsion Retcon Prose System ─────────────────────────────
 
-/** One-line prose hooks for encounter candidates in the Compulsion modal. */
+/**
+ * Composable retcon prose: data-driven one-liners explaining why an agent
+ * is considering an encounter. Composed from three fragments:
+ *   [how they learned] + [what's pulling them] + [how confident they feel]
+ */
+
+// ── Distance bands ──
+
+export const DISTANCE_BAND_NEAR = 0;
+export const DISTANCE_BAND_SHORT = 2;
+export const DISTANCE_BAND_MEDIUM = 5;
+
+const RETCON_DISTANCE_FRAGMENTS: Record<string, string[]> = {
+  here:   ['Right here,', 'Close at hand,', 'Nearby,'],
+  short:  ['Not far off,', 'Just beyond the next ridge,', 'A short journey away,'],
+  medium: ['Word has reached {pronoun} of', 'Rumours have drifted in —', 'Talk at the inn mentioned'],
+  far:    ['From distant lands, news of', 'Far off, word has spread of', 'A traveller brought word of'],
+  remote: ['Even from here,', 'Without needing to travel,', 'From where {pronoun} stand,'],
+};
+
+// ── Encounter type "desire" fragments ──
+
+const RETCON_DESIRE_FRAGMENTS: Record<EncounterType, string[]> = {
+  explore:  ['something unknown waits to be found', 'a mystery begs investigation', 'an uncharted place calls to {pronoun}'],
+  duel:     ['a challenge demands an answer', 'someone stands in {possessive} way', 'a fight is brewing'],
+  trade:    ['a deal could be struck', 'goods change hands if the price is right', 'riches ripe for the taking'],
+  steal:    ['something valuable sits poorly guarded', 'an opportunity for the quick-fingered', 'someone else\'s fortune beckons'],
+  assist:   ['someone needs {possessive} help', 'a task awaits willing hands', '{pronoun} could make a difference'],
+  build:    ['something could be raised from nothing', 'raw materials and ambition align', 'the foundations of something new await'],
+  hire:     ['a capable soul seeks a patron', 'loyalty is on offer', 'a willing blade awaits a purpose'],
+  lead:     ['others look to {pronoun} for direction', 'a group needs someone to follow', 'leadership is called for'],
+  acquire:  ['something of value is within reach', 'a prize sits waiting to be claimed', 'treasure ripe for the taking'],
+  create:   ['an idea takes shape in {possessive} mind', 'the urge to make something stirs', 'inspiration strikes'],
+};
+
+// ── Confidence fragments (from threat rating) ──
+
+const RETCON_CONFIDENCE_FRAGMENTS: Record<string, string[]> = {
+  trivial:  ['— an easy prospect', '— hardly a challenge', '— child\'s play, really'],
+  easy:     ['— and {pronoun} like {possessive} chances', '— a fair bet', '— well within {possessive} grasp'],
+  moderate: ['— though it won\'t be simple', '— a real test', '— odds could go either way'],
+  hard:     ['— a daunting prospect', '— {pronoun} are not sure {pronoun} are ready', '— it\'ll take everything {pronoun} have'],
+  deadly:   ['— it could be the end of {pronoun}', '— only a fool would try', '— but the pull is strong, despite the danger'],
+};
+
+// ── Location suffix ──
+
+const RETCON_LOCATION_FRAGMENTS = [
+  ', at {locationName}',
+  ', near {locationName}',
+  ', in {locationName}',
+];
+
+// ── Compose function ──
+
+export interface RetconInput {
+  encounterType: EncounterType;
+  reach: ReachDomain;
+  threatRating: string;
+  hexDistance: number;
+  requiresPresence: boolean;
+  locationName: string;
+  agentName: string;
+}
+
+function pickFragment(pool: string[], rng: () => number): string {
+  return pool[Math.floor(rng() * pool.length)];
+}
+
+function resolveRetconPronouns(text: string, name: string): string {
+  return text
+    .replace(/\{name\}/g, name)
+    .replace(/\{possessive\}/g, 'their')
+    .replace(/\{pronoun\}/g, 'they')
+    .replace(/\{Pronoun\}/g, 'They');
+}
+
+export function composeRetconLine(rng: () => number, input: RetconInput): string {
+  const { encounterType, threatRating, hexDistance: dist, requiresPresence, locationName, agentName } = input;
+
+  // 1. Distance context
+  let distanceKey: string;
+  if (!requiresPresence) {
+    distanceKey = 'remote';
+  } else if (dist <= DISTANCE_BAND_NEAR) {
+    distanceKey = 'here';
+  } else if (dist <= DISTANCE_BAND_SHORT) {
+    distanceKey = 'short';
+  } else if (dist <= DISTANCE_BAND_MEDIUM) {
+    distanceKey = 'medium';
+  } else {
+    distanceKey = 'far';
+  }
+  const distPool = RETCON_DISTANCE_FRAGMENTS[distanceKey] ?? RETCON_DISTANCE_FRAGMENTS.here;
+  const distFragment = pickFragment(distPool, rng);
+
+  // 2. Desire (encounter type)
+  const desirePool = RETCON_DESIRE_FRAGMENTS[encounterType] ?? ['an opportunity presents itself'];
+  const desireFragment = pickFragment(desirePool, rng);
+
+  // 3. Confidence (threat rating)
+  const confPool = RETCON_CONFIDENCE_FRAGMENTS[threatRating] ?? RETCON_CONFIDENCE_FRAGMENTS.moderate;
+  const confFragment = pickFragment(confPool, rng);
+
+  // 4. Location suffix (only for non-nearby encounters)
+  let locationSuffix = '';
+  if (dist > DISTANCE_BAND_NEAR && locationName && locationName !== 'unknown') {
+    const locTemplate = pickFragment(RETCON_LOCATION_FRAGMENTS, rng);
+    locationSuffix = locTemplate.replace(/\{locationName\}/g, locationName);
+  }
+
+  const raw = `${distFragment} ${desireFragment}${locationSuffix} ${confFragment}`;
+  return resolveRetconPronouns(raw, agentName);
+}
+
+// ── Legacy export for backward compat (tests that reference it) ──
+/** @deprecated Use composeRetconLine instead */
 export const COMPULSION_ENCOUNTER_HOOKS: Record<string, string[]> = {
-  // Keyed by reach domain
-  iron: [
-    'Blood and iron — a reckoning that will not wait',
-    'The clash of wills and weapons',
-    'Strength tested against strength',
-  ],
-  gold: [
-    'Coin and cleverness, weighed in the balance',
-    'Prosperity hangs in the balance',
-    'A deal that shapes the future',
-  ],
-  shadow: [
-    'Secrets move beneath the surface',
-    'What is hidden demands to be found',
-    'The truth wears many faces',
-  ],
-  veil: [
-    'The old ways stir — tradition and heresy entwined',
-    'Knowledge forbidden or forgotten',
-    'The boundary between worlds grows thin',
-  ],
-  heart: [
-    'Loyalty tested, bonds forged or broken',
-    'The ties that bind — and those that burn',
-    'A choice that defines who {name} truly is',
-  ],
-  eye: [
-    'Perception sharpens. Something reveals itself.',
-    'The veil lifts — but what lies beneath?',
-    'Clarity comes at a cost',
-  ],
-  stone: [
-    'The land itself remembers',
-    'What was built endures — or crumbles',
-    'Foundation and transformation, side by side',
-  ],
-  star: [
-    'Fate turns on a single moment',
-    'The price of survival — or of sacrifice',
-    'Time folds. The stars lean close.',
-  ],
+  iron:   ['Blood and iron — a reckoning that will not wait'],
+  gold:   ['Coin and cleverness, weighed in the balance'],
+  shadow: ['Secrets move beneath the surface'],
+  veil:   ['The old ways stir — tradition and heresy entwined'],
+  heart:  ['Loyalty tested, bonds forged or broken'],
+  eye:    ['Perception sharpens. Something reveals itself.'],
+  stone:  ['The land itself remembers'],
+  star:   ['Fate turns on a single moment'],
 };
 
 // ─── Dismiss Prose ──────────────────────────────────────────────
