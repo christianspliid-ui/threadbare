@@ -2,6 +2,9 @@ import React from 'react';
 import type { HexCoord, HexTile } from '../../types';
 import type { WorldGraph } from '../../engine/graph';
 import { terrainDisplayName } from '../HexMapV2/palette/terrainPalette';
+import { getTerrainSphereScores } from '../../types/sphereAffinity';
+import { getSphereColor } from '../../data/sphereIcons';
+import { SphereIcon } from '../shared/SphereIcon';
 
 interface HexDetailViewProps {
   coord: HexCoord;
@@ -165,6 +168,7 @@ export const HexDetailView = React.memo(function HexDetailView({
             <HexField label="Moisture" value={`${Math.round(tile.geoParams.moisture * 100)}%`} />
           </>
         )}
+        {tile && <SphereResonanceRow terrain={tile.terrain} />}
       </div>
 
       {/* Footer */}
@@ -213,6 +217,43 @@ function HexField({ label, value }: { label: string; value: React.ReactNode }) {
     >
       <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>{label}: </span>
       <span style={{ color: 'var(--text-primary)' }}>{value}</span>
+    </div>
+  );
+}
+
+function SphereResonanceRow({ terrain }: { terrain: string }) {
+  const scores = getTerrainSphereScores(terrain);
+  const active = Object.entries(scores).filter(([, v]) => v > 0) as [string, number][];
+  if (active.length === 0) return null;
+
+  // Sort descending by score so dominant sphere shows first
+  active.sort((a, b) => b[1] - a[1]);
+
+  return (
+    <div style={{ marginTop: 'var(--space-1)' }}>
+      <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginBottom: 'var(--space-1)' }}>
+        Sphere resonance
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+        {active.map(([sphere, score]) => (
+          <div
+            key={sphere}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+            }}
+          >
+            <SphereIcon sphereName={sphere} size={13} />
+            <span style={{ fontSize: 'var(--text-xs)', color: getSphereColor(sphere), fontWeight: 500 }}>
+              {sphere}
+            </span>
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', letterSpacing: '-0.02em' }}>
+              {'●'.repeat(score)}{'○'.repeat(Math.max(0, 3 - score))}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
