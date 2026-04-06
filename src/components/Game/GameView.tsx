@@ -1,7 +1,12 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { SPHERE_NAMES, type CosmologyProfile } from '../../types';
 import type { AscendantArchetype } from '../../types/influence';
-import { resumeMusic as resumeTheme } from '../../audio/MusicChannel';
+import { resumeMusic as resumeTheme, getMusicVolume, setMusicVolume, isMusicMuted, toggleMusicMute } from '../../audio/MusicChannel';
+import { getBackgroundVolume, setBackgroundVolume, isBackgroundMuted, muteBackground, unmuteBackground } from '../../audio/BackgroundChannel';
+import { getUiVolume, setUiVolume, isUiMuted, muteUi, unmuteUi } from '../../audio/UiChannel';
+import { muteAll, unmuteAll, isAllMuted } from '../../audio/AudioMaster';
+import { useAmbientContext } from './hooks/useAmbientContext';
+import { CAMERA_CONSTANTS } from '../HexMapV2/camera/D3ZoomCamera';
 import type { ScryState } from '../../types/scry';
 import { createScryState } from '../../engine/scry';
 import { useSimulation } from './hooks/useSimulation';
@@ -219,6 +224,18 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
   // ── Settings panel state ──
   const [settingsPanelOpen, setSettingsPanelOpen] = useState(false);
+
+  // ── Camera center hex (for ambient audio terrain context) ──
+  const [cameraCenter, setCameraCenter] = useState<import('../../types').HexCoord>({
+    col: CAMERA_CONSTANTS.INITIAL_CENTER_COL,
+    row: CAMERA_CONSTANTS.INITIAL_CENTER_ROW,
+  });
+
+  // ── Audio state (singletons are source of truth; React state mirrors for re-renders) ──
+  const [musicVolume, setMusicVolumeState] = useState(() => getMusicVolume());
+  const [bgVolume, setBgVolumeState] = useState(() => getBackgroundVolume());
+  const [uiVolume, setUiVolumeState] = useState(() => getUiVolume());
+  const [audioMuted, setAudioMuted] = useState(() => isAllMuted());
 
   // ── Ascendant sheet modal state ──
   const [ascendantSheetOpen, setAscendantSheetOpen] = useState(false);
@@ -965,6 +982,27 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     onStep: doTick,
   });
 
+  // ── Audio volume handlers ──
+  const handleMusicVolume = useCallback((v: number) => {
+    setMusicVolume(v);
+    setMusicVolumeState(v);
+  }, []);
+
+  const handleBgVolume = useCallback((v: number) => {
+    setBackgroundVolume(v);
+    setBgVolumeState(v);
+  }, []);
+
+  const handleUiVolume = useCallback((v: number) => {
+    setUiVolume(v);
+    setUiVolumeState(v);
+  }, []);
+
+  const handleToggleAudioMute = useCallback(() => {
+    if (audioMuted) { unmuteAll(); setAudioMuted(false); }
+    else { muteAll(); setAudioMuted(true); }
+  }, [audioMuted]);
+
   // ── Essence income (view-layer, pure computation) ──
   const essenceIncome = useMemo(
     () => computeEssenceIncome(gameState.graph, gameState.ascendantId, gameState.controlEffects),
@@ -1038,6 +1076,50 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     tiles,
     fogDisabled,
     worldVersion: runtime.worldVersion,
+  });
+
+  // ── Ambient audio context inputs ──
+  /** Dominant location sound subtype for the hex chronicle panel (priority 1). */
+  const hexChronicleSubtype = useMemo<import('../../types').LocationSubtype | null>(() => {
+    if (viewLevel !== 'hex-zoom' || !focusedHex) return null;
+    const locs = locationNodes.filter(
+      l => l.hexCol === focusedHex.col && l.hexRow === focusedHex.row
+    );
+    if (locs.length === 0) return null;
+    const PRIORITY = [
+      'city', 'capital', 'castle', 'fort', 'temple', 'shrine', 'healing_spring',
+      'standing_stones', 'ley_nexus', 'fey_crossing', 'living_archive',
+      'cavern', 'ruins', 'ruined_city', 'crystal_cavern', 'ancient_vault', 'shadow_hollow',
+      'sacrifice_site', 'haunted_ground', 'corruption_zone', 'nest', 'lair', 'battleground',
+      'hamlet', 'town',
+    ] as const;
+    for (const s of PRIORITY) {
+      if (locs.some(l => l.locationType === s)) return s as import('../../types').LocationSubtype;
+    }
+    return (locs[0]!.locationType as import('../../types').LocationSubtype) ?? null;
+  }, [viewLevel, focusedHex, locationNodes]);
+
+  /** Location subtype for the open location detail panel (priority 2). */
+  const locationDetailSubtype = useMemo<import('../../types').LocationSubtype | null>(() => {
+    if (viewLevel !== 'location') return null;
+    const subtype = focusedLocation?.properties?.locationSubtype as string | undefined;
+    return (subtype as import('../../types').LocationSubtype) ?? null;
+  }, [viewLevel, focusedLocation]);
+
+  /** Active encounter template for audio override (priority 3). */
+  const activeEncounterTemplate = useMemo<EncounterTemplate | null>(() => {
+    const active = gameState.encounterProgress.find(ep => ep.status === 'active');
+    if (!active) return null;
+    return resolveEncounterTemplate(active.encounterId) ?? null;
+  }, [gameState.encounterProgress]);
+
+  // ── Ambient audio context ──
+  useAmbientContext({
+    terrainHex: selectedHex ?? cameraCenter,
+    tiles,
+    hexChronicleSubtype,
+    locationDetailSubtype,
+    activeEncounterTemplate,
   });
 
   // ── Location encounter data (available + active) ──
@@ -2230,6 +2312,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               onToggleNotificationCategory={toggleNotifCategory}
               onSetNotificationMode={setNotifMode}
               onResetNotificationPrefs={resetNotifPrefs}
+              musicVolume={musicVolume}
+              onMusicVolume={handleMusicVolume}
+              bgVolume={bgVolume}
+              onBgVolume={handleBgVolume}
+              uiVolume={uiVolume}
+              onUiVolume={handleUiVolume}
+              audioMuted={audioMuted}
+              onToggleAudioMute={handleToggleAudioMute}
             />
           </div>
         </div>
@@ -2278,6 +2368,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   showOrganicShore={showOrganicShore}
                   overlayOpen={scryVisible || harvestResult !== null}
                   moveDestinationHex={avatarTargetHex}
+                  onCameraCenterHex={setCameraCenter}
                   onHexClick={handleHexClickFull}
                   onHexHover={setHoveredHex}
                   onAgentClick={(agentId) => handleThreadNodeSelect(agentId, 'agent')}

@@ -9,13 +9,41 @@ vi.mock('../../HexMapV2/HexMapV2', () => ({
   default: vi.fn().mockReturnValue(null),
 }));
 
-// Mock theme audio to avoid HTMLAudioElement issues in jsdom
+// Mock audio modules to avoid HTMLAudioElement issues in jsdom
 vi.mock('../../../audio/MusicChannel', () => ({
   resumeMusic: vi.fn(),
   fadeOutMusic: vi.fn().mockResolvedValue(undefined),
   playMusic: vi.fn(),
   setMuted: vi.fn(),
   isMuted: vi.fn().mockReturnValue(false),
+  getMusicVolume: vi.fn().mockReturnValue(0.4),
+  setMusicVolume: vi.fn(),
+  isMusicMuted: vi.fn().mockReturnValue(false),
+  toggleMusicMute: vi.fn(),
+  swapMusicTrack: vi.fn(),
+  restoreMusicDefault: vi.fn(),
+}));
+vi.mock('../../../audio/BackgroundChannel', () => ({
+  pushAmbient: vi.fn(),
+  popAmbient: vi.fn(),
+  getBackgroundVolume: vi.fn().mockReturnValue(0.35),
+  setBackgroundVolume: vi.fn(),
+  isBackgroundMuted: vi.fn().mockReturnValue(false),
+  muteBackground: vi.fn(),
+  unmuteBackground: vi.fn(),
+}));
+vi.mock('../../../audio/UiChannel', () => ({
+  playUi: vi.fn(),
+  getUiVolume: vi.fn().mockReturnValue(0.6),
+  setUiVolume: vi.fn(),
+  isUiMuted: vi.fn().mockReturnValue(false),
+  muteUi: vi.fn(),
+  unmuteUi: vi.fn(),
+}));
+vi.mock('../../../audio/AudioMaster', () => ({
+  muteAll: vi.fn(),
+  unmuteAll: vi.fn(),
+  isAllMuted: vi.fn().mockReturnValue(false),
 }));
 
 describe('GameView debug panel integration', () => {
