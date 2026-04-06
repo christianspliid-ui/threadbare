@@ -41,6 +41,8 @@ interface AgentDetailPanelProps {
   digestBuffer?: DigestEntry[];
   /** Current simulation tick, used to window recent digest entries. */
   currentTick?: number;
+  /** The tick at which this agent was last viewed; used to highlight new digest entries. */
+  lastViewedTick?: number;
 }
 
 // Domain display names — 8 reaches (flesh removed in TB-075)
@@ -80,6 +82,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
   onAttachmentClick,
   digestBuffer,
   currentTick,
+  lastViewedTick = 0,
 }: AgentDetailPanelProps) {
   const tierColor = TIER_COLORS[detail.tier] || '#78716c';
   const archetypeReaches = detail.archetype?.reachAffinities || [];
@@ -535,7 +538,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
       {/* Recent Activity Log */}
       {recentEntries.length > 0 && (
         <div className="px-4 py-2 border-t border-amber-900/20">
-          <RecentActivityLog entries={recentEntries} lastViewedTick={0} />
+          <RecentActivityLog entries={recentEntries} lastViewedTick={lastViewedTick} />
         </div>
       )}
 

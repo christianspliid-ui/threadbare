@@ -649,7 +649,16 @@ export function useAgentInteraction({
         const ascNode = gameState.graph.getNode(gameState.ascendantId);
         if (ascNode) {
           const currentPool = (ascNode.properties.attentionPool as number) ?? 6;
-          ascNode.properties.attentionPool = Math.max(0, currentPool - cost);
+          // Reject the attend if the pool is insufficient — open agent panel but do not attend
+          if (currentPool < cost) {
+            setSelectedAgentId(nodeId);
+            setDrawerOpen(true);
+            setStrandViewAgent(null);
+            setSelectedThreadNode({ nodeId, category });
+            setSelectedHexCoord(null);
+            return;
+          }
+          ascNode.properties.attentionPool = currentPool - cost;
         }
 
         // Mark tug as attended in place

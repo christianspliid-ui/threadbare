@@ -338,6 +338,14 @@ export function phaseEncounterVisibility(
     const epTier = ep.effectiveTier;
     if (epTier === 'invisible' || epTier === 'background') continue;
 
+    // For shaping tier: only generate notification if the player attended the tug for this agent.
+    // Without an attended tug the encounter auto-resolves silently into the digest buffer.
+    if (epTier === 'shaping') {
+      const tugs = state.activeThreadTugs ?? [];
+      const attendedTug = tugs.find(t => t.agentId === ep.actorId && t.attended);
+      if (!attendedTug) continue;
+    }
+
     // Skip if we already have a pending notification for this agent + encounter
     const stepIndex = ep.currentEncounterIndex;
     const notifKey = `encounter:legacy_encounter:${ep.actorId}:${ep.encounterId}:legacy:${stepIndex}`;
@@ -400,6 +408,14 @@ export function phaseEncounterVisibility(
     // Undefined effectiveTier (old records) preserves existing notification behavior.
     const actionTier = action.effectiveTier;
     if (actionTier === 'invisible' || actionTier === 'background') continue;
+
+    // For shaping tier: only generate notification if the player attended the tug for this agent.
+    // Without an attended tug the encounter auto-resolves silently into the digest buffer.
+    if (actionTier === 'shaping') {
+      const tugs = state.activeThreadTugs ?? [];
+      const attendedTug = tugs.find(t => t.agentId === action.actorId && t.attended);
+      if (!attendedTug) continue;
+    }
 
     const stepIndex = action.currentStep;
     const notifKey = `encounter:unified_action:${action.actorId}:${action.templateId}:${action.actionId}:${stepIndex}`;

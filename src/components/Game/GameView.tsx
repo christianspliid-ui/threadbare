@@ -30,12 +30,13 @@ import type { ArmyRenderData } from '../HexMapV2/scene/ArmySpriteMesh';
 import { ARMY_SIZE_SMALL_MAX } from '../HexMapV2/scene/ArmySpriteMesh';
 import type { BattleRenderData } from '../HexMapV2/scene/BattleIndicatorMesh';
 import type { SiegeRenderData } from '../HexMapV2/scene/SiegeIndicatorMesh';
-import type { ThreadLineData } from '../HexMapV2/scene/ThreadLineMesh';
+import type { ThreadLineData, TugData } from '../HexMapV2/scene/ThreadLineMesh';
 import type { ActivityIconData } from '../HexMapV2/scene/ActivityIconMesh';
 import {
   ACTIVITY_ICON_OPACITY_BACKGROUND,
   ACTIVITY_ICON_OPACITY_SHAPING,
   ACTIVITY_ICON_OPACITY_STORY,
+  ATTENTION_BASE_CAPACITY,
 } from '../../data/attention-constants';
 import type { ArmyState } from '../../types/army';
 import type { BattleState } from '../../types/battle';
@@ -501,12 +502,27 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     return result;
   }, [gameState.graph, gameState.ascendantId, avatarNodeId, runtime.worldVersion]);
 
-  // ── Tugged agent IDs — drives vibration animation on thread lines ──
+  // ── Active tug data — drives reach-coloured vibration animation on thread lines ──
   // Unattended tugs only; attended tugs have already been acknowledged by the player.
-  const tuggedAgentIds = useMemo<Set<string>>(() => {
+  const activeTugData = useMemo<Map<string, TugData>>(() => {
     const tugs = gameState.activeThreadTugs ?? [];
-    return new Set(tugs.filter(t => !t.attended).map(t => t.agentId));
+    const map = new Map<string, TugData>();
+    for (const t of tugs) {
+      if (!t.attended) {
+        map.set(t.agentId, { reachPrimary: t.reachPrimary, threatLevel: t.threatLevel });
+      }
+    }
+    return map;
   }, [gameState.activeThreadTugs]);
+
+  // ── Attention ratio — scales thread line opacity in the Three.js layer ──
+  // Reads attentionPool and attentionCapacity from the ascendant node properties.
+  const attentionRatio = useMemo<number>(() => {
+    const ascNode = gameState.graph.getNode(gameState.ascendantId);
+    const pool = (ascNode?.properties?.attentionPool as number) ?? ATTENTION_BASE_CAPACITY;
+    const cap  = (ascNode?.properties?.attentionCapacity as number) ?? ATTENTION_BASE_CAPACITY;
+    return cap > 0 ? Math.min(1, pool / cap) : 1;
+  }, [gameState.graph, gameState.ascendantId, runtime.worldVersion]);
 
   // ── Activity icon render data (active encounters → per-agent reach icons) ──
   // Rebuilds on worldVersion so icons appear/disappear as encounters start/end.
@@ -2546,6 +2562,34 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           />
         )}
       </AnimateMount>
+
+      {/* Read the Threads panel — divine digest review */}
+      <ReadTheThreadsPanel
+        open={readThreadsOpen}
+        onClose={() => setReadThreadsOpen(false)}
+        digestBuffer={gameState.digestBuffer ?? []}
+        currentTick={gameState.tick}
+        essenceAvailable={SPHERE_NAMES.reduce((sum, s) => sum + gameState.essencePool[s], 0)}
+        onSpendEssence={(cost) => {
+          setGameState(prev => {
+            const newPool = { ...prev.essencePool };
+            // Deduct cost from available spheres — primary sphere first, then secondary, then rest
+            let remaining = cost;
+            const sphereOrder = [
+              archetype.sphereAlignment.primary,
+              archetype.sphereAlignment.secondary,
+              ...SPHERE_NAMES.filter(s => s !== archetype.sphereAlignment.primary && s !== archetype.sphereAlignment.secondary),
+            ];
+            for (const s of sphereOrder) {
+              if (remaining <= 0) break;
+              const deduct = Math.min(remaining, newPool[s] ?? 0);
+              newPool[s] = (newPool[s] ?? 0) - deduct;
+              remaining -= deduct;
+            }
+            return { ...prev, essencePool: newPool };
+          });
+        }}
+      />
 
       {/* Stub profile modals for non-agent thread types */}
       <AnimateMount show={stubModalState !== null} animation="anim-fade-up">
