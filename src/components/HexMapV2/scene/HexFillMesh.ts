@@ -34,23 +34,39 @@ export interface HexFillMeshResult {
 /**
  * Builds a flat-top hexagonal BufferGeometry with the given radius.
  * Constructed as 6 triangles fanning from the center.
- * Angle formula: angle_i = 60° × i (flat-top: first vertex at 0° = rightmost).
+ * Angle formula: angle_i = 60deg * i (flat-top: first vertex at 0deg = rightmost).
+ *
+ * Includes UV coordinates mapping each vertex to 0-1 space for texture sampling.
+ * Center = (0.5, 0.5), vertices mapped by: u = 0.5 + x/(2*size), v = 0.5 + y/(2*size).
  */
 export function buildHexGeometry(size: number): THREE.BufferGeometry {
   const positions: number[] = [];
+  const uvs: number[] = [];
 
   for (let i = 0; i < 6; i++) {
     const a0 = (Math.PI / 180) * (60 * i);
     const a1 = (Math.PI / 180) * (60 * ((i + 1) % 6));
 
+    const x0 = size * Math.cos(a0);
+    const y0 = size * Math.sin(a0);
+    const x1 = size * Math.cos(a1);
+    const y1 = size * Math.sin(a1);
+
     // Triangle: center -> v[i] -> v[i+1]
     positions.push(0, 0, 0);
-    positions.push(size * Math.cos(a0), size * Math.sin(a0), 0);
-    positions.push(size * Math.cos(a1), size * Math.sin(a1), 0);
+    positions.push(x0, y0, 0);
+    positions.push(x1, y1, 0);
+
+    // UVs: map position to 0-1 range (center = 0.5, 0.5)
+    const invDiam = 1 / (2 * size);
+    uvs.push(0.5, 0.5);                               // center
+    uvs.push(0.5 + x0 * invDiam, 0.5 + y0 * invDiam); // vertex i
+    uvs.push(0.5 + x1 * invDiam, 0.5 + y1 * invDiam); // vertex i+1
   }
 
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
   return geo;
 }
 
