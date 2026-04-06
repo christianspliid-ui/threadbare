@@ -290,7 +290,7 @@ export function createAgentSpriteMesh(agents: AgentRenderData[]): AgentSpriteGro
  * Above this zoom, sprites are scaled down to maintain consistent screen size.
  * NFP #1: Named constant for tunability.
  */
-const SPRITE_SCALE_REFERENCE_ZOOM = 12;
+const SPRITE_SCALE_REFERENCE_ZOOM = 7;
 
 /**
  * Swaps each agent sprite's material and scale for the current zoom tier.
