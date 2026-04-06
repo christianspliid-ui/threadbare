@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { SPHERE_NAMES, type CosmologyProfile } from '../../types';
 import type { AscendantArchetype } from '../../types/influence';
-import { resumeTheme } from '../../audio/themeAudio';
+import { resumeMusic as resumeTheme } from '../../audio/MusicChannel';
 import type { ScryState } from '../../types/scry';
 import { createScryState } from '../../engine/scry';
 import { useSimulation } from './hooks/useSimulation';

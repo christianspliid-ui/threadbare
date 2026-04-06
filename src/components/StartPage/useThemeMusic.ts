@@ -1,11 +1,11 @@
 import { useState, useCallback } from 'react';
 import {
-  playTheme,
-  fadeOutTheme,
-  isThemeMuted,
-  toggleThemeMute,
-  setThemeVolume,
-} from '../../audio/themeAudio';
+  playMusic as playTheme,
+  fadeOutMusic as fadeOutTheme,
+  isMusicMuted as isThemeMuted,
+  toggleMusicMute as toggleThemeMute,
+  setMusicVolume as setThemeVolume,
+} from '../../audio/MusicChannel';
 
 /**
  * useThemeMusic — React wrapper around the module-level theme audio singleton.

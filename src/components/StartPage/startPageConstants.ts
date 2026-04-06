@@ -26,13 +26,6 @@ export const MENU_HOVER_TRANSITION_MS = 300;
 export const START_PAGE_GRADIENT_OPACITY_MID = 0.4;
 export const START_PAGE_GRADIENT_OPACITY_LOW = 0.95;
 
-// ─── Audio ───────────────────────────────────────────────────────
-export const THEME_MUSIC_SRC = '/audio/theme-drone.mp3';
-export const THEME_VOLUME_DEFAULT = 0.4;
-export const THEME_FADE_IN_MS = 3000;
-export const THEME_FADE_OUT_MS = 1500;
-export const THEME_MUTE_STORAGE_KEY = 'threadbearer_muted';
-
 // ─── Version ─────────────────────────────────────────────────────
 export const VERSION_STAMP_TEXT = 'v0.1.0 · prototype';
 

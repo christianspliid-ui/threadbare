@@ -10,10 +10,10 @@ vi.mock('../../HexMapV2/HexMapV2', () => ({
 }));
 
 // Mock theme audio to avoid HTMLAudioElement issues in jsdom
-vi.mock('../../../audio/themeAudio', () => ({
-  resumeTheme: vi.fn(),
-  fadeOutTheme: vi.fn().mockResolvedValue(undefined),
-  playTheme: vi.fn(),
+vi.mock('../../../audio/MusicChannel', () => ({
+  resumeMusic: vi.fn(),
+  fadeOutMusic: vi.fn().mockResolvedValue(undefined),
+  playMusic: vi.fn(),
   setMuted: vi.fn(),
   isMuted: vi.fn().mockReturnValue(false),
 }));
