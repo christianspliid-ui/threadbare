@@ -87,32 +87,46 @@ A single hook mounted once in `GameView`. Watches four context sources and calls
 
 ### Terrain Context (priority 0)
 
-Source: `selectedHex ?? cameraCenter` from HexMapV2 props. Terrain type read from tile data. Grouped into 8 sound keys:
+Source: `selectedHex ?? cameraCenter` — see **cameraCenter data path** below. Terrain type read from tile lookup on `tiles[]`. Grouped into 9 exhaustive sound keys covering all 38 `TerrainType` values:
 
 | Sound key | Terrain types |
 |-----------|--------------|
-| `forest` | light_forest, woodland, temperate_forest, dense_forest, boreal_forest, tropical_forest |
-| `grassland` | grassland, savanna, steppe, floodplain |
+| `water` | ocean, deep_ocean, tropical_ocean, coastal_shallows, coast, lake, river, reef |
+| `grassland` | grassland, farmland, savanna, steppe, floodplain, oasis |
+| `forest` | light_forest, temperate_forest, dense_forest, boreal_forest, tropical_forest, jungle, evergreen_forest, great_home_trees |
 | `swamp` | marsh, swamp, moor_bog |
 | `mountains` | hills, forested_hills, mountains, high_mountains, plateau, mountain_pass |
-| `desert` | sand_desert, sand_dunes, rocky_desert, hardened_clay, badlands |
-| `tundra` | tundra, snow_fields, glacier |
-| `volcanic` | volcanic, volcano, lava |
+| `desert` | desert, rocky_desert, sand_dunes, badlands |
+| `tundra` | tundra, snow_fields, glacier, arctic |
+| `volcanic` | volcano |
 | `wasteland` | broken_lands, dead_forest |
+
+Every `TerrainType` value maps to exactly one key. If a new terrain type is ever added without a mapping entry, the lookup function falls back to `grassland` and logs a warning (not silent — missing terrain coverage is a content bug, not a runtime error).
+
+#### cameraCenter data path
+
+HexMapV2 currently exposes no camera-center callback. A new optional prop is added:
+
+```ts
+onCameraCenterHex?: (hex: HexCoord) => void
+```
+
+Called from the d3-zoom `on('zoom')` handler inside HexMapV2, debounced at `AMBIENT_CONTEXT_DEBOUNCE_MS`. World-space center is computed from the d3 transform (`cx = -transform.x / transform.k`, `cy = transform.y / transform.k`) then inverse-mapped to hex coordinates using existing `worldToHex`. `GameView` stores the result as `useState<HexCoord>` and passes it to `useAmbientContext`.
 
 ### Hex Chronicles Context (priority 1)
 
-Source: the **dominant location** for the focused hex. Dominant location is resolved by priority order: city/capital → dungeon/cave/crypt → temple/shrine → town/village/hamlet → camp/ruin. If multiple locations exist on the hex, the highest-priority type wins. Maps `locationSubtype` to a sound key. Initial mapping:
+Source: the **dominant location** for the focused hex. If multiple locations exist on the hex, highest-priority type wins using this order: city/capital → castle/fort → temple/shrine/sacred → dungeon/cavern/ruins → settlement → all others fall back to terrain. Maps `locationSubtype` to a sound key covering all 50+ `LocationSubtype` values:
 
 | Sound key | Location subtypes |
 |-----------|------------------|
 | `city` | city, capital |
-| `settlement` | town, village, hamlet |
-| `wilderness` | (no location, or camp, ruin) |
-| `temple` | temple, shrine |
-| `dungeon` | dungeon, cave, crypt |
+| `settlement` | hamlet, town |
+| `fortress` | castle, fort, tower |
+| `sacred` | temple, shrine, healing_spring, standing_stones, ley_nexus, fey_crossing, living_archive |
+| `dungeon` | cavern, ruins, ruined_tower, ruined_city, ruined_village, crystal_cavern, ancient_vault, shadow_hollow |
+| `danger` | sacrifice_site, haunted_ground, corruption_zone, nest, lair, cleared_lair, battleground |
 
-Falls back to the terrain key if no location is present.
+All remaining subtypes (`mining`, `farmland`, `camp`, `oasis`, `unexplored_poi`, `grove`, `hot_spring`, `shipwreck`, `ancient_road`, `monument`, `gem_deposit`, `golden_grove`, `iron_seep`, `pearl_shoal`, `sunken_treasury`, `herb_garden`, `fossil_bed`, `glowcap_hollow`, `master_forge`, `convergence`, `time_scar`, `wilderness`, `lair`, `cleared_lair`) fall back to the terrain key — no location sound override for these. This is explicit, not silent omission.
 
 ### Location Detail Context (priority 2)
 
@@ -154,9 +168,8 @@ Initial sound keys:
 | `click` | General UI button press |
 | `confirm` | Action confirmation |
 | `cancel` | Dismiss / cancel |
-| `intervention` | Intervention cast (replaces Web Audio synthesis) |
 
-The existing `useInterventionAudio` Web Audio synthesis can be migrated to file-based UI sounds once assets are available. Until then, both can coexist.
+**Intervention SFX migration path:** The existing `useInterventionAudio` Web Audio synthesis hook (`src/components/Game/hooks/useInterventionAudio.ts`) is called by `useAgentInteraction` at three sites. It is **not touched in this implementation** — `UiChannel` ships without an `intervention` key to avoid double-play. The `intervention.mp3` slot is reserved in the file layout as a placeholder. Migration is a separate future task: when audio assets exist, remove `useInterventionAudio`, replace the three `playCastSound()` calls in `useAgentInteraction` with `UiChannel.play('intervention')`, and delete the hook.
 
 ---
 
@@ -212,6 +225,7 @@ Each folder is the sound key. Multiple files in a folder = random selection on c
 | Failure | Fallback |
 |---------|---------|
 | Audio file missing | Channel stays silent, no error thrown |
+| Unknown terrain type in mapping | Falls back to `grassland` sound key, logs a console warning |
 | `AudioContext` unavailable | UI channel skips playback silently |
 | Autoplay policy blocked | Swallow rejection, retry on next user interaction |
 | Encounter specifies unknown track key | No override pushed, lower priority resumes |
@@ -230,7 +244,17 @@ window.__DEBUG.getAudioState()  // returns { music, background, ui } channel sta
 
 ## UI / Visibility Phase
 
-**Volume controls:** Three sliders (Music / Ambient / UI) in the existing settings/options panel, one per channel. Global mute toggle calls `AudioMaster.muteAll()` / `AudioMaster.unmuteAll()`.
+**Volume controls:** Three sliders (Music / Ambient / UI) added to `SettingsPanel`. Current `SettingsPanelProps` covers fog/debug/notification only — audio props are additive:
+
+```ts
+// New props added to SettingsPanelProps:
+musicVolume: number;        onMusicVolume: (v: number) => void;
+bgVolume: number;           onBgVolume: (v: number) => void;
+uiVolume: number;           onUiVolume: (v: number) => void;
+audioMuted: boolean;        onToggleAudioMute: () => void;
+```
+
+**State ownership:** Volume and mute state lives in the audio singletons (localStorage-backed). `GameView` reads initial values from each channel on mount into local `useState`, and on slider/toggle change updates both React state and the singleton. The panel is a controlled component — it does not own audio state.
 
 **No in-HexMap UI** — ambient sound changes are inaudible transitions, no visual indicator needed.
 
@@ -240,8 +264,8 @@ window.__DEBUG.getAudioState()  // returns { music, background, ui } channel sta
 
 | Surface | Detail |
 |---------|--------|
-| `GameView.tsx` | Mount `useAmbientContext`, pass `selectedHex` + `cameraCenter` + open panel state |
-| `HexMapV2.tsx` | Expose `cameraCenter: HexCoord` as a prop or callback (may need adding) |
+| `GameView.tsx` | Mount `useAmbientContext`. Add `useState<HexCoord>` for `cameraCenter`, initialized to `CAMERA_CONSTANTS.INITIAL_CENTER_{COL,ROW}`. Pass `selectedHex`, `cameraCenter`, and open panel state to `useAmbientContext`. Pass audio volume/mute state + handlers to `SettingsPanel`. |
+| `HexMapV2.tsx` | Add `onCameraCenterHex?: (hex: HexCoord) => void` prop. Wire into the d3-zoom `on('zoom')` handler: compute world center from transform, inverse-map to hex via `worldToHex`, debounce, call prop. |
 | `MusicChannel.ts` | Replace `themeAudio.ts`. Update all import sites (`StartPage`, `GameView`, etc.). Move `theme-drone.mp3` from `public/audio/` to `public/audio/music/` and update `MUSIC_SRC` constant. |
 | `BackgroundChannel.ts` | New. Called by `useAmbientContext`. |
 | `UiChannel.ts` | New. Called at UI interaction sites (buttons, intervention confirm). |
