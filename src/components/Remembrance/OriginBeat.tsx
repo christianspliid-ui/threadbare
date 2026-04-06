@@ -26,10 +26,12 @@ export function OriginBeat({ fragments, onSelect }: OriginBeatProps) {
   return (
     <div className="flex flex-col items-center justify-center h-screen px-8"
          style={{ background: 'var(--bg-abyss, #0a0a0f)' }}>
-      <p className="text-lg italic mb-10" style={{ color: '#9bc4a9' }}>
+      <p className="text-xl italic mb-8" style={{ color: '#9bc4a9' }}>
         You remember...
       </p>
-      <div className="flex flex-col gap-4 max-w-2xl w-full mb-8">
+
+      {/* Horizontal row of large fragment cards */}
+      <div className="flex gap-5 mb-8" style={{ width: 'min(1200px, 92vw)' }}>
         {fragments.map(fragment => (
           <FragmentCard
             key={fragment.id}
@@ -42,6 +44,8 @@ export function OriginBeat({ fragments, onSelect }: OriginBeatProps) {
           />
         ))}
       </div>
+
+      {/* Mortal naming */}
       <div
         className="max-w-md w-full transition-all duration-500"
         style={{

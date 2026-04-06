@@ -24,27 +24,30 @@ export function FragmentCard({
       type="button"
       onClick={handleClick}
       data-testid={testId}
-      className="w-full text-left transition-all duration-300 cursor-pointer group"
+      className="text-left transition-all duration-300 cursor-pointer group flex-1 min-w-0"
       style={{
         background: selected
-          ? `linear-gradient(135deg, ${accentColor}15, ${accentColor}08)`
+          ? `linear-gradient(180deg, ${accentColor}20, ${accentColor}08)`
           : 'rgba(255,255,255,0.03)',
-        border: `1px solid ${selected ? accentColor : 'rgba(255,255,255,0.08)'}`,
-        borderRadius: '12px',
-        padding: '20px',
+        border: `1px solid ${selected ? accentColor : 'rgba(255,255,255,0.1)'}`,
+        borderRadius: '16px',
+        overflow: 'hidden',
         transform: selected ? 'scale(1.02)' : 'scale(1)',
-        boxShadow: selected ? `0 0 24px ${accentColor}20` : 'none',
+        boxShadow: selected ? `0 4px 40px ${accentColor}25` : 'none',
       }}
     >
-      <div className="flex gap-4 items-start">
-        <div
-          className="w-24 h-16 rounded-lg flex-shrink-0 bg-cover bg-center"
-          style={{
-            backgroundImage: `url(${imageAssetPath})`,
-            background: `linear-gradient(135deg, ${accentColor}15, rgba(255,255,255,0.03))`,
-            border: '1px solid rgba(255,255,255,0.06)',
-          }}
-        />
+      {/* Large 16:9 image area — hero of the card */}
+      <div
+        className="w-full bg-cover bg-center"
+        style={{
+          aspectRatio: '16/9',
+          backgroundImage: `url(${imageAssetPath})`,
+          background: `linear-gradient(135deg, ${accentColor}18, rgba(255,255,255,0.04), ${accentColor}10)`,
+          borderBottom: `1px solid ${selected ? `${accentColor}40` : 'rgba(255,255,255,0.06)'}`,
+        }}
+      />
+      {/* Prose underneath the image */}
+      <div className="p-5">
         <p
           className="text-sm leading-relaxed italic"
           style={{ color: selected ? '#e8e0f0' : '#a09090' }}
@@ -54,7 +57,7 @@ export function FragmentCard({
       </div>
       {selected && (
         <div
-          className="mt-3 h-0.5 rounded-full transition-all duration-500"
+          className="h-0.5 rounded-full mx-5 mb-4 transition-all duration-500"
           style={{ backgroundColor: accentColor, opacity: 0.6 }}
         />
       )}

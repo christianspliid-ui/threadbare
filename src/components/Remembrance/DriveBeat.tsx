@@ -20,12 +20,14 @@ export function DriveBeat({ fragments, onSelect }: DriveBeatProps) {
   return (
     <div className="flex flex-col items-center justify-center h-screen px-8"
          style={{ background: 'var(--bg-abyss, #0a0a0f)' }}>
-      <p className="text-lg italic mb-10 transition-opacity duration-500"
+      <p className="text-xl italic mb-8 transition-opacity duration-500"
          style={{ color: '#c49bab', opacity: fading ? 0 : 1 }}>
         But there was something you could not release. Even now, it burns.
       </p>
-      <div className="flex flex-col gap-4 max-w-2xl w-full transition-opacity duration-500"
-           style={{ opacity: fading ? 0.3 : 1 }}>
+
+      {/* Horizontal row of large fragment cards */}
+      <div className="flex gap-5 transition-opacity duration-500"
+           style={{ opacity: fading ? 0.3 : 1, width: 'min(1200px, 92vw)' }}>
         {fragments.map(fragment => (
           <FragmentCard
             key={fragment.id}

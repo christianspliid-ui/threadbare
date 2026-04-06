@@ -18,40 +18,55 @@ export function StirringBeat({ images, onSelect }: StirringBeatProps) {
   }, [onSelect]);
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen"
+    <div className="flex flex-col items-center justify-center h-screen p-8"
          style={{ background: 'var(--bg-abyss, #0a0a0f)' }}>
-      <p className="text-lg italic mb-12 transition-opacity duration-500"
+      <p className="text-xl italic mb-8 transition-opacity duration-500"
          style={{ color: '#8a7a9a', opacity: fading ? 0 : 1 }}>
         Something stirs in the void. What echoes?
       </p>
-      <div className="grid grid-cols-2 gap-6 max-w-2xl transition-opacity duration-500"
-           style={{ opacity: fading && !selectedId ? 0 : 1 }}>
+
+      {/* Large 2x2 grid filling most of the viewport */}
+      <div className="grid grid-cols-2 gap-4 transition-opacity duration-500"
+           style={{
+             opacity: fading && !selectedId ? 0 : 1,
+             width: 'min(1100px, 90vw)',
+             height: 'min(600px, 65vh)',
+           }}>
         {images.map(image => {
           const placeholder = STIRRING_PLACEHOLDERS[image.id];
+          const isSelected = selectedId === image.id;
+          const isOther = selectedId !== null && !isSelected;
           return (
             <button
               key={image.id}
               type="button"
               onClick={() => handleSelect(image)}
               data-testid={`stirring-${image.id}`}
-              className="relative overflow-hidden rounded-xl cursor-pointer transition-all duration-500"
+              className="relative overflow-hidden rounded-2xl cursor-pointer transition-all duration-500"
               style={{
-                aspectRatio: '16/10',
-                opacity: selectedId && selectedId !== image.id ? 0 : 1,
-                transform: selectedId === image.id ? 'scale(1.05)' : 'scale(1)',
-                boxShadow: selectedId === image.id ? '0 0 40px rgba(200,180,240,0.2)' : 'none',
-                border: '1px solid rgba(255,255,255,0.08)',
+                opacity: isOther ? 0 : 1,
+                transform: isSelected ? 'scale(1.03)' : 'scale(1)',
+                boxShadow: isSelected ? '0 0 60px rgba(200,180,240,0.25)' : '0 0 0 rgba(0,0,0,0)',
+                border: isSelected
+                  ? '2px solid rgba(200,180,240,0.4)'
+                  : '1px solid rgba(255,255,255,0.1)',
               }}
             >
               <div
-                className="w-full h-full bg-cover bg-center flex items-center justify-center"
+                className="w-full h-full bg-cover bg-center flex items-end justify-center"
                 style={{
                   backgroundImage: `url(${image.imageAssetPath})`,
                   background: placeholder?.gradient ?? 'rgba(255,255,255,0.05)',
                 }}
               >
                 {placeholder && (
-                  <span className="text-sm italic" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                  <span
+                    className="text-base italic pb-4"
+                    style={{
+                      color: 'rgba(255,255,255,0.3)',
+                      textShadow: '0 2px 8px rgba(0,0,0,0.5)',
+                    }}
+                  >
                     {placeholder.label}
                   </span>
                 )}
