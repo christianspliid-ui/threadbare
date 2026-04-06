@@ -11,11 +11,11 @@ import type { ArmyRenderData } from './scene/ArmyLayer';
 import type { BattleIndicatorData } from './scene/BattleIndicatorLayer';
 import { computeVisibilityFromSources, FOG_CONSTANTS } from './scene/FogCulling';
 
-// Read ?fog URL param once (stable — URL doesn't change during session)
+// Fog is ON by default. Use ?nofog to disable for testing.
 // NFP #1: fogEnabled is derived from URL, not a magic boolean in the component
 const fogEnabled = typeof window !== 'undefined'
-  ? new URLSearchParams(window.location.search).has('fog')
-  : false;
+  ? !new URLSearchParams(window.location.search).has('nofog')
+  : true;
 
 interface HexV2ViewProps {
   tiles: HexTile[];
