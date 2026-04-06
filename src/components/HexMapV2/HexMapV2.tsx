@@ -64,6 +64,7 @@ import type { ZoomTier } from './scene/ZoomVisibilityMatrix';
 import {
   buildOriginalColorCache,
 } from './scene/FogCulling';
+import { PARCHMENT_FOG_CONSTANTS } from './scene/fogShader';
 import { createFollowMode, updateFollowTarget } from './camera/FollowMode';
 import { WebGLDiagnostics } from './diagnostics/WebGLDiagnostics';
 import type { WebGLDiagnosticsSnapshot } from './diagnostics/WebGLDiagnostics';
@@ -357,6 +358,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const globalToMeshMapRef   = useRef<Map<number, { mesh: THREE.InstancedMesh; instanceIdx: number }> | null>(null);
     const originalColorsRef    = useRef<Float32Array | null>(null);
     const tileIndexByKeyRef    = useRef<Map<string, number> | null>(null);
+    const landFogStateRef      = useRef<Float32Array | null>(null);
+    const waterFogStateRef     = useRef<Float32Array | null>(null);
+    const parchmentTextureRef  = useRef<THREE.Texture | null>(null);
     // Visibility map ref — kept in sync with prop for use without closure staleness
     const visibilityMapRef     = useRef<VisibilityMap | undefined>(visibilityMap);
     const fogEnabledRef        = useRef<boolean>(fogEnabled);
@@ -364,6 +368,35 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     // Keep fog refs in sync with latest props
     visibilityMapRef.current = visibilityMap;
     fogEnabledRef.current    = fogEnabled;
+
+    // ── Load parchment texture for fog-of-war overlay ──
+    useEffect(() => {
+      const loader = new THREE.TextureLoader();
+      loader.load(
+        PARCHMENT_FOG_CONSTANTS.PARCHMENT_TEXTURE_PATH,
+        (tex) => {
+          tex.wrapS = THREE.RepeatWrapping;
+          tex.wrapT = THREE.RepeatWrapping;
+          tex.colorSpace = THREE.SRGBColorSpace;
+          parchmentTextureRef.current = tex;
+          // Update material uniform if meshes already created
+          const land = landMeshRef.current;
+          const water = waterMeshRef.current;
+          if (land?.material && 'uniforms' in land.material) {
+            (land.material as THREE.ShaderMaterial).uniforms.uParchmentTex.value = tex;
+            (land.material as THREE.ShaderMaterial).uniforms.uHasTexture.value = 1.0;
+          }
+          if (water?.material && 'uniforms' in water.material) {
+            (water.material as THREE.ShaderMaterial).uniforms.uParchmentTex.value = tex;
+            (water.material as THREE.ShaderMaterial).uniforms.uHasTexture.value = 1.0;
+          }
+        },
+        undefined,
+        () => {
+          console.warn('[FoW] Parchment texture failed to load, using solid fallback color');
+        },
+      );
+    }, []);
 
     // Scene group refs for fog layer culling and zoom matrix
     const signifierGroupRef  = useRef<THREE.Group | null>(null);
@@ -489,7 +522,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         // Water mesh renders as full hexagonal shapes with no stencil constraints.
         // Pass lakeIds so lake hexes (lakeId >= 0) are classified as water (Plan 03-01).
         const lakeIdsArg = lakeIdsRef.current.length > 0 ? lakeIdsRef.current : undefined;
-        const fillResult = createHexFillMesh(tiles, seed, lakeIdsArg);
+        const fillResult = createHexFillMesh(tiles, seed, lakeIdsArg, parchmentTextureRef.current);
         fillResult.landMesh.frustumCulled = true;
         fillResult.waterMesh.frustumCulled = true;
         scene.add(fillResult.landMesh);
@@ -497,6 +530,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         fillResultRef.current = fillResult;
         landMeshRef.current = fillResult.landMesh;
         waterMeshRef.current = fillResult.waterMesh;
+        landFogStateRef.current = fillResult.landFogState;
+        waterFogStateRef.current = fillResult.waterFogState;
 
         // Build global-to-mesh routing map for fog update (avoids re-scanning index arrays each fog update)
         const globalToMeshMap = new Map<number, { mesh: THREE.InstancedMesh; instanceIdx: number }>();
@@ -1042,6 +1077,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       tileIndexByKey: tileIndexByKeyRef,
       signifierGroup: signifierGroupRef,
       locationGroup: locationGroupRef,
+      landFogState: landFogStateRef,
+      waterFogState: waterFogStateRef,
     });
 
     // ── Zoom layer visibility — delegated to useZoomLayerVisibility hook ──

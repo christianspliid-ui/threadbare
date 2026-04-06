@@ -110,6 +110,8 @@ import { applyBeatChoice } from '../../engine/journeyEngine';
 import { getThreadsFrom } from '../../engine/graphQueries';
 import type { ThreadEdgeProperties } from '../../types/influence';
 import { createMeetingEncounterState, createAgentFromMeeting, isMeetTheFirstAvailable } from '../../engine/meetingEncounter';
+import { buildStubAscendantLens } from '../../types/hunger';
+import type { AscendantLens } from '../../types/hunger';
 import { useNotifications } from './hooks/useNotifications';
 import { useEncounterNotifications } from './hooks/useEncounterNotifications';
 import { toggleAttentionMode } from '../../engine/encounterVisibility';
@@ -198,7 +200,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
   // ── Debug: fog-of-war toggle ──
   const [fogDisabled, setFogDisabled] = useState(
-    () => !new URLSearchParams(window.location.search).has('fog')
+    () => new URLSearchParams(window.location.search).has('nofog')
   );
 
   // ── Debug: organic shore toggle ──
@@ -1080,6 +1082,20 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // ^ Runs once — live deps accessed via refs (graphRef) or stable callbacks (handleAgentSelect, hexMapRef)
+
+  // ── Debug bridge: fog toggle ─────────────────────────────────────────────
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerFogToggle((enabled?: boolean) => {
+      if (enabled === undefined) {
+        // Toggle: flip the current state; return new fog-enabled state (inverse of disabled)
+        setFogDisabled(prev => !prev);
+        return fogDisabled; // fogDisabled before toggle = new fog-enabled after toggle
+      }
+      setFogDisabled(!enabled);
+      return enabled;
+    });
+  }, [fogDisabled]);
 
   // ── Debug bridge: listActions / fireAction ────────────────────────────────
   // A single ref captures the mutable state slices needed by both commands.
