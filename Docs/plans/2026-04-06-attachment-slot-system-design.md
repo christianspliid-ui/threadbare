@@ -55,6 +55,15 @@ Agents can accumulate unlimited attachments with no mechanical constraint. A sin
 
 Agreements are `relates_to` edges with agreement properties, not possession nodes. They use the same cap system but have no physical representation to sell/gift. Overflow agreements must be resolved narratively (fulfil, betray, or renegotiate).
 
+**Runtime seam — agreements as mechanical participants:**
+
+Currently, agreements are excluded from the effect system: the effect walker (`effectWalker.ts`) only reads `possesses`, `bonded_to`, and `has_trait` edges. The reward pool (`rewardPool.ts`) cannot draw agreement rewards. To make agreements carry effects (compel, axiological_drift, behavior_weight, action_gate, faction_manipulate), two seams must be extended:
+
+1. **Effect walker:** Add `'relates_to'` to `ATTACHMENT_EDGE_TYPES` in `effectWalker.ts`, filtered to edges where `edge.properties.agreement` is truthy. This brings agreement effects into the same resolution pipeline as possessions and conditions.
+2. **Reward pool:** Add an agreement-drawing path to `assembleRewardPool()`. Agreement rewards create `relates_to` edges (not nodes), so the instantiation path differs from possessions/conditions. This requires a new `instantiateAgreementReward()` function.
+
+Until both seams are extended, agreement effects remain design-only. Implementation order: walker first (enables existing manually-created agreements to carry effects), then reward pool (enables encounter-granted agreements).
+
 ### Special Slot: Quest Items
 
 | Slot Tag | Base Max | Covers |
@@ -182,19 +191,59 @@ The reward system filters on three independent axes — all using the same `tags
 - **Quality tag** — how significant (#trinket, #relic, #artifact)
 - **Reach/context tags** — thematic flavor (#iron, #shadow, #combat, #wilderness...)
 
-The pool assembler doesn't distinguish possessions from conditions at the filtering level. Tags select candidates, tier curves weight them, and the node type (`artifact` vs `trait`) determines how the result is attached to the agent.
+**Preserving the category axis:** The current `RewardPoolRecipe` requires `categoryWeights: Partial<Record<AttachmentCategory, number>>` to decide whether it scans `artifact` nodes (possessions) or `trait` nodes (conditions). This category axis must be preserved — tags alone cannot distinguish "draw a curse" from "draw a cursed item."
+
+The unified model keeps `categoryWeights` as the first-class structural selector and adds `tagFilters` as a refinement within each category. The encounter template specifies *both*:
+
+```typescript
+// "Inflict a shadow curse" — category selects conditions, tags refine
+rewardPool: {
+  categoryWeights: { curse: 1.0 },
+  tagFilters: ['#shadow'],
+}
+
+// "Grant a relic weapon" — category selects possessions, tags refine
+rewardPool: {
+  categoryWeights: { possession: 1.0 },
+  tagFilters: ['#relic', '#weapon'],
+}
+
+// "Grant a mix of loot and wounds" — category weights distribute
+rewardPool: {
+  categoryWeights: { possession: 0.6, condition: 0.3, curse: 0.1 },
+  tagFilters: ['#combat'],
+}
+```
+
+The tag system extends filtering power without replacing the category axis. `categoryWeights` answers "possession or condition?" — `tagFilters` answers "which kind?"
 
 ---
 
 ## Slot Expansion via Effects
 
-Attachments can grant bonus capacity in another slot using the existing `passive` effect type with a `slot_bonus:<slotTag>` modifier key.
+Slot expansion uses the existing `modify_rules` effect (type 27) with a new `RuleOverrideKey`. The `PassiveEffect` type only supports `{ reach, value }` — it cannot carry slot bonuses. `modify_rules` already has a flexible `value: number | boolean | string` field and is resolved by `getActiveRuleOverride()` in `effectQueries.ts`.
+
+**Implementation:** Add `'slot_cap_bonus'` to `RuleOverrideKey` in `src/types/effects.ts`. The slot cap resolver reads it via the existing `getActiveRuleOverride()` query, keyed per slot tag using a convention: `rule: 'slot_cap_bonus'` with `scope` carrying the target slot tag.
+
+However, `modify_rules` scope is `EffectScope` (self/target/hex/region/etc.), not a slot tag. Two options:
+
+**Option A — Dedicated effect type (recommended):** Add a new `SlotBonusEffect` (type 39):
+```typescript
+export interface SlotBonusEffect {
+  readonly type: 'slot_bonus';
+  readonly slotTag: string;    // target slot to expand
+  readonly bonus: number;      // additional slots granted
+}
+```
+Simple, typed, no overloading. The slot cap resolver is the only consumer.
+
+**Option B — Reuse `modify_rules` with convention:** Use rule `'slot_cap_bonus'` and encode the target slot in a string value field. Works but stringly-typed.
 
 ```typescript
-// Bag of Holding — a utility item that grants +2 consumable slots
+// Option A — Bag of Holding as a utility item that grants +2 consumable slots
 {
   slotTag: 'utility',
-  effects: [{ type: 'passive', modifiers: { 'slot_bonus:consumable': 2 } }]
+  effects: [{ type: 'slot_bonus', slotTag: 'consumable', bonus: 2 }]
 }
 ```
 
@@ -211,7 +260,7 @@ Attachments can grant bonus capacity in another slot using the existing `passive
 
 The trade-off is real: a utility slot spent on a Bag of Holding is a utility slot not spent on a lantern or lockpicks.
 
-**Resolution:** The effective cap for a slot is `BASE_MAX + sum(slot_bonus:<slotTag> from all active effects)`.
+**Resolution:** The effective cap for a slot is `BASE_MAX + sum(slot_bonus effects targeting that slotTag from all active attachments)`.
 
 ---
 
@@ -221,9 +270,11 @@ When an agent gains an attachment that exceeds the effective cap for its slot:
 
 ### Phase 1: Deactivation
 The lowest-priority item in the overflowing slot becomes **inactive**:
-- Its effects stop resolving (not counted by `resolveEffectModifiers`)
-- It remains in the agent's inventory but is flagged `active: false`
+- A property `active: false` is set on the `possesses`/`bonded_to`/`has_trait` edge
+- **The suppression seam lives in `effectWalker.ts`**, not individual resolvers. `collectAttachmentEffects()` must skip edges where `edge.properties.active === false`. This ensures ALL effect consumers (resolver, queries, events, tick effects) respect deactivation uniformly — no leaking of behavior_weight, social_modifier, action_gate, etc. from inactive items.
 - Priority is determined by: tier (lower first), then acquisition tick (older first)
+
+**Slot-expanding cascade rule:** When deactivating an item causes a slot-expanding item to become inactive (shrinking another slot's cap), the system must re-evaluate caps in a fixed-point loop. Cap: `MAX_DEACTIVATION_CASCADES = 3` — if not stable after 3 passes, emit a warning trace and stop. In practice cascades should be rare (requires a slot-expanding item to itself be in an overflowing slot).
 
 ### Phase 2: Disposal Motivation
 Inactive items create a **disposal motivation** in the agent's Maslow pipeline:
@@ -331,55 +382,69 @@ export const BLESSING_FADE_OLDEST_FIRST = true;
 export const BESTOWED_REJECTION_THRESHOLD = 3; // === cap + 1
 
 // --- Slot Expansion ---
-export const SLOT_BONUS_MODIFIER_PREFIX = 'slot_bonus:';
 export const MAX_SLOT_BONUS_PER_ITEM = 3; // no single item grants more than +3 to any slot
+export const MAX_DEACTIVATION_CASCADES = 3; // fixed-point loop cap for cascade deactivation
 ```
 
 ---
 
 ## Tracing
 
+All traces extend `TraceBase` (`id`, `tick`, `timestamp`, `category`, `agentId?`, `summary`) from `src/types/trace.ts`. New categories must be registered in `TraceCategory` and `TRACE_CATEGORIES` before use.
+
+**New TraceCategory values to register:** `'slot_overflow'`, `'slot_disposal'`, `'condition_overflow'`, `'slot_expansion'`
+
 ```typescript
-interface SlotOverflowTrace {
-  type: 'slot_overflow';
-  agentId: string;
-  slotTag: string;
-  currentCount: number;
-  effectiveCap: number;
-  deactivatedItemId: string;
-  deactivatedItemName: string;
+// All extend TraceBase. Fields below are the category-specific payload.
+
+// category: 'slot_overflow'
+// summary: "Deactivated {itemName} — {slotTag} slots full ({currentCount}/{effectiveCap})"
+{
+  category: 'slot_overflow',
+  agentId: string,
+  slotTag: string,
+  currentCount: number,
+  effectiveCap: number,
+  deactivatedItemId: string,
+  deactivatedItemName: string,
 }
 
-interface SlotDisposalTrace {
-  type: 'slot_disposal';
-  agentId: string;
-  slotTag: string;
-  itemId: string;
-  itemName: string;
-  method: 'sell' | 'gift' | 'offer' | 'drop';
-  recipientId?: string; // for gift
-  reputationDelta?: number;
-  wealthDelta?: number;
+// category: 'slot_disposal'
+// summary: "{agentName} {method} {itemName} at {locationName}"
+{
+  category: 'slot_disposal',
+  agentId: string,
+  slotTag: string,
+  itemId: string,
+  itemName: string,
+  method: 'sell' | 'gift' | 'offer' | 'drop',
+  recipientId?: string,
+  reputationDelta?: number,
+  wealthDelta?: number,
 }
 
-interface ConditionOverflowTrace {
-  type: 'condition_overflow';
-  agentId: string;
-  conditionSlot: string;
-  currentCount: number;
-  cap: number;
-  overflowEvent: 'incapacitation_check' | 'mortality_check' | 'corruption_check' | 'transcendence_check' | 'rejection';
-  outcome: 'passed' | 'failed';
-  consequenceTraitId?: string; // scar, drift, etc.
+// category: 'condition_overflow'
+// summary: "{agentName} suffers {overflowEvent} — {conditionSlot} at {currentCount}/{cap}"
+{
+  category: 'condition_overflow',
+  agentId: string,
+  conditionSlot: string,
+  currentCount: number,
+  cap: number,
+  overflowEvent: 'incapacitation_check' | 'mortality_check' | 'corruption_check' | 'transcendence_check' | 'rejection',
+  outcome: 'passed' | 'failed',
+  consequenceTraitId?: string,
 }
 
-interface SlotExpansionTrace {
-  type: 'slot_expansion';
-  agentId: string;
-  sourceItemId: string;
-  targetSlot: string;
-  bonusSlots: number;
-  newEffectiveCap: number;
+// category: 'slot_expansion'
+// summary: "{itemName} expands {targetSlot} cap to {newEffectiveCap}"
+{
+  category: 'slot_expansion',
+  agentId: string,
+  sourceItemId: string,
+  targetSlot: string,
+  bonusSlots: number,
+  newEffectiveCap: number,
 }
 ```
 
