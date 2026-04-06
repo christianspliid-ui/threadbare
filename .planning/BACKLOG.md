@@ -8,7 +8,42 @@
 > Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
 > Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-110**.
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-114**.
+
+---
+
+## 📐▶ TB-110 · Attention Tier Model — Phase 6 UI (2026-04-06)
+
+**Milestone: Attention & Notification Tiers**
+
+UI integration for the three-tier attention model engine foundation. Thread tug visuals on HexMapV2 (reach-coloured vibrating thread lines, click-to-attend), ambient activity icons (per-reach micro-icons on agent dots), story beat modal (dramatic prose + multi-phase choices), gathering storm indicator (hex glow for queued beats), Read the Threads panel (divine vision digest grouped by reach), attention overload visuals (thread network aesthetic degradation), agent character sheet enhancements (recent activity log, capability growth indicators, new badges, last-viewed tracking), dormant/reactivate divine action templates, thread management panel.
+
+**Depends on:** Attention Tier Engine Foundation (✅ TB-110 prerequisite work shipped 2026-04-06)
+**Design:** `Docs/plans/2026-04-05-attention-tier-model-design.md` Sections 3 (thread tugs), 5 (Read the Threads), 6 (ambient icons), 7 (character sheet)
+
+---
+
+## 📋 TB-111 · Curator Metadata Wiring (2026-04-06)
+
+Wire real encounter metadata into curator scoring factors. Currently `isChainStage`, `isFinalChainStage`, `factionThreadCount`, `matchesAmbition` are stubbed. Requires encounter chain tracking, faction thread counting, and ambition-encounter alignment detection.
+
+**Depends on:** Attention Tier Engine Foundation (✅)
+
+---
+
+## 📋 TB-112 · Wound Detection for Mid-Encounter Promotion (2026-04-06)
+
+Add `woundApplied` flag to encounter step outcomes so mid-encounter promotion can precisely detect wounds instead of using `!result.success` as proxy.
+
+**Depends on:** Attention Tier Engine Foundation (✅)
+
+---
+
+## 📋 TB-113 · Siege Template Attention Tier Classification (2026-04-06)
+
+`siege-encounter-content.ts` uses `SiegeSpotlightTemplate`/`SiegeRegionalTemplate` (not `EncounterTemplate`), so `intrinsicTier` wasn't added. Either add the field to siege types or create a mapping layer.
+
+**Depends on:** Attention Tier Engine Foundation (✅)
 
 ---
 

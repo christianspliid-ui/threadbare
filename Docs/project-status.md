@@ -4,7 +4,9 @@
 
 ## Current Focus
 
-**Ascendant Remembrance Flow — V1 Shipped.** Replaced the 3-screen creation flow with a narrative remembrance experience. Players recover mortal memories (Stirring → Origin → Drive), then collide with divine power (Transformation → Reveal). Dual naming (mortal + divine). Cosmology derived from identity. Starter content: 4 stirring images, 6 origins, 6 drives, 4 hungers. Old flow available via "Advanced World Setup". Design: `Docs/plans/2026-04-06-ascendant-remembrance-flow-design.md`.
+**Three-Tier Attention Model — Engine Foundation Shipped.** Background/shaping/story_beat encounter classification with full pipeline: tier resolution at encounter creation, effectiveTier-driven notification routing, digest buffer for background encounters, curator scoring (7 weighted factors), pacing governor for story beats, attention pool (regen/spend/visual states), dormant court position, 5 CLI debug commands, 42 tunable constants. ~500 templates classified. Code review fixes applied (phase ordering, notification routing, pacing wiring). **Next:** Phase 6 UI (thread tug visuals, story beat modal, Read the Threads panel, ambient activity icons, agent character sheet).
+
+Design: `Docs/plans/2026-04-05-attention-tier-model-design.md`. Plan: `Docs/plans/2026-04-05-attention-tier-implementation-plan.md`.
 
 ## Milestone Status
 
@@ -16,6 +18,14 @@
 
 ## Recent Completions (2026-04-06)
 
+- **Three-Tier Attention Model — Engine Foundation:**
+  - 8 new engine modules, 4 new type files, ~500 templates classified
+  - Tier resolution (resolveEffectiveTier matrix), mid-encounter promotion, notable detection
+  - Digest buffer, attention pool, curator (7-factor scoring), pacing governor (priority queue)
+  - phaseAttention wired into orchestrator, effectiveTier routing in notifications, dormant handling
+  - Code review: all P1/P2/P3 findings fixed (phase ordering, notification routing, pacing wiring, rarity mapping, tug pipeline, trace types)
+  - 93+ new tests (unit) + integration tests
+
 - **Ascendant Remembrance Flow V1:**
   - Narrative creation: Stirring (abstract images) → Origin (mortal memory + name) → Drive (obsession) → Transformation (hunger + court + sphere reveal) → Reveal (identity + divine name)
   - Filtering funnel engine with seeded PRNG, cosmology derivation, personality biasing
@@ -24,15 +34,7 @@
 
 ## Previous Completions (2026-04-05)
 
-- **Attention Tier Classification — Task 10:**
-  - Added `intrinsicTier` field to every `UnifiedActionTemplate` and `EncounterTemplate` in data files and test factories
-  - Classification rules: rarityTier 1→background, 2→shaping, 3/4→story_beat; CRUD override forces background on any single-step template
-  - Fixed `unifiedToEncounterTemplate()` to pass through `intrinsicTier`, `reachPrimary`, `reachSecondary`, and `motivations`
-  - Fixed `migrateActionTemplate()` and all 16 NPC action templates (added missing `rarityTier`/`intrinsicTier`)
-  - 24 files changed; tsc clean, all modified-file tests pass
-
 - **Effect Primitive Architecture — Phase 5:** All tick handlers + transform + modify_rules wired. See project-history.md.
-
 - **Coat of Arms & Icon System:** Procedural SVG heraldry, SphereIcon, ReachIcon, 82 tests. See project-history.md.
 
 ## Earlier (see project-history.md)
