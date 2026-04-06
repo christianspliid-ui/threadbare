@@ -60,9 +60,9 @@ const OVERLAY_FRAGMENT_SHADER = /* glsl */ `
 
     if (uHasTexture > 0.5) {
       gl_FragColor = texture2D(uParchmentTex, vUv);
-      gl_FragColor.a = vAlpha;
+      gl_FragColor.a = 1.0;  // Fully opaque — occlude everything behind
     } else {
-      gl_FragColor = vec4(uParchmentFallback, vAlpha);
+      gl_FragColor = vec4(uParchmentFallback, 1.0);
     }
   }
 `;
@@ -104,8 +104,9 @@ export function createFogOverlayMesh(
     },
     vertexShader: OVERLAY_VERTEX_SHADER,
     fragmentShader: OVERLAY_FRAGMENT_SHADER,
-    transparent: true,
-    depthWrite: false,   // Don't write depth — overlay is visual-only
+    transparent: true,    // Needed for fragment discard on remembered/visible hexes
+    depthWrite: true,     // Write depth for opaque parchment — occlude objects behind overlay
+    depthTest: true,
     side: THREE.FrontSide,
   });
 
