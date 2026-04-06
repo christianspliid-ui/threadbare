@@ -1882,7 +1882,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (!hasAgents) return;
 
     // All conditions met — auto-trigger once
-    setGameState(prev => ({ ...prev, meetTheFirstAutoTriggered: true }));
+    // Mutate in place to avoid spreading GameState (which strips WorldGraph prototype)
+    gameState.meetTheFirstAutoTriggered = true;
     handleStartMeeting(locationId);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameState.tick, meetTheFirstAvailable, meetingState, gameState.meetTheFirstAutoTriggered]);
