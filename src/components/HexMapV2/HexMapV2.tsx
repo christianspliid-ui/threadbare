@@ -13,6 +13,7 @@ import type { RegionData } from '../../engine/regionTypes';
 import type { VisibilityMap } from '../../types/visibility';
 import { hexKey } from '../../lib/hexKey';
 import { hexToWorld, worldToHex } from '../../lib/worldPosition';
+import { AMBIENT_CONTEXT_DEBOUNCE_MS } from '../../audio/audioConstants';
 import { createHexScene, resizeHexScene } from './scene/HexSceneSetup';
 import { createHexFillMesh, HEX_CONSTANTS } from './scene/HexFillMesh';
 import type { HexFillMeshResult } from './scene/HexFillMesh';
@@ -287,6 +288,8 @@ export interface HexMapV2Props {
   overlayOpen?: boolean;
   /** Target hex for the ascendant's active move order. Shows a pulsing X destination marker. */
   moveDestinationHex?: HexCoord | null;
+  /** Called (debounced) when the camera center hex changes — used by ambient audio context. */
+  onCameraCenterHex?: (hex: HexCoord) => void;
 }
 
 export interface HexMapV2Handle {
@@ -408,7 +411,7 @@ function createHoverOverlayMesh(size: number): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, battles, threadLines, activityIcons, activeTugs, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, moveDestinationHex },
+    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, battles, threadLines, activityIcons, activeTugs, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, moveDestinationHex, onCameraCenterHex },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -440,6 +443,12 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     // Attention ratio ref — kept in sync with prop, read by the animation loop.
     const attentionRatioRef = useRef<number>(attentionRatio);
     attentionRatioRef.current = attentionRatio;
+
+    // Ambient audio callback ref — kept in sync with prop so zoom handler always calls latest version
+    const onCameraCenterHexRef = useRef<((hex: HexCoord) => void) | undefined>(undefined);
+    onCameraCenterHexRef.current = onCameraCenterHex;
+    // Debounce timer for camera-center ambient updates
+    const cameraCenterDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Particle burst ref — active bursts ticked each frame, consumed by tickParticleBursts
     const activeBurstsRef = useRef<ActiveBurst[]>([]);
@@ -898,6 +907,24 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           }
         });
 
+        // Notify ambient audio system when camera center hex changes (debounced)
+        zoom.on('zoom.ambient', (event: d3.D3ZoomEvent<HTMLCanvasElement, unknown>) => {
+          if (!onCameraCenterHexRef.current) return;
+          const transform = event.transform;
+          const canvas = canvasRef.current;
+          if (!canvas) return;
+          const centerX = (canvas.width / 2 - transform.x) / transform.k;
+          const centerY = (canvas.height / 2 - transform.y) / transform.k;
+          const hex = worldToHex(centerX, centerY, HEX_CONSTANTS.HEX_SIZE);
+          if (cameraCenterDebounceRef.current !== null) {
+            clearTimeout(cameraCenterDebounceRef.current);
+          }
+          cameraCenterDebounceRef.current = setTimeout(() => {
+            onCameraCenterHexRef.current?.(hex);
+            cameraCenterDebounceRef.current = null;
+          }, AMBIENT_CONTEXT_DEBOUNCE_MS);
+        });
+
         // Update selection ring when selectedHex prop changes
         // This runs inside the effect on mount; prop changes are handled separately below.
         const updateSelectionRing = (hex: HexCoord | null) => {
@@ -1023,6 +1050,11 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           // Remove zoom listeners (Plan 04-03, Plan 07-03)
           zoom.on('zoom.labels', null);
           zoom.on('zoom.follow', null);
+          zoom.on('zoom.ambient', null);
+          if (cameraCenterDebounceRef.current !== null) {
+            clearTimeout(cameraCenterDebounceRef.current);
+            cameraCenterDebounceRef.current = null;
+          }
           destroy();
           zoomRef.current = null;
           destroyZoomRef.current = null;
