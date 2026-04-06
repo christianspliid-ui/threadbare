@@ -661,11 +661,13 @@ export function useAgentInteraction({
           ascNode.properties.attentionPool = currentPool - cost;
         }
 
-        // Mark tug as attended in place
-        (activeTug as { attended: boolean }).attended = true;
-
-        // Trigger re-render so attention pool UI reflects the spend
-        setGameState(s => ({ ...s }));
+        // Mark tug as attended via new array so useMemo deps detect the change
+        setGameState(s => ({
+          ...s,
+          activeThreadTugs: (s.activeThreadTugs ?? []).map(t =>
+            t === activeTug ? { ...t, attended: true } : t,
+          ),
+        }));
       }
     }
     setSelectedThreadNode({ nodeId, category });

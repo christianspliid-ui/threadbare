@@ -342,7 +342,9 @@ export function phaseEncounterVisibility(
     // Without an attended tug the encounter auto-resolves silently into the digest buffer.
     if (epTier === 'shaping') {
       const tugs = state.activeThreadTugs ?? [];
-      const attendedTug = tugs.find(t => t.agentId === ep.actorId && t.attended);
+      const attendedTug = tugs.find(
+        t => t.agentId === ep.actorId && t.encounterId === ep.encounterId && t.attended,
+      );
       if (!attendedTug) continue;
     }
 
@@ -413,7 +415,9 @@ export function phaseEncounterVisibility(
     // Without an attended tug the encounter auto-resolves silently into the digest buffer.
     if (actionTier === 'shaping') {
       const tugs = state.activeThreadTugs ?? [];
-      const attendedTug = tugs.find(t => t.agentId === action.actorId && t.attended);
+      const attendedTug = tugs.find(
+        t => t.agentId === action.actorId && (t.actionId === action.actionId || t.encounterId === action.templateId) && t.attended,
+      );
       if (!attendedTug) continue;
     }
 

@@ -169,6 +169,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
   // ── Read the Threads panel state ──
   const [readThreadsOpen, setReadThreadsOpen] = useState(false);
+  const [lastReadThreadsTick, setLastReadThreadsTick] = useState(0);
 
   // ── Last viewed tick tracking (drives "new" badges on digest entries) ──
   const { markViewed, getLastViewedTick } = useLastViewedTick();
@@ -2637,10 +2638,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         digestBuffer={gameState.digestBuffer ?? []}
         currentTick={gameState.tick}
         essenceAvailable={SPHERE_NAMES.reduce((sum, s) => sum + gameState.essencePool[s], 0)}
+        lastReadTick={lastReadThreadsTick}
+        attentionPool={attentionPool}
+        attentionCapacity={attentionCapacity}
         onSpendEssence={(cost) => {
+          setLastReadThreadsTick(gameState.tick);
           setGameState(prev => {
             const newPool = { ...prev.essencePool };
-            // Deduct cost from available spheres — primary sphere first, then secondary, then rest
             let remaining = cost;
             const sphereOrder = [
               archetype.sphereAlignment.primary,
