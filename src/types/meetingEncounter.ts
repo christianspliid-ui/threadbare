@@ -102,14 +102,14 @@ export interface MeetingGraphAddition {
 // ─── Meeting Encounter State Machine ──────────────────────────────
 
 /** The four steps of the meeting encounter */
-export type MeetingStep = 'seeking_threads' | 'defining_moment' | 'the_spark' | 'confirmation';
+export type MeetingStep = 'sensing' | 'testing' | 'spark' | 'bond';
 
 /** Ordered step sequence */
 export const MEETING_STEP_ORDER: MeetingStep[] = [
-  'seeking_threads',
-  'defining_moment',
-  'the_spark',
-  'confirmation',
+  'sensing',
+  'testing',
+  'spark',
+  'bond',
 ];
 
 /**
@@ -131,12 +131,8 @@ export interface MeetingEncounterState {
   status: 'active' | 'completed' | 'cancelled';
 
   // ── Step 1 results ──
-  /** Player's chosen primary reach intent */
-  intentPrimaryReach?: ReachDomain;
-  /** Player's chosen secondary reach */
-  intentSecondaryReach?: ReachDomain;
-  /** Player's chosen sphere/domain */
-  intentSphere?: SphereName;
+  /** Beat 1: narrative candidates (replaces intent-based candidates). */
+  narrativeCandidates?: NarrativeCandidate[];
   /** Generated candidates (3) */
   candidates?: MeetingCandidate[];
   /** Index of the selected candidate (0-2) */
@@ -153,15 +149,13 @@ export interface MeetingEncounterState {
   dilemmaChoiceRecords?: DilemmaChoiceRecord[];
 
   // ── Step 3 results ──
-  /** God-given trait selected by the player */
-  sparkTraitId?: string;
-  /** Investment choice ID from Step 3 */
-  investmentChoiceId?: string;
+  /** Beat 3: available spark visions for the selected candidate. */
+  sparkVisions?: SparkVision[];
+  /** Beat 3: player's chosen spark vision ID. */
+  sparkVisionId?: string;
 
   // ── Step 4 results ──
-  /** Whether the player chose to shape or accept */
-  shapePath?: 'shape' | 'surprise';
-  /** Player-edited name (only if shapePath = 'shape') */
+  /** Player-edited name (only if bond path) */
   editedName?: string;
 
   // ── Accumulated state ──
@@ -206,6 +200,68 @@ export interface MeetingCandidate {
   cooperationStrategy: CooperationStrategy;
   /** PRNG seed for appearance generation */
   appearanceSeed: number;
+}
+
+/** A candidate presented as a narrative vignette — no stats visible to the player. */
+export interface NarrativeCandidate {
+  /** Temp ID for this candidate (not yet a graph node). */
+  tempId: string;
+  /** Generated name. */
+  name: string;
+  /** Archetype from ARCHETYPE_NAME_MAP. */
+  archetypeId: string;
+  /** Culture from meeting location. */
+  cultureId: string;
+  /** Primary reach — derived from vignette archetype, never shown. */
+  primaryReach: ReachDomain;
+  /** Secondary reach — derived from vignette archetype, never shown. */
+  secondaryReach: ReachDomain;
+  /** Sphere alignment. */
+  sphere: SphereName;
+  /** Rich prose vignette — the player sees only this. */
+  vignetteText: string;
+  /** Narrative epithet (e.g. "merchant's daughter, sharp-tongued, restless"). */
+  epithet: string;
+  /** Path to 4:3 character portrait. */
+  imageAssetPath: string;
+  /** Gradient fallback when image is missing. */
+  placeholderGradient: string;
+  /** Hidden axiological profile. */
+  axiologicalSeed: AxiologicalProfile;
+  /** Hidden reach capabilities (0-1 range). */
+  reachCapabilities: Record<ReachDomain, number>;
+  /** Hidden cooperation strategy. */
+  cooperationStrategy: CooperationStrategy;
+  /** Appearance PRNG seed. */
+  appearanceSeed: number;
+}
+
+/** A vision of the mortal's possible future — presented in Beat 3 (Spark). */
+export interface SparkVision {
+  /** Unique vision ID (e.g. 'vision.gold_eye.explorer'). */
+  id: string;
+  /** Player-facing narrative prose. */
+  prose: string;
+  /** Path to 4:3 future portrait. */
+  portraitAssetPath: string;
+  /** Path to 16:9 scene backdrop. */
+  sceneAssetPath: string;
+  /** Gradient fallback for portrait. */
+  portraitPlaceholder: string;
+  /** Gradient fallback for scene. */
+  scenePlaceholder: string;
+  /** Which reach gets boosted. */
+  reachInvestment: ReachDomain;
+  /** Boost amount (added to reach capability). */
+  investmentAmount: number;
+  /** Trait seeds granted. */
+  traitGrants: string[];
+  /** Optional starter attachment template ID. */
+  starterAttachment?: string;
+  /** Which primary reach this vision requires on the candidate. */
+  requiredPrimaryReach?: ReachDomain;
+  /** Which secondary reach this vision pairs with (optional filter). */
+  requiredSecondaryReach?: ReachDomain;
 }
 
 /**
@@ -349,34 +405,14 @@ export interface DilemmaChoiceRecord {
  * Stored on the thread edge as `meetingChoiceRecord`.
  */
 export interface MeetingChoiceRecord {
-  /** Tick when the meeting encounter completed */
   encounterTick: number;
-  /** Location where the meeting took place */
   locationId: string;
-  /** Player's primary reach intent */
-  intentPrimaryReach: ReachDomain;
-  /** Player's secondary reach intent */
-  intentSecondaryReach: ReachDomain;
-  /** Player's sphere intent */
-  intentSphere: SphereName;
-  /** Which candidate was selected (0-based index) */
   candidateIndex: number;
-  /** Archetype ID of the selected candidate */
   archetypeId: string;
-  /** All dilemma choices with founding tags */
   dilemmaChoices: DilemmaChoiceRecord[];
-  /** Step 3 investment choice ID */
-  investmentChoice: string;
-  /** Step 3 god-given trait ID */
-  sparkTraitId: string;
-  /** Step 4: shape or surprise */
-  shapePath: 'shape' | 'surprise';
-  /** Ascendant's sphere at time of meeting */
+  sparkVisionId: string;
   ascendantSphere: SphereName;
-  /** All accumulated founding gate tags */
   foundingGateTags: string[];
-  /** Flavor choices */
-  flavorChoices?: FlavorChoices;
 }
 
 // ─── Spark Investment Options (Step 3) ────────────────────────────
