@@ -23,6 +23,7 @@ Agents can accumulate unlimited attachments with no mechanical constraint. A sin
 4. **Slot-expanding items are valid.** An attachment can grant bonus capacity in another slot, spending its own slot to do so.
 5. **Any effect type can appear on any slot.** The slot/effect mapping in the assessment is a *tendency*, not a constraint. A weapon can have `axiological_drift`. A ring can have `spawn`. Content authors have full freedom.
 6. **Quest items are pinned.** They occupy their own slot, are never auto-sold, and are only lost through specific narrative outcomes.
+7. **One unified tag filter for all rewards — possessions and conditions alike.** The reward pool recipe uses `tags[]` to filter both items and conditions from the same catalog. `{ tags: ['#curse', '#shadow'] }` draws a shadow-aligned curse; `{ tags: ['#relic', '#weapon'] }` draws a storied blade. The system doesn't distinguish between "gain an item" and "suffer a condition" at the filtering level — tags select, tier curves weight, and the node type determines how it's attached.
 
 ---
 
@@ -127,11 +128,61 @@ rewardPool: { tags: ['#relic', '#weapon', '#iron', '#cursed'] }
 rewardPool: { tags: ['#trinket'] }
 ```
 
-The reward system filters on two independent axes:
-- **Slot tag** — what kind of thing (weapon, ring, consumable...)
-- **Quality tag** — how significant (#trinket, #relic, #artifact)
+### Condition Tags in Reward Recipes
 
-Content authors tag templates in the catalog; encounter templates request by tag; the reward pool assembler matches.
+The same `tags[]` filter works for negative outcomes — conditions are tagged in the catalog alongside possessions. When an encounter says "inflict a curse," it doesn't hardcode which one:
+
+```typescript
+// Failed a duel — suffer a combat wound
+rewardPool: { tags: ['#wound', '#combat'] }
+
+// Critical failure exploring ruins — get cursed
+rewardPool: { tags: ['#curse', '#shadow'] }
+
+// Swamp exploration failure — contract a disease
+rewardPool: { tags: ['#disease', '#flesh', '#wilderness'] }
+
+// Shrine blessing on success
+rewardPool: { tags: ['#blessing', '#star'] }
+
+// Eldritch horror encounter — madness
+rewardPool: { tags: ['#curse', '#veil', '#madness'] }
+
+// Betrayal consequence — social/psychological wound
+rewardPool: { tags: ['#wound', '#heart'] }
+
+// Divine overreach — branded by the gods
+rewardPool: { tags: ['#brand', '#star', '#divine'] }
+```
+
+**Condition tag vocabulary** (content-extensible, not exhaustive):
+
+| Tag | Category | Examples |
+|-----|----------|---------|
+| `#wound` | Physical injury | Fractured Arm, Deep Stab Wound, Spine Wound |
+| `#disease` | Illness/infection | Road Fever, Gut Rot, Greyscale, The Wasting |
+| `#curse` | Supernatural affliction | Ill Luck, Tonguebound, Void-Touched |
+| `#blessing` | Divine/supernatural boon | Dawn-Kissed, Saint's Ward, The Anointing |
+| `#madness` | Psychological/cognitive | Paranoia, Obsession, Fractured Memory, Voices |
+| `#corruption` | Entropic/moral degradation | Creeping Darkness, Soul Taint, Entropy's Kiss |
+| `#exhaustion` | Fatigue/depletion | Road-Weary, Essence-Drained, Overextended |
+| `#combat` | Context: from fighting | Combat wounds, battle curses |
+| `#wilderness` | Context: from nature | Diseases, beast wounds, exposure |
+| `#arcane` | Context: from magic | Spell backlash, ritual scars, veil sickness |
+| `#divine` | Context: from gods | Divine brands, blessings, holy burns |
+| `#social` | Context: from betrayal/loss | Heartbreak, broken trust, shame |
+
+Tags combine freely: a `#wound #arcane #veil` is a magical injury from spell backlash. A `#curse #divine #star` is a god's punishment. A `#disease #corruption #entropy` is an entropic plague.
+
+### Unified Filtering Model
+
+The reward system filters on three independent axes — all using the same `tags[]` mechanism:
+
+- **Slot/condition tag** — what kind of thing (weapon, ring, wound, curse...)
+- **Quality tag** — how significant (#trinket, #relic, #artifact)
+- **Reach/context tags** — thematic flavor (#iron, #shadow, #combat, #wilderness...)
+
+The pool assembler doesn't distinguish possessions from conditions at the filtering level. Tags select candidates, tier curves weight them, and the node type (`artifact` vs `trait`) determines how the result is attached to the agent.
 
 ---
 
