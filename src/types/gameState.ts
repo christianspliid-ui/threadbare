@@ -182,8 +182,9 @@ export interface GameState {
   // Control effects — sustained divine effects with per-tick costs, ticked by phaseControlEffects
   controlEffects?: ControlEffect[];
 
-  // Generic effect system runtime state — cooldowns, stacks, decay values per attachment
-  // Keyed by attachment node ID. Ticked by phaseEffectTick.
+  // Generic effect system runtime state — cooldowns, stacks, decay values per attachment.
+  // Keyed by attachment identity (node ID for possessions/traits, edge ID for agreements).
+  // Ticked by phaseEffectTick.
   effectStates?: Map<string, import('./effects').EffectRuntimeState>;
 
   // Pending encounter seeds — planted by aftermath reactions, consumed by evaluateEncounterSeeds phase

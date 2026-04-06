@@ -35,7 +35,11 @@ export type TraceCategory =
   | 'encounter_promotion'
   | 'curator_decision'
   | 'attention_pool'
-  | 'story_beat_queue';
+  | 'story_beat_queue'
+  | 'slot_overflow'
+  | 'slot_disposal'
+  | 'condition_overflow'
+  | 'slot_expansion';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -60,6 +64,10 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'curator_decision',
   'attention_pool',
   'story_beat_queue',
+  'slot_overflow',
+  'slot_disposal',
+  'condition_overflow',
+  'slot_expansion',
 ];
 
 /** Base shape for all trace entries */
@@ -663,7 +671,11 @@ export type TraceEntry =
   | EncounterPromotionTrace
   | CuratorDecisionTrace
   | AttentionPoolTrace
-  | StoryBeatQueueTrace;
+  | StoryBeatQueueTrace
+  | SlotOverflowTrace
+  | SlotDisposalTrace
+  | ConditionOverflowTrace
+  | SlotExpansionTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {
@@ -686,4 +698,54 @@ export interface GraphOpExecutionTrace extends TraceBase {
     error?: string;
     createdId?: string;
   }>;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Slot System Traces
+// ═══════════════════════════════════════════════════════════════════
+
+/** Trace: possession deactivated because slot cap exceeded */
+export interface SlotOverflowTrace extends TraceBase {
+  category: 'slot_overflow';
+  agentId: string;
+  slotTag: string;
+  currentCount: number;
+  effectiveCap: number;
+  deactivatedItemId: string;
+  deactivatedItemName: string;
+}
+
+/** Trace: inactive overflow item disposed of (sold, gifted, offered, or dropped) */
+export interface SlotDisposalTrace extends TraceBase {
+  category: 'slot_disposal';
+  agentId: string;
+  slotTag: string;
+  itemId: string;
+  itemName: string;
+  method: 'sell' | 'gift' | 'offer' | 'drop';
+  recipientId?: string;
+  reputationDelta?: number;
+  wealthDelta?: number;
+}
+
+/** Trace: condition cap exceeded — overflow consequence triggered */
+export interface ConditionOverflowTrace extends TraceBase {
+  category: 'condition_overflow';
+  agentId: string;
+  conditionSlot: string;
+  currentCount: number;
+  cap: number;
+  overflowEvent: 'incapacitation_check' | 'mortality_check' | 'corruption_check' | 'transcendence_check' | 'rejection';
+  outcome: 'passed' | 'failed';
+  consequenceTraitId?: string;
+}
+
+/** Trace: slot-expanding effect changed effective cap */
+export interface SlotExpansionTrace extends TraceBase {
+  category: 'slot_expansion';
+  agentId: string;
+  sourceItemId: string;
+  targetSlot: string;
+  bonusSlots: number;
+  newEffectiveCap: number;
 }

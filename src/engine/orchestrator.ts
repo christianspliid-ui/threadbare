@@ -139,6 +139,7 @@ import { checkMidEncounterPromotion, isNotableEntry } from './attentionTier';
 import type { EncounterPromotionTrace, DigestEntry } from '../types/attention';
 import { appendDigestEntry } from './digestBuffer';
 import { phaseAttention } from './phaseAttention';
+import { phaseSlotCaps, phaseDisposalTimeout } from './phaseSlotCaps';
 
 // ─── Legacy Decision Cache (backward-compat shim for tests) ───────
 //
@@ -1679,6 +1680,12 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     phaseEventCounts['encounter_seeding'] = s.tickEvents.length - prevEventCount;
     prevEventCount = s.tickEvents.length;
   }
+
+  // Phase 2a.85: Slot Cap Enforcement — deactivate overflow possessions, handle condition overflow
+  phaseSlotCaps(s);
+  phaseDisposalTimeout(s);
+  phaseEventCounts['slot_caps'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
 
   // Phase 2a.9: Divine Premonition (Whisper) — subconscious nudges for idle threaded agents
   {

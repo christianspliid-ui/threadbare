@@ -1,5 +1,5 @@
 /**
- * Generic Effect System — type definitions for 32 composable effect primitives.
+ * Generic Effect System — type definitions for 39 composable effect primitives.
  *
  * Effects are data, not code. Content creators compose JSON effect arrays
  * on attachment templates. The engine interprets them through a small number
@@ -641,7 +641,20 @@ export interface GraphMutationEffect {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// Discriminated Union — all 38 effect types
+// SLOT SYSTEM Effect (type 39)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Type 39: Grants bonus capacity to a specific attachment slot */
+export interface SlotBonusEffect {
+  readonly type: 'slot_bonus';
+  /** Target slot tag to expand (e.g. 'consumable', 'weapon') */
+  readonly slotTag: string;
+  /** Additional slots granted (positive integer) */
+  readonly bonus: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Discriminated Union — all 39 effect types
 // ═══════════════════════════════════════════════════════════════════
 
 export type AttachmentEffect =
@@ -696,7 +709,9 @@ export type AttachmentEffect =
   | TagImmunityEffect
   | ResourceManipulateEffect
   | HexEffectEffect
-  | GraphMutationEffect;
+  | GraphMutationEffect
+  // Slot system (39)
+  | SlotBonusEffect;
 
 // ═══════════════════════════════════════════════════════════════════
 // Spell Framework

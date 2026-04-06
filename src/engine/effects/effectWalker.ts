@@ -43,6 +43,13 @@ export interface AttachedEffect {
  * Walks possesses, bonded_to, and has_trait edges, reads effects[] from
  * each target node, pairs with runtime state from the effectStates map.
  *
+ * Suppression: edges with `active === false` are skipped entirely —
+ * this is the single suppression seam for inactive/overflowed attachments.
+ *
+ * Agreement edges: `relates_to` edges where `agreement` is truthy carry
+ * effects on `edge.properties.effects` (not on a target node). These use
+ * `edge.id` as attachment identity instead of a node ID.
+ *
  * @param graph - World graph
  * @param agentId - Agent to collect for
  * @param effectStates - Per-attachment runtime state (cooldowns, stacks, etc.)
@@ -55,9 +62,13 @@ export function collectAttachmentEffects(
 ): AttachedEffect[] {
   const entries: AttachedEffect[] = [];
 
+  // ─── Node-backed attachments (possesses, bonded_to, has_trait) ───
   for (const edgeType of ATTACHMENT_EDGE_TYPES) {
     const edges = graph.getOutgoingEdges(agentId, edgeType);
     for (const edge of edges) {
+      // Inactive suppression — skip deactivated attachments
+      if (edge.properties.active === false) continue;
+
       const node = graph.getNode(edge.target);
       if (!node) continue;
 
@@ -81,12 +92,38 @@ export function collectAttachmentEffects(
     }
   }
 
+  // ─── Edge-backed agreements (relates_to with agreement === true) ───
+  const relatesToEdges = graph.getOutgoingEdges(agentId, 'relates_to');
+  for (const edge of relatesToEdges) {
+    if (!edge.properties.agreement) continue;
+    if (edge.properties.active === false) continue;
+
+    const effects = edge.properties.effects as AttachmentEffect[] | undefined;
+    if (!effects || !Array.isArray(effects)) continue;
+
+    const attachmentName = (edge.properties.agreementName as string) ?? 'Agreement';
+    const attachmentTier = (edge.properties.tier as number) ?? 1;
+    const runtimeState = effectStates?.get(edge.id);
+    const effectsToRead = effects.slice(0, MAX_EFFECTS_PER_NODE);
+
+    for (const effect of effectsToRead) {
+      entries.push({
+        attachmentId: edge.id,
+        attachmentName,
+        attachmentTier,
+        effect,
+        runtimeState,
+      });
+    }
+  }
+
   return entries;
 }
 
 /**
  * Check whether an agent has any attachments with the new effects[] format.
  * Used to determine whether to use the new resolver or legacy path.
+ * Also checks agreement edges for edge-backed effects.
  */
 export function hasEffectsFormat(
   graph: WorldGraph,
@@ -95,6 +132,7 @@ export function hasEffectsFormat(
   for (const edgeType of ATTACHMENT_EDGE_TYPES) {
     const edges = graph.getOutgoingEdges(agentId, edgeType);
     for (const edge of edges) {
+      if (edge.properties.active === false) continue;
       const node = graph.getNode(edge.target);
       if (!node) continue;
       const effects = node.properties.effects;
@@ -103,5 +141,17 @@ export function hasEffectsFormat(
       }
     }
   }
+
+  // Check agreement edges
+  const relatesToEdges = graph.getOutgoingEdges(agentId, 'relates_to');
+  for (const edge of relatesToEdges) {
+    if (!edge.properties.agreement) continue;
+    if (edge.properties.active === false) continue;
+    const effects = edge.properties.effects;
+    if (effects && Array.isArray(effects) && effects.length > 0) {
+      return true;
+    }
+  }
+
   return false;
 }

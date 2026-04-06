@@ -17,10 +17,13 @@ import type {
 import type { OutcomeType } from '../types/resolution';
 import type { AttachmentEffect, ContentGrantEffect } from '../types/effects';
 import { mulberry32 } from '../lib/prng';
+import { filterAgreementTemplates, type AgreementRewardTemplate } from '../data/agreement-reward-catalog';
 
 export interface PoolEntry {
   nodeId: string;
   weight: number;
+  /** For agreement entries: the agreement template ID (nodeId will be the template ID). */
+  isAgreement?: boolean;
 }
 
 /**
@@ -48,8 +51,11 @@ function getCandidateNodes(
       nodeType = 'trait';
       subcategoryFilter = 'bestowed';
       break;
+    case 'spell':
+      nodeType = 'artifact';
+      break;
     case 'agreement':
-      return []; // agreements are edges, not nodes
+      return []; // agreements are edge-backed — handled separately via agreement catalog
     default:
       return [];
   }
@@ -76,6 +82,7 @@ function getCandidateNodes(
 
 /**
  * Assemble a weighted pool. Each candidate's weight = categoryWeight × tierCurve[tier].
+ * Agreement candidates come from the agreement catalog (edge-backed, not nodes).
  */
 export function assembleRewardPool(
   graph: WorldGraph,
@@ -85,6 +92,19 @@ export function assembleRewardPool(
 
   for (const [category, categoryWeight] of Object.entries(recipe.categoryWeights)) {
     if (!categoryWeight || categoryWeight <= 0) continue;
+
+    // Agreement candidates come from the catalog, not the graph
+    if (category === 'agreement') {
+      const templates = filterAgreementTemplates(recipe.tagFilters);
+      for (const template of templates) {
+        const tierWeight = recipe.tierCurve[template.tier as AttachmentTier] ?? 0;
+        const weight = categoryWeight * tierWeight;
+        if (weight > 0) {
+          pool.push({ nodeId: template.id, weight, isAgreement: true });
+        }
+      }
+      continue;
+    }
 
     const candidates = getCandidateNodes(
       graph,
@@ -385,4 +405,56 @@ function instantiateRewardInternal(
 
   // Unknown node type — skip
   return null;
+}
+
+// ─── Agreement Reward Instantiation ───────────────────────────────
+
+export interface InstantiateAgreementResult {
+  edgeId: string;
+  displayName: string;
+}
+
+/**
+ * Create a `relates_to` edge with agreement properties from a template.
+ * Agreements are edge-backed — no node is cloned.
+ *
+ * @param graph - World graph
+ * @param recipientId - Agent who receives the agreement
+ * @param counterpartyId - The other party (can be a location, faction, or agent)
+ * @param template - Agreement template from the catalog
+ * @param tick - Current game tick
+ */
+export function instantiateAgreementReward(
+  graph: WorldGraph,
+  recipientId: string,
+  counterpartyId: string,
+  template: AgreementRewardTemplate,
+  tick: number,
+): InstantiateAgreementResult | null {
+  const recipient = graph.getNode(recipientId);
+  if (!recipient) return null;
+
+  const edgeId = `agreement_${recipientId}_${counterpartyId}_${tick}_${template.id}`;
+
+  graph.addEdge({
+    id: edgeId,
+    source: recipientId,
+    target: counterpartyId,
+    type: 'relates_to',
+    properties: {
+      agreement: true,
+      agreementName: template.name,
+      tier: template.tier,
+      tags: template.tags,
+      effects: template.effects,
+      active: true,
+      acquiredTick: tick,
+      source: REWARD_EDGE_SOURCE,
+      ticksRemaining: template.ticksRemaining,
+      terms: template.terms,
+      agreementType: template.agreementType,
+    },
+  });
+
+  return { edgeId, displayName: template.name };
 }

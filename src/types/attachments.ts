@@ -78,6 +78,13 @@ export interface OnUseTrigger {
 
 export interface PossessionNodeProperties {
   subcategory: PossessionSubcategory;
+  /**
+   * Slot tag — determines which slot cap this item counts against.
+   * Takes precedence over subcategory for slot enforcement.
+   * Added 2026-04-06 as part of the attachment slot system.
+   * @see SLOT_CAPS in src/data/attachment-slot-constants.ts
+   */
+  slotTag?: string;
   tier: AttachmentTier;
   tags: string[];
   /** Human-readable one-liner: "+Iron, grants cavalry_charge, +movement" */

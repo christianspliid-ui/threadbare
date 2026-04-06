@@ -15,6 +15,7 @@ import type {
   PossessionEdgeProperties,
   AgreementProperties,
 } from '../types/attachments';
+import { resolveSlotTag } from './attachmentSlotResolver';
 
 // ─── Summary Types ────────────────────────────────────────────────
 
@@ -38,6 +39,16 @@ export interface AttachmentFullEntry extends AttachmentSummary {
   agreementType?: string;
   onUseTriggers?: OnUseTrigger[];
   image?: string;
+  /** Resolved slot tag for grouping (e.g. 'weapon', 'ring', 'wound'). */
+  slotTag?: string;
+  /** Whether this attachment is currently active (false = deactivated by overflow). */
+  active?: boolean;
+  /** Reason for inactivity, if applicable. */
+  inactiveReason?: string;
+  /** Whether this is a pinned/quest item. */
+  isPinned?: boolean;
+  /** Counterparty name for agreements. */
+  counterpartyName?: string;
 }
 
 // ─── Sort: tier descending, name ascending ────────────────────────
@@ -84,6 +95,10 @@ export function getAgentAttachments(
     const props = node.properties as Partial<PossessionNodeProperties>;
     const edgeProps = edge.properties as Partial<PossessionEdgeProperties>;
 
+    const slotTag = resolveSlotTag(props.slotTag, props.subcategory);
+    const isActive = edge.properties.active !== false;
+    const isPinned = slotTag === 'quest' || props.lossCondition === 'permanent';
+
     possessions.push({
       id: node.id,
       name: node.name,
@@ -96,6 +111,10 @@ export function getAgentAttachments(
       source: props.source,
       lossCondition: props.lossCondition,
       onUseTriggers: props.onUseTriggers,
+      slotTag,
+      active: isActive,
+      inactiveReason: edge.properties.inactiveReason as string | undefined,
+      isPinned,
     });
   }
 
@@ -131,6 +150,9 @@ export function getAgentAttachments(
         tags: (traitProps.tags as string[]) ?? [],
         flavorText: traitProps.flavorText as string | undefined,
         source: traitProps.source as string | undefined,
+        slotTag: subcategory,
+        active: edge.properties.active !== false,
+        inactiveReason: edge.properties.inactiveReason as string | undefined,
       });
     }
 
@@ -173,7 +195,7 @@ export function getAgentAttachments(
       ? 'debt' : 'pact';
 
     agreements.push({
-      id: `${edge.source}-${edge.target}-agreement`,
+      id: edge.id,
       name: (edgeProps.agreementName as string) ?? `${agreementProps.type} with ${counterpartyName}`,
       subcategory,
       tier: (agreementProps.tier ?? 1) as AttachmentTier,
@@ -183,6 +205,10 @@ export function getAgentAttachments(
       tags: agreementProps.tags ?? [],
       agreementType: agreementProps.type,
       grantedBy: counterpartyName,
+      slotTag: 'agreement',
+      active: edgeProps.active !== false,
+      inactiveReason: edgeProps.inactiveReason as string | undefined,
+      counterpartyName,
     });
   }
 
