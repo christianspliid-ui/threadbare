@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { AgentDetail } from '../../engine/agentDetail';
 import type { ReachDomain } from '../../types/traits';
 import type { CooperationStrategy } from '../../types/disposition';
+import type { DigestEntry } from '../../types/attention';
 import { ReachIcon } from '../icons';
 import { TIER_COLORS, ARCHETYPE_DOT_COLOR, FACTION_TAG_COLOR, FACTION_TAG_BACKGROUND, FACTION_TAG_BORDER, SENTIMENT_GREEN, SENTIMENT_RED } from '../../data/uiColorPalette';
 import { AttachmentRow } from './AttachmentRow';
@@ -13,6 +14,8 @@ import { Tooltip } from '../shared/Tooltip';
 import { quintessenceToWord } from '../../types/quintessence';
 import { QUINTESSENCE_TOOLTIPS } from '../../data/quintessence-content';
 import { QUINTESSENCE_LEXICON } from '../../data/quintessence-content';
+import { RecentActivityLog } from './RecentActivityLog';
+import { queryDigest } from '../../engine/digestBuffer';
 
 /** Max attachment rows shown per section before overflow */
 const MAX_ATTACHMENT_ROWS = 5;
@@ -34,6 +37,10 @@ interface AgentDetailPanelProps {
   onIntervene: () => void;
   onLocationClick: (locationId: string) => void;
   onAttachmentClick?: (attachmentId: string) => void;
+  /** Optional digest buffer for the recent activity log. */
+  digestBuffer?: DigestEntry[];
+  /** Current simulation tick, used to window recent digest entries. */
+  currentTick?: number;
 }
 
 // Domain display names — 8 reaches (flesh removed in TB-075)
@@ -71,9 +78,20 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
   onIntervene,
   onLocationClick,
   onAttachmentClick,
+  digestBuffer,
+  currentTick,
 }: AgentDetailPanelProps) {
   const tierColor = TIER_COLORS[detail.tier] || '#78716c';
   const archetypeReaches = detail.archetype?.reachAffinities || [];
+
+  const recentEntries = useMemo(() => {
+    if (!digestBuffer) return [];
+    return queryDigest(digestBuffer, {
+      agentId: detail.id,
+      fromTick: Math.max(0, (currentTick ?? 0) - 48),
+      toTick: currentTick ?? 999,
+    });
+  }, [digestBuffer, currentTick, detail.id]);
 
   return (
     <div className="flex flex-col h-full bg-stone-900 overflow-y-auto">
@@ -511,6 +529,13 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
               Contested by {activity.opponentName}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Recent Activity Log */}
+      {recentEntries.length > 0 && (
+        <div className="px-4 py-2 border-t border-amber-900/20">
+          <RecentActivityLog entries={recentEntries} lastViewedTick={0} />
         </div>
       )}
 
