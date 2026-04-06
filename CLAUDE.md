@@ -33,7 +33,7 @@ npm run dev    # start Vite dev server with hot reload
 | `?view=game` | **Primary dev view.** Full game view with Three.js hex map (HexMapV2) and all game chrome. Use this for all hex map and gameplay testing. |
 | `?view=glow` | Magic glow tile preview |
 | `?view=cms` | Content browser |
-| `?fog` | Enable fog of war on load (fog is off by default). Combinable: `?view=game&fog` |
+| `?nofog` | Disable fog of war (fog is ON by default). Combinable: `?view=game&nofog` |
 
 **For all testing, use `?view=game`** — this skips the multi-click entry flow and loads the full game with HexMapV2. Only test the worldgen/selection screens when those screens are the subject of the test.
 
@@ -48,7 +48,7 @@ npm run cli                          # default seed 42, medium map
 npm run cli -- --seed 99 --map small # custom seed + map size
 ```
 
-Key commands at the `fws>` prompt: `tick [N]` (advance ticks), `run [N]` (auto-run at N ticks/sec), `pause`, `status` (game overview), `agents`, `agent <name>` (inspect one), `events [N]`, `doom`, `mandate`, `essence`, `encounters [agent]`, `spawn encounter <agent|@hero> <encounterId> [--courtPosition X]`, `spawn encounter-context <encounterId> [--agent <agent|@hero>] [--at <location|actor>] [--hex <col> <row>]`, `spawn attachment <agent|@hero> <templateId|name> [--tick N]`, `spawn location <subtype> --hex <col> <row> [--name "..."]`, `spawn sublocation <typeId> (--at <location|actor|@hero> | --hex <col> <row>)`, `spawn npc <role> (--at <location|actor|@hero> | --hex <col> <row>) [--name "..."] [--faction <factionDefId>]`, `move agent <agent|@hero> (--to <location|actor> | --hex <col> <row>)`, `factions`, `traces [N]`, `graph` (node counts), `eval <expr>` (JS with `state` in scope). Type `help` for the full list.
+Key commands at the `fws>` prompt: `tick [N]` (advance ticks), `run [N]` (auto-run at N ticks/sec), `pause`, `status` (game overview), `agents`, `agent <name>` (inspect one), `events [N]`, `doom`, `mandate`, `essence`, `encounters [agent]`, `spawn encounter <agent|@hero> <encounterId> [--courtPosition X]`, `spawn encounter-context <encounterId> [--agent <agent|@hero>] [--at <location|actor>] [--hex <col> <row>]`, `spawn attachment <agent|@hero> <templateId|name> [--tick N]`, `spawn location <subtype> --hex <col> <row> [--name "..."]`, `spawn sublocation <typeId> (--at <location|actor|@hero> | --hex <col> <row>)`, `spawn npc <role> (--at <location|actor|@hero> | --hex <col> <row>) [--name "..."] [--faction <factionDefId>]`, `move agent <agent|@hero> (--to <location|actor> | --hex <col> <row>)`, `factions`, `traces [N]`, `graph` (node counts), `fog` (toggle fog of war on/off), `fog on`, `fog off`, `eval <expr>` (JS with `state` in scope). Type `help` for the full list.
 
 **When to use the CLI:**
 - After modifying tick phases or orchestrator logic — run `tick 30` and check `status` + `events`
@@ -94,6 +94,11 @@ window.__DEBUG.listActions('Serafina')     // same list, but returns [] if agent
 window.__DEBUG.fireAction('Serafina', 'action.charm.heart')   // exact template id
 window.__DEBUG.fireAction('abc123', 'charm')                   // partial template id/name match
 // Returns {success, actionId, templateName, message}
+
+// Fog of war control:
+window.__DEBUG.toggleFog()                // toggle fog on/off, returns new enabled state
+window.__DEBUG.setFog(true)               // explicitly enable fog
+window.__DEBUG.setFog(false)              // explicitly disable fog
 
 // Encounter log export (returns TSV strings):
 const summary = await window.__DEBUG.getEncounterLogAll()   // { trackedAgentCount, totalEvents, agentIds }
