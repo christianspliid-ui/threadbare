@@ -39,7 +39,11 @@ export type TraceCategory =
   | 'slot_overflow'
   | 'slot_disposal'
   | 'condition_overflow'
-  | 'slot_expansion';
+  | 'slot_expansion'
+  | 'meeting_sensing'
+  | 'meeting_testing'
+  | 'meeting_spark'
+  | 'meeting_bond';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -68,6 +72,10 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'slot_disposal',
   'condition_overflow',
   'slot_expansion',
+  'meeting_sensing',
+  'meeting_testing',
+  'meeting_spark',
+  'meeting_bond',
 ];
 
 /** Base shape for all trace entries */

@@ -17,8 +17,6 @@ import type { MeetingEncounterState, DilemmaChoiceRecord, MeetingEncounterResult
 import { MEETING_CANDIDATE_COUNT, INTENT_OPTIONS } from '../../types/meetingEncounter';
 import { VALUE_PAIRS } from '../../types/agent';
 import { REACH_DOMAINS } from '../../types/traits';
-import { buildStubAscendantLens } from '../../types/hunger';
-import type { SphereName } from '../../types/index';
 
 // ─── Helpers ──────────────────────────────────────────────────────
 
@@ -300,60 +298,21 @@ describe('applyReachChanges', () => {
 // ─── Meeting State Machine ────────────────────────────────────────
 
 describe('createMeetingEncounterState', () => {
-  it('creates initial state', () => {
+  it('creates initial state with sensing step', () => {
     const state = createMeetingEncounterState('loc_village', 'asc', 10);
-    expect(state.currentStep).toBe('seeking_threads');
+    expect(state.currentStep).toBe('sensing');
     expect(state.status).toBe('active');
     expect(state.locationId).toBe('loc_village');
     expect(state.ascendantId).toBe('asc');
     expect(state.startedTick).toBe(10);
   });
 
-  it('auto-derives intent from AscendantLens when provided', () => {
-    const lens = buildStubAscendantLens('life', 'spirit');
-    const state = createMeetingEncounterState('loc.1', 'asc.1', 10, lens, 'life' as SphereName, 42);
-    expect(state.intentPrimaryReach).toBeDefined();
-    expect(state.intentSecondaryReach).toBeDefined();
-    expect(state.intentSphere).toBe('life');
-  });
-
-  it('does not set intent fields when lens is not provided', () => {
-    const state = createMeetingEncounterState('loc.1', 'asc.1', 10);
-    expect(state.intentPrimaryReach).toBeUndefined();
-    expect(state.intentSecondaryReach).toBeUndefined();
-    expect(state.intentSphere).toBeUndefined();
-  });
-
-  it('derived intent is deterministic with same seed', () => {
-    const lens = buildStubAscendantLens('life', 'spirit');
-    const a = createMeetingEncounterState('loc.1', 'asc.1', 10, lens, 'life' as SphereName, 42);
-    const b = createMeetingEncounterState('loc.1', 'asc.1', 10, lens, 'life' as SphereName, 42);
-    expect(a.intentPrimaryReach).toBe(b.intentPrimaryReach);
-    expect(a.intentSecondaryReach).toBe(b.intentSecondaryReach);
-    expect(a.intentSphere).toBe(b.intentSphere);
-  });
-
-  it('derived intent varies with different seeds', () => {
-    const lens = buildStubAscendantLens('life', 'spirit');
-    const seeds = [42, 99, 123, 456, 789];
-    const results = seeds.map(s =>
-      createMeetingEncounterState('loc.1', 'asc.1', 10, lens, 'life' as SphereName, s)
-    );
-    // At least one should differ (extremely unlikely all are identical across 5 seeds)
-    const primary = results.map(r => r.intentPrimaryReach);
-    const secondary = results.map(r => r.intentSecondaryReach);
-    const allSamePrimary = primary.every(p => p === primary[0]);
-    const allSameSecondary = secondary.every(s => s === secondary[0]);
-    // Both being identical across all seeds is possible but extremely unlikely
-    expect(allSamePrimary && allSameSecondary).toBe(false);
-  });
-
-  it('derived intent reaches come from the hunger candidateReachBias', () => {
-    const lens = buildStubAscendantLens('life', 'spirit');
-    const bias = lens.hunger.candidateReachBias;
-    const state = createMeetingEncounterState('loc.1', 'asc.1', 10, lens, 'life' as SphereName, 42);
-    expect(bias).toContain(state.intentPrimaryReach);
-    expect(bias).toContain(state.intentSecondaryReach);
+  it('generates deterministic id from tick and location', () => {
+    const a = createMeetingEncounterState('loc.1', 'asc.1', 10);
+    const b = createMeetingEncounterState('loc.1', 'asc.1', 10);
+    expect(a.id).toBe(b.id);
+    const c = createMeetingEncounterState('loc.2', 'asc.1', 10);
+    expect(a.id).not.toBe(c.id);
   });
 });
 
@@ -468,14 +427,11 @@ describe('buildMeetingResult', () => {
 
     const state: MeetingEncounterState = {
       id: 'meeting_10_loc_village',
-      currentStep: 'confirmation',
+      currentStep: 'bond',
       locationId: 'loc_village',
       ascendantId: 'asc',
       startedTick: 10,
       status: 'active',
-      intentPrimaryReach: 'iron',
-      intentSecondaryReach: 'heart',
-      intentSphere: 'force',
       candidates: [{
         tempId: 'meeting_candidate_0',
         name: 'Kael',
@@ -499,9 +455,7 @@ describe('buildMeetingResult', () => {
         gateTags: ['mercy_shown', 'heroic_origin'],
         axiologicalShifts: { mercy_ruthlessness: 0.2 },
       }],
-      sparkTraitId: 'trait.god.iron_will',
-      investmentChoiceId: 'spark_invest_iron',
-      shapePath: 'surprise',
+      sparkVisionId: 'vision.iron.sentinel',
       accumulatedProfile: {},
       accumulatedGateTags: [],
       accumulatedTraitSeeds: [],
@@ -514,7 +468,6 @@ describe('buildMeetingResult', () => {
     expect(result!.secondaryReach).toBe('heart');
     expect(result!.foundingGateTags).toContain('mercy_shown');
     expect(result!.foundingGateTags).toContain('heroic_origin');
-    expect(result!.traitSeeds).toContain('trait.god.iron_will');
     expect(result!.axiologicalProfile.mercy_ruthlessness).toBeCloseTo(0.2);
   });
 

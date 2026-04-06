@@ -15,8 +15,7 @@ import type { WorldGraph } from './graph';
 import type { ReachDomain } from '../types/traits';
 import type { SphereName } from '../types/index';
 import type { AxiologicalProfile, ValuePair } from '../types/agent';
-import type { AscendantLens } from '../types/hunger';
-import { deriveIntentFromHunger } from '../types/hunger';
+// AscendantLens + deriveIntentFromHunger removed — narrative flow derives intent in the sensing beat
 import { REACH_VALUE_PAIR, VALUE_PAIRS } from '../types/agent';
 import { REACH_DOMAINS } from '../types/traits';
 import { DEFAULT_REPUTATION } from '../types/disposition';
@@ -30,6 +29,8 @@ import type {
   DilemmaInstance,
   DilemmaChoiceRecord,
   IntentOption,
+  NarrativeCandidate,
+  SparkVision,
 } from '../types/meetingEncounter';
 import {
   INTENT_OPTIONS,
@@ -43,6 +44,10 @@ import {
   REACH_VARIANCE,
   ASCENDANT_REACH_BIAS,
 } from '../types/meetingEncounter';
+import { CANDIDATE_VIGNETTES, type CandidateVignette } from '../data/candidate-vignettes';
+import { SPARK_VISION_CATALOG } from '../data/spark-vision-catalog';
+import { ARCHETYPE_NAME_MAP } from '../data/meeting-content';
+import { mulberry32 } from '../lib/prng';
 
 // ─── Per-tick Meeting Counter ─────────────────────────────────────
 
@@ -494,45 +499,240 @@ export function createAgentFromMeeting(
   return agentId;
 }
 
+// ─── Narrative Candidate Generation ─────────────────────────────────
+
+/** Number of narrative candidates to show the player. */
+const NARRATIVE_CANDIDATE_COUNT = 3;
+
+/** Score multiplier applied to vignettes that resonate with the active Hunger. */
+const HUNGER_RESONANCE_WEIGHT = 2.0;
+
+/**
+ * Generate 3 narrative candidates biased by Hunger resonance.
+ * Vignettes that list `hungerId` in their `hungerResonance` array receive a
+ * higher score and are more likely to appear.  The RNG ensures determinism
+ * for the same seed while still producing different results across seeds.
+ */
+export function generateNarrativeCandidates(
+  hungerId: string,
+  cultureId: string,
+  seed: number,
+): NarrativeCandidate[] {
+  const rng = mulberry32(seed ^ 0x4d454554); // 'MEET' salt
+
+  // Score vignettes by Hunger resonance
+  const scored = CANDIDATE_VIGNETTES.map(v => {
+    const resonance = v.hungerResonance.includes(hungerId) ? HUNGER_RESONANCE_WEIGHT : 0;
+    const jitter = rng() * 0.5;
+    return { vignette: v, score: resonance + jitter };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+
+  // Pick top candidates, preferring diversity of primary reach
+  const selected: CandidateVignette[] = [];
+  const usedPrimaryReaches = new Set<string>();
+
+  for (const { vignette } of scored) {
+    if (selected.length >= NARRATIVE_CANDIDATE_COUNT) break;
+    if (usedPrimaryReaches.has(vignette.primaryReach) && selected.length < NARRATIVE_CANDIDATE_COUNT - 1) {
+      const remaining = scored.filter(s =>
+        !selected.includes(s.vignette) && !usedPrimaryReaches.has(s.vignette.primaryReach),
+      );
+      if (remaining.length > 0) continue;
+    }
+    selected.push(vignette);
+    usedPrimaryReaches.add(vignette.primaryReach);
+  }
+
+  // Fill if diversity filter was too aggressive
+  if (selected.length < NARRATIVE_CANDIDATE_COUNT) {
+    for (const { vignette } of scored) {
+      if (selected.length >= NARRATIVE_CANDIDATE_COUNT) break;
+      if (!selected.includes(vignette)) {
+        selected.push(vignette);
+      }
+    }
+  }
+
+  return selected.map((vignette, i) => {
+    const archetypeKey = `${vignette.primaryReach}_${vignette.secondaryReach}`;
+    const archetypeId = ARCHETYPE_NAME_MAP[archetypeKey] ?? 'Wanderer';
+    const axiologicalSeed = generateAxiologicalProfile(rng);
+    const reachCapabilities = generateReachCapabilities(vignette.primaryReach, vignette.secondaryReach, rng);
+    const cooperationStrategy = assignCooperationStrategy(archetypeId, axiologicalSeed, rng);
+    const name = generateCandidateName(rng);
+
+    return {
+      tempId: `candidate_${seed}_${i}`,
+      name,
+      archetypeId,
+      cultureId,
+      primaryReach: vignette.primaryReach,
+      secondaryReach: vignette.secondaryReach,
+      sphere: deriveSphereFromReaches(vignette.primaryReach, vignette.secondaryReach, rng),
+      vignetteText: vignette.prose,
+      epithet: vignette.epithet,
+      imageAssetPath: vignette.imageAssetPath,
+      placeholderGradient: vignette.placeholderGradient,
+      axiologicalSeed,
+      reachCapabilities,
+      cooperationStrategy,
+      appearanceSeed: Math.floor(rng() * 2147483647),
+    };
+  });
+}
+
+/** Derive a sphere from primary/secondary reach using canonical affinity map. */
+function deriveSphereFromReaches(
+  primary: ReachDomain,
+  _secondary: ReachDomain,
+  rng: () => number,
+): SphereName {
+  const REACH_SPHERE_MAP: Record<string, SphereName[]> = {
+    iron:   ['force', 'matter'],
+    gold:   ['matter', 'energy'],
+    shadow: ['entropy', 'mind'],
+    veil:   ['spirit', 'mind'],
+    heart:  ['life', 'spirit'],
+    eye:    ['mind', 'time'],
+    stone:  ['matter', 'time'],
+    star:   ['spirit', 'light'],
+  };
+  const options = REACH_SPHERE_MAP[primary] ?? ['force'];
+  return options[Math.floor(rng() * options.length)];
+}
+
+/**
+ * Generate reach-matched spark visions for the player to choose from.
+ * Returns 3 visions whose `requiredPrimaryReach` matches the candidate's
+ * primary reach.  If fewer than 3 matching visions exist, fills from the
+ * rest of the catalog using a seeded shuffle.
+ */
+export function generateSparkVisions(
+  primaryReach: ReachDomain,
+  _ascendantPrimarySphere: SphereName,
+  seed: number,
+): SparkVision[] {
+  const matching = SPARK_VISION_CATALOG.filter(
+    v => v.requiredPrimaryReach === primaryReach,
+  );
+
+  if (matching.length >= 3) {
+    return matching.slice(0, 3);
+  }
+
+  const rng = mulberry32(seed ^ 0x5350524b); // 'SPRK' salt
+  const others = SPARK_VISION_CATALOG.filter(
+    v => v.requiredPrimaryReach !== primaryReach,
+  );
+  // Fisher-Yates shuffle for deterministic ordering
+  const shuffled = [...others];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  const result = [...matching];
+  for (const v of shuffled) {
+    if (result.length >= 3) break;
+    result.push(v);
+  }
+  return result.slice(0, 3);
+}
+
+/**
+ * Input shape for buildNarrativeResult.
+ */
+export interface NarrativeResultInput {
+  candidate: NarrativeCandidate;
+  vision: SparkVision;
+  dilemmaChoices: DilemmaChoiceRecord[];
+  editedName: string | undefined;
+  locationId: string;
+  ascendantSphere: SphereName;
+  tick: number;
+}
+
+/**
+ * Assemble a MeetingEncounterResult from the narrative-flow choices.
+ * Applies dilemma axiological shifts, the spark vision's reach investment,
+ * and collects all founding gate tags and trait seeds.
+ */
+export function buildNarrativeResult(input: NarrativeResultInput): MeetingEncounterResult {
+  const { candidate, vision, dilemmaChoices, editedName, locationId, ascendantSphere, tick } = input;
+
+  // Apply dilemma axiological shifts
+  let profile = { ...candidate.axiologicalSeed };
+  for (const choice of dilemmaChoices) {
+    for (const [pair, shift] of Object.entries(choice.axiologicalShifts)) {
+      const current = profile[pair as ValuePair] ?? 0;
+      profile[pair as ValuePair] = Math.max(-1, Math.min(1, current + (shift ?? 0)));
+    }
+  }
+
+  // Apply vision reach investment
+  const reachCapabilities = { ...candidate.reachCapabilities };
+  reachCapabilities[vision.reachInvestment] = Math.min(
+    1,
+    (reachCapabilities[vision.reachInvestment] ?? 0) + vision.investmentAmount,
+  );
+
+  const foundingGateTags = dilemmaChoices.flatMap(c => c.gateTags);
+  const traitSeeds = [
+    ...dilemmaChoices.flatMap(c => c.traitSeeds ?? []),
+    ...vision.traitGrants,
+  ];
+
+  const meetingChoiceRecord: MeetingChoiceRecord = {
+    encounterTick: tick,
+    locationId,
+    candidateIndex: 0,
+    archetypeId: candidate.archetypeId,
+    dilemmaChoices,
+    sparkVisionId: vision.id,
+    ascendantSphere,
+    foundingGateTags,
+  };
+
+  return {
+    name: editedName ?? candidate.name,
+    archetypeId: candidate.archetypeId,
+    cultureId: candidate.cultureId,
+    axiologicalProfile: profile,
+    reachCapabilities,
+    primaryReach: candidate.primaryReach,
+    secondaryReach: candidate.secondaryReach,
+    sphere: candidate.sphere,
+    cooperationStrategy: candidate.cooperationStrategy,
+    foundingGateTags,
+    traitSeeds,
+    appearanceSeed: candidate.appearanceSeed,
+    meetingChoiceRecord,
+    locationId,
+  };
+}
+
 // ─── State Machine Helpers ────────────────────────────────────────
 
 /**
  * Create initial meeting encounter state.
  *
- * When an AscendantLens is provided, intent fields (primary/secondary reach
- * and sphere) are auto-derived from the Hunger rather than requiring player
- * selection. This is the default path until the UI supports manual intent.
+ * The new narrative flow generates candidates via the orchestrator during
+ * the sensing beat, so we no longer derive intent here.
  */
 export function createMeetingEncounterState(
   locationId: string,
   ascendantId: string,
   tick: number,
-  ascendantLens?: AscendantLens,
-  ascendantSphere?: SphereName,
-  seed?: number,
 ): MeetingEncounterState {
-  const state: MeetingEncounterState = {
+  return {
     id: `meeting_${tick}_${locationId}`,
-    currentStep: 'seeking_threads',
+    currentStep: 'sensing',
     locationId,
     ascendantId,
     startedTick: tick,
     status: 'active',
-    accumulatedProfile: {},
-    accumulatedGateTags: [],
-    accumulatedTraitSeeds: [],
-    dilemmaChoiceRecords: [],
   };
-
-  // Auto-derive intent from Hunger if lens is provided
-  if (ascendantLens && ascendantSphere && seed != null) {
-    const intent = deriveIntentFromHunger(ascendantLens, ascendantSphere, seed);
-    state.intentPrimaryReach = intent.primaryReach;
-    state.intentSecondaryReach = intent.secondaryReach;
-    state.intentSphere = intent.sphere;
-  }
-
-  return state;
 }
 
 /**
@@ -589,27 +789,18 @@ export function buildMeetingResult(
     ...records.flatMap(r => r.traitSeeds ?? []),
     ...(state.accumulatedTraitSeeds ?? []),
   ];
-  if (state.sparkTraitId) {
-    traitSeeds.push(state.sparkTraitId);
-  }
 
   const name = state.editedName ?? candidate.name;
 
   const meetingChoiceRecord: MeetingChoiceRecord = {
     encounterTick: state.startedTick,
     locationId: state.locationId,
-    intentPrimaryReach: candidate.primaryReach,
-    intentSecondaryReach: candidate.secondaryReach,
-    intentSphere: candidate.sphere,
-    candidateIndex: state.selectedCandidateIndex,
+    candidateIndex: state.selectedCandidateIndex ?? 0,
     archetypeId: candidate.archetypeId,
     dilemmaChoices: records,
-    investmentChoice: state.investmentChoiceId ?? '',
-    sparkTraitId: state.sparkTraitId ?? '',
-    shapePath: state.shapePath ?? 'surprise',
+    sparkVisionId: state.sparkVisionId ?? '',
     ascendantSphere,
     foundingGateTags: gateTags,
-    flavorChoices: state.flavorChoices,
   };
 
   return {
