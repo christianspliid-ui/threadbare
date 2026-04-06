@@ -418,9 +418,11 @@ interface SlotExpansionTrace {
 | **Agent AI (Maslow)** | Inactive items feed `disposal_motivation` into esteem/belonging layer |
 | **Encounter system** | Disposal encounters (sell, gift, offer) as new encounter subtypes |
 | **Effect resolver** | `resolveEffectModifiers` skips effects from inactive items; reads `slot_bonus:` modifiers |
-| **UI — Attachment detail** | Show active/inactive status; show effective cap with bonuses |
-| **UI — Agent panel** | Slot usage summary (e.g., "Weapons: 2/2") |
-| **Debug panel** | `attachments <agent>` CLI command shows slot usage + overflow status |
+| **UI — Detail modal** | `AttachmentDetailModal` for every possession, condition, agreement, quest item. Uses `EntityCard` + `Modal`. Shows effects, tags, slot usage, duration, history. |
+| **UI — Agent character sheet** | Attachments tab grouped by slot tag with `(count/cap)` headers. Inactive section at bottom. Each row clickable → detail modal. |
+| **UI — Codex** | Browsable encyclopedia of all discovered items/conditions. Category tabs, quality tag filters, reach filters, knowledge gating. Entry states: Held / Known / Unseen. |
+| **UI — Encounter aftermath** | Every gained attachment and suffered condition is a clickable `AttachmentRow`. Opens detail modal overlaid on aftermath. Slot overflow warnings inline. |
+| **Debug panel** | `slots <agent>`, `overflow <agent>`, `conditions <agent>`, `codex` CLI commands |
 | **Traces** | `slot_overflow`, `slot_disposal`, `condition_overflow`, `slot_expansion` |
 
 ---
@@ -446,6 +448,236 @@ New slot tags with no old equivalent: `ring`, `necklace`, `spell`, `wealth`, `al
 ### Condition Data
 
 Existing condition tags (`#wound`, `#disease`, `#blessing`, `#curse`) already map directly to condition slot tags. Bestowed powers (`subcategory: 'bestowed'`) map to the `bestowed` condition slot. No migration needed for conditions.
+
+---
+
+## UI / Visibility
+
+Every attachment and condition in this system must be inspectable by the player. Three access paths, one detail modal.
+
+### 1. Detail Modal (per item/condition)
+
+Every possession, condition, agreement, and quest item opens an **AttachmentDetailModal** when clicked. Uses the existing `EntityCard` renderer inside a `Modal` shell.
+
+**Modal layout:**
+
+```
+┌─────────────────────────────────────────────┐
+│  [Slot Icon]  Iron Blade            [✕]     │
+│  weapon · tier 2 · #relic                   │
+│  ─────────────────────────────────────────  │
+│                                             │
+│  ┌─────────────────────────────────────┐    │
+│  │  [Image / Glyph fallback]          │    │
+│  └─────────────────────────────────────┘    │
+│                                             │
+│  "Forged in a dead forge-town. The metal    │
+│   remembers heat it should not."            │
+│                                             │
+│  ── Effects ──────────────────────────────  │
+│  +0.08 Iron reach (passive)                 │
+│  Bloodthirst: +0.01 Iron per kill (max 5)   │
+│                                             │
+│  ── Details ──────────────────────────────  │
+│  Loss condition: breakable                  │
+│  Active: ✓  │  Slot: weapon 2/2             │
+│                                             │
+│  ── History ──────────────────────────────  │
+│  Acquired tick 34 · Found in Ashenmane Lair │
+│                                             │
+│  [ View in Codex ]                          │
+└─────────────────────────────────────────────┘
+```
+
+**Sections (EntitySection-based, compositional):**
+
+| Section | Content | Structured Block |
+|---------|---------|-----------------|
+| **Header** | Name, slot tag, tier, quality tags (#relic, #artifact, #trinket) | — |
+| **Image** | Hero image or glyph fallback (tier-colored) | — |
+| **Flavor** | `flavorText` prose | — |
+| **Effects** | All `effects[]` rendered as human-readable lines | `domain_grid` for reach modifiers, `trigger` for activated/reactive |
+| **Details** | Loss condition, active/inactive status, slot usage, duration (for conditions) | `keyword_cloud` for tags |
+| **History** | Acquisition tick, source encounter, location found | `timeline` |
+| **Codex link** | "View in Codex" button in footer | — |
+
+**Condition-specific sections:**
+
+| Section | Content |
+|---------|---------|
+| **Duration** | Progress bar showing `ticksRemaining / totalTicks`, tier-colored |
+| **Severity** | Current condition count vs cap (e.g., "Wounds: 2/3") |
+| **Cure** | What removes it — rest, healing, dispel, specific encounter |
+
+**Fail-soft:** Missing fields render as absent sections, never as errors. An attachment with no `flavorText` simply skips the flavor section. An attachment with no `effects[]` shows "No mechanical effects" in muted text.
+
+### 2. Agent Character Sheet (Attachments Tab)
+
+The existing `AgentProfileModal` has an **Attachments tab**. This tab must display slot-organized inventory:
+
+```
+┌─ Attachments ────────────────────────────────┐
+│                                              │
+│  ── Weapons (2/2) ─────────────────────────  │
+│  ⚔ Iron Blade          Tier 2  #relic       │
+│  ⚔ Hunting Bow          Tier 1              │
+│                                              │
+│  ── Vestment (1/1) ────────────────────────  │
+│  🛡 Shadowweave Cloak    Tier 2              │
+│                                              │
+│  ── Rings (1/2) ───────────────────────────  │
+│  💍 Ring of Whispers     Tier 2  #trinket    │
+│                                              │
+│  ── Spells (2/3) ──────────────────────────  │
+│  ✦ Flamebind            Tier 2              │
+│  ✦ Warding Circle        Tier 1              │
+│                                              │
+│  ── Wealth (1/3) ──────────────────────────  │
+│  ◆ Pouch of Silver       Tier 1              │
+│                                              │
+│  ── Conditions ────────────────────────────  │
+│  ── Wounds (1/3) ──                          │
+│  ✦ Bruised Ribs         Tier 1  ████░░ 12t  │
+│  ── Blessings (1/2) ──                       │
+│  ✦ Dawn-Kissed          Tier 1  █████░  8t  │
+│                                              │
+│  ── Agreements (2/4) ──────────────────────  │
+│  📜 Oath to the Wardens   pact              │
+│  📜 Favour Owed (Smith)   debt              │
+│                                              │
+│  ── Quest Items ───────────────────────────  │
+│  🔑 Sealed Letter         (pinned)          │
+│                                              │
+│  ── Inactive ──────────────────────────────  │
+│  ⚔ Rusty Mace  Tier 1  (overflow — seeking  │
+│     buyer)                                   │
+│                                              │
+└──────────────────────────────────────────────┘
+```
+
+**Layout rules:**
+
+- Grouped by slot tag, each group shows `(count/cap)` in the section header
+- Slot groups with 0 items are hidden (don't show empty "Necklace (0/1)")
+- Each row is an `AttachmentRow` — clickable, opens detail modal
+- Quality tags (#relic, #artifact, #trinket) shown as colored pills after tier badge
+- Conditions show duration progress bar inline
+- Agreements show subtype (pact, debt, oath, favour) as subtitle
+- Quest items show "(pinned)" label, visually distinct (gold border or accent)
+- **Inactive section** at bottom — muted styling, shows overflow reason and disposal status
+- Slot groups sorted by: quest (top, always visible) → possessions (by slot tag alpha) → conditions → agreements → inactive (bottom)
+
+### 3. Codex (Encyclopedia)
+
+The Codex is a browsable collection of all discovered items and conditions. It serves as both a reference and a collection tracker.
+
+**Access points:**
+- "View in Codex" button from any detail modal
+- Codex tab in a top-level game menu (alongside Chronicle, Map, etc.)
+- Agent character sheet → click any attachment → detail modal → "View in Codex"
+
+**Codex structure:**
+
+```
+┌─ Codex ──────────────────────────────────────┐
+│                                              │
+│  [Search: _______________]  [Filter ▾]       │
+│                                              │
+│  ── Categories ────────────────────────────  │
+│  Weapons (4)  Vestments (1)  Rings (2)       │
+│  Spells (3)   Tomes (1)     Consumables (6)  ���
+│  Mounts (1)   Allies (0)    Companions (1)   │
+│  Wealth (2)   Brands (0)    Utility (3)      │
+│  Agreements (3)  Quest Items (1)             │
+│  ────────────────────────────────────────    │
+│  Wounds (2)  Diseases (0)  Curses (1)        │
+│  Blessings (2)  Bestowed (0)                 │
+│                                              │
+│  ── Weapons ───────────────────────────────  │
+│  ⚔ Iron Blade       T2 #relic    [Held: ✓]  │
+│  ⚔ Hunting Bow      T1           [Held: ✓]  │
+│  ⚔ Rusty Mace       T1           [Lost]     │
+│  ⚔ The Quiet Blade  T4 #artifact [Unseen]   │
+│                                              │
+└──────────────────────────────────────────────┘
+```
+
+**Codex entry states:**
+
+| State | Meaning | Visual |
+|-------|---------|--------|
+| **Held** | Currently in an agent's inventory (any agent) | Full detail, bright text |
+| **Known** | Previously held or encountered, now lost/used | Full detail, muted text |
+| **Unseen** | Exists in catalog but never encountered | Name + slot + tier only, blurred/redacted prose, "???" effects |
+
+**Codex vs detail modal:**
+- The **detail modal** shows one item in context (who holds it, when acquired, active/inactive)
+- The **Codex entry** shows the item as a reference (all known effects, full prose, acquisition history across all agents)
+- Clicking an item in the Codex opens its detail modal with the reference view (no agent context)
+
+**Filtering:**
+- By slot tag (category tabs or pills)
+- By quality tag (#trinket / #relic / #artifact toggle)
+- By reach affinity (Iron, Shadow, etc.)
+- By state (held / known / unseen)
+- Free text search on name + tags
+
+**Knowledge gating:** The Codex respects the existing `insightTier` system on `EntitySection`. Sections the player hasn't earned insight into show as redacted. This applies to Unseen items (visible as placeholders to hint at what exists) and to hidden effects on Known items (e.g., a cursed ring's drift effect isn't shown until the player discovers it).
+
+### 4. Encounter Aftermath (Reward/Penalty Display)
+
+When an encounter resolves and grants rewards or inflicts conditions, the aftermath view must make every attachment and condition **clickable**.
+
+**Aftermath reward/penalty display:**
+
+```
+┌─ Encounter Complete ─────────────────────────┐
+│                                              │
+│  Road Ambush — Success                       │
+│                                              │
+│  "The bandits scatter. Among the wreckage,   │
+│   something catches your eye..."             │
+│                                              │
+│  ── Gained ────────────────────────────────  │
+│  ⚔ Blackiron Blade     Tier 2  weapon  [→]  │
+│  ◆ Stolen Coin Purse    Tier 1  wealth  [→]  │
+│  ★ +0.05 reputation                          │
+│                                              │
+│  ── Suffered ──────────────────────────────  │
+│  ✦ Bruised Ribs        Tier 1  wound   [→]  │
+│                                              │
+│  [ Continue ]                                │
+└──────────────────────────────────────────────┘
+```
+
+**Rules:**
+
+- Every attachment/condition line is a clickable `AttachmentRow`
+- Clicking opens the **detail modal** for that specific item/condition, overlaid on the aftermath view
+- The `[→]` indicator signals clickability (or the whole row highlights on hover)
+- Non-attachment rewards (reputation, wealth score, prosperity) are shown as plain text lines — not clickable
+- Gained items show slot tag as a subtle label (helps player understand inventory impact)
+- Suffered conditions show condition slot tag + duration if applicable
+- If gaining an item triggers a slot overflow, show an inline warning: "Rusty Mace deactivated — weapon slots full (2/2)"
+- The aftermath view does NOT auto-dismiss — player must click "Continue" (this is a learning moment)
+
+**Penalty display for conditions:**
+
+- Wounds, diseases, curses show with a red/amber left-border accent
+- Blessings show with gold/warm accent
+- Duration shown inline: "Bruised Ribs · 20 ticks"
+- Clicking opens the condition detail modal with cure information
+
+### 5. Debug Panel
+
+The debug CLI gains slot inspection commands:
+
+| Command | Output |
+|---------|--------|
+| `slots <agent>` | All slot usage: tag, count/cap, active/inactive breakdown |
+| `overflow <agent>` | Items currently inactive + disposal status |
+| `conditions <agent>` | All conditions with remaining ticks + slot usage |
+| `codex` | Summary: total items known, held, unseen per category |
 
 ---
 
