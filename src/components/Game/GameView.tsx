@@ -1875,7 +1875,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (meetingState) return;
     if (!meetTheFirstAvailable) return;
 
-    // Find avatar's current location — must be a habitable place (not monster lairs or ruins)
+    // Find avatar's current location — must be a place where people live
+    // (dilemmas describe merchants, guards, children, councils — needs a settlement)
     if (!avatarNodeId) return;
     const avatarLocEdge = gameState.graph.getOutgoingEdges(avatarNodeId, 'located_at')[0];
     if (!avatarLocEdge) return;
@@ -1883,8 +1884,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     const locNode = gameState.graph.getNode(locationId);
     if (!locNode) return;
     const subtype = locNode.properties.locationSubtype as string | undefined;
-    const excludedTypes = ['monster_lair', 'ruin', 'ruins', 'dungeon', 'wilderness'];
-    if (subtype && excludedTypes.includes(subtype)) return;
+    const settledTypes = ['town', 'city', 'hamlet', 'village', 'capital', 'port', 'outpost', 'fortress', 'monastery', 'trading_post'];
+    if (!subtype || !settledTypes.includes(subtype)) return;
 
     // All conditions met — auto-trigger once
     gameState.meetTheFirstAutoTriggered = true;
