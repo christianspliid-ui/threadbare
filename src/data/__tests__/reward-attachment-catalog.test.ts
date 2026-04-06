@@ -8,9 +8,9 @@ import { POSSESSION_SUBCATEGORIES } from '../../types/attachments';
 
 describe('reward-attachment-catalog', () => {
   describe('REWARD_POSSESSIONS', () => {
-    it('has ~50 entries', () => {
+    it('has ~84 entries', () => {
       expect(REWARD_POSSESSIONS.length).toBeGreaterThanOrEqual(45);
-      expect(REWARD_POSSESSIONS.length).toBeLessThanOrEqual(80);
+      expect(REWARD_POSSESSIONS.length).toBeLessThanOrEqual(100);
     });
 
     it('all entries have type artifact', () => {
