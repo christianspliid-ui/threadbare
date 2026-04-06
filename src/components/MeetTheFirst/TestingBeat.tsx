@@ -110,7 +110,10 @@ export function TestingBeat({ candidate, dilemmas, godVoiceOverride, onComplete 
             characterPosition={currentDilemmaIdx % 2 === 0 ? 'left' : 'right'}
           >
             {/* Prose area */}
-            <div className="px-8 pb-8 max-w-3xl mx-auto" style={{ paddingLeft: '38vw' }}>
+            <div className="pb-8" style={{
+              paddingLeft: currentDilemmaIdx % 2 === 0 ? '38vw' : '8vw',
+              paddingRight: currentDilemmaIdx % 2 === 0 ? '8vw' : '38vw',
+            }}>
               {/* God voice */}
               <p
                 style={{
