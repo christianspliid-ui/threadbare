@@ -32,6 +32,7 @@ npm run dev    # start Vite dev server with hot reload
 |-----------|-------------|
 | `?view=game` | **Primary dev view.** Full game view with Three.js hex map (HexMapV2) and all game chrome. Use this for all hex map and gameplay testing. |
 | `?view=glow` | Magic glow tile preview |
+| `?view=codex` | Game codex — browsable catalog of divine actions, possessions, conditions, agreements, mortal actions |
 | `?view=cms` | Content browser |
 | `?nofog` | Disable fog of war (fog is ON by default). Combinable: `?view=game&nofog` |
 
