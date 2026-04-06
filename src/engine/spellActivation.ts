@@ -98,17 +98,20 @@ export function checkPrerequisites(
   // Check required traits
   if (prereqs.requiredTraits) {
     const traitEdges = graph.getOutgoingEdges(agentId, 'has_trait');
-    const traitNames = new Set<string>();
+    // traitKeys includes node IDs, names, and tags for backward-compatible matching
+    const traitKeys = new Set<string>();
     for (const edge of traitEdges) {
+      traitKeys.add(edge.target); // canonical: trait node ID (e.g. trait.culture.culture_0)
       const traitNode = graph.getNode(edge.target);
       if (traitNode) {
-        traitNames.add(traitNode.properties.name as string ?? '');
+        const name = traitNode.properties.name as string | undefined;
+        if (name) traitKeys.add(name);
         const tags = traitNode.properties.tags as string[] | undefined;
-        if (tags) tags.forEach(t => traitNames.add(t));
+        if (tags) tags.forEach(t => traitKeys.add(t));
       }
     }
     for (const req of prereqs.requiredTraits) {
-      if (!traitNames.has(req)) {
+      if (!traitKeys.has(req)) {
         return { met: false, reason: `Missing required trait: ${req}` };
       }
     }
