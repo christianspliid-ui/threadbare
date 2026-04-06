@@ -159,8 +159,8 @@ export function createFogOverlayMesh(
   // the background plane just ensures no scene content is visible beyond the grid.
   const planeMat = new THREE.MeshBasicMaterial({
     color: new THREE.Color(getActivePalette().sceneBackground),
-    depthTest: true,
-    depthWrite: true,
+    depthTest: false,     // Render regardless of depth — purely visual filler
+    depthWrite: false,    // Must NOT write depth — would block terrain on visible hexes
     side: THREE.FrontSide,
   });
 

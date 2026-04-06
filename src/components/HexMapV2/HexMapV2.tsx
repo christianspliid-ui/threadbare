@@ -1248,6 +1248,11 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
 
       const hex = screenToHex(e.nativeEvent.offsetX, e.nativeEvent.offsetY, camera, canvas);
       if (hex) {
+        // Block clicks on unexplored hexes (fog of war)
+        if (fogEnabledRef.current && visibilityMapRef.current) {
+          const hexVis = visibilityMapRef.current.get(`${hex.col},${hex.row}`);
+          if (hexVis?.state === 'unexplored') return;
+        }
         onHexClick(hex);
       }
     };
