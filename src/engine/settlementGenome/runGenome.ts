@@ -217,11 +217,42 @@ export function runSettlementGenome(
   };
 }
 
-/** Compute settlement reach scores from factions, NPCs, and sublocations present. Stub for v1. */
+/** Compute settlement reach scores by aggregating reachWeights from factions at this location. */
 export function computeSettlementReaches(
-  _graph: WorldGraph,
-  _locationId: string,
+  graph: WorldGraph,
+  locationId: string,
 ): Partial<Record<ReachDomain, number>> {
-  // Stub: returns empty. Task 8 implements full computation.
-  return {};
+  const reaches: Partial<Record<ReachDomain, number>> = {};
+
+  // Faction contributions via located_at edges (faction is located at this settlement)
+  const locatedAtEdges = graph.getIncomingEdges(locationId, 'located_at');
+  for (const edge of locatedAtEdges) {
+    const actor = graph.getNode(edge.source);
+    if (!actor || actor.properties.actorType !== 'faction') continue;
+    const weights = actor.properties.reachWeights as Partial<Record<ReachDomain, number>> | undefined;
+    if (!weights) continue;
+    for (const [reach, weight] of Object.entries(weights)) {
+      reaches[reach as ReachDomain] = (reaches[reach as ReachDomain] ?? 0) + (weight ?? 0);
+    }
+  }
+
+  // Faction contributions via member_of edges (faction is a member of this location/group)
+  const memberEdges = graph.getIncomingEdges(locationId, 'member_of');
+  for (const edge of memberEdges) {
+    const actor = graph.getNode(edge.source);
+    if (!actor || actor.properties.actorType !== 'faction') continue;
+    const weights = actor.properties.reachWeights as Partial<Record<ReachDomain, number>> | undefined;
+    if (!weights) continue;
+    for (const [reach, weight] of Object.entries(weights)) {
+      reaches[reach as ReachDomain] = (reaches[reach as ReachDomain] ?? 0) + (weight ?? 0);
+    }
+  }
+
+  // Normalize all values to 0–1 range so no single faction dominates absolutely
+  const maxVal = Math.max(...Object.values(reaches).map(v => v ?? 0), 1);
+  for (const key of Object.keys(reaches)) {
+    reaches[key as ReachDomain] = (reaches[key as ReachDomain] ?? 0) / maxVal;
+  }
+
+  return reaches;
 }
