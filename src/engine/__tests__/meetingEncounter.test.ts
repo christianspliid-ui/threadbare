@@ -70,15 +70,15 @@ function buildTestGraph() {
 // ─── Type Definitions ─────────────────────────────────────────────
 
 describe('Meeting encounter types', () => {
-  it('INTENT_OPTIONS covers all 9 reaches', () => {
+  it('INTENT_OPTIONS covers all 8 reaches', () => {
     const reaches = INTENT_OPTIONS.map(o => o.reach);
     for (const r of REACH_DOMAINS) {
       expect(reaches).toContain(r);
     }
   });
 
-  it('ARCHETYPE_NAME_MAP has 81 entries (9×9)', () => {
-    expect(Object.keys(ARCHETYPE_NAME_MAP).length).toBe(81);
+  it('ARCHETYPE_NAME_MAP has 64 entries (8×8)', () => {
+    expect(Object.keys(ARCHETYPE_NAME_MAP).length).toBe(64);
   });
 
   it('ARCHETYPE_NAME_MAP covers all primary×secondary combinations', () => {

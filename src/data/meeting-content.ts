@@ -12,7 +12,7 @@ import type { ReachDomain } from '../types/traits';
 import type { DilemmaTemplate } from '../types/meetingEncounter';
 import type { SparkInvestmentOption } from '../types/meetingEncounter';
 
-// ─── Archetype Name Map (81 combinations: primary × secondary reach) ──
+// ─── Archetype Name Map (64 combinations: primary × secondary reach) ──
 
 /**
  * One archetype name per primary×secondary reach combination.
@@ -29,7 +29,6 @@ export const ARCHETYPE_NAME_MAP: Record<string, string> = {
   iron_eye:      'Tactician',
   iron_stone:    'Sentinel',
   iron_star:     'Crusader',
-  iron_flesh:    'Berserker',
 
   // ── Gold primary ──
   gold_iron:     'Arms Dealer',
@@ -40,7 +39,6 @@ export const ARCHETYPE_NAME_MAP: Record<string, string> = {
   gold_eye:      'Spymaster',
   gold_stone:    'Architect',
   gold_star:     'Benefactor',
-  gold_flesh:    'Healer',
 
   // ── Shadow primary ──
   shadow_iron:   'Saboteur',
@@ -51,7 +49,6 @@ export const ARCHETYPE_NAME_MAP: Record<string, string> = {
   shadow_eye:    'Infiltrator',
   shadow_stone:  'Tunneler',
   shadow_star:   'Heretic',
-  shadow_flesh:  'Poisoner',
 
   // ── Veil primary ──
   veil_iron:     'Warlock',
@@ -62,7 +59,6 @@ export const ARCHETYPE_NAME_MAP: Record<string, string> = {
   veil_eye:      'Diviner',
   veil_stone:    'Runecaster',
   veil_star:     'Mystic',
-  veil_flesh:    'Shapeshifter',
 
   // ── Heart primary ──
   heart_iron:    'War Chief',
@@ -73,7 +69,6 @@ export const ARCHETYPE_NAME_MAP: Record<string, string> = {
   heart_eye:     'Counselor',
   heart_stone:   'Elder',
   heart_star:    'Martyr',
-  heart_flesh:   'Hearthkeeper',
 
   // ── Eye primary ──
   eye_iron:      'Scout',
@@ -84,7 +79,6 @@ export const ARCHETYPE_NAME_MAP: Record<string, string> = {
   eye_eye:       'Watcher',
   eye_stone:     'Cartographer',
   eye_star:      'Astrologer',
-  eye_flesh:     'Tracker',
 
   // ── Stone primary ──
   stone_iron:    'Siegemaster',
@@ -95,7 +89,6 @@ export const ARCHETYPE_NAME_MAP: Record<string, string> = {
   stone_eye:     'Geomancer',
   stone_stone:   'Monolith',
   stone_star:    'Monument Keeper',
-  stone_flesh:   'Golemwright',
 
   // ── Star primary ──
   star_iron:     'Templar',
@@ -106,18 +99,6 @@ export const ARCHETYPE_NAME_MAP: Record<string, string> = {
   star_eye:      'Seer',
   star_stone:    'Anchorite',
   star_star:     'Saint',
-  star_flesh:    'Flagellant',
-
-  // ── Flesh primary ──
-  flesh_iron:    'Gladiator',
-  flesh_gold:    'Brewer',
-  flesh_shadow:  'Contortionist',
-  flesh_veil:    'Alchemist',
-  flesh_heart:   'Midwife',
-  flesh_eye:     'Bloodhound',
-  flesh_stone:   'Stonemason',
-  flesh_star:    'Ascetic',
-  flesh_flesh:   'Survivor',
 };
 
 // ─── Starter Dilemma Templates ────────────────────────────────────
@@ -293,7 +274,7 @@ export const DILEMMA_TEMPLATES: DilemmaTemplate[] = [
         text: 'She takes the jagged blade. The ugly truth is: the dead don\'t care about form.',
         godAction: 'You flood her with the raw instinct of survival.',
         axiologicalShifts: { mercy_ruthlessness: -0.1 },
-        reachChanges: { iron: 0.05, flesh: 0.02 },
+        reachChanges: { iron: 0.05 },
         gateTags: ['ruthless_origin', 'blood_on_hands'],
         traitSeeds: ['savage'],
       },
@@ -589,88 +570,6 @@ export const DILEMMA_TEMPLATES: DilemmaTemplate[] = [
     ],
   },
 
-  // ── Phase 6 additions: flesh reach dilemmas ──
-  {
-    id: 'flesh_survival',
-    reach: 'gold',
-    title: 'The Body\'s Price',
-    sceneProse: 'The candidate has pushed past every physical limit. Their body is a map of scars, each one a lesson in survival. Now they face a trial that demands not skill but raw endurance — the kind that breaks bones and tests the will to live.',
-    tensionProse: 'The body screams to stop. Every fiber begs for mercy. But something deeper — something primal — refuses to yield.',
-    choices: [
-      {
-        id: 'flesh_1_endure',
-        text: 'The candidate pushes through the pain. Their body will remember this.',
-        godAction: 'You feel the thread vibrate with their agony — and their refusal to surrender.',
-        axiologicalShifts: { courage_prudence: 0.15, sacrifice_selfishness: 0.1 },
-        reachChanges: { flesh: 0.08 },
-        gateTags: ['endured_agony', 'body_tested'],
-        traitSeeds: ['resilient'],
-      },
-      {
-        id: 'flesh_1_adapt',
-        text: 'They find another way — not through the wall but around it.',
-        godAction: 'Cleverness over brute force. The body is preserved, the lesson different.',
-        axiologicalShifts: { courage_prudence: -0.1 },
-        reachChanges: { flesh: 0.03, eye: 0.03 },
-        gateTags: ['adapted'],
-        traitSeeds: ['adaptive'],
-      },
-    ],
-  },
-  {
-    id: 'flesh_healing',
-    reach: 'gold',
-    title: 'The Healer\'s Burden',
-    sceneProse: 'Someone lies dying. The candidate has the knowledge — crude, hard-won, written in scar tissue — to save them. But the effort will cost something. Healing always does, when it comes from the flesh rather than from magic.',
-    tensionProse: 'Blood for blood. Life for life. The oldest transaction in the world waits to be completed.',
-    choices: [
-      {
-        id: 'flesh_2_heal',
-        text: 'The candidate gives their own vitality to save the dying. The price is paid in years.',
-        godAction: 'You watch them diminish so another might live. The thread aches with the beauty of it.',
-        axiologicalShifts: { sacrifice_selfishness: 0.2, mercy_ruthlessness: 0.15 },
-        reachChanges: { flesh: 0.08, heart: 0.03 },
-        gateTags: ['showed_mercy', 'body_tested'],
-        traitSeeds: ['scarred-healer'],
-      },
-      {
-        id: 'flesh_2_refuse',
-        text: 'The candidate walks away. They cannot save everyone.',
-        godAction: 'A harsh lesson, but survival requires it. Not everyone can be saved.',
-        axiologicalShifts: { mercy_ruthlessness: -0.15, sacrifice_selfishness: -0.1 },
-        reachChanges: { flesh: 0.03 },
-        gateTags: ['pragmatic'],
-        traitSeeds: ['hardened'],
-      },
-    ],
-  },
-  {
-    id: 'star_communion',
-    reach: 'star',
-    title: 'The Voice from Above',
-    sceneProse: 'In a place of ancient worship, the candidate kneels — not from obedience but from the weight of something pressing down from the sky. The divine presence is overwhelming here, almost unbearable.',
-    tensionProse: 'To open oneself to the divine is to risk being consumed by it. Faith is not safety. It is the willingness to be unmade and remade.',
-    choices: [
-      {
-        id: 'star_3_open',
-        text: 'The candidate opens themselves fully. Whatever comes, they will receive it.',
-        godAction: 'For one blazing instant, mortal and divine share the same breath.',
-        axiologicalShifts: { sacrifice_selfishness: 0.15, tradition_novelty: 0.1 },
-        reachChanges: { star: 0.08 },
-        gateTags: ['divine_communion', 'transcendent_moment'],
-        traitSeeds: ['star-touched'],
-      },
-      {
-        id: 'star_3_shield',
-        text: 'The candidate shields their mind. They accept the divine — on their own terms.',
-        godAction: 'Boundaries. Even with a god. Admirable — or infuriating.',
-        axiologicalShifts: { preservation_transformation: -0.1 },
-        reachChanges: { star: 0.03, eye: 0.02 },
-        gateTags: ['independent_faith'],
-        traitSeeds: ['wary-devout'],
-      },
-    ],
-  },
 ];
 
 // ─── Spark Investment Options ─────────────────────────────────────
@@ -693,7 +592,6 @@ export function getSparkInvestmentOptions(
     eye:    'You sharpen their sight beyond mortal limits',
     stone:  'You root them in the deep places of the earth',
     star:   'You kindle the divine spark within them',
-    flesh:  'You awaken the sleeping beast in their blood',
   };
 
   return [
@@ -741,7 +639,6 @@ export const GOD_GIVEN_TRAITS: GodGivenTraitOption[] = [
   { id: 'trait.god.all_seeing',      name: 'All-Seeing',       description: 'Nothing escapes their gaze',            reach: 'eye' },
   { id: 'trait.god.stone_blood',     name: 'Stone Blood',      description: 'Endurance beyond mortal limits',        reach: 'stone' },
   { id: 'trait.god.star_touched',    name: 'Star-Touched',     description: 'A connection to the cosmic order',      reach: 'star' },
-  { id: 'trait.god.vital_surge',     name: 'Vital Surge',      description: 'Life force that overwhelms and heals',  reach: 'gold' },
 ];
 
 /**
