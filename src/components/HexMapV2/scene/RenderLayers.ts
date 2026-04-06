@@ -20,9 +20,11 @@ export const RENDER_ORDER = {
   ANOMALY_SHIMMER:8.2,   // Between signifiers and locations — undiscovered hint glow
   ANOMALY_HALO:   8.5,   // Between shimmer and locations — discovered ground ring
   LOCATIONS:      9,
+  THREADS:           9.5,   // Relationship thread lines — below agent sprites
   AGENTS:            10,
   ARMIES:            10.5,  // Above agents (10), below events (11)
   BATTLE_INDICATORS: 10.8,  // Above armies, below events
+  ACTIVITY_ICONS:    10.9,  // Reach micro-icons — above combat indicators, below events
   EVENTS:            11,
   LABELS:            12,
   FOG:               13,
@@ -46,9 +48,11 @@ export const LAYER_Z = {
   ANOMALY_HALO:    0.075,   // Between signifiers and locations — discovered ground ring
   LOCATIONS:       0.080,
   TRAILS:          0.085,
+  THREADS:           5.500,  // Relationship thread lines — below agent sprites
   AGENTS:            6.000,  // Above 3D model geometry (city towers extend ~5 units above base)
   ARMIES:            6.050,  // Above agents but below events
   BATTLE_INDICATORS: 6.080,  // Above armies, below events
+  ACTIVITY_ICONS:    6.090,  // Reach micro-icons — above combat indicators, below events
   PARTICLE_BURST:    6.060,  // Sphere-colored particle effects above battles, below events
   EVENTS:            6.100,
 } as const;
