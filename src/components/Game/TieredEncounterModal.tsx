@@ -611,22 +611,26 @@ function PeekGate({ essence, onPeek }: { essence: number; onPeek: () => void }) 
 
 /** TTS narrate button — reads .chronicle-prose elements */
 function NarrateButton({ containerRef }: { containerRef: React.RefObject<HTMLDivElement | null> }) {
-  const { isSpeaking, narrateChronicle, stop, enabled } = useNarration();
+  const { isSpeaking, narrateChronicle, stop, enabled, status, isAvailable, initWorker } = useNarration();
 
   const handleNarrate = useCallback(() => {
+    if (isAvailable) {
+      initWorker();
+      return;
+    }
     if (isSpeaking) {
       stop();
       return;
     }
     narrateChronicle(containerRef.current);
-  }, [isSpeaking, stop, narrateChronicle, containerRef]);
+  }, [isAvailable, initWorker, isSpeaking, stop, narrateChronicle, containerRef]);
 
-  if (!enabled) return null;
+  if (!enabled || status === 'idle') return null;
 
   return (
     <button
       onClick={handleNarrate}
-      title={isSpeaking ? 'Stop narration' : 'Narrate this encounter'}
+      title={isAvailable ? 'Download voice narration (~90MB)' : isSpeaking ? 'Stop narration' : 'Narrate this encounter'}
       className="inline-flex items-center gap-1.5 rounded-full text-xs font-semibold uppercase tracking-wider"
       style={{
         padding: '4px 10px',
@@ -640,7 +644,7 @@ function NarrateButton({ containerRef }: { containerRef: React.RefObject<HTMLDiv
       }}
     >
       {isSpeaking ? '■' : '▶'}
-      <span>{isSpeaking ? 'Stop' : 'Narrate'}</span>
+      <span>{isAvailable ? 'Enable Voice' : isSpeaking ? 'Stop' : 'Narrate'}</span>
     </button>
   );
 }

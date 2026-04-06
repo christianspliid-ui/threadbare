@@ -802,7 +802,7 @@ export const LocationView = memo(function LocationView({
 
   // ── TTS narration ──
   const proseRef = useRef<HTMLDivElement>(null);
-  const { enabled: narrationEnabled, isLoading, isSpeaking, speak, stop: stopNarration } = useNarration();
+  const { enabled: narrationEnabled, status: narrationStatus, isLoading, isSpeaking, isAvailable, initWorker, speak, stop: stopNarration } = useNarration();
 
   const handleNarrateProse = useCallback(() => {
     if (isSpeaking || isLoading) {
@@ -969,38 +969,66 @@ export const LocationView = memo(function LocationView({
             }}
           >
             {/* TTS narrate button */}
-            {narrationEnabled && (
-              <button
-                onClick={handleNarrateProse}
-                title={isSpeaking ? 'Stop narration' : isLoading ? 'Loading...' : 'Narrate description'}
-                aria-label={isSpeaking ? 'Stop narration' : 'Narrate description'}
-                style={{
-                  position: 'absolute',
-                  top: '8px',
-                  right: '8px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '22px',
-                  height: '22px',
-                  background: 'none',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: '50%',
-                  cursor: isLoading ? 'wait' : 'pointer',
-                  color: isSpeaking ? 'var(--accent-gold)' : 'var(--text-tertiary)',
-                  padding: 0,
-                  flexShrink: 0,
-                  transition: 'color 0.2s, border-color 0.2s',
-                }}
-              >
-                {isLoading ? (
-                  <Loader2 size={10} style={{ animation: 'spin 1s linear infinite' }} />
-                ) : isSpeaking ? (
-                  <Square size={8} />
-                ) : (
+            {narrationEnabled && narrationStatus !== 'idle' && (
+              isAvailable ? (
+                <button
+                  onClick={() => initWorker()}
+                  title="Download voice narration (~90MB)"
+                  aria-label="Enable voice narration"
+                  style={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: '8px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '22px',
+                    height: '22px',
+                    background: 'none',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: '50%',
+                    cursor: 'pointer',
+                    color: 'var(--text-tertiary)',
+                    padding: 0,
+                    flexShrink: 0,
+                    transition: 'color 0.2s, border-color 0.2s',
+                  }}
+                >
                   <Play size={10} style={{ marginLeft: '1px' }} />
-                )}
-              </button>
+                </button>
+              ) : (
+                <button
+                  onClick={handleNarrateProse}
+                  title={isSpeaking ? 'Stop narration' : isLoading ? 'Loading...' : 'Narrate description'}
+                  aria-label={isSpeaking ? 'Stop narration' : 'Narrate description'}
+                  style={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: '8px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '22px',
+                    height: '22px',
+                    background: 'none',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: '50%',
+                    cursor: isLoading ? 'wait' : 'pointer',
+                    color: isSpeaking ? 'var(--accent-gold)' : 'var(--text-tertiary)',
+                    padding: 0,
+                    flexShrink: 0,
+                    transition: 'color 0.2s, border-color 0.2s',
+                  }}
+                >
+                  {isLoading ? (
+                    <Loader2 size={10} style={{ animation: 'spin 1s linear infinite' }} />
+                  ) : isSpeaking ? (
+                    <Square size={8} />
+                  ) : (
+                    <Play size={10} style={{ marginLeft: '1px' }} />
+                  )}
+                </button>
+              )
             )}
             <div className="space-y-3">
               {locationProse.split('\n\n').map((para, idx) => (

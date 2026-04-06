@@ -131,7 +131,7 @@ export function EncounterStage({
     () => new Map(model.narrative.references.map(reference => [reference.id, reference])),
     [model.narrative.references],
   );
-  const { enabled: narrationEnabled, isLoading, isSpeaking, speak, stop } = useNarration();
+  const { enabled: narrationEnabled, status: narrationStatus, isLoading, isSpeaking, isAvailable, initWorker, speak, stop } = useNarration();
   const [activeNarrationId, setActiveNarrationId] = useState<string | null>(null);
   const [selectedChoiceId, setSelectedChoiceId] = useState<string | null>(null);
   const currentStepId = useMemo(
@@ -168,7 +168,7 @@ export function EncounterStage({
   }, []);
 
   const handleNarrate = useCallback(async (id: string, text: string) => {
-    if (!narrationEnabled || !text.trim()) return;
+    if (!narrationEnabled || narrationStatus === 'idle' || !text.trim()) return;
 
     if (isSpeaking && activeNarrationId === id) {
       stop();
@@ -186,10 +186,38 @@ export function EncounterStage({
     } finally {
       setActiveNarrationId(current => (current === id ? null : current));
     }
-  }, [activeNarrationId, isSpeaking, narrationEnabled, speak, stop]);
+  }, [activeNarrationId, isSpeaking, narrationEnabled, narrationStatus, speak, stop]);
 
   const getNarrationButton = useCallback((id: string, text: string, label: string) => {
-    if (!narrationEnabled) return null;
+    if (!narrationEnabled || narrationStatus === 'idle') return null;
+
+    if (isAvailable) {
+      return (
+        <button
+          type="button"
+          onClick={() => initWorker()}
+          title="Download voice narration (~90MB)"
+          aria-label="Enable voice narration"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '22px',
+            height: '22px',
+            background: 'none',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: '50%',
+            cursor: 'pointer',
+            color: 'var(--text-tertiary)',
+            padding: 0,
+            flexShrink: 0,
+            transition: 'color 0.2s, border-color 0.2s',
+          }}
+        >
+          <Play size={10} style={{ marginLeft: '1px' }} />
+        </button>
+      );
+    }
 
     const isActive = activeNarrationId === id;
 
@@ -226,7 +254,7 @@ export function EncounterStage({
         )}
       </button>
     );
-  }, [activeNarrationId, handleNarrate, isLoading, isSpeaking, narrationEnabled]);
+  }, [activeNarrationId, handleNarrate, initWorker, isAvailable, isLoading, isSpeaking, narrationEnabled, narrationStatus]);
 
   const handleSelectChoice = useCallback((choiceId: string) => {
     const choice = model.choices.find(entry => entry.id === choiceId);

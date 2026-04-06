@@ -142,7 +142,7 @@ export const HexChronicle = memo(function HexChronicle({
   const peopleRef = useRef<HTMLDivElement>(null);
   const placesRef = useRef<HTMLDivElement>(null);
   const ruinsRef = useRef<HTMLDivElement>(null);
-  const { enabled: narrationEnabled, isLoading, isSpeaking, narrateChronicle, stop: stopNarration } = useNarration();
+  const { enabled: narrationEnabled, status: narrationStatus, isLoading, isSpeaking, isAvailable, initWorker, narrateChronicle, stop: stopNarration } = useNarration();
 
   // Stop narration when hex changes
   const prevHexKey = useRef(`${hexCol},${hexRow}`);
@@ -483,8 +483,23 @@ export const HexChronicle = memo(function HexChronicle({
     transition: 'color 0.2s, border-color 0.2s',
   };
 
-  const renderPlayBtn = (ref: React.RefObject<HTMLDivElement | null>, chapterName: string) =>
-    narrationEnabled ? (
+  const renderPlayBtn = (ref: React.RefObject<HTMLDivElement | null>, chapterName: string) => {
+    if (!narrationEnabled || narrationStatus === 'idle') return null;
+
+    if (isAvailable) {
+      return (
+        <button
+          onClick={() => initWorker()}
+          title="Download voice narration (~90MB)"
+          aria-label="Enable voice narration"
+          style={playBtnStyle}
+        >
+          <Play size={10} style={{ marginLeft: '1px' }} />
+        </button>
+      );
+    }
+
+    return (
       <button
         onClick={() => handleNarrateChapter(ref)}
         title={isSpeaking ? 'Stop narration' : isLoading ? 'Loading...' : `Narrate ${chapterName}`}
@@ -499,7 +514,8 @@ export const HexChronicle = memo(function HexChronicle({
           <Play size={10} style={{ marginLeft: '1px' }} />
         )}
       </button>
-    ) : null;
+    );
+  };
 
   return (
     <div
