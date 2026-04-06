@@ -516,14 +516,19 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     return map;
   }, [gameState.activeThreadTugs]);
 
-  // ── Attention ratio — scales thread line opacity in the Three.js layer ──
-  // Reads attentionPool and attentionCapacity from the ascendant node properties.
-  const attentionRatio = useMemo<number>(() => {
+  // ── Attention pool/capacity — component-level so they're in scope everywhere ──
+  const { attentionPool, attentionCapacity } = useMemo(() => {
     const ascNode = gameState.graph.getNode(gameState.ascendantId);
-    const pool = (ascNode?.properties?.attentionPool as number) ?? ATTENTION_BASE_CAPACITY;
-    const cap  = (ascNode?.properties?.attentionCapacity as number) ?? ATTENTION_BASE_CAPACITY;
-    return cap > 0 ? Math.min(1, pool / cap) : 1;
+    return {
+      attentionPool:    (ascNode?.properties?.attentionPool    as number) ?? ATTENTION_BASE_CAPACITY,
+      attentionCapacity:(ascNode?.properties?.attentionCapacity as number) ?? ATTENTION_BASE_CAPACITY,
+    };
   }, [gameState.graph, gameState.ascendantId, runtime.worldVersion]);
+
+  // ── Attention ratio — scales thread line opacity in the Three.js layer ──
+  const attentionRatio = useMemo<number>(() => {
+    return attentionCapacity > 0 ? Math.min(1, attentionPool / attentionCapacity) : 1;
+  }, [attentionPool, attentionCapacity]);
 
   // ── Activity icon render data (active encounters → per-agent reach icons) ──
   // Rebuilds on worldVersion so icons appear/disappear as encounters start/end.
@@ -2127,8 +2132,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           {/* Attention pool indicator — shows how much focused attention the ascendant has left */}
           {(() => {
             const ascNode = gameState.graph.getNode(gameState.ascendantId);
-            const attentionPool = (ascNode?.properties?.attentionPool as number) ?? 6;
-            const attentionCapacity = (ascNode?.properties?.attentionCapacity as number) ?? 6;
             const attentionRegen = (ascNode?.properties?.attentionRegen as number) ?? 0.4;
             return (
               <>
