@@ -368,6 +368,7 @@ export function initializeGameState(
     pendingEncounterSeeds: [],
     hiddenMarks: [],
     intelligenceRecords: [],
+    meetTheFirstAutoTriggered: false,
     worldSoul: {
       fundament,
       resonance: createResonanceState(),

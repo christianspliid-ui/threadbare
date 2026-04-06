@@ -203,6 +203,9 @@ export interface GameState {
   // Cleared each tick. Each shock traces back to a discrete cause (encounter, route loss, etc.)
   prosperityShocks?: ProsperityShock[];
 
+  // Onboarding — one-shot flags for auto-triggered encounters
+  meetTheFirstAutoTriggered?: boolean;
+
   // Metaprogression (persists across cycles)
   worldSoul: WorldSoulState;
   echoDefinitions: EchoDefinition[];

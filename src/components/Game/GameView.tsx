@@ -1859,6 +1859,34 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     isMeetTheFirstAvailable(gameState.graph, gameState.ascendantId, gameState.tick),
   [gameState.graph, gameState.ascendantId, gameState.tick]);
 
+  // ── Auto-trigger Meet The First on first populated location ──
+  useEffect(() => {
+    if (gameState.tick < 2) return; // let the world settle
+    if (gameState.meetTheFirstAutoTriggered) return;
+    if (meetingState) return;
+    if (!meetTheFirstAvailable) return;
+
+    // Find avatar's current location
+    const avatarLocEdge = gameState.graph.getEdgesFrom(gameState.avatarId)
+      .find((e: { type: string }) => e.type === 'located_at');
+    if (!avatarLocEdge) return;
+    const locationId = avatarLocEdge.targetId;
+
+    // Check if the location has agents (populated)
+    const hasAgents = gameState.graph.getEdgesTo(locationId)
+      .some((e: { type: string; sourceId: string }) => {
+        if (e.type !== 'located_at') return false;
+        const node = gameState.graph.getNode(e.sourceId);
+        return node?.properties?.actorType === 'individual';
+      });
+    if (!hasAgents) return;
+
+    // All conditions met — auto-trigger once
+    setGameState(prev => ({ ...prev, meetTheFirstAutoTriggered: true }));
+    handleStartMeeting(locationId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameState.tick, meetTheFirstAvailable, meetingState, gameState.meetTheFirstAutoTriggered]);
+
   // Inject Meet The First card into non-agent slots when on a location view
   const enrichedNonAgentSlots = useMemo(() => {
     const base = nonAgentSlots ?? [];
