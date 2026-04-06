@@ -353,6 +353,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     });
   }, [fogDisabled, gameState.visibilityMap]);
 
+  // ── Ascendant Lens (Hunger-based intent derivation for meetings) ──
+  const ascendantLens = useMemo<AscendantLens>(
+    () => buildStubAscendantLens(archetype.sphereAlignment.primary, archetype.sphereAlignment.secondary),
+    [archetype.sphereAlignment.primary, archetype.sphereAlignment.secondary],
+  );
+
   // ── Shared actor + faction lookups (single graph traversal per tick) ──
   // TB-086: Key off runtime.worldVersion, not graph identity (graph is mutated in place)
   const actors = useMemo(() => gameState.graph.getNodesByType('actor'), [gameState.graph, runtime.worldVersion]);

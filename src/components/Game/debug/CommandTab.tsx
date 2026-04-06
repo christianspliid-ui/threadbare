@@ -212,6 +212,17 @@ export function CommandTab({ retinueAgents = [], followAgentId }: CommandTabProp
       ].filter(Boolean).join('\n');
     }
 
+    if (parsed.kind === 'fog') {
+      if (!window.__DEBUG) return 'Debug bridge not available';
+      if (parsed.mode === 'toggle') {
+        const newState = window.__DEBUG.toggleFog();
+        return `Fog of war: ${newState ? 'ON' : 'OFF'}`;
+      }
+      const enabled = parsed.mode === 'on';
+      window.__DEBUG.setFog(enabled);
+      return `Fog of war: ${enabled ? 'ON' : 'OFF'}`;
+    }
+
     const inspect = window.__DEBUG.inspectEncounterPipeline(parsed.agentFilter);
     return formatInspectResult(inspect);
   };

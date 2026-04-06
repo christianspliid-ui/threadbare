@@ -318,5 +318,12 @@ export function parseDebugCommand(input: string): ParsedDebugCommand | { error: 
     return { kind: 'inspect-encounters', agentFilter: rest[0] };
   }
 
+  if (head === 'fog') {
+    const mode = tokens[1]?.toLowerCase();
+    if (mode === 'on') return { kind: 'fog', mode: 'on' };
+    if (mode === 'off') return { kind: 'fog', mode: 'off' };
+    return { kind: 'fog', mode: 'toggle' };
+  }
+
   return { error: `Unknown command '${tokens.join(' ')}'.` };
 }
