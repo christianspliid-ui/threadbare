@@ -18,6 +18,7 @@ import * as THREE from 'three';
 import type { HexTile } from '../../../types';
 import { hexToWorld } from '../../../lib/worldPosition';
 import { buildHexGeometry, HEX_CONSTANTS } from './HexFillMesh';
+import { HEX_SCALE_X, HEX_SCALE_Y } from '../../../lib/hexMath';
 import { RENDER_ORDER, LAYER_Z } from './RenderLayers';
 import { PARCHMENT_FOG_CONSTANTS } from './fogShader';
 
@@ -71,6 +72,8 @@ const OVERLAY_FRAGMENT_SHADER = /* glsl */ `
 
 export interface FogOverlayResult {
   mesh: THREE.InstancedMesh;
+  /** Large background plane covering area beyond the hex grid */
+  backgroundPlane: THREE.Mesh;
   /** Per-instance alpha buffer: 1.0 = unexplored (opaque), 0.0 = visible/remembered */
   alphaBuffer: Float32Array;
   /** Hex key ("col,row") → instance index */
@@ -86,10 +89,14 @@ export interface FogOverlayResult {
  * The overlay starts fully opaque (all hexes unexplored).
  *
  * @param tiles - All hex tiles in the grid
+ * @param cols - Grid width in hexes
+ * @param rows - Grid height in hexes
  * @param parchmentTexture - Pre-loaded parchment texture (null = solid fallback)
  */
 export function createFogOverlayMesh(
   tiles: HexTile[],
+  cols: number,
+  rows: number,
   parchmentTexture: THREE.Texture | null,
 ): FogOverlayResult {
   const geo = buildHexGeometry(HEX_CONSTANTS.HEX_SIZE);
@@ -136,7 +143,43 @@ export function createFogOverlayMesh(
 
   mesh.instanceMatrix.needsUpdate = true;
 
-  return { mesh, alphaBuffer, indexByKey };
+  // ── Background plane — extends parchment far beyond the hex grid ──
+  // Covers 3x the map dimensions in each direction so the edge is never visible.
+  // Uses a simple textured quad at the same Z, rendered just before the hex overlay.
+  const mapWorldWidth = cols * HEX_CONSTANTS.HEX_SIZE * HEX_SCALE_X;
+  const mapWorldHeight = rows * HEX_CONSTANTS.HEX_SIZE * HEX_SCALE_Y;
+  const padding = Math.max(mapWorldWidth, mapWorldHeight) * 2; // 2x map dimension of padding — generous coverage
+  const planeWidth = mapWorldWidth + padding * 2;
+  const planeHeight = mapWorldHeight + padding * 2;
+
+  const planeGeo = new THREE.PlaneGeometry(planeWidth, planeHeight);
+  const planeMat = new THREE.MeshBasicMaterial({
+    color: new THREE.Color(PARCHMENT_FOG_CONSTANTS.PARCHMENT_FALLBACK_COLOR),
+    depthTest: true,
+    depthWrite: true,
+    side: THREE.FrontSide,
+  });
+
+  // If parchment texture is available, tile it across the plane
+  if (parchmentTexture) {
+    const tileTex = parchmentTexture.clone();
+    tileTex.wrapS = THREE.RepeatWrapping;
+    tileTex.wrapT = THREE.RepeatWrapping;
+    // Scale repeats so each hex-sized region gets roughly one texture tile
+    tileTex.repeat.set(planeWidth / (HEX_CONSTANTS.HEX_SIZE * 2), planeHeight / (HEX_CONSTANTS.HEX_SIZE * 2));
+    tileTex.needsUpdate = true;
+    planeMat.map = tileTex;
+    planeMat.needsUpdate = true;
+  }
+
+  const backgroundPlane = new THREE.Mesh(planeGeo, planeMat);
+  // Center the plane on the map center
+  const centerX = (cols - 1) * HEX_CONSTANTS.HEX_SIZE * HEX_SCALE_X / 2;
+  const centerY = -((rows - 1) * HEX_CONSTANTS.HEX_SIZE * HEX_SCALE_Y / 2);
+  backgroundPlane.position.set(centerX, centerY, LAYER_Z.FOG_OVERLAY - 0.001); // Slightly behind hex overlay
+  backgroundPlane.renderOrder = RENDER_ORDER.FOG - 0.1; // Render just before hex overlay
+
+  return { mesh, backgroundPlane, alphaBuffer, indexByKey };
 }
 
 /**
@@ -174,7 +217,22 @@ export function updateFogOverlayTexture(
   result: FogOverlayResult,
   texture: THREE.Texture,
 ): void {
+  // Update hex overlay shader uniform
   const mat = result.mesh.material as THREE.ShaderMaterial;
   mat.uniforms.uParchmentTex.value = texture;
   mat.uniforms.uHasTexture.value = 1.0;
+
+  // Update background plane texture
+  const planeMat = result.backgroundPlane.material as THREE.MeshBasicMaterial;
+  const tileTex = texture.clone();
+  tileTex.wrapS = THREE.RepeatWrapping;
+  tileTex.wrapT = THREE.RepeatWrapping;
+  // Match the repeat scale from the plane geometry
+  const planeGeo = result.backgroundPlane.geometry as THREE.PlaneGeometry;
+  const planeWidth = planeGeo.parameters.width;
+  const planeHeight = planeGeo.parameters.height;
+  tileTex.repeat.set(planeWidth / (HEX_CONSTANTS.HEX_SIZE * 2), planeHeight / (HEX_CONSTANTS.HEX_SIZE * 2));
+  tileTex.needsUpdate = true;
+  planeMat.map = tileTex;
+  planeMat.needsUpdate = true;
 }

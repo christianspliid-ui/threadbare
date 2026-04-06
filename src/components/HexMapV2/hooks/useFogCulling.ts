@@ -136,6 +136,7 @@ export function useFogCulling({
       const overlay = fogOverlay.current;
       if (overlay) {
         overlay.mesh.visible = false;
+        overlay.backgroundPlane.visible = false;
       }
       return;
     }
@@ -185,6 +186,7 @@ export function useFogCulling({
     const overlay = fogOverlay.current;
     if (overlay) {
       overlay.mesh.visible = true;
+      overlay.backgroundPlane.visible = true;
       for (const [key, hexVis] of visibilityMap) {
         setFogOverlayAlpha(overlay, key, hexVis.state === 'unexplored' ? 1.0 : 0.0);
       }

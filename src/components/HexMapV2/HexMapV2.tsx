@@ -551,8 +551,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         waterFogStateRef.current = fillResult.waterFogState;
 
         // Build fog overlay mesh — parchment layer floating above all scene content
-        const fogOverlay = createFogOverlayMesh(tiles, parchmentTextureRef.current);
+        const fogOverlay = createFogOverlayMesh(tiles, cols, rows, parchmentTextureRef.current);
         scene.add(fogOverlay.mesh);
+        scene.add(fogOverlay.backgroundPlane);
         fogOverlayRef.current = fogOverlay;
 
         // Build global-to-mesh routing map for fog update (avoids re-scanning index arrays each fog update)
