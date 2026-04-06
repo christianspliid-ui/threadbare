@@ -15,6 +15,7 @@ import type {
   EssencePool,
 } from '../types/influence';
 import { BASE_MAX_ESSENCE } from '../types/influence';
+import type { AscendantIdentity } from '../types/remembrance';
 import type { AxiologicalProfile, ValuePair } from '../types/agent';
 import type { ReachDomain } from '../types/traits';
 import { REACH_DOMAINS } from '../types/traits';
@@ -169,6 +170,82 @@ export function createAscendant(
     id: `edge.located_at.${avatarId}`,
     source: avatarId,
     target: config.avatar.startLocationId,
+    type: 'located_at',
+    properties: {},
+  });
+
+  return { ascendantId, avatarId };
+}
+
+/**
+ * Create an Ascendant and its Avatar in the world graph from a full AscendantIdentity.
+ *
+ * This is the identity-based creation path used by the Remembrance character creation
+ * flow. It derives node IDs and sphere alignment directly from the identity, seeding
+ * the starting essence pool with higher values for the primary/secondary spheres.
+ *
+ * Creates:
+ * 1. Ascendant actor node with sphere alignment, seeded essence pool, personality
+ * 2. Avatar actor node (individual) at the starting location
+ * 3. avatar_of edge (avatar → ascendant)
+ * 4. located_at edge (avatar → starting location)
+ */
+export function createAscendantFromIdentity(
+  graph: WorldGraph,
+  identity: AscendantIdentity,
+  startLocationId: string,
+): CreateAscendantResult {
+  const ascendantId = `asc.${identity.hungerId}`;
+  const avatarId = `avatar.${identity.hungerId}`;
+
+  const startingPool: EssencePool = createStartingEssencePool();
+  startingPool[identity.sphereAlignment.primary] = 10;
+  startingPool[identity.sphereAlignment.secondary] = 8;
+
+  const ascendantProperties: AscendantProperties = {
+    actorType: 'ascendant',
+    sphereAlignment: identity.sphereAlignment,
+    essencePool: startingPool,
+    maxEssence: BASE_MAX_ESSENCE,
+    archetypeId: identity.hungerId,
+    interventionHistory: {},
+    avatarId,
+  };
+
+  // Create Ascendant node
+  graph.addNode({
+    id: ascendantId,
+    type: 'actor',
+    name: identity.divineName,
+    properties: ascendantProperties as unknown as Record<string, unknown>,
+  });
+
+  // Create Avatar node
+  graph.addNode({
+    id: avatarId,
+    type: 'actor',
+    name: identity.mortalName,
+    properties: {
+      actorType: 'individual',
+      formDescription: `The mortal echo of ${identity.divineName}`,
+      axiologicalProfile: identity.personalitySeed,
+    },
+  });
+
+  // Wire avatar_of edge
+  graph.addEdge({
+    id: `edge.avatar_of.${avatarId}`,
+    source: avatarId,
+    target: ascendantId,
+    type: 'avatar_of',
+    properties: {},
+  });
+
+  // Place avatar at starting location
+  graph.addEdge({
+    id: `edge.located_at.${avatarId}`,
+    source: avatarId,
+    target: startLocationId,
     type: 'located_at',
     properties: {},
   });

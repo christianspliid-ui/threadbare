@@ -10,6 +10,8 @@
 import type { CosmologyProfile, HexTile } from '../types';
 import type { AscendantArchetype } from '../types/influence';
 import type { GameState } from '../types/gameState';
+import type { AscendantIdentity } from '../types/remembrance';
+import { deriveCosmologyFromIdentity, deriveMapSize } from './remembrance';
 import { generateWorld } from './hexGrid';
 import type { RiverPath } from './worldGenData';
 import type { RegionData } from './regionTypes';
@@ -381,4 +383,54 @@ export function initializeGameState(
     lakeIds: worldGenResult.lakeIds,
     regionData: worldGenResult.regionData,
   };
+}
+
+/**
+ * Initialize a fresh GameState from a fully-resolved AscendantIdentity.
+ *
+ * This is the identity-based init path used after the Remembrance character creation
+ * flow. It derives cosmology and map size from the identity, then builds a compatible
+ * AscendantArchetype to hand off to the existing `initializeGameState` pipeline.
+ *
+ * @param identity - The resolved AscendantIdentity from the Remembrance flow
+ * @param seed - PRNG seed for deterministic world generation
+ * @param cosmologyOverride - Optional cosmology override (skips derivation from identity)
+ * @param mapSizeOverride - Optional map size override (skips hunger-based derivation)
+ * @returns The same shape as `initializeGameState`
+ */
+export function initializeGameStateFromIdentity(
+  identity: AscendantIdentity,
+  seed: number,
+  cosmologyOverride?: CosmologyProfile,
+  mapSizeOverride?: MapSizePreset,
+): ReturnType<typeof initializeGameState> {
+  const cosmology = cosmologyOverride ?? deriveCosmologyFromIdentity({
+    sphereAlignment: identity.sphereAlignment,
+    mortalTags: identity.mortalTags,
+    hungerId: identity.hungerId,
+  });
+
+  const mapSize = mapSizeOverride ?? deriveMapSize(identity.hungerId);
+  const { cols, rows } = MAP_SIZE_PRESETS[mapSize];
+
+  // Build a compatible archetype from the identity for the existing init path
+  const compatArchetype: AscendantArchetype = {
+    id: identity.hungerId,
+    name: identity.divineName,
+    title: identity.divineName,
+    description: `${identity.hungerName} — ${identity.mandateDirection}`,
+    sphereAlignment: identity.sphereAlignment,
+    startingDomainAffinities: identity.domainAffinities,
+    personalitySeed: identity.personalitySeed,
+    flavorText: identity.mandateDirection,
+  };
+
+  return initializeGameState(
+    compatArchetype,
+    identity.mortalName,
+    cosmology,
+    seed,
+    cols,
+    rows,
+  );
 }
