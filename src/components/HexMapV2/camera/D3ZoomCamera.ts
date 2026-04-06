@@ -8,7 +8,7 @@ import { HEX_CONSTANTS } from '../scene/HexFillMesh';
  * NFP #1: Every magic number is named here — tune by changing values.
  */
 export const CAMERA_CONSTANTS = {
-  MIN_ZOOM: 0.5,              // Full-world zoom — capped so fog overlay edge is never visible
+  MIN_ZOOM: 1.0,              // Full-world zoom — capped so map fills viewport and fog edge is never visible
   MAX_ZOOM: 20,               // Hero-local zoom (~600px/hex apparent)
   JUMP_TO_DURATION_MS: 500,   // Smooth fly-to duration in ms (CONTEXT.md decision)
   DEFAULT_ZOOM: 1.5,          // Starting zoom level — shows a comfortable region
