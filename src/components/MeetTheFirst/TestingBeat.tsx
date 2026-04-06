@@ -14,6 +14,11 @@ interface TestingBeatProps {
 
 const SCENE_BG = '#0a0a0f';
 
+/** Replace {agent.name} placeholders with the candidate's actual name. */
+function fillName(text: string, name: string): string {
+  return text.replace(/\{agent\.name\}/g, name);
+}
+
 export function TestingBeat({ candidate, dilemmas, godVoiceOverride, onComplete }: TestingBeatProps) {
   const [currentDilemmaIdx, setCurrentDilemmaIdx] = useState(-1); // -1 = transition in
   const [choices, setChoices] = useState<DilemmaChoiceRecord[]>([]);
@@ -125,7 +130,7 @@ export function TestingBeat({ candidate, dilemmas, godVoiceOverride, onComplete 
                   lineHeight: 1.6,
                 }}
               >
-                {godVoiceOverride ?? currentDilemma.godVoice}
+                {fillName(godVoiceOverride ?? currentDilemma.godVoice, candidate.name)}
               </p>
 
               {/* Setup prose */}
@@ -138,7 +143,7 @@ export function TestingBeat({ candidate, dilemmas, godVoiceOverride, onComplete 
                   lineHeight: 1.7,
                 }}
               >
-                {currentDilemma.setup}
+                {fillName(currentDilemma.setup, candidate.name)}
               </p>
 
               {/* Choices as prose fragments */}
@@ -172,7 +177,7 @@ export function TestingBeat({ candidate, dilemmas, godVoiceOverride, onComplete 
                       e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)';
                     }}
                   >
-                    {choice.text}
+                    {fillName(choice.text, candidate.name)}
                   </button>
                 ))}
               </div>
