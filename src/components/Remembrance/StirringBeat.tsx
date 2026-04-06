@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import type { StirringImage } from '../../types/remembrance';
+import { STIRRING_PLACEHOLDERS } from '../../data/stirring-images';
 
 interface StirringBeatProps {
   images: StirringImage[];
@@ -25,29 +26,39 @@ export function StirringBeat({ images, onSelect }: StirringBeatProps) {
       </p>
       <div className="grid grid-cols-2 gap-6 max-w-2xl transition-opacity duration-500"
            style={{ opacity: fading && !selectedId ? 0 : 1 }}>
-        {images.map(image => (
-          <button
-            key={image.id}
-            type="button"
-            onClick={() => handleSelect(image)}
-            data-testid={`stirring-${image.id}`}
-            className="relative overflow-hidden rounded-xl cursor-pointer transition-all duration-500"
-            style={{
-              aspectRatio: '16/10',
-              opacity: selectedId && selectedId !== image.id ? 0 : 1,
-              transform: selectedId === image.id ? 'scale(1.05)' : 'scale(1)',
-              boxShadow: selectedId === image.id ? '0 0 40px rgba(200,180,240,0.2)' : 'none',
-            }}
-          >
-            <div
-              className="w-full h-full bg-cover bg-center"
+        {images.map(image => {
+          const placeholder = STIRRING_PLACEHOLDERS[image.id];
+          return (
+            <button
+              key={image.id}
+              type="button"
+              onClick={() => handleSelect(image)}
+              data-testid={`stirring-${image.id}`}
+              className="relative overflow-hidden rounded-xl cursor-pointer transition-all duration-500"
               style={{
-                backgroundImage: `url(${image.imageAssetPath})`,
-                backgroundColor: 'rgba(255,255,255,0.05)',
+                aspectRatio: '16/10',
+                opacity: selectedId && selectedId !== image.id ? 0 : 1,
+                transform: selectedId === image.id ? 'scale(1.05)' : 'scale(1)',
+                boxShadow: selectedId === image.id ? '0 0 40px rgba(200,180,240,0.2)' : 'none',
+                border: '1px solid rgba(255,255,255,0.08)',
               }}
-            />
-          </button>
-        ))}
+            >
+              <div
+                className="w-full h-full bg-cover bg-center flex items-center justify-center"
+                style={{
+                  backgroundImage: `url(${image.imageAssetPath})`,
+                  background: placeholder?.gradient ?? 'rgba(255,255,255,0.05)',
+                }}
+              >
+                {placeholder && (
+                  <span className="text-sm italic" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                    {placeholder.label}
+                  </span>
+                )}
+              </div>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

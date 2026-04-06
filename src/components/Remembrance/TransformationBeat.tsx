@@ -71,7 +71,8 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
                       className="w-20 h-20 rounded-lg flex-shrink-0 bg-cover bg-center"
                       style={{
                         backgroundImage: `url(${hunger.imageAssetPath})`,
-                        backgroundColor: 'rgba(255,255,255,0.05)',
+                        background: 'linear-gradient(135deg, rgba(180,160,100,0.15), rgba(100,80,50,0.1))',
+                        border: '1px solid rgba(255,255,255,0.06)',
                       }}
                     />
                     <p className="text-sm leading-relaxed italic" style={{ color: '#d4c48a' }}>

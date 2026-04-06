@@ -52,7 +52,8 @@ export function RevealBeat({
         className="w-64 h-40 rounded-xl mb-10 bg-cover bg-center"
         style={{
           backgroundImage: `url(${hunger.imageAssetPath})`,
-          backgroundColor: 'rgba(255,255,255,0.05)',
+          background: `radial-gradient(ellipse at center, ${primaryColor}20, rgba(255,255,255,0.03))`,
+          border: '1px solid rgba(255,255,255,0.08)',
           boxShadow: `0 0 60px ${primaryColor}20`,
         }}
       />

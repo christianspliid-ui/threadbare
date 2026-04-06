@@ -41,7 +41,8 @@ export function FragmentCard({
           className="w-24 h-16 rounded-lg flex-shrink-0 bg-cover bg-center"
           style={{
             backgroundImage: `url(${imageAssetPath})`,
-            backgroundColor: 'rgba(255,255,255,0.05)',
+            background: `linear-gradient(135deg, ${accentColor}15, rgba(255,255,255,0.03))`,
+            border: '1px solid rgba(255,255,255,0.06)',
           }}
         />
         <p
