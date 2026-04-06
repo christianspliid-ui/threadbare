@@ -20,6 +20,7 @@
  *   essence        — print essence pool
  *   encounters     — list active encounters / unified actions
  *   factions       — list factions
+ *   genome <name>  — inspect settlement genome result (sublocations, NPCs, archetype)
  *   traces [N]     — show last N trace entries (default 10)
  *   seed           — print the current seed
  *   eval <expr>    — evaluate a JS expression with `state` in scope
@@ -463,6 +464,7 @@ function printHelp(): void {
   console.log(`  ${BOLD}essence${RESET}          Essence pool`);
   console.log(`  ${BOLD}encounters${RESET}       Active unified actions`);
   console.log(`  ${BOLD}factions${RESET}         List factions`);
+  console.log(`  ${BOLD}genome${RESET} <name>    Inspect settlement genome result (sublocations, NPCs, archetype)`);
   console.log(`  ${BOLD}traces${RESET} [N]       Show last N traces (default 10)`);
   console.log(`  ${BOLD}attention${RESET}        Ascendant attention pool state (alias: attn)`);
   console.log(`  ${BOLD}digest${RESET} [N]       Last N digest buffer entries (default 10)`);
@@ -909,6 +911,25 @@ function handleCommand(line: string): boolean {
         handleSpawnAttachment(subParts[1], subParts.slice(2).join(' '));
       } else {
         console.log(`${RED}Usage: spawn encounter|attachment <agent|@hero> <templateId>${RESET}`);
+      }
+      break;
+    }
+    case 'genome': {
+      const locationName = arg;
+      const loc = state.graph.getNodesByType('location')
+        .find(n => n.name.toLowerCase().includes(locationName.toLowerCase()));
+      if (!loc) { console.log(`${RED}No location matching "${locationName}"${RESET}`); break; }
+      const genome = loc.properties.genomeResult as any;
+      if (!genome) { console.log(`${YELLOW}${loc.name} has no genome result${RESET}`); break; }
+      console.log(`\n${BOLD}${loc.name}${RESET} (${loc.properties.locationSubtype})`);
+      if (genome.archetypeName) console.log(`  Archetype: ${CYAN}${genome.archetypeName}${RESET}`);
+      console.log(`  Sublocations: ${genome.sublocations?.length ?? 0}`);
+      for (const sub of (genome.sublocations ?? [])) {
+        console.log(`    [${DIM}${sub.sourcePass}${RESET}] ${sub.id} (${(sub.tags ?? []).join(', ')})`);
+      }
+      console.log(`  NPCs: ${genome.npcs?.length ?? 0}`);
+      for (const npc of (genome.npcs ?? [])) {
+        console.log(`    [${DIM}${npc.sourcePass}${RESET}] ${npc.role}`);
       }
       break;
     }
