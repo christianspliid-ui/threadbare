@@ -1,11 +1,13 @@
 import { useState, useCallback, useMemo, lazy, Suspense } from 'react';
 import type { CosmologyProfile, HexCoord, HexTile } from './types';
 import type { AscendantArchetype } from './types/influence';
+import type { AscendantIdentity } from './types/remembrance';
 import { createBalancedCosmology } from './engine/cosmology';
 import { generateWorld } from './engine/hexGrid';
 import { generateArchetypes } from './engine/ascendant';
 import { MAP_SIZE_PRESETS, DEFAULT_MAP_SIZE } from './engine/gameInit';
 import type { MapSizePreset } from './engine/gameInit';
+import { deriveCosmologyFromIdentity, deriveMapSize } from './engine/remembrance';
 import HexMapV2 from './components/HexMapV2/HexMapV2';
 import { CosmologyPanel } from './components/Cosmology/CosmologyPanel';
 import { InfoPanel } from './components/UI/InfoPanel';
@@ -14,6 +16,7 @@ import { GameView } from './components/Game/GameView';
 import { MagicGlowTiles } from './components/UI/MagicGlowTiles';
 import { HexV2View } from './components/HexMapV2/HexV2View';
 import { StartPage } from './components/StartPage/StartPage';
+import { RemembranceFlow } from './components/Remembrance/RemembranceFlow';
 
 const ContentBrowser = lazy(() => import('./components/CMS/ContentBrowser'));
 
@@ -26,7 +29,9 @@ type GamePhase =
   | { phase: 'start' }
   | { phase: 'worldgen' }
   | { phase: 'selection' }
-  | { phase: 'playing'; archetype: AscendantArchetype; avatarName: string };
+  | { phase: 'remembrance' }
+  | { phase: 'playing'; archetype: AscendantArchetype; avatarName: string }
+  | { phase: 'playing-remembrance'; identity: AscendantIdentity };
 
 /** Parse ?size= URL param into a valid MapSizePreset, falling back to default. */
 function parseMapSizeParam(): MapSizePreset {
@@ -105,7 +110,24 @@ function App() {
 
   // ── Start screen (default entry point) ──
   if (gamePhase.phase === 'start') {
-    return <StartPage onNewWorld={() => setGamePhase({ phase: 'worldgen' })} />;
+    return (
+      <StartPage
+        onNewWorld={() => setGamePhase({ phase: 'remembrance' })}
+        onAdvancedNewWorld={() => setGamePhase({ phase: 'worldgen' })}
+      />
+    );
+  }
+
+  // ── Remembrance flow (new world creation) ──
+  if (gamePhase.phase === 'remembrance') {
+    return (
+      <RemembranceFlow
+        seed={seed}
+        onComplete={(identity) => {
+          setGamePhase({ phase: 'playing-remembrance', identity });
+        }}
+      />
+    );
   }
 
   // ── Ascendant selection screen ──
@@ -122,6 +144,36 @@ function App() {
         cosmology={cosmology}
         seed={seed}
         mapSize={mapSize}
+      />
+    );
+  }
+
+  // ── Game view (playing via remembrance flow) ──
+  if (gamePhase.phase === 'playing-remembrance') {
+    const compat: AscendantArchetype = {
+      id: gamePhase.identity.hungerId,
+      name: gamePhase.identity.divineName,
+      title: gamePhase.identity.divineName,
+      description: gamePhase.identity.mandateDirection,
+      sphereAlignment: gamePhase.identity.sphereAlignment,
+      startingDomainAffinities: gamePhase.identity.domainAffinities,
+      personalitySeed: gamePhase.identity.personalitySeed,
+      flavorText: gamePhase.identity.mandateDirection,
+    };
+
+    const derivedCosmology = deriveCosmologyFromIdentity({
+      sphereAlignment: gamePhase.identity.sphereAlignment,
+      mortalTags: gamePhase.identity.mortalTags,
+      hungerId: gamePhase.identity.hungerId,
+    });
+
+    return (
+      <GameView
+        archetype={compat}
+        avatarName={gamePhase.identity.mortalName}
+        cosmology={derivedCosmology}
+        seed={seed}
+        mapSize={deriveMapSize(gamePhase.identity.hungerId)}
       />
     );
   }

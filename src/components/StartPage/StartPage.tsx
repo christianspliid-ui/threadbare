@@ -17,9 +17,10 @@ import './StartPage.css';
 
 interface StartPageProps {
   onNewWorld: () => void;
+  onAdvancedNewWorld?: () => void;
 }
 
-export function StartPage({ onNewWorld }: StartPageProps) {
+export function StartPage({ onNewWorld, onAdvancedNewWorld }: StartPageProps) {
   const { play, muted, toggleMute, setVolume } = useThemeMusic();
   const [volume, setVolumeState] = useState(THEME_VOLUME_DEFAULT);
 
@@ -95,6 +96,16 @@ export function StartPage({ onNewWorld }: StartPageProps) {
               Credits
             </button>
           </nav>
+          {onAdvancedNewWorld && (
+            <button
+              type="button"
+              onClick={onAdvancedNewWorld}
+              className="text-xs mt-4 transition-colors cursor-pointer"
+              style={{ color: '#555', textDecoration: 'underline' }}
+            >
+              Advanced World Setup
+            </button>
+          )}
         </div>
         <button
           className="start-page__mute"
