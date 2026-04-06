@@ -8,7 +8,17 @@
 > Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
 > Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-114**.
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-116**.
+
+---
+
+## 📋 TB-115 · Culture-Seeded Agent Name Generation (2026-04-06)
+
+Replace the syllable-concatenation placeholder name generator (`generateCandidateName`) with culture-aware name tables. Agent names should draw from the culture seedings of their origin location — each culture produces names with distinct phonetic patterns, syllable structures, and naming conventions. Currently produces awkward names like "DakDraGar". Location and city names shown in dilemma prose (`{agent.location}`) should also draw from the same culture-seeded tables rather than using raw graph node names.
+
+**Touches:** `src/engine/meetingEncounter.ts` (`generateCandidateName`), culture data in world-model, location name generation
+**Depends on:** Culture seeding system
+**Needs design:** Yes — name table structure, per-culture phoneme pools, gendered/ungendered options, location name conventions per culture
 
 ---
 

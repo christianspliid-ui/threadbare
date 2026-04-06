@@ -314,6 +314,15 @@ export function phaseEncounterVisibility(
 
   if (threadedAgents.size === 0) return { notifications, events };
 
+  // Agents with pending compulsions — suppress encounter notifications so
+  // the Compulsion modal handles encounter selection instead of the legacy
+  // tiered encounter modal. Without this, both modals stack on the same tick.
+  const agentsWithPendingCompulsion = new Set(
+    (state.premonitionQueue ?? [])
+      .filter(p => p.type === 'compulsion' && p.eligibleUntilTick > tick)
+      .map(p => p.agentId),
+  );
+
   // Build a set of already-pending notification keys to avoid duplicates.
   // Include RESOLVED notifications for aftermath (otherwise dismissed aftermath modals
   // regenerate every tick) AND for unified_action steps (otherwise a player committing a
@@ -332,6 +341,9 @@ export function phaseEncounterVisibility(
 
     const threadInfo = threadedAgents.get(ep.actorId);
     if (!threadInfo) continue;
+
+    // Skip agents with pending compulsions — compulsion modal handles their encounters
+    if (agentsWithPendingCompulsion.has(ep.actorId)) continue;
 
     // Skip digest-only tiers — notifications are suppressed; outcome goes to digest buffer only.
     // Undefined effectiveTier (old records) preserves existing notification behavior.
@@ -405,6 +417,9 @@ export function phaseEncounterVisibility(
 
     const threadInfo = threadedAgents.get(action.actorId);
     if (!threadInfo) continue;
+
+    // Skip agents with pending compulsions — compulsion modal handles their encounters
+    if (agentsWithPendingCompulsion.has(action.actorId)) continue;
 
     // Skip digest-only tiers — notifications are suppressed; outcome goes to digest buffer only.
     // Undefined effectiveTier (old records) preserves existing notification behavior.

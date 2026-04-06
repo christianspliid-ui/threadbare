@@ -1848,6 +1848,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // Pause is handled by the general encounterModalOpen useEffect below
   useEffect(() => {
     if (interruptsSuppressed) return;
+    // Don't auto-open tiered encounters while a premonition modal is active —
+    // compulsion handles encounter selection for that agent
+    if (activePremonition) return;
     const notifications = gameState.encounterNotifications ?? [];
     if (suppressedEncounterNotificationId.current) {
       const suppressedStillPending = notifications.some(
@@ -1864,7 +1867,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       handleOpenEncounterFromNotification(notif);
       break; // Only one auto-interrupt at a time
     }
-  }, [gameState.encounterNotifications, handleOpenEncounterFromNotification, interruptsSuppressed]);
+  }, [gameState.encounterNotifications, handleOpenEncounterFromNotification, interruptsSuppressed, activePremonition]);
 
   // ── Meeting encounter (Meet The First) ──
   const [meetingState, setMeetingState] = useState<MeetingEncounterState | null>(null);
@@ -1875,7 +1878,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // ── Auto-pause when encounter modal opens, auto-resume on close ──
   /** Tracks whether the game was running before an encounter modal opened */
   const wasRunningBeforeEncounterPause = useRef<boolean>(false);
-  const encounterModalOpen = tieredEncounterState !== null || meetingState !== null;
+  const encounterModalOpen = tieredEncounterState !== null || meetingState !== null || activePremonition !== null;
 
   useEffect(() => {
     if (encounterModalOpen && running) {

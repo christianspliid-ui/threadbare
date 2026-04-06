@@ -32,6 +32,18 @@ function seededPick<T>(arr: T[], rng: () => number): T {
   return arr[Math.floor(rng() * arr.length)];
 }
 
+/** Map textual threat rating to 0..1 for cost scaling. */
+function threatToNorm(rating: string): number {
+  switch (rating) {
+    case 'trivial': return 0;
+    case 'easy':    return 0.25;
+    case 'moderate': return 0.5;
+    case 'hard':    return 0.75;
+    case 'deadly':  return 1;
+    default:        return 0.25;
+  }
+}
+
 function resolvePronouns(template: string, name: string): string {
   return template
     .replace(/\{name\}/g, name)
@@ -90,7 +102,7 @@ export function buildCompulsionEvent(
     const locationName = locationNode?.name ?? 'unknown';
 
     // Essence cost scales with threat
-    const threatNorm = (c.entry.threatRating - 1) / 4; // 0..1
+    const threatNorm = threatToNorm(c.entry.threatRating);
     const essenceCost = Math.round(
       COMPULSION_ESSENCE_COST_MIN + threatNorm * (COMPULSION_ESSENCE_COST_MAX - COMPULSION_ESSENCE_COST_MIN),
     );

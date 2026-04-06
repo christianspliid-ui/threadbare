@@ -50,8 +50,8 @@ export interface CompulsionCandidate {
   reach: ReachDomain;
   /** Dominant sphere affinity of the encounter */
   sphere: SphereName;
-  /** Encounter threat rating (1-5) */
-  threatRating: number;
+  /** Encounter threat rating label */
+  threatRating: string;
   /** Score from the scoring pipeline */
   score: number;
   /** Essence cost to compel this choice */
