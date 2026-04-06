@@ -10,6 +10,7 @@ import type { AxiologicalProfile } from './agent';
 import type { ReachDomain } from './traits';
 import type { MeetingChoiceRecord } from './meetingEncounter';
 import type { BeatOutcome, OrdealOutcome } from './journeyEngine';
+import type { AscendantIdentity } from './remembrance';
 
 // ─── Influence Essence ───────────────────────────────────────────────
 
@@ -152,6 +153,12 @@ export interface AvatarConfig {
  */
 export interface AscendantCreationConfig {
   archetype: AscendantArchetype;
+  avatar: AvatarConfig;
+}
+
+// AscendantIdentity is defined in src/types/remembrance.ts (Task 1 Step 1).
+export interface RemembranceCreationConfig {
+  identity: AscendantIdentity;
   avatar: AvatarConfig;
 }
 
