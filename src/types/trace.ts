@@ -43,7 +43,11 @@ export type TraceCategory =
   | 'meeting_sensing'
   | 'meeting_testing'
   | 'meeting_spark'
-  | 'meeting_bond';
+  | 'meeting_bond'
+  | 'settlement_genome'
+  | 'settlement_reassessment'
+  | 'culture_generation'
+  | 'culture_sublocation';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -76,6 +80,10 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'meeting_testing',
   'meeting_spark',
   'meeting_bond',
+  'settlement_genome',
+  'settlement_reassessment',
+  'culture_generation',
+  'culture_sublocation',
 ];
 
 /** Base shape for all trace entries */
@@ -632,6 +640,63 @@ export interface RarityImportanceTrace extends TraceBase {
   currentTier: RarityTier;
 }
 
+/** Trace: settlement genome pipeline result at worldgen or reassessment */
+export interface SettlementGenomeTrace extends TraceBase {
+  category: 'settlement_genome';
+  locationId: string;
+  locationName: string;
+  tier: string;
+  cultureBias: string;
+  cultureStrength: number;
+  spheresAboveThreshold: { sphere: string; value: number }[];
+  reachesAboveThreshold: { reach: string; value: number }[];
+  position: 'heartland' | 'borderland';
+  passContributions: {
+    infrastructure: string[];
+    culture: { substitutions: string[]; additions: string[] };
+    sphere: string[];
+    reach: string[];
+    archetype: string[] | null;
+  };
+  archetypeMatch: string | null;
+  totalSublocations: number;
+  totalNpcs: number;
+  npcBudgetUsed: number;
+  npcBudgetMax: number;
+}
+
+/** Trace: settlement reassessment triggered by tier change, reach shift, etc. */
+export interface SettlementReassessmentTrace extends TraceBase {
+  category: 'settlement_reassessment';
+  locationId: string;
+  trigger: 'promotion' | 'demotion' | 'reach_threshold' | 'faction_change' | 'vitality_crisis';
+  previousTier: string | null;
+  newTier: string | null;
+  sublocationsAdded: string[];
+  sublocationsRuined: string[];
+  archetypeChange: { from: string | null; to: string | null } | null;
+}
+
+/** Trace: culture identity generation and trait assignment */
+export interface CultureGenerationTrace extends TraceBase {
+  category: 'culture_generation';
+  cultureId: string;
+  demonym?: string;
+  traitNodeId?: string;
+  entityId?: string;
+  edgeCulturalStrength?: number;
+}
+
+/** Trace: cultural sublocation creation or ruin */
+export interface CultureSublocationTrace extends TraceBase {
+  category: 'culture_sublocation';
+  locationId: string;
+  sublocationId: string;
+  cultureId: string;
+  tier: string;
+  isSubstitution: boolean;
+}
+
 /** Discriminated union of all trace types */
 export type TraceEntry =
   | ActionSelectionTrace
@@ -683,7 +748,11 @@ export type TraceEntry =
   | SlotOverflowTrace
   | SlotDisposalTrace
   | ConditionOverflowTrace
-  | SlotExpansionTrace;
+  | SlotExpansionTrace
+  | SettlementGenomeTrace
+  | SettlementReassessmentTrace
+  | CultureGenerationTrace
+  | CultureSublocationTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {
