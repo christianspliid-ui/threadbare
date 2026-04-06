@@ -11,6 +11,9 @@
  *
  * NFP #1: All reach bonuses and probabilities are named values.
  * NFP #5: Every item has flavor text grounded in the anomaly narrative.
+ *
+ * Upgraded 2026-04-06: Migrated reachBonus/domainContributions to composable effects[].
+ * Pipeline: content-catalog-manager/upgrade-anomaly-rewards
  */
 
 import type { GraphNode } from '../types/graph';
@@ -31,10 +34,14 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
       subcategory: 'relics_talismans',
       tier: 2,
       tags: ['#gem', '#wealth', '#anomaly'],
-      mechanicalSummary: '+0.15 Gold reach',
-      reachBonus: { gold: 0.15 },
+      mechanicalSummary: '+0.10 Gold, +0.05 Gold while trading, 1.3x desire for Gold encounters',
       lossCondition: 'stealable',
       flavorText: 'A stone the size of a fist, still warm from the earth. Its facets catch light that isn\'t there.',
+      effects: [
+        { type: 'passive', reach: 'gold', value: 0.10 },
+        { type: 'conditional', condition: 'in_social', reach: 'gold', value: 0.05 },
+        { type: 'behavior_weight', reach: 'gold', multiplier: 1.3 },
+      ],
     } as PossessionNodeProperties,
   },
   // crystal_cavern → Resonance Shard
@@ -46,8 +53,7 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
       subcategory: 'relics_talismans',
       tier: 3,
       tags: ['#crystal', '#arcane', '#anomaly'],
-      mechanicalSummary: '+0.20 Veil reach, +0.10 Eye reach',
-      reachBonus: { veil: 0.20, eye: 0.10 },
+      mechanicalSummary: '+0.10 Veil, +0.05 Eye, +0.05 Veil in mystical contexts, shifts near-miss to success on Veil tests',
       lossCondition: 'breakable',
       flavorText: 'A finger-length crystal that hums when magic is near. Hold it too long and your teeth ache.',
       onUseTriggers: [
@@ -62,6 +68,12 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
           narrativeTemplate: 'The {item_name} pulses with dissonant harmonics. {actor}\'s vision blurs.',
         } as OnUseTrigger,
       ],
+      effects: [
+        { type: 'passive', reach: 'veil', value: 0.10 },
+        { type: 'passive', reach: 'eye', value: 0.05 },
+        { type: 'conditional', condition: 'in_mystical', reach: 'veil', value: 0.05 },
+        { type: 'test_shaper', reach: 'veil', trigger: 'near_miss', steps: 1 },
+      ],
     } as PossessionNodeProperties,
   },
   // golden_grove → Amber Phial
@@ -73,8 +85,7 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
       subcategory: 'provisions',
       tier: 2,
       tags: ['#nature', '#healing', '#anomaly'],
-      mechanicalSummary: '+0.10 Heart reach. First use: remove 1 wound.',
-      reachBonus: { heart: 0.10 },
+      mechanicalSummary: '+0.05 Heart, 3 charges of +0.06 Heart burst (golden sap doses)',
       lossCondition: 'consumable',
       flavorText: 'Thick golden sap in a sealed clay vessel. One dose — warm, sweet, and potent enough to mend what should not mend.',
       onUseTriggers: [
@@ -88,6 +99,10 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
           narrativeTemplate: 'The golden sap burns going down, but the {actor}\'s wounds close like flowers at dusk.',
         } as OnUseTrigger,
       ],
+      effects: [
+        { type: 'passive', reach: 'heart', value: 0.05 },
+        { type: 'consumable_charge', charges: 3, onUse: { reach: 'heart', value: 0.06 }, destroyOnEmpty: true },
+      ],
     } as PossessionNodeProperties,
   },
   // herb_garden → Herb Bundle
@@ -99,8 +114,7 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
       subcategory: 'provisions',
       tier: 1,
       tags: ['#herb', '#healing', '#anomaly'],
-      mechanicalSummary: 'First use: remove 1 wound.',
-      reachBonus: {},
+      mechanicalSummary: '+0.02 Heart in wilderness, 2 charges of +0.04 Heart burst',
       lossCondition: 'consumable',
       flavorText: 'Carefully dried rare medicinal plants, bound with twine. The scent alone eases pain.',
       onUseTriggers: [
@@ -114,6 +128,10 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
           narrativeTemplate: 'The herbs dissolve into a bitter tea. {actor}\'s breathing eases, and the wound fades to scar.',
         } as OnUseTrigger,
       ],
+      effects: [
+        { type: 'conditional', condition: 'in_wilderness', reach: 'heart', value: 0.02 },
+        { type: 'consumable_charge', charges: 2, onUse: { reach: 'heart', value: 0.04 }, destroyOnEmpty: true },
+      ],
     } as PossessionNodeProperties,
   },
   // ancient_vault → Sealed Codex
@@ -125,8 +143,7 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
       subcategory: 'tomes_scrolls',
       tier: 3,
       tags: ['#ancient', '#relic', '#anomaly'],
-      mechanicalSummary: '+0.20 Eye reach, +0.10 Star reach. First use: grant Vault Scholar trait.',
-      reachBonus: { eye: 0.20, star: 0.10 },
+      mechanicalSummary: '+0.10 Eye, +0.05 Star, +0.01 Eye per social success (max +0.05)',
       lossCondition: 'permanent',
       flavorText: 'Warded pages from before the fall — knowledge sealed in metal bindings that took centuries to corrode. The script is alien, but comprehensible.',
       onUseTriggers: [
@@ -141,6 +158,11 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
           narrativeTemplate: 'The Codex opens and {actor}\'s mind fills with knowledge from a world that fell. Not all of it is comfortable.',
         } as OnUseTrigger,
       ],
+      effects: [
+        { type: 'passive', reach: 'eye', value: 0.10 },
+        { type: 'passive', reach: 'star', value: 0.05 },
+        { type: 'stacking', reach: 'eye', valuePerStack: 0.01, maxStacks: 5, stackOn: 'social_success' },
+      ],
     } as PossessionNodeProperties,
   },
   // sunken_treasury → Corroded Crown
@@ -152,8 +174,7 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
       subcategory: 'relics_talismans',
       tier: 2,
       tags: ['#gold', '#cursed', '#anomaly'],
-      mechanicalSummary: '+0.20 Gold reach. 15% chance: Vault Curse on use.',
-      reachBonus: { gold: 0.20 },
+      mechanicalSummary: '+0.10 Gold, +0.05 Gold / -0.03 Heart (drowned king\'s price)',
       lossCondition: 'cursed',
       flavorText: 'A barnacled circlet from a drowned treasury. The dead king it belonged to is not entirely gone.',
       onUseTriggers: [
@@ -168,6 +189,10 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
           narrativeTemplate: 'The {item_name} grows cold against {actor}\'s brow. Something in the water remembers its owner.',
         } as OnUseTrigger,
       ],
+      effects: [
+        { type: 'passive', reach: 'gold', value: 0.10 },
+        { type: 'tradeoff', bonus: { reach: 'gold', value: 0.05 }, penalty: { reach: 'heart', value: 0.03 } },
+      ],
     } as PossessionNodeProperties,
   },
   // fossil_bed → Fossilized Eye
@@ -179,10 +204,14 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
       subcategory: 'relics_talismans',
       tier: 2,
       tags: ['#ancient', '#bone', '#anomaly'],
-      mechanicalSummary: '+0.10 Eye reach, +0.05 Veil reach',
-      reachBonus: { eye: 0.10, veil: 0.05 },
+      mechanicalSummary: '+0.05 Eye, +0.03 Veil, +1 awareness range',
       lossCondition: 'permanent',
       flavorText: 'An ancient creature\'s eye, perfectly preserved in amber. It watches back. It always watches back.',
+      effects: [
+        { type: 'passive', reach: 'eye', value: 0.05 },
+        { type: 'passive', reach: 'veil', value: 0.03 },
+        { type: 'range_modifier', awarenessRangeBonus: 1 },
+      ],
     } as PossessionNodeProperties,
   },
   // iron_seep → Star Metal Shard
@@ -194,10 +223,14 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
       subcategory: 'arms',
       tier: 3,
       tags: ['#star_metal', '#fate', '#anomaly'],
-      mechanicalSummary: '+0.15 Iron reach, +0.10 Star reach',
-      reachBonus: { iron: 0.15, star: 0.10 },
+      mechanicalSummary: '+0.08 Iron, +0.05 Star, active 6 ticks / dormant 12 ticks: +0.05 Iron (star alignment)',
       lossCondition: 'permanent',
       flavorText: 'Dense, dark metal from a fallen star. It is colder than iron, harder than steel, and the air around it tastes of distant places.',
+      effects: [
+        { type: 'passive', reach: 'iron', value: 0.08 },
+        { type: 'passive', reach: 'star', value: 0.05 },
+        { type: 'cooldown', activeTicks: 6, cooldownTicks: 12, reach: 'iron', value: 0.05 },
+      ],
     } as PossessionNodeProperties,
   },
   // pearl_shoal → Moonpearl Strand
@@ -209,10 +242,14 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
       subcategory: 'vestments',
       tier: 2,
       tags: ['#pearl', '#devotion', '#anomaly'],
-      mechanicalSummary: '+0.15 Spirit reach',
-      reachBonus: { spirit: 0.15 },
+      mechanicalSummary: '+0.08 Heart, +0.05 Heart in social contexts, cooperates more readily with allies',
       lossCondition: 'permanent',
       flavorText: 'A string of flawless pearls, moon-white and warm to the touch. Folk say they calm the sea and soothe the restless dead.',
+      effects: [
+        { type: 'passive', reach: 'heart', value: 0.08 },
+        { type: 'conditional', condition: 'in_social', reach: 'heart', value: 0.05 },
+        { type: 'social_modifier', targetFilter: 'ally', cooperationBias: 0.15 },
+      ],
     } as PossessionNodeProperties,
   },
   // glowcap_hollow → Spore Lantern
@@ -224,8 +261,7 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
       subcategory: 'tools_instruments',
       tier: 2,
       tags: ['#fungus', '#vision', '#anomaly'],
-      mechanicalSummary: '+0.10 Eye reach. 20% chance: Spore Visions on use.',
-      reachBonus: { eye: 0.10 },
+      mechanicalSummary: '+0.05 Eye, +0.05 Eye in exploration, +0.02 Veil / -0.02 Heart (spore haze)',
       lossCondition: 'permanent',
       flavorText: 'Glowcap spores sealed in a glass jar. It illuminates and hallucinates in equal measure. Handle with care.',
       onUseTriggers: [
@@ -239,6 +275,11 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
           },
           narrativeTemplate: 'The {item_name}\'s glow brightens. {actor}\'s vision fractures into colours that have no name.',
         } as OnUseTrigger,
+      ],
+      effects: [
+        { type: 'passive', reach: 'eye', value: 0.05 },
+        { type: 'conditional', condition: 'in_exploration', reach: 'eye', value: 0.05 },
+        { type: 'tradeoff', bonus: { reach: 'veil', value: 0.02 }, penalty: { reach: 'heart', value: 0.02 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -261,8 +302,12 @@ export const ANOMALY_BESTOWED_POWERS: GraphNode[] = [
       maxLevel: 1,
       visibility: 'public',
       importance: 0.6,
-      domainContributions: { eye: 0.15 },
       flavorText: 'The earth has shown them its secret face. They will never look at stone the same way.',
+      effects: [
+        { type: 'passive', reach: 'eye', value: 0.08 },
+        { type: 'conditional', condition: 'in_exploration', reach: 'eye', value: 0.05 },
+        { type: 'behavior_weight', reach: 'gold', multiplier: 1.2 },
+      ],
     } as TraitDefinitionProperties,
   },
   {
@@ -277,8 +322,13 @@ export const ANOMALY_BESTOWED_POWERS: GraphNode[] = [
       maxLevel: 1,
       visibility: 'discoverable',
       importance: 0.7,
-      domainContributions: { veil: 0.15, eye: 0.10 },
       flavorText: 'The cavern\'s resonance lingers in their bones. They hear magic before they see it.',
+      effects: [
+        { type: 'passive', reach: 'veil', value: 0.08 },
+        { type: 'passive', reach: 'eye', value: 0.05 },
+        { type: 'conditional', condition: 'in_mystical', reach: 'veil', value: 0.05 },
+        { type: 'tag_immunity', tags: ['#dissonance'] },
+      ],
     } as TraitDefinitionProperties,
   },
   {
@@ -293,8 +343,12 @@ export const ANOMALY_BESTOWED_POWERS: GraphNode[] = [
       maxLevel: 1,
       visibility: 'public',
       importance: 0.5,
-      domainContributions: { heart: 0.10 },
       flavorText: 'There is golden light in their touch. Growing things lean toward them, and wounds close more easily in their presence.',
+      effects: [
+        { type: 'passive', reach: 'heart', value: 0.05 },
+        { type: 'conditional', condition: 'in_social', reach: 'heart', value: 0.04 },
+        { type: 'prevent_loss', channel: 'condition', tags: ['#wound'], consumeOnPrevent: false },
+      ],
     } as TraitDefinitionProperties,
   },
   {
@@ -309,8 +363,11 @@ export const ANOMALY_BESTOWED_POWERS: GraphNode[] = [
       maxLevel: 1,
       visibility: 'public',
       importance: 0.4,
-      domainContributions: { eye: 0.10 },
       flavorText: 'What others call weeds, they call a pharmacy. The wild apothecary taught them well.',
+      effects: [
+        { type: 'passive', reach: 'eye', value: 0.05 },
+        { type: 'conditional', condition: 'in_wilderness', reach: 'eye', value: 0.04 },
+      ],
     } as TraitDefinitionProperties,
   },
   {
@@ -325,8 +382,13 @@ export const ANOMALY_BESTOWED_POWERS: GraphNode[] = [
       maxLevel: 1,
       visibility: 'discoverable',
       importance: 0.7,
-      domainContributions: { eye: 0.15, stone: 0.10 },
       flavorText: 'The sealed chamber opened their mind. They read the old script as if born to it, and the past speaks clearly.',
+      effects: [
+        { type: 'passive', reach: 'eye', value: 0.08 },
+        { type: 'passive', reach: 'stone', value: 0.05 },
+        { type: 'conditional', condition: 'in_exploration', reach: 'eye', value: 0.04 },
+        { type: 'trait_grant', grantedTrait: 'ancient_reader' },
+      ],
     } as TraitDefinitionProperties,
   },
   {
@@ -341,8 +403,12 @@ export const ANOMALY_BESTOWED_POWERS: GraphNode[] = [
       maxLevel: 1,
       visibility: 'public',
       importance: 0.5,
-      domainContributions: { star: 0.15 },
       flavorText: 'The sea whispered its rhythms, and they listened. They know when the waters will part before the waters do.',
+      effects: [
+        { type: 'passive', reach: 'star', value: 0.08 },
+        { type: 'conditional', condition: 'near_water', reach: 'star', value: 0.06 },
+        { type: 'range_modifier', movementCostMultiplier: 0.9 },
+      ],
     } as TraitDefinitionProperties,
   },
   {
@@ -357,8 +423,12 @@ export const ANOMALY_BESTOWED_POWERS: GraphNode[] = [
       maxLevel: 1,
       visibility: 'discoverable',
       importance: 0.6,
-      domainContributions: { veil: 0.10, eye: 0.10 },
       flavorText: 'The dreaming light left traces in their sight. In deep shadow, they see colours no one else sees.',
+      effects: [
+        { type: 'passive', reach: 'veil', value: 0.05 },
+        { type: 'passive', reach: 'eye', value: 0.05 },
+        { type: 'tradeoff', bonus: { reach: 'veil', value: 0.04 }, penalty: { reach: 'heart', value: 0.02 } },
+      ],
     } as TraitDefinitionProperties,
   },
   {
@@ -373,8 +443,12 @@ export const ANOMALY_BESTOWED_POWERS: GraphNode[] = [
       maxLevel: 1,
       visibility: 'discoverable',
       importance: 0.6,
-      domainContributions: { iron: 0.10, star: 0.10 },
       flavorText: 'They drank the red water that flowed from the fallen star. Their blood runs darker now, and heavier, and it does not fear steel.',
+      effects: [
+        { type: 'passive', reach: 'iron', value: 0.05 },
+        { type: 'passive', reach: 'star', value: 0.05 },
+        { type: 'conditional', condition: 'in_combat', reach: 'iron', value: 0.05 },
+      ],
     } as TraitDefinitionProperties,
   },
 ];
@@ -396,8 +470,11 @@ export const ANOMALY_CONDITIONS: GraphNode[] = [
       maxLevel: 1,
       visibility: 'public',
       importance: 0.3,
-      domainContributions: { mind: -0.10 },
       flavorText: 'The singing of the crystals follows them. Every thought echoes twice.',
+      effects: [
+        { type: 'passive', reach: 'eye', value: -0.05 },
+        { type: 'conditional', condition: 'in_mystical', reach: 'veil', value: -0.04 },
+      ],
     } as TraitDefinitionProperties,
   },
   {
@@ -412,8 +489,12 @@ export const ANOMALY_CONDITIONS: GraphNode[] = [
       maxLevel: 1,
       visibility: 'public',
       importance: 0.3,
-      domainContributions: { heart: 0.15, iron: -0.10 },
       flavorText: 'Everything is warm and golden and slow. The urgency of the world seems very far away.',
+      effects: [
+        { type: 'passive', reach: 'heart', value: 0.08 },
+        { type: 'passive', reach: 'iron', value: -0.06 },
+        { type: 'social_modifier', targetFilter: 'any', cooperationBias: 0.1 },
+      ],
     } as TraitDefinitionProperties,
   },
   {
@@ -428,8 +509,11 @@ export const ANOMALY_CONDITIONS: GraphNode[] = [
       maxLevel: 1,
       visibility: 'discoverable',
       importance: 0.5,
-      domainContributions: { star: -0.15 },
       flavorText: 'Things go wrong around them. Small things first — a dropped tool, a missed step. Then larger things.',
+      effects: [
+        { type: 'passive', reach: 'star', value: -0.08 },
+        { type: 'stacking', reach: 'star', valuePerStack: -0.01, maxStacks: 5, stackOn: 'any_encounter' },
+      ],
     } as TraitDefinitionProperties,
   },
   {
@@ -444,8 +528,11 @@ export const ANOMALY_CONDITIONS: GraphNode[] = [
       maxLevel: 1,
       visibility: 'public',
       importance: 0.2,
-      domainContributions: { iron: -0.10 },
       flavorText: 'Every breath rattles. The salt is in their lungs and will take days to clear.',
+      effects: [
+        { type: 'passive', reach: 'iron', value: -0.06 },
+        { type: 'range_modifier', movementCostMultiplier: 1.2 },
+      ],
     } as TraitDefinitionProperties,
   },
   {
@@ -460,8 +547,12 @@ export const ANOMALY_CONDITIONS: GraphNode[] = [
       maxLevel: 1,
       visibility: 'discoverable',
       importance: 0.4,
-      domainContributions: { eye: 0.20, heart: -0.15 },
       flavorText: 'They see things — patterns in the dark, faces in the grain of wood, futures in the fall of leaves. But they cannot explain what they see, and they have stopped trying.',
+      effects: [
+        { type: 'passive', reach: 'eye', value: 0.10 },
+        { type: 'passive', reach: 'heart', value: -0.08 },
+        { type: 'range_modifier', awarenessRangeBonus: 1 },
+      ],
     } as TraitDefinitionProperties,
   },
   {
@@ -476,8 +567,12 @@ export const ANOMALY_CONDITIONS: GraphNode[] = [
       maxLevel: 1,
       visibility: 'discoverable',
       importance: 0.3,
-      domainContributions: { eye: 0.10, veil: 0.05 },
       flavorText: 'At night, when the world is still, they hear voices in a language no one has spoken for ten thousand years. They are beginning to understand.',
+      effects: [
+        { type: 'passive', reach: 'eye', value: 0.05 },
+        { type: 'passive', reach: 'veil', value: 0.03 },
+        { type: 'axiological_drift', axis: 'caution_curiosity', ratePerTick: 0.005, limitValue: 0.3 },
+      ],
     } as TraitDefinitionProperties,
   },
 ];
