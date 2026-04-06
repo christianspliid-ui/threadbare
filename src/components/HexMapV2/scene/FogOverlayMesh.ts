@@ -21,6 +21,7 @@ import { buildHexGeometry, HEX_CONSTANTS } from './HexFillMesh';
 import { HEX_SCALE_X, HEX_SCALE_Y } from '../../../lib/hexMath';
 import { RENDER_ORDER, LAYER_Z } from './RenderLayers';
 import { PARCHMENT_FOG_CONSTANTS } from './fogShader';
+import { getActivePalette } from '../palette/activePalette';
 
 // ── Overlay Shaders ──────────────────────────────────────────────────────────
 
@@ -153,24 +154,15 @@ export function createFogOverlayMesh(
   const planeHeight = mapWorldHeight + padding * 2;
 
   const planeGeo = new THREE.PlaneGeometry(planeWidth, planeHeight);
+  // Use scene background color so the plane is invisible against the canvas background.
+  // The hex overlay instances handle the parchment texture on the actual map area —
+  // the background plane just ensures no scene content is visible beyond the grid.
   const planeMat = new THREE.MeshBasicMaterial({
-    color: new THREE.Color(PARCHMENT_FOG_CONSTANTS.PARCHMENT_FALLBACK_COLOR),
+    color: new THREE.Color(getActivePalette().sceneBackground),
     depthTest: true,
     depthWrite: true,
     side: THREE.FrontSide,
   });
-
-  // If parchment texture is available, tile it across the plane
-  if (parchmentTexture) {
-    const tileTex = parchmentTexture.clone();
-    tileTex.wrapS = THREE.RepeatWrapping;
-    tileTex.wrapT = THREE.RepeatWrapping;
-    // Scale repeats so each hex-sized region gets roughly one texture tile
-    tileTex.repeat.set(planeWidth / (HEX_CONSTANTS.HEX_SIZE * 2), planeHeight / (HEX_CONSTANTS.HEX_SIZE * 2));
-    tileTex.needsUpdate = true;
-    planeMat.map = tileTex;
-    planeMat.needsUpdate = true;
-  }
 
   const backgroundPlane = new THREE.Mesh(planeGeo, planeMat);
   // Center the plane on the map center
@@ -221,18 +213,5 @@ export function updateFogOverlayTexture(
   const mat = result.mesh.material as THREE.ShaderMaterial;
   mat.uniforms.uParchmentTex.value = texture;
   mat.uniforms.uHasTexture.value = 1.0;
-
-  // Update background plane texture
-  const planeMat = result.backgroundPlane.material as THREE.MeshBasicMaterial;
-  const tileTex = texture.clone();
-  tileTex.wrapS = THREE.RepeatWrapping;
-  tileTex.wrapT = THREE.RepeatWrapping;
-  // Match the repeat scale from the plane geometry
-  const planeGeo = result.backgroundPlane.geometry as THREE.PlaneGeometry;
-  const planeWidth = planeGeo.parameters.width;
-  const planeHeight = planeGeo.parameters.height;
-  tileTex.repeat.set(planeWidth / (HEX_CONSTANTS.HEX_SIZE * 2), planeHeight / (HEX_CONSTANTS.HEX_SIZE * 2));
-  tileTex.needsUpdate = true;
-  planeMat.map = tileTex;
-  planeMat.needsUpdate = true;
+  // Background plane uses scene background color — no texture needed
 }
