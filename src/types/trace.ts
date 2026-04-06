@@ -5,6 +5,12 @@ import type { ModifierResolutionTrace } from './modifiers';
 import type { LapseReason } from './controlEffect';
 import type { NarrativeLayer } from './unifiedAction';
 import type { RarityTier } from './rarity';
+import type {
+  EncounterPromotionTrace,
+  CuratorDecisionTrace,
+  AttentionPoolTrace,
+  StoryBeatQueueTrace,
+} from './attention';
 
 /** Known trace categories for filtering in debug panel */
 export type TraceCategory =
@@ -25,7 +31,11 @@ export type TraceCategory =
   | 'faction_ambition'
   | 'reputation_trait'
   | 'rarity_graduation'
-  | 'rarity_importance';
+  | 'rarity_importance'
+  | 'encounter_promotion'
+  | 'curator_decision'
+  | 'attention_pool'
+  | 'story_beat_queue';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -46,6 +56,10 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'reputation_trait',
   'rarity_graduation',
   'rarity_importance',
+  'encounter_promotion',
+  'curator_decision',
+  'attention_pool',
+  'story_beat_queue',
 ];
 
 /** Base shape for all trace entries */
@@ -645,7 +659,11 @@ export type TraceEntry =
   | ReputationTraitTrace
   | GraphOpExecutionTrace
   | RarityGraduationTrace
-  | RarityImportanceTrace;
+  | RarityImportanceTrace
+  | EncounterPromotionTrace
+  | CuratorDecisionTrace
+  | AttentionPoolTrace
+  | StoryBeatQueueTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {

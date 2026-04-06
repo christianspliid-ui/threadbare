@@ -140,23 +140,22 @@ export interface AscendantAttentionState {
 export type AttentionVisualState = 'focused' | 'busy' | 'strained' | 'overwhelmed';
 
 // ─── Trace Types ──────────────────────────────────────────────────────
+// All extend TraceBase so they can join the TraceEntry discriminated union.
+
+import type { TraceBase } from './trace';
 
 /** Trace emitted when an encounter changes attention tier. */
-export interface EncounterPromotionTrace {
-  type: 'encounter_promotion';
-  tick: number;
+export interface EncounterPromotionTrace extends TraceBase {
+  category: 'encounter_promotion';
   encounterId: string;
-  agentId: string;
   fromTier: AttentionTier;
   toTier: AttentionTier;
   reason: StoryBeatPriority | string;
 }
 
 /** Trace emitted when the curator accepts or suppresses a digest entry. */
-export interface CuratorDecisionTrace {
-  type: 'curator_decision';
-  tick: number;
-  agentId: string;
+export interface CuratorDecisionTrace extends TraceBase {
+  category: 'curator_decision';
   encounterId: string;
   decision: 'kept' | 'curated_out';
   curationScore: number;
@@ -164,9 +163,8 @@ export interface CuratorDecisionTrace {
 }
 
 /** Trace emitted when the attention pool changes. */
-export interface AttentionPoolTrace {
-  type: 'attention_pool';
-  tick: number;
+export interface AttentionPoolTrace extends TraceBase {
+  category: 'attention_pool';
   previous: number;
   current: number;
   capacity: number;
@@ -175,11 +173,9 @@ export interface AttentionPoolTrace {
 }
 
 /** Trace emitted when a story beat enters or exits the queue. */
-export interface StoryBeatQueueTrace {
-  type: 'story_beat_queue';
-  tick: number;
+export interface StoryBeatQueueTrace extends TraceBase {
+  category: 'story_beat_queue';
   encounterId: string;
-  agentId: string;
   action: 'enqueued' | 'dequeued' | 'expired';
   priority: StoryBeatPriority;
   queueDepth: number;

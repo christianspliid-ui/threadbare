@@ -309,50 +309,31 @@ export function phaseAttention(
 
   // ── 7. Emit traces ─────────────────────────────────────────────────────────
 
-  const poolTrace: AttentionPoolTrace & { category: string; summary: string } = {
-    type:     'attention_pool',
+  emitTrace({
+    category: 'attention_pool',
     tick:     state.tick,
+    summary:  `attention pool regen +${regenAmount.toFixed(2)} → ${regenned.attentionPool.toFixed(2)}/${regenned.attentionCapacity}`,
     previous: prevPool,
     current:  regenned.attentionPool,
     capacity: regenned.attentionCapacity,
     delta:    regenAmount,
     cause:    'regen',
-    // TraceBase required fields
-    category: 'attention_pool',
-    summary:  `attention pool regen +${regenAmount.toFixed(2)} → ${regenned.attentionPool.toFixed(2)}/${regenned.attentionCapacity}`,
-  };
-  emitTrace(poolTrace as unknown as TraceEntry);
+  } satisfies Omit<AttentionPoolTrace, 'id' | 'timestamp'> as Omit<TraceEntry, 'id' | 'timestamp'>);
 
   for (const { candidate: c, score } of selected) {
-    const decTrace: CuratorDecisionTrace & { category: string; summary: string } = {
-      type:          'curator_decision',
-      tick:          state.tick,
-      agentId:       c.agentId,
-      encounterId:   c.encounterId,
-      decision:      'kept',
-      curationScore: score,
-      reason:        'selected_by_curator',
-      // TraceBase required fields
-      category: 'curator_decision',
-      summary:  `curator kept encounter ${c.encounterId} for agent ${c.agentId} (score ${score.toFixed(3)})`,
-    };
-    emitTrace(decTrace as unknown as TraceEntry);
+    emitTrace({
+      category: 'curator_decision', tick: state.tick, agentId: c.agentId,
+      summary: `curator kept encounter ${c.encounterId} for agent ${c.agentId} (score ${score.toFixed(3)})`,
+      encounterId: c.encounterId, decision: 'kept', curationScore: score, reason: 'selected_by_curator',
+    } satisfies Omit<CuratorDecisionTrace, 'id' | 'timestamp'> as Omit<TraceEntry, 'id' | 'timestamp'>);
   }
 
   for (const { candidate: c, score } of demoted) {
-    const decTrace: CuratorDecisionTrace & { category: string; summary: string } = {
-      type:          'curator_decision',
-      tick:          state.tick,
-      agentId:       c.agentId,
-      encounterId:   c.encounterId,
-      decision:      'curated_out',
-      curationScore: score,
-      reason:        'demoted_by_curator',
-      // TraceBase required fields
-      category: 'curator_decision',
-      summary:  `curator demoted encounter ${c.encounterId} for agent ${c.agentId} (score ${score.toFixed(3)})`,
-    };
-    emitTrace(decTrace as unknown as TraceEntry);
+    emitTrace({
+      category: 'curator_decision', tick: state.tick, agentId: c.agentId,
+      summary: `curator demoted encounter ${c.encounterId} for agent ${c.agentId} (score ${score.toFixed(3)})`,
+      encounterId: c.encounterId, decision: 'curated_out', curationScore: score, reason: 'demoted_by_curator',
+    } satisfies Omit<CuratorDecisionTrace, 'id' | 'timestamp'> as Omit<TraceEntry, 'id' | 'timestamp'>);
   }
 
   // ── 8. Pacing governor — story_beat encounters ────────────────────────────────
