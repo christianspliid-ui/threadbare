@@ -349,7 +349,7 @@ export function createRiverMesh(
   const mat = new THREE.MeshBasicMaterial({
     color: new THREE.Color(getActivePalette().waterOverrides['deep_ocean'] ?? WATER_PALETTE['deep_ocean']),
     side: THREE.DoubleSide,
-    depthTest: false,
+    depthTest: true,
   });
 
   const mesh = new THREE.Mesh(mergedGeo, mat);

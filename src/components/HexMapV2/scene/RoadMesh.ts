@@ -430,7 +430,7 @@ export function createRoadMesh(
         transparent: true,
         opacity: 0.85,
         side: THREE.DoubleSide,
-        depthTest: false,
+        depthTest: true,
       });
 
       const mesh = new THREE.Mesh(geo, mat);
@@ -474,7 +474,7 @@ export function createRoadMesh(
         transparent: true,
         opacity: 0.7,
         side: THREE.DoubleSide,
-        depthTest: false,
+        depthTest: true,
       });
 
       const mesh = new THREE.Mesh(geo, mat);
