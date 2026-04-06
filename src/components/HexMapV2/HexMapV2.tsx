@@ -370,8 +370,6 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const globalToMeshMapRef   = useRef<Map<number, { mesh: THREE.InstancedMesh; instanceIdx: number }> | null>(null);
     const originalColorsRef    = useRef<Float32Array | null>(null);
     const tileIndexByKeyRef    = useRef<Map<string, number> | null>(null);
-    const landFogStateRef      = useRef<Float32Array | null>(null);
-    const waterFogStateRef     = useRef<Float32Array | null>(null);
     const parchmentTextureRef  = useRef<THREE.Texture | null>(null);
     const fogOverlayRef        = useRef<FogOverlayResult | null>(null);
     // Visibility map ref — kept in sync with prop for use without closure staleness
@@ -392,18 +390,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           tex.wrapT = THREE.RepeatWrapping;
           tex.colorSpace = THREE.SRGBColorSpace;
           parchmentTextureRef.current = tex;
-          // Update material uniform if meshes already created
-          const land = landMeshRef.current;
-          const water = waterMeshRef.current;
-          if (land?.material && 'uniforms' in land.material) {
-            (land.material as THREE.ShaderMaterial).uniforms.uParchmentTex.value = tex;
-            (land.material as THREE.ShaderMaterial).uniforms.uHasTexture.value = 1.0;
-          }
-          if (water?.material && 'uniforms' in water.material) {
-            (water.material as THREE.ShaderMaterial).uniforms.uParchmentTex.value = tex;
-            (water.material as THREE.ShaderMaterial).uniforms.uHasTexture.value = 1.0;
-          }
-          // Update fog overlay texture too
+          // Update fog overlay texture if already created
           if (fogOverlayRef.current) {
             updateFogOverlayTexture(fogOverlayRef.current, tex);
           }
@@ -539,7 +526,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         // Water mesh renders as full hexagonal shapes with no stencil constraints.
         // Pass lakeIds so lake hexes (lakeId >= 0) are classified as water (Plan 03-01).
         const lakeIdsArg = lakeIdsRef.current.length > 0 ? lakeIdsRef.current : undefined;
-        const fillResult = createHexFillMesh(tiles, seed, lakeIdsArg, parchmentTextureRef.current);
+        const fillResult = createHexFillMesh(tiles, seed, lakeIdsArg);
         fillResult.landMesh.frustumCulled = true;
         fillResult.waterMesh.frustumCulled = true;
         scene.add(fillResult.landMesh);
@@ -547,8 +534,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         fillResultRef.current = fillResult;
         landMeshRef.current = fillResult.landMesh;
         waterMeshRef.current = fillResult.waterMesh;
-        landFogStateRef.current = fillResult.landFogState;
-        waterFogStateRef.current = fillResult.waterFogState;
+
 
         // Build fog overlay mesh — parchment layer floating above all scene content
         const fogOverlay = createFogOverlayMesh(tiles, cols, rows, parchmentTextureRef.current);
@@ -1100,8 +1086,6 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       tileIndexByKey: tileIndexByKeyRef,
       signifierGroup: signifierGroupRef,
       locationGroup: locationGroupRef,
-      landFogState: landFogStateRef,
-      waterFogState: waterFogStateRef,
       fogOverlay: fogOverlayRef,
     });
 
