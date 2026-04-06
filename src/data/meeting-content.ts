@@ -653,3 +653,60 @@ export function getGodGivenTraitOptions(
     t.reach === primaryReach || t.reach === secondaryReach
   );
 }
+
+// ─── Candidate Vignette Templates ──────────────────────────────────
+
+/**
+ * Short prose vignettes shown for each meeting candidate.
+ * Keyed by reach domain — candidates get a vignette matching their
+ * primary reach. Each reach has multiple templates to avoid repetition.
+ *
+ * Templates use {name} for the candidate's generated name and
+ * {location} for the meeting location.
+ */
+export const CANDIDATE_VIGNETTE_TEMPLATES: Record<ReachDomain, readonly string[]> = {
+  iron: [
+    '{name} stands at the edge of the sparring ring, watching the others with the calm patience of someone who has already decided how each of them would fall.',
+    '{name} sharpens a blade in the shadow of the wall, the strokes rhythmic and unhurried. The weapon is already sharp. The sharpening is for the mind.',
+    '{name} carries scars the way some people carry titles — as credentials, not complaints.',
+  ],
+  gold: [
+    '{name} counts the market stalls from the rooftop, lips moving, calculating margins that no one else has noticed exist.',
+    '{name} trades a copper ring for a meal, a meal for a favor, and a favor for a seat at the merchant council. All before noon.',
+    '{name} watches the caravan arrive and sees not goods but leverage.',
+  ],
+  shadow: [
+    '{name} sits in the corner where two walls meet, a position from which every entrance is visible and no one can approach unseen.',
+    '{name} arrived in {location} three days ago. No one noticed until today.',
+    '{name} listens at the edge of conversations the way a fisherman reads water — for what moves beneath the surface.',
+  ],
+  veil: [
+    '{name} traces a glyph in the dust, erases it, traces it again. The air tastes different the second time.',
+    '{name} stares at a candle flame and the flame leans toward them, like a plant toward light.',
+    '{name} speaks to the wind in {location} and the wind answers, though not in any language the others understand.',
+  ],
+  heart: [
+    '{name} sits among the children of {location}, teaching them a game from a place they have never been. The children are laughing. The parents are watching. Something is being built here, in the space between the game and the laughter.',
+    '{name} stands between two arguing farmers, hands raised, not to command but to hold the space open. The argument does not resolve, but it does not become a fight. That is the work.',
+    '{name} carries water to the elder who cannot walk to the well. It is not their duty. No one asked. But the elder drinks, and {name} sits beside them for a while, because the water was not the point.',
+    '{name} kneels in the common garden of {location}, pulling weeds from between someone else\'s rows. The garden belongs to everyone and no one, which means it belongs to whoever tends it.',
+    '{name} gathers the frayed edges of {location} — the widow, the orphan, the stranger — and seats them at the same fire. Not charity. Architecture.',
+  ],
+  eye: [
+    '{name} stands on the high ground above {location}, sketching the terrain in a journal that is already half full of observations no one asked for.',
+    '{name} reads the old records in the settlement hall, cross-referencing dates and harvests, finding the pattern that everyone else mistook for coincidence.',
+    '{name} watches the stars above {location} and marks the ones that have shifted since the last season.',
+  ],
+  stone: [
+    '{name} runs a hand along the retaining wall, feeling for the crack that the rain will find before the spring. The wall was built by someone who knew what they were doing. {name} intends to be worthy of the work.',
+    '{name} stacks stones at the edge of {location}, testing weight and balance, building nothing yet — just learning the language of the material.',
+    '{name} repairs the gate hinge that everyone walks past. The gate has been sagging for months. It will not sag tomorrow.',
+    '{name} rebuilds the broken section of the common well wall, stone by stone, in the quiet hour before dawn when no one is watching. The well serves everyone. The wall will outlast {name}.',
+    '{name} studies the foundation of the oldest building in {location}, pressing an ear to the stone the way a healer presses an ear to a chest — listening for what holds and what is about to give.',
+  ],
+  star: [
+    '{name} kneels at the crossroads outside {location} and whispers a prayer that is not for any god the settlement knows.',
+    '{name} gave away the last of the bread and sits hungry at the edge of the road, watching the person who received it walk away without looking back.',
+    '{name} tends the shrine that no one else remembers — sweeping the steps, replacing the candle, speaking the words.',
+  ],
+};

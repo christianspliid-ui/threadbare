@@ -38,12 +38,19 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       },
     ],
     resonance: {
-      emotionalRegister: [],
-      hungerResonance: [],
-      driveResonance: [],
+      emotionalRegister: ['compassion', 'loss', 'protection'],
+      hungerResonance: ['gather'],
+      driveResonance: ['protection', 'belonging'],
       incompatibleWith: ['AX-IRON-02'],
     },
-    lensOverlays: [],
+    lensOverlays: [
+      {
+        hungerId: 'gather',
+        perceptionProse: "You feel the pull of compassion — not weakness, but the refusal to let suffering stand unanswered. The boy is an enemy, and the boy is dying, and someone kneels anyway.",
+        echoThreshold: 2,
+        echoProse: "You remember this. The first time you chose to hold instead of strike. Before the hunger had a name.",
+      }
+    ],
     artTags: [],
   },
   {
@@ -71,12 +78,19 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       },
     ],
     resonance: {
-      emotionalRegister: [],
-      hungerResonance: [],
-      driveResonance: [],
+      emotionalRegister: ['desperation', 'sacrifice', 'belonging'],
+      hungerResonance: ['gather'],
+      driveResonance: ['protection', 'sacrifice'],
       incompatibleWith: ['AX-IRON-01'],
     },
-    lensOverlays: [],
+    lensOverlays: [
+      {
+        hungerId: 'gather',
+        perceptionProse: "You see a starving man who stole to feed his children. The arithmetic of need — one village against another. You know this weight. It is the weight of everyone who ever carried more than they could hold.",
+        echoThreshold: 2,
+        echoProse: "The hunger stirs. You gathered once for reasons just like these — because someone small depended on someone desperate.",
+      }
+    ],
     artTags: [],
   },
   {
@@ -104,12 +118,19 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       },
     ],
     resonance: {
-      emotionalRegister: [],
-      hungerResonance: [],
-      driveResonance: [],
+      emotionalRegister: ['sacrifice', 'protection', 'loss'],
+      hungerResonance: ['gather'],
+      driveResonance: ['protection', 'sacrifice'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
+    lensOverlays: [
+      {
+        hungerId: 'gather',
+        perceptionProse: "There is someone behind them they are shielding. You know the posture — the body placed between fire and the fragile thing. You remember it in your bones.",
+        echoThreshold: 2,
+        echoProse: "Something ancient stirs. You held this weight once, before it became hunger.",
+      }
+    ],
     artTags: [],
   },
   {
@@ -698,12 +719,19 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       },
     ],
     resonance: {
-      emotionalRegister: [],
-      hungerResonance: [],
-      driveResonance: [],
+      emotionalRegister: ['loyalty', 'belonging', 'duty'],
+      hungerResonance: ['gather'],
+      driveResonance: ['belonging', 'community'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
+    lensOverlays: [
+      {
+        hungerId: 'gather',
+        perceptionProse: "You see the invisible threads of care — the weight someone carries for others without being asked. The forge is small. The work is slow. But it is tended, and the tending is its own kind of devotion.",
+        echoThreshold: 2,
+        echoProse: "You feel it like a phantom limb — the warmth of a place you chose to stay in, long after staying stopped being easy.",
+      }
+    ],
     artTags: [],
   },
   {
@@ -764,12 +792,19 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       },
     ],
     resonance: {
-      emotionalRegister: [],
-      hungerResonance: [],
-      driveResonance: [],
+      emotionalRegister: ['devotion', 'sacrifice', 'belonging'],
+      hungerResonance: ['gather'],
+      driveResonance: ['belonging', 'protection'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
+    lensOverlays: [
+      {
+        hungerId: 'gather',
+        perceptionProse: "You see the one who will not leave. The friend spirals, and someone stands at the edge of the spiral and refuses to step back. This is not rescue. It is witness — the quiet insistence that no one falls alone.",
+        echoThreshold: 2,
+        echoProse: "The hunger recognizes itself. You gathered the broken ones before you understood why. You still do.",
+      }
+    ],
     artTags: [],
   },
   {
@@ -2260,12 +2295,19 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       },
     ],
     resonance: {
-      emotionalRegister: [],
-      hungerResonance: [],
-      driveResonance: [],
+      emotionalRegister: ['belonging', 'shelter', 'community'],
+      hungerResonance: ['gather'],
+      driveResonance: ['community', 'belonging'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
+    lensOverlays: [
+      {
+        hungerId: 'gather',
+        perceptionProse: "Twelve people carrying everything they own, and three children clutching a dog. You see the moment a door opens or does not. The difference between shelter and exclusion is one person willing to say: they stay.",
+        echoThreshold: 2,
+        echoProse: "This is the oldest pattern. The wanderers arrive. Someone makes room. You have always been the one who makes room.",
+      }
+    ],
     artTags: [],
   },
   {
@@ -2365,12 +2407,19 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       },
     ],
     resonance: {
-      emotionalRegister: [],
-      hungerResonance: [],
-      driveResonance: [],
+      emotionalRegister: ['nurturing', 'belonging', 'protection'],
+      hungerResonance: ['gather'],
+      driveResonance: ['protection', 'community'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
+    lensOverlays: [
+      {
+        hungerId: 'gather',
+        perceptionProse: "A four-year-old with no one. Three families with open doors. You watch the child drift toward the noise and the laughter, and you know — the way you always know — where belonging lives. It is not in wealth or wanting. It is in the house that is already full and makes room anyway.",
+        echoThreshold: 2,
+        echoProse: "You ache with recognition. Every orphan you ever sheltered. Every door you held open when the world said close it.",
+      }
+    ],
     artTags: [],
   },
   {
@@ -2680,12 +2729,19 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       },
     ],
     resonance: {
-      emotionalRegister: [],
-      hungerResonance: [],
-      driveResonance: [],
+      emotionalRegister: ['protection', 'sacrifice', 'endurance'],
+      hungerResonance: ['gather', 'preserve'],
+      driveResonance: ['protection', 'community'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
+    lensOverlays: [
+      {
+        hungerId: 'gather',
+        perceptionProse: "The river rises and someone builds a wall between the water and the people. Not for glory. Not for craft. Because the homes are behind them, and the children are sleeping, and the wall is what stands between the living and the loss.",
+        echoThreshold: 2,
+        echoProse: "You remember building walls like this. Not of stone — of will. The hunger to shelter was the first thing you ever felt.",
+      }
+    ],
     artTags: [],
   },
   {
@@ -4291,12 +4347,19 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       },
     ],
     resonance: {
-      emotionalRegister: [],
-      hungerResonance: [],
-      driveResonance: [],
+      emotionalRegister: ['nurturing', 'belonging', 'loss'],
+      hungerResonance: ['gather'],
+      driveResonance: ['protection', 'belonging'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
+    lensOverlays: [
+      {
+        hungerId: 'gather',
+        perceptionProse: "A child follows at twenty paces. Silent. Watchful. Too thin. You feel the absence around them — the shape of everything they have lost. And you feel the moment someone slows down, leaves food behind, waits by the fire. The gathering begins.",
+        echoThreshold: 2,
+        echoProse: "You have always found the lost ones. Before the hunger had a name, before you were anything at all, you were the one who turned around.",
+      }
+    ],
     artTags: [],
   },
   {
@@ -4439,12 +4502,19 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       },
     ],
     resonance: {
-      emotionalRegister: [],
-      hungerResonance: [],
-      driveResonance: [],
+      emotionalRegister: ['devotion', 'protection', 'belonging'],
+      hungerResonance: ['gather'],
+      driveResonance: ['protection', 'sacrifice'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
+    lensOverlays: [
+      {
+        hungerId: 'gather',
+        perceptionProse: "You feel the current pulling them apart, and the hands that hold on. The bond forged in floodwater is older than language — two bodies in a river, and one refuses to let go. This is gathering at its most elemental.",
+        echoThreshold: 2,
+        echoProse: "You have held on like this. In the dark, in the cold, when the world tried to tear apart what you were gathering. You held.",
+      }
+    ],
     artTags: [],
   },
   {
