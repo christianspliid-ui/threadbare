@@ -9,6 +9,11 @@
  *   Post-read — grouped digest display (by reach domain)
  *
  * Design doc: Docs/plans/2026-04-05-attention-tier-model-design.md
+ *
+ * P2 additions:
+ *   - Fidelity degradation: detail level scales with lookback depth
+ *   - Overwhelmed degradation: pool < 10% capacity degrades fidelity one step
+ *   - Cooldown: READ_THREADS_COOLDOWN ticks between uses, button shows countdown
  */
 
 import { useState, useMemo } from 'react';
@@ -22,9 +27,22 @@ import {
   READ_THREADS_COST_12,
   READ_THREADS_COST_24,
   READ_THREADS_COST_36,
+  READ_THREADS_COOLDOWN,
+  ATTENTION_BASE_CAPACITY,
+  ATTENTION_POOL_STRAINED_THRESHOLD,
 } from '../../data/attention-constants';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+
+/**
+ * Fidelity levels for digest entry rendering (spec Section 5).
+ * Depth of lookback determines how much detail is preserved.
+ *   full     (6 ticks)  — all detail: names, deltas, attachments
+ *   high     (12 ticks) — same but older entries may be compressed
+ *   moderate (24 ticks) — encounter type and outcome only, no deltas
+ *   vague    (36 ticks) — grouped summaries only
+ */
+type Fidelity = 'full' | 'high' | 'moderate' | 'vague';
 
 interface ReadTheThreadsPanelProps {
   open: boolean;
@@ -33,6 +51,20 @@ interface ReadTheThreadsPanelProps {
   currentTick: number;
   essenceAvailable: number;
   onSpendEssence: (cost: number) => void;
+  /**
+   * Tick on which the player last used Read the Threads.
+   * 0 means never used. Used to enforce READ_THREADS_COOLDOWN.
+   */
+  lastReadTick?: number;
+  /**
+   * Current attention pool fill (0-capacity). Used for overwhelmed degradation:
+   * if pool < 10% capacity, fidelity degrades one level.
+   */
+  attentionPool?: number;
+  /**
+   * Attention pool capacity. Paired with attentionPool for ratio computation.
+   */
+  attentionCapacity?: number;
 }
 
 interface LookbackOption {
@@ -65,6 +97,28 @@ const REACH_LABELS: Record<ReachDomain, string> = {
   shadow: 'Intrigue & Shadow',
 };
 
+// ─── Fidelity helpers ─────────────────────────────────────────────────────────
+
+/**
+ * Determine fidelity level based on lookback depth (spec Section 5) and
+ * optional overwhelmed degradation (pool < ATTENTION_POOL_STRAINED_THRESHOLD).
+ */
+function computeFidelity(lookbackTicks: number, isOverwhelmed: boolean): Fidelity {
+  let base: Fidelity;
+  if (lookbackTicks <= 6)       base = 'full';
+  else if (lookbackTicks <= 12) base = 'high';
+  else if (lookbackTicks <= 24) base = 'moderate';
+  else                          base = 'vague';
+
+  if (!isOverwhelmed) return base;
+
+  // Overwhelmed: degrade one level
+  if (base === 'full')     return 'high';
+  if (base === 'high')     return 'moderate';
+  if (base === 'moderate') return 'vague';
+  return 'vague'; // already at floor
+}
+
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -84,7 +138,40 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-function DigestRow({ entry }: { entry: DigestEntry }) {
+/**
+ * Render a single digest entry with detail appropriate to the given fidelity level.
+ * Returns null for 'vague' fidelity — those entries are rendered at group level.
+ */
+function DigestRow({ entry, fidelity }: { entry: DigestEntry; fidelity: Fidelity }) {
+  // vague: no individual entries — handled at group level
+  if (fidelity === 'vague') return null;
+
+  const outcome = entry.success ? 'Success' : 'Failed';
+
+  if (fidelity === 'moderate') {
+    // No deltas, no attachment names — encounter type and outcome only
+    return (
+      <div
+        style={{
+          padding: 'var(--space-2) 0',
+          borderBottom: '1px solid rgba(255,255,255,0.04)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'baseline',
+          gap: 'var(--space-2)',
+        }}
+      >
+        <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}>
+          {entry.agentName}
+        </span>
+        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
+          {entry.encounterName}. {outcome}.
+        </span>
+      </div>
+    );
+  }
+
+  // full / high: show everything including deltas and attachments
   const outcomeText = entry.significantOutcomes.length > 0
     ? entry.significantOutcomes[0]
     : entry.success ? 'Resolved successfully.' : 'Did not go as planned.';
@@ -117,7 +204,7 @@ function DigestRow({ entry }: { entry: DigestEntry }) {
       )}
       {entry.attachmentsLost.length > 0 && (
         <div style={{ fontSize: 'var(--text-xs)', color: 'var(--negative)' }}>
-          — Lost: {entry.attachmentsLost.join(', ')}
+          - Lost: {entry.attachmentsLost.join(', ')}
         </div>
       )}
     </div>
@@ -131,14 +218,17 @@ function PreReadState({
   selectedIndex,
   onSelect,
   onRead,
+  cooldownTicksRemaining,
 }: {
   essenceAvailable: number;
   selectedIndex: number;
   onSelect: (i: number) => void;
   onRead: () => void;
+  cooldownTicksRemaining: number;
 }) {
   const selected = LOOKBACK_OPTIONS[selectedIndex];
   const canAfford = essenceAvailable >= selected.cost;
+  const onCooldown = cooldownTicksRemaining > 0;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
@@ -202,14 +292,21 @@ function PreReadState({
         <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
           Available: <span style={{ color: canAfford ? 'var(--accent-gold)' : 'var(--negative)' }}>{essenceAvailable} essence</span>
         </span>
-        <Button
-          variant="primary"
-          size="md"
-          disabled={!canAfford}
-          onClick={onRead}
-        >
-          Read the Threads
-        </Button>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 'var(--space-1)' }}>
+          <Button
+            variant="primary"
+            size="md"
+            disabled={!canAfford || onCooldown}
+            onClick={onRead}
+          >
+            {onCooldown ? `Cooldown (${cooldownTicksRemaining} ticks)` : 'Read the Threads'}
+          </Button>
+          {onCooldown && (
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+              The threads need time to settle.
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -217,7 +314,7 @@ function PreReadState({
 
 // ─── Post-read state ──────────────────────────────────────────────────────────
 
-function PostReadState({ entries }: { entries: DigestEntry[] }) {
+function PostReadState({ entries, fidelity }: { entries: DigestEntry[]; fidelity: Fidelity }) {
   // Partition entries
   const notable = entries.filter(e => e.isNotable && !e.wasCuratedOut);
   const curatedOut = entries.filter(e => e.wasCuratedOut);
@@ -251,7 +348,7 @@ function PostReadState({ entries }: { entries: DigestEntry[] }) {
 
   return (
     <div>
-      {/* Notable callout */}
+      {/* Notable callout — always shown regardless of fidelity */}
       {notable.length > 0 && (
         <div
           style={{
@@ -261,7 +358,7 @@ function PostReadState({ entries }: { entries: DigestEntry[] }) {
           }}
         >
           <SectionLabel>Notable</SectionLabel>
-          {notable.map((e, i) => <DigestRow key={`notable-${i}`} entry={e} />)}
+          {notable.map((e, i) => <DigestRow key={`notable-${i}`} entry={e} fidelity={fidelity} />)}
         </div>
       )}
 
@@ -272,7 +369,14 @@ function PostReadState({ entries }: { entries: DigestEntry[] }) {
         return (
           <div key={reach} style={{ marginBottom: 'var(--space-2)' }}>
             <SectionLabel>{REACH_LABELS[reach]}</SectionLabel>
-            {group.map((e, i) => <DigestRow key={`${reach}-${i}`} entry={e} />)}
+            {fidelity === 'vague' ? (
+              // Vague: group-level summary only — no individual entries
+              <div style={{ padding: 'var(--space-2) 0', fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
+                {group.length} encounter{group.length !== 1 ? 's' : ''}. {group.filter(e => e.success).length} succeeded.
+              </div>
+            ) : (
+              group.map((e, i) => <DigestRow key={`${reach}-${i}`} entry={e} fidelity={fidelity} />)
+            )}
           </div>
         );
       })}
@@ -355,17 +459,32 @@ export function ReadTheThreadsPanel({
   currentTick,
   essenceAvailable,
   onSpendEssence,
+  lastReadTick = 0,
+  attentionPool,
+  attentionCapacity,
 }: ReadTheThreadsPanelProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [readEntries, setReadEntries] = useState<DigestEntry[] | null>(null);
+  const [readFidelity, setReadFidelity] = useState<Fidelity>('full');
+
+  // Cooldown: ticks remaining before next Read is allowed
+  const cooldownTicksRemaining = Math.max(0, READ_THREADS_COOLDOWN - (currentTick - lastReadTick));
+
+  // Overwhelmed check: pool < STRAINED threshold of capacity degrades fidelity one level
+  const cap = attentionCapacity ?? ATTENTION_BASE_CAPACITY;
+  const pool = attentionPool ?? cap;
+  const isOverwhelmed = cap > 0 && (pool / cap) < ATTENTION_POOL_STRAINED_THRESHOLD;
 
   function handleRead() {
+    if (cooldownTicksRemaining > 0) return;
     const opt = LOOKBACK_OPTIONS[selectedIndex];
     const entries = queryDigest(digestBuffer, {
       fromTick: currentTick - opt.ticks,
       toTick: currentTick,
     });
+    const fidelity = computeFidelity(opt.ticks, isOverwhelmed);
     onSpendEssence(opt.cost);
+    setReadFidelity(fidelity);
     setReadEntries(entries);
   }
 
@@ -393,9 +512,10 @@ export function ReadTheThreadsPanel({
             selectedIndex={selectedIndex}
             onSelect={setSelectedIndex}
             onRead={handleRead}
+            cooldownTicksRemaining={cooldownTicksRemaining}
           />
         ) : (
-          <PostReadState entries={readEntries} />
+          <PostReadState entries={readEntries} fidelity={readFidelity} />
         )}
       </Modal.Body>
       {hasRead && (

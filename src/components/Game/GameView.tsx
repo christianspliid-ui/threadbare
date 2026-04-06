@@ -564,8 +564,46 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         tierOpacity,
       });
     }
+
+    // Also scan legacy encounterProgress so agents in old-system encounters show icons too.
+    for (const ep of gameState.encounterProgress) {
+      if (ep.status !== 'active') continue;
+
+      const agentNode = gameState.graph.getNode(ep.actorId);
+      if (!agentNode) continue;
+      let epHexCol = agentNode.properties.hexCol as number | undefined;
+      let epHexRow = agentNode.properties.hexRow as number | undefined;
+      if (epHexCol == null || epHexRow == null) {
+        const locEdges = gameState.graph.getOutgoingEdges(ep.actorId, 'located_at');
+        if (locEdges.length > 0) {
+          const loc = gameState.graph.getNode(locEdges[0].target);
+          epHexCol = loc?.properties.hexCol as number | undefined;
+          epHexRow = loc?.properties.hexRow as number | undefined;
+        }
+      }
+      if (epHexCol == null || epHexRow == null) continue;
+
+      const epTemplate = getAnyEncounterById(ep.encounterId);
+      if (!epTemplate) continue;
+
+      const epWorldPos = hexToWorld({ col: epHexCol, row: epHexRow }, HEX_CONSTANTS.HEX_SIZE);
+      const epTier = ep.effectiveTier;
+      const epTierOpacity =
+        epTier === 'story_beat'  ? ACTIVITY_ICON_OPACITY_STORY :
+        epTier === 'shaping'     ? ACTIVITY_ICON_OPACITY_SHAPING :
+        ACTIVITY_ICON_OPACITY_BACKGROUND;
+
+      result.push({
+        agentId: ep.actorId,
+        worldX: epWorldPos.x,
+        worldY: epWorldPos.y,
+        reachPrimary: epTemplate.reachPrimary,
+        tierOpacity: epTierOpacity,
+      });
+    }
+
     return result;
-  }, [gameState.unifiedActions, gameState.graph, runtime.worldVersion]);
+  }, [gameState.unifiedActions, gameState.encounterProgress, gameState.graph, runtime.worldVersion]);
 
   // ── Location render data adapter (graph → LocationNode[]) ──
   // TB-086: Key off structuralCacheVersion (not worldVersion) — locationSubtype
@@ -2201,7 +2239,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   sieges={siegeRenderData}
                   threadLines={threadLineData}
                   activityIcons={activityIconData}
-                  activeTugs={tuggedAgentIds}
+                  activeTugs={activeTugData}
+                  attentionRatio={attentionRatio}
                   visibilityMap={fogDisabled ? undefined : effectiveVisibilityMap}
                   fogEnabled={!fogDisabled}
                   showOrganicShore={showOrganicShore}

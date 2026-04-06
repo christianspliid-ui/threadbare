@@ -3,6 +3,8 @@
  *
  * Draws lines from the avatar's hex to each threaded agent's hex.
  * Lines are coloured by court position and pulse based on attention state.
+ * Tugged lines override to reach colour (from REACH_ICON_COLORS) and vibrate
+ * at amplitude scaled by threat level.
  *
  * NFP #1 (tunability): All colours, opacities, and animation parameters are named constants.
  * NFP #2 (inspectability): ThreadLineData exposes all data needed to trace why a line appears.
@@ -15,6 +17,7 @@
 
 import * as THREE from 'three';
 import { RENDER_ORDER, LAYER_Z } from './RenderLayers';
+import { REACH_ICON_COLORS } from './ActivityIconMesh';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -56,8 +59,16 @@ const DORMANT_OPACITY_MULTIPLIER = 0.3;
 /** Period in seconds for the fast vibrate applied to tugged lines. */
 const TUG_VIBRATE_PERIOD_S = 0.5;
 
-/** Amplitude of the tug vibrate pulse. */
-const TUG_VIBRATE_AMPLITUDE = 0.3;
+/**
+ * Tug vibrate amplitude per threat level.
+ * NFP #1: Change these to tune vibration intensity without touching logic.
+ */
+const TUG_VIBRATE_AMPLITUDE_MODERATE = 0.2;
+const TUG_VIBRATE_AMPLITUDE_HARD     = 0.3;
+const TUG_VIBRATE_AMPLITUDE_DEADLY   = 0.4;
+
+/** Fallback amplitude when threat level is unrecognised. */
+const TUG_VIBRATE_AMPLITUDE_FALLBACK = TUG_VIBRATE_AMPLITUDE_MODERATE;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -80,6 +91,16 @@ export interface ThreadLineData {
 }
 
 /**
+ * Per-tug data supplied alongside agent IDs for richer vibration rendering.
+ * reachPrimary maps to REACH_ICON_COLORS for colour override.
+ * threatLevel drives vibrate amplitude: moderate=0.2, hard=0.3, deadly=0.4.
+ */
+export interface TugData {
+  reachPrimary: string;
+  threatLevel: string;
+}
+
+/**
  * Public interface for the ThreadLineMesh layer returned by createThreadLineMesh().
  */
 export interface ThreadLineLayer {
@@ -94,14 +115,15 @@ export interface ThreadLineLayer {
   /**
    * Per-frame update — drives opacity, pulse, and vibrate animations.
    * @param elapsedS      Monotonic elapsed time in seconds (e.g. from THREE.Clock).
-   * @param attentionRatio Attention level 0.0–1.0 (1.0 = focused, lower = depleted).
+   * @param attentionRatio Attention level 0.0-1.0 (1.0 = focused, lower = depleted).
    */
   tick(elapsedS: number, attentionRatio: number): void;
   /**
-   * Mark a set of agents whose threads are currently being tugged.
-   * Tugged lines get a fast vibrate overlay distinct from the gentle pulse.
+   * Mark agents whose threads are currently being tugged, with reach and threat data.
+   * Tugged lines use the tug's reach colour and get a fast vibrate whose amplitude
+   * scales with threat level (moderate / hard / deadly).
    */
-  setActiveTugs(tugAgentIds: Set<string>): void;
+  setActiveTugs(tugData: Map<string, TugData>): void;
   /** Dispose all GPU resources. Call when removing the layer from the scene. */
   dispose(): void;
 }
@@ -131,7 +153,7 @@ export function createThreadLineMesh(): ThreadLineLayer {
   group.renderOrder = RENDER_ORDER.THREADS;
 
   let records: ThreadLineRecord[] = [];
-  let activeTugs: Set<string> = new Set();
+  let activeTugs: Map<string, TugData> = new Map();
 
   // ── dispose helpers ────────────────────────────────────────────────────────
 
@@ -208,12 +230,26 @@ export function createThreadLineMesh(): ThreadLineLayer {
         opacity *= DORMANT_OPACITY_MULTIPLIER;
       }
 
-      // Tugged lines: fast vibrate overlay.
-      if (activeTugs.has(r.agentId)) {
+      // Tugged lines: fast vibrate overlay with reach colour and threat amplitude.
+      const tugEntry = activeTugs.get(r.agentId);
+      if (tugEntry) {
+        const amplitude =
+          tugEntry.threatLevel === 'deadly'   ? TUG_VIBRATE_AMPLITUDE_DEADLY   :
+          tugEntry.threatLevel === 'hard'     ? TUG_VIBRATE_AMPLITUDE_HARD     :
+          tugEntry.threatLevel === 'moderate' ? TUG_VIBRATE_AMPLITUDE_MODERATE :
+          TUG_VIBRATE_AMPLITUDE_FALLBACK;
         const vibrate =
-          Math.sin((elapsedS / TUG_VIBRATE_PERIOD_S) * Math.PI * 2) *
-          TUG_VIBRATE_AMPLITUDE;
+          Math.sin((elapsedS / TUG_VIBRATE_PERIOD_S) * Math.PI * 2) * amplitude;
         opacity += vibrate;
+        // Override material colour to reach colour so the tug source is visually distinct.
+        const reachColor = REACH_ICON_COLORS[tugEntry.reachPrimary];
+        if (reachColor) {
+          r.material.color.set(reachColor);
+        }
+      } else {
+        // Restore original court-position colour when no longer tugged.
+        const courtColor = THREAD_COLORS[r.courtPosition] ?? THREAD_COLOR_FALLBACK;
+        r.material.color.set(courtColor);
       }
 
       // Scale by attentionRatio, then clamp to [THREAD_MIN_OPACITY, 1].
@@ -226,8 +262,8 @@ export function createThreadLineMesh(): ThreadLineLayer {
 
   // ── setActiveTugs ──────────────────────────────────────────────────────────
 
-  function setActiveTugs(tugAgentIds: Set<string>): void {
-    activeTugs = tugAgentIds;
+  function setActiveTugs(tugData: Map<string, TugData>): void {
+    activeTugs = tugData;
   }
 
   // ── dispose ────────────────────────────────────────────────────────────────

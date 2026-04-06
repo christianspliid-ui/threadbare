@@ -36,7 +36,7 @@ import { createBattleIndicatorLayer, tickBattleIndicators } from './scene/Battle
 import type { BattleIndicatorLayerGroup } from './scene/BattleIndicatorLayer';
 import type { BattleIndicatorData } from './scene/BattleIndicatorLayer';
 import { createThreadLineMesh } from './scene/ThreadLineMesh';
-import type { ThreadLineData, ThreadLineLayer } from './scene/ThreadLineMesh';
+import type { ThreadLineData, ThreadLineLayer, TugData } from './scene/ThreadLineMesh';
 import { createActivityIconLayer } from './scene/ActivityIconMesh';
 import type { ActivityIconData, ActivityIconLayer } from './scene/ActivityIconMesh';
 import { ACTIVITY_ICON_ZOOM_HIDE_THRESHOLD } from '../../data/attention-constants';
@@ -172,8 +172,14 @@ export interface HexMapV2Props {
   threadLines?: ThreadLineData[];
   /** Activity icon data — reach micro-icons for active encounters (Attention UI) */
   activityIcons?: ActivityIconData[];
-  /** Set of agent IDs with active (unattended) thread tugs — drives vibration animation. */
-  activeTugs?: Set<string>;
+  /** Rich tug data keyed by agent ID — drives reach-coloured vibration animation. */
+  activeTugs?: Map<string, TugData>;
+  /**
+   * Attention pool fill ratio 0.0-1.0 (pool / capacity).
+   * Scales thread line opacity: depleted pool = dimmer lines.
+   * Defaults to 1.0 (fully focused) when not provided.
+   */
+  attentionRatio?: number;
   /** Fog-of-war visibility map — keyed by "col,row". undefined = fog disabled (Plan 07-03+) */
   visibilityMap?: VisibilityMap;
   /** Whether the fog-of-war system is active. Default false. (Plan 07-03+) */
@@ -303,7 +309,7 @@ function createHoverOverlayMesh(size: number): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, battles, threadLines, activityIcons, activeTugs, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false },
+    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, battles, threadLines, activityIcons, activeTugs, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -332,6 +338,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     // Thread line and activity icon layer refs (Attention UI)
     const threadLineLayerRef = useRef<ThreadLineLayer | null>(null);
     const activityIconLayerRef = useRef<ActivityIconLayer | null>(null);
+    // Attention ratio ref — kept in sync with prop, read by the animation loop.
+    const attentionRatioRef = useRef<number>(attentionRatio);
+    attentionRatioRef.current = attentionRatio;
 
     // Particle burst ref — active bursts ticked each frame, consumed by tickParticleBursts
     const activeBurstsRef = useRef<ActiveBurst[]>([]);
@@ -842,7 +851,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           if (threadLineLayer || activityIconLayer) {
             const elapsedS = clock.getElapsedTime();
             if (threadLineLayer) {
-              threadLineLayer.tick(elapsedS, 1.0);
+              threadLineLayer.tick(elapsedS, attentionRatioRef.current);
             }
             if (activityIconLayer) {
               activityIconLayer.tick(elapsedS);
@@ -1181,7 +1190,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
 
     // ── Active tugs update — drives vibration animation on tugged thread lines ──
     useEffect(() => {
-      threadLineLayerRef.current?.setActiveTugs(activeTugs ?? new Set());
+      threadLineLayerRef.current?.setActiveTugs(activeTugs ?? new Map());
     }, [activeTugs]);
 
     // ── Activity icon layer rebuild when activityIcons prop changes ──
