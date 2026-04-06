@@ -32,7 +32,15 @@ export interface CodexEntry {
   tags: string[];
   /** Extra key-value details shown in the detail panel */
   details: { label: string; value: string }[];
+  /** Optional path to an art asset (relative to public/) */
+  imageAssetPath?: string;
 }
+
+// ─── Item Art Registry ──────────────────────────────────────────
+// Maps entry IDs to their art asset paths under public/assets/items/.
+const ITEM_ART: Record<string, string> = {
+  reward_arms_thornwood_staff: '/assets/items/thornwood-staff.jpg',
+};
 
 export interface CodexCategory {
   id: string;
@@ -276,6 +284,11 @@ export function getAllCodexEntries(): CodexEntry[] {
 
   // Agreements
   for (const a of AGREEMENT_REWARD_TEMPLATES) entries.push(mapAgreement(a));
+
+  // Attach art asset paths where available
+  for (const entry of entries) {
+    if (entry.id in ITEM_ART) entry.imageAssetPath = ITEM_ART[entry.id];
+  }
 
   _cachedEntries = entries;
   return entries;

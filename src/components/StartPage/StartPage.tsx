@@ -89,6 +89,9 @@ export function StartPage({ onNewWorld, onAdvancedNewWorld }: StartPageProps) {
               New World
             </button>
             {/* Continue hidden until save system ships */}
+            <button className="start-page__menu-item" onClick={() => { window.location.search = '?view=codex'; }}>
+              Codex
+            </button>
             <button className="start-page__menu-item" onClick={() => setSettingsOpen(true)}>
               Settings
             </button>

@@ -79,6 +79,27 @@ export const CodexDetailPanel = memo(function CodexDetailPanel({
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
+        {/* Art asset */}
+        {entry.imageAssetPath && (
+          <div
+            style={{
+              borderRadius: 'var(--radius-md)',
+              overflow: 'hidden',
+              border: `1px solid ${entry.tierColor}30`,
+            }}
+          >
+            <img
+              src={entry.imageAssetPath}
+              alt={entry.name}
+              style={{
+                width: '100%',
+                display: 'block',
+                objectFit: 'cover',
+              }}
+            />
+          </div>
+        )}
+
         {/* Flavor text */}
         {entry.flavorText && (
           <div>

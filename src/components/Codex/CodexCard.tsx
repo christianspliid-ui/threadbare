@@ -27,11 +27,25 @@ export const CodexCard = memo(function CodexCard({
         cursor: 'pointer',
       }}
     >
-      {/* Top row: glyph + name + tier badge */}
+      {/* Top row: thumbnail/glyph + name + tier badge */}
       <div className="flex items-center gap-2 mb-1">
-        <span style={{ fontSize: 'var(--text-base)', lineHeight: 1 }}>
-          {entry.glyph}
-        </span>
+        {entry.imageAssetPath ? (
+          <img
+            src={entry.imageAssetPath}
+            alt=""
+            style={{
+              width: '28px',
+              height: '28px',
+              borderRadius: '4px',
+              objectFit: 'cover',
+              flexShrink: 0,
+            }}
+          />
+        ) : (
+          <span style={{ fontSize: 'var(--text-base)', lineHeight: 1 }}>
+            {entry.glyph}
+          </span>
+        )}
         <span
           className="flex-1 truncate"
           style={{
