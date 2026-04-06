@@ -188,6 +188,18 @@ export interface EncounterTemplate {
   supportBundle?: EncounterSupportBundle;
   /** Optional scrutiny/proof shell configs used by richer checkpoint encounters. */
   clearanceGates?: readonly ClearanceGateConfig[];
+  /**
+   * Optional background ambient sound key to push while this encounter is active.
+   * Must match a key in AMBIENT_TRACKS (e.g. 'dungeon', 'danger', 'sacred').
+   * Targets the Background channel. Falls back to terrain/location if absent.
+   */
+  backgroundTrack?: string;
+  /**
+   * Optional music track src path to swap in while this encounter is active.
+   * e.g. '/audio/music/boss-theme.mp3'. Targets the Music channel.
+   * Falls back to default theme drone if absent.
+   */
+  musicTrack?: string;
 }
 
 // ─── Encounter Support Bundle Types ────────────────────────────
