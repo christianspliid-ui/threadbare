@@ -7,7 +7,7 @@ import type { WorldGraph } from '../../engine/graph';
 import type { GraphNode } from '../../types/graph';
 import { getSphereColor } from '../../data/sphereIcons';
 import { FACTION_DEFINITIONS } from '../../data/faction-definitions';
-import { LocationCard, SoulCard, AgentEntry, FactionEntry, SubLocationEntry, EventBlock, ExplorationHook } from './chronicle';
+import { LocationCard, SoulCard, FactionEntry, SubLocationEntry, EventBlock, ExplorationHook } from './chronicle';
 import { historicalCultureResolver, regionEtymologyResolver, geographicRegionResolver } from '../../engine/proseResolvers';
 import { generateEntityProse } from '../../engine/proseGenerator';
 import { mulberry32 } from '../../lib/prng';
@@ -304,7 +304,7 @@ export const HexChronicle = memo(function HexChronicle({
   const locationProse = useMemo(() => {
     const result: Record<string, string> = {};
     for (const loc of locations) {
-      const prose = generateEntityProse(loc.id, graph, seed, 'summary', tick);
+      const prose = generateEntityProse(loc.id, graph, seed, 'full', tick);
       if (prose) result[loc.id] = prose;
     }
     return result;
@@ -399,8 +399,8 @@ export const HexChronicle = memo(function HexChronicle({
   const heroSubtitle = useMemo(() => {
     const parts: string[] = [];
     parts.push(`${terrainLabel} at ${hexCol}, ${hexRow}`);
-    if (dominantCulture) parts.push(dominantCulture.cultureName);
-    if (dominantFaction) parts.push(dominantFaction.factionName);
+    if (dominantCulture) parts.push(dominantCulture.cultureName.replace(/_/g, ' '));
+    if (dominantFaction) parts.push(dominantFaction.factionName.replace(/_/g, ' '));
     return parts.join(' · ');
   }, [terrainLabel, hexCol, hexRow, dominantCulture, dominantFaction]);
 
@@ -662,10 +662,264 @@ export const HexChronicle = memo(function HexChronicle({
         )}
       </div>
 
+      {/* ─── THE PLACES ──────────────────────────────────────────────────── */}
+      {(parentLocations.length > 0 || orphanSublocations.length > 0) && (
+      <div ref={placesRef} className="chronicle-layer" style={{
+        marginBottom: '40px',
+        animation: 'fadeIn 0.6s ease-out 0.2s both',
+      }}>
+        <div className="chronicle-marker" style={markerStyle}>
+          <div style={ruleStyle} />
+          <span style={labelStyle}>The Places</span>
+          {renderPlayBtn(placesRef, 'The Places')}
+          <div style={ruleStyle} />
+        </div>
+
+        <div style={{ marginBottom: '16px' }}>
+            {parentLocations.map(loc => {
+              const agentsHere = agentsByLocation[loc.id] || [];
+              const subtype = (loc.properties as any)?.locationSubtype ?? 'landmark';
+              const fullProse = locationProse[loc.id] ?? '';
+              const proseParagraphs = fullProse.split('\n\n').filter(Boolean);
+              const cardFlavor = proseParagraphs[0] ?? '';
+              const extraParagraphs = proseParagraphs.slice(1);
+              const subs = sublocationsByParent[loc.id] || [];
+              const totalAgents = agentsHere.length;
+
+              return (
+                <div key={loc.id}>
+                  <LocationCard
+                    name={loc.name}
+                    subtype={subtype}
+                    agentCount={totalAgents}
+                    flavorText={cardFlavor}
+                    onClick={() => onLocationClick(loc.id)}
+                  >
+                    {/* Nested sublocations — agents visible in location detail */}
+                    {subs.length > 0 && (
+                      <div style={{ paddingLeft: '26px', marginTop: '8px' }}>
+                        {subs.map(sub => {
+                          const subFlavor = locationProse[sub.id] ?? '';
+                          return (
+                            <SubLocationEntry
+                              key={sub.id}
+                              name={sub.name}
+                              flavorText={subFlavor}
+                              onClick={() => onLocationClick(sub.id)}
+                            />
+                          );
+                        })}
+                      </div>
+                    )}
+                  </LocationCard>
+                  {/* Additional location prose paragraphs */}
+                  {extraParagraphs.map((para, idx) => (
+                    <p key={idx} className="chronicle-prose" style={proseStyle}>
+                      {para}
+                    </p>
+                  ))}
+                </div>
+              );
+            })}
+            {/* Orphan sublocations (parent not in this hex) shown at top level */}
+            {orphanSublocations.map(loc => {
+              const agentsHere = agentsByLocation[loc.id] || [];
+              const subtype = (loc.properties as any)?.locationSubtype ?? 'landmark';
+              const fullProse = locationProse[loc.id] ?? '';
+              const proseParagraphs = fullProse.split('\n\n').filter(Boolean);
+              const cardFlavor = proseParagraphs[0] ?? '';
+              const extraParagraphs = proseParagraphs.slice(1);
+              return (
+                <div key={loc.id}>
+                  <LocationCard
+                    name={loc.name}
+                    subtype={subtype}
+                    agentCount={agentsHere.length}
+                    flavorText={cardFlavor}
+                    onClick={() => onLocationClick(loc.id)}
+                  />
+                  {extraParagraphs.map((para, idx) => (
+                    <p key={idx} className="chronicle-prose" style={proseStyle}>
+                      {para}
+                    </p>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+      </div>
+      )}
+
+      {/* ─── THE PEOPLE ───────────────────────────────────────────────────── */}
+      <div ref={peopleRef} className="chronicle-layer" style={{
+        marginBottom: '40px',
+        animation: 'fadeIn 0.6s ease-out 0.3s both',
+      }}>
+        <div className="chronicle-marker" style={markerStyle}>
+          <div style={ruleStyle} />
+          <span style={labelStyle}>The People</span>
+          {renderPlayBtn(peopleRef, 'The People')}
+          <div style={ruleStyle} />
+        </div>
+
+        {dominantCulture && cultureProse && (
+          <p className="chronicle-prose drop-cap" style={proseStyle}>
+            {cultureProse}
+          </p>
+        )}
+        {dominantCulture && !cultureProse && (
+          <p className="chronicle-prose drop-cap" style={proseStyle}>
+            The {stripLeadingThe(dominantCulture.cultureName)} claim this land, their traditions shaping the settlement and its people.
+          </p>
+        )}
+
+        {dominantFaction && factionProse && (
+          <p className="chronicle-prose" style={proseStyle}>
+            {factionProse}
+          </p>
+        )}
+        {dominantFaction && !factionProse && (
+          <p className="chronicle-prose" style={proseStyle}>
+            Control rests with {dominantFaction.factionName}.
+          </p>
+        )}
+
+        {/* Factions present at this hex */}
+        {allFactions.length > 0 && (
+          <div style={{ marginTop: '12px' }}>
+            <div style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: 'var(--text-xs)',
+              color: 'var(--text-tertiary)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              marginBottom: '4px',
+            }}>
+              Factions Present
+            </div>
+            {allFactions.map(faction => {
+              const locName = locationNameById[faction.locationId] ?? faction.locationId;
+              const guildType = (faction.properties as any)?.guildType as string | undefined;
+              // Extract defId from factionId: "faction_def_{defId}" or "faction_def_{defId}_{suffix}"
+              const defMatch = faction.id.match(/^faction_def_(.+?)(?:_\d+)?$/);
+              const factionDef = defMatch ? FACTION_DEFINITIONS.get(defMatch[1]) : undefined;
+              return (
+                <FactionEntry
+                  key={faction.id}
+                  name={faction.name}
+                  guildType={guildType}
+                  locationName={locName}
+                  factionDef={factionDef}
+                  onClick={() => onFactionClick ? onFactionClick(faction.id) : onAgentClick(faction.id)}
+                />
+              );
+            })}
+          </div>
+        )}
+
+        {/* Individual souls present — grouped by location */}
+        {allAgents.length > 0 && (
+          <div style={{ marginTop: '12px' }}>
+            <div style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: 'var(--text-xs)',
+              color: 'var(--text-tertiary)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              marginBottom: '4px',
+            }}>
+              Souls Present
+            </div>
+            {parentLocations.map(parentLoc => {
+              const agentsHere = agentsByLocation[parentLoc.id] ?? [];
+              if (agentsHere.length === 0) return null;
+              return (
+                <div key={parentLoc.id} style={{ marginBottom: '8px' }}>
+                  <div style={{
+                    fontFamily: 'var(--font-display)',
+                    fontSize: 'var(--text-xs)',
+                    color: 'var(--text-muted)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    marginTop: '10px',
+                    marginBottom: '4px',
+                    paddingLeft: '2px',
+                  }}>
+                    {parentLoc.name}
+                  </div>
+                  {agentsHere.map(agent => {
+                    const primarySphere = (agent.properties as any)?.primarySphere as SphereName | undefined;
+                    const sphereColor = primarySphere ? getSphereColor(primarySphere) : '#7a6e60';
+                    const archetypeName = (agent.properties as any)?.narrativeArchetype ?? undefined;
+                    const npcRole = (agent.properties as any)?.npcRole as string | undefined;
+                    const rarityTier = ((agent.properties as any)?.rarityTier ?? 1) as RarityTier;
+                    const flavor = agentProse[agent.id] ?? '';
+                    return (
+                      <SoulCard
+                        key={agent.id}
+                        name={agent.name}
+                        role={npcRole}
+                        rarityTier={rarityTier}
+                        locationName={parentLoc.name}
+                        sphereColor={sphereColor}
+                        archetypeName={archetypeName}
+                        flavorText={flavor}
+                        onClick={() => onAgentClick(agent.id)}
+                      />
+                    );
+                  })}
+                </div>
+              );
+            })}
+            {orphanSublocations.map(orphan => {
+              const agentsHere = agentsByLocation[orphan.id] ?? [];
+              if (agentsHere.length === 0) return null;
+              return (
+                <div key={orphan.id} style={{ marginBottom: '8px' }}>
+                  <div style={{
+                    fontFamily: 'var(--font-display)',
+                    fontSize: 'var(--text-xs)',
+                    color: 'var(--text-muted)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    marginTop: '10px',
+                    marginBottom: '4px',
+                    paddingLeft: '2px',
+                  }}>
+                    {orphan.name}
+                  </div>
+                  {agentsHere.map(agent => {
+                    const primarySphere = (agent.properties as any)?.primarySphere as SphereName | undefined;
+                    const sphereColor = primarySphere ? getSphereColor(primarySphere) : '#7a6e60';
+                    const archetypeName = (agent.properties as any)?.narrativeArchetype ?? undefined;
+                    const npcRole = (agent.properties as any)?.npcRole as string | undefined;
+                    const rarityTier = ((agent.properties as any)?.rarityTier ?? 1) as RarityTier;
+                    const flavor = agentProse[agent.id] ?? '';
+                    return (
+                      <SoulCard
+                        key={agent.id}
+                        name={agent.name}
+                        role={npcRole}
+                        rarityTier={rarityTier}
+                        locationName={orphan.name}
+                        sphereColor={sphereColor}
+                        archetypeName={archetypeName}
+                        flavorText={flavor}
+                        onClick={() => onAgentClick(agent.id)}
+                      />
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
       {/* ─── THE SOUL ─────────────────────────────────────────────────────── */}
       <div ref={soulRef} className="chronicle-layer" style={{
         marginBottom: '40px',
-        animation: 'fadeIn 0.6s ease-out 0.2s both',
+        animation: 'fadeIn 0.6s ease-out 0.35s both',
       }}>
         <div className="chronicle-marker" style={markerStyle}>
           <div style={ruleStyle} />
@@ -739,310 +993,7 @@ export const HexChronicle = memo(function HexChronicle({
             })}
           </div>
         )}
-
-        {/* Individual souls present at this hex — grouped by location */}
-        {allAgents.length > 0 && (
-          <div style={{ marginTop: '12px' }}>
-            <div style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: 'var(--text-xs)',
-              color: 'var(--text-tertiary)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.08em',
-              marginBottom: '4px',
-            }}>
-              Souls Present
-            </div>
-            {/* Render parent locations first, then their sublocations */}
-            {parentLocations.map(parentLoc => {
-              const agentsHere = agentsByLocation[parentLoc.id] ?? [];
-              // Only show agents directly at the city — sublocation inhabitants are
-              // discoverable by entering the sublocation in LocationView.
-              if (agentsHere.length === 0) return null;
-              return (
-                <div key={parentLoc.id} style={{ marginBottom: '8px' }}>
-                  {/* Location heading */}
-                  <div style={{
-                    fontFamily: 'var(--font-display)',
-                    fontSize: 'var(--text-xs)',
-                    color: 'var(--text-muted)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.1em',
-                    marginTop: '10px',
-                    marginBottom: '4px',
-                    paddingLeft: '2px',
-                  }}>
-                    {parentLoc.name}
-                  </div>
-                  {/* Agents directly at this parent location */}
-                  {agentsHere.map(agent => {
-                    const primarySphere = (agent.properties as any)?.primarySphere as SphereName | undefined;
-                    const sphereColor = primarySphere ? getSphereColor(primarySphere) : '#7a6e60';
-                    const archetypeName = (agent.properties as any)?.narrativeArchetype ?? undefined;
-                    const npcRole = (agent.properties as any)?.npcRole as string | undefined;
-                    const rarityTier = ((agent.properties as any)?.rarityTier ?? 1) as RarityTier;
-                    const flavor = agentProse[agent.id] ?? '';
-                    return (
-                      <SoulCard
-                        key={agent.id}
-                        name={agent.name}
-                        role={npcRole}
-                        rarityTier={rarityTier}
-                        locationName={parentLoc.name}
-                        sphereColor={sphereColor}
-                        archetypeName={archetypeName}
-                        flavorText={flavor}
-                        onClick={() => onAgentClick(agent.id)}
-                      />
-                    );
-                  })}
-                </div>
-              );
-            })}
-            {/* Orphan sublocations (parent not on this hex) */}
-            {orphanSublocations.map(orphan => {
-              const agentsHere = agentsByLocation[orphan.id] ?? [];
-              if (agentsHere.length === 0) return null;
-              return (
-                <div key={orphan.id} style={{ marginBottom: '8px' }}>
-                  <div style={{
-                    fontFamily: 'var(--font-display)',
-                    fontSize: 'var(--text-xs)',
-                    color: 'var(--text-muted)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.1em',
-                    marginTop: '10px',
-                    marginBottom: '4px',
-                    paddingLeft: '2px',
-                  }}>
-                    {orphan.name}
-                  </div>
-                  {agentsHere.map(agent => {
-                    const primarySphere = (agent.properties as any)?.primarySphere as SphereName | undefined;
-                    const sphereColor = primarySphere ? getSphereColor(primarySphere) : '#7a6e60';
-                    const archetypeName = (agent.properties as any)?.narrativeArchetype ?? undefined;
-                    const npcRole = (agent.properties as any)?.npcRole as string | undefined;
-                    const rarityTier = ((agent.properties as any)?.rarityTier ?? 1) as RarityTier;
-                    const flavor = agentProse[agent.id] ?? '';
-                    return (
-                      <SoulCard
-                        key={agent.id}
-                        name={agent.name}
-                        role={npcRole}
-                        rarityTier={rarityTier}
-                        locationName={orphan.name}
-                        sphereColor={sphereColor}
-                        archetypeName={archetypeName}
-                        flavorText={flavor}
-                        onClick={() => onAgentClick(agent.id)}
-                      />
-                    );
-                  })}
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Factions Present at this hex */}
-        {allFactions.length > 0 && (
-          <div style={{ marginTop: '12px' }}>
-            <div style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: 'var(--text-xs)',
-              color: 'var(--text-tertiary)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.08em',
-              marginBottom: '4px',
-            }}>
-              Factions Present
-            </div>
-            {allFactions.map(faction => {
-              const locName = locationNameById[faction.locationId] ?? faction.locationId;
-              const guildType = (faction.properties as any)?.guildType as string | undefined;
-              // Extract defId from factionId: "faction_def_{defId}" or "faction_def_{defId}_{suffix}"
-              const defMatch = faction.id.match(/^faction_def_(.+?)(?:_\d+)?$/);
-              const factionDef = defMatch ? FACTION_DEFINITIONS.get(defMatch[1]) : undefined;
-              return (
-                <FactionEntry
-                  key={faction.id}
-                  name={faction.name}
-                  guildType={guildType}
-                  locationName={locName}
-                  factionDef={factionDef}
-                  onClick={() => onFactionClick ? onFactionClick(faction.id) : onAgentClick(faction.id)}
-                />
-              );
-            })}
-          </div>
-        )}
       </div>
-
-      {/* ─── THE PEOPLE ───────────────────────────────────────────────────── */}
-      <div ref={peopleRef} className="chronicle-layer" style={{
-        marginBottom: '40px',
-        animation: 'fadeIn 0.6s ease-out 0.3s both',
-      }}>
-        <div className="chronicle-marker" style={markerStyle}>
-          <div style={ruleStyle} />
-          <span style={labelStyle}>The People</span>
-          {renderPlayBtn(peopleRef, 'The People')}
-          <div style={ruleStyle} />
-        </div>
-
-        {dominantCulture && cultureProse && (
-          <p className="chronicle-prose drop-cap" style={proseStyle}>
-            {cultureProse}
-          </p>
-        )}
-        {dominantCulture && !cultureProse && (
-          <p className="chronicle-prose drop-cap" style={proseStyle}>
-            The {stripLeadingThe(dominantCulture.cultureName)} claim this land, their traditions shaping the settlement and its people.
-          </p>
-        )}
-
-        {dominantFaction && factionProse && (
-          <p className="chronicle-prose" style={proseStyle}>
-            {factionProse}
-          </p>
-        )}
-        {dominantFaction && !factionProse && (
-          <p className="chronicle-prose" style={proseStyle}>
-            Control rests with {dominantFaction.factionName}.
-          </p>
-        )}
-      </div>
-
-      {/* ─── THE PLACES ──────────────────────────────────────────────────── */}
-      {(parentLocations.length > 0 || orphanSublocations.length > 0) && (
-      <div ref={placesRef} className="chronicle-layer" style={{
-        marginBottom: '40px',
-        animation: 'fadeIn 0.6s ease-out 0.35s both',
-      }}>
-        <div className="chronicle-marker" style={markerStyle}>
-          <div style={ruleStyle} />
-          <span style={labelStyle}>The Places</span>
-          {renderPlayBtn(placesRef, 'The Places')}
-          <div style={ruleStyle} />
-        </div>
-
-        <div style={{ marginBottom: '16px' }}>
-            {parentLocations.map(loc => {
-              const agentsHere = agentsByLocation[loc.id] || [];
-              const subtype = (loc.properties as any)?.locationSubtype ?? 'landmark';
-              const flavorText = locationProse[loc.id] ?? '';
-              const subs = sublocationsByParent[loc.id] || [];
-              // Total agent count includes sublocation agents
-              const subAgentCount = subs.reduce(
-                (sum, sub) => sum + (agentsByLocation[sub.id]?.length ?? 0), 0
-              );
-              const totalAgents = agentsHere.length + subAgentCount;
-
-              return (
-                <LocationCard
-                  key={loc.id}
-                  name={loc.name}
-                  subtype={subtype}
-                  agentCount={totalAgents}
-                  flavorText={flavorText}
-                  onClick={() => onLocationClick(loc.id)}
-                >
-                  {/* Agents directly at this location */}
-                  {agentsHere.length > 0 && (
-                    <div style={{ paddingLeft: '26px', marginTop: '6px' }}>
-                      {agentsHere.map(agent => {
-                        const primarySphere = (agent.properties as any)?.primarySphere as SphereName | undefined;
-                        const sphereColor = primarySphere ? getSphereColor(primarySphere) : '#7a6e60';
-                        const archetypeName = (agent.properties as any)?.narrativeArchetype ?? undefined;
-                        return (
-                          <AgentEntry
-                            key={agent.id}
-                            name={agent.name}
-                            sphereColor={sphereColor}
-                            archetypeName={archetypeName}
-                            onClick={() => onAgentClick(agent.id)}
-                          />
-                        );
-                      })}
-                    </div>
-                  )}
-                  {/* Nested sublocations */}
-                  {subs.length > 0 && (
-                    <div style={{ paddingLeft: '26px', marginTop: '8px' }}>
-                      {subs.map(sub => {
-                        const subAgents = agentsByLocation[sub.id] || [];
-                        const subFlavor = locationProse[sub.id] ?? '';
-                        return (
-                          <SubLocationEntry
-                            key={sub.id}
-                            name={sub.name}
-                            flavorText={subFlavor}
-                            onClick={() => onLocationClick(sub.id)}
-                          >
-                            {subAgents.length > 0 && (
-                              <div style={{ marginTop: '4px' }}>
-                                {subAgents.map(agent => {
-                                  const primarySphere = (agent.properties as any)?.primarySphere as SphereName | undefined;
-                                  const sphereColor = primarySphere ? getSphereColor(primarySphere) : '#7a6e60';
-                                  const archetypeName = (agent.properties as any)?.narrativeArchetype ?? undefined;
-                                  return (
-                                    <AgentEntry
-                                      key={agent.id}
-                                      name={agent.name}
-                                      sphereColor={sphereColor}
-                                      archetypeName={archetypeName}
-                                      onClick={() => onAgentClick(agent.id)}
-                                    />
-                                  );
-                                })}
-                              </div>
-                            )}
-                          </SubLocationEntry>
-                        );
-                      })}
-                    </div>
-                  )}
-                </LocationCard>
-              );
-            })}
-            {/* Orphan sublocations (parent not in this hex) shown at top level */}
-            {orphanSublocations.map(loc => {
-              const agentsHere = agentsByLocation[loc.id] || [];
-              const subtype = (loc.properties as any)?.locationSubtype ?? 'landmark';
-              const flavorText = locationProse[loc.id] ?? '';
-              return (
-                <LocationCard
-                  key={loc.id}
-                  name={loc.name}
-                  subtype={subtype}
-                  agentCount={agentsHere.length}
-                  flavorText={flavorText}
-                  onClick={() => onLocationClick(loc.id)}
-                >
-                  {agentsHere.length > 0 && (
-                    <div style={{ paddingLeft: '26px', marginTop: '6px' }}>
-                      {agentsHere.map(agent => {
-                        const primarySphere = (agent.properties as any)?.primarySphere as SphereName | undefined;
-                        const sphereColor = primarySphere ? getSphereColor(primarySphere) : '#7a6e60';
-                        const archetypeName = (agent.properties as any)?.narrativeArchetype ?? undefined;
-                        return (
-                          <AgentEntry
-                            key={agent.id}
-                            name={agent.name}
-                            sphereColor={sphereColor}
-                            archetypeName={archetypeName}
-                            onClick={() => onAgentClick(agent.id)}
-                          />
-                        );
-                      })}
-                    </div>
-                  )}
-                </LocationCard>
-              );
-            })}
-          </div>
-      </div>
-      )}
 
       {/* ─── THE RUINS (conditional) ──────────────────────────────────────── */}
       {regionData?.historicalCulture && (

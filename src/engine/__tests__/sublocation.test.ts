@@ -97,11 +97,11 @@ describe('ensureSublocations', () => {
     // No located_at edge needed — Path A uses locationSubtype: 'city' directly
     const result = ensureSublocations(graph, locationId, 42);
 
-    // 'city' maps to: market-district, temple-quarter, barracks
-    expect(result).toHaveLength(3);
-    expect(result[0].type).toBe('location');
-    expect(result[1].type).toBe('location');
-    expect(result[2].type).toBe('location');
+    // 'city' maps to: market-district, temple-quarter, barracks, gatehouse, library
+    expect(result).toHaveLength(5);
+    for (const node of result) {
+      expect(node.type).toBe('location');
+    }
 
     // Check that nodes have been added to graph with correct properties
     const props0 = result[0].properties as SublocationProperties;
@@ -115,7 +115,7 @@ describe('ensureSublocations', () => {
 
     // Verify contains edges were created (for getSubLocations)
     const containsEdges = graph.getOutgoingEdges(locationId, 'contains');
-    expect(containsEdges.length).toBe(3);
+    expect(containsEdges.length).toBe(5);
   });
 
   it('copies parent hexCol/hexRow onto sublocation nodes', () => {

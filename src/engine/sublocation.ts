@@ -38,15 +38,20 @@ export const SUBTYPE_SUBLOCATION_MAP: Record<string, SublocationTypeDef[]> = {
     { id: 'sublocation-type.temple-quarter', name: 'Temple Quarter', motivations: [{ left: 'devotion', right: 'independence', weight: 0.8 }, { left: 'tradition', right: 'innovation', weight: 0.6 }] },
     { id: 'sublocation-type.barracks', name: 'Barracks', motivations: [{ left: 'duty', right: 'freedom', weight: 0.7 }, { left: 'order', right: 'chaos', weight: 0.6 }] },
     { id: 'sublocation-type.throne-room', name: 'Throne Room', motivations: [{ left: 'authority', right: 'rebellion', weight: 0.9 }, { left: 'tradition', right: 'innovation', weight: 0.5 }] },
+    { id: 'sublocation-type.gatehouse', name: 'Gatehouse', motivations: [{ left: 'duty', right: 'freedom', weight: 0.8 }, { left: 'order', right: 'chaos', weight: 0.7 }] },
+    { id: 'sublocation-type.library', name: 'Library', motivations: [{ left: 'knowledge', right: 'ignorance', weight: 0.9 }, { left: 'tradition', right: 'innovation', weight: 0.4 }] },
   ],
   city: [
     { id: 'sublocation-type.market-district', name: 'Market District', motivations: [{ left: 'greed', right: 'generosity', weight: 0.7 }, { left: 'cunning', right: 'honesty', weight: 0.5 }] },
     { id: 'sublocation-type.temple-quarter', name: 'Temple Quarter', motivations: [{ left: 'devotion', right: 'independence', weight: 0.8 }, { left: 'tradition', right: 'innovation', weight: 0.6 }] },
     { id: 'sublocation-type.barracks', name: 'Barracks', motivations: [{ left: 'duty', right: 'freedom', weight: 0.7 }, { left: 'order', right: 'chaos', weight: 0.6 }] },
+    { id: 'sublocation-type.gatehouse', name: 'Gatehouse', motivations: [{ left: 'duty', right: 'freedom', weight: 0.8 }, { left: 'order', right: 'chaos', weight: 0.7 }] },
+    { id: 'sublocation-type.library', name: 'Library', motivations: [{ left: 'knowledge', right: 'ignorance', weight: 0.9 }, { left: 'tradition', right: 'innovation', weight: 0.4 }] },
   ],
   town: [
     { id: 'sublocation-type.market-district', name: 'Market District', motivations: [{ left: 'greed', right: 'generosity', weight: 0.7 }, { left: 'cunning', right: 'honesty', weight: 0.5 }] },
     { id: 'sublocation-type.temple-quarter', name: 'Temple Quarter', motivations: [{ left: 'devotion', right: 'independence', weight: 0.8 }, { left: 'tradition', right: 'innovation', weight: 0.6 }] },
+    { id: 'sublocation-type.gatehouse', name: 'Gatehouse', motivations: [{ left: 'duty', right: 'freedom', weight: 0.8 }, { left: 'order', right: 'chaos', weight: 0.7 }] },
   ],
   hamlet: [
     { id: 'sublocation-type.garden', name: 'Garden', motivations: [{ left: 'devotion', right: 'independence', weight: 0.4 }, { left: 'tradition', right: 'innovation', weight: 0.3 }] },

@@ -100,10 +100,10 @@ describe('HexChronicle', () => {
     expect(screen.getAllByText('The Forge of Sorrow').length).toBeGreaterThan(0);
   });
 
-  it('renders inline soul cards', () => {
+  it('renders inline soul cards in The People only (deduplicated)', () => {
     render(<HexChronicle {...makeTestProps()} />);
-    // Agent appears as SoulCard in The Soul and as AgentEntry in The Places
-    expect(screen.getAllByText('The Hollow King').length).toBeGreaterThan(0);
+    // Agent appears only as SoulCard in The People — no AgentEntry duplication
+    expect(screen.getAllByText('The Hollow King')).toHaveLength(1);
   });
 
   it('hides Ruins layer when no historical culture exists', () => {
