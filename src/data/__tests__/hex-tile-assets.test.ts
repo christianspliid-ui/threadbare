@@ -1,79 +1,49 @@
 import { describe, it, expect } from 'vitest';
-import { getHexTileUrl, TERRAIN_TILE_MAP, getMagicOverlayUrl, MAGIC_OVERLAY_MAP } from '../hex-tile-assets';
-import type { TerrainType } from '../../types';
+import { getOverlayIconUrl, isFullSizeOverlay, OVERLAY_ICON_MAP } from '../hex-tile-assets';
+import type { LocationSubtype } from '../../types';
 
-const ALL_TERRAIN_TYPES: TerrainType[] = [
-  'ocean', 'deep_ocean', 'tropical_ocean', 'coastal_shallows', 'coast', 'lake', 'river', 'reef',
-  'grassland', 'farmland', 'savanna', 'steppe', 'floodplain',
-  'temperate_forest', 'dense_forest', 'boreal_forest', 'jungle',
-  'tropical_forest', 'evergreen_forest', 'light_forest', 'dead_forest',
-  'swamp', 'marsh', 'moor_bog',
-  'hills', 'mountains', 'high_mountains', 'plateau', 'badlands', 'mountain_pass',
-  'forested_hills',
-  'great_home_trees', 'broken_lands', 'oasis',
-  'desert', 'rocky_desert', 'sand_dunes', 'tundra', 'glacier', 'volcano',
-  'arctic', 'snow_fields',
-];
-
-describe('hex-tile-assets', () => {
-  it('has a mapping for every TerrainType', () => {
-    for (const terrain of ALL_TERRAIN_TYPES) {
-      expect(TERRAIN_TILE_MAP[terrain], `Missing mapping for ${terrain}`).toBeDefined();
+describe('OVERLAY_ICON_MAP', () => {
+  it('has entries for all standard location subtypes', () => {
+    const expected: LocationSubtype[] = [
+      'hamlet', 'town', 'city', 'capital', 'camp', 'farmland',
+      'castle', 'fort', 'tower', 'shrine', 'temple', 'mining',
+      'ruins', 'ruined_tower', 'ruined_city', 'ruined_village',
+      'battleground', 'oasis', 'unexplored_poi',
+    ];
+    for (const subtype of expected) {
+      expect(OVERLAY_ICON_MAP[subtype], `Missing overlay for ${subtype}`).toBeDefined();
     }
   });
 
-  it('getHexTileUrl returns a path under /hex-tiles/', () => {
-    const url = getHexTileUrl('dense_forest');
-    expect(url).toBe('/hex-tiles/dense-forest.png');
-  });
-
-  it('getHexTileUrl handles grassland → open-grassland', () => {
-    expect(getHexTileUrl('grassland')).toBe('/hex-tiles/open-grassland.png');
-  });
-
-  it('getHexTileUrl handles mountains → mountain', () => {
-    expect(getHexTileUrl('mountains')).toBe('/hex-tiles/mountain.png');
-  });
-
-  it('all mapped filenames end with .png', () => {
-    for (const terrain of ALL_TERRAIN_TYPES) {
-      expect(getHexTileUrl(terrain)).toMatch(/\.png$/);
+  it('all filenames follow overlay-{subtype}.png pattern', () => {
+    for (const filename of Object.values(OVERLAY_ICON_MAP)) {
+      expect(filename).toMatch(/^overlay-[\w-]+\.png$/);
     }
   });
 });
 
-describe('MAGIC_OVERLAY_MAP', () => {
-  it('has entries for all 8 creation spheres', () => {
-    const creationSpheres = ['force', 'matter', 'energy', 'life', 'mind', 'spirit', 'time', 'entropy'];
-    for (const sphere of creationSpheres) {
-      expect(MAGIC_OVERLAY_MAP[sphere as keyof typeof MAGIC_OVERLAY_MAP]).toBeDefined();
-    }
+describe('getOverlayIconUrl', () => {
+  it('returns correct URL for a location subtype', () => {
+    expect(getOverlayIconUrl('hamlet')).toBe('/hex-tiles/overlay-hamlet.png');
   });
 
-  it('has entries for all 4 foundation spheres', () => {
-    const foundationSpheres = ['chaos', 'order', 'light', 'darkness'];
-    for (const sphere of foundationSpheres) {
-      expect(MAGIC_OVERLAY_MAP[sphere as keyof typeof MAGIC_OVERLAY_MAP]).toBeDefined();
-    }
-  });
-
-  it('has exactly 12 entries', () => {
-    expect(Object.keys(MAGIC_OVERLAY_MAP)).toHaveLength(12);
-  });
-
-  it('all filenames follow magic-{sphere}.png pattern', () => {
-    for (const [sphere, filename] of Object.entries(MAGIC_OVERLAY_MAP)) {
-      expect(filename).toBe(`magic-${sphere}.png`);
-    }
+  it('returns null for wilderness (no overlay)', () => {
+    expect(getOverlayIconUrl('wilderness')).toBeNull();
   });
 });
 
-describe('getMagicOverlayUrl', () => {
-  it('returns correct URL for a creation sphere', () => {
-    expect(getMagicOverlayUrl('force')).toBe('/hex-tiles/magic-force.png');
+describe('isFullSizeOverlay', () => {
+  it('returns true for settlement types', () => {
+    expect(isFullSizeOverlay('hamlet')).toBe(true);
+    expect(isFullSizeOverlay('town')).toBe(true);
+    expect(isFullSizeOverlay('city')).toBe(true);
+    expect(isFullSizeOverlay('capital')).toBe(true);
+    expect(isFullSizeOverlay('farmland')).toBe(true);
   });
 
-  it('returns correct URL for a foundation sphere', () => {
-    expect(getMagicOverlayUrl('order')).toBe('/hex-tiles/magic-order.png');
+  it('returns false for structure types', () => {
+    expect(isFullSizeOverlay('castle')).toBe(false);
+    expect(isFullSizeOverlay('tower')).toBe(false);
+    expect(isFullSizeOverlay('shrine')).toBe(false);
   });
 });

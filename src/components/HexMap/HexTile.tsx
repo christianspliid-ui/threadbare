@@ -4,7 +4,7 @@ import type { HexTile, HexCoord, LocationSubtype } from '../../types';
 import type { HexVisibilityState, StaleSnapshot } from '../../types/visibility';
 import { BIOME_COLORS } from '../../engine/color';
 import { hexPolygonPoints, HEX_IMG_SCALE } from '../../lib/hexMath';
-import { getHexTileUrl, getOverlayIconUrl, isFullSizeOverlay } from '../../data/hex-tile-assets';
+import { getOverlayIconUrl, isFullSizeOverlay } from '../../data/hex-tile-assets';
 import { getRingSlotOffset } from '../../lib/movementPath';
 import { AGENT_RING_RADIUS } from '../../data/agent-visual-content';
 import { isWaterTerrain } from '../../engine/coastline';
@@ -163,7 +163,7 @@ export const HexTileComponent = memo(function HexTileComponent({
   const onMouseLeave = useCallback(() => onHexHover?.(null), [onHexHover]);
   const fillColor = BIOME_COLORS[tile.terrain];
   const points = hexPolygonPoints(cx, cy, size);
-  const tileUrl = getHexTileUrl(tile.terrain);
+  const tileUrl = ''; // V1 terrain tiles removed — WebGL renders terrain now
   const imgSize = size * HEX_IMG_SCALE;
 
   // IX-205: Data attributes for test selectors and accessibility

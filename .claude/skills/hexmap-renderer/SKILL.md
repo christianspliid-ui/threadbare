@@ -54,7 +54,7 @@ When verifying hex map changes, always check both: Playwright for errors, Claude
 
 ## Water & Coastlines
 
-- **Water colors** extracted from `Design/mark-known-world-region-8-v2.png`: deep_ocean `#3A7AB8`, ocean `#5098D0`, shallows `#78BCE0`, lake `#4A8FC0`, river `#68B0D8`.
+- **Water colors** extracted from reference image (now in Obsidian vault `raw/references/mark-known-world-region-8-v2.png`): deep_ocean `#3A7AB8`, ocean `#5098D0`, shallows `#78BCE0`, lake `#4A8FC0`, river `#68B0D8`.
 - **CoastlineMesh** — two-layer approach: shallows band (z=0.01) + land boundary (z=0.02) using ShapeGeometry from marching squares loops.
 - **River rendering** — mesh quad strips for width (not linewidth — WebGL clamps to 1px). All river paths merged into one BufferGeometry for minimal draw calls.
 - **Terrain seeding before biome pass** — hydrology pre-seeds terrain from `isOcean` + elevation so river routing works before biome classification.

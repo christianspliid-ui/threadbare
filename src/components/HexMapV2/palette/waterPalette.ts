@@ -4,7 +4,7 @@
  * NFP #1: Every color is a named entry.
  *
  * COLOR SOURCE: "Golden Hour" warm-shifted palette derived from the original
- * Tait reference (Design/hexmap macro-reference.png). Blues desaturated and
+ * Tait reference (moved to Obsidian vault: raw/references/hexmap macro-reference.png). Blues desaturated and
  * warmed toward muted teal-blue to harmonize with the dark-gold UI chrome.
  *
  * Original Tait values for reference:

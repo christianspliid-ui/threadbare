@@ -57,8 +57,11 @@ scripts/playtest.mjs
 # Temporary verification screenshots (root level)
 *.png
 !public/**/*.png
-!Design/**/*.png
 !Docs/**/*.png
+
+# Large assets moved to Obsidian vault (2026-04-06)
+Docs/source-pdfs/
+Design/
 
 # Python TTS server
 .venv/
