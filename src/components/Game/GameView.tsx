@@ -141,9 +141,10 @@ interface GameViewProps {
   cosmology: CosmologyProfile;
   seed: number;
   mapSize?: import('../../engine/gameInit').MapSizePreset;
+  ascendantIdentity?: import('../../types/remembrance').AscendantIdentity;
 }
 
-export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: GameViewProps) {
+export function GameView({ archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity }: GameViewProps) {
   // ── Resume theme music if it was started on the start screen ──
   useEffect(() => {
     resumeTheme();
@@ -158,7 +159,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     running, speed, harvestResult, doTick, handleBeginNextCycle,
     handleToggleRunning, setRunning, setSpeed, seasonName, year, maxEssence, COLS, ROWS,
     runtime,
-  } = useSimulation({ archetype, avatarName, cosmology, seed, scryState, mapSize });
+  } = useSimulation({ archetype, avatarName, cosmology, seed, scryState, mapSize, ascendantIdentity });
 
   // O(1) tile lookup by hex coordinate (tiles array is stable — created once at init)
   const tileMap = useMemo(() => {

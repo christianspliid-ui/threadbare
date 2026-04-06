@@ -346,6 +346,7 @@ export function initializeGameState(
     tiles,
     clock: { currentTick: 0, ticksPerSeason: DEFAULT_TICKS_PER_SEASON, season: 0, year: 0 },
     ascendantId,
+    ascendantIdentity: null,  // set by initializeGameStateFromIdentity for remembrance path
     essencePool: startingPool,
     mandateDefinition: mandateDef,
     mandateState: mandateStateInit,
@@ -425,7 +426,7 @@ export function initializeGameStateFromIdentity(
     flavorText: identity.mandateDirection,
   };
 
-  return initializeGameState(
+  const result = initializeGameState(
     compatArchetype,
     identity.mortalName,
     cosmology,
@@ -433,4 +434,11 @@ export function initializeGameStateFromIdentity(
     cols,
     rows,
   );
+
+  // Stamp the full identity onto game state so remembrance-only fields
+  // (timeSinceAscension, courtType, mortalTags, ascendantLens) are
+  // available to downstream systems like Meet The First.
+  result.state.ascendantIdentity = identity;
+
+  return result;
 }

@@ -174,6 +174,7 @@ function App() {
         cosmology={derivedCosmology}
         seed={seed}
         mapSize={deriveMapSize(gamePhase.identity.hungerId)}
+        ascendantIdentity={gamePhase.identity}
       />
     );
   }

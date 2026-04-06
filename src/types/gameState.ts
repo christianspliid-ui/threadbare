@@ -18,6 +18,7 @@ import type { HexMutation } from './hexMutation';
 import type { NotificationDirective } from './notification';
 import type { PendingVignette } from './journeyEngine';
 import type { ControlEffect } from './controlEffect';
+import type { AscendantIdentity } from './remembrance';
 import type { HexRevelation } from './unifiedAction';
 import type { SpherePressureEvent } from './sphereAffinity';
 import type { QuintessenceEvent } from './quintessence';
@@ -113,6 +114,7 @@ export interface GameState {
 
   // Player
   ascendantId: string;
+  ascendantIdentity: AscendantIdentity | null;  // null for legacy archetype-based creation
   essencePool: EssencePool;
   mandateDefinition: MandateDefinition | null;
   mandateState: MandateState | null;

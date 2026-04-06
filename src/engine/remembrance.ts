@@ -79,6 +79,24 @@ const TAG_BIASES: Partial<Record<string, Partial<Record<ValuePair, number>>>> = 
   restless:      { tradition_novelty: -0.2, courage_prudence: 0.2, loyalty_ambition: -0.2 },
 };
 
+// ─── Hunger → Personality Bias Map ───────────────────────────────────────────
+
+/**
+ * Maps hunger IDs to personality adjustments. These represent how the divine
+ * transformation distorts the mortal personality — the Hunger's mark.
+ */
+const HUNGER_PERSONALITY_BIASES: Partial<Record<string, Partial<Record<ValuePair, number>>>> = {
+  'hunger.gather':   { loyalty_ambition: 0.3, mercy_ruthlessness: 0.2, sacrifice_survival: 0.2 },
+  'hunger.witness':  { revelation_discretion: -0.3, honesty_cunning: -0.2, courage_prudence: -0.2 },
+  'hunger.reclaim':  { mercy_ruthlessness: -0.3, courage_prudence: 0.3, preservation_transformation: 0.2 },
+  'hunger.reshape':  { preservation_transformation: -0.3, loyalty_ambition: -0.2, tradition_novelty: -0.3 },
+  'hunger.preserve': { preservation_transformation: 0.4, tradition_novelty: 0.3, sacrifice_survival: 0.2 },
+  'hunger.wander':   { tradition_novelty: -0.3, courage_prudence: 0.3, revelation_discretion: 0.2 },
+  'hunger.sever':    { loyalty_ambition: -0.4, mercy_ruthlessness: -0.2, tradition_novelty: -0.2 },
+  'hunger.bind':     { loyalty_ambition: 0.3, tradition_novelty: 0.2, honesty_cunning: 0.2 },
+  'hunger.kindle':   { sacrifice_survival: 0.3, courage_prudence: 0.2, tradition_novelty: -0.2 },
+};
+
 // ─── Divine Name Tables ───────────────────────────────────────────────────────
 
 /** Maps hunger IDs to pools of adjectives for divine name generation */
@@ -131,17 +149,22 @@ function overlapScore(a: string[], b: string[]): number {
   return a.filter(x => setB.has(x)).length;
 }
 
-/** Score + jitter sort, return top N items. */
+/** Minimum raw score (before jitter) for a candidate to be eligible. */
+const MIN_SCORE_THRESHOLD = 0.5;
+
+/** Score + jitter sort, return top N items that have positive real scores. */
 function scoredTopN<T>(
   items: T[],
   scoreFn: (item: T) => number,
   n: number,
   rng: () => number,
 ): T[] {
-  const scored = items.map(item => ({
-    item,
-    score: scoreFn(item) + rng() * JITTER_WEIGHT,
-  }));
+  const scored = items
+    .map(item => {
+      const rawScore = scoreFn(item);
+      return { item, rawScore, score: rawScore + rng() * JITTER_WEIGHT };
+    })
+    .filter(s => s.rawScore >= MIN_SCORE_THRESHOLD);
   scored.sort((a, b) => b.score - a.score);
   return scored.slice(0, n).map(s => s.item);
 }
@@ -255,7 +278,7 @@ export function buildPersonalitySeed(
     biases[pair] = 0;
   }
 
-  // Accumulate biases from all tags across origin, drive, and hunger affinities
+  // Accumulate biases from all tags across origin and drive
   const allTags = [...origin.tags, ...drive.tags];
   for (const tag of allTags) {
     const tagBias = TAG_BIASES[tag];
@@ -263,6 +286,14 @@ export function buildPersonalitySeed(
       for (const [pair, delta] of Object.entries(tagBias) as [ValuePair, number][]) {
         biases[pair] = (biases[pair] ?? 0) + delta;
       }
+    }
+  }
+
+  // Apply hunger-specific personality biases
+  const hungerBiases = HUNGER_PERSONALITY_BIASES[hunger.id];
+  if (hungerBiases) {
+    for (const [pair, delta] of Object.entries(hungerBiases) as [ValuePair, number][]) {
+      biases[pair] = (biases[pair] ?? 0) + delta;
     }
   }
 
@@ -305,10 +336,33 @@ export function generateDivineName(
   return `The ${adjective} ${noun}`;
 }
 
+/** Bonus cosmology weight for spheres associated with mortal tags */
+const COSMOLOGY_TAG_BONUS = 0.02;
+
+/** Maps mortal tags to spheres they should bias toward */
+const TAG_SPHERE_AFFINITY: Partial<Record<string, SphereName[]>> = {
+  caretaker:     ['life', 'spirit'],
+  scholar:       ['mind', 'spirit'],
+  leader:        ['force', 'matter'],
+  ruler:         ['matter', 'order'],
+  healer:        ['life', 'energy'],
+  wanderer:      ['energy', 'time'],
+  love:          ['spirit', 'life'],
+  vengeance:     ['force', 'entropy'],
+  obsession:     ['mind', 'entropy'],
+  perfectionism: ['order', 'matter'],
+  preservation:  ['time', 'spirit'],
+  freedom:       ['chaos', 'energy'],
+  ancient:       ['time', 'darkness'],
+  recent:        ['life', 'light'],
+};
+
 /**
  * Derive a full CosmologyProfile from the ascendant's identity.
- * Primary sphere gets 0.25, secondary gets 0.20, remaining 10 spheres share
- * the rest evenly (≈ 0.055 each). Always sums to exactly 1.0.
+ * Primary sphere gets 0.25, secondary gets 0.20.
+ * Remaining 0.55 is distributed among other spheres with bonuses
+ * for spheres associated with the mortal tags.
+ * Always sums to exactly 1.0.
  */
 export function deriveCosmologyFromIdentity(identity: {
   sphereAlignment: SphereAlignment;
@@ -316,21 +370,50 @@ export function deriveCosmologyFromIdentity(identity: {
   hungerId: string;
 }): CosmologyProfile {
   const { primary, secondary } = identity.sphereAlignment;
-  const totalSpheres = SPHERE_NAMES.length; // 12
   const remainder = 1.0 - COSMOLOGY_PRIMARY_WEIGHT - COSMOLOGY_SECONDARY_WEIGHT;
-  const otherCount = totalSpheres - 2;
-  const baseWeight = remainder / otherCount;
+  const otherSpheres = SPHERE_NAMES.filter(s => s !== primary && s !== secondary);
+
+  // Compute bonus weights from mortal tags
+  const bonuses = new Map<SphereName, number>();
+  for (const tag of identity.mortalTags) {
+    const affinities = TAG_SPHERE_AFFINITY[tag];
+    if (affinities) {
+      for (const sphere of affinities) {
+        if (sphere !== primary && sphere !== secondary) {
+          bonuses.set(sphere, (bonuses.get(sphere) ?? 0) + COSMOLOGY_TAG_BONUS);
+        }
+      }
+    }
+  }
+
+  // Distribute remainder: base weight per sphere + accumulated bonuses, then normalize
+  const totalBonus = Array.from(bonuses.values()).reduce((a, b) => a + b, 0);
+  const basePerSphere = (remainder - totalBonus) / otherSpheres.length;
+  // If bonuses exceed remainder budget, fall back to even distribution
+  const safeBase = basePerSphere > 0 ? basePerSphere : remainder / otherSpheres.length;
+  const useBonuses = basePerSphere > 0;
 
   const profile = {} as CosmologyProfile;
+  let sum = 0;
   for (const sphere of SPHERE_NAMES) {
     if (sphere === primary) {
       profile[sphere] = COSMOLOGY_PRIMARY_WEIGHT;
     } else if (sphere === secondary) {
       profile[sphere] = COSMOLOGY_SECONDARY_WEIGHT;
     } else {
-      profile[sphere] = baseWeight;
+      profile[sphere] = safeBase + (useBonuses ? (bonuses.get(sphere) ?? 0) : 0);
+    }
+    sum += profile[sphere];
+  }
+
+  // Normalize to exactly 1.0 to handle floating-point drift
+  if (Math.abs(sum - 1.0) > 1e-10) {
+    const scale = 1.0 / sum;
+    for (const sphere of SPHERE_NAMES) {
+      profile[sphere] *= scale;
     }
   }
+
   return profile;
 }
 
