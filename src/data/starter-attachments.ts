@@ -29,10 +29,13 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       subcategory: 'arms',
       tier: 1,
       tags: ['#iron', '#weapon', '#melee'],
-      mechanicalSummary: '+0.10 Iron reach',
-      reachBonus: { iron: 0.05 },
+      mechanicalSummary: '+0.05 Iron, rescues near-miss combat rolls (+1 step, within 1 margin)',
       lossCondition: 'breakable',
       flavorText: 'A well-worn blade of folded steel, simple and reliable.',
+      effects: [
+        { type: 'passive', reach: 'iron', value: 0.05 },
+        { type: 'test_shaper', reach: 'iron', trigger: 'near_miss', steps: 1, maxMargin: 1 },
+      ],
       onUseTriggers: [
         {
           triggerCondition: 'critical_failure',
