@@ -81,7 +81,7 @@ export function useZoomLayerVisibility({
 
     // Agent tiers (portrait/dot/retinue)
     const agentGroup = agentSpriteGroup.current;
-    if (agentGroup) updateZoomVisibility(agentGroup, tier);
+    if (agentGroup) updateZoomVisibility(agentGroup, tier, zoomK);
 
     // Military layer visibility (Plan 13-04)
     if (groups.armies?.current) groups.armies.current.visible = ZOOM_VISIBILITY_MATRIX.armies[tier];

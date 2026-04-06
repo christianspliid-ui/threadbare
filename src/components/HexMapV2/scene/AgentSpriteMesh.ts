@@ -286,6 +286,13 @@ export function createAgentSpriteMesh(agents: AgentRenderData[]): AgentSpriteGro
 // ── Zoom Visibility ──────────────────────────────────────────────────────────
 
 /**
+ * Reference zoom level where sprite scale is 1:1 (no compensation).
+ * Above this zoom, sprites are scaled down to maintain consistent screen size.
+ * NFP #1: Named constant for tunability.
+ */
+const SPRITE_SCALE_REFERENCE_ZOOM = 12;
+
+/**
  * Swaps each agent sprite's material and scale for the current zoom tier.
  *
  * Uses ZOOM_VISIBILITY_MATRIX to determine which tier to show:
@@ -293,38 +300,56 @@ export function createAgentSpriteMesh(agents: AgentRenderData[]): AgentSpriteGro
  * - regional/continental: dot material + dot scale (continental retinue: continental material)
  * - full-world: sprite hidden
  *
+ * At zoom levels above SPRITE_SCALE_REFERENCE_ZOOM, sprites are scaled down
+ * proportionally so they maintain a consistent apparent screen size instead of
+ * growing as the camera zooms in.
+ *
  * Also updates userData.baseScale so settle bounce uses the correct multiplier.
  *
  * @param group — the AgentSpriteGroup to update
  * @param tier — current zoom tier (from getZoomTier)
+ * @param zoomK — current d3-zoom scale level (optional, defaults to no compensation)
  */
-export function updateZoomVisibility(group: AgentSpriteGroup, tier: ZoomTier): void {
+export function updateZoomVisibility(group: AgentSpriteGroup, tier: ZoomTier, zoomK?: number): void {
   const showPortrait = ZOOM_VISIBILITY_MATRIX.agents_portrait[tier];
   const showDot = ZOOM_VISIBILITY_MATRIX.agents_dot[tier];
   const showRetinue = ZOOM_VISIBILITY_MATRIX.agents_retinue[tier];
 
+  // Compute zoom compensation factor: 1.0 at reference zoom, smaller at higher zooms
+  const zoomCompensation = (zoomK !== undefined && zoomK > SPRITE_SCALE_REFERENCE_ZOOM)
+    ? SPRITE_SCALE_REFERENCE_ZOOM / zoomK
+    : 1.0;
+
   for (const [, entry] of group.spriteMap) {
+    let baseScale: number;
     if (showPortrait) {
       entry.sprite.material = entry.materials.portrait;
-      entry.sprite.scale.setScalar(entry.scales.portrait);
-      entry.sprite.userData.baseScale = entry.scales.portrait;
+      baseScale = entry.scales.portrait;
       entry.sprite.visible = true;
     } else if (showDot) {
       entry.sprite.material = entry.materials.dot;
-      entry.sprite.scale.setScalar(entry.scales.dot);
-      entry.sprite.userData.baseScale = entry.scales.dot;
+      baseScale = entry.scales.dot;
       entry.sprite.visible = true;
     } else if (showRetinue && entry.isRetinue && entry.materials.continental) {
       entry.sprite.material = entry.materials.continental;
-      entry.sprite.scale.setScalar(entry.scales.continental!);
-      entry.sprite.userData.baseScale = entry.scales.continental!;
+      baseScale = entry.scales.continental!;
       entry.sprite.visible = true;
     } else {
       entry.sprite.visible = false;
+      continue;
     }
-    // Pulse ring tracks main sprite visibility (only visible at portrait tier)
+
+    const compensatedScale = baseScale * zoomCompensation;
+    entry.sprite.scale.setScalar(compensatedScale);
+    entry.sprite.userData.baseScale = compensatedScale;
+
+    // Pulse ring tracks main sprite visibility and scale
     if (entry.pulseRingSprite) {
       entry.pulseRingSprite.visible = showPortrait;
+      if (showPortrait) {
+        const ringScale = compensatedScale * 1.2;
+        entry.pulseRingSprite.scale.set(ringScale, ringScale, 1);
+      }
     }
   }
 }
