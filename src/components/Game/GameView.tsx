@@ -1867,16 +1867,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (!meetTheFirstAvailable) return;
 
     // Find avatar's current location
-    const avatarLocEdge = gameState.graph.getEdgesFrom(gameState.avatarId)
-      .find((e: { type: string }) => e.type === 'located_at');
+    const avatarLocEdge = gameState.graph.getOutgoingEdges(gameState.avatarId, 'located_at')[0];
     if (!avatarLocEdge) return;
-    const locationId = avatarLocEdge.targetId;
+    const locationId = avatarLocEdge.target;
 
     // Check if the location has agents (populated)
-    const hasAgents = gameState.graph.getEdgesTo(locationId)
-      .some((e: { type: string; sourceId: string }) => {
-        if (e.type !== 'located_at') return false;
-        const node = gameState.graph.getNode(e.sourceId);
+    const hasAgents = gameState.graph.getIncomingEdges(locationId, 'located_at')
+      .some(e => {
+        const node = gameState.graph.getNode(e.source);
         return node?.properties?.actorType === 'individual';
       });
     if (!hasAgents) return;
