@@ -427,14 +427,11 @@ describe('buildMeetingResult', () => {
 
     const state: MeetingEncounterState = {
       id: 'meeting_10_loc_village',
-      currentStep: 'confirmation',
+      currentStep: 'bond',
       locationId: 'loc_village',
       ascendantId: 'asc',
       startedTick: 10,
       status: 'active',
-      intentPrimaryReach: 'iron',
-      intentSecondaryReach: 'heart',
-      intentSphere: 'force',
       candidates: [{
         tempId: 'meeting_candidate_0',
         name: 'Kael',
@@ -458,9 +455,7 @@ describe('buildMeetingResult', () => {
         gateTags: ['mercy_shown', 'heroic_origin'],
         axiologicalShifts: { mercy_ruthlessness: 0.2 },
       }],
-      sparkTraitId: 'trait.god.iron_will',
-      investmentChoiceId: 'spark_invest_iron',
-      shapePath: 'surprise',
+      sparkVisionId: 'vision.iron.sentinel',
       accumulatedProfile: {},
       accumulatedGateTags: [],
       accumulatedTraitSeeds: [],
@@ -473,7 +468,6 @@ describe('buildMeetingResult', () => {
     expect(result!.secondaryReach).toBe('heart');
     expect(result!.foundingGateTags).toContain('mercy_shown');
     expect(result!.foundingGateTags).toContain('heroic_origin');
-    expect(result!.traitSeeds).toContain('trait.god.iron_will');
     expect(result!.axiologicalProfile.mercy_ruthlessness).toBeCloseTo(0.2);
   });
 

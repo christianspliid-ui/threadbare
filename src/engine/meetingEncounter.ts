@@ -626,7 +626,12 @@ export function generateSparkVisions(
   const others = SPARK_VISION_CATALOG.filter(
     v => v.requiredPrimaryReach !== primaryReach,
   );
-  const shuffled = [...others].sort(() => rng() - 0.5);
+  // Fisher-Yates shuffle for deterministic ordering
+  const shuffled = [...others];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
   const result = [...matching];
   for (const v of shuffled) {
     if (result.length >= 3) break;
@@ -784,27 +789,18 @@ export function buildMeetingResult(
     ...records.flatMap(r => r.traitSeeds ?? []),
     ...(state.accumulatedTraitSeeds ?? []),
   ];
-  if (state.sparkTraitId) {
-    traitSeeds.push(state.sparkTraitId);
-  }
 
   const name = state.editedName ?? candidate.name;
 
   const meetingChoiceRecord: MeetingChoiceRecord = {
     encounterTick: state.startedTick,
     locationId: state.locationId,
-    intentPrimaryReach: candidate.primaryReach,
-    intentSecondaryReach: candidate.secondaryReach,
-    intentSphere: candidate.sphere,
-    candidateIndex: state.selectedCandidateIndex,
+    candidateIndex: state.selectedCandidateIndex ?? 0,
     archetypeId: candidate.archetypeId,
     dilemmaChoices: records,
-    investmentChoice: state.investmentChoiceId ?? '',
-    sparkTraitId: state.sparkTraitId ?? '',
-    shapePath: state.shapePath ?? 'surprise',
+    sparkVisionId: state.sparkVisionId ?? '',
     ascendantSphere,
     foundingGateTags: gateTags,
-    flavorChoices: state.flavorChoices,
   };
 
   return {

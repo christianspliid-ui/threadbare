@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import type { NarrativeCandidate } from '../../types/meetingEncounter';
 
 interface SensingBeatProps {
@@ -32,11 +32,6 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
   // Build index map for stable slot lookups
-  const _indexMap = useMemo(() => {
-    const map = new Map<string, number>();
-    candidates.forEach((c, i) => map.set(c.tempId, i));
-    return map;
-  }, [candidates]);
 
   const handleClick = useCallback((idx: number) => {
     if (confirmedIdx !== null) return;
