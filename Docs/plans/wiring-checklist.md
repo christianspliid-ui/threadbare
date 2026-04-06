@@ -30,6 +30,7 @@ Every engine module that produces per-tick state changes must be called from a p
 | 2a.3 | `phaseEncounterProgressionV2` | Encounter step advancement |
 | 2a.4 | `tickEffects` (inline orchestrator block) | Generic effect runtime bookkeeping: duration, cooldown, decay, stacking, attachment removal |
 | 2a.6 | `phaseEncounterVisibility` | Encounter notifications |
+| 2a.85 | `phaseSlotCaps` + `phaseDisposalTimeout` | Attachment slot cap enforcement + disposal timeout |
 | 2b | `phaseAgentDecision` | Goal selection & movement initiation |
 | 3 | `phaseMovement` | Pathfinding & hex traversal |
 | 3.5 | `phaseColocationDetection` | Agent proximity events |
@@ -140,7 +141,7 @@ Engine phases write to GameState fields. UI components must read them. An engine
 
 Every system should emit traces for inspectability (NFP #2). A trace category that exists in the type system but is never emitted is dead code.
 
-**Current trace categories (35):** action_selection, narrative_generation, context_harvest, dilemma_resolution, tick_summary, encounter_resolution, familiarity_change, intervention_effect, action_execution, modifier_resolution, prosperity_tick, wealth_delta, trade_route_volume_change, trade_route_dissolved, settlement_tier_change, target_action_filter, hex_state, unrest_tick, saturation_tick, economic_chronicle, encounter_awareness, faction_awareness, encounter_cache, encounter_filter, encounter_scoring, movement, idle_decision, road_hex_transition, agent_reroute, return_resolution, ripple_consequence, control_effect, revelation, tick_health, tick_crash
+**Current trace categories (39):** action_selection, narrative_generation, context_harvest, dilemma_resolution, tick_summary, encounter_resolution, familiarity_change, intervention_effect, action_execution, modifier_resolution, prosperity_tick, wealth_delta, trade_route_volume_change, trade_route_dissolved, settlement_tier_change, target_action_filter, hex_state, unrest_tick, saturation_tick, economic_chronicle, encounter_awareness, faction_awareness, encounter_cache, encounter_filter, encounter_scoring, movement, idle_decision, road_hex_transition, agent_reroute, return_resolution, ripple_consequence, control_effect, revelation, tick_health, tick_crash, slot_overflow, slot_disposal, condition_overflow, slot_expansion
 
 **All categories emitted (TB-057, 2026-03-26).** `tick_health` and `tick_crash` emitted from `orchestrator.ts` (health check failures and unhandled exceptions respectively). `control_effect` emitted from `phaseControlEffects.ts`. `revelation` emitted from `revelationResolver.ts`.
 
