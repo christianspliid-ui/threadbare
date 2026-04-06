@@ -11,7 +11,9 @@ import { SETTLEMENT_ARCHETYPES } from './archetypes';
 import {
   SPHERE_CONTRIBUTION_THRESHOLD, SPHERE_STRONG_THRESHOLD,
   REACH_CONTRIBUTION_THRESHOLD, NPC_BUDGET,
+  CULTURE_STRENGTH_BASE, CULTURE_STRENGTH_MIN_FOR_ADDITIONS,
 } from './constants';
+import { CULTURE_BASELINE_MAP } from './cultureBaseline';
 
 export interface GenomeInput {
   tier: SettlementTier;
@@ -62,7 +64,50 @@ export function runSettlementGenome(
   }
 
   // ── Pass 2: Culture ──
-  // Stub: filled in Task 7. Culture sublocations added by culture subsystem.
+  if (input.cultureId) {
+    const cultureEdges = graph.getOutgoingEdges(locationId, 'belongs_to');
+    const currentCultureEdge = cultureEdges.find(
+      e => e.target === input.cultureId && (e.properties as any)?.cultureLayer === 'current',
+    );
+    const culturalStrength = (currentCultureEdge?.properties as any)?.culturalStrength ?? CULTURE_STRENGTH_BASE;
+
+    const cultureNode = graph.getNode(input.cultureId);
+    const identity = (cultureNode?.properties as any)?.cultureIdentity;
+    const foundation = identity?.foundationBias as string | undefined;
+
+    if (foundation) {
+      const baseline = CULTURE_BASELINE_MAP[foundation];
+      if (baseline) {
+        // Substitutions: replace infrastructure slots with cultural variants
+        let subsApplied = 0;
+        const maxSubs = culturalStrength < CULTURE_STRENGTH_MIN_FOR_ADDITIONS ? 1 : 3;
+        for (const sub of baseline.substitutions) {
+          if (subsApplied >= maxSubs) break;
+          if (!tierAtOrBelow(tier, sub.replacement.minTier)) continue;
+          // Remove the generic slot if it was added by infrastructure
+          accumulated.delete(sub.replaces);
+          addSublocation(sub.replacement.id, 'culture', sub.replacement.tags);
+          subsApplied++;
+        }
+
+        // Additions: unique cultural sublocations (only if strength >= threshold)
+        if (culturalStrength >= CULTURE_STRENGTH_MIN_FOR_ADDITIONS) {
+          for (const add of baseline.additions) {
+            if (tierAtOrBelow(tier, add.minTier)) {
+              addSublocation(add.id, 'culture', add.tags);
+            }
+          }
+        }
+
+        // NPC roles
+        for (const npc of baseline.npcRoles) {
+          if (tierAtOrBelow(tier, npc.minTier)) {
+            npcList.push({ role: npc.role, sourcePass: 'culture' });
+          }
+        }
+      }
+    }
+  }
 
   // ── Pass 3: Spheres ──
   for (const [sphereKey, value] of Object.entries(sphereInfluence)) {

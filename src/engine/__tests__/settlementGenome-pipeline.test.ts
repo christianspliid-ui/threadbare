@@ -114,6 +114,95 @@ describe('runSettlementGenome', () => {
     });
   });
 
+  describe('Pass 2: Culture', () => {
+    it('culture contributes sublocations to a town', () => {
+      const graph = new WorldGraph();
+      makeSettlementNode(graph, 'loc_1', 'town');
+      graph.addNode({
+        id: 'culture_0', type: 'actor', name: 'Daru',
+        properties: {
+          actorType: 'culture',
+          cultureIdentity: { foundationBias: 'force', demonym: 'Daru' },
+        },
+      });
+      graph.addEdge({
+        id: 'e_cult', type: 'belongs_to', source: 'loc_1', target: 'culture_0',
+        properties: { culturalStrength: 0.7, cultureLayer: 'current' },
+      });
+
+      const result = runSettlementGenome(graph, 'loc_1', {
+        tier: 'town', sphereInfluence: {}, position: 'heartland',
+        cultureId: 'culture_0', seed: 42,
+      });
+
+      const cultureSubIds = result.sublocations
+        .filter(s => s.sourcePass === 'culture').map(s => s.id);
+      expect(cultureSubIds.length).toBeGreaterThan(0);
+    });
+
+    it('force culture substitutes temple-quarter with forge-shrine', () => {
+      const graph = new WorldGraph();
+      makeSettlementNode(graph, 'loc_1', 'town');
+      graph.addNode({
+        id: 'culture_0', type: 'actor', name: 'Daru',
+        properties: {
+          actorType: 'culture',
+          cultureIdentity: { foundationBias: 'force', demonym: 'Daru' },
+        },
+      });
+      graph.addEdge({
+        id: 'e_cult', type: 'belongs_to', source: 'loc_1', target: 'culture_0',
+        properties: { culturalStrength: 0.7, cultureLayer: 'current' },
+      });
+
+      const result = runSettlementGenome(graph, 'loc_1', {
+        tier: 'town', sphereInfluence: {}, position: 'heartland',
+        cultureId: 'culture_0', seed: 42,
+      });
+
+      const allIds = result.sublocations.map(s => s.id);
+      // Force culture replaces temple-quarter with forge-shrine
+      expect(allIds).toContain('sublocation-type.forge-shrine');
+      expect(allIds).not.toContain('sublocation-type.temple-quarter');
+    });
+
+    it('low culture strength limits to 1 substitution only, no additions', () => {
+      const graph = new WorldGraph();
+      makeSettlementNode(graph, 'loc_1', 'city');
+      graph.addNode({
+        id: 'culture_0', type: 'actor', name: 'Daru',
+        properties: {
+          actorType: 'culture',
+          cultureIdentity: { foundationBias: 'force', demonym: 'Daru' },
+        },
+      });
+      graph.addEdge({
+        id: 'e_cult', type: 'belongs_to', source: 'loc_1', target: 'culture_0',
+        properties: { culturalStrength: 0.2, cultureLayer: 'current' },
+      });
+
+      const result = runSettlementGenome(graph, 'loc_1', {
+        tier: 'city', sphereInfluence: {}, position: 'heartland',
+        cultureId: 'culture_0', seed: 42,
+      });
+
+      const cultureSubs = result.sublocations.filter(s => s.sourcePass === 'culture');
+      // Low strength: 1 substitution max, no additions
+      expect(cultureSubs.length).toBeLessThanOrEqual(1);
+    });
+
+    it('no culture ID means Pass 2 is skipped', () => {
+      const graph = new WorldGraph();
+      makeSettlementNode(graph, 'loc_1', 'town');
+      const result = runSettlementGenome(graph, 'loc_1', {
+        tier: 'town', sphereInfluence: {}, position: 'heartland',
+        cultureId: null, seed: 42,
+      });
+      const cultureSubs = result.sublocations.filter(s => s.sourcePass === 'culture');
+      expect(cultureSubs.length).toBe(0);
+    });
+  });
+
   describe('Deduplication', () => {
     it('same sublocation from multiple passes is deduplicated', () => {
       const graph = new WorldGraph();
