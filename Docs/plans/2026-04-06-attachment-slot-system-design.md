@@ -23,7 +23,7 @@ Agents can accumulate unlimited attachments with no mechanical constraint. A sin
 4. **Slot-expanding items are valid.** An attachment can grant bonus capacity in another slot, spending its own slot to do so.
 5. **Any effect type can appear on any slot.** The slot/effect mapping in the assessment is a *tendency*, not a constraint. A weapon can have `axiological_drift`. A ring can have `spawn`. Content authors have full freedom.
 6. **Quest items are pinned.** They occupy their own slot, are never auto-sold, and are only lost through specific narrative outcomes.
-7. **One unified tag filter for all rewards — possessions and conditions alike.** The reward pool recipe uses `tags[]` to filter both items and conditions from the same catalog. `{ tags: ['#curse', '#shadow'] }` draws a shadow-aligned curse; `{ tags: ['#relic', '#weapon'] }` draws a storied blade. The system doesn't distinguish between "gain an item" and "suffer a condition" at the filtering level — tags select, tier curves weight, and the node type determines how it's attached.
+7. **`categoryWeights` selects the structural category, `tagFilters` refines within it.** The reward pool recipe uses `categoryWeights` (possession, condition, curse, blessing, etc.) to decide which node type to scan, and `tagFilters` to narrow by slot tag, quality tag, and reach/context tags. Category answers "item or condition?"; tags answer "which kind?"
 
 ---
 
@@ -57,10 +57,21 @@ Agreements are `relates_to` edges with agreement properties, not possession node
 
 **Runtime seam — agreements as mechanical participants:**
 
-Currently, agreements are excluded from the effect system: the effect walker (`effectWalker.ts`) only reads `possesses`, `bonded_to`, and `has_trait` edges. The reward pool (`rewardPool.ts`) cannot draw agreement rewards. To make agreements carry effects (compel, axiological_drift, behavior_weight, action_gate, faction_manipulate), two seams must be extended:
+Currently, agreements are excluded from the effect system. The effect walker (`effectWalker.ts`) only reads `possesses`, `bonded_to`, and `has_trait` edges, all of which point to **nodes** — the walker reads `node.properties.effects` from the target node and uses `node.id` as the runtime-state key. Agreements are **edge-backed**, not node-backed: they live as properties on `relates_to` edges with no target node to read from. This is a structural mismatch that requires a different collection path.
 
-1. **Effect walker:** Add `'relates_to'` to `ATTACHMENT_EDGE_TYPES` in `effectWalker.ts`, filtered to edges where `edge.properties.agreement` is truthy. This brings agreement effects into the same resolution pipeline as possessions and conditions.
-2. **Reward pool:** Add an agreement-drawing path to `assembleRewardPool()`. Agreement rewards create `relates_to` edges (not nodes), so the instantiation path differs from possessions/conditions. This requires a new `instantiateAgreementReward()` function.
+**Agreement effect storage contract:**
+
+- **Where effects live:** `edge.properties.effects: AttachmentEffect[]` — stored directly on the `relates_to` edge, not on a target node. This is a new convention; no other edge type carries effects.
+- **Identity key:** `edge.id` — used as both the `attachmentId` in `AttachedEffect` and the key into the `EffectRuntimeState` map.
+- **Attachment name:** `edge.properties.agreementName ?? 'Agreement'` — human-readable label.
+- **Tier:** `edge.properties.tier ?? 1` — agreements have tiers like possessions.
+- **Active flag:** `edge.properties.active ?? true` — same deactivation seam as possessions.
+
+**Walker extension:** `collectAttachmentEffects()` gains a second loop after the node-backed loop. For `relates_to` edges where `edge.properties.agreement` is truthy, it reads `edge.properties.effects` directly (instead of `node.properties.effects`) and uses `edge.id` as identity. The `AttachedEffect` output shape is unchanged — consumers don't need to know the backing is edge-based.
+
+**Reward pool extension:** `assembleRewardPool()` needs an agreement-drawing path. Agreement rewards create `relates_to` edges (not nodes), so instantiation differs:
+- `instantiateAgreementReward(graph, recipientId, counterpartyId, template, tick)` creates a `relates_to` edge with `agreement: true`, `effects`, `tier`, `tags`, and `active: true` in edge properties.
+- Agreement templates live in the reward catalog alongside possession and condition templates, distinguished by a `category: 'agreement'` field.
 
 Until both seams are extended, agreement effects remain design-only. Implementation order: walker first (enables existing manually-created agreements to carry effects), then reward pool (enables encounter-granted agreements).
 
@@ -118,50 +129,74 @@ Quality tags describe the significance of an item and can appear on **any slot t
 
 ### Quality Tags in Reward Recipes
 
-Encounter templates use quality tags to describe rewards without specifying slots:
+Encounter templates use `categoryWeights` to select the structural type, and `tagFilters` (which includes quality tags) to refine:
 
 ```typescript
-// Background encounter — minor loot from any slot
-rewardPool: { tags: ['#trinket'] }
+// Background encounter — minor loot from any possession slot
+rewardPool: {
+  categoryWeights: { possession: 1.0 },
+  tagFilters: ['#trinket'],
+}
 
 // Shaping encounter — a significant spell
-rewardPool: { tags: ['#relic', '#spell'] }
+rewardPool: {
+  categoryWeights: { possession: 1.0 },
+  tagFilters: ['#relic', '#spell'],
+}
 
-// Story beat — a legendary item from any slot
-rewardPool: { tags: ['#artifact'] }
+// Story beat — a legendary possession from any slot
+rewardPool: {
+  categoryWeights: { possession: 1.0 },
+  tagFilters: ['#artifact'],
+}
 
 // Precise filtering — a cursed ancient war-blade
-rewardPool: { tags: ['#relic', '#weapon', '#iron', '#cursed'] }
-
-// Loose filtering — any minor item
-rewardPool: { tags: ['#trinket'] }
+rewardPool: {
+  categoryWeights: { possession: 1.0 },
+  tagFilters: ['#relic', '#weapon', '#iron', '#cursed'],
+}
 ```
 
 ### Condition Tags in Reward Recipes
 
-The same `tags[]` filter works for negative outcomes — conditions are tagged in the catalog alongside possessions. When an encounter says "inflict a curse," it doesn't hardcode which one:
+Negative outcomes use condition/curse/blessing categories with tag refinement. When an encounter says "inflict a curse," it doesn't hardcode which one:
 
 ```typescript
 // Failed a duel — suffer a combat wound
-rewardPool: { tags: ['#wound', '#combat'] }
+rewardPool: {
+  categoryWeights: { condition: 1.0 },
+  tagFilters: ['#wound', '#combat'],
+}
 
 // Critical failure exploring ruins — get cursed
-rewardPool: { tags: ['#curse', '#shadow'] }
+rewardPool: {
+  categoryWeights: { curse: 1.0 },
+  tagFilters: ['#shadow'],
+}
 
 // Swamp exploration failure — contract a disease
-rewardPool: { tags: ['#disease', '#flesh', '#wilderness'] }
+rewardPool: {
+  categoryWeights: { condition: 1.0 },
+  tagFilters: ['#disease', '#flesh', '#wilderness'],
+}
 
 // Shrine blessing on success
-rewardPool: { tags: ['#blessing', '#star'] }
+rewardPool: {
+  categoryWeights: { blessing: 1.0 },
+  tagFilters: ['#star'],
+}
 
 // Eldritch horror encounter — madness
-rewardPool: { tags: ['#curse', '#veil', '#madness'] }
+rewardPool: {
+  categoryWeights: { curse: 1.0 },
+  tagFilters: ['#veil', '#madness'],
+}
 
-// Betrayal consequence — social/psychological wound
-rewardPool: { tags: ['#wound', '#heart'] }
-
-// Divine overreach — branded by the gods
-rewardPool: { tags: ['#brand', '#star', '#divine'] }
+// Mixed outcome — loot and wounds
+rewardPool: {
+  categoryWeights: { possession: 0.6, condition: 0.3, curse: 0.1 },
+  tagFilters: ['#combat'],
+}
 ```
 
 **Condition tag vocabulary** (content-extensible, not exhaustive):
@@ -183,64 +218,34 @@ rewardPool: { tags: ['#brand', '#star', '#divine'] }
 
 Tags combine freely: a `#wound #arcane #veil` is a magical injury from spell backlash. A `#curse #divine #star` is a god's punishment. A `#disease #corruption #entropy` is an entropic plague.
 
-### Unified Filtering Model
+### Filtering Model
 
-The reward system filters on three independent axes — all using the same `tags[]` mechanism:
+The reward system filters on two axes:
 
-- **Slot/condition tag** — what kind of thing (weapon, ring, wound, curse...)
-- **Quality tag** — how significant (#trinket, #relic, #artifact)
-- **Reach/context tags** — thematic flavor (#iron, #shadow, #combat, #wilderness...)
+1. **`categoryWeights`** (structural) — selects which node type to scan. `possession` scans `artifact` nodes, `condition`/`curse`/`blessing` scan `trait` nodes, `agreement` scans `relates_to` edges. This axis is required and cannot be replaced by tags.
+2. **`tagFilters`** (refinement) — narrows within the selected category. Includes slot tags (`#weapon`, `#spell`), quality tags (`#trinket`, `#relic`, `#artifact`), reach tags (`#iron`, `#shadow`), and context tags (`#combat`, `#wilderness`).
 
-**Preserving the category axis:** The current `RewardPoolRecipe` requires `categoryWeights: Partial<Record<AttachmentCategory, number>>` to decide whether it scans `artifact` nodes (possessions) or `trait` nodes (conditions). This category axis must be preserved — tags alone cannot distinguish "draw a curse" from "draw a cursed item."
-
-The unified model keeps `categoryWeights` as the first-class structural selector and adds `tagFilters` as a refinement within each category. The encounter template specifies *both*:
-
-```typescript
-// "Inflict a shadow curse" — category selects conditions, tags refine
-rewardPool: {
-  categoryWeights: { curse: 1.0 },
-  tagFilters: ['#shadow'],
-}
-
-// "Grant a relic weapon" — category selects possessions, tags refine
-rewardPool: {
-  categoryWeights: { possession: 1.0 },
-  tagFilters: ['#relic', '#weapon'],
-}
-
-// "Grant a mix of loot and wounds" — category weights distribute
-rewardPool: {
-  categoryWeights: { possession: 0.6, condition: 0.3, curse: 0.1 },
-  tagFilters: ['#combat'],
-}
-```
-
-The tag system extends filtering power without replacing the category axis. `categoryWeights` answers "possession or condition?" — `tagFilters` answers "which kind?"
+`categoryWeights` answers "item or condition?" — `tagFilters` answers "which kind?"
 
 ---
 
 ## Slot Expansion via Effects
 
-Slot expansion uses the existing `modify_rules` effect (type 27) with a new `RuleOverrideKey`. The `PassiveEffect` type only supports `{ reach, value }` — it cannot carry slot bonuses. `modify_rules` already has a flexible `value: number | boolean | string` field and is resolved by `getActiveRuleOverride()` in `effectQueries.ts`.
+Slot expansion uses a dedicated `SlotBonusEffect` (type 39). `PassiveEffect` only supports `{ reach, value }` and `modify_rules` uses `EffectScope` (self/target/hex), neither of which can carry a slot tag. A new typed primitive is cleaner than overloading existing ones.
 
-**Implementation:** Add `'slot_cap_bonus'` to `RuleOverrideKey` in `src/types/effects.ts`. The slot cap resolver reads it via the existing `getActiveRuleOverride()` query, keyed per slot tag using a convention: `rule: 'slot_cap_bonus'` with `scope` carrying the target slot tag.
-
-However, `modify_rules` scope is `EffectScope` (self/target/hex/region/etc.), not a slot tag. Two options:
-
-**Option A — Dedicated effect type (recommended):** Add a new `SlotBonusEffect` (type 39):
 ```typescript
+// New effect type — add to AttachmentEffect union in src/types/effects.ts
 export interface SlotBonusEffect {
   readonly type: 'slot_bonus';
-  readonly slotTag: string;    // target slot to expand
+  readonly slotTag: string;    // target slot to expand (e.g. 'consumable')
   readonly bonus: number;      // additional slots granted
 }
 ```
-Simple, typed, no overloading. The slot cap resolver is the only consumer.
 
-**Option B — Reuse `modify_rules` with convention:** Use rule `'slot_cap_bonus'` and encode the target slot in a string value field. Works but stringly-typed.
+The slot cap resolver is the only consumer. It collects all active `slot_bonus` effects for the agent and sums `bonus` per `slotTag`. The effect walker reads it like any other effect — no special query function needed.
 
 ```typescript
-// Option A — Bag of Holding as a utility item that grants +2 consumable slots
+// Bag of Holding — a utility item that grants +2 consumable slots
 {
   slotTag: 'utility',
   effects: [{ type: 'slot_bonus', slotTag: 'consumable', bonus: 2 }]
@@ -482,7 +487,9 @@ All traces extend `TraceBase` (`id`, `tick`, `timestamp`, `category`, `agentId?`
 | **Reward granting** | `instantiateReward()` checks slot cap immediately; if over, flags item inactive |
 | **Agent AI (Maslow)** | Inactive items feed `disposal_motivation` into esteem/belonging layer |
 | **Encounter system** | Disposal encounters (sell, gift, offer) as new encounter subtypes |
-| **Effect resolver** | `resolveEffectModifiers` skips effects from inactive items; reads `slot_bonus:` modifiers |
+| **Effect walker** | `collectAttachmentEffects()` skips edges with `active: false`; gains second loop for agreement edges reading `edge.properties.effects` |
+| **Effect resolver** | No changes — inactive suppression handled by walker upstream |
+| **Slot cap resolver** | New `getSlotBonuses()` query collects `slot_bonus` effects, sums `bonus` per `slotTag` |
 | **UI — Detail modal** | `AttachmentDetailModal` for every possession, condition, agreement, quest item. Uses `EntityCard` + `Modal`. Shows effects, tags, slot usage, duration, history. |
 | **UI — Agent character sheet** | Attachments tab grouped by slot tag with `(count/cap)` headers. Inactive section at bottom. Each row clickable → detail modal. |
 | **UI — Codex** | Browsable encyclopedia of all discovered items/conditions. Category tabs, quality tag filters, reach filters, knowledge gating. Entry states: Held / Known / Unseen. |
