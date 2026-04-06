@@ -9,10 +9,10 @@ import {
   START_PAGE_LORE_LINE_1,
   START_PAGE_LORE_LINE_2,
   START_PAGE_FADE_DURATION_MS,
-  THEME_VOLUME_DEFAULT,
   VERSION_STAMP_TEXT,
   START_PAGE_BG_IMAGE,
 } from './startPageConstants';
+import { MUSIC_VOLUME_DEFAULT } from '../../audio/audioConstants';
 import './StartPage.css';
 
 interface StartPageProps {
@@ -22,7 +22,7 @@ interface StartPageProps {
 
 export function StartPage({ onNewWorld, onAdvancedNewWorld }: StartPageProps) {
   const { play, muted, toggleMute, setVolume } = useThemeMusic();
-  const [volume, setVolumeState] = useState(THEME_VOLUME_DEFAULT);
+  const [volume, setVolumeState] = useState(MUSIC_VOLUME_DEFAULT);
 
   const handleVolumeChange = useCallback(
     (v: number) => {
