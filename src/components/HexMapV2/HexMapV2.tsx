@@ -2,6 +2,7 @@ import {
   forwardRef,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -11,7 +12,7 @@ import type { RiverPath } from '../../engine/worldGenData';
 import type { RegionData } from '../../engine/regionTypes';
 import type { VisibilityMap } from '../../types/visibility';
 import { hexKey } from '../../lib/hexKey';
-import { hexToWorld } from '../../lib/worldPosition';
+import { hexToWorld, worldToHex } from '../../lib/worldPosition';
 import { createHexScene, resizeHexScene } from './scene/HexSceneSetup';
 import { createHexFillMesh, HEX_CONSTANTS } from './scene/HexFillMesh';
 import type { HexFillMeshResult } from './scene/HexFillMesh';
@@ -1299,6 +1300,24 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       );
     }
 
+    // ── Filter labels by fog state — hide labels on unexplored hexes ──
+    const visibleRegionLabels = useMemo(() => {
+      if (!fogEnabled || !visibilityMap) return regionLabels;
+      return regionLabels.filter(label => {
+        const hex = worldToHex(label.worldX, label.worldY, HEX_CONSTANTS.HEX_SIZE);
+        const hexVis = visibilityMap.get(`${hex.col},${hex.row}`);
+        return hexVis?.state !== 'unexplored';
+      });
+    }, [regionLabels, visibilityMap, fogEnabled]);
+
+    const visibleLocationLabels = useMemo(() => {
+      if (!fogEnabled || !visibilityMap) return locationLabels;
+      return locationLabels.filter(loc => {
+        const hexVis = visibilityMap.get(`${loc.hexCol},${loc.hexRow}`);
+        return hexVis?.state !== 'unexplored';
+      });
+    }, [locationLabels, visibilityMap, fogEnabled]);
+
     // ── Normal render ─────────────────────────────────────────────
     return (
       <div
@@ -1317,9 +1336,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           onClick={handleClick}
           onMouseLeave={handleMouseLeave}
         />
-        {!overlayOpen && regionLabels.length > 0 && (
+        {!overlayOpen && visibleRegionLabels.length > 0 && (
           <RegionLabelOverlay
-            labels={regionLabels}
+            labels={visibleRegionLabels}
             cameraRef={cameraRef}
             canvasWidth={canvasDimensions.w}
             canvasHeight={canvasDimensions.h}
@@ -1327,9 +1346,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             placedBBoxesRef={regionPlacedBBoxesRef}
           />
         )}
-        {!overlayOpen && locationLabels.length > 0 && (
+        {!overlayOpen && visibleLocationLabels.length > 0 && (
           <LocationLabelOverlay
-            locations={locationLabels}
+            locations={visibleLocationLabels}
             cameraRef={cameraRef}
             canvasWidth={canvasDimensions.w}
             canvasHeight={canvasDimensions.h}

@@ -8,7 +8,7 @@
  */
 
 import type { HexCoord } from '../types';
-import { hexToPixel } from './hexMath';
+import { hexToPixel, HEX_SCALE_X, HEX_SCALE_Y } from './hexMath';
 
 export interface WorldPosition {
   x: number;
@@ -34,6 +34,27 @@ export function hexToWorld(hex: HexCoord, hexSize: number): WorldPosition {
  * @param offset - Offset in SVG space (added to hexToPixel result before Y-flip)
  * @param hexSize - Hex radius in world units
  */
+/**
+ * Convert Three.js world position back to the nearest hex coordinate (y-up → offset).
+ * Inverse of hexToWorld. Returns the nearest hex by rounding.
+ *
+ * @param worldX - X in Three.js world space
+ * @param worldY - Y in Three.js world space (y-up)
+ * @param hexSize - Hex radius in world units
+ */
+export function worldToHex(worldX: number, worldY: number, hexSize: number): HexCoord {
+  // Undo the Y-flip: pixel.y = -worldY
+  const pixelY = -worldY;
+
+  // Inverse of hexToPixel (flat-top odd-q):
+  //   x = col * size * HEX_SCALE_X
+  //   y = row * HEX_SCALE_Y * size + (col % 2 === 1 ? HEX_SCALE_Y * size / 2 : 0)
+  const col = Math.round(worldX / (hexSize * HEX_SCALE_X));
+  const yOffset = (col % 2 === 1) ? HEX_SCALE_Y * hexSize / 2 : 0;
+  const row = Math.round((pixelY - yOffset) / (HEX_SCALE_Y * hexSize));
+  return { col, row };
+}
+
 export function hexToWorldWithOffset(
   hex: HexCoord,
   offset: { x: number; y: number },
