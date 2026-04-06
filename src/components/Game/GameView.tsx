@@ -1875,10 +1875,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (meetingState) return;
     if (!meetTheFirstAvailable) return;
 
-    // Find avatar's current location
-    const avatarLocEdge = gameState.graph.getOutgoingEdges(gameState.avatarId, 'located_at')[0];
+    // Find avatar's current location — must be a settlement (town, city, hamlet, village)
+    if (!avatarNodeId) return;
+    const avatarLocEdge = gameState.graph.getOutgoingEdges(avatarNodeId, 'located_at')[0];
     if (!avatarLocEdge) return;
     const locationId = avatarLocEdge.target;
+    const locNode = gameState.graph.getNode(locationId);
+    if (!locNode) return;
+    const subtype = locNode.properties.locationSubtype as string | undefined;
+    const settlementTypes = ['town', 'city', 'hamlet', 'village', 'capital'];
+    if (!subtype || !settlementTypes.includes(subtype)) return;
 
     // All conditions met — auto-trigger once
     gameState.meetTheFirstAutoTriggered = true;
