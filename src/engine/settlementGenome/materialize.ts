@@ -52,6 +52,7 @@ export function materializeGenome(
         hexRow: loc.properties.hexRow,
         genomeSourcePass: sub.sourcePass,
         genomeTags: sub.tags,
+        persistence: { type: 'permanent' },
       },
     });
 
