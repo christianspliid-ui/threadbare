@@ -5,7 +5,7 @@ export const HUNGER_CATALOG: HungerDefinition[] = [
   {
     id: 'hunger.gather',
     name: 'Gather',
-    imageAssetPath: '/assets/remembrance/hunger/gather.webp',
+    imageAssetPath: '/assets/remembrance/hunger/gather.jpg',
     proseVariants: [
       { driveTag: 'love', prose: 'Your love became a hunger. You would gather every soul under your wings — shelter them, hold them, keep them. Whether they wish it or not.' },
       { driveTag: 'preservation', prose: 'Your grief became a hunger. What died was alone. Unprotected. You would never let that happen again. You would gather them all.' },
@@ -29,7 +29,7 @@ export const HUNGER_CATALOG: HungerDefinition[] = [
   {
     id: 'hunger.witness',
     name: 'Witness',
-    imageAssetPath: '/assets/remembrance/hunger/witness.webp',
+    imageAssetPath: '/assets/remembrance/hunger/witness.jpg',
     proseVariants: [
       { driveTag: 'obsession', prose: 'Your question became a hunger. You would know everything. Every secret whispered in darkness. Every truth buried under lies. Nothing — nothing — would be hidden from you.' },
       { driveTag: 'seeking', prose: 'Your seeking became a hunger. Not for answers — for seeing. You would witness every moment, every choice, every hidden thing. The world would be transparent to your gaze.' },
@@ -52,7 +52,7 @@ export const HUNGER_CATALOG: HungerDefinition[] = [
   {
     id: 'hunger.reclaim',
     name: 'Reclaim',
-    imageAssetPath: '/assets/remembrance/hunger/reclaim.webp',
+    imageAssetPath: '/assets/remembrance/hunger/reclaim.jpg',
     proseVariants: [
       { driveTag: 'vengeance', prose: 'Your rage became a hunger. What was taken will be taken back. What was destroyed will be rebuilt. And those who took it will understand what they stole.' },
       { driveTag: 'justice', prose: 'Your sense of justice became a hunger. The scales are broken. The world is crooked. You would right every wrong, recover every loss, even if it means breaking what stands in the way.' },
@@ -75,7 +75,7 @@ export const HUNGER_CATALOG: HungerDefinition[] = [
   {
     id: 'hunger.reshape',
     name: 'Reshape',
-    imageAssetPath: '/assets/remembrance/hunger/reshape.webp',
+    imageAssetPath: '/assets/remembrance/hunger/reshape.jpg',
     proseVariants: [
       { driveTag: 'perfectionism', prose: 'Your vision became a hunger. The world as it is — imperfect, chaotic, wrong — cannot be tolerated. You would reshape it. All of it. Until it matches what you saw.' },
       { driveTag: 'vision', prose: 'Your certainty became a hunger. You saw the truth that others could not. Now you would make them see it too — by changing everything around them until the truth is all that remains.' },
@@ -98,7 +98,7 @@ export const HUNGER_CATALOG: HungerDefinition[] = [
   {
     id: 'hunger.preserve',
     name: 'Preserve',
-    imageAssetPath: '/assets/remembrance/hunger/preserve.webp',
+    imageAssetPath: '/assets/remembrance/hunger/preserve.jpg',
     proseVariants: [
       { driveTag: 'preservation', prose: 'Your grief became a hunger. You watched it die — and you swore nothing else would. You would hold the world in place. Every name remembered. Every thread unbroken. Even if time itself must stop.' },
       { driveTag: 'memory', prose: 'Your memory became a hunger. You remember everything, and you will not allow forgetting. Every language, every song, every face — you would press them into amber and hold them against the dark.' },
@@ -122,7 +122,7 @@ export const HUNGER_CATALOG: HungerDefinition[] = [
   {
     id: 'hunger.kindle',
     name: 'Kindle',
-    imageAssetPath: '/assets/remembrance/hunger/kindle.webp',
+    imageAssetPath: '/assets/remembrance/hunger/kindle.jpg',
     proseVariants: [
       { driveTag: 'compassion', prose: 'Your compassion became a hunger. But not to shelter — to ignite. You saw the spark in the broken, the lost, the defeated. You would not carry them. You would set them on fire.' },
       { driveTag: 'devotion', prose: 'Your devotion became a hunger to kindle. You loved one soul so completely that now you would pour that fire into every soul you touch. They will burn with purpose they never knew they had.' },
@@ -146,7 +146,7 @@ export const HUNGER_CATALOG: HungerDefinition[] = [
   {
     id: 'hunger.sever',
     name: 'Sever',
-    imageAssetPath: '/assets/remembrance/hunger/sever.webp',
+    imageAssetPath: '/assets/remembrance/hunger/sever.jpg',
     proseVariants: [
       { driveTag: 'freedom', prose: 'Your freedom became a hunger. But freedom is not a gift — it is a wound. You would cut every chain, sever every bond, break every cage. Whether the prisoner wants it or not.' },
       { driveTag: 'restlessness', prose: 'Your restlessness became a hunger. Every wall is an insult. Every obligation is a lie. You would unmake the structures that hold the world in place and let it breathe for the first time.' },
@@ -170,7 +170,7 @@ export const HUNGER_CATALOG: HungerDefinition[] = [
   {
     id: 'hunger.bind',
     name: 'Bind',
-    imageAssetPath: '/assets/remembrance/hunger/bind.webp',
+    imageAssetPath: '/assets/remembrance/hunger/bind.jpg',
     proseVariants: [
       { driveTag: 'perfectionism', prose: 'Your need for perfection became a hunger to bind. Order is not imposed — it is woven. You would thread every faction, every soul, every stone into a pattern so tight that nothing could ever come apart again.' },
       { driveTag: 'order', prose: 'Your love of order became a hunger. Not to reshape the world — to fix it in place. Covenants that cannot be broken. Oaths that outlast the speakers. Structure that endures beyond memory.' },
@@ -194,7 +194,7 @@ export const HUNGER_CATALOG: HungerDefinition[] = [
   {
     id: 'hunger.wander',
     name: 'Wander',
-    imageAssetPath: '/assets/remembrance/hunger/wander.webp',
+    imageAssetPath: '/assets/remembrance/hunger/wander.jpg',
     proseVariants: [
       { driveTag: 'restlessness', prose: 'Your restlessness became a hunger. Not to arrive — to move. Every horizon is a door. Every ending is a lie. You would walk forever, and the world would unfold before you like a road without end.' },
       { driveTag: 'freedom', prose: 'Your freedom became a hunger to wander. Roots are prisons. Homes are cages. You would see everything, touch everything, leave everything behind. The journey is the only destination.' },
@@ -218,7 +218,7 @@ export const HUNGER_CATALOG: HungerDefinition[] = [
   {
     id: 'hunger.consume',
     name: 'Consume',
-    imageAssetPath: '/assets/remembrance/hunger/consume.webp',
+    imageAssetPath: '/assets/remembrance/hunger/consume.jpg',
     proseVariants: [
       { driveTag: 'vengeance', prose: 'Your vengeance became a hunger. But not for justice — for appetite. They took from you, and now you would take from everyone. Territory. Power. Essence. You would swallow it all and still be hungry.' },
       { driveTag: 'obsession', prose: 'Your obsession became a hunger to consume. You counted, and counted, and counted — and it was never enough. Now you would consume the world itself, absorbing every rival, every resource, every scrap of power into yourself.' },
@@ -242,7 +242,7 @@ export const HUNGER_CATALOG: HungerDefinition[] = [
   {
     id: 'hunger.haunt',
     name: 'Haunt',
-    imageAssetPath: '/assets/remembrance/hunger/haunt.webp',
+    imageAssetPath: '/assets/remembrance/hunger/haunt.jpg',
     proseVariants: [
       { driveTag: 'love', prose: 'Your love became a hunger to haunt. You would not let them forget. Every dream, every quiet moment, every shadow in the corner of their eye — you would be there. Watching. Remembering. Refusing to let go.' },
       { driveTag: 'grief', prose: 'Your grief became a hunger to haunt. Death did not end your vigil. You would whisper from the other side of the veil, a presence felt but never seen, shaping the living from the space between worlds.' },
@@ -266,7 +266,7 @@ export const HUNGER_CATALOG: HungerDefinition[] = [
   {
     id: 'hunger.illuminate',
     name: 'Illuminate',
-    imageAssetPath: '/assets/remembrance/hunger/illuminate.webp',
+    imageAssetPath: '/assets/remembrance/hunger/illuminate.jpg',
     proseVariants: [
       { driveTag: 'justice', prose: 'Your justice became a hunger to illuminate. Corruption hides in darkness. Cruelty thrives in shadow. You would burn away every hiding place until the world stands naked in the light, and nothing wicked can endure.' },
       { driveTag: 'vision', prose: 'Your vision became a hunger to illuminate. You saw the truth so clearly — and everyone else was blind. Now you would make the truth visible to all, whether they want to see it or not. Light has no mercy.' },

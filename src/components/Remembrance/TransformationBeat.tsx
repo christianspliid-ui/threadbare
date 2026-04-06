@@ -113,8 +113,9 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
                     className="w-full bg-cover bg-center"
                     style={{
                       aspectRatio: '16/9',
-                      backgroundImage: `url(${hunger.imageAssetPath})`,
-                      background: 'linear-gradient(135deg, rgba(180,160,100,0.12), rgba(60,50,30,0.08), rgba(120,100,60,0.10))',
+                      backgroundImage: `url(${hunger.imageAssetPath}), linear-gradient(135deg, rgba(180,160,100,0.12), rgba(60,50,30,0.08), rgba(120,100,60,0.10))`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
                       maskImage: 'radial-gradient(ellipse 90% 85% at center, black 35%, transparent 100%)',
                       WebkitMaskImage: 'radial-gradient(ellipse 90% 85% at center, black 35%, transparent 100%)',
                     }}

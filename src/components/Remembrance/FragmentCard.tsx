@@ -43,8 +43,9 @@ export function FragmentCard({
         className="w-full bg-cover bg-center"
         style={{
           aspectRatio: '16/9',
-          backgroundImage: `url(${imageAssetPath})`,
-          background: `linear-gradient(135deg, ${accentColor}18, rgba(255,255,255,0.04), ${accentColor}10)`,
+          backgroundImage: `url(${imageAssetPath}), linear-gradient(135deg, ${accentColor}18, rgba(255,255,255,0.04), ${accentColor}10)`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
           maskImage: 'linear-gradient(to bottom, black 50%, transparent 95%), linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
           maskComposite: 'intersect',
           WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 95%), linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',

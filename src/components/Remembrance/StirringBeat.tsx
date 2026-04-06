@@ -149,8 +149,9 @@ export function StirringBeat({ images, onSelect }: StirringBeatProps) {
             <div
               className="absolute inset-0 bg-cover bg-center"
               style={{
-                backgroundImage: `url(${image.imageAssetPath})`,
-                background: placeholder?.gradient ?? 'rgba(255,255,255,0.03)',
+                backgroundImage: `url(${image.imageAssetPath}), ${placeholder?.gradient ?? 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.03))'}`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
                 maskImage: 'radial-gradient(ellipse 90% 85% at center, black 30%, transparent 95%)',
                 WebkitMaskImage: 'radial-gradient(ellipse 90% 85% at center, black 30%, transparent 95%)',
               }}

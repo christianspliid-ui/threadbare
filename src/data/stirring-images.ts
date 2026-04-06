@@ -11,22 +11,22 @@ export const STIRRING_PLACEHOLDERS: Record<string, { gradient: string; label: st
 export const STIRRING_IMAGES: StirringImage[] = [
   {
     id: 'stirring.tangled-light',
-    imageAssetPath: '/assets/remembrance/stirring/tangled-light.webp',
+    imageAssetPath: '/assets/remembrance/stirring/tangled-light.jpg',
     fragmentClusters: ['growth', 'shelter', 'connection', 'life'],
   },
   {
     id: 'stirring.fracturing-geometry',
-    imageAssetPath: '/assets/remembrance/stirring/fracturing-geometry.webp',
+    imageAssetPath: '/assets/remembrance/stirring/fracturing-geometry.jpg',
     fragmentClusters: ['order', 'ambition', 'power', 'mind'],
   },
   {
     id: 'stirring.dark-water',
-    imageAssetPath: '/assets/remembrance/stirring/dark-water.webp',
+    imageAssetPath: '/assets/remembrance/stirring/dark-water.jpg',
     fragmentClusters: ['memory', 'loss', 'depth', 'ancient'],
   },
   {
     id: 'stirring.rising-embers',
-    imageAssetPath: '/assets/remembrance/stirring/rising-embers.webp',
+    imageAssetPath: '/assets/remembrance/stirring/rising-embers.jpg',
     fragmentClusters: ['transformation', 'sacrifice', 'will', 'force'],
   },
 ];
