@@ -9,7 +9,8 @@ export type ParsedDebugCommand =
   | { kind: 'spawn-sublocation'; sublocationTypeId: string; locationQuery?: string; col?: number; row?: number; name?: string }
   | { kind: 'spawn-npc'; role: string; locationQuery?: string; col?: number; row?: number; name?: string; factionDefId?: string; spotlightTier?: SpotlightTier }
   | { kind: 'move-agent'; agentQuery: string; locationQuery?: string; col?: number; row?: number }
-  | { kind: 'inspect-encounters'; agentFilter?: string };
+  | { kind: 'inspect-encounters'; agentFilter?: string }
+  | { kind: 'fog'; mode: 'toggle' | 'on' | 'off' };
 
 export function tokenizeDebugCommand(input: string): string[] {
   const tokens: string[] = [];

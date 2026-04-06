@@ -137,18 +137,24 @@ export function createHexFillMesh(
     }
   }
 
+  // Clone geometry per mesh — each InstancedMesh needs its own geometry because
+  // per-instance InstancedBufferAttributes (aFogState) are owned by the geometry.
+  // Shared geometry means the second setAttribute('aFogState', ...) overwrites the first.
+  const landGeo = geo.clone();
+  const waterGeo = geo.clone();
+
   // Land mesh — renders full hex shapes (no stencil on InstancedMesh — Three.js limitation).
   // Organic coastline clipping is handled by CoastlineMesh water-colored overlay
   // that uses inverse stencil test on a regular Mesh (where stencil DOES work).
   const landMat = createFogHexMaterial(parchmentTexture ?? null);
 
-  const landMesh = new THREE.InstancedMesh(geo, landMat, landTileIndices.length);
+  const landMesh = new THREE.InstancedMesh(landGeo, landMat, landTileIndices.length);
   landMesh.renderOrder = RENDER_ORDER.HEX_FILL;
   landMesh.frustumCulled = true;
 
   // Water mesh — no stencil constraints; renders as full hexagonal shapes
   const waterMat = createFogHexMaterial(parchmentTexture ?? null);
-  const waterMesh = new THREE.InstancedMesh(geo, waterMat, waterTileIndices.length);
+  const waterMesh = new THREE.InstancedMesh(waterGeo, waterMat, waterTileIndices.length);
   waterMesh.renderOrder = RENDER_ORDER.HEX_FILL;
   waterMesh.frustumCulled = true;
 

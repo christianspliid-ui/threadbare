@@ -1164,9 +1164,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (!import.meta.env.DEV || !window.__DEBUG) return;
     window.__DEBUG._registerFogToggle((enabled?: boolean) => {
       if (enabled === undefined) {
-        // Toggle: flip the current state; return new fog-enabled state (inverse of disabled)
+        // Toggle: flip the current state; return new fog-enabled state
+        const newFogEnabled = fogDisabled; // fogDisabled=true means fog is currently off, so toggling enables it
         setFogDisabled(prev => !prev);
-        return fogDisabled; // fogDisabled before toggle = new fog-enabled after toggle
+        return newFogEnabled;
       }
       setFogDisabled(!enabled);
       return enabled;

@@ -118,6 +118,14 @@ export function useFogCulling({
         }
         sigGroupReset.meta.flushFogAlpha();
       }
+
+      // Reset location sprite visibility to fully visible
+      const locGroupReset = locationGroup.current;
+      if (locGroupReset) {
+        for (const child of locGroupReset.children) {
+          child.visible = true;
+        }
+      }
       return;
     }
 
