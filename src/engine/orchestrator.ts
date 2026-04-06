@@ -76,6 +76,7 @@ import { checkTierPromotion } from './influence';
 import { phaseTradeRouteDecay } from './phaseTradeRouteDecay';
 import { phaseSublocations } from './phaseSublocations';
 import { phaseSettlementPromotion } from './phaseSettlementPromotion';
+import { phaseSettlementReassessment } from './phaseSettlementReassessment';
 import { phaseEconomicChronicle } from './phaseEconomicChronicle';
 import { phaseHexState } from './phaseHexState';
 import { revealLayer } from './revelationResolver';
@@ -1876,7 +1877,12 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   if (runtime && s.tickEvents.length > prePromoEventCount) touchStructure(runtime);
   prevEventCount = s.tickEvents.length;
 
-  // Phase 6.636: Hex State (divine influence + corruption decay, terrain transformation)
+  // Phase 6.636: Settlement Genome Reassessment (re-evaluate genome on tier changes or reach shifts)
+  s = { ...s, ...phaseSettlementReassessment(s) };
+  phaseEventCounts['settlement_reassessment'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.638 (was 6.636): Hex State (divine influence + corruption decay, terrain transformation)
   s = { ...s, ...phaseHexState(s, s.pendingHexMutations ?? []), pendingHexMutations: [] };
   phaseEventCounts['hex_state'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;

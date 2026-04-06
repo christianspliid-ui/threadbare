@@ -142,6 +142,9 @@ export function phaseSettlementPromotion(state: GameState): Partial<GameState> {
           significance: 0.9,
         });
       }
+      loc.properties.pendingReassessment = true;
+      loc.properties.reassessmentTick = tick;
+      loc.properties.reassessmentTrigger = 'promotion';
       continue;
     }
 
@@ -193,6 +196,9 @@ export function phaseSettlementPromotion(state: GameState): Partial<GameState> {
           significance: 0.9,
         });
       }
+      loc.properties.pendingReassessment = true;
+      loc.properties.reassessmentTick = tick;
+      loc.properties.reassessmentTrigger = 'demotion';
       continue;
     }
 
