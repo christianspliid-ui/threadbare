@@ -18,6 +18,8 @@ Design: `Docs/plans/2026-04-05-attention-tier-model-design.md`. Plan: `Docs/plan
 
 ## Recent Completions (2026-04-06)
 
+- **Dual-Mode TTS:** Browser-side kokoro-js Web Worker backend alongside Python GPU server. Auto-fallback on deployed origins; explicit ~92MB model download opt-in. COOP/COEP headers for WASM threading. 19 new tests. Design: `Docs/plans/2026-04-06-dual-mode-tts-design.md`.
+
 - **Three-Tier Attention Model — Engine Foundation:**
   - 8 new engine modules, 4 new type files, ~500 templates classified
   - Tier resolution (resolveEffectiveTier matrix), mid-encounter promotion, notable detection

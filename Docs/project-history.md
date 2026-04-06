@@ -7,6 +7,7 @@
 
 Detailed per-phase implementation status for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
+- ✅ Dual-Mode TTS: browser-side kokoro-js Web Worker backend with auto-fallback from Python GPU server, explicit ~92MB model download opt-in, COOP/COEP headers for WASM threading. Design: `Docs/plans/2026-04-06-dual-mode-tts-design.md`. (2026-04-06)
 - ✅ Three-Tier Attention Model — Engine Foundation: background/shaping/story_beat encounter classification, attention pool, curator scoring, pacing governor, digest buffer, thread tugs, dormant court position, effectiveTier notification routing, 5 CLI debug commands, 42 tunable constants, ~500 templates classified, 93+ new tests. Code review: all 7 findings fixed. Design: `Docs/plans/2026-04-05-attention-tier-model-design.md`. Plan: `Docs/plans/2026-04-05-attention-tier-implementation-plan.md`. (2026-04-06)
 - ✅ Ascendant Remembrance Flow V1: Narrative creation replacing archetype cards — Stirring/Origin/Drive/Transformation/Reveal beats, filtering funnel engine, dual naming, cosmology derivation, 4 hungers, 18 tests. Design: `Docs/plans/2026-04-06-ascendant-remembrance-flow-design.md`. (2026-04-06)
 - ✅ Effect Primitive Architecture — All 5 Phases: shared walker/predicates, query handler (7 queries, 5 system wirings), event handler (encounter+doom), tick primitives (axiological_drift/hex_effect/resource_manipulate), transform execution, doom_rate_multiplier + encounter_difficulty_modifier modify_rules wired. Plan: swirling-dazzling-journal.md. (2026-04-05)
