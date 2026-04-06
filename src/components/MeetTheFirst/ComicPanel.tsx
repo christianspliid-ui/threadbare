@@ -58,9 +58,12 @@ export function ComicPanel({
         }}
       />
 
-      {/* Content overlay (prose, choices) */}
-      <div className="absolute inset-0 flex flex-col justify-end">
-        {children}
+      {/* Content overlay (prose, choices) — top spacer keeps content in lower ~55% */}
+      <div className="absolute inset-0 flex flex-col">
+        <div style={{ flexShrink: 0, minHeight: '30%' }} />
+        <div className="flex-1 overflow-y-auto flex flex-col justify-end">
+          {children}
+        </div>
       </div>
     </div>
   );
