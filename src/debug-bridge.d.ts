@@ -111,6 +111,12 @@ export interface DebugBridge {
   _registerRuntimeProvider: (fn: () => import('./engine/simulationRuntime').SimulationRuntime | null) => void;
   /** @internal GameView registers encounter spawn / world-spawn callbacks here */
   _registerEncounterBridge: (callbacks: Record<string, (...args: unknown[]) => unknown>) => void;
+  /** Toggle fog of war on/off. Returns the new enabled state. */
+  toggleFog(): boolean;
+  /** Explicitly set fog of war enabled state. */
+  setFog(enabled: boolean): void;
+  /** @internal GameView registers its fog toggle callback here */
+  _registerFogToggle(fn: (enabled?: boolean) => boolean): void;
 
   // ── Spawn / world-spawn commands ────────────────────────────────────────
   /** Spawn an encounter on an agent. Opens the encounter modal by default. */

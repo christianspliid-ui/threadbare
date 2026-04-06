@@ -24,6 +24,8 @@ if (import.meta.env.DEV) {
   let _runtimeProvider: (() => import('./engine/simulationRuntime').SimulationRuntime | null) | null = null;
   // GameView registers encounter spawn/world-spawn callbacks here
   let _encounterBridge: Record<string, (...args: unknown[]) => unknown> | null = null;
+  // GameView registers its fog toggle callback here
+  let _fogToggle: ((enabled?: boolean) => boolean) | null = null;
 
   window.__DEBUG = {
     // Debug panel control — called from browser console or Playwright
@@ -48,6 +50,9 @@ if (import.meta.env.DEV) {
     _registerRuntimeProvider: (fn: () => import('./engine/simulationRuntime').SimulationRuntime | null) => { _runtimeProvider = fn; },
     /** @internal GameView registers encounter spawn / world-spawn callbacks here */
     _registerEncounterBridge: (cb: Record<string, (...args: unknown[]) => unknown>) => { _encounterBridge = cb; },
+    toggleFog: () => _fogToggle?.() ?? false,
+    setFog: (enabled: boolean) => { _fogToggle?.(enabled); },
+    _registerFogToggle: (fn: (enabled?: boolean) => boolean) => { _fogToggle = fn; },
 
     // ── Spawn / world-spawn commands (delegated to encounter bridge) ──────
     spawnEncounter: (agentQuery: string, templateId: string, options?: Record<string, unknown>) =>
