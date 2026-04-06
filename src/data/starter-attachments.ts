@@ -56,11 +56,14 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       subcategory: 'arms',
       tier: 2,
       tags: ['#iron', '#weapon', '#legendary_beast'],
-      mechanicalSummary: '+0.15 Iron, +0.05 Fang reach',
-      reachBonus: { iron: 0.08 },
+      mechanicalSummary: '+0.08 Iron, +0.04 Iron in combat (beast fury)',
       lossCondition: 'permanent',
       flavorText:
         'Pulled from the jaw of the beast that terrorized the Ashen Vale for three generations.',
+      effects: [
+        { type: 'passive', reach: 'iron', value: 0.08 },
+        { type: 'conditional', condition: 'in_combat', reach: 'iron', value: 0.04 },
+      ],
     } as PossessionNodeProperties,
   },
 
@@ -73,10 +76,13 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       subcategory: 'mounts_beasts',
       tier: 1,
       tags: ['#beast', '#mount', '#travel'],
-      mechanicalSummary: '+movement_speed',
-      reachBonus: { gold: 0.03 },
+      mechanicalSummary: '+0.03 Gold, 10% reduced movement cost (pack carrier)',
       lossCondition: 'stealable',
       flavorText: 'A stubborn creature with strong legs and stronger opinions.',
+      effects: [
+        { type: 'passive', reach: 'gold', value: 0.03 },
+        { type: 'range_modifier', movementCostMultiplier: 0.9 },
+      ],
     } as PossessionNodeProperties,
   },
   {
@@ -87,10 +93,14 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       subcategory: 'mounts_beasts',
       tier: 2,
       tags: ['#beast', '#mount', '#cavalry'],
-      mechanicalSummary: '+movement_speed, grants cavalry_charge',
+      mechanicalSummary: '20% reduced movement cost, grants cavalry_charge trait',
       lossCondition: 'breakable',
       flavorText:
         'Bred in the western reaches, these horses run until their hearts give out.',
+      effects: [
+        { type: 'range_modifier', movementCostMultiplier: 0.8 },
+        { type: 'trait_grant', grantedTrait: 'cavalry_charge' },
+      ],
     } as PossessionNodeProperties,
   },
 
@@ -122,9 +132,12 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       subcategory: 'provisions',
       tier: 1,
       tags: ['#food', '#consumable', '#travel'],
-      mechanicalSummary: '+movement for 3 ticks',
+      mechanicalSummary: '+0.03 Iron, decays -0.003/tick to 0 (rations consumed)',
       lossCondition: 'consumable',
       flavorText: 'Dried meat, hard bread, and a waterskin. Simple sustenance for the road.',
+      effects: [
+        { type: 'decay', reach: 'iron', startValue: 0.03, changePerTick: -0.003, limitValue: 0, destroyAtLimit: true },
+      ],
     } as PossessionNodeProperties,
   },
 
@@ -137,10 +150,17 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       subcategory: 'relics_talismans',
       tier: 3,
       tags: ['#eye', '#cursed', '#supernatural'],
-      mechanicalSummary: '+0.20 Eye reach, −0.10 Heart reach',
-      reachBonus: { eye: 0.08, heart: -0.04 },
+      mechanicalSummary: '+0.08 Eye, -0.04 Heart, reveals attachments within 2 hexes, when cursed: -0.03 Heart for 6 ticks (12-tick cd)',
       lossCondition: 'cursed',
       flavorText: 'It sees what you cannot. It shows what you must not know.',
+      effects: [
+        { type: 'passive', reach: 'eye', value: 0.08 },
+        { type: 'passive', reach: 'heart', value: -0.04 },
+        { type: 'reveal', target: 'attachments', range: 2 },
+        { type: 'reactive', trigger: 'cursed', effect: {
+          type: 'duration', ticks: 6, reach: 'heart', value: -0.03, destroyOnExpiry: true
+        }, cooldown: 12 },
+      ],
       onUseTriggers: [
         {
           triggerCondition: 'any_use',
@@ -166,9 +186,13 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       subcategory: 'tomes_scrolls',
       tier: 2,
       tags: ['#star', '#tome', '#knowledge'],
-      mechanicalSummary: '+0.10 Star reach, grants dark_knowledge',
+      mechanicalSummary: '+0.06 Star, +0.03 Eye in exploration (fragment research), on first use: revelation condition',
       lossCondition: 'permanent',
       flavorText: 'Half the pages are ash. The rest are worse.',
+      effects: [
+        { type: 'passive', reach: 'star', value: 0.06 },
+        { type: 'conditional', condition: 'in_exploration', reach: 'eye', value: 0.03 },
+      ],
       onUseTriggers: [
         {
           triggerCondition: 'first_use',
