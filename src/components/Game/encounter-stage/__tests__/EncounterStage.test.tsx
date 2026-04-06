@@ -10,12 +10,15 @@ const stopMock = vi.fn();
 vi.mock('../../../../services/narration/useNarration', () => ({
   useNarration: () => ({
     enabled: true,
-    status: 'idle',
-    loadProgress: 0,
+    status: 'ready' as const,
+    backendType: 'server' as const,
+    loadProgress: 1,
     error: null,
     isSpeaking: false,
     isLoading: false,
+    isAvailable: false,
     init: vi.fn(),
+    initWorker: vi.fn(),
     speak: speakMock,
     speakSections: vi.fn(),
     stop: stopMock,
