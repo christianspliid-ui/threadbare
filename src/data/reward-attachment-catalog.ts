@@ -1235,8 +1235,12 @@ export const REWARD_CONDITIONS: GraphNode[] = [
       description: 'A faint warmth lingers, granting minor divine favor.',
       maxLevel: 1,
       visibility: 'public',
-      domainContributions: { star: 0.04 },
       flavorText: 'The first light of morning seems to linger on your skin longer than it should.',
+      mechanicalSummary: '+0.04 Star, +0.02 Eye when exploring',
+      effects: [
+        { type: 'passive', reach: 'star', value: 0.04 },
+        { type: 'conditional', condition: 'in_exploration', reach: 'eye', value: 0.02 },
+      ],
     } as TraitDefinitionProperties,
   },
   {
@@ -1246,12 +1250,19 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#blessing', '#heart', '#flesh', '#healing'],
+      tags: ['#blessing', '#heart', '#stone', '#healing'],
       description: 'Hands carry a soothing warmth that eases pain.',
       maxLevel: 1,
       visibility: 'public',
-      domainContributions: { heart: 0.03, flesh: 0.03 },
       flavorText: 'Your palms tingle. The wounded lean toward you without knowing why.',
+      mechanicalSummary: '+0.03 Heart, +0.03 Stone, temporary +0.03 Stone when healed',
+      effects: [
+        { type: 'passive', reach: 'heart', value: 0.03 },
+        { type: 'passive', reach: 'stone', value: 0.03 },
+        { type: 'reactive', trigger: 'healed', effect: {
+          type: 'duration', ticks: 6, reach: 'stone', value: 0.03, destroyOnExpiry: false,
+        }},
+      ],
     } as TraitDefinitionProperties,
   },
   {
@@ -1265,8 +1276,12 @@ export const REWARD_CONDITIONS: GraphNode[] = [
       description: 'Luck bends slightly in your direction.',
       maxLevel: 1,
       visibility: 'public',
-      domainContributions: { gold: 0.04 },
       flavorText: 'Coins turn up in pockets. Doors left ajar swing the right way.',
+      mechanicalSummary: '+0.04 Gold, rescues near-miss Gold outcomes (+1 step)',
+      effects: [
+        { type: 'passive', reach: 'gold', value: 0.04 },
+        { type: 'test_shaper', reach: 'gold', trigger: 'near_miss', steps: 1 },
+      ],
     } as TraitDefinitionProperties,
   },
 
@@ -1282,8 +1297,13 @@ export const REWARD_CONDITIONS: GraphNode[] = [
       description: 'A protective aura that dulls hostile intent nearby.',
       maxLevel: 1,
       visibility: 'public',
-      domainContributions: { star: 0.06, heart: 0.04 },
       flavorText: 'Blades hesitate. Arrows veer. The faithful call it grace; the skeptical call it luck.',
+      mechanicalSummary: '+0.06 Star, +0.04 Heart, allies within 1 hex gain +0.02 Heart',
+      effects: [
+        { type: 'passive', reach: 'star', value: 0.06 },
+        { type: 'passive', reach: 'heart', value: 0.04 },
+        { type: 'aura', radius: 1, target: 'allies', reach: 'heart', value: 0.02 },
+      ],
     } as TraitDefinitionProperties,
   },
   {
@@ -1293,12 +1313,18 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 2,
-      tags: ['#blessing', '#stone', '#flesh', '#wilderness'],
+      tags: ['#blessing', '#stone', '#wilderness'],
       description: 'Vitality drawn from the land itself. Wounds close faster, muscles ache less.',
       maxLevel: 1,
       visibility: 'public',
-      domainContributions: { stone: 0.05, flesh: 0.05 },
       flavorText: 'You sleep on bare earth and wake restored. The soil knows your name.',
+      mechanicalSummary: '+0.10 Stone, temporary +0.04 Stone buff that fades over 10 ticks after resting',
+      effects: [
+        { type: 'passive', reach: 'stone', value: 0.10 },
+        { type: 'reactive', trigger: 'healed', effect: {
+          type: 'decay', reach: 'stone', startValue: 0.04, changePerTick: -0.004, limitValue: 0.0, destroyAtLimit: true,
+        }, cooldown: 12 },
+      ],
     } as TraitDefinitionProperties,
   },
 
@@ -1314,8 +1340,14 @@ export const REWARD_CONDITIONS: GraphNode[] = [
       description: 'Marked by divine purpose. Perception and faith burn bright.',
       maxLevel: 1,
       visibility: 'public',
-      domainContributions: { star: 0.10, eye: 0.05 },
       flavorText: 'A smear of oil that will not wash away. You see the world as a god sees it — and it is not kind.',
+      mechanicalSummary: '+0.10 Star, +0.05 Eye, +0.02 Eye in mystical contexts, rescues near-miss Star outcomes (+1 step)',
+      effects: [
+        { type: 'passive', reach: 'star', value: 0.10 },
+        { type: 'passive', reach: 'eye', value: 0.05 },
+        { type: 'conditional', condition: 'in_mystical', reach: 'eye', value: 0.02 },
+        { type: 'test_shaper', reach: 'star', trigger: 'near_miss', steps: 1, maxMargin: 0.05 },
+      ],
     } as TraitDefinitionProperties,
   },
 
@@ -1331,8 +1363,12 @@ export const REWARD_CONDITIONS: GraphNode[] = [
       description: 'Misfortune clings like smoke. Commerce and stealth suffer.',
       maxLevel: 1,
       visibility: 'discoverable',
-      domainContributions: { gold: -0.04 },
       flavorText: 'Things break in your hands. Deals sour. People stop meeting your eyes.',
+      mechanicalSummary: '-0.04 Gold, bad luck compounds: -0.01 Gold per combat failure (max -0.03, slow decay)',
+      effects: [
+        { type: 'passive', reach: 'gold', value: -0.04 },
+        { type: 'stacking', reach: 'gold', valuePerStack: -0.01, maxStacks: 3, stackOn: 'combat_failure', decayPerTick: 0.005 },
+      ],
     } as TraitDefinitionProperties,
   },
   {
@@ -1346,8 +1382,13 @@ export const REWARD_CONDITIONS: GraphNode[] = [
       description: 'Restless sleep erodes composure and empathy.',
       maxLevel: 1,
       visibility: 'discoverable',
-      domainContributions: { heart: -0.04 },
       flavorText: 'You wake gasping. The dreams fade but the dread does not.',
+      mechanicalSummary: '-0.04 Heart, slow drift toward ruthlessness, suppresses social encounters',
+      effects: [
+        { type: 'passive', reach: 'heart', value: -0.04 },
+        { type: 'axiological_drift', axis: 'mercy_ruthlessness', ratePerTick: 0.002, limitValue: 0.15 },
+        { type: 'behavior_weight', reach: 'heart', multiplier: 0.7 },
+      ],
     } as TraitDefinitionProperties,
   },
 
@@ -1363,8 +1404,14 @@ export const REWARD_CONDITIONS: GraphNode[] = [
       description: 'Cannot speak truths about a particular subject. Social reach impaired.',
       maxLevel: 1,
       visibility: 'discoverable',
-      domainContributions: { heart: -0.07, shadow: -0.03 },
       flavorText: 'The words form but the throat closes. Some truths have been locked away.',
+      mechanicalSummary: '-0.07 Heart, -0.03 Shadow, blocks Heart actions in social contexts, -0.01 Heart per nearby social success (max -0.03)',
+      effects: [
+        { type: 'passive', reach: 'heart', value: -0.07 },
+        { type: 'passive', reach: 'shadow', value: -0.03 },
+        { type: 'action_gate', mode: 'block', reach: 'heart', condition: 'in_social' },
+        { type: 'stacking', reach: 'heart', valuePerStack: -0.01, maxStacks: 3, stackOn: 'social_success', decayPerTick: 0.003 },
+      ],
     } as TraitDefinitionProperties,
   },
   {
