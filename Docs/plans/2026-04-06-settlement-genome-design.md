@@ -163,7 +163,7 @@ const SPHERE_STRONG_THRESHOLD = 0.6;         // above this, contributes an extra
 Geographic position adds bonus sublocations independent of spheres:
 
 ```typescript
-const POSITION_MODIFIERS: Record<'heartland' | 'borderlands', {
+const POSITION_MODIFIERS: Record<'heartland' | 'borderland', {
   bonusSublocations: SublocationTypeId[];
   bonusNpcRoles: NpcRole[];
 }>;
@@ -171,8 +171,8 @@ const POSITION_MODIFIERS: Record<'heartland' | 'borderlands', {
 
 | Position | Bonus Sublocations | Bonus NPCs |
 |----------|-------------------|------------|
-| borderlands | city-walls, watchtower | guard, scout |
-| heartlands | festival-ground, granary | farmer, innkeeper |
+| borderland | city-walls, watchtower | guard, scout |
+| heartland | festival-ground, granary | farmer, innkeeper |
 
 ---
 
@@ -464,7 +464,7 @@ interface SettlementGenomeTrace extends TraceBase {
   cultureStrength: number;
   spheresAboveThreshold: { sphere: string; value: number }[];
   reachesAboveThreshold: { reach: ReachDomain; value: number }[];
-  position: 'heartland' | 'borderlands';
+  position: 'heartland' | 'borderland';
   passContributions: {
     infrastructure: SublocationTypeId[];
     culture: { substitutions: SublocationTypeId[]; additions: SublocationTypeId[] };
