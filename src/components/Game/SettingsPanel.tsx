@@ -26,6 +26,15 @@ interface SettingsPanelProps {
   onToggleNotificationCategory?: (key: NotificationCategoryKey) => void;
   onSetNotificationMode?: (key: NotificationCategoryKey, mode: NotificationMode) => void;
   onResetNotificationPrefs?: () => void;
+  // Audio settings
+  musicVolume: number;
+  onMusicVolume: (v: number) => void;
+  bgVolume: number;
+  onBgVolume: (v: number) => void;
+  uiVolume: number;
+  onUiVolume: (v: number) => void;
+  audioMuted: boolean;
+  onToggleAudioMute: () => void;
 }
 
 export function SettingsPanel({
@@ -41,6 +50,14 @@ export function SettingsPanel({
   onToggleNotificationCategory,
   onSetNotificationMode,
   onResetNotificationPrefs,
+  musicVolume,
+  onMusicVolume,
+  bgVolume,
+  onBgVolume,
+  uiVolume,
+  onUiVolume,
+  audioMuted,
+  onToggleAudioMute,
 }: SettingsPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const [paletteId, setPaletteId] = useState<PaletteThemeId>(getActivePaletteId());
@@ -329,6 +346,53 @@ export function SettingsPanel({
             )}
           </div>
         )}
+
+        {/* Audio Section */}
+        <div style={sectionStyle}>
+          <div style={{ ...sectionHeaderStyle, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>Audio</span>
+            <button
+              onClick={onToggleAudioMute}
+              style={{ ...toggleStyle(!audioMuted), marginRight: 16 }}
+              aria-label={audioMuted ? 'Unmute all audio' : 'Mute all audio'}
+              title={audioMuted ? 'All audio muted' : 'All audio on'}
+            >
+              <div style={toggleDotStyle(!audioMuted)} />
+            </button>
+          </div>
+          <div style={{ padding: '4px 16px 8px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label style={{ ...settingLabelStyle, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ width: 48 }}>Music</span>
+              <input
+                type="range" min={0} max={1} step={0.01}
+                value={musicVolume}
+                onChange={e => onMusicVolume(parseFloat(e.target.value))}
+                style={{ flex: 1 }}
+                aria-label="Music volume"
+              />
+            </label>
+            <label style={{ ...settingLabelStyle, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ width: 48 }}>Ambient</span>
+              <input
+                type="range" min={0} max={1} step={0.01}
+                value={bgVolume}
+                onChange={e => onBgVolume(parseFloat(e.target.value))}
+                style={{ flex: 1 }}
+                aria-label="Ambient volume"
+              />
+            </label>
+            <label style={{ ...settingLabelStyle, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ width: 48 }}>UI</span>
+              <input
+                type="range" min={0} max={1} step={0.01}
+                value={uiVolume}
+                onChange={e => onUiVolume(parseFloat(e.target.value))}
+                style={{ flex: 1 }}
+                aria-label="UI effects volume"
+              />
+            </label>
+          </div>
+        </div>
 
         {/* Debug Section */}
         <div style={sectionStyle}>
