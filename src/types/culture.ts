@@ -13,6 +13,10 @@ export interface CultureIdentity {
   toleratedBiomes: TerrainType[];   // up to 5 additional biomes for heartland
   /** Human-readable archetype label, e.g. "The Protector Mountain Folk" */
   archetypeLabel: string;
+  /** Short demonym for the people, e.g. "Daru" */
+  demonym?: string;
+  /** Name for the culture's homeland, e.g. "Daruheim" */
+  homePlaceName?: string;
   socialStructure: string;
   accountability: string;
   behavioralKeywords: string[];

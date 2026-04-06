@@ -264,6 +264,21 @@ export function assignCultureToActor(
     type: 'belongs_to',
     properties: { culturalStrength: strength },
   });
+
+  // Assign culture trait to actor for gating
+  const traitNodeId = `trait.culture.${cultureId}`;
+  if (graph.getNode(traitNodeId)) {
+    const traitEdgeId = `edge_culture_trait_${actorId}_${cultureId}`;
+    if (!graph.getNode(traitEdgeId)) {
+      graph.addEdge({
+        id: traitEdgeId,
+        type: 'has_trait',
+        source: actorId,
+        target: traitNodeId,
+        properties: { level: 1 },
+      });
+    }
+  }
 }
 
 /**
@@ -282,6 +297,21 @@ export function assignCultureToLocation(
     type: 'belongs_to',
     properties: { culturalStrength: 1.0, cultureLayer: layer },
   });
+
+  // Assign culture trait to location for gating
+  const traitNodeId = `trait.culture.${cultureId}`;
+  if (graph.getNode(traitNodeId)) {
+    const traitEdgeId = `edge_culture_trait_${locationId}_${cultureId}_${layer}`;
+    if (!graph.getNode(traitEdgeId)) {
+      graph.addEdge({
+        id: traitEdgeId,
+        type: 'has_trait',
+        source: locationId,
+        target: traitNodeId,
+        properties: { level: 1 },
+      });
+    }
+  }
 }
 
 // ─── Pre-Generation (before worldgen) ──────────────────────────────
@@ -363,6 +393,31 @@ export function generateCultureIdentities(
     const identity = composeCultureIdentity(foundationId, spheres, biome);
     const name = generateCultureName(identity, rng);
 
+    // Derive demonym from culture name (first word or short form)
+    const demonym = name.replace(/^The\s+/i, '').split(/[\s-]+/)[0];
+
+    // Home place name: demonym + foundation-appropriate suffix
+    const PLACE_SUFFIXES: Record<string, string[]> = {
+      order: ['-hold', '-heim', '-gar', '-stan'],
+      chaos: ['-reach', '-thos', '-shar', '-wilds'],
+      force: ['-grad', '-hold', '-gar', '-forge'],
+      life: ['-dell', '-mere', '-glen', '-haven'],
+      mind: ['-spire', '-thos', '-reach', '-archive'],
+      spirit: ['-haven', '-dell', '-mere', '-rest'],
+      matter: ['-delve', '-hold', '-quarry', '-forge'],
+      energy: ['-peak', '-storm', '-crest', '-reach'],
+      entropy: ['-mire', '-blight', '-end', '-hollow'],
+      time: ['-span', '-watch', '-rest', '-mark'],
+      light: ['-haven', '-dawn', '-crest', '-beacon'],
+      darkness: ['-shade', '-deep', '-hollow', '-veil'],
+    };
+    const suffixes = PLACE_SUFFIXES[foundationId] ?? ['-ton', '-bury', '-ford'];
+    const suffixIdx = Math.abs(demonym.charCodeAt(0) * 31 + demonym.charCodeAt(Math.min(1, demonym.length - 1))) % suffixes.length;
+    const homePlaceName = demonym + suffixes[suffixIdx];
+
+    identity.demonym = demonym;
+    identity.homePlaceName = homePlaceName;
+
     const flagSeed = Math.floor(rng() * 0xFFFFFFFF);
     const flagSvg = generateCultureFlag(identity, flagSeed);
 
@@ -388,6 +443,26 @@ export function registerPregenCultures(
       name: pc.name,
       properties: { actorType: 'culture', cultureIdentity: pc.identity, flagSvg: pc.flagSvg },
     });
+
+    // Create culture trait node for gating
+    const traitNodeId = `trait.culture.${pc.id}`;
+    graph.addNode({
+      id: traitNodeId,
+      type: 'trait',
+      name: pc.identity.demonym ?? pc.name,
+      properties: {
+        subcategory: 'cultural',
+        description: `Cultural trait for the ${pc.identity.demonym ?? pc.name} people`,
+        importance: 0,
+        maxLevel: 1,
+        visibility: 'public',
+        domainContributions: {},
+        tags: [pc.identity.demonym ?? pc.name],
+        flavorText: '',
+        category: 'innate',
+      },
+    });
+
     cultureIds.push(pc.id);
   }
   return cultureIds;

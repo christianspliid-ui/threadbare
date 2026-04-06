@@ -14,9 +14,11 @@ import {
   composeCultureIdentity,
   generateCultureName,
   generateCultures,
+  generateCultureIdentities,
   assignCultureToActor,
   assignCultureToLocation,
   assignCulturesToActors,
+  registerPregenCultures,
 } from '../cultureGenerator';
 
 describe('culture graph edges', () => {
@@ -142,6 +144,27 @@ describe('generateCultureName', () => {
     expect(name.length).toBeGreaterThan(0);
   });
 });
+
+// ─── Reusable mock identity ────────────────────────────────────────
+
+const mockIdentity: CultureIdentity = {
+  foundationBias: 'order',
+  veneratedSpheres: ['force'],
+  primaryBiome: 'grassland',
+  preferredBiomes: ['grassland'],
+  toleratedBiomes: [],
+  archetypeLabel: 'The Protector Plains Folk',
+  demonym: 'Daru',
+  homePlaceName: 'Daruheim',
+  socialStructure: 'Council of elders',
+  accountability: 'Community consensus',
+  behavioralKeywords: ['structured'],
+  materialVocabulary: ['stone'],
+  metaphorPalette: ['the steady river'],
+  formativeTraitSeedIds: ['discipline'],
+  behavioralTraitSeedIds: ['loyalty'],
+  reachPreferences: { iron: 0, gold: 0, shadow: 0, veil: 0, heart: 0, eye: 0, stone: 0, star: 0, flesh: 0 },
+};
 
 // ─── Helper for tests ──────────────────────────────────────────────
 
@@ -354,6 +377,108 @@ describe('assignCulturesToActors', () => {
         expect(e.properties.culturalStrength).toBeLessThanOrEqual(CULTURE_STRENGTH_INDIVIDUAL.max);
       }
     }
+  });
+});
+
+describe('generateCultureIdentities demonym and homePlaceName', () => {
+  it('generates demonym and homePlaceName on each culture identity', () => {
+    const rng = (() => { let i = 0; return () => (i++ * 0.13) % 1; })();
+    const cultures = generateCultureIdentities(balancedCosmology(), rng);
+    for (const c of cultures) {
+      expect(c.identity.demonym).toBeTruthy();
+      expect(c.identity.homePlaceName).toBeTruthy();
+      // homePlaceName should start with demonym
+      expect(c.identity.homePlaceName!.startsWith(c.identity.demonym!)).toBe(true);
+    }
+  });
+});
+
+describe('culture trait nodes', () => {
+  it('registerPregenCultures creates a trait node per culture', () => {
+    const graph = new WorldGraph();
+    const cultures = [{
+      id: 'culture_0',
+      name: 'The Daru',
+      identity: { ...mockIdentity, demonym: 'Daru' },
+      flagSvg: '',
+    }];
+    registerPregenCultures(graph, cultures);
+    const traitNode = graph.getNode('trait.culture.culture_0');
+    expect(traitNode).toBeTruthy();
+    expect(traitNode!.type).toBe('trait');
+    expect(traitNode!.name).toBe('Daru');
+    expect(traitNode!.properties.subcategory).toBe('cultural');
+    expect(traitNode!.properties.tags).toContain('Daru');
+  });
+
+  it('uses culture name as fallback when demonym is absent', () => {
+    const graph = new WorldGraph();
+    const identityWithoutDemonym = { ...mockIdentity };
+    delete identityWithoutDemonym.demonym;
+    const cultures = [{
+      id: 'culture_1',
+      name: 'The Unnamed',
+      identity: identityWithoutDemonym,
+      flagSvg: '',
+    }];
+    registerPregenCultures(graph, cultures);
+    const traitNode = graph.getNode('trait.culture.culture_1');
+    expect(traitNode).toBeTruthy();
+    expect(traitNode!.name).toBe('The Unnamed');
+  });
+});
+
+describe('culture trait assignment', () => {
+  it('assignCultureToLocation creates has_trait edge to culture trait node', () => {
+    const graph = new WorldGraph();
+    const cultures = [{
+      id: 'culture_0',
+      name: 'The Daru',
+      identity: { ...mockIdentity, demonym: 'Daru' },
+      flagSvg: '',
+    }];
+    registerPregenCultures(graph, cultures);
+    graph.addNode({ id: 'loc_1', type: 'location', name: 'Test Town', properties: {} });
+    assignCultureToLocation(graph, 'loc_1', 'culture_0', 'current');
+    const traitEdges = graph.getOutgoingEdges('loc_1', 'has_trait');
+    const cultureTrait = traitEdges.find(e => e.target === 'trait.culture.culture_0');
+    expect(cultureTrait).toBeTruthy();
+  });
+
+  it('assignCultureToLocation does not create has_trait edge when trait node absent', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'culture_0', type: 'actor', name: 'Orphan', properties: { actorType: 'culture' } });
+    graph.addNode({ id: 'loc_1', type: 'location', name: 'Test Town', properties: {} });
+    // No trait node created — no registerPregenCultures call
+    assignCultureToLocation(graph, 'loc_1', 'culture_0', 'current');
+    const traitEdges = graph.getOutgoingEdges('loc_1', 'has_trait');
+    expect(traitEdges).toHaveLength(0);
+  });
+
+  it('assignCultureToActor creates has_trait edge to culture trait node', () => {
+    const graph = new WorldGraph();
+    const cultures = [{
+      id: 'culture_0',
+      name: 'The Daru',
+      identity: { ...mockIdentity, demonym: 'Daru' },
+      flagSvg: '',
+    }];
+    registerPregenCultures(graph, cultures);
+    graph.addNode({ id: 'actor_1', type: 'actor', name: 'Test Agent', properties: {} });
+    assignCultureToActor(graph, 'actor_1', 'culture_0', 0.8);
+    const traitEdges = graph.getOutgoingEdges('actor_1', 'has_trait');
+    const cultureTrait = traitEdges.find(e => e.target === 'trait.culture.culture_0');
+    expect(cultureTrait).toBeTruthy();
+  });
+
+  it('assignCultureToActor does not create has_trait edge when trait node absent', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'culture_0', type: 'actor', name: 'Orphan', properties: { actorType: 'culture' } });
+    graph.addNode({ id: 'actor_1', type: 'actor', name: 'Test Agent', properties: {} });
+    // No trait node created
+    assignCultureToActor(graph, 'actor_1', 'culture_0', 0.8);
+    const traitEdges = graph.getOutgoingEdges('actor_1', 'has_trait');
+    expect(traitEdges).toHaveLength(0);
   });
 });
 
