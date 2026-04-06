@@ -10,7 +10,7 @@ const TERRAIN_TO_SOUND_KEY: Record<TerrainType, string> = {
   evergreen_forest: 'forest', great_home_trees: 'forest', dead_forest: 'wasteland',
   marsh: 'swamp', swamp: 'swamp', moor_bog: 'swamp',
   hills: 'mountains', forested_hills: 'mountains', mountains: 'mountains',
-  high_mountains: 'mountains', plateau: 'mountains', mountain_pass: 'mountains',
+  high_mountains: 'mountains', plateau: 'plateau', mountain_pass: 'mountains',
   desert: 'desert', rocky_desert: 'desert', sand_dunes: 'desert', badlands: 'desert',
   tundra: 'tundra', snow_fields: 'tundra', glacier: 'tundra', arctic: 'tundra',
   volcano: 'volcanic',

@@ -21,11 +21,12 @@ export const MUSIC_SRC_DEFAULT = '/audio/music/theme-drone.mp3';
  */
 export const AMBIENT_TRACKS: Record<string, string[]> = {
   water:      [],
-  grassland:  [],
-  forest:     [],
+  grassland:  ['/audio/grassland-01.mp3'],
+  forest:     ['/audio/forest-01.mp3'],
   swamp:      [],
   mountains:  [],
-  desert:     [],
+  plateau:    ['/audio/plateau-01.mp3'],
+  desert:     ['/audio/desert-01.mp3'],
   tundra:     [],
   volcanic:   [],
   wasteland:  [],
