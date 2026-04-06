@@ -10,14 +10,14 @@ export interface MeetingSceneAsset {
 
 /** 16:9 scene backdrops for dilemma beats. Placeholder gradients until art is generated. */
 export const DILEMMA_SCENE_ART: readonly MeetingSceneAsset[] = [
-  { id: 'scene.crossroads', path: '/assets/meeting/scenes/crossroads.webp', placeholderGradient: 'linear-gradient(135deg, #1a1a0a, #2a1a0a, #1a2a1a)', emotionalTags: ['choice', 'journey'], dilemmaCategories: ['general'] },
-  { id: 'scene.burning-village', path: '/assets/meeting/scenes/burning-village.webp', placeholderGradient: 'linear-gradient(135deg, #3a0a0a, #2a0a0a, #1a0a0a)', emotionalTags: ['destruction', 'loss', 'urgency'], dilemmaCategories: ['axiological', 'reach_specific'] },
-  { id: 'scene.throne-room', path: '/assets/meeting/scenes/throne-room.webp', placeholderGradient: 'linear-gradient(135deg, #2a1a0a, #3a2a1a, #1a1a0a)', emotionalTags: ['power', 'politics', 'betrayal'], dilemmaCategories: ['axiological', 'domain_specific'] },
-  { id: 'scene.prison-cell', path: '/assets/meeting/scenes/prison-cell.webp', placeholderGradient: 'linear-gradient(135deg, #0a0a0a, #1a1a1a, #0a0a0a)', emotionalTags: ['confinement', 'mercy', 'justice'], dilemmaCategories: ['axiological'] },
-  { id: 'scene.market-riot', path: '/assets/meeting/scenes/market-riot.webp', placeholderGradient: 'linear-gradient(135deg, #2a1a0a, #3a1a0a, #1a0a0a)', emotionalTags: ['chaos', 'courage', 'crowd'], dilemmaCategories: ['general', 'reach_specific'] },
-  { id: 'scene.forest-shrine', path: '/assets/meeting/scenes/forest-shrine.webp', placeholderGradient: 'linear-gradient(135deg, #0a1a0a, #1a2a1a, #0a1a0a)', emotionalTags: ['sacred', 'nature', 'revelation'], dilemmaCategories: ['domain_specific'] },
-  { id: 'scene.harbor-storm', path: '/assets/meeting/scenes/harbor-storm.webp', placeholderGradient: 'linear-gradient(135deg, #0a0a1a, #1a1a2a, #0a1a1a)', emotionalTags: ['danger', 'choice', 'nature'], dilemmaCategories: ['general'] },
-  { id: 'scene.plague-ward', path: '/assets/meeting/scenes/plague-ward.webp', placeholderGradient: 'linear-gradient(135deg, #1a1a0a, #0a1a0a, #1a0a0a)', emotionalTags: ['suffering', 'compassion', 'sacrifice'], dilemmaCategories: ['axiological', 'reach_specific'] },
+  { id: 'scene.crossroads', path: '/assets/meeting/scenes/crossroads.jpg', placeholderGradient: 'linear-gradient(135deg, #1a1a0a, #2a1a0a, #1a2a1a)', emotionalTags: ['choice', 'journey'], dilemmaCategories: ['general'] },
+  { id: 'scene.burning-village', path: '/assets/meeting/scenes/burning-village.jpg', placeholderGradient: 'linear-gradient(135deg, #3a0a0a, #2a0a0a, #1a0a0a)', emotionalTags: ['destruction', 'loss', 'urgency'], dilemmaCategories: ['axiological', 'reach_specific'] },
+  { id: 'scene.throne-room', path: '/assets/meeting/scenes/throne-room.jpg', placeholderGradient: 'linear-gradient(135deg, #2a1a0a, #3a2a1a, #1a1a0a)', emotionalTags: ['power', 'politics', 'betrayal'], dilemmaCategories: ['axiological', 'domain_specific'] },
+  { id: 'scene.prison-cell', path: '/assets/meeting/scenes/prison-cell.jpg', placeholderGradient: 'linear-gradient(135deg, #0a0a0a, #1a1a1a, #0a0a0a)', emotionalTags: ['confinement', 'mercy', 'justice'], dilemmaCategories: ['axiological'] },
+  { id: 'scene.market-riot', path: '/assets/meeting/scenes/market-riot.jpg', placeholderGradient: 'linear-gradient(135deg, #2a1a0a, #3a1a0a, #1a0a0a)', emotionalTags: ['chaos', 'courage', 'crowd'], dilemmaCategories: ['general', 'reach_specific'] },
+  { id: 'scene.forest-shrine', path: '/assets/meeting/scenes/forest-shrine.jpg', placeholderGradient: 'linear-gradient(135deg, #0a1a0a, #1a2a1a, #0a1a0a)', emotionalTags: ['sacred', 'nature', 'revelation'], dilemmaCategories: ['domain_specific'] },
+  { id: 'scene.harbor-storm', path: '/assets/meeting/scenes/harbor-storm.jpg', placeholderGradient: 'linear-gradient(135deg, #0a0a1a, #1a1a2a, #0a1a1a)', emotionalTags: ['danger', 'choice', 'nature'], dilemmaCategories: ['general'] },
+  { id: 'scene.plague-ward', path: '/assets/meeting/scenes/plague-ward.jpg', placeholderGradient: 'linear-gradient(135deg, #1a1a0a, #0a1a0a, #1a0a0a)', emotionalTags: ['suffering', 'compassion', 'sacrifice'], dilemmaCategories: ['axiological', 'reach_specific'] },
 ];
 
 /**
