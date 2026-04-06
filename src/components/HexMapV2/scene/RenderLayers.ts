@@ -55,5 +55,5 @@ export const LAYER_Z = {
   ACTIVITY_ICONS:    6.090,  // Reach micro-icons — above combat indicators, below events
   PARTICLE_BURST:    6.060,  // Sphere-colored particle effects above battles, below events
   EVENTS:            6.100,
-  FOG_OVERLAY:       8.000,  // Parchment fog overlay — above all scene content including 3D models (city towers ~5 units, agents 6.0, events 6.1)
+  FOG_OVERLAY:      12.000,  // Parchment fog overlay — must clear tallest 3D model spires
 } as const;
