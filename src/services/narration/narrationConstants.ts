@@ -22,8 +22,8 @@ export const NARRATION_SECTION_PAUSE = '. ';
 /** HuggingFace model ID for browser-side TTS. */
 export const NARRATION_WORKER_MODEL_ID = 'onnx-community/Kokoro-82M-v1.0-ONNX';
 
-/** ONNX quantization level — q8 is ~92MB, good quality/size tradeoff. */
-export const NARRATION_WORKER_DTYPE = 'q8';
+/** ONNX quantization — fp32 for WebGPU (q8 produces garbled audio on GPU). ~326MB download. */
+export const NARRATION_WORKER_DTYPE = 'fp32';
 
 /** WebGPU for ~10x faster inference; kokoro-js auto-falls back to WASM if unavailable. */
 export const NARRATION_WORKER_DEVICE = 'webgpu';
