@@ -165,10 +165,17 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'arms',
       tier: 3,
       tags: ['#iron', '#weapon', '#melee', '#cursed', '#combat'],
-      mechanicalSummary: '+0.12 Iron reach, −0.05 Heart reach',
-      reachBonus: { iron: 0.12, heart: -0.05 },
+      mechanicalSummary: '+0.12 Iron, -0.05 Heart, when damaged: +0.05 Iron burst decaying over 5 ticks (12-tick cooldown), grants dark_ferocity trait',
       lossCondition: 'cursed',
       flavorText: 'The blade is hollow and whistles when swung. The sound makes children weep.',
+      effects: [
+        { type: 'passive', reach: 'iron', value: 0.12 },
+        { type: 'passive', reach: 'heart', value: -0.05 },
+        { type: 'reactive', trigger: 'damaged', effect: {
+          type: 'decay', reach: 'iron', startValue: 0.05, changePerTick: -0.01, limitValue: 0.0, destroyAtLimit: true
+        }, cooldown: 12 },
+        { type: 'trait_grant', grantedTrait: 'dark_ferocity' },
+      ],
     } as PossessionNodeProperties,
   },
   {
@@ -179,14 +186,21 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'arms',
       tier: 3,
       tags: ['#iron', '#weapon', '#ranged', '#star', '#combat'],
-      mechanicalSummary: '+0.10 Iron reach, +0.05 Star reach',
-      reachBonus: { iron: 0.10, star: 0.05 },
+      mechanicalSummary: '+0.10 Iron, +0.05 Star, stellar alignment: +0.03 Star for 6 ticks then dormant 12 ticks',
       lossCondition: 'permanent',
       flavorText: 'The string hums a note too low to hear. Arrows fly straighter than physics allows.',
+      effects: [
+        { type: 'passive', reach: 'iron', value: 0.10 },
+        { type: 'passive', reach: 'star', value: 0.05 },
+        { type: 'cooldown', activeTicks: 6, cooldownTicks: 12, reach: 'star', value: 0.03 },
+      ],
     } as PossessionNodeProperties,
   },
 
   // ─── Arms (T4 ×1) ───────────────────────────────────────────────────
+  // NOTE: passive total 0.26 exceeds EFFECT_PER_ITEM_CAP=0.15.
+  // This is a preserved legacy reachBonus value. Non-passive effects
+  // are utility-only to avoid inflating the overrun further.
   {
     id: 'reward_arms_the_quiet_blade',
     type: 'artifact',
@@ -195,10 +209,18 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'arms',
       tier: 4,
       tags: ['#iron', '#weapon', '#melee', '#shadow', '#ancient', '#combat'],
-      mechanicalSummary: '+0.18 Iron reach, +0.08 Shadow reach',
-      reachBonus: { iron: 0.18, shadow: 0.08 },
+      mechanicalSummary: '+0.18 Iron, +0.08 Shadow, blocks fear/intimidation conditions, when attacked: 20% faster movement for 6 ticks (12-tick cooldown), shadow focus persists until combat ends (+0.02 Shadow)',
       lossCondition: 'permanent',
       flavorText: 'It makes no sound when it cuts. Neither does the one it cuts.',
+      effects: [
+        { type: 'passive', reach: 'iron', value: 0.18 },
+        { type: 'passive', reach: 'shadow', value: 0.08 },
+        { type: 'until_event', event: 'leave_combat', reach: 'shadow', value: 0.02, destroyOnEvent: false },
+        { type: 'reactive', trigger: 'attacked', effect: {
+          type: 'range_modifier', movementCostMultiplier: 0.8
+        }, duration: 6, cooldown: 12 },
+        { type: 'tag_immunity', tags: ['fear', 'intimidation'] },
+      ],
     } as PossessionNodeProperties,
   },
 
@@ -211,10 +233,13 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'vestments',
       tier: 1,
       tags: ['#iron', '#armor', '#cloth', '#combat'],
-      mechanicalSummary: '+0.03 Iron reach',
-      reachBonus: { iron: 0.03 },
+      mechanicalSummary: '+0.03 Iron, blocks bruise conditions',
       lossCondition: 'breakable',
       flavorText: 'Quilted linen stuffed with horsehair. Better than bare skin.',
+      effects: [
+        { type: 'passive', reach: 'iron', value: 0.03 },
+        { type: 'tag_immunity', tags: ['bruise'] },
+      ],
     } as PossessionNodeProperties,
   },
   {
@@ -225,10 +250,13 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'vestments',
       tier: 1,
       tags: ['#gold', '#cloth', '#commercial', '#trade'],
-      mechanicalSummary: '+0.04 Gold reach',
-      reachBonus: { gold: 0.04 },
+      mechanicalSummary: '+0.04 Gold, +0.02 Gold in social encounters',
       lossCondition: 'stealable',
       flavorText: 'Dyed in the saffron of the eastern markets. Wealth worn on the sleeve.',
+      effects: [
+        { type: 'passive', reach: 'gold', value: 0.04 },
+        { type: 'conditional', condition: 'in_social', reach: 'gold', value: 0.02 },
+      ],
     } as PossessionNodeProperties,
   },
   {
@@ -255,10 +283,15 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'vestments',
       tier: 2,
       tags: ['#iron', '#armor', '#combat'],
-      mechanicalSummary: '+0.08 Iron reach',
-      reachBonus: { iron: 0.08 },
+      mechanicalSummary: '+0.08 Iron, when attacked: +0.03 Iron for 4 ticks (8-tick cooldown)',
       lossCondition: 'breakable',
       flavorText: 'Each ring was closed by hand. Someone cared enough to do it right.',
+      effects: [
+        { type: 'passive', reach: 'iron', value: 0.08 },
+        { type: 'reactive', trigger: 'attacked', effect: {
+          type: 'duration', ticks: 4, reach: 'iron', value: 0.03, destroyOnExpiry: true
+        }, cooldown: 8 },
+      ],
     } as PossessionNodeProperties,
   },
   {
@@ -269,10 +302,16 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'vestments',
       tier: 2,
       tags: ['#shadow', '#cloth', '#stealth'],
-      mechanicalSummary: '+0.07 Shadow reach',
-      reachBonus: { shadow: 0.07 },
+      // CAVEAT: 3 effects at T2 norm 1–2. All are utility (zero reach).
+      // Accepted as-is — see systems audit.
+      mechanicalSummary: '+0.07 Shadow, +1 awareness range, blocks tracking conditions',
       lossCondition: 'stealable',
       flavorText: 'The fabric drinks light. Corners seem deeper when you wear it.',
+      effects: [
+        { type: 'passive', reach: 'shadow', value: 0.07 },
+        { type: 'range_modifier', awarenessRangeBonus: 1 },
+        { type: 'tag_immunity', tags: ['tracked', 'marked'] },
+      ],
     } as PossessionNodeProperties,
   },
 
@@ -285,14 +324,23 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'vestments',
       tier: 3,
       tags: ['#shadow', '#cloth', '#veil', '#cursed', '#stealth'],
-      mechanicalSummary: '+0.12 Shadow reach, −0.06 Heart reach',
-      reachBonus: { shadow: 0.12, heart: -0.06 },
+      mechanicalSummary: '+0.12 Shadow, -0.06 Heart, entering new hex: +0.04 Shadow burst decaying over 4 ticks (8-tick cooldown), amplifies shadow encounter desire x1.5',
       lossCondition: 'cursed',
       flavorText: 'Those who wear it become harder to recall. Even by those who love them.',
+      effects: [
+        { type: 'passive', reach: 'shadow', value: 0.12 },
+        { type: 'passive', reach: 'heart', value: -0.06 },
+        { type: 'reactive', trigger: 'entered_hex', effect: {
+          type: 'decay', reach: 'shadow', startValue: 0.04, changePerTick: -0.01, limitValue: 0.0, destroyAtLimit: true
+        }, cooldown: 8 },
+        { type: 'behavior_weight', reach: 'shadow', multiplier: 1.5 },
+      ],
     } as PossessionNodeProperties,
   },
 
   // ─── Vestments (T4 ×1) ──────────────────────────────────────────────
+  // NOTE: passive total 0.23 exceeds EFFECT_PER_ITEM_CAP=0.15.
+  // Preserved legacy reachBonus. Non-passive additions are modest.
   {
     id: 'reward_vestments_the_woven_sky',
     type: 'artifact',
@@ -301,10 +349,18 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'vestments',
       tier: 4,
       tags: ['#star', '#cloth', '#divine', '#ancient'],
-      mechanicalSummary: '+0.15 Star reach, +0.08 Veil reach',
-      reachBonus: { star: 0.15, veil: 0.08 },
+      mechanicalSummary: '+0.15 Star, +0.08 Veil, in mystical contexts: +0.03 Star, blocks curse/corruption/blight conditions, when damaged: +0.04 Veil ward for 6 ticks (12-tick cooldown)',
       lossCondition: 'permanent',
       flavorText: 'A robe of impossible blue, stitched with constellations that move. It weighs nothing.',
+      effects: [
+        { type: 'passive', reach: 'star', value: 0.15 },
+        { type: 'passive', reach: 'veil', value: 0.08 },
+        { type: 'conditional', condition: 'in_mystical', reach: 'star', value: 0.03 },
+        { type: 'reactive', trigger: 'damaged', effect: {
+          type: 'duration', ticks: 6, reach: 'veil', value: 0.04, destroyOnExpiry: true
+        }, cooldown: 12 },
+        { type: 'tag_immunity', tags: ['curse', 'corruption', 'blight'] },
+      ],
     } as PossessionNodeProperties,
   },
 

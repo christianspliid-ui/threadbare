@@ -103,9 +103,13 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       subcategory: 'vestments',
       tier: 1,
       tags: ['#cloth', '#travel', '#weather'],
-      mechanicalSummary: '+weather_resistance',
+      mechanicalSummary: '10% reduced movement cost, blocks cold conditions',
       lossCondition: 'breakable',
       flavorText: 'Dyed with muddy hues, designed to shed rain as much as attention.',
+      effects: [
+        { type: 'range_modifier', movementCostMultiplier: 0.9 },
+        { type: 'tag_immunity', tags: ['cold', 'frostbite'] },
+      ],
     } as PossessionNodeProperties,
   },
 
