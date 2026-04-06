@@ -50,6 +50,8 @@ import { spawnArmy } from './armySpawning';
 import { seedNpcsAtLocations } from './npcSeeding';
 import type { GameState } from '../types/gameState';
 import { ensureSublocations } from './sublocation';
+import { runSettlementGenome } from './settlementGenome';
+import { materializeGenome } from './settlementGenome/materialize';
 import { assignInitialAmbitions } from './ambitionAssignment';
 import { getTerrainSphereScores } from '../types/sphereAffinity';
 import type { SphereName as SphereNameType } from '../types/index';
@@ -989,8 +991,29 @@ export function seedWorld(
   }
 
   // ── Eager Base Sublocations ──────────────────────────────
+  const GENOME_SUBTYPES = new Set(['hamlet', 'town', 'city', 'capital']);
   for (let i = 0; i < locationIds.length; i++) {
-    ensureSublocations(graph, locationIds[i], seed + i * 7717);
+    const loc = graph.getNode(locationIds[i]);
+    const subtype = loc?.properties.locationSubtype as string;
+    if (loc && GENOME_SUBTYPES.has(subtype)) {
+      // Settlement genome pipeline for hamlet/town/city/capital
+      const cultureEdge = graph.getOutgoingEdges(locationIds[i], 'belongs_to')
+        .find(e => (e.properties as any)?.cultureLayer === 'current');
+      const sphereInfluence = (loc.properties.sphereInfluence ?? {}) as Record<string, number>;
+      const position = (loc.properties.position ?? 'heartland') as 'heartland' | 'borderland';
+
+      const genomeResult = runSettlementGenome(graph, locationIds[i], {
+        tier: subtype as any,
+        sphereInfluence,
+        position,
+        cultureId: cultureEdge?.target ?? null,
+        seed: seed + i * 7717,
+      });
+      materializeGenome(graph, locationIds[i], genomeResult, seed + i * 7717);
+    } else {
+      // Non-settlement locations use legacy ensureSublocations
+      ensureSublocations(graph, locationIds[i], seed + i * 7717);
+    }
   }
 
   // ── Resources ────────────────────────────────────────────
