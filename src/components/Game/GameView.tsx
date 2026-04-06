@@ -477,6 +477,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     return result;
   }, [gameState.graph, gameState.ascendantId, avatarNodeId, runtime.worldVersion]);
 
+  // ── Tugged agent IDs — drives vibration animation on thread lines ──
+  // Unattended tugs only; attended tugs have already been acknowledged by the player.
+  const tuggedAgentIds = useMemo<Set<string>>(() => {
+    const tugs = gameState.activeThreadTugs ?? [];
+    return new Set(tugs.filter(t => !t.attended).map(t => t.agentId));
+  }, [gameState.activeThreadTugs]);
+
   // ── Activity icon render data (active encounters → per-agent reach icons) ──
   // Rebuilds on worldVersion so icons appear/disappear as encounters start/end.
   const activityIconData = useMemo<ActivityIconData[]>(() => {
@@ -2111,6 +2118,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   sieges={siegeRenderData}
                   threadLines={threadLineData}
                   activityIcons={activityIconData}
+                  activeTugs={tuggedAgentIds}
                   visibilityMap={fogDisabled ? undefined : effectiveVisibilityMap}
                   fogEnabled={!fogDisabled}
                   showOrganicShore={showOrganicShore}

@@ -171,6 +171,8 @@ export interface HexMapV2Props {
   threadLines?: ThreadLineData[];
   /** Activity icon data — reach micro-icons for active encounters (Attention UI) */
   activityIcons?: ActivityIconData[];
+  /** Set of agent IDs with active (unattended) thread tugs — drives vibration animation. */
+  activeTugs?: Set<string>;
   /** Fog-of-war visibility map — keyed by "col,row". undefined = fog disabled (Plan 07-03+) */
   visibilityMap?: VisibilityMap;
   /** Whether the fog-of-war system is active. Default false. (Plan 07-03+) */
@@ -300,7 +302,7 @@ function createHoverOverlayMesh(size: number): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, battles, threadLines, activityIcons, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false },
+    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, battles, threadLines, activityIcons, activeTugs, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -1139,6 +1141,11 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     useEffect(() => {
       threadLineLayerRef.current?.rebuild(threadLines ?? []);
     }, [threadLines]);
+
+    // ── Active tugs update — drives vibration animation on tugged thread lines ──
+    useEffect(() => {
+      threadLineLayerRef.current?.setActiveTugs(activeTugs ?? new Set());
+    }, [activeTugs]);
 
     // ── Activity icon layer rebuild when activityIcons prop changes ──
     useEffect(() => {

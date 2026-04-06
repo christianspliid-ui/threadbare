@@ -37,6 +37,8 @@ import {
 } from '../../../engine/strands';
 import { useInterventionAudio } from './useInterventionAudio';
 import { getSphereColor } from '../../../data/sphereIcons';
+import { computeAttendCost } from '../../../engine/attentionPool';
+import type { CourtPosition } from '../../../types/influence';
 
 interface UseAgentInteractionParams {
   gameState: GameState;
@@ -630,10 +632,36 @@ export function useAgentInteraction({
     if (category === 'agent') {
       // Use existing agent selection flow for agents
       handleAgentSelect(nodeId);
+
+      // ── Thread tug attend: clicking a tugged agent spends attention and marks tug attended ──
+      const activeTug = (gameState.activeThreadTugs ?? []).find(
+        t => t.agentId === nodeId && !t.attended,
+      );
+      if (activeTug) {
+        // courtPosition on ThreadTug is CourtPosition — dormant agents should not generate tugs,
+        // but default to 'retinue' if one somehow slips through.
+        const safePosition = (activeTug.courtPosition !== 'dormant'
+          ? activeTug.courtPosition
+          : 'retinue') as Exclude<CourtPosition, 'dormant'>;
+        const cost = computeAttendCost(activeTug.threatLevel, safePosition);
+
+        // Deduct from attention pool (in-place mutation — same pattern as graph mutations)
+        const ascNode = gameState.graph.getNode(gameState.ascendantId);
+        if (ascNode) {
+          const currentPool = (ascNode.properties.attentionPool as number) ?? 6;
+          ascNode.properties.attentionPool = Math.max(0, currentPool - cost);
+        }
+
+        // Mark tug as attended in place
+        (activeTug as { attended: boolean }).attended = true;
+
+        // Trigger re-render so attention pool UI reflects the spend
+        setGameState(s => ({ ...s }));
+      }
     }
     setSelectedThreadNode({ nodeId, category });
     setSelectedHexCoord(null);
-  }, [handleAgentSelect]);
+  }, [handleAgentSelect, gameState, setGameState]);
 
   const handleThreadDetailClose = useCallback(() => {
     setSelectedThreadNode(null);
