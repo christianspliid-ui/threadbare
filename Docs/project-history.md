@@ -7,6 +7,7 @@
 
 Detailed per-phase implementation status for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
+- ✅ Settlement Genome Pipeline: 5-pass composition (infrastructure → culture → spheres → reaches → archetype recognition) replacing `ensureSublocations` for settlements. Phase 6.636 reassessment, vitality drift, culture trait gating, 8 archetypes, `genome` CLI command, archetype in HexChronicle/HexSidebar. 108+ tests. Design: `Docs/plans/2026-04-06-settlement-genome-design.md`. (2026-04-06)
 - ✅ Ambient Sound System: 3-channel audio (Music/Background/UI) with terrain/location/encounter context-driven ambient. BackgroundChannel 4-priority stack via useAmbientContext hook. MusicChannel replaces themeAudio.ts. Volume sliders + master mute in SettingsPanel. 5 new test files. (2026-04-06)
 - ✅ Game Codex: browsable content catalog (?view=codex) — 5 categories (Divine Actions, Mortal Actions, Possessions, Conditions, Agreements), 171 entries, sidebar tree, card grid, detail panel. Lazy-loaded. (2026-04-06)
 - ✅ Attachment Slot System: per-slot caps (13 possession + 5 condition slots, 36 base capacity), SlotBonusEffect slot expansion, edge-backed agreement effects, fixed-point cascade deactivation, disposal timeout, condition overflow checks, grouped slot-aware AttachmentsTab UI, agreement reward catalog. 6 new engine modules, 47 new tests. Design: `Docs/plans/2026-04-06-attachment-slot-system-design.md`. (2026-04-06)

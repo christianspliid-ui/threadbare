@@ -18,6 +18,8 @@ Design: `Docs/plans/2026-04-05-attention-tier-model-design.md`. Plan: `Docs/plan
 
 ## Recent Completions (2026-04-06)
 
+- **Settlement Genome Pipeline:** Five-pass composition system (infrastructure → culture → spheres → reaches → archetype recognition) gives settlements emergent identity from hex environment, cultural heritage, and economic activity. Replaces `ensureSublocations` for settlement types. Phase 6.636 reassessment on tier changes. Vitality drift model. Culture trait nodes with `has_trait` edges. Archetype displayed in HexChronicle and HexSidebar. `genome` CLI command. 4 trace categories, 8 archetypes, 17 tunable constants, 108+ new tests across 8 test files. Design: `Docs/plans/2026-04-06-settlement-genome-design.md`.
+
 - **Ambient Sound System:** 3-channel audio (Music/Background/UI). BackgroundChannel 4-priority stack driven by terrain/location/encounter context via `useAmbientContext`. MusicChannel replaces themeAudio.ts with encounter track swap. Volume sliders + master mute in SettingsPanel. `onCameraCenterHex` prop added to HexMapV2.
 
 - **Game Codex:** Browsable content catalog at `?view=codex`. 5 categories (Divine Actions, Mortal Actions, Possessions, Conditions, Agreements), 171 entries. Sidebar tree with subcategory filtering, responsive card grid, detail panel with prose and mechanics. Lazy-loaded, no game state dependency.
