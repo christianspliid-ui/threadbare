@@ -433,3 +433,51 @@ export interface MeetingEncounterResult {
   /** Location ID where the agent was created */
   locationId: string;
 }
+
+// ─── Dilemma Resonance & Lens Overlay (Enriched Templates) ──────
+
+/**
+ * Tags that allow a dilemma to be scored for resonance against the
+ * AscendantLens. Used by the dilemma selector to pick the most
+ * narratively fitting dilemmas for a given god.
+ */
+export interface DilemmaResonanceTags {
+  /** Core emotional registers of this dilemma (e.g. 'loss', 'ambition') */
+  emotionalRegister: readonly string[];
+  /** Hunger IDs or resonance tags this dilemma resonates with */
+  hungerResonance: readonly string[];
+  /** Drive tags this dilemma resonates with */
+  driveResonance: readonly string[];
+  /** Tags that make this dilemma a poor fit (negative scoring) */
+  incompatibleWith: readonly string[];
+}
+
+/**
+ * A Hunger-specific prose overlay for a dilemma template.
+ * When the god's Hunger matches `hungerId`, the overlay prose replaces
+ * or augments the default template prose.
+ */
+export interface LensOverlay {
+  /** Which Hunger this overlay is written for */
+  hungerId: string;
+  /** Perception prose — how this god sees the dilemma situation */
+  perceptionProse: string;
+  /** Resonance threshold above which echo prose fires (0-1) */
+  echoThreshold?: number;
+  /** Deep-resonance prose — surfaces when the dilemma strikes close to the god's drive */
+  echoProse?: string;
+}
+
+/**
+ * An enriched dilemma template with resonance scoring data and
+ * Hunger-specific lens overlays. Extends the base DilemmaTemplate
+ * with the data needed for the Meet The First redesign.
+ */
+export interface EnrichedDilemmaTemplate extends DilemmaTemplate {
+  /** Resonance tags for scoring against the AscendantLens */
+  resonance: DilemmaResonanceTags;
+  /** Per-Hunger prose overlays */
+  lensOverlays: readonly LensOverlay[];
+  /** Visual/thematic tags for art direction */
+  artTags: readonly string[];
+}
