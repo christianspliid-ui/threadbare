@@ -25,18 +25,32 @@ describe('RemembranceFlow', () => {
     expect(images.length).toBeGreaterThanOrEqual(4);
   });
 
-  it('transitions from stirring to origin on image click', async () => {
+  it('transitions from stirring to origin on double-click (focus then confirm)', async () => {
     const onComplete = vi.fn();
     render(<RemembranceFlow seed={42} onComplete={onComplete} />);
     const firstImage = screen.getAllByTestId(/^stirring-/)[0];
-    fireEvent.click(firstImage);
 
-    // StirringBeat uses setTimeout(600) before calling onSelect
+    // First click = focus the image
     await act(async () => {
-      vi.advanceTimersByTime(600);
+      fireEvent.click(firstImage);
+    });
+    expect(screen.getByText(/click again to choose/i)).toBeInTheDocument();
+
+    // Second click = confirm selection
+    await act(async () => {
+      fireEvent.click(firstImage);
     });
 
-    // The OriginBeat heading is "You remember..." — use a precise text match
+    // StirringBeat uses setTimeout(800) before calling onSelect
+    await act(async () => {
+      vi.advanceTimersByTime(1000);
+    });
+
+    // Also advance OriginBeat's entrance timers (200ms + 800ms)
+    await act(async () => {
+      vi.advanceTimersByTime(1000);
+    });
+
     expect(screen.getByText('You remember...')).toBeInTheDocument();
   });
 
@@ -44,15 +58,21 @@ describe('RemembranceFlow', () => {
     const onComplete = vi.fn();
     render(<RemembranceFlow seed={42} onComplete={onComplete} />);
     const firstImage = screen.getAllByTestId(/^stirring-/)[0];
-    fireEvent.click(firstImage);
 
+    // Focus then confirm
     await act(async () => {
-      vi.advanceTimersByTime(600);
+      fireEvent.click(firstImage);
+    });
+    await act(async () => {
+      fireEvent.click(firstImage);
     });
 
-    // origin-continue is the Continue button; exclude it — fragment cards use pattern origin-origin.*
+    // Advance through StirringBeat timeout + OriginBeat entrance timers
+    await act(async () => {
+      vi.advanceTimersByTime(2000);
+    });
+
     const fragments = screen.getAllByTestId(/^origin-origin\./);
-    // With min-score filtering, we get 1-3 fragments (only those with positive cluster overlap)
     expect(fragments.length).toBeGreaterThanOrEqual(1);
     expect(fragments.length).toBeLessThanOrEqual(3);
   });
