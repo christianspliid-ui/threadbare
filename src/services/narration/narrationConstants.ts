@@ -18,3 +18,18 @@ export const NARRATION_MAX_TEXT_LENGTH = 1500;
 
 /** Inserted between chronicle sections for a natural pause. */
 export const NARRATION_SECTION_PAUSE = '. ';
+
+/** HuggingFace model ID for browser-side TTS. */
+export const NARRATION_WORKER_MODEL_ID = 'onnx-community/Kokoro-82M-v1.0-ONNX';
+
+/** ONNX quantization level — q8 is ~92MB, good quality/size tradeoff. */
+export const NARRATION_WORKER_DTYPE = 'q8';
+
+/** WASM by default; kokoro-js auto-upgrades to WebGPU if available. */
+export const NARRATION_WORKER_DEVICE = 'wasm';
+
+/** Timeout for probing the Python TTS server (ms). */
+export const NARRATION_SERVER_PROBE_TIMEOUT = 5000;
+
+/** Silence duration between sections in worker mode (seconds). */
+export const NARRATION_WORKER_SECTION_SILENCE = 0.6;
