@@ -90,7 +90,7 @@ import { AscendantSheet } from './AscendantSheet';
 import { EventPopup } from './EventPopup';
 import { SettingsPanel } from './SettingsPanel';
 import { TieredEncounterModal, courtPositionToThreadTier } from './TieredEncounterModal';
-import { MeetingEncounterModal } from './MeetingEncounterModal';
+import { MeetTheFirstFlow } from '../MeetTheFirst/MeetTheFirstFlow';
 import { JourneyVignetteModal } from './JourneyVignetteModal';
 import { PremonitionModal } from './PremonitionModal';
 import type { WhisperNudge, CompulsionCandidate } from '../../types/premonition';
@@ -1819,10 +1819,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (!isMeetTheFirstAvailable(gameState.graph, gameState.ascendantId, gameState.tick)) return;
     const state = createMeetingEncounterState(
       locationId, gameState.ascendantId, gameState.tick,
-      ascendantLens, archetype.sphereAlignment.primary, gameState.seed,
     );
     setMeetingState(state);
-  }, [gameState.graph, gameState.ascendantId, gameState.tick, ascendantLens, archetype.sphereAlignment.primary, gameState.seed]);
+  }, [gameState.graph, gameState.ascendantId, gameState.tick]);
 
   const handleMeetingComplete = useCallback((result: MeetingEncounterResult) => {
     const agentId = createAgentFromMeeting(gameState.graph, result, gameState.ascendantId, gameState.tick);
@@ -2738,23 +2737,17 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         />
       )}
 
-      {/* Meeting encounter modal */}
-      {meetingState && (
-        <MeetingEncounterModal
-          open={true}
-          onClose={handleMeetingClose}
-          onComplete={handleMeetingComplete}
-          state={meetingState}
-          onStateChange={setMeetingState}
+      {/* Meeting encounter — full-screen narrative flow */}
+      {meetingState && ascendantIdentity && (
+        <MeetTheFirstFlow
+          ascendantIdentity={ascendantIdentity}
           graph={gameState.graph}
           ascendantId={gameState.ascendantId}
-          ascendantSphere={archetype.sphereAlignment.primary}
-          ascendantSecondSphere={archetype.sphereAlignment.secondary}
           locationId={meetingState.locationId}
-          locationCultureId={(gameState.graph.getNode(meetingState.locationId)?.properties.cultureId as string) ?? 'default'}
-          locationSubtype={(gameState.graph.getNode(meetingState.locationId)?.properties.locationSubtype as string) ?? 'village'}
           seed={gameState.seed}
           tick={gameState.tick}
+          onComplete={handleMeetingComplete}
+          onClose={handleMeetingClose}
         />
       )}
 

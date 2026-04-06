@@ -15,8 +15,7 @@ import type { WorldGraph } from './graph';
 import type { ReachDomain } from '../types/traits';
 import type { SphereName } from '../types/index';
 import type { AxiologicalProfile, ValuePair } from '../types/agent';
-import type { AscendantLens } from '../types/hunger';
-import { deriveIntentFromHunger } from '../types/hunger';
+// AscendantLens + deriveIntentFromHunger removed — narrative flow derives intent in the sensing beat
 import { REACH_VALUE_PAIR, VALUE_PAIRS } from '../types/agent';
 import { REACH_DOMAINS } from '../types/traits';
 import { DEFAULT_REPUTATION } from '../types/disposition';
@@ -713,40 +712,22 @@ export function buildNarrativeResult(input: NarrativeResultInput): MeetingEncoun
 /**
  * Create initial meeting encounter state.
  *
- * When an AscendantLens is provided, intent fields (primary/secondary reach
- * and sphere) are auto-derived from the Hunger rather than requiring player
- * selection. This is the default path until the UI supports manual intent.
+ * The new narrative flow generates candidates via the orchestrator during
+ * the sensing beat, so we no longer derive intent here.
  */
 export function createMeetingEncounterState(
   locationId: string,
   ascendantId: string,
   tick: number,
-  ascendantLens?: AscendantLens,
-  ascendantSphere?: SphereName,
-  seed?: number,
 ): MeetingEncounterState {
-  const state: MeetingEncounterState = {
+  return {
     id: `meeting_${tick}_${locationId}`,
-    currentStep: 'seeking_threads',
+    currentStep: 'sensing',
     locationId,
     ascendantId,
     startedTick: tick,
     status: 'active',
-    accumulatedProfile: {},
-    accumulatedGateTags: [],
-    accumulatedTraitSeeds: [],
-    dilemmaChoiceRecords: [],
   };
-
-  // Auto-derive intent from Hunger if lens is provided
-  if (ascendantLens && ascendantSphere && seed != null) {
-    const intent = deriveIntentFromHunger(ascendantLens, ascendantSphere, seed);
-    state.intentPrimaryReach = intent.primaryReach;
-    state.intentSecondaryReach = intent.secondaryReach;
-    state.intentSphere = intent.sphere;
-  }
-
-  return state;
 }
 
 /**
