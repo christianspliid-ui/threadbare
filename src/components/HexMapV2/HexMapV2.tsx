@@ -140,6 +140,67 @@ function buildLocationOffsetLookup(
   return lookup;
 }
 
+// ─── Destination marker (ascendant move order target) ────────────────────────
+
+const DESTINATION_MARKER_CONSTANTS = {
+  /** Pulse speed in radians per second */
+  PULSE_SPEED: 2.8,
+  /** Minimum opacity during pulse */
+  PULSE_MIN: 0.25,
+  /** Maximum opacity during pulse */
+  PULSE_MAX: 1.0,
+  /** X arm length as a fraction of HEX_SIZE */
+  X_ARM_RATIO: 0.38,
+  /** Ring color — white so it contrasts with the gold selection ring */
+  COLOR: 0xffffff,
+} as const;
+
+/**
+ * Builds the destination marker for the ascendant's move order target:
+ * a white hex outline ring + an X cross, both pulsed each frame.
+ */
+function createDestinationMarkerGroup(size: number): THREE.Group {
+  const group = new THREE.Group();
+
+  // Hex outline — same shape as the selection ring, different color
+  const ringPoints: THREE.Vector3[] = [];
+  for (let i = 0; i < 6; i++) {
+    const angle = (Math.PI / 180) * (60 * i);
+    ringPoints.push(new THREE.Vector3(size * Math.cos(angle), size * Math.sin(angle), 0));
+  }
+  const ringGeo = new THREE.BufferGeometry().setFromPoints(ringPoints);
+  const ringMat = new THREE.LineBasicMaterial({
+    color: DESTINATION_MARKER_CONSTANTS.COLOR,
+    transparent: true,
+    opacity: DESTINATION_MARKER_CONSTANTS.PULSE_MAX,
+  });
+  const ring = new THREE.LineLoop(ringGeo, ringMat);
+  ring.renderOrder = RENDER_ORDER.GRID + 1;
+  group.add(ring);
+
+  // X cross — two diagonal line segments
+  const arm = size * DESTINATION_MARKER_CONSTANTS.X_ARM_RATIO;
+  const xGeo = new THREE.BufferGeometry();
+  xGeo.setAttribute(
+    'position',
+    new THREE.Float32BufferAttribute([
+      -arm,  arm, 0,   arm, -arm, 0,   // \ diagonal
+       arm,  arm, 0,  -arm, -arm, 0,   // / diagonal
+    ], 3),
+  );
+  const xMat = new THREE.LineBasicMaterial({
+    color: DESTINATION_MARKER_CONSTANTS.COLOR,
+    transparent: true,
+    opacity: DESTINATION_MARKER_CONSTANTS.PULSE_MAX,
+  });
+  const cross = new THREE.LineSegments(xGeo, xMat);
+  cross.renderOrder = RENDER_ORDER.GRID + 1;
+  group.add(cross);
+
+  group.visible = false;
+  return group;
+}
+
 // ─── Props & Handle ───────────────────────────────────────────────────────────
 
 export interface HexMapV2Props {
@@ -191,6 +252,8 @@ export interface HexMapV2Props {
   showOrganicShore?: boolean;
   /** When true, suppresses label overlays (region/location). Use when a full-screen overlay covers the map. */
   overlayOpen?: boolean;
+  /** Target hex for the ascendant's active move order. Shows a pulsing X destination marker. */
+  moveDestinationHex?: HexCoord | null;
 }
 
 export interface HexMapV2Handle {
@@ -312,7 +375,7 @@ function createHoverOverlayMesh(size: number): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, battles, threadLines, activityIcons, activeTugs, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false },
+    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, battles, threadLines, activityIcons, activeTugs, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, moveDestinationHex },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -349,6 +412,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const activeBurstsRef = useRef<ActiveBurst[]>([]);
     // Clock ref — exposed for imperative handle (anomaly reveal flash timing)
     const clockRef = useRef<THREE.Clock | null>(null);
+
+    // Destination marker ref — ascendant move order target, pulsed each frame
+    const destinationMarkerRef = useRef<THREE.Group | null>(null);
 
     // Agent animation state refs — stable across renders, mutated by render loop
     const agentSpriteGroupRef = useRef<AgentSpriteGroup | null>(null);
@@ -750,6 +816,24 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         const selectionRing = createHexRingMesh(HEX_CONSTANTS.HEX_SIZE);
         scene.add(selectionRing);
 
+        // Destination marker: pulsing white ring + X cross for active move order target
+        const destinationMarker = createDestinationMarkerGroup(HEX_CONSTANTS.HEX_SIZE);
+        scene.add(destinationMarker);
+        destinationMarkerRef.current = destinationMarker;
+
+        const updateDestinationMarker = (hex: HexCoord | null) => {
+          if (hex) {
+            const world = hexToWorld(hex, HEX_CONSTANTS.HEX_SIZE);
+            destinationMarker.position.set(world.x, world.y, 0.1);
+            destinationMarker.visible = true;
+          } else {
+            destinationMarker.visible = false;
+          }
+        };
+        (canvas as HTMLCanvasElement & { _updateDestinationMarker?: (h: HexCoord | null) => void })
+          ._updateDestinationMarker = updateDestinationMarker;
+        updateDestinationMarker(moveDestinationHex ?? null);
+
         // Hover overlay mesh (initially hidden)
         const hoverOverlay = createHoverOverlayMesh(HEX_CONSTANTS.HEX_SIZE);
         scene.add(hoverOverlay);
@@ -835,6 +919,17 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           // Fade and dispose expired movement trail segments
           const tGroup = trailGroupRef.current;
           if (tGroup) updateTrails(tGroup);
+          // Pulse destination marker (ascendant move order X)
+          const destMarker = destinationMarkerRef.current;
+          if (destMarker?.visible) {
+            const t = clock.getElapsedTime();
+            const pulse = DESTINATION_MARKER_CONSTANTS.PULSE_MIN
+              + (DESTINATION_MARKER_CONSTANTS.PULSE_MAX - DESTINATION_MARKER_CONSTANTS.PULSE_MIN)
+              * (0.5 + 0.5 * Math.sin(t * DESTINATION_MARKER_CONSTANTS.PULSE_SPEED));
+            for (const child of destMarker.children) {
+              (child as THREE.LineLoop | THREE.LineSegments).material.opacity = pulse;
+            }
+          }
           // Pulse battle/siege indicators
           const battleLayer = battleIndicatorLayerRef.current;
           if (battleLayer && battleLayer.materials.length > 0) {
@@ -1167,6 +1262,14 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       }
     }, [selectedHex]);
 
+    // Update destination marker when moveDestinationHex prop changes
+    useEffect(() => {
+      const canvas = canvasRef.current as (HTMLCanvasElement & {
+        _updateDestinationMarker?: (h: HexCoord | null) => void;
+      }) | null;
+      canvas?._updateDestinationMarker?.(moveDestinationHex ?? null);
+    }, [moveDestinationHex]);
+
     // ── Agent animation — delegated to useAgentAnimations hook ──
     useAgentAnimations({
       agents,
@@ -1248,10 +1351,11 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
 
       const hex = screenToHex(e.nativeEvent.offsetX, e.nativeEvent.offsetY, camera, canvas);
       if (hex) {
-        // Block clicks on unexplored hexes (fog of war)
+        // Block clicks on unexplored hexes (fog of war).
+        // !hexVis catches hexes absent from the map (never seen) — same as 'unexplored'.
         if (fogEnabledRef.current && visibilityMapRef.current) {
           const hexVis = visibilityMapRef.current.get(`${hex.col},${hex.row}`);
-          if (hexVis?.state === 'unexplored') return;
+          if (!hexVis || hexVis.state === 'unexplored') return;
         }
         onHexClick(hex);
       }

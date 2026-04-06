@@ -2277,6 +2277,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   fogEnabled={!fogDisabled}
                   showOrganicShore={showOrganicShore}
                   overlayOpen={scryVisible || harvestResult !== null}
+                  moveDestinationHex={avatarTargetHex}
                   onHexClick={handleHexClickFull}
                   onHexHover={setHoveredHex}
                   onAgentClick={(agentId) => handleThreadNodeSelect(agentId, 'agent')}
