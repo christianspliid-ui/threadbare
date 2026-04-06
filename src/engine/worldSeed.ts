@@ -1282,10 +1282,18 @@ export function seedWorld(
     if (!actorNode) continue;
 
     const caps = (actorNode.properties.domainCapabilities as Record<ReachDomain, number>) ?? {} as Record<ReachDomain, number>;
+    // Include node ID, name, and tags so culture traits match by ID as well as name
     const traitEdges = graph.getOutgoingEdges(indId, 'has_trait');
-    const traits = traitEdges
-      .map(e => graph.getNode(e.target)?.name ?? e.target)
-      .filter(Boolean);
+    const traits: string[] = [];
+    for (const e of traitEdges) {
+      traits.push(e.target); // canonical: trait node ID (e.g. trait.culture.culture_0)
+      const traitNode = graph.getNode(e.target);
+      if (traitNode) {
+        traits.push(traitNode.name); // backward-compat: trait name
+        const tags = traitNode.properties.tags as string[] | undefined;
+        if (tags) traits.push(...tags);
+      }
+    }
 
     const snapshot: AmbitionAgentSnapshot = {
       domainCapabilities: caps,

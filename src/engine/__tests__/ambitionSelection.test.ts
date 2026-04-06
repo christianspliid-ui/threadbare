@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   selectAmbitions,
+  passesEligibility,
   type AmbitionAgentSnapshot,
 } from '../ambitionSelection';
 import type { AmbitionTemplate } from '../../types/ambition';
@@ -88,6 +89,30 @@ function makeAgent(overrides: Partial<AmbitionAgentSnapshot> = {}): AmbitionAgen
   };
 }
 
+function makeTemplate(overrides: Partial<AmbitionTemplate> = {}): AmbitionTemplate {
+  return {
+    id: 'test-template',
+    displayName: 'Test',
+    category: 'mastery',
+    reachFloors: {},
+    requiredTraits: [],
+    blockingTraits: [],
+    sphereAffinities: [],
+    bondModifiers: [],
+    boostingTraits: [],
+    reachAffinity: {},
+    milestones: [],
+    completion: { requires: 1, of: 1 },
+    abandonmentTriggers: [],
+    abandonmentCooldown: 5,
+    selectionProse: [],
+    milestoneProse: {},
+    completionProse: [],
+    abandonmentProse: [],
+    ...overrides,
+  };
+}
+
 // --- selectAmbitions ---
 
 describe('selectAmbitions', () => {
@@ -162,5 +187,27 @@ describe('selectAmbitions', () => {
       maxAmbitions: 3,
     });
     expect(result).toHaveLength(0);
+  });
+});
+
+// --- passesEligibility trait gating ---
+
+describe('passesEligibility trait gating', () => {
+  it('matches on trait node ID (culture gating)', () => {
+    const agent = makeAgent({ traits: ['trait.culture.culture_0', 'Daru'] });
+    const template = makeTemplate({ requiredTraits: ['trait.culture.culture_0'] });
+    expect(passesEligibility(template, agent)).toBe(true);
+  });
+
+  it('still matches on trait name (backward compat)', () => {
+    const agent = makeAgent({ traits: ['trait.culture.culture_0', 'Daru'] });
+    const template = makeTemplate({ requiredTraits: ['Daru'] });
+    expect(passesEligibility(template, agent)).toBe(true);
+  });
+
+  it('fails when agent lacks required trait', () => {
+    const agent = makeAgent({ traits: [] });
+    const template = makeTemplate({ requiredTraits: ['trait.culture.culture_0'] });
+    expect(passesEligibility(template, agent)).toBe(false);
   });
 });

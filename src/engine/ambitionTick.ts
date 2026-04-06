@@ -169,11 +169,19 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
         // Build agent snapshot from graph state
         const caps = (actor.properties.domainCapabilities as Record<ReachDomain, number>) ?? {} as Record<ReachDomain, number>;
 
-        // Get traits from has_trait edges
+        // Get traits from has_trait edges — include node ID, name, and tags
+        // so culture traits like trait.culture.culture_0 match by ID as well as name
         const traitEdges = graph.getOutgoingEdges(actor.id, 'has_trait');
-        const traits = traitEdges
-          .map(e => graph.getNode(e.target)?.name ?? e.target)
-          .filter(Boolean);
+        const traits: string[] = [];
+        for (const e of traitEdges) {
+          traits.push(e.target); // canonical: trait node ID (e.g. trait.culture.culture_0)
+          const traitNode = graph.getNode(e.target);
+          if (traitNode) {
+            traits.push(traitNode.name); // backward-compat: trait name
+            const tags = traitNode.properties.tags as string[] | undefined;
+            if (tags) traits.push(...tags);
+          }
+        }
 
         // Get cultural spheres from belongs_to edges
         const cultureEdges = graph.getOutgoingEdges(actor.id, 'belongs_to');
