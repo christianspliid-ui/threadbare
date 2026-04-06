@@ -12,18 +12,18 @@ interface StirringBeatProps {
  * x/y as % offset from center. Scale simulates depth (smaller = further away).
  */
 const REST_POSITIONS = [
-  { x: -24, y: -15, scale: 0.82, rotate: -1.5 },
-  { x: 22,  y: -11, scale: 0.72, rotate: 1.2 },
-  { x: -20, y: 17,  scale: 0.76, rotate: 0.8 },
-  { x: 23,  y: 19,  scale: 0.88, rotate: -0.6 },
+  { x: -26, y: -16, scale: 0.88, rotate: -1.5 },
+  { x: 24,  y: -12, scale: 0.78, rotate: 1.2 },
+  { x: -22, y: 18,  scale: 0.82, rotate: 0.8 },
+  { x: 25,  y: 20,  scale: 0.94, rotate: -0.6 },
 ];
 
 /** Peripheral positions when another image is focused. */
 const PERIPHERAL_POSITIONS = [
-  { x: -40, y: -6,  scale: 0.45, rotate: -3 },
-  { x: 42,  y: -10, scale: 0.40, rotate: 2.5 },
-  { x: -38, y: 14,  scale: 0.42, rotate: 1.8 },
-  { x: 40,  y: 16,  scale: 0.48, rotate: -2 },
+  { x: -40, y: -6,  scale: 0.50, rotate: -3 },
+  { x: 42,  y: -10, scale: 0.45, rotate: 2.5 },
+  { x: -38, y: 14,  scale: 0.47, rotate: 1.8 },
+  { x: 40,  y: 16,  scale: 0.52, rotate: -2 },
 ];
 
 export function StirringBeat({ images, onSelect }: StirringBeatProps) {
@@ -136,7 +136,7 @@ export function StirringBeat({ images, onSelect }: StirringBeatProps) {
             style={{
               top: '50%',
               left: '50%',
-              width: 'min(560px, 42vw)',
+              width: 'min(1100px, 65vw)',
               aspectRatio: '16/9',
               background: 'transparent',
               border: 'none',
