@@ -74,9 +74,19 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
 
   const isBrowsingHunger = step === 'hunger' && focusedHungerId !== null && !selectedHunger;
 
-  const hungerPromptText = !focusedHungerId
-    ? null // show the two-line prompt
-    : 'Click again to choose. Or reach for another.';
+  const courtOptions = selectedHunger?.courtOptions ?? [];
+  const selectedCourtIndex = courtOptions.findIndex(c => c.courtType === selectedCourt);
+
+  const handleCourtNav = useCallback((direction: -1 | 1) => {
+    if (!courtOptions.length) return;
+    const next = (selectedCourtIndex + direction + courtOptions.length) % courtOptions.length;
+    setSelectedCourt(courtOptions[next].courtType);
+  }, [selectedCourtIndex, courtOptions]);
+
+  const currentCourtOption = courtOptions[selectedCourtIndex] ?? null;
+  const currentCourtImagePath = currentCourtOption
+    ? `/assets/remembrance/court/${currentCourtOption.courtType === 'high_house' ? 'high-house' : currentCourtOption.courtType}.png`
+    : '';
 
   return (
     <div className="h-screen relative overflow-hidden flex flex-col items-center justify-center"
@@ -206,10 +216,10 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
                 <p style={{
                   fontFamily: 'Georgia, "Times New Roman", serif',
                   fontStyle: 'italic',
-                  fontSize: '1.15rem',
+                  fontSize: '1.5rem',
                   lineHeight: '1.85',
                   color: 'rgba(212,196,158,0.75)',
-                  maxWidth: '680px',
+                  maxWidth: '780px',
                   textAlign: 'center',
                   marginBottom: '16px',
                 }}>
@@ -218,7 +228,7 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
                 <p style={{
                   fontFamily: 'Georgia, "Times New Roman", serif',
                   fontStyle: 'italic',
-                  fontSize: '0.85rem',
+                  fontSize: '1.1rem',
                   color: 'rgba(160,140,130,0.25)',
                   letterSpacing: '0.06em',
                 }}>
@@ -232,12 +242,12 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
           {isBrowsingHunger && (
             <>
               <button type="button" onClick={() => handleHungerNav(-1)} className="absolute cursor-pointer"
-                style={{ left: '2vw', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', padding: '2rem 1.5rem', zIndex: 20, color: 'rgba(160,140,180,0.3)', fontSize: '3rem', fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif', lineHeight: 1, transition: 'color 0.3s ease' }}
+                style={{ left: '2vw', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', padding: '2rem 1.5rem', zIndex: 20, color: 'rgba(160,140,180,0.3)', fontSize: '9rem', fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif', lineHeight: 1, transition: 'color 0.3s ease' }}
                 onMouseEnter={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.7)'; }}
                 onMouseLeave={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.3)'; }}
                 aria-label="Previous hunger">&#x2039;</button>
               <button type="button" onClick={() => handleHungerNav(1)} className="absolute cursor-pointer"
-                style={{ right: '2vw', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', padding: '2rem 1.5rem', zIndex: 20, color: 'rgba(160,140,180,0.3)', fontSize: '3rem', fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif', lineHeight: 1, transition: 'color 0.3s ease' }}
+                style={{ right: '2vw', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', padding: '2rem 1.5rem', zIndex: 20, color: 'rgba(160,140,180,0.3)', fontSize: '9rem', fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif', lineHeight: 1, transition: 'color 0.3s ease' }}
                 onMouseEnter={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.7)'; }}
                 onMouseLeave={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.3)'; }}
                 aria-label="Next hunger">&#x203a;</button>
@@ -246,110 +256,105 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
         </>
       )}
 
-      {/* ── Court geometry ── */}
-      {step === 'court' && selectedHunger && (
+      {/* ── Court geometry — full-bleed ── */}
+      {step === 'court' && selectedHunger && currentCourtOption && (
         <>
-          <p className="mb-14 transition-all duration-1000"
+          {/* Prompt */}
+          <p className="absolute left-0 right-0 text-center transition-all duration-1000"
              style={{
+               top: '5vh',
                fontFamily: 'Georgia, "Times New Roman", serif',
                fontStyle: 'italic',
-               fontSize: '1.4rem',
-               color: 'rgba(180,180,138,0.45)',
+               fontSize: '1.5rem',
+               color: 'rgba(180,180,138,0.35)',
                letterSpacing: '0.06em',
                opacity: textVisible ? 1 : 0,
                transform: textVisible ? 'translateY(0)' : 'translateY(12px)',
+               zIndex: 20,
+               pointerEvents: 'none',
              }}>
             The power settles into a pattern...
           </p>
 
-          <div className="flex gap-12 transition-all duration-1000"
-               style={{
-                 width: 'min(900px, 80vw)',
-                 opacity: contentVisible ? 1 : 0,
-                 transform: contentVisible ? 'translateY(0)' : 'translateY(16px)',
-               }}>
-            {selectedHunger.courtOptions.map(option => {
-              const isChosen = selectedCourt === option.courtType;
-              const courtImagePath = `/assets/remembrance/court/${option.courtType === 'high_house' ? 'high-house' : option.courtType}.png`;
-              return (
-                <button
-                  key={option.courtType}
-                  type="button"
-                  onClick={() => setSelectedCourt(option.courtType)}
-                  data-testid={`court-${option.courtType}`}
-                  className="flex-1 text-left cursor-pointer transition-all duration-500"
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    padding: '0 4px',
-                    opacity: isChosen ? 1 : 0.4,
-                  }}
-                >
-                  <div
-                    className="w-full bg-cover bg-center transition-all duration-700"
-                    style={{
-                      aspectRatio: '16/9',
-                      backgroundImage: `url(${courtImagePath})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                      maskImage: 'radial-gradient(ellipse 90% 85% at center, black 35%, transparent 100%)',
-                      WebkitMaskImage: 'radial-gradient(ellipse 90% 85% at center, black 35%, transparent 100%)',
-                      filter: isChosen ? 'brightness(1)' : 'brightness(0.5)',
-                    }}
-                  />
-                  <p className="mt-4" style={{
-                    fontFamily: 'Georgia, "Times New Roman", serif',
-                    fontStyle: 'italic',
-                    fontSize: '1.05rem',
-                    lineHeight: '1.8',
-                    color: isChosen ? 'rgba(180,164,138,0.7)' : 'rgba(180,164,138,0.3)',
-                    transition: 'color 0.5s ease',
-                  }}>
-                    {option.prose}
-                  </p>
-                  {option.isDefault && isChosen && (
-                    <span style={{
-                      fontFamily: 'Georgia, "Times New Roman", serif',
-                      fontStyle: 'italic',
-                      fontSize: '0.75rem',
-                      color: 'rgba(120,110,90,0.4)',
-                      display: 'block',
-                      marginTop: '12px',
-                    }}>
-                      (this feels natural)
-                    </span>
-                  )}
-                  {/* Faint underline for chosen */}
-                  {isChosen && (
-                    <div style={{
-                      height: '1px',
-                      marginTop: '16px',
-                      background: 'linear-gradient(to right, transparent, rgba(138,122,74,0.3), transparent)',
-                    }} />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-
-          <button
-            type="button"
-            onClick={handleCourtConfirm}
-            data-testid="court-confirm"
-            className="mt-14 cursor-pointer transition-all duration-500"
+          {/* Full-bleed court art */}
+          <div
+            className="absolute inset-0 transition-all duration-1000"
             style={{
-              background: 'transparent',
-              border: 'none',
-              fontFamily: 'Georgia, "Times New Roman", serif',
-              fontStyle: 'italic',
-              fontSize: '1rem',
-              color: 'rgba(180,164,138,0.5)',
-              letterSpacing: '0.08em',
-              opacity: contentVisible ? 1 : 0,
+              backgroundImage: `url(${currentCourtImagePath})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              opacity: contentVisible ? 0.8 : 0,
+              maskImage: 'radial-gradient(ellipse 90% 85% at 50% 40%, black 25%, transparent 80%)',
+              WebkitMaskImage: 'radial-gradient(ellipse 90% 85% at 50% 40%, black 25%, transparent 80%)',
+            }}
+          />
+
+          {/* Bottom reading zone */}
+          <div
+            className="absolute bottom-0 left-0 right-0 flex flex-col items-center"
+            style={{
+              padding: '0 8vw 5vh',
+              background: 'linear-gradient(to top, rgba(10,10,15,0.95) 0%, rgba(10,10,15,0.8) 30%, rgba(10,10,15,0.4) 60%, transparent 100%)',
+              zIndex: 10,
             }}
           >
-            Continue
-          </button>
+            <p style={{
+              fontFamily: 'Georgia, "Times New Roman", serif',
+              fontStyle: 'italic',
+              fontSize: '1.5rem',
+              lineHeight: '1.85',
+              color: 'rgba(212,196,158,0.75)',
+              maxWidth: '780px',
+              textAlign: 'center',
+              marginBottom: '12px',
+            }}>
+              {currentCourtOption.prose}
+            </p>
+            {currentCourtOption.isDefault && (
+              <p style={{
+                fontFamily: 'Georgia, "Times New Roman", serif',
+                fontStyle: 'italic',
+                fontSize: '1rem',
+                color: 'rgba(120,110,90,0.35)',
+                marginBottom: '12px',
+              }}>
+                (this feels natural)
+              </p>
+            )}
+            <button
+              type="button"
+              onClick={handleCourtConfirm}
+              data-testid="court-confirm"
+              className="cursor-pointer transition-all duration-500"
+              style={{
+                background: 'transparent',
+                border: 'none',
+                fontFamily: 'Georgia, "Times New Roman", serif',
+                fontStyle: 'italic',
+                fontSize: '1.1rem',
+                color: 'rgba(180,164,138,0.5)',
+                letterSpacing: '0.08em',
+              }}
+            >
+              Continue
+            </button>
+          </div>
+
+          {/* Navigation arrows */}
+          {courtOptions.length > 1 && (
+            <>
+              <button type="button" onClick={() => handleCourtNav(-1)} className="absolute cursor-pointer"
+                style={{ left: '2vw', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', padding: '2rem 1.5rem', zIndex: 20, color: 'rgba(160,140,180,0.3)', fontSize: '9rem', fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif', lineHeight: 1, transition: 'color 0.3s ease' }}
+                onMouseEnter={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.7)'; }}
+                onMouseLeave={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.3)'; }}
+                aria-label="Previous court">&#x2039;</button>
+              <button type="button" onClick={() => handleCourtNav(1)} className="absolute cursor-pointer"
+                style={{ right: '2vw', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', padding: '2rem 1.5rem', zIndex: 20, color: 'rgba(160,140,180,0.3)', fontSize: '9rem', fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif', lineHeight: 1, transition: 'color 0.3s ease' }}
+                onMouseEnter={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.7)'; }}
+                onMouseLeave={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.3)'; }}
+                aria-label="Next court">&#x203a;</button>
+            </>
+          )}
         </>
       )}
 

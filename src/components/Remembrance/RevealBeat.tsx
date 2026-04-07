@@ -55,108 +55,110 @@ export function RevealBeat({
   });
 
   return (
-    <div className="h-screen flex flex-col items-center justify-center overflow-hidden"
+    <div className="h-screen relative overflow-hidden"
          style={{ background: '#0a0a0f' }}>
 
-      {/* Hero image — dissolved edges, no container */}
+      {/* Full-bleed hunger art as background */}
       <div
-        className="bg-cover bg-center mb-6"
+        className="absolute inset-0 transition-all duration-1500"
         style={{
-          width: 'min(1000px, 80vw)',
-          aspectRatio: '16/7',
-          maxHeight: '30vh',
-          backgroundImage: `url(${hunger.imageAssetPath}), radial-gradient(ellipse at center, ${primaryColor}20, ${primaryColor}06, transparent)`,
+          backgroundImage: `url(${hunger.imageAssetPath})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          maskImage: 'radial-gradient(ellipse 90% 90% at center, black 30%, transparent 90%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 90% 90% at center, black 30%, transparent 90%)',
-          opacity: phase >= 1 ? 1 : 0,
-          transition: 'opacity 1.5s ease',
+          opacity: phase >= 1 ? 0.4 : 0,
+          maskImage: 'radial-gradient(ellipse 90% 85% at 50% 30%, black 20%, transparent 75%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 90% 85% at 50% 30%, black 20%, transparent 75%)',
         }}
       />
 
-      {/* Identity lines — each materializes separately */}
-      <div className="max-w-2xl text-center" style={{ lineHeight: '2.2' }}>
+      {/* Content overlay — centered text over the art */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center"
+           style={{ zIndex: 10 }}>
 
-        <p className="mb-3" style={{ ...lineStyle(2, 'rgba(138,138,138,0.5)'), fontSize: '1.05rem' }}>
-          You were called <strong style={{ color: '#e8e0f0', fontWeight: 'normal', fontSize: '1.2rem' }}>{mortalName}</strong>.
-        </p>
+        {/* Identity lines */}
+        <div className="max-w-2xl text-center" style={{ lineHeight: '2.2' }}>
 
-        <p className="mb-3" style={{ ...lineStyle(3, 'rgba(138,138,138,0.4)'), fontSize: '0.9rem', lineHeight: '1.8' }}>
-          {originFragment.prose}
-        </p>
+          <p className="mb-3" style={{ ...lineStyle(2, 'rgba(138,138,138,0.5)'), fontSize: '1.3rem' }}>
+            You were called <strong style={{ color: '#e8e0f0', fontWeight: 'normal', fontSize: '1.5rem' }}>{mortalName}</strong>.
+          </p>
 
-        <p className="mb-5" style={{ ...lineStyle(4, 'rgba(184,140,154,0.45)'), fontSize: '0.9rem', lineHeight: '1.8' }}>
-          {driveFragment.prose}
-        </p>
+          <p className="mb-3" style={{ ...lineStyle(3, 'rgba(138,138,138,0.4)'), fontSize: '1.15rem', lineHeight: '1.8' }}>
+            {originFragment.prose}
+          </p>
 
-        <p className="mb-1" style={{ ...lineStyle(5, 'rgba(212,196,138,0.6)'), fontSize: '1.15rem' }}>
-          Now you hunger to <strong style={{ fontWeight: 'normal' }}>{hunger.name}</strong>.
-        </p>
-        <p className="mb-5" style={{ ...lineStyle(5, 'rgba(180,164,138,0.35)'), fontSize: '0.85rem' }}>
-          {hunger.mandateDirection}.
-        </p>
+          <p className="mb-5" style={{ ...lineStyle(4, 'rgba(184,140,154,0.45)'), fontSize: '1.15rem', lineHeight: '1.8' }}>
+            {driveFragment.prose}
+          </p>
 
-        <p style={{ ...lineStyle(6, primaryColor), fontSize: '1rem', opacity: phase >= 6 ? 0.6 : 0 }}>
-          {hunger.sphereAlignment.primary} and {hunger.sphereAlignment.secondary} pour through you.
-          Your court is {COURT_LABELS[courtType] ?? courtType}.
-        </p>
-      </div>
+          <p className="mb-1" style={{ ...lineStyle(5, 'rgba(212,196,138,0.6)'), fontSize: '1.4rem' }}>
+            Now you hunger to <strong style={{ fontWeight: 'normal' }}>{hunger.name}</strong>.
+          </p>
+          <p className="mb-5" style={{ ...lineStyle(5, 'rgba(180,164,138,0.35)'), fontSize: '1.1rem' }}>
+            {hunger.mandateDirection}.
+          </p>
 
-      {/* Divine naming — appears last, floating in the void */}
-      <div className="mt-10 text-center transition-all duration-1000"
-           style={{
-             opacity: phase >= 7 ? 1 : 0,
-             transform: phase >= 7 ? 'translateY(0)' : 'translateY(12px)',
-             pointerEvents: phase >= 7 ? 'auto' : 'none',
-           }}>
-        <p className="mb-4"
-           style={{
-             fontFamily: 'Georgia, "Times New Roman", serif',
-             fontStyle: 'italic',
-             fontSize: '0.95rem',
-             color: 'rgba(138,122,154,0.4)',
-             letterSpacing: '0.06em',
-           }}>
-          The mortals will need a name for what you are.
-        </p>
-        <input
-          type="text"
-          value={divineName}
-          onChange={e => setDivineName(e.target.value)}
-          placeholder={suggestedDivineName}
-          data-testid="divine-name-input"
-          className="block mx-auto mb-6 text-center text-lg outline-none"
-          style={{
-            width: '380px',
-            background: 'transparent',
-            border: 'none',
-            borderBottom: `1px solid ${primaryColor}30`,
-            padding: '12px 0',
-            color: '#e8e0f0',
-            fontFamily: 'Georgia, "Times New Roman", serif',
-            fontStyle: 'italic',
-            letterSpacing: '0.04em',
-          }}
-        />
-        <button
-          type="button"
-          onClick={handleAscend}
-          data-testid="ascend-button"
-          className="cursor-pointer transition-all duration-500"
-          style={{
-            background: 'transparent',
-            border: 'none',
-            fontFamily: 'Georgia, "Times New Roman", serif',
-            fontStyle: 'italic',
-            fontSize: '1.1rem',
-            color: primaryColor,
-            opacity: 0.6,
-            letterSpacing: '0.1em',
-          }}
-        >
-          Ascend
-        </button>
+          <p style={{ ...lineStyle(6, primaryColor), fontSize: '1.2rem', opacity: phase >= 6 ? 0.6 : 0 }}>
+            {hunger.sphereAlignment.primary} and {hunger.sphereAlignment.secondary} pour through you.
+            Your court is {COURT_LABELS[courtType] ?? courtType}.
+          </p>
+        </div>
+
+        {/* Divine naming — appears last */}
+        <div className="mt-10 text-center transition-all duration-1000"
+             style={{
+               opacity: phase >= 7 ? 1 : 0,
+               transform: phase >= 7 ? 'translateY(0)' : 'translateY(12px)',
+               pointerEvents: phase >= 7 ? 'auto' : 'none',
+             }}>
+          <p className="mb-4"
+             style={{
+               fontFamily: 'Georgia, "Times New Roman", serif',
+               fontStyle: 'italic',
+               fontSize: '1.15rem',
+               color: 'rgba(138,122,154,0.4)',
+               letterSpacing: '0.06em',
+             }}>
+            The mortals will need a name for what you are.
+          </p>
+          <input
+            type="text"
+            value={divineName}
+            onChange={e => setDivineName(e.target.value)}
+            placeholder={suggestedDivineName}
+            data-testid="divine-name-input"
+            className="block mx-auto mb-6 text-center text-lg outline-none"
+            style={{
+              width: '380px',
+              background: 'transparent',
+              border: 'none',
+              borderBottom: `1px solid ${primaryColor}30`,
+              padding: '12px 0',
+              color: '#e8e0f0',
+              fontFamily: 'Georgia, "Times New Roman", serif',
+              fontStyle: 'italic',
+              fontSize: '1.3rem',
+              letterSpacing: '0.04em',
+            }}
+          />
+          <button
+            type="button"
+            onClick={handleAscend}
+            data-testid="ascend-button"
+            className="cursor-pointer transition-all duration-500"
+            style={{
+              background: 'transparent',
+              border: 'none',
+              fontFamily: 'Georgia, "Times New Roman", serif',
+              fontStyle: 'italic',
+              fontSize: '1.3rem',
+              color: primaryColor,
+              opacity: 0.6,
+              letterSpacing: '0.1em',
+            }}
+          >
+            Ascend
+          </button>
+        </div>
       </div>
     </div>
   );

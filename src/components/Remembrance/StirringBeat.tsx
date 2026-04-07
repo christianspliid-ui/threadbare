@@ -155,7 +155,7 @@ export function StirringBeat({ images, onSelect }: StirringBeatProps) {
         >
           <span style={{
             fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif',
-            fontSize: '0.9rem',
+            fontSize: '1.5rem',
             letterSpacing: '0.16em',
             textTransform: 'uppercase' as const,
             color: 'rgba(255,255,255,0.2)',
@@ -166,7 +166,7 @@ export function StirringBeat({ images, onSelect }: StirringBeatProps) {
           <p style={{
             fontFamily: 'Georgia, "Times New Roman", serif',
             fontStyle: 'italic',
-            fontSize: '0.85rem',
+            fontSize: '1.1rem',
             color: 'rgba(160,140,130,0.25)',
             letterSpacing: '0.06em',
           }}>
@@ -186,7 +186,7 @@ export function StirringBeat({ images, onSelect }: StirringBeatProps) {
               left: '2vw', top: '50%', transform: 'translateY(-50%)',
               background: 'none', border: 'none', padding: '2rem 1.5rem',
               zIndex: 20, color: 'rgba(160,140,180,0.3)',
-              fontSize: '3rem', fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif',
+              fontSize: '9rem', fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif',
               lineHeight: 1, transition: 'color 0.3s ease',
             }}
             onMouseEnter={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.7)'; }}
@@ -201,7 +201,7 @@ export function StirringBeat({ images, onSelect }: StirringBeatProps) {
               right: '2vw', top: '50%', transform: 'translateY(-50%)',
               background: 'none', border: 'none', padding: '2rem 1.5rem',
               zIndex: 20, color: 'rgba(160,140,180,0.3)',
-              fontSize: '3rem', fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif',
+              fontSize: '9rem', fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif',
               lineHeight: 1, transition: 'color 0.3s ease',
             }}
             onMouseEnter={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.7)'; }}

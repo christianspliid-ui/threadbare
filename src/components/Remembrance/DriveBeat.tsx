@@ -126,10 +126,10 @@ export function DriveBeat({ fragments, onSelect }: DriveBeatProps) {
               <p style={{
                 fontFamily: 'Georgia, "Times New Roman", serif',
                 fontStyle: 'italic',
-                fontSize: '1.15rem',
+                fontSize: '1.5rem',
                 lineHeight: '1.85',
                 color: 'rgba(212,196,158,0.75)',
-                maxWidth: '680px',
+                maxWidth: '780px',
                 textAlign: 'center',
                 marginBottom: '16px',
               }}>
@@ -138,7 +138,7 @@ export function DriveBeat({ fragments, onSelect }: DriveBeatProps) {
               <p style={{
                 fontFamily: 'Georgia, "Times New Roman", serif',
                 fontStyle: 'italic',
-                fontSize: '0.85rem',
+                fontSize: '1.1rem',
                 color: 'rgba(160,140,130,0.25)',
                 letterSpacing: '0.06em',
               }}>
@@ -153,12 +153,12 @@ export function DriveBeat({ fragments, onSelect }: DriveBeatProps) {
       {isBrowsing && (
         <>
           <button type="button" onClick={() => handleNav(-1)} className="absolute cursor-pointer"
-            style={{ left: '2vw', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', padding: '2rem 1.5rem', zIndex: 20, color: 'rgba(160,140,180,0.3)', fontSize: '3rem', fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif', lineHeight: 1, transition: 'color 0.3s ease' }}
+            style={{ left: '2vw', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', padding: '2rem 1.5rem', zIndex: 20, color: 'rgba(160,140,180,0.3)', fontSize: '9rem', fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif', lineHeight: 1, transition: 'color 0.3s ease' }}
             onMouseEnter={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.7)'; }}
             onMouseLeave={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.3)'; }}
             aria-label="Previous fragment">&#x2039;</button>
           <button type="button" onClick={() => handleNav(1)} className="absolute cursor-pointer"
-            style={{ right: '2vw', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', padding: '2rem 1.5rem', zIndex: 20, color: 'rgba(160,140,180,0.3)', fontSize: '3rem', fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif', lineHeight: 1, transition: 'color 0.3s ease' }}
+            style={{ right: '2vw', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', padding: '2rem 1.5rem', zIndex: 20, color: 'rgba(160,140,180,0.3)', fontSize: '9rem', fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif', lineHeight: 1, transition: 'color 0.3s ease' }}
             onMouseEnter={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.7)'; }}
             onMouseLeave={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.3)'; }}
             aria-label="Next fragment">&#x203a;</button>
