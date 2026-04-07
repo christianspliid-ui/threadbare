@@ -192,3 +192,27 @@ describe('lightly threaded', () => {
     expect(screen.getByText(/Lightly Threaded/)).toBeInTheDocument();
   });
 });
+
+describe('watched tier', () => {
+  const watchedProps = {
+    ...defaultProps,
+    threadTier: 'watched' as const,
+  };
+
+  it('shows peek gate initially', () => {
+    render(<EncounterVeil {...watchedProps} />);
+    expect(screen.getByText(/Peer Through the Thread/)).toBeInTheDocument();
+  });
+
+  it('calls onPeek when peek button is clicked', () => {
+    const onPeek = vi.fn();
+    render(<EncounterVeil {...watchedProps} onPeek={onPeek} />);
+    fireEvent.click(screen.getByText(/Peer Through the Thread/));
+    expect(onPeek).toHaveBeenCalled();
+  });
+
+  it('shows Watched label', () => {
+    render(<EncounterVeil {...watchedProps} />);
+    expect(screen.getByText(/Watched/)).toBeInTheDocument();
+  });
+});

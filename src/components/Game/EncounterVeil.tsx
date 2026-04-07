@@ -95,14 +95,17 @@ export function EncounterVeil({
   tick,
   autoResolveTick,
   onIntervene,
-  onBoost: _onBoost,
-  onPeek: _onPeek,
+  onBoost,
+  onPeek,
   onDisregard,
   onAcknowledgeAftermath: _onAcknowledgeAftermath,
   onAftermathReaction: _onAftermathReaction,
 }: EncounterVeilProps) {
   const [visible, setVisible] = useState(false);
   const [selectedChoiceId, setSelectedChoiceId] = useState<string | null>(null);
+  // Watched tier state
+  const [peeked, setPeeked] = useState(false);
+  const [boostAmount, setBoostAmount] = useState(0);
 
   // Trigger entrance animation after mount
   useEffect(() => {
@@ -113,6 +116,8 @@ export function EncounterVeil({
     } else {
       setVisible(false);
       setSelectedChoiceId(null);
+      setPeeked(false);
+      setBoostAmount(0);
     }
   }, [open]);
 
@@ -154,10 +159,355 @@ export function EncounterVeil({
     }
   }, [selectedChoiceId, model.choices, onIntervene]);
 
-  // Phase 1 stubs: watched and aftermath still return null
+  // Aftermath stub — not yet implemented
   if (!open) return null;
-  if (threadTier === 'watched') return null;
   if (model.aftermath) return null;
+
+  // ── Watched tier rendering path ────────────────────────────────
+  if (threadTier === 'watched') {
+    const tierModeLabel = peeked ? 'Watched · Boost' : 'Watched · Peek';
+
+    // Shared entrance style helper for watched (uses same visible state)
+    const watchedEntrance = (delay: number, duration: number): React.CSSProperties => ({
+      opacity: visible ? 1 : 0,
+      transition: `opacity ${duration}s ease ${delay}s`,
+    });
+
+    return createPortal(
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={model.header.title}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: VOID,
+          zIndex: 50,
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        {/* Art layer — desaturated */}
+        {hasArt && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundImage: `url(${model.illustration!.src})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              maskImage:
+                'radial-gradient(ellipse 85% 80% at 35% 40%, black 20%, transparent 75%)',
+              WebkitMaskImage:
+                'radial-gradient(ellipse 85% 80% at 35% 40%, black 20%, transparent 75%)',
+              opacity: visible ? ART_OPACITY.watched : 0,
+              filter: 'grayscale(40%)',
+              transform: visible ? 'scale(1)' : 'scale(1.02)',
+              transition: `opacity 1.2s ease ${ENTRANCE_DELAYS.art}s, transform 8s ease-out ${ENTRANCE_DELAYS.art}s`,
+            }}
+          />
+        )}
+
+        {/* Tier label — top-right */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '4vh',
+            right: '5vw',
+            zIndex: 20,
+            textAlign: 'right',
+            ...watchedEntrance(0.6, 0.8),
+          }}
+        >
+          <div
+            style={{
+              fontFamily: FONT_DISPLAY,
+              fontSize: '0.65rem',
+              letterSpacing: '0.18em',
+              textTransform: 'uppercase',
+              color: GOLD,
+              opacity: 0.5,
+            }}
+          >
+            {tierModeLabel}
+          </div>
+          <div
+            style={{
+              fontFamily: FONT_PROSE,
+              fontStyle: 'italic',
+              fontSize: '0.7rem',
+              color: TEXT_GHOST,
+              marginTop: 4,
+              letterSpacing: '0.05em',
+            }}
+          >
+            {model.header.threatLabel} threat
+          </div>
+        </div>
+
+        {/* ── Peek gate (before peek) ─────────────────────── */}
+        {!peeked && (
+          <div
+            style={{
+              position: 'relative',
+              zIndex: 10,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 20,
+              ...watchedEntrance(0.4, 1.0),
+            }}
+          >
+            {/* Diamond icon */}
+            <div
+              style={{
+                fontFamily: FONT_DISPLAY,
+                fontSize: '1.8rem',
+                color: GOLD,
+                opacity: 0.35,
+              }}
+            >
+              ◆
+            </div>
+
+            {/* Whisper text */}
+            <div
+              style={{
+                fontFamily: FONT_PROSE,
+                fontStyle: 'italic',
+                fontSize: '0.8rem',
+                color: TEXT_WHISPER,
+                letterSpacing: '0.05em',
+                textAlign: 'center',
+              }}
+            >
+              This encounter runs in the background
+            </div>
+
+            {/* Peek button */}
+            <button
+              onClick={() => {
+                setPeeked(true);
+                onPeek();
+              }}
+              style={{
+                background: 'rgba(212, 175, 55, 0.04)',
+                border: '1px solid rgba(212, 175, 55, 0.12)',
+                borderRadius: 2,
+                fontFamily: FONT_PROSE,
+                fontStyle: 'italic',
+                fontSize: '0.85rem',
+                letterSpacing: '0.06em',
+                color: 'rgba(212, 175, 55, 0.45)',
+                cursor: 'pointer',
+                padding: '10px 24px',
+                transition: 'all 0.4s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(212, 175, 55, 0.08)';
+                e.currentTarget.style.color = 'rgba(212, 175, 55, 0.7)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(212, 175, 55, 0.04)';
+                e.currentTarget.style.color = 'rgba(212, 175, 55, 0.45)';
+              }}
+            >
+              ◆ 1 — Peer Through the Thread
+            </button>
+          </div>
+        )}
+
+        {/* ── Revealed view (after peek) ──────────────────── */}
+        {peeked && (
+          <div
+            style={{
+              position: 'relative',
+              zIndex: 10,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 24,
+              maxWidth: 540,
+              padding: '0 5vw',
+              ...watchedEntrance(0.1, 0.6),
+            }}
+          >
+            {/* Short prose — first paragraph only */}
+            <div>
+              {model.narrative.paragraphs.slice(0, 1).map((para) => {
+                const text = para.segments.map((s) => s.text).join('');
+                return (
+                  <p
+                    key={para.id}
+                    style={{
+                      fontFamily: FONT_PROSE,
+                      fontStyle: 'italic',
+                      fontSize: '0.9rem',
+                      lineHeight: 1.85,
+                      color: TEXT_WHISPER,
+                      textAlign: 'center',
+                      margin: 0,
+                    }}
+                  >
+                    {text}
+                  </p>
+                );
+              })}
+            </div>
+
+            {/* Gold divider */}
+            <div
+              style={{
+                height: 1,
+                width: '60%',
+                background:
+                  'linear-gradient(to right, transparent, rgba(212, 175, 55, 0.2), transparent)',
+              }}
+            />
+
+            {/* Boost pip slider */}
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 12,
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: FONT_PROSE,
+                  fontStyle: 'italic',
+                  fontSize: '0.7rem',
+                  color: TEXT_GHOST,
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                Boost
+              </div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                {[1, 2, 3, 4, 5].map((pip) => (
+                  <button
+                    key={pip}
+                    onClick={() => setBoostAmount(pip === boostAmount ? 0 : pip)}
+                    style={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: '50%',
+                      border: `1px solid ${pip <= boostAmount ? 'rgba(212, 175, 55, 0.6)' : 'rgba(212, 175, 55, 0.2)'}`,
+                      background:
+                        pip <= boostAmount
+                          ? 'rgba(212, 175, 55, 0.4)'
+                          : 'transparent',
+                      cursor: 'pointer',
+                      padding: 0,
+                      transition: 'all 0.3s ease',
+                    }}
+                    aria-label={`Boost ${pip}`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Footer ─────────────────────────────────────── */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '2.5vh 5vw',
+            zIndex: 20,
+            background: `linear-gradient(to top, ${VOID} 0%, rgba(10,10,15,0.6) 60%, transparent 100%)`,
+            ...watchedEntrance(0.8, 0.8),
+          }}
+        >
+          {/* Essence display */}
+          <div
+            style={{
+              fontFamily: FONT_PROSE,
+              fontStyle: 'italic',
+              fontSize: '0.75rem',
+              color: GOLD,
+              opacity: 0.35,
+              letterSpacing: '0.04em',
+            }}
+          >
+            &#9670; {essence} essence
+          </div>
+
+          {/* Action buttons */}
+          <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
+            <button
+              onClick={onDisregard}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                fontFamily: FONT_PROSE,
+                fontStyle: 'italic',
+                fontSize: '0.85rem',
+                letterSpacing: '0.06em',
+                color: TEXT_GHOST,
+                cursor: 'pointer',
+                padding: '8px 0',
+                transition: 'all 0.4s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = TEXT_WHISPER;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = TEXT_GHOST;
+              }}
+            >
+              Close
+            </button>
+            {peeked && (
+              <button
+                onClick={() => onBoost(boostAmount)}
+                disabled={boostAmount === 0}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  fontFamily: FONT_PROSE,
+                  fontStyle: 'italic',
+                  fontSize: '0.85rem',
+                  letterSpacing: '0.06em',
+                  color: GOLD,
+                  opacity: boostAmount > 0 ? 0.7 : 0.3,
+                  cursor: boostAmount > 0 ? 'pointer' : 'default',
+                  padding: '8px 0',
+                  transition: 'all 0.4s ease',
+                }}
+                onMouseEnter={(e) => {
+                  if (boostAmount > 0) {
+                    e.currentTarget.style.opacity = '1';
+                    e.currentTarget.style.textShadow =
+                      '0 0 20px rgba(212, 175, 55, 0.3)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.opacity = boostAmount > 0 ? '0.7' : '0.3';
+                  e.currentTarget.style.textShadow = 'none';
+                }}
+              >
+                Commit
+              </button>
+            )}
+          </div>
+        </div>
+      </div>,
+      document.body,
+    );
+  }
 
   // Derived values for lightly threaded timer
   const ticksUntilAutoResolve =
