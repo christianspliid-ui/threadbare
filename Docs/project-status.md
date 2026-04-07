@@ -28,7 +28,7 @@ Design: `Docs/plans/2026-04-05-attention-tier-model-design.md`. Plan: `Docs/plan
 
 - **Ambient Sound System:** 3-channel audio (Music/Background/UI). BackgroundChannel 4-priority stack via `useAmbientContext`. MusicChannel replaces themeAudio.ts. Volume sliders + master mute in SettingsPanel.
 
-- **Game Codex:** Browsable content catalog at `?view=codex`. 5 categories (Divine Actions, Mortal Actions, Possessions, Conditions, Agreements), 171 entries. Sidebar tree with subcategory filtering, responsive card grid, detail panel with prose and mechanics. Lazy-loaded, no game state dependency.
+- **Game Codex:** Browsable content catalog at `?view=codex`. 9 categories (Divine Actions, Hex Actions, Place Actions, Artifact Actions, Thread & Insight, Mortal Actions, Possessions, Conditions, Agreements), 300 entries. Action card art for 8 divine + 2 thread-binding actions. Sidebar tree with subcategory filtering, responsive card grid, detail panel with prose and mechanics. Lazy-loaded, no game state dependency.
 
 - **Attachment Slot System:** Per-slot caps (13 possession + 5 condition slots), SlotBonusEffect (type 39) slot expansion, edge-backed agreement effects on `relates_to` edges, fixed-point cascade deactivation, disposal timeout, condition overflow checks (wound/disease/curse/blessing/bestowed), grouped slot-aware AttachmentsTab UI. 6 new engine modules, 1 data file, 47 new tests. Design: `Docs/plans/2026-04-06-attachment-slot-system-design.md`.
 
