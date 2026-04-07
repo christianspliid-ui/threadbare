@@ -124,10 +124,9 @@ const ACTION_ART: Record<string, string> = {
   'hex.seal_tomb': '/assets/actions/tomb-sealing.jpg',
   'hex.ward_against_deep': '/assets/actions/delvers-ward.jpg',
 };
+import { ITEM_ART as ITEM_ART_BASE } from '../../data/item-art-registry';
 const ITEM_ART: Record<string, string> = {
-  reward_arms_thornwood_staff: '/assets/items/thornwood-staff.jpg',
-  reward_relics_talismans_stasis_pearl: '/assets/items/stasis-pearl.jpg',
-  reward_mounts_beasts_shimmer_hart: '/assets/items/shimmer-hart.jpg',
+  ...ITEM_ART_BASE,
   ...ACTION_ART,
 };
 

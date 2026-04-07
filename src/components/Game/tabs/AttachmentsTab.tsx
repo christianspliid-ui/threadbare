@@ -9,6 +9,7 @@ import type { AttachmentFullEntry } from '../../../engine/agentAttachments';
 import { getAttachmentGlyph } from '../attachmentGlyphs';
 import { resolveAttachmentTooltip } from '../../../engine/attachmentTooltip';
 import { SLOT_CAPS, CONDITION_CAPS, SLOT_TAG_DISPLAY_NAMES } from '../../../data/attachment-slot-constants';
+import { getItemArt } from '../../../data/item-art-registry';
 
 interface AttachmentsTabProps {
   card: AgentInfoCardData;
@@ -67,6 +68,8 @@ export function AttachmentsTab({ card, onAttachmentClick }: AttachmentsTabProps)
       totalTicks: entry.totalTicks,
     });
 
+    const artPath = getItemArt(entry.id);
+
     return (
       <div
         key={entry.id}
@@ -85,6 +88,25 @@ export function AttachmentsTab({ card, onAttachmentClick }: AttachmentsTabProps)
           }
         }}
       >
+        {artPath && (
+          <div
+            className="mb-2 overflow-hidden rounded"
+            style={{ maxHeight: '120px' }}
+          >
+            <img
+              src={artPath}
+              alt=""
+              aria-hidden="true"
+              style={{
+                width: '100%',
+                height: '120px',
+                objectFit: 'cover',
+                objectPosition: 'center 30%',
+                display: 'block',
+              }}
+            />
+          </div>
+        )}
         <div className="flex items-center justify-between mb-1">
           <Tooltip label={tooltip.label} desc={tooltip.desc}>
             <span
