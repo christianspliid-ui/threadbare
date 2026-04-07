@@ -148,23 +148,22 @@ function getActionArt(slotId: string): string | undefined {
 
 // ─── Sizing Constants ──────────────────────────────────────────────────────
 
-/** Standard 5:7 card ratio (poker/tarot-style). Height = width × 1.4 */
-const CARD_ASPECT = 7 / 5; // 1.4
-
 const SIZE_CONFIG = {
   hand: {
-    widthPx: 100,            // 100px wide × 140px tall (5:7)
-    glyphSize: '1.5rem',     // 24px
-    nameSize: 'var(--text-xs)',
-    descSize: '0.625rem',    // 10px
+    widthPx: 160,            // 160px wide × 110px tall (16:11 landscape — showcases 16:9 art)
+    aspect: 11 / 16,         // landscape: height = width × 0.6875
+    glyphSize: '1.75rem',    // 28px
+    nameSize: '0.875rem',    // 14px — larger for readability
+    descSize: '0.6875rem',   // 11px
     descClamp: 'line-clamp-2',
-    costSize: '0.625rem',
+    costSize: '0.75rem',     // 12px
     padding: 'px-2 py-2',
-    badgePos: 'top-1.5 right-1.5',
-    badgePad: 'px-1 py-0.5',
+    badgePos: 'top-2 right-2',
+    badgePad: 'px-1.5 py-0.5',
   },
   focused: {
-    widthPx: 320,            // 320px wide × 448px tall (5:7)
+    widthPx: 320,            // 320px wide × 448px tall (5:7 portrait)
+    aspect: 7 / 5,           // portrait: height = width × 1.4
     glyphSize: '2rem',       // 32px
     nameSize: 'var(--text-base)',
     descSize: '0.75rem',     // 12px — fits more text in the card
@@ -289,11 +288,13 @@ export const ActionCard = React.memo(function ActionCard({
           className={containerClasses}
           style={{
             width: `${cfg.widthPx}px`,
-            height: `${Math.round(cfg.widthPx * CARD_ASPECT)}px`,
-            // Art background: sphere gradient fills the card
-            background: (isAvailable || playing) && sphereColor
-              ? `linear-gradient(145deg, ${sphereColor}30 0%, #111114 100%)`
-              : `linear-gradient(145deg, #2a2a3a 0%, #111114 100%)`,
+            height: `${Math.round(cfg.widthPx * cfg.aspect)}px`,
+            // Art background: use art image if available, else sphere gradient
+            background: artPath
+              ? '#111114'
+              : (isAvailable || playing) && sphereColor
+                ? `linear-gradient(145deg, ${sphereColor}30 0%, #111114 100%)`
+                : `linear-gradient(145deg, #2a2a3a 0%, #111114 100%)`,
             borderTop: '1px solid var(--border-medium)',
             borderRight: '1px solid var(--border-medium)',
             borderBottom: '1px solid var(--border-medium)',
@@ -329,23 +330,40 @@ export const ActionCard = React.memo(function ActionCard({
             </span>
           </div>
 
-          {/* Centered sphere icon — subtle background element */}
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              opacity: 0.35,
-              pointerEvents: 'none',
-            }}
-          >
-            {slot.sphere
-              ? <SphereIcon sphere={slot.sphere as SphereName} size={32} />
-              : <span style={{ fontSize: '2rem', color: '#ffffff26' }}>{glyph}</span>
-            }
-          </div>
+          {/* Art image or centered sphere icon fallback */}
+          {artPath ? (
+            <img
+              src={artPath}
+              alt=""
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                opacity: isAvailable || playing ? 1 : 0.4,
+                pointerEvents: 'none',
+              }}
+            />
+          ) : (
+            <div
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                opacity: 0.35,
+                pointerEvents: 'none',
+              }}
+            >
+              {slot.sphere
+                ? <SphereIcon sphere={slot.sphere as SphereName} size={32} />
+                : <span style={{ fontSize: '2rem', color: '#ffffff26' }}>{glyph}</span>
+              }
+            </div>
+          )}
 
           {/* Name overlay — bottom */}
           <div
@@ -354,7 +372,9 @@ export const ActionCard = React.memo(function ActionCard({
               bottom: 0,
               left: 0,
               right: 0,
-              background: 'rgba(10,10,15,0.7)',
+              background: artPath
+                ? 'linear-gradient(to top, rgba(10,10,15,0.9) 0%, rgba(10,10,15,0.6) 100%)'
+                : 'rgba(10,10,15,0.7)',
               padding: '4px 8px',
               fontFamily: 'var(--font-display)',
               fontSize: '0.6875rem',
@@ -428,7 +448,7 @@ export const ActionCard = React.memo(function ActionCard({
         className={containerClasses}
         style={{
           width: `${cfg.widthPx}px`,
-          height: `${Math.round(cfg.widthPx * CARD_ASPECT)}px`,
+          height: `${Math.round(cfg.widthPx * cfg.aspect)}px`,
           backgroundColor: 'var(--bg-raised)',
           borderTop: '1px solid var(--border-medium)',
           borderRight: '1px solid var(--border-medium)',

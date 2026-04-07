@@ -20,15 +20,15 @@ const LAYER_CONFIG: { key: NarrativeLayer; label: string; icon: string }[] = [
 
 const HAND_CONFIG = {
   /** Card width in hand (px) — must match ActionCard SIZE_CONFIG.hand.widthPx */
-  CARD_WIDTH_PX: 100,
+  CARD_WIDTH_PX: 160,
   /** Minimum visible portion of each card when overlapping (px) */
-  MIN_OVERLAP_SPACING_PX: 36,
+  MIN_OVERLAP_SPACING_PX: 50,
   /** Max available width for the hand (px) */
-  MAX_HAND_WIDTH_PX: 1000,
+  MAX_HAND_WIDTH_PX: 1200,
   /** Max fan rotation for outermost cards (degrees) */
   FAN_MAX_ROTATION_DEG: 3,
   /** Max vertical arc for outermost cards (px) */
-  FAN_MAX_ARC_PX: 12,
+  FAN_MAX_ARC_PX: 10,
   /** Drawer slide transition (ms) */
   TRANSITION_MS: 200,
 } as const;
@@ -339,7 +339,7 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
           {/* Hand container — relative positioned, cards absolutely placed */}
           <div
             className="relative pointer-events-auto"
-            style={{ width: `${handWidth}px`, height: '160px' }}
+            style={{ width: `${handWidth}px`, height: '130px' }}
           >
             {handCards.map((slot, i) => {
               const isFocused = slot.id === focusedSlotId;
