@@ -142,7 +142,7 @@ export const HexChronicle = memo(function HexChronicle({
   const peopleRef = useRef<HTMLDivElement>(null);
   const placesRef = useRef<HTMLDivElement>(null);
   const ruinsRef = useRef<HTMLDivElement>(null);
-  const { enabled: narrationEnabled, status: narrationStatus, isLoading, isSpeaking, isAvailable, initWorker, narrateChronicle, stop: stopNarration } = useNarration();
+  const { enabled: narrationEnabled, status: narrationStatus, isLoading, isSpeaking, isAvailable, initWorker, speakSections, narrateChronicle, stop: stopNarration } = useNarration();
 
   // Stop narration when hex changes
   const prevHexKey = useRef(`${hexCol},${hexRow}`);
@@ -163,6 +163,18 @@ export const HexChronicle = memo(function HexChronicle({
       narrateChronicle(ref.current);
     }
   }, [isSpeaking, isLoading, stopNarration, narrateChronicle]);
+
+  /** Narrate a single soul's prose (name + flavor text). */
+  const handleNarrateSoul = useCallback((text: string) => {
+    if (isSpeaking || isLoading) {
+      stopNarration();
+    } else if (text) {
+      speakSections([text]);
+    }
+  }, [isSpeaking, isLoading, speakSections, stopNarration]);
+
+  /** True when narration backend is ready to speak (not just probed/available). */
+  const canNarrate = narrationEnabled && narrationStatus !== 'idle' && !isAvailable;
 
   // ── Derived data ─────────────────────────────────────────────────
 
@@ -311,8 +323,9 @@ export const HexChronicle = memo(function HexChronicle({
   }, [locations, graph, seed, tick]);
 
   // ── Separate parent locations from sublocations ─────────────
-  const { parentLocations, sublocationsByParent, orphanSublocations } = useMemo(() => {
+  const { parentLocations, sublocationsByParent, orphanSublocations, transientLocations } = useMemo(() => {
     const parents: GraphNode[] = [];
+    const transients: GraphNode[] = [];
     const subsByParent: Record<string, GraphNode[]> = {};
     const orphans: GraphNode[] = [];
     const locationIds = new Set(locations.map(l => l.id));
@@ -325,11 +338,14 @@ export const HexChronicle = memo(function HexChronicle({
       } else if (parentId && !locationIds.has(parentId)) {
         // Parent not in this hex — show as orphan sublocation at top level
         orphans.push(loc);
+      } else if (loc.id.startsWith('loc.transient.')) {
+        // Transient wilderness placeholder — don't show as a POI card
+        transients.push(loc);
       } else {
         parents.push(loc);
       }
     }
-    return { parentLocations: parents, sublocationsByParent: subsByParent, orphanSublocations: orphans };
+    return { parentLocations: parents, sublocationsByParent: subsByParent, orphanSublocations: orphans, transientLocations: transients };
   }, [locations]);
 
   const allAgents = useMemo(() => {
@@ -688,9 +704,7 @@ export const HexChronicle = memo(function HexChronicle({
               const agentsHere = agentsByLocation[loc.id] || [];
               const subtype = (loc.properties as any)?.locationSubtype ?? 'landmark';
               const fullProse = locationProse[loc.id] ?? '';
-              const proseParagraphs = fullProse.split('\n\n').filter(Boolean);
-              const cardFlavor = proseParagraphs[0] ?? '';
-              const extraParagraphs = proseParagraphs.slice(1);
+              const placeProse = fullProse.split('\n\n').filter(Boolean)[0] ?? '';
               const subs = sublocationsByParent[loc.id] || [];
               const totalAgents = agentsHere.length;
 
@@ -700,14 +714,14 @@ export const HexChronicle = memo(function HexChronicle({
                     name={loc.name}
                     subtype={subtype}
                     agentCount={totalAgents}
-                    flavorText={cardFlavor}
+                    flavorText=""
                     onClick={() => onLocationClick(loc.id)}
                   >
                     {/* Nested sublocations — agents visible in location detail */}
                     {subs.length > 0 && (
                       <div style={{ paddingLeft: '26px', marginTop: '8px' }}>
                         {subs.map(sub => {
-                          const subFlavor = locationProse[sub.id] ?? '';
+                          const subFlavor = (locationProse[sub.id] ?? '').split('\n\n').filter(Boolean)[0] ?? '';
                           return (
                             <SubLocationEntry
                               key={sub.id}
@@ -720,12 +734,12 @@ export const HexChronicle = memo(function HexChronicle({
                       </div>
                     )}
                   </LocationCard>
-                  {/* Additional location prose paragraphs */}
-                  {extraParagraphs.map((para, idx) => (
-                    <p key={idx} className="chronicle-prose" style={proseStyle}>
-                      {para}
+                  {/* Place prose — outside card so it's narratable */}
+                  {placeProse && (
+                    <p className="chronicle-prose" style={proseStyle}>
+                      {placeProse}
                     </p>
-                  ))}
+                  )}
                 </div>
               );
             })}
@@ -734,23 +748,21 @@ export const HexChronicle = memo(function HexChronicle({
               const agentsHere = agentsByLocation[loc.id] || [];
               const subtype = (loc.properties as any)?.locationSubtype ?? 'landmark';
               const fullProse = locationProse[loc.id] ?? '';
-              const proseParagraphs = fullProse.split('\n\n').filter(Boolean);
-              const cardFlavor = proseParagraphs[0] ?? '';
-              const extraParagraphs = proseParagraphs.slice(1);
+              const placeProse = fullProse.split('\n\n').filter(Boolean)[0] ?? '';
               return (
                 <div key={loc.id}>
                   <LocationCard
                     name={loc.name}
                     subtype={subtype}
                     agentCount={agentsHere.length}
-                    flavorText={cardFlavor}
+                    flavorText=""
                     onClick={() => onLocationClick(loc.id)}
                   />
-                  {extraParagraphs.map((para, idx) => (
-                    <p key={idx} className="chronicle-prose" style={proseStyle}>
-                      {para}
+                  {placeProse && (
+                    <p className="chronicle-prose" style={proseStyle}>
+                      {placeProse}
                     </p>
-                  ))}
+                  )}
                 </div>
               );
             })}
@@ -873,6 +885,8 @@ export const HexChronicle = memo(function HexChronicle({
                         archetypeName={archetypeName}
                         flavorText={flavor}
                         onClick={() => onAgentClick(agent.id)}
+                        onNarrate={canNarrate && flavor ? () => handleNarrateSoul(flavor) : undefined}
+                        isNarrating={isSpeaking}
                       />
                     );
                   })}
@@ -914,6 +928,52 @@ export const HexChronicle = memo(function HexChronicle({
                         archetypeName={archetypeName}
                         flavorText={flavor}
                         onClick={() => onAgentClick(agent.id)}
+                        onNarrate={canNarrate && flavor ? () => handleNarrateSoul(flavor) : undefined}
+                        isNarrating={isSpeaking}
+                      />
+                    );
+                  })}
+                </div>
+              );
+            })}
+            {/* Agents at transient wilderness locations — no POI card, just souls in the wild */}
+            {transientLocations.map(transient => {
+              const agentsHere = agentsByLocation[transient.id] ?? [];
+              if (agentsHere.length === 0) return null;
+              return (
+                <div key={transient.id} style={{ marginBottom: '8px' }}>
+                  <div style={{
+                    fontFamily: 'var(--font-display)',
+                    fontSize: 'var(--text-xs)',
+                    color: 'var(--text-muted)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    marginTop: '10px',
+                    marginBottom: '4px',
+                    paddingLeft: '2px',
+                  }}>
+                    In the Wild
+                  </div>
+                  {agentsHere.map(agent => {
+                    const primarySphere = (agent.properties as any)?.primarySphere as SphereName | undefined;
+                    const sphereColor = primarySphere ? getSphereColor(primarySphere) : '#7a6e60';
+                    const archetypeName = (agent.properties as any)?.narrativeArchetype ?? undefined;
+                    const npcRole = (agent.properties as any)?.npcRole as string | undefined;
+                    const rarityTier = ((agent.properties as any)?.rarityTier ?? 1) as RarityTier;
+                    const flavor = agentProse[agent.id] ?? '';
+                    return (
+                      <SoulCard
+                        key={agent.id}
+                        name={agent.name}
+                        role={npcRole}
+                        rarityTier={rarityTier}
+                        locationName="In the Wild"
+                        sphereColor={sphereColor}
+                        archetypeName={archetypeName}
+                        flavorText={flavor}
+                        onClick={() => onAgentClick(agent.id)}
+                        onNarrate={canNarrate && flavor ? () => handleNarrateSoul(flavor) : undefined}
+                        isNarrating={isSpeaking}
                       />
                     );
                   })}

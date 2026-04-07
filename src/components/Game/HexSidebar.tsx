@@ -65,6 +65,9 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
   // Count total agents across all locations
   const totalAgents = Object.values(props.agentsByLocation).reduce((sum, agents) => sum + agents.length, 0);
 
+  // Filter out transient wilderness placeholder locations from display
+  const displayLocations = props.locations.filter(loc => !loc.id.startsWith('loc.transient.'));
+
   // Detect lair locations in this hex for the MONSTER LAIR detail section
   const lairLocations = props.locations.filter(
     loc => loc.properties?.locationSubtype === 'lair' || loc.properties?.locationType === 'lair',
@@ -113,9 +116,9 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
 
       {isExpanded ? (
         <>
-          {/* Hex Terrain Image Preview — hidden when locations exist
+          {/* Hex Terrain Image Preview — hidden when real locations exist
               (concept art banner in HexChronicle provides the landscape visual) */}
-          {props.locations.length === 0 && (
+          {displayLocations.length === 0 && (
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <svg
                 viewBox={`0 0 ${HEX_PREVIEW_SIZE} ${HEX_PREVIEW_SIZE}`}
@@ -300,10 +303,10 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
             }}
           >
             <div>
-              {props.locations.length}
+              {displayLocations.length}
               <span style={{ color: 'var(--text-tertiary)' }}>
                 {' '}
-                location{props.locations.length !== 1 ? 's' : ''}
+                location{displayLocations.length !== 1 ? 's' : ''}
               </span>
             </div>
             <div>
@@ -316,7 +319,7 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
           </div>
 
           {/* Quick Nav: Location Links */}
-          {props.locations.length > 0 && (
+          {displayLocations.length > 0 && (
             <div
               style={{
                 display: 'flex',
@@ -326,7 +329,7 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
                 paddingTop: '8px',
               }}
             >
-              {props.locations.map((loc) => {
+              {displayLocations.map((loc) => {
                 const rawTier = Number((loc.properties?.rarityTier as number | undefined) ?? 1);
                 const locTier = clampRarityTier(rawTier || 1);
                 const showBadge = locTier >= 2;
@@ -582,7 +585,7 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
               marginTop: 'auto',
             }}
           >
-            {props.locations.length}L
+            {displayLocations.length}L
             <br />
             {totalAgents}S
           </div>
