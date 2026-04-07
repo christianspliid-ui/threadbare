@@ -8,7 +8,7 @@
 > Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
 > Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-116**.
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-117**.
 
 ---
 
@@ -19,12 +19,6 @@ Replace the syllable-concatenation placeholder name generator (`generateCandidat
 **Touches:** `src/engine/meetingEncounter.ts` (`generateCandidateName`), culture data in world-model, location name generation
 **Depends on:** Culture seeding system
 **Needs design:** Yes — name table structure, per-culture phoneme pools, gendered/ungendered options, location name conventions per culture
-
----
-
-## ✅ TB-114 · Ambient Sound System (2026-04-06)
-
-Three independent audio channels (Music, Background, UI) with context-sensitive ambient sound. BackgroundChannel has 4-priority stack driven by terrain/location/encounter state. MusicChannel replaces themeAudio.ts with encounter track swap. Volume sliders + master mute in SettingsPanel.
 
 ---
 
@@ -292,71 +286,4 @@ Make the economy dynamic by connecting encounters, factions, locations, and acti
 
 Locations should be populated with non-agent characters — named or unnamed NPCs that give places a sense of life and population without being full graph-walking agents. Think innkeepers, market vendors, town guards, wandering scholars, shrine keepers. They provide flavor, potential encounter hooks, quest givers, and a sense that the world exists beyond the player's spotlight agents. Design questions: how are NPCs represented (lightweight graph nodes? location properties? a new sublocation feature?), how do they interact with encounters and the action system, can agents have relationships with them, and do they ever "graduate" to full agent status?
 
-**Brainstorm:** `brainstorm-location-npcs.md`
-
----
-
-## 💡 TB-051 · Monster Encounters — Residual Scope (2026-03-27, core delivered in M2.5)
-
-M2.5 delivered the core monster system: monster types, lair seeding, escalation, sphere feedback, encounter templates, army attrition, lair icons, divine targeting. Remaining scope is stretch/polish:
-
-- Monster roaming (territory patrol, expansion beyond lairs)
-- Graduated threat scaling with world age / tick count
-- Monster taxonomy expansion (beasts, undead, elemental, corrupted subtypes)
-- Province role consumer (danger gradient computed but unused by monsters)
-
-**Core delivery:** Phase M2.5 (4 plans, 2026-03-30)
-**Depends on:** Encounter system (✅), Layer Revelation (✅), Hex Actions (✅)
-
----
-
-## 💡 TB-037 · Meet The First — Onboarding Auto-Trigger
-
-Auto-trigger the Meet The First encounter on the player's first visit to a populated hex. Free re-rolls, tutorial affordances (tooltips explaining encounter flow, archetypes, values, reaches), and a guided first-time experience. Wraps the repeatable TB-035 action in an onboarding shell.
-
-**Depends on:** TB-035 (Meet The First)
-**Needs design:** Yes — deferred from TB-035 design session (2026-03-26)
-
----
-
-## 💡 TB-032 · Agent Seeding — Pre-Existing Relationships
-
-Agents should start with bonds, faction hierarchy, and narrative hooks instead of spawning as isolated strangers. Seed `relates_to` edges, faction leadership ranks, and opening situations. Needs full design pass.
-
-**Preliminary design:** `Docs/plans/2026-03-25-culture-and-agent-seeding-preliminary-design.md`
-
----
-
-## 💡 TB-017 · Chain Reactions / Trigger System
-
-Lightweight trigger system: "when cursed edge added at this location, also add unrest +10." Player actions cascade through world in visible, traceable ways. Must stay deterministic and traceable per NFPs.
-
-**Depends on:** Location State Fields, Attachment Action Templates
-
----
-
-## 💡 TB-018 · Cosmological Manipulation
-
-Player targets foundation axes (chaos↔order, light↔darkness) directly. Globally modifies action difficulty, terrain stability, agent behavior. Very expensive essence cost, dramatic narrative payoff.
-
-**Depends on:** Generalized Action Targeting (✅), Hex Terrain State
-**Needs design:** Yes
-
----
-
-## 💡 TB-082 · Notification Navigation — Encounter/Faction/Journey Modals (2026-03-30)
-
-Notification click navigation works for agents, hexes, and locations. Three handlers remain stubbed in `useNotificationNavigation.ts`: `onOpenEncounter` (needs active encounter modal), `onOpenFaction` (needs FactionDetailModal), `onOpenJourney` (needs Journey tab navigation). Each is optional — gracefully no-ops when absent.
-
-**Depends on:** Respective modal implementations
-
----
-
-## Implementation Prerequisites (from 2026-03-18 design session)
-
-Audited 2026-03-30:
-
-- [x] Step tick duration backfill — `duration?: number` field exists on EncounterStep (optional, defaults to 1)
-- [x] Attachment reachBonus backfill — `reachBonus` populated on all artifact definitions in reward-attachment-catalog.ts
-- [ ] Trait resolutionBonus backfill — Engine reads `resolutionBonus` from trait nodes but no trait definitions populate it yet
-- [x] ~~Promotion trait names~~ — N/A: promotions use TickEvents + tier advancement, not trait acquisition
+**Brainstorm:** `brainstorm-locati

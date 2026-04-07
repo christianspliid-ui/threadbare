@@ -1,6 +1,6 @@
 # Project Status
 
-> Updated 2026-04-06.
+> Updated 2026-04-07.
 
 ## Current Focus
 
@@ -18,13 +18,15 @@ Design: `Docs/plans/2026-04-05-attention-tier-model-design.md`. Plan: `Docs/plan
 
 ## Recent Completions (2026-04-07)
 
+- **Encounter Veil:** Full-screen overlay replacing TieredEncounterModal (973 lines) + EncounterStage (925 lines) with a single EncounterVeil using the dissolved-art Remembrance aesthetic. All three thread tiers (strongly_threaded/lightly_threaded/watched) + aftermath mode. Wired into GameView as the single encounter rendering path. Net: ~2644 added / ~2457 removed, one path instead of two.
+
 - **Content Catalog Pipeline:** Systematic upgrade and fill of the attachment catalog using the content-catalog-manager skill. Upgraded 10 dead items to 100% alive. Created 55 new items across 6 fill batches: time-manipulation primitives (haste/slow/freeze_duration), encounter-altering primitives (suppress/reroll/create_barrier), diverse arms (6 new reaches), diverse mounts (4 new reaches + first T4 mount), thin primitives (resource_manipulate/slot_bonus/content_grant), and T4 legendary tools + provisions. Primitives with zero usage reduced from 10 to 0. Arms reach coverage expanded from 2 to 8. Total catalog ~210 items, all alive.
 
 ## Previous Completions (2026-04-06)
 
-- **Settlement Genome Pipeline:** Five-pass composition system (infrastructure → culture → spheres → reaches → archetype recognition) gives settlements emergent identity from hex environment, cultural heritage, and economic activity. Replaces `ensureSublocations` for settlement types. Phase 6.636 reassessment on tier changes. Vitality drift model. Culture trait nodes with `has_trait` edges. Archetype displayed in HexChronicle and HexSidebar. `genome` CLI command. 4 trace categories, 8 archetypes, 17 tunable constants, 108+ new tests across 8 test files. Design: `Docs/plans/2026-04-06-settlement-genome-design.md`.
+- **Settlement Genome Pipeline:** Five-pass composition (infrastructure → culture → spheres → reaches → archetype recognition). Replaces `ensureSublocations` for settlements. Phase 6.636 reassessment, vitality drift, culture trait nodes, 8 archetypes, `genome` CLI command, archetype in HexChronicle/HexSidebar. 108+ new tests. Design: `Docs/plans/2026-04-06-settlement-genome-design.md`.
 
-- **Ambient Sound System:** 3-channel audio (Music/Background/UI). BackgroundChannel 4-priority stack driven by terrain/location/encounter context via `useAmbientContext`. MusicChannel replaces themeAudio.ts with encounter track swap. Volume sliders + master mute in SettingsPanel. `onCameraCenterHex` prop added to HexMapV2.
+- **Ambient Sound System:** 3-channel audio (Music/Background/UI). BackgroundChannel 4-priority stack via `useAmbientContext`. MusicChannel replaces themeAudio.ts. Volume sliders + master mute in SettingsPanel.
 
 - **Game Codex:** Browsable content catalog at `?view=codex`. 5 categories (Divine Actions, Mortal Actions, Possessions, Conditions, Agreements), 171 entries. Sidebar tree with subcategory filtering, responsive card grid, detail panel with prose and mechanics. Lazy-loaded, no game state dependency.
 
@@ -52,8 +54,4 @@ Effect Primitive Architecture Phase 5, Coat of Arms & Icon System, TB-104 Conten
 - TB-017 Chain Reactions (idea)
 - TB-018 Cosmological Manipulation (idea)
 
-## Full Backlog
-See: `.planning/BACKLOG.md`
-
-## Completed Work
-See: `Docs/project-history.md`
+Full backlog: `.planning/BACKLOG.md` · Completed work: `Docs/project-history.md`

@@ -6,6 +6,14 @@
 
 ---
 
+## ✅ TB-116 · Encounter Veil (2026-04-07)
+
+Full-screen encounter overlay replacing TieredEncounterModal (973 lines) and EncounterStage (925 lines) with a single `EncounterVeil` component using the dissolved-art Remembrance aesthetic. All three thread tiers supported: strongly_threaded (full art, full prose, 3 choices, paused sim), lightly_threaded (reduced art, auto-resolve timer, 2 choices), watched (peek gate, boost slider, desaturated art). Aftermath mode with actor moments, changes, highlights, and reactions. Wired into GameView as the single rendering path for all encounters. Deleted both legacy modals. Net: ~2644 lines added, ~2457 removed.
+
+**Files:** `src/components/Game/EncounterVeil.tsx` (new, 1593 lines), `src/components/Game/buildSimpleEncounterStageModel.ts` (new), `src/components/Game/encounter-stage/types.ts` (ThreadTier/courtPositionToThreadTier relocated here), `src/types/encounter.ts` (illustrationUrl/illustrationAlt added), `src/types/unifiedAction.ts` (EncounterStageChoiceModel extended: interventionType, godVoice, probabilityBoost), `src/components/Game/GameView.tsx`, `TieredEncounterModal.tsx` (deleted), `EncounterStage.tsx` (deleted).
+
+---
+
 ## ✅ TB-114 · Ambient Sound System (2026-04-06)
 
 Three independent audio channels (Music, Background, UI) with context-sensitive ambient sound. BackgroundChannel has 4-priority stack driven by terrain/location/encounter state. MusicChannel replaces themeAudio.ts with encounter track swap. Volume sliders + master mute in SettingsPanel. 5 new test files. HexMapV2 gains `onCameraCenterHex` prop feeding camera center to ambient context hook `useAmbientContext`. EncounterTemplate gains `backgroundTrack?` and `musicTrack?` for per-encounter audio overrides.

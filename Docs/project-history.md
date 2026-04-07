@@ -7,6 +7,7 @@
 
 Detailed per-phase implementation status for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
+- ✅ Encounter Veil (TB-116): Full-screen dissolved-art overlay replacing TieredEncounterModal + EncounterStage with a single EncounterVeil component. Three thread tiers (strongly_threaded/lightly_threaded/watched) + aftermath mode. buildSimpleEncounterStageModel adapter, ThreadTier relocated to encounter-stage/types.ts, illustrationUrl/illustrationAlt on EncounterTemplate, GameView wired. Net: ~2644 added / ~2457 removed, one rendering path. (2026-04-07)
 - ✅ Content Catalog Pipeline: 65 items upgraded/created across 7 batches — 10 dead items upgraded, 55 new items filling primitive gaps, reach gaps, and T4 tier gaps. 10 unused primitives → 0. Catalog ~210 items, 100% alive. (2026-04-07)
 - ✅ Settlement Genome Pipeline: 5-pass composition (infrastructure → culture → spheres → reaches → archetype recognition) replacing `ensureSublocations` for settlements. Phase 6.636 reassessment, vitality drift, culture trait gating, 8 archetypes, `genome` CLI command, archetype in HexChronicle/HexSidebar. 108+ tests. Design: `Docs/plans/2026-04-06-settlement-genome-design.md`. (2026-04-06)
 - ✅ Ambient Sound System: 3-channel audio (Music/Background/UI) with terrain/location/encounter context-driven ambient. BackgroundChannel 4-priority stack via useAmbientContext hook. MusicChannel replaces themeAudio.ts. Volume sliders + master mute in SettingsPanel. 5 new test files. (2026-04-06)
