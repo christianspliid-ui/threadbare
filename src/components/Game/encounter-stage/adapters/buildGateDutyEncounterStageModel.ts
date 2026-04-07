@@ -297,6 +297,9 @@ function buildChoiceIntent(args: {
     affordable,
     costLabel: essenceCost > 0 ? `${essenceCost.toFixed(2)} essence` : undefined,
     likelyBurden: stepSpecific?.likelyBurden,
+    interventionType: choice.interventionType,
+    godVoice: choice.godVoice,
+    probabilityBoost: choice.probabilityBoost,
   };
 }
 

@@ -395,6 +395,85 @@ describe('buildGateDutyEncounterStageModel', () => {
     expect(model.history[1]?.afterimage).toMatch(/courier’s panic|courier's panic|pushed the courier/i);
   });
 
+  it('passes through interventionType, godVoice, and probabilityBoost on choices', () => {
+    const template = getGateDutyTemplate();
+    const encounter: ActiveEncounterDisplay = {
+      encounterId: template.id,
+      actorId: 'agent.guard',
+      currentStepIndex: 0,
+      history: [],
+      status: 'active',
+      startedTick: 10,
+      sourceSystem: 'legacy_encounter',
+    };
+    const notification: EncounterNotification = {
+      id: 'notif-gate-duty-new-fields',
+      agentId: 'agent.guard',
+      agentName: 'Sergeant Tal',
+      courtPosition: 'the_first',
+      encounterId: template.id,
+      encounterName: template.name,
+      prose: template.steps[0]?.narrative ?? '',
+      choices: [
+        {
+          id: 'choice-support',
+          text: 'Steady the courier',
+          interventionType: 'supportive',
+          probabilityBoost: 0.12,
+          essenceCost: 0.05,
+          godVoice: 'Hold the line without breaking it.',
+        },
+      ],
+      createdTick: 10,
+      autoResolveTick: null,
+      viewed: true,
+      resolved: false,
+    };
+    const clearanceGateState: ClearanceGateRuntimeState = {
+      runtimeId: 'clearance_gate_cg.quest.gate_duty_loc_town_checkpoint_clearance',
+      templateId: template.id,
+      gateId: 'checkpoint_clearance',
+      anchorLocationId: 'loc.town',
+      subjectNodeId: 'npc.courier',
+      authorityNodeId: 'npc.captain',
+      witnessNodeIds: ['npc.witness'],
+      locationNodeId: 'loc.gatehouse',
+      persistence: 'must-persist',
+      state: 'pending',
+      revealedSignalKeys: [],
+      followOnTags: [],
+      attempts: 0,
+      lastUpdatedTick: 10,
+      history: [],
+    };
+    const graph = {
+      getNode(nodeId: string) {
+        const names: Record<string, { name: string }> = {
+          'loc.gatehouse': { name: 'South Quarantine Gate' },
+          'npc.captain': { name: 'Captain Merrow' },
+          'npc.courier': { name: 'Courier Nessa' },
+          'npc.witness': { name: 'Dock Porter' },
+        };
+        return names[nodeId] ?? null;
+      },
+    } as const;
+
+    const model = buildGateDutyEncounterStageModel({
+      template,
+      encounter,
+      notification,
+      agentName: 'Sergeant Tal',
+      threadTier: 'strong',
+      graph: graph as never,
+      clearanceGateState,
+      essence: 0.34,
+    });
+
+    expect(model.choices[0]?.interventionType).toBe('supportive');
+    expect(model.choices[0]?.godVoice).toBe('Hold the line without breaking it.');
+    expect(model.choices[0]?.probabilityBoost).toBe(0.12);
+  });
+
   it('maps aftermath summary and reaction choices into the stage model', () => {
     const template = getGateDutyTemplate();
     const encounter: ActiveEncounterDisplay = {
