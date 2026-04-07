@@ -26,6 +26,8 @@ import type { ControlEffect } from '../../types/controlEffect';
 import { SOUL_PROSE, SOUL_SECONDARY_PROSE, type HexSoulLevel } from '../../data/hexSoulProse';
 import { renderProseWithIPK } from '../ProseKeyword';
 import type { RarityTier } from '../../types/rarity';
+import type { CultureIdentity } from '../../types/culture';
+import { composeCultureMores } from '../../engine/cultureMores';
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
@@ -303,6 +305,15 @@ export const HexChronicle = memo(function HexChronicle({
     if (!templates) return null;
     return pickFromArray(templates, hexSeed + hashString(dominantCulture.cultureId));
   }, [dominantCulture, hexSeed]);
+
+  const cultureMoresProse = useMemo(() => {
+    if (!dominantCulture?.cultureId) return null;
+    const cultureNode = graph.getNode(dominantCulture.cultureId);
+    if (!cultureNode) return null;
+    const identity = (cultureNode.properties as any).cultureIdentity as CultureIdentity | undefined;
+    if (!identity) return null;
+    return composeCultureMores(identity, hexSeed + hashString(dominantCulture.cultureId) + 7919);
+  }, [dominantCulture, graph, hexSeed]);
 
   const factionProse = useMemo(() => {
     if (!dominantFaction) return null;
@@ -790,6 +801,12 @@ export const HexChronicle = memo(function HexChronicle({
         {dominantCulture && !cultureProse && (
           <p className="chronicle-prose drop-cap" style={proseStyle}>
             The {stripLeadingThe(dominantCulture.cultureName)} claim this land, their traditions shaping the settlement and its people.
+          </p>
+        )}
+
+        {cultureMoresProse && (
+          <p className="chronicle-prose" style={proseStyle}>
+            {cultureMoresProse}
           </p>
         )}
 
