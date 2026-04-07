@@ -24,7 +24,7 @@ import { Tooltip } from '../shared/Tooltip';
 import { IconButton } from '../shared/IconButton';
 import { getSphereColor } from '../../data/sphereIcons';
 import { getThreadsFrom } from '../../engine/graphQueries';
-import { getOriginPortraitUrl, getSphereFrameUrl } from '../../data/avatar-portrait-assets';
+import { composePortrait } from '../../utils/portraitCompositor';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -200,35 +200,11 @@ export function AscendantSheet({
     if (!open) return;
     setPortraitDataUrl(null);
 
-    const portraitUrl = getOriginPortraitUrl(originFragmentId);
-    const frameUrl = getSphereFrameUrl(primarySphere);
-
-    const portraitImg = new Image();
-    portraitImg.crossOrigin = 'anonymous';
-    const frameImg = new Image();
-    frameImg.crossOrigin = 'anonymous';
-
     let cancelled = false;
 
-    Promise.all([
-      new Promise<HTMLImageElement>((res, rej) => { portraitImg.onload = () => res(portraitImg); portraitImg.onerror = rej; portraitImg.src = portraitUrl; }),
-      new Promise<HTMLImageElement>((res, rej) => { frameImg.onload = () => res(frameImg); frameImg.onerror = rej; frameImg.src = frameUrl; }),
-    ]).then(([pImg, fImg]) => {
-      if (cancelled) return;
-      const canvas = document.createElement('canvas');
-      canvas.width = 240;
-      canvas.height = 320;
-      const ctx = canvas.getContext('2d')!;
-      // Draw origin portrait, cover-crop to canvas
-      const scale = Math.max(240 / pImg.width, 320 / pImg.height);
-      const sw = 240 / scale, sh = 320 / scale;
-      const sx = (pImg.width - sw) / 2, sy = (pImg.height - sh) / 2;
-      ctx.drawImage(pImg, sx, sy, sw, sh, 0, 0, 240, 320);
-      // Draw sphere frame on top
-      ctx.drawImage(fImg, 0, 0, 240, 320);
+    composePortrait(originFragmentId, primarySphere, 240, 320).then((canvas) => {
+      if (cancelled || !canvas) return;
       setPortraitDataUrl(canvas.toDataURL());
-    }).catch(() => {
-      // fail-soft: leave the fallback sphere sigil visible
     });
 
     return () => { cancelled = true; };
