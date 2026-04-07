@@ -16,7 +16,11 @@ Design: `Docs/plans/2026-04-05-attention-tier-model-design.md`. Plan: `Docs/plan
 - **Agent Success Redesign:** Phase 1 ✅, Phase 2 ✅, Phase 3 ✅, Phase 4 ✅ corrected (2026-04-03)
 - **Next:** Phase 5 (encounter migration and early-game retune), or v1.2 Social Systems
 
-## Recent Completions (2026-04-06)
+## Recent Completions (2026-04-07)
+
+- **Content Catalog Pipeline:** Systematic upgrade and fill of the attachment catalog using the content-catalog-manager skill. Upgraded 10 dead items to 100% alive. Created 55 new items across 6 fill batches: time-manipulation primitives (haste/slow/freeze_duration), encounter-altering primitives (suppress/reroll/create_barrier), diverse arms (6 new reaches), diverse mounts (4 new reaches + first T4 mount), thin primitives (resource_manipulate/slot_bonus/content_grant), and T4 legendary tools + provisions. Primitives with zero usage reduced from 10 to 0. Arms reach coverage expanded from 2 to 8. Total catalog ~210 items, all alive.
+
+## Previous Completions (2026-04-06)
 
 - **Settlement Genome Pipeline:** Five-pass composition system (infrastructure → culture → spheres → reaches → archetype recognition) gives settlements emergent identity from hex environment, cultural heritage, and economic activity. Replaces `ensureSublocations` for settlement types. Phase 6.636 reassessment on tier changes. Vitality drift model. Culture trait nodes with `has_trait` edges. Archetype displayed in HexChronicle and HexSidebar. `genome` CLI command. 4 trace categories, 8 archetypes, 17 tunable constants, 108+ new tests across 8 test files. Design: `Docs/plans/2026-04-06-settlement-genome-design.md`.
 
@@ -32,13 +36,9 @@ Design: `Docs/plans/2026-04-05-attention-tier-model-design.md`. Plan: `Docs/plan
 
 - **Ascendant Remembrance Flow V1:** Stirring/Origin/Drive/Transformation/Reveal narrative creation, filtering funnel, dual naming, 6 components, 18 tests. Old cosmology-slider flow preserved as "Advanced World Setup".
 
-## Previous Completions (see project-history.md)
-
-Effect Primitive Architecture Phase 5, Coat of Arms & Icon System, TB-104 Content Primitives, Agent Success Redesign Phases 2-4, Balance-Eval Phase 1.
-
 ## Earlier (see project-history.md)
 
-TB-104 Content Primitives, Agent Success Redesign Phases 2-4, Balance-Eval Phase 1, Coat of Arms system, Effect Primitives — all in `Docs/project-history.md`.
+Effect Primitive Architecture Phase 5, Coat of Arms & Icon System, TB-104 Content Primitives, Agent Success Redesign Phases 2-4, Balance-Eval Phase 1 — all in `Docs/project-history.md`.
 
 ## Active Backlog Ideas
 
