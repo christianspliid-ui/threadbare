@@ -18,14 +18,6 @@ const REST_POSITIONS = [
   { x: 25,  y: 20,  scale: 0.94, rotate: -0.6 },
 ];
 
-/** Peripheral positions when another image is focused. */
-const PERIPHERAL_POSITIONS = [
-  { x: -40, y: -6,  scale: 0.50, rotate: -3 },
-  { x: 42,  y: -10, scale: 0.45, rotate: 2.5 },
-  { x: -38, y: 14,  scale: 0.47, rotate: 1.8 },
-  { x: 40,  y: 16,  scale: 0.52, rotate: -2 },
-];
-
 export function StirringBeat({ images, onSelect }: StirringBeatProps) {
   const [focusedId, setFocusedId] = useState<string | null>(null);
   const [confirmedId, setConfirmedId] = useState<string | null>(null);
@@ -36,6 +28,11 @@ export function StirringBeat({ images, onSelect }: StirringBeatProps) {
     images.forEach((img, i) => map.set(img.id, i));
     return map;
   }, [images]);
+
+  const focusedIndex = useMemo(() => {
+    if (!focusedId) return -1;
+    return images.findIndex(img => img.id === focusedId);
+  }, [focusedId, images]);
 
   const handleClick = useCallback((image: StirringImage) => {
     if (confirmedId) return;
@@ -49,6 +46,12 @@ export function StirringBeat({ images, onSelect }: StirringBeatProps) {
       setFocusedId(image.id);
     }
   }, [focusedId, confirmedId, onSelect]);
+
+  const handleNav = useCallback((direction: -1 | 1) => {
+    if (confirmedId || focusedIndex < 0) return;
+    const next = (focusedIndex + direction + images.length) % images.length;
+    setFocusedId(images[next].id);
+  }, [confirmedId, focusedIndex, images]);
 
   const getStyle = (imageId: string, slot: number): React.CSSProperties => {
     const isFocused = focusedId === imageId;
@@ -67,20 +70,22 @@ export function StirringBeat({ images, onSelect }: StirringBeatProps) {
 
     if (isFocused) {
       return {
-        transform: 'translate(-50%, -50%) scale(1.1)',
+        transform: 'translate(-50%, -50%) scale(1)',
         opacity: 1,
         filter: 'brightness(1.1)',
         zIndex: 5,
+        top: '42%',
+        width: 'min(1100px, 58vw)',
       };
     }
 
     if (somethingFocused) {
-      const p = PERIPHERAL_POSITIONS[slot] ?? PERIPHERAL_POSITIONS[0];
       return {
-        transform: `translate(calc(-50% + ${p.x}vw), calc(-50% + ${p.y}vh)) scale(${p.scale}) rotate(${p.rotate}deg)`,
-        opacity: 0.3,
-        filter: 'brightness(0.4)',
+        transform: 'translate(-50%, -50%) scale(0)',
+        opacity: 0,
+        filter: 'brightness(0)',
         zIndex: 1,
+        pointerEvents: 'none' as const,
       };
     }
 
@@ -94,6 +99,8 @@ export function StirringBeat({ images, onSelect }: StirringBeatProps) {
       zIndex: isHovered ? 3 : 2,
     };
   };
+
+  const focusedPlaceholder = focusedId ? STIRRING_PLACEHOLDERS[focusedId] : null;
 
   return (
     <div className="h-screen relative overflow-hidden"
@@ -136,13 +143,13 @@ export function StirringBeat({ images, onSelect }: StirringBeatProps) {
             style={{
               top: '50%',
               left: '50%',
-              width: 'min(1100px, 65vw)',
+              width: 'min(850px, 48vw)',
               aspectRatio: '16/9',
               background: 'transparent',
               border: 'none',
               padding: 0,
               ...style,
-              transition: 'transform 1s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.8s ease, filter 0.6s ease',
+              transition: 'transform 1s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.8s ease, filter 0.6s ease, top 1s cubic-bezier(0.23, 1, 0.32, 1), width 1s cubic-bezier(0.23, 1, 0.32, 1)',
             }}
           >
             {/* Image with dissolved edges */}
@@ -156,25 +163,82 @@ export function StirringBeat({ images, onSelect }: StirringBeatProps) {
                 WebkitMaskImage: 'radial-gradient(ellipse 90% 85% at center, black 30%, transparent 95%)',
               }}
             />
-            {/* Label — only when focused */}
-            {placeholder && (
-              <span
-                className="absolute bottom-4 left-0 right-0 text-center transition-opacity duration-600"
-                style={{
-                  fontFamily: 'Georgia, "Times New Roman", serif',
-                  fontStyle: 'italic',
-                  fontSize: '0.85rem',
-                  color: 'rgba(255,255,255,0.2)',
-                  opacity: isFocused ? 1 : 0,
-                  letterSpacing: '0.08em',
-                  pointerEvents: 'none',
-                }}>
-                {placeholder.label}
-              </span>
-            )}
           </button>
         );
       })}
+
+      {/* Label — below the focused image */}
+      <p
+        className="absolute left-0 right-0 text-center transition-all duration-700"
+        style={{
+          bottom: '13vh',
+          fontFamily: 'Georgia, "Times New Roman", serif',
+          fontStyle: 'italic',
+          fontSize: '1.6rem',
+          color: 'rgba(255,255,255,0.35)',
+          letterSpacing: '0.1em',
+          opacity: confirmedId ? 0 : focusedPlaceholder ? 1 : 0,
+          zIndex: 20,
+          pointerEvents: 'none',
+        }}>
+        {focusedPlaceholder?.label ?? ''}
+      </p>
+
+      {/* Navigation arrows — visible when focused */}
+      {focusedId && !confirmedId && (
+        <>
+          {/* Left arrow */}
+          <button
+            type="button"
+            onClick={() => handleNav(-1)}
+            className="absolute cursor-pointer"
+            style={{
+              left: '4vw',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'none',
+              border: 'none',
+              padding: '1rem',
+              zIndex: 20,
+              color: 'rgba(160,140,180,0.35)',
+              fontSize: '3.5rem',
+              fontFamily: 'Georgia, "Times New Roman", serif',
+              lineHeight: 1,
+              transition: 'color 0.3s ease',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.7)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.35)'; }}
+            aria-label="Previous image"
+          >
+            &#x2039;
+          </button>
+          {/* Right arrow */}
+          <button
+            type="button"
+            onClick={() => handleNav(1)}
+            className="absolute cursor-pointer"
+            style={{
+              right: '4vw',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'none',
+              border: 'none',
+              padding: '1rem',
+              zIndex: 20,
+              color: 'rgba(160,140,180,0.35)',
+              fontSize: '3.5rem',
+              fontFamily: 'Georgia, "Times New Roman", serif',
+              lineHeight: 1,
+              transition: 'color 0.3s ease',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.7)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.35)'; }}
+            aria-label="Next image"
+          >
+            &#x203a;
+          </button>
+        </>
+      )}
     </div>
   );
 }
