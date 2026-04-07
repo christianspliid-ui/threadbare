@@ -15,6 +15,7 @@ import { AscendantSelection } from './components/Ascendant/AscendantSelection';
 import { GameView } from './components/Game/GameView';
 import { MagicGlowTiles } from './components/UI/MagicGlowTiles';
 import { HexV2View } from './components/HexMapV2/HexV2View';
+import { TerrainTextureLab } from './components/HexMapV2/lab/TerrainTextureLab';
 import { StartPage } from './components/StartPage/StartPage';
 import { RemembranceFlow } from './components/Remembrance/RemembranceFlow';
 
@@ -55,11 +56,12 @@ function quickStartPhase(seed: number): GamePhase {
 }
 
 function App() {
-  // Dev views via URL param: ?view=glow | ?view=cms | ?view=game
+  // Dev views via URL param: ?view=glow | ?view=cms | ?view=game | ?view=terrain-lab
   const viewParam = new URLSearchParams(window.location.search).get('view');
   if (viewParam === 'glow') return <MagicGlowTiles />;
   if (viewParam === 'cms') return <Suspense fallback={<div className="h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-abyss)', color: 'var(--text-muted)' }}>Loading Content Browser...</div>}><ContentBrowser /></Suspense>;
   if (viewParam === 'codex') return <Suspense fallback={<div className="h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-abyss)', color: 'var(--text-muted)' }}>Loading Codex...</div>}><Codex /></Suspense>;
+  if (viewParam === 'terrain-lab') return <TerrainTextureLab />;
   // Three.js renderer V2 — 60K hex grid at full world scale
   if (viewParam === 'hexv2') {
     const hexv2Result = generateWorld(createBalancedCosmology(), HEXV2_COLS, HEXV2_ROWS, 42);

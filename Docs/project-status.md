@@ -1,6 +1,6 @@
 # Project Status
 
-> Updated 2026-04-07.
+> Updated 2026-04-08.
 
 ## Current Focus
 
@@ -16,7 +16,11 @@ Design: `Docs/plans/2026-04-05-attention-tier-model-design.md`. Plan: `Docs/plan
 - **Agent Success Redesign:** Phase 1 ✅, Phase 2 ✅, Phase 3 ✅, Phase 4 ✅ corrected (2026-04-03)
 - **Next:** Phase 5 (encounter migration and early-game retune), or v1.2 Social Systems
 
-## Recent Completions (2026-04-07)
+## Recent Completions (2026-04-08)
+
+- **Terrain Texture Lab POC:** Standalone WebGL playground at `?view=terrain-lab` for experimenting with hex terrain materials outside the live game renderer. Separate Three.js scene + instanced shader preview, six starter recipes (grassland, forest, mountains, dunes, coast, swamp), live controls for noise/warp/banding/color, localStorage persistence, JSON export. Research/implementation note: `Docs/plans/2026-04-08-terrain-texture-lab-poc.md`.
+
+## Previous Completions (2026-04-07)
 
 - **Ascendant Portrait System:** Two-layer composited portrait system replacing generic sphere-keyed energy-being avatars. 12 origin portraits (mortal faces from remembrance choices) + 8 sphere frames (ornate picture frames with sphere-specific patterns). Canvas compositing at runtime, per-session caching, fail-soft fallbacks. Surfaces: AscendantSheet (full framed portrait), hex map agent icon (origin portrait), IdentityChip (circular thumbnail). 20 placeholder assets, 23 tests. Design: `Docs/plans/2026-04-07-ascendant-portrait-system-design.md`.
 
@@ -24,7 +28,7 @@ Design: `Docs/plans/2026-04-05-attention-tier-model-design.md`. Plan: `Docs/plan
 
 - **Content Catalog Pipeline:** Systematic upgrade and fill of the attachment catalog using the content-catalog-manager skill. Upgraded 10 dead items to 100% alive. Created 55 new items across 6 fill batches: time-manipulation primitives (haste/slow/freeze_duration), encounter-altering primitives (suppress/reroll/create_barrier), diverse arms (6 new reaches), diverse mounts (4 new reaches + first T4 mount), thin primitives (resource_manipulate/slot_bonus/content_grant), and T4 legendary tools + provisions. Primitives with zero usage reduced from 10 to 0. Arms reach coverage expanded from 2 to 8. Total catalog ~210 items, all alive.
 
-## Previous Completions (2026-04-06)
+## Earlier Completions (2026-04-06)
 
 - **Settlement Genome Pipeline:** Five-pass composition (infrastructure → culture → spheres → reaches → archetype recognition). Replaces `ensureSublocations` for settlements. Phase 6.636 reassessment, vitality drift, culture trait nodes, 8 archetypes, `genome` CLI command, archetype in HexChronicle/HexSidebar. 108+ new tests. Design: `Docs/plans/2026-04-06-settlement-genome-design.md`.
 

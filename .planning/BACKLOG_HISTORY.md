@@ -6,6 +6,14 @@
 
 ---
 
+## ✅ TB-117 · Terrain Texture Lab POC (2026-04-08)
+
+Standalone WebGL playground for terrain material experiments before touching HexMapV2 production rendering. Added dev route `?view=terrain-lab` with a separate Three.js scene, instanced shader preview, six starter recipes (grassland, forest, mountains, dunes, coast, swamp), live controls for color/noise/warp/banding/animation, localStorage persistence, and JSON export. Includes implementation/research note: `Docs/plans/2026-04-08-terrain-texture-lab-poc.md`.
+
+**Files:** `src/App.tsx`, `src/components/HexMapV2/lab/TerrainTextureLab.tsx`, `src/components/HexMapV2/lab/TerrainTextureLabCanvas.tsx`, `src/components/HexMapV2/lab/terrainTextureLabPresets.ts`, `src/components/HexMapV2/lab/terrainTextureLabShader.ts`, `src/components/HexMapV2/lab/__tests__/terrainTextureLabShader.test.ts`, `Docs/plans/2026-04-08-terrain-texture-lab-poc.md`.
+
+---
+
 ## ✅ TB-116 · Encounter Veil (2026-04-07)
 
 Full-screen encounter overlay replacing TieredEncounterModal (973 lines) and EncounterStage (925 lines) with a single `EncounterVeil` component using the dissolved-art Remembrance aesthetic. All three thread tiers supported: strongly_threaded (full art, full prose, 3 choices, paused sim), lightly_threaded (reduced art, auto-resolve timer, 2 choices), watched (peek gate, boost slider, desaturated art). Aftermath mode with actor moments, changes, highlights, and reactions. Wired into GameView as the single rendering path for all encounters. Deleted both legacy modals. Net: ~2644 lines added, ~2457 removed.
