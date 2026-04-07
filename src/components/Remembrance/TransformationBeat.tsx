@@ -85,56 +85,48 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
       {/* ── Hunger selection ── */}
       {step === 'hunger' && (
         <>
-          {/* Prompt — two-line version at rest, single-line when focused */}
-          {!focusedHungerId ? (
-            <div className="absolute left-0 right-0 text-center transition-all duration-1000"
-                 style={{
-                   top: '7vh',
-                   opacity: textVisible ? 1 : 0,
-                   transform: textVisible ? 'translateY(0)' : 'translateY(12px)',
-                   zIndex: 20,
-                 }}>
-              <p style={{
-                fontFamily: 'Georgia, "Times New Roman", serif',
-                fontStyle: 'italic',
-                fontSize: '1.5rem',
-                color: 'rgba(196,180,155,0.5)',
-                letterSpacing: '0.06em',
-              }}>
-                And then the power found you. Or you found it.
-              </p>
-              <p className="mt-3" style={{
-                fontFamily: 'Georgia, "Times New Roman", serif',
-                fontStyle: 'italic',
-                fontSize: '0.95rem',
-                color: 'rgba(154,138,106,0.4)',
-                letterSpacing: '0.05em',
-              }}>
-                It does not matter which. It was hungry. So were you.
-              </p>
-            </div>
-          ) : (
-            <p className="absolute left-0 right-0 text-center transition-all duration-700"
+          {/* Prompt */}
+          <p className="absolute left-0 right-0 text-center transition-all duration-1000"
+             style={{
+               top: '5vh',
+               fontFamily: 'Georgia, "Times New Roman", serif',
+               fontStyle: 'italic',
+               fontSize: '1.5rem',
+               color: focusedHungerId ? 'rgba(160,140,180,0.35)' : 'rgba(196,180,155,0.45)',
+               letterSpacing: '0.06em',
+               opacity: textVisible ? 1 : 0,
+               transform: textVisible ? 'translateY(0)' : 'translateY(12px)',
+               zIndex: 20,
+               pointerEvents: 'none',
+             }}>
+            {focusedHungerId
+              ? 'Click again to choose. Or reach for another.'
+              : 'And then the power found you. Or you found it.'}
+          </p>
+          {!focusedHungerId && (
+            <p className="absolute left-0 right-0 text-center transition-all duration-1000"
                style={{
-                 top: '7vh',
+                 top: 'calc(5vh + 2.2rem)',
                  fontFamily: 'Georgia, "Times New Roman", serif',
                  fontStyle: 'italic',
-                 fontSize: '1.3rem',
-                 color: 'rgba(160,140,180,0.4)',
-                 letterSpacing: '0.06em',
+                 fontSize: '0.95rem',
+                 color: 'rgba(154,138,106,0.4)',
+                 letterSpacing: '0.05em',
+                 opacity: textVisible ? 1 : 0,
                  zIndex: 20,
+                 pointerEvents: 'none',
                }}>
-              {hungerPromptText}
+              It does not matter which. It was hungry. So were you.
             </p>
           )}
 
           {/* Browse mode — all cards in a row */}
           {!focusedHungerId && (
-            <div className="flex gap-8 transition-all duration-1000"
+            <div className="absolute inset-0 flex items-center justify-center gap-8 px-[6vw]"
                  style={{
-                   width: 'min(1100px, 90vw)',
                    opacity: contentVisible ? 1 : 0,
                    transform: contentVisible ? 'translateY(0)' : 'translateY(20px)',
+                   transition: 'opacity 1s ease, transform 1s ease',
                  }}>
               {hungers.map(hunger => {
                 const prose = selectHungerProse(hunger, driveFragment);
@@ -185,101 +177,70 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
             </div>
           )}
 
-          {/* Focused mode — single expanded hunger card */}
+          {/* Focused mode — full-bleed art */}
           {focusedHunger && !selectedHunger && (
-            <div className="flex flex-col items-center justify-center"
-                 style={{ marginTop: '-2vh', width: '100%' }}>
-              <button
-                type="button"
+            <>
+              <div
+                className="absolute inset-0 transition-all duration-1000 cursor-pointer"
+                style={{
+                  backgroundImage: `url(${focusedHunger.imageAssetPath})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  opacity: 0.8,
+                  maskImage: 'radial-gradient(ellipse 90% 85% at 50% 40%, black 25%, transparent 80%)',
+                  WebkitMaskImage: 'radial-gradient(ellipse 90% 85% at 50% 40%, black 25%, transparent 80%)',
+                }}
                 onClick={() => handleHungerClick(focusedHunger)}
                 data-testid="hunger-focused"
-                className="text-left cursor-pointer transition-all duration-700"
+              />
+
+              {/* Bottom reading zone */}
+              <div
+                className="absolute bottom-0 left-0 right-0 flex flex-col items-center"
                 style={{
-                  width: 'min(900px, 55vw)',
-                  background: 'transparent',
-                  border: 'none',
-                  padding: 0,
-                  opacity: 1,
-                  filter: 'brightness(1.1)',
+                  padding: '0 8vw 5vh',
+                  background: 'linear-gradient(to top, rgba(10,10,15,0.95) 0%, rgba(10,10,15,0.8) 30%, rgba(10,10,15,0.4) 60%, transparent 100%)',
+                  zIndex: 10,
                 }}
               >
-                <div
-                  className="w-full bg-cover bg-center"
-                  style={{
-                    aspectRatio: '16/9',
-                    backgroundImage: `url(${focusedHunger.imageAssetPath}), linear-gradient(135deg, rgba(180,160,100,0.12), rgba(60,50,30,0.08), rgba(120,100,60,0.10))`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    maskImage: 'radial-gradient(ellipse 90% 85% at center, black 35%, transparent 100%)',
-                    WebkitMaskImage: 'radial-gradient(ellipse 90% 85% at center, black 35%, transparent 100%)',
-                  }}
-                />
-                <div className="px-2 pt-5 pb-2">
-                  <p style={{
-                    fontFamily: 'Georgia, "Times New Roman", serif',
-                    fontStyle: 'italic',
-                    fontSize: '1.05rem',
-                    lineHeight: '1.8',
-                    color: 'rgba(212,196,138,0.8)',
-                  }}>
-                    {selectHungerProse(focusedHunger, driveFragment)}
-                  </p>
-                </div>
-              </button>
-            </div>
+                <p style={{
+                  fontFamily: 'Georgia, "Times New Roman", serif',
+                  fontStyle: 'italic',
+                  fontSize: '1.15rem',
+                  lineHeight: '1.85',
+                  color: 'rgba(212,196,158,0.75)',
+                  maxWidth: '680px',
+                  textAlign: 'center',
+                  marginBottom: '16px',
+                }}>
+                  {selectHungerProse(focusedHunger, driveFragment)}
+                </p>
+                <p style={{
+                  fontFamily: 'Georgia, "Times New Roman", serif',
+                  fontStyle: 'italic',
+                  fontSize: '0.85rem',
+                  color: 'rgba(160,140,130,0.25)',
+                  letterSpacing: '0.06em',
+                }}>
+                  Click the image to choose
+                </p>
+              </div>
+            </>
           )}
 
           {/* Navigation arrows for hunger browsing */}
           {isBrowsingHunger && (
             <>
-              <button
-                type="button"
-                onClick={() => handleHungerNav(-1)}
-                className="absolute cursor-pointer"
-                style={{
-                  left: '4vw',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none',
-                  border: 'none',
-                  padding: '1rem',
-                  zIndex: 20,
-                  color: 'rgba(160,140,180,0.35)',
-                  fontSize: '3.5rem',
-                  fontFamily: 'Georgia, "Times New Roman", serif',
-                  lineHeight: 1,
-                  transition: 'color 0.3s ease',
-                }}
+              <button type="button" onClick={() => handleHungerNav(-1)} className="absolute cursor-pointer"
+                style={{ left: '2vw', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', padding: '2rem 1.5rem', zIndex: 20, color: 'rgba(160,140,180,0.3)', fontSize: '3rem', fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif', lineHeight: 1, transition: 'color 0.3s ease' }}
                 onMouseEnter={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.7)'; }}
-                onMouseLeave={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.35)'; }}
-                aria-label="Previous hunger"
-              >
-                &#x2039;
-              </button>
-              <button
-                type="button"
-                onClick={() => handleHungerNav(1)}
-                className="absolute cursor-pointer"
-                style={{
-                  right: '4vw',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none',
-                  border: 'none',
-                  padding: '1rem',
-                  zIndex: 20,
-                  color: 'rgba(160,140,180,0.35)',
-                  fontSize: '3.5rem',
-                  fontFamily: 'Georgia, "Times New Roman", serif',
-                  lineHeight: 1,
-                  transition: 'color 0.3s ease',
-                }}
+                onMouseLeave={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.3)'; }}
+                aria-label="Previous hunger">&#x2039;</button>
+              <button type="button" onClick={() => handleHungerNav(1)} className="absolute cursor-pointer"
+                style={{ right: '2vw', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', padding: '2rem 1.5rem', zIndex: 20, color: 'rgba(160,140,180,0.3)', fontSize: '3rem', fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif', lineHeight: 1, transition: 'color 0.3s ease' }}
                 onMouseEnter={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.7)'; }}
-                onMouseLeave={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.35)'; }}
-                aria-label="Next hunger"
-              >
-                &#x203a;
-              </button>
+                onMouseLeave={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.3)'; }}
+                aria-label="Next hunger">&#x203a;</button>
             </>
           )}
         </>
@@ -309,6 +270,7 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
                }}>
             {selectedHunger.courtOptions.map(option => {
               const isChosen = selectedCourt === option.courtType;
+              const courtImagePath = `/assets/remembrance/court/${option.courtType === 'high_house' ? 'high-house' : option.courtType}.png`;
               return (
                 <button
                   key={option.courtType}
@@ -319,11 +281,23 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
                   style={{
                     background: 'transparent',
                     border: 'none',
-                    padding: '24px 4px',
+                    padding: '0 4px',
                     opacity: isChosen ? 1 : 0.4,
                   }}
                 >
-                  <p style={{
+                  <div
+                    className="w-full bg-cover bg-center transition-all duration-700"
+                    style={{
+                      aspectRatio: '16/9',
+                      backgroundImage: `url(${courtImagePath})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      maskImage: 'radial-gradient(ellipse 90% 85% at center, black 35%, transparent 100%)',
+                      WebkitMaskImage: 'radial-gradient(ellipse 90% 85% at center, black 35%, transparent 100%)',
+                      filter: isChosen ? 'brightness(1)' : 'brightness(0.5)',
+                    }}
+                  />
+                  <p className="mt-4" style={{
                     fontFamily: 'Georgia, "Times New Roman", serif',
                     fontStyle: 'italic',
                     fontSize: '1.05rem',

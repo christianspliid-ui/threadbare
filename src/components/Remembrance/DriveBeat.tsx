@@ -29,11 +29,12 @@ export function DriveBeat({ fragments, onSelect }: DriveBeatProps) {
     return fragments[focusedIndex];
   }, [focusedIndex, fragments]);
 
+  const activeFragment = focusedFragment ?? (confirmedId ? fragments.find(f => f.id === confirmedId) ?? null : null);
+
   const handleClick = useCallback((fragment: RemembranceFragment) => {
     if (confirmedId) return;
 
     if (focusedId === fragment.id) {
-      // Second click = confirm
       setConfirmedId(fragment.id);
       setTimeout(() => onSelect(fragment), 1000);
     } else {
@@ -48,35 +49,37 @@ export function DriveBeat({ fragments, onSelect }: DriveBeatProps) {
   }, [confirmedId, focusedIndex, fragments]);
 
   const isBrowsing = focusedId !== null && !confirmedId;
-  const promptText = !focusedId
-    ? 'But there was something you could not release. Even now, it burns.'
-    : 'Click again to choose. Or reach for another.';
 
   return (
-    <div className="h-screen relative overflow-hidden flex flex-col items-center"
+    <div className="h-screen relative overflow-hidden"
          style={{ background: '#0a0a0f' }}>
 
-      <p className="mt-[7vh] text-center transition-all duration-1000"
+      {/* Prompt */}
+      <p className="absolute left-0 right-0 text-center transition-all duration-1000"
          style={{
+           top: '5vh',
            fontFamily: 'Georgia, "Times New Roman", serif',
            fontStyle: 'italic',
-           fontSize: '1.4rem',
-           color: focusedId ? 'rgba(160,140,180,0.4)' : 'rgba(196,155,171,0.5)',
+           fontSize: '1.5rem',
+           color: focusedId ? 'rgba(160,140,180,0.35)' : 'rgba(196,155,171,0.45)',
            letterSpacing: '0.06em',
            opacity: textVisible && !confirmedId ? 1 : 0,
            transform: textVisible ? 'translateY(0)' : 'translateY(12px)',
            zIndex: 20,
+           pointerEvents: 'none',
          }}>
-        {promptText}
+        {focusedId
+          ? 'Click again to choose. Or reach for another.'
+          : 'But there was something you could not release. Even now, it burns.'}
       </p>
 
-      {/* Browse mode — all cards in a row */}
+      {/* ── REST STATE: cards in a row ── */}
       {!focusedId && !confirmedId && (
-        <div className="flex gap-8 mt-14 transition-all duration-1000"
+        <div className="absolute inset-0 flex items-center justify-center gap-8 px-[6vw]"
              style={{
-               width: 'min(1200px, 92vw)',
                opacity: cardsVisible ? 1 : 0,
                transform: cardsVisible ? 'translateY(0)' : 'translateY(20px)',
+               transition: 'opacity 1s ease, transform 1s ease',
              }}>
           {fragments.map(fragment => (
             <FragmentCard
@@ -92,84 +95,73 @@ export function DriveBeat({ fragments, onSelect }: DriveBeatProps) {
         </div>
       )}
 
-      {/* Focus/confirmed mode — single expanded card centered */}
-      {(focusedFragment || confirmedId) && (
-        <div className="flex-1 flex flex-col items-center justify-center"
-             style={{ marginTop: '-2vh', width: '100%' }}>
+      {/* ── FOCUSED STATE: full-bleed art ── */}
+      {activeFragment && (
+        <>
           <div
-            className="transition-all duration-700"
+            className="absolute inset-0 transition-all duration-1000 cursor-pointer"
             style={{
-              width: 'min(900px, 55vw)',
-              opacity: confirmedId ? 0.3 : 1,
+              backgroundImage: `url(${activeFragment.imageAssetPath})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              opacity: confirmedId ? 0.3 : 0.8,
+              maskImage: 'radial-gradient(ellipse 90% 85% at 50% 40%, black 25%, transparent 80%)',
+              WebkitMaskImage: 'radial-gradient(ellipse 90% 85% at 50% 40%, black 25%, transparent 80%)',
             }}
-          >
-            <FragmentCard
-              prose={(focusedFragment ?? fragments.find(f => f.id === confirmedId))!.prose}
-              imageAssetPath={(focusedFragment ?? fragments.find(f => f.id === confirmedId))!.imageAssetPath}
-              selected={true}
-              onClick={() => {
-                if (focusedFragment && !confirmedId) {
-                  handleClick(focusedFragment);
-                }
+            onClick={() => {
+              if (focusedFragment && !confirmedId) handleClick(focusedFragment);
+            }}
+          />
+
+          {/* Bottom reading zone */}
+          {!confirmedId && (
+            <div
+              className="absolute bottom-0 left-0 right-0 flex flex-col items-center"
+              style={{
+                padding: '0 8vw 5vh',
+                background: 'linear-gradient(to top, rgba(10,10,15,0.95) 0%, rgba(10,10,15,0.8) 30%, rgba(10,10,15,0.4) 60%, transparent 100%)',
+                zIndex: 10,
               }}
-              accentColor="#b88c9a"
-              testId="drive-focused"
-            />
-          </div>
-        </div>
+            >
+              <p style={{
+                fontFamily: 'Georgia, "Times New Roman", serif',
+                fontStyle: 'italic',
+                fontSize: '1.15rem',
+                lineHeight: '1.85',
+                color: 'rgba(212,196,158,0.75)',
+                maxWidth: '680px',
+                textAlign: 'center',
+                marginBottom: '16px',
+              }}>
+                {activeFragment.prose}
+              </p>
+              <p style={{
+                fontFamily: 'Georgia, "Times New Roman", serif',
+                fontStyle: 'italic',
+                fontSize: '0.85rem',
+                color: 'rgba(160,140,130,0.25)',
+                letterSpacing: '0.06em',
+              }}>
+                Click the image to choose
+              </p>
+            </div>
+          )}
+        </>
       )}
 
       {/* Navigation arrows */}
       {isBrowsing && (
         <>
-          <button
-            type="button"
-            onClick={() => handleNav(-1)}
-            className="absolute cursor-pointer"
-            style={{
-              left: '4vw',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              background: 'none',
-              border: 'none',
-              padding: '1rem',
-              zIndex: 20,
-              color: 'rgba(160,140,180,0.35)',
-              fontSize: '3.5rem',
-              fontFamily: 'Georgia, "Times New Roman", serif',
-              lineHeight: 1,
-              transition: 'color 0.3s ease',
-            }}
+          <button type="button" onClick={() => handleNav(-1)} className="absolute cursor-pointer"
+            style={{ left: '2vw', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', padding: '2rem 1.5rem', zIndex: 20, color: 'rgba(160,140,180,0.3)', fontSize: '3rem', fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif', lineHeight: 1, transition: 'color 0.3s ease' }}
             onMouseEnter={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.7)'; }}
-            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.35)'; }}
-            aria-label="Previous fragment"
-          >
-            &#x2039;
-          </button>
-          <button
-            type="button"
-            onClick={() => handleNav(1)}
-            className="absolute cursor-pointer"
-            style={{
-              right: '4vw',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              background: 'none',
-              border: 'none',
-              padding: '1rem',
-              zIndex: 20,
-              color: 'rgba(160,140,180,0.35)',
-              fontSize: '3.5rem',
-              fontFamily: 'Georgia, "Times New Roman", serif',
-              lineHeight: 1,
-              transition: 'color 0.3s ease',
-            }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.3)'; }}
+            aria-label="Previous fragment">&#x2039;</button>
+          <button type="button" onClick={() => handleNav(1)} className="absolute cursor-pointer"
+            style={{ right: '2vw', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', padding: '2rem 1.5rem', zIndex: 20, color: 'rgba(160,140,180,0.3)', fontSize: '3rem', fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif', lineHeight: 1, transition: 'color 0.3s ease' }}
             onMouseEnter={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.7)'; }}
-            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.35)'; }}
-            aria-label="Next fragment"
-          >
-            &#x203a;
-          </button>
+            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.3)'; }}
+            aria-label="Next fragment">&#x203a;</button>
         </>
       )}
     </div>
