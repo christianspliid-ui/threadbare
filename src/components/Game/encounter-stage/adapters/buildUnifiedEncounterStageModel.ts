@@ -238,6 +238,9 @@ function buildChoices(
     essenceCost: choice.essenceCost,
     affordable: choice.essenceCost <= essence,
     costLabel: choice.essenceCost > 0 ? `${choice.essenceCost} essence` : 'Free',
+    interventionType: choice.interventionType,
+    godVoice: choice.godVoice,
+    probabilityBoost: choice.probabilityBoost,
   }));
 }
 

@@ -379,6 +379,34 @@ describe('buildUnifiedEncounterStageModel', () => {
 
       expect(model.header.threatLabel).toBe('Easy');
     });
+
+    it('populates interventionType, godVoice, and probabilityBoost on choices', () => {
+      const graph = buildGraph();
+      const notification = buildNotification({
+        choices: [
+          {
+            id: 'choice-1',
+            text: 'Force it',
+            essenceCost: 2,
+            probabilityBoost: 0.2,
+            interventionType: 'coercive',
+            godVoice: 'Let them burn.',
+          },
+        ],
+      });
+      const model = buildUnifiedEncounterStageModel({
+        template: LINEAR_TEMPLATE,
+        activeAction: buildLinearAction(),
+        notification,
+        agentName: 'Kael the Scout',
+        threadTier: 'strong',
+        graph,
+        essence: 10,
+      });
+      expect(model.choices[0].interventionType).toBe('coercive');
+      expect(model.choices[0].godVoice).toBe('Let them burn.');
+      expect(model.choices[0].probabilityBoost).toBe(0.2);
+    });
   });
 
   describe('branching template (rival-shrine-betrayal)', () => {
