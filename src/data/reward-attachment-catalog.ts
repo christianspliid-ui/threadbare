@@ -1179,6 +1179,168 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     } as PossessionNodeProperties,
   },
 
+  // --- Diverse Mounts (pipeline: 2026-04-07) ---
+  {
+    id: 'reward_mounts_beasts_dustwalker',
+    type: 'artifact',
+    name: 'Dustwalker',
+    properties: {
+      subcategory: 'mounts_beasts',
+      tier: 2,
+      tags: ['#beast', '#mount', '#shadow', '#stealth', '#wilderness'],
+      mechanicalSummary: '+0.04 Shadow, 15% reduced movement cost, +0.03 Shadow in enemy territory (ambush positioning)',
+      lossCondition: 'stealable',
+      flavorText: 'A gaunt grey thing with hooves wrapped in rags. It makes no sound on any surface and will not approach firelight.',
+      effects: [
+        { type: 'passive', reach: 'shadow', value: 0.04 },
+        { type: 'range_modifier', movementCostMultiplier: 0.85 },
+        { type: 'conditional', condition: 'in_enemy_territory', reach: 'shadow', value: 0.03 },
+      ],
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_mounts_beasts_smoke_tooth',
+    type: 'artifact',
+    name: 'Smoke-Tooth',
+    properties: {
+      subcategory: 'mounts_beasts',
+      tier: 3,
+      tags: ['#beast', '#mount', '#shadow', '#combat', '#intimidation'],
+      mechanicalSummary: '+0.07 Shadow, +0.03 Iron, 15% reduced movement cost, grants shadow_strike trait, enemies in 1 hex: -0.03 Eye (shroud aura)',
+      lossCondition: 'permanent',
+      flavorText: 'A wolf the size of a yearling calf, black as wet charcoal. Smoke leaks from between its teeth when it breathes. It chose you. You did not choose it.',
+      effects: [
+        { type: 'passive', reach: 'shadow', value: 0.07 },
+        { type: 'passive', reach: 'iron', value: 0.03 },
+        { type: 'range_modifier', movementCostMultiplier: 0.85 },
+        { type: 'trait_grant', grantedTrait: 'shadow_strike' },
+        { type: 'aura', radius: 1, target: 'enemies', reach: 'eye', value: -0.03 },
+      ],
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_mounts_beasts_shimmer_hart',
+    type: 'artifact',
+    name: 'Shimmer Hart',
+    properties: {
+      subcategory: 'mounts_beasts',
+      tier: 2,
+      tags: ['#beast', '#mount', '#veil', '#mystical', '#exploration'],
+      mechanicalSummary: '+0.04 Veil, 10% reduced movement cost, +1 awareness hex range, +0.03 Veil in mystical encounters',
+      lossCondition: 'stealable',
+      flavorText: 'A white hart with too many antler points. Its hooves leave no prints but the air shimmers where it stepped, as if heat were rising from snow.',
+      effects: [
+        { type: 'passive', reach: 'veil', value: 0.04 },
+        { type: 'range_modifier', movementCostMultiplier: 0.9, awarenessRangeBonus: 1 },
+        { type: 'conditional', condition: 'in_mystical', reach: 'veil', value: 0.03 },
+      ],
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_mounts_beasts_glimmermoth',
+    type: 'artifact',
+    name: 'Glimmermoth',
+    properties: {
+      subcategory: 'mounts_beasts',
+      tier: 3,
+      tags: ['#beast', '#mount', '#veil', '#mystical', '#arcane'],
+      mechanicalSummary: '+0.06 Veil, +0.03 Eye, 15% reduced movement cost, +2 awareness hex range, immune to fear/illusion tags, amplifies mystical encounters (1.3x)',
+      lossCondition: 'permanent',
+      flavorText: 'Larger than any moth should be and luminous at the wing-edges. It navigates by ley-lines that no cartographer has mapped. When it lands on your shoulder the weight is barely there, but the world looks different.',
+      effects: [
+        { type: 'passive', reach: 'veil', value: 0.06 },
+        { type: 'passive', reach: 'eye', value: 0.03 },
+        { type: 'range_modifier', movementCostMultiplier: 0.85, awarenessRangeBonus: 2 },
+        { type: 'tag_immunity', tags: ['fear', 'illusion'] },
+        { type: 'behavior_weight', reach: 'veil', multiplier: 1.3 },
+      ],
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_mounts_beasts_hearthbound_hound',
+    type: 'artifact',
+    name: 'Hearthbound Hound',
+    properties: {
+      subcategory: 'mounts_beasts',
+      tier: 2,
+      tags: ['#beast', '#heart', '#loyalty', '#social', '#companion'],
+      mechanicalSummary: '+0.04 Heart, +0.02 Iron, cooperation +0.15 toward allies, when damaged: +0.04 Heart for 3 ticks (8-tick cooldown, protective instinct)',
+      lossCondition: 'permanent',
+      flavorText: 'It followed a dead woman for nine days before it found you. Now it sleeps across your doorway and will not let strangers pass without your word.',
+      effects: [
+        { type: 'passive', reach: 'heart', value: 0.04 },
+        { type: 'passive', reach: 'iron', value: 0.02 },
+        { type: 'social_modifier', targetFilter: 'ally', cooperationBias: 0.15 },
+        { type: 'reactive', trigger: 'damaged', effect: {
+          type: 'duration', ticks: 3, reach: 'heart', value: 0.04, destroyOnExpiry: true
+        }, cooldown: 8 },
+      ],
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_mounts_beasts_sorrowheart_mare',
+    type: 'artifact',
+    name: 'Sorrowheart Mare',
+    properties: {
+      subcategory: 'mounts_beasts',
+      tier: 3,
+      tags: ['#beast', '#mount', '#heart', '#empathy', '#social', '#healing'],
+      mechanicalSummary: '+0.08 Heart, +0.03 Gold, 20% reduced movement cost, allies in 1 hex: +0.02 Heart (calming aura), grants empathic_bond trait',
+      lossCondition: 'permanent',
+      flavorText: 'She carries grief the way other horses carry weight -- steadily, without stumbling. Wounded soldiers stop screaming when she walks through camp. No one knows why.',
+      effects: [
+        { type: 'passive', reach: 'heart', value: 0.08 },
+        { type: 'passive', reach: 'gold', value: 0.03 },
+        { type: 'range_modifier', movementCostMultiplier: 0.8 },
+        { type: 'aura', radius: 1, target: 'allies', reach: 'heart', value: 0.02 },
+        { type: 'trait_grant', grantedTrait: 'empathic_bond' },
+      ],
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_mounts_beasts_dawnfeather_kestrel',
+    type: 'artifact',
+    name: 'Dawnfeather Kestrel',
+    properties: {
+      subcategory: 'mounts_beasts',
+      tier: 3,
+      tags: ['#beast', '#star', '#prophecy', '#awareness', '#companion'],
+      mechanicalSummary: '+0.06 Star, +0.04 Eye, +3 awareness hex range, amplifies exploration encounters (1.2x), when encounter starts: +0.03 Star for 4 ticks (6-tick cooldown, prescient warning)',
+      lossCondition: 'permanent',
+      flavorText: 'It perches on your shoulder at dawn and screams at things that have not happened yet. By the time you understand its warning, you are already moving.',
+      effects: [
+        { type: 'passive', reach: 'star', value: 0.06 },
+        { type: 'passive', reach: 'eye', value: 0.04 },
+        { type: 'range_modifier', awarenessRangeBonus: 3 },
+        { type: 'behavior_weight', reach: 'eye', multiplier: 1.2 },
+        { type: 'reactive', trigger: 'encounter_started', effect: {
+          type: 'duration', ticks: 4, reach: 'star', value: 0.03, destroyOnExpiry: true
+        }, cooldown: 6 },
+      ],
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_mounts_beasts_pale_pilgrim',
+    type: 'artifact',
+    name: 'The Pale Pilgrim',
+    properties: {
+      subcategory: 'mounts_beasts',
+      tier: 4,
+      tags: ['#beast', '#mount', '#star', '#veil', '#legendary', '#celestial'],
+      mechanicalSummary: '+0.06 Star, +0.04 Veil, +0.03 Eye, 25% reduced movement cost, +2 awareness hex range, allies in 1 hex: +0.02 Star (fate-touched aura), grants starborne_rider trait',
+      lossCondition: 'permanent',
+      flavorText: 'No breed anyone can name. Coat like moonlight on still water. It appeared at the crossroads on the longest night and waited, as though it had always known you would come. The old woman at the wayshrine said it had been waiting for a century.',
+      effects: [
+        { type: 'passive', reach: 'star', value: 0.06 },
+        { type: 'passive', reach: 'veil', value: 0.04 },
+        { type: 'passive', reach: 'eye', value: 0.03 },
+        { type: 'range_modifier', movementCostMultiplier: 0.75, awarenessRangeBonus: 2 },
+        { type: 'aura', radius: 1, target: 'allies', reach: 'star', value: 0.02 },
+        { type: 'trait_grant', grantedTrait: 'starborne_rider' },
+      ],
+    } as PossessionNodeProperties,
+  },
+
   // ─── Provisions (T1 ×4) ─────────────────────────────────────────────
   {
     id: 'reward_provisions_hardtack_and_salt',
