@@ -90,6 +90,12 @@ export interface EncounterStageChoiceModel {
   affordable: boolean;
   costLabel?: string;
   likelyBurden?: string;
+  /** Intervention type — supportive, coercive, or withdrawn. Drives choice glow color. */
+  interventionType?: 'supportive' | 'coercive' | 'withdrawn';
+  /** God-voice quote revealed when choice is selected. */
+  godVoice?: string;
+  /** Probability boost (0.0–1.0) shown in choice meta. */
+  probabilityBoost?: number;
 }
 
 export interface EncounterStageHistoryModel {
