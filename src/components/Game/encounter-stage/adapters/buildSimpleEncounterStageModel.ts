@@ -12,7 +12,7 @@ import type { EncounterTemplate } from '../../../../types/encounter';
 import type { EncounterNotification } from '../../../../types/encounterVisibility';
 import type { ActiveEncounterDisplay } from '../../encounterNotificationRuntime';
 import type { WorldGraph } from '../../../../engine/graph';
-import type { ThreadTier } from '../../TieredEncounterModal';
+import type { ThreadTier } from '../types';
 import type {
   EncounterStageModel,
   EncounterStageChoiceModel,

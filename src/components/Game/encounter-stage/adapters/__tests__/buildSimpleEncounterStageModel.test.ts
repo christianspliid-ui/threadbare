@@ -3,7 +3,7 @@ import { buildSimpleEncounterStageModel } from '../buildSimpleEncounterStageMode
 import type { EncounterTemplate } from '../../../../../types/encounter';
 import type { EncounterNotification } from '../../../../../types/encounterVisibility';
 import type { ActiveEncounterDisplay } from '../../../encounterNotificationRuntime';
-import type { ThreadTier } from '../../../TieredEncounterModal';
+import type { ThreadTier } from '../../types';
 import { WorldGraph } from '../../../../../engine/graph';
 
 function buildTemplate(overrides?: Partial<EncounterTemplate>): EncounterTemplate {

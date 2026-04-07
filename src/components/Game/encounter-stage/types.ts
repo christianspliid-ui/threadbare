@@ -1,4 +1,16 @@
-import type { ThreadTier } from '../TieredEncounterModal';
+import type { CourtPosition } from '../../../types/influence';
+
+export type ThreadTier = 'strong' | 'light' | 'watched';
+
+/** Map engine CourtPosition to UI thread tier */
+export function courtPositionToThreadTier(pos: CourtPosition | null): ThreadTier {
+  switch (pos) {
+    case 'the_first': return 'strong';
+    case 'retinue': return 'light';
+    case 'watched': return 'watched';
+    default: return 'watched';
+  }
+}
 
 export type EncounterCastRole =
   | 'authority'

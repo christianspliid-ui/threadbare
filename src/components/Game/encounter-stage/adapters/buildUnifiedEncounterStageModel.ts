@@ -28,7 +28,7 @@ import {
   type UnifiedAction,
   type UnifiedActionTemplate,
 } from '../../../../types/unifiedAction';
-import type { ThreadTier } from '../../TieredEncounterModal';
+import type { ThreadTier } from '../types';
 import type {
   EncounterCastRole,
   EncounterStageAftermathActorModel,

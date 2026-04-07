@@ -94,13 +94,12 @@ import { IdentityChip } from './IdentityChip';
 import { AscendantSheet } from './AscendantSheet';
 import { EventPopup } from './EventPopup';
 import { SettingsPanel } from './SettingsPanel';
-import { TieredEncounterModal, courtPositionToThreadTier } from './TieredEncounterModal';
+import { courtPositionToThreadTier } from './encounter-stage/types';
 import { MeetTheFirstFlow } from '../MeetTheFirst/MeetTheFirstFlow';
 import { JourneyVignetteModal } from './JourneyVignetteModal';
 import { PremonitionModal } from './PremonitionModal';
 import type { WhisperNudge, CompulsionCandidate } from '../../types/premonition';
 import { applyWhisperChoice, applyCompulsionChoice, dismissPremonition } from '../../engine/premonitionActions';
-import { EncounterStage } from './encounter-stage/EncounterStage';
 import { buildGateDutyEncounterStageModel } from './encounter-stage/adapters/buildGateDutyEncounterStageModel';
 import { buildUnifiedEncounterStageModel } from './encounter-stage/adapters/buildUnifiedEncounterStageModel';
 import { buildSimpleEncounterStageModel } from './encounter-stage/adapters/buildSimpleEncounterStageModel';
@@ -874,8 +873,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     clearanceGateStateSnapshot?: ClearanceGateRuntimeState;
   } | null>(null);
 
-  // ── Encounter stage routing: gate duty keeps its specialized adapter,
-  // other qualifying unified encounters use the general adapter ──
+  // ── Encounter adapter routing: gate duty uses its specialized adapter,
+  // other qualifying unified encounters use the general adapter,
+  // legacy encounters fall back to the simple adapter ──
   const isGateDutyEncounterStage = tieredEncounterState?.template.id === 'cg.quest.gate_duty'
     && tieredEncounterState.threadTier !== 'watched';
 
@@ -892,10 +892,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     return (hasSupportBundle || hasBranching || hasAftermath) ? ut : null;
   }, [tieredEncounterState, isGateDutyEncounterStage]);
 
-  const shouldUseEncounterStage = isGateDutyEncounterStage || !!unifiedTemplateForStage;
-
   const encounterStageActiveAction = useMemo(() => {
-    if (!shouldUseEncounterStage || !tieredEncounterState) return null;
+    if (!(isGateDutyEncounterStage || !!unifiedTemplateForStage) || !tieredEncounterState) return null;
     if (tieredEncounterState.activeActionId) {
       const byId = gameState.unifiedActions.find(action => action.actionId === tieredEncounterState.activeActionId);
       if (byId) return byId;
@@ -906,7 +904,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       && action.templateId === tieredEncounterState.template.id,
     );
     return byAgentAndTemplate ?? tieredEncounterState.activeActionSnapshot ?? null;
-  }, [gameState.unifiedActions, shouldUseEncounterStage, tieredEncounterState]);
+  }, [gameState.unifiedActions, isGateDutyEncounterStage, unifiedTemplateForStage, tieredEncounterState]);
 
   const gateDutyClearanceGateState = useMemo(() => {
     const runtimeId = tieredEncounterState?.clearanceGateRuntimeId ?? encounterStageActiveAction?.clearanceGateIds?.[0];
@@ -914,8 +912,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     return gameState.clearanceGateStates?.get(runtimeId) ?? tieredEncounterState?.clearanceGateStateSnapshot;
   }, [gameState.clearanceGateStates, encounterStageActiveAction, tieredEncounterState]);
 
+  // Build EncounterStageModel for gate duty and general unified encounters
   const encounterStageModel = useMemo(() => {
-    if (!shouldUseEncounterStage || !tieredEncounterState) return null;
+    if (!(isGateDutyEncounterStage || !!unifiedTemplateForStage) || !tieredEncounterState) return null;
 
     // Gate duty uses its specialized adapter
     if (isGateDutyEncounterStage) {
@@ -953,7 +952,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     gateDutyClearanceGateState,
     isGateDutyEncounterStage,
     unifiedTemplateForStage,
-    shouldUseEncounterStage,
     tieredEncounterState,
   ]);
 
@@ -964,7 +962,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     // Existing adapter paths remain
     if (isGateDutyEncounterStage && encounterStageModel) return encounterStageModel;
     if (unifiedTemplateForStage && encounterStageModel) return encounterStageModel;
-    // New: simple adapter for legacy encounters
+    // Fall back to simple adapter for legacy encounters
     return buildSimpleEncounterStageModel({
       notification: tieredEncounterState.notification,
       encounter: tieredEncounterState.encounter,
@@ -1840,7 +1838,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     });
 
     // Emit trace
-    console.debug('[TieredEncounterModal] Intervention:', {
+    console.debug('[EncounterVeil] Intervention:', {
       agentId,
       encounterId: notification.encounterId,
       choiceId,
@@ -2845,50 +2843,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           onAftermathReaction={handleEncounterAftermathReaction}
         />
       )}
-
-      {/* Legacy encounter modals — replaced by EncounterVeil
-      {tieredEncounterState && shouldUseEncounterStage && encounterStageModel && (
-        <EncounterStage
-          open={true}
-          onDisregard={handleEncounterDisregard}
-          onAcknowledgeAftermath={handleEncounterAcknowledgeAftermath}
-          onAftermathReaction={handleEncounterAftermathReaction}
-          onCommitChoice={(choiceId) => {
-            const choice = tieredEncounterState.notification.choices.find(c => c.id === choiceId);
-            if (choice) {
-              handleEncounterCommitAndContinue(choiceId, choice.essenceCost ?? 0);
-              return;
-            }
-            const activeAction = (gameState.unifiedActions ?? []).find(a => a.actionId === tieredEncounterState.encounter.actionId);
-            const template = activeAction ? getUnifiedTemplateById(activeAction.templateId) : undefined;
-            const authoredCard = template?.authoredChoices?.[activeAction?.currentStep ?? 0]?.find(c => c.id === choiceId);
-            if (authoredCard) {
-              handleEncounterCommitAndContinue(choiceId, authoredCard.essenceCost ?? 0);
-              return;
-            }
-          }}
-          model={encounterStageModel}
-        />
-      )}
-      {tieredEncounterState && (!shouldUseEncounterStage || !encounterStageModel) && (
-        <TieredEncounterModal
-          open={true}
-          onClose={handleEncounterDisregard}
-          notification={tieredEncounterState.notification}
-          encounter={tieredEncounterState.encounter}
-          template={tieredEncounterState.template}
-          agentName={tieredEncounterState.agentName}
-          agentId={tieredEncounterState.agentId}
-          graph={gameState.graph}
-          threadTier={tieredEncounterState.threadTier}
-          essence={SPHERE_NAMES.reduce((sum, s) => sum + gameState.essencePool[s], 0)}
-          tick={gameState.tick}
-          onIntervene={handleEncounterIntervene}
-          onBoost={handleEncounterBoost}
-          onPeek={handleEncounterPeek}
-        />
-      )}
-      */}
 
       {/* Meeting encounter — full-screen narrative flow */}
       {meetingState && ascendantIdentity && (

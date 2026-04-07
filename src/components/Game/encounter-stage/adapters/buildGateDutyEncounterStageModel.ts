@@ -15,7 +15,7 @@ import type {
 import type { EncounterNotification } from '../../../../types/encounterVisibility';
 import { isStepSuccess, type UnifiedAction } from '../../../../types/unifiedAction';
 import type { ReachDomain } from '../../../../types/traits';
-import type { ThreadTier } from '../../TieredEncounterModal';
+import type { ThreadTier } from '../types';
 import type { ActiveEncounterDisplay } from '../../encounterNotificationRuntime';
 import { getAttachmentGlyph } from '../../attachmentGlyphs';
 import type {
