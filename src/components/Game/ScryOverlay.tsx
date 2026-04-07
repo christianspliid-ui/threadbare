@@ -51,11 +51,12 @@ const SLOT_SIZES = {
 interface PositionSlotProps {
   position: Position;
   onSelect: () => void;
+  onAgentClick?: (agentId: string) => void;
   retinueAgents: RetinueAgent[];
 }
 
 const PositionSlot = memo(function PositionSlot(
-  { position, onSelect, retinueAgents }: PositionSlotProps
+  { position, onSelect, onAgentClick, retinueAgents }: PositionSlotProps
 ) {
   const rankLabel = position.rank.charAt(0).toUpperCase() + position.rank.slice(1);
   const size = SLOT_SIZES[position.rank];
@@ -90,13 +91,15 @@ const PositionSlot = memo(function PositionSlot(
     : DEFAULT_AGENT_COLOR;
 
   return (
-    <div
-      className="rounded-lg overflow-hidden relative"
+    <button
+      onClick={() => agent && onAgentClick?.(agent.id)}
+      className="rounded-lg overflow-hidden relative transition-all hover:scale-105 hover:brightness-110"
       style={{
         width: size.width,
         height: size.height,
         border: `3px solid ${frameColor}`,
         boxShadow: `0 0 8px ${frameColor}40`,
+        cursor: 'pointer',
       }}
     >
       {/* Portrait image or gradient fallback */}
@@ -105,7 +108,6 @@ const PositionSlot = memo(function PositionSlot(
           src={agent.portraitUrl}
           alt={agent.name}
           className="absolute inset-0 w-full h-full object-cover"
-          loading="lazy"
         />
       ) : (
         <div
@@ -140,7 +142,7 @@ const PositionSlot = memo(function PositionSlot(
           </div>
         )}
       </div>
-    </div>
+    </button>
   );
 });
 
@@ -350,6 +352,7 @@ interface PositionSlotWithMenuProps {
   position: Position;
   contextMenuOpen: boolean;
   onSelect: () => void;
+  onAgentClick?: (agentId: string) => void;
   onDemote: () => void;
   onCloseMenu: () => void;
   retinueAgents: RetinueAgent[];
@@ -360,13 +363,14 @@ const PositionSlotWithMenu = memo(
     position,
     contextMenuOpen,
     onSelect,
+    onAgentClick,
     onDemote,
     onCloseMenu,
     retinueAgents,
   }: PositionSlotWithMenuProps) {
     return (
       <div>
-        <PositionSlot position={position} onSelect={onSelect} retinueAgents={retinueAgents} />
+        <PositionSlot position={position} onSelect={onSelect} onAgentClick={onAgentClick} retinueAgents={retinueAgents} />
         {contextMenuOpen && (
           <ContextMenu onDemote={onDemote} onClose={onCloseMenu} />
         )}
@@ -380,6 +384,7 @@ const PositionSlotWithMenu = memo(
       prevProps.position.activeTitle?.id === nextProps.position.activeTitle?.id &&
       prevProps.contextMenuOpen === nextProps.contextMenuOpen &&
       prevProps.onSelect === nextProps.onSelect &&
+      prevProps.onAgentClick === nextProps.onAgentClick &&
       prevProps.onDemote === nextProps.onDemote &&
       prevProps.onCloseMenu === nextProps.onCloseMenu &&
       prevProps.retinueAgents === nextProps.retinueAgents
@@ -399,6 +404,7 @@ interface PositionSlotRowProps {
   position: Position;
   contextMenuOpen: boolean;
   onPositionClick: (positionId: string) => void;
+  onAgentClick?: (agentId: string) => void;
   onDemote: () => void;
   onCloseMenu: () => void;
   retinueAgents: RetinueAgent[];
@@ -408,6 +414,7 @@ const PositionSlotRow = memo(function PositionSlotRow({
   position,
   contextMenuOpen,
   onPositionClick,
+  onAgentClick,
   onDemote,
   onCloseMenu,
   retinueAgents,
@@ -421,6 +428,7 @@ const PositionSlotRow = memo(function PositionSlotRow({
       position={position}
       contextMenuOpen={contextMenuOpen}
       onSelect={handleSelect}
+      onAgentClick={onAgentClick}
       onDemote={onDemote}
       onCloseMenu={onCloseMenu}
       retinueAgents={retinueAgents}
@@ -524,6 +532,7 @@ export function ScryOverlay() {
     onAssign,
     onDemote,
     onClose,
+    onAgentSelect,
   } = useScryContext();
 
   const [selectedPositionId, setSelectedPositionId] = useState<string | null>(null);
@@ -736,13 +745,15 @@ export function ScryOverlay() {
                 The First
               </h2>
               <div className="flex justify-center">
-                <div
-                  className="rounded-lg overflow-hidden relative"
+                <button
+                  onClick={() => onAgentSelect?.(theFirstAgent.id)}
+                  className="rounded-lg overflow-hidden relative transition-all hover:scale-105 hover:brightness-110"
                   style={{
                     width: SLOT_SIZES.apex.width,
                     height: SLOT_SIZES.apex.height,
                     border: '3px solid var(--accent-gold)',
                     boxShadow: '0 0 12px rgba(212, 160, 64, 0.35)',
+                    cursor: 'pointer',
                   }}
                 >
                   {theFirstAgent.portraitUrl ? (
@@ -750,7 +761,6 @@ export function ScryOverlay() {
                       src={theFirstAgent.portraitUrl}
                       alt={theFirstAgent.name}
                       className="absolute inset-0 w-full h-full object-cover"
-                      loading="lazy"
                     />
                   ) : (
                     <div
@@ -776,7 +786,7 @@ export function ScryOverlay() {
                       {theFirstAgent.name}
                     </div>
                   </div>
-                </div>
+                </button>
               </div>
             </div>
           )}
@@ -795,6 +805,7 @@ export function ScryOverlay() {
                     position={pos}
                     contextMenuOpen={contextMenuPositionId === pos.id}
                     onPositionClick={handlePositionClick}
+                    onAgentClick={onAgentSelect}
                     onDemote={handleDemote}
                     onCloseMenu={handleCloseContextMenu}
                     retinueAgents={retinueAgents}
@@ -818,6 +829,7 @@ export function ScryOverlay() {
                     position={pos}
                     contextMenuOpen={contextMenuPositionId === pos.id}
                     onPositionClick={handlePositionClick}
+                    onAgentClick={onAgentSelect}
                     onDemote={handleDemote}
                     onCloseMenu={handleCloseContextMenu}
                     retinueAgents={retinueAgents}
@@ -841,6 +853,7 @@ export function ScryOverlay() {
                     position={pos}
                     contextMenuOpen={contextMenuPositionId === pos.id}
                     onPositionClick={handlePositionClick}
+                    onAgentClick={onAgentSelect}
                     onDemote={handleDemote}
                     onCloseMenu={handleCloseContextMenu}
                     retinueAgents={retinueAgents}

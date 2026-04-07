@@ -37,6 +37,9 @@ import { seedMonsterLairs } from './lairSeeding';
 import { generateCultureIdentities, toCultureForWorldgen } from './cultureGenerator';
 import { mulberry32 } from '../lib/prng';
 import { seedAllRarityTiers } from './raritySeeding';
+import { assignInitialAmbitions } from './ambitionAssignment';
+import { AMBITION_TEMPLATES } from '../data/ambition-templates';
+import type { AmbitionAgentSnapshot } from './ambitionSelection';
 
 /** PRNG offset for pre-worldgen culture identity generation. Unique prime — no collision with worldgen passes. */
 const CULTURE_SEED_OFFSET = 87671;
@@ -424,10 +427,9 @@ export function devSeedTheFirst(state: GameState): string {
         eye: 25,
         stone: 15,
         star: 40,
-        wild: 10,
       },
       locationId,
-      narrativeArchetype: 'Healer',
+      narrativeArchetype: 'true_believer',
       cooperationStrategy: 'reciprocal',
       reputationScore: 0.5,
       primaryReach: 'heart',
@@ -470,8 +472,178 @@ export function devSeedTheFirst(state: GameState): string {
   });
 
   state.meetTheFirstAutoTriggered = true;
-  // Add familiarity for the new agent
-  state.familiarityMap.set(agentId, 0.5);
+  // Add familiarity for the new agent — intimate level so attachments/backstory are visible
+  state.familiarityMap.set(agentId, 0.7);
+
+  // Assign ambitions (same pattern as worldSeed.ts)
+  const snapshot: AmbitionAgentSnapshot = {
+    domainCapabilities: {
+      heart: 65, shadow: 45, iron: 30, gold: 20, veil: 35,
+      eye: 25, stone: 15, star: 40,
+    },
+    traits: [],
+    culturalSpheres: [],
+    bonds: [],
+  };
+  const assignments = assignInitialAmbitions(AMBITION_TEMPLATES, snapshot, 42 + 29173);
+  for (const assignment of assignments) {
+    const ambitionNodeId = `ambition.${assignment.templateId}`;
+    if (!graph.getNode(ambitionNodeId)) {
+      const tmpl = AMBITION_TEMPLATES.find(t => t.id === assignment.templateId);
+      graph.addNode({
+        id: ambitionNodeId,
+        type: 'ambition',
+        name: tmpl?.displayName ?? assignment.templateId,
+        properties: {
+          templateId: assignment.templateId,
+          displayName: tmpl?.displayName ?? assignment.templateId,
+          category: tmpl?.category ?? 'survival',
+          reachAffinity: tmpl?.reachAffinity ?? {},
+          totalMilestones: tmpl?.milestones.length ?? 0,
+        },
+      });
+    }
+    graph.addEdge({
+      id: `pursues_${agentId}_${ambitionNodeId}`,
+      source: agentId,
+      target: ambitionNodeId,
+      type: 'pursues',
+      properties: {
+        priority: assignment.priority,
+        status: 'active',
+        assignedTick: 0,
+        completedMilestones: [],
+      },
+    });
+  }
+
+  // ── Seed possessions ────────────────────────────────────────────
+  const possessions = [
+    {
+      node: {
+        id: 'first_hollowfang', type: 'artifact' as const, name: 'Hollowfang',
+        properties: {
+          subcategory: 'arms', tier: 3,
+          tags: ['#iron', '#weapon', '#melee', '#cursed'],
+          mechanicalSummary: '+0.12 Iron, -0.05 Heart, rage burst when damaged, grants dark_ferocity',
+          lossCondition: 'permanent',
+          flavorText: 'The blade is hollow and whistles when swung. The sound makes children weep.',
+          effects: [
+            { type: 'passive', reach: 'iron', value: 0.12 },
+            { type: 'passive', reach: 'heart', value: -0.05 },
+          ],
+        },
+      },
+      modifiers: { iron: 0.12, heart: -0.05 },
+      grants: ['dark_ferocity'],
+    },
+    {
+      node: {
+        id: 'first_mantle_unremembered', type: 'artifact' as const, name: 'Mantle of the Unremembered',
+        properties: {
+          subcategory: 'vestments', tier: 3,
+          tags: ['#shadow', '#vestment', '#cursed'],
+          mechanicalSummary: '+0.12 Shadow, -0.06 Heart, shadow burst on hex entry',
+          lossCondition: 'permanent',
+          flavorText: 'Those who wear it become harder to recall. Even by those who love them.',
+          effects: [
+            { type: 'passive', reach: 'shadow', value: 0.12 },
+            { type: 'passive', reach: 'heart', value: -0.06 },
+          ],
+        },
+      },
+      modifiers: { shadow: 0.12, heart: -0.06 },
+      grants: [],
+    },
+    {
+      node: {
+        id: 'first_heart_barrow', type: 'artifact' as const, name: 'Heart of the Barrow',
+        properties: {
+          subcategory: 'relics_talismans', tier: 3,
+          tags: ['#stone', '#relic', '#aura'],
+          mechanicalSummary: '+0.12 Stone, -0.04 Shadow, aura boosts allies',
+          lossCondition: 'permanent',
+          flavorText: 'A stone pulled from a king\'s grave. It pulses like a heartbeat when pressed to earth.',
+          effects: [
+            { type: 'passive', reach: 'stone', value: 0.12 },
+            { type: 'passive', reach: 'shadow', value: -0.04 },
+          ],
+        },
+      },
+      modifiers: { stone: 0.12, shadow: -0.04 },
+      grants: [],
+    },
+    {
+      node: {
+        id: 'first_smoke_tooth', type: 'artifact' as const, name: 'Smoke-Tooth',
+        properties: {
+          subcategory: 'mounts_beasts', tier: 3,
+          tags: ['#shadow', '#mount', '#beast', '#aura'],
+          mechanicalSummary: '+0.07 Shadow, +0.03 Iron, 15% move reduction, shroud aura',
+          lossCondition: 'permanent',
+          flavorText: 'A wolf the size of a yearling calf, black as wet charcoal. Smoke leaks from between its teeth.',
+          effects: [
+            { type: 'passive', reach: 'shadow', value: 0.07 },
+            { type: 'passive', reach: 'iron', value: 0.03 },
+          ],
+        },
+      },
+      modifiers: { shadow: 0.07, iron: 0.03 },
+      grants: [],
+    },
+  ];
+
+  for (const p of possessions) {
+    graph.addNode(p.node);
+    graph.addEdge({
+      id: `seed.${agentId}.possesses.${p.node.id}`,
+      source: agentId, target: p.node.id, type: 'possesses',
+      properties: { modifiers: p.modifiers, grants: p.grants, tags: p.node.properties.tags },
+    });
+  }
+
+  // ── Seed bestowed powers ────────────────────────────────────────
+  const bestowedPowers = [
+    {
+      id: 'first_stormcaller', name: 'Stormcaller',
+      properties: {
+        subcategory: 'bestowed', tier: 3,
+        tags: ['#star', '#stone', '#bestowed'],
+        description: 'Thunder follows your anger. Rain follows your grief.',
+        maxLevel: 1, visibility: 'public', importance: 0.8,
+        flavorText: 'Thunder follows your anger. Rain follows your grief.',
+        mechanicalSummary: '+0.10 Star, +0.05 Stone, enemy aura debuff',
+        effects: [
+          { type: 'passive', reach: 'star', value: 0.10 },
+          { type: 'passive', reach: 'stone', value: 0.05 },
+        ],
+      },
+    },
+    {
+      id: 'first_veilwalk', name: 'Veilwalk',
+      properties: {
+        subcategory: 'bestowed', tier: 3,
+        tags: ['#veil', '#shadow', '#bestowed'],
+        description: 'The wall is there, and then it is not.',
+        maxLevel: 1, visibility: 'public', importance: 0.8,
+        flavorText: 'The wall is there, and then it is not.',
+        mechanicalSummary: '+0.10 Veil, +0.05 Shadow, phase-walking movement',
+        effects: [
+          { type: 'passive', reach: 'veil', value: 0.10 },
+          { type: 'passive', reach: 'shadow', value: 0.05 },
+        ],
+      },
+    },
+  ];
+
+  for (const power of bestowedPowers) {
+    graph.addNode({ id: power.id, type: 'trait', name: power.name, properties: power.properties });
+    graph.addEdge({
+      id: `seed.${agentId}.has_trait.${power.id}`,
+      source: agentId, target: power.id, type: 'has_trait',
+      properties: { level: 1, acquiredTick: 0, source: 'Divine gift' },
+    });
+  }
 
   return agentId;
 }

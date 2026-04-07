@@ -25,6 +25,8 @@ interface ScryContextValue {
   onAssign: (positionId: string, agentId: string, title: Title, cost: number) => void;
   onDemote: (positionId: string) => void;
   onClose: () => void;
+  /** Select a court member agent — opens ActionDrawer with their action cards */
+  onAgentSelect?: (agentId: string) => void;
 }
 
 const ScryContext = createContext<ScryContextValue | undefined>(undefined);

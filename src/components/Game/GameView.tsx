@@ -1219,10 +1219,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   );
 
   // IX-002: Wrapped scry click with cross-hook overlay mutual exclusion
+  // Also clears agent & hex selection so ActionDrawers don't persist behind the court overlay
   const handleScryWithMutex = useCallback(() => {
     closeAllAgentOverlays();
+    handleBackFromAgentDetail(); // clears selectedAgentId + drawerOpen
+    handleHexDetailClose();      // clears selectedHexCoord
+    setNonAgentDrawerOpen(false);
     handleAvatarScryClick();
-  }, [closeAllAgentOverlays, handleAvatarScryClick]);
+  }, [closeAllAgentOverlays, handleBackFromAgentDetail, handleHexDetailClose, handleAvatarScryClick]);
 
   // NFP #1: Named constant for retinue eye-icon zoom level.
   // Maximum zoom — agent eye icon zooms in tight to the agent's hex.
@@ -2207,8 +2211,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         style={{
           background: 'linear-gradient(180deg, rgba(17,17,20,0.98), rgba(10,10,14,0.95))',
           borderBottom: `1px solid rgba(var(--accent-gold-rgb, 212,175,55), 0.3)`,
-          height: 'var(--topbar-height)',
           minHeight: 'var(--topbar-height)',
+          paddingTop: '4px',
+          paddingBottom: '4px',
           paddingLeft: 'var(--topbar-padding-x)',
           paddingRight: 'var(--topbar-padding-x)',
           gap: 'var(--topbar-gap)',
@@ -2716,7 +2721,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   />
                 )}
                 <div style={{ marginTop: threadedNodes.length > 0 ? 'var(--panel-padding)' : undefined }}>
-                  <WorldPulse gameState={gameState} />
+                  <WorldPulse
+                    gameState={gameState}
+                    season={seasonName}
+                    year={year}
+                    speed={speed}
+                    onSpeedChange={setSpeed}
+                  />
                 </div>
               </div>
             </div>
@@ -2749,6 +2760,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             onAssign: handleScryAssign,
             onDemote: handleScryDemote,
             onClose: handleCloseScry,
+            onAgentSelect: handleAgentSelect,
           }}
         >
           <ScryOverlay />
