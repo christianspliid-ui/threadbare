@@ -52,7 +52,7 @@ import type { ActiveBurst } from './scene/ParticleBurstMesh';
 import { useAgentAnimations } from './hooks/useAgentAnimations';
 import type { AgentPrevPosition } from './hooks/useAgentAnimations';
 import { useFogCulling } from './hooks/useFogCulling';
-import { createFogOverlayMesh, updateFogOverlayTexture } from './scene/FogOverlayMesh';
+import { createFogOverlayMesh, updateFogOverlayTexture, setFogOverlayAlpha, flushFogOverlay } from './scene/FogOverlayMesh';
 import type { FogOverlayResult } from './scene/FogOverlayMesh';
 import { useZoomLayerVisibility } from './hooks/useZoomLayerVisibility';
 import { RENDER_ORDER } from './scene/RenderLayers';
@@ -649,6 +649,20 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         scene.add(fogOverlay.mesh);
         scene.add(fogOverlay.backgroundPlane);
         fogOverlayRef.current = fogOverlay;
+
+        // Apply current visibility state to the new overlay immediately.
+        // useFogCulling only re-runs on visibilityMap/fogEnabled changes —
+        // if the scene rebuilds without those changing, the overlay would
+        // stay fully opaque (all hexes unexplored) without this.
+        if (fogEnabledRef.current && visibilityMapRef.current) {
+          for (const [key, hexVis] of visibilityMapRef.current) {
+            setFogOverlayAlpha(fogOverlay, key, hexVis.state === 'unexplored' ? 1.0 : 0.0);
+          }
+          flushFogOverlay(fogOverlay);
+        } else if (!fogEnabledRef.current) {
+          fogOverlay.mesh.visible = false;
+          fogOverlay.backgroundPlane.visible = false;
+        }
 
         // Build global-to-mesh routing map for fog update (avoids re-scanning index arrays each fog update)
         const globalToMeshMap = new Map<number, { mesh: THREE.InstancedMesh; instanceIdx: number }>();
