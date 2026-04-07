@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Encounter Veil — Implementation Analysis</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0f0f14;
+    color: #d0c8b8;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    padding: 32px 48px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 1.6rem;
+    color: rgba(212, 175, 55, 0.7);
+    font-style: italic;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    font-size: 0.85rem;
+    color: rgba(180, 170, 150, 0.4);
+    font-style: italic;
+    margin-bottom: 40px;
+  }
+  h2 {
+    font-size: 1.1rem;
+    color: rgba(212, 196, 158, 0.6);
+    font-style: italic;
+    letter-spacing: 0.06em;
+    margin-bottom: 16px;
+    margin-top: 40px;
+  }
+  h2:first-of-type { margin-top: 0; }
+
+  /* Architecture diagram */
+  .arch-diagram {
+    display: grid;
+    grid-template-columns: 1fr 40px 1fr;
+    gap: 0;
+    margin-bottom: 48px;
+    align-items: start;
+  }
+  .arch-side {
+    padding: 24px;
+    border-radius: 4px;
+  }
+  .arch-side.current { background: rgba(100, 80, 60, 0.08); border: 1px solid rgba(180, 150, 100, 0.1); }
+  .arch-side.proposed { background: rgba(60, 80, 100, 0.08); border: 1px solid rgba(100, 150, 212, 0.1); }
+  .arch-arrow {
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; color: rgba(180,170,150,0.2);
+    padding-top: 40px;
+  }
+  .arch-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: rgba(180,170,150,0.35);
+    margin-bottom: 16px;
+  }
+
+  .node {
+    padding: 10px 14px;
+    border-radius: 3px;
+    margin-bottom: 8px;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    position: relative;
+  }
+  .node .file { color: rgba(212, 196, 158, 0.7); font-weight: 600; }
+  .node .desc { color: rgba(180,170,150,0.45); font-style: italic; font-size: 0.72rem; }
+  .node .lines { color: rgba(160,140,120,0.3); font-size: 0.65rem; }
+  .node.primary { background: rgba(212, 175, 55, 0.08); border-left: 2px solid rgba(212, 175, 55, 0.3); }
+  .node.secondary { background: rgba(180, 160, 140, 0.05); border-left: 2px solid rgba(180, 160, 140, 0.15); }
+  .node.new { background: rgba(134, 239, 172, 0.06); border-left: 2px solid rgba(134, 239, 172, 0.3); }
+  .node.modify { background: rgba(249, 191, 59, 0.06); border-left: 2px solid rgba(249, 191, 59, 0.3); }
+  .node.delete { background: rgba(252, 165, 165, 0.06); border-left: 2px solid rgba(252, 165, 165, 0.2); text-decoration: line-through; opacity: 0.5; }
+  .node.keep { background: rgba(180, 160, 140, 0.04); border-left: 2px solid rgba(180, 160, 140, 0.1); }
+
+  .badge {
+    display: inline-block;
+    font-size: 0.55rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 2px 6px;
+    border-radius: 2px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .badge.new { background: rgba(134,239,172,0.12); color: rgba(134,239,172,0.7); }
+  .badge.modify { background: rgba(249,191,59,0.12); color: rgba(249,191,59,0.7); }
+  .badge.delete { background: rgba(252,165,165,0.12); color: rgba(252,165,165,0.6); }
+  .badge.keep { background: rgba(180,160,140,0.08); color: rgba(180,160,140,0.4); }
+
+  /* Edge connections */
+  .edge-label {
+    font-size: 0.6rem;
+    color: rgba(180,170,150,0.3);
+    font-style: italic;
+    padding: 4px 0;
+    margin-left: 20px;
+  }
+
+  /* Touch point table */
+  .touch-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 32px;
+    font-size: 0.78rem;
+  }
+  .touch-table th {
+    text-align: left;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(212, 175, 55, 0.4);
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+    font-weight: normal;
+  }
+  .touch-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(180,170,150,0.06);
+    vertical-align: top;
+  }
+  .touch-table td.file { color: rgba(212, 196, 158, 0.6); font-weight: 600; white-space: nowrap; }
+  .touch-table td.action { font-style: italic; color: rgba(180,170,150,0.5); }
+  .touch-table td.complexity {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .complexity-low { color: rgba(134, 239, 172, 0.5); }
+  .complexity-med { color: rgba(249, 191, 59, 0.5); }
+  .complexity-high { color: rgba(252, 165, 165, 0.5); }
+
+  /* Approaches */
+  .approaches {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .approach {
+    padding: 20px;
+    border-radius: 4px;
+    border: 1px solid rgba(180,170,150,0.08);
+    background: rgba(180,170,150,0.02);
+    cursor: pointer;
+    transition: all 0.4s ease;
+  }
+  .approach:hover {
+    border-color: rgba(212, 175, 55, 0.2);
+    background: rgba(212, 175, 55, 0.03);
+  }
+  .approach.recommended {
+    border-color: rgba(212, 175, 55, 0.15);
+    background: rgba(212, 175, 55, 0.04);
+  }
+  .approach-name {
+    font-size: 0.85rem;
+    color: rgba(212, 196, 158, 0.65);
+    margin-bottom: 4px;
+  }
+  .approach-tag {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(212, 175, 55, 0.5);
+    margin-bottom: 12px;
+  }
+  .approach-desc {
+    font-size: 0.75rem;
+    color: rgba(180,170,150,0.45);
+    font-style: italic;
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+  .approach-pro, .approach-con {
+    font-size: 0.68rem;
+    line-height: 1.6;
+    margin-bottom: 4px;
+  }
+  .approach-pro { color: rgba(134, 239, 172, 0.5); }
+  .approach-con { color: rgba(252, 165, 165, 0.4); }
+
+  /* Risk callouts */
+  .risk-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .risk-card {
+    padding: 16px;
+    border-radius: 4px;
+    border: 1px solid rgba(252, 165, 165, 0.08);
+    background: rgba(252, 165, 165, 0.02);
+  }
+  .risk-title {
+    font-size: 0.78rem;
+    color: rgba(252, 165, 165, 0.5);
+    margin-bottom: 6px;
+  }
+  .risk-desc {
+    font-size: 0.72rem;
+    color: rgba(180,170,150,0.4);
+    font-style: italic;
+    line-height: 1.6;
+  }
+  .risk-mitigation {
+    font-size: 0.68rem;
+    color: rgba(134, 239, 172, 0.45);
+    margin-top: 8px;
+    font-style: italic;
+  }
+
+  /* Scope */
+  .scope-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .scope-item {
+    padding: 14px 16px;
+    border-radius: 3px;
+    background: rgba(180,170,150,0.03);
+    border: 1px solid rgba(180,170,150,0.06);
+  }
+  .scope-phase {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(212, 175, 55, 0.4);
+    margin-bottom: 6px;
+  }
+  .scope-name {
+    font-size: 0.8rem;
+    color: rgba(212, 196, 158, 0.6);
+    margin-bottom: 4px;
+  }
+  .scope-desc {
+    font-size: 0.7rem;
+    color: rgba(180,170,150,0.4);
+    font-style: italic;
+    line-height: 1.6;
+  }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.1), transparent);
+    margin: 40px 0;
+  }
+
+  .legend {
+    display: flex; gap: 20px; margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.65rem; color: rgba(180,170,150,0.4);
+  }
+  .legend-swatch {
+    width: 12px; height: 12px; border-radius: 2px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Encounter Veil — Implementation Analysis</h1>
+<p class="subtitle">Every touch point, dependency, risk, and decision mapped. No stones unturned.</p>
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 1: Current vs Proposed Architecture
+     ═══════════════════════════════════════════════════════ -->
+
+<h2>1. Architecture: Current vs Proposed</h2>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-swatch" style="background: rgba(212,175,55,0.25);"></div> Primary component</div>
+  <div class="legend-item"><div class="legend-swatch" style="background: rgba(134,239,172,0.25);"></div> New</div>
+  <div class="legend-item"><div class="legend-swatch" style="background: rgba(249,191,59,0.25);"></div> Modified</div>
+  <div class="legend-item"><div class="legend-swatch" style="background: rgba(252,165,165,0.15);"></div> Removed (eventually)</div>
+  <div class="legend-item"><div class="legend-swatch" style="background: rgba(180,160,140,0.1);"></div> Unchanged</div>
+</div>
+
+<div class="arch-diagram">
+  <!-- CURRENT -->
+  <div class="arch-side current">
+    <div class="arch-label">Current Architecture</div>
+
+    <div class="node primary">
+      <div class="file">GameView.tsx <span class="lines">3000+ lines</span></div>
+      <div class="desc">Routes encounters to one of two modals based on template type</div>
+    </div>
+    <div class="edge-label">shouldUseEncounterStage? &rarr;</div>
+
+    <div class="node primary">
+      <div class="file">TieredEncounterModal.tsx <span class="lines">973 lines</span></div>
+      <div class="desc">Legacy encounters. Builds prose inline from raw template + graph. No illustrations. maxWidth=560px Modal.</div>
+    </div>
+
+    <div class="node primary">
+      <div class="file">EncounterStage.tsx <span class="lines">925 lines</span></div>
+      <div class="desc">Rich encounters (gate-duty, unified w/ support bundles). Uses EncounterStageModel. Has illustration support. maxWidth=980px Modal.</div>
+    </div>
+
+    <div class="edge-label">built by adapters &darr;</div>
+
+    <div class="node secondary">
+      <div class="file">buildUnifiedEncounterStageModel.ts <span class="lines">600+ lines</span></div>
+      <div class="desc">Builds model from UnifiedActionTemplate. Uses template.illustrationUrl.</div>
+    </div>
+    <div class="node secondary">
+      <div class="file">buildGateDutyEncounterStageModel.ts <span class="lines">1300+ lines</span></div>
+      <div class="desc">Hardcoded gate-duty narrative. One fixed illustration path.</div>
+    </div>
+
+    <div class="edge-label">data contracts &darr;</div>
+
+    <div class="node secondary">
+      <div class="file">encounter-stage/types.ts <span class="lines">176 lines</span></div>
+      <div class="desc">EncounterStageModel — 14+ nested interfaces. Already has illustration field.</div>
+    </div>
+    <div class="node secondary">
+      <div class="file">Modal.tsx <span class="lines">149 lines</span></div>
+      <div class="desc">Shared modal primitive. Gold-bordered panel, 75vh max-height, portal.</div>
+    </div>
+  </div>
+
+  <div class="arch-arrow">&rArr;</div>
+
+  <!-- PROPOSED -->
+  <div class="arch-side proposed">
+    <div class="arch-label">Proposed Architecture</div>
+
+    <div class="node modify">
+      <div class="file">GameView.tsx <span class="badge modify">modify</span></div>
+      <div class="desc">Route ALL encounters through EncounterVeil. Old modals become fallback (or removed).</div>
+    </div>
+    <div class="edge-label">always &rarr;</div>
+
+    <div class="node new">
+      <div class="file">EncounterVeil.tsx <span class="badge new">new ~400-500 lines</span></div>
+      <div class="desc">Full-screen overlay. Dissolved art, whisper chrome, prose choice blocks. Handles all thread tiers, aftermath, narration.</div>
+    </div>
+
+    <div class="node delete">
+      <div class="file">TieredEncounterModal.tsx <span class="badge delete">retire</span></div>
+      <div class="desc">Replaced by EncounterVeil. Keep temporarily as fallback.</div>
+    </div>
+    <div class="node delete">
+      <div class="file">EncounterStage.tsx <span class="badge delete">retire</span></div>
+      <div class="desc">Replaced by EncounterVeil. Keep temporarily as fallback.</div>
+    </div>
+
+    <div class="edge-label">still built by adapters &darr;</div>
+
+    <div class="node modify">
+      <div class="file">buildSimpleEncounterStageModel.ts <span class="badge new">new adapter</span></div>
+      <div class="desc">New adapter for "simple" encounters that currently bypass EncounterStageModel.</div>
+    </div>
+    <div class="node keep">
+      <div class="file">buildUnifiedEncounterStageModel.ts <span class="badge keep">keep</span></div>
+      <div class="desc">Already works. Just ensure illustrationUrl is populated on more templates.</div>
+    </div>
+    <div class="node keep">
+      <div class="file">buildGateDutyEncounterStageModel.ts <span class="badge keep">keep</span></div>
+      <div class="desc">Already provides illustration. Works as-is.</div>
+    </div>
+
+    <div class="edge-label">same data contract &darr;</div>
+
+    <div class="node keep">
+      <div class="file">encounter-stage/types.ts <span class="badge keep">keep</span></div>
+      <div class="desc">EncounterStageModel already has everything the Veil needs. No changes.</div>
+    </div>
+    <div class="node keep">
+      <div class="file">Modal.tsx <span class="badge keep">unused by Veil</span></div>
+      <div class="desc">Veil uses its own full-screen portal overlay. Modal stays for other UIs.</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 2: Complete Touch Point Map
+     ═══════════════════════════════════════════════════════ -->
+
+<h2>2. Every File That Must Change</h2>
+
+<table class="touch-table">
+  <thead>
+    <tr>
+      <th>File</th>
+      <th>What Changes</th>
+      <th>Why</th>
+      <th>Complexity</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="file">EncounterVeil.tsx</td>
+      <td class="action">Create ~400-500 line component. Full-screen portal overlay, dissolved art via CSS mask-image, prose renderer, choice blocks, step dots, thread tier chrome, narration hooks, aftermath view, peek gate, boost slider.</td>
+      <td>Core new component. Replaces both existing modals.</td>
+      <td class="complexity complexity-high">High</td>
+    </tr>
+    <tr>
+      <td class="file">GameView.tsx</td>
+      <td class="action">Replace lines 2809-2853 (modal rendering JSX). Change routing: always render EncounterVeil when tieredEncounterState is set. Pass EncounterStageModel instead of raw props. Build model via adapter for all encounters.</td>
+      <td>The orchestrator. Must route all encounters through the new component.</td>
+      <td class="complexity complexity-med">Medium</td>
+    </tr>
+    <tr>
+      <td class="file">buildSimpleEncounter<br>StageModel.ts</td>
+      <td class="action">New adapter (~200 lines). Converts TieredEncounterModal's raw data (EncounterNotification + EncounterTemplate + WorldGraph) into EncounterStageModel. Handles prose enrichment that TieredEncounterModal currently does inline.</td>
+      <td>TieredEncounterModal builds prose inline. The Veil needs a pre-built model. This adapter bridges the gap.</td>
+      <td class="complexity complexity-med">Medium</td>
+    </tr>
+    <tr>
+      <td class="file">unified-action-<br>templates.ts</td>
+      <td class="action">Add illustrationUrl + illustrationAlt to templates that have concept art. Currently only gate-duty has art. 3 other images exist (flawed-steel, soul-ferryman, road-ambush).</td>
+      <td>Templates need to declare their illustration for the adapter to include it.</td>
+      <td class="complexity complexity-low">Low</td>
+    </tr>
+    <tr>
+      <td class="file">encounter.ts (types)</td>
+      <td class="action">Add optional illustrationUrl/illustrationAlt to EncounterTemplate type, matching UnifiedActionTemplate.</td>
+      <td>Legacy encounter templates need a place to declare illustrations too.</td>
+      <td class="complexity complexity-low">Low</td>
+    </tr>
+    <tr>
+      <td class="file">encounterVisibility.ts</td>
+      <td class="action">Possibly extend EncounterInterventionChoice with godVoice if not already present for EncounterStage path.</td>
+      <td>Choices need godVoice for the Veil's selected-choice reveal.</td>
+      <td class="complexity complexity-low">Low</td>
+    </tr>
+    <tr>
+      <td class="file">encounter-stage/<br>types.ts</td>
+      <td class="action">Possibly add interventionType to EncounterStageChoiceModel (supportive/coercive/withdrawn). Currently only has label + intent + cost.</td>
+      <td>The Veil uses intervention type for color-coded choice glow. The current model lacks this field.</td>
+      <td class="complexity complexity-low">Low</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 3: The Hard Parts
+     ═══════════════════════════════════════════════════════ -->
+
+<h2>3. The Hard Parts (Risks & Complexity)</h2>
+
+<div class="risk-section">
+  <div class="risk-card">
+    <div class="risk-title">Two data paths must become one</div>
+    <div class="risk-desc">TieredEncounterModal builds prose inline from raw EncounterTemplate + WorldGraph (lines 699-722). EncounterStage receives a pre-built EncounterStageModel. The Veil needs one contract. This means either: (a) all encounters go through an adapter, or (b) the Veil accepts both formats.</div>
+    <div class="risk-mitigation">Mitigation: New buildSimpleEncounterStageModel adapter. One-time work, then all encounters use the same contract.</div>
+  </div>
+  <div class="risk-card">
+    <div class="risk-title">EncounterStageModel is missing fields the Veil needs</div>
+    <div class="risk-desc">EncounterStageChoiceModel has: id, label, intent, essenceCost, affordable, costLabel, likelyBurden. But the Veil needs: interventionType (supportive/coercive/withdrawn), godVoice, probabilityBoost. These exist on EncounterInterventionChoice but NOT on EncounterStageChoiceModel.</div>
+    <div class="risk-mitigation">Mitigation: Extend EncounterStageChoiceModel with 3 optional fields. Adapters populate them from source data.</div>
+  </div>
+  <div class="risk-card">
+    <div class="risk-title">Narration has two different patterns</div>
+    <div class="risk-desc">TieredEncounterModal: NarrateButton uses .chronicle-prose CSS selector via containerRef. EncounterStage: per-paragraph + per-choice buttons with activeNarrationId state. The Veil needs to pick one approach.</div>
+    <div class="risk-mitigation">Mitigation: Use the EncounterStage pattern (per-paragraph buttons) — more granular, works better with the Veil's floating prose layout.</div>
+  </div>
+  <div class="risk-card">
+    <div class="risk-title">GameView is 3000+ lines and fragile</div>
+    <div class="risk-desc">The encounter rendering block (lines 2809-2853) depends on shouldUseEncounterStage routing, encounterStageModel memo, and 8+ handler callbacks. Changing this routing is the riskiest edit.</div>
+    <div class="risk-mitigation">Mitigation: Phase 1 adds the Veil alongside existing modals with a feature flag. Only after validation do we remove old paths.</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 4: Implementation Phases
+     ═══════════════════════════════════════════════════════ -->
+
+<h2>4. Implementation Phases</h2>
+
+<div class="scope-grid">
+  <div class="scope-item">
+    <div class="scope-phase">Phase 1 — Foundation</div>
+    <div class="scope-name">Core EncounterVeil + strongly threaded</div>
+    <div class="scope-desc">New EncounterVeil.tsx component. Full-screen overlay, dissolved art, prose renderer, choice blocks with type glow, god-voice reveal. Wire into GameView alongside existing modals (feature-flag or illustration-present gate). Strongly threaded tier only.</div>
+  </div>
+  <div class="scope-item">
+    <div class="scope-phase">Phase 2 — Adapter bridge</div>
+    <div class="scope-name">buildSimpleEncounterStageModel + model extensions</div>
+    <div class="scope-desc">New adapter for "simple" encounters. Extend EncounterStageChoiceModel with interventionType, godVoice, probabilityBoost. All encounters can now produce a model the Veil consumes.</div>
+  </div>
+  <div class="scope-item">
+    <div class="scope-phase">Phase 3 — All tiers</div>
+    <div class="scope-name">Lightly threaded + watched + no-art fallback</div>
+    <div class="scope-desc">Auto-resolve timer bar. Peek gate with essence cost. Boost slider. Lighter art treatment for non-strong tiers. Centered content layout for encounters without illustrations.</div>
+  </div>
+  <div class="scope-item">
+    <div class="scope-phase">Phase 4 — Aftermath + narration</div>
+    <div class="scope-name">Post-resolution view + TTS integration</div>
+    <div class="scope-desc">Aftermath with actor moments, changes, highlights in the dissolved aesthetic. Per-paragraph narration buttons. Aftermath reactions.</div>
+  </div>
+  <div class="scope-item">
+    <div class="scope-phase">Phase 5 — Migration</div>
+    <div class="scope-name">Route all encounters through EncounterVeil</div>
+    <div class="scope-desc">Remove shouldUseEncounterStage routing. All encounters go through EncounterVeil. Old modals become dead code.</div>
+  </div>
+  <div class="scope-item">
+    <div class="scope-phase">Phase 6 — Cleanup</div>
+    <div class="scope-name">Delete old modals + update tests</div>
+    <div class="scope-desc">Remove TieredEncounterModal.tsx (973 lines) and EncounterStage.tsx (925 lines). Update/rewrite tests. Net code reduction despite new component.</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 5: Key Design Decisions
+     ═══════════════════════════════════════════════════════ -->
+
+<h2>5. Decisions Needed</h2>
+
+<table class="touch-table">
+  <thead>
+    <tr>
+      <th>Decision</th>
+      <th>Options</th>
+      <th>Recommendation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="file">Rollout strategy</td>
+      <td class="action">A) Veil alongside old modals (feature flag) &rarr; gradual migration<br>B) Veil replaces both immediately<br>C) Veil for art-encounters only, old modals for the rest</td>
+      <td class="action" style="color: rgba(134,239,172,0.5);">A — safest. Ship early, validate, then migrate. Art-present encounters get the Veil first.</td>
+    </tr>
+    <tr>
+      <td class="file">Data contract</td>
+      <td class="action">A) EncounterVeil accepts EncounterStageModel (extend with missing fields)<br>B) EncounterVeil has its own VeilModel type<br>C) EncounterVeil accepts a union of both current prop shapes</td>
+      <td class="action" style="color: rgba(134,239,172,0.5);">A — EncounterStageModel is already 90% right. Extend it, don't duplicate it.</td>
+    </tr>
+    <tr>
+      <td class="file">Full-screen vs modal</td>
+      <td class="action">A) Full-screen fixed overlay (like prototype)<br>B) Very large modal (95vw x 90vh) using Modal primitive<br>C) Full-screen for art encounters, modal for no-art</td>
+      <td class="action" style="color: rgba(134,239,172,0.5);">A — the whole point is dissolving into void. A modal with borders defeats the purpose.</td>
+    </tr>
+    <tr>
+      <td class="file">Encounter image catalog</td>
+      <td class="action">Only 4 encounter images exist today. Most encounters will have no art initially.</td>
+      <td class="action" style="color: rgba(134,239,172,0.5);">Build the system now, populate art over time. The no-art fallback (void + prose) is still better than the current modal.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div style="margin-top: 48px; text-align: center; font-size: 0.7rem; color: rgba(180,170,150,0.2); font-style: italic; letter-spacing: 0.04em;">
+  respond in terminal when ready
+</div>
+
+</body>
+</html>

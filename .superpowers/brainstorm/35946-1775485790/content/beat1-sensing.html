@@ -1,0 +1,76 @@
+<h2>Beat 1: The Sensing</h2>
+<p class="subtitle">The god reaches out through threads of fate and glimpses 3 mortals at pivotal moments</p>
+
+<div class="section">
+  <h3>Opening</h3>
+  <p>Full-screen dark. Prose fades in, colored by the Ascendant's Hunger:</p>
+  <div class="mockup">
+    <div class="mockup-header">Opening Prose (Gatherer example)</div>
+    <div class="mockup-body" style="background: #0a0a0f; color: #c4a882; padding: 60px 80px; text-align: center; font-family: Georgia, serif; min-height: 200px; display: flex; align-items: center; justify-content: center;">
+      <div>
+        <p style="font-size: 1.4em; font-style: italic; line-height: 1.8; max-width: 600px; margin: 0 auto; opacity: 0.9;">
+          You reach out through the web of fates,<br>
+          feeling for a thread that hums with purpose.<br>
+          <span style="color: #33ff77;">Three lives flicker at the edge of your sight.</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Candidate Presentation</h3>
+  <p>3 mortals appear as full-bleed image cards with prose vignettes. No stats, no reaches, no spheres &mdash; just a scene from their life that hints at who they are.</p>
+
+  <div class="cards">
+    <div class="card" data-choice="triptych" onclick="toggleSelect(this)">
+      <div class="card-image" style="background: linear-gradient(135deg, #2a1a0a 0%, #1a2a1a 100%); height: 200px; display: flex; align-items: center; justify-content: center;">
+        <span style="color: #c4a882; font-style: italic; font-size: 0.95em; padding: 20px; text-align: center;">
+          [concept art: a young woman haggling fiercely<br>in a lantern-lit market at dusk]
+        </span>
+      </div>
+      <div class="card-body">
+        <h3>A. Triptych Layout</h3>
+        <p>All 3 candidates visible at once as side-by-side portrait cards. Each has a large image (top 60%) and prose vignette (bottom 40%). Player clicks to select. Similar to Remembrance's OriginBeat fragment layout but with larger images.</p>
+        <div style="margin-top: 12px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 6px; font-size: 0.85em;">
+          <strong>Example prose:</strong> <em>"She counts coins like a general counts soldiers &mdash; each one a battle won. The merchants twice her age have learned not to underestimate the girl with ink-stained fingers and a ledger she guards like scripture."</em>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" data-choice="spatial" onclick="toggleSelect(this)">
+      <div class="card-image" style="background: linear-gradient(135deg, #1a0a2a 0%, #0a1a2a 100%); height: 200px; display: flex; align-items: center; justify-content: center;">
+        <span style="color: #a882c4; font-style: italic; font-size: 0.95em; padding: 20px; text-align: center;">
+          [concept art: scattered images at different depths,<br>like memories surfacing from dark water]
+        </span>
+      </div>
+      <div class="card-body">
+        <h3>B. Spatial/Scattered Layout</h3>
+        <p>Images float at different positions and scales on a dark field, like the Remembrance StirringBeat. Click to focus one (it centers and enlarges, others blur). Click again to confirm. Prose appears below the focused image. More dreamlike and god-like.</p>
+        <div style="margin-top: 12px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 6px; font-size: 0.85em;">
+          <strong>Interaction:</strong> First click = focus (image centers, prose fades in). Second click = choose. Other images dim and blur.
+        </div>
+      </div>
+    </div>
+
+    <div class="card" data-choice="sequential" onclick="toggleSelect(this)">
+      <div class="card-image" style="background: linear-gradient(135deg, #2a0a0a 0%, #2a1a0a 100%); height: 200px; display: flex; align-items: center; justify-content: center;">
+        <span style="color: #c4a882; font-style: italic; font-size: 0.95em; padding: 20px; text-align: center;">
+          [concept art: a single figure fills the screen,<br>their story told in a cinematic moment]
+        </span>
+      </div>
+      <div class="card-body">
+        <h3>C. Sequential Reveal</h3>
+        <p>One mortal shown at a time, full-screen with cinematic image treatment. Swipe/arrow to see next. Each gets maximum visual impact and prose space. After seeing all 3, player picks from thumbnail strip at bottom.</p>
+        <div style="margin-top: 12px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 6px; font-size: 0.85em;">
+          <strong>Trade-off:</strong> Maximum impact per candidate, but can't compare side-by-side. Takes longer.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Behind the Scenes</h3>
+  <p style="font-size: 0.9em; color: #999;">The Ascendant's Hunger and sphere alignment filter which 3 mortals surface from the candidate pool. A Gatherer god sees people at moments of connection/isolation. A Witness god sees people at moments of hidden truth. Each mortal's hidden stats (reach capabilities, axiological profile) are derived from their narrative context &mdash; the merchant girl has high Gold, the soldier has high Iron. The player never sees numbers.</p>
+</div>

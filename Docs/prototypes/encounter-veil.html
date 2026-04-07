@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>Encounter Veil — Prototype</title>
+<style>
+  /* ── Reset ─────────────────────────────────────────── */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100vh; overflow: hidden; background: #0a0a0f; color: #e0d8c8; }
+  button { font: inherit; cursor: pointer; }
+
+  /* ── Typography ────────────────────────────────────── */
+  :root {
+    --font-prose: Georgia, 'Times New Roman', serif;
+    --font-display: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+    --void: #0a0a0f;
+    --gold: #d4af37;
+    --gold-dim: rgba(212, 175, 55, 0.25);
+    --gold-whisper: rgba(212, 175, 55, 0.12);
+    --text-warm: rgba(212, 196, 158, 0.75);
+    --text-whisper: rgba(180, 170, 150, 0.4);
+    --text-ghost: rgba(160, 140, 130, 0.25);
+    --supportive: rgba(134, 239, 172, 0.7);
+    --coercive: rgba(249, 115, 22, 0.7);
+    --withdrawn: rgba(160, 160, 170, 0.5);
+  }
+
+  /* ── View switcher ─────────────────────────────────── */
+  .view-switcher {
+    position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
+    z-index: 100; display: flex; gap: 2px;
+    background: rgba(20, 18, 14, 0.85);
+    border: 1px solid rgba(212, 175, 55, 0.15);
+    border-radius: 8px; padding: 3px;
+    backdrop-filter: blur(12px);
+  }
+  .view-switcher button {
+    background: transparent; border: none; padding: 6px 14px;
+    font-family: var(--font-prose); font-size: 11px; font-style: italic;
+    letter-spacing: 0.06em; color: var(--text-whisper);
+    border-radius: 6px; transition: all 0.4s ease;
+  }
+  .view-switcher button.active {
+    background: var(--gold-whisper);
+    color: var(--gold);
+  }
+  .view-switcher button:hover:not(.active) {
+    color: var(--text-warm);
+  }
+
+  /* ── Encounter veil — the full-screen overlay ──────── */
+  .encounter-veil {
+    position: fixed; inset: 0;
+    background: var(--void);
+    display: none;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+  .encounter-veil.visible {
+    display: block;
+    opacity: 1;
+  }
+
+  /* ── Art layer ─────────────────────────────────────── */
+  .veil-art {
+    position: absolute; inset: 0;
+    background-size: cover;
+    background-position: center;
+    /* The signature dissolved edges — art materializes from void */
+    mask-image:
+      radial-gradient(ellipse 85% 80% at 35% 40%, black 20%, transparent 75%);
+    -webkit-mask-image:
+      radial-gradient(ellipse 85% 80% at 35% 40%, black 20%, transparent 75%);
+    opacity: 0;
+    transform: scale(1.02);
+    transition: opacity 1.2s ease 0.2s, transform 8s ease-out 0.2s;
+  }
+  .encounter-veil.visible .veil-art {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+
+  /* ── Art title — lower-left like "THE SILENT ORACLE" ── */
+  .art-title {
+    position: absolute; bottom: 6vh; left: 4vw;
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.18);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 1s ease 1s, transform 1s ease 1s;
+    z-index: 5;
+  }
+  .encounter-veil.visible .art-title {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── Content layer — right side reading zone ──────── */
+  .veil-content {
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    width: 52%;
+    display: flex; flex-direction: column;
+    justify-content: center;
+    padding: 6vh 5vw 8vh 3vw;
+    /* Dark gradient — opaque enough to read, transparent enough to glimpse art */
+    background: linear-gradient(
+      to right,
+      transparent 0%,
+      rgba(10, 10, 15, 0.55) 10%,
+      rgba(10, 10, 15, 0.82) 28%,
+      rgba(10, 10, 15, 0.93) 50%,
+      rgba(10, 10, 15, 0.97) 100%
+    );
+    z-index: 10;
+    overflow-y: auto;
+  }
+
+  /* ── Thread tier whisper — top-right ───────────────── */
+  .thread-tier {
+    position: absolute; top: 4vh; right: 5vw;
+    z-index: 20;
+    text-align: right;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity 0.8s ease 0.6s, transform 0.8s ease 0.6s;
+  }
+  .encounter-veil.visible .thread-tier {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .thread-tier .tier-label {
+    font-family: var(--font-display);
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    opacity: 0.5;
+  }
+  .thread-tier .tier-label.light { color: #aa88cc; }
+  .thread-tier .tier-label.watched { color: rgba(140,140,150,0.5); }
+  .thread-tier .threat {
+    font-family: var(--font-prose);
+    font-style: italic;
+    font-size: 0.7rem;
+    color: var(--text-ghost);
+    margin-top: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── Step indicator — minimal dots ─────────────────── */
+  .step-dots {
+    display: flex; gap: 8px; align-items: center;
+    margin-bottom: 24px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.8s ease 0.8s, transform 0.8s ease 0.8s;
+  }
+  .encounter-veil.visible .step-dots {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .step-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--text-ghost);
+    transition: all 0.4s ease;
+  }
+  .step-dot.current {
+    width: 8px; height: 8px;
+    background: var(--gold);
+    opacity: 0.6;
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.2);
+  }
+  .step-dot.resolved {
+    background: rgba(134, 239, 172, 0.4);
+  }
+  .step-dot-label {
+    font-family: var(--font-prose);
+    font-style: italic;
+    font-size: 0.7rem;
+    color: var(--text-ghost);
+    margin-left: 6px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Encounter title ───────────────────────────────── */
+  .encounter-title {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-ghost);
+    margin-bottom: 6px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.8s ease 0.9s, transform 0.8s ease 0.9s;
+  }
+  .encounter-veil.visible .encounter-title {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Agent line */
+  .encounter-agent {
+    font-family: var(--font-prose);
+    font-style: italic;
+    font-size: 0.8rem;
+    color: var(--text-whisper);
+    margin-bottom: 20px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.8s ease 1s, transform 0.8s ease 1s;
+  }
+  .encounter-veil.visible .encounter-agent {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Gold divider */
+  .gold-divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.2), transparent);
+    margin-bottom: 22px;
+    opacity: 0;
+    transition: opacity 1s ease 1.1s;
+  }
+  .encounter-veil.visible .gold-divider {
+    opacity: 1;
+  }
+
+  /* ── Prose ─────────────────────────────────────────── */
+  .encounter-prose {
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 1s ease 1.2s, transform 1s ease 1.2s;
+  }
+  .encounter-veil.visible .encounter-prose {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .encounter-prose p {
+    font-family: var(--font-prose);
+    font-style: italic;
+    font-size: 0.95rem;
+    line-height: 1.85;
+    color: var(--text-warm);
+    margin-bottom: 16px;
+    max-width: 540px;
+  }
+  .encounter-prose p:last-child { margin-bottom: 0; }
+
+  /* Drop cap */
+  .drop-cap::first-letter {
+    font-family: var(--font-display);
+    font-size: 3.4em;
+    float: left;
+    line-height: 0.75;
+    margin-right: 0.06em;
+    margin-top: 0.08em;
+    color: rgba(212, 196, 158, 0.55);
+    font-style: normal;
+  }
+
+  /* Entity reference highlight */
+  .entity-ref {
+    color: var(--gold);
+    opacity: 0.7;
+    text-decoration: underline;
+    text-decoration-color: rgba(212, 175, 55, 0.2);
+    text-underline-offset: 0.14em;
+    cursor: help;
+  }
+
+  /* Moment line */
+  .moment-line {
+    font-family: var(--font-prose);
+    font-style: italic;
+    font-size: 0.8rem;
+    color: var(--gold);
+    opacity: 0.4;
+    margin-top: 8px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Choices — styled like OriginBeat outcome blocks ── */
+  .choices-section {
+    margin-top: 28px;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 1s ease 1.5s, transform 1s ease 1.5s;
+  }
+  .encounter-veil.visible .choices-section {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .choice-block {
+    position: relative;
+    padding: 18px 22px;
+    margin-bottom: 12px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.5s ease;
+    background: transparent;
+    border: none;
+    text-align: left;
+    width: 100%;
+    max-width: 540px;
+  }
+
+  /* Subtle left border that emerges on hover */
+  .choice-block::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 10%; bottom: 10%;
+    width: 1px;
+    background: transparent;
+    transition: background 0.5s ease;
+  }
+
+  .choice-block:hover::before,
+  .choice-block.selected::before {
+    background: linear-gradient(to bottom, transparent, var(--gold-dim), transparent);
+  }
+
+  /* Background glow on hover/selected */
+  .choice-block:hover {
+    background: rgba(212, 175, 55, 0.03);
+  }
+  .choice-block.selected {
+    background: rgba(212, 175, 55, 0.06);
+  }
+
+  .choice-intent {
+    font-family: var(--font-prose);
+    font-style: italic;
+    font-size: 0.9rem;
+    line-height: 1.75;
+    color: var(--text-whisper);
+    transition: color 0.5s ease;
+  }
+  .choice-block:hover .choice-intent,
+  .choice-block.selected .choice-intent {
+    color: var(--text-warm);
+  }
+
+  /* Choice type color accent — a faint glow at the top of the block */
+  .choice-type-glow {
+    position: absolute;
+    top: 0; left: 5%; right: 5%;
+    height: 1px;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+  .choice-block:hover .choice-type-glow,
+  .choice-block.selected .choice-type-glow {
+    opacity: 1;
+  }
+  .choice-type-glow.supportive {
+    background: linear-gradient(to right, transparent, rgba(134, 239, 172, 0.3), transparent);
+  }
+  .choice-type-glow.coercive {
+    background: linear-gradient(to right, transparent, rgba(249, 115, 22, 0.3), transparent);
+  }
+  .choice-type-glow.withdrawn {
+    background: linear-gradient(to right, transparent, rgba(160, 160, 170, 0.2), transparent);
+  }
+
+  /* Choice meta (type label + essence cost) */
+  .choice-meta {
+    display: flex; gap: 16px; align-items: center;
+    margin-top: 8px;
+    font-family: var(--font-prose);
+    font-style: italic;
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+  }
+  .choice-type-label {
+    text-transform: lowercase;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+  .choice-type-label.supportive { color: var(--supportive); }
+  .choice-type-label.coercive { color: var(--coercive); }
+  .choice-type-label.withdrawn { color: var(--withdrawn); }
+
+  .choice-block:hover .choice-type-label,
+  .choice-block.selected .choice-type-label {
+    opacity: 1;
+  }
+
+  .choice-cost {
+    color: var(--gold);
+    opacity: 0.35;
+    transition: opacity 0.5s ease;
+  }
+  .choice-block:hover .choice-cost,
+  .choice-block.selected .choice-cost {
+    opacity: 0.7;
+  }
+
+  .choice-boost {
+    color: var(--text-ghost);
+  }
+
+  /* God voice — appears on selected */
+  .god-voice {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 0.8rem;
+    color: var(--gold);
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    margin-top: 0;
+    padding-left: 12px;
+    border-left: 1px solid rgba(212, 175, 55, 0.15);
+    transition: all 0.6s ease;
+    line-height: 1.7;
+  }
+  .choice-block.selected .god-voice {
+    opacity: 0.5;
+    max-height: 80px;
+    margin-top: 12px;
+    padding-top: 2px;
+  }
+
+  /* ── Footer chrome — essence + actions ─────────────── */
+  .veil-footer {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 2.5vh 5vw;
+    z-index: 20;
+    opacity: 0;
+    transition: opacity 0.8s ease 1.8s;
+    /* Gradient to ensure readability over art */
+    background: linear-gradient(to top, var(--void) 0%, rgba(10,10,15,0.6) 60%, transparent 100%);
+  }
+  .encounter-veil.visible .veil-footer {
+    opacity: 1;
+  }
+
+  .essence-display {
+    font-family: var(--font-prose);
+    font-style: italic;
+    font-size: 0.75rem;
+    color: var(--gold);
+    opacity: 0.35;
+    letter-spacing: 0.04em;
+  }
+
+  .veil-actions {
+    display: flex; gap: 24px; align-items: center;
+  }
+
+  .action-btn {
+    background: transparent;
+    border: none;
+    font-family: var(--font-prose);
+    font-style: italic;
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    transition: all 0.4s ease;
+    padding: 8px 0;
+  }
+  .action-btn.disregard {
+    color: var(--text-ghost);
+  }
+  .action-btn.disregard:hover {
+    color: var(--text-whisper);
+  }
+  .action-btn.intervene {
+    color: var(--gold);
+    opacity: 0.3;
+    cursor: default;
+  }
+  .action-btn.intervene.ready {
+    opacity: 0.7;
+    cursor: pointer;
+  }
+  .action-btn.intervene.ready:hover {
+    opacity: 1;
+    text-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+  }
+
+  /* ── Auto-resolve timer (lightly threaded) ─────────── */
+  .auto-resolve {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    z-index: 30;
+  }
+  .auto-resolve-bar {
+    height: 100%;
+    background: linear-gradient(to right, transparent, #aa88cc55, #aa88cc);
+    transition: width 1s linear;
+  }
+  .auto-resolve-label {
+    position: absolute;
+    top: 8px; left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-prose);
+    font-style: italic;
+    font-size: 0.65rem;
+    color: rgba(170, 136, 204, 0.4);
+    letter-spacing: 0.06em;
+  }
+
+  /* ── Aftermath view ────────────────────────────────── */
+  .aftermath-section {
+    margin-top: 28px;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 1s ease 1.5s, transform 1s ease 1.5s;
+  }
+  .encounter-veil.visible .aftermath-section {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .aftermath-title {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-ghost);
+    margin-bottom: 16px;
+  }
+
+  .aftermath-overview {
+    font-family: var(--font-prose);
+    font-style: italic;
+    font-size: 0.9rem;
+    line-height: 1.8;
+    color: var(--text-warm);
+    margin-bottom: 20px;
+    max-width: 540px;
+  }
+
+  .aftermath-change {
+    padding: 14px 18px;
+    margin-bottom: 10px;
+    max-width: 540px;
+    border-left: 1px solid transparent;
+    transition: border-color 0.5s ease;
+  }
+  .aftermath-change:hover {
+    border-left-color: var(--gold-dim);
+  }
+  .aftermath-change-title {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    color: var(--text-warm);
+    margin-bottom: 4px;
+  }
+  .aftermath-change-detail {
+    font-family: var(--font-prose);
+    font-style: italic;
+    font-size: 0.8rem;
+    line-height: 1.7;
+    color: var(--text-whisper);
+  }
+  .aftermath-change-tone {
+    font-family: var(--font-prose);
+    font-size: 0.65rem;
+    letter-spacing: 0.06em;
+    margin-top: 6px;
+  }
+  .aftermath-change-tone.gain { color: rgba(134, 239, 172, 0.5); }
+  .aftermath-change-tone.loss { color: rgba(252, 165, 165, 0.5); }
+  .aftermath-change-tone.mixed { color: rgba(212, 175, 55, 0.4); }
+
+  /* Actor moment */
+  .actor-moment {
+    display: flex; gap: 14px; align-items: start;
+    padding: 14px 0;
+    max-width: 540px;
+  }
+  .actor-moment-portrait {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(180, 160, 100, 0.15), rgba(20, 17, 11, 0.5));
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: rgba(212, 196, 158, 0.35);
+    flex-shrink: 0;
+  }
+  .actor-moment-name {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    color: var(--text-warm);
+    margin-bottom: 4px;
+    letter-spacing: 0.02em;
+  }
+  .actor-moment-line {
+    font-family: var(--font-prose);
+    font-style: italic;
+    font-size: 0.78rem;
+    line-height: 1.7;
+    color: var(--text-whisper);
+  }
+
+  /* ── No-art fallback ───────────────────────────────── */
+  .no-art .veil-content {
+    width: 65%;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    background: transparent;
+  }
+  .no-art .art-title { display: none; }
+
+  /* ── Peek gate (watched tier) ──────────────────────── */
+  .peek-gate {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 15;
+  }
+  .peek-icon {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    border: 1px solid rgba(140, 140, 150, 0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    color: rgba(140, 140, 150, 0.2);
+    margin-bottom: 20px;
+  }
+  .peek-prompt {
+    font-family: var(--font-prose);
+    font-style: italic;
+    font-size: 0.9rem;
+    color: rgba(140, 140, 150, 0.35);
+    max-width: 320px;
+    text-align: center;
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+  .peek-btn {
+    background: transparent;
+    border: none;
+    font-family: var(--font-prose);
+    font-style: italic;
+    font-size: 0.85rem;
+    color: rgba(140, 140, 150, 0.4);
+    letter-spacing: 0.06em;
+    padding: 8px 20px;
+    transition: all 0.4s ease;
+  }
+  .peek-btn:hover {
+    color: rgba(180, 180, 190, 0.6);
+    text-shadow: 0 0 16px rgba(140, 140, 150, 0.15);
+  }
+
+  /* ── Close X ───────────────────────────────────────── */
+  .close-x {
+    position: absolute; top: 3vh; left: 3vw;
+    z-index: 30;
+    background: transparent; border: none;
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    color: var(--text-ghost);
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    transition: color 0.3s ease;
+    opacity: 0;
+    transition: opacity 0.8s ease 2s, color 0.3s ease;
+  }
+  .encounter-veil.visible .close-x {
+    opacity: 1;
+  }
+  .close-x:hover {
+    color: var(--text-whisper);
+  }
+
+  /* ── View comparison indicators ────────────────────── */
+  .comparison-note {
+    position: fixed;
+    bottom: 12px; left: 50%; transform: translateX(-50%);
+    z-index: 100;
+    font-family: var(--font-prose);
+    font-style: italic;
+    font-size: 0.65rem;
+    color: rgba(120, 110, 100, 0.3);
+    letter-spacing: 0.05em;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── View Switcher ──────────────────────────────────── -->
+<div class="view-switcher">
+  <button class="active" onclick="showView('strong')">Strongly Threaded</button>
+  <button onclick="showView('light')">Lightly Threaded</button>
+  <button onclick="showView('watched')">Watched</button>
+  <button onclick="showView('aftermath')">Aftermath</button>
+  <button onclick="showView('noart')">No Art Fallback</button>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     VIEW 1: STRONGLY THREADED — full art, full prose, 3 choices
+     ════════════════════════════════════════════════════════ -->
+<div id="view-strong" class="encounter-veil visible">
+
+  <!-- Dissolved concept art — full screen background -->
+  <div class="veil-art" style="
+    background-image:
+      url('../../public/concept-art/encounters/gate-duty.jpg'),
+      linear-gradient(135deg, rgba(140,100,50,0.15), rgba(30,25,15,0.1), rgba(100,80,40,0.12));
+  "></div>
+
+  <!-- Art title — whisper in the lower left -->
+  <div class="art-title">The Checkpoint at Dusk</div>
+
+  <!-- Close -->
+  <button class="close-x" title="Resume">&times;</button>
+
+  <!-- Thread tier indicator -->
+  <div class="thread-tier">
+    <div class="tier-label">Strongly Threaded &middot; Paused</div>
+    <div class="threat">moderate threat</div>
+  </div>
+
+  <!-- Content — right reading zone -->
+  <div class="veil-content">
+
+    <!-- Step dots -->
+    <div class="step-dots">
+      <div class="step-dot current"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+      <span class="step-dot-label">1 of 3</span>
+    </div>
+
+    <!-- Encounter info -->
+    <div class="encounter-title">Gate Duty</div>
+    <div class="encounter-agent"><span class="entity-ref">Vasara the Unbowed</span> faces a test of authority</div>
+    <div class="gold-divider"></div>
+
+    <!-- Prose -->
+    <div class="encounter-prose">
+      <p class="drop-cap">The torchlight gutters as another caravan approaches the checkpoint. Vasara's hand rests on the seal of office, the weight of it familiar now after three months at this post. The merchant at the head of the line carries papers from <span class="entity-ref">House Venn</span> &mdash; the faction that controls the river crossing and, by extension, most of the grain that feeds the western settlements.</p>
+      <p>But the papers are wrong. Not forged &mdash; worse than forged. They're genuine documents issued for a different shipment, reused with a clumsy alteration to the date. Someone in House Venn's bureaucracy either made an honest mistake or is running a quiet side operation. Either way, the caravan cannot pass legally.</p>
+      <div class="moment-line">The merchant's eyes are steady. They know something is wrong.</div>
+    </div>
+
+    <!-- Choices — dissolved like OriginBeat outcomes -->
+    <div class="choices-section">
+      <button class="choice-block" onclick="selectChoice(this)">
+        <div class="choice-type-glow supportive"></div>
+        <div class="choice-intent">You whisper to Vasara's conscience: let the grain through. The western settlements are hungry, and this merchant has fed them before. A quiet wave of the hand, a word about the date being close enough. Sometimes mercy is the harder path.</div>
+        <div class="choice-meta">
+          <span class="choice-type-label supportive">supportive</span>
+          <span class="choice-cost">&#9670; 2 essence</span>
+          <span class="choice-boost">+20% success</span>
+        </div>
+        <div class="god-voice">&ldquo;The hungry do not eat paperwork.&rdquo;</div>
+      </button>
+
+      <button class="choice-block" onclick="selectChoice(this)">
+        <div class="choice-type-glow coercive"></div>
+        <div class="choice-intent">You harden Vasara's resolve. Seize the shipment. If House Venn is running a shadow operation, this is the thread that unravels it. The merchant will hate her, the settlements will go hungry another week, but the truth is worth more than comfort.</div>
+        <div class="choice-meta">
+          <span class="choice-type-label coercive">coercive</span>
+          <span class="choice-cost">&#9670; 4 essence</span>
+          <span class="choice-boost">+35% success</span>
+        </div>
+        <div class="god-voice">&ldquo;Pull the thread. Let it all unravel.&rdquo;</div>
+      </button>
+
+      <button class="choice-block" onclick="selectChoice(this)">
+        <div class="choice-type-glow withdrawn"></div>
+        <div class="choice-intent">You withdraw your influence. Vasara will decide on her own, with whatever instincts and pressures have shaped her. This is, after all, a mortal's crossroads &mdash; not yours.</div>
+        <div class="choice-meta">
+          <span class="choice-type-label withdrawn">withdrawn</span>
+          <span class="choice-cost">&#9670; 0 essence</span>
+          <span class="choice-boost">fate decides</span>
+        </div>
+        <div class="god-voice">&ldquo;Some threads must find their own tension.&rdquo;</div>
+      </button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="veil-footer">
+    <div class="essence-display">&#9670; 12 essence</div>
+    <div class="veil-actions">
+      <button class="action-btn disregard">Resume</button>
+      <button id="intervene-strong" class="action-btn intervene">Intervene</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     VIEW 2: LIGHTLY THREADED — timer bar, 2 choices, lighter prose
+     ════════════════════════════════════════════════════════ -->
+<div id="view-light" class="encounter-veil">
+
+  <div class="veil-art" style="
+    background-image:
+      url('../../public/concept-art/encounters/road-ambush.jpg'),
+      linear-gradient(135deg, rgba(100,60,40,0.15), rgba(30,20,15,0.1));
+    opacity: 0.6;
+  "></div>
+
+  <!-- Auto-resolve timer -->
+  <div class="auto-resolve">
+    <div class="auto-resolve-bar" style="width: 65%"></div>
+    <div class="auto-resolve-label">auto-resolves in 4 ticks</div>
+  </div>
+
+  <div class="art-title" style="opacity: 0.12;">Ambush on the Old Road</div>
+  <button class="close-x" title="Close">&times;</button>
+
+  <div class="thread-tier">
+    <div class="tier-label light">Lightly Threaded &middot; Notification</div>
+    <div class="threat">hard threat</div>
+  </div>
+
+  <div class="veil-content">
+    <div class="step-dots">
+      <div class="step-dot resolved"></div>
+      <div class="step-dot current"></div>
+      <span class="step-dot-label">2 of 2</span>
+    </div>
+
+    <div class="encounter-title">Road Ambush</div>
+    <div class="encounter-agent"><span class="entity-ref">Kael Dustwalker</span> confronts danger</div>
+    <div class="gold-divider"></div>
+
+    <div class="encounter-prose">
+      <p class="drop-cap">The bandits emerge from the treeline like they've done this a hundred times. Kael counts four, then five, then realizes the sixth is already behind them. The caravan guards look to Kael for direction &mdash; somewhere in the last month, this wanderer became the person people look to when things go wrong.</p>
+    </div>
+
+    <div class="choices-section">
+      <button class="choice-block" onclick="selectChoice(this)">
+        <div class="choice-type-glow supportive"></div>
+        <div class="choice-intent">Steady their hand. A calm voice, a clear plan &mdash; the guards outnumber the bandits if they hold formation.</div>
+        <div class="choice-meta">
+          <span class="choice-type-label supportive">supportive</span>
+          <span class="choice-cost">&#9670; 2 essence</span>
+          <span class="choice-boost">+20% success</span>
+        </div>
+        <div class="god-voice">&ldquo;You have been braver than this.&rdquo;</div>
+      </button>
+
+      <button class="choice-block" onclick="selectChoice(this)">
+        <div class="choice-type-glow coercive"></div>
+        <div class="choice-intent">Push them into reckless fury. Let the anger override the fear. The sixth bandit won't expect a charging assault.</div>
+        <div class="choice-meta">
+          <span class="choice-type-label coercive">coercive</span>
+          <span class="choice-cost">&#9670; 3 essence</span>
+          <span class="choice-boost">+30% success</span>
+        </div>
+        <div class="god-voice">&ldquo;Surprise is the weapon of the outnumbered.&rdquo;</div>
+      </button>
+    </div>
+  </div>
+
+  <div class="veil-footer">
+    <div class="essence-display">&#9670; 8 essence</div>
+    <div class="veil-actions">
+      <button class="action-btn disregard">Close</button>
+      <button class="action-btn intervene">Intervene</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     VIEW 3: WATCHED — peek gate, then boost slider
+     ════════════════════════════════════════════════════════ -->
+<div id="view-watched" class="encounter-veil">
+
+  <div class="veil-art" style="
+    background-image:
+      url('../../public/concept-art/encounters/soul-ferryman.jpg'),
+      linear-gradient(135deg, rgba(80,80,100,0.12), rgba(15,15,20,0.1));
+    opacity: 0.35;
+    filter: grayscale(40%);
+  "></div>
+
+  <button class="close-x" title="Close">&times;</button>
+
+  <div class="thread-tier">
+    <div class="tier-label watched">Watched &middot; Peek</div>
+    <div class="threat">easy threat</div>
+  </div>
+
+  <!-- Peek gate — shown before spending essence to see -->
+  <div class="peek-gate" id="peek-gate">
+    <div class="peek-icon">&#9676;</div>
+    <div class="peek-prompt">A thread stirs at the edge of your perception &mdash; something is happening to a mortal you have touched, though only barely.</div>
+    <button class="peek-btn" onclick="revealPeek()">&#9670; 1 &mdash; Peer Through the Thread</button>
+  </div>
+
+  <!-- Revealed content (hidden until peek) -->
+  <div class="veil-content" id="watched-content" style="opacity: 0; pointer-events: none;">
+    <div class="encounter-title">The Ferryman's Bargain</div>
+    <div class="encounter-agent"><span class="entity-ref">Maren of the Grey Shore</span> &middot; a distant echo</div>
+    <div class="gold-divider"></div>
+
+    <div class="encounter-prose">
+      <p>Someone is asking Maren to carry something across the river that should not be carried. You sense the weight of it &mdash; not physical weight, but the kind that changes the person who bears it.</p>
+    </div>
+
+    <!-- Boost slider instead of choices -->
+    <div class="choices-section">
+      <div style="padding: 18px 0; max-width: 540px;">
+        <div style="font-family: var(--font-prose); font-style: italic; font-size: 0.75rem; color: var(--text-ghost); margin-bottom: 14px; letter-spacing: 0.04em;">
+          Commit essence to shift the odds
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button class="boost-pip" onclick="setBoost(0)" style="width: 28px; height: 28px; border-radius: 4px; border: 1px solid rgba(212,175,55,0.2); background: transparent; color: var(--gold); opacity: 0.5; font-size: 0.7rem; transition: all 0.3s;">0</button>
+          <button class="boost-pip" onclick="setBoost(1)" style="width: 28px; height: 28px; border-radius: 4px; border: 1px solid rgba(212,175,55,0.2); background: transparent; color: var(--gold); opacity: 0.5; font-size: 0.7rem; transition: all 0.3s;">1</button>
+          <button class="boost-pip" onclick="setBoost(2)" style="width: 28px; height: 28px; border-radius: 4px; border: 1px solid rgba(212,175,55,0.2); background: transparent; color: var(--gold); opacity: 0.5; font-size: 0.7rem; transition: all 0.3s;">2</button>
+          <button class="boost-pip" onclick="setBoost(3)" style="width: 28px; height: 28px; border-radius: 4px; border: 1px solid rgba(212,175,55,0.2); background: transparent; color: var(--gold); opacity: 0.5; font-size: 0.7rem; transition: all 0.3s;">3</button>
+          <span id="boost-label" style="font-family: var(--font-prose); font-style: italic; font-size: 0.7rem; color: var(--text-ghost); margin-left: 8px;">
+            each point: +10% success
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="veil-footer">
+    <div class="essence-display">&#9670; 5 essence</div>
+    <div class="veil-actions">
+      <button class="action-btn disregard">Close</button>
+      <button class="action-btn intervene">Commit</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     VIEW 4: AFTERMATH — resolution, changes, actor moments
+     ════════════════════════════════════════════════════════ -->
+<div id="view-aftermath" class="encounter-veil">
+
+  <div class="veil-art" style="
+    background-image:
+      url('../../public/concept-art/encounters/gate-duty.jpg'),
+      linear-gradient(135deg, rgba(140,100,50,0.15), rgba(30,25,15,0.1));
+    opacity: 0.5;
+    filter: saturate(0.7);
+  "></div>
+
+  <div class="art-title" style="opacity: 0.1;">The Checkpoint at Dusk</div>
+  <button class="close-x" title="Return to the world">&times;</button>
+
+  <div class="thread-tier">
+    <div class="tier-label">Resolved</div>
+    <div class="threat" style="color: rgba(134, 239, 172, 0.3);">success</div>
+  </div>
+
+  <div class="veil-content">
+    <div class="step-dots">
+      <div class="step-dot resolved"></div>
+      <div class="step-dot resolved"></div>
+      <div class="step-dot resolved"></div>
+      <span class="step-dot-label">complete</span>
+    </div>
+
+    <div class="encounter-title">Gate Duty &middot; Aftermath</div>
+    <div class="encounter-agent"><span class="entity-ref">Vasara the Unbowed</span> chose mercy</div>
+    <div class="gold-divider"></div>
+
+    <div class="encounter-prose">
+      <p class="drop-cap">The grain passes through. Vasara watches the caravan disappear into the dusk, the merchant's nod of gratitude barely visible in the torchlight. She pockets the altered papers &mdash; not as evidence, but as a reminder that the rules she enforces are written by people with their own appetites.</p>
+      <p>By the time the western settlements receive the shipment, no one will remember that it almost didn't arrive. That's how mercy works &mdash; invisible to everyone except the person who chose it.</p>
+    </div>
+
+    <div class="aftermath-section">
+      <div class="aftermath-title">What changed</div>
+
+      <!-- Actor moments -->
+      <div class="actor-moment">
+        <div class="actor-moment-portrait">V</div>
+        <div>
+          <div class="actor-moment-name">Vasara the Unbowed</div>
+          <div class="actor-moment-line">Gained a quiet reputation for pragmatism. House Venn notices &mdash; and takes note of the checkpoint guard who doesn't ask too many questions.</div>
+          <div style="margin-top: 8px;">
+            <span style="font-size: 0.65rem; color: rgba(134, 239, 172, 0.5); font-family: var(--font-prose); font-style: italic;">+reputation with House Venn</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="actor-moment">
+        <div class="actor-moment-portrait">R</div>
+        <div>
+          <div class="actor-moment-name">Renn the Quartermaster</div>
+          <div class="actor-moment-line">Watches this with quiet calculation. If Vasara bends rules for grain, perhaps she'll bend them for other shipments too.</div>
+        </div>
+      </div>
+
+      <!-- Mechanical changes as whispers -->
+      <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(212,175,55,0.08);">
+        <div class="aftermath-change">
+          <div class="aftermath-change-title">The Merchant's Debt</div>
+          <div class="aftermath-change-detail">The merchant remembers a kindness. This thread may pull taut later.</div>
+          <div class="aftermath-change-tone mixed">narrative consequence</div>
+        </div>
+        <div class="aftermath-change">
+          <div class="aftermath-change-title">Shadow Ledger</div>
+          <div class="aftermath-change-detail">The altered papers go unexamined. Whatever House Venn is running through this checkpoint continues unchecked.</div>
+          <div class="aftermath-change-tone loss">risk persists</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="veil-footer">
+    <div class="essence-display" style="opacity: 0.2;">&#9670; 10 essence</div>
+    <div class="veil-actions">
+      <button class="action-btn intervene ready" style="opacity: 0.5;">Return to the world</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     VIEW 5: NO ART FALLBACK — graceful degradation
+     ════════════════════════════════════════════════════════ -->
+<div id="view-noart" class="encounter-veil no-art">
+
+  <!-- No art layer — just void -->
+
+  <button class="close-x" title="Resume">&times;</button>
+
+  <div class="thread-tier">
+    <div class="tier-label">Strongly Threaded &middot; Paused</div>
+    <div class="threat">moderate threat</div>
+  </div>
+
+  <div class="veil-content">
+    <div class="step-dots">
+      <div class="step-dot current"></div>
+      <div class="step-dot"></div>
+      <span class="step-dot-label">1 of 2</span>
+    </div>
+
+    <div class="encounter-title">A Merchant's Gambit</div>
+    <div class="encounter-agent"><span class="entity-ref">Pyra of the Long Roads</span> faces a test of cunning</div>
+    <div class="gold-divider"></div>
+
+    <div class="encounter-prose">
+      <p class="drop-cap">The deal is simple on its surface: three casks of dye for a wagon of undyed wool. But Pyra has counted the casks twice now, and the numbers don't add up. The merchant across the table smiles too easily, and in Pyra's experience, easy smiles are the most expensive currency.</p>
+      <p>There's a clause in the contract written in a hand different from the rest. Pyra noticed it on the second reading &mdash; a penalty for late delivery that would bankrupt a small trading house. The merchant's smile hasn't changed, which means either they don't know about the clause, or they wrote it themselves.</p>
+      <div class="moment-line">The ink is still wet on someone's ambition.</div>
+    </div>
+
+    <div class="choices-section">
+      <button class="choice-block" onclick="selectChoice(this)">
+        <div class="choice-type-glow supportive"></div>
+        <div class="choice-intent">Sharpen Pyra's eye. Let them see the clause clearly, understand its implications, and negotiate from knowledge rather than trust.</div>
+        <div class="choice-meta">
+          <span class="choice-type-label supportive">supportive</span>
+          <span class="choice-cost">&#9670; 2 essence</span>
+          <span class="choice-boost">+20% success</span>
+        </div>
+        <div class="god-voice">&ldquo;Read the small words. They carry the heaviest weight.&rdquo;</div>
+      </button>
+
+      <button class="choice-block" onclick="selectChoice(this)">
+        <div class="choice-type-glow coercive"></div>
+        <div class="choice-intent">Fill Pyra with righteous indignation. Confront the merchant publicly, expose the hidden clause, and let the marketplace judge who is honest.</div>
+        <div class="choice-meta">
+          <span class="choice-type-label coercive">coercive</span>
+          <span class="choice-cost">&#9670; 3 essence</span>
+          <span class="choice-boost">+25% success</span>
+        </div>
+        <div class="god-voice">&ldquo;Let them choke on their own cleverness.&rdquo;</div>
+      </button>
+
+      <button class="choice-block" onclick="selectChoice(this)">
+        <div class="choice-type-glow withdrawn"></div>
+        <div class="choice-intent">Step back. This is Pyra's trade, Pyra's instinct, Pyra's risk. Let the mortal navigate mortal waters.</div>
+        <div class="choice-meta">
+          <span class="choice-type-label withdrawn">withdrawn</span>
+          <span class="choice-cost">&#9670; 0 essence</span>
+          <span class="choice-boost">fate decides</span>
+        </div>
+        <div class="god-voice">&ldquo;They will learn or they will not. Either way, it is theirs.&rdquo;</div>
+      </button>
+    </div>
+  </div>
+
+  <div class="veil-footer">
+    <div class="essence-display">&#9670; 14 essence</div>
+    <div class="veil-actions">
+      <button class="action-btn disregard">Resume</button>
+      <button class="action-btn intervene">Intervene</button>
+    </div>
+  </div>
+</div>
+
+<div class="comparison-note">Encounter Veil prototype &mdash; dissolved art + whisper chrome. Open in browser at 1920&times;1080 for intended experience.</div>
+
+<script>
+  // ── View switching ──────────────────────────────────
+  function showView(id) {
+    document.querySelectorAll('.encounter-veil').forEach(el => {
+      el.classList.remove('visible');
+    });
+    document.querySelectorAll('.view-switcher button').forEach(btn => {
+      btn.classList.remove('active');
+    });
+
+    const viewEl = document.getElementById('view-' + id);
+    const buttons = document.querySelectorAll('.view-switcher button');
+    const idx = ['strong', 'light', 'watched', 'aftermath', 'noart'].indexOf(id);
+
+    // Short delay for re-triggering entrance animations
+    setTimeout(() => {
+      viewEl.classList.add('visible');
+      if (buttons[idx]) buttons[idx].classList.add('active');
+    }, 50);
+  }
+
+  // ── Choice selection ────────────────────────────────
+  function selectChoice(el) {
+    const parent = el.closest('.choices-section');
+    parent.querySelectorAll('.choice-block').forEach(cb => cb.classList.remove('selected'));
+    el.classList.add('selected');
+
+    // Enable intervene button
+    const veil = el.closest('.encounter-veil');
+    const interveneBtn = veil.querySelector('.action-btn.intervene');
+    if (interveneBtn) {
+      interveneBtn.classList.add('ready');
+    }
+  }
+
+  // ── Peek gate reveal ────────────────────────────────
+  function revealPeek() {
+    const gate = document.getElementById('peek-gate');
+    const content = document.getElementById('watched-content');
+    gate.style.opacity = '0';
+    gate.style.transition = 'opacity 0.8s ease';
+    setTimeout(() => {
+      gate.style.display = 'none';
+      content.style.opacity = '1';
+      content.style.pointerEvents = 'auto';
+      content.style.transition = 'opacity 1s ease';
+    }, 600);
+  }
+
+  // ── Boost slider ────────────────────────────────────
+  let currentBoost = 0;
+  function setBoost(n) {
+    currentBoost = n;
+    document.querySelectorAll('.boost-pip').forEach((pip, i) => {
+      if (i <= n) {
+        pip.style.background = 'rgba(212, 175, 55, 0.25)';
+        pip.style.borderColor = 'rgba(212, 175, 55, 0.5)';
+        pip.style.opacity = '1';
+      } else {
+        pip.style.background = 'transparent';
+        pip.style.borderColor = 'rgba(212, 175, 55, 0.2)';
+        pip.style.opacity = '0.5';
+      }
+    });
+    const label = document.getElementById('boost-label');
+    if (n > 0) {
+      label.textContent = `+${n * 10}% success · ${n} essence`;
+      label.style.color = 'rgba(212, 175, 55, 0.5)';
+    } else {
+      label.textContent = 'each point: +10% success';
+      label.style.color = 'var(--text-ghost)';
+    }
+
+    // Enable commit button
+    const veil = document.getElementById('view-watched');
+    const btn = veil.querySelector('.action-btn.intervene');
+    if (n > 0) btn.classList.add('ready');
+    else btn.classList.remove('ready');
+  }
+</script>
+</body>
+</html>

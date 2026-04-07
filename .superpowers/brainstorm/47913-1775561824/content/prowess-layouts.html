@@ -1,0 +1,320 @@
+<style>
+  body { background: #131316 !important; }
+  .game-theme {
+    --bg-surface: #1a1a1f;
+    --bg-raised: #222228;
+    --text-primary: #f0e6d2;
+    --text-secondary: #c8b89a;
+    --text-tertiary: #8a7f6f;
+    --accent-gold: #d4a040;
+    --accent-gold-dim: #d4a04060;
+    --border-subtle: #2a2520;
+  }
+  .mockup-container {
+    font-family: 'Crimson Pro', 'Palatino', serif;
+    color: var(--text-primary);
+    max-width: 520px;
+    margin: 0 auto;
+  }
+  .section-heading {
+    font-variant: small-caps;
+    letter-spacing: 0.15em;
+    color: var(--accent-gold);
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  /* ─── Approach A: 2-column grid, card with art + prose ─── */
+  .grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .domain-card-a {
+    background: var(--bg-raised);
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--border-subtle);
+  }
+  .domain-card-a .art {
+    width: 100%;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    position: relative;
+  }
+  .domain-card-a .art .tier-word {
+    position: absolute;
+    bottom: 6px;
+    right: 8px;
+    font-size: 10px;
+    font-variant: small-caps;
+    letter-spacing: 0.1em;
+    color: rgba(240,230,210,0.7);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+  }
+  .domain-card-a .card-body {
+    padding: 8px 10px 10px;
+  }
+  .domain-card-a .reach-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent-gold);
+    font-variant: small-caps;
+    letter-spacing: 0.1em;
+  }
+  .domain-card-a .prose {
+    font-size: 11.5px;
+    line-height: 1.45;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-top: 4px;
+  }
+  .domain-card-a.unknown .art {
+    filter: grayscale(1) brightness(0.3);
+  }
+  .domain-card-a.unknown .prose {
+    color: var(--text-tertiary);
+  }
+
+  /* ─── Approach B: horizontal cards, art left + text right ─── */
+  .stack-horiz {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .domain-card-b {
+    background: var(--bg-raised);
+    border-radius: 6px;
+    display: flex;
+    overflow: hidden;
+    border: 1px solid var(--border-subtle);
+    min-height: 72px;
+  }
+  .domain-card-b .art {
+    width: 72px;
+    min-width: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+  .domain-card-b .card-body {
+    padding: 8px 12px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .domain-card-b .reach-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent-gold);
+    font-variant: small-caps;
+    letter-spacing: 0.1em;
+  }
+  .domain-card-b .tier-word {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    font-variant: small-caps;
+    letter-spacing: 0.05em;
+    margin-left: 6px;
+  }
+  .domain-card-b .prose {
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-top: 3px;
+  }
+  .domain-card-b.unknown .art {
+    filter: grayscale(1) brightness(0.3);
+  }
+  .domain-card-b.unknown .prose {
+    color: var(--text-tertiary);
+  }
+
+  /* Art placeholder gradients per reach */
+  .art-iron    { background: linear-gradient(135deg, #2a1a1a, #4a2020, #1a0a0a); }
+  .art-gold    { background: linear-gradient(135deg, #2a2210, #4a3a18, #1a1508); }
+  .art-shadow  { background: linear-gradient(135deg, #15151f, #252535, #0a0a12); }
+  .art-veil    { background: linear-gradient(135deg, #1a1528, #2a2040, #100c1a); }
+  .art-heart   { background: linear-gradient(135deg, #2a1520, #401a28, #1a0c12); }
+  .art-eye     { background: linear-gradient(135deg, #152028, #1a3040, #0c1520); }
+  .art-stone   { background: linear-gradient(135deg, #1a1a15, #2a2a20, #12120c); }
+  .art-star    { background: linear-gradient(135deg, #181825, #202038, #10101a); }
+
+  .comparison-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent-gold);
+    margin-bottom: 6px;
+    font-variant: small-caps;
+    letter-spacing: 0.15em;
+  }
+  .comparison-note {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-bottom: 16px;
+    line-height: 1.4;
+  }
+</style>
+
+<h2>Prowess Tab — Layout Approaches</h2>
+<p class="subtitle">How should the domain cards with art + prose be arranged?</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>2-Column Grid — Art Dominant</h3>
+      <p>Square art fills the top of each card, prose below. Shows art prominently, but takes more vertical space (scrollable). 4 cards visible at a time.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Horizontal List — Compact</h3>
+      <p>Small square art on the left, text on the right. More domains visible without scrolling, but art is thumbnail-sized. Information-dense.</p>
+    </div>
+  </div>
+</div>
+
+<div style="display: flex; gap: 32px; margin-top: 24px; flex-wrap: wrap; justify-content: center;">
+
+  <!-- APPROACH A: 2-column grid -->
+  <div class="game-theme" style="width: 480px;">
+    <div class="comparison-label">A — 2-Column Grid</div>
+    <div class="comparison-note">Square art fills the card top. Prose below. Scrolls for all 8.</div>
+    <div class="mockup-container">
+      <div class="grid-2col">
+        <!-- Iron — Fearsome (tier 3) -->
+        <div class="domain-card-a">
+          <div class="art art-iron">
+            <span style="opacity:0.6">⚔️</span>
+            <span class="tier-word">fearsome</span>
+          </div>
+          <div class="card-body">
+            <div class="reach-name">Iron</div>
+            <div class="prose">Kael fights with a cold precision that unnerves even seasoned warriors. His blade finds openings others wouldn't dare reach for.</div>
+          </div>
+        </div>
+
+        <!-- Gold — Shrewd (tier 2) -->
+        <div class="domain-card-a">
+          <div class="art art-gold">
+            <span style="opacity:0.6">🪙</span>
+            <span class="tier-word">shrewd</span>
+          </div>
+          <div class="card-body">
+            <div class="reach-name">Gold</div>
+            <div class="prose">He reads a deal the way others read weather — instinctively, and rarely wrong about which way the wind blows.</div>
+          </div>
+        </div>
+
+        <!-- Shadow — Phantom (tier 4) -->
+        <div class="domain-card-a">
+          <div class="art art-shadow">
+            <span style="opacity:0.6">🌑</span>
+            <span class="tier-word">phantom</span>
+          </div>
+          <div class="card-body">
+            <div class="reach-name">Shadow</div>
+            <div class="prose">Kael moves like a phantom through the world. Hardly seen, quickly forgotten, with a knack for manipulating plans and people without them noticing.</div>
+          </div>
+        </div>
+
+        <!-- Veil — unknown -->
+        <div class="domain-card-a unknown">
+          <div class="art art-veil">
+            <span style="opacity:0.3">✦</span>
+          </div>
+          <div class="card-body">
+            <div class="reach-name" style="color: var(--text-tertiary);">Veil</div>
+            <div class="prose">???</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPROACH B: Horizontal list -->
+  <div class="game-theme" style="width: 480px;">
+    <div class="comparison-label">B — Horizontal List</div>
+    <div class="comparison-note">Thumbnail art left, prose right. More compact, shows more at once.</div>
+    <div class="mockup-container">
+      <div class="stack-horiz">
+        <!-- Iron — Fearsome -->
+        <div class="domain-card-b">
+          <div class="art art-iron">
+            <span style="opacity:0.6">⚔️</span>
+          </div>
+          <div class="card-body">
+            <div><span class="reach-name">Iron</span><span class="tier-word">· Fearsome</span></div>
+            <div class="prose">Kael fights with a cold precision that unnerves even seasoned warriors. His blade finds openings others wouldn't dare reach for.</div>
+          </div>
+        </div>
+
+        <!-- Gold — Shrewd -->
+        <div class="domain-card-b">
+          <div class="art art-gold">
+            <span style="opacity:0.6">🪙</span>
+          </div>
+          <div class="card-body">
+            <div><span class="reach-name">Gold</span><span class="tier-word">· Shrewd</span></div>
+            <div class="prose">He reads a deal the way others read weather — instinctively, and rarely wrong about which way the wind blows.</div>
+          </div>
+        </div>
+
+        <!-- Shadow — Phantom -->
+        <div class="domain-card-b">
+          <div class="art art-shadow">
+            <span style="opacity:0.6">🌑</span>
+          </div>
+          <div class="card-body">
+            <div><span class="reach-name">Shadow</span><span class="tier-word">· Phantom</span></div>
+            <div class="prose">Kael moves like a phantom through the world. Hardly seen, quickly forgotten, with a knack for manipulating plans and people without them noticing.</div>
+          </div>
+        </div>
+
+        <!-- Veil — unknown -->
+        <div class="domain-card-b unknown">
+          <div class="art art-veil">
+            <span style="opacity:0.3">✦</span>
+          </div>
+          <div class="card-body">
+            <div><span class="reach-name" style="color: var(--text-tertiary);">Veil</span><span class="tier-word">· ???</span></div>
+            <div class="prose" style="color: var(--text-tertiary);">You haven't observed this domain.</div>
+          </div>
+        </div>
+
+        <!-- Heart — Revered -->
+        <div class="domain-card-b">
+          <div class="art art-heart">
+            <span style="opacity:0.6">❤️</span>
+          </div>
+          <div class="card-body">
+            <div><span class="reach-name">Heart</span><span class="tier-word">· Revered</span></div>
+            <div class="prose">When Kael speaks, even the quarrelling fall silent. His presence draws loyalty not through command, but through a warmth that makes others feel truly seen.</div>
+          </div>
+        </div>
+
+        <!-- Eye — Observant -->
+        <div class="domain-card-b">
+          <div class="art art-eye">
+            <span style="opacity:0.6">👁️</span>
+          </div>
+          <div class="card-body">
+            <div><span class="reach-name">Eye</span><span class="tier-word">· Observant</span></div>
+            <div class="prose">He notices things — the pause before a lie, the fresh scratch on an old lock. Not a scholar's eye, but a survivor's.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

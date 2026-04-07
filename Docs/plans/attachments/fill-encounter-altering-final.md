@@ -1,0 +1,297 @@
+# Attachment Pipeline: Encounter-Altering Primitives (Suppress, Reroll, Create Barrier)
+> Category: mixed (possessions + conditions) | Slug: fill-encounter-altering | Pass: final
+> Status: **READY WITH CAVEATS** — systems audit complete, all caveats non-blocking
+> Systems audit: fill-encounter-altering-systems.md
+
+## Audit Summary
+
+| Check | Result |
+|-------|--------|
+| Type validity (all 39 effect types) | PASS — all interfaces match exactly |
+| Reach values | PASS — all 8 valid ReachDomains used correctly |
+| Predicate validity | PASS — 'in_mystical', 'at_home_territory' in EffectCondition union |
+| Tier appropriateness | PASS — effect counts within engine hard cap (6) |
+| Balance (EFFECT_PER_ITEM_CAP = 0.15) | PASS — no single-reach passive exceeds 0.08 |
+| ID uniqueness | PASS — zero collisions in reward-attachment-catalog.ts |
+| Condition fields (TraitDefinitionProperties) | PASS — all required fields present |
+
+**Non-blocking caveats:**
+- Items 3, 5, 10 carry 5 effects at T3 (convention: 3–4; hard cap: 6). Established precedent.
+- Item 7 carries 4 effects at T2 (convention: 2–3). Established precedent.
+- Item 6 mechanicalSummary imprecision: barrier is always-on, not per-charge (prose note only).
+- suppress/reroll/create_barrier are pass-through primitives — items attach without errors; full behavioral wiring is pre-existing engine work.
+
+---
+
+## Implementation-Ready Code
+
+### Possessions
+
+```typescript
+// --- Relics & Talismans (T1 x1) ----------------------------------------
+{
+  id: 'reward_relics_talismans_the_hush_stone',
+  type: 'artifact',
+  name: 'The Hush Stone',
+  properties: {
+    subcategory: 'relics_talismans',
+    tier: 1,
+    tags: ['#veil', '#talisman', '#ward', '#anti-magic'],
+    mechanicalSummary: '+0.03 Veil, +0.02 Veil in mystical encounters, suppresses spells on self for 4 ticks',
+    lossCondition: 'breakable',
+    flavorText: 'A river stone worn smooth and cold. When sorcery gathers, it drinks the sound from the air.',
+    effects: [
+      { type: 'passive', reach: 'veil', value: 0.03 },
+      { type: 'conditional', condition: 'in_mystical', reach: 'veil', value: 0.02 },
+      { type: 'suppress', target: 'spell', scope: { scope: 'self' }, ticks: 4 },
+    ],
+  } as PossessionNodeProperties,
+},
+
+// --- Relics & Talismans (T2 x1) ----------------------------------------
+{
+  id: 'reward_relics_talismans_gamblers_last_copper',
+  type: 'artifact',
+  name: "Gambler's Last Copper",
+  properties: {
+    subcategory: 'relics_talismans',
+    tier: 2,
+    tags: ['#star', '#talisman', '#luck', '#fate'],
+    mechanicalSummary: '+0.04 Star, 3 encounter rerolls, upgrades near-miss outcomes by 1 step',
+    lossCondition: 'stealable',
+    flavorText: 'A copper coin so old the face has worn away. The last thing a dead gambler held. It feels warm when odds turn.',
+    effects: [
+      { type: 'passive', reach: 'star', value: 0.04 },
+      { type: 'reroll', uses: 3 },
+      { type: 'test_shaper', reach: 'star', trigger: 'near_miss', maxMargin: 6, steps: 1 },
+    ],
+  } as PossessionNodeProperties,
+},
+
+// --- Relics & Talismans (T3 x1) ----------------------------------------
+{
+  id: 'reward_relics_talismans_null_circlet',
+  type: 'artifact',
+  name: 'Null Circlet',
+  properties: {
+    subcategory: 'relics_talismans',
+    tier: 3,
+    tags: ['#veil', '#shadow', '#relic', '#anti-magic', '#ancient'],
+    mechanicalSummary: '+0.08 Veil, +0.04 Shadow, -0.04 Star, suppresses all effects in 1-hex radius for 6 ticks, creates awareness barrier on adjacent hexes for 8 ticks',
+    lossCondition: 'cursed',
+    flavorText: 'A band of grey iron that sits above the brow like a wound. Nothing magical survives within arm\'s reach. Including prayers.',
+    effects: [
+      { type: 'passive', reach: 'veil', value: 0.08 },
+      { type: 'passive', reach: 'shadow', value: 0.04 },
+      { type: 'passive', reach: 'star', value: -0.04 },
+      { type: 'suppress', target: 'all_effects', scope: { scope: 'radius', hexes: 1 }, ticks: 6 },
+      { type: 'create_barrier', between: 'self_hex', and: 'adjacent', blocks: 'awareness', ticks: 8 },
+    ],
+  } as PossessionNodeProperties,
+},
+
+// --- Tools & Instruments (T2 x1) ----------------------------------------
+{
+  id: 'reward_tools_instruments_wardwright_compass',
+  type: 'artifact',
+  name: "Wardwright's Compass",
+  properties: {
+    subcategory: 'tools_instruments',
+    tier: 2,
+    tags: ['#stone', '#tool', '#ward', '#craft', '#territorial'],
+    mechanicalSummary: '+0.05 Stone, creates movement barrier between self hex and adjacent for 10 ticks, +0.03 Stone at home territory',
+    lossCondition: 'breakable',
+    flavorText: 'The needle does not point north. It points toward the boundary of what is yours and what is not.',
+    effects: [
+      { type: 'passive', reach: 'stone', value: 0.05 },
+      { type: 'conditional', condition: 'at_home_territory', reach: 'stone', value: 0.03 },
+      { type: 'create_barrier', between: 'self_hex', and: 'adjacent', blocks: 'movement', ticks: 10 },
+    ],
+  } as PossessionNodeProperties,
+},
+
+// --- Tools & Instruments (T3 x1) ----------------------------------------
+{
+  id: 'reward_tools_instruments_fatesight_lens',
+  type: 'artifact',
+  name: 'Fatesight Lens',
+  properties: {
+    subcategory: 'tools_instruments',
+    tier: 3,
+    tags: ['#eye', '#star', '#tool', '#divination', '#fate'],
+    mechanicalSummary: '+0.06 Eye, +0.04 Star, -0.03 Shadow, 4 encounter rerolls, reveals encounters within 2 hexes',
+    lossCondition: 'breakable',
+    flavorText: 'A lens of polished quartz set in brass so old it has turned green. Through it, the future is not one line but many, and some of them are kind.',
+    effects: [
+      { type: 'passive', reach: 'eye', value: 0.06 },
+      { type: 'passive', reach: 'star', value: 0.04 },
+      { type: 'passive', reach: 'shadow', value: -0.03 },
+      { type: 'reroll', uses: 4 },
+      { type: 'reveal', target: 'encounters', range: 2 },
+    ],
+  } as PossessionNodeProperties,
+},
+
+// --- Provisions (T1 x1) ------------------------------------------------
+{
+  id: 'reward_provisions_ward_incense',
+  type: 'artifact',
+  name: 'Ward Incense',
+  properties: {
+    subcategory: 'provisions',
+    tier: 1,
+    tags: ['#stone', '#consumable', '#ward', '#territorial'],
+    mechanicalSummary: '+0.02 Stone (always), 3 charges of +0.03 Stone burst, creates movement barrier on adjacent hexes for 6 ticks (while held)',
+    lossCondition: 'consumable',
+    flavorText: 'Resinous sticks that burn with a bitter smoke. The old folk plant them at doorsteps and say nothing crosses the threshold while the ash is warm.',
+    effects: [
+      { type: 'passive', reach: 'stone', value: 0.02 },
+      { type: 'consumable_charge', charges: 3, onUse: { reach: 'stone', value: 0.03 }, destroyOnEmpty: true },
+      { type: 'create_barrier', between: 'self_hex', and: 'adjacent', blocks: 'movement', ticks: 6 },
+    ],
+  } as PossessionNodeProperties,
+},
+```
+
+### Tomes & Scrolls
+
+```typescript
+// --- Tomes & Scrolls (T2 x1) -------------------------------------------
+{
+  id: 'reward_tomes_scrolls_book_of_sealing',
+  type: 'artifact',
+  name: 'Book of Sealing',
+  properties: {
+    subcategory: 'tomes_scrolls',
+    tier: 2,
+    tags: ['#veil', '#stone', '#tome', '#ward', '#ritual'],
+    mechanicalSummary: '+0.04 Veil, +0.03 Stone, suppresses auras on self hex for 8 ticks, creates both-type barrier on adjacent hexes for 8 ticks',
+    lossCondition: 'breakable',
+    flavorText: 'The pages are blank until held near something enchanted. Then the ink rises like veins beneath skin, spelling out how to cage it.',
+    effects: [
+      { type: 'passive', reach: 'veil', value: 0.04 },
+      { type: 'passive', reach: 'stone', value: 0.03 },
+      { type: 'suppress', target: 'aura', scope: { scope: 'hex', target: 'self' }, ticks: 8 },
+      { type: 'create_barrier', between: 'self_hex', and: 'adjacent', blocks: 'both', ticks: 8 },
+    ],
+  } as PossessionNodeProperties,
+},
+```
+
+### Conditions
+
+```typescript
+// --- Blessings (T1 x1) -------------------------------------------------
+{
+  id: 'reward_condition_fortune_kissed',
+  type: 'trait',
+  name: 'Fortune-Kissed',
+  properties: {
+    subcategory: 'condition',
+    tier: 1,
+    tags: ['#blessing', '#star', '#fate', '#luck'],
+    description: 'Fate bends gently toward the bearer. Misfortune slides past like rain off wax.',
+    maxLevel: 1,
+    visibility: 'public',
+    importance: 0,
+    domainContributions: {},
+    mechanicalSummary: '+0.03 Star, 2 encounter rerolls',
+    flavorText: 'You find coins in the road. Arrows miss by a finger-width. It will not last, but while it does, the world is gentle.',
+    effects: [
+      { type: 'passive', reach: 'star', value: 0.03 },
+      { type: 'reroll', uses: 2 },
+    ],
+  } as TraitDefinitionProperties,
+},
+
+// --- Supernatural (T2 x1) -----------------------------------------------
+{
+  id: 'reward_condition_null_touched',
+  type: 'trait',
+  name: 'Null-Touched',
+  properties: {
+    subcategory: 'condition',
+    tier: 2,
+    tags: ['#supernatural', '#shadow', '#veil', '#anti-magic'],
+    description: 'Something has scoured the magic from your blood. Spells slide off you. So do blessings.',
+    maxLevel: 1,
+    visibility: 'discoverable',
+    importance: 0,
+    domainContributions: {},
+    mechanicalSummary: '+0.05 Shadow, -0.04 Star, suppresses spells on self for 8 ticks',
+    flavorText: 'Candles gutter when you pass. Enchanted locks open at your touch, and then break. Healers look at you with pity.',
+    effects: [
+      { type: 'passive', reach: 'shadow', value: 0.05 },
+      { type: 'passive', reach: 'star', value: -0.04 },
+      { type: 'suppress', target: 'spell', scope: { scope: 'self' }, ticks: 8 },
+    ],
+  } as TraitDefinitionProperties,
+},
+
+// --- Supernatural (T3 x1) -----------------------------------------------
+{
+  id: 'reward_condition_warded_ground',
+  type: 'trait',
+  name: 'Warded Ground',
+  properties: {
+    subcategory: 'condition',
+    tier: 3,
+    tags: ['#supernatural', '#stone', '#eye', '#territorial', '#ward'],
+    description: 'The earth itself remembers your claim. Trespassers feel the boundary in their bones.',
+    maxLevel: 1,
+    visibility: 'public',
+    importance: 0,
+    domainContributions: {},
+    mechanicalSummary: '+0.06 Stone, +0.04 Eye, creates both-type barrier on adjacent hexes for 12 ticks, allies within 1 hex gain +0.02 Stone, drifts toward mercy on the mercy-ruthlessness axis',
+    flavorText: 'The grass grows shorter at the edge. Animals will not cross. Even the wind seems to hesitate at the line you have drawn.',
+    effects: [
+      { type: 'passive', reach: 'stone', value: 0.06 },
+      { type: 'passive', reach: 'eye', value: 0.04 },
+      { type: 'create_barrier', between: 'self_hex', and: 'adjacent', blocks: 'both', ticks: 12 },
+      { type: 'aura', radius: 1, target: 'allies', reach: 'stone', value: 0.02 },
+      { type: 'axiological_drift', axis: 'mercy_ruthlessness', ratePerTick: 0.003, limitValue: 0.25 },
+    ],
+  } as TraitDefinitionProperties,
+},
+```
+
+---
+
+## Changes from Revised → Final
+
+| # | Item | Change | Reason |
+|---|------|--------|--------|
+| 2 | Gambler's Last Copper | mechanicalSummary: "near-miss failures" → "near-miss outcomes" | Aligns with `trigger: 'near_miss'` semantics |
+| 5 | Fatesight Lens | mechanicalSummary reordered: penalty listed after bonuses | Clarity |
+| 6 | Ward Incense | mechanicalSummary clarified: barrier is "(while held)" not "per use" | Corrects misleading implication that barrier is charge-gated |
+| 9 | Null-Touched | mechanicalSummary reordered: penalty listed last | Clarity |
+| 10 | Warded Ground | mechanicalSummary reworded: "1-hex aura" → "allies within 1 hex" | Matches AuraEffect field naming |
+
+All effect arrays are unchanged from the revised document.
+
+---
+
+## Summary Table
+
+| # | Name | Type | Tier | Subcategory | Primitives | Peak Passive | Verdict |
+|---|------|------|------|-------------|------------|--------------|---------|
+| 1 | The Hush Stone | artifact | T1 | relics_talismans | suppress | 0.05 Veil | PASS |
+| 2 | Gambler's Last Copper | artifact | T2 | relics_talismans | reroll, test_shaper | 0.04 Star | PASS |
+| 3 | Null Circlet | artifact | T3 | relics_talismans | suppress, create_barrier | 0.08 Veil | PASS (5 effects) |
+| 4 | Wardwright's Compass | artifact | T2 | tools_instruments | create_barrier | 0.08 Stone | PASS |
+| 5 | Fatesight Lens | artifact | T3 | tools_instruments | reroll, reveal | 0.07 net | PASS (5 effects) |
+| 6 | Ward Incense | artifact | T1 | provisions | create_barrier | 0.02 Stone | PASS |
+| 7 | Book of Sealing | artifact | T2 | tomes_scrolls | suppress, create_barrier | 0.07 Veil+Stone | PASS (4 effects) |
+| 8 | Fortune-Kissed | trait | T1 | condition | reroll | 0.03 Star | PASS |
+| 9 | Null-Touched | trait | T2 | condition | suppress | 0.01 net | PASS |
+| 10 | Warded Ground | trait | T3 | condition | create_barrier, aura, axiological_drift | 0.10 Stone+Eye | PASS (5 effects) |
+
+## Primitive Coverage (Final)
+
+| Primitive | Items | Implementation Status |
+|-----------|-------|-----------------------|
+| suppress | The Hush Stone, Null Circlet, Book of Sealing, Null-Touched | Pass-through — runtime suppression state tracked; behavioral wiring pending |
+| reroll | Gambler's Last Copper, Fatesight Lens, Fortune-Kissed | Pass-through — no encounter-resolution consumer yet |
+| create_barrier | Null Circlet, Wardwright's Compass, Ward Incense, Book of Sealing, Warded Ground | Pass-through — no movement/awareness consumer yet |
+
+All three primitives were at zero usage before this batch. This batch brings suppress to 4 items, reroll to 3, create_barrier to 5.

@@ -1,0 +1,237 @@
+<h2>Ascendant Portrait System — Proposed Design</h2>
+<p class="subtitle">12 origin portraits + 8 sphere frames, composited at runtime</p>
+
+<div class="section">
+  <h3>The Concept</h3>
+  <p>Each ascendant's portrait is two layers: a <strong>mortal portrait</strong> (driven by origin choice) framed by an <strong>ornate sphere frame</strong> (driven by primary sphere). The frame is the divine tell — a mortal face in an otherworldly frame.</p>
+</div>
+
+<!-- Visual mockup of the composition -->
+<div style="display: flex; gap: 32px; margin: 32px 0; align-items: center; justify-content: center;">
+
+  <!-- Origin portrait -->
+  <div style="text-align: center;">
+    <div style="width: 180px; height: 220px; border-radius: 8px; overflow: hidden; position: relative; background: linear-gradient(135deg, #2a2218 0%, #3d2e1e 50%, #1a1510 100%);">
+      <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <div style="width: 65px; height: 65px; border-radius: 50%; background: radial-gradient(circle, #d4b896 0%, #a08060 60%, #6a5040 100%); margin-bottom: 6px;"></div>
+        <div style="width: 80px; height: 45px; border-radius: 6px 6px 0 0; background: linear-gradient(180deg, #7a6a50 0%, #5a4a38 100%);"></div>
+        <div style="margin-top: 8px; color: #c4a882; font-size: 11px; font-style: italic;">shepherd</div>
+      </div>
+    </div>
+    <div class="label" style="margin-top: 8px;">Origin Portrait</div>
+  </div>
+
+  <div style="color: #666; font-size: 28px; font-weight: 300;">+</div>
+
+  <!-- Sphere frame -->
+  <div style="text-align: center;">
+    <div style="width: 180px; height: 220px; position: relative; background: #000; border-radius: 8px; overflow: hidden;">
+      <!-- Ornate frame border -->
+      <div style="position: absolute; inset: 0; border: 12px solid transparent; border-image: linear-gradient(135deg, #2288ff 0%, #1155aa 25%, #44aaff 50%, #1155aa 75%, #2288ff 100%) 1;">
+      </div>
+      <!-- Inner decorative patterns -->
+      <div style="position: absolute; inset: 8px; border: 2px solid rgba(34,136,255,0.3); border-radius: 4px;">
+        <!-- Corner flourishes -->
+        <svg width="100%" height="100%" style="position: absolute; inset: 0;">
+          <!-- Top-left dendrite -->
+          <path d="M0,0 Q8,20 4,35 M0,0 Q20,8 35,4" stroke="rgba(68,170,255,0.5)" fill="none" stroke-width="1.5"/>
+          <path d="M0,0 Q12,12 8,28" stroke="rgba(68,170,255,0.3)" fill="none" stroke-width="1"/>
+          <!-- Top-right -->
+          <path d="M164,0 Q156,20 160,35 M164,0 Q144,8 129,4" stroke="rgba(68,170,255,0.5)" fill="none" stroke-width="1.5"/>
+          <!-- Bottom-left -->
+          <path d="M0,204 Q8,184 4,169 M0,204 Q20,196 35,200" stroke="rgba(68,170,255,0.5)" fill="none" stroke-width="1.5"/>
+          <!-- Bottom-right -->
+          <path d="M164,204 Q156,184 160,169 M164,204 Q144,196 129,200" stroke="rgba(68,170,255,0.5)" fill="none" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <!-- Transparent center (portrait shows through here) -->
+      <div style="position: absolute; inset: 20px; display: flex; align-items: center; justify-content: center;">
+        <div style="color: rgba(34,136,255,0.3); font-size: 11px; font-style: italic; text-align: center;">transparent<br>center</div>
+      </div>
+    </div>
+    <div class="label" style="margin-top: 8px;">Mind Sphere Frame</div>
+  </div>
+
+  <div style="color: #666; font-size: 28px; font-weight: 300;">=</div>
+
+  <!-- Composite result -->
+  <div style="text-align: center;">
+    <div style="width: 180px; height: 220px; position: relative; border-radius: 8px; overflow: hidden;">
+      <!-- Portrait underneath -->
+      <div style="position: absolute; inset: 0; background: linear-gradient(135deg, #1a2030 0%, #2a3040 50%, #0a1520 100%);">
+        <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+          <div style="width: 65px; height: 65px; border-radius: 50%; background: radial-gradient(circle, #a0b8d0 0%, #708898 60%, #405060 100%); margin-bottom: 6px;"></div>
+          <div style="width: 80px; height: 45px; border-radius: 6px 6px 0 0; background: linear-gradient(180deg, #506070 0%, #304050 100%);"></div>
+        </div>
+      </div>
+      <!-- Frame on top -->
+      <div style="position: absolute; inset: 0; border: 12px solid transparent; border-image: linear-gradient(135deg, #2288ff 0%, #1155aa 25%, #44aaff 50%, #1155aa 75%, #2288ff 100%) 1;"></div>
+      <div style="position: absolute; inset: 8px; border: 2px solid rgba(34,136,255,0.3); border-radius: 4px;">
+        <svg width="100%" height="100%" style="position: absolute; inset: 0;">
+          <path d="M0,0 Q8,20 4,35 M0,0 Q20,8 35,4" stroke="rgba(68,170,255,0.5)" fill="none" stroke-width="1.5"/>
+          <path d="M164,0 Q156,20 160,35 M164,0 Q144,8 129,4" stroke="rgba(68,170,255,0.5)" fill="none" stroke-width="1.5"/>
+          <path d="M0,204 Q8,184 4,169 M0,204 Q20,196 35,200" stroke="rgba(68,170,255,0.5)" fill="none" stroke-width="1.5"/>
+          <path d="M164,204 Q156,184 160,169 M164,204 Q144,196 129,200" stroke="rgba(68,170,255,0.5)" fill="none" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <!-- Subtle glow -->
+      <div style="position: absolute; inset: 0; box-shadow: inset 0 0 30px rgba(34,136,255,0.1); pointer-events: none;"></div>
+    </div>
+    <div class="label" style="margin-top: 8px;">Final: Shepherd + Mind</div>
+  </div>
+</div>
+
+<!-- All 8 sphere frame styles -->
+<div class="section" style="margin-top: 40px;">
+  <h3>The Eight Sphere Frames</h3>
+  <p class="subtitle">Each frame uses its sphere's signature colors and form language from STYLE.md</p>
+  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 16px;">
+
+    <!-- Force -->
+    <div style="text-align: center;">
+      <div style="width: 100%; aspect-ratio: 0.82; background: #000; border-radius: 6px; position: relative; overflow: hidden;">
+        <div style="position: absolute; inset: 0; border: 8px solid transparent; border-image: linear-gradient(135deg, #ff4444, #aa2222, #ff6b6b, #aa2222) 1;"></div>
+        <div style="position: absolute; inset: 6px; border: 1px solid rgba(255,68,68,0.3);">
+          <svg width="100%" height="100%" style="position: absolute; inset: 0;">
+            <line x1="0" y1="0" x2="20" y2="25" stroke="rgba(255,107,107,0.4)" stroke-width="2"/>
+            <line x1="100%" y1="0" x2="calc(100% - 20px)" y2="25" stroke="rgba(255,107,107,0.4)" stroke-width="2"/>
+            <line x1="0" y1="100%" x2="20" y2="calc(100% - 25px)" stroke="rgba(255,107,107,0.4)" stroke-width="2"/>
+            <line x1="100%" y1="100%" x2="calc(100% - 20px)" y2="calc(100% - 25px)" stroke="rgba(255,107,107,0.4)" stroke-width="2"/>
+          </svg>
+        </div>
+      </div>
+      <div style="color: #ff6b6b; font-size: 12px; margin-top: 6px; font-weight: 600;">Force</div>
+      <div style="color: #888; font-size: 11px;">sharp angular streaks</div>
+    </div>
+
+    <!-- Matter -->
+    <div style="text-align: center;">
+      <div style="width: 100%; aspect-ratio: 0.82; background: #000; border-radius: 6px; position: relative; overflow: hidden;">
+        <div style="position: absolute; inset: 0; border: 8px solid transparent; border-image: linear-gradient(135deg, #8b6b4a, #5a4030, #a8886a, #5a4030) 1;"></div>
+        <div style="position: absolute; inset: 6px; border: 1px solid rgba(139,107,74,0.3);"></div>
+      </div>
+      <div style="color: #a8886a; font-size: 12px; margin-top: 6px; font-weight: 600;">Matter</div>
+      <div style="color: #888; font-size: 11px;">crystalline lattices</div>
+    </div>
+
+    <!-- Energy -->
+    <div style="text-align: center;">
+      <div style="width: 100%; aspect-ratio: 0.82; background: #000; border-radius: 6px; position: relative; overflow: hidden;">
+        <div style="position: absolute; inset: 0; border: 8px solid transparent; border-image: linear-gradient(135deg, #ffd700, #aa8800, #ffe44d, #aa8800) 1;"></div>
+        <div style="position: absolute; inset: 6px; border: 1px solid rgba(255,215,0,0.3);"></div>
+      </div>
+      <div style="color: #ffe44d; font-size: 12px; margin-top: 6px; font-weight: 600;">Energy</div>
+      <div style="color: #888; font-size: 11px;">radiating spikes</div>
+    </div>
+
+    <!-- Life -->
+    <div style="text-align: center;">
+      <div style="width: 100%; aspect-ratio: 0.82; background: #000; border-radius: 6px; position: relative; overflow: hidden;">
+        <div style="position: absolute; inset: 0; border: 8px solid transparent; border-image: linear-gradient(135deg, #00cc55, #008833, #33ff77, #008833) 1;"></div>
+        <div style="position: absolute; inset: 6px; border: 1px solid rgba(0,204,85,0.3);"></div>
+      </div>
+      <div style="color: #33ff77; font-size: 12px; margin-top: 6px; font-weight: 600;">Life</div>
+      <div style="color: #888; font-size: 11px;">organic branching</div>
+    </div>
+
+    <!-- Mind -->
+    <div style="text-align: center;">
+      <div style="width: 100%; aspect-ratio: 0.82; background: #000; border-radius: 6px; position: relative; overflow: hidden;">
+        <div style="position: absolute; inset: 0; border: 8px solid transparent; border-image: linear-gradient(135deg, #2288ff, #1155aa, #44aaff, #1155aa) 1;"></div>
+        <div style="position: absolute; inset: 6px; border: 1px solid rgba(34,136,255,0.3);"></div>
+      </div>
+      <div style="color: #44aaff; font-size: 12px; margin-top: 6px; font-weight: 600;">Mind</div>
+      <div style="color: #888; font-size: 11px;">neural dendrites</div>
+    </div>
+
+    <!-- Spirit -->
+    <div style="text-align: center;">
+      <div style="width: 100%; aspect-ratio: 0.82; background: #000; border-radius: 6px; position: relative; overflow: hidden;">
+        <div style="position: absolute; inset: 0; border: 8px solid transparent; border-image: linear-gradient(135deg, #aa44dd, #772299, #cc66ff, #772299) 1;"></div>
+        <div style="position: absolute; inset: 6px; border: 1px solid rgba(170,68,221,0.3);"></div>
+      </div>
+      <div style="color: #cc66ff; font-size: 12px; margin-top: 6px; font-weight: 600;">Spirit</div>
+      <div style="color: #888; font-size: 11px;">ascending wisps</div>
+    </div>
+
+    <!-- Time -->
+    <div style="text-align: center;">
+      <div style="width: 100%; aspect-ratio: 0.82; background: #000; border-radius: 6px; position: relative; overflow: hidden;">
+        <div style="position: absolute; inset: 0; border: 8px solid transparent; border-image: linear-gradient(135deg, #ff9933, #aa6622, #ffb355, #aa6622) 1;"></div>
+        <div style="position: absolute; inset: 6px; border: 1px solid rgba(255,153,51,0.3);"></div>
+      </div>
+      <div style="color: #ffb355; font-size: 12px; margin-top: 6px; font-weight: 600;">Time</div>
+      <div style="color: #888; font-size: 11px;">concentric ripples</div>
+    </div>
+
+    <!-- Entropy -->
+    <div style="text-align: center;">
+      <div style="width: 100%; aspect-ratio: 0.82; background: #000; border-radius: 6px; position: relative; overflow: hidden;">
+        <div style="position: absolute; inset: 0; border: 8px solid transparent; border-image: linear-gradient(135deg, #5a8a7a, #3a6a5a, #7aaa9a, #3a6a5a) 1;"></div>
+        <div style="position: absolute; inset: 6px; border: 1px solid rgba(90,138,122,0.3);"></div>
+      </div>
+      <div style="color: #7aaa9a; font-size: 12px; margin-top: 6px; font-weight: 600;">Entropy</div>
+      <div style="color: #888; font-size: 11px;">fracturing cracks</div>
+    </div>
+  </div>
+</div>
+
+<!-- Usage surfaces -->
+<div class="section" style="margin-top: 40px;">
+  <h3>How It Adapts Per Surface</h3>
+  <div style="display: flex; gap: 24px; margin-top: 16px;">
+
+    <div style="flex: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 20px;">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+        <!-- Hex icon mockup: circular crop, no frame, sphere ring -->
+        <div style="width: 48px; height: 48px; border-radius: 50%; background: radial-gradient(circle, #a0b8d0, #405060); border: 3px solid #2288ff; box-shadow: 0 0 10px rgba(34,136,255,0.3); flex-shrink: 0;"></div>
+        <div>
+          <div class="label">Hex Map (zoomed out)</div>
+          <div style="color: #999; font-size: 12px;">Circular crop of portrait only. Frame not shown — sphere ring serves same purpose. Existing system.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 20px;">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+        <div style="width: 48px; height: 60px; border-radius: 4px; background: linear-gradient(135deg, #1a2030, #2a3040); border: 3px solid transparent; border-image: linear-gradient(135deg, #2288ff, #44aaff) 1; flex-shrink: 0;"></div>
+        <div>
+          <div class="label">Character Sheet</div>
+          <div style="color: #999; font-size: 12px;">Full portrait + sphere frame composited. The main showcase surface.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 20px;">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+        <div style="width: 28px; height: 28px; border-radius: 50%; background: radial-gradient(circle, #a0b8d0, #405060); border: 2px solid #2288ff; flex-shrink: 0;"></div>
+        <div>
+          <div class="label">Identity Chip</div>
+          <div style="color: #999; font-size: 12px;">Small circular crop, like hex icon. Replaces current sphere-only glyph.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Asset summary -->
+<div class="section" style="margin-top: 40px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 20px;">
+  <h3>Asset Summary</h3>
+  <table style="width: 100%; border-collapse: collapse; margin-top: 12px;">
+    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+      <td style="padding: 8px; color: #ccc; font-weight: 600;">Origin portraits</td>
+      <td style="padding: 8px; text-align: center; color: #fff;">12</td>
+      <td style="padding: 8px; color: #888;">AI-generated mortal faces. Remembrance style. ~512×640px</td>
+    </tr>
+    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+      <td style="padding: 8px; color: #ccc; font-weight: 600;">Sphere frames</td>
+      <td style="padding: 8px; text-align: center; color: #fff;">8</td>
+      <td style="padding: 8px; color: #888;">AI-generated ornate frames on transparent/black bg. ~512×640px</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px; color: #ccc; font-weight: 600;">Total new assets</td>
+      <td style="padding: 8px; text-align: center; color: #fff; font-weight: bold;">20</td>
+      <td style="padding: 8px; color: #888;">Composited at runtime → 96 unique portraits</td>
+    </tr>
+  </table>
+</div>

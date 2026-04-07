@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>Remembrance Flow — Prototype</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100vh; overflow: hidden; background: #0a0a0f; color: #e0d8c8; }
+  button { font: inherit; cursor: pointer; }
+
+  :root {
+    --font-prose: Georgia, 'Times New Roman', serif;
+    --font-display: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+    --void: #0a0a0f;
+    --text-warm: rgba(212, 196, 158, 0.75);
+    --text-whisper: rgba(180, 170, 150, 0.4);
+    --text-ghost: rgba(160, 140, 130, 0.25);
+  }
+
+  /* ── Beat container — each beat is a full-screen layer ── */
+  .beat {
+    position: fixed; inset: 0;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+  .beat.active {
+    display: block;
+    opacity: 1;
+  }
+
+  /* ── Full-bleed art layer ─────────────────────────────── */
+  .beat-art {
+    position: absolute; inset: 0;
+    background-size: cover;
+    background-position: center;
+    transition: opacity 1s ease, transform 6s ease-out, background-image 0.8s ease;
+  }
+
+  /* ── Stirring beat — floating thumbnails dissolve into full-bleed ── */
+
+  .stirring-grid {
+    position: absolute; inset: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 0;
+  }
+  .stirring-cell {
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: opacity 0.8s ease;
+  }
+  .stirring-cell .cell-art {
+    position: absolute; inset: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.35;
+    filter: brightness(0.6);
+    transition: opacity 0.6s ease, filter 0.6s ease, transform 4s ease-out;
+    transform: scale(1.02);
+  }
+  .stirring-cell:hover .cell-art {
+    opacity: 0.7;
+    filter: brightness(0.85);
+    transform: scale(1);
+  }
+  .stirring-cell .cell-label {
+    position: absolute;
+    bottom: 12%; left: 0; right: 0;
+    text-align: center;
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.12);
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    z-index: 2;
+  }
+  .stirring-cell:hover .cell-label {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  /* Dissolved edges between cells — inner vignette */
+  .stirring-cell::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 100% 100% at center, transparent 40%, var(--void) 85%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* When a stirring is focused, hide grid, show full-bleed */
+  .stirring-grid.has-focus .stirring-cell {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .stirring-grid.has-focus .stirring-cell.focused {
+    opacity: 0; /* we use the full-bleed art layer instead */
+  }
+
+  /* ── Full-bleed focused state — used across all beats ── */
+  .focused-art {
+    position: absolute; inset: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transform: scale(1.03);
+    transition: opacity 1.2s ease, transform 8s ease-out;
+    mask-image: radial-gradient(ellipse 95% 90% at center, black 30%, transparent 90%);
+    -webkit-mask-image: radial-gradient(ellipse 95% 90% at center, black 30%, transparent 90%);
+  }
+  .focused-art.visible {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+
+  /* ── Bottom reading zone — prose floats above a dark gradient ── */
+  .reading-zone {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 0 8vw 5vh;
+    background: linear-gradient(
+      to top,
+      rgba(10, 10, 15, 0.95) 0%,
+      rgba(10, 10, 15, 0.8) 30%,
+      rgba(10, 10, 15, 0.4) 60%,
+      transparent 100%
+    );
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.8s ease 0.4s, transform 0.8s ease 0.4s;
+    pointer-events: none;
+  }
+  .reading-zone.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .reading-zone .beat-label {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-ghost);
+    margin-bottom: 12px;
+  }
+
+  .reading-zone .prose {
+    font-family: var(--font-prose);
+    font-style: italic;
+    font-size: 1.15rem;
+    line-height: 1.85;
+    color: var(--text-warm);
+    max-width: 680px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .reading-zone .art-title {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.2);
+    margin-bottom: 20px;
+  }
+
+  .reading-zone .confirm-hint {
+    font-family: var(--font-prose);
+    font-style: italic;
+    font-size: 0.85rem;
+    color: var(--text-ghost);
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: color 0.3s ease;
+  }
+  .reading-zone .confirm-hint:hover {
+    color: var(--text-whisper);
+  }
+
+  /* ── Top prompt ───────────────────────────────────────── */
+  .top-prompt {
+    position: absolute;
+    top: 5vh; left: 0; right: 0;
+    text-align: center;
+    z-index: 20;
+    pointer-events: none;
+  }
+  .top-prompt .main-prompt {
+    font-family: var(--font-prose);
+    font-style: italic;
+    font-size: 1.5rem;
+    color: rgba(160, 140, 180, 0.45);
+    letter-spacing: 0.06em;
+    transition: opacity 0.8s ease;
+  }
+  .top-prompt .sub-prompt {
+    font-family: var(--font-prose);
+    font-style: italic;
+    font-size: 0.9rem;
+    color: var(--text-ghost);
+    letter-spacing: 0.05em;
+    margin-top: 6px;
+  }
+
+  /* ── Navigation chevrons ──────────────────────────────── */
+  .nav-chevron {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 2rem 1.5rem;
+    z-index: 20;
+    color: rgba(160, 140, 180, 0.3);
+    font-size: 3rem;
+    font-family: var(--font-display);
+    line-height: 1;
+    transition: color 0.3s ease;
+    opacity: 0;
+    transition: opacity 0.6s ease 0.6s, color 0.3s ease;
+  }
+  .nav-chevron.visible {
+    opacity: 1;
+  }
+  .nav-chevron:hover {
+    color: rgba(160, 140, 180, 0.7);
+  }
+  .nav-chevron.left { left: 2vw; }
+  .nav-chevron.right { right: 2vw; }
+
+  /* ── View switcher ─────────────────────────────────────── */
+  .view-switcher {
+    position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
+    z-index: 100; display: flex; gap: 2px;
+    background: rgba(20, 18, 14, 0.85);
+    border: 1px solid rgba(212, 175, 55, 0.15);
+    border-radius: 8px; padding: 3px;
+    backdrop-filter: blur(12px);
+  }
+  .view-switcher button {
+    background: transparent; border: none; padding: 6px 14px;
+    font-family: var(--font-prose); font-size: 11px; font-style: italic;
+    letter-spacing: 0.06em; color: var(--text-whisper);
+    border-radius: 6px; transition: all 0.4s ease;
+  }
+  .view-switcher button.active {
+    background: rgba(212, 175, 55, 0.12);
+    color: rgba(212, 175, 55, 0.8);
+  }
+  .view-switcher button:hover:not(.active) {
+    color: var(--text-warm);
+  }
+
+  /* ── Naming overlay ───────────────────────────────────── */
+  .naming-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 0 8vw 6vh;
+    background: linear-gradient(
+      to top,
+      rgba(10, 10, 15, 0.97) 0%,
+      rgba(10, 10, 15, 0.85) 40%,
+      rgba(10, 10, 15, 0.5) 70%,
+      transparent 100%
+    );
+    z-index: 15;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+    pointer-events: none;
+  }
+  .naming-overlay.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  .naming-overlay .naming-prompt {
+    font-family: var(--font-prose);
+    font-style: italic;
+    font-size: 1.1rem;
+    color: rgba(155, 180, 160, 0.45);
+    letter-spacing: 0.05em;
+    margin-bottom: 16px;
+  }
+  .naming-overlay input {
+    width: 320px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(155, 196, 169, 0.2);
+    padding: 12px 0;
+    color: #d0e8d8;
+    font-family: var(--font-prose);
+    font-style: italic;
+    font-size: 1.1rem;
+    letter-spacing: 0.04em;
+    text-align: center;
+    outline: none;
+    margin-bottom: 20px;
+  }
+  .naming-overlay input::placeholder {
+    color: rgba(155, 196, 169, 0.25);
+  }
+  .naming-overlay .continue-btn {
+    background: transparent;
+    border: none;
+    font-family: var(--font-prose);
+    font-style: italic;
+    font-size: 1rem;
+    color: rgba(155, 196, 169, 0.5);
+    letter-spacing: 0.08em;
+    transition: color 0.3s ease;
+  }
+  .naming-overlay .continue-btn:hover {
+    color: rgba(155, 196, 169, 0.8);
+  }
+
+  /* ── Court selection — two-column text ── */
+  .court-choices {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 0 8vw 5vh;
+    background: linear-gradient(
+      to top,
+      rgba(10, 10, 15, 0.95) 0%,
+      rgba(10, 10, 15, 0.75) 40%,
+      rgba(10, 10, 15, 0.3) 70%,
+      transparent 100%
+    );
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+    pointer-events: none;
+  }
+  .court-choices.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  .court-choices .court-options {
+    display: flex;
+    gap: 4vw;
+    max-width: 1000px;
+    margin-bottom: 24px;
+  }
+  .court-option {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 20px 16px;
+    text-align: left;
+    cursor: pointer;
+    transition: opacity 0.5s ease;
+    position: relative;
+  }
+  .court-option.dim { opacity: 0.3; }
+  .court-option.chosen { opacity: 1; }
+  .court-option .court-prose {
+    font-family: var(--font-prose);
+    font-style: italic;
+    font-size: 1.05rem;
+    line-height: 1.85;
+    color: var(--text-warm);
+    transition: color 0.5s ease;
+  }
+  .court-option.dim .court-prose {
+    color: var(--text-whisper);
+  }
+  .court-option .court-note {
+    font-family: var(--font-prose);
+    font-style: italic;
+    font-size: 0.75rem;
+    color: rgba(120, 110, 90, 0.4);
+    display: block;
+    margin-top: 10px;
+  }
+  .court-option::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(138, 122, 74, 0.3), transparent);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+  .court-option.chosen::after { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     VIEW SWITCHER — jump between beats for comparison
+     ══════════════════════════════════════════════════════════ -->
+<div class="view-switcher">
+  <button class="active" onclick="showBeat('stirring')">Stirring</button>
+  <button onclick="showBeat('stirring-focused')">Stirring (focused)</button>
+  <button onclick="showBeat('origin')">Origin</button>
+  <button onclick="showBeat('origin-focused')">Origin (focused)</button>
+  <button onclick="showBeat('drive-focused')">Drive (focused)</button>
+  <button onclick="showBeat('hunger-focused')">Hunger (focused)</button>
+  <button onclick="showBeat('court')">Court</button>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     BEAT 1: STIRRING — Four images as quadrants
+     ══════════════════════════════════════════════════════════ -->
+<div class="beat active" id="beat-stirring">
+  <div class="top-prompt">
+    <p class="main-prompt">Something stirs in the void. What echoes?</p>
+  </div>
+
+  <div class="stirring-grid" id="stirring-grid">
+    <div class="stirring-cell" onclick="showBeat('stirring-focused')">
+      <div class="cell-art" style="background-image: url('../../public/assets/remembrance/stirring/tangled-light.jpg')"></div>
+      <span class="cell-label">Tangled Light</span>
+    </div>
+    <div class="stirring-cell" onclick="showBeat('stirring-focused')">
+      <div class="cell-art" style="background-image: url('../../public/assets/remembrance/stirring/fracturing-geometry.jpg')"></div>
+      <span class="cell-label">Fracturing Geometry</span>
+    </div>
+    <div class="stirring-cell" onclick="showBeat('stirring-focused')">
+      <div class="cell-art" style="background-image: url('../../public/assets/remembrance/stirring/dark-water.jpg')"></div>
+      <span class="cell-label">Dark Water</span>
+    </div>
+    <div class="stirring-cell" onclick="showBeat('stirring-focused')">
+      <div class="cell-art" style="background-image: url('../../public/assets/remembrance/stirring/rising-embers.jpg')"></div>
+      <span class="cell-label">Rising Embers</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     BEAT 1b: STIRRING — Focused (full-bleed)
+     ══════════════════════════════════════════════════════════ -->
+<div class="beat" id="beat-stirring-focused">
+  <div class="top-prompt">
+    <p class="main-prompt" style="opacity: 0.35">Click again to choose. Or reach for another.</p>
+  </div>
+
+  <div class="focused-art visible"
+       id="stirring-focused-art"
+       style="background-image: url('../../public/assets/remembrance/stirring/tangled-light.jpg')">
+  </div>
+
+  <button class="nav-chevron left visible" onclick="cycleStirring(-1)">&#x2039;</button>
+  <button class="nav-chevron right visible" onclick="cycleStirring(1)">&#x203a;</button>
+
+  <div class="reading-zone visible">
+    <span class="art-title" id="stirring-art-title">Tangled Light</span>
+    <p class="confirm-hint" onclick="showBeat('origin')">Click the image to choose</p>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     BEAT 2: ORIGIN — Full-bleed focused
+     ══════════════════════════════════════════════════════════ -->
+<div class="beat" id="beat-origin">
+  <div class="top-prompt">
+    <p class="main-prompt" style="color: rgba(155,196,169,0.45)">You remember...</p>
+  </div>
+
+  <!-- Thumbnail strip — three images across the center -->
+  <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:3vw; padding:0 6vw; z-index:5;">
+    <button onclick="showBeat('origin-focused')" style="flex:1; max-width:380px; background:transparent; border:none; padding:0; cursor:pointer; opacity:0.45; filter:brightness(0.7); transition: all 0.5s ease;" onmouseenter="this.style.opacity='0.85'; this.style.filter='brightness(1)'" onmouseleave="this.style.opacity='0.45'; this.style.filter='brightness(0.7)'">
+      <div style="width:100%; aspect-ratio:16/9; background:url('../../public/assets/remembrance/origin/recent-shepherd.jpg') center/cover; mask-image:radial-gradient(ellipse 90% 85% at center, black 30%, transparent 95%); -webkit-mask-image:radial-gradient(ellipse 90% 85% at center, black 30%, transparent 95%);"></div>
+      <p style="font-family:var(--font-prose); font-style:italic; font-size:0.9rem; line-height:1.7; color:var(--text-whisper); margin-top:14px; padding:0 4px;">You remember a hillside. The smell of wet wool and wildflowers. The flock knew your voice.</p>
+    </button>
+    <button onclick="showBeat('origin-focused')" style="flex:1; max-width:380px; background:transparent; border:none; padding:0; cursor:pointer; opacity:0.45; filter:brightness(0.7); transition: all 0.5s ease;" onmouseenter="this.style.opacity='0.85'; this.style.filter='brightness(1)'" onmouseleave="this.style.opacity='0.45'; this.style.filter='brightness(0.7)'">
+      <div style="width:100%; aspect-ratio:16/9; background:url('../../public/assets/remembrance/origin/recent-healer.jpg') center/cover; mask-image:radial-gradient(ellipse 90% 85% at center, black 30%, transparent 95%); -webkit-mask-image:radial-gradient(ellipse 90% 85% at center, black 30%, transparent 95%);"></div>
+      <p style="font-family:var(--font-prose); font-style:italic; font-size:0.9rem; line-height:1.7; color:var(--text-whisper); margin-top:14px; padding:0 4px;">You remember hands that never stopped working. The sick, the broken, the ones everyone else had given up on.</p>
+    </button>
+    <button onclick="showBeat('origin-focused')" style="flex:1; max-width:380px; background:transparent; border:none; padding:0; cursor:pointer; opacity:0.45; filter:brightness(0.7); transition: all 0.5s ease;" onmouseenter="this.style.opacity='0.85'; this.style.filter='brightness(1)'" onmouseleave="this.style.opacity='0.45'; this.style.filter='brightness(0.7)'">
+      <div style="width:100%; aspect-ratio:16/9; background:url('../../public/assets/remembrance/origin/ancient-artisan.jpg') center/cover; mask-image:radial-gradient(ellipse 90% 85% at center, black 30%, transparent 95%); -webkit-mask-image:radial-gradient(ellipse 90% 85% at center, black 30%, transparent 95%);"></div>
+      <p style="font-family:var(--font-prose); font-style:italic; font-size:0.9rem; line-height:1.7; color:var(--text-whisper); margin-top:14px; padding:0 4px;">You remember the clay. The wheel. The moment a shapeless thing became beautiful under your hands.</p>
+    </button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     BEAT 2b: ORIGIN — Focused (full-bleed + prose + naming)
+     ══════════════════════════════════════════════════════════ -->
+<div class="beat" id="beat-origin-focused">
+  <div class="top-prompt">
+    <p class="main-prompt" style="opacity: 0.3; color: rgba(155,196,169,0.4)">Click again to choose. Or reach for another.</p>
+  </div>
+
+  <div class="focused-art visible"
+       id="origin-focused-art"
+       style="background-image: url('../../public/assets/remembrance/origin/recent-healer.jpg');
+              mask-image: radial-gradient(ellipse 90% 85% at 50% 40%, black 25%, transparent 80%);
+              -webkit-mask-image: radial-gradient(ellipse 90% 85% at 50% 40%, black 25%, transparent 80%);">
+  </div>
+
+  <button class="nav-chevron left visible" onclick="cycleOrigin(-1)">&#x2039;</button>
+  <button class="nav-chevron right visible" onclick="cycleOrigin(1)">&#x203a;</button>
+
+  <div class="reading-zone visible">
+    <p class="prose" id="origin-prose">You remember hands that never stopped working. The sick, the broken, the ones everyone else had given up on. Your clinic still stands at the crossroads.</p>
+    <p class="confirm-hint" onclick="toggleNaming()">Click the image to choose</p>
+  </div>
+
+  <!-- Naming overlay — slides up when confirmed -->
+  <div class="naming-overlay" id="naming-overlay">
+    <p class="naming-prompt">You had a name once.</p>
+    <input type="text" placeholder="What were you called?" />
+    <button class="continue-btn" onclick="showBeat('drive-focused')">Continue</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     BEAT 3: DRIVE — Focused (full-bleed + prose)
+     ══════════════════════════════════════════════════════════ -->
+<div class="beat" id="beat-drive-focused">
+  <div class="top-prompt">
+    <p class="main-prompt" style="color: rgba(196,155,171,0.45)">But there was something you could not release. Even now, it burns.</p>
+    <p class="sub-prompt">Click again to choose. Or reach for another.</p>
+  </div>
+
+  <div class="focused-art visible"
+       id="drive-focused-art"
+       style="background-image: url('../../public/assets/remembrance/drive/burning-creation.jpg');
+              mask-image: radial-gradient(ellipse 90% 85% at 50% 40%, black 25%, transparent 80%);
+              -webkit-mask-image: radial-gradient(ellipse 90% 85% at 50% 40%, black 25%, transparent 80%);">
+  </div>
+
+  <button class="nav-chevron left visible" onclick="cycleDrive(-1)">&#x2039;</button>
+  <button class="nav-chevron right visible" onclick="cycleDrive(1)">&#x203a;</button>
+
+  <div class="reading-zone visible">
+    <p class="prose" id="drive-prose">You remember the ache of something inside you that demanded to be made real. A song, a building, a movement, a revolution &mdash; the shape did not matter. Only that it existed, and you had made it.</p>
+    <p class="confirm-hint" onclick="showBeat('hunger-focused')">Click the image to choose</p>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     BEAT 4: HUNGER — Focused (full-bleed + prose)
+     ══════════════════════════════════════════════════════════ -->
+<div class="beat" id="beat-hunger-focused">
+  <div class="top-prompt">
+    <p class="main-prompt" style="color: rgba(196,180,155,0.45)">And then the power found you. Or you found it.</p>
+    <p class="sub-prompt">It does not matter which. It was hungry. So were you.</p>
+  </div>
+
+  <div class="focused-art visible"
+       id="hunger-focused-art"
+       style="background-image: url('../../public/assets/remembrance/hunger/kindle.jpg');
+              mask-image: radial-gradient(ellipse 90% 85% at 50% 40%, black 25%, transparent 80%);
+              -webkit-mask-image: radial-gradient(ellipse 90% 85% at 50% 40%, black 25%, transparent 80%);">
+  </div>
+
+  <button class="nav-chevron left visible" onclick="cycleHunger(-1)">&#x2039;</button>
+  <button class="nav-chevron right visible" onclick="cycleHunger(1)">&#x203a;</button>
+
+  <div class="reading-zone visible">
+    <p class="prose" id="hunger-prose">Your devotion became a hunger to kindle. You loved one soul so completely that now you would pour that fire into every soul you touch. They will burn with purpose they never knew they had.</p>
+    <p class="confirm-hint" onclick="showBeat('court')">Click the image to choose</p>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     BEAT 5: COURT — Full-bleed art + text choices at bottom
+     ══════════════════════════════════════════════════════════ -->
+<div class="beat" id="beat-court">
+  <div class="top-prompt">
+    <p class="main-prompt" style="color: rgba(180,180,138,0.4)">The power settles into a pattern...</p>
+  </div>
+
+  <div class="focused-art visible"
+       style="background-image: url('../../public/assets/remembrance/court/high-house.png');
+              opacity: 0.6;
+              mask-image: radial-gradient(ellipse 85% 80% at 50% 35%, black 20%, transparent 75%);
+              -webkit-mask-image: radial-gradient(ellipse 85% 80% at 50% 35%, black 20%, transparent 75%);">
+  </div>
+
+  <div class="court-choices visible">
+    <div class="court-options">
+      <button class="court-option chosen" onclick="selectCourt(this)">
+        <p class="court-prose">Your power demands hierarchy. Above and below, patron and supplicant, a chain of obligation stretching from heaven to earth. Your court is a High House &mdash; a spire of authority where every thread leads upward to you.</p>
+        <span class="court-note">(this feels natural)</span>
+      </button>
+      <button class="court-option dim" onclick="selectCourt(this)">
+        <p class="court-prose">Your power seeks connection. Equal to equal, thread to thread, a web with no center and no edge. Your court is a Web &mdash; a living network where every bond strengthens every other.</p>
+      </button>
+    </div>
+    <button class="continue-btn" style="font-family:var(--font-prose); font-style:italic; font-size:1rem; color:rgba(180,164,138,0.5); letter-spacing:0.08em; background:transparent; border:none; transition:color 0.3s ease;" onmouseenter="this.style.color='rgba(180,164,138,0.8)'" onmouseleave="this.style.color='rgba(180,164,138,0.5)'">Continue</button>
+  </div>
+</div>
+
+
+<script>
+  /* ── Beat switching ─────────────────────────────────────── */
+  function showBeat(id) {
+    document.querySelectorAll('.beat').forEach(b => {
+      b.classList.remove('active');
+    });
+    const beat = document.getElementById('beat-' + id);
+    if (beat) {
+      // Small delay so the opacity transition fires
+      requestAnimationFrame(() => {
+        beat.classList.add('active');
+        // Force reflow for transition
+        beat.offsetHeight;
+      });
+    }
+    // Update switcher
+    document.querySelectorAll('.view-switcher button').forEach(btn => {
+      btn.classList.toggle('active', btn.textContent.toLowerCase().replace(/[() ]/g, '').includes(id.replace(/-/g, '')));
+    });
+  }
+
+  /* ── Stirring cycling ───────────────────────────────────── */
+  const stirringImages = [
+    { src: '../../public/assets/remembrance/stirring/tangled-light.jpg', label: 'Tangled Light' },
+    { src: '../../public/assets/remembrance/stirring/fracturing-geometry.jpg', label: 'Fracturing Geometry' },
+    { src: '../../public/assets/remembrance/stirring/dark-water.jpg', label: 'Dark Water' },
+    { src: '../../public/assets/remembrance/stirring/rising-embers.jpg', label: 'Rising Embers' },
+  ];
+  let stirringIdx = 0;
+  function cycleStirring(dir) {
+    stirringIdx = (stirringIdx + dir + stirringImages.length) % stirringImages.length;
+    const img = stirringImages[stirringIdx];
+    document.getElementById('stirring-focused-art').style.backgroundImage = `url('${img.src}')`;
+    document.getElementById('stirring-art-title').textContent = img.label;
+  }
+
+  /* ── Origin cycling ─────────────────────────────────────── */
+  const originImages = [
+    { src: '../../public/assets/remembrance/origin/recent-shepherd.jpg', prose: 'You remember a hillside. The smell of wet wool and wildflowers. The flock knew your voice \u2014 every one of them. They still graze those hills.' },
+    { src: '../../public/assets/remembrance/origin/recent-healer.jpg', prose: 'You remember hands that never stopped working. The sick, the broken, the ones everyone else had given up on. Your clinic still stands at the crossroads.' },
+    { src: '../../public/assets/remembrance/origin/ancient-artisan.jpg', prose: 'You remember the clay. The wheel. The moment a shapeless thing became beautiful under your hands. The kilns went cold centuries ago, but the pots remain.' },
+  ];
+  let originIdx = 1;
+  function cycleOrigin(dir) {
+    originIdx = (originIdx + dir + originImages.length) % originImages.length;
+    const img = originImages[originIdx];
+    document.getElementById('origin-focused-art').style.backgroundImage = `url('${img.src}')`;
+    document.getElementById('origin-prose').textContent = img.prose;
+  }
+
+  /* ── Drive cycling ──────────────────────────────────────── */
+  const driveImages = [
+    { src: '../../public/assets/remembrance/drive/burning-creation.jpg', prose: 'You remember the ache of something inside you that demanded to be made real. A song, a building, a movement, a revolution \u2014 the shape did not matter. Only that it existed, and you had made it.' },
+    { src: '../../public/assets/remembrance/drive/dying-light.jpg', prose: 'You remember watching something beautiful die. Slowly. A culture, a language, a way of being. You could not save it. You could not look away.' },
+    { src: '../../public/assets/remembrance/drive/whispers-beyond.jpg', prose: 'You remember hearing them. Voices just past the edge of hearing. The dead, or something older. They spoke your name. They told you things no living thing should know.' },
+  ];
+  let driveIdx = 0;
+  function cycleDrive(dir) {
+    driveIdx = (driveIdx + dir + driveImages.length) % driveImages.length;
+    const img = driveImages[driveIdx];
+    document.getElementById('drive-focused-art').style.backgroundImage = `url('${img.src}')`;
+    document.getElementById('drive-prose').textContent = img.prose;
+  }
+
+  /* ── Hunger cycling ─────────────────────────────────────── */
+  const hungerImages = [
+    { src: '../../public/assets/remembrance/hunger/kindle.jpg', prose: 'Your devotion became a hunger to kindle. You loved one soul so completely that now you would pour that fire into every soul you touch. They will burn with purpose they never knew they had.' },
+    { src: '../../public/assets/remembrance/hunger/bind.jpg', prose: 'Your devotion became a hunger to bind. You loved so fiercely that now you would make every bond unbreakable. Betrayal would be impossible. Abandonment would be a concept without meaning.' },
+    { src: '../../public/assets/remembrance/hunger/reshape.jpg', prose: 'Your vision became a hunger. The world as it is \u2014 imperfect, chaotic, wrong \u2014 cannot be tolerated. You would reshape it. All of it. Until it matches what you saw.' },
+  ];
+  let hungerIdx = 0;
+  function cycleHunger(dir) {
+    hungerIdx = (hungerIdx + dir + hungerImages.length) % hungerImages.length;
+    const img = hungerImages[hungerIdx];
+    document.getElementById('hunger-focused-art').style.backgroundImage = `url('${img.src}')`;
+    document.getElementById('hunger-prose').textContent = img.prose;
+  }
+
+  /* ── Naming toggle ──────────────────────────────────────── */
+  function toggleNaming() {
+    const overlay = document.getElementById('naming-overlay');
+    overlay.classList.toggle('visible');
+    if (overlay.classList.contains('visible')) {
+      // Hide the reading zone
+      overlay.previousElementSibling.querySelector('.reading-zone')?.classList.remove('visible');
+    }
+  }
+
+  /* ── Court selection ────────────────────────────────────── */
+  function selectCourt(el) {
+    el.parentElement.querySelectorAll('.court-option').forEach(opt => {
+      opt.classList.remove('chosen');
+      opt.classList.add('dim');
+    });
+    el.classList.remove('dim');
+    el.classList.add('chosen');
+  }
+</script>
+
+</body>
+</html>

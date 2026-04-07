@@ -1,0 +1,186 @@
+<h2>Parchment Fog: Unexplored Hex Treatment</h2>
+<p class="subtitle">How should unexplored hexes look? The parchment replaces the current near-black darkening.</p>
+
+<div class="cards">
+  <!-- Option A: Solid Parchment Fill -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="height: 280px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+      <!-- Hex grid with parchment fill -->
+      <svg viewBox="0 0 400 300" style="width: 100%; height: 100%;">
+        <defs>
+          <pattern id="parchA" patternUnits="userSpaceOnUse" width="400" height="300">
+            <rect width="400" height="300" fill="#3d3025"/>
+            <!-- Parchment noise texture approximation -->
+            <rect width="400" height="300" fill="#4a3d2e" opacity="0.6"/>
+            <circle cx="50" cy="80" r="60" fill="#3a3025" opacity="0.3"/>
+            <circle cx="200" cy="150" r="80" fill="#443828" opacity="0.3"/>
+            <circle cx="350" cy="50" r="50" fill="#3d3525" opacity="0.4"/>
+            <circle cx="100" cy="250" r="70" fill="#413520" opacity="0.3"/>
+            <circle cx="300" cy="220" r="55" fill="#3a3028" opacity="0.3"/>
+          </pattern>
+          <!-- Flat-top hex -->
+          <polygon id="hex" points="30,0 90,0 120,52 90,104 30,104 0,52" />
+        </defs>
+
+        <!-- Row of "explored" hexes at top -->
+        <use href="#hex" x="10" y="10" fill="#2a4a2a" stroke="#1a1a1a" stroke-width="1" opacity="0.9"/>
+        <use href="#hex" x="130" y="10" fill="#3a5a3a" stroke="#1a1a1a" stroke-width="1" opacity="0.9"/>
+        <use href="#hex" x="250" y="10" fill="#2a4a2a" stroke="#1a1a1a" stroke-width="1" opacity="0.9"/>
+
+        <!-- Transition row - mix -->
+        <use href="#hex" x="70" y="70" fill="#3a5a3a" stroke="#1a1a1a" stroke-width="1" opacity="0.9"/>
+        <use href="#hex" x="190" y="70" fill="url(#parchA)" stroke="#2a2218" stroke-width="1.5"/>
+
+        <!-- Unexplored - solid parchment -->
+        <use href="#hex" x="10" y="130" fill="url(#parchA)" stroke="#2a2218" stroke-width="1.5"/>
+        <use href="#hex" x="130" y="130" fill="url(#parchA)" stroke="#2a2218" stroke-width="1.5"/>
+        <use href="#hex" x="250" y="130" fill="url(#parchA)" stroke="#2a2218" stroke-width="1.5"/>
+
+        <use href="#hex" x="70" y="190" fill="url(#parchA)" stroke="#2a2218" stroke-width="1.5"/>
+        <use href="#hex" x="190" y="190" fill="url(#parchA)" stroke="#2a2218" stroke-width="1.5"/>
+      </svg>
+    </div>
+    <div class="card-body">
+      <h3>A. Solid Parchment Fill</h3>
+      <p>Unexplored hexes become a uniform dark parchment/leather color from the Threadbare palette. Simple, clean, fast. Like the blank areas of an old map. The hex shape is visible but the terrain is completely hidden.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Simplest to implement (color swap like current)</li><li>Zero GPU overhead (no textures)</li><li>Clean hex grid still visible</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Less atmospheric than textured</li><li>Flat appearance may feel cheap</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option B: Textured Parchment -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="height: 280px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+      <svg viewBox="0 0 400 300" style="width: 100%; height: 100%;">
+        <defs>
+          <filter id="parchTex">
+            <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="5" seed="3" result="noise"/>
+            <feColorMatrix type="saturate" values="0" in="noise" result="grey"/>
+            <feComponentTransfer in="grey" result="contrast">
+              <feFuncR type="linear" slope="0.3" intercept="0.15"/>
+              <feFuncG type="linear" slope="0.25" intercept="0.12"/>
+              <feFuncB type="linear" slope="0.15" intercept="0.08"/>
+            </feComponentTransfer>
+          </filter>
+          <filter id="parchEdge">
+            <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="3" seed="7"/>
+            <feColorMatrix type="saturate" values="0"/>
+            <feComponentTransfer>
+              <feFuncA type="linear" slope="0.4" intercept="0"/>
+            </feComponentTransfer>
+          </filter>
+          <polygon id="hexB" points="30,0 90,0 120,52 90,104 30,104 0,52" />
+        </defs>
+
+        <!-- Explored hexes -->
+        <use href="#hexB" x="10" y="10" fill="#2a4a2a" stroke="#1a1a1a" stroke-width="1" opacity="0.9"/>
+        <use href="#hexB" x="130" y="10" fill="#3a5a3a" stroke="#1a1a1a" stroke-width="1" opacity="0.9"/>
+        <use href="#hexB" x="250" y="10" fill="#2a4a2a" stroke="#1a1a1a" stroke-width="1" opacity="0.9"/>
+
+        <!-- Transition -->
+        <use href="#hexB" x="70" y="70" fill="#3a5a3a" stroke="#1a1a1a" stroke-width="1" opacity="0.9"/>
+
+        <!-- Textured parchment hexes -->
+        <g>
+          <use href="#hexB" x="190" y="70" fill="#3d3025" stroke="#2a2218" stroke-width="1.5"/>
+          <use href="#hexB" x="190" y="70" filter="url(#parchTex)" opacity="0.8"/>
+        </g>
+        <g>
+          <use href="#hexB" x="10" y="130" fill="#3d3025" stroke="#2a2218" stroke-width="1.5"/>
+          <use href="#hexB" x="10" y="130" filter="url(#parchTex)" opacity="0.8"/>
+        </g>
+        <g>
+          <use href="#hexB" x="130" y="130" fill="#3d3025" stroke="#2a2218" stroke-width="1.5"/>
+          <use href="#hexB" x="130" y="130" filter="url(#parchTex)" opacity="0.8"/>
+        </g>
+        <g>
+          <use href="#hexB" x="250" y="130" fill="#3d3025" stroke="#2a2218" stroke-width="1.5"/>
+          <use href="#hexB" x="250" y="130" filter="url(#parchTex)" opacity="0.8"/>
+        </g>
+        <g>
+          <use href="#hexB" x="70" y="190" fill="#3d3025" stroke="#2a2218" stroke-width="1.5"/>
+          <use href="#hexB" x="70" y="190" filter="url(#parchTex)" opacity="0.8"/>
+        </g>
+        <g>
+          <use href="#hexB" x="190" y="190" fill="#3d3025" stroke="#2a2218" stroke-width="1.5"/>
+          <use href="#hexB" x="190" y="190" filter="url(#parchTex)" opacity="0.8"/>
+        </g>
+
+        <!-- Subtle compass rose hint -->
+        <g transform="translate(265, 225)" opacity="0.15" stroke="#8a7a5a" fill="none" stroke-width="1">
+          <line x1="0" y1="-15" x2="0" y2="15"/>
+          <line x1="-15" y1="0" x2="15" y2="0"/>
+          <polygon points="0,-15 -3,-5 3,-5" fill="#8a7a5a" stroke="none"/>
+        </g>
+      </svg>
+    </div>
+    <div class="card-body">
+      <h3>B. Textured Parchment with Cartographic Detail</h3>
+      <p>Unexplored hexes show a procedural parchment texture with subtle cartographic elements &mdash; faint compass rose hints, aged paper grain, ink stains. Like the margins of an ancient fantasy map where the cartographer hasn't yet explored. Fits the "Threadbare" worn-surfaces aesthetic.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Rich, atmospheric, fits Threadbare aesthetic</li><li>Parchment texture is a pre-baked static asset (one texture)</li><li>Cartographic details reward zooming in</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Needs texture on the material (currently pure vertex colors)</li><li>Moderate implementation: add texture UV + blend</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option C: Overlay Shroud -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="height: 280px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+      <svg viewBox="0 0 400 300" style="width: 100%; height: 100%;">
+        <defs>
+          <filter id="fogFilter">
+            <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="4" seed="5"/>
+            <feColorMatrix type="saturate" values="0"/>
+            <feComponentTransfer>
+              <feFuncR type="linear" slope="0.2" intercept="0.15"/>
+              <feFuncG type="linear" slope="0.18" intercept="0.12"/>
+              <feFuncB type="linear" slope="0.12" intercept="0.08"/>
+            </feComponentTransfer>
+          </filter>
+          <radialGradient id="edgeFade" cx="50%" cy="50%">
+            <stop offset="0%" stop-color="#3d3025" stop-opacity="0"/>
+            <stop offset="60%" stop-color="#3d3025" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#3d3025" stop-opacity="0.95"/>
+          </radialGradient>
+          <polygon id="hexC" points="30,0 90,0 120,52 90,104 30,104 0,52" />
+        </defs>
+
+        <!-- All hexes show terrain underneath -->
+        <use href="#hexC" x="10" y="10" fill="#2a4a2a" stroke="#1a1a1a" stroke-width="1"/>
+        <use href="#hexC" x="130" y="10" fill="#3a5a3a" stroke="#1a1a1a" stroke-width="1"/>
+        <use href="#hexC" x="250" y="10" fill="#2a4a2a" stroke="#1a1a1a" stroke-width="1"/>
+        <use href="#hexC" x="70" y="70" fill="#3a5a3a" stroke="#1a1a1a" stroke-width="1"/>
+        <use href="#hexC" x="190" y="70" fill="#2a4a2a" stroke="#1a1a1a" stroke-width="1"/>
+        <use href="#hexC" x="10" y="130" fill="#3a5a3a" stroke="#1a1a1a" stroke-width="1"/>
+        <use href="#hexC" x="130" y="130" fill="#2a4a2a" stroke="#1a1a1a" stroke-width="1"/>
+        <use href="#hexC" x="250" y="130" fill="#3a5a3a" stroke="#1a1a1a" stroke-width="1"/>
+        <use href="#hexC" x="70" y="190" fill="#2a4a2a" stroke="#1a1a1a" stroke-width="1"/>
+        <use href="#hexC" x="190" y="190" fill="#3a5a3a" stroke="#1a1a1a" stroke-width="1"/>
+
+        <!-- Parchment overlay on unexplored area (lower half) -->
+        <rect x="0" y="100" width="400" height="200" filter="url(#fogFilter)" opacity="0.85"/>
+        <!-- Edge fade at boundary -->
+        <rect x="0" y="60" width="400" height="100" fill="url(#edgeFade)"/>
+
+        <!-- Semi-visible hex on boundary -->
+        <use href="#hexC" x="190" y="70" fill="none" stroke="#5a4a38" stroke-width="1" opacity="0.4"/>
+      </svg>
+    </div>
+    <div class="card-body">
+      <h3>C. Parchment Overlay with Soft Edge</h3>
+      <p>A separate parchment-textured mesh renders ON TOP of the hex grid, covering unexplored areas. The edge where explored meets unexplored has a soft, feathered transition &mdash; like the terrain fading into old paper. Terrain peeks through faintly underneath.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Most atmospheric &mdash; soft boundary is cinematic</li><li>Terrain hints visible through the parchment</li><li>Edge transition feels organic, not grid-locked</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Most complex: separate overlay mesh + edge blending</li><li>Soft edges across hex boundaries harder in InstancedMesh</li><li>May fight with existing layer culling system</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+  <p class="label">Context</p>
+  <p style="font-size: 14px; opacity: 0.7;">The hex map currently uses <code>MeshBasicMaterial</code> with per-instance vertex colors (no textures). The fog system swaps colors via <code>setColorAt()</code>. Option A stays within this model. Options B and C would require adding texture support or an overlay mesh.</p>
+</div>
