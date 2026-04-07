@@ -216,3 +216,57 @@ describe('watched tier', () => {
     expect(screen.getByText(/Watched/)).toBeInTheDocument();
   });
 });
+
+describe('aftermath mode', () => {
+  const aftermathModel: EncounterStageModel = {
+    ...mockModel,
+    aftermath: {
+      title: 'Aftermath',
+      overview: 'The grain passes through. Vasara watches the caravan disappear.',
+      actorMoments: [
+        {
+          id: 'actor-1',
+          actorName: 'Vasara',
+          summaryLines: ['Gained a reputation for pragmatism.'],
+        },
+      ],
+      changes: [
+        {
+          id: 'change-1',
+          kind: 'reputation',
+          title: "The Merchant's Debt",
+          detail: 'The merchant remembers a kindness.',
+          polarity: 'gain',
+        },
+      ],
+    },
+  };
+
+  it('displays aftermath overview prose', () => {
+    render(<EncounterVeil {...defaultProps} model={aftermathModel} />);
+    expect(screen.getByText(/grain passes through/)).toBeInTheDocument();
+  });
+
+  it('displays actor moments', () => {
+    render(<EncounterVeil {...defaultProps} model={aftermathModel} />);
+    expect(screen.getByText('Vasara')).toBeInTheDocument();
+    expect(screen.getByText(/reputation for pragmatism/)).toBeInTheDocument();
+  });
+
+  it('displays aftermath changes', () => {
+    render(<EncounterVeil {...defaultProps} model={aftermathModel} />);
+    expect(screen.getByText("The Merchant's Debt")).toBeInTheDocument();
+  });
+
+  it('shows Return to the world button', () => {
+    render(<EncounterVeil {...defaultProps} model={aftermathModel} />);
+    expect(screen.getByText('Return to the world')).toBeInTheDocument();
+  });
+
+  it('calls onAcknowledgeAftermath when return button is clicked', () => {
+    const onAcknowledge = vi.fn();
+    render(<EncounterVeil {...defaultProps} model={aftermathModel} onAcknowledgeAftermath={onAcknowledge} />);
+    fireEvent.click(screen.getByText('Return to the world'));
+    expect(onAcknowledge).toHaveBeenCalled();
+  });
+});

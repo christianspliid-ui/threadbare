@@ -98,8 +98,8 @@ export function EncounterVeil({
   onBoost,
   onPeek,
   onDisregard,
-  onAcknowledgeAftermath: _onAcknowledgeAftermath,
-  onAftermathReaction: _onAftermathReaction,
+  onAcknowledgeAftermath,
+  onAftermathReaction,
 }: EncounterVeilProps) {
   const [visible, setVisible] = useState(false);
   const [selectedChoiceId, setSelectedChoiceId] = useState<string | null>(null);
@@ -159,9 +159,490 @@ export function EncounterVeil({
     }
   }, [selectedChoiceId, model.choices, onIntervene]);
 
-  // Aftermath stub — not yet implemented
   if (!open) return null;
-  if (model.aftermath) return null;
+
+  // ── Aftermath rendering path ───────────────────────────────────
+  if (model.aftermath) {
+    const aftermath = model.aftermath;
+
+    const polarityColor = (polarity: 'gain' | 'loss' | 'mixed' | 'info') => {
+      if (polarity === 'gain') return 'rgba(134, 239, 172, 0.65)';
+      if (polarity === 'loss') return 'rgba(248, 113, 113, 0.65)';
+      if (polarity === 'mixed') return 'rgba(251, 191, 36, 0.65)';
+      return 'rgba(180, 170, 150, 0.45)';
+    };
+
+    const aftermathEntrance = (delay: number, duration: number): React.CSSProperties => ({
+      opacity: visible ? 1 : 0,
+      transform: visible ? 'translateY(0)' : 'translateY(8px)',
+      transition: `opacity ${duration}s ease ${delay}s, transform ${duration}s ease ${delay}s`,
+    });
+
+    return createPortal(
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={aftermath.title ?? 'Aftermath'}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: VOID,
+          zIndex: 50,
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        {/* Art layer — dimmed + desaturated */}
+        {hasArt && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundImage: `url(${model.illustration!.src})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              maskImage:
+                'radial-gradient(ellipse 85% 80% at 35% 40%, black 20%, transparent 75%)',
+              WebkitMaskImage:
+                'radial-gradient(ellipse 85% 80% at 35% 40%, black 20%, transparent 75%)',
+              opacity: visible ? 0.5 : 0,
+              filter: 'saturate(0.7)',
+              transform: visible ? 'scale(1)' : 'scale(1.02)',
+              transition: `opacity 1.2s ease ${ENTRANCE_DELAYS.art}s, transform 8s ease-out ${ENTRANCE_DELAYS.art}s`,
+            }}
+          />
+        )}
+
+        {/* Step dots — all resolved */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '4vh',
+            left: '5vw',
+            display: 'flex',
+            gap: 8,
+            alignItems: 'center',
+            zIndex: 20,
+            ...aftermathEntrance(0.5, 0.8),
+          }}
+        >
+          {model.history.map((step, i) => (
+            <div
+              key={step.stepId}
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                background: 'rgba(134, 239, 172, 0.4)',
+              }}
+              aria-label={`Step ${i + 1}: ${step.stepLabel}`}
+            />
+          ))}
+          <span
+            style={{
+              fontFamily: FONT_PROSE,
+              fontStyle: 'italic',
+              fontSize: '0.7rem',
+              color: TEXT_GHOST,
+              marginLeft: 6,
+              letterSpacing: '0.04em',
+            }}
+          >
+            resolved
+          </span>
+        </div>
+
+        {/* Tier label — top-right */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '4vh',
+            right: '5vw',
+            zIndex: 20,
+            textAlign: 'right',
+            ...aftermathEntrance(0.6, 0.8),
+          }}
+        >
+          <div
+            style={{
+              fontFamily: FONT_DISPLAY,
+              fontSize: '0.65rem',
+              letterSpacing: '0.18em',
+              textTransform: 'uppercase',
+              color: GOLD,
+              opacity: 0.4,
+            }}
+          >
+            {TIER_LABELS[threadTier]} &middot; Aftermath
+          </div>
+        </div>
+
+        {/* ── Scrollable content zone ────────────────────── */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: hasArt ? 0 : undefined,
+            bottom: 0,
+            left: hasArt ? undefined : '50%',
+            width: hasArt ? '52%' : '65%',
+            transform: hasArt ? undefined : 'translateX(-50%)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            padding: '10vh 5vw 10vh 3vw',
+            background: hasArt
+              ? 'linear-gradient(to right, transparent 0%, rgba(10,10,15,0.55) 10%, rgba(10,10,15,0.82) 28%, rgba(10,10,15,0.93) 50%, rgba(10,10,15,0.97) 100%)'
+              : 'transparent',
+            zIndex: 10,
+            overflowY: 'auto',
+          }}
+        >
+          {/* Aftermath title */}
+          <div
+            style={{
+              fontFamily: FONT_DISPLAY,
+              fontSize: '0.75rem',
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: TEXT_GHOST,
+              marginBottom: 6,
+              ...aftermathEntrance(0.7, 0.8),
+            }}
+          >
+            {aftermath.title ?? 'Aftermath'}
+          </div>
+
+          {/* Gold divider */}
+          <div
+            style={{
+              height: 1,
+              background:
+                'linear-gradient(to right, transparent, rgba(212, 175, 55, 0.2), transparent)',
+              marginBottom: 22,
+              opacity: visible ? 1 : 0,
+              transition: `opacity 1s ease 0.9s`,
+            }}
+          />
+
+          {/* Overview prose — drop cap */}
+          <div style={aftermathEntrance(1.0, 1.0)}>
+            {aftermath.overview && aftermath.overview.length > 0 && (
+              <p
+                style={{
+                  fontFamily: FONT_PROSE,
+                  fontStyle: 'italic',
+                  fontSize: '0.95rem',
+                  lineHeight: 1.85,
+                  color: TEXT_WARM,
+                  marginBottom: 24,
+                  maxWidth: 540,
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: FONT_DISPLAY,
+                    fontSize: '3.4em',
+                    float: 'left',
+                    lineHeight: 0.75,
+                    marginRight: '0.06em',
+                    marginTop: '0.08em',
+                    color: 'rgba(212, 196, 158, 0.55)',
+                    fontStyle: 'normal',
+                  }}
+                >
+                  {aftermath.overview[0]}
+                </span>
+                {aftermath.overview.slice(1)}
+              </p>
+            )}
+          </div>
+
+          {/* Actor moments */}
+          {aftermath.actorMoments && aftermath.actorMoments.length > 0 && (
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 16,
+                marginBottom: 24,
+                maxWidth: 540,
+                ...aftermathEntrance(1.2, 0.9),
+              }}
+            >
+              {aftermath.actorMoments.map((actor) => (
+                <div
+                  key={actor.id}
+                  style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}
+                >
+                  {/* Portrait circle */}
+                  <div
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: '50%',
+                      border: '1px solid rgba(212, 175, 55, 0.3)',
+                      background: actor.portraitUrl
+                        ? `url(${actor.portraitUrl}) center/cover`
+                        : 'rgba(212, 175, 55, 0.06)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                      fontFamily: FONT_DISPLAY,
+                      fontSize: '0.9rem',
+                      color: 'rgba(212, 175, 55, 0.5)',
+                    }}
+                  >
+                    {!actor.portraitUrl && actor.actorName[0]}
+                  </div>
+                  {/* Name + summary */}
+                  <div>
+                    <div
+                      style={{
+                        fontFamily: FONT_DISPLAY,
+                        fontSize: '0.8rem',
+                        letterSpacing: '0.06em',
+                        color: TEXT_WARM,
+                        marginBottom: 4,
+                      }}
+                    >
+                      {actor.actorName}
+                    </div>
+                    {actor.summaryLines.map((line, i) => (
+                      <div
+                        key={i}
+                        style={{
+                          fontFamily: FONT_PROSE,
+                          fontStyle: 'italic',
+                          fontSize: '0.8rem',
+                          lineHeight: 1.7,
+                          color: TEXT_WHISPER,
+                        }}
+                      >
+                        {line}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Highlights */}
+          {aftermath.highlights && aftermath.highlights.length > 0 && (
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 10,
+                marginBottom: 20,
+                maxWidth: 540,
+                ...aftermathEntrance(1.3, 0.9),
+              }}
+            >
+              {aftermath.highlights.map((h) => (
+                <div
+                  key={h.id}
+                  style={{
+                    padding: '10px 14px',
+                    border: `1px solid ${polarityColor(h.tone ?? 'info')}`,
+                    borderRadius: 2,
+                    borderLeft: `3px solid ${polarityColor(h.tone ?? 'info')}`,
+                    background: 'rgba(255,255,255,0.02)',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: FONT_DISPLAY,
+                      fontSize: '0.78rem',
+                      letterSpacing: '0.05em',
+                      color: TEXT_WARM,
+                      marginBottom: 4,
+                    }}
+                  >
+                    {h.title}
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: FONT_PROSE,
+                      fontStyle: 'italic',
+                      fontSize: '0.75rem',
+                      color: TEXT_WHISPER,
+                      lineHeight: 1.65,
+                    }}
+                  >
+                    {h.detail}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Changes */}
+          {aftermath.changes && aftermath.changes.length > 0 && (
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 10,
+                marginBottom: 20,
+                maxWidth: 540,
+                ...aftermathEntrance(1.4, 0.9),
+              }}
+            >
+              {aftermath.changes.map((change) => (
+                <div
+                  key={change.id}
+                  style={{
+                    padding: '10px 14px',
+                    border: `1px solid rgba(212, 175, 55, 0.1)`,
+                    borderRadius: 2,
+                    borderLeft: `3px solid ${polarityColor(change.polarity)}`,
+                    background: 'rgba(255,255,255,0.02)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 4,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: FONT_DISPLAY,
+                      fontSize: '0.78rem',
+                      letterSpacing: '0.05em',
+                      color: TEXT_WARM,
+                    }}
+                  >
+                    {change.title}
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: FONT_PROSE,
+                      fontStyle: 'italic',
+                      fontSize: '0.75rem',
+                      color: TEXT_WHISPER,
+                      lineHeight: 1.65,
+                    }}
+                  >
+                    {change.detail}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Reactions */}
+          {aftermath.reactions && aftermath.reactions.length > 0 && (
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 10,
+                marginBottom: 20,
+                maxWidth: 540,
+                ...aftermathEntrance(1.5, 0.9),
+              }}
+            >
+              {aftermath.reactionPrompt && (
+                <div
+                  style={{
+                    fontFamily: FONT_PROSE,
+                    fontStyle: 'italic',
+                    fontSize: '0.75rem',
+                    color: TEXT_GHOST,
+                    marginBottom: 6,
+                    letterSpacing: '0.04em',
+                  }}
+                >
+                  {aftermath.reactionPrompt}
+                </div>
+              )}
+              {aftermath.reactions.map((reaction) => (
+                <button
+                  key={reaction.id}
+                  disabled={reaction.disabled}
+                  onClick={() => onAftermathReaction(reaction.id)}
+                  style={{
+                    background: 'rgba(212, 175, 55, 0.03)',
+                    border: '1px solid rgba(212, 175, 55, 0.1)',
+                    borderRadius: 2,
+                    fontFamily: FONT_PROSE,
+                    fontStyle: 'italic',
+                    fontSize: '0.85rem',
+                    letterSpacing: '0.04em',
+                    color: reaction.disabled ? TEXT_GHOST : TEXT_WARM,
+                    cursor: reaction.disabled ? 'default' : 'pointer',
+                    padding: '12px 16px',
+                    textAlign: 'left',
+                    opacity: reaction.disabled ? 0.4 : 1,
+                    transition: 'all 0.4s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!reaction.disabled) {
+                      e.currentTarget.style.background = 'rgba(212, 175, 55, 0.06)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(212, 175, 55, 0.03)';
+                  }}
+                >
+                  {reaction.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* ── Footer ─────────────────────────────────────── */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            display: 'flex',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            padding: '2.5vh 5vw',
+            zIndex: 20,
+            background: `linear-gradient(to top, ${VOID} 0%, rgba(10,10,15,0.6) 60%, transparent 100%)`,
+            ...aftermathEntrance(1.6, 0.8),
+          }}
+        >
+          <button
+            onClick={onAcknowledgeAftermath}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              fontFamily: FONT_PROSE,
+              fontStyle: 'italic',
+              fontSize: '0.85rem',
+              letterSpacing: '0.06em',
+              color: GOLD,
+              opacity: 0.6,
+              cursor: 'pointer',
+              padding: '8px 0',
+              transition: 'all 0.4s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = '1';
+              e.currentTarget.style.textShadow = '0 0 20px rgba(212, 175, 55, 0.3)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = '0.6';
+              e.currentTarget.style.textShadow = 'none';
+            }}
+          >
+            Return to the world
+          </button>
+        </div>
+      </div>,
+      document.body,
+    );
+  }
 
   // ── Watched tier rendering path ────────────────────────────────
   if (threadTier === 'watched') {
