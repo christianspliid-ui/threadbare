@@ -2,6 +2,8 @@ import { useState, useCallback, useMemo } from 'react';
 import type { MeetingEncounterResult, NarrativeCandidate, SparkVision, DilemmaChoiceRecord } from '../../types/meetingEncounter';
 import type { AscendantIdentity } from '../../types/remembrance';
 import type { WorldGraph, SphereName } from '../../types/graph';
+import type { CultureIdentity } from '../../types/culture';
+import { getActorCultures } from '../../engine/graphQueries';
 import { SensingBeat } from './SensingBeat';
 import { TestingBeat } from './TestingBeat';
 import { SparkBeat } from './SparkBeat';
@@ -46,13 +48,24 @@ export function MeetTheFirstFlow({
   const primarySphere = ascendantIdentity.sphereAlignment.primary;
   const locationNode = graph.getNode(locationId);
   const locationName = locationNode?.name ?? 'the settlement';
-  const cultureId = (locationNode?.properties.cultureId as string) ?? 'default';
   const locationSubtype = (locationNode?.properties.locationSubtype as string) ?? 'village';
+
+  // Resolve culture identity from location's belongs_to edges
+  const locationCultures = useMemo(
+    () => getActorCultures(graph, locationId),
+    [graph, locationId],
+  );
+  const cultureId = locationCultures.length > 0 ? locationCultures[0].culture.id : 'default';
+  const cultureIdentity = locationCultures.length > 0
+    ? locationCultures[0].culture.properties.cultureIdentity as CultureIdentity | undefined
+    : undefined;
+  const foundationBias = cultureIdentity?.foundationBias;
+  const primaryCultureSphere = cultureIdentity?.veneratedSpheres[0];
 
   // Generate candidates (memoized on seed + hunger)
   const candidates = useMemo(
-    () => generateNarrativeCandidates(hungerId, cultureId, seed),
-    [hungerId, cultureId, seed],
+    () => generateNarrativeCandidates(hungerId, cultureId, seed, foundationBias, primaryCultureSphere),
+    [hungerId, cultureId, seed, foundationBias, primaryCultureSphere],
   );
 
   // Opening prose

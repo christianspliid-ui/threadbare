@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import type { NarrativeCandidate } from '../../types/meetingEncounter';
 
 interface SensingBeatProps {
@@ -45,6 +45,14 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
       setFocusedIdx(idx);
     }
   }, [focusedIdx, confirmedIdx, onSelect, candidates]);
+
+  const handleNav = useCallback((direction: -1 | 1) => {
+    if (confirmedIdx !== null || focusedIdx === null) return;
+    const next = (focusedIdx + direction + candidates.length) % candidates.length;
+    setFocusedIdx(next);
+  }, [confirmedIdx, focusedIdx, candidates.length]);
+
+  const isBrowsing = useMemo(() => focusedIdx !== null && confirmedIdx === null, [focusedIdx, confirmedIdx]);
 
   const getStyle = (idx: number): React.CSSProperties => {
     const isFocused = focusedIdx === idx;
@@ -130,8 +138,8 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
             style={{
               top: '50%',
               left: '50%',
-              width: 'min(900px, 55vw)',
-              aspectRatio: '4/3',
+              width: 'min(550px, 32vw)',
+              aspectRatio: '3/4',
               background: 'transparent',
               border: 'none',
               padding: 0,
@@ -176,6 +184,42 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
           </button>
         );
       })}
+
+      {/* Navigation chevrons */}
+      {isBrowsing && (
+        <>
+          <button
+            type="button"
+            onClick={() => handleNav(-1)}
+            className="absolute cursor-pointer"
+            style={{
+              left: '2vw', top: '50%', transform: 'translateY(-50%)',
+              background: 'none', border: 'none', padding: '2rem 1.5rem',
+              zIndex: 20, color: 'rgba(160,140,180,0.3)',
+              fontSize: '9rem', fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif',
+              lineHeight: 1, transition: 'color 0.3s ease',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.7)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.3)'; }}
+            aria-label="Previous candidate"
+          >&#x2039;</button>
+          <button
+            type="button"
+            onClick={() => handleNav(1)}
+            className="absolute cursor-pointer"
+            style={{
+              right: '2vw', top: '50%', transform: 'translateY(-50%)',
+              background: 'none', border: 'none', padding: '2rem 1.5rem',
+              zIndex: 20, color: 'rgba(160,140,180,0.3)',
+              fontSize: '9rem', fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif',
+              lineHeight: 1, transition: 'color 0.3s ease',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.7)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.3)'; }}
+            aria-label="Next candidate"
+          >&#x203a;</button>
+        </>
+      )}
     </div>
   );
 }

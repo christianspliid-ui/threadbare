@@ -5,7 +5,7 @@ import type { CosmologyProfile } from '../../../types';
 import type { GameState } from '../../../types/gameState';
 import type { RiverPath } from '../../../engine/worldGenData';
 import type { RegionData } from '../../../engine/regionTypes';
-import { initializeGameState, initializeGameStateFromIdentity, MAP_SIZE_PRESETS, DEFAULT_MAP_SIZE } from '../../../engine/gameInit';
+import { initializeGameState, initializeGameStateFromIdentity, devSeedTheFirst, MAP_SIZE_PRESETS, DEFAULT_MAP_SIZE } from '../../../engine/gameInit';
 import type { MapSizePreset } from '../../../engine/gameInit';
 import type { AscendantIdentity } from '../../../types/remembrance';
 import { runTick, resetEventCounter } from '../../../engine/orchestrator';
@@ -30,6 +30,7 @@ interface UseSimulationParams {
   scryState: ScryState;
   mapSize?: MapSizePreset;
   ascendantIdentity?: AscendantIdentity;
+  preSeeded?: boolean;
 }
 
 const SEASONS = ['spring', 'summer', 'autumn', 'winter'] as const;
@@ -42,16 +43,24 @@ export function useSimulation({
   scryState,
   mapSize = DEFAULT_MAP_SIZE,
   ascendantIdentity,
+  preSeeded,
 }: UseSimulationParams) {
   // ── Resolve map dimensions from preset ──
   const { cols: COLS, rows: ROWS } = MAP_SIZE_PRESETS[mapSize];
 
   // ── Initialize ──
   const initial = useMemo(
-    () => ascendantIdentity
-      ? initializeGameStateFromIdentity(ascendantIdentity, seed, cosmology, mapSize)
-      : initializeGameState(archetype, avatarName, cosmology, seed, COLS, ROWS),
-    [archetype, avatarName, cosmology, seed, COLS, ROWS, ascendantIdentity, mapSize]
+    () => {
+      const result = ascendantIdentity
+        ? initializeGameStateFromIdentity(ascendantIdentity, seed, cosmology, mapSize)
+        : initializeGameState(archetype, avatarName, cosmology, seed, COLS, ROWS);
+      // Dev pre-seeding: inject The First agent so the game starts fully populated
+      if (preSeeded) {
+        devSeedTheFirst(result.state);
+      }
+      return result;
+    },
+    [archetype, avatarName, cosmology, seed, COLS, ROWS, ascendantIdentity, mapSize, preSeeded]
   );
 
   const [gameState, setGameState] = useState<GameState>(initial.state);

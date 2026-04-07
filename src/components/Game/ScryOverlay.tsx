@@ -643,6 +643,12 @@ export function ScryOverlay() {
     setContextMenuPositionId(null);
   }, []);
 
+  // Find The First agent from retinue (auto-populated, not manually assigned)
+  const theFirstAgent = useMemo(
+    () => retinueAgents.find(a => a.courtPosition === 'the_first') ?? null,
+    [retinueAgents],
+  );
+
   const apexPositions = scryState.positions.filter(p => p.rank === 'apex');
   const innerPositions = scryState.positions.filter(p => p.rank === 'inner');
   const outerPositions = scryState.positions.filter(p => p.rank === 'outer');
@@ -719,6 +725,61 @@ export function ScryOverlay() {
         >
           {/* SVG thread connections behind position slots */}
           <CourtThreads threadColor={threadColor} />
+
+          {/* The First — auto-populated from court position, above all other ranks */}
+          {theFirstAgent && (
+            <div className="relative z-10 mb-2">
+              <h2
+                className="text-sm font-bold uppercase tracking-wider mb-3 text-center"
+                style={{ color: 'var(--accent-gold)' }}
+              >
+                The First
+              </h2>
+              <div className="flex justify-center">
+                <div
+                  className="rounded-lg overflow-hidden relative"
+                  style={{
+                    width: SLOT_SIZES.apex.width,
+                    height: SLOT_SIZES.apex.height,
+                    border: '3px solid var(--accent-gold)',
+                    boxShadow: '0 0 12px rgba(212, 160, 64, 0.35)',
+                  }}
+                >
+                  {theFirstAgent.portraitUrl ? (
+                    <img
+                      src={theFirstAgent.portraitUrl}
+                      alt={theFirstAgent.name}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div
+                      className="absolute inset-0"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(212,160,64,0.3), rgba(212,160,64,0.08), #0a0a0e)',
+                      }}
+                    />
+                  )}
+                  <div
+                    className="absolute bottom-0 left-0 right-0 p-2"
+                    style={{
+                      background: 'linear-gradient(transparent, rgba(10, 10, 14, 0.85) 40%)',
+                    }}
+                  >
+                    <div
+                      className="text-xs font-bold"
+                      style={{ color: 'var(--accent-gold)' }}
+                    >
+                      The First
+                    </div>
+                    <div className="text-xs mt-0.5 truncate" style={{ color: 'var(--text-tertiary)' }}>
+                      {theFirstAgent.name}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* FE-TT-15: Apex with tooltip */}
           <div className="relative z-10">

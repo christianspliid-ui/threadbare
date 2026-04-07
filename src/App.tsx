@@ -5,7 +5,7 @@ import type { AscendantIdentity } from './types/remembrance';
 import { createBalancedCosmology } from './engine/cosmology';
 import { generateWorld } from './engine/hexGrid';
 import { generateArchetypes } from './engine/ascendant';
-import { MAP_SIZE_PRESETS, DEFAULT_MAP_SIZE } from './engine/gameInit';
+import { MAP_SIZE_PRESETS, DEFAULT_MAP_SIZE, DEV_ASCENDANT_IDENTITY } from './engine/gameInit';
 import type { MapSizePreset } from './engine/gameInit';
 import { deriveCosmologyFromIdentity, deriveMapSize } from './engine/remembrance';
 import HexMapV2 from './components/HexMapV2/HexMapV2';
@@ -43,6 +43,11 @@ function parseMapSizeParam(): MapSizePreset {
 
 /** Pick a random archetype and avatar name for dev quick-start. */
 function quickStartPhase(seed: number): GamePhase {
+  const seeded = new URLSearchParams(window.location.search).has('seeded');
+  if (seeded) {
+    // Full identity path — ascendant + The First pre-seeded
+    return { phase: 'playing-remembrance', identity: DEV_ASCENDANT_IDENTITY };
+  }
   const archetypes = generateArchetypes(4, seed);
   const archetype = archetypes[seed % archetypes.length];
   const avatarName = 'The Dev Oracle';
@@ -169,6 +174,8 @@ function App() {
       hungerId: gamePhase.identity.hungerId,
     });
 
+    const isDevSeeded = viewParam === 'game' && new URLSearchParams(window.location.search).has('seeded');
+
     return (
       <GameView
         archetype={compat}
@@ -177,6 +184,7 @@ function App() {
         seed={seed}
         mapSize={deriveMapSize(gamePhase.identity.hungerId)}
         ascendantIdentity={gamePhase.identity}
+        preSeeded={isDevSeeded}
       />
     );
   }

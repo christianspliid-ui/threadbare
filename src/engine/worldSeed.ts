@@ -46,6 +46,7 @@ import { seedAllFactions } from './factionSeeding';
 import { FACTION_DEFINITIONS } from '../data/faction-definitions';
 import { AGENT_COUNT_BY_MAP_SIZE, AGENT_COUNT_FALLBACK } from '../data/agent-behavior-constants';
 import { MC_COMPANY_NAMES } from '../data/mercenary-company-definition';
+import { pickCulturalName, GENERIC_NAMES, buildSettlementCultureRoots, getSettlementCultureSuffixes } from '../data/culture-name-pools';
 import { spawnArmy } from './armySpawning';
 import { seedNpcsAtLocations } from './npcSeeding';
 import type { GameState } from '../types/gameState';
@@ -151,11 +152,6 @@ export const INITIAL_PROSPERITY: Partial<Record<LocationSubtype, number>> = {
 
 const REACH_DOMAINS: ReachDomain[] = [
   'iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star',
-];
-
-const INDIVIDUAL_NAMES = [
-  'Kael', 'Mirael', 'Thorne', 'Lyssa', 'Dren', 'Isolde', 'Varn', 'Ashara',
-  'Brynn', 'Cael', 'Dara', 'Fen', 'Gale', 'Hestia', 'Jorik', 'Kira',
 ];
 
 const FACTION_NAMES = [
@@ -311,12 +307,31 @@ function generateLocationName(
   terrain: TerrainType,
   subtype: LocationSubtype,
   usedNames: Set<string>,
+  foundationBias?: string,
+  primarySphere?: string,
 ): string {
   const maxAttempts = 5;
+
+  // Culture-specific roots and suffixes mixed in when available
+  const cultureRoots = (foundationBias || primarySphere)
+    ? buildSettlementCultureRoots(foundationBias ?? '', primarySphere ?? '')
+    : [];
+  const cultureSuffixes = foundationBias
+    ? getSettlementCultureSuffixes(foundationBias)
+    : [];
+
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const prefixes = LOCATION_PREFIXES[subtype] ?? ['Old', 'New', 'Far'];
-    const roots = TERRAIN_NAME_ROOTS[terrain] ?? DEFAULT_ROOTS;
-    const suffixes = LOCATION_SUFFIXES[subtype] ?? ['ton', 'bury', 'vale'];
+    const terrainRoots = TERRAIN_NAME_ROOTS[terrain] ?? DEFAULT_ROOTS;
+    const subtypeSuffixes = LOCATION_SUFFIXES[subtype] ?? ['ton', 'bury', 'vale'];
+
+    // ~40% chance to use a culture root when available, otherwise terrain root
+    const useCultureRoot = cultureRoots.length > 0 && rng() < 0.4;
+    const roots = useCultureRoot ? cultureRoots : terrainRoots;
+
+    // ~30% chance to use a culture suffix when available, otherwise subtype suffix
+    const useCultureSuffix = cultureSuffixes.length > 0 && rng() < 0.3;
+    const suffixes = useCultureSuffix ? cultureSuffixes : subtypeSuffixes;
 
     const usePrefix = rng() < 0.35;
     const root = roots[Math.floor(rng() * roots.length)];
@@ -325,7 +340,6 @@ function generateLocationName(
     let name: string;
     if (usePrefix) {
       const prefix = prefixes[Math.floor(rng() * prefixes.length)];
-      // If suffix starts with space, it's a separate word
       name = suffix.startsWith(' ')
         ? `${prefix} ${root}${suffix}`
         : `${prefix} ${root}${suffix}`;
@@ -531,6 +545,24 @@ export function seedWorld(
     Math.round(habitableTiles.length * densityFraction),
   );
 
+  // Build hex → culture identity lookup for culture-aware settlement naming
+  const gridCols = tiles.reduce((max, t) => Math.max(max, t.coord.col), 0) + 1;
+  const pregenCultureMap = new Map<string, CultureIdentity>();
+  if (pregenCultures) {
+    for (const pc of pregenCultures) {
+      pregenCultureMap.set(pc.id, pc.identity);
+    }
+  }
+  const getHexCultureIdentity = (col: number, row: number): CultureIdentity | undefined => {
+    if (!provinceIds || !provinces) return undefined;
+    const hexIdx = row * gridCols + col;
+    const provId = provinceIds[hexIdx];
+    if (provId === undefined || provId < 0 || provId >= provinces.length) return undefined;
+    const cId = provinces[provId].cultureId;
+    if (!cId) return undefined;
+    return pregenCultureMap.get(cId);
+  };
+
   // Shuffle habitable tiles for unique hex placement (Fisher-Yates)
   const shuffledTiles = [...habitableTiles];
   for (let i = shuffledTiles.length - 1; i > 0; i--) {
@@ -587,11 +619,13 @@ export function seedWorld(
     const id = `loc_${locIndex}`;
 
     // Use handcrafted names first, then procedural generation
+    const hexCulture = getHexCultureIdentity(tile.coord.col, tile.coord.row);
     let name: string;
     if (locIndex < LOCATION_NAMES.length) {
       name = LOCATION_NAMES[locIndex];
     } else {
-      name = generateLocationName(rng, tile.terrain, locationSubtype, usedLocationNames);
+      name = generateLocationName(rng, tile.terrain, locationSubtype, usedLocationNames,
+        hexCulture?.foundationBias, hexCulture?.veneratedSpheres[0]);
     }
     usedLocationNames.add(name);
 
@@ -709,7 +743,9 @@ export function seedWorld(
 
     const hexKey = `${tile.coord.col},${tile.coord.row}`;
     const id = `loc_${locIndex}`;
-    const name = generateLocationName(wonderRng, tile.terrain, subtype, usedLocationNames);
+    const wonderCulture = getHexCultureIdentity(tile.coord.col, tile.coord.row);
+    const name = generateLocationName(wonderRng, tile.terrain, subtype, usedLocationNames,
+      wonderCulture?.foundationBias, wonderCulture?.veneratedSpheres[0]);
     usedLocationNames.add(name);
 
     const sphereInfluence: Record<string, number> = {};
@@ -810,7 +846,9 @@ export function seedWorld(
 
     const hexKey = `${tile.coord.col},${tile.coord.row}`;
     const id = `loc_${locIndex}`;
-    const name = generateLocationName(wildRng, tile.terrain, subtype, usedLocationNames);
+    const wildCulture = getHexCultureIdentity(tile.coord.col, tile.coord.row);
+    const name = generateLocationName(wildRng, tile.terrain, subtype, usedLocationNames,
+      wildCulture?.foundationBias, wildCulture?.veneratedSpheres[0]);
     usedLocationNames.add(name);
 
     const sphereInfluence: Record<string, number> = {};
@@ -908,7 +946,9 @@ export function seedWorld(
 
     const hexKey = `${tile.coord.col},${tile.coord.row}`;
     const id = `loc_${locIndex}`;
-    const name = generateLocationName(anomalyRng, tile.terrain, subtype, usedLocationNames);
+    const anomalyCulture = getHexCultureIdentity(tile.coord.col, tile.coord.row);
+    const name = generateLocationName(anomalyRng, tile.terrain, subtype, usedLocationNames,
+      anomalyCulture?.foundationBias, anomalyCulture?.veneratedSpheres[0]);
     usedLocationNames.add(name);
 
     const sphereInfluence: Record<string, number> = {};
@@ -1035,7 +1075,6 @@ export function seedWorld(
     cultureIds.push(...registeredIds);
 
     // Assign cultures to locations based on their province membership
-    const gridCols = tiles.reduce((max, t) => Math.max(max, t.coord.col), 0) + 1;
     for (const locId of locationIds) {
       const node = graph.getNode(locId);
       if (!node) continue;
@@ -1195,18 +1234,21 @@ export function seedWorld(
     : 'epic';
   const agentRange = AGENT_COUNT_BY_MAP_SIZE[mapSizeKey] ?? AGENT_COUNT_FALLBACK;
   const indCount = randomInRange(rng, agentRange.min, agentRange.max);
-  const usedIndNames = new Set<number>();
+  const usedIndNames = new Set<string>();
+
+  // Build a lookup from cultureId → identity for culture-aware naming
+  const cultureIdentityMap = new Map<string, CultureIdentity>();
+  if (pregenCultures) {
+    for (const pc of pregenCultures) {
+      cultureIdentityMap.set(pc.id, pc.identity);
+    }
+  }
 
   const culturalInjection = injections?.find(
     inj => inj.injection.injectionType === 'cultural_template'
   );
 
   for (let i = 0; i < indCount; i++) {
-    let nameIdx: number;
-    do { nameIdx = Math.floor(rng() * INDIVIDUAL_NAMES.length); }
-    while (usedIndNames.has(nameIdx) && usedIndNames.size < INDIVIDUAL_NAMES.length);
-    usedIndNames.add(nameIdx);
-
     const id = `ind_${i}`;
     const profile = generateAxiologicalProfile(rng, cosmology);
 
@@ -1223,13 +1265,29 @@ export function seedWorld(
 
     const locationId = pickRandom(rng, locationIds);
 
+    // Pick a culture-aware name based on the location's culture province
+    const locCulture = locationCultureMap.get(locationId);
+    const cultureIdentity = locCulture ? cultureIdentityMap.get(locCulture.cultureId) : undefined;
+    let agentName: string;
+    if (cultureIdentity) {
+      agentName = pickCulturalName(
+        cultureIdentity.foundationBias,
+        cultureIdentity.veneratedSpheres[0],
+        rng,
+        usedIndNames,
+      );
+    } else {
+      // No culture for this location — pick from generic pool
+      agentName = pickCulturalName('', '', rng, usedIndNames);
+    }
+
     const narrativeArchetypeId = NARRATIVE_ARCHETYPES[Math.floor(rng() * NARRATIVE_ARCHETYPES.length)].id;
     const cooperationStrategy = assignCooperationStrategy(narrativeArchetypeId, profile, rng);
 
     graph.addNode({
       id,
       type: 'actor',
-      name: INDIVIDUAL_NAMES[nameIdx],
+      name: agentName,
       properties: {
         actorType: 'individual',
         spotlightTier: 'spotlight' as const,

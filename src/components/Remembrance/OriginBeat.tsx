@@ -69,7 +69,8 @@ export function OriginBeat({ fragments, onSelect }: OriginBeatProps) {
            fontFamily: 'Georgia, "Times New Roman", serif',
            fontStyle: 'italic',
            fontSize: '1.5rem',
-           color: focusedId ? 'rgba(160,140,180,0.35)' : 'rgba(155,196,169,0.45)',
+           color: focusedId ? 'rgba(160,140,180,0.5)' : 'rgba(155,196,169,0.58)',
+           textShadow: '0 1px 8px rgba(0,0,0,0.7), 0 0 30px rgba(0,0,0,0.4)',
            letterSpacing: '0.06em',
            opacity: textVisible && !showNaming ? 1 : 0,
            transform: textVisible ? 'translateY(0)' : 'translateY(12px)',
@@ -135,7 +136,8 @@ export function OriginBeat({ fragments, onSelect }: OriginBeatProps) {
               fontStyle: 'italic',
               fontSize: '1.5rem',
               lineHeight: '1.85',
-              color: 'rgba(212,196,158,0.75)',
+              color: 'rgba(212,196,158,0.88)',
+              textShadow: '0 1px 8px rgba(0,0,0,0.7), 0 0 30px rgba(0,0,0,0.4)',
               maxWidth: '780px',
               textAlign: 'center',
               marginBottom: '16px',
@@ -147,7 +149,8 @@ export function OriginBeat({ fragments, onSelect }: OriginBeatProps) {
                 fontFamily: 'Georgia, "Times New Roman", serif',
                 fontStyle: 'italic',
                 fontSize: '1.1rem',
-                color: 'rgba(160,140,130,0.25)',
+                color: 'rgba(160,140,130,0.38)',
+                textShadow: '0 1px 6px rgba(0,0,0,0.6), 0 0 20px rgba(0,0,0,0.3)',
                 letterSpacing: '0.06em',
               }}>
                 Click the image to choose
@@ -190,7 +193,8 @@ export function OriginBeat({ fragments, onSelect }: OriginBeatProps) {
              fontFamily: 'Georgia, "Times New Roman", serif',
              fontStyle: 'italic',
              fontSize: '1.1rem',
-             color: 'rgba(155,180,160,0.45)',
+             color: 'rgba(155,180,160,0.58)',
+             textShadow: '0 1px 8px rgba(0,0,0,0.7), 0 0 30px rgba(0,0,0,0.4)',
              letterSpacing: '0.05em',
            }}>
           You had a name once.

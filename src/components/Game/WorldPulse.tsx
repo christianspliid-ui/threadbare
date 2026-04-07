@@ -14,8 +14,9 @@ export const WorldPulse = React.memo(function WorldPulse({ gameState }: WorldPul
   const activeAgents = gameState.graph.getNodesByType('actor')
     .filter(node => node.properties?.actorType === 'individual').length;
 
-  // Count cultures
-  const cultures = gameState.graph.getNodesByType('culture').length;
+  // Count cultures (stored as actor nodes with actorType 'culture')
+  const cultures = gameState.graph.getNodesByType('actor')
+    .filter(node => node.properties?.actorType === 'culture').length;
 
   // Generate mood-driven summary based on doom stage
   const doomStage = gameState.doomClock.currentStage;

@@ -47,8 +47,8 @@ export function BondBeat({ candidate, vision, hungerId, primarySphere, onComplet
       {/* Vision portrait — fades in */}
       <div
         style={{
-          width: 'min(600px, 50vw)',
-          aspectRatio: '4/3',
+          width: 'min(420px, 32vw)',
+          aspectRatio: '3/4',
           backgroundImage: `url(${vision.portraitAssetPath}), ${vision.portraitPlaceholder}`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',

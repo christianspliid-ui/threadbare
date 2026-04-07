@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import type { SparkVision } from '../../types/meetingEncounter';
 import { getSphereColor } from '../../data/sphereIcons';
 import { SPARK_TRANSITION_IN } from '../../data/meeting-narrative-prose';
@@ -51,6 +51,14 @@ export function SparkBeat({ visions, primarySphere, onSelect }: SparkBeatProps) 
       setFocusedIdx(idx);
     }
   }, [focusedIdx, confirmedIdx, phase, onSelect, visions]);
+
+  const handleNav = useCallback((direction: -1 | 1) => {
+    if (confirmedIdx !== null || focusedIdx === null) return;
+    const next = (focusedIdx + direction + visions.length) % visions.length;
+    setFocusedIdx(next);
+  }, [confirmedIdx, focusedIdx, visions.length]);
+
+  const isBrowsing = useMemo(() => focusedIdx !== null && confirmedIdx === null && phase === 'choosing', [focusedIdx, confirmedIdx, phase]);
 
   const getStyle = (idx: number): React.CSSProperties => {
     const isFocused = focusedIdx === idx;
@@ -195,6 +203,42 @@ export function SparkBeat({ visions, primarySphere, onSelect }: SparkBeatProps) 
           </button>
         );
       })}
+
+      {/* Navigation chevrons */}
+      {isBrowsing && (
+        <>
+          <button
+            type="button"
+            onClick={() => handleNav(-1)}
+            className="absolute cursor-pointer"
+            style={{
+              left: '2vw', top: '50%', transform: 'translateY(-50%)',
+              background: 'none', border: 'none', padding: '2rem 1.5rem',
+              zIndex: 20, color: 'rgba(160,140,180,0.3)',
+              fontSize: '9rem', fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif',
+              lineHeight: 1, transition: 'color 0.3s ease',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.7)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.3)'; }}
+            aria-label="Previous vision"
+          >&#x2039;</button>
+          <button
+            type="button"
+            onClick={() => handleNav(1)}
+            className="absolute cursor-pointer"
+            style={{
+              right: '2vw', top: '50%', transform: 'translateY(-50%)',
+              background: 'none', border: 'none', padding: '2rem 1.5rem',
+              zIndex: 20, color: 'rgba(160,140,180,0.3)',
+              fontSize: '9rem', fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif',
+              lineHeight: 1, transition: 'color 0.3s ease',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.7)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.3)'; }}
+            aria-label="Next vision"
+          >&#x203a;</button>
+        </>
+      )}
     </div>
   );
 }

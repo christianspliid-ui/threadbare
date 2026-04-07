@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { Play, Square } from 'lucide-react';
 import type { RarityTier } from '../../../types/rarity';
 import { RARITY_TIER_COLORS } from '../../../types/rarity';
 
@@ -17,6 +18,10 @@ interface SoulCardProps {
   archetypeName?: string;
   flavorText: string;
   onClick: () => void;
+  /** If provided, renders a narrate button. Called when user clicks play. */
+  onNarrate?: () => void;
+  /** True when any narration is active (shows stop icon). */
+  isNarrating?: boolean;
 }
 
 export const SoulCard = memo(function SoulCard({
@@ -29,6 +34,8 @@ export const SoulCard = memo(function SoulCard({
   archetypeName,
   flavorText,
   onClick,
+  onNarrate,
+  isNarrating,
 }: SoulCardProps) {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -92,6 +99,30 @@ export const SoulCard = memo(function SoulCard({
           >
             {archetypeName}
           </span>
+        )}
+        {onNarrate && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onNarrate(); }}
+            title={isNarrating ? 'Stop narration' : `Narrate ${name}`}
+            aria-label={isNarrating ? 'Stop narration' : `Narrate ${name}`}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '20px',
+              height: '20px',
+              background: 'none',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: '50%',
+              cursor: 'pointer',
+              color: isNarrating ? 'var(--accent-gold)' : 'var(--text-tertiary)',
+              padding: 0,
+              flexShrink: 0,
+              marginLeft: archetypeName ? '0' : 'auto',
+            }}
+          >
+            {isNarrating ? <Square size={7} /> : <Play size={8} style={{ marginLeft: '1px' }} />}
+          </button>
         )}
       </div>
       {flavorText && (

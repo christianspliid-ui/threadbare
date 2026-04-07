@@ -286,6 +286,8 @@ export interface HexMapV2Props {
   showOrganicShore?: boolean;
   /** When true, suppresses label overlays (region/location). Use when a full-screen overlay covers the map. */
   overlayOpen?: boolean;
+  /** CSS color string for the selected-hex tinted overlay (ascendant sphere color). Falls back to accent gold. */
+  selectionColor?: string;
   /** Target hex for the ascendant's active move order. Shows a pulsing X destination marker. */
   moveDestinationHex?: HexCoord | null;
   /** Called (debounced) when the camera center hex changes — used by ambient audio context. */
@@ -386,6 +388,37 @@ function createHoverOverlayMesh(size: number): THREE.Mesh {
   return mesh;
 }
 
+// ─── Selected hex tinted overlay ────────────────────────────────────────────
+
+/**
+ * Builds a hex-shaped filled overlay for the selected hex, tinted with the
+ * ascendant's sphere color. Sits between the selection ring and hover overlay.
+ */
+function createSelectionOverlayMesh(size: number, color: string): THREE.Mesh {
+  const positions: number[] = [];
+  for (let i = 0; i < 6; i++) {
+    const a0 = (Math.PI / 180) * (60 * i);
+    const a1 = (Math.PI / 180) * (60 * ((i + 1) % 6));
+    positions.push(0, 0, 0);
+    positions.push(size * Math.cos(a0), size * Math.sin(a0), 0);
+    positions.push(size * Math.cos(a1), size * Math.sin(a1), 0);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  const c = new THREE.Color();
+  c.setStyle(color, THREE.SRGBColorSpace);
+  const mat = new THREE.MeshBasicMaterial({
+    color: c,
+    transparent: true,
+    opacity: INTERACTION_CONSTANTS.SELECTION_OVERLAY_OPACITY,
+    depthTest: false,
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.renderOrder = RENDER_ORDER.GRID + 1.5; // Between selection ring (+1) and hover overlay (+2)
+  mesh.visible = false;
+  return mesh;
+}
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 /**
@@ -411,7 +444,7 @@ function createHoverOverlayMesh(size: number): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, battles, threadLines, activityIcons, activeTugs, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, moveDestinationHex, onCameraCenterHex },
+    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, battles, threadLines, activityIcons, activeTugs, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -454,6 +487,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const activeBurstsRef = useRef<ActiveBurst[]>([]);
     // Clock ref — exposed for imperative handle (anomaly reveal flash timing)
     const clockRef = useRef<THREE.Clock | null>(null);
+
+    // Selection overlay ref — tinted hex fill for selected hex (ascendant sphere color)
+    const selectionOverlayRef = useRef<THREE.Mesh | null>(null);
 
     // Destination marker ref — ascendant move order target, pulsed each frame
     const destinationMarkerRef = useRef<THREE.Group | null>(null);
@@ -872,6 +908,14 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         const selectionRing = createHexRingMesh(HEX_CONSTANTS.HEX_SIZE);
         scene.add(selectionRing);
 
+        // Selected hex tinted overlay — ascendant sphere color (initially hidden)
+        const selOverlay = createSelectionOverlayMesh(
+          HEX_CONSTANTS.HEX_SIZE,
+          selectionColor ?? '#d4a040',
+        );
+        scene.add(selOverlay);
+        selectionOverlayRef.current = selOverlay;
+
         // Destination marker: pulsing white ring + X cross for active move order target
         const destinationMarker = createDestinationMarkerGroup(HEX_CONSTANTS.HEX_SIZE);
         scene.add(destinationMarker);
@@ -939,15 +983,18 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           }, AMBIENT_CONTEXT_DEBOUNCE_MS);
         });
 
-        // Update selection ring when selectedHex prop changes
+        // Update selection ring + tinted overlay when selectedHex prop changes
         // This runs inside the effect on mount; prop changes are handled separately below.
         const updateSelectionRing = (hex: HexCoord | null) => {
           if (hex) {
             const world = hexToWorld(hex, HEX_CONSTANTS.HEX_SIZE);
             selectionRing.position.set(world.x, world.y, 0.1); // slight Z offset above fill mesh
             selectionRing.visible = true;
+            selOverlay.position.set(world.x, world.y, 0.05);
+            selOverlay.visible = true;
           } else {
             selectionRing.visible = false;
+            selOverlay.visible = false;
           }
         };
 
@@ -1224,6 +1271,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           }
           trailGroupRef.current = null;
           selectionRing.geometry.dispose();
+          selOverlay.geometry.dispose();
+          (selOverlay.material as THREE.Material).dispose();
+          selectionOverlayRef.current = null;
           hoverOverlay.geometry.dispose();
           diagnosticsRef.current.dispose();
           rendererRef.current = null;
@@ -1341,6 +1391,14 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         clearZoomTargetRef.current?.();
       }
     }, [selectedHex]);
+
+    // Update selection overlay color when selectionColor prop changes
+    useEffect(() => {
+      const overlay = selectionOverlayRef.current;
+      if (!overlay) return;
+      const mat = overlay.material as THREE.MeshBasicMaterial;
+      mat.color.setStyle(selectionColor ?? '#d4a040', THREE.SRGBColorSpace);
+    }, [selectionColor]);
 
     // Update destination marker when moveDestinationHex prop changes
     useEffect(() => {

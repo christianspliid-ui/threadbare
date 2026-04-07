@@ -14,7 +14,8 @@ import type { AxiologicalProfile } from '../types/agent';
 import { VALUE_PAIRS } from '../types/agent';
 import { DEFAULT_REPUTATION } from '../types/disposition';
 import { NARRATIVE_ARCHETYPES } from '../data/archetype-content';
-import { BORN_NAMES } from '../data/narrative-content';
+import type { CultureIdentity } from '../types/culture';
+import { pickCulturalName } from '../data/culture-name-pools';
 import { assignCooperationStrategy } from './disposition';
 import { assignInitialAmbitions } from './ambitionAssignment';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
@@ -164,13 +165,32 @@ export function phaseAgentLifecycle(
       locationIds = graph.getNodesByType('location').map(n => n.id);
     }
 
+    const usedBornNames = new Set<string>();
+
     for (const locId of locationIds) {
       // Count agents at this location
       const agentsHere = getAgentsAtLocation(graph, locId);
 
       if (agentsHere.length >= BIRTH_DENSITY_THRESHOLD && rng() < BIRTH_CHANCE) {
         const newId = nextLifecycleId('born');
-        const name = BORN_NAMES[Math.floor(rng() * BORN_NAMES.length)];
+
+        // Resolve culture from parents at this location (used for naming + edge)
+        const parentCultureEntries = agentsHere
+          .flatMap(a => getActorCultures(graph, a.id));
+        const inheritedCulture = parentCultureEntries.length > 0
+          ? parentCultureEntries[Math.floor(rng() * parentCultureEntries.length)]
+          : null;
+
+        // Culture-aware naming from inherited culture
+        const inheritedIdentity = inheritedCulture
+          ? inheritedCulture.culture.properties.cultureIdentity as CultureIdentity | undefined
+          : undefined;
+        const name = pickCulturalName(
+          inheritedIdentity?.foundationBias ?? '',
+          inheritedIdentity?.veneratedSpheres[0] ?? '',
+          rng,
+          usedBornNames,
+        );
 
         // Inherit sphere from location's dominant sphere
         const locNode = graph.getNode(locId);
@@ -218,15 +238,12 @@ export function phaseAgentLifecycle(
           properties: {},
         });
 
-        // Inherit culture from a parent at this location
-        const parentCultureEntries = agentsHere
-          .flatMap(a => getActorCultures(graph, a.id));
-        if (parentCultureEntries.length > 0) {
-          const pick = parentCultureEntries[Math.floor(rng() * parentCultureEntries.length)];
+        // Assign inherited culture edge
+        if (inheritedCulture) {
           graph.addEdge({
             id: `edge_culture_${newId}`,
             source: newId,
-            target: pick.culture.id,
+            target: inheritedCulture.culture.id,
             type: 'belongs_to',
             properties: { strength: 0.6 },
           });
@@ -236,7 +253,7 @@ export function phaseAgentLifecycle(
         const agentSnapshot = {
           domainCapabilities: domainCaps as Record<ReachDomain, number>,
           traits: [] as string[],  // newly born agents have no traits yet
-          culturalSpheres: parentCultureEntries.length > 0
+          culturalSpheres: inheritedCulture
             ? [dominantSphere]
             : [],
           bonds: [],  // newly born agents have no bonds yet

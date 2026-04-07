@@ -18,6 +18,8 @@ import {
   NPC_ROLE_SUBLOCATION_MAP,
 } from '../types/npc';
 import type { SublocationProperties } from '../types/sublocation';
+import type { CultureIdentity } from '../types/culture';
+import { pickCulturalName } from '../data/culture-name-pools';
 
 // ─── Trace types ─────────────────────────────────────────────────────────────
 
@@ -89,6 +91,7 @@ export function seedNpcsAtLocations(
 ): SeedNpcsResult {
   const npcIds: string[] = [];
   const traces: NpcSeededTrace[] = [];
+  const usedNpcNames = new Set<string>();
 
   for (const locationId of locationIds) {
     const locationNode = graph.getNode(locationId);
@@ -143,7 +146,22 @@ export function seedNpcsAtLocations(
       if (rng() > entry.chance) continue;
 
       const id = `npc_${npcCounter++}`;
-      const name = NPC_NAME_POOL[Math.floor(rng() * NPC_NAME_POOL.length)];
+
+      // Culture-aware naming: resolve identity from the location's culture node
+      let npcName: string;
+      if (cultureId !== null) {
+        const cultureNode = graph.getNode(cultureId);
+        const identity = cultureNode?.properties.cultureIdentity as CultureIdentity | undefined;
+        npcName = pickCulturalName(
+          identity?.foundationBias ?? '',
+          identity?.veneratedSpheres[0] ?? '',
+          rng,
+          usedNpcNames,
+        );
+      } else {
+        npcName = pickCulturalName('', '', rng, usedNpcNames);
+      }
+      const name = npcName;
 
       // ── Create actor node ─────────────────────────────────────────────────
       graph.addNode({

@@ -51,17 +51,6 @@ export function IdentityChip({
             </span>
           </div>
 
-          {/* Line 2: archetype title */}
-          <div
-            style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: 'var(--text-xs)',
-              color: 'var(--text-muted)',
-              marginTop: '0.1rem',
-            }}
-          >
-            {archetypeTitle}
-          </div>
         </div>
       </button>
     </Tooltip>

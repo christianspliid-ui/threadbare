@@ -376,3 +376,129 @@ export function initializeGameStateFromIdentity(
 
   return result;
 }
+
+// ─── Dev Pre-Seeding ─────────────────────────────────────────────
+
+/**
+ * Pre-seed "The First" agent into a GameState for dev/testing.
+ *
+ * Creates a synthetic bonded agent with a thread edge at courtPosition
+ * 'the_first', placed at the avatar's current location. Sets
+ * meetTheFirstAutoTriggered = true so the auto-trigger doesn't fire.
+ *
+ * Only call from dev quick-start paths — never from production flows.
+ */
+export function devSeedTheFirst(state: GameState): string {
+  const { graph, ascendantId, tick } = state;
+
+  // Find avatar node via avatar_of edge
+  const avatarEdges = graph.getIncomingEdges(ascendantId, 'avatar_of');
+  const avatarId = avatarEdges[0]?.source;
+  // Find avatar's location
+  const avatarLocEdge = avatarId
+    ? graph.getOutgoingEdges(avatarId, 'located_at')[0]
+    : undefined;
+  const locationId = avatarLocEdge?.target ?? 'loc.start';
+
+  const agentId = 'ind_dev_the_first';
+
+  graph.addNode({
+    id: agentId,
+    type: 'actor',
+    name: 'Kael Thornweaver',
+    properties: {
+      actorType: 'individual',
+      axiologicalProfile: {
+        mercy_ruthlessness: 0.6,
+        asceticism_extravagance: 0.4,
+        honesty_cunning: 0.55,
+        tradition_novelty: 0.45,
+        loyalty_ambition: 0.7,
+      },
+      domainCapabilities: {
+        heart: 65,
+        shadow: 45,
+        iron: 30,
+        gold: 20,
+        veil: 35,
+        eye: 25,
+        stone: 15,
+        star: 40,
+        wild: 10,
+      },
+      locationId,
+      narrativeArchetype: 'Healer',
+      cooperationStrategy: 'reciprocal',
+      reputationScore: 0.5,
+      primaryReach: 'heart',
+      secondaryReach: 'shadow',
+      sphere: 'spirit',
+      createdByMeeting: true,
+      appearanceSeed: 77701,
+    },
+  });
+
+  // located_at edge
+  graph.addEdge({
+    id: `${agentId}_located_at_${locationId}`,
+    source: agentId,
+    target: locationId,
+    type: 'located_at',
+    properties: {},
+  });
+
+  // thread edge (ascendant → first agent)
+  graph.addEdge({
+    id: `edge_thread_${ascendantId}_${agentId}`,
+    source: ascendantId,
+    target: agentId,
+    type: 'thread',
+    properties: {
+      courtPosition: 'the_first',
+      tier: 1,
+      ticksAtCurrentTier: 0,
+      establishedTick: tick,
+      totalEssenceSpent: 0,
+      maintenanceCurrent: true,
+      awareness: 'faith',
+      readBackstoryTier: 0,
+      attentionMode: 'pause',
+      storyPhase: 'call',
+      meetingChoiceRecord: null,
+      beatHistory: [],
+    },
+  });
+
+  state.meetTheFirstAutoTriggered = true;
+  // Add familiarity for the new agent
+  state.familiarityMap.set(agentId, 0.5);
+
+  return agentId;
+}
+
+/** Pre-baked AscendantIdentity for dev quick-start (seed 42, hunger.witness). */
+export const DEV_ASCENDANT_IDENTITY: AscendantIdentity = {
+  mortalName: 'The Dev Oracle',
+  originFragmentId: 'origin.dev',
+  driveFragmentId: 'drive.dev',
+  timeSinceAscension: 'ancient',
+  mortalTags: ['scholar', 'seeker', 'loss', 'mind'],
+  divineName: 'The Dev Oracle',
+  hungerId: 'hunger.witness',
+  hungerName: 'Witness',
+  mandateDirection: 'Establish an information network that sees across the world',
+  courtType: 'web',
+  sphereAlignment: { primary: 'mind', secondary: 'spirit' },
+  domainAffinities: { eye: 4, veil: 3, shadow: 2 },
+  personalitySeed: {
+    mercy_ruthlessness: 0.5,
+    asceticism_extravagance: 0.5,
+    honesty_cunning: 0.5,
+    tradition_novelty: 0.5,
+    loyalty_ambition: 0.5,
+  },
+  ascendantLens: {
+    perceptionStyle: 'You see the hidden — every glance averted, every word unsaid, every secret kept.',
+    emotionalTone: 'Detached curiosity sharpened by an insatiable need to know.',
+  },
+};

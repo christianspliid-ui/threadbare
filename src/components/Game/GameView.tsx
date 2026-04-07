@@ -162,9 +162,10 @@ interface GameViewProps {
   seed: number;
   mapSize?: import('../../engine/gameInit').MapSizePreset;
   ascendantIdentity?: import('../../types/remembrance').AscendantIdentity;
+  preSeeded?: boolean;
 }
 
-export function GameView({ archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity }: GameViewProps) {
+export function GameView({ archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity, preSeeded }: GameViewProps) {
   // ── Resume theme music if it was started on the start screen ──
   useEffect(() => {
     resumeTheme();
@@ -186,7 +187,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     running, speed, harvestResult, doTick, handleBeginNextCycle,
     handleToggleRunning, setRunning, setSpeed, seasonName, year, maxEssence, COLS, ROWS,
     runtime,
-  } = useSimulation({ archetype, avatarName, cosmology, seed, scryState, mapSize, ascendantIdentity });
+  } = useSimulation({ archetype, avatarName, cosmology, seed, scryState, mapSize, ascendantIdentity, preSeeded });
 
   // O(1) tile lookup by hex coordinate (tiles array is stable — created once at init)
   const tileMap = useMemo(() => {
@@ -1084,10 +1085,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     return null;
   }, [viewLevel, focusedHex, focusedLocationId, selectedHexCoord, getTile, gameState.graph]);
 
-  // Close non-agent drawer on navigation — it must be opened by explicit user action, never auto-opened.
+  // Auto-open the non-agent drawer when a targetable context is active.
+  // World map: hex selected → show hex actions. Location view: show location actions.
+  // Hex-zoom: no auto-open — user picks targets (locations, agents) within the chronicle.
   useEffect(() => {
-    setNonAgentDrawerOpen(false);
-  }, [viewLevel, selectedHexCoord]);
+    const hasTarget =
+      (viewLevel === 'location' && !!focusedLocationId) ||
+      (viewLevel === 'world' && !!selectedHexCoord);
+    setNonAgentDrawerOpen(hasTarget);
+  }, [viewLevel, selectedHexCoord, focusedLocationId]);
 
   const nonAgentSlots = useTargetActions({
     target: nonAgentTargetContext,
@@ -2411,6 +2417,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   fogEnabled={!fogDisabled}
                   showOrganicShore={showOrganicShore}
                   overlayOpen={scryVisible || harvestResult !== null}
+                  selectionColor={sphereColor}
                   moveDestinationHex={avatarTargetHex}
                   onCameraCenterHex={setCameraCenter}
                   onHexClick={handleHexClickFull}
@@ -2695,7 +2702,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               }}
             >
               <div style={{ padding: 'var(--panel-padding)' }}>
-                {threadedNodes.length > 0 ? (
+                {threadedNodes.length > 0 && (
                   <ThreadsPanel
                     threadedNodes={threadedNodes}
                     selectedNodeId={selectedThreadNode?.nodeId ?? null}
@@ -2706,9 +2713,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                     onEncounterClick={handleEncounterClick}
                     onToggleAttentionMode={handleToggleAttentionMode}
                   />
-                ) : (
-                  <WorldPulse gameState={gameState} />
                 )}
+                <div style={{ marginTop: threadedNodes.length > 0 ? 'var(--panel-padding)' : undefined }}>
+                  <WorldPulse gameState={gameState} />
+                </div>
               </div>
             </div>
           </div>

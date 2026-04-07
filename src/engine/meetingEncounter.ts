@@ -48,6 +48,7 @@ import { CANDIDATE_VIGNETTES, type CandidateVignette } from '../data/candidate-v
 import { SPARK_VISION_CATALOG } from '../data/spark-vision-catalog';
 import { ARCHETYPE_NAME_MAP } from '../data/meeting-content';
 import { mulberry32 } from '../lib/prng';
+import { pickCulturalName } from '../data/culture-name-pools';
 
 // ─── Per-tick Meeting Counter ─────────────────────────────────────
 
@@ -119,9 +120,12 @@ export function generateCandidates(
   locationCultureId: string,
   archetypeNameMap: Record<string, string>,
   seed: number,
+  foundationBias?: string,
+  primarySphereName?: string,
 ): MeetingCandidate[] {
   const rng = createSeededRng(seed, 'candidates');
   const candidates: MeetingCandidate[] = [];
+  const usedNames = new Set<string>();
 
   for (let i = 0; i < MEETING_CANDIDATE_COUNT; i++) {
     const candidateRng = createSeededRng(seed, `candidate_${i}`);
@@ -143,8 +147,7 @@ export function generateCandidates(
     // Generate personality hints (visible to player, derived from profile)
     const hints = derivePersonalityHints(profile);
 
-    // Generate a name (placeholder — real names come from content)
-    const name = generateCandidateName(candidateRng);
+    const name = generateCandidateName(candidateRng, usedNames, foundationBias, primarySphereName);
 
     candidates.push({
       tempId: `meeting_candidate_${i}`,
@@ -237,17 +240,14 @@ function getPersonalityHint(pair: ValuePair, value: number): string {
   return value >= 0 ? virtue : flaw;
 }
 
-/** Generate a placeholder candidate name (real names from content layer). */
-function generateCandidateName(rng: () => number): string {
-  const SYLLABLES = ['Ka', 'Vel', 'Rin', 'Tha', 'Mor', 'Sel', 'Ero', 'Nia', 'Dak', 'Fen',
-    'Ash', 'Bri', 'Cor', 'Dra', 'Eli', 'Gar', 'Hel', 'Ira', 'Jes', 'Kyr',
-    'Lum', 'Mal', 'Ner', 'Ora', 'Pyx', 'Ral', 'Syl', 'Tor', 'Uma', 'Vex'];
-  const count = 2 + Math.floor(rng() * 2); // 2-3 syllables
-  let name = '';
-  for (let i = 0; i < count; i++) {
-    name += SYLLABLES[Math.floor(rng() * SYLLABLES.length)];
-  }
-  return name;
+/** Generate a candidate name, preferring culture-specific pools when available. */
+function generateCandidateName(
+  rng: () => number,
+  usedNames: Set<string>,
+  foundationBias?: string,
+  primarySphere?: string,
+): string {
+  return pickCulturalName(foundationBias ?? '', primarySphere ?? '', rng, usedNames);
 }
 
 // ─── Step 2: Dilemma Selection ────────────────────────────────────
@@ -517,6 +517,8 @@ export function generateNarrativeCandidates(
   hungerId: string,
   cultureId: string,
   seed: number,
+  foundationBias?: string,
+  primarySphere?: string,
 ): NarrativeCandidate[] {
   const rng = mulberry32(seed ^ 0x4d454554); // 'MEET' salt
 
@@ -555,13 +557,15 @@ export function generateNarrativeCandidates(
     }
   }
 
+  const usedNames = new Set<string>();
+
   return selected.map((vignette, i) => {
     const archetypeKey = `${vignette.primaryReach}_${vignette.secondaryReach}`;
     const archetypeId = ARCHETYPE_NAME_MAP[archetypeKey] ?? 'Wanderer';
     const axiologicalSeed = generateAxiologicalProfile(rng);
     const reachCapabilities = generateReachCapabilities(vignette.primaryReach, vignette.secondaryReach, rng);
     const cooperationStrategy = assignCooperationStrategy(archetypeId, axiologicalSeed, rng);
-    const name = generateCandidateName(rng);
+    const name = generateCandidateName(rng, usedNames, foundationBias, primarySphere);
 
     return {
       tempId: `candidate_${seed}_${i}`,

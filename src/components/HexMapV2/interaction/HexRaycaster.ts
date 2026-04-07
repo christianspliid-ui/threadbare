@@ -11,6 +11,7 @@ import type { AgentSpriteEntry } from '../scene/AgentSpriteMesh';
  */
 export const INTERACTION_CONSTANTS = {
   SELECTED_RING_WIDTH: 2.5,     // Ring outline width in world units (2–3px range per UI-SPEC)
+  SELECTION_OVERLAY_OPACITY: 0.18, // Tinted fill on selected hex (ascendant sphere color)
   HOVER_OVERLAY_OPACITY: 0.10,  // Subtle white overlay on hovered hex
   TOOLTIP_OFFSET_Y: 12,         // px: tooltip appears this many px above the screen position
   AGENT_CLICK_RADIUS_PX: 18,    // px: minimum hit radius for agent click detection (scales with zoom)
