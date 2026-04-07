@@ -169,6 +169,22 @@ export function phaseMovement(state: GameState): Partial<GameState> {
         }
       }
 
+      // --- Avatar arrival event (auto-pause signal for UI) ---
+      if (isAvatar && result.arrivedAtDestination && result.moved) {
+        const destNode = state.graph.getNode(result.newLocationId!);
+        events.push({
+          id: nextEventId(state.tick),
+          tick: state.tick,
+          type: 'avatar_arrival',
+          message: `Your ascendant has arrived at ${destNode?.name ?? 'their destination'}.`,
+          significance: 0.6,
+          actorId: actorId,
+          hexCoords: destNode?.properties?.hexCol != null
+            ? { col: destNode.properties.hexCol as number, row: destNode.properties.hexRow as number }
+            : undefined,
+        });
+      }
+
       // --- Sublocation entry on arrival ---
       if (result.arrivedAtDestination && result.updatedState.targetSublocationId) {
         const sublocationId = result.updatedState.targetSublocationId;

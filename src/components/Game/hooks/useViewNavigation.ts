@@ -35,6 +35,8 @@ interface UseViewNavigationParams {
   scryState: ScryState;
   /** When true, fog-of-war checks are bypassed (all hexes clickable) */
   fogDisabled?: boolean;
+  /** Simulation running state setter — used to auto-pause on move initiation and auto-unpause on target selection */
+  setRunning?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 interface UseViewNavigationReturn {
@@ -64,6 +66,7 @@ export function useViewNavigation({
   ROWS,
   scryState: _scryState,
   fogDisabled,
+  setRunning,
 }: UseViewNavigationParams): UseViewNavigationReturn {
   const [hoveredHex, setHoveredHex] = useState<{ col: number; row: number } | null>(null);
   const [selectedHex, setSelectedHex] = useState<{ col: number; row: number } | null>(null);
@@ -123,7 +126,9 @@ export function useViewNavigation({
 
   const handleAvatarMoveClick = useCallback(() => {
     setMoveMode(true);
-  }, []);
+    // Auto-pause so the player can plan their route without the game advancing
+    setRunning?.(false);
+  }, [setRunning]);
 
   // IX-009: Escape key cancels move mode (no timeout — player needs time to plan route)
   useEffect(() => {
@@ -151,12 +156,14 @@ export function useViewNavigation({
         // Force re-render so route visualization appears — visibility recalc
         // happens later when the avatar actually moves during tick processing.
         setGameState(prev => ({ ...prev }));
+        // Auto-unpause so the game runs while the ascendant travels to the target
+        setRunning?.(true);
       }
       setMoveMode(false);
     } else {
       handleHexClick(coord);
     }
-  }, [moveMode, gameState.graph, gameState.ascendantId, gameState.tick, tiles, COLS, ROWS, handleHexClick, setGameState]);
+  }, [moveMode, gameState.graph, gameState.ascendantId, gameState.tick, tiles, COLS, ROWS, handleHexClick, setGameState, setRunning]);
 
   return {
     hoveredHex,

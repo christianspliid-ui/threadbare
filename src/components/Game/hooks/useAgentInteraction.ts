@@ -55,6 +55,8 @@ interface UseAgentInteractionParams {
   onParticleBurst?: (hexCol: number, hexRow: number, sphereColor: string) => void;
   /** TB-086: Per-session runtime for mutation observability */
   runtime?: SimulationRuntime;
+  /** Simulation running state setter — used to auto-pause when an ascendant action is initiated */
+  setRunning?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export function useAgentInteraction({
@@ -66,6 +68,7 @@ export function useAgentInteraction({
   onPushToast,
   onParticleBurst,
   runtime,
+  setRunning,
 }: UseAgentInteractionParams) {
   // ── Hooks ──
   const { playCastSound } = useInterventionAudio();
@@ -590,12 +593,15 @@ export function useAgentInteraction({
       return;
     }
 
+    // Auto-pause so the player can consider their action without the game advancing
+    setRunning?.(false);
+
     if (selectedAgentId) {
       setDrawerOpen(true);
     } else {
       handleAgentSelect(retinueAgents[0].id);
     }
-  }, [selectedAgentId, retinueAgents, handleAgentSelect]);
+  }, [selectedAgentId, retinueAgents, handleAgentSelect, setRunning]);
 
   const handleViewProfile = useCallback(() => {
     if (selectedAgentId) {

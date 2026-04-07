@@ -251,7 +251,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     handleHexClick, handleBackToWorld,
     handleBackToHex, handleLocationClick, handleCenterOnAvatar,
     handleAvatarMoveClick, handleHexClickMove,
-  } = useViewNavigation({ gameState, setGameState, avatarPixelPos, tiles, COLS, ROWS, scryState, fogDisabled });
+  } = useViewNavigation({ gameState, setGameState, avatarPixelPos, tiles, COLS, ROWS, scryState, fogDisabled, setRunning });
 
   // ── Scry hook ──
   const {
@@ -324,6 +324,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       hexMapRef.current?.spawnParticleBurst(hexCol, hexRow, sphereColor);
     },
     runtime,
+    setRunning,
   });
 
   // ── Mark agent as viewed when detail panel opens ──
@@ -368,6 +369,26 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       hexMapRef.current?.triggerAnomalyReveal(hexCol, hexRow, color);
     }
   }, [gameState.recentEvents]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Avatar arrival event → auto-pause + toast ──
+  // When the ascendant reaches its move target, pause the game and notify the player.
+  const processedArrivalEventsRef = useRef(new Set<string>());
+  useEffect(() => {
+    for (const evt of gameState.tickEvents) {
+      if (evt.type !== 'avatar_arrival') continue;
+      if (processedArrivalEventsRef.current.has(evt.id)) continue;
+      processedArrivalEventsRef.current.add(evt.id);
+
+      setRunning(false);
+      handlePushToast({
+        id: `toast_arrival_${evt.id}`,
+        message: evt.message,
+        count: 1,
+        createdTick: evt.tick,
+        expiresAt: Date.now() + 5000,
+      });
+    }
+  }, [gameState.tickEvents, setRunning, handlePushToast]);
 
   // Cache selected retinue agent lookup (used in ActionDrawer props)
   const selectedRetinueAgent = useMemo(

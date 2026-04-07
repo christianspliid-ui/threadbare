@@ -74,7 +74,9 @@ export interface TickEvent {
   // NPC graduation events
     | 'npc_graduated'
   // Divine premonition events
-    | 'divine_premonition';
+    | 'divine_premonition'
+  // Avatar movement events
+    | 'avatar_arrival';
   message: string;
   /** Optional sphere coloring for UI */
   sphere?: SphereName;
