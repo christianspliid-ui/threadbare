@@ -2223,6 +2223,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             cycle={gameState.cycle}
             sphereColor={sphereColor}
             primarySphere={archetype.sphereAlignment.primary}
+            originFragmentId={ascendantIdentity?.originFragmentId ?? ''}
             onClick={() => setAscendantSheetOpen(true)}
           />
 
