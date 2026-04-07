@@ -2908,6 +2908,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         archetype={archetype}
         avatarName={avatarName}
         sphereColor={sphereColor}
+        originFragmentId={ascendantIdentity?.originFragmentId ?? ''}
       />
 
       {/* Doom clock detail modal */}

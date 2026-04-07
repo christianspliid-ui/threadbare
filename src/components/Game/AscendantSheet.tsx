@@ -8,7 +8,7 @@
  * Opened from IdentityChip in the top-left corner.
  */
 
-import { useMemo } from 'react';
+import { useMemo, useEffect, useRef, useState } from 'react';
 import type { SphereName } from '../../types';
 import { FOUNDATION_SPHERE_NAMES, CREATION_SPHERE_NAMES } from '../../types';
 import type { AscendantArchetype } from '../../types/influence';
@@ -24,6 +24,7 @@ import { Tooltip } from '../shared/Tooltip';
 import { IconButton } from '../shared/IconButton';
 import { getSphereColor } from '../../data/sphereIcons';
 import { getThreadsFrom } from '../../engine/graphQueries';
+import { getOriginPortraitUrl, getSphereFrameUrl } from '../../data/avatar-portrait-assets';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -34,6 +35,7 @@ interface AscendantSheetProps {
   archetype: AscendantArchetype;
   avatarName: string;
   sphereColor: string;
+  originFragmentId: string;
 }
 
 // ─── Constants & helpers ──────────────────────────────────────────────────────
@@ -151,6 +153,7 @@ export function AscendantSheet({
   archetype,
   avatarName,
   sphereColor,
+  originFragmentId,
 }: AscendantSheetProps) {
   const primarySphere = archetype.sphereAlignment.primary;
   const secondarySphere = archetype.sphereAlignment.secondary;
@@ -190,6 +193,54 @@ export function AscendantSheet({
 
   const naturePhrase = DIVINE_NATURE_PHRASES[primarySphere] ?? DIVINE_NATURE_PHRASES.force;
 
+  // ── Composed portrait (origin + sphere frame) ──
+  const portraitRef = useRef<HTMLDivElement>(null);
+  const [portraitReady, setPortraitReady] = useState(false);
+
+  useEffect(() => {
+    if (!open || !portraitRef.current) return;
+    setPortraitReady(false);
+
+    const portraitUrl = getOriginPortraitUrl(originFragmentId);
+    const frameUrl = getSphereFrameUrl(primarySphere);
+
+    const portraitImg = new Image();
+    portraitImg.crossOrigin = 'anonymous';
+    const frameImg = new Image();
+    frameImg.crossOrigin = 'anonymous';
+
+    let cancelled = false;
+
+    Promise.all([
+      new Promise<HTMLImageElement>((res, rej) => { portraitImg.onload = () => res(portraitImg); portraitImg.onerror = rej; portraitImg.src = portraitUrl; }),
+      new Promise<HTMLImageElement>((res, rej) => { frameImg.onload = () => res(frameImg); frameImg.onerror = rej; frameImg.src = frameUrl; }),
+    ]).then(([pImg, fImg]) => {
+      if (cancelled || !portraitRef.current) return;
+      const canvas = document.createElement('canvas');
+      canvas.width = 120;
+      canvas.height = 160;
+      const ctx = canvas.getContext('2d')!;
+      // Draw origin portrait, cover-crop to 120×160
+      const scale = Math.max(120 / pImg.width, 160 / pImg.height);
+      const sw = 120 / scale, sh = 160 / scale;
+      const sx = (pImg.width - sw) / 2, sy = (pImg.height - sh) / 2;
+      ctx.drawImage(pImg, sx, sy, sw, sh, 0, 0, 120, 160);
+      // Draw sphere frame on top
+      ctx.drawImage(fImg, 0, 0, 120, 160);
+      // Replace container content with canvas
+      portraitRef.current.innerHTML = '';
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      canvas.style.borderRadius = 'var(--radius-md, 0.375rem)';
+      portraitRef.current.appendChild(canvas);
+      setPortraitReady(true);
+    }).catch(() => {
+      // fail-soft: leave the fallback sphere sigil visible
+    });
+
+    return () => { cancelled = true; };
+  }, [open, originFragmentId, primarySphere]);
+
   return (
     <Modal open={open} onClose={onClose} maxWidth={960} aria-label="Ascendant character sheet">
       {/* ── Header Zone (mirrors AgentProfileModal) ─────────────────── */}
@@ -205,8 +256,9 @@ export function AscendantSheet({
         </div>
 
         <div className="flex gap-4 mb-3">
-          {/* Sphere sigil — occupies the portrait slot */}
+          {/* Composed portrait (origin + sphere frame), falls back to sphere sigil */}
           <div
+            ref={portraitRef}
             className="rounded overflow-hidden flex-shrink-0 flex items-center justify-center"
             style={{
               width: '120px',
@@ -215,7 +267,8 @@ export function AscendantSheet({
               background: `linear-gradient(135deg, ${sphereColor}30 0%, rgba(30,27,46,0.8) 100%)`,
             }}
           >
-            <SphereIcon sphereName={primarySphere} size="3rem" />
+            {/* Fallback while portrait loads or on failure */}
+            {!portraitReady && <SphereIcon sphereName={primarySphere} size="3rem" />}
           </div>
 
           {/* Header text */}
