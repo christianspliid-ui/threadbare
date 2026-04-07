@@ -14,6 +14,16 @@ export const LEGACY_MUSIC_MUTE_KEY = 'threadbearer_muted';
 export const MUSIC_SRC_DEFAULT = '/audio/music/theme-drone.mp3';
 
 /**
+ * Pool of in-game music tracks. MusicChannel shuffles through these,
+ * advancing to the next track when the current one ends.
+ * Drop MP3s into public/audio/music/ and add the path here.
+ * If empty, falls back to MUSIC_SRC_DEFAULT on loop.
+ */
+export const MUSIC_TRACKS: string[] = [
+  '/audio/music/theme-drone.mp3',
+];
+
+/**
  * Maps each ambient sound key to an ordered list of audio file URLs.
  * BackgroundChannel picks randomly from this list on context switch.
  * Empty arrays = channel stays silent (graceful degradation until assets ship).

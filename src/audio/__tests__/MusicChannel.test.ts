@@ -3,9 +3,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 // Mock HTMLAudioElement before importing module
 vi.stubGlobal('Audio', vi.fn().mockImplementation(function () {
   return {
-    loop: false, volume: 0, muted: false, paused: true,
+    loop: false, volume: 0, muted: false, paused: true, src: '',
     play: vi.fn().mockResolvedValue(undefined),
     pause: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
   };
 }));
 
