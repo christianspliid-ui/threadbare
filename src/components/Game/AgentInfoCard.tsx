@@ -98,7 +98,7 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
               Sheet →
             </button>
           </div>
-          <Tooltip label="Knowledge Level" desc="How well you know this agent. Grows through proximity, worship, scry, and narrative contact.">
+          <Tooltip id={`knowledge.${card.knowledgeLevel}`}>
             <div
               className="underline decoration-dotted cursor-help"
               style={{

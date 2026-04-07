@@ -170,7 +170,7 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, k
             })()}
 
             {/* Knowledge level badge */}
-            <Tooltip label="Knowledge Level" desc="How well you know this agent. Grows through proximity, worship, scry, and narrative contact.">
+            <Tooltip id={`knowledge.${card.knowledgeLevel}`}>
               <div className="inline-block px-2 py-0.5 rounded text-xs mb-2 underline decoration-dotted cursor-help" style={{ backgroundColor: 'var(--border-subtle)', color: 'var(--accent-gold)' }}>
                 {card.knowledgeLevel}
               </div>

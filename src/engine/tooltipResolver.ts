@@ -216,6 +216,11 @@ export function resolveTooltip(id: string, context?: TooltipResolverContext): To
     };
   }
 
+  // ─── Knowledge Level Tooltips ────────────────────────────────────
+  if (prefix === 'knowledge') {
+    return getKnowledgeLevelTooltip(suffix);
+  }
+
   // ─── Mandate tooltips ──────────────────────────────────────────
   if (prefix === 'mandate') {
     const template = MANDATE_TEMPLATES.find(t => t.id === suffix);
@@ -227,6 +232,41 @@ export function resolveTooltip(id: string, context?: TooltipResolverContext): To
 
   // Unknown prefix
   return null;
+}
+
+/**
+ * Knowledge level tooltip content — describes what each tier reveals and how to progress.
+ */
+function getKnowledgeLevelTooltip(level: string): TooltipContent | null {
+  switch (level) {
+    case 'stranger':
+      return {
+        label: 'Stranger',
+        desc: 'You know nothing of this soul beyond their name. Spend time nearby, use Scry, or observe their encounters to learn more.',
+      };
+    case 'recognised':
+      return {
+        label: 'Recognised',
+        desc: 'You recognise their face and role — archetype, faction, culture, and a glimpse of their nature. Deeper knowledge requires continued observation.',
+      };
+    case 'known':
+      return {
+        label: 'Known',
+        desc: 'Their bonds, blessings, and strongest domains are apparent to you. Keep watching to learn what drives them.',
+      };
+    case 'intimate':
+      return {
+        label: 'Intimate',
+        desc: 'You see the full shape of their soul — all domains, possessions, conditions, backstory, and the values that guide them. Little remains hidden.',
+      };
+    case 'transparent':
+      return {
+        label: 'Transparent',
+        desc: 'Nothing is hidden. You perceive their complete history, every disposition, and the full arc of their story. Total divine sight.',
+      };
+    default:
+      return null;
+  }
 }
 
 /**
