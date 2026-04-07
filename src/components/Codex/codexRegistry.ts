@@ -220,6 +220,37 @@ function mapMortalAction(template: typeof UNIFIED_ACTION_TEMPLATES[number]): Cod
   };
 }
 
+/** Generic mapper for target-action templates into a codex category. */
+function mapTargetAction(
+  template: typeof UNIFIED_ACTION_TEMPLATES[number],
+  category: string,
+): CodexEntry {
+  const tier = (template.rarityTier ?? 1) as RarityTier;
+  const reach = template.reach as string;
+
+  return {
+    id: template.id,
+    name: template.spellName ?? template.name,
+    glyph: REACH_GLYPHS[reach] ?? '\u25C8',
+    tier,
+    tierName: RARITY_TIER_NAMES[tier] ?? 'Unknown',
+    tierColor: RARITY_TIER_COLORS[tier] ?? '#888',
+    category,
+    subcategory: reach,
+    subtitle: `${REACH_DISPLAY[reach] ?? reach} \u00B7 ${template.crudType}`,
+    summary: template.description ?? '',
+    flavorText: template.narrativeTemplates?.initiation,
+    tags: [reach, template.crudType, template.scale, template.sphereAffinity ?? ''].filter(Boolean),
+    details: [
+      { label: 'Reach', value: REACH_DISPLAY[reach] ?? reach },
+      { label: 'CRUD', value: template.crudType },
+      { label: 'Scale', value: template.scale },
+      { label: 'Essence Cost', value: String(template.essenceCost) },
+      ...(template.sphereAffinity ? [{ label: 'Sphere', value: template.sphereAffinity }] : []),
+    ],
+  };
+}
+
 function mapAgreement(template: typeof AGREEMENT_REWARD_TEMPLATES[number]): CodexEntry {
   const tier = template.tier as RarityTier;
 
@@ -286,6 +317,28 @@ export function getAllCodexEntries(): CodexEntry[] {
   const mortalTemplates = UNIFIED_ACTION_TEMPLATES.filter(t => t.id.startsWith('action.'));
   for (const t of mortalTemplates) entries.push(mapMortalAction(t));
 
+  // Hex actions
+  const hexTemplates = UNIFIED_ACTION_TEMPLATES.filter(t => t.id.startsWith('hex.'));
+  for (const t of hexTemplates) entries.push(mapTargetAction(t, 'hex'));
+
+  // Location actions
+  const locTemplates = UNIFIED_ACTION_TEMPLATES.filter(t => t.id.startsWith('loc.'));
+  for (const t of locTemplates) entries.push(mapTargetAction(t, 'location'));
+
+  // Sublocation actions
+  const subTemplates = UNIFIED_ACTION_TEMPLATES.filter(t => t.id.startsWith('sub.'));
+  for (const t of subTemplates) entries.push(mapTargetAction(t, 'location'));
+
+  // Artifact actions
+  const artifactTemplates = UNIFIED_ACTION_TEMPLATES.filter(t => t.id.startsWith('artifact.'));
+  for (const t of artifactTemplates) entries.push(mapTargetAction(t, 'artifact'));
+
+  // Thread & insight actions (thread-binding + agent observation)
+  const threadTemplates = UNIFIED_ACTION_TEMPLATES.filter(t =>
+    t.id.startsWith('bind_thread_') || ['observe_agent', 'scry_agent', 'whisper_insight', 'dream_sending'].includes(t.id)
+  );
+  for (const t of threadTemplates) entries.push(mapTargetAction(t, 'threads'));
+
   // Possessions (deduplicate starter + reward)
   const allPossessions = deduplicateNodes([...REWARD_POSSESSIONS, ...STARTER_POSSESSIONS]);
   for (const n of allPossessions) entries.push(mapPossession(n));
@@ -311,6 +364,10 @@ export function getCodexCategories(): CodexCategory[] {
 
   const catDefs: { id: string; label: string; glyph: string }[] = [
     { id: 'divine', label: 'Divine Actions', glyph: '\u2605' },
+    { id: 'hex', label: 'Hex Actions', glyph: '\u2B21' },
+    { id: 'location', label: 'Place Actions', glyph: '\u2302' },
+    { id: 'artifact', label: 'Artifact Actions', glyph: '\u2726' },
+    { id: 'threads', label: 'Thread & Insight', glyph: '\u2058' },
     { id: 'actions', label: 'Mortal Actions', glyph: '\u2694' },
     { id: 'possessions', label: 'Possessions', glyph: '\u25C6' },
     { id: 'conditions', label: 'Conditions', glyph: '\u2715' },
