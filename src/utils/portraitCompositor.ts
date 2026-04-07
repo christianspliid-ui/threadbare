@@ -68,7 +68,8 @@ export async function composePortrait(
     // Layer 1: origin portrait (fills canvas)
     ctx.drawImage(portraitImg, 0, 0, width, height);
 
-    // Layer 2: sphere frame on top (transparent center lets portrait show through)
+    // Layer 2: sphere frame on top — lighten blend so black center is invisible
+    ctx.globalCompositeOperation = 'lighten';
     ctx.drawImage(frameImg, 0, 0, width, height);
 
     return canvas;
