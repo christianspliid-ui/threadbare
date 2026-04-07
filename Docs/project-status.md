@@ -18,6 +18,8 @@ Design: `Docs/plans/2026-04-05-attention-tier-model-design.md`. Plan: `Docs/plan
 
 ## Recent Completions (2026-04-07)
 
+- **Ascendant Portrait System:** Two-layer composited portrait system replacing generic sphere-keyed energy-being avatars. 12 origin portraits (mortal faces from remembrance choices) + 8 sphere frames (ornate picture frames with sphere-specific patterns). Canvas compositing at runtime, per-session caching, fail-soft fallbacks. Surfaces: AscendantSheet (full framed portrait), hex map agent icon (origin portrait), IdentityChip (circular thumbnail). 20 placeholder assets, 23 tests. Design: `Docs/plans/2026-04-07-ascendant-portrait-system-design.md`.
+
 - **Encounter Veil:** Full-screen overlay replacing TieredEncounterModal (973 lines) + EncounterStage (925 lines) with a single EncounterVeil using the dissolved-art Remembrance aesthetic. All three thread tiers (strongly_threaded/lightly_threaded/watched) + aftermath mode. Wired into GameView as the single encounter rendering path. Net: ~2644 added / ~2457 removed, one path instead of two.
 
 - **Content Catalog Pipeline:** Systematic upgrade and fill of the attachment catalog using the content-catalog-manager skill. Upgraded 10 dead items to 100% alive. Created 55 new items across 6 fill batches: time-manipulation primitives (haste/slow/freeze_duration), encounter-altering primitives (suppress/reroll/create_barrier), diverse arms (6 new reaches), diverse mounts (4 new reaches + first T4 mount), thin primitives (resource_manipulate/slot_bonus/content_grant), and T4 legendary tools + provisions. Primitives with zero usage reduced from 10 to 0. Arms reach coverage expanded from 2 to 8. Total catalog ~210 items, all alive.
