@@ -50,7 +50,7 @@ import { getRetinueAgents } from '../../engine/retinue';
 import { TIER_NAMES } from '../../data/influence-content';
 import type { ThreadedNode, ThreadedFaction } from '../../engine/retinue';
 import { getPortraitUrl } from '../../data/portrait-assets';
-import { getAvatarPortraitUrl } from '../../data/avatar-portrait-assets';
+import { getOriginPortraitUrl } from '../../data/avatar-portrait-assets';
 import { HEX_CONSTANTS } from '../HexMapV2/scene/HexFillMesh';
 import { EssencePanel } from './EssencePanel';
 import { SimulationControls } from './SimulationControls';
@@ -474,7 +474,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         hexCol,
         hexRow,
         portraitUrl: isAvatar
-          ? getAvatarPortraitUrl(archetype.sphereAlignment.primary)
+          ? getOriginPortraitUrl(ascendantIdentity?.originFragmentId ?? '')
           : (getPortraitUrl(archetypeId) ?? undefined),
         factionIndex: i % 6,
         isRetinue: retinueIds.has(n.id),
@@ -486,7 +486,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       });
     }
     return result;
-  }, [actors, gameState.graph, runtime.worldVersion, gameState.ascendantId, avatarNodeId, sphereColor, archetype.sphereAlignment.primary]);
+  }, [actors, gameState.graph, runtime.worldVersion, gameState.ascendantId, avatarNodeId, sphereColor, ascendantIdentity?.originFragmentId]);
 
   // ── Thread line render data (ascendant → threaded agents) ──
   // Rebuilds on every worldVersion tick so line positions track moving agents.
