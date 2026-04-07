@@ -39,61 +39,13 @@ export function SimulationControls({
   if (compact) {
     return (
       <Tooltip label={`Tick ${tick}`} desc="Current simulation tick">
-        <div className="flex items-center gap-2.5">
-          {/* Season + year */}
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            <span style={{ fontSize: '1rem', lineHeight: 1 }}>{SEASON_ICONS[season] ?? '🌍'}</span>
-            <div className="flex items-center gap-1">
-              <span className="capitalize font-semibold" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)' }}>
-                {season}
-              </span>
-              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
-                Yr {year}
-              </span>
-            </div>
-          </div>
-
-          {/* Play/Pause */}
-          <Tooltip id="ui.sim_play_pause">
-            <IconButton
-              icon={<span>{running ? '⏸' : '⏵'}</span>}
-              size="sm"
-              active={running}
-              onClick={onToggle}
-              aria-label={running ? 'Pause simulation' : 'Play simulation'}
-            />
-          </Tooltip>
-
-          {/* Speed ◀ N× ▶ */}
-          <Tooltip id="ui.sim_speed">
-            <div className="flex items-center gap-1">
-              <IconButton
-                icon={<span>◀</span>}
-                size="sm"
-                onClick={speedDown}
-                disabled={speed === SPEED_STEPS[0]}
-                aria-label="Decrease speed"
-              />
-              <span
-                className="font-mono text-center"
-                style={{
-                  fontSize: 'var(--text-xs)',
-                  color: speed > 1 ? 'var(--accent-gold)' : 'var(--text-primary)',
-                  minWidth: '2rem',
-                }}
-              >
-                {speed}×
-              </span>
-              <IconButton
-                icon={<span>▶</span>}
-                size="sm"
-                onClick={speedUp}
-                disabled={speed === SPEED_STEPS[SPEED_STEPS.length - 1]}
-                aria-label="Increase speed"
-              />
-            </div>
-          </Tooltip>
-        </div>
+        <IconButton
+          icon={<span>{running ? '⏸' : '⏵'}</span>}
+          size="sm"
+          active={running}
+          onClick={onToggle}
+          aria-label={running ? 'Pause simulation' : 'Play simulation'}
+        />
       </Tooltip>
     );
   }

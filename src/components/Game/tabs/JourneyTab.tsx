@@ -29,15 +29,15 @@ interface JourneyTabProps {
 }
 
 export function JourneyTab({ card, knowledge }: JourneyTabProps) {
-  // Whether to show ambitions
-  const showAmbitions = knowledge != null
-    ? knowledge.interactionDepth >= AMBITION_PRIMARY_INTERACTIONS
-    : hasKnowledge(card.knowledgeLevel, 'known');
+  // Whether to show ambitions — either via interaction depth OR knowledge level
+  const showAmbitions =
+    (knowledge != null && knowledge.interactionDepth >= AMBITION_PRIMARY_INTERACTIONS)
+    || hasKnowledge(card.knowledgeLevel, 'known');
 
   // Whether to show secondary ambitions
-  const showSecondaryAmbitions = knowledge != null
-    ? knowledge.interactionDepth >= AMBITION_SECONDARY_INTERACTIONS
-    : hasKnowledge(card.knowledgeLevel, 'intimate');
+  const showSecondaryAmbitions =
+    (knowledge != null && knowledge.interactionDepth >= AMBITION_SECONDARY_INTERACTIONS)
+    || hasKnowledge(card.knowledgeLevel, 'intimate');
 
   const visibleIntents = (() => {
     if (!card.intents || card.intents.length === 0) return [];

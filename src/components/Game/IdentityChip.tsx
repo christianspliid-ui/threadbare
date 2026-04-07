@@ -88,6 +88,7 @@ export function IdentityChip({
               )}
             </div>
             <span
+              className="topbar-compact-hide"
               style={{
                 fontFamily: 'var(--font-display)',
                 fontSize: 'var(--text-base)',

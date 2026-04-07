@@ -75,6 +75,8 @@ export interface PremonitionEvent {
   agentId: string;
   agentName: string;
   tick: number;
+  /** Tick at which this event becomes visible to the player */
+  showAfterTick: number;
   /** Tick after which this event is considered stale and should be discarded */
   eligibleUntilTick: number;
   /** Vignette prose for the modal header */

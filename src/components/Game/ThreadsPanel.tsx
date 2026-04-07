@@ -212,6 +212,9 @@ function CompactThreadRow({
             onToggleAttentionMode(node.threadEdgeId);
           }}
           aria-label={`Toggle attention mode for ${node.name}`}
+          title={node.attentionMode === 'pause'
+            ? 'Pause: encounters interrupt the simulation for your decision. Click to switch to Auto.'
+            : 'Auto: encounters resolve in the background. Click to switch to Pause.'}
         >
           <span>{node.attentionMode === 'pause' ? '⏸' : '▶'}</span>
           <span>{node.attentionMode === 'pause' ? 'Pause' : 'Auto'}</span>

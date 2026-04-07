@@ -96,6 +96,14 @@
     --space-8: 32px;
   }
 
+  /* ── Responsive topbar compacting ─────────────────────────── */
+  /* Below 1600px, hide optional topbar labels to reclaim space */
+  @media (max-width: 1599px) {
+    .topbar-compact-hide {
+      display: none;
+    }
+  }
+
   /* ── Responsive layout scaling ───────────────────────────── */
   @media (min-width: 1920px) {
     :root {

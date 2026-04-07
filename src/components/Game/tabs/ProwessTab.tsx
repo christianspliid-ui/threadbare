@@ -48,9 +48,7 @@ export function ProwessTab({ card, knowledge, onAttachmentClick }: ProwessTabPro
   );
 
   const isDomainRevealed = (domain: ReachDomain): boolean => {
-    if (knowledge != null) {
-      return knowledge.revealedDomains.has(domain);
-    }
+    if (knowledge?.revealedDomains.has(domain)) return true;
     // KnowledgeLevel fallback: recognised+ shows all available domains
     return hasKnowledge(card.knowledgeLevel, 'recognised') && domainMap.has(domain);
   };
@@ -63,9 +61,8 @@ export function ProwessTab({ card, knowledge, onAttachmentClick }: ProwessTabPro
       return hasKnowledge(card.knowledgeLevel, 'known');
     }
     if (sub === 'curse') {
-      return knowledge != null
-        ? knowledge.revealedConditions.has(entry.id)
-        : hasKnowledge(card.knowledgeLevel, 'intimate');
+      if (knowledge?.revealedConditions.has(entry.id)) return true;
+      return hasKnowledge(card.knowledgeLevel, 'intimate');
     }
     return hasKnowledge(card.knowledgeLevel, 'recognised');
   };
@@ -83,9 +80,8 @@ export function ProwessTab({ card, knowledge, onAttachmentClick }: ProwessTabPro
   // ── Bestowed powers visibility ─────────────────────────────────────
   const bestowedPowers = (card.giftsAndBurdens ?? []).filter(g => g.subcategory === 'bestowed_power');
   const visiblePowers = bestowedPowers.filter(entry => {
-    return knowledge != null
-      ? knowledge.revealedPowers.has(entry.id)
-      : hasKnowledge(card.knowledgeLevel, 'intimate');
+    if (knowledge?.revealedPowers.has(entry.id)) return true;
+    return hasKnowledge(card.knowledgeLevel, 'intimate');
   });
 
   // ── Vignette renderer ─────────────────────────────────────────────

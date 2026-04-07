@@ -68,7 +68,11 @@ export const COMPULSION_CANDIDATE_COUNT = 4;
 // QUEUE & ELIGIBILITY
 // ═══════════════════════════════════════════════════════════════════
 
-/** Ticks before a queued premonition event goes stale and is silently discarded.
+/** Ticks after creation before a premonition becomes visible to the player.
+ * @range 0–15 */
+export const PREMONITION_DISPLAY_DELAY_TICKS = 10;
+
+/** Ticks after becoming visible before a premonition goes stale and is discarded.
  * @range 2–5 */
 export const PREMONITION_EXPIRY_TICKS = 3;
 

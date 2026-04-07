@@ -34,6 +34,7 @@ import {
   WHISPER_ESSENCE_COST_AMBITION_DRIFT,
   WHISPER_NUDGE_COUNT_MIN,
   WHISPER_NUDGE_COUNT_MAX,
+  PREMONITION_DISPLAY_DELAY_TICKS,
   PREMONITION_EXPIRY_TICKS,
   GATHER_STRENGTH_QUINTESSENCE_THRESHOLD,
   COURAGE_NUDGE_THRESHOLD,
@@ -234,8 +235,15 @@ export function phaseDivinePremonition(
 
   if (threadedAgents.length === 0) return {};
 
+  // Track agents that already have a pending premonition — one at a time
+  const pendingQueue = state.premonitionQueue ?? [];
+  const agentsWithPending = new Set(pendingQueue.map(p => p.agentId));
+
   for (const agent of threadedAgents) {
     try {
+      // Gate: no pending premonition for this agent already
+      if (agentsWithPending.has(agent.id)) continue;
+
       // Gate: tier 1+
       const tier = getThreadTier(graph, ascendantId, agent.id);
       if (tier < 1) continue;
@@ -296,13 +304,15 @@ export function phaseDivinePremonition(
       const vignette = generateWhisperVignette(agent, graph, state, rng);
 
       // Emit premonition event
+      const showAfterTick = state.tick + PREMONITION_DISPLAY_DELAY_TICKS;
       const premonition: PremonitionEvent = {
         id: `whisper_${agent.id}_${state.tick}`,
         type: 'whisper',
         agentId: agent.id,
         agentName: agent.name,
         tick: state.tick,
-        eligibleUntilTick: state.tick + PREMONITION_EXPIRY_TICKS,
+        showAfterTick,
+        eligibleUntilTick: showAfterTick + PREMONITION_EXPIRY_TICKS,
         vignetteProse: vignette,
         whisperOptions: options,
       };
@@ -319,10 +329,14 @@ export function phaseDivinePremonition(
     }
   }
 
-  // Merge with existing queue (discard stale entries)
-  const existingQueue = (state.premonitionQueue ?? []).filter(
-    p => p.eligibleUntilTick > state.tick,
-  );
+  // Merge with existing queue (discard stale + no-longer-idle entries)
+  const existingQueue = (state.premonitionQueue ?? []).filter(p => {
+    if (p.eligibleUntilTick <= state.tick) return false;
+    // Prune whispers/compulsions for agents that are no longer idle
+    const agentNode = graph.getNode(p.agentId);
+    if (agentNode && !isAgentIdle(agentNode, state)) return false;
+    return true;
+  });
 
   // Only return premonitionQueue — do NOT return tickEvents here.
   // This phase doesn't emit tick events. Returning tickEvents: [] would

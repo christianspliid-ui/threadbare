@@ -73,7 +73,7 @@ export function AttachmentsTab({ card, onAttachmentClick }: AttachmentsTabProps)
     return (
       <div
         key={entry.id}
-        className={onAttachmentClick ? 'cursor-pointer transition-opacity hover:opacity-80 py-2' : 'py-2'}
+        className={`flex gap-3 ${onAttachmentClick ? 'cursor-pointer transition-opacity hover:opacity-80' : ''} py-2`}
         style={{
           borderBottom: '1px solid var(--border-subtle)',
           opacity: isMuted ? 0.5 : 1,
@@ -89,78 +89,75 @@ export function AttachmentsTab({ card, onAttachmentClick }: AttachmentsTabProps)
         }}
       >
         {artPath && (
-          <div
-            className="mb-2 overflow-hidden rounded"
-            style={{ maxHeight: '120px' }}
-          >
+          <div className="flex-shrink-0 overflow-hidden rounded" style={{ width: '50%' }}>
             <img
               src={artPath}
               alt=""
               aria-hidden="true"
               style={{
                 width: '100%',
-                height: '120px',
-                objectFit: 'cover',
-                objectPosition: 'center 30%',
+                height: 'auto',
                 display: 'block',
               }}
             />
           </div>
         )}
-        <div className="flex items-center justify-between mb-1">
-          <Tooltip label={tooltip.label} desc={tooltip.desc}>
-            <span
-              className="text-sm font-semibold underline decoration-transparent hover:decoration-current cursor-pointer"
-              style={{ color: isMuted ? 'var(--text-tertiary)' : tierColor }}
-            >
-              {glyph} {entry.name}
-            </span>
-          </Tooltip>
-          <span className="text-xs uppercase tracking-wider" style={{ color: `${tierColor}99` }}>
-            {tierName}
-            {entry.isPinned && ' (pinned)'}
-          </span>
-        </div>
-        {entry.flavorText && (
-          <p className="text-sm italic mb-1" style={{ color: 'var(--text-secondary)' }}>
-            {entry.flavorText}
-          </p>
-        )}
-        {entry.counterpartyName && (
-          <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>
-            {entry.agreementType ? `Bound to ${entry.counterpartyName}` : `With ${entry.counterpartyName}`}
-          </p>
-        )}
-        {!entry.counterpartyName && entry.grantedBy && (
-          <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>
-            {entry.agreementType ? `Bound to ${entry.grantedBy}` : `Granted by ${entry.grantedBy}`}
-          </p>
-        )}
-        <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-          {entry.mechanicalSummary}
-          {entry.lossCondition ? ` \u00B7 ${entry.lossCondition}` : ''}
-          {entry.tags.length > 0 ? ` \u00B7 ${entry.tags.join(', ')}` : ''}
-        </p>
-        {isMuted && entry.inactiveReason && (
-          <p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>
-            Inactive: {entry.inactiveReason}
-          </p>
-        )}
-        {entry.ticksRemaining != null && entry.totalTicks != null && entry.totalTicks > 0 && (
-          <div className="flex items-center gap-2 mt-1">
-            <div style={{ width: '200px' }}>
-              <ProgressBar
-                progress={entry.ticksRemaining / entry.totalTicks}
-                color={tierColor}
-                className="h-1.5"
-                glow={false}
-              />
-            </div>
-            <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
-              {entry.ticksRemaining} ticks remaining
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between mb-1">
+            <Tooltip label={tooltip.label} desc={tooltip.desc}>
+              <span
+                className="text-sm font-semibold underline decoration-transparent hover:decoration-current cursor-pointer"
+                style={{ color: isMuted ? 'var(--text-tertiary)' : tierColor }}
+              >
+                {glyph} {entry.name}
+              </span>
+            </Tooltip>
+            <span className="text-xs uppercase tracking-wider" style={{ color: `${tierColor}99` }}>
+              {tierName}
+              {entry.isPinned && ' (pinned)'}
             </span>
           </div>
-        )}
+          {entry.flavorText && (
+            <p className="text-sm italic mb-1" style={{ color: 'var(--text-secondary)' }}>
+              {entry.flavorText}
+            </p>
+          )}
+          {entry.counterpartyName && (
+            <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>
+              {entry.agreementType ? `Bound to ${entry.counterpartyName}` : `With ${entry.counterpartyName}`}
+            </p>
+          )}
+          {!entry.counterpartyName && entry.grantedBy && (
+            <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>
+              {entry.agreementType ? `Bound to ${entry.grantedBy}` : `Granted by ${entry.grantedBy}`}
+            </p>
+          )}
+          <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+            {entry.mechanicalSummary}
+            {entry.lossCondition ? ` \u00B7 ${entry.lossCondition}` : ''}
+            {entry.tags.length > 0 ? ` \u00B7 ${entry.tags.join(', ')}` : ''}
+          </p>
+          {isMuted && entry.inactiveReason && (
+            <p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>
+              Inactive: {entry.inactiveReason}
+            </p>
+          )}
+          {entry.ticksRemaining != null && entry.totalTicks != null && entry.totalTicks > 0 && (
+            <div className="flex items-center gap-2 mt-1">
+              <div style={{ width: '200px' }}>
+                <ProgressBar
+                  progress={entry.ticksRemaining / entry.totalTicks}
+                  color={tierColor}
+                  className="h-1.5"
+                  glow={false}
+                />
+              </div>
+              <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                {entry.ticksRemaining} ticks remaining
+              </span>
+            </div>
+          )}
+        </div>
       </div>
     );
   };

@@ -62,25 +62,24 @@ interface BondsTabProps {
 export function BondsTab({ card, knowledge }: BondsTabProps) {
   const showFaction = hasKnowledge(card.knowledgeLevel, 'recognised') && card.factionName && card.factionRank;
 
-  // Bonds to show
+  // Bonds to show — revealed bonds augmented by knowledgeLevel fallback
   const bondsToShow = (() => {
-    if (knowledge != null) {
-      // knowledge path: only show bonds in revealedBonds
-      return (card.topBonds ?? []).map(bond => {
-        const source = knowledge.revealedBonds.get(bond.name);
-        if (source === undefined) return null;
-        return { ...bond, source };
-      }).filter((b): b is NonNullable<typeof b> => b !== null);
-    }
-    // KnowledgeLevel fallback
-    return hasKnowledge(card.knowledgeLevel, 'known')
+    const byKnowledge = knowledge != null
+      ? (card.topBonds ?? []).map(bond => {
+          const source = knowledge.revealedBonds.get(bond.name);
+          if (source === undefined) return null;
+          return { ...bond, source };
+        }).filter((b): b is NonNullable<typeof b> => b !== null)
+      : [];
+    const byLevel = hasKnowledge(card.knowledgeLevel, 'known')
       ? (card.topBonds ?? []).map(b => ({ ...b, source: undefined as string | undefined }))
       : [];
+    return byLevel.length > byKnowledge.length ? byLevel : byKnowledge;
   })();
 
-  const showDisposition = knowledge != null
-    ? knowledge.dispositionRevealed
-    : hasKnowledge(card.knowledgeLevel, 'intimate');
+  const showDisposition =
+    (knowledge != null && knowledge.dispositionRevealed)
+    || hasKnowledge(card.knowledgeLevel, 'intimate');
 
   const dispositionLabel = card.cooperationStrategy
     ? (DISPOSITION_LABEL_MAP[card.cooperationStrategy] ?? card.cooperationStrategy)

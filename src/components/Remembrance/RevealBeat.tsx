@@ -78,26 +78,26 @@ export function RevealBeat({
         {/* Identity lines */}
         <div className="max-w-2xl text-center" style={{ lineHeight: '2.2' }}>
 
-          <p className="mb-3" style={{ ...lineStyle(2, 'rgba(138,138,138,0.5)'), fontSize: '1.3rem' }}>
+          <p className="mb-3" style={{ ...lineStyle(2, 'rgba(168,168,175,0.85)'), fontSize: '1.3rem' }}>
             You were called <strong style={{ color: '#e8e0f0', fontWeight: 'normal', fontSize: '1.5rem' }}>{mortalName}</strong>.
           </p>
 
-          <p className="mb-3" style={{ ...lineStyle(3, 'rgba(138,138,138,0.4)'), fontSize: '1.15rem', lineHeight: '1.8' }}>
+          <p className="mb-3" style={{ ...lineStyle(3, 'rgba(168,168,175,0.75)'), fontSize: '1.15rem', lineHeight: '1.8' }}>
             {originFragment.prose}
           </p>
 
-          <p className="mb-5" style={{ ...lineStyle(4, 'rgba(184,140,154,0.45)'), fontSize: '1.15rem', lineHeight: '1.8' }}>
+          <p className="mb-5" style={{ ...lineStyle(4, 'rgba(200,160,175,0.8)'), fontSize: '1.15rem', lineHeight: '1.8' }}>
             {driveFragment.prose}
           </p>
 
-          <p className="mb-1" style={{ ...lineStyle(5, 'rgba(212,196,138,0.6)'), fontSize: '1.4rem' }}>
+          <p className="mb-1" style={{ ...lineStyle(5, 'rgba(222,206,148,0.9)'), fontSize: '1.4rem' }}>
             Now you hunger to <strong style={{ fontWeight: 'normal' }}>{hunger.name}</strong>.
           </p>
-          <p className="mb-5" style={{ ...lineStyle(5, 'rgba(180,164,138,0.35)'), fontSize: '1.1rem' }}>
+          <p className="mb-5" style={{ ...lineStyle(5, 'rgba(195,180,155,0.7)'), fontSize: '1.1rem' }}>
             {hunger.mandateDirection}.
           </p>
 
-          <p style={{ ...lineStyle(6, primaryColor), fontSize: '1.2rem', opacity: phase >= 6 ? 0.6 : 0 }}>
+          <p style={{ ...lineStyle(6, primaryColor), fontSize: '1.2rem', opacity: phase >= 6 ? 0.85 : 0 }}>
             {hunger.sphereAlignment.primary} and {hunger.sphereAlignment.secondary} pour through you.
             Your court is {COURT_LABELS[courtType] ?? courtType}.
           </p>
@@ -115,7 +115,7 @@ export function RevealBeat({
                fontFamily: 'Georgia, "Times New Roman", serif',
                fontStyle: 'italic',
                fontSize: '1.15rem',
-               color: 'rgba(138,122,154,0.4)',
+               color: 'rgba(168,152,184,0.75)',
                letterSpacing: '0.06em',
              }}>
             The mortals will need a name for what you are.
@@ -152,7 +152,7 @@ export function RevealBeat({
               fontStyle: 'italic',
               fontSize: '1.3rem',
               color: primaryColor,
-              opacity: 0.6,
+              opacity: 0.85,
               letterSpacing: '0.1em',
             }}
           >

@@ -731,17 +731,13 @@ export const HexChronicle = memo(function HexChronicle({
                     {/* Nested sublocations — agents visible in location detail */}
                     {subs.length > 0 && (
                       <div style={{ paddingLeft: '26px', marginTop: '8px' }}>
-                        {subs.map(sub => {
-                          const subFlavor = (locationProse[sub.id] ?? '').split('\n\n').filter(Boolean)[0] ?? '';
-                          return (
+                        {subs.map(sub => (
                             <SubLocationEntry
                               key={sub.id}
                               name={sub.name}
-                              flavorText={subFlavor}
                               onClick={() => onLocationClick(sub.id)}
                             />
-                          );
-                        })}
+                        ))}
                       </div>
                     )}
                   </LocationCard>

@@ -13,11 +13,12 @@ import type { SphereName } from '../../types';
 import { FOUNDATION_SPHERE_NAMES, CREATION_SPHERE_NAMES } from '../../types';
 import type { AscendantArchetype } from '../../types/influence';
 import type { ReachDomain } from '../../types/traits';
-import { NARRATIVE_LEXICON, REACH_DOMAINS } from '../../types/traits';
+import { REACH_DOMAINS } from '../../types/traits';
 import type { GameState } from '../../types/gameState';
+import { getDomainTier } from '../../data/domain-words';
 import { Modal } from '../shared/Modal';
 import { SphereIcon } from '../shared/SphereIcon';
-import { ReachIcon } from '../icons';
+import { DomainCard } from '../shared/DomainCard';
 import { SectionHeading } from '../shared/SectionHeading';
 import { ProseKeyword } from '../ProseKeyword';
 import { Tooltip } from '../shared/Tooltip';
@@ -91,10 +92,6 @@ const DIVINE_NATURE_PHRASES: Record<SphereName, { primary: string; secondary: st
   },
 };
 
-const DOMAIN_NAMES: Record<ReachDomain, string> = {
-  iron: 'Iron', gold: 'Gold', shadow: 'Shadow', veil: 'Veil', heart: 'Heart',
-  eye: 'Eye', stone: 'Stone', star: 'Star', flesh: 'Flesh',
-};
 
 function essenceToProseDescriptor(amount: number): string {
   if (amount < 1) return 'Barren';
@@ -115,10 +112,6 @@ function threadsToProseDescriptor(threadCount: number): string {
   return 'Multitudes cry out to you.';
 }
 
-function domainLevelToWord(reach: ReachDomain, level: number | undefined): string {
-  const idx = Math.max(0, Math.min(9, Math.floor(level ?? 0)));
-  return NARRATIVE_LEXICON[reach][idx] ?? NARRATIVE_LEXICON[reach][0];
-}
 
 const ORDINAL_WORDS = [
   'First', 'Second', 'Third', 'Fourth', 'Fifth',
@@ -308,29 +301,20 @@ export function AscendantSheet({
             </p>
           </section>
 
-          {/* Dominion — matches ProwessTab domain grid exactly */}
+          {/* Dominion — matches ProwessTab domain cards exactly */}
           <section className="anim-fade-up-enter" style={{ animationDelay: '50ms', animationFillMode: 'backwards' }}>
             <SectionHeading as="h2">Dominion</SectionHeading>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="flex flex-col gap-2">
               {REACH_DOMAINS.map((reach) => {
                 const level = archetype.startingDomainAffinities[reach] ?? 0;
-                const word = domainLevelToWord(reach, level);
                 return (
-                  <div
+                  <DomainCard
                     key={reach}
-                    className="p-2 rounded text-center"
-                    style={{ backgroundColor: 'var(--bg-raised)' }}
-                  >
-                    <Tooltip id={`reach.${reach}`}>
-                      <p className="inline-flex items-center justify-center gap-1 text-xs font-medium underline decoration-dotted cursor-help" style={{ color: 'var(--accent-gold)' }}>
-                        <ReachIcon reach={reach} size={14} />
-                        {DOMAIN_NAMES[reach]}
-                      </p>
-                    </Tooltip>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>
-                      {word}
-                    </p>
-                  </div>
+                    reach={reach}
+                    tier={getDomainTier(level)}
+                    agentName={avatarName ?? 'The Ascendant'}
+                    revealed={true}
+                  />
                 );
               })}
             </div>

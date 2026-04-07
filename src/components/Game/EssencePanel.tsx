@@ -47,7 +47,7 @@ export function EssencePanel({ pool, maxEssence, primarySphere, secondarySphere,
 
   if (compact) {
     return (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center flex-wrap gap-1.5 min-w-0">
           {sorted.map((sphere) => {
             const value = pool[sphere];
             const isPrimary = sphere === primarySphere;

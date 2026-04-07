@@ -33,25 +33,32 @@ interface OverviewTabProps {
 export function OverviewTab({ card, profile: _profile, knowledge }: OverviewTabProps) {
   // How many quotes to show: one per interaction depth point (max 5), or all if no knowledge
   const quoteCount = knowledge != null
-    ? Math.min(card.quotes?.length ?? 0, Math.floor(knowledge.interactionDepth))
+    ? Math.max(
+        Math.min(card.quotes?.length ?? 0, Math.floor(knowledge.interactionDepth)),
+        card.quotes?.length ?? 0, // knowledgeLevel already gated card.quotes
+      )
     : card.quotes?.length ?? 0;
 
   // Whether reputation is revealed
-  const reputationRevealed = knowledge != null
-    ? knowledge.interactionDepth >= OVERVIEW_GOSSIP_THRESHOLD
-    : hasKnowledge(card.knowledgeLevel, 'known');
+  const reputationRevealed =
+    (knowledge != null && knowledge.interactionDepth >= OVERVIEW_GOSSIP_THRESHOLD)
+    || hasKnowledge(card.knowledgeLevel, 'known');
 
   // Whether origin/backstory is revealed
-  const backstoryRevealed = knowledge != null
-    ? knowledge.interactionDepth >= OVERVIEW_BACKSTORY_INTERACTIONS
-    : hasKnowledge(card.knowledgeLevel, 'intimate');
+  const backstoryRevealed =
+    (knowledge != null && knowledge.interactionDepth >= OVERVIEW_BACKSTORY_INTERACTIONS)
+    || hasKnowledge(card.knowledgeLevel, 'intimate');
 
   // Values to show: from revealedValues facets if knowledge present, else KnowledgeLevel-gated
-  const valuesToShow = knowledge != null
-    ? (card.topValues ?? []).filter(v => knowledge.revealedValues.has(v.pair))
-    : hasKnowledge(card.knowledgeLevel, 'recognised')
+  const valuesToShow = (() => {
+    const byKnowledge = knowledge != null
+      ? (card.topValues ?? []).filter(v => knowledge.revealedValues.has(v.pair))
+      : [];
+    const byLevel = hasKnowledge(card.knowledgeLevel, 'recognised')
       ? (card.topValues ?? [])
       : [];
+    return byLevel.length > byKnowledge.length ? byLevel : byKnowledge;
+  })();
 
   const showNatureSection = knowledge != null || hasKnowledge(card.knowledgeLevel, 'recognised');
   const showTraits = hasKnowledge(card.knowledgeLevel, 'intimate') && (card.allTraits?.length ?? 0) > 0;

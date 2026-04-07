@@ -18,7 +18,7 @@ import { getArchetype, type NarrativeArchetype } from '../data/archetype-content
 import type { CooperationStrategy, InteractionRecord } from '../types/disposition';
 import { DEFAULT_REPUTATION } from '../types/disposition';
 import type { KnowledgeLevel } from '../types/familiarity';
-import { getDomainWord, getValueWord, getReputationWord, getBondStrengthWord } from '../data/domain-words';
+import { getDomainWord, getDomainTier, getValueWord, getReputationWord, getBondStrengthWord } from '../data/domain-words';
 import { generateQuotes, generateBackstory } from './profileGenerator';
 import type { AmbitionCategory, ReactiveAmbitionTemplate } from '../types/ambition';
 import { generateTieredBackstory } from './backstoryGenerator';
@@ -178,7 +178,9 @@ export interface AgentInfoCardData {
   factionThemeColor?: string;
   cultureName?: string;
   topValues?: { pair: ValuePair; word: string }[];
-  domains?: { domain: ReachDomain; word: string }[];
+  domains?: { domain: ReachDomain; word: string; tier: number }[];
+  /** Agent gender for pronoun resolution in prose (e.g. 'male', 'female'). Defaults to neutral. */
+  gender?: string;
   topBonds?: { name: string; strengthWord: string; sentiment: string }[];
   quotes?: string[];
   cooperationStrategy?: string;
@@ -444,8 +446,10 @@ export function getAgentInfoCard(
   const agentNode = graph.getNode(agentId);
   if (!agentNode) return null;
 
-  const primarySphere = (agentNode.properties as Record<string, unknown>).primarySphere as string | undefined;
-  const rarityTier = (agentNode.properties as Record<string, unknown>).rarityTier as number | undefined;
+  const agentProps = agentNode.properties as Record<string, unknown>;
+  const primarySphere = agentProps.primarySphere as string | undefined;
+  const rarityTier = agentProps.rarityTier as number | undefined;
+  const agentGender = agentProps.gender as string | undefined;
   const cultureName = getAgentCultureName(graph, agentId);
   const traitNames = getAgentTraitNames(graph, agentId);
 
@@ -459,6 +463,7 @@ export function getAgentInfoCard(
     cultureName,
     knowledgeLevel,
     rarityTier,
+    gender: agentGender,
   };
 
   // Intent data — always visible in prototype
@@ -544,6 +549,7 @@ export function getAgentInfoCard(
       card.domains = sortedDomains.map(({ domain, value }) => ({
         domain,
         word: getDomainWord(domain, value),
+        tier: getDomainTier(value),
       }));
     }
   }
@@ -580,11 +586,12 @@ export function getAgentInfoCard(
 
   // Intimate+: full 9 domains, quotes, cooperation strategy, reputation, all traits, backstory paragraph 1
   if (knowledgeLevel === 'intimate' || knowledgeLevel === 'transparent') {
-    // All 9 domains
+    // All 8 domains
     card.domains = Object.entries(detail.domainCapabilities)
       .map(([domain, value]) => ({
         domain: domain as ReachDomain,
         word: getDomainWord(domain as ReachDomain, value),
+        tier: getDomainTier(value),
       }));
 
     // Generate all quotes

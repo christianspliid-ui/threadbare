@@ -55,6 +55,7 @@ export function WorldSoulIndicator({ aggregate }: WorldSoulIndicatorProps) {
   return (
     <div
       data-testid="world-soul-indicator"
+      className="topbar-compact-hide"
       style={{
         fontFamily: 'var(--font-prose, serif)',
         fontSize: '12px',

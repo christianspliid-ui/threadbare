@@ -55,10 +55,14 @@ export const DOMAIN_WORD_SCALES: Record<ReachDomain, [string, string, string, st
  *   6–7    → tier 3 (Fearsome, Masterful, Unseen, ...)
  *   8–10   → tier 4 (Legendary, Magnate, Phantom, ...)
  */
-export function getDomainWord(domain: ReachDomain, value: number): string {
+/** Convert a numeric domain value (0–10) to a 0-indexed tier (0–4). */
+export function getDomainTier(value: number): number {
   const clamped = Math.max(0, Math.min(10, value));
-  const tier = Math.min(4, Math.floor(clamped / 2));
-  return DOMAIN_WORD_SCALES[domain][tier];
+  return Math.min(4, Math.floor(clamped / 2));
+}
+
+export function getDomainWord(domain: ReachDomain, value: number): string {
+  return DOMAIN_WORD_SCALES[domain][getDomainTier(value)];
 }
 
 /**

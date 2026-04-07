@@ -1,15 +1,28 @@
 import React from 'react';
 import type { GameState } from '../../types/gameState';
+import { IconButton } from '../shared/IconButton';
+import { Tooltip } from '../shared/Tooltip';
+import { SPEED_STEPS } from './SimulationControls';
+
+const SEASON_ICONS: Record<string, string> = {
+  spring: '∿', summer: '☼', autumn: '◇', winter: '❋',
+};
 
 interface WorldPulseProps {
   gameState: GameState;
+  season: string;
+  year: number;
+  speed: number;
+  onSpeedChange: (speed: number) => void;
 }
 
 /**
  * WorldPulse — a minimal summary panel shown when no agent is selected.
  * Displays tick number, active agent count, culture count, and a mood-driven summary.
  */
-export const WorldPulse = React.memo(function WorldPulse({ gameState }: WorldPulseProps) {
+export const WorldPulse = React.memo(function WorldPulse({
+  gameState, season, year, speed, onSpeedChange,
+}: WorldPulseProps) {
   // Count active agents
   const activeAgents = gameState.graph.getNodesByType('actor')
     .filter(node => node.properties?.actorType === 'individual').length;
@@ -31,6 +44,18 @@ export const WorldPulse = React.memo(function WorldPulse({ gameState }: WorldPul
   const moodLines = summaries[doomStage] || summaries[0];
   const mood = moodLines[gameState.tick % moodLines.length];
 
+  function speedDown() {
+    const idx = SPEED_STEPS.indexOf(speed);
+    const prev = SPEED_STEPS[Math.max(idx - 1, 0)];
+    if (prev !== undefined && prev !== speed) onSpeedChange(prev);
+  }
+
+  function speedUp() {
+    const idx = SPEED_STEPS.indexOf(speed);
+    const next = SPEED_STEPS[Math.min(idx + 1, SPEED_STEPS.length - 1)];
+    if (next !== undefined && next !== speed) onSpeedChange(next);
+  }
+
   return (
     <div className="space-y-4">
       <h3
@@ -39,6 +64,50 @@ export const WorldPulse = React.memo(function WorldPulse({ gameState }: WorldPul
       >
         World Pulse
       </h3>
+
+      {/* Season / year / speed */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <span style={{ fontSize: '1rem', lineHeight: 1 }}>{SEASON_ICONS[season] ?? '🌍'}</span>
+          <span
+            className="capitalize font-semibold"
+            style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)' }}
+          >
+            {season}
+          </span>
+          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+            Yr {year}
+          </span>
+        </div>
+        <Tooltip id="ui.sim_speed">
+          <div className="flex items-center gap-1">
+            <IconButton
+              icon={<span>◀</span>}
+              size="sm"
+              onClick={speedDown}
+              disabled={speed === SPEED_STEPS[0]}
+              aria-label="Decrease speed"
+            />
+            <span
+              className="font-mono text-center"
+              style={{
+                fontSize: 'var(--text-xs)',
+                color: speed > 1 ? 'var(--accent-gold)' : 'var(--text-primary)',
+                minWidth: '2rem',
+              }}
+            >
+              {speed}×
+            </span>
+            <IconButton
+              icon={<span>▶</span>}
+              size="sm"
+              onClick={speedUp}
+              disabled={speed === SPEED_STEPS[SPEED_STEPS.length - 1]}
+              aria-label="Increase speed"
+            />
+          </div>
+        </Tooltip>
+      </div>
 
       <div className="space-y-2">
         <div className="flex justify-between items-center">

@@ -17,6 +17,7 @@ import {
   COMPULSION_CANDIDATE_COUNT,
   COMPULSION_ESSENCE_COST_MIN,
   COMPULSION_ESSENCE_COST_MAX,
+  PREMONITION_DISPLAY_DELAY_TICKS,
   PREMONITION_EXPIRY_TICKS,
   REACH_TO_SPHERE,
 } from '../data/premonition-constants';
@@ -155,13 +156,15 @@ export function buildCompulsionEvent(
   const vignetteTemplate = seededPick(COMPULSION_VIGNETTE_TEMPLATES[proseTier], rng);
   const vignetteProse = resolvePronouns(vignetteTemplate, agentName);
 
+  const showAfterTick = state.tick + PREMONITION_DISPLAY_DELAY_TICKS;
   return {
     id: `compulsion_${agentId}_${state.tick}`,
     type: 'compulsion',
     agentId,
     agentName,
     tick: state.tick,
-    eligibleUntilTick: state.tick + PREMONITION_EXPIRY_TICKS,
+    showAfterTick,
+    eligibleUntilTick: showAfterTick + PREMONITION_EXPIRY_TICKS,
     vignetteProse,
     compulsionCandidates,
   };

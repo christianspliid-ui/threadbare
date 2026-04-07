@@ -819,11 +819,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   });
 
   // ── Divine Premonition modal state ──
-  // Pops the next premonition from the queue when available.
+  // Pops the next ready premonition from the queue (respects display delay).
   const activePremonition = useMemo(() => {
     const queue = gameState.premonitionQueue ?? [];
-    return queue.length > 0 ? queue[0] : null;
-  }, [gameState.premonitionQueue]);
+    const ready = queue.find(p => gameState.tick >= p.showAfterTick);
+    return ready ?? null;
+  }, [gameState.premonitionQueue, gameState.tick]);
 
   const handleWhisperChoice = useCallback((nudge: WhisperNudge) => {
     if (!activePremonition) return;
