@@ -40,6 +40,8 @@ export interface CodexEntry {
 // Maps entry IDs to their art asset paths under public/assets/items/.
 const ITEM_ART: Record<string, string> = {
   reward_arms_thornwood_staff: '/assets/items/thornwood-staff.jpg',
+  reward_relics_talismans_stasis_pearl: '/assets/items/stasis-pearl.jpg',
+  reward_mounts_beasts_shimmer_hart: '/assets/items/shimmer-hart.jpg',
 };
 
 export interface CodexCategory {
