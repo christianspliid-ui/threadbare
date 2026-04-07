@@ -447,9 +447,52 @@ Actors and artifacts each produce TWO images:
 | **Actor (lore)** | 50mm medium shot, environmental portrait | Scene-dependent chiaroscuro, magic as key light if sphere-aligned | Malazan covers, Simonetti figures |
 | **Artifact (game)** | Macro close-up, slight overhead angle, isolated | Single directional light, soft shadow, dark background | Diablo 3 item art, D&D sourcebook objects |
 | **Artifact (lore)** | 35mm medium, object in environment | Atmospheric, object as focal point with environmental context | Greg Rutkowski, Donato Giancola |
+| **Attachment (catalog)** | 35mm wide, mid-distance, item-in-action scene | Atmospheric twilight, sphere-colored magic as accent light, deep haze | Remembrance style — clean digital painting, atmospheric depth |
 | **Faction (heraldry)** | Flat orthographic, straight-on, no perspective distortion | Even soft lighting, aged cloth/parchment texture | Medieval heraldry, Dark Souls covenant icons |
 | **Event (general)** | 28mm dramatic wide, dynamic angle | Scene-dependent, dramatic, high contrast | MTG card art, Diablo cinematics |
 | **Event (doom)** | Ultra-wide panoramic (16mm), cosmic scale | Apocalyptic — magic IS the light source, extreme contrast | Wayne Barlowe, Beksiński, MTG Eldrazi art |
+
+### Attachment Art: Items in Action
+
+Attachment catalog art (possessions, conditions, mounts, relics — everything in the game codex library) uses the **Remembrance art style**, not the standard artifact style. The key differences:
+
+**Content shift — items in action, not isolated objects:**
+- Show the item being *used* in the Threadbearer world — a warrior gripping a weapon in battle, a rider on a mount crossing misty terrain, a scholar consulting a tome in a ruined library, a cursed relic pulsing in a dark temple
+- The item is the focal point but exists in a scene with environment, atmosphere, and implied narrative
+- The viewer should feel like they're glimpsing a moment from the world, not looking at a museum display
+
+**Style shift — clean digital painting, not heavy oil impasto:**
+- Atmospheric digital painting with refined rendering and subtle texture
+- Dark fantasy palette from STYLE.md (10-30% brightness environments)
+- Sphere-colored magic threads clinging to surfaces, not floating in void
+- Deep atmospheric haze and dissolved edges where concrete meets darkness
+- NOT heavy visible brushstrokes or thick impasto oil paint
+
+**Prompt template for attachment catalog art:**
+
+```
+[Subject — a character or figure using/wearing/wielding the item in a specific
+Threadbearer environment. 2-3 narrative sentences describing the scene: who is
+using it, where, what moment are we seeing. Physical substance first, then the
+magic transforming or emanating from the item.]
+
+[Composition — 35mm wide shot, mid-distance. The item is the clear focal point
+but the character and environment provide context. Atmospheric depth.]
+
+[Magic — sphere colors from STYLE.md, form language from the item's reach tags.
+Threads integrated into the item and clinging to nearby surfaces. 10-25% coverage.]
+
+Atmospheric dark fantasy digital painting. Refined rendering with subtle texture.
+Dark world — environmental colors at 10-30% brightness. Magic threads intensely
+bright and concentrated but clinging to surfaces. Deep atmospheric haze.
+Dissolved edges where the scene meets darkness at the frame boundaries.
+
+No text, no UI. No heavy visible brushstrokes. No isolated object on black.
+```
+
+**Aspect ratio:** 16:9 landscape (matches codex/library display).
+
+**DO NOT** use this style for in-game UI artifact slots (inventory, status panels). Those still use the isolated game-asset style with dark neutral backgrounds for clean compositing.
 
 ### Location Art: Terrain-Neutral Framing
 
@@ -468,6 +511,7 @@ Frame locations as: the structure + stormy twilight sky + atmospheric haze. No g
 | Actor (lore art) | 16:9 | Landscape scene |
 | Artifact (game asset) | 1:1 | Square for UI display |
 | Artifact (lore art) | 16:9 | Landscape scene |
+| Attachment (catalog) | 16:9 | Landscape, item-in-action scene for codex/library |
 | Faction (heraldry) | 3:4 | Tall banner format |
 | Event (general) | 16:9 | Wide dramatic scene |
 | Event (doom) | 21:9 | Ultra-wide panoramic |
@@ -492,3 +536,5 @@ Frame locations as: the structure + stormy twilight sky + atmospheric haze. No g
 *(updated 2026-03-05 — Entropy color #5a7a8a→#5a8a7a ghostly sea-green; Chaos color #8a2be2→#8a8a8e neutral grey; Matter color #c4956a→#8b6b4a deep umber-brown; added Hex Tile System section with three-component compositable rules)*
 
 *(updated 2026-03-06 — Rewrote Prompt Construction Guide: narrative-first prompts, NB2-optimized element ordering, magic spectrum by content type, camera/lens/DoF defaults, specific lighting patterns, positive atmosphere descriptions replacing keyword exclusions. Added Content-Type Art Direction section: dual-image variants, camera & lighting defaults table, terrain-neutral location framing, aspect ratios by content type. Added four new prompt examples: location, actor, faction heraldry, doom splash art.)*
+
+*(updated 2026-04-07 — Added "Attachment Art: Items in Action" section under Content-Type Art Direction. Attachment catalog images use Remembrance-style clean digital painting with items shown in action in the world, not isolated objects on black. Added attachment rows to Camera & Lighting Defaults and Aspect Ratios tables. Prompt template included.)*

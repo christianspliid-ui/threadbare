@@ -72,6 +72,36 @@ Images auto-save to the configured output directory.
 - Prompt has no exclusion constraints → Add "No text, no UI elements, no labels" or similar
 - Using vague style language ("make it look cool") → Be specific: name art references, color palettes, techniques
 
+## Attachment Catalog Art
+
+When generating images for game attachments (possessions, conditions, mounts, relics — items in the codex/library), use the **Remembrance art style**:
+
+- **Content**: Show the item *in action* in the Threadbearer world — a character using, wielding, wearing, or interacting with the item in an environment. NOT an isolated object on black.
+- **Style**: Clean atmospheric digital painting with refined rendering. NOT heavy oil impasto or thick visible brushstrokes.
+- **Aspect ratio**: 16:9 landscape
+- **Quality**: "quality" preset
+- **Filename**: `<kebab-case-item-name>.jpg` in `public/assets/items/`
+- **Magic**: Sphere-colored threads (from STYLE.md) clinging to the item and nearby surfaces, 10-25% coverage
+
+See STYLE.md → "Attachment Art: Items in Action" for the full prompt template.
+
+**Example prompt structure:**
+```
+A [character description] [using/wielding/riding] [item name] in [Threadbearer environment].
+[2-3 sentences describing the scene moment — physical substance first, then magic.]
+
+35mm wide shot, mid-distance. [Item] as focal point with character and environment context.
+Deep atmospheric depth.
+
+[Sphere] magic threads in [form language from STYLE.md], clinging to [item surfaces].
+[Color hex] threads at 10-25% coverage.
+
+Atmospheric dark fantasy digital painting. Refined rendering with subtle texture.
+Dark world — environmental colors at 10-30% brightness. Deep atmospheric haze.
+
+No text, no UI. No heavy visible brushstrokes. No isolated object on black.
+```
+
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -81,3 +111,5 @@ Images auto-save to the configured output directory.
 | Unwanted text in generated images | Explicitly state "no text" or "ONLY text is X" |
 | Wrong aspect ratio | Match use case: 16:9 screens, 1:1 icons, 3:4 portraits |
 | Generic filenames | Use descriptive kebab-case: `loading-screen-unmaking.png` |
+| Attachment art as isolated object | Show items in action in the world, not on black background |
+| Heavy oil impasto for attachments | Use clean digital painting (Remembrance style) |
