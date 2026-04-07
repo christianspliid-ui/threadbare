@@ -373,13 +373,14 @@ export const ActionCard = React.memo(function ActionCard({
               left: 0,
               right: 0,
               background: artPath
-                ? 'linear-gradient(to top, rgba(10,10,15,0.9) 0%, rgba(10,10,15,0.6) 100%)'
-                : 'rgba(10,10,15,0.7)',
-              padding: '4px 8px',
+                ? 'linear-gradient(to top, rgba(10,10,15,0.95) 0%, rgba(10,10,15,0.7) 100%)'
+                : 'rgba(10,10,15,0.8)',
+              padding: '6px 10px',
               fontFamily: 'var(--font-display)',
-              fontSize: '0.6875rem',
+              fontSize: cfg.nameSize,
               fontWeight: 600,
               color: 'var(--text-primary)',
+              textShadow: '0 1px 3px rgba(0,0,0,0.8)',
               overflow: 'hidden',
               display: '-webkit-box',
               WebkitLineClamp: 2,
