@@ -200,6 +200,10 @@ export interface EncounterTemplate {
    * Falls back to default theme drone if absent.
    */
   musicTrack?: string;
+  /** Concept art image URL. Relative to public/ root. Example: '/concept-art/encounters/gate-duty.jpg' */
+  readonly illustrationUrl?: string;
+  /** Alt text for the concept art image (accessibility). */
+  readonly illustrationAlt?: string;
 }
 
 // ─── Encounter Support Bundle Types ────────────────────────────
