@@ -20,6 +20,12 @@ export const MUSIC_SRC_DEFAULT = '/audio/music/theme-drone.mp3';
  * If empty, falls back to MUSIC_SRC_DEFAULT on loop.
  */
 export const MUSIC_TRACKS: string[] = [
+  '/audio/music/Ashes in the Black Snow.mp3',
+  '/audio/music/Desert of Unremembered Names.mp3',
+  '/audio/music/Endless Mouth of Sky.mp3',
+  '/audio/music/Forgotten Threshold.mp3',
+  '/audio/music/Oboe Over The Black Sand.mp3',
+  '/audio/music/Temple of the Wind-Scarred Steppe.mp3',
   '/audio/music/theme-drone.mp3',
 ];
 
