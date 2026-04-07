@@ -28,6 +28,7 @@ import {
   guildFactionIdentityResolver,
   locationEncounterHistoryResolver,
   agentEncounterBiographyResolver,
+  settlementGenomeResolver,
 } from './proseResolvers';
 
 // ─── Resolver Registry ──────────────────────────────────────────────
@@ -35,6 +36,7 @@ import {
 const LOCATION_RESOLVERS: ProseResolver[] = [
   subtypeResolver,
   biomeResolver,
+  settlementGenomeResolver,
   resourcesResolver,
   cultureResolver,
   sphereResolver,

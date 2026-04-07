@@ -36,6 +36,8 @@ import {
   GEOGRAPHIC_REGION_WILDERNESS_PROSE,
   LOCATION_ENCOUNTER_HISTORY_PROSE,
   AGENT_ENCOUNTER_BIOGRAPHY_PROSE,
+  SETTLEMENT_ARCHETYPE_PROSE,
+  SETTLEMENT_TAG_PROSE,
 } from '../data/prose-layer-content';
 import {
   getLocationEncounterHistory,
@@ -1182,4 +1184,85 @@ export function agentEncounterBiographyResolver(
       source: 'agentEncounterBiographyResolver',
     },
   ];
+}
+
+// ─── Settlement Genome Resolver ────────────────────────────────────
+// Seed offset range: 4000-4099
+
+/**
+ * settlementGenomeResolver — archetype-aware settlement character prose.
+ * Priority: 85 (between biome/atmosphere and culture/origin)
+ * Category: 'character'
+ *
+ * Reads genome data materialized onto the location node:
+ * - archetypeId/archetypeName/archetypeProseFlavor (from archetype matching)
+ * - genomeResult.sublocations[].tags (sublocation tag profile)
+ *
+ * If an archetype matched, uses archetype-specific prose.
+ * If no archetype matched but genome data exists, uses the dominant
+ * sublocation tag for fallback flavor.
+ */
+export function settlementGenomeResolver(nodeId: string, graph: WorldGraph, seed: number): ProseLayer[] {
+  const node = graph.getNode(nodeId);
+  if (!node) return [];
+
+  const archetypeId = node.properties?.archetypeId as string | undefined;
+  const archetypeName = node.properties?.archetypeName as string | undefined;
+
+  // Path 1: Archetype matched — use archetype-specific prose
+  if (archetypeId) {
+    const templates = SETTLEMENT_ARCHETYPE_PROSE[archetypeId];
+    if (templates && templates.length > 0) {
+      const template = pickTemplate(templates, seed + 4000);
+      if (template) {
+        let text = replacePlaceholder(template, 'name', node.name);
+        text = replacePlaceholder(text, 'archetype', archetypeName ?? archetypeId);
+        return [{
+          text,
+          priority: 85,
+          category: 'character',
+          source: 'settlementGenomeResolver',
+        }];
+      }
+    }
+  }
+
+  // Path 2: No archetype, but genome ran — use dominant tag fallback
+  const genomeResult = node.properties?.genomeResult as
+    | { sublocations: { tags: string[] }[] }
+    | undefined;
+  if (!genomeResult?.sublocations?.length) return [];
+
+  // Count tags across all sublocations
+  const tagCounts = new Map<string, number>();
+  for (const sub of genomeResult.sublocations) {
+    for (const tag of sub.tags) {
+      tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
+    }
+  }
+  if (tagCounts.size === 0) return [];
+
+  // Find dominant tag
+  let dominantTag = '';
+  let maxCount = 0;
+  for (const [tag, count] of tagCounts) {
+    if (count > maxCount) {
+      maxCount = count;
+      dominantTag = tag;
+    }
+  }
+
+  const tagTemplates = SETTLEMENT_TAG_PROSE[dominantTag];
+  if (!tagTemplates || tagTemplates.length === 0) return [];
+
+  const tagTemplate = pickTemplate(tagTemplates, seed + 4010);
+  if (!tagTemplate) return [];
+
+  const text = replacePlaceholder(tagTemplate, 'name', node.name);
+  return [{
+    text,
+    priority: 75,
+    category: 'character',
+    source: 'settlementGenomeResolver',
+  }];
 }

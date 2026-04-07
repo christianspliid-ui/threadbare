@@ -14,6 +14,7 @@ import {
   sphereResolver,
   factionResolver,
   populationResolver,
+  settlementGenomeResolver,
 } from '../proseResolvers';
 
 describe('Prose Resolvers', () => {
@@ -453,6 +454,115 @@ describe('Prose Resolvers', () => {
       expect(layers[0].text).toContain('Mysterious');
       // Should produce valid prose (fallback archetype 'wanderer' used internally)
       expect(layers[0].text.length).toBeGreaterThan(20);
+    });
+  });
+
+  describe('settlementGenomeResolver', () => {
+    it('returns character layer with archetype prose when archetypeId is set', () => {
+      const loc: GraphNode = {
+        id: 'loc_arch',
+        type: 'location',
+        name: 'Ironhold',
+        properties: {
+          locationSubtype: 'town',
+          archetypeId: 'garrison-town',
+          archetypeName: 'Garrison Town',
+          archetypeProseFlavor: 'a town that exists to hold the line',
+        },
+      };
+      graph.addNode(loc);
+
+      const layers = settlementGenomeResolver('loc_arch', graph, testSeed);
+      expect(layers).toHaveLength(1);
+      expect(layers[0].category).toBe('character');
+      expect(layers[0].priority).toBe(85);
+      expect(layers[0].source).toBe('settlementGenomeResolver');
+      expect(layers[0].text).toContain('Ironhold');
+      expect(layers[0].text.length).toBeGreaterThan(40);
+    });
+
+    it('returns tag-based fallback prose when genome exists but no archetype matched', () => {
+      const loc: GraphNode = {
+        id: 'loc_noarch',
+        type: 'location',
+        name: 'Dustwatch',
+        properties: {
+          locationSubtype: 'hamlet',
+          genomeResult: {
+            sublocations: [
+              { id: 'sub1', sourcePass: 'infrastructure', tags: ['military'] },
+              { id: 'sub2', sourcePass: 'infrastructure', tags: ['military'] },
+              { id: 'sub3', sourcePass: 'culture', tags: ['commerce'] },
+            ],
+            npcs: [],
+            archetypeId: null,
+            archetypeName: null,
+            archetypeProseFlavor: null,
+            settlementReachProfile: {},
+          },
+        },
+      };
+      graph.addNode(loc);
+
+      const layers = settlementGenomeResolver('loc_noarch', graph, testSeed);
+      expect(layers).toHaveLength(1);
+      expect(layers[0].category).toBe('character');
+      expect(layers[0].priority).toBe(75);
+      expect(layers[0].text).toContain('Dustwatch');
+    });
+
+    it('returns empty array for missing node', () => {
+      expect(settlementGenomeResolver('nonexistent', graph, testSeed)).toEqual([]);
+    });
+
+    it('returns empty array for location without genome data', () => {
+      const loc: GraphNode = {
+        id: 'loc_plain',
+        type: 'location',
+        name: 'Nowhere',
+        properties: { locationSubtype: 'ruins' },
+      };
+      graph.addNode(loc);
+
+      expect(settlementGenomeResolver('loc_plain', graph, testSeed)).toEqual([]);
+    });
+
+    it('produces deterministic output for the same seed', () => {
+      const loc: GraphNode = {
+        id: 'loc_det',
+        type: 'location',
+        name: 'Steadfast',
+        properties: {
+          archetypeId: 'trade-nexus',
+          archetypeName: 'Trade Nexus',
+        },
+      };
+      graph.addNode(loc);
+
+      const a = settlementGenomeResolver('loc_det', graph, 100);
+      const b = settlementGenomeResolver('loc_det', graph, 100);
+      expect(a[0].text).toBe(b[0].text);
+    });
+
+    it('produces different output for different archetypes', () => {
+      const garrison: GraphNode = {
+        id: 'loc_g',
+        type: 'location',
+        name: 'Wallkeep',
+        properties: { archetypeId: 'garrison-town', archetypeName: 'Garrison Town' },
+      };
+      const trade: GraphNode = {
+        id: 'loc_t',
+        type: 'location',
+        name: 'Coinbury',
+        properties: { archetypeId: 'trade-nexus', archetypeName: 'Trade Nexus' },
+      };
+      graph.addNode(garrison);
+      graph.addNode(trade);
+
+      const gLayers = settlementGenomeResolver('loc_g', graph, testSeed);
+      const tLayers = settlementGenomeResolver('loc_t', graph, testSeed);
+      expect(gLayers[0].text).not.toBe(tLayers[0].text);
     });
   });
 });

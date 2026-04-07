@@ -1029,6 +1029,121 @@ export const LOCATION_ENCOUNTER_HISTORY_PROSE: Record<string, string[]> = {
   ],
 };
 
+// ─── Settlement Archetype Prose ─────────────────────────────────
+
+/**
+ * Archetype-specific prose for settlements whose genome has matched an archetype.
+ * Keyed by archetypeId from settlementGenome/archetypes.ts.
+ * Complements (does not duplicate) the generic subtype establishing prose.
+ * Placeholders: {name} = settlement name, {archetype} = archetype display name.
+ */
+export const SETTLEMENT_ARCHETYPE_PROSE: Record<string, string[]> = {
+  'garrison-town': [
+    'Every second building in {name} serves the wall. Smiths forge for the garrison, not the market, and the sound of drilling carries from dawn until the watch changes.',
+    '{name} is a {archetype} in all but name — its economy, its architecture, its very rhythm of life bent toward the single purpose of holding ground.',
+    'The barracks at {name} outnumber the homes. Children here learn to count by tallying arrows, and the market sells more bandages than bread.',
+    'Discipline runs through {name} like mortar between stones. Even the civilians walk in formation without knowing it.',
+    'In {name}, the wall is not a boundary — it is the reason the town exists at all. Everything inside serves what stands on top.',
+  ],
+  'arcane-conclave': [
+    'Knowledge is hoarded in {name} the way other settlements hoard grain. Libraries outnumber taverns, and the air smells of ink and chalk dust and something less identifiable.',
+    '{name} has the hushed intensity of a place where thinking is the primary industry. Conversations here tend toward argument, and arguments tend toward proof.',
+    'The scholars of {name} have turned the settlement into a living archive — every wall inscribed, every cellar a vault of catalogued curiosities.',
+    'At {name}, secrets are the local currency, and the exchange rate favors those who can keep them longest.',
+    'The towers of {name} lean inward, as if conspiring. Lights burn in upper windows at hours when sensible places are dark and dreaming.',
+  ],
+  'trade-nexus': [
+    'Coin changes hands faster in {name} than anywhere within a week\'s ride. The merchant halls outnumber the temples, and the exchange rate is discussed with more passion than the weather.',
+    '{name} is a crossroads made permanent — a place where enough traders stopped long enough that someone built walls around the market.',
+    'The warehouses of {name} hold goods from every direction, stacked in a logistical order that the merchants understand and nobody else does.',
+    'At {name}, every conversation is a negotiation and every handshake is a contract. The town\'s true walls are built of ledgers and favors.',
+    'Commerce has given {name} a restless energy. The markets never truly close — they just change which goods are being argued over.',
+  ],
+  'holy-seat': [
+    'Faith is the foundation of {name} — not metaphorically, but literally, with every major structure built atop or around a site of devotion.',
+    'The bells of {name} mark the hours, and the hours belong to the faithful. Pilgrims arrive in a steady stream, each carrying a hope they cannot quite articulate.',
+    '{name} is a place where stone has been made to pray. The architecture reaches upward with the single-mindedness of the devoted.',
+    'At {name}, the sacred and the mundane have negotiated an uneasy truce. The market sells relics alongside turnips, and nobody finds this strange.',
+    'The clergy of {name} outnumber the soldiers, and their influence extends further. Here, moral authority is the only kind that matters.',
+  ],
+  'thieves-haven': [
+    '{name} runs on two economies — the one you see and the one you don\'t. The legitimate businesses are mostly fronts, and everyone knows it.',
+    'At {name}, the law is a suggestion and the real rules are set by people whose names change more often than the weather.',
+    'The alleys of {name} are more important than the streets. What moves through them after dark is the settlement\'s true commerce.',
+    '{name} has the cheerful lawlessness of a place that has given up pretending. The guards are bribed, the fences are busy, and the honest folk keep their heads down.',
+    'Trust in {name} is a commodity more valuable than gold — and considerably rarer. Everyone here is selling something, and half of it fell off a cart.',
+  ],
+  'frontier-bastion': [
+    '{name} is the last familiar place before the map runs out. Beyond it, the land belongs to things that do not negotiate.',
+    'The walls of {name} face outward with the grim determination of a place that knows what comes from the wild. Refugees arrive; few ask to leave.',
+    '{name} has the hunched posture of a settlement bracing for impact. Every structure is built to be defended, every street designed with retreat in mind.',
+    'At {name}, the frontier is not a concept — it is the view from the top of the wall. The wild presses against the gates like a held breath.',
+    'The people of {name} are practical about danger in the way that only those who live beside it can be. Fear is not discussed. Preparation is.',
+  ],
+  'nature-sanctuary': [
+    'The land speaks at {name}, and the people who live here have learned to listen. The settlement grows around ancient groves and sacred springs, never over them.',
+    '{name} is a place where the boundary between settlement and wilderness has been deliberately blurred. Buildings wear moss like decoration.',
+    'At {name}, the oldest structures are not buildings but trees, and the most respected residents are not human. The settlement exists by permission of the land.',
+    'The paths in {name} curve around root and stone in deference to things that were here first. The settlement does not tame the wild — it negotiates with it.',
+    '{name} smells of wet earth and growing things. The walls are low, the gardens are vast, and the healers are more trusted than the guards.',
+  ],
+  'seat-of-power': [
+    'Power flows downhill from the walls of {name}, and the surrounding lands know it. The architecture is designed to impress before it is designed to shelter.',
+    '{name} is where decisions are made that people three days\' ride away will live or die by. The weight of authority is visible in every stone.',
+    'The courts of {name} are more dangerous than any battlefield — careers end here, alliances shatter, and the ambitious arrive daily to test their luck.',
+    'At {name}, even the servants carry themselves with a borrowed dignity. Proximity to power is its own currency, and everyone is counting.',
+    '{name} governs with the quiet confidence of a place that has held authority long enough to consider it natural. The throne room is the true center of the map.',
+  ],
+};
+
+/**
+ * Fallback settlement character prose for settlements that have genome data
+ * but no matched archetype. Keyed by the dominant sublocation tag.
+ * Gives flavor even when no archetype threshold was reached.
+ */
+export const SETTLEMENT_TAG_PROSE: Record<string, string[]> = {
+  military: [
+    'A martial edge runs through {name} — the walls are thick, the guard is visible, and the smiths stay busy.',
+    'The garrison presence at {name} shapes daily life. Even the tavern talk turns to watches and weapons.',
+  ],
+  scholarly: [
+    'There is a bookish quality to {name} that manifests in quiet corners and ink-stained fingers. Knowledge is valued here, if not always shared.',
+    'The learned of {name} have left their mark — notice boards carry academic disputes, and the local speech borrows from older languages.',
+  ],
+  arcane: [
+    'Something in {name} hums at a frequency most people cannot hear. The arcane presence is subtle but pervasive, like a scent you cannot quite place.',
+    'The wards at {name} are old and well-maintained. Whatever the settlement was built to contain — or attract — still lingers.',
+  ],
+  commerce: [
+    'Trade has shaped {name} more than any architect. The market is the true center, and everything else arranges itself around the flow of goods.',
+    'The merchants of {name} have given the settlement its character — practical, opportunistic, and always calculating.',
+  ],
+  religious: [
+    'Devotion is woven into the daily routine of {name}. The bells mark the hours, and the faithful mark everything else.',
+    'A reverent quiet settles over {name} at prayer times. The sacred spaces here are well-kept and well-attended.',
+  ],
+  cultural: [
+    'The traditions of {name} run deep — visible in the murals, the festivals, the way people greet strangers with old formal phrases.',
+    '{name} carries its culture like an heirloom, polished by use and heavy with significance.',
+  ],
+  underworld: [
+    'There is a shadow economy in {name} that everyone acknowledges and nobody discusses. The official trade is only part of the story.',
+    'The back alleys of {name} are busier than the main streets after dark. Not everything here is legal, and not everything illegal is unwelcome.',
+  ],
+  nature: [
+    'The natural world presses close at {name}. Greenery grows between the paving stones, and the air carries the scent of earth and leaf.',
+    '{name} exists in careful balance with the land around it. The people here respect what grows, and what grows returns the favor.',
+  ],
+  authority: [
+    'The weight of governance sits visibly on {name}. The administrative buildings are the largest, and the officials the most visible.',
+    'Order at {name} is maintained with the practiced efficiency of long habit. The laws here are enforced, not suggested.',
+  ],
+  borderlands: [
+    'The frontier proximity of {name} gives it a watchful quality. People here look outward as much as inward.',
+    '{name} carries the edge of the borderlands in its posture — alert, resourceful, and never quite at ease.',
+  ],
+};
+
 /** Agent biography prose — references an agent's encounter history */
 export const AGENT_ENCOUNTER_BIOGRAPHY_PROSE: Record<string, string[]> = {
   veteran: [
