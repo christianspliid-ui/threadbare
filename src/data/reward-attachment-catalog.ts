@@ -1830,6 +1830,68 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     } as PossessionNodeProperties,
   },
 
+  // --- T4 Legendary Provisions (pipeline: 2026-04-07) ---
+  {
+    id: 'reward_provisions_the_quiet_cup',
+    type: 'artifact',
+    name: 'The Quiet Cup',
+    properties: {
+      subcategory: 'provisions',
+      tier: 4,
+      tags: ['#star', '#heart', '#provision', '#divine', '#ancient', '#healing', '#celestial'],
+      mechanicalSummary: '+0.08 Star, +0.06 Heart, restores 1 essence per tick (requires Star > 0.10), 1-hex aura: +0.02 Heart to allies, blocks Iron actions (too peaceful to fight)',
+      lossCondition: 'permanent',
+      flavorText: 'The cup is always full. It tastes like the first meal you remember, like the last drink before sleep. Those who share it speak more softly afterward.',
+      effects: [
+        { type: 'passive', reach: 'star', value: 0.08 },
+        { type: 'passive', reach: 'heart', value: 0.06 },
+        { type: 'resource_manipulate', resource: 'essence', target: 'self', amount: 1, mode: 'per_tick', condition: 'reach_above:star:0.10' },
+        { type: 'aura', radius: 1, target: 'allies', reach: 'heart', value: 0.02 },
+        { type: 'action_gate', mode: 'block', reach: 'iron' },
+      ],
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_provisions_the_last_harvest',
+    type: 'artifact',
+    name: 'The Last Harvest',
+    properties: {
+      subcategory: 'provisions',
+      tier: 4,
+      tags: ['#iron', '#stone', '#provision', '#ancient', '#cursed', '#survival', '#fortification'],
+      mechanicalSummary: '+0.07 Iron, +0.06 Stone, blocks poison/disease/blight conditions, -0.04 Heart (numbing), modifies death_prevented rule (cannot die while held)',
+      lossCondition: 'cursed',
+      flavorText: 'The grain is pale and heavy as lead. It tastes of nothing. After the third handful you stop noticing hunger, and after the tenth you stop noticing most things.',
+      effects: [
+        { type: 'passive', reach: 'iron', value: 0.07 },
+        { type: 'passive', reach: 'stone', value: 0.06 },
+        { type: 'tag_immunity', tags: ['poison', 'disease', 'blight'] },
+        { type: 'passive', reach: 'heart', value: -0.04 },
+        { type: 'modify_rules', scope: { scope: 'self' }, rule: 'death_prevented', value: true, ticks: 'permanent' },
+      ],
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_provisions_the_black_mead',
+    type: 'artifact',
+    name: 'The Black Mead',
+    properties: {
+      subcategory: 'provisions',
+      tier: 4,
+      tags: ['#veil', '#shadow', '#provision', '#cursed', '#arcane', '#ancient', '#prophecy'],
+      mechanicalSummary: '+0.09 Veil, +0.05 Shadow, reveals all encounters (unlimited range), +0.04 Veil / -0.02 Star tradeoff (clarity at the cost of faith), drifts toward ruthlessness',
+      lossCondition: 'cursed',
+      flavorText: 'The mead is black and tastes of smoke and thyme. After the first draught the world looks thin — you can see the seams where it was stitched together. You pull at them.',
+      effects: [
+        { type: 'passive', reach: 'veil', value: 0.09 },
+        { type: 'passive', reach: 'shadow', value: 0.05 },
+        { type: 'reveal', target: 'encounters', range: 'all' },
+        { type: 'tradeoff', bonus: { reach: 'veil', value: 0.04 }, penalty: { reach: 'star', value: 0.02 } },
+        { type: 'axiological_drift', axis: 'mercy_ruthlessness', ratePerTick: 0.006, limitValue: 0.45 },
+      ],
+    } as PossessionNodeProperties,
+  },
+
   // --- Thin Primitives: Relics (pipeline: 2026-04-07) ---
   {
     id: 'reward_relics_talismans_river_clay_bead',
@@ -1984,6 +2046,48 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'slot_bonus', slotTag: 'consumable', bonus: 2 },
         { type: 'slot_bonus', slotTag: 'wealth', bonus: 1 },
         { type: 'resource_manipulate', resource: 'essence', target: 'self', amount: 1, mode: 'one_shot' },
+      ],
+    } as PossessionNodeProperties,
+  },
+
+  // --- T4 Legendary Tools (pipeline: 2026-04-07) ---
+  {
+    id: 'reward_tools_instruments_the_trembling_needle',
+    type: 'artifact',
+    name: 'The Trembling Needle',
+    properties: {
+      subcategory: 'tools_instruments',
+      tier: 4,
+      tags: ['#eye', '#veil', '#tool', '#divination', '#ancient', '#exploration'],
+      mechanicalSummary: '+0.08 Eye, +0.05 Veil, reveals all encounters within 3 hexes, +0.03 Eye in exploration, modifies awareness range +2 (permanent, self only)',
+      lossCondition: 'permanent',
+      flavorText: 'It trembles when you face a direction no one has walked. Carved from the world\'s first boundary stone. It has never pointed north.',
+      effects: [
+        { type: 'passive', reach: 'eye', value: 0.08 },
+        { type: 'passive', reach: 'veil', value: 0.05 },
+        { type: 'reveal', target: 'encounters', range: 3 },
+        { type: 'conditional', condition: 'in_exploration', reach: 'eye', value: 0.03 },
+        { type: 'modify_rules', scope: { scope: 'self' }, rule: 'awareness_range_bonus', value: 2, ticks: 'permanent' },
+      ],
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_tools_instruments_the_anvilbone',
+    type: 'artifact',
+    name: 'The Anvilbone',
+    properties: {
+      subcategory: 'tools_instruments',
+      tier: 4,
+      tags: ['#stone', '#star', '#tool', '#craft', '#ancient', '#divine', '#creation'],
+      mechanicalSummary: '+0.10 Stone, +0.04 Star, +0.03 Stone at home territory, creates a shrine on the wielder\'s hex (permanent), drifts toward ambition',
+      lossCondition: 'permanent',
+      flavorText: 'The bones hum when they touch raw stone. Where you set them down, the ground remembers how to hold weight. Cities begin where you rest.',
+      effects: [
+        { type: 'passive', reach: 'stone', value: 0.10 },
+        { type: 'passive', reach: 'star', value: 0.04 },
+        { type: 'conditional', condition: 'at_home_territory', reach: 'stone', value: 0.03 },
+        { type: 'create_structure', what: 'landmark', subtype: 'shrine', onHex: 'self', permanent: true, properties: { name: 'Anvilbone Foundation' } },
+        { type: 'axiological_drift', axis: 'loyalty_ambition', ratePerTick: 0.005, limitValue: 0.40 },
       ],
     } as PossessionNodeProperties,
   },
