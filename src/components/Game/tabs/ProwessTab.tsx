@@ -1,9 +1,5 @@
 import type { AgentInfoCardData } from '../../../engine/agentDetail';
 import type { AgentKnowledge } from '../../../types/agentKnowledge';
-import {
-  POSSESSION_ACTIVITY_TICKS,
-  POSSESSION_PROVISIONS_TICKS,
-} from '../../../types/agentKnowledge';
 import type { ReachDomain } from '../../../types/traits';
 import { SectionHeading } from '../../shared/SectionHeading';
 import { DomainCard } from '../../shared/DomainCard';
@@ -37,14 +33,6 @@ const ALL_DOMAINS: ReachDomain[] = [
   'stone', 'star',
 ];
 
-// ─── Subcategory visibility ───────────────────────────────────────
-
-/** Always-visible possession subcategories */
-const ALWAYS_VISIBLE_SUBCATS = new Set(['arms', 'vestments', 'mounts_beasts']);
-
-/** Hidden subcategories that require explicit revelation or KnowledgeLevel >= 'known' */
-const HIDDEN_SUBCATS = new Set(['tomes_scrolls', 'relics_talismans']);
-
 // ─── Component ───────────────────────────────────────────────────
 
 interface ProwessTabProps {
@@ -66,32 +54,6 @@ export function ProwessTab({ card, knowledge, onAttachmentClick }: ProwessTabPro
     // KnowledgeLevel fallback: recognised+ shows all available domains
     return hasKnowledge(card.knowledgeLevel, 'recognised') && domainMap.has(domain);
   };
-
-  // ── Possession visibility ─────────────────────────────────────────
-  const isPossessionVisible = (entry: AttachmentFullEntry): boolean => {
-    const sub = entry.subcategory;
-    if (ALWAYS_VISIBLE_SUBCATS.has(sub)) return true;
-
-    if (sub === 'tools_instruments') {
-      return knowledge != null
-        ? knowledge.coLocationTicks >= POSSESSION_ACTIVITY_TICKS
-        : hasKnowledge(card.knowledgeLevel, 'intimate');
-    }
-    if (sub === 'provisions') {
-      return knowledge != null
-        ? knowledge.coLocationTicks >= POSSESSION_PROVISIONS_TICKS
-        : hasKnowledge(card.knowledgeLevel, 'intimate');
-    }
-    if (HIDDEN_SUBCATS.has(sub)) {
-      return knowledge != null
-        ? hasKnowledge(card.knowledgeLevel, 'known') || knowledge.revealedPossessions.has(entry.id)
-        : hasKnowledge(card.knowledgeLevel, 'intimate');
-    }
-    // Default: intimate+
-    return hasKnowledge(card.knowledgeLevel, 'intimate');
-  };
-
-  const visiblePossessions = (card.possessions ?? []).filter(isPossessionVisible);
 
   // ── Conditions visibility ─────────────────────────────────────────
   const isConditionVisible = (entry: AttachmentFullEntry): boolean => {
@@ -233,14 +195,6 @@ export function ProwessTab({ card, knowledge, onAttachmentClick }: ProwessTabPro
           </p>
         )}
       </section>
-
-      {/* Possessions */}
-      {visiblePossessions.length > 0 && (
-        <section data-testid="modal-possessions">
-          <SectionHeading as="h2">Possessions</SectionHeading>
-          {visiblePossessions.map(renderVignette)}
-        </section>
-      )}
 
       {/* Conditions */}
       {visibleConditions.length > 0 && (
