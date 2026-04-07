@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useRef, useState } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import type { SphereName } from '../../types';
 import { SphereIcon } from '../shared/SphereIcon';
 import { Tooltip } from '../shared/Tooltip';
@@ -26,18 +26,16 @@ export function IdentityChip({
     flexShrink: 0,
   }), [sphereColor]);
 
-  const thumbRef = useRef<HTMLDivElement>(null);
-  const [thumbReady, setThumbReady] = useState(false);
+  const [thumbDataUrl, setThumbDataUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!thumbRef.current || !originFragmentId) return;
-    setThumbReady(false);
+    if (!originFragmentId) return;
+    setThumbDataUrl(null);
 
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
-      if (!thumbRef.current) return;
-      const size = 28;
+      const size = 56; // 2x for retina
       const canvas = document.createElement('canvas');
       canvas.width = size;
       canvas.height = size;
@@ -51,21 +49,14 @@ export function IdentityChip({
       // Cover crop from head region
       const minDim = Math.min(img.width, img.height);
       const sx = (img.width - minDim) / 2;
-      const sy = img.height * 0.1; // offset down to center on face
+      const sy = img.height * 0.1;
       ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
 
-      thumbRef.current.innerHTML = '';
-      canvas.style.borderRadius = '50%';
-      canvas.style.border = `2px solid ${sphereColor}`;
-      canvas.style.width = '28px';
-      canvas.style.height = '28px';
-      thumbRef.current.appendChild(canvas);
-      setThumbReady(true);
+      setThumbDataUrl(canvas.toDataURL());
     };
-    // fail-soft: on error, sphere icon remains visible
     img.onerror = () => {};
     img.src = getOriginPortraitUrl(originFragmentId);
-  }, [originFragmentId, sphereColor]);
+  }, [originFragmentId]);
 
   return (
     <Tooltip label={`Cycle ${cycle}`} desc={`${archetypeTitle} — Cycle ${cycle}`}>
@@ -80,9 +71,21 @@ export function IdentityChip({
         <div className="text-left">
           {/* Line 1: portrait thumbnail + avatar name */}
           <div className="flex items-center gap-1.5">
-            <div ref={thumbRef} className="flex-shrink-0" style={{ width: '28px', height: '28px' }}>
-              {/* Fallback: sphere icon while portrait loads */}
-              {!thumbReady && <SphereIcon sphereName={primarySphere} size="1.25rem" />}
+            <div className="flex-shrink-0 flex items-center justify-center" style={{ width: '28px', height: '28px' }}>
+              {thumbDataUrl ? (
+                <img
+                  src={thumbDataUrl}
+                  alt=""
+                  style={{
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: '50%',
+                    border: `2px solid ${sphereColor}`,
+                  }}
+                />
+              ) : (
+                <SphereIcon sphereName={primarySphere} size="1.25rem" />
+              )}
             </div>
             <span
               style={{
