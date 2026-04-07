@@ -36,12 +36,20 @@ export interface CodexEntry {
   imageAssetPath?: string;
 }
 
-// ─── Item Art Registry ──────────────────────────────────────────
-// Maps entry IDs to their art asset paths under public/assets/items/.
+// ─── Art Registries ─────────────────────────────────────────────
+// Maps entry IDs to their art asset paths under public/assets/.
 const ITEM_ART: Record<string, string> = {
   reward_arms_thornwood_staff: '/assets/items/thornwood-staff.jpg',
   reward_relics_talismans_stasis_pearl: '/assets/items/stasis-pearl.jpg',
   reward_mounts_beasts_shimmer_hart: '/assets/items/shimmer-hart.jpg',
+  'divine.dream': '/assets/actions/oneiric-sending.jpg',
+  'divine.persuade': '/assets/actions/divine-compulsion.jpg',
+  'divine.deceive': '/assets/actions/veil-of-falsehood.jpg',
+  'divine.intimidate': '/assets/actions/wrath-descending.jpg',
+  'divine.inspire': '/assets/actions/breath-of-purpose.jpg',
+  'divine.coincidence': '/assets/actions/thread-of-fate.jpg',
+  'divine.omen': '/assets/actions/starfall-omen.jpg',
+  'divine.afflict_bless': '/assets/actions/aegis-of-grace.jpg',
 };
 
 export interface CodexCategory {

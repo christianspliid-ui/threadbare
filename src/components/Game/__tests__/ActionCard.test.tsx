@@ -111,11 +111,19 @@ describe('ActionCard — focused layout (MTG frame)', () => {
     expect(screen.getByText('Dream')).toBeInTheDocument();
   });
 
-  it('focused card renders art frame placeholder (aria-hidden)', () => {
+  it('focused card renders art image when art asset exists', () => {
     render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="focused" />);
-    const artFrame = screen.getByTestId('action-card-dream')
-      .querySelector('[aria-hidden="true"]');
-    expect(artFrame).toBeTruthy();
+    const img = screen.getByTestId('action-card-dream').querySelector('img');
+    expect(img).toBeTruthy();
+    expect(img!.getAttribute('src')).toContain('/assets/actions/');
+  });
+
+  it('focused card renders sphere icon fallback when no art asset', () => {
+    const noArtSlot: WheelSlot = { ...baseSlot, id: 'scry', label: 'Scry', type: 'observation', interventionType: null };
+    render(<ActionCard slot={noArtSlot} onClick={vi.fn()} size="focused" />);
+    const card = screen.getByTestId('action-card-scry');
+    // No <img> should render for cards without art
+    expect(card.querySelector('img')).toBeNull();
   });
 
   it('focused card renders type line with reach and CRUD type', () => {

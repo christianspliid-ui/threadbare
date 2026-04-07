@@ -22,6 +22,37 @@ import { RarityBadge } from '../shared/RarityBadge';
 import type { RarityTier } from '../../types/rarity';
 import type { SphereName } from '../../types/index';
 
+// ─── Action Art Registry ──────────────────────────────────────────────────
+// Maps slot/template IDs to art asset paths under public/assets/actions/.
+// Keyed by both legacy wheel IDs (bare: "dream") and unified template IDs
+// ("divine.dream") so art resolves from either code path.
+const ACTION_ART: Record<string, string> = {
+  // Legacy wheel slot IDs (used by getAgentWheelSlots for threaded agents)
+  'dream': '/assets/actions/oneiric-sending.jpg',
+  'persuade': '/assets/actions/divine-compulsion.jpg',
+  'deceive': '/assets/actions/veil-of-falsehood.jpg',
+  'intimidate': '/assets/actions/wrath-descending.jpg',
+  'inspire': '/assets/actions/breath-of-purpose.jpg',
+  'coincidence': '/assets/actions/thread-of-fate.jpg',
+  'omen': '/assets/actions/starfall-omen.jpg',
+  'afflict_bless': '/assets/actions/aegis-of-grace.jpg',
+  // Unified template IDs (used by getTargetActionSlots)
+  'divine.dream': '/assets/actions/oneiric-sending.jpg',
+  'divine.persuade': '/assets/actions/divine-compulsion.jpg',
+  'divine.deceive': '/assets/actions/veil-of-falsehood.jpg',
+  'divine.intimidate': '/assets/actions/wrath-descending.jpg',
+  'divine.inspire': '/assets/actions/breath-of-purpose.jpg',
+  'divine.coincidence': '/assets/actions/thread-of-fate.jpg',
+  'divine.omen': '/assets/actions/starfall-omen.jpg',
+  'divine.afflict_bless': '/assets/actions/aegis-of-grace.jpg',
+};
+
+/** Resolve art path from any slot ID format (legacy bare, or target_action_ prefixed) */
+function getActionArt(slotId: string): string | undefined {
+  const templateId = slotId.replace(/^target_action_/, '');
+  return ACTION_ART[templateId];
+}
+
 // ─── Sizing Constants ──────────────────────────────────────────────────────
 
 /** Standard 5:7 card ratio (poker/tarot-style). Height = width × 1.4 */
@@ -89,6 +120,7 @@ export const ActionCard = React.memo(function ActionCard({
   const glyph = getWheelSlotGlyph(slot.id);
   const sphereColor = slot.sphere ? getSphereColor(slot.sphere) : undefined;
   const cfg = SIZE_CONFIG[size];
+  const artPath = getActionArt(slot.id);
 
   // Determine lock state
   const isAvailable = slot.available && !playing;
@@ -341,9 +373,9 @@ export const ActionCard = React.memo(function ActionCard({
           >
             {displayName}
           </h3>
-          {/* Cost badge */}
+          {/* Cost badge with sphere icon */}
           <div
-            className={`flex items-center gap-1 ${cfg.badgePad} rounded-full flex-shrink-0`}
+            className={`flex items-center gap-1.5 ${cfg.badgePad} rounded-full flex-shrink-0`}
             style={{
               backgroundColor: sphereColor ? `${sphereColor}20` : 'rgba(255,255,255,0.08)',
               border: `1px solid ${sphereColor ? `${sphereColor}50` : 'var(--border-medium)'}`,
@@ -352,38 +384,53 @@ export const ActionCard = React.memo(function ActionCard({
               fontWeight: 600,
             }}
           >
-            {slot.sphere && (
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: sphereColor }} />
-            )}
+            {slot.sphere
+              ? <SphereIcon sphere={slot.sphere as SphereName} size={16} />
+              : <span style={{ fontSize: '0.75rem' }}>{glyph}</span>
+            }
             <span data-testid="action-card-cost">
               {slot.essenceCost === 0 ? 'Free' : Math.round(slot.essenceCost)}
             </span>
           </div>
         </div>
 
-        {/* ── 2. Art frame placeholder ────────────────────────────────── */}
+        {/* ── 2. Art frame ────────────────────────────────────────────── */}
         <div
-          aria-hidden="true"
           style={{
-            height: '96px',
-            background: `linear-gradient(145deg, ${sphereColor ?? '#333'}20 0%, #111114 100%)`,
+            height: artPath ? '160px' : '96px',
+            background: artPath ? 'none' : `linear-gradient(145deg, ${sphereColor ?? '#333'}20 0%, #111114 100%)`,
             border: `1px solid ${sphereColor ?? '#333'}30`,
             borderRadius: '4px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             marginBottom: '8px',
+            overflow: 'hidden',
+            position: 'relative',
           }}
         >
-          <span
-            className={playing ? 'glyph-pulse' : ''}
-            style={{ opacity: 0.45 }}
-          >
-            {slot.sphere
-              ? <SphereIcon sphere={slot.sphere as SphereName} size={32} />
-              : <span style={{ fontSize: '2rem', color: `${sphereColor ?? '#333'}60` }}>{glyph}</span>
-            }
-          </span>
+          {artPath ? (
+            <img
+              src={artPath}
+              alt=""
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: 'block',
+              }}
+            />
+          ) : (
+            <span
+              className={playing ? 'glyph-pulse' : ''}
+              style={{ opacity: 0.45 }}
+            >
+              {slot.sphere
+                ? <SphereIcon sphere={slot.sphere as SphereName} size={32} />
+                : <span style={{ fontSize: '2rem', color: `${sphereColor ?? '#333'}60` }}>{glyph}</span>
+              }
+            </span>
+          )}
         </div>
 
         {/* ── 3. Type line ────────────────────────────────────────────── */}
