@@ -72,14 +72,28 @@ const ENTRANCE_DELAYS = {
   footer: 1.8,
 } as const;
 
+/** Mode label suffix per thread tier */
+const TIER_MODE_SUFFIX: Record<ThreadTier, string> = {
+  strong: 'Paused',
+  light: 'Notification',
+  watched: 'Watching',
+};
+
+/** Disregard button label per thread tier */
+const DISREGARD_LABEL: Record<ThreadTier, string> = {
+  strong: 'Resume',
+  light: 'Close',
+  watched: 'Dismiss',
+};
+
 // ── Component ──────────────────────────────────────────────────────
 export function EncounterVeil({
   open,
   model,
   threadTier,
   essence,
-  tick: _tick,
-  autoResolveTick: _autoResolveTick,
+  tick,
+  autoResolveTick,
   onIntervene,
   onBoost: _onBoost,
   onPeek: _onPeek,
@@ -140,11 +154,14 @@ export function EncounterVeil({
     }
   }, [selectedChoiceId, model.choices, onIntervene]);
 
-  // Phase 1 stubs: lightly threaded, watched, aftermath return null
+  // Phase 1 stubs: watched and aftermath still return null
   if (!open) return null;
-  if (threadTier === 'light') return null;
   if (threadTier === 'watched') return null;
   if (model.aftermath) return null;
+
+  // Derived values for lightly threaded timer
+  const ticksUntilAutoResolve =
+    autoResolveTick !== null ? autoResolveTick - tick : null;
 
   const selectedChoice = model.choices.find((c) => c.id === selectedChoiceId);
 
@@ -174,6 +191,58 @@ export function EncounterVeil({
         overflow: 'hidden',
       }}
     >
+      {/* ── Auto-resolve timer bar (lightly threaded only) ── */}
+      {threadTier === 'light' && ticksUntilAutoResolve !== null && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 30,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            padding: '0 5vw',
+            height: 28,
+          }}
+        >
+          {/* Warm amber timer bar */}
+          <div
+            style={{
+              flex: 1,
+              height: 2,
+              background: 'rgba(212, 160, 55, 0.18)',
+              borderRadius: 1,
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                height: '100%',
+                width: '100%',
+                background:
+                  'linear-gradient(to right, rgba(212, 160, 55, 0.5), rgba(212, 175, 55, 0.25))',
+              }}
+            />
+          </div>
+          {/* Timer label */}
+          <div
+            style={{
+              fontFamily: FONT_PROSE,
+              fontStyle: 'italic',
+              fontSize: '0.65rem',
+              letterSpacing: '0.06em',
+              color: 'rgba(212, 160, 55, 0.55)',
+              whiteSpace: 'nowrap' as const,
+            }}
+          >
+            auto-resolves in {ticksUntilAutoResolve} tick
+            {ticksUntilAutoResolve !== 1 ? 's' : ''}
+          </div>
+        </div>
+      )}
+
       {/* ── Art layer ─────────────────────────────────────── */}
       {hasArt && (
         <div
@@ -235,7 +304,7 @@ export function EncounterVeil({
             opacity: 0.5,
           }}
         >
-          {TIER_LABELS[threadTier]} &middot; Paused
+          {TIER_LABELS[threadTier]} &middot; {TIER_MODE_SUFFIX[threadTier]}
         </div>
         <div
           style={{
@@ -495,7 +564,7 @@ export function EncounterVeil({
               e.currentTarget.style.color = TEXT_GHOST;
             }}
           >
-            Resume
+            {DISREGARD_LABEL[threadTier]}
           </button>
           <button
             onClick={handleIntervene}

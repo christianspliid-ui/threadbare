@@ -173,3 +173,22 @@ describe('EncounterVeil', () => {
     expect(screen.getByText(/1 of 2/)).toBeInTheDocument();
   });
 });
+
+describe('lightly threaded', () => {
+  const lightProps = {
+    ...defaultProps,
+    threadTier: 'light' as const,
+    autoResolveTick: 16,
+    tick: 12,
+  };
+
+  it('displays auto-resolve timer', () => {
+    render(<EncounterVeil {...lightProps} />);
+    expect(screen.getByText(/auto-resolves in 4 tick/)).toBeInTheDocument();
+  });
+
+  it('shows Lightly Threaded label', () => {
+    render(<EncounterVeil {...lightProps} />);
+    expect(screen.getByText(/Lightly Threaded/)).toBeInTheDocument();
+  });
+});
