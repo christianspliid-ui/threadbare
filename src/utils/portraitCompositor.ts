@@ -26,6 +26,10 @@ export const PORTRAIT_FULL_WIDTH = 512;
 export const PORTRAIT_FULL_HEIGHT = 640;
 /** Vertical offset for circular crop — shifts crop window down to center on head region (fraction of image height) */
 const CIRCULAR_CROP_Y_OFFSET = 0.1;
+/** Luminance threshold below which frame pixels become fully transparent (0-255) */
+const FRAME_BLACK_THRESHOLD = 30;
+/** Luminance range over which frame pixels fade from transparent to opaque */
+const FRAME_FADE_RANGE = 20;
 
 // ── Image Loader ────────────────────────────────────────────────────────────
 
@@ -37,6 +41,37 @@ function loadImage(url: string): Promise<HTMLImageElement> {
     img.onerror = () => reject(new Error(`Failed to load image: ${url}`));
     img.src = url;
   });
+}
+
+// ── Frame Alpha Conversion ─────────────────────────────────────────────────
+
+/**
+ * Convert dark pixels in a frame image to transparent.
+ * JPG frames have near-black (not transparent) centers — this converts
+ * pixels below a luminance threshold to alpha=0, with a smooth fade.
+ */
+function frameToAlpha(frameImg: HTMLImageElement, width: number, height: number): HTMLCanvasElement {
+  const c = document.createElement('canvas');
+  c.width = width;
+  c.height = height;
+  const ctx = c.getContext('2d')!;
+  ctx.drawImage(frameImg, 0, 0, width, height);
+
+  const imageData = ctx.getImageData(0, 0, width, height);
+  const d = imageData.data;
+  for (let i = 0; i < d.length; i += 4) {
+    // Perceived luminance (fast approximation)
+    const lum = d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114;
+    if (lum < FRAME_BLACK_THRESHOLD) {
+      d[i + 3] = 0; // fully transparent
+    } else if (lum < FRAME_BLACK_THRESHOLD + FRAME_FADE_RANGE) {
+      // smooth fade from transparent to opaque
+      d[i + 3] = Math.round(255 * (lum - FRAME_BLACK_THRESHOLD) / FRAME_FADE_RANGE);
+    }
+    // else: keep original alpha (255 for JPG)
+  }
+  ctx.putImageData(imageData, 0, 0);
+  return c;
 }
 
 // ── Compositing Functions ───────────────────────────────────────────────────
@@ -68,9 +103,9 @@ export async function composePortrait(
     // Layer 1: origin portrait (fills canvas)
     ctx.drawImage(portraitImg, 0, 0, width, height);
 
-    // Layer 2: sphere frame on top — lighten blend so black center is invisible
-    ctx.globalCompositeOperation = 'lighten';
-    ctx.drawImage(frameImg, 0, 0, width, height);
+    // Layer 2: sphere frame — convert dark pixels to transparent, then overlay
+    const alphaFrame = frameToAlpha(frameImg, width, height);
+    ctx.drawImage(alphaFrame, 0, 0);
 
     return canvas;
   } catch {
