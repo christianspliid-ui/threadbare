@@ -28,7 +28,7 @@ export interface LOSSource {
 
 // --- Tunable Constants ---
 
-export const AVATAR_SIGHT_RANGE = 1;
+export const AVATAR_SIGHT_RANGE = 0;
 export const AGENT_SIGHT_RANGE = 1;
 export const SCRY_SIGHT_RANGE = 0;
 export const SCRY_ESSENCE_PER_TICK = 2;
