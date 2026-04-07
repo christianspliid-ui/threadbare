@@ -29,12 +29,13 @@ npm run dev    # start Vite dev server with hot reload
 
 | URL Param | What it does |
 |-----------|-------------|
-| `?view=game` | **Primary dev view.** Full game view with Three.js hex map (HexMapV2) and all game chrome. Use this for all hex map and gameplay testing. |
+| `?view=game&seeded` | **Primary dev view.** Full game with pre-seeded ascendant identity (Witness/mind+spirit) AND The First agent ("Kael Thornweaver") already bonded. Use this for all testing that needs a valid game state with threads. |
+| `?view=game` | Quick-start game view — ascendant archetype only, no identity, no First. Use when testing the MeetTheFirst flow itself or identity-less paths. |
 | `?view=glow` | Magic glow tile preview |
 | `?view=cms` | Content browser |
-| `?fog` | Enable fog of war on load (fog is off by default). Combinable: `?view=game&fog` |
+| `?nofog` | Disable fog of war (fog is ON by default). Combinable: `?view=game&seeded&nofog` |
 
-**For all testing, use `?view=game`** — this skips the multi-click entry flow and loads the full game with HexMapV2. Only test the worldgen/selection screens when those screens are the subject of the test.
+**For all testing, use `?view=game&seeded`** — this skips the remembrance flow, ascendant selection, AND the Meet The First encounter, loading directly into a fully populated game with a bonded First agent. Only use bare `?view=game` when testing identity-less paths, and only test the worldgen/selection/remembrance screens when those screens are the subject of the test.
 
 **Note for Cowork/Codex sessions:** The sandbox VM has isolated networking. Use `npx tsc --noEmit`, `npx vite build`, and `npm test` to verify. The user must run `npm run dev` on their own machine.
 

@@ -157,14 +157,15 @@ Playwright `preview_snapshot` and `preview_inspect` see only a blank `<canvas>` 
 | What to Verify | Tool |
 |---------------|------|
 | Console errors, network requests, DOM UI | Playwright: `preview_console_logs`, `preview_network`, `preview_snapshot` |
-| Actual rendered hex map visuals | **Codex in Chrome**: `tabs_context_mcp` → `navigate` to `localhost:5173/?view=game` → `computer` with `action: "screenshot"` or `action: "zoom"` |
+| Actual rendered hex map visuals | **Codex in Chrome**: `tabs_context_mcp` → `navigate` to `localhost:5173/?view=game&seeded` → `computer` with `action: "screenshot"` or `action: "zoom"` |
 
 ### Dev URLs for Testing
 
 | URL | Purpose |
 |-----|---------|
-| `?view=game` | **Primary.** Full game with HexMapV2 + all chrome. Use for all testing. |
-| `?view=game&fog` | Game view with fog-of-war enabled |
+| `?view=game&seeded` | **Primary.** Full game with HexMapV2, pre-seeded identity + The First agent. Use for all testing. |
+| `?view=game&seeded&nofog` | Game view with fog-of-war disabled |
+| `?view=game` | Quick-start without identity/First — only for testing MeetTheFirst flow or identity-less paths. |
 
 ### Screenshot Tips
 

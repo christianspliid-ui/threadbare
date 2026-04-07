@@ -57,7 +57,7 @@ Ask the user which mode to run, or default to Mode 1 if they said "run QA" witho
 1. The orchestrator runs `bash scripts/qa-server.sh start` before dispatching any browser agents
 2. The script finds a free port in the 5180–5199 range (away from the default 5173)
 3. It starts Vite on that port and writes `{port, pid, url}` to `.qa-server.json`
-4. All agent prompts receive the dynamic `QA_URL` (e.g., `http://localhost:5183/?view=game`)
+4. All agent prompts receive the dynamic `QA_URL` (e.g., `http://localhost:5183/?view=game&seeded`)
 5. After the sweep, the orchestrator runs `bash scripts/qa-server.sh stop` to clean up
 
 ### Orchestrator responsibility
@@ -84,13 +84,13 @@ Before dispatching browser-based agents, verify:
 2. **Playwright MCP connected** — `browser_navigate` must respond
 3. **STYLE.md exists** — read it for visual spec reference
 
-**Pre-flight check:** Navigate to `{QA_URL}/?view=game` via Playwright. This skips worldgen and ascendant selection, jumping straight to the game view with HexMapV2 (seed 42, random archetype, "The Dev Oracle"). If the page doesn't load, check `bash scripts/qa-server.sh status` and the log at `/tmp/qa-vite-{port}.log`.
+**Pre-flight check:** Navigate to `{QA_URL}/?view=game&seeded` via Playwright. This skips worldgen, ascendant selection, AND Meet The First — jumping straight to a fully populated game view with HexMapV2, pre-seeded ascendant identity (Witness/mind+spirit), and The First agent ("Kael Thornweaver") already bonded (seed 42). If the page doesn't load, check `bash scripts/qa-server.sh status` and the log at `/tmp/qa-vite-{port}.log`.
 
 ### Game Entry Flow (required for all browser agents)
 
-**Use the quick-start URL:** `{QA_URL}/?view=game`
+**Use the quick-start URL:** `{QA_URL}/?view=game&seeded`
 
-This bypasses the multi-step entry flow and loads directly into the main game view with a valid game state. Wait 2-3 seconds for all components to mount before beginning tests.
+This bypasses the entire entry flow and loads directly into the main game view with a valid game state including ascendant identity and a bonded First agent. Wait 2-3 seconds for all components to mount before beginning tests.
 
 Only use the manual entry flow below when **testing the worldgen or selection screens themselves:**
 
