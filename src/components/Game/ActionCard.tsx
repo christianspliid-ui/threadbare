@@ -162,16 +162,16 @@ const SIZE_CONFIG = {
     badgePad: 'px-1.5 py-0.5',
   },
   focused: {
-    widthPx: 320,            // 320px wide × 448px tall (5:7 portrait)
+    widthPx: 400,            // 400px wide × 560px tall (5:7 portrait, 25% up from 320)
     aspect: 7 / 5,           // portrait: height = width × 1.4
-    glyphSize: '2rem',       // 32px
-    nameSize: 'var(--text-base)',
-    descSize: '0.75rem',     // 12px — fits more text in the card
+    glyphSize: '2.5rem',     // 40px
+    nameSize: '1.25rem',     // 20px (25% up from 16px)
+    descSize: '0.9375rem',   // 15px (25% up from 12px)
     descClamp: '',            // no clamp
-    costSize: '0.75rem',     // 12px
-    padding: 'px-5 py-4',
-    badgePos: 'top-3 right-3',
-    badgePad: 'px-2 py-1',
+    costSize: '0.9375rem',   // 15px
+    padding: 'px-6 py-5',
+    badgePos: 'top-4 right-4',
+    badgePad: 'px-2.5 py-1.5',
   },
 } as const;
 
@@ -469,11 +469,11 @@ export const ActionCard = React.memo(function ActionCard({
       >
 
         {/* ── 1. Spell name zone ─────────────────────────────────────── */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', height: '36px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', height: '44px' }}>
           <h3
             style={{
               fontFamily: 'var(--font-display)',
-              fontSize: '1rem',
+              fontSize: cfg.nameSize,
               fontWeight: 600,
               color: 'var(--text-primary)',
               lineHeight: 1.2,
@@ -482,14 +482,14 @@ export const ActionCard = React.memo(function ActionCard({
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
-              maxWidth: '220px',
+              maxWidth: '280px',
             }}
           >
             {displayName}
           </h3>
           {/* Cost badge with sphere icon */}
           <div
-            className={`flex items-center gap-1.5 ${cfg.badgePad} rounded-full flex-shrink-0`}
+            className={`flex items-center gap-2 ${cfg.badgePad} rounded-full flex-shrink-0`}
             style={{
               backgroundColor: sphereColor ? `${sphereColor}20` : 'rgba(255,255,255,0.08)',
               border: `1px solid ${sphereColor ? `${sphereColor}50` : 'var(--border-medium)'}`,
@@ -499,8 +499,8 @@ export const ActionCard = React.memo(function ActionCard({
             }}
           >
             {slot.sphere
-              ? <SphereIcon sphere={slot.sphere as SphereName} size={16} />
-              : <span style={{ fontSize: '0.75rem' }}>{glyph}</span>
+              ? <SphereIcon sphere={slot.sphere as SphereName} size={20} />
+              : <span style={{ fontSize: '0.9375rem' }}>{glyph}</span>
             }
             <span data-testid="action-card-cost">
               {slot.essenceCost === 0 ? 'Free' : Math.round(slot.essenceCost)}
@@ -511,7 +511,7 @@ export const ActionCard = React.memo(function ActionCard({
         {/* ── 2. Art frame ────────────────────────────────────────────── */}
         <div
           style={{
-            height: artPath ? '160px' : '96px',
+            height: artPath ? '200px' : '120px',
             background: artPath ? 'none' : `linear-gradient(145deg, ${sphereColor ?? '#333'}20 0%, #111114 100%)`,
             border: `1px solid ${sphereColor ?? '#333'}30`,
             borderRadius: '4px',
@@ -540,26 +540,26 @@ export const ActionCard = React.memo(function ActionCard({
               style={{ opacity: 0.45 }}
             >
               {slot.sphere
-                ? <SphereIcon sphere={slot.sphere as SphereName} size={32} />
-                : <span style={{ fontSize: '2rem', color: `${sphereColor ?? '#333'}60` }}>{glyph}</span>
+                ? <SphereIcon sphere={slot.sphere as SphereName} size={40} />
+                : <span style={{ fontSize: cfg.glyphSize, color: `${sphereColor ?? '#333'}60` }}>{glyph}</span>
               }
             </span>
           )}
         </div>
 
         {/* ── 3. Type line ────────────────────────────────────────────── */}
-        <div style={{ marginBottom: '6px' }}>
+        <div style={{ marginBottom: '8px' }}>
           <div
             style={{
               height: '1px',
               backgroundColor: 'var(--border-gold, #d4a040)',
-              marginBottom: '4px',
+              marginBottom: '5px',
             }}
           />
           <div
             style={{
               fontFamily: 'var(--font-body, "Alegreya Sans", sans-serif)',
-              fontSize: '0.75rem',
+              fontSize: cfg.descSize,
               fontWeight: 400,
               color: 'var(--text-tertiary)',
               letterSpacing: '0.08em',
@@ -569,9 +569,9 @@ export const ActionCard = React.memo(function ActionCard({
               justifyContent: 'space-between',
             }}
           >
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
               {slot.sphere && (
-                <SphereIcon sphere={slot.sphere as SphereName} size={14} />
+                <SphereIcon sphere={slot.sphere as SphereName} size={18} />
               )}
               {[reach, crud].filter(Boolean).join(' \u00B7 ') || slot.type.toUpperCase()}
             </span>
@@ -581,7 +581,7 @@ export const ActionCard = React.memo(function ActionCard({
                 <RarityBadge
                   tier={slot.rarityTier}
                   opacity={0.9}
-                  className="text-xs font-semibold uppercase tracking-wide"
+                  className="text-sm font-semibold uppercase tracking-wide"
                 />
               </span>
             )}
@@ -593,11 +593,11 @@ export const ActionCard = React.memo(function ActionCard({
           <div
             style={{
               fontFamily: 'var(--font-body, "Alegreya Sans", sans-serif)',
-              fontSize: '0.75rem',
+              fontSize: cfg.descSize,
               fontWeight: 400,
               color: 'var(--text-secondary)',
-              lineHeight: 1.4,
-              marginBottom: '6px',
+              lineHeight: 1.5,
+              marginBottom: '8px',
               overflow: 'hidden',
               flexShrink: 1,
             }}
