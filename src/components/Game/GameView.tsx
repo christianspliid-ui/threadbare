@@ -103,6 +103,8 @@ import { applyWhisperChoice, applyCompulsionChoice, dismissPremonition } from '.
 import { EncounterStage } from './encounter-stage/EncounterStage';
 import { buildGateDutyEncounterStageModel } from './encounter-stage/adapters/buildGateDutyEncounterStageModel';
 import { buildUnifiedEncounterStageModel } from './encounter-stage/adapters/buildUnifiedEncounterStageModel';
+import { buildSimpleEncounterStageModel } from './encounter-stage/adapters/buildSimpleEncounterStageModel';
+import { EncounterVeil } from './EncounterVeil';
 import {
   buildActiveEncounterDisplayFromLegacyProgress,
   buildActiveEncounterDisplayFromUnifiedAction,
@@ -954,6 +956,27 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     shouldUseEncounterStage,
     tieredEncounterState,
   ]);
+
+  // ── Unified model for EncounterVeil: reuses existing adapters when available,
+  // falls back to the simple adapter for legacy encounters ──
+  const encounterVeilModel = useMemo(() => {
+    if (!tieredEncounterState) return null;
+    // Existing adapter paths remain
+    if (isGateDutyEncounterStage && encounterStageModel) return encounterStageModel;
+    if (unifiedTemplateForStage && encounterStageModel) return encounterStageModel;
+    // New: simple adapter for legacy encounters
+    return buildSimpleEncounterStageModel({
+      notification: tieredEncounterState.notification,
+      encounter: tieredEncounterState.encounter,
+      template: tieredEncounterState.template,
+      agentName: tieredEncounterState.agentName,
+      agentId: tieredEncounterState.agentId,
+      graph: gameState.graph,
+      threadTier: tieredEncounterState.threadTier,
+      essence: SPHERE_NAMES.reduce((sum, s) => sum + gameState.essencePool[s], 0),
+      tick: gameState.tick,
+    });
+  }, [tieredEncounterState, isGateDutyEncounterStage, unifiedTemplateForStage, encounterStageModel, gameState.graph, gameState.essencePool, gameState.tick]);
 
   // ── Encounter notification surfacing (TB-040 / TB-055) ──
   /** Open the tiered encounter modal from a notification (toast click or auto-interrupt) */
@@ -2805,41 +2828,55 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         })()}
       </AnimateMount>
 
-      {/* Encounter Stage — Gate Duty uses specialized adapter, qualifying unified encounters use general adapter */}
-        {tieredEncounterState && shouldUseEncounterStage && encounterStageModel && (
-          <EncounterStage
-            open={true}
-            onDisregard={handleEncounterDisregard}
-            onAcknowledgeAftermath={handleEncounterAcknowledgeAftermath}
-            onAftermathReaction={handleEncounterAftermathReaction}
-            onCommitChoice={(choiceId) => {
-              // Check notification choices first, then fall back to authored choices on the template
-              const choice = tieredEncounterState.notification.choices.find(c => c.id === choiceId);
-              if (choice) {
-                handleEncounterCommitAndContinue(choiceId, choice.essenceCost ?? 0);
-                return;
-              }
-              // Authored choices may have different IDs than the notification's generic choices
-              const activeAction = (gameState.unifiedActions ?? []).find(a => a.actionId === tieredEncounterState.encounter.actionId);
-              const template = activeAction ? getUnifiedTemplateById(activeAction.templateId) : undefined;
-              const authoredCard = template?.authoredChoices?.[activeAction?.currentStep ?? 0]?.find(c => c.id === choiceId);
-              if (authoredCard) {
-                handleEncounterCommitAndContinue(choiceId, authoredCard.essenceCost ?? 0);
-                return;
-              }
-            }}
-          model={encounterStageModel}
+      {/* EncounterVeil — unified encounter display for all encounter types */}
+      {tieredEncounterState && encounterVeilModel && (
+        <EncounterVeil
+          open={true}
+          model={encounterVeilModel}
+          threadTier={tieredEncounterState.threadTier}
+          essence={SPHERE_NAMES.reduce((sum, s) => sum + gameState.essencePool[s], 0)}
+          tick={gameState.tick}
+          autoResolveTick={tieredEncounterState.notification.autoResolveTick}
+          onIntervene={handleEncounterIntervene}
+          onBoost={handleEncounterBoost}
+          onPeek={handleEncounterPeek}
+          onDisregard={handleEncounterDisregard}
+          onAcknowledgeAftermath={handleEncounterAcknowledgeAftermath}
+          onAftermathReaction={handleEncounterAftermathReaction}
         />
       )}
 
-      {/* Tiered encounter modal (TB-055) — fallback for encounters that don't qualify for EncounterStage */}
-        {tieredEncounterState && (!shouldUseEncounterStage || !encounterStageModel) && (
-          <TieredEncounterModal
-            open={true}
-            onClose={handleEncounterDisregard}
-            notification={tieredEncounterState.notification}
-            encounter={tieredEncounterState.encounter}
-            template={tieredEncounterState.template}
+      {/* Legacy encounter modals — replaced by EncounterVeil
+      {tieredEncounterState && shouldUseEncounterStage && encounterStageModel && (
+        <EncounterStage
+          open={true}
+          onDisregard={handleEncounterDisregard}
+          onAcknowledgeAftermath={handleEncounterAcknowledgeAftermath}
+          onAftermathReaction={handleEncounterAftermathReaction}
+          onCommitChoice={(choiceId) => {
+            const choice = tieredEncounterState.notification.choices.find(c => c.id === choiceId);
+            if (choice) {
+              handleEncounterCommitAndContinue(choiceId, choice.essenceCost ?? 0);
+              return;
+            }
+            const activeAction = (gameState.unifiedActions ?? []).find(a => a.actionId === tieredEncounterState.encounter.actionId);
+            const template = activeAction ? getUnifiedTemplateById(activeAction.templateId) : undefined;
+            const authoredCard = template?.authoredChoices?.[activeAction?.currentStep ?? 0]?.find(c => c.id === choiceId);
+            if (authoredCard) {
+              handleEncounterCommitAndContinue(choiceId, authoredCard.essenceCost ?? 0);
+              return;
+            }
+          }}
+          model={encounterStageModel}
+        />
+      )}
+      {tieredEncounterState && (!shouldUseEncounterStage || !encounterStageModel) && (
+        <TieredEncounterModal
+          open={true}
+          onClose={handleEncounterDisregard}
+          notification={tieredEncounterState.notification}
+          encounter={tieredEncounterState.encounter}
+          template={tieredEncounterState.template}
           agentName={tieredEncounterState.agentName}
           agentId={tieredEncounterState.agentId}
           graph={gameState.graph}
@@ -2851,6 +2888,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           onPeek={handleEncounterPeek}
         />
       )}
+      */}
 
       {/* Meeting encounter — full-screen narrative flow */}
       {meetingState && ascendantIdentity && (
