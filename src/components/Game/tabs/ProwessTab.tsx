@@ -1,12 +1,12 @@
 import type { AgentInfoCardData } from '../../../engine/agentDetail';
 import type { AgentKnowledge } from '../../../types/agentKnowledge';
-import { ReachIcon } from '../../icons';
 import {
   POSSESSION_ACTIVITY_TICKS,
   POSSESSION_PROVISIONS_TICKS,
 } from '../../../types/agentKnowledge';
 import type { ReachDomain } from '../../../types/traits';
 import { SectionHeading } from '../../shared/SectionHeading';
+import { DomainCard } from '../../shared/DomainCard';
 import { Tooltip } from '../../shared/Tooltip';
 import { ProgressBar } from '../../shared/ProgressBar';
 import { ATTACHMENT_TIER_COLORS, ATTACHMENT_TIER_NAMES } from '../../../types/attachments';
@@ -30,17 +30,6 @@ function hasKnowledge(level: string, minimum: string): boolean {
 }
 
 // ─── Domain config ────────────────────────────────────────────────
-
-const DOMAIN_NAMES: Record<ReachDomain, string> = {
-  iron: 'Iron',
-  gold: 'Gold',
-  shadow: 'Shadow',
-  veil: 'Veil',
-  heart: 'Heart',
-  eye: 'Eye',
-  stone: 'Stone',
-  star: 'Star',
-};
 
 const ALL_DOMAINS: ReachDomain[] = [
   'iron', 'gold', 'shadow',
@@ -215,34 +204,26 @@ export function ProwessTab({ card, knowledge, onAttachmentClick }: ProwessTabPro
     );
   };
 
-  const hasDomainData = card.domains && card.domains.length > 0;
+  const revealedDomains = ALL_DOMAINS.filter(isDomainRevealed);
 
   return (
     <div className="space-y-4">
-      {/* Domains — 2x4 grid (8 reaches, flesh removed in TB-075) */}
+      {/* Domains — only revealed reaches shown */}
       <section>
         <SectionHeading as="h2">Domains</SectionHeading>
-        {hasDomainData ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
-            {ALL_DOMAINS.map((domain) => {
-              const revealed = isDomainRevealed(domain);
-              const descriptor = revealed ? domainMap.get(domain) : undefined;
+        {revealedDomains.length > 0 ? (
+          <div className="flex flex-col gap-2">
+            {revealedDomains.map((domain) => {
+              const domainEntry = (card.domains ?? []).find(d => d.domain === domain);
               return (
-                <div
+                <DomainCard
                   key={domain}
-                  className="p-2 rounded text-center"
-                  style={{ backgroundColor: 'var(--bg-raised)' }}
-                >
-                  <Tooltip id={`reach.${domain}`}>
-                    <p className="inline-flex items-center justify-center gap-1 text-xs font-medium underline decoration-dotted cursor-help" style={{ color: 'var(--accent-gold)' }}>
-                      <ReachIcon reach={domain} size={14} />
-                      {DOMAIN_NAMES[domain]}
-                    </p>
-                  </Tooltip>
-                  <p className="text-xs mt-0.5" style={{ color: revealed ? 'var(--text-secondary)' : 'var(--text-tertiary)' }}>
-                    {descriptor ?? '???'}
-                  </p>
-                </div>
+                  reach={domain}
+                  tier={domainEntry?.tier ?? 0}
+                  agentName={card.name}
+                  gender={card.gender}
+                  revealed={true}
+                />
               );
             })}
           </div>
