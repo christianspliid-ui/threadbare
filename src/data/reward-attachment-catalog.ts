@@ -1793,6 +1793,259 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       ],
     } as PossessionNodeProperties,
   },
+
+  // --- Thin Primitives: Provisions (pipeline: 2026-04-07) ---
+  {
+    id: 'reward_provisions_spring_water_vial',
+    type: 'artifact',
+    name: 'Spring Water Vial',
+    properties: {
+      subcategory: 'provisions',
+      tier: 1,
+      tags: ['#star', '#provision', '#divine', '#restoration'],
+      mechanicalSummary: '+0.02 Star near water, restores 1 essence (one-shot)',
+      lossCondition: 'consumable',
+      flavorText: 'Drawn from a spring that remembers its source. Drink it near somewhere holy and feel the world lean closer.',
+      effects: [
+        { type: 'resource_manipulate', resource: 'essence', target: 'self', amount: 1, mode: 'one_shot' },
+        { type: 'conditional', condition: 'near_water', reach: 'star', value: 0.02 },
+      ],
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_provisions_meditation_stones',
+    type: 'artifact',
+    name: 'Meditation Stones',
+    properties: {
+      subcategory: 'provisions',
+      tier: 1,
+      tags: ['#star', '#provision', '#divine', '#calm', '#restoration'],
+      mechanicalSummary: '+0.03 Star, restores 1 essence (one-shot) when alone',
+      lossCondition: 'consumable',
+      flavorText: 'Five flat stones, each a different shade of grey. Arranged in the right order, they settle the mind like still water.',
+      effects: [
+        { type: 'passive', reach: 'star', value: 0.03 },
+        { type: 'resource_manipulate', resource: 'essence', target: 'self', amount: 1, mode: 'one_shot', condition: 'alone' },
+      ],
+    } as PossessionNodeProperties,
+  },
+
+  // --- Thin Primitives: Relics (pipeline: 2026-04-07) ---
+  {
+    id: 'reward_relics_talismans_river_clay_bead',
+    type: 'artifact',
+    name: 'River Clay Bead',
+    properties: {
+      subcategory: 'relics_talismans',
+      tier: 2,
+      tags: ['#star', '#relic', '#divine', '#restoration', '#faith'],
+      mechanicalSummary: '+0.04 Star, restores 1 essence per tick during mystical encounters',
+      lossCondition: 'breakable',
+      flavorText: 'A thumb-worn bead of river clay, shaped by a hundred thousand whispered prayers. It hums when the veil thins.',
+      effects: [
+        { type: 'passive', reach: 'star', value: 0.04 },
+        { type: 'resource_manipulate', resource: 'essence', target: 'self', amount: 1, mode: 'per_tick', condition: 'in_mystical' },
+      ],
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_relics_talismans_tarnished_draw_tube',
+    type: 'artifact',
+    name: 'Tarnished Draw-Tube',
+    properties: {
+      subcategory: 'relics_talismans',
+      tier: 2,
+      tags: ['#veil', '#relic', '#arcane', '#parasitic'],
+      mechanicalSummary: '+0.06 Veil / -0.03 Star (tradeoff), drains 1 quintessence from other agent per tick',
+      lossCondition: 'stealable',
+      flavorText: 'A glass tube bound in tarnished silver. It draws something out of the air near living things. They seem not to notice.',
+      effects: [
+        { type: 'tradeoff', bonus: { reach: 'veil', value: 0.06 }, penalty: { reach: 'star', value: 0.03 } },
+        { type: 'resource_manipulate', resource: 'quintessence', target: 'other_agent', amount: -1, mode: 'per_tick' },
+      ],
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_relics_talismans_the_sweating_vessel',
+    type: 'artifact',
+    name: 'The Sweating Vessel',
+    properties: {
+      subcategory: 'relics_talismans',
+      tier: 3,
+      tags: ['#veil', '#relic', '#arcane', '#ancient', '#restoration'],
+      mechanicalSummary: 'Veil bonus decays from +0.08 to +0.02 over ~20 ticks, -0.04 Star, restores 2 quintessence per tick',
+      lossCondition: 'cursed',
+      flavorText: 'A vessel of fused obsidian, warm to the touch. It sweats a clear liquid that smells of lightning. The priests who made it did not survive the process.',
+      effects: [
+        { type: 'decay', reach: 'veil', startValue: 0.08, changePerTick: -0.003, limitValue: 0.02, destroyAtLimit: false },
+        { type: 'passive', reach: 'star', value: -0.04 },
+        { type: 'resource_manipulate', resource: 'quintessence', target: 'self', amount: 2, mode: 'per_tick' },
+      ],
+    } as PossessionNodeProperties,
+  },
+
+  // --- Thin Primitives: Tools (pipeline: 2026-04-07) ---
+  {
+    id: 'reward_tools_instruments_leather_bandolier',
+    type: 'artifact',
+    name: 'Leather Bandolier',
+    properties: {
+      subcategory: 'tools_instruments',
+      tier: 1,
+      tags: ['#iron', '#tool', '#equipment', '#carrying'],
+      mechanicalSummary: '+0.02 Iron, +1 weapon slot',
+      lossCondition: 'breakable',
+      flavorText: 'Cracked leather and brass buckles, fitted to cross the chest. Room enough for one more blade.',
+      effects: [
+        { type: 'passive', reach: 'iron', value: 0.02 },
+        { type: 'slot_bonus', slotTag: 'weapon', bonus: 1 },
+      ],
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_tools_instruments_scroll_case',
+    type: 'artifact',
+    name: 'Scroll Case',
+    properties: {
+      subcategory: 'tools_instruments',
+      tier: 1,
+      tags: ['#veil', '#tool', '#equipment', '#carrying', '#scholarly'],
+      mechanicalSummary: '+0.02 Veil, +1 tome slot',
+      lossCondition: 'breakable',
+      flavorText: 'Oiled leather, sealed with wax. Keeps the rain off what matters.',
+      effects: [
+        { type: 'passive', reach: 'veil', value: 0.02 },
+        { type: 'slot_bonus', slotTag: 'tome', bonus: 1 },
+      ],
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_tools_instruments_quartermasters_harness',
+    type: 'artifact',
+    name: "Quartermaster's Harness",
+    properties: {
+      subcategory: 'tools_instruments',
+      tier: 2,
+      tags: ['#stone', '#gold', '#tool', '#equipment', '#carrying', '#trade'],
+      mechanicalSummary: '+0.04 Stone, +1 consumable slot, +1 utility slot, 20% slower movement',
+      lossCondition: 'breakable',
+      flavorText: 'Canvas and ironwork, distributing weight across shoulders and hips. You carry more. You carry it slower.',
+      effects: [
+        { type: 'passive', reach: 'stone', value: 0.04 },
+        { type: 'slot_bonus', slotTag: 'consumable', bonus: 1 },
+        { type: 'slot_bonus', slotTag: 'utility', bonus: 1 },
+        { type: 'range_modifier', movementCostMultiplier: 1.2 },
+      ],
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_tools_instruments_salvage_kit',
+    type: 'artifact',
+    name: 'Salvage Kit',
+    properties: {
+      subcategory: 'tools_instruments',
+      tier: 2,
+      tags: ['#stone', '#tool', '#scavenging', '#discovery', '#wilderness'],
+      mechanicalSummary: '+0.04 Stone, grants a random provision or tool on use, +0.02 Stone in wilderness',
+      lossCondition: 'consumable',
+      flavorText: 'Wire cutters, a pry bar, three sizes of bag. Everything you need to take apart what someone else put together.',
+      effects: [
+        { type: 'passive', reach: 'stone', value: 0.04 },
+        { type: 'conditional', condition: 'in_wilderness', reach: 'stone', value: 0.02 },
+        {
+          type: 'content_grant',
+          templateIds: [
+            'reward_provisions_hardtack_and_salt',
+            'reward_arms_bronze_spear',
+            'reward_provisions_travelers_wine',
+            'reward_relics_talismans_bone_ward',
+          ],
+          selection: 'random',
+          narrativeTemplate: 'The kit finds purchase. Salvaged: {grantedName}.',
+        },
+      ],
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_tools_instruments_bag_of_conveyance',
+    type: 'artifact',
+    name: 'Bag of Conveyance',
+    properties: {
+      subcategory: 'tools_instruments',
+      slotTag: 'utility',
+      tier: 3,
+      tags: ['#gold', '#veil', '#arcane', '#equipment', '#carrying', '#ancient'],
+      mechanicalSummary: '+0.06 Gold, +0.04 Veil, +2 consumable slots, +1 wealth slot, restores 1 essence (one-shot)',
+      lossCondition: 'stealable',
+      flavorText: 'A leather satchel with seams that do not line up with its edges. You reach in past the elbow and your hand keeps going. The stitching hums when you find what you were looking for.',
+      effects: [
+        { type: 'passive', reach: 'gold', value: 0.06 },
+        { type: 'passive', reach: 'veil', value: 0.04 },
+        { type: 'slot_bonus', slotTag: 'consumable', bonus: 2 },
+        { type: 'slot_bonus', slotTag: 'wealth', bonus: 1 },
+        { type: 'resource_manipulate', resource: 'essence', target: 'self', amount: 1, mode: 'one_shot' },
+      ],
+    } as PossessionNodeProperties,
+  },
+
+  // --- Thin Primitives: Tomes (pipeline: 2026-04-07) ---
+  {
+    id: 'reward_tomes_scrolls_sealed_bounty_scroll',
+    type: 'artifact',
+    name: 'Sealed Bounty Scroll',
+    properties: {
+      subcategory: 'tomes_scrolls',
+      tier: 2,
+      tags: ['#gold', '#scroll', '#reward', '#discovery'],
+      mechanicalSummary: '+0.04 Gold, 2 charges — each use grants a random item from a curated pool',
+      lossCondition: 'consumable',
+      flavorText: 'Heavy parchment sealed with a merchant-guild stamp. Break the wax, and something of value falls out. Twice.',
+      effects: [
+        { type: 'passive', reach: 'gold', value: 0.04 },
+        { type: 'consumable_charge', charges: 2, onUse: { reach: 'gold', value: 0.01 }, destroyOnEmpty: true },
+        {
+          type: 'content_grant',
+          templateIds: [
+            'reward_provisions_healing_poultice',
+            'reward_provisions_travelers_wine',
+            'reward_relics_talismans_bone_ward',
+            'reward_relics_talismans_wayfarers_charm',
+            'reward_provisions_hardtack_and_salt',
+          ],
+          selection: 'random',
+          narrativeTemplate: 'The seal cracks. Inside: {grantedName}.',
+        },
+      ],
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_tomes_scrolls_tithe_box',
+    type: 'artifact',
+    name: 'Tithe Box',
+    properties: {
+      subcategory: 'tomes_scrolls',
+      slotTag: 'utility',
+      tier: 2,
+      tags: ['#heart', '#star', '#offering', '#divine', '#discovery'],
+      mechanicalSummary: '+0.03 Heart, restores 1 essence (one-shot), grants a random item: prayer scroll, healing poultice, or Fortune-Kissed blessing',
+      lossCondition: 'consumable',
+      flavorText: "A wooden box carved with a saint's face, left at a crossroads shrine. Someone filled it. Someone always fills it.",
+      effects: [
+        { type: 'passive', reach: 'heart', value: 0.03 },
+        { type: 'resource_manipulate', resource: 'essence', target: 'self', amount: 1, mode: 'one_shot' },
+        {
+          type: 'content_grant',
+          templateIds: [
+            'reward_tomes_scrolls_prayer_scroll',
+            'reward_provisions_healing_poultice',
+            'reward_condition_fortune_kissed',
+          ],
+          selection: 'random',
+          narrativeTemplate: 'The tithe box opens with a faint sigh. Within: {grantedName}.',
+        },
+      ],
+    } as PossessionNodeProperties,
+  },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════

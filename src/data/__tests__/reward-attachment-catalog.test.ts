@@ -10,7 +10,7 @@ describe('reward-attachment-catalog', () => {
   describe('REWARD_POSSESSIONS', () => {
     it('has ~84 entries', () => {
       expect(REWARD_POSSESSIONS.length).toBeGreaterThanOrEqual(45);
-      expect(REWARD_POSSESSIONS.length).toBeLessThanOrEqual(100);
+      expect(REWARD_POSSESSIONS.length).toBeLessThanOrEqual(120);
     });
 
     it('all entries have type artifact', () => {
@@ -119,7 +119,7 @@ describe('reward-attachment-catalog', () => {
     it('has ~86 total templates', () => {
       const total = REWARD_POSSESSIONS.length + REWARD_CONDITIONS.length + REWARD_BESTOWED_POWERS.length;
       expect(total).toBeGreaterThanOrEqual(80);
-      expect(total).toBeLessThanOrEqual(150);
+      expect(total).toBeLessThanOrEqual(175);
     });
   });
 });
