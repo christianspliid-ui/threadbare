@@ -50,6 +50,8 @@ const ITEM_ART: Record<string, string> = {
   'divine.coincidence': '/assets/actions/thread-of-fate.jpg',
   'divine.omen': '/assets/actions/starfall-omen.jpg',
   'divine.afflict_bless': '/assets/actions/aegis-of-grace.jpg',
+  'bind_thread_agent': '/assets/actions/agent-thread.jpg',
+  'bind_thread_agent_strong': '/assets/actions/strong-agent-thread.jpg',
 };
 
 export interface CodexCategory {
