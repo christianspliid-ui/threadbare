@@ -8,7 +8,7 @@
 
 ## ✅ TB-117 · Terrain Texture Lab POC (2026-04-08)
 
-Standalone WebGL playground for terrain material experiments before touching HexMapV2 production rendering. Added dev route `?view=terrain-lab` with a separate Three.js scene, instanced shader preview, six starter recipes (grassland, forest, mountains, dunes, coast, swamp), live controls for color/noise/warp/banding/animation plus perspective camera tilt/bearing/zoom, localStorage persistence, and JSON export. Includes implementation/research note: `Docs/plans/2026-04-08-terrain-texture-lab-poc.md`.
+Standalone WebGL playground for terrain material experiments before touching HexMapV2 production rendering. Added dev route `?view=terrain-lab` with a separate Three.js scene, instanced shader preview, six starter recipes (grassland, forest, mountains, dunes, coast, swamp), live controls for color/noise/warp/banding/animation plus perspective camera tilt/bearing/zoom, built-in and imported GLB placement on preview hexes, localStorage persistence, and JSON export. Includes implementation/research note: `Docs/plans/2026-04-08-terrain-texture-lab-poc.md`.
 
 **Files:** `src/App.tsx`, `src/components/HexMapV2/lab/TerrainTextureLab.tsx`, `src/components/HexMapV2/lab/TerrainTextureLabCanvas.tsx`, `src/components/HexMapV2/lab/terrainTextureLabPresets.ts`, `src/components/HexMapV2/lab/terrainTextureLabShader.ts`, `src/components/HexMapV2/lab/__tests__/terrainTextureLabShader.test.ts`, `Docs/plans/2026-04-08-terrain-texture-lab-poc.md`.
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ChangeEvent } from 'react';
 import { Button } from '../../shared/Button';
 import { Card } from '../../shared/Card';
 import { TerrainTextureLabCanvas } from './TerrainTextureLabCanvas';
@@ -11,12 +11,15 @@ import {
   parseTerrainTextureLabViewSettings,
   serializeTerrainTextureLabConfigs,
   serializeTerrainTextureLabViewSettings,
+  TERRAIN_TEXTURE_LAB_BUILTIN_MODELS,
   TERRAIN_RECIPE_OPTIONS,
   TERRAIN_TEXTURE_LAB_CONSTANTS,
   TERRAIN_TEXTURE_LAB_STORAGE_KEY,
   TERRAIN_TEXTURE_PREVIEW_HEXES,
   TERRAIN_TEXTURE_LAB_VIEW_STORAGE_KEY,
   type LabTerrainKey,
+  type TerrainTextureLabModelDefinition,
+  type TerrainTextureLabModelPlacement,
   type TerrainTextureLabConfig,
   type TerrainTextureLabViewSettings,
 } from './terrainTextureLabPresets';
@@ -36,6 +39,13 @@ function copyToClipboard(text: string): Promise<boolean> {
   return navigator.clipboard.writeText(text)
     .then(() => true)
     .catch(() => false);
+}
+
+function createClientId(prefix: string): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `${prefix}-${crypto.randomUUID()}`;
+  }
+  return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
 }
 
 interface SliderFieldProps {
@@ -91,6 +101,7 @@ function ColorField({ label, value, onChange }: ColorFieldProps) {
 }
 
 export function TerrainTextureLab() {
+  const fileUrlsRef = useRef<string[]>([]);
   const [configs, setConfigs] = useState<Record<LabTerrainKey, TerrainTextureLabConfig>>(() => {
     if (typeof window === 'undefined') return getDefaultTerrainTextureLabConfigs();
     const saved = window.localStorage.getItem(TERRAIN_TEXTURE_LAB_STORAGE_KEY);
@@ -98,6 +109,10 @@ export function TerrainTextureLab() {
     return parseTerrainTextureLabConfigs(saved) ?? getDefaultTerrainTextureLabConfigs();
   });
   const [selectedTerrain, setSelectedTerrain] = useState<LabTerrainKey>('grassland');
+  const [models, setModels] = useState<TerrainTextureLabModelDefinition[]>(() => [...TERRAIN_TEXTURE_LAB_BUILTIN_MODELS]);
+  const [selectedModelId, setSelectedModelId] = useState<string | null>(TERRAIN_TEXTURE_LAB_BUILTIN_MODELS[0]?.id ?? null);
+  const [selectedHexId, setSelectedHexId] = useState<string | null>(TERRAIN_TEXTURE_PREVIEW_HEXES[0]?.id ?? null);
+  const [placements, setPlacements] = useState<TerrainTextureLabModelPlacement[]>([]);
   const [seed, setSeed] = useState(TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_SEED);
   const [animationEnabled, setAnimationEnabled] = useState(true);
   const [globalTimeScale, setGlobalTimeScale] = useState(TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_TIME_SCALE);
@@ -107,10 +122,17 @@ export function TerrainTextureLab() {
     if (!saved) return getDefaultTerrainTextureLabViewSettings();
     return parseTerrainTextureLabViewSettings(saved) ?? getDefaultTerrainTextureLabViewSettings();
   });
+  const [modelUrlDraft, setModelUrlDraft] = useState('/models/city.glb');
+  const [placeOnHexClick, setPlaceOnHexClick] = useState(true);
+  const [placementScale, setPlacementScale] = useState(TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_MODEL_SCALE);
+  const [placementHeightOffset, setPlacementHeightOffset] = useState(TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_MODEL_HEIGHT_OFFSET);
+  const [placementRotationDegrees, setPlacementRotationDegrees] = useState(TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_MODEL_ROTATION_DEGREES);
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
 
   const selectedConfig = configs[selectedTerrain];
   const selectedRecipe = getRecipeOption(selectedConfig.recipe);
+  const selectedModel = selectedModelId ? models.find(model => model.id === selectedModelId) ?? null : null;
+  const selectedHex = selectedHexId ? TERRAIN_TEXTURE_PREVIEW_HEXES.find(hex => hex.id === selectedHexId) ?? null : null;
   const serializedConfigs = useMemo(() => serializeTerrainTextureLabConfigs(configs), [configs]);
   const serializedViewSettings = useMemo(() => serializeTerrainTextureLabViewSettings(viewSettings), [viewSettings]);
 
@@ -130,6 +152,20 @@ export function TerrainTextureLab() {
     return () => window.clearTimeout(timeout);
   }, [copyState]);
 
+  useEffect(() => {
+    if (!selectedModel) return;
+    setPlacementScale(selectedModel.suggestedScale);
+    setPlacementHeightOffset(selectedModel.suggestedHeightOffset);
+    setPlacementRotationDegrees(selectedModel.suggestedRotationDegrees);
+  }, [selectedModel]);
+
+  useEffect(() => {
+    return () => {
+      for (const url of fileUrlsRef.current) URL.revokeObjectURL(url);
+      fileUrlsRef.current = [];
+    };
+  }, []);
+
   function updateSelectedTerrain(nextPartial: Partial<TerrainTextureLabConfig>) {
     setConfigs(prev => ({
       ...prev,
@@ -147,6 +183,93 @@ export function TerrainTextureLab() {
     }));
   }
 
+  function revokeFileUrlIfNeeded(model: TerrainTextureLabModelDefinition) {
+    if (model.sourceKind !== 'file') return;
+    URL.revokeObjectURL(model.sourceUrl);
+    fileUrlsRef.current = fileUrlsRef.current.filter(url => url !== model.sourceUrl);
+  }
+
+  function addModelFromUrl() {
+    const normalized = modelUrlDraft.trim();
+    if (!normalized) return;
+
+    const label = normalized.split('/').pop() || 'Imported URL Model';
+    const newModel: TerrainTextureLabModelDefinition = {
+      id: createClientId('url-model'),
+      label,
+      sourceUrl: normalized,
+      sourceKind: 'url',
+      suggestedScale: TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_MODEL_SCALE,
+      suggestedHeightOffset: TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_MODEL_HEIGHT_OFFSET,
+      suggestedRotationDegrees: TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_MODEL_ROTATION_DEGREES,
+    };
+
+    setModels(prev => [...prev, newModel]);
+    setSelectedModelId(newModel.id);
+  }
+
+  function handleFileImport(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const objectUrl = URL.createObjectURL(file);
+    fileUrlsRef.current.push(objectUrl);
+
+    const newModel: TerrainTextureLabModelDefinition = {
+      id: createClientId('file-model'),
+      label: file.name,
+      sourceUrl: objectUrl,
+      sourceKind: 'file',
+      suggestedScale: TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_MODEL_SCALE,
+      suggestedHeightOffset: TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_MODEL_HEIGHT_OFFSET,
+      suggestedRotationDegrees: TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_MODEL_ROTATION_DEGREES,
+    };
+
+    setModels(prev => [...prev, newModel]);
+    setSelectedModelId(newModel.id);
+    event.target.value = '';
+  }
+
+  function removeModel(modelId: string) {
+    const model = models.find(entry => entry.id === modelId);
+    if (!model || model.sourceKind === 'builtin') return;
+
+    revokeFileUrlIfNeeded(model);
+    setModels(prev => prev.filter(entry => entry.id !== modelId));
+    setPlacements(prev => prev.filter(placement => placement.modelId !== modelId));
+    if (selectedModelId === modelId) {
+      setSelectedModelId(TERRAIN_TEXTURE_LAB_BUILTIN_MODELS[0]?.id ?? null);
+    }
+  }
+
+  function placeSelectedModelOnHex(hexId: string) {
+    if (!selectedModelId) return;
+    setPlacements(prev => [
+      ...prev,
+      {
+        id: createClientId('placement'),
+        modelId: selectedModelId,
+        hexId,
+        scale: placementScale,
+        heightOffset: placementHeightOffset,
+        rotationDegrees: placementRotationDegrees,
+      },
+    ]);
+  }
+
+  function handleHexSelect(hexId: string) {
+    setSelectedHexId(hexId);
+    if (placeOnHexClick && selectedModelId) placeSelectedModelOnHex(hexId);
+  }
+
+  function clearPlacements() {
+    setPlacements([]);
+  }
+
+  function removePlacement(placementId: string) {
+    setPlacements(prev => prev.filter(placement => placement.id !== placementId));
+  }
+
   function resetSelectedTerrain() {
     const defaults = getDefaultTerrainTextureLabConfigs();
     setConfigs(prev => ({
@@ -156,11 +279,23 @@ export function TerrainTextureLab() {
   }
 
   function resetAllTerrains() {
+    for (const model of models) {
+      if (model.sourceKind === 'file') revokeFileUrlIfNeeded(model);
+    }
     setConfigs(getDefaultTerrainTextureLabConfigs());
+    setModels([...TERRAIN_TEXTURE_LAB_BUILTIN_MODELS]);
+    setSelectedModelId(TERRAIN_TEXTURE_LAB_BUILTIN_MODELS[0]?.id ?? null);
+    setSelectedHexId(TERRAIN_TEXTURE_PREVIEW_HEXES[0]?.id ?? null);
+    setPlacements([]);
     setSeed(TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_SEED);
     setGlobalTimeScale(TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_TIME_SCALE);
     setAnimationEnabled(true);
     setViewSettings(getDefaultTerrainTextureLabViewSettings());
+    setModelUrlDraft('/models/city.glb');
+    setPlaceOnHexClick(true);
+    setPlacementScale(TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_MODEL_SCALE);
+    setPlacementHeightOffset(TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_MODEL_HEIGHT_OFFSET);
+    setPlacementRotationDegrees(TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_MODEL_ROTATION_DEGREES);
   }
 
   async function handleCopyJson() {
@@ -359,6 +494,189 @@ export function TerrainTextureLab() {
           </Card>
 
           <Card variant="glass">
+            <Card.Header title="Model Import" />
+            <Card.Body>
+              <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
+                <div style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-xs)', lineHeight: 1.5 }}>
+                  Blender MCP workflow: export a `.glb` into `public/models/`, then paste the URL here like `/models/my-fortress.glb`. For quick experiments, you can also pick a local `.glb` file directly.
+                </div>
+                <label style={{ display: 'grid', gap: '6px' }}>
+                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>Model URL</span>
+                  <input
+                    type="text"
+                    value={modelUrlDraft}
+                    onChange={(event) => setModelUrlDraft(event.target.value)}
+                    placeholder="/models/my-model.glb"
+                    style={{
+                      height: '38px',
+                      padding: '0 10px',
+                      borderRadius: '6px',
+                      border: '1px solid var(--border-subtle)',
+                      backgroundColor: 'var(--bg-raised)',
+                      color: 'var(--text-primary)',
+                    }}
+                  />
+                </label>
+                <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+                  <Button variant="secondary" size="sm" onClick={addModelFromUrl}>Add URL Model</Button>
+                  <label
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      minHeight: '32px',
+                      padding: '0 12px',
+                      borderRadius: '6px',
+                      border: '1px solid var(--border-subtle)',
+                      color: 'var(--text-primary)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <input
+                      type="file"
+                      accept=".glb,model/gltf-binary"
+                      onChange={handleFileImport}
+                      style={{ display: 'none' }}
+                    />
+                    Pick Local .glb
+                  </label>
+                </div>
+                <div style={{ display: 'grid', gap: '8px' }}>
+                  {models.map((model) => {
+                    const isActive = model.id === selectedModelId;
+                    return (
+                      <button
+                        key={model.id}
+                        type="button"
+                        onClick={() => setSelectedModelId(model.id)}
+                        className="interactive-row"
+                        style={{
+                          display: 'grid',
+                          gap: '4px',
+                          width: '100%',
+                          backgroundColor: isActive ? 'rgba(212, 160, 64, 0.12)' : 'transparent',
+                          borderColor: isActive ? 'var(--border-gold-strong)' : 'transparent',
+                          textAlign: 'left',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                          <strong style={{ color: 'var(--text-primary)' }}>{model.label}</strong>
+                          {model.sourceKind !== 'builtin' && (
+                            <span
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                removeModel(model.id);
+                              }}
+                              style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}
+                            >
+                              remove
+                            </span>
+                          )}
+                        </div>
+                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{model.sourceUrl}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </Card.Body>
+          </Card>
+
+          <Card variant="glass">
+            <Card.Header title="Model Placement" />
+            <Card.Body>
+              <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
+                <div style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-xs)', lineHeight: 1.5 }}>
+                  {selectedHex ? `Selected hex: ${selectedHex.id} (${selectedHex.terrainKey})` : 'No hex selected yet.'}
+                </div>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
+                  <input
+                    type="checkbox"
+                    checked={placeOnHexClick}
+                    onChange={(event) => setPlaceOnHexClick(event.target.checked)}
+                  />
+                  Click preview hexes to place selected model
+                </label>
+                <SliderField
+                  label="Model scale"
+                  min={0.2}
+                  max={8}
+                  step={0.05}
+                  value={placementScale}
+                  onChange={(next) => setPlacementScale(next)}
+                />
+                <SliderField
+                  label="Height offset"
+                  min={-8}
+                  max={24}
+                  step={0.25}
+                  value={placementHeightOffset}
+                  onChange={(next) => setPlacementHeightOffset(next)}
+                />
+                <SliderField
+                  label="Yaw"
+                  min={-180}
+                  max={180}
+                  step={1}
+                  value={placementRotationDegrees}
+                  onChange={(next) => setPlacementRotationDegrees(Math.round(next))}
+                />
+                <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => selectedHexId && placeSelectedModelOnHex(selectedHexId)}
+                    disabled={!selectedModelId || !selectedHexId}
+                  >
+                    Place On Selected Hex
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={clearPlacements} disabled={placements.length === 0}>
+                    Clear Placements
+                  </Button>
+                </div>
+                <div style={{ display: 'grid', gap: '8px' }}>
+                  {placements.length === 0 ? (
+                    <div style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
+                      No placed models yet. Pick a model and click a hex in the preview.
+                    </div>
+                  ) : (
+                    placements.map((placement) => {
+                      const model = models.find(entry => entry.id === placement.modelId);
+                      return (
+                        <div
+                          key={placement.id}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: '10px',
+                            padding: '10px 12px',
+                            borderRadius: '6px',
+                            border: '1px solid var(--border-subtle)',
+                            backgroundColor: 'rgba(16,16,20,0.55)',
+                          }}
+                        >
+                          <div style={{ minWidth: 0 }}>
+                            <strong style={{ display: 'block', color: 'var(--text-primary)', fontSize: 'var(--text-sm)' }}>
+                              {model?.label ?? placement.modelId}
+                            </strong>
+                            <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
+                              {placement.hexId} · scale {placement.scale.toFixed(2)} · z {placement.heightOffset.toFixed(2)} · yaw {placement.rotationDegrees}°
+                            </span>
+                          </div>
+                          <Button variant="ghost" size="sm" onClick={() => removePlacement(placement.id)}>
+                            Remove
+                          </Button>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            </Card.Body>
+          </Card>
+
+          <Card variant="glass">
             <Card.Header title="Export & Notes" />
             <Card.Body>
               <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
@@ -367,7 +685,7 @@ export function TerrainTextureLab() {
                   <span style={{ alignSelf: 'center', color: copyState === 'failed' ? 'var(--negative)' : 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
                     {copyState === 'copied' && 'Copied current presets'}
                     {copyState === 'failed' && 'Clipboard write failed'}
-                    {copyState === 'idle' && 'Autosaves to localStorage in this browser'}
+                    {copyState === 'idle' && 'Autosaves terrain presets and camera settings to localStorage in this browser'}
                   </span>
                 </div>
                 <div
@@ -432,10 +750,14 @@ export function TerrainTextureLab() {
           <TerrainTextureLabCanvas
             configs={configs}
             previewHexes={TERRAIN_TEXTURE_PREVIEW_HEXES}
+            models={models}
+            placements={placements}
+            selectedHexId={selectedHexId}
             seed={seed}
             animationEnabled={animationEnabled}
             globalTimeScale={globalTimeScale}
             viewSettings={viewSettings}
+            onHexSelect={handleHexSelect}
           />
         </div>
       </main>

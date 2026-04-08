@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type {
   LabTerrainKey,
   TerrainTextureLabConfig,
+  TerrainTextureLabModelDefinition,
+  TerrainTextureLabModelPlacement,
   TerrainTextureLabViewSettings,
   TerrainTexturePreviewHex,
 } from './terrainTextureLabPresets';
@@ -15,10 +18,14 @@ import {
 interface TerrainTextureLabCanvasProps {
   configs: Record<LabTerrainKey, TerrainTextureLabConfig>;
   previewHexes: TerrainTexturePreviewHex[];
+  models: TerrainTextureLabModelDefinition[];
+  placements: TerrainTextureLabModelPlacement[];
+  selectedHexId: string | null;
   seed: number;
   animationEnabled: boolean;
   globalTimeScale: number;
   viewSettings: TerrainTextureLabViewSettings;
+  onHexSelect: (hexId: string) => void;
 }
 
 interface SceneRefs {
@@ -27,6 +34,8 @@ interface SceneRefs {
   camera: THREE.PerspectiveCamera;
   mesh: THREE.InstancedMesh;
   material: THREE.ShaderMaterial;
+  modelGroup: THREE.Group;
+  selectionOutline: THREE.LineLoop;
 }
 
 const RECIPE_INDEX: Record<TerrainTextureLabConfig['recipe'], number> = {
@@ -82,7 +91,11 @@ function getHexCenter(col: number, row: number, radius: number): { x: number; y:
   };
 }
 
-function createOutline(size: number): THREE.LineLoop {
+function createOutline(
+  size: number,
+  color = TERRAIN_TEXTURE_LAB_SHADER_CONSTANTS.OUTLINE_COLOR,
+  opacity = TERRAIN_TEXTURE_LAB_SHADER_CONSTANTS.OUTLINE_OPACITY,
+) {
   const points: THREE.Vector3[] = [];
   for (let i = 0; i < 6; i++) {
     const angle = (Math.PI / 180) * (60 * i);
@@ -91,11 +104,38 @@ function createOutline(size: number): THREE.LineLoop {
 
   const geometry = new THREE.BufferGeometry().setFromPoints(points);
   const material = new THREE.LineBasicMaterial({
-    color: TERRAIN_TEXTURE_LAB_SHADER_CONSTANTS.OUTLINE_COLOR,
+    color,
     transparent: true,
-    opacity: TERRAIN_TEXTURE_LAB_SHADER_CONSTANTS.OUTLINE_OPACITY,
+    opacity,
   });
   return new THREE.LineLoop(geometry, material);
+}
+
+function disposeLineLoop(loop: THREE.LineLoop) {
+  loop.geometry.dispose();
+  (loop.material as THREE.Material).dispose();
+}
+
+function disposeObjectResources(root: THREE.Object3D): void {
+  const disposedMaterials = new Set<THREE.Material>();
+  root.traverse(child => {
+    if (!(child instanceof THREE.Mesh)) return;
+    child.geometry.dispose();
+    const materials = Array.isArray(child.material) ? child.material : [child.material];
+    for (const material of materials) {
+      if (!disposedMaterials.has(material)) {
+        material.dispose();
+        disposedMaterials.add(material);
+      }
+    }
+  });
+}
+
+function clearGroupChildren(group: THREE.Group): void {
+  while (group.children.length > 0) {
+    const child = group.children[group.children.length - 1];
+    group.remove(child);
+  }
 }
 
 function fitPerspectiveCamera(
@@ -202,10 +242,14 @@ function updateMeshAttributes(
 export function TerrainTextureLabCanvas({
   configs,
   previewHexes,
+  models,
+  placements,
+  selectedHexId,
   seed,
   animationEnabled,
   globalTimeScale,
   viewSettings,
+  onHexSelect,
 }: TerrainTextureLabCanvasProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -216,6 +260,12 @@ export function TerrainTextureLabCanvas({
   const globalTimeScaleRef = useRef(globalTimeScale);
   const seedRef = useRef(seed);
   const viewSettingsRef = useRef(viewSettings);
+  const onHexSelectRef = useRef(onHexSelect);
+  const loaderRef = useRef<GLTFLoader | null>(null);
+  const templateCacheRef = useRef<Map<string, Promise<THREE.Group>>>(new Map());
+  const resolvedTemplateRef = useRef<Map<string, THREE.Group>>(new Map());
+  const raycasterRef = useRef(new THREE.Raycaster());
+  const pointerRef = useRef(new THREE.Vector2());
 
   const sceneBounds = useMemo(() => {
     const centers = previewHexes.map(hex => getHexCenter(hex.col, hex.row, TERRAIN_TEXTURE_LAB_CONSTANTS.HEX_RADIUS));
@@ -227,6 +277,10 @@ export function TerrainTextureLabCanvas({
       minY: Math.min(...ys) - TERRAIN_TEXTURE_LAB_CONSTANTS.HEX_RADIUS * 1.4,
       maxY: Math.max(...ys) + TERRAIN_TEXTURE_LAB_CONSTANTS.HEX_RADIUS * 1.4,
     };
+  }, [previewHexes]);
+
+  const previewHexMap = useMemo(() => {
+    return new Map(previewHexes.map(hex => [hex.id, hex]));
   }, [previewHexes]);
 
   useEffect(() => {
@@ -247,6 +301,10 @@ export function TerrainTextureLabCanvas({
   }, [sceneBounds, viewSettings]);
 
   useEffect(() => {
+    onHexSelectRef.current = onHexSelect;
+  }, [onHexSelect]);
+
+  useEffect(() => {
     const container = containerRef.current;
     const canvas = canvasRef.current;
     if (!container || !canvas) return;
@@ -262,6 +320,7 @@ export function TerrainTextureLabCanvas({
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(TERRAIN_TEXTURE_LAB_SHADER_CONSTANTS.BACKGROUND_COLOR);
+    loaderRef.current = new GLTFLoader();
 
     const camera = new THREE.PerspectiveCamera(
       TERRAIN_TEXTURE_LAB_CONSTANTS.CAMERA_FOV_DEGREES,
@@ -287,7 +346,20 @@ export function TerrainTextureLabCanvas({
     }
     scene.add(outlineGroup);
 
-    sceneRef.current = { renderer, scene, camera, mesh, material };
+    const modelGroup = new THREE.Group();
+    modelGroup.name = 'TerrainTextureLabModels';
+    scene.add(modelGroup);
+
+    const selectionOutline = createOutline(
+      TERRAIN_TEXTURE_LAB_CONSTANTS.HEX_RADIUS * 1.08,
+      '#F6E7A8',
+      0.95,
+    );
+    selectionOutline.visible = false;
+    selectionOutline.position.z = TERRAIN_TEXTURE_LAB_CONSTANTS.MODEL_LAYER_Z + 0.5;
+    scene.add(selectionOutline);
+
+    sceneRef.current = { renderer, scene, camera, mesh, material, modelGroup, selectionOutline };
 
     const fitCamera = () => {
       fitPerspectiveCamera(camera, renderer, container, sceneBounds, viewSettingsRef.current);
@@ -308,20 +380,43 @@ export function TerrainTextureLabCanvas({
     const resizeObserver = new ResizeObserver(() => fitCamera());
     resizeObserver.observe(container);
 
+    const handlePointerDown = (event: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return;
+
+      pointerRef.current.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      pointerRef.current.y = -(((event.clientY - rect.top) / rect.height) * 2 - 1);
+
+      raycasterRef.current.setFromCamera(pointerRef.current, camera);
+      const intersections = raycasterRef.current.intersectObject(mesh, false);
+      const hit = intersections[0];
+      if (!hit || hit.instanceId == null) return;
+
+      const previewHex = previewHexes[hit.instanceId];
+      if (!previewHex) return;
+      onHexSelectRef.current(previewHex.id);
+    };
+
+    canvas.addEventListener('pointerdown', handlePointerDown);
+
     return () => {
       resizeObserver.disconnect();
+      canvas.removeEventListener('pointerdown', handlePointerDown);
       if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
       outlineGroup.children.forEach(child => {
-        if (child instanceof THREE.LineLoop) {
-          child.geometry.dispose();
-          (child.material as THREE.Material).dispose();
-        }
+        if (child instanceof THREE.LineLoop) disposeLineLoop(child);
       });
+      disposeLineLoop(selectionOutline);
+      clearGroupChildren(modelGroup);
+      resolvedTemplateRef.current.forEach(template => disposeObjectResources(template));
+      resolvedTemplateRef.current.clear();
+      templateCacheRef.current.clear();
       geometry.dispose();
       material.dispose();
       renderer.dispose();
       scene.clear();
       sceneRef.current = null;
+      loaderRef.current = null;
     };
   }, [previewHexes, sceneBounds]);
 
@@ -338,6 +433,111 @@ export function TerrainTextureLabCanvas({
     startTimeRef.current = performance.now();
     sceneRefs.material.uniforms.uTime.value = 0;
   }, [animationEnabled, globalTimeScale]);
+
+  useEffect(() => {
+    const sceneRefs = sceneRef.current;
+    const previewHex = selectedHexId ? previewHexMap.get(selectedHexId) : null;
+    if (!sceneRefs || !previewHex) {
+      if (sceneRefs) sceneRefs.selectionOutline.visible = false;
+      return;
+    }
+
+    const center = getHexCenter(previewHex.col, previewHex.row, TERRAIN_TEXTURE_LAB_CONSTANTS.HEX_RADIUS);
+    sceneRefs.selectionOutline.visible = true;
+    sceneRefs.selectionOutline.position.set(
+      center.x,
+      center.y,
+      TERRAIN_TEXTURE_LAB_CONSTANTS.MODEL_LAYER_Z + 0.5,
+    );
+  }, [previewHexMap, selectedHexId]);
+
+  useEffect(() => {
+    const sceneRefs = sceneRef.current;
+    const loader = loaderRef.current;
+    if (!sceneRefs || !loader) return;
+
+    let cancelled = false;
+    clearGroupChildren(sceneRefs.modelGroup);
+
+    async function loadTemplate(model: TerrainTextureLabModelDefinition): Promise<THREE.Group> {
+      const cached = templateCacheRef.current.get(model.id);
+      if (cached) return cached;
+
+      const promise = loader.loadAsync(model.sourceUrl).then((gltf) => {
+        const materialCache = new Map<THREE.Material, THREE.MeshBasicMaterial>();
+        gltf.scene.traverse(child => {
+          if (!(child instanceof THREE.Mesh)) return;
+          const original = Array.isArray(child.material) ? child.material[0] : child.material;
+          if (!materialCache.has(original)) {
+            const originalColor = original instanceof THREE.MeshStandardMaterial || original instanceof THREE.MeshBasicMaterial
+              ? original.color.clone()
+              : new THREE.Color('#ffffff');
+            materialCache.set(original, new THREE.MeshBasicMaterial({
+              color: originalColor,
+              side: THREE.DoubleSide,
+            }));
+          }
+          child.material = materialCache.get(original)!;
+          child.castShadow = false;
+          child.receiveShadow = false;
+        });
+
+        if (model.sourceKind !== 'builtin') {
+          const bounds = new THREE.Box3().setFromObject(gltf.scene);
+          const size = bounds.getSize(new THREE.Vector3());
+          const center = bounds.getCenter(new THREE.Vector3());
+          const footprintRadius = Math.max(size.x, size.y) * 0.5;
+          const autoScale = footprintRadius > 0
+            ? TERRAIN_TEXTURE_LAB_CONSTANTS.MODEL_TARGET_FOOTPRINT_RADIUS / footprintRadius
+            : 1;
+
+          gltf.scene.position.x -= center.x;
+          gltf.scene.position.y -= center.y;
+          gltf.scene.position.z -= bounds.min.z;
+          gltf.scene.scale.setScalar(autoScale);
+        }
+
+        resolvedTemplateRef.current.set(model.id, gltf.scene);
+        return gltf.scene;
+      });
+
+      templateCacheRef.current.set(model.id, promise);
+      return promise;
+    }
+
+    async function syncPlacements() {
+      for (const placement of placements) {
+        const model = models.find(entry => entry.id === placement.modelId);
+        const previewHex = previewHexMap.get(placement.hexId);
+        if (!model || !previewHex) continue;
+
+        try {
+          const template = await loadTemplate(model);
+          if (cancelled) return;
+
+          const clone = template.clone(true);
+          const center = getHexCenter(previewHex.col, previewHex.row, TERRAIN_TEXTURE_LAB_CONSTANTS.HEX_RADIUS);
+          clone.position.set(
+            center.x,
+            center.y,
+            TERRAIN_TEXTURE_LAB_CONSTANTS.MODEL_LAYER_Z + placement.heightOffset,
+          );
+          clone.scale.setScalar(placement.scale);
+          clone.rotation.z = THREE.MathUtils.degToRad(placement.rotationDegrees);
+          sceneRefs.modelGroup.add(clone);
+        } catch (error) {
+          console.warn(`[TerrainTextureLab] Failed to load model ${model.sourceUrl}:`, error);
+        }
+      }
+    }
+
+    void syncPlacements();
+
+    return () => {
+      cancelled = true;
+      clearGroupChildren(sceneRefs.modelGroup);
+    };
+  }, [models, placements, previewHexMap]);
 
   return (
     <div

@@ -39,6 +39,11 @@ Scope:
   - animation speed
 - Global controls for seed, time scale, and animation enable/disable
 - Camera controls for tilt, bearing, and zoom with persistent view settings
+- Model import and placement controls:
+  - built-in `city.glb`, `town.glb`, and `village.glb`
+  - URL import for MCP-exported GLBs in `public/models/`
+  - local `.glb` picker for quick experiments
+  - click-to-place on preview hexes
 - Local persistence via `localStorage`
 - JSON export for presets
 
@@ -74,6 +79,16 @@ Practical takeaways:
 - Use cellular/Worley-style distance fields for clustered or pooled forms like canopy, marsh, foam.
 - Rotate or warp coordinates to avoid obvious axis-aligned grid artifacts.
 - If we later move to authored textures, `DataArrayTexture` is the cleanest path for same-sized terrain layers.
+
+## Model Workflow
+
+The lab now supports a Blender-MCP-friendly flow without wiring frontend code directly to an MCP server:
+
+1. Use Blender MCP to export a `.glb` into `public/models/`.
+2. In the lab, add the model by URL, e.g. `/models/my-fortress.glb`.
+3. Select the model, tweak scale / height / yaw, and click preview hexes to place instances.
+
+Imported non-builtin GLBs are auto-fit to an approximate hex footprint on first load so scale `1` is usually in the right neighborhood. This keeps the browser-side tool simple while still making the export → preview loop fast.
 
 ## Tunability
 

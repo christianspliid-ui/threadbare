@@ -13,6 +13,7 @@ import {
   parseTerrainTextureLabViewSettings,
   serializeTerrainTextureLabConfigs,
   serializeTerrainTextureLabViewSettings,
+  TERRAIN_TEXTURE_LAB_BUILTIN_MODELS,
 } from '../terrainTextureLabPresets';
 
 describe('terrainTextureLab presets', () => {
@@ -31,6 +32,14 @@ describe('terrainTextureLab presets', () => {
     const defaults = getDefaultTerrainTextureLabViewSettings();
     const parsed = parseTerrainTextureLabViewSettings(serializeTerrainTextureLabViewSettings(defaults));
     expect(parsed).toEqual(defaults);
+  });
+
+  it('exposes builtin lab models for quick placement testing', () => {
+    expect(TERRAIN_TEXTURE_LAB_BUILTIN_MODELS.map(model => model.sourceUrl)).toEqual([
+      '/models/city.glb',
+      '/models/town.glb',
+      '/models/village.glb',
+    ]);
   });
 });
 

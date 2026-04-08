@@ -18,7 +18,7 @@ Design: `Docs/plans/2026-04-05-attention-tier-model-design.md`. Plan: `Docs/plan
 
 ## Recent Completions (2026-04-08)
 
-- **Terrain Texture Lab POC:** Standalone WebGL playground at `?view=terrain-lab` for experimenting with hex terrain materials outside the live game renderer. Separate Three.js scene + instanced shader preview, six starter recipes (grassland, forest, mountains, dunes, coast, swamp), live controls for noise/warp/banding/color plus perspective camera tilt/bearing/zoom, localStorage persistence, JSON export. Research/implementation note: `Docs/plans/2026-04-08-terrain-texture-lab-poc.md`.
+- **Terrain Texture Lab POC:** Standalone WebGL playground at `?view=terrain-lab` for experimenting with hex terrain materials outside the live game renderer. Separate Three.js scene + instanced shader preview, six starter recipes (grassland, forest, mountains, dunes, coast, swamp), live controls for noise/warp/banding/color plus perspective camera tilt/bearing/zoom, built-in and imported GLB placement on preview hexes, localStorage persistence, JSON export. Research/implementation note: `Docs/plans/2026-04-08-terrain-texture-lab-poc.md`.
 
 ## Previous Completions (2026-04-07)
 

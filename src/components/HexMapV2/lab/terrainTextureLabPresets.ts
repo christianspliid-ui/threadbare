@@ -9,6 +9,11 @@ export const TERRAIN_TEXTURE_LAB_CONSTANTS = {
   PIXEL_RATIO_CAP: 2,
   DEFAULT_SEED: 42,
   DEFAULT_TIME_SCALE: 1,
+  MODEL_LAYER_Z: 2,
+  MODEL_TARGET_FOOTPRINT_RADIUS: 48,
+  DEFAULT_MODEL_SCALE: 1,
+  DEFAULT_MODEL_HEIGHT_OFFSET: 0,
+  DEFAULT_MODEL_ROTATION_DEGREES: 0,
   CAMERA_FOV_DEGREES: 38,
   CAMERA_FIT_MARGIN: 1.35,
   MIN_CAMERA_TILT_DEGREES: 0,
@@ -75,6 +80,25 @@ export interface TerrainTextureLabViewSettings {
   zoom: number;
 }
 
+export interface TerrainTextureLabModelDefinition {
+  id: string;
+  label: string;
+  sourceUrl: string;
+  sourceKind: 'builtin' | 'url' | 'file';
+  suggestedScale: number;
+  suggestedHeightOffset: number;
+  suggestedRotationDegrees: number;
+}
+
+export interface TerrainTextureLabModelPlacement {
+  id: string;
+  modelId: string;
+  hexId: string;
+  scale: number;
+  heightOffset: number;
+  rotationDegrees: number;
+}
+
 export const TERRAIN_TEXTURE_PREVIEW_HEXES: TerrainTexturePreviewHex[] = [
   { id: 'grass-a', terrainKey: 'grassland', col: 0, row: 0 },
   { id: 'grass-b', terrainKey: 'grassland', col: 1, row: 0 },
@@ -88,6 +112,36 @@ export const TERRAIN_TEXTURE_PREVIEW_HEXES: TerrainTexturePreviewHex[] = [
   { id: 'desert-b', terrainKey: 'sand_dunes', col: 1, row: 2 },
   { id: 'swamp-b', terrainKey: 'swamp', col: 2, row: 2 },
   { id: 'mountain-b', terrainKey: 'mountains', col: 3, row: 2 },
+] as const;
+
+export const TERRAIN_TEXTURE_LAB_BUILTIN_MODELS: TerrainTextureLabModelDefinition[] = [
+  {
+    id: 'builtin-city',
+    label: 'City (builtin)',
+    sourceUrl: '/models/city.glb',
+    sourceKind: 'builtin',
+    suggestedScale: 5.4,
+    suggestedHeightOffset: 0,
+    suggestedRotationDegrees: 0,
+  },
+  {
+    id: 'builtin-town',
+    label: 'Town (builtin)',
+    sourceUrl: '/models/town.glb',
+    sourceKind: 'builtin',
+    suggestedScale: 3.3,
+    suggestedHeightOffset: 0,
+    suggestedRotationDegrees: 0,
+  },
+  {
+    id: 'builtin-village',
+    label: 'Village (builtin)',
+    sourceUrl: '/models/village.glb',
+    sourceKind: 'builtin',
+    suggestedScale: 2.9,
+    suggestedHeightOffset: 0,
+    suggestedRotationDegrees: 0,
+  },
 ] as const;
 
 function clamp01(value: number): number {
