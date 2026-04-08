@@ -417,6 +417,56 @@ describe('runFilterPipeline', () => {
     // At least the local one should survive
     expect(result.candidates.length).toBeGreaterThanOrEqual(1);
   });
+
+  it('does not zero out awareness when the agent has a condition trait without domain contributions', () => {
+    const graph = buildAgentGraph('agent-1', { iron: 10 });
+
+    graph.updateNode('loc-agent', { properties: { ...graph.getNode('loc-agent')!.properties, hexCol: 0, hexRow: 0 } });
+    graph.updateNode('loc-target', { properties: { ...graph.getNode('loc-target')!.properties, hexCol: 0, hexRow: 0 } });
+
+    graph.addNode({
+      id: 'trait-condition-deep-stab-wound',
+      type: 'trait',
+      name: 'Deep Stab Wound',
+      properties: {
+        subcategory: 'condition',
+        description: 'A lingering wound.',
+        importance: 0.4,
+        maxLevel: 1,
+        visibility: 'public',
+        effects: [],
+        tags: [],
+        flavorText: 'It aches with every breath.',
+      },
+    });
+    graph.addEdge({
+      id: 'edge-agent-condition',
+      type: 'has_trait',
+      source: 'agent-1',
+      target: 'trait-condition-deep-stab-wound',
+      properties: {
+        level: 1,
+        acquiredTick: 0,
+        lastReinforcedTick: 0,
+        source: 'test',
+        visibility: 'public',
+      },
+    });
+
+    const entries = [
+      makeEntry({
+        templateId: 'tmpl-same-hex',
+        locationId: 'loc-target',
+        threatRating: 'moderate',
+        reachPrimary: 'iron' as ReachDomain,
+      }),
+    ];
+
+    const result = runFilterPipeline(entries, 'agent-1', 'loc-agent', graph, 10);
+
+    expect(result.trace.afterAwareness).toBe(1);
+    expect(result.candidates).toHaveLength(1);
+  });
 });
 
 // ─── Stage 3b: Outgrowth Lock ────────────────────────────────────

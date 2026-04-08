@@ -68,6 +68,40 @@ describe('Domain Capability', () => {
       const raw = computeRawScore(graph, 'actor.thorin', 'iron');
       expect(raw).toBe(4); // 3 origin + 1 artifact
     });
+
+    it('ignores traits that do not define domain contributions', () => {
+      graph.addNode({
+        id: 'trait.condition.deep_stab_wound',
+        type: 'trait',
+        name: 'Deep Stab Wound',
+        properties: {
+          subcategory: 'condition',
+          description: 'A lingering wound.',
+          importance: 0.5,
+          maxLevel: 1,
+          visibility: 'public',
+          effects: [],
+          tags: [],
+          flavorText: 'It aches with every breath.',
+        },
+      });
+      graph.addEdge({
+        id: 'e.has_trait.deep_stab_wound',
+        source: 'actor.thorin',
+        target: 'trait.condition.deep_stab_wound',
+        type: 'has_trait',
+        properties: {
+          level: 1,
+          acquiredTick: 0,
+          lastReinforcedTick: 0,
+          source: 'test',
+          visibility: 'public',
+        },
+      });
+
+      expect(() => computeRawScore(graph, 'actor.thorin', 'iron')).not.toThrow();
+      expect(computeRawScore(graph, 'actor.thorin', 'iron')).toBe(3);
+    });
   });
 
   describe('computeCapability', () => {
@@ -125,6 +159,40 @@ describe('Domain Capability', () => {
       const top = getTopContributors(graph, 'actor.thorin', 'iron', 3);
       expect(top.length).toBeLessThanOrEqual(3);
       expect(top[0].contribution).toBeGreaterThanOrEqual(top[1]?.contribution ?? 0);
+    });
+
+    it('skips malformed traits without domain contributions', () => {
+      graph.addNode({
+        id: 'trait.condition.deep_stab_wound',
+        type: 'trait',
+        name: 'Deep Stab Wound',
+        properties: {
+          subcategory: 'condition',
+          description: 'A lingering wound.',
+          importance: 0.5,
+          maxLevel: 1,
+          visibility: 'public',
+          effects: [],
+          tags: [],
+          flavorText: 'It aches with every breath.',
+        },
+      });
+      graph.addEdge({
+        id: 'e.has_trait.deep_stab_wound',
+        source: 'actor.thorin',
+        target: 'trait.condition.deep_stab_wound',
+        type: 'has_trait',
+        properties: {
+          level: 1,
+          acquiredTick: 0,
+          lastReinforcedTick: 0,
+          source: 'test',
+          visibility: 'public',
+        },
+      });
+
+      expect(() => getTopContributors(graph, 'actor.thorin', 'iron', 3)).not.toThrow();
+      expect(getTopContributors(graph, 'actor.thorin', 'iron', 3).map((entry) => entry.sourceId)).not.toContain('trait.condition.deep_stab_wound');
     });
   });
 });

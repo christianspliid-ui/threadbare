@@ -50,7 +50,8 @@ export function computeRawScore(
     if (!traitNode) continue;
     const traitDef = traitNode.properties as unknown as TraitDefinitionProperties;
     const assignment = edge.properties as unknown as TraitAssignmentProperties;
-    const base = traitDef.domainContributions[domain] ?? 0;
+    const contributions = traitDef.domainContributions as DomainContributions | undefined;
+    const base = contributions?.[domain] ?? 0;
     total += base * assignment.level;
   }
 
@@ -147,7 +148,8 @@ export function getTopContributors(
     if (!traitNode) continue;
     const traitDef = traitNode.properties as unknown as TraitDefinitionProperties;
     const assignment = edge.properties as unknown as TraitAssignmentProperties;
-    const base = traitDef.domainContributions[domain] ?? 0;
+    const contributions = traitDef.domainContributions as DomainContributions | undefined;
+    const base = contributions?.[domain] ?? 0;
     const contribution = base * assignment.level;
     if (contribution > 0) {
       contributors.push({ name: traitNode.name, sourceId: traitNode.id, contribution });
