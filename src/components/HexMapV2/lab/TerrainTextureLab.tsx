@@ -281,10 +281,11 @@ export function TerrainTextureLab() {
         return `Vignette prototype ${nextEnabled ? 'enabled' : 'disabled'}`;
       },
 
-      /** Set vignette scope: selected_forest | all_forests */
+      /** Set vignette scope: selected_forest | all_forests | selected_mountain | all_mountains */
       prototypeScope: (scope: TerrainTextureLabVignetteSettings['scope']) => {
-        if (scope !== 'selected_forest' && scope !== 'all_forests') {
-          return 'Scope must be selected_forest or all_forests';
+        const validScopes = ['selected_forest', 'all_forests', 'selected_mountain', 'all_mountains'];
+        if (!validScopes.includes(scope)) {
+          return `Scope must be one of: ${validScopes.join(', ')}`;
         }
         setVignetteSettings(prev => ({ ...prev, scope }));
         return `Vignette scope set to ${scope}`;
@@ -325,7 +326,7 @@ export function TerrainTextureLab() {
         '  .clear()                        — clear all placements',
         '  .camera({tilt, bearing, zoom})  — set camera',
         '  .prototype(enabled?)            — toggle slot-aware vignette pass',
-        '  .prototypeScope(scope)          — selected_forest | all_forests',
+        '  .prototypeScope(scope)          — selected_forest | all_forests | selected_mountain | all_mountains',
         '  .prototypeSummary()             — list current auto-vignette counts',
         '  .forestVignette(hexId?, scale?) — quick forest+city vignette',
         '  .placements()                   — list current placements',
@@ -683,6 +684,8 @@ export function TerrainTextureLab() {
                   >
                     <option value="selected_forest">Selected forest only</option>
                     <option value="all_forests">All forest sample hexes</option>
+                    <option value="selected_mountain">Selected mountain only</option>
+                    <option value="all_mountains">All mountain sample hexes</option>
                   </select>
                 </label>
 

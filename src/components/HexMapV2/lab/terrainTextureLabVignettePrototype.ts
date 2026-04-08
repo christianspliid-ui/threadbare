@@ -87,6 +87,12 @@ function getForestTreeModels(models: TerrainTextureLabModelDefinition[]): Terrai
   return models.filter(model => /forest/i.test(model.id) === false);
 }
 
+function getMountainFillerModels(models: TerrainTextureLabModelDefinition[]): TerrainTextureLabModelDefinition[] {
+  const explicitRocks = models.filter(model => /cairn|rock|outcrop/i.test(model.id) || /cairn|rock|outcrop/i.test(model.label));
+  if (explicitRocks.length > 0) return explicitRocks;
+  return [];
+}
+
 function chooseLandmarkModel(
   models: TerrainTextureLabModelDefinition[],
   requestedId: string,
@@ -95,6 +101,16 @@ function chooseLandmarkModel(
     ?? models.find(model => /village/i.test(model.id))
     ?? models.find(model => /town/i.test(model.id))
     ?? models.find(model => /city/i.test(model.id))
+    ?? null;
+}
+
+function chooseMountainLandmarkModel(
+  models: TerrainTextureLabModelDefinition[],
+  requestedId: string,
+): TerrainTextureLabModelDefinition | null {
+  return models.find(model => model.id === requestedId)
+    ?? models.find(model => /mountain-temple/i.test(model.id))
+    ?? models.find(model => /temple/i.test(model.id))
     ?? null;
 }
 
@@ -138,10 +154,20 @@ function sampleFreeFillCandidates(
   hexCenter: TerrainTextureLabPoint,
   blockedZones: TerrainTextureLabVignetteZoneRule[],
   existingPoints: TerrainTextureLabPoint[],
+  isMountain = false,
 ): FillerCandidate[] {
   const results: FillerCandidate[] = [];
   const allPoints = [...existingPoints];
-  const minSpacing = TERRAIN_TEXTURE_LAB_CONSTANTS.HEX_RADIUS * TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.FOREST_FREE_MIN_SPACING_FRACTION;
+  const spacingFraction = isMountain
+    ? TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.MOUNTAIN_FREE_MIN_SPACING_FRACTION
+    : TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.FOREST_FREE_MIN_SPACING_FRACTION;
+  const scaleMin = isMountain
+    ? TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.MOUNTAIN_FREE_SCALE_MIN
+    : TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.FOREST_FREE_SCALE_MIN;
+  const scaleMax = isMountain
+    ? TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.MOUNTAIN_FREE_SCALE_MAX
+    : TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.FOREST_FREE_SCALE_MAX;
+  const minSpacing = TERRAIN_TEXTURE_LAB_CONSTANTS.HEX_RADIUS * spacingFraction;
   const maxAttempts = Math.max(targetCount * 24, 240);
 
   for (let attempt = 0; attempt < maxAttempts && results.length < targetCount; attempt++) {
@@ -150,8 +176,7 @@ function sampleFreeFillCandidates(
     if (isInsideAnyKeepout(point, blockedZones)) continue;
     if (violatesMinSpacing(point, allPoints, minSpacing)) continue;
 
-    const scale = TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.FOREST_FREE_SCALE_MIN
-      + rng() * (TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.FOREST_FREE_SCALE_MAX - TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.FOREST_FREE_SCALE_MIN);
+    const scale = scaleMin + rng() * (scaleMax - scaleMin);
 
     results.push({ ...point, scale, mode: 'free_fill' });
     allPoints.push(point);
@@ -166,16 +191,29 @@ function sampleSoftFillCandidates(
   zone: TerrainTextureLabVignetteZoneRule,
   existingPoints: TerrainTextureLabPoint[],
   densityScale: number,
+  isMountain = false,
 ): FillerCandidate[] {
   const zoneArea = Math.PI * zone.radius * zone.radius;
   const equivalentHexFraction = zoneArea / HEX_AREA;
-  const exactTargetCount = TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.FOREST_SOFT_DENSITY_PER_HEX * equivalentHexFraction * densityScale;
+  const softDensity = isMountain
+    ? TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.MOUNTAIN_SOFT_DENSITY_PER_HEX
+    : TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.FOREST_SOFT_DENSITY_PER_HEX;
+  const exactTargetCount = softDensity * equivalentHexFraction * densityScale;
   const targetCount = Math.floor(exactTargetCount) + (rng() < (exactTargetCount % 1) ? 1 : 0);
   if (targetCount <= 0) return [];
 
   const results: FillerCandidate[] = [];
   const allPoints = [...existingPoints];
-  const minSpacing = TERRAIN_TEXTURE_LAB_CONSTANTS.HEX_RADIUS * TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.FOREST_SOFT_MIN_SPACING_FRACTION;
+  const spacingFraction = isMountain
+    ? TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.MOUNTAIN_SOFT_MIN_SPACING_FRACTION
+    : TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.FOREST_SOFT_MIN_SPACING_FRACTION;
+  const scaleMin = isMountain
+    ? TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.MOUNTAIN_SOFT_SCALE_MIN
+    : TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.FOREST_SOFT_SCALE_MIN;
+  const scaleMax = isMountain
+    ? TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.MOUNTAIN_SOFT_SCALE_MAX
+    : TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.FOREST_SOFT_SCALE_MAX;
+  const minSpacing = TERRAIN_TEXTURE_LAB_CONSTANTS.HEX_RADIUS * spacingFraction;
   const maxAttempts = Math.max(targetCount * 20, 48);
 
   for (let attempt = 0; attempt < maxAttempts && results.length < targetCount; attempt++) {
@@ -189,8 +227,7 @@ function sampleSoftFillCandidates(
     if (!isPointInsideTerrainTextureHex(point, hexCenter)) continue;
     if (violatesMinSpacing(point, allPoints, minSpacing)) continue;
 
-    const scale = TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.FOREST_SOFT_SCALE_MIN
-      + rng() * (TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.FOREST_SOFT_SCALE_MAX - TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.FOREST_SOFT_SCALE_MIN);
+    const scale = scaleMin + rng() * (scaleMax - scaleMin);
 
     results.push({ ...point, scale, mode: 'soft_fill' });
     allPoints.push(point);
@@ -204,6 +241,12 @@ function getScopeHexes(
   selectedHexId: string | null,
   scope: TerrainTextureLabVignetteSettings['scope'],
 ): TerrainTexturePreviewHex[] {
+  if (scope === 'selected_mountain' || scope === 'all_mountains') {
+    const mountains = previewHexes.filter(hex => hex.terrainKey === 'mountains');
+    if (scope === 'all_mountains') return mountains;
+    const selectedMountain = mountains.find(hex => hex.id === selectedHexId);
+    return selectedMountain ? [selectedMountain] : mountains.slice(0, 1);
+  }
   const forests = previewHexes.filter(hex => hex.terrainKey === 'temperate_forest');
   if (scope === 'all_forests') return forests;
   const selectedForest = forests.find(hex => hex.id === selectedHexId);
@@ -220,8 +263,13 @@ export function buildTerrainTextureLabVignettePrototype(
   const targetHexes = settings.enabled
     ? getScopeHexes(previewHexes, selectedHexId, settings.scope)
     : [];
-  const landmarkModel = chooseLandmarkModel(models, settings.landmarkModelId);
-  const treeModels = getForestTreeModels(models);
+  const isMountainScope = settings.scope === 'selected_mountain' || settings.scope === 'all_mountains';
+  const landmarkModel = isMountainScope
+    ? chooseMountainLandmarkModel(models, settings.landmarkModelId)
+    : chooseLandmarkModel(models, settings.landmarkModelId);
+  const fillerModels = isMountainScope
+    ? getMountainFillerModels(models)
+    : getForestTreeModels(models);
 
   const autoPlacements: TerrainTextureLabModelPlacement[] = [];
   const slotAnchors: TerrainTextureLabVignetteSlotAnchor[] = [];
@@ -299,8 +347,11 @@ export function buildTerrainTextureLabVignettePrototype(
       TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.MIN_DENSITY_SCALE,
       TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.MAX_DENSITY_SCALE,
     );
-    const freeTargetCount = Math.round(TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.FOREST_FREE_DENSITY_PER_HEX * densityScale);
-    const freeCandidates = sampleFreeFillCandidates(rng, freeTargetCount, center, [...keepouts, ...softFillZones], occupiedPoints);
+    const freeDensity = isMountainScope
+      ? TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.MOUNTAIN_FREE_DENSITY_PER_HEX
+      : TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.FOREST_FREE_DENSITY_PER_HEX;
+    const freeTargetCount = Math.round(freeDensity * densityScale);
+    const freeCandidates = sampleFreeFillCandidates(rng, freeTargetCount, center, [...keepouts, ...softFillZones], occupiedPoints, isMountainScope);
     const allCandidates: FillerCandidate[] = [...freeCandidates];
 
     for (const zone of softFillZones) {
@@ -310,6 +361,7 @@ export function buildTerrainTextureLabVignettePrototype(
         zone,
         [slotPositions.CENTER, ...allCandidates.map(candidate => ({ x: candidate.x, y: candidate.y }))],
         densityScale,
+        isMountainScope,
       );
       allCandidates.push(...softCandidates);
     }
@@ -324,14 +376,14 @@ export function buildTerrainTextureLabVignettePrototype(
         scale: candidate.scale,
       });
 
-      if (treeModels.length === 0) continue;
-      const treeModel = treeModels[Math.floor(rng() * treeModels.length)] ?? treeModels[0];
+      if (fillerModels.length === 0) continue;
+      const fillerModel = fillerModels[Math.floor(rng() * fillerModels.length)] ?? fillerModels[0];
       autoPlacements.push({
         id: `${previewHex.id}-filler-${index}`,
-        modelId: treeModel.id,
+        modelId: fillerModel.id,
         hexId: previewHex.id,
         scale: candidate.scale,
-        heightOffset: treeModel.suggestedHeightOffset,
+        heightOffset: fillerModel.suggestedHeightOffset,
         rotationDegrees: Math.round(rng() * 360 - 180),
       });
     }
@@ -348,7 +400,10 @@ export function buildTerrainTextureLabVignettePrototype(
       autoPlacementCount: autoPlacements.length,
       fillerPlacementCount: fillerDots.length,
       zoneCount: zoneRules.length,
-      scopeLabel: settings.scope === 'all_forests' ? 'All forest sample hexes' : 'Selected forest sample hex',
+      scopeLabel: settings.scope === 'all_forests' ? 'All forest sample hexes'
+        : settings.scope === 'all_mountains' ? 'All mountain sample hexes'
+        : settings.scope === 'selected_mountain' ? 'Selected mountain sample hex'
+        : 'Selected forest sample hex',
     },
   };
 }

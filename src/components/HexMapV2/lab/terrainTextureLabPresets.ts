@@ -45,6 +45,15 @@ export const TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS = {
   MAX_DENSITY_SCALE: 1.6,
   DEFAULT_LANDMARK_MODEL_ID: 'builtin-village',
   LANDMARK_CLICK_RADIUS_PX: 28,
+  MOUNTAIN_FREE_DENSITY_PER_HEX: 45,
+  MOUNTAIN_SOFT_DENSITY_PER_HEX: 12,
+  MOUNTAIN_FREE_MIN_SPACING_FRACTION: 0.13,
+  MOUNTAIN_SOFT_MIN_SPACING_FRACTION: 0.16,
+  MOUNTAIN_FREE_SCALE_MIN: 4.5,
+  MOUNTAIN_FREE_SCALE_MAX: 7.5,
+  MOUNTAIN_SOFT_SCALE_MIN: 3.0,
+  MOUNTAIN_SOFT_SCALE_MAX: 5.0,
+  DEFAULT_MOUNTAIN_LANDMARK_MODEL_ID: 'builtin-mountain-temple',
 } as const;
 
 export const TERRAIN_RECIPE_OPTIONS = [
@@ -100,7 +109,7 @@ export interface TerrainTextureLabViewSettings {
   zoom: number;
 }
 
-export type TerrainTextureLabVignetteScope = 'selected_forest' | 'all_forests';
+export type TerrainTextureLabVignetteScope = 'selected_forest' | 'all_forests' | 'selected_mountain' | 'all_mountains';
 
 export interface TerrainTextureLabVignetteSettings {
   enabled: boolean;
@@ -207,6 +216,33 @@ export const TERRAIN_TEXTURE_LAB_BUILTIN_MODELS: TerrainTextureLabModelDefinitio
     sourceUrl: '/models/deciduous-birch.glb',
     sourceKind: 'builtin',
     suggestedScale: 8,
+    suggestedHeightOffset: 0,
+    suggestedRotationDegrees: 0,
+  },
+  {
+    id: 'builtin-mountain-temple',
+    label: 'Mountain Temple (builtin)',
+    sourceUrl: '/models/mountain-temple.glb',
+    sourceKind: 'builtin',
+    suggestedScale: 2.8,
+    suggestedHeightOffset: 0,
+    suggestedRotationDegrees: 0,
+  },
+  {
+    id: 'builtin-cairn-stones',
+    label: 'Cairn Stones (builtin)',
+    sourceUrl: '/models/cairn-stones.glb',
+    sourceKind: 'builtin',
+    suggestedScale: 6,
+    suggestedHeightOffset: 0,
+    suggestedRotationDegrees: 0,
+  },
+  {
+    id: 'builtin-rock-outcrop',
+    label: 'Rock Outcrop (builtin)',
+    sourceUrl: '/models/rock-outcrop.glb',
+    sourceKind: 'builtin',
+    suggestedScale: 7,
     suggestedHeightOffset: 0,
     suggestedRotationDegrees: 0,
   },
@@ -492,9 +528,10 @@ export function parseTerrainTextureLabViewSettings(raw: string): TerrainTextureL
 export function parseTerrainTextureLabVignetteSettings(raw: string): TerrainTextureLabVignetteSettings | null {
   try {
     const parsed = JSON.parse(raw) as Partial<TerrainTextureLabVignetteSettings>;
+    const validScopes: TerrainTextureLabVignetteScope[] = ['selected_forest', 'all_forests', 'selected_mountain', 'all_mountains'];
     if (
       typeof parsed.enabled !== 'boolean'
-      || (parsed.scope !== 'selected_forest' && parsed.scope !== 'all_forests')
+      || !validScopes.includes(parsed.scope as TerrainTextureLabVignetteScope)
       || typeof parsed.landmarkModelId !== 'string'
       || typeof parsed.densityScale !== 'number'
       || typeof parsed.showSlotAnchors !== 'boolean'
