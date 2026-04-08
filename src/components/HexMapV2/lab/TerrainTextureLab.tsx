@@ -309,6 +309,7 @@ export function TerrainTextureLab() {
       style={{
         display: 'grid',
         gridTemplateColumns: `${TERRAIN_TEXTURE_LAB_CONSTANTS.PANEL_WIDTH}px minmax(0, 1fr)`,
+        minHeight: 0,
         backgroundColor: 'var(--bg-abyss)',
         color: 'var(--text-primary)',
       }}
@@ -319,6 +320,7 @@ export function TerrainTextureLab() {
           position: 'relative',
           display: 'flex',
           flexDirection: 'column',
+          minHeight: 0,
           overflow: 'hidden',
           borderRight: '1px solid var(--border-subtle)',
           background: 'linear-gradient(180deg, rgba(17,17,20,0.98), rgba(10,10,14,0.98))',
@@ -330,8 +332,18 @@ export function TerrainTextureLab() {
             Standalone WebGL playground for exploring terrain noise recipes before we touch the real hex map renderer.
           </p>
         </div>
-
-        <div style={{ flex: 1, overflowY: 'auto', padding: 'var(--panel-padding)', display: 'grid', gap: 'var(--space-4)' }}>
+        <div
+          style={{
+            flex: 1,
+            minHeight: 0,
+            overflowY: 'auto',
+            scrollbarGutter: 'stable',
+            padding: 'var(--panel-padding)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 'var(--space-4)',
+          }}
+        >
           <Card variant="glass">
             <Card.Header title="Terrain Presets" />
             <Card.Body>
@@ -378,7 +390,7 @@ export function TerrainTextureLab() {
 
           <Card variant="glass">
             <Card.Header title="Selected Terrain" />
-            <Card.Body scroll>
+            <Card.Body>
               <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
                 <div>
                   <h2 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>{selectedConfig.label}</h2>

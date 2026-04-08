@@ -1,27 +1,17 @@
 # Project Status
-
 > Updated 2026-04-08.
-
 ## Current Focus
-
 **Three-Tier Attention Model — Engine Foundation Shipped.** Background/shaping/story_beat encounter classification with full pipeline: tier resolution at encounter creation, effectiveTier-driven notification routing, digest buffer for background encounters, curator scoring (7 weighted factors), pacing governor for story beats, attention pool (regen/spend/visual states), dormant court position, 5 CLI debug commands, 42 tunable constants. ~500 templates classified. Code review fixes applied (phase ordering, notification routing, pacing wiring). **Next:** Phase 6 UI (thread tug visuals, story beat modal, Read the Threads panel, ambient activity icons, agent character sheet).
-
 Design: `Docs/plans/2026-04-05-attention-tier-model-design.md`. Plan: `Docs/plans/2026-04-05-attention-tier-implementation-plan.md`.
-
 ## Milestone Status
-
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
 - **v1.1 Optimization:** In progress — Phases 19-22 (determinism, wiring, performance, hygiene)
 - **v1.2 Social Systems Expansion:** Designed — 5 expansions. Design doc: `Docs/plans/2026-03-31-social-systems-expansion-design.md`
 - **Agent Success Redesign:** Phase 1 ✅, Phase 2 ✅, Phase 3 ✅, Phase 4 ✅ corrected (2026-04-03)
 - **Next:** Phase 5 (encounter migration and early-game retune), or v1.2 Social Systems
-
 ## Recent Completions (2026-04-08)
-
-- **Terrain Texture Lab POC:** Standalone WebGL playground at `?view=terrain-lab` for experimenting with hex terrain materials outside the live game renderer. Separate Three.js scene + instanced shader preview, six starter recipes (grassland, forest, mountains, dunes, coast, swamp), live controls for noise/warp/banding/color plus perspective camera tilt/bearing/zoom, built-in and imported GLB placement on preview hexes, localStorage persistence, JSON export. Research/implementation note: `Docs/plans/2026-04-08-terrain-texture-lab-poc.md`.
-
+- **Terrain Texture Lab POC:** Standalone WebGL playground at `?view=terrain-lab` for experimenting with hex terrain materials outside the live game renderer. Separate Three.js scene + instanced shader preview, six starter recipes (grassland, forest, mountains, dunes, coast, swamp), live controls for noise/warp/banding/color plus perspective camera tilt/bearing/zoom, built-in and imported GLB placement on preview hexes, localStorage persistence, JSON export, and a scrollable left control rail that stays usable when the widget stack exceeds viewport height. Research/implementation note: `Docs/plans/2026-04-08-terrain-texture-lab-poc.md`.
 ## Previous Completions (2026-04-07)
-
 - **Ascendant Portrait System:** Two-layer composited portrait system replacing generic sphere-keyed energy-being avatars. 12 origin portraits (mortal faces from remembrance choices) + 8 sphere frames (ornate picture frames with sphere-specific patterns). Canvas compositing at runtime, per-session caching, fail-soft fallbacks. Surfaces: AscendantSheet (full framed portrait), hex map agent icon (origin portrait), IdentityChip (circular thumbnail). 20 placeholder assets, 23 tests. Design: `Docs/plans/2026-04-07-ascendant-portrait-system-design.md`.
 
 - **Encounter Veil:** Full-screen overlay replacing TieredEncounterModal (973 lines) + EncounterStage (925 lines) with a single EncounterVeil using the dissolved-art Remembrance aesthetic. All three thread tiers (strongly_threaded/lightly_threaded/watched) + aftermath mode. Wired into GameView as the single encounter rendering path. Net: ~2644 added / ~2457 removed, one path instead of two.
