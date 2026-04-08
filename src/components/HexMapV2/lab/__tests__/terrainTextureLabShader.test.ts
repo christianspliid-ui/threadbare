@@ -52,6 +52,7 @@ describe('terrainTextureLab presets', () => {
       '/models/deciduous-oak.glb',
       '/models/deciduous-elm.glb',
       '/models/deciduous-birch.glb',
+      '/models/mountain-plateau-vignette.glb',
       '/models/mountain-temple.glb',
       '/models/cairn-stones.glb',
       '/models/rock-outcrop.glb',

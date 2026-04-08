@@ -220,6 +220,15 @@ export const TERRAIN_TEXTURE_LAB_BUILTIN_MODELS: TerrainTextureLabModelDefinitio
     suggestedRotationDegrees: 0,
   },
   {
+    id: 'builtin-mountain-plateau-vignette',
+    label: 'Mountain Plateau Vignette (builtin)',
+    sourceUrl: '/models/mountain-plateau-vignette.glb',
+    sourceKind: 'builtin',
+    suggestedScale: 15.6,
+    suggestedHeightOffset: 0,
+    suggestedRotationDegrees: 0,
+  },
+  {
     id: 'builtin-mountain-temple',
     label: 'Mountain Temple (builtin)',
     sourceUrl: '/models/mountain-temple.glb',
