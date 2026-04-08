@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import type { LabTerrainKey, TerrainTextureLabConfig, TerrainTexturePreviewHex } from './terrainTextureLabPresets';
+import type {
+  LabTerrainKey,
+  TerrainTextureLabConfig,
+  TerrainTextureLabViewSettings,
+  TerrainTexturePreviewHex,
+} from './terrainTextureLabPresets';
 import { TERRAIN_TEXTURE_LAB_CONSTANTS } from './terrainTextureLabPresets';
 import {
   createTerrainTextureLabMaterial,
@@ -13,12 +18,13 @@ interface TerrainTextureLabCanvasProps {
   seed: number;
   animationEnabled: boolean;
   globalTimeScale: number;
+  viewSettings: TerrainTextureLabViewSettings;
 }
 
 interface SceneRefs {
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
-  camera: THREE.OrthographicCamera;
+  camera: THREE.PerspectiveCamera;
   mesh: THREE.InstancedMesh;
   material: THREE.ShaderMaterial;
 }
@@ -92,6 +98,48 @@ function createOutline(size: number): THREE.LineLoop {
   return new THREE.LineLoop(geometry, material);
 }
 
+function fitPerspectiveCamera(
+  camera: THREE.PerspectiveCamera,
+  renderer: THREE.WebGLRenderer,
+  container: HTMLDivElement,
+  sceneBounds: { minX: number; maxX: number; minY: number; maxY: number },
+  viewSettings: TerrainTextureLabViewSettings,
+) {
+  const width = Math.max(container.clientWidth, 1);
+  const height = Math.max(container.clientHeight, 1);
+  const aspect = width / height;
+  renderer.setSize(width, height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, TERRAIN_TEXTURE_LAB_CONSTANTS.PIXEL_RATIO_CAP));
+
+  camera.aspect = aspect;
+  camera.fov = TERRAIN_TEXTURE_LAB_CONSTANTS.CAMERA_FOV_DEGREES;
+  camera.updateProjectionMatrix();
+
+  const centerX = (sceneBounds.minX + sceneBounds.maxX) * 0.5;
+  const centerY = (sceneBounds.minY + sceneBounds.maxY) * 0.5;
+  const halfWidth = (sceneBounds.maxX - sceneBounds.minX) * 0.5;
+  const halfHeight = (sceneBounds.maxY - sceneBounds.minY) * 0.5;
+  const radius = Math.max(Math.hypot(halfWidth, halfHeight), 1);
+
+  const verticalFov = THREE.MathUtils.degToRad(camera.fov);
+  const horizontalFov = 2 * Math.atan(Math.tan(verticalFov * 0.5) * camera.aspect);
+  const limitingFov = Math.min(verticalFov, horizontalFov);
+  const zoom = Math.max(viewSettings.zoom, 0.01);
+  const distance = (radius * TERRAIN_TEXTURE_LAB_CONSTANTS.CAMERA_FIT_MARGIN) / Math.sin(limitingFov * 0.5) / zoom;
+
+  const tilt = THREE.MathUtils.degToRad(viewSettings.tiltDegrees);
+  const rotation = THREE.MathUtils.degToRad(viewSettings.rotationDegrees);
+  const horizontalDistance = distance * Math.sin(tilt);
+
+  camera.position.set(
+    centerX + Math.cos(rotation) * horizontalDistance,
+    centerY + Math.sin(rotation) * horizontalDistance,
+    distance * Math.cos(tilt),
+  );
+  camera.lookAt(centerX, centerY, 0);
+  camera.updateMatrixWorld();
+}
+
 function updateMeshAttributes(
   mesh: THREE.InstancedMesh,
   configs: Record<LabTerrainKey, TerrainTextureLabConfig>,
@@ -157,6 +205,7 @@ export function TerrainTextureLabCanvas({
   seed,
   animationEnabled,
   globalTimeScale,
+  viewSettings,
 }: TerrainTextureLabCanvasProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -166,6 +215,7 @@ export function TerrainTextureLabCanvas({
   const animationEnabledRef = useRef(animationEnabled);
   const globalTimeScaleRef = useRef(globalTimeScale);
   const seedRef = useRef(seed);
+  const viewSettingsRef = useRef(viewSettings);
 
   const sceneBounds = useMemo(() => {
     const centers = previewHexes.map(hex => getHexCenter(hex.col, hex.row, TERRAIN_TEXTURE_LAB_CONSTANTS.HEX_RADIUS));
@@ -189,6 +239,14 @@ export function TerrainTextureLabCanvas({
   }, [seed]);
 
   useEffect(() => {
+    viewSettingsRef.current = viewSettings;
+    const sceneRefs = sceneRef.current;
+    const container = containerRef.current;
+    if (!sceneRefs || !container) return;
+    fitPerspectiveCamera(sceneRefs.camera, sceneRefs.renderer, container, sceneBounds, viewSettings);
+  }, [sceneBounds, viewSettings]);
+
+  useEffect(() => {
     const container = containerRef.current;
     const canvas = canvasRef.current;
     if (!container || !canvas) return;
@@ -205,9 +263,13 @@ export function TerrainTextureLabCanvas({
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(TERRAIN_TEXTURE_LAB_SHADER_CONSTANTS.BACKGROUND_COLOR);
 
-    const camera = new THREE.OrthographicCamera(-width / 2, width / 2, height / 2, -height / 2, 0.1, 2000);
-    camera.position.set(0, 0, TERRAIN_TEXTURE_LAB_CONSTANTS.CAMERA_Z);
-    camera.lookAt(0, 0, 0);
+    const camera = new THREE.PerspectiveCamera(
+      TERRAIN_TEXTURE_LAB_CONSTANTS.CAMERA_FOV_DEGREES,
+      width / height,
+      1,
+      4000,
+    );
+    camera.up.set(0, 0, 1);
 
     const geometry = buildHexGeometry(TERRAIN_TEXTURE_LAB_CONSTANTS.HEX_RADIUS);
     const material = createTerrainTextureLabMaterial();
@@ -228,24 +290,7 @@ export function TerrainTextureLabCanvas({
     sceneRef.current = { renderer, scene, camera, mesh, material };
 
     const fitCamera = () => {
-      const nextWidth = Math.max(container.clientWidth, 1);
-      const nextHeight = Math.max(container.clientHeight, 1);
-      renderer.setSize(nextWidth, nextHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, TERRAIN_TEXTURE_LAB_CONSTANTS.PIXEL_RATIO_CAP));
-
-      const boundsWidth = sceneBounds.maxX - sceneBounds.minX;
-      const boundsHeight = sceneBounds.maxY - sceneBounds.minY;
-      const scale = Math.max(boundsWidth / nextWidth, boundsHeight / nextHeight, 1);
-      camera.left = (-nextWidth / 2) * scale;
-      camera.right = (nextWidth / 2) * scale;
-      camera.top = (nextHeight / 2) * scale;
-      camera.bottom = (-nextHeight / 2) * scale;
-      camera.position.set(
-        (sceneBounds.minX + sceneBounds.maxX) * 0.5,
-        (sceneBounds.minY + sceneBounds.maxY) * 0.5,
-        TERRAIN_TEXTURE_LAB_CONSTANTS.CAMERA_Z,
-      );
-      camera.updateProjectionMatrix();
+      fitPerspectiveCamera(camera, renderer, container, sceneBounds, viewSettingsRef.current);
     };
 
     fitCamera();

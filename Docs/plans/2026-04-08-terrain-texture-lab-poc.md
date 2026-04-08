@@ -38,6 +38,7 @@ Scope:
   - banding
   - animation speed
 - Global controls for seed, time scale, and animation enable/disable
+- Camera controls for tilt, bearing, and zoom with persistent view settings
 - Local persistence via `localStorage`
 - JSON export for presets
 
@@ -105,6 +106,7 @@ The app-level constants live in `TERRAIN_TEXTURE_LAB_CONSTANTS`.
 2. Whether water should stay shader-only or eventually move to a texture-array workflow.
 3. Whether forests should read as canopy masses, undergrowth texture, or symbolic top-down tree clusters.
 4. How much intra-hex variation is desirable before the map starts looking too noisy.
+5. Which camera angle is best for judging texture quality: near-orthographic inspection or a more tabletop, tilted presentation.
 
 ## Next Safe Steps
 

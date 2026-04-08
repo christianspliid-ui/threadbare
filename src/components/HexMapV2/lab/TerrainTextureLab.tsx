@@ -4,16 +4,21 @@ import { Card } from '../../shared/Card';
 import { TerrainTextureLabCanvas } from './TerrainTextureLabCanvas';
 import {
   getDefaultTerrainTextureLabConfigs,
+  getDefaultTerrainTextureLabViewSettings,
   getRecipeOption,
   LAB_TERRAIN_ORDER,
-  serializeTerrainTextureLabConfigs,
   parseTerrainTextureLabConfigs,
+  parseTerrainTextureLabViewSettings,
+  serializeTerrainTextureLabConfigs,
+  serializeTerrainTextureLabViewSettings,
   TERRAIN_RECIPE_OPTIONS,
   TERRAIN_TEXTURE_LAB_CONSTANTS,
   TERRAIN_TEXTURE_LAB_STORAGE_KEY,
   TERRAIN_TEXTURE_PREVIEW_HEXES,
+  TERRAIN_TEXTURE_LAB_VIEW_STORAGE_KEY,
   type LabTerrainKey,
   type TerrainTextureLabConfig,
+  type TerrainTextureLabViewSettings,
 } from './terrainTextureLabPresets';
 
 const GLOBAL_CONTROL_STYLES: CSSProperties = {
@@ -96,16 +101,28 @@ export function TerrainTextureLab() {
   const [seed, setSeed] = useState(TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_SEED);
   const [animationEnabled, setAnimationEnabled] = useState(true);
   const [globalTimeScale, setGlobalTimeScale] = useState(TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_TIME_SCALE);
+  const [viewSettings, setViewSettings] = useState<TerrainTextureLabViewSettings>(() => {
+    if (typeof window === 'undefined') return getDefaultTerrainTextureLabViewSettings();
+    const saved = window.localStorage.getItem(TERRAIN_TEXTURE_LAB_VIEW_STORAGE_KEY);
+    if (!saved) return getDefaultTerrainTextureLabViewSettings();
+    return parseTerrainTextureLabViewSettings(saved) ?? getDefaultTerrainTextureLabViewSettings();
+  });
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
 
   const selectedConfig = configs[selectedTerrain];
   const selectedRecipe = getRecipeOption(selectedConfig.recipe);
   const serializedConfigs = useMemo(() => serializeTerrainTextureLabConfigs(configs), [configs]);
+  const serializedViewSettings = useMemo(() => serializeTerrainTextureLabViewSettings(viewSettings), [viewSettings]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
     window.localStorage.setItem(TERRAIN_TEXTURE_LAB_STORAGE_KEY, serializedConfigs);
   }, [serializedConfigs]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(TERRAIN_TEXTURE_LAB_VIEW_STORAGE_KEY, serializedViewSettings);
+  }, [serializedViewSettings]);
 
   useEffect(() => {
     if (copyState === 'idle') return;
@@ -123,6 +140,13 @@ export function TerrainTextureLab() {
     }));
   }
 
+  function updateViewSettings(nextPartial: Partial<TerrainTextureLabViewSettings>) {
+    setViewSettings(prev => ({
+      ...prev,
+      ...nextPartial,
+    }));
+  }
+
   function resetSelectedTerrain() {
     const defaults = getDefaultTerrainTextureLabConfigs();
     setConfigs(prev => ({
@@ -136,6 +160,7 @@ export function TerrainTextureLab() {
     setSeed(TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_SEED);
     setGlobalTimeScale(TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_TIME_SCALE);
     setAnimationEnabled(true);
+    setViewSettings(getDefaultTerrainTextureLabViewSettings());
   }
 
   async function handleCopyJson() {
@@ -293,6 +318,47 @@ export function TerrainTextureLab() {
           </Card>
 
           <Card variant="glass">
+            <Card.Header title="Camera" />
+            <Card.Body>
+              <div style={GLOBAL_CONTROL_STYLES}>
+                <SliderField
+                  label="Tilt"
+                  min={TERRAIN_TEXTURE_LAB_CONSTANTS.MIN_CAMERA_TILT_DEGREES}
+                  max={TERRAIN_TEXTURE_LAB_CONSTANTS.MAX_CAMERA_TILT_DEGREES}
+                  step={1}
+                  value={viewSettings.tiltDegrees}
+                  onChange={(tiltDegrees) => updateViewSettings({ tiltDegrees: Math.round(tiltDegrees) })}
+                />
+                <SliderField
+                  label="Bearing"
+                  min={TERRAIN_TEXTURE_LAB_CONSTANTS.MIN_CAMERA_ROTATION_DEGREES}
+                  max={TERRAIN_TEXTURE_LAB_CONSTANTS.MAX_CAMERA_ROTATION_DEGREES}
+                  step={1}
+                  value={viewSettings.rotationDegrees}
+                  onChange={(rotationDegrees) => updateViewSettings({ rotationDegrees: Math.round(rotationDegrees) })}
+                />
+                <SliderField
+                  label="Zoom"
+                  min={TERRAIN_TEXTURE_LAB_CONSTANTS.MIN_CAMERA_ZOOM}
+                  max={TERRAIN_TEXTURE_LAB_CONSTANTS.MAX_CAMERA_ZOOM}
+                  step={0.01}
+                  value={viewSettings.zoom}
+                  onChange={(zoom) => updateViewSettings({
+                    zoom: clamp(
+                      zoom,
+                      TERRAIN_TEXTURE_LAB_CONSTANTS.MIN_CAMERA_ZOOM,
+                      TERRAIN_TEXTURE_LAB_CONSTANTS.MAX_CAMERA_ZOOM,
+                    ),
+                  })}
+                />
+                <div style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)', lineHeight: 1.5 }}>
+                  Tilt changes the camera angle without touching the real hex renderer. Bearing rotates the view across the flat-top grid.
+                </div>
+              </div>
+            </Card.Body>
+          </Card>
+
+          <Card variant="glass">
             <Card.Header title="Export & Notes" />
             <Card.Body>
               <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
@@ -369,6 +435,7 @@ export function TerrainTextureLab() {
             seed={seed}
             animationEnabled={animationEnabled}
             globalTimeScale={globalTimeScale}
+            viewSettings={viewSettings}
           />
         </div>
       </main>

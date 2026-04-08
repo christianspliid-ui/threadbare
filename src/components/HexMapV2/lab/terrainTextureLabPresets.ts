@@ -1,14 +1,25 @@
 import { TERRAIN_PALETTE } from '../palette/terrainPalette';
 
 export const TERRAIN_TEXTURE_LAB_STORAGE_KEY = 'terrain-texture-lab.v1';
+export const TERRAIN_TEXTURE_LAB_VIEW_STORAGE_KEY = 'terrain-texture-lab.view.v1';
 
 export const TERRAIN_TEXTURE_LAB_CONSTANTS = {
   HEX_RADIUS: 78,
   PANEL_WIDTH: 380,
-  CAMERA_Z: 400,
   PIXEL_RATIO_CAP: 2,
   DEFAULT_SEED: 42,
   DEFAULT_TIME_SCALE: 1,
+  CAMERA_FOV_DEGREES: 38,
+  CAMERA_FIT_MARGIN: 1.35,
+  MIN_CAMERA_TILT_DEGREES: 0,
+  MAX_CAMERA_TILT_DEGREES: 78,
+  DEFAULT_CAMERA_TILT_DEGREES: 42,
+  MIN_CAMERA_ROTATION_DEGREES: -180,
+  MAX_CAMERA_ROTATION_DEGREES: 180,
+  DEFAULT_CAMERA_ROTATION_DEGREES: -32,
+  MIN_CAMERA_ZOOM: 0.75,
+  MAX_CAMERA_ZOOM: 1.8,
+  DEFAULT_CAMERA_ZOOM: 1,
 } as const;
 
 export const TERRAIN_RECIPE_OPTIONS = [
@@ -56,6 +67,12 @@ export interface TerrainTexturePreviewHex {
   terrainKey: LabTerrainKey;
   col: number;
   row: number;
+}
+
+export interface TerrainTextureLabViewSettings {
+  tiltDegrees: number;
+  rotationDegrees: number;
+  zoom: number;
 }
 
 export const TERRAIN_TEXTURE_PREVIEW_HEXES: TerrainTexturePreviewHex[] = [
@@ -279,6 +296,18 @@ export function serializeTerrainTextureLabConfigs(configs: Record<LabTerrainKey,
   return JSON.stringify(configs, null, 2);
 }
 
+export function getDefaultTerrainTextureLabViewSettings(): TerrainTextureLabViewSettings {
+  return {
+    tiltDegrees: TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_CAMERA_TILT_DEGREES,
+    rotationDegrees: TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_CAMERA_ROTATION_DEGREES,
+    zoom: TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_CAMERA_ZOOM,
+  };
+}
+
+export function serializeTerrainTextureLabViewSettings(settings: TerrainTextureLabViewSettings): string {
+  return JSON.stringify(settings);
+}
+
 export function parseTerrainTextureLabConfigs(raw: string): Record<LabTerrainKey, TerrainTextureLabConfig> | null {
   try {
     const parsed = JSON.parse(raw) as Partial<Record<LabTerrainKey, TerrainTextureLabConfig>>;
@@ -296,6 +325,27 @@ export function parseTerrainTextureLabConfigs(raw: string): Record<LabTerrainKey
     }
 
     return next;
+  } catch {
+    return null;
+  }
+}
+
+export function parseTerrainTextureLabViewSettings(raw: string): TerrainTextureLabViewSettings | null {
+  try {
+    const parsed = JSON.parse(raw) as Partial<TerrainTextureLabViewSettings>;
+    if (
+      typeof parsed.tiltDegrees !== 'number'
+      || typeof parsed.rotationDegrees !== 'number'
+      || typeof parsed.zoom !== 'number'
+    ) {
+      return null;
+    }
+
+    return {
+      tiltDegrees: parsed.tiltDegrees,
+      rotationDegrees: parsed.rotationDegrees,
+      zoom: parsed.zoom,
+    };
   } catch {
     return null;
   }

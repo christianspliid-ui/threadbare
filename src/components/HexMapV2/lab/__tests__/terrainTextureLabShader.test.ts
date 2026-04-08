@@ -6,10 +6,13 @@ import {
   TERRAIN_TEXTURE_LAB_VERTEX_SHADER,
 } from '../terrainTextureLabShader';
 import {
+  getDefaultTerrainTextureLabViewSettings,
   getDefaultTerrainTextureLabConfigs,
   LAB_TERRAIN_ORDER,
   parseTerrainTextureLabConfigs,
+  parseTerrainTextureLabViewSettings,
   serializeTerrainTextureLabConfigs,
+  serializeTerrainTextureLabViewSettings,
 } from '../terrainTextureLabPresets';
 
 describe('terrainTextureLab presets', () => {
@@ -22,6 +25,12 @@ describe('terrainTextureLab presets', () => {
   it('defines a config for every lab terrain', () => {
     const defaults = getDefaultTerrainTextureLabConfigs();
     expect(Object.keys(defaults)).toEqual(LAB_TERRAIN_ORDER);
+  });
+
+  it('round-trips the default view settings through JSON serialization', () => {
+    const defaults = getDefaultTerrainTextureLabViewSettings();
+    const parsed = parseTerrainTextureLabViewSettings(serializeTerrainTextureLabViewSettings(defaults));
+    expect(parsed).toEqual(defaults);
   });
 });
 
