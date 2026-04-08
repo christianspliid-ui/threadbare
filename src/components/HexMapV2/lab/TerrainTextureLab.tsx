@@ -30,6 +30,10 @@ const GLOBAL_CONTROL_STYLES: CSSProperties = {
   gap: 'var(--space-3)',
 };
 
+const SIDEBAR_CARD_STYLE: CSSProperties = {
+  flexShrink: 0,
+};
+
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
@@ -344,7 +348,7 @@ export function TerrainTextureLab() {
             gap: 'var(--space-4)',
           }}
         >
-          <Card variant="glass">
+          <Card variant="glass" style={SIDEBAR_CARD_STYLE}>
             <Card.Header title="Terrain Presets" />
             <Card.Body>
               <div style={{ display: 'grid', gap: 'var(--space-2)' }}>
@@ -388,7 +392,7 @@ export function TerrainTextureLab() {
             </Card.Body>
           </Card>
 
-          <Card variant="glass">
+          <Card variant="glass" style={SIDEBAR_CARD_STYLE}>
             <Card.Header title="Selected Terrain" />
             <Card.Body>
               <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
@@ -446,7 +450,7 @@ export function TerrainTextureLab() {
             </Card.Body>
           </Card>
 
-          <Card variant="glass">
+          <Card variant="glass" style={SIDEBAR_CARD_STYLE}>
             <Card.Header title="Global Controls" />
             <Card.Body>
               <div style={GLOBAL_CONTROL_STYLES}>
@@ -464,7 +468,7 @@ export function TerrainTextureLab() {
             </Card.Body>
           </Card>
 
-          <Card variant="glass">
+          <Card variant="glass" style={SIDEBAR_CARD_STYLE}>
             <Card.Header title="Camera" />
             <Card.Body>
               <div style={GLOBAL_CONTROL_STYLES}>
@@ -505,7 +509,7 @@ export function TerrainTextureLab() {
             </Card.Body>
           </Card>
 
-          <Card variant="glass">
+          <Card variant="glass" style={SIDEBAR_CARD_STYLE}>
             <Card.Header title="Model Import" />
             <Card.Body>
               <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
@@ -594,7 +598,7 @@ export function TerrainTextureLab() {
             </Card.Body>
           </Card>
 
-          <Card variant="glass">
+          <Card variant="glass" style={SIDEBAR_CARD_STYLE}>
             <Card.Header title="Model Placement" />
             <Card.Body>
               <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
@@ -688,7 +692,7 @@ export function TerrainTextureLab() {
             </Card.Body>
           </Card>
 
-          <Card variant="glass">
+          <Card variant="glass" style={SIDEBAR_CARD_STYLE}>
             <Card.Header title="Export & Notes" />
             <Card.Body>
               <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
