@@ -68,6 +68,26 @@ export interface BalanceCounters {
   forecastedUtilitySum: number;
   forecastPushRecommendedCount: number;
   forecastResistValuableCount: number;
+  encounterDecisionCounts: Record<string, number>;
+  idleReasonCounts: Record<string, number>;
+  decisionTemplateStats: Record<string, {
+    decisions: number;
+    startLocal: number;
+    attemptRemote: number;
+    queueMovement: number;
+    threadedDecisions: number;
+    travelCostTotal: number;
+    forecastedUtilityTotal: number;
+    forecastedCompletionProbTotal: number;
+  }>;
+  decisionLocationSubtypeStats: Record<string, {
+    decisions: number;
+    selectedDecisions: number;
+    idleDecisions: number;
+    forcedTravelDecisions: number;
+    threadedDecisions: number;
+    idleReasons: Record<string, number>;
+  }>;
 }
 
 // ─── Milestones ───────────────────────────────────────────────────
@@ -165,6 +185,10 @@ function createEmptyCounters(): BalanceCounters {
     forecastedUtilitySum: 0,
     forecastPushRecommendedCount: 0,
     forecastResistValuableCount: 0,
+    encounterDecisionCounts: {},
+    idleReasonCounts: {},
+    decisionTemplateStats: {},
+    decisionLocationSubtypeStats: {},
   };
 }
 
@@ -252,6 +276,56 @@ function updateCounters(counters: BalanceCounters, event: BalanceEvent): void {
         counters.totalEncountersAbandoned++;
       }
       counters.completionByBand[band] = bandStats;
+      break;
+    }
+    case 'encounter_decision': {
+      const decisionType = event.decisionType ?? 'unknown';
+      counters.encounterDecisionCounts[decisionType] = (counters.encounterDecisionCounts[decisionType] ?? 0) + 1;
+
+      if (event.idleReason) {
+        counters.idleReasonCounts[event.idleReason] = (counters.idleReasonCounts[event.idleReason] ?? 0) + 1;
+      }
+
+      if (event.templateId) {
+        const templateStats = counters.decisionTemplateStats[event.templateId] ?? {
+          decisions: 0,
+          startLocal: 0,
+          attemptRemote: 0,
+          queueMovement: 0,
+          threadedDecisions: 0,
+          travelCostTotal: 0,
+          forecastedUtilityTotal: 0,
+          forecastedCompletionProbTotal: 0,
+        };
+        templateStats.decisions++;
+        if (decisionType === 'start_local') templateStats.startLocal++;
+        if (decisionType === 'attempt_remote') templateStats.attemptRemote++;
+        if (decisionType === 'queue_movement') templateStats.queueMovement++;
+        if (event.threaded) templateStats.threadedDecisions++;
+        templateStats.travelCostTotal += event.travelCost ?? 0;
+        templateStats.forecastedUtilityTotal += event.forecastedUtility ?? 0;
+        templateStats.forecastedCompletionProbTotal += event.forecastedCompletionProb ?? 0;
+        counters.decisionTemplateStats[event.templateId] = templateStats;
+      }
+
+      const locationSubtype = event.locationSubtype ?? 'unknown';
+      const locationStats = counters.decisionLocationSubtypeStats[locationSubtype] ?? {
+        decisions: 0,
+        selectedDecisions: 0,
+        idleDecisions: 0,
+        forcedTravelDecisions: 0,
+        threadedDecisions: 0,
+        idleReasons: {},
+      };
+      locationStats.decisions++;
+      if (decisionType === 'idle') locationStats.idleDecisions++;
+      else if (decisionType === 'forced_travel') locationStats.forcedTravelDecisions++;
+      else locationStats.selectedDecisions++;
+      if (event.threaded) locationStats.threadedDecisions++;
+      if (event.idleReason) {
+        locationStats.idleReasons[event.idleReason] = (locationStats.idleReasons[event.idleReason] ?? 0) + 1;
+      }
+      counters.decisionLocationSubtypeStats[locationSubtype] = locationStats;
       break;
     }
     case 'quintessence_changed':

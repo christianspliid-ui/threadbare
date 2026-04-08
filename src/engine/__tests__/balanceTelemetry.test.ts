@@ -104,8 +104,10 @@ describe('recordBalanceEvent()', () => {
   it('does not throw on any event kind', () => {
     const kinds: Array<Omit<BalanceEvent, 'seq'>['kind']> = [
       'step_resolved', 'action_resolved', 'encounter_resolved',
+      'encounter_decision',
       'quintessence_changed', 'reward_granted', 'attachment_changed',
-      'growth_applied', 'state_transition',
+      'growth_applied', 'state_transition', 'quintessence_push',
+      'quintessence_resist', 'forecast_recorded',
     ];
     for (const kind of kinds) {
       expect(() => recordBalanceEvent(rt, makeEvent({ kind }))).not.toThrow();
@@ -179,6 +181,54 @@ describe('counter accumulation', () => {
     recordBalanceEvent(rt, makeEvent({ kind: 'quintessence_changed', quintessenceDelta: 0.02 }));
     expect(rt.balanceTelemetry!.counters.quintessenceTotalNegativeDelta).toBeCloseTo(-0.05);
     expect(rt.balanceTelemetry!.counters.quintessenceTotalPositiveDelta).toBeCloseTo(0.02);
+  });
+
+  it('tracks encounter decision funnel counters by type, template, and location subtype', () => {
+    recordBalanceEvent(rt, makeEvent({
+      kind: 'encounter_decision',
+      decisionType: 'queue_movement',
+      templateId: 'encounter.bandit_ambush',
+      locationSubtype: 'forest',
+      travelCost: 2,
+      forecastedUtility: 0.6,
+      forecastedCompletionProb: 0.4,
+      threaded: true,
+    }));
+    recordBalanceEvent(rt, makeEvent({
+      kind: 'encounter_decision',
+      decisionType: 'idle',
+      locationSubtype: 'forest',
+      idleReason: 'no_candidates_after_filter',
+    }));
+    recordBalanceEvent(rt, makeEvent({
+      kind: 'encounter_decision',
+      decisionType: 'forced_travel',
+      locationSubtype: 'forest',
+      idleReason: 'no_candidates_after_filter',
+      threaded: true,
+    }));
+
+    const counters = rt.balanceTelemetry!.counters;
+    expect(counters.encounterDecisionCounts['queue_movement']).toBe(1);
+    expect(counters.encounterDecisionCounts['idle']).toBe(1);
+    expect(counters.encounterDecisionCounts['forced_travel']).toBe(1);
+    expect(counters.idleReasonCounts['no_candidates_after_filter']).toBe(2);
+    expect(counters.decisionTemplateStats['encounter.bandit_ambush']).toMatchObject({
+      decisions: 1,
+      queueMovement: 1,
+      threadedDecisions: 1,
+      travelCostTotal: 2,
+      forecastedUtilityTotal: 0.6,
+      forecastedCompletionProbTotal: 0.4,
+    });
+    expect(counters.decisionLocationSubtypeStats['forest']).toMatchObject({
+      decisions: 3,
+      selectedDecisions: 1,
+      idleDecisions: 1,
+      forcedTravelDecisions: 1,
+      threadedDecisions: 2,
+    });
+    expect(counters.decisionLocationSubtypeStats['forest'].idleReasons['no_candidates_after_filter']).toBe(2);
   });
 });
 

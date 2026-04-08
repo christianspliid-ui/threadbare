@@ -15,6 +15,7 @@ import type {
   BalanceCohortSummary,
   BalanceThreatBand,
   BalanceEvent,
+  BalanceEncounterDecisionSummary,
 } from '../types/balanceEval';
 import { getTrackedAgentEvents } from './balanceTelemetry';
 
@@ -145,6 +146,9 @@ export function buildBalanceRunSummary(
 
     // Phase 4: forecast drift
     forecastDrift: computeForecastDriftSummary(c, t.recentEvents),
+
+    // Encounter decision funnel summary
+    encounterDecisions: computeEncounterDecisionSummary(c),
   };
 }
 
@@ -201,6 +205,51 @@ function computeQuintessenceThresholdSummary(
   return { thresholdTransitions: transitions };
 }
 
+function computeEncounterDecisionSummary(
+  counters: BalanceCounters,
+): BalanceEncounterDecisionSummary | undefined {
+  const hasAnyDecisionData =
+    Object.keys(counters.encounterDecisionCounts).length > 0 ||
+    Object.keys(counters.idleReasonCounts).length > 0 ||
+    Object.keys(counters.decisionTemplateStats).length > 0 ||
+    Object.keys(counters.decisionLocationSubtypeStats).length > 0;
+  if (!hasAnyDecisionData) return undefined;
+
+  const byTemplate: BalanceEncounterDecisionSummary['byTemplate'] = {};
+  for (const [templateId, stats] of Object.entries(counters.decisionTemplateStats)) {
+    const denom = Math.max(1, stats.decisions);
+    byTemplate[templateId] = {
+      decisions: stats.decisions,
+      startLocal: stats.startLocal,
+      attemptRemote: stats.attemptRemote,
+      queueMovement: stats.queueMovement,
+      threadedDecisions: stats.threadedDecisions,
+      averageTravelCost: stats.travelCostTotal / denom,
+      averageForecastedUtility: stats.forecastedUtilityTotal / denom,
+      averageCompletionProb: stats.forecastedCompletionProbTotal / denom,
+    };
+  }
+
+  const byLocationSubtype: BalanceEncounterDecisionSummary['byLocationSubtype'] = {};
+  for (const [locationSubtype, stats] of Object.entries(counters.decisionLocationSubtypeStats)) {
+    byLocationSubtype[locationSubtype] = {
+      decisions: stats.decisions,
+      selectedDecisions: stats.selectedDecisions,
+      idleDecisions: stats.idleDecisions,
+      forcedTravelDecisions: stats.forcedTravelDecisions,
+      threadedDecisions: stats.threadedDecisions,
+      idleReasons: { ...stats.idleReasons },
+    };
+  }
+
+  return {
+    countsByType: { ...counters.encounterDecisionCounts },
+    idleReasons: { ...counters.idleReasonCounts },
+    byTemplate,
+    byLocationSubtype,
+  };
+}
+
 // ─── Agent Journey Summary ────────────────────────────────────────
 
 /**
@@ -229,10 +278,15 @@ export function buildBalanceAgentJourneySummary(
   let stepSuccesses = 0;
   let encounterAttempts = 0;
   let encounterCompletions = 0;
+  let idleDecisions = 0;
+  const idleReasonCounts: Record<string, number> = {};
+  const decisionCounts: Record<string, number> = {};
 
   // Streak tracking
   let currentFailStreak = 0;
   let longestSetbackStreak = 0;
+  let currentIdleStreak = 0;
+  let longestIdleStreak = 0;
 
   for (const e of events) {
     if (firstSeenTick === null || e.tick < firstSeenTick) firstSeenTick = e.tick;
@@ -261,6 +315,21 @@ export function buildBalanceAgentJourneySummary(
         if (e.finalStatus === 'completed') encounterCompletions++;
         if (firstEncounterTick === null) firstEncounterTick = e.tick;
         break;
+      case 'encounter_decision': {
+        const decisionType = e.decisionType ?? 'unknown';
+        decisionCounts[decisionType] = (decisionCounts[decisionType] ?? 0) + 1;
+        if (decisionType === 'idle') {
+          idleDecisions++;
+          currentIdleStreak++;
+          if (currentIdleStreak > longestIdleStreak) longestIdleStreak = currentIdleStreak;
+          if (e.idleReason) {
+            idleReasonCounts[e.idleReason] = (idleReasonCounts[e.idleReason] ?? 0) + 1;
+          }
+        } else {
+          currentIdleStreak = 0;
+        }
+        break;
+      }
       case 'reward_granted':
         if (e.rewardTemplateId) {
           totalRewards++;
@@ -298,6 +367,10 @@ export function buildBalanceAgentJourneySummary(
     totalRewards,
     totalSetbacks,
     longestSetbackStreak,
+    idleDecisions,
+    longestIdleStreak,
+    idleReasonCounts,
+    decisionCounts,
     durableAttachments: 0, // Phase 2: will track via attachment_changed events
     stepSuccessRate: stepAttempts > 0 ? stepSuccesses / stepAttempts : 0,
     encounterCompletionRate: encounterAttempts > 0 ? encounterCompletions / encounterAttempts : 0,

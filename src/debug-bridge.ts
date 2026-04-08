@@ -254,6 +254,14 @@ if (import.meta.env.DEV) {
       const { buildBalanceRunSummary } = await import('./engine/balanceSummary');
       return buildBalanceRunSummary(runtime, tick);
     },
+    /** Returns just the encounter-decision funnel summary for the current session. */
+    getEncounterDecisionSummary: async (endTick?: number) => {
+      const runtime = _runtimeProvider?.();
+      if (!runtime?.balanceTelemetry) return null;
+      const tick = endTick ?? (_gameStateProvider?.()?.tick ?? 0);
+      const { buildBalanceRunSummary } = await import('./engine/balanceSummary');
+      return buildBalanceRunSummary(runtime, tick)?.encounterDecisions ?? null;
+    },
     /** Returns the current balance targets (versioned bands). */
     getBalanceTargets: async () => {
       const { getDefaultBalanceTargets } = await import('./engine/balanceTargets');

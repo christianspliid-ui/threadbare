@@ -211,6 +211,21 @@ export function evaluateAgentJourney(journey: BalanceAgentJourneySummary): strin
   lines.push(`  Steps: success rate ${pct(journey.stepSuccessRate)}`);
   lines.push(`  Rewards: ${journey.totalRewards} granted`);
   lines.push(`  Setbacks: ${journey.totalSetbacks} (longest streak: ${journey.longestSetbackStreak} failures)`);
+  lines.push(`  Idle: ${journey.idleDecisions} decisions (longest streak: ${journey.longestIdleStreak} ticks)`);
+
+  const decisionMix = Object.entries(journey.decisionCounts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([kind, count]) => `${kind}=${count}`);
+  if (decisionMix.length > 0) {
+    lines.push(`  Decision mix: ${decisionMix.join(', ')}`);
+  }
+
+  const idleReasons = Object.entries(journey.idleReasonCounts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([reason, count]) => `${reason}=${count}`);
+  if (idleReasons.length > 0) {
+    lines.push(`  Idle reasons: ${idleReasons.join(', ')}`);
+  }
 
   if (journey.firstRewardTick !== null) {
     lines.push(`  First reward at tick ${journey.firstRewardTick}`);

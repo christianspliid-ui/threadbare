@@ -328,6 +328,29 @@ function printTraces(n: number = 10): void {
   }
 }
 
+function formatCountMap(counts: Record<string, number>): string {
+  const parts = Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([key, value]) => `${key}=${value}`);
+  return parts.length > 0 ? parts.join(', ') : 'none';
+}
+
+function printEncounterDecisionSummary(summary: NonNullable<ReturnType<typeof buildBalanceRunSummary>>): void {
+  const decisions = summary.encounterDecisions;
+  if (!decisions) return;
+
+  console.log(`  Decision mix: ${formatCountMap(decisions.countsByType)}`);
+  console.log(`  Idle reasons: ${formatCountMap(decisions.idleReasons)}`);
+
+  const hottestSubtype = Object.entries(decisions.byLocationSubtype)
+    .sort((a, b) => b[1].idleDecisions - a[1].idleDecisions)[0];
+  if (hottestSubtype && hottestSubtype[1].idleDecisions > 0) {
+    console.log(
+      `  Hottest idle subtype: ${hottestSubtype[0]} (${hottestSubtype[1].idleDecisions} idle, ${hottestSubtype[1].forcedTravelDecisions} forced travel)`,
+    );
+  }
+}
+
 function printBalance(subCmd?: string, subArg?: string): void {
   const tel = runtime.balanceTelemetry;
   if (!tel) {
@@ -349,6 +372,7 @@ function printBalance(subCmd?: string, subArg?: string): void {
     console.log(`  First reward tick: ${summary.pacing.firstRewardTick ?? 'none'}`);
     console.log(`  First setback tick: ${summary.pacing.firstSetbackTick ?? 'none'}`);
     console.log(`  First growth beat tick: ${summary.pacing.firstGrowthBeatTick ?? 'none'}`);
+    printEncounterDecisionSummary(summary);
     if (Object.keys(summary.stepSuccessRates).length > 0) {
       console.log(`  Step success rates by band:`);
       for (const [band, stats] of Object.entries(summary.stepSuccessRates)) {
@@ -369,6 +393,52 @@ function printBalance(subCmd?: string, subArg?: string): void {
     return;
   }
 
+  if (subCmd === 'idle') {
+    const summary = buildBalanceRunSummary(runtime, state.tick);
+    const decisions = summary?.encounterDecisions;
+    if (!decisions) { console.log('No encounter decision data yet.'); return; }
+    console.log(header('Encounter Idle Report'));
+    console.log(`  Idle reasons: ${formatCountMap(decisions.idleReasons)}`);
+    const hotspots = Object.entries(decisions.byLocationSubtype)
+      .filter(([, stats]) => stats.idleDecisions > 0 || stats.forcedTravelDecisions > 0)
+      .sort((a, b) => {
+        const aScore = a[1].idleDecisions * 10 + a[1].forcedTravelDecisions;
+        const bScore = b[1].idleDecisions * 10 + b[1].forcedTravelDecisions;
+        return bScore - aScore;
+      })
+      .slice(0, 8);
+    if (hotspots.length === 0) {
+      console.log('  No idle hotspots recorded.');
+      return;
+    }
+    for (const [subtype, stats] of hotspots) {
+      console.log(
+        `  ${subtype}: idle=${stats.idleDecisions}, forcedTravel=${stats.forcedTravelDecisions}, selected=${stats.selectedDecisions}, reasons=${formatCountMap(stats.idleReasons)}`,
+      );
+    }
+    return;
+  }
+
+  if (subCmd === 'templates') {
+    const summary = buildBalanceRunSummary(runtime, state.tick);
+    const decisions = summary?.encounterDecisions;
+    if (!decisions) { console.log('No encounter decision data yet.'); return; }
+    console.log(header('Encounter Templates'));
+    const templates = Object.entries(decisions.byTemplate)
+      .sort((a, b) => b[1].decisions - a[1].decisions)
+      .slice(0, 12);
+    if (templates.length === 0) {
+      console.log('  No template decisions recorded.');
+      return;
+    }
+    for (const [templateId, stats] of templates) {
+      console.log(
+        `  ${templateId}: picks=${stats.decisions}, local=${stats.startLocal}, remote=${stats.attemptRemote}, move=${stats.queueMovement}, avgUtil=${stats.averageForecastedUtility.toFixed(3)}, avgProb=${stats.averageCompletionProb.toFixed(3)}, avgTravel=${stats.averageTravelCost.toFixed(2)}`,
+      );
+    }
+    return;
+  }
+
   if (subCmd === 'targets') {
     const targets = getDefaultBalanceTargets();
     console.log(header(`Balance Targets — ${targets.version}`));
@@ -385,7 +455,10 @@ function printBalance(subCmd?: string, subArg?: string): void {
     const events = getBalanceEvents(runtime, { limit: isNaN(n) ? 20 : n });
     console.log(header(`Balance Events (last ${events.length})`));
     for (const e of events) {
-      console.log(`  ${dim(`#${e.seq} t${e.tick}`)} [${e.kind}] agent:${e.agentId.slice(-8)} src:${e.sourceSystem}${e.result ? ` res:${e.result}` : ''}${e.threatBand ? ` band:${e.threatBand}` : ''}`);
+      const decisionInfo = e.kind === 'encounter_decision'
+        ? `${e.decisionType ? ` decision:${e.decisionType}` : ''}${e.idleReason ? ` idle:${e.idleReason}` : ''}${e.templateId ? ` tmpl:${e.templateId}` : ''}`
+        : '';
+      console.log(`  ${dim(`#${e.seq} t${e.tick}`)} [${e.kind}] agent:${e.agentId.slice(-8)} src:${e.sourceSystem}${e.result ? ` res:${e.result}` : ''}${e.threatBand ? ` band:${e.threatBand}` : ''}${decisionInfo}`);
     }
     return;
   }
@@ -412,7 +485,7 @@ function printBalance(subCmd?: string, subArg?: string): void {
     return;
   }
 
-  console.log(`${RED}Usage: balance [summary|eval|targets|recent [N]|agent <id>]${RESET}`);
+  console.log(`${RED}Usage: balance [summary|idle|templates|eval|targets|recent [N]|agent <id>]${RESET}`);
 }
 
 function startAutoRun(speed?: number): void {
@@ -472,6 +545,8 @@ function printHelp(): void {
   console.log(`  ${BOLD}storybeats${RESET}       Story beat queue (alias: beats)`);
   console.log(`  ${BOLD}threads${RESET}          Divine thread edges by court position`);
   console.log(`  ${BOLD}balance${RESET}          Balance summary (alias: bal)`);
+  console.log(`  ${BOLD}balance idle${RESET}     Idle reasons + subtype starvation hotspots`);
+  console.log(`  ${BOLD}balance templates${RESET} Top encounter templates by decision count`);
   console.log(`  ${BOLD}balance eval${RESET}     Evaluate session vs. targets`);
   console.log(`  ${BOLD}balance targets${RESET}  Show target bands`);
   console.log(`  ${BOLD}balance recent${RESET} [N] Show last N balance events`);
@@ -898,7 +973,7 @@ function handleCommand(line: string): boolean {
       break;
     case 'balance':
     case 'bal': {
-      // sub-commands: summary (default), eval, targets, recent [N], agent <id>
+      // sub-commands: summary (default), idle, templates, eval, targets, recent [N], agent <id>
       const subParts = arg ? arg.split(/\s+/) : [];
       printBalance(subParts[0], subParts[1]);
       break;

@@ -114,6 +114,40 @@ function filterByCooldown(
   });
 }
 
+function getDecisionLocationSubtype(
+  graph: GameState['graph'],
+  locationId: string,
+): string {
+  const node = graph.getNode(locationId);
+  if (!node) return 'unknown';
+  const props = node.properties as Record<string, unknown>;
+  const locationType = props.locationType;
+  const locationSubtype = props.locationSubtype;
+  if (typeof locationType === 'string' && locationType.length > 0 && locationType !== 'location') {
+    return locationType;
+  }
+  if (typeof locationSubtype === 'string' && locationSubtype.length > 0) {
+    return locationSubtype;
+  }
+  return 'unknown';
+}
+
+function getThreadContext(
+  graph: GameState['graph'],
+  ascendantId: string | null,
+  agentId: string,
+): { threaded: boolean; courtPosition?: string } {
+  if (!ascendantId) return { threaded: false };
+  const threadEdge = graph.getOutgoingEdges(ascendantId, 'thread').find(e => e.target === agentId);
+  const courtPosition = typeof threadEdge?.properties?.courtPosition === 'string'
+    ? threadEdge.properties.courtPosition
+    : undefined;
+  return {
+    threaded: Boolean(threadEdge),
+    ...(courtPosition ? { courtPosition } : {}),
+  };
+}
+
 export function phaseAgentDecision(
   state: GameState,
   encounterCache: EncounterCacheManager,
@@ -355,6 +389,9 @@ export function phaseAgentDecision(
 
       if (!locationId) continue;
 
+      const originLocationSubtype = getDecisionLocationSubtype(graph, locationId);
+      const threadContext = getThreadContext(graph, state.ascendantId, agentId);
+
       // Generate social encounter candidates (agent-to-agent)
       const socialEntries = generateSocialCandidates(
         graph,
@@ -493,6 +530,7 @@ export function phaseAgentDecision(
         const targetLocNode = graph.getNode(sel.entry.locationId);
         const targetHexCol = (targetLocNode?.properties?.hexCol as number) ?? 0;
         const targetHexRow = (targetLocNode?.properties?.hexRow as number) ?? 0;
+        const targetLocationSubtype = getDecisionLocationSubtype(graph, sel.entry.locationId);
         appendEvent(agentId, {
           phase: 'DECIDE',
           tick: state.tick,
@@ -633,6 +671,26 @@ export function phaseAgentDecision(
               message: `${actor.name} ${prefix} ${template.name}`,
               significance: 0.4,
             });
+
+            if (runtime) {
+              recordBalanceEvent(runtime, {
+                tick: state.tick,
+                kind: 'encounter_decision',
+                agentId,
+                sourceSystem: 'planner',
+                decisionType: sel.action,
+                templateId: sel.entry.templateId,
+                forecastedUtility: sel.expectedUtility,
+                forecastedCompletionProb: sel.completionProb,
+                locationId,
+                locationSubtype: originLocationSubtype,
+                targetLocationId: sel.entry.locationId,
+                targetLocationSubtype: targetLocationSubtype,
+                travelCost: selCandidate?.travelCost ?? 0,
+                threaded: threadContext.threaded,
+                courtPosition: threadContext.courtPosition,
+              });
+            }
           }
         } else if (sel.action === 'queue_movement') {
           // Queue movement toward the encounter's location.
@@ -722,6 +780,26 @@ export function phaseAgentDecision(
               queueLength,
               summary: `${actor.name} departs for ${destName} (${queueLength} hops, encounter: ${sel.entry.templateId})`,
             } as TraceEntry);
+
+            if (runtime) {
+              recordBalanceEvent(runtime, {
+                tick: state.tick,
+                kind: 'encounter_decision',
+                agentId,
+                sourceSystem: 'planner',
+                decisionType: 'queue_movement',
+                templateId: sel.entry.templateId,
+                forecastedUtility: sel.expectedUtility,
+                forecastedCompletionProb: sel.completionProb,
+                locationId,
+                locationSubtype: originLocationSubtype,
+                targetLocationId: sel.entry.locationId,
+                targetLocationSubtype: getDecisionLocationSubtype(graph, sel.entry.locationId),
+                travelCost: selCandidate?.travelCost ?? 0,
+                threaded: threadContext.threaded,
+                courtPosition: threadContext.courtPosition,
+              });
+            }
           }
         }
       } else {
@@ -798,6 +876,31 @@ export function phaseAgentDecision(
           driftTarget: driftTargetNode?.name ?? idle.targetLocationId ?? undefined,
           pipeline: pipelineStr,
         });
+
+        if (runtime) {
+          recordBalanceEvent(runtime, {
+            tick: state.tick,
+            kind: 'encounter_decision',
+            agentId,
+            sourceSystem: 'planner',
+            decisionType: 'idle',
+            idleReason,
+            idleAction: idle.action,
+            locationId,
+            locationSubtype: originLocationSubtype,
+            filterCacheSize: ft.cacheSize,
+            filterAfterAwareness: ft.afterAwareness,
+            filterAfterVisibility: ft.afterVisibility,
+            filterAfterPrerequisites: ft.afterPrerequisites,
+            filterAfterThreat: ft.afterThreat,
+            filterAfterCap: ft.afterCap,
+            candidatesBeforeCooldown: rawCandidates.length,
+            candidatesAfterCooldown: candidates.length,
+            bestScore: bestScore ?? undefined,
+            threaded: threadContext.threaded,
+            courtPosition: threadContext.courtPosition,
+          });
+        }
 
         if (idle.action === 'drift' && idle.targetLocationId) {
           // Hex-by-hex A* pathfinding for idle drift (same as encounter movement)
@@ -906,6 +1009,24 @@ export function phaseAgentDecision(
                 idleAction: 'forced_travel',
                 driftTarget: destNode?.name ?? nearestContentLocId,
               });
+
+              if (runtime) {
+                recordBalanceEvent(runtime, {
+                  tick: state.tick,
+                  kind: 'encounter_decision',
+                  agentId,
+                  sourceSystem: 'planner',
+                  decisionType: 'forced_travel',
+                  idleReason,
+                  idleAction: 'forced_travel',
+                  locationId,
+                  locationSubtype: originLocationSubtype,
+                  targetLocationId: nearestContentLocId,
+                  targetLocationSubtype: getDecisionLocationSubtype(graph, nearestContentLocId),
+                  threaded: threadContext.threaded,
+                  courtPosition: threadContext.courtPosition,
+                });
+              }
             }
           }
           // If no reachable content location → agent stays idle (fail-soft)

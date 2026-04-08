@@ -101,6 +101,8 @@ export interface DebugBridge {
   exportDiagnostics: () => Promise<unknown>;
   /** Returns a BalanceRunSummary for the current session. Pass endTick to override the current tick. */
   getBalanceSummary: (endTick?: number) => Promise<BalanceRunSummary | null>;
+  /** Returns the encounter-decision funnel summary for the current session. */
+  getEncounterDecisionSummary: (endTick?: number) => Promise<BalanceRunSummary['encounterDecisions'] | null>;
   /** Returns the current versioned balance targets. */
   getBalanceTargets: () => Promise<BalanceTargets>;
   /** Evaluates the current session telemetry against balance targets. Returns summary + evaluation result. */

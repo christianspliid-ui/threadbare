@@ -91,6 +91,52 @@ describe('buildBalanceRunSummary()', () => {
     const summary = buildBalanceRunSummary(rt, 100)!;
     expect(summary.critFailShareByBand['hard']).toBeCloseTo(0.25);
   });
+
+  it('includes encounter decision rollups by type, template, and location subtype', () => {
+    const rt = makeRuntime();
+    record(rt, {
+      tick: 1,
+      kind: 'encounter_decision',
+      agentId: 'a',
+      sourceSystem: 'planner',
+      decisionType: 'queue_movement',
+      templateId: 'encounter.bandit_ambush',
+      locationSubtype: 'forest',
+      travelCost: 3,
+      forecastedUtility: 0.75,
+      forecastedCompletionProb: 0.5,
+      threaded: true,
+    });
+    record(rt, {
+      tick: 2,
+      kind: 'encounter_decision',
+      agentId: 'a',
+      sourceSystem: 'planner',
+      decisionType: 'idle',
+      locationSubtype: 'forest',
+      idleReason: 'no_candidates_after_filter',
+    });
+
+    const summary = buildBalanceRunSummary(rt, 100)!;
+    expect(summary.encounterDecisions?.countsByType['queue_movement']).toBe(1);
+    expect(summary.encounterDecisions?.countsByType['idle']).toBe(1);
+    expect(summary.encounterDecisions?.idleReasons['no_candidates_after_filter']).toBe(1);
+    expect(summary.encounterDecisions?.byTemplate['encounter.bandit_ambush']).toMatchObject({
+      decisions: 1,
+      queueMovement: 1,
+      threadedDecisions: 1,
+      averageTravelCost: 3,
+      averageForecastedUtility: 0.75,
+      averageCompletionProb: 0.5,
+    });
+    expect(summary.encounterDecisions?.byLocationSubtype['forest']).toMatchObject({
+      decisions: 2,
+      selectedDecisions: 1,
+      idleDecisions: 1,
+      forcedTravelDecisions: 0,
+      threadedDecisions: 1,
+    });
+  });
 });
 
 // ─── buildBalanceAgentJourneySummary ─────────────────────────────
@@ -155,6 +201,29 @@ describe('buildBalanceAgentJourneySummary()', () => {
     const j = buildBalanceAgentJourneySummary(rt, 'agent-A')!;
     expect(j.totalEncounters).toBe(3);
     expect(j.encounterCompletionRate).toBeCloseTo(2 / 3);
+  });
+
+  it('tracks idle streaks and idle reasons from encounter decision events', () => {
+    const rt = makeRuntime();
+    setTrackedAgents(rt, ['agent-A']);
+    record(rt, { tick: 1, kind: 'encounter_decision', agentId: 'agent-A', sourceSystem: 'planner', decisionType: 'idle', idleReason: 'no_candidates_after_filter', locationSubtype: 'void' });
+    record(rt, { tick: 2, kind: 'encounter_decision', agentId: 'agent-A', sourceSystem: 'planner', decisionType: 'idle', idleReason: 'no_candidates_after_filter', locationSubtype: 'void' });
+    record(rt, { tick: 3, kind: 'encounter_decision', agentId: 'agent-A', sourceSystem: 'planner', decisionType: 'forced_travel', idleReason: 'no_candidates_after_filter', locationSubtype: 'void' });
+    record(rt, { tick: 4, kind: 'encounter_decision', agentId: 'agent-A', sourceSystem: 'planner', decisionType: 'queue_movement', templateId: 'encounter.bandit_ambush', locationSubtype: 'forest' });
+    record(rt, { tick: 5, kind: 'encounter_decision', agentId: 'agent-A', sourceSystem: 'planner', decisionType: 'idle', idleReason: 'below_score_threshold', locationSubtype: 'forest' });
+
+    const j = buildBalanceAgentJourneySummary(rt, 'agent-A')!;
+    expect(j.idleDecisions).toBe(3);
+    expect(j.longestIdleStreak).toBe(2);
+    expect(j.idleReasonCounts).toEqual({
+      no_candidates_after_filter: 2,
+      below_score_threshold: 1,
+    });
+    expect(j.decisionCounts).toMatchObject({
+      idle: 3,
+      forced_travel: 1,
+      queue_movement: 1,
+    });
   });
 });
 
@@ -298,11 +367,14 @@ describe('evaluateAgentJourney()', () => {
     setTrackedAgents(rt, ['agent-A']);
     record(rt, { tick: 1, kind: 'step_resolved', agentId: 'agent-A', sourceSystem: 'test', result: 'success' });
     record(rt, { tick: 2, kind: 'reward_granted', agentId: 'agent-A', sourceSystem: 'reward', rewardTemplateId: 'tmpl-1' });
+    record(rt, { tick: 3, kind: 'encounter_decision', agentId: 'agent-A', sourceSystem: 'planner', decisionType: 'idle', idleReason: 'no_candidates_after_filter', locationSubtype: 'void' });
 
     const j = buildBalanceAgentJourneySummary(rt, 'agent-A', 'Serafina')!;
     const lines = evaluateAgentJourney(j);
     expect(lines.some(l => l.includes('Serafina'))).toBe(true);
     expect(lines.some(l => l.includes('Rewards'))).toBe(true);
+    expect(lines.some(l => l.includes('Idle'))).toBe(true);
+    expect(lines.some(l => l.includes('Idle reasons'))).toBe(true);
   });
 });
 

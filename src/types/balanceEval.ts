@@ -37,6 +37,7 @@ export type BalanceEventKind =
   | 'step_resolved'
   | 'action_resolved'
   | 'encounter_resolved'
+  | 'encounter_decision'
   | 'quintessence_changed'
   | 'reward_granted'
   | 'attachment_changed'
@@ -45,6 +46,40 @@ export type BalanceEventKind =
   | 'quintessence_push'
   | 'quintessence_resist'
   | 'forecast_recorded';
+
+export type BalanceEncounterDecisionType =
+  | 'start_local'
+  | 'attempt_remote'
+  | 'queue_movement'
+  | 'idle'
+  | 'forced_travel';
+
+export interface BalanceEncounterDecisionTemplateSummary {
+  decisions: number;
+  startLocal: number;
+  attemptRemote: number;
+  queueMovement: number;
+  threadedDecisions: number;
+  averageTravelCost: number;
+  averageForecastedUtility: number;
+  averageCompletionProb: number;
+}
+
+export interface BalanceEncounterDecisionLocationSummary {
+  decisions: number;
+  selectedDecisions: number;
+  idleDecisions: number;
+  forcedTravelDecisions: number;
+  threadedDecisions: number;
+  idleReasons: Record<string, number>;
+}
+
+export interface BalanceEncounterDecisionSummary {
+  countsByType: Record<string, number>;
+  idleReasons: Record<string, number>;
+  byTemplate: Record<string, BalanceEncounterDecisionTemplateSummary>;
+  byLocationSubtype: Record<string, BalanceEncounterDecisionLocationSummary>;
+}
 
 // ─── Balance Event ────────────────────────────────────────────────
 
@@ -83,6 +118,30 @@ export interface BalanceEvent {
   result?: 'success' | 'failure' | 'critical_success' | 'critical_failure' | 'success_at_cost';
   /** For encounter_resolved / action_resolved: 'completed' | 'abandoned' */
   finalStatus?: string;
+
+  // ── Encounter decision context ──
+  decisionType?: BalanceEncounterDecisionType;
+  idleReason?: string;
+  idleAction?: string;
+  /** Location occupied by the agent when the decision was made */
+  locationId?: string;
+  /** Resolved from locationType/locationSubtype for balance rollups */
+  locationSubtype?: string;
+  /** Chosen destination / target location for movement or encounter start */
+  targetLocationId?: string;
+  targetLocationSubtype?: string;
+  filterCacheSize?: number;
+  filterAfterAwareness?: number;
+  filterAfterVisibility?: number;
+  filterAfterPrerequisites?: number;
+  filterAfterThreat?: number;
+  filterAfterCap?: number;
+  candidatesBeforeCooldown?: number;
+  candidatesAfterCooldown?: number;
+  bestScore?: number;
+  travelCost?: number;
+  threaded?: boolean;
+  courtPosition?: string;
 
   // ── Quintessence context ──
   quintessenceBefore?: number;
@@ -254,6 +313,9 @@ export interface BalanceRunSummary {
     /** Number of forecasts where resist was deemed valuable */
     resistValuableCount: number;
   };
+
+  /** Encounter-decision funnel summary: starts, movement, idles, and starvation hotspots. */
+  encounterDecisions?: BalanceEncounterDecisionSummary;
 }
 
 // ─── Agent Journey Summary ────────────────────────────────────────
@@ -272,6 +334,10 @@ export interface BalanceAgentJourneySummary {
   totalRewards: number;
   totalSetbacks: number;
   longestSetbackStreak: number;
+  idleDecisions: number;
+  longestIdleStreak: number;
+  idleReasonCounts: Record<string, number>;
+  decisionCounts: Record<string, number>;
   durableAttachments: number;
 
   stepSuccessRate: number;
