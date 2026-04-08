@@ -518,11 +518,11 @@
     </div>
     <div class="data-flow-item">
       <strong>Encounter</strong>
-      <span>Multi-step test at a location, gated by threat &amp; motivation</span>
+      <span>Static + dynamic candidates filtered by awareness, visibility, cooldown, then scored for utility</span>
     </div>
     <div class="data-flow-item">
       <strong>Resolution</strong>
-      <span>Base capability + 5 modifiers vs. difficulty &rarr; outcome</span>
+      <span>Capability + sphere + action modifiers + influence nudge &minus; difficulty &rarr; doubles-based outcome</span>
     </div>
   </div>
 
@@ -566,7 +566,7 @@
       </dl>
       <dl class="concept">
         <dt>Threat Rating</dt>
-        <dd>Encounter difficulty band: Trivial, Easy, Moderate, Hard, Deadly. Agents self-select encounters within &plusmn;1 tier of their power.</dd>
+        <dd>Encounter difficulty band: Trivial, Easy, Moderate, Hard, Deadly. The threat stage still exists in the pipeline, but the live tune currently disables it by default.</dd>
       </dl>
       <dl class="concept">
         <dt>Encounter Step</dt>
@@ -581,8 +581,8 @@
         <dd>The player's divine resource. Generated from controlled locations. Spent on interventions, nudges, and divine actions.</dd>
       </dl>
       <dl class="concept">
-        <dt>Maslow Pipeline</dt>
-        <dd>Agent decision model: 6 need layers (survival &rarr; self-actualization). Higher layers activate only when lower needs are met.</dd>
+        <dt>Decision Pipeline</dt>
+        <dd>Live encounter chooser: merge static + dynamic candidates, run the filter pipeline, apply cooldown/exhaustion, score survivors, then start, move, act remotely, or idle.</dd>
       </dl>
     </div>
   </div>
@@ -942,32 +942,33 @@ const CHAPTERS = [
       },
       {
         name: 'Threat Ratings',
-        desc: 'Five difficulty bands define how dangerous an encounter is. Agents self-select encounters within \u00b11 tier of their own power.',
+        desc: 'Five difficulty bands still label encounter danger, but in the live tune they are mostly telemetry/tuning metadata because the threat filter is currently disabled (`THREAT_FLOOR_FILTER = false`). If the stage is re-enabled, these bands define the capability checks.',
         table: {
-          headers: ['Rating', 'Capability Range', 'Who Attempts It'],
+          headers: ['Rating', 'Capability Range', 'Reference reading'],
           rows: [
-            ['<strong>Trivial</strong>', '<span class="num">0\u201320</span>', 'Anyone can \u2014 most won\'t bother'],
-            ['<strong>Easy</strong>', '<span class="num">15\u201340</span>', 'Newcomers, cautious agents'],
-            ['<strong>Moderate</strong>', '<span class="num">30\u201360</span>', 'Experienced agents, the bread and butter'],
-            ['<strong>Hard</strong>', '<span class="num">50\u201380</span>', 'Veterans, the ambitious'],
-            ['<strong>Deadly</strong>', '<span class="num">70\u2013100</span>', 'Legends only. High risk, high reward.']
+            ['<strong>Trivial</strong>', '<span class="num">0\u201320</span>', 'Low danger; useful for onboarding, recovery, or background churn.'],
+            ['<strong>Easy</strong>', '<span class="num">15\u201340</span>', 'Comfort band for weaker or cautious actors.'],
+            ['<strong>Moderate</strong>', '<span class="num">30\u201360</span>', 'Bread-and-butter midrange challenge.'],
+            ['<strong>Hard</strong>', '<span class="num">50\u201380</span>', 'Strong challenge band that rewards capable actors and good modifiers.'],
+            ['<strong>Deadly</strong>', '<span class="num">70\u2013100</span>', 'Top-end danger band with strong failure pressure.']
           ]
         },
         tags: ['5 threat bands']
       },
       {
-        name: 'Threat Filtering by Personality',
-        desc: 'Agent personality modifies which encounters they\'ll attempt:',
+        name: 'Threat Stage (Current Tune)',
+        desc: 'The pipeline still contains a threat-tolerance stage, but its live behavior depends on one tuning flag:',
         table: {
-          headers: ['Personality', 'Condition', 'Effect'],
+          headers: ['State', 'Condition', 'Effect'],
           rows: [
-            ['<strong>Default</strong>', '\u2014', 'Attempt encounters \u00b11 tier of capability'],
-            ['<strong>Courageous</strong>', 'courage_prudence > 0.3', 'Expand upward by one tier (reach harder encounters)'],
-            ['<strong>Prudent</strong>', 'courage_prudence < \u22120.3', 'Restrict downward by one tier (safer choices)'],
-            ['<strong>Divine nudge</strong>', 'Player intervention', 'Bypasses threat filtering entirely']
+            ['<strong>Current default</strong>', 'THREAT_FLOOR_FILTER = false', 'Stage is skipped; no candidates are rejected on threat alone.'],
+            ['<strong>If enabled</strong>', '\u2014', 'Check the encounter\'s threat band against the agent\'s capability band, roughly within a one-tier tolerance window.'],
+            ['<strong>Courageous</strong>', 'courage_prudence > 0.3', 'Expand the upper tolerance by one tier.'],
+            ['<strong>Prudent</strong>', 'courage_prudence < \u22120.3', 'Raise the minimum accepted capability band by one tier.'],
+            ['<strong>Divine influence</strong>', 'Whispers, compulsions, scoring nudges', 'Biases scoring or final selection elsewhere; does not directly bypass the threat stage.']
           ]
         },
-        tags: ['personality filter']
+        tags: ['threat stage']
       },
       {
         name: 'Location \u2192 Encounter Coverage',
@@ -1014,29 +1015,28 @@ const CHAPTERS = [
     num: 'VII',
     title: 'Resolution Pipeline',
     color: 'var(--ch-resolution)',
-    summary: 'The formula that determines success or failure \u2014 five modifiers on top of base capability',
+    summary: 'The shared resolver that determines success or failure \u2014 live inputs, forecast tiers, and doubles-based crits',
     rules: [
       {
         name: 'The Resolution Formula',
-        desc: 'When an encounter step resolves, the engine computes a success probability from six components. The result is clamped to ensure nothing is ever guaranteed or impossible.',
-        formula: 'P = base_capability\n  + sphereAlignmentBonus\n  + equipmentModifier\n  + terrainModifier\n  + traitBonus\n  + divineInterventionModifier\n  \u2212 difficulty\n\nclamped to [0.05, 0.95]',
+        desc: 'The shared resolver consumes five canonical inputs. Equipment, terrain, trait, and support effects may still matter, but they are folded into `actionModifiers` before the resolver is called.',
+        formula: 'P = capability\n  + sphereFactor\n  + actionModifiers\n  + influenceNudge\n  \u2212 difficulty\n\nclamped to [0.05, 0.95]',
         tags: ['master formula', 'cap: 0.05\u20130.95']
       },
       {
         name: 'Modifier Breakdown',
-        desc: 'Each modifier has defined caps and sources:',
+        desc: 'These are the live resolver inputs rather than a longer list of author-facing sub-modifiers:',
         table: {
-          headers: ['Modifier', 'Source', 'Range', 'Cap'],
+          headers: ['Input', 'Live field', 'Meaning'],
           rows: [
-            ['<strong>Base Capability</strong>', 'Agent\'s domain score in step\'s Reach', '<span class="num">0.0\u20131.0</span>', '\u2014'],
-            ['<strong>Sphere Alignment</strong>', 'Match/oppose between agent\'s sphere and encounter\'s sphere', '<span class="num">\u22120.15 to +0.15</span>', '<span class="num">\u00b10.15</span>'],
-            ['<strong>Equipment</strong>', 'Sum of reachBonus from possessed artifacts', '<span class="num">0.0 to +0.15</span>', '<span class="num">+0.15</span>'],
-            ['<strong>Terrain</strong>', 'Location advantage, control bonus', '<span class="num">\u22120.10 to +0.10</span>', '<span class="num">\u00b10.10</span>'],
-            ['<strong>Trait Bonus</strong>', 'Reach/type-specific bonuses from traits', '<span class="num">\u22120.15 to +0.15</span>', '<span class="num">~\u00b10.15</span>'],
-            ['<strong>Divine Intervention</strong>', 'Player spends essence', '<span class="num">0.0 to ~+0.15</span>', 'Practical: ~+0.15']
+            ['<strong>Capability</strong>', '<code>capability</code>', 'Agent\'s normalized Domain Capability in the relevant Reach.'],
+            ['<strong>Sphere Factor</strong>', '<code>sphereFactor</code>', 'Alignment or opposition from the current sphere context.'],
+            ['<strong>Action Modifiers</strong>', '<code>actionModifiers</code>', 'Collapsed local modifiers: traits, equipment, terrain, support, test shapers, and other contextual bonuses/penalties.'],
+            ['<strong>Influence Nudge</strong>', '<code>influenceNudge</code>', 'Direct divine pressure or other explicit intervention nudges.'],
+            ['<strong>Difficulty</strong>', '<code>difficulty</code>', 'Normalized step difficulty in the canonical 0\u20131 range, subtracted from the total.']
           ]
         },
-        tags: ['5 modifiers', 'all capped']
+        tags: ['5 resolver inputs']
       },
       {
         name: 'Fate Forecast',
@@ -1055,14 +1055,14 @@ const CHAPTERS = [
       },
       {
         name: 'Outcome Bands',
-        desc: 'The d100 roll against the probability P produces four possible outcomes:',
+        desc: 'The live crit model is doubles-based. The roll is compared to the threshold, then doubles determine whether the result is critical:',
         table: {
           headers: ['Roll vs P', 'Outcome', 'Effect'],
           rows: [
-            ['Roll \u2264 P \u00d7 0.1', '<strong style="color:var(--green)">Critical Success</strong>', 'Exceptional result. Best rewards, dramatic narrative.'],
-            ['Roll \u2264 P', '<strong style="color:var(--blue)">Success</strong>', 'Standard success. Good rewards, capability growth.'],
-            ['Roll > P', '<strong style="color:var(--orange)">Failure</strong>', 'Standard failure. Reduced rewards, possible complications.'],
-            ['Roll \u2265 95', '<strong style="color:var(--red)">Critical Failure</strong>', 'Catastrophic. Bad outcomes, scar traits, item breakage.']
+            ['Roll \u2264 threshold, and doubles', '<strong style="color:var(--green)">Critical Success</strong>', 'Exceptional result. More doubles land here as the actor becomes more competent.'],
+            ['Roll \u2264 threshold, not doubles', '<strong style="color:var(--blue)">Success</strong>', 'Standard success.'],
+            ['Roll > threshold, not doubles', '<strong style="color:var(--orange)">Failure</strong>', 'Standard failure.'],
+            ['Roll > threshold, and doubles', '<strong style="color:var(--red)">Critical Failure</strong>', 'Catastrophic failure. Fewer doubles land here as competence rises.']
           ]
         },
         tags: ['d100 resolution', 'rng: seeded']
@@ -1188,67 +1188,71 @@ const CHAPTERS = [
     num: 'IX',
     title: 'Agent Decisions',
     color: 'var(--ch-decision)',
-    summary: 'How agents choose what to do \u2014 the Maslow pipeline and action economy',
+    summary: 'How agents choose encounters in the live build \u2014 candidate merge, filter stages, scoring, and fallback behavior',
     rules: [
       {
-        name: 'The Maslow Pipeline',
-        desc: 'Every idle agent runs through a 6-layer need hierarchy each tick. Higher layers only activate when lower needs are met. The first unsatisfied layer drives the agent\'s decision.',
+        name: 'Decision Pipeline',
+        desc: 'For each idle spotlight individual not already occupied, the encounter phase gathers candidates, filters them, and scores the survivors:',
         table: {
-          headers: ['Layer', 'Need', 'Drives'],
+          headers: ['Step', 'Live stage', 'What it does'],
           rows: [
-            ['<span class="num">1</span>', '<strong>Survival</strong>', 'Flee danger, find shelter, heal wounds'],
-            ['<span class="num">2</span>', '<strong>Safety</strong>', 'Secure location, avoid threats, find allies'],
-            ['<span class="num">3</span>', '<strong>Belonging</strong>', 'Join groups, build relationships, find community'],
-            ['<span class="num">4</span>', '<strong>Esteem</strong>', 'Earn reputation, prove skill, gain recognition'],
-            ['<span class="num">5</span>', '<strong>Purpose</strong>', 'Pursue ambitions, fulfill destiny, advance goals'],
-            ['<span class="num">6</span>', '<strong>Self-Actualization</strong>', 'Create legacy, explore the unknown, transcend']
+            ['<span class="num">1</span>', '<strong>Gather</strong>', 'Merge static encounter-cache entries with dynamic social, faction-quest, and faction-lifecycle candidates.'],
+            ['<span class="num">2</span>', '<strong>Awareness + faction</strong>', 'Keep only encounters visible through hex-range awareness or faction-network knowledge.'],
+            ['<span class="num">3</span>', '<strong>Visibility</strong>', 'Apply <code>visibleTo</code> restrictions such as faction, culture, archetype, or agent-specific gating.'],
+            ['<span class="num">4</span>', '<strong>Prerequisites + outgrowth</strong>', 'Drop locked chain stages, gated templates, and content the actor has significantly outgrown.'],
+            ['<span class="num">5</span>', '<strong>Threat</strong>', 'Threat tolerance stage exists architecturally, but the current tune skips it because <code>THREAT_FLOOR_FILTER = false</code>.'],
+            ['<span class="num">6</span>', '<strong>Diversity cap</strong>', 'Keep at most 40 candidates for scoring while preserving at least one slot per encounter type.'],
+            ['<span class="num">7</span>', '<strong>Cooldown + retirement</strong>', 'Remove recently abandoned/completed encounters and templates the actor has already exhausted.'],
+            ['<span class="num">8</span>', '<strong>Score + select</strong>', 'Rank by forecasted utility, cost, desire, and context bonuses, then select the best surviving candidate.']
           ]
         },
-        tags: ['6 layers', 'priority cascade']
+        tags: ['live phase 2b']
+      },
+      {
+        name: 'Scoring Signals',
+        desc: 'Candidate ranking is deterministic and utility-first; raw success probability is only one ingredient in the final score:',
+        table: {
+          headers: ['Signal', 'Role in score'],
+          rows: [
+            ['<strong>Forecasted utility</strong>', 'Primary reward signal, computed from the same resolver math used by live step resolution.'],
+            ['<strong>Push / resist benefit</strong>', 'Adds value when quintessence push or resist options look worthwhile.'],
+            ['<strong>Travel + total cost</strong>', 'Same-hex is free, remote-without-presence is free, and required travel is penalized by hex distance and tick cost.'],
+            ['<strong>Desire multiplier</strong>', 'Axiological motivations, ambition boosts, social bonds, and behavior-weight effects amplify or dampen value.'],
+            ['<strong>Context bonuses</strong>', 'Faction boosts, sphere resonance, exploration, chain progress, rarity, hunches, reputation, ruins, anomalies, and similar local incentives.'],
+            ['<strong>Familiarity penalty</strong>', 'Repeated templates gradually score lower so the world does not collapse into one dominant loop.']
+          ]
+        },
+        tags: ['ranking inputs']
       },
       {
         name: 'Decision Outcomes',
-        desc: 'After evaluating needs, an agent chooses one of four actions:',
+        desc: 'Action type is classified after selection from distance and presence requirements, then idle fallback logic takes over if nothing clears the bar:',
         table: {
-          headers: ['Choice', 'When'],
+          headers: ['Outcome', 'When it happens'],
           rows: [
-            ['<strong>Start encounter</strong>', 'Best candidate encounter passes threat filter and motivation check'],
-            ['<strong>Queue movement</strong>', 'Better opportunities exist at a different location'],
-            ['<strong>Attempt remote action</strong>', 'Can act on something without traveling (diplomacy, magic)'],
-            ['<strong>Drift / Stay</strong>', 'No pressing needs, no good candidates \u2014 idle observation']
+            ['<strong>Start local</strong>', 'Selected candidate is on the actor\'s current hex/location (distance 0).'],
+            ['<strong>Attempt remote</strong>', 'Selected candidate does not require physical presence.'],
+            ['<strong>Queue movement</strong>', 'Best candidate requires presence somewhere else, so the actor sets out toward it.'],
+            ['<strong>Stay / drift</strong>', 'No candidate is selected; idle behavior chooses to stay put or drift locally.'],
+            ['<strong>Forced travel</strong>', 'After 10 consecutive starvation ticks from filter/cooldown failure, the actor heads toward the nearest content-bearing location.']
           ]
         },
-        tags: ['4 choices']
+        tags: ['start move remote idle']
       },
       {
-        name: 'Action Points & Duration',
-        desc: 'Actors have limited action capacity. Larger entities can sustain more parallel activities.',
+        name: 'Runtime Guards',
+        desc: 'The live chooser includes several guardrails to prevent thrashing and duplicate work:',
         table: {
-          headers: ['Actor Type', 'Base AP', 'Scale'],
+          headers: ['Guard', 'Live behavior'],
           rows: [
-            ['God / Primordial', '<span class="num">1</span>', 'Cosmic (one massive action)'],
-            ['Ascendant / Demigod', '<span class="num">1\u20132</span>', 'Regional'],
-            ['Faction / Organization', '<span class="num">2\u20133</span>', 'Regional \u2192 Local'],
-            ['Culture / Nation', '<span class="num">1\u20132</span>', 'Regional'],
-            ['Group / Party', '<span class="num">1\u20132</span>', 'Local \u2192 Personal'],
-            ['Individual', '<span class="num">1</span>', 'Local \u2192 Personal']
+            ['<strong>Occupied actors</strong>', 'Actors already in an active encounter or unresolved unified action are skipped entirely.'],
+            ['<strong>Moving actors</strong>', 'Traveling actors do not run the full chooser every tick; they only reevaluate on cadence or when a dramatically better heading appears.'],
+            ['<strong>Idle score threshold</strong>', 'If the best final score stays below <span class="num">0.0001</span>, the actor idles instead of forcing a weak pick.'],
+            ['<strong>Cooldowns</strong>', 'Abandoned encounters cool down for 6 ticks, completed ones for 20 ticks before they can be reattempted.'],
+            ['<strong>Telemetry everywhere</strong>', 'Every decision also emits traces, encounter-log entries, and balance telemetry for later tuning.']
           ]
         },
-        tags: ['action points']
-      },
-      {
-        name: 'Action Duration Categories',
-        desc: 'How long actions take, in game-ticks (each tick = 1 day):',
-        table: {
-          headers: ['Category', 'Tick Range', 'Feel'],
-          rows: [
-            ['<strong>Days</strong>', '<span class="num">1\u20137</span>', 'Quick resolution, immediate impact'],
-            ['<strong>Weeks</strong>', '<span class="num">7\u201330</span>', 'Visible progress, resolves within a season'],
-            ['<strong>Months</strong>', '<span class="num">30\u201390</span>', 'Major undertaking, spans a significant season portion'],
-            ['<strong>Seasons</strong>', '<span class="num">60\u2013120</span>', 'Transformative, nearly an entire season']
-          ]
-        },
-        tags: ['4 duration bands', '1 tick = 1 day']
+        tags: ['fail-soft', 'inspectability']
       },
       {
         name: 'Quintessence & Actor Vitality',
