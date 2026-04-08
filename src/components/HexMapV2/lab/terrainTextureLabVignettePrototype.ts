@@ -242,7 +242,7 @@ function getScopeHexes(
   scope: TerrainTextureLabVignetteSettings['scope'],
 ): TerrainTexturePreviewHex[] {
   if (scope === 'selected_mountain' || scope === 'all_mountains') {
-    const mountains = previewHexes.filter(hex => hex.terrainKey === 'mountains');
+    const mountains = previewHexes.filter(hex => hex.terrainKey === 'mountains' || hex.terrainKey === 'mountain_plateau');
     if (scope === 'all_mountains') return mountains;
     const selectedMountain = mountains.find(hex => hex.id === selectedHexId);
     return selectedMountain ? [selectedMountain] : mountains.slice(0, 1);

@@ -71,6 +71,7 @@ export const LAB_TERRAIN_ORDER = [
   'grassland',
   'temperate_forest',
   'mountains',
+  'mountain_plateau',
   'sand_dunes',
   'coast',
   'swamp',
@@ -153,6 +154,8 @@ export const TERRAIN_TEXTURE_PREVIEW_HEXES: TerrainTexturePreviewHex[] = [
   { id: 'desert-b', terrainKey: 'sand_dunes', col: 1, row: 2 },
   { id: 'swamp-b', terrainKey: 'swamp', col: 2, row: 2 },
   { id: 'mountain-b', terrainKey: 'mountains', col: 3, row: 2 },
+  { id: 'plateau-a', terrainKey: 'mountain_plateau', col: 0, row: 3 },
+  { id: 'plateau-b', terrainKey: 'mountain_plateau', col: 1, row: 3 },
 ] as const;
 
 export const TERRAIN_TEXTURE_LAB_BUILTIN_MODELS: TerrainTextureLabModelDefinition[] = [
@@ -403,6 +406,23 @@ export function getDefaultTerrainTextureLabConfigs(): Record<LabTerrainKey, Terr
         ridgeStrength: 0.86,
         banding: 0.44,
         animationSpeed: 0.02,
+      },
+    ),
+    mountain_plateau: createConfig(
+      'Mountain Plateau',
+      'ridges',
+      'Broad grey stone with weathered cracks and subtle lichen breakup.',
+      '#787880',
+      {
+        primaryScale: 2.2,
+        detailScale: 8.4,
+        warpScale: 1.6,
+        warpStrength: 0.3,
+        mixAmount: 0.74,
+        contrast: 1.18,
+        ridgeStrength: 0.62,
+        banding: 0.28,
+        animationSpeed: 0.01,
       },
     ),
     sand_dunes: createConfig(
