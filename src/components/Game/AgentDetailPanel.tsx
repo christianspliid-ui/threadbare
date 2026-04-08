@@ -169,21 +169,62 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
 
         {/* Faction tag */}
         {detail.factionName && (
-          <div className="inline-block">
-            <span
-              className="inline-block px-2.5 py-1 text-xs font-medium rounded"
-              style={{
-                color: detail.factionThemeColor || FACTION_TAG_COLOR,
-                backgroundColor: detail.factionThemeColor
-                  ? `${detail.factionThemeColor}26`
-                  : FACTION_TAG_BACKGROUND,
-                border: `1px solid ${detail.factionThemeColor
-                  ? `${detail.factionThemeColor}66`
-                  : FACTION_TAG_BORDER}`,
-              }}
-            >
-              {detail.factionIconGlyph ? `${detail.factionIconGlyph} ` : ''}{detail.factionName}
-            </span>
+          <div className="space-y-2">
+            <div className="inline-block">
+              <span
+                className="inline-block px-2.5 py-1 text-xs font-medium rounded"
+                style={{
+                  color: detail.factionThemeColor || FACTION_TAG_COLOR,
+                  backgroundColor: detail.factionThemeColor
+                    ? `${detail.factionThemeColor}26`
+                    : FACTION_TAG_BACKGROUND,
+                  border: `1px solid ${detail.factionThemeColor
+                    ? `${detail.factionThemeColor}66`
+                    : FACTION_TAG_BORDER}`,
+                }}
+              >
+                {detail.factionIconGlyph ? `${detail.factionIconGlyph} ` : ''}{detail.factionName}
+              </span>
+            </div>
+
+            {(detail.factionRank || detail.factionReputation != null) && (
+              <div
+                className="rounded px-3 py-2"
+                style={{
+                  backgroundColor: 'rgba(12, 10, 9, 0.45)',
+                  border: `1px solid ${detail.factionThemeColor ? `${detail.factionThemeColor}40` : 'rgba(217, 119, 6, 0.2)'}`,
+                }}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-xs uppercase tracking-wide text-amber-400/70">Faction Standing</span>
+                  {detail.factionRank && (
+                    <span
+                      className="text-xs font-medium"
+                      style={{ color: detail.factionThemeColor || 'var(--accent-gold)' }}
+                    >
+                      {detail.factionRank}
+                    </span>
+                  )}
+                </div>
+                {detail.factionReputation != null && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <div className="flex-1 h-1.5 rounded-full overflow-hidden bg-stone-700/80">
+                      <div
+                        className="h-full rounded-full transition-all duration-200"
+                        style={{
+                          width: `${Math.round(detail.factionReputation * 100)}%`,
+                          backgroundColor: detail.factionThemeColor || 'var(--accent-gold)',
+                          opacity: 0.85,
+                        }}
+                      />
+                    </div>
+                    <span className="text-xs tabular-nums text-amber-200/80">
+                      {Math.round(detail.factionReputation * 100)}%
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 

@@ -30,7 +30,7 @@ export const CIVIC_GUARD_DEFINITION: FactionDefinition = {
     veil: 0.1,
     star: 0.1,
   },
-  locationTypes: ['town', 'city', 'capital'],
+  locationTypes: ['town', 'city', 'capital', 'fort', 'castle'],
   rankTiers: [
     {
       id: 'recruit',

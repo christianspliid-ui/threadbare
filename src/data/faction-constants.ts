@@ -9,7 +9,19 @@
  */
 
 /** Base decay rate (overridable per faction definition) */
-export const FACTION_REPUTATION_DECAY_PER_TICK = 0.003;
+export const FACTION_REPUTATION_DECAY_PER_TICK = 0.001;
+
+/** Ticks a member can go inactive before reputation starts decaying */
+export const FACTION_REPUTATION_INACTIVITY_GRACE_TICKS = 36;
+
+/** Reputation threshold below which maintenance encounters get a strong urgency boost */
+export const FACTION_REPUTATION_MAINTENANCE_THRESHOLD = 0.2;
+
+/** Additional quest priority for slipping or vulnerable members */
+export const FACTION_REPUTATION_MAINTENANCE_PRIORITY_BOOST = 3.5;
+
+/** Reputation gap to next rank at which promotion upkeep becomes urgent */
+export const FACTION_REPUTATION_PROMOTION_URGENCY_GAP = 0.08;
 
 /** Reputation on joining (just above zero) */
 export const FACTION_JOIN_STARTING_REPUTATION = 0.05;

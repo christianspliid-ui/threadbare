@@ -11,6 +11,7 @@ import type { ReachDomain } from '../types/traits';
 import type { InfluenceTier, ThreadEdgeProperties, CourtPosition } from '../types/influence';
 import { TIER_NAMES } from '../types/influence';
 import { getPortraitUrl } from '../data/portrait-assets';
+import { getAgentFaction } from './graphQueries';
 
 /**
  * A single agent in the ascendant's retinue, with extracted data ready for UI rendering.
@@ -112,16 +113,7 @@ export function getRetinueAgents(graph: WorldGraph, ascendantId: string): Retinu
     }
 
     // Look up faction membership
-    let factionName: string | null = null;
-    const memberOfEdges = graph.getOutgoingEdges(agentId, 'member_of');
-    if (memberOfEdges.length > 0) {
-      // Take first faction membership (agents typically have at most one)
-      const factionId = memberOfEdges[0].target;
-      const factionNode = graph.getNode(factionId);
-      if (factionNode) {
-        factionName = factionNode.name;
-      }
-    }
+    const factionName = getAgentFaction(graph, agentId)?.faction.name ?? null;
 
     // Extract archetype and portrait (agents store archetype as 'narrativeArchetype')
     const archetypeId = (agentProps.narrativeArchetype as string) ?? null;
@@ -378,12 +370,7 @@ export function getThreadedNodes(graph: WorldGraph, ascendantId: string): Thread
           if (locNode) locationName = locNode.name;
         }
 
-        const memberOfEdges = graph.getOutgoingEdges(targetNode.id, 'member_of');
-        let factionName: string | null = null;
-        if (memberOfEdges.length > 0) {
-          const factionNode = graph.getNode(memberOfEdges[0].target);
-          if (factionNode) factionName = factionNode.name;
-        }
+        const factionName = getAgentFaction(graph, targetNode.id)?.faction.name ?? null;
 
         const archetypeId = (nodeProps.narrativeArchetype as string) ?? null;
         const portraitUrl = getPortraitUrl(archetypeId ?? undefined);

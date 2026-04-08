@@ -5,6 +5,7 @@ import type { WorldGraph } from '../../engine/graph';
 import { TIER_COLORS } from '../../data/uiColorPalette';
 import { getSphereColor } from '../../data/sphereIcons';
 import type { ReachDomain } from '../../types/traits';
+import { getFactionNetworkSummary } from '../../engine/factionNetwork';
 
 // Domain display names (8 reaches after flesh removal)
 const DOMAIN_NAMES: Record<ReachDomain, string> = {
@@ -150,7 +151,7 @@ export const ThreadDetailView = React.memo(function ThreadDetailView({
           <LocationDetailBody node={node} graph={graph} />
         )}
         {node.category === 'faction' && (
-          <FactionDetailBody node={node} />
+          <FactionDetailBody node={node} graph={graph} />
         )}
         {node.category === 'army' && (
           <ArmyDetailBody node={node} />
@@ -364,19 +365,35 @@ function LocationDetailBody({
 // Faction detail body — sphere alignment FIRST per CONTEXT.md locked decision
 function FactionDetailBody({
   node,
+  graph,
 }: {
   node: import('../../engine/retinue').ThreadedFaction;
+  graph?: WorldGraph;
 }) {
+  const summary = graph ? getFactionNetworkSummary(graph, node.id) : null;
+  const topReaches = summary?.dominantReaches.slice(0, 3) ?? [];
   return (
     <>
       {/* Sphere alignment FIRST per CONTEXT.md locked decision */}
       {node.dominantSphere && (
         <SphereField label="Sphere" sphereName={node.dominantSphere} />
       )}
-      {node.territoryCount > 0 && (
-        <DetailField label="Territory" value={`${node.territoryCount} hexes`} />
+      {summary?.leader && (
+        <DetailField label="Leader" value={summary.leader.name} />
       )}
-      <DetailField label="Members" value={`${node.memberCount} members`} />
+      {summary?.governingSeats.length ? (
+        <DetailField label="Seat" value={summary.governingSeats[0].name} />
+      ) : null}
+      {node.territoryCount > 0 && (
+        <DetailField label="Control" value={`${node.territoryCount} holdings`} />
+      )}
+      <DetailField label="Members" value={`${summary?.memberCount ?? node.memberCount} members`} />
+      {topReaches.length > 0 && (
+        <DetailField label="Reaches" value={topReaches.map(reach => DOMAIN_NAMES[reach]).join(', ')} />
+      )}
+      {summary?.activeAmbition && (
+        <DetailField label="Agenda" value={summary.activeAmbition.name} />
+      )}
     </>
   );
 }

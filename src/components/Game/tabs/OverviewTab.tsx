@@ -107,6 +107,41 @@ export function OverviewTab({ card, profile: _profile, knowledge }: OverviewTabP
         </div>
       </section>
 
+      {hasKnowledge(card.knowledgeLevel, 'recognised') && card.factionName && (
+        <section>
+          <SectionHeading as="h2">Faction</SectionHeading>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                {card.factionIconGlyph ? `${card.factionIconGlyph} ` : ''}{card.factionName}
+              </p>
+              {card.factionRank && (
+                <p className="text-xs" style={{ color: card.factionThemeColor ?? 'var(--accent-gold)' }}>
+                  {card.factionRank}
+                </p>
+              )}
+            </div>
+            {hasKnowledge(card.knowledgeLevel, 'known') && card.factionReputation != null && (
+              <div className="flex items-center gap-2">
+                <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--border-subtle)' }}>
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{
+                      width: `${Math.round(card.factionReputation * 100)}%`,
+                      backgroundColor: card.factionThemeColor ?? 'var(--accent-gold)',
+                      opacity: 0.8,
+                    }}
+                  />
+                </div>
+                <span className="text-xs tabular-nums" style={{ color: 'var(--text-tertiary)' }}>
+                  {Math.round(card.factionReputation * 100)}%
+                </span>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* Nature — values, gated by revealedValues or KnowledgeLevel */}
       {showNatureSection && (
         <section>

@@ -2,7 +2,7 @@
 
 > **Living document.** Every design plan must include a wiring section that maps new modules to entries on this checklist. Every implementation must verify all listed connections before marking work complete. Maintaining this checklist is part of the Definition of Done for both design and implementation phases.
 >
-> **Last updated:** 2026-04-08 (objective triangle sync — doom/journey/mandate wiring)
+> **Last updated:** 2026-04-08 (faction network visibility/governance wiring)
 
 ---
 
@@ -119,6 +119,7 @@ Every player-facing modal or overlay must appear in the GameView JSX return bloc
 | `HexSidebar` | Hex detail sidebar |
 | `HexChronicle` | Hex event chronicle |
 | `LocationView` | Location detail view |
+| `FactionSheet` | Faction network, leadership, holdings, and faction-targeted action surface |
 | `ActionDrawer` (×2) | Agent & non-agent intervention |
 | `DoomClockDetail` | Doom chapter timeline and resolved doom-card fallout |
 | `MandateDetail` | Mandate sphere-growth detail and omen checkpoints |
@@ -194,6 +195,7 @@ Engine capabilities that are player-toggleable need UI controls. An engine funct
 | Bond overlay | DebugPanel checkbox | ✅ |
 | Decision vector overlay | DebugPanel checkbox | ✅ |
 | Attention mode toggle | `toggleAttentionMode()` in encounterVisibility.ts | ✅ RetinuePanel per-agent toggle (TB-040) |
+| Faction-targeted ascendant actions | `FactionSheet` "Ascendant Actions" button → non-agent `ActionDrawer` | ✅ (2026-04-08) |
 | Meet The First action | `handleStartMeeting()` in GameView | ✅ Rendered in JSX (TB-035 Phase 1) |
 | Music volume | SettingsPanel Music slider | ✅ (2026-04-06) |
 | Background/ambient volume | SettingsPanel Ambient slider | ✅ (2026-04-06) |

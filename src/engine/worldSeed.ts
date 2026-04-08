@@ -48,7 +48,7 @@ import { AGENT_COUNT_BY_MAP_SIZE, AGENT_COUNT_FALLBACK } from '../data/agent-beh
 import { MC_COMPANY_NAMES } from '../data/mercenary-company-definition';
 import { pickCulturalName, GENERIC_NAMES, buildSettlementCultureRoots, getSettlementCultureSuffixes } from '../data/culture-name-pools';
 import { spawnArmy } from './armySpawning';
-import { seedNpcsAtLocations } from './npcSeeding';
+import { assignFactionsToExistingNpcs, seedNpcsAtLocations } from './npcSeeding';
 import type { GameState } from '../types/gameState';
 import { ensureSublocations } from './sublocation';
 import { runSettlementGenome } from './settlementGenome';
@@ -365,6 +365,73 @@ function randomInRange(rng: () => number, min: number, max: number): number {
 
 function pickRandom<T>(rng: () => number, arr: readonly T[]): T {
   return arr[Math.floor(rng() * arr.length)];
+}
+
+function pushLocationFaction(map: Map<string, string[]>, locationId: string, factionId: string): void {
+  const existing = map.get(locationId) ?? [];
+  if (!existing.includes(factionId)) {
+    existing.push(factionId);
+    map.set(locationId, existing);
+  }
+}
+
+function buildDataDrivenFactionLocationMap(
+  graph: WorldGraph,
+  factionIds: readonly string[],
+): Map<string, string[]> {
+  const map = new Map<string, string[]>();
+
+  for (const factionId of factionIds) {
+    for (const edge of graph.getOutgoingEdges(factionId, 'located_at')) {
+      if ((edge.properties.role as string | undefined) !== 'guild_hall') continue;
+      const locationNode = graph.getNode(edge.target);
+      if (locationNode?.type === 'location') {
+        pushLocationFaction(map, locationNode.id, factionId);
+      }
+    }
+
+    for (const edge of graph.getOutgoingEdges(factionId, 'controls')) {
+      const locationNode = graph.getNode(edge.target);
+      if (locationNode?.type === 'location') {
+        pushLocationFaction(map, locationNode.id, factionId);
+      }
+    }
+  }
+
+  return map;
+}
+
+function ensureFactionControlAtHomeLocations(
+  graph: WorldGraph,
+  factionIds: readonly string[],
+): void {
+  let controlEdgeSeq = 0;
+
+  for (const factionId of factionIds) {
+    const factionNode = graph.getNode(factionId);
+    if (!factionNode) continue;
+    const homeLocationId = factionNode.properties.homeLocationId as string | undefined;
+    if (!homeLocationId) continue;
+
+    const alreadyControls = graph.getOutgoingEdges(factionId, 'controls')
+      .some(edge => edge.target === homeLocationId);
+    if (alreadyControls) continue;
+
+    const homeNode = graph.getNode(homeLocationId);
+    const subtype = (homeNode?.properties.locationSubtype as string | undefined) ?? '';
+    const influence =
+      subtype === 'capital' ? 0.92
+      : subtype === 'castle' || subtype === 'fort' ? 0.84
+      : 0.72;
+
+    graph.addEdge({
+      id: `edge_faction_home_control_${controlEdgeSeq++}`,
+      source: factionId,
+      target: homeLocationId,
+      type: 'controls',
+      properties: { influence },
+    });
+  }
 }
 
 function generateAxiologicalProfile(rng: () => number, cosmology: CosmologyProfile): AxiologicalProfile {
@@ -1580,10 +1647,11 @@ export function seedWorld(
       type: 'member_of',
       properties: {
         role: 'commander',
-        rank: 'war_chief',
+        rank: 1.0,
         reputation: 0.9,
         factionDefId: 'mercenary_company',
         joinedTick: 0,
+        lastFactionActivityTick: 0,
       },
     });
 
@@ -1596,6 +1664,12 @@ export function seedWorld(
       spawnArmy(seedTimeState, result.factionId, commanderId, ambitionId);
     }
   }
+
+  // ── Faction territory + NPC institutional wiring ─────────────────────
+  // Data-driven factions should visibly command the places where they operate.
+  ensureFactionControlAtHomeLocations(graph, factionDefIds);
+  const factionLocationMap = buildDataDrivenFactionLocationMap(graph, factionDefIds);
+  assignFactionsToExistingNpcs(graph, factionLocationMap);
 
   return { graph, individualIds, factionIds, guildIds, factionDefIds, locationIds, artifactIds, cultureIds, regionIds, historicalCultureIds };
 }

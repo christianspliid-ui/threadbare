@@ -108,6 +108,11 @@ export interface AgentDetail {
   locationId: string;
   locationName: string;
   factionName: string | null;
+  factionRank?: string;
+  factionReputation?: number;
+  factionDefId?: string;
+  factionIconGlyph?: string;
+  factionThemeColor?: string;
   archetype: NarrativeArchetype | null;
   profile: AxiologicalProfile;
   domainCapabilities: Record<ReachDomain, number>;
@@ -257,8 +262,28 @@ export function getAgentDetail(
   }
 
   let factionName: string | null = null;
+  let factionRank: string | undefined;
+  let factionReputation: number | undefined;
+  let factionDefId: string | undefined;
+  let factionIconGlyph: string | undefined;
+  let factionThemeColor: string | undefined;
   const factionResult = getAgentFaction(graph, agentId);
-  if (factionResult) factionName = factionResult.faction.name;
+  if (factionResult) {
+    factionName = factionResult.faction.name;
+    const memberEdge = graph.getOutgoingEdges(agentId, 'member_of')
+      .find(edge => edge.target === factionResult.faction.id);
+    const memberProps = memberEdge?.properties as Partial<MemberOfEdgeProperties> | undefined;
+    factionDefId = memberProps?.factionDefId;
+    if (factionDefId) {
+      const definition = FACTION_DEFINITIONS.get(factionDefId);
+      if (definition) {
+        factionReputation = memberProps?.reputation ?? 0;
+        factionRank = computeRankFromReputation(factionReputation, definition).name;
+        factionIconGlyph = definition.iconGlyph;
+        factionThemeColor = definition.themeColor;
+      }
+    }
+  }
 
   const archetypeId = props.narrativeArchetype as string | undefined;
   const archetype = archetypeId ? getArchetype(archetypeId) ?? null : null;
@@ -342,6 +367,11 @@ export function getAgentDetail(
     locationId,
     locationName,
     factionName,
+    factionRank,
+    factionReputation,
+    factionDefId,
+    factionIconGlyph,
+    factionThemeColor,
     archetype,
     profile,
     domainCapabilities,

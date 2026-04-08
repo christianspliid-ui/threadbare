@@ -83,6 +83,7 @@ export function processFactionJoinOutcome(
       joinedTick: tick,
       reputation: FACTION_JOIN_STARTING_REPUTATION,
       factionDefId: definition.id,
+      lastFactionActivityTick: tick,
     } satisfies MemberOfEdgeProperties,
   });
 
@@ -277,6 +278,7 @@ export function processFactionOutcome(
   const agentName = graph.getNode(progress.actorId)?.name ?? '?';
   const factionNodes = graph.getNodesByType('actor')
     .filter(n => n.properties.factionDefId === definition.id);
+  const factionId = factionNodes[0]?.id;
   const factionName = factionNodes.length > 0 ? factionNodes[0].name : definition.nameTemplate;
 
   // Get hex coords for the agent's location
@@ -299,6 +301,7 @@ export function processFactionOutcome(
         notification: { channel: 'toast', icon: 'faction' },
         hexCoords,
         actorId: progress.actorId,
+        factionId,
       });
     }
     return events;
@@ -318,6 +321,7 @@ export function processFactionOutcome(
         notification: { channel: 'alert', icon: 'faction' },
         hexCoords,
         actorId: progress.actorId,
+        factionId,
       });
     }
     return events;

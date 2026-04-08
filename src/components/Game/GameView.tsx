@@ -124,7 +124,7 @@ import { useEncounterNotifications } from './hooks/useEncounterNotifications';
 import { toggleAttentionMode } from '../../engine/encounterVisibility';
 import { useTopBarHotkeys } from './hooks/useTopBarHotkeys';
 import { computeEssenceIncome } from '../../engine/essenceIncome';
-import { buildHexTargetContext, buildLocationTargetContext } from '../../engine/targetContextBuilders';
+import { buildActorTargetContext, buildHexTargetContext, buildLocationTargetContext } from '../../engine/targetContextBuilders';
 import { useTargetActions } from './hooks/useTargetActions';
 import { templateIdFromSlotId } from '../../engine/targetActions';
 import type { WheelSlot } from '../../engine/wheel';
@@ -434,12 +434,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // ── Shared actor + faction lookups (single graph traversal per tick) ──
   // TB-086: Key off runtime.worldVersion, not graph identity (graph is mutated in place)
   const actors = useMemo(() => gameState.graph.getNodesByType('actor'), [gameState.graph, runtime.worldVersion]);
-  const factionNodes = useMemo(() => gameState.graph.getNodesByType('faction'), [gameState.graph, runtime.worldVersion]);
+  const factionNodes = useMemo(
+    () => actors.filter(node => node.properties.actorType === 'faction'),
+    [actors],
+  );
 
   // ── Agent render data adapter (graph → AgentRenderData[]) ──
   const agentRenderData = useMemo<AgentRenderData[]>(() => {
     const retinueIds = new Set(
-      getRetinueAgents(gameState.graph, gameState.ascendantId).map(r => r.agentId)
+      getRetinueAgents(gameState.graph, gameState.ascendantId).map(r => r.id)
     );
     const result: AgentRenderData[] = [];
     for (let i = 0; i < actors.length; i++) {
@@ -1097,9 +1100,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
   // ── Non-agent target context (hex-zoom and location views) ──
   const [nonAgentDrawerOpen, setNonAgentDrawerOpen] = useState(false);
+  const [manualTargetContext, setManualTargetContext] = useState<import('../../types/targetContext').TargetContext | null>(null);
 
   // Build a TargetContext for the currently focused hex or location, or selected hex on world map
-  const nonAgentTargetContext = useMemo(() => {
+  const autoNonAgentTargetContext = useMemo(() => {
     if (viewLevel === 'hex-zoom' && focusedHex) {
       // Use gameState.tiles for live mutable state (divineInfluence, corruption)
       const liveTile = getTile(focusedHex.col, focusedHex.row);
@@ -1128,15 +1132,18 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     return null;
   }, [viewLevel, focusedHex, focusedLocationId, selectedHexCoord, getTile, gameState.graph]);
 
+  const nonAgentTargetContext = manualTargetContext ?? autoNonAgentTargetContext;
+
   // Auto-open the non-agent drawer when a targetable context is active.
   // World map: hex selected → show hex actions. Location view: show location actions.
   // Hex-zoom: no auto-open — user picks targets (locations, agents) within the chronicle.
   useEffect(() => {
+    if (manualTargetContext) return;
     const hasTarget =
       (viewLevel === 'location' && !!focusedLocationId) ||
       (viewLevel === 'world' && !!selectedHexCoord);
     setNonAgentDrawerOpen(hasTarget);
-  }, [viewLevel, selectedHexCoord, focusedLocationId]);
+  }, [viewLevel, selectedHexCoord, focusedLocationId, manualTargetContext]);
 
   const nonAgentSlots = useTargetActions({
     target: nonAgentTargetContext,
@@ -1268,6 +1275,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     handleBackFromAgentDetail(); // clears selectedAgentId + drawerOpen
     handleHexDetailClose();      // clears selectedHexCoord
     setNonAgentDrawerOpen(false);
+    setManualTargetContext(null);
     handleAvatarScryClick();
   }, [closeAllAgentOverlays, handleBackFromAgentDetail, handleHexDetailClose, handleAvatarScryClick]);
 
@@ -2156,11 +2164,28 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
       setTimeout(() => {
         setNonAgentDrawerOpen(false);
+        setManualTargetContext(null);
       }, DIVINE_INFLUENCE_CONSTANTS.DRAWER_CLOSE_DELAY_MS);
     } catch (err) {
       console.warn('[targetAction] failed to create action:', err);
     }
   }, [nonAgentTargetContext, gameState.ascendantId, gameState.seed, gameState.tick, archetype, setGameState, focusedLocation, handleStartMeeting]);
+
+  const handleOpenFactionActions = useCallback((factionId: string) => {
+    const context = buildActorTargetContext(factionId, gameState.graph);
+    if (!context) return;
+    setManualTargetContext(context);
+    setNonAgentDrawerOpen(true);
+  }, [gameState.graph]);
+
+  const handleCloseNonAgentDrawer = useCallback(() => {
+    setNonAgentDrawerOpen(false);
+    if (manualTargetContext) {
+      setManualTargetContext(null);
+      return;
+    }
+    handleHexDetailClose();
+  }, [manualTargetContext, handleHexDetailClose]);
 
   // ── Profile modal routing for thread detail view ──
   const handleOpenProfileModal = useCallback((nodeId: string, category: import('../../engine/retinue').ThreadCategory) => {
@@ -2635,7 +2660,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               targetLabel={nonAgentTargetContext?.displayLabel ?? ''}
               playingCardId={null}
               onSlotClick={handleNonAgentSlotClick}
-              onClose={() => { setNonAgentDrawerOpen(false); handleHexDetailClose(); }}
+              onClose={handleCloseNonAgentDrawer}
             />
           )}
         </div>
@@ -2883,7 +2908,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             case 'location':
               return <LocationProfileModal name={nodeName} onClose={onClose} />;
             case 'faction':
-              return <FactionSheet factionId={nodeId} name={nodeName} onClose={onClose} />;
+              return (
+                <FactionSheet
+                  factionId={nodeId}
+                  name={nodeName}
+                  graph={gameState.graph}
+                  onClose={onClose}
+                  onOpenTargetActions={handleOpenFactionActions}
+                />
+              );
             case 'army':
               return <ArmySheet name={nodeName} onClose={onClose} />;
             case 'artifact':

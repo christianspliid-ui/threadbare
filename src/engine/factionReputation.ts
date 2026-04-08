@@ -13,7 +13,11 @@ import type { WorldGraph } from './graph';
 import type { FactionDefinition, FactionReputationTrace } from '../types/faction';
 import { computeRankFromReputation } from '../types/faction';
 import type { MemberOfEdgeProperties } from '../types/disposition';
-import { FACTION_DEFINITIONS, FACTION_REPUTATION_COMPLETION_BONUS } from '../data/faction-definitions';
+import {
+  FACTION_DEFINITIONS,
+  FACTION_REPUTATION_COMPLETION_BONUS,
+  FACTION_REPUTATION_INACTIVITY_GRACE_TICKS,
+} from '../data/faction-definitions';
 import { FACTION_ENCOUNTER_META } from '../data/faction-encounter-content';
 import { getEncounterRewardMultiplier, emitFactionBonusTrace } from './factionRankBonus';
 import { emitTrace } from './traceBuffer';
@@ -61,6 +65,7 @@ export function applyFactionReputationGain(
   edge.properties = {
     ...edge.properties,
     reputation: newReputation,
+    ...(amount > 0 ? { lastFactionActivityTick: tick } : {}),
   };
 
   // Recalculate rank
@@ -133,6 +138,11 @@ export function phaseFactionReputationDecay(state: GameState): Partial<GameState
     const oldReputation = props.reputation ?? 0;
     if (oldReputation <= 0) continue; // Already at minimum
 
+    const lastActivityTick = props.lastFactionActivityTick ?? props.joinedTick ?? 0;
+    if ((tick - lastActivityTick) < FACTION_REPUTATION_INACTIVITY_GRACE_TICKS) {
+      continue;
+    }
+
     const decayRate = definition.reputationDecayPerTick;
     const newReputation = Math.max(0, oldReputation - decayRate);
 
@@ -164,6 +174,7 @@ export function phaseFactionReputationDecay(state: GameState): Partial<GameState
         significance: 0.5,
         notification: { channel: 'toast', icon: 'faction' },
         actorId: edge.source,
+        factionId: edge.target,
       });
     }
   }

@@ -227,6 +227,8 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 
 - Hex Map V2 Phase 4 Plan 01 — Geographic Region Detection: ✅ Complete (2026-03-22) — Border-cost watershed (Dijkstra flood fill with MinHeap), edgeBorderCost (coast/mountain/river/steep/biome/same priority hierarchy), detectRegionsBorderCost with small-region merge and large-region split, TERRAIN_TO_FEATURE covering all 42 terrain types, regionTypes.ts shared interfaces (RegionData, RegionCluster, BaronyRegion, KingdomRegion, RegionLabel). Threaded through WorldGenResult.regionData. 23 TDD tests.
 
+- Faction Network Visibility & Governance Pass: ✅ Complete (2026-04-08) — faction sheets now show live leadership/member/control network state and dominant reaches, character/thread surfaces expose faction standing, upkeep decay slowed with inactivity grace, faction socials/upkeep get stronger priority, local NPC/faction/capital governance links established, and faction-targeted ascendant actions launch from the faction sheet.
+
 - Hex Map V2 Phase 4 Plan 02 — Political Regions, Border Mesh, Capital Markers: ✅ Complete (2026-03-22) — assignPoliticalRegions (province → barony → kingdom grouping, mulberry32 names), BorderMesh (quad-strip borders, REGN-06 geographic skip), CapitalMarkers (two Points groups, kingdom size=6 / barony size=3). Wired into HexMapV2 via regionData prop.
 
 - Hex Map V2 Phase 4 Plan 03 — HTML Label Overlay: ✅ Complete (2026-03-22) — RAF-driven HTML overlay with camera.project() positioning, AABB collision detection (60ms debounce), zoom-tier filtering (kingdom/barony/geo/river tiers), cartographic dark-text-with-halo typography. Phase 4 Regions & Borders complete. 22 TDD tests.

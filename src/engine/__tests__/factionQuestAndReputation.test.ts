@@ -318,13 +318,13 @@ describe('phaseFactionReputationDecay', () => {
     addAgent(graph, 'agent_1');
     joinFaction(graph, 'agent_1', factionId, 0.50);
 
-    const state = makeMinimalGameState(graph, 10);
+    const state = makeMinimalGameState(graph, 50);
     phaseFactionReputationDecay(state);
 
     const edge = graph.getOutgoingEdges('agent_1', 'member_of')[0];
     const newRep = edge.properties.reputation as number;
-    // Should decay by ADVENTURING_GUILD_DEFINITION.reputationDecayPerTick (0.003)
-    expect(newRep).toBeCloseTo(0.497, 5);
+    // Should decay by ADVENTURING_GUILD_DEFINITION.reputationDecayPerTick (0.001)
+    expect(newRep).toBeCloseTo(0.499, 5);
   });
 
   it('does not decay below 0', () => {
@@ -333,7 +333,7 @@ describe('phaseFactionReputationDecay', () => {
     addAgent(graph, 'agent_1');
     joinFaction(graph, 'agent_1', factionId, 0.001);
 
-    const state = makeMinimalGameState(graph, 10);
+    const state = makeMinimalGameState(graph, 50);
     phaseFactionReputationDecay(state);
 
     const edge = graph.getOutgoingEdges('agent_1', 'member_of')[0];
@@ -366,14 +366,14 @@ describe('phaseFactionReputationDecay', () => {
     const graph = makeGraph();
     const factionId = addFaction(graph);
     addAgent(graph, 'agent_1');
-    joinFaction(graph, 'agent_1', factionId, 0.301, 'sergeant'); // just above sergeant threshold
+    joinFaction(graph, 'agent_1', factionId, 0.3005, 'sergeant'); // just above sergeant threshold
 
-    const state = makeMinimalGameState(graph);
+    const state = makeMinimalGameState(graph, 50);
     phaseFactionReputationDecay(state);
 
     const edge = graph.getOutgoingEdges('agent_1', 'member_of')[0];
     const newRep = edge.properties.reputation as number;
-    expect(newRep).toBeCloseTo(0.298, 3);
+    expect(newRep).toBeCloseTo(0.2995, 4);
     // Should have been demoted to journeyman
     expect(edge.properties.role).toBe('journeyman');
   });

@@ -110,6 +110,12 @@ export interface MemberOfEdgeProperties {
    * Cleared when the promotion encounter is completed.
    */
   promotionPending?: boolean;
+  /**
+   * Tick of the most recent faction-relevant activity.
+   * Used to gate reputation decay behind a grace window so membership
+   * erodes from neglect, not simply from time passing.
+   */
+  lastFactionActivityTick?: number;
 }
 
 // ─── Trust Constants ────────────────────────────────────────────

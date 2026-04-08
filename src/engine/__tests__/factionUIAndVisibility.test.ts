@@ -92,14 +92,20 @@ function addLocatedAt(graph: WorldGraph, agentId: string, locId: string): void {
   });
 }
 
-function addMemberOf(graph: WorldGraph, agentId: string, factionId: string, reputation: number): void {
+function addMemberOf(
+  graph: WorldGraph,
+  agentId: string,
+  factionId: string,
+  reputation: number,
+  role = 'journeyman',
+): void {
   graph.addEdge({
     id: `member_${agentId}_${factionId}`,
     source: agentId,
     target: factionId,
     type: 'member_of',
     properties: {
-      role: 'journeyman',
+      role,
       rank: 0,
       joinedTick: 1,
       reputation,
@@ -275,8 +281,8 @@ describe('Faction reputation decay rank events', () => {
     const graph = makeGraph();
     addAgent(graph, 'agent_1');
     const factionId = addFaction(graph);
-    // Put agent just above Sergeant threshold (0.3), so decay drops them
-    addMemberOf(graph, 'agent_1', factionId, 0.301);
+    // Put agent just above Sergeant threshold (0.3), so post-grace decay drops them
+    addMemberOf(graph, 'agent_1', factionId, 0.3005, 'sergeant');
 
     const state = {
       graph,
@@ -286,7 +292,7 @@ describe('Faction reputation decay rank events', () => {
 
     const result = phaseFactionReputationDecay(state);
 
-    // With decay of 0.003 per tick, 0.301 - 0.003 = 0.298 → below 0.3 → demotion
+    // With decay of 0.001 per tick after inactivity grace, 0.3005 - 0.001 = 0.2995 → below 0.3 → demotion
     if (result.tickEvents) {
       const demotionEvents = result.tickEvents.filter(
         (e: any) => e.type === 'faction_rank_changed'

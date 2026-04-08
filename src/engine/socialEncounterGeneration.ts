@@ -76,6 +76,7 @@ import {
 
 const COOPERATIVE_TYPES = new Set(['assist', 'hire', 'trade', 'build', 'lead']);
 const DESTRUCTIVE_TYPES = new Set(['steal', 'duel']);
+const RESERVED_FACTION_SOCIAL_SLOTS = 1;
 
 // ─── Core Functions ──────────────────────────────────────────
 
@@ -123,11 +124,11 @@ export function generateSocialCandidates(
       graph, agentId, targetAgentId, locationType,
     );
 
-    // Combine: location-based first, then faction-scoped
-    const combinedTemplates = [...matchingTemplates, ...factionTemplates];
-
-    // Take up to MAX_SOCIAL_CANDIDATES_PER_AGENT templates
-    const selectedTemplates = combinedTemplates.slice(0, MAX_SOCIAL_CANDIDATES_PER_AGENT);
+    const selectedTemplates = selectSocialTemplates(
+      matchingTemplates,
+      factionTemplates,
+      MAX_SOCIAL_CANDIDATES_PER_AGENT,
+    );
 
     for (const tmpl of selectedTemplates) {
       candidates.push({
@@ -242,7 +243,11 @@ function findVisibleAgents(
       const agentNode = graph.getNode(edge.source);
       if (!agentNode) continue;
       if (agentNode.type !== 'actor') continue;
-      if ((agentNode.properties.spotlightTier ?? 'spotlight') !== 'spotlight') continue; // Skip ambient/notable NPCs
+      if (agentNode.properties.actorType !== 'individual') continue;
+      const spotlightTier = (agentNode.properties.spotlightTier ?? 'spotlight') as string;
+      const factionLinked = graph.getOutgoingEdges(edge.source, 'member_of')
+        .some(memberEdge => (memberEdge.properties.factionDefId as string | undefined) != null);
+      if (spotlightTier !== 'spotlight' && !factionLinked) continue;
       if (edge.source === sourceAgentId) continue; // Skip self
 
       results.push({
@@ -253,6 +258,23 @@ function findVisibleAgents(
   }
 
   return results;
+}
+
+function selectSocialTemplates(
+  matchingTemplates: EncounterTemplate[],
+  factionTemplates: EncounterTemplate[],
+  limit: number,
+): EncounterTemplate[] {
+  if (limit <= 0) return [];
+  if (factionTemplates.length === 0) return matchingTemplates.slice(0, limit);
+
+  const reservedFactionCount = Math.min(RESERVED_FACTION_SOCIAL_SLOTS, factionTemplates.length, limit);
+  const prioritizedFactionTemplates = factionTemplates.slice(0, reservedFactionCount);
+  const remainingSlots = limit - prioritizedFactionTemplates.length;
+  const genericTemplates = matchingTemplates.slice(0, remainingSlots);
+  const extraFactionTemplates = factionTemplates
+    .slice(reservedFactionCount, reservedFactionCount + Math.max(0, limit - prioritizedFactionTemplates.length - genericTemplates.length));
+  return [...prioritizedFactionTemplates, ...genericTemplates, ...extraFactionTemplates].slice(0, limit);
 }
 
 /**

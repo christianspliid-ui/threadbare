@@ -90,11 +90,13 @@ export function BondsTab({ card, knowledge }: BondsTabProps) {
       {/* Faction */}
       {showFaction && (
         <section data-testid="modal-faction">
-          <SectionHeading as="h2">Guild</SectionHeading>
+          <SectionHeading as="h2">Faction</SectionHeading>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{card.factionName}</span>
-              <span className="text-sm" style={{ color: 'var(--accent-gold)' }}>{card.factionRank}</span>
+              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                {card.factionIconGlyph ? `${card.factionIconGlyph} ` : ''}{card.factionName}
+              </span>
+              <span className="text-sm" style={{ color: card.factionThemeColor ?? 'var(--accent-gold)' }}>{card.factionRank}</span>
             </div>
             {hasKnowledge(card.knowledgeLevel, 'known') && card.factionReputation != null && (
               <div className="flex items-center gap-2">
@@ -103,7 +105,7 @@ export function BondsTab({ card, knowledge }: BondsTabProps) {
                     className="h-full rounded-full transition-all"
                     style={{
                       width: `${Math.round(card.factionReputation * 100)}%`,
-                      backgroundColor: 'var(--accent-gold)',
+                      backgroundColor: card.factionThemeColor ?? 'var(--accent-gold)',
                       opacity: 0.8,
                     }}
                   />

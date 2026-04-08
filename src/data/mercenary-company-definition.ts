@@ -51,7 +51,7 @@ export const MERCENARY_COMPANY_DEFINITION: FactionDefinition = {
   },
   instanceCount: 2,
   distanceConstrained: true,
-  locationTypes: ['town', 'city', 'capital'],
+  locationTypes: ['town', 'city', 'capital', 'fort', 'castle'],
   rankTiers: [
     {
       id: 'sellsword',

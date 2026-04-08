@@ -16,10 +16,12 @@ import {
   NPC_NAME_POOL,
   NPC_CONSTANTS,
   NPC_ROLE_SUBLOCATION_MAP,
+  type NpcRole,
 } from '../types/npc';
 import type { SublocationProperties } from '../types/sublocation';
 import type { CultureIdentity } from '../types/culture';
 import { pickCulturalName } from '../data/culture-name-pools';
+import type { MemberOfEdgeProperties } from '../types/disposition';
 
 // ─── Trace types ─────────────────────────────────────────────────────────────
 
@@ -44,6 +46,11 @@ const SUBTYPE_TO_ROSTER_KEY: Record<string, string | null> = {
   hamlet: 'hamlet',
   town: 'town',
   city: 'city',
+  capital: 'capital',
+  castle: 'capital',
+  fort: 'military_outpost',
+  camp: 'military_outpost',
+  farmland: 'hamlet',
   temple: 'temple',
   shrine: 'temple',
   military_outpost: 'military_outpost',
@@ -58,9 +65,70 @@ const ROSTER_KEY_TO_CAP: Record<string, number> = {
   hamlet: NPC_CONSTANTS.MAX_NPCS_HAMLET,
   town: NPC_CONSTANTS.MAX_NPCS_TOWN,
   city: NPC_CONSTANTS.MAX_NPCS_CITY,
+  capital: NPC_CONSTANTS.MAX_NPCS_CITY,
   temple: 3,
   military_outpost: 3,
   wilderness: 2,
+};
+
+const ROLE_FACTION_AFFINITY: Partial<Record<NpcRole, string[]>> = {
+  guard: ['political', 'military'],
+  guard_captain: ['political', 'military'],
+  commander: ['military'],
+  quartermaster: ['military', 'guild'],
+  scout: ['military', 'guild'],
+  noble: ['political'],
+  steward: ['political'],
+  herald: ['political'],
+  attendant: ['political'],
+  priest: ['religious'],
+  acolyte: ['religious'],
+  pilgrim: ['religious'],
+  healer: ['religious', 'guild'],
+  merchant: ['guild', 'criminal'],
+  trader: ['guild'],
+  clerk: ['guild'],
+  appraiser: ['guild'],
+  broker: ['guild', 'criminal'],
+  scholar: ['guild', 'religious'],
+  scribe: ['guild', 'religious'],
+  librarian: ['guild', 'religious'],
+  researcher: ['guild', 'religious'],
+  smith: ['guild', 'military'],
+  mason: ['guild'],
+  brewer: ['guild'],
+  innkeeper: ['guild', 'criminal'],
+  lookout: ['criminal', 'military'],
+  spy: ['criminal', 'political'],
+  fence: ['criminal'],
+  informant: ['criminal'],
+  ranger: ['guild', 'military'],
+  wanderer: ['guild'],
+  elder: ['political', 'guild'],
+};
+
+const LEADERSHIP_REPUTATION_BY_ROLE: Partial<Record<NpcRole, number>> = {
+  noble: 0.88,
+  steward: 0.82,
+  herald: 0.76,
+  commander: 0.86,
+  guard_captain: 0.74,
+  priest: 0.72,
+  merchant: 0.62,
+  scholar: 0.62,
+  smith: 0.58,
+};
+
+const LEADERSHIP_RANK_BY_ROLE: Partial<Record<NpcRole, number>> = {
+  noble: 0.95,
+  steward: 0.82,
+  herald: 0.7,
+  commander: 0.9,
+  guard_captain: 0.76,
+  priest: 0.7,
+  merchant: 0.58,
+  scholar: 0.58,
+  smith: 0.52,
 };
 
 // ─── NPC counter (module-level, increments across all seedNpcsAtLocations calls) ──
@@ -204,6 +272,7 @@ export function seedNpcsAtLocations(
 
       // ── member_of faction edge (if location is mapped to a faction) ───────
       if (factionId !== null) {
+        const factionNode = graph.getNode(factionId);
         graph.addEdge({
           id: `${id}_member_of_${factionId}`,
           source: id,
@@ -213,6 +282,9 @@ export function seedNpcsAtLocations(
             role: entry.role,
             rank: 0.1,
             joinedTick: 0,
+            reputation: 0.12,
+            factionDefId: factionNode?.properties.factionDefId as string | undefined,
+            lastFactionActivityTick: 0,
           },
         });
       }
@@ -232,4 +304,68 @@ export function seedNpcsAtLocations(
   }
 
   return { npcIds, traces };
+}
+
+export function assignFactionsToExistingNpcs(
+  graph: WorldGraph,
+  locationFactionMap: Map<string, string[]>,
+): void {
+  if (locationFactionMap.size === 0) return;
+
+  for (const actor of graph.getNodesByType('actor')) {
+    if (actor.properties.actorType !== 'individual') continue;
+    const npcRole = actor.properties.npcRole as NpcRole | undefined;
+    if (!npcRole) continue;
+
+    const hasDataDrivenFaction = graph.getOutgoingEdges(actor.id, 'member_of')
+      .some(edge => (edge.properties.factionDefId as string | undefined) != null);
+    if (hasDataDrivenFaction) continue;
+
+    const locationEdge = graph.getOutgoingEdges(actor.id, 'located_at')[0];
+    if (!locationEdge) continue;
+
+    const locationNode = graph.getNode(locationEdge.target);
+    const locationId = (locationNode?.properties.parentLocationId as string | undefined) ?? locationEdge.target;
+    const factionIds = locationFactionMap.get(locationId) ?? [];
+    if (factionIds.length === 0) continue;
+
+    const factionId = pickFactionForNpc(graph, npcRole, factionIds);
+    if (!factionId) continue;
+
+    const factionNode = graph.getNode(factionId);
+    if (!factionNode) continue;
+
+    graph.addEdge({
+      id: `${actor.id}_member_of_${factionId}`,
+      source: actor.id,
+      target: factionId,
+      type: 'member_of',
+      properties: {
+        role: npcRole,
+        rank: LEADERSHIP_RANK_BY_ROLE[npcRole] ?? 0.16,
+        joinedTick: 0,
+        reputation: LEADERSHIP_REPUTATION_BY_ROLE[npcRole] ?? 0.22,
+        factionDefId: factionNode.properties.factionDefId as string | undefined,
+        lastFactionActivityTick: 0,
+      } satisfies MemberOfEdgeProperties,
+    });
+  }
+}
+
+function pickFactionForNpc(
+  graph: WorldGraph,
+  role: NpcRole,
+  factionIds: string[],
+): string | null {
+  const preferredTypes = ROLE_FACTION_AFFINITY[role] ?? [];
+  const factions = factionIds
+    .map(factionId => graph.getNode(factionId))
+    .filter((node): node is NonNullable<typeof node> => node != null);
+
+  for (const preferredType of preferredTypes) {
+    const match = factions.find(node => node.properties.factionType === preferredType);
+    if (match) return match.id;
+  }
+
+  return factions[0]?.id ?? null;
 }

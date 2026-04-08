@@ -173,7 +173,7 @@ describe('ThreadDetailView', () => {
     // Sphere should appear — check for 'force' text
     expect(screen.getByText('force')).toBeInTheDocument();
     // Territory and members should also be present
-    expect(screen.getByText(/12 hexes/i)).toBeInTheDocument();
+    expect(screen.getByText(/12 holdings/i)).toBeInTheDocument();
     expect(screen.getByText(/48 members/i)).toBeInTheDocument();
   });
 

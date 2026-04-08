@@ -79,7 +79,25 @@ export function getAgentFaction(
   graph: WorldGraph,
   agentId: string,
 ): { faction: GraphNode; rank: number; role: string } | undefined {
-  const edges = graph.getOutgoingEdges(agentId, 'member_of');
+  const edges = [...graph.getOutgoingEdges(agentId, 'member_of')].sort((a, b) => {
+    const aFaction = graph.getNode(a.target);
+    const bFaction = graph.getNode(b.target);
+    const aDef = (a.properties.factionDefId as string | undefined) != null;
+    const bDef = (b.properties.factionDefId as string | undefined) != null;
+    if (aDef !== bDef) return aDef ? -1 : 1;
+
+    const aFactionDef = (aFaction?.properties.factionDefId as string | undefined) != null;
+    const bFactionDef = (bFaction?.properties.factionDefId as string | undefined) != null;
+    if (aFactionDef !== bFactionDef) return aFactionDef ? -1 : 1;
+
+    const aRep = (a.properties.reputation as number | undefined) ?? 0;
+    const bRep = (b.properties.reputation as number | undefined) ?? 0;
+    if (aRep !== bRep) return bRep - aRep;
+
+    const aRank = (a.properties.rank as number | undefined) ?? 0;
+    const bRank = (b.properties.rank as number | undefined) ?? 0;
+    return bRank - aRank;
+  });
   if (edges.length === 0) return undefined;
   const edge = edges[0];
   const faction = graph.getNode(edge.target);

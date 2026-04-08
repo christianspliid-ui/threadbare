@@ -20,7 +20,13 @@ import type { EncounterCacheEntry } from './encounterCache';
 import type { EncounterTemplate } from '../types/encounter';
 import type { FactionDefinition, FactionRankTier } from '../types/faction';
 import { computeRankFromReputation } from '../types/faction';
-import { FACTION_DEFINITIONS, PROMOTION_PARTIAL_SUCCESS_MARGIN } from '../data/faction-definitions';
+import {
+  FACTION_DEFINITIONS,
+  PROMOTION_PARTIAL_SUCCESS_MARGIN,
+  FACTION_REPUTATION_MAINTENANCE_PRIORITY_BOOST,
+  FACTION_REPUTATION_MAINTENANCE_THRESHOLD,
+  FACTION_REPUTATION_PROMOTION_URGENCY_GAP,
+} from '../data/faction-definitions';
 import {
   FACTION_ENCOUNTER_META,
   FACTION_JOIN_TEMPLATE,
@@ -71,17 +77,33 @@ export function generateFactionQuestCandidates(
 
     for (const template of accessibleTemplates) {
       const meta = FACTION_ENCOUNTER_META.get(template.id);
+      const nextTier = getNextRank(definition, currentRank);
+      const reputationGap = nextTier ? Math.max(0, nextTier.minReputation - reputation) : 1;
+      const maintenanceBoost = (
+        reputation <= FACTION_REPUTATION_MAINTENANCE_THRESHOLD
+        || reputationGap <= FACTION_REPUTATION_PROMOTION_URGENCY_GAP
+        || props.promotionPending
+      ) ? FACTION_REPUTATION_MAINTENANCE_PRIORITY_BOOST : 0;
 
       candidates.push(buildCacheEntry(template, locationId, {
         visibleTo: [`faction:${edge.target}`],
         requiresPresence: false,
-        questPriority: template.questPriority ?? (meta?.questType === 'elite' ? 8.0 : meta?.questType === 'senior' ? 5.0 : 3.0),
+        questPriority: (template.questPriority ?? (meta?.questType === 'elite' ? 8.0 : meta?.questType === 'senior' ? 5.0 : 3.0)) + maintenanceBoost,
         successRewardEstimate: meta?.reputationReward ?? 0.04,
       }));
     }
   }
 
   return candidates;
+}
+
+function getNextRank(
+  definition: FactionDefinition,
+  currentRank: FactionRankTier,
+): FactionRankTier | null {
+  const index = definition.rankTiers.indexOf(currentRank);
+  if (index < 0 || index >= definition.rankTiers.length - 1) return null;
+  return definition.rankTiers[index + 1];
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────

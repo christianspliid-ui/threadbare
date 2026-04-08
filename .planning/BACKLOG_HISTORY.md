@@ -6,6 +6,16 @@
 
 ---
 
+## ✅ TB-119 · Faction Network Visibility & Governance Pass (2026-04-08)
+
+Reframed factions as visible institutions instead of hidden metadata. The faction sheet now renders a live network view with leadership, officers, member roster, reputation bars, dominant reaches/domain capabilities, active ambition, halls, governing seats, controlled holdings, relations, and a simple faction network graph. Character and thread surfaces now expose faction standing directly, including rank and reputation, so the player can see who belongs where without opening debug-only tooling.
+
+The systemic loop was hardened too: faction reputation decay now waits for an inactivity grace window and decays more slowly, faction members get stronger urgency to maintain standing and pursue promotion, faction-flavored social encounters reserve space in the social pipeline, and faction-linked NPCs can participate even when they are not spotlight actors. Data-driven factions now also claim home locations and recruit/affiliate nearby NPCs in capitals, castles, forts, and settlements, giving civic and military institutions a real in-world footprint. Faction sheets can now launch faction-targeted ascendant actions directly.
+
+**Files:** `src/components/Game/FactionSheet.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/ThreadDetailView.tsx`, `src/components/Game/AgentDetailPanel.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/components/Game/tabs/BondsTab.tsx`, `src/engine/factionNetwork.ts`, `src/engine/graphQueries.ts`, `src/engine/agentDetail.ts`, `src/engine/retinue.ts`, `src/engine/factionReputation.ts`, `src/engine/factionQuestGeneration.ts`, `src/engine/socialEncounterGeneration.ts`, `src/engine/npcSeeding.ts`, `src/engine/worldSeed.ts`, `src/data/faction-constants.ts`, `src/data/civic-guard-definition.ts`, `src/data/mercenary-company-definition.ts`.
+
+---
+
 ## ✅ TB-118 · Objective Triangle Sync — Doom, Journey, Mandate (2026-04-08)
 
 Reworked the three long-term objective systems into one synchronized loop. The Doom Clock now escalates through authored doom-card beats and saves chapter five as a climax window. The First's journey cadence is aligned to those same doom thresholds so the return resolves before the final act. Mandates are now generated from ascendant remembrance identity (primary/secondary spheres + court shape), track global sphere-strength growth from run-start baselines, and feed missed/exceeded checkpoint results back into future doom severity through doom debt and counter-omens. The top-bar and detail surfaces now show that shared state directly so the player can read the race between world pressure, The First, and divine intent.
