@@ -170,7 +170,7 @@ Filler is driven by **zone-aware profiles**, not just “density per terrain.”
 interface FillerProfile {
   id: string;
   modelWeights: Array<{ modelId: string; weight: number }>;
-  densityPerHex: number;
+  densityPerHexEquivalent: number;
   minSpacing: number;
   scaleMin: number;
   scaleMax: number;
@@ -184,6 +184,17 @@ Example:
   dense canopy, normal tree sizes, full density
 - `forest-soft-fill`
   fewer trees, smaller trees, lower-profile shrubs/rocks allowed
+
+**Density semantics:** `densityPerHexEquivalent` is normalized to a full hex, not an individual zone. Actual spawn count for a specific zone is:
+
+```typescript
+actualZoneTargetCount =
+  densityPerHexEquivalent *
+  zoneAreaFraction *
+  zone.densityMultiplier;
+```
+
+This avoids the ambiguity where a soft-fill ring slot looked like it wanted "20-35 trees in a tiny circle." It does not. The soft-fill profile is lower-density, then prorated to the actual zone footprint.
 
 ### 4.3 Initial Density Targets
 
@@ -201,6 +212,19 @@ Calibrated from the Blender prototype and user feedback:
 | swamp | 35-60 twisted trees / reeds | 10-18 accents | Uneven watery clutter |
 
 These are starting ranges, not authored absolutes. PRNG and zone masks create the final variation.
+
+### 4.4 Calibrated Forest Palette
+
+The current forest filler prototype has already been art-directed in Blender. Preserve these canopy tones as the first-pass reference palette:
+
+| Role | Color | Notes |
+|------|-------|-------|
+| shadow canopy | `#1A3318` | deep black-green mass |
+| mid canopy | `#2B5E24` | dominant rich forest green |
+| highlight canopy | `#4A8A32` | warm radiant green accent |
+| trunk / branch | `#463828` | dark warm wood |
+
+These belong to the filler profile/art reference, not just the Blender session history.
 
 ---
 
@@ -247,6 +271,8 @@ It makes all of the following possible without contradiction:
 - future incremental rebuilds when one part of the map changes
 
 The terrain lab can run as a single chunk at first, but the architecture remains chunk-based so the prototype and later game renderer share the same shape.
+
+**Cap sanity check:** A dense 12×12 forest chunk at 110 filler instances/hex implies ~15,840 filler instances before model split. With 3 tree archetypes × 2 material slots, the architecture must leave enough room per batch to avoid pathological truncation during ordinary dense-forest scenes. This is why the batch cap in §10 is set above the earlier draft.
 
 ### 5.3 Chunk Ownership
 
@@ -400,6 +426,7 @@ Prototype surfaces that must exist:
 - selection callback panel in terrain lab
 - debug overlay for slot anchors and zone rules
 - debug toggle for filler/landmark/chunk bounds visibility
+- `window.__TERRAIN_LAB` console API for rapid placement/camera/model iteration without sidebar clicking
 
 Without these, the prototype cannot validate readability or click correctness.
 
@@ -432,6 +459,12 @@ Prototype target:
 - landmark batches: under 12 draw calls
 - terrain shader + overlays: under 12 draw calls
 - total: under 45 draw calls in terrain lab
+
+The first profiling check should explicitly verify that a dense forest chunk does not hit the per-batch cap under ordinary usage. If it does, tune one of:
+
+- `SCATTER_MAX_INSTANCES_PER_BATCH`
+- chunk dimensions
+- dense-forest free-fill density
 
 ### 7.3 Production-Oriented Budget
 
@@ -509,6 +542,7 @@ Never let filler sampling run before landmark placement.
 - add slot anchor visualization
 - implement `ZoneRule`
 - build a debug view for `hard_keepout`, `soft_fill`, `free_fill`
+- render simple placeholder dots/markers for free-fill vs soft-fill occupancy so zone sizing can be judged before real filler meshes land
 - prove that unused slots are reclaimed cleanly
 
 ### Phase 2 — Chunked Filler Layer
@@ -555,12 +589,12 @@ Only after the prototype proves:
 |---------|---------|---------|
 | `VIGNETTE_CHUNK_COLS` | 12 | Chunk width in hexes |
 | `VIGNETTE_CHUNK_ROWS` | 12 | Chunk height in hexes |
-| `SCATTER_DENSITY_FOREST_FREE` | 110 | Forest filler density in free-fill area |
-| `SCATTER_DENSITY_FOREST_SOFT` | 28 | Forest filler density in soft-fill slots |
-| `SCATTER_DENSITY_LIGHT_FOREST_FREE` | 45 | Light forest free-fill density |
-| `SCATTER_DENSITY_LIGHT_FOREST_SOFT` | 14 | Light forest soft-fill density |
-| `SCATTER_DENSITY_SWAMP_FREE` | 55 | Swamp free-fill density |
-| `SCATTER_DENSITY_SWAMP_SOFT` | 16 | Swamp soft-fill density |
+| `SCATTER_DENSITY_FOREST_FREE` | 110 | Forest filler density as full-hex equivalent for free-fill zones |
+| `SCATTER_DENSITY_FOREST_SOFT` | 28 | Forest filler density as full-hex equivalent for soft-fill zones |
+| `SCATTER_DENSITY_LIGHT_FOREST_FREE` | 45 | Light forest free-fill density as full-hex equivalent |
+| `SCATTER_DENSITY_LIGHT_FOREST_SOFT` | 14 | Light forest soft-fill density as full-hex equivalent |
+| `SCATTER_DENSITY_SWAMP_FREE` | 55 | Swamp free-fill density as full-hex equivalent |
+| `SCATTER_DENSITY_SWAMP_SOFT` | 16 | Swamp soft-fill density as full-hex equivalent |
 | `SCATTER_MIN_SPACING_FREE` | 0.11 | Minimum spacing in free-fill zones |
 | `SCATTER_MIN_SPACING_SOFT` | 0.14 | Slightly wider spacing in soft-fill zones |
 | `ZONE_RADIUS_CENTER` | 0.20 | Center slot radius as fraction of hex radius |
@@ -572,7 +606,7 @@ Only after the prototype proves:
 | `REMEMBERED_TINT_MIX` | 0.55 | How strongly remembered landmarks/filler tint toward fog color |
 | `FILLER_HIDE_ZOOM_THRESHOLD` | 5 | Below this zoom, filler starts degrading/hiding |
 | `SHADER_REDUCED_OCTAVE_ZOOM_THRESHOLD` | 5 | Terrain shader detail reduction threshold |
-| `SCATTER_MAX_INSTANCES_PER_BATCH` | 2048 | Safety cap per chunk batch |
+| `SCATTER_MAX_INSTANCES_PER_BATCH` | 3072 | Safety cap per chunk batch; chosen to avoid routine dense-forest truncation at current chunk size |
 | `PIXEL_RATIO_CAP` | 2 | Renderer DPR cap |
 
 ---
