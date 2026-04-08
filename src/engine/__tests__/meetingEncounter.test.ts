@@ -369,6 +369,7 @@ describe('createAgentFromMeeting', () => {
       cooperationStrategy: 'tit-for-tat',
       foundingGateTags: ['heroic_origin'],
       traitSeeds: ['fearless'],
+      portraitAssetPath: '/assets/meet-the-first/kael.jpg',
       appearanceSeed: 12345,
       meetingChoiceRecord: {
         encounterTick: 10,
@@ -396,6 +397,7 @@ describe('createAgentFromMeeting', () => {
     expect(agentNode!.name).toBe('Kael');
     expect(agentNode!.properties.actorType).toBe('individual');
     expect(agentNode!.properties.narrativeArchetype).toBe('iron_heart');
+    expect(agentNode!.properties.portraitAssetPath).toBe('/assets/meet-the-first/kael.jpg');
     expect(agentNode!.properties.cooperationStrategy).toBe('tit-for-tat');
     expect(agentNode!.properties.createdByMeeting).toBe(true);
 

@@ -107,6 +107,7 @@ describe('buildNarrativeResult', () => {
     expect(result.secondaryReach).toBe(candidate.secondaryReach);
     expect(result.locationId).toBe('loc_test');
     expect(result.meetingChoiceRecord.sparkVisionId).toBe(vision.id);
+    expect(result.portraitAssetPath).toBe(candidate.imageAssetPath);
     const investedReach = vision.reachInvestment;
     expect(result.reachCapabilities[investedReach]).toBeGreaterThan(
       candidate.reachCapabilities[investedReach],

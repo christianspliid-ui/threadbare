@@ -462,6 +462,8 @@ export interface MeetingEncounterResult {
   traitSeeds: string[];
   /** Flavor choices */
   flavorChoices?: FlavorChoices;
+  /** Explicit portrait selected during the meeting flow, if one was authored */
+  portraitAssetPath?: string;
   /** Appearance PRNG seed */
   appearanceSeed: number;
   /** The full meeting choice record (persisted on thread edge) */

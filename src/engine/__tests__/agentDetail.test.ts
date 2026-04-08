@@ -104,6 +104,29 @@ describe('getAgentDetail', () => {
     expect(detail.archetype).toBeNull();
   });
 
+  it('prefers an explicit portrait asset path over archetype registry lookups', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'asc', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
+    graph.addNode({
+      id: 'agent.1',
+      type: 'actor',
+      name: 'Solenne',
+      properties: {
+        actorType: 'individual',
+        axiologicalProfile: makeProfile(),
+        domainCapabilities: makeDomainCaps(),
+        locationId: 'loc.1',
+        narrativeArchetype: 'stone_shadow',
+        portraitAssetPath: '/assets/meet-the-first/solenne.jpg',
+      },
+    });
+    graph.addNode({ id: 'loc.1', type: 'location', name: 'Here', properties: {} });
+    graph.addEdge({ id: 't.1', source: 'asc', target: 'agent.1', type: 'thread', properties: { tier: 1 } });
+
+    const detail = getAgentDetail(graph, 'agent.1', 'asc')!;
+    expect(detail.portraitUrl).toBe('/assets/meet-the-first/solenne.jpg');
+  });
+
   it('includes faction name from member_of edge', () => {
     const graph = new WorldGraph();
     graph.addNode({ id: 'asc', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });

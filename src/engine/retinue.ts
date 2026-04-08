@@ -10,7 +10,7 @@ import type { AxiologicalProfile } from '../types/agent';
 import type { ReachDomain } from '../types/traits';
 import type { InfluenceTier, ThreadEdgeProperties, CourtPosition } from '../types/influence';
 import { TIER_NAMES } from '../types/influence';
-import { getPortraitUrl } from '../data/portrait-assets';
+import { getAgentPortraitUrlFromProperties } from '../data/portrait-assets';
 import { getAgentFaction } from './graphQueries';
 
 /**
@@ -117,7 +117,7 @@ export function getRetinueAgents(graph: WorldGraph, ascendantId: string): Retinu
 
     // Extract archetype and portrait (agents store archetype as 'narrativeArchetype')
     const archetypeId = (agentProps.narrativeArchetype as string) ?? null;
-    const portraitUrl = getPortraitUrl(archetypeId ?? undefined);
+    const portraitUrl = getAgentPortraitUrlFromProperties(agentProps);
 
     // Derive primary domain from highest capability
     let primaryDomain: ReachDomain | null = null;

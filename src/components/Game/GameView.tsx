@@ -49,7 +49,7 @@ import { extractRoadPaths } from '../../engine/roadNetwork';
 import { getRetinueAgents } from '../../engine/retinue';
 import { TIER_NAMES } from '../../data/influence-content';
 import type { ThreadedNode, ThreadedFaction } from '../../engine/retinue';
-import { getPortraitUrl } from '../../data/portrait-assets';
+import { getAgentPortraitUrlFromProperties } from '../../data/portrait-assets';
 import { getOriginPortraitUrl } from '../../data/avatar-portrait-assets';
 import { HEX_CONSTANTS } from '../HexMapV2/scene/HexFillMesh';
 import { EssencePanel } from './EssencePanel';
@@ -485,14 +485,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       }
 
       const isAvatar = n.id === avatarNodeId;
-      const archetypeId = n.properties.narrativeArchetype as string | undefined;
       result.push({
         id: n.id,
         hexCol,
         hexRow,
         portraitUrl: isAvatar
           ? getOriginPortraitUrl(ascendantIdentity?.originFragmentId ?? '')
-          : (getPortraitUrl(archetypeId) ?? undefined),
+          : (getAgentPortraitUrlFromProperties(n.properties as Record<string, unknown>) ?? undefined),
         factionIndex: i % 6,
         isRetinue: retinueIds.has(n.id),
         isAvatar,

@@ -50,3 +50,25 @@ export function getPortraitUrl(archetypeId: string | undefined): string | null {
   if (!archetypeId) return null;
   return ARCHETYPE_PORTRAITS[archetypeId as ArchetypeId] ?? null;
 }
+
+/**
+ * Resolve a portrait URL from persisted agent properties.
+ *
+ * Meeting-generated agents can carry a bespoke portrait asset path that should
+ * take precedence over the generic archetype portrait registry.
+ */
+export function getAgentPortraitUrlFromProperties(
+  properties: Record<string, unknown> | undefined,
+): string | null {
+  if (!properties) return null;
+
+  const portraitAssetPath = properties.portraitAssetPath;
+  if (typeof portraitAssetPath === 'string' && portraitAssetPath.trim().length > 0) {
+    return portraitAssetPath;
+  }
+
+  const narrativeArchetype = properties.narrativeArchetype;
+  return typeof narrativeArchetype === 'string'
+    ? getPortraitUrl(narrativeArchetype)
+    : null;
+}

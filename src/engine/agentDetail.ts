@@ -24,7 +24,7 @@ import type { AmbitionCategory, ReactiveAmbitionTemplate } from '../types/ambiti
 import { generateTieredBackstory } from './backstoryGenerator';
 import type { BackstoryResult } from '../types/prose';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
-import { getPortraitUrl } from '../data/portrait-assets';
+import { getAgentPortraitUrlFromProperties } from '../data/portrait-assets';
 import { getDivineInfluences } from './interventionEffects';
 import { getCurrentStrength } from './decayCurve';
 import type { InterventionType, DivineInfluenceEntry } from '../types/dream';
@@ -287,7 +287,7 @@ export function getAgentDetail(
 
   const archetypeId = props.narrativeArchetype as string | undefined;
   const archetype = archetypeId ? getArchetype(archetypeId) ?? null : null;
-  const portraitUrl = getPortraitUrl(archetypeId);
+  const portraitUrl = getAgentPortraitUrlFromProperties(props);
 
   const valuePairs = Object.keys(profile) as ValuePair[];
   const sortedValues = valuePairs
