@@ -44,6 +44,13 @@ Scope:
   - URL import for MCP-exported GLBs in `public/models/`
   - local `.glb` picker for quick experiments
   - click-to-place on preview hexes
+- First vignette prototype slice:
+  - slot-aware forest village generation for forest sample hexes
+  - hard-keepout center landmark + soft-fill ring slots + free-fill forest scatter
+  - generated deciduous tree placements using the current oak / elm / birch lab assets
+  - optional debug overlays for slot anchors, zone rings, and filler dots
+  - clickable village landmark targets with selection feedback
+  - `window.__TERRAIN_LAB.prototype()`, `.prototypeScope()`, and `.prototypeSummary()` for faster iteration
 - Local persistence via `localStorage`
 - JSON export for presets
 

@@ -8,10 +8,13 @@ import {
 import {
   getDefaultTerrainTextureLabViewSettings,
   getDefaultTerrainTextureLabConfigs,
+  getDefaultTerrainTextureLabVignetteSettings,
   LAB_TERRAIN_ORDER,
   parseTerrainTextureLabConfigs,
+  parseTerrainTextureLabVignetteSettings,
   parseTerrainTextureLabViewSettings,
   serializeTerrainTextureLabConfigs,
+  serializeTerrainTextureLabVignetteSettings,
   serializeTerrainTextureLabViewSettings,
   TERRAIN_TEXTURE_LAB_BUILTIN_MODELS,
 } from '../terrainTextureLabPresets';
@@ -34,11 +37,21 @@ describe('terrainTextureLab presets', () => {
     expect(parsed).toEqual(defaults);
   });
 
+  it('round-trips the default vignette settings through JSON serialization', () => {
+    const defaults = getDefaultTerrainTextureLabVignetteSettings();
+    const parsed = parseTerrainTextureLabVignetteSettings(serializeTerrainTextureLabVignetteSettings(defaults));
+    expect(parsed).toEqual(defaults);
+  });
+
   it('exposes builtin lab models for quick placement testing', () => {
     expect(TERRAIN_TEXTURE_LAB_BUILTIN_MODELS.map(model => model.sourceUrl)).toEqual([
       '/models/city.glb',
       '/models/town.glb',
       '/models/village.glb',
+      '/models/forest-city-vignette.glb',
+      '/models/deciduous-oak.glb',
+      '/models/deciduous-elm.glb',
+      '/models/deciduous-birch.glb',
     ]);
   });
 });

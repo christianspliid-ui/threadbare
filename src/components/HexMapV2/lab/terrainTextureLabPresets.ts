@@ -2,6 +2,7 @@ import { TERRAIN_PALETTE } from '../palette/terrainPalette';
 
 export const TERRAIN_TEXTURE_LAB_STORAGE_KEY = 'terrain-texture-lab.v1';
 export const TERRAIN_TEXTURE_LAB_VIEW_STORAGE_KEY = 'terrain-texture-lab.view.v1';
+export const TERRAIN_TEXTURE_LAB_VIGNETTE_STORAGE_KEY = 'terrain-texture-lab.vignette.v1';
 
 export const TERRAIN_TEXTURE_LAB_CONSTANTS = {
   HEX_RADIUS: 78,
@@ -23,8 +24,27 @@ export const TERRAIN_TEXTURE_LAB_CONSTANTS = {
   MAX_CAMERA_ROTATION_DEGREES: 180,
   DEFAULT_CAMERA_ROTATION_DEGREES: -32,
   MIN_CAMERA_ZOOM: 0.75,
-  MAX_CAMERA_ZOOM: 1.8,
+  MAX_CAMERA_ZOOM: 20,
   DEFAULT_CAMERA_ZOOM: 1,
+} as const;
+
+export const TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS = {
+  SLOT_RING_RADIUS_FRACTION: 0.44,
+  ZONE_RADIUS_CENTER_FRACTION: 0.2,
+  ZONE_RADIUS_RING_FRACTION: 0.14,
+  FOREST_FREE_DENSITY_PER_HEX: 110,
+  FOREST_SOFT_DENSITY_PER_HEX: 28,
+  FOREST_FREE_MIN_SPACING_FRACTION: 0.11,
+  FOREST_SOFT_MIN_SPACING_FRACTION: 0.14,
+  FOREST_FREE_SCALE_MIN: 5.8,
+  FOREST_FREE_SCALE_MAX: 8.1,
+  FOREST_SOFT_SCALE_MIN: 3.8,
+  FOREST_SOFT_SCALE_MAX: 5.4,
+  DEFAULT_DENSITY_SCALE: 1,
+  MIN_DENSITY_SCALE: 0.25,
+  MAX_DENSITY_SCALE: 1.6,
+  DEFAULT_LANDMARK_MODEL_ID: 'builtin-village',
+  LANDMARK_CLICK_RADIUS_PX: 28,
 } as const;
 
 export const TERRAIN_RECIPE_OPTIONS = [
@@ -78,6 +98,18 @@ export interface TerrainTextureLabViewSettings {
   tiltDegrees: number;
   rotationDegrees: number;
   zoom: number;
+}
+
+export type TerrainTextureLabVignetteScope = 'selected_forest' | 'all_forests';
+
+export interface TerrainTextureLabVignetteSettings {
+  enabled: boolean;
+  scope: TerrainTextureLabVignetteScope;
+  landmarkModelId: string;
+  densityScale: number;
+  showSlotAnchors: boolean;
+  showZones: boolean;
+  showFillerDots: boolean;
 }
 
 export interface TerrainTextureLabModelDefinition {
@@ -139,6 +171,42 @@ export const TERRAIN_TEXTURE_LAB_BUILTIN_MODELS: TerrainTextureLabModelDefinitio
     sourceUrl: '/models/village.glb',
     sourceKind: 'builtin',
     suggestedScale: 2.9,
+    suggestedHeightOffset: 0,
+    suggestedRotationDegrees: 0,
+  },
+  {
+    id: 'builtin-forest-city-vignette',
+    label: 'Forest City Vignette (builtin)',
+    sourceUrl: '/models/forest-city-vignette.glb',
+    sourceKind: 'builtin',
+    suggestedScale: 15.6,
+    suggestedHeightOffset: 0,
+    suggestedRotationDegrees: 0,
+  },
+  {
+    id: 'builtin-deciduous-oak',
+    label: 'Oak Tree (builtin)',
+    sourceUrl: '/models/deciduous-oak.glb',
+    sourceKind: 'builtin',
+    suggestedScale: 8,
+    suggestedHeightOffset: 0,
+    suggestedRotationDegrees: 0,
+  },
+  {
+    id: 'builtin-deciduous-elm',
+    label: 'Elm Tree (builtin)',
+    sourceUrl: '/models/deciduous-elm.glb',
+    sourceKind: 'builtin',
+    suggestedScale: 8,
+    suggestedHeightOffset: 0,
+    suggestedRotationDegrees: 0,
+  },
+  {
+    id: 'builtin-deciduous-birch',
+    label: 'Birch Tree (builtin)',
+    sourceUrl: '/models/deciduous-birch.glb',
+    sourceKind: 'builtin',
+    suggestedScale: 8,
     suggestedHeightOffset: 0,
     suggestedRotationDegrees: 0,
   },
@@ -362,6 +430,22 @@ export function serializeTerrainTextureLabViewSettings(settings: TerrainTextureL
   return JSON.stringify(settings);
 }
 
+export function getDefaultTerrainTextureLabVignetteSettings(): TerrainTextureLabVignetteSettings {
+  return {
+    enabled: true,
+    scope: 'selected_forest',
+    landmarkModelId: TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.DEFAULT_LANDMARK_MODEL_ID,
+    densityScale: TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.DEFAULT_DENSITY_SCALE,
+    showSlotAnchors: true,
+    showZones: false,
+    showFillerDots: false,
+  };
+}
+
+export function serializeTerrainTextureLabVignetteSettings(settings: TerrainTextureLabVignetteSettings): string {
+  return JSON.stringify(settings);
+}
+
 export function parseTerrainTextureLabConfigs(raw: string): Record<LabTerrainKey, TerrainTextureLabConfig> | null {
   try {
     const parsed = JSON.parse(raw) as Partial<Record<LabTerrainKey, TerrainTextureLabConfig>>;
@@ -399,6 +483,35 @@ export function parseTerrainTextureLabViewSettings(raw: string): TerrainTextureL
       tiltDegrees: parsed.tiltDegrees,
       rotationDegrees: parsed.rotationDegrees,
       zoom: parsed.zoom,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function parseTerrainTextureLabVignetteSettings(raw: string): TerrainTextureLabVignetteSettings | null {
+  try {
+    const parsed = JSON.parse(raw) as Partial<TerrainTextureLabVignetteSettings>;
+    if (
+      typeof parsed.enabled !== 'boolean'
+      || (parsed.scope !== 'selected_forest' && parsed.scope !== 'all_forests')
+      || typeof parsed.landmarkModelId !== 'string'
+      || typeof parsed.densityScale !== 'number'
+      || typeof parsed.showSlotAnchors !== 'boolean'
+      || typeof parsed.showZones !== 'boolean'
+      || typeof parsed.showFillerDots !== 'boolean'
+    ) {
+      return null;
+    }
+
+    return {
+      enabled: parsed.enabled,
+      scope: parsed.scope,
+      landmarkModelId: parsed.landmarkModelId,
+      densityScale: parsed.densityScale,
+      showSlotAnchors: parsed.showSlotAnchors,
+      showZones: parsed.showZones,
+      showFillerDots: parsed.showFillerDots,
     };
   } catch {
     return null;

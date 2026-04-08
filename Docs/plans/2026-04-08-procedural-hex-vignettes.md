@@ -2,7 +2,7 @@
 
 **Date:** 2026-04-08
 **Updated:** 2026-04-08 — architecture redesigned after review findings
-**Status:** Draft — ready for prototype implementation
+**Status:** Prototype slice 1 implemented in terrain lab; architecture remains the source of truth for further expansion
 **Build target:** Terrain Texture Lab prototype (`?view=terrain-lab`) only. Do not wire into live `HexMapV2` until the prototype proves performance, clickability, and visual readability.
 **References:** `HexMapV2.tsx`, `SettlementModelMesh.ts`, `SignifierMesh.ts`, `HexRaycaster.ts`, terrain lab shader/canvas implementation
 
@@ -20,6 +20,8 @@ Each hex becomes a **small, readable diorama**:
 The target look is **miniature, low-poly, Chrome-friendly, and legible**. A forest hex should feel like a tiny landscape, not a handful of oversized props. A city or shrine should read as a landmark within the landscape, not consume the whole hex.
 
 This system is explicitly **prototype-first**. We will validate the architecture in the terrain lab before touching the game renderer.
+
+**Implementation note (2026-04-08):** The first prototype slice is now live in `?view=terrain-lab`: forest sample hexes can auto-generate a slot-aware village vignette using the current deciduous tree assets, with optional slot/zone/filler debug overlays and clickable landmark targets. The prototype still uses clone-based model placement in the lab; the chunked batch model below remains the planned production direction.
 
 ---
 

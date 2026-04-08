@@ -5,24 +5,31 @@ import { TerrainTextureLabCanvas } from './TerrainTextureLabCanvas';
 import {
   getDefaultTerrainTextureLabConfigs,
   getDefaultTerrainTextureLabViewSettings,
+  getDefaultTerrainTextureLabVignetteSettings,
   getRecipeOption,
   LAB_TERRAIN_ORDER,
   parseTerrainTextureLabConfigs,
   parseTerrainTextureLabViewSettings,
+  parseTerrainTextureLabVignetteSettings,
   serializeTerrainTextureLabConfigs,
   serializeTerrainTextureLabViewSettings,
+  serializeTerrainTextureLabVignetteSettings,
   TERRAIN_TEXTURE_LAB_BUILTIN_MODELS,
   TERRAIN_RECIPE_OPTIONS,
   TERRAIN_TEXTURE_LAB_CONSTANTS,
   TERRAIN_TEXTURE_LAB_STORAGE_KEY,
   TERRAIN_TEXTURE_PREVIEW_HEXES,
+  TERRAIN_TEXTURE_LAB_VIGNETTE_STORAGE_KEY,
+  TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS,
   TERRAIN_TEXTURE_LAB_VIEW_STORAGE_KEY,
   type LabTerrainKey,
   type TerrainTextureLabModelDefinition,
   type TerrainTextureLabModelPlacement,
   type TerrainTextureLabConfig,
   type TerrainTextureLabViewSettings,
+  type TerrainTextureLabVignetteSettings,
 } from './terrainTextureLabPresets';
+import { buildTerrainTextureLabVignettePrototype } from './terrainTextureLabVignettePrototype';
 
 const GLOBAL_CONTROL_STYLES: CSSProperties = {
   display: 'flex',
@@ -66,7 +73,27 @@ function SliderField({ label, min, max, step, value, onChange }: SliderFieldProp
     <label style={{ display: 'grid', gap: '6px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
         <span>{label}</span>
-        <span style={{ color: 'var(--text-tertiary)' }}>{value.toFixed(2)}</span>
+        <input
+          type="number"
+          min={min}
+          max={max}
+          step={step}
+          value={value.toFixed(2)}
+          onChange={(event) => {
+            const n = Number(event.target.value);
+            if (!Number.isNaN(n)) onChange(Math.min(max, Math.max(min, n)));
+          }}
+          style={{
+            width: '70px',
+            background: 'transparent',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: '4px',
+            color: 'var(--text-tertiary)',
+            fontSize: 'var(--text-xs)',
+            textAlign: 'right',
+            padding: '2px 6px',
+          }}
+        />
       </div>
       <input
         type="range"
@@ -126,12 +153,19 @@ export function TerrainTextureLab() {
     if (!saved) return getDefaultTerrainTextureLabViewSettings();
     return parseTerrainTextureLabViewSettings(saved) ?? getDefaultTerrainTextureLabViewSettings();
   });
+  const [vignetteSettings, setVignetteSettings] = useState<TerrainTextureLabVignetteSettings>(() => {
+    if (typeof window === 'undefined') return getDefaultTerrainTextureLabVignetteSettings();
+    const saved = window.localStorage.getItem(TERRAIN_TEXTURE_LAB_VIGNETTE_STORAGE_KEY);
+    if (!saved) return getDefaultTerrainTextureLabVignetteSettings();
+    return parseTerrainTextureLabVignetteSettings(saved) ?? getDefaultTerrainTextureLabVignetteSettings();
+  });
   const [modelUrlDraft, setModelUrlDraft] = useState('/models/city.glb');
   const [placeOnHexClick, setPlaceOnHexClick] = useState(true);
   const [placementScale, setPlacementScale] = useState(TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_MODEL_SCALE);
   const [placementHeightOffset, setPlacementHeightOffset] = useState(TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_MODEL_HEIGHT_OFFSET);
   const [placementRotationDegrees, setPlacementRotationDegrees] = useState(TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_MODEL_ROTATION_DEGREES);
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
+  const [selectedClickTargetId, setSelectedClickTargetId] = useState<string | null>(null);
 
   const selectedConfig = configs[selectedTerrain];
   const selectedRecipe = getRecipeOption(selectedConfig.recipe);
@@ -139,6 +173,25 @@ export function TerrainTextureLab() {
   const selectedHex = selectedHexId ? TERRAIN_TEXTURE_PREVIEW_HEXES.find(hex => hex.id === selectedHexId) ?? null : null;
   const serializedConfigs = useMemo(() => serializeTerrainTextureLabConfigs(configs), [configs]);
   const serializedViewSettings = useMemo(() => serializeTerrainTextureLabViewSettings(viewSettings), [viewSettings]);
+  const serializedVignetteSettings = useMemo(() => serializeTerrainTextureLabVignetteSettings(vignetteSettings), [vignetteSettings]);
+  const vignettePrototype = useMemo(() => buildTerrainTextureLabVignettePrototype(
+    TERRAIN_TEXTURE_PREVIEW_HEXES,
+    models,
+    vignetteSettings,
+    seed,
+    selectedHexId,
+  ), [models, vignetteSettings, seed, selectedHexId]);
+  const combinedPlacements = useMemo(
+    () => [...vignettePrototype.autoPlacements, ...placements],
+    [placements, vignettePrototype.autoPlacements],
+  );
+  const selectedClickTarget = selectedClickTargetId
+    ? vignettePrototype.clickTargets.find(target => target.id === selectedClickTargetId) ?? null
+    : null;
+  const vignetteLandmarkModels = useMemo(
+    () => models.filter(model => !/tree|vignette/i.test(model.id) && !/tree|vignette/i.test(model.label)),
+    [models],
+  );
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -149,6 +202,11 @@ export function TerrainTextureLab() {
     if (typeof window === 'undefined') return;
     window.localStorage.setItem(TERRAIN_TEXTURE_LAB_VIEW_STORAGE_KEY, serializedViewSettings);
   }, [serializedViewSettings]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(TERRAIN_TEXTURE_LAB_VIGNETTE_STORAGE_KEY, serializedVignetteSettings);
+  }, [serializedVignetteSettings]);
 
   useEffect(() => {
     if (copyState === 'idle') return;
@@ -164,11 +222,120 @@ export function TerrainTextureLab() {
   }, [selectedModel]);
 
   useEffect(() => {
+    if (!selectedClickTargetId) return;
+    if (vignettePrototype.clickTargets.some(target => target.id === selectedClickTargetId)) return;
+    setSelectedClickTargetId(null);
+  }, [selectedClickTargetId, vignettePrototype.clickTargets]);
+
+  useEffect(() => {
     return () => {
       for (const url of fileUrlsRef.current) URL.revokeObjectURL(url);
       fileUrlsRef.current = [];
     };
   }, []);
+
+  // ── Console API: window.__TERRAIN_LAB ──
+  useEffect(() => {
+    const api = {
+      /** List available hex IDs for placement */
+      hexes: () => TERRAIN_TEXTURE_PREVIEW_HEXES.map(h => `${h.id} (${h.terrainKey})`),
+
+      /** List available model IDs */
+      models: () => models.map(m => `${m.id} — ${m.label}`),
+
+      /** Place a model on a hex. Usage: place('forest-city-vignette', 'forest-a', {scale: 15}) */
+      place: (modelIdFragment: string, hexId: string, opts?: { scale?: number; z?: number; yaw?: number }) => {
+        const model = models.find(m => m.id.includes(modelIdFragment));
+        if (!model) return `Model not found. Available: ${models.map(m => m.id).join(', ')}`;
+        const hex = TERRAIN_TEXTURE_PREVIEW_HEXES.find(h => h.id === hexId);
+        if (!hex) return `Hex not found. Available: ${TERRAIN_TEXTURE_PREVIEW_HEXES.map(h => h.id).join(', ')}`;
+        const placement: TerrainTextureLabModelPlacement = {
+          id: createClientId('placement'),
+          modelId: model.id,
+          hexId,
+          scale: opts?.scale ?? model.suggestedScale,
+          heightOffset: opts?.z ?? model.suggestedHeightOffset,
+          rotationDegrees: opts?.yaw ?? model.suggestedRotationDegrees,
+        };
+        setPlacements(prev => [...prev, placement]);
+        return `Placed ${model.label} on ${hexId} (scale ${placement.scale}, z ${placement.heightOffset}, yaw ${placement.rotationDegrees})`;
+      },
+
+      /** Clear all placements */
+      clear: () => { setPlacements([]); return 'All placements cleared'; },
+
+      /** Set camera. Usage: camera({tilt: 45, bearing: -30, zoom: 3}) */
+      camera: (opts: { tilt?: number; bearing?: number; zoom?: number }) => {
+        setViewSettings(prev => ({
+          tiltDegrees: opts.tilt ?? prev.tiltDegrees,
+          rotationDegrees: opts.bearing ?? prev.rotationDegrees,
+          zoom: opts.zoom ?? prev.zoom,
+        }));
+        return `Camera updated`;
+      },
+
+      /** Toggle the procedural vignette prototype */
+      prototype: (enabled?: boolean) => {
+        const nextEnabled = enabled ?? !vignetteSettings.enabled;
+        setVignetteSettings(prev => ({ ...prev, enabled: nextEnabled }));
+        return `Vignette prototype ${nextEnabled ? 'enabled' : 'disabled'}`;
+      },
+
+      /** Set vignette scope: selected_forest | all_forests */
+      prototypeScope: (scope: TerrainTextureLabVignetteSettings['scope']) => {
+        if (scope !== 'selected_forest' && scope !== 'all_forests') {
+          return 'Scope must be selected_forest or all_forests';
+        }
+        setVignetteSettings(prev => ({ ...prev, scope }));
+        return `Vignette scope set to ${scope}`;
+      },
+
+      /** Summary of the generated prototype vignette */
+      prototypeSummary: () => vignettePrototype.summary,
+
+      /** Quick vignette: clears + places forest-city on a forest hex */
+      forestVignette: (hexId?: string, scale?: number) => {
+        const targetHex = hexId ?? 'forest-a';
+        setPlacements([]);
+        setTimeout(() => {
+          api.place('forest-city-vignette', targetHex, { scale: scale ?? 15.6 });
+        }, 50);
+        return `Forest vignette placed on ${targetHex}`;
+      },
+
+      /** List current placements */
+      placements: () => placements.map(p => {
+        const model = models.find(m => m.id === p.modelId);
+        return `${model?.label ?? p.modelId} → ${p.hexId} (scale ${p.scale}, z ${p.heightOffset}, yaw ${p.rotationDegrees})`;
+      }),
+
+      /** Select a terrain preset for editing */
+      selectTerrain: (key: string) => {
+        const valid = LAB_TERRAIN_ORDER.includes(key as LabTerrainKey);
+        if (!valid) return `Invalid. Options: ${LAB_TERRAIN_ORDER.join(', ')}`;
+        setSelectedTerrain(key as LabTerrainKey);
+        return `Selected ${key}`;
+      },
+
+      help: () => [
+        '__TERRAIN_LAB commands:',
+        '  .hexes()                        — list hex IDs',
+        '  .models()                       — list model IDs',
+        '  .place(modelId, hexId, {opts})  — place model (scale, z, yaw)',
+        '  .clear()                        — clear all placements',
+        '  .camera({tilt, bearing, zoom})  — set camera',
+        '  .prototype(enabled?)            — toggle slot-aware vignette pass',
+        '  .prototypeScope(scope)          — selected_forest | all_forests',
+        '  .prototypeSummary()             — list current auto-vignette counts',
+        '  .forestVignette(hexId?, scale?) — quick forest+city vignette',
+        '  .placements()                   — list current placements',
+        '  .selectTerrain(key)             — select terrain for editing',
+      ].join('\n'),
+    };
+
+    (window as Record<string, unknown>).__TERRAIN_LAB = api;
+    return () => { delete (window as Record<string, unknown>).__TERRAIN_LAB; };
+  });
 
   function updateSelectedTerrain(nextPartial: Partial<TerrainTextureLabConfig>) {
     setConfigs(prev => ({
@@ -182,6 +349,13 @@ export function TerrainTextureLab() {
 
   function updateViewSettings(nextPartial: Partial<TerrainTextureLabViewSettings>) {
     setViewSettings(prev => ({
+      ...prev,
+      ...nextPartial,
+    }));
+  }
+
+  function updateVignetteSettings(nextPartial: Partial<TerrainTextureLabVignetteSettings>) {
+    setVignetteSettings(prev => ({
       ...prev,
       ...nextPartial,
     }));
@@ -262,8 +436,14 @@ export function TerrainTextureLab() {
   }
 
   function handleHexSelect(hexId: string) {
+    setSelectedClickTargetId(null);
     setSelectedHexId(hexId);
     if (placeOnHexClick && selectedModelId) placeSelectedModelOnHex(hexId);
+  }
+
+  function handleLandmarkSelect(targetId: string, hexId: string) {
+    setSelectedClickTargetId(targetId);
+    setSelectedHexId(hexId);
   }
 
   function clearPlacements() {
@@ -295,11 +475,13 @@ export function TerrainTextureLab() {
     setGlobalTimeScale(TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_TIME_SCALE);
     setAnimationEnabled(true);
     setViewSettings(getDefaultTerrainTextureLabViewSettings());
+    setVignetteSettings(getDefaultTerrainTextureLabVignetteSettings());
     setModelUrlDraft('/models/city.glb');
     setPlaceOnHexClick(true);
     setPlacementScale(TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_MODEL_SCALE);
     setPlacementHeightOffset(TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_MODEL_HEIGHT_OFFSET);
     setPlacementRotationDegrees(TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_MODEL_ROTATION_DEGREES);
+    setSelectedClickTargetId(null);
   }
 
   async function handleCopyJson() {
@@ -469,6 +651,141 @@ export function TerrainTextureLab() {
           </Card>
 
           <Card variant="glass" style={SIDEBAR_CARD_STYLE}>
+            <Card.Header title="Vignette Prototype" />
+            <Card.Body>
+              <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
+                <div style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-xs)', lineHeight: 1.5 }}>
+                  Slot-aware forest vignette pass: center landmark, soft-filled empty ring slots, and dense free-fill forest scatter. Manual placements still work on top.
+                </div>
+
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
+                  <input
+                    type="checkbox"
+                    checked={vignetteSettings.enabled}
+                    onChange={(event) => updateVignetteSettings({ enabled: event.target.checked })}
+                  />
+                  Enable forest vignette prototype
+                </label>
+
+                <label style={{ display: 'grid', gap: '6px' }}>
+                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>Scope</span>
+                  <select
+                    value={vignetteSettings.scope}
+                    onChange={(event) => updateVignetteSettings({ scope: event.target.value as TerrainTextureLabVignetteSettings['scope'] })}
+                    style={{
+                      height: '38px',
+                      padding: '0 10px',
+                      borderRadius: '6px',
+                      border: '1px solid var(--border-subtle)',
+                      backgroundColor: 'var(--bg-raised)',
+                      color: 'var(--text-primary)',
+                    }}
+                  >
+                    <option value="selected_forest">Selected forest only</option>
+                    <option value="all_forests">All forest sample hexes</option>
+                  </select>
+                </label>
+
+                <label style={{ display: 'grid', gap: '6px' }}>
+                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>Landmark model</span>
+                  <select
+                    value={vignetteSettings.landmarkModelId}
+                    onChange={(event) => updateVignetteSettings({ landmarkModelId: event.target.value })}
+                    style={{
+                      height: '38px',
+                      padding: '0 10px',
+                      borderRadius: '6px',
+                      border: '1px solid var(--border-subtle)',
+                      backgroundColor: 'var(--bg-raised)',
+                      color: 'var(--text-primary)',
+                    }}
+                  >
+                    {vignetteLandmarkModels.map((model) => (
+                      <option key={model.id} value={model.id}>{model.label}</option>
+                    ))}
+                  </select>
+                </label>
+
+                <SliderField
+                  label="Density scale"
+                  min={TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.MIN_DENSITY_SCALE}
+                  max={TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.MAX_DENSITY_SCALE}
+                  step={0.05}
+                  value={vignetteSettings.densityScale}
+                  onChange={(densityScale) => updateVignetteSettings({ densityScale })}
+                />
+
+                <div style={{ display: 'grid', gap: '8px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
+                    <input
+                      type="checkbox"
+                      checked={vignetteSettings.showSlotAnchors}
+                      onChange={(event) => updateVignetteSettings({ showSlotAnchors: event.target.checked })}
+                    />
+                    Show slot anchors
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
+                    <input
+                      type="checkbox"
+                      checked={vignetteSettings.showZones}
+                      onChange={(event) => updateVignetteSettings({ showZones: event.target.checked })}
+                    />
+                    Show zone rings
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
+                    <input
+                      type="checkbox"
+                      checked={vignetteSettings.showFillerDots}
+                      onChange={(event) => updateVignetteSettings({ showFillerDots: event.target.checked })}
+                    />
+                    Show filler dots
+                  </label>
+                </div>
+
+                <div
+                  style={{
+                    padding: '10px 12px',
+                    borderRadius: '6px',
+                    border: '1px solid var(--border-subtle)',
+                    backgroundColor: 'rgba(16,16,20,0.55)',
+                    display: 'grid',
+                    gap: '4px',
+                    color: 'var(--text-secondary)',
+                    fontSize: 'var(--text-xs)',
+                    lineHeight: 1.5,
+                  }}
+                >
+                  <div><strong style={{ color: 'var(--text-primary)' }}>Active scope:</strong> {vignettePrototype.summary.scopeLabel}</div>
+                  <div><strong style={{ color: 'var(--text-primary)' }}>Target hexes:</strong> {vignettePrototype.summary.targetHexIds.join(', ') || 'none'}</div>
+                  <div><strong style={{ color: 'var(--text-primary)' }}>Auto placements:</strong> {vignettePrototype.summary.autoPlacementCount}</div>
+                  <div><strong style={{ color: 'var(--text-primary)' }}>Filler dots:</strong> {vignettePrototype.summary.fillerPlacementCount}</div>
+                </div>
+
+                <div
+                  style={{
+                    padding: '10px 12px',
+                    borderRadius: '6px',
+                    border: '1px solid var(--border-subtle)',
+                    backgroundColor: 'rgba(10,10,14,0.8)',
+                    color: 'var(--text-secondary)',
+                    fontSize: 'var(--text-xs)',
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {selectedClickTarget ? (
+                    <>
+                      <strong style={{ color: 'var(--text-primary)' }}>Selected landmark:</strong> {selectedClickTarget.label}
+                      <div>Hex {selectedClickTarget.hexId} · slot {selectedClickTarget.slot} · click radius {selectedClickTarget.radiusPx}px</div>
+                    </>
+                  ) : (
+                    <>Click the generated village on the preview map to inspect the landmark target.</>
+                  )}
+                </div>
+              </div>
+            </Card.Body>
+          </Card>
+
+          <Card variant="glass" style={SIDEBAR_CARD_STYLE}>
             <Card.Header title="Camera" />
             <Card.Body>
               <div style={GLOBAL_CONTROL_STYLES}>
@@ -616,7 +933,7 @@ export function TerrainTextureLab() {
                 <SliderField
                   label="Model scale"
                   min={0.2}
-                  max={8}
+                  max={50}
                   step={0.05}
                   value={placementScale}
                   onChange={(next) => setPlacementScale(next)}
@@ -701,7 +1018,7 @@ export function TerrainTextureLab() {
                   <span style={{ alignSelf: 'center', color: copyState === 'failed' ? 'var(--negative)' : 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
                     {copyState === 'copied' && 'Copied current presets'}
                     {copyState === 'failed' && 'Clipboard write failed'}
-                    {copyState === 'idle' && 'Autosaves terrain presets and camera settings to localStorage in this browser'}
+                    {copyState === 'idle' && 'Autosaves terrain presets, camera settings, and vignette controls to localStorage in this browser'}
                   </span>
                 </div>
                 <div
@@ -767,13 +1084,27 @@ export function TerrainTextureLab() {
             configs={configs}
             previewHexes={TERRAIN_TEXTURE_PREVIEW_HEXES}
             models={models}
-            placements={placements}
+            placements={combinedPlacements}
+            slotAnchors={vignetteSettings.showSlotAnchors ? vignettePrototype.slotAnchors : []}
+            zoneRules={vignetteSettings.showZones ? vignettePrototype.zoneRules : []}
+            fillerDots={vignetteSettings.showFillerDots ? vignettePrototype.fillerDots : []}
+            clickTargets={vignettePrototype.clickTargets}
             selectedHexId={selectedHexId}
+            selectedClickTargetId={selectedClickTargetId}
             seed={seed}
             animationEnabled={animationEnabled}
             globalTimeScale={globalTimeScale}
             viewSettings={viewSettings}
             onHexSelect={handleHexSelect}
+            onLandmarkSelect={handleLandmarkSelect}
+            onZoom={(delta) => setViewSettings(prev => ({
+              ...prev,
+              zoom: clamp(
+                prev.zoom + delta,
+                TERRAIN_TEXTURE_LAB_CONSTANTS.MIN_CAMERA_ZOOM,
+                TERRAIN_TEXTURE_LAB_CONSTANTS.MAX_CAMERA_ZOOM,
+              ),
+            }))}
           />
         </div>
       </main>
