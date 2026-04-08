@@ -18,9 +18,16 @@ import type {
   EncounterStageChoiceModel,
   EncounterStageHistoryModel,
   EncounterStageNarrativeParagraph,
+  EncounterStageResolutionCheckModel,
 } from '../types';
 import { enrichProse, gatherNarrativeContext } from '../../../../engine/proseEnrichment';
 import { resolveEncounterNarrative } from '../../../../data/encounter-content';
+import { computeCapability } from '../../../../engine/domainCapability';
+import { computeResolutionModifiers } from '../../../../engine/resolutionModifiers';
+import {
+  forecastAction,
+  normalizeLegacyDifficulty,
+} from '../../../../engine/resolutionService';
 
 // ── Types ────────────────────────────────────────────────
 
@@ -63,6 +70,95 @@ function buildProseParagraphs(
   }
 }
 
+function titleCaseWord(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function formatOutcomeLabel(raw: string): string {
+  return raw
+    .split('_')
+    .map(titleCaseWord)
+    .join(' ');
+}
+
+function formatForecastLabel(raw: string): string {
+  return titleCaseWord(raw);
+}
+
+function buildCurrentResolutionCheck(
+  graph: WorldGraph,
+  agentId: string,
+  template: EncounterTemplate,
+  currentStepIndex: number,
+): EncounterStageResolutionCheckModel | undefined {
+  const currentStep = template.steps[currentStepIndex];
+  if (!currentStep) return undefined;
+
+  const capability = computeCapability(graph, agentId, currentStep.reach);
+  const locEdges = graph.getOutgoingEdges(agentId, 'located_at');
+  const locationId = locEdges.length > 0 ? locEdges[0].target : '';
+  const modifiers = computeResolutionModifiers(
+    graph,
+    agentId,
+    locationId,
+    currentStep.reach,
+    template.sphereAffinity,
+  );
+  const normalizedDifficulty = normalizeLegacyDifficulty(currentStep.difficulty);
+  const summary = forecastAction({
+    actorId: agentId,
+    domain: currentStep.reach,
+    capability,
+    difficulty: normalizedDifficulty,
+    sphereFactor: 0,
+    actionModifiers: modifiers.totalModifier,
+    testShapers: modifiers.testShapers,
+  });
+
+  return {
+    id: `current:${currentStep.id}`,
+    stepId: currentStep.id,
+    stepLabel: currentStep.name,
+    state: 'pending',
+    reach: currentStep.reach,
+    reachLabel: titleCaseWord(currentStep.reach),
+    difficulty: currentStep.difficulty,
+    difficultyLabel: `${currentStep.difficulty}/100`,
+    capability,
+    modifierTotal: modifiers.totalModifier,
+    probability: summary.successProbability,
+    threshold: summary.threshold,
+    forecastLabel: formatForecastLabel(summary.forecastTier),
+  };
+}
+
+function buildResolvedResolutionChecks(
+  encounter: ActiveEncounterDisplay,
+  template: EncounterTemplate,
+): EncounterStageResolutionCheckModel[] {
+  return (encounter.resolutionHistory ?? []).map((entry) => ({
+    id: `resolved:${entry.stepIndex}:${entry.stepId}:${entry.tick}`,
+    stepId: entry.stepId,
+    stepLabel: entry.stepName || template.steps[entry.stepIndex]?.name || entry.stepId,
+    state: 'resolved',
+    reach: entry.reach,
+    reachLabel: titleCaseWord(entry.reach),
+    difficulty: entry.difficulty,
+    difficultyLabel: `${entry.difficulty}/100`,
+    capability: entry.capability,
+    modifierTotal: entry.modifierTotal,
+    probability: entry.probability,
+    threshold: entry.threshold,
+    roll: entry.roll,
+    margin: entry.rollBreakdown?.margin,
+    outcomeLabel: formatOutcomeLabel(entry.outcomeType),
+    nearMiss: entry.rollBreakdown?.nearMiss,
+    critLabel: entry.rollBreakdown?.critClassification && entry.rollBreakdown.critClassification !== 'none'
+      ? formatOutcomeLabel(entry.rollBreakdown.critClassification)
+      : undefined,
+  }));
+}
+
 // ── Main adapter ─────────────────────────────────────────
 
 export function buildSimpleEncounterStageModel(
@@ -72,6 +168,7 @@ export function buildSimpleEncounterStageModel(
 
   const currentIndex = Math.min(encounter.currentStepIndex, template.steps.length - 1);
   const currentStep = template.steps[currentIndex];
+  const isEncounterFinished = encounter.status === 'completed' || encounter.status === 'abandoned';
   const narrativeCtx = gatherNarrativeContext(graph, agentId);
   const depth = proseDepthForTier(threadTier);
 
@@ -106,9 +203,13 @@ export function buildSimpleEncounterStageModel(
     stepId: step.id,
     stepLabel: step.name,
     status: i < currentIndex ? 'resolved' as const
-      : i === currentIndex ? 'current' as const
+      : i === currentIndex ? (isEncounterFinished ? 'resolved' as const : 'current' as const)
       : 'future' as const,
   }));
+  const previousChecks = buildResolvedResolutionChecks(encounter, template);
+  const currentCheck = isEncounterFinished
+    ? undefined
+    : buildCurrentResolutionCheck(graph, agentId, template, currentIndex);
 
   // ── Illustration ──
   const illustration = template.illustrationUrl
@@ -142,5 +243,10 @@ export function buildSimpleEncounterStageModel(
     falloutPreview: [],
     history,
     resourceSummary: { quintessence: essence },
+    resolutionReadout: {
+      heading: 'Resolution Readout',
+      current: currentCheck,
+      previous: previousChecks,
+    },
   };
 }

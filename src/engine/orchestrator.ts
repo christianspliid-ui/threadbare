@@ -307,7 +307,7 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
     // Capture resolved step index before advance mutates it (TB-077)
     const resolvedStepIndex = progress.currentEncounterIndex;
     // Advance encounter (mutates progress in place)
-    advanceEncounter(state, progress, result.success, state.tick);
+    advanceEncounter(state, progress, result.success, state.tick, result.resolutionSnapshot);
 
     // Effect events — fire reactive/stacking/until_event effects for encounter outcome
     {

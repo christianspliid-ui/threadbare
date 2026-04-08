@@ -1,4 +1,5 @@
-import type { EncounterNotification, EncounterProgress } from '../../types/encounter';
+import type { EncounterProgress, EncounterResolutionSnapshot } from '../../types/encounter';
+import type { EncounterNotification } from '../../types/encounterVisibility';
 import { isStepSuccess, type EncounterAftermathSummary, type UnifiedAction } from '../../types/unifiedAction';
 
 export interface ActiveEncounterDisplay {
@@ -11,6 +12,7 @@ export interface ActiveEncounterDisplay {
   occupiedUntilTick?: number;
   choiceHistory?: EncounterProgress['choiceHistory'];
   disregardRemaining?: boolean;
+  resolutionHistory?: EncounterResolutionSnapshot[];
   sourceSystem: 'legacy_encounter' | 'unified_action';
   actionId?: string;
   aftermathSummary?: EncounterAftermathSummary;
@@ -34,6 +36,7 @@ export function buildActiveEncounterDisplayFromLegacyProgress(
     occupiedUntilTick: progress.occupiedUntilTick,
     choiceHistory: progress.choiceHistory,
     disregardRemaining: progress.disregardRemaining,
+    resolutionHistory: progress.resolutionHistory,
     sourceSystem: 'legacy_encounter',
   };
 }

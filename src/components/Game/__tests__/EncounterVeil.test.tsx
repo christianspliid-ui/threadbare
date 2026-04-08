@@ -90,6 +90,44 @@ const mockModel: EncounterStageModel = {
     { stepId: 'step-2', stepLabel: 'Second Step', status: 'future' },
   ],
   resourceSummary: { quintessence: 12 },
+  resolutionReadout: {
+    heading: 'Resolution Readout',
+    current: {
+      id: 'current:step-1',
+      stepId: 'step-1',
+      stepLabel: 'First Step',
+      state: 'pending',
+      reach: 'iron',
+      reachLabel: 'Iron',
+      difficulty: 45,
+      difficultyLabel: '45/100',
+      capability: 0.62,
+      modifierTotal: 0.08,
+      probability: 0.25,
+      threshold: 25,
+      forecastLabel: 'Perilous',
+    },
+    previous: [
+      {
+        id: 'resolved:step-0',
+        stepId: 'step-0',
+        stepLabel: 'Opening Clash',
+        state: 'resolved',
+        reach: 'heart',
+        reachLabel: 'Heart',
+        difficulty: 30,
+        difficultyLabel: '30/100',
+        capability: 0.7,
+        modifierTotal: 0.1,
+        probability: 0.5,
+        threshold: 50,
+        roll: 47,
+        margin: -3,
+        outcomeLabel: 'Success',
+        nearMiss: true,
+      },
+    ],
+  },
 };
 
 const defaultProps = {
@@ -171,6 +209,13 @@ describe('EncounterVeil', () => {
   it('displays step indicator', () => {
     render(<EncounterVeil {...defaultProps} />);
     expect(screen.getByText(/1 of 2/)).toBeInTheDocument();
+  });
+
+  it('renders the resolution readout when provided', () => {
+    render(<EncounterVeil {...defaultProps} />);
+    expect(screen.getByText('Resolution Readout')).toBeInTheDocument();
+    expect(screen.getByText(/Test: Iron vs 45\/100 difficulty/)).toBeInTheDocument();
+    expect(screen.getByText(/Roll 47 vs 50/)).toBeInTheDocument();
   });
 });
 

@@ -67,6 +67,7 @@ function buildEncounter(overrides?: Partial<ActiveEncounterDisplay>): ActiveEnco
     currentStepIndex: 0,
     status: 'awaiting_choice',
     history: [],
+    resolutionHistory: [],
     startedTick: 10,
     sourceSystem: 'legacy_encounter',
     ...overrides,
@@ -154,5 +155,52 @@ describe('buildSimpleEncounterStageModel', () => {
     const fullText = fullModel.narrative.paragraphs.map(p => p.segments.map(s => s.text).join('')).join('');
     const peekText = peekModel.narrative.paragraphs.map(p => p.segments.map(s => s.text).join('')).join('');
     expect(peekText.length).toBeLessThanOrEqual(fullText.length);
+  });
+
+  it('builds a current resolution readout for the active step', () => {
+    const model = buildSimpleEncounterStageModel(baseArgs);
+    expect(model.resolutionReadout).toBeDefined();
+    expect(model.resolutionReadout!.current?.reach).toBe('iron');
+    expect(model.resolutionReadout!.current?.difficultyLabel).toBe('50/100');
+    expect(model.resolutionReadout!.current?.threshold).toBeGreaterThan(0);
+  });
+
+  it('maps stored legacy roll history into previous resolution checks', () => {
+    const model = buildSimpleEncounterStageModel({
+      ...baseArgs,
+      encounter: buildEncounter({
+        resolutionHistory: [
+          {
+            stepIndex: 0,
+            stepId: 'step-1',
+            stepName: 'First Step',
+            reach: 'iron',
+            difficulty: 50,
+            normalizedDifficulty: 0.5,
+            capability: 0.64,
+            modifierTotal: 0.1,
+            probability: 0.24,
+            threshold: 24,
+            roll: 19,
+            success: true,
+            outcomeType: 'success',
+            rollBreakdown: {
+              threshold: 24,
+              roll: 19,
+              isDoubles: false,
+              margin: -5,
+              critClassification: 'none',
+              nearMiss: true,
+            },
+            tick: 12,
+          },
+        ],
+      }),
+    });
+
+    expect(model.resolutionReadout?.previous).toHaveLength(1);
+    expect(model.resolutionReadout?.previous[0].roll).toBe(19);
+    expect(model.resolutionReadout?.previous[0].outcomeLabel).toBe('Success');
+    expect(model.resolutionReadout?.previous[0].nearMiss).toBe(true);
   });
 });

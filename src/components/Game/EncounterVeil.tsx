@@ -1,6 +1,10 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import type { EncounterStageModel, EncounterStageChoiceModel } from './encounter-stage/types';
+import type {
+  EncounterStageModel,
+  EncounterStageChoiceModel,
+  EncounterStageResolutionCheckModel,
+} from './encounter-stage/types';
 
 // ── Thread tier types ──────────────────────────────────────────────
 type ThreadTier = 'strong' | 'light' | 'watched';
@@ -1322,6 +1326,10 @@ export function EncounterVeil({
               {model.scene.momentLine}
             </div>
           )}
+
+          {model.resolutionReadout && (
+            <ResolutionReadoutBlock readout={model.resolutionReadout} />
+          )}
         </div>
 
         {/* ── Choice blocks ─────────────────────────────── */}
@@ -1439,6 +1447,128 @@ interface ChoiceBlockProps {
   choice: EncounterStageChoiceModel;
   selected: boolean;
   onClick: () => void;
+}
+
+function formatSignedPercent(value: number): string {
+  const percent = Math.round(value * 100);
+  if (percent === 0) return '+0%';
+  return `${percent > 0 ? '+' : ''}${percent}%`;
+}
+
+function formatProbability(value: number): string {
+  return `${Math.round(value * 100)}%`;
+}
+
+function ResolutionReadoutBlock({
+  readout,
+}: {
+  readout: NonNullable<EncounterStageModel['resolutionReadout']>;
+}) {
+  const entries = [
+    ...(readout.current ? [readout.current] : []),
+    ...readout.previous,
+  ];
+
+  if (entries.length === 0) return null;
+
+  return (
+    <div
+      style={{
+        marginTop: 22,
+        maxWidth: 540,
+        padding: '14px 16px',
+        border: '1px solid rgba(212, 175, 55, 0.12)',
+        background: 'rgba(212, 175, 55, 0.03)',
+      }}
+    >
+      <div
+        style={{
+          fontFamily: FONT_DISPLAY,
+          fontSize: '0.68rem',
+          letterSpacing: '0.16em',
+          textTransform: 'uppercase',
+          color: GOLD,
+          opacity: 0.55,
+          marginBottom: 12,
+        }}
+      >
+        {readout.heading}
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {entries.map((entry) => (
+          <ResolutionCheckCard key={entry.id} entry={entry} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ResolutionCheckCard({ entry }: { entry: EncounterStageResolutionCheckModel }) {
+  return (
+    <div
+      style={{
+        borderLeft: `2px solid ${entry.state === 'pending' ? 'rgba(212, 175, 55, 0.35)' : 'rgba(134, 239, 172, 0.22)'}`,
+        paddingLeft: 12,
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          gap: 12,
+          alignItems: 'baseline',
+          marginBottom: 4,
+        }}
+      >
+        <div
+          style={{
+            fontFamily: FONT_DISPLAY,
+            fontSize: '0.72rem',
+            letterSpacing: '0.08em',
+            color: TEXT_WARM,
+          }}
+        >
+          {entry.stepLabel}
+        </div>
+        <div
+          style={{
+            fontFamily: FONT_PROSE,
+            fontStyle: 'italic',
+            fontSize: '0.68rem',
+            color: entry.state === 'pending' ? GOLD : TEXT_WHISPER,
+            opacity: 0.7,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {entry.state === 'pending' ? 'roll pending' : entry.outcomeLabel}
+        </div>
+      </div>
+      <div
+        style={{
+          fontFamily: FONT_PROSE,
+          fontStyle: 'italic',
+          fontSize: '0.74rem',
+          lineHeight: 1.65,
+          color: TEXT_WHISPER,
+        }}
+      >
+        <div>
+          Test: {entry.reachLabel} vs {entry.difficultyLabel} difficulty
+        </div>
+        <div>
+          Capability {formatProbability(entry.capability)} · Modifiers {formatSignedPercent(entry.modifierTotal)} · Threshold {entry.threshold}
+          {entry.forecastLabel ? ` · Forecast ${entry.forecastLabel}` : ''}
+        </div>
+        <div>
+          {entry.roll !== undefined
+            ? `Roll ${entry.roll} vs ${entry.threshold}${entry.margin !== undefined ? ` · Margin ${entry.margin}` : ''}`
+            : `Projected success ${formatProbability(entry.probability)}`}
+          {entry.critLabel ? ` · ${entry.critLabel}` : ''}
+          {entry.nearMiss ? ' · Near miss' : ''}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function ChoiceBlock({ choice, selected, onClick }: ChoiceBlockProps) {

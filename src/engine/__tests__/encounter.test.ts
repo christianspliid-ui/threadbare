@@ -236,6 +236,20 @@ describe('Encounter Engine', () => {
       expect(result.outcome.narrative.length).toBeGreaterThan(0);
     });
 
+    it('returns a resolution snapshot with roll math for inspectability', () => {
+      const { state, actorId } = buildTestGameState();
+
+      const encounters = getTownEncounters();
+      const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
+
+      const result = resolveEncounter(state, progress, 25);
+
+      expect(result.resolutionSnapshot.stepId).toBeDefined();
+      expect(result.resolutionSnapshot.threshold).toBeGreaterThanOrEqual(0);
+      expect(result.resolutionSnapshot.roll).toBe(25);
+      expect(result.resolutionSnapshot.outcomeType).toBe(result.outcomeType);
+    });
+
     it('applies capability modifier based on domain', () => {
       const { state, actorId } = buildTestGameState();
 
@@ -275,6 +289,23 @@ describe('Encounter Engine', () => {
       expect(progress.history.length).toBe(1);
       expect(progress.history[0].success).toBe(true);
       expect(progress.history[0].tick).toBe(1);
+    });
+
+    it('stores resolution snapshots in progress history when provided', () => {
+      const { state, actorId } = buildTestGameState();
+
+      addTraitToActor(state.graph, actorId, 'trait.gold', 'gold', 8);
+      addTraitToActor(state.graph, actorId, 'trait.eye', 'eye', 8);
+
+      const encounters = getTownEncounters();
+      const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
+
+      const result = resolveEncounter(state, progress, 5);
+      advanceEncounter(state, progress, result.success, 1, result.resolutionSnapshot);
+
+      expect(progress.resolutionHistory).toHaveLength(1);
+      expect(progress.resolutionHistory?.[0].roll).toBe(5);
+      expect(progress.resolutionHistory?.[0].threshold).toBeGreaterThan(0);
     });
 
     it('increments currentEncounterIndex on success', () => {

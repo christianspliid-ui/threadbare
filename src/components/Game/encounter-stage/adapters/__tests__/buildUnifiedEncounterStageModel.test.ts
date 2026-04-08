@@ -324,8 +324,9 @@ describe('buildUnifiedEncounterStageModel', () => {
 
       expect(model.aftermath).toBeDefined();
       expect(model.aftermath!.overview).toContain('crossing succeeded');
-      expect(model.aftermath!.changes).toHaveLength(1);
-      expect(model.aftermath!.changes![0].kind).toBe('reputation');
+      expect(model.aftermath!.highlights).toHaveLength(1);
+      expect(model.aftermath!.highlights![0].title).toBe('Reputation Gained');
+      expect(model.aftermath!.highlights![0].tone).toBe('gain');
       expect(model.aftermath!.reactionPrompt).toContain('What next?');
       expect(model.aftermath!.reactions).toHaveLength(1);
       expect(model.aftermath!.reactions![0].label).toContain('permanent bridge');

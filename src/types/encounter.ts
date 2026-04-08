@@ -12,6 +12,7 @@ import type { ValuePair } from './agent';
 import type { RewardPoolRecipe } from './attachments';
 import type { ClearanceGateConfig } from './contentShells';
 import type { AttentionTier } from './attention';
+import type { OutcomeType, ResolutionRollBreakdown } from './resolution';
 
 // ─── Encounter Types & Threat Ratings ───────────────────────────
 
@@ -279,6 +280,25 @@ export interface EncounterChoiceMemory {
   readonly tick: number;
 }
 
+/** Stored legacy encounter resolution snapshot for inspectable UI/debug rendering. */
+export interface EncounterResolutionSnapshot {
+  readonly stepIndex: number;
+  readonly stepId: string;
+  readonly stepName: string;
+  readonly reach: ReachDomain;
+  readonly difficulty: number;
+  readonly normalizedDifficulty: number;
+  readonly capability: number;
+  readonly modifierTotal: number;
+  readonly probability: number;
+  readonly threshold: number;
+  readonly roll: number;
+  readonly success: boolean;
+  readonly outcomeType: OutcomeType;
+  readonly rollBreakdown?: ResolutionRollBreakdown;
+  readonly tick: number;
+}
+
 // ─── Encounter Progress (Runtime State) ─────────────────────────
 
 export interface EncounterProgress {
@@ -296,6 +316,8 @@ export interface EncounterProgress {
     success: boolean;
     tick: number;
   }>;
+  /** Stored resolution math for completed legacy steps. Optional for backward compatibility. */
+  resolutionHistory?: EncounterResolutionSnapshot[];
   /** Current status. 'awaiting_choice' = paused at a choice-point step waiting for player input. */
   status: 'active' | 'abandoned' | 'completed' | 'awaiting_choice';
   /** Tick when the encounter started */

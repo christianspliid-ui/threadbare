@@ -7,14 +7,18 @@
  */
 
 import type { GameState } from '../types/gameState';
-import type { EncounterProgress, EncounterOutcome } from '../types/encounter';
+import type {
+  EncounterProgress,
+  EncounterOutcome,
+  EncounterResolutionSnapshot,
+} from '../types/encounter';
 import type { EncounterResolutionTrace } from '../types/trace';
 import {
   getAnyEncounterById,
 } from '../data/encounter-content';
 import { computeCapability } from './domainCapability';
 import { resolveAction as resolveActionShared, normalizeLegacyDifficulty, isSuccessOutcome, isFailureOutcome } from './resolutionService';
-import type { ResolutionInput, OutcomeType } from '../types/resolution';
+import type { ResolutionInput, OutcomeType, ResolutionResult } from '../types/resolution';
 import { computeResolutionModifiers } from './resolutionModifiers';
 import { createEncounterFailureErosion } from './quintessenceActions';
 import { QUINTESSENCE_ENCOUNTER_FAILURE_EROSION } from '../types/quintessence';
@@ -46,6 +50,7 @@ export function initiateEncounter(
     actorId,
     currentEncounterIndex: 0,
     history: [],
+    resolutionHistory: [],
     status: 'active',
     startedTick: tick,
     occupiedUntilTick: tick + firstStepDuration,
@@ -96,23 +101,88 @@ export function resolveEncounter(
   state: GameState,
   progress: EncounterProgress,
   deterministicRoll?: number,
-): { success: boolean; outcome: EncounterOutcome; outcomeType: OutcomeType; growth?: GrowthResult; promotion?: PromotionResult } {
+): {
+  success: boolean;
+  outcome: EncounterOutcome;
+  outcomeType: OutcomeType;
+  resolution: ResolutionResult;
+  resolutionSnapshot: EncounterResolutionSnapshot;
+  growth?: GrowthResult;
+  promotion?: PromotionResult;
+} {
+  const buildFailSoftResolution = (
+    stepId: string,
+    stepName: string,
+    reach: ResolutionInput['domain'],
+    difficulty: number,
+  ): { resolution: ResolutionResult; resolutionSnapshot: EncounterResolutionSnapshot } => {
+    const probability = 0;
+    const roll = deterministicRoll ?? 100;
+    const resolution: ResolutionResult = {
+      outcome: 'failure',
+      roll,
+      probability,
+      margin: roll,
+      forecast: {
+        probability,
+        forecastTier: 'doomed',
+        topContributors: [],
+      },
+      sourceSystem: 'encounter',
+    };
+    return {
+      resolution,
+      resolutionSnapshot: {
+        stepIndex: progress.currentEncounterIndex,
+        stepId,
+        stepName,
+        reach,
+        difficulty,
+        normalizedDifficulty: 0,
+        capability: 0,
+        modifierTotal: 0,
+        probability,
+        threshold: 0,
+        roll,
+        success: false,
+        outcomeType: 'failure',
+        tick: state.tick,
+      },
+    };
+  };
+
   const encounter = getAnyEncounterById(progress.encounterId);
   if (!encounter) {
     // Graceful fallback: failed encounter with placeholder outcome
+    const { resolution, resolutionSnapshot } = buildFailSoftResolution(
+      'unknown',
+      'Unknown Step',
+      'iron',
+      0,
+    );
     return {
       success: false,
       outcomeType: 'failure',
       outcome: { narrative: 'The encounter dissolves into shadow.' },
+      resolution,
+      resolutionSnapshot,
     };
   }
 
   const step = encounter.steps[progress.currentEncounterIndex];
   if (!step) {
+    const { resolution, resolutionSnapshot } = buildFailSoftResolution(
+      'unknown',
+      'Unknown Step',
+      encounter.reachPrimary,
+      0,
+    );
     return {
       success: false,
       outcomeType: 'failure',
       outcome: { narrative: 'No further trial awaits.' },
+      resolution,
+      resolutionSnapshot,
     };
   }
 
@@ -159,6 +229,23 @@ export function resolveEncounter(
     'encounter',
   );
   const success = isSuccessOutcome(resolution.outcome);
+  const resolutionSnapshot: EncounterResolutionSnapshot = {
+    stepIndex: progress.currentEncounterIndex,
+    stepId: step.id,
+    stepName: step.name,
+    reach: step.reach,
+    difficulty: step.difficulty,
+    normalizedDifficulty,
+    capability,
+    modifierTotal: modifiers.totalModifier,
+    probability: resolution.probability,
+    threshold: resolution.rollBreakdown?.threshold ?? Math.floor(resolution.probability * 100),
+    roll: resolution.roll,
+    success,
+    outcomeType: resolution.outcome,
+    rollBreakdown: resolution.rollBreakdown,
+    tick: state.tick,
+  };
 
   // Select the appropriate outcome
   const outcome = success ? step.onSuccess : step.onFailure;
@@ -233,7 +320,15 @@ export function resolveEncounter(
     );
   }
 
-  return { success, outcome, outcomeType: resolution.outcome, growth, promotion };
+  return {
+    success,
+    outcome,
+    outcomeType: resolution.outcome,
+    resolution,
+    resolutionSnapshot,
+    growth,
+    promotion,
+  };
 }
 
 /**
@@ -248,6 +343,7 @@ export function advanceEncounter(
   progress: EncounterProgress,
   success: boolean,
   tick: number,
+  resolutionSnapshot?: EncounterResolutionSnapshot,
 ): void {
   const encounter = getAnyEncounterById(progress.encounterId);
   if (!encounter) return;
@@ -261,6 +357,9 @@ export function advanceEncounter(
     success,
     tick,
   });
+  if (resolutionSnapshot) {
+    progress.resolutionHistory = [...(progress.resolutionHistory ?? []), resolutionSnapshot];
+  }
 
   if (success) {
     // Check if there are more steps

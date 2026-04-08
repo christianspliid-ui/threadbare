@@ -1,4 +1,5 @@
 import type { CourtPosition } from '../../../types/influence';
+import type { ReachDomain } from '../../../types/traits';
 
 export type ThreadTier = 'strong' | 'light' | 'watched';
 
@@ -110,6 +111,33 @@ export interface EncounterStageChoiceModel {
   probabilityBoost?: number;
 }
 
+export interface EncounterStageResolutionCheckModel {
+  id: string;
+  stepId: string;
+  stepLabel: string;
+  state: 'pending' | 'resolved';
+  reach: ReachDomain;
+  reachLabel: string;
+  difficulty: number;
+  difficultyLabel: string;
+  capability: number;
+  modifierTotal: number;
+  probability: number;
+  threshold: number;
+  forecastLabel?: string;
+  roll?: number;
+  margin?: number;
+  outcomeLabel?: string;
+  nearMiss?: boolean;
+  critLabel?: string;
+}
+
+export interface EncounterStageResolutionReadoutModel {
+  heading: string;
+  current?: EncounterStageResolutionCheckModel;
+  previous: EncounterStageResolutionCheckModel[];
+}
+
 export interface EncounterStageHistoryModel {
   stepId: string;
   stepLabel: string;
@@ -189,5 +217,6 @@ export interface EncounterStageModel {
   resourceSummary?: {
     quintessence?: number;
   };
+  resolutionReadout?: EncounterStageResolutionReadoutModel;
   aftermath?: EncounterStageAftermathModel;
 }
