@@ -32,6 +32,7 @@ import type { VisibilityMap } from './visibility';
 import type { FamiliarityMap } from './familiarity';
 import type { AgentKnowledge } from './agentKnowledge';
 import type { DigestEntry, ThreadTug, QueuedStoryBeat } from './attention';
+import { DEFAULT_DOOM_TICKS as CONFIG_DEFAULT_DOOM_TICKS } from '../data/game-config';
 
 // ─── Game Phase ─────────────────────────────────────────────────
 
@@ -226,7 +227,8 @@ export interface ProsperityShock {
     | 'encounter_impact' | 'faction_arrival' | 'faction_departure'
     | 'corruption_shock' | 'corruption_cleared' | 'divine_blessing' | 'divine_blessing_lost'
     | 'unrest_shock' | 'unrest_relief'
-    | 'agent_economic_action' | 'wealthy_resident_arrival' | 'wealthy_resident_departure';
+    | 'agent_economic_action' | 'wealthy_resident_arrival' | 'wealthy_resident_departure'
+    | 'doom_card';
   causeId: string;
   description: string;
 }
@@ -239,8 +241,8 @@ export const MAX_RECENT_EVENTS = 100;
 /** Stealth exposure decay per tick (natural forgetting) */
 export const STEALTH_DECAY_PER_TICK = 0.01;
 
-/** Default doom clock length in ticks (20000 = 100× normal for testing) */
-export const DEFAULT_DOOM_TICKS = 20_000;
+/** Default doom clock length in ticks. Re-exported from shared game config. */
+export const DEFAULT_DOOM_TICKS = CONFIG_DEFAULT_DOOM_TICKS;
 
 /** Doom archetypes available for selection */
 export const DOOM_ARCHETYPES: DoomClockArchetype[] = [

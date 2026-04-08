@@ -134,8 +134,8 @@ describe('getJourneyPhase', () => {
     expect(getJourneyPhase(0.14)).toBe('call');
   });
 
-  test('returns road_of_trials for progress 15-55%', () => {
-    expect(getJourneyPhase(0.15)).toBe('road_of_trials');
+  test('returns road_of_trials for progress 20-55%', () => {
+    expect(getJourneyPhase(0.20)).toBe('road_of_trials');
     expect(getJourneyPhase(0.35)).toBe('road_of_trials');
     expect(getJourneyPhase(0.54)).toBe('road_of_trials');
   });
@@ -146,14 +146,13 @@ describe('getJourneyPhase', () => {
     expect(getJourneyPhase(0.69)).toBe('crisis');
   });
 
-  test('returns ordeal for progress 70-85%', () => {
+  test('returns ordeal for progress 70-80%', () => {
     expect(getJourneyPhase(0.70)).toBe('ordeal');
-    expect(getJourneyPhase(0.80)).toBe('ordeal');
-    expect(getJourneyPhase(0.84)).toBe('ordeal');
+    expect(getJourneyPhase(0.79)).toBe('ordeal');
   });
 
-  test('returns return for progress 85-100%', () => {
-    expect(getJourneyPhase(0.85)).toBe('return');
+  test('returns return for progress 80-100%', () => {
+    expect(getJourneyPhase(0.80)).toBe('return');
     expect(getJourneyPhase(0.95)).toBe('return');
     expect(getJourneyPhase(1.0)).toBe('return');
   });
@@ -189,7 +188,7 @@ describe('getBeatThresholds', () => {
   test('road_of_trials has 4 evenly-spaced thresholds', () => {
     const thresholds = getBeatThresholds('road_of_trials');
     expect(thresholds).toHaveLength(4);
-    // Should be evenly spaced within [0.15, 0.55]
+    // Should be evenly spaced within [0.20, 0.55]
     for (let i = 1; i < thresholds.length; i++) {
       const gap = thresholds[i] - thresholds[i - 1];
       expect(gap).toBeCloseTo(thresholds[1] - thresholds[0], 5);
@@ -244,7 +243,7 @@ describe('shouldBeatFire', () => {
 
   test('fires on phase transition', () => {
     // Moving from call to road_of_trials
-    const result = shouldBeatFire(0.16, 0.14, 'call', [
+    const result = shouldBeatFire(0.21, 0.19, 'call', [
       { phase: 'call', tick: 5, templateId: 't', variantKey: 'v', playerChoiceId: 'c', stateSnapshot: makeSnapshot() },
     ]);
     expect(result.shouldFire).toBe(true);
@@ -638,17 +637,11 @@ describe('phaseJourneyBeat', () => {
   test('produces a vignette when beat threshold is crossed', () => {
     const { graph, ascendantId, agentId } = buildTestGraph();
 
-    // Doom clock just crossed the call beat threshold
-    // callThreshold = midpoint of [0, 0.15] = 0.075
-    // We need prevDoomProgress < 0.075 and doomProgress >= 0.075
-    // In phaseJourneyBeat: prevDoomProgress = (currentTick - tickModifier) / totalTicks
-    // With totalTicks=10000, tickModifier=1: currentTick=751 → progress=0.0751, prev=0.0750 = threshold (not <)
-    // Use tickModifier=5 so prev = (755 - 5) / 10000 = 0.075 — still equal!
-    // Use totalTicks=10000, currentTick=756, tickModifier=2: progress=0.0756, prev=0.0754 — both above
-    // Simplest: set prev explicitly by using large tickModifier and picking ticks carefully
-    // currentTick=80, totalTicks=1000, tickModifier=10 → progress=0.08, prev=(80-10)/1000=0.07 < 0.075 ✓
+    // Doom clock just crossed the call beat threshold.
+    // callThreshold = midpoint of [0, 0.20] = 0.10
+    // currentTick=105, totalTicks=1000, tickModifier=10 -> progress=0.105, prev=0.095
     const totalTicks = 1000;
-    const currentTick = 80;
+    const currentTick = 105;
 
     const state = {
       graph,
@@ -656,8 +649,8 @@ describe('phaseJourneyBeat', () => {
       doomClock: {
         currentTick,
         totalTicks,
-        progress: currentTick / totalTicks, // 0.08
-        tickModifier: 10.0, // prev = (80 - 10) / 1000 = 0.07 < 0.075
+        progress: currentTick / totalTicks, // 0.105
+        tickModifier: 10.0, // prev = (105 - 10) / 1000 = 0.095 < 0.10
       },
       tick: currentTick,
       seed: 42,
@@ -676,7 +669,7 @@ describe('phaseJourneyBeat', () => {
     const { graph, ascendantId } = buildTestGraph();
 
     const totalTicks = 1000;
-    const currentTick = 80;
+    const currentTick = 105;
 
     // Run phase once — same setup as the crossing test
     const state = {

@@ -2,7 +2,7 @@
 
 > **Living document.** Every design plan must include a wiring section that maps new modules to entries on this checklist. Every implementation must verify all listed connections before marking work complete. Maintaining this checklist is part of the Definition of Done for both design and implementation phases.
 >
-> **Last updated:** 2026-04-06 (ambient sound system — 3-channel audio wiring)
+> **Last updated:** 2026-04-08 (objective triangle sync — doom/journey/mandate wiring)
 
 ---
 
@@ -55,7 +55,7 @@ Every engine module that produces per-tick state changes must be called from a p
 | 10.5 | `phaseEconomicChronicle` | Economic state records |
 | 11 | `phaseAmbitionProgress` | Ambition milestone/completion |
 | 12 | `phaseAgentLifecycle` | Birth, death, migration |
-| 12.1 | `phaseMandate` | Player mandate progress |
+| 12.1 | `phaseMandate` | Player mandate progress, checkpoint feedback, doom debt, counter-omens |
 | 13 | `phaseDoomExpiry` | Doom conclusion |
 
 | 6.6396 | `phaseQuintessence` | Quintessence event processing, regen, dissolution |
@@ -120,6 +120,8 @@ Every player-facing modal or overlay must appear in the GameView JSX return bloc
 | `HexChronicle` | Hex event chronicle |
 | `LocationView` | Location detail view |
 | `ActionDrawer` (×2) | Agent & non-agent intervention |
+| `DoomClockDetail` | Doom chapter timeline and resolved doom-card fallout |
+| `MandateDetail` | Mandate sphere-growth detail and omen checkpoints |
 | `DebugPanel` | Debug trace sidebar |
 
 **All modals connected (TB-040, 2026-03-26):**
@@ -143,6 +145,9 @@ Engine phases write to GameState fields. UI components must read them. An engine
 | `recentEvents` | Multiple phases | `NarrativeLog` | ✅ Connected |
 | `pendingVignettes` | `phaseJourneyBeat` | `JourneyVignetteModal` | ✅ Connected |
 | `encounterNotifications` | `phaseEncounterVisibility` | `useEncounterNotifications` → `ToastStack` | ✅ Connected (TB-040) |
+| `doomClock.resolvedEvents` | `phaseDoom` | `DoomClockDetail` | ✅ Connected |
+| `doomClock.counterOmens` / `doomClock.nextEscalationSeverityModifier` | `phaseMandate` + `phaseDoom` | `DoomBar`, `DoomClockDetail`, `MandateTracker`, `MandateDetail` | ✅ Connected |
+| `mandateState.primaryDelta` / `secondaryDelta` / `checkpointResults` / `secondaryObjectiveCurrent` | `phaseMandate` | `MandateTracker`, `MandateDetail` | ✅ Connected |
 | `pendingHexMutations` | `phaseHexState` | Cleared after use (internal) | ✅ Internal |
 | `prosperityShocks` | `phaseProsperity` | Cleared after use (internal) | ✅ Internal |
 | `effectStates` | Orchestrator Phase 2a.4 (`tickEffects`) | No dedicated player UI; currently engine/runtime only | ⚠️ Debug visibility should improve before shell-heavy effect features land |
@@ -154,7 +159,7 @@ Engine phases write to GameState fields. UI components must read them. An engine
 
 Every system should emit traces for inspectability (NFP #2). A trace category that exists in the type system but is never emitted is dead code.
 
-**Current trace categories (39):** action_selection, narrative_generation, context_harvest, dilemma_resolution, tick_summary, encounter_resolution, familiarity_change, intervention_effect, action_execution, modifier_resolution, prosperity_tick, wealth_delta, trade_route_volume_change, trade_route_dissolved, settlement_tier_change, target_action_filter, hex_state, unrest_tick, saturation_tick, economic_chronicle, encounter_awareness, faction_awareness, encounter_cache, encounter_filter, encounter_scoring, movement, idle_decision, road_hex_transition, agent_reroute, return_resolution, ripple_consequence, control_effect, revelation, tick_health, tick_crash, slot_overflow, slot_disposal, condition_overflow, slot_expansion
+**Current trace categories (59):** action_selection, narrative_generation, context_harvest, dilemma_resolution, tick_summary, encounter_resolution, familiarity_change, movement, intervention_effect, action_execution, modifier_resolution, prosperity_tick, wealth_delta, trade_route_volume_change, trade_route_dissolved, settlement_tier_change, target_action_filter, hex_state, unrest_tick, saturation_tick, economic_chronicle, encounter_awareness, faction_awareness, encounter_cache, encounter_filter, idle_decision, encounter_scoring, road_hex_transition, agent_reroute, return_resolution, ripple_consequence, control_effect, doom_card, mandate_checkpoint, revelation, tick_health, tick_crash, agent_revelation, interaction_depth, faction_ambition, reputation_trait, rarity_graduation, rarity_importance, encounter_promotion, curator_decision, attention_pool, story_beat_queue, slot_overflow, slot_disposal, condition_overflow, slot_expansion, meeting_sensing, meeting_testing, meeting_spark, meeting_bond, settlement_genome, settlement_reassessment, culture_generation, culture_sublocation
 
 **All categories emitted (TB-057, 2026-03-26).** `tick_health` and `tick_crash` emitted from `orchestrator.ts` (health check failures and unhandled exceptions respectively). `control_effect` emitted from `phaseControlEffects.ts`. `revelation` emitted from `revelationResolver.ts`.
 

@@ -12,8 +12,8 @@ import type {
 import { TRACE_CATEGORIES } from '../trace';
 
 describe('TraceEntry types', () => {
-  it('TRACE_CATEGORIES has 57 categories', () => {
-    expect(TRACE_CATEGORIES).toHaveLength(57);
+  it('TRACE_CATEGORIES has 59 categories', () => {
+    expect(TRACE_CATEGORIES).toHaveLength(59);
     expect(TRACE_CATEGORIES).toContain('action_selection');
     expect(TRACE_CATEGORIES).toContain('narrative_generation');
     expect(TRACE_CATEGORIES).toContain('context_harvest');
@@ -32,6 +32,8 @@ describe('TraceEntry types', () => {
     expect(TRACE_CATEGORIES).toContain('target_action_filter');
     expect(TRACE_CATEGORIES).toContain('road_hex_transition');
     expect(TRACE_CATEGORIES).toContain('agent_reroute');
+    expect(TRACE_CATEGORIES).toContain('doom_card');
+    expect(TRACE_CATEGORIES).toContain('mandate_checkpoint');
     // Phase 11: agent revelation system
     expect(TRACE_CATEGORIES).toContain('agent_revelation');
     expect(TRACE_CATEGORIES).toContain('interaction_depth');

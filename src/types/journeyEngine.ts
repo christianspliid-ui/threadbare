@@ -9,17 +9,23 @@
 import type { CampbellianPhase } from './influence';
 import type { ReachDomain } from './traits';
 import type { SphereName } from './index';
+import {
+  JOURNEY_CALL_PHASE_END,
+  JOURNEY_TRIALS_PHASE_END,
+  JOURNEY_CRISIS_PHASE_END,
+  JOURNEY_ORDEAL_PHASE_END,
+} from '../data/game-config';
 
 // ─── Constants ──────────────────────────────────────────────────────
 
 /** Doom clock fraction where Call phase ends → Road of Trials begins */
-export const CALL_PHASE_END = 0.15;
+export const CALL_PHASE_END = JOURNEY_CALL_PHASE_END;
 /** Doom clock fraction where Road of Trials ends → Crisis begins */
-export const TRIALS_PHASE_END = 0.55;
+export const TRIALS_PHASE_END = JOURNEY_TRIALS_PHASE_END;
 /** Doom clock fraction where Crisis ends → Ordeal begins */
-export const CRISIS_PHASE_END = 0.70;
-/** Doom clock fraction where Ordeal ends → Return begins */
-export const ORDEAL_PHASE_END = 0.85;
+export const CRISIS_PHASE_END = JOURNEY_CRISIS_PHASE_END;
+/** Doom clock fraction where Ordeal ends → Return begins / Climax begins */
+export const ORDEAL_PHASE_END = JOURNEY_ORDEAL_PHASE_END;
 
 /** Target number of beats during Road of Trials */
 export const TRIALS_BEAT_COUNT = 4;

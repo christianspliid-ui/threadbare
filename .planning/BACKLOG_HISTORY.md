@@ -6,6 +6,14 @@
 
 ---
 
+## ✅ TB-118 · Objective Triangle Sync — Doom, Journey, Mandate (2026-04-08)
+
+Reworked the three long-term objective systems into one synchronized loop. The Doom Clock now escalates through authored doom-card beats and saves chapter five as a climax window. The First's journey cadence is aligned to those same doom thresholds so the return resolves before the final act. Mandates are now generated from ascendant remembrance identity (primary/secondary spheres + court shape), track global sphere-strength growth from run-start baselines, and feed missed/exceeded checkpoint results back into future doom severity through doom debt and counter-omens. The top-bar and detail surfaces now show that shared state directly so the player can read the race between world pressure, The First, and divine intent.
+
+**Files:** `src/data/game-config.ts`, `src/engine/doomClock.ts`, `src/engine/gameInit.ts`, `src/engine/mandateGenerator.ts`, `src/engine/phaseDoom.ts`, `src/engine/phaseMandate.ts`, `src/components/Game/DoomBar.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/Game/MandateTracker.tsx`, `src/components/Game/MandateDetail.tsx`, `Docs/plans/2026-04-08-objective-triangle-sync-design.md`.
+
+---
+
 ## ✅ TB-117 · Terrain Texture Lab POC (2026-04-08)
 
 Standalone WebGL playground for terrain material experiments before touching HexMapV2 production rendering. Added dev route `?view=terrain-lab` with a separate Three.js scene, instanced shader preview, six starter recipes (grassland, forest, mountains, dunes, coast, swamp), live controls for color/noise/warp/banding/animation plus perspective camera tilt/bearing/zoom, built-in and imported GLB placement on preview hexes, localStorage persistence, and JSON export. Includes implementation/research note: `Docs/plans/2026-04-08-terrain-texture-lab-poc.md`.

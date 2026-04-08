@@ -1,8 +1,8 @@
 {
   "id": "mandate.threads_of_fate",
   "type": "simulation_achievable",
-  "name": "Threads of Fate",
-  "description": "Relationships form between mortals. Weave the web of destiny.",
+  "name": "Web of Mortal Bonds",
+  "description": "Relationships form between mortals. Weave a living web of obligation and kinship.",
   "sphereAffinities": ["mind", "spirit"],
   "stages": [
     {
@@ -49,9 +49,9 @@
     }
   ],
   "prose": {
-    "setup_to_escalation": "Four mortal hearts find each other. Relationships weave themselves into being. The fabric of destiny hums with new connection.",
-    "escalation_to_culmination": "Eight bonds now link the mortals together. The web grows dense, stronger. Fate becomes tangible—something you can almost touch.",
-    "completed": "Twelve threads bind mortals in intricate webs of relation. The tapestry of destiny is complete. All hearts are woven together now.",
-    "failed": "The threads unravel. Hearts turn away from one another. Fate cannot be written if mortals refuse to listen."
+    "setup_to_escalation": "Four mortal hearts find each other. Relationships weave themselves into being. A web of living bonds begins to hum.",
+    "escalation_to_culmination": "Eight bonds now link the mortals together. The web grows dense and resilient. Kinship becomes something you can almost touch.",
+    "completed": "Twelve threads bind mortals in an intricate web of relation. Oaths, loyalties, and affections hold. The pattern is complete.",
+    "failed": "The bonds fray. Hearts turn away from one another. No web can hold if mortals refuse each other."
   }
 }

@@ -24,8 +24,8 @@ import { createDefaultFundament, createResonanceState } from './worldSoul';
 import { createStartingEssencePool } from './influence';
 import { DEFAULT_DOOM_TICKS } from '../types/gameState';
 import { recalcVisibility, collectLOSSources } from './visibility';
-import { generateMandate } from './mandateGenerator';
-import { createMandateState } from './mandate';
+import { generateRememberedMandate } from './mandateGenerator';
+import { createMandateStateWith } from './mandate';
 import { ACTION_TEMPLATES } from '../data/action-template-content';
 import {
   seedHexSphereAffinity,
@@ -40,6 +40,7 @@ import { seedAllRarityTiers } from './raritySeeding';
 import { assignInitialAmbitions } from './ambitionAssignment';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 import type { AmbitionAgentSnapshot } from './ambitionSelection';
+import { computeSphereAggregate, normalizeAggregate } from './phaseSphereAggregation';
 
 /** PRNG offset for pre-worldgen culture identity generation. Unique prime — no collision with worldgen passes. */
 const CULTURE_SEED_OFFSET = 87671;
@@ -251,6 +252,8 @@ export function initializeGameState(
 
   // Initialize empty familiarity map — populated as threads are formed
   const familiarityMap = new Map<string, number>();
+  const initialAggregate = computeSphereAggregate(graph);
+  const initialSphereWeights = normalizeAggregate(initialAggregate.totalBySphere);
 
   // Generate rival gods
   const rivalDefs = generateRivals(cosmology, seed);
@@ -263,9 +266,22 @@ export function initializeGameState(
   // Initialize starting essence pool (50 per sphere)
   const startingPool = createStartingEssencePool();
 
-  // Generate victory mandate
-  const mandateDef = generateMandate(cosmology, archetype.sphereAlignment, seed);
-  const mandateStateInit = createMandateState(mandateDef.id, 0);
+  // Generate victory mandate from the starting aggregate and current ascendant alignment.
+  const mandateDef = generateRememberedMandate({
+    alignment: archetype.sphereAlignment,
+    aggregate: initialAggregate,
+  });
+  const mandateStateInit = createMandateStateWith(mandateDef.id, 0, {
+    primaryCurrent: mandateDef.primaryBaseline,
+    secondaryCurrent: mandateDef.secondaryBaseline,
+    primaryDelta: 0,
+    secondaryDelta: 0,
+    secondaryObjectiveCurrent: 0,
+    secondaryObjectiveCompleted: false,
+    checkpointResults: [],
+    counterOmensEarned: 0,
+    doomSeverityPenalties: 0,
+  });
 
   // Initialize visibility map (fog of war)
   const losSources = collectLOSSources(graph, ascendantId, []);
@@ -306,8 +322,12 @@ export function initializeGameState(
     intelligenceRecords: [],
     meetTheFirstAutoTriggered: false,
     worldSoul: {
-      fundament,
+      fundament: {
+        ...fundament,
+        sphereWeights: initialSphereWeights,
+      },
       resonance: createResonanceState(),
+      aggregate: initialAggregate,
     },
     echoDefinitions: [],
     echoStates: [],
@@ -376,6 +396,23 @@ export function initializeGameStateFromIdentity(
   // (timeSinceAscension, courtType, mortalTags, ascendantLens) are
   // available to downstream systems like Meet The First.
   result.state.ascendantIdentity = identity;
+  const rememberedMandate = generateRememberedMandate({
+    alignment: identity.sphereAlignment,
+    aggregate: result.state.worldSoul.aggregate ?? computeSphereAggregate(result.state.graph),
+    identity,
+  });
+  result.state.mandateDefinition = rememberedMandate;
+  result.state.mandateState = createMandateStateWith(rememberedMandate.id, 0, {
+    primaryCurrent: rememberedMandate.primaryBaseline,
+    secondaryCurrent: rememberedMandate.secondaryBaseline,
+    primaryDelta: 0,
+    secondaryDelta: 0,
+    secondaryObjectiveCurrent: 0,
+    secondaryObjectiveCompleted: false,
+    checkpointResults: [],
+    counterOmensEarned: 0,
+    doomSeverityPenalties: 0,
+  });
 
   return result;
 }

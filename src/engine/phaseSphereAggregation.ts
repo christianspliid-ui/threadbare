@@ -129,9 +129,7 @@ export function getDominantSphere(totals: Record<SphereName, number>): SphereNam
  * Returns: Partial<GameState> with updated worldSoul.
  * Fail-soft: nodes without sphereAffinity are silently skipped.
  */
-export function phaseSphereAggregation(state: GameState): Partial<GameState> {
-  const graph = state.graph;
-
+export function computeSphereAggregate(graph: GameState['graph']): SphereAggregate {
   // Initialize totals
   const totals = {} as Record<SphereName, number>;
   for (const s of SPHERE_NAMES) totals[s] = 0;
@@ -181,11 +179,16 @@ export function phaseSphereAggregation(state: GameState): Partial<GameState> {
   const dominantSphere = getDominantSphere(totals);
   const normalizedWeights = normalizeAggregate(totals);
 
-  const aggregate: SphereAggregate = {
+  return {
     totalBySphere: { ...totals },
     dominantSphere,
     entityCount,
   };
+}
+
+export function phaseSphereAggregation(state: GameState): Partial<GameState> {
+  const aggregate = computeSphereAggregate(state.graph);
+  const normalizedWeights = normalizeAggregate(aggregate.totalBySphere);
 
   // ── Update worldSoul ───────────────────────────────────────────────
   const currentWorldSoul = state.worldSoul;

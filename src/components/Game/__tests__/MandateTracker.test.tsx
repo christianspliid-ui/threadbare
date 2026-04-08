@@ -54,6 +54,60 @@ const baseMandateState: MandateState = {
   failed: false,
 };
 
+const rememberedMandateDefinition: MandateDefinition = {
+  id: 'mandate.remembrance.witness',
+  type: 'sphere_dominance',
+  runtimeKind: 'sphere_growth',
+  name: 'Witness Ascendancy',
+  description: 'Raise mind and spirit before doom closes.',
+  primarySphere: 'mind',
+  secondarySphere: 'spirit',
+  primaryTargetDelta: 0.18,
+  secondaryTargetDelta: 0.1,
+  checkpoints: [
+    { index: 0, doomProgressThreshold: 0.4, label: 'First Omen', description: 'Hold the opening omen.', requiredPrimaryDelta: 0.07, requiredSecondaryDelta: 0.04 },
+    { index: 1, doomProgressThreshold: 0.6, label: 'Second Omen', description: 'Hold the second omen.', requiredPrimaryDelta: 0.11, requiredSecondaryDelta: 0.06 },
+    { index: 2, doomProgressThreshold: 0.8, label: 'Third Omen', description: 'Hold the third omen.', requiredPrimaryDelta: 0.14, requiredSecondaryDelta: 0.08 },
+    { index: 3, doomProgressThreshold: 1.0, label: 'Final Omen', description: 'Hold the final omen.', requiredPrimaryDelta: 0.18, requiredSecondaryDelta: 0.1 },
+  ],
+  secondaryObjective: {
+    type: 'circle_retinue',
+    label: 'Gathered Circle',
+    description: 'Maintain 3 mortal agents within your circle.',
+    target: 3,
+  },
+  stages: [
+    { stage: 'setup', description: 'Open strongly.', conditions: [{ type: 'custom', description: 'Mind rises.', params: {} }] },
+    { stage: 'escalation', description: 'Hold the middle game.', conditions: [{ type: 'custom', description: 'Keep both spheres rising.', params: {} }] },
+    { stage: 'culmination', description: 'Enter the climax ahead.', conditions: [{ type: 'custom', description: 'Finish before doom.', params: {} }] },
+  ],
+};
+
+const rememberedMandateState: MandateState = {
+  mandateId: 'mandate.remembrance.witness',
+  currentStage: 'escalation',
+  progress: 0.42,
+  completed: false,
+  failed: false,
+  primaryDelta: 0.09,
+  secondaryDelta: 0.04,
+  secondaryObjectiveCurrent: 2,
+  secondaryObjectiveCompleted: false,
+  counterOmensEarned: 1,
+  doomSeverityPenalties: 0,
+  checkpointResults: [
+    {
+      index: 0,
+      doomProgressThreshold: 0.4,
+      passed: true,
+      exceeded: true,
+      evaluatedTick: 40,
+      requiredPrimaryDelta: 0.07,
+      observedPrimaryDelta: 0.09,
+    },
+  ],
+};
+
 describe('MandateTracker', () => {
   it('renders mandate name', () => {
     render(
@@ -235,5 +289,23 @@ describe('MandateTracker', () => {
     });
     expect(screen.queryByText('Establish control over the world-graph')).not.toBeInTheDocument();
     vi.useRealTimers();
+  });
+
+  it('shows remembered mandate sphere deltas and omen summary', () => {
+    render(
+      <MandateTracker
+        definition={rememberedMandateDefinition}
+        state={rememberedMandateState}
+      />
+    );
+
+    expect(screen.getByText('mind +9%')).toBeInTheDocument();
+    expect(screen.getByText('spirit +4%')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Witness Ascendancy'));
+
+    expect(screen.getByText('Omens Held')).toBeInTheDocument();
+    expect(screen.getByText('1/4')).toBeInTheDocument();
+    expect(screen.getByText('Gathered Circle')).toBeInTheDocument();
   });
 });

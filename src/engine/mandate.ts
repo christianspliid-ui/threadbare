@@ -16,6 +16,17 @@ const STAGE_ORDER: MandateStage[] = ['setup', 'escalation', 'culmination'];
  * Create initial mandate state.
  */
 export function createMandateState(mandateId: string, tick: number): MandateState {
+  return createMandateStateWith(mandateId, tick);
+}
+
+/**
+ * Create initial mandate state, optionally layering in runtime-specific fields.
+ */
+export function createMandateStateWith(
+  mandateId: string,
+  tick: number,
+  initial: Partial<MandateState> = {},
+): MandateState {
   return {
     mandateId,
     currentStage: 'setup',
@@ -24,6 +35,7 @@ export function createMandateState(mandateId: string, tick: number): MandateStat
     failed: false,
     assignedTick: tick,
     stageCompletedTicks: {},
+    ...initial,
   };
 }
 

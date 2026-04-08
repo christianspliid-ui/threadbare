@@ -26,6 +26,7 @@ export type TraceCategory =
   | 'encounter_cache' | 'encounter_filter' | 'idle_decision'
   | 'encounter_scoring' | 'road_hex_transition' | 'agent_reroute'
   | 'return_resolution' | 'ripple_consequence' | 'control_effect'
+  | 'doom_card' | 'mandate_checkpoint'
   | 'revelation' | 'tick_health' | 'tick_crash'
   | 'agent_revelation' | 'interaction_depth'
   | 'faction_ambition'
@@ -62,6 +63,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'encounter_cache', 'encounter_filter', 'idle_decision',
   'encounter_scoring', 'road_hex_transition', 'agent_reroute',
   'return_resolution', 'ripple_consequence', 'control_effect',
+  'doom_card', 'mandate_checkpoint',
   'revelation', 'tick_health', 'tick_crash',
   'agent_revelation', 'interaction_depth',
   'faction_ambition',
@@ -519,6 +521,31 @@ export interface RippleConsequenceTrace extends TraceBase {
   consequence: string;
 }
 
+/** Trace: a doom card resolved into world-scale effects. */
+export interface DoomCardTrace extends TraceBase {
+  category: 'doom_card';
+  stage: number;
+  archetype: string;
+  cardId: string;
+  cardTitle: string;
+  severity: number;
+  effectType?: string;
+  targetCount?: number;
+}
+
+/** Trace: a remembrance mandate checkpoint passed or missed. */
+export interface MandateCheckpointTrace extends TraceBase {
+  category: 'mandate_checkpoint';
+  checkpointIndex: number;
+  doomProgressThreshold: number;
+  requiredPrimaryDelta: number;
+  observedPrimaryDelta: number;
+  passed: boolean;
+  exceeded: boolean;
+  counterOmensDelta: number;
+  severityPenaltyDelta: number;
+}
+
 /** Trace: control effect ticked (per-tick drain, income, threshold check) */
 export interface ControlEffectTickTrace extends TraceBase {
   category: 'control_effect';
@@ -730,6 +757,8 @@ export type TraceEntry =
   | AgentRerouteTrace
   | ReturnResolutionTrace
   | RippleConsequenceTrace
+  | DoomCardTrace
+  | MandateCheckpointTrace
   | ControlEffectTickTrace
   | ControlEffectLapseTrace
   | ControlEffectEstablishedTrace

@@ -165,6 +165,20 @@ interface GameViewProps {
   preSeeded?: boolean;
 }
 
+function formatJourneyPhaseLabel(
+  phase: ThreadEdgeProperties['storyPhase'] | undefined,
+  active: boolean,
+): string {
+  switch (phase) {
+    case 'call': return 'Call';
+    case 'road_of_trials': return 'Trials';
+    case 'crisis': return 'Crisis';
+    case 'ordeal': return 'Ordeal';
+    case 'return': return active ? 'Return' : 'Return resolved';
+    default: return active ? 'Unfolding' : 'Dormant';
+  }
+}
+
 export function GameView({ archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity, preSeeded }: GameViewProps) {
   // ── Resume theme music if it was started on the start screen ──
   useEffect(() => {
@@ -1052,6 +1066,34 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     () => computeEssenceIncome(gameState.graph, gameState.ascendantId, gameState.controlEffects),
     [gameState.graph, gameState.ascendantId, gameState.tick, gameState.controlEffects],
   );
+
+  const firstJourneyStatus = useMemo(() => {
+    const candidates = getThreadsFrom(gameState.graph, gameState.ascendantId)
+      .map((edge) => ({
+        props: edge.properties as ThreadEdgeProperties,
+        node: gameState.graph.getNode(edge.target),
+      }))
+      .filter(({ props }) =>
+        props.courtPosition === 'the_first' ||
+        props.storyPhase != null ||
+        (props.beatHistory?.length ?? 0) > 0 ||
+        props.ordealOutcome != null,
+      );
+
+    if (candidates.length === 0) return null;
+
+    const current = candidates.find(({ props }) => props.courtPosition === 'the_first') ?? candidates[0];
+    return {
+      active: current.props.courtPosition === 'the_first',
+      phase: current.props.storyPhase,
+      agentName: current.node?.name ?? 'The First',
+    };
+  }, [gameState.graph, gameState.ascendantId, runtime.worldVersion]);
+
+  const doomJourneyLabel = useMemo(() => {
+    if (!firstJourneyStatus) return undefined;
+    return formatJourneyPhaseLabel(firstJourneyStatus.phase, firstJourneyStatus.active);
+  }, [firstJourneyStatus]);
 
   // ── Non-agent target context (hex-zoom and location views) ──
   const [nonAgentDrawerOpen, setNonAgentDrawerOpen] = useState(false);
@@ -2308,7 +2350,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             style={{ minWidth: '140px' }}
             aria-label="View doom clock details"
           >
-            <DoomBar definition={gameState.doomDefinition} state={gameState.doomClock} />
+            <DoomBar
+              definition={gameState.doomDefinition}
+              state={gameState.doomClock}
+              journeyLabel={doomJourneyLabel}
+            />
           </div>
           {gameState.mandateDefinition && gameState.mandateState && (
             <>
@@ -2931,6 +2977,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         onClose={() => setDoomDetailOpen(false)}
         definition={gameState.doomDefinition}
         state={gameState.doomClock}
+        journeyLabel={doomJourneyLabel}
       />
 
       {/* Mandate detail modal */}

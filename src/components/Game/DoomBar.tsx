@@ -5,10 +5,12 @@ import { Tooltip } from '../shared/Tooltip';
 import { DOOM_ARCHETYPE_COLORS } from '../../data/uiColorPalette';
 import { SphereIcon } from '../icons';
 import type { SphereName } from '../../types/index';
+import { DOOM_CLIMAX_START } from '../../data/game-config';
 
 interface DoomBarProps {
   definition: DoomClockDefinition;
   state: DoomClockState;
+  journeyLabel?: string;
 }
 
 /**
@@ -29,7 +31,17 @@ const DOOM_ARCHETYPE_GLYPHS: Record<string, string> = {
   reckoning: '⚔',
 };
 
-export function DoomBar({ definition, state }: DoomBarProps) {
+function getNextStageHint(definition: DoomClockDefinition, state: DoomClockState): string {
+  if (state.expired) return 'The doom has landed';
+  if (state.progress >= DOOM_CLIMAX_START) return 'Climax window';
+
+  const nextStage = definition.stages.find((stage) => stage.stage > state.currentStage);
+  if (!nextStage) return 'Final omen';
+
+  return `Next: ${nextStage.name}`;
+}
+
+export function DoomBar({ definition, state, journeyLabel }: DoomBarProps) {
   const color = DOOM_ARCHETYPE_COLORS[definition.archetype] ?? DOOM_ARCHETYPE_COLORS.breach;
   const pct = Math.round(state.progress * 100);
   // currentStage is 1-5, so index into stages array with currentStage - 1
@@ -37,6 +49,8 @@ export function DoomBar({ definition, state }: DoomBarProps) {
   const stageName = currentStageDef?.name ?? 'Unknown';
   const archetypeSphere = DOOM_ARCHETYPE_SPHERE[definition.archetype];
   const fallbackGlyph = DOOM_ARCHETYPE_GLYPHS[definition.archetype] ?? '◈';
+  const nextStageHint = getNextStageHint(definition, state);
+  const journeyHint = journeyLabel ? `The First: ${journeyLabel}` : 'The First awaits';
 
   // Track doom progress and trigger pulse on increase
   const prevProgressRef = useRef(state.progress);
@@ -64,9 +78,9 @@ export function DoomBar({ definition, state }: DoomBarProps) {
   return (
     <Tooltip
       id="ui.doom_bar"
-      label={`${definition.archetype} — Stage ${state.currentStage}: ${stageName}`}
+      label={`${definition.archetype} — Stage ${state.currentStage}: ${stageName}${journeyLabel ? ` — ${journeyHint}` : ''}`}
     >
-      <div className="min-w-0" style={{ minWidth: '140px' }}>
+      <div className="min-w-0" style={{ minWidth: '170px' }}>
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-1.5">
             {archetypeSphere
@@ -80,6 +94,13 @@ export function DoomBar({ definition, state }: DoomBarProps) {
           <span className="font-mono ml-2" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
             {state.expired ? 'UNMADE' : `${pct}%`}
           </span>
+        </div>
+        <div
+          className="flex items-center justify-between gap-2 mb-1"
+          style={{ fontSize: '10px', color: 'var(--text-muted)' }}
+        >
+          <span className="truncate">{journeyHint}</span>
+          <span className="truncate" style={{ maxWidth: '84px', textAlign: 'right' }}>{nextStageHint}</span>
         </div>
         <div className={isPulsing ? 'pulse-doom' : ''}>
           <ProgressBar progress={state.progress} color={color} glow={true} />
