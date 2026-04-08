@@ -467,6 +467,36 @@ export function getTrackedAgentEvents(runtime: SimulationRuntime, agentId: strin
   return [...(runtime.balanceTelemetry?.trackedAgentEvents.get(agentId) ?? [])];
 }
 
+export function getLatestEncounterDecisionsByAgent(
+  runtime: SimulationRuntime,
+  agentIds?: readonly string[],
+): Map<string, BalanceEvent> {
+  const latest = new Map<string, BalanceEvent>();
+  const recentEvents = runtime.balanceTelemetry?.recentEvents ?? [];
+  const remaining = agentIds ? new Set(agentIds) : null;
+
+  for (let i = recentEvents.length - 1; i >= 0; i--) {
+    const event = recentEvents[i];
+    if (event.kind !== 'encounter_decision') continue;
+    if (latest.has(event.agentId)) continue;
+    if (remaining && !remaining.has(event.agentId)) continue;
+
+    latest.set(event.agentId, event);
+    remaining?.delete(event.agentId);
+
+    if (remaining && remaining.size === 0) break;
+  }
+
+  return latest;
+}
+
+export function getLatestEncounterDecisionForAgent(
+  runtime: SimulationRuntime,
+  agentId: string,
+): BalanceEvent | null {
+  return getLatestEncounterDecisionsByAgent(runtime, [agentId]).get(agentId) ?? null;
+}
+
 export function clearBalanceTelemetry(runtime: SimulationRuntime): void {
   if (!runtime.balanceTelemetry) return;
   const { seed, mapSize, targetVersion } = runtime.balanceTelemetry.meta;

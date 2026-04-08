@@ -83,6 +83,7 @@ import { INTERVENTION_DEFINITIONS } from '../../types/dream';
 import { MandateTracker } from './MandateTracker';
 import { DebugPanel } from './DebugPanel';
 import { getEncounterCacheManager } from '../../engine/orchestrator';
+import { getLatestEncounterDecisionForAgent, getLatestEncounterDecisionsByAgent } from '../../engine/balanceTelemetry';
 import { AvatarHUD } from './AvatarHUD';
 import { WorldPulse } from './WorldPulse';
 import { ToastStack } from './ToastStack';
@@ -411,6 +412,20 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     () => selectedAgentId ? retinueAgents.find(a => a.id === selectedAgentId) : undefined,
     [retinueAgents, selectedAgentId],
   );
+
+  const latestThreadEncounterDecisions = useMemo(() => {
+    const threadedAgentIds = threadedNodes
+      .filter((node): node is Extract<ThreadedNode, { category: 'agent' }> => node.category === 'agent')
+      .map(node => node.id);
+    if (threadedAgentIds.length === 0) return new Map();
+    return getLatestEncounterDecisionsByAgent(runtime, threadedAgentIds);
+  }, [threadedNodes, runtime, runtime.balanceTelemetryVersion]);
+
+  const selectedAgentEncounterDecision = useMemo(() => {
+    if (selectedThreadNode?.category !== 'agent') return null;
+    return latestThreadEncounterDecisions.get(selectedThreadNode.nodeId)
+      ?? getLatestEncounterDecisionForAgent(runtime, selectedThreadNode.nodeId);
+  }, [selectedThreadNode, latestThreadEncounterDecisions, runtime, runtime.balanceTelemetryVersion]);
 
   // When fog is disabled, create a proxy map that returns 'visible' for every key
   const effectiveVisibilityMap = useMemo(() => {
@@ -2748,6 +2763,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                       <ThreadDetailView
                         node={detailNode}
                         agentInfoCard={selectedThreadNode.category === 'agent' ? agentInfoCard : null}
+                        agentEncounterDecision={selectedThreadNode.category === 'agent' ? selectedAgentEncounterDecision : null}
                         onClose={handleThreadDetailClose}
                         onViewProfile={handleOpenProfileModal}
                         onZoomToLocation={handleZoomToLocation}
@@ -2787,6 +2803,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                     onCenterOnHex={handleCenterOnHex}
                     onZoomToLocation={handleZoomToLocation}
                     activeEncounters={retinueActiveEncounters}
+                    agentEncounterDecisions={latestThreadEncounterDecisions}
                     onEncounterClick={handleEncounterClick}
                     onToggleAttentionMode={handleToggleAttentionMode}
                   />

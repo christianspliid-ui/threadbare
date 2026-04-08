@@ -4,6 +4,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { ThreadDetailView } from '../ThreadDetailView';
 import type { ThreadedAgent, ThreadedLocation, ThreadedFaction, ThreadedArmy, ThreadedArtifact } from '../../../engine/retinue';
 import type { AgentInfoCardData } from '../../../engine/agentDetail';
+import type { BalanceEvent } from '../../../types/balanceEval';
 
 // ─── Test fixtures ─────────────────────────────────────────────────────────────
 
@@ -114,6 +115,24 @@ const makeAgentInfoCard = (): AgentInfoCardData => ({
   backstory: null,
 } as AgentInfoCardData);
 
+const makeEncounterDecision = (overrides?: Partial<BalanceEvent>): BalanceEvent => ({
+  seq: 1,
+  tick: 12,
+  kind: 'encounter_decision',
+  agentId: 'agent-1',
+  sourceSystem: 'planner',
+  decisionType: 'idle',
+  filterCacheSize: 12,
+  filterAfterAwareness: 8,
+  filterAfterVisibility: 6,
+  filterAfterPrerequisites: 4,
+  filterAfterThreat: 4,
+  filterAfterCap: 3,
+  candidatesAfterCooldown: 2,
+  bestScore: 0.42,
+  ...overrides,
+});
+
 const noop = vi.fn();
 
 // ─── Tests ─────────────────────────────────────────────────────────────────────
@@ -146,6 +165,43 @@ describe('ThreadDetailView', () => {
     expect(screen.getByText('Seraphel')).toBeInTheDocument();
     // Should show activity label in fallback path
     expect(screen.getByText('Recruiting')).toBeInTheDocument();
+  });
+
+  it('renders the encounter pool panel when latest chooser telemetry is provided', () => {
+    render(
+      <ThreadDetailView
+        node={makeAgent()}
+        agentInfoCard={makeAgentInfoCard()}
+        agentEncounterDecision={makeEncounterDecision({
+          decisionType: 'queue_movement',
+          targetLocationSubtype: 'ruins',
+          travelCost: 2,
+        })}
+        onClose={noop}
+        onViewProfile={noop}
+      />
+    );
+
+    expect(screen.getByText('Encounter Pool')).toBeInTheDocument();
+    expect(screen.getByText('Queue Movement')).toBeInTheDocument();
+    expect(screen.getByText('ruins')).toBeInTheDocument();
+    expect(screen.getByText(/Cached 12 -> Awareness 8 -> Visibility 6 -> Prereqs 4 -> Threat 4 -> Capability 3 -> Cooldown 2/i)).toBeInTheDocument();
+  });
+
+  it('renders idle reason text in encounter pool panel', () => {
+    render(
+      <ThreadDetailView
+        node={makeAgent()}
+        agentEncounterDecision={makeEncounterDecision({
+          idleReason: 'no_candidates_after_cooldown',
+          candidatesAfterCooldown: 0,
+        })}
+        onClose={noop}
+        onViewProfile={noop}
+      />
+    );
+
+    expect(screen.getByText('All candidates on cooldown')).toBeInTheDocument();
   });
 
   it('renders location detail with prosperity label and controlling faction', () => {

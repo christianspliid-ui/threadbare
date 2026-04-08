@@ -3,6 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ThreadsPanel } from '../ThreadsPanel';
 import type { ThreadedNode } from '../../../engine/retinue';
+import type { BalanceEvent } from '../../../types/balanceEval';
 
 // ─── Test fixtures ─────────────────────────────────────────────────
 
@@ -97,6 +98,20 @@ function makeArtifact(overrides?: Partial<Extract<ThreadedNode, { category: 'art
 
 const noop = () => {};
 
+function makeEncounterDecision(overrides?: Partial<BalanceEvent>): BalanceEvent {
+  return {
+    seq: 1,
+    tick: 10,
+    kind: 'encounter_decision',
+    agentId: 'agent-1',
+    sourceSystem: 'planner',
+    decisionType: 'idle',
+    filterCacheSize: 12,
+    candidatesAfterCooldown: 3,
+    ...overrides,
+  };
+}
+
 // ─── Tests ────────────────────────────────────────────────────────
 
 describe('ThreadsPanel', () => {
@@ -139,6 +154,20 @@ describe('ThreadsPanel', () => {
     expect(screen.getByText('Seraphel')).toBeTruthy();
     // Secondary info: "Thornwall · Idling"
     expect(screen.getByText(/Thornwall/)).toBeTruthy();
+  });
+
+  it('shows encounter pool counts for agent rows when telemetry is available', () => {
+    render(
+      <ThreadsPanel
+        threadedNodes={[makeAgent()]}
+        selectedNodeId={null}
+        onNodeSelect={noop}
+        onCenterOnHex={noop}
+        agentEncounterDecisions={new Map([['agent-1', makeEncounterDecision()]])}
+      />
+    );
+
+    expect(screen.getByText('Pool 3 / 12')).toBeTruthy();
   });
 
   it('does not render sections with 0 entries', () => {

@@ -2,6 +2,7 @@ import React from 'react';
 import type { AgentInfoCardData } from '../../engine/agentDetail';
 import type { ThreadedNode, ThreadCategory } from '../../engine/retinue';
 import type { WorldGraph } from '../../engine/graph';
+import type { BalanceEvent } from '../../types/balanceEval';
 import { TIER_COLORS } from '../../data/uiColorPalette';
 import { getSphereColor } from '../../data/sphereIcons';
 import type { ReachDomain } from '../../types/traits';
@@ -33,6 +34,7 @@ interface ThreadDetailViewProps {
   node: ThreadedNode;
   /** Pre-built agent info card — only provided when category is 'agent' */
   agentInfoCard?: AgentInfoCardData | null;
+  agentEncounterDecision?: BalanceEvent | null;
   onClose: () => void;
   onViewProfile: (nodeId: string, category: ThreadCategory) => void;
   onZoomToLocation?: (locationId: string) => void;
@@ -42,6 +44,7 @@ interface ThreadDetailViewProps {
 export const ThreadDetailView = React.memo(function ThreadDetailView({
   node,
   agentInfoCard,
+  agentEncounterDecision,
   onClose,
   onViewProfile,
   onZoomToLocation: _onZoomToLocation,
@@ -145,7 +148,7 @@ export const ThreadDetailView = React.memo(function ThreadDetailView({
         }}
       >
         {node.category === 'agent' && (
-          <AgentDetailBody node={node} agentInfoCard={agentInfoCard} />
+          <AgentDetailBody node={node} agentInfoCard={agentInfoCard} agentEncounterDecision={agentEncounterDecision} />
         )}
         {node.category === 'location' && (
           <LocationDetailBody node={node} graph={graph} />
@@ -213,6 +216,33 @@ function DetailField({ label, value }: { label: string; value: React.ReactNode }
   );
 }
 
+function DetailSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        padding: 'var(--space-2)',
+        border: '1px solid color-mix(in srgb, var(--border-gold) 45%, transparent)',
+        borderRadius: '8px',
+        backgroundColor: 'color-mix(in srgb, var(--bg-deep) 70%, transparent)',
+      }}
+    >
+      <div
+        style={{
+          fontSize: 'var(--text-xs)',
+          color: 'var(--text-muted)',
+          fontFamily: 'var(--font-display)',
+          marginBottom: 'var(--space-1)',
+        }}
+      >
+        {title}
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 function SphereField({ label, sphereName }: { label: string; sphereName: string }) {
   const color = getSphereColor(sphereName);
   return (
@@ -244,13 +274,91 @@ function SphereField({ label, sphereName }: { label: string; sphereName: string 
   );
 }
 
+function getVisibleEncounterPool(decision?: BalanceEvent | null): number | null {
+  if (!decision) return null;
+  return decision.candidatesAfterCooldown
+    ?? decision.filterAfterCap
+    ?? decision.filterAfterThreat
+    ?? decision.filterAfterPrerequisites
+    ?? decision.filterAfterVisibility
+    ?? decision.filterAfterAwareness
+    ?? decision.filterCacheSize
+    ?? null;
+}
+
+function formatDecisionType(decisionType?: string): string {
+  switch (decisionType) {
+    case 'start_local': return 'Start Local';
+    case 'attempt_remote': return 'Attempt Remote';
+    case 'queue_movement': return 'Queue Movement';
+    case 'forced_travel': return 'Forced Travel';
+    case 'idle': return 'Idle';
+    default: return 'Unknown';
+  }
+}
+
+function formatIdleReason(idleReason?: string): string | null {
+  if (!idleReason) return null;
+  switch (idleReason) {
+    case 'no_candidates_after_filter': return 'No candidates after filter';
+    case 'no_candidates_after_cooldown': return 'All candidates on cooldown';
+    case 'below_score_threshold': return 'Best score below threshold';
+    default: return idleReason.replaceAll('_', ' ');
+  }
+}
+
+function EncounterDecisionPanel({ decision }: { decision: BalanceEvent }) {
+  const visiblePool = getVisibleEncounterPool(decision);
+  const stages = [
+    { label: 'Cached', value: decision.filterCacheSize },
+    { label: 'Awareness', value: decision.filterAfterAwareness },
+    { label: 'Visibility', value: decision.filterAfterVisibility },
+    { label: 'Prereqs', value: decision.filterAfterPrerequisites },
+    { label: 'Threat', value: decision.filterAfterThreat },
+    { label: 'Capability', value: decision.filterAfterCap },
+    { label: 'Cooldown', value: decision.candidatesAfterCooldown },
+  ].filter(stage => stage.value !== undefined);
+
+  return (
+    <DetailSection title="Encounter Pool">
+      {visiblePool !== null && (
+        <DetailField label="Viable now" value={visiblePool} />
+      )}
+      <DetailField label="Decision" value={formatDecisionType(decision.decisionType)} />
+      {decision.templateId && (
+        <DetailField label="Template" value={decision.templateId} />
+      )}
+      {decision.targetLocationSubtype && (
+        <DetailField label="Heading" value={decision.targetLocationSubtype} />
+      )}
+      {decision.travelCost !== undefined && decision.travelCost > 0 && (
+        <DetailField label="Travel cost" value={decision.travelCost} />
+      )}
+      {decision.bestScore !== undefined && (
+        <DetailField label="Best score" value={decision.bestScore.toFixed(2)} />
+      )}
+      {formatIdleReason(decision.idleReason) && (
+        <DetailField label="Idle reason" value={formatIdleReason(decision.idleReason)!} />
+      )}
+      {stages.length > 0 && (
+        <DetailField
+          label="Funnel"
+          value={stages.map(stage => `${stage.label} ${stage.value}`).join(' -> ')}
+        />
+      )}
+    </DetailSection>
+  );
+}
+
 // Agent detail body
 function AgentDetailBody({
   node,
   agentInfoCard,
+  agentEncounterDecision,
 }: {
   node: import('../../engine/retinue').ThreadedAgent;
   agentInfoCard?: AgentInfoCardData | null;
+  agentEncounterDecision?: BalanceEvent | null;
 }) {
   if (agentInfoCard) {
     return (
@@ -305,6 +413,10 @@ function AgentDetailBody({
         {node.activityLabel && (
           <DetailField label="Activity" value={node.activityLabel} />
         )}
+
+        {agentEncounterDecision && (
+          <EncounterDecisionPanel decision={agentEncounterDecision} />
+        )}
       </>
     );
   }
@@ -320,6 +432,9 @@ function AgentDetailBody({
       )}
       {node.factionName && (
         <DetailField label="Faction" value={node.factionName} />
+      )}
+      {agentEncounterDecision && (
+        <EncounterDecisionPanel decision={agentEncounterDecision} />
       )}
     </>
   );

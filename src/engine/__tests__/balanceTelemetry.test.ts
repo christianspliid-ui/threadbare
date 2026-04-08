@@ -10,6 +10,8 @@ import {
   getTrackedAgentIds,
   setTrackedAgents,
   getTrackedAgentEvents,
+  getLatestEncounterDecisionForAgent,
+  getLatestEncounterDecisionsByAgent,
   clearBalanceTelemetry,
   selectDefaultTrackedHero,
   exportBalanceTelemetry,
@@ -376,6 +378,55 @@ describe('getBalanceEvents() filtering', () => {
   it('limits with limit option', () => {
     const events = getBalanceEvents(rt, { limit: 2 });
     expect(events).toHaveLength(2);
+  });
+});
+
+describe('latest encounter decision helpers', () => {
+  it('returns the newest encounter decision for a single agent', () => {
+    const rt = makeRuntime();
+    recordBalanceEvent(rt, makeEvent({
+      tick: 3,
+      agentId: 'agent-1',
+      kind: 'encounter_decision',
+      decisionType: 'idle',
+      candidatesAfterCooldown: 0,
+    }));
+    recordBalanceEvent(rt, makeEvent({
+      tick: 4,
+      agentId: 'agent-1',
+      kind: 'encounter_decision',
+      decisionType: 'queue_movement',
+      candidatesAfterCooldown: 2,
+    }));
+
+    expect(getLatestEncounterDecisionForAgent(rt, 'agent-1')?.decisionType).toBe('queue_movement');
+  });
+
+  it('returns the newest encounter decision per requested agent', () => {
+    const rt = makeRuntime();
+    recordBalanceEvent(rt, makeEvent({
+      tick: 1,
+      agentId: 'agent-1',
+      kind: 'encounter_decision',
+      decisionType: 'idle',
+    }));
+    recordBalanceEvent(rt, makeEvent({
+      tick: 2,
+      agentId: 'agent-2',
+      kind: 'encounter_decision',
+      decisionType: 'start_local',
+    }));
+    recordBalanceEvent(rt, makeEvent({
+      tick: 3,
+      agentId: 'agent-1',
+      kind: 'encounter_decision',
+      decisionType: 'attempt_remote',
+    }));
+
+    const latest = getLatestEncounterDecisionsByAgent(rt, ['agent-1', 'agent-2']);
+
+    expect(latest.get('agent-1')?.decisionType).toBe('attempt_remote');
+    expect(latest.get('agent-2')?.decisionType).toBe('start_local');
   });
 });
 

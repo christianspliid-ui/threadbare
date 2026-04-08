@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { ThreadedNode, ThreadCategory } from '../../engine/retinue';
 import { groupThreadedNodes } from '../../engine/retinue';
 import type { EncounterTemplate } from '../../types/encounter';
+import type { BalanceEvent } from '../../types/balanceEval';
 import type { ActiveEncounterDisplay } from './encounterNotificationRuntime';
 import { SectionHeading } from '../shared/SectionHeading';
 import { IconButton } from '../shared/IconButton';
@@ -28,6 +29,7 @@ interface ThreadsPanelProps {
   onCenterOnHex: (locationIdOrHexCoords: string) => void;
   onZoomToLocation?: (locationId: string) => void;
   activeEncounters?: Map<string, { encounter: ActiveEncounterDisplay; template: EncounterTemplate }>;
+  agentEncounterDecisions?: Map<string, BalanceEvent>;
   onEncounterClick?: (agentId: string, encounter: ActiveEncounterDisplay, template: EncounterTemplate) => void;
   onToggleAttentionMode?: (threadEdgeId: string) => void;
 }
@@ -40,8 +42,25 @@ interface CompactThreadRowProps {
   onNodeSelect: (nodeId: string, category: ThreadCategory) => void;
   onCenterOnHex: (locationId: string) => void;
   activeEncounters?: Map<string, { encounter: ActiveEncounterDisplay; template: EncounterTemplate }>;
+  agentEncounterDecision?: BalanceEvent;
   onEncounterClick?: (agentId: string, encounter: ActiveEncounterDisplay, template: EncounterTemplate) => void;
   onToggleAttentionMode?: (threadEdgeId: string) => void;
+}
+
+function getVisibleEncounterPool(decision?: BalanceEvent): number | null {
+  if (!decision) return null;
+  return decision.candidatesAfterCooldown
+    ?? decision.filterAfterCap
+    ?? decision.filterAfterThreat
+    ?? decision.filterAfterPrerequisites
+    ?? decision.filterAfterVisibility
+    ?? decision.filterAfterAwareness
+    ?? decision.filterCacheSize
+    ?? null;
+}
+
+function getEncounterPoolBaseline(decision?: BalanceEvent): number | null {
+  return decision?.filterCacheSize ?? null;
 }
 
 function CompactThreadRow({
@@ -50,6 +69,7 @@ function CompactThreadRow({
   onNodeSelect,
   onCenterOnHex,
   activeEncounters,
+  agentEncounterDecision,
   onEncounterClick,
   onToggleAttentionMode,
 }: CompactThreadRowProps) {
@@ -90,6 +110,12 @@ function CompactThreadRow({
     node.category === 'agent' && activeEncounters
       ? activeEncounters.get(node.id)
       : undefined;
+  const encounterPool = node.category === 'agent'
+    ? getVisibleEncounterPool(agentEncounterDecision)
+    : null;
+  const encounterPoolBaseline = node.category === 'agent'
+    ? getEncounterPoolBaseline(agentEncounterDecision)
+    : null;
 
   return (
     <div
@@ -163,6 +189,21 @@ function CompactThreadRow({
         </div>
       )}
 
+      {node.category === 'agent' && encounterPool !== null && (
+        <div
+          style={{
+            marginTop: '2px',
+            fontFamily: 'var(--font-body)',
+            fontSize: 'var(--text-xs)',
+            color: encounterPool > 0 ? 'var(--text-secondary)' : 'var(--accent-gold)',
+            lineHeight: 1.2,
+          }}
+        >
+          Pool {encounterPool}
+          {encounterPoolBaseline !== null && encounterPoolBaseline !== encounterPool ? ` / ${encounterPoolBaseline}` : ''}
+        </div>
+      )}
+
       {/* Encounter badge (agents only) */}
       {agentEncounter && onEncounterClick && (
         <button
@@ -233,6 +274,7 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
   onCenterOnHex,
   onZoomToLocation,
   activeEncounters,
+  agentEncounterDecisions,
   onEncounterClick,
   onToggleAttentionMode,
 }: ThreadsPanelProps) {
@@ -336,6 +378,7 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
                     onNodeSelect={onNodeSelect}
                     onCenterOnHex={onCenterOnHex}
                     activeEncounters={activeEncounters}
+                    agentEncounterDecision={node.category === 'agent' ? agentEncounterDecisions?.get(node.id) : undefined}
                     onEncounterClick={onEncounterClick}
                     onToggleAttentionMode={onToggleAttentionMode}
                   />
