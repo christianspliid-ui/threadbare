@@ -54,6 +54,28 @@ export type BalanceEncounterDecisionType =
   | 'idle'
   | 'forced_travel';
 
+export interface BalanceEncounterPoolCandidate {
+  rank: number;
+  templateId: string;
+  templateName: string;
+  locationId: string;
+  locationName: string;
+  sublocationId?: string;
+  sublocationName?: string;
+  action: Exclude<BalanceEncounterDecisionType, 'idle' | 'forced_travel'>;
+  reachPrimary: string;
+  reachSecondary: string;
+  encounterType: string;
+  threatBand: BalanceThreatBand;
+  stepCount: number;
+  totalTickCost: number;
+  rewardEstimate: number;
+  completionProb: number;
+  travelCost: number;
+  finalScore: number;
+  selected: boolean;
+}
+
 export interface BalanceEncounterDecisionTemplateSummary {
   decisions: number;
   startLocal: number;
@@ -138,6 +160,7 @@ export interface BalanceEvent {
   filterAfterCap?: number;
   candidatesBeforeCooldown?: number;
   candidatesAfterCooldown?: number;
+  rankedEncounterPool?: BalanceEncounterPoolCandidate[];
   bestScore?: number;
   travelCost?: number;
   threaded?: boolean;

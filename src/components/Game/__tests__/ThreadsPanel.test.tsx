@@ -170,6 +170,73 @@ describe('ThreadsPanel', () => {
     expect(screen.getByText('Pool 3 / 12')).toBeTruthy();
   });
 
+  it('opens encounter pool modal with ranked candidates in priority order', () => {
+    const onNodeSelect = vi.fn();
+    render(
+      <ThreadsPanel
+        threadedNodes={[makeAgent()]}
+        selectedNodeId={null}
+        onNodeSelect={onNodeSelect}
+        onCenterOnHex={noop}
+        agentEncounterDecisions={new Map([[
+          'agent-1',
+          makeEncounterDecision({
+            rankedEncounterPool: [
+              {
+                rank: 1,
+                templateId: 'encounter.merchant_gambit',
+                templateName: "Merchant's Gambit",
+                locationId: 'loc-2',
+                locationName: 'Green-shroud',
+                action: 'queue_movement',
+                reachPrimary: 'gold',
+                reachSecondary: 'eye',
+                encounterType: 'trade',
+                threatBand: 'moderate',
+                stepCount: 3,
+                totalTickCost: 4,
+                rewardEstimate: 1.1,
+                completionProb: 0.62,
+                travelCost: 0.58,
+                finalScore: 1.42,
+                selected: true,
+              },
+              {
+                rank: 2,
+                templateId: 'encounter.shadow_hunt',
+                templateName: 'The Shadow Hunt',
+                locationId: 'loc-3',
+                locationName: 'Sacred Grove',
+                action: 'queue_movement',
+                reachPrimary: 'shadow',
+                reachSecondary: 'star',
+                encounterType: 'steal',
+                threatBand: 'moderate',
+                stepCount: 3,
+                totalTickCost: 4,
+                rewardEstimate: 1.1,
+                completionProb: 0.53,
+                travelCost: 0.71,
+                finalScore: 1.11,
+                selected: false,
+              },
+            ],
+          }),
+        ]])}
+      />
+    );
+
+    fireEvent.click(screen.getByLabelText('Open encounter pool for Seraphel'));
+
+    expect(onNodeSelect).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: 'Seraphel encounter pool' })).toBeTruthy();
+    const items = screen.getAllByTestId('encounter-pool-item');
+    expect(items).toHaveLength(2);
+    expect(items[0].textContent).toContain("Merchant's Gambit");
+    expect(items[0].textContent).toContain('Chosen');
+    expect(items[1].textContent).toContain('The Shadow Hunt');
+  });
+
   it('does not render sections with 0 entries', () => {
     render(
       <ThreadsPanel

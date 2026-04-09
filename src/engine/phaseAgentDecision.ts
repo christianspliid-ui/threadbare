@@ -27,7 +27,7 @@ import {
   ENCOUNTER_COMPLETION_COOLDOWN,
 } from '../types/encounter';
 import { runFilterPipeline } from './encounterFilterPipeline';
-import { scoreAndSelect, type FamiliarityRecord } from './encounterScoring';
+import { scoreAndSelect, type FamiliarityRecord, type ScoredCandidate } from './encounterScoring';
 import { resolveIdleBehavior } from './idleBehavior';
 import { isEncounterOccupied } from './encounter';
 import { getAnyEncounterById } from '../data/encounter-content';
@@ -56,6 +56,7 @@ import { createUnifiedAction } from './unifiedActionLifecycle';
 import { isCompulsionEligible, buildCompulsionEvent } from './premonitionCompulsion';
 import type { PremonitionEvent } from '../types/premonition';
 import { resolveEffectiveTier } from './attentionTier';
+import type { BalanceEncounterPoolCandidate } from '../types/balanceEval';
 
 /**
  * Compute effective cooldown scaled by available template pool size.
@@ -146,6 +147,55 @@ function getThreadContext(
     threaded: Boolean(threadEdge),
     ...(courtPosition ? { courtPosition } : {}),
   };
+}
+
+function isSelectedPoolCandidate(
+  candidate: ScoredCandidate,
+  selected: ScoredCandidate | null,
+): boolean {
+  if (!selected) return false;
+  return candidate.entry.templateId === selected.entry.templateId
+    && candidate.entry.locationId === selected.entry.locationId
+    && candidate.entry.sublocationId === selected.entry.sublocationId
+    && candidate.entry.targetAgentId === selected.entry.targetAgentId;
+}
+
+function buildEncounterPoolSnapshot(
+  graph: GameState['graph'],
+  rankedCandidates: readonly ScoredCandidate[],
+  selected: ScoredCandidate | null,
+): BalanceEncounterPoolCandidate[] {
+  return rankedCandidates.map((candidate, index) => {
+    const templateName = getAnyEncounterById(candidate.entry.templateId)?.name
+      ?? getUnifiedTemplateById(candidate.entry.templateId)?.name
+      ?? candidate.entry.templateId;
+    const locationNode = graph.getNode(candidate.entry.locationId);
+    const sublocationNode = candidate.entry.sublocationId
+      ? graph.getNode(candidate.entry.sublocationId)
+      : null;
+
+    return {
+      rank: index + 1,
+      templateId: candidate.entry.templateId,
+      templateName,
+      locationId: candidate.entry.locationId,
+      locationName: locationNode?.name ?? candidate.entry.locationId,
+      ...(candidate.entry.sublocationId ? { sublocationId: candidate.entry.sublocationId } : {}),
+      ...(sublocationNode?.name ? { sublocationName: sublocationNode.name } : {}),
+      action: candidate.action,
+      reachPrimary: candidate.entry.reachPrimary,
+      reachSecondary: candidate.entry.reachSecondary,
+      encounterType: candidate.entry.encounterType,
+      threatBand: candidate.entry.threatRating,
+      stepCount: candidate.entry.stepCount,
+      totalTickCost: candidate.entry.totalTickCost,
+      rewardEstimate: candidate.entry.successRewardEstimate,
+      completionProb: candidate.completionProb,
+      travelCost: candidate.travelCost,
+      finalScore: candidate.finalScore,
+      selected: isSelectedPoolCandidate(candidate, selected),
+    };
+  });
 }
 
 export function phaseAgentDecision(
@@ -511,6 +561,11 @@ export function phaseAgentDecision(
       const topScore = decision.topCandidates.length > 0
         ? decision.topCandidates[0].finalScore
         : undefined;
+      const rankedEncounterPool = buildEncounterPoolSnapshot(
+        graph,
+        decision.rankedCandidates,
+        decision.selected,
+      );
 
       if (decision.selected) {
         const sel = decision.selected;
@@ -699,6 +754,7 @@ export function phaseAgentDecision(
                 filterAfterCap: ft.afterCap,
                 candidatesBeforeCooldown: rawCandidates.length,
                 candidatesAfterCooldown: candidates.length,
+                rankedEncounterPool,
                 bestScore: topScore,
                 travelCost: selCandidate?.travelCost ?? 0,
                 threaded: threadContext.threaded,
@@ -817,6 +873,7 @@ export function phaseAgentDecision(
                 filterAfterCap: ft.afterCap,
                 candidatesBeforeCooldown: rawCandidates.length,
                 candidatesAfterCooldown: candidates.length,
+                rankedEncounterPool,
                 bestScore: topScore,
                 travelCost: selCandidate?.travelCost ?? 0,
                 threaded: threadContext.threaded,
@@ -916,6 +973,7 @@ export function phaseAgentDecision(
             filterAfterCap: ft.afterCap,
             candidatesBeforeCooldown: rawCandidates.length,
             candidatesAfterCooldown: candidates.length,
+            rankedEncounterPool,
             bestScore: bestScore ?? undefined,
             threaded: threadContext.threaded,
             courtPosition: threadContext.courtPosition,
@@ -1051,6 +1109,7 @@ export function phaseAgentDecision(
                   filterAfterCap: ft.afterCap,
                   candidatesBeforeCooldown: rawCandidates.length,
                   candidatesAfterCooldown: candidates.length,
+                  rankedEncounterPool,
                   bestScore: topScore,
                   threaded: threadContext.threaded,
                   courtPosition: threadContext.courtPosition,

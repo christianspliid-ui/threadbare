@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import type { ThreadedNode, ThreadCategory } from '../../engine/retinue';
 import { groupThreadedNodes } from '../../engine/retinue';
 import type { EncounterTemplate } from '../../types/encounter';
-import type { BalanceEvent } from '../../types/balanceEval';
+import type { BalanceEvent, BalanceEncounterPoolCandidate } from '../../types/balanceEval';
 import type { ActiveEncounterDisplay } from './encounterNotificationRuntime';
 import { SectionHeading } from '../shared/SectionHeading';
 import { IconButton } from '../shared/IconButton';
+import { Modal } from '../shared/Modal';
 import { StepDots } from '../shared/StepDots';
 import { TIER_COLORS, TIER_COLOR_DEFAULT } from '../../data/uiColorPalette';
 
@@ -34,6 +35,11 @@ interface ThreadsPanelProps {
   onToggleAttentionMode?: (threadEdgeId: string) => void;
 }
 
+interface EncounterPoolModalState {
+  agentName: string;
+  decision: BalanceEvent;
+}
+
 // ─── Compact row ─────────────────────────────────────────────────
 
 interface CompactThreadRowProps {
@@ -45,6 +51,7 @@ interface CompactThreadRowProps {
   agentEncounterDecision?: BalanceEvent;
   onEncounterClick?: (agentId: string, encounter: ActiveEncounterDisplay, template: EncounterTemplate) => void;
   onToggleAttentionMode?: (threadEdgeId: string) => void;
+  onOpenEncounterPool?: (agentName: string, decision: BalanceEvent) => void;
 }
 
 function getVisibleEncounterPool(decision?: BalanceEvent): number | null {
@@ -63,6 +70,156 @@ function getEncounterPoolBaseline(decision?: BalanceEvent): number | null {
   return decision?.filterCacheSize ?? null;
 }
 
+function getEncounterPoolCandidates(decision?: BalanceEvent): BalanceEncounterPoolCandidate[] {
+  return decision?.rankedEncounterPool ?? [];
+}
+
+function formatEncounterPoolMeta(candidate: BalanceEncounterPoolCandidate): string {
+  return `${candidate.reachPrimary}/${candidate.reachSecondary} | ${candidate.encounterType} | ${candidate.threatBand} | ${candidate.stepCount} steps | ~${candidate.totalTickCost} ticks | reward ${candidate.rewardEstimate.toFixed(1)}`;
+}
+
+function formatEncounterPoolDestination(candidate: BalanceEncounterPoolCandidate): string | null {
+  const destination = candidate.sublocationName ?? candidate.locationName;
+  if (!destination) return null;
+  if (candidate.action === 'queue_movement') return `Heading to ${destination}`;
+  if (candidate.action === 'attempt_remote') return `Remote at ${destination}`;
+  if (candidate.sublocationName) return `At ${destination}`;
+  return null;
+}
+
+function EncounterPoolModal({
+  state,
+  onClose,
+}: {
+  state: EncounterPoolModalState | null;
+  onClose: () => void;
+}) {
+  const candidates = getEncounterPoolCandidates(state?.decision);
+  const visibleCount = getVisibleEncounterPool(state?.decision);
+  const baselineCount = getEncounterPoolBaseline(state?.decision);
+
+  return (
+    <Modal
+      open={state !== null}
+      onClose={onClose}
+      maxWidth={720}
+      aria-label={state ? `${state.agentName} encounter pool` : 'Encounter pool'}
+    >
+      <Modal.Header onClose={onClose}>
+        {state ? `${state.agentName}'s Encounter Pool` : 'Encounter Pool'}
+      </Modal.Header>
+      <Modal.Body>
+        {state && (
+          <div
+            style={{
+              marginBottom: 'var(--space-3)',
+              fontFamily: 'var(--font-body)',
+              fontSize: 'var(--text-sm)',
+              color: 'var(--text-secondary)',
+            }}
+          >
+            <div>
+              Pool {visibleCount ?? 0}
+              {baselineCount !== null && baselineCount !== visibleCount ? ` / ${baselineCount}` : ''}
+            </div>
+            <div style={{ marginTop: '4px', color: 'var(--text-tertiary)' }}>
+              Ordered by the agent&apos;s current decision score.
+            </div>
+          </div>
+        )}
+
+        {candidates.length === 0 ? (
+          <div
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: 'var(--text-sm)',
+              color: 'var(--text-tertiary)',
+            }}
+          >
+            No ranked encounter pool is available for this agent yet.
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+            {candidates.map((candidate) => {
+              const destinationLine = formatEncounterPoolDestination(candidate);
+              return (
+                <div
+                  key={`${candidate.rank}-${candidate.templateId}-${candidate.locationId}-${candidate.sublocationId ?? 'root'}`}
+                  data-testid="encounter-pool-item"
+                  style={{
+                    border: '1px solid rgba(212, 160, 64, 0.18)',
+                    borderRadius: '10px',
+                    padding: '10px 12px',
+                    backgroundColor: candidate.selected ? 'rgba(212, 160, 64, 0.08)' : 'rgba(255,255,255,0.02)',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 'var(--space-2)',
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-display)',
+                        fontSize: 'var(--text-base)',
+                        color: 'var(--accent-gold)',
+                      }}
+                    >
+                      {candidate.templateName}
+                    </div>
+                    {candidate.selected && (
+                      <div
+                        style={{
+                          fontFamily: 'var(--font-body)',
+                          fontSize: 'var(--text-xs)',
+                          color: 'var(--bg-abyss)',
+                          backgroundColor: 'var(--accent-gold)',
+                          borderRadius: '999px',
+                          padding: '2px 8px',
+                          flexShrink: 0,
+                        }}
+                      >
+                        Chosen
+                      </div>
+                    )}
+                  </div>
+
+                  {(destinationLine || candidate.locationName) && (
+                    <div
+                      style={{
+                        marginTop: '4px',
+                        fontFamily: 'var(--font-body)',
+                        fontSize: 'var(--text-xs)',
+                        color: 'var(--text-secondary)',
+                      }}
+                    >
+                      {destinationLine ?? candidate.locationName}
+                    </div>
+                  )}
+
+                  <div
+                    style={{
+                      marginTop: '4px',
+                      fontFamily: 'var(--font-body)',
+                      fontSize: 'var(--text-xs)',
+                      color: 'var(--text-tertiary)',
+                    }}
+                  >
+                    {formatEncounterPoolMeta(candidate)}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Modal.Body>
+    </Modal>
+  );
+}
+
 function CompactThreadRow({
   node,
   isSelected,
@@ -72,6 +229,7 @@ function CompactThreadRow({
   agentEncounterDecision,
   onEncounterClick,
   onToggleAttentionMode,
+  onOpenEncounterPool,
 }: CompactThreadRowProps) {
   const tierColor = TIER_COLORS[node.tier] || TIER_COLOR_DEFAULT;
   const [hovered, setHovered] = useState(false);
@@ -190,18 +348,34 @@ function CompactThreadRow({
       )}
 
       {node.category === 'agent' && encounterPool !== null && (
-        <div
+        <button
+          type="button"
+          data-testid="encounter-pool-button"
+          aria-label={`Open encounter pool for ${node.name}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (agentEncounterDecision && onOpenEncounterPool) {
+              onOpenEncounterPool(node.name, agentEncounterDecision);
+            }
+          }}
           style={{
             marginTop: '2px',
+            padding: 0,
             fontFamily: 'var(--font-body)',
             fontSize: 'var(--text-xs)',
             color: encounterPool > 0 ? 'var(--text-secondary)' : 'var(--accent-gold)',
             lineHeight: 1.2,
+            backgroundColor: 'transparent',
+            border: 'none',
+            cursor: agentEncounterDecision && onOpenEncounterPool ? 'pointer' : 'default',
+            textDecoration: agentEncounterDecision && onOpenEncounterPool ? 'underline' : 'none',
+            textUnderlineOffset: '2px',
+            width: 'fit-content',
           }}
         >
           Pool {encounterPool}
           {encounterPoolBaseline !== null && encounterPoolBaseline !== encounterPool ? ` / ${encounterPoolBaseline}` : ''}
-        </div>
+        </button>
       )}
 
       {/* Encounter badge (agents only) */}
@@ -286,6 +460,7 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
     army: false,
     artifact: false,
   });
+  const [encounterPoolModal, setEncounterPoolModal] = useState<EncounterPoolModalState | null>(null);
 
   const groups = groupThreadedNodes(threadedNodes);
 
@@ -326,7 +501,8 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
   }
 
   return (
-    <div>
+    <>
+      <div>
       {/* Panel title */}
       <div
         style={{
@@ -381,6 +557,7 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
                     agentEncounterDecision={node.category === 'agent' ? agentEncounterDecisions?.get(node.id) : undefined}
                     onEncounterClick={onEncounterClick}
                     onToggleAttentionMode={onToggleAttentionMode}
+                    onOpenEncounterPool={(agentName, decision) => setEncounterPoolModal({ agentName, decision })}
                   />
                 ))}
               </div>
@@ -388,6 +565,11 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
           </div>
         );
       })}
-    </div>
+      </div>
+      <EncounterPoolModal
+        state={encounterPoolModal}
+        onClose={() => setEncounterPoolModal(null)}
+      />
+    </>
   );
 });

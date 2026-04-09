@@ -2,7 +2,7 @@
 
 > **Living document.** Every design plan must include a wiring section that maps new modules to entries on this checklist. Every implementation must verify all listed connections before marking work complete. Maintaining this checklist is part of the Definition of Done for both design and implementation phases.
 >
-> **Last updated:** 2026-04-08 (faction network visibility/governance wiring)
+> **Last updated:** 2026-04-09 (thread encounter-pool modal wiring)
 
 ---
 
@@ -155,6 +155,12 @@ Engine phases write to GameState fields. UI components must read them. An engine
 | `EncounterTemplate.backgroundTrack` / `.musicTrack` | Authored encounter templates | `useAmbientContext` reads active encounter's track fields to override BackgroundChannel/MusicChannel | ✅ (2026-04-06) |
 
 **Verification:** For each new GameState field in your feature, name the component that reads it and how the data reaches the player.
+
+**Telemetry-fed thread inspection (2026-04-09):**
+
+| Source | Producer | UI consumer | Status |
+|--------|----------|-------------|--------|
+| Latest `encounter_decision.rankedEncounterPool` in `runtime.balanceTelemetry.recentEvents` | `phaseAgentDecision` via `recordBalanceEvent()` | `GameView` → `getLatestEncounterDecisionsByAgent()` → `ThreadsPanel` pool button → `EncounterPoolModal` | ✅ Connected |
 
 ### 4. Trace Emission & Debug Visibility (`src/types/trace.ts` → `src/engine/traceBuffer.ts` → DebugPanel)
 

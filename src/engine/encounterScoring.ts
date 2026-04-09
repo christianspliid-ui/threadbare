@@ -477,6 +477,7 @@ export interface ScoredCandidate {
 
 export interface DecisionResult {
   selected: ScoredCandidate | null;
+  rankedCandidates: ScoredCandidate[];
   topCandidates: ScoredCandidate[];
   trace: ScoringTrace;
 }
@@ -688,6 +689,7 @@ export function scoreAndSelect(
   if (!agentNode) {
     return {
       selected: null,
+      rankedCandidates: [],
       topCandidates: [],
       trace: buildTrace(agentId, tick, null, []),
     };
@@ -697,6 +699,7 @@ export function scoreAndSelect(
   if (candidates.length === 0) {
     return {
       selected: null,
+      rankedCandidates: [],
       topCandidates: [],
       trace: buildTrace(agentId, tick, null, []),
     };
@@ -904,6 +907,7 @@ export function scoreAndSelect(
 
   return {
     selected,
+    rankedCandidates: scored,
     topCandidates: top5,
     trace: buildTrace(agentId, tick, selected, top5),
   };

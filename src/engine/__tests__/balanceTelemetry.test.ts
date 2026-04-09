@@ -397,9 +397,29 @@ describe('latest encounter decision helpers', () => {
       kind: 'encounter_decision',
       decisionType: 'queue_movement',
       candidatesAfterCooldown: 2,
+      rankedEncounterPool: [{
+        rank: 1,
+        templateId: 'encounter.trade_route',
+        templateName: 'Trade Route',
+        locationId: 'loc-2',
+        locationName: 'Green-shroud',
+        action: 'queue_movement',
+        reachPrimary: 'gold',
+        reachSecondary: 'eye',
+        encounterType: 'trade',
+        threatBand: 'easy',
+        stepCount: 2,
+        totalTickCost: 4,
+        rewardEstimate: 1.1,
+        completionProb: 0.58,
+        travelCost: 0.4,
+        finalScore: 1.2,
+        selected: true,
+      }],
     }));
 
     expect(getLatestEncounterDecisionForAgent(rt, 'agent-1')?.decisionType).toBe('queue_movement');
+    expect(getLatestEncounterDecisionForAgent(rt, 'agent-1')?.rankedEncounterPool?.[0]?.templateName).toBe('Trade Route');
   });
 
   it('returns the newest encounter decision per requested agent', () => {
