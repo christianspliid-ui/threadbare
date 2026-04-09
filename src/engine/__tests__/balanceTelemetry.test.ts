@@ -448,6 +448,27 @@ describe('latest encounter decision helpers', () => {
     expect(latest.get('agent-1')?.decisionType).toBe('attempt_remote');
     expect(latest.get('agent-2')?.decisionType).toBe('start_local');
   });
+
+  it('retains latest encounter decisions even after recent event eviction', () => {
+    const rt = makeRuntime();
+    recordBalanceEvent(rt, makeEvent({
+      tick: 1,
+      agentId: 'agent-1',
+      kind: 'encounter_decision',
+      decisionType: 'queue_movement',
+    }));
+
+    for (let i = 0; i < BALANCE_RECENT_EVENTS_CAP + 5; i++) {
+      recordBalanceEvent(rt, makeEvent({
+        tick: i + 2,
+        kind: 'step_resolved',
+        agentId: `other-${i}`,
+      }));
+    }
+
+    expect(getLatestEncounterDecisionForAgent(rt, 'agent-1')?.decisionType).toBe('queue_movement');
+    expect(getLatestEncounterDecisionsByAgent(rt, ['agent-1']).get('agent-1')?.tick).toBe(1);
+  });
 });
 
 // ─── exportBalanceTelemetry ───────────────────────────────────────

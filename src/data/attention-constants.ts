@@ -152,5 +152,5 @@ export const ACTIVITY_ICON_OPACITY_STORY = 0.8;
 /** Animation pulse period in seconds for activity icons. */
 export const ACTIVITY_ICON_PULSE_PERIOD = 1.75;
 
-/** Camera zoom level below which activity icons are hidden. */
-export const ACTIVITY_ICON_ZOOM_HIDE_THRESHOLD = 15;
+/** Camera zoom level below which activity icons are hidden. Regional zoom keeps them readable without map spam. */
+export const ACTIVITY_ICON_ZOOM_HIDE_THRESHOLD = 5;

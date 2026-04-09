@@ -6,8 +6,7 @@ import { SectionHeading } from '../shared/SectionHeading';
 import { IconButton } from '../shared/IconButton';
 import { StepDots } from '../shared/StepDots';
 import { TIER_COLORS, TIER_COLOR_DEFAULT } from '../../data/uiColorPalette';
-
-const ENCOUNTER_BADGE_ICON = '⚔';
+import { getEncounterActivityGlyph, getEncounterActivityIconKey } from './encounterActivityPresentation';
 
 interface RetinuePanelProps {
   agents: RetinueAgent[];
@@ -225,7 +224,7 @@ export const RetinuePanel = React.memo(function RetinuePanel({ agents, selectedA
                       }}
                       aria-label={`View encounter: ${enc.template.name}`}
                     >
-                      <span>{ENCOUNTER_BADGE_ICON}</span>
+                      <span>{getEncounterActivityGlyph(getEncounterActivityIconKey(enc.template.encounterType))}</span>
                       <span className="truncate flex-1">{enc.template.name}</span>
                       <StepDots
                         totalSteps={enc.template.steps.length}

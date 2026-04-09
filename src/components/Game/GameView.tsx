@@ -158,6 +158,10 @@ import { ReadTheThreadsPanel } from './ReadTheThreadsPanel';
 import { useLastViewedTick } from '../../hooks/useLastViewedTick';
 import type { SpotlightTier } from '../../types/npc';
 import { shouldRenderIndividualOnHexMap } from './hexMapAgentVisibility';
+import {
+  getEncounterActivityIconKey,
+  getSelectedEncounterPoolCandidate,
+} from './encounterActivityPresentation';
 
 interface GameViewProps {
   archetype: AscendantArchetype;
@@ -606,83 +610,115 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // ── Activity icon render data (active encounters → per-agent reach icons) ──
   // Rebuilds on worldVersion so icons appear/disappear as encounters start/end.
   const activityIconData = useMemo<ActivityIconData[]>(() => {
-    const result: ActivityIconData[] = [];
+    const resultByAgent = new Map<string, ActivityIconData & { __priority__: number }>();
 
-    for (const action of gameState.unifiedActions) {
-      if (action.resolved) continue;
+    const getAgentWorldPosition = (agentId: string): { worldX: number; worldY: number } | null => {
+      const agentNode = gameState.graph.getNode(agentId);
+      if (!agentNode) return null;
 
-      const agentNode = gameState.graph.getNode(action.actorId);
-      if (!agentNode) continue;
       let hexCol = agentNode.properties.hexCol as number | undefined;
       let hexRow = agentNode.properties.hexRow as number | undefined;
       if (hexCol == null || hexRow == null) {
-        const locEdges = gameState.graph.getOutgoingEdges(action.actorId, 'located_at');
+        const locEdges = gameState.graph.getOutgoingEdges(agentId, 'located_at');
         if (locEdges.length > 0) {
           const loc = gameState.graph.getNode(locEdges[0].target);
           hexCol = loc?.properties.hexCol as number | undefined;
           hexRow = loc?.properties.hexRow as number | undefined;
         }
       }
-      if (hexCol == null || hexRow == null) continue;
-
-      const template = getUnifiedTemplateById(action.templateId);
-      if (!template) continue;
+      if (hexCol == null || hexRow == null) return null;
 
       const worldPos = hexToWorld({ col: hexCol, row: hexRow }, HEX_CONSTANTS.HEX_SIZE);
+      return { worldX: worldPos.x, worldY: worldPos.y };
+    };
+
+    const upsertIcon = (
+      agentId: string,
+      iconData: Omit<ActivityIconData, 'agentId' | 'worldX' | 'worldY'>,
+      priority: number,
+    ) => {
+      const worldPosition = getAgentWorldPosition(agentId);
+      if (!worldPosition) return;
+      const storedPriority = resultByAgent.get(agentId)?.__priority__ ?? -1;
+      if (storedPriority > priority) return;
+
+      const entry = {
+        agentId,
+        worldX: worldPosition.worldX,
+        worldY: worldPosition.worldY,
+        ...iconData,
+        __priority__: priority,
+      } as ActivityIconData & { __priority__: number };
+      resultByAgent.set(agentId, entry);
+    };
+
+    for (const [agentId, decision] of latestThreadEncounterDecisions.entries()) {
+      if (decision.decisionType === 'idle') continue;
+      const selectedCandidate = getSelectedEncounterPoolCandidate(decision);
+      if (!selectedCandidate) continue;
+      upsertIcon(
+        agentId,
+        {
+          iconKey: getEncounterActivityIconKey(selectedCandidate.encounterType, decision.decisionType),
+          tierOpacity: ACTIVITY_ICON_OPACITY_SHAPING,
+        },
+        0,
+      );
+    }
+
+    for (const action of gameState.unifiedActions) {
+      if (action.resolved) continue;
+      const template = resolveEncounterTemplate(action.templateId);
+      if (!template) continue;
       const tier = action.effectiveTier ?? template.intrinsicTier;
       const tierOpacity =
         tier === 'story_beat'  ? ACTIVITY_ICON_OPACITY_STORY :
         tier === 'shaping'     ? ACTIVITY_ICON_OPACITY_SHAPING :
         ACTIVITY_ICON_OPACITY_BACKGROUND;
-
-      result.push({
-        agentId: action.actorId,
-        worldX: worldPos.x,
-        worldY: worldPos.y,
-        reachPrimary: template.reach,
-        tierOpacity,
-      });
+      upsertIcon(
+        action.actorId,
+        {
+          iconKey: getEncounterActivityIconKey(template.encounterType, 'start_local'),
+          tierOpacity,
+        },
+        2,
+      );
     }
 
     // Also scan legacy encounterProgress so agents in old-system encounters show icons too.
     for (const ep of gameState.encounterProgress) {
       if (ep.status !== 'active') continue;
-
-      const agentNode = gameState.graph.getNode(ep.actorId);
-      if (!agentNode) continue;
-      let epHexCol = agentNode.properties.hexCol as number | undefined;
-      let epHexRow = agentNode.properties.hexRow as number | undefined;
-      if (epHexCol == null || epHexRow == null) {
-        const locEdges = gameState.graph.getOutgoingEdges(ep.actorId, 'located_at');
-        if (locEdges.length > 0) {
-          const loc = gameState.graph.getNode(locEdges[0].target);
-          epHexCol = loc?.properties.hexCol as number | undefined;
-          epHexRow = loc?.properties.hexRow as number | undefined;
-        }
-      }
-      if (epHexCol == null || epHexRow == null) continue;
-
       const epTemplate = getAnyEncounterById(ep.encounterId);
       if (!epTemplate) continue;
-
-      const epWorldPos = hexToWorld({ col: epHexCol, row: epHexRow }, HEX_CONSTANTS.HEX_SIZE);
       const epTier = ep.effectiveTier;
       const epTierOpacity =
         epTier === 'story_beat'  ? ACTIVITY_ICON_OPACITY_STORY :
         epTier === 'shaping'     ? ACTIVITY_ICON_OPACITY_SHAPING :
         ACTIVITY_ICON_OPACITY_BACKGROUND;
-
-      result.push({
-        agentId: ep.actorId,
-        worldX: epWorldPos.x,
-        worldY: epWorldPos.y,
-        reachPrimary: epTemplate.reachPrimary,
-        tierOpacity: epTierOpacity,
-      });
+      upsertIcon(
+        ep.actorId,
+        {
+          iconKey: getEncounterActivityIconKey(epTemplate.encounterType, 'start_local'),
+          tierOpacity: epTierOpacity,
+        },
+        2,
+      );
     }
 
-    return result;
-  }, [gameState.unifiedActions, gameState.encounterProgress, gameState.graph, runtime.worldVersion]);
+    return [...resultByAgent.values()].map((entry) => ({
+      agentId: entry.agentId,
+      worldX: entry.worldX,
+      worldY: entry.worldY,
+      iconKey: entry.iconKey,
+      tierOpacity: entry.tierOpacity,
+    }));
+  }, [
+    gameState.unifiedActions,
+    gameState.encounterProgress,
+    gameState.graph,
+    latestThreadEncounterDecisions,
+    runtime.worldVersion,
+  ]);
 
   // ── Location render data adapter (graph → LocationNode[]) ──
   // TB-086: Key off structuralCacheVersion (not worldVersion) — locationSubtype

@@ -174,6 +174,8 @@ export const ACTIVITY_ICON_REGISTRY: Record<string, ActivityIconEntry> = {
   },
 };
 
+export type ActivityIndicatorKey = keyof typeof ACTIVITY_ICON_REGISTRY;
+
 // ── Texture cache builder ─────────────────────────────────────────────────────
 
 /**

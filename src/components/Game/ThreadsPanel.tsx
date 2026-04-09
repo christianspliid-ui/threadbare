@@ -9,6 +9,12 @@ import { IconButton } from '../shared/IconButton';
 import { Modal } from '../shared/Modal';
 import { StepDots } from '../shared/StepDots';
 import { TIER_COLORS, TIER_COLOR_DEFAULT } from '../../data/uiColorPalette';
+import {
+  getEncounterActivityGlyph,
+  getEncounterActivityIconKey,
+  getSelectedEncounterPoolCandidate,
+  groupEncounterPoolCandidates,
+} from './encounterActivityPresentation';
 
 // ─── Section config ───────────────────────────────────────────────
 
@@ -95,6 +101,7 @@ function EncounterPoolModal({
   onClose: () => void;
 }) {
   const candidates = getEncounterPoolCandidates(state?.decision);
+  const groupedCandidates = groupEncounterPoolCandidates(candidates);
   const visibleCount = getVisibleEncounterPool(state?.decision);
   const baselineCount = getEncounterPoolBaseline(state?.decision);
 
@@ -123,12 +130,12 @@ function EncounterPoolModal({
               {baselineCount !== null && baselineCount !== visibleCount ? ` / ${baselineCount}` : ''}
             </div>
             <div style={{ marginTop: '4px', color: 'var(--text-tertiary)' }}>
-              Ordered by the agent&apos;s current decision score.
+              {groupedCandidates.length} encounter type{groupedCandidates.length === 1 ? '' : 's'} ordered by the agent&apos;s current decision score.
             </div>
           </div>
         )}
 
-        {candidates.length === 0 ? (
+        {groupedCandidates.length === 0 ? (
           <div
             style={{
               fontFamily: 'var(--font-body)',
@@ -140,17 +147,19 @@ function EncounterPoolModal({
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-            {candidates.map((candidate) => {
-              const destinationLine = formatEncounterPoolDestination(candidate);
+            {groupedCandidates.map((groupedCandidate) => {
+              const { primary } = groupedCandidate;
+              const destinationLine = formatEncounterPoolDestination(primary);
+              const extraDestinations = Math.max(0, groupedCandidate.destinations.length - 1);
               return (
                 <div
-                  key={`${candidate.rank}-${candidate.templateId}-${candidate.locationId}-${candidate.sublocationId ?? 'root'}`}
+                  key={`${primary.rank}-${groupedCandidate.key}`}
                   data-testid="encounter-pool-item"
                   style={{
                     border: '1px solid rgba(212, 160, 64, 0.18)',
                     borderRadius: '10px',
                     padding: '10px 12px',
-                    backgroundColor: candidate.selected ? 'rgba(212, 160, 64, 0.08)' : 'rgba(255,255,255,0.02)',
+                    backgroundColor: primary.selected ? 'rgba(212, 160, 64, 0.08)' : 'rgba(255,255,255,0.02)',
                   }}
                 >
                   <div
@@ -168,9 +177,9 @@ function EncounterPoolModal({
                         color: 'var(--accent-gold)',
                       }}
                     >
-                      {candidate.templateName}
+                      {primary.templateName}
                     </div>
-                    {candidate.selected && (
+                    {primary.selected && (
                       <div
                         style={{
                           fontFamily: 'var(--font-body)',
@@ -187,7 +196,7 @@ function EncounterPoolModal({
                     )}
                   </div>
 
-                  {(destinationLine || candidate.locationName) && (
+                  {(destinationLine || primary.locationName) && (
                     <div
                       style={{
                         marginTop: '4px',
@@ -196,7 +205,7 @@ function EncounterPoolModal({
                         color: 'var(--text-secondary)',
                       }}
                     >
-                      {destinationLine ?? candidate.locationName}
+                      {destinationLine ?? primary.locationName}
                     </div>
                   )}
 
@@ -208,8 +217,23 @@ function EncounterPoolModal({
                       color: 'var(--text-tertiary)',
                     }}
                   >
-                    {formatEncounterPoolMeta(candidate)}
+                    {formatEncounterPoolMeta(primary)}
                   </div>
+
+                  {groupedCandidate.count > 1 && (
+                    <div
+                      style={{
+                        marginTop: '4px',
+                        fontFamily: 'var(--font-body)',
+                        fontSize: 'var(--text-xs)',
+                        color: 'var(--text-muted)',
+                      }}
+                    >
+                      {groupedCandidate.count} destinations
+                      {groupedCandidate.destinations[0] ? ` · best at ${groupedCandidate.destinations[0]}` : ''}
+                      {extraDestinations > 0 ? ` + ${extraDestinations} more` : ''}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -273,6 +297,14 @@ function CompactThreadRow({
     : null;
   const encounterPoolBaseline = node.category === 'agent'
     ? getEncounterPoolBaseline(agentEncounterDecision)
+    : null;
+  const encounterDecisionCandidate = node.category === 'agent'
+    ? getSelectedEncounterPoolCandidate(agentEncounterDecision)
+    : null;
+  const decisionBadgeGlyph = encounterDecisionCandidate
+    ? getEncounterActivityGlyph(
+        getEncounterActivityIconKey(encounterDecisionCandidate.encounterType, agentEncounterDecision?.decisionType),
+      )
     : null;
 
   return (
@@ -395,13 +427,32 @@ function CompactThreadRow({
             onEncounterClick(node.id, agentEncounter.encounter, agentEncounter.template);
           }}
         >
-          <span>&#x2694;</span>
+          <span>
+            {getEncounterActivityGlyph(
+              getEncounterActivityIconKey(agentEncounter.template.encounterType),
+            )}
+          </span>
           <span className="truncate">{agentEncounter.template.name}</span>
           <StepDots
             total={agentEncounter.template.steps.length}
             current={agentEncounter.encounter.currentStepIndex}
           />
         </button>
+      )}
+
+      {!agentEncounter && encounterDecisionCandidate && agentEncounterDecision?.decisionType !== 'idle' && (
+        <div
+          className="flex items-center gap-1 mt-0.5 text-left rounded px-1"
+          style={{
+            fontSize: 'var(--text-xs)',
+            color: 'var(--accent-gold)',
+            backgroundColor: 'rgba(212,175,55,0.08)',
+            padding: '1px 4px',
+          }}
+        >
+          <span>{decisionBadgeGlyph}</span>
+          <span className="truncate">{encounterDecisionCandidate.templateName}</span>
+        </div>
       )}
 
       {/* Attention mode toggle (agents only, court position required) */}

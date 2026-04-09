@@ -118,6 +118,8 @@ export interface BalanceTelemetry {
   trackedAgentIds: string[];
   /** Per-agent bounded journey event buffers */
   trackedAgentEvents: Map<string, BalanceEvent[]>;
+  /** Durable latest encounter-decision snapshot per agent for UI lookup. */
+  latestEncounterDecisionByAgent: Map<string, BalanceEvent>;
   /** Run-level first-seen milestones */
   milestones: BalanceMilestones;
 }
@@ -143,6 +145,7 @@ export function createBalanceTelemetry(opts?: {
     recentEventSeq: 0,
     trackedAgentIds: [],
     trackedAgentEvents: new Map(),
+    latestEncounterDecisionByAgent: new Map(),
     milestones: {
       firstRewardTick: null,
       firstSetbackTick: null,
@@ -229,6 +232,10 @@ export function recordBalanceEvent(
       if (agentEvents.length > BALANCE_AGENT_EVENTS_CAP) {
         agentEvents.shift();
       }
+    }
+
+    if (event.kind === 'encounter_decision') {
+      telemetry.latestEncounterDecisionByAgent.set(event.agentId, event);
     }
   } catch {
     // Fail-soft: never crash the tick loop
@@ -472,8 +479,24 @@ export function getLatestEncounterDecisionsByAgent(
   agentIds?: readonly string[],
 ): Map<string, BalanceEvent> {
   const latest = new Map<string, BalanceEvent>();
-  const recentEvents = runtime.balanceTelemetry?.recentEvents ?? [];
+  const telemetry = runtime.balanceTelemetry;
+  if (!telemetry) return latest;
+  const recentEvents = telemetry.recentEvents ?? [];
   const remaining = agentIds ? new Set(agentIds) : null;
+
+  if (agentIds) {
+    for (const agentId of agentIds) {
+      const event = telemetry.latestEncounterDecisionByAgent.get(agentId);
+      if (!event) continue;
+      latest.set(agentId, event);
+      remaining?.delete(agentId);
+    }
+    if (remaining && remaining.size === 0) return latest;
+  } else {
+    for (const [agentId, event] of telemetry.latestEncounterDecisionByAgent.entries()) {
+      latest.set(agentId, event);
+    }
+  }
 
   for (let i = recentEvents.length - 1; i >= 0; i--) {
     const event = recentEvents[i];
@@ -534,6 +557,7 @@ export function exportBalanceTelemetry(runtime: SimulationRuntime): Record<strin
     trackedAgentEventCounts: Object.fromEntries(
       t.trackedAgentIds.map(id => [id, t.trackedAgentEvents.get(id)?.length ?? 0]),
     ),
+    latestEncounterDecisionAgentCount: t.latestEncounterDecisionByAgent.size,
     milestones: { ...t.milestones },
     version: runtime.balanceTelemetryVersion,
   };

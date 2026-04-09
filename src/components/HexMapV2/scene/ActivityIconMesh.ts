@@ -1,16 +1,17 @@
 /**
- * ActivityIconMesh.ts — Three.js scene module for per-reach activity micro-icons.
+ * ActivityIconMesh.ts — Three.js scene module for encounter activity micro-icons.
  *
- * Renders small reach-coloured circle sprites near agents that have active
- * encounters, offset to the upper-right of the agent's world position so they
- * don't overlap the agent dot itself.
+ * Renders small silhouette sprites near agents that have active encounters or
+ * selected encounter intents, offset to the upper-right of the agent's world
+ * position so they don't overlap the agent dot itself.
  *
- * Each reach colour gets its own canvas texture (cached in a Map). Icons pulse
- * gently to signal ongoing activity without demanding constant attention.
+ * Each icon key gets its own cached texture from activityIndicatorRegistry.
+ * Icons pulse gently to signal ongoing activity without demanding constant
+ * attention.
  *
  * NFP #1 (tunability): All sizes, offsets, and animation parameters are named
  *   constants imported from attention-constants.ts.
- * NFP #2 (inspectability): ActivityIconData exposes agentId, reach, and tier
+ * NFP #2 (inspectability): ActivityIconData exposes agentId, icon key, and tier
  *   so callers can trace exactly why an icon appears at a given position.
  * NFP #3 (determinism): No PRNG — pulse driven by monotonic elapsed time.
  * NFP #4 (fail-soft): Unknown reach colours fall back to a neutral grey.
@@ -19,27 +20,25 @@
 
 import * as THREE from 'three';
 import { RENDER_ORDER, LAYER_Z } from './RenderLayers';
+import { ACTIVITY_ICON_SIZE, ACTIVITY_ICON_PULSE_PERIOD } from '../../../data/attention-constants';
 import {
-  ACTIVITY_ICON_SIZE,
-  ACTIVITY_ICON_PULSE_PERIOD,
-} from '../../../data/attention-constants';
+  buildActivityIconTextureCache,
+  type ActivityIndicatorKey,
+} from '../agents/activityIndicatorRegistry';
 
-// ── Reach colours ─────────────────────────────────────────────────────────────
+// ── Shared reach colours ──────────────────────────────────────────────────────
 
-/** Hex fill colour keyed by reach name. Unknown reaches fall back to FALLBACK_ICON_COLOR. */
+/** Shared reach palette — also reused by thread/tug layers for consistent coloring. */
 export const REACH_ICON_COLORS: Record<string, string> = {
-  iron:   '#ff6b6b',
-  stone:  '#d4a87a',
-  eye:    '#ffe44d',
-  gold:   '#33ff77',
-  veil:   '#44aaff',
-  heart:  '#cc66ff',
-  star:   '#ffb355',
+  iron: '#ff6b6b',
+  stone: '#d4a87a',
+  eye: '#ffe44d',
+  gold: '#33ff77',
+  veil: '#44aaff',
+  heart: '#cc66ff',
+  star: '#ffb355',
   shadow: '#8fd4c0',
 };
-
-/** Colour used when a reach name has no entry in REACH_ICON_COLORS. */
-const FALLBACK_ICON_COLOR = '#aaaaaa';
 
 // ── Layout constants ──────────────────────────────────────────────────────────
 
@@ -55,17 +54,9 @@ const PULSE_AMPLITUDE = 0.1;
 
 // ── Texture cache ─────────────────────────────────────────────────────────────
 
-/** Cache: reach name (or hex color string) → CanvasTexture */
-const textureCache = new Map<string, THREE.CanvasTexture>();
+const textureCache = buildActivityIconTextureCache();
 
-/**
- * Build or return a cached circle texture for the given CSS colour.
- * NFP #4: if the canvas context is unavailable, returns an empty texture.
- */
-function getReachTexture(color: string): THREE.CanvasTexture {
-  const cached = textureCache.get(color);
-  if (cached) return cached;
-
+function getFallbackTexture(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = ICON_TEXTURE_SIZE;
   canvas.height = ICON_TEXTURE_SIZE;
@@ -74,18 +65,18 @@ function getReachTexture(color: string): THREE.CanvasTexture {
   if (ctx) {
     const cx = ICON_TEXTURE_SIZE / 2;
     const cy = ICON_TEXTURE_SIZE / 2;
-    const r  = ICON_TEXTURE_SIZE * 0.44;
+    const r = ICON_TEXTURE_SIZE * 0.44;
 
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.fillStyle = color;
+    ctx.fillStyle = '#d4a040';
     ctx.fill();
   }
 
-  const texture = new THREE.CanvasTexture(canvas);
-  textureCache.set(color, texture);
-  return texture;
+  return new THREE.CanvasTexture(canvas);
 }
+
+const fallbackTexture = getFallbackTexture();
 
 // ── Data interface ────────────────────────────────────────────────────────────
 
@@ -97,8 +88,8 @@ export interface ActivityIconData {
   worldX: number;
   /** World Y position of the agent (not the icon — offset applied internally). */
   worldY: number;
-  /** Primary reach of the agent's active encounter (e.g. "iron", "veil"). */
-  reachPrimary: string;
+  /** Icon describing the encounter activity (travel, combat, trade, crafting, etc.). */
+  iconKey: ActivityIndicatorKey;
   /**
    * Base opacity for this icon, determined by attention tier:
    *   - 0.4 = background (non-player-facing)
@@ -164,8 +155,7 @@ export function createActivityIconLayer(): ActivityIconLayer {
     clearSprites();
 
     for (const icon of icons) {
-      const color   = REACH_ICON_COLORS[icon.reachPrimary] ?? FALLBACK_ICON_COLOR;
-      const texture = getReachTexture(color);
+      const texture = textureCache.get(icon.iconKey) ?? fallbackTexture;
 
       const mat = new THREE.SpriteMaterial({
         map: texture,

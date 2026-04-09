@@ -237,6 +237,106 @@ describe('ThreadsPanel', () => {
     expect(items[1].textContent).toContain('The Shadow Hunt');
   });
 
+  it('groups repeated encounter templates into one modal row with destination count', () => {
+    render(
+      <ThreadsPanel
+        threadedNodes={[makeAgent()]}
+        selectedNodeId={null}
+        onNodeSelect={noop}
+        onCenterOnHex={noop}
+        agentEncounterDecisions={new Map([[
+          'agent-1',
+          makeEncounterDecision({
+            rankedEncounterPool: [
+              {
+                rank: 1,
+                templateId: 'encounter.master_local_craft',
+                templateName: 'Master the Local Craft',
+                locationId: 'loc-2',
+                locationName: 'Inn',
+                action: 'queue_movement',
+                reachPrimary: 'stone',
+                reachSecondary: 'gold',
+                encounterType: 'create',
+                threatBand: 'hard',
+                stepCount: 2,
+                totalTickCost: 5,
+                rewardEstimate: 1.0,
+                completionProb: 0.51,
+                travelCost: 0.6,
+                finalScore: 1.2,
+                selected: true,
+              },
+              {
+                rank: 2,
+                templateId: 'encounter.master_local_craft',
+                templateName: 'Master the Local Craft',
+                locationId: 'loc-3',
+                locationName: 'Well Fountain',
+                action: 'queue_movement',
+                reachPrimary: 'stone',
+                reachSecondary: 'gold',
+                encounterType: 'create',
+                threatBand: 'hard',
+                stepCount: 2,
+                totalTickCost: 5,
+                rewardEstimate: 1.0,
+                completionProb: 0.48,
+                travelCost: 0.7,
+                finalScore: 1.1,
+                selected: false,
+              },
+            ],
+          }),
+        ]])}
+      />
+    );
+
+    fireEvent.click(screen.getByLabelText('Open encounter pool for Seraphel'));
+
+    const items = screen.getAllByTestId('encounter-pool-item');
+    expect(items).toHaveLength(1);
+    expect(items[0].textContent).toContain('2 destinations');
+  });
+
+  it('shows the chosen encounter as a badge even when the agent is still moving toward it', () => {
+    render(
+      <ThreadsPanel
+        threadedNodes={[makeAgent({ activityLabel: 'Going to Green-shroud' })]}
+        selectedNodeId={null}
+        onNodeSelect={noop}
+        onCenterOnHex={noop}
+        agentEncounterDecisions={new Map([[
+          'agent-1',
+          makeEncounterDecision({
+            decisionType: 'queue_movement',
+            rankedEncounterPool: [{
+              rank: 1,
+              templateId: 'encounter.merchant_gambit',
+              templateName: "Merchant's Gambit",
+              locationId: 'loc-2',
+              locationName: 'Green-shroud',
+              action: 'queue_movement',
+              reachPrimary: 'gold',
+              reachSecondary: 'eye',
+              encounterType: 'trade',
+              threatBand: 'moderate',
+              stepCount: 3,
+              totalTickCost: 4,
+              rewardEstimate: 1.1,
+              completionProb: 0.62,
+              travelCost: 0.58,
+              finalScore: 1.42,
+              selected: true,
+            }],
+          }),
+        ]])}
+      />
+    );
+
+    expect(screen.getByText("Merchant's Gambit")).toBeTruthy();
+  });
+
   it('does not render sections with 0 entries', () => {
     render(
       <ThreadsPanel
