@@ -1,6 +1,7 @@
 // src/types/ambition.ts
 import type { ReachDomain } from './traits';
 import type { SphereName } from './index';
+import type { AmbitionStrategicProfile } from './strategicAction';
 
 // ─── Ambition Categories ─────────────────────────────────────────
 export type AmbitionCategory =
@@ -71,6 +72,9 @@ export interface AmbitionTemplate {
   readonly completion: CompletionRule;
   readonly abandonmentTriggers: readonly AbandonmentTrigger[];
   readonly abandonmentCooldown: number;
+
+  // Strategic profile (optional — ambitions without this skip strategic candidate generation)
+  readonly strategicProfile?: AmbitionStrategicProfile;
 
   // Prose
   readonly selectionProse: readonly string[];

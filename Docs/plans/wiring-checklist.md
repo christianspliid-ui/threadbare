@@ -30,8 +30,9 @@ Every engine module that produces per-tick state changes must be called from a p
 | 2a.3 | `phaseEncounterProgressionV2` | Encounter step advancement |
 | 2a.4 | `tickEffects` (inline orchestrator block) | Generic effect runtime bookkeeping: duration, cooldown, decay, stacking, attachment removal |
 | 2a.6 | `phaseEncounterVisibility` | Encounter notifications |
+| 2a.55 | `phaseStrategicProjects` | Strategic project progression + control degradation |
 | 2a.85 | `phaseSlotCaps` + `phaseDisposalTimeout` | Attachment slot cap enforcement + disposal timeout |
-| 2b | `phaseAgentDecision` | Goal selection & movement initiation |
+| 2b | `phaseAgentDecision` | Goal selection & movement initiation (+ strategic candidate merge) |
 | 3 | `phaseMovement` | Pathfinding & hex traversal |
 | 3.5 | `phaseColocationDetection` | Agent proximity events |
 | 4 | `phaseDilemmaDetection` | Moral choice generation |

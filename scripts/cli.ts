@@ -553,6 +553,9 @@ function printHelp(): void {
   console.log(`  ${BOLD}balance agent${RESET} <id> Show agent journey`);
   console.log(`  ${BOLD}spawn encounter${RESET} <agent|@hero> <templateId>  Spawn an encounter on an agent`);
   console.log(`  ${BOLD}spawn attachment${RESET} <agent|@hero> <templateId> Attach an item/trait to an agent`);
+  console.log(`  ${BOLD}strategic${RESET} [agent] Strategic action summary (global or per-agent)`);
+  console.log(`  ${BOLD}projects${RESET}         Active strategic projects`);
+  console.log(`  ${BOLD}history${RESET} [agent]   Strategic action history`);
   console.log(`  ${BOLD}seed${RESET}             Print current seed`);
   console.log(`  ${BOLD}eval${RESET} <expr>      Evaluate JS with 'state' in scope`);
   console.log(`  ${BOLD}help${RESET}             This help`);
@@ -971,6 +974,18 @@ function handleCommand(line: string): boolean {
     case 'threads':
       printThreads();
       break;
+    case 'strategic': {
+      printStrategicSummary(arg || undefined);
+      break;
+    }
+    case 'projects': {
+      printStrategicProjects();
+      break;
+    }
+    case 'history': {
+      printStrategicHistory(arg || undefined);
+      break;
+    }
     case 'balance':
     case 'bal': {
       // sub-commands: summary (default), idle, templates, eval, targets, recent [N], agent <id>
@@ -1040,6 +1055,90 @@ function handleCommand(line: string): boolean {
   }
 
   return true;
+}
+
+// ─── Strategic Actions ────────────────────────────────────────────
+
+function printStrategicSummary(agentName?: string): void {
+  const strategicState = state.strategicState;
+  if (!strategicState) {
+    console.log(`${YELLOW}No strategic state (feature may be disabled)${RESET}`);
+    return;
+  }
+
+  let agentId: string | undefined;
+  if (agentName) {
+    const match = state.graph.getNodesByType('actor')
+      .find(n => n.name.toLowerCase().includes(agentName.toLowerCase()));
+    if (!match) { console.log(`${RED}No agent matching "${agentName}"${RESET}`); return; }
+    agentId = match.id;
+    console.log(header(`Strategic Summary: ${match.name}`));
+  } else {
+    console.log(header('Strategic Summary (global)'));
+  }
+
+  const projects = agentId
+    ? strategicState.projects.filter(p => p.actorId === agentId)
+    : strategicState.projects;
+  const controls = agentId
+    ? strategicState.controls.filter(c => c.actorId === agentId)
+    : strategicState.controls;
+  const history = agentId
+    ? strategicState.history.filter(h => h.actorId === agentId)
+    : strategicState.history;
+
+  console.log(`  Projects: ${projects.filter(p => p.status === 'active').length} active / ${projects.length} total`);
+  console.log(`  Controls: ${controls.filter(c => c.active).length} active / ${controls.length} total`);
+  console.log(`  History: ${history.length} entries`);
+
+  if (history.length > 0) {
+    const families = new Map<string, number>();
+    for (const h of history) families.set(h.behaviorFamily, (families.get(h.behaviorFamily) ?? 0) + 1);
+    console.log(`  Families: ${[...families.entries()].map(([f, c]) => `${f}:${c}`).join(', ')}`);
+  }
+}
+
+function printStrategicProjects(): void {
+  const strategicState = state.strategicState;
+  if (!strategicState || strategicState.projects.length === 0) {
+    console.log(`${YELLOW}No strategic projects${RESET}`);
+    return;
+  }
+
+  console.log(header(`Strategic Projects (${strategicState.projects.length})`));
+  for (const p of strategicState.projects) {
+    const actorNode = state.graph.getNode(p.actorId);
+    const targetNode = p.targetNodeId ? state.graph.getNode(p.targetNodeId) : null;
+    const pct = Math.round((p.progress / p.progressRequired) * 100);
+    const status = p.status === 'active' ? GREEN : p.status === 'completed' ? CYAN : RED;
+    console.log(`  ${status}[${p.status}]${RESET} ${actorNode?.name ?? p.actorId}: ${p.templateId}`);
+    console.log(`    → ${targetNode?.name ?? p.targetNodeId ?? 'none'} (${pct}% — ${p.progress}/${p.progressRequired})`);
+  }
+}
+
+function printStrategicHistory(agentName?: string): void {
+  const strategicState = state.strategicState;
+  if (!strategicState || strategicState.history.length === 0) {
+    console.log(`${YELLOW}No strategic history${RESET}`);
+    return;
+  }
+
+  let history = strategicState.history;
+  if (agentName) {
+    const match = state.graph.getNodesByType('actor')
+      .find(n => n.name.toLowerCase().includes(agentName.toLowerCase()));
+    if (!match) { console.log(`${RED}No agent matching "${agentName}"${RESET}`); return; }
+    history = history.filter(h => h.actorId === match.id);
+    console.log(header(`Strategic History: ${match.name} (${history.length} entries)`));
+  } else {
+    console.log(header(`Strategic History (${history.length} entries)`));
+  }
+
+  for (const h of history.slice(-20)) {
+    const status = h.outcome === 'completed' ? `${GREEN}+${RESET}` : h.outcome === 'failed' ? `${RED}X${RESET}` : '?';
+    const catalyst = h.catalystSeeded ? ` ${CYAN}[catalyst]${RESET}` : '';
+    console.log(`  [${status}] tick ${h.tick}: ${h.displayName} (${h.verb})${catalyst}`);
+  }
 }
 
 // ─── Main ─────────────────────────────────────────────────────────

@@ -338,5 +338,24 @@ if (import.meta.env.DEV) {
           })),
         };
       }),
+
+    // Strategic action inspection
+    getStrategicDecisionSummary: async (agentId?: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      const { getStrategicDecisionSummary } = await import('./engine/strategicTelemetry');
+      return getStrategicDecisionSummary(state.strategicState, agentId);
+    },
+    getStrategicProjects: async () => {
+      const state = _gameStateProvider?.();
+      if (!state?.strategicState) return [];
+      return state.strategicState.projects;
+    },
+    getStrategicHistory: async (agentId?: string) => {
+      const state = _gameStateProvider?.();
+      if (!state?.strategicState) return [];
+      const history = state.strategicState.history;
+      return agentId ? history.filter(h => h.actorId === agentId) : history;
+    },
   };
 }

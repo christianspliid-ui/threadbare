@@ -52,7 +52,10 @@ export type BalanceEncounterDecisionType =
   | 'attempt_remote'
   | 'queue_movement'
   | 'idle'
-  | 'forced_travel';
+  | 'forced_travel'
+  | 'strategic_instant'
+  | 'strategic_project'
+  | 'strategic_control';
 
 export interface BalanceEncounterPoolCandidate {
   rank: number;

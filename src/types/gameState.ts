@@ -32,6 +32,7 @@ import type { VisibilityMap } from './visibility';
 import type { FamiliarityMap } from './familiarity';
 import type { AgentKnowledge } from './agentKnowledge';
 import type { DigestEntry, ThreadTug, QueuedStoryBeat } from './attention';
+import type { StrategicRuntimeState } from './strategicAction';
 import { DEFAULT_DOOM_TICKS as CONFIG_DEFAULT_DOOM_TICKS } from '../data/game-config';
 
 // ─── Game Phase ─────────────────────────────────────────────────
@@ -206,6 +207,9 @@ export interface GameState {
   // Prosperity shocks — one-time deltas pushed by other phases, consumed by phaseProsperity
   // Cleared each tick. Each shock traces back to a discrete cause (encounter, route loss, etc.)
   prosperityShocks?: ProsperityShock[];
+
+  // Strategic actions — proactive world-shaping behavior driven by ambitions
+  strategicState?: StrategicRuntimeState;
 
   // Onboarding — one-shot flags for auto-triggered encounters
   meetTheFirstAutoTriggered?: boolean;

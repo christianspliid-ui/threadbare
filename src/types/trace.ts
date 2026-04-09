@@ -11,6 +11,7 @@ import type {
   AttentionPoolTrace,
   StoryBeatQueueTrace,
 } from './attention';
+import type { BehaviorFamily, StrategicVerb, StrategicExecutionMode } from './strategicAction';
 
 /** Known trace categories for filtering in debug panel */
 export type TraceCategory =
@@ -48,7 +49,11 @@ export type TraceCategory =
   | 'settlement_genome'
   | 'settlement_reassessment'
   | 'culture_generation'
-  | 'culture_sublocation';
+  | 'culture_sublocation'
+  | 'strategic_candidate_board'
+  | 'strategic_action_started'
+  | 'strategic_project_progress'
+  | 'strategic_world_change';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -86,6 +91,10 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'settlement_reassessment',
   'culture_generation',
   'culture_sublocation',
+  'strategic_candidate_board',
+  'strategic_action_started',
+  'strategic_project_progress',
+  'strategic_world_change',
 ];
 
 /** Base shape for all trace entries */
@@ -724,6 +733,55 @@ export interface CultureSublocationTrace extends TraceBase {
   isSubstitution: boolean;
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// Strategic Action Traces
+// ═══════════════════════════════════════════════════════════════════
+
+/** Trace: strategic candidate board evaluated for an actor */
+export interface StrategicCandidateBoardTrace extends TraceBase {
+  category: 'strategic_candidate_board';
+  actorId: string;
+  ambitionIds: string[];
+  candidatesGenerated: number;
+  candidatesRejected: number;
+  topCandidateIds: string[];
+  chosenCandidateId: string | null;
+  featureEnabled: boolean;
+}
+
+/** Trace: strategic action started (instant or project) */
+export interface StrategicActionStartedTrace extends TraceBase {
+  category: 'strategic_action_started';
+  actorId: string;
+  candidateId: string;
+  behaviorFamily: BehaviorFamily;
+  verb: StrategicVerb;
+  targetNodeId?: string;
+  targetHex?: { col: number; row: number };
+  executionMode: StrategicExecutionMode;
+}
+
+/** Trace: multi-tick strategic project progress update */
+export interface StrategicProjectProgressTrace extends TraceBase {
+  category: 'strategic_project_progress';
+  actorId: string;
+  projectId: string;
+  progress: number;
+  progressRequired: number;
+  status: 'active' | 'completed' | 'stalled' | 'failed';
+}
+
+/** Trace: strategic action produced a world graph change */
+export interface StrategicWorldChangeTrace extends TraceBase {
+  category: 'strategic_world_change';
+  actorId: string;
+  projectId?: string;
+  verb: StrategicVerb;
+  graphOps: string[];
+  catalystSeeded: boolean;
+  affectedNodeIds: string[];
+}
+
 /** Discriminated union of all trace types */
 export type TraceEntry =
   | ActionSelectionTrace
@@ -781,7 +839,11 @@ export type TraceEntry =
   | SettlementGenomeTrace
   | SettlementReassessmentTrace
   | CultureGenerationTrace
-  | CultureSublocationTrace;
+  | CultureSublocationTrace
+  | StrategicCandidateBoardTrace
+  | StrategicActionStartedTrace
+  | StrategicProjectProgressTrace
+  | StrategicWorldChangeTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {

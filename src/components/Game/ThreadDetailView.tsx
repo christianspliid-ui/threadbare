@@ -303,6 +303,9 @@ function formatDecisionType(decisionType?: string): string {
     case 'queue_movement': return 'Queue Movement';
     case 'forced_travel': return 'Forced Travel';
     case 'idle': return 'Idle';
+    case 'strategic_instant': return 'Strategic Action';
+    case 'strategic_project': return 'Strategic Project';
+    case 'strategic_control': return 'Strategic Control';
     default: return 'Unknown';
   }
 }
@@ -329,9 +332,11 @@ function EncounterDecisionPanel({ decision }: { decision: BalanceEvent }) {
     { label: 'Cooldown', value: decision.candidatesAfterCooldown },
   ].filter(stage => stage.value !== undefined);
 
+  const isStrategic = decision.decisionType?.startsWith('strategic_');
+
   return (
-    <DetailSection title="Encounter Pool">
-      {visiblePool !== null && (
+    <DetailSection title={isStrategic ? 'Strategic Action' : 'Encounter Pool'}>
+      {!isStrategic && visiblePool !== null && (
         <DetailField label="Viable now" value={visiblePool} />
       )}
       <DetailField label="Decision" value={formatDecisionType(decision.decisionType)} />

@@ -57,6 +57,12 @@ import { isCompulsionEligible, buildCompulsionEvent } from './premonitionCompuls
 import type { PremonitionEvent } from '../types/premonition';
 import { resolveEffectiveTier } from './attentionTier';
 import type { BalanceEncounterPoolCandidate } from '../types/balanceEval';
+import { ENABLE_STRATEGIC_ACTIONS } from '../data/strategic-action-constants';
+import { generateStrategicCandidates } from './strategicActionCandidates';
+import { scoreStrategicCandidates } from './strategicActionScoring';
+import { executeStrategicAction } from './strategicActionLifecycle';
+import type { StrategicCandidateBoardTrace, StrategicActionStartedTrace } from '../types/trace';
+import type { DecisionFamily } from '../types/strategicAction';
 
 /**
  * Compute effective cooldown scaled by available template pool size.
@@ -518,6 +524,66 @@ export function phaseAgentDecision(
       // Emit scoring trace
       emitTrace(decision.trace as TraceEntry);
 
+      // ── Strategic Candidate Integration ─────────────────────────────
+      // When enabled, generate strategic candidates from active ambitions
+      // and compare them with the encounter board. If the best strategic
+      // candidate beats the best encounter candidate, override the selection.
+      let decisionFamily: DecisionFamily = decision.selected ? 'encounter' : 'idle';
+      let strategicWinner: ReturnType<typeof scoreStrategicCandidates>[number] | null = null;
+
+      if (ENABLE_STRATEGIC_ACTIONS) {
+        try {
+          // Find active ambition template IDs via pursues edges
+          const pursuesEdges = graph.getOutgoingEdges(agentId, 'pursues');
+          const activeAmbitionTemplateIds: string[] = [];
+          for (const edge of pursuesEdges) {
+            const props = edge.properties as Record<string, unknown> | undefined;
+            if (props?.status === 'active') {
+              const ambitionNode = graph.getNode(edge.target);
+              const templateId = ambitionNode?.properties?.templateId as string | undefined;
+              if (templateId) activeAmbitionTemplateIds.push(templateId);
+            }
+          }
+
+          if (activeAmbitionTemplateIds.length > 0) {
+            const strategicState = state.strategicState;
+            const stratResult = generateStrategicCandidates(
+              graph, agentId, activeAmbitionTemplateIds, strategicState, state.tick, rng,
+            );
+            const scored = scoreStrategicCandidates(
+              stratResult.candidates, strategicState, state.tick, rng,
+            );
+
+            // Emit strategic candidate board trace
+            emitTrace({
+              category: 'strategic_candidate_board',
+              tick: state.tick,
+              agentId,
+              ambitionIds: activeAmbitionTemplateIds,
+              candidatesGenerated: stratResult.candidates.length,
+              candidatesRejected: stratResult.rejections.length,
+              topCandidateIds: scored.slice(0, 3).map(c => c.candidateId),
+              chosenCandidateId: null, // Updated below if strategic wins
+              featureEnabled: true,
+              summary: `Strategic board: ${stratResult.candidates.length} generated, ${stratResult.rejections.length} rejected, top=${scored[0]?.finalScore.toFixed(3) ?? 'none'}`,
+            } as StrategicCandidateBoardTrace & { summary: string });
+
+            // Compare best strategic score against best encounter score
+            const bestStrategicScore = scored.length > 0 ? scored[0].finalScore : 0;
+            const bestEncounterScore = decision.topCandidates.length > 0
+              ? decision.topCandidates[0].finalScore
+              : 0;
+
+            if (bestStrategicScore > bestEncounterScore && scored.length > 0) {
+              strategicWinner = scored[0];
+              decisionFamily = 'strategic_action';
+            }
+          }
+        } catch {
+          // Fail-soft: strategic generation failure → fall through to encounter path
+        }
+      }
+
       // ── Compulsion Check ──────────────────────────────────────────
       // Before committing, check if this agent is eligible for a Compulsion
       // premonition. If so, emit the event to the queue. The agent's decision
@@ -566,6 +632,75 @@ export function phaseAgentDecision(
         decision.rankedCandidates,
         decision.selected,
       );
+
+      // ── Strategic Action Execution ──────────────────────────────────
+      // If a strategic candidate beat all encounter candidates, execute it
+      // and skip the encounter path entirely.
+      if (strategicWinner && decisionFamily === 'strategic_action') {
+        try {
+          const stratResult = executeStrategicAction(
+            state, graph, strategicWinner, state.tick, rng,
+          );
+
+          // Merge results
+          if (stratResult.strategicState) {
+            // Update state.strategicState for downstream phases
+            state = { ...state, strategicState: stratResult.strategicState } as GameState;
+          }
+
+          emitTrace({
+            category: 'strategic_action_started',
+            tick: state.tick,
+            agentId,
+            candidateId: strategicWinner.candidateId,
+            behaviorFamily: strategicWinner.behaviorFamily,
+            verb: strategicWinner.verb,
+            targetNodeId: strategicWinner.targetNodeId,
+            targetHex: strategicWinner.targetHex,
+            executionMode: strategicWinner.executionMode,
+            summary: `${actor.name} begins strategic action: ${strategicWinner.displayName}`,
+          } as StrategicActionStartedTrace & { summary: string });
+
+          newEvents.push({
+            id: `decision_strategic_${agentId}_${state.tick}`,
+            tick: state.tick,
+            type: 'agent_action',
+            message: `${actor.name} ${strategicWinner.displayName.toLowerCase()}`,
+            significance: 0.5,
+            actorId: agentId,
+          });
+
+          // Reset idle counter
+          const freshForStrat = graph.getNode(agentId);
+          if (freshForStrat) freshForStrat.properties.consecutiveIdleTicks = 0;
+
+          if (runtime) {
+            recordBalanceEvent(runtime, {
+              tick: state.tick,
+              kind: 'encounter_decision',
+              agentId,
+              sourceSystem: 'strategic',
+              decisionType: strategicWinner.executionMode === 'instant'
+                ? 'strategic_instant'
+                : strategicWinner.executionMode === 'claim_control'
+                  ? 'strategic_control'
+                  : 'strategic_project',
+              templateId: strategicWinner.templateId,
+              locationId,
+              locationSubtype: originLocationSubtype,
+              targetLocationId: strategicWinner.targetNodeId,
+              threaded: threadContext.threaded,
+              courtPosition: threadContext.courtPosition,
+            });
+          }
+
+          continue; // Skip encounter execution path
+        } catch {
+          // Fail-soft: strategic execution failure → fall through to encounter path
+          decisionFamily = 'encounter';
+          strategicWinner = null;
+        }
+      }
 
       if (decision.selected) {
         const sel = decision.selected;

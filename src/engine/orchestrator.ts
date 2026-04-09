@@ -89,6 +89,7 @@ import { QUINTESSENCE_ENCOUNTER_FAILURE_EROSION } from '../types/quintessence';
 import { phaseEconomicTraits } from './phaseEconomicTraits';
 import { phaseReputationTraits, processReputationTally } from './phaseReputationTraits';
 import { phaseAgentDecision } from './phaseAgentDecision';
+import { phaseStrategicProjects } from './phaseStrategicProjects';
 import { phaseDivinePremonition } from './phaseDivinePremonition';
 import { phaseControlEffects, resetControlEffectsCounter } from './phaseControlEffects';
 // phaseDoom and phaseMandate are extracted to their own files with sphere pressure wiring.
@@ -1649,6 +1650,14 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   s = { ...s, ...phaseEncounterProgressionV2(s, runtime) };
   phaseEventCounts['encounter_progression'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
+
+  // Phase 2a.55: Strategic Projects — advance multi-tick projects and tick control degradation
+  {
+    const stratProjRng = mulberry32(state.seed + state.tick * 59);
+    s = { ...s, ...phaseStrategicProjects(s, stratProjRng) };
+    phaseEventCounts['strategic_projects'] = s.tickEvents.length - prevEventCount;
+    prevEventCount = s.tickEvents.length;
+  }
 
   // Phase 2a.7: Encounter Revelations (knowledge facets from encounter observations)
   emitEncounterRevelations(s);

@@ -3,6 +3,7 @@
 // Starter ambition content library — 10 standard templates and 4 reactive templates.
 
 import type { AmbitionTemplate, ReactiveAmbitionTemplate } from '../types/ambition';
+import type { AmbitionStrategicProfile } from '../types/strategicAction';
 
 // ─── Standard Ambition Templates ─────────────────────────────────────────────
 
@@ -19,6 +20,19 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     bondModifiers: [{ bondType: 'trade_partner', modifier: 0.3 }],
     boostingTraits: ['merchant', 'networker'],
     reachAffinity: { gold: 0.8, eye: 0.5, shadow: 0.2, heart: 0.2 },
+    strategicProfile: {
+      behaviorFamily: 'merchant-expansion',
+      preferredVerbs: ['gather_info', 'create', 'control', 'change'],
+      templateIds: [
+        'strategic_survey_market',
+        'strategic_negotiate_storage',
+        'strategic_establish_trade_route',
+        'strategic_build_warehouse',
+        'strategic_found_guild_chapter',
+        'strategic_maintain_monopoly',
+      ],
+      reachEmphasis: { gold: 0.8, eye: 0.5, shadow: 0.2, heart: 0.2 },
+    },
     milestones: [
       {
         id: 'trade_bonds',
@@ -238,6 +252,17 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     ],
     boostingTraits: ['noble_blood', 'charismatic'],
     reachAffinity: { gold: 0.6, heart: 0.7, star: 0.4 },
+    strategicProfile: {
+      behaviorFamily: 'court-political',
+      preferredVerbs: ['create', 'control', 'change', 'gather_info'],
+      templateIds: [
+        'strategic_survey_market',
+        'strategic_negotiate_storage',
+        'strategic_build_warehouse',
+        'strategic_found_guild_chapter',
+      ],
+      reachEmphasis: { gold: 0.6, heart: 0.7, star: 0.4 },
+    },
     milestones: [
       {
         id: 'dynasty_heir',
