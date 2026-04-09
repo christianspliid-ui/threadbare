@@ -197,6 +197,7 @@ Broaden the older "agent initiatives" concept into a full ambition-driven strate
 
 **Creates:** Strategic candidate generator, family-aware chooser scoring, multi-tick strategic project lifecycle, control-state upkeep/contest logic, graph-op helpers for world change, catalyst encounter seeding, UI/debug history of ambition steps, and HexMap/Threads visibility for proactive work.
 **Design doc:** `Docs/plans/2026-04-09-ambition-driven-strategic-actions-design.md`
+**Implementation plan:** `Docs/plans/2026-04-09-ambition-driven-strategic-actions-implementation-plan.md`
 **Supersedes:** `Docs/plans/2026-03-31-social-systems-expansion-design.md` Expansion B
 **Depends on:** Ambition system (✅), encounter chooser/telemetry foundation (✅). Deep social scenes remain valuable follow-on content, but are no longer a hard prerequisite for the first implementation slice.
 
