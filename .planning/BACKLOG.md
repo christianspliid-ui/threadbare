@@ -189,15 +189,16 @@ Replace thin 2-step social encounters with rich 3-5 step social scenes featuring
 
 ---
 
-## 🎨 TB-097 · Social Expansion B: Agent Initiatives (2026-03-31)
+## 📐▶ TB-097 · Social Expansion B: Ambition-Driven Strategic Actions (2026-03-31)
 
 **Milestone: v1.2 Social Systems Expansion — Phase B (do third)**
 
-New `phaseAgentInitiative` tick phase where agents with sufficient capability + ambition + resources proactively create things in the world. 13+ initiative types: build structure (mine, workshop, guild hall, temple, library, tavern), found settlement, establish trade post, sponsor faction, found organization, recruit party, commission quest, organize festival, establish spy network, consecrate holy site, fortify position, write treatise, train apprentice. Gated by Domain Capability tier, ambition alignment, wealth, and location suitability. Multi-tick duration (3-15 ticks). Sphere coloring of initiative prose. Built structures appear as sublocations on hex map and become action/encounter targets.
+Broaden the older "agent initiatives" concept into a full ambition-driven strategic action layer. Agents should proactively gather information, create structures/routes/institutions, change world state, claim or contest control, and destroy or suppress rival structures when those steps advance an active ambition. Encounters remain the dramatic/reactive layer around that work instead of being replaced by it. The planner should stay unified: ambition-driven strategic candidates sit beside encounter candidates in the live chooser, not in a separate hidden phase.
 
-**Creates:** `phaseAgentInitiative` orchestrator phase, initiative evaluation/scoring, sublocation creation via GraphOps, initiative encounter templates, HexMapV2 signifiers for built structures.
-**Design doc:** `Docs/plans/2026-03-31-social-systems-expansion-design.md` → Expansion B
-**Depends on:** TB-096 (Deep Social Scenes — initiative-related negotiation encounters)
+**Creates:** Strategic candidate generator, family-aware chooser scoring, multi-tick strategic project lifecycle, control-state upkeep/contest logic, graph-op helpers for world change, catalyst encounter seeding, UI/debug history of ambition steps, and HexMap/Threads visibility for proactive work.
+**Design doc:** `Docs/plans/2026-04-09-ambition-driven-strategic-actions-design.md`
+**Supersedes:** `Docs/plans/2026-03-31-social-systems-expansion-design.md` Expansion B
+**Depends on:** Ambition system (✅), encounter chooser/telemetry foundation (✅). Deep social scenes remain valuable follow-on content, but are no longer a hard prerequisite for the first implementation slice.
 
 ---
 
