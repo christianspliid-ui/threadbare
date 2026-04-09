@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { ThreadedNode, ThreadCategory } from '../../engine/retinue';
 import { groupThreadedNodes } from '../../engine/retinue';
 import type { EncounterTemplate } from '../../types/encounter';
@@ -14,6 +14,7 @@ import {
   getEncounterActivityIconKey,
   getSelectedEncounterPoolCandidate,
   groupEncounterPoolCandidates,
+  summarizeEncounterPoolDominance,
 } from './encounterActivityPresentation';
 
 // ─── Section config ───────────────────────────────────────────────
@@ -45,6 +46,8 @@ interface EncounterPoolModalState {
   agentName: string;
   decision: BalanceEvent;
 }
+
+type EncounterPoolViewMode = 'raw' | 'grouped';
 
 // ─── Compact row ─────────────────────────────────────────────────
 
@@ -100,10 +103,16 @@ function EncounterPoolModal({
   state: EncounterPoolModalState | null;
   onClose: () => void;
 }) {
+  const [viewMode, setViewMode] = useState<EncounterPoolViewMode>('raw');
   const candidates = getEncounterPoolCandidates(state?.decision);
   const groupedCandidates = groupEncounterPoolCandidates(candidates);
+  const dominance = summarizeEncounterPoolDominance(candidates, 10);
   const visibleCount = getVisibleEncounterPool(state?.decision);
   const baselineCount = getEncounterPoolBaseline(state?.decision);
+
+  useEffect(() => {
+    if (state) setViewMode('raw');
+  }, [state?.agentName, state?.decision.seq, state?.decision.tick]);
 
   return (
     <Modal
@@ -130,12 +139,58 @@ function EncounterPoolModal({
               {baselineCount !== null && baselineCount !== visibleCount ? ` / ${baselineCount}` : ''}
             </div>
             <div style={{ marginTop: '4px', color: 'var(--text-tertiary)' }}>
-              {groupedCandidates.length} encounter type{groupedCandidates.length === 1 ? '' : 's'} ordered by the agent&apos;s current decision score.
+              Ordered by the agent&apos;s current decision score.
+            </div>
+            <div style={{ marginTop: '8px', color: 'var(--text-secondary)' }}>
+              Unique templates in top {dominance.windowSize}: {dominance.uniqueTemplates}
+            </div>
+            {dominance.dominantTemplateName && (
+              <div style={{ marginTop: '2px', color: 'var(--text-muted)' }}>
+                Top {dominance.windowSize} contains {dominance.dominantTemplateCount} copies of {dominance.dominantTemplateName}
+                {' '}({Math.round(dominance.dominantTemplateShare * 100)}%)
+              </div>
+            )}
+            <div
+              role="tablist"
+              aria-label="Encounter pool display mode"
+              style={{
+                display: 'flex',
+                gap: 'var(--space-2)',
+                marginTop: '10px',
+              }}
+            >
+              {([
+                { mode: 'raw' as const, label: `Raw priority list (${candidates.length})` },
+                { mode: 'grouped' as const, label: `Grouped templates (${groupedCandidates.length})` },
+              ]).map(({ mode, label }) => {
+                const selected = viewMode === mode;
+                return (
+                  <button
+                    key={mode}
+                    type="button"
+                    role="tab"
+                    aria-selected={selected}
+                    onClick={() => setViewMode(mode)}
+                    style={{
+                      borderRadius: '999px',
+                      border: `1px solid ${selected ? 'rgba(212, 160, 64, 0.45)' : 'rgba(255,255,255,0.08)'}`,
+                      backgroundColor: selected ? 'rgba(212, 160, 64, 0.12)' : 'rgba(255,255,255,0.02)',
+                      color: selected ? 'var(--accent-gold)' : 'var(--text-secondary)',
+                      fontFamily: 'var(--font-body)',
+                      fontSize: 'var(--text-xs)',
+                      padding: '4px 10px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
 
-        {groupedCandidates.length === 0 ? (
+        {candidates.length === 0 ? (
           <div
             style={{
               fontFamily: 'var(--font-body)',
@@ -147,96 +202,182 @@ function EncounterPoolModal({
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-            {groupedCandidates.map((groupedCandidate) => {
-              const { primary } = groupedCandidate;
-              const destinationLine = formatEncounterPoolDestination(primary);
-              const extraDestinations = Math.max(0, groupedCandidate.destinations.length - 1);
-              return (
-                <div
-                  key={`${primary.rank}-${groupedCandidate.key}`}
-                  data-testid="encounter-pool-item"
-                  style={{
-                    border: '1px solid rgba(212, 160, 64, 0.18)',
-                    borderRadius: '10px',
-                    padding: '10px 12px',
-                    backgroundColor: primary.selected ? 'rgba(212, 160, 64, 0.08)' : 'rgba(255,255,255,0.02)',
-                  }}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: 'var(--space-2)',
-                    }}
-                  >
+            {viewMode === 'raw'
+              ? candidates.map((candidate) => {
+                  const destinationLine = formatEncounterPoolDestination(candidate);
+                  return (
                     <div
+                      key={`${candidate.rank}-${candidate.templateId}-${candidate.locationId}`}
+                      data-testid="encounter-pool-item"
                       style={{
-                        fontFamily: 'var(--font-display)',
-                        fontSize: 'var(--text-base)',
-                        color: 'var(--accent-gold)',
+                        border: '1px solid rgba(212, 160, 64, 0.18)',
+                        borderRadius: '10px',
+                        padding: '10px 12px',
+                        backgroundColor: candidate.selected ? 'rgba(212, 160, 64, 0.08)' : 'rgba(255,255,255,0.02)',
                       }}
                     >
-                      {primary.templateName}
-                    </div>
-                    {primary.selected && (
                       <div
                         style={{
-                          fontFamily: 'var(--font-body)',
-                          fontSize: 'var(--text-xs)',
-                          color: 'var(--bg-abyss)',
-                          backgroundColor: 'var(--accent-gold)',
-                          borderRadius: '999px',
-                          padding: '2px 8px',
-                          flexShrink: 0,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: 'var(--space-2)',
                         }}
                       >
-                        Chosen
+                        <div
+                          style={{
+                            fontFamily: 'var(--font-display)',
+                            fontSize: 'var(--text-base)',
+                            color: 'var(--accent-gold)',
+                          }}
+                        >
+                          #{candidate.rank} {candidate.templateName}
+                        </div>
+                        {candidate.selected && (
+                          <div
+                            style={{
+                              fontFamily: 'var(--font-body)',
+                              fontSize: 'var(--text-xs)',
+                              color: 'var(--bg-abyss)',
+                              backgroundColor: 'var(--accent-gold)',
+                              borderRadius: '999px',
+                              padding: '2px 8px',
+                              flexShrink: 0,
+                            }}
+                          >
+                            Chosen
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
 
-                  {(destinationLine || primary.locationName) && (
+                      {(destinationLine || candidate.locationName) && (
+                        <div
+                          style={{
+                            marginTop: '4px',
+                            fontFamily: 'var(--font-body)',
+                            fontSize: 'var(--text-xs)',
+                            color: 'var(--text-secondary)',
+                          }}
+                        >
+                          {destinationLine ?? candidate.locationName}
+                        </div>
+                      )}
+
+                      <div
+                        style={{
+                          marginTop: '4px',
+                          fontFamily: 'var(--font-body)',
+                          fontSize: 'var(--text-xs)',
+                          color: 'var(--text-tertiary)',
+                        }}
+                      >
+                        {formatEncounterPoolMeta(candidate)}
+                      </div>
+
+                      <div
+                        style={{
+                          marginTop: '4px',
+                          fontFamily: 'var(--font-body)',
+                          fontSize: 'var(--text-xs)',
+                          color: 'var(--text-muted)',
+                        }}
+                      >
+                        Score {candidate.finalScore.toFixed(2)} · completion {(candidate.completionProb * 100).toFixed(0)}%
+                        {candidate.travelCost > 0 ? ` · travel ${candidate.travelCost.toFixed(2)}` : ''}
+                      </div>
+                    </div>
+                  );
+                })
+              : groupedCandidates.map((groupedCandidate) => {
+                  const { primary } = groupedCandidate;
+                  const destinationLine = formatEncounterPoolDestination(primary);
+                  const extraDestinations = Math.max(0, groupedCandidate.destinations.length - 1);
+                  return (
                     <div
+                      key={`${primary.rank}-${groupedCandidate.key}`}
+                      data-testid="encounter-pool-item"
                       style={{
-                        marginTop: '4px',
-                        fontFamily: 'var(--font-body)',
-                        fontSize: 'var(--text-xs)',
-                        color: 'var(--text-secondary)',
+                        border: '1px solid rgba(212, 160, 64, 0.18)',
+                        borderRadius: '10px',
+                        padding: '10px 12px',
+                        backgroundColor: primary.selected ? 'rgba(212, 160, 64, 0.08)' : 'rgba(255,255,255,0.02)',
                       }}
                     >
-                      {destinationLine ?? primary.locationName}
-                    </div>
-                  )}
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: 'var(--space-2)',
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontFamily: 'var(--font-display)',
+                            fontSize: 'var(--text-base)',
+                            color: 'var(--accent-gold)',
+                          }}
+                        >
+                          #{primary.rank} {primary.templateName}
+                        </div>
+                        {primary.selected && (
+                          <div
+                            style={{
+                              fontFamily: 'var(--font-body)',
+                              fontSize: 'var(--text-xs)',
+                              color: 'var(--bg-abyss)',
+                              backgroundColor: 'var(--accent-gold)',
+                              borderRadius: '999px',
+                              padding: '2px 8px',
+                              flexShrink: 0,
+                            }}
+                          >
+                            Chosen
+                          </div>
+                        )}
+                      </div>
 
-                  <div
-                    style={{
-                      marginTop: '4px',
-                      fontFamily: 'var(--font-body)',
-                      fontSize: 'var(--text-xs)',
-                      color: 'var(--text-tertiary)',
-                    }}
-                  >
-                    {formatEncounterPoolMeta(primary)}
-                  </div>
+                      {(destinationLine || primary.locationName) && (
+                        <div
+                          style={{
+                            marginTop: '4px',
+                            fontFamily: 'var(--font-body)',
+                            fontSize: 'var(--text-xs)',
+                            color: 'var(--text-secondary)',
+                          }}
+                        >
+                          {destinationLine ?? primary.locationName}
+                        </div>
+                      )}
 
-                  {groupedCandidate.count > 1 && (
-                    <div
-                      style={{
-                        marginTop: '4px',
-                        fontFamily: 'var(--font-body)',
-                        fontSize: 'var(--text-xs)',
-                        color: 'var(--text-muted)',
-                      }}
-                    >
-                      {groupedCandidate.count} destinations
-                      {groupedCandidate.destinations[0] ? ` · best at ${groupedCandidate.destinations[0]}` : ''}
-                      {extraDestinations > 0 ? ` + ${extraDestinations} more` : ''}
+                      <div
+                        style={{
+                          marginTop: '4px',
+                          fontFamily: 'var(--font-body)',
+                          fontSize: 'var(--text-xs)',
+                          color: 'var(--text-tertiary)',
+                        }}
+                      >
+                        {formatEncounterPoolMeta(primary)}
+                      </div>
+
+                      {groupedCandidate.count > 1 && (
+                        <div
+                          style={{
+                            marginTop: '4px',
+                            fontFamily: 'var(--font-body)',
+                            fontSize: 'var(--text-xs)',
+                            color: 'var(--text-muted)',
+                          }}
+                        >
+                          {groupedCandidate.count} destinations
+                          {groupedCandidate.destinations[0] ? ` · best at ${groupedCandidate.destinations[0]}` : ''}
+                          {extraDestinations > 0 ? ` + ${extraDestinations} more` : ''}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              );
-            })}
+                  );
+                })}
           </div>
         )}
       </Modal.Body>

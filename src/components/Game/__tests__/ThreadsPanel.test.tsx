@@ -294,9 +294,19 @@ describe('ThreadsPanel', () => {
 
     fireEvent.click(screen.getByLabelText('Open encounter pool for Seraphel'));
 
+    expect(screen.getByText('Top 2 contains 2 copies of Master the Local Craft (100%)')).toBeTruthy();
+    expect(screen.getByRole('tab', { name: 'Raw priority list (2)' }).getAttribute('aria-selected')).toBe('true');
+
     const items = screen.getAllByTestId('encounter-pool-item');
-    expect(items).toHaveLength(1);
-    expect(items[0].textContent).toContain('2 destinations');
+    expect(items).toHaveLength(2);
+    expect(items[0].textContent).toContain('#1 Master the Local Craft');
+    expect(items[1].textContent).toContain('#2 Master the Local Craft');
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Grouped templates (1)' }));
+
+    const groupedItems = screen.getAllByTestId('encounter-pool-item');
+    expect(groupedItems).toHaveLength(1);
+    expect(groupedItems[0].textContent).toContain('2 destinations');
   });
 
   it('shows the chosen encounter as a badge even when the agent is still moving toward it', () => {

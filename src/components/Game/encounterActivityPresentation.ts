@@ -8,6 +8,14 @@ export interface GroupedEncounterPoolCandidate {
   destinations: string[];
 }
 
+export interface EncounterPoolDominanceSummary {
+  windowSize: number;
+  uniqueTemplates: number;
+  dominantTemplateName: string | null;
+  dominantTemplateCount: number;
+  dominantTemplateShare: number;
+}
+
 function normalizeEncounterType(value?: string): string {
   return value?.trim().toLowerCase() ?? '';
 }
@@ -139,4 +147,42 @@ export function groupEncounterPoolCandidates(
   }
 
   return [...grouped.values()].sort((a, b) => a.primary.rank - b.primary.rank);
+}
+
+export function summarizeEncounterPoolDominance(
+  candidates: BalanceEncounterPoolCandidate[],
+  windowSize = 10,
+): EncounterPoolDominanceSummary {
+  const topCandidates = candidates.slice(0, Math.max(1, windowSize));
+  if (topCandidates.length === 0) {
+    return {
+      windowSize: Math.max(1, windowSize),
+      uniqueTemplates: 0,
+      dominantTemplateName: null,
+      dominantTemplateCount: 0,
+      dominantTemplateShare: 0,
+    };
+  }
+
+  const counts = new Map<string, { templateName: string; count: number }>();
+  for (const candidate of topCandidates) {
+    const existing = counts.get(candidate.templateId);
+    if (existing) {
+      existing.count += 1;
+      continue;
+    }
+    counts.set(candidate.templateId, {
+      templateName: candidate.templateName,
+      count: 1,
+    });
+  }
+
+  const dominant = [...counts.values()].sort((a, b) => b.count - a.count)[0];
+  return {
+    windowSize: topCandidates.length,
+    uniqueTemplates: counts.size,
+    dominantTemplateName: dominant?.templateName ?? null,
+    dominantTemplateCount: dominant?.count ?? 0,
+    dominantTemplateShare: dominant ? dominant.count / topCandidates.length : 0,
+  };
 }
