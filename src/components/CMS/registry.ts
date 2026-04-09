@@ -22,6 +22,12 @@ import { TERRAIN_MODIFIERS } from '../../data/terrain-modifiers';
 // Locations & Sublocations
 import { SUBTYPE_SUBLOCATION_MAP } from '../../engine/sublocation';
 
+// NPCs
+import {
+  NPC_ROLES, LOCATION_ROLE_ROSTERS, FACTION_ROLE_ROSTERS,
+  NPC_ROLE_SUBLOCATION_MAP, NPC_CONSTANTS, NPC_NAME_POOL,
+} from '../../types/npc';
+
 // Encounters
 import { ENCOUNTER_TEMPLATES, ENCOUNTER_DIFFICULTY_TIERS } from '../../data/encounter-content';
 import { SOCIAL_ENCOUNTER_TEMPLATES } from '../../data/social-encounter-content';
@@ -249,6 +255,128 @@ const TRAIT_CATEGORY_COLORS: Record<string, string> = {
   destiny: '#7c2d12',    // orange
   cultural: '#115e59',   // teal
   bestowed: '#4338ca',   // indigo
+};
+
+// ── Derived: NPC role table rows ──────────────────────────────────
+const NPC_ROLE_ROWS = NPC_ROLES.map(role => {
+  const sublocationPref = NPC_ROLE_SUBLOCATION_MAP[role];
+  const locationTypes = Object.entries(LOCATION_ROLE_ROSTERS)
+    .filter(([, roster]) => roster.some(r => r.role === role))
+    .map(([locType, roster]) => {
+      const entry = roster.find(r => r.role === role)!;
+      return `${locType} (${Math.round(entry.chance * 100)}%)`;
+    });
+  const factionTypes = Object.entries(FACTION_ROLE_ROSTERS)
+    .filter(([, roster]) => roster.some(r => r.role === role))
+    .map(([fType, roster]) => {
+      const entry = roster.find(r => r.role === role)!;
+      return `${fType} (${Math.round(entry.chance * 100)}%)`;
+    });
+  return {
+    role,
+    locations: locationTypes.join(', ') || '—',
+    factions: factionTypes.join(', ') || '—',
+    sublocation: sublocationPref?.replace('sublocation-type.', '') ?? '—',
+  };
+});
+
+// ── Derived: location role roster rows ───────────────────────────
+const LOCATION_ROSTER_ROWS = Object.entries(LOCATION_ROLE_ROSTERS).flatMap(
+  ([locType, roster]) => roster.map(r => ({
+    locationType: locType,
+    role: r.role,
+    chance: r.chance,
+  }))
+);
+
+// ── Derived: faction role roster rows ────────────────────────────
+const FACTION_ROSTER_ROWS = Object.entries(FACTION_ROLE_ROSTERS).flatMap(
+  ([fType, roster]) => roster.map(r => ({
+    factionType: fType,
+    role: r.role,
+    chance: r.chance,
+  }))
+);
+
+// ── Derived: location subtypes catalog ───────────────────────────
+const LOCATION_SUBTYPE_CATALOG: Array<{ subtype: string; group: string; description: string }> = [
+  // Settlements
+  { subtype: 'hamlet', group: 'Settlement', description: 'Small rural settlement' },
+  { subtype: 'town', group: 'Settlement', description: 'Medium-sized trading settlement' },
+  { subtype: 'city', group: 'Settlement', description: 'Large urban center' },
+  { subtype: 'capital', group: 'Settlement', description: 'Major seat of power' },
+  // Infrastructure
+  { subtype: 'camp', group: 'Infrastructure', description: 'Temporary or semi-permanent camp' },
+  { subtype: 'farmland', group: 'Infrastructure', description: 'Agricultural land' },
+  // Military
+  { subtype: 'castle', group: 'Military', description: 'Fortified stronghold' },
+  { subtype: 'fort', group: 'Military', description: 'Military fortification' },
+  { subtype: 'tower', group: 'Military', description: 'Watchtower or wizard tower' },
+  { subtype: 'military_outpost', group: 'Military', description: 'Frontier military outpost' },
+  // Religious
+  { subtype: 'shrine', group: 'Religious', description: 'Small place of worship' },
+  { subtype: 'temple', group: 'Religious', description: 'Major place of worship' },
+  // Resource
+  { subtype: 'mining', group: 'Resource', description: 'Mining operation' },
+  // Ruins
+  { subtype: 'ruins', group: 'Ruins', description: 'Generic ruins' },
+  { subtype: 'ruined_tower', group: 'Ruins', description: 'Collapsed tower' },
+  { subtype: 'ruined_city', group: 'Ruins', description: 'Fallen city' },
+  { subtype: 'ruined_village', group: 'Ruins', description: 'Abandoned village' },
+  // Wilderness Interest
+  { subtype: 'battleground', group: 'Wilderness Interest', description: 'Site of past conflict' },
+  { subtype: 'oasis', group: 'Wilderness Interest', description: 'Water source in arid terrain' },
+  { subtype: 'unexplored_poi', group: 'Wilderness Interest', description: 'Unknown point of interest' },
+  { subtype: 'cavern', group: 'Wilderness Interest', description: 'Mountains/Hills cave system' },
+  { subtype: 'grove', group: 'Wilderness Interest', description: 'Ancient or sacred forest grove' },
+  { subtype: 'hot_spring', group: 'Wilderness Interest', description: 'Geothermal feature' },
+  { subtype: 'shipwreck', group: 'Wilderness Interest', description: 'Wrecked vessel on coast' },
+  { subtype: 'ancient_road', group: 'Wilderness Interest', description: 'Remnant infrastructure from historical cultures' },
+  { subtype: 'monument', group: 'Wilderness Interest', description: 'Ancestral tomb, stone monolith, burial mound' },
+  // Sphere-Resonant Wonders
+  { subtype: 'healing_spring', group: 'Sphere Wonder', description: 'Life + Spirit — land itself mends what\'s broken' },
+  { subtype: 'master_forge', group: 'Sphere Wonder', description: 'Matter + Force — craft reaching the sacred' },
+  { subtype: 'living_archive', group: 'Sphere Wonder', description: 'Mind + Spirit — repository that curates itself' },
+  { subtype: 'fey_crossing', group: 'Sphere Wonder', description: 'Spirit + Chaos — where the veil is thin' },
+  { subtype: 'sacrifice_site', group: 'Sphere Wonder', description: 'Entropy + Darkness — blood-soaked ground of power' },
+  { subtype: 'convergence', group: 'Sphere Wonder', description: 'Force + all — power accumulates, draws conflict' },
+  { subtype: 'time_scar', group: 'Sphere Wonder', description: 'Time + Entropy — wound in time, echoes bleed through' },
+  { subtype: 'standing_stones', group: 'Sphere Wonder', description: 'Order + Time — ancient megaliths' },
+  { subtype: 'shadow_hollow', group: 'Sphere Wonder', description: 'Darkness + Entropy — where magic went wrong' },
+  { subtype: 'ley_nexus', group: 'Sphere Wonder', description: 'Energy + Light — raw magical convergence' },
+  // Natural Anomalies (economy/treasure)
+  { subtype: 'gem_deposit', group: 'Natural Anomaly', description: 'Precious stones in hills/mountains' },
+  { subtype: 'golden_grove', group: 'Natural Anomaly', description: 'Trees bearing amber/gold sap' },
+  { subtype: 'crystal_cavern', group: 'Natural Anomaly', description: 'Resonant crystal formations' },
+  { subtype: 'ancient_vault', group: 'Natural Anomaly', description: 'Sealed pre-collapse treasury' },
+  { subtype: 'sunken_treasury', group: 'Natural Anomaly', description: 'Submerged wealth from lost civilization' },
+  { subtype: 'herb_garden', group: 'Natural Anomaly', description: 'Wild medicinal plants' },
+  { subtype: 'fossil_bed', group: 'Natural Anomaly', description: 'Ancient bones with residual magic' },
+  { subtype: 'iron_seep', group: 'Natural Anomaly', description: 'Surface metal deposit' },
+  { subtype: 'pearl_shoal', group: 'Natural Anomaly', description: 'Natural pearl beds' },
+  { subtype: 'glowcap_hollow', group: 'Natural Anomaly', description: 'Bioluminescent fungi' },
+  // Monster/Danger
+  { subtype: 'nest', group: 'Monster/Danger', description: 'Ecosystem-scale creature hive' },
+  { subtype: 'haunted_ground', group: 'Monster/Danger', description: 'Restless spirits' },
+  { subtype: 'corruption_zone', group: 'Monster/Danger', description: 'Spreading wrongness' },
+  { subtype: 'lair', group: 'Monster/Danger', description: 'Monster lair' },
+  { subtype: 'cleared_lair', group: 'Monster/Danger', description: 'Lair cleared by a faction' },
+  // Default
+  { subtype: 'wilderness', group: 'Default', description: 'No overlay — open land' },
+];
+
+const LOCATION_GROUP_COLORS: Record<string, string> = {
+  'Settlement':         '#166534',
+  'Infrastructure':     '#92400e',
+  'Military':           '#b91c1c',
+  'Religious':          '#581c87',
+  'Resource':           '#57534e',
+  'Ruins':              '#78350f',
+  'Wilderness Interest':'#134e4a',
+  'Sphere Wonder':      '#4338ca',
+  'Natural Anomaly':    '#0e7490',
+  'Monster/Danger':     '#991b1b',
+  'Default':            '#525252',
 };
 
 // ── The Registry ─────────────────────────────────────────────────
@@ -1758,13 +1886,115 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
     viewer: 'constants',
     sourceFile: 'src/data/economic-trait-content.ts',
   },
+
+  // ─── NPCs ──────────────────────────────────────────────────────
+  {
+    id: 'npc-roles',
+    label: 'NPC Roles',
+    category: 'NPCs',
+    description: `${NPC_ROLES.length} NPC roles with location assignments, faction assignments, and sublocation preferences.`,
+    data: NPC_ROLE_ROWS,
+    viewer: 'table',
+    columns: [
+      { key: 'role', label: 'Role', render: 'badge' },
+      { key: 'locations', label: 'Location Types' },
+      { key: 'factions', label: 'Faction Types' },
+      { key: 'sublocation', label: 'Preferred Sublocation' },
+    ],
+    searchFields: ['role', 'locations', 'factions', 'sublocation'],
+    sourceFile: 'src/types/npc.ts',
+  },
+  {
+    id: 'location-role-rosters',
+    label: 'Location → NPC Rosters',
+    category: 'NPCs',
+    description: 'Which NPC roles spawn at each location subtype, with probability (0–1).',
+    data: LOCATION_ROSTER_ROWS,
+    viewer: 'table',
+    columns: [
+      { key: 'locationType', label: 'Location Type', render: 'badge' },
+      { key: 'role', label: 'NPC Role' },
+      { key: 'chance', label: 'Spawn Chance', render: 'number' },
+    ],
+    searchFields: ['locationType', 'role'],
+    sourceFile: 'src/types/npc.ts',
+  },
+  {
+    id: 'faction-role-rosters',
+    label: 'Faction → NPC Rosters',
+    category: 'NPCs',
+    description: 'Which NPC roles are assigned to each faction type, with probability (0–1).',
+    data: FACTION_ROSTER_ROWS,
+    viewer: 'table',
+    columns: [
+      { key: 'factionType', label: 'Faction Type', render: 'badge' },
+      { key: 'role', label: 'NPC Role' },
+      { key: 'chance', label: 'Spawn Chance', render: 'number' },
+    ],
+    searchFields: ['factionType', 'role'],
+    sourceFile: 'src/types/npc.ts',
+  },
+  {
+    id: 'npc-name-pool',
+    label: 'NPC Name Pool',
+    category: 'NPCs',
+    description: `${NPC_NAME_POOL.length} fallback names for NPC generation.`,
+    data: NPC_NAME_POOL.map((name, i) => ({ index: i, name })),
+    viewer: 'table',
+    columns: [
+      { key: 'index', label: '#', render: 'number' },
+      { key: 'name', label: 'Name' },
+    ],
+    sourceFile: 'src/types/npc.ts',
+  },
+  {
+    id: 'npc-constants',
+    label: 'NPC Constants',
+    category: 'NPCs',
+    description: 'Spotlight promotion thresholds, importance scoring increments, and population caps.',
+    data: constants(
+      ['NOTABLE_THRESHOLD', NPC_CONSTANTS.NOTABLE_THRESHOLD, 'Importance score for ambient → notable promotion'],
+      ['SPOTLIGHT_THRESHOLD', NPC_CONSTANTS.SPOTLIGHT_THRESHOLD, 'Importance score for notable → spotlight promotion'],
+      ['SPOTLIGHT_MIN_EDGES', NPC_CONSTANTS.SPOTLIGHT_MIN_EDGES, 'Min graph edges for spotlight promotion'],
+      ['PROMOTE_ESSENCE_BASE', NPC_CONSTANTS.PROMOTE_ESSENCE_BASE, 'Base essence cost for player-driven promotion'],
+      ['PROMOTE_IMPORTANCE_DISCOUNT', NPC_CONSTANTS.PROMOTE_IMPORTANCE_DISCOUNT, 'Importance discount on promotion cost'],
+      ['IMPORTANCE_PLAYER_ACTION', NPC_CONSTANTS.IMPORTANCE_PLAYER_ACTION, 'Importance added by player targeting this NPC'],
+      ['IMPORTANCE_ENCOUNTER_REFERENCE', NPC_CONSTANTS.IMPORTANCE_ENCOUNTER_REFERENCE, 'Importance from encounter narrative reference'],
+      ['IMPORTANCE_EDGE_CREATED', NPC_CONSTANTS.IMPORTANCE_EDGE_CREATED, 'Importance from new graph edge'],
+      ['IMPORTANCE_TRAIT_GAINED', NPC_CONSTANTS.IMPORTANCE_TRAIT_GAINED, 'Importance from trait acquisition'],
+      ['IMPORTANCE_LOCATION_CONTESTED', NPC_CONSTANTS.IMPORTANCE_LOCATION_CONTESTED, 'Importance when location becomes contested'],
+      ['MAX_NPCS_HAMLET', NPC_CONSTANTS.MAX_NPCS_HAMLET, 'Max NPCs generated for a hamlet'],
+      ['MAX_NPCS_TOWN', NPC_CONSTANTS.MAX_NPCS_TOWN, 'Max NPCs generated for a town'],
+      ['MAX_NPCS_CITY', NPC_CONSTANTS.MAX_NPCS_CITY, 'Max NPCs generated for a city'],
+      ['WILDERNESS_NPC_CHANCE', NPC_CONSTANTS.WILDERNESS_NPC_CHANCE, 'Probability of wilderness hex notable NPC'],
+    ),
+    viewer: 'constants',
+    sourceFile: 'src/types/npc.ts',
+  },
+
+  // ─── Location Subtypes ──────────────────────────────────────────
+  {
+    id: 'location-subtypes',
+    label: 'Location Subtypes',
+    category: 'Locations & Sublocations',
+    description: `${LOCATION_SUBTYPE_CATALOG.length} location subtypes grouped by category: settlements, military, religious, ruins, wonders, anomalies, and monster/danger.`,
+    data: LOCATION_SUBTYPE_CATALOG,
+    viewer: 'table',
+    columns: [
+      { key: 'subtype', label: 'Subtype' },
+      { key: 'group', label: 'Group', render: 'badge', badgeColors: LOCATION_GROUP_COLORS },
+      { key: 'description', label: 'Description' },
+    ],
+    searchFields: ['subtype', 'group', 'description'],
+    sourceFile: 'src/types/index.ts',
+  },
 ];
 
 // ── Derived: categories grouped from registry ────────────────────
 
 /** Category order for sidebar display */
 const CATEGORY_ORDER = [
-  'World & Geography', 'Locations & Sublocations', 'Encounters', 'Actions',
+  'World & Geography', 'Locations & Sublocations', 'NPCs', 'Encounters', 'Actions',
   'Agents & Archetypes', 'Traits', 'Culture & Society', 'Factions & Military',
   'Economy & Trade', 'Cosmology & Divine', 'Rivals & Opposition',
   'Narrative & Prose', 'Attachments', 'Configuration',
