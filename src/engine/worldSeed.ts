@@ -172,7 +172,7 @@ export const LOCATION_NAMES = [
 // ─── Procedural Location Naming ──────────────────────────────────
 
 /** Prefixes by location subtype for procedural names */
-const LOCATION_PREFIXES: Partial<Record<LocationSubtype, string[]>> = {
+export const LOCATION_PREFIXES: Partial<Record<LocationSubtype, string[]>> = {
   hamlet:   ['Little', 'Old', 'Lower', 'Upper', 'East', 'West', 'New'],
   town:     ['Greater', 'Market', 'Fair', 'High', 'Free'],
   city:     ['Grand', 'Royal', 'Great', 'Noble'],
@@ -223,7 +223,7 @@ const LOCATION_PREFIXES: Partial<Record<LocationSubtype, string[]>> = {
 };
 
 /** Core name roots by terrain type */
-const TERRAIN_NAME_ROOTS: Partial<Record<TerrainType, string[]>> = {
+export const TERRAIN_NAME_ROOTS: Partial<Record<TerrainType, string[]>> = {
   grassland:   ['Meadow', 'Field', 'Green', 'Lea', 'Downs'],
   farmland:    ['Grange', 'Stead', 'Furrow', 'Acre', 'Tilth'],
   savanna:     ['Reach', 'Flat', 'Grass', 'Plain', 'Dry'],
@@ -244,7 +244,7 @@ const TERRAIN_NAME_ROOTS: Partial<Record<TerrainType, string[]>> = {
 };
 
 /** Suffix by location subtype */
-const LOCATION_SUFFIXES: Partial<Record<LocationSubtype, string[]>> = {
+export const LOCATION_SUFFIXES: Partial<Record<LocationSubtype, string[]>> = {
   hamlet:   ['bury', 'ton', 'wick', 'stead', 'ford', 'ham', 'vale'],
   town:     ['town', 'borough', 'gate', 'bridge', 'cross', 'market'],
   city:     ['city', 'polis', 'haven', 'port', 'hold'],
@@ -296,7 +296,7 @@ const LOCATION_SUFFIXES: Partial<Record<LocationSubtype, string[]>> = {
   corruption_zone: [' Blight', ' Mire', ' Waste', ' Taint'],
 };
 
-const DEFAULT_ROOTS = ['Stone', 'Grey', 'Iron', 'Silver', 'Raven', 'Wolf', 'Thorn', 'Hawk'];
+export const DEFAULT_ROOTS = ['Stone', 'Grey', 'Iron', 'Silver', 'Raven', 'Wolf', 'Thorn', 'Hawk'];
 
 /**
  * Generate a procedural location name from terrain + subtype.
