@@ -4,8 +4,9 @@
 import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
 import { bumpImportance, hydrateToTier, phaseNpcGraduation } from '../npcGraduation';
-import { NPC_CONSTANTS } from '../../types/npc';
+import { NPC_CONSTANTS, NPC_ROLE_REACH_MAP } from '../../types/npc';
 import { VALUE_PAIRS } from '../../types/agent';
+import { REACH_DOMAINS } from '../../types/traits';
 import type { GameState } from '../../types/gameState';
 
 // ─── PRNG ────────────────────────────────────────────────────────────────────
@@ -178,12 +179,67 @@ describe('hydrateToTier', () => {
 
     const caps = node.properties.domainCapabilities as Record<string, number>;
     expect(caps).toBeDefined();
-    const expectedDomains = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'flesh'];
-    for (const domain of expectedDomains) {
+    // Should have all 8 reaches (no flesh)
+    for (const domain of REACH_DOMAINS) {
       expect(caps[domain]).toBeDefined();
-      expect(caps[domain]).toBeGreaterThanOrEqual(10);
-      expect(caps[domain]).toBeLessThanOrEqual(50);
+      expect(caps[domain]).toBeGreaterThanOrEqual(1);
     }
+    expect(caps['flesh']).toBeUndefined();
+  });
+
+  it('notable promotion generates role-aware domainCapabilities', () => {
+    const graph = new WorldGraph();
+    makeAmbientNpc(graph, 'npc_0', 'guard'); // guard = iron primary, stone secondary
+
+    hydrateToTier(graph, 'npc_0', 'notable', mulberry32(42));
+
+    const node = graph.getNode('npc_0')!;
+    const caps = node.properties.domainCapabilities as Record<string, number>;
+    expect(caps).toBeDefined();
+
+    // Primary (iron) should be in notable primary range
+    expect(caps.iron).toBeGreaterThanOrEqual(NPC_CONSTANTS.NOTABLE_PRIMARY_BASE);
+    expect(caps.iron).toBeLessThan(NPC_CONSTANTS.NOTABLE_PRIMARY_BASE + NPC_CONSTANTS.NOTABLE_PRIMARY_RANGE);
+
+    // Secondary (stone) should be in notable secondary range
+    expect(caps.stone).toBeGreaterThanOrEqual(NPC_CONSTANTS.NOTABLE_SECONDARY_BASE);
+    expect(caps.stone).toBeLessThan(NPC_CONSTANTS.NOTABLE_SECONDARY_BASE + NPC_CONSTANTS.NOTABLE_SECONDARY_RANGE);
+
+    // Other reaches should be in notable other range
+    for (const domain of ['gold', 'shadow', 'veil', 'heart', 'eye', 'star'] as const) {
+      expect(caps[domain]).toBeGreaterThanOrEqual(NPC_CONSTANTS.NOTABLE_OTHER_BASE);
+      expect(caps[domain]).toBeLessThan(NPC_CONSTANTS.NOTABLE_OTHER_BASE + NPC_CONSTANTS.NOTABLE_OTHER_RANGE);
+    }
+  });
+
+  it('spotlight promotion boosts role primary/secondary reaches highest', () => {
+    const graph = new WorldGraph();
+    makeAmbientNpc(graph, 'npc_0', 'merchant'); // gold primary, eye secondary
+
+    // First promote to notable
+    const rng1 = mulberry32(42);
+    hydrateToTier(graph, 'npc_0', 'notable', rng1);
+
+    // Then promote to spotlight
+    graph.updateNode('npc_0', { properties: { spotlightTier: 'notable' } });
+    const rng2 = mulberry32(99);
+    hydrateToTier(graph, 'npc_0', 'spotlight', rng2);
+
+    const caps = graph.getNode('npc_0')!.properties.domainCapabilities as Record<string, number>;
+    const affinity = NPC_ROLE_REACH_MAP['merchant'];
+
+    // Primary should be the highest or among the highest
+    const primaryVal = caps[affinity.primary];
+    const secondaryVal = caps[affinity.secondary];
+    const otherVals = REACH_DOMAINS
+      .filter(d => d !== affinity.primary && d !== affinity.secondary)
+      .map(d => caps[d]);
+    const maxOther = Math.max(...otherVals);
+
+    // Primary should exceed max of other reaches
+    expect(primaryVal).toBeGreaterThan(maxOther);
+    // Secondary should be >= most others
+    expect(secondaryVal).toBeGreaterThanOrEqual(maxOther - 5); // some tolerance for rng
   });
 
   it('is deterministic — same seed produces same axiological profile', () => {

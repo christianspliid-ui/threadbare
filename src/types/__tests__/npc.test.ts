@@ -6,8 +6,10 @@ import {
   LOCATION_ROLE_ROSTERS,
   FACTION_ROLE_ROSTERS,
   NPC_NAME_POOL,
+  NPC_ROLE_REACH_MAP,
 } from '../npc';
 import type { SpotlightTier, NpcRole, RoleRosterEntry } from '../npc';
+import { REACH_DOMAINS } from '../traits';
 
 describe('SpotlightTier', () => {
   it('has exactly three tiers', () => {
@@ -53,8 +55,19 @@ describe('NpcRole', () => {
     }
   });
 
-  it('has at least 30 roles', () => {
-    expect(NPC_ROLES.length).toBeGreaterThanOrEqual(30);
+  it('has exactly 56 roles (all reach permutations)', () => {
+    expect(NPC_ROLES.length).toBe(56);
+  });
+
+  it('includes all 19 new roles', () => {
+    const newRoles: NpcRole[] = [
+      'mercenary', 'spellsword', 'paladin', 'alchemist', 'assassin', 'burglar',
+      'hexer', 'warmage', 'enchanter', 'illusionist', 'bard', 'marshal',
+      'sage', 'monk', 'hunter', 'warrior_priest', 'chaplain', 'exorcist', 'oracle',
+    ];
+    for (const role of newRoles) {
+      expect(NPC_ROLES).toContain(role);
+    }
   });
 });
 
@@ -87,6 +100,11 @@ describe('RoleRosterEntry', () => {
     expect(spy).toBeDefined();
   });
 
+  it('LOCATION_ROLE_ROSTERS includes castle and shrine', () => {
+    expect(LOCATION_ROLE_ROSTERS).toHaveProperty('castle');
+    expect(LOCATION_ROLE_ROSTERS).toHaveProperty('shrine');
+  });
+
   it('FACTION_ROLE_ROSTERS has expected faction types', () => {
     expect(FACTION_ROLE_ROSTERS).toHaveProperty('merchant_guild');
     expect(FACTION_ROLE_ROSTERS).toHaveProperty('military_order');
@@ -95,6 +113,14 @@ describe('RoleRosterEntry', () => {
     expect(FACTION_ROLE_ROSTERS).toHaveProperty('noble_house');
     expect(FACTION_ROLE_ROSTERS).toHaveProperty('scholarly_circle');
     expect(FACTION_ROLE_ROSTERS).toHaveProperty('artisan_guild');
+  });
+
+  it('FACTION_ROLE_ROSTERS includes 5 new faction types', () => {
+    expect(FACTION_ROLE_ROSTERS).toHaveProperty('arcane_order');
+    expect(FACTION_ROLE_ROSTERS).toHaveProperty('holy_order');
+    expect(FACTION_ROLE_ROSTERS).toHaveProperty('mercenary_band');
+    expect(FACTION_ROLE_ROSTERS).toHaveProperty('ranger_lodge');
+    expect(FACTION_ROLE_ROSTERS).toHaveProperty('underworld');
   });
 
   it('thieves_guild has fence at chance 1.0', () => {
@@ -170,5 +196,49 @@ describe('NPC_NAME_POOL', () => {
   it('has no duplicate names', () => {
     const unique = new Set(NPC_NAME_POOL);
     expect(unique.size).toBe(NPC_NAME_POOL.length);
+  });
+});
+
+describe('NPC_ROLE_REACH_MAP', () => {
+  it('has an entry for every NPC role', () => {
+    for (const role of NPC_ROLES) {
+      expect(NPC_ROLE_REACH_MAP).toHaveProperty(role);
+    }
+  });
+
+  it('every entry has valid primary and secondary reaches', () => {
+    for (const role of NPC_ROLES) {
+      const aff = NPC_ROLE_REACH_MAP[role];
+      expect(REACH_DOMAINS).toContain(aff.primary);
+      expect(REACH_DOMAINS).toContain(aff.secondary);
+    }
+  });
+
+  it('primary and secondary are always different', () => {
+    for (const role of NPC_ROLES) {
+      const aff = NPC_ROLE_REACH_MAP[role];
+      expect(aff.primary).not.toBe(aff.secondary);
+    }
+  });
+
+  it('covers all 56 unique (primary, secondary) permutations', () => {
+    const combos = new Set<string>();
+    for (const role of NPC_ROLES) {
+      const aff = NPC_ROLE_REACH_MAP[role];
+      combos.add(`${aff.primary}+${aff.secondary}`);
+    }
+    // 8 reaches × 7 secondaries = 56 permutations
+    expect(combos.size).toBe(56);
+  });
+
+  it('each primary reach has exactly 7 roles', () => {
+    const counts = new Map<string, number>();
+    for (const role of NPC_ROLES) {
+      const p = NPC_ROLE_REACH_MAP[role].primary;
+      counts.set(p, (counts.get(p) ?? 0) + 1);
+    }
+    for (const domain of REACH_DOMAINS) {
+      expect(counts.get(domain)).toBe(7);
+    }
   });
 });

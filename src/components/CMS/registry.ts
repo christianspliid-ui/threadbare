@@ -12,7 +12,10 @@ import type { ContentRegistryEntry, ContentCategory, ConstantEntry } from './typ
 
 // ── Data Imports ─────────────────────────────────────────────────
 // World & Geography
-import { TERRAIN_SETTLEMENT_WEIGHTS, LOCATION_NAMES } from '../../engine/worldSeed';
+import {
+  TERRAIN_SETTLEMENT_WEIGHTS, LOCATION_NAMES,
+  LOCATION_PREFIXES, LOCATION_SUFFIXES, TERRAIN_NAME_ROOTS, DEFAULT_ROOTS,
+} from '../../engine/worldSeed';
 import { TERRAIN_TRANSFORMATIONS } from '../../data/terrain-transformation-content';
 import { TERRAIN_TAXES } from '../../data/movement-content';
 import { REGION_NAME_FRAGMENTS } from '../../data/region-name-content';
@@ -26,6 +29,7 @@ import { SUBTYPE_SUBLOCATION_MAP } from '../../engine/sublocation';
 import {
   NPC_ROLES, LOCATION_ROLE_ROSTERS, FACTION_ROLE_ROSTERS,
   NPC_ROLE_SUBLOCATION_MAP, NPC_CONSTANTS, NPC_NAME_POOL,
+  NPC_ROLE_REACH_MAP,
 } from '../../types/npc';
 
 // Encounters
@@ -43,6 +47,10 @@ import { AMBITION_TEMPLATES } from '../../data/ambition-templates';
 // Culture & Society
 import { FOUNDATION_MODIFIERS, CREATION_SPHERE_MODIFIERS, BIOME_MODIFIERS, FORMATIVE_TRAIT_SEEDS, BEHAVIORAL_TRAIT_SEEDS } from '../../data/culture-content';
 import { HISTORICAL_CULTURE_TEMPLATES } from '../../data/historical-culture-content';
+import {
+  SETTLEMENT_ROOTS_BY_FOUNDATION, SETTLEMENT_ROOTS_BY_SPHERE,
+  SETTLEMENT_SUFFIXES_BY_FOUNDATION,
+} from '../../data/culture-name-pools';
 
 // Cosmology & Divine
 import { ARCHETYPE_TITLES } from '../../data/ascendant-content';
@@ -280,6 +288,16 @@ const NPC_ROLE_ROWS = NPC_ROLES.map(role => {
   };
 });
 
+// ── Derived: NPC role reach affinity rows ─────────────────────────
+const NPC_ROLE_REACH_ROWS = NPC_ROLES.map(role => {
+  const aff = NPC_ROLE_REACH_MAP[role];
+  return {
+    role,
+    primary: aff.primary,
+    secondary: aff.secondary,
+  };
+});
+
 // ── Derived: location role roster rows ───────────────────────────
 const LOCATION_ROSTER_ROWS = Object.entries(LOCATION_ROLE_ROSTERS).flatMap(
   ([locType, roster]) => roster.map(r => ({
@@ -384,39 +402,6 @@ const LOCATION_GROUP_COLORS: Record<string, string> = {
 export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
   // ─── World & Geography ──────────────────────────────────────
   {
-    id: 'terrain-settlement-weights',
-    label: 'Terrain → Settlement Weights',
-    category: 'World & Geography',
-    description: 'Weighted probability of settlement subtypes spawning per terrain type during world generation.',
-    data: TERRAIN_SETTLEMENT_WEIGHTS,
-    viewer: 'record',
-    sourceFile: 'src/engine/worldSeed.ts',
-  },
-  {
-    id: 'terrain-transformations',
-    label: 'Terrain Transformations',
-    category: 'World & Geography',
-    description: 'Corruption and divine influence terrain transformations (from → to).',
-    data: TERRAIN_TRANSFORMATIONS,
-    viewer: 'table',
-    columns: [
-      { key: 'from', label: 'From Terrain' },
-      { key: 'to', label: 'To Terrain' },
-      { key: 'trigger', label: 'Trigger', render: 'badge' },
-    ],
-    searchFields: ['from', 'to', 'trigger'],
-    sourceFile: 'src/data/terrain-transformation-content.ts',
-  },
-  {
-    id: 'terrain-movement-costs',
-    label: 'Movement Costs',
-    category: 'World & Geography',
-    description: 'Terrain movement tax multipliers (0=easy, Infinity=impassable).',
-    data: TERRAIN_TAXES,
-    viewer: 'record',
-    sourceFile: 'src/data/movement-content.ts',
-  },
-  {
     id: 'region-name-fragments',
     label: 'Region Name Fragments',
     category: 'World & Geography',
@@ -444,20 +429,65 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
     searchFields: ['value.id', 'value.name'],
     sourceFile: 'src/data/resource-content.ts',
   },
+
+  // ─── Terrain ───────────────────────────────────────────────
+  {
+    id: 'terrain-name-roots',
+    label: 'Terrain Name Roots',
+    category: 'Terrain',
+    description: 'Core name root words by terrain type, used in procedural location naming. E.g. forest → "Wood/Thorn/Oak".',
+    data: { ...TERRAIN_NAME_ROOTS, _default: DEFAULT_ROOTS },
+    viewer: 'record',
+    sourceFile: 'src/engine/worldSeed.ts',
+  },
+  {
+    id: 'terrain-settlement-weights',
+    label: 'Settlement Spawn Weights',
+    category: 'Terrain',
+    description: 'Weighted probability of settlement subtypes spawning per terrain type during world generation.',
+    data: TERRAIN_SETTLEMENT_WEIGHTS,
+    viewer: 'record',
+    sourceFile: 'src/engine/worldSeed.ts',
+  },
+  {
+    id: 'terrain-transformations',
+    label: 'Terrain Transformations',
+    category: 'Terrain',
+    description: 'Corruption and divine influence terrain transformations (from → to).',
+    data: TERRAIN_TRANSFORMATIONS,
+    viewer: 'table',
+    columns: [
+      { key: 'from', label: 'From Terrain' },
+      { key: 'to', label: 'To Terrain' },
+      { key: 'trigger', label: 'Trigger', render: 'badge' },
+    ],
+    searchFields: ['from', 'to', 'trigger'],
+    sourceFile: 'src/data/terrain-transformation-content.ts',
+  },
+  {
+    id: 'terrain-movement-costs',
+    label: 'Movement Costs',
+    category: 'Terrain',
+    description: 'Terrain movement tax multipliers (0=easy, Infinity=impassable).',
+    data: TERRAIN_TAXES,
+    viewer: 'record',
+    sourceFile: 'src/data/movement-content.ts',
+  },
   {
     id: 'terrain-modifiers',
     label: 'Terrain Modifiers',
-    category: 'World & Geography',
-    description: 'Per-terrain modifiers for prosperity, defensibility, and trade.',
+    category: 'Terrain',
+    description: 'Per-terrain modifiers for line-of-sight range, prosperity, defensibility.',
     data: TERRAIN_MODIFIERS,
     viewer: 'record',
     sourceFile: 'src/data/terrain-modifiers.ts',
   },
+  // ─── Locations & Sublocations ───────────────────────────────
   {
     id: 'location-names',
     label: 'Location Name Pool',
-    category: 'World & Geography',
-    description: 'Static name pool used during world seeding.',
+    category: 'Locations & Sublocations',
+    description: `${LOCATION_NAMES.length} handcrafted names used for the first locations during world seeding; later locations use procedural generation.`,
     data: LOCATION_NAMES.map((n, i) => ({ index: i, name: n })),
     viewer: 'table',
     columns: [
@@ -466,8 +496,24 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
     ],
     sourceFile: 'src/engine/worldSeed.ts',
   },
-
-  // ─── Locations & Sublocations ───────────────────────────────
+  {
+    id: 'location-name-prefixes',
+    label: 'Location Name Prefixes',
+    category: 'Locations & Sublocations',
+    description: 'Procedural name prefixes by location subtype (35% chance to appear). E.g. hamlet → "Little/Old", city → "Grand/Royal".',
+    data: LOCATION_PREFIXES,
+    viewer: 'record',
+    sourceFile: 'src/engine/worldSeed.ts',
+  },
+  {
+    id: 'location-name-suffixes',
+    label: 'Location Name Suffixes',
+    category: 'Locations & Sublocations',
+    description: 'Procedural name suffixes by location subtype. E.g. hamlet → "bury/ton/wick", city → "city/polis/haven".',
+    data: LOCATION_SUFFIXES,
+    viewer: 'record',
+    sourceFile: 'src/engine/worldSeed.ts',
+  },
   {
     id: 'sublocation-map',
     label: 'Sublocation Map',
@@ -706,6 +752,33 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
     ],
     searchFields: ['id', 'name'],
     sourceFile: 'src/data/historical-culture-content.ts',
+  },
+  {
+    id: 'settlement-roots-foundation',
+    label: 'Settlement Name Roots (Foundation)',
+    category: 'Culture & Society',
+    description: 'Culture-flavored name roots for settlements, keyed by foundation bias. ~40% chance to replace terrain root.',
+    data: SETTLEMENT_ROOTS_BY_FOUNDATION,
+    viewer: 'record',
+    sourceFile: 'src/data/culture-name-pools.ts',
+  },
+  {
+    id: 'settlement-roots-sphere',
+    label: 'Settlement Name Roots (Sphere)',
+    category: 'Culture & Society',
+    description: 'Culture-flavored name roots for settlements, keyed by creation sphere. Combined with foundation roots.',
+    data: SETTLEMENT_ROOTS_BY_SPHERE,
+    viewer: 'record',
+    sourceFile: 'src/data/culture-name-pools.ts',
+  },
+  {
+    id: 'settlement-suffixes-foundation',
+    label: 'Settlement Name Suffixes (Foundation)',
+    category: 'Culture & Society',
+    description: 'Culture-flavored name suffixes for settlements, keyed by foundation bias. ~30% chance to replace subtype suffix.',
+    data: SETTLEMENT_SUFFIXES_BY_FOUNDATION,
+    viewer: 'record',
+    sourceFile: 'src/data/culture-name-pools.ts',
   },
 
   // ─── Cosmology & Divine ─────────────────────────────────────
@@ -1905,6 +1978,21 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
     sourceFile: 'src/types/npc.ts',
   },
   {
+    id: 'npc-role-reaches',
+    label: 'NPC Role → Reaches',
+    category: 'NPCs',
+    description: `${NPC_ROLES.length} NPC roles mapped to primary and secondary reach domains (all 56 permutations of 8 reaches).`,
+    data: NPC_ROLE_REACH_ROWS,
+    viewer: 'table',
+    columns: [
+      { key: 'role', label: 'Role', render: 'badge' },
+      { key: 'primary', label: 'Primary Reach', render: 'badge', badgeColors: REACH_BADGE_COLORS },
+      { key: 'secondary', label: 'Secondary Reach', render: 'badge', badgeColors: REACH_BADGE_COLORS },
+    ],
+    searchFields: ['role', 'primary', 'secondary'],
+    sourceFile: 'src/types/npc.ts',
+  },
+  {
     id: 'location-role-rosters',
     label: 'Location → NPC Rosters',
     category: 'NPCs',
@@ -1994,7 +2082,7 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
 
 /** Category order for sidebar display */
 const CATEGORY_ORDER = [
-  'World & Geography', 'Locations & Sublocations', 'NPCs', 'Encounters', 'Actions',
+  'World & Geography', 'Terrain', 'Locations & Sublocations', 'NPCs', 'Encounters', 'Actions',
   'Agents & Archetypes', 'Traits', 'Culture & Society', 'Factions & Military',
   'Economy & Trade', 'Cosmology & Divine', 'Rivals & Opposition',
   'Narrative & Prose', 'Attachments', 'Configuration',

@@ -12,8 +12,10 @@
 
 import type { WorldGraph } from './graph';
 import type { GameState } from '../types/gameState';
-import { NPC_CONSTANTS } from '../types/npc';
-import type { SpotlightTier } from '../types/npc';
+import { NPC_CONSTANTS, NPC_ROLE_REACH_MAP } from '../types/npc';
+import type { SpotlightTier, NpcRole } from '../types/npc';
+import { REACH_DOMAINS } from '../types/traits';
+import type { ReachDomain } from '../types/traits';
 import { VALUE_PAIRS } from '../types/agent';
 import type { AxiologicalProfile } from '../types/agent';
 import { NARRATIVE_ARCHETYPES } from '../data/archetype-content';
@@ -76,15 +78,35 @@ const IMPORTANCE_DELTAS: Record<ImportanceSource, number> = {
 // ─── Role → wealth lookup (NFP #1) ───────────────────────────────────────────
 
 const ROLE_WEALTH: Record<string, number> = {
-  merchant:      60,
-  trader:        55,
-  noble:         70,
-  innkeeper:     40,
-  smith:         45,
-  guard:         25,
-  guard_captain: 35,
-  healer:        30,
-  priest:        20,
+  merchant:       60,
+  trader:         55,
+  noble:          70,
+  innkeeper:      40,
+  smith:          45,
+  guard:          25,
+  guard_captain:  35,
+  healer:         30,
+  priest:         20,
+  // New roles
+  mercenary:      40,
+  spellsword:     35,
+  paladin:        30,
+  alchemist:      50,
+  assassin:       45,
+  burglar:        30,
+  hexer:          15,
+  warmage:        35,
+  enchanter:      55,
+  illusionist:    30,
+  bard:           35,
+  marshal:        40,
+  sage:           25,
+  monk:           10,
+  hunter:         20,
+  warrior_priest: 20,
+  chaplain:       25,
+  exorcist:       20,
+  oracle:         15,
 };
 const DEFAULT_WEALTH = 20;
 
@@ -126,6 +148,88 @@ export function bumpImportance(
   });
 }
 
+// ─── Role-aware capability generation ─────────────────────────────────────────
+
+/**
+ * Generate domainCapabilities weighted by role reach affinity.
+ * Primary reach gets the highest scores, secondary gets moderate, others get low.
+ */
+function generateRoleCapabilities(
+  rng: () => number,
+  affinity: { primary: ReachDomain; secondary: ReachDomain } | undefined,
+  tier: 'notable' | 'spotlight',
+): Record<string, number> {
+  const caps: Record<string, number> = {};
+
+  if (tier === 'notable') {
+    for (const domain of REACH_DOMAINS) {
+      if (affinity && domain === affinity.primary) {
+        caps[domain] = NPC_CONSTANTS.NOTABLE_PRIMARY_BASE +
+          Math.floor(rng() * NPC_CONSTANTS.NOTABLE_PRIMARY_RANGE);
+      } else if (affinity && domain === affinity.secondary) {
+        caps[domain] = NPC_CONSTANTS.NOTABLE_SECONDARY_BASE +
+          Math.floor(rng() * NPC_CONSTANTS.NOTABLE_SECONDARY_RANGE);
+      } else {
+        caps[domain] = NPC_CONSTANTS.NOTABLE_OTHER_BASE +
+          Math.floor(rng() * NPC_CONSTANTS.NOTABLE_OTHER_RANGE);
+      }
+    }
+  } else {
+    // Direct spotlight (no notable step): combine notable + spotlight ranges
+    for (const domain of REACH_DOMAINS) {
+      if (affinity && domain === affinity.primary) {
+        caps[domain] = NPC_CONSTANTS.NOTABLE_PRIMARY_BASE +
+          Math.floor(rng() * NPC_CONSTANTS.NOTABLE_PRIMARY_RANGE) +
+          NPC_CONSTANTS.SPOTLIGHT_PRIMARY_BOOST +
+          Math.floor(rng() * NPC_CONSTANTS.SPOTLIGHT_PRIMARY_RANGE);
+      } else if (affinity && domain === affinity.secondary) {
+        caps[domain] = NPC_CONSTANTS.NOTABLE_SECONDARY_BASE +
+          Math.floor(rng() * NPC_CONSTANTS.NOTABLE_SECONDARY_RANGE) +
+          NPC_CONSTANTS.SPOTLIGHT_SECONDARY_BOOST +
+          Math.floor(rng() * NPC_CONSTANTS.SPOTLIGHT_SECONDARY_RANGE);
+      } else {
+        caps[domain] = NPC_CONSTANTS.NOTABLE_OTHER_BASE +
+          Math.floor(rng() * NPC_CONSTANTS.NOTABLE_OTHER_RANGE) +
+          NPC_CONSTANTS.SPOTLIGHT_OTHER_BOOST +
+          Math.floor(rng() * NPC_CONSTANTS.SPOTLIGHT_OTHER_RANGE);
+      }
+    }
+  }
+
+  return caps;
+}
+
+/**
+ * Boost existing capabilities when promoting to spotlight tier.
+ * Applies role-weighted boosts: primary reach gets the biggest bump.
+ */
+function boostCapabilities(
+  rng: () => number,
+  existing: Record<ReachDomain, number>,
+  affinity: { primary: ReachDomain; secondary: ReachDomain } | undefined,
+): Record<string, number> {
+  const caps: Record<string, number> = {};
+
+  for (const domain of REACH_DOMAINS) {
+    const base = existing[domain] ?? 0;
+    if (affinity && domain === affinity.primary) {
+      caps[domain] = Math.min(100, base +
+        NPC_CONSTANTS.SPOTLIGHT_PRIMARY_BOOST +
+        Math.floor(rng() * NPC_CONSTANTS.SPOTLIGHT_PRIMARY_RANGE));
+    } else if (affinity && domain === affinity.secondary) {
+      caps[domain] = Math.min(100, base +
+        NPC_CONSTANTS.SPOTLIGHT_SECONDARY_BOOST +
+        Math.floor(rng() * NPC_CONSTANTS.SPOTLIGHT_SECONDARY_RANGE));
+    } else {
+      caps[domain] = Math.min(100, base +
+        NPC_CONSTANTS.SPOTLIGHT_OTHER_BOOST +
+        Math.floor(rng() * NPC_CONSTANTS.SPOTLIGHT_OTHER_RANGE));
+    }
+  }
+
+  return caps;
+}
+
 // ─── hydrateToTier ────────────────────────────────────────────────────────────
 
 /**
@@ -150,6 +254,9 @@ export function hydrateToTier(
     spotlightTier: targetTier,
   };
 
+  const role = (node.properties.npcRole as NpcRole | undefined) ?? undefined;
+  const affinity = role ? NPC_ROLE_REACH_MAP[role] : undefined;
+
   // For notable or spotlight: generate axiological profile if missing
   if (targetTier === 'notable' || targetTier === 'spotlight') {
     if (typeof node.properties.narrativeArchetype !== 'string') {
@@ -167,30 +274,31 @@ export function hydrateToTier(
 
     // Set wealth based on role if missing
     if (node.properties.wealth === undefined) {
-      const role = (node.properties.npcRole as string | undefined) ?? '';
-      updates.wealth = ROLE_WEALTH[role] ?? DEFAULT_WEALTH;
+      const roleStr = (node.properties.npcRole as string | undefined) ?? '';
+      updates.wealth = ROLE_WEALTH[roleStr] ?? DEFAULT_WEALTH;
     }
 
     // Set reputationScore to 0 if missing
     if (node.properties.reputationScore === undefined) {
       updates.reputationScore = 0;
     }
+
+    // Generate role-aware domainCapabilities at notable tier
+    if (!node.properties.domainCapabilities) {
+      updates.domainCapabilities = generateRoleCapabilities(rng, affinity, 'notable');
+    }
   }
 
-  // For spotlight: generate domainCapabilities and set cooperationStrategy
+  // For spotlight: boost existing domainCapabilities and set cooperationStrategy
   if (targetTier === 'spotlight') {
-    if (!node.properties.domainCapabilities) {
-      updates.domainCapabilities = {
-        iron:   10 + Math.floor(rng() * 41),
-        gold:   10 + Math.floor(rng() * 41),
-        shadow: 10 + Math.floor(rng() * 41),
-        veil:   10 + Math.floor(rng() * 41),
-        heart:  10 + Math.floor(rng() * 41),
-        eye:    10 + Math.floor(rng() * 41),
-        stone:  10 + Math.floor(rng() * 41),
-        star:   10 + Math.floor(rng() * 41),
-        flesh:  10 + Math.floor(rng() * 41),
-      };
+    // Boost existing capabilities (from notable tier or freshly generated above)
+    const existing = (node.properties.domainCapabilities ?? updates.domainCapabilities) as
+      Record<ReachDomain, number> | undefined;
+    if (existing) {
+      updates.domainCapabilities = boostCapabilities(rng, existing, affinity);
+    } else {
+      // Edge case: direct promotion to spotlight without notable step
+      updates.domainCapabilities = generateRoleCapabilities(rng, affinity, 'spotlight');
     }
 
     if (!node.properties.cooperationStrategy) {
