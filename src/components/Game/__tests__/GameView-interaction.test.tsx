@@ -99,8 +99,7 @@ describe('GameView', () => {
     // Check for right sidebar with retinue content
     const rightSidebar = container.querySelector('[data-testid="right-sidebar"]');
     expect(rightSidebar).toBeInTheDocument();
-    // ThreadsPanel replaced RetinuePanel in Phase 16-01
-    expect(rightSidebar?.textContent).toMatch(/Threads|No agents|Agents/);
+    expect(rightSidebar?.textContent).toContain('Threads');
   });
 
   it('renders the ascendant info', () => {

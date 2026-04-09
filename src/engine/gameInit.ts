@@ -501,7 +501,7 @@ export function devSeedTheFirst(state: GameState): string {
       maintenanceCurrent: true,
       awareness: 'faith',
       readBackstoryTier: 0,
-      attentionMode: 'pause',
+      attentionMode: 'auto_resolve',
       storyPhase: 'call',
       meetingChoiceRecord: null,
       beatHistory: [],

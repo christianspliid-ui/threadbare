@@ -96,6 +96,12 @@ export function selectEncounterRuntimeForNotification(
   return { encounter, activeAction };
 }
 
+export function shouldAutoOpenEncounterNotification(
+  notif: Pick<EncounterNotification, 'resolved' | 'autoResolveTick'>,
+): boolean {
+  return !notif.resolved && notif.autoResolveTick === null;
+}
+
 export function selectEncounterRuntimeForDisplay(
   encounter: ActiveEncounterDisplay,
   legacyProgresses: EncounterProgress[],

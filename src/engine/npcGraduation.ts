@@ -16,6 +16,7 @@ import { NPC_CONSTANTS } from '../types/npc';
 import type { SpotlightTier } from '../types/npc';
 import { VALUE_PAIRS } from '../types/agent';
 import type { AxiologicalProfile } from '../types/agent';
+import { NARRATIVE_ARCHETYPES } from '../data/archetype-content';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────────────────
 
@@ -95,6 +96,11 @@ const TIER_ORDER: Record<SpotlightTier, number> = {
   spotlight: 2,
 };
 
+function pickNarrativeArchetypeId(rng: () => number): string {
+  const archetype = NARRATIVE_ARCHETYPES[Math.floor(rng() * NARRATIVE_ARCHETYPES.length)];
+  return archetype?.id ?? 'wanderer';
+}
+
 // ─── bumpImportance ───────────────────────────────────────────────────────────
 
 /**
@@ -146,6 +152,10 @@ export function hydrateToTier(
 
   // For notable or spotlight: generate axiological profile if missing
   if (targetTier === 'notable' || targetTier === 'spotlight') {
+    if (typeof node.properties.narrativeArchetype !== 'string') {
+      updates.narrativeArchetype = pickNarrativeArchetypeId(rng);
+    }
+
     if (!node.properties.axiologicalProfile) {
       const profile: Partial<AxiologicalProfile> = {};
       for (const pair of VALUE_PAIRS) {

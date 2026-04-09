@@ -306,7 +306,7 @@ export function phaseEncounterVisibility(
         props: {
           tier: 5,
           courtPosition: 'the_first',
-          attentionMode: 'pause',
+          attentionMode: 'auto_resolve',
         } as ThreadEdgeProperties,
       });
     }

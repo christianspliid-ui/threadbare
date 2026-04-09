@@ -7,6 +7,7 @@ import type { WorldGraph } from './graph';
 import type { GraphOp, GraphOpContext, GraphOpResult, GraphOpBatchResult } from '../types/graphOp';
 import { resolveRef } from '../types/graphOp';
 import { emitTrace } from './traceBuffer';
+import { hydrateToTier } from './npcGraduation';
 
 interface ExecuteOptions {
   tick?: number;
@@ -14,6 +15,38 @@ interface ExecuteOptions {
 }
 
 let opCounter = 0;
+
+function createDeterministicHydrationRng(seedInput: string): () => number {
+  let seed = 0;
+  for (let i = 0; i < seedInput.length; i++) {
+    seed = (Math.imul(31, seed) + seedInput.charCodeAt(i)) | 0;
+  }
+
+  return () => {
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function hydrateThreadedIndividual(
+  graph: WorldGraph,
+  sourceId: string,
+  targetId: string,
+): void {
+  const targetNode = graph.getNode(targetId);
+  if (!targetNode || targetNode.type !== 'actor') return;
+  if (targetNode.properties.actorType !== 'individual') return;
+  if (targetNode.properties.spotlightTier === 'spotlight') return;
+
+  hydrateToTier(
+    graph,
+    targetId,
+    'spotlight',
+    createDeterministicHydrationRng(`${sourceId}->${targetId}`),
+  );
+}
 
 /**
  * Reset the operation counter for testing.
@@ -300,6 +333,10 @@ function executeAddEdge(
     type: op.edgeType,
     properties: op.properties ?? {},
   });
+
+  if (op.edgeType === 'thread') {
+    hydrateThreadedIndividual(graph, source, target);
+  }
 
   createdIds[id] = id;
 

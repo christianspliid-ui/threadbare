@@ -14,6 +14,7 @@ import {
   RETINUE_VIGNETTE_TIMEOUT,
   PAUSE_MODE_MIN_TIER,
   ATTENTION_MODE_CHANGE_COST,
+  VISIBILITY_BY_POSITION,
 } from '../../types/encounterVisibility';
 import { WorldGraph } from '../graph';
 import type { ThreadEdgeProperties } from '../../types/influence';
@@ -125,6 +126,11 @@ describe('generateEncounterProse', () => {
 // ─── Notification Building ─────────────────────────────────────────
 
 describe('buildEncounterNotification', () => {
+  it('defaults threaded legacy positions to auto-resolve mode', () => {
+    expect(VISIBILITY_BY_POSITION.the_first.defaultAttentionMode).toBe('auto_resolve');
+    expect(VISIBILITY_BY_POSITION.retinue.defaultAttentionMode).toBe('auto_resolve');
+  });
+
   it('builds notification for retinue agent', () => {
     const notif = buildEncounterNotification(
       'agent_1', 'Kira', 'enc_1', 'a duel', 'Ashenmoor',

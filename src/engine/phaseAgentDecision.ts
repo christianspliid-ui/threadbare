@@ -507,6 +507,11 @@ export function phaseAgentDecision(
         }
       }
 
+      const ft = filterResult.trace;
+      const topScore = decision.topCandidates.length > 0
+        ? decision.topCandidates[0].finalScore
+        : undefined;
+
       if (decision.selected) {
         const sel = decision.selected;
 
@@ -686,6 +691,15 @@ export function phaseAgentDecision(
                 locationSubtype: originLocationSubtype,
                 targetLocationId: sel.entry.locationId,
                 targetLocationSubtype: targetLocationSubtype,
+                filterCacheSize: ft.cacheSize,
+                filterAfterAwareness: ft.afterAwareness,
+                filterAfterVisibility: ft.afterVisibility,
+                filterAfterPrerequisites: ft.afterPrerequisites,
+                filterAfterThreat: ft.afterThreat,
+                filterAfterCap: ft.afterCap,
+                candidatesBeforeCooldown: rawCandidates.length,
+                candidatesAfterCooldown: candidates.length,
+                bestScore: topScore,
                 travelCost: selCandidate?.travelCost ?? 0,
                 threaded: threadContext.threaded,
                 courtPosition: threadContext.courtPosition,
@@ -795,6 +809,15 @@ export function phaseAgentDecision(
                 locationSubtype: originLocationSubtype,
                 targetLocationId: sel.entry.locationId,
                 targetLocationSubtype: getDecisionLocationSubtype(graph, sel.entry.locationId),
+                filterCacheSize: ft.cacheSize,
+                filterAfterAwareness: ft.afterAwareness,
+                filterAfterVisibility: ft.afterVisibility,
+                filterAfterPrerequisites: ft.afterPrerequisites,
+                filterAfterThreat: ft.afterThreat,
+                filterAfterCap: ft.afterCap,
+                candidatesBeforeCooldown: rawCandidates.length,
+                candidatesAfterCooldown: candidates.length,
+                bestScore: topScore,
                 travelCost: selCandidate?.travelCost ?? 0,
                 threaded: threadContext.threaded,
                 courtPosition: threadContext.courtPosition,
@@ -833,10 +856,7 @@ export function phaseAgentDecision(
         );
 
         // Emit idle decision trace
-        const ft = filterResult.trace;
-        const bestScore = decision.topCandidates.length > 0
-          ? decision.topCandidates[0].finalScore
-          : null;
+        const bestScore = topScore ?? null;
         const driftTargetNode = idle.targetLocationId ? graph.getNode(idle.targetLocationId) : null;
 
         const effectiveCd = getEffectiveCooldown(ENCOUNTER_ABANDON_COOLDOWN, rawCandidates.length);
@@ -1023,6 +1043,15 @@ export function phaseAgentDecision(
                   locationSubtype: originLocationSubtype,
                   targetLocationId: nearestContentLocId,
                   targetLocationSubtype: getDecisionLocationSubtype(graph, nearestContentLocId),
+                  filterCacheSize: ft.cacheSize,
+                  filterAfterAwareness: ft.afterAwareness,
+                  filterAfterVisibility: ft.afterVisibility,
+                  filterAfterPrerequisites: ft.afterPrerequisites,
+                  filterAfterThreat: ft.afterThreat,
+                  filterAfterCap: ft.afterCap,
+                  candidatesBeforeCooldown: rawCandidates.length,
+                  candidatesAfterCooldown: candidates.length,
+                  bestScore: topScore,
                   threaded: threadContext.threaded,
                   courtPosition: threadContext.courtPosition,
                 });

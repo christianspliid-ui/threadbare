@@ -372,8 +372,7 @@ export function getThreadedNodes(graph: WorldGraph, ascendantId: string): Thread
 
         const factionName = getAgentFaction(graph, targetNode.id)?.faction.name ?? null;
 
-        const archetypeId = (nodeProps.narrativeArchetype as string) ?? null;
-        const portraitUrl = getPortraitUrl(archetypeId ?? undefined);
+        const portraitUrl = getAgentPortraitUrlFromProperties(nodeProps);
 
         const domainCapabilities = nodeProps.domainCapabilities as Record<ReachDomain, number> | undefined;
         let primaryDomain: ReachDomain | null = null;

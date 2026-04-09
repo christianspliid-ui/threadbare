@@ -91,6 +91,7 @@ export function useAgentInteraction({
   const [selectedAgenda, setSelectedAgenda] = useState<AgendaTemplate | null>(null);
   const [agendaPickerOpen, setAgendaPickerOpen] = useState(false);
   const [pendingAgendas, setPendingAgendas] = useState<AgendaTemplate[] | null>(null);
+  const worldVersion = runtime?.worldVersion ?? 0;
 
   // ── Computed values ──
   const retinueAgents = useMemo(
@@ -100,7 +101,7 @@ export function useAgentInteraction({
       gameState.unifiedActions,
       gameState.encounterProgress,
     ),
-    [gameState.graph, gameState.ascendantId, gameState.unifiedActions, gameState.encounterProgress]
+    [gameState.graph, gameState.ascendantId, gameState.unifiedActions, gameState.encounterProgress, worldVersion]
   );
 
   // All threaded nodes (all 5 categories) with agent activity labels enriched
@@ -118,12 +119,12 @@ export function useAgentInteraction({
       );
       return { ...node, activityLabel };
     });
-  }, [gameState.graph, gameState.ascendantId, gameState.unifiedActions, gameState.encounterProgress]);
+  }, [gameState.graph, gameState.ascendantId, gameState.unifiedActions, gameState.encounterProgress, worldVersion]);
 
   const agentDetail = useMemo(() => {
     if (!selectedAgentId) return null;
     return getAgentDetail(gameState.graph, selectedAgentId, gameState.ascendantId);
-  }, [selectedAgentId, gameState.graph, gameState.ascendantId]);
+  }, [selectedAgentId, gameState.graph, gameState.ascendantId, worldVersion]);
 
   const wheelSlots = useMemo(() => {
     if (!selectedAgentId || !drawerOpen) return null;
@@ -159,7 +160,7 @@ export function useAgentInteraction({
 
     const combined = [...interventionSlots, ...targetSlots];
     return combined.length > 0 ? combined : null;
-  }, [selectedAgentId, drawerOpen, gameState.essencePool, gameState.graph, gameState.ascendantId, gameState.hexRevelation, retinueAgents, archetype]);
+  }, [selectedAgentId, drawerOpen, gameState.essencePool, gameState.graph, gameState.ascendantId, gameState.hexRevelation, retinueAgents, archetype, worldVersion]);
 
   const strandData = useMemo(() => {
     if (!strandViewAgent) return null;
@@ -175,7 +176,7 @@ export function useAgentInteraction({
         fears: getFearsStrand(gameState.graph, strandViewAgent),
       },
     };
-  }, [strandViewAgent, gameState.graph]);
+  }, [strandViewAgent, gameState.graph, worldVersion]);
 
   const agentInfoCard = useMemo(() => {
     if (!selectedAgentId) return null;
@@ -197,14 +198,14 @@ export function useAgentInteraction({
     }
 
     return card;
-  }, [selectedAgentId, gameState.graph, gameState.ascendantId, gameState.familiarityMap, gameState.seed, gameState.tick, scryState]);
+  }, [selectedAgentId, gameState.graph, gameState.ascendantId, gameState.familiarityMap, gameState.seed, gameState.tick, scryState, worldVersion]);
 
   const agentFullProfile = useMemo(() => {
     if (!profileModalAgentId) return undefined;
     const familiarity = getFamiliarity(gameState.familiarityMap, profileModalAgentId);
     const knowledgeLevel = getKnowledgeLevel(familiarity);
     return getAgentFullProfile(gameState.graph, profileModalAgentId, gameState.ascendantId, knowledgeLevel);
-  }, [profileModalAgentId, gameState.graph, gameState.ascendantId, gameState.familiarityMap]);
+  }, [profileModalAgentId, gameState.graph, gameState.ascendantId, gameState.familiarityMap, worldVersion]);
 
   // ── Handlers ──
   const handleAgentSelect = useCallback((agentId: string) => {

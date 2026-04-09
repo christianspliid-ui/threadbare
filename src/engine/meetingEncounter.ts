@@ -490,7 +490,7 @@ export function createAgentFromMeeting(
       maintenanceCurrent: true,
       awareness: 'faith',
       readBackstoryTier: 0,
-      attentionMode: 'pause',
+      attentionMode: 'auto_resolve',
       storyPhase: 'call',
       meetingChoiceRecord: result.meetingChoiceRecord,
       beatHistory: [],

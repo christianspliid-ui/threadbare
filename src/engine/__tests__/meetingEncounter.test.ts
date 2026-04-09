@@ -413,7 +413,7 @@ describe('createAgentFromMeeting', () => {
     expect(threadToAgent!.properties.courtPosition).toBe('the_first');
     expect(threadToAgent!.properties.tier).toBe(1);
     expect(threadToAgent!.properties.awareness).toBe('faith');
-    expect(threadToAgent!.properties.attentionMode).toBe('pause');
+    expect(threadToAgent!.properties.attentionMode).toBe('auto_resolve');
     expect(threadToAgent!.properties.storyPhase).toBe('call');
   });
 });

@@ -8,6 +8,7 @@ import type { AscendantArchetype } from '../../../types/influence';
 import type { WheelSlot } from '../../../engine/wheel';
 import type { ToastItem } from '../../../types/notification';
 import { WorldGraph } from '../../../engine/graph';
+import { createSimulationRuntime, touchStructure } from '../../../engine/simulationRuntime';
 
 // ─── Mocks ────────────────────────────────────────────────────────
 
@@ -191,6 +192,35 @@ describe('useAgentInteraction - Effects Integration', () => {
 
       expect(typeof result.current.playingCardId === 'object' || typeof result.current.playingCardId === 'string').toBe(true);
     });
+  });
+
+  it('refreshes threadedNodes when thread edges are added to the in-place graph', () => {
+    const runtime = createSimulationRuntime();
+
+    const { result, rerender } = renderHook(() =>
+      useAgentInteraction({
+        gameState: mockGameState,
+        setGameState,
+        archetype: mockArchetype,
+        onOpenScry: vi.fn(),
+        runtime,
+      })
+    );
+
+    expect(result.current.threadedNodes).toHaveLength(0);
+
+    mockGameState.graph.addEdge({
+      id: 'thread_1',
+      source: 'asc',
+      target: 'agent_1',
+      type: 'thread',
+      properties: { tier: 1, readBackstoryTier: 1, attentionMode: 'auto_resolve' },
+    });
+    touchStructure(runtime);
+    rerender();
+
+    expect(result.current.threadedNodes).toHaveLength(1);
+    expect(result.current.threadedNodes[0]?.id).toBe('agent_1');
   });
 });
 

@@ -147,6 +147,7 @@ describe('hydrateToTier', () => {
 
     const node = graph.getNode('npc_0')!;
     expect(node.properties.spotlightTier).toBe('notable');
+    expect(typeof node.properties.narrativeArchetype).toBe('string');
     expect(node.properties.axiologicalProfile).toBeDefined();
     expect(node.properties.wealth).toBeDefined();
     expect(node.properties.reputationScore).toBe(0);
@@ -169,6 +170,7 @@ describe('hydrateToTier', () => {
 
     const node = graph.getNode('npc_0')!;
     expect(node.properties.spotlightTier).toBe('spotlight');
+    expect(typeof node.properties.narrativeArchetype).toBe('string');
     expect(node.properties.axiologicalProfile).toBeDefined();
     expect(node.properties.wealth).toBeDefined();
     expect(node.properties.reputationScore).toBe(0);
@@ -226,6 +228,18 @@ describe('hydrateToTier', () => {
     makeAmbientNpc(graph, 'npc_guard', 'guard');
     hydrateToTier(graph, 'npc_guard', 'notable', mulberry32(3));
     expect(graph.getNode('npc_guard')!.properties.wealth).toBe(25);
+  });
+
+  it('preserves an existing narrative archetype during promotion', () => {
+    const graph = new WorldGraph();
+    makeAmbientNpc(graph, 'npc_0', 'merchant');
+    graph.updateNode('npc_0', {
+      properties: { narrativeArchetype: 'schemer' },
+    });
+
+    hydrateToTier(graph, 'npc_0', 'notable', mulberry32(42));
+
+    expect(graph.getNode('npc_0')!.properties.narrativeArchetype).toBe('schemer');
   });
 });
 

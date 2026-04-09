@@ -1,6 +1,9 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { selectEncounterRuntimeForNotification } from '../encounterNotificationRuntime';
+import {
+  selectEncounterRuntimeForNotification,
+  shouldAutoOpenEncounterNotification,
+} from '../encounterNotificationRuntime';
 
 describe('GameView unified encounter notification runtime selection', () => {
   it('prefers unified progress for unified notifications even when legacy progress is stale', () => {
@@ -96,5 +99,22 @@ describe('GameView unified encounter notification runtime selection', () => {
     expect(encounter?.history).toEqual([
       { encounterId: 'cg.quest.gate_duty', success: true, tick: 10 },
     ]);
+  });
+
+  it('only auto-opens pause-mode encounter notifications', () => {
+    expect(shouldAutoOpenEncounterNotification({
+      resolved: false,
+      autoResolveTick: null,
+    })).toBe(true);
+
+    expect(shouldAutoOpenEncounterNotification({
+      resolved: false,
+      autoResolveTick: 24,
+    })).toBe(false);
+
+    expect(shouldAutoOpenEncounterNotification({
+      resolved: true,
+      autoResolveTick: null,
+    })).toBe(false);
   });
 });

@@ -71,6 +71,34 @@ describe('executeGraphOps', () => {
       expect(result.allSucceeded).toBe(true);
       expect(result.results[0].createdId).not.toBe(result.results[1].createdId);
     });
+
+    it('hydrates threaded ambient individuals to spotlight so they can enter the autonomous loop', () => {
+      graph.addNode({ id: 'asc.1', type: 'actor', name: 'Ascendant', properties: { actorType: 'ascendant' } });
+      graph.updateNode('agent.1', {
+        properties: {
+          actorType: 'individual',
+          spotlightTier: 'ambient',
+        },
+      });
+
+      const ops: GraphOp[] = [
+        {
+          op: 'add_edge',
+          edgeType: 'thread',
+          source: 'asc.1',
+          target: '$actor',
+          properties: { tier: 1, attentionMode: 'auto_resolve' },
+        },
+      ];
+
+      const result = executeGraphOps(graph, ops, ctx);
+      expect(result.allSucceeded).toBe(true);
+
+      const node = graph.getNode('agent.1');
+      expect(node?.properties.spotlightTier).toBe('spotlight');
+      expect(node?.properties.domainCapabilities).toBeDefined();
+      expect(node?.properties.axiologicalProfile).toBeDefined();
+    });
   });
 
   describe('add_node operation', () => {

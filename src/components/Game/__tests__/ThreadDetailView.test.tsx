@@ -188,6 +188,23 @@ describe('ThreadDetailView', () => {
     expect(screen.getByText(/Cached 12 -> Awareness 8 -> Visibility 6 -> Prereqs 4 -> Threat 4 -> Capability 3 -> Cooldown 2/i)).toBeInTheDocument();
   });
 
+  it('adds the viable choice count to the activity line when chooser telemetry is present', () => {
+    render(
+      <ThreadDetailView
+        node={makeAgent({ activityLabel: 'Going to Green-shroud' })}
+        agentInfoCard={makeAgentInfoCard()}
+        agentEncounterDecision={makeEncounterDecision({
+          decisionType: 'queue_movement',
+          candidatesAfterCooldown: 2,
+        })}
+        onClose={noop}
+        onViewProfile={noop}
+      />
+    );
+
+    expect(screen.getByText('Going to Green-shroud (from 2 options)')).toBeInTheDocument();
+  });
+
   it('renders idle reason text in encounter pool panel', () => {
     render(
       <ThreadDetailView

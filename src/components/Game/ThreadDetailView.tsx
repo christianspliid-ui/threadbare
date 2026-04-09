@@ -286,6 +286,16 @@ function getVisibleEncounterPool(decision?: BalanceEvent | null): number | null 
     ?? null;
 }
 
+function formatActivityLabel(
+  activityLabel: string,
+  decision?: BalanceEvent | null,
+): string {
+  const visiblePool = getVisibleEncounterPool(decision);
+  if (visiblePool === null) return activityLabel;
+  const noun = visiblePool === 1 ? 'option' : 'options';
+  return `${activityLabel} (from ${visiblePool} ${noun})`;
+}
+
 function formatDecisionType(decisionType?: string): string {
   switch (decisionType) {
     case 'start_local': return 'Start Local';
@@ -360,6 +370,10 @@ function AgentDetailBody({
   agentInfoCard?: AgentInfoCardData | null;
   agentEncounterDecision?: BalanceEvent | null;
 }) {
+  const activityLabel = node.activityLabel
+    ? formatActivityLabel(node.activityLabel, agentEncounterDecision)
+    : null;
+
   if (agentInfoCard) {
     return (
       <>
@@ -410,8 +424,8 @@ function AgentDetailBody({
         )}
 
         {/* Current activity */}
-        {node.activityLabel && (
-          <DetailField label="Activity" value={node.activityLabel} />
+        {activityLabel && (
+          <DetailField label="Activity" value={activityLabel} />
         )}
 
         {agentEncounterDecision && (
@@ -427,8 +441,8 @@ function AgentDetailBody({
       {node.locationName && (
         <DetailField label="Location" value={node.locationName} />
       )}
-      {node.activityLabel && (
-        <DetailField label="Activity" value={node.activityLabel} />
+      {activityLabel && (
+        <DetailField label="Activity" value={activityLabel} />
       )}
       {node.factionName && (
         <DetailField label="Faction" value={node.factionName} />

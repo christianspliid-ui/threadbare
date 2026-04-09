@@ -108,6 +108,7 @@ import { EncounterVeil } from './EncounterVeil';
 import {
   buildActiveEncounterDisplayFromLegacyProgress,
   buildActiveEncounterDisplayFromUnifiedAction,
+  shouldAutoOpenEncounterNotification,
   type ActiveEncounterDisplay,
   selectEncounterRuntimeForDisplay,
   selectEncounterRuntimeForNotification,
@@ -155,6 +156,8 @@ import {
 import { AttentionPoolIndicator } from './AttentionPoolIndicator';
 import { ReadTheThreadsPanel } from './ReadTheThreadsPanel';
 import { useLastViewedTick } from '../../hooks/useLastViewedTick';
+import type { SpotlightTier } from '../../types/npc';
+import { shouldRenderIndividualOnHexMap } from './hexMapAgentVisibility';
 
 interface GameViewProps {
   archetype: AscendantArchetype;
@@ -462,19 +465,18 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     const result: AgentRenderData[] = [];
     for (let i = 0; i < actors.length; i++) {
       const n = actors[i];
-      // Only render full spotlight agents and army groups on the hex map.
+      // Only render notable-or-higher individuals and army groups on the hex map.
       // Factions, cultures, gods, ascendants are not map-positioned entities.
-      // NPCs (ambient/notable spotlight tiers) only appear in location rosters.
+      // Ambient NPCs stay in rosters; promoted NPCs become visible on the map.
       const actorType = n.properties.actorType as string | undefined;
       if (actorType !== 'individual' && actorType !== 'group') continue;
       // Army nodes are rendered by the army layer, not the agent sprite system.
       if (n.properties.armyState != null) continue;
       if (actorType === 'individual') {
-        const tier = (n.properties.spotlightTier as string) ?? 'spotlight';
-        if (tier !== 'spotlight') continue;
         // Commanders are represented by their army's icon while on campaign.
         const commandedByEdges = gameState.graph.getIncomingEdges(n.id, 'commanded_by');
-        if (commandedByEdges.length > 0) continue;
+        const tier = n.properties.spotlightTier as SpotlightTier | undefined;
+        if (!shouldRenderIndividualOnHexMap(tier, commandedByEdges.length)) continue;
       }
       let hexCol = n.properties.hexCol as number | undefined;
       let hexRow = n.properties.hexRow as number | undefined;
@@ -1961,7 +1963,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     });
   }, [setGameState, archetype.sphereAlignment.primary]);
 
-  // Auto-interrupt for all encounter notifications (not just the_first)
+  // Auto-interrupt only pause-mode encounter notifications.
   // Pause is handled by the general encounterModalOpen useEffect below
   useEffect(() => {
     if (interruptsSuppressed) return;
@@ -1978,9 +1980,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       }
     }
     for (const notif of notifications) {
-      if (notif.resolved) continue;
+      if (!shouldAutoOpenEncounterNotification(notif)) continue;
       if (suppressedEncounterNotificationId.current === notif.id) continue;
-      // Auto-open — all encounters auto-interrupt regardless of court position
       handleOpenEncounterFromNotification(notif);
       break; // Only one auto-interrupt at a time
     }
@@ -2795,20 +2796,18 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               }}
             >
               <div style={{ padding: 'var(--panel-padding)' }}>
-                {threadedNodes.length > 0 && (
-                  <ThreadsPanel
-                    threadedNodes={threadedNodes}
-                    selectedNodeId={selectedThreadNode?.nodeId ?? null}
-                    onNodeSelect={handleThreadNodeSelect}
-                    onCenterOnHex={handleCenterOnHex}
-                    onZoomToLocation={handleZoomToLocation}
-                    activeEncounters={retinueActiveEncounters}
-                    agentEncounterDecisions={latestThreadEncounterDecisions}
-                    onEncounterClick={handleEncounterClick}
-                    onToggleAttentionMode={handleToggleAttentionMode}
-                  />
-                )}
-                <div style={{ marginTop: threadedNodes.length > 0 ? 'var(--panel-padding)' : undefined }}>
+                <ThreadsPanel
+                  threadedNodes={threadedNodes}
+                  selectedNodeId={selectedThreadNode?.nodeId ?? null}
+                  onNodeSelect={handleThreadNodeSelect}
+                  onCenterOnHex={handleCenterOnHex}
+                  onZoomToLocation={handleZoomToLocation}
+                  activeEncounters={retinueActiveEncounters}
+                  agentEncounterDecisions={latestThreadEncounterDecisions}
+                  onEncounterClick={handleEncounterClick}
+                  onToggleAttentionMode={handleToggleAttentionMode}
+                />
+                <div style={{ marginTop: 'var(--panel-padding)' }}>
                   <WorldPulse
                     gameState={gameState}
                     season={seasonName}
