@@ -364,9 +364,11 @@ describe('contestation integration', () => {
     const resolved = result.unifiedActions!.filter(a => a.resolved);
     expect(resolved.length).toBe(3);
 
-    // Trade should succeed independently (low roll, easy difficulty)
+    // Trade completes independently (low roll, easy difficulty).
+    // With near-miss detection, a very low roll (0.01) on difficulty 0.2 may yield
+    // 'success_at_cost' instead of clean 'success' — both are valid success outcomes.
     const tradeResult = result.unifiedActions!.find(a => a.templateId === 'economy.trade')!;
-    expect(tradeResult.outcome).toBe('success');
+    expect(['success', 'success_at_cost']).toContain(tradeResult.outcome);
   });
 
   it('deterministic: same seed produces same contestation outcome', () => {

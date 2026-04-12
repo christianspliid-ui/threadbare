@@ -267,11 +267,12 @@ describe('seedNpcsAtLocations', () => {
   it('handles temple subtypes (maps temple → temple roster)', () => {
     const { graph, locationIds } = makeGraphWithLocation('temple');
     const result = seedNpcsAtLocations(graph, locationIds, mulberry32(42));
-    // Temple roster: priest (1.0), acolyte (0.9), pilgrim (0.7) → expect 2–3
+    // Temple roster: priest (1.0), acolyte (0.9), monk (0.8), chaplain (0.7), warrior_priest (0.5)
+    // Cap is 3, so expect 1–3 NPCs
     expect(result.npcIds.length).toBeGreaterThanOrEqual(1);
     expect(result.npcIds.length).toBeLessThanOrEqual(3);
-    // All should have priest/acolyte/pilgrim roles
-    const validRoles = new Set(['priest', 'acolyte', 'pilgrim']);
+    // All should have valid temple roster roles
+    const validRoles = new Set(['priest', 'acolyte', 'monk', 'chaplain', 'warrior_priest']);
     for (const id of result.npcIds) {
       const node = graph.getNode(id)!;
       expect(validRoles.has(node.properties.npcRole as string)).toBe(true);

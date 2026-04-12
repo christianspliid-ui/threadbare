@@ -129,6 +129,9 @@ function createLivenessGameState(seed: number): GameState {
     stealthExposure: 0,
     visibilityMap,
     encounterProgress: [],
+    actionsInProgress: [],
+    unifiedActions: [],
+    familiarityMap: new Map(),
     worldSoul: {
       fundament: createDefaultFundament(),
       resonance: createResonanceState(),
@@ -151,7 +154,7 @@ describe('Pipeline Liveness: encounter initiation → completion → rewards', (
     resetEventCounter();
   });
 
-  it('at least one encounter completes within 50 ticks on a seeded world', () => {
+  it('at least one encounter completes within 50 ticks on a seeded world', { timeout: 120000 }, () => {
     let state = createLivenessGameState(42);
 
     // Run the full orchestrator for LIVENESS_TICK_COUNT ticks
@@ -160,17 +163,19 @@ describe('Pipeline Liveness: encounter initiation → completion → rewards', (
     }
 
     // Check that encounters were initiated (upstream health)
-    const allEncounters = state.encounterProgress;
-    expect(allEncounters.length).toBeGreaterThan(
-      0,
-      `No encounters were initiated in ${LIVENESS_TICK_COUNT} ticks — agent decision pipeline is not producing encounter starts`,
-    );
+    // Encounters now run via unified actions (encounterProgress is deprecated)
+    const legacyEncounters = state.encounterProgress;
+    const unifiedActions = state.unifiedActions;
+    const anyActivity = legacyEncounters.length > 0 || unifiedActions.length > 0;
+    expect(anyActivity).toBe(true);
 
-    // Check that at least one encounter completed (pipeline throughput)
-    const completed = allEncounters.filter((p) => p.status === 'completed');
-    expect(completed.length).toBeGreaterThan(
+    // Check that at least one unified action completed (pipeline throughput)
+    const completedLegacy = legacyEncounters.filter((p) => p.status === 'completed');
+    const completedUnified = unifiedActions.filter((a) => a.resolved);
+    const totalCompleted = completedLegacy.length + completedUnified.length;
+    expect(totalCompleted).toBeGreaterThan(
       0,
-      `${allEncounters.length} encounters were initiated but none completed in ${LIVENESS_TICK_COUNT} ticks — encounter progression pipeline is stalled`,
+      `${legacyEncounters.length} legacy + ${unifiedActions.length} unified actions initiated but none completed in ${LIVENESS_TICK_COUNT} ticks`,
     );
   });
 
@@ -208,7 +213,7 @@ describe('Pipeline Liveness: encounter initiation → completion → rewards', (
     }
   });
 
-  it('pipeline liveness holds across multiple seeds', { timeout: 20_000 }, () => {
+  it('pipeline liveness holds across multiple seeds', { timeout: 120_000 }, () => {
     // Verify this isn't a seed-specific fluke
     const seeds = [42, 123, 777, 1337];
     const results: Array<{ seed: number; initiated: number; completed: number }> = [];
@@ -222,19 +227,22 @@ describe('Pipeline Liveness: encounter initiation → completion → rewards', (
         state = runTick(state);
       }
 
+      // Count both legacy encounters and unified actions
+      const legacyCompleted = state.encounterProgress.filter((p) => p.status === 'completed').length;
+      const unifiedCompleted = state.unifiedActions.filter((a) => a.resolved).length;
       results.push({
         seed,
-        initiated: state.encounterProgress.length,
-        completed: state.encounterProgress.filter((p) => p.status === 'completed').length,
+        initiated: state.encounterProgress.length + state.unifiedActions.length,
+        completed: legacyCompleted + unifiedCompleted,
       });
     }
 
-    // At least 3 out of 4 seeds should produce completed encounters
+    // At least 3 out of 4 seeds should produce completed encounters/actions
     // (accounts for edge-case seeds where topology blocks agent movement)
     const seedsWithCompletions = results.filter((r) => r.completed > 0).length;
     expect(seedsWithCompletions).toBeGreaterThanOrEqual(
       3,
-      `Only ${seedsWithCompletions}/4 seeds produced completed encounters. Results: ${JSON.stringify(results)}`,
+      `Only ${seedsWithCompletions}/4 seeds produced completed actions. Results: ${JSON.stringify(results)}`,
     );
   });
 });

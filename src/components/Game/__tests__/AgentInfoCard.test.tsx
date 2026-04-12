@@ -27,7 +27,7 @@ const recognisedCard: AgentInfoCardData = {
     { pair: 'honesty_cunning', word: 'Cunning' },
   ],
   domains: [
-    { domain: 'eye', word: 'Perceptive' },
+    { domain: 'eye', word: 'Perceptive', tier: 1 },
   ],
   knowledgeLevel: 'recognised',
 };
@@ -47,9 +47,9 @@ const knownCard: AgentInfoCardData = {
     { pair: 'mercy_ruthlessness', word: 'Cruel' },
   ],
   domains: [
-    { domain: 'iron', word: 'Fearsome' },
-    { domain: 'gold', word: 'Shrewd' },
-    { domain: 'shadow', word: 'Cunning' },
+    { domain: 'iron', word: 'Fearsome', tier: 2 },
+    { domain: 'gold', word: 'Shrewd', tier: 1 },
+    { domain: 'shadow', word: 'Cunning', tier: 1 },
   ],
   topBonds: [
     { name: 'Kira', strengthWord: 'Strong', sentiment: 'positive' },
@@ -74,15 +74,14 @@ const intimateCard: AgentInfoCardData = {
     { pair: 'mercy_ruthlessness', word: 'Compassionate' },
   ],
   domains: [
-    { domain: 'veil', word: 'Mystical' },
-    { domain: 'eye', word: 'Perceptive' },
-    { domain: 'heart', word: 'Empathetic' },
-    { domain: 'iron', word: 'Resolute' },
-    { domain: 'gold', word: 'Shrewd' },
-    { domain: 'shadow', word: 'Subtle' },
-    { domain: 'stone', word: 'Grounded' },
-    { domain: 'star', word: 'Visionary' },
-    { domain: 'flesh', word: 'Vigorous' },
+    { domain: 'veil', word: 'Mystical', tier: 3 },
+    { domain: 'eye', word: 'Perceptive', tier: 2 },
+    { domain: 'heart', word: 'Empathetic', tier: 2 },
+    { domain: 'iron', word: 'Resolute', tier: 2 },
+    { domain: 'gold', word: 'Shrewd', tier: 1 },
+    { domain: 'shadow', word: 'Subtle', tier: 1 },
+    { domain: 'stone', word: 'Grounded', tier: 1 },
+    { domain: 'star', word: 'Visionary', tier: 1 },
   ],
   topBonds: [
     { name: 'Kael', strengthWord: 'Profound', sentiment: 'positive' },
@@ -189,11 +188,11 @@ describe('AgentInfoCard', () => {
 
   // ─── Intimate level ───
 
-  it('shows all 9 domains at intimate level', () => {
+  it('shows all 8 domains at intimate level', () => {
     render(<AgentInfoCard card={intimateCard} onViewProfile={vi.fn()} onBack={vi.fn()} />);
     // Domain names are now wrapped in Tooltip spans, so test for domain name separately
     expect(screen.getByText('Veil')).toBeInTheDocument();
-    expect(screen.getByText('Flesh')).toBeInTheDocument();
+    expect(screen.getByText('Star')).toBeInTheDocument();
   });
 
   it('shows cooperation strategy at intimate level', () => {

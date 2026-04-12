@@ -10,16 +10,7 @@ import type { CosmologyProfile } from '../../types';
 
 const testArchetype: AscendantArchetype = {
   title: 'The Architect',
-  sphereAlignment: {
-    force: 0.1,
-    matter: 0.3,
-    energy: 0.2,
-    life: 0.1,
-    mind: 0.1,
-    spirit: 0.1,
-    time: 0.1,
-    entropy: 0.0,
-  },
+  sphereAlignment: { primary: 'matter', secondary: 'energy' },
 };
 
 const testCosmology: CosmologyProfile = {

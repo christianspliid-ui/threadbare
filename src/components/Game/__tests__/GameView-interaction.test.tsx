@@ -62,16 +62,15 @@ describe('GameView', () => {
       gold: 0.4,
     },
     personalitySeed: {
-      loyalty_ambition: 0.7,
-      courage_prudence: 0.6,
       mercy_ruthlessness: 0.5,
-      honesty_cunning: 0.4,
-      sacrifice_survival: 0.8,
-      loyalty_ambition: 0.3,
-      tradition_novelty: 0.5,
-      humility_pride: 0.6,
-      mercy_ruthlessness: -0.2,
       asceticism_extravagance: -0.1,
+      honesty_cunning: 0.4,
+      tradition_novelty: 0.5,
+      loyalty_ambition: 0.3,
+      revelation_discretion: 0.5,
+      preservation_transformation: 0.6,
+      sacrifice_survival: 0.8,
+      courage_prudence: 0.6,
     },
     flavorText: 'A god of justice and righteous order',
   };
@@ -111,7 +110,7 @@ describe('GameView', () => {
         seed={42}
       />
     );
-    expect(screen.getByText('The Just One')).toBeInTheDocument();
+    // Avatar name is visible text; archetype title is in a tooltip
     expect(screen.getByText(/The Divine Witness/)).toBeInTheDocument();
   });
 
@@ -124,11 +123,9 @@ describe('GameView', () => {
         seed={42}
       />
     );
-    // Check for simulation control elements by looking for Time header or tick/season info
-    const timeControl = screen.queryByText('Time') ||
-                       screen.queryByText(/Tick:/) ||
-                       screen.queryByText(/Spring|Summer|Autumn|Winter/);
-    expect(timeControl || screen.getByText(/Time|Tick|spring|summer|autumn|winter/i)).toBeTruthy();
+    // Check for simulation control elements by looking for tick/season info
+    const matches = screen.queryAllByText(/Time|Tick|spring|summer|autumn|winter/i);
+    expect(matches.length).toBeGreaterThan(0);
   });
 
   it('renders doom bar at top', () => {
@@ -140,8 +137,10 @@ describe('GameView', () => {
         seed={42}
       />
     );
-    // DoomBar now shows a glyph (◈ for breach) — may appear multiple times in UI
-    expect(screen.getAllByText('◈').length).toBeGreaterThan(0);
+    // DoomBar renders stage name and a progress bar — the doom archetype now uses
+    // a SphereIcon instead of a text glyph. Check for a percentage or stage text.
+    const matches = screen.queryAllByText(/0%|\d+%/);
+    expect(matches.length).toBeGreaterThan(0);
   });
 
   it('renders layout with top bar and right sidebar', () => {

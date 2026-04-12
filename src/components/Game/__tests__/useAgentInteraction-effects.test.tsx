@@ -19,12 +19,13 @@ vi.mock('../hooks/useInterventionAudio', () => ({
   }),
 }));
 
-// Mock getUnifiedTemplateById
+// Mock unified-action-templates
 vi.mock('../../../data/unified-action-templates', () => ({
   getUnifiedTemplateById: vi.fn(),
+  THREAD_CREATION_TEMPLATES: [],
 }));
 
-// Mock templateIdFromSlotId
+// Mock targetActions module
 vi.mock('../../../engine/targetActions', () => ({
   templateIdFromSlotId: vi.fn((slotId: string) => {
     if (slotId.startsWith('target_action_')) {
@@ -32,6 +33,7 @@ vi.mock('../../../engine/targetActions', () => ({
     }
     return undefined;
   }),
+  getTargetActionSlots: vi.fn(() => []),
 }));
 
 // Mock createUnifiedAction

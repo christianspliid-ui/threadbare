@@ -152,9 +152,9 @@ describe('reward pipeline contract', () => {
   });
 
   it('empty pool when no matching templates exist', () => {
-    // Agreements return empty (edges, not nodes)
+    // Use a non-existent category to guarantee empty pool
     const resolved = resolveRewardRecipe(
-      { categoryWeights: { agreement: 1.0 } },
+      { categoryWeights: { nonexistent_category_xyz: 1.0 } as any },
       'success',
     );
 

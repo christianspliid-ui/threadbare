@@ -187,8 +187,8 @@ describe('movement-content', () => {
       expect(TERRAIN_TAXES.lake).toBe(Infinity);
     });
 
-    it('river terrain tax is Infinity', () => {
-      expect(TERRAIN_TAXES.river).toBe(Infinity);
+    it('river terrain tax is 1 (moderate — fordable with effort)', () => {
+      expect(TERRAIN_TAXES.river).toBe(1);
     });
 
     it('all terrain taxes are non-negative', () => {

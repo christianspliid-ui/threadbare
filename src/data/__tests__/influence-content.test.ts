@@ -17,7 +17,8 @@ describe('influence-content', () => {
   it('exports tier names with valid tier labels', () => {
     expect(Object.keys(TIER_NAMES).length).toBeGreaterThan(0);
     expect(TIER_NAMES[0]).toBe('Unaware');
-    expect(TIER_NAMES[TIER_NAMES.length - 1]).toBeDefined();
+    // TIER_NAMES is a Record<InfluenceTier, string>, not an array — check last tier key directly
+    expect(TIER_NAMES[4]).toBeDefined();
   });
 
   it('exports tier maintenance costs', () => {

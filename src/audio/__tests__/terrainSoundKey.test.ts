@@ -17,7 +17,7 @@ const ALL_TERRAIN_TYPES: TerrainType[] = [
 
 const VALID_SOUND_KEYS = new Set([
   'water', 'grassland', 'forest', 'swamp', 'mountains',
-  'desert', 'tundra', 'volcanic', 'wasteland',
+  'desert', 'tundra', 'volcanic', 'wasteland', 'plateau',
 ]);
 
 describe('terrainToSoundKey', () => {

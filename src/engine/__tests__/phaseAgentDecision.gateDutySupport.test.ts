@@ -22,22 +22,35 @@ vi.mock('../factionQuestGeneration', () => ({
 vi.mock('../encounterScoring', () => ({
   scoreAndSelect: (candidates: Array<{ templateId: string; locationId: string }>) => {
     const entry = candidates[0];
+    const candidate = entry ? {
+      entry,
+      action: 'start_local' as const,
+      finalScore: 1.1,
+      travelCost: 0,
+      completionProb: 0.72,
+      pushBenefit: 0,
+      resistBenefit: 0,
+      expectedUtility: 1.1,
+      desireMultiplier: 1,
+      totalCost: 0,
+      valuePerTick: 1.1,
+      axiologicalScore: 0,
+      ambitionBoost: 0,
+      familiarityPenalty: 0,
+      explorationBonus: 0,
+      chainBonus: 0,
+      resonance: 0,
+      globalResonance: 0,
+      ruinsBonus: 0,
+      attractionBonus: 0,
+      hunchBonus: 0,
+      rarityMultiplier: 1,
+      roleAffinityMultiplier: 1,
+    } : null;
     return {
-      selected: entry ? {
-        action: 'start_local',
-        entry,
-        completionProb: 0.72,
-        pushBenefit: 0,
-        resistBenefit: 0,
-        expectedUtility: 1.1,
-      } : null,
-      topCandidates: entry ? [{
-        entry,
-        finalScore: 1.1,
-        travelCost: 0,
-        completionProb: 0.72,
-        desireMultiplier: 1,
-      }] : [],
+      selected: candidate,
+      topCandidates: candidate ? [candidate] : [],
+      rankedCandidates: candidate ? [candidate] : [],
       trace: { category: 'encounter_scoring', summary: 'mock scoring' },
     };
   },

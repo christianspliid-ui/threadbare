@@ -190,3 +190,4 @@ export function getEffectiveDomainContributions(
 
   return result as DomainContributions;
 }
+

@@ -71,6 +71,7 @@ export interface RememberedMandateOptions {
 const OMEN_LABELS = ['First Omen', 'Second Omen', 'Third Omen', 'Final Omen'] as const;
 
 function formatSphereName(sphere: SphereName): string {
+  if (!sphere) return 'Unknown';
   return sphere.charAt(0).toUpperCase() + sphere.slice(1);
 }
 

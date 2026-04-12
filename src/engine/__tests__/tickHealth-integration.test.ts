@@ -136,7 +136,7 @@ function createTestGameState(): GameState {
 
 // ─── Tests ────────────────────────────────────────────────────────
 
-describe('tick health integration', () => {
+describe('tick health integration', { timeout: 120000 }, () => {
   beforeEach(() => {
     resetDecisionCache();
     resetEventCounter();

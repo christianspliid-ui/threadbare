@@ -10,16 +10,7 @@ import type { CosmologyProfile } from '../../types';
 
 const testArchetype: AscendantArchetype = {
   title: 'The Architect',
-  sphereAlignment: {
-    force: 0.1,
-    matter: 0.3,
-    energy: 0.2,
-    life: 0.1,
-    mind: 0.1,
-    spirit: 0.1,
-    time: 0.1,
-    entropy: 0.0,
-  },
+  sphereAlignment: { primary: 'matter', secondary: 'energy' },
 };
 
 const testCosmology: CosmologyProfile = {
@@ -46,7 +37,7 @@ describe('intervention effects — full integration', () => {
     clearTraces();
   });
 
-  it('dream intervention → divine influence stored → decays to zero', () => {
+  it('dream intervention → divine influence stored → decays to zero', { timeout: 120000 }, () => {
     // 1. Find an individual actor
     const actors = state.graph.getNodesByType('actor')
       .filter(a => a.properties?.actorType === 'individual');

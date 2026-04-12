@@ -26,7 +26,7 @@ describe('familiarity integration', () => {
     const result = initializeGameState(
       {
         title: 'Test Ascendant',
-        sphereAlignment: { force: 0.5, matter: 0.5 },
+        sphereAlignment: { primary: 'force', secondary: 'matter' },
       },
       'Test Avatar',
       {
@@ -101,7 +101,7 @@ describe('familiarity integration', () => {
     const result = initializeGameState(
       {
         title: 'Test Ascendant',
-        sphereAlignment: { force: 0.5, matter: 0.5 },
+        sphereAlignment: { primary: 'force', secondary: 'matter' },
       },
       'Test Avatar',
       {

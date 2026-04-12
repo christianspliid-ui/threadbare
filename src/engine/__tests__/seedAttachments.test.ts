@@ -102,7 +102,9 @@ describe('seedAttachments', () => {
       const { graph } = seedWorld(balancedCosmology(), mockTiles(), 42);
       const edge = graph.getEdge('seed.ind_2.has_trait.starter_revelation');
       expect(edge).toBeTruthy();
-      expect(edge?.properties.modifiers).toMatchObject({ star: 0.15, eye: 0.10 });
+      // modifiers come from domainContributions on the trait node, which is {} for
+      // starter_revelation (effects are in the effects array, not domainContributions)
+      expect(edge?.properties.modifiers).toEqual({});
       expect(edge?.properties.ticksRemaining).toBe(15);
     });
   });
@@ -124,7 +126,9 @@ describe('seedAttachments', () => {
       expect(edge).toBeTruthy();
       expect(edge?.properties.ticksRemaining).toBe(25);
       expect(edge?.properties.totalTicks).toBe(40);
-      expect(edge?.properties.modifiers).toMatchObject({ flesh: -0.10 });
+      // modifiers come from domainContributions on the trait node, which is {} for
+      // starter_plague_touched (effects are in the effects array, not domainContributions)
+      expect(edge?.properties.modifiers).toEqual({});
     });
   });
 

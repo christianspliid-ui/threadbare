@@ -59,8 +59,12 @@ function makeHexTarget(col = 3, row = 5): TargetContext {
     nodeId: 'hex_3_5',
     nodeType: 'location',
     subtype: 'hex',
+    displayName: 'Test Hex',
+    displayLabel: 'Hex',
     traitIds: [],
+    sphereAffinity: null,
     position: { col, row },
+    properties: { terrain: 'grassland' },
   };
 }
 

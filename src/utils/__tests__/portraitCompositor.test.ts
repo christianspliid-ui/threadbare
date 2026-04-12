@@ -15,6 +15,13 @@ import {
 
 // ── Mocks ──────────────────────────────────────────────────────────────────────
 
+// Minimal ImageData mock for frameToAlpha pixel processing
+const mockImageData = {
+  data: new Uint8ClampedArray(16), // small buffer — enough for the loop to run without crashing
+  width: 512,
+  height: 640,
+};
+
 const mockCtx = {
   save: vi.fn(),
   restore: vi.fn(),
@@ -23,6 +30,8 @@ const mockCtx = {
   clip: vi.fn(),
   drawImage: vi.fn(),
   closePath: vi.fn(),
+  getImageData: vi.fn(() => mockImageData),
+  putImageData: vi.fn(),
   canvas: { width: 512, height: 640, toDataURL: () => 'data:image/png;base64,mock' },
 };
 
@@ -120,10 +129,13 @@ describe('portraitCompositor', () => {
       expect(result).toBeDefined();
     });
 
-    it('calls drawImage twice (portrait layer + frame layer)', async () => {
+    it('calls drawImage three times (portrait layer + frameToAlpha internal + frame overlay)', async () => {
       vi.clearAllMocks();
       await composePortrait('origin.ancient-scholar', 'mind');
-      expect(mockCtx.drawImage).toHaveBeenCalledTimes(2);
+      // 1: portrait drawn onto main canvas
+      // 2: frame drawn onto internal frameToAlpha canvas (for pixel processing)
+      // 3: processed alpha frame drawn onto main canvas
+      expect(mockCtx.drawImage).toHaveBeenCalledTimes(3);
     });
 
     it('accepts custom width and height', async () => {

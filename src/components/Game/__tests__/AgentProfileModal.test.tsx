@@ -27,7 +27,7 @@ const recognisedCard: AgentInfoCardData = {
   cultureName: 'Valdor',
   knowledgeLevel: 'recognised',
   topValues: [{ pair: 'loyalty_ambition', word: 'Ambitious' }],
-  domains: [{ domain: 'iron', word: 'Fearsome' }],
+  domains: [{ domain: 'iron', word: 'Fearsome', tier: 3 }],
 };
 
 const knownCard: AgentInfoCardData = {
@@ -39,9 +39,9 @@ const knownCard: AgentInfoCardData = {
     { pair: 'sacrifice_survival', word: 'Devoted' },
   ],
   domains: [
-    { domain: 'iron', word: 'Fearsome' },
-    { domain: 'gold', word: 'Shrewd' },
-    { domain: 'shadow', word: 'Subtle' },
+    { domain: 'iron', word: 'Fearsome', tier: 3 },
+    { domain: 'gold', word: 'Shrewd', tier: 2 },
+    { domain: 'shadow', word: 'Subtle', tier: 2 },
   ],
   topBonds: [
     { name: 'Lyra', strengthWord: 'strong', sentiment: 'positive' },
@@ -54,14 +54,14 @@ const intimateCard: AgentInfoCardData = {
   ...knownCard,
   knowledgeLevel: 'intimate',
   domains: [
-    { domain: 'iron', word: 'Fearsome' },
-    { domain: 'gold', word: 'Shrewd' },
-    { domain: 'shadow', word: 'Subtle' },
-    { domain: 'veil', word: 'Attuned' },
-    { domain: 'heart', word: 'Beloved' },
-    { domain: 'eye', word: 'Perceptive' },
-    { domain: 'stone', word: 'Skilled' },
-    { domain: 'star', word: 'Fated' },
+    { domain: 'iron', word: 'Fearsome', tier: 3 },
+    { domain: 'gold', word: 'Shrewd', tier: 2 },
+    { domain: 'shadow', word: 'Subtle', tier: 2 },
+    { domain: 'veil', word: 'Attuned', tier: 2 },
+    { domain: 'heart', word: 'Beloved', tier: 3 },
+    { domain: 'eye', word: 'Perceptive', tier: 1 },
+    { domain: 'stone', word: 'Skilled', tier: 1 },
+    { domain: 'star', word: 'Fated', tier: 1 },
   ],
   cooperationStrategy: 'tit-for-tat',
   reputationWord: 'esteemed',
@@ -130,10 +130,11 @@ describe('AgentProfileModal', () => {
 
   // ─── Tab navigation ────────────────────────────────────────────────
 
-  it('renders 5 tab buttons', () => {
+  it('renders 6 tab buttons', () => {
     render(<AgentProfileModal card={strangerCard} profile={undefined} onClose={vi.fn()} />);
     expect(screen.getByText('Overview')).toBeTruthy();
     expect(screen.getByText('Prowess')).toBeTruthy();
+    expect(screen.getByText('Attachments')).toBeTruthy();
     expect(screen.getByText('Bonds')).toBeTruthy();
     expect(screen.getByText('Journey')).toBeTruthy();
     expect(screen.getByText('Chronicle')).toBeTruthy();
@@ -274,7 +275,7 @@ describe('AgentProfileModal', () => {
     expect(screen.getAllByText('The Void').length).toBeGreaterThan(0);
   });
 
-  it('renders possessions section in Prowess tab at intimate level', () => {
+  it('renders possessions section in Attachments tab at intimate level', () => {
     const cardWithPossessions: AgentInfoCardData = {
       ...intimateCard,
       possessions: [{
@@ -289,8 +290,7 @@ describe('AgentProfileModal', () => {
       }],
     };
     render(<AgentProfileModal card={cardWithPossessions} profile={intimateProfile} onClose={vi.fn()} />);
-    clickTab('Prowess');
-    expect(screen.getByTestId('modal-possessions')).toBeTruthy();
+    clickTab('Attachments');
     expect(screen.getByText(/Ashenmane's Fang/)).toBeTruthy();
     expect(screen.getByText('Won in a border raid.')).toBeTruthy();
   });
@@ -335,7 +335,7 @@ describe('AgentProfileModal', () => {
     expect(screen.getByText(/Granted by Solhaven/)).toBeTruthy();
   });
 
-  it('opens attachment detail overlay when vignette is clicked in Prowess tab', () => {
+  it('opens attachment detail overlay when vignette is clicked in Attachments tab', () => {
     const cardWithPossessions: AgentInfoCardData = {
       ...intimateCard,
       possessions: [{
@@ -348,20 +348,20 @@ describe('AgentProfileModal', () => {
       }],
     };
     render(<AgentProfileModal card={cardWithPossessions} profile={intimateProfile} onClose={vi.fn()} />);
-    clickTab('Prowess');
-    const possessionsSection = screen.getByTestId('modal-possessions');
-    const vignette = possessionsSection.querySelector('[role="button"]');
+    clickTab('Attachments');
+    // Find the clickable attachment item
+    const vignette = screen.getByText(/Ashenmane's Fang/).closest('[role="button"]');
     expect(vignette).toBeTruthy();
     fireEvent.click(vignette!);
     expect(screen.getByTestId('attachment-detail-overlay')).toBeTruthy();
     expect(screen.getByTestId('attachment-detail-view')).toBeTruthy();
   });
 
-  it('does not show attachment sections when no attachments', () => {
+  it('shows empty state in Attachments tab when no attachments', () => {
     render(<AgentProfileModal card={intimateCard} profile={intimateProfile} onClose={vi.fn()} />);
-    clickTab('Prowess');
-    expect(screen.queryByTestId('modal-possessions')).toBeNull();
-    expect(screen.queryByTestId('modal-afflictions')).toBeNull();
+    clickTab('Attachments');
+    // AttachmentsTab shows empty state message when no items
+    expect(screen.getByText(/carries no known/)).toBeTruthy();
   });
 
   // ─── Portrait Tests ─────────────────────────────────────────────────
