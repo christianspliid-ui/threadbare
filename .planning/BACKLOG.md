@@ -8,7 +8,28 @@
 > Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
 > Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-122**.
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-123**.
+
+---
+
+## 📋 TB-122 · Strategic Actions — UI/Threads Visibility & HexMap Overlays (2026-04-12)
+
+Phase 8 data expansion is shipped (36 templates across 6 behavior families, hint-driven mutations, 54 tests). The remaining work is making strategic actions **visible to the player** through existing UI surfaces.
+
+**UI/Threads visibility:**
+- Strategic action badges in Threads sidebar rows (show active strategic project alongside encounter activity)
+- Strategic project progress indicators (multi-tick project % complete, ticks remaining)
+- Strategic control indicators (active controls with neglect state)
+- Strategic history in agent detail panel (completed strategic actions, intelligence gathered)
+
+**HexMap strategic overlays:**
+- Garrison/shrine/estate/workshop sublocations visible as map signifiers at appropriate zoom
+- Control territory shading (hex tint for actor-controlled locations)
+- Strategic project activity markers (construction-in-progress icon on target hex)
+
+**Touches:** `src/components/Game/ThreadsPanel.tsx`, `src/components/Game/AgentDetailPanel.tsx`, `src/components/HexMapV2/` (signifier + overlay layers)
+**Depends on:** Strategic actions Phase 8 data expansion (✅ done)
+**Needs design:** Yes — Cowork should draft the thread row layout changes and hex overlay visual language
 
 ---
 
