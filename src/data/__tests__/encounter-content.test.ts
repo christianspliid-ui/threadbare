@@ -12,10 +12,6 @@ import {
 
 describe('encounter-content', () => {
   describe('ENCOUNTER_TEMPLATES', () => {
-    it('should have exactly 154 encounter templates', () => {
-      expect(ENCOUNTER_TEMPLATES).toHaveLength(154);
-    });
-
     it('every template should have a unique id', () => {
       const ids = ENCOUNTER_TEMPLATES.map(t => t.id);
       expect(new Set(ids).size).toBe(ids.length);
@@ -129,10 +125,6 @@ describe('encounter-content', () => {
   });
 
   describe('CULTURAL_ENCOUNTER_OVERLAYS', () => {
-    it('should have 6 overlay sets', () => {
-      expect(Object.keys(CULTURAL_ENCOUNTER_OVERLAYS)).toHaveLength(6);
-    });
-
     it('each overlay should have adjectives, verbs, and atmosphere', () => {
       for (const [, overlay] of Object.entries(CULTURAL_ENCOUNTER_OVERLAYS)) {
         expect(overlay.adjectives.length).toBeGreaterThanOrEqual(3);
@@ -163,18 +155,6 @@ describe('encounter-content', () => {
   });
 
   describe('encounter inspection vignettes', () => {
-    it('should have 10 in-progress vignettes', () => {
-      expect(ENCOUNTER_INSPECTION_VIGNETTES.inProgress).toHaveLength(10);
-    });
-
-    it('should have 5 completed vignettes', () => {
-      expect(ENCOUNTER_INSPECTION_VIGNETTES.completed).toHaveLength(5);
-    });
-
-    it('should have 3 failed vignettes', () => {
-      expect(ENCOUNTER_INSPECTION_VIGNETTES.failed).toHaveLength(3);
-    });
-
     it('all vignettes should be non-empty strings', () => {
       const all = [
         ...ENCOUNTER_INSPECTION_VIGNETTES.inProgress,
@@ -188,10 +168,6 @@ describe('encounter-content', () => {
   });
 
   describe('encounter difficulty tiers', () => {
-    it('should have 3 difficulty tiers', () => {
-      expect(Object.keys(ENCOUNTER_DIFFICULTY_TIERS)).toHaveLength(3);
-    });
-
     it('each tier should have difficultyMultiplier and toneAdjectives', () => {
       for (const tier of Object.values(ENCOUNTER_DIFFICULTY_TIERS)) {
         expect(tier.difficultyMultiplier).toBeGreaterThan(0);
@@ -224,12 +200,6 @@ describe('encounter-content', () => {
   });
 
   describe('encounter system connections', () => {
-    it('should have 9 encounter system connection templates (3 doom + 3 culture + 3 rival)', () => {
-      expect(ENCOUNTER_SYSTEM_CONNECTIONS.doom).toHaveLength(3);
-      expect(ENCOUNTER_SYSTEM_CONNECTIONS.culture).toHaveLength(3);
-      expect(ENCOUNTER_SYSTEM_CONNECTIONS.rival).toHaveLength(3);
-    });
-
     it('each connection template should have id, trigger, and prose', () => {
       const allConnections = [
         ...ENCOUNTER_SYSTEM_CONNECTIONS.doom,

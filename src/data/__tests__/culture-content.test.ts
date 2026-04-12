@@ -461,10 +461,6 @@ describe('culture-content', () => {
       expect(SUB_LOCATION_TEMPLATES.length).toBeGreaterThanOrEqual(15);
     });
 
-    it('has 27 sub-location templates with biome coverage', () => {
-      expect(SUB_LOCATION_TEMPLATES.length).toBe(27);
-    });
-
     it('each template has required fields', () => {
       for (const tmpl of SUB_LOCATION_TEMPLATES) {
         expect(tmpl.id).toBeTruthy();

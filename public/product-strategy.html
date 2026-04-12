@@ -1027,4 +1027,99 @@
 <section id="gaps">
   <div class="section-label fade-in">Journey Audit</div>
   <h2 class="fade-in">Known gaps and <em>where they land</em></h2>
-  <p class="fade-in">Ten gaps identified by tracing the end-to-end player journey. Seven are now resolved or partially resolved. Each remaining gap is mapped to the milestone 
+  <p class="fade-in">Ten gaps identified by tracing the end-to-end player journey. Seven are now resolved or partially resolved. Each remaining gap is mapped to the milestone where it naturally resolves.</p>
+
+  <table class="gaps-table fade-in">
+    <thead>
+      <tr>
+        <th>Gap</th>
+        <th>Description</th>
+        <th>Severity</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="opacity: 0.45;">
+        <td><span class="gap-id">D</span></td>
+        <td>World-Soul not in tick loop</td>
+        <td><span class="gap-severity gap-structural"></span>Structural</td>
+        <td><span class="gap-landing" style="color: var(--life-green);">Resolved &mdash; M1</span></td>
+      </tr>
+      <tr style="opacity: 0.45;">
+        <td><span class="gap-id">F</span></td>
+        <td>No danger in the world</td>
+        <td><span class="gap-severity gap-structural"></span>Structural</td>
+        <td><span class="gap-landing" style="color: var(--life-green);">Resolved &mdash; M2 armies + M2.5 monsters operational</span></td>
+      </tr>
+      <tr style="opacity: 0.45;">
+        <td><span class="gap-id">G</span></td>
+        <td>Agent character sheet needs overhaul</td>
+        <td><span class="gap-severity gap-enrichment"></span>Enrichment</td>
+        <td><span class="gap-landing" style="color: var(--life-green);">Resolved &mdash; Phase 11</span></td>
+      </tr>
+      <tr style="opacity: 0.45;">
+        <td><span class="gap-id">J</span></td>
+        <td>No chain reactions from player actions</td>
+        <td><span class="gap-severity gap-enrichment"></span>Enrichment</td>
+        <td><span class="gap-landing" style="color: var(--life-green);">Foundation laid &mdash; M1 sphere pressure propagation</span></td>
+      </tr>
+      <tr>
+        <td><span class="gap-id">A</span></td>
+        <td>Doom has no mechanical teeth</td>
+        <td><span class="gap-severity gap-critical"></span>Critical</td>
+        <td><span class="gap-landing gap-m2">In progress</span> &mdash; objective triangle sync shipped (doom chapters, debt, counter-omens); army/monster spawning next</td>
+      </tr>
+      <tr>
+        <td><span class="gap-id">B</span></td>
+        <td>Rival gods are inert (text only)</td>
+        <td><span class="gap-severity gap-critical"></span>Critical</td>
+        <td><span class="gap-landing gap-m2">M2</span> &mdash; rivals field armies, declare wars</td>
+      </tr>
+      <tr>
+        <td><span class="gap-id">C</span></td>
+        <td>No onboarding path for new players</td>
+        <td><span class="gap-severity gap-critical"></span>Critical</td>
+        <td><span class="gap-landing gap-later">Post-M3</span> &mdash; onboarding needs content to onboard into</td>
+      </tr>
+      <tr>
+        <td><span class="gap-id">E</span></td>
+        <td>Economy is one-directional</td>
+        <td><span class="gap-severity gap-structural"></span>Structural</td>
+        <td><span class="gap-landing gap-m3">M3</span> &mdash; primary target</td>
+      </tr>
+      <tr style="opacity: 0.45;">
+        <td><span class="gap-id">H</span></td>
+        <td>Culture/seeding lacks geographic coherence</td>
+        <td><span class="gap-severity gap-enrichment"></span>Enrichment</td>
+        <td><span class="gap-landing" style="color: var(--life-green);">Partially resolved &mdash; territory-aware province culture seeding shipped</span></td>
+      </tr>
+      <tr style="opacity: 0.45;">
+        <td><span class="gap-id">I</span></td>
+        <td>No NPCs at locations</td>
+        <td><span class="gap-severity gap-enrichment"></span>Enrichment</td>
+        <td><span class="gap-landing" style="color: var(--life-green);">Partially resolved &mdash; NPC sublocation seeding (21 roles), promoted NPC portraits, notable visibility on HexMap</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════════════════════════════ FOOTER ═══ -->
+<footer>
+  Threadbearer &middot; Product Strategy &middot; Last updated 12 April 2026 &middot; Build the world, find the game
+</footer>
+
+<script>
+  // Simple intersection observer for fade-in animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>

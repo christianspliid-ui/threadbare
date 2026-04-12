@@ -1,4 +1,18 @@
 {
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx codesight --wiki 2>/dev/null || true",
+            "timeout": 120,
+            "statusMessage": "Refreshing codesight analysis..."
+          }
+        ]
+      }
+    ]
+  },
   "permissions": {
     "allow": [
       "Bash(dir:*)",

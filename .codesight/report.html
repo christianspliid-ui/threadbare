@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>app — codesight report</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0a0f;--card:#12121a;--border:#1e1e2e;--text:#e0e0e8;--muted:#6b6b80;--accent:#6366f1;--accent2:#22d3ee;--green:#22c55e;--orange:#f59e0b;--red:#ef4444;--pink:#ec4899}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:2rem;max-width:1400px;margin:0 auto;line-height:1.6}
+h1{font-size:2.5rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.25rem}
+.subtitle{color:var(--muted);font-size:1rem;margin-bottom:2rem}
+.stack-badge{display:inline-block;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:2px 10px;font-size:.85rem;color:var(--accent2);margin:0 4px 4px 0}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin:2rem 0}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;text-align:center}
+.stat-value{font-size:2rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-label{color:var(--muted);font-size:.85rem;margin-top:.25rem}
+.token-hero{background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid var(--accent);border-radius:16px;padding:2rem;margin:2rem 0;text-align:center}
+.token-saved{font-size:3rem;font-weight:900;color:var(--green)}
+.token-detail{color:var(--muted);font-size:.9rem;margin-top:.5rem}
+.section{margin:2.5rem 0}
+.section h2{font-size:1.4rem;font-weight:700;margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1rem;transition:border-color .2s}
+.card:hover{border-color:var(--accent)}
+.card-title{font-weight:700;font-size:1rem;margin-bottom:.5rem}
+.card-meta{color:var(--muted);font-size:.8rem}
+.tag{display:inline-block;background:rgba(99,102,241,.15);color:var(--accent);border-radius:4px;padding:1px 6px;font-size:.75rem;margin:1px}
+.tag-auth{background:rgba(239,68,68,.15);color:var(--red)}
+.tag-db{background:rgba(34,211,238,.15);color:var(--accent2)}
+.tag-ai{background:rgba(236,72,153,.15);color:var(--pink)}
+.tag-payment{background:rgba(245,158,11,.15);color:var(--orange)}
+.tag-email{background:rgba(34,197,94,.15);color:var(--green)}
+.tag-queue{background:rgba(168,85,247,.15);color:#a855f7}
+.tag-cache{background:rgba(245,158,11,.15);color:var(--orange)}
+.method{font-weight:700;font-size:.8rem;padding:2px 6px;border-radius:4px;margin-right:6px}
+.method-GET{background:rgba(34,197,94,.2);color:var(--green)}
+.method-POST{background:rgba(99,102,241,.2);color:var(--accent)}
+.method-PUT{background:rgba(245,158,11,.2);color:var(--orange)}
+.method-PATCH{background:rgba(245,158,11,.2);color:var(--orange)}
+.method-DELETE{background:rgba(239,68,68,.2);color:var(--red)}
+.method-ALL{background:rgba(107,107,128,.2);color:var(--muted)}
+.route-path{font-family:'Fira Code',monospace;font-size:.9rem}
+.route-contract{color:var(--muted);font-size:.8rem;font-style:italic;margin-left:.5rem}
+.field{display:flex;gap:.5rem;padding:3px 0;font-size:.9rem}
+.field-name{font-family:monospace;color:var(--accent2)}
+.field-type{color:var(--muted);font-family:monospace}
+.field-flags{display:flex;gap:3px}
+.flag{font-size:.7rem;padding:0 4px;border-radius:3px;background:rgba(99,102,241,.1);color:var(--accent)}
+.flag-pk{background:rgba(245,158,11,.2);color:var(--orange)}
+.flag-fk{background:rgba(34,211,238,.2);color:var(--accent2)}
+.flag-unique{background:rgba(236,72,153,.2);color:var(--pink)}
+.hot-bar{height:8px;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;margin-top:4px}
+.component-props{color:var(--muted);font-size:.85rem}
+.badge-client{background:rgba(34,197,94,.15);color:var(--green);font-size:.75rem;padding:1px 6px;border-radius:4px}
+.badge-server{background:rgba(99,102,241,.15);color:var(--accent);font-size:.75rem;padding:1px 6px;border-radius:4px}
+.env-required{color:var(--red);font-weight:600;font-size:.8rem}
+.env-default{color:var(--green);font-size:.8rem}
+.footer{text-align:center;color:var(--muted);margin-top:4rem;padding-top:2rem;border-top:1px solid var(--border);font-size:.85rem}
+.footer a{color:var(--accent);text-decoration:none}
+table{width:100%;border-collapse:collapse}
+table td,table th{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);font-size:.9rem}
+table th{color:var(--muted);font-size:.8rem;font-weight:600;text-transform:uppercase}
+</style>
+</head>
+<body>
+
+<h1>app</h1>
+<div class="subtitle">AI Context Map — generated by codesight</div>
+
+<div>
+<span class="stack-badge">raw-http</span>
+
+<span class="stack-badge">react</span>
+<span class="stack-badge">typescript</span>
+
+</div>
+
+<div class="token-hero">
+  <div class="token-saved">~145.046 tokens saved</div>
+  <div class="token-detail">
+    Output: 38.904 tokens — Exploration cost without codesight: ~183.950 tokens — 1405 files scanned
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="stat-value">0</div><div class="stat-label">Routes</div></div>
+  <div class="stat"><div class="stat-value">0</div><div class="stat-label">Models</div></div>
+  <div class="stat"><div class="stat-value">166</div><div class="stat-label">Components</div></div>
+  <div class="stat"><div class="stat-value">457</div><div class="stat-label">Libraries</div></div>
+  <div class="stat"><div class="stat-value">4</div><div class="stat-label">Env Vars</div></div>
+  <div class="stat"><div class="stat-value">6</div><div class="stat-label">Middleware</div></div>
+  <div class="stat"><div class="stat-value">4984</div><div class="stat-label">Import Links</div></div>
+</div>
+
+
+
+
+
+
+<div class="section">
+<h2>Components</h2>
+<div class="grid">
+<div class="card">
+  <div class="card-title">ContentBrowser </div>
+  
+  <div class="card-meta">src\App.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">AgentInfoCard </div>
+  <div class="component-props">props: graph, agentId, onClose</div>
+  <div class="card-meta">src\components\AgentInfoCard\AgentInfoCard.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">ArchetypeCard </div>
+  <div class="component-props">props: archetype, selected, onClick</div>
+  <div class="card-meta">src\components\Ascendant\ArchetypeCard.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">AscendantSelection </div>
+  <div class="component-props">props: seed, onSelect</div>
+  <div class="card-meta">src\components\Ascendant\AscendantSelection.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">CMSDetailPanel </div>
+  <div class="component-props">props: data, itemKey, entryLabel, onClose</div>
+  <div class="card-meta">src\components\CMS\CMSDetailPanel.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">CMSHeader </div>
+  <div class="component-props">props: searchQuery, onSearchChange, onSelectEntry</div>
+  <div class="card-meta">src\components\CMS\CMSHeader.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">CMSMainPanel </div>
+  <div class="component-props">props: entry, searchQuery, selectedItemKey, onSelectItem</div>
+  <div class="card-meta">src\components\CMS\CMSMainPanel.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">CMSSidebar </div>
+  <div class="component-props">props: selectedEntryId, onSelectEntry</div>
+  <div class="card-meta">src\components\CMS\CMSSidebar.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">ContentBrowser </div>
+  
+  <div class="card-meta">src\components\CMS\ContentBrowser.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">ConfigManager </div>
+  <div class="component-props">props: groups, searchQuery</div>
+  <div class="card-meta">src\components\CMS\viewers\ConfigManager.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">ConstantsViewer </div>
+  <div class="component-props">props: data, searchQuery</div>
+  <div class="card-meta">src\components\CMS\viewers\ConstantsViewer.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">ProseViewer </div>
+  <div class="component-props">props: data, searchQuery</div>
+  <div class="card-meta">src\components\CMS\viewers\ProseViewer.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">RecordViewer </div>
+  <div class="component-props">props: data, searchQuery, selectedKey, onSelectItem</div>
+  <div class="card-meta">src\components\CMS\viewers\RecordViewer.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">TableViewer </div>
+  <div class="component-props">props: data, columns, searchQuery, searchFields, selectedKey, onSelectItem</div>
+  <div class="card-meta">src\components\CMS\viewers\TableViewer.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">TreeViewer </div>
+  <div class="component-props">props: data, searchQuery, onSelectItem</div>
+  <div class="card-meta">src\components\CMS\viewers\TreeViewer.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">Codex </div>
+  
+  <div class="card-meta">src\components\Codex\Codex.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">CodexCard </div>
+  <div class="component-props">props: entry, isSelected, onClick</div>
+  <div class="card-meta">src\components\Codex\CodexCard.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">CodexDetailPanel </div>
+  <div class="component-props">props: entry, onClose</div>
+  <div class="card-meta">src\components\Codex\CodexDetailPanel.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">CodexSidebar </div>
+  <div class="component-props">props: categories, selectedCategory, selectedSubcategory, onSelectCategory, onSelectSubcategory</div>
+  <div class="card-meta">src\components\Codex\CodexSidebar.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">CosmologyPanel </div>
+  <div class="component-props">props: cosmology, seed, onCosmologyChange, onSeedChange, onGenerate</div>
+  <div class="card-meta">src\components\Cosmology\CosmologyPanel.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">SphereSlider </div>
+  <div class="component-props">props: sphere, value, onChange</div>
+  <div class="card-meta">src\components\Cosmology\SphereSlider.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">ActionCard </div>
+  <div class="component-props">props: slot, onClick, playing, size</div>
+  <div class="card-meta">src\components\Game\ActionCard.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">ActionDrawer </div>
+  <div class="component-props">props: open, slots, _targetName, _targetLabel, onSlotClick, onClose, playingCardId, hexRevelation, gatedActionCounts</div>
+  <div class="card-meta">src\components\Game\ActionDrawer.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">AgendaPicker </div>
+  <div class="component-props">props: agendas, onSelect, onCancel, sphere</div>
+  <div class="card-meta">src\components\Game\AgendaPicker.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">AgentDetailPanel </div>
+  <div class="component-props">props: detail, activity, onBack, onViewPsyche, onIntervene, onLocationClick, onAttachmentClick, digestBuffer, currentTick, lastViewedTick</div>
+  <div class="card-meta">src\components\Game\AgentDetailPanel.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">AgentInfoCard </div>
+  <div class="component-props">props: card, onViewProfile, onBack, onZoomToLocation, graph, seed, tick</div>
+  <div class="card-meta">src\components\Game\AgentInfoCard.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">AgentProfileModal </div>
+  <div class="component-props">props: card, profile, onClose, scrollToNewStrata, knowledge</div>
+  <div class="card-meta">src\components\Game\AgentProfileModal.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">AgentWheel </div>
+  <div class="component-props">props: slots, agentName, agentTitle, cx, cy, onSlotClick, onDismiss</div>
+  <div class="card-meta">src\components\Game\AgentWheel.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">AlertBar </div>
+  <div class="component-props">props: alerts, onDismiss, onSelectAgent, onNavigate</div>
+  <div class="card-meta">src\components\Game\AlertBar.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">ArmySheet </div>
+  <div class="component-props">props: name, onClose</div>
+  <div class="card-meta">src\components\Game\ArmySheet.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">ArtifactSheet </div>
+  <div class="component-props">props: name, onClose</div>
+  <div class="card-meta">src\components\Game\ArtifactSheet.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">AscendantSheet </div>
+  <div class="component-props">props: open, onClose, gameState, archetype, avatarName, sphereColor, originFragmentId</div>
+  <div class="card-meta">src\components\Game\AscendantSheet.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">AttachmentDetailView </div>
+  <div class="component-props">props: attachment, onBack, onViewCodex</div>
+  <div class="card-meta">src\components\Game\AttachmentDetailView.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">AttachmentRow </div>
+  <div class="component-props">props: name, subcategory, tier, mechanicalSummary, ticksRemaining, totalTicks, durationLabel, onClick</div>
+  <div class="card-meta">src\components\Game\AttachmentRow.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">AttentionPoolIndicator </div>
+  <div class="component-props">props: attentionPool, attentionCapacity, attentionRegen</div>
+  <div class="card-meta">src\components\Game\AttentionPoolIndicator.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">AvatarHUD </div>
+  <div class="component-props">props: sphereColor, onCenterOnAvatar, onMoveClick, onWheelClick, onScryClick, moveMode</div>
+  <div class="card-meta">src\components\Game\AvatarHUD.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">AgentEntry </div>
+  <div class="component-props">props: name, sphereColor, archetypeName, onClick</div>
+  <div class="card-meta">src\components\Game\chronicle\AgentEntry.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">EventBlock </div>
+  <div class="component-props">props: label, text</div>
+  <div class="card-meta">src\components\Game\chronicle\EventBlock.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">ExplorationHook </div>
+  <div class="component-props">props: text</div>
+  <div class="card-meta">src\components\Game\chronicle\ExplorationHook.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">FactionEntry </div>
+  <div class="component-props">props: name, guildType, locationName, onClick, factionDef</div>
+  <div class="card-meta">src\components\Game\chronicle\FactionEntry.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">LocationCard </div>
+  <div class="component-props">props: name, subtype, agentCount, flavorText, onClick</div>
+  <div class="card-meta">src\components\Game\chronicle\LocationCard.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">SoulCard </div>
+  <div class="component-props">props: name, role, rarityTier, locationName, parentLocationName, sphereColor, archetypeName, flavorText, onClick, onNarrate</div>
+  <div class="card-meta">src\components\Game\chronicle\SoulCard.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">SubLocationEntry </div>
+  <div class="component-props">props: name, flavorText, onClick</div>
+  <div class="card-meta">src\components\Game\chronicle\SubLocationEntry.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">ScryProvider </div>
+  <div class="component-props">props: value</div>
+  <div class="card-meta">src\components\Game\contexts\ScryContext.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">ArmiesTabContent </div>
+  <div class="component-props">props: graph, currentTick, onZoomToLocation</div>
+  <div class="card-meta">src\components\Game\debug\ArmiesTabContent.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">BondOverlay </div>
+  <div class="component-props">props: graph, hexSize, visibleAgents, showBonds, showDecisionVectors</div>
+  <div class="card-meta">src\components\Game\debug\BondOverlay.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">CommandTab </div>
+  <div class="component-props">props: retinueAgents, followAgentId</div>
+  <div class="card-meta">src\components\Game\debug\CommandTab.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">DebugTabContent </div>
+  <div class="component-props">props: viewMode, currentTick, graph, allTraces, displayTraces, expandedTraceId, onToggleTrace, effectiveAgentId, showBonds, showDecisionVectors</div>
+  <div class="card-meta">src\components\Game\debug\DebugTabContent.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">DecisionBreakdown </div>
+  <div class="component-props">props: agentId, traces</div>
+  <div class="card-meta">src\components\Game\debug\DecisionBreakdown.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">EncounterCacheView </div>
+  <div class="component-props">props: cacheEntries, encounterProgress, currentTick, followAgentId, onZoomToLocation, graph, seed</div>
+  <div class="card-meta">src\components\Game\debug\EncounterCacheView.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">FactionDebugContent </div>
+  <div class="component-props">props: graph, onZoomToLocation</div>
+  <div class="card-meta">src\components\Game\debug\FactionDebugContent.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">JourneyDebugContent </div>
+  <div class="component-props">props: encounterNotifications, pendingVignettes, _currentTick</div>
+  <div class="card-meta">src\components\Game\debug\JourneyDebugContent.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">KnowledgeComparisonTab </div>
+  <div class="component-props">props: agentKnowledge, graph</div>
+  <div class="card-meta">src\components\Game\debug\KnowledgeComparisonTab.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">RelationshipGraph </div>
+  <div class="component-props">props: agentId, graph</div>
+  <div class="card-meta">src\components\Game\debug\RelationshipGraph.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">RevelationLogTab </div>
+  <div class="component-props">props: traces, _agentKnowledge</div>
+  <div class="card-meta">src\components\Game\debug\RevelationLogTab.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">SocialTabContent </div>
+  <div class="component-props">props: followAgentId, graph, traces, showBonds, showDecisionVectors, onToggleBonds, onToggleDecisionVectors</div>
+  <div class="card-meta">src\components\Game\debug\SocialTabContent.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">SphereStateTabContent </div>
+  <div class="component-props">props: aggregate</div>
+  <div class="card-meta">src\components\Game\debug\SphereStateTabContent.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">TraceEntryItem </div>
+  <div class="component-props">props: trace, isExpanded, onToggle</div>
+  <div class="card-meta">src\components\Game\debug\TraceFeed.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">WebGLDebugTab </div>
+  <div class="component-props">props: getDiagnostics, getZoomLevel, showOrganicShore, onToggleOrganicShore</div>
+  <div class="card-meta">src\components\Game\debug\WebGLDebugTab.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">DebugPanel </div>
+  <div class="component-props">props: currentTick, followAgentId, graph, retinueAgents, onClose, onToggleBonds, onToggleDecisionVectors, cacheEntries, encounterProgress, onZoomToLocation</div>
+  <div class="card-meta">src\components\Game\DebugPanel.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">DoomBar </div>
+  <div class="component-props">props: definition, state</div>
+  <div class="card-meta">src\components\Game\DoomBar.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">DoomClockDetail </div>
+  <div class="component-props">props: open, onClose, definition, state</div>
+  <div class="card-meta">src\components\Game\DoomClockDetail.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">ClearanceGatePanel </div>
+  <div class="component-props">props: shellState, signals</div>
+  <div class="card-meta">src\components\Game\encounter-stage\shells\ClearanceGatePanel.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">EncounterLog </div>
+  <div class="component-props">props: progress, template, agentName, onClick</div>
+  <div class="card-meta">src\components\Game\EncounterLog.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">EncounterVeil </div>
+  <div class="component-props">props: open, model, threadTier, essence, tick, autoResolveTick, onIntervene, onBoost, onPeek, onDisregard</div>
+  <div class="card-meta">src\components\Game\EncounterVeil.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">EssencePanel </div>
+  <div class="component-props">props: pool, maxEssence, primarySphere, secondarySphere, income, compact</div>
+  <div class="card-meta">src\components\Game\EssencePanel.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">EventLog </div>
+  <div class="component-props">props: entries</div>
+  <div class="card-meta">src\components\Game\EventLog.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">EventPopup </div>
+  <div class="component-props">props: popup, queueLength, onDismiss, onChoice</div>
+  <div class="card-meta">src\components\Game\EventPopup.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">FactionSheet </div>
+  <div class="component-props">props: factionId, name, onClose</div>
+  <div class="card-meta">src\components\Game\FactionSheet.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">GameView </div>
+  <div class="component-props">props: archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity, preSeeded</div>
+  <div class="card-meta">src\components\Game\GameView.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">HarvestScreen </div>
+  <div class="component-props">props: harvest, cycle, onBeginNextCycle</div>
+  <div class="card-meta">src\components\Game\HarvestScreen.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">HexBreadcrumb </div>
+  <div class="component-props">props: hexCol, hexRow, terrain, locationCount, agentCount, lineOfSight, sphereInfluence, cultures, factions, regionName</div>
+  <div class="card-meta">src\components\Game\HexBreadcrumb.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">HexChronicle </div>
+  <div class="component-props">props: terrain, hexCol, hexRow, lineOfSight, sphereInfluence, cultures, factions, locations, agentsByLocation, factionsByLocation</div>
+  <div class="card-meta">src\components\Game\HexChronicle.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">HexDetailView </div>
+  <div class="component-props">props: coord, tile, onClose, onGoToChronicle, graph</div>
+  <div class="card-meta">src\components\Game\HexDetailView.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">HexFlavorPanel </div>
+  <div class="component-props">props: terrain, lineOfSight, sphereInfluence, cultures, factions, locationCount, agentCount</div>
+  <div class="card-meta">src\components\Game\HexFlavorPanel.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">HexPoiPanel </div>
+  <div class="component-props">props: locations, agentsByLocation, lineOfSight, onLocationClick</div>
+  <div class="card-meta">src\components\Game\HexPoiPanel.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">HexSidebar </div>
+  <div class="component-props">props: terrain, hexCol, hexRow, sphereInfluence, regionData, locations, agentsByLocation, lineOfSight, cultures, factions</div>
+  <div class="card-meta">src\components\Game\HexSidebar.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">HexZoomView </div>
+  <div class="component-props">props: locations, agentsByLocation, connections, lineOfSight, terrain, cultures, factions, onLocationClick</div>
+  <div class="card-meta">src\components\Game\HexZoomView.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">IdentityChip </div>
+  <div class="component-props">props: avatarName, archetypeTitle, cycle, sphereColor, primarySphere, originFragmentId, onClick</div>
+  <div class="card-meta">src\components\Game\IdentityChip.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">IntentSection </div>
+  <div class="component-props">props: intents, variant</div>
+  <div class="card-meta">src\components\Game\IntentSection.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">InterventionConfirm </div>
+  <div class="component-props">props: interventionType, label, deliveryMode, essenceCost, sphere, detectionRisk, rangeStatus, hexDistance, description, availableEssence</div>
+  <div class="card-meta">src\components\Game\InterventionConfirm.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">JourneyVignetteModal </div>
+  <div class="component-props">props: open, onClose, onChoice, vignette</div>
+  <div class="card-meta">src\components\Game\JourneyVignetteModal.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">LocationProfileModal </div>
+  <div class="component-props">props: name, onClose</div>
+  <div class="card-meta">src\components\Game\LocationProfileModal.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">LocationView </div>
+  <div class="component-props">props: location, agents, hexTerrain, hexCol, hexRow, onAgentClick, onBack, availableEncounters, activeEncounters, getAgentName</div>
+  <div class="card-meta">src\components\Game\LocationView.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">MandateDetail </div>
+  <div class="component-props">props: open, onClose, definition, state</div>
+  <div class="card-meta">src\components\Game\MandateDetail.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">MandateTracker </div>
+  <div class="component-props">props: definition, state</div>
+  <div class="card-meta">src\components\Game\MandateTracker.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">MeetingEncounterModal </div>
+  <div class="component-props">props: open, onClose, onComplete, state, onStateChange, graph, ascendantId, ascendantSphere, ascendantSecondSphere, locationId</div>
+  <div class="card-meta">src\components\Game\MeetingEncounterModal.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">NarrativeFeed </div>
+  <div class="component-props">props: events</div>
+  <div class="card-meta">src\components\Game\NarrativeFeed.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">NarrativeLog </div>
+  <div class="component-props">props: events, onSelectAgent</div>
+  <div class="card-meta">src\components\Game\NarrativeLog.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">NpcDetailView </div>
+  <div class="component-props">props: npc, traits, factionName</div>
+  <div class="card-meta">src\components\Game\NpcDetailView.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">PremonitionModal </div>
+  <div class="component-props">props: open, premonition, essencePool, onWhisperChoice, onCompulsionChoice, onDismiss</div>
+  <div class="card-meta">src\components\Game\PremonitionModal.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">ReadTheThreadsPanel </div>
+  <div class="component-props">props: open, onClose, digestBuffer, currentTick, essenceAvailable, onSpendEssence, lastReadTick, attentionPool, attentionCapacity</div>
+  <div class="card-meta">src\components\Game\ReadTheThreadsPanel.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">RecentActivityLog </div>
+  <div class="component-props">props: entries, lastViewedTick, maxEntries</div>
+  <div class="card-meta">src\components\Game\RecentActivityLog.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">RetinuePanel </div>
+  <div class="component-props">props: agents, selectedAgentId, onAgentSelect, onCenterOnHex, onZoomToLocation, activeEncounters, onEncounterClick, onToggleAttentionMode</div>
+  <div class="card-meta">src\components\Game\RetinuePanel.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">RivalPanel </div>
+  <div class="component-props">props: definitions, states</div>
+  <div class="card-meta">src\components\Game\RivalPanel.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">RivalsButton </div>
+  <div class="component-props">props: definitions, states</div>
+  <div class="card-meta">src\components\Game\RivalsButton.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">ScryOverlay </div>
+  
+  <div class="card-meta">src\components\Game\ScryOverlay.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">SettingsPanel </div>
+  <div class="component-props">props: open, onClose, fogDisabled, onToggleFog, debugPanelOpen, onToggleDebug, showOrganicShore, onToggleOrganicShore, notificationPrefs, onToggleNotificationCategory</div>
+  <div class="card-meta">src\components\Game\SettingsPanel.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">SimulationControls </div>
+  <div class="component-props">props: tick, season, year, running, speed, onToggle, onStep, onSpeedChange, compact</div>
+  <div class="card-meta">src\components\Game\SimulationControls.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">StrandView </div>
+  <div class="component-props">props: agentName, strands, onClose</div>
+  <div class="card-meta">src\components\Game\StrandView.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">AttachmentsTab </div>
+  <div class="component-props">props: card, onAttachmentClick</div>
+  <div class="card-meta">src\components\Game\tabs\AttachmentsTab.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">BondsTab </div>
+  <div class="component-props">props: card, knowledge</div>
+  <div class="card-meta">src\components\Game\tabs\BondsTab.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">ChronicleTab </div>
+  <div class="component-props">props: card, profile, knowledge, scrollToNewStrata</div>
+  <div class="card-meta">src\components\Game\tabs\ChronicleTab.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">JourneyTab </div>
+  <div class="component-props">props: card, knowledge</div>
+  <div class="card-meta">src\components\Game\tabs\JourneyTab.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">OverviewTab </div>
+  <div class="component-props">props: card, _profile, knowledge</div>
+  <div class="card-meta">src\components\Game\tabs\OverviewTab.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">ProwessTab </div>
+  <div class="component-props">props: card, knowledge, onAttachmentClick</div>
+  <div class="card-meta">src\components\Game\tabs\ProwessTab.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">TabBar </div>
+  <div class="component-props">props: activeTab, onTabChange</div>
+  <div class="card-meta">src\components\Game\tabs\TabBar.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">ThreadDetailView </div>
+  <div class="component-props">props: node, agentInfoCard, onClose, onViewProfile, _onZoomToLocation, graph</div>
+  <div class="card-meta">src\components\Game\ThreadDetailView.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">ThreadsPanel </div>
+  <div class="component-props">props: threadedNodes, selectedNodeId, onNodeSelect, onCenterOnHex, onZoomToLocation, activeEncounters, onEncounterClick, onToggleAttentionMode</div>
+  <div class="card-meta">src\components\Game\ThreadsPanel.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">ToastStack </div>
+  <div class="component-props">props: toasts, onDismiss, onSelectAgent, onNavigate</div>
+  <div class="card-meta">src\components\Game\ToastStack.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">WorldPulse </div>
+  <div class="component-props">props: gameState, season, year, speed, onSpeedChange</div>
+  <div class="card-meta">src\components\Game\WorldPulse.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">AgentDots </div>
+  <div class="component-props">props: graph, locationPositions, zoomScale, hexSize, currentTick, avatarId, sphereColor, onAgentClick, onAgentHover</div>
+  <div class="card-meta">src\components\HexMap\AgentDots.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">CoastlineOverlay </div>
+  <div class="component-props">props: data, svgWidth, svgHeight, colors</div>
+  <div class="card-meta">src\components\HexMap\CoastlineOverlay.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">GhostDots </div>
+  <div class="component-props">props: ghosts, hexSize, currentTick</div>
+  <div class="card-meta">src\components\HexMap\GhostDots.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">HexDefs </div>
+  <div class="component-props">props: size</div>
+  <div class="card-meta">src\components\HexMap\HexDefs.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">HexMap </div>
+  <div class="component-props">props: tiles, cols, rows, hexSize, seed, hoveredHex, selectedHex, overlayMode, visibilityMap, locationOverlays</div>
+  <div class="card-meta">src\components\HexMap\HexMap.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">HexTileComponent </div>
+  <div class="component-props">props: tile, cx, cy, size, hexClipId, isHovered, isSelected, visibility, isAvatarHex, sphereColor</div>
+  <div class="card-meta">src\components\HexMap\HexTile.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">MovementTrails </div>
+  <div class="component-props">props: graph, hexSize</div>
+  <div class="card-meta">src\components\HexMap\MovementTrails.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">RegionLabels </div>
+  <div class="component-props">props: graph, hexSize, zoomScale, visibilityMap</div>
+  <div class="card-meta">src\components\HexMap\RegionLabels.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">RiverOverlay </div>
+  <div class="component-props">props: riverPaths, hexSize, seed</div>
+  <div class="card-meta">src\components\HexMap\RiverOverlay.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">DESTINATION_MARKER_CONSTANTS </div>
+  <div class="component-props">props: tiles, cols, rows, seed, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick</div>
+  <div class="card-meta">src\components\HexMapV2\HexMapV2.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">HexV2View </div>
+  <div class="component-props">props: tiles, cols, rows, seed, riverPaths, lakeIds, locations, agents, armies, battles</div>
+  <div class="card-meta">src\components\HexMapV2\HexV2View.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">HexTooltip </div>
+  <div class="component-props">props: terrainName, coord, screenX, screenY, canvasWidth, canvasHeight, terrainKey, geoParams, hasRiver</div>
+  <div class="card-meta">src\components\HexMapV2\interaction\HexTooltip.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">TerrainTextureLab </div>
+  
+  <div class="card-meta">src\components\HexMapV2\lab\TerrainTextureLab.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">TerrainTextureLabCanvas </div>
+  <div class="component-props">props: configs, previewHexes, models, placements, selectedHexId, seed, animationEnabled, globalTimeScale, viewSettings, onHexSelect</div>
+  <div class="card-meta">src\components\HexMapV2\lab\TerrainTextureLabCanvas.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">LocationLabelOverlay </div>
+  <div class="component-props">props: locations, cameraRef, canvasWidth, canvasHeight, zoomLevel, prePlacedBBoxesRef</div>
+  <div class="card-meta">src\components\HexMapV2\overlay\LocationLabelOverlay.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">RegionLabelOverlay </div>
+  <div class="component-props">props: labels, cameraRef, canvasWidth, canvasHeight, zoomLevel, placedBBoxesRef</div>
+  <div class="card-meta">src\components\HexMapV2\overlay\RegionLabelOverlay.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">CoatOfArms </div>
+  <div class="component-props">props: definition, size, prominenceLevel, className</div>
+  <div class="card-meta">src\components\icons\CoatOfArms.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">ReachIcon </div>
+  <div class="component-props">props: reach, size, className</div>
+  <div class="card-meta">src\components\icons\ReachIcon.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">SphereIcon </div>
+  <div class="component-props">props: sphere, size, className</div>
+  <div class="card-meta">src\components\icons\SphereIcon.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">BondBeat </div>
+  <div class="component-props">props: candidate, vision, hungerId, primarySphere, onComplete</div>
+  <div class="card-meta">src\components\MeetTheFirst\BondBeat.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">ComicPanel </div>
+  <div class="component-props">props: sceneImagePath, scenePlaceholder, characterImagePath, characterPlaceholder, characterPosition</div>
+  <div class="card-meta">src\components\MeetTheFirst\ComicPanel.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">MeetTheFirstFlow </div>
+  <div class="component-props">props: ascendantIdentity, graph, ascendantId, locationId, seed, tick, onComplete, onClose</div>
+  <div class="card-meta">src\components\MeetTheFirst\MeetTheFirstFlow.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">SensingBeat </div>
+  <div class="component-props">props: candidates, openingProse, onSelect</div>
+  <div class="card-meta">src\components\MeetTheFirst\SensingBeat.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">SparkBeat </div>
+  <div class="component-props">props: visions, primarySphere, onSelect</div>
+  <div class="card-meta">src\components\MeetTheFirst\SparkBeat.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">TestingBeat </div>
+  <div class="component-props">props: candidate, dilemmas, locationName, godVoiceOverride, onComplete</div>
+  <div class="card-meta">src\components\MeetTheFirst\TestingBeat.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">ProseKeyword </div>
+  <div class="component-props">props: sphere</div>
+  <div class="card-meta">src\components\ProseKeyword.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">DriveBeat </div>
+  <div class="component-props">props: fragments, onSelect</div>
+  <div class="card-meta">src\components\Remembrance\DriveBeat.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">FragmentCard </div>
+  <div class="component-props">props: prose, imageAssetPath, selected, onClick, accentColor, testId</div>
+  <div class="card-meta">src\components\Remembrance\FragmentCard.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">OriginBeat </div>
+  <div class="component-props">props: fragments, onSelect</div>
+  <div class="card-meta">src\components\Remembrance\OriginBeat.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">RemembranceFlow </div>
+  <div class="component-props">props: seed, onComplete</div>
+  <div class="card-meta">src\components\Remembrance\RemembranceFlow.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">RevealBeat </div>
+  <div class="component-props">props: originFragment, driveFragment, hunger, mortalName, courtType, suggestedDivineName, onComplete</div>
+  <div class="card-meta">src\components\Remembrance\RevealBeat.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">StirringBeat </div>
+  <div class="component-props">props: images, onSelect</div>
+  <div class="card-meta">src\components\Remembrance\StirringBeat.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">TransformationBeat </div>
+  <div class="component-props">props: hungers, driveFragment, onSelect</div>
+  <div class="card-meta">src\components\Remembrance\TransformationBeat.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">AnimateMount </div>
+  <div class="component-props">props: show, animation, duration</div>
+  <div class="card-meta">src\components\shared\AnimateMount.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">DomainCard </div>
+  <div class="component-props">props: reach, tier, agentName, gender, revealed</div>
+  <div class="card-meta">src\components\shared\DomainCard.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">Dropdown </div>
+  <div class="component-props">props: trigger, open, onOpenChange, align</div>
+  <div class="card-meta">src\components\shared\Dropdown.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">EntityCard </div>
+  <div class="component-props">props: header, sections, onBack, onViewCodex, onZoomToLocation</div>
+  <div class="card-meta">src\components\shared\EntityCard.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">IconButton </div>
+  <div class="component-props">props: icon, badge, active, size, variant, disabled, style, className</div>
+  <div class="card-meta">src\components\shared\IconButton.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">ListRow </div>
+  <div class="component-props">props: accentColor, selected, onClick, trailing, className</div>
+  <div class="card-meta">src\components\shared\ListRow.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">Modal </div>
+  <div class="component-props">props: open, onClose, maxWidth, animation</div>
+  <div class="card-meta">src\components\shared\Modal.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">ProgressBar </div>
+  <div class="component-props">props: progress, color, glow, className, dataTestId</div>
+  <div class="card-meta">src\components\shared\ProgressBar.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">RarityBadge </div>
+  <div class="component-props">props: tier, opacity, className</div>
+  <div class="card-meta">src\components\shared\RarityBadge.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">RarityBorderBox </div>
+  <div class="component-props">props: tier, className, style</div>
+  <div class="card-meta">src\components\shared\RarityBorderBox.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">RivalIcon </div>
+  <div class="component-props">props: spheres, size, className, style, title</div>
+  <div class="card-meta">src\components\shared\RivalIcon.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">SectionHeading </div>
+  <div class="component-props">props: count, Tag, ornamental</div>
+  <div class="card-meta">src\components\shared\SectionHeading.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">SphereIcon </div>
+  <div class="component-props">props: sphereName, size, className, style, title, useImage</div>
+  <div class="card-meta">src\components\shared\SphereIcon.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">StepDots </div>
+  <div class="component-props">props: totalSteps, currentStepIndex, size</div>
+  <div class="card-meta">src\components\shared\StepDots.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">CreditsModal </div>
+  <div class="component-props">props: open, onClose</div>
+  <div class="card-meta">src\components\StartPage\CreditsModal.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">SettingsModal </div>
+  <div class="component-props">props: open, onClose, volume, onVolumeChange, muted, onToggleMute</div>
+  <div class="card-meta">src\components\StartPage\SettingsModal.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">StartPage </div>
+  <div class="component-props">props: onNewWorld, onAdvancedNewWorld</div>
+  <div class="card-meta">src\components\StartPage\StartPage.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">NodeDetail </div>
+  <div class="component-props">props: node, graph, onClose</div>
+  <div class="card-meta">src\components\TaxonomyViewer\NodeDetail.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">TaxonomyViewer </div>
+  
+  <div class="card-meta">src\components\TaxonomyViewer\TaxonomyViewer.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">InfoPanel </div>
+  <div class="component-props">props: tile</div>
+  <div class="card-meta">src\components\UI\InfoPanel.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">MagicGlowTiles </div>
+  
+  <div class="card-meta">src\components\UI\MagicGlowTiles.tsx</div>
+</div>
+<div class="card">
+  <div class="card-title">WorldSoulIndicator </div>
+  <div class="component-props">props: aggregate</div>
+  <div class="card-meta">src\components\WorldSoulIndicator.tsx</div>
+</div>
+</div>
+</div>
+
+
+<div class="section">
+<h2>Dependency Hot Files</h2>
+<div class="grid">
+<div class="card">
+  <div class="card-title" style="font-size:.9rem">src\engine\graph.ts</div>
+  <div class="card-meta">imported by 370 files</div>
+  <div class="hot-bar" style="width:100%"></div>
+</div>
+<div class="card">
+  <div class="card-title" style="font-size:.9rem">src\types\index.ts</div>
+  <div class="card-meta">imported by 186 files</div>
+  <div class="hot-bar" style="width:50%"></div>
+</div>
+<div class="card">
+  <div class="card-title" style="font-size:.9rem">src\types\gameState.ts</div>
+  <div class="card-meta">imported by 176 files</div>
+  <div class="hot-bar" style="width:48%"></div>
+</div>
+<div class="card">
+  <div class="card-title" style="font-size:.9rem">src\types\traits.ts</div>
+  <div class="card-meta">imported by 156 files</div>
+  <div class="hot-bar" style="width:42%"></div>
+</div>
+<div class="card">
+  <div class="card-title" style="font-size:.9rem">src\engine\traceBuffer.ts</div>
+  <div class="card-meta">imported by 106 files</div>
+  <div class="hot-bar" style="width:29%"></div>
+</div>
+<div class="card">
+  <div class="card-title" style="font-size:.9rem">src\types\encounter.ts</div>
+  <div class="card-meta">imported by 97 files</div>
+  <div class="hot-bar" style="width:26%"></div>
+</div>
+<div class="card">
+  <div class="card-title" style="font-size:.9rem">src\types\agent.ts</div>
+  <div class="card-meta">imported by 96 files</div>
+  <div class="hot-bar" style="width:26%"></div>
+</div>
+<div class="card">
+  <div class="card-title" style="font-size:.9rem">src\types\influence.ts</div>
+  <div class="card-meta">imported by 86 files</div>
+  <div class="hot-bar" style="width:23%"></div>
+</div>
+<div class="card">
+  <div class="card-title" style="font-size:.9rem">src\types\graph.ts</div>
+  <div class="card-meta">imported by 85 files</div>
+  <div class="hot-bar" style="width:23%"></div>
+</div>
+<div class="card">
+  <div class="card-title" style="font-size:.9rem">src\types\unifiedAction.ts</div>
+  <div class="card-meta">imported by 77 files</div>
+  <div class="hot-bar" style="width:21%"></div>
+</div>
+<div class="card">
+  <div class="card-title" style="font-size:.9rem">src\lib\hexMath.ts</div>
+  <div class="card-meta">imported by 52 files</div>
+  <div class="hot-bar" style="width:14%"></div>
+</div>
+<div class="card">
+  <div class="card-title" style="font-size:.9rem">src\types\faction.ts</div>
+  <div class="card-meta">imported by 49 files</div>
+  <div class="hot-bar" style="width:13%"></div>
+</div>
+</div>
+</div>
+
+
+<div class="section">
+<h2>Environment Variables</h2>
+<table>
+<tr><th>Variable</th><th>Status</th><th>Source</th></tr>
+<tr>
+  <td><code>DEV</code></td>
+  <td><span class="env-required">required</span></td>
+  <td class="card-meta">src\components\Game\GameView.tsx</td>
+</tr>
+<tr>
+  <td><code>NANOBANANANA_API_KEY</code></td>
+  <td><span class="env-default">has default</span></td>
+  <td class="card-meta">.env.example</td>
+</tr>
+<tr>
+  <td><code>OBSIDIAN_VAULT_ROOT</code></td>
+  <td><span class="env-required">required</span></td>
+  <td class="card-meta">scripts\enhance-frontmatter.ts</td>
+</tr>
+<tr>
+  <td><code>VERCEL_OIDC_TOKEN</code></td>
+  <td><span class="env-default">has default</span></td>
+  <td class="card-meta">.env.local</td>
+</tr>
+</table>
+</div>
+
+
+<div class="section">
+<h2>Middleware</h2>
+<div class="grid">
+<div class="card">
+  <div class="card-title">generate-hex-tile <span class="tag tag-custom">custom</span></div>
+  <div class="card-meta">scripts\generate-hex-tile.py</div>
+</div>
+<div class="card">
+  <div class="card-title">generate-vault <span class="tag tag-validation">validation</span></div>
+  <div class="card-meta">scripts\generate-vault.ts</div>
+</div>
+<div class="card">
+  <div class="card-title">generateVault.test <span class="tag tag-custom">custom</span></div>
+  <div class="card-meta">scripts\__tests__\generateVault.test.ts</div>
+</div>
+<div class="card">
+  <div class="card-title">civic-guard-definition <span class="tag tag-custom">custom</span></div>
+  <div class="card-meta">src\data\civic-guard-definition.ts</div>
+</div>
+<div class="card">
+  <div class="card-title">civic-guard-encounter-content <span class="tag tag-auth">auth</span></div>
+  <div class="card-meta">src\data\civic-guard-encounter-content.ts</div>
+</div>
+<div class="card">
+  <div class="card-title">generate-vault <span class="tag tag-validation">validation</span></div>
+  <div class="card-meta">tmp\generate-vault.mjs</div>
+</div>
+</div>
+</div>
+
+<div class="footer">
+  Generated by <a href="https://github.com/Houseofmvps/codesight">codesight</a> — see your codebase clearly
+</div>
+
+</body>
+</html>

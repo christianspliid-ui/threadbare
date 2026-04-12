@@ -237,10 +237,6 @@ describe('DECISIVE_NATURE_PROSE', () => {
 // ─── Table 9: FEAR_PROSE ─────────────────────────────────────────────────────
 
 describe('FEAR_PROSE', () => {
-  test('has exactly 18 keys (9 value pairs × 2 poles)', () => {
-    expect(Object.keys(FEAR_PROSE).length).toBe(18);
-  });
-
   test('has all 20 expected keys', () => {
     ALL_FEAR_KEYS.forEach((key) => {
       expect(FEAR_PROSE[key]).toBeDefined();

@@ -60,21 +60,30 @@ import {
 
 // ─── Trait Node Initialization ─────────────────────────────────────
 
-let _traitNodesEnsured = false;
-
 function ensureReputationTraitNodes(graph: WorldGraph): void {
-  if (_traitNodesEnsured) return;
+  // Check if the first trait node exists in this specific graph.
+  // If it does, all others were added together, so skip.
+  // If not, add all trait definition nodes.
+  // This avoids module-level singleton state that persists across test sessions.
+  if (REPUTATION_TRAIT_DEFINITIONS.length === 0) return;
+
+  const firstTraitId = REPUTATION_TRAIT_DEFINITIONS[0].id;
+  if (graph.getNode(firstTraitId)) {
+    // First trait already exists, so all trait nodes are already in this graph
+    return;
+  }
+
+  // Add all trait definition nodes
   for (const node of REPUTATION_TRAIT_DEFINITIONS) {
     if (!graph.getNode(node.id)) {
       graph.addNode(node);
     }
   }
-  _traitNodesEnsured = true;
 }
 
-/** Reset initialization flag (for tests / new sessions) */
+/** Reset initialization flag (for tests / new sessions) — now a no-op since we check graph state */
 export function resetReputationTraitInit(): void {
-  _traitNodesEnsured = false;
+  // No-op: initialization is now graph-aware via ensureReputationTraitNodes check
 }
 
 // ─── Tally Helpers ─────────────────────────────────────────────────

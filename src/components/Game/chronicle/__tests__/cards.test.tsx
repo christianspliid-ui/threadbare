@@ -181,7 +181,7 @@ describe('SoulCard', () => {
       />,
     );
     expect(screen.getByText('Kael')).toBeTruthy();
-    expect(screen.getByText('The Forge')).toBeTruthy();
+    expect(screen.getByText('In The Forge')).toBeTruthy();
   });
 
   it('renders archetype when provided', () => {

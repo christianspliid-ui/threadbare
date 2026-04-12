@@ -1,0 +1,177 @@
+# UI
+
+> **Navigation aid.** Component inventory and prop signatures extracted via AST. Read the source files before adding props or modifying component logic.
+
+**166 components** (react)
+
+## Components
+
+- **ContentBrowser** — `src\App.tsx`
+- **AgentInfoCard** — props: graph, agentId, onClose — `src\components\AgentInfoCard\AgentInfoCard.tsx`
+- **ArchetypeCard** — props: archetype, selected, onClick — `src\components\Ascendant\ArchetypeCard.tsx`
+- **AscendantSelection** — props: seed, onSelect — `src\components\Ascendant\AscendantSelection.tsx`
+- **CMSDetailPanel** — props: data, itemKey, entryLabel, onClose — `src\components\CMS\CMSDetailPanel.tsx`
+- **CMSHeader** — props: searchQuery, onSearchChange, onSelectEntry — `src\components\CMS\CMSHeader.tsx`
+- **CMSMainPanel** — props: entry, searchQuery, selectedItemKey, onSelectItem — `src\components\CMS\CMSMainPanel.tsx`
+- **CMSSidebar** — props: selectedEntryId, onSelectEntry — `src\components\CMS\CMSSidebar.tsx`
+- **ContentBrowser** — `src\components\CMS\ContentBrowser.tsx`
+- **ConfigManager** — props: groups, searchQuery — `src\components\CMS\viewers\ConfigManager.tsx`
+- **ConstantsViewer** — props: data, searchQuery — `src\components\CMS\viewers\ConstantsViewer.tsx`
+- **ProseViewer** — props: data, searchQuery — `src\components\CMS\viewers\ProseViewer.tsx`
+- **RecordViewer** — props: data, searchQuery, selectedKey, onSelectItem — `src\components\CMS\viewers\RecordViewer.tsx`
+- **TableViewer** — props: data, columns, searchQuery, searchFields, selectedKey, onSelectItem — `src\components\CMS\viewers\TableViewer.tsx`
+- **TreeViewer** — props: data, searchQuery, onSelectItem — `src\components\CMS\viewers\TreeViewer.tsx`
+- **Codex** — `src\components\Codex\Codex.tsx`
+- **CodexCard** — props: entry, isSelected, onClick — `src\components\Codex\CodexCard.tsx`
+- **CodexDetailPanel** — props: entry, onClose — `src\components\Codex\CodexDetailPanel.tsx`
+- **CodexSidebar** — props: categories, selectedCategory, selectedSubcategory, onSelectCategory, onSelectSubcategory — `src\components\Codex\CodexSidebar.tsx`
+- **CosmologyPanel** — props: cosmology, seed, onCosmologyChange, onSeedChange, onGenerate — `src\components\Cosmology\CosmologyPanel.tsx`
+- **SphereSlider** — props: sphere, value, onChange — `src\components\Cosmology\SphereSlider.tsx`
+- **ActionCard** — props: slot, onClick, playing, size — `src\components\Game\ActionCard.tsx`
+- **ActionDrawer** — props: open, slots, _targetName, _targetLabel, onSlotClick, onClose, playingCardId, hexRevelation, gatedActionCounts — `src\components\Game\ActionDrawer.tsx`
+- **AgendaPicker** — props: agendas, onSelect, onCancel, sphere — `src\components\Game\AgendaPicker.tsx`
+- **AgentDetailPanel** — props: detail, activity, onBack, onViewPsyche, onIntervene, onLocationClick, onAttachmentClick, digestBuffer, currentTick, lastViewedTick — `src\components\Game\AgentDetailPanel.tsx`
+- **AgentInfoCard** — props: card, onViewProfile, onBack, onZoomToLocation, graph, seed, tick — `src\components\Game\AgentInfoCard.tsx`
+- **AgentProfileModal** — props: card, profile, onClose, scrollToNewStrata, knowledge — `src\components\Game\AgentProfileModal.tsx`
+- **AgentWheel** — props: slots, agentName, agentTitle, cx, cy, onSlotClick, onDismiss — `src\components\Game\AgentWheel.tsx`
+- **AlertBar** — props: alerts, onDismiss, onSelectAgent, onNavigate — `src\components\Game\AlertBar.tsx`
+- **ArmySheet** — props: name, onClose — `src\components\Game\ArmySheet.tsx`
+- **ArtifactSheet** — props: name, onClose — `src\components\Game\ArtifactSheet.tsx`
+- **AscendantSheet** — props: open, onClose, gameState, archetype, avatarName, sphereColor, originFragmentId — `src\components\Game\AscendantSheet.tsx`
+- **AttachmentDetailView** — props: attachment, onBack, onViewCodex — `src\components\Game\AttachmentDetailView.tsx`
+- **AttachmentRow** — props: name, subcategory, tier, mechanicalSummary, ticksRemaining, totalTicks, durationLabel, onClick — `src\components\Game\AttachmentRow.tsx`
+- **AttentionPoolIndicator** — props: attentionPool, attentionCapacity, attentionRegen — `src\components\Game\AttentionPoolIndicator.tsx`
+- **AvatarHUD** — props: sphereColor, onCenterOnAvatar, onMoveClick, onWheelClick, onScryClick, moveMode — `src\components\Game\AvatarHUD.tsx`
+- **AgentEntry** — props: name, sphereColor, archetypeName, onClick — `src\components\Game\chronicle\AgentEntry.tsx`
+- **EventBlock** — props: label, text — `src\components\Game\chronicle\EventBlock.tsx`
+- **ExplorationHook** — props: text — `src\components\Game\chronicle\ExplorationHook.tsx`
+- **FactionEntry** — props: name, guildType, locationName, onClick, factionDef — `src\components\Game\chronicle\FactionEntry.tsx`
+- **LocationCard** — props: name, subtype, agentCount, flavorText, onClick — `src\components\Game\chronicle\LocationCard.tsx`
+- **SoulCard** — props: name, role, rarityTier, locationName, parentLocationName, sphereColor, archetypeName, flavorText, onClick, onNarrate — `src\components\Game\chronicle\SoulCard.tsx`
+- **SubLocationEntry** — props: name, flavorText, onClick — `src\components\Game\chronicle\SubLocationEntry.tsx`
+- **ScryProvider** — props: value — `src\components\Game\contexts\ScryContext.tsx`
+- **ArmiesTabContent** — props: graph, currentTick, onZoomToLocation — `src\components\Game\debug\ArmiesTabContent.tsx`
+- **BondOverlay** — props: graph, hexSize, visibleAgents, showBonds, showDecisionVectors — `src\components\Game\debug\BondOverlay.tsx`
+- **CommandTab** — props: retinueAgents, followAgentId — `src\components\Game\debug\CommandTab.tsx`
+- **DebugTabContent** — props: viewMode, currentTick, graph, allTraces, displayTraces, expandedTraceId, onToggleTrace, effectiveAgentId, showBonds, showDecisionVectors — `src\components\Game\debug\DebugTabContent.tsx`
+- **DecisionBreakdown** — props: agentId, traces — `src\components\Game\debug\DecisionBreakdown.tsx`
+- **EncounterCacheView** — props: cacheEntries, encounterProgress, currentTick, followAgentId, onZoomToLocation, graph, seed — `src\components\Game\debug\EncounterCacheView.tsx`
+- **FactionDebugContent** — props: graph, onZoomToLocation — `src\components\Game\debug\FactionDebugContent.tsx`
+- **JourneyDebugContent** — props: encounterNotifications, pendingVignettes, _currentTick — `src\components\Game\debug\JourneyDebugContent.tsx`
+- **KnowledgeComparisonTab** — props: agentKnowledge, graph — `src\components\Game\debug\KnowledgeComparisonTab.tsx`
+- **RelationshipGraph** — props: agentId, graph — `src\components\Game\debug\RelationshipGraph.tsx`
+- **RevelationLogTab** — props: traces, _agentKnowledge — `src\components\Game\debug\RevelationLogTab.tsx`
+- **SocialTabContent** — props: followAgentId, graph, traces, showBonds, showDecisionVectors, onToggleBonds, onToggleDecisionVectors — `src\components\Game\debug\SocialTabContent.tsx`
+- **SphereStateTabContent** — props: aggregate — `src\components\Game\debug\SphereStateTabContent.tsx`
+- **TraceEntryItem** — props: trace, isExpanded, onToggle — `src\components\Game\debug\TraceFeed.tsx`
+- **WebGLDebugTab** — props: getDiagnostics, getZoomLevel, showOrganicShore, onToggleOrganicShore — `src\components\Game\debug\WebGLDebugTab.tsx`
+- **DebugPanel** — props: currentTick, followAgentId, graph, retinueAgents, onClose, onToggleBonds, onToggleDecisionVectors, cacheEntries, encounterProgress, onZoomToLocation — `src\components\Game\DebugPanel.tsx`
+- **DoomBar** — props: definition, state, journeyLabel — `src\components\Game\DoomBar.tsx`
+- **DoomClockDetail** — props: open, onClose, definition, state, journeyLabel — `src\components\Game\DoomClockDetail.tsx`
+- **ClearanceGatePanel** — props: shellState, signals — `src\components\Game\encounter-stage\shells\ClearanceGatePanel.tsx`
+- **EncounterLog** — props: progress, template, agentName, onClick — `src\components\Game\EncounterLog.tsx`
+- **EncounterVeil** — props: open, model, threadTier, essence, tick, autoResolveTick, onIntervene, onBoost, onPeek, onDisregard — `src\components\Game\EncounterVeil.tsx`
+- **EssencePanel** — props: pool, maxEssence, primarySphere, secondarySphere, income, compact — `src\components\Game\EssencePanel.tsx`
+- **EventLog** — props: entries — `src\components\Game\EventLog.tsx`
+- **EventPopup** — props: popup, queueLength, onDismiss, onChoice — `src\components\Game\EventPopup.tsx`
+- **FactionSheet** — props: factionId, name, graph, onClose, onOpenTargetActions — `src\components\Game\FactionSheet.tsx`
+- **GameView** — props: archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity, preSeeded — `src\components\Game\GameView.tsx`
+- **HarvestScreen** — props: harvest, cycle, onBeginNextCycle — `src\components\Game\HarvestScreen.tsx`
+- **HexBreadcrumb** — props: hexCol, hexRow, terrain, locationCount, agentCount, lineOfSight, sphereInfluence, cultures, factions, regionName — `src\components\Game\HexBreadcrumb.tsx`
+- **HexChronicle** — props: terrain, hexCol, hexRow, lineOfSight, sphereInfluence, cultures, factions, locations, agentsByLocation, factionsByLocation — `src\components\Game\HexChronicle.tsx`
+- **HexDetailView** — props: coord, tile, onClose, onGoToChronicle, graph — `src\components\Game\HexDetailView.tsx`
+- **HexFlavorPanel** — props: terrain, lineOfSight, sphereInfluence, cultures, factions, locationCount, agentCount — `src\components\Game\HexFlavorPanel.tsx`
+- **HexPoiPanel** — props: locations, agentsByLocation, lineOfSight, onLocationClick — `src\components\Game\HexPoiPanel.tsx`
+- **HexSidebar** — props: terrain, hexCol, hexRow, sphereInfluence, regionData, locations, agentsByLocation, lineOfSight, cultures, factions — `src\components\Game\HexSidebar.tsx`
+- **HexZoomView** — props: locations, agentsByLocation, connections, lineOfSight, terrain, cultures, factions, onLocationClick — `src\components\Game\HexZoomView.tsx`
+- **IdentityChip** — props: avatarName, archetypeTitle, cycle, sphereColor, primarySphere, originFragmentId, onClick — `src\components\Game\IdentityChip.tsx`
+- **IntentSection** — props: intents, variant — `src\components\Game\IntentSection.tsx`
+- **InterventionConfirm** — props: interventionType, label, deliveryMode, essenceCost, sphere, detectionRisk, rangeStatus, hexDistance, description, availableEssence — `src\components\Game\InterventionConfirm.tsx`
+- **JourneyVignetteModal** — props: open, onClose, onChoice, vignette — `src\components\Game\JourneyVignetteModal.tsx`
+- **LocationProfileModal** — props: name, onClose — `src\components\Game\LocationProfileModal.tsx`
+- **LocationView** — props: location, agents, hexTerrain, hexCol, hexRow, onAgentClick, onBack, availableEncounters, activeEncounters, getAgentName — `src\components\Game\LocationView.tsx`
+- **MandateDetail** — props: open, onClose, definition, state — `src\components\Game\MandateDetail.tsx`
+- **MandateTracker** — props: definition, state — `src\components\Game\MandateTracker.tsx`
+- **MeetingEncounterModal** — props: open, onClose, onComplete, state, onStateChange, graph, ascendantId, ascendantSphere, ascendantSecondSphere, locationId — `src\components\Game\MeetingEncounterModal.tsx`
+- **NarrativeFeed** — props: events — `src\components\Game\NarrativeFeed.tsx`
+- **NarrativeLog** — props: events, onSelectAgent — `src\components\Game\NarrativeLog.tsx`
+- **NpcDetailView** — props: npc, traits, factionName — `src\components\Game\NpcDetailView.tsx`
+- **PremonitionModal** — props: open, premonition, essencePool, onWhisperChoice, onCompulsionChoice, onDismiss — `src\components\Game\PremonitionModal.tsx`
+- **ReadTheThreadsPanel** — props: open, onClose, digestBuffer, currentTick, essenceAvailable, onSpendEssence, lastReadTick, attentionPool, attentionCapacity — `src\components\Game\ReadTheThreadsPanel.tsx`
+- **RecentActivityLog** — props: entries, lastViewedTick, maxEntries — `src\components\Game\RecentActivityLog.tsx`
+- **RetinuePanel** — props: agents, selectedAgentId, onAgentSelect, onCenterOnHex, onZoomToLocation, activeEncounters, onEncounterClick, onToggleAttentionMode — `src\components\Game\RetinuePanel.tsx`
+- **RivalPanel** — props: definitions, states — `src\components\Game\RivalPanel.tsx`
+- **RivalsButton** — props: definitions, states — `src\components\Game\RivalsButton.tsx`
+- **ScryOverlay** — `src\components\Game\ScryOverlay.tsx`
+- **SettingsPanel** — props: open, onClose, fogDisabled, onToggleFog, debugPanelOpen, onToggleDebug, showOrganicShore, onToggleOrganicShore, notificationPrefs, onToggleNotificationCategory — `src\components\Game\SettingsPanel.tsx`
+- **SimulationControls** — props: tick, season, year, running, speed, onToggle, onStep, onSpeedChange, compact — `src\components\Game\SimulationControls.tsx`
+- **StrandView** — props: agentName, strands, onClose — `src\components\Game\StrandView.tsx`
+- **AttachmentsTab** — props: card, onAttachmentClick — `src\components\Game\tabs\AttachmentsTab.tsx`
+- **BondsTab** — props: card, knowledge — `src\components\Game\tabs\BondsTab.tsx`
+- **ChronicleTab** — props: card, profile, knowledge, scrollToNewStrata — `src\components\Game\tabs\ChronicleTab.tsx`
+- **JourneyTab** — props: card, knowledge — `src\components\Game\tabs\JourneyTab.tsx`
+- **OverviewTab** — props: card, _profile, knowledge — `src\components\Game\tabs\OverviewTab.tsx`
+- **ProwessTab** — props: card, knowledge, onAttachmentClick — `src\components\Game\tabs\ProwessTab.tsx`
+- **TabBar** — props: activeTab, onTabChange — `src\components\Game\tabs\TabBar.tsx`
+- **ThreadDetailView** — props: node, agentInfoCard, agentEncounterDecision, onClose, onViewProfile, _onZoomToLocation, graph — `src\components\Game\ThreadDetailView.tsx`
+- **ThreadsPanel** — props: threadedNodes, selectedNodeId, onNodeSelect, onCenterOnHex, onZoomToLocation, activeEncounters, agentEncounterDecisions, onEncounterClick, onToggleAttentionMode — `src\components\Game\ThreadsPanel.tsx`
+- **ToastStack** — props: toasts, onDismiss, onSelectAgent, onNavigate — `src\components\Game\ToastStack.tsx`
+- **WorldPulse** — props: gameState, season, year, speed, onSpeedChange — `src\components\Game\WorldPulse.tsx`
+- **AgentDots** — props: graph, locationPositions, zoomScale, hexSize, currentTick, avatarId, sphereColor, onAgentClick, onAgentHover — `src\components\HexMap\AgentDots.tsx`
+- **CoastlineOverlay** — props: data, svgWidth, svgHeight, colors — `src\components\HexMap\CoastlineOverlay.tsx`
+- **GhostDots** — props: ghosts, hexSize, currentTick — `src\components\HexMap\GhostDots.tsx`
+- **HexDefs** — props: size — `src\components\HexMap\HexDefs.tsx`
+- **HexMap** — props: tiles, cols, rows, hexSize, seed, hoveredHex, selectedHex, overlayMode, visibilityMap, locationOverlays — `src\components\HexMap\HexMap.tsx`
+- **HexTileComponent** — props: tile, cx, cy, size, hexClipId, isHovered, isSelected, visibility, isAvatarHex, sphereColor — `src\components\HexMap\HexTile.tsx`
+- **MovementTrails** — props: graph, hexSize — `src\components\HexMap\MovementTrails.tsx`
+- **RegionLabels** — props: graph, hexSize, zoomScale, visibilityMap — `src\components\HexMap\RegionLabels.tsx`
+- **RiverOverlay** — props: riverPaths, hexSize, seed — `src\components\HexMap\RiverOverlay.tsx`
+- **DESTINATION_MARKER_CONSTANTS** — props: tiles, cols, rows, seed, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick — `src\components\HexMapV2\HexMapV2.tsx`
+- **HexV2View** — props: tiles, cols, rows, seed, riverPaths, lakeIds, locations, agents, armies, battles — `src\components\HexMapV2\HexV2View.tsx`
+- **HexTooltip** — props: terrainName, coord, screenX, screenY, canvasWidth, canvasHeight, terrainKey, geoParams, hasRiver — `src\components\HexMapV2\interaction\HexTooltip.tsx`
+- **TerrainTextureLab** — `src\components\HexMapV2\lab\TerrainTextureLab.tsx`
+- **TerrainTextureLabCanvas** — props: configs, previewHexes, models, placements, slotAnchors, zoneRules, fillerDots, clickTargets, selectedHexId, selectedClickTargetId — `src\components\HexMapV2\lab\TerrainTextureLabCanvas.tsx`
+- **LocationLabelOverlay** — props: locations, cameraRef, canvasWidth, canvasHeight, zoomLevel, prePlacedBBoxesRef — `src\components\HexMapV2\overlay\LocationLabelOverlay.tsx`
+- **RegionLabelOverlay** — props: labels, cameraRef, canvasWidth, canvasHeight, zoomLevel, placedBBoxesRef — `src\components\HexMapV2\overlay\RegionLabelOverlay.tsx`
+- **CoatOfArms** — props: definition, size, prominenceLevel, className — `src\components\icons\CoatOfArms.tsx`
+- **ReachIcon** — props: reach, size, className — `src\components\icons\ReachIcon.tsx`
+- **SphereIcon** — props: sphere, size, className — `src\components\icons\SphereIcon.tsx`
+- **BondBeat** — props: candidate, vision, hungerId, primarySphere, onComplete — `src\components\MeetTheFirst\BondBeat.tsx`
+- **ComicPanel** — props: sceneImagePath, scenePlaceholder, characterImagePath, characterPlaceholder, characterPosition — `src\components\MeetTheFirst\ComicPanel.tsx`
+- **MeetTheFirstFlow** — props: ascendantIdentity, graph, ascendantId, locationId, seed, tick, onComplete, onClose — `src\components\MeetTheFirst\MeetTheFirstFlow.tsx`
+- **SensingBeat** — props: candidates, openingProse, onSelect — `src\components\MeetTheFirst\SensingBeat.tsx`
+- **SparkBeat** — props: visions, primarySphere, onSelect — `src\components\MeetTheFirst\SparkBeat.tsx`
+- **TestingBeat** — props: candidate, dilemmas, locationName, godVoiceOverride, onComplete — `src\components\MeetTheFirst\TestingBeat.tsx`
+- **ProseKeyword** — props: sphere — `src\components\ProseKeyword.tsx`
+- **DriveBeat** — props: fragments, onSelect — `src\components\Remembrance\DriveBeat.tsx`
+- **FragmentCard** — props: prose, imageAssetPath, selected, onClick, accentColor, testId — `src\components\Remembrance\FragmentCard.tsx`
+- **OriginBeat** — props: fragments, onSelect — `src\components\Remembrance\OriginBeat.tsx`
+- **RemembranceFlow** — props: seed, onComplete — `src\components\Remembrance\RemembranceFlow.tsx`
+- **RevealBeat** — props: originFragment, driveFragment, hunger, mortalName, courtType, suggestedDivineName, onComplete — `src\components\Remembrance\RevealBeat.tsx`
+- **StirringBeat** — props: images, onSelect — `src\components\Remembrance\StirringBeat.tsx`
+- **TransformationBeat** — props: hungers, driveFragment, onSelect — `src\components\Remembrance\TransformationBeat.tsx`
+- **AnimateMount** — props: show, animation, duration — `src\components\shared\AnimateMount.tsx`
+- **DomainCard** — props: reach, tier, agentName, gender, revealed — `src\components\shared\DomainCard.tsx`
+- **Dropdown** — props: trigger, open, onOpenChange, align — `src\components\shared\Dropdown.tsx`
+- **EntityCard** — props: header, sections, onBack, onViewCodex, onZoomToLocation — `src\components\shared\EntityCard.tsx`
+- **IconButton** — props: icon, badge, active, size, variant, disabled, style, className — `src\components\shared\IconButton.tsx`
+- **ListRow** — props: accentColor, selected, onClick, trailing, className — `src\components\shared\ListRow.tsx`
+- **Modal** — props: open, onClose, maxWidth, animation — `src\components\shared\Modal.tsx`
+- **ProgressBar** — props: progress, color, glow, className, dataTestId — `src\components\shared\ProgressBar.tsx`
+- **RarityBadge** — props: tier, opacity, className — `src\components\shared\RarityBadge.tsx`
+- **RarityBorderBox** — props: tier, className, style — `src\components\shared\RarityBorderBox.tsx`
+- **RivalIcon** — props: spheres, size, className, style, title — `src\components\shared\RivalIcon.tsx`
+- **SectionHeading** — props: count, Tag, ornamental — `src\components\shared\SectionHeading.tsx`
+- **SphereIcon** — props: sphereName, size, className, style, title, useImage — `src\components\shared\SphereIcon.tsx`
+- **StepDots** — props: totalSteps, currentStepIndex, size — `src\components\shared\StepDots.tsx`
+- **CreditsModal** — props: open, onClose — `src\components\StartPage\CreditsModal.tsx`
+- **SettingsModal** — props: open, onClose, volume, onVolumeChange, muted, onToggleMute — `src\components\StartPage\SettingsModal.tsx`
+- **StartPage** — props: onNewWorld, onAdvancedNewWorld — `src\components\StartPage\StartPage.tsx`
+- **NodeDetail** — props: node, graph, onClose — `src\components\TaxonomyViewer\NodeDetail.tsx`
+- **TaxonomyViewer** — `src\components\TaxonomyViewer\TaxonomyViewer.tsx`
+- **InfoPanel** — props: tile — `src\components\UI\InfoPanel.tsx`
+- **MagicGlowTiles** — `src\components\UI\MagicGlowTiles.tsx`
+- **WorldSoulIndicator** — props: aggregate — `src\components\WorldSoulIndicator.tsx`
+
+---
+_Back to [overview.md](./overview.md)_

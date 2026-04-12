@@ -318,6 +318,7 @@ Context for specific problem types lives in on-demand skills. **Always load `sta
 |--------|-------|-------------|
 | **Foundational (load first)** | `state-of-game-design` | Always — before any other domain skill. Cosmology, reaches, spheres, action verbs, prerequisites, architectural decisions. |
 | Engine & code architecture | `engine-architecture` | Writing engine modules, tick loop work, tracing, resolution, PRNG |
+| Encounter & actor systems | `encounter-actor-systems` | Analysing, debugging, tuning encounter pipeline, actor capability, resolution, awareness, scoring. Also maintains `encounters-agents-reference.html` and `tick-cycle-reference.html`. |
 | Frontend & UI | `frontend-ui` | Building components, styling, accessibility, layout at 1920–3440px. Loads `Docs/design-system/` |
 | Prose — resolver architecture | `prose-pipeline` | Implementing new resolvers, modifying the prose pipeline, understanding graph-walking prose generation. Includes Threadbare aesthetic and authoring checklist. |
 | Prose — content authoring | `prose-content-systems` | Adding encounter templates, narrative event prose, faction content, spell flavor, content tables. High-volume daily work. |
@@ -351,3 +352,25 @@ Two skills form a feedback loop:
 2. **`retrospective`** — Periodically analyze the log, implement quick wins, backlog bigger fixes → `Docs/retrospectives/`
 
 Repetitive workflows → propose a skill. Use `skill-creator` to build and eval 
+
+
+# Codesight — Codebase Intelligence
+
+Codesight is installed as both a **static analysis output** (`.codesight/`) and an **MCP server** (`codesight` in `.mcp.json`). A SessionStart hook regenerates the analysis each session.
+
+**Use codesight actively:**
+- Before touching unfamiliar code, check `.codesight/wiki/index.md` for orientation (WHERE things live), then read actual source files.
+- Use `.codesight/CODESIGHT.md` for the full context map: components, libraries, config, middleware, dependency graph.
+- Use `.codesight/components.md` for the component catalog with props (166 components).
+- Use `.codesight/graph.md` for the import dependency graph and high-impact files.
+- Use the codesight MCP tools when available for live queries (blast radius, dependency chains).
+- To refresh mid-session after significant changes: `npx codesight --wiki`
+
+**High-impact files** (changes here affect many other files):
+- `src/engine/graph.ts` (imported by 370 files)
+- `src/types/index.ts` (imported by 186 files)
+- `src/types/gameState.ts` (imported by 176 files)
+- `src/types/traits.ts` (imported by 156 files)
+- `src/engine/traceBuffer.ts` (imported by 106 files)
+
+Wiki articles are navigation aids, not implementation guides — always read source files before implementing.

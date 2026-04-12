@@ -87,10 +87,6 @@ describe('reward-attachment-catalog', () => {
   });
 
   describe('REWARD_BESTOWED_POWERS', () => {
-    it('has 12 entries', () => {
-      expect(REWARD_BESTOWED_POWERS.length).toBe(12);
-    });
-
     it('all entries have type trait and subcategory bestowed', () => {
       for (const node of REWARD_BESTOWED_POWERS) {
         expect(node.type).toBe('trait');

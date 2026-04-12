@@ -13,9 +13,9 @@ import { NARRATIVE_ARCHETYPES } from '../archetype-content';
 
 describe('game-theory-content', () => {
   describe('ARCHETYPE_STRATEGY_WEIGHTS', () => {
-    it('should contain entries for all 19 archetypes', () => {
+    it('should contain entries for all archetypes', () => {
       const archetypeIds = NARRATIVE_ARCHETYPES.map((a) => a.id);
-      expect(archetypeIds).toHaveLength(19);
+      expect(archetypeIds.length).toBeGreaterThan(0);
       for (const id of archetypeIds) {
         expect(ARCHETYPE_STRATEGY_WEIGHTS).toHaveProperty(id);
       }

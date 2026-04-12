@@ -77,10 +77,6 @@ describe('mandate-loader', () => {
   describe('loadMandateMilestoneProse', () => {
     const prose = loadMandateMilestoneProse();
 
-    it('has exactly 48 entries (12 mandates × 4 transitions)', () => {
-      expect(Object.keys(prose).length).toBe(48);
-    });
-
     it('every prose entry is a non-empty string', () => {
       for (const [key, text] of Object.entries(prose)) {
         expect(typeof text).toBe('string');

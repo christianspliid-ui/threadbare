@@ -336,19 +336,27 @@ export function updateZoomVisibility(group: AgentSpriteGroup, tier: ZoomTier, zo
       entry.sprite.visible = true;
     } else {
       entry.sprite.visible = false;
-      continue;
+      baseScale = 0; // Not used but needed for type safety
     }
 
-    const compensatedScale = baseScale * zoomCompensation;
-    entry.sprite.scale.setScalar(compensatedScale);
-    entry.sprite.userData.baseScale = compensatedScale;
+    // Update scale and visibility only if sprite is visible
+    if (entry.sprite.visible) {
+      const compensatedScale = baseScale * zoomCompensation;
+      entry.sprite.scale.setScalar(compensatedScale);
+      entry.sprite.userData.baseScale = compensatedScale;
 
-    // Pulse ring tracks main sprite visibility and scale
-    if (entry.pulseRingSprite) {
-      entry.pulseRingSprite.visible = showPortrait;
-      if (showPortrait) {
-        const ringScale = compensatedScale * 1.2;
-        entry.pulseRingSprite.scale.set(ringScale, ringScale, 1);
+      // Pulse ring tracks main sprite visibility and scale
+      if (entry.pulseRingSprite) {
+        entry.pulseRingSprite.visible = showPortrait;
+        if (showPortrait) {
+          const ringScale = compensatedScale * 1.2;
+          entry.pulseRingSprite.scale.set(ringScale, ringScale, 1);
+        }
+      }
+    } else {
+      // Ensure pulse ring is hidden when main sprite is hidden
+      if (entry.pulseRingSprite) {
+        entry.pulseRingSprite.visible = false;
       }
     }
   }

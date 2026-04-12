@@ -1,0 +1,368 @@
+<style>
+  body { background: #131316 !important; }
+  .game-theme {
+    --bg-surface: #1a1a1f;
+    --bg-raised: #222228;
+    --text-primary: #f0e6d2;
+    --text-secondary: #c8b89a;
+    --text-tertiary: #8a7f6f;
+    --accent-gold: #d4a040;
+    --accent-gold-dim: #d4a04060;
+    --border-subtle: #2a2520;
+    font-family: 'Crimson Pro', 'Palatino', Georgia, serif;
+    color: var(--text-primary);
+  }
+
+  .design-summary {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 16px;
+  }
+
+  .summary-section {
+    margin-bottom: 32px;
+    padding: 20px;
+    background: var(--bg-surface);
+    border-radius: 8px;
+    border: 1px solid var(--border-subtle);
+  }
+  .summary-section h3 {
+    color: var(--accent-gold);
+    font-variant: small-caps;
+    letter-spacing: 0.12em;
+    font-size: 15px;
+    margin: 0 0 12px;
+  }
+  .summary-section p {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-secondary);
+    margin: 4px 0;
+  }
+
+  /* ─── Final mockup ─── */
+  .prowess-mockup {
+    max-width: 520px;
+    background: var(--bg-surface);
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px solid var(--border-subtle);
+  }
+  .section-heading {
+    font-variant: small-caps;
+    letter-spacing: 0.15em;
+    color: var(--accent-gold);
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  .domain-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .domain-card {
+    background: var(--bg-raised);
+    border-radius: 6px;
+    display: flex;
+    overflow: hidden;
+    border: 1px solid var(--border-subtle);
+    min-height: 72px;
+    transition: border-color 0.2s;
+  }
+  .domain-card:hover {
+    border-color: var(--accent-gold-dim);
+  }
+  .domain-card .art {
+    width: 72px;
+    min-width: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .domain-card .art img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .domain-card .card-body {
+    padding: 8px 12px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .domain-card .reach-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent-gold);
+    font-variant: small-caps;
+    letter-spacing: 0.1em;
+  }
+  .domain-card .tier-word {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    font-variant: small-caps;
+    letter-spacing: 0.05em;
+    margin-left: 6px;
+  }
+  .domain-card .prose {
+    font-size: 11.5px;
+    line-height: 1.4;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-top: 3px;
+  }
+  .domain-card.unknown .art {
+    filter: grayscale(1) brightness(0.25);
+  }
+  .domain-card.unknown .reach-name {
+    color: var(--text-tertiary);
+  }
+  .domain-card.unknown .prose {
+    color: var(--text-tertiary);
+  }
+
+  /* Art placeholder gradients per reach */
+  .art-iron    { background: linear-gradient(135deg, #3a1a1a, #5a2828, #2a0e0e); }
+  .art-gold    { background: linear-gradient(135deg, #3a2e10, #5a4a1a, #2a1e08); }
+  .art-shadow  { background: linear-gradient(135deg, #12121e, #1e1e30, #0a0a14); }
+  .art-veil    { background: linear-gradient(135deg, #201830, #30204a, #140e20); }
+  .art-heart   { background: linear-gradient(135deg, #351828, #4a1830, #200e18); }
+  .art-eye     { background: linear-gradient(135deg, #182830, #1a3848, #0e1a22); }
+  .art-stone   { background: linear-gradient(135deg, #222018, #33302a, #181610); }
+  .art-star    { background: linear-gradient(135deg, #181828, #22223a, #101018); }
+
+  .file-path {
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 11px;
+    color: var(--text-tertiary);
+    background: rgba(255,255,255,0.05);
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0;
+    font-size: 12px;
+  }
+  .data-table th {
+    text-align: left;
+    color: var(--accent-gold);
+    font-variant: small-caps;
+    letter-spacing: 0.08em;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .data-table td {
+    padding: 5px 8px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid rgba(42, 37, 32, 0.5);
+  }
+  .data-table td:first-child {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  .scope-tag {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-variant: small-caps;
+    letter-spacing: 0.08em;
+    margin-right: 4px;
+  }
+  .scope-now { background: #2a3a20; color: #8ac060; }
+  .scope-later { background: #2a2520; color: #a08060; }
+</style>
+
+<h2>Domain Prowess Redesign — Final Design</h2>
+<p class="subtitle">Horizontal cards with tier art, narrator-voice prose, shared component</p>
+
+<div class="game-theme design-summary">
+
+  <!-- Architecture overview -->
+  <div class="summary-section">
+    <h3>Architecture</h3>
+    <table class="data-table">
+      <tr><th>Layer</th><th>File</th><th>What</th></tr>
+      <tr>
+        <td>Data — prose</td>
+        <td><span class="file-path">src/data/domain-prose.ts</span></td>
+        <td>40 narrator-voice prose templates (8 reaches x 5 tiers) with {name}/{they}/{them} interpolation</td>
+      </tr>
+      <tr>
+        <td>Data — art</td>
+        <td><span class="file-path">public/assets/reaches/{reach}-{tier}.png</span></td>
+        <td>40 square PNGs, symbolic/emblematic, tier-escalating. 512x512 source.</td>
+      </tr>
+      <tr>
+        <td>Component</td>
+        <td><span class="file-path">src/components/shared/DomainCard.tsx</span></td>
+        <td>Shared horizontal card: 72px art thumbnail + reach name + tier word + prose</td>
+      </tr>
+      <tr>
+        <td>Consumer</td>
+        <td><span class="file-path">ProwessTab.tsx</span></td>
+        <td><span class="scope-tag scope-now">phase 1</span> Replace 4x2 grid with DomainCard list</td>
+      </tr>
+      <tr>
+        <td>Consumer</td>
+        <td><span class="file-path">AscendantSheet.tsx</span></td>
+        <td><span class="scope-tag scope-now">phase 1</span> Replace domain grid with DomainCard list</td>
+      </tr>
+      <tr>
+        <td>Consumer</td>
+        <td><span class="file-path">FactionSheet.tsx</span></td>
+        <td><span class="scope-tag scope-later">later</span> Different prose (institutional voice)</td>
+      </tr>
+      <tr>
+        <td>Consumer</td>
+        <td><span class="file-path">ArmySheet.tsx</span></td>
+        <td><span class="scope-tag scope-later">later</span> Different prose (military voice)</td>
+      </tr>
+      <tr>
+        <td>Consumer</td>
+        <td><span class="file-path">SettlementSheet.tsx</span></td>
+        <td><span class="scope-tag scope-later">later</span> Not yet designed</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Prose examples -->
+  <div class="summary-section">
+    <h3>Prose Examples — Iron Reach (all 5 tiers)</h3>
+    <p style="margin-bottom: 10px; font-size: 11px; color: var(--text-tertiary);">Narrator/observer voice. {name} and {they}/{them}/{their} substituted at render.</p>
+    <table class="data-table">
+      <tr><th>Tier</th><th>Word</th><th>Prose</th></tr>
+      <tr>
+        <td>1</td>
+        <td>Meek</td>
+        <td style="font-style: italic;">{name} flinches at the sound of drawn steel. {They} are no fighter, and know it.</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>Trained</td>
+        <td style="font-style: italic;">{name} holds a blade correctly and knows when to raise a shield. Drilled, not tested.</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>Formidable</td>
+        <td style="font-style: italic;">{name} fights with a cold precision that unnerves even seasoned warriors. {Their} blade finds openings others wouldn't dare reach for.</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>Fearsome</td>
+        <td style="font-style: italic;">Soldiers who've faced {name} don't speak of it willingly. {They} move through battle like a scythe through wheat.</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>Legendary</td>
+        <td style="font-style: italic;">Songs are sung of {name}'s blade-work, though the songs get the details wrong. The truth is worse.</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Live mockup -->
+  <div class="summary-section">
+    <h3>Final Mockup — Kael Thornweaver's Prowess Tab</h3>
+    <p style="margin-bottom: 16px; font-size: 11px; color: var(--text-tertiary);">As it would appear in-game. Gradient placeholders where generated art will go.</p>
+
+    <div class="prowess-mockup">
+      <div class="section-heading">Domains</div>
+      <div class="domain-list">
+        <!-- Iron — tier 3 Formidable -->
+        <div class="domain-card">
+          <div class="art art-iron"><span style="opacity:0.4; font-size: 28px">⚔</span></div>
+          <div class="card-body">
+            <div><span class="reach-name">Iron</span><span class="tier-word">· Formidable</span></div>
+            <div class="prose">Kael fights with a cold precision that unnerves even seasoned warriors. His blade finds openings others wouldn't dare reach for.</div>
+          </div>
+        </div>
+
+        <!-- Gold — tier 2 Shrewd -->
+        <div class="domain-card">
+          <div class="art art-gold"><span style="opacity:0.4; font-size: 28px">&#9733;</span></div>
+          <div class="card-body">
+            <div><span class="reach-name">Gold</span><span class="tier-word">· Shrewd</span></div>
+            <div class="prose">He reads a deal the way others read weather — instinctively, and rarely wrong about which way the wind blows.</div>
+          </div>
+        </div>
+
+        <!-- Shadow — tier 4 Phantom -->
+        <div class="domain-card">
+          <div class="art art-shadow"><span style="opacity:0.4; font-size: 28px">&#9790;</span></div>
+          <div class="card-body">
+            <div><span class="reach-name">Shadow</span><span class="tier-word">· Phantom</span></div>
+            <div class="prose">Kael moves like a phantom through the world. Hardly seen, quickly forgotten, with a knack for manipulating plans and people without them noticing.</div>
+          </div>
+        </div>
+
+        <!-- Veil — unknown -->
+        <div class="domain-card unknown">
+          <div class="art art-veil"><span style="opacity:0.2; font-size: 28px">&#10022;</span></div>
+          <div class="card-body">
+            <div><span class="reach-name">Veil</span><span class="tier-word">· ???</span></div>
+            <div class="prose">You haven't observed this domain.</div>
+          </div>
+        </div>
+
+        <!-- Heart — tier 4 Revered -->
+        <div class="domain-card">
+          <div class="art art-heart"><span style="opacity:0.4; font-size: 28px">&#9829;</span></div>
+          <div class="card-body">
+            <div><span class="reach-name">Heart</span><span class="tier-word">· Revered</span></div>
+            <div class="prose">When Kael speaks, even the quarrelling fall silent. His presence draws loyalty not through command, but through a warmth that makes others feel truly seen.</div>
+          </div>
+        </div>
+
+        <!-- Eye — tier 1 Observant -->
+        <div class="domain-card">
+          <div class="art art-eye"><span style="opacity:0.4; font-size: 28px">&#9673;</span></div>
+          <div class="card-body">
+            <div><span class="reach-name">Eye</span><span class="tier-word">· Observant</span></div>
+            <div class="prose">He notices things — the pause before a lie, the fresh scratch on an old lock. Not a scholar's eye, but a survivor's.</div>
+          </div>
+        </div>
+
+        <!-- Stone — unknown -->
+        <div class="domain-card unknown">
+          <div class="art art-stone"><span style="opacity:0.2; font-size: 28px">&#9670;</span></div>
+          <div class="card-body">
+            <div><span class="reach-name">Stone</span><span class="tier-word">· ???</span></div>
+            <div class="prose">You haven't observed this domain.</div>
+          </div>
+        </div>
+
+        <!-- Star — tier 2 Cosmic -->
+        <div class="domain-card">
+          <div class="art art-star"><span style="opacity:0.4; font-size: 28px">&#10037;</span></div>
+          <div class="card-body">
+            <div><span class="reach-name">Star</span><span class="tier-word">· Cosmic</span></div>
+            <div class="prose">Kael speaks of the heavens as though they speak back. His faith isn't learned — it burns in him like a second heartbeat, steady and sure.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- What stays unchanged -->
+  <div class="summary-section">
+    <h3>What Stays Unchanged</h3>
+    <table class="data-table">
+      <tr><td>5-tier word scales</td><td>Kept as compact labels (sidebar, card suffix). Source of truth for tier word.</td></tr>
+      <tr><td>10-tier NARRATIVE_LEXICON</td><td>Engine-internal. Untouched.</td></tr>
+      <tr><td>AgentInfoCard sidebar</td><td>Stays as "Formidable in Iron" compact list. No art, no prose.</td></tr>
+      <tr><td>Knowledge gating</td><td>Same revealedDomains + knowledge level logic. Unknown = greyed card.</td></tr>
+      <tr><td>Reach tooltips</td><td>Still explain what the reach is. Prose now explains the character's level in it.</td></tr>
+      <tr><td>Pronoun system</td><td>Reuses existing {they}/{them}/{their} from proseEnrichment.ts</td></tr>
+    </table>
+  </div>
+</div>
