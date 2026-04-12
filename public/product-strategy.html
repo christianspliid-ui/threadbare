@@ -746,7 +746,7 @@
     <img src="/screens/title-screen.png" alt="The Fantasy World Simulator — cosmic energy streams through ancient ruins" loading="eager">
   </div>
   <h1>Build the world first.<br>Find the <em>game</em> inside it.</h1>
-  <div class="subtitle">Product Strategy &mdash; Updated 5 April 2026</div>
+  <div class="subtitle">Product Strategy &mdash; Updated 12 April 2026</div>
   <div class="divider"></div>
   <div class="thesis">
     The Fantasy World Simulator is a systemic god-game where <strong>emergent narrative</strong> comes from the collision of deep, interconnected systems &mdash; not from scripted events. Like CK3 and Stellaris, the simulation comes first. The game emerges from watching systems interact in surprising ways.
@@ -823,8 +823,8 @@
         <div class="m-status m-status-complete">Engine complete</div>
         <div class="m-tagline">The world breaks</div>
         <p>The full conflict engine is operational. Mercenary companies form within factions. Faction ambitions drive war goals. Armies spawn, march across the hex map with quintessence attrition, and engage in multi-step battle resolution. Sieges escalate over ticks with sortie, negotiation, and assault options. Victorious armies sack settlements, destroying sublocations, tanking prosperity, and generating refugees. The aftermath reshapes the world.</p>
-        <p>This is where emergent storytelling gets visceral. A guild war that escalates into a siege because one faction hired mercenaries and the other called in allies &mdash; that's the kind of story players screenshot and share. Monster encounters (M2.5) are the next design target for the conflict layer.</p>
-        <div class="m-delivers"><strong>Delivered:</strong> Mercenary company + faction ambition system &middot; Army entities with spawning encounters &middot; Army movement + quintessence attrition &middot; Battle resolution with spotlight encounters &middot; Siege resolution (multi-tick, escalating) &middot; Location destruction + aftermath + refugees &middot; Armies debug tab &middot; 102 conflict tests</div>
+        <p>This is where emergent storytelling gets visceral. A guild war that escalates into a siege because one faction hired mercenaries and the other called in allies &mdash; that's the kind of story players screenshot and share. Monster lairs now escalate through sphere feedback, and agents can be divinely targeted to confront them.</p>
+        <div class="m-delivers"><strong>Delivered:</strong> Mercenary company + faction ambition system &middot; Army entities with spawning encounters &middot; Army movement + quintessence attrition &middot; Battle resolution with spotlight encounters &middot; Siege resolution (multi-tick, escalating) &middot; Location destruction + aftermath + refugees &middot; Monster encounters (lairs, escalation, sphere feedback, divine targeting) &middot; Armies debug tab &middot; 102+ conflict tests</div>
         <div class="milestone-art art-conflict">
           <img src="/concept-art/locations/battleground.png" alt="Aftermath of a great battle — tattered banners and scorched earth" loading="lazy">
         </div>
@@ -860,12 +860,64 @@
 
   <div class="devlog-current fade-in">
     <h4>Currently in progress</h4>
-    <div class="wip-item">v1.1 Phase 22: Code Hygiene &mdash; DebugPanel sub-components, lodash consolidation, action template required-property constraints</div>
-    <div class="wip-item">TB-104 Procedural Content Component Library &mdash; second foundation slice (resource_delta, action_trigger, choice_set, stateful shells)</div>
+    <div class="wip-item">TB-120: Test Suite Repair Sprint &mdash; full npm test has been red since early April; triaging and fixing all failing tests to restore the safety net</div>
+    <div class="wip-item">TB-121: CI/CD Pipeline Setup &mdash; GitHub Actions + branch protection so red tests block deployment</div>
+    <div class="wip-item">TB-097 Phase 8: Strategic Actions expansion &mdash; builder, scholar, zealot behavior families, UI/Threads visibility, HexMap overlays</div>
+    <div class="wip-item">TB-104 Procedural Content Component Library &mdash; remaining primitives (resource_delta, action_trigger, choice_set) and stateful shells</div>
     <div class="wip-item">TB-105–108 Thematic Pressure & Living World Pass &mdash; omen agendas, cool-failure outcomes, doom identity, intent/activity visibility</div>
   </div>
 
   <div class="devlog">
+    <div class="devlog-entry devlog-system fade-in">
+      <div class="devlog-date">12 April 2026</div>
+      <h4>Ambition-Driven Strategic Actions &mdash; Merchant Proving Slice</h4>
+      <p>Agents now proactively reshape the world instead of only reacting to encounters. Merchants with trade ambitions generate strategic candidates (survey markets, build warehouses, establish trade routes, found guild chapters), compete against encounters on a unified decision board, execute graph mutations, and record history. Two blocking bugs found and fixed during live testing. 29 tests across 4 files.</p>
+    </div>
+    <div class="devlog-entry devlog-system fade-in">
+      <div class="devlog-date">8 April 2026</div>
+      <h4>Objective Triangle Sync</h4>
+      <p>Doom, The First&rsquo;s journey, and mandates now share one cadence. Doom escalates through authored doom cards, chapter five is a climax window, remembrance generates sphere-growth mandates, and checkpoint results feed future doom beats through doom debt and counter-omens. UI surfaces expose the shared pacing state.</p>
+    </div>
+    <div class="devlog-entry devlog-system fade-in">
+      <div class="devlog-date">8 April 2026</div>
+      <h4>Faction Network Visibility & Governance</h4>
+      <p>Factions now surface as live institutions instead of debug-only metadata. Faction sheets show leadership, members, reputation, dominant reaches, halls, governing seats, controlled holdings, relations, agenda, and a network diagram. Slower reputation decay, reserved faction social slots, and direct faction-targeted Ascendant actions from the faction sheet.</p>
+    </div>
+    <div class="devlog-entry devlog-system fade-in">
+      <div class="devlog-date">8 April 2026</div>
+      <h4>Terrain Texture Lab POC</h4>
+      <p>Standalone WebGL playground for hex terrain shader experimentation. Instanced ShaderMaterial preview, six starter recipes (grassland, forest, mountains, dunes, coast, swamp), live controls, perspective camera, GLB placement, procedural forest village vignettes with slot-aware composition. Foundation for the next generation of hex map visuals.</p>
+    </div>
+    <div class="devlog-entry devlog-system fade-in">
+      <div class="devlog-date">7 April 2026</div>
+      <h4>Encounter Veil</h4>
+      <p>Full-screen dissolved-art overlay replacing two legacy encounter components (~2,500 lines) with a single unified EncounterVeil. Three thread tiers (strongly/lightly/watched) plus aftermath mode. The Remembrance aesthetic now carries through the entire encounter experience.</p>
+    </div>
+    <div class="devlog-entry devlog-soul fade-in">
+      <div class="devlog-date">7 April 2026</div>
+      <h4>Ascendant Portrait System</h4>
+      <p>Two-layer composited portraits: 12 origin faces from remembrance choices layered into 8 sphere-specific ornate frames. Canvas compositing at runtime with per-session caching and fail-soft fallbacks. Replaces generic energy-being avatars across the hex map, retinue panel, and ascendant sheet.</p>
+    </div>
+    <div class="devlog-entry devlog-system fade-in">
+      <div class="devlog-date">7 April 2026</div>
+      <h4>Content Catalog Pipeline</h4>
+      <p>Systematic upgrade and fill of the attachment catalog: 10 dead items upgraded, 55 new items created across arms, mounts, time-manipulation, encounter-altering, and legendary tiers. Zero unused primitives remaining. Catalog at ~210 items, 100% alive.</p>
+    </div>
+    <div class="devlog-entry devlog-soul fade-in">
+      <div class="devlog-date">6 April 2026</div>
+      <h4>Three-Tier Attention Model &mdash; Engine Foundation</h4>
+      <p>~500 encounter templates classified into background/shaping/story_beat tiers. Attention pool, curator scoring, pacing governor, digest buffer, thread tugs, dormant court position, and effectiveTier notification routing. 42 tunable constants, 93+ new tests. The encounter pipeline now understands what deserves player attention.</p>
+    </div>
+    <div class="devlog-entry devlog-soul fade-in">
+      <div class="devlog-date">6 April 2026</div>
+      <h4>Ascendant Remembrance Flow</h4>
+      <p>Narrative creation flow replacing archetype cards: Stirring, Origin, Drive, Transformation, and Reveal beats. The player discovers who their ascendant was through story choices, not dropdown menus. Filtering funnel engine, dual naming, cosmology derivation from remembrance.</p>
+    </div>
+    <div class="devlog-entry devlog-system fade-in">
+      <div class="devlog-date">6 April 2026</div>
+      <h4>Settlement Genome Pipeline</h4>
+      <p>Five-pass composition system (infrastructure &rarr; culture &rarr; spheres &rarr; reaches &rarr; archetype recognition) replacing the flat sublocation generator. Settlements now develop distinct identities: a mountain mining town reads differently from a coastal trade hub. 8 archetypes, culture trait gating, vitality drift. 108+ tests.</p>
+    </div>
     <div class="devlog-entry devlog-system fade-in">
       <div class="devlog-date">4 April 2026</div>
       <h4>Coat of Arms & Icon System</h4>
@@ -882,24 +934,9 @@
       <p>plannerForecast.ts adapter derives expected utility from 5-tier outcome ladder with exact success_at_cost math. Wired into encounter scoring: positive EU drives valuePerTick, binary fallback for incapable agents. Push-aware planner suppresses risky templates when quintessence low. Resist-aware planner factors downgrade value. Forecast drift telemetry tracks completion-rate gap. 29 new tests.</p>
     </div>
     <div class="devlog-entry devlog-system fade-in">
-      <div class="devlog-date">2 April 2026</div>
-      <h4>Agent Success Redesign Phase 3 &mdash; Unified Action Outcome Expansion</h4>
-      <p>5-tier outcome ladder (clear_success, success_at_cost, near_miss, complication, failure) with push/resist quintessence spend seams. Proving-slice consequences operationalized. 35 comprehensive outcome tests across resolution pipeline.</p>
-    </div>
-    <div class="devlog-entry devlog-soul fade-in">
       <div class="devlog-date">28 March 2026</div>
       <h4>Sphere Affinity System &mdash; M1 Core</h4>
       <p>Per-entity sphere affinity on the triangle number scale. Six upstream pressure sources (control effects, doom, mandates, actions, encounters, rivals), downstream modifiers for prosperity, encounter scoring, and agent decisions. Magic as sphere fluency with overchannel risk. Interactive Prose Keywords (IPK) render sphere-colored, tooltippable keywords in all narrative text. 109 tests.</p>
-    </div>
-    <div class="devlog-entry devlog-system fade-in">
-      <div class="devlog-date">28 March 2026</div>
-      <h4>Agent Character Sheet Overhaul</h4>
-      <p>Five-tab layout replacing the long scroll: Overview, Prowess, Bonds, Journey, Chronicle. Multi-faceted knowledge model where individual data points are revealed through specific narrative interactions. Four new divine action cards for deliberate discovery: Observe, Scry, Whisper Insight, Dream Sending.</p>
-    </div>
-    <div class="devlog-entry devlog-system fade-in">
-      <div class="devlog-date">27 March 2026</div>
-      <h4>Faction UI, Notifications, Palette Themes</h4>
-      <p>Agent profiles show faction rank and reputation. Faction events surface through the alert bar. Two palette themes ship: Golden Hour (warm) and Dark Parchment (cool). Right-click dismiss and navigation targets for notifications.</p>
     </div>
   </div>
 </section>
@@ -919,7 +956,7 @@
     <div class="layer layer-2 fade-in">
       <div class="layer-tag">Layer 3 &middot; M2 &middot; Engine complete</div>
       <h4>Conflict & Destruction</h4>
-      <div class="layer-desc">Armies, sieges, sacking, refugees. The immune system. Forces that break and reshape the world through violence. Engine operational &mdash; monster encounters next.</div>
+      <div class="layer-desc">Armies, sieges, sacking, refugees, monster lairs. The immune system. Forces that break and reshape the world through violence. Engine operational &mdash; armies and monsters both live.</div>
     </div>
     <div class="layer layer-1 fade-in">
       <div class="layer-tag">Layer 2 &middot; M1 &middot; Core complete</div>
@@ -990,99 +1027,4 @@
 <section id="gaps">
   <div class="section-label fade-in">Journey Audit</div>
   <h2 class="fade-in">Known gaps and <em>where they land</em></h2>
-  <p class="fade-in">Ten gaps identified by tracing the end-to-end player journey. Four are now resolved. Each remaining gap is mapped to the milestone where it naturally resolves.</p>
-
-  <table class="gaps-table fade-in">
-    <thead>
-      <tr>
-        <th>Gap</th>
-        <th>Description</th>
-        <th>Severity</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr style="opacity: 0.45;">
-        <td><span class="gap-id">D</span></td>
-        <td>World-Soul not in tick loop</td>
-        <td><span class="gap-severity gap-structural"></span>Structural</td>
-        <td><span class="gap-landing" style="color: var(--life-green);">Resolved &mdash; M1</span></td>
-      </tr>
-      <tr style="opacity: 0.45;">
-        <td><span class="gap-id">F</span></td>
-        <td>No danger in the world</td>
-        <td><span class="gap-severity gap-structural"></span>Structural</td>
-        <td><span class="gap-landing" style="color: var(--life-green);">Partially resolved &mdash; M2 armies operational, monsters next</span></td>
-      </tr>
-      <tr style="opacity: 0.45;">
-        <td><span class="gap-id">G</span></td>
-        <td>Agent character sheet needs overhaul</td>
-        <td><span class="gap-severity gap-enrichment"></span>Enrichment</td>
-        <td><span class="gap-landing" style="color: var(--life-green);">Resolved &mdash; Phase 11</span></td>
-      </tr>
-      <tr style="opacity: 0.45;">
-        <td><span class="gap-id">J</span></td>
-        <td>No chain reactions from player actions</td>
-        <td><span class="gap-severity gap-enrichment"></span>Enrichment</td>
-        <td><span class="gap-landing" style="color: var(--life-green);">Foundation laid &mdash; M1 sphere pressure propagation</span></td>
-      </tr>
-      <tr>
-        <td><span class="gap-id">A</span></td>
-        <td>Doom has no mechanical teeth</td>
-        <td><span class="gap-severity gap-critical"></span>Critical</td>
-        <td><span class="gap-landing gap-m2">Post-M2</span> &mdash; doom spawns armies/monsters, triggers sieges</td>
-      </tr>
-      <tr>
-        <td><span class="gap-id">B</span></td>
-        <td>Rival gods are inert (text only)</td>
-        <td><span class="gap-severity gap-critical"></span>Critical</td>
-        <td><span class="gap-landing gap-m2">M2</span> &mdash; rivals field armies, declare wars</td>
-      </tr>
-      <tr>
-        <td><span class="gap-id">C</span></td>
-        <td>No onboarding path for new players</td>
-        <td><span class="gap-severity gap-critical"></span>Critical</td>
-        <td><span class="gap-landing gap-later">Post-M3</span> &mdash; onboarding needs content to onboard into</td>
-      </tr>
-      <tr>
-        <td><span class="gap-id">E</span></td>
-        <td>Economy is one-directional</td>
-        <td><span class="gap-severity gap-structural"></span>Structural</td>
-        <td><span class="gap-landing gap-m3">M3</span> &mdash; primary target</td>
-      </tr>
-      <tr>
-        <td><span class="gap-id">H</span></td>
-        <td>Culture/seeding lacks geographic coherence</td>
-        <td><span class="gap-severity gap-enrichment"></span>Enrichment</td>
-        <td><span class="gap-landing gap-later">Between milestones</span></td>
-      </tr>
-      <tr>
-        <td><span class="gap-id">I</span></td>
-        <td>No NPCs at locations</td>
-        <td><span class="gap-severity gap-enrichment"></span>Enrichment</td>
-        <td><span class="gap-landing gap-m3">M3</span> partial</td>
-      </tr>
-    </tbody>
-  </table>
-</section>
-
-<!-- ═══════════════════════════════════════ FOOTER ═══ -->
-<footer>
-  Threadbearer &middot; Product Strategy &middot; Last updated 5 April 2026 &middot; Build the world, find the game
-</footer>
-
-<script>
-  // Simple intersection observer for fade-in animations
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-      }
-    });
-  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-
-  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
-</script>
-
-</body>
-</html>
+  <p class="fade-in">Ten gaps identified by tracing the end-to-end player journey. Seven are now resolved or partially resolved. Each remaining gap is mapped to the milestone 
