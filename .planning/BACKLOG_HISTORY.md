@@ -6,6 +6,20 @@
 
 ---
 
+## ✅ TB-097 · Social Expansion B: Ambition-Driven Strategic Actions — Merchant Proving Slice (2026-04-12)
+
+**Milestone: v1.2 Social Systems Expansion — Phase B**
+
+Merchant proving slice delivered and verified. Enabled `ENABLE_STRATEGIC_ACTIONS` feature gate and fixed two blocking bugs: (1) `phaseAgentDecision` never returned `strategicState` to the orchestrator (dead local variable reassignment discarded on `continue`), (2) property name typo `domainCapability` vs `domainCapabilities` caused all reach floor checks to reject every candidate. CLI verification with seed 42 confirmed: merchants with `ambition_dominate_trade` generate 4+ candidates, strategic actions win over encounters when scored higher (bestStrat=0.462 > bestEnc=0.442), multi-tick projects complete (Build Warehouse tick 9, Found Guild Chapter tick 12), and control claims create graph edges. 29 tests across 4 files pass.
+
+**Creates:** Strategic candidate generator (6 merchant templates), family-aware chooser scoring bridged into unified decision pipeline, multi-tick project lifecycle (active/completed/failed), control-state claims, graph mutations (sublocations, trade routes, intelligence), strategic telemetry via debug bridge.
+**Design doc:** `Docs/plans/2026-04-09-ambition-driven-strategic-actions-design.md`
+**Implementation plan:** `Docs/plans/2026-04-09-ambition-driven-strategic-actions-implementation-plan.md`
+**Commits:** `4f79098f` (implementation), `8706a8db` (enable + bugfix)
+**Next:** Phase 8 — behavior family expansion (builder, scholar, zealot, etc.), UI/Threads visibility, HexMap strategic overlays.
+
+---
+
 ## ✅ TB-119 · Faction Network Visibility & Governance Pass (2026-04-08)
 
 Reframed factions as visible institutions instead of hidden metadata. The faction sheet now renders a live network view with leadership, officers, member roster, reputation bars, dominant reaches/domain capabilities, active ambition, halls, governing seats, controlled holdings, relations, and a simple faction network graph. Character and thread surfaces now expose faction standing directly, including rank and reputation, so the player can see who belongs where without opening debug-only tooling.

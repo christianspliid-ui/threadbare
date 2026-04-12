@@ -8,7 +8,58 @@
 > Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
 > Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-120**.
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-122**.
+
+---
+
+## 📋 TB-120 · Test Suite Repair Sprint (2026-04-11) — HIGH PRIORITY
+
+Full `npm test` has been red since at least 2026-04-03. Every session falls back to scoped verification (`tsc --noEmit` + `vite build` + targeted vitest), which means the full suite no longer catches cross-cutting regressions. Logged as impediments #22, #30, #31, #32, #34, #38, #39 — 7 entries, ~15 occurrences, the most-logged issue in the project.
+
+**Known failing groups (from impediment logs):**
+- `movement-content.test.ts` — expectation drift (river tax `Infinity`?)
+- `revelationGate.test.ts` — unknown
+- `npcSeeding.test.ts` — unknown
+- `rewardPipeline.contract.test.ts` — contract drift
+- `sublocation-integration.test.ts` — unknown
+- Portrait/audio/avatar tests — environment or API changes
+- Encounter content-count drift assertions — template count changed without updating assertions
+- `trait.reputation.power.renown` — repeated orchestrator crashes, missing domain field
+
+**Approach:**
+1. **Delete all count-based assertions** — `toHaveLength(154)` in encounter-content.test.ts, unified-action rarity counts, TRACE_CATEGORIES count, and similar. These test nothing meaningful (the game doesn't break if encounter count changes) and are the primary source of assertion drift. Keep structural/quality assertions (valid encounterType, narrative text present, 2–4 steps, etc.).
+2. **Run `npm test`, triage remaining failures** — categorize each as: real bug (fix), obsolete test (delete), environment issue (mock or skip).
+3. **Fix the `trait.reputation.power.renown` orchestrator crash** — this is likely a real bug, not assertion drift.
+4. **Get to green.** Every test must pass before closing this item.
+
+**Goal:** Green `npm test` on `main`. Every session can run the full suite again.
+
+**Touches:** Multiple test files across `src/engine/__tests__/`, `src/data/`, `src/components/`
+**Depends on:** Nothing — this is infrastructure repair
+**Needs design:** No
+
+---
+
+## 📋 TB-121 · CI/CD Pipeline Setup (2026-04-11) — HIGH PRIORITY
+
+Build automated infrastructure so test failures block deployment. Social conventions (CLAUDE.md instructions, skill docs, ways-of-working) have proven insufficient — agents routinely skip them. We need hard gates.
+
+**Retro context:** Impediments #22, #30–39 document 8+ days of red tests that shipped to main because nothing enforced the "npm test must pass" rule. The retinue regression (#35) reached production because scoped verification missed a shared dependency — a full green suite would have caught it.
+
+**Scope:**
+1. **GitHub Actions CI workflow** — Run on every push and PR to main:
+   - `npm test` (vitest — the actual safety net)
+   - `npx tsc --noEmit` (type checking)
+   - `npx vite build` (production build)
+2. **Branch protection on main** — Require CI status checks to pass before merge. No more direct pushes to main that bypass tests.
+3. **Vercel build gate** — Update `vercel.json` buildCommand from `vite build` to `vitest run && vite build` so red tests also block deploy (belt and suspenders with GitHub Actions).
+4. **Visibility** — CI status badge in CLAUDE.md so agents see suite health at session start without running anything.
+
+**Why this matters:** Every "workaround: agents should remember to do X" in the impediment log is a process smell. Documentation tells agents what to do; CI makes it impossible to skip. This is the single highest-leverage infrastructure investment we can make.
+
+**Touches:** `.github/workflows/`, `vercel.json`, `CLAUDE.md`
+**Depends on:** TB-120 (suite must be green before CI gates can enforce green)
+**Needs design:** Yes — Cowork should draft the workflow YAML and branch protection config
 
 ---
 
@@ -189,17 +240,18 @@ Replace thin 2-step social encounters with rich 3-5 step social scenes featuring
 
 ---
 
-## 📐▶ TB-097 · Social Expansion B: Ambition-Driven Strategic Actions (2026-03-31)
+## ✅ TB-097 · Social Expansion B: Ambition-Driven Strategic Actions (2026-03-31)
 
-**Milestone: v1.2 Social Systems Expansion — Phase B (do third)**
+**Milestone: v1.2 Social Systems Expansion — Phase B — Merchant Proving Slice SHIPPED**
 
-Broaden the older "agent initiatives" concept into a full ambition-driven strategic action layer. Agents should proactively gather information, create structures/routes/institutions, change world state, claim or contest control, and destroy or suppress rival structures when those steps advance an active ambition. Encounters remain the dramatic/reactive layer around that work instead of being replaced by it. The planner should stay unified: ambition-driven strategic candidates sit beside encounter candidates in the live chooser, not in a separate hidden phase.
+Merchant proving slice delivered and verified: strategic candidate generator (6 merchant templates), family-aware chooser scoring bridged into unified decision pipeline, multi-tick project lifecycle (active/completed/failed), control-state claims, graph mutations (sublocation creation, trade routes, intelligence), and full telemetry. Two blocking bugs found and fixed during live testing: (1) `phaseAgentDecision` never returned `strategicState` to the orchestrator (dead local reassignment), (2) property name typo `domainCapability` vs `domainCapabilities` caused all reach floor checks to reject every candidate.
 
-**Creates:** Strategic candidate generator, family-aware chooser scoring, multi-tick strategic project lifecycle, control-state upkeep/contest logic, graph-op helpers for world change, catalyst encounter seeding, UI/debug history of ambition steps, and HexMap/Threads visibility for proactive work.
+**Creates:** Strategic candidate generator, family-aware chooser scoring, multi-tick strategic project lifecycle, control-state upkeep/contest logic, graph-op helpers for world change, catalyst encounter seeding, strategic telemetry via debug bridge.
 **Design doc:** `Docs/plans/2026-04-09-ambition-driven-strategic-actions-design.md`
 **Implementation plan:** `Docs/plans/2026-04-09-ambition-driven-strategic-actions-implementation-plan.md`
+**Next:** Phase 8 — behavior family expansion (builder, scholar, zealot, etc.), UI/Threads visibility for strategic work, HexMap strategic overlays.
 **Supersedes:** `Docs/plans/2026-03-31-social-systems-expansion-design.md` Expansion B
-**Depends on:** Ambition system (✅), encounter chooser/telemetry foundation (✅). Deep social scenes remain valuable follow-on content, but are no longer a hard prerequisite for the first implementation slice.
+**Depends on:** Ambition system (✅), encounter chooser/telemetry foundation (✅).
 
 ---
 
@@ -288,4 +340,7 @@ Make the economy dynamic by connecting encounters, factions, locations, and acti
 
 Locations should be populated with non-agent characters — named or unnamed NPCs that give places a sense of life and population without being full graph-walking agents. Think innkeepers, market vendors, town guards, wandering scholars, shrine keepers. They provide flavor, potential encounter hooks, quest givers, and a sense that the world exists beyond the player's spotlight agents. Design questions: how are NPCs represented (lightweight graph nodes? location properties? a new sublocation feature?), how do they interact with encounters and the action system, can agents have relationships with them, and do they ever "graduate" to full agent status?
 
-**Brainstorm:** `brainstorm-locati
+**Brainstorm:** Obsidian → `TheFantasyWorldSimulator/Brainstorms/brainstorm-location-npcs.md` (link truncated — verify actual filename)
+**Depends on:** Nothing specific
+
+---
