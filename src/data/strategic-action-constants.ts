@@ -8,7 +8,7 @@
 // ─── Feature Gate ───────────────────────────────────────────────────
 
 /** Rollout gate for safe A/B verification against encounter-only behavior */
-export const ENABLE_STRATEGIC_ACTIONS = false;
+export const ENABLE_STRATEGIC_ACTIONS = true;
 
 // ─── Candidate Generation Caps ──────────────────────────────────────
 

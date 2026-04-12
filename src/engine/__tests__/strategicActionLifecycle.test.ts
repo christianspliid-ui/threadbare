@@ -51,7 +51,7 @@ function buildTestGraph() {
     type: 'actor',
     properties: {
       actorType: 'individual',
-      domainCapability: { gold: 0.6, eye: 0.4 },
+      domainCapabilities: { gold: 0.6, eye: 0.4 },
     },
   });
 

@@ -220,6 +220,7 @@ export function phaseAgentDecision(
   let nextClearanceGateStates = state.clearanceGateStates
     ? new Map(state.clearanceGateStates)
     : undefined;
+  let accumulatedStrategicState = state.strategicState;
 
   // Derive map dimensions for edge hex awareness bonus
   let mapCols = 0;
@@ -546,13 +547,18 @@ export function phaseAgentDecision(
           }
 
           if (activeAmbitionTemplateIds.length > 0) {
-            const strategicState = state.strategicState;
             const stratResult = generateStrategicCandidates(
-              graph, agentId, activeAmbitionTemplateIds, strategicState, state.tick, rng,
+              graph, agentId, activeAmbitionTemplateIds, accumulatedStrategicState, state.tick, rng,
             );
             const scored = scoreStrategicCandidates(
-              stratResult.candidates, strategicState, state.tick, rng,
+              stratResult.candidates, accumulatedStrategicState, state.tick, rng,
             );
+
+            // Compare best strategic score against best encounter score
+            const bestStrategicScore = scored.length > 0 ? scored[0].finalScore : 0;
+            const bestEncounterScore = decision.topCandidates.length > 0
+              ? decision.topCandidates[0].finalScore
+              : 0;
 
             // Emit strategic candidate board trace
             emitTrace({
@@ -567,12 +573,6 @@ export function phaseAgentDecision(
               featureEnabled: true,
               summary: `Strategic board: ${stratResult.candidates.length} generated, ${stratResult.rejections.length} rejected, top=${scored[0]?.finalScore.toFixed(3) ?? 'none'}`,
             } as StrategicCandidateBoardTrace & { summary: string });
-
-            // Compare best strategic score against best encounter score
-            const bestStrategicScore = scored.length > 0 ? scored[0].finalScore : 0;
-            const bestEncounterScore = decision.topCandidates.length > 0
-              ? decision.topCandidates[0].finalScore
-              : 0;
 
             if (bestStrategicScore > bestEncounterScore && scored.length > 0) {
               strategicWinner = scored[0];
@@ -642,10 +642,9 @@ export function phaseAgentDecision(
             state, graph, strategicWinner, state.tick, rng,
           );
 
-          // Merge results
+          // Accumulate strategic state for return + downstream agents
           if (stratResult.strategicState) {
-            // Update state.strategicState for downstream phases
-            state = { ...state, strategicState: stratResult.strategicState } as GameState;
+            accumulatedStrategicState = stratResult.strategicState;
           }
 
           emitTrace({
@@ -1272,5 +1271,6 @@ export function phaseAgentDecision(
     unifiedActions: [...state.unifiedActions, ...newUnifiedActions],
     clearanceGateStates: nextClearanceGateStates ?? state.clearanceGateStates,
     premonitionQueue: [...existingPremonitions, ...newPremonitions],
+    ...(accumulatedStrategicState ? { strategicState: accumulatedStrategicState } : {}),
   };
 }

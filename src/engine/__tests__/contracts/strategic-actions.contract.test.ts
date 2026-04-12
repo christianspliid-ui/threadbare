@@ -27,7 +27,7 @@ function buildMerchantWorld() {
     properties: {
       actorType: 'individual',
       spotlightTier: 'spotlight',
-      domainCapability: { gold: 0.65, eye: 0.5, heart: 0.3, shadow: 0.15, iron: 0.2, stone: 0.3, star: 0.1, veil: 0.1 },
+      domainCapabilities: { gold: 0.65, eye: 0.5, heart: 0.3, shadow: 0.15, iron: 0.2, stone: 0.3, star: 0.1, veil: 0.1 },
     },
   });
 

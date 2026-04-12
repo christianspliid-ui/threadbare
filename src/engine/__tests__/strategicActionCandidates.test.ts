@@ -14,7 +14,7 @@ function buildTestGraph() {
     properties: {
       actorType: 'individual',
       spotlightTier: 'spotlight',
-      domainCapability: { gold: 0.6, eye: 0.4, heart: 0.3, shadow: 0.1, iron: 0.2, stone: 0.2, star: 0.1, veil: 0.1 },
+      domainCapabilities: { gold: 0.6, eye: 0.4, heart: 0.3, shadow: 0.1, iron: 0.2, stone: 0.2, star: 0.1, veil: 0.1 },
     },
   });
 
@@ -117,7 +117,7 @@ describe('strategicActionCandidates', () => {
       graph.updateNode('actor_merchant', {
         properties: {
           ...graph.getNode('actor_merchant')!.properties,
-          domainCapability: { gold: 0.1, eye: 0.1, heart: 0.1 },
+          domainCapabilities: { gold: 0.1, eye: 0.1, heart: 0.1 },
         },
       });
 
@@ -177,7 +177,7 @@ describe('strategicActionCandidates', () => {
         id: 'actor_homeless',
         name: 'Lost Soul',
         type: 'actor',
-        properties: { actorType: 'individual', domainCapability: { gold: 0.6 } },
+        properties: { actorType: 'individual', domainCapabilities: { gold: 0.6 } },
       });
 
       const rng = mulberry32(42);

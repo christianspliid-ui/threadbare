@@ -281,7 +281,7 @@ function computeWorldImpact(template: StrategicActionTemplate): number {
 }
 
 function computeRoleFit(actor: GraphNode, template: StrategicActionTemplate): number {
-  const domains = actor.properties.domainCapability as Record<string, number> | undefined;
+  const domains = actor.properties.domainCapabilities as Record<string, number> | undefined;
   if (!domains) return 0.3;
 
   let fitSum = 0;
@@ -317,7 +317,7 @@ function checkReachFloors(
   actor: GraphNode,
   floors: Partial<Record<ReachDomain, number>>,
 ): string | null {
-  const domains = actor.properties.domainCapability as Record<string, number> | undefined;
+  const domains = actor.properties.domainCapabilities as Record<string, number> | undefined;
   if (!domains) return Object.keys(floors)[0] ?? null;
 
   for (const [reach, min] of Object.entries(floors)) {
