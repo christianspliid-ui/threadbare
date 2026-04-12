@@ -182,7 +182,7 @@ export function getEffectiveDomainContributions(
     const contributions = traitDef.domainContributions;
     for (const domain of REACH_DOMAINS) {
       const base = contributions[domain as ReachDomain] ?? 0;
-      if (base > 0) {
+      if (base !== 0) {
         result[domain] = (result[domain] ?? 0) + base * assignment.level;
       }
     }

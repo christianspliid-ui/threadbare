@@ -193,6 +193,77 @@ export function joinOrUpdateMembership(
 }
 
 /**
+ * Modify a numeric property on a location node (e.g. defense, prosperity, magicalSaturation).
+ * Clamps to optional bounds. Fail-soft: missing location → failure, not crash.
+ */
+export function modifyLocationProperty(
+  graph: WorldGraph,
+  locationId: string,
+  property: string,
+  delta: number,
+  clamp?: [number, number],
+): GraphOpResult {
+  try {
+    const loc = graph.getNode(locationId);
+    if (!loc) {
+      return { success: false, op: 'modify_location_property', error: 'location_not_found' };
+    }
+
+    const current = (loc.properties[property] as number | undefined) ?? 0;
+    let newValue = current + delta;
+    if (clamp) {
+      newValue = Math.max(clamp[0], Math.min(clamp[1], newValue));
+    }
+    loc.properties[property] = newValue;
+
+    return { success: true, op: 'modify_location_property' };
+  } catch (e) {
+    return { success: false, op: 'modify_location_property', error: String(e) };
+  }
+}
+
+/**
+ * Create a typed edge between two nodes (actor→target or target→actor).
+ * Generic primitive for sacred routes, patronage networks, spy networks, etc.
+ */
+export function createRelationEdge(
+  graph: WorldGraph,
+  sourceId: string,
+  targetId: string,
+  edgeType: string,
+  tick: number,
+  properties?: Record<string, unknown>,
+): GraphOpResult {
+  try {
+    const source = graph.getNode(sourceId);
+    const target = graph.getNode(targetId);
+    if (!source || !target) {
+      return { success: false, op: 'create_relation_edge', error: 'node_not_found' };
+    }
+
+    // Check for duplicate
+    const existing = graph.getOutgoingEdges(sourceId, edgeType)
+      .find(e => e.target === targetId);
+    if (existing) {
+      return { success: false, op: 'create_relation_edge', error: 'edge_already_exists' };
+    }
+
+    const edgeId = `${edgeType}_${sourceId}_${targetId}_${tick}`;
+    graph.addEdge({
+      id: edgeId,
+      source: sourceId,
+      target: targetId,
+      type: edgeType,
+      properties: { establishedTick: tick, ...properties },
+    });
+
+    return { success: true, op: 'create_relation_edge', createdId: edgeId };
+  } catch (e) {
+    return { success: false, op: 'create_relation_edge', error: String(e) };
+  }
+}
+
+/**
  * Record an information-only strategic outcome (survey, reconnaissance).
  * Stores the result as a property on the actor node.
  */

@@ -144,7 +144,7 @@ describe('strategicActionCandidates', () => {
       const result = generateStrategicCandidates(
         graph,
         'actor_merchant',
-        ['ambition_conquer_territory'], // Has no strategicProfile
+        ['ambition_escape_cursed_land'], // Has no strategicProfile
         undefined,
         10,
         rng,

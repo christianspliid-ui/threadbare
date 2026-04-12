@@ -11,7 +11,7 @@
 import type { WorldGraph } from './graph';
 import type { AxiologicalProfile, ValuePair } from '../types/agent';
 import { getAgentAttachments, type AttachmentSummary, type AttachmentFullEntry } from './agentAttachments';
-import type { ReachDomain } from '../types/traits';
+import type { ReachDomain, TraitDefinitionProperties, TraitAssignmentProperties } from '../types/traits';
 import type { InfluenceTier } from '../types/influence';
 import { TIER_NAMES } from '../types/influence';
 import { getArchetype, type NarrativeArchetype } from '../data/archetype-content';
@@ -131,6 +131,21 @@ export interface AgentDetail {
   portraitUrl: string | null;
   /** Quintessence value (0–1.0) — existential health. Undefined if not yet initialized. */
   quintessence?: number;
+  /** Trait summaries for display — grouped by category. Only includes public traits. */
+  traits?: TraitSummary[];
+}
+
+/** Display-ready trait summary for the AgentDetailPanel */
+export interface TraitSummary {
+  id: string;
+  name: string;
+  category: string;
+  level: number;
+  maxLevel: number;
+  description: string;
+  flavorText: string;
+  visibility: string;
+  domainContributions: Record<string, number>;
 }
 
 // ─── Active Effects (divine influences visible on agent card) ────────
@@ -359,6 +374,9 @@ export function getAgentDetail(
   // ─── Intent data ─────────────────────────────────────────────────
   const intents = getAgentIntents(graph, agentId);
 
+  // ─── Trait data ─────────────────────────────────────────────────
+  const traitSummaries = getAgentTraitSummaries(graph, agentId);
+
   return {
     id: agentId,
     name: agentNode.name,
@@ -386,6 +404,7 @@ export function getAgentDetail(
     intents: intents.length > 0 ? intents : undefined,
     portraitUrl,
     quintessence: (props.quintessence as number | undefined),
+    traits: traitSummaries.length > 0 ? traitSummaries : undefined,
   };
 }
 
@@ -397,6 +416,44 @@ export function getAgentDetail(
  */
 function getAgentTraitNames(graph: WorldGraph, agentId: string): string[] {
   return getActorTraits(graph, agentId).map(t => t.trait.name);
+}
+
+/**
+ * Build display-ready trait summaries from an agent's has_trait edges.
+ * Excludes condition traits (shown separately in Conditions section).
+ * Only includes 'public' visibility traits for the standard detail panel.
+ * @private
+ */
+function getAgentTraitSummaries(graph: WorldGraph, agentId: string): TraitSummary[] {
+  return getActorTraits(graph, agentId)
+    .map(({ trait, edge, level }) => {
+      const def = trait.properties as unknown as TraitDefinitionProperties;
+      const assignment = edge.properties as unknown as TraitAssignmentProperties;
+      // Skip conditions — displayed in their own section
+      if (def.subcategory === 'condition') return null;
+      // Skip divine-only traits unless visibility is overridden on the edge
+      if ((assignment.visibility ?? def.visibility) === 'divine_only') return null;
+      return {
+        id: trait.id,
+        name: trait.name,
+        category: def.subcategory ?? 'innate',
+        level,
+        maxLevel: def.maxLevel ?? 1,
+        description: def.description ?? '',
+        flavorText: def.flavorText ?? '',
+        visibility: assignment.visibility ?? def.visibility ?? 'public',
+        domainContributions: (def.domainContributions ?? {}) as Record<string, number>,
+      };
+    })
+    .filter((t): t is TraitSummary => t != null)
+    .sort((a, b) => {
+      // Sort by category, then name
+      const catOrder = ['innate', 'cultural', 'bestowed', 'destiny', 'mastery', 'reputation', 'scar'];
+      const ai = catOrder.indexOf(a.category);
+      const bi = catOrder.indexOf(b.category);
+      if (ai !== bi) return ai - bi;
+      return a.name.localeCompare(b.name);
+    });
 }
 
 /**

@@ -43,7 +43,7 @@ import {
   THREAT_COURAGE_THRESHOLD,
   THREAT_PRUDENCE_THRESHOLD,
 } from '../types/encounter';
-import type { ReachDomain } from '../types/traits';
+import type { ReachDomain, TraitDefinitionProperties } from '../types/traits';
 import { getChainProgress, isChainStageUnlocked } from './encounterChains';
 import { getAnyEncounterById } from '../data/encounter-content';
 import { FACTION_ENCOUNTER_META } from '../data/faction-encounter-content';
@@ -212,6 +212,56 @@ export function filterByPrerequisites(
     result.push(entry);
   }
   return result;
+}
+
+// ─── Stage 3a: Reputation Gate Filter ────────────────────────────
+
+/**
+ * Filter encounters that are blocked (or require unlock) by the agent's reputation traits.
+ *
+ * Reads `encounterGates.blocks` and `encounterGates.unlocks` from reputation trait definitions.
+ * - If any held trait blocks the encounter → filtered out.
+ * - If any held trait unlocks the encounter → it passes (even if another trait blocks it — unlock wins).
+ *
+ * Fail-soft: missing agent/trait nodes → pass through all entries unchanged.
+ */
+export function filterByReputationGates(
+  entries: readonly EncounterCacheEntry[],
+  agentId: string,
+  graph: WorldGraph,
+): EncounterCacheEntry[] {
+  const agentNode = graph.getNode(agentId);
+  if (!agentNode) return [...entries];
+
+  const traitEdges = graph.getOutgoingEdges(agentId, 'has_trait');
+
+  // Collect all unlocked and blocked template IDs from reputation traits
+  const unlocked = new Set<string>();
+  const blocked = new Set<string>();
+
+  for (const edge of traitEdges) {
+    const traitNode = graph.getNode(edge.target);
+    if (!traitNode) continue;
+
+    const props = traitNode.properties as unknown as TraitDefinitionProperties;
+    if (props.subcategory !== 'reputation') continue;
+
+    const effects = props.reputationEffects;
+    if (!effects?.encounterGates) continue;
+
+    for (const id of effects.encounterGates.unlocks) unlocked.add(id);
+    for (const id of effects.encounterGates.blocks) blocked.add(id);
+  }
+
+  // Fast path: no gates defined
+  if (unlocked.size === 0 && blocked.size === 0) return [...entries];
+
+  return entries.filter(entry => {
+    // Unlocks take priority over blocks
+    if (unlocked.has(entry.templateId)) return true;
+    if (blocked.has(entry.templateId)) return false;
+    return true;
+  });
 }
 
 // ─── Stage 3b: Outgrowth Lock ────────────────────────────────────
@@ -434,9 +484,14 @@ export function runFilterPipeline(
   }
   const afterVisibility = current.length;
 
-  // Stage 3: Prerequisites + Outgrowth Lock
+  // Stage 3: Prerequisites + Reputation Gates + Outgrowth Lock
   try {
     current = filterByPrerequisites(current, agentId, graph);
+  } catch {
+    // Keep previous stage's output
+  }
+  try {
+    current = filterByReputationGates(current, agentId, graph);
   } catch {
     // Keep previous stage's output
   }

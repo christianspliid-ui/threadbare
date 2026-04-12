@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import type { AgentDetail } from '../../engine/agentDetail';
+import type { AgentDetail, TraitSummary } from '../../engine/agentDetail';
 import type { ReachDomain } from '../../types/traits';
 import type { CooperationStrategy } from '../../types/disposition';
 import type { DigestEntry } from '../../types/attention';
@@ -19,6 +19,31 @@ import { queryDigest } from '../../engine/digestBuffer';
 
 /** Max attachment rows shown per section before overflow */
 const MAX_ATTACHMENT_ROWS = 5;
+
+/** Max trait rows shown before overflow */
+const MAX_TRAIT_ROWS = 8;
+
+/** Trait category display colors (muted, thematic) */
+const TRAIT_CATEGORY_COLORS: Record<string, string> = {
+  innate: '#a8a29e',   // stone-400
+  cultural: '#78716c', // stone-500
+  bestowed: '#d97706', // amber-600
+  destiny: '#c084fc',  // purple-400
+  mastery: '#34d399',  // emerald-400
+  reputation: '#60a5fa', // blue-400
+  scar: '#f87171',     // red-400
+};
+
+/** Trait category display labels */
+const TRAIT_CATEGORY_LABELS: Record<string, string> = {
+  innate: 'Innate',
+  cultural: 'Cultural',
+  bestowed: 'Bestowed',
+  destiny: 'Destiny',
+  mastery: 'Mastery',
+  reputation: 'Reputation',
+  scar: 'Scar',
+};
 
 /** Activity summary for unified action display */
 export interface ActivitySummary {
@@ -266,26 +291,39 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
               const percentage = Math.min((score / 10) * 100, 100);
               const isAffinity = archetypeReaches.includes(domain);
 
+              // Build trait contribution breakdown for tooltip
+              const contributors = (detail.traits ?? [])
+                .filter(t => (t.domainContributions[domain] ?? 0) !== 0)
+                .map(t => {
+                  const v = t.domainContributions[domain]! * t.level;
+                  return `${v > 0 ? '+' : ''}${v.toFixed(2)} ${t.name}`;
+                });
+              const domainTooltip = contributors.length > 0
+                ? `${DOMAIN_NAMES[domain]} ${score.toFixed(1)}\n${contributors.join('\n')}`
+                : `${DOMAIN_NAMES[domain]} ${score.toFixed(1)}`;
+
               return (
-                <div key={domain} className="flex flex-col">
-                  <span
-                    className={`inline-flex items-center gap-1 text-xs font-medium mb-1 ${
-                      isAffinity ? 'text-amber-100' : 'text-amber-400/70'
-                    }`}
-                  >
-                    <ReachIcon reach={domain} size={14} />
-                    {DOMAIN_NAMES[domain]}
-                  </span>
-                  <div className="bg-stone-700 rounded h-1.5 overflow-hidden">
-                    <div
-                      className="bg-amber-400 h-full transition-all duration-200"
-                      style={{ width: `${percentage}%` }}
-                    />
+                <Tooltip key={domain} content={domainTooltip}>
+                  <div className="flex flex-col cursor-default">
+                    <span
+                      className={`inline-flex items-center gap-1 text-xs font-medium mb-1 ${
+                        isAffinity ? 'text-amber-100' : 'text-amber-400/70'
+                      }`}
+                    >
+                      <ReachIcon reach={domain} size={14} />
+                      {DOMAIN_NAMES[domain]}
+                    </span>
+                    <div className="bg-stone-700 rounded h-1.5 overflow-hidden">
+                      <div
+                        className="bg-amber-400 h-full transition-all duration-200"
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                    <span className="text-xs text-amber-400/70 mt-0.5">
+                      {score}
+                    </span>
                   </div>
-                  <span className="text-xs text-amber-400/70 mt-0.5">
-                    {score}
-                  </span>
-                </div>
+                </Tooltip>
               );
             })}
           </div>
@@ -364,6 +402,25 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
             </div>
           )}
         </div>
+
+        {/* Traits Section */}
+        {detail.traits && detail.traits.length > 0 && (
+          <div>
+            <SectionHeading>
+              Traits
+            </SectionHeading>
+            <div className="space-y-1">
+              {detail.traits.slice(0, MAX_TRAIT_ROWS).map(trait => (
+                <TraitRow key={trait.id} trait={trait} />
+              ))}
+              {detail.traits.length > MAX_TRAIT_ROWS && (
+                <p className="text-amber-400/60 text-xs italic">
+                  and {detail.traits.length - MAX_TRAIT_ROWS} more…
+                </p>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Possessions Section */}
         {detail.possessions && detail.possessions.length > 0 && (
@@ -595,3 +652,56 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
     </div>
   );
 });
+
+// ─── Trait Row Component ──────────────────────────────────────────
+
+function TraitRow({ trait }: { trait: TraitSummary }) {
+  const catColor = TRAIT_CATEGORY_COLORS[trait.category] ?? '#78716c';
+  const catLabel = TRAIT_CATEGORY_LABELS[trait.category] ?? trait.category;
+
+  // Build domain contribution tooltip content
+  const domainEntries = Object.entries(trait.domainContributions).filter(([, v]) => v !== 0);
+
+  const tooltipLines: string[] = [];
+  if (trait.flavorText) tooltipLines.push(trait.flavorText);
+  if (domainEntries.length > 0) {
+    tooltipLines.push(
+      domainEntries
+        .map(([domain, value]) => {
+          const sign = value > 0 ? '+' : '';
+          const name = (DOMAIN_NAMES as Record<string, string>)[domain] ?? domain;
+          return `${sign}${value} ${name}`;
+        })
+        .join(' · '),
+    );
+  }
+  if (trait.maxLevel > 1) {
+    tooltipLines.push(`Level ${trait.level}/${trait.maxLevel}`);
+  }
+
+  const tooltipContent = tooltipLines.join('\n');
+
+  return (
+    <Tooltip content={tooltipContent || trait.description}>
+      <div
+        className="flex items-center gap-2 px-2 py-1 rounded hover:bg-stone-800/60 transition-colors cursor-default"
+        style={{ borderLeft: `2px solid ${catColor}` }}
+      >
+        <span className="text-xs text-amber-100 flex-1 truncate">
+          {trait.name}
+        </span>
+        <span
+          className="text-[10px] font-medium uppercase tracking-wider"
+          style={{ color: catColor }}
+        >
+          {catLabel}
+        </span>
+        {trait.maxLevel > 1 && (
+          <span className="text-[10px] text-amber-400/50">
+            {trait.level}/{trait.maxLevel}
+          </span>
+        )}
+      </div>
+    </Tooltip>
+  );
+}

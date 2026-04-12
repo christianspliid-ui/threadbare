@@ -87,7 +87,10 @@ import { phaseSphereAggregation } from './phaseSphereAggregation';
 import { phaseQuintessence } from './phaseQuintessence';
 import { QUINTESSENCE_ENCOUNTER_FAILURE_EROSION } from '../types/quintessence';
 import { phaseEconomicTraits } from './phaseEconomicTraits';
+import { decayConditions } from './conditionDecay';
+import { processTraitDecay } from './traits';
 import { phaseReputationTraits, processReputationTally } from './phaseReputationTraits';
+import { processEncounterMastery, processEncounterConditions } from './phaseEncounterTraits';
 import { phaseAgentDecision } from './phaseAgentDecision';
 import { phaseStrategicProjects } from './phaseStrategicProjects';
 import { phaseDivinePremonition } from './phaseDivinePremonition';
@@ -476,6 +479,28 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
       progress.status === 'completed',
       state.tick,
     );
+
+    // ── Encounter mastery + condition trait processing ──
+    try {
+      processEncounterMastery(
+        state.graph,
+        progress.actorId,
+        progress.encounterId,
+        result.success,
+        progress.status === 'completed',
+        state.tick,
+      );
+      processEncounterConditions(
+        state.graph,
+        progress.actorId,
+        progress.encounterId,
+        result.success,
+        progress.status === 'completed',
+        state.tick,
+      );
+    } catch {
+      // fail-soft: encounter trait processing failure is non-fatal
+    }
 
     // ── Faction join/promotion outcome processing (TB-061, TB-063 events) ──
     if (progress.status === 'completed') {
@@ -1858,6 +1883,23 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   s = { ...s, ...phaseTradeRouteDecay(s) };
   phaseEventCounts['trade_route_decay'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
+
+  // Phase 6.625: Condition Decay (tick-based removal of transient condition traits)
+  try {
+    decayConditions(s.graph, s.tick);
+  } catch {
+    // fail-soft: condition decay failure is non-fatal
+  }
+
+  // Phase 6.626: Mastery Trait Decay (mastery traits lose levels without reinforcement)
+  try {
+    const agents = s.graph.getNodesByType('actor');
+    for (const agent of agents) {
+      processTraitDecay(s.graph, agent.id, s.tick);
+    }
+  } catch {
+    // fail-soft: trait decay failure is non-fatal
+  }
 
   // ─── World State Evolution ──────────────────────────────────────────────────────
   // Dynamics that reshape the map: prosperity, settlement tiers, hex mutations,

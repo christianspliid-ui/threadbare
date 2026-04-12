@@ -82,7 +82,21 @@ export interface StrategicActionTemplate {
     readonly wealthCost?: number;
     readonly reachFloor?: Partial<Record<ReachDomain, number>>;
   };
+
+  /** Data-driven mutation descriptor — replaces hardcoded switch in lifecycle */
+  readonly mutationHint?: StrategicMutationHint;
 }
+
+// ─── Mutation Hints ─────────────────────────────────────────────────
+// Data-driven execution descriptors so new packs don't need hardcoded switch cases.
+
+export type StrategicMutationHint =
+  | { type: 'record_intelligence'; intelligenceType: string }
+  | { type: 'create_sublocation'; sublocationTypeId: string; nameTemplate: string }
+  | { type: 'create_trade_route' }
+  | { type: 'create_relation_edge'; edgeType: string; direction: 'actor_to_target' | 'target_to_actor'; properties?: Record<string, unknown> }
+  | { type: 'modify_location_property'; property: string; delta: number; clamp?: [number, number] }
+  | { type: 'no_mutation' };
 
 // ─── Target Rules ───────────────────────────────────────────────────
 

@@ -23,6 +23,7 @@ export const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
     ],
     targetRule: { type: 'location_subtype', subtypes: ['market', 'town', 'city', 'trading_post'] },
     resourceHint: { reachFloor: { eye: 0.2 } },
+    mutationHint: { type: 'record_intelligence', intelligenceType: 'market_survey' },
   },
 
   // 2. Negotiate Storage Rights — establish permission for future warehouse
@@ -42,6 +43,7 @@ export const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
     ],
     targetRule: { type: 'location_subtype', subtypes: ['market', 'town', 'city', 'trading_post', 'port'] },
     resourceHint: { wealthCost: 20, reachFloor: { gold: 0.3 } },
+    mutationHint: { type: 'record_intelligence', intelligenceType: 'storage_rights' },
   },
 
   // 3. Establish Trade Route — create a trades_with edge between locations
@@ -63,6 +65,7 @@ export const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
     catalystEncounterIds: ['encounter_route_ambush', 'encounter_toll_dispute'],
     targetRule: { type: 'location_subtype', subtypes: ['market', 'town', 'city', 'trading_post', 'port'] },
     resourceHint: { wealthCost: 40, reachFloor: { gold: 0.4 } },
+    mutationHint: { type: 'create_trade_route' },
   },
 
   // 4. Build Warehouse — create a sublocation with constructed_by edge
@@ -84,6 +87,7 @@ export const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
     catalystEncounterIds: ['encounter_warehouse_sabotage', 'encounter_labor_dispute'],
     targetRule: { type: 'location_subtype', subtypes: ['market', 'town', 'city', 'trading_post', 'port'] },
     resourceHint: { wealthCost: 80, reachFloor: { gold: 0.4, stone: 0.2 } },
+    mutationHint: { type: 'create_sublocation', sublocationTypeId: 'warehouse', nameTemplate: "{actor}'s Warehouse at {location}" },
   },
 
   // 5. Found Guild Chapter — faction-linked institution
@@ -105,6 +109,7 @@ export const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
     catalystEncounterIds: ['encounter_guild_rivalry', 'encounter_charter_challenge'],
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city'] },
     resourceHint: { wealthCost: 120, reachFloor: { gold: 0.5, heart: 0.3 } },
+    mutationHint: { type: 'create_sublocation', sublocationTypeId: 'guild_chapter', nameTemplate: "{actor}'s Guild Chapter at {location}" },
   },
 
   // 6. Maintain Monopoly / Control — ongoing control stance
@@ -124,6 +129,7 @@ export const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
     ],
     targetRule: { type: 'location_subtype', subtypes: ['market', 'town', 'city', 'trading_post'] },
     resourceHint: { reachFloor: { gold: 0.5 } },
+    mutationHint: { type: 'no_mutation' },
   },
 ];
 

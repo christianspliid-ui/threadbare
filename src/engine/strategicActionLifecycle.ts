@@ -29,6 +29,8 @@ import {
   createSublocation,
   claimControl,
   recordIntelligence,
+  modifyLocationProperty,
+  createRelationEdge,
   type GraphOpResult,
 } from './strategicGraphOps';
 import { getStrategicTemplate } from './strategicActionCandidates';
@@ -346,63 +348,102 @@ function executeInstantMutation(
   const ops: GraphOpResult[] = [];
   const targetId = candidate.targetNodeId;
 
-  switch (candidate.templateId) {
-    case 'strategic_survey_market': {
-      if (targetId) {
-        ops.push(recordIntelligence(graph, candidate.actorId, targetId, 'market_survey', tick));
-      }
-      break;
-    }
+  // ── Hint-driven dispatch: templates declare their mutation via mutationHint ──
+  const template = getStrategicTemplate(candidate.templateId);
+  const hint = template?.mutationHint;
 
-    case 'strategic_negotiate_storage': {
-      if (targetId) {
-        ops.push(recordIntelligence(graph, candidate.actorId, targetId, 'storage_rights', tick));
-      }
-      break;
-    }
-
-    case 'strategic_establish_trade_route': {
-      if (targetId) {
-        // Find actor's current location for route source
-        const actorEdges = graph.getOutgoingEdges(candidate.actorId, 'located_at');
-        const actorLocId = actorEdges[0]?.target;
-        if (actorLocId && actorLocId !== targetId) {
-          ops.push(createTradeRoute(graph, actorLocId, targetId, candidate.actorId, tick));
-          // Graph mutation triggers version bump via addEdge/addNode internally
+  if (hint) {
+    switch (hint.type) {
+      case 'record_intelligence': {
+        if (targetId) {
+          ops.push(recordIntelligence(graph, candidate.actorId, targetId, hint.intelligenceType, tick));
         }
+        break;
       }
-      break;
-    }
 
-    case 'strategic_build_warehouse': {
-      if (targetId) {
-        const actorNode = graph.getNode(candidate.actorId);
-        const locNode = graph.getNode(targetId);
-        const warehouseName = `${actorNode?.name ?? 'Unknown'}'s Warehouse at ${locNode?.name ?? 'Unknown'}`;
-        ops.push(createSublocation(graph, targetId, candidate.actorId, warehouseName, 'warehouse', tick));
+      case 'create_sublocation': {
+        if (targetId) {
+          const actorNode = graph.getNode(candidate.actorId);
+          const locNode = graph.getNode(targetId);
+          const name = hint.nameTemplate
+            .replace('{actor}', actorNode?.name ?? 'Unknown')
+            .replace('{location}', locNode?.name ?? 'Unknown');
+          ops.push(createSublocation(graph, targetId, candidate.actorId, name, hint.sublocationTypeId, tick));
+        }
+        break;
       }
-      break;
-    }
 
-    case 'strategic_found_guild_chapter': {
-      if (targetId) {
-        const actorNode = graph.getNode(candidate.actorId);
-        const locNode = graph.getNode(targetId);
-        const chapterName = `${actorNode?.name ?? 'Unknown'}'s Guild Chapter at ${locNode?.name ?? 'Unknown'}`;
-        ops.push(createSublocation(graph, targetId, candidate.actorId, chapterName, 'guild_chapter', tick));
+      case 'create_trade_route': {
+        if (targetId) {
+          const actorEdges = graph.getOutgoingEdges(candidate.actorId, 'located_at');
+          const actorLocId = actorEdges[0]?.target;
+          if (actorLocId && actorLocId !== targetId) {
+            ops.push(createTradeRoute(graph, actorLocId, targetId, candidate.actorId, tick));
+          }
+        }
+        break;
       }
-      break;
-    }
 
-    case 'strategic_maintain_monopoly': {
-      // Control maintenance resets neglect on the matching control state
-      // (handled by the caller when returning control updates)
-      break;
-    }
+      case 'create_relation_edge': {
+        if (targetId) {
+          const [source, target] = hint.direction === 'actor_to_target'
+            ? [candidate.actorId, targetId]
+            : [targetId, candidate.actorId];
+          ops.push(createRelationEdge(graph, source, target, hint.edgeType, tick, hint.properties));
+        }
+        break;
+      }
 
-    default:
-      // Unknown template — no-op but not an error
-      break;
+      case 'modify_location_property': {
+        if (targetId) {
+          ops.push(modifyLocationProperty(graph, targetId, hint.property, hint.delta, hint.clamp));
+        }
+        break;
+      }
+
+      case 'no_mutation':
+        // Intentional no-op (control stances, seed_encounter modes)
+        break;
+    }
+  } else {
+    // ── Legacy fallback for templates without mutationHint ──
+    // (Kept temporarily for backward compatibility — remove once all templates have hints)
+    switch (candidate.templateId) {
+      case 'strategic_survey_market':
+        if (targetId) ops.push(recordIntelligence(graph, candidate.actorId, targetId, 'market_survey', tick));
+        break;
+      case 'strategic_negotiate_storage':
+        if (targetId) ops.push(recordIntelligence(graph, candidate.actorId, targetId, 'storage_rights', tick));
+        break;
+      case 'strategic_establish_trade_route': {
+        if (targetId) {
+          const actorEdges = graph.getOutgoingEdges(candidate.actorId, 'located_at');
+          const actorLocId = actorEdges[0]?.target;
+          if (actorLocId && actorLocId !== targetId) {
+            ops.push(createTradeRoute(graph, actorLocId, targetId, candidate.actorId, tick));
+          }
+        }
+        break;
+      }
+      case 'strategic_build_warehouse': {
+        if (targetId) {
+          const actorNode = graph.getNode(candidate.actorId);
+          const locNode = graph.getNode(targetId);
+          ops.push(createSublocation(graph, targetId, candidate.actorId, `${actorNode?.name ?? 'Unknown'}'s Warehouse at ${locNode?.name ?? 'Unknown'}`, 'warehouse', tick));
+        }
+        break;
+      }
+      case 'strategic_found_guild_chapter': {
+        if (targetId) {
+          const actorNode = graph.getNode(candidate.actorId);
+          const locNode = graph.getNode(targetId);
+          ops.push(createSublocation(graph, targetId, candidate.actorId, `${actorNode?.name ?? 'Unknown'}'s Guild Chapter at ${locNode?.name ?? 'Unknown'}`, 'guild_chapter', tick));
+        }
+        break;
+      }
+      default:
+        break;
+    }
   }
 
   if (ops.length > 0) {

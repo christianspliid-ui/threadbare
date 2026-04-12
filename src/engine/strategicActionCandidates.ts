@@ -21,6 +21,11 @@ import type { AmbitionTemplate } from '../types/ambition';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 import { REACTIVE_AMBITION_TEMPLATES } from '../data/ambition-templates';
 import { MERCHANT_STRATEGIC_TEMPLATES } from '../data/strategic-packs/merchantStrategicPack';
+import { BUILDER_STRATEGIC_TEMPLATES } from '../data/strategic-packs/builderStrategicPack';
+import { SCHOLAR_STRATEGIC_TEMPLATES } from '../data/strategic-packs/scholarStrategicPack';
+import { ZEALOT_STRATEGIC_TEMPLATES } from '../data/strategic-packs/zealotStrategicPack';
+import { COURT_STRATEGIC_TEMPLATES } from '../data/strategic-packs/courtStrategicPack';
+import { WARLORD_STRATEGIC_TEMPLATES } from '../data/strategic-packs/warlordStrategicPack';
 import {
   STRATEGIC_MAX_CANDIDATES_PER_ACTOR,
   STRATEGIC_MAX_CANDIDATES_PER_AMBITION,
@@ -34,8 +39,18 @@ import type { ReachDomain } from '../types/traits';
 // All strategic templates by ID. Scales as new packs are added.
 
 const TEMPLATE_REGISTRY = new Map<string, StrategicActionTemplate>();
-for (const t of MERCHANT_STRATEGIC_TEMPLATES) {
-  TEMPLATE_REGISTRY.set(t.id, t);
+const ALL_PACKS: readonly (readonly StrategicActionTemplate[])[] = [
+  MERCHANT_STRATEGIC_TEMPLATES,
+  BUILDER_STRATEGIC_TEMPLATES,
+  SCHOLAR_STRATEGIC_TEMPLATES,
+  ZEALOT_STRATEGIC_TEMPLATES,
+  COURT_STRATEGIC_TEMPLATES,
+  WARLORD_STRATEGIC_TEMPLATES,
+];
+for (const pack of ALL_PACKS) {
+  for (const t of pack) {
+    TEMPLATE_REGISTRY.set(t.id, t);
+  }
 }
 
 export function getStrategicTemplate(id: string): StrategicActionTemplate | undefined {
