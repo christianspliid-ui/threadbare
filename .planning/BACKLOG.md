@@ -8,7 +8,83 @@
 > Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
 > Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-123**.
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-128**.
+
+---
+
+## ✅ TB-123 · Procedural Hex Vignettes — Phase 1: Terrain Lab Slot/Zone Prototype (2026-04-12)
+
+Phase 1 of the procedural hex vignette system, built in `?view=terrain-lab`. Codex implemented the zone-aware resolver, slot layout, and debug overlay system; Claude Code found and fixed a critical scatter bug (all filler models stacked at hex center due to missing per-placement positions).
+
+**Delivered:** `terrainTextureLabVignettePrototype.ts` (full resolver: zone modes, Poisson-disk sampling, mulberry32 PRNG, click targets), `terrainTextureLabLayout.ts` (slot positions), vignette UI panel (scope/density/landmark/debug controls), canvas rendering (zone rings, slot anchors, filler dots, landmark selection), per-placement x/y scatter fix.
+**Design doc:** `Docs/plans/2026-04-08-procedural-hex-vignettes.md`
+**Verified:** 194 tree models across 2 forest hexes, dense Poisson-disk scatter, slot anchors visible, zone debug overlays functional.
+
+---
+
+## 📋 TB-124 · Procedural Hex Vignettes — Phase 2: Chunked Filler Layer (2026-04-12)
+
+Replace clone-per-tree rendering in the terrain lab with chunked instanced batches using a custom unlit instance shader. Currently the lab clones GLTF scenes for each tree placement (~100 per hex), which won't scale to the full game map.
+
+**Scope:**
+- Introduce chunk registry (12×12 hex chunks)
+- Implement filler profiles per terrain type (forest trees, mountain rocks, etc.)
+- Build chunked InstancedMesh filler batches with per-instance attributes (aVisibilityState, aHoverMix, aSelectionMix)
+- Custom unlit shader: sRGB→linear in attributes, blend in shader, SRGBColorSpace output
+- Buffer attribute lifecycle: allocate once, update in place, set needsUpdate
+- Validate density and readability at scale
+
+**Design doc:** `Docs/plans/2026-04-08-procedural-hex-vignettes.md` § Phase 2, § 5 (Rendering Architecture)
+**Depends on:** TB-123 (✅)
+**Needs design:** No — architecture doc covers this in detail
+
+---
+
+## 📋 TB-125 · Procedural Hex Vignettes — Phase 3: Landmark Batch Layer (2026-04-12)
+
+Convert repeated landmark archetypes (village, city, temple, etc.) from clone-based to chunked instanced landmark batches. Enforce Blender export contracts (max material slots, merge-by-material, bake rotation). Register click targets from slot anchors for production-ready interaction.
+
+**Scope:**
+- Chunked instanced landmark batches (same shader as filler, different geometry/material)
+- Enforce Blender export limits (≤10 primitives after merge-by-material)
+- Click target registration from slot anchors
+- Integration with `compositionResolver.ts` slot suppression/priority rules
+
+**Design doc:** `Docs/plans/2026-04-08-procedural-hex-vignettes.md` § Phase 3
+**Depends on:** TB-124
+
+---
+
+## 📋 TB-126 · Procedural Hex Vignettes — Phase 4: Interaction & UI Validation (2026-04-12)
+
+Add hover/selection feedback to vignette models in the terrain lab. Prove click behavior works on instanced landmarks before game integration.
+
+**Scope:**
+- Hover highlight on instanced filler and landmarks (per-instance aHoverMix attribute)
+- Selection ring/outline on clicked landmarks (per-instance aSelectionMix)
+- Direct click on instanced landmark meshes via raycaster
+- Terrain lab selection panel showing clicked landmark details
+- Debug toggles for chunk bounds and zone visualization
+
+**Design doc:** `Docs/plans/2026-04-08-procedural-hex-vignettes.md` § Phase 4
+**Depends on:** TB-125
+
+---
+
+## 📋 TB-127 · Procedural Hex Vignettes — Phase 5: Profiling & Resilience (2026-04-12)
+
+Performance hardening and resilience pass before game integration.
+
+**Scope:**
+- WebGL context loss recovery (re-create buffers, re-upload instance data)
+- Chunk-priority cap behavior (limit max active chunks based on zoom)
+- Shader LOD: reduce fBm octaves (5→3→2) based on camera distance
+- Chrome profiling on integrated GPU — target ≤4ms terrain + vignette at 1080p
+- Validate on `large` and `epic` map presets (584–805 locations)
+
+**Design doc:** `Docs/plans/2026-04-08-procedural-hex-vignettes.md` § Phase 5
+**Depends on:** TB-126
+**After this:** Phase 6 game integration (only if prototype proves readability, click behavior, draw-call budget, and fog states)
 
 ---
 
