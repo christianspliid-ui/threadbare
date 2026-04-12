@@ -139,6 +139,9 @@ export interface TerrainTextureLabModelPlacement {
   scale: number;
   heightOffset: number;
   rotationDegrees: number;
+  /** Per-placement world position. When absent, falls back to hex center. */
+  x?: number;
+  y?: number;
 }
 
 export const TERRAIN_TEXTURE_PREVIEW_HEXES: TerrainTexturePreviewHex[] = [

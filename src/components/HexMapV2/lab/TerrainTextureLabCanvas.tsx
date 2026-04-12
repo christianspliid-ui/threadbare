@@ -723,10 +723,13 @@ export function TerrainTextureLabCanvas({
           if (cancelled) return;
 
           const clone = template.clone(true);
-          const center = getTerrainTextureLabHexCenter(previewHex.col, previewHex.row, TERRAIN_TEXTURE_LAB_CONSTANTS.HEX_RADIUS);
+          const hasPosition = placement.x != null && placement.y != null;
+          const fallback = hasPosition ? null : getTerrainTextureLabHexCenter(previewHex.col, previewHex.row, TERRAIN_TEXTURE_LAB_CONSTANTS.HEX_RADIUS);
+          const posX = hasPosition ? placement.x! : fallback!.x;
+          const posY = hasPosition ? placement.y! : fallback!.y;
           clone.position.set(
-            center.x,
-            center.y,
+            posX,
+            posY,
             TERRAIN_TEXTURE_LAB_CONSTANTS.MODEL_LAYER_Z + placement.heightOffset,
           );
           clone.scale.setScalar(placement.scale);

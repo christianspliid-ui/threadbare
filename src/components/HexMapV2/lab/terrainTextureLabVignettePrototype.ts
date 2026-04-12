@@ -327,6 +327,8 @@ export function buildTerrainTextureLabVignettePrototype(
         scale: landmarkModel.suggestedScale,
         heightOffset: landmarkModel.suggestedHeightOffset,
         rotationDegrees: landmarkModel.suggestedRotationDegrees,
+        x: slotPositions.CENTER.x,
+        y: slotPositions.CENTER.y,
       });
       clickTargets.push({
         id: `${previewHex.id}-target-center`,
@@ -385,6 +387,8 @@ export function buildTerrainTextureLabVignettePrototype(
         scale: candidate.scale,
         heightOffset: fillerModel.suggestedHeightOffset,
         rotationDegrees: Math.round(rng() * 360 - 180),
+        x: candidate.x,
+        y: candidate.y,
       });
     }
   }
