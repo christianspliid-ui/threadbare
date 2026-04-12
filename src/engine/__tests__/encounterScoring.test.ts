@@ -29,9 +29,12 @@ import {
   DRIFT_ACTIVATION_THRESHOLD,
   SPHERE_DRIFT_MAP,
   WANDERLUST_MAX_DISCOUNT,
+  computeRoleAffinityMultiplier,
 } from '../encounterScoring';
 import type { FamiliarityRecord, ExplorationRecord } from '../encounterScoring';
 import type { FundamentState } from '../../types/worldSoul';
+import { ROLE_PRIMARY_AFFINITY_BONUS, ROLE_SECONDARY_AFFINITY_BONUS } from '../../data/agent-behavior-constants';
+import type { GraphNode } from '../graph';
 import { SPHERE_NAMES } from '../../types/index';
 
 // ─── Helpers ────────────────────────────────────────────────────
@@ -1089,5 +1092,50 @@ describe('scoreAndSelect: rarity multiplier', () => {
     if (result.topCandidates.length > 0) {
       expect(result.topCandidates[0].rarityMultiplier).toBe(1.0);
     }
+  });
+});
+
+// ─── computeRoleAffinityMultiplier ─────────────────────────────
+
+describe('computeRoleAffinityMultiplier', () => {
+  function makeAgentNode(npcRole?: string): GraphNode {
+    return {
+      id: 'test-agent',
+      type: 'actor',
+      name: 'Test Agent',
+      properties: npcRole ? { npcRole } : {},
+    } as GraphNode;
+  }
+
+  it('returns 1.0 + PRIMARY bonus when encounter reach matches role primary', () => {
+    // guard has primary: 'iron'
+    const agent = makeAgentNode('guard');
+    const result = computeRoleAffinityMultiplier(agent, 'iron');
+    expect(result).toBeCloseTo(1.0 + ROLE_PRIMARY_AFFINITY_BONUS);
+  });
+
+  it('returns 1.0 + SECONDARY bonus when encounter reach matches role secondary', () => {
+    // guard has secondary: 'stone'
+    const agent = makeAgentNode('guard');
+    const result = computeRoleAffinityMultiplier(agent, 'stone');
+    expect(result).toBeCloseTo(1.0 + ROLE_SECONDARY_AFFINITY_BONUS);
+  });
+
+  it('returns 1.0 when encounter reach matches neither primary nor secondary', () => {
+    const agent = makeAgentNode('guard');
+    const result = computeRoleAffinityMultiplier(agent, 'veil');
+    expect(result).toBe(1.0);
+  });
+
+  it('returns 1.0 when agent has no npcRole (fail-soft)', () => {
+    const agent = makeAgentNode();
+    const result = computeRoleAffinityMultiplier(agent, 'iron');
+    expect(result).toBe(1.0);
+  });
+
+  it('returns 1.0 for unmapped role (fail-soft)', () => {
+    const agent = makeAgentNode('nonexistent_role_xyz');
+    const result = computeRoleAffinityMultiplier(agent, 'iron');
+    expect(result).toBe(1.0);
   });
 });
