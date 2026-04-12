@@ -6,6 +6,12 @@ import { runTick, resetDecisionCache, resetEventCounter } from '../../orchestrat
 import { createBalancedCosmology } from '../../cosmology';
 import { generateArchetypes } from '../../ascendant';
 import { createSimulationRuntime } from '../../simulationRuntime';
+import { computeFullProfile } from '../../domainCapability';
+import { enableTracing, disableTracing, getTraces, clearTraces } from '../../traceBuffer';
+import { getAnyEncounterById } from '../../../data/encounter-content';
+import { NPC_ROLE_REACH_MAP } from '../../../types/npc';
+import type { NpcRole } from '../../../types/npc';
+import type { WorldGraph } from '../../graph';
 import type { GameState } from '../../../types/gameState';
 import type { TickEvent } from '../../../types/gameState';
 
@@ -64,6 +70,16 @@ export interface SimulationMetrics {
 
 function countEvents(events: TickEvent[], type: string): number {
   return events.filter(e => e.type === type).length;
+}
+
+/** Sum all domain raw scores for an agent into a single aggregate number. */
+function sumRawScores(graph: WorldGraph, nodeId: string): number {
+  const profile = computeFullProfile(graph, nodeId);
+  let total = 0;
+  for (const domain of Object.values(profile)) {
+    total += domain.rawScore;
+  }
+  return total;
 }
 
 // ─── Main Harness ────────────────────────────────────────────────
@@ -130,6 +146,15 @@ export function runSimulation(opts: SimulationOpts): SimulationMetrics {
     consecutiveIdle.set(id, 0);
   }
 
+  // Snapshot initial raw scores (sum across all domains per agent)
+  for (const id of agentIds) {
+    metrics.initialRawScores.set(id, sumRawScores(state.graph, id));
+  }
+
+  // Enable tracing so we can count decision traces
+  enableTracing();
+  clearTraces();
+
   // Run ticks and collect metrics
   for (let t = 0; t < opts.ticks; t++) {
     state = runTick(state, [], runtime);
@@ -185,12 +210,33 @@ export function runSimulation(opts: SimulationOpts): SimulationMetrics {
       }
     }
 
-    // Encounter types
+    // Encounter types + role-reach matching
     for (const ep of state.encounterProgress) {
       if (ep.status === 'active') {
         metrics.uniqueEncounterTypes.add(ep.encounterId.split('.')[0] ?? ep.encounterId);
       }
+      // Check newly started encounters this tick for role-reach affinity
+      if (ep.startedTick === state.tick) {
+        const agentNode = state.graph.getNode(ep.actorId);
+        const role = agentNode?.properties.npcRole as NpcRole | undefined;
+        if (role && NPC_ROLE_REACH_MAP[role]) {
+          metrics.encounterStartsWithRole++;
+          const template = getAnyEncounterById(ep.encounterId);
+          if (template && template.reachPrimary === NPC_ROLE_REACH_MAP[role].primary) {
+            metrics.encounterStartsWithRoleMatch++;
+          }
+        }
+      }
     }
+
+    // Count decision traces (encounter_scoring = one per agent decision)
+    const traces = getTraces();
+    for (const trace of traces) {
+      if (trace.category === 'encounter_scoring' || trace.category === 'idle_decision') {
+        metrics.decisionTraceCount++;
+      }
+    }
+    clearTraces();
 
     // Idle detection: agents not in encounter and not moving this tick
     const busyAgents = new Set<string>();
@@ -216,6 +262,15 @@ export function runSimulation(opts: SimulationOpts): SimulationMetrics {
       }
     }
   }
+
+  // Snapshot final raw scores (sum across all domains per agent)
+  for (const id of agentIds) {
+    metrics.finalRawScores.set(id, sumRawScores(state.graph, id));
+  }
+
+  // Clean up tracing
+  disableTracing();
+  clearTraces();
 
   metrics.totalAgentTicks = agentIds.length * opts.ticks;
   metrics.finalState = state;
