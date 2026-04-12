@@ -626,6 +626,21 @@ export const WHISPER_INTUITION_HUNCH_STRENGTH = 1.0;
 export const WHISPER_INTUITION_DURATION_TICKS = 15;
 
 // ═══════════════════════════════════════════════════════════════════
+// ROLE-REACH AFFINITY — NPC role identity shapes encounter preference
+// ═══════════════════════════════════════════════════════════════════
+
+/** Multiplicative bonus on encounter base score when the encounter's primary reach
+ * matches the agent's NPC role primary reach. Guards prefer iron encounters, etc.
+ * Applied as (1 + bonus) multiplier on baseScore alongside rarity.
+ * @range 0.2–0.6 */
+export const ROLE_PRIMARY_AFFINITY_BONUS = 0.4;
+
+/** Multiplicative bonus when the encounter's primary reach matches the agent's
+ * NPC role secondary reach. Smaller than primary — secondary is a supporting skill.
+ * @range 0.05–0.25 */
+export const ROLE_SECONDARY_AFFINITY_BONUS = 0.15;
+
+// ═══════════════════════════════════════════════════════════════════
 // REPUTATION TRAITS — Reach-polarity reputation accumulation (phaseReputationTraits.ts)
 // ═══════════════════════════════════════════════════════════════════
 

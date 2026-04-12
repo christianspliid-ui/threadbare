@@ -78,6 +78,8 @@ export {
   PERSONALITY_SCORE_EXPONENT,
   WANDERLUST_MAX_DISCOUNT,
   WANDERLUST_PAIR,
+  ROLE_PRIMARY_AFFINITY_BONUS,
+  ROLE_SECONDARY_AFFINITY_BONUS,
 } from '../data/agent-behavior-constants';
 
 import {
@@ -104,8 +106,12 @@ import {
   ANOMALY_EYE_SCALING,
   ANOMALY_VEIL_SCALING,
   ANOMALY_EYE_THRESHOLD,
+  ROLE_PRIMARY_AFFINITY_BONUS,
+  ROLE_SECONDARY_AFFINITY_BONUS,
 } from '../data/agent-behavior-constants';
 import { ANOMALY_RESOURCE_MAP } from '../data/resource-content';
+import { NPC_ROLE_REACH_MAP } from '../types/npc';
+import type { NpcRole } from '../types/npc';
 import type { HexTile } from '../types/index';
 import { getRarityTier } from './rarity';
 import { RARITY_ENCOUNTER_SCORE_MULTIPLIER } from '../data/rarity-constants';
@@ -471,6 +477,7 @@ export interface ScoredCandidate {
   attractionBonus: number;
   hunchBonus: number;
   rarityMultiplier: number;
+  roleAffinityMultiplier: number;
   finalScore: number;
   action: 'start_local' | 'queue_movement' | 'attempt_remote';
 }
@@ -668,6 +675,38 @@ export function computeReputationScoringBonus(
   return bonus;
 }
 
+// ─── Role-Reach Affinity ──────────────────────────────────────────
+
+/**
+ * Multiplicative bonus when an encounter's primary reach aligns with
+ * the agent's NPC role reach affinity. Guards prefer iron encounters,
+ * scholars prefer eye encounters, etc.
+ *
+ * Returns 1.0 + ROLE_PRIMARY_AFFINITY_BONUS   if encounter reach matches role primary
+ *         1.0 + ROLE_SECONDARY_AFFINITY_BONUS if encounter reach matches role secondary
+ *         1.0                                 if no match or agent has no role
+ *
+ * Fail-soft: missing npcRole or unmapped role → 1.0 (no bonus, no penalty).
+ */
+export function computeRoleAffinityMultiplier(
+  agentNode: GraphNode,
+  encounterReachPrimary: ReachDomain,
+): number {
+  const role = agentNode.properties?.npcRole as NpcRole | undefined;
+  if (!role) return 1.0;
+
+  const affinity = NPC_ROLE_REACH_MAP[role];
+  if (!affinity) return 1.0;
+
+  if (encounterReachPrimary === affinity.primary) {
+    return 1.0 + ROLE_PRIMARY_AFFINITY_BONUS;
+  }
+  if (encounterReachPrimary === affinity.secondary) {
+    return 1.0 + ROLE_SECONDARY_AFFINITY_BONUS;
+  }
+  return 1.0;
+}
+
 // ─── Main: Score and Select ─────────────────────────────────────
 
 /**
@@ -855,9 +894,12 @@ export function scoreAndSelect(
     const locRarityTier = getRarityTier(locationNode ?? { id: '', type: 'location', name: '', properties: {} });
     const rarityMultiplier = RARITY_ENCOUNTER_SCORE_MULTIPLIER[locRarityTier];
 
-    // 20. Final score — rarity multiplier applied to baseScore only (exploration/ruins/chain bonuses are fixed)
+    // 20. Role-reach affinity — professional identity shapes encounter preference
+    const roleAffinityMultiplier = computeRoleAffinityMultiplier(agentNode, entry.reachPrimary);
+
+    // 21. Final score — rarity + role affinity multipliers on baseScore (exploration/ruins/chain bonuses are fixed)
     const baseScore = valuePerTick * desireMultiplier + factionScoringBoost + reputationBonus + resonance + globalResonance;
-    const finalScore = baseScore * rarityMultiplier * (1 - familiarityPenalty) + explorationBonus + chainBonus
+    const finalScore = baseScore * rarityMultiplier * roleAffinityMultiplier * (1 - familiarityPenalty) + explorationBonus + chainBonus
       + ruinsBonus + anomalyBonus + attractionBonus + hunchBonus;
 
     // 17. Action classification
@@ -892,6 +934,7 @@ export function scoreAndSelect(
       attractionBonus,
       hunchBonus,
       rarityMultiplier,
+      roleAffinityMultiplier,
       finalScore,
       action,
     });
@@ -942,6 +985,7 @@ function buildTrace(
       resonance: c.resonance,
       globalResonance: c.globalResonance,
       rarityMultiplier: c.rarityMultiplier,
+      roleAffinityMultiplier: c.roleAffinityMultiplier,
       // Phase 4: rich forecast fields
       expectedUtility: c.expectedUtility,
       pushBenefit: c.pushBenefit,

@@ -470,6 +470,8 @@ export interface ScoringTrace extends TraceBase {
     worldSoulDrift?: Record<string, number>;
     chainBonus?: number;
     rarityMultiplier?: number;
+    /** Role-reach affinity multiplier (1.0 = no match, >1.0 = role reach matches encounter) */
+    roleAffinityMultiplier?: number;
     /** Phase 4: Expected utility from 5-tier outcome ladder */
     expectedUtility?: number;
     /** Phase 4: Push benefit estimate (Q spend for better odds) */
