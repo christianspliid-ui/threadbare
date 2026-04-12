@@ -87,6 +87,19 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     bondModifiers: [{ bondType: 'vassal', modifier: 0.4 }],
     boostingTraits: ['commander', 'ruthless'],
     reachAffinity: { iron: 0.8, heart: 0.6, eye: 0.3 },
+    strategicProfile: {
+      behaviorFamily: 'warlord-expansion',
+      preferredVerbs: ['gather_info', 'create', 'destroy', 'control'],
+      templateIds: [
+        'strategic_scout_defenses',
+        'strategic_recruit_warband',
+        'strategic_fortify_position',
+        'strategic_establish_garrison',
+        'strategic_raid_supply_lines',
+        'strategic_claim_territory',
+      ],
+      reachEmphasis: { iron: 0.8, heart: 0.6, eye: 0.3 },
+    },
     milestones: [
       {
         id: 'conquer_followers',
@@ -195,6 +208,19 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     bondModifiers: [{ bondType: 'mentor', modifier: 0.2 }],
     boostingTraits: ['scholar', 'veil_touched'],
     reachAffinity: { veil: 0.9, eye: 0.5, star: 0.3 },
+    strategicProfile: {
+      behaviorFamily: 'scholar-seeker',
+      preferredVerbs: ['gather_info', 'create', 'control'],
+      templateIds: [
+        'strategic_research_archive',
+        'strategic_investigate_anomaly',
+        'strategic_write_treatise',
+        'strategic_establish_research_circle',
+        'strategic_mount_expedition',
+        'strategic_guard_knowledge',
+      ],
+      reachEmphasis: { veil: 0.9, eye: 0.5, star: 0.3 },
+    },
     milestones: [
       {
         id: 'arcane_veil_high',
@@ -256,10 +282,12 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       behaviorFamily: 'court-political',
       preferredVerbs: ['create', 'control', 'change', 'gather_info'],
       templateIds: [
-        'strategic_survey_market',
-        'strategic_negotiate_storage',
-        'strategic_build_warehouse',
-        'strategic_found_guild_chapter',
+        'strategic_assess_politics',
+        'strategic_buy_influence',
+        'strategic_secure_office',
+        'strategic_organize_patronage',
+        'strategic_establish_dynasty_seat',
+        'strategic_maintain_authority',
       ],
       reachEmphasis: { gold: 0.6, heart: 0.7, star: 0.4 },
     },
@@ -365,6 +393,19 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     bondModifiers: [{ bondType: 'informant', modifier: 0.2 }],
     boostingTraits: ['scholar', 'ruin_delver'],
     reachAffinity: { eye: 0.8, veil: 0.5, stone: 0.4 },
+    strategicProfile: {
+      behaviorFamily: 'scholar-seeker',
+      preferredVerbs: ['gather_info', 'create', 'control'],
+      templateIds: [
+        'strategic_research_archive',
+        'strategic_investigate_anomaly',
+        'strategic_write_treatise',
+        'strategic_establish_research_circle',
+        'strategic_mount_expedition',
+        'strategic_guard_knowledge',
+      ],
+      reachEmphasis: { eye: 0.8, veil: 0.5, stone: 0.4 },
+    },
     milestones: [
       {
         id: 'secrets_ruin',
@@ -419,6 +460,19 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     bondModifiers: [{ bondType: 'convert', modifier: 0.3 }],
     boostingTraits: ['zealot', 'orator'],
     reachAffinity: { star: 0.8, heart: 0.6, eye: 0.2 },
+    strategicProfile: {
+      behaviorFamily: 'zealot-mission',
+      preferredVerbs: ['gather_info', 'change', 'create', 'control'],
+      templateIds: [
+        'strategic_survey_faithful',
+        'strategic_preach_masses',
+        'strategic_found_shrine',
+        'strategic_consecrate_site',
+        'strategic_establish_sacred_route',
+        'strategic_police_doctrine',
+      ],
+      reachEmphasis: { star: 0.8, heart: 0.6, eye: 0.2 },
+    },
     milestones: [
       {
         id: 'faith_flock',
@@ -473,6 +527,19 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     bondModifiers: [{ bondType: 'laborer', modifier: 0.2 }],
     boostingTraits: ['architect', 'visionary'],
     reachAffinity: { gold: 0.5, iron: 0.4, stone: 0.7 },
+    strategicProfile: {
+      behaviorFamily: 'builder-civic',
+      preferredVerbs: ['gather_info', 'create', 'change', 'control'],
+      templateIds: [
+        'strategic_survey_site',
+        'strategic_draft_plans',
+        'strategic_civic_construction',
+        'strategic_fortify_defenses',
+        'strategic_build_granary',
+        'strategic_maintain_civic_order',
+      ],
+      reachEmphasis: { gold: 0.5, iron: 0.4, stone: 0.7 },
+    },
     milestones: [
       {
         id: 'work_labor',
