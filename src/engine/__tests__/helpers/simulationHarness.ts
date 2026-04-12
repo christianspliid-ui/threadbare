@@ -296,6 +296,7 @@ export function mean(values: number[]): number {
 }
 
 export function idleRate(m: SimulationMetrics): number {
+  if (m.totalAgentTicks === 0) return 0;
   let totalIdle = 0;
   for (const count of m.idleTicksPerAgent.values()) totalIdle += count;
   return totalIdle / m.totalAgentTicks;
