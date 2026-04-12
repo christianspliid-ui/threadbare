@@ -8,7 +8,7 @@
  * locations before encounters begin. Checks both legacy encounterProgress
  * and unifiedActions since the former is deprecated in favor of the latter.
  */
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { initializeGameState, MAP_SIZE_PRESETS } from '../../gameInit';
 import { runTick, resetDecisionCache, resetEventCounter } from '../../orchestrator';
 import { createBalancedCosmology } from '../../cosmology';
@@ -31,70 +31,48 @@ function createFreshState(): GameState {
   return state;
 }
 
-function runTicks(initial: GameState, n: number): GameState {
+describe('encounter lifecycle contract', { timeout: 120_000 }, () => {
+  // Shared state — one world gen + tick run for all tests
+  const initialState = createFreshState();
+
+  // Run ticks once, tracking lifecycle events as we go
   const runtime = createSimulationRuntime();
-  let s = initial;
-  for (let i = 0; i < n; i++) {
-    s = runTick(s, [], runtime);
+  let state = initialState;
+  let seenActive = false;
+  let seenCompleted = false;
+
+  for (let i = 0; i < LIFECYCLE_TICK_BUDGET; i++) {
+    state = runTick(state, [], runtime);
+
+    if (state.encounterProgress.some(ep => ep.status === 'active')) seenActive = true;
+    if (state.encounterProgress.some(ep => ep.status === 'completed')) seenCompleted = true;
+
+    const unifiedActions = state.unifiedActions ?? [];
+    if (unifiedActions.some(a => a.source === 'agent' && !a.resolved)) seenActive = true;
+    if (unifiedActions.some(a => a.source === 'agent' && a.resolved)) seenCompleted = true;
   }
-  return s;
-}
 
-describe('encounter lifecycle contract', () => {
-  let state: GameState;
+  // Pre-compute shared data for tests
+  const legacyCompleted = state.encounterProgress.filter(ep => ep.status === 'completed');
+  const unifiedCompleted = (state.unifiedActions ?? []).filter(
+    a => a.source === 'agent' && a.resolved,
+  );
+  const completedActorIds = new Set<string>();
+  for (const ep of legacyCompleted) completedActorIds.add(ep.actorId);
+  for (const ua of unifiedCompleted) completedActorIds.add(ua.actorId);
 
-  beforeEach(() => {
-    state = createFreshState();
-  });
-
-  it('encounters progress from active to completed', { timeout: 30_000 }, () => {
-    const runtime = createSimulationRuntime();
-    let seenActive = false;
-    let seenCompleted = false;
-
-    for (let i = 0; i < LIFECYCLE_TICK_BUDGET; i++) {
-      state = runTick(state, [], runtime);
-
-      // Check legacy encounterProgress
-      if (state.encounterProgress.some(ep => ep.status === 'active')) {
-        seenActive = true;
-      }
-      if (state.encounterProgress.some(ep => ep.status === 'completed')) {
-        seenCompleted = true;
-      }
-
-      // Check unified actions (encounters have source 'agent' and are not divine actions)
-      const unifiedActions = state.unifiedActions ?? [];
-      if (unifiedActions.some(a => a.source === 'agent' && !a.resolved)) {
-        seenActive = true;
-      }
-      if (unifiedActions.some(a => a.source === 'agent' && a.resolved)) {
-        seenCompleted = true;
-      }
-
-      if (seenActive && seenCompleted) break;
-    }
-
+  it('encounters progress from active to completed', () => {
     expect(seenActive).toBe(true);
     expect(seenCompleted).toBe(true);
   });
 
-  it('completed encounters have step history', { timeout: 30_000 }, () => {
-    state = runTicks(state, LIFECYCLE_TICK_BUDGET);
-
-    // Gather completed encounters from both systems
-    const legacyCompleted = state.encounterProgress.filter(ep => ep.status === 'completed');
-    const unifiedCompleted = (state.unifiedActions ?? []).filter(
-      a => a.source === 'agent' && a.resolved,
-    );
+  it('completed encounters have step history', () => {
     const totalCompleted = legacyCompleted.length + unifiedCompleted.length;
-
     expect(totalCompleted).toBeGreaterThan(
       0,
       `No encounters completed in ${LIFECYCLE_TICK_BUDGET} ticks — lifecycle pipeline is stalled`,
     );
 
-    // Legacy: completed encounters must have non-empty history with valid ticks
     for (const ep of legacyCompleted) {
       expect(ep.history.length).toBeGreaterThan(0);
       for (const h of ep.history) {
@@ -102,34 +80,17 @@ describe('encounter lifecycle contract', () => {
       }
     }
 
-    // Unified: resolved actions must have step outcomes recording each step's result
     for (const ua of unifiedCompleted) {
       expect(ua.stepOutcomes.length).toBeGreaterThan(0);
     }
   });
 
-  it('agents are freed after encounter completion', { timeout: 30_000 }, () => {
-    state = runTicks(state, LIFECYCLE_TICK_BUDGET);
-
-    // Collect actor IDs from completed encounters (both systems)
-    const completedActorIds = new Set<string>();
-
-    for (const ep of state.encounterProgress.filter(ep => ep.status === 'completed')) {
-      completedActorIds.add(ep.actorId);
-    }
-    for (const ua of (state.unifiedActions ?? []).filter(a => a.source === 'agent' && a.resolved)) {
-      completedActorIds.add(ua.actorId);
-    }
-
+  it('agents are freed after encounter completion', () => {
     expect(completedActorIds.size).toBeGreaterThan(
       0,
       'No completed encounters found — cannot verify agent freeing',
     );
 
-    // An agent that completed an encounter should NOT still be in an active
-    // encounter with the same action/encounter ID. They may have started a
-    // new encounter (which is fine — that proves they were freed).
-    // Check that no completed encounter's actor+id pair is also active.
     const activeKeys = new Set<string>();
     for (const ep of state.encounterProgress.filter(ep => ep.status === 'active')) {
       activeKeys.add(`${ep.actorId}:${ep.encounterId}`);
@@ -138,11 +99,10 @@ describe('encounter lifecycle contract', () => {
       activeKeys.add(`${ua.actorId}:${ua.actionId}`);
     }
 
-    // Completed encounters should not also appear as active with the same key
-    for (const ep of state.encounterProgress.filter(ep => ep.status === 'completed')) {
+    for (const ep of legacyCompleted) {
       expect(activeKeys.has(`${ep.actorId}:${ep.encounterId}`)).toBe(false);
     }
-    for (const ua of (state.unifiedActions ?? []).filter(a => a.resolved)) {
+    for (const ua of unifiedCompleted) {
       expect(activeKeys.has(`${ua.actorId}:${ua.actionId}`)).toBe(false);
     }
   });

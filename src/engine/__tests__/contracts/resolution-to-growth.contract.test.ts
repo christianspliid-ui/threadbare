@@ -10,7 +10,7 @@
  *   - encounters aren't completing (upstream), or
  *   - completions aren't producing growth (downstream wiring broken)
  */
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { initializeGameState, MAP_SIZE_PRESETS } from '../../gameInit';
 import { runTick, resetDecisionCache, resetEventCounter } from '../../orchestrator';
 import { createBalancedCosmology } from '../../cosmology';
@@ -38,44 +38,45 @@ function createFreshState(): GameState {
   return state;
 }
 
-describe('resolution → growth contract', () => {
-  let state: GameState;
+describe('resolution → growth contract', { timeout: 120_000 }, () => {
+  // Shared state — one world gen + 100 tick run for all tests
+  const initialState = createFreshState();
 
-  beforeEach(() => {
-    state = createFreshState();
-  });
+  // Snapshot initial capabilities before ticking
+  const agents = initialState.graph.getNodesByType('actor')
+    .filter(n => n.properties.actorType === 'individual');
+  const initialProfiles = new Map<string, Record<ReachDomain, { rawScore: number; capability: number; tier: number; label: string }>>();
+  for (const agent of agents) {
+    initialProfiles.set(agent.id, computeFullProfile(initialState.graph, agent.id));
+  }
 
-  it('agents who complete encounters show capability growth', { timeout: 30_000 }, () => {
-    const runtime = createSimulationRuntime();
+  // Run TICK_COUNT ticks once, shared across tests
+  const runtime = createSimulationRuntime();
+  let state = initialState;
+  let completionEventSeen = false;
+  const resolutionTypes = new Set(['encounter_completed', 'agent_action_resolved']);
 
-    // Snapshot initial capabilities for all individual actors
-    const agents = state.graph.getNodesByType('actor')
-      .filter(n => n.properties.actorType === 'individual');
-    const initialProfiles = new Map<string, Record<ReachDomain, { rawScore: number; capability: number; tier: number; label: string }>>();
-    for (const agent of agents) {
-      initialProfiles.set(agent.id, computeFullProfile(state.graph, agent.id));
+  for (let i = 0; i < TICK_COUNT; i++) {
+    state = runTick(state, [], runtime);
+    if (!completionEventSeen && state.tickEvents.some(e => resolutionTypes.has(e.type))) {
+      completionEventSeen = true;
     }
+  }
 
-    // Run TICK_COUNT ticks — enough for agents to travel and complete encounters
-    for (let i = 0; i < TICK_COUNT; i++) {
-      state = runTick(state, [], runtime);
+  // Find agents who completed at least one encounter
+  const completedActors = new Set<string>();
+  for (const ep of state.encounterProgress) {
+    if (ep.status === 'completed') {
+      completedActors.add(ep.actorId);
     }
-
-    // Find agents who completed at least one encounter via encounterProgress
-    const completedActors = new Set<string>();
-    for (const ep of state.encounterProgress) {
-      if (ep.status === 'completed') {
-        completedActors.add(ep.actorId);
-      }
+  }
+  for (const ua of (state.unifiedActions ?? [])) {
+    if (ua.source === 'agent' && ua.resolved) {
+      completedActors.add(ua.actorId);
     }
+  }
 
-    // Also check unifiedActions for completed encounters (migration path)
-    for (const ua of (state.unifiedActions ?? [])) {
-      if (ua.source === 'agent' && ua.resolved) {
-        completedActors.add(ua.actorId);
-      }
-    }
-
+  it('agents who complete encounters show capability growth', () => {
     // At least some agents should have completed encounters
     expect(completedActors.size).toBeGreaterThan(
       0,
@@ -99,22 +100,7 @@ describe('resolution → growth contract', () => {
     expect(anyGrowth).toBe(true);
   });
 
-  it('encounter completion emits a resolution event', { timeout: 30_000 }, () => {
-    const runtime = createSimulationRuntime();
-    let completionSeen = false;
-
-    // Legacy encounters emit 'encounter_completed'; unified actions emit 'agent_action_resolved'.
-    // Accept either — the contract is that resolution produces an observable event.
-    const resolutionTypes = new Set(['encounter_completed', 'agent_action_resolved']);
-
-    for (let i = 0; i < TICK_COUNT; i++) {
-      state = runTick(state, [], runtime);
-      if (state.tickEvents.some(e => resolutionTypes.has(e.type))) {
-        completionSeen = true;
-        break;
-      }
-    }
-
-    expect(completionSeen).toBe(true);
+  it('encounter completion emits a resolution event', () => {
+    expect(completionEventSeen).toBe(true);
   });
 });
