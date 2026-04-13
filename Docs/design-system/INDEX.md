@@ -12,6 +12,8 @@ This folder is the single source of truth for all UI decisions. It is structured
 |------|------|
 | Building any new component | `layout.md` + `tokens.md` + `interactions.md` |
 | Positioning/sizing panels or sidebars | `layout.md` |
+| **Choosing which component to use** | `component-selection.md` |
+| **Placing a new UI element (zone, z-index)** | `layout-zones.md` |
 | Choosing colors, borders, shadows | `tokens.md` |
 | Choosing font sizes or font families | `typography.md` |
 | Adding animations or transitions | `motion.md` |
@@ -37,12 +39,15 @@ This folder is the single source of truth for all UI decisions. It is structured
 
 | File | Scope |
 |------|-------|
+| `component-selection.md` | **Which component to use for what** — decision tree, composition patterns, anti-patterns |
+| `layout-zones.md` | **Where new UI lives** — viewport zones, z-index stacking, insertion points, responsive scaling |
 | `layout.md` | Breakpoints, layout zones, top bar, sidebar, panel rules |
 | `tokens.md` | All CSS custom properties with semantic meaning and usage rules |
 | `typography.md` | Type scale, font families, text hierarchy, usage per context |
 | `motion.md` | Animation principles, keyframe inventory, timing rules |
 | `components.md` | Component inventory, sizing per breakpoint, scaling notes |
 | `interactions.md` | Hover, focus, active, disabled states; cursor rules; keyboard patterns |
+| `primitives.md` | Shared primitive component specs (Button, Card, Modal, etc.) |
 
 ---
 
