@@ -2150,6 +2150,52 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       ],
     } as PossessionNodeProperties,
   },
+
+  // ─── Content Primitive Proof Pack (TB-104 Phase 1B) ─────────────
+
+  {
+    id: 'reward_talisman_pilgrims_wayfinding_stone',
+    type: 'artifact',
+    name: "Pilgrim's Wayfinding Stone",
+    properties: {
+      subcategory: 'talisman',
+      tier: 1,
+      tags: ['#quintessence', '#travel', '#mystical'],
+      mechanicalSummary: '+3 quintessence on movement arrival (6-tick cooldown)',
+      lossCondition: 'durable',
+      flavorText: 'The stone hums faintly when you arrive somewhere new, as though approving of the journey.',
+      effects: [
+        {
+          type: 'action_trigger',
+          on: 'movement_complete',
+          payload: { kind: 'resource_delta', resource: 'quintessence', amount: 3 },
+          cooldownTicks: 6,
+        },
+      ],
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_charm_battle_spoils_talisman',
+    type: 'artifact',
+    name: 'Battle Spoils Talisman',
+    properties: {
+      subcategory: 'charm',
+      tier: 1,
+      tags: ['#essence', '#combat', '#consumable'],
+      mechanicalSummary: '+5 essence on encounter success (10 uses total)',
+      lossCondition: 'consumable',
+      flavorText: 'A leather pouch threaded with bone beads \u2014 each bead cracks and darkens after a victory, feeding you its stored warmth.',
+      effects: [
+        {
+          type: 'action_trigger',
+          on: 'encounter_success',
+          payload: { kind: 'resource_delta', resource: 'essence', amount: 5 },
+          maxFires: 10,
+          cooldownTicks: 1,
+        },
+      ],
+    } as PossessionNodeProperties,
+  },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════
