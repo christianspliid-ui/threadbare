@@ -7,6 +7,7 @@
 
 Detailed per-phase implementation status for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
+- ✅ TB-104 Phase 1B — `resource_delta` + `action_trigger`: Two content primitives added to the generic effect system. `resource_delta` for one-shot resource mutation at resolution/reward time (per-resource caps, clamping). `action_trigger` fires payloads on agent actions (encounter success/failure, movement_complete, action_complete) with cooldown and fire-count limits. Wired into rewardPool, orchestrator encounter aftermath, phaseMovement, unifiedActionResolution. 2 proof-pack catalog items, 16 unit tests. `choice_set` separated to TB-128. Spec: `Docs/plans/2026-04-13-tb104-phase1b-resource-delta-action-trigger.md`. (2026-04-13)
 - ✅ TB-121 CI/CD Pipeline: GitHub Actions CI (test + typecheck + build) on every push/PR to main. Vercel build gate (`npm test && vite build`). CI badge in CLAUDE.md. (2026-04-13)
 - ✅ TB-120 Test Suite Repair Sprint: Fixed 31 failing test files (104 failures → 0). 599 files / 9015 tests green. Root causes: wrong sphereAlignment format, missing TargetContext properties, timeout drift, stale assertions, obsolete V1 HexTile test. (2026-04-13)
 - ✅ Encounter Actor Test Suite: 33 new tests (smoke/regression/tuning/contract/unit) for encounter/actor pipeline. Shared `runSimulation` harness, `npm run test:regression` script, calibrated statistical bounds. Strategy: `Docs/plans/2026-04-12-encounter-actor-test-strategy.md`. (2026-04-13)

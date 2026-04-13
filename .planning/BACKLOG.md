@@ -177,10 +177,13 @@ Expand the generic effect system into a reusable procedural content grammar for 
 **Creates:** Reusable content primitives and shells that future authoring can recombine instead of relying on one-off item/talent/condition logic.  
 **Depends on:** Generic Effect System (✅), Attachment System (✅), Encounter Reward Wiring (✅)
 
-**Implementation status (2026-04-03):** First foundation slice shipped — `test_shaper`, `prevent_loss`, `content_grant`, immediate `service` reward resolution, and proof-pack content/examples. Remaining work: `resource_delta`, `action_trigger`, `choice_set`, stateful shells, governance caps, and broader authoring libraries.
+**Implementation status (2026-04-03):** First foundation slice shipped — `test_shaper`, `prevent_loss`, `content_grant`, immediate `service` reward resolution, and proof-pack content/examples.
 
-**Phase 1B (2026-04-13):** `resource_delta` + `action_trigger` in progress. `choice_set` separated to TB-128.  
-**Phase 1B plan doc:** `Docs/plans/2026-04-13-tb104-phase1b-resource-delta-action-trigger.md`
+**Phase 1B (2026-04-13):** ✅ `resource_delta` + `action_trigger` shipped. `choice_set` separated to TB-128.  
+**Phase 1B spec:** `Docs/plans/2026-04-13-tb104-phase1b-resource-delta-action-trigger.md`  
+**Phase 1B plan:** `Docs/plans/2026-04-13-tb104-phase1b-implementation-plan.md`
+
+**Remaining:** `choice_set` (TB-128), stateful shells (Phase 2), governance caps, broader authoring libraries.
 
 ---
 
