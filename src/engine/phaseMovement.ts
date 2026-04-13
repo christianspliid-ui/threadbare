@@ -19,6 +19,9 @@ import type { TraceEntry, RoadHexTransitionTrace } from '../types/trace';
 import { getAvatarAscendant, getAgentLocationId } from './graphQueries';
 import { appendEvent } from './encounterTimeline';
 import type { ExplorationRecord } from './encounterScoring';
+import { checkAndFireActionTriggers, type ActionTriggerContext } from './effects/actionTrigger';
+import { collectAttachmentEffects } from './effects/effectWalker';
+import type { EffectRuntimeState } from '../types/effects';
 
 // ─── ID Generator (local) ─────────────────────────────────────────
 
@@ -165,6 +168,43 @@ export function phaseMovement(state: GameState): Partial<GameState> {
             state.graph.updateNode(actorId, {
               properties: { ...currentActorNode!.properties, explorationRecord: updatedExploration },
             });
+          }
+
+          // ── Action trigger: movement_complete (TB-104 Phase 1B) ──
+          const triggerActorNode = state.graph.getNode(actorId);
+          if (triggerActorNode) {
+            const tProps = triggerActorNode.properties as Record<string, unknown>;
+            const triggerCtx: ActionTriggerContext = {
+              agentId: actorId,
+              tick: state.tick,
+              agentResources: {
+                essence: (tProps.essence as number) ?? 0,
+                quintessence: (tProps.quintessence as number) ?? 0,
+                quintessenceMax: (tProps.quintessenceMax as number) ?? Infinity,
+                doom: (tProps.doom as number) ?? 0,
+                doomThreshold: (tProps.doomThreshold as number) ?? 100,
+              },
+            };
+            const effectStates = state.effectStates ?? new Map<string, EffectRuntimeState>();
+            const attachedEffects = collectAttachmentEffects(state.graph, actorId, effectStates);
+            const triggerResult = checkAndFireActionTriggers(
+              attachedEffects,
+              'movement_complete',
+              triggerCtx,
+              effectStates,
+            );
+            if (triggerResult.firedCount > 0) {
+              for (const delta of triggerResult.resourceDeltas) {
+                (tProps as Record<string, number>)[delta.resource] = delta.after;
+              }
+              if (triggerResult.resourceDeltas.length > 0) {
+                state.graph.updateNode(actorId, { properties: tProps });
+              }
+              if (!state.effectStates) state.effectStates = new Map();
+              for (const [k, v] of triggerResult.updatedStates) {
+                state.effectStates.set(k, v);
+              }
+            }
           }
         }
       }
