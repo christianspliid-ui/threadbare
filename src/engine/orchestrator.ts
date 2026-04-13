@@ -58,6 +58,8 @@ import type { DivineInfluenceEntry } from '../types/dream';
 import { getCurrentStrength } from './decayCurve';
 import { checkDissolutions } from './sublocation';
 import { phaseMovement, resetMovementEventCounter } from './phaseMovement';
+import { checkAndFireActionTriggers, type ActionTriggerContext } from './effects/actionTrigger';
+import { collectAttachmentEffects } from './effects/effectWalker';
 import { phaseColocationDetection, resetColocationEventCounter } from './phaseColocationDetection';
 import { phaseInteractionDepth } from './phaseInteractionDepth';
 import { emitEncounterRevelations, emitDilemmaRevelations, emitColocationRevelations, resetRevEventCounter } from './revelationEmitter';
@@ -655,6 +657,46 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
           finalStatus: progress.status,
           threatBand: (encounter?.threatRating ?? 'unknown') as import('../types/balanceEval').BalanceThreatBand,
         });
+      }
+    }
+
+    // ── Action trigger check on encounter completion (TB-104 Phase 1B) ──
+    if (progress.status === 'completed' || progress.status === 'abandoned') {
+      const triggerEvent = result.success ? 'encounter_success' : 'encounter_failure';
+      const agentNode = state.graph.getNode(progress.actorId);
+      if (agentNode) {
+        const agentProps = agentNode.properties as Record<string, unknown>;
+        const triggerCtx: ActionTriggerContext = {
+          agentId: progress.actorId,
+          tick: state.tick,
+          agentResources: {
+            essence: (agentProps.essence as number) ?? 0,
+            quintessence: (agentProps.quintessence as number) ?? 0,
+            quintessenceMax: (agentProps.quintessenceMax as number) ?? Infinity,
+            doom: (agentProps.doom as number) ?? 0,
+            doomThreshold: (agentProps.doomThreshold as number) ?? 100,
+          },
+        };
+        const attachedEffects = collectAttachmentEffects(
+          state.graph,
+          progress.actorId,
+          runningEffectStates,
+        );
+        const triggerResult = checkAndFireActionTriggers(
+          attachedEffects,
+          triggerEvent as import('../types/effects').ActionTriggerEvent,
+          triggerCtx,
+          runningEffectStates,
+        );
+        if (triggerResult.firedCount > 0) {
+          for (const delta of triggerResult.resourceDeltas) {
+            (agentProps as Record<string, number>)[delta.resource] = delta.after;
+          }
+          if (triggerResult.resourceDeltas.length > 0) {
+            state.graph.updateNode(progress.actorId, { properties: agentProps });
+          }
+          runningEffectStates = triggerResult.updatedStates;
+        }
       }
     }
 
