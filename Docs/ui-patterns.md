@@ -631,9 +631,283 @@ The hex detail view uses a narrative chronicle design with four layers instead o
 
 ---
 
+---
+
+## 19. Tab Navigation
+
+Tabs are rendered as `<button>` elements in a flex row. Active state indicated by a gold bottom border. No keyboard arrow navigation — Tab/Shift-Tab only.
+
+### Where it appears
+
+| Component | Tabs | File |
+|-----------|------|------|
+| `DebugPanel` | Traces / CLI / Health | `DebugPanel.tsx` |
+| `AgentProfileModal` | 6 profile tabs | `AgentProfileModal.tsx` + `TabBar.tsx` |
+
+### Implementation pattern
+
+```tsx
+// TabBar.tsx — canonical tab bar
+{TABS.map((tab) => (
+  <button
+    key={tab.id}
+    onClick={() => onTabChange(tab.id)}
+    role="tab"
+    aria-selected={activeTab === tab.id}
+    style={activeTab === tab.id ? TAB_BUTTON_ACTIVE : TAB_BUTTON_INACTIVE}
+  >
+    {tab.label}
+  </button>
+))}
+
+// TAB_BUTTON_ACTIVE (module-level constant)
+const TAB_BUTTON_ACTIVE: React.CSSProperties = {
+  borderBottom: '2px solid var(--accent-gold)',
+  color: 'var(--accent-gold)',
+  opacity: 1,
+  transition: 'all 200ms ease-out',
+};
+const TAB_BUTTON_INACTIVE: React.CSSProperties = {
+  borderBottom: '2px solid transparent',
+  color: 'var(--text-secondary)',
+  opacity: 0.6,
+  transition: 'all 200ms ease-out',
+};
+```
+
+### Rules
+
+- State: `useState<TabId>` where `TabId` is a string union type, not a number
+- Active border: `2px solid var(--accent-gold)` bottom only — never a filled background
+- Inactive: opacity 0.6, color `var(--text-secondary)` — not disabled, still interactive
+- Transition: `all 200ms ease-out` applied to both states
+- Accessibility: `role="tab"` + `aria-selected` on each button
+- No keyboard arrow navigation between tabs — not implemented yet
+- Pre-compute style objects as module-level constants (not inline object literals in render)
+
+---
+
+## 20. Toast / Alert Notifications
+
+Two notification surfaces with different lifecycles: `AlertBar` (persistent, dismissable) and `EventPopup` (modal, queue-based).
+
+### Where it appears
+
+- **AlertBar** — inline in the top bar, one icon button per alert. Right-click to dismiss.
+- **EventPopup** — centered modal popup, driven by an event queue. One at a time.
+
+### AlertBar pattern
+
+```tsx
+// Each alert is a sphere-colored icon button in the top bar flex row
+// Background: sphere color at 10% opacity; border: sphere color at 27% opacity
+// Dismiss: right-click → 150ms fade → remove from state
+<button
+  onContextMenu={(e) => { e.preventDefault(); handleDismiss(alert.id); }}
+  style={{
+    backgroundColor: `${sphereColor}1a`,  // 10% opacity
+    border: `1px solid ${sphereColor}44`, // 27% opacity
+  }}
+/>
+```
+
+### EventPopup pattern
+
+```tsx
+// Modal wrapper with anim-fade animation (200ms)
+// Shows queue badge "+N more" when multiple events queued
+<Modal open={popup !== null} onClose={handleDismiss} animation="anim-fade">
+  <Modal.Header title={popup.title} />
+  <Modal.Body>{popup.prose}</Modal.Body>
+  <Modal.Footer>
+    <Button onClick={handleDismiss}>Acknowledge</Button>
+  </Modal.Footer>
+</Modal>
+{queueLength > 1 && <span>+{queueLength - 1}</span>}
+```
+
+### Rules
+
+- **AlertBar:** right-click to dismiss (not left-click — left-click selects/focuses); 150ms CSS opacity transition before removal; no auto-dismiss
+- **EventPopup:** queue-driven; show one at a time; always provides a dismiss action; interactive events add choice buttons
+- **Sphere color** drives accent — use `getSphereColor(sphere)`, never hardcode
+- **Do not stack** multiple EventPopups — hold in queue and show sequentially
+
+---
+
+## 21. Inline Loading States
+
+Two patterns: **Button loading** (breathe animation) and **lazy view loading** (themed fallback div).
+
+### Button loading
+
+The `Button` primitive accepts `loading?: boolean`. When true: `animate-breathe` opacity pulse + `disabled` behavior.
+
+```tsx
+<Button variant="primary" loading>Loading...</Button>
+```
+
+- Animation: `animate-breathe` keyframe (opacity 0.4→0.8→0.4, 3s infinite)
+- No spinner element — the label text itself pulses
+- Automatically applies `pointer-events: none` (disabled)
+
+### Lazy view loading
+
+Dev views (`?view=codex`, `?view=styleguide`, etc.) use `React.lazy` + `<Suspense>` with a themed inline fallback:
+
+```tsx
+const MyView = lazy(() => import('./components/MyView'));
+
+<Suspense fallback={
+  <div
+    className="h-screen flex items-center justify-center"
+    style={{ backgroundColor: 'var(--bg-abyss)', color: 'var(--text-muted)' }}
+  >
+    Loading...
+  </div>
+}>
+  <MyView />
+</Suspense>
+```
+
+### Rules
+
+- No spinners — use `animate-breathe` (pulsing opacity) on the element itself
+- Lazy fallback must use `h-screen` + `var(--bg-abyss)` — no white flash
+- Full-page loading states use `var(--text-muted)` text — not `--text-primary`
+- Don't show loading states for operations under 200ms (they flash distractingly)
+
+---
+
+## 22. Dropdown Menus
+
+Portal-based dropdown using the `Dropdown` shared primitive. Compound pattern: `Dropdown` root + `Dropdown.Item` children.
+
+### Where it appears
+
+Any contextual action menu. Wired to a `Button` or `IconButton` trigger.
+
+### Implementation pattern
+
+```tsx
+const [open, setOpen] = useState(false);
+
+<Dropdown
+  open={open}
+  onOpenChange={setOpen}
+  align="right"  // or "left"
+  trigger={
+    <Button variant="secondary" size="sm" onClick={() => setOpen(!open)}>
+      Actions ▾
+    </Button>
+  }
+>
+  <Dropdown.Item onClick={() => { setOpen(false); doThing(); }}>
+    Do a thing
+  </Dropdown.Item>
+  <Dropdown.Item onClick={() => { setOpen(false); doOther(); }}>
+    Do another thing
+  </Dropdown.Item>
+</Dropdown>
+```
+
+### Rules
+
+- Trigger must be a `<Button>` or `<IconButton>` — not a bare `<div>`
+- Trigger's `onClick` toggles open: `() => setOpen(!open)` — the `Dropdown` handles outside-click and Escape to close
+- Always call `setOpen(false)` in each `Dropdown.Item` onClick — the item does not auto-close
+- `align="right"` (default) anchors panel to trigger's right edge; use `align="left"` for triggers near the left edge
+- Panel renders via `createPortal` at z:9999 — never worry about overflow clipping
+- `Dropdown.Item` hover color applied via `onMouseEnter`/`onMouseLeave` style mutation (consistent with pattern 5)
+
+---
+
+## 23. Context-Sensitive Action Filtering (ActionDrawer)
+
+The `ActionDrawer` shows player actions filtered by target context and NarrativeLayer. New actions must register in the template pool — the drawer filters automatically.
+
+### How it works
+
+```
+Template pool (all action templates)
+  → filterActionsByContext(selectedTarget, gameState)
+    → filtered by: target type (actor/location/self), prerequisites, essence cost, reach
+  → grouped by NarrativeLayer (God | Hero | World | All)
+  → displayed as filter tabs + card hand
+```
+
+### Adding a new filter category
+
+1. Add a value to the `NarrativeLayer` union in `src/types/`
+2. Add a tab entry to the `ACTION_DRAWER_TABS` config in `ActionDrawer.tsx`
+3. Set `narrativeLayer` on your action template(s) in the template data
+
+### Rules
+
+- Don't add a new tab for a single action — tabs are for logical categories with 3+ members
+- Tabs are labeled for player-facing narrative framing, not engine internals (e.g., "God Powers", not "AscendantActions")
+- The "All" tab always shows unfiltered results — it's the default view
+- Context filtering (which actions appear) is driven by `filterActionsByContext` in the engine, not by UI state
+- Lock states (greyed-out with reason text) come from the action template's `prerequisite` evaluation — don't add UI-layer locks
+
+---
+
+## 24. Accordion / Collapsible Sections
+
+Instant collapse (no animation) with a chevron indicator. State managed as a `Record<SectionId, boolean>`.
+
+### Where it appears
+
+- `ThreadsPanel` — collapsible sections per thread category (Agent, Location, Faction, etc.)
+- `DebugPanel` — collapsible trace filter area
+
+### Implementation pattern
+
+```tsx
+// State: Record of section → open boolean
+const [expanded, setExpanded] = useState<Record<ThreadCategory, boolean>>({
+  agent: true,     // default first section open
+  location: false,
+  faction: false,
+});
+
+const toggle = (category: ThreadCategory) => {
+  setExpanded(prev => ({ ...prev, [category]: !prev[category] }));
+};
+
+// Header (click target)
+<div
+  onClick={() => toggle(category)}
+  style={{ cursor: 'pointer', userSelect: 'none' }}
+  className="flex items-center gap-1"
+>
+  <SectionHeading count={items.length}>{label}</SectionHeading>
+  <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>
+    {expanded[category] ? '▼' : '▶'}
+  </span>
+</div>
+
+// Content (conditional render — no AnimateMount, no CSS transition)
+{expanded[category] && (
+  <div>{/* section content */}</div>
+)}
+```
+
+### Rules
+
+- Chevron: `▼` (expanded) / `▶` (collapsed) via Unicode — no SVG icon needed
+- No animation — instant toggle. If animation is needed later, wrap content with `AnimateMount animation="anim-fade"`
+- Default state: first section open, rest closed
+- `userSelect: 'none'` on the header — prevents text selection on rapid clicks
+- `cursor: pointer` on the header — not on the content area
+- Section counts via `SectionHeading count={items.length}` — update when filtering changes the count
+
+---
+
 ## Changelog
 
 *(2026-03-09 — Created. 11 numbered interaction patterns + 3 cross-cutting sections (panel styling, accessibility, performance). Sourced from codebase audit of 15+ component/hook files.)*
 *(2026-03-10 — Added sections 12-16: AnimateMount, value feedback, empty states, ARIA live regions, GameErrorBoundary. FE Polish Sprint #1.)*
 *(2026-03-10 — Added section 17: Disabled Action Feedback (Shake-No). FE-16.)*
 *(2026-03-15 — Added section 18: Hex Chronicle Pattern. HexChronicle redesign with four narrative layers, inline components, staggered animations, and fog-of-war awareness.)*
+*(2026-04-13 — Added sections 19-24: Tab navigation, Toast/alert notifications, Inline loading states, Dropdown menus, Context-sensitive action filtering, Accordion/collapsible sections. THR-48.)*
