@@ -7,6 +7,7 @@
 
 Detailed per-phase implementation status for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
+- ✅ UI/UX Design Infrastructure (THR-45/46/47/48/49): `frontend-ui` skill, `component-selection.md`, `layout-zones.md`, `?view=styleguide` living style guide (17 primitives), `ui-patterns.md` expanded to 24 patterns. (2026-04-13)
 - ✅ TB-129 DoD Hook Enforcement: Claude Code hooks hard-gate commits (tsc + tests + untracked imports), pushes (doc updates + vite build), session stops (loose ends). Cowork role boundary blocks code writes. 5 hook scripts + settings.json config. (2026-04-13)
 - ✅ TB-104 Phase 1B — `resource_delta` + `action_trigger`: Two content primitives added to the generic effect system. `resource_delta` for one-shot resource mutation at resolution/reward time (per-resource caps, clamping). `action_trigger` fires payloads on agent actions (encounter success/failure, movement_complete, action_complete) with cooldown and fire-count limits. Wired into rewardPool, orchestrator encounter aftermath, phaseMovement, unifiedActionResolution. 2 proof-pack catalog items, 16 unit tests. `choice_set` separated to TB-128. Spec: `Docs/plans/2026-04-13-tb104-phase1b-resource-delta-action-trigger.md`. (2026-04-13)
 - ✅ TB-121 CI/CD Pipeline: GitHub Actions CI (test + typecheck + build) on every push/PR to main. Vercel build gate (`npm test && vite build`). CI badge in CLAUDE.md. (2026-04-13)

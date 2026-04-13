@@ -10,6 +10,7 @@ Design: `Docs/plans/2026-04-09-ambition-driven-strategic-actions-design.md`. Pla
 - **Agent Success Redesign:** Phase 1 ✅, Phase 2 ✅, Phase 3 ✅, Phase 4 ✅ corrected (2026-04-03)
 - **Next:** Phase 5 (encounter migration and early-game retune), or v1.2 Social Systems
 ## Recent Completions (2026-04-13)
+- **UI/UX Design Infrastructure (THR-45/46/47/48/49):** Complete 5-issue project shipped. `frontend-ui` domain skill (single-load context for all UI design work). `component-selection.md` (decision tree for 166 components). `layout-zones.md` (zone specs, z-index table, insertion points). `?view=styleguide` (living style guide — all 17 shared primitives rendered with sample data). `ui-patterns.md` expanded to 24 patterns (+6: tabs, toasts, loading, dropdowns, action filtering, accordion).
 - **TB-129 DoD Hook Enforcement:** Claude Code hooks hard-gate commits (tsc + tests), pushes (doc updates + build), and session stops (loose ends). Cowork role boundary gate blocks code writes in Cowork sessions.
 - **TB-104 Phase 1B — `resource_delta` + `action_trigger` Primitives:** Two new content primitives. `resource_delta` (resource mutation with caps). `action_trigger` (fires payloads on agent actions with cooldowns). 16 unit tests.
 - **TB-121 CI/CD Pipeline:** GitHub Actions CI (test + typecheck + build) on every push/PR. Vercel build gate. CI badge in CLAUDE.md.
