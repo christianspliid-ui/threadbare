@@ -17,6 +17,7 @@ import type {
 import type { OutcomeType } from '../types/resolution';
 import type { AttachmentEffect, ContentGrantEffect } from '../types/effects';
 import { mulberry32 } from '../lib/prng';
+import { applyResourceDelta } from './effects/resourceDelta';
 import { filterAgreementTemplates, type AgreementRewardTemplate } from '../data/agreement-reward-catalog';
 
 export interface PoolEntry {
@@ -344,6 +345,8 @@ function instantiateRewardInternal(
   const edgeId = `${instanceId}_edge`;
   const subcategory = template.properties.subcategory as string | undefined;
 
+  let rewardResult: InstantiateRewardResult | null = null;
+
   if (template.type === 'artifact' || template.type === 'artifact_legendary') {
     // Possession → possesses edge
     const reachBonus = template.properties.reachBonus as Record<string, number> | undefined;
@@ -358,10 +361,8 @@ function instantiateRewardInternal(
         tags: (template.properties.tags as string[]) ?? [],
       },
     });
-    return { instanceId, edgeId, category: 'possession', displayName: template.name };
-  }
-
-  if (template.type === 'trait' && subcategory === 'bestowed') {
+    rewardResult = { instanceId, edgeId, category: 'possession', displayName: template.name };
+  } else if (template.type === 'trait' && subcategory === 'bestowed') {
     // Bestowed power → has_trait edge, permanent
     const domainContributions = template.properties.domainContributions as Record<string, number> | undefined;
     graph.addEdge({
@@ -378,10 +379,8 @@ function instantiateRewardInternal(
         modifiers: domainContributions ?? {},
       },
     });
-    return { instanceId, edgeId, category: 'bestowed', displayName: template.name };
-  }
-
-  if (template.type === 'trait') {
+    rewardResult = { instanceId, edgeId, category: 'bestowed', displayName: template.name };
+  } else if (template.type === 'trait') {
     // Condition (wound/blessing/curse/disease) → has_trait edge with expiry
     const domainContributions = template.properties.domainContributions as Record<string, number> | undefined;
     const totalTicks = (template.properties.ticksRemaining as number | undefined) ?? REWARD_CONDITION_DEFAULT_TICKS;
@@ -400,11 +399,35 @@ function instantiateRewardInternal(
         modifiers: domainContributions ?? {},
       },
     });
-    return { instanceId, edgeId, category: 'condition', displayName: template.name };
+    rewardResult = { instanceId, edgeId, category: 'condition', displayName: template.name };
   }
 
-  // Unknown node type — skip
-  return null;
+  if (!rewardResult) {
+    // Unknown node type — skip
+    return null;
+  }
+
+  // Apply any resource_delta effects immediately (TB-104 Phase 1B)
+  const rewardEffects = (template.properties.effects ?? []) as AttachmentEffect[];
+  for (const eff of rewardEffects) {
+    if (eff.type !== 'resource_delta') continue;
+    const agentNode = graph.getNode(recipientAgentId);
+    if (!agentNode) break;
+    const agentProps = agentNode.properties as Record<string, unknown>;
+    const deltaResult = applyResourceDelta(eff, {
+      essence: (agentProps.essence as number) ?? 0,
+      quintessence: (agentProps.quintessence as number) ?? 0,
+      quintessenceMax: (agentProps.quintessenceMax as number) ?? Infinity,
+      doom: (agentProps.doom as number) ?? 0,
+      doomThreshold: (agentProps.doomThreshold as number) ?? 100,
+    }, tick, 'reward');
+    if (deltaResult.applied) {
+      agentProps[eff.resource] = deltaResult.after;
+      graph.updateNode(recipientAgentId, { properties: agentProps });
+    }
+  }
+
+  return rewardResult;
 }
 
 // ─── Agreement Reward Instantiation ───────────────────────────────
