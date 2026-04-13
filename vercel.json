@@ -1,5 +1,5 @@
 {
-  "buildCommand": "vite build",
+  "buildCommand": "npm test && vite build",
   "headers": [
     {
       "source": "/(.*)",

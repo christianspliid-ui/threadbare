@@ -1,5 +1,7 @@
 This folder contains The Fantasy World Simulator — a systemic god-game/rogue-lite narrative simulation built in React + TypeScript + Vite.
 
+[![CI](https://github.com/christianspliid-ui/threadbare/actions/workflows/ci.yml/badge.svg)](https://github.com/christianspliid-ui/threadbare/actions/workflows/ci.yml)
+
 ## Cowork vs Claude Code — Read This First
 
 **If you are running in Cowork mode:** You must NOT write code or run git commands. You CAN write to `.planning/` coordination files (BACKLOG.md, HANDOVER.md, ROADMAP.md) — **snapshot before every write** (see `Docs/cowork-ways-of-working.md` → "Coordination File Versioning"). Your job is design, research, documentation (via MCP), and implementation plans. Hand coding tasks to Claude Code with a plan link.
@@ -196,6 +198,8 @@ Cross-boundary testing rules, contract test patterns, pre-commit verification ch
 1. `npm test` — all tests pass
 2. `npx tsc --noEmit` — type check clean
 3. `npx vite build` — production build succeeds (confirms Vercel will deploy)
+
+> **CI enforces these automatically.** GitHub Actions runs all three on every push. Vercel runs tests before deploying. You don't need to remember — but you should still run locally to catch failures before pushing.
 
 ## Viewport Contract (1920×1080)
 
