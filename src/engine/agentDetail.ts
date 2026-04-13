@@ -475,7 +475,7 @@ function getAgentIntents(graph: WorldGraph, agentId: string): ActiveIntent[] {
   const ambitionEntries = getAgentAmbitions(graph, agentId)
     .filter(a => a.status === 'active');
 
-  // TODO: gate by familiarity tier when PROTOTYPE_INTENT_VISIBLE = false
+  // TODO(THR-22): gate by familiarity tier when PROTOTYPE_INTENT_VISIBLE = false
   const intents: ActiveIntent[] = [];
 
   for (const entry of ambitionEntries) {
@@ -554,7 +554,7 @@ export function getAgentInfoCard(
   };
 
   // Intent data — always visible in prototype
-  // TODO: gate by familiarity tier when PROTOTYPE_INTENT_VISIBLE = false
+  // TODO(THR-22): gate by familiarity tier when PROTOTYPE_INTENT_VISIBLE = false
   if (detail.intents && detail.intents.length > 0) {
     card.intents = detail.intents;
     const primary = detail.intents.find(i => i.priority === 'primary');

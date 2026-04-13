@@ -178,11 +178,11 @@ export function resolveAuraModifiers(
       if (targetPos.factionId !== aura.sourceAgentId) {
         // Need to check if same faction — simplified: check if source agent's faction matches
         // For now: same faction = ally
-        // TODO: resolve source agent's faction from aura entry
+        // TODO(THR-41): resolve source agent's faction from aura entry
       }
     }
     if (aura.targetFilter === 'enemies') {
-      // TODO: faction hostility check
+      // TODO(THR-41): faction hostility check
     }
 
     // Apply (filter logic is simplified for now — all auras apply based on distance only)

@@ -194,10 +194,10 @@ export function phaseAttention(
       courtPosition,
       threatRating,
       reachPrimary,
-      isChainStage:       false,         // TODO: wire encounter chain metadata
-      isFinalChainStage:  false,         // TODO: wire encounter chain metadata
-      factionThreadCount: 0,             // TODO: wire faction thread relevance
-      matchesAmbition:    false,         // TODO: wire ambition alignment
+      isChainStage:       false,         // TODO(THR-16): wire encounter chain metadata
+      isFinalChainStage:  false,         // TODO(THR-16): wire encounter chain metadata
+      factionThreadCount: 0,             // TODO(THR-16): wire faction thread relevance
+      matchesAmbition:    false,         // TODO(THR-16): wire ambition alignment
     });
   }
 

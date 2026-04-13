@@ -128,7 +128,7 @@ export function useNotifications({
   }, [setRunning]);
 
   const handlePopupChoice = useCallback((_effect: string) => {
-    // TODO: dispatch effect to engine when choice resolution is implemented
+    // TODO(THR-14): dispatch effect to engine when choice resolution is implemented
     handleDismissPopup();
   }, [handleDismissPopup]);
 

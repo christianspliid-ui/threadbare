@@ -208,7 +208,7 @@ describe('Layer 1 seed divergence', { timeout: 120_000 }, () => {
 
 // ─── Determinism (skipped — known non-determinism) ──────────────────
 
-// TODO: Known non-determinism — chronicle entry count diverges by 1 between runs.
+// TODO(THR-44): Known non-determinism — chronicle entry count diverges by 1 between runs.
 // Likely a module-level counter or Date.now() leak. Filed for investigation.
 describe.skip('Layer 1 determinism', () => {
   it('same seed produces deterministic results', () => {

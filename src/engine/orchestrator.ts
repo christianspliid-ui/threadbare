@@ -1926,7 +1926,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseEventCounts['divine_influence_decay'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
-  // PHASE-D-DEFERRED: Wire accumulateImportance(node, getImportanceDelta('divine_proximity'))
+  // PHASE-D-DEFERRED(THR-25): Wire accumulateImportance(node, getImportanceDelta('divine_proximity'))
   // for entities near active ascendant hex. Needs a per-tick spatial scan: find all actor/location
   // nodes within N hexes of the ascendant's current hex position, then call accumulateImportance
   // on each. Insert here, after divine influence decay and before trade route decay, so the
