@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { initializeGameState } from '../gameInit';
 import { runTick, resetDecisionCache, resetEventCounter } from '../orchestrator';
 import { ENCOUNTER_TEMPLATES } from '../../data/encounter-content';
@@ -6,52 +6,48 @@ import { ROUTINE_TEMPLATES, LIFECYCLE_TEMPLATES } from '../../data/narrative-con
 import { DOOM_VOCABULARY } from '../../data/doom-content';
 import type { AscendantArchetype, CosmologyProfile } from '../../types';
 
-describe('Layer 1 content integration', () => {
-  // Reset module-level caches between tests to avoid cross-contamination
-  beforeEach(() => {
-    resetDecisionCache();
-    resetEventCounter();
-  });
+const testArchetype: AscendantArchetype = {
+  id: 'arch.test',
+  title: 'The Wanderer',
+  sphereAlignment: {
+    primary: 'chaos',
+    secondary: 'light',
+  },
+  personalitySeed: {
+    loyalty_ambition: 0.3,
+    courage_prudence: -0.1,
+    mercy_ruthlessness: 0.2,
+    honesty_cunning: -0.4,
+    sacrifice_survival: 0.1,
+    loyalty_ambition: 0.5,
+    tradition_novelty: -0.2,
+    restraint_indulgence: 0.0,
+    pragmatism_idealism: 0.3,
+    openness_caution: -0.1,
+  },
+};
 
-  const testArchetype: AscendantArchetype = {
-    id: 'arch.test',
-    title: 'The Wanderer',
-    sphereAlignment: {
-      primary: 'chaos',
-      secondary: 'light',
-    },
-    personalitySeed: {
-      loyalty_ambition: 0.3,
-      courage_prudence: -0.1,
-      mercy_ruthlessness: 0.2,
-      honesty_cunning: -0.4,
-      sacrifice_survival: 0.1,
-      loyalty_ambition: 0.5,
-      tradition_novelty: -0.2,
-      restraint_indulgence: 0.0,
-      pragmatism_idealism: 0.3,
-      openness_caution: -0.1,
-    },
-  };
+const testCosmology: CosmologyProfile = {
+  id: 'cosmo.test',
+  foundationSpheres: {
+    primary: 'chaos',
+    secondary: 'light',
+  },
+  creationSpheres: {
+    force: 0.1,
+    matter: 0.2,
+    energy: 0.3,
+    life: 0.1,
+    mind: 0.1,
+    spirit: 0.05,
+    time: 0.05,
+    entropy: 0.05,
+  },
+};
 
-  const testCosmology: CosmologyProfile = {
-    id: 'cosmo.test',
-    foundationSpheres: {
-      primary: 'chaos',
-      secondary: 'light',
-    },
-    creationSpheres: {
-      force: 0.1,
-      matter: 0.2,
-      energy: 0.3,
-      life: 0.1,
-      mind: 0.1,
-      spirit: 0.05,
-      time: 0.05,
-      entropy: 0.05,
-    },
-  };
+// ─── Pure data checks (no simulation) ───────────────────────────────
 
+describe('Layer 1 content data', () => {
   it('encounter templates are accessible and non-empty', () => {
     expect(ENCOUNTER_TEMPLATES).toBeDefined();
     expect(Array.isArray(ENCOUNTER_TEMPLATES)).toBe(true);
@@ -87,107 +83,91 @@ describe('Layer 1 content integration', () => {
     expect(typeof DOOM_VOCABULARY).toBe('object');
     expect(Object.keys(DOOM_VOCABULARY).length).toBeGreaterThan(0);
   });
+});
 
-  it('100-tick simulation runs without errors', () => {
-    const { state: initialState } = initializeGameState(
-      testArchetype,
-      'Test Avatar',
-      testCosmology,
-      42,
-    );
+// ─── Shared 100-tick simulation (seed 42) ───────────────────────────
+// All single-seed assertions share one run to avoid redundant world gen + tick loops.
+// Previously each test ran its own 100-tick sim — 11 separate runs totalling ~7 minutes.
 
-    let current = initialState;
-    for (let i = 0; i < 100; i++) {
-      current = runTick(current);
-    }
+describe('Layer 1 content integration (100-tick simulation)', { timeout: 120_000 }, () => {
+  // Run once at describe scope — all it() blocks read from the collected results.
+  resetDecisionCache();
+  resetEventCounter();
 
-    expect(current.tick).toBe(100);
-    expect(current.chronicle).toBeDefined();
-    expect(current.tickEvents).toBeDefined();
-  }, 120000);
+  const { state: initialState } = initializeGameState(
+    testArchetype,
+    'Test Avatar',
+    testCosmology,
+    42,
+  );
 
-  it('simulation produces narrative variety across 100 ticks', () => {
-    const { state: initialState } = initializeGameState(
-      testArchetype,
-      'Test Avatar',
-      testCosmology,
-      42,
-    );
+  const startingChronicleCount = initialState.chronicleEntries.length;
 
-    let current = initialState;
-    const allEventTypes = new Set<string>();
+  // Collect per-tick telemetry during the single run
+  const allEventTypes = new Set<string>();
+  const lifecycleEvents = new Set<string>();
+  const encounterEvents = new Set<string>();
 
-    for (let i = 0; i < 100; i++) {
-      current = runTick(current);
-      for (const event of current.tickEvents) {
-        allEventTypes.add(event.type);
+  let state = initialState;
+  for (let i = 0; i < 100; i++) {
+    state = runTick(state);
+    for (const event of state.tickEvents) {
+      allEventTypes.add(event.type);
+      if (['death', 'birth', 'migration'].includes(event.type)) {
+        lifecycleEvents.add(event.type);
+      }
+      if (event.type.startsWith('encounter_')) {
+        encounterEvents.add(event.type);
       }
     }
+  }
 
-    // Should produce multiple event types, not just one
+  // Snapshot final state for assertions
+  const finalState = state;
+
+  it('100-tick simulation runs without errors', () => {
+    expect(finalState.tick).toBe(100);
+    expect(finalState.chronicle).toBeDefined();
+    expect(finalState.tickEvents).toBeDefined();
+  });
+
+  it('simulation produces narrative variety across 100 ticks', () => {
     expect(allEventTypes.size).toBeGreaterThan(0);
-  }, 120000);
+  });
 
   it('simulation accumulates chronicle entries over 100 ticks', () => {
-    const { state: initialState } = initializeGameState(
-      testArchetype,
-      'Test Avatar',
-      testCosmology,
-      42,
-    );
-
-    let current = initialState;
-    const startingCount = current.chronicleEntries.length;
-
-    for (let i = 0; i < 100; i++) {
-      current = runTick(current);
-    }
-
-    const endingCount = current.chronicleEntries.length;
-    expect(endingCount).toBeGreaterThanOrEqual(startingCount);
-  }, 120000);
+    expect(finalState.chronicleEntries.length).toBeGreaterThanOrEqual(startingChronicleCount);
+  });
 
   it('doom clock advances correctly over 100 ticks', () => {
-    const { state: initialState } = initializeGameState(
-      testArchetype,
-      'Test Avatar',
-      testCosmology,
-      42,
-    );
-
-    let current = initialState;
-    const startingDoom = current.doomClock.progress;
-
-    for (let i = 0; i < 100; i++) {
-      current = runTick(current);
-    }
-
-    // Doom should advance or stay same
-    expect(current.doomClock.progress).toBeGreaterThanOrEqual(0);
-    expect(current.doomClock.progress).toBeLessThanOrEqual(1);
-  }, 120000);
+    expect(finalState.doomClock.progress).toBeGreaterThanOrEqual(0);
+    expect(finalState.doomClock.progress).toBeLessThanOrEqual(1);
+  });
 
   it('mandate state updates correctly over 100 ticks', () => {
-    const { state: initialState } = initializeGameState(
-      testArchetype,
-      'Test Avatar',
-      testCosmology,
-      42,
-    );
+    expect(finalState.mandateState.progress).toBeGreaterThanOrEqual(0);
+    expect(finalState.mandateState.progress).toBeLessThanOrEqual(1);
+  });
 
-    let current = initialState;
-    const startingProgress = current.mandateState.progress;
+  it('agent lifecycle events fire during 100-tick simulation', () => {
+    // Lifecycle events should be possible (even if rare)
+    // This test just confirms the system runs without error
+    expect(lifecycleEvents.size).toBeGreaterThanOrEqual(0);
+  });
 
-    for (let i = 0; i < 100; i++) {
-      current = runTick(current);
-    }
+  it('encounter progression events can fire', () => {
+    // Encounter events should be possible
+    expect(encounterEvents.size).toBeGreaterThanOrEqual(0);
+  });
+});
 
-    // Mandate should be valid
-    expect(current.mandateState.progress).toBeGreaterThanOrEqual(0);
-    expect(current.mandateState.progress).toBeLessThanOrEqual(1);
-  }, 120000);
+// ─── Multi-seed divergence test ─────────────────────────────────────
 
+describe('Layer 1 seed divergence', { timeout: 120_000 }, () => {
   it('different seeds produce different narratives', () => {
+    resetDecisionCache();
+    resetEventCounter();
+
     const { state: state42 } = initializeGameState(
       testArchetype,
       'Test Avatar',
@@ -220,15 +200,18 @@ describe('Layer 1 content integration', () => {
     }
 
     // Different seeds should produce different cumulative event sequences
-    // (deterministic pipeline produces different worlds from different seeds)
     const events42 = allEvents42.join('|');
     const events7 = allEvents7.join('|');
     expect(events42).not.toBe(events7);
-  }, 120000);
+  });
+});
 
-  // TODO: Known non-determinism — chronicle entry count diverges by 1 between runs.
-  // Likely a module-level counter or Date.now() leak. Filed for investigation.
-  it.skip('same seed produces deterministic results', () => {
+// ─── Determinism (skipped — known non-determinism) ──────────────────
+
+// TODO: Known non-determinism — chronicle entry count diverges by 1 between runs.
+// Likely a module-level counter or Date.now() leak. Filed for investigation.
+describe.skip('Layer 1 determinism', () => {
+  it('same seed produces deterministic results', () => {
     // Run A: 100 ticks from seed 42 (fresh module cache)
     resetDecisionCache();
     const { state: state42a } = initializeGameState(
@@ -271,8 +254,6 @@ describe('Layer 1 content integration', () => {
     // Verify no wall-clock timestamps leaked into event IDs
     for (const event of allEventsA) {
       if (event.id && typeof event.id === 'string') {
-        // Date.now() produces 13-digit numbers like 1711800000000
-        // Tick-local IDs should have small numbers (tick < 10000, seq < 1000)
         const segments = event.id.split('_');
         for (const seg of segments) {
           if (/^\d{13,}$/.test(seg)) {
@@ -281,54 +262,5 @@ describe('Layer 1 content integration', () => {
         }
       }
     }
-  }, 120000);
-
-  it('agent lifecycle events fire during 100-tick simulation', () => {
-    const { state: initialState } = initializeGameState(
-      testArchetype,
-      'Test Avatar',
-      testCosmology,
-      42,
-    );
-
-    let current = initialState;
-    const lifecycleEvents = new Set<string>();
-
-    for (let i = 0; i < 100; i++) {
-      current = runTick(current);
-      for (const event of current.tickEvents) {
-        if (['death', 'birth', 'migration'].includes(event.type)) {
-          lifecycleEvents.add(event.type);
-        }
-      }
-    }
-
-    // Lifecycle events should be possible (even if rare)
-    // This test just confirms the system runs without error
-    expect(lifecycleEvents.size).toBeGreaterThanOrEqual(0);
-  }, 120000);
-
-  it('encounter progression events can fire', () => {
-    const { state: initialState } = initializeGameState(
-      testArchetype,
-      'Test Avatar',
-      testCosmology,
-      42,
-    );
-
-    let current = initialState;
-    const encounterEvents = new Set<string>();
-
-    for (let i = 0; i < 100; i++) {
-      current = runTick(current);
-      for (const event of current.tickEvents) {
-        if (event.type.startsWith('encounter_')) {
-          encounterEvents.add(event.type);
-        }
-      }
-    }
-
-    // Encounter events should be possible
-    expect(encounterEvents.size).toBeGreaterThanOrEqual(0);
   }, 120000);
 });
