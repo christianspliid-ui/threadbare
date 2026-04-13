@@ -416,6 +416,42 @@ export interface ContentGrantEffect {
   readonly narrativeTemplate?: string;
 }
 
+// ─── Content Primitive: resource_delta (TB-104 Phase 1B) ─────────
+
+/** Type 19h: One-shot resource mutation at resolution/reward time */
+export interface ResourceDeltaEffect {
+  readonly type: 'resource_delta';
+  readonly resource: 'essence' | 'quintessence' | 'doom';
+  readonly amount: number;
+  readonly condition?: EffectPredicate;
+  readonly scope?: EffectScope;
+}
+
+// ─── Content Primitive: action_trigger (TB-104 Phase 1B) ──────────
+
+export type ActionTriggerEvent =
+  | 'encounter_success'
+  | 'encounter_failure'
+  | 'movement_complete'
+  | 'rest'
+  | 'spell_cast'
+  | 'action_complete';
+
+export type ActionTriggerPayload =
+  | { readonly kind: 'resource_delta'; readonly resource: 'essence' | 'quintessence' | 'doom'; readonly amount: number }
+  | { readonly kind: 'content_grant'; readonly templateIds: readonly string[]; readonly selection?: 'first' | 'random' }
+  | { readonly kind: 'trace_only'; readonly message: string };
+
+/** Type 19i: Fire a payload when the owner performs a specific action */
+export interface ActionTriggerEffect {
+  readonly type: 'action_trigger';
+  readonly on: ActionTriggerEvent;
+  readonly payload: ActionTriggerPayload;
+  readonly condition?: EffectPredicate;
+  readonly maxFires?: number;
+  readonly cooldownTicks?: number;
+}
+
 /** Type 20a: Alter hex terrain properties */
 export interface AlterTerrainEffect {
   readonly type: 'alter_terrain';
@@ -687,6 +723,8 @@ export type AttachmentEffect =
   | TestShaperEffect
   | PreventLossEffect
   | ContentGrantEffect
+  | ResourceDeltaEffect
+  | ActionTriggerEffect
   | AlterTerrainEffect
   | CreateBarrierEffect
   | TransferEffect
@@ -818,6 +856,10 @@ export interface EffectRuntimeState {
   suppressed?: boolean;
   /** Suppression end tick */
   suppressedUntilTick?: number;
+  /** Action trigger: total fires consumed so far */
+  actionTriggerFireCount?: number;
+  /** Action trigger: tick when cooldown expires (trigger cannot fire before this tick) */
+  actionTriggerCooldownUntil?: number;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -893,6 +935,28 @@ export interface EffectModifierResult {
   readonly testShapers: ResolvedTestShaper[];
   /** Active rescue/protection effects keyed to loss channels */
   readonly preventLoss: ActivePreventLoss[];
+}
+
+// ─── Content Primitive Trace Details (TB-104 Phase 1B) ────────────
+
+export interface ResourceDeltaAppliedTraceDetails {
+  readonly actorId: string;
+  readonly resource: 'essence' | 'quintessence' | 'doom';
+  readonly amount: number;
+  readonly before: number;
+  readonly after: number;
+  readonly source: 'encounter' | 'reward' | 'action_trigger';
+  readonly sourceAttachmentId?: string;
+}
+
+export interface ActionTriggerFiredTraceDetails {
+  readonly actorId: string;
+  readonly attachmentId: string;
+  readonly attachmentName: string;
+  readonly event: ActionTriggerEvent;
+  readonly payloadKind: ActionTriggerPayload['kind'];
+  readonly firesRemaining: number | undefined;
+  readonly cooldownUntilTick: number;
 }
 
 // ═══════════════════════════════════════════════════════════════════

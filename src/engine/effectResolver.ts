@@ -155,6 +155,8 @@ export function getEffectModifierValue(
     case 'test_shaper':
     case 'prevent_loss':
     case 'content_grant':
+    case 'resource_delta':
+    case 'action_trigger':
     case 'alter_terrain':
     case 'create_barrier':
     case 'transfer':

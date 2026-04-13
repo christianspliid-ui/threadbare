@@ -110,3 +110,20 @@ export const HEALTH_LOW_THRESHOLD = 0.70;
  * @range 0.0–1.0
  */
 export const HEALTH_HIGH_THRESHOLD = 0.30;
+
+// ─── Content Primitives (TB-104 Phase 1B) ────────────────────────
+
+/** Max absolute essence change from a single resource_delta effect. */
+export const RESOURCE_DELTA_ESSENCE_CAP = 50;
+
+/** Max absolute quintessence change from a single resource_delta effect. */
+export const RESOURCE_DELTA_QUINTESSENCE_CAP = 30;
+
+/** Max absolute doom change from a single resource_delta effect. */
+export const RESOURCE_DELTA_DOOM_CAP = 20;
+
+/** Max action_trigger effects per attachment template. */
+export const ACTION_TRIGGER_MAX_PER_ATTACHMENT = 2;
+
+/** Default ticks between action_trigger fires when cooldownTicks not specified. */
+export const ACTION_TRIGGER_DEFAULT_COOLDOWN = 6;
