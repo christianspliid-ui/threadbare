@@ -1,5 +1,65 @@
 {
   "enabledPlugins": {
     "codex@openai-codex": true
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [{
+          "type": "command",
+          "command": "bash .claude/hooks/detect-cowork-session.sh",
+          "timeout": 5,
+          "once": true
+        }]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [{
+          "type": "command",
+          "command": "bash .claude/hooks/cowork-role-gate.sh",
+          "timeout": 5,
+          "statusMessage": "Checking Cowork role boundary..."
+        }]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [{
+          "type": "command",
+          "command": "bash .claude/hooks/cowork-role-gate.sh",
+          "timeout": 5,
+          "statusMessage": "Checking Cowork role boundary..."
+        }]
+      },
+      {
+        "matcher": "Bash(git commit*)",
+        "hooks": [{
+          "type": "command",
+          "command": "bash .claude/hooks/pre-commit-gate.sh",
+          "timeout": 300,
+          "statusMessage": "Running pre-commit checks (tsc + tests)..."
+        }]
+      },
+      {
+        "matcher": "Bash(git push*)",
+        "hooks": [{
+          "type": "command",
+          "command": "bash .claude/hooks/pre-push-gate.sh",
+          "timeout": 120,
+          "statusMessage": "Verifying Definition of Done (docs + build)..."
+        }]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [{
+          "type": "command",
+          "command": "bash .claude/hooks/session-stop-gate.sh",
+          "timeout": 15,
+          "statusMessage": "Checking for loose ends..."
+        }]
+      }
+    ]
   }
 }

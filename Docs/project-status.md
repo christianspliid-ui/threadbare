@@ -10,8 +10,9 @@ Design: `Docs/plans/2026-04-09-ambition-driven-strategic-actions-design.md`. Pla
 - **Agent Success Redesign:** Phase 1 ✅, Phase 2 ✅, Phase 3 ✅, Phase 4 ✅ corrected (2026-04-03)
 - **Next:** Phase 5 (encounter migration and early-game retune), or v1.2 Social Systems
 ## Recent Completions (2026-04-13)
-- **TB-104 Phase 1B — `resource_delta` + `action_trigger` Primitives:** Two new content primitives for the generic effect system. `resource_delta` (one-shot resource mutation at resolution/reward time with per-resource caps and clamping). `action_trigger` (fires payloads on agent actions — encounter success/failure, movement completion, action completion — with cooldown and fire-count limits). Wired into reward instantiation, encounter aftermath, movement arrival, and unified action resolution. 2 proof-pack items (Pilgrim's Wayfinding Stone, Battle Spoils Talisman). 16 unit tests. `choice_set` separated to TB-128. Spec: `Docs/plans/2026-04-13-tb104-phase1b-resource-delta-action-trigger.md`.
-- **TB-121 CI/CD Pipeline:** GitHub Actions CI (test + typecheck + build) on every push/PR. Vercel build gate (`npm test && vite build`). CI badge in CLAUDE.md. Branch protection pending manual setup.
+- **TB-129 DoD Hook Enforcement:** Claude Code hooks hard-gate commits (tsc + tests), pushes (doc updates + build), and session stops (loose ends). Cowork role boundary gate blocks code writes in Cowork sessions.
+- **TB-104 Phase 1B — `resource_delta` + `action_trigger` Primitives:** Two new content primitives. `resource_delta` (resource mutation with caps). `action_trigger` (fires payloads on agent actions with cooldowns). 16 unit tests.
+- **TB-121 CI/CD Pipeline:** GitHub Actions CI (test + typecheck + build) on every push/PR. Vercel build gate. CI badge in CLAUDE.md.
 - **TB-120 Test Suite Repair Sprint:** Fixed 31 failing test files (104 failures → 0). 599 files / 9015 tests green.
 - **Encounter Actor Test Suite:** Three-tier test suite (smoke, regression, tuning) plus 3 contract tests. 33 new tests across 8 files.
 

@@ -6,6 +6,14 @@
 
 ---
 
+## ✅ TB-129 · Definition of Done — Hook Enforcement (2026-04-13) — Done 2026-04-13
+
+Claude Code hooks that hard-gate commits, pushes, and session stops behind the Definition of Done checklist. 5 scripts: Cowork session detector, Cowork role boundary gate (blocks src/scripts/config writes + git mutations), pre-commit gate (tsc + tests + untracked imports), pre-push gate (doc updates + vite build), session stop gate (uncommitted/unpushed loose ends). Uses `node` for JSON parsing instead of `jq` (not available on Windows). Tested all gates manually.
+
+**Design doc:** `Docs/plans/2026-04-13-definition-of-done-hooks-design.md`
+
+---
+
 ## ✅ TB-121 · CI/CD Pipeline Setup (2026-04-11) — Done 2026-04-13
 
 GitHub Actions CI workflow (test + typecheck + build) on every push/PR. Vercel build gate (`npm test && vite build`). CI badge in CLAUDE.md. Node 22 pinned via `.nvmrc`/`.node-version`. Branch protection pending user manual setup.

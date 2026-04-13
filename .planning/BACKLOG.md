@@ -1,30 +1,20 @@
-# Backlog
+# Backlog — RETIRED
 
-> Prioritized list of future work. Migrated from Notion 2026-03-22 — Notion backlog archived.
+> **This file is no longer the source of truth.** All backlog items have been migrated to [Linear (Threadbare team)](https://linear.app/threadbare). Use Linear for all issue tracking, state management, and dependency tracking.
 >
-> **Rules:** One item per heading. Status is the emoji prefix. Completed `✅` items are archived in `BACKLOG_HISTORY.md`.
+> **Migrated:** 2026-04-13. All active items (TB-069 through TB-129) are now THR-6 through THR-38 in Linear. Original TB-XXX IDs are preserved in each Linear issue description.
 >
-> **Kanban states:** `💡` idea · `📋` todo · `🎨` design · `📐` plan · `🏗️` dev · `✅` done
-> Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
-> Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
+> **Protocol:** See `Docs/plans/2026-04-13-linear-coordination-protocol.md` for the new workflow.
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-130**.
+> **Historical record:** Completed items remain in `BACKLOG_HISTORY.md` for reference. New completed items are tracked via Linear's "Done" state.
+>
+> **Next ID (if ever needed for legacy reference):** TB-130
 
 ---
 
-## 📐▶ TB-129 · Definition of Done — Hook Enforcement (2026-04-13) — HIGH PRIORITY
+## ✅ TB-129 · Definition of Done — Hook Enforcement (2026-04-13) — DONE 2026-04-13
 
-Add Claude Code hooks that hard-gate commits, pushes, and session stops behind the Definition of Done checklist. Currently DoD compliance is convention-enforced (CLAUDE.md tells agents what to do) — hooks make it mechanism-enforced (agents are blocked if they skip steps).
-
-**Three gates:**
-1. **Pre-commit gate** (`PreToolUse` → `Bash(git commit*)`) — blocks commits unless `npx tsc --noEmit` + `npm test` pass + no untracked imports
-2. **Pre-push gate** (`PreToolUse` → `Bash(git push*)`) — blocks pushes unless changelog.md, project-status.md, project-history.md, BACKLOG.md all have new entries + `npx vite build` succeeds
-3. **Session stop gate** (`Stop` hook) — detects uncommitted changes, unpushed commits, and 🏗️ backlog items, forces agent to continue
-
-**Design doc:** `Docs/plans/2026-04-13-definition-of-done-hooks-design.md`
-**Creates:** `.claude/hooks/` directory with 3 gate scripts + shared lib, updated `.claude/settings.json`
-**Depends on:** TB-121 (CI/CD) for complementary coverage, but can ship independently
-**Needs design:** No — design complete, ready for implementation
+Implemented. Archived to `BACKLOG_HISTORY.md`.
 
 ---
 
