@@ -199,7 +199,7 @@ export function phaseSublocations(
   // Update encounter cache for dissolved sublocations
   if (encounterCache && dissolutions.length > 0) {
     for (const d of dissolutions) {
-      encounterCache.onSublocationDestroyed(d.sublocationId, d.parentLocationId);
+      encounterCache.onSublocationDestroyed(d.sublocationId, d.parentLocationId, graph);
     }
   }
 

@@ -48,6 +48,7 @@ import { getAgentLocationId, getAvatarsOf } from './graphQueries';
 import { appendEvent } from './encounterTimeline';
 import { resolveLocationToHex } from './encounterAwareness';
 import { hexDistance } from '../lib/hexMath';
+import { MAX_AWARENESS_HOPS, EDGE_HEX_AWARENESS_BONUS } from '../data/agent-behavior-constants';
 import type { SimulationRuntime } from './simulationRuntime';
 import { recordBalanceEvent } from './balanceTelemetry';
 import { prepareEncounterSupportBundle } from './encounterSupportBundle';
@@ -212,7 +213,8 @@ export function phaseAgentDecision(
   runtime?: SimulationRuntime,
 ): Partial<GameState> {
   const graph = state.graph;
-  const allEntries = encounterCache.getAllEntries();
+  // Max spatial query range: MAX_AWARENESS_HOPS + edge hex bonus + 1 (safety margin for effects)
+  const spatialQueryRange = MAX_AWARENESS_HOPS + EDGE_HEX_AWARENESS_BONUS + 1;
   const newEvents: TickEvent[] = [];
   const newEncounterProgress: EncounterProgress[] = [];
   const newUnifiedActions: UnifiedAction[] = [];
@@ -247,13 +249,20 @@ export function phaseAgentDecision(
       && !avatarNodeIds.has(n.id),
   );
 
+  // Pre-compute set of agents with active (unresolved) unified actions — O(actions) once
+  // instead of O(actors × actions) per-agent .some() scan.
+  const busyAgentIds = new Set<string>();
+  for (const a of state.unifiedActions) {
+    if (!a.resolved) busyAgentIds.add(a.actorId);
+  }
+
   for (const actor of actors) {
     const agentId = actor.id;
 
     try {
       // Skip if already active (unified action)
       if (
-        state.unifiedActions.some((a) => a.actorId === agentId && !a.resolved)
+        busyAgentIds.has(agentId)
         || newUnifiedActions.some((a) => a.actorId === agentId && !a.resolved)
       ) {
         continue;
@@ -296,11 +305,15 @@ export function phaseAgentDecision(
           const agentLocId = getAgentLocationId(graph, agentId);
 
           if (agentLocId) {
-            const allEntries = encounterCache.getAllEntries();
+            // Spatial pre-filter for reroute check
+            const movingHex = resolveLocationToHex(graph, agentLocId);
+            const rerouteEntries = movingHex
+              ? encounterCache.getEntriesNearHex(movingHex.col, movingHex.row, spatialQueryRange)
+              : encounterCache.getAllEntries();
             let bestAltScore = 0;
             let bestAltLocationId: string | null = null;
 
-            for (const entry of allEntries) {
+            for (const entry of rerouteEntries) {
               if (entry.locationId === movementState.destinationId) continue; // Skip current destination
               // Simple heuristic: questPriority as rough score proxy
               const entryScore = entry.questPriority ?? 1.0;
@@ -472,11 +485,17 @@ export function phaseAgentDecision(
         locationId,
       );
 
+      // Spatial pre-filter: only fetch cache entries near the agent's hex
+      const agentHex = resolveLocationToHex(graph, locationId);
+      const nearbyEntries = agentHex
+        ? encounterCache.getEntriesNearHex(agentHex.col, agentHex.row, spatialQueryRange)
+        : encounterCache.getAllEntries();
+
       // Merge static cache entries with dynamic social + faction + lifecycle entries
       const dynamicEntries = [...socialEntries, ...factionEntries, ...lifecycleEntries];
       const mergedEntries = dynamicEntries.length > 0
-        ? [...allEntries, ...dynamicEntries]
-        : allEntries;
+        ? [...nearbyEntries, ...dynamicEntries]
+        : nearbyEntries;
 
       // Run filter pipeline (hex-distance awareness with edge hex bonus)
       const filterResult = runFilterPipeline(
@@ -499,7 +518,7 @@ export function phaseAgentDecision(
         rawCandidates,
         agentId,
         state.encounterProgress,
-        [...state.unifiedActions, ...newUnifiedActions],
+        state.unifiedActions,
         state.tick,
         rawCandidates.length,
       );
@@ -1036,7 +1055,7 @@ export function phaseAgentDecision(
           idleReason = 'below_score_threshold';
         }
 
-        const localEntries = allEntries.filter((e) => e.locationId === locationId);
+        const localEntries = encounterCache.getEntriesForLocation(locationId);
         const idle = resolveIdleBehavior(
           agentId,
           locationId,
@@ -1151,7 +1170,7 @@ export function phaseAgentDecision(
           const agentHex = resolveLocationToHex(graph, locationId);
           let nearestContentLocId: string | null = null;
           let nearestDist = Infinity;
-          for (const entry of allEntries) {
+          for (const entry of encounterCache.getAllEntries()) {
             if (entry.locationId === locationId) continue;
             const entryHex = resolveLocationToHex(graph, entry.locationId);
             if (!agentHex || !entryHex) continue;

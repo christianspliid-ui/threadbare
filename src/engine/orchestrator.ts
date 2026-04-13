@@ -176,8 +176,10 @@ export function getEncounterCacheManager(): EncounterCacheManager | null {
 /** Trim encounterNotifications older than this many ticks */
 const NOTIFICATION_RETENTION_TICKS = 50;
 
-/** Prune resolved unifiedActions older than this many ticks */
-const RESOLVED_ACTION_RETENTION_TICKS = 100;
+/** Prune resolved unifiedActions older than this many ticks.
+ *  Cooldowns are 5–15 ticks; 20 gives headroom without unbounded growth.
+ *  Was 100 — caused O(agents × actions) quadratic tick cost at scale. */
+const RESOLVED_ACTION_RETENTION_TICKS = 20;
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -1593,6 +1595,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   const phaseEventCounts: Record<string, number> = {};
   let agentsProcessed = 0;
 
+
   // Track initial event count
   let prevEventCount = s.tickEvents.length;
 
@@ -1740,6 +1743,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.35: Agent Movement (goal-directed pathfinding)
+
   s = { ...s, ...phaseMovement(s) };
   phaseEventCounts['agent_movement'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
@@ -1810,7 +1814,9 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseEventCounts['sublocation_dissolution'] = dissolutions.length;
   prevEventCount = s.tickEvents.length;
 
+
   // Phase 2.5: Dilemma Detection
+
   s = { ...s, ...phaseDilemmaDetection(s) };
   phaseEventCounts['dilemma_detection'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
@@ -1830,7 +1836,9 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseEventCounts['interaction_depth'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
+
   // Phase 3: Rival Actions
+
   s = { ...s, ...phaseRivalActions(s) };
   phaseEventCounts['rival_actions'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
@@ -1839,6 +1847,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   s = { ...s, ...phaseStealth(s) };
   phaseEventCounts['stealth'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
+
 
   // ─── Resources & Divine ───────────────────────────────────────────────────────
   // What the player earns and spends this tick.
@@ -2006,6 +2015,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseEventCounts['narrative'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
+
   // ─── Victory & Defeat ──────────────────────────────────────────────────────────
 
   // Phase 7: Mandate
@@ -2021,7 +2031,9 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // from agent decision, movement, encounters, familiarity, etc.
   if (runtime) touchWorld(runtime);
 
+
   // Recalculate visibility
+
   const losSources = collectLOSSources(s.graph, s.ascendantId, scryTargets);
   const gridSize = {
     cols: Math.max(...s.tiles.map(t => t.coord.col)) + 1,
@@ -2088,6 +2100,8 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
       ),
     };
   }
+
+
 
   // ─── Health Validation ─────────────────────────────────────────
 

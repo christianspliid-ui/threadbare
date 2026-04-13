@@ -28,6 +28,7 @@ import type { GraphNode } from '../types/graph';
 import type { WorldGraph } from './graph';
 import { getEncountersByLocationType, getEncountersBySublocationAndLocation } from '../data/encounter-content';
 import { hexKey } from '../lib/hexKey';
+import { hexDistance } from '../lib/hexMath';
 import { DANGER_DIFFICULTY_SCALE } from './worldgen/constants';
 
 // ─── Constants (re-exported from central tuning file) ───────────
@@ -281,6 +282,12 @@ export class EncounterCacheManager {
   /** locationId → entries for that location */
   private byLocation = new Map<string, EncounterCacheEntry[]>();
 
+  /** hexKey → entries at that hex (spatial index for awareness filtering) */
+  private byHex = new Map<string, EncounterCacheEntry[]>();
+
+  /** hexKey → {col, row} for iteration during spatial queries */
+  private hexCoords = new Map<string, { col: number; row: number }>();
+
   /** Current difficulty tier — updated on each full cache rebuild */
   private currentTier: string = 'early';
 
@@ -294,6 +301,8 @@ export class EncounterCacheManager {
    */
   buildFullCache(graph: WorldGraph, tick: number = 0, dangerMap?: Map<string, number>): void {
     this.byLocation.clear();
+    this.byHex.clear();
+    this.hexCoords.clear();
     this.dangerMap = dangerMap;
     const newTier = selectDifficultyTier(tick);
     const baseMult = getDifficultyMultiplier(newTier);
@@ -308,6 +317,46 @@ export class EncounterCacheManager {
       const entries = buildEntriesForLocationAndSublocations(graph, loc.id, locationType, multiplier);
       if (entries.length > 0) {
         this.byLocation.set(loc.id, entries);
+        this.indexByHex(graph, loc.id, entries);
+      }
+    }
+  }
+
+  /** Index entries by their location's hex coordinates for spatial queries. */
+  private indexByHex(graph: WorldGraph, locationId: string, entries: EncounterCacheEntry[]): void {
+    const loc = graph.getNode(locationId);
+    if (!loc) return;
+    const col = loc.properties.hexCol as number | undefined;
+    const row = loc.properties.hexRow as number | undefined;
+    if (col == null || row == null) return;
+    const key = hexKey(col, row);
+    const existing = this.byHex.get(key);
+    if (existing) {
+      existing.push(...entries);
+    } else {
+      this.byHex.set(key, [...entries]);
+    }
+    if (!this.hexCoords.has(key)) {
+      this.hexCoords.set(key, { col, row });
+    }
+  }
+
+  /** Remove entries for a location from the hex index. */
+  private unindexByHex(graph: WorldGraph, locationId: string): void {
+    const loc = graph.getNode(locationId);
+    if (!loc) return;
+    const col = loc.properties.hexCol as number | undefined;
+    const row = loc.properties.hexRow as number | undefined;
+    if (col == null || row == null) return;
+    const key = hexKey(col, row);
+    const existing = this.byHex.get(key);
+    if (existing) {
+      const filtered = existing.filter(e => e.locationId !== locationId);
+      if (filtered.length > 0) {
+        this.byHex.set(key, filtered);
+      } else {
+        this.byHex.delete(key);
+        this.hexCoords.delete(key);
       }
     }
   }
@@ -329,13 +378,15 @@ export class EncounterCacheManager {
     const entries = buildEntriesForLocationAndSublocations(graph, locationId, locationType, multiplier);
     if (entries.length > 0) {
       this.byLocation.set(locationId, entries);
+      this.indexByHex(graph, locationId, entries);
     }
   }
 
   /**
    * Remove all cache entries for a destroyed location.
    */
-  onLocationDestroyed(locationId: string): void {
+  onLocationDestroyed(locationId: string, graph?: WorldGraph): void {
+    if (graph) this.unindexByHex(graph, locationId);
     this.byLocation.delete(locationId);
   }
 
@@ -343,6 +394,7 @@ export class EncounterCacheManager {
    * Re-compute cache entries when a location's type changes.
    */
   onLocationTypeChanged(graph: WorldGraph, locationId: string): void {
+    this.unindexByHex(graph, locationId);
     this.byLocation.delete(locationId);
     this.onLocationCreated(graph, locationId);
   }
@@ -353,6 +405,7 @@ export class EncounterCacheManager {
    */
   onSublocationCreated(graph: WorldGraph, sublocationId: string, parentLocationId: string): void {
     // Rebuild the entire parent location's cache entries (includes all sublocations)
+    this.unindexByHex(graph, parentLocationId);
     this.byLocation.delete(parentLocationId);
     this.onLocationCreated(graph, parentLocationId);
   }
@@ -361,12 +414,16 @@ export class EncounterCacheManager {
    * Remove cache entries for a destroyed sublocation from the parent location's set.
    * Filters out entries referencing the destroyed sublocation ID.
    */
-  onSublocationDestroyed(sublocationId: string, parentLocationId: string): void {
+  onSublocationDestroyed(sublocationId: string, parentLocationId: string, graph?: WorldGraph): void {
     const existing = this.byLocation.get(parentLocationId);
     if (!existing) return;
+    // Remove from hex index first (uses old entries)
+    if (graph) this.unindexByHex(graph, parentLocationId);
     const filtered = existing.filter(e => e.sublocationId !== sublocationId);
     if (filtered.length > 0) {
       this.byLocation.set(parentLocationId, filtered);
+      // Re-index with filtered entries
+      if (graph) this.indexByHex(graph, parentLocationId, filtered);
     } else {
       this.byLocation.delete(parentLocationId);
     }
@@ -381,6 +438,23 @@ export class EncounterCacheManager {
       all.push(...entries);
     }
     return all;
+  }
+
+  /**
+   * Return cached entries within `maxRange` hex distance of the given hex.
+   * Uses the spatial index for O(nearby hexes) instead of O(all entries).
+   * Falls back to getAllEntries() if the hex index is empty.
+   */
+  getEntriesNearHex(col: number, row: number, maxRange: number): readonly EncounterCacheEntry[] {
+    if (this.byHex.size === 0) return this.getAllEntries();
+    const result: EncounterCacheEntry[] = [];
+    for (const [key, coord] of this.hexCoords) {
+      if (hexDistance({ col, row }, coord) <= maxRange) {
+        const entries = this.byHex.get(key);
+        if (entries) result.push(...entries);
+      }
+    }
+    return result;
   }
 
   /**

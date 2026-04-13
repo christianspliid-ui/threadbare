@@ -76,9 +76,15 @@ export function phaseIdleSelection(
     n => n.properties.actorType === 'individual',
   );
 
+  // Pre-compute busy agent set — O(actions) once instead of O(actors × actions)
+  const busyAgentIds = new Set<string>();
+  for (const a of state.unifiedActions ?? []) {
+    if (!a.resolved) busyAgentIds.add(a.actorId);
+  }
+
   for (const actor of actors) {
     // Skip if already has active unified action
-    if (!isUnifiedAgentIdle(state.unifiedActions ?? [], actor.id)) continue;
+    if (busyAgentIds.has(actor.id)) continue;
 
     // Also skip if still has active legacy encounter or action
     // (during transition period — once old phases are fully replaced, this check goes away)
