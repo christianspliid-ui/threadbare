@@ -8,17 +8,23 @@
 > Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
 > Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-128**.
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-130**.
 
 ---
 
-## ✅ TB-123 · Procedural Hex Vignettes — Phase 1: Terrain Lab Slot/Zone Prototype (2026-04-12)
+## 📐▶ TB-129 · Definition of Done — Hook Enforcement (2026-04-13) — HIGH PRIORITY
 
-Phase 1 of the procedural hex vignette system, built in `?view=terrain-lab`. Codex implemented the zone-aware resolver, slot layout, and debug overlay system; Claude Code found and fixed a critical scatter bug (all filler models stacked at hex center due to missing per-placement positions).
+Add Claude Code hooks that hard-gate commits, pushes, and session stops behind the Definition of Done checklist. Currently DoD compliance is convention-enforced (CLAUDE.md tells agents what to do) — hooks make it mechanism-enforced (agents are blocked if they skip steps).
 
-**Delivered:** `terrainTextureLabVignettePrototype.ts` (full resolver: zone modes, Poisson-disk sampling, mulberry32 PRNG, click targets), `terrainTextureLabLayout.ts` (slot positions), vignette UI panel (scope/density/landmark/debug controls), canvas rendering (zone rings, slot anchors, filler dots, landmark selection), per-placement x/y scatter fix.
-**Design doc:** `Docs/plans/2026-04-08-procedural-hex-vignettes.md`
-**Verified:** 194 tree models across 2 forest hexes, dense Poisson-disk scatter, slot anchors visible, zone debug overlays functional.
+**Three gates:**
+1. **Pre-commit gate** (`PreToolUse` → `Bash(git commit*)`) — blocks commits unless `npx tsc --noEmit` + `npm test` pass + no untracked imports
+2. **Pre-push gate** (`PreToolUse` → `Bash(git push*)`) — blocks pushes unless changelog.md, project-status.md, project-history.md, BACKLOG.md all have new entries + `npx vite build` succeeds
+3. **Session stop gate** (`Stop` hook) — detects uncommitted changes, unpushed commits, and 🏗️ backlog items, forces agent to continue
+
+**Design doc:** `Docs/plans/2026-04-13-definition-of-done-hooks-design.md`
+**Creates:** `.claude/hooks/` directory with 3 gate scripts + shared lib, updated `.claude/settings.json`
+**Depends on:** TB-121 (CI/CD) for complementary coverage, but can ship independently
+**Needs design:** No — design complete, ready for implementation
 
 ---
 
@@ -109,54 +115,9 @@ Phase 8 data expansion is shipped (36 templates across 6 behavior families, hint
 
 ---
 
-## ✅ TB-120 · Test Suite Repair Sprint (2026-04-13)
+## ✅ TB-121 · CI/CD Pipeline Setup (2026-04-11) — DONE 2026-04-13
 
-Full `npm test` has been red since at least 2026-04-03. Every session falls back to scoped verification (`tsc --noEmit` + `vite build` + targeted vitest), which means the full suite no longer catches cross-cutting regressions. Logged as impediments #22, #30, #31, #32, #34, #38, #39 — 7 entries, ~15 occurrences, the most-logged issue in the project.
-
-**Known failing groups (from impediment logs):**
-- `movement-content.test.ts` — expectation drift (river tax `Infinity`?)
-- `revelationGate.test.ts` — unknown
-- `npcSeeding.test.ts` — unknown
-- `rewardPipeline.contract.test.ts` — contract drift
-- `sublocation-integration.test.ts` — unknown
-- Portrait/audio/avatar tests — environment or API changes
-- Encounter content-count drift assertions — template count changed without updating assertions
-- `trait.reputation.power.renown` — repeated orchestrator crashes, missing domain field
-
-**Approach:**
-1. **Delete all count-based assertions** — `toHaveLength(154)` in encounter-content.test.ts, unified-action rarity counts, TRACE_CATEGORIES count, and similar. These test nothing meaningful (the game doesn't break if encounter count changes) and are the primary source of assertion drift. Keep structural/quality assertions (valid encounterType, narrative text present, 2–4 steps, etc.).
-2. **Run `npm test`, triage remaining failures** — categorize each as: real bug (fix), obsolete test (delete), environment issue (mock or skip).
-3. **Fix the `trait.reputation.power.renown` orchestrator crash** — this is likely a real bug, not assertion drift.
-4. **Get to green.** Every test must pass before closing this item.
-
-**Goal:** Green `npm test` on `main`. Every session can run the full suite again.
-
-**Touches:** Multiple test files across `src/engine/__tests__/`, `src/data/`, `src/components/`
-**Depends on:** Nothing — this is infrastructure repair
-**Needs design:** No
-
----
-
-## 📋 TB-121 · CI/CD Pipeline Setup (2026-04-11) — HIGH PRIORITY
-
-Build automated infrastructure so test failures block deployment. Social conventions (CLAUDE.md instructions, skill docs, ways-of-working) have proven insufficient — agents routinely skip them. We need hard gates.
-
-**Retro context:** Impediments #22, #30–39 document 8+ days of red tests that shipped to main because nothing enforced the "npm test must pass" rule. The retinue regression (#35) reached production because scoped verification missed a shared dependency — a full green suite would have caught it.
-
-**Scope:**
-1. **GitHub Actions CI workflow** — Run on every push and PR to main:
-   - `npm test` (vitest — the actual safety net)
-   - `npx tsc --noEmit` (type checking)
-   - `npx vite build` (production build)
-2. **Branch protection on main** — Require CI status checks to pass before merge. No more direct pushes to main that bypass tests.
-3. **Vercel build gate** — Update `vercel.json` buildCommand from `vite build` to `vitest run && vite build` so red tests also block deploy (belt and suspenders with GitHub Actions).
-4. **Visibility** — CI status badge in CLAUDE.md so agents see suite health at session start without running anything.
-
-**Why this matters:** Every "workaround: agents should remember to do X" in the impediment log is a process smell. Documentation tells agents what to do; CI makes it impossible to skip. This is the single highest-leverage infrastructure investment we can make.
-
-**Touches:** `.github/workflows/`, `vercel.json`, `CLAUDE.md`
-**Depends on:** TB-120 (suite must be green before CI gates can enforce green)
-**Needs design:** Yes — Cowork should draft the workflow YAML and branch protection config
+Archived to `BACKLOG_HISTORY.md`.
 
 ---
 
@@ -217,6 +178,20 @@ Expand the generic effect system into a reusable procedural content grammar for 
 **Depends on:** Generic Effect System (✅), Attachment System (✅), Encounter Reward Wiring (✅)
 
 **Implementation status (2026-04-03):** First foundation slice shipped — `test_shaper`, `prevent_loss`, `content_grant`, immediate `service` reward resolution, and proof-pack content/examples. Remaining work: `resource_delta`, `action_trigger`, `choice_set`, stateful shells, governance caps, and broader authoring libraries.
+
+**Phase 1B (2026-04-13):** `resource_delta` + `action_trigger` in progress. `choice_set` separated to TB-128.  
+**Phase 1B plan doc:** `Docs/plans/2026-04-13-tb104-phase1b-resource-delta-action-trigger.md`
+
+---
+
+## 📋 TB-128 · `choice_set` Content Primitive with Player Choice UI (2026-04-13)
+
+**Milestone: Cross-cutting Content Architecture**
+
+The `choice_set` primitive from TB-104 Phase 1 — a "pick one of N" effect that presents filtered options at resolution/reward time. Requires both the data primitive (type definition, predicate filtering, auto-resolve for AI agents) AND the player-facing choice UI (modal or inline picker for player-controlled agents). Shipping without the UI would leave a half-finished primitive.
+
+**Creates:** `ChoiceSetEffect` type with `ChoiceOption[]`, predicate-filtered option availability, `selectionMode` (player vs agent_auto), player choice modal/UI surface, auto-resolve logic for AI agents, traces, proof-pack content.
+**Depends on:** TB-104 Phase 1B (✅ once `resource_delta` + `action_trigger` ship — `choice_set` payloads may include these)
 
 ---
 
@@ -334,21 +309,6 @@ Replace thin 2-step social encounters with rich 3-5 step social scenes featuring
 **Creates:** Leverage mechanic, personality-driven counter-arguments, group scene resolution, ~30-40 encounter templates across all reaches.
 **Design doc:** `Docs/plans/2026-03-31-social-systems-expansion-design.md` → Expansion A
 **Depends on:** TB-095 (Tavern & Party System — taverns as encounter locations)
-
----
-
-## ✅ TB-097 · Social Expansion B: Ambition-Driven Strategic Actions (2026-03-31)
-
-**Milestone: v1.2 Social Systems Expansion — Phase B — Merchant Proving Slice SHIPPED**
-
-Merchant proving slice delivered and verified: strategic candidate generator (6 merchant templates), family-aware chooser scoring bridged into unified decision pipeline, multi-tick project lifecycle (active/completed/failed), control-state claims, graph mutations (sublocation creation, trade routes, intelligence), and full telemetry. Two blocking bugs found and fixed during live testing: (1) `phaseAgentDecision` never returned `strategicState` to the orchestrator (dead local reassignment), (2) property name typo `domainCapability` vs `domainCapabilities` caused all reach floor checks to reject every candidate.
-
-**Creates:** Strategic candidate generator, family-aware chooser scoring, multi-tick strategic project lifecycle, control-state upkeep/contest logic, graph-op helpers for world change, catalyst encounter seeding, strategic telemetry via debug bridge.
-**Design doc:** `Docs/plans/2026-04-09-ambition-driven-strategic-actions-design.md`
-**Implementation plan:** `Docs/plans/2026-04-09-ambition-driven-strategic-actions-implementation-plan.md`
-**Next:** Phase 8 — behavior family expansion (builder, scholar, zealot, etc.), UI/Threads visibility for strategic work, HexMap strategic overlays.
-**Supersedes:** `Docs/plans/2026-03-31-social-systems-expansion-design.md` Expansion B
-**Depends on:** Ambition system (✅), encounter chooser/telemetry foundation (✅).
 
 ---
 

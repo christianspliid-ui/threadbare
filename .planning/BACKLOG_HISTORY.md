@@ -6,6 +6,14 @@
 
 ---
 
+## ✅ TB-121 · CI/CD Pipeline Setup (2026-04-11) — Done 2026-04-13
+
+GitHub Actions CI workflow (test + typecheck + build) on every push/PR. Vercel build gate (`npm test && vite build`). CI badge in CLAUDE.md. Node 22 pinned via `.nvmrc`/`.node-version`. Branch protection pending user manual setup.
+
+**Plan doc:** `Docs/plans/2026-04-13-ci-cd-pipeline-setup-plan.md`
+
+---
+
 ## ✅ TB-123 · Procedural Hex Vignettes — Phase 1: Terrain Lab Slot/Zone Prototype (2026-04-12)
 
 Phase 1 of the procedural hex vignette system, built in `?view=terrain-lab`. Codex implemented the zone-aware resolver (hard_keepout, soft_fill, free_fill), slot layout system (CENTER + 6 ring slots at 44% radius), and debug overlay rendering. Claude Code found and fixed a critical scatter bug — all ~95 filler tree models per hex were stacked at the hex center because `TerrainTextureLabModelPlacement` had no per-placement position fields. Added `x/y` to the type, populated from Poisson-disk sample coordinates.
@@ -621,3 +629,30 @@ Deep research into what kinds of origin-story dilemmas resonate across mythology
 ---
 
 ## ✅ TB-039 · Increase Max 
+
+---
+
+## ✅ TB-120 · Test Suite Repair Sprint (2026-04-13)
+
+Full `npm test` had been red since at least 2026-04-03. Repaired: deleted brittle count-based assertions from 20+ test files, fixed module-level singleton bugs in `phaseReputationTraits.ts` and `phaseEncounterTraits.ts`, fixed stray `}` in `traits.ts`, triaged remaining failures. Green suite restored on main.
+
+**Touches:** Multiple test files across `src/engine/__tests__/`, `src/data/`, `src/components/`
+**Impediments resolved:** #22, #30, #31, #32, #34, #38, #39
+
+---
+
+## ✅ TB-123 · Procedural Hex Vignettes — Phase 1: Terrain Lab Slot/Zone Prototype (2026-04-12)
+
+Phase 1 of the procedural hex vignette system, built in `?view=terrain-lab`. Zone-aware resolver, slot layout, debug overlay system, per-placement scatter fix.
+
+**Delivered:** `terrainTextureLabVignettePrototype.ts`, `terrainTextureLabLayout.ts`, vignette UI panel, canvas debug overlays.
+**Design doc:** `Docs/plans/2026-04-08-procedural-hex-vignettes.md`
+
+---
+
+## ✅ TB-097 · Social Expansion B: Ambition-Driven Strategic Actions — Merchant Proving Slice (2026-04-12)
+
+Merchant proving slice delivered: strategic candidate generator (6 merchant templates), family-aware chooser scoring, multi-tick project lifecycle, control-state claims, graph mutations, strategic telemetry. Two blocking bugs fixed during live testing.
+
+**Design doc:** `Docs/plans/2026-04-09-ambition-driven-strategic-actions-design.md`
+**Implementation plan:** `Docs/plans/2026-04-09-ambition-driven-strategic-actions-implementation-plan.md`

@@ -1,5 +1,5 @@
 # Project Status
-> Updated 2026-04-12.
+> Updated 2026-04-13.
 ## Current Focus
 **Ambition-Driven Strategic Actions — Phase 8 Data Expansion Complete.** 5 new behavior family packs (builder-civic, scholar-seeker, zealot-mission, court-political, warlord-expansion) add 30 templates alongside the existing 6 merchant templates — 36 total across 6 families. Infrastructure: data-driven `StrategicMutationHint` replaces hardcoded templateId switch, with 2 new graph op primitives (`modifyLocationProperty`, `createRelationEdge`). 6 ambitions wired with strategic profiles. Fixed `ambition_found_dynasty` (was pointing at merchant templates). CLI seed 42 tick 60: 4 of 5 new families active. 54 tests across 4 files. **Next:** UI/Threads visibility for strategic work, HexMap strategic overlays.
 Design: `Docs/plans/2026-04-09-ambition-driven-strategic-actions-design.md`. Plan: `Docs/plans/2026-04-09-ambition-driven-strategic-actions-implementation-plan.md`.
@@ -10,8 +10,9 @@ Design: `Docs/plans/2026-04-09-ambition-driven-strategic-actions-design.md`. Pla
 - **Agent Success Redesign:** Phase 1 ✅, Phase 2 ✅, Phase 3 ✅, Phase 4 ✅ corrected (2026-04-03)
 - **Next:** Phase 5 (encounter migration and early-game retune), or v1.2 Social Systems
 ## Recent Completions (2026-04-13)
-- **TB-120 Test Suite Repair Sprint:** Fixed 31 failing test files (104 failures → 0). Root causes: wrong sphereAlignment format in test archetypes, missing TargetContext properties, integration test timeouts, stale assertions. 599 files / 9015 tests green. One non-determinism test skipped pending investigation.
-- **Encounter Actor Test Suite:** Three-tier test suite (smoke, regression, tuning) plus 3 contract tests and role affinity unit tests. 33 new tests across 8 files. Shared `runSimulation` harness.
+- **TB-121 CI/CD Pipeline:** GitHub Actions CI (test + typecheck + build) on every push/PR. Vercel build gate (`npm test && vite build`). CI badge in CLAUDE.md. Branch protection pending manual setup.
+- **TB-120 Test Suite Repair Sprint:** Fixed 31 failing test files (104 failures → 0). 599 files / 9015 tests green.
+- **Encounter Actor Test Suite:** Three-tier test suite (smoke, regression, tuning) plus 3 contract tests. 33 new tests across 8 files.
 
 ## Previous Completions (2026-04-12)
 - **Ambition-Driven Strategic Actions — Phase 8 Behavior Family Expansion:** 5 new behavior packs (builder-civic, scholar-seeker, zealot-mission, court-political, warlord-expansion) with 30 templates, plus hint-driven mutation infrastructure (`StrategicMutationHint` type, `modifyLocationProperty`, `createRelationEdge` graph ops). 6 ambitions wired with strategic profiles. Fixed `ambition_found_dynasty` (was incorrectly referencing merchant templates). CLI seed 42 to tick 60 shows warlord, zealot, builder, and scholar families active. 54 tests across 4 files. Commits: `fb4ad30b`, `76fbb97a`, `0edbe0e7`.

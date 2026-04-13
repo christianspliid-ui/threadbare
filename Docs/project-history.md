@@ -7,6 +7,7 @@
 
 Detailed per-phase implementation status for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
+- ✅ TB-121 CI/CD Pipeline: GitHub Actions CI (test + typecheck + build) on every push/PR to main. Vercel build gate (`npm test && vite build`). CI badge in CLAUDE.md. (2026-04-13)
 - ✅ TB-120 Test Suite Repair Sprint: Fixed 31 failing test files (104 failures → 0). 599 files / 9015 tests green. Root causes: wrong sphereAlignment format, missing TargetContext properties, timeout drift, stale assertions, obsolete V1 HexTile test. (2026-04-13)
 - ✅ Encounter Actor Test Suite: 33 new tests (smoke/regression/tuning/contract/unit) for encounter/actor pipeline. Shared `runSimulation` harness, `npm run test:regression` script, calibrated statistical bounds. Strategy: `Docs/plans/2026-04-12-encounter-actor-test-strategy.md`. (2026-04-13)
 - ✅ Objective Triangle Sync: doom, The First's journey, and mandates now share one cadence. Doom escalates through authored doom cards, chapter five is a climax window, remembrance now generates sphere-growth mandates from chosen spheres/court shape, checkpoint misses/exceeds feed doom debt and counter-omens, and Doom/Mandate UI surfaces now expose the shared pacing state. Design: `Docs/plans/2026-04-08-objective-triangle-sync-design.md`. (2026-04-08)

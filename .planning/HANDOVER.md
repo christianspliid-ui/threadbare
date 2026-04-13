@@ -11,38 +11,37 @@
 
 ---
 
-### ✅ 2026-04-13: TB-120 Test Suite Repair Sprint — COMPLETED
+### 2026-04-13: TB-129 · Definition of Done — Hook Enforcement — Plan Ready
 
-**Context:** Full retrospective on impediments #13–39 identified `npm test` baseline red as the #1 systemic issue (8+ days, 15+ occurrences). Cowork agents attempted fixes through the VM sandbox but couldn't complete — the VM mount has filesystem sync issues and the 5-min test runtime exceeds agent time budgets. **This needs to run locally via Claude Code on the real machine.**
+**Context:** Designed a 3-gate Claude Code hooks system to hard-enforce the Definition of Done checklist. Currently agents skip doc updates, test runs, and kanban state changes because CLAUDE.md instructions are conventions, not mechanisms. Hooks make compliance automatic — exit code 2 blocks the action and tells Claude what to fix.
 
-**Retro report:** `Docs/retrospectives/2026-04-11-retro-v2.md`
-**Backlog items:** TB-120 (test repair), TB-121 (CI/CD pipeline — do after TB-120)
+**What Cowork already did:**
+- Wrote design doc: `Docs/plans/2026-04-13-definition-of-done-hooks-design.md` (full script contents, settings.json config, rollout plan)
+- Added TB-129 to BACKLOG.md at `📐▶` (plan done, ready for dev)
 
-**What Cowork agents already did (changes on disk, NOT committed):**
-1. Removed brittle count-based assertions from 20+ test files (encounter-content, dream-content, doom-loader, domain-words, game-theory-content, influence-content, opposition-content, strand-content, economic-trait-content, chronicler-content, archetype-content, action-template-content, unified-action-templates, culture-content, backstory-content, reward-attachment-catalog, mandate-loader, trace, agentSpriteTypes, portrait-assets, avatar-portrait-assets)
-2. Fixed module-level singleton bug in `src/engine/phaseReputationTraits.ts` — removed `_traitNodesEnsured` flag, now checks graph instance state
-3. Fixed identical singleton bug in `src/engine/phaseEncounterTraits.ts` — removed `_nodesEnsured` flag
-4. Fixed stray `}` on line 194 of `src/engine/traits.ts` added by a previous agent
-5. Modified `src/engine/__tests__/revelationGate.test.ts` and `src/engine/__tests__/sublocation-integration.test.ts`
-6. Modified `src/components/Game/chronicle/__tests__/cards.test.tsx`, `src/components/Remembrance/__tests__/RemembranceFlow.test.tsx`, `src/components/HexMapV2/scene/AgentSpriteMesh.ts`
+**Action for Claude Code:**
+- [ ] Create `.claude/hooks/` directory and `.claude/hooks/lib/` subdirectory
+- [ ] Create `.claude/hooks/detect-cowork-session.sh` — SessionStart Cowork detection beacon
+- [ ] Create `.claude/hooks/cowork-role-gate.sh` — Gate 4: block code writes in Cowork
+- [ ] Create `.claude/hooks/pre-commit-gate.sh` — Gate 1: tsc + tests + untracked imports
+- [ ] Create `.claude/hooks/pre-push-gate.sh` — Gate 2: doc updates + vite build
+- [ ] Create `.claude/hooks/session-stop-gate.sh` — Gate 3: loose ends check
+- [ ] Update `.claude/settings.json` — add full `hooks` config (exact JSON in design doc, includes SessionStart + all 4 PreToolUse matchers + Stop)
+- [ ] Make all `.sh` files executable (`chmod +x`)
+- [ ] Test: attempt a commit without running tests — verify it blocks
+- [ ] Test: attempt a push without updating changelog — verify it blocks
+- [ ] Commit, push, update docs per DoD (the hooks will enforce this!)
+- [ ] Mark TB-129 as `✅` in BACKLOG.md, archive to BACKLOG_HISTORY.md
 
-**⚠️ WARNING:** Some Cowork agent edits may have introduced issues rather than fixing them. The agents were working through a VM mount that doesn't always sync cleanly. **Start by running `git diff` to review all uncommitted changes.** If anything looks wrong, `git checkout` the file and fix it fresh. Trust `npm test` output over agent claims.
+**Phase 1.5 (Cowork tests — done in a Cowork session after hooks ship):**
+- [ ] Attempt `Write` to `src/test-gate.ts` — does it block?
+- [ ] Attempt `Bash` with `git commit -m "test"` — does it block?
+- [ ] If blocked → Gate 4 works, log success
+- [ ] If not blocked → hooks don't fire in Cowork, log as impediment, Gate 4 is convention-only for now
 
-**Last known test state (user's local run, after Cowork edits):**
-- 29 files failed, 563 passed, 4 skipped
-- 89 tests failed, 8900 passed, 30 skipped
+**Files changed:** `Docs/plans/2026-04-13-definition-of-done-hooks-design.md` (new + updated), `.planning/BACKLOG.md` (TB-129 added), `.planning/HANDOVER.md` (this entry)
 
-**Your approach:**
-1. `git diff` — review all uncommitted changes, revert anything suspicious
-2. `npm test` — see where we are now
-3. Delete any remaining count-based assertions (`toHaveLength(<hardcoded number>)` on collections that grow). Don't replace with ranges — just remove
-4. Triage remaining failures: assertion drift (fix), real bug (fix), obsolete test (delete)
-5. The `trait.reputation.power.renown` orchestrator crash was the #1 cascading failure. The singleton fix should help, but verify
-6. Get to green. `npm test` + `npx tsc --noEmit` + `npx vite build` all pass
-7. Commit: `fix: TB-120 test suite repair — fix trait init singleton bug, delete brittle count assertions, fix drift`
-8. Push to main
-
-**After TB-120 is green**, start TB-121 (CI/CD pipeline). See backlog for full scope.
+**Note:** The design doc contains complete script contents for all 5 hook scripts — Claude Code should use them as-is for Phase 1, then tune during the 3-5 session burn-in period. Bypass env vars (`SKIP_DOD_TESTS=1`, `SKIP_DOD_DOCS=1`) exist for edge cases.
 
 ---
 
@@ -56,4 +55,4 @@
 
 ## Completed
 
-_No completed entries — all archived to `HANDOVER_HISTORY.md` on 2026-03-31._
+_No completed entries — all archived to `HANDOVER_HISTORY.md` on 2026-04-13._
