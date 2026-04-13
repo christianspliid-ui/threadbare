@@ -695,6 +695,9 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
           if (triggerResult.resourceDeltas.length > 0) {
             state.graph.updateNode(progress.actorId, { properties: agentProps });
           }
+          for (const trace of triggerResult.traces) {
+            emitTrace({ category: 'effect_reaction', tick: state.tick, event: 'action_trigger_fired', ...trace } as unknown as TraceEntry);
+          }
           runningEffectStates = triggerResult.updatedStates;
         }
       }

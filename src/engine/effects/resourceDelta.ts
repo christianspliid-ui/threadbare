@@ -39,7 +39,7 @@ const CAPS: Record<string, number> = {
 export function applyResourceDelta(
   effect: ResourceDeltaEffect,
   agentResources: ResourceDeltaInput,
-  tick: number,
+  agentId: string,
   source: ResourceDeltaAppliedTraceDetails['source'],
   sourceAttachmentId?: string,
 ): ResourceDeltaResult {
@@ -49,7 +49,7 @@ export function applyResourceDelta(
       applied: false,
       after: 0,
       trace: {
-        actorId: '',
+        actorId: agentId,
         resource: effect.resource,
         amount: effect.amount,
         before: 0,
@@ -87,7 +87,7 @@ export function applyResourceDelta(
     applied: true,
     after,
     trace: {
-      actorId: '',
+      actorId: agentId,
       resource: effect.resource,
       amount: effect.amount,
       before,

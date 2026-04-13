@@ -200,6 +200,9 @@ export function phaseMovement(state: GameState): Partial<GameState> {
               if (triggerResult.resourceDeltas.length > 0) {
                 state.graph.updateNode(actorId, { properties: tProps });
               }
+              for (const trace of triggerResult.traces) {
+                emitTrace({ category: 'effect_reaction', tick: state.tick, event: 'action_trigger_fired', ...trace } as unknown as TraceEntry);
+              }
               if (!state.effectStates) state.effectStates = new Map();
               for (const [k, v] of triggerResult.updatedStates) {
                 state.effectStates.set(k, v);

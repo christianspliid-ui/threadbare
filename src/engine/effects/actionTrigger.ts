@@ -15,15 +15,18 @@ import type {
   ActionTriggerEvent,
   ActionTriggerFiredTraceDetails,
   EffectRuntimeState,
+  PredicateContext,
 } from '../../types/effects';
 import type { AttachedEffect } from './effectWalker';
 import { applyResourceDelta, type ResourceDeltaInput } from './resourceDelta';
+import { evaluateOptionalCondition } from './effectPredicates';
 import { ACTION_TRIGGER_DEFAULT_COOLDOWN } from '../../data/effect-constants';
 
 export interface ActionTriggerContext {
   agentId: string;
   tick: number;
   agentResources: ResourceDeltaInput;
+  predicateContext?: PredicateContext;
 }
 
 export interface ActionTriggerResult {
@@ -51,6 +54,9 @@ export function checkAndFireActionTriggers(
     // Event match
     if (trigger.on !== event) continue;
 
+    // Condition predicate check
+    if (!evaluateOptionalCondition(trigger.condition, ctx.predicateContext)) continue;
+
     // State check: cooldown + fire count
     const state = updatedStates.get(entry.attachmentId) ?? {};
     const fireCount = state.actionTriggerFireCount ?? 0;
@@ -77,7 +83,7 @@ export function checkAndFireActionTriggers(
       const deltaResult = applyResourceDelta(
         deltaEffect,
         ctx.agentResources,
-        ctx.tick,
+        ctx.agentId,
         'action_trigger',
         entry.attachmentId,
       );

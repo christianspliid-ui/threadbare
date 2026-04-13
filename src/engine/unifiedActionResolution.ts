@@ -1152,6 +1152,10 @@ export function executeStepResult(
         if (allDeltas.length > 0) {
           state.graph.updateNode(action.actorId, { properties: tProps });
         }
+        const allTraces = [...acResult.traces, ...finalTriggerResult.traces];
+        for (const trace of allTraces) {
+          emitTrace({ category: 'effect_reaction', tick: state.tick, event: 'action_trigger_fired', ...trace } as unknown as TraceEntry);
+        }
         if (!state.effectStates) state.effectStates = new Map();
         for (const [k, v] of finalTriggerResult.updatedStates) {
           state.effectStates.set(k, v);

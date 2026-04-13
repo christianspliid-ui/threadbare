@@ -144,6 +144,45 @@ describe('checkAndFireActionTriggers', () => {
     expect(result.traces).toHaveLength(1);
   });
 
+  it('skips trigger when condition predicate fails', () => {
+    const trigger: ActionTriggerEffect = {
+      type: 'action_trigger',
+      on: 'encounter_success',
+      payload: { kind: 'resource_delta', resource: 'essence', amount: 5 },
+      condition: 'in_combat',
+    };
+    const effects = [makeAttachedTrigger('att-1', trigger)];
+    const states = new Map<string, EffectRuntimeState>();
+
+    // No predicateContext → evaluateOptionalCondition returns false (fail-soft)
+    const result = checkAndFireActionTriggers(effects, 'encounter_success', baseCtx, states);
+    expect(result.firedCount).toBe(0);
+  });
+
+  it('fires trigger when condition predicate passes', () => {
+    const trigger: ActionTriggerEffect = {
+      type: 'action_trigger',
+      on: 'encounter_success',
+      payload: { kind: 'resource_delta', resource: 'essence', amount: 5 },
+      condition: 'in_combat',
+    };
+    const effects = [makeAttachedTrigger('att-1', trigger)];
+    const states = new Map<string, EffectRuntimeState>();
+
+    const ctx: ActionTriggerContext = {
+      ...baseCtx,
+      predicateContext: {
+        inCombat: true, inSocial: false, inExploration: false, inMystical: false,
+        atHomeTerritory: false, inEnemyTerritory: false, inWilderness: true,
+        healthLow: false, healthHigh: true, alone: true, outnumbered: false,
+        nearWater: false, biome: 'grassland', agentTraits: new Set(),
+        reachValues: {}, factionRank: 0,
+      },
+    };
+    const result = checkAndFireActionTriggers(effects, 'encounter_success', ctx, states);
+    expect(result.firedCount).toBe(1);
+  });
+
   it('skips non-action_trigger effects', () => {
     const passive = { type: 'passive', reach: 'iron', value: 0.03 } as any;
     const effects: AttachedEffect[] = [{

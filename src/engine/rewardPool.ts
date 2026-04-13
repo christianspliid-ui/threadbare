@@ -18,6 +18,8 @@ import type { OutcomeType } from '../types/resolution';
 import type { AttachmentEffect, ContentGrantEffect } from '../types/effects';
 import { mulberry32 } from '../lib/prng';
 import { applyResourceDelta } from './effects/resourceDelta';
+import { emitTrace } from './traceBuffer';
+import type { TraceEntry } from '../types/trace';
 import { filterAgreementTemplates, type AgreementRewardTemplate } from '../data/agreement-reward-catalog';
 
 export interface PoolEntry {
@@ -420,10 +422,17 @@ function instantiateRewardInternal(
       quintessenceMax: (agentProps.quintessenceMax as number) ?? Infinity,
       doom: (agentProps.doom as number) ?? 0,
       doomThreshold: (agentProps.doomThreshold as number) ?? 100,
-    }, tick, 'reward');
+    }, recipientAgentId, 'reward');
     if (deltaResult.applied) {
       agentProps[eff.resource] = deltaResult.after;
       graph.updateNode(recipientAgentId, { properties: agentProps });
+      emitTrace({
+        category: 'effect_reaction',
+        tick,
+        agentId: recipientAgentId,
+        event: 'resource_delta_applied',
+        ...deltaResult.trace,
+      } as unknown as TraceEntry);
     }
   }
 
