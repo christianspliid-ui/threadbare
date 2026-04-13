@@ -21,6 +21,7 @@ import { RemembranceFlow } from './components/Remembrance/RemembranceFlow';
 
 const ContentBrowser = lazy(() => import('./components/CMS/ContentBrowser'));
 const Codex = lazy(() => import('./components/Codex/Codex'));
+const StyleGuide = lazy(() => import('./components/StyleGuide/StyleGuide'));
 
 // V2 renderer grid dimensions: 80×120 = 9.6K hexes (dev scale — fast load)
 // Production: 200×300 = 60K hexes (full world scale)
@@ -56,11 +57,12 @@ function quickStartPhase(seed: number): GamePhase {
 }
 
 function App() {
-  // Dev views via URL param: ?view=glow | ?view=cms | ?view=game | ?view=terrain-lab
+  // Dev views via URL param: ?view=glow | ?view=cms | ?view=game | ?view=terrain-lab | ?view=codex | ?view=styleguide
   const viewParam = new URLSearchParams(window.location.search).get('view');
   if (viewParam === 'glow') return <MagicGlowTiles />;
   if (viewParam === 'cms') return <Suspense fallback={<div className="h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-abyss)', color: 'var(--text-muted)' }}>Loading Content Browser...</div>}><ContentBrowser /></Suspense>;
   if (viewParam === 'codex') return <Suspense fallback={<div className="h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-abyss)', color: 'var(--text-muted)' }}>Loading Codex...</div>}><Codex /></Suspense>;
+  if (viewParam === 'styleguide') return <Suspense fallback={<div className="h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-abyss)', color: 'var(--text-muted)' }}>Loading Style Guide...</div>}><StyleGuide /></Suspense>;
   if (viewParam === 'terrain-lab') return <TerrainTextureLab />;
   // Three.js renderer V2 — 60K hex grid at full world scale
   if (viewParam === 'hexv2') {

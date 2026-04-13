@@ -4,9 +4,21 @@ This folder contains The Fantasy World Simulator — a systemic god-game/rogue-l
 
 ## Cowork vs Claude Code — Read This First
 
-**If you are running in Cowork mode:** You must NOT write code or run git commands. You CAN write to `.planning/` coordination files (BACKLOG.md, HANDOVER.md, ROADMAP.md) — **snapshot before every write** (see `Docs/cowork-ways-of-working.md` → "Coordination File Versioning"). Your job is design, research, documentation (via MCP), and implementation plans. Hand coding tasks to Claude Code with a plan link.
+**If you are running in Cowork mode:** You must NOT write code or run git commands. Your job is design, research, documentation (via MCP), and implementation plans. Use **Linear** (Threadbare team) for all issue tracking — query and update issue states via the Linear MCP. When a design is complete, move the issue to **"Ready for Dev"** and add a comment with the plan doc link and action items. See `Docs/plans/2026-04-13-linear-coordination-protocol.md` for the full protocol.
 
-**If you are running in Claude Code:** You do the coding, testing, committing, and pushing. Check for implementation plans in `Docs/plans/` before starting work.
+**If you are running in Claude Code:** You do the coding, testing, committing, and pushing. Check **Linear** for issues in **"Ready for Dev"** state, sorted by priority — **pull from the top.** Read the issue comments for plan docs and action items. Move issues to "In Dev" when starting, "Done" when complete. **WIP limit: 1 In Dev issue per project** — finish and ship the current issue before pulling another from the same project to avoid merge/write conflicts. Check `Docs/plans/` for design docs before starting work. See `Docs/plans/2026-04-13-linear-coordination-protocol.md` for the full protocol.
+
+### Prioritization: Finish Before You Start
+
+**Deferrals and completions before new development.** When choosing what to work on, apply this priority order:
+
+1. **Deferrals from in-progress projects** — issues labeled `Deferral` that belong to a project with active work. Finish what you started before moving on. Query: `list_issues label:"Deferral" state:"Ready for Dev"`.
+2. **Remaining issues in active projects** — if a project has issues in Ready for Dev, complete them before pulling issues from a different project.
+3. **New work by priority** — only start a fresh project's issues when active projects have no remaining Implementation Planning items.
+
+This ensures projects get completed rather than accumulating half-finished work across many fronts. Check `list_projects` to see which projects have open issues.
+
+**Every Linear issue must belong to a project.** No orphan issues — if work doesn't fit an existing project, ask the user which project it belongs to or whether a new project is needed. Deferrals inherit the project of the parent issue they were deferred from.
 
 ## Running the Prototype
 
@@ -36,6 +48,7 @@ npm run dev    # start Vite dev server with hot reload
 | `?view=game` | Quick-start game view — ascendant archetype only, no identity, no First. Use when testing the MeetTheFirst flow itself or identity-less paths. |
 | `?view=glow` | Magic glow tile preview |
 | `?view=codex` | Game codex — browsable catalog of divine actions, possessions, conditions, agreements, mortal actions |
+| `?view=styleguide` | **Visual component reference.** All shared primitives with sample data — see what components look like before building UI. |
 | `?view=cms` | Content browser |
 | `?nofog` | Disable fog of war (fog is ON by default). Combinable: `?view=game&seeded&nofog` |
 
@@ -116,7 +129,7 @@ See `src/debug-bridge.ts` for the full API and `src/debug-bridge.d.ts` for types
 Three surfaces, each with a distinct purpose. Full ownership rules and duplication policy: **`Docs/documentation-ownership.md`**
 
 - **Obsidian vault** — Domain model: systems, mechanics, terminology (wikilinks). Read `Index.md` first.
-- **Repo `.planning/`** — Backlog, milestone roadmap, handover notes, coordination files
+- **Repo `.planning/`** — Legacy milestone roadmap, phase history (backlog and handover retired — use Linear)
 - **Repo `Docs/`** — Implementation rationale (`plans/`), changelog, UI patterns, project status
 
 *Notion content migrated to Obsidian 2026-04-04. Dilemma templates remain in Notion pending TypeScript import.*
@@ -169,8 +182,11 @@ updated: YYYY-MM-DD
 
 ## Key Links
 
-- Backlog: `.planning/BACKLOG.md` · Completed items: `.planning/BACKLOG_HISTORY.md`
-- Active milestone roadmap: `.planning/ROADMAP.md`
+- **Backlog & issue tracking: [Linear (Threadbare team)](https://linear.app/threadbare)** — single source of truth for all issues, states, and dependencies
+- Linear coordination protocol: `Docs/plans/2026-04-13-linear-coordination-protocol.md`
+- **Roadmap milestones: [Linear Projects](https://linear.app/threadbare/projects)** — 8 projects (Linear Setup, UI/UX Design Infrastructure, Procedural Hex Vignettes, Content Architecture, Attention Tier Model, Thematic Pressure, Social Systems Expansion, Rarity Model) with lifecycle statuses (Idea → Next → Research → Discovery → Now → Done)
+- Legacy milestone roadmap: `.planning/ROADMAP.md` (still maintained for high-level overview)
+- Completed items archive: `.planning/BACKLOG_HISTORY.md` (pre-Linear history)
 - Obsidian vault index: read via Obsidian MCP → `TheFantasyWorldSimulator/Index.md`
 - Documentation ownership: `Docs/documentation-ownership.md`
 - Integration wiring checklist: `Docs/plans/wiring-checklist.md`
@@ -216,22 +232,28 @@ The game fills exactly one viewport. **Nothing scrolls. Nothing renders below th
 
 Every design proposal **must be architecturally compliant before the user ever sees it.** Steps 1–4 happen in a single internal pass — never present a non-compliant design. If an NFP conflict is structural (not just a missing constant), flag it as a trade-off for the user.
 
+### Three-Pillar Rule
+
+Every feature touches three pillars: **Engine** (systems, tick loop, graph), **Content** (encounters, prose, templates, data), and **UI** (components, modals, HexMap, player controls). Designs and plans that cover only one or two pillars produce incomplete features that CC rightfully defers. **Do not move an issue forward unless all three pillars are addressed or explicitly marked N/A with rationale.** See exit criteria in `Docs/plans/2026-04-13-linear-coordination-protocol.md`.
+
 ### Design workflow checklist
 
-- [ ] **Draft** the system design
+- [ ] **Draft** the system design — covering all three pillars (Engine, Content, UI)
 - [ ] **Audit** against all 7 NFPs, load-bearing decisions, and rejected approaches
 - [ ] **Revise** — integrate remediations inline (not in a separate appendix)
 - [ ] **Summarize** — NFP Compliance table at the end (PASS / PASS with note per priority)
+- [ ] **Three-pillar check** — Engine section present? Content section present? UI section present? Wiring section connecting them?
 - [ ] **Present** the finished, compliant design to the user
 
 ### Per-system required sections (inline, not appendix)
 
+- [ ] **Engine pillar** — systems design, graph nodes/edges, tick phases, resolution logic, PRNG callouts
+- [ ] **Content pillar** — encounter templates, prose tables, attachment content, data tables
+- [ ] **UI pillar** — player-facing display, event notifications (alerts/toasts/chronicle), debug inspection (DebugPanel), visual presence (HexMapV2 signifiers/overlays). No UI pillar = incomplete design.
+- [ ] **Wiring section** — for each module: orchestrator phase, UI component, GameState flow, traces, debug visibility, prose pipeline (`enrichProse()`?), player controls. Reference `Docs/plans/wiring-checklist.md`. Module only in test files = not integrated.
 - [ ] **Constants table** — every tunable number named, with default and purpose (NFP #1)
 - [ ] **Tracing** — trace types emitted, with TypeScript interface definitions (NFP #2)
-- [ ] **PRNG callouts** — where seeded randomness is needed, at point of use (NFP #3)
 - [ ] **Fail-soft table** — failure cases and fallback behavior (NFP #4)
-- [ ] **UI/visibility phase** — player-facing display, event notifications (alerts/toasts/chronicle), debug inspection (DebugPanel), visual presence (HexMapV2 signifiers/overlays). No UI phase = incomplete design.
-- [ ] **Wiring section** — for each module: orchestrator phase, UI component, GameState flow, traces, debug visibility, prose pipeline (`enrichProse()`?), player controls. Reference `Docs/plans/wiring-checklist.md`. Module only in test files = not integrated.
 
 ### Maintenance and review
 
@@ -294,22 +316,27 @@ Work is not "done" until it is deployed and documented. Do all of these automati
 - [ ] **Push** to GitHub (`git push`, with `-u origin <branch>` if needed)
 - [ ] **Merge** feature branches into main immediately — don't leave branches waiting
 - [ ] **Deploy** — Vercel auto-deploys from GitHub on push to `main`. Just ensure the push succeeded.
-- [ ] **Update docs** — `BACKLOG.md` (mark `✅`, archive to `BACKLOG_HISTORY.md`), `project-status.md` (≤60 lines, move old entries to `project-history.md`), `project-history.md` (one-line `✅` entry), `changelog.md` (append rows)
+- [ ] **Update docs** — `project-status.md` (≤60 lines, move old entries to `project-history.md`), `project-history.md` (one-line `✅` entry), `changelog.md` (append rows). Move the Linear issue to "Done" with a completion comment.
 - [ ] **Verify wiring** — Check every new module against `Docs/plans/wiring-checklist.md`. Engine modules called from orchestrator, modals rendered in GameView JSX, GameState fields consumed by UI, traces emitted, player controls connected. Update the checklist if new surfaces added.
+- [ ] **Log deferrals** — Every `// TODO`, `// DEFERRED`, or `// PHASE-X-DEFERRED` comment added in this session MUST have a corresponding Linear issue. Use format `// TODO(THR-XX): description`. No orphan deferrals — if you deferred it, track it. Label the issue `Deferral` and assign it to the same project as the parent work. A deferral without a Linear issue is invisible tech debt.
 - [ ] **Log impediments** — Any blockers or workarounds → `Docs/impediments.md`. Load `impediment-reporter` skill for format. Mandatory — unlogged friction is invisible.
 - [ ] **Close out** — Tell the user: *"Session ready to archive — all work is tested, deployed, and documented. No loose ends."*
 
-**Where to find completed work history:** `.planning/BACKLOG_HISTORY.md` (full descriptions) and `Docs/project-history.md` (one-line entries).
+**Where to find completed work history:** Linear issues in "Done" state (current), `.planning/BACKLOG_HISTORY.md` (pre-Linear history), and `Docs/project-history.md` (one-line entries).
 
 ## Session Workflow
 
 - [ ] Read this file for orientation
-- [ ] **Check `.planning/HANDOVER.md`** — act on pending Cowork handovers before starting new work
+- [ ] **Check Linear for work** — query issues by state per the protocol in `Docs/plans/2026-04-13-linear-coordination-protocol.md`:
+  - **Cowork:** `list_issues state:"In Design"` (resume design), `list_issues state:"Implementation Planning"` (resume planning), `list_issues state:"Ready for Dev"` (verify handoffs), `list_issues state:"Todo"` (what's next)
+  - **Claude Code:** `list_issues state:"Ready for Dev"` (pick up handoffs), `list_issues state:"In Dev"` (resume active work)
 - [ ] Read Obsidian `Index.md` via MCP → follow links to the relevant system. Index.md is the comprehensive catalog — use it as the LLM's navigation system.
-- [ ] Check `.planning/BACKLOG.md` + `.planning/ROADMAP.md` for priorities
+- [ ] **Check Linear Projects for milestone context** — `list_projects` to see which milestones are in Now/Discovery/Research. Issues belong to projects; projects show the big picture.
+- [ ] Check `.planning/ROADMAP.md` for legacy milestone overview
 - [ ] Read relevant design doc in `Docs/plans/` before writing code
 - [ ] **Upstream health check** — if the feature depends on upstream pipeline throughput, verify the pipeline is producing output before coding. A feature wired to a dead pipeline is wasted work.
 - [ ] After completing work, follow the **Definition of Done** above
+- [ ] **Update Linear** — move issue to appropriate state, add completion comment
 - [ ] **Update vault log** — Append to `log.md` via Obsidian MCP what was changed in this session
 
 ## Domain Skills
