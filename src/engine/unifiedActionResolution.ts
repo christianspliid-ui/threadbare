@@ -97,6 +97,8 @@ import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import { appendDigestEntry } from './digestBuffer';
 import { isNotableEntry } from './attentionTier';
 import type { DigestEntry } from '../types/attention';
+import { checkAndFireActionTriggers, type ActionTriggerContext } from './effects/actionTrigger';
+import { collectAttachmentEffects } from './effects/effectWalker';
 
 // ─── Phase 1: Progress ──────────────────────────────────────────
 
@@ -1104,6 +1106,57 @@ export function executeStepResult(
         result: actionResult,
         finalStatus: actionFinalStatus,
       });
+    }
+  }
+
+  // ── Action trigger: action_complete / encounter_success / encounter_failure (TB-104 Phase 1B) ──
+  if (finalAction.resolved) {
+    const triggerActorNode = state.graph.getNode(action.actorId);
+    if (triggerActorNode) {
+      const tProps = triggerActorNode.properties as Record<string, unknown>;
+      const triggerCtx: ActionTriggerContext = {
+        agentId: action.actorId,
+        tick,
+        agentResources: {
+          essence: (tProps.essence as number) ?? 0,
+          quintessence: (tProps.quintessence as number) ?? 0,
+          quintessenceMax: (tProps.quintessenceMax as number) ?? Infinity,
+          doom: (tProps.doom as number) ?? 0,
+          doomThreshold: (tProps.doomThreshold as number) ?? 100,
+        },
+      };
+      const effectStates = state.effectStates ?? new Map();
+      const attachedEffects = collectAttachmentEffects(state.graph, action.actorId, effectStates);
+
+      // Fire action_complete for any completed action
+      const acResult = checkAndFireActionTriggers(attachedEffects, 'action_complete', triggerCtx, effectStates);
+
+      // Also fire encounter_success/encounter_failure for multi-step (encounter-like) templates
+      const isEncounterTemplate = template.steps.length > 1;
+      let finalTriggerResult = acResult;
+      if (isEncounterTemplate) {
+        const encEvent = isStepSuccess(outcome) ? 'encounter_success' : 'encounter_failure';
+        finalTriggerResult = checkAndFireActionTriggers(
+          attachedEffects,
+          encEvent,
+          { ...triggerCtx, agentResources: { ...triggerCtx.agentResources } },
+          acResult.updatedStates,
+        );
+      }
+
+      if (finalTriggerResult.firedCount > 0 || acResult.firedCount > 0) {
+        const allDeltas = [...acResult.resourceDeltas, ...finalTriggerResult.resourceDeltas];
+        for (const delta of allDeltas) {
+          (tProps as Record<string, number>)[delta.resource] = delta.after;
+        }
+        if (allDeltas.length > 0) {
+          state.graph.updateNode(action.actorId, { properties: tProps });
+        }
+        if (!state.effectStates) state.effectStates = new Map();
+        for (const [k, v] of finalTriggerResult.updatedStates) {
+          state.effectStates.set(k, v);
+        }
+      }
     }
   }
 
