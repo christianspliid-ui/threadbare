@@ -7,6 +7,7 @@
 
 Detailed per-phase implementation status for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
+- ✅ TB-120 Test Suite Repair Sprint: Fixed 31 failing test files (104 failures → 0). 599 files / 9015 tests green. Root causes: wrong sphereAlignment format, missing TargetContext properties, timeout drift, stale assertions, obsolete V1 HexTile test. (2026-04-13)
 - ✅ Encounter Actor Test Suite: 33 new tests (smoke/regression/tuning/contract/unit) for encounter/actor pipeline. Shared `runSimulation` harness, `npm run test:regression` script, calibrated statistical bounds. Strategy: `Docs/plans/2026-04-12-encounter-actor-test-strategy.md`. (2026-04-13)
 - ✅ Objective Triangle Sync: doom, The First's journey, and mandates now share one cadence. Doom escalates through authored doom cards, chapter five is a climax window, remembrance now generates sphere-growth mandates from chosen spheres/court shape, checkpoint misses/exceeds feed doom debt and counter-omens, and Doom/Mandate UI surfaces now expose the shared pacing state. Design: `Docs/plans/2026-04-08-objective-triangle-sync-design.md`. (2026-04-08)
 - ✅ Ambition-driven strategic actions — Phase 8 behavior family expansion: 5 new packs (builder-civic, scholar-seeker, zealot-mission, court-political, warlord-expansion) with 30 templates, hint-driven mutation infrastructure (`StrategicMutationHint`, `modifyLocationProperty`, `createRelationEdge`), 6 ambitions wired with strategic profiles, `ambition_found_dynasty` fixed. 54 tests. (2026-04-12)

@@ -109,7 +109,7 @@ Phase 8 data expansion is shipped (36 templates across 6 behavior families, hint
 
 ---
 
-## 📋 TB-120 · Test Suite Repair Sprint (2026-04-11) — HIGH PRIORITY
+## ✅ TB-120 · Test Suite Repair Sprint (2026-04-13)
 
 Full `npm test` has been red since at least 2026-04-03. Every session falls back to scoped verification (`tsc --noEmit` + `vite build` + targeted vitest), which means the full suite no longer catches cross-cutting regressions. Logged as impediments #22, #30, #31, #32, #34, #38, #39 — 7 entries, ~15 occurrences, the most-logged issue in the project.
 
