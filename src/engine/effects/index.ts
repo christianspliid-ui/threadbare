@@ -50,3 +50,17 @@ export {
   type SocialModifier,
   type ActionGateEntry,
 } from './effectQueries';
+
+// Resource delta — one-shot resource mutation (TB-104 Phase 1B)
+export {
+  applyResourceDelta,
+  type ResourceDeltaInput,
+  type ResourceDeltaResult,
+} from './resourceDelta';
+
+// Action trigger — event-driven effect firing (TB-104 Phase 1B)
+export {
+  checkAndFireActionTriggers,
+  type ActionTriggerContext,
+  type ActionTriggerResult,
+} from './actionTrigger';
