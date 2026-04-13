@@ -190,11 +190,9 @@ describe('Layer 1 seed divergence', { timeout: 120_000 }, () => {
     const allEvents7: string[] = [];
 
     for (let i = 0; i < 50; i++) {
-      resetDecisionCache(); // Reset between seed switches
       current42 = runTick(current42);
       allEvents42.push(...current42.tickEvents.map(e => e.type));
 
-      resetDecisionCache();
       current7 = runTick(current7);
       allEvents7.push(...current7.tickEvents.map(e => e.type));
     }
@@ -206,11 +204,9 @@ describe('Layer 1 seed divergence', { timeout: 120_000 }, () => {
   });
 });
 
-// ─── Determinism (skipped — known non-determinism) ──────────────────
+// ─── Determinism ─────────────────────────────────────────────────────
 
-// TODO(THR-44): Known non-determinism — chronicle entry count diverges by 1 between runs.
-// Likely a module-level counter or Date.now() leak. Filed for investigation.
-describe.skip('Layer 1 determinism', () => {
+describe('Layer 1 determinism', () => {
   it('same seed produces deterministic results', () => {
     // Run A: 100 ticks from seed 42 (fresh module cache)
     resetDecisionCache();

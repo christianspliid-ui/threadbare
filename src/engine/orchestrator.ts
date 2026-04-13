@@ -38,7 +38,7 @@ import {
   DILEMMA_NOUN_POOL,
   DILEMMA_VERB_POOL,
 } from '../data/narrative-content';
-import { phaseAgentLifecycle } from './agentLifecycle';
+import { phaseAgentLifecycle, resetLifecycleCounter } from './agentLifecycle';
 import { emitTrace } from './traceBuffer';
 import { tickEffects } from './effectTick';
 import { processEffectEvent, applyEffectEventResult } from './effects/effectEvents';
@@ -81,7 +81,7 @@ import { phaseSettlementPromotion } from './phaseSettlementPromotion';
 import { phaseSettlementReassessment } from './phaseSettlementReassessment';
 import { phaseEconomicChronicle } from './phaseEconomicChronicle';
 import { phaseHexState } from './phaseHexState';
-import { revealLayer } from './revelationResolver';
+import { revealLayer, resetDiscoveryEventCounter } from './revelationResolver';
 import { phaseUnrest } from './phaseUnrest';
 import { phaseMagicalSaturation } from './phaseMagicalSaturation';
 import { phaseSpherePressure } from './phaseSpherePressure';
@@ -147,6 +147,13 @@ import type { EncounterPromotionTrace, DigestEntry } from '../types/attention';
 import { appendDigestEntry } from './digestBuffer';
 import { phaseAttention } from './phaseAttention';
 import { phaseSlotCaps, phaseDisposalTimeout } from './phaseSlotCaps';
+import { resetUnifiedActionCounter } from './unifiedActionLifecycle';
+import { resetActionCounter } from './actionLifecycle';
+import { resetEffectCounter } from './controlEffectSpawn';
+import { resetOpCounter } from './graphOpExecutor';
+import { _resetNpcCounter } from './npcSeeding';
+import { resetConditionCounter } from './spellActivation';
+import { resetPremonitionCounter } from './premonitionActions';
 
 // ─── Legacy Decision Cache (backward-compat shim for tests) ───────
 //
@@ -158,13 +165,35 @@ let legacyEncounterCache: EncounterCacheManager | null = null;
 let legacyDistanceMatrix: DistanceMatrix | null = null;
 let legacyRuntime: SimulationRuntime | null = null;
 
-/** Reset the encounter cache, distance matrix, and timeline (useful for game restart / tests). */
+/**
+ * Reset the encounter cache, distance matrix, timeline, and all persistent
+ * module-level ID counters. Call this before starting a new game (tests and
+ * game restarts). NFP #3: ensures same seed produces identical IDs and
+ * behavior across independent runs.
+ *
+ * ─── Why counters here and not in resetEventCounters() ──────────────────
+ * resetEventCounters() runs per-tick and only resets ephemeral event ID
+ * counters. The counters reset here generate persistent graph-node / action
+ * IDs that must NOT reset per-tick (duplicate IDs would corrupt the graph),
+ * but MUST reset at game-start so run A and run B with the same seed produce
+ * identical ID sequences.
+ */
 export function resetDecisionCache(): void {
   legacyEncounterCache = null;
   legacyDistanceMatrix = null;
   legacyRuntime = null;
   clearTimelines();
   clearRewardHistory();
+  // Persistent graph-node / action ID counters — reset for determinism across runs
+  resetLifecycleCounter();
+  resetUnifiedActionCounter();
+  resetActionCounter();
+  resetEffectCounter();
+  resetOpCounter();
+  resetDiscoveryEventCounter();
+  resetConditionCounter();
+  resetPremonitionCounter();
+  _resetNpcCounter();
 }
 
 /** Read-only access to the current encounter cache (for debug tooling). */

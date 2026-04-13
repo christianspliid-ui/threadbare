@@ -66,6 +66,10 @@ export interface ActivationResult {
   trace: EffectActivationTrace;
 }
 
+// ─── Condition ID counter (deterministic, no Date.now()) ────────────
+let conditionCounter = 0;
+export function resetConditionCounter(): void { conditionCounter = 0; }
+
 // ═══════════════════════════════════════════════════════════════════
 // Prerequisite Validation
 // ═══════════════════════════════════════════════════════════════════
@@ -240,7 +244,7 @@ export function payCosts(
       }
       case 'condition_inflict': {
         // Create a condition trait on the agent
-        const condId = `cond_${agentId}_${cost.template}_${Date.now()}`;
+        const condId = `cond_${agentId}_${cost.template}_${conditionCounter++}`;
         graph.addNode({
           id: condId,
           type: 'trait',
