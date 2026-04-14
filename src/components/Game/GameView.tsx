@@ -2658,7 +2658,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                     <ChoiceSetModal
                       pending={pendingChoice}
                       onResolve={(_choiceId, _selectedOptionId) => {
-                        // TODO(THR-XX): Execute selectedOption.consequences on the actor.
+                        // TODO(THR-73): Execute selectedOption.consequences on the actor.
                         // For now: clear the pending state and resume simulation.
                         setPendingChoice(null);
                         setRunning(true);

@@ -1,7 +1,7 @@
 # Project Status
 > Updated 2026-04-14.
 ## Current Focus
-**Phase 22 Hygiene complete (THR-50/60/61).** DebugPanel.tsx 204 → 194 lines, lodash audit clean. Vault untracked from git. `vercel.json` doc-skip + immutable cache. **Next:** THR-43 (targetRequiredProperties filtering), encounter packet content, or TB-105–108 Thematic Pressure.
+**THR-14 shipped.** `choice_set` content primitive complete: type 40, predicate-filtered options, ai_auto/weighted_random/player modes, ChoiceSetModal, 6 proof-pack authored effects, 14 unit tests. Content Architecture project now has no remaining Ready for Dev issues.
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
 - **v1.1 Optimization:** In progress — Phases 19-22 (determinism, wiring, performance, hygiene)
@@ -9,6 +9,7 @@
 - **Agent Success Redesign:** Phase 1 ✅, Phase 2 ✅, Phase 3 ✅, Phase 4 ✅ corrected (2026-04-03)
 - **Next:** Phase 5 (encounter migration and early-game retune), or v1.2 Social Systems
 ## Recent Completions (2026-04-14)
+- **THR-14 choice_set primitive (TB-128):** Type 40 in effects.ts, `executeChoiceSet` executor (predicate filtering, ai_auto/weighted_random/player modes, PRNG determinism, PendingChoiceData), 14 unit tests, 6 proof-pack effects (loot fork, dialogue branch, sacrifice/save, path fork, faction alignment, mercy test), `ChoiceSetModal` with countdown bar, `pendingChoice` state in `useAgentInteraction`, `AnimateMount`-wrapped modal in `GameView`. Commit: `a46c680e`.
 - **THR-50 DebugPanel & Lodash Audit:** `DebugPanel.tsx` 204 → 194 lines (TABS moved to DebugTabContent). Lodash audit: no direct usage, no duplicate bundles. Commit: `3ba90d17`.
 - **THR-60 Untrack vault:** All 11 vault directories removed from git tracking; `.gitignore` guards them. Local vault preserved on disk. Commit: `8ee0a966`.
 - **THR-61 vercel.json:** Drop `npm test &&` from buildCommand, add `ignoreCommand` (doc-only skip), add `/assets/*` immutable cache headers. Commit: `18cc6579`.
