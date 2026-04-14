@@ -87,6 +87,12 @@ export const SUBLOCATION_CONCEPT_ART: Record<string, SublocationConceptArt> = {
     label: 'Forge',
     glyphColor: '#ea7a3a',
   },
+  'sublocation-type.tavern': {
+    gradient: 'linear-gradient(135deg, #1e1005 0%, #3a2210 40%, #5a3a1a 60%, #4a2e12 80%, #2a1a08 100%)',
+    glyph: '\u{1F37A}', // beer mug
+    label: 'Tavern',
+    glyphColor: '#d4a030',
+  },
 };
 
 /**

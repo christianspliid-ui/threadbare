@@ -10,8 +10,13 @@ import {
   STRANGER_CURIOSITY_BONUS,
   STRANGER_CURIOSITY_THRESHOLD,
   MAX_SOCIAL_CANDIDATES_PER_AGENT,
+  TAVERN_SOCIAL_ENCOUNTER_BOOST,
+  SOCIAL_DENSITY_BONUS_PER_AGENT,
 } from '../socialEncounterGeneration';
 import { SOCIAL_ENCOUNTER_TEMPLATES } from '../../data/social-encounter-content';
+import { TAVERN_ENCOUNTER_TEMPLATES } from '../../data/tavern-encounter-content';
+import { TAVERN_SUBLOCATION_TYPE_ID } from '../sublocation';
+import { generateTavernName } from '../../data/tavern-names';
 import { WorldGraph } from '../graph';
 import type { DistanceMatrix } from '../distanceMatrix';
 
@@ -99,6 +104,23 @@ function makeDistanceMatrix(
     distances.get(from)!.set(to, dist);
   }
   return { distances, builtAtTick: 0, locationCount: distances.size };
+}
+
+function addTavernSublocation(
+  g: WorldGraph,
+  id: string,
+  parentId: string,
+  name = 'The Rusty Flagon',
+): void {
+  g.addNode({
+    id,
+    type: 'location',
+    name,
+    properties: {
+      sublocationTypeId: TAVERN_SUBLOCATION_TYPE_ID,
+      parentLocationId: parentId,
+    },
+  });
 }
 
 describe('socialEncounterGeneration', () => {
@@ -239,6 +261,143 @@ describe('socialEncounterGeneration', () => {
     });
   });
 
+  describe('tavern social mechanics', () => {
+    it('applies questPriority boost when agent is at a tavern sublocation', () => {
+      addLocation(graph, 'town-1', 'town');
+      addTavernSublocation(graph, 'tavern-1', 'town-1');
+      addAgent(graph, 'agent-a', 'tavern-1');
+      addAgent(graph, 'agent-b', 'town-1');
+
+      // Distance matrix scans from parent (town-1) when agent is at tavern
+      const dm = makeDistanceMatrix([['town-1', 'town-1', 0]]);
+      const candidates = generateSocialCandidates(graph, 'agent-a', 'tavern-1', dm);
+
+      expect(candidates.length).toBeGreaterThan(0);
+      // questPriority starts at 1.0 * multiplier; with tavern boost multiplier > 1.0
+      const minExpected = 1.0 * (1 + TAVERN_SOCIAL_ENCOUNTER_BOOST);
+      for (const c of candidates) {
+        expect(c.questPriority).toBeGreaterThanOrEqual(minExpected);
+      }
+    });
+
+    it('expands colocation to parent location when agent is at tavern', () => {
+      addLocation(graph, 'town-1', 'town');
+      addTavernSublocation(graph, 'tavern-1', 'town-1');
+      addAgent(graph, 'agent-a', 'tavern-1');
+      addAgent(graph, 'agent-b', 'town-1'); // at parent, not inside the tavern
+
+      const dm = makeDistanceMatrix([['town-1', 'town-1', 0]]);
+      const candidates = generateSocialCandidates(graph, 'agent-a', 'tavern-1', dm);
+
+      // agent-b at the parent location should be visible via colocation expansion
+      expect(candidates.length).toBeGreaterThan(0);
+      const targetIds = candidates.map(c => c.targetAgentId);
+      expect(targetIds).toContain('agent-b');
+    });
+
+    it('also sees agents co-present inside the tavern sublocation', () => {
+      addLocation(graph, 'town-1', 'town');
+      addTavernSublocation(graph, 'tavern-1', 'town-1');
+      addAgent(graph, 'agent-a', 'tavern-1');
+      addAgent(graph, 'agent-b', 'tavern-1'); // also inside the tavern
+
+      const dm = makeDistanceMatrix([['town-1', 'town-1', 0]]);
+      const candidates = generateSocialCandidates(graph, 'agent-a', 'tavern-1', dm);
+
+      expect(candidates.length).toBeGreaterThan(0);
+      const targetIds = candidates.map(c => c.targetAgentId);
+      expect(targetIds).toContain('agent-b');
+    });
+
+    it('sets sublocationId and sublocationTypeId on candidates when at tavern', () => {
+      addLocation(graph, 'town-1', 'town');
+      addTavernSublocation(graph, 'tavern-1', 'town-1');
+      addAgent(graph, 'agent-a', 'tavern-1');
+      addAgent(graph, 'agent-b', 'town-1');
+
+      const dm = makeDistanceMatrix([['town-1', 'town-1', 0]]);
+      const candidates = generateSocialCandidates(graph, 'agent-a', 'tavern-1', dm);
+
+      expect(candidates.length).toBeGreaterThan(0);
+      for (const c of candidates) {
+        expect(c.sublocationId).toBe('tavern-1');
+        expect(c.sublocationTypeId).toBe(TAVERN_SUBLOCATION_TYPE_ID);
+      }
+    });
+
+    it('does NOT set sublocationId for agents at a regular location', () => {
+      addLocation(graph, 'town-1', 'town');
+      addAgent(graph, 'agent-a', 'town-1');
+      addAgent(graph, 'agent-b', 'town-1');
+
+      const dm = makeDistanceMatrix([['town-1', 'town-1', 0]]);
+      const candidates = generateSocialCandidates(graph, 'agent-a', 'town-1', dm);
+
+      expect(candidates.length).toBeGreaterThan(0);
+      for (const c of candidates) {
+        expect(c.sublocationId).toBeNull();
+        expect(c.sublocationTypeId).toBeNull();
+      }
+    });
+
+    it('includes tavern templates only when agent is at a tavern', () => {
+      addLocation(graph, 'town-1', 'town');
+      addTavernSublocation(graph, 'tavern-1', 'town-1');
+      addAgent(graph, 'agent-a', 'tavern-1');
+      addAgent(graph, 'agent-b', 'town-1');
+
+      const dm = makeDistanceMatrix([['town-1', 'town-1', 0]]);
+      const candidates = generateSocialCandidates(graph, 'agent-a', 'tavern-1', dm);
+
+      const tavernTemplateIds = new Set(TAVERN_ENCOUNTER_TEMPLATES.map(t => t.id));
+      const hasTavernTemplate = candidates.some(c => tavernTemplateIds.has(c.templateId));
+      expect(hasTavernTemplate).toBe(true);
+    });
+
+    it('does NOT include tavern templates for agents at a non-tavern location', () => {
+      addLocation(graph, 'town-1', 'town');
+      addAgent(graph, 'agent-a', 'town-1');
+      addAgent(graph, 'agent-b', 'town-1');
+
+      const dm = makeDistanceMatrix([['town-1', 'town-1', 0]]);
+      const candidates = generateSocialCandidates(graph, 'agent-a', 'town-1', dm);
+
+      const tavernTemplateIds = new Set(TAVERN_ENCOUNTER_TEMPLATES.map(t => t.id));
+      for (const c of candidates) {
+        expect(tavernTemplateIds.has(c.templateId)).toBe(false);
+      }
+    });
+
+    it('social density bonus raises questPriority when more agents are at target', () => {
+      addLocation(graph, 'town-1', 'town');
+      addTavernSublocation(graph, 'tavern-1', 'town-1');
+      addAgent(graph, 'agent-a', 'tavern-1');
+      addAgent(graph, 'agent-b', 'town-1');
+
+      const dm = makeDistanceMatrix([['town-1', 'town-1', 0]]);
+
+      // Sparse: 1 agent at town-1 → densityBonus = 0
+      const sparseCandidates = generateSocialCandidates(graph, 'agent-a', 'tavern-1', dm);
+      const sparseForB = sparseCandidates.filter(c => c.targetAgentId === 'agent-b');
+      expect(sparseForB.length).toBeGreaterThan(0);
+
+      // Add two more agents to make it dense: 3 agents at town-1 → densityBonus = 2 * SOCIAL_DENSITY_BONUS_PER_AGENT
+      addAgent(graph, 'agent-c', 'town-1');
+      addAgent(graph, 'agent-d', 'town-1');
+
+      const denseCandidates = generateSocialCandidates(graph, 'agent-a', 'tavern-1', dm);
+      const denseForB = denseCandidates.filter(c => c.targetAgentId === 'agent-b');
+      expect(denseForB.length).toBeGreaterThan(0);
+
+      // Dense questPriority should exceed sparse by 2 × SOCIAL_DENSITY_BONUS_PER_AGENT per template
+      const expectedBonus = 2 * SOCIAL_DENSITY_BONUS_PER_AGENT;
+      expect(denseForB[0].questPriority).toBeCloseTo(
+        sparseForB[0].questPriority + expectedBonus,
+        5,
+      );
+    });
+  });
+
   describe('social encounter templates content', () => {
     it('contains exactly 14 templates', () => {
       expect(SOCIAL_ENCOUNTER_TEMPLATES).toHaveLength(14);
@@ -286,6 +445,96 @@ describe('socialEncounterGeneration', () => {
     it('template IDs are unique', () => {
       const ids = SOCIAL_ENCOUNTER_TEMPLATES.map(t => t.id);
       expect(new Set(ids).size).toBe(ids.length);
+    });
+  });
+
+  describe('tavern encounter templates content', () => {
+    it('contains exactly 10 templates', () => {
+      expect(TAVERN_ENCOUNTER_TEMPLATES).toHaveLength(10);
+    });
+
+    it('all templates have sublocationTypes containing TAVERN_SUBLOCATION_TYPE_ID', () => {
+      for (const tmpl of TAVERN_ENCOUNTER_TEMPLATES) {
+        expect(tmpl.sublocationTypes).toBeDefined();
+        expect(tmpl.sublocationTypes).toContain(TAVERN_SUBLOCATION_TYPE_ID);
+      }
+    });
+
+    it('all templates target settlement locations', () => {
+      const settlements = ['hamlet', 'town', 'city', 'capital'];
+      for (const tmpl of TAVERN_ENCOUNTER_TEMPLATES) {
+        const hasSettlement = tmpl.locationTypes.some(lt => settlements.includes(lt));
+        expect(hasSettlement).toBe(true);
+      }
+    });
+
+    it('all templates have required fields', () => {
+      for (const tmpl of TAVERN_ENCOUNTER_TEMPLATES) {
+        expect(tmpl.id).toBeTruthy();
+        expect(tmpl.name).toBeTruthy();
+        expect(tmpl.steps.length).toBeGreaterThanOrEqual(1);
+        expect(tmpl.reachPrimary).toBeTruthy();
+        expect(tmpl.reachSecondary).toBeTruthy();
+        expect(tmpl.encounterType).toBeTruthy();
+        expect(tmpl.threatRating).toBeTruthy();
+        expect(tmpl.motivations.length).toBeGreaterThan(0);
+      }
+    });
+
+    it('all steps have required fields', () => {
+      for (const tmpl of TAVERN_ENCOUNTER_TEMPLATES) {
+        for (const step of tmpl.steps) {
+          expect(step.id).toBeTruthy();
+          expect(step.name).toBeTruthy();
+          expect(step.reach).toBeTruthy();
+          expect(step.difficulty).toBeGreaterThan(0);
+          expect(step.duration).toBeGreaterThan(0);
+          expect(step.narrative).toBeTruthy();
+          expect(step.onSuccess).toBeTruthy();
+          expect(step.onFailure).toBeTruthy();
+        }
+      }
+    });
+
+    it('template IDs are unique and all start with "tavern."', () => {
+      const ids = TAVERN_ENCOUNTER_TEMPLATES.map(t => t.id);
+      expect(new Set(ids).size).toBe(ids.length);
+      for (const id of ids) {
+        expect(id.startsWith('tavern.')).toBe(true);
+      }
+    });
+  });
+
+  describe('generateTavernName', () => {
+    it('returns a non-empty string starting with "The "', () => {
+      const rng = () => 0.5;
+      const name = generateTavernName(rng);
+      expect(typeof name).toBe('string');
+      expect(name.length).toBeGreaterThan(0);
+      expect(name.startsWith('The ')).toBe(true);
+    });
+
+    it('returns deterministic result for the same RNG sequence', () => {
+      const constant = () => 0.42;
+      const name1 = generateTavernName(constant);
+      const name2 = generateTavernName(constant);
+      expect(name1).toBe(name2);
+    });
+
+    it('uses culture-specific vocabulary when culture is recognized', () => {
+      const rng = () => 0;
+      const genericName = generateTavernName(rng, undefined);
+      const northernName = generateTavernName(rng, 'northern-culture');
+      // With rng always returning 0, picks first element of each pool
+      // Generic first adj: 'Rusty', Northern first adj: 'Frosted'
+      expect(genericName).not.toBe(northernName);
+    });
+
+    it('falls back to generic pool for unrecognized culture IDs', () => {
+      const rng = () => 0;
+      const name = generateTavernName(rng, 'unknown-culture-xyz');
+      // Should not throw and should return a valid name
+      expect(name.startsWith('The ')).toBe(true);
     });
   });
 });

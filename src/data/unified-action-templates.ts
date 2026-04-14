@@ -929,6 +929,37 @@ const SUBLOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       failure: 'the place resists divine scrutiny; it remains opaque',
     },
   },
+  {
+    id: 'sub.sanctify_tavern',
+    name: 'Sanctify Tavern',
+    spellName: 'Hearthfire Blessing',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description: 'Breathes a divine warmth into a tavern — the hearth burns brighter, the ale flows sweeter, and travelers feel an inexplicable pull toward its doors. The blessing concentrates social energy for a time, drawing agents from neighboring hexes and amplifying the social encounter rate for all present.',
+    reach: 'heart',
+    crudType: 'update',
+    scale: 'local',
+    steps: [{
+      reach: 'heart',
+      duration: { min: 2, max: 3 },
+      difficulty: 0.20,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 15,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'life',
+    targetCategories: ['sublocation'],
+    requiredNodeProperties: { sublocationTypeId: 'sublocation-type.tavern' },
+    motivations: ['preservation_transformation', 'loyalty_ambition'],
+    narrativeTemplates: {
+      initiation: 'breathes a whisper of warmth into this gathering place',
+      success: 'the hearthfire blessing takes hold — laughter comes easier, strangers become friends',
+      failure: 'the blessing dissipates before it can take root; the tavern remains unchanged',
+    },
+  },
 ];
 
 // ─── Hex Action Templates ──────────────────────────────────────────

@@ -14,6 +14,10 @@ import type { GraphNode } from '../types/graph';
 import type { AxiologicalProfile, ValuePair } from '../types/agent';
 import type { SublocationProperties, SublocationPersistence, DivineOrigin } from '../types/sublocation';
 import { mulberry32 } from '../lib/prng';
+import { generateTavernName } from '../data/tavern-names';
+
+/** Sublocation type ID for taverns — used by social encounter generation. */
+export const TAVERN_SUBLOCATION_TYPE_ID = 'sublocation-type.tavern';
 
 // ── Subtype → sublocation type mapping ──────────────────────────────────────
 // Maps runtime locationSubtype values to the sublocation-type node IDs they contain.
@@ -40,6 +44,8 @@ export const SUBTYPE_SUBLOCATION_MAP: Record<string, SublocationTypeDef[]> = {
     { id: 'sublocation-type.throne-room', name: 'Throne Room', motivations: [{ left: 'authority', right: 'rebellion', weight: 0.9 }, { left: 'tradition', right: 'innovation', weight: 0.5 }] },
     { id: 'sublocation-type.gatehouse', name: 'Gatehouse', motivations: [{ left: 'duty', right: 'freedom', weight: 0.8 }, { left: 'order', right: 'chaos', weight: 0.7 }] },
     { id: 'sublocation-type.library', name: 'Library', motivations: [{ left: 'knowledge', right: 'ignorance', weight: 0.9 }, { left: 'tradition', right: 'innovation', weight: 0.4 }] },
+    { id: 'sublocation-type.tavern', name: 'Tavern', motivations: [{ left: 'cooperation', right: 'self-reliance', weight: 0.7 }, { left: 'ambition', right: 'contentment', weight: 0.3 }] },
+    { id: 'sublocation-type.tavern', name: 'Tavern', motivations: [{ left: 'cooperation', right: 'self-reliance', weight: 0.7 }, { left: 'ambition', right: 'contentment', weight: 0.3 }] },
   ],
   city: [
     { id: 'sublocation-type.market-district', name: 'Market District', motivations: [{ left: 'greed', right: 'generosity', weight: 0.7 }, { left: 'cunning', right: 'honesty', weight: 0.5 }] },
@@ -47,14 +53,18 @@ export const SUBTYPE_SUBLOCATION_MAP: Record<string, SublocationTypeDef[]> = {
     { id: 'sublocation-type.barracks', name: 'Barracks', motivations: [{ left: 'duty', right: 'freedom', weight: 0.7 }, { left: 'order', right: 'chaos', weight: 0.6 }] },
     { id: 'sublocation-type.gatehouse', name: 'Gatehouse', motivations: [{ left: 'duty', right: 'freedom', weight: 0.8 }, { left: 'order', right: 'chaos', weight: 0.7 }] },
     { id: 'sublocation-type.library', name: 'Library', motivations: [{ left: 'knowledge', right: 'ignorance', weight: 0.9 }, { left: 'tradition', right: 'innovation', weight: 0.4 }] },
+    { id: 'sublocation-type.tavern', name: 'Tavern', motivations: [{ left: 'cooperation', right: 'self-reliance', weight: 0.7 }, { left: 'ambition', right: 'contentment', weight: 0.3 }] },
+    { id: 'sublocation-type.tavern', name: 'Tavern', motivations: [{ left: 'cooperation', right: 'self-reliance', weight: 0.7 }, { left: 'ambition', right: 'contentment', weight: 0.3 }] },
   ],
   town: [
     { id: 'sublocation-type.market-district', name: 'Market District', motivations: [{ left: 'greed', right: 'generosity', weight: 0.7 }, { left: 'cunning', right: 'honesty', weight: 0.5 }] },
     { id: 'sublocation-type.temple-quarter', name: 'Temple Quarter', motivations: [{ left: 'devotion', right: 'independence', weight: 0.8 }, { left: 'tradition', right: 'innovation', weight: 0.6 }] },
     { id: 'sublocation-type.gatehouse', name: 'Gatehouse', motivations: [{ left: 'duty', right: 'freedom', weight: 0.8 }, { left: 'order', right: 'chaos', weight: 0.7 }] },
+    { id: 'sublocation-type.tavern', name: 'Tavern', motivations: [{ left: 'cooperation', right: 'self-reliance', weight: 0.7 }, { left: 'ambition', right: 'contentment', weight: 0.3 }] },
   ],
   hamlet: [
     { id: 'sublocation-type.garden', name: 'Garden', motivations: [{ left: 'devotion', right: 'independence', weight: 0.4 }, { left: 'tradition', right: 'innovation', weight: 0.3 }] },
+    { id: 'sublocation-type.tavern', name: 'Tavern', motivations: [{ left: 'cooperation', right: 'self-reliance', weight: 0.7 }, { left: 'ambition', right: 'contentment', weight: 0.3 }] },
   ],
   // Military
   castle: [
@@ -291,10 +301,16 @@ export function ensureSublocations(
     if (locProps.hexCol !== undefined) properties.hexCol = locProps.hexCol;
     if (locProps.hexRow !== undefined) properties.hexRow = locProps.hexRow;
 
+    // Taverns get a unique generated name; other sublocations use the type+parent pattern.
+    const cultureId = typeof locProps.culture === 'string' ? locProps.culture : undefined;
+    const instanceName = def.id === TAVERN_SUBLOCATION_TYPE_ID
+      ? generateTavernName(rng, cultureId)
+      : `${def.name} (${location.name})`;
+
     const instanceNode: GraphNode = {
       id: instanceId,
       type: 'location',
-      name: `${def.name} (${location.name})`,
+      name: instanceName,
       properties,
     };
 

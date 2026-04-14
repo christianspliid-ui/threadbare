@@ -305,6 +305,25 @@ export const MAX_SOCIAL_CANDIDATES_PER_AGENT = 3;
  * @range 1–4 */
 export const VISIBLE_AGENT_MAX_HOPS = 2;
 
+/** questPriority multiplier applied to all social candidates when the acting agent is at a tavern.
+ * Combined with base questPriority: final = base * (1 + TAVERN_SOCIAL_ENCOUNTER_BOOST).
+ * @range 0.1–0.8 */
+export const TAVERN_SOCIAL_ENCOUNTER_BOOST = 0.3;
+
+/** When true, agents at a tavern sublocation can see all agents at the parent location
+ * (not just agents also at the tavern). Expands the social interaction pool.
+ * @default true */
+export const TAVERN_COLOCATION_PARENT = true;
+
+/** Per-additional-agent bonus to questPriority for social candidates at populated locations.
+ * Stacks per extra agent beyond the first, capped at SOCIAL_DENSITY_CAP.
+ * @range 0.01–0.15 */
+export const SOCIAL_DENSITY_BONUS_PER_AGENT = 0.05;
+
+/** Maximum total density bonus (caps at ~6 agents beyond first).
+ * @range 0.1–0.5 */
+export const SOCIAL_DENSITY_CAP = 0.3;
+
 /** Trust gain on successful cooperative encounter completion.
  * @range 0.01–0.2 */
 export const SOCIAL_COOPERATE_TRUST_BONUS = 0.05;

@@ -39,6 +39,7 @@ import type { WorldGraph } from './graph';
 import type { DistanceMatrix } from './distanceMatrix';
 import { computeRewardEstimate, computeTotalTickCost } from './encounterCache';
 import { SOCIAL_ENCOUNTER_TEMPLATES } from '../data/social-encounter-content';
+import { TAVERN_ENCOUNTER_TEMPLATES } from '../data/tavern-encounter-content';
 import { FACTION_SOCIAL_TEMPLATES } from '../data/faction-encounter-content';
 import { FACTION_DEFINITIONS } from '../data/faction-definitions';
 import type { MemberOfEdgeProperties } from '../types/disposition';
@@ -46,6 +47,7 @@ import type { EncounterTemplate } from '../types/encounter';
 import { getTrust } from './trustMechanics';
 import { computeCapability } from './domainCapability';
 import { emitTrace } from './traceBuffer';
+import { TAVERN_SUBLOCATION_TYPE_ID } from './sublocation';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {
@@ -58,6 +60,10 @@ export {
   STRANGER_CURIOSITY_BONUS,
   MAX_SOCIAL_CANDIDATES_PER_AGENT,
   VISIBLE_AGENT_MAX_HOPS,
+  TAVERN_SOCIAL_ENCOUNTER_BOOST,
+  TAVERN_COLOCATION_PARENT,
+  SOCIAL_DENSITY_BONUS_PER_AGENT,
+  SOCIAL_DENSITY_CAP,
 } from '../data/agent-behavior-constants';
 
 import {
@@ -70,6 +76,10 @@ import {
   STRANGER_CURIOSITY_BONUS,
   MAX_SOCIAL_CANDIDATES_PER_AGENT,
   VISIBLE_AGENT_MAX_HOPS,
+  TAVERN_SOCIAL_ENCOUNTER_BOOST,
+  TAVERN_COLOCATION_PARENT,
+  SOCIAL_DENSITY_BONUS_PER_AGENT,
+  SOCIAL_DENSITY_CAP,
 } from '../data/agent-behavior-constants';
 
 // ─── Cooperative/Destructive encounter type classification ───
@@ -86,6 +96,12 @@ const RESERVED_FACTION_SOCIAL_SLOTS = 1;
  * Scans for visible agents (same or adjacent locations within 2 hops),
  * then produces up to MAX_SOCIAL_CANDIDATES_PER_AGENT EncounterCacheEntry
  * objects per visible target.
+ *
+ * Tavern behaviour (when agent is at a sublocation-type.tavern):
+ *   - Colocation expands to include all agents at the parent location
+ *   - Tavern-exclusive encounter templates are added to the pool
+ *   - questPriority is multiplied by (1 + TAVERN_SOCIAL_ENCOUNTER_BOOST)
+ *   - Social density bonus applied based on agent count at target location
  */
 export function generateSocialCandidates(
   graph: WorldGraph,
@@ -96,36 +112,88 @@ export function generateSocialCandidates(
   // Fail-soft: missing agent node
   if (!graph.getNode(agentId)) return [];
 
-  // Find all visible agents (at same or adjacent locations)
+  // ── Tavern detection ────────────────────────────────────────
+  const agentLocNode = graph.getNode(agentLocationId);
+  const agentSublocationTypeId = agentLocNode
+    ? (agentLocNode.properties.sublocationTypeId as string | undefined)
+    : undefined;
+  const atTavern = agentSublocationTypeId === TAVERN_SUBLOCATION_TYPE_ID;
+
+  // When at a tavern, use parent location ID for distance matrix lookups
+  // so agents at the parent location are also visible (TAVERN_COLOCATION_PARENT).
+  let scanLocationId = agentLocationId;
+  let tavernParentId: string | undefined;
+  if (atTavern && TAVERN_COLOCATION_PARENT && agentLocNode) {
+    tavernParentId = agentLocNode.properties.parentLocationId as string | undefined;
+    if (tavernParentId) scanLocationId = tavernParentId;
+  }
+
+  // Find visible agents — pass tavern sublocation as extra scan target so
+  // agents inside the tavern are still visible when scanning from parent.
+  const extraScanIds = (atTavern && tavernParentId)
+    ? new Set([agentLocationId])
+    : undefined;
+
   const visibleAgents = findVisibleAgents(
     graph,
     agentId,
-    agentLocationId,
+    scanLocationId,
     distanceMatrix,
+    extraScanIds,
   );
 
   if (visibleAgents.length === 0) return [];
 
+  const tavernBoostMultiplier = atTavern ? (1 + TAVERN_SOCIAL_ENCOUNTER_BOOST) : 1;
+
   const candidates: EncounterCacheEntry[] = [];
 
   for (const { agentId: targetAgentId, locationId: targetLocationId } of visibleAgents) {
-    // Get location type for template filtering
+    // Get location type for template filtering.
+    // If target is at a sublocation, walk up to parent for the locationType.
     const locationNode = graph.getNode(targetLocationId);
     if (!locationNode) continue;
-    const locationType = (locationNode.properties.locationType as string) ?? '';
 
-    // Filter templates that match the target's location type
+    let locationType = (locationNode.properties.locationType as string) ?? '';
+    if (!locationType && locationNode.properties.sublocationTypeId) {
+      const parentId = locationNode.properties.parentLocationId as string | undefined;
+      if (parentId) {
+        const parentNode = graph.getNode(parentId);
+        locationType = (parentNode?.properties.locationType as string) ?? '';
+      }
+    }
+
+    // Social density bonus: more agents at target → higher questPriority boost.
+    const agentsAtTarget = graph.getIncomingEdges(targetLocationId, 'located_at').length;
+    const densityBonus = Math.min(
+      Math.max(0, agentsAtTarget - 1) * SOCIAL_DENSITY_BONUS_PER_AGENT,
+      SOCIAL_DENSITY_CAP,
+    );
+
+    const questPriorityMultiplier = tavernBoostMultiplier + densityBonus;
+
+    // Filter standard social templates by location type
     const matchingTemplates = SOCIAL_ENCOUNTER_TEMPLATES.filter(tmpl =>
       tmpl.locationTypes.includes(locationType),
     );
+
+    // Include tavern-exclusive templates when acting agent is at a tavern
+    const extraTemplates: EncounterTemplate[] = atTavern
+      ? TAVERN_ENCOUNTER_TEMPLATES.filter(tmpl =>
+          tmpl.sublocationTypes?.includes(TAVERN_SUBLOCATION_TYPE_ID)
+          && tmpl.locationTypes.includes(locationType),
+        )
+      : [];
 
     // Add faction-scoped social templates if agents share a faction (TB-062)
     const factionTemplates = getSharedFactionSocialTemplates(
       graph, agentId, targetAgentId, locationType,
     );
 
+    // Sublocation-specific templates (e.g. tavern) come first so they occupy
+    // slots before generic social templates when the limit is tight.
     const selectedTemplates = selectSocialTemplates(
-      matchingTemplates,
+      [...extraTemplates, ...matchingTemplates],
       factionTemplates,
       MAX_SOCIAL_CANDIDATES_PER_AGENT,
     );
@@ -134,8 +202,8 @@ export function generateSocialCandidates(
       candidates.push({
         templateId: tmpl.id,
         locationId: targetLocationId,
-        sublocationId: null,
-        sublocationTypeId: null,
+        sublocationId: atTavern ? agentLocationId : null,
+        sublocationTypeId: atTavern ? TAVERN_SUBLOCATION_TYPE_ID : null,
         targetAgentId,
         reachPrimary: tmpl.reachPrimary,
         reachSecondary: tmpl.reachSecondary,
@@ -147,7 +215,7 @@ export function generateSocialCandidates(
         remotePenalty: 0,
         remoteMaxRange: undefined,
         sphereAffinity: tmpl.sphereAffinity,
-        questPriority: tmpl.questPriority ?? 1.0,
+        questPriority: (tmpl.questPriority ?? 1.0) * questPriorityMultiplier,
         totalTickCost: computeTotalTickCost(tmpl),
         successRewardEstimate: computeRewardEstimate(tmpl),
         stepCount: tmpl.steps.length,
@@ -161,9 +229,11 @@ export function generateSocialCandidates(
     tick: 0,
     category: 'social_encounter_generation',
     agentId,
-    summary: `Social candidates for ${agentId}: ${candidates.length} entries from ${visibleAgents.length} visible agents`,
+    summary: `Social candidates for ${agentId}: ${candidates.length} entries from ${visibleAgents.length} visible agents${atTavern ? ' [tavern boost active]' : ''}`,
     candidateCount: candidates.length,
     visibleAgentCount: visibleAgents.length,
+    atTavern,
+    tavernBoostApplied: atTavern ? TAVERN_SOCIAL_ENCOUNTER_BOOST : 0,
   });
 
   return candidates;
@@ -216,12 +286,14 @@ interface VisibleAgent {
  * Find all agents visible to the source agent:
  * - Agents at the same location
  * - Agents at locations within VISIBLE_AGENT_MAX_HOPS of the agent's location
+ * - Agents at any extraLocationIds (e.g. a tavern sublocation when scanning from its parent)
  */
 function findVisibleAgents(
   graph: WorldGraph,
   sourceAgentId: string,
   sourceLocationId: string,
   distanceMatrix: DistanceMatrix,
+  extraLocationIds?: ReadonlySet<string>,
 ): VisibleAgent[] {
   const results: VisibleAgent[] = [];
 
@@ -234,6 +306,10 @@ function findVisibleAgents(
         nearbyLocationIds.add(locId);
       }
     }
+  }
+  // Include any explicitly requested extra scan locations (e.g. tavern sublocation)
+  if (extraLocationIds) {
+    for (const id of extraLocationIds) nearbyLocationIds.add(id);
   }
 
   // For each nearby location, find agents located there
