@@ -718,6 +718,7 @@
   - interface SublocationConceptArt
   - const SUBLOCATION_CONCEPT_ART: Record<string, SublocationConceptArt>
   - const LOCATION_TYPE_CONCEPT_ART: Record<string, SublocationConceptArt>
+- `src\data\tavern-names.ts` — function generateTavernName: (rng) => void
 - `src\data\temple-of-spheres-encounter-content.ts`
   - function getTempleOfSpheresEncounterById: (id) => EncounterTemplate | undefined
   - const TEMPLE_OF_SPHERES_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterMeta>
@@ -768,7 +769,7 @@
   - function unifiedToEncounterTemplate: (ut) => EncounterTemplate
   - function resolveEncounterTemplate: (id) => EncounterTemplate | undefined
   - const THREAD_CREATION_TEMPLATES: UnifiedActionTemplate[]
-  - _...1 more_
+  - _...2 more_
 - `src\engine\actionCandidates.ts` — function generateActionCandidates: (graph, actorId, locationId) => ActionCandidate[]
 - `src\engine\actionLifecycle.ts`
   - function resetActionCounter: () => void
@@ -1204,7 +1205,7 @@
   - function executeDispel: (effect, ctx) => ExecutionResult
   - function executeAlterTerrain: (effect, ctx) => ExecutionResult
   - function executeTransfer: (effect, ctx) => ExecutionResult
-  - _...10 more_
+  - _...12 more_
 - `src\engine\effectResolver.ts`
   - function getEffectModifierValue: (effect, reach, ctx, runtimeState?) => number
   - function collectTestShapers: (graph, agentId, reach, ctx, effectStates?, EffectRuntimeState>) => ResolvedTestShaper[]
@@ -1213,6 +1214,10 @@
   - const evaluatePredicate
   - const hasEffectsFormat
   - _...1 more_
+- `src\engine\effects\actionTrigger.ts`
+  - function checkAndFireActionTriggers: (effects, event, ctx, effectStates, EffectRuntimeState>) => ActionTriggerResult
+  - interface ActionTriggerContext
+  - interface ActionTriggerResult
 - `src\engine\effects\effectEvents.ts`
   - function processEffectEvent: (graph, agentId, event, effectStates, EffectRuntimeState>, tick, rng) => void
   - function applyEffectEventResult: (graph, result) => Map<string, EffectRuntimeState>
@@ -1235,6 +1240,10 @@
   - function hasEffectsFormat: (graph, agentId) => boolean
   - interface AttachedEffect
   - const ATTACHMENT_EDGE_TYPES
+- `src\engine\effects\resourceDelta.ts`
+  - function applyResourceDelta: (effect, agentResources, agentId, source, sourceAttachmentId?) => ResourceDeltaResult
+  - interface ResourceDeltaInput
+  - interface ResourceDeltaResult
 - `src\engine\effectScope.ts` — function resolveScope: (graph, scope, casterId, targetId?) => ScopeResolution, interface ScopeResolution
 - `src\engine\effectTick.ts`
   - function tickEffects: (graph, agentId, tick, effectStates, EffectRuntimeState>) => EffectTickResult
@@ -1893,13 +1902,13 @@
   - interface SocialOutcomeResult
   - type AgreementType
 - `src\engine\spellActivation.ts`
+  - function resetConditionCounter: () => void
   - function checkPrerequisites: (graph, agentId, spell) => void
   - function canPayCosts: (graph, agentId, costs) => void
   - function payCosts: (graph, agentId, costs) => void
   - function evaluateBacklash: (backlash, outcome, roll) => void
   - function activateSpell: (graph, agentId, spell, targetId, tick, roll, effectStates?, EffectRuntimeState>) => ActivationResult
-  - interface ActivationResult
-  - _...1 more_
+  - _...2 more_
 - `src\engine\sphereAffinity.ts`
   - function getNodeSphereAffinity: (node) => SphereAffinity | undefined
   - function seedHexSphereAffinity: (terrainType) => SphereAffinity
@@ -1955,7 +1964,7 @@
   - function checkDissolutions: (graph, tick, encounterProgress) => DissolutionEvent[]
   - function createDivineSublocation: (graph, params) => GraphNode | undefined
   - function evaluateConditionalPredicate: (predicate, locationId, graph) => boolean
-  - _...5 more_
+  - _...6 more_
 - `src\engine\targetActions.ts`
   - function getTargetActionSlots: (params) => WheelSlot[]
   - function templateIdFromSlotId: (slotId) => string | undefined
@@ -2125,6 +2134,14 @@
   - function blendFundaments: (existing, current, blendWeight) => FundamentState
   - function createResonanceState: () => ResonanceState
   - _...11 more_
+- `src\engine\__tests__\helpers\simulationHarness.ts`
+  - function runSimulation: (opts) => SimulationMetrics
+  - function runMultiSeed: (seeds, ticks, map) => SimulationMetrics[]
+  - function mean: (values) => number
+  - function idleRate: (m) => number
+  - function successRate: (m) => number
+  - function critRate: (m) => number
+  - _...7 more_
 - `src\hooks\useLastViewedTick.ts` — function useLastViewedTick: () => void
 - `src\lib\hexGrouping.ts` — function groupByHex: (items, sortKey?, b) => void
 - `src\lib\hexKey.ts`

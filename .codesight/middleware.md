@@ -8,6 +8,7 @@
 - 2026-03-10-visual-asset-strategy — `Docs\plans\2026-03-10-visual-asset-strategy.md`
 - 2026-04-09-ambition-driven-strategic-actions-design — `Docs\plans\2026-04-09-ambition-driven-strategic-actions-design.md`
 - 2026-04-09-ambition-driven-strategic-actions-implementation-plan — `Docs\plans\2026-04-09-ambition-driven-strategic-actions-implementation-plan.md`
+- 2026-04-12-encounter-actor-test-strategy — `Docs\plans\2026-04-12-encounter-actor-test-strategy.md`
 - rel.generates — `Relationships\rel.generates.md`
 - rel.venerates — `Relationships\rel.venerates.md`
 - generate-hex-tile — `scripts\generate-hex-tile.py`

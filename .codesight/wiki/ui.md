@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Component inventory and prop signatures extracted via AST. Read the source files before adding props or modifying component logic.
 
-**166 components** (react)
+**169 components** (react)
 
 ## Components
 
@@ -42,6 +42,7 @@
 - **AttachmentRow** — props: name, subcategory, tier, mechanicalSummary, ticksRemaining, totalTicks, durationLabel, onClick — `src\components\Game\AttachmentRow.tsx`
 - **AttentionPoolIndicator** — props: attentionPool, attentionCapacity, attentionRegen — `src\components\Game\AttentionPoolIndicator.tsx`
 - **AvatarHUD** — props: sphereColor, onCenterOnAvatar, onMoveClick, onWheelClick, onScryClick, moveMode — `src\components\Game\AvatarHUD.tsx`
+- **ChoiceSetModal** — props: pending, onResolve, onDismiss — `src\components\Game\ChoiceSetModal.tsx`
 - **AgentEntry** — props: name, sphereColor, archetypeName, onClick — `src\components\Game\chronicle\AgentEntry.tsx`
 - **EventBlock** — props: label, text — `src\components\Game\chronicle\EventBlock.tsx`
 - **ExplorationHook** — props: text — `src\components\Game\chronicle\ExplorationHook.tsx`
@@ -105,6 +106,7 @@
 - **ScryOverlay** — `src\components\Game\ScryOverlay.tsx`
 - **SettingsPanel** — props: open, onClose, fogDisabled, onToggleFog, debugPanelOpen, onToggleDebug, showOrganicShore, onToggleOrganicShore, notificationPrefs, onToggleNotificationCategory — `src\components\Game\SettingsPanel.tsx`
 - **SimulationControls** — props: tick, season, year, running, speed, onToggle, onStep, onSpeedChange, compact — `src\components\Game\SimulationControls.tsx`
+- **StoryBeatModal** — props: open, onDismiss, template, agentName — `src\components\Game\StoryBeatModal.tsx`
 - **StrandView** — props: agentName, strands, onClose — `src\components\Game\StrandView.tsx`
 - **AttachmentsTab** — props: card, onAttachmentClick — `src\components\Game\tabs\AttachmentsTab.tsx`
 - **BondsTab** — props: card, knowledge — `src\components\Game\tabs\BondsTab.tsx`
@@ -113,7 +115,7 @@
 - **OverviewTab** — props: card, _profile, knowledge — `src\components\Game\tabs\OverviewTab.tsx`
 - **ProwessTab** — props: card, knowledge, onAttachmentClick — `src\components\Game\tabs\ProwessTab.tsx`
 - **TabBar** — props: activeTab, onTabChange — `src\components\Game\tabs\TabBar.tsx`
-- **ThreadDetailView** — props: node, agentInfoCard, agentEncounterDecision, onClose, onViewProfile, _onZoomToLocation, graph — `src\components\Game\ThreadDetailView.tsx`
+- **ThreadDetailView** — props: node, agentInfoCard, agentEncounterDecision, onClose, onViewProfile, _onZoomToLocation, graph, digestBuffer, currentTick, lastViewedTick — `src\components\Game\ThreadDetailView.tsx`
 - **ThreadsPanel** — props: threadedNodes, selectedNodeId, onNodeSelect, onCenterOnHex, onZoomToLocation, activeEncounters, agentEncounterDecisions, onEncounterClick, onToggleAttentionMode — `src\components\Game\ThreadsPanel.tsx`
 - **ToastStack** — props: toasts, onDismiss, onSelectAgent, onNavigate — `src\components\Game\ToastStack.tsx`
 - **WorldPulse** — props: gameState, season, year, speed, onSpeedChange — `src\components\Game\WorldPulse.tsx`
@@ -167,6 +169,7 @@
 - **CreditsModal** — props: open, onClose — `src\components\StartPage\CreditsModal.tsx`
 - **SettingsModal** — props: open, onClose, volume, onVolumeChange, muted, onToggleMute — `src\components\StartPage\SettingsModal.tsx`
 - **StartPage** — props: onNewWorld, onAdvancedNewWorld — `src\components\StartPage\StartPage.tsx`
+- **StyleGuide** — `src\components\StyleGuide\StyleGuide.tsx`
 - **NodeDetail** — props: node, graph, onClose — `src\components\TaxonomyViewer\NodeDetail.tsx`
 - **TaxonomyViewer** — `src\components\TaxonomyViewer\TaxonomyViewer.tsx`
 - **InfoPanel** — props: tile — `src\components\UI\InfoPanel.tsx`

@@ -6,22 +6,22 @@
 
 ## Scale
 
-166 UI components · 475 library files · 34 middleware layers · 4 environment variables
+169 UI components · 479 library files · 35 middleware layers · 4 environment variables
 
-**UI:** 166 components (react) — see [ui.md](./ui.md)
+**UI:** 169 components (react) — see [ui.md](./ui.md)
 
-**Libraries:** 475 files — see [libraries.md](./libraries.md)
+**Libraries:** 479 files — see [libraries.md](./libraries.md)
 
 ## High-Impact Files
 
 Changes to these files have the widest blast radius across the codebase:
 
-- `src\engine\graph.ts` — imported by **381** files
-- `src\types\index.ts` — imported by **188** files
-- `src\types\gameState.ts` — imported by **183** files
-- `src\types\traits.ts` — imported by **169** files
-- `src\engine\traceBuffer.ts` — imported by **109** files
-- `src\types\encounter.ts` — imported by **96** files
+- `src\engine\graph.ts` — imported by **384** files
+- `src\types\index.ts` — imported by **189** files
+- `src\types\gameState.ts` — imported by **188** files
+- `src\types\traits.ts` — imported by **170** files
+- `src\engine\traceBuffer.ts` — imported by **111** files
+- `src\types\encounter.ts` — imported by **99** files
 
 ## Required Environment Variables
 
@@ -29,4 +29,4 @@ Changes to these files have the widest blast radius across the codebase:
 - `OBSIDIAN_VAULT_ROOT` — `scripts\enhance-frontmatter.ts`
 
 ---
-_Back to [index.md](./index.md) · Generated 2026-04-12_
+_Back to [index.md](./index.md) · Generated 2026-04-14_
