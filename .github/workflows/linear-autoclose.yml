@@ -1,0 +1,128 @@
+name: Linear Auto-Close
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  close-issues:
+    name: Close referenced Linear issues
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/github-script@v7
+        env:
+          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+        with:
+          script: |
+            const apiKey = process.env.LINEAR_API_KEY;
+            if (!apiKey) {
+              console.log('LINEAR_API_KEY secret not set — skipping Linear auto-close');
+              return;
+            }
+
+            // Collect commit messages from this push
+            const before = context.payload.before;
+            const after = context.payload.after;
+
+            let commitMessages = [];
+            if (before === '0000000000000000000000000000000000000000') {
+              // First push to branch — use commits from the payload directly
+              commitMessages = (context.payload.commits || []).map(c => c.message);
+            } else {
+              const { data } = await github.rest.repos.compareCommits({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                base: before,
+                head: after,
+              });
+              commitMessages = data.commits.map(c => c.commit.message);
+            }
+
+            // Extract issue IDs from "Fixes/Closes/Resolves THR-XX" patterns
+            const pattern = /(?:Fixes|Closes|Resolves)\s+(THR-\d+)/gi;
+            const issueIds = new Set();
+            for (const msg of commitMessages) {
+              for (const [, id] of msg.matchAll(pattern)) {
+                issueIds.add(id.toUpperCase());
+              }
+            }
+
+            if (!issueIds.size) {
+              console.log('No Linear issues referenced in this push — nothing to close');
+              return;
+            }
+
+            console.log(`Issues to close: ${[...issueIds].join(', ')}`);
+
+            async function linearGql(query, variables = {}) {
+              const res = await fetch('https://api.linear.app/graphql', {
+                method: 'POST',
+                headers: {
+                  Authorization: apiKey,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query, variables }),
+              });
+              if (!res.ok) throw new Error(`Linear API HTTP ${res.status}`);
+              return res.json();
+            }
+
+            let anyFailed = false;
+
+            for (const issueId of issueIds) {
+              // Fetch issue UUID + current state + team's completed state in one round-trip
+              const result = await linearGql(`
+                query GetIssue($id: String!) {
+                  issue(id: $id) {
+                    id
+                    title
+                    state { name type }
+                    team {
+                      states {
+                        nodes { id type }
+                      }
+                    }
+                  }
+                }
+              `, { id: issueId });
+
+              const issue = result.data?.issue;
+              if (!issue) {
+                console.warn(`⚠️  ${issueId} not found in Linear`);
+                continue;
+              }
+
+              const { type: currentType, name: currentName } = issue.state;
+              if (currentType === 'completed' || currentType === 'cancelled') {
+                console.log(`ℹ️  ${issueId} already closed (${currentName}) — skipping`);
+                continue;
+              }
+
+              const doneState = issue.team.states.nodes.find(s => s.type === 'completed');
+              if (!doneState) {
+                console.warn(`⚠️  No completed workflow state found for team of ${issueId}`);
+                continue;
+              }
+
+              const update = await linearGql(`
+                mutation CloseIssue($id: String!, $stateId: String!) {
+                  issueUpdate(id: $id, input: { stateId: $stateId }) {
+                    success
+                    issue { identifier state { name } }
+                  }
+                }
+              `, { id: issue.id, stateId: doneState.id });
+
+              if (update.data?.issueUpdate?.success) {
+                const newState = update.data.issueUpdate.issue.state.name;
+                console.log(`✅ ${issueId} → ${newState}`);
+              } else {
+                console.error(`❌ Failed to close ${issueId}:`, JSON.stringify(update.errors ?? update));
+                anyFailed = true;
+              }
+            }
+
+            if (anyFailed) {
+              core.setFailed('One or more Linear issues could not be closed — check logs above');
+            }

@@ -312,11 +312,11 @@ This protocol exists because: a bug where `@hero` resolved to the wrong actor wa
 
 Work is not "done" until it is deployed and documented. Do all of these automatically — do not ask, do not stop at "ready to push?", just do it.
 
-- [ ] **Commit** all changes
+- [ ] **Commit** all changes — the closing commit's message body **must** include `Fixes THR-XX` (or `Closes THR-XX` / `Resolves THR-XX`). This triggers the Linear auto-close workflow on push to `main`. Example: `docs: update project-status for THR-8\n\nFixes THR-8`
 - [ ] **Push** to GitHub (`git push`, with `-u origin <branch>` if needed)
 - [ ] **Merge** feature branches into main immediately — don't leave branches waiting
 - [ ] **Deploy** — Vercel auto-deploys from GitHub on push to `main`. Just ensure the push succeeded.
-- [ ] **Update docs** — `project-status.md` (≤60 lines, move old entries to `project-history.md`), `project-history.md` (one-line `✅` entry), `changelog.md` (append rows). Move the Linear issue to "Done" with a completion comment.
+- [ ] **Update docs** — `project-status.md` (≤60 lines, move old entries to `project-history.md`), `project-history.md` (one-line `✅` entry), `changelog.md` (append rows). Add a completion comment to the Linear issue (the `Fixes THR-XX` keyword in the commit auto-closes it, but a human-readable comment is still expected).
 - [ ] **Verify wiring** — Check every new module against `Docs/plans/wiring-checklist.md`. Engine modules called from orchestrator, modals rendered in GameView JSX, GameState fields consumed by UI, traces emitted, player controls connected. Update the checklist if new surfaces added.
 - [ ] **Log deferrals** — Every `// TODO`, `// DEFERRED`, or `// PHASE-X-DEFERRED` comment added in this session MUST have a corresponding Linear issue. Use format `// TODO(THR-XX): description`. No orphan deferrals — if you deferred it, track it. Label the issue `Deferral` and assign it to the same project as the parent work. A deferral without a Linear issue is invisible tech debt.
 - [ ] **Log impediments** — Any blockers or workarounds → `Docs/impediments.md`. Load `impediment-reporter` skill for format. Mandatory — unlogged friction is invisible.
