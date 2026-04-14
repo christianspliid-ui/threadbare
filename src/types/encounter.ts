@@ -94,6 +94,13 @@ export interface EncounterOutcome {
   traitChanges?: string[];
   /** Reward pool recipe for attachment generation on this outcome */
   rewardPool?: RewardPoolRecipe;
+  /**
+   * Explicit flag indicating this outcome applies a wound condition.
+   * When true, mid-encounter promotion fires the `wound` tier-1 trigger.
+   * Prefer this over inferring from `rewardPool.categoryWeights.condition`
+   * — only failure outcomes that specifically give wounds should set this.
+   */
+  appliesWound?: boolean;
 }
 
 // ─── Step Definition ────────────────────────────────────────────

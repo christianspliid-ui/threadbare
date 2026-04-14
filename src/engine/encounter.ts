@@ -109,6 +109,8 @@ export function resolveEncounter(
   resolutionSnapshot: EncounterResolutionSnapshot;
   growth?: GrowthResult;
   promotion?: PromotionResult;
+  /** True when the selected outcome has appliesWound: true. Drives mid-encounter promotion. */
+  woundApplied: boolean;
 } {
   const buildFailSoftResolution = (
     stepId: string,
@@ -166,6 +168,7 @@ export function resolveEncounter(
       outcome: { narrative: 'The encounter dissolves into shadow.' },
       resolution,
       resolutionSnapshot,
+      woundApplied: false,
     };
   }
 
@@ -183,6 +186,7 @@ export function resolveEncounter(
       outcome: { narrative: 'No further trial awaits.' },
       resolution,
       resolutionSnapshot,
+      woundApplied: false,
     };
   }
 
@@ -328,6 +332,7 @@ export function resolveEncounter(
     resolutionSnapshot,
     growth,
     promotion,
+    woundApplied: outcome.appliesWound === true,
   };
 }
 

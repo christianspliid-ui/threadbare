@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   initiateEncounter,
   resolveEncounter,
@@ -9,6 +9,8 @@ import type { GameState } from '../../types';
 import { WorldGraph } from '../graph';
 import { enableTracing, disableTracing, clearTraces } from '../traceBuffer';
 import { getEncountersByLocationType } from '../../data/encounter-content';
+import * as encounterContent from '../../data/encounter-content';
+import type { EncounterTemplate } from '../../types/encounter';
 
 // ──────────────────────────────────────────────────────────────────────
 // HELPERS
@@ -377,6 +379,82 @@ describe('Encounter Engine', () => {
       const result = resolveEncounter(state, progress, 30);
       clearTraces();
       advanceEncounter(state, progress, result.success, 1);
+    });
+  });
+
+  describe('woundApplied flag', () => {
+    function makeWoundEncounter(failureAppliesWound: boolean): EncounterTemplate {
+      return {
+        id: 'test.wound_encounter',
+        name: 'Wound Test Encounter',
+        description: 'Test',
+        reachPrimary: 'iron',
+        locationSubtypes: ['town'],
+        sphereAffinity: 'none',
+        encounterType: 'challenge',
+        threatRating: 'low',
+        intrinsicTier: 'background',
+        steps: [
+          {
+            id: 'test.wound_encounter.step1',
+            name: 'Test Step',
+            narrative: 'A test.',
+            reach: 'iron',
+            difficulty: 50,
+            onSuccess: { narrative: 'Success.', appliesWound: false },
+            onFailure: { narrative: 'Failure.', appliesWound: failureAppliesWound },
+          },
+        ],
+      };
+    }
+
+    it('returns woundApplied: false for standard encounters without appliesWound', () => {
+      const { state, actorId } = buildTestGameState();
+      const encounters = getTownEncounters();
+      const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
+      // Fail the step
+      const result = resolveEncounter(state, progress, 99);
+      expect(result.woundApplied).toBe(false);
+    });
+
+    it('returns woundApplied: true when failure outcome has appliesWound: true', () => {
+      const { state, actorId } = buildTestGameState();
+      const wound = makeWoundEncounter(true);
+      const spy = vi.spyOn(encounterContent, 'getAnyEncounterById').mockReturnValue(wound);
+
+      const progress = initiateEncounter(state, actorId, wound.id, 0);
+      // Fail: roll 99 always fails for difficulty 50
+      const result = resolveEncounter(state, progress, 99);
+
+      spy.mockRestore();
+      expect(result.success).toBe(false);
+      expect(result.woundApplied).toBe(true);
+    });
+
+    it('returns woundApplied: false when success outcome is selected even with appliesWound on failure', () => {
+      const { state, actorId } = buildTestGameState();
+      addTraitToActor(state.graph, actorId, 'trait.iron_high', 'iron', 20);
+      const wound = makeWoundEncounter(true);
+      const spy = vi.spyOn(encounterContent, 'getAnyEncounterById').mockReturnValue(wound);
+
+      const progress = initiateEncounter(state, actorId, wound.id, 0);
+      // Succeed: roll 1 with high iron capability always passes
+      const result = resolveEncounter(state, progress, 1);
+
+      spy.mockRestore();
+      expect(result.success).toBe(true);
+      expect(result.woundApplied).toBe(false);
+    });
+
+    it('returns woundApplied: false for fail-soft path (unknown encounter)', () => {
+      const { state, actorId } = buildTestGameState();
+      const spy = vi.spyOn(encounterContent, 'getAnyEncounterById').mockReturnValue(undefined);
+
+      const progress = initiateEncounter(state, actorId, 'nonexistent', 0);
+      const result = resolveEncounter(state, progress);
+
+      spy.mockRestore();
+      expect(result.woundApplied).toBe(false);
     });
   });
 

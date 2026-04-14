@@ -398,8 +398,8 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
       const promotionTriggers = {
         // Tier promotion: capability tier crossed during this step
         tierPromotion: !!result.growth?.tierCrossed,
-        // Wound: encounter step failed (damage taken) — conservative proxy
-        wound: !result.success,
+        // Wound: outcome explicitly declares appliesWound (precise; not a proxy)
+        wound: result.woundApplied,
       };
       const newTier = checkMidEncounterPromotion(
         progress.effectiveTier,
