@@ -1,7 +1,7 @@
 # Project Status
 > Updated 2026-04-14.
 ## Current Focus
-**Repo & Deploy Hygiene (THR-60/61) complete.** Vault untracked from git (on-disk local only), `.gitignore` guards all 11 vault directories. `vercel.json` drops redundant test run, adds `ignoreCommand` for doc-only skip, adds `Cache-Control: immutable` on `/assets/*`. **Next:** THR-50 DebugPanel extraction & Lodash audit, or more encounter packet content.
+**Phase 22 Hygiene complete (THR-50/60/61).** DebugPanel.tsx 204 → 194 lines, lodash audit clean. Vault untracked from git. `vercel.json` doc-skip + immutable cache. **Next:** THR-43 (targetRequiredProperties filtering), encounter packet content, or TB-105–108 Thematic Pressure.
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
 - **v1.1 Optimization:** In progress — Phases 19-22 (determinism, wiring, performance, hygiene)
@@ -9,6 +9,7 @@
 - **Agent Success Redesign:** Phase 1 ✅, Phase 2 ✅, Phase 3 ✅, Phase 4 ✅ corrected (2026-04-03)
 - **Next:** Phase 5 (encounter migration and early-game retune), or v1.2 Social Systems
 ## Recent Completions (2026-04-14)
+- **THR-50 DebugPanel & Lodash Audit:** `DebugPanel.tsx` 204 → 194 lines (TABS moved to DebugTabContent). Lodash audit: no direct usage, no duplicate bundles. Commit: `3ba90d17`.
 - **THR-60 Untrack vault:** All 11 vault directories removed from git tracking; `.gitignore` guards them. Local vault preserved on disk. Commit: `8ee0a966`.
 - **THR-61 vercel.json:** Drop `npm test &&` from buildCommand, add `ignoreCommand` (doc-only skip), add `/assets/*` immutable cache headers. Commit: `18cc6579`.
 - **THR-23 Encounter Packets (3 templates):** `enc.courtyard_duel` (shaping, Iron/Gold), `enc.brink_rescue` (shaping, Star/Iron), `enc.letters_of_introduction` (background, Gold/Heart). Full support bundles, authored choices, BranchAwareAftermathConfig. Also fixed `fireDoomThresholdEffects` Math.random leak (determinism regression). Commit: `8ee0a966`.
