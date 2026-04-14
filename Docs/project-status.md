@@ -1,6 +1,9 @@
 # Project Status
 > Updated 2026-04-14.
 ## Current Focus
+**Repo & Deploy Hygiene (THR-60/61) complete.** Vault untracked from git (on-disk local only), `.gitignore` guards all 11 vault directories. `vercel.json` drops redundant test run, adds `ignoreCommand` for doc-only skip, adds `Cache-Control: immutable` on `/assets/*`. **Next:** THR-50 DebugPanel extraction & Lodash audit, or more encounter packet content.
+
+## Recent Completions (2026-04-14) (continued)
 **THR-23 Encounter Packets — 3 production templates shipped.** `enc.courtyard_duel` (shaping/Iron-Gold), `enc.brink_rescue` (shaping/Star-Iron), `enc.letters_of_introduction` (background/Gold-Heart). All three use branching ActionStepBranch, full support bundles (4 actors + locations), authored choices, and BranchAwareAftermathConfig. Registered in UNIFIED_ACTION_TEMPLATES. Also fixed a pre-existing determinism regression (Math.random leakage in phaseDoom.ts fireDoomThresholdEffects). **Next:** THR-23 follow-on content (more proof-pack templates), or pick from Linear Ready for Dev.
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
@@ -9,6 +12,8 @@
 - **Agent Success Redesign:** Phase 1 ✅, Phase 2 ✅, Phase 3 ✅, Phase 4 ✅ corrected (2026-04-03)
 - **Next:** Phase 5 (encounter migration and early-game retune), or v1.2 Social Systems
 ## Recent Completions (2026-04-14)
+- **THR-60 Untrack vault:** All 11 vault directories (`/Actions/`, `/Actors/`, `/Cosmology/`, `/Cultures/`, `/Domains/`, `/Locations/`, `/Magic/`, `/Relationships/`, `/Terrain/`, `/Traits/`, `/Index.md`) removed from git tracking via `.gitignore`. Local vault files preserved on disk. Commit: `8ee0a966`.
+- **THR-61 vercel.json:** Drop `npm test &&` from buildCommand (CI gates), add `ignoreCommand` (doc-only skip), add `/assets/*` immutable cache headers. Commit: `18cc6579`.
 - **THR-23 Encounter Packets (3 templates):** `enc.courtyard_duel` (shaping, Iron/Gold branching, Vaera/Breck/arbiter/courtyard support bundle), `enc.brink_rescue` (shaping, Star/Iron branching, Pell/Nessa/disaster-site bundle), `enc.letters_of_introduction` (background, Gold/Heart branching, Maevis/Ferrick/Lira/chamber bundle). Also fixed determinism flakiness in `fireDoomThresholdEffects` — was calling `processEffectEvent` without seeded rng (Math.random leak). Commit: `8ee0a966`.
 - **THR-17 Wound Detection for Mid-Encounter Promotion:** Added `appliesWound?: boolean` to `EncounterOutcome`. `resolveEncounter` returns `woundApplied: boolean` — true only when the selected outcome explicitly declares `appliesWound: true`. Orchestrator now uses `result.woundApplied` instead of the `!result.success` proxy (which was over-firing promotion on any failure). 4 new unit tests. Existing encounters are unaffected (no `appliesWound` flags yet — content authors add them when authoring wound outcomes). Commit: `d722f924`.
 - **THR-8 Attention Tier Model — Phase 6 UI (complete):** All 10 slices shipped. 70 unit tests for core attention tier engine modules. `ThreadDetailView` renders `RecentActivityLog` with NEW badges. Slice 9: dormant/reactivate thread actions — new `set_thread_courtposition` GraphOp type finds the thread edge by source/target and updates `courtPosition`; two `THREAD_MANAGEMENT_TEMPLATES` (`thread.dormant`, `thread.reactivate`) with `bypassRevelationGate`; dormant rows render at 0.5 opacity with grey left-border in ThreadsPanel. Slice 10: `StoryBeatModal` — full-screen interrupt modal for story_beat tier encounters; auto-pauses simulation when `pacingActiveStoryBeat` fires; dismiss handler clears the pacing flag and records `pacingLastCompletedTick`. Commits: `ed2da1f9`, `918eac56`, `678925da`.
