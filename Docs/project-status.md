@@ -1,13 +1,16 @@
 # Project Status
-> Updated 2026-04-14.
+> Updated 2026-04-15.
 ## Current Focus
-**THR-14 shipped.** `choice_set` content primitive complete: type 40, predicate-filtered options, ai_auto/weighted_random/player modes, ChoiceSetModal, 6 proof-pack authored effects, 14 unit tests. Content Architecture project now has no remaining Ready for Dev issues.
+**THR-73 shipped.** `choice_set` player resolution now executes consequences: `onResolve` in `GameView.tsx` calls `executeEffect` per consequence, emits `ChoiceSetPlayerResolvedTrace`, bumps `touchWorld`, and adds a narrative log event. Content Architecture project (choice_set deferral) fully closed.
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
 - **v1.1 Optimization:** In progress — Phases 19-22 (determinism, wiring, performance, hygiene)
 - **v1.2 Social Systems Expansion:** Designed — 5 expansions. Design doc: `Docs/plans/2026-03-31-social-systems-expansion-design.md`
 - **Agent Success Redesign:** Phase 1 ✅, Phase 2 ✅, Phase 3 ✅, Phase 4 ✅ corrected (2026-04-03)
 - **Next:** Phase 5 (encounter migration and early-game retune), or v1.2 Social Systems
+## Recent Completions (2026-04-15)
+- **THR-73 choice_set consequence execution:** `onResolve` now runs `executeEffect` per consequence with per-effect try/catch, nested `pendingChoice` guard, `touchWorld` bump, `TickEvent` to narrative log, and `emitTrace` for debug panel. New trace types: `ChoiceSetPlayerResolvedTrace`, `ChoiceSetPlayerDismissedTrace`. Commit: `3666c7cd`.
+
 ## Recent Completions (2026-04-14)
 - **THR-14 choice_set primitive (TB-128):** Type 40 in effects.ts, `executeChoiceSet` executor (predicate filtering, ai_auto/weighted_random/player modes, PRNG determinism, PendingChoiceData), 14 unit tests, 6 proof-pack effects (loot fork, dialogue branch, sacrifice/save, path fork, faction alignment, mercy test), `ChoiceSetModal` with countdown bar, `pendingChoice` state in `useAgentInteraction`, `AnimateMount`-wrapped modal in `GameView`. Commit: `a46c680e`.
 - **THR-50 DebugPanel & Lodash Audit:** `DebugPanel.tsx` 204 → 194 lines (TABS moved to DebugTabContent). Lodash audit: no direct usage, no duplicate bundles. Commit: `3ba90d17`.
