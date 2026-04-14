@@ -24,6 +24,16 @@ import { EMPTY_STATE_STYLE } from './debugPanelStyles';
 
 export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli';
 
+export const TABS: { id: ViewMode; label: string }[] = [
+  { id: 'feed', label: 'Feed' }, { id: 'agent-follow', label: 'Agent' },
+  { id: 'tick-inspector', label: 'Tick' }, { id: 'social', label: 'Social' },
+  { id: 'encounters', label: 'Encounters' }, { id: 'journey', label: 'Journey' },
+  { id: 'webgl', label: 'WebGL' }, { id: 'factions', label: 'Factions' },
+  { id: 'spheres', label: 'Sphere State' }, { id: 'revelation-log', label: 'Revelations' },
+  { id: 'knowledge-gaps', label: 'Knowledge' }, { id: 'armies', label: 'Armies' },
+  { id: 'cli', label: 'CLI' },
+];
+
 export interface DebugTabContentProps {
   viewMode: ViewMode;
   currentTick: number;

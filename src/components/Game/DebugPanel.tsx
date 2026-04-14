@@ -12,7 +12,7 @@ import type { SphereAggregate } from '../../types/worldSoul';
 import type { WorldGraph } from '../../engine/graph';
 import type { EncounterNotification } from '../../types/encounterVisibility';
 import type { PendingVignette } from '../../types/journeyEngine';
-import { DebugTabContent, type ViewMode } from './debug/DebugTabContent';
+import { DebugTabContent, TABS, type ViewMode } from './debug/DebugTabContent';
 import {
   PANEL_STYLES, CONTAINER_STYLE, HEADER_STYLE, TAB_BAR_STYLE,
   TAB_BUTTON_ACTIVE, TAB_BUTTON_INACTIVE, FILTER_AREA_STYLE,
@@ -42,16 +42,6 @@ export interface DebugPanelProps {
   preferredViewMode?: string;
   preferredViewNonce?: number;
 }
-
-const TABS: { id: ViewMode; label: string }[] = [
-  { id: 'feed', label: 'Feed' }, { id: 'agent-follow', label: 'Agent' },
-  { id: 'tick-inspector', label: 'Tick' }, { id: 'social', label: 'Social' },
-  { id: 'encounters', label: 'Encounters' }, { id: 'journey', label: 'Journey' },
-  { id: 'webgl', label: 'WebGL' }, { id: 'factions', label: 'Factions' },
-  { id: 'spheres', label: 'Sphere State' }, { id: 'revelation-log', label: 'Revelations' },
-  { id: 'knowledge-gaps', label: 'Knowledge' }, { id: 'armies', label: 'Armies' },
-  { id: 'cli', label: 'CLI' },
-];
 
 export const DebugPanel = React.memo(function DebugPanel({
   currentTick, followAgentId, graph, retinueAgents, onClose,
