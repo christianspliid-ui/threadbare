@@ -99,6 +99,7 @@ import { courtPositionToThreadTier } from './encounter-stage/types';
 import { MeetTheFirstFlow } from '../MeetTheFirst/MeetTheFirstFlow';
 import { JourneyVignetteModal } from './JourneyVignetteModal';
 import { PremonitionModal } from './PremonitionModal';
+import { StoryBeatModal } from './StoryBeatModal';
 import type { WhisperNudge, CompulsionCandidate } from '../../types/premonition';
 import { applyWhisperChoice, applyCompulsionChoice, dismissPremonition } from '../../engine/premonitionActions';
 import { buildGateDutyEncounterStageModel } from './encounter-stage/adapters/buildGateDutyEncounterStageModel';
@@ -2278,6 +2279,52 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     }
   }, [activeVignette, interruptsSuppressed, running, setRunning]);
 
+  // ── Story beat modal (pacing governor) ──
+  const activeStoryBeatId: string | null = useMemo(() => {
+    const ascNode = gameState.graph.getNode(gameState.ascendantId);
+    const id = (ascNode?.properties as Record<string, unknown> | undefined)?.pacingActiveStoryBeat;
+    return typeof id === 'string' ? id : null;
+  }, [gameState.graph, gameState.ascendantId, gameState.worldVersion]);
+
+  const activeStoryBeatTemplate = useMemo((): import('../../types/unifiedAction').UnifiedActionTemplate | null => {
+    if (!activeStoryBeatId) return null;
+    // activeStoryBeatId is an action ID — look up the unified action to get the templateId
+    const ua = gameState.unifiedActions?.find(a => a.actionId === activeStoryBeatId);
+    if (ua) {
+      return UNIFIED_ACTION_TEMPLATES.find(t => t.id === ua.templateId) ?? null;
+    }
+    return null;
+  }, [activeStoryBeatId, gameState.unifiedActions]);
+
+  const activeStoryBeatAgentName = useMemo(() => {
+    if (!activeStoryBeatId) return '';
+    const ua = gameState.unifiedActions?.find(a => a.actionId === activeStoryBeatId);
+    if (ua) {
+      const agentNode = gameState.graph.getNode(ua.actorId);
+      return (agentNode?.properties as Record<string, unknown> | undefined)?.name as string ?? agentNode?.name ?? 'Unknown';
+    }
+    return '';
+  }, [activeStoryBeatId, gameState.unifiedActions, gameState.graph]);
+
+  const handleStoryBeatDismiss = useCallback(() => {
+    setGameState(prev => {
+      const ascNode = prev.graph.getNode(prev.ascendantId);
+      if (!ascNode) return prev;
+      const props = ascNode.properties as Record<string, unknown>;
+      props.pacingActiveStoryBeat   = null;
+      props.pacingLastCompletedTick = prev.tick;
+      return { ...prev, worldVersion: (prev.worldVersion ?? 0) + 1 };
+    });
+  }, [setGameState]);
+
+  // Auto-pause simulation when a story beat fires
+  useEffect(() => {
+    if (interruptsSuppressed) return;
+    if (activeStoryBeatId && running) {
+      setRunning(false);
+    }
+  }, [activeStoryBeatId, interruptsSuppressed, running, setRunning]);
+
   // Close detail panel on Escape key
   useEffect(() => {
     if (!selectedThreadNode && !selectedHexCoord) return;
@@ -3032,6 +3079,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           }}
           onChoice={handleJourneyChoice}
           vignette={activeVignette.data}
+        />
+      )}
+
+      {/* Story beat modal (pacing governor) */}
+      {activeStoryBeatId && activeStoryBeatTemplate && !interruptsSuppressed && (
+        <StoryBeatModal
+          open={true}
+          onDismiss={handleStoryBeatDismiss}
+          template={activeStoryBeatTemplate}
+          agentName={activeStoryBeatAgentName}
         />
       )}
 
