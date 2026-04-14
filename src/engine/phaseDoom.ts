@@ -242,12 +242,14 @@ function fireDoomThresholdEffects(
     .filter((n) => n.properties.actorType === 'individual' || n.properties.actorType === 'ascendant');
 
   for (const agent of agents) {
+    const agentEffectRng = mulberry32(state.seed + state.tick * 97 + hashString(agent.id));
     const eventResult = processEffectEvent(
       state.graph,
       agent.id,
       { type: 'doom_threshold', stage },
       states,
       state.tick,
+      agentEffectRng,
     );
     states = applyEffectEventResult(state.graph, eventResult);
 

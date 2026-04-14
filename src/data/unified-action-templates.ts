@@ -41,6 +41,9 @@ import { WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE } from './encounters/wandering-
 import { FLAWED_STEEL_TEMPLATE } from './encounters/flawed-steel';
 import { SOUL_FERRYMAN_TEMPLATE } from './encounters/soul-ferryman';
 import { ROAD_AMBUSH_TEMPLATE } from './encounters/road-ambush';
+import { COURTYARD_DUEL_TEMPLATE } from './encounters/the-courtyard-duel';
+import { BRINK_RESCUE_TEMPLATE } from './encounters/the-brink-rescue';
+import { LETTERS_OF_INTRODUCTION_TEMPLATE } from './encounters/the-letters-of-introduction';
 
 // ─── Migration: ActionTemplateData → UnifiedActionTemplate ─────────
 
@@ -3354,6 +3357,9 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   FLAWED_STEEL_TEMPLATE,
   SOUL_FERRYMAN_TEMPLATE,
   ROAD_AMBUSH_TEMPLATE,
+  COURTYARD_DUEL_TEMPLATE,
+  BRINK_RESCUE_TEMPLATE,
+  LETTERS_OF_INTRODUCTION_TEMPLATE,
 ];
 
 /**
