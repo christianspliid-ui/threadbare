@@ -452,6 +452,34 @@ export interface ActionTriggerEffect {
   readonly cooldownTicks?: number;
 }
 
+// ─── Content Primitive: choice_set (TB-128) ──────────────────────
+
+/** A single selectable option within a choice_set effect */
+export interface ChoiceOption {
+  readonly id: string;
+  readonly label: string;
+  readonly description: string;
+  /** Predicate gate — option is hidden/filtered if predicate is false */
+  readonly predicate?: EffectPredicate;
+  /** Effects that fire when this option is selected */
+  readonly consequences: readonly AttachmentEffect[];
+}
+
+/** Type 19j: Present a filtered list of options; player or AI picks one at resolution/reward time */
+export interface ChoiceSetEffect {
+  readonly type: 'choice_set';
+  /** All authored options (predicates may reduce the visible set at runtime) */
+  readonly options: readonly ChoiceOption[];
+  /**
+   * player     — pauses sim and surfaces ChoiceSetModal to the player
+   * ai_auto    — AI picks the first available option (no weight randomness)
+   * weighted_random — AI picks via seeded PRNG weighted by option index
+   */
+  readonly selectionMode: 'player' | 'ai_auto' | 'weighted_random';
+  /** Timeout before auto-resolving (player mode only); falls back to weighted_random if exceeded */
+  readonly timeoutMs?: number;
+}
+
 /** Type 20a: Alter hex terrain properties */
 export interface AlterTerrainEffect {
   readonly type: 'alter_terrain';
@@ -749,7 +777,9 @@ export type AttachmentEffect =
   | HexEffectEffect
   | GraphMutationEffect
   // Slot system (39)
-  | SlotBonusEffect;
+  | SlotBonusEffect
+  // Interactive (40)
+  | ChoiceSetEffect;
 
 // ═══════════════════════════════════════════════════════════════════
 // Spell Framework
@@ -957,6 +987,25 @@ export interface ActionTriggerFiredTraceDetails {
   readonly payloadKind: ActionTriggerPayload['kind'];
   readonly firesRemaining: number | undefined;
   readonly cooldownUntilTick: number;
+}
+
+// ─── Content Primitive Trace Details (TB-128 choice_set) ─────────
+
+export interface ChoiceSetResolutionTrace {
+  readonly actorId: string;
+  /** Attachment or reward source that contained the choice_set effect */
+  readonly sourceId: string;
+  /** All authored option IDs before predicate filtering */
+  readonly availableOptions: readonly string[];
+  /** Option IDs that passed predicate evaluation (may equal availableOptions) */
+  readonly filteredOptions: readonly string[];
+  /** Which option was selected (null when forwarded to player UI) */
+  readonly selectedOptionId: string | null;
+  readonly selectionMode: 'player' | 'ai_auto' | 'weighted_random';
+  /** Set when all options were filtered out and fallback was used */
+  readonly usedFallback?: boolean;
+  /** Set when selection is deferred to player UI */
+  readonly awaitingPlayerChoice?: boolean;
 }
 
 // ═══════════════════════════════════════════════════════════════════

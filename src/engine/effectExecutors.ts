@@ -36,8 +36,19 @@ import type {
   TransformEffect,
   ActiveTerrainOverlay,
   ActiveRuleOverride,
+  ChoiceSetEffect,
+  ChoiceOption,
+  PredicateContext,
+  ChoiceSetResolutionTrace,
 } from '../types/effects';
-import { CASCADE_MAX_DEPTH, CASCADE_MAX_EFFECTS, COMPEL_MAX_TICKS } from '../data/effect-constants';
+import {
+  CASCADE_MAX_DEPTH,
+  CASCADE_MAX_EFFECTS,
+  COMPEL_MAX_TICKS,
+  CHOICE_SET_MAX_OPTIONS,
+} from '../data/effect-constants';
+import { evaluatePredicate } from './effects/effectPredicates';
+import { mulberry32 } from '../lib/prng';
 
 // ═══════════════════════════════════════════════════════════════════
 // Execution Context
@@ -49,6 +60,21 @@ export interface ExecutionContext {
   targetHex?: { col: number; row: number };
   tick: number;
   graph: WorldGraph;
+  /**
+   * Optional predicate context for choice_set option filtering.
+   * When absent, all options pass (no predicate gates applied).
+   */
+  predicateContext?: PredicateContext;
+}
+
+/** Pending player choice — returned when choice_set fires in 'player' mode */
+export interface PendingChoiceData {
+  /** Stable ID for this pending choice (used by modal to call back) */
+  readonly choiceId: string;
+  readonly actorId: string;
+  readonly sourceId: string;
+  readonly options: readonly ChoiceOption[];
+  readonly timeoutMs: number | undefined;
 }
 
 export interface ExecutionResult {
@@ -61,6 +87,11 @@ export interface ExecutionResult {
   ruleOverrides?: ActiveRuleOverride[];
   /** Warning messages (non-fatal) */
   warnings?: string[];
+  /**
+   * Set when a choice_set fires in 'player' mode.
+   * Caller is responsible for surfacing the ChoiceSetModal.
+   */
+  pendingChoice?: PendingChoiceData;
 }
 
 interface GraphMutation {
@@ -543,6 +574,124 @@ export function executeCascade(
 }
 
 // ═══════════════════════════════════════════════════════════════════
+// Type 40: Choice Set
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Evaluate predicate-gated options and resolve via the chosen selection mode.
+ *
+ * - ai_auto:        first available option (deterministic, no PRNG)
+ * - weighted_random: seeded PRNG pick from available options (seed = tick ^ casterId hash)
+ * - player:         defers to UI — returns PendingChoiceData, no mutations
+ *
+ * Fail-soft: if all options are filtered out, uses the full unfiltered list with a warning.
+ * Fail-soft: empty options array → skip entirely, emit error trace.
+ */
+export function executeChoiceSet(
+  effect: ChoiceSetEffect,
+  ctx: ExecutionContext,
+  sourceId: string = 'unknown',
+): ExecutionResult {
+  // ── Guard: empty options ────────────────────────────────────────
+  if (effect.options.length === 0) {
+    return {
+      success: false,
+      mutations: [],
+      traces: [{
+        effectType: 'choice_set',
+        casterId: ctx.casterId,
+        details: { error: 'empty_options_array', sourceId } satisfies Partial<ChoiceSetResolutionTrace>,
+      }],
+      warnings: ['choice_set has no options — skipped'],
+    };
+  }
+
+  // ── Predicate filtering ─────────────────────────────────────────
+  const allIds = effect.options.map(o => o.id);
+  let available: readonly ChoiceOption[];
+
+  if (ctx.predicateContext) {
+    available = effect.options.filter(
+      o => o.predicate == null || evaluatePredicate(o.predicate, ctx.predicateContext!),
+    );
+  } else {
+    available = effect.options; // no context → all options pass
+  }
+
+  // Cap to UX max
+  const capped = available.slice(0, CHOICE_SET_MAX_OPTIONS);
+
+  // Fallback: if filtering removed everything, use unfiltered list
+  const usedFallback = capped.length === 0;
+  const candidates = usedFallback
+    ? (effect.options.slice(0, CHOICE_SET_MAX_OPTIONS) as ChoiceOption[])
+    : (capped as ChoiceOption[]);
+
+  const filteredIds = candidates.map(o => o.id);
+
+  // ── player mode — defer to UI ───────────────────────────────────
+  if (effect.selectionMode === 'player') {
+    const choiceId = `choice_${ctx.casterId}_${ctx.tick}_${sourceId}`;
+    const trace: ChoiceSetResolutionTrace = {
+      actorId: ctx.casterId,
+      sourceId,
+      availableOptions: allIds,
+      filteredOptions: filteredIds,
+      selectedOptionId: null,
+      selectionMode: 'player',
+      usedFallback: usedFallback || undefined,
+      awaitingPlayerChoice: true,
+    };
+    return {
+      success: true,
+      mutations: [],
+      traces: [{ effectType: 'choice_set', casterId: ctx.casterId, details: trace }],
+      warnings: usedFallback ? ['All choice_set predicates failed — fallback options shown'] : undefined,
+      pendingChoice: {
+        choiceId,
+        actorId: ctx.casterId,
+        sourceId,
+        options: candidates,
+        timeoutMs: effect.timeoutMs,
+      },
+    };
+  }
+
+  // ── AI modes — resolve immediately ─────────────────────────────
+  let selectedOption: ChoiceOption;
+
+  if (effect.selectionMode === 'ai_auto') {
+    selectedOption = candidates[0];
+  } else {
+    // weighted_random: seed from tick xor'd with a hash of casterId
+    const seed = ctx.tick ^ (ctx.casterId.charCodeAt(0) * 0x9e3779b9 | 0);
+    const rng = mulberry32(seed);
+    const idx = Math.floor(rng() * candidates.length);
+    selectedOption = candidates[idx];
+  }
+
+  const trace: ChoiceSetResolutionTrace = {
+    actorId: ctx.casterId,
+    sourceId,
+    availableOptions: allIds,
+    filteredOptions: filteredIds,
+    selectedOptionId: selectedOption.id,
+    selectionMode: effect.selectionMode,
+    usedFallback: usedFallback || undefined,
+  };
+
+  return {
+    success: true,
+    mutations: [],
+    traces: [{ effectType: 'choice_set', casterId: ctx.casterId, details: trace }],
+    warnings: usedFallback ? ['All choice_set predicates failed — fallback options shown'] : undefined,
+    // Note: consequence effects from selectedOption.consequences are NOT executed here.
+    // The caller is responsible for iterating selectedOption.consequences and executing them.
+    // This keeps the executor pure and avoids nested executeEffect calls outside cascade.
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // Generic Effect Dispatcher
 // ═══════════════════════════════════════════════════════════════════
 
@@ -580,6 +729,8 @@ export function executeEffect(
       return executeFactionManipulate(effect, ctx);
     case 'cascade':
       return executeCascade(effect, ctx, cascadeDepth);
+    case 'choice_set':
+      return executeChoiceSet(effect, ctx);
     // Modifier-only effects don't need executors — handled by effectResolver
     case 'passive':
     case 'permanent':

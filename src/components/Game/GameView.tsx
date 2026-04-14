@@ -72,6 +72,7 @@ import { ArtifactSheet } from './ArtifactSheet';
 import { AgentProfileModal } from './AgentProfileModal';
 import { StrandView } from './StrandView';
 import { InterventionConfirm } from './InterventionConfirm';
+import { ChoiceSetModal } from './ChoiceSetModal';
 import { AgendaPicker } from './AgendaPicker';
 import { ScryOverlay } from './ScryOverlay';
 import { ScryProvider } from './contexts/ScryContext';
@@ -306,6 +307,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     selectedThreadNode,
     drawerOpen,
     pendingIntervention,
+    pendingChoice,
+    setPendingChoice,
     profileModalAgentId,
     playingCardId,
     selectedAgenda,
@@ -2648,6 +2651,25 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                     />
                   );
                 })()}
+
+                {/* Player choice modal — fires when a choice_set effect resolves in 'player' mode */}
+                <AnimateMount show={!!pendingChoice} animation="anim-fade">
+                  {pendingChoice && (
+                    <ChoiceSetModal
+                      pending={pendingChoice}
+                      onResolve={(_choiceId, _selectedOptionId) => {
+                        // TODO(THR-XX): Execute selectedOption.consequences on the actor.
+                        // For now: clear the pending state and resume simulation.
+                        setPendingChoice(null);
+                        setRunning(true);
+                      }}
+                      onDismiss={() => {
+                        setPendingChoice(null);
+                        setRunning(true);
+                      }}
+                    />
+                  )}
+                </AnimateMount>
               </>
             )}
 

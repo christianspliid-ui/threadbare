@@ -127,3 +127,14 @@ export const ACTION_TRIGGER_MAX_PER_ATTACHMENT = 2;
 
 /** Default ticks between action_trigger fires when cooldownTicks not specified. */
 export const ACTION_TRIGGER_DEFAULT_COOLDOWN = 6;
+
+// ─── Content Primitive: choice_set (TB-128) ──────────────────────
+
+/** Auto-resolve timeout for player choices (ms before auto-picking highest-weight option). */
+export const CHOICE_SET_DEFAULT_TIMEOUT_MS = 30_000;
+
+/** Max visible options presented to the player (UX cap; excess options are hidden). */
+export const CHOICE_SET_MAX_OPTIONS = 6;
+
+/** Ticks the executor waits before AI auto-resolves (0 = immediate). */
+export const CHOICE_SET_AI_RESOLVE_DELAY_TICKS = 0;

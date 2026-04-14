@@ -3,6 +3,7 @@ import type { GameState } from '../../../types/gameState';
 import type { AscendantArchetype } from '../../../types/influence';
 import type { LocalEncounterMode, InterventionType } from '../../../types/dream';
 import type { AgendaTemplate } from '../../../data/agenda-content';
+import type { PendingChoiceData } from '../../../engine/effectExecutors';
 import { INTERVENTION_DEFINITIONS } from '../../../types/dream';
 import { getRetinueAgents, getThreadedNodes } from '../../../engine/retinue';
 import type { ThreadCategory, ThreadedNode } from '../../../engine/retinue';
@@ -87,6 +88,8 @@ export function useAgentInteraction({
     slotId: string;
     interventionType: InterventionType;
   } | null>(null);
+  /** Pending player choice_set — set when a choice_set effect fires in 'player' mode */
+  const [pendingChoice, setPendingChoice] = useState<PendingChoiceData | null>(null);
   const [playingCardId, setPlayingCardId] = useState<string | null>(null);
   const [selectedAgenda, setSelectedAgenda] = useState<AgendaTemplate | null>(null);
   const [agendaPickerOpen, setAgendaPickerOpen] = useState(false);
@@ -716,6 +719,8 @@ export function useAgentInteraction({
     drawerOpen,
     strandViewAgent,
     pendingIntervention,
+    pendingChoice,
+    setPendingChoice,
     profileModalAgentId,
     playingCardId,
     selectedAgenda,
