@@ -65,3 +65,18 @@ Design/
 
 # Python TTS server
 .venv/
+
+# Obsidian vault (local only — generated/edited in place, not shipped in the build)
+# These directories live on disk for local tooling (Obsidian app, obsidian MCP, generate-vault).
+# Use `npm run generate-vault` or `npm run rebuild-index` to regenerate locally.
+/Actions/
+/Actors/
+/Cosmology/
+/Cultures/
+/Domains/
+/Locations/
+/Magic/
+/Relationships/
+/Terrain/
+/Traits/
+/Index.md
