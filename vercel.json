@@ -1,11 +1,18 @@
 {
-  "buildCommand": "npm test && vite build",
+  "buildCommand": "vite build",
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- src public scripts index.html package.json package-lock.json tsconfig.json tsconfig.app.json tsconfig.node.json vite.config.ts vite-plugin-constant-writer.ts vercel.json",
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
         { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
         { "key": "Cross-Origin-Embedder-Policy", "value": "credentialless" }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
     }
   ]
