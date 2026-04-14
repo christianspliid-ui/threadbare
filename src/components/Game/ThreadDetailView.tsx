@@ -1,12 +1,15 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { AgentInfoCardData } from '../../engine/agentDetail';
 import type { ThreadedNode, ThreadCategory } from '../../engine/retinue';
 import type { WorldGraph } from '../../engine/graph';
 import type { BalanceEvent } from '../../types/balanceEval';
+import type { DigestEntry } from '../../types/attention';
 import { TIER_COLORS } from '../../data/uiColorPalette';
 import { getSphereColor } from '../../data/sphereIcons';
 import type { ReachDomain } from '../../types/traits';
 import { getFactionNetworkSummary } from '../../engine/factionNetwork';
+import { queryDigest } from '../../engine/digestBuffer';
+import { RecentActivityLog } from './RecentActivityLog';
 
 // Domain display names (8 reaches after flesh removal)
 const DOMAIN_NAMES: Record<ReachDomain, string> = {
@@ -39,6 +42,12 @@ interface ThreadDetailViewProps {
   onViewProfile: (nodeId: string, category: ThreadCategory) => void;
   onZoomToLocation?: (locationId: string) => void;
   graph?: WorldGraph;
+  /** Encounter digest buffer — used to show recent activity for agent nodes. */
+  digestBuffer?: DigestEntry[];
+  /** Current simulation tick — used to window recent digest entries. */
+  currentTick?: number;
+  /** The tick at which this agent was last viewed — used to highlight new entries. */
+  lastViewedTick?: number;
 }
 
 export const ThreadDetailView = React.memo(function ThreadDetailView({
@@ -49,6 +58,9 @@ export const ThreadDetailView = React.memo(function ThreadDetailView({
   onViewProfile,
   onZoomToLocation: _onZoomToLocation,
   graph,
+  digestBuffer,
+  currentTick,
+  lastViewedTick = 0,
 }: ThreadDetailViewProps) {
   const tierColor = TIER_COLORS[node.tier] ?? '#6b7280';
   const tierBgColor = `color-mix(in srgb, ${tierColor} 20%, transparent)`;
@@ -148,7 +160,14 @@ export const ThreadDetailView = React.memo(function ThreadDetailView({
         }}
       >
         {node.category === 'agent' && (
-          <AgentDetailBody node={node} agentInfoCard={agentInfoCard} agentEncounterDecision={agentEncounterDecision} />
+          <AgentDetailBody
+            node={node}
+            agentInfoCard={agentInfoCard}
+            agentEncounterDecision={agentEncounterDecision}
+            digestBuffer={digestBuffer}
+            currentTick={currentTick}
+            lastViewedTick={lastViewedTick}
+          />
         )}
         {node.category === 'location' && (
           <LocationDetailBody node={node} graph={graph} />
@@ -370,14 +389,29 @@ function AgentDetailBody({
   node,
   agentInfoCard,
   agentEncounterDecision,
+  digestBuffer,
+  currentTick,
+  lastViewedTick = 0,
 }: {
   node: import('../../engine/retinue').ThreadedAgent;
   agentInfoCard?: AgentInfoCardData | null;
   agentEncounterDecision?: BalanceEvent | null;
+  digestBuffer?: DigestEntry[];
+  currentTick?: number;
+  lastViewedTick?: number;
 }) {
   const activityLabel = node.activityLabel
     ? formatActivityLabel(node.activityLabel, agentEncounterDecision)
     : null;
+
+  const recentEntries = useMemo(() => {
+    if (!digestBuffer) return [];
+    return queryDigest(digestBuffer, {
+      agentId: node.id,
+      fromTick: Math.max(0, (currentTick ?? 0) - 48),
+      toTick: currentTick ?? 999,
+    });
+  }, [digestBuffer, currentTick, node.id]);
 
   if (agentInfoCard) {
     return (
@@ -436,6 +470,13 @@ function AgentDetailBody({
         {agentEncounterDecision && (
           <EncounterDecisionPanel decision={agentEncounterDecision} />
         )}
+
+        {/* Recent Activity Log — background encounter digest for this agent */}
+        {recentEntries.length > 0 && (
+          <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
+            <RecentActivityLog entries={recentEntries} lastViewedTick={lastViewedTick} />
+          </div>
+        )}
       </>
     );
   }
@@ -454,6 +495,13 @@ function AgentDetailBody({
       )}
       {agentEncounterDecision && (
         <EncounterDecisionPanel decision={agentEncounterDecision} />
+      )}
+
+      {/* Recent Activity Log — background encounter digest for this agent */}
+      {recentEntries.length > 0 && (
+        <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
+          <RecentActivityLog entries={recentEntries} lastViewedTick={lastViewedTick} />
+        </div>
       )}
     </>
   );

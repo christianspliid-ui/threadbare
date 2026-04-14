@@ -2805,6 +2805,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                         onViewProfile={handleOpenProfileModal}
                         onZoomToLocation={handleZoomToLocation}
                         graph={gameState.graph}
+                        digestBuffer={selectedThreadNode.category === 'agent' ? (gameState.digestBuffer ?? []) : undefined}
+                        currentTick={selectedThreadNode.category === 'agent' ? gameState.tick : undefined}
+                        lastViewedTick={selectedThreadNode.category === 'agent' ? getLastViewedTick(selectedThreadNode.nodeId) : undefined}
                       />
                     );
                   })()}
