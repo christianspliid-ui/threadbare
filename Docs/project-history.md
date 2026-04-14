@@ -7,6 +7,7 @@
 
 Detailed per-phase implementation status for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
+- ✅ THR-27 Tavern Social Hubs: sublocation auto-seed, culture names, 30% social boost, colocation expansion, density bonus, 10 exclusive templates, sanctify action. (2026-04-15)
 - ✅ THR-14 choice_set primitive (TB-128): type 40 effect, predicate filtering, 3 selection modes, 14 tests, 6 proof-pack effects, ChoiceSetModal player UI. (2026-04-14)
 - ✅ UI/UX Design Infrastructure (THR-45/46/47/48/49): `frontend-ui` skill, `component-selection.md`, `layout-zones.md`, `?view=styleguide` living style guide (17 primitives), `ui-patterns.md` expanded to 24 patterns. (2026-04-13)
 - ✅ TB-129 DoD Hook Enforcement: Claude Code hooks hard-gate commits (tsc + tests + untracked imports), pushes (doc updates + vite build), session stops (loose ends). Cowork role boundary blocks code writes. 5 hook scripts + settings.json config. (2026-04-13)
