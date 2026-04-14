@@ -147,7 +147,10 @@ import {
 } from '../../engine/debugWorldSpawnTools';
 import type { UnifiedAction } from '../../types/unifiedAction';
 import type { ClearanceGateRuntimeState } from '../../types/contentShells';
-import { touchStructure } from '../../engine/simulationRuntime';
+import { touchStructure, touchWorld } from '../../engine/simulationRuntime';
+import { executeEffect } from '../../engine/effectExecutors';
+import type { ExecutionContext } from '../../engine/effectExecutors';
+import { emitTrace } from '../../engine/traceBuffer';
 import { applyEncounterAftermathReaction } from '../../engine/encounterAftermath';
 import {
   markEncounterProgressDisregarded,
@@ -2657,13 +2660,77 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   {pendingChoice && (
                     <ChoiceSetModal
                       pending={pendingChoice}
-                      onResolve={(_choiceId, _selectedOptionId) => {
-                        // TODO(THR-73): Execute selectedOption.consequences on the actor.
-                        // For now: clear the pending state and resume simulation.
-                        setPendingChoice(null);
-                        setRunning(true);
+                      onResolve={(choiceId, selectedOptionId) => {
+                        if (!pendingChoice) return; // guard: race between timeout and click
+
+                        const selectedOption = pendingChoice.options.find(o => o.id === selectedOptionId);
+                        let nestedPending = null as typeof pendingChoice | null;
+
+                        if (selectedOption && selectedOption.consequences.length > 0) {
+                          const ctx: ExecutionContext = {
+                            casterId: pendingChoice.actorId,
+                            tick: gameState.tick,
+                            graph: gameState.graph,
+                          };
+
+                          // Execute each consequence — effects mutate the graph in place
+                          for (const consequence of selectedOption.consequences) {
+                            try {
+                              const result = executeEffect(consequence, ctx);
+                              if (result.pendingChoice) nestedPending = result.pendingChoice;
+                            } catch (err) {
+                              console.error('[THR-73] Consequence effect failed:', consequence.type, err);
+                            }
+                          }
+
+                          // Emit resolution trace for debug panel visibility
+                          emitTrace({
+                            category: 'choice_set_player_resolved',
+                            tick: gameState.tick,
+                            actorId: pendingChoice.actorId,
+                            choiceId,
+                            selectedOptionId,
+                            consequenceCount: selectedOption.consequences.length,
+                            agentId: pendingChoice.actorId,
+                            summary: `Player resolved choice '${choiceId}' → '${selectedOptionId}' (${selectedOption.consequences.length} consequences)`,
+                          });
+
+                          // Bump world version — graph was mutated in place
+                          touchWorld(runtime);
+
+                          // Add player-visible event to the narrative log
+                          setGameState(prev => ({
+                            ...prev,
+                            recentEvents: [
+                              ...prev.recentEvents.slice(-99),
+                              {
+                                id: `evt_choice_resolved_${prev.tick}_${Date.now()}`,
+                                tick: prev.tick,
+                                type: 'choice_set_resolved' as const,
+                                message: selectedOption.label
+                                  ? `Choice made: ${selectedOption.label}`
+                                  : 'Your choice has been made.',
+                                significance: 0.7,
+                              },
+                            ],
+                          }));
+                        }
+
+                        // Queue nested choice (if a consequence produced one) or clear and resume
+                        setPendingChoice(nestedPending);
+                        if (!nestedPending) setRunning(true);
                       }}
                       onDismiss={() => {
+                        if (pendingChoice) {
+                          emitTrace({
+                            category: 'choice_set_player_dismissed',
+                            tick: gameState.tick,
+                            actorId: pendingChoice.actorId,
+                            choiceId: pendingChoice.choiceId,
+                            agentId: pendingChoice.actorId,
+                            summary: `Player dismissed choice '${pendingChoice.choiceId}' — no consequences fired`,
+                          });
+                        }
                         setPendingChoice(null);
                         setRunning(true);
                       }}

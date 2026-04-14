@@ -845,7 +845,9 @@ export type TraceEntry =
   | StrategicCandidateBoardTrace
   | StrategicActionStartedTrace
   | StrategicProjectProgressTrace
-  | StrategicWorldChangeTrace;
+  | StrategicWorldChangeTrace
+  | ChoiceSetPlayerResolvedTrace
+  | ChoiceSetPlayerDismissedTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {
@@ -918,4 +920,24 @@ export interface SlotExpansionTrace extends TraceBase {
   targetSlot: string;
   bonusSlots: number;
   newEffectiveCap: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Choice Set Player Resolution Traces (THR-73)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Trace: player confirmed a choice_set selection and consequences executed */
+export interface ChoiceSetPlayerResolvedTrace extends TraceBase {
+  category: 'choice_set_player_resolved';
+  actorId: string;
+  choiceId: string;
+  selectedOptionId: string;
+  consequenceCount: number;
+}
+
+/** Trace: player dismissed a choice_set modal (timeout or manual cancel, no consequences fired) */
+export interface ChoiceSetPlayerDismissedTrace extends TraceBase {
+  category: 'choice_set_player_dismissed';
+  actorId: string;
+  choiceId: string;
 }

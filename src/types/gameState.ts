@@ -78,7 +78,9 @@ export interface TickEvent {
   // Divine premonition events
     | 'divine_premonition'
   // Avatar movement events
-    | 'avatar_arrival';
+    | 'avatar_arrival'
+  // Player choice resolution events (THR-73)
+    | 'choice_set_resolved';
   message: string;
   /** Optional sphere coloring for UI */
   sphere?: SphereName;
