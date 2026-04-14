@@ -72,7 +72,8 @@ export type GraphOpType =
   | 'add_edge'
   | 'remove_edge'
   | 'update_edge'
-  | 'apply_influence';
+  | 'apply_influence'
+  | 'set_thread_courtposition';
 
 /**
  * Payload for the apply_influence GraphOp.

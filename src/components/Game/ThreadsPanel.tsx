@@ -398,6 +398,7 @@ function CompactThreadRow({
 }: CompactThreadRowProps) {
   const tierColor = TIER_COLORS[node.tier] || TIER_COLOR_DEFAULT;
   const [hovered, setHovered] = useState(false);
+  const isDormant = node.category === 'agent' && node.courtPosition === 'dormant';
 
   // Derive secondary info line
   let secondaryInfo = '';
@@ -457,7 +458,8 @@ function CompactThreadRow({
       className={`rounded cursor-pointer transition-colors duration-150${isSelected ? ' ring-2 ring-amber-400/60' : ''}`}
       style={{
         backgroundColor: isSelected ? 'var(--bg-raised)' : hovered ? 'var(--bg-hover)' : 'var(--bg-raised)',
-        borderLeft: `3px solid ${tierColor}`,
+        borderLeft: `3px solid ${isDormant ? 'var(--text-muted)' : tierColor}`,
+        opacity: isDormant ? 0.5 : 1,
         borderTop: isSelected ? '1px solid rgba(212,160,64,0.3)' : '1px solid transparent',
         borderRight: isSelected ? '1px solid rgba(212,160,64,0.3)' : '1px solid transparent',
         borderBottom: isSelected ? '1px solid rgba(212,160,64,0.3)' : '1px solid transparent',

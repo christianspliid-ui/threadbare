@@ -140,6 +140,9 @@ function executeSingleOp(
       case 'apply_influence':
         return executeApplyInfluence(graph, op, ctx);
 
+      case 'set_thread_courtposition':
+        return executeSetThreadCourtPosition(graph, op, ctx);
+
       default:
         return {
           op,
@@ -430,6 +433,33 @@ function executeApplyInfluence(
   graph.updateNode(targetId, {
     properties: { divineInfluences: [...existing, entry] },
   });
+
+  return { op, success: true };
+}
+
+/**
+ * Set the courtPosition on the thread edge between actor and target.
+ * Used by dormant/reactivate thread actions.
+ *
+ * Requires: op.source (actor, defaults to $actor) + op.target (agent, defaults to $target)
+ *           op.changes.courtPosition — the new court position value (or null to clear)
+ */
+function executeSetThreadCourtPosition(
+  graph: WorldGraph,
+  op: GraphOp,
+  ctx: GraphOpContext,
+): GraphOpResult {
+  const actorId  = resolveRef(op.source ?? '$actor',  ctx);
+  const targetId = resolveRef(op.target ?? '$target', ctx);
+
+  const threadEdges = graph.getIncomingEdges(targetId, 'thread');
+  const edge = threadEdges.find(e => e.source === actorId);
+  if (!edge) {
+    return { op, success: false, error: `No thread edge from ${actorId} to ${targetId}` };
+  }
+
+  const courtPosition = (op.changes ?? op.properties)?.courtPosition ?? null;
+  graph.updateEdge(edge.id, { properties: { courtPosition } });
 
   return { op, success: true };
 }

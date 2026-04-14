@@ -3252,6 +3252,85 @@ export const THREAD_CREATION_TEMPLATES: UnifiedActionTemplate[] = [
   },
 ];
 
+// ─── Thread Management Templates (dormant / reactivate) ───────────
+
+export const THREAD_MANAGEMENT_TEMPLATES: UnifiedActionTemplate[] = [
+  {
+    id: 'thread.dormant',
+    name: 'Dormant Thread',
+    spellName: 'Dormant Thread',
+    rarityTier: 1,
+    intrinsicTier: 'background',
+    description: 'Lets the divine thread go slack, withdrawing active attention from the agent. The agent fades from constant awareness — they will still exist and act, but their encounters no longer surface as tugs. Use when an agent needs no guidance for a time. The thread persists; reactivation is swift.',
+    reach: 'star',
+    crudType: 'update',
+    scale: 'cosmic',
+    steps: [{
+      reach: 'star',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [{
+        op: 'set_thread_courtposition',
+        source: '$actor',
+        target: '$target',
+        changes: { courtPosition: 'dormant' },
+      }],
+      onFailure: [],
+      failBehavior: 'fail_action',
+      narrativeTemplate: 'The thread goes slack. {target} recedes from your active awareness.',
+    }],
+    apCost: 0,
+    essenceCost: 0,
+    actorAffinities: ['ascendant'],
+    targetCategories: ['actor'],
+    targetSubtypes: ['individual'],
+    bypassRevelationGate: true,
+    motivations: ['preservation_transformation', 'revelation_discretion'],
+    narrativeTemplates: {
+      initiation: 'lets the divine thread go slack',
+      success: 'the thread quiets — this agent recedes from active attention',
+      failure: 'the thread resists going dormant',
+    },
+  },
+  {
+    id: 'thread.reactivate',
+    name: 'Reactivate Thread',
+    spellName: 'Reactivate Thread',
+    rarityTier: 1,
+    intrinsicTier: 'background',
+    description: 'Pulls the slack thread taut again, restoring full attention to the agent. Encounters will surface as tugs once more, and the agent re-enters the normal curation queue.',
+    reach: 'star',
+    crudType: 'update',
+    scale: 'cosmic',
+    steps: [{
+      reach: 'star',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [{
+        op: 'set_thread_courtposition',
+        source: '$actor',
+        target: '$target',
+        changes: { courtPosition: 'retinue' },
+      }],
+      onFailure: [],
+      failBehavior: 'fail_action',
+      narrativeTemplate: 'The thread pulls taut. {target} returns to full awareness.',
+    }],
+    apCost: 0,
+    essenceCost: 0,
+    actorAffinities: ['ascendant'],
+    targetCategories: ['actor'],
+    targetSubtypes: ['individual'],
+    bypassRevelationGate: true,
+    motivations: ['loyalty_ambition', 'preservation_transformation'],
+    narrativeTemplates: {
+      initiation: 'pulls the slack thread taut once more',
+      success: 'the thread vibrates with restored awareness — this agent is fully present again',
+      failure: 'the thread remains slack; the agent cannot be drawn back to attention',
+    },
+  },
+];
+
 // ─── Unified Template Registry ────────────────────────────────────
 
 /**
@@ -3268,6 +3347,7 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...HEX_ACTION_TEMPLATES,
   ...REVELATION_ACTION_TEMPLATES,
   ...THREAD_CREATION_TEMPLATES,
+  ...THREAD_MANAGEMENT_TEMPLATES,
   ...NPC_ACTION_TEMPLATES,
   RIVAL_SHRINE_BETRAYAL_TEMPLATE,
   WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE,
