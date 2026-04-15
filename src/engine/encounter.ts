@@ -11,6 +11,12 @@ import type {
   EncounterProgress,
   EncounterOutcome,
   EncounterResolutionSnapshot,
+  LeverageHistoryEntry,
+} from '../types/encounter';
+import {
+  LEVERAGE_STEP_SUCCESS,
+  LEVERAGE_STEP_FAILURE,
+  LEVERAGE_DIFFICULTY_SCALE,
 } from '../types/encounter';
 import type { EncounterResolutionTrace } from '../types/trace';
 import {
@@ -28,6 +34,132 @@ import { handleTierPromotion } from './tierPromotion';
 import type { GrowthResult } from './capabilityGrowth';
 import type { PromotionResult } from './tierPromotion';
 import { appendEvent } from './encounterTimeline';
+import { computeInitialLeverage, isSocialSceneTemplate } from './socialLeverage';
+import { selectCounterArgument, applyCounterModifier } from './socialCounterArgument';
+import type { ReachDomain } from '../types/traits';
+
+// ─── Group Scene Constants ────────────────────────────────────────────────
+
+/** Leverage bonus per supporting participant in a group scene (best_member mode). */
+export const LEVERAGE_GROUP_SUPPORT_BONUS = 0.03;
+
+/** Minimum agents for a group scene (actor + target + participants). */
+export const GROUP_SCENE_MIN_PARTICIPANTS = 3;
+
+/** Maximum agents for a group scene. */
+export const GROUP_SCENE_MAX_PARTICIPANTS = 6;
+
+// ────────────────────────────────────────────────────────────────────────
+// INTERNAL HELPERS
+// ────────────────────────────────────────────────────────────────────────
+
+/**
+ * Check whether a step's conditional gate is satisfied by the current progress.
+ * Returns true if the condition is met (step should fire).
+ * Returns false if the condition is NOT met (step should be skipped).
+ */
+function isConditionMet(
+  conditional: NonNullable<import('../types/encounter').EncounterStep['conditional']>,
+  progress: import('../types/encounter').EncounterProgress,
+): boolean {
+  const leverage = progress.leverage ?? 0;
+  const margin = progress.lastStepMargin ?? 0;
+
+  switch (conditional.type) {
+    case 'leverage_range': {
+      const min = conditional.leverageMin ?? 0;
+      const max = conditional.leverageMax ?? 1;
+      return leverage >= min && leverage <= max;
+    }
+    case 'partial_success': {
+      const min = conditional.marginMin ?? -Infinity;
+      const max = conditional.marginMax ?? Infinity;
+      return margin >= min && margin <= max;
+    }
+    default:
+      return true; // Unknown condition type — don't skip
+  }
+}
+
+/**
+ * Find the participant with the highest capability in a given reach domain.
+ * Used by best_member group resolution mode.
+ * Fail-soft: returns first participant if none have measurable capability.
+ */
+function findBestCapabilityParticipant(
+  state: import('../types/gameState').GameState,
+  participantIds: string[],
+  reach: ReachDomain,
+): string {
+  let bestId = participantIds[0];
+  let bestCap = -1;
+  for (const id of participantIds) {
+    const cap = computeCapability(state.graph, id, reach);
+    if (cap > bestCap) {
+      bestCap = cap;
+      bestId = id;
+    }
+  }
+  return bestId;
+}
+
+/**
+ * Apply group participant support bonuses to leverage.
+ * In best_member mode: each non-resolving supporter adds LEVERAGE_GROUP_SUPPORT_BONUS.
+ * Modifies progress.leverage in place.
+ */
+export function applyGroupSupportLeverage(
+  progress: EncounterProgress,
+  resolvingAgentId: string,
+): void {
+  if (!progress.participantIds || progress.leverage === undefined) return;
+
+  const supporters = progress.participantIds.filter(id => id !== resolvingAgentId);
+  if (supporters.length === 0) return;
+
+  const bonus = supporters.length * LEVERAGE_GROUP_SUPPORT_BONUS;
+  const leverageBefore = progress.leverage;
+  progress.leverage = Math.min(1.0, progress.leverage + bonus);
+
+  const delta = progress.leverage - leverageBefore;
+  if (delta > 0) {
+    if (!progress.leverageHistory) progress.leverageHistory = [];
+    // Record group support as anonymous — no specific source
+    progress.leverageHistory.push({
+      stepIndex: progress.currentEncounterIndex,
+      delta,
+      source: 'step_success',
+    });
+  }
+}
+
+/**
+ * Resolve a group scene step using best_member mode:
+ * - Find the participant with the best capability in the step's reach
+ * - Resolve as if that participant is the actor
+ * - Apply group support leverage bonus
+ *
+ * For consensus/majority modes, caller should resolve each participant
+ * individually and aggregate results — not yet implemented here.
+ *
+ * Returns the ID of the resolving participant (the best member).
+ */
+export function selectGroupStepResolver(
+  state: import('../types/gameState').GameState,
+  progress: EncounterProgress,
+  stepReach: ReachDomain,
+): string {
+  if (!progress.participantIds || progress.participantIds.length === 0) {
+    return progress.actorId;
+  }
+
+  const allParticipants = [
+    progress.actorId,
+    ...(progress.participantIds ?? []),
+  ];
+
+  return findBestCapabilityParticipant(state, allParticipants, stepReach);
+}
 
 // ────────────────────────────────────────────────────────────────────────
 // PUBLIC API
@@ -42,18 +174,31 @@ export function initiateEncounter(
   actorId: string,
   encounterId: string,
   tick: number,
+  targetAgentId?: string,
 ): EncounterProgress {
   const encounter = getAnyEncounterById(encounterId);
   const firstStepDuration = encounter?.steps[0]?.duration ?? 1;
+
+  // Compute initial leverage for social scene templates
+  let initialLeverage: number | undefined;
+  if (encounter && isSocialSceneTemplate(encounter.steps) && targetAgentId) {
+    initialLeverage = computeInitialLeverage(state.graph, actorId, targetAgentId);
+  }
+
   const progress: EncounterProgress = {
     encounterId,
     actorId,
+    targetAgentId,
     currentEncounterIndex: 0,
     history: [],
     resolutionHistory: [],
     status: 'active',
     startedTick: tick,
     occupiedUntilTick: tick + firstStepDuration,
+    ...(initialLeverage !== undefined ? {
+      leverage: initialLeverage,
+      leverageHistory: initialLeverage > 0 ? [] : [],
+    } : {}),
   };
 
   state.encounterProgress.push(progress);
@@ -207,10 +352,63 @@ export function resolveEncounter(
     state.effectStates,
   );
 
+  // ─── Divine effects: Tip the Scales ─────────────────────────────────────
+  // If the player used 'Tip the Scales' on this agent, consume the leverage
+  // shift before computing effective difficulty.
+  const actorNode = state.graph.getNode(progress.actorId);
+  const leverageShift = (actorNode?.properties.socialLeverageShift as number | undefined) ?? 0;
+  if (leverageShift > 0 && progress.leverage !== undefined) {
+    progress.leverage = Math.min(1.0, (progress.leverage ?? 0) + leverageShift);
+    if (!progress.leverageHistory) progress.leverageHistory = [];
+    progress.leverageHistory.push({
+      stepIndex: progress.currentEncounterIndex,
+      delta: leverageShift,
+      source: 'divine_tip_scales',
+    });
+    // Consume the one-shot effect
+    delete (actorNode!.properties as Record<string, unknown>).socialLeverageShift;
+  }
+
+  // ─── Divine effects: Embolden ─────────────────────────────────────────────
+  // If the player used 'Embolden' on this agent, the target's counter-argument
+  // is suppressed for this step. Consume the one-shot flag so it doesn't persist.
+  const counterResistanceActive = (actorNode?.properties.counterResistanceActive as boolean | undefined) ?? false;
+  if (counterResistanceActive) {
+    delete (actorNode!.properties as Record<string, unknown>).counterResistanceActive;
+  }
+
+  // ─── Leverage: modify effective difficulty ──────────────────────────────
+  // Social scene steps with leverageModifiesDifficulty=true get easier as
+  // leverage accumulates. Formula: effective = base × (1 - leverage × scale).
+  const currentLeverage = progress.leverage ?? 0;
+  let effectiveDifficulty = step.difficulty;
+  if (step.leverageModifiesDifficulty && currentLeverage > 0) {
+    effectiveDifficulty = step.difficulty * (1.0 - currentLeverage * LEVERAGE_DIFFICULTY_SCALE);
+    effectiveDifficulty = Math.max(1, effectiveDifficulty); // floor at 1
+  }
+
+  // ─── Counter-argument difficulty modifier ────────────────────────────────
+  // Social scene counter steps (conditional: leverage_range) apply a personality-
+  // driven difficulty modifier from the target's axiological profile.
+  // Embolden (counterResistanceActive, consumed above) suppresses this entirely.
+  if (
+    step.conditional?.type === 'leverage_range' &&
+    progress.targetAgentId &&
+    !counterResistanceActive
+  ) {
+    const counter = selectCounterArgument(
+      state.graph,
+      progress.targetAgentId,
+      step.reach,
+      currentLeverage,
+    );
+    effectiveDifficulty = applyCounterModifier(effectiveDifficulty, counter);
+  }
+
   // Phase 2: Use shared resolution service with difficulty normalization.
   // Legacy encounter difficulty is integer-like (e.g. 12, 25, 30) — normalize to 0..1
   // at this boundary before calling the shared resolver.
-  const normalizedDifficulty = normalizeLegacyDifficulty(step.difficulty);
+  const normalizedDifficulty = normalizeLegacyDifficulty(effectiveDifficulty);
 
   const resolutionInput: ResolutionInput = {
     actorId: progress.actorId,
@@ -238,7 +436,7 @@ export function resolveEncounter(
     stepId: step.id,
     stepName: step.name,
     reach: step.reach,
-    difficulty: step.difficulty,
+    difficulty: effectiveDifficulty,
     normalizedDifficulty,
     capability,
     modifierTotal: modifiers.totalModifier,
@@ -250,6 +448,27 @@ export function resolveEncounter(
     rollBreakdown: resolution.rollBreakdown,
     tick: state.tick,
   };
+
+  // ─── Leverage: accumulate after resolution ───────────────────────────────
+  if (progress.leverage !== undefined) {
+    const rawDelta = success
+      ? (step.leverageOnSuccess ?? LEVERAGE_STEP_SUCCESS)
+      : (step.leverageOnFailure ?? LEVERAGE_STEP_FAILURE);
+
+    // Only accumulate if the step has leverage config defined
+    if (step.leverageOnSuccess !== undefined || step.leverageOnFailure !== undefined) {
+      const leverageBefore = progress.leverage;
+      progress.leverage = Math.max(0.0, Math.min(1.0, progress.leverage + rawDelta));
+
+      const entry: LeverageHistoryEntry = {
+        stepIndex: progress.currentEncounterIndex,
+        delta: progress.leverage - leverageBefore,
+        source: success ? 'step_success' : 'step_failure',
+      };
+      if (!progress.leverageHistory) progress.leverageHistory = [];
+      progress.leverageHistory.push(entry);
+    }
+  }
 
   // Select the appropriate outcome
   const outcome = success ? step.onSuccess : step.onFailure;
@@ -324,6 +543,9 @@ export function resolveEncounter(
     );
   }
 
+  // Store margin for conditional step evaluation in advanceEncounter()
+  progress.lastStepMargin = resolution.roll - (resolution.rollBreakdown?.threshold ?? (resolution.probability * 100));
+
   return {
     success,
     outcome,
@@ -369,12 +591,27 @@ export function advanceEncounter(
   if (success) {
     // Check if there are more steps
     if (progress.currentEncounterIndex < encounter.steps.length - 1) {
-      // Move to next step
-      progress.currentEncounterIndex++;
-      // Set occupiedUntilTick for the new step
-      const nextStep = encounter.steps[progress.currentEncounterIndex];
-      const nextDuration = nextStep?.duration ?? 1;
-      progress.occupiedUntilTick = tick + nextDuration;
+      // Advance to next ELIGIBLE step, skipping conditional ones whose condition isn't met
+      let nextIndex = progress.currentEncounterIndex + 1;
+      while (nextIndex < encounter.steps.length) {
+        const candidate = encounter.steps[nextIndex];
+        if (!candidate.conditional || isConditionMet(candidate.conditional, progress)) {
+          break;
+        }
+        // Condition not met — skip this step
+        nextIndex++;
+      }
+
+      if (nextIndex < encounter.steps.length) {
+        progress.currentEncounterIndex = nextIndex;
+        const nextStep = encounter.steps[nextIndex];
+        const nextDuration = nextStep?.duration ?? 1;
+        progress.occupiedUntilTick = tick + nextDuration;
+      } else {
+        // All remaining steps were conditional and skipped — encounter complete
+        progress.status = 'completed';
+        progress.occupiedUntilTick = undefined;
+      }
     } else {
       // Final step succeeded: completed
       progress.status = 'completed';

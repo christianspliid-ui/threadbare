@@ -103,6 +103,19 @@ export interface EncounterOutcome {
   appliesWound?: boolean;
 }
 
+// ─── Leverage Constants ─────────────────────────────────────────
+
+/** Default leverage gained on a successful social scene step */
+export const LEVERAGE_STEP_SUCCESS = 0.15;
+/** Default leverage lost on a failed social scene step */
+export const LEVERAGE_STEP_FAILURE = -0.10;
+/** How much max leverage (1.0) reduces effective step difficulty (30% reduction) */
+export const LEVERAGE_DIFFICULTY_SCALE = 0.30;
+/** Leverage tier — decisive victory (best outcome) */
+export const LEVERAGE_TIER_HIGH = 0.70;
+/** Leverage tier — negotiated success (moderate outcome) */
+export const LEVERAGE_TIER_MID = 0.40;
+
 // ─── Step Definition ────────────────────────────────────────────
 
 export interface EncounterStep {
@@ -127,6 +140,43 @@ export interface EncounterStep {
   onSuccess: EncounterOutcome;
   /** What happens on failure */
   onFailure: EncounterOutcome;
+
+  // ─── Social scene / leverage fields ─────────────────────────────
+
+  /**
+   * Leverage gained when this step succeeds.
+   * Undefined → no leverage change. Social scene steps use LEVERAGE_STEP_SUCCESS as default.
+   */
+  leverageOnSuccess?: number;
+  /**
+   * Leverage change when this step fails (typically negative).
+   * Undefined → no leverage change.
+   */
+  leverageOnFailure?: number;
+  /**
+   * If true, accumulated leverage reduces this step's effective difficulty.
+   * Formula: effectiveDifficulty = baseDifficulty × (1 - leverage × LEVERAGE_DIFFICULTY_SCALE).
+   * Default false for non-leverage steps.
+   */
+  leverageModifiesDifficulty?: boolean;
+  /**
+   * Conditional — if present, this step only fires when the condition is met.
+   * If condition fails, the step is skipped (advance to the next non-conditional step).
+   */
+  conditional?: {
+    /** Condition type */
+    type: 'leverage_range' | 'partial_success';
+    /** For leverage_range: step only fires if progress.leverage >= this value */
+    leverageMin?: number;
+    /** For leverage_range: step only fires if progress.leverage <= this value */
+    leverageMax?: number;
+    /**
+     * For partial_success: step fires if the previous step's roll margin was in this range.
+     * margin = roll - threshold (positive = passed, negative = failed).
+     */
+    marginMin?: number;
+    marginMax?: number;
+  };
 }
 
 // ─── Encounter Template ─────────────────────────────────────────
@@ -308,6 +358,33 @@ export interface EncounterResolutionSnapshot {
 
 // ─── Encounter Progress (Runtime State) ─────────────────────────
 
+// ─── Leverage History Entry ─────────────────────────────────────
+
+export interface LeverageHistoryEntry {
+  stepIndex: number;
+  delta: number;
+  source:
+    | 'step_success'
+    | 'step_failure'
+    | 'bond_bonus'
+    | 'wealth_bonus'
+    | 'power_bonus'
+    | 'rank_bonus'
+    | 'divine_tip_scales';
+}
+
+// ─── Group Encounter Participant ────────────────────────────────
+
+export interface GroupParticipantOutcome {
+  success: boolean;
+  leverageContribution: number;
+  role: 'initiator' | 'supporter' | 'opponent' | 'observer';
+}
+
+export type GroupResolutionMode = 'consensus' | 'majority' | 'best_member' | 'leader_decides';
+
+// ─── Encounter Progress (Runtime State) ─────────────────────────
+
 export interface EncounterProgress {
   /** Which encounter template this tracks */
   encounterId: string;
@@ -337,4 +414,33 @@ export interface EncounterProgress {
   occupiedUntilTick?: number;
   /** Effective attention tier — computed at initiation, may be promoted mid-encounter. */
   effectiveTier?: AttentionTier | 'invisible';
+
+  // ─── Social scene / leverage state ──────────────────────────────
+
+  /**
+   * Accumulated social leverage score (0.0–1.0).
+   * Undefined for non-social encounters — treated as 0.0 (no effect).
+   * Set at encounter start by computeInitialLeverage(), updated after each step.
+   */
+  leverage?: number;
+  /** Audit trail of leverage changes across steps. */
+  leverageHistory?: LeverageHistoryEntry[];
+
+  // ─── Group scene state ───────────────────────────────────────────
+
+  /**
+   * All participating agent IDs for group scenes (beyond actor + target).
+   * Undefined for standard 1v1 scenes.
+   */
+  participantIds?: string[];
+  /** Per-participant outcomes for group scene resolution. */
+  participantOutcomes?: Record<string, GroupParticipantOutcome>;
+  /** Resolution mode for group scenes. Undefined = standard 1v1 (not a group scene). */
+  groupResolutionMode?: GroupResolutionMode;
+
+  /**
+   * The last step's resolution margin (roll - threshold, positive = passed).
+   * Used by conditional step logic to determine whether to fire 'partial_success' steps.
+   */
+  lastStepMargin?: number;
 }

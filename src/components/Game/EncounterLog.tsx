@@ -1,8 +1,9 @@
 import { memo } from 'react';
 import type { EncounterTemplate, EncounterProgress } from '../../types/encounter';
-import { THREAT_RATING_COLORS } from '../../types/encounter';
+import { THREAT_RATING_COLORS, LEVERAGE_TIER_HIGH, LEVERAGE_TIER_MID } from '../../types/encounter';
 import { resolveEncounterNarrative } from '../../data/encounter-content';
 import { Tooltip } from '../shared/Tooltip';
+import { ProgressBar } from '../shared/ProgressBar';
 
 interface EncounterLogProps {
   progress: EncounterProgress;
@@ -29,6 +30,13 @@ export const EncounterLog = memo(function EncounterLog({
   const isAbandoned = progress.status === 'abandoned';
 
   const threatColor = THREAT_RATING_COLORS[template.threatRating] ?? '#a78bfa';
+
+  // Leverage color: green (high) → amber (mid) → slate (low)
+  const lev = progress.leverage;
+  const leverageColor = lev === undefined ? '#64748b'
+    : lev >= LEVERAGE_TIER_HIGH ? '#4ade80'
+    : lev >= LEVERAGE_TIER_MID  ? '#f59e0b'
+    : '#64748b';
 
   return (
     <div
@@ -113,6 +121,34 @@ export const EncounterLog = memo(function EncounterLog({
         })}
         </div>
       </Tooltip>
+
+      {/* Social leverage bar — only visible for social scene encounters */}
+      {progress.leverage !== undefined && (
+        <Tooltip label="Social Leverage" desc="Accumulated influence toward your goal. Higher leverage reduces the difficulty of key appeal steps.">
+          <div className="mb-3 cursor-help">
+            <div className="flex items-center justify-between mb-1">
+              <span
+                className="text-xs uppercase tracking-wider"
+                style={{ color: 'var(--text-tertiary)', fontFamily: 'var(--font-display)' }}
+              >
+                Leverage
+              </span>
+              <span
+                className="text-xs font-mono"
+                style={{ color: leverageColor }}
+              >
+                {Math.round(progress.leverage * 100)}%
+              </span>
+            </div>
+            <ProgressBar
+              progress={progress.leverage}
+              color={leverageColor}
+              glow={progress.leverage >= LEVERAGE_TIER_HIGH}
+              className="h-1.5"
+            />
+          </div>
+        </Tooltip>
+      )}
 
       {/* Current step narrative */}
       {currentStep && (

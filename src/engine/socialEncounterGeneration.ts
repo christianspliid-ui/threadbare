@@ -39,6 +39,7 @@ import type { WorldGraph } from './graph';
 import type { DistanceMatrix } from './distanceMatrix';
 import { computeRewardEstimate, computeTotalTickCost } from './encounterCache';
 import { SOCIAL_ENCOUNTER_TEMPLATES } from '../data/social-encounter-content';
+import { SOCIAL_SCENE_TEMPLATES } from '../data/social-scene-templates';
 import { TAVERN_ENCOUNTER_TEMPLATES } from '../data/tavern-encounter-content';
 import { FACTION_SOCIAL_TEMPLATES } from '../data/faction-encounter-content';
 import { FACTION_DEFINITIONS } from '../data/faction-definitions';
@@ -172,10 +173,11 @@ export function generateSocialCandidates(
 
     const questPriorityMultiplier = tavernBoostMultiplier + densityBonus;
 
-    // Filter standard social templates by location type
-    const matchingTemplates = SOCIAL_ENCOUNTER_TEMPLATES.filter(tmpl =>
-      tmpl.locationTypes.includes(locationType),
-    );
+    // Filter standard social templates + deep social scene templates by location type
+    const matchingTemplates = [
+      ...SOCIAL_ENCOUNTER_TEMPLATES,
+      ...SOCIAL_SCENE_TEMPLATES,
+    ].filter(tmpl => tmpl.locationTypes.includes(locationType));
 
     // Include tavern-exclusive templates when acting agent is at a tavern
     const extraTemplates: EncounterTemplate[] = atTavern

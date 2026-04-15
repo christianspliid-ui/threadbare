@@ -570,6 +570,78 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       failure: 'the mortal constitution repels the divine touch',
     },
   },
+
+  // ─── Social Scene Divine Actions ─────────────────────────────────────────
+
+  {
+    id: 'action.social.tip_scales',
+    name: 'Tip the Scales',
+    spellName: 'Divine Whisper',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description: 'You breathe a word into the space between thoughts during a negotiation or social contest. The target\'s argument sharpens — or their opponent\'s resolve wavers. The scales of the conversation shift toward the outcome you desire. Use it to help a bonded agent close a deal, win an argument, or hold firm under pressure.',
+    reach: 'shadow',
+    crudType: 'update',
+    scale: 'personal',
+    steps: [{
+      reach: 'shadow',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [{
+        op: 'update_node',
+        nodeId: '$target',
+        changes: { socialLeverageShift: 0.20 },
+      }],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 12,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'mind',
+    motivations: ['loyalty_ambition'],
+    targetCategories: ['agent'] as unknown as readonly import('../types/targetContext').TargetCategory[],
+    narrativeTemplates: {
+      initiation: 'breathes a word into the space between thoughts',
+      success: 'the scales of the conversation shift — something in the negotiation tilts',
+      failure: 'the social current resists the divine nudge',
+    },
+  },
+
+  {
+    id: 'action.social.embolden',
+    name: 'Embolden',
+    spellName: 'Divine Courage',
+    rarityTier: 1,
+    intrinsicTier: 'present',
+    description: 'A warmth fills the target\'s chest — the certainty that they are not alone. Their voice steadies. Their gaze hardens. In the next confrontation or social challenge, they will not be moved by counter-arguments or intimidation. Use it when a bonded agent needs to hold firm against pressure they might otherwise fold to.',
+    reach: 'heart',
+    crudType: 'update',
+    scale: 'personal',
+    steps: [{
+      reach: 'heart',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [{
+        op: 'update_node',
+        nodeId: '$target',
+        changes: { counterResistanceActive: true },
+      }],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 8,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'force',
+    motivations: ['courage_prudence'],
+    targetCategories: ['agent'] as unknown as readonly import('../types/targetContext').TargetCategory[],
+    narrativeTemplates: {
+      initiation: 'breathes divine courage into a mortal chest',
+      success: 'the target\'s resolve hardens — they will not be moved',
+      failure: 'the divine courage fails to find purchase in this mortal',
+    },
+  },
 ];
 
 // ─── Location Action Templates ────────────────────────────────────

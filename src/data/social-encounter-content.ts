@@ -844,18 +844,28 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
 
 // ─── Lookup Functions ───────────────────────────────────────
 
+import { SOCIAL_SCENE_TEMPLATES } from './social-scene-templates';
+
+/** Combined pool: legacy 14 templates + 30 new deep social scene templates. */
+export const ALL_SOCIAL_TEMPLATES: EncounterTemplate[] = [
+  ...SOCIAL_ENCOUNTER_TEMPLATES,
+  ...SOCIAL_SCENE_TEMPLATES,
+];
+
 /**
  * Return all social encounters available at a given location type.
  */
 export function getSocialEncountersByLocationType(locationType: string): EncounterTemplate[] {
-  return SOCIAL_ENCOUNTER_TEMPLATES.filter(encounter =>
+  return ALL_SOCIAL_TEMPLATES.filter(encounter =>
     encounter.locationTypes.includes(locationType),
   );
 }
 
 /**
  * Get a social encounter template by ID.
+ * Checks legacy templates first, then deep social scene templates.
  */
 export function getSocialEncounterById(id: string): EncounterTemplate | undefined {
-  return SOCIAL_ENCOUNTER_TEMPLATES.find(t => t.id === id);
+  return SOCIAL_ENCOUNTER_TEMPLATES.find(t => t.id === id)
+    ?? SOCIAL_SCENE_TEMPLATES.find(t => t.id === id);
 }
