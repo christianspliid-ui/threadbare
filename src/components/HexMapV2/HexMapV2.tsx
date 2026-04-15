@@ -41,6 +41,9 @@ import { createThreadLineMesh } from './scene/ThreadLineMesh';
 import type { ThreadLineData, ThreadLineLayer, TugData } from './scene/ThreadLineMesh';
 import { createActivityIconLayer } from './scene/ActivityIconMesh';
 import type { ActivityIconData, ActivityIconLayer } from './scene/ActivityIconMesh';
+import { createStrategicMarkerLayer } from './scene/StrategicMarkerMesh';
+import type { StrategicMarkerLayer } from './scene/StrategicMarkerMesh';
+import type { HexStrategicOverlay } from '../../engine/strategicPresentation';
 import { ACTIVITY_ICON_ZOOM_HIDE_THRESHOLD } from '../../data/attention-constants';
 import { createAnomalyShimmerLayer, tickAnomalyShimmers, triggerAnomalyRevealFlash } from './scene/AnomalyShimmerMesh';
 import type { AnomalyShimmerLayerGroup } from './scene/AnomalyShimmerMesh';
@@ -270,6 +273,8 @@ export interface HexMapV2Props {
   threadLines?: ThreadLineData[];
   /** Activity icon data — reach micro-icons for active encounters (Attention UI) */
   activityIcons?: ActivityIconData[];
+  /** Strategic hex overlays — project dots and control pips per hex. */
+  strategicOverlays?: Map<string, HexStrategicOverlay>;
   /** Rich tug data keyed by agent ID — drives reach-coloured vibration animation. */
   activeTugs?: Map<string, TugData>;
   /**
@@ -444,7 +449,7 @@ function createSelectionOverlayMesh(size: number, color: string): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, battles, threadLines, activityIcons, activeTugs, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex },
+    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, battles, threadLines, activityIcons, strategicOverlays, activeTugs, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -473,6 +478,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     // Thread line and activity icon layer refs (Attention UI)
     const threadLineLayerRef = useRef<ThreadLineLayer | null>(null);
     const activityIconLayerRef = useRef<ActivityIconLayer | null>(null);
+    // Strategic marker layer ref — project dots and control pips
+    const strategicMarkerLayerRef = useRef<StrategicMarkerLayer | null>(null);
     // Attention ratio ref — kept in sync with prop, read by the animation loop.
     const attentionRatioRef = useRef<number>(attentionRatio);
     attentionRatioRef.current = attentionRatio;
@@ -872,6 +879,12 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         scene.add(activityIconLayer.group);
         activityIconLayerRef.current = activityIconLayer;
 
+        // Build strategic marker layer — project dots + control pips on hex map.
+        // Renders between locations (9) and agents (10).
+        const strategicMarkerLayer = createStrategicMarkerLayer();
+        scene.add(strategicMarkerLayer.group);
+        strategicMarkerLayerRef.current = strategicMarkerLayer;
+
         // Build anomaly shimmer/halo layer — undiscovered glow + discovered ring
         if (anomalies && anomalies.length > 0) {
           const anomalyLayer = createAnomalyShimmerLayer(anomalies);
@@ -1062,16 +1075,20 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           if (anomalyLayer) {
             tickAnomalyShimmers(anomalyLayer, clock.getElapsedTime());
           }
-          // Tick thread lines and activity icons (Attention UI)
+          // Tick thread lines, activity icons, and strategic markers (Attention UI)
           const threadLineLayer = threadLineLayerRef.current;
           const activityIconLayer = activityIconLayerRef.current;
-          if (threadLineLayer || activityIconLayer) {
+          const strategicMarkerLayer = strategicMarkerLayerRef.current;
+          if (threadLineLayer || activityIconLayer || strategicMarkerLayer) {
             const elapsedS = clock.getElapsedTime();
             if (threadLineLayer) {
               threadLineLayer.tick(elapsedS, attentionRatioRef.current);
             }
             if (activityIconLayer) {
               activityIconLayer.tick(elapsedS);
+            }
+            if (strategicMarkerLayer) {
+              strategicMarkerLayer.tick(elapsedS);
             }
           }
           // Tick sphere-colored particle bursts (action activation feedback)
@@ -1255,6 +1272,10 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           if (activityIconLayerRef.current) {
             activityIconLayerRef.current.dispose();
             activityIconLayerRef.current = null;
+          }
+          if (strategicMarkerLayerRef.current) {
+            strategicMarkerLayerRef.current.dispose();
+            strategicMarkerLayerRef.current = null;
           }
           // Dispose agent sprite groups
           agentSpriteGroup.dispose();
@@ -1441,6 +1462,16 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     // ── Activity icon zoom visibility ──
     useEffect(() => {
       activityIconLayerRef.current?.setVisible(zoomK >= ACTIVITY_ICON_ZOOM_HIDE_THRESHOLD);
+    }, [zoomK]);
+
+    // ── Strategic marker layer rebuild when strategicOverlays prop changes ──
+    useEffect(() => {
+      strategicMarkerLayerRef.current?.rebuild(strategicOverlays ?? new Map());
+    }, [strategicOverlays]);
+
+    // ── Strategic marker zoom visibility (same threshold as activity icons) ──
+    useEffect(() => {
+      strategicMarkerLayerRef.current?.setVisible(zoomK >= ACTIVITY_ICON_ZOOM_HIDE_THRESHOLD);
     }, [zoomK]);
 
     // ── Mouse event handlers ───────────────────────────────────────

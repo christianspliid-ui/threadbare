@@ -16,6 +16,8 @@ import {
   groupEncounterPoolCandidates,
   summarizeEncounterPoolDominance,
 } from './encounterActivityPresentation';
+import type { AgentStrategicSummary } from '../../engine/strategicPresentation';
+import { getBehaviorFamilyPresentation, STRATEGIC_BADGE_BG_OPACITY } from '../../engine/strategicPresentation';
 
 // ─── Section config ───────────────────────────────────────────────
 
@@ -40,6 +42,8 @@ interface ThreadsPanelProps {
   agentEncounterDecisions?: Map<string, BalanceEvent>;
   onEncounterClick?: (agentId: string, encounter: ActiveEncounterDisplay, template: EncounterTemplate) => void;
   onToggleAttentionMode?: (threadEdgeId: string) => void;
+  /** Per-agent strategic summaries for badge display. Only agents with strategic activity will have entries. */
+  agentStrategicSummaries?: Map<string, AgentStrategicSummary>;
 }
 
 interface EncounterPoolModalState {
@@ -61,6 +65,8 @@ interface CompactThreadRowProps {
   onEncounterClick?: (agentId: string, encounter: ActiveEncounterDisplay, template: EncounterTemplate) => void;
   onToggleAttentionMode?: (threadEdgeId: string) => void;
   onOpenEncounterPool?: (agentName: string, decision: BalanceEvent) => void;
+  /** Strategic summary for this agent, if they have active strategic activity. */
+  strategicSummary?: AgentStrategicSummary;
 }
 
 function getVisibleEncounterPool(decision?: BalanceEvent): number | null {
@@ -395,6 +401,7 @@ function CompactThreadRow({
   onEncounterClick,
   onToggleAttentionMode,
   onOpenEncounterPool,
+  strategicSummary,
 }: CompactThreadRowProps) {
   const tierColor = TIER_COLORS[node.tier] || TIER_COLOR_DEFAULT;
   const [hovered, setHovered] = useState(false);
@@ -449,6 +456,25 @@ function CompactThreadRow({
       )
     : null;
 
+  // Strategic badge — agents only, when there is active strategic activity
+  const familyPresentation = strategicSummary
+    ? getBehaviorFamilyPresentation(strategicSummary.behaviorFamily)
+    : null;
+  const strategicBadgeText = strategicSummary
+    ? (() => {
+        if (strategicSummary.activeProject) {
+          return `${strategicSummary.activeProject.displayName} — ${strategicSummary.activeProject.progressLabel}`;
+        }
+        if (strategicSummary.primaryControl) {
+          const suffix = strategicSummary.controlCount > 1
+            ? ` +${strategicSummary.controlCount - 1}`
+            : '';
+          return `Holds ${strategicSummary.primaryControl.targetName}${suffix}`;
+        }
+        return null;
+      })()
+    : null;
+
   return (
     <div
       role="listitem"
@@ -469,7 +495,7 @@ function CompactThreadRow({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Name line + eye icon */}
+      {/* Name line + family glyph + eye icon */}
       <div className="flex items-center justify-between gap-1" style={{ minWidth: 0 }}>
         <span
           className="truncate"
@@ -484,6 +510,20 @@ function CompactThreadRow({
         >
           {node.name}
         </span>
+        {/* Behavior family glyph — only for agents with strategic activity */}
+        {familyPresentation && (
+          <span
+            title={familyPresentation.label}
+            style={{
+              fontSize: '12px',
+              color: familyPresentation.color,
+              flexShrink: 0,
+              lineHeight: 1,
+            }}
+          >
+            {familyPresentation.glyph}
+          </span>
+        )}
         {eyeLocationId && (
           <IconButton
             icon={<span>&#x1F441;</span>}
@@ -522,35 +562,60 @@ function CompactThreadRow({
         </div>
       )}
 
-      {node.category === 'agent' && encounterPool !== null && (
-        <button
-          type="button"
-          data-testid="encounter-pool-button"
-          aria-label={`Open encounter pool for ${node.name}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (agentEncounterDecision && onOpenEncounterPool) {
-              onOpenEncounterPool(node.name, agentEncounterDecision);
-            }
-          }}
-          style={{
-            marginTop: '2px',
-            padding: 0,
-            fontFamily: 'var(--font-body)',
-            fontSize: 'var(--text-xs)',
-            color: encounterPool > 0 ? 'var(--text-secondary)' : 'var(--accent-gold)',
-            lineHeight: 1.2,
-            backgroundColor: 'transparent',
-            border: 'none',
-            cursor: agentEncounterDecision && onOpenEncounterPool ? 'pointer' : 'default',
-            textDecoration: agentEncounterDecision && onOpenEncounterPool ? 'underline' : 'none',
-            textUnderlineOffset: '2px',
-            width: 'fit-content',
-          }}
-        >
-          Pool {encounterPool}
-          {encounterPoolBaseline !== null && encounterPoolBaseline !== encounterPool ? ` / ${encounterPoolBaseline}` : ''}
-        </button>
+      {/* Bottom row: encounter pool button + strategic badge (flex, share space) */}
+      {(node.category === 'agent' && (encounterPool !== null || strategicBadgeText)) && (
+        <div className="flex items-center gap-1" style={{ marginTop: '2px', minWidth: 0 }}>
+          {/* Strategic badge — flex-1 so it takes available space, truncates if needed */}
+          {strategicBadgeText && familyPresentation && (
+            <div
+              className="truncate"
+              style={{
+                flex: 1,
+                minWidth: 0,
+                padding: '1px 4px',
+                borderRadius: 4,
+                fontFamily: 'var(--font-body)',
+                fontSize: 'var(--text-xs)',
+                lineHeight: 1.2,
+                color: familyPresentation.color,
+                backgroundColor: `color-mix(in srgb, ${familyPresentation.color} ${Math.round(STRATEGIC_BADGE_BG_OPACITY * 100)}%, transparent)`,
+              }}
+              title={strategicBadgeText}
+            >
+              {familyPresentation.glyph} {strategicBadgeText}
+            </div>
+          )}
+          {/* Encounter pool button — flex-shrink-0 so it doesn't get squeezed */}
+          {encounterPool !== null && (
+            <button
+              type="button"
+              data-testid="encounter-pool-button"
+              aria-label={`Open encounter pool for ${node.name}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (agentEncounterDecision && onOpenEncounterPool) {
+                  onOpenEncounterPool(node.name, agentEncounterDecision);
+                }
+              }}
+              style={{
+                flexShrink: 0,
+                padding: 0,
+                fontFamily: 'var(--font-body)',
+                fontSize: 'var(--text-xs)',
+                color: encounterPool > 0 ? 'var(--text-secondary)' : 'var(--accent-gold)',
+                lineHeight: 1.2,
+                backgroundColor: 'transparent',
+                border: 'none',
+                cursor: agentEncounterDecision && onOpenEncounterPool ? 'pointer' : 'default',
+                textDecoration: agentEncounterDecision && onOpenEncounterPool ? 'underline' : 'none',
+                textUnderlineOffset: '2px',
+              }}
+            >
+              Pool {encounterPool}
+              {encounterPoolBaseline !== null && encounterPoolBaseline !== encounterPool ? ` / ${encounterPoolBaseline}` : ''}
+            </button>
+          )}
+        </div>
       )}
 
       {/* Encounter badge (agents only) */}
@@ -645,6 +710,7 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
   agentEncounterDecisions,
   onEncounterClick,
   onToggleAttentionMode,
+  agentStrategicSummaries,
 }: ThreadsPanelProps) {
   // Agents open by default; all other sections collapsed
   const [expandedSections, setExpandedSections] = useState<Record<ThreadCategory, boolean>>({
@@ -752,6 +818,7 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
                     onEncounterClick={onEncounterClick}
                     onToggleAttentionMode={onToggleAttentionMode}
                     onOpenEncounterPool={(agentName, decision) => setEncounterPoolModal({ agentName, decision })}
+                    strategicSummary={node.category === 'agent' ? agentStrategicSummaries?.get(node.id) : undefined}
                   />
                 ))}
               </div>

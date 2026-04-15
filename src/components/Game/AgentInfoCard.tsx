@@ -2,12 +2,18 @@ import React, { useMemo, useState, useEffect } from 'react';
 import type { AgentInfoCardData } from '../../engine/agentDetail';
 import type { WorldGraph } from '../../engine/graph';
 import type { ReachDomain } from '../../types/traits';
+import type { StrategicRuntimeState } from '../../types/strategicAction';
 import { ReachIcon } from '../icons';
 import { Tooltip } from '../shared/Tooltip';
 import { generateEntityProse } from '../../engine/proseGenerator';
 import { CATEGORY_GLYPHS, CATEGORY_COLORS } from '../../data/ambition-categories';
 import { getSphereColor } from '../../data/sphereIcons';
 import { BACKSTORY_CONSTANTS } from '../../types/prose';
+import {
+  getAgentStrategicSummary,
+  getAgentStrategicHistory,
+  getBehaviorFamilyPresentation,
+} from '../../engine/strategicPresentation';
 
 interface AgentInfoCardProps {
   card: AgentInfoCardData;
@@ -19,6 +25,8 @@ interface AgentInfoCardProps {
   seed?: number;
   /** Current game tick — enables tick-based prose cache (PERF-01) */
   tick?: number;
+  /** Strategic runtime state — enables the "Designs" section showing agent strategic activity. */
+  strategicState?: StrategicRuntimeState;
 }
 
 // Domain display names
@@ -51,6 +59,7 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
   graph,
   seed,
   tick,
+  strategicState,
 }: AgentInfoCardProps) {
   const knowledgeLevelLabel = KNOWLEDGE_LEVEL_DISPLAY[card.knowledgeLevel] || card.knowledgeLevel;
 
@@ -60,6 +69,17 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
     if (!graph || seed === undefined || tick === undefined) return '';
     return generateEntityProse(card.id, graph, seed, 'summary', tick);
   }, [card.id, graph, seed, tick]);
+
+  // Strategic summary — only computed when strategicState + graph + tick are available
+  const strategicSummary = useMemo(() => {
+    if (!strategicState || !graph || tick === undefined) return null;
+    return getAgentStrategicSummary(strategicState, card.id, graph, tick);
+  }, [strategicState, card.id, graph, tick]);
+
+  const strategicHistory = useMemo(() => {
+    if (!strategicState || tick === undefined) return [];
+    return getAgentStrategicHistory(strategicState, card.id, tick);
+  }, [strategicState, card.id, tick]);
 
   return (
     <div
@@ -432,6 +452,79 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
         {/* Their Story teaser (Recognised+ knowledge, Tier 1+ influence) */}
         {card.backstory && card.backstory.strata.length > 0 && (
           <BackstoryTeaser card={card} onViewProfile={onViewProfile} />
+        )}
+
+        {/* Designs — strategic activity section (hidden when no strategic data) */}
+        {strategicSummary && (
+          <div>
+            <h3 className="section-heading mb-1.5">Designs</h3>
+
+            {/* Active project */}
+            {strategicSummary.activeProject && (() => {
+              const fp = getBehaviorFamilyPresentation(strategicSummary.behaviorFamily);
+              return (
+                <div
+                  className="rounded px-2 py-1.5 mb-1.5"
+                  style={{
+                    backgroundColor: 'var(--bg-raised)',
+                    borderLeft: `2px solid ${fp.color}`,
+                  }}
+                >
+                  <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
+                    {fp.glyph} {strategicSummary.activeProject.displayName}
+                  </div>
+                  <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                    {strategicSummary.activeProject.progressLabel}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Control stances */}
+            {strategicSummary.controlCount > 0 && (
+              <div className="mb-1.5">
+                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginBottom: '2px' }}>Holds:</div>
+                {strategicSummary.primaryControl && (() => {
+                  const fp = getBehaviorFamilyPresentation(strategicSummary.behaviorFamily);
+                  const healthColor =
+                    strategicSummary.primaryControl.healthLabel === 'firm'      ? 'var(--text-secondary)'
+                    : strategicSummary.primaryControl.healthLabel === 'weakening' ? '#aa8a5a'
+                    : '#b85450';
+                  return (
+                    <div style={{ fontSize: 'var(--text-xs)' }}>
+                      <span style={{ color: fp.color }}>{fp.glyph}</span>{' '}
+                      <span style={{ color: 'var(--text-primary)' }}>{strategicSummary.primaryControl.targetName}</span>{' '}
+                      <span style={{ color: healthColor }}>— {strategicSummary.primaryControl.healthLabel}</span>
+                      {strategicSummary.controlCount > 1 && (
+                        <span style={{ color: 'var(--text-muted)' }}> +{strategicSummary.controlCount - 1} more</span>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* History timeline */}
+            {strategicHistory.length > 0 && (
+              <div>
+                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginBottom: '2px' }}>History:</div>
+                <div className="space-y-0.5">
+                  {strategicHistory.map((entry, idx) => {
+                    const prefix = entry.outcome === 'completed' ? '✓' : entry.outcome === 'failed' ? '✕' : '—';
+                    const color =
+                      entry.outcome === 'completed' ? 'var(--text-secondary)'
+                      : entry.outcome === 'failed'    ? '#b85450'
+                      : 'var(--text-muted)';
+                    return (
+                      <div key={idx} style={{ fontSize: 'var(--text-xs)', color }}>
+                        {prefix} {entry.displayName} — {entry.ticksAgo} ticks ago
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
         )}
       </div>
 

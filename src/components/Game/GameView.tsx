@@ -167,6 +167,12 @@ import {
   getEncounterActivityIconKey,
   getSelectedEncounterPoolCandidate,
 } from './encounterActivityPresentation';
+import {
+  getHexStrategicOverlays,
+  getAgentStrategicSummary,
+  type AgentStrategicSummary,
+  type HexStrategicOverlay,
+} from '../../engine/strategicPresentation';
 
 interface GameViewProps {
   archetype: AscendantArchetype;
@@ -726,6 +732,23 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     latestThreadEncounterDecisions,
     runtime.worldVersion,
   ]);
+
+  // ── Strategic overlay data (hex map dots + ThreadsPanel summaries) ──
+  // Rebuilds when strategicState changes (each tick where agents take strategic actions).
+  const hexStrategicOverlays = useMemo<Map<string, HexStrategicOverlay>>(() => {
+    return getHexStrategicOverlays(gameState.strategicState, gameState.graph);
+  }, [gameState.strategicState, gameState.graph]);
+
+  const agentStrategicSummaries = useMemo<Map<string, AgentStrategicSummary>>(() => {
+    const result = new Map<string, AgentStrategicSummary>();
+    if (!gameState.strategicState) return result;
+    for (const node of threadedNodes) {
+      if (node.category !== 'agent') continue;
+      const summary = getAgentStrategicSummary(gameState.strategicState, node.id, gameState.graph, gameState.tick);
+      if (summary) result.set(node.id, summary);
+    }
+    return result;
+  }, [gameState.strategicState, gameState.graph, gameState.tick, threadedNodes]);
 
   // ── Location render data adapter (graph → LocationNode[]) ──
   // TB-086: Key off structuralCacheVersion (not worldVersion) — locationSubtype
@@ -2606,6 +2629,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   onHexHover={setHoveredHex}
                   onAgentClick={(agentId) => handleThreadNodeSelect(agentId, 'agent')}
                   onArmyClick={(armyId) => handleOpenProfileModal(armyId, 'army')}
+                  strategicOverlays={hexStrategicOverlays}
                 />
 
                 <AvatarHUD
@@ -2874,6 +2898,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             seed={gameState.seed}
             sphereAggregate={gameState.worldSoul?.aggregate}
             agentKnowledge={gameState.agentKnowledge}
+            strategicState={gameState.strategicState}
           />
         ) : (
           <div className="flex flex-shrink-0" style={{ alignItems: 'stretch' }}>
@@ -2944,6 +2969,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                         digestBuffer={selectedThreadNode.category === 'agent' ? (gameState.digestBuffer ?? []) : undefined}
                         currentTick={selectedThreadNode.category === 'agent' ? gameState.tick : undefined}
                         lastViewedTick={selectedThreadNode.category === 'agent' ? getLastViewedTick(selectedThreadNode.nodeId) : undefined}
+                        strategicState={selectedThreadNode.category === 'agent' ? gameState.strategicState : undefined}
                       />
                     );
                   })()}
@@ -2981,6 +3007,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   agentEncounterDecisions={latestThreadEncounterDecisions}
                   onEncounterClick={handleEncounterClick}
                   onToggleAttentionMode={handleToggleAttentionMode}
+                  agentStrategicSummaries={agentStrategicSummaries}
                 />
                 <div style={{ marginTop: 'var(--panel-padding)' }}>
                   <WorldPulse

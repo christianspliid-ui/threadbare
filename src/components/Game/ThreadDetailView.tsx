@@ -4,12 +4,18 @@ import type { ThreadedNode, ThreadCategory } from '../../engine/retinue';
 import type { WorldGraph } from '../../engine/graph';
 import type { BalanceEvent } from '../../types/balanceEval';
 import type { DigestEntry } from '../../types/attention';
+import type { StrategicRuntimeState } from '../../types/strategicAction';
 import { TIER_COLORS } from '../../data/uiColorPalette';
 import { getSphereColor } from '../../data/sphereIcons';
 import type { ReachDomain } from '../../types/traits';
 import { getFactionNetworkSummary } from '../../engine/factionNetwork';
 import { queryDigest } from '../../engine/digestBuffer';
 import { RecentActivityLog } from './RecentActivityLog';
+import {
+  getAgentStrategicSummary,
+  getAgentStrategicHistory,
+  getBehaviorFamilyPresentation,
+} from '../../engine/strategicPresentation';
 
 // Domain display names (8 reaches after flesh removal)
 const DOMAIN_NAMES: Record<ReachDomain, string> = {
@@ -48,6 +54,8 @@ interface ThreadDetailViewProps {
   currentTick?: number;
   /** The tick at which this agent was last viewed — used to highlight new entries. */
   lastViewedTick?: number;
+  /** Strategic runtime state — enables the "Designs" section for agent nodes. */
+  strategicState?: StrategicRuntimeState;
 }
 
 export const ThreadDetailView = React.memo(function ThreadDetailView({
@@ -61,6 +69,7 @@ export const ThreadDetailView = React.memo(function ThreadDetailView({
   digestBuffer,
   currentTick,
   lastViewedTick = 0,
+  strategicState,
 }: ThreadDetailViewProps) {
   const tierColor = TIER_COLORS[node.tier] ?? '#6b7280';
   const tierBgColor = `color-mix(in srgb, ${tierColor} 20%, transparent)`;
@@ -167,6 +176,8 @@ export const ThreadDetailView = React.memo(function ThreadDetailView({
             digestBuffer={digestBuffer}
             currentTick={currentTick}
             lastViewedTick={lastViewedTick}
+            strategicState={strategicState}
+            graph={graph}
           />
         )}
         {node.category === 'location' && (
@@ -392,6 +403,8 @@ function AgentDetailBody({
   digestBuffer,
   currentTick,
   lastViewedTick = 0,
+  strategicState,
+  graph,
 }: {
   node: import('../../engine/retinue').ThreadedAgent;
   agentInfoCard?: AgentInfoCardData | null;
@@ -399,10 +412,22 @@ function AgentDetailBody({
   digestBuffer?: DigestEntry[];
   currentTick?: number;
   lastViewedTick?: number;
+  strategicState?: StrategicRuntimeState;
+  graph?: WorldGraph;
 }) {
   const activityLabel = node.activityLabel
     ? formatActivityLabel(node.activityLabel, agentEncounterDecision)
     : null;
+
+  const strategicSummary = useMemo(() => {
+    if (!strategicState || !graph || currentTick === undefined) return null;
+    return getAgentStrategicSummary(strategicState, node.id, graph, currentTick);
+  }, [strategicState, node.id, graph, currentTick]);
+
+  const strategicHistory = useMemo(() => {
+    if (!strategicState || currentTick === undefined) return [];
+    return getAgentStrategicHistory(strategicState, node.id, currentTick);
+  }, [strategicState, node.id, currentTick]);
 
   const recentEntries = useMemo(() => {
     if (!digestBuffer) return [];
@@ -475,6 +500,43 @@ function AgentDetailBody({
         {recentEntries.length > 0 && (
           <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
             <RecentActivityLog entries={recentEntries} lastViewedTick={lastViewedTick} />
+          </div>
+        )}
+
+        {/* Designs — strategic activity for this agent */}
+        {strategicSummary && (
+          <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontFamily: 'var(--font-display)', marginBottom: 'var(--space-1)' }}>
+              Designs
+            </div>
+            {strategicSummary.activeProject && (() => {
+              const pres = getBehaviorFamilyPresentation(strategicSummary.behaviorFamily);
+              return (
+                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>
+                  <span style={{ color: pres.color }}>{pres.glyph}</span>
+                  {' '}{strategicSummary.activeProject.displayName}
+                  <span style={{ color: 'var(--text-muted)' }}> — {strategicSummary.activeProject.progressLabel}</span>
+                </div>
+              );
+            })()}
+            {strategicSummary.primaryControl && (
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontFamily: 'var(--font-body)', marginTop: '2px' }}>
+                {strategicSummary.primaryControl.targetName}
+                <span style={{ color: 'var(--text-muted)' }}> — {strategicSummary.primaryControl.healthLabel}</span>
+              </div>
+            )}
+            {strategicHistory.length > 0 && (
+              <div style={{ marginTop: 'var(--space-1)' }}>
+                {strategicHistory.slice(0, 3).map((entry, i) => (
+                  <div key={i} style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>
+                    <span style={{ color: entry.outcome === 'completed' ? '#6a9a6e' : entry.outcome === 'failed' ? '#b85450' : 'var(--text-muted)' }}>
+                      {entry.outcome === 'completed' ? '✓' : entry.outcome === 'failed' ? '✕' : '—'}
+                    </span>
+                    {' '}{entry.displayName}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </>
