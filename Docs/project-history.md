@@ -7,6 +7,7 @@
 
 Detailed per-phase implementation status for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
+- ✅ THR-9 Strategic Actions UI/HexMap Visibility: strategicPresentation.ts selectors, StrategicMarkerMesh Three.js layer, ThreadsPanel badge, ThreadDetailView Designs section, DebugPanel Strategic tab, full GameView wiring. (2026-04-15)
 - ✅ THR-28 Deep Social Scenes: 30 templates (7 categories), leverage mechanic, counter-argument system (9 axes × 2 poles), conditional step branching, group resolution, Tip the Scales + Embolden divine actions, leverage bar UI, 26 tests. (2026-04-15)
 - ✅ THR-27 Tavern Social Hubs: sublocation auto-seed, culture names, 30% social boost, colocation expansion, density bonus, 10 exclusive templates, sanctify action. (2026-04-15)
 - ✅ THR-14 choice_set primitive (TB-128): type 40 effect, predicate filtering, 3 selection modes, 14 tests, 6 proof-pack effects, ChoiceSetModal player UI. (2026-04-14)
