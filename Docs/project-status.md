@@ -1,14 +1,15 @@
 # Project Status
 > Updated 2026-04-15.
 ## Current Focus
-**THR-27 shipped.** Social Systems Expansion, Phase 1: Tavern Social Hubs. Tavern sublocations auto-seed in all settlement tiers, boost social encounter questPriority by 30%, expand co-location to include parent-location agents, and unlock 10 tavern-exclusive encounter templates. `sub.sanctify_tavern` divine action added.
+**THR-28 shipped.** Social Systems Expansion, Phase 2: Deep Social Scenes. 30 new 3-5 step social scene templates with leverage mechanic, personality-driven counter-arguments, conditional branching, group resolution, and two divine player actions (Tip the Scales, Embolden).
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
 - **v1.1 Optimization:** In progress — Phases 19-22 (determinism, wiring, performance, hygiene)
 - **v1.2 Social Systems Expansion:** Designed — 5 expansions. Design doc: `Docs/plans/2026-03-31-social-systems-expansion-design.md`
 - **Agent Success Redesign:** Phase 1 ✅, Phase 2 ✅, Phase 3 ✅, Phase 4 ✅ corrected (2026-04-03)
-- **Next:** Phase 5 (encounter migration and early-game retune), or v1.2 Social Systems
+- **Next:** Phase 3 of Social Systems Expansion, or Phase 5 encounter migration
 ## Recent Completions (2026-04-15)
+- **THR-28 Deep Social Scenes:** 30 social scene templates (7 categories). Leverage mechanic (0–1.0) seeded from bond/wealth/power/rank, accumulates per step, reduces difficulty on key steps. Counter-argument system driven by target's dominant axiological axis (9 axes × 2 poles, rock-paper-scissors difficulty modifier). Conditional step skip (Counter fires only below 0.70 leverage). Group scene resolution (best_member + per-supporter bonus). Divine actions: Tip the Scales (+0.20 leverage shift) and Embolden (suppress counter-argument). Leverage bar UI in EncounterLog. 26 tests. Commit: `9a8b81ed`.
 - **THR-27 Tavern Social Hubs:** Tavern sublocation type auto-seeds in hamlet/town/city/capital (×1/1/2/2). Culture-aware generated names (7 pools). 30% questPriority boost + parent colocation expansion + density bonus when at tavern. 10 tavern-exclusive encounter templates. `sub.sanctify_tavern` action (heart/life shaping). 32 tests. Commit: `0640af2c`.
 - **THR-73 choice_set consequence execution:** `onResolve` now runs `executeEffect` per consequence with per-effect try/catch, nested `pendingChoice` guard, `touchWorld` bump, `TickEvent` to narrative log, and `emitTrace` for debug panel. New trace types: `ChoiceSetPlayerResolvedTrace`, `ChoiceSetPlayerDismissedTrace`. Commit: `3666c7cd`.
 
