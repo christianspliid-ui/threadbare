@@ -4,6 +4,7 @@ import { RIVAL_SHRINE_BETRAYAL_TEMPLATE } from '../../../../../data/encounters/r
 import type { EncounterNotification } from '../../../../../types/encounterVisibility';
 import type { UnifiedAction, UnifiedActionTemplate, ActionStep } from '../../../../../types/unifiedAction';
 import { buildUnifiedEncounterStageModel } from '../buildUnifiedEncounterStageModel';
+import { enrichProse, gatherNarrativeContext } from '../../../../../engine/proseEnrichment';
 
 // ─── Fixtures ─────────────────────────────────────────────────────
 
@@ -642,6 +643,399 @@ describe('buildUnifiedEncounterStageModel', () => {
 
       // Step 0 difficulty is 0 → Trivial
       expect(model.header.threatLabel).toBe('Trivial');
+    });
+  });
+
+  // ─── Prose enrichment parity + regression lock ────────────────────
+  //
+  // These tests verify that the unified adapter enriches all narrative
+  // strings identically to calling enrichProse() directly. They serve as
+  // the quality gate for every content phase that migrates templates.
+
+  describe('enrichProse parity and regression lock', () => {
+    /** Build a graph with rich agent state: faction, location, weapon artifact, ally. */
+    function buildRichGraph(): WorldGraph {
+      const graph = new WorldGraph();
+      graph.addNode({
+        id: 'agent.richscout',
+        type: 'actor',
+        name: 'Serafina',
+        properties: { actorType: 'individual', gender: 'female' },
+      });
+      graph.addNode({ id: 'loc.keep', type: 'location', name: 'Thornwall Keep', properties: {} });
+      graph.addNode({
+        id: 'artifact.blade',
+        type: 'artifact',
+        name: 'The Ashen Blade',
+        properties: { tier: 'storied', reach: 'iron' },
+      });
+      graph.addNode({
+        id: 'npc.ally',
+        type: 'actor',
+        name: 'Brother Cael',
+        properties: { actorType: 'individual' },
+      });
+      graph.addNode({ id: 'faction.guild', type: 'faction', name: 'Ironblood Guild', properties: {} });
+      graph.addEdge({ id: 'e1', type: 'located_at', source: 'agent.richscout', target: 'loc.keep', properties: {} });
+      graph.addEdge({ id: 'e2', type: 'possesses', source: 'agent.richscout', target: 'artifact.blade', properties: {} });
+      // relates_to is the edge type used by getAgentBonds
+      graph.addEdge({ id: 'e3', type: 'relates_to', source: 'agent.richscout', target: 'npc.ally', properties: { sentiment: 0.8 } });
+      // rank >= 3 is required for factionRank to be non-null (enables {has_faction} conditional)
+      graph.addEdge({ id: 'e4', type: 'member_of', source: 'agent.richscout', target: 'faction.guild', properties: { role: 'member', rank: 3 } });
+      return graph;
+    }
+
+    /** Template exercising every placeholder variant and conditional block. */
+    const PLACEHOLDER_TEMPLATE: UnifiedActionTemplate = {
+      id: 'test.placeholder_heavy',
+      rarityTier: 1,
+      intrinsicTier: 'background',
+      name: 'The Enriched Encounter',
+      reach: 'iron',
+      crudType: 'read',
+      scale: 'local',
+      steps: [
+        {
+          reach: 'iron',
+          duration: { min: 1, max: 2 },
+          difficulty: 0.4,
+          onSuccess: [],
+          onFailure: [],
+          failBehavior: 'continue_weakened',
+          narrativeTemplate: '{name} stands at {location} with {artifact:weapon}, trusting {ally:strongest}. {?has_faction}The {faction} watches.{/has_faction}',
+          successAfterimage: '{name} succeeded at {location}.',
+          failureAfterimage: '{name} failed at {location}.',
+        } satisfies ActionStep,
+      ],
+      apCost: 1,
+      actorAffinities: ['individual'],
+      motivations: [],
+      narrativeTemplates: {
+        initiation: '{name} arrives at {location}. {?has_ally}An ally stands nearby.{/has_ally}',
+        success: '{name} prevailed.',
+        failure: '{name} fell.',
+      },
+    };
+
+    function buildRichAction(): UnifiedAction {
+      return {
+        actionId: 'ua_rich_1',
+        actorId: 'agent.richscout',
+        templateId: PLACEHOLDER_TEMPLATE.id,
+        targetId: 'loc.keep',
+        scale: 'local',
+        source: 'agent',
+        startTick: 1,
+        currentStep: 0,
+        stepProgress: 0,
+        stepDuration: 2,
+        resolved: false,
+        stepOutcomes: [],
+      };
+    }
+
+    function buildRichNotification(): EncounterNotification {
+      return {
+        id: 'notif-rich-1',
+        agentId: 'agent.richscout',
+        agentName: 'Serafina',
+        courtPosition: 'the_first',
+        encounterId: PLACEHOLDER_TEMPLATE.id,
+        encounterName: PLACEHOLDER_TEMPLATE.name,
+        prose: 'Something stirs.',
+        choices: [
+          {
+            id: 'c1',
+            text: 'Proceed',
+            interventionType: 'supportive',
+            probabilityBoost: 0,
+            essenceCost: 0,
+          },
+        ],
+        createdTick: 1,
+        autoResolveTick: null,
+        viewed: false,
+        resolved: false,
+      };
+    }
+
+    it('parity: narrative paragraphs match direct enrichProse output for same inputs', () => {
+      const graph = buildRichGraph();
+      const ctx = gatherNarrativeContext(graph, 'agent.richscout');
+      const expectedText = enrichProse(
+        '{name} stands at {location} with {artifact:weapon}, trusting {ally:strongest}. {?has_faction}The {faction} watches.{/has_faction}',
+        ctx,
+      );
+
+      const model = buildUnifiedEncounterStageModel({
+        template: PLACEHOLDER_TEMPLATE,
+        activeAction: buildRichAction(),
+        notification: buildRichNotification(),
+        agentName: 'Serafina',
+        threadTier: 'strong',
+        graph,
+        essence: 10,
+      });
+
+      const allText = model.narrative.paragraphs
+        .flatMap(p => p.segments)
+        .map(s => s.text)
+        .join(' ');
+      expect(allText).toContain(expectedText.trim());
+    });
+
+    it('regression: {name} resolves in narrative', () => {
+      const graph = buildRichGraph();
+      const model = buildUnifiedEncounterStageModel({
+        template: PLACEHOLDER_TEMPLATE,
+        activeAction: buildRichAction(),
+        notification: buildRichNotification(),
+        agentName: 'Serafina',
+        threadTier: 'strong',
+        graph,
+        essence: 10,
+      });
+
+      const allText = model.narrative.paragraphs.flatMap(p => p.segments).map(s => s.text).join(' ');
+      expect(allText).toContain('Serafina');
+      expect(allText).not.toMatch(/\{name\}/);
+    });
+
+    it('regression: {location} resolves in narrative', () => {
+      const graph = buildRichGraph();
+      const model = buildUnifiedEncounterStageModel({
+        template: PLACEHOLDER_TEMPLATE,
+        activeAction: buildRichAction(),
+        notification: buildRichNotification(),
+        agentName: 'Serafina',
+        threadTier: 'strong',
+        graph,
+        essence: 10,
+      });
+
+      const allText = model.narrative.paragraphs.flatMap(p => p.segments).map(s => s.text).join(' ');
+      expect(allText).toContain('Thornwall Keep');
+      expect(allText).not.toMatch(/\{location\}/);
+    });
+
+    it('regression: {artifact:weapon} resolves in narrative', () => {
+      const graph = buildRichGraph();
+      const model = buildUnifiedEncounterStageModel({
+        template: PLACEHOLDER_TEMPLATE,
+        activeAction: buildRichAction(),
+        notification: buildRichNotification(),
+        agentName: 'Serafina',
+        threadTier: 'strong',
+        graph,
+        essence: 10,
+      });
+
+      const allText = model.narrative.paragraphs.flatMap(p => p.segments).map(s => s.text).join(' ');
+      expect(allText).toContain('The Ashen Blade');
+      expect(allText).not.toMatch(/\{artifact:weapon\}/);
+    });
+
+    it('regression: {ally:strongest} resolves in narrative', () => {
+      const graph = buildRichGraph();
+      const model = buildUnifiedEncounterStageModel({
+        template: PLACEHOLDER_TEMPLATE,
+        activeAction: buildRichAction(),
+        notification: buildRichNotification(),
+        agentName: 'Serafina',
+        threadTier: 'strong',
+        graph,
+        essence: 10,
+      });
+
+      const allText = model.narrative.paragraphs.flatMap(p => p.segments).map(s => s.text).join(' ');
+      expect(allText).toContain('Brother Cael');
+      expect(allText).not.toMatch(/\{ally:strongest\}/);
+    });
+
+    it('regression: {?has_faction}...{/has_faction} conditional resolves when faction present', () => {
+      const graph = buildRichGraph();
+      const model = buildUnifiedEncounterStageModel({
+        template: PLACEHOLDER_TEMPLATE,
+        activeAction: buildRichAction(),
+        notification: buildRichNotification(),
+        agentName: 'Serafina',
+        threadTier: 'strong',
+        graph,
+        essence: 10,
+      });
+
+      const allText = model.narrative.paragraphs.flatMap(p => p.segments).map(s => s.text).join(' ');
+      // Conditional block should be rendered (agent has a faction)
+      expect(allText).toContain('watches');
+      expect(allText).not.toMatch(/\{[?/]/);
+    });
+
+    it('regression: {?has_ally}...{/has_ally} conditional resolves in initiation prose', () => {
+      const graph = buildRichGraph();
+      const model = buildUnifiedEncounterStageModel({
+        template: PLACEHOLDER_TEMPLATE,
+        activeAction: buildRichAction(),
+        notification: buildRichNotification(),
+        agentName: 'Serafina',
+        threadTier: 'strong',
+        graph,
+        essence: 10,
+      });
+
+      // Initiation prose is used in scene.situationProse
+      expect(model.scene.situationProse).toContain('An ally stands nearby');
+      expect(model.scene.situationProse).not.toMatch(/\{[?/]/);
+    });
+
+    it('regression: {?has_faction} conditional suppressed when no faction', () => {
+      const graph = new WorldGraph();
+      graph.addNode({
+        id: 'agent.loner',
+        type: 'actor',
+        name: 'Isolde',
+        properties: { actorType: 'individual' },
+      });
+      graph.addNode({ id: 'loc.ruins', type: 'location', name: 'Broken Ruins', properties: {} });
+      graph.addEdge({ id: 'e1', type: 'located_at', source: 'agent.loner', target: 'loc.ruins', properties: {} });
+
+      const lonerAction: UnifiedAction = {
+        ...buildRichAction(),
+        actorId: 'agent.loner',
+        targetId: 'loc.ruins',
+      };
+      const lonerNotification: EncounterNotification = {
+        ...buildRichNotification(),
+        agentId: 'agent.loner',
+        agentName: 'Isolde',
+      };
+
+      const model = buildUnifiedEncounterStageModel({
+        template: PLACEHOLDER_TEMPLATE,
+        activeAction: lonerAction,
+        notification: lonerNotification,
+        agentName: 'Isolde',
+        threadTier: 'strong',
+        graph,
+        essence: 10,
+      });
+
+      const allText = model.narrative.paragraphs.flatMap(p => p.segments).map(s => s.text).join(' ');
+      // Faction conditional should be suppressed
+      expect(allText).not.toContain('watches');
+      expect(allText).not.toMatch(/\{[?/]/);
+    });
+
+    it('regression: pronouns resolve in narrative ({they}/{them}/{their})', () => {
+      const graph = buildRichGraph(); // Serafina is female
+      const templateWithPronouns: UnifiedActionTemplate = {
+        ...PLACEHOLDER_TEMPLATE,
+        id: 'test.pronoun_test',
+        steps: [
+          {
+            ...PLACEHOLDER_TEMPLATE.steps[0],
+            narrativeTemplate: '{They} drew {their} weapon. {name} trusts {them}.',
+          } as ActionStep,
+        ],
+      };
+
+      const model = buildUnifiedEncounterStageModel({
+        template: templateWithPronouns,
+        activeAction: { ...buildRichAction(), templateId: 'test.pronoun_test' },
+        notification: buildRichNotification(),
+        agentName: 'Serafina',
+        threadTier: 'strong',
+        graph,
+        essence: 10,
+      });
+
+      const allText = model.narrative.paragraphs.flatMap(p => p.segments).map(s => s.text).join(' ');
+      expect(allText).toContain('She drew her weapon');
+      expect(allText).not.toMatch(/\{[Tt]hey?\}|\{their\}|\{them\}/);
+    });
+
+    it('regression: afterimage strings are enriched (successAfterimage)', () => {
+      const graph = buildRichGraph();
+      const action: UnifiedAction = {
+        ...buildRichAction(),
+        currentStep: 1,
+        stepOutcomes: ['success' as const],
+      };
+      // Template with only 1 step resolved
+      const singleStepTemplate: UnifiedActionTemplate = {
+        ...PLACEHOLDER_TEMPLATE,
+        steps: [PLACEHOLDER_TEMPLATE.steps[0]],
+      };
+
+      const model = buildUnifiedEncounterStageModel({
+        template: singleStepTemplate,
+        activeAction: { ...action, currentStep: 0, resolved: true },
+        notification: buildRichNotification(),
+        agentName: 'Serafina',
+        threadTier: 'strong',
+        graph,
+        essence: 10,
+      });
+
+      // successAfterimage: '{name} succeeded at {location}.'
+      expect(model.history[0].afterimage).toContain('Serafina');
+      expect(model.history[0].afterimage).toContain('Thornwall Keep');
+      expect(model.history[0].afterimage).not.toMatch(/\{name\}|\{location\}/);
+    });
+
+    it('regression: aftermath overview is enriched', () => {
+      const graph = buildRichGraph();
+      const action: UnifiedAction = {
+        ...buildRichAction(),
+        resolved: true,
+        outcome: 'success',
+        stepOutcomes: ['success' as const],
+        aftermathSummary: {
+          encounterId: PLACEHOLDER_TEMPLATE.id,
+          outcome: 'success',
+          overview: '{name} brought glory to {location}.',
+          changes: [],
+          reactionPrompt: 'What next?',
+          reactions: [],
+        },
+      };
+
+      const model = buildUnifiedEncounterStageModel({
+        template: PLACEHOLDER_TEMPLATE,
+        activeAction: action,
+        notification: buildRichNotification(),
+        agentName: 'Serafina',
+        threadTier: 'strong',
+        graph,
+        essence: 10,
+      });
+
+      expect(model.aftermath!.overview).toContain('Serafina');
+      expect(model.aftermath!.overview).toContain('Thornwall Keep');
+      expect(model.aftermath!.overview).not.toMatch(/\{name\}|\{location\}/);
+    });
+
+    it('regression: no raw braces remain in any narrative surface after enrichment', () => {
+      const graph = buildRichGraph();
+      const model = buildUnifiedEncounterStageModel({
+        template: PLACEHOLDER_TEMPLATE,
+        activeAction: buildRichAction(),
+        notification: buildRichNotification(),
+        agentName: 'Serafina',
+        threadTier: 'strong',
+        graph,
+        essence: 10,
+      });
+
+      const surfaces = [
+        model.header.subtitle ?? '',
+        model.scene.situationProse,
+        model.scene.pressureProse,
+        ...model.narrative.paragraphs.flatMap(p => p.segments).map(s => s.text),
+      ];
+
+      for (const surface of surfaces) {
+        expect(surface, `raw brace in: "${surface}"`).not.toMatch(/\{[a-zA-Z?/]/);
+      }
     });
   });
 });

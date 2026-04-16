@@ -10,6 +10,8 @@
  */
 
 import type { WorldGraph } from '../../../../engine/graph';
+import { enrichProse, gatherNarrativeContext } from '../../../../engine/proseEnrichment';
+import type { NarrativeContext } from '../../../../engine/proseEnrichment';
 import { autoLinkNarrative, collectSupportBundleEntities } from '../narrativeLinker';
 import { resolveStepDefinition } from '../../../../engine/unifiedActionLifecycle';
 import { getPortraitUrl } from '../../../../data/portrait-assets';
@@ -103,13 +105,15 @@ function getCurrentStep(
 
 function buildHeader(
   args: BuildUnifiedEncounterStageModelArgs,
+  ctx: NarrativeContext,
 ): EncounterStageModel['header'] {
   const { template, activeAction, agentName, threadTier, graph } = args;
   const currentStep = getCurrentStep(template, activeAction);
+  const rawSubtitle = template.description ?? template.narrativeTemplates.initiation;
 
   return {
     title: template.name,
-    subtitle: template.description ?? template.narrativeTemplates.initiation,
+    subtitle: enrichProse(rawSubtitle, ctx),
     locationLabel: resolveLocationLabel(graph, activeAction.targetId),
     threatLabel: difficultyToThreatLabel(currentStep.difficulty),
     threadTier,
@@ -119,23 +123,26 @@ function buildHeader(
 
 function buildScene(
   args: BuildUnifiedEncounterStageModelArgs,
+  ctx: NarrativeContext,
 ): EncounterStageModel['scene'] {
   const { template, activeAction } = args;
   const currentStep = getCurrentStep(template, activeAction);
 
   return {
-    situationProse: template.narrativeTemplates.initiation,
-    pressureProse: currentStep.narrativeTemplate ?? '',
+    situationProse: enrichProse(template.narrativeTemplates.initiation, ctx),
+    pressureProse: enrichProse(currentStep.narrativeTemplate ?? '', ctx),
     noticeLines: [],
   };
 }
 
 function buildNarrative(
   args: BuildUnifiedEncounterStageModelArgs,
+  ctx: NarrativeContext,
 ): EncounterStageModel['narrative'] {
   const { template, activeAction, graph } = args;
   const currentStep = getCurrentStep(template, activeAction);
-  const proseSource = currentStep.narrativeTemplate ?? template.narrativeTemplates.initiation;
+  const rawSource = currentStep.narrativeTemplate ?? template.narrativeTemplates.initiation;
+  const proseSource = enrichProse(rawSource, ctx);
 
   // Collect linkable entities from support bundle
   const bindings = activeAction.supportBindings ?? [];
@@ -152,7 +159,7 @@ function buildNarrative(
   // Ensure at least one paragraph
   if (paragraphs.length === 0) {
     paragraphs.push(
-      autoLinkNarrative('para-0', template.narrativeTemplates.initiation, linkEntries),
+      autoLinkNarrative('para-0', enrichProse(template.narrativeTemplates.initiation, ctx), linkEntries),
     );
   }
 
@@ -210,6 +217,7 @@ function mapSupportRoleToCastRole(supportRole: string): EncounterCastRole {
 
 function buildChoices(
   args: BuildUnifiedEncounterStageModelArgs,
+  ctx: NarrativeContext,
 ): EncounterStageChoiceModel[] {
   const { template, activeAction, notification, essence } = args;
 
@@ -220,13 +228,13 @@ function buildChoices(
     // Use authored choice cards with full prose bodies
     return authoredForStep.map((card) => ({
       id: card.id,
-      label: card.label,
-      intent: card.intent,
+      label: enrichProse(card.label, ctx),
+      intent: enrichProse(card.intent, ctx),
       targetLabel: card.targetLabel,
       essenceCost: card.essenceCost,
       affordable: essence + 1e-9 >= card.essenceCost,
       costLabel: card.essenceCost > 0 ? `${card.essenceCost.toFixed(2)} essence` : undefined,
-      likelyBurden: card.likelyBurden,
+      likelyBurden: card.likelyBurden != null ? enrichProse(card.likelyBurden, ctx) : undefined,
     }));
   }
 
@@ -246,6 +254,7 @@ function buildChoices(
 
 function buildHistory(
   args: BuildUnifiedEncounterStageModelArgs,
+  ctx: NarrativeContext,
 ): EncounterStageHistoryModel[] {
   const { template, activeAction } = args;
 
@@ -269,9 +278,10 @@ function buildHistory(
       const success = isStepSuccess(outcome);
       // Use authored afterimage text if available, otherwise fall back to bare status
       const resolvedStep = resolveStepDefinition(template, index, activeAction.choiceHistory);
-      afterimage = success
+      const rawAfterimage = success
         ? (resolvedStep.successAfterimage ?? 'Succeeded')
         : (resolvedStep.failureAfterimage ?? 'Failed');
+      afterimage = enrichProse(rawAfterimage, ctx);
     }
 
     return {
@@ -315,6 +325,7 @@ function resolveAuthoredAftermath(
 
 function buildAftermath(
   args: BuildUnifiedEncounterStageModelArgs,
+  ctx: NarrativeContext,
 ): EncounterStageModel['aftermath'] {
   const { activeAction, template, graph } = args;
   const summary = activeAction.aftermathSummary;
@@ -327,7 +338,8 @@ function buildAftermath(
     ? resolveAuthoredAftermath(template.aftermathConfig, activeAction.choiceHistory)
     : undefined;
   const displayChanges = authoredVariant?.changes ?? summary.changes;
-  const displayOverview = authoredVariant?.overview ?? summary.overview;
+  const rawOverview = authoredVariant?.overview ?? summary.overview;
+  const displayOverview = enrichProse(rawOverview, ctx);
 
   // Build actor name → support binding lookup from support bundle
   const bindings = activeAction.supportBindings ?? [];
@@ -359,6 +371,7 @@ function buildAftermath(
   const highlights: EncounterStageAftermathHighlightModel[] = [];
 
   for (const change of displayChanges) {
+    const enrichedDetail = enrichProse(change.detail, ctx);
     // Check if this change's title matches an actor name
     const binding = actorNameToBinding.get(change.title) ?? actorNameToBinding.get(change.title.toLowerCase());
 
@@ -377,7 +390,7 @@ function buildAftermath(
         });
       }
       const moment = actorMoments.get(key)!;
-      moment.summaryLines.push(change.detail);
+      moment.summaryLines.push(enrichedDetail);
 
       // Add a mark with icon glyph
       moment.marks!.push({
@@ -391,7 +404,7 @@ function buildAftermath(
       highlights.push({
         id: change.id,
         title: change.title,
-        detail: change.detail,
+        detail: enrichedDetail,
         tone: change.polarity === 'gain' ? 'gain' : change.polarity === 'loss' ? 'loss' : 'info',
       });
     } else if (change.kind === 'item' || change.kind === 'reputation_tally') {
@@ -400,7 +413,7 @@ function buildAftermath(
       highlights.push({
         id: change.id,
         title: change.title,
-        detail: change.detail,
+        detail: enrichedDetail,
         tone: change.polarity === 'gain' ? 'gain' : change.polarity === 'loss' ? 'loss' : 'mixed',
       });
     } else {
@@ -408,7 +421,7 @@ function buildAftermath(
       highlights.push({
         id: change.id,
         title: change.title,
-        detail: change.detail,
+        detail: enrichedDetail,
         tone: change.polarity === 'gain' ? 'gain' : change.polarity === 'loss' ? 'loss' : 'info',
       });
     }
@@ -472,9 +485,14 @@ function buildFalloutPreview(
 export function buildUnifiedEncounterStageModel(
   args: BuildUnifiedEncounterStageModelArgs,
 ): EncounterStageModel {
+  const { graph, activeAction } = args;
+
+  // Build enrichment context once — shared by all section builders
+  const ctx = gatherNarrativeContext(graph, activeAction.actorId);
+
   // Show illustration at step 0 only (opening scene), not during aftermath
-  const isAftermath = args.activeAction.resolved;
-  const isOpeningStep = args.activeAction.currentStep === 0;
+  const isAftermath = activeAction.resolved;
+  const isOpeningStep = activeAction.currentStep === 0;
   const illustration = !isAftermath && isOpeningStep && args.template.illustrationUrl
     ? {
         src: args.template.illustrationUrl,
@@ -484,16 +502,16 @@ export function buildUnifiedEncounterStageModel(
     : undefined;
 
   return {
-    header: buildHeader(args),
+    header: buildHeader(args, ctx),
     illustration,
-    scene: buildScene(args),
-    narrative: buildNarrative(args),
+    scene: buildScene(args, ctx),
+    narrative: buildNarrative(args, ctx),
     cast: buildCast(args),
     factions: [],
     signals: [],
-    choices: buildChoices(args),
+    choices: buildChoices(args, ctx),
     falloutPreview: buildFalloutPreview(args),
-    history: buildHistory(args),
-    aftermath: buildAftermath(args),
+    history: buildHistory(args, ctx),
+    aftermath: buildAftermath(args, ctx),
   };
 }
