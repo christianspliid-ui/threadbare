@@ -1014,11 +1014,119 @@ describe('buildUnifiedEncounterStageModel', () => {
       expect(model.aftermath!.overview).not.toMatch(/\{name\}|\{location\}/);
     });
 
-    it('regression: no raw braces remain in any narrative surface after enrichment', () => {
+    it('regression: aftermath change.detail is enriched (highlight path)', () => {
+      // Verifies that change details in the aftermath highlights path are enriched.
+      // Without this test, reverting the enrichedDetail usage would still pass the suite.
       const graph = buildRichGraph();
+      const action: UnifiedAction = {
+        ...buildRichAction(),
+        resolved: true,
+        outcome: 'success',
+        stepOutcomes: ['success' as const],
+        aftermathSummary: {
+          encounterId: PLACEHOLDER_TEMPLATE.id,
+          outcome: 'success',
+          overview: 'The crossing is done.',
+          changes: [
+            {
+              id: 'change_detail_test',
+              kind: 'future_hook',
+              title: 'A Thread Remains',
+              detail: '{name} left a mark at {location} that will not be forgotten.',
+              polarity: 'gain',
+            },
+          ],
+          reactionPrompt: 'What now?',
+          reactions: [],
+        },
+      };
+
       const model = buildUnifiedEncounterStageModel({
         template: PLACEHOLDER_TEMPLATE,
-        activeAction: buildRichAction(),
+        activeAction: action,
+        notification: buildRichNotification(),
+        agentName: 'Serafina',
+        threadTier: 'strong',
+        graph,
+        essence: 10,
+      });
+
+      expect(model.aftermath!.highlights).toHaveLength(1);
+      const detail = model.aftermath!.highlights![0].detail;
+      expect(detail).toContain('Serafina');
+      expect(detail).toContain('Thornwall Keep');
+      expect(detail).not.toMatch(/\{name\}|\{location\}/);
+    });
+
+    it('regression: authored choice label and intent are enriched', () => {
+      // Verifies enrichment of the authoredChoices path, which is separate from
+      // the notification fallback path.
+      const graph = buildRichGraph();
+      const templateWithChoices: UnifiedActionTemplate = {
+        ...PLACEHOLDER_TEMPLATE,
+        id: 'test.authored_choices',
+        authoredChoices: {
+          0: [
+            {
+              id: 'choice_a',
+              label: 'Draw {artifact:weapon} and stand firm',
+              intent: '{name} plants their feet at {location} and refuses to yield.',
+              likelyBurden: '{name} may exhaust {their} reserves.',
+              essenceCost: 1,
+              interventionType: 'supportive',
+            },
+          ],
+        },
+      };
+
+      const model = buildUnifiedEncounterStageModel({
+        template: templateWithChoices,
+        activeAction: { ...buildRichAction(), templateId: 'test.authored_choices' },
+        notification: buildRichNotification(),
+        agentName: 'Serafina',
+        threadTier: 'strong',
+        graph,
+        essence: 10,
+      });
+
+      expect(model.choices[0].label).toContain('The Ashen Blade');
+      expect(model.choices[0].label).not.toMatch(/\{artifact:weapon\}/);
+      expect(model.choices[0].intent).toContain('Serafina');
+      expect(model.choices[0].intent).toContain('Thornwall Keep');
+      expect(model.choices[0].intent).not.toMatch(/\{name\}|\{location\}/);
+      expect(model.choices[0].likelyBurden).toContain('Serafina');
+      expect(model.choices[0].likelyBurden).toContain('her');
+      expect(model.choices[0].likelyBurden).not.toMatch(/\{name\}|\{their\}/);
+    });
+
+    it('regression: no raw braces remain in any narrative surface after enrichment', () => {
+      const graph = buildRichGraph();
+      const actionWithAftermath: UnifiedAction = {
+        ...buildRichAction(),
+        resolved: true,
+        outcome: 'success',
+        stepOutcomes: ['success' as const],
+        aftermathSummary: {
+          encounterId: PLACEHOLDER_TEMPLATE.id,
+          outcome: 'success',
+          overview: '{name} triumphed at {location}.',
+          changes: [
+            {
+              id: 'sweep_change',
+              kind: 'future_hook',
+              title: 'Echo',
+              detail: '{name} will be remembered here.',
+              polarity: 'gain',
+            },
+          ],
+          reactionPrompt: 'Choose.',
+          reactions: [],
+        },
+      };
+
+      const model = buildUnifiedEncounterStageModel({
+        template: PLACEHOLDER_TEMPLATE,
+        activeAction: actionWithAftermath,
         notification: buildRichNotification(),
         agentName: 'Serafina',
         threadTier: 'strong',
@@ -1031,6 +1139,8 @@ describe('buildUnifiedEncounterStageModel', () => {
         model.scene.situationProse,
         model.scene.pressureProse,
         ...model.narrative.paragraphs.flatMap(p => p.segments).map(s => s.text),
+        model.aftermath?.overview ?? '',
+        ...(model.aftermath?.highlights ?? []).map(h => h.detail),
       ];
 
       for (const surface of surfaces) {
