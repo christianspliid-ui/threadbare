@@ -7,6 +7,7 @@
 
 Detailed per-phase implementation status for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
+- ✅ THR-20 Cool Failure & Complication Outcome Pass: 44 templates/9 categories/3 severities; selection pipeline (filter→score→weighted-PRNG→prose fill); complicationEffects.ts (12 effect types, fail-soft); EncounterVeil inline display; complication_selection trace; 3 deferrals (THR-119/120/121). (2026-04-16)
 - ✅ THR-111 Encounter aftermath tracing + TRACE_CATEGORIES drift fix: 8 new trace types (aftermath_applied/effect, seed_planted/triggered, mark_placed/revealed, intel_granted, authored_attachment_created); 3 existing DebugPanel-invisible types fixed; 7 trace contract tests + drift guard. (2026-04-16)
 - ✅ THR-110 enrichProse wiring in unified encounter stage adapter: All narrative surfaces enriched before UI render; parity test + 12 regression lock tests; Codex review pass. (2026-04-16)
 - ✅ THR-9 Strategic Actions UI/HexMap Visibility: strategicPresentation.ts selectors, StrategicMarkerMesh Three.js layer, ThreadsPanel badge, ThreadDetailView Designs section, DebugPanel Strategic tab, full GameView wiring. (2026-04-15)
