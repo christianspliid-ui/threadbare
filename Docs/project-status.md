@@ -1,12 +1,12 @@
 # Project Status
 > Updated 2026-04-16.
 ## Current Focus
-**Encounter Format Migration — Phase 0 Infrastructure.** 115 legacy EncounterTemplates migrating to UnifiedActionTemplate with contextual aftermath, prose enrichment, GraphOps, branch-aware aftermath, authored choices, and the five-level outcome ladder. Phase 0 (THR-110 through THR-118) establishes the engine prerequisites that every content phase depends on. **THR-110 shipped.** THR-111 (aftermath tracing + TRACE_CATEGORIES drift fix) is next. Design doc: `Docs/plans/2026-04-16-encounter-template-migration.md`.
+**Encounter Format Migration — Phase 0 Infrastructure.** 115 legacy EncounterTemplates migrating to UnifiedActionTemplate with contextual aftermath, prose enrichment, GraphOps, branch-aware aftermath, authored choices, and the five-level outcome ladder. Phase 0 (THR-110 through THR-118) establishes the engine prerequisites that every content phase depends on. **THR-110 + THR-111 shipped.** THR-112–118 in Implementation Planning. Design doc: `Docs/plans/2026-04-16-encounter-template-migration.md`.
 
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
 - **v1.1 Optimization:** Shipped — Phases 19-22 (determinism, wiring, performance, hygiene)
-- **Encounter Format Migration (Now):** Phase 0 Infrastructure active. ✅ THR-110 shipped. THR-111 Ready for Dev; THR-112–118 Implementation Planning. Pilot (Phase 1 thieves guild, THR-89) blocked by THR-111.
+- **Encounter Format Migration (Now):** Phase 0 Infrastructure active. ✅ THR-110 shipped. ✅ THR-111 shipped. THR-112–118 Implementation Planning. Pilot (Phase 1 thieves guild, THR-89) unblocked.
 - **Content Architecture (Now):** Shell/primitive work continues — stateful shells (Phase 2), progress/service shells (Phase 3), starter libraries (Phase 4), governance (Phase 5). THR-86 (routine template grammar) and THR-88 (backstory strata) absorbed from archived Prose Content Quality Pass.
 - **Attention Tier Model (Now):** UI integration ongoing.
 - **Social Systems Expansion (Next):** Demoted from Now 2026-04-16 to respect WIP limit. THR-28/27 shipped (deep social scenes, tavern hubs). THR-51/29/30/78 gated behind Phase 0 infrastructure (THR-112/114/115).
@@ -15,7 +15,7 @@
 - **Rarity Model (Next):** Three deferred Phase D items — prose tier bias, divine proximity, hex map signifiers.
 - **Procedural Hex Vignettes (Next):** Phases 2-5 queued. Phase 6 integration gated on prototype proof.
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed by Encounter Format Migration + Content Architecture + Thematic Pressure. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure (blocked by THR-116); THR-82/83/84/85 → Encounter Format Migration (Duplicate).
-- **Next up:** Ship Phase 0 (THR-110, THR-111), then pilot Phase 1 thieves guild migration (THR-89).
+- **Next up:** THR-112–118 (Phase 0 remaining), then pilot Phase 1 thieves guild migration (THR-89).
 
 ## Backlog Grooming — 2026-04-16
 Roadmap re-sequenced in light of Encounter Format Migration. Five actions executed:
@@ -25,6 +25,7 @@ Roadmap re-sequenced in light of Encounter Format Migration. Five actions execut
 4. **Six blocking edges wired:** THR-29 ← THR-115 · THR-30 ← THR-112, THR-114 · THR-51 ← THR-115 · THR-78 ← THR-112, THR-114 · THR-87 ← THR-116 · THR-31 ← THR-110.
 5. **Content Architecture audited for Phase 0 overlap** — no conflicts. THR-86 touches legacy NarrativeContext enrichment while THR-110 fixes unified-pipeline enrichProse; THR-53 stateful shells share mild surface with THR-115 GraphOps at a different abstraction layer.
 ## Recent Completions (2026-04-16)
+- **THR-111 Encounter aftermath tracing + TRACE_CATEGORIES drift fix:** `applyEncounterAftermathReaction` now emits `encounter_aftermath_applied` (once per reaction) + `encounter_aftermath_effect` (per effect, success/failReason) for all 7 effect kinds. Seeds emit `encounter_seed_planted`; marks emit `hidden_mark_placed`; intelligence emits `intelligence_granted`. `encounterSeeding.ts` emits `encounter_seed_triggered` on consumption. New `revealHiddenMark()` emits `hidden_mark_revealed`. Fixed 3 existing TraceEntry members invisible in DebugPanel (`graph_op_execution`, `choice_set_player_resolved`, `choice_set_player_dismissed`). 8 new trace types added. Drift guard test added. Commit: `34e24e06`.
 - **THR-110 enrichProse wiring — unified encounter stage adapter:** All narrative surfaces in `buildUnifiedEncounterStageModel.ts` now pass through `enrichProse()` before reaching the UI. Context built once via `gatherNarrativeContext(graph, actorId)` and threaded to all section builders. Covers: header subtitle, scene prose, step narrative, authored choice labels/intents/likelyBurden, step afterimages, aftermath overview and change details. Parity test + 12 per-placeholder regression lock tests. Codex review addressed (change.detail and authored choice coverage added). Commits: `2f37a8cd`, `9ff9632f`.
 - **THR-19 Omen Agenda System:** `phaseOmenAgenda` (Phase 1.7) — primary/secondary omen slots, expiry, doom force-expire on escalation, seeded PRNG selection, beat emission on interval, sphere pressure feedback for sphere_surge omens. 36 templates (doom_echo: breach/convergence/reckoning; sphere_surge: 6 spheres; cultural: 6 conditions; seasonal: 4). `OmenIndicator` top-bar widget + `OmenDetail` flyout, `WorldPulse` sidebar section, Debug Omens tab. `deriveOmenEncounterBias` exported for future encounter scoring integration. 27 unit tests. Commit: `6fd3cbd8`. THR-79 deferred (4 remaining doom archetypes).
 

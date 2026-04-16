@@ -7,6 +7,7 @@
 
 Detailed per-phase implementation status for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
+- ✅ THR-111 Encounter aftermath tracing + TRACE_CATEGORIES drift fix: 8 new trace types (aftermath_applied/effect, seed_planted/triggered, mark_placed/revealed, intel_granted, authored_attachment_created); 3 existing DebugPanel-invisible types fixed; 7 trace contract tests + drift guard. (2026-04-16)
 - ✅ THR-110 enrichProse wiring in unified encounter stage adapter: All narrative surfaces enriched before UI render; parity test + 12 regression lock tests; Codex review pass. (2026-04-16)
 - ✅ THR-9 Strategic Actions UI/HexMap Visibility: strategicPresentation.ts selectors, StrategicMarkerMesh Three.js layer, ThreadsPanel badge, ThreadDetailView Designs section, DebugPanel Strategic tab, full GameView wiring. (2026-04-15)
 - ✅ THR-28 Deep Social Scenes: 30 templates (7 categories), leverage mechanic, counter-argument system (9 axes × 2 poles), conditional step branching, group resolution, Tip the Scales + Embolden divine actions, leverage bar UI, 26 tests. (2026-04-15)
