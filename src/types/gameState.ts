@@ -33,6 +33,7 @@ import type { FamiliarityMap } from './familiarity';
 import type { AgentKnowledge } from './agentKnowledge';
 import type { DigestEntry, ThreadTug, QueuedStoryBeat } from './attention';
 import type { StrategicRuntimeState } from './strategicAction';
+import type { OmenState } from './omen';
 import { DEFAULT_DOOM_TICKS as CONFIG_DEFAULT_DOOM_TICKS } from '../data/game-config';
 
 // ─── Game Phase ─────────────────────────────────────────────────
@@ -80,7 +81,9 @@ export interface TickEvent {
   // Avatar movement events
     | 'avatar_arrival'
   // Player choice resolution events (THR-73)
-    | 'choice_set_resolved';
+    | 'choice_set_resolved'
+  // Omen agenda events (THR-19)
+    | 'omen_started' | 'omen_expired' | 'omen_beat' | 'omen_forced_shift';
   message: string;
   /** Optional sphere coloring for UI */
   sphere?: SphereName;
@@ -212,6 +215,9 @@ export interface GameState {
 
   // Strategic actions — proactive world-shaping behavior driven by ambitions
   strategicState?: StrategicRuntimeState;
+
+  // Omen agenda — world atmospheric pressure tracks (THR-19)
+  omenState?: OmenState;
 
   // Onboarding — one-shot flags for auto-triggered encounters
   meetTheFirstAutoTriggered?: boolean;

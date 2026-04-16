@@ -393,6 +393,11 @@
   - const SIGNIFIER_SCALE_OVERRIDES: Record<string, number>
   - const SIGNIFIER_OFFSET_OVERRIDES: Record<string, { dx: number; dy: number }>
   - const SIGNIFIER_Z
+- `src\components\HexMapV2\scene\StrategicMarkerMesh.ts`
+  - function createStrategicMarkerLayer: () => StrategicMarkerLayer
+  - interface StrategicProjectMarkerData
+  - interface StrategicControlPipData
+  - interface StrategicMarkerLayer
 - `src\components\HexMapV2\scene\ThreadLineMesh.ts`
   - function createThreadLineMesh: () => ThreadLineLayer
   - interface ThreadLineData
@@ -651,6 +656,12 @@
   - const BASE_EDGE_TRAVERSAL_COST
   - const DECISION_REEVALUATION_TICKS
   - _...15 more_
+- `src\data\omenTemplates.ts`
+  - function getOmenTemplateById: (id) => OmenTrackTemplate | undefined
+  - function getDoomEchoTemplates: (archetype, stage) => OmenTrackTemplate[]
+  - function getEligibleSphereSurgeTemplates: (sphereDominance, number>>) => OmenTrackTemplate[]
+  - function getSeasonalTemplates: () => OmenTrackTemplate[]
+  - const OMEN_TEMPLATES: OmenTrackTemplate[]
 - `src\data\opposition-content.ts`
   - function getFoundationOpposition: (a, b) => number
   - function getCreationSphereTension: (a, b) => number
@@ -697,6 +708,13 @@
   - function getSocialEncountersByLocationType: (locationType) => EncounterTemplate[]
   - function getSocialEncounterById: (id) => EncounterTemplate | undefined
   - const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[]
+  - const ALL_SOCIAL_TEMPLATES: EncounterTemplate[]
+- `src\data\social-scene-sphere-coloring.ts`
+  - function getSphereFlavorPhrase: (approach, sphere) => string | undefined
+  - type SocialApproach
+  - type SphereFlavors
+  - type SphereColoringTable
+  - const SPHERE_COLORING: SphereColoringTable
 - `src\data\spell-templates.ts` — function getSpellTemplate: (id) => SpellTemplate | undefined, const SPELL_TEMPLATES: SpellTemplate[]
 - `src\data\sphereIcons.ts`
   - function getSphereColor: (sphereName) => string
@@ -1251,11 +1269,13 @@
   - interface EffectTickResult
 - `src\engine\elderEssenceReward.ts` — function computeElderEssenceReward: (reveal, tick) => EssenceRewardResult, interface EssenceRewardResult
 - `src\engine\encounter.ts`
-  - function initiateEncounter: (state, actorId, encounterId, tick) => EncounterProgress
+  - function applyGroupSupportLeverage: (progress, resolvingAgentId) => void
+  - function selectGroupStepResolver: (state) => void
+  - function initiateEncounter: (state, actorId, encounterId, tick, targetAgentId?) => EncounterProgress
   - function resolveEncounter: (state, progress, deterministicRoll?) => void
   - function advanceEncounter: (state, progress, success, tick, resolutionSnapshot?) => void
   - function isEncounterOccupied: (progress, currentTick) => boolean
-  - function abandonEncounter: (progress) => void
+  - _...4 more_
 - `src\engine\encounterAftermath.ts` — function appendRecentEvent: (existing, event) => TickEvent[], function applyEncounterAftermathReaction: (state, action, reaction, tick) => GameState
 - `src\engine\encounterAwareness.ts`
   - function resolveLocationToHex: (graph, locationId) => void
@@ -1644,6 +1664,14 @@
   - const MAGICAL_SATURATION_VISIBILITY_THRESHOLD
 - `src\engine\phaseMandate.ts` — function resetMandateCounter: () => void, function phaseMandate: (state) => Partial<GameState>
 - `src\engine\phaseMovement.ts` — function resetMovementEventCounter: () => void, function phaseMovement: (state) => Partial<GameState>
+- `src\engine\phaseOmenAgenda.ts`
+  - function resetOmenCounter: () => void
+  - function phaseOmenAgenda: (state) => Partial<GameState>
+  - function deriveOmenEncounterBias: (omenState) => Partial<Record<string, number>>
+  - const OMEN_FIRST_ACTIVATION_TICK
+  - const OMEN_SECONDARY_THRESHOLD
+  - const OMEN_BEAT_INTERVAL_DEFAULT
+  - _...7 more_
 - `src\engine\phaseProsperity.ts`
   - function getProsperityTier: (prosperity) => ProsperityTier
   - function computeBaseIncome: (props, unknown>) => number
@@ -1893,10 +1921,23 @@
   - function ensureEncounterCache: (runtime, graph, tick, tiles) => EncounterCacheManager
   - function ensureDistanceMatrix: (runtime, graph) => DistanceMatrix
   - _...2 more_
+- `src\engine\socialCounterArgument.ts`
+  - function findDominantAxis: (profile) => void
+  - function selectCounterArgument: (graph, targetId, actorReach, leverage) => CounterArgumentResult | null
+  - function applyCounterModifier: (baseDifficulty, counter) => number
+  - interface CounterArgumentResult
 - `src\engine\socialEncounterGeneration.ts`
   - function generateSocialCandidates: (graph, agentId, agentLocationId, distanceMatrix) => EncounterCacheEntry[]
   - function computeBondModifier: (graph, agentId, targetAgentId) => number
   - function getSharedFactionSocialTemplates: (graph, agentId, targetAgentId, locationType) => EncounterTemplate[]
+- `src\engine\socialLeverage.ts`
+  - function getHighestFactionRank: (graph, agentId) => number
+  - function computeInitialLeverage: (graph, actorId, targetId) => number
+  - function isSocialSceneTemplate: (steps) => boolean
+  - const LEVERAGE_BOND_BONUS
+  - const LEVERAGE_WEALTH_BONUS
+  - const LEVERAGE_WEALTH_RATIO
+  - _...5 more_
 - `src\engine\socialOutcome.ts`
   - function processSocialOutcome: (graph, progress, success, tick) => SocialOutcomeResult
   - interface SocialOutcomeResult
@@ -1951,6 +1992,14 @@
   - function modifyLocationProperty: (graph, locationId, property, delta, clamp?, number]) => GraphOpResult
   - function createRelationEdge: (graph, sourceId, targetId, edgeType, tick, properties?, unknown>) => GraphOpResult
   - _...2 more_
+- `src\engine\strategicPresentation.ts`
+  - function getProgressLabel: (fraction) => string
+  - function getHealthLabel: (degradation) => string
+  - function getBehaviorFamilyPresentation: (family) => void
+  - function getAgentStrategicSummary: (strategicState, agentId, graph, currentTick) => AgentStrategicSummary | null
+  - function getAgentStrategicHistory: (strategicState, agentId, currentTick) => StrategicHistoryDisplayEntry[]
+  - function getHexStrategicOverlays: (strategicState, graph) => Map<string, HexStrategicOverlay>
+  - _...19 more_
 - `src\engine\strategicTelemetry.ts`
   - function getStrategicDecisionSummary: (state, agentId?) => StrategicDecisionSummary
   - function formatStrategicHistory: (history, limit) => string

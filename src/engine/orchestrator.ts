@@ -107,6 +107,7 @@ import { resetInfluenceCounter } from './interventionEffects';
 import { resetMeetingCounter } from './meetingEncounter';
 import { phaseJourneyBeat } from './journeyEngine';
 import { JOURNEY_BEAT_TEMPLATES } from '../data/journey-content';
+import { phaseOmenAgenda, resetOmenCounter } from './phaseOmenAgenda';
 import { phaseEncounterVisibility } from './encounterVisibility';
 import { evaluateEncounterSeeds } from './encounterSeeding';
 import { EncounterCacheManager, buildDangerMap } from './encounterCache';
@@ -257,6 +258,7 @@ function resetEventCounters(): void {
   resetControlEffectsCounter();
   resetInfluenceCounter();
   resetMeetingCounter();
+  resetOmenCounter();
   // Additional ephemeral-event counters (Plan 02 — complete DTRM-03 coverage)
   // Note: resetLifecycleCounter and resetUnifiedActionCounter are intentionally
   // excluded — those generate persistent graph node / action IDs, not tick events.
@@ -1410,7 +1412,10 @@ export function phaseNarrative(state: GameState): Partial<GameState> {
   const newChronicleEntries = [...state.chronicleEntries];
 
   for (const event of state.tickEvents) {
-    if (event.significance >= 0.8) {
+    // Omen start/expire events use a lower chronicle threshold (THR-19)
+    const omenEvent = event.type === 'omen_started' || event.type === 'omen_expired';
+    const chronicleThreshold = omenEvent ? 0.65 : 0.8;
+    if (event.significance >= chronicleThreshold) {
       // Build narrative context for notable/chronicle events
       const narrativeEvent: NarrativeEvent = {
         id: event.id,
@@ -1457,6 +1462,9 @@ function tickEventTypeToNarrativeType(type: string): NarrativeEventType {
     mandate_progress: 'mandate_stage',
     narrative: 'action_resolved',
     dilemma_resolved: 'contested_action',
+    omen_started: 'action_resolved',
+    omen_expired: 'action_resolved',
+    omen_beat: 'action_resolved',
   };
   return mapping[type] ?? 'action_resolved';
 }
@@ -1681,6 +1689,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 1.5: Journey Beat — check if doom clock crossed a beat threshold for The First
   s = { ...s, ...phaseJourneyBeat(s, JOURNEY_BEAT_TEMPLATES) };
   phaseEventCounts['journey_beat'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 1.7: Omen Agenda — select/rotate atmospheric pressure tracks, emit beats (THR-19)
+  s = { ...s, ...phaseOmenAgenda(s) };
+  phaseEventCounts['omen_agenda'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // ─── Unified Action Pipeline (replaces old phaseAgentActions + phaseEncounterProgression + phaseActionProgress) ───

@@ -53,7 +53,10 @@ export type TraceCategory =
   | 'strategic_candidate_board'
   | 'strategic_action_started'
   | 'strategic_project_progress'
-  | 'strategic_world_change';
+  | 'strategic_world_change'
+  // Omen agenda traces (THR-19)
+  | 'omen_selection'
+  | 'omen_beat';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -95,6 +98,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'strategic_action_started',
   'strategic_project_progress',
   'strategic_world_change',
+  'omen_selection',
+  'omen_beat',
 ];
 
 /** Base shape for all trace entries */
@@ -847,7 +852,9 @@ export type TraceEntry =
   | StrategicProjectProgressTrace
   | StrategicWorldChangeTrace
   | ChoiceSetPlayerResolvedTrace
-  | ChoiceSetPlayerDismissedTrace;
+  | ChoiceSetPlayerDismissedTrace
+  | OmenSelectionTrace
+  | OmenBeatTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {
@@ -940,4 +947,26 @@ export interface ChoiceSetPlayerDismissedTrace extends TraceBase {
   category: 'choice_set_player_dismissed';
   actorId: string;
   choiceId: string;
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+// Omen Agenda Traces (THR-19)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Trace: omen slot selection pipeline ran — which candidates scored and why */
+export interface OmenSelectionTrace extends TraceBase {
+  category: 'omen_selection';
+  slot: 'primary' | 'secondary';
+  candidates: Array<{ templateId: string; score: number }>;
+  selected: string | null;
+  reason: string;
+}
+
+/** Trace: omen beat emitted — atmospheric micro-event fired */
+export interface OmenBeatTrace extends TraceBase {
+  category: 'omen_beat';
+  omenId: string;
+  slot: 'primary' | 'secondary';
+  prose: string;
 }

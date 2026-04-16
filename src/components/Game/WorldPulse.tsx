@@ -3,6 +3,40 @@ import type { GameState } from '../../types/gameState';
 import { IconButton } from '../shared/IconButton';
 import { Tooltip } from '../shared/Tooltip';
 import { SPEED_STEPS } from './SimulationControls';
+import { getOmenTemplateById } from '../../data/omenTemplates';
+import { getSphereColor } from '../../data/sphereIcons';
+import type { ActiveOmen } from '../../types/omen';
+
+const OMEN_CATEGORY_GLYPHS: Record<string, string> = {
+  doom_echo: '⊘',
+  sphere_surge: '◈',
+  cultural: '⬡',
+  seasonal: '◇',
+};
+
+function OmenLine({ omen, isPrimary }: { omen: ActiveOmen; isPrimary: boolean }) {
+  const template = getOmenTemplateById(omen.templateId);
+  const glyph = OMEN_CATEGORY_GLYPHS[omen.category] ?? '◇';
+  const color = omen.sphere ? getSphereColor(omen.sphere) : 'var(--text-tertiary)';
+  if (!template) return null;
+  return (
+    <div className="flex items-center gap-1">
+      <span style={{ color, fontSize: isPrimary ? '11px' : '10px', flexShrink: 0 }}>{glyph}</span>
+      <span
+        style={{
+          fontSize: 'var(--text-xs)',
+          color: isPrimary ? 'var(--text-secondary)' : 'var(--text-tertiary)',
+          fontStyle: isPrimary ? 'normal' : 'italic',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {omen.name}
+      </span>
+    </div>
+  );
+}
 
 const SEASON_ICONS: Record<string, string> = {
   spring: '∿', summer: '☼', autumn: '◇', winter: '❋',
@@ -15,6 +49,8 @@ interface WorldPulseProps {
   speed: number;
   onSpeedChange: (speed: number) => void;
 }
+
+
 
 /**
  * WorldPulse — a minimal summary panel shown when no agent is selected.
@@ -129,6 +165,22 @@ export const WorldPulse = React.memo(function WorldPulse({
           {mood}
         </p>
       </div>
+
+      {/* Omen tracks (THR-19) */}
+      {gameState.omenState?.primary && (
+        <div className="pt-3 space-y-1" style={{ borderTop: `1px solid var(--border-subtle)` }}>
+          <span
+            className="uppercase tracking-wider"
+            style={{ fontSize: '9px', color: 'var(--text-tertiary)', fontFamily: 'var(--font-display)' }}
+          >
+            World Omen
+          </span>
+          <OmenLine omen={gameState.omenState.primary} isPrimary />
+          {gameState.omenState.secondary && (
+            <OmenLine omen={gameState.omenState.secondary} isPrimary={false} />
+          )}
+        </div>
+      )}
     </div>
   );
 });

@@ -10,6 +10,7 @@ import type { AgentKnowledge } from '../../../types/agentKnowledge';
 import type { EncounterNotification } from '../../../types/encounterVisibility';
 import type { PendingVignette } from '../../../types/journeyEngine';
 import type { StrategicRuntimeState, BehaviorFamily } from '../../../types/strategicAction';
+import type { OmenState } from '../../../types/omen';
 import {
   BEHAVIOR_FAMILY_PRESENTATION,
   getBehaviorFamilyPresentation,
@@ -31,7 +32,7 @@ import { SphereStateTabContent } from './SphereStateTabContent';
 import { CommandTab } from './CommandTab';
 import { EMPTY_STATE_STYLE } from './debugPanelStyles';
 
-export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic';
+export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens';
 
 export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'feed', label: 'Feed' }, { id: 'agent-follow', label: 'Agent' },
@@ -40,7 +41,7 @@ export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'webgl', label: 'WebGL' }, { id: 'factions', label: 'Factions' },
   { id: 'spheres', label: 'Sphere State' }, { id: 'revelation-log', label: 'Revelations' },
   { id: 'knowledge-gaps', label: 'Knowledge' }, { id: 'armies', label: 'Armies' },
-  { id: 'strategic', label: 'Strategic' }, { id: 'cli', label: 'CLI' },
+  { id: 'strategic', label: 'Strategic' }, { id: 'omens', label: 'Omens' }, { id: 'cli', label: 'CLI' },
 ];
 
 export interface DebugTabContentProps {
@@ -71,6 +72,8 @@ export interface DebugTabContentProps {
   retinueAgents?: readonly RetinueAgent[];
   /** Strategic runtime state for the strategic debug tab. */
   strategicState?: StrategicRuntimeState;
+  /** Omen state for the omens debug tab (THR-19). */
+  omenState?: OmenState;
 }
 
 export function DebugTabContent({
@@ -80,8 +83,9 @@ export function DebugTabContent({
   cacheEntries, encounterProgress, onZoomToLocation,
   getWebGLDiagnostics, getZoomLevel, showOrganicShore, onToggleOrganicShore,
   encounterNotifications, pendingVignettes, seed, sphereAggregate, agentKnowledge,
-  retinueAgents, strategicState,
+  retinueAgents, strategicState, omenState,
 }: DebugTabContentProps) {
+  if (viewMode === 'omens') return <OmenDebugTab omenState={omenState} currentTick={currentTick} />;
   if (viewMode === 'journey') {
     return <JourneyDebugContent encounterNotifications={encounterNotifications} pendingVignettes={pendingVignettes} currentTick={currentTick} />;
   }
@@ -308,6 +312,57 @@ function StrategicDebugTab({
         </div>
       )}
 
+    </div>
+  );
+}
+
+// ─── Omen Debug Tab (THR-19) ────────────────────────────────────
+
+function OmenDebugTab({ omenState, currentTick }: { omenState?: OmenState; currentTick: number }) {
+  if (!omenState) {
+    return <div style={EMPTY_STATE_STYLE}>No omen state initialized yet. Omens activate at tick {3}.</div>;
+  }
+
+  const { primary, secondary, history } = omenState;
+  const recentHistory = [...history].reverse().slice(0, 10);
+
+  return (
+    <div style={{ padding: '8px', fontSize: '11px', fontFamily: 'monospace' }}>
+      <div style={{ color: 'var(--accent-gold)', fontWeight: 600, marginBottom: '8px' }}>World Omens — Tick {currentTick}</div>
+
+      <div style={{ marginBottom: '12px' }}>
+        <div style={{ color: 'var(--text-muted)', fontSize: '10px', textTransform: 'uppercase', marginBottom: '4px' }}>Active</div>
+        {primary ? (
+          <div style={{ background: 'rgba(160,149,107,0.08)', border: '1px solid rgba(160,149,107,0.2)', borderRadius: '4px', padding: '6px', marginBottom: '4px' }}>
+            <div style={{ color: 'var(--text-primary)', fontWeight: 600 }}>⊘ {primary.name} <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>[primary]</span></div>
+            <div style={{ color: 'var(--text-muted)' }}>ID: {primary.templateId}</div>
+            <div style={{ color: 'var(--text-muted)' }}>Duration: t{primary.startTick}–t{primary.startTick + primary.duration} ({primary.startTick + primary.duration - currentTick} left)</div>
+            <div style={{ color: 'var(--text-muted)' }}>Category: {primary.category} | Last beat: t{primary.lastBeatTick}</div>
+          </div>
+        ) : (
+          <div style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>No primary omen active</div>
+        )}
+        {secondary ? (
+          <div style={{ background: 'rgba(160,149,107,0.04)', border: '1px solid rgba(160,149,107,0.12)', borderRadius: '4px', padding: '6px' }}>
+            <div style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>◈ {secondary.name} <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>[secondary]</span></div>
+            <div style={{ color: 'var(--text-muted)' }}>ID: {secondary.templateId}</div>
+            <div style={{ color: 'var(--text-muted)' }}>Duration: t{secondary.startTick}–t{secondary.startTick + secondary.duration} ({secondary.startTick + secondary.duration - currentTick} left)</div>
+          </div>
+        ) : (
+          <div style={{ color: 'var(--text-muted)', fontStyle: 'italic', marginTop: '2px' }}>No secondary omen active</div>
+        )}
+      </div>
+
+      {recentHistory.length > 0 && (
+        <div>
+          <div style={{ color: 'var(--text-muted)', fontSize: '10px', textTransform: 'uppercase', marginBottom: '4px' }}>History (last {recentHistory.length})</div>
+          {recentHistory.map((h, i) => (
+            <div key={i} style={{ color: 'var(--text-tertiary)', marginBottom: '2px' }}>
+              t{h.startTick}–{h.endTick} · {h.templateId}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

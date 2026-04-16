@@ -13,6 +13,7 @@ import type { WorldGraph } from '../../engine/graph';
 import type { EncounterNotification } from '../../types/encounterVisibility';
 import type { PendingVignette } from '../../types/journeyEngine';
 import type { StrategicRuntimeState } from '../../types/strategicAction';
+import type { OmenState } from '../../types/omen';
 import { DebugTabContent, TABS, type ViewMode } from './debug/DebugTabContent';
 import {
   PANEL_STYLES, CONTAINER_STYLE, HEADER_STYLE, TAB_BAR_STYLE,
@@ -43,6 +44,7 @@ export interface DebugPanelProps {
   preferredViewMode?: string;
   preferredViewNonce?: number;
   strategicState?: StrategicRuntimeState;
+  omenState?: OmenState;
 }
 
 export const DebugPanel = React.memo(function DebugPanel({
@@ -51,7 +53,7 @@ export const DebugPanel = React.memo(function DebugPanel({
   onZoomToLocation, getWebGLDiagnostics, getZoomLevel, showOrganicShore = true,
   onToggleOrganicShore, encounterNotifications, pendingVignettes, seed,
   sphereAggregate, agentKnowledge, preferredViewMode, preferredViewNonce,
-  strategicState,
+  strategicState, omenState,
 }: DebugPanelProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('feed');
   const [enabledCategories, setEnabledCategories] = useState<Set<TraceCategory>>(new Set(TRACE_CATEGORIES));
@@ -185,6 +187,7 @@ export const DebugPanel = React.memo(function DebugPanel({
           agentKnowledge={agentKnowledge}
           retinueAgents={retinueAgents}
           strategicState={strategicState}
+          omenState={omenState}
         />
       </div>
 

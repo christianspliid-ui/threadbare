@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Component inventory and prop signatures extracted via AST. Read the source files before adding props or modifying component logic.
 
-**169 components** (react)
+**171 components** (react)
 
 ## Components
 
@@ -31,7 +31,7 @@
 - **ActionDrawer** — props: open, slots, _targetName, _targetLabel, onSlotClick, onClose, playingCardId, hexRevelation, gatedActionCounts — `src\components\Game\ActionDrawer.tsx`
 - **AgendaPicker** — props: agendas, onSelect, onCancel, sphere — `src\components\Game\AgendaPicker.tsx`
 - **AgentDetailPanel** — props: detail, activity, onBack, onViewPsyche, onIntervene, onLocationClick, onAttachmentClick, digestBuffer, currentTick, lastViewedTick — `src\components\Game\AgentDetailPanel.tsx`
-- **AgentInfoCard** — props: card, onViewProfile, onBack, onZoomToLocation, graph, seed, tick — `src\components\Game\AgentInfoCard.tsx`
+- **AgentInfoCard** — props: card, onViewProfile, onBack, onZoomToLocation, graph, seed, tick, strategicState — `src\components\Game\AgentInfoCard.tsx`
 - **AgentProfileModal** — props: card, profile, onClose, scrollToNewStrata, knowledge — `src\components\Game\AgentProfileModal.tsx`
 - **AgentWheel** — props: slots, agentName, agentTitle, cx, cy, onSlotClick, onDismiss — `src\components\Game\AgentWheel.tsx`
 - **AlertBar** — props: alerts, onDismiss, onSelectAgent, onNavigate — `src\components\Game\AlertBar.tsx`
@@ -97,6 +97,8 @@
 - **NarrativeFeed** — props: events — `src\components\Game\NarrativeFeed.tsx`
 - **NarrativeLog** — props: events, onSelectAgent — `src\components\Game\NarrativeLog.tsx`
 - **NpcDetailView** — props: npc, traits, factionName — `src\components\Game\NpcDetailView.tsx`
+- **OmenDetail** — props: omenState, currentTick, onClose — `src\components\Game\OmenDetail.tsx`
+- **OmenIndicator** — props: omenState, currentTick — `src\components\Game\OmenIndicator.tsx`
 - **PremonitionModal** — props: open, premonition, essencePool, onWhisperChoice, onCompulsionChoice, onDismiss — `src\components\Game\PremonitionModal.tsx`
 - **ReadTheThreadsPanel** — props: open, onClose, digestBuffer, currentTick, essenceAvailable, onSpendEssence, lastReadTick, attentionPool, attentionCapacity — `src\components\Game\ReadTheThreadsPanel.tsx`
 - **RecentActivityLog** — props: entries, lastViewedTick, maxEntries — `src\components\Game\RecentActivityLog.tsx`
@@ -116,7 +118,7 @@
 - **ProwessTab** — props: card, knowledge, onAttachmentClick — `src\components\Game\tabs\ProwessTab.tsx`
 - **TabBar** — props: activeTab, onTabChange — `src\components\Game\tabs\TabBar.tsx`
 - **ThreadDetailView** — props: node, agentInfoCard, agentEncounterDecision, onClose, onViewProfile, _onZoomToLocation, graph, digestBuffer, currentTick, lastViewedTick — `src\components\Game\ThreadDetailView.tsx`
-- **ThreadsPanel** — props: threadedNodes, selectedNodeId, onNodeSelect, onCenterOnHex, onZoomToLocation, activeEncounters, agentEncounterDecisions, onEncounterClick, onToggleAttentionMode — `src\components\Game\ThreadsPanel.tsx`
+- **ThreadsPanel** — props: threadedNodes, selectedNodeId, onNodeSelect, onCenterOnHex, onZoomToLocation, activeEncounters, agentEncounterDecisions, onEncounterClick, onToggleAttentionMode, agentStrategicSummaries — `src\components\Game\ThreadsPanel.tsx`
 - **ToastStack** — props: toasts, onDismiss, onSelectAgent, onNavigate — `src\components\Game\ToastStack.tsx`
 - **WorldPulse** — props: gameState, season, year, speed, onSpeedChange — `src\components\Game\WorldPulse.tsx`
 - **AgentDots** — props: graph, locationPositions, zoomScale, hexSize, currentTick, avatarId, sphereColor, onAgentClick, onAgentHover — `src\components\HexMap\AgentDots.tsx`

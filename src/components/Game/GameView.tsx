@@ -55,6 +55,7 @@ import { HEX_CONSTANTS } from '../HexMapV2/scene/HexFillMesh';
 import { EssencePanel } from './EssencePanel';
 import { SimulationControls } from './SimulationControls';
 import { DoomBar } from './DoomBar';
+import { OmenIndicator } from './OmenIndicator';
 import { DoomClockDetail } from './DoomClockDetail';
 import { MandateDetail } from './MandateDetail';
 import { ActionDrawer } from './ActionDrawer';
@@ -2508,6 +2509,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               journeyLabel={doomJourneyLabel}
             />
           </div>
+          {gameState.omenState?.primary && (
+            <>
+              <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
+              <OmenIndicator
+                omenState={gameState.omenState}
+                currentTick={gameState.tick}
+              />
+            </>
+          )}
           {gameState.mandateDefinition && gameState.mandateState && (
             <>
               <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
@@ -2899,6 +2909,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             sphereAggregate={gameState.worldSoul?.aggregate}
             agentKnowledge={gameState.agentKnowledge}
             strategicState={gameState.strategicState}
+            omenState={gameState.omenState}
           />
         ) : (
           <div className="flex flex-shrink-0" style={{ alignItems: 'stretch' }}>

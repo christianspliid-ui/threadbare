@@ -69,6 +69,12 @@ export interface NarrativeContext {
   meetingChoiceRecord?: MeetingChoiceRecord;
   beatHistory: BeatOutcome[];
 
+  /** Omen vocabulary injected from active omen tracks (THR-19) */
+  omenAdj?: string;
+  omenVerb?: string;
+  omenNoun?: string;
+  omenAtmosphere?: string;
+
   /** Gendered pronouns. Default: they/them/their */
   pronouns: { they: string; them: string; their: string; s: string };
 }
@@ -202,6 +208,12 @@ export function enrichProse(template: string, ctx: NarrativeContext): string {
   // Title
   result = result.replace(/{title}/g,
     ctx.titles[0] ?? ctx.agentName);
+
+  // Omen vocabulary (THR-19) — resolve silently to empty string when no omen active
+  result = result.replace(/{omen_adj}/g, ctx.omenAdj ?? '');
+  result = result.replace(/{omen_verb}/g, ctx.omenVerb ?? '');
+  result = result.replace(/{omen_noun}/g, ctx.omenNoun ?? '');
+  result = result.replace(/{omen_atmosphere}/g, ctx.omenAtmosphere ?? '');
 
   // Conditional blocks: {?has_X}...{/has_X} and {?no_X}...{/no_X}
   result = resolveConditionals(result, ctx);

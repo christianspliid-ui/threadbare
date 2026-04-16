@@ -2,9 +2,9 @@
 
 > **Stack:** raw-http | none | react | typescript
 
-> 0 routes | 0 models | 169 components | 479 lib files | 4 env vars | 35 middleware | 1 events | 0% test coverage
-> **Token savings:** this file is ~46.900 tokens. Without it, AI exploration would cost ~198.400 tokens. **Saves ~151.500 tokens per conversation.**
-> **Last scanned:** 2026-04-14 22:46 — re-run after significant changes
+> 0 routes | 0 models | 171 components | 486 lib files | 4 env vars | 38 middleware | 1 events | 0% test coverage
+> **Token savings:** this file is ~47.800 tokens. Without it, AI exploration would cost ~201.600 tokens. **Saves ~153.800 tokens per conversation.**
+> **Last scanned:** 2026-04-16 07:30 — re-run after significant changes
 
 ---
 
@@ -35,7 +35,7 @@
 - **ActionDrawer** — props: open, slots, _targetName, _targetLabel, onSlotClick, onClose, playingCardId, hexRevelation, gatedActionCounts — `src\components\Game\ActionDrawer.tsx`
 - **AgendaPicker** — props: agendas, onSelect, onCancel, sphere — `src\components\Game\AgendaPicker.tsx`
 - **AgentDetailPanel** — props: detail, activity, onBack, onViewPsyche, onIntervene, onLocationClick, onAttachmentClick, digestBuffer, currentTick, lastViewedTick — `src\components\Game\AgentDetailPanel.tsx`
-- **AgentInfoCard** — props: card, onViewProfile, onBack, onZoomToLocation, graph, seed, tick — `src\components\Game\AgentInfoCard.tsx`
+- **AgentInfoCard** — props: card, onViewProfile, onBack, onZoomToLocation, graph, seed, tick, strategicState — `src\components\Game\AgentInfoCard.tsx`
 - **AgentProfileModal** — props: card, profile, onClose, scrollToNewStrata, knowledge — `src\components\Game\AgentProfileModal.tsx`
 - **AgentWheel** — props: slots, agentName, agentTitle, cx, cy, onSlotClick, onDismiss — `src\components\Game\AgentWheel.tsx`
 - **AlertBar** — props: alerts, onDismiss, onSelectAgent, onNavigate — `src\components\Game\AlertBar.tsx`
@@ -101,6 +101,8 @@
 - **NarrativeFeed** — props: events — `src\components\Game\NarrativeFeed.tsx`
 - **NarrativeLog** — props: events, onSelectAgent — `src\components\Game\NarrativeLog.tsx`
 - **NpcDetailView** — props: npc, traits, factionName — `src\components\Game\NpcDetailView.tsx`
+- **OmenDetail** — props: omenState, currentTick, onClose — `src\components\Game\OmenDetail.tsx`
+- **OmenIndicator** — props: omenState, currentTick — `src\components\Game\OmenIndicator.tsx`
 - **PremonitionModal** — props: open, premonition, essencePool, onWhisperChoice, onCompulsionChoice, onDismiss — `src\components\Game\PremonitionModal.tsx`
 - **ReadTheThreadsPanel** — props: open, onClose, digestBuffer, currentTick, essenceAvailable, onSpendEssence, lastReadTick, attentionPool, attentionCapacity — `src\components\Game\ReadTheThreadsPanel.tsx`
 - **RecentActivityLog** — props: entries, lastViewedTick, maxEntries — `src\components\Game\RecentActivityLog.tsx`
@@ -120,7 +122,7 @@
 - **ProwessTab** — props: card, knowledge, onAttachmentClick — `src\components\Game\tabs\ProwessTab.tsx`
 - **TabBar** — props: activeTab, onTabChange — `src\components\Game\tabs\TabBar.tsx`
 - **ThreadDetailView** — props: node, agentInfoCard, agentEncounterDecision, onClose, onViewProfile, _onZoomToLocation, graph, digestBuffer, currentTick, lastViewedTick — `src\components\Game\ThreadDetailView.tsx`
-- **ThreadsPanel** — props: threadedNodes, selectedNodeId, onNodeSelect, onCenterOnHex, onZoomToLocation, activeEncounters, agentEncounterDecisions, onEncounterClick, onToggleAttentionMode — `src\components\Game\ThreadsPanel.tsx`
+- **ThreadsPanel** — props: threadedNodes, selectedNodeId, onNodeSelect, onCenterOnHex, onZoomToLocation, activeEncounters, agentEncounterDecisions, onEncounterClick, onToggleAttentionMode, agentStrategicSummaries — `src\components\Game\ThreadsPanel.tsx`
 - **ToastStack** — props: toasts, onDismiss, onSelectAgent, onNavigate — `src\components\Game\ToastStack.tsx`
 - **WorldPulse** — props: gameState, season, year, speed, onSpeedChange — `src\components\Game\WorldPulse.tsx`
 - **AgentDots** — props: graph, locationPositions, zoomScale, hexSize, currentTick, avatarId, sphereColor, onAgentClick, onAgentHover — `src\components\HexMap\AgentDots.tsx`
@@ -577,6 +579,11 @@
   - const SIGNIFIER_SCALE_OVERRIDES: Record<string, number>
   - const SIGNIFIER_OFFSET_OVERRIDES: Record<string, { dx: number; dy: number }>
   - const SIGNIFIER_Z
+- `src\components\HexMapV2\scene\StrategicMarkerMesh.ts`
+  - function createStrategicMarkerLayer: () => StrategicMarkerLayer
+  - interface StrategicProjectMarkerData
+  - interface StrategicControlPipData
+  - interface StrategicMarkerLayer
 - `src\components\HexMapV2\scene\ThreadLineMesh.ts`
   - function createThreadLineMesh: () => ThreadLineLayer
   - interface ThreadLineData
@@ -835,6 +842,12 @@
   - const BASE_EDGE_TRAVERSAL_COST
   - const DECISION_REEVALUATION_TICKS
   - _...15 more_
+- `src\data\omenTemplates.ts`
+  - function getOmenTemplateById: (id) => OmenTrackTemplate | undefined
+  - function getDoomEchoTemplates: (archetype, stage) => OmenTrackTemplate[]
+  - function getEligibleSphereSurgeTemplates: (sphereDominance, number>>) => OmenTrackTemplate[]
+  - function getSeasonalTemplates: () => OmenTrackTemplate[]
+  - const OMEN_TEMPLATES: OmenTrackTemplate[]
 - `src\data\opposition-content.ts`
   - function getFoundationOpposition: (a, b) => number
   - function getCreationSphereTension: (a, b) => number
@@ -881,6 +894,13 @@
   - function getSocialEncountersByLocationType: (locationType) => EncounterTemplate[]
   - function getSocialEncounterById: (id) => EncounterTemplate | undefined
   - const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[]
+  - const ALL_SOCIAL_TEMPLATES: EncounterTemplate[]
+- `src\data\social-scene-sphere-coloring.ts`
+  - function getSphereFlavorPhrase: (approach, sphere) => string | undefined
+  - type SocialApproach
+  - type SphereFlavors
+  - type SphereColoringTable
+  - const SPHERE_COLORING: SphereColoringTable
 - `src\data\spell-templates.ts` — function getSpellTemplate: (id) => SpellTemplate | undefined, const SPELL_TEMPLATES: SpellTemplate[]
 - `src\data\sphereIcons.ts`
   - function getSphereColor: (sphereName) => string
@@ -1435,11 +1455,13 @@
   - interface EffectTickResult
 - `src\engine\elderEssenceReward.ts` — function computeElderEssenceReward: (reveal, tick) => EssenceRewardResult, interface EssenceRewardResult
 - `src\engine\encounter.ts`
-  - function initiateEncounter: (state, actorId, encounterId, tick) => EncounterProgress
+  - function applyGroupSupportLeverage: (progress, resolvingAgentId) => void
+  - function selectGroupStepResolver: (state) => void
+  - function initiateEncounter: (state, actorId, encounterId, tick, targetAgentId?) => EncounterProgress
   - function resolveEncounter: (state, progress, deterministicRoll?) => void
   - function advanceEncounter: (state, progress, success, tick, resolutionSnapshot?) => void
   - function isEncounterOccupied: (progress, currentTick) => boolean
-  - function abandonEncounter: (progress) => void
+  - _...4 more_
 - `src\engine\encounterAftermath.ts` — function appendRecentEvent: (existing, event) => TickEvent[], function applyEncounterAftermathReaction: (state, action, reaction, tick) => GameState
 - `src\engine\encounterAwareness.ts`
   - function resolveLocationToHex: (graph, locationId) => void
@@ -1828,6 +1850,14 @@
   - const MAGICAL_SATURATION_VISIBILITY_THRESHOLD
 - `src\engine\phaseMandate.ts` — function resetMandateCounter: () => void, function phaseMandate: (state) => Partial<GameState>
 - `src\engine\phaseMovement.ts` — function resetMovementEventCounter: () => void, function phaseMovement: (state) => Partial<GameState>
+- `src\engine\phaseOmenAgenda.ts`
+  - function resetOmenCounter: () => void
+  - function phaseOmenAgenda: (state) => Partial<GameState>
+  - function deriveOmenEncounterBias: (omenState) => Partial<Record<string, number>>
+  - const OMEN_FIRST_ACTIVATION_TICK
+  - const OMEN_SECONDARY_THRESHOLD
+  - const OMEN_BEAT_INTERVAL_DEFAULT
+  - _...7 more_
 - `src\engine\phaseProsperity.ts`
   - function getProsperityTier: (prosperity) => ProsperityTier
   - function computeBaseIncome: (props, unknown>) => number
@@ -2077,10 +2107,23 @@
   - function ensureEncounterCache: (runtime, graph, tick, tiles) => EncounterCacheManager
   - function ensureDistanceMatrix: (runtime, graph) => DistanceMatrix
   - _...2 more_
+- `src\engine\socialCounterArgument.ts`
+  - function findDominantAxis: (profile) => void
+  - function selectCounterArgument: (graph, targetId, actorReach, leverage) => CounterArgumentResult | null
+  - function applyCounterModifier: (baseDifficulty, counter) => number
+  - interface CounterArgumentResult
 - `src\engine\socialEncounterGeneration.ts`
   - function generateSocialCandidates: (graph, agentId, agentLocationId, distanceMatrix) => EncounterCacheEntry[]
   - function computeBondModifier: (graph, agentId, targetAgentId) => number
   - function getSharedFactionSocialTemplates: (graph, agentId, targetAgentId, locationType) => EncounterTemplate[]
+- `src\engine\socialLeverage.ts`
+  - function getHighestFactionRank: (graph, agentId) => number
+  - function computeInitialLeverage: (graph, actorId, targetId) => number
+  - function isSocialSceneTemplate: (steps) => boolean
+  - const LEVERAGE_BOND_BONUS
+  - const LEVERAGE_WEALTH_BONUS
+  - const LEVERAGE_WEALTH_RATIO
+  - _...5 more_
 - `src\engine\socialOutcome.ts`
   - function processSocialOutcome: (graph, progress, success, tick) => SocialOutcomeResult
   - interface SocialOutcomeResult
@@ -2135,6 +2178,14 @@
   - function modifyLocationProperty: (graph, locationId, property, delta, clamp?, number]) => GraphOpResult
   - function createRelationEdge: (graph, sourceId, targetId, edgeType, tick, properties?, unknown>) => GraphOpResult
   - _...2 more_
+- `src\engine\strategicPresentation.ts`
+  - function getProgressLabel: (fraction) => string
+  - function getHealthLabel: (degradation) => string
+  - function getBehaviorFamilyPresentation: (family) => void
+  - function getAgentStrategicSummary: (strategicState, agentId, graph, currentTick) => AgentStrategicSummary | null
+  - function getAgentStrategicHistory: (strategicState, agentId, currentTick) => StrategicHistoryDisplayEntry[]
+  - function getHexStrategicOverlays: (strategicState, graph) => Map<string, HexStrategicOverlay>
+  - _...19 more_
 - `src\engine\strategicTelemetry.ts`
   - function getStrategicDecisionSummary: (state, agentId?) => StrategicDecisionSummary
   - function formatStrategicHistory: (history, limit) => string
@@ -2502,10 +2553,12 @@
 - 2026-04-09-ambition-driven-strategic-actions-design — `Docs\plans\2026-04-09-ambition-driven-strategic-actions-design.md`
 - 2026-04-09-ambition-driven-strategic-actions-implementation-plan — `Docs\plans\2026-04-09-ambition-driven-strategic-actions-implementation-plan.md`
 - 2026-04-12-encounter-actor-test-strategy — `Docs\plans\2026-04-12-encounter-actor-test-strategy.md`
+- 2026-04-15-strategic-actions-ui-visibility-design — `Docs\plans\2026-04-15-strategic-actions-ui-visibility-design.md`
 - rel.generates — `Relationships\rel.generates.md`
 - rel.venerates — `Relationships\rel.venerates.md`
 - generate-hex-tile — `scripts\generate-hex-tile.py`
 - generateVault.test — `scripts\__tests__\generateVault.test.ts`
+- StrategicMarkerMesh — `src\components\HexMapV2\scene\StrategicMarkerMesh.ts`
 - civic-guard-definition — `src\data\civic-guard-definition.ts`
 - strategic-action-constants — `src\data\strategic-action-constants.ts`
 - builderStrategicPack — `src\data\strategic-packs\builderStrategicPack.ts`
@@ -2518,6 +2571,7 @@
 - strategicActionLifecycle — `src\engine\strategicActionLifecycle.ts`
 - strategicActionScoring — `src\engine\strategicActionScoring.ts`
 - strategicGraphOps — `src\engine\strategicGraphOps.ts`
+- strategicPresentation — `src\engine\strategicPresentation.ts`
 - strategicTelemetry — `src\engine\strategicTelemetry.ts`
 - strategic-actions.contract.test — `src\engine\__tests__\contracts\strategic-actions.contract.test.ts`
 - strategicActionCandidates.test — `src\engine\__tests__\strategicActionCandidates.test.ts`
@@ -2540,36 +2594,36 @@
 
 ## Most Imported Files (change these carefully)
 
-- `src\engine\graph.ts` — imported by **384** files
-- `src\types\index.ts` — imported by **189** files
-- `src\types\gameState.ts` — imported by **188** files
-- `src\types\traits.ts` — imported by **170** files
-- `src\engine\traceBuffer.ts` — imported by **111** files
-- `src\types\encounter.ts` — imported by **99** files
-- `src\types\agent.ts` — imported by **96** files
+- `src\engine\graph.ts` — imported by **389** files
+- `src\types\gameState.ts` — imported by **192** files
+- `src\types\index.ts` — imported by **191** files
+- `src\types\traits.ts` — imported by **173** files
+- `src\engine\traceBuffer.ts` — imported by **113** files
+- `src\types\encounter.ts` — imported by **106** files
+- `src\types\agent.ts` — imported by **99** files
 - `src\types\graph.ts` — imported by **89** files
 - `src\types\influence.ts` — imported by **86** files
 - `src\types\unifiedAction.ts` — imported by **83** files
 - `src\lib\hexMath.ts` — imported by **55** files
+- `src\types\trace.ts` — imported by **53** files
 - `src\types\faction.ts` — imported by **51** files
-- `src\types\trace.ts` — imported by **50** files
 - `src\types\disposition.ts` — imported by **46** files
-- `src\data\sphereIcons.ts` — imported by **40** files
+- `src\data\sphereIcons.ts` — imported by **43** files
 - `src\types\effects.ts` — imported by **39** files
 - `src\lib\prng.ts` — imported by **37** files
-- `src\components\HexMapV2\scene\RenderLayers.ts` — imported by **36** files
-- `src\data\encounter-content.ts` — imported by **35** files
+- `src\components\HexMapV2\scene\RenderLayers.ts` — imported by **37** files
+- `src\data\encounter-content.ts` — imported by **36** files
 - `src\types\rarity.ts` — imported by **34** files
 
 ## Import Map (who imports what)
 
-- `src\engine\graph.ts` ← `src\components\AgentInfoCard\AgentInfoCard.tsx`, `src\components\Game\AgentInfoCard.tsx`, `src\components\Game\debug\ArmiesTabContent.tsx`, `src\components\Game\debug\BondOverlay.tsx`, `src\components\Game\debug\DebugTabContent.tsx` +379 more
-- `src\types\index.ts` ← `scripts\cli.ts`, `scripts\playtest.ts`, `src\components\Game\ActionCard.tsx`, `src\components\Game\DoomBar.tsx`, `src\components\Game\InterventionConfirm.tsx` +184 more
-- `src\types\gameState.ts` ← `scripts\cli.ts`, `scripts\playtest-format.ts`, `scripts\playtest.ts`, `scripts\__tests__\playtest-format.test.ts`, `src\components\Game\AscendantSheet.tsx` +183 more
-- `src\types\traits.ts` ← `src\components\CMS\registry.ts`, `src\components\Game\AgentDetailPanel.tsx`, `src\components\Game\AgentInfoCard.tsx`, `src\components\Game\AscendantSheet.tsx`, `src\components\Game\AscendantSheet.tsx` +165 more
-- `src\engine\traceBuffer.ts` ← `src\components\Game\DebugPanel.tsx`, `src\components\Game\hooks\useAvatarData.ts`, `src\components\Game\__tests__\DebugPanel-intervention.test.tsx`, `src\components\Game\__tests__\DebugPanel-modifier.test.tsx`, `src\components\Game\__tests__\DebugPanel.test.tsx` +106 more
-- `src\types\encounter.ts` ← `src\components\Game\debug\DebugTabContent.tsx`, `src\components\Game\debug\EncounterCacheView.tsx`, `src\components\Game\debug\EncounterCacheView.tsx`, `src\components\Game\DebugPanel.tsx`, `src\components\Game\encounter-stage\adapters\buildSimpleEncounterStageModel.ts` +94 more
-- `src\types\agent.ts` ← `src\data\action-template-content.ts`, `src\data\agenda-content.ts`, `src\data\domain-words.ts`, `src\data\narrative-content.ts`, `src\data\strand-content.ts` +91 more
+- `src\engine\graph.ts` ← `src\components\AgentInfoCard\AgentInfoCard.tsx`, `src\components\Game\AgentInfoCard.tsx`, `src\components\Game\debug\ArmiesTabContent.tsx`, `src\components\Game\debug\BondOverlay.tsx`, `src\components\Game\debug\DebugTabContent.tsx` +384 more
+- `src\types\gameState.ts` ← `scripts\cli.ts`, `scripts\playtest-format.ts`, `scripts\playtest.ts`, `scripts\__tests__\playtest-format.test.ts`, `src\components\Game\AscendantSheet.tsx` +187 more
+- `src\types\index.ts` ← `scripts\cli.ts`, `scripts\playtest.ts`, `src\components\Game\ActionCard.tsx`, `src\components\Game\DoomBar.tsx`, `src\components\Game\InterventionConfirm.tsx` +186 more
+- `src\types\traits.ts` ← `src\components\CMS\registry.ts`, `src\components\Game\AgentDetailPanel.tsx`, `src\components\Game\AgentInfoCard.tsx`, `src\components\Game\AscendantSheet.tsx`, `src\components\Game\AscendantSheet.tsx` +168 more
+- `src\engine\traceBuffer.ts` ← `src\components\Game\DebugPanel.tsx`, `src\components\Game\GameView.tsx`, `src\components\Game\hooks\useAvatarData.ts`, `src\components\Game\__tests__\DebugPanel-intervention.test.tsx`, `src\components\Game\__tests__\DebugPanel-modifier.test.tsx` +108 more
+- `src\types\encounter.ts` ← `src\components\Game\debug\DebugTabContent.tsx`, `src\components\Game\debug\EncounterCacheView.tsx`, `src\components\Game\debug\EncounterCacheView.tsx`, `src\components\Game\DebugPanel.tsx`, `src\components\Game\encounter-stage\adapters\buildSimpleEncounterStageModel.ts` +101 more
+- `src\types\agent.ts` ← `src\data\action-template-content.ts`, `src\data\agenda-content.ts`, `src\data\counter-argument-content.ts`, `src\data\domain-words.ts`, `src\data\narrative-content.ts` +94 more
 - `src\types\graph.ts` ← `scripts\cli.ts`, `src\components\Codex\codexRegistry.ts`, `src\components\Game\debug\BondOverlay.tsx`, `src\components\Game\debug\EncounterCacheView.tsx`, `src\components\Game\debug\RelationshipGraph.tsx` +84 more
 - `src\types\influence.ts` ← `src\App.tsx`, `src\components\Ascendant\ArchetypeCard.tsx`, `src\components\Ascendant\AscendantSelection.tsx`, `src\components\Game\AscendantSheet.tsx`, `src\components\Game\contexts\ScryContext.tsx` +81 more
 - `src\types\unifiedAction.ts` ← `src\components\Game\ActionDrawer.tsx`, `src\components\Game\ActionDrawer.tsx`, `src\components\Game\encounter-stage\adapters\buildGateDutyEncounterStageModel.ts`, `src\components\Game\encounter-stage\adapters\__tests__\buildUnifiedEncounterStageModel.test.ts`, `src\components\Game\encounter-stage\__tests__\buildGateDutyEncounterStageModel.test.ts` +78 more
@@ -2585,7 +2639,7 @@
 # Test Coverage
 
 > **0%** of routes and models are covered by tests
-> 611 test files found
+> 613 test files found
 
 ---
 
