@@ -21,6 +21,7 @@ import type { PendingEncounterSeed } from '../types/unifiedAction';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import { createUnifiedAction } from './unifiedActionLifecycle';
 import { appendRecentEvent } from './encounterAftermath';
+import { emitTrace } from './traceBuffer';
 
 export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () => number): GameState {
   const seeds = state.pendingEncounterSeeds ?? [];
@@ -44,6 +45,8 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
   let nextRecentEvents = [...state.recentEvents];
 
   for (const seed of eligible) {
+    const ticksSincePlant = tick - (seed.plantedTick ?? tick);
+
     // Try direct template spawn
     if (seed.templateId) {
       const template = getUnifiedTemplateById(seed.templateId);
@@ -75,9 +78,19 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
           };
           nextTickEvents = [...nextTickEvents, spawnEvent];
           nextRecentEvents = appendRecentEvent(nextRecentEvents, spawnEvent);
+          emitTrace({
+            tick, category: 'encounter_seed_triggered',
+            agentId: seed.targetAgentId,
+            seedId: seed.seedId,
+            targetAgentId: seed.targetAgentId,
+            ticksBetweenPlantAndTrigger: ticksSincePlant,
+            resolvedTemplateId: seed.templateId,
+            outcome: 'fired',
+            summary: `Seed fired: "${seed.seedLabel}" → ${seed.templateId} for ${seed.targetAgentId}`,
+          });
           continue;
         }
-        // Agent busy — keep seed for next tick
+        // Agent busy — keep seed for next tick (not triggered yet, no trace)
         remaining.push(seed);
         continue;
       }
@@ -97,6 +110,16 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
       nextTickEvents = [...nextTickEvents, familyEvent];
       nextRecentEvents = appendRecentEvent(nextRecentEvents, familyEvent);
       // Seed consumed — family matching is best-effort narrative for v1
+      emitTrace({
+        tick, category: 'encounter_seed_triggered',
+        agentId: seed.targetAgentId,
+        seedId: seed.seedId,
+        targetAgentId: seed.targetAgentId,
+        ticksBetweenPlantAndTrigger: ticksSincePlant,
+        resolvedTemplateId: `family:${seed.encounterFamily}`,
+        outcome: 'fired',
+        summary: `Seed fired (family-only narrative): "${seed.seedLabel}" → ${seed.encounterFamily}`,
+      });
       continue;
     }
 
@@ -111,6 +134,17 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
     };
     nextTickEvents = [...nextTickEvents, expiredEvent];
     nextRecentEvents = appendRecentEvent(nextRecentEvents, expiredEvent);
+    emitTrace({
+      tick, category: 'encounter_seed_triggered',
+      agentId: seed.targetAgentId,
+      seedId: seed.seedId,
+      targetAgentId: seed.targetAgentId,
+      ticksBetweenPlantAndTrigger: ticksSincePlant,
+      resolvedTemplateId: 'none',
+      outcome: 'discarded',
+      discardReason: 'no_template_or_family',
+      summary: `Seed discarded (no template or family): "${seed.seedLabel}"`,
+    });
   }
 
   return {

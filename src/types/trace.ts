@@ -56,7 +56,16 @@ export type TraceCategory =
   | 'strategic_world_change'
   // Omen agenda traces (THR-19)
   | 'omen_selection'
-  | 'omen_beat';
+  | 'omen_beat'
+  // Encounter aftermath traces (THR-111)
+  | 'encounter_aftermath_applied'
+  | 'encounter_aftermath_effect'
+  | 'encounter_seed_planted'
+  | 'encounter_seed_triggered'
+  | 'hidden_mark_placed'
+  | 'hidden_mark_revealed'
+  | 'intelligence_granted'
+  | 'authored_attachment_created';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -100,6 +109,19 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'strategic_world_change',
   'omen_selection',
   'omen_beat',
+  // Fix: three TraceEntry members that were defined but missing from this array (THR-111)
+  'graph_op_execution',
+  'choice_set_player_resolved',
+  'choice_set_player_dismissed',
+  // New encounter aftermath traces (THR-111)
+  'encounter_aftermath_applied',
+  'encounter_aftermath_effect',
+  'encounter_seed_planted',
+  'encounter_seed_triggered',
+  'hidden_mark_placed',
+  'hidden_mark_revealed',
+  'intelligence_granted',
+  'authored_attachment_created',
 ];
 
 /** Base shape for all trace entries */
@@ -789,6 +811,115 @@ export interface StrategicWorldChangeTrace extends TraceBase {
   affectedNodeIds: string[];
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// Encounter Aftermath Traces (THR-111)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Trace: encounter aftermath reaction applied — summary of all effects fired */
+export interface EncounterAftermathAppliedTrace extends TraceBase {
+  category: 'encounter_aftermath_applied';
+  encounterId: string;
+  actionId: string;
+  actorId: string;
+  reactionId: string;
+  /** Category string for each effect in the reaction, in order */
+  effectKinds: readonly string[];
+}
+
+/** Trace: single aftermath reaction effect applied (one per effect.kind in reaction.effects) */
+export interface EncounterAftermathEffectTrace extends TraceBase {
+  category: 'encounter_aftermath_effect';
+  encounterId: string;
+  actionId: string;
+  reactionId: string;
+  /** Index in reaction.effects array */
+  effectIndex: number;
+  effectKind:
+    | 'reputation_score' | 'reputation_tally' | 'clearance_gate_tag'
+    | 'recent_event' | 'encounter_seed' | 'hidden_mark' | 'intelligence';
+  /** Kind-specific payload for inspection */
+  effectDetail: Readonly<Record<string, unknown>>;
+  success: boolean;
+  failReason?: string;
+}
+
+/** Trace: encounter seed planted by aftermath reaction */
+export interface EncounterSeedPlantedTrace extends TraceBase {
+  category: 'encounter_seed_planted';
+  seedId: string;
+  targetAgentId: string;
+  sourceEncounterId: string;
+  sourceReactionId: string;
+  templateId?: string;
+  encounterFamily?: string;
+  delayTicks: number;
+  eligibleAfterTick: number;
+  seedLabel: string;
+  priority: number;
+}
+
+/** Trace: encounter seed consumed — fired into an action, used as a narrative beat, or discarded */
+export interface EncounterSeedTriggeredTrace extends TraceBase {
+  category: 'encounter_seed_triggered';
+  seedId: string;
+  targetAgentId: string;
+  /** Ticks elapsed between seed.plantedTick and current tick */
+  ticksBetweenPlantAndTrigger: number;
+  /** templateId if fired, 'family:<name>' if family-only, 'none' if discarded */
+  resolvedTemplateId: string;
+  outcome: 'fired' | 'discarded';
+  discardReason?: string;
+}
+
+/** Trace: hidden mark placed on an agent by aftermath reaction */
+export interface HiddenMarkPlacedTrace extends TraceBase {
+  category: 'hidden_mark_placed';
+  markId: string;
+  actorId: string;
+  sourceEncounterId: string;
+  sourceTemplateId: string;
+  markCategory: string;
+  severity: number;
+  revealFamilies: readonly string[];
+  label: string;
+}
+
+/** Trace: hidden mark revealed (consumed) by a matching encounter or action */
+export interface HiddenMarkRevealedTrace extends TraceBase {
+  category: 'hidden_mark_revealed';
+  markId: string;
+  actorId: string;
+  /** templateId of the encounter or action that matched revealFamilies */
+  revealedBy: string;
+  ticksSincePlacement: number;
+}
+
+/** Trace: intelligence record granted to an agent by aftermath reaction */
+export interface IntelligenceGrantedTrace extends TraceBase {
+  category: 'intelligence_granted';
+  recordId: string;
+  agentId: string;
+  sourceEncounterId: string;
+  intelCategory: string;
+  label: string;
+  reliability: number;
+  targetRegion?: string;
+  targetEntityId?: string;
+}
+
+/** Trace: authored attachment created from encounter GraphOp, aftermath effect, or support bundle */
+export interface AuthoredAttachmentCreatedTrace extends TraceBase {
+  category: 'authored_attachment_created';
+  sourceEncounterId: string;
+  sourceTemplateId: string;
+  ownerActorId: string;
+  attachmentNodeId: string;
+  attachmentName: string;
+  /** Node category: possession / condition / agreement / etc. */
+  attachmentCategory: string;
+  origin: 'aftermath_effect' | 'step_graphop' | 'support_bundle';
+}
+
 /** Discriminated union of all trace types */
 export type TraceEntry =
   | ActionSelectionTrace
@@ -854,7 +985,16 @@ export type TraceEntry =
   | ChoiceSetPlayerResolvedTrace
   | ChoiceSetPlayerDismissedTrace
   | OmenSelectionTrace
-  | OmenBeatTrace;
+  | OmenBeatTrace
+  // Encounter aftermath traces (THR-111)
+  | EncounterAftermathAppliedTrace
+  | EncounterAftermathEffectTrace
+  | EncounterSeedPlantedTrace
+  | EncounterSeedTriggeredTrace
+  | HiddenMarkPlacedTrace
+  | HiddenMarkRevealedTrace
+  | IntelligenceGrantedTrace
+  | AuthoredAttachmentCreatedTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {

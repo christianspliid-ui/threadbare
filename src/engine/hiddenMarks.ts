@@ -11,6 +11,7 @@
 
 import type { GameState } from '../types/gameState';
 import type { HiddenMark } from '../types/unifiedAction';
+import { emitTrace } from './traceBuffer';
 
 /** Get all hidden marks on a specific agent. */
 export function getAgentHiddenMarks(state: GameState, agentId: string): readonly HiddenMark[] {
@@ -42,10 +43,38 @@ export function checkMarkReveals(
   );
 }
 
-/** Remove a specific mark by ID (after it has been revealed). */
+/** Remove a specific mark by ID (after it has been revealed). Does NOT emit a trace. */
 export function removeHiddenMark(state: GameState, markId: string): GameState {
   return {
     ...state,
     hiddenMarks: (state.hiddenMarks ?? []).filter(m => m.markId !== markId),
   };
+}
+
+/**
+ * Reveal a hidden mark — remove it from state and emit a `hidden_mark_revealed` trace.
+ * Use this instead of `removeHiddenMark` when a mark is consumed by a matching encounter
+ * or action (i.e. a revealFamilies predicate matched).
+ *
+ * If the markId is not found, state is returned unchanged and no trace is emitted.
+ */
+export function revealHiddenMark(
+  state: GameState,
+  markId: string,
+  tick: number,
+  revealedBy: string,
+): GameState {
+  const mark = (state.hiddenMarks ?? []).find(m => m.markId === markId);
+  if (!mark) return state;
+  emitTrace({
+    tick,
+    category: 'hidden_mark_revealed',
+    agentId: mark.targetAgentId,
+    markId,
+    actorId: mark.targetAgentId,
+    revealedBy,
+    ticksSincePlacement: tick - mark.placedTick,
+    summary: `Hidden mark revealed: "${mark.label}" on ${mark.targetAgentId} by ${revealedBy}`,
+  });
+  return removeHiddenMark(state, markId);
 }
