@@ -136,8 +136,10 @@ export function computeOutcomeConsequence(
   tick: number,
   context?: ComplicationContext,
 ): OutcomeConsequence {
-  // Run complication selection for all failure tiers (not gated by proving slice)
-  const complication = (context && isStepFailure(outcome))
+  // Run complication selection for all failure tiers (not gated by proving slice).
+  // Includes success_at_cost — isStepFailure() excludes that tier, so we check explicitly.
+  const isFailureTier = isStepFailure(outcome) || outcome === 'success_at_cost';
+  const complication = (context && isFailureTier)
     ? selectComplication(outcome, context)
     : null;
 

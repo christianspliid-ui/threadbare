@@ -143,7 +143,9 @@ function applyEffect(
     }
 
     case 'sphere_pressure': {
-      // Record sphere pressure spike on the game state's world soul (if present)
+      // TODO(THR-120): WorldSoulState.spherePressures does not yet exist.
+      // This writes to a cast object that nothing reads — deferred until
+      // WorldSoulState is extended and the omen/worldsoul phase consumes the field.
       const worldSoul = state.worldSoul as Record<string, unknown> | null | undefined;
       if (!worldSoul) break;
       const pressures = (worldSoul.spherePressures as Record<string, number> | undefined) ?? {};
@@ -153,11 +155,9 @@ function applyEffect(
     }
 
     case 'partial_progress': {
-      // Add partial step progress back onto the action's stepProgress
-      // NOTE: The action is immutable (readonly), so we annotate progress
-      // on the actor node as a pending partial-progress hint for the lifecycle.
-      // The actual advancement happens in unifiedActionLifecycle via stepOutcomes.
-      // Here we record the fraction on the actor as a transient signal.
+      // TODO(THR-119): The actor node receives a transient _complicationPartialProgress
+      // signal but nothing in unifiedActionLifecycle reads it yet. Deferred until the
+      // lifecycle is extended to consume this hint and advance step progress fractionally.
       const fraction = Math.min(1, Math.max(0, effect.fraction));
       actorNode.properties._complicationPartialProgress = fraction;
       break;
@@ -200,7 +200,9 @@ function applyEffect(
     }
 
     case 'rival_awareness': {
-      // Bump rival awareness of this actor in rivalStates
+      // TODO(THR-121): RivalState.agentAwareness does not yet exist.
+      // The if (awarenessMap) guard makes this a no-op on all real rivals.
+      // Deferred until RivalState is extended and the rival targeting phase consumes the field.
       for (const rivalState of state.rivalStates) {
         const awarenessMap = (rivalState as Record<string, unknown>).agentAwareness as
           Record<string, number> | undefined;
