@@ -56,6 +56,7 @@ export function eventTypeToCategory(type: TickEvent['type']): NotificationCatego
   if (type.startsWith('journey_')) return 'journeys';
   if (type.startsWith('ambition_')) return 'ambitions';
   if (type === 'intervention_effect' || type.startsWith('control_effect_')) return 'divine';
+  if (type === 'complication') return 'encounters'; // THR-20: complications route with encounters
   if (type === 'settlement_tier_change' || type === 'economic_chronicle') return 'economy';
   if (type === 'tier_promotion') return 'actions';
   if (type === 'return_resolved' || type === 'ripple_consequence') return 'journeys';

@@ -1330,6 +1330,37 @@ export function EncounterVeil({
           {model.resolutionReadout && (
             <ResolutionReadoutBlock readout={model.resolutionReadout} />
           )}
+
+          {/* Complication prose — most recent failed step with a complication (THR-20) */}
+          {(() => {
+            const mostRecentComplication = [...(model.history ?? [])].reverse().find(
+              s => s.status === 'resolved' && s.complication,
+            )?.complication;
+            if (!mostRecentComplication) return null;
+            return (
+              <div
+                style={{
+                  marginTop: 16,
+                  paddingTop: 12,
+                  borderTop: '1px solid rgba(212, 175, 55, 0.15)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                  <span style={{ fontSize: '0.65rem', color: 'rgba(212, 175, 55, 0.5)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                    ⊘ {mostRecentComplication.name}
+                  </span>
+                  {mostRecentComplication.severity === 'severe' && (
+                    <span style={{ fontSize: '0.6rem', color: 'rgba(220, 100, 60, 0.7)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                      severe
+                    </span>
+                  )}
+                </div>
+                <p style={{ fontFamily: 'Georgia, "Times New Roman", serif', fontStyle: 'italic', fontSize: '0.82rem', lineHeight: 1.7, color: 'rgba(212, 175, 55, 0.7)', margin: 0, maxWidth: 500 }}>
+                  {mostRecentComplication.prose}
+                </p>
+              </div>
+            );
+          })()}
         </div>
 
         {/* ── Choice blocks ─────────────────────────────── */}

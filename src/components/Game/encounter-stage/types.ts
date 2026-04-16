@@ -143,6 +143,13 @@ export interface EncounterStageHistoryModel {
   stepLabel: string;
   status: 'resolved' | 'current' | 'future';
   afterimage?: string;
+  /** Complication prose and metadata for failure-tier steps (THR-20) */
+  complication?: {
+    prose: string;
+    name: string;
+    severity: 'minor' | 'standard' | 'severe';
+    category: string;
+  };
 }
 
 export interface EncounterStageFalloutModel {

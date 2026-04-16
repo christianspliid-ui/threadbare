@@ -83,7 +83,9 @@ export interface TickEvent {
   // Player choice resolution events (THR-73)
     | 'choice_set_resolved'
   // Omen agenda events (THR-19)
-    | 'omen_started' | 'omen_expired' | 'omen_beat' | 'omen_forced_shift';
+    | 'omen_started' | 'omen_expired' | 'omen_beat' | 'omen_forced_shift'
+  // Complication outcome events (THR-20)
+    | 'complication';
   message: string;
   /** Optional sphere coloring for UI */
   sphere?: SphereName;

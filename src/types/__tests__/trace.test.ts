@@ -180,6 +180,8 @@ describe('TraceEntry types', () => {
       'encounter_seed_planted', 'encounter_seed_triggered',
       'hidden_mark_placed', 'hidden_mark_revealed',
       'intelligence_granted', 'authored_attachment_created',
+      // Complication outcome traces (THR-20)
+      'complication_selection',
     ];
     for (const cat of traceEntryCategories) {
       expect(TRACE_CATEGORIES).toContain(cat);

@@ -273,6 +273,7 @@ function buildHistory(
     }
 
     let afterimage: string | undefined;
+    let complication: { prose: string; name: string; severity: 'minor' | 'standard' | 'severe'; category: string } | undefined;
     if (isResolved) {
       const outcome = activeAction.stepOutcomes[index];
       const success = isStepSuccess(outcome);
@@ -282,6 +283,17 @@ function buildHistory(
         ? (resolvedStep.successAfterimage ?? 'Succeeded')
         : (resolvedStep.failureAfterimage ?? 'Failed');
       afterimage = enrichProse(rawAfterimage, ctx);
+
+      // Attach complication prose if a complication fired on this step (THR-20)
+      const complicationSlot = activeAction.stepComplications?.[index];
+      if (complicationSlot) {
+        complication = {
+          prose: complicationSlot.prose,
+          name: complicationSlot.name,
+          severity: complicationSlot.severity,
+          category: complicationSlot.category,
+        };
+      }
     }
 
     return {
@@ -289,6 +301,7 @@ function buildHistory(
       stepLabel,
       status: isResolved ? 'resolved' as const : isCurrent ? 'current' as const : 'future' as const,
       afterimage,
+      complication,
     };
   });
 }

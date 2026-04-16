@@ -530,4 +530,27 @@ export interface UnifiedAction {
   readonly aftermathChanges?: readonly EncounterAftermathChange[];
   /** World-facing summary of what changed because this encounter resolved. */
   readonly aftermathSummary?: EncounterAftermathSummary;
+  /**
+   * Per-step complication results (parallel to stepOutcomes).
+   * Null entries indicate the step had no complication or was a success tier.
+   * Used by the UI to display complication prose alongside step narratives. (THR-20)
+   * Typed as readonly unknown[] here to avoid a circular type dependency with complication.ts.
+   * Cast to ComplicationResult at consumer sites.
+   */
+  readonly stepComplications?: readonly (StepComplicationSlot | null)[];
+}
+
+/**
+ * Opaque slot for a complication result stored on a UnifiedAction step.
+ * Defined here to avoid circular imports between unifiedAction.ts and complication.ts.
+ * The actual runtime value is a ComplicationResult from src/types/complication.ts.
+ */
+export interface StepComplicationSlot {
+  readonly templateId: string;
+  readonly category: string;
+  readonly severity: 'minor' | 'standard' | 'severe';
+  readonly prose: string;
+  readonly name: string;
+  readonly narrativeTag: string;
+  readonly significanceBoost: number;
 }

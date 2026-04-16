@@ -32,6 +32,8 @@
 import type { StepOutcome } from '../types/unifiedAction';
 import type { QuintessenceEvent } from '../types/quintessence';
 import { isStepSuccess, isStepFailure } from '../types/unifiedAction';
+import type { ComplicationContext, ComplicationResult } from '../types/complication';
+import { selectComplication } from './complicationSelection';
 
 // ─── Constants (NFP #1: Tunability) ────────────────────────────────
 
@@ -93,6 +95,12 @@ export interface OutcomeConsequence {
   narrativeTag: string;
   /** Extra significance boost for tick events. Added to base significance. */
   significanceBoost: number;
+  /**
+   * Complication attached to this outcome (null for success tiers).
+   * Populated for failure / critical_failure / success_at_cost when a
+   * ComplicationContext is provided. (THR-20)
+   */
+  complication: ComplicationResult | null;
 }
 
 const DEFAULT_CONSEQUENCE: OutcomeConsequence = {
@@ -100,6 +108,7 @@ const DEFAULT_CONSEQUENCE: OutcomeConsequence = {
   quintessenceEvent: null,
   narrativeTag: 'neutral',
   significanceBoost: 0,
+  complication: null,
 };
 
 // ─── Consequence Computation ──────────────────────────────────────
@@ -107,13 +116,17 @@ const DEFAULT_CONSEQUENCE: OutcomeConsequence = {
 /**
  * Compute differentiated consequences for a step outcome.
  *
- * Only templates in the proving slice get rich consequences.
- * All others return the default (no-op) consequence.
+ * Success-tier consequences (growth multiplier, quintessence events) are still
+ * restricted to the proving-slice families. Failure-tier complications now apply
+ * to ALL templates when a ComplicationContext is provided — the proving-slice gate
+ * is removed for failure tiers (THR-20).
  *
  * @param templateId - The action template ID
  * @param outcome - The step outcome from the shared resolver
  * @param actorId - The actor node ID (for quintessence events)
  * @param tick - Current game tick
+ * @param context - Optional context for complication selection. When absent, no
+ *   complication is selected (backward-compatible with legacy callers).
  * @returns Consequence specification for the caller to apply
  */
 export function computeOutcomeConsequence(
@@ -121,9 +134,16 @@ export function computeOutcomeConsequence(
   outcome: StepOutcome,
   actorId: string,
   tick: number,
+  context?: ComplicationContext,
 ): OutcomeConsequence {
+  // Run complication selection for all failure tiers (not gated by proving slice)
+  const complication = (context && isStepFailure(outcome))
+    ? selectComplication(outcome, context)
+    : null;
+
+  // Success-tier consequences: still restricted to proving-slice families
   if (!isProvingSliceTemplate(templateId)) {
-    return DEFAULT_CONSEQUENCE;
+    return { ...DEFAULT_CONSEQUENCE, complication };
   }
 
   // Determine which family for flavor differences
@@ -141,10 +161,11 @@ export function computeOutcomeConsequence(
         },
         narrativeTag: 'surge',
         significanceBoost: 0.2,
+        complication: null,
       };
 
     case 'success':
-      return DEFAULT_CONSEQUENCE;
+      return { ...DEFAULT_CONSEQUENCE, complication: null };
 
     case 'success_at_cost': {
       // Risky actions charge a steeper cost
@@ -161,6 +182,7 @@ export function computeOutcomeConsequence(
         },
         narrativeTag: 'strained',
         significanceBoost: 0.05,
+        complication,
       };
     }
 
@@ -170,6 +192,7 @@ export function computeOutcomeConsequence(
         quintessenceEvent: null,
         narrativeTag: 'setback',
         significanceBoost: 0,
+        complication,
       };
 
     case 'critical_failure': {
@@ -186,7 +209,10 @@ export function computeOutcomeConsequence(
           tick,
         },
         narrativeTag: 'catastrophe',
+        // Complication has its own dedicated event with its own significance;
+        // we do not merge complication.significanceBoost here (THR-20)
         significanceBoost: 0.1,
+        complication,
       };
     }
   }

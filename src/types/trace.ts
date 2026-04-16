@@ -3,7 +3,7 @@ import type { ReachDomain } from './traits';
 import type { ValuePair } from './agent';
 import type { ModifierResolutionTrace } from './modifiers';
 import type { LapseReason } from './controlEffect';
-import type { NarrativeLayer } from './unifiedAction';
+import type { NarrativeLayer, StepOutcome } from './unifiedAction';
 import type { RarityTier } from './rarity';
 import type {
   EncounterPromotionTrace,
@@ -12,6 +12,7 @@ import type {
   StoryBeatQueueTrace,
 } from './attention';
 import type { BehaviorFamily, StrategicVerb, StrategicExecutionMode } from './strategicAction';
+import type { ComplicationSeverity } from './complication';
 
 /** Known trace categories for filtering in debug panel */
 export type TraceCategory =
@@ -65,7 +66,9 @@ export type TraceCategory =
   | 'hidden_mark_placed'
   | 'hidden_mark_revealed'
   | 'intelligence_granted'
-  | 'authored_attachment_created';
+  | 'authored_attachment_created'
+  // Complication outcome traces (THR-20)
+  | 'complication_selection';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -122,6 +125,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'hidden_mark_revealed',
   'intelligence_granted',
   'authored_attachment_created',
+  // Complication outcome traces (THR-20)
+  'complication_selection',
 ];
 
 /** Base shape for all trace entries */
@@ -920,6 +925,26 @@ export interface AuthoredAttachmentCreatedTrace extends TraceBase {
   origin: 'aftermath_effect' | 'step_graphop' | 'support_bundle';
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// Complication Outcome Traces (THR-20)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Trace: complication selector ran for a failure-tier step outcome */
+export interface ComplicationSelectionTrace extends TraceBase {
+  category: 'complication_selection';
+  actionId: string;
+  actorId: string;
+  stepIndex: number;
+  outcome: StepOutcome;
+  severity: ComplicationSeverity;
+  /** All candidates that passed requirement filtering, with their scores */
+  candidates: ReadonlyArray<{ templateId: string; score: number }>;
+  /** The templateId that was selected (or 'none' if pool was empty) */
+  selected: string;
+  /** Human-readable rationale string for the selection (e.g., 'omen_synergy,reach_affinity') */
+  reason: string;
+}
+
 /** Discriminated union of all trace types */
 export type TraceEntry =
   | ActionSelectionTrace
@@ -994,7 +1019,9 @@ export type TraceEntry =
   | HiddenMarkPlacedTrace
   | HiddenMarkRevealedTrace
   | IntelligenceGrantedTrace
-  | AuthoredAttachmentCreatedTrace;
+  | AuthoredAttachmentCreatedTrace
+  // Complication outcome traces (THR-20)
+  | ComplicationSelectionTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {

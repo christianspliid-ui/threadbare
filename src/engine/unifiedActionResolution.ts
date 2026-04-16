@@ -68,6 +68,9 @@ import type { BalanceEvent } from '../types/balanceEval';
 import { DEFAULT_REPUTATION } from '../types/disposition';
 import { recordBalanceEvent } from './balanceTelemetry';
 import { computeOutcomeConsequence } from './outcomeConsequences';
+import type { ComplicationContext } from '../types/complication';
+import { applyComplicationEffects } from './complicationEffects';
+import { getAgentLocationId, getAgentsAtLocation } from './graphQueries';
 import { processFactionEncounterReputation } from './factionReputation';
 import { processReputationTally } from './phaseReputationTraits';
 import {
@@ -862,14 +865,84 @@ export function executeStepResult(
     }
   }
 
-  // Phase 3: Compute differentiated consequences for the proving slice
+  // Phase 3: Assemble ComplicationContext for failure-tier outcome enrichment (THR-20)
+  const locationId = getAgentLocationId(state.graph, action.actorId) ?? null;
+  const locationNode = locationId ? state.graph.getNode(locationId) : undefined;
+  const locationSubtype = (locationNode?.properties?.locationSubtype
+    ?? locationNode?.properties?.locationType) as string | undefined;
+  const atSettlement = !!(locationSubtype &&
+    ['hamlet', 'town', 'city', 'capital'].includes(locationSubtype));
+  const presentAgentIds = locationId
+    ? getAgentsAtLocation(state.graph, locationId)
+        .map(n => n.id)
+        .filter(id => id !== action.actorId)
+    : [];
+  const factionIds = state.graph
+    .getOutgoingEdges(action.actorId, 'member_of')
+    .map(e => e.target);
+  const activeOmenCategory = state.omenState?.primary?.category ?? null;
+  const doomStage = state.doomClock?.currentStage ?? 0;
+  const existingAttachments = (
+    state.graph.getNode(action.actorId)?.properties?.activeAttachmentIds as string[] | undefined
+  ) ?? [];
+  const locationUnrest = typeof locationNode?.properties?.unrest === 'number'
+    ? locationNode.properties.unrest : 0;
+
+  const complicationContext: ComplicationContext = {
+    action,
+    template,
+    stepIndex: action.currentStep,
+    locationId,
+    atSettlement,
+    presentAgentIds,
+    factionIds,
+    activeOmenCategory,
+    doomStage,
+    existingAttachments,
+    locationUnrest,
+    rng,
+    graph: state.graph,
+  };
+
+  // Phase 3: Compute differentiated consequences (all templates for failure tiers; THR-20)
   const consequence = computeOutcomeConsequence(
-    action.templateId, outcome, action.actorId, tick,
+    action.templateId, outcome, action.actorId, tick, complicationContext,
   );
 
   // Phase 3: Queue quintessence effect from outcome consequence
   if (consequence.quintessenceEvent && state.pendingQuintessenceEvents) {
     state.pendingQuintessenceEvents.push(consequence.quintessenceEvent);
+  }
+
+  // Phase 3: Apply complication effects and generate complication tick event (THR-20)
+  if (consequence.complication) {
+    const complicationEvents = applyComplicationEffects(
+      consequence.complication.effects,
+      complicationContext,
+      state,
+      tick,
+      consequence.complication.name,
+    );
+    events.push(...complicationEvents);
+
+    // Emit a 'complication' tick event for narrative visibility
+    const severity = consequence.complication.severity;
+    const complicationNotification: import('../types/notification').NotificationDirective | undefined =
+      severity === 'severe'
+        ? { channel: 'alert', icon: 'discovery' }
+        : severity === 'standard'
+          ? { channel: 'toast' }
+          : undefined; // minor complications: no toast
+    events.push({
+      id: `complication_${tick}_${action.actionId}`,
+      tick,
+      type: 'complication',
+      message: `⊘ ${consequence.complication.name} — ${consequence.complication.prose}`,
+      significance: 0.3 + consequence.complication.significanceBoost,
+      actorId: action.actorId,
+      sphere: undefined,
+      notification: complicationNotification,
+    });
   }
 
   // Apply capability growth from step resolution
@@ -950,6 +1023,15 @@ export function executeStepResult(
 
   // Advance step or complete action
   let finalAction = advanceStep(action, outcome, template, rng);
+
+  // Accumulate per-step complication result (THR-20)
+  if (consequence.complication !== undefined) {
+    const prevComplications = action.stepComplications ?? [];
+    finalAction = {
+      ...finalAction,
+      stepComplications: [...prevComplications, consequence.complication],
+    };
+  }
   const rewardName = finalAction.resolved
     ? resolveUnifiedReward(action, outcome, stepMetadata, state, tick, runtime)
     : undefined;

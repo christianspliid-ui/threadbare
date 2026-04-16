@@ -369,7 +369,9 @@ describe('unifiedActionResolution', () => {
 
       expect(updatedAction.resolved).toBe(true);
       expect(updatedAction.outcome).toBe('failure');
-      expect(events[0].message).toContain('failed');
+      // Find the action resolution event — complication events may precede it (THR-20)
+      const resolvedEvent = events.find(e => e.type === 'agent_action_resolved');
+      expect(resolvedEvent?.message).toContain('failed');
     });
 
     it('instantiates encounter rewards from success metadata on final resolution', () => {
@@ -584,7 +586,9 @@ describe('unifiedActionResolution', () => {
       );
 
       expect(state.graph.getNode('actor-1')?.properties?.reputationScore).toBeCloseTo(DEFAULT_REPUTATION - 0.06, 5);
-      expect(events[0].message).toContain('lost reputation');
+      // Find the action resolution event — complication events may precede it (THR-20)
+      const resolvedEvent = events.find(e => e.type === 'agent_action_resolved');
+      expect(resolvedEvent?.message).toContain('lost reputation');
     });
 
     it('generates step progression event for multi-step', () => {
