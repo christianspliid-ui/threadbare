@@ -56,6 +56,9 @@ Every `narrative` field in steps and outcomes supports dynamic text substitution
 | `{omen_verb}` | Active omen action | "unravels" |
 | `{omen_noun}` | Active omen object | "the membrane" |
 | `{omen_atmosphere}` | Active omen mood | "the air thickens" |
+| `{doom_verb}` | Doom archetype vocabulary — action verb | "fractures" (breach) / "gathers" (convergence) |
+| `{doom_adj}` | Doom archetype vocabulary — adjective | "fractured" (breach) / "inexorable" (convergence) |
+| `{doom_atmosphere}` | Doom archetype vocabulary — atmospheric phrase | "something presses through" (breach) |
 
 **Conditional blocks** — prose that only appears if a condition is true:
 

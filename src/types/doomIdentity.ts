@@ -43,7 +43,7 @@ export const IDENTITY_RIVAL_BIAS_WEIGHT = 0.4;
 export const IDENTITY_PROSPERITY_MODIFIER_CAP = 2.0;
 
 /** Multiplier on scar-complication trust decay driven by doom identity.
- * @todo(THR-22) Wire this into complicationEffects.ts trust_decay handler so
+ * @todo(THR-122) Wire this into complicationEffects.ts trust_decay handler so
  * doom identity amplifies relationship damage from scar-type complications.
  */
 export const IDENTITY_TRUST_DECAY_MODIFIER = 0.2;
@@ -73,7 +73,7 @@ export interface IdentityLocationPressure {
   centerDelta: number;
   /**
    * Additional unrest tick applied to death-site locations when non-zero.
-   * @todo(THR-22) Not yet consumed by phaseProsperity. Requires tracking death-site
+   * @todo(THR-122) Not yet consumed by phaseProsperity. Requires tracking death-site
    * location IDs from phaseAgentLifecycle and applying unrest delta here.
    */
   deathSiteUnrestBonus?: number;
