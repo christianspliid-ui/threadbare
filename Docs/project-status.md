@@ -1,13 +1,16 @@
 # Project Status
 > Updated 2026-04-15.
 ## Current Focus
-**THR-28 shipped.** Social Systems Expansion, Phase 2: Deep Social Scenes. 30 new 3-5 step social scene templates with leverage mechanic, personality-driven counter-arguments, conditional branching, group resolution, and two divine player actions (Tip the Scales, Embolden).
+**THR-19 shipped.** Omen Agenda System — short-lived atmospheric pressure tracks (5–15 ticks) with primary/secondary slots, 36 templates across doom_echo/sphere_surge/cultural/seasonal categories, beat emission, encounter bias derivation, and full UI visibility.
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
 - **v1.1 Optimization:** In progress — Phases 19-22 (determinism, wiring, performance, hygiene)
 - **v1.2 Social Systems Expansion:** Designed — 5 expansions. Design doc: `Docs/plans/2026-03-31-social-systems-expansion-design.md`
 - **Agent Success Redesign:** Phase 1 ✅, Phase 2 ✅, Phase 3 ✅, Phase 4 ✅ corrected (2026-04-03)
 - **Next:** Phase 3 of Social Systems Expansion, or Phase 5 encounter migration
+## Recent Completions (2026-04-16)
+- **THR-19 Omen Agenda System:** `phaseOmenAgenda` (Phase 1.7) — primary/secondary omen slots, expiry, doom force-expire on escalation, seeded PRNG selection, beat emission on interval, sphere pressure feedback for sphere_surge omens. 36 templates (doom_echo: breach/convergence/reckoning; sphere_surge: 6 spheres; cultural: 6 conditions; seasonal: 4). `OmenIndicator` top-bar widget + `OmenDetail` flyout, `WorldPulse` sidebar section, Debug Omens tab. `deriveOmenEncounterBias` exported for future encounter scoring integration. 27 unit tests. Commit: `6fd3cbd8`. THR-79 deferred (4 remaining doom archetypes).
+
 ## Recent Completions (2026-04-15)
 - **THR-9 Strategic Actions — UI/HexMap Visibility:** Strategic activity visible to the player across all surfaces. `strategicPresentation.ts` pure selector layer (BEHAVIOR_FAMILY_PRESENTATION, getHexStrategicOverlays, getAgentStrategicSummary, getAgentStrategicHistory). `StrategicMarkerMesh.ts` Three.js sprite layer — project pulse dots (SE corner, 1.5s sine), control pip ring (degradation opacity). ThreadsPanel CompactThreadRow: family glyph + activity badge (progress/health prose). ThreadDetailView: Designs section with project/control/history. DebugTabContent: Strategic tab (global stats, per-family, followed agent). All wired through GameView. Commit: `c8c9a8ab`.
 - **THR-28 Deep Social Scenes:** 30 social scene templates (7 categories). Leverage mechanic (0–1.0) seeded from bond/wealth/power/rank, accumulates per step, reduces difficulty on key steps. Counter-argument system driven by target's dominant axiological axis (9 axes × 2 poles, rock-paper-scissors difficulty modifier). Conditional step skip (Counter fires only below 0.70 leverage). Group scene resolution (best_member + per-supporter bonus). Divine actions: Tip the Scales (+0.20 leverage shift) and Embolden (suppress counter-argument). Leverage bar UI in EncounterLog. 26 tests. Commit: `9a8b81ed`.

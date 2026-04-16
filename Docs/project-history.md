@@ -336,3 +336,5 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - Legacy encounter auto-resolve + threaded NPC activation: ✅ Complete (2026-04-09) — legacy threaded encounters now default to auto-resolve, pause popups only open for true pause-mode notifications, thread detail activity shows the actual viable choice count, and newly threaded ambient/notable individual NPCs are hydrated to spotlight so they can join the autonomous encounter loop.
 
 | 2026-04-15 | src/components/Game/GameView.tsx, src/types/trace.ts, src/types/gameState.ts | ✅ THR-73: wired choice_set player onResolve to execute selectedOption.consequences via executeEffect, with touchWorld, narrative log event, and ChoiceSetPlayerResolved/Dismissed traces | Deferral from THR-14 — modal was live but consequences were silently discarded |
+
+- THR-19 Omen Agenda System: ✅ Complete (2026-04-16) — phaseOmenAgenda (Phase 1.7), 36 templates, OmenIndicator UI, WorldPulse section, Debug Omens tab, 27 tests. Commit: 6fd3cbd8.
