@@ -186,10 +186,15 @@ export function transitionToNewCycle(
   ];
   const combinedStates = [...survivingOldEchoes, ...newEchoStates];
 
-  // Update chronicle
+  // Update chronicle — use doom identity chapter title if available (THR-21)
   let chronicle = state.chronicle;
   const doomArch = state.doomDefinition.archetype;
-  chronicle = createVolume(chronicle, state.cycle, doomArch);
+  const identityTitles = state.doomIdentityMatrix?.chronicleChapterTitles;
+  const stageIndex = Math.max(0, (state.doomClock?.currentStage ?? 0) - 1);
+  const identityTitle = identityTitles && identityTitles.length > stageIndex
+    ? identityTitles[stageIndex]
+    : undefined;
+  chronicle = createVolume(chronicle, state.cycle, doomArch, identityTitle);
 
   // Add chapters from chronicle entries
   for (const entry of state.chronicleEntries) {

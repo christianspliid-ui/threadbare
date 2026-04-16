@@ -34,6 +34,7 @@ import type { AgentKnowledge } from './agentKnowledge';
 import type { DigestEntry, ThreadTug, QueuedStoryBeat } from './attention';
 import type { StrategicRuntimeState } from './strategicAction';
 import type { OmenState } from './omen';
+import type { DoomIdentityMatrix } from './doomIdentity';
 import { DEFAULT_DOOM_TICKS as CONFIG_DEFAULT_DOOM_TICKS } from '../data/game-config';
 
 // ─── Game Phase ─────────────────────────────────────────────────
@@ -135,6 +136,8 @@ export interface GameState {
   rivalStates: RivalState[];
   doomDefinition: DoomClockDefinition;
   doomClock: DoomClockState;
+  /** Per-archetype configuration bundle; loaded at game-init from doomDefinition.archetype. */
+  doomIdentityMatrix: DoomIdentityMatrix | null;
 
   // Narrative
   tickEvents: TickEvent[];           // events from the current tick (cleared each tick)

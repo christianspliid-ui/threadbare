@@ -1043,6 +1043,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         threadTier: tieredEncounterState.threadTier,
         graph: gameState.graph,
         essence: SPHERE_NAMES.reduce((sum, s) => sum + gameState.essencePool[s], 0),
+        doomIdentityMatrix: gameState.doomIdentityMatrix,
       });
     }
 
@@ -2910,6 +2911,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             agentKnowledge={gameState.agentKnowledge}
             strategicState={gameState.strategicState}
             omenState={gameState.omenState}
+            doomIdentityMatrix={gameState.doomIdentityMatrix}
           />
         ) : (
           <div className="flex flex-shrink-0" style={{ alignItems: 'stretch' }}>

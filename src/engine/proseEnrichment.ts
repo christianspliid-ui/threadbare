@@ -20,6 +20,7 @@ import type { CampbellianPhase } from '../types/influence';
 import type { MeetingChoiceRecord } from '../types/meetingEncounter';
 import type { BeatOutcome } from '../types/journeyEngine';
 import type { ReachDomain } from '../types/traits';
+import type { DoomIdentityMatrix } from '../types/doomIdentity';
 import {
   getActorTraits,
   getAgentBonds,
@@ -75,6 +76,11 @@ export interface NarrativeContext {
   omenNoun?: string;
   omenAtmosphere?: string;
 
+  /** Doom identity vocabulary injected from the active doom archetype matrix (THR-21) */
+  doomVerb?: string;
+  doomAdj?: string;
+  doomAtmosphere?: string;
+
   /** Gendered pronouns. Default: they/them/their */
   pronouns: { they: string; them: string; their: string; s: string };
 }
@@ -87,6 +93,7 @@ export function gatherNarrativeContext(
   agentId: string,
   meetingRecord?: MeetingChoiceRecord,
   beatHistory?: BeatOutcome[],
+  doomIdentityMatrix?: DoomIdentityMatrix | null,
 ): NarrativeContext {
   const agentNode = graph.getNode(agentId);
   const props = agentNode?.properties ?? {};
@@ -150,6 +157,19 @@ export function gatherNarrativeContext(
   const gender = (props.gender as string) ?? '';
   const pronouns = getPronouns(gender);
 
+  // Doom identity prose vocabulary (THR-21) — deterministic pick per agent
+  let doomVerb: string | undefined;
+  let doomAdj: string | undefined;
+  let doomAtmosphere: string | undefined;
+  if (doomIdentityMatrix) {
+    // Deterministic index: sum of agentId char codes mod pool length
+    const idHash = agentId.split('').reduce((s, c) => s + c.charCodeAt(0), 0);
+    const { verbs, adjectives, atmospheres } = doomIdentityMatrix.proseTone;
+    if (verbs.length > 0)       doomVerb       = verbs[idHash % verbs.length];
+    if (adjectives.length > 0)  doomAdj        = adjectives[idHash % adjectives.length];
+    if (atmospheres.length > 0) doomAtmosphere = atmospheres[idHash % atmospheres.length];
+  }
+
   return {
     agentName: agentNode?.name ?? 'the mortal',
     agentId,
@@ -166,6 +186,9 @@ export function gatherNarrativeContext(
     meetingChoiceRecord: meetingRecord,
     beatHistory: beatHistory ?? [],
     pronouns,
+    doomVerb,
+    doomAdj,
+    doomAtmosphere,
   };
 }
 
@@ -214,6 +237,11 @@ export function enrichProse(template: string, ctx: NarrativeContext): string {
   result = result.replace(/{omen_verb}/g, ctx.omenVerb ?? '');
   result = result.replace(/{omen_noun}/g, ctx.omenNoun ?? '');
   result = result.replace(/{omen_atmosphere}/g, ctx.omenAtmosphere ?? '');
+
+  // Doom identity vocabulary (THR-21) — resolve silently to empty string when no matrix loaded
+  result = result.replace(/{doom_verb}/g, ctx.doomVerb ?? '');
+  result = result.replace(/{doom_adj}/g, ctx.doomAdj ?? '');
+  result = result.replace(/{doom_atmosphere}/g, ctx.doomAtmosphere ?? '');
 
   // Conditional blocks: {?has_X}...{/has_X} and {?no_X}...{/no_X}
   result = resolveConditionals(result, ctx);

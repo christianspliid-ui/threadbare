@@ -26,6 +26,7 @@ import type { ResourceInstance } from '../types/resource';
 import type { SphereAffinity } from '../types/sphereAffinity';
 import { emitTrace } from './traceBuffer';
 import { getNodeSphereAffinity } from './sphereAffinity';
+import { IDENTITY_PROSPERITY_MODIFIER_CAP } from '../types/doomIdentity';
 
 // ─── Tier Constants ──────────────────────────────────────────────────────────
 
@@ -419,6 +420,25 @@ export function phaseProsperity(state: GameState): Partial<GameState> {
   const shocks = state.prosperityShocks ?? [];
   const locations = graph.getNodesByType('location');
 
+  // Derive map bounds for frontier/center classification (identity location pressure)
+  const identityPressure = state.doomIdentityMatrix?.locationPressure;
+  let mapMinCol = 0, mapMaxCol = 0, mapMinRow = 0, mapMaxRow = 0;
+  if (identityPressure && tiles.length > 0) {
+    mapMinCol = Math.min(...tiles.map(t => t.coord.col));
+    mapMaxCol = Math.max(...tiles.map(t => t.coord.col));
+    mapMinRow = Math.min(...tiles.map(t => t.coord.row));
+    mapMaxRow = Math.max(...tiles.map(t => t.coord.row));
+  }
+  const mapCenterCol = (mapMinCol + mapMaxCol) / 2;
+  const mapCenterRow = (mapMinRow + mapMaxRow) / 2;
+  // Frontier band: outer 25% of each dimension. Center zone: inner 25%.
+  // Both currently use the same fraction; extract as a named constant to tune independently.
+  const LOCATION_PRESSURE_BAND_FRACTION = 0.25;
+  const frontierColThreshold = (mapMaxCol - mapMinCol) * LOCATION_PRESSURE_BAND_FRACTION;
+  const frontierRowThreshold = (mapMaxRow - mapMinRow) * LOCATION_PRESSURE_BAND_FRACTION;
+  const centerColThreshold = (mapMaxCol - mapMinCol) * LOCATION_PRESSURE_BAND_FRACTION;
+  const centerRowThreshold = (mapMaxRow - mapMinRow) * LOCATION_PRESSURE_BAND_FRACTION;
+
   // Group shocks by locationId for O(1) lookup
   const shocksByLocation = new Map<string, ProsperityShock[]>();
   for (const shock of shocks) {
@@ -461,31 +481,45 @@ export function phaseProsperity(state: GameState): Partial<GameState> {
     const locationShocks = shocksByLocation.get(loc.id) ?? [];
     const shockTotal = locationShocks.reduce((sum, s) => sum + s.delta, 0);
 
-    // 4. Combined delta, clamped
-    const rawDelta = drift + shockTotal;
+    // 4. Doom identity location pressure (additive, capped, applied before clamp)
+    let identityDelta = 0;
+    if (identityPressure) {
+      const locCol = typeof loc.properties?.hexCol === 'number' ? loc.properties.hexCol : mapCenterCol;
+      const locRow = typeof loc.properties?.hexRow === 'number' ? loc.properties.hexRow : mapCenterRow;
+      const isFrontier = (locCol - mapMinCol) < frontierColThreshold || (mapMaxCol - locCol) < frontierColThreshold
+        || (locRow - mapMinRow) < frontierRowThreshold || (mapMaxRow - locRow) < frontierRowThreshold;
+      const isCenter = Math.abs(locCol - mapCenterCol) < centerColThreshold
+        && Math.abs(locRow - mapCenterRow) < centerRowThreshold;
+      const rawIdentityDelta = isFrontier ? identityPressure.frontierDelta
+        : isCenter ? identityPressure.centerDelta : 0;
+      identityDelta = Math.max(-IDENTITY_PROSPERITY_MODIFIER_CAP, Math.min(IDENTITY_PROSPERITY_MODIFIER_CAP, rawIdentityDelta));
+    }
+
+    // 5. Combined delta, clamped
+    const rawDelta = drift + shockTotal + identityDelta;
     const clampedDelta = Math.max(-PROSPERITY_DELTA_CLAMP, Math.min(PROSPERITY_DELTA_CLAMP, rawDelta));
 
-    // 5. New prosperity, clamped to 0–100
+    // 6. New prosperity, clamped to 0–100
     const newProsperity = Math.max(0, Math.min(100, prevProsperity + clampedDelta));
 
     const prevTier = getProsperityTier(prevProsperity);
     const newTier = getProsperityTier(newProsperity);
     const tierChanged = prevTier !== newTier;
 
-    // 6. Population trend follows prosperity tier
+    // 7. Population trend follows prosperity tier
     const populationTrend: PopulationTrend = getPopulationTrend(newTier);
 
-    // 7. populationLagTicks: if missing, default to min and emit warning trace
+    // 8. populationLagTicks: if missing, default to min and emit warning trace
     const lagMissing = loc.properties?.populationLagTicks === undefined;
     if (lagMissing) {
       loc.properties.populationLagTicks = POPULATION_LAG_TICKS_MIN;
     }
 
-    // 8. Write updated properties back to node
+    // 9. Write updated properties back to node
     loc.properties.prosperity = newProsperity;
     loc.properties.populationTrend = populationTrend;
 
-    // 9. Emit tick trace with full equilibrium breakdown
+    // 10. Emit tick trace with full equilibrium breakdown
     emitTrace({
       category: 'prosperity_tick',
       tick,

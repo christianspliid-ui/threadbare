@@ -16,6 +16,7 @@ import {
   BEHAVIOR_WEIGHTS,
   ACTION_TYPES,
 } from '../data/rival-content';
+import { IDENTITY_RIVAL_BIAS_WEIGHT } from '../types/doomIdentity';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -129,6 +130,8 @@ export function selectRivalAction(
   rival: RivalDefinition,
   state: RivalState,
   deterministicRoll?: number,
+  /** Doom identity rival-behavior bias — weight deltas scaled by IDENTITY_RIVAL_BIAS_WEIGHT. */
+  identityBias?: Partial<Record<string, number>>,
 ): RivalAction {
   const weights = BEHAVIOR_WEIGHTS[rival.behavior];
   // @deprecated fallback — all production callers must pass deterministicRoll (seeded via RNG).
@@ -139,6 +142,13 @@ export function selectRivalAction(
   if (state.hostilityToPlayer > 0.7) {
     adjustedWeights.attack += 0.15;
     adjustedWeights.wait = Math.max(0, adjustedWeights.wait - 0.15);
+  }
+  // Apply doom identity bias (scaled; already bounded at source via data authoring)
+  if (identityBias) {
+    for (const actionType of ACTION_TYPES) {
+      const delta = (identityBias[actionType] ?? 0) * IDENTITY_RIVAL_BIAS_WEIGHT;
+      adjustedWeights[actionType] = Math.max(0, adjustedWeights[actionType] + delta);
+    }
   }
 
   const total = ACTION_TYPES.reduce((s, t) => s + adjustedWeights[t], 0);

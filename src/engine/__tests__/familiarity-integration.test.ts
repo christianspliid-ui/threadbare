@@ -48,6 +48,9 @@ describe('familiarity integration', () => {
       15,
     );
     state = result.state;
+    // Null out doom identity matrix so tests measure base familiarity behavior
+    // without archetype-specific modifiers (those are tested via THR-21 unit tests)
+    state = { ...state, doomIdentityMatrix: null };
 
     // Manually create a thread edge to an NPC and place them at the avatar's hex.
     // Game starts with no threads; this simulates establishing one.

@@ -192,4 +192,10 @@ export interface ComplicationContext {
   rng: () => number;
   /** World graph (for effect application and edge queries) */
   graph: WorldGraph;
+  /**
+   * Doom identity complication bias — category → additive score bonus.
+   * Applied in scoreCandidate() and capped at ±IDENTITY_COMPLICATION_BIAS_CAP.
+   * Optional: absent when no doom identity matrix is loaded.
+   */
+  doomIdentityComplicationBias?: Partial<Record<ComplicationCategory, number>>;
 }

@@ -41,6 +41,7 @@ import { assignInitialAmbitions } from './ambitionAssignment';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 import type { AmbitionAgentSnapshot } from './ambitionSelection';
 import { computeSphereAggregate, normalizeAggregate } from './phaseSphereAggregation';
+import { getDoomIdentityMatrix } from '../data/doom-identity-matrices';
 
 /** PRNG offset for pre-worldgen culture identity generation. Unique prime — no collision with worldgen passes. */
 const CULTURE_SEED_OFFSET = 87671;
@@ -306,6 +307,7 @@ export function initializeGameState(
     rivalStates,
     doomDefinition: doomDef,
     doomClock: doomState,
+    doomIdentityMatrix: getDoomIdentityMatrix(doomDef.archetype),
     tickEvents: [],
     recentEvents: [],
     chronicleEntries: [],

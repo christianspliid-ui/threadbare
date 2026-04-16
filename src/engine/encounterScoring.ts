@@ -722,6 +722,8 @@ export function scoreAndSelect(
   fundament?: FundamentState,
   tiles?: readonly HexTile[],
   effectStates?: ReadonlyMap<string, EffectRuntimeState>,
+  /** Combined encounter-type bias from doom identity + active omen. Capped at ±IDENTITY_ENCOUNTER_BIAS_CAP per source. */
+  encounterTypeBias?: Partial<Record<string, number>>,
 ): DecisionResult {
   // Fail-soft: missing agent → null result
   const agentNode = graph.getNode(agentId);
@@ -899,8 +901,10 @@ export function scoreAndSelect(
 
     // 21. Final score — rarity + role affinity multipliers on baseScore (exploration/ruins/chain bonuses are fixed)
     const baseScore = valuePerTick * desireMultiplier + factionScoringBoost + reputationBonus + resonance + globalResonance;
+    // 22. Doom identity + omen bias — additive, applied after all multipliers (already capped at source)
+    const identityBiasBonus = encounterTypeBias?.[entry.encounterType] ?? 0;
     const finalScore = baseScore * rarityMultiplier * roleAffinityMultiplier * (1 - familiarityPenalty) + explorationBonus + chainBonus
-      + ruinsBonus + anomalyBonus + attractionBonus + hunchBonus;
+      + ruinsBonus + anomalyBonus + attractionBonus + hunchBonus + identityBiasBonus;
 
     // 17. Action classification
     let action: ScoredCandidate['action'];

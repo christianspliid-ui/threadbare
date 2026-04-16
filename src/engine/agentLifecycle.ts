@@ -110,6 +110,7 @@ export function phaseAgentLifecycle(
   );
 
   let deathOccurred = false;
+  const deadActorIds = new Set<string>();
 
   // ── Deaths ─────────────────────────────────────────────
   for (const actor of actors) {
@@ -135,6 +136,7 @@ export function phaseAgentLifecycle(
         graph.removeEdge(edge.id);
       }
       graph.removeNode(actor.id);
+      deadActorIds.add(actor.id);
 
       events.push({
         id: nextEventId(),
@@ -340,5 +342,13 @@ export function phaseAgentLifecycle(
     }
   }
 
-  return { tickEvents: [...state.tickEvents, ...events] };
+  // Prune unified actions for actors who died this tick
+  const prunedUnifiedActions = deadActorIds.size > 0 && state.unifiedActions
+    ? state.unifiedActions.filter(a => !deadActorIds.has(a.actorId))
+    : undefined;
+
+  return {
+    tickEvents: [...state.tickEvents, ...events],
+    ...(prunedUnifiedActions != null ? { unifiedActions: prunedUnifiedActions } : {}),
+  };
 }

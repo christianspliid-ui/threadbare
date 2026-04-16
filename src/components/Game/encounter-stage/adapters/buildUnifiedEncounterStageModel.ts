@@ -31,6 +31,7 @@ import {
   type UnifiedActionTemplate,
 } from '../../../../types/unifiedAction';
 import type { ThreadTier } from '../types';
+import type { DoomIdentityMatrix } from '../../../../types/doomIdentity';
 import type {
   EncounterCastRole,
   EncounterStageAftermathActorModel,
@@ -54,6 +55,8 @@ export interface BuildUnifiedEncounterStageModelArgs {
   threadTier: ThreadTier;
   graph: WorldGraph;
   essence: number;
+  /** Optional doom identity matrix for prose vocabulary enrichment (THR-21) */
+  doomIdentityMatrix?: DoomIdentityMatrix | null;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────
@@ -501,7 +504,7 @@ export function buildUnifiedEncounterStageModel(
   const { graph, activeAction } = args;
 
   // Build enrichment context once — shared by all section builders
-  const ctx = gatherNarrativeContext(graph, activeAction.actorId);
+  const ctx = gatherNarrativeContext(graph, activeAction.actorId, undefined, undefined, args.doomIdentityMatrix);
 
   // Show illustration at step 0 only (opening scene), not during aftermath
   const isAftermath = activeAction.resolved;

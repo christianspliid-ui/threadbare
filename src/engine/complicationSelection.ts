@@ -39,6 +39,7 @@ import {
 import type { StepOutcome } from '../types/unifiedAction';
 import { emitTrace } from './traceBuffer';
 import { COMPLICATION_TEMPLATES } from '../data/complication-templates';
+import { IDENTITY_COMPLICATION_BIAS_CAP } from '../types/doomIdentity';
 
 // ─── Omen → Complication category mapping ────────────────────────────────────
 
@@ -153,6 +154,13 @@ function scoreCandidate(
     if (activeSameCategory >= 1) {
       score += COMPLICATION_DIMINISHING_PENALTY;
     }
+  }
+
+  // Doom identity complication bias — archetype-specific category weight
+  if (ctx.doomIdentityComplicationBias) {
+    const rawBias = ctx.doomIdentityComplicationBias[template.category] ?? 0;
+    const clampedBias = Math.max(-IDENTITY_COMPLICATION_BIAS_CAP, Math.min(IDENTITY_COMPLICATION_BIAS_CAP, rawBias));
+    score += clampedBias;
   }
 
   return Math.max(0, score);

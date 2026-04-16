@@ -390,6 +390,9 @@ export function applyRippleConsequences(
 
     let filledProse: string;
     try {
+      // TODO(THR-22): Pass doomIdentityMatrix here so {doom_verb}/{doom_adj}/{doom_atmosphere}
+      // resolve in return-engine prose. Requires threading GameState or doomIdentityMatrix
+      // through the return engine call chain.
       const ctx = gatherNarrativeContext(graph, agentId);
       filledProse = enrichProse(prose.replace(/{target}/g, target.name), ctx);
     } catch {
@@ -822,6 +825,8 @@ function getReturnProse(
 ): string {
   const prose = RETURN_OUTCOME_PROSE[outcome] ?? 'The journey reaches its conclusion.';
   try {
+    // TODO(THR-22): Pass doomIdentityMatrix so {doom_verb}/{doom_adj}/{doom_atmosphere}
+    // resolve in return outcome prose. See first call site above for wiring notes.
     const ctx = gatherNarrativeContext(graph, agentId, meetingRecord, beatHistory);
     return enrichProse(prose, ctx);
   } catch {

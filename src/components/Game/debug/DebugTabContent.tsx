@@ -11,6 +11,7 @@ import type { EncounterNotification } from '../../../types/encounterVisibility';
 import type { PendingVignette } from '../../../types/journeyEngine';
 import type { StrategicRuntimeState, BehaviorFamily } from '../../../types/strategicAction';
 import type { OmenState } from '../../../types/omen';
+import type { DoomIdentityMatrix } from '../../../types/doomIdentity';
 import {
   BEHAVIOR_FAMILY_PRESENTATION,
   getBehaviorFamilyPresentation,
@@ -74,6 +75,8 @@ export interface DebugTabContentProps {
   strategicState?: StrategicRuntimeState;
   /** Omen state for the omens debug tab (THR-19). */
   omenState?: OmenState;
+  /** Doom identity matrix for milestone display in omens tab (THR-21). */
+  doomIdentityMatrix?: DoomIdentityMatrix | null;
 }
 
 export function DebugTabContent({
@@ -83,9 +86,9 @@ export function DebugTabContent({
   cacheEntries, encounterProgress, onZoomToLocation,
   getWebGLDiagnostics, getZoomLevel, showOrganicShore, onToggleOrganicShore,
   encounterNotifications, pendingVignettes, seed, sphereAggregate, agentKnowledge,
-  retinueAgents, strategicState, omenState,
+  retinueAgents, strategicState, omenState, doomIdentityMatrix,
 }: DebugTabContentProps) {
-  if (viewMode === 'omens') return <OmenDebugTab omenState={omenState} currentTick={currentTick} />;
+  if (viewMode === 'omens') return <OmenDebugTab omenState={omenState} currentTick={currentTick} doomIdentityMatrix={doomIdentityMatrix} />;
   if (viewMode === 'journey') {
     return <JourneyDebugContent encounterNotifications={encounterNotifications} pendingVignettes={pendingVignettes} currentTick={currentTick} />;
   }
@@ -318,7 +321,7 @@ function StrategicDebugTab({
 
 // ─── Omen Debug Tab (THR-19) ────────────────────────────────────
 
-function OmenDebugTab({ omenState, currentTick }: { omenState?: OmenState; currentTick: number }) {
+function OmenDebugTab({ omenState, currentTick, doomIdentityMatrix }: { omenState?: OmenState; currentTick: number; doomIdentityMatrix?: DoomIdentityMatrix | null }) {
   if (!omenState) {
     return <div style={EMPTY_STATE_STYLE}>No omen state initialized yet. Omens activate at tick {3}.</div>;
   }
@@ -359,6 +362,26 @@ function OmenDebugTab({ omenState, currentTick }: { omenState?: OmenState; curre
           {recentHistory.map((h, i) => (
             <div key={i} style={{ color: 'var(--text-tertiary)', marginBottom: '2px' }}>
               t{h.startTick}–{h.endTick} · {h.templateId}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {doomIdentityMatrix && (
+        <div style={{ marginTop: '12px' }}>
+          <div style={{ color: 'var(--text-muted)', fontSize: '10px', textTransform: 'uppercase', marginBottom: '4px' }}>
+            Doom Identity — {doomIdentityMatrix.archetype}
+          </div>
+          <div style={{ color: 'var(--text-secondary)', marginBottom: '6px', fontStyle: 'italic', fontSize: '10px' }}>
+            {doomIdentityMatrix.proseTone.atmospheres[0] ?? '—'}
+          </div>
+          {doomIdentityMatrix.identityMilestones.map((m, i) => (
+            <div key={i} style={{ display: 'flex', gap: '6px', alignItems: 'flex-start', marginBottom: '3px', color: m.triggered ? 'var(--accent-gold)' : 'var(--text-muted)' }}>
+              <span style={{ flexShrink: 0 }}>{m.triggered ? '✓' : '○'}</span>
+              <span>
+                <strong>{m.label}</strong> ({Math.round(m.progressThreshold * 100)}%)
+                {' '}<span style={{ color: 'var(--text-tertiary)' }}>{m.description}</span>
+              </span>
             </div>
           ))}
         </div>

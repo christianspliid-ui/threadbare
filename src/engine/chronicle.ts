@@ -36,12 +36,14 @@ export function getVolumeTitle(archetype: DoomClockArchetype, cycleNumber: numbe
 export function createVolume(
   chronicle: GreatChronicle,
   cycleNumber: number,
-  doomArchetype: DoomClockArchetype
+  doomArchetype: DoomClockArchetype,
+  /** Optional identity-matrix-derived title override (THR-21). Falls back to getVolumeTitle(). */
+  titleOverride?: string,
 ): GreatChronicle {
   const volume: ChronicleVolume = {
     id: `vol_${String(cycleNumber).padStart(3, '0')}`,
     cycleNumber,
-    title: getVolumeTitle(doomArchetype, cycleNumber),
+    title: titleOverride ?? getVolumeTitle(doomArchetype, cycleNumber),
     doomArchetype,
     chapters: [],
     interludes: [],

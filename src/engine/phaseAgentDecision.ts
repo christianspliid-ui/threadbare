@@ -58,6 +58,8 @@ import { isCompulsionEligible, buildCompulsionEvent } from './premonitionCompuls
 import type { PremonitionEvent } from '../types/premonition';
 import { resolveEffectiveTier } from './attentionTier';
 import type { BalanceEncounterPoolCandidate } from '../types/balanceEval';
+import { deriveOmenEncounterBias } from './phaseOmenAgenda';
+import { IDENTITY_ENCOUNTER_BIAS_CAP } from '../types/doomIdentity';
 import { ENABLE_STRATEGIC_ACTIONS } from '../data/strategic-action-constants';
 import { generateStrategicCandidates } from './strategicActionCandidates';
 import { scoreStrategicCandidates } from './strategicActionScoring';
@@ -530,6 +532,17 @@ export function phaseAgentDecision(
         return completions < MAX_COMPLETIONS_PER_TEMPLATE;
       });
 
+      // Combine doom identity + omen encounter biases (additive; each capped at ±IDENTITY_ENCOUNTER_BIAS_CAP)
+      const identityBias = state.doomIdentityMatrix?.encounterPoolBias ?? {};
+      const omenBias = state.omenState ? deriveOmenEncounterBias(state.omenState) : {};
+      const combinedBias: Partial<Record<string, number>> = {};
+      const allTypes = new Set([...Object.keys(identityBias), ...Object.keys(omenBias)]);
+      for (const t of allTypes) {
+        const id = Math.max(-IDENTITY_ENCOUNTER_BIAS_CAP, Math.min(IDENTITY_ENCOUNTER_BIAS_CAP, identityBias[t] ?? 0));
+        const om = Math.max(-IDENTITY_ENCOUNTER_BIAS_CAP, Math.min(IDENTITY_ENCOUNTER_BIAS_CAP, omenBias[t] ?? 0));
+        combinedBias[t] = id + om;
+      }
+
       // Score and select (hex-distance travel cost, no distance matrix)
       const decision = scoreAndSelect(
         candidates,
@@ -539,6 +552,8 @@ export function phaseAgentDecision(
         state.tick,
         state.worldSoul?.fundament,
         state.tiles,
+        undefined,
+        combinedBias,
       );
 
       // Emit scoring trace

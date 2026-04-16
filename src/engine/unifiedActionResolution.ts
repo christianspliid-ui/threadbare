@@ -902,6 +902,7 @@ export function executeStepResult(
     locationUnrest,
     rng,
     graph: state.graph,
+    doomIdentityComplicationBias: state.doomIdentityMatrix?.complicationBias,
   };
 
   // Phase 3: Compute differentiated consequences (all templates for failure tiers; THR-20)

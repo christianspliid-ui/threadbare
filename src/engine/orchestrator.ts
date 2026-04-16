@@ -18,6 +18,7 @@ import {
 } from './influence';
 import { recalcVisibility, collectLOSSources } from './visibility';
 import { RIVAL_ACTION_TEMPLATES } from '../data/rival-content';
+import { selectRivalAction } from './rival';
 import {
   computeStakes,
   resolveDilemma,
@@ -1296,13 +1297,15 @@ export function phaseFamiliarityGain(state: GameState): Partial<GameState> {
 
     // Check if actor is in the same hex as avatar
     if (actorHexCol === avatarHex.col && actorHexRow === avatarHex.row) {
+      const familiarityModifier = state.doomIdentityMatrix?.familiarityGainModifier ?? 1.0;
+      const proximityGain = FAMILIARITY_GAINS.proximity * familiarityModifier;
       const oldFamiliarity = getFamiliarity(map, actor.id);
-      const newMap = addFamiliarity(map, actor.id, FAMILIARITY_GAINS.proximity);
+      const newMap = addFamiliarity(map, actor.id, proximityGain);
       const newFamiliarity = getFamiliarity(newMap, actor.id);
       const levelChanged = checkThresholdCrossed(oldFamiliarity, newFamiliarity);
 
-      // Emit trace for this familiarity gain
-      const gain = FAMILIARITY_GAINS.proximity;
+      // Emit trace for this familiarity gain (proximityGain already includes identity modifier)
+      const gain = proximityGain;
       emitTrace({
         tick: state.tick,
         category: 'familiarity_change',
@@ -1349,17 +1352,11 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
         interventionCount: rivalState.interventionCount + 1,
       };
 
-      // Map behavior to action type, then pick a template variant
-      let actionType: 'recruit' | 'intervene' | 'expand' | 'attack' | 'wait';
-      if (rival.behavior === 'aggressive') {
-        actionType = 'attack';
-      } else if (rival.behavior === 'subtle') {
-        actionType = 'intervene';
-      } else if (rival.behavior === 'territorial') {
-        actionType = 'expand';
-      } else {
-        actionType = 'expand';
-      }
+      // Select rival action type probabilistically (doom identity bias applied)
+      const rivalRoll = rng();
+      const identityRivalBias = state.doomIdentityMatrix?.rivalBehaviorBias;
+      const rivalAction = selectRivalAction(rival, rivalState, rivalRoll, identityRivalBias);
+      const actionType = rivalAction.type;
 
       const templates = RIVAL_ACTION_TEMPLATES[actionType] ?? ['{rival} acts against you'];
       const templateIdx = Math.floor(rng() * templates.length);
