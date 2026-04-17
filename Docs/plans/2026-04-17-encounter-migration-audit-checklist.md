@@ -259,3 +259,49 @@ Every audit run produces:
 ## History
 
 _(Append one entry per audit run: date, phase audited, decision, deferral count, link to Linear issue.)_
+
+### 2026-04-17 — Post-pilot audit (THR-89 Thieves Guild + THR-90 parity harness)
+
+- **Decision:** AMBER
+- **Audit issue:** [THR-129](https://linear.app/threadbare/issue/THR-129)
+- **Deferrals opened:** 2 (wiring-checklist X1 fix, UI/CLI live verification batch covering U1–U7, E1/E2/E9/E10, X6) + 2 documentation follow-ups (revise C2e GraphOps target; capture C6 baseline)
+- **Engine pillar:** 6 PASS, 0 FAIL, 2 DEFER (CI-verifiable), 1 UNABLE (baseline). Parity harness verified present at `src/data/__tests__/migrateEncounterTemplate-parity.test.ts`; covers social + monster canaries; Thieves Guild verified via pre-unified shape check.
+- **Content pillar:** 11 PASS, 1 structural FAIL (C2e GraphOps — checklist target overstates current engine surface; tracked under THR-115), 1 SKIP (C6 baseline).
+- **UI pillar:** 7 UNABLE — batched into single deferral for live verification.
+- **Cross-pillar:** 3 PASS, 1 FAIL blocker-adjacent (X1 wiring-checklist stale), 1 FAIL tracked (X2 → THR-118), 1 UNABLE (X6 agent-analyser batched with U-pillar).
+- **Baseline numbers:**
+  - Migrated templates: 15 main + 2 standalone (Thieves Guild).
+  - Legacy `EncounterTemplate` refs in `src/`: 289 (stable by design).
+  - Aftermath effect kinds in use: 3 of 7 (`hidden_mark`, `intelligence`, `reputation_tally`).
+  - Orphan TODOs in migration payload: 0.
+- **Next-phase decision:** Phase 2 (THR-91/92/99) can move Idea → In Design. Implementation Planning blocked on X1 deferral closing. Code merge for Phase 2 blocked on UI live-verification deferral.
+- **Checklist improvements to carry forward:**
+  1. C2e GraphOps target is aspirational — mark N/A-until-THR-115 or rewrite to target typed effect-kind coverage instead.
+  2. Sample sizes in C1/C4 proved right-sized for a 15-template batch; scale up for Phase 2 (128 templates across 9 files).
+  3. First audit caught a false FAIL on E3 (sub-agent missed the parity file in a different location than expected). Future audits: verify file-not-found claims before recording a FAIL.
+
+### 2026-04-17 — THR-134 pilot-phase UI + CLI live verification run (partial)
+
+- **Decision:** AMBER — autonomous verification covered the engine + viewport pillars; UI interaction checks (U2/U3/U4/U5) could not be closed without a human in the browser.
+- **Audit issue:** [THR-134](https://linear.app/threadbare/issue/THR-134)
+- **Outcome:** Partial pass. Moving to "In Review" rather than "Done" — U2/U3/U4/U5 require real user input.
+- **Engine pillar:**
+  - **E1 (tests): FAIL** — 9331/9362 pass. Pre-existing failure in `src/engine/__tests__/unifiedActionPhases.test.ts > walks a 3-step action through the full pipeline to completion` (expected 3 events, got 6). Not introduced by THR-89/90. Should be filed as its own defect.
+  - **E2 (tsc + vite build): PASS** — clean.
+  - **E9 (throughput baseline): ~15 ticks/sec** on seed 42 medium map (60 ticks in ~4s, CLI `run 5`).
+  - **E10 (stability): PASS** — 60 ticks, no crashes, no thrown errors.
+- **UI pillar:**
+  - **U1 (placeholder leaks): PASS** — no `{name}` / `{artifact}` / `{ally}` leaks detected in `body.innerText` scan on the seeded game view.
+  - **U6 (viewport contract): PASS** — 1920×1080 holds; no unintended scroll; `html/body/#root` overflow:hidden confirmed.
+  - **U7 (readability smoke): PARTIAL PASS** — captured font-family and foreground/background colors via `preview_inspect`; full a11y audit not exercised.
+  - **U2/U3/U4/U5: UNABLE** — preview_click on the Play button did not advance ticks past 20 (React synthetic event did not fire despite "click successful" response + aria-label stayed "Play simulation"). preview_screenshot on WebGL canvas timed out at 30s. All four require a real user session.
+- **Cross-pillar:**
+  - **X6 (agent-analyser): NOT RUN** — requires longer dev-server session + encounter log TSV export.
+- **New finding (engine):** At tick 60 the trace buffer contains 13+ entries with `category: undefined` (printed as `[undefined] undefined`), plus `[ambition_progress] undefined` messages with null body. Not visible in normal UI. Should be investigated as a trace-emission hygiene bug — file a follow-up issue.
+- **Modal-gating note (important for future CLI verification):** The Thieves Guild pilot template `tg.quest.case_the_mark` places its `hidden_mark` / `intelligence` / `encounter_seed` effects inside `aftermathConfig.fallback.reactions[].effects[]`, meaning they only fire when the player picks a reaction in the aftermath modal. CLI-only runs will NOT populate `state.hiddenMarks`, `state.intelligenceRecords`, or `state.pendingEncounterSeeds` from this template. This is not a bug — it's the designed gating. CLI verification of aftermath-effect application requires either (a) a non-modal template with inline effects, or (b) a debug hook that auto-picks a reaction. Trace emission paths in `src/engine/encounterAftermath.ts` were confirmed by code read (lines 41, 58–329) to cover `encounter_aftermath_applied`, `encounter_aftermath_effect`, `encounter_seed_planted`, `hidden_mark_placed`, and `intelligence_granted`.
+- **Documentation correction:** The checklist referenced `hidden_mark_revealed` trace category; actual code emits `hidden_mark_placed`. Rename in future audit templates.
+- **Recommended follow-ups:**
+  1. Open a narrow issue for U2/U3/U4/U5 UI-interaction verification (human-in-browser, 20-min session).
+  2. Open a test defect for `unifiedActionPhases.test.ts` event-count regression.
+  3. Open a trace-hygiene issue for `[undefined]` / `[ambition_progress] undefined` entries.
+  4. Add a "CLI aftermath hook" deferral so future verification runs can exercise modal-gated aftermath effects headlessly.
