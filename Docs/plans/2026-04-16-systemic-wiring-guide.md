@@ -260,6 +260,99 @@ The player is a god. Their choices are always divine interventions, never direct
 
 ---
 
+### Capability 9: World-Shaping Effects — Encounters That Change the Map (THR-115)
+
+Aftermath reactions can now permanently reshape world topology: spawning artifacts, staining regions with omens, splitting or absorbing factions, and triggering war or peace between factions. These effects run through the same `applyEncounterAftermathReaction` call path as all other effects — content authors just declare the intent, the engine does the surgery.
+
+#### Spawn Artifact
+
+```typescript
+{
+  kind: 'spawn_artifact',
+  artifactName: "The Thornweave Seal",
+  artifactSubtype: 'relic',                     // relic | weapon | scroll | vessel | etc.
+  possessedByAgentId: '$actor',                 // who carries it (defaults to actor)
+  bondedToAgentId?: '$actor',                   // mystical bond (optional)
+  targetLocationId?: 'loc_throne_room',         // contained within a location (optional)
+  chronicleEntry?: "A seal of binding was forged in the ruins."
+}
+```
+
+Creates an `artifact` graph node, adds `possesses` / `bonded_to` / `contains` edges as declared, and optionally appends a chronicle event. The artifact becomes part of the world graph — prose resolvers can reference it via `{artifact:relic}`, and other encounters can discover it.
+
+**When to use:** Founding moments, magical discoveries, pivotal plot payoffs. If the encounter's outcome is "an important object now exists in the world," this is the effect.
+
+#### Emit Omen
+
+```typescript
+{
+  kind: 'emit_omen',
+  omenId: 'omen_bridge_of_silence',
+  encounterTypeBias: { ritual: 0.3, conflict: -0.15 },  // which encounter types become more/less likely
+  scope: {
+    kind: 'local',                // global | regional | local
+    hexCol: 4, hexRow: 7,
+    radius: 3                     // hex distance radius for 'local'
+  },
+  durationTicks: 48,              // how long the omen stains this region (default: 48 = 4 game days)
+  intensity: 0.7                  // 0-1, scales the bias contribution
+}
+```
+
+Appends an `EmittedOmen` to `GameState.emittedOmens`. The omen drives `deriveEmittedOmenEncounterBias` in Phase 2b, nudging agent encounter selection toward the declared bias while the omen is active. Decays automatically in Phase 1.7a when `tick > expiresTick`.
+
+Cap: `MAX_EMITTED_OMENS_CAP = 10`. When exceeded, the oldest omen is evicted.
+
+**When to use:** Dark rituals, cursed ground, prophecies fulfilled, corrupted shrines. A conflict in a sacred grove should make ritual and spiritual encounters more likely in that region for the next few days — this is the mechanism.
+
+#### Faction Topology Effects
+
+Five effects reshape the faction graph:
+
+```typescript
+// Split a faction into two
+{ kind: 'faction_splinter', factionId: 'faction_weavers_circle',
+  newFactionName: "The Rift Circle", newFactionType: 'guild',
+  memberSelectionStrategy: 'by_reputation_below', memberSelectionValue: 0.3,
+  sentimentToward: 'resentful' }
+
+// One faction absorbs another's members
+{ kind: 'faction_absorb', absorbingFactionId: 'faction_iron_pact',
+  absorbedFactionId: 'faction_weavers_circle',
+  memberSelectionStrategy: 'all_matching_trait', memberSelectionTrait: 'aligned_iron',
+  reputationMerge: 'max' }
+
+// Dissolve a faction entirely
+{ kind: 'faction_dissolve', factionId: 'faction_weavers_circle',
+  memberDisposition: 'drift_to_rival',   // independent | drift_to_rival
+  rivalFactionId: 'faction_iron_pact' }
+
+// Declare war between two factions
+{ kind: 'faction_declare_war',
+  factionAId: 'faction_iron_pact', factionBId: 'faction_weavers_circle' }
+
+// Force peace between two factions
+{ kind: 'faction_force_peace',
+  factionAId: 'faction_iron_pact', factionBId: 'faction_weavers_circle',
+  sentimentFloor: 0.1 }
+```
+
+**Member selection strategies** (`faction_splinter` / `faction_absorb`):
+- `all_matching_trait` — all members who have a specific trait
+- `within_radius` — members within N hex distance of the origin hex
+- `by_reputation_below` / `by_reputation_above` — members whose reputation with the faction is below/above a threshold
+- `explicit_ids` — exact agent IDs (for authored story moments)
+- `random_sample` — deterministically random subset by count
+
+**Reputation merge strategies** (`faction_absorb`):
+- `max` — each absorbed member gets the higher of their two reputation values
+- `sum_clamped` — reputations add (clamped 0–1)
+- `weighted_avg` — proportional blend based on member counts
+
+**When to use faction effects:** These are climax-level story beats, not routine aftermath. Reserve them for encounters where the fiction demands structural change — the betrayal that tears a guild apart, the war declaration at the coronation, the peace treaty as divine intervention. Each call mutates `WorldGraph` topology and bumps `structuralCacheVersion` — other systems will notice.
+
+---
+
 ### Capability 8: Complication System — Failure Has Texture (THR-20)
 
 When a failure-tier step outcome occurs (success_at_cost / failure / critical_failure), the engine automatically selects a concrete narrative complication from a pool of templates. This runs for **all** action templates, not just the proving-slice families. The complication is displayed in the EncounterVeil and emits notification events.
@@ -499,6 +592,13 @@ For implementation agents translating authored designs into template code.
 | `condition_attachment` | Apply a condition trait by template ID; auto-looks up default duration; **triggers mid-encounter tier promotion when the template is the `wounded` condition** | `templateId` (e.g. `'trait.condition.wounded'`), `targetAgentId?`, `durationOverride?`, `stackCount?` |
 | `clearance_gate_tag` | Advance gate progression | `tag` |
 | `recent_event` | Emit narrative event (optionally fan out to witnesses) | `message`, `significance`, `witnessAgentIds?[]` |
+| `spawn_artifact` | Create an artifact graph node; add possesses/bonded_to/contains edges; optional chronicle event | `artifactName`, `artifactSubtype`, `possessedByAgentId?`, `bondedToAgentId?`, `targetLocationId?`, `chronicleEntry?` |
+| `emit_omen` | Append `EmittedOmen` to `GameState.emittedOmens`; drive per-type encounter bias in a scope/radius until expiry | `omenId`, `encounterTypeBias`, `scope` (`global`/`regional`/`local`+radius), `durationTicks?`, `intensity?` |
+| `faction_splinter` | Create a new faction node; migrate selected members; add resentful edge | `factionId`, `newFactionName`, `newFactionType`, `memberSelectionStrategy`, `sentimentToward?` |
+| `faction_absorb` | Migrate selected members from absorbed faction to absorbing; mark absorbed dissolved | `absorbingFactionId`, `absorbedFactionId`, `memberSelectionStrategy`, `reputationMerge` (`max`/`sum_clamped`/`weighted_avg`) |
+| `faction_dissolve` | Mark faction dissolved; disperse members to independent or drift_to_rival | `factionId`, `memberDisposition` (`independent`/`drift_to_rival`), `rivalFactionId?` |
+| `faction_declare_war` | Create bidirectional war_sentiment edges between two factions | `factionAId`, `factionBId` |
+| `faction_force_peace` | Create bidirectional treaty edges; clamp sentiment above floor | `factionAId`, `factionBId`, `sentimentFloor?` |
 
 **Multi-target note (THR-114):** Effects that accept `targetAgentId` / `targetFactionId` / `targetSublocationId` use priority resolution: explicit agent > explicit faction > explicit sublocation > action actor (fallback). Use `role:` prefix for participant substitution (e.g. `targetAgentId: 'role:victim'`). See `src/data/encounters/examples/` for gold-standard patterns: `example.betrayal_multi_target.ts` (hidden_mark + apply_condition on victim), `example.council_disowns.ts` (reputation_set on faction), `example.shrine_consecration.ts` (apply_condition + remove_condition on sublocation).
 
