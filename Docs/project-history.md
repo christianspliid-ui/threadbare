@@ -3,6 +3,7 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ **THR-132** (2026-04-17) — Hidden mark reveal prose: 70 templates (7 categories × 2 paths × 5), `generateMarkRevealMessage` with deterministic picker + `enrichProse`, three-rung fail-soft, decay now chronicles with `DECAY_EVENT_SIGNIFICANCE=0.3` (below toast threshold). 25 new tests. Silent/debug reveals replaced with authored prose.
 ✅ **THR-135** (2026-04-17) — Wiring-checklist update for authored aftermath surfaces: per-surface rows for `hidden_mark` and `encounter_seed`. Phase-2 X1 unblocker from THR-129 audit. DebugPanel inspector deferred to THR-136.
 ✅ **THR-112** (2026-04-17) — Hidden mark reveal loop: scoring boost, probabilistic encounter-resolution consumption, Phase 6.7 decay. 37 tests. Marks no longer write-only.
 ✅ **THR-89** (2026-04-17) — Phase 1: 15 thieves guild templates migrated to UnifiedActionTemplate. Full Threadbare prose, enrichment placeholders, conditional blocks, aftermath reactions (seeds/marks/intel/tallies). Registry wiring updated; bulk shape test suite. Codex-reviewed.

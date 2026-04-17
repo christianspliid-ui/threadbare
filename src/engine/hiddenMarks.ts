@@ -14,6 +14,7 @@ import { MAX_RECENT_EVENTS } from '../types/gameState';
 import type { HiddenMark } from '../types/unifiedAction';
 import { emitTrace } from './traceBuffer';
 import { mulberry32 } from '../lib/prng';
+import { generateMarkRevealMessage } from './hiddenMarkProse';
 
 // ─── Decay constants (NFP #1) ─────────────────────────────────────
 
@@ -37,6 +38,11 @@ export const MARK_DECAY_FLOOR = 0.05;
 /** Chronicle event significance for a successful revelation. High enough to toast.
  * @range 0.5–1.0 */
 export const REVEAL_EVENT_SIGNIFICANCE = 0.7;
+
+/** Chronicle event significance for a decay-dropped revelation. Below the ~0.5
+ * toast threshold — logs to NarrativeLog without raising a toast.
+ * @range 0.1–0.5 */
+export const DECAY_EVENT_SIGNIFICANCE = 0.3;
 
 // ─── Query helpers ────────────────────────────────────────────────
 
@@ -201,13 +207,12 @@ export function consumeMatchingMarks(
     }
 
     // Chronicle event — high significance to surface in NarrativeLog + ToastStack
-    // TODO(THR-132): replace with per-category prose tables + enrichProse() placeholder support
     // TODO(THR-133): emitTrace inside setGameState updater → StrictMode double-invokes in dev; move to caller side effect
     const revealEvent: TickEvent = {
       id: `mark_reveal_${mark.markId}_${tick}`,
       tick,
       type: 'ripple_consequence',
-      message: `A buried truth surfaces: ${mark.label}`,
+      message: generateMarkRevealMessage(s, mark, templateId, tick),
       significance: REVEAL_EVENT_SIGNIFICANCE,
       actorId: mark.targetAgentId,
     };

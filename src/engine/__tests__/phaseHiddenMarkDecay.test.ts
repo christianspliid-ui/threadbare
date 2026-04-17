@@ -5,12 +5,13 @@ import {
   MARK_DECAY_GRACE_TICKS,
   MARK_DECAY_PER_TICK,
   MARK_DECAY_FLOOR,
+  DECAY_EVENT_SIGNIFICANCE,
 } from '../hiddenMarks';
 import type { GameState } from '../../types/gameState';
 import type { HiddenMark } from '../../types/unifiedAction';
 
 function makeState(marks: HiddenMark[], tick: number): GameState {
-  return { hiddenMarks: marks, tick } as unknown as GameState;
+  return { hiddenMarks: marks, tick, seed: 42, tickEvents: [], recentEvents: [] } as unknown as GameState;
 }
 
 function makeMark(overrides: Partial<HiddenMark> = {}): HiddenMark {
@@ -113,6 +114,44 @@ describe('phaseHiddenMarkDecay — floor removal', () => {
     phaseHiddenMarkDecay(state);
     const traces = getTraces().filter(t => t.category === 'hidden_mark_revealed');
     expect(traces).toHaveLength(0);
+  });
+
+  it('appends a chronicle event with DECAY_EVENT_SIGNIFICANCE when mark decays (THR-132)', () => {
+    const aboveFloor = MARK_DECAY_FLOOR * 1.005;
+    const mark = makeMark({ placedTick: 0, severity: aboveFloor, label: 'the old debt to the guild' });
+    const state = makeState([mark], MARK_DECAY_GRACE_TICKS);
+    const result = phaseHiddenMarkDecay(state);
+    expect(result.tickEvents).toBeDefined();
+    expect(result.tickEvents!.length).toBeGreaterThan(0);
+    const decayEvent = result.tickEvents!.find(e => e.type === 'ripple_consequence');
+    expect(decayEvent).toBeDefined();
+    expect(decayEvent!.significance).toBe(DECAY_EVENT_SIGNIFICANCE);
+    // Enriched prose — label present, no placeholder leaks.
+    expect(decayEvent!.message).toContain('the old debt to the guild');
+    expect(decayEvent!.message).not.toMatch(/\{[a-z_]+\}/);
+  });
+
+  it('decay chronicle message differs from encounter-reveal message for the same category', async () => {
+    const { consumeMatchingMarks } = await import('../hiddenMarks');
+    const aboveFloor = MARK_DECAY_FLOOR * 1.005;
+    const mark = makeMark({ placedTick: 0, severity: aboveFloor, category: 'betrayal' });
+    const decayState = makeState([mark], MARK_DECAY_GRACE_TICKS);
+    const decayResult = phaseHiddenMarkDecay(decayState);
+    const decayMsg = decayResult.tickEvents!.find(e => e.type === 'ripple_consequence')!.message;
+
+    // Encounter-consume path: high-severity mark on matching template, loop seeds until consumed.
+    const revealMark: HiddenMark = { ...mark, severity: 1.0, revealFamilies: ['investigation'] };
+    let encounterMsg: string | null = null;
+    for (let seed = 0; seed < 100; seed++) {
+      const state = { hiddenMarks: [revealMark], tick: 20, seed, tickEvents: [], recentEvents: [] } as unknown as GameState;
+      const result = consumeMatchingMarks(state, 'agent-1', 'investigation.audit', 20);
+      if ((result.hiddenMarks?.length ?? 1) === 0) {
+        encounterMsg = result.tickEvents.find(e => e.type === 'ripple_consequence')!.message;
+        break;
+      }
+    }
+    expect(encounterMsg).not.toBeNull();
+    expect(encounterMsg).not.toBe(decayMsg);
   });
 });
 
