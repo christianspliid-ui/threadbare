@@ -1,5 +1,7 @@
 import type { HexCoord, GeoParams } from '../../../types';
+import type { LocationActivitySummary, AgentActivityThread } from '../../../types/locationActivity';
 import { INTERACTION_CONSTANTS } from './HexRaycaster';
+import { LOCATION_ACTIVITY_CONSTANTS } from '../../../engine/deriveLocationActivities';
 
 /**
  * Water terrain types and their display labels.
@@ -36,6 +38,12 @@ interface HexTooltipProps {
   geoParams?: GeoParams;
   /** Whether the hex has a river */
   hasRiver?: boolean;
+  /**
+   * Location activity summary for the primary location on this hex.
+   * When provided, replaces the terrain name with location name + murmur prose
+   * and adds familiarity-gated agent thread list below.
+   */
+  locationActivity?: LocationActivitySummary;
 }
 
 /** Format a 0-1 float as a percentage string */
@@ -48,12 +56,29 @@ function f2(v: number): string {
   return v.toFixed(2);
 }
 
+/** Movement phase badge for agent thread entries */
+function MovementBadge({ phase }: { phase: AgentActivityThread['movementPhase'] }) {
+  if (!phase || phase === 'present') return null;
+  const label = phase === 'arriving' ? '→' : '←';
+  return (
+    <span style={{ color: 'var(--text-tertiary)', marginLeft: 4, fontSize: '10px' }}>
+      {label}
+    </span>
+  );
+}
+
 /**
  * HTML tooltip overlay for the hex map canvas.
  *
  * Positioned absolutely above the hovered hex's screen position.
  * Clamps to canvas bounds so it never overflows the map panel.
  * No animation on show/hide — tooltip is a data readout, not a dramatic element.
+ *
+ * When locationActivity is provided, shows:
+ *   1. Location name (replaces terrain name)
+ *   2. Murmur prose in italic (1-3 lines)
+ *   3. Familiarity-gated agent thread list (max TOOLTIP_MAX_NAMED_AGENTS + "(N others)")
+ * When not provided, falls back to terrain name + coordinates.
  *
  * Z-index 10: above canvas, below modal overlays.
  * pointer-events: none so it never intercepts mouse events.
@@ -68,27 +93,36 @@ export function HexTooltip({
   terrainKey,
   geoParams,
   hasRiver,
+  locationActivity,
 }: HexTooltipProps) {
-  // Resolve display name: water terrains use their own labels per copywriting contract
-  const displayName = terrainKey && WATER_DISPLAY_LABELS[terrainKey]
-    ? WATER_DISPLAY_LABELS[terrainKey]
-    : terrainName;
+  const hasLocationData = locationActivity && locationActivity.agentThreads.length > 0 || locationActivity?.murmurs.length;
 
-  // Estimated tooltip dimensions for clamping (wider now with geo data)
-  const estimatedWidth  = 180;
-  const estimatedHeight = geoParams ? 100 : 46;
+  // Estimated tooltip dimensions for clamping
+  const murmurLineCount = locationActivity?.murmurs.length ?? 0;
+  const threadCount = Math.min(
+    locationActivity?.agentThreads.length ?? 0,
+    LOCATION_ACTIVITY_CONSTANTS.TOOLTIP_MAX_NAMED_AGENTS,
+  );
+  const hasOverflow = (locationActivity?.agentThreads.length ?? 0) > LOCATION_ACTIVITY_CONSTANTS.TOOLTIP_MAX_NAMED_AGENTS;
+
+  const estimatedWidth  = hasLocationData ? 240 : 180;
+  const estimatedHeight = geoParams ? 100
+    : hasLocationData
+      ? 46 + murmurLineCount * 18 + threadCount * 16 + (hasOverflow ? 14 : 0) + 8
+      : 46;
   const offsetY = INTERACTION_CONSTANTS.TOOLTIP_OFFSET_Y;
 
-  // Position tooltip above the hex center
   let left = screenX - estimatedWidth / 2;
   let top  = screenY - offsetY - estimatedHeight;
 
-  // Clamp horizontally
   if (left < 4) left = 4;
   if (left + estimatedWidth > canvasWidth - 4) left = canvasWidth - estimatedWidth - 4;
-
-  // If tooltip would go above canvas, flip it below the hex
   if (top < 4) top = screenY + offsetY;
+
+  // Resolve terrain display name
+  const displayTerrainName = terrainKey && WATER_DISPLAY_LABELS[terrainKey]
+    ? WATER_DISPLAY_LABELS[terrainKey]
+    : terrainName;
 
   const dimStyle = {
     color:      'var(--text-tertiary)',
@@ -97,6 +131,10 @@ export function HexTooltip({
     fontFamily: 'monospace',
     lineHeight: 1.5,
   };
+
+  // Familiarity-gated agent threads (max named + overflow line)
+  const namedThreads = locationActivity?.agentThreads.slice(0, LOCATION_ACTIVITY_CONSTANTS.TOOLTIP_MAX_NAMED_AGENTS) ?? [];
+  const overflowCount = Math.max(0, (locationActivity?.agentThreads.length ?? 0) - LOCATION_ACTIVITY_CONSTANTS.TOOLTIP_MAX_NAMED_AGENTS);
 
   return (
     <div
@@ -109,12 +147,13 @@ export function HexTooltip({
         background:    'var(--bg-surface)',
         border:        '1px solid rgba(255,255,255,0.08)',
         borderRadius:  '4px',
-        padding:       '4px 8px',
+        padding:       '6px 10px',
         whiteSpace:    'nowrap',
         userSelect:    'none',
+        maxWidth:      `${estimatedWidth}px`,
       }}
     >
-      {/* Primary line: terrain name in gold */}
+      {/* Primary line: location name (when available) or terrain name */}
       <div
         style={{
           color:       'var(--accent-gold)',
@@ -124,12 +163,13 @@ export function HexTooltip({
           lineHeight:  1.3,
         }}
       >
-        {displayName}
-        {hasRiver && (
+        {locationActivity ? locationActivity.locationName : displayTerrainName}
+        {hasRiver && !locationActivity && (
           <span style={{ color: 'var(--text-secondary)', fontWeight: 400 }}> 🌊</span>
         )}
       </div>
-      {/* Secondary line: coordinates */}
+
+      {/* Secondary line: coordinates (always shown) */}
       <div
         style={{
           color:      'var(--text-secondary)',
@@ -137,13 +177,77 @@ export function HexTooltip({
           fontWeight: 400,
           fontFamily: 'Alegreya Sans, sans-serif',
           lineHeight: 1.4,
+          marginBottom: locationActivity ? 4 : 0,
         }}
       >
         ({coord.col}, {coord.row})
-        {terrainKey && terrainKey !== displayName.toLowerCase() && (
+        {!locationActivity && terrainKey && terrainKey !== displayTerrainName.toLowerCase() && (
           <span style={{ color: 'var(--text-tertiary)', marginLeft: 4 }}>{terrainKey}</span>
         )}
       </div>
+
+      {/* Location murmur prose — italic, atmospheric */}
+      {locationActivity?.murmurs && locationActivity.murmurs.length > 0 && (
+        <>
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', marginBottom: 4 }} />
+          {locationActivity.murmurs.map((murmur, i) => (
+            <div
+              key={i}
+              style={{
+                fontStyle:  'italic',
+                color:      'var(--text-secondary)',
+                fontSize:   'var(--text-xs)',
+                fontFamily: 'Alegreya Sans, sans-serif',
+                lineHeight: 1.5,
+                whiteSpace: 'normal',
+                maxWidth:   `${estimatedWidth - 20}px`,
+              }}
+            >
+              {murmur}
+            </div>
+          ))}
+        </>
+      )}
+
+      {/* Agent thread list — familiarity-gated */}
+      {namedThreads.length > 0 && (
+        <div style={{ marginTop: 6 }}>
+          {namedThreads.map((thread) => (
+            <div
+              key={thread.agentId}
+              style={{
+                color:      'var(--text-secondary)',
+                fontSize:   '11px',
+                fontFamily: 'Alegreya Sans, sans-serif',
+                lineHeight: 1.4,
+                display:    'flex',
+                alignItems: 'center',
+                gap:        4,
+              }}
+            >
+              <span style={{ color: 'var(--text-tertiary)', fontSize: '8px' }}>●</span>
+              <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {thread.visibleActivity}
+              </span>
+              <MovementBadge phase={thread.movementPhase} />
+            </div>
+          ))}
+          {overflowCount > 0 && (
+            <div
+              style={{
+                color:      'var(--text-tertiary)',
+                fontSize:   '11px',
+                fontFamily: 'Alegreya Sans, sans-serif',
+                lineHeight: 1.4,
+              }}
+            >
+              <span style={{ color: 'var(--text-tertiary)', fontSize: '8px' }}>○</span>
+              {' '}({overflowCount} {overflowCount === 1 ? 'other' : 'others'})
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Dev debug: geo parameters */}
       {geoParams && (
         <div style={{ marginTop: 2, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 2 }}>

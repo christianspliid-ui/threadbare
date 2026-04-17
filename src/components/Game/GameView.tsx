@@ -14,6 +14,7 @@ import type { EncounterTemplate } from '../../types/encounter';
 import { getEncountersForLocation, getAnyEncounterById } from '../../data/encounter-content';
 import { SUBTYPE_SUBLOCATION_MAP } from '../../engine/sublocation';
 import { useHexZoomData } from './hooks/useHexZoomData';
+import { useLocationActivities } from './hooks/useLocationActivities';
 import { useAvatarData } from './hooks/useAvatarData';
 import { useScry } from './hooks/useScry';
 import { useAgentInteraction } from './hooks/useAgentInteraction';
@@ -1259,6 +1260,26 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     fogDisabled,
     worldVersion: runtime.worldVersion,
   });
+
+  // ── Location activity summaries — drives murmur tooltips on hex hover (THR-22) ──
+  const { summaries: locationActivitySummaries } = useLocationActivities({
+    graph: gameState.graph,
+    unifiedActions: gameState.unifiedActions,
+    familiarityMap: gameState.familiarityMap,
+    visibilityMap: effectiveVisibilityMap,
+    fogDisabled,
+    tick: gameState.tick,
+    omenState: gameState.omenState,
+    worldVersion: runtime.worldVersion,
+  });
+  // Re-key by "col,row" for O(1) lookup by hoveredHex in HexMapV2
+  const locationActivityByHex = useMemo(() => {
+    const byHex = new Map<string, import('../../types/locationActivity').LocationActivitySummary>();
+    for (const summary of locationActivitySummaries.values()) {
+      byHex.set(`${summary.hexCol},${summary.hexRow}`, summary);
+    }
+    return byHex;
+  }, [locationActivitySummaries]);
 
   // ── Ambient audio context inputs ──
   /** Dominant location sound subtype for the hex chronicle panel (priority 1). */
@@ -2641,6 +2662,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   onAgentClick={(agentId) => handleThreadNodeSelect(agentId, 'agent')}
                   onArmyClick={(armyId) => handleOpenProfileModal(armyId, 'army')}
                   strategicOverlays={hexStrategicOverlays}
+                  locationActivityMap={locationActivityByHex}
                 />
 
                 <AvatarHUD

@@ -80,6 +80,8 @@ import { screenToHex, worldToScreen, pickAgentAtScreen, pickArmyAtScreen, INTERA
 import { RegionLabelOverlay } from './overlay/RegionLabelOverlay';
 import { LocationLabelOverlay, type LocationLabelData } from './overlay/LocationLabelOverlay';
 import type { ScreenBBox } from './overlay/labelCollision';
+import { HexTooltip } from './interaction/HexTooltip';
+import type { LocationActivitySummary } from '../../types/locationActivity';
 import { LOCATION_IMPORTANCE_MAP, LOCATION_ICON_REGISTRY, CENTERED_SIZE_CLASSES } from './locations/locationIconRegistry';
 import { getFixedSlotOffset } from '../../lib/movementPath';
 import {
@@ -297,6 +299,8 @@ export interface HexMapV2Props {
   moveDestinationHex?: HexCoord | null;
   /** Called (debounced) when the camera center hex changes — used by ambient audio context. */
   onCameraCenterHex?: (hex: HexCoord) => void;
+  /** Location activity summaries keyed by locationId — drives murmur tooltips (THR-22). */
+  locationActivityMap?: Map<string, LocationActivitySummary>;
 }
 
 export interface HexMapV2Handle {
@@ -449,7 +453,7 @@ function createSelectionOverlayMesh(size: number, color: string): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, battles, threadLines, activityIcons, strategicOverlays, activeTugs, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex },
+    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, battles, threadLines, activityIcons, strategicOverlays, activeTugs, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -1619,6 +1623,37 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             prePlacedBBoxesRef={regionPlacedBBoxesRef}
           />
         )}
+        {/* Location murmur tooltip — shown on hex hover when location data is available (THR-22) */}
+        {hoveredHex && cameraRef.current && canvasRef.current && (() => {
+          const camera = cameraRef.current!;
+          const canvas = canvasRef.current!;
+          const worldPos = hexToWorld(hoveredHex, HEX_CONSTANTS.HEX_SIZE);
+          const screen = worldToScreen(
+            new THREE.Vector3(worldPos.x, worldPos.y, 0),
+            camera,
+            canvas,
+          );
+          // Look up location activity summary by hex key ("col,row")
+          const locationActivity = locationActivityMap?.get(
+            `${hoveredHex.col},${hoveredHex.row}`,
+          );
+          // Fall back to tile terrain name
+          const hoveredTile = tiles.find(
+            t => t.coord.col === hoveredHex.col && t.coord.row === hoveredHex.row,
+          );
+          const terrainName = String(hoveredTile?.terrain ?? '');
+          return (
+            <HexTooltip
+              terrainName={terrainName}
+              coord={hoveredHex}
+              screenX={screen.x}
+              screenY={screen.y}
+              canvasWidth={canvasDimensions.w}
+              canvasHeight={canvasDimensions.h}
+              locationActivity={locationActivity}
+            />
+          );
+        })()}
       </div>
     );
   },

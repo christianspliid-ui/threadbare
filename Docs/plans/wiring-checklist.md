@@ -158,6 +158,16 @@ Engine phases write to GameState fields. UI components must read them. An engine
 
 **Verification:** For each new GameState field in your feature, name the component that reads it and how the data reaches the player.
 
+**Location activity derivation (THR-22, 2026-04-17):**
+
+| Surface | Integration | Notes |
+|---------|-------------|-------|
+| `deriveLocationActivities()` | NOT an orchestrator phase — pure UI-side derivation. Called from `useLocationActivities` hook in GameView. | O(edges) one-pass index; pure function; no game-state writes |
+| `useLocationActivities` | Mounted in `GameView.tsx`; provides `locationActivitySummaries` + `hexPulses` | worldVersion-gated useMemo; fog-aware visible hex set (Proxy sentinel when fog disabled) |
+| `locationActivityByHex: Map<string, LocationActivitySummary>` | Derived in GameView from `locationActivitySummaries`; keyed by `"col,row"` | Passed as `locationActivityMap` prop to HexMapV2 |
+| `HexMapV2.locationActivityMap` | Prop consumed in HexMapV2 render block; read by inline tooltip IIFE | No Three.js layer — data flows to HTML overlay only |
+| `HexTooltip` | Rendered in HexMapV2 JSX when `hoveredHex` is set; receives `locationActivity` prop | Tooltip positioned via `hexToWorld → worldToScreen` (anchors to hex center, not cursor) |
+
 **Telemetry-fed thread inspection (2026-04-09):**
 
 | Source | Producer | UI consumer | Status |
