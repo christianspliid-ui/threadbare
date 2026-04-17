@@ -76,8 +76,19 @@ function inferScaleFromActorAffinities(affinities?: string[]): ActionScale {
 
 /**
  * Map encounterType to a CRUD classification.
+ *
+ * Audit 2026-04-17 (THR-90): All 10 encounter types reviewed.
+ * - create/hire/build → 'create': these all establish a new entity or relationship.
+ * - explore/acquire/steal/trade → 'read': these gather or extract existing value.
+ *   Note: 'steal' uses 'read' (not 'delete') because the target inventory is
+ *   not destroyed — value is redistributed. Future: could become 'delete' if we
+ *   model per-item inventory destruction, but 'read' is correct for now.
+ * - duel → 'delete': duels aim to remove a threat (defeat/kill the target).
+ * - assist/lead → 'update' (default): these modify relationships or states
+ *   without creating or removing entities.
+ * Locked via encounterTypeToCrud-audit.test.ts as a regression gate.
  */
-function encounterTypeToCrud(
+export function encounterTypeToCrud(
   encounterType: string,
 ): 'create' | 'read' | 'update' | 'delete' {
   switch (encounterType) {

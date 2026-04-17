@@ -181,6 +181,10 @@ export interface EncounterStep {
 
 // ─── Encounter Template ─────────────────────────────────────────
 
+/**
+ * @deprecated Use UnifiedActionTemplate — see src/data/unified-action-templates.ts#migrateEncounterTemplate for the migration path.
+ * Legacy format retained while 115 templates await migration (THR-89 through THR-107).
+ */
 export interface EncounterTemplate {
   /** Unique encounter template ID */
   id: string;
