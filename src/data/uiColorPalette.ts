@@ -71,6 +71,15 @@ export const TRACE_CATEGORY_COLORS: Record<string, string> = {
   encounter_resolution: '#10b981',     // green (encounter progress)
   familiarity_change: '#fbbf24',    // amber-400 (knowledge/connection growth)
   movement: '#38bdf8',              // sky-400 (travel/pathfinding)
+  // THR-115: world-shaping aftermath effects
+  artifact_spawned: '#f59e0b',      // amber (material world change)
+  omen_emitted: '#a855f7',          // purple (atmospheric pressure)
+  omen_decayed: '#6b7280',          // gray (expiry)
+  faction_splintered: '#ef4444',    // red (rupture)
+  faction_absorbed: '#3b82f6',      // blue (merger)
+  faction_dissolved: '#374151',     // dark gray (dissolution)
+  faction_war_declared: '#dc2626',  // bright red (conflict)
+  faction_peace_forced: '#22c55e',  // green (resolution)
 };
 
 // ============================================================================

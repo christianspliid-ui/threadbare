@@ -13,7 +13,9 @@
  */
 
 import type { GameState, TickEvent } from '../types/gameState';
-import type { OmenState, ActiveOmen, OmenTrackTemplate, CompletedOmen } from '../types/omen';
+import type { OmenState, ActiveOmen, OmenTrackTemplate, CompletedOmen, EmittedOmen, OmenCategory } from '../types/omen';
+import { EMITTED_OMEN_SCORE_WEIGHT } from '../data/game-config';
+import { hexDistance } from '../lib/hexMath';
 import {
   OMEN_TEMPLATES,
   getDoomEchoTemplates,
@@ -604,4 +606,88 @@ export function deriveOmenEncounterBias(
   mergeBias(secondaryTemplate);
 
   return bias;
+}
+
+// ─── Emitted omen decay phase (THR-115) ──────────────────────────
+
+/**
+ * Remove expired EmittedOmen entries from GameState.
+ * Runs adjacent to phaseOmenAgenda (Phase 1.7). O(n) with n ≤ EMITTED_OMEN_MAX_ACTIVE.
+ */
+export function phaseEmittedOmenDecay(state: GameState): Partial<GameState> {
+  const omens = state.emittedOmens;
+  if (!omens || omens.length === 0) return {};
+
+  const tick = state.tick;
+  const remaining: EmittedOmen[] = [];
+
+  for (const omen of omens) {
+    if (tick > omen.expiresTick) {
+      emitTrace({
+        tick,
+        category: 'omen_decayed',
+        omenId: omen.omenId,
+        livedTicks: tick - omen.emittedTick,
+        summary: `omen_decayed: ${omen.omenId} expired (lived ${tick - omen.emittedTick} ticks)`,
+      });
+    } else {
+      remaining.push(omen);
+    }
+  }
+
+  if (remaining.length === omens.length) return {};
+  return { emittedOmens: remaining };
+}
+
+// ─── Emitted omen encounter type affinity (THR-115) ─────────────
+
+/**
+ * Category-to-encounter-type affinity for emitted omens.
+ * Emitted omens don't have encounter templates so we use this static mapping.
+ */
+const EMITTED_OMEN_ENCOUNTER_AFFINITY: Partial<Record<OmenCategory, string[]>> = {
+  doom_echo: ['duel', 'steal'],
+  sphere_surge: ['explore', 'create'],
+  cultural: ['assist', 'trade', 'lead'],
+  seasonal: ['acquire', 'build'],
+};
+
+/**
+ * Derive encounter type bias from active EmittedOmens for a specific hex.
+ * Additive with existing omenBias; combined total remains capped at ±OMEN_ENCOUNTER_BIAS_CAP.
+ */
+export function deriveEmittedOmenEncounterBias(
+  emittedOmens: readonly EmittedOmen[] | undefined,
+  agentHexCol: number,
+  agentHexRow: number,
+): Partial<Record<string, number>> {
+  if (!emittedOmens || emittedOmens.length === 0) return {};
+
+  const bias: Record<string, number> = {};
+
+  for (const omen of emittedOmens) {
+    if (!isOmenInScope(omen, agentHexCol, agentHexRow)) continue;
+
+    const affinity = EMITTED_OMEN_ENCOUNTER_AFFINITY[omen.category];
+    if (!affinity) continue;
+
+    const boost = omen.intensity * EMITTED_OMEN_SCORE_WEIGHT;
+    for (const encounterType of affinity) {
+      bias[encounterType] = (bias[encounterType] ?? 0) + boost;
+    }
+  }
+
+  return bias;
+}
+
+function isOmenInScope(omen: EmittedOmen, hexCol: number, hexRow: number): boolean {
+  const scope = omen.scope;
+  if (scope.kind === 'global') return true;
+  if (scope.kind === 'regional') return true; // region matching deferred; treat as in-scope
+  if (scope.kind === 'local') {
+    const radius = scope.radius ?? 2;
+    const dist = hexDistance({ col: hexCol, row: hexRow }, { col: scope.hexCol, row: scope.hexRow });
+    return dist <= radius;
+  }
+  return true;
 }

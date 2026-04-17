@@ -132,6 +132,10 @@ export function phaseFactionReputationDecay(state: GameState): Partial<GameState
     const factionDefId = props.factionDefId;
     if (!factionDefId) continue; // Skip non-faction memberships
 
+    // Skip dissolved factions (faction_dissolve aftermath sets dissolved: true on the node)
+    const factionNode = graph.getNode(edge.target);
+    if (factionNode?.properties?.dissolved) continue;
+
     const definition = FACTION_DEFINITIONS.get(factionDefId);
     if (!definition) continue; // Unknown definition — fail-soft
 

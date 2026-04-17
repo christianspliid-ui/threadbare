@@ -76,7 +76,16 @@ export type TraceCategory =
   | 'reputation_set_applied'
   | 'condition_applied'
   | 'condition_removed'
-  | 'aftermath_target_invalid';
+  | 'aftermath_target_invalid'
+  // World-shaping aftermath traces (THR-115)
+  | 'artifact_spawned'
+  | 'omen_emitted'
+  | 'omen_decayed'
+  | 'faction_splintered'
+  | 'faction_absorbed'
+  | 'faction_dissolved'
+  | 'faction_war_declared'
+  | 'faction_peace_forced';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -143,6 +152,15 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'condition_applied',
   'condition_removed',
   'aftermath_target_invalid',
+  // World-shaping aftermath traces (THR-115)
+  'artifact_spawned',
+  'omen_emitted',
+  'omen_decayed',
+  'faction_splintered',
+  'faction_absorbed',
+  'faction_dissolved',
+  'faction_war_declared',
+  'faction_peace_forced',
 ];
 
 /** Base shape for all trace entries */
