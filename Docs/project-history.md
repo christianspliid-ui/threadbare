@@ -3,6 +3,8 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ **THR-90** (2026-04-17) — Phase 0: EncounterTemplate deprecation + parity/audit tests. 4 test suites, Codex-reviewed. Unblocks THR-89 Phase 1 pilot.
+
 # Project Status
 
 Detailed per-phase implementation status for The Fantasy World Simulator. Referenced from CLAUDE.md.
