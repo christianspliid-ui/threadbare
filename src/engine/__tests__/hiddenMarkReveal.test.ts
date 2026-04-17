@@ -203,14 +203,22 @@ describe('consumeMatchingMarks — on consumption', () => {
     }
   });
 
-  it('appends a ripple_consequence chronicle event', () => {
+  it('appends a ripple_consequence chronicle event with enriched prose (THR-132)', () => {
     for (let seed = 0; seed < 100; seed++) {
       const state = makeState([MARK_INVESTIGATION], seed, 20);
       const result = consumeMatchingMarks(state, 'agent-1', 'investigation.audit', 20);
       if ((result.hiddenMarks?.length ?? 1) === 0) {
-        const reveal = result.tickEvents.find(e => e.type === 'ripple_consequence' && e.message.includes('buried truth'));
+        const reveal = result.tickEvents.find(e => e.type === 'ripple_consequence');
         expect(reveal).toBeDefined();
         expect(reveal!.significance).toBe(0.7);
+        // THR-132: message should NOT be the pre-prose debug string; it should
+        // include the mark.label (via {mark_label} substitution) and the
+        // minimal-context agent name "The marked one" (graph absent in fixture).
+        expect(reveal!.message).not.toBe(`A buried truth surfaces: ${MARK_INVESTIGATION.label}`);
+        expect(reveal!.message).toContain(MARK_INVESTIGATION.label);
+        expect(reveal!.message).toContain('The marked one');
+        // Placeholder syntax must not leak to the player
+        expect(reveal!.message).not.toMatch(/\{[a-z_]+\}/);
         break;
       }
     }
