@@ -12,7 +12,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { WorldGraph } from '../graph';
 import type { GraphNode } from '../../types/graph';
 import { getCulturalFlavorWords, pickCulturalWord } from '../culturalProse';
-import { generateRoutineProse, generateNotableProse } from '../narrative';
+import { generateRoutineProse, generateNotableProse, resetNarrativeEventCounter } from '../narrative';
 
 // ─── Helpers for Test Setup ────────────────────────────────────────
 
@@ -397,6 +397,7 @@ describe('Cultural prose integration', () => {
     });
     addBelongsToEdge(graph, 'actor_x', 'culture_x', 0.75);
 
+    resetNarrativeEventCounter();
     const prose1 = generateRoutineProse(
       'action_resolved',
       { actorName: 'Consistent One', actorId: 'actor_x', sphere: 'mind' },
@@ -404,6 +405,7 @@ describe('Cultural prose integration', () => {
       graph,
     );
 
+    resetNarrativeEventCounter();
     const prose2 = generateRoutineProse(
       'action_resolved',
       { actorName: 'Consistent One', actorId: 'actor_x', sphere: 'mind' },
