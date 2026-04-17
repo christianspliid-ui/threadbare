@@ -2,7 +2,7 @@
 
 > **Living document.** Every design plan must include a wiring section that maps new modules to entries on this checklist. Every implementation must verify all listed connections before marking work complete. Maintaining this checklist is part of the Definition of Done for both design and implementation phases.
 >
-> **Last updated:** 2026-04-17 (THR-115 — world-shaping aftermath effects: spawn_artifact, emit_omen, 5 faction topology kinds; Phase 1.7a phaseEmittedOmenDecay; 8 new trace categories)
+> **Last updated:** 2026-04-18 (THR-116 — causation edges, conditional aftermath `when` gate, thread mutation effects)
 
 ---
 
@@ -210,6 +210,18 @@ Eight new `EncounterAftermathReactionEffect` kinds that change world topology fr
 * Trace definitions: `src/types/trace.ts` — `aftermath_target_resolved`, `aftermath_target_invalid`, `faction_reputation_changed`, `reputation_set_applied`, `condition_applied`, `condition_removed`
 * Example content: `src/data/encounters/examples/` — `example.betrayal_multi_target.ts`, `example.council_disowns.ts`, `example.shrine_consecration.ts`
 * Tests: `src/engine/__tests__/encounterAftermath-multi-target.test.ts` (35+ tests)
+
+**Causation edges + conditional aftermath (THR-116, 2026-04-18):**
+
+| Surface | Wiring |
+|---------|--------|
+| `when` gate | `encounterAftermath.ts` evaluates `effect.when` via `evaluatePredicate(buildPredicateContext(...))` before every effect dispatch. Emits `aftermath_effect_skipped_by_when` / `aftermath_effect_when_passed` traces. |
+| Thread mutations | `thread_strengthen/weaken/break/branch` cases in `applyEncounterAftermathReaction`. Strength clamped [0,1] via `THREAD_STRENGTH_MAX/MIN`. `thread_break` emits `TickEvent`. `thread_branch` wraps `addEdge` in try/catch for duplicate-edge safety. |
+| ThreadsPanel UI | `threadStrength` field on `ThreadedNodeBase` (from `edge.properties.strength`). CSS-transitioned bar renders when `threadStrength < 1.0`. |
+| Causation edges | `encounterSeeding.ts` tries `caused_by` addEdge on seed evaluation; always falls to `causation_edge_creation_skipped` in v1 (action IDs not graph nodes). |
+| Prose placeholders | `{cause:label}` / `{cause:ticksAgo}` resolved in `enrichProse` from `ctx.cause`. |
+| Trace categories | `causation_edge_created`, `causation_edge_creation_skipped`, `aftermath_effect_skipped_by_when`, `aftermath_effect_when_passed`, `thread_mutation_applied`, `thread_mutation_skipped` |
+| Tests | `encounterAftermath.test.ts` (tests 3-10), `encounterSeeding.test.ts` (tests 1-2) |
 
 **Component-library foundation seams (2026-04-03):**
 

@@ -628,6 +628,71 @@ The executor (a) resolves `templateId` from `condition-trait-content`, (b) looks
 
 ---
 
+### Capability 10: Conditional Aftermath Gates + Thread Mutations (THR-116)
+
+#### The `when` predicate gate
+
+Every `EncounterAftermathReactionEffect` can carry an optional `when?: EffectPredicate` field. If the predicate evaluates false, the effect is skipped silently (emits `aftermath_effect_skipped_by_when` trace). This lets one reaction branch serve multiple situations.
+
+**Available predicates:**
+| Predicate | Fires when |
+|-----------|-----------|
+| `'health_high'` | Agent's doom fraction ≤ 0.25 (healthy) |
+| `'health_low'` | Agent's doom fraction ≥ 0.75 (badly hurt) |
+| `'in_combat'` | Agent has `status_in_combat` trait |
+| `'at_sea'` | Agent is in coastal/ocean biome |
+| `'near_water'` | Coastal, river, lake, swamp, or archipelago biome |
+| `'reputation_above:0.6'` | Actor's `reputationScore` > 0.6 |
+| `'reputation_below:0.3'` | Actor's `reputationScore` < 0.3 |
+| `'has_mark:suspicion'` | Actor has at least one hidden mark of that category |
+| `'has_intel:patrol_routes'` | Actor has an intelligence record in that category |
+| `'faction_controls:city_north'` | Actor's faction controls the named region |
+
+```typescript
+// Effect fires only when the actor is reputation-worthy
+{ kind: 'reputation_score', delta: 0.1, when: 'reputation_above:0.6' }
+
+// Effect fires only when wounded
+{ kind: 'encounter_seed', encounterFamily: 'revenge', seedLabel: 'They remember the wound', delayTicks: 12, priority: 1.5, when: 'health_low' }
+```
+
+**Note:** `alone` and `outnumbered` predicates exist in the type but are currently stubs (always evaluates alone=true, outnumbered=false) — annotated in source with TODO.
+
+#### Thread mutation effects
+
+Four new effect kinds directly mutate thread-bond edges:
+
+| Kind | What it does |
+|------|-------------|
+| `thread_strengthen` | Increases `edge.properties.strength` by `delta`, clamped at 1.0 |
+| `thread_weaken` | Decreases `edge.properties.strength` by `delta`, clamped at 0.0 |
+| `thread_break` | Removes the thread edge entirely; emits a `TickEvent` |
+| `thread_branch` | Creates a new thread edge from `ascendantId → newMortalId` with `initialStrength` and a `branchedFromMortalId` back-reference |
+
+```typescript
+// Strengthen after trust-building reaction
+{ kind: 'thread_strengthen', ascendantId: 'asc.player', mortalId: 'npc.spymaster', delta: 0.15 }
+
+// Break the thread if the bond shatters
+{ kind: 'thread_break', ascendantId: 'asc.player', mortalId: 'npc.betrayer' }
+
+// Branch a new thread from an existing one
+{ kind: 'thread_branch', ascendantId: 'asc.player', sourceMortalId: 'npc.mentor', newMortalId: 'npc.protege', initialStrength: 0.4 }
+```
+
+Thread strength is visible in `ThreadsPanel` as a thin animated bar (only shown when `< 1.0`). Mutations are inspectable via `thread_mutation_applied` / `thread_mutation_skipped` trace categories in the DebugPanel.
+
+#### The `{cause:*}` prose placeholders
+
+If a seeded encounter carries a `sourceEncounterId`, prose can reference the causing encounter:
+
+- `{cause:label}` — the `seedLabel` from the original seed effect (e.g. "The mark knows your face")
+- `{cause:ticksAgo}` — how many ticks ago the seed was planted
+
+These resolve from `ctx.cause` in `NarrativeContext`. If no cause is present, `{cause:*}` tokens strip cleanly.
+
+---
+
 ## Part 6: The Exemplars — Study These Encounters
 
 These encounters demonstrate championship-level systemic wiring. Read them before authoring new content.
