@@ -1,6 +1,7 @@
 // src/types/unifiedAction.ts
 import type { ReachDomain } from './traits';
 import type { SphereName } from './index';
+import type { OmenCategory, EmittedOmenScope } from './omen';
 import type { ActorType } from './graph';
 import type { ValuePair } from './agent';
 import type { GraphOp } from './graphOp';
@@ -135,6 +136,19 @@ export interface EncounterAftermathChange {
   readonly actorName?: string;
 }
 
+// ─── World-shaping aftermath supporting types (THR-115) ─────────────────────
+
+export type ArtifactTier = 'common' | 'shaping' | 'legendary';
+export type ArtifactCategory = 'weapon' | 'talisman' | 'relic' | 'tome' | 'vessel' | 'key' | 'mundane';
+
+export type FactionMemberSelection =
+  | { readonly kind: 'all_matching_trait'; readonly traitId: string }
+  | { readonly kind: 'within_radius'; readonly hexCol: number; readonly hexRow: number; readonly radius: number }
+  | { readonly kind: 'by_reputation_below'; readonly threshold: number }
+  | { readonly kind: 'by_reputation_above'; readonly threshold: number }
+  | { readonly kind: 'explicit_ids'; readonly agentIds: readonly string[] }
+  | { readonly kind: 'random_sample'; readonly fraction: number };
+
 /**
  * Resolved target for a multi-target aftermath effect.
  * `actor_fallback` means no explicit target was supplied and the action actor was used.
@@ -259,6 +273,74 @@ export type EncounterAftermathReactionEffect =
     readonly durationOverride?: number;
     /** Number of stacks to apply. Defaults to CONDITION_ATTACHMENT_DEFAULT_STACK_COUNT (1). */
     readonly stackCount?: number;
+  }
+  // ─── World-shaping effects (THR-115) ──────────────────────────────────────
+  | {
+    readonly kind: 'spawn_artifact';
+    /** Artifact template id from content catalog. */
+    readonly templateId?: string;
+    /** Fallback category if templateId not given. */
+    readonly category?: ArtifactCategory;
+    /** Override template tier. Determines node type and edge kind. */
+    readonly tier?: ArtifactTier;
+    /** Override display name. */
+    readonly nameOverride?: string;
+    readonly tags?: readonly string[];
+    /** Place artifact in actor inventory (possesses / bonded_to). Symbolic: $actor | $ally | $rival | $witness. */
+    readonly targetAgentId?: string;
+    /** Place artifact at location (contains). */
+    readonly targetLocationId?: string;
+    /** Chronicle message override. */
+    readonly messageOverride?: string;
+  }
+  | {
+    readonly kind: 'emit_omen';
+    readonly category: OmenCategory;
+    /** Intensity 0–1; drives encounter bias weight and chronicle significance. */
+    readonly intensity: number;
+    /** How long the omen stains the scope in ticks. Falls back to EMITTED_OMEN_DEFAULT_DURATION_TICKS when omitted. */
+    readonly durationTicks?: number;
+    /** Short prose, appears in chronicle + feeds enrichment {omen}. */
+    readonly narrativeHook: string;
+    readonly scope: EmittedOmenScope;
+    /** Optional sphere tint — biases sphere_surge category encounters. */
+    readonly sphereAlignment?: SphereName;
+  }
+  | {
+    readonly kind: 'faction_splinter';
+    readonly sourceFactionId: string;
+    readonly newFactionName: string;
+    readonly memberSelection: FactionMemberSelection;
+    /** Fraction of parent reputation transferred to splinter members (0–1). */
+    readonly inheritReputationShare?: number;
+    readonly narrativeHook?: string;
+  }
+  | {
+    readonly kind: 'faction_absorb';
+    readonly absorbingFactionId: string;
+    readonly absorbedFactionId: string;
+    readonly reputationMerge?: 'max' | 'sum_clamped' | 'weighted_avg';
+    readonly narrativeHook?: string;
+  }
+  | {
+    readonly kind: 'faction_dissolve';
+    readonly factionId: string;
+    readonly memberFallback?: 'independent' | 'drift_to_rival';
+    readonly narrativeHook?: string;
+  }
+  | {
+    readonly kind: 'faction_declare_war';
+    readonly factionA: string;
+    readonly factionB: string;
+    readonly narrativeHook?: string;
+  }
+  | {
+    readonly kind: 'faction_force_peace';
+    readonly factionA: string;
+    readonly factionB: string;
+    /** Sentiment boost applied to both parties. Defaults to FACTION_PEACE_DEFAULT_SENTIMENT_BOOST. */
+    readonly sentimentBoost?: number;
+    readonly narrativeHook?: string;
   };
 
 export interface PendingEncounterSeed {

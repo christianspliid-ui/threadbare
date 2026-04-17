@@ -127,3 +127,23 @@ export interface OmenState {
   /** History of completed omens for THR-21 pattern detection (capped at OMEN_MAX_HISTORY) */
   history: CompletedOmen[];
 }
+
+// ─── Emitted Omens — aftermath-spawned regional/global omen events (THR-115) ──
+
+export type EmittedOmenScope =
+  | { readonly kind: 'global' }
+  | { readonly kind: 'regional'; readonly regionId: string }
+  | { readonly kind: 'local'; readonly hexCol: number; readonly hexRow: number; readonly radius?: number };
+
+export interface EmittedOmen {
+  readonly omenId: string;
+  readonly sourceEncounterId: string;
+  readonly sourceReactionId: string;
+  readonly category: OmenCategory;
+  readonly intensity: number;
+  readonly scope: EmittedOmenScope;
+  readonly narrativeHook: string;
+  readonly sphereAlignment?: SphereName;
+  readonly emittedTick: number;
+  readonly expiresTick: number;
+}

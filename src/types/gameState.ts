@@ -33,7 +33,7 @@ import type { FamiliarityMap } from './familiarity';
 import type { AgentKnowledge } from './agentKnowledge';
 import type { DigestEntry, ThreadTug, QueuedStoryBeat } from './attention';
 import type { StrategicRuntimeState } from './strategicAction';
-import type { OmenState } from './omen';
+import type { OmenState, EmittedOmen } from './omen';
 import type { DoomIdentityMatrix } from './doomIdentity';
 import { DEFAULT_DOOM_TICKS as CONFIG_DEFAULT_DOOM_TICKS } from '../data/game-config';
 
@@ -225,6 +225,9 @@ export interface GameState {
 
   // Omen agenda — world atmospheric pressure tracks (THR-19)
   omenState?: OmenState;
+
+  // Emitted omens — aftermath-spawned regional/global omen events (THR-115)
+  emittedOmens?: EmittedOmen[];
 
   // Onboarding — one-shot flags for auto-triggered encounters
   meetTheFirstAutoTriggered?: boolean;

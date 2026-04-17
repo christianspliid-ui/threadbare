@@ -15,6 +15,24 @@ import type { SimulationRuntime } from './simulationRuntime';
 import { touchWorld, touchStructure } from './simulationRuntime';
 import { CONDITION_DURATIONS } from '../data/condition-trait-content';
 import { CONDITION_ATTACHMENT_DEFAULT_STACK_COUNT } from '../data/attachment-slot-constants';
+import {
+  SPAWN_ARTIFACT_DEFAULT_SIGNIFICANCE_COMMON,
+  SPAWN_ARTIFACT_DEFAULT_SIGNIFICANCE_SHAPING,
+  SPAWN_ARTIFACT_DEFAULT_SIGNIFICANCE_LEGENDARY,
+  EMITTED_OMEN_DEFAULT_DURATION_TICKS,
+  EMITTED_OMEN_MAX_ACTIVE,
+  EMITTED_OMEN_LOCAL_DEFAULT_RADIUS,
+  FACTION_SPLINTER_DEFAULT_REPUTATION_SHARE,
+  FACTION_SPLINTER_INITIAL_SENTIMENT_TO_PARENT,
+  FACTION_PEACE_DEFAULT_SENTIMENT_BOOST,
+  FACTION_PEACE_SENTIMENT_FLOOR,
+  FACTION_WAR_SENTIMENT_FLOOR,
+  FACTION_DRIFT_TO_RIVAL_INITIAL_REPUTATION,
+  FACTION_MUTATION_CHRONICLE_SIGNIFICANCE,
+} from '../data/game-config';
+import type { EmittedOmen } from '../types/omen';
+import type { ArtifactTier, FactionMemberSelection } from '../types/unifiedAction';
+import { mulberry32 } from '../lib/prng';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -64,6 +82,77 @@ export function resolveAftermathTarget(
   return { kind: 'actor_fallback' };
 }
 
+// ─── World-shaping helpers ────────────────────────────────────────────────────
+
+interface FactionMemberCandidate {
+  id: string;
+  reputation: number;
+}
+
+function selectFactionMembers(
+  allMembers: FactionMemberCandidate[],
+  selection: FactionMemberSelection,
+  state: import('../types/gameState').GameState,
+  tick: number,
+  encounterId: string,
+  reactionId: string,
+  effectIndex: number,
+): FactionMemberCandidate[] {
+  switch (selection.kind) {
+    case 'explicit_ids':
+      return allMembers.filter(m => selection.agentIds.includes(m.id));
+    case 'by_reputation_above':
+      return allMembers.filter(m => m.reputation > selection.threshold);
+    case 'by_reputation_below':
+      return allMembers.filter(m => m.reputation < selection.threshold);
+    case 'within_radius': {
+      const result: FactionMemberCandidate[] = [];
+      for (const member of allMembers) {
+        const node = state.graph.getNode(member.id);
+        if (!node) continue;
+        const hexCol = node.properties?.hexCol as number | undefined;
+        const hexRow = node.properties?.hexRow as number | undefined;
+        if (hexCol === undefined || hexRow === undefined) continue;
+        const dist = Math.max(
+          Math.abs(hexCol - selection.hexCol),
+          Math.abs(hexRow - selection.hexRow),
+          Math.abs((hexCol - hexRow) - (selection.hexCol - selection.hexRow)),
+        );
+        if (dist <= selection.radius) result.push(member);
+      }
+      return result;
+    }
+    case 'all_matching_trait':
+      return allMembers.filter(m => {
+        const traitEdges = state.graph.getOutgoingEdges(m.id, 'has_trait');
+        return traitEdges.some(e => e.target === selection.traitId);
+      });
+    case 'random_sample': {
+      const salt = `${encounterId}_${reactionId}_${effectIndex}`;
+      let seed = state.seed;
+      for (let c = 0; c < salt.length; c++) seed = (seed ^ salt.charCodeAt(c)) >>> 0;
+      seed = (seed + tick * 31337) >>> 0;
+      const rng = mulberry32(seed);
+      return allMembers.filter(() => rng() < selection.fraction);
+    }
+    default:
+      return allMembers;
+  }
+}
+
+function mergeReputation(
+  existing: number,
+  absorbed: number,
+  strategy: 'max' | 'sum_clamped' | 'weighted_avg',
+): number {
+  switch (strategy) {
+    case 'max': return Math.max(existing, absorbed);
+    case 'sum_clamped': return clamp01(existing + absorbed);
+    case 'weighted_avg': return (existing + absorbed) / 2;
+    default: return (existing + absorbed) / 2;
+  }
+}
+
 // ─── Mutation summary ─────────────────────────────────────────────────────────
 
 export interface AftermathMutationSummary {
@@ -95,6 +184,7 @@ export function applyEncounterAftermathReaction(
   let nextSeeds: PendingEncounterSeed[] = [];
   let nextHiddenMarks: HiddenMark[] = [];
   let nextIntelligenceRecords: IntelligenceRecord[] = [];
+  let nextEmittedOmens: EmittedOmen[] | undefined = undefined;
 
   let mutationSummary: AftermathMutationSummary = { touchedWorld: false, touchedStructure: false, woundApplied: false };
 
@@ -884,6 +974,723 @@ export function applyEncounterAftermathReaction(
         });
         break;
       }
+
+      // ─── World-shaping effects (THR-115) ───────────────────────────────────
+
+      case 'spawn_artifact': {
+        // Resolve placement target: explicit agent > explicit location > symbolic actor fallback
+        const saAgentId = effect.targetAgentId
+          ? (effect.targetAgentId.startsWith('$') ? actorAgentId : effect.targetAgentId)
+          : (!effect.targetLocationId ? actorAgentId : undefined);
+        const saLocationId = effect.targetLocationId;
+
+        if (!saAgentId && !saLocationId) {
+          emitTrace({
+            tick, category: 'artifact_spawned', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            artifactId: '', artifactName: '', tier: 'common',
+            templateId: effect.templateId, targetAgentId: undefined, targetLocationId: undefined,
+            sourceEncounterId: encounterId, sourceReactionId: reaction.id,
+            success: false, failReason: 'no_placement_target',
+            summary: `spawn_artifact[${i}] skipped: no placement target`,
+          });
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'spawn_artifact', effectDetail: { templateId: effect.templateId },
+            success: false, failReason: 'no_placement_target',
+            summary: `spawn_artifact[${i}] skipped: no placement target`,
+          });
+          break;
+        }
+
+        // Validate placement node exists
+        if (saAgentId && !state.graph.getNode(saAgentId)) {
+          emitTrace({
+            tick, category: 'artifact_spawned', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            artifactId: '', artifactName: '', tier: 'common',
+            templateId: effect.templateId, targetAgentId: saAgentId,
+            sourceEncounterId: encounterId, sourceReactionId: reaction.id,
+            success: false, failReason: 'target_actor_missing',
+            summary: `spawn_artifact[${i}] skipped: target actor ${saAgentId} not found`,
+          });
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'spawn_artifact', effectDetail: { targetAgentId: saAgentId },
+            success: false, failReason: 'target_actor_missing',
+            summary: `spawn_artifact[${i}] skipped: actor ${saAgentId} not found`,
+          });
+          break;
+        }
+        if (saLocationId && !state.graph.getNode(saLocationId)) {
+          emitTrace({
+            tick, category: 'artifact_spawned', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            artifactId: '', artifactName: '', tier: 'common',
+            templateId: effect.templateId, targetLocationId: saLocationId,
+            sourceEncounterId: encounterId, sourceReactionId: reaction.id,
+            success: false, failReason: 'target_location_missing',
+            summary: `spawn_artifact[${i}] skipped: target location ${saLocationId} not found`,
+          });
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'spawn_artifact', effectDetail: { targetLocationId: saLocationId },
+            success: false, failReason: 'target_location_missing',
+            summary: `spawn_artifact[${i}] skipped: location ${saLocationId} not found`,
+          });
+          break;
+        }
+
+        // Determine tier — template lookup is deferred until Phase 2+ content; fall back to 'common'
+        const saTier: ArtifactTier = effect.tier ?? 'common';
+        const saNodeType = saTier === 'legendary' ? 'artifact_legendary' : 'artifact';
+        const saActorEdgeType = saTier === 'legendary' ? 'bonded_to' : 'possesses';
+
+        // Derive artifact name: nameOverride > templateId-based > generic
+        const saName = effect.nameOverride
+          ?? (effect.templateId ? effect.templateId.split('.').pop() ?? 'artifact' : 'artifact');
+
+        const saArtifactId = `artifact_spawned_${encounterId}_${reaction.id}_${i}_${tick}`;
+
+        // Warn if templateId not found in graph (fail-soft: use fallback name)
+        let saTemplateMissing = false;
+        if (effect.templateId && !state.graph.getNode(effect.templateId)) {
+          saTemplateMissing = true;
+        }
+
+        state.graph.addNode({
+          id: saArtifactId,
+          type: saNodeType,
+          name: saName,
+          properties: {
+            category: effect.category,
+            tier: saTier,
+            tags: effect.tags ? [...effect.tags] : [],
+            sourceEncounterId: encounterId,
+            spawnedAtTick: tick,
+          },
+        });
+
+        if (saAgentId) {
+          state.graph.addEdge({
+            id: `${saActorEdgeType}_${saAgentId}_${saArtifactId}`,
+            source: saAgentId,
+            target: saArtifactId,
+            type: saActorEdgeType,
+            properties: { spawnedAtTick: tick, sourceEncounterId: encounterId },
+          });
+        } else if (saLocationId) {
+          state.graph.addEdge({
+            id: `contains_${saLocationId}_${saArtifactId}`,
+            source: saLocationId,
+            target: saArtifactId,
+            type: 'contains',
+            properties: { spawnedAtTick: tick, sourceEncounterId: encounterId },
+          });
+        }
+
+        mutationSummary.touchedWorld = true;
+        touchWorld(runtime);
+
+        const saSignificance = saTier === 'legendary'
+          ? SPAWN_ARTIFACT_DEFAULT_SIGNIFICANCE_LEGENDARY
+          : saTier === 'shaping'
+            ? SPAWN_ARTIFACT_DEFAULT_SIGNIFICANCE_SHAPING
+            : SPAWN_ARTIFACT_DEFAULT_SIGNIFICANCE_COMMON;
+
+        const saMessage = effect.messageOverride ?? `${saName} has come into the world.`;
+        const saEvent: TickEvent = {
+          id: `${saArtifactId}_chronicle`,
+          tick,
+          type: 'narrative',
+          message: saMessage,
+          significance: saSignificance,
+          actorId: saAgentId ?? actorAgentId,
+        };
+        nextTickEvents = [...nextTickEvents, saEvent];
+        nextRecentEvents = appendRecentEvent(nextRecentEvents, saEvent);
+
+        emitTrace({
+          tick, category: 'artifact_spawned', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          artifactId: saArtifactId, artifactName: saName, tier: saTier,
+          templateId: effect.templateId,
+          targetAgentId: saAgentId, targetLocationId: saLocationId,
+          sourceEncounterId: encounterId, sourceReactionId: reaction.id,
+          success: true,
+          ...(saTemplateMissing ? { failReason: 'template_missing_used_fallback' } : {}),
+          summary: `spawn_artifact[${i}]: "${saName}" (${saTier}) → ${saAgentId ?? saLocationId}`,
+        });
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'spawn_artifact',
+          effectDetail: { artifactId: saArtifactId, name: saName, tier: saTier, targetAgentId: saAgentId, targetLocationId: saLocationId },
+          success: true,
+          summary: `spawn_artifact[${i}]: "${saName}" (${saTier})`,
+        });
+        break;
+      }
+
+      case 'emit_omen': {
+        const eoId = `omen_${encounterId}_${reaction.id}_${i}_${tick}`;
+        const eoDuration = effect.durationTicks ?? EMITTED_OMEN_DEFAULT_DURATION_TICKS;
+        const eoExpiresTick = tick + eoDuration;
+
+        // Normalize scope — degrade invalid scope to global
+        let eoScope = effect.scope;
+        let eoDegradedToGlobal = false;
+        if (eoScope.kind === 'regional' && !eoScope.regionId) {
+          eoScope = { kind: 'global' };
+          eoDegradedToGlobal = true;
+        }
+        if (eoScope.kind === 'local' && (eoScope.hexCol === undefined || eoScope.hexRow === undefined)) {
+          eoScope = { kind: 'global' };
+          eoDegradedToGlobal = true;
+        }
+        // Apply default radius for local scope
+        if (eoScope.kind === 'local' && eoScope.radius === undefined) {
+          eoScope = { ...eoScope, radius: EMITTED_OMEN_LOCAL_DEFAULT_RADIUS };
+        }
+
+        const eoEntry: EmittedOmen = {
+          omenId: eoId,
+          sourceEncounterId: encounterId,
+          sourceReactionId: reaction.id,
+          category: effect.category,
+          intensity: Math.max(0, Math.min(1, effect.intensity)),
+          scope: eoScope,
+          narrativeHook: effect.narrativeHook,
+          sphereAlignment: effect.sphereAlignment,
+          emittedTick: tick,
+          expiresTick: eoExpiresTick,
+        };
+
+        // Build new emittedOmens list with cap enforcement
+        const currentOmens = nextEmittedOmens ?? state.emittedOmens ?? [];
+        let updatedOmens = [...currentOmens, eoEntry];
+        if (updatedOmens.length > EMITTED_OMEN_MAX_ACTIVE) {
+          // Evict oldest (smallest emittedTick)
+          const evicted = updatedOmens.reduce((oldest, o) =>
+            o.emittedTick < oldest.emittedTick ? o : oldest
+          , updatedOmens[0]);
+          emitTrace({
+            tick, category: 'omen_decayed', agentId: actorAgentId,
+            omenId: evicted.omenId, livedTicks: tick - evicted.emittedTick,
+            failReason: 'cap_evicted',
+            summary: `omen_decayed: ${evicted.omenId} evicted (cap_evicted)`,
+          });
+          updatedOmens = updatedOmens.filter(o => o !== evicted);
+        }
+        nextEmittedOmens = updatedOmens;
+        mutationSummary.touchedWorld = true;
+        touchWorld(runtime);
+
+        const eoSignificance = Math.max(0.5, Math.min(0.85, 0.5 + eoEntry.intensity * 0.3));
+        const eoEvent: TickEvent = {
+          id: `${eoId}_chronicle`,
+          tick,
+          type: 'narrative',
+          message: effect.narrativeHook,
+          significance: eoSignificance,
+          actorId: actorAgentId,
+        };
+        nextTickEvents = [...nextTickEvents, eoEvent];
+        nextRecentEvents = appendRecentEvent(nextRecentEvents, eoEvent);
+
+        emitTrace({
+          tick, category: 'omen_emitted', agentId: actorAgentId,
+          omenId: eoId, omenCategory: effect.category,
+          intensity: eoEntry.intensity, scope: eoScope,
+          expiresTick: eoExpiresTick,
+          sourceEncounterId: encounterId, sourceReactionId: reaction.id,
+          ...(eoDegradedToGlobal ? { degradedToGlobal: true } : {}),
+          summary: `omen_emitted[${i}]: ${effect.category} intensity=${eoEntry.intensity.toFixed(2)} scope=${eoScope.kind} expires@${eoExpiresTick}`,
+        });
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'emit_omen',
+          effectDetail: { omenId: eoId, category: effect.category, intensity: eoEntry.intensity, scope: eoScope, expiresTick: eoExpiresTick },
+          success: true,
+          summary: `emit_omen[${i}]: ${effect.category} ${eoEntry.intensity.toFixed(2)} (${eoScope.kind})`,
+        });
+        break;
+      }
+
+      case 'faction_splinter': {
+        const fsSrc = state.graph.getNode(effect.sourceFactionId);
+        if (!fsSrc || (fsSrc.properties?.actorStatus as string | undefined) === 'dissolved') {
+          emitTrace({
+            tick, category: 'faction_splintered', agentId: actorAgentId,
+            sourceFactionId: effect.sourceFactionId, newFactionId: '',
+            memberCount: 0, selectionKind: '', reputationShare: 0,
+            success: false, failReason: 'source_faction_invalid',
+            summary: `faction_splinter[${i}] skipped: source faction invalid (${effect.sourceFactionId})`,
+          });
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'faction_splinter', effectDetail: { sourceFactionId: effect.sourceFactionId },
+            success: false, failReason: 'source_faction_invalid',
+            summary: `faction_splinter[${i}] skipped: source faction invalid`,
+          });
+          break;
+        }
+
+        // Select members from source faction
+        const allMembers = state.graph.getIncomingEdges(effect.sourceFactionId, 'member_of')
+          .map(e => ({ id: e.source, reputation: (e.properties?.reputation as number | undefined) ?? DEFAULT_FACTION_REPUTATION }));
+
+        let selectedMembers = selectFactionMembers(allMembers, effect.memberSelection, state, tick, encounterId, reaction.id, i);
+
+        const newFactionId = `faction_splinter_${encounterId}_${reaction.id}_${i}_${tick}`;
+        state.graph.addNode({
+          id: newFactionId,
+          type: 'actor',
+          name: effect.newFactionName,
+          properties: {
+            actorType: 'faction',
+            actorStatus: 'active',
+            sourceEncounterId: encounterId,
+            foundedTick: tick,
+          },
+        });
+
+        const repShare = effect.inheritReputationShare ?? FACTION_SPLINTER_DEFAULT_REPUTATION_SHARE;
+        for (const member of selectedMembers) {
+          // Remove old member_of edge
+          const oldEdges = state.graph.getOutgoingEdges(member.id, 'member_of')
+            .filter(e => e.target === effect.sourceFactionId);
+          for (const e of oldEdges) state.graph.removeEdge(e.id);
+
+          // Add new member_of edge to splinter
+          state.graph.addEdge({
+            id: `member_of_${member.id}_${newFactionId}`,
+            source: member.id,
+            target: newFactionId,
+            type: 'member_of',
+            properties: { reputation: clamp01(member.reputation * repShare), joinedTick: tick },
+          });
+        }
+
+        // Copy relates_to edges from source to new faction (marked inherited)
+        const srcRelations = state.graph.getOutgoingEdges(effect.sourceFactionId, 'relates_to');
+        for (const rel of srcRelations) {
+          if (rel.target !== newFactionId) {
+            state.graph.addEdge({
+              id: `relates_to_${newFactionId}_${rel.target}_inherited`,
+              source: newFactionId,
+              target: rel.target,
+              type: 'relates_to',
+              properties: { ...rel.properties, inherited: true },
+            });
+          }
+        }
+
+        // Splinter starts resentful toward parent
+        state.graph.addEdge({
+          id: `relates_to_${newFactionId}_${effect.sourceFactionId}`,
+          source: newFactionId,
+          target: effect.sourceFactionId,
+          type: 'relates_to',
+          properties: { sentiment: FACTION_SPLINTER_INITIAL_SENTIMENT_TO_PARENT, strength: 0.8, basis: 'splinter' },
+        });
+
+        mutationSummary.touchedWorld = true;
+        mutationSummary.touchedStructure = true;
+        touchWorld(runtime);
+        touchStructure(runtime);
+
+        const fsSignificance = FACTION_MUTATION_CHRONICLE_SIGNIFICANCE.splinter;
+        const fsMessage = effect.narrativeHook ?? `${fsSrc.name} fractures. ${effect.newFactionName} breaks away.`;
+        const fsEvent: TickEvent = {
+          id: `${newFactionId}_chronicle`,
+          tick,
+          type: 'narrative',
+          message: fsMessage,
+          significance: fsSignificance,
+          actorId: actorAgentId,
+        };
+        nextTickEvents = [...nextTickEvents, fsEvent];
+        nextRecentEvents = appendRecentEvent(nextRecentEvents, fsEvent);
+
+        emitTrace({
+          tick, category: 'faction_splintered', agentId: actorAgentId,
+          sourceFactionId: effect.sourceFactionId, newFactionId,
+          memberCount: selectedMembers.length,
+          selectionKind: effect.memberSelection.kind,
+          reputationShare: repShare,
+          success: true,
+          summary: `faction_splinter[${i}]: ${effect.sourceFactionId} → ${newFactionId} (${selectedMembers.length} members, sel=${effect.memberSelection.kind})`,
+        });
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'faction_splinter',
+          effectDetail: { sourceFactionId: effect.sourceFactionId, newFactionId, memberCount: selectedMembers.length },
+          success: true,
+          summary: `faction_splinter[${i}]: ${selectedMembers.length} members broke to ${newFactionId}`,
+        });
+        break;
+      }
+
+      case 'faction_absorb': {
+        const faAbsorbing = state.graph.getNode(effect.absorbingFactionId);
+        const faAbsorbed = state.graph.getNode(effect.absorbedFactionId);
+        if (!faAbsorbing || !faAbsorbed
+          || (faAbsorbing.properties?.actorStatus as string | undefined) === 'dissolved'
+          || (faAbsorbed.properties?.actorStatus as string | undefined) === 'dissolved') {
+          emitTrace({
+            tick, category: 'faction_absorbed', agentId: actorAgentId,
+            absorbingFactionId: effect.absorbingFactionId, absorbedFactionId: effect.absorbedFactionId,
+            migratedMemberCount: 0, reputationMergeStrategy: '',
+            success: false, failReason: 'faction_missing_or_dissolved',
+            summary: `faction_absorb[${i}] skipped: faction missing or dissolved`,
+          });
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'faction_absorb',
+            effectDetail: { absorbingFactionId: effect.absorbingFactionId, absorbedFactionId: effect.absorbedFactionId },
+            success: false, failReason: 'faction_missing_or_dissolved',
+            summary: `faction_absorb[${i}] skipped: faction missing or dissolved`,
+          });
+          break;
+        }
+
+        const mergeStrategy = effect.reputationMerge ?? 'weighted_avg';
+        const absorbedMembers = state.graph.getIncomingEdges(effect.absorbedFactionId, 'member_of');
+        let migratedCount = 0;
+
+        for (const memberEdge of absorbedMembers) {
+          const absorbedRep = (memberEdge.properties?.reputation as number | undefined) ?? DEFAULT_FACTION_REPUTATION;
+          // Check if already member of absorbing faction
+          const existingEdge = state.graph.getOutgoingEdges(memberEdge.source, 'member_of')
+            .find(e => e.target === effect.absorbingFactionId);
+
+          const newRep = existingEdge
+            ? mergeReputation(
+                (existingEdge.properties?.reputation as number | undefined) ?? DEFAULT_FACTION_REPUTATION,
+                absorbedRep,
+                mergeStrategy,
+              )
+            : absorbedRep;
+
+          state.graph.removeEdge(memberEdge.id);
+          if (existingEdge) {
+            existingEdge.properties.reputation = newRep;
+          } else {
+            state.graph.addEdge({
+              id: `member_of_${memberEdge.source}_${effect.absorbingFactionId}`,
+              source: memberEdge.source,
+              target: effect.absorbingFactionId,
+              type: 'member_of',
+              properties: { reputation: newRep, joinedTick: tick },
+            });
+          }
+          migratedCount++;
+        }
+
+        // Rewrite relates_to edges pointing at absorbed faction → absorbing
+        const allRelatesTo = state.graph.getIncomingEdges(effect.absorbedFactionId, 'relates_to');
+        for (const rel of allRelatesTo) {
+          if (rel.source !== effect.absorbingFactionId) {
+            state.graph.removeEdge(rel.id);
+            // Avoid self-loop: skip if source is absorbing faction
+            state.graph.addEdge({
+              id: `${rel.id}_rewritten`,
+              source: rel.source,
+              target: effect.absorbingFactionId,
+              type: 'relates_to',
+              properties: { ...rel.properties },
+            });
+          }
+        }
+
+        // Mark absorbed faction dissolved
+        faAbsorbed.properties.actorStatus = 'dissolved';
+        mutationSummary.touchedWorld = true;
+        mutationSummary.touchedStructure = true;
+        touchWorld(runtime);
+        touchStructure(runtime);
+
+        const faSignificance = FACTION_MUTATION_CHRONICLE_SIGNIFICANCE.absorb;
+        const faMessage = effect.narrativeHook ?? `${faAbsorbed.name} is absorbed into ${faAbsorbing.name}.`;
+        const faEvent: TickEvent = {
+          id: `faction_absorb_${encounterId}_${reaction.id}_${i}_${tick}`,
+          tick,
+          type: 'narrative',
+          message: faMessage,
+          significance: faSignificance,
+          actorId: actorAgentId,
+        };
+        nextTickEvents = [...nextTickEvents, faEvent];
+        nextRecentEvents = appendRecentEvent(nextRecentEvents, faEvent);
+
+        emitTrace({
+          tick, category: 'faction_absorbed', agentId: actorAgentId,
+          absorbingFactionId: effect.absorbingFactionId,
+          absorbedFactionId: effect.absorbedFactionId,
+          migratedMemberCount: migratedCount,
+          reputationMergeStrategy: mergeStrategy,
+          success: true,
+          summary: `faction_absorb[${i}]: ${effect.absorbedFactionId} → ${effect.absorbingFactionId} (${migratedCount} members, merge=${mergeStrategy})`,
+        });
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'faction_absorb',
+          effectDetail: { absorbingFactionId: effect.absorbingFactionId, absorbedFactionId: effect.absorbedFactionId, migratedMemberCount: migratedCount },
+          success: true,
+          summary: `faction_absorb[${i}]: ${migratedCount} members migrated`,
+        });
+        break;
+      }
+
+      case 'faction_dissolve': {
+        const fdNode = state.graph.getNode(effect.factionId);
+        if (!fdNode) {
+          emitTrace({
+            tick, category: 'faction_dissolved', agentId: actorAgentId,
+            factionId: effect.factionId, releasedMemberCount: 0, memberFallback: '',
+            success: false, failReason: 'faction_missing',
+            summary: `faction_dissolve[${i}] skipped: faction ${effect.factionId} not found`,
+          });
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'faction_dissolve', effectDetail: { factionId: effect.factionId },
+            success: false, failReason: 'faction_missing',
+            summary: `faction_dissolve[${i}] skipped: faction not found`,
+          });
+          break;
+        }
+
+        const fdFallback = effect.memberFallback ?? 'independent';
+        const fdMembers = state.graph.getIncomingEdges(effect.factionId, 'member_of');
+
+        // Find top rival for drift_to_rival fallback (skip dissolved target factions)
+        let fdRivalId: string | undefined;
+        if (fdFallback === 'drift_to_rival') {
+          const fdRelations = state.graph.getOutgoingEdges(effect.factionId, 'relates_to')
+            .filter(e => (state.graph.getNode(e.target)?.properties?.actorStatus as string | undefined) !== 'dissolved')
+            .sort((a, b) => ((b.properties?.strength as number | undefined) ?? 0) - ((a.properties?.strength as number | undefined) ?? 0));
+          fdRivalId = fdRelations[0]?.target;
+        }
+
+        for (const memberEdge of fdMembers) {
+          state.graph.removeEdge(memberEdge.id);
+          if (fdFallback === 'drift_to_rival' && fdRivalId) {
+            state.graph.addEdge({
+              id: `member_of_${memberEdge.source}_${fdRivalId}_drift`,
+              source: memberEdge.source,
+              target: fdRivalId,
+              type: 'member_of',
+              properties: { reputation: FACTION_DRIFT_TO_RIVAL_INITIAL_REPUTATION, joinedTick: tick, basis: 'drift' },
+            });
+          }
+        }
+
+        fdNode.properties.actorStatus = 'dissolved';
+        mutationSummary.touchedWorld = true;
+        mutationSummary.touchedStructure = true;
+        touchWorld(runtime);
+        touchStructure(runtime);
+
+        const fdSignificance = FACTION_MUTATION_CHRONICLE_SIGNIFICANCE.dissolve;
+        const fdMessage = effect.narrativeHook ?? `${fdNode.name} is no more.`;
+        const fdEvent: TickEvent = {
+          id: `faction_dissolve_${encounterId}_${reaction.id}_${i}_${tick}`,
+          tick,
+          type: 'narrative',
+          message: fdMessage,
+          significance: fdSignificance,
+          actorId: actorAgentId,
+        };
+        nextTickEvents = [...nextTickEvents, fdEvent];
+        nextRecentEvents = appendRecentEvent(nextRecentEvents, fdEvent);
+
+        emitTrace({
+          tick, category: 'faction_dissolved', agentId: actorAgentId,
+          factionId: effect.factionId, releasedMemberCount: fdMembers.length,
+          memberFallback: fdFallback,
+          success: true,
+          summary: `faction_dissolve[${i}]: ${effect.factionId} dissolved (${fdMembers.length} members released, fallback=${fdFallback})`,
+        });
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'faction_dissolve',
+          effectDetail: { factionId: effect.factionId, releasedMemberCount: fdMembers.length, memberFallback: fdFallback },
+          success: true,
+          summary: `faction_dissolve[${i}]: ${fdMembers.length} members released`,
+        });
+        break;
+      }
+
+      case 'faction_declare_war': {
+        const fdwA = state.graph.getNode(effect.factionA);
+        const fdwB = state.graph.getNode(effect.factionB);
+        if (!fdwA || !fdwB) {
+          emitTrace({
+            tick, category: 'faction_war_declared', agentId: actorAgentId,
+            factionA: effect.factionA, factionB: effect.factionB, previousSentiment: 0,
+            success: false, failReason: 'faction_missing',
+            summary: `faction_declare_war[${i}] skipped: faction missing`,
+          });
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'faction_declare_war',
+            effectDetail: { factionA: effect.factionA, factionB: effect.factionB },
+            success: false, failReason: 'faction_missing',
+            summary: `faction_declare_war[${i}] skipped: faction missing`,
+          });
+          break;
+        }
+
+        const upsertWarRelation = (src: string, dst: string) => {
+          const existing = state.graph.getOutgoingEdges(src, 'relates_to').find(e => e.target === dst);
+          const prevSent = existing ? (existing.properties?.sentiment as number | undefined) ?? 0 : 0;
+          if (existing) {
+            existing.properties.sentiment = FACTION_WAR_SENTIMENT_FLOOR;
+            existing.properties.strength = 1.0;
+            existing.properties.basis = 'war';
+          } else {
+            state.graph.addEdge({
+              id: `relates_to_${src}_${dst}_war`,
+              source: src,
+              target: dst,
+              type: 'relates_to',
+              properties: { sentiment: FACTION_WAR_SENTIMENT_FLOOR, strength: 1.0, basis: 'war' },
+            });
+          }
+          return prevSent;
+        };
+
+        const fdwPrevSent = upsertWarRelation(effect.factionA, effect.factionB);
+        upsertWarRelation(effect.factionB, effect.factionA);
+
+        mutationSummary.touchedWorld = true;
+        mutationSummary.touchedStructure = true;
+        touchWorld(runtime);
+        touchStructure(runtime);
+
+        const fdwSignificance = FACTION_MUTATION_CHRONICLE_SIGNIFICANCE.declare_war;
+        const fdwMessage = effect.narrativeHook ?? `${fdwA.name} and ${fdwB.name} are now at war.`;
+        const fdwEvent: TickEvent = {
+          id: `faction_war_${encounterId}_${reaction.id}_${i}_${tick}`,
+          tick,
+          type: 'narrative',
+          message: fdwMessage,
+          significance: fdwSignificance,
+          actorId: actorAgentId,
+        };
+        nextTickEvents = [...nextTickEvents, fdwEvent];
+        nextRecentEvents = appendRecentEvent(nextRecentEvents, fdwEvent);
+
+        emitTrace({
+          tick, category: 'faction_war_declared', agentId: actorAgentId,
+          factionA: effect.factionA, factionB: effect.factionB,
+          previousSentiment: fdwPrevSent,
+          success: true,
+          summary: `faction_declare_war[${i}]: ${effect.factionA} ⚔ ${effect.factionB}`,
+        });
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'faction_declare_war',
+          effectDetail: { factionA: effect.factionA, factionB: effect.factionB },
+          success: true,
+          summary: `faction_declare_war[${i}]: war between ${effect.factionA} and ${effect.factionB}`,
+        });
+        break;
+      }
+
+      case 'faction_force_peace': {
+        const ffpA = state.graph.getNode(effect.factionA);
+        const ffpB = state.graph.getNode(effect.factionB);
+        if (!ffpA || !ffpB) {
+          emitTrace({
+            tick, category: 'faction_peace_forced', agentId: actorAgentId,
+            factionA: effect.factionA, factionB: effect.factionB,
+            previousSentiment: 0, newSentiment: 0,
+            success: false, failReason: 'faction_missing',
+            summary: `faction_force_peace[${i}] skipped: faction missing`,
+          });
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'faction_force_peace',
+            effectDetail: { factionA: effect.factionA, factionB: effect.factionB },
+            success: false, failReason: 'faction_missing',
+            summary: `faction_force_peace[${i}] skipped: faction missing`,
+          });
+          break;
+        }
+
+        const sentBoost = effect.sentimentBoost ?? FACTION_PEACE_DEFAULT_SENTIMENT_BOOST;
+        const upsertPeaceRelation = (src: string, dst: string) => {
+          const existing = state.graph.getOutgoingEdges(src, 'relates_to').find(e => e.target === dst);
+          const prevSent = existing ? (existing.properties?.sentiment as number | undefined) ?? 0 : 0;
+          const newSent = Math.max(FACTION_PEACE_SENTIMENT_FLOOR, prevSent + sentBoost);
+          if (existing) {
+            existing.properties.sentiment = newSent;
+            existing.properties.basis = 'treaty';
+          } else {
+            state.graph.addEdge({
+              id: `relates_to_${src}_${dst}_peace`,
+              source: src,
+              target: dst,
+              type: 'relates_to',
+              properties: { sentiment: newSent, strength: 0.6, basis: 'treaty' },
+            });
+          }
+          return { prevSent, newSent };
+        };
+
+        const { prevSent: ffpPrevSent, newSent: ffpNewSent } = upsertPeaceRelation(effect.factionA, effect.factionB);
+        upsertPeaceRelation(effect.factionB, effect.factionA);
+
+        mutationSummary.touchedWorld = true;
+        mutationSummary.touchedStructure = true;
+        touchWorld(runtime);
+        touchStructure(runtime);
+
+        const ffpSignificance = FACTION_MUTATION_CHRONICLE_SIGNIFICANCE.force_peace;
+        const ffpMessage = effect.narrativeHook ?? `${ffpA.name} and ${ffpB.name} have made peace.`;
+        const ffpEvent: TickEvent = {
+          id: `faction_peace_${encounterId}_${reaction.id}_${i}_${tick}`,
+          tick,
+          type: 'narrative',
+          message: ffpMessage,
+          significance: ffpSignificance,
+          actorId: actorAgentId,
+        };
+        nextTickEvents = [...nextTickEvents, ffpEvent];
+        nextRecentEvents = appendRecentEvent(nextRecentEvents, ffpEvent);
+
+        emitTrace({
+          tick, category: 'faction_peace_forced', agentId: actorAgentId,
+          factionA: effect.factionA, factionB: effect.factionB,
+          previousSentiment: ffpPrevSent, newSentiment: ffpNewSent,
+          success: true,
+          summary: `faction_force_peace[${i}]: ${effect.factionA} ↔ ${effect.factionB} sentiment ${ffpPrevSent.toFixed(2)} → ${ffpNewSent.toFixed(2)}`,
+        });
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'faction_force_peace',
+          effectDetail: { factionA: effect.factionA, factionB: effect.factionB, previousSentiment: ffpPrevSent, newSentiment: ffpNewSent },
+          success: true,
+          summary: `faction_force_peace[${i}]: peace between ${effect.factionA} and ${effect.factionB}`,
+        });
+        break;
+      }
     }
   }
 
@@ -901,6 +1708,7 @@ export function applyEncounterAftermathReaction(
     intelligenceRecords: nextIntelligenceRecords.length > 0
       ? [...(state.intelligenceRecords ?? []), ...nextIntelligenceRecords]
       : state.intelligenceRecords,
+    emittedOmens: nextEmittedOmens !== undefined ? nextEmittedOmens : state.emittedOmens,
   };
 
   return { state: nextState, mutationSummary };

@@ -134,3 +134,53 @@ export const MANDATE_BASE_WEIGHT = 1;
  * Extra multiplier for simulation_achievable mandate type.
  */
 export const MANDATE_ACHIEVABLE_MULTIPLIER = 2;
+
+// ─── Encounter World-Shaping Constants (THR-115) ────────────────────────────
+
+/** How strongly an active emitted omen biases encounter scoring when its category synergizes. */
+export const EMITTED_OMEN_SCORE_WEIGHT = 0.35;
+
+/** Fallback duration in ticks for emit_omen when author omits durationTicks. */
+export const EMITTED_OMEN_DEFAULT_DURATION_TICKS = 15;
+
+/** Hard cap on simultaneous emitted omens; oldest is evicted when exceeded. */
+export const EMITTED_OMEN_MAX_ACTIVE = 20;
+
+/** Default hex radius for scope.kind='local' when radius is not specified. */
+export const EMITTED_OMEN_LOCAL_DEFAULT_RADIUS = 2;
+
+/** Chronicle significance for a spawned artifact at common tier. */
+export const SPAWN_ARTIFACT_DEFAULT_SIGNIFICANCE_COMMON = 0.55;
+
+/** Chronicle significance for a spawned artifact at shaping tier. */
+export const SPAWN_ARTIFACT_DEFAULT_SIGNIFICANCE_SHAPING = 0.7;
+
+/** Chronicle significance for a spawned artifact at legendary tier. */
+export const SPAWN_ARTIFACT_DEFAULT_SIGNIFICANCE_LEGENDARY = 0.9;
+
+/** Fraction of parent reputation transferred to new splinter faction members. */
+export const FACTION_SPLINTER_DEFAULT_REPUTATION_SHARE = 0.8;
+
+/** Initial relates_to sentiment between splinter faction and its parent (negative = resentful). */
+export const FACTION_SPLINTER_INITIAL_SENTIMENT_TO_PARENT = -0.3;
+
+/** Default sentiment boost for faction_force_peace when sentimentBoost is omitted. */
+export const FACTION_PEACE_DEFAULT_SENTIMENT_BOOST = 0.1;
+
+/** Peace cannot set sentiment below this floor. */
+export const FACTION_PEACE_SENTIMENT_FLOOR = 0.2;
+
+/** Declare-war clamps sentiment to this ceiling. */
+export const FACTION_WAR_SENTIMENT_FLOOR = -0.8;
+
+/** Starting reputation when memberFallback='drift_to_rival' in faction_dissolve. */
+export const FACTION_DRIFT_TO_RIVAL_INITIAL_REPUTATION = 0.1;
+
+/** Chronicle significance for faction topology effects. */
+export const FACTION_MUTATION_CHRONICLE_SIGNIFICANCE = {
+  declare_war: 0.85,
+  force_peace: 0.75,
+  splinter: 0.8,
+  absorb: 0.7,
+  dissolve: 0.7,
+} as const;
