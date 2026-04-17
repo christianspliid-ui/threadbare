@@ -1,12 +1,12 @@
 # Project Status
 > Updated 2026-04-18.
 ## Current Focus
-**Encounter Format Migration — Phase 0 + Phase 1.** 115 legacy EncounterTemplates migrating to UnifiedActionTemplate. Phase 0 (THR-110–118) establishes engine prerequisites. **THR-110 + THR-111 + THR-90 + THR-89 + THR-112 + THR-113 + THR-114 + THR-117 + THR-115 + THR-141 + THR-116 shipped.** THR-118 next. Design doc: `Docs/plans/2026-04-16-encounter-template-migration.md`.
+**Encounter Format Migration — Phase 0 complete, Phase 1 next.** 115 legacy EncounterTemplates migrating to UnifiedActionTemplate. Phase 0 (THR-110–118) engine prerequisites all shipped. Design doc: `Docs/plans/2026-04-16-encounter-template-migration.md`.
 
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
 - **v1.1 Optimization:** Shipped — Phases 19-22 (determinism, wiring, performance, hygiene)
-- **Encounter Format Migration (Now):** ✅ THR-110/111 shipped. ✅ THR-90 shipped. ✅ THR-89 shipped (Phase 1 pilot — 15 TG templates). ✅ THR-112 shipped (hidden mark reveal loop). ✅ THR-113 shipped (intelligence consumption pathway). ✅ THR-114 shipped (multi-target aftermath effects). ✅ THR-117 shipped (condition_attachment aftermath effect, wound promotion). ✅ THR-115 shipped (world-shaping aftermath: artifacts, omens, faction topology). ✅ THR-141 shipped (agent intelligence panel UI — player-visible record inspection). ✅ THR-116 shipped (causation edges + conditional aftermath). THR-118 next.
+- **Encounter Format Migration (Now):** ✅ Phase 0 complete (THR-110/111/90/89/112/113/114/117/115/141/116/118 all shipped). Phase 1 content migration continues with next guild faction.
 - **Content Architecture (Now):** Shell/primitive work — stateful shells (Phase 2), progress/service shells (Phase 3), starter libraries (Phase 4), governance (Phase 5). ✅ THR-86 shipped (routine template structural variety). THR-88 next.
 - **Attention Tier Model (Now):** UI integration ongoing.
 - **Social Systems Expansion (Next):** THR-28/27 shipped. THR-51/29/30/78 gated behind Phase 0 (THR-112/114/115).
@@ -15,9 +15,10 @@
 - **Rarity Model (Next):** Three deferred Phase D items.
 - **Procedural Hex Vignettes (Next):** Phases 2-5 queued.
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
-- **Next up:** THR-118 (Phase 0 remaining), then Phase 1 continues with next guild faction.
+- **Next up:** Phase 1 content migration — next guild faction encounter templates.
 
 ## Recent Completions (2026-04-18)
+- **THR-118 — Wiring guide correction pass:** 6 corrections to `Docs/plans/2026-04-16-systemic-wiring-guide.md`: `How to verify` line added to Capability 1; Capability 5 restructured to clearly separate engine-internal helpers from the 18 authored aftermath effect kinds; `40 effect types` conflation fixed in Part 8; Capabilities 8/9 reordered; trace category reference table added to Part 5; downstream skill review confirmed no inherited overstatements. Phase 0 now complete.
 - **THR-116 — Causation edges + conditional aftermath effects:** `when?: EffectPredicate` gate on every `EncounterAftermathReactionEffect`. `buildPredicateContext`/`evaluatePredicate` in `effectPredicates.ts`. Four new thread-mutation effect kinds: `thread_strengthen/weaken/break/branch` with strength clamping [0,1]. `caused_by` EdgeType + schema entry (v1 creation deferred until event nodes exist). `{cause:label}`/`{cause:ticksAgo}` prose enrichment placeholders. `threadStrength` on `ThreadedNodeBase` + animated strength bar in `ThreadsPanel`. 6 new trace categories. 10 contract tests. Codex review: removed redundant cast, added thread_branch try/catch, annotated alone/outnumbered stubs, caused_by in EDGE_SCHEMA. Commit: `9429324a`.
 - **THR-86 — Routine template structural variety:** `ROUTINE_TEMPLATES` converted from flat `string[]` to `ShapedTemplate[]` (5 shapes: svo/aftermath/inverted/compound/fragment). All 23 event types have ≥4 templates and ≥3 distinct shapes. Shape rotation system in `generateRoutineProse` prevents consecutive identical shapes with weighted pick + SHAPE_REROLL_LIMIT=3. `enrichProse()` integration path for `{name}/{location}/{?has_faction}` placeholders with safe no-graph fallback. `applyFallbacks()` resolves all pronouns + strips residual `{foo}` tokens. `NarrativeGenerationTrace` extended with `shape`/`placeholdersResolved`/`fallbackReason`. 9 new tests in `narrative-shape-variety.test.ts`.
 
