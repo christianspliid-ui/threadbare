@@ -858,7 +858,7 @@ export interface EncounterAftermathEffectTrace extends TraceBase {
   effectKind:
     | 'reputation_score' | 'reputation_tally' | 'clearance_gate_tag'
     | 'recent_event' | 'encounter_seed' | 'hidden_mark' | 'intelligence'
-    | 'reputation_set' | 'apply_condition' | 'remove_condition';
+    | 'reputation_set' | 'apply_condition' | 'remove_condition' | 'condition_attachment';
   /** Kind-specific payload for inspection */
   effectDetail: Readonly<Record<string, unknown>>;
   success: boolean;

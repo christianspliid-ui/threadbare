@@ -16,6 +16,8 @@ Premise → Draft (Opus) → Editorial+Revised (Opus) → Systems+Final (Sonnet)
 
 **Before running the pipeline, read `Docs/plans/2026-04-16-systemic-wiring-guide.md`.** This guide explains the seven engine capabilities that should shape what you decide to write: enrichment placeholders, encounter seeding, hidden marks, reputation flow, graph operations, intelligence/content grants, and divine intervention choices. If you don't know what the engine can do, you'll write hardcoded fiction instead of game content. The guide includes a worked example (Pyra's festival) and a wiring checklist to audit against.
 
+**Wounds and conditions in aftermath (THR-117):** To apply a physical or mental condition (wound, exhaustion, disease, blessing, …) in a `UnifiedActionTemplate` aftermath reaction, use the `condition_attachment` effect kind — not a legacy `content_grant` (which is not an aftermath effect kind) and not `appliesWound` (which is `EncounterTemplate`-only). Example: `{ kind: 'condition_attachment', templateId: 'trait.condition.wounded' }`. Applying the wound condition automatically triggers mid-encounter tier promotion from `background → shaping` (so the combat failure becomes visible in the chronicle) and feeds into the overflow pipeline (third wound → incapacitation check). You do not need to wire the overflow — it fires automatically. See the "Conditions and wounds" subsection of `Docs/plans/2026-04-16-systemic-wiring-guide.md` for all five subcategories and relevant constants.
+
 **Exemplar encounters to study:** `rival-shrine-betrayal.ts` (10/10 wiring), `flawed-steel.ts` (9/10 wiring). Read these before drafting to understand what championship-level systemic connectivity looks like.
 
 ## Game Design Direction Enforcement

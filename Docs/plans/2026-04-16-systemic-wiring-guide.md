@@ -482,7 +482,7 @@ For implementation agents translating authored designs into template code.
 | `reputationDelta` | `number` | Direct reputation score change |
 | `tierPromotionEligible` | `boolean` | Allows capability tier promotion on this outcome |
 | `rewardPool` | `RewardPoolRecipe` | Attachment generation |
-| `appliesWound` | `boolean` | Explicit wound trigger |
+| `appliesWound` | `boolean` | **Legacy only (`EncounterTemplate` only).** Triggers mid-encounter tier promotion on wound. Not available on `UnifiedActionTemplate` — use the `condition_attachment` aftermath effect instead. |
 
 ### Aftermath Reaction Effect Types
 
@@ -494,15 +494,35 @@ For implementation agents translating authored designs into template code.
 | `encounter_seed` | Plant future encounter | `templateId` or `encounterFamily`, `delayTicks`, `seedLabel` |
 | `hidden_mark` | Track discoverable secret on an agent | `category`, `severity`, `label`, `revealFamilies`, `targetAgentId?` |
 | `intelligence` | Grant knowledge to an agent | `category`, `label`, `detail`, `targetEntityId`, `reliability`, `targetAgentId?` |
-| `apply_condition` | Attach a trait condition for N ticks | `conditionTraitId`, `durationTicks?`, `intensity?`, `targetAgentId?`, `targetFactionId?`, `targetSublocationId?` |
+| `apply_condition` | Attach a trait condition for N ticks (full target resolution: agent, faction, sublocation) | `conditionTraitId`, `durationTicks?`, `intensity?`, `targetAgentId?`, `targetFactionId?`, `targetSublocationId?` |
 | `remove_condition` | Remove a trait condition (oldest or all) | `conditionTraitId`, `removeAll?`, `targetAgentId?`, `targetFactionId?`, `targetSublocationId?` |
+| `condition_attachment` | Apply a condition trait by template ID; auto-looks up default duration; **triggers mid-encounter tier promotion when the template is the `wounded` condition** | `templateId` (e.g. `'trait.condition.wounded'`), `targetAgentId?`, `durationOverride?`, `stackCount?` |
 | `clearance_gate_tag` | Advance gate progression | `tag` |
 | `recent_event` | Emit narrative event (optionally fan out to witnesses) | `message`, `significance`, `witnessAgentIds?[]` |
-| `content_grant` | Auto-fire attachment template | `templateId` |
 
 **Multi-target note (THR-114):** Effects that accept `targetAgentId` / `targetFactionId` / `targetSublocationId` use priority resolution: explicit agent > explicit faction > explicit sublocation > action actor (fallback). Use `role:` prefix for participant substitution (e.g. `targetAgentId: 'role:victim'`). See `src/data/encounters/examples/` for gold-standard patterns: `example.betrayal_multi_target.ts` (hidden_mark + apply_condition on victim), `example.council_disowns.ts` (reputation_set on faction), `example.shrine_consecration.ts` (apply_condition + remove_condition on sublocation).
 
 **Use `reputation_set` only when the fiction demands "it is now literally X"**, not for ordinary outcome nudges — those belong to `reputation_score` with a delta.
+
+#### Conditions and wounds (THR-117)
+
+Wounds are **not a separate subsystem** — they are a condition subcategory, fully wired into the same slot, overflow, and attachment pipeline as diseases, curses, blessings, and bestowed effects.
+
+**Five condition subcategories:** `wound` (cap 3), `disease` (cap 2), `curse` (cap 2), `blessing` (cap 2), `bestowed` (cap 2). Slot caps are in `src/data/attachment-slot-constants.ts:CONDITION_CAPS`.
+
+**Authoring surface for UnifiedActionTemplate aftermath:** Use `condition_attachment`. Example:
+
+```typescript
+{ kind: 'condition_attachment', templateId: 'trait.condition.wounded' }
+```
+
+The executor (a) resolves `templateId` from `condition-trait-content`, (b) looks up the default duration from `CONDITION_DURATIONS`, (c) creates a `has_trait` edge on the target agent, (d) emits `encounter_aftermath_effect` trace, and (e) **returns a `woundApplied` signal** when the condition is the wounded trait — which is fed into `checkMidEncounterPromotion` to promote the encounter from `background → shaping` tier, making the story beat visible in the chronicle.
+
+**Overflow is automatic:** When a third wound is applied, `resolveWoundOverflow` fires automatically on the next tick (phase 2a.85), rolling against `WOUND_INCAPACITATION_CHECK_DIFFICULTY = 0.4`. Failure produces a `scar` consequence trait. You do not need to author this.
+
+**Key constants:** `CONDITION_WOUNDED_DURATION = 24` (2 game days), `WOUND_INCAPACITATION_CHECK_DIFFICULTY = 0.4`, `CONDITION_ATTACHMENT_DEFAULT_STACK_COUNT = 1`.
+
+**Verification:** `src/engine/__tests__/conditionOverflow.test.ts` (overflow pipeline), `src/engine/__tests__/conditionAttachment.test.ts` (aftermath effect).
 
 ---
 
