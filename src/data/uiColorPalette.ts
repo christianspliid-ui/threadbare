@@ -80,6 +80,11 @@ export const TRACE_CATEGORY_COLORS: Record<string, string> = {
   faction_dissolved: '#374151',     // dark gray (dissolution)
   faction_war_declared: '#dc2626',  // bright red (conflict)
   faction_peace_forced: '#22c55e',  // green (resolution)
+  // THR-136: authored aftermath inspectors
+  hidden_mark_placed: '#f97316',    // orange-500 (concealment/mark)
+  hidden_mark_revealed: '#fbbf24',  // amber-400 (revelation)
+  encounter_seed_planted: '#2dd4bf', // teal-400 (planted future)
+  encounter_seed_triggered: '#0d9488', // teal-600 (fired/consumed)
 };
 
 // ============================================================================

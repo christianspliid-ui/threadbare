@@ -2985,6 +2985,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             strategicState={gameState.strategicState}
             omenState={gameState.omenState}
             doomIdentityMatrix={gameState.doomIdentityMatrix}
+            hiddenMarks={gameState.hiddenMarks}
+            pendingEncounterSeeds={gameState.pendingEncounterSeeds}
           />
         ) : (
           <div className="flex flex-shrink-0" style={{ alignItems: 'stretch' }}>

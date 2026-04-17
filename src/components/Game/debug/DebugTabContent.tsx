@@ -12,6 +12,7 @@ import type { PendingVignette } from '../../../types/journeyEngine';
 import type { StrategicRuntimeState, BehaviorFamily } from '../../../types/strategicAction';
 import type { OmenState } from '../../../types/omen';
 import type { DoomIdentityMatrix } from '../../../types/doomIdentity';
+import type { HiddenMark, PendingEncounterSeed } from '../../../types/unifiedAction';
 import {
   BEHAVIOR_FAMILY_PRESENTATION,
   getBehaviorFamilyPresentation,
@@ -31,14 +32,17 @@ import { ArmiesTabContent } from './ArmiesTabContent';
 import { FactionDebugContent } from './FactionDebugContent';
 import { SphereStateTabContent } from './SphereStateTabContent';
 import { CommandTab } from './CommandTab';
+import { HiddenMarksTab } from './HiddenMarksTab';
+import { EncounterSeedsTab } from './EncounterSeedsTab';
 import { EMPTY_STATE_STYLE } from './debugPanelStyles';
 
-export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens';
+export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens';
 
 export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'feed', label: 'Feed' }, { id: 'agent-follow', label: 'Agent' },
   { id: 'tick-inspector', label: 'Tick' }, { id: 'social', label: 'Social' },
-  { id: 'encounters', label: 'Encounters' }, { id: 'journey', label: 'Journey' },
+  { id: 'encounters', label: 'Encounters' }, { id: 'encounter-seeds', label: 'Seeds' }, { id: 'hidden-marks', label: 'Marks' },
+  { id: 'journey', label: 'Journey' },
   { id: 'webgl', label: 'WebGL' }, { id: 'factions', label: 'Factions' },
   { id: 'spheres', label: 'Sphere State' }, { id: 'revelation-log', label: 'Revelations' },
   { id: 'knowledge-gaps', label: 'Knowledge' }, { id: 'armies', label: 'Armies' },
@@ -77,6 +81,10 @@ export interface DebugTabContentProps {
   omenState?: OmenState;
   /** Doom identity matrix for milestone display in omens tab (THR-21). */
   doomIdentityMatrix?: DoomIdentityMatrix | null;
+  /** Hidden marks on agents — inspected in the Marks tab (THR-136). */
+  hiddenMarks?: readonly HiddenMark[];
+  /** Pending encounter seeds — inspected in the Seeds tab (THR-136). */
+  pendingEncounterSeeds?: readonly PendingEncounterSeed[];
 }
 
 export function DebugTabContent({
@@ -87,6 +95,7 @@ export function DebugTabContent({
   getWebGLDiagnostics, getZoomLevel, showOrganicShore, onToggleOrganicShore,
   encounterNotifications, pendingVignettes, seed, sphereAggregate, agentKnowledge,
   retinueAgents, strategicState, omenState, doomIdentityMatrix,
+  hiddenMarks, pendingEncounterSeeds,
 }: DebugTabContentProps) {
   if (viewMode === 'omens') return <OmenDebugTab omenState={omenState} currentTick={currentTick} doomIdentityMatrix={doomIdentityMatrix} />;
   if (viewMode === 'journey') {
@@ -99,6 +108,12 @@ export function DebugTabContent({
   }
   if (viewMode === 'encounters') {
     return <EncounterCacheView cacheEntries={cacheEntries ?? []} encounterProgress={encounterProgress ?? []} currentTick={currentTick} followAgentId={effectiveAgentId} onZoomToLocation={onZoomToLocation} graph={graph} seed={seed != null ? String(seed) : undefined} />;
+  }
+  if (viewMode === 'hidden-marks') {
+    return <HiddenMarksTab marks={hiddenMarks ?? []} currentTick={currentTick} focusedAgentId={effectiveAgentId} retinueAgents={retinueAgents} />;
+  }
+  if (viewMode === 'encounter-seeds') {
+    return <EncounterSeedsTab seeds={pendingEncounterSeeds ?? []} currentTick={currentTick} retinueAgents={retinueAgents} />;
   }
   if (viewMode === 'factions') return <FactionDebugContent graph={graph} onZoomToLocation={onZoomToLocation} />;
   if (viewMode === 'spheres') return <SphereStateTabContent aggregate={sphereAggregate} />;

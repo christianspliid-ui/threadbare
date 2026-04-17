@@ -14,6 +14,8 @@ import type { EncounterNotification } from '../../types/encounterVisibility';
 import type { PendingVignette } from '../../types/journeyEngine';
 import type { StrategicRuntimeState } from '../../types/strategicAction';
 import type { OmenState } from '../../types/omen';
+import type { DoomIdentityMatrix } from '../../types/doomIdentity';
+import type { HiddenMark, PendingEncounterSeed } from '../../types/unifiedAction';
 import { DebugTabContent, TABS, type ViewMode } from './debug/DebugTabContent';
 import {
   PANEL_STYLES, CONTAINER_STYLE, HEADER_STYLE, TAB_BAR_STYLE,
@@ -45,6 +47,11 @@ export interface DebugPanelProps {
   preferredViewNonce?: number;
   strategicState?: StrategicRuntimeState;
   omenState?: OmenState;
+  doomIdentityMatrix?: DoomIdentityMatrix | null;
+  /** Hidden marks for the Marks inspector tab (THR-136). */
+  hiddenMarks?: readonly HiddenMark[];
+  /** Pending encounter seeds for the Seeds inspector tab (THR-136). */
+  pendingEncounterSeeds?: readonly PendingEncounterSeed[];
 }
 
 export const DebugPanel = React.memo(function DebugPanel({
@@ -53,7 +60,7 @@ export const DebugPanel = React.memo(function DebugPanel({
   onZoomToLocation, getWebGLDiagnostics, getZoomLevel, showOrganicShore = true,
   onToggleOrganicShore, encounterNotifications, pendingVignettes, seed,
   sphereAggregate, agentKnowledge, preferredViewMode, preferredViewNonce,
-  strategicState, omenState,
+  strategicState, omenState, doomIdentityMatrix, hiddenMarks, pendingEncounterSeeds,
 }: DebugPanelProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('feed');
   const [enabledCategories, setEnabledCategories] = useState<Set<TraceCategory>>(new Set(TRACE_CATEGORIES));
@@ -188,6 +195,9 @@ export const DebugPanel = React.memo(function DebugPanel({
           retinueAgents={retinueAgents}
           strategicState={strategicState}
           omenState={omenState}
+          doomIdentityMatrix={doomIdentityMatrix}
+          hiddenMarks={hiddenMarks}
+          pendingEncounterSeeds={pendingEncounterSeeds}
         />
       </div>
 
