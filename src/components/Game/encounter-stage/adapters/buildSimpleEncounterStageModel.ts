@@ -12,6 +12,7 @@ import type { EncounterTemplate } from '../../../../types/encounter';
 import type { EncounterNotification } from '../../../../types/encounterVisibility';
 import type { ActiveEncounterDisplay } from '../../encounterNotificationRuntime';
 import type { WorldGraph } from '../../../../engine/graph';
+import type { GameState } from '../../../../types/gameState';
 import type { ThreadTier } from '../types';
 import type {
   EncounterStageModel,
@@ -41,6 +42,9 @@ export interface BuildSimpleEncounterStageModelArgs {
   threadTier: ThreadTier;
   essence: number;
   tick: number;
+  /** GameState for intelligence consumption (THR-113). When omitted, `{intel:*}`
+   * placeholders silently strip. */
+  gameState?: GameState;
 }
 
 // ── Prose depth ──────────────────────────────────────────
@@ -169,7 +173,15 @@ export function buildSimpleEncounterStageModel(
   const currentIndex = Math.min(encounter.currentStepIndex, template.steps.length - 1);
   const currentStep = template.steps[currentIndex];
   const isEncounterFinished = encounter.status === 'completed' || encounter.status === 'abandoned';
-  const narrativeCtx = gatherNarrativeContext(graph, agentId);
+  const narrativeCtx = gatherNarrativeContext(
+    graph,
+    agentId,
+    undefined,
+    undefined,
+    null,
+    args.gameState,
+    args.tick,
+  );
   const depth = proseDepthForTier(threadTier);
 
   // ── Prose enrichment (ported from TieredEncounterModal) ──

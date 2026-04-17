@@ -16,6 +16,7 @@ import type { NarrativeContext } from '../proseEnrichment';
 import { WorldGraph } from '../graph';
 import type { MeetingChoiceRecord } from '../../types/meetingEncounter';
 import type { BeatOutcome } from '../../types/journeyEngine';
+import { clearTraces, enableTracing, disableTracing, getTraces } from '../traceBuffer';
 
 // ─── Test Helpers ─────────────────────────────────────────────────
 
@@ -343,6 +344,140 @@ describe('enrichProse', () => {
       pronouns: { they: 'they', them: 'them', their: 'their', s: '' },
     });
     expect(enrichProse('{name} walk{s} forward.', ctx)).toBe('Kira walk forward.');
+  });
+});
+
+// ─── Intelligence placeholders (THR-113) ──────────────────────────
+
+describe('enrichProse — intelligence placeholders', () => {
+  function ctxWithIntel(overrides?: Partial<NarrativeContext>): NarrativeContext {
+    return createMinimalContext({
+      agentId: 'agent_1',
+      intelligence: {
+        byCategory: {
+          shrine_location: {
+            recordId: 'intel_001',
+            agentId: 'agent_1',
+            category: 'shrine_location',
+            label: 'The Pale Court shrine',
+            detail: 'Hidden behind the falls; guardians change at dusk.',
+            reliability: 0.85,
+            acquiredTick: 10,
+            sourceEncounterId: 'encounter.quest',
+            targetRegion: 'vessen_uplands',
+          },
+          trade_route: {
+            recordId: 'intel_002',
+            agentId: 'agent_1',
+            category: 'trade_route',
+            label: 'Salt route schedule',
+            detail: 'Caravans depart at dawn from the northern gate.',
+            reliability: 0.5,
+            acquiredTick: 20,
+            sourceEncounterId: 'encounter.merchant',
+          },
+        },
+        flags: { shrine_location: true, trade_route: true },
+        all: [],
+      },
+      tick: 30,
+      ...overrides,
+    });
+  }
+
+  it('resolves {intel:<category>} to the record label', () => {
+    const ctx = ctxWithIntel();
+    expect(enrichProse('knowledge of {intel:shrine_location}', ctx)).toBe(
+      'knowledge of The Pale Court shrine',
+    );
+  });
+
+  it('resolves {intel:<category>.detail} to the record detail', () => {
+    const ctx = ctxWithIntel();
+    expect(enrichProse('{intel:shrine_location.detail}', ctx)).toBe(
+      'Hidden behind the falls; guardians change at dusk.',
+    );
+  });
+
+  it('resolves {intel:<category>.reliability} to the descriptor', () => {
+    const ctx = ctxWithIntel();
+    expect(enrichProse('intel is {intel:shrine_location.reliability}', ctx)).toBe(
+      'intel is reliable',
+    );
+    expect(enrichProse('intel is {intel:trade_route.reliability}', ctx)).toBe(
+      'intel is uncertain',
+    );
+  });
+
+  it('silently strips {intel:*} when no matching record', () => {
+    const ctx = ctxWithIntel();
+    // agent_network has no record — placeholder falls through to empty string
+    expect(enrichProse('contacts: {intel:agent_network}', ctx)).toBe('contacts: ');
+  });
+
+  it('silently strips {intel:*} when ctx.intelligence is undefined', () => {
+    const ctx = createMinimalContext(); // no intelligence field
+    expect(enrichProse('contacts: {intel:agent_network}', ctx)).toBe('contacts: ');
+    expect(enrichProse('detail: {intel:shrine_location.detail}', ctx)).toBe('detail: ');
+  });
+
+  it('evaluates {?knows_<category>} conditionals against the flags', () => {
+    const ctx = ctxWithIntel();
+    expect(enrichProse('{?knows_shrine_location}she remembers{/knows_shrine_location}', ctx))
+      .toBe('she remembers');
+    expect(enrichProse('{?knows_agent_network}contacts pulled{/knows_agent_network}', ctx))
+      .toBe('');
+  });
+
+  it('evaluates {?no_<category>} conditionals inversely', () => {
+    const ctx = ctxWithIntel();
+    expect(enrichProse('{?no_agent_network}she has no contacts{/no_agent_network}', ctx))
+      .toBe('she has no contacts');
+    expect(enrichProse('{?no_shrine_location}unknown shrines{/no_shrine_location}', ctx))
+      .toBe('');
+  });
+
+  it('emits one intelligence_referenced trace per unique recordId per call', () => {
+    clearTraces();
+    enableTracing();
+    try {
+      const ctx = ctxWithIntel();
+      // Template references the same record via 3 placeholders
+      enrichProse(
+        '{intel:shrine_location} / {intel:shrine_location.detail} / {intel:shrine_location.reliability}',
+        ctx,
+      );
+      const traces = getTraces().filter(
+        t => t.category === 'intelligence_referenced' && (t as any).recordId === 'intel_001',
+      );
+      expect(traces).toHaveLength(1);
+      expect((traces[0] as any).referencedBy).toBe('prose_enrichment');
+      expect((traces[0] as any).agentId).toBe('agent_1');
+    } finally {
+      clearTraces();
+      disableTracing();
+    }
+  });
+
+  it('does NOT emit a trace when the template contains no {intel:*} placeholder', () => {
+    clearTraces();
+    enableTracing();
+    try {
+      const ctx = ctxWithIntel();
+      // The context has records, but the prose has no intel tokens.
+      enrichProse('A quiet morning. Nothing stirred in the square.', ctx);
+      const traces = getTraces().filter(t => t.category === 'intelligence_referenced');
+      expect(traces).toHaveLength(0);
+    } finally {
+      clearTraces();
+      disableTracing();
+    }
+  });
+
+  it('strips unknown {intel:typo} tokens instead of leaking raw braces', () => {
+    const ctx = ctxWithIntel();
+    expect(enrichProse('weird {intel:not_a_category} thing', ctx)).toBe('weird  thing');
+    expect(enrichProse('also {intel:agent_network.bogus} here', ctx)).toBe('also  here');
   });
 });
 

@@ -197,7 +197,7 @@ Two aftermath reaction types give agents tangible knowledge or items:
 ```typescript
 {
   kind: 'intelligence',
-  category: 'shrine_location',              // shrine_location | agent_network | trade_route | etc.
+  category: 'shrine_location',              // shrine_location | agent_network | trade_route | military_position | political_secret | cultural_knowledge
   label: "Location of the Thornweave Shrine",
   detail: "Northeast of the salt flats, behind the fallen bridge",
   targetRegion?: 'eastern_reach',
@@ -211,7 +211,31 @@ Two aftermath reaction types give agents tangible knowledge or items:
 { kind: 'content_grant', templateId: 'patrons_backing' }
 ```
 
-**Why this changes what you write:** Intelligence creates asymmetric knowledge — one agent knows something others don't. This feeds into encounter scoring (agents with intelligence about a location may prioritize encounters there) and creates narrative tension. **Write scenes where knowledge is the prize, not just items.** A spy encounter that grants intelligence about a rival's plans is more systemically alive than one that grants a generic sword.
+#### Intelligence is consumed in three places (THR-113)
+
+Granting intelligence without consuming it is write-only theatre. The engine now closes the loop at three sites. As an author, you get this automatically — but knowing the sites tells you what prose can reference what.
+
+| Hook | Where it fires | What it does |
+|---|---|---|
+| `scoring_boost` | `scoreAndSelect` in `encounterScoring.ts` | Candidates whose `templateId` / `locationId` / `targetAgentId` / region match an actionable record gain `INTEL_SCORING_BONUS` (default `0.25`). `intelBonus` is exposed on `ScoredCandidate` for trace inspection. |
+| `prose_enrichment` | `enrichProse` in `proseEnrichment.ts` | `{intel:<category>}` placeholders resolve to the most recent record's label/detail/reliability. `{?knows_<category>}...{/knows_<category>}` and `{?no_<category>}...{/no_<category>}` conditionals gate whole sentences. |
+| `resolution_match` | `observeResolutionIntelligence` after `consumeMatchingMarks` in GameView | Passive observation: when a resolved action matches any of the acting agent's records, a trace fires. No game-state mutation — this is the "I noticed" hook for auditing what intel actually paid off. |
+
+Every consumption emits an `intelligence_referenced` trace with a `referencedBy` discriminator (`scoring_boost` | `prose_enrichment` | `resolution_match`), the `recordId`, and the consuming context. Dedup is per-call (scoring loop and enrichProse each only emit once per unique record).
+
+**Placeholder vocabulary for prose authors:**
+
+| Placeholder | Resolves to | Silent fallback when record missing |
+|---|---|---|
+| `{intel:shrine_location}` | Record's `label` | Whole placeholder stripped |
+| `{intel:shrine_location.detail}` | Record's `detail` | Stripped |
+| `{intel:shrine_location.reliability}` | `"reliable"` / `"uncertain"` / `"dubious"` (thresholds `0.7` / `0.4`; non-finite → `dubious`) | Stripped |
+| `{?knows_shrine_location}…{/knows_shrine_location}` | Enclosed text if the agent has any record in that category | Enclosed text removed |
+| `{?no_shrine_location}…{/no_shrine_location}` | Enclosed text if the agent has NO record in that category | Enclosed text kept |
+
+All six `IntelligenceCategory` values are supported: `shrine_location`, `agent_network`, `trade_route`, `military_position`, `political_secret`, `cultural_knowledge`.
+
+**Why this changes what you write:** Intelligence creates asymmetric knowledge — one agent knows something others don't. Now that knowledge *ranks their next encounter higher*, *shows up in their prose*, and *is noticed when they act on it*. Write reveal beats that call out the intel by category: "What {name} knew of {intel:trade_route} had cost them years." Write scenes where an uninformed agent fumbles: "`{?no_political_secret}{name} still did not know who had sent the steward.{/no_political_secret}`" A spy encounter that grants intelligence about a rival's plans is more systemically alive than one that grants a generic sword — and the rival's plans will now *influence what the agent does next*.
 
 ---
 
