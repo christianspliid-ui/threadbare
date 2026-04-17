@@ -1,12 +1,12 @@
 # Project Status
 > Updated 2026-04-17.
 ## Current Focus
-**Encounter Format Migration — Phase 0 + Phase 1.** 115 legacy EncounterTemplates migrating to UnifiedActionTemplate. Phase 0 (THR-110–118) establishes engine prerequisites. **THR-110 + THR-111 + THR-90 + THR-89 + THR-112 shipped.** THR-113–118 in Implementation Planning. Design doc: `Docs/plans/2026-04-16-encounter-template-migration.md`.
+**Encounter Format Migration — Phase 0 + Phase 1.** 115 legacy EncounterTemplates migrating to UnifiedActionTemplate. Phase 0 (THR-110–118) establishes engine prerequisites. **THR-110 + THR-111 + THR-90 + THR-89 + THR-112 + THR-113 shipped.** THR-114–118 in Implementation Planning. Design doc: `Docs/plans/2026-04-16-encounter-template-migration.md`.
 
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
 - **v1.1 Optimization:** Shipped — Phases 19-22 (determinism, wiring, performance, hygiene)
-- **Encounter Format Migration (Now):** ✅ THR-110/111 shipped. ✅ THR-90 shipped. ✅ THR-89 shipped (Phase 1 pilot — 15 TG templates). ✅ THR-112 shipped (hidden mark reveal loop). THR-113–118 next.
+- **Encounter Format Migration (Now):** ✅ THR-110/111 shipped. ✅ THR-90 shipped. ✅ THR-89 shipped (Phase 1 pilot — 15 TG templates). ✅ THR-112 shipped (hidden mark reveal loop). ✅ THR-113 shipped (intelligence consumption pathway). THR-114–118 next.
 - **Content Architecture (Now):** Shell/primitive work — stateful shells (Phase 2), progress/service shells (Phase 3), starter libraries (Phase 4), governance (Phase 5). THR-86/88 absorbed from archived Prose Content Quality Pass.
 - **Attention Tier Model (Now):** UI integration ongoing.
 - **Social Systems Expansion (Next):** THR-28/27 shipped. THR-51/29/30/78 gated behind Phase 0 (THR-112/114/115).
@@ -15,9 +15,10 @@
 - **Rarity Model (Next):** Three deferred Phase D items.
 - **Procedural Hex Vignettes (Next):** Phases 2-5 queued.
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
-- **Next up:** THR-113–118 (Phase 0 remaining), then Phase 1 continues with next guild faction.
+- **Next up:** THR-114–118 (Phase 0 remaining), then Phase 1 continues with next guild faction.
 
 ## Recent Completions (2026-04-17)
+- **THR-113 — Intelligence consumption pathway:** Closes the write-only loop on `IntelligenceRecord`. Three hooks: `scoreAndSelect` applies `INTEL_SCORING_BONUS=0.25` when an actionable record matches the candidate's templateId/locationId/targetAgentId/region; `enrichProse` resolves `{intel:<category>}`, `{intel:<category>.detail}`, `{intel:<category>.reliability}` and `{?knows_<category>}…{/knows_<category>}` / `{?no_<category>}…{/no_<category>}` for all six `IntelligenceCategory` values; `observeResolutionIntelligence` emits a passive `resolution_match` trace after `consumeMatchingMarks` in GameView. New `intelligence_referenced` trace with `referencedBy` discriminator. Adapter layer now threads `gameState` + `tick` into `gatherNarrativeContext`. Codex review surfaced 5 real issues (trace-on-placeholder presence, residual `{intel:typo}` strip, per-call scoring dedup, region resolution, `INTEL_RESOLUTION_MATCH_REGIONS` honored in resolution) — all fixed in a follow-up commit on the same branch. 36 new tests across 4 files.
 - **THR-132 — Hidden mark reveal prose:** Replaces the `A buried truth surfaces: ${label}` debug string with authored, category-aware, path-aware chronicle prose. 70 templates across 7 categories × 2 paths (encounter-consume vs decay-drop) × 5 variants. New `generateMarkRevealMessage(state, mark, revealedBy, tick)` routes on `revealedBy`, picks via `mulberry32((worldSeed ^ tick*97) XOR markId)`, substitutes `{mark_label}`, runs `enrichProse`. Three-rung fail-soft (graph absent → minimal context "The marked one"; empty label → "a buried thing"; any throw → v1 literal). Decay now chronicles too via new `DECAY_EVENT_SIGNIFICANCE = 0.3` constant (sub-toast; logs to NarrativeLog only). Wired into `consumeMatchingMarks` + `phaseHiddenMarkDecay`. 25 new tests.
 - **THR-135 — Wiring-checklist update for authored aftermath surfaces:** Added per-surface rows for `hidden_mark` and `encounter_seed` to `Docs/plans/wiring-checklist.md` (Orchestrator phase / GameState field / Trace category / Debug visibility / UI surfacing). Primary X1 (wiring-checklist coverage) Phase-2 unblocker from the THR-129 post-pilot audit. DebugPanel inspector follow-up: THR-136.
 - **THR-112 — Hidden mark reveal loop:** Closes the write-only gap in `HiddenMark`. Scoring boost (`+0.3 * severity`, cap 0.9) applied by `scoreAndSelect()` via new `hiddenMarks` param from `phaseAgentDecision`. Probabilistic consumption in `consumeMatchingMarks()` (seeded RNG, `severity * 0.9` threshold) called after encounter aftermath in `GameView.tsx`. Phase 6.7 `phaseHiddenMarkDecay`: 20-tick grace, 2%/tick decay, drop at floor 0.05 with `hidden_mark_revealed` trace. 37 new tests across 3 files (unit + phase + 4-scenario contract).
