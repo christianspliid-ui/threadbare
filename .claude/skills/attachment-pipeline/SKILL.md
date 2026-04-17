@@ -15,3 +15,5 @@ model: opus
 This skill is defined at `.agents/skills/attachment-pipeline/`. See that directory for the full orchestrator SKILL.md and all 4 agent prompts (`agents/draft-prompt.md`, `agents/editorial-prompt.md`, `agents/systems-prompt.md`, `agents/implementation-prompt.md`).
 
 Load the `.agents` version for execution. This file is a pointer for the Claude Code skill registry.
+
+**Game design direction enforcement:** The `.agents` orchestrator now requires checking `Docs/plans/2026-04-16-game-design-direction.md` principles and any issue-specific Section 9 benchmark moments before authoring. Every attachment must evoke a human condition, not just modify a number. See the orchestrator SKILL.md for details.

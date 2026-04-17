@@ -61,6 +61,19 @@ For larger fixes, add entries to `.planning/BACKLOG.md` under the appropriate se
 - Prefix with `💡` if it needs design work, `🔲` if ready to build
 - Include the ROI score so they can be prioritized relative to other backlog items
 
+### Step 4b: Systemic Wiring Guide Audit
+
+**Check whether new engine capabilities have been added since the guide was last updated.**
+
+1. Grep `src/types/effects.ts` for effect type names and compare against the capability inventory in `Docs/plans/2026-04-16-systemic-wiring-guide.md` Part 5.
+2. Check `src/engine/proseEnrichment.ts` for placeholder patterns vs. what the guide documents in Part 2 Capability 1.
+3. Check `src/types/encounter.ts` for EncounterTemplate fields vs. the guide's template-level fields table.
+4. Check `src/engine/strategicGraphOps.ts` for available operations vs. Part 2 Capability 5.
+
+If there are undocumented capabilities, flag them as a quick-win improvement (edit the guide immediately) or backlog if the capability is complex enough to need a worked example.
+
+**Why this matters:** The wiring guide is the IKEA manual for content authoring. If it's stale, content agents produce hardcoded fiction instead of systemically alive content. Every undocumented capability is a missed opportunity for dynamic storytelling.
+
 ### Step 5: Write the Retrospective Report
 
 Create a dated file: `Docs/retrospectives/YYYY-MM-DD-retro.md`

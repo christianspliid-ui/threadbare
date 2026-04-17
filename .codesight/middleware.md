@@ -22,6 +22,7 @@
 - scholarStrategicPack — `src\data\strategic-packs\scholarStrategicPack.ts`
 - warlordStrategicPack — `src\data\strategic-packs\warlordStrategicPack.ts`
 - zealotStrategicPack — `src\data\strategic-packs\zealotStrategicPack.ts`
+- migrateEncounterTemplate-parity.test — `src\data\__tests__\migrateEncounterTemplate-parity.test.ts`
 - phaseStrategicProjects — `src\engine\phaseStrategicProjects.ts`
 - strategicActionCandidates — `src\engine\strategicActionCandidates.ts`
 - strategicActionLifecycle — `src\engine\strategicActionLifecycle.ts`

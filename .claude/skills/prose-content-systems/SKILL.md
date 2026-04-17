@@ -19,6 +19,28 @@ model: opus
 
 High-volume, day-to-day prose work: adding encounter templates, writing narrative event prose, authoring faction content, adding spell flavor text. Load `prose-pipeline` when you need to understand resolver architecture or implement a new resolver. Load `prose-vignettes-and-enrichment` for enrichment placeholders and vignettes.
 
+---
+
+## Content Quality Enforcement — READ FIRST
+
+**Prerequisite 1:** Load `state-of-game-design` (Part 0: Game Design Direction) before authoring any content. Every template, prose line, and content table entry is a player experience, not a data record.
+
+**Prerequisite 2:** Read `Docs/plans/2026-04-16-systemic-wiring-guide.md` — the systemic wiring guide. This document explains the seven engine capabilities (enrichment placeholders, encounter seeding, hidden marks, reputation flow, graph ops, intelligence, divine intervention) that should shape what you decide to write. If a narrative field contains no `{placeholder}` syntax, no conditional blocks, and the aftermath has no seeds or marks — ask whether you're writing game content or a book page. The guide includes a wiring checklist and worked example.
+
+**Before authoring a batch of content, check for benchmark moments.** If the issue you're implementing has a design doc in `Docs/plans/`, read it and find the Section 9 benchmark moments. These are the quality bar — every template you author must meet or exceed the benchmark's emotional specificity, forward-hook quality, and prose texture. If no benchmarks exist, flag it as a gap before proceeding.
+
+**Player-as-god framing constraint.** The player is a god who observes through threads and intervenes indirectly. They NEVER make choices for the character. When writing encounter choices, intervention options, or any player-facing decision point: the choices must be what the *god* does (whisper, send vision, steady, strengthen, withdraw), never what the *mortal* does (say this, go there, fight). The mortal acts according to their personality and the god's influence. "Let them handle it" must always be a valid option.
+
+**Per-template quality check** — ask these questions for every piece of content you write:
+
+1. **Does this create a human condition the player recognizes?** Not "trust_decay -0.02" but "exposed" or "indebted" or "unexpectedly grateful." If the prose describes a mechanical change without evoking a human experience, rewrite it.
+2. **Does this make the player want to know what happens next?** Every prose line should open a question, create a tension, or imply a future consequence. "The negotiation failed" is a dead end. "The negotiation failed — and the merchant's apprentice heard every word" is a hook.
+3. **Does this work as a *moment*, not just a label?** A complication prose that says "A rival noticed" is a label. "A figure at the edge of the market — one of the Thornweave scouts — paused mid-stride. Their eyes met. Then the scout turned and walked quickly toward the guild quarter" is a moment.
+4. **Would the player sometimes prefer this outcome over success?** (For failure/complication content specifically.) The best complications make the player think "oh no — oh, that's actually interesting." If the failure content is just punishment, it's not cool failure.
+5. **Does this serve the three-beat loop?** Content surfaces during portfolio scan (Beat 1), curated moments (Beat 2), or aftermath (Beat 3). Which beat does this content serve? Is it pulling its weight in that beat?
+
+**When in doubt, write the scene first.** Before filling in template fields (ID, severity, effects, reach affinity), write the moment as a paragraph of prose. What is the protagonist doing? What goes wrong (or right)? What does the player read? What do they feel? Then extract the template fields from the scene. This is the reverse of the usual workflow — and it produces dramatically better content.
+
 ## Content Tables Reference
 
 All prose content lives in `src/data/`. Read **`content-files-reference.md`** (in this skill directory) for the complete file → key tables → system map when you need to locate a specific content table or verify what exists before adding new content.

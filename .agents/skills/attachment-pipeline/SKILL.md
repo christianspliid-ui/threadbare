@@ -8,6 +8,22 @@ model: opus
 
 Automated 4-pass workflow for composing mechanically interesting attachments using the Generic Effect System primitives. Every attachment must use composable `effects[]` arrays — flat `reachBonus` / `domainContributions` modifiers are the old pattern we're moving away from.
 
+## Systemic Wiring — READ BEFORE AUTHORING
+
+**Before running the pipeline, read `Docs/plans/2026-04-16-systemic-wiring-guide.md`.** Attachments use the same 40-effect composable system documented there. Understanding effect scopes, conditions, and the graph mutation capabilities changes what you decide to create — an attachment that uses `ChoiceSetEffect` with conditional visibility based on faction rank is alive in a way that a flat `PassiveEffect` with a reach bonus isn't.
+
+## Game Design Direction Enforcement
+
+**Every attachment is a story object, not a stat block.** Read the game design direction principles in `Docs/plans/2026-04-16-game-design-direction.md` (summarized in `state-of-game-design` Part 0).
+
+**Attachments must evoke human conditions.** A sword isn't "+0.05 Iron reach bonus." It's "a blade that remembers every hand that held it" — and mechanically, its effects should create *situations* the player cares about. The `flavorText` and `narrativeTemplate` fields are not decoration on top of effects. They ARE the player experience of this object. Effects without evocative prose are invisible to the player.
+
+**Before authoring a batch, check the issue's design doc for Section 9 benchmark moments.** If benchmarks exist, every attachment must meet that quality bar. If they don't exist, the draft agent should write one benchmark attachment as a fully worked moment (who has it, how did they get it, what does it feel like to use, what story does it create) before proceeding to the batch.
+
+**Player-as-god framing constraint.** If an attachment has player-facing choices (e.g., activation decisions, usage options), those choices must be framed as divine intervention — what the *god* does (empower, withhold, channel, withdraw) — never what the *mortal* does. The mortal uses the object according to their nature; the god influences when and how divine power flows through it.
+
+**The editorial agent must reject attachments that are mechanically correct but narratively inert.** If the flavorText reads like a tooltip and the narrativeTemplate reads like a system message, the attachment isn't done.
+
 ```
 Premise → Draft (Opus) → Editorial+Revised (Opus) → Systems+Final (Sonnet) → Implementation (Sonnet)
 ```

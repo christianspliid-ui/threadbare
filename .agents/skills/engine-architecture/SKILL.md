@@ -153,6 +153,14 @@ A 5th action verb beyond CRUD: sustained actions requiring ongoing resources/foc
 - `src/engine/types/` — shared type definitions
 - Obsidian vault for system specs: read `Index.md` first, follow wikilinks
 
+## Content-Facing Capability Check
+
+**After implementing** any engine change that adds or modifies capabilities content authors use, update the **systemic wiring guide** (`Docs/plans/2026-04-16-systemic-wiring-guide.md`). This is a Definition of Done requirement.
+
+Content-facing capabilities include: new effect types in `effects.ts`, new graph operations in `strategicGraphOps.ts`, new enrichment placeholders in `proseEnrichment.ts`, new aftermath reaction kinds in `unifiedAction.ts`, new template fields in `encounter.ts`, new scoring signals in `encounterScoring.ts` or `agent-behavior-constants.ts`. If content authors don't know a capability exists, they won't use it — and the game gets hardcoded prose instead of systemically alive content.
+
+**Ask yourself:** "Does this change give content authors a new tool for making encounters dynamic?" If yes, the wiring guide needs a new entry or an updated entry.
+
 ## Design Assessment for Engine Work
 
 Before implementing any new engine system or significant engine change, verify the design document includes an NFP audit. If no audit exists, write one before coding.

@@ -21,6 +21,35 @@ This skill is the canonical reference for game design context. Load it before an
 
 ---
 
+## Part 0: Game Design Direction (Experiential Compass)
+
+**Read `Docs/plans/2026-04-16-game-design-direction.md` before any design or content work.** That document defines what Threadbearer is supposed to *feel like* to play. This skill (state-of-game-design) covers the mechanical foundations — reaches, spheres, verbs, graph architecture. The game design direction covers the experiential foundations — what the player does, how they feel, and what makes moments matter. Both are required context.
+
+**Core principles from the game design direction (summary — read the full doc for depth):**
+
+**The core fantasy:** You are a nascent god who discovers interesting mortals, follows their stories like a living novel, and shapes their arcs through subtle divine intervention.
+
+**The three-beat core loop** (every play session):
+1. **Portfolio scan** — "How are my people doing?" Read protagonist states at a glance via emotional/iconic signals + human-textured prose.
+2. **Curated moment** — The game identifies emotionally significant encounters and pulls the player in for branching decision-making under uncertainty.
+3. **Aftermath** — Resolution reshapes the protagonist's trajectory. Failure is not a loss state — it's a story turn.
+
+**Six principles every feature and content piece must satisfy:**
+1. **Emotional read at every level** — the player understands state through human conditions (alone, ashamed, triumphant), not numbers.
+2. **Genuine dilemmas** — choices where there's no obviously right answer and the "best" option depends on understanding the protagonist.
+3. **Cool failure** — every failure state produces narrative texture that makes the next chapter more interesting. Failure is plot, not punishment.
+4. **Turn-based pacing** — each tick is a turn the player controls. Features must work in quick turns (scan and advance) AND deep turns (stop and engage).
+5. **Prose carries narrative, UI carries status** — mechanics are communicated through story, never through exposed numbers.
+6. **Content is design** — authored prose, encounter templates, and complication moments are not implementation details. They ARE the player experience. A structurally correct template with bland prose is a design failure.
+
+**Anti-patterns to avoid:** Six new actions listed without dilemmas, engine-first design without player experience scenarios, binary succeed/fail outcomes, mechanical surfaces instead of emotional reads, isolated systems, missing UI vision.
+
+**Design quality gate:** `Docs/plans/2026-04-16-design-quality-gate.md` — 9-section checklist required before any player-facing feature moves to Implementation Planning. Section 9 (Content Benchmark Moments) is mandatory for all content-heavy features.
+
+**When authoring content:** Every template, encounter, attachment, omen beat, and prose line must pass a simple test: *Does this create a moment the player cares about? Does it make them want to know what happens next? If the answer is "it fills the right fields but doesn't pull the player in," it's not done.*
+
+---
+
 ## Part 1: Core Concepts
 
 ### The Two Orthogonal Axes — Reaches × Spheres
@@ -328,10 +357,12 @@ When in tension, higher priorities win.
 | Classical stats (STR/DEX/INT) | Domain Capability across Nine Reaches |
 | Fixed rival pantheon | Generated rivals from World-Soul |
 | Old 5-force cosmology | Foundation + Creation Sphere model |
-| Pure template-based prose | Hybrid layered engine (3 tiers) |
+| Pure template-based prose | Hybrid layered engine |
 | Pure LLM-generated content | Generated-within-constraints with player iteration |
-| Intervention wheel (AgentWheel) | ActionDrawer with Generalized Action Targeting |
-| Fixed action count / capped slots | Open-ended, data-driven template pool |
+| Intervention wheel (AgentWheel) | ActionDrawer with context-filtered cards |
+| Fixed action count / capped slots | Open-ended data-driven template pool |
+| React Three Fiber (R3F) | Raw Three.js with canvas ref |
+| V1 SVG hex map | HexMapV2 (Three.js InstancedMesh) |
 | Spheres as fixed Reach pairings | Orthogonal axes that combine freely |
 | 8 Action Domains | 9 Reaches (Flesh was missing, domains renamed) |
 | Utility-function AI | Maslow need hierarchy |
@@ -369,6 +400,6 @@ Load the domain-specific skill for your task:
 | Content & worldbuilding | `content-worldbuilding` | Content packages, graph data, constraint layers |
 | Art direction | `art-direction` | Hex tiles, prompt construction, Threadbare aesthetic |
 | Creative prose & content | `cw-*` (platform) | Brainstorming, prose drafting, wiki docs, critique |
-| Post-implementation docs | `gamedocumenter` | Obsidian/changelog/backlog updates |
+| Post-implementation docs | `gamedocumenter` | Notion/Obsidian/changelog updates |
 | Image manipulation | `image-manipulation` | Geometric clipping, alpha masks, hex pipeline |
 | QA sweeps | `qa-orchestrator` | Systematic UI/UX/frontend QA |

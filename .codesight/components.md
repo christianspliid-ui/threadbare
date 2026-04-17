@@ -126,7 +126,7 @@
 - **RiverOverlay** — props: riverPaths, hexSize, seed — `src\components\HexMap\RiverOverlay.tsx`
 - **DESTINATION_MARKER_CONSTANTS** — props: tiles, cols, rows, seed, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick — `src\components\HexMapV2\HexMapV2.tsx`
 - **HexV2View** — props: tiles, cols, rows, seed, riverPaths, lakeIds, locations, agents, armies, battles — `src\components\HexMapV2\HexV2View.tsx`
-- **HexTooltip** — props: terrainName, coord, screenX, screenY, canvasWidth, canvasHeight, terrainKey, geoParams, hasRiver — `src\components\HexMapV2\interaction\HexTooltip.tsx`
+- **HexTooltip** — props: terrainName, coord, screenX, screenY, canvasWidth, canvasHeight, terrainKey, geoParams, hasRiver, locationActivity — `src\components\HexMapV2\interaction\HexTooltip.tsx`
 - **TerrainTextureLab** — `src\components\HexMapV2\lab\TerrainTextureLab.tsx`
 - **TerrainTextureLabCanvas** — props: configs, previewHexes, models, placements, slotAnchors, zoneRules, fillerDots, clickTargets, selectedHexId, selectedClickTargetId — `src\components\HexMapV2\lab\TerrainTextureLabCanvas.tsx`
 - **LocationLabelOverlay** — props: locations, cameraRef, canvasWidth, canvasHeight, zoomLevel, prePlacedBBoxesRef — `src\components\HexMapV2\overlay\LocationLabelOverlay.tsx`

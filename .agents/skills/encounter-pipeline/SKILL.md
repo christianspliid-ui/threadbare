@@ -12,6 +12,29 @@ Automated 4-pass encounter pipeline: premise → deployed code. Each agent pass 
 Premise → Draft (Opus) → Editorial+Revised (Opus) → Systems+Final (Sonnet) → Implementation (Sonnet)
 ```
 
+## Systemic Wiring — READ BEFORE AUTHORING
+
+**Before running the pipeline, read `Docs/plans/2026-04-16-systemic-wiring-guide.md`.** This guide explains the seven engine capabilities that should shape what you decide to write: enrichment placeholders, encounter seeding, hidden marks, reputation flow, graph operations, intelligence/content grants, and divine intervention choices. If you don't know what the engine can do, you'll write hardcoded fiction instead of game content. The guide includes a worked example (Pyra's festival) and a wiring checklist to audit against.
+
+**Exemplar encounters to study:** `rival-shrine-betrayal.ts` (10/10 wiring), `flawed-steel.ts` (9/10 wiring). Read these before drafting to understand what championship-level systemic connectivity looks like.
+
+## Game Design Direction Enforcement
+
+**Before running the pipeline, read the issue's design doc in `Docs/plans/`.** If the design doc has Section 9 benchmark moments, inject them into the draft agent's prompt as the quality bar. Every encounter authored in this pipeline must meet or exceed the benchmark's emotional specificity and forward-hook quality.
+
+**Always inject the game design direction principles into the draft agent's context** (from `Docs/plans/2026-04-16-game-design-direction.md`). The six principles that every encounter must satisfy:
+
+1. **Emotional read** — the player understands what's happening through human conditions, not mechanics
+2. **Genuine dilemmas** — choices where there's no obviously right answer
+3. **Cool failure** — failure outcomes produce narrative texture, not dead ends
+4. **Turn compatibility** — works in both quick turns and deep turns
+5. **Prose carries narrative** — mechanics communicated through story
+6. **Content is design** — the prose IS the player experience
+
+**Player-as-god framing constraint.** The player is a god who observes through threads and intervenes indirectly. They NEVER make choices for the character. When writing encounter choices, intervention options, or any player-facing decision point: the choices must be what the *god* does (whisper, send vision, steady, strengthen, withdraw), never what the *mortal* does (say this, go there, fight). The mortal acts according to their personality and the god's influence. "Let them handle it" must always be a valid option.
+
+**The editorial agent must check against these principles.** If a draft has structurally correct encounters but emotionally inert prose — if failure is just "you failed" with a number change, if choices have obvious right answers, if the player wouldn't care about the outcome — the editorial agent should REVISE, not PASS. **Additionally, any encounter where the player "chooses how the character responds" must be rejected and reframed as divine intervention.**
+
 ## Quality Exemplar
 
 Every encounter must meet the quality standard demonstrated by "Gate Duty" (Clearance Gate):
@@ -21,6 +44,8 @@ Every encounter must meet the quality standard demonstrated by "Gate Duty" (Clea
 - Graduated approach cards with prose bodies at EVERY player-facing step
 - Scene-specific choice labels ("Steady the Courier" not "Help them")
 - Aftermath with reflective prose, actor-centered consequences, and reaction choices (medium+)
+- **Cool failure at every branch** — the failure path must be as narratively interesting as the success path. If the failure outcome reads like punishment, it's not done.
+- **Human conditions, not mechanical labels** — aftermath prose describes what the protagonist *feels* and *becomes*, not what numbers changed
 
 If a draft reads like a functional template with structural bones but no experiential flesh, the editorial agent will reject it.
 

@@ -85,11 +85,24 @@ No Ready for Dev issues found. Check Linear for what's next:
 https://linear.app/threadbare
 ```
 
-### Step 5 — Send the Slack DM
+### Step 5 — Send the Slack message
 
 Use `slack_send_message` to channel `C0AT5DYGJ8P` (the Threadbare dev channel).
 
 **Important:** Use plain text only — no markdown bold (`**`), no italic (`_`), no backtick code spans. The Slack MCP rejects messages with those formatting characters. Asterisks for `*italic*` are fine.
+
+### Step 6 — Fire the next remote trigger (local sessions only)
+
+After sending the Slack message, fire the appropriate remote trigger immediately so the next agent starts without waiting for the hourly cron:
+
+| Next agent | Trigger ID | Action |
+|-----------|-----------|--------|
+| Claude Code (next item is Ready for Dev) | `trig_012H3CEdTnrAqY4w81T4rLXz` | `RemoteTrigger(action: "run", trigger_id: "trig_012H3CEdTnrAqY4w81T4rLXz")` |
+| Cowork PM (next item needs design) | `trig_01D4TCHhvnHAvWUGVVnrC9cH` | `RemoteTrigger(action: "run", trigger_id: "trig_01D4TCHhvnHAvWUGVVnrC9cH")` |
+
+**Note:** `RemoteTrigger` is only available in local Claude Code sessions. Remote trigger sessions (running on claude.ai/scheduled) cannot call it — they rely on the hourly cron or the Slack notification for the next handoff. Skip this step if you are running as a remote session.
+
+If `RemoteTrigger` is not available or returns an error, log the error and continue — the Slack message already covers the handoff.
 
 ---
 

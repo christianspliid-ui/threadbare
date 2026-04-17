@@ -129,6 +129,7 @@
   - interface UseHexZoomDataParams
   - interface UseHexZoomDataReturn
 - `src\components\Game\hooks\useInterventionAudio.ts` — function useInterventionAudio: () => void
+- `src\components\Game\hooks\useLocationActivities.ts` — function useLocationActivities: ({...}, unifiedActions, familiarityMap, visibilityMap, fogDisabled, tick, omenState, worldVersion, }) => DeriveLocationActivitiesResult, interface UseLocationActivitiesParams
 - `src\components\Game\hooks\useNotificationNavigation.ts` — function useNotificationNavigation: (deps) => void
 - `src\components\Game\hooks\useNotificationPreferences.ts` — function useNotificationPreferences: (gameStatePrefs?) => UseNotificationPreferencesReturn, interface UseNotificationPreferencesReturn
 - `src\components\Game\hooks\useNotifications.ts`
@@ -559,6 +560,7 @@
   - function getBondStrengthWord: (value) => string
   - const DOMAIN_WORD_SCALES: Record<ReachDomain, [string, string, string, string, string]>
   - _...3 more_
+- `src\data\doom-identity-matrices.ts` — function getDoomIdentityMatrix: (archetype) => DoomIdentityMatrix
 - `src\data\doom-loader.ts`
   - function validateArchetypeJson: (raw, filename) => void
   - function loadArchetypeStageNames: () => Record<DoomClockArchetype, [string, string, string, string, string]>
@@ -752,12 +754,12 @@
   - const TERRAIN_TRANSFORMATIONS: readonly TerrainTransformation[]
   - const TERRAIN_TRANSFORMATION_MAP: ReadonlyMap<string, TerrainType>
 - `src\data\thieves-guild-encounter-content.ts`
-  - function getThievesGuildEncounterById: (id) => EncounterTemplate | undefined
+  - function getThievesGuildEncounterById: (id) => UnifiedActionTemplate | undefined
   - const THIEVES_GUILD_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterMeta>
-  - const THIEVES_GUILD_ENCOUNTER_TEMPLATES: EncounterTemplate[]
-  - const THIEVES_GUILD_SOCIAL_TEMPLATES: EncounterTemplate[]
-  - const TG_JOIN_TEMPLATE: EncounterTemplate
-  - const TG_PROMOTION_TEMPLATE: EncounterTemplate
+  - const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[]
+  - const THIEVES_GUILD_SOCIAL_TEMPLATES: UnifiedActionTemplate[]
+  - const TG_JOIN_TEMPLATE: UnifiedActionTemplate
+  - const TG_PROMOTION_TEMPLATE: UnifiedActionTemplate
   - _...1 more_
 - `src\data\trait-modifiers.ts`
   - function getLOSTraitModifiers: (traitId) => Record<string, number>
@@ -781,13 +783,13 @@
   - const UK_PROMOTION_TEMPLATE: EncounterTemplate
   - _...1 more_
 - `src\data\unified-action-templates.ts`
+  - function encounterTypeToCrud: (encounterType) => 'create' | 'read' | 'update' | 'delete'
   - function migrateActionTemplate: (old) => UnifiedActionTemplate
   - function migrateEncounterTemplate: (old) => UnifiedActionTemplate
   - function getUnifiedTemplateById: (id) => UnifiedActionTemplate | undefined
   - function unifiedToEncounterTemplate: (ut) => EncounterTemplate
   - function resolveEncounterTemplate: (id) => EncounterTemplate | undefined
-  - const THREAD_CREATION_TEMPLATES: UnifiedActionTemplate[]
-  - _...2 more_
+  - _...3 more_
 - `src\engine\actionCandidates.ts` — function generateActionCandidates: (graph, actorId, locationId) => ActionCandidate[]
 - `src\engine\actionLifecycle.ts`
   - function resetActionCounter: () => void
@@ -989,7 +991,7 @@
 - `src\engine\chronicle.ts`
   - function createGreatChronicle: () => GreatChronicle
   - function getVolumeTitle: (archetype, cycleNumber) => string
-  - function createVolume: (chronicle, cycleNumber, doomArchetype) => GreatChronicle
+  - function createVolume: (chronicle, cycleNumber, doomArchetype, /** Optional identity-matrix-derived title override (THR-21) => void
   - function addChapter: (chronicle, chapter) => GreatChronicle
   - function addInterlude: (chronicle, interlude) => GreatChronicle
   - function closeVolume: (chronicle, harvestSummary) => GreatChronicle
@@ -1013,6 +1015,8 @@
   - function darkenColor: (hex, factor) => string
   - interface RGB
   - const BIOME_COLORS: Record<TerrainType, string>
+- `src\engine\complicationEffects.ts` — function applyComplicationEffects: (effects, ctx, state, tick, complicationName) => TickEvent[]
+- `src\engine\complicationSelection.ts` — function determineSeverity: (outcome) => ComplicationSeverity | null, function selectComplication: (outcome, ctx) => ComplicationResult | null
 - `src\engine\conditionDecay.ts` — function decayConditions: (graph, tick) => RemovedCondition[], interface RemovedCondition
 - `src\engine\conditionOverflow.ts`
   - function resolveConditionOverflow: (slotTag, count, cap, items, agentId, roll) => ConditionOverflowResult | null
@@ -1142,6 +1146,12 @@
   - interface DeliveryInfo
 - `src\engine\depressionFilling.ts` — function fillDepressions: (data) => void
 - `src\engine\depressionLakes.ts` — function promoteDepressionLakes: (data) => void
+- `src\engine\deriveLocationActivities.ts`
+  - function computeLocationPulse: (threads) => LocationPulse
+  - function deriveLocationActivities: (input) => DeriveLocationActivitiesResult
+  - interface DeriveLocationActivitiesInput
+  - interface DeriveLocationActivitiesResult
+  - const LOCATION_ACTIVITY_CONSTANTS
 - `src\engine\digestBuffer.ts`
   - function appendDigestEntry: (buffer, entry) => void
   - function pruneDigestBuffer: (buffer, currentTick, retention) => DigestEntry[]
@@ -1479,6 +1489,8 @@
   - function hasHiddenMark: (state, agentId, category) => boolean
   - function checkMarkReveals: (state, agentId, encounterFamily) => readonly HiddenMark[]
   - function removeHiddenMark: (state, markId) => GameState
+  - function revealHiddenMark: (state, markId, tick, revealedBy) => GameState
+  - _...8 more_
 - `src\engine\historicalCulture.ts` — function generateHistoricalCultures: (graph, cosmology, rng) => void, function assignHistoricalTerritories: (graph, historicalCultureIds, clusters, rng) => void
 - `src\engine\idleBehavior.ts`
   - function deriveAmbitionTarget: (agentId, agentLocationId, graph, distanceMatrix) => string | null
@@ -1612,7 +1624,7 @@
   - _...9 more_
 - `src\engine\outcomeConsequences.ts`
   - function isProvingSliceTemplate: (templateId) => boolean
-  - function computeOutcomeConsequence: (templateId, outcome, actorId, tick) => OutcomeConsequence
+  - function computeOutcomeConsequence: (templateId, outcome, actorId, tick, context?) => OutcomeConsequence
   - interface OutcomeConsequence
   - const CRITICAL_SUCCESS_GROWTH_MULTIPLIER
   - const SUCCESS_AT_COST_GROWTH_MULTIPLIER
@@ -1656,6 +1668,7 @@
   - const HEX_DIVINE_TRANSFORM_THRESHOLD
   - const HEX_TRANSFORM_COOLDOWN_TICKS
   - _...1 more_
+- `src\engine\phaseHiddenMarkDecay.ts` — function phaseHiddenMarkDecay: (state) => Partial<GameState>
 - `src\engine\phaseInteractionDepth.ts` — function phaseInteractionDepth: (state) => void
 - `src\engine\phaseMagicalSaturation.ts`
   - function phaseMagicalSaturation: (state) => Partial<GameState>
@@ -1744,7 +1757,7 @@
   - _...1 more_
 - `src\engine\proseComposer.ts` — function composeProse: (layers) => string, function composeSummary: (layers) => string
 - `src\engine\proseEnrichment.ts`
-  - function gatherNarrativeContext: (graph, agentId, meetingRecord?, beatHistory?) => NarrativeContext
+  - function gatherNarrativeContext: (graph, agentId, meetingRecord?, beatHistory?, doomIdentityMatrix?) => NarrativeContext
   - function enrichProse: (template, ctx) => string
   - function generateMeetingCallback: (ctx, rng) => void
   - interface NarrativeContext
@@ -1880,7 +1893,8 @@
 - `src\engine\rival.ts`
   - function generateRivals: (playerAlignment, seed) => RivalDefinition[]
   - function createRivalState: (rivalId) => RivalState
-  - function selectRivalAction: (rival, state, deterministicRoll?) => RivalAction
+  - function selectRivalAction: (rival, state, deterministicRoll?, /** Doom identity rival-behavior bias — weight deltas scaled by IDENTITY_RIVAL_BIAS_WEIGHT. */
+  identityBias?, number>>) => RivalAction
   - function updateRivalState: (state, action) => RivalState
 - `src\engine\riverGeneration.ts` — function generateRivers: (data) => void
 - `src\engine\roadNetwork.ts`
@@ -2317,7 +2331,7 @@
   - function isStepFailure: (outcome) => boolean
   - interface ActionStepOutcomeMetadata
   - interface IntelligenceRecord
-  - _...27 more_
+  - _...28 more_
 - `src\utils\portraitCompositor.ts`
   - function composePortrait: (originFragmentId, primarySphere, width, height) => Promise<HTMLCanvasElement | null>
   - function composePortraitCircular: (originFragmentId, primarySphere, diameter) => Promise<HTMLCanvasElement | null>
