@@ -224,11 +224,30 @@ export function observeResolutionIntelligence(
   if (records.length === 0) return;
   const targetId = action.targetId;
   const templateId = action.templateId;
+
+  // Resolve the action's target to a region for region-keyed records.
+  // Fail-soft: if the graph lookup fails or the node has no region, region
+  // matching is simply skipped — we don't throw or fall back to a match.
+  let targetRegion: string | undefined;
+  if (INTEL_RESOLUTION_MATCH_REGIONS && targetId) {
+    try {
+      const node = state.graph?.getNode?.(targetId);
+      const props = node?.properties as Record<string, unknown> | undefined;
+      const rawRegion = props?.region ?? props?.regionId;
+      if (typeof rawRegion === 'string') targetRegion = rawRegion;
+    } catch {
+      // Graph lookup errors must never block resolution observation (NFP #4).
+    }
+  }
+
   const seen = new Set<string>();
   for (const record of records) {
     if (seen.has(record.recordId)) continue;
     let matched = false;
     if (record.targetEntityId && targetId && record.targetEntityId === targetId) matched = true;
+    if (!matched && targetRegion && record.targetRegion && record.targetRegion === targetRegion) {
+      matched = true;
+    }
     if (!matched && templateId) {
       const matchers = TEMPLATE_CATEGORY_MATCHERS[record.category];
       if (matchers && matchers.some(m => templateId.includes(m))) matched = true;

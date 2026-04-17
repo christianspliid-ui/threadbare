@@ -268,19 +268,25 @@ export function enrichProse(template: string, ctx: NarrativeContext): string {
   result = result.replace(/{doom_atmosphere}/g, ctx.doomAtmosphere ?? '');
 
   // Intelligence placeholders (THR-113) — silent fallback to '' when no view.
-  // One `intelligence_referenced` trace per unique recordId per enrichProse call
-  // (dedupe Set prevents chatty emissions when a template has many {intel:*} tokens).
+  // Only emit `intelligence_referenced` when a placeholder for that category
+  // was actually present in the source — otherwise every enrichProse call on
+  // a template with zero {intel:*} tokens would log a false consumption.
   if (ctx.intelligence) {
     const referenced = new Set<string>();
     for (const category of INTEL_CATEGORIES) {
       const record = ctx.intelligence.byCategory[category];
+      const detailRe = new RegExp(`\\{intel:${category}\\.detail\\}`, 'g');
+      const reliabilityRe = new RegExp(`\\{intel:${category}\\.reliability\\}`, 'g');
+      const labelRe = new RegExp(`\\{intel:${category}\\}`, 'g');
+      const hadPlaceholder =
+        detailRe.test(result) || reliabilityRe.test(result) || labelRe.test(result);
       const label = record?.label ?? '';
       const detail = record?.detail ?? '';
       const reliability = record ? reliabilityDescriptor(record.reliability) : '';
       result = result.replace(new RegExp(`\\{intel:${category}\\.detail\\}`, 'g'), detail);
       result = result.replace(new RegExp(`\\{intel:${category}\\.reliability\\}`, 'g'), reliability);
       result = result.replace(new RegExp(`\\{intel:${category}\\}`, 'g'), label);
-      if (record && !referenced.has(record.recordId)) {
+      if (hadPlaceholder && record && !referenced.has(record.recordId)) {
         emitIntelligenceReferenced(
           ctx.tick ?? 0,
           ctx.agentId,
@@ -291,11 +297,10 @@ export function enrichProse(template: string, ctx: NarrativeContext): string {
         referenced.add(record.recordId);
       }
     }
-  } else {
-    // Strip any {intel:*} tokens so raw literals never leak into prose when the
-    // caller hasn't provided GameState (mirrors the omen/doom silent-fallback pattern).
-    result = result.replace(/{intel:[^}]+}/g, '');
   }
+  // Residual strip: any unknown / malformed {intel:*} tokens (including
+  // {intel:typo} or calls without an intelligence view) never leak to players.
+  result = result.replace(/\{intel:[^}]+\}/g, '');
 
   // Conditional blocks: {?has_X}...{/has_X} and {?no_X}...{/no_X}
   result = resolveConditionals(result, ctx);

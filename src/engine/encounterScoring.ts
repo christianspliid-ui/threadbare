@@ -769,6 +769,10 @@ export function scoreAndSelect(
   const chainProgress = getChainProgress(agentNode.properties as Record<string, unknown>);
 
   const scored: ScoredCandidate[] = [];
+  // Dedup `intelligence_referenced` trace emission: a single record can match
+  // many candidates in one scoreAndSelect call, but we only want one audit trace
+  // per (record, scoring_boost) pair per call.
+  const emittedIntelRecords = new Set<string>();
 
   for (const entry of candidates) {
     // 1. Completion probability (kept for backward compat / trace output)
@@ -923,17 +927,29 @@ export function scoreAndSelect(
     // 24. Intelligence scoring bonus (THR-113) — actionable intel adds a flat boost once per candidate
     let intelBonus = 0;
     if (intelligenceRecords && intelligenceRecords.length > 0) {
+      // Resolve region from the location node so region-only records (no
+      // targetEntityId) still count as actionable intel for this candidate.
+      const entryRegion =
+        typeof locationNode?.properties?.region === 'string'
+          ? (locationNode.properties.region as string)
+          : typeof locationNode?.properties?.regionId === 'string'
+            ? (locationNode.properties.regionId as string)
+            : undefined;
       const intelMatch = findActionableIntelligence(intelligenceRecords, agentId, {
         templateId: entry.templateId,
         locationId: entry.locationId,
         targetAgentId: entry.targetAgentId,
+        region: entryRegion,
       });
       if (intelMatch) {
         intelBonus = INTEL_SCORING_BONUS;
-        emitIntelligenceReferenced(tick, agentId, intelMatch.recordId, 'scoring_boost', {
-          templateId: entry.templateId,
-          intelCategory: intelMatch.category,
-        });
+        if (!emittedIntelRecords.has(intelMatch.recordId)) {
+          emitIntelligenceReferenced(tick, agentId, intelMatch.recordId, 'scoring_boost', {
+            templateId: entry.templateId,
+            intelCategory: intelMatch.category,
+          });
+          emittedIntelRecords.add(intelMatch.recordId);
+        }
       }
     }
     const finalScore = baseScore * rarityMultiplier * roleAffinityMultiplier * (1 - familiarityPenalty) + explorationBonus + chainBonus

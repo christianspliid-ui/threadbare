@@ -458,6 +458,27 @@ describe('enrichProse — intelligence placeholders', () => {
       disableTracing();
     }
   });
+
+  it('does NOT emit a trace when the template contains no {intel:*} placeholder', () => {
+    clearTraces();
+    enableTracing();
+    try {
+      const ctx = ctxWithIntel();
+      // The context has records, but the prose has no intel tokens.
+      enrichProse('A quiet morning. Nothing stirred in the square.', ctx);
+      const traces = getTraces().filter(t => t.category === 'intelligence_referenced');
+      expect(traces).toHaveLength(0);
+    } finally {
+      clearTraces();
+      disableTracing();
+    }
+  });
+
+  it('strips unknown {intel:typo} tokens instead of leaking raw braces', () => {
+    const ctx = ctxWithIntel();
+    expect(enrichProse('weird {intel:not_a_category} thing', ctx)).toBe('weird  thing');
+    expect(enrichProse('also {intel:agent_network.bogus} here', ctx)).toBe('also  here');
+  });
 });
 
 // ─── generateMeetingCallback ──────────────────────────────────────

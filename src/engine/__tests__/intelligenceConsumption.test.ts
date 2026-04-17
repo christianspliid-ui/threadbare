@@ -209,5 +209,31 @@ describe('scoreAndSelect — intelligence consumption', () => {
 
     expect(result.rankedCandidates[0].intelBonus).toBeCloseTo(INTEL_SCORING_BONUS, 5);
   });
+
+  it('dedupes intelligence_referenced traces across many matching candidates in one call', () => {
+    const graph = makeGraph();
+    // Three candidates all matching the same record via the pilgrim template substring.
+    const c1 = mkCandidate({ templateId: 'pilgrim.shrine.visit' });
+    const c2 = mkCandidate({ templateId: 'pilgrim.shrine.vigil' });
+    const c3 = mkCandidate({ templateId: 'pilgrim.shrine.contrition' });
+
+    scoreAndSelect(
+      [c1, c2, c3],
+      'agent-1',
+      'loc-shrine',
+      graph,
+      50,
+      undefined, undefined, undefined, undefined, undefined,
+      [INTEL_SHRINE],
+    );
+
+    const traces = getTraces().filter(
+      t =>
+        t.category === 'intelligence_referenced' &&
+        (t as any).referencedBy === 'scoring_boost' &&
+        (t as any).recordId === 'intel_shrine_1',
+    );
+    expect(traces).toHaveLength(1);
+  });
 });
 
