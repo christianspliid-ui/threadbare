@@ -3058,6 +3058,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                         currentTick={selectedThreadNode.category === 'agent' ? gameState.tick : undefined}
                         lastViewedTick={selectedThreadNode.category === 'agent' ? getLastViewedTick(selectedThreadNode.nodeId) : undefined}
                         strategicState={selectedThreadNode.category === 'agent' ? gameState.strategicState : undefined}
+                        intelligenceRecords={selectedThreadNode.category === 'agent' ? (gameState.intelligenceRecords ?? []) : undefined}
                       />
                     );
                   })()}

@@ -350,4 +350,74 @@ describe('ThreadDetailView', () => {
     // Category label in small caps — "Agent"
     expect(screen.getByText('Agent')).toBeInTheDocument();
   });
+
+  // ─── Intelligence panel integration ─────────────────────────────
+
+  it('shows Intelligence section when intelligenceRecords is non-empty and agent tier >= 1', () => {
+    const records = [
+      {
+        recordId: 'rec-1',
+        agentId: 'agent-1',
+        category: 'shrine_location' as const,
+        label: 'A veiled shrine',
+        detail: 'Hidden near the forest edge.',
+        reliability: 0.8,
+        acquiredTick: 5,
+        sourceEncounterId: 'enc-1',
+      },
+    ];
+    render(
+      <ThreadDetailView
+        node={makeAgent({ tier: 1 })}
+        agentInfoCard={makeAgentInfoCard()}
+        onClose={noop}
+        onViewProfile={noop}
+        intelligenceRecords={records}
+        currentTick={10}
+      />
+    );
+    expect(screen.getByText('Intelligence')).toBeInTheDocument();
+    expect(screen.getByText('A veiled shrine')).toBeInTheDocument();
+  });
+
+  it('omits Intelligence section entirely when agent tier is 0 (Stranger)', () => {
+    const records = [
+      {
+        recordId: 'rec-1',
+        agentId: 'agent-1',
+        category: 'trade_route' as const,
+        label: 'Northern caravan route',
+        detail: 'Passes through the valley.',
+        reliability: 0.7,
+        acquiredTick: 5,
+        sourceEncounterId: 'enc-1',
+      },
+    ];
+    render(
+      <ThreadDetailView
+        node={makeAgent({ tier: 0, tierName: 'Stranger' })}
+        agentInfoCard={null}
+        onClose={noop}
+        onViewProfile={noop}
+        intelligenceRecords={records}
+        currentTick={10}
+      />
+    );
+    expect(screen.queryByText('Intelligence')).not.toBeInTheDocument();
+    expect(screen.queryByText('Northern caravan route')).not.toBeInTheDocument();
+  });
+
+  it('shows empty-state copy when intelligenceRecords is empty and agent tier >= 1', () => {
+    render(
+      <ThreadDetailView
+        node={makeAgent({ tier: 2 })}
+        agentInfoCard={makeAgentInfoCard()}
+        onClose={noop}
+        onViewProfile={noop}
+        intelligenceRecords={[]}
+        currentTick={10}
+      />
+    );
+    expect(screen.getByText('Knows nothing of consequence.')).toBeInTheDocument();
+  });
 });

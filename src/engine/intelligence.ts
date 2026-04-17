@@ -22,6 +22,7 @@ import type {
   IntelligenceCategory,
   EncounterAftermathReactionEffect,
 } from '../types/unifiedAction';
+import type { WorldGraph } from './graph';
 import { emitTrace } from './traceBuffer';
 
 // ─── Constants ────────────────────────────────────────────────────
@@ -200,6 +201,124 @@ export function emitIntelligenceReferenced(
     });
   } catch {
     // Trace failure must never block downstream work (NFP #4)
+  }
+}
+
+// ─── Display helper (THR-141) ─────────────────────────────────────
+
+/** Max records rendered in the intelligence panel before truncation. */
+export const INTEL_PANEL_MAX_RECORDS = 24;
+
+/** Minimum InfluenceTier at which the intel panel is rendered (0 = Stranger = hidden). */
+export const INTEL_PANEL_FOG_MIN_TIER = 1;
+
+export const RELIABILITY_RANK_RELIABLE = 0;
+export const RELIABILITY_RANK_UNCERTAIN = 1;
+export const RELIABILITY_RANK_DUBIOUS = 2;
+
+/** Human-readable labels for each IntelligenceCategory. */
+export const INTEL_CATEGORY_LABELS: Record<IntelligenceCategory, string> = {
+  shrine_location: 'Shrine Location',
+  agent_network: 'Agent Network',
+  trade_route: 'Trade Route',
+  military_position: 'Military Position',
+  political_secret: 'Political Secret',
+  cultural_knowledge: 'Cultural Knowledge',
+} as const satisfies Record<IntelligenceCategory, string>;
+
+export interface IntelligenceDisplayEntry {
+  readonly recordId: string;
+  readonly category: IntelligenceCategory;
+  readonly categoryLabel: string;
+  readonly label: string;
+  readonly detail: string;
+  readonly targetDisplayName: string | null;
+  readonly targetKind: 'agent' | 'location' | 'region' | 'unknown';
+  readonly reliabilityDescriptor: 'reliable' | 'uncertain' | 'dubious';
+  readonly reliabilityRank: 0 | 1 | 2;
+  readonly acquiredTick: number;
+  readonly acquiredDaysAgo: number;
+  readonly acquiredLabel: string;
+}
+
+function formatAcquiredLabel(daysAgo: number): string {
+  if (daysAgo === 0) return 'today';
+  if (daysAgo === 1) return '1 day ago';
+  return `${daysAgo} days ago`;
+}
+
+/**
+ * Build display entries for an agent's intelligence records.
+ * Sorted reliable → uncertain → dubious; within tier, most recent first.
+ * Pure function; fail-soft on graph errors and missing input.
+ *
+ * Accepts the records array directly (pass `state.intelligenceRecords`) so callers
+ * don't need to thread a full GameState through UI components.
+ */
+export function buildIntelligenceDisplay(
+  allRecords: readonly IntelligenceRecord[] | undefined,
+  agentId: string,
+  graph: WorldGraph | undefined,
+  currentTick: number | undefined,
+): readonly IntelligenceDisplayEntry[] {
+  try {
+    const records = (allRecords ?? []).filter(r => r.agentId === agentId);
+    if (records.length === 0) return [];
+
+    const entries: IntelligenceDisplayEntry[] = records.map(record => {
+      const desc = reliabilityDescriptor(record.reliability);
+      const rank: 0 | 1 | 2 =
+        desc === 'reliable' ? RELIABILITY_RANK_RELIABLE :
+        desc === 'uncertain' ? RELIABILITY_RANK_UNCERTAIN :
+        RELIABILITY_RANK_DUBIOUS;
+
+      const effectiveTick = currentTick ?? record.acquiredTick;
+      const daysAgo = Math.max(0, effectiveTick - record.acquiredTick);
+
+      let targetDisplayName: string | null = null;
+      let targetKind: IntelligenceDisplayEntry['targetKind'] = 'unknown';
+
+      if (record.targetEntityId) {
+        try {
+          const node = graph?.getNode(record.targetEntityId);
+          if (node) {
+            targetDisplayName = node.name;
+            targetKind = (node.type === 'actor') ? 'agent' : 'location';
+          }
+        } catch {
+          // Graph lookup failure → leave as unknown (NFP #4)
+        }
+      } else if (record.targetRegion) {
+        targetKind = 'region';
+        targetDisplayName = record.targetRegion;
+      }
+
+      return {
+        recordId: record.recordId,
+        category: record.category,
+        categoryLabel: INTEL_CATEGORY_LABELS[record.category] ?? record.category,
+        label: record.label,
+        detail: record.detail,
+        targetDisplayName,
+        targetKind,
+        reliabilityDescriptor: desc,
+        reliabilityRank: rank,
+        acquiredTick: record.acquiredTick,
+        acquiredDaysAgo: daysAgo,
+        acquiredLabel: formatAcquiredLabel(daysAgo),
+      };
+    });
+
+    // Primary sort: reliability rank asc; secondary: acquiredTick desc; tertiary: recordId for stability
+    entries.sort((a, b) => {
+      if (a.reliabilityRank !== b.reliabilityRank) return a.reliabilityRank - b.reliabilityRank;
+      if (b.acquiredTick !== a.acquiredTick) return b.acquiredTick - a.acquiredTick;
+      return a.recordId.localeCompare(b.recordId);
+    });
+
+    return entries;
+  } catch {
+    return [];
   }
 }
 

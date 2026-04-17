@@ -16,6 +16,12 @@ import {
   getAgentStrategicHistory,
   getBehaviorFamilyPresentation,
 } from '../../engine/strategicPresentation';
+import {
+  buildIntelligenceDisplay,
+  INTEL_PANEL_FOG_MIN_TIER,
+} from '../../engine/intelligence';
+import { AgentIntelligencePanel } from './AgentIntelligencePanel';
+import type { IntelligenceRecord } from '../../types/unifiedAction';
 
 // Domain display names (8 reaches after flesh removal)
 const DOMAIN_NAMES: Record<ReachDomain, string> = {
@@ -56,6 +62,8 @@ interface ThreadDetailViewProps {
   lastViewedTick?: number;
   /** Strategic runtime state — enables the "Designs" section for agent nodes. */
   strategicState?: StrategicRuntimeState;
+  /** Intelligence records — enables the "Intelligence" section for bonded agent nodes. */
+  intelligenceRecords?: readonly IntelligenceRecord[];
 }
 
 export const ThreadDetailView = React.memo(function ThreadDetailView({
@@ -70,6 +78,7 @@ export const ThreadDetailView = React.memo(function ThreadDetailView({
   currentTick,
   lastViewedTick = 0,
   strategicState,
+  intelligenceRecords,
 }: ThreadDetailViewProps) {
   const tierColor = TIER_COLORS[node.tier] ?? '#6b7280';
   const tierBgColor = `color-mix(in srgb, ${tierColor} 20%, transparent)`;
@@ -178,6 +187,7 @@ export const ThreadDetailView = React.memo(function ThreadDetailView({
             lastViewedTick={lastViewedTick}
             strategicState={strategicState}
             graph={graph}
+            intelligenceRecords={intelligenceRecords}
           />
         )}
         {node.category === 'location' && (
@@ -405,6 +415,7 @@ function AgentDetailBody({
   lastViewedTick = 0,
   strategicState,
   graph,
+  intelligenceRecords,
 }: {
   node: import('../../engine/retinue').ThreadedAgent;
   agentInfoCard?: AgentInfoCardData | null;
@@ -414,6 +425,7 @@ function AgentDetailBody({
   lastViewedTick?: number;
   strategicState?: StrategicRuntimeState;
   graph?: WorldGraph;
+  intelligenceRecords?: readonly IntelligenceRecord[];
 }) {
   const activityLabel = node.activityLabel
     ? formatActivityLabel(node.activityLabel, agentEncounterDecision)
@@ -437,6 +449,13 @@ function AgentDetailBody({
       toTick: currentTick ?? 999,
     });
   }, [digestBuffer, currentTick, node.id]);
+
+  const intelligenceEntries = useMemo(
+    () => buildIntelligenceDisplay(intelligenceRecords, node.id, graph, currentTick),
+    [intelligenceRecords, node.id, graph, currentTick],
+  );
+
+  const isStranger = node.tier < INTEL_PANEL_FOG_MIN_TIER;
 
   if (agentInfoCard) {
     return (
@@ -539,6 +558,9 @@ function AgentDetailBody({
             )}
           </div>
         )}
+
+        {/* Intelligence — what this agent knows */}
+        <AgentIntelligencePanel entries={intelligenceEntries} isStranger={isStranger} />
       </>
     );
   }
@@ -565,6 +587,9 @@ function AgentDetailBody({
           <RecentActivityLog entries={recentEntries} lastViewedTick={lastViewedTick} />
         </div>
       )}
+
+      {/* Intelligence — what this agent knows */}
+      <AgentIntelligencePanel entries={intelligenceEntries} isStranger={isStranger} />
     </>
   );
 }
