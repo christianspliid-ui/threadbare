@@ -85,7 +85,9 @@ export type EdgeType =
   | 'commanded_by'     // army → commander agent (army leadership)
   | 'participates_in'  // army/agent → battle node (battle participation)
   // Spell System
-  | 'knows_spell';     // actor → spell_template (learned spell)
+  | 'knows_spell'      // actor → spell_template (learned spell)
+  // Causation (THR-116)
+  | 'caused_by';       // event → event/seed (this encounter was set up by that one)
 
 /** Result type for graph mutations */
 export interface GraphMutation {

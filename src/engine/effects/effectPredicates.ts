@@ -11,10 +11,12 @@
 import type { WorldGraph } from '../graph';
 import type { ReachDomain } from '../../types/traits';
 import type { EffectPredicate, PredicateContext } from '../../types/effects';
+import type { HiddenMark, IntelligenceRecord } from '../../types/unifiedAction';
 import {
   HEALTH_LOW_THRESHOLD,
   HEALTH_HIGH_THRESHOLD,
 } from '../../data/effect-constants';
+import { DEFAULT_REPUTATION } from '../../types/disposition';
 
 // ═══════════════════════════════════════════════════════════════════
 // Predicate Evaluation
@@ -72,6 +74,30 @@ export function evaluatePredicate(
     return ctx.factionRank >= minRank;
   }
 
+  // THR-116: aftermath conditional predicate extensions
+  if (predicate.startsWith('has_mark:')) {
+    const category = predicate.slice('has_mark:'.length);
+    return ctx.hiddenMarkCategories.has(category);
+  }
+  if (predicate.startsWith('has_intel:')) {
+    const category = predicate.slice('has_intel:'.length);
+    return ctx.intelCategories.has(category);
+  }
+  if (predicate.startsWith('reputation_above:')) {
+    const threshold = parseFloat(predicate.slice('reputation_above:'.length));
+    if (isNaN(threshold)) return false;
+    return ctx.reputationScore > threshold;
+  }
+  if (predicate.startsWith('reputation_below:')) {
+    const threshold = parseFloat(predicate.slice('reputation_below:'.length));
+    if (isNaN(threshold)) return false;
+    return ctx.reputationScore < threshold;
+  }
+  if (predicate.startsWith('faction_controls:')) {
+    const locationId = predicate.slice('faction_controls:'.length);
+    return ctx.controlledLocations.has(locationId);
+  }
+
   // Unknown predicate — fail-soft: treat as false
   return false;
 }
@@ -98,12 +124,17 @@ export function evaluateOptionalCondition(
  * Build a PredicateContext from graph state for a given agent.
  * Used by encounter resolution and other systems that need to evaluate
  * conditional effects.
+ *
+ * @param hiddenMarks - Optional GameState.hiddenMarks (needed for has_mark: predicates, THR-116)
+ * @param intelligenceRecords - Optional GameState.intelligenceRecords (needed for has_intel: predicates, THR-116)
  */
 export function buildPredicateContext(
   graph: WorldGraph,
   agentId: string,
   stepReach?: ReachDomain,
   encounterType?: string,
+  hiddenMarks?: readonly HiddenMark[],
+  intelligenceRecords?: readonly IntelligenceRecord[],
 ): PredicateContext {
   const agentNode = graph.getNode(agentId);
 
@@ -170,6 +201,8 @@ export function buildPredicateContext(
   const healthHigh = doomFraction <= HEALTH_HIGH_THRESHOLD;
 
   // Alone / outnumbered — check co-located agents
+  // TODO(THR-??): allyCount and enemyCount are stubs. alone is always true, outnumbered always false.
+  // Full implementation requires graph traversal to count co-located allies/enemies.
   const allyCount = 0;
   const enemyCount = 0;
   const alone = allyCount === 0 && enemyCount === 0;
@@ -206,6 +239,38 @@ export function buildPredicateContext(
   // Faction rank
   const factionRank = (agentNode?.properties.factionRank as number) ?? 0;
 
+  // THR-116: hidden mark categories for this agent
+  const hiddenMarkCategories = new Set<string>();
+  if (hiddenMarks) {
+    for (const mark of hiddenMarks) {
+      if (mark.targetAgentId === agentId) {
+        hiddenMarkCategories.add(mark.category);
+      }
+    }
+  }
+
+  // THR-116: intelligence categories held by this agent
+  const intelCategories = new Set<string>();
+  if (intelligenceRecords) {
+    for (const rec of intelligenceRecords) {
+      if (rec.agentId === agentId) {
+        intelCategories.add(rec.category);
+      }
+    }
+  }
+
+  // THR-116: agent's reputation score
+  const reputationScore = (agentNode?.properties.reputationScore as number | undefined) ?? DEFAULT_REPUTATION;
+
+  // THR-116: location IDs controlled by this agent's faction
+  const controlledLocations = new Set<string>();
+  if (agentFaction) {
+    const controlEdges = graph.getOutgoingEdges(agentFaction, 'controls');
+    for (const ce of controlEdges) {
+      controlledLocations.add(ce.target);
+    }
+  }
+
   return {
     inCombat,
     inSocial,
@@ -223,5 +288,9 @@ export function buildPredicateContext(
     agentTraits,
     reachValues,
     factionRank,
+    hiddenMarkCategories,
+    intelCategories,
+    reputationScore,
+    controlledLocations,
   };
 }

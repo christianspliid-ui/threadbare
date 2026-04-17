@@ -183,6 +183,8 @@ export interface ThreadedNodeBase {
   threadEdgeId: string;
   attentionMode: 'pause' | 'auto_resolve';
   courtPosition: CourtPosition | null;
+  /** Thread bond strength [0,1] — mutated by thread_strengthen/weaken/break effects (THR-116). */
+  threadStrength: number;
 }
 
 export interface ThreadedAgent extends ThreadedNodeBase {
@@ -341,6 +343,8 @@ export function getThreadedNodes(graph: WorldGraph, ascendantId: string): Thread
     const attentionMode = (influenceProps.attentionMode as 'pause' | 'auto_resolve') ?? 'auto_resolve';
     const courtPosition = (influenceProps.courtPosition as CourtPosition) ?? null;
 
+    const threadStrength = typeof edge.properties.strength === 'number' ? edge.properties.strength : 1.0;
+
     const base: ThreadedNodeBase = {
       id: targetNode.id,
       name: targetNode.name,
@@ -350,6 +354,7 @@ export function getThreadedNodes(graph: WorldGraph, ascendantId: string): Thread
       threadEdgeId: edge.id,
       attentionMode,
       courtPosition,
+      threadStrength,
     };
 
     // ── Classify by node type ──────────────────────────────────────

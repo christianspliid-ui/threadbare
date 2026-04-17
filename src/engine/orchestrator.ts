@@ -1802,7 +1802,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 2a.8: Evaluate encounter seeds planted by aftermath reactions
   {
     const seedRng = mulberry32(state.seed + state.tick * 53);
-    s = evaluateEncounterSeeds(s, s.tick, seedRng);
+    s = evaluateEncounterSeeds(s, s.tick, seedRng, runtime);
     phaseEventCounts['encounter_seeding'] = s.tickEvents.length - prevEventCount;
     prevEventCount = s.tickEvents.length;
   }

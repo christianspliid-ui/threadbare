@@ -178,11 +178,11 @@ describe('unifiedActionPhases — multi-step integration', () => {
       expect(successOutcomes).toContain(so);
     }
 
-    // Should have 3 events: 2 step-progression + 1 completion
-    expect(allEvents.length).toBe(3);
-    // Phase 3: step verbs may vary (progresses, excels, pushes through at cost)
-    expect(allEvents[0].message).toContain('step 1/3');
-    expect(allEvents[1].message).toContain('step 2/3');
+    // THR-86 may add extra routine narrative events; filter for step-progression events
+    const stepEvents = allEvents.filter(e => /step \d+\/3/.test(e.message ?? ''));
+    expect(stepEvents.length).toBe(2);
+    expect(stepEvents[0].message).toContain('step 1/3');
+    expect(stepEvents[1].message).toContain('step 2/3');
   });
 
   it('stops at step 2 with fail_action when step fails', () => {

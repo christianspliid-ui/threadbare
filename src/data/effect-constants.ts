@@ -130,6 +130,28 @@ export const ACTION_TRIGGER_DEFAULT_COOLDOWN = 6;
 
 // ─── Content Primitive: choice_set (TB-128) ──────────────────────
 
+// ─── Thread mutation constants (THR-116) ──────────────────────────
+
+/** Default strength delta applied by thread_strengthen when effect omits delta. */
+export const THREAD_STRENGTHEN_DEFAULT = 0.15;
+
+/** Default strength delta applied by thread_weaken (positive; applied as subtraction). */
+export const THREAD_WEAKEN_DEFAULT = 0.2;
+
+/** Starting strength on a newly branched thread edge. */
+export const THREAD_BRANCH_INITIAL_STRENGTH = 0.3;
+
+/** Clamp ceiling for thread.properties.strength. */
+export const THREAD_STRENGTH_MAX = 1.0;
+
+/** Clamp floor for thread.properties.strength. */
+export const THREAD_STRENGTH_MIN = 0.0;
+
+/** GC retention: 0 = never GC caused_by edges (indefinite in v1). */
+export const CAUSATION_EDGE_RETENTION_TICKS = 0;
+
+// ─── Choice Set (TB-128) ──────────────────────────────────────────
+
 /** Auto-resolve timeout for player choices (ms before auto-picking highest-weight option). */
 export const CHOICE_SET_DEFAULT_TIMEOUT_MS = 30_000;
 

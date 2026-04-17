@@ -12,6 +12,7 @@ import type { AttentionTier } from './attention';
 import type { RewardPoolRecipe } from './attachments';
 import type { EncounterChoiceMemory, EncounterSupportBinding, EncounterSupportBundle } from './encounter';
 import type { ClearanceGateConfig } from './contentShells';
+import type { EffectPredicate } from './effects';
 
 export type ActionScale = 'cosmic' | 'regional' | 'local' | 'personal';
 export type ActionSource = 'agent' | 'player' | 'system';
@@ -169,6 +170,8 @@ export type EncounterAftermathReactionEffect =
     readonly targetAgentId?: string;
     /** Direct the rep change at a faction node. */
     readonly targetFactionId?: string;
+    /** Optional predicate gate — effect skips if predicate evaluates false (THR-116). */
+    readonly when?: EffectPredicate;
   }
   | {
     readonly kind: 'reputation_tally';
@@ -180,11 +183,14 @@ export type EncounterAftermathReactionEffect =
     readonly targetAgentId?: string;
     /** Direct the tally change at a faction node. */
     readonly targetFactionId?: string;
+    /** Optional predicate gate — effect skips if predicate evaluates false (THR-116). */
+    readonly when?: EffectPredicate;
   }
   | {
     readonly kind: 'clearance_gate_tag';
     readonly runtimeId?: string;
     readonly tag: string;
+    readonly when?: EffectPredicate;
   }
   | {
     readonly kind: 'recent_event';
@@ -196,6 +202,7 @@ export type EncounterAftermathReactionEffect =
      * The actor always records implicitly; duplicates are de-duped.
      */
     readonly witnessAgentIds?: readonly string[];
+    readonly when?: EffectPredicate;
   }
   | {
     readonly kind: 'encounter_seed';
@@ -205,6 +212,7 @@ export type EncounterAftermathReactionEffect =
     readonly delayTicks: number;
     readonly priority?: number;
     readonly seedLabel: string;
+    readonly when?: EffectPredicate;
   }
   | {
     readonly kind: 'hidden_mark';
@@ -214,6 +222,7 @@ export type EncounterAftermathReactionEffect =
     readonly revealFamilies?: readonly string[];
     /** Place the mark on a specific agent (not the actor). */
     readonly targetAgentId?: string;
+    readonly when?: EffectPredicate;
   }
   | {
     readonly kind: 'intelligence';
@@ -226,6 +235,7 @@ export type EncounterAftermathReactionEffect =
     readonly reliability?: number;
     /** Grant intelligence to a specific agent (not the actor). */
     readonly targetAgentId?: string;
+    readonly when?: EffectPredicate;
   }
   | {
     readonly kind: 'reputation_set';
@@ -235,6 +245,7 @@ export type EncounterAftermathReactionEffect =
     readonly targetAgentId?: string;
     /** Target a faction node directly. */
     readonly targetFactionId?: string;
+    readonly when?: EffectPredicate;
   }
   | {
     readonly kind: 'apply_condition';
@@ -247,6 +258,7 @@ export type EncounterAftermathReactionEffect =
     readonly targetAgentId?: string;
     readonly targetFactionId?: string;
     readonly targetSublocationId?: string;
+    readonly when?: EffectPredicate;
   }
   | {
     readonly kind: 'remove_condition';
@@ -257,6 +269,7 @@ export type EncounterAftermathReactionEffect =
     readonly targetAgentId?: string;
     readonly targetFactionId?: string;
     readonly targetSublocationId?: string;
+    readonly when?: EffectPredicate;
   }
   | {
     readonly kind: 'condition_attachment';
@@ -273,6 +286,7 @@ export type EncounterAftermathReactionEffect =
     readonly durationOverride?: number;
     /** Number of stacks to apply. Defaults to CONDITION_ATTACHMENT_DEFAULT_STACK_COUNT (1). */
     readonly stackCount?: number;
+    readonly when?: EffectPredicate;
   }
   // ─── World-shaping effects (THR-115) ──────────────────────────────────────
   | {
@@ -292,6 +306,7 @@ export type EncounterAftermathReactionEffect =
     readonly targetLocationId?: string;
     /** Chronicle message override. */
     readonly messageOverride?: string;
+    readonly when?: EffectPredicate;
   }
   | {
     readonly kind: 'emit_omen';
@@ -305,6 +320,7 @@ export type EncounterAftermathReactionEffect =
     readonly scope: EmittedOmenScope;
     /** Optional sphere tint — biases sphere_surge category encounters. */
     readonly sphereAlignment?: SphereName;
+    readonly when?: EffectPredicate;
   }
   | {
     readonly kind: 'faction_splinter';
@@ -314,6 +330,7 @@ export type EncounterAftermathReactionEffect =
     /** Fraction of parent reputation transferred to splinter members (0–1). */
     readonly inheritReputationShare?: number;
     readonly narrativeHook?: string;
+    readonly when?: EffectPredicate;
   }
   | {
     readonly kind: 'faction_absorb';
@@ -321,18 +338,21 @@ export type EncounterAftermathReactionEffect =
     readonly absorbedFactionId: string;
     readonly reputationMerge?: 'max' | 'sum_clamped' | 'weighted_avg';
     readonly narrativeHook?: string;
+    readonly when?: EffectPredicate;
   }
   | {
     readonly kind: 'faction_dissolve';
     readonly factionId: string;
     readonly memberFallback?: 'independent' | 'drift_to_rival';
     readonly narrativeHook?: string;
+    readonly when?: EffectPredicate;
   }
   | {
     readonly kind: 'faction_declare_war';
     readonly factionA: string;
     readonly factionB: string;
     readonly narrativeHook?: string;
+    readonly when?: EffectPredicate;
   }
   | {
     readonly kind: 'faction_force_peace';
@@ -341,6 +361,46 @@ export type EncounterAftermathReactionEffect =
     /** Sentiment boost applied to both parties. Defaults to FACTION_PEACE_DEFAULT_SENTIMENT_BOOST. */
     readonly sentimentBoost?: number;
     readonly narrativeHook?: string;
+    readonly when?: EffectPredicate;
+  }
+  // ─── Thread mutation effects (THR-116) ────────────────────────────────────
+  | {
+    readonly kind: 'thread_strengthen';
+    readonly ascendantId: string;
+    readonly mortalId: string;
+    /** Strength delta. Defaults to THREAD_STRENGTHEN_DEFAULT. */
+    readonly delta?: number;
+    /** Narrative label stored on the thread edge. */
+    readonly reason?: string;
+    readonly when?: EffectPredicate;
+  }
+  | {
+    readonly kind: 'thread_weaken';
+    readonly ascendantId: string;
+    readonly mortalId: string;
+    /** Strength delta (positive value applied as subtraction). Defaults to THREAD_WEAKEN_DEFAULT. */
+    readonly delta?: number;
+    readonly reason?: string;
+    readonly when?: EffectPredicate;
+  }
+  | {
+    readonly kind: 'thread_break';
+    readonly ascendantId: string;
+    readonly mortalId: string;
+    readonly reason?: string;
+    readonly when?: EffectPredicate;
+  }
+  | {
+    readonly kind: 'thread_branch';
+    readonly ascendantId: string;
+    /** Existing thread recipient the branch originates from. */
+    readonly sourceMortalId: string;
+    /** New thread recipient. */
+    readonly newMortalId: string;
+    /** Starting strength of the new thread edge. Defaults to THREAD_BRANCH_INITIAL_STRENGTH. */
+    readonly initialStrength?: number;
+    readonly reason?: string;
+    readonly when?: EffectPredicate;
   };
 
 export interface PendingEncounterSeed {

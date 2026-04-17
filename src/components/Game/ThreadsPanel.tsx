@@ -663,6 +663,18 @@ function CompactThreadRow({
         </div>
       )}
 
+      {/* Thread strength bar — shows bond health; animates on thread_strengthen/weaken/break */}
+      {node.threadStrength < 1.0 && (
+        <div style={{ position: 'relative', height: '2px', borderRadius: 1, backgroundColor: 'rgba(255,255,255,0.07)', marginTop: '4px', overflow: 'hidden' }}>
+          <div style={{
+            position: 'absolute', left: 0, top: 0, bottom: 0,
+            width: `${Math.round(node.threadStrength * 100)}%`,
+            backgroundColor: node.threadStrength > 0.5 ? tierColor : node.threadStrength > 0.25 ? '#e0a020' : '#b03030',
+            transition: 'width 0.6s ease, background-color 0.4s ease',
+          }} />
+        </div>
+      )}
+
       {/* Attention mode toggle (agents only, court position required) */}
       {node.category === 'agent' && node.courtPosition && onToggleAttentionMode && (
         <button

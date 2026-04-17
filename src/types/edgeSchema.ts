@@ -281,6 +281,20 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     description: 'Encounter event occurred at this location. Properties: tick, sublocationId (optional).',
   },
 
+  // ── Causation (THR-116) ────────────────────────────────────
+  // NOTE: In v1, caused_by edge creation often fails silently because action IDs are not
+  // graph nodes. Full implementation requires event-node creation during encounter resolution.
+  // TODO(THR-???): wire encounter history event nodes so caused_by edges can be created reliably.
+  caused_by: {
+    type: 'caused_by',
+    sourceNodeType: 'event',
+    targetNodeType: 'event',
+    direction: 'directed',
+    cardinality: 'many-to-one',
+    requiredProperties: ['seedId', 'seedLabel', 'firedTick'],
+    description: 'Seeded encounter action was caused by a prior encounter event. Properties: seedId, seedLabel, firedTick.',
+  },
+
   // ── Economic ───────────────────────────────────────────────
   trades_with: {
     type: 'trades_with',

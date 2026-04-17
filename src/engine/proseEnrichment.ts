@@ -100,6 +100,10 @@ export interface NarrativeContext {
   /** Current tick — populated alongside `intelligence` for trace emission during
    * `enrichProse`. Silent fallback to 0 if not provided. */
   tick?: number;
+
+  /** Causal predecessor — populated when this encounter was seeded by another (THR-116).
+   * Enables `{cause:label}` and `{cause:ticksAgo}` placeholders. */
+  cause?: { label: string; ticksAgo: number };
 }
 
 /**
@@ -301,6 +305,14 @@ export function enrichProse(template: string, ctx: NarrativeContext): string {
   // Residual strip: any unknown / malformed {intel:*} tokens (including
   // {intel:typo} or calls without an intelligence view) never leak to players.
   result = result.replace(/\{intel:[^}]+\}/g, '');
+
+  // Causal predecessor placeholders (THR-116) — {cause:label}, {cause:ticksAgo}.
+  if (ctx.cause) {
+    result = result.replace(/\{cause:label\}/g, ctx.cause.label);
+    result = result.replace(/\{cause:ticksAgo\}/g, String(ctx.cause.ticksAgo));
+  }
+  // Residual strip: {cause:*} tokens when no cause context — never leak raw tokens.
+  result = result.replace(/\{cause:[^}]+\}/g, '');
 
   // Conditional blocks: {?has_X}...{/has_X} and {?no_X}...{/no_X}
   result = resolveConditionals(result, ctx);

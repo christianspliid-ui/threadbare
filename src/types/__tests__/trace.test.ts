@@ -182,6 +182,10 @@ describe('TraceEntry types', () => {
       'intelligence_granted', 'authored_attachment_created',
       // Complication outcome traces (THR-20)
       'complication_selection',
+      // Causation + conditional aftermath (THR-116)
+      'causation_edge_created', 'causation_edge_creation_skipped',
+      'aftermath_effect_skipped_by_when', 'aftermath_effect_when_passed',
+      'thread_mutation_applied', 'thread_mutation_skipped',
     ];
     for (const cat of traceEntryCategories) {
       expect(TRACE_CATEGORIES).toContain(cat);

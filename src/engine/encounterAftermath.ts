@@ -13,6 +13,14 @@ import type {
 import { emitTrace } from './traceBuffer';
 import type { SimulationRuntime } from './simulationRuntime';
 import { touchWorld, touchStructure } from './simulationRuntime';
+import { buildPredicateContext, evaluateOptionalCondition } from './effects/effectPredicates';
+import {
+  THREAD_STRENGTHEN_DEFAULT,
+  THREAD_WEAKEN_DEFAULT,
+  THREAD_BRANCH_INITIAL_STRENGTH,
+  THREAD_STRENGTH_MAX,
+  THREAD_STRENGTH_MIN,
+} from '../data/effect-constants';
 import { CONDITION_DURATIONS } from '../data/condition-trait-content';
 import { CONDITION_ATTACHMENT_DEFAULT_STACK_COUNT } from '../data/attachment-slot-constants';
 import {
@@ -233,6 +241,43 @@ export function applyEncounterAftermathReaction(
       effectiveTargetKind,
       summary: `aftermath[${i}] ${effect.kind}: resolved target → ${effectiveTargetKind}:${effectiveTargetId}`,
     });
+
+    // THR-116: evaluate optional `when` predicate before dispatching to handler
+    // Every member of EncounterAftermathReactionEffect now includes when?, so direct access is safe.
+    const whenPredicate = effect.when;
+    if (whenPredicate !== undefined) {
+      const whenTargetId = effectiveTargetId || actorAgentId || '';
+      let whenCtx: import('../types/effects').PredicateContext | undefined;
+      if (whenTargetId) {
+        whenCtx = buildPredicateContext(
+          state.graph,
+          whenTargetId,
+          undefined,
+          action?.templateId,
+          state.hiddenMarks,
+          state.intelligenceRecords,
+        );
+      }
+      const passed = evaluateOptionalCondition(whenPredicate, whenCtx);
+      if (!passed) {
+        emitTrace({
+          tick, category: 'aftermath_effect_skipped_by_when',
+          agentId: actorAgentId, encounterId, actionId, reactionId: reaction.id,
+          effectIndex: i, effectKind: effect.kind,
+          predicate: whenPredicate, targetEntityId: whenTargetId,
+          summary: `aftermath[${i}] ${effect.kind}: skipped — when predicate '${whenPredicate}' false for ${whenTargetId}`,
+        });
+        continue;
+      }
+      // Verbose-tier only (gated to avoid trace flood): log successful pass
+      emitTrace({
+        tick, category: 'aftermath_effect_when_passed',
+        agentId: actorAgentId, encounterId, actionId, reactionId: reaction.id,
+        effectIndex: i, effectKind: effect.kind,
+        predicate: whenPredicate, targetEntityId: whenTargetId,
+        summary: `aftermath[${i}] ${effect.kind}: when predicate '${whenPredicate}' passed`,
+      });
+    }
 
     switch (effect.kind) {
       case 'reputation_score': {
@@ -1688,6 +1733,175 @@ export function applyEncounterAftermathReaction(
           effectDetail: { factionA: effect.factionA, factionB: effect.factionB, previousSentiment: ffpPrevSent, newSentiment: ffpNewSent },
           success: true,
           summary: `faction_force_peace[${i}]: peace between ${effect.factionA} and ${effect.factionB}`,
+        });
+        break;
+      }
+
+      // ─── Thread mutation effects (THR-116) ─────────────────────────────────
+
+      case 'thread_strengthen': {
+        const tsEdges = state.graph.getOutgoingEdges(effect.ascendantId, 'thread')
+          .filter(e => e.target === effect.mortalId);
+        if (tsEdges.length === 0) {
+          emitTrace({
+            tick, category: 'thread_mutation_skipped', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'thread_strengthen', ascendantId: effect.ascendantId, mortalId: effect.mortalId,
+            reason: 'edge_missing',
+            summary: `thread_strengthen[${i}] skipped: no thread edge ${effect.ascendantId} → ${effect.mortalId}`,
+          });
+          break;
+        }
+        const tsEdge = tsEdges[0];
+        const tsBefore = (tsEdge.properties.strength as number | undefined) ?? 0;
+        const tsDelta = effect.delta ?? THREAD_STRENGTHEN_DEFAULT;
+        const tsAfter = Math.min(THREAD_STRENGTH_MAX, tsBefore + tsDelta);
+        tsEdge.properties.strength = tsAfter;
+        if (effect.reason) tsEdge.properties.lastReason = effect.reason;
+        mutationSummary.touchedWorld = true;
+        touchWorld(runtime);
+        emitTrace({
+          tick, category: 'thread_mutation_applied', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'thread_strengthen', ascendantId: effect.ascendantId, mortalId: effect.mortalId,
+          before: { strength: tsBefore, existed: true }, after: { strength: tsAfter, existed: true },
+          delta: tsDelta, reason: effect.reason,
+          summary: `thread_strengthen[${i}]: ${effect.ascendantId}→${effect.mortalId} ${tsBefore.toFixed(2)}→${tsAfter.toFixed(2)}`,
+        });
+        break;
+      }
+
+      case 'thread_weaken': {
+        const twEdges = state.graph.getOutgoingEdges(effect.ascendantId, 'thread')
+          .filter(e => e.target === effect.mortalId);
+        if (twEdges.length === 0) {
+          emitTrace({
+            tick, category: 'thread_mutation_skipped', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'thread_weaken', ascendantId: effect.ascendantId, mortalId: effect.mortalId,
+            reason: 'edge_missing',
+            summary: `thread_weaken[${i}] skipped: no thread edge ${effect.ascendantId} → ${effect.mortalId}`,
+          });
+          break;
+        }
+        const twEdge = twEdges[0];
+        const twBefore = (twEdge.properties.strength as number | undefined) ?? 0;
+        const twDelta = effect.delta ?? THREAD_WEAKEN_DEFAULT;
+        const twAfter = Math.max(THREAD_STRENGTH_MIN, twBefore - twDelta);
+        twEdge.properties.strength = twAfter;
+        if (effect.reason) twEdge.properties.lastReason = effect.reason;
+        mutationSummary.touchedWorld = true;
+        touchWorld(runtime);
+        emitTrace({
+          tick, category: 'thread_mutation_applied', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'thread_weaken', ascendantId: effect.ascendantId, mortalId: effect.mortalId,
+          before: { strength: twBefore, existed: true }, after: { strength: twAfter, existed: true },
+          delta: twDelta, reason: effect.reason,
+          summary: `thread_weaken[${i}]: ${effect.ascendantId}→${effect.mortalId} ${twBefore.toFixed(2)}→${twAfter.toFixed(2)}`,
+        });
+        break;
+      }
+
+      case 'thread_break': {
+        const tbEdges = state.graph.getOutgoingEdges(effect.ascendantId, 'thread')
+          .filter(e => e.target === effect.mortalId);
+        if (tbEdges.length === 0) {
+          emitTrace({
+            tick, category: 'thread_mutation_skipped', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'thread_break', ascendantId: effect.ascendantId, mortalId: effect.mortalId,
+            reason: 'edge_missing',
+            summary: `thread_break[${i}] skipped: no thread edge ${effect.ascendantId} → ${effect.mortalId}`,
+          });
+          break;
+        }
+        const tbEdge = tbEdges[0];
+        const tbStrengthBefore = (tbEdge.properties.strength as number | undefined) ?? 0;
+        state.graph.removeEdge(tbEdge.id);
+        mutationSummary.touchedWorld = true;
+        touchWorld(runtime);
+        // Emit narrative event so the UI can surface the severance
+        const tbEvent: import('../types/gameState').TickEvent = {
+          id: `thread_break_${encounterId}_${reaction.id}_${i}_${tick}`,
+          tick,
+          type: 'narrative',
+          message: effect.reason ?? 'A divine thread has been severed.',
+          significance: 0.75,
+          actorId: actorAgentId,
+        };
+        nextTickEvents = [...nextTickEvents, tbEvent];
+        nextRecentEvents = appendRecentEvent(nextRecentEvents, tbEvent);
+        emitTrace({
+          tick, category: 'thread_mutation_applied', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'thread_break', ascendantId: effect.ascendantId, mortalId: effect.mortalId,
+          before: { strength: tbStrengthBefore, existed: true }, after: { existed: false },
+          reason: effect.reason,
+          summary: `thread_break[${i}]: severed thread ${effect.ascendantId}→${effect.mortalId}`,
+        });
+        break;
+      }
+
+      case 'thread_branch': {
+        // Verify source thread edge exists
+        const tbrSrcEdges = state.graph.getOutgoingEdges(effect.ascendantId, 'thread')
+          .filter(e => e.target === effect.sourceMortalId);
+        if (tbrSrcEdges.length === 0) {
+          emitTrace({
+            tick, category: 'thread_mutation_skipped', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'thread_branch', ascendantId: effect.ascendantId, mortalId: effect.newMortalId,
+            reason: 'edge_missing',
+            summary: `thread_branch[${i}] skipped: source thread ${effect.ascendantId}→${effect.sourceMortalId} not found`,
+          });
+          break;
+        }
+        // Verify new mortal node exists
+        if (!state.graph.getNode(effect.newMortalId)) {
+          emitTrace({
+            tick, category: 'thread_mutation_skipped', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'thread_branch', ascendantId: effect.ascendantId, mortalId: effect.newMortalId,
+            reason: 'node_missing',
+            summary: `thread_branch[${i}] skipped: new mortal node ${effect.newMortalId} not found`,
+          });
+          break;
+        }
+        const tbrStrength = effect.initialStrength ?? THREAD_BRANCH_INITIAL_STRENGTH;
+        const tbrEdgeId = `thread_${effect.ascendantId}_${effect.newMortalId}_branch_${tick}`;
+        try {
+          state.graph.addEdge({
+            id: tbrEdgeId,
+            source: effect.ascendantId,
+            target: effect.newMortalId,
+            type: 'thread',
+            properties: {
+              strength: tbrStrength,
+              branchedFromMortalId: effect.sourceMortalId,
+              branchedAtTick: tick,
+              reason: effect.reason,
+            },
+          });
+        } catch {
+          emitTrace({
+            tick, category: 'thread_mutation_skipped', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'thread_branch', ascendantId: effect.ascendantId, mortalId: effect.newMortalId,
+            reason: 'duplicate_edge',
+            summary: `thread_branch[${i}] skipped: edge ${tbrEdgeId} already exists`,
+          });
+          break;
+        }
+        mutationSummary.touchedWorld = true;
+        touchWorld(runtime);
+        emitTrace({
+          tick, category: 'thread_mutation_applied', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'thread_branch', ascendantId: effect.ascendantId, mortalId: effect.newMortalId,
+          before: { existed: false }, after: { strength: tbrStrength, existed: true },
+          reason: effect.reason,
+          summary: `thread_branch[${i}]: ${effect.ascendantId}→${effect.newMortalId} (branched from ${effect.sourceMortalId}, strength ${tbrStrength.toFixed(2)})`,
         });
         break;
       }

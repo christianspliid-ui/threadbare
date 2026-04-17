@@ -85,7 +85,14 @@ export type TraceCategory =
   | 'faction_absorbed'
   | 'faction_dissolved'
   | 'faction_war_declared'
-  | 'faction_peace_forced';
+  | 'faction_peace_forced'
+  // Causation + conditional aftermath traces (THR-116)
+  | 'causation_edge_created'
+  | 'causation_edge_creation_skipped'
+  | 'aftermath_effect_skipped_by_when'
+  | 'aftermath_effect_when_passed'
+  | 'thread_mutation_applied'
+  | 'thread_mutation_skipped';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -161,6 +168,13 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'faction_dissolved',
   'faction_war_declared',
   'faction_peace_forced',
+  // Causation + conditional aftermath traces (THR-116)
+  'causation_edge_created',
+  'causation_edge_creation_skipped',
+  'aftermath_effect_skipped_by_when',
+  'aftermath_effect_when_passed',
+  'thread_mutation_applied',
+  'thread_mutation_skipped',
 ];
 
 /** Base shape for all trace entries */

@@ -46,7 +46,13 @@ export type ParameterizedCondition =
   | `has_trait:${string}`
   | `lacks_trait:${string}`
   | `reach_above:${string}:${string}`
-  | `faction_rank:${string}`;
+  | `faction_rank:${string}`
+  // THR-116: aftermath conditional effect predicates
+  | `has_mark:${string}`
+  | `has_intel:${string}`
+  | `reputation_above:${string}`
+  | `reputation_below:${string}`
+  | `faction_controls:${string}`;
 
 /** Union of all condition types */
 export type EffectPredicate = EffectCondition | ParameterizedCondition;
@@ -919,6 +925,15 @@ export interface PredicateContext {
   readonly agentTraits: ReadonlySet<string>;
   readonly reachValues: Partial<Record<ReachDomain, number>>;
   readonly factionRank: number;
+  // THR-116: aftermath conditional predicate extensions
+  /** Hidden mark categories currently placed on this agent. */
+  readonly hiddenMarkCategories: ReadonlySet<string>;
+  /** Intelligence categories currently held by this agent. */
+  readonly intelCategories: ReadonlySet<string>;
+  /** Agent's current reputationScore (0–1). Falls back to DEFAULT_REPUTATION. */
+  readonly reputationScore: number;
+  /** Location IDs currently controlled by this agent's faction. */
+  readonly controlledLocations: ReadonlySet<string>;
 }
 
 // ═══════════════════════════════════════════════════════════════════
