@@ -60,6 +60,8 @@ Every `narrative` field in steps and outcomes supports dynamic text substitution
 | `{doom_adj}` | Doom archetype vocabulary — adjective | "fractured" (breach) / "inexorable" (convergence) |
 | `{doom_atmosphere}` | Doom archetype vocabulary — atmospheric phrase | "something presses through" (breach) |
 
+**How to verify:** Run the DebugPanel Trace tab filtered on `narrative_generation`. Every step and outcome narrative you see in game should render with placeholders resolved — not as literal `{name}` / `{?has_faction}` text. The regression locks live in `src/engine/__tests__/unifiedAdapterProseEnrichment.test.ts`.
+
 **Conditional blocks** — prose that only appears if a condition is true:
 
 ```
@@ -163,23 +165,27 @@ Polarity determines whether reputation grows in the "virtuous" or "notorious" di
 
 ### Capability 5: Graph Operations — Changing the World's Structure
 
-Encounters can create nodes, edges, and modify properties on the world graph. These aren't cosmetic — they change what exists in the world.
+Encounters can cause the world graph to be structurally mutated. These changes aren't cosmetic — they change what exists in the world. The authoring surface and the engine implementation are distinct levels; understanding both prevents writing aftermath that tries to call the wrong thing.
 
-**Available operations (all fail-soft):**
+#### Engine-internal helpers (not callable from authored aftermath)
 
-| Operation | What It Does | When To Use |
-|---|---|---|
-| `createSublocation` | Creates a new sublocation inside a location | Agent builds a shrine, founds a chapter house, establishes a workshop |
-| `createTradeRoute` | Creates a `trades_with` edge between locations | Agent brokers a deal, opens a supply line |
-| `claimControl` | Creates a `controls` edge | Agent seizes a location or faction |
-| `joinOrUpdateMembership` | Creates a `member_of` edge | Agent joins or is accepted into a faction |
-| `modifyLocationProperty` | Changes prosperity, defense, magicalSaturation, etc. | Agent's actions improve or damage a settlement |
-| `createRelationEdge` | Creates any custom edge type | Sacred routes, patronage networks, spy networks, alliances |
-| `recordIntelligence` | Stores intel on agent node | Agent learns about a shrine, trade route, agent network |
+These helpers are used by engine code (tick phases, attachment pipeline, agent movement, encounter resolution). Authored encounter aftermath cannot invoke them directly. The list is here so you know what structural mutations the engine can perform, which in turn tells you what shape of outcome a new authored effect kind could produce if you propose one.
 
-**From the effect system (40 effect types):**
+| Helper | What It Does |
+|---|---|
+| `createSublocation` | Creates a new sublocation inside a location |
+| `createTradeRoute` | Creates a `trades_with` edge between locations |
+| `claimControl` | Creates a `controls` edge |
+| `joinOrUpdateMembership` | Creates a `member_of` edge |
+| `modifyLocationProperty` | Changes prosperity, defense, magicalSaturation, etc. |
+| `createRelationEdge` | Creates any custom edge type |
+| `recordIntelligence` | Stores intel on agent node |
 
-| Effect | What It Does |
+**Engine-internal effect primitives (used in attachment / spell pipelines, NOT in encounter aftermath):**
+
+The attachment and spell systems compose effects from a category pool of ~40 primitive types. These are the mechanical vocabulary for authored **attachments** and **spells**, not for encounter aftermath. The table below lists category types, each of which has multiple concrete sub-variants.
+
+| Effect category | What It Does |
 |---|---|
 | `GraphMutationEffect` | Direct CRUD: `add_edge`, `remove_edge`, `set_property`, `remove_node` |
 | `CreateStructureEffect` | Creates locations, sublocations, landmarks, trade routes, barriers |
@@ -187,7 +193,26 @@ Encounters can create nodes, edges, and modify properties on the world graph. Th
 | `FactionManipulateEffect` | Shift relationships, transfer control, splinter, absorb, declare war, force peace |
 | `SpawnEffect` | Brings entities into existence (agents, encounters, attachments, locations) |
 
-**Why this changes what you write:** When you know an encounter can literally create a new location, found a faction chapter, or establish a trade route, you write *stories about building things*. A founding scene isn't just narrative — it produces a sublocation node that other agents can visit, other encounters can reference, and the map can display. **Write encounters that leave structural fingerprints on the graph.** If an agent "establishes a guild chapter," that should be a `createSublocation` call, not just prose that says it happened.
+**For encounter aftermath authoring, use the typed aftermath effect kinds in Part 5 § "Aftermath Reaction Effect Types" (18 kinds).** Raw graph-mutation primitives are not exposed to authored aftermath — propose a new typed kind if you need one.
+
+#### Authored aftermath surface for graph mutation
+
+The following typed effects ARE callable from `aftermathConfig.reactions[].effects` and constitute the complete graph-mutation vocabulary for encounter authors:
+
+- `spawn_artifact` — creates artifact node + possesses/bonded_to/contains edges (THR-115)
+- `emit_omen` — appends to `GameState.emittedOmens`, drives encounter bias (THR-115)
+- `faction_splinter` / `faction_absorb` / `faction_dissolve` — faction topology surgery (THR-115)
+- `faction_declare_war` / `faction_force_peace` — faction sentiment edges (THR-115)
+- `intelligence` — writes `intelligenceRecords` on agent node (existing)
+- `apply_condition` / `remove_condition` / `condition_attachment` — condition edges + attachments (THR-114 / THR-117)
+- `hidden_mark` — discoverable secret on agent (existing)
+- `encounter_seed` — plants future encounter, creates `caused_by` edge (THR-116)
+
+If you need a structural mutation that no typed effect covers, propose a new aftermath effect kind — do not try to smuggle engine helpers into authored aftermath.
+
+**How to verify:** Grep `src/engine/encounterAftermath.ts` for the `applyEncounterAftermathReaction` function — the polymorphic switch on `effect.kind` enumerates the actual authoring surface. The count there is the source of truth, not "40".
+
+**Why this changes what you write:** When you know an encounter can cause artifacts to be created, omens to be emitted, or faction topology to change, you write *stories about structural consequences*. A founding scene produces a real artifact or sublocation that other agents can discover, encounters can reference, and the map can display. **Write encounters that leave structural fingerprints on the graph.** If an agent "establishes a guild chapter," that should produce a `spawn_artifact` or faction effect — not just prose that says it happened.
 
 ---
 
@@ -259,6 +284,47 @@ The player is a god. Their choices are always divine interventions, never direct
 - `essenceSpentOnEncounters`
 
 **Why this changes what you write:** You're not writing choices for a character — you're writing moments where divine observation creates tension. The god sees the agent struggling and must decide: pour power in, or let them find their own way? **Write moments where the intervention decision is genuinely difficult — where supporting has a cost beyond essence, and withdrawing has consequences beyond failure probability.** The intervention ratio is tracked. A god who always meddles creates a different story than one who watches.
+
+---
+
+### Capability 8: Complication System — Failure Has Texture (THR-20)
+
+When a failure-tier step outcome occurs (success_at_cost / failure / critical_failure), the engine automatically selects a concrete narrative complication from a pool of templates. This runs for **all** action templates, not just the proving-slice families. The complication is displayed in the EncounterVeil and emits notification events.
+
+**You do not author complications per-encounter.** Complications come from the global `src/data/complication-templates.ts` pool. However, the complication **scoring and selection** is influenced by:
+- The **action's reach** — matching templates score higher (e.g. a `heart` action preferentially draws `broken_trust` and `witness` complications; a `shadow` action preferentially draws `rival_attention` and `scar`)
+- The **active omen category** — synergy bonus if the complication category matches omen themes
+- The **doom stage** — `worsening_convergence` templates score higher at stage 3+
+- **Scar stacking** — if the actor already has scar attachments, diminishing returns apply
+- The **location's unrest** — `location_fallout` complications diminish when unrest is already maxed
+
+**Complication effects that run automatically (you don't need to wire these per-encounter):**
+
+| Effect type | What it does |
+|---|---|
+| `unrest_delta` | Raises/lowers location unrest |
+| `attachment_add` | Creates a mark/scar attachment on the actor |
+| `doom_micro_tick` | Advances the doom clock by a small magnitude |
+| `relates_to_create` | Creates a graph edge between actor and a witness/faction member |
+| `reputation_delta` | Adjusts actor reputation |
+| `quintessence_delta` | Adjusts the actor's quintessence |
+| `location_fallout` | Marks a location as unsafe/compromised |
+
+**Prose placeholders available in complication templates** (resolve from live graph):
+- `{name}` — actor's name · `{possessive}` — `their` · `{location}` — current location name
+- `{witness}` — a randomly chosen present agent · `{faction}` — actor's faction name
+- `{omen_atmosphere}` — flavored atmosphere from the active omen
+
+**What you CAN do:** Author new complication templates in `src/data/complication-templates.ts`. Each needs:
+- `id`, `category` (9 options), `name`, `severity` (`minor`/`standard`/`severe`)
+- `proseTemplates: string[]` — 3+ prose variants using placeholders
+- `effects: ComplicationEffect[]` — at least one game-state effect
+- Optional `requirements`: `witnessesPresent`, `factionRelationship`, `atSettlement`, `minDoomStage`, `omenCategory`
+- Optional `reachAffinity: string[]` and `omenSynergy: string[]` for scoring bias
+
+**Notification routing:** Severe → `alert` channel. Standard → `toast`. Minor → silent (prose-only in EncounterVeil).
+
+**Why this changes what you write:** Failure in this engine is never "nothing happened." Write failure branch prose that *opens space* for the complication to specify the consequence: "The attempt goes wrong—" leaves room. "The merchant catches you red-handed—" over-specifies and may contradict a `scar` or `worsening_convergence` complication. Let the complication system carry the specificity; your prose carries the emotional register.
 
 ---
 
@@ -352,47 +418,6 @@ Five effects reshape the faction graph:
 - `weighted_avg` — proportional blend based on member counts
 
 **When to use faction effects:** These are climax-level story beats, not routine aftermath. Reserve them for encounters where the fiction demands structural change — the betrayal that tears a guild apart, the war declaration at the coronation, the peace treaty as divine intervention. Each call mutates `WorldGraph` topology and bumps `structuralCacheVersion` — other systems will notice.
-
----
-
-### Capability 8: Complication System — Failure Has Texture (THR-20)
-
-When a failure-tier step outcome occurs (success_at_cost / failure / critical_failure), the engine automatically selects a concrete narrative complication from a pool of templates. This runs for **all** action templates, not just the proving-slice families. The complication is displayed in the EncounterVeil and emits notification events.
-
-**You do not author complications per-encounter.** Complications come from the global `src/data/complication-templates.ts` pool. However, the complication **scoring and selection** is influenced by:
-- The **action's reach** — matching templates score higher (e.g. a `heart` action preferentially draws `broken_trust` and `witness` complications; a `shadow` action preferentially draws `rival_attention` and `scar`)
-- The **active omen category** — synergy bonus if the complication category matches omen themes
-- The **doom stage** — `worsening_convergence` templates score higher at stage 3+
-- **Scar stacking** — if the actor already has scar attachments, diminishing returns apply
-- The **location's unrest** — `location_fallout` complications diminish when unrest is already maxed
-
-**Complication effects that run automatically (you don't need to wire these per-encounter):**
-
-| Effect type | What it does |
-|---|---|
-| `unrest_delta` | Raises/lowers location unrest |
-| `attachment_add` | Creates a mark/scar attachment on the actor |
-| `doom_micro_tick` | Advances the doom clock by a small magnitude |
-| `relates_to_create` | Creates a graph edge between actor and a witness/faction member |
-| `reputation_delta` | Adjusts actor reputation |
-| `quintessence_delta` | Adjusts the actor's quintessence |
-| `location_fallout` | Marks a location as unsafe/compromised |
-
-**Prose placeholders available in complication templates** (resolve from live graph):
-- `{name}` — actor's name · `{possessive}` — `their` · `{location}` — current location name
-- `{witness}` — a randomly chosen present agent · `{faction}` — actor's faction name
-- `{omen_atmosphere}` — flavored atmosphere from the active omen
-
-**What you CAN do:** Author new complication templates in `src/data/complication-templates.ts`. Each needs:
-- `id`, `category` (9 options), `name`, `severity` (`minor`/`standard`/`severe`)
-- `proseTemplates: string[]` — 3+ prose variants using placeholders
-- `effects: ComplicationEffect[]` — at least one game-state effect
-- Optional `requirements`: `witnessesPresent`, `factionRelationship`, `atSettlement`, `minDoomStage`, `omenCategory`
-- Optional `reachAffinity: string[]` and `omenSynergy: string[]` for scoring bias
-
-**Notification routing:** Severe → `alert` channel. Standard → `toast`. Minor → silent (prose-only in EncounterVeil).
-
-**Why this changes what you write:** Failure in this engine is never "nothing happened." Write failure branch prose that *opens space* for the complication to specify the consequence: "The attempt goes wrong—" leaves room. "The merchant catches you red-handed—" over-specifies and may contradict a `scar` or `worsening_convergence` complication. Let the complication system carry the specificity; your prose carries the emotional register.
 
 ---
 
@@ -693,6 +718,27 @@ These resolve from `ctx.cause` in `NarrativeContext`. If no cause is present, `{
 
 ---
 
+### Trace Categories You Can Filter On
+
+Content authoring often needs to verify "did my effect actually fire?" DebugPanel's Trace tab filters on any of the categories below, grouped by what they prove:
+
+| Verifies... | Categories |
+|---|---|
+| Prose enrichment works | `narrative_generation`, `intelligence_referenced` |
+| Aftermath fired | `encounter_aftermath_applied`, `encounter_aftermath_effect` |
+| Seeds planted and triggered | `encounter_seed_planted`, `encounter_seed_triggered`, `causation_edge_created` (THR-116) |
+| Hidden marks placed, revealed, or decayed | `hidden_mark_placed`, `hidden_mark_revealed` |
+| Intelligence granted, consumed, referenced | `intelligence_granted`, `intelligence_referenced` |
+| Multi-target aftermath (THR-114) | `aftermath_target_resolved`, `aftermath_target_invalid`, `faction_reputation_changed`, `reputation_set_applied`, `condition_applied`, `condition_removed` |
+| World-shaping aftermath (THR-115) | `artifact_spawned`, `omen_emitted`, `omen_decayed`, `faction_splintered`, `faction_absorbed`, `faction_dissolved`, `faction_war_declared`, `faction_peace_forced` |
+| Conditional / causation effects (THR-116) | `aftermath_effect_skipped_by_when`, `aftermath_effect_when_passed`, `thread_mutation_applied`, `thread_mutation_skipped` |
+| Graph mutation & UI choice flow | `graph_op_execution`, `choice_set_player_resolved`, `choice_set_player_dismissed` |
+| Complication outcomes (THR-20) | `complication_selection` |
+
+**How to use:** Open DebugPanel (backtick or F1), select the Trace tab, check the category filter chips. Full TypeScript interface definitions for each trace type live in `src/types/trace.ts`.
+
+---
+
 ## Part 6: The Exemplars — Study These Encounters
 
 These encounters demonstrate championship-level systemic wiring. Read them before authoring new content.
@@ -738,7 +784,7 @@ Success and failure both produce the same kind of persistence — maybe both add
 This guide should be read before these skills:
 
 - **`encounter-pipeline`** — The four-pass pipeline authors encounters. This guide tells authors *what to write about* based on engine capabilities. The systems-audit agent (Pass 3) should validate wiring against this guide.
-- **`attachment-pipeline`** — Attachments use the same effect system. The 40 effect types are the mechanical vocabulary.
+- **`attachment-pipeline`** — Attachments compose behavior from the engine's effect primitive categories (`GraphMutationEffect`, `CreateStructureEffect`, `SpawnEffect`, etc.). These primitives are distinct from the 18 typed aftermath effect kinds — the attachment pool is authored at a lower level. See the attachment-pipeline skill for the full vocabulary.
 - **`prose-content-systems`** — Day-to-day content uses enrichment placeholders and narrative templates. This guide explains what those placeholders resolve to and why they matter.
 - **`prose-pipeline`** — Resolver architecture for graph-walking prose. This guide explains the other side: how encounter outcomes create the graph state that resolvers later walk.
 - **`encounter-actor-systems`** — The scoring, filtering, and resolution systems. This guide explains how template fields feed into those systems.
