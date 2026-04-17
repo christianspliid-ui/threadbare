@@ -237,12 +237,13 @@ describe('Gate Duty aftermath progression', () => {
 
     const reaction = actionAfterResolution?.aftermathSummary?.reactions?.[0];
     expect(reaction).toBeDefined();
-    state = applyEncounterAftermathReaction(
+    ({ state } = applyEncounterAftermathReaction(
       state,
       actionAfterResolution as UnifiedAction,
       reaction!,
       state.tick,
-    );
+      runtime,
+    ));
     state = {
       ...state,
       encounterNotifications: (state.encounterNotifications ?? []).map(notification =>

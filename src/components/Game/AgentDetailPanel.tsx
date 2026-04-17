@@ -477,6 +477,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
                   totalTicks={att.totalTicks}
                   durationLabel={att.durationLabel}
                   onClick={onAttachmentClick ? () => onAttachmentClick(att.id) : undefined}
+                  sourceEncounterId={att.sourceEncounterId}
                 />
               ))}
               {detail.conditions.length > MAX_ATTACHMENT_ROWS && (

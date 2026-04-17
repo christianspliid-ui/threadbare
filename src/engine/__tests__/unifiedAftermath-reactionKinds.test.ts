@@ -13,6 +13,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { WorldGraph } from '../graph';
 import { applyEncounterAftermathReaction } from '../encounterAftermath';
 import { clearTraces, enableTracing, disableTracing, getTraces } from '../traceBuffer';
+import { createSimulationRuntime, type SimulationRuntime } from '../simulationRuntime';
 import type { GameState } from '../../types/gameState';
 import type { ClearanceGateRuntimeState } from '../../types/contentShells';
 import type { EncounterAftermathReaction, UnifiedAction } from '../../types/unifiedAction';
@@ -100,7 +101,8 @@ function makeAction(): UnifiedAction {
 }
 
 describe('unifiedAftermath — all 7 effect kinds (THR-90)', () => {
-  beforeEach(() => { clearTraces(); enableTracing(); });
+  let runtime: SimulationRuntime;
+  beforeEach(() => { clearTraces(); enableTracing(); runtime = createSimulationRuntime(); });
   afterEach(() => { clearTraces(); disableTracing(); });
 
   it('fires all 7 effect kinds: correct state mutations + trace contract', () => {
@@ -130,7 +132,7 @@ describe('unifiedAftermath — all 7 effect kinds (THR-90)', () => {
     };
 
     // (F2 fix) Use the returned state for state mutation assertions
-    const updated = applyEncounterAftermathReaction(state, action, reaction, 10);
+    const { state: updated } = applyEncounterAftermathReaction(state, action, reaction, 10, runtime);
     const traces = getTraces();
 
     // (a) — state mutations via returned state

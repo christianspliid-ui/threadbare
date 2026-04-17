@@ -135,17 +135,37 @@ export interface EncounterAftermathChange {
   readonly actorName?: string;
 }
 
+/**
+ * Resolved target for a multi-target aftermath effect.
+ * `actor_fallback` means no explicit target was supplied and the action actor was used.
+ */
+export type AftermathTarget =
+  | { readonly kind: 'agent'; readonly id: string }
+  | { readonly kind: 'faction'; readonly id: string }
+  | { readonly kind: 'sublocation'; readonly id: string }
+  | { readonly kind: 'actor_fallback' };
+
 export type EncounterAftermathReactionEffect =
   | {
     readonly kind: 'reputation_score';
+    /** @deprecated Use targetAgentId instead. Kept for backward compatibility. */
     readonly actorId?: string;
     readonly delta: number;
+    /** Direct the rep change at a specific agent (not the actor). */
+    readonly targetAgentId?: string;
+    /** Direct the rep change at a faction node. */
+    readonly targetFactionId?: string;
   }
   | {
     readonly kind: 'reputation_tally';
+    /** @deprecated Use targetAgentId instead. Kept for backward compatibility. */
     readonly actorId?: string;
     readonly key: string;
     readonly delta: number;
+    /** Direct the tally change at a specific agent (not the actor). */
+    readonly targetAgentId?: string;
+    /** Direct the tally change at a faction node. */
+    readonly targetFactionId?: string;
   }
   | {
     readonly kind: 'clearance_gate_tag';
@@ -157,6 +177,11 @@ export type EncounterAftermathReactionEffect =
     readonly eventType?: 'narrative' | 'ripple_consequence';
     readonly message: string;
     readonly significance?: number;
+    /**
+     * Fan-out: record this event in each listed witness's recentEvents as well.
+     * The actor always records implicitly; duplicates are de-duped.
+     */
+    readonly witnessAgentIds?: readonly string[];
   }
   | {
     readonly kind: 'encounter_seed';
@@ -173,6 +198,8 @@ export type EncounterAftermathReactionEffect =
     readonly severity: number;
     readonly label: string;
     readonly revealFamilies?: readonly string[];
+    /** Place the mark on a specific agent (not the actor). */
+    readonly targetAgentId?: string;
   }
   | {
     readonly kind: 'intelligence';
@@ -183,6 +210,39 @@ export type EncounterAftermathReactionEffect =
     readonly targetEntityId?: string;
     /** Reliability 0-1; defaults to 0.8 if omitted. */
     readonly reliability?: number;
+    /** Grant intelligence to a specific agent (not the actor). */
+    readonly targetAgentId?: string;
+  }
+  | {
+    readonly kind: 'reputation_set';
+    /** Absolute reputation value to assign (clamped to 0..1). */
+    readonly value: number;
+    /** Target a specific agent (not the actor). */
+    readonly targetAgentId?: string;
+    /** Target a faction node directly. */
+    readonly targetFactionId?: string;
+  }
+  | {
+    readonly kind: 'apply_condition';
+    /** ID of an existing trait/condition node in the graph. */
+    readonly conditionTraitId: string;
+    /** How long the condition lasts in ticks. 0 = indefinite (no auto-expiry). */
+    readonly durationTicks?: number;
+    /** Intensity 0-1. Stored on the has_trait edge. */
+    readonly intensity?: number;
+    readonly targetAgentId?: string;
+    readonly targetFactionId?: string;
+    readonly targetSublocationId?: string;
+  }
+  | {
+    readonly kind: 'remove_condition';
+    /** ID of the condition trait node to remove. */
+    readonly conditionTraitId: string;
+    /** Remove all matching edges (default: remove oldest). */
+    readonly removeAll?: boolean;
+    readonly targetAgentId?: string;
+    readonly targetFactionId?: string;
+    readonly targetSublocationId?: string;
   };
 
 export interface PendingEncounterSeed {

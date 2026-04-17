@@ -105,6 +105,8 @@ export interface TickEvent {
   factionId?: string;
   /** Journey ID — populated by journey phases for notification navigation */
   journeyId?: string;
+  /** Agent IDs that also witnessed this event (for chronicle attribution). */
+  witnessAgentIds?: readonly string[];
 }
 
 // ─── Game State ─────────────────────────────────────────────────

@@ -64,12 +64,12 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
   // ── Trait ───────────────────────────────────────────────────
   has_trait: {
     type: 'has_trait',
-    sourceNodeType: ['actor', 'location'],
+    sourceNodeType: ['actor', 'location', 'sublocation'],
     targetNodeType: 'trait',
     direction: 'directed',
     cardinality: 'many-to-many',
     requiredProperties: [],
-    description: 'Actor or location has a trait. Edge properties: level, tick, decay, etc.',
+    description: 'Actor, location, or sublocation has a trait. Edge properties: level, tick, decay, appliedAt, durationTicks, intensity, sourceEncounterId.',
   },
 
   // ── Possession ─────────────────────────────────────────────

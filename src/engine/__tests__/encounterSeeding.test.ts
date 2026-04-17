@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { WorldGraph } from '../graph';
 import { evaluateEncounterSeeds } from '../encounterSeeding';
 import { applyEncounterAftermathReaction } from '../encounterAftermath';
+import { createSimulationRuntime, type SimulationRuntime } from '../simulationRuntime';
 import { resetUnifiedActionCounter } from '../unifiedActionLifecycle';
 import type { GameState } from '../../types/gameState';
 import type { PendingEncounterSeed, EncounterAftermathReaction, UnifiedAction } from '../../types/unifiedAction';
@@ -286,6 +287,8 @@ describe('evaluateEncounterSeeds', () => {
 });
 
 describe('applyEncounterAftermathReaction with encounter_seed effect', () => {
+  let runtime: SimulationRuntime;
+  beforeEach(() => { runtime = createSimulationRuntime(); });
   it('plants a seed into pendingEncounterSeeds', () => {
     const state = createMinimalGameState({ pendingEncounterSeeds: [] });
     const action: UnifiedAction = {
@@ -317,7 +320,7 @@ describe('applyEncounterAftermathReaction with encounter_seed effect', () => {
       ],
     };
 
-    const updated = applyEncounterAftermathReaction(state, action, reaction, 20);
+    const { state: updated } = applyEncounterAftermathReaction(state, action, reaction, 20, runtime);
 
     // Seed should be added
     expect(updated.pendingEncounterSeeds).toHaveLength(1);
@@ -381,7 +384,7 @@ describe('applyEncounterAftermathReaction with encounter_seed effect', () => {
       ],
     };
 
-    const updated = applyEncounterAftermathReaction(state, action, reaction, 20);
+    const { state: updated } = applyEncounterAftermathReaction(state, action, reaction, 20, runtime);
     expect(updated.pendingEncounterSeeds).toHaveLength(2);
     expect(updated.pendingEncounterSeeds![0].seedId).toBe('seed_existing');
     expect(updated.pendingEncounterSeeds![1].seedLabel).toBe('New seed');
@@ -418,7 +421,7 @@ describe('applyEncounterAftermathReaction with encounter_seed effect', () => {
       ],
     };
 
-    const updated = applyEncounterAftermathReaction(state, action, reaction, 20);
+    const { state: updated } = applyEncounterAftermathReaction(state, action, reaction, 20, runtime);
     expect(updated.pendingEncounterSeeds![0].targetAgentId).toBe('actor-other');
   });
 
@@ -452,7 +455,7 @@ describe('applyEncounterAftermathReaction with encounter_seed effect', () => {
       ],
     };
 
-    const updated = applyEncounterAftermathReaction(state, action, reaction, 20);
+    const { state: updated } = applyEncounterAftermathReaction(state, action, reaction, 20, runtime);
     expect(updated.pendingEncounterSeeds![0].priority).toBe(1.0);
   });
 });

@@ -1,8 +1,31 @@
 import type { GameState, TickEvent } from '../types/gameState';
 import { MAX_RECENT_EVENTS } from '../types/gameState';
 import { DEFAULT_REPUTATION } from '../types/disposition';
-import type { EncounterAftermathReaction, HiddenMark, IntelligenceRecord, PendingEncounterSeed, UnifiedAction } from '../types/unifiedAction';
+import type {
+  AftermathTarget,
+  EncounterAftermathReaction,
+  EncounterAftermathReactionEffect,
+  HiddenMark,
+  IntelligenceRecord,
+  PendingEncounterSeed,
+  UnifiedAction,
+} from '../types/unifiedAction';
 import { emitTrace } from './traceBuffer';
+import type { SimulationRuntime } from './simulationRuntime';
+import { touchWorld, touchStructure } from './simulationRuntime';
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+/** Initial reputationScore on a faction node when first read (matches DEFAULT_REPUTATION for agents). */
+export const DEFAULT_FACTION_REPUTATION = 0.5;
+
+/** Default intensity on apply_condition when the effect omits it. */
+export const CONDITION_DEFAULT_INTENSITY = 0.5;
+
+/** Default durationTicks on apply_condition when omitted. 0 = indefinite (no auto-expiry). */
+export const CONDITION_DEFAULT_DURATION_TICKS = 0;
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function clamp01(value: number): number {
   return Math.max(0, Math.min(1, value));
@@ -15,12 +38,50 @@ export function appendRecentEvent(
   return [...existing, event].slice(-MAX_RECENT_EVENTS);
 }
 
+/**
+ * Resolve which target entity an aftermath effect should apply to.
+ *
+ * Priority: targetAgentId > targetFactionId > targetSublocationId > legacy actorId > action actor.
+ * Returns { kind: 'actor_fallback' } when no explicit target is supplied.
+ */
+export function resolveAftermathTarget(
+  effect: EncounterAftermathReactionEffect,
+  action: UnifiedAction | undefined,
+): AftermathTarget {
+  const e = effect as Partial<{
+    targetAgentId: string;
+    targetFactionId: string;
+    targetSublocationId: string;
+    actorId: string; // legacy field on reputation_score / reputation_tally
+  }>;
+  if (e.targetAgentId) return { kind: 'agent', id: e.targetAgentId };
+  if (e.targetFactionId) return { kind: 'faction', id: e.targetFactionId };
+  if (e.targetSublocationId) return { kind: 'sublocation', id: e.targetSublocationId };
+  if (e.actorId) return { kind: 'agent', id: e.actorId }; // legacy fallback
+  if (action?.actorId) return { kind: 'agent', id: action.actorId };
+  return { kind: 'actor_fallback' };
+}
+
+// ─── Mutation summary ─────────────────────────────────────────────────────────
+
+export interface AftermathMutationSummary {
+  touchedWorld: boolean;
+  touchedStructure: boolean;
+}
+
+// ─── Main function ────────────────────────────────────────────────────────────
+
 export function applyEncounterAftermathReaction(
   state: GameState,
   action: UnifiedAction | undefined,
   reaction: EncounterAftermathReaction,
   tick: number,
-): GameState {
+  runtime: SimulationRuntime,
+): { state: GameState; mutationSummary: AftermathMutationSummary } {
+  if (!runtime) {
+    throw new Error('[encounterAftermath] runtime is required — programming error, not a data error');
+  }
+
   let nextRecentEvents = state.recentEvents;
   let nextTickEvents = state.tickEvents;
   let nextClearanceGateStates = state.clearanceGateStates
@@ -30,6 +91,8 @@ export function applyEncounterAftermathReaction(
   let nextSeeds: PendingEncounterSeed[] = [];
   let nextHiddenMarks: HiddenMark[] = [];
   let nextIntelligenceRecords: IntelligenceRecord[] = [];
+
+  let mutationSummary: AftermathMutationSummary = { touchedWorld: false, touchedStructure: false };
 
   const encounterId = action?.templateId ?? 'unknown';
   const actionId = action?.actionId ?? 'unknown';
@@ -50,78 +113,238 @@ export function applyEncounterAftermathReaction(
 
   for (let i = 0; i < reaction.effects.length; i++) {
     const effect = reaction.effects[i];
+    const target = resolveAftermathTarget(effect, action);
+
+    // Check for ambiguous multi-target specification
+    const e = effect as Partial<{ targetAgentId: string; targetFactionId: string; targetSublocationId: string }>;
+    const targetFieldCount = [e.targetAgentId, e.targetFactionId, e.targetSublocationId].filter(Boolean).length;
+    if (targetFieldCount > 1) {
+      emitTrace({
+        tick, category: 'aftermath_target_invalid',
+        agentId: actorAgentId, encounterId, actionId: actionId, reactionId: reaction.id,
+        effectIndex: i, effectKind: effect.kind,
+        reason: 'multiple_targets_specified',
+        summary: `aftermath[${i}] ${effect.kind}: multiple target fields set — using priority (agent>faction>sublocation)`,
+      });
+    }
+
+    // Per-effect target resolution trace
+    const effectiveTargetId = target.kind !== 'actor_fallback' ? target.id : (actorAgentId ?? '');
+    const effectiveTargetKind = target.kind;
+    emitTrace({
+      tick, category: 'aftermath_target_resolved',
+      agentId: actorAgentId, encounterId, actionId, reactionId: reaction.id,
+      effectIndex: i, effectKind: effect.kind,
+      effectiveTargetId,
+      effectiveTargetKind,
+      summary: `aftermath[${i}] ${effect.kind}: resolved target → ${effectiveTargetKind}:${effectiveTargetId}`,
+    });
+
     switch (effect.kind) {
       case 'reputation_score': {
-        const actorId = effect.actorId ?? actorAgentId;
-        if (!actorId) {
+        const resolvedId = target.kind !== 'actor_fallback' ? target.id : actorAgentId;
+        if (!resolvedId) {
           emitTrace({
             tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
             encounterId, actionId, reactionId: reaction.id, effectIndex: i,
             effectKind: 'reputation_score', effectDetail: { delta: effect.delta },
             success: false, failReason: 'no_actor_id',
+            effectiveTargetId: '', effectiveTargetKind: 'actor_fallback',
             summary: `reputation_score[${i}] skipped: no actorId`,
           });
           break;
         }
-        const actorNode = state.graph.getNode(actorId);
-        if (!actorNode) {
+        const node = state.graph.getNode(resolvedId);
+        if (!node) {
+          emitTrace({
+            tick, category: 'aftermath_target_invalid', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'reputation_score', attemptedTargetId: resolvedId,
+            attemptedTargetKind: target.kind !== 'actor_fallback' ? target.kind : 'agent',
+            reason: 'target_node_missing',
+            summary: `reputation_score[${i}] skipped: target node not found (${resolvedId})`,
+          });
           emitTrace({
             tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
             encounterId, actionId, reactionId: reaction.id, effectIndex: i,
-            effectKind: 'reputation_score', effectDetail: { actorId, delta: effect.delta },
-            success: false, failReason: 'actor_node_missing',
-            summary: `reputation_score[${i}] skipped: actor node not found (${actorId})`,
+            effectKind: 'reputation_score', effectDetail: { targetId: resolvedId, delta: effect.delta },
+            success: false, failReason: 'target_node_missing',
+            effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+            summary: `reputation_score[${i}] skipped: target node not found (${resolvedId})`,
           });
           break;
         }
-        const current = (actorNode.properties?.reputationScore as number | undefined) ?? DEFAULT_REPUTATION;
-        actorNode.properties.reputationScore = clamp01(current + effect.delta);
+        const isFaction = target.kind === 'faction';
+        const current = (node.properties?.reputationScore as number | undefined)
+          ?? (isFaction ? DEFAULT_FACTION_REPUTATION : DEFAULT_REPUTATION);
+        const result = clamp01(current + effect.delta);
+        node.properties.reputationScore = result;
+        mutationSummary.touchedWorld = true;
+        if (isFaction) {
+          emitTrace({
+            tick, category: 'faction_reputation_changed', agentId: actorAgentId,
+            factionId: resolvedId, previous: current, result, delta: effect.delta,
+            kind: 'reputation_score', encounterId, reactionId: reaction.id,
+            summary: `faction_reputation_changed: ${resolvedId} ${effect.delta >= 0 ? '+' : ''}${effect.delta.toFixed(2)} → ${result.toFixed(2)}`,
+          });
+        }
         emitTrace({
           tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
           encounterId, actionId, reactionId: reaction.id, effectIndex: i,
           effectKind: 'reputation_score',
-          effectDetail: { actorId, delta: effect.delta, previous: current, result: actorNode.properties.reputationScore },
+          effectDetail: { targetId: resolvedId, delta: effect.delta, previous: current, result },
           success: true,
-          summary: `reputation_score[${i}]: ${actorId} ${effect.delta >= 0 ? '+' : ''}${effect.delta.toFixed(2)}`,
+          effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+          summary: `reputation_score[${i}]: ${resolvedId} ${effect.delta >= 0 ? '+' : ''}${effect.delta.toFixed(2)}`,
         });
         break;
       }
 
       case 'reputation_tally': {
-        const actorId = effect.actorId ?? actorAgentId;
-        if (!actorId) {
+        const resolvedId = target.kind !== 'actor_fallback' ? target.id : actorAgentId;
+        if (!resolvedId) {
           emitTrace({
             tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
             encounterId, actionId, reactionId: reaction.id, effectIndex: i,
             effectKind: 'reputation_tally', effectDetail: { key: effect.key, delta: effect.delta },
             success: false, failReason: 'no_actor_id',
+            effectiveTargetId: '', effectiveTargetKind: 'actor_fallback',
             summary: `reputation_tally[${i}] skipped: no actorId`,
           });
           break;
         }
-        const actorNode = state.graph.getNode(actorId);
-        if (!actorNode) {
+        const node = state.graph.getNode(resolvedId);
+        if (!node) {
+          emitTrace({
+            tick, category: 'aftermath_target_invalid', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'reputation_tally', attemptedTargetId: resolvedId,
+            attemptedTargetKind: target.kind !== 'actor_fallback' ? target.kind : 'agent',
+            reason: 'target_node_missing',
+            summary: `reputation_tally[${i}] skipped: target node not found (${resolvedId})`,
+          });
           emitTrace({
             tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
             encounterId, actionId, reactionId: reaction.id, effectIndex: i,
-            effectKind: 'reputation_tally', effectDetail: { actorId, key: effect.key, delta: effect.delta },
-            success: false, failReason: 'actor_node_missing',
-            summary: `reputation_tally[${i}] skipped: actor node not found (${actorId})`,
+            effectKind: 'reputation_tally', effectDetail: { targetId: resolvedId, key: effect.key, delta: effect.delta },
+            success: false, failReason: 'target_node_missing',
+            effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+            summary: `reputation_tally[${i}] skipped: target node not found (${resolvedId})`,
           });
           break;
         }
         const tallies = {
-          ...((actorNode.properties?.reputationTallies as Record<string, number> | undefined) ?? {}),
+          ...((node.properties?.reputationTallies as Record<string, number> | undefined) ?? {}),
         };
         tallies[effect.key] = (tallies[effect.key] ?? 0) + effect.delta;
-        actorNode.properties.reputationTallies = tallies;
+        node.properties.reputationTallies = tallies;
+        mutationSummary.touchedWorld = true;
+        if (target.kind === 'faction') {
+          emitTrace({
+            tick, category: 'faction_reputation_changed', agentId: actorAgentId,
+            factionId: resolvedId, previous: tallies[effect.key] - effect.delta, result: tallies[effect.key],
+            delta: effect.delta, kind: 'reputation_tally', encounterId, reactionId: reaction.id,
+            summary: `faction_reputation_tally: ${resolvedId} [${effect.key}] ${effect.delta >= 0 ? '+' : ''}${effect.delta}`,
+          });
+        }
         emitTrace({
           tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
           encounterId, actionId, reactionId: reaction.id, effectIndex: i,
           effectKind: 'reputation_tally',
-          effectDetail: { actorId, key: effect.key, delta: effect.delta, newTally: tallies[effect.key] },
+          effectDetail: { targetId: resolvedId, key: effect.key, delta: effect.delta, newTally: tallies[effect.key] },
           success: true,
-          summary: `reputation_tally[${i}]: ${actorId} [${effect.key}] ${effect.delta >= 0 ? '+' : ''}${effect.delta}`,
+          effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+          summary: `reputation_tally[${i}]: ${resolvedId} [${effect.key}] ${effect.delta >= 0 ? '+' : ''}${effect.delta}`,
+        });
+        break;
+      }
+
+      case 'reputation_set': {
+        const resolvedId = target.kind !== 'actor_fallback' ? target.id : actorAgentId;
+        if (!resolvedId) {
+          emitTrace({
+            tick, category: 'aftermath_target_invalid', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'reputation_set', reason: 'no_actor_id',
+            summary: `reputation_set[${i}] skipped: no actor id`,
+          });
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'reputation_set', effectDetail: { value: effect.value },
+            success: false, failReason: 'no_actor_id',
+            effectiveTargetId: '', effectiveTargetKind: 'actor_fallback',
+            summary: `reputation_set[${i}] skipped: no actorId`,
+          });
+          break;
+        }
+        if (target.kind === 'sublocation') {
+          emitTrace({
+            tick, category: 'aftermath_target_invalid', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'reputation_set', attemptedTargetKind: 'sublocation', attemptedTargetId: resolvedId,
+            reason: 'target_kind_not_supported',
+            summary: `reputation_set[${i}] skipped: sublocation target not supported`,
+          });
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'reputation_set', effectDetail: { targetId: resolvedId, value: effect.value },
+            success: false, failReason: 'target_kind_not_supported',
+            effectiveTargetId: resolvedId, effectiveTargetKind: 'sublocation',
+            summary: `reputation_set[${i}] skipped: sublocation not supported`,
+          });
+          break;
+        }
+        const node = state.graph.getNode(resolvedId);
+        if (!node) {
+          emitTrace({
+            tick, category: 'aftermath_target_invalid', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'reputation_set', attemptedTargetId: resolvedId,
+            attemptedTargetKind: target.kind !== 'actor_fallback' ? target.kind : 'agent',
+            reason: 'target_node_missing',
+            summary: `reputation_set[${i}] skipped: node not found (${resolvedId})`,
+          });
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'reputation_set', effectDetail: { targetId: resolvedId, value: effect.value },
+            success: false, failReason: 'target_node_missing',
+            effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+            summary: `reputation_set[${i}] skipped: node not found (${resolvedId})`,
+          });
+          break;
+        }
+        const isFaction = target.kind === 'faction';
+        const previous = (node.properties?.reputationScore as number | undefined)
+          ?? (isFaction ? DEFAULT_FACTION_REPUTATION : DEFAULT_REPUTATION);
+        const clamped = clamp01(effect.value);
+        node.properties.reputationScore = clamped;
+        mutationSummary.touchedWorld = true;
+        const targetKindForTrace = isFaction ? 'faction' as const : 'agent' as const;
+        emitTrace({
+          tick, category: 'reputation_set_applied', agentId: actorAgentId,
+          targetId: resolvedId, targetKind: targetKindForTrace,
+          value: clamped, previous, encounterId, reactionId: reaction.id,
+          summary: `reputation_set[${i}]: ${resolvedId} set to ${clamped.toFixed(2)} (was ${previous.toFixed(2)})`,
+        });
+        if (isFaction) {
+          emitTrace({
+            tick, category: 'faction_reputation_changed', agentId: actorAgentId,
+            factionId: resolvedId, previous, result: clamped, delta: clamped - previous,
+            kind: 'reputation_set', encounterId, reactionId: reaction.id,
+            summary: `faction_reputation_set: ${resolvedId} → ${clamped.toFixed(2)}`,
+          });
+        }
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'reputation_set',
+          effectDetail: { targetId: resolvedId, value: clamped, previous },
+          success: true,
+          effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+          summary: `reputation_set[${i}]: ${resolvedId} → ${clamped.toFixed(2)}`,
         });
         break;
       }
@@ -173,6 +396,7 @@ export function applyEncounterAftermathReaction(
           message: effect.message,
           significance: effect.significance ?? 0.55,
           actorId: actorAgentId,
+          witnessAgentIds: effect.witnessAgentIds ? [...effect.witnessAgentIds] : undefined,
         };
         nextRecentEvents = appendRecentEvent(nextRecentEvents, event);
         nextTickEvents = [...nextTickEvents, event];
@@ -180,9 +404,14 @@ export function applyEncounterAftermathReaction(
           tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
           encounterId, actionId, reactionId: reaction.id, effectIndex: i,
           effectKind: 'recent_event',
-          effectDetail: { eventId: event.id, message: effect.message, significance: event.significance },
+          effectDetail: {
+            eventId: event.id,
+            message: effect.message,
+            significance: event.significance,
+            witnessCount: effect.witnessAgentIds?.length ?? 0,
+          },
           success: true,
-          summary: `recent_event[${i}]: "${effect.message.slice(0, 60)}"`,
+          summary: `recent_event[${i}]: "${effect.message.slice(0, 60)}"${effect.witnessAgentIds?.length ? ` (${effect.witnessAgentIds.length} witnesses)` : ''}`,
         });
         break;
       }
@@ -211,7 +440,6 @@ export function applyEncounterAftermathReaction(
         };
         nextTickEvents = [...nextTickEvents, seedEvent];
         nextRecentEvents = appendRecentEvent(nextRecentEvents, seedEvent);
-        // Per-effect trace
         emitTrace({
           tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
           encounterId, actionId, reactionId: reaction.id, effectIndex: i,
@@ -220,7 +448,6 @@ export function applyEncounterAftermathReaction(
           success: true,
           summary: `encounter_seed[${i}]: "${effect.seedLabel}" → ${seed.targetAgentId} eligible at tick ${seed.eligibleAfterTick}`,
         });
-        // Specific seed-planted trace for provenance queries
         emitTrace({
           tick, category: 'encounter_seed_planted',
           agentId: seed.targetAgentId,
@@ -240,7 +467,26 @@ export function applyEncounterAftermathReaction(
       }
 
       case 'hidden_mark': {
-        const targetAgentId = actorAgentId ?? '';
+        // hidden_mark supports targetAgentId; faction/sublocation rejected in v1
+        if (target.kind === 'faction' || target.kind === 'sublocation') {
+          emitTrace({
+            tick, category: 'aftermath_target_invalid', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'hidden_mark', attemptedTargetKind: target.kind, attemptedTargetId: target.id,
+            reason: 'target_kind_not_supported',
+            summary: `hidden_mark[${i}] skipped: ${target.kind} target not supported in v1`,
+          });
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'hidden_mark', effectDetail: { attemptedTargetKind: target.kind },
+            success: false, failReason: 'target_kind_not_supported',
+            effectiveTargetId: target.id, effectiveTargetKind: target.kind,
+            summary: `hidden_mark[${i}] skipped: ${target.kind} target not supported`,
+          });
+          break;
+        }
+        const targetAgentId = target.kind === 'agent' ? target.id : (actorAgentId ?? '');
         const mark: HiddenMark = {
           markId: `mark_${actionId}_${reaction.id}_${i}`,
           category: effect.category,
@@ -252,7 +498,6 @@ export function applyEncounterAftermathReaction(
           revealFamilies: effect.revealFamilies,
         };
         nextHiddenMarks = [...nextHiddenMarks, mark];
-        // Low-significance chronicle event — hidden from the player's perspective
         const markEvent: TickEvent = {
           id: `${mark.markId}_placed`,
           tick,
@@ -263,16 +508,16 @@ export function applyEncounterAftermathReaction(
         };
         nextTickEvents = [...nextTickEvents, markEvent];
         nextRecentEvents = appendRecentEvent(nextRecentEvents, markEvent);
-        // Per-effect trace
         emitTrace({
           tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
           encounterId, actionId, reactionId: reaction.id, effectIndex: i,
           effectKind: 'hidden_mark',
           effectDetail: { markId: mark.markId, targetAgentId, category: effect.category, severity: effect.severity, label: effect.label },
           success: true,
+          effectiveTargetId: targetAgentId,
+          effectiveTargetKind: target.kind === 'agent' ? 'agent' : 'actor_fallback',
           summary: `hidden_mark[${i}]: "${effect.label}" on ${targetAgentId} (${effect.category} sev=${effect.severity})`,
         });
-        // Specific mark-placed trace for reveal-chain queries
         emitTrace({
           tick, category: 'hidden_mark_placed',
           agentId: targetAgentId,
@@ -290,7 +535,26 @@ export function applyEncounterAftermathReaction(
       }
 
       case 'intelligence': {
-        const agentId = actorAgentId ?? '';
+        // intelligence supports targetAgentId; faction target rejected in v1
+        if (target.kind === 'faction') {
+          emitTrace({
+            tick, category: 'aftermath_target_invalid', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'intelligence', attemptedTargetKind: 'faction', attemptedTargetId: target.id,
+            reason: 'target_kind_not_supported',
+            summary: `intelligence[${i}] skipped: faction target not supported in v1`,
+          });
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'intelligence', effectDetail: { attemptedTargetKind: 'faction' },
+            success: false, failReason: 'target_kind_not_supported',
+            effectiveTargetId: target.id, effectiveTargetKind: 'faction',
+            summary: `intelligence[${i}] skipped: faction target not supported`,
+          });
+          break;
+        }
+        const agentId = target.kind === 'agent' ? target.id : (actorAgentId ?? '');
         const record: IntelligenceRecord = {
           recordId: `intel_${actionId}_${reaction.id}_${i}`,
           category: effect.category,
@@ -304,7 +568,6 @@ export function applyEncounterAftermathReaction(
           reliability: effect.reliability ?? 0.8,
         };
         nextIntelligenceRecords = [...nextIntelligenceRecords, record];
-        // Medium-significance chronicle event — intelligence is meant to be known to the player
         const intelEvent: TickEvent = {
           id: `${record.recordId}_acquired`,
           tick,
@@ -315,16 +578,16 @@ export function applyEncounterAftermathReaction(
         };
         nextTickEvents = [...nextTickEvents, intelEvent];
         nextRecentEvents = appendRecentEvent(nextRecentEvents, intelEvent);
-        // Per-effect trace
         emitTrace({
           tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
           encounterId, actionId, reactionId: reaction.id, effectIndex: i,
           effectKind: 'intelligence',
           effectDetail: { recordId: record.recordId, agentId, category: effect.category, label: effect.label, reliability: record.reliability },
           success: true,
+          effectiveTargetId: agentId,
+          effectiveTargetKind: target.kind === 'agent' ? 'agent' : 'actor_fallback',
           summary: `intelligence[${i}]: "${effect.label}" → ${agentId}`,
         });
-        // Specific intelligence-granted trace
         emitTrace({
           tick, category: 'intelligence_granted',
           agentId,
@@ -339,10 +602,165 @@ export function applyEncounterAftermathReaction(
         });
         break;
       }
+
+      case 'apply_condition': {
+        const resolvedId = target.kind !== 'actor_fallback' ? target.id : actorAgentId;
+        if (!resolvedId) {
+          emitTrace({
+            tick, category: 'aftermath_target_invalid', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'apply_condition', reason: 'no_actor_id',
+            summary: `apply_condition[${i}] skipped: no actor id`,
+          });
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'apply_condition', effectDetail: { conditionTraitId: effect.conditionTraitId },
+            success: false, failReason: 'no_actor_id',
+            effectiveTargetId: '', effectiveTargetKind: 'actor_fallback',
+            summary: `apply_condition[${i}] skipped: no actorId`,
+          });
+          break;
+        }
+        const targetNode = state.graph.getNode(resolvedId);
+        if (!targetNode) {
+          emitTrace({
+            tick, category: 'aftermath_target_invalid', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'apply_condition', attemptedTargetId: resolvedId,
+            attemptedTargetKind: target.kind !== 'actor_fallback' ? target.kind : 'agent',
+            reason: 'target_node_missing',
+            summary: `apply_condition[${i}] skipped: target node not found (${resolvedId})`,
+          });
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'apply_condition', effectDetail: { targetId: resolvedId, conditionTraitId: effect.conditionTraitId },
+            success: false, failReason: 'target_node_missing',
+            effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+            summary: `apply_condition[${i}] skipped: target node not found (${resolvedId})`,
+          });
+          break;
+        }
+        const conditionNode = state.graph.getNode(effect.conditionTraitId);
+        if (!conditionNode) {
+          emitTrace({
+            tick, category: 'aftermath_target_invalid', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'apply_condition', reason: 'condition_template_missing',
+            summary: `apply_condition[${i}] skipped: condition trait not found (${effect.conditionTraitId})`,
+          });
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'apply_condition', effectDetail: { targetId: resolvedId, conditionTraitId: effect.conditionTraitId },
+            success: false, failReason: 'condition_template_missing',
+            effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+            summary: `apply_condition[${i}] skipped: condition node not found (${effect.conditionTraitId})`,
+          });
+          break;
+        }
+        const intensity = effect.intensity ?? CONDITION_DEFAULT_INTENSITY;
+        const durationTicks = effect.durationTicks ?? CONDITION_DEFAULT_DURATION_TICKS;
+        const edgeId = `has_trait_${resolvedId}_${effect.conditionTraitId}_${tick}_${i}`;
+        state.graph.addEdge({
+          id: edgeId,
+          source: resolvedId,
+          target: effect.conditionTraitId,
+          type: 'has_trait',
+          properties: {
+            appliedAt: tick,
+            durationTicks,
+            intensity,
+            sourceEncounterId: encounterId,
+            sourceReactionId: reaction.id,
+          },
+        });
+        mutationSummary.touchedStructure = true;
+        const condKind = (target.kind === 'agent' || target.kind === 'faction' || target.kind === 'sublocation')
+          ? target.kind
+          : 'agent' as const;
+        emitTrace({
+          tick, category: 'condition_applied', agentId: actorAgentId,
+          targetId: resolvedId, targetKind: condKind,
+          conditionTraitId: effect.conditionTraitId, durationTicks, intensity,
+          encounterId, reactionId: reaction.id,
+          summary: `condition_applied[${i}]: ${effect.conditionTraitId} → ${resolvedId} (intensity=${intensity}, duration=${durationTicks || 'indefinite'})`,
+        });
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'apply_condition',
+          effectDetail: { targetId: resolvedId, conditionTraitId: effect.conditionTraitId, intensity, durationTicks },
+          success: true,
+          effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+          summary: `apply_condition[${i}]: ${effect.conditionTraitId} → ${resolvedId}`,
+        });
+        break;
+      }
+
+      case 'remove_condition': {
+        const resolvedId = target.kind !== 'actor_fallback' ? target.id : actorAgentId;
+        if (!resolvedId) {
+          emitTrace({
+            tick, category: 'aftermath_target_invalid', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'remove_condition', reason: 'no_actor_id',
+            summary: `remove_condition[${i}] skipped: no actor id`,
+          });
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'remove_condition', effectDetail: { conditionTraitId: effect.conditionTraitId },
+            success: false, failReason: 'no_actor_id',
+            effectiveTargetId: '', effectiveTargetKind: 'actor_fallback',
+            summary: `remove_condition[${i}] skipped: no actorId`,
+          });
+          break;
+        }
+        const matchingEdges = state.graph.getOutgoingEdges(resolvedId, 'has_trait')
+          .filter(edge => edge.target === effect.conditionTraitId);
+
+        let removedCount = 0;
+        if (matchingEdges.length > 0) {
+          const edgesToRemove = effect.removeAll
+            ? matchingEdges
+            : [matchingEdges.reduce((oldest, e) =>
+                ((e.properties?.appliedAt as number) ?? 0) < ((oldest.properties?.appliedAt as number) ?? 0)
+                  ? e : oldest
+              )];
+          for (const edge of edgesToRemove) {
+            state.graph.removeEdge(edge.id);
+            removedCount++;
+          }
+          if (removedCount > 0) mutationSummary.touchedStructure = true;
+        }
+
+        const removKind = (target.kind === 'agent' || target.kind === 'faction' || target.kind === 'sublocation')
+          ? target.kind
+          : 'agent' as const;
+        emitTrace({
+          tick, category: 'condition_removed', agentId: actorAgentId,
+          targetId: resolvedId, targetKind: removKind,
+          conditionTraitId: effect.conditionTraitId, removedCount,
+          encounterId, reactionId: reaction.id,
+          summary: `condition_removed[${i}]: ${effect.conditionTraitId} ← ${resolvedId} (removed ${removedCount})`,
+        });
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'remove_condition',
+          effectDetail: { targetId: resolvedId, conditionTraitId: effect.conditionTraitId, removedCount },
+          success: true,
+          effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+          summary: `remove_condition[${i}]: removed ${removedCount} edge(s) of ${effect.conditionTraitId} from ${resolvedId}`,
+        });
+        break;
+      }
     }
   }
 
-  return {
+  const nextState: GameState = {
     ...state,
     tickEvents: nextTickEvents,
     recentEvents: nextRecentEvents,
@@ -357,4 +775,6 @@ export function applyEncounterAftermathReaction(
       ? [...(state.intelligenceRecords ?? []), ...nextIntelligenceRecords]
       : state.intelligenceRecords,
   };
+
+  return { state: nextState, mutationSummary };
 }

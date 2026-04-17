@@ -2,6 +2,7 @@ import { describe, expect, it, beforeEach, afterEach } from 'vitest';
 import { WorldGraph } from '../graph';
 import { applyEncounterAftermathReaction } from '../encounterAftermath';
 import { clearTraces, enableTracing, disableTracing, getTraces } from '../traceBuffer';
+import { createSimulationRuntime, type SimulationRuntime } from '../simulationRuntime';
 import type { GameState } from '../../types/gameState';
 import type { ClearanceGateRuntimeState } from '../../types/contentShells';
 import type { EncounterAftermathReaction, UnifiedAction } from '../../types/unifiedAction';
@@ -71,7 +72,8 @@ function createMinimalGameState(): GameState {
 }
 
 describe('applyEncounterAftermathReaction — trace emission (THR-111)', () => {
-  beforeEach(() => { clearTraces(); enableTracing(); });
+  let runtime: SimulationRuntime;
+  beforeEach(() => { clearTraces(); enableTracing(); runtime = createSimulationRuntime(); });
   afterEach(() => { clearTraces(); disableTracing(); });
 
   it('emits encounter_aftermath_applied once per reaction application', () => {
@@ -88,7 +90,7 @@ describe('applyEncounterAftermathReaction — trace emission (THR-111)', () => {
       effects: [{ kind: 'reputation_score', delta: 0.05 }],
       closeAfterSelection: true,
     };
-    applyEncounterAftermathReaction(state, action, reaction, 5);
+    applyEncounterAftermathReaction(state, action, reaction, 5, runtime);
     const traces = getTraces();
     const applied = traces.filter(t => t.category === 'encounter_aftermath_applied');
     expect(applied).toHaveLength(1);
@@ -123,7 +125,7 @@ describe('applyEncounterAftermathReaction — trace emission (THR-111)', () => {
       ],
       closeAfterSelection: false,
     };
-    applyEncounterAftermathReaction(state, action, reaction, 5);
+    applyEncounterAftermathReaction(state, action, reaction, 5, runtime);
     const effectTraces = getTraces().filter(t => t.category === 'encounter_aftermath_effect');
     expect(effectTraces).toHaveLength(3);
     const kinds = effectTraces.map(t => {
@@ -151,12 +153,12 @@ describe('applyEncounterAftermathReaction — trace emission (THR-111)', () => {
       effects: [{ kind: 'reputation_score', delta: 0.1 }],
       closeAfterSelection: true,
     };
-    applyEncounterAftermathReaction(state, action, reaction, 5);
+    applyEncounterAftermathReaction(state, action, reaction, 5, runtime);
     const effectTraces = getTraces().filter(t => t.category === 'encounter_aftermath_effect');
     expect(effectTraces).toHaveLength(1);
     if (effectTraces[0].category === 'encounter_aftermath_effect') {
       expect(effectTraces[0].success).toBe(false);
-      expect(effectTraces[0].failReason).toBe('actor_node_missing');
+      expect(effectTraces[0].failReason).toBe('target_node_missing');
     }
   });
 
@@ -180,7 +182,7 @@ describe('applyEncounterAftermathReaction — trace emission (THR-111)', () => {
       }],
       closeAfterSelection: true,
     };
-    applyEncounterAftermathReaction(state, action, reaction, 5);
+    applyEncounterAftermathReaction(state, action, reaction, 5, runtime);
     const traces = getTraces();
     const effectTrace = traces.filter(t => t.category === 'encounter_aftermath_effect');
     const plantedTrace = traces.filter(t => t.category === 'encounter_seed_planted');
@@ -213,7 +215,7 @@ describe('applyEncounterAftermathReaction — trace emission (THR-111)', () => {
       }],
       closeAfterSelection: true,
     };
-    applyEncounterAftermathReaction(state, action, reaction, 5);
+    applyEncounterAftermathReaction(state, action, reaction, 5, runtime);
     const traces = getTraces();
     const effectTrace = traces.filter(t => t.category === 'encounter_aftermath_effect');
     const markTrace = traces.filter(t => t.category === 'hidden_mark_placed');
@@ -247,7 +249,7 @@ describe('applyEncounterAftermathReaction — trace emission (THR-111)', () => {
       }],
       closeAfterSelection: true,
     };
-    applyEncounterAftermathReaction(state, action, reaction, 5);
+    applyEncounterAftermathReaction(state, action, reaction, 5, runtime);
     const traces = getTraces();
     const effectTrace = traces.filter(t => t.category === 'encounter_aftermath_effect');
     const intelTrace = traces.filter(t => t.category === 'intelligence_granted');
@@ -302,7 +304,7 @@ describe('applyEncounterAftermathReaction — trace emission (THR-111)', () => {
       ],
       closeAfterSelection: true,
     };
-    applyEncounterAftermathReaction(state, action, reaction, 10);
+    applyEncounterAftermathReaction(state, action, reaction, 10, runtime);
     const traces = getTraces();
     // 1 applied + 4 per-effect + 1 mark_placed + 1 seed_planted + 1 intel_granted
     expect(traces.filter(t => t.category === 'encounter_aftermath_applied')).toHaveLength(1);
@@ -315,6 +317,7 @@ describe('applyEncounterAftermathReaction — trace emission (THR-111)', () => {
 
 describe('applyEncounterAftermathReaction', () => {
   it('applies general aftermath effects back into the world model', () => {
+    const runtime = createSimulationRuntime();
     const state = createMinimalGameState();
     const action: UnifiedAction = {
       actionId: 'ua_gate_duty',
@@ -342,19 +345,19 @@ describe('applyEncounterAftermathReaction', () => {
         {
           kind: 'recent_event',
           eventType: 'ripple_consequence',
-          message: 'You keep a finger on the witness’s telling as it leaves the gate.',
+          message: 'You keep a finger on the witness\u2019s telling as it leaves the gate.',
           significance: 0.61,
         },
       ],
       closeAfterSelection: true,
     };
 
-    const updated = applyEncounterAftermathReaction(state, action, reaction, 20);
+    const { state: updated } = applyEncounterAftermathReaction(state, action, reaction, 20, runtime);
     const actor = updated.graph.getNode('actor-1');
     expect((actor?.properties?.reputationScore as number | undefined) ?? 0).toBeGreaterThan(0);
     expect((actor?.properties?.reputationTallies as Record<string, number>)['gate_duty.witness_story_followed']).toBe(1);
     expect(updated.clearanceGateStates?.get('gate-1')?.followOnTags).toContain('#witness_story_followed');
-    expect(updated.recentEvents.at(-1)?.message).toContain('witness’s telling');
+    expect(updated.recentEvents.at(-1)?.message).toContain('witness');
     expect(updated.tickEvents.at(-1)?.type).toBe('ripple_consequence');
   });
 });

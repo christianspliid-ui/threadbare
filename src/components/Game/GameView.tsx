@@ -1912,6 +1912,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       setInterruptSuppressedUntilTick(gameState.tick + 1);
     }
 
+    // THR-114: mutable object written inside updater, read outside (pattern per plan §D7)
+    const pendingAftermathMutations = { touchedWorld: false, touchedStructure: false };
+
     setGameState(prev => {
       const activeAction =
         (tieredEncounterState.activeActionId
@@ -1923,7 +1926,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           && Boolean(action.aftermathSummary),
         );
 
-      const nextState = applyEncounterAftermathReaction(prev, activeAction, reaction, prev.tick);
+      const { state: nextState, mutationSummary: reactionMutations } = applyEncounterAftermathReaction(prev, activeAction, reaction, prev.tick, runtime);
+      // Store mutation summary for touch calls outside the updater
+      pendingAftermathMutations.touchedWorld = reactionMutations.touchedWorld;
+      pendingAftermathMutations.touchedStructure = reactionMutations.touchedStructure;
       const afterMarks = consumeMatchingMarks(
         nextState,
         activeAction?.actorId,
@@ -1942,6 +1948,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         ),
       };
     });
+    // THR-114: apply world/structure touches OUTSIDE setGameState updater (StrictMode-safe)
+    if (pendingAftermathMutations.touchedStructure) touchStructure(runtime);
+    else if (pendingAftermathMutations.touchedWorld) touchWorld(runtime);
 
     if (reaction.closeAfterSelection ?? true) {
       closeEncounterModalAndResume(tieredEncounterState.openedAsInterrupt);

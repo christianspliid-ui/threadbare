@@ -488,14 +488,21 @@ For implementation agents translating authored designs into template code.
 
 | Effect Kind | Purpose | Key Fields |
 |---|---|---|
-| `reputation_score` | Direct reputation delta | `delta` |
-| `reputation_tally` | Named counter accumulation | `key`, `delta` |
+| `reputation_score` | Direct reputation delta (actor or faction) | `delta`, `targetAgentId?`, `targetFactionId?` |
+| `reputation_tally` | Named counter accumulation | `key`, `delta`, `targetAgentId?`, `targetFactionId?` |
+| `reputation_set` | Absolute reputation assignment (hard reset) | `value` (clamped [0,1]), `targetAgentId?`, `targetFactionId?` |
 | `encounter_seed` | Plant future encounter | `templateId` or `encounterFamily`, `delayTicks`, `seedLabel` |
-| `hidden_mark` | Track discoverable secret | `category`, `severity`, `label`, `revealFamilies` |
-| `intelligence` | Grant knowledge | `category`, `label`, `detail`, `targetEntityId`, `reliability` |
+| `hidden_mark` | Track discoverable secret on an agent | `category`, `severity`, `label`, `revealFamilies`, `targetAgentId?` |
+| `intelligence` | Grant knowledge to an agent | `category`, `label`, `detail`, `targetEntityId`, `reliability`, `targetAgentId?` |
+| `apply_condition` | Attach a trait condition for N ticks | `conditionTraitId`, `durationTicks?`, `intensity?`, `targetAgentId?`, `targetFactionId?`, `targetSublocationId?` |
+| `remove_condition` | Remove a trait condition (oldest or all) | `conditionTraitId`, `removeAll?`, `targetAgentId?`, `targetFactionId?`, `targetSublocationId?` |
 | `clearance_gate_tag` | Advance gate progression | `tag` |
-| `recent_event` | Emit narrative event | `message`, `significance` |
+| `recent_event` | Emit narrative event (optionally fan out to witnesses) | `message`, `significance`, `witnessAgentIds?[]` |
 | `content_grant` | Auto-fire attachment template | `templateId` |
+
+**Multi-target note (THR-114):** Effects that accept `targetAgentId` / `targetFactionId` / `targetSublocationId` use priority resolution: explicit agent > explicit faction > explicit sublocation > action actor (fallback). Use `role:` prefix for participant substitution (e.g. `targetAgentId: 'role:victim'`). See `src/data/encounters/examples/` for gold-standard patterns: `example.betrayal_multi_target.ts` (hidden_mark + apply_condition on victim), `example.council_disowns.ts` (reputation_set on faction), `example.shrine_consecration.ts` (apply_condition + remove_condition on sublocation).
+
+**Use `reputation_set` only when the fiction demands "it is now literally X"**, not for ordinary outcome nudges — those belong to `reputation_score` with a delta.
 
 ---
 
