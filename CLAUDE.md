@@ -4,9 +4,9 @@ This folder contains The Fantasy World Simulator — a systemic god-game/rogue-l
 
 ## Cowork vs Claude Code — Read This First
 
-**If you are running in Cowork mode:** You must NOT write code or run git commands. Your job is design, research, documentation (via MCP), and implementation plans. Use **Linear** (Threadbare team) for all issue tracking — query and update issue states via the Linear MCP. When a design is complete, move the issue to **"Ready for Dev"** and add a comment with the plan doc link and action items. See `Docs/plans/2026-04-13-linear-coordination-protocol.md` for the full protocol.
+**If you are running in Cowork mode:** You must NOT write code or run git commands. Your job is design, research, documentation (via MCP), and implementation plans. Use **Linear** (Threadbare team) for all issue tracking — query and update issue states via the Linear MCP. When a design is complete, move the issue to **"Ready for Dev"** and add a comment with the plan doc link and action items. **Every Ready for Dev handoff must include a Claude Code coordination block** — `Suggested model` (with matching `model:haiku` / `model:sonnet` / `model:opus` label), `Parallel-safe with`, `Mutex with`, and `Codex review` lines — see the handoff template in `Docs/plans/2026-04-13-linear-coordination-protocol.md`.
 
-**If you are running in Claude Code:** You do the coding, testing, committing, and pushing. Check **Linear** for issues in **"Ready for Dev"** state, sorted by priority — **pull from the top.** Read the issue comments for plan docs and action items. Move issues to "In Dev" when starting, "Done" when complete. **WIP limit: 1 In Dev issue per project** — finish and ship the current issue before pulling another from the same project to avoid merge/write conflicts. Check `Docs/plans/` for design docs before starting work. See `Docs/plans/2026-04-13-linear-coordination-protocol.md` for the full protocol.
+**If you are running in Claude Code:** You do the coding, testing, committing, and pushing. Check **Linear** for issues in **"Ready for Dev"** state, sorted by priority — **pull from the top.** Read the issue comments for plan docs and action items. Move issues to "In Dev" when starting, "Done" when complete. **Use the model suggested by the `model:*` label** (or the `Suggested model` line in the handover) unless you have a specific reason to override. **WIP limit: 1 In Dev issue per project** — finish and ship the current issue before pulling another from the same project to avoid merge/write conflicts. **Before pulling a second issue into a concurrent worktree**, check the first issue's `Parallel-safe with` and `Mutex with` lines to confirm file surfaces don't collide. **If the handover says `Codex review: yes`**, run Codex review against the branch diff after tests/tsc/build pass and before `git push`; address findings or add a commit with rationale for accepting them. Check `Docs/plans/` for design docs before starting work. See `Docs/plans/2026-04-13-linear-coordination-protocol.md` for the full protocol.
 
 ### Prioritization: Finish Before You Start
 
@@ -313,14 +313,16 @@ This protocol exists because: a bug where `@hero` resolved to the wrong actor wa
 Work is not "done" until it is deployed and documented. Do all of these automatically — do not ask, do not stop at "ready to push?", just do it.
 
 - [ ] **Commit** all changes — the closing commit's message body **must** include `Fixes THR-XX` (or `Closes THR-XX` / `Resolves THR-XX`). This triggers the Linear auto-close workflow on push to `main`. Example: `docs: update project-status for THR-8\n\nFixes THR-8`
+- [ ] **Codex review** (if the handover says `Codex review: yes`) — run Codex review against the branch diff after tests/tsc/build pass and before push. Address findings or add a follow-up commit with rationale for accepting each finding. Re-run if changes were made. Skip this step when the handover says `Codex review: no`.
 - [ ] **Push** to GitHub (`git push`, with `-u origin <branch>` if needed)
 - [ ] **Merge** feature branches into main immediately — don't leave branches waiting
 - [ ] **Deploy** — Vercel auto-deploys from GitHub on push to `main`. Just ensure the push succeeded.
 - [ ] **Update docs** — `project-status.md` (≤60 lines, move old entries to `project-history.md`), `project-history.md` (one-line `✅` entry), `changelog.md` (append rows). Add a completion comment to the Linear issue (the `Fixes THR-XX` keyword in the commit auto-closes it, but a human-readable comment is still expected).
 - [ ] **Verify wiring** — Check every new module against `Docs/plans/wiring-checklist.md`. Engine modules called from orchestrator, modals rendered in GameView JSX, GameState fields consumed by UI, traces emitted, player controls connected. Update the checklist if new surfaces added.
+- [ ] **Update systemic wiring guide** — If your change adds or modifies a content-facing engine capability (new effect type, new graph operation, new enrichment placeholder, new aftermath reaction kind, new template field, new scoring signal), update `Docs/plans/2026-04-16-systemic-wiring-guide.md`. This guide is the IKEA manual for content authors — if a capability isn't documented there, content agents won't use it and the game gets hardcoded prose instead of systemically alive content.
 - [ ] **Log deferrals** — Every `// TODO`, `// DEFERRED`, or `// PHASE-X-DEFERRED` comment added in this session MUST have a corresponding Linear issue. Use format `// TODO(THR-XX): description`. No orphan deferrals — if you deferred it, track it. Label the issue `Deferral` and assign it to the same project as the parent work. A deferral without a Linear issue is invisible tech debt.
 - [ ] **Log impediments** — Any blockers or workarounds → `Docs/impediments.md`. Load `impediment-reporter` skill for format. Mandatory — unlogged friction is invisible.
-- [ ] **Close out** — Tell the user: *"Session ready to archive — all work is tested, deployed, and documented. No loose ends."*
+- [ ] **Close out** — Load and run the `session-handoff` skill. It sends a structured Slack DM with: completion summary, next Linear issue, and a ready-to-paste prompt for the next agent (CC or Cowork). This replaces the plain "Session ready to archive" line — the Slack message IS the closeout.
 
 **Where to find completed work history:** Linear issues in "Done" state (current), `.planning/BACKLOG_HISTORY.md` (pre-Linear history), and `Docs/project-history.md` (one-line entries).
 
@@ -343,11 +345,13 @@ Work is not "done" until it is deployed and documented. Do all of these automati
 
 Context for specific problem types lives in on-demand skills. **Always load `state-of-game-design` first** — it provides the foundational cosmology, action system, and architectural context that all other skills depend on.
 
-**For any prose, narrative, or content work** — choose the right prose skill: `prose-pipeline` for resolver architecture, `prose-content-systems` for encounter templates and day-to-day content, `prose-vignettes-and-enrichment` for enrichment placeholders and vignettes.
+**For any prose, narrative, or content work** — first read the **systemic wiring guide** (`Docs/plans/2026-04-16-systemic-wiring-guide.md`), then choose the right prose skill: `prose-pipeline` for resolver architecture, `prose-content-systems` for encounter templates and day-to-day content, `prose-vignettes-and-enrichment` for enrichment placeholders and vignettes. The wiring guide ensures content uses the engine's dynamic capabilities instead of producing hardcoded fiction.
 
 | Domain | Skill | When to load |
 |--------|-------|-------------|
 | **Foundational (load first)** | `state-of-game-design` | Always — before any other domain skill. Cosmology, reaches, spheres, action verbs, prerequisites, architectural decisions. |
+| **Game design direction** | `game-design-direction` | During In Design phase for player-facing features. Core loop, encounter principles, emotional architecture, design quality gate. Load alongside `state-of-game-design`. |
+| **Systemic wiring guide** | `Docs/plans/2026-04-16-systemic-wiring-guide.md` | **Before any content authoring.** The 7 engine capabilities content authors must know: enrichment placeholders, encounter seeding, hidden marks, reputation flow, graph ops, intelligence, divine intervention. Read this before encounter-pipeline, attachment-pipeline, or prose-content-systems. If you don't know what the engine can do, you'll write hardcoded fiction. |
 | Engine & code architecture | `engine-architecture` | Writing engine modules, tick loop work, tracing, resolution, PRNG |
 | Encounter & actor systems | `encounter-actor-systems` | Analysing, debugging, tuning encounter pipeline, actor capability, resolution, awareness, scoring. Also maintains `encounters-agents-reference.html` and `tick-cycle-reference.html`. |
 | Frontend & UI | `frontend-ui` | Building components, styling, accessibility, layout at 1920–3440px. Loads `Docs/design-system/` |
@@ -373,6 +377,7 @@ Context for specific problem types lives in on-demand skills. **Always load `sta
 | Testing & contracts | `testing-patterns` | Writing tests for engine or HexMapV2 changes. Contract test patterns, dependency maps, anti-patterns, coverage gap reference. |
 | Encounter tuning & analysis | `agent-analyser` | Analysing encounter log TSV exports for agent behavior, balance, variety, movement, capability growth, idle rates. Upload logs and ask for analysis. |
 | **Impediment reporting (always active)** | `impediment-reporter` | **Every session, every agent.** Log blockers and workarounds to `Docs/impediments.md` as they occur. Part of Definition of Done. |
+| **Session closeout (always active)** | `session-handoff` | **Every session, every agent.** Final step of Definition of Done — sends Slack DM with completion summary, next Linear issue, and ready-to-paste prompt for the next agent (CC or Cowork). Closes the coordination loop. |
 | Continuous improvement | `retrospective` | Review impediment log, analyze patterns, implement quick-fix improvements, backlog larger ones. Run with `/retrospective`. |
 
 ## Continuous Improvement
