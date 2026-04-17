@@ -87,9 +87,9 @@ https://linear.app/threadbare
 
 ### Step 5 — Send the Slack DM
 
-Use `slack_send_message` to DM `christian.spliid@gmail.com`.
+Use `slack_send_message` to channel `C0AT5DYGJ8P` (the Threadbare dev channel).
 
-Search for the user first if needed: `slack_search_users` with query `christian`.
+**Important:** Use plain text only — no markdown bold (`**`), no italic (`_`), no backtick code spans. The Slack MCP rejects messages with those formatting characters. Asterisks for `*italic*` are fine.
 
 ---
 
