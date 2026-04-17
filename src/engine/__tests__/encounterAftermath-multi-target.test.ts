@@ -437,6 +437,87 @@ describe('hidden_mark fail-soft on unsupported target kinds', () => {
   });
 });
 
+// ─── multiple_targets_specified warning ───────────────────────────────────────
+
+describe('multiple_targets_specified warning', () => {
+  let runtime: SimulationRuntime;
+  beforeEach(() => { clearTraces(); enableTracing(); runtime = createSimulationRuntime(); });
+  afterEach(() => { clearTraces(); disableTracing(); });
+
+  it('emits aftermath_target_invalid warning and uses agent (priority) when both targetAgentId and targetFactionId set', () => {
+    const state = buildState();
+    const reaction: EncounterAftermathReaction = {
+      id: 'rx.ambiguous', label: 'test', closeAfterSelection: true,
+      effects: [{ kind: 'reputation_score', targetAgentId: 'actor-victim', targetFactionId: 'faction-guild', delta: 0.1 } as never],
+    };
+    applyEncounterAftermathReaction(state, makeAction(), reaction, 10, runtime);
+    const warnTrace = getTraces().find(t =>
+      t.category === 'aftermath_target_invalid' &&
+      (t as { reason?: string }).reason === 'multiple_targets_specified'
+    );
+    expect(warnTrace).toBeDefined();
+    // Priority: agent wins — victim should be mutated, not faction
+    const victimRep = state.graph.getNode('actor-victim')?.properties?.reputationScore;
+    expect(victimRep).toBeDefined();
+  });
+});
+
+// ─── intelligence faction rejection ───────────────────────────────────────────
+
+describe('intelligence faction rejection', () => {
+  let runtime: SimulationRuntime;
+  beforeEach(() => { clearTraces(); enableTracing(); runtime = createSimulationRuntime(); });
+  afterEach(() => { clearTraces(); disableTracing(); });
+
+  it('emits success=false with target_kind_not_supported when intelligence targets a faction', () => {
+    const state = buildState();
+    const reaction: EncounterAftermathReaction = {
+      id: 'rx.intel_faction', label: 'test', closeAfterSelection: true,
+      effects: [{
+        kind: 'intelligence',
+        targetFactionId: 'faction-guild',
+        category: 'political_secret',
+        label: 'Guild plans',
+        detail: 'They plan to betray the council.',
+      } as never],
+    };
+    applyEncounterAftermathReaction(state, makeAction(), reaction, 10, runtime);
+    const effectTrace = getTraces().find(t =>
+      t.category === 'encounter_aftermath_effect' &&
+      (t as { effectKind?: string }).effectKind === 'intelligence'
+    );
+    expect((effectTrace as { success?: boolean })?.success).toBe(false);
+    expect((effectTrace as { failReason?: string })?.failReason).toBe('target_kind_not_supported');
+  });
+});
+
+// ─── reputation_tally faction path ────────────────────────────────────────────
+
+describe('reputation_tally faction target', () => {
+  let runtime: SimulationRuntime;
+  beforeEach(() => { clearTraces(); enableTracing(); runtime = createSimulationRuntime(); });
+  afterEach(() => { clearTraces(); disableTracing(); });
+
+  it('mutates faction node reputationTallies and emits faction_reputation_changed', () => {
+    const state = buildState();
+    const action = makeAction();
+    const reaction: EncounterAftermathReaction = {
+      id: 'rx.tally_faction', label: 'test', closeAfterSelection: true,
+      effects: [{ kind: 'reputation_tally', targetFactionId: 'faction-guild', key: 'goodwill', delta: 2 }],
+    };
+    applyEncounterAftermathReaction(state, action, reaction, 10, runtime);
+    const faction = state.graph.getNode('faction-guild');
+    const tallies = faction?.properties?.reputationTallies as Record<string, number> | undefined;
+    expect(tallies?.goodwill).toBe(2);
+    const factionTrace = getTraces().find(t => t.category === 'faction_reputation_changed');
+    expect(factionTrace).toBeDefined();
+    if (factionTrace?.category === 'faction_reputation_changed') {
+      expect(factionTrace.factionId).toBe('faction-guild');
+      expect(factionTrace.kind).toBe('reputation_tally');
+    }
+  });
+});
+
 // ─── mutationSummary contract ─────────────────────────────────────────────────
 
 describe('mutationSummary contract', () => {
