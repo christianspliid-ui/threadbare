@@ -519,12 +519,27 @@ export function phaseProsperity(state: GameState): Partial<GameState> {
     loc.properties.prosperity = newProsperity;
     loc.properties.populationTrend = populationTrend;
 
+    // 9.5 Death-site haunting — locations where agents died gain unrest each tick.
+    // deathCount is incremented by phaseAgentLifecycle when an agent dies here.
+    // Unrest is applied after prosperity so the penalty takes effect next tick.
+    // TODO(THR-124): wire RECKONING_DEATH_SITE_SPIRIT_PRESSURE sphere-pressure variant (deathSiteUnrestBonus wired here)
+    const deathSiteUnrestBonus = identityPressure?.deathSiteUnrestBonus ?? 0;
+    let deathSiteUnrestApplied = 0;
+    if (deathSiteUnrestBonus > 0) {
+      const deathCount = typeof loc.properties.deathCount === 'number' ? loc.properties.deathCount : 0;
+      if (deathCount > 0) {
+        const prevUnrest = typeof loc.properties.unrest === 'number' ? loc.properties.unrest : 0;
+        deathSiteUnrestApplied = deathSiteUnrestBonus;
+        loc.properties.unrest = Math.min(100, prevUnrest + deathSiteUnrestApplied);
+      }
+    }
+
     // 10. Emit tick trace with full equilibrium breakdown
     emitTrace({
       category: 'prosperity_tick',
       tick,
       agentId: loc.id,
-      summary: `${loc.name}: prosperity ${prevProsperity.toFixed(1)} → ${newProsperity.toFixed(1)} (target ${target.toFixed(1)}, ${newTier})${tierChanged ? ' [tier changed]' : ''}`,
+      summary: `${loc.name}: prosperity ${prevProsperity.toFixed(1)} → ${newProsperity.toFixed(1)} (target ${target.toFixed(1)}, ${newTier})${tierChanged ? ' [tier changed]' : ''}${deathSiteUnrestApplied > 0 ? ` [death-site unrest +${deathSiteUnrestApplied}]` : ''}`,
       locationId: loc.id,
       // Equilibrium model
       equilibriumTarget: target,
@@ -536,6 +551,8 @@ export function phaseProsperity(state: GameState): Partial<GameState> {
       clampedDelta,
       // Breakdown
       ...breakdown,
+      // Identity death-site haunting
+      deathSiteUnrestApplied,
       // Result
       previousProsperity: prevProsperity,
       newProsperity,

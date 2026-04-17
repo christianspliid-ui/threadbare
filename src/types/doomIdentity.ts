@@ -72,9 +72,8 @@ export interface IdentityLocationPressure {
   /** Applied to settlements near the map centre. */
   centerDelta: number;
   /**
-   * Additional unrest tick applied to death-site locations when non-zero.
-   * @todo(THR-122) Not yet consumed by phaseProsperity. Requires tracking death-site
-   * location IDs from phaseAgentLifecycle and applying unrest delta here.
+   * Additional unrest applied each tick to locations where agents have died (deathCount > 0).
+   * Consumed by phaseProsperity; deathCount is incremented by phaseAgentLifecycle.
    */
   deathSiteUnrestBonus?: number;
 }

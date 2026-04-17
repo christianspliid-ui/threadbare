@@ -130,6 +130,13 @@ export function phaseAgentLifecycle(
         ? { col: deathLocNode.properties.hexCol as number, row: deathLocNode.properties.hexRow as number }
         : undefined;
 
+      // Record death at location so phaseProsperity can apply deathSiteUnrestBonus
+      if (deathLocNode) {
+        const prev = typeof deathLocNode.properties.deathCount === 'number'
+          ? deathLocNode.properties.deathCount : 0;
+        deathLocNode.properties.deathCount = prev + 1;
+      }
+
       // Remove all edges connected to this actor
       const allEdges = graph.getAllEdgesForNode(actor.id);
       for (const edge of allEdges) {
