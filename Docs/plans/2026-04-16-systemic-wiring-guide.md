@@ -77,6 +77,8 @@ Available conditionals: `has_artifact`, `has_ally`, `has_rival`, `has_faction`, 
 
 **Why this changes what you write:** When you know prose can branch on whether the agent has allies or artifacts, you write scenes that *use* those relationships. A betrayal scene where the agent has no allies reads differently from one where their strongest ally might hear about it. A discovery scene where the agent carries a storied artifact reads differently from one where they have nothing. These aren't cosmetic — they change the emotional texture of the moment. **Write scenes where the conditionals matter, not scenes where they're decoration.**
 
+**Routine tier (ROUTINE_TEMPLATES) also supports enrichment:** As of THR-86, `ROUTINE_TEMPLATES` in `src/data/narrative-content.ts` uses `ShapedTemplate[]` — each template has a `shape` property (`svo | aftermath | inverted | compound | fragment`) and a `template` string that supports the same enrichment placeholders (`{name}`, `{location}`, `{?has_faction}...{/has_faction}`, etc.). When `generateRoutineProse` is called with a `graph` + `actorId`, it runs `enrichProse()` to resolve them; without graph, `applyFallbacks()` provides safe substitutions. Use `{name}` (not `{actor}`) in all new routine templates. Aim for all 5 shapes across the pool for an event type to get variety rotation.
+
 ---
 
 ### Capability 2: Encounter Seeding — Consequences That Grow Into Future Stories
