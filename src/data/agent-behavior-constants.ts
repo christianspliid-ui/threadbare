@@ -750,3 +750,13 @@ export const MARK_REVEAL_SCORING_BONUS = 0.3;
  * Prevents stacking above this value regardless of mark count.
  * @range 0.3–2.0 */
 export const MARK_REVEAL_SCORING_CAP = 0.9;
+
+// ═══════════════════════════════════════════════════════════════════
+// INTELLIGENCE — Consumption scoring (encounterScoring.ts, THR-113)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Flat additive scoring boost when an agent holds actionable intelligence
+ * matching an encounter candidate. Binary (applied once per candidate),
+ * not scaled by reliability in v1.
+ * @range 0.1–0.6 */
+export const INTEL_SCORING_BONUS = 0.25;

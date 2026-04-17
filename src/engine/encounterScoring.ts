@@ -55,9 +55,10 @@ import { computeBondModifier } from './socialEncounterGeneration';
 import { getScoringBoost } from './factionRankBonus';
 import { getTraitsForNode } from './traits';
 import type { TraitDefinitionProperties, ReputationEffects } from '../types/traits';
-import { REPUTATION_SCORING_WEIGHT, MARK_REVEAL_SCORING_BONUS, MARK_REVEAL_SCORING_CAP } from '../data/agent-behavior-constants';
-import type { HiddenMark } from '../types/unifiedAction';
+import { REPUTATION_SCORING_WEIGHT, MARK_REVEAL_SCORING_BONUS, MARK_REVEAL_SCORING_CAP, INTEL_SCORING_BONUS } from '../data/agent-behavior-constants';
+import type { HiddenMark, IntelligenceRecord } from '../types/unifiedAction';
 import { evaluateMarkReveals } from './hiddenMarks';
+import { findActionableIntelligence, emitIntelligenceReferenced } from './intelligence';
 import { getChainProgress, computeChainBonus } from './encounterChains';
 import { getNodeSphereAffinity, getDominantSphere, SPHERE_AXIOLOGICAL_MAP, applyAxiologicalShift } from './sphereAffinity';
 import { SPHERE_OPPOSITES } from './cosmology';
@@ -481,6 +482,8 @@ export interface ScoredCandidate {
   rarityMultiplier: number;
   roleAffinityMultiplier: number;
   markRevealBonus: number;
+  /** Flat additive boost from actionable intelligence held by the agent (THR-113). 0 or INTEL_SCORING_BONUS. */
+  intelBonus: number;
   finalScore: number;
   action: 'start_local' | 'queue_movement' | 'attempt_remote';
 }
@@ -729,6 +732,8 @@ export function scoreAndSelect(
   encounterTypeBias?: Partial<Record<string, number>>,
   /** Active hidden marks for this agent — matching candidates score higher (THR-112). */
   hiddenMarks?: readonly HiddenMark[],
+  /** Active intelligence records for this agent — actionable intel boosts scoring (THR-113). */
+  intelligenceRecords?: readonly IntelligenceRecord[],
 ): DecisionResult {
   // Fail-soft: missing agent → null result
   const agentNode = graph.getNode(agentId);
@@ -915,8 +920,24 @@ export function scoreAndSelect(
       const rawBonus = markMatches.reduce((sum, m) => sum + MARK_REVEAL_SCORING_BONUS * m.mark.severity, 0);
       markRevealBonus = Math.min(rawBonus, MARK_REVEAL_SCORING_CAP);
     }
+    // 24. Intelligence scoring bonus (THR-113) — actionable intel adds a flat boost once per candidate
+    let intelBonus = 0;
+    if (intelligenceRecords && intelligenceRecords.length > 0) {
+      const intelMatch = findActionableIntelligence(intelligenceRecords, agentId, {
+        templateId: entry.templateId,
+        locationId: entry.locationId,
+        targetAgentId: entry.targetAgentId,
+      });
+      if (intelMatch) {
+        intelBonus = INTEL_SCORING_BONUS;
+        emitIntelligenceReferenced(tick, agentId, intelMatch.recordId, 'scoring_boost', {
+          templateId: entry.templateId,
+          intelCategory: intelMatch.category,
+        });
+      }
+    }
     const finalScore = baseScore * rarityMultiplier * roleAffinityMultiplier * (1 - familiarityPenalty) + explorationBonus + chainBonus
-      + ruinsBonus + anomalyBonus + attractionBonus + hunchBonus + identityBiasBonus + markRevealBonus;
+      + ruinsBonus + anomalyBonus + attractionBonus + hunchBonus + identityBiasBonus + markRevealBonus + intelBonus;
 
     // 17. Action classification
     let action: ScoredCandidate['action'];
@@ -952,6 +973,7 @@ export function scoreAndSelect(
       rarityMultiplier,
       roleAffinityMultiplier,
       markRevealBonus,
+      intelBonus,
       finalScore,
       action,
     });

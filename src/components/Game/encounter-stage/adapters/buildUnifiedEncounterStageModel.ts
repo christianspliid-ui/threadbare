@@ -10,6 +10,7 @@
  */
 
 import type { WorldGraph } from '../../../../engine/graph';
+import type { GameState } from '../../../../types/gameState';
 import { enrichProse, gatherNarrativeContext } from '../../../../engine/proseEnrichment';
 import type { NarrativeContext } from '../../../../engine/proseEnrichment';
 import { autoLinkNarrative, collectSupportBundleEntities } from '../narrativeLinker';
@@ -57,6 +58,11 @@ export interface BuildUnifiedEncounterStageModelArgs {
   essence: number;
   /** Optional doom identity matrix for prose vocabulary enrichment (THR-21) */
   doomIdentityMatrix?: DoomIdentityMatrix | null;
+  /** GameState for intelligence consumption (THR-113). When omitted, `{intel:*}`
+   * placeholders silently strip. */
+  gameState?: GameState;
+  /** Current tick — paired with `gameState` for intelligence trace emission. */
+  tick?: number;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────
@@ -504,7 +510,15 @@ export function buildUnifiedEncounterStageModel(
   const { graph, activeAction } = args;
 
   // Build enrichment context once — shared by all section builders
-  const ctx = gatherNarrativeContext(graph, activeAction.actorId, undefined, undefined, args.doomIdentityMatrix);
+  const ctx = gatherNarrativeContext(
+    graph,
+    activeAction.actorId,
+    undefined,
+    undefined,
+    args.doomIdentityMatrix,
+    args.gameState,
+    args.tick,
+  );
 
   // Show illustration at step 0 only (opening scene), not during aftermath
   const isAftermath = activeAction.resolved;

@@ -66,6 +66,7 @@ export type TraceCategory =
   | 'hidden_mark_placed'
   | 'hidden_mark_revealed'
   | 'intelligence_granted'
+  | 'intelligence_referenced'
   | 'authored_attachment_created'
   // Complication outcome traces (THR-20)
   | 'complication_selection';
@@ -124,6 +125,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'hidden_mark_placed',
   'hidden_mark_revealed',
   'intelligence_granted',
+  'intelligence_referenced',
   'authored_attachment_created',
   // Complication outcome traces (THR-20)
   'complication_selection',
@@ -912,6 +914,19 @@ export interface IntelligenceGrantedTrace extends TraceBase {
   targetEntityId?: string;
 }
 
+/** Trace: intelligence record referenced/used (non-destructive) — closes the grant→consume loop (THR-113) */
+export interface IntelligenceReferencedTrace extends TraceBase {
+  category: 'intelligence_referenced';
+  recordId: string;
+  agentId: string;
+  /** Where the reference happened. */
+  referencedBy: 'scoring_boost' | 'prose_enrichment' | 'resolution_match';
+  /** Optional: templateId of the encounter involved (scoring/resolution only). */
+  templateId?: string;
+  /** Optional: intelligence category (prose_enrichment only). */
+  intelCategory?: string;
+}
+
 /** Trace: authored attachment created from encounter GraphOp, aftermath effect, or support bundle */
 export interface AuthoredAttachmentCreatedTrace extends TraceBase {
   category: 'authored_attachment_created';
@@ -1019,6 +1034,7 @@ export type TraceEntry =
   | HiddenMarkPlacedTrace
   | HiddenMarkRevealedTrace
   | IntelligenceGrantedTrace
+  | IntelligenceReferencedTrace
   | AuthoredAttachmentCreatedTrace
   // Complication outcome traces (THR-20)
   | ComplicationSelectionTrace;

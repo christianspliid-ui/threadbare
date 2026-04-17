@@ -21,12 +21,20 @@ import type { MeetingChoiceRecord } from '../types/meetingEncounter';
 import type { BeatOutcome } from '../types/journeyEngine';
 import type { ReachDomain } from '../types/traits';
 import type { DoomIdentityMatrix } from '../types/doomIdentity';
+import type { GameState } from '../types/gameState';
 import {
   getActorTraits,
   getAgentBonds,
   getAgentMemberships,
   getAgentLocation,
 } from './graphQueries';
+import {
+  buildIntelligenceView,
+  emitIntelligenceReferenced,
+  reliabilityDescriptor,
+  INTEL_CATEGORIES,
+  type IntelligenceView,
+} from './intelligence';
 
 // ─── Constants ─────────────────────────────────────────────────────
 
@@ -83,6 +91,15 @@ export interface NarrativeContext {
 
   /** Gendered pronouns. Default: they/them/their */
   pronouns: { they: string; them: string; their: string; s: string };
+
+  /** Intelligence records held by the agent (THR-113).
+   * When present, enables `{intel:*}` placeholders and `{?knows_*}` / `{?no_*}`
+   * conditional blocks. Omitted when caller doesn't have access to GameState. */
+  intelligence?: IntelligenceView;
+
+  /** Current tick — populated alongside `intelligence` for trace emission during
+   * `enrichProse`. Silent fallback to 0 if not provided. */
+  tick?: number;
 }
 
 /**
@@ -94,6 +111,8 @@ export function gatherNarrativeContext(
   meetingRecord?: MeetingChoiceRecord,
   beatHistory?: BeatOutcome[],
   doomIdentityMatrix?: DoomIdentityMatrix | null,
+  state?: GameState,
+  tick?: number,
 ): NarrativeContext {
   const agentNode = graph.getNode(agentId);
   const props = agentNode?.properties ?? {};
@@ -170,6 +189,9 @@ export function gatherNarrativeContext(
     if (atmospheres.length > 0) doomAtmosphere = atmospheres[idHash % atmospheres.length];
   }
 
+  // Intelligence view (THR-113) — only populated when caller passes GameState
+  const intelligence = state ? buildIntelligenceView(state, agentId) : undefined;
+
   return {
     agentName: agentNode?.name ?? 'the mortal',
     agentId,
@@ -189,6 +211,8 @@ export function gatherNarrativeContext(
     doomVerb,
     doomAdj,
     doomAtmosphere,
+    intelligence,
+    tick,
   };
 }
 
@@ -243,6 +267,36 @@ export function enrichProse(template: string, ctx: NarrativeContext): string {
   result = result.replace(/{doom_adj}/g, ctx.doomAdj ?? '');
   result = result.replace(/{doom_atmosphere}/g, ctx.doomAtmosphere ?? '');
 
+  // Intelligence placeholders (THR-113) — silent fallback to '' when no view.
+  // One `intelligence_referenced` trace per unique recordId per enrichProse call
+  // (dedupe Set prevents chatty emissions when a template has many {intel:*} tokens).
+  if (ctx.intelligence) {
+    const referenced = new Set<string>();
+    for (const category of INTEL_CATEGORIES) {
+      const record = ctx.intelligence.byCategory[category];
+      const label = record?.label ?? '';
+      const detail = record?.detail ?? '';
+      const reliability = record ? reliabilityDescriptor(record.reliability) : '';
+      result = result.replace(new RegExp(`\\{intel:${category}\\.detail\\}`, 'g'), detail);
+      result = result.replace(new RegExp(`\\{intel:${category}\\.reliability\\}`, 'g'), reliability);
+      result = result.replace(new RegExp(`\\{intel:${category}\\}`, 'g'), label);
+      if (record && !referenced.has(record.recordId)) {
+        emitIntelligenceReferenced(
+          ctx.tick ?? 0,
+          ctx.agentId,
+          record.recordId,
+          'prose_enrichment',
+          { intelCategory: category },
+        );
+        referenced.add(record.recordId);
+      }
+    }
+  } else {
+    // Strip any {intel:*} tokens so raw literals never leak into prose when the
+    // caller hasn't provided GameState (mirrors the omen/doom silent-fallback pattern).
+    result = result.replace(/{intel:[^}]+}/g, '');
+  }
+
   // Conditional blocks: {?has_X}...{/has_X} and {?no_X}...{/no_X}
   result = resolveConditionals(result, ctx);
 
@@ -268,6 +322,14 @@ function resolveConditionals(prose: string, ctx: NarrativeContext): string {
     has_title: ctx.titles.length > 0,
     no_title: ctx.titles.length === 0,
   };
+
+  // Intelligence conditionals (THR-113) — {?knows_<category>} / {?no_<category>}.
+  // When ctx.intelligence is absent, all knows_* evaluate false and no_* evaluate true.
+  for (const category of INTEL_CATEGORIES) {
+    const has = ctx.intelligence?.flags[category] === true;
+    conditions[`knows_${category}`] = has;
+    conditions[`no_${category}`] = !has;
+  }
 
   // Resolve {?condition}...{/condition} blocks
   for (const [key, value] of Object.entries(conditions)) {

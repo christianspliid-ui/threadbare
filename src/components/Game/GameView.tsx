@@ -155,6 +155,7 @@ import type { ExecutionContext } from '../../engine/effectExecutors';
 import { emitTrace } from '../../engine/traceBuffer';
 import { applyEncounterAftermathReaction } from '../../engine/encounterAftermath';
 import { consumeMatchingMarks } from '../../engine/hiddenMarks';
+import { observeResolutionIntelligence } from '../../engine/intelligence';
 import {
   markEncounterProgressDisregarded,
   markUnifiedActionDisregarded,
@@ -1046,13 +1047,17 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         graph: gameState.graph,
         essence: SPHERE_NAMES.reduce((sum, s) => sum + gameState.essencePool[s], 0),
         doomIdentityMatrix: gameState.doomIdentityMatrix,
+        gameState,
+        tick: gameState.tick,
       });
     }
 
     return null;
   }, [
+    gameState,
     gameState.graph,
     gameState.essencePool,
+    gameState.tick,
     encounterStageActiveAction,
     gateDutyClearanceGateState,
     isGateDutyEncounterStage,
@@ -1078,8 +1083,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       threadTier: tieredEncounterState.threadTier,
       essence: SPHERE_NAMES.reduce((sum, s) => sum + gameState.essencePool[s], 0),
       tick: gameState.tick,
+      gameState,
     });
-  }, [tieredEncounterState, isGateDutyEncounterStage, unifiedTemplateForStage, encounterStageModel, gameState.graph, gameState.essencePool, gameState.tick]);
+  }, [tieredEncounterState, isGateDutyEncounterStage, unifiedTemplateForStage, encounterStageModel, gameState, gameState.graph, gameState.essencePool, gameState.tick]);
 
   // ── Encounter notification surfacing (TB-040 / TB-055) ──
   /** Open the tiered encounter modal from a notification (toast click or auto-interrupt) */
@@ -1924,6 +1930,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         activeAction?.templateId,
         prev.tick,
       );
+      // THR-113: passive observation — trace when a resolved encounter's target
+      // matches an existing intelligence record held by the actor. No state mutation.
+      observeResolutionIntelligence(afterMarks, activeAction, reaction, prev.tick);
       return {
         ...afterMarks,
         encounterNotifications: (afterMarks.encounterNotifications ?? []).map(notification =>
