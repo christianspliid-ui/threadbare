@@ -1,8 +1,8 @@
 /**
  * Migration parity tests (THR-90 task 2).
  *
- * For 3 representative legacy templates (guild, social, combat/duel), verify
- * that migrateEncounterTemplate() preserves all consequential fields:
+ * For 2 representative legacy templates (social, combat/duel), verify that
+ * migrateEncounterTemplate() preserves all consequential fields:
  *   - difficulty correctly scaled 0–100 → 0–1
  *   - duration correctly converted to { min, max } range
  *   - encounterType correctly mapped to crudType via encounterTypeToCrud()
@@ -10,10 +10,19 @@
  *     successMetadata / failureMetadata on each step
  *   - failBehavior: 'continue_weakened' on non-final steps, 'fail_action' on final
  *   - top-level fields (id, name, reach, scale, actorAffinities) preserved
+ *
+ * Note: Thieves guild templates were migrated to UnifiedActionTemplate in THR-89.
+ * They no longer go through migrateEncounterTemplate — they are pre-authored unified
+ * templates. The guild section of this test was updated to verify the pre-migrated shape.
  */
 import { describe, it, expect } from 'vitest';
 import { migrateEncounterTemplate, encounterTypeToCrud } from '../unified-action-templates';
-import { THIEVES_GUILD_ENCOUNTER_TEMPLATES } from '../thieves-guild-encounter-content';
+import {
+  THIEVES_GUILD_ENCOUNTER_TEMPLATES,
+  THIEVES_GUILD_SOCIAL_TEMPLATES,
+  TG_JOIN_TEMPLATE,
+  TG_PROMOTION_TEMPLATE,
+} from '../thieves-guild-encounter-content';
 import { SOCIAL_ENCOUNTER_TEMPLATES } from '../social-encounter-content';
 import { MONSTER_ENCOUNTER_TEMPLATES } from '../monster-encounter-content';
 import type { EncounterTemplate } from '../../types/encounter';
@@ -84,6 +93,7 @@ function assertParity(legacy: EncounterTemplate, migrated: UnifiedActionTemplate
 
 // ─── Pick representative templates ────────────────────────────────────────
 
+// TG templates are pre-migrated UnifiedActionTemplate (THR-89) — accessed directly
 const guildTemplate = THIEVES_GUILD_ENCOUNTER_TEMPLATES.find(t => t.id === 'tg.quest.pocket_run')!;
 const socialTemplate = SOCIAL_ENCOUNTER_TEMPLATES.find(t => t.id === 'social.forge_alliance')!;
 const combatTemplate = MONSTER_ENCOUNTER_TEMPLATES.find(t => t.id === 'monster.hunt.minor')!;
@@ -95,9 +105,26 @@ describe('migrateEncounterTemplate parity (THR-90)', () => {
     expect(combatTemplate, 'monster.hunt.minor').toBeDefined();
   });
 
-  it('tg.quest.pocket_run (guild / steal→read) passes full parity check', () => {
-    assertParity(guildTemplate, migrateEncounterTemplate(guildTemplate));
+  // ─── Guild: pre-migrated shape (THR-89) ───────────────────────────────
+
+  it('tg.quest.pocket_run is a valid pre-migrated UnifiedActionTemplate', () => {
+    // TG templates were hand-authored in unified format (THR-89) — no migration needed.
+    expect(guildTemplate.id).toBe('tg.quest.pocket_run');
+    expect(guildTemplate.crudType).toBe('read');
+    expect(guildTemplate.reach).toBeDefined();
+    expect(guildTemplate.steps.length).toBeGreaterThan(0);
+    // All steps have duration as {min,max} (already unified)
+    for (const step of guildTemplate.steps) {
+      expect(step.duration).toMatchObject({ min: expect.any(Number), max: expect.any(Number) });
+      expect(step.difficulty).toBeGreaterThanOrEqual(0);
+      expect(step.difficulty).toBeLessThanOrEqual(1);
+    }
+    // aftermathConfig present
+    expect(guildTemplate.aftermathConfig).toBeDefined();
+    expect(guildTemplate.aftermathConfig.fallback).toBeDefined();
   });
+
+  // ─── Legacy migration: social + combat ────────────────────────────────
 
   it('social.forge_alliance (social / assist→update) passes full parity check', () => {
     assertParity(socialTemplate, migrateEncounterTemplate(socialTemplate));
@@ -109,19 +136,70 @@ describe('migrateEncounterTemplate parity (THR-90)', () => {
 
   // ─── Cross-template invariants ─────────────────────────────────────────
 
-  it('encounterTypeToCrud produces the correct crudType for each representative', () => {
-    expect(encounterTypeToCrud(guildTemplate.encounterType)).toBe('read');    // steal
+  it('encounterTypeToCrud produces correct crudType for legacy representatives', () => {
     expect(encounterTypeToCrud(socialTemplate.encounterType)).toBe('update'); // assist
     expect(encounterTypeToCrud(combatTemplate.encounterType)).toBe('delete'); // duel
   });
 
-  it('all three migrated templates compile as UnifiedActionTemplate (type check via usage)', () => {
-    const g = migrateEncounterTemplate(guildTemplate);
+  it('legacy migrated templates compile as UnifiedActionTemplate (type check via usage)', () => {
     const s = migrateEncounterTemplate(socialTemplate);
     const c = migrateEncounterTemplate(combatTemplate);
-    // If this compiles without error, the return type is correct
-    expect(g.id).toBeTruthy();
     expect(s.id).toBeTruthy();
     expect(c.id).toBeTruthy();
+  });
+});
+
+// ─── Bulk shape assertions: all 15 TG templates (THR-89, Codex finding) ──────
+
+describe('TG pre-migrated shape invariants (all 15 templates)', () => {
+  const ALL_TG = [
+    ...THIEVES_GUILD_ENCOUNTER_TEMPLATES,
+    ...THIEVES_GUILD_SOCIAL_TEMPLATES,
+    TG_JOIN_TEMPLATE,
+    TG_PROMOTION_TEMPLATE,
+  ];
+
+  it('covers all 15 TG templates', () => {
+    expect(ALL_TG).toHaveLength(15);
+  });
+
+  it('every template has duration {min,max} on all steps', () => {
+    for (const t of ALL_TG) {
+      for (const step of t.steps) {
+        expect(step.duration, `${t.id} step duration`).toMatchObject({
+          min: expect.any(Number),
+          max: expect.any(Number),
+        });
+      }
+    }
+  });
+
+  it('every template has difficulty 0-1 on all steps', () => {
+    for (const t of ALL_TG) {
+      for (const step of t.steps) {
+        expect(step.difficulty, `${t.id} step difficulty`).toBeGreaterThanOrEqual(0);
+        expect(step.difficulty, `${t.id} step difficulty`).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
+  it('every template final step has failBehavior fail_action', () => {
+    for (const t of ALL_TG) {
+      const lastStep = t.steps[t.steps.length - 1];
+      expect(lastStep.failBehavior, `${t.id} final step failBehavior`).toBe('fail_action');
+    }
+  });
+
+  it('every template has aftermathConfig with a fallback', () => {
+    for (const t of ALL_TG) {
+      expect(t.aftermathConfig, `${t.id} aftermathConfig`).toBeDefined();
+      expect(t.aftermathConfig.fallback, `${t.id} aftermathConfig.fallback`).toBeDefined();
+    }
+  });
+
+  it('no template has rarityTier 4', () => {
+    for (const t of ALL_TG) {
+      expect(t.rarityTier, `${t.id} rarityTier`).toBeLessThanOrEqual(3);
+    }
   });
 });

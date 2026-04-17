@@ -36,6 +36,12 @@ import {
 import { DECAY_CONSTANTS } from '../engine/decayCurve';
 import { INTERVENTION_DEFINITIONS } from './dream-content';
 import { NPC_ACTION_TEMPLATES } from './npc-action-templates';
+import {
+  THIEVES_GUILD_ENCOUNTER_TEMPLATES,
+  THIEVES_GUILD_SOCIAL_TEMPLATES,
+  TG_JOIN_TEMPLATE,
+  TG_PROMOTION_TEMPLATE,
+} from './thieves-guild-encounter-content';
 import { RIVAL_SHRINE_BETRAYAL_TEMPLATE } from './encounters/rival-shrine-betrayal';
 import { WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE } from './encounters/wandering-healer-shrine-access';
 import { FLAWED_STEEL_TEMPLATE } from './encounters/flawed-steel';
@@ -3466,6 +3472,11 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...THREAD_CREATION_TEMPLATES,
   ...THREAD_MANAGEMENT_TEMPLATES,
   ...NPC_ACTION_TEMPLATES,
+  // Thieves guild — pre-migrated to UnifiedActionTemplate (THR-89)
+  ...THIEVES_GUILD_ENCOUNTER_TEMPLATES,
+  ...THIEVES_GUILD_SOCIAL_TEMPLATES,
+  TG_JOIN_TEMPLATE,
+  TG_PROMOTION_TEMPLATE,
   RIVAL_SHRINE_BETRAYAL_TEMPLATE,
   WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE,
   FLAWED_STEEL_TEMPLATE,
