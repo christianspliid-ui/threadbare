@@ -15,6 +15,8 @@ export interface AttachmentRowProps {
   totalTicks?: number;
   durationLabel?: string;
   onClick?: () => void;
+  /** Encounter ID that applied this condition via aftermath effect. Shown as a tooltip. */
+  sourceEncounterId?: string;
 }
 
 export const AttachmentRow = React.memo(function AttachmentRow({
@@ -26,6 +28,7 @@ export const AttachmentRow = React.memo(function AttachmentRow({
   totalTicks,
   durationLabel,
   onClick,
+  sourceEncounterId,
 }: AttachmentRowProps) {
   const tierColor = ATTACHMENT_TIER_COLORS[tier];
   const tierName = ATTACHMENT_TIER_NAMES[tier];
@@ -49,6 +52,7 @@ export const AttachmentRow = React.memo(function AttachmentRow({
       onClick={onClick}
       onKeyDown={handleKeyDown}
       aria-label={`${name}, ${tierName} ${subcategory}`}
+      title={sourceEncounterId ? `from: ${sourceEncounterId}` : undefined}
       className={`transition-colors cursor-pointer${isLegendary ? ` ${RARITY_LEGENDARY_PULSE_ANIMATION}` : ''}`}
       data-testid="attachment-row"
       style={{

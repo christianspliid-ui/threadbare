@@ -146,6 +146,7 @@ export function NarrativeLog({ events, onSelectAgent }: NarrativeLogProps) {
                 const isNew = newEntryCount > 0 && i >= events.length - newEntryCount;
                 const isClickable = Boolean(evt.actorId && onSelectAgent);
 
+                const witnessCount = evt.witnessAgentIds?.length ?? 0;
                 const rowContent = (
                   <>
                     <span
@@ -163,6 +164,15 @@ export function NarrativeLog({ events, onSelectAgent }: NarrativeLogProps) {
                       style={{ color: 'var(--text-secondary)' }}
                     >
                       {evt.message}
+                      {witnessCount > 0 && (
+                        <span
+                          className="block"
+                          style={{ fontSize: 'var(--text-2xs, 10px)', color: 'var(--text-muted)', marginTop: '2px' }}
+                          title={evt.witnessAgentIds?.join(', ')}
+                        >
+                          Witnessed by {witnessCount}
+                        </span>
+                      )}
                     </span>
                   </>
                 );

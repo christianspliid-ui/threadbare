@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, beforeEach } from 'vitest';
 import {
   getAgentHiddenMarks,
   getHiddenMarksByCategory,
@@ -7,6 +7,7 @@ import {
   removeHiddenMark,
 } from '../hiddenMarks';
 import { applyEncounterAftermathReaction } from '../encounterAftermath';
+import { createSimulationRuntime, type SimulationRuntime } from '../simulationRuntime';
 import { WorldGraph } from '../graph';
 import type { GameState } from '../../types/gameState';
 import type { HiddenMark } from '../../types/unifiedAction';
@@ -181,6 +182,8 @@ describe('removeHiddenMark', () => {
 // ─── Aftermath Integration Tests ─────────────────────────────────
 
 describe('applyEncounterAftermathReaction — hidden_mark effect', () => {
+  let runtime: SimulationRuntime;
+  beforeEach(() => { runtime = createSimulationRuntime(); });
   function createMinimalGameState(): GameState {
     const graph = new WorldGraph();
     graph.addNode({
@@ -257,7 +260,7 @@ describe('applyEncounterAftermathReaction — hidden_mark effect', () => {
       ],
     };
 
-    const updated = applyEncounterAftermathReaction(state, action, reaction, 20);
+    const { state: updated } = applyEncounterAftermathReaction(state, action, reaction, 20, runtime);
 
     expect(updated.hiddenMarks).toHaveLength(1);
     const mark = updated.hiddenMarks![0];
@@ -300,7 +303,7 @@ describe('applyEncounterAftermathReaction — hidden_mark effect', () => {
       ],
     };
 
-    const updated = applyEncounterAftermathReaction(state, action, reaction, 20);
+    const { state: updated } = applyEncounterAftermathReaction(state, action, reaction, 20, runtime);
 
     const markEvent = updated.tickEvents.find(e => e.id.includes('mark_'));
     expect(markEvent).toBeDefined();
@@ -343,7 +346,7 @@ describe('applyEncounterAftermathReaction — hidden_mark effect', () => {
       ],
     };
 
-    const updated = applyEncounterAftermathReaction(state, action, reaction, 25);
+    const { state: updated } = applyEncounterAftermathReaction(state, action, reaction, 25, runtime);
     expect(updated.hiddenMarks).toHaveLength(2);
     expect(updated.hiddenMarks![0].markId).toBe('mark_002'); // pre-existing
     expect(updated.hiddenMarks![1].category).toBe('concealed_action');
@@ -376,7 +379,7 @@ describe('applyEncounterAftermathReaction — hidden_mark effect', () => {
       ],
     };
 
-    const updated = applyEncounterAftermathReaction(state, action, reaction, 25);
+    const { state: updated } = applyEncounterAftermathReaction(state, action, reaction, 25, runtime);
     // Should be the same reference (not a new array) since no marks were added
     expect(updated.hiddenMarks).toBe(state.hiddenMarks);
   });

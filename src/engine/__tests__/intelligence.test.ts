@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, beforeEach } from 'vitest';
 import {
   getAgentIntelligence,
   getIntelligenceByCategory,
@@ -7,6 +7,7 @@ import {
   hasRegionIntelligence,
 } from '../intelligence';
 import { applyEncounterAftermathReaction } from '../encounterAftermath';
+import { createSimulationRuntime, type SimulationRuntime } from '../simulationRuntime';
 import { WorldGraph } from '../graph';
 import type { GameState } from '../../types/gameState';
 import type { IntelligenceRecord } from '../../types/unifiedAction';
@@ -171,6 +172,8 @@ describe('hasRegionIntelligence', () => {
 // ─── Aftermath Integration Tests ─────────────────────────────────
 
 describe('applyEncounterAftermathReaction — intelligence effect', () => {
+  let runtime: SimulationRuntime;
+  beforeEach(() => { runtime = createSimulationRuntime(); });
   function createMinimalGameState(): GameState {
     const graph = new WorldGraph();
     graph.addNode({
@@ -249,7 +252,7 @@ describe('applyEncounterAftermathReaction — intelligence effect', () => {
       ],
     };
 
-    const updated = applyEncounterAftermathReaction(state, action, reaction, 20);
+    const { state: updated } = applyEncounterAftermathReaction(state, action, reaction, 20, runtime);
 
     expect(updated.intelligenceRecords).toHaveLength(1);
     const record = updated.intelligenceRecords![0];
@@ -293,7 +296,7 @@ describe('applyEncounterAftermathReaction — intelligence effect', () => {
       ],
     };
 
-    const updated = applyEncounterAftermathReaction(state, action, reaction, 25);
+    const { state: updated } = applyEncounterAftermathReaction(state, action, reaction, 25, runtime);
     expect(updated.intelligenceRecords![0].reliability).toBe(0.8);
   });
 
@@ -327,7 +330,7 @@ describe('applyEncounterAftermathReaction — intelligence effect', () => {
       ],
     };
 
-    const updated = applyEncounterAftermathReaction(state, action, reaction, 20);
+    const { state: updated } = applyEncounterAftermathReaction(state, action, reaction, 20, runtime);
 
     const intelEvent = updated.tickEvents.find(e => e.id.includes('intel_'));
     expect(intelEvent).toBeDefined();
@@ -368,7 +371,7 @@ describe('applyEncounterAftermathReaction — intelligence effect', () => {
       ],
     };
 
-    const updated = applyEncounterAftermathReaction(state, action, reaction, 25);
+    const { state: updated } = applyEncounterAftermathReaction(state, action, reaction, 25, runtime);
     expect(updated.intelligenceRecords).toHaveLength(2);
     expect(updated.intelligenceRecords![0].recordId).toBe('intel_002'); // pre-existing
     expect(updated.intelligenceRecords![1].category).toBe('political_secret');
@@ -401,7 +404,7 @@ describe('applyEncounterAftermathReaction — intelligence effect', () => {
       ],
     };
 
-    const updated = applyEncounterAftermathReaction(state, action, reaction, 25);
+    const { state: updated } = applyEncounterAftermathReaction(state, action, reaction, 25, runtime);
     // Should be the same reference (not a new array) since no records were added
     expect(updated.intelligenceRecords).toBe(state.intelligenceRecords);
   });
@@ -438,7 +441,7 @@ describe('applyEncounterAftermathReaction — intelligence effect', () => {
       ],
     };
 
-    const updated = applyEncounterAftermathReaction(state, action, reaction, 30);
+    const { state: updated } = applyEncounterAftermathReaction(state, action, reaction, 30, runtime);
     const record = updated.intelligenceRecords![0];
     expect(record.targetEntityId).toBe('faction-shadow-court');
     expect(record.targetRegion).toBeUndefined();

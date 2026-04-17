@@ -69,7 +69,14 @@ export type TraceCategory =
   | 'intelligence_referenced'
   | 'authored_attachment_created'
   // Complication outcome traces (THR-20)
-  | 'complication_selection';
+  | 'complication_selection'
+  // Multi-target aftermath traces (THR-114)
+  | 'aftermath_target_resolved'
+  | 'faction_reputation_changed'
+  | 'reputation_set_applied'
+  | 'condition_applied'
+  | 'condition_removed'
+  | 'aftermath_target_invalid';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -129,6 +136,13 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'authored_attachment_created',
   // Complication outcome traces (THR-20)
   'complication_selection',
+  // Multi-target aftermath traces (THR-114)
+  'aftermath_target_resolved',
+  'faction_reputation_changed',
+  'reputation_set_applied',
+  'condition_applied',
+  'condition_removed',
+  'aftermath_target_invalid',
 ];
 
 /** Base shape for all trace entries */
@@ -843,11 +857,16 @@ export interface EncounterAftermathEffectTrace extends TraceBase {
   effectIndex: number;
   effectKind:
     | 'reputation_score' | 'reputation_tally' | 'clearance_gate_tag'
-    | 'recent_event' | 'encounter_seed' | 'hidden_mark' | 'intelligence';
+    | 'recent_event' | 'encounter_seed' | 'hidden_mark' | 'intelligence'
+    | 'reputation_set' | 'apply_condition' | 'remove_condition';
   /** Kind-specific payload for inspection */
   effectDetail: Readonly<Record<string, unknown>>;
   success: boolean;
   failReason?: string;
+  /** The entity this effect actually landed on (promoted from effectDetail for filter convenience). */
+  effectiveTargetId?: string;
+  /** Whether the actor fallback was used or a specific target was supplied. */
+  effectiveTargetKind?: 'agent' | 'faction' | 'sublocation' | 'actor_fallback';
 }
 
 /** Trace: encounter seed planted by aftermath reaction */
@@ -938,6 +957,81 @@ export interface AuthoredAttachmentCreatedTrace extends TraceBase {
   /** Node category: possession / condition / agreement / etc. */
   attachmentCategory: string;
   origin: 'aftermath_effect' | 'step_graphop' | 'support_bundle';
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Multi-Target Aftermath Traces (THR-114)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Trace: aftermath effect target resolved — emitted once per effect, just after resolveAftermathTarget() */
+export interface AftermathTargetResolvedTrace extends TraceBase {
+  category: 'aftermath_target_resolved';
+  encounterId: string;
+  actionId: string;
+  reactionId: string;
+  effectIndex: number;
+  effectKind: string;
+  effectiveTargetId: string;
+  effectiveTargetKind: 'agent' | 'faction' | 'sublocation' | 'actor_fallback';
+}
+
+/** Trace: faction node reputation changed by aftermath effect */
+export interface FactionReputationChangedTrace extends TraceBase {
+  category: 'faction_reputation_changed';
+  factionId: string;
+  previous: number;
+  result: number;
+  delta: number;
+  /** Which effect kind caused the change */
+  kind: 'reputation_score' | 'reputation_tally' | 'reputation_set';
+  encounterId: string;
+  reactionId: string;
+}
+
+/** Trace: reputation_set effect applied (absolute assignment) */
+export interface ReputationSetAppliedTrace extends TraceBase {
+  category: 'reputation_set_applied';
+  targetId: string;
+  targetKind: 'agent' | 'faction';
+  value: number;
+  previous: number;
+  encounterId: string;
+  reactionId: string;
+}
+
+/** Trace: apply_condition effect succeeded — has_trait edge added to graph */
+export interface ConditionAppliedTrace extends TraceBase {
+  category: 'condition_applied';
+  targetId: string;
+  targetKind: 'agent' | 'faction' | 'sublocation';
+  conditionTraitId: string;
+  durationTicks: number;
+  intensity: number;
+  encounterId: string;
+  reactionId: string;
+}
+
+/** Trace: remove_condition effect ran (removedCount may be 0 if no matching edges found) */
+export interface ConditionRemovedTrace extends TraceBase {
+  category: 'condition_removed';
+  targetId: string;
+  targetKind: 'agent' | 'faction' | 'sublocation';
+  conditionTraitId: string;
+  removedCount: number;
+  encounterId: string;
+  reactionId: string;
+}
+
+/** Trace: aftermath effect target could not be resolved or effect kind does not support the target kind */
+export interface AftermathTargetInvalidTrace extends TraceBase {
+  category: 'aftermath_target_invalid';
+  encounterId: string;
+  reactionId: string;
+  effectIndex: number;
+  effectKind: string;
+  attemptedTargetKind?: 'agent' | 'faction' | 'sublocation';
+  attemptedTargetId?: string;
+  reason: 'target_node_missing' | 'target_kind_not_supported' | 'condition_template_missing' | 'no_actor_id' | 'participant_unresolved' | 'multiple_targets_specified';
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1037,7 +1131,14 @@ export type TraceEntry =
   | IntelligenceReferencedTrace
   | AuthoredAttachmentCreatedTrace
   // Complication outcome traces (THR-20)
-  | ComplicationSelectionTrace;
+  | ComplicationSelectionTrace
+  // Multi-target aftermath traces (THR-114)
+  | AftermathTargetResolvedTrace
+  | FactionReputationChangedTrace
+  | ReputationSetAppliedTrace
+  | ConditionAppliedTrace
+  | ConditionRemovedTrace
+  | AftermathTargetInvalidTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {

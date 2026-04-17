@@ -28,6 +28,8 @@ export interface AttachmentSummary {
   ticksRemaining?: number | null;
   totalTicks?: number;
   durationLabel?: string;
+  /** Encounter that applied this condition (from apply_condition aftermath effect). */
+  sourceEncounterId?: string;
 }
 
 export interface AttachmentFullEntry extends AttachmentSummary {
@@ -153,6 +155,7 @@ export function getAgentAttachments(
         slotTag: subcategory,
         active: edge.properties.active !== false,
         inactiveReason: edge.properties.inactiveReason as string | undefined,
+        sourceEncounterId: edge.properties.sourceEncounterId as string | undefined,
       });
     }
 
