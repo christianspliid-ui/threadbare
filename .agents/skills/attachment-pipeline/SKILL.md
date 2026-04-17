@@ -12,6 +12,8 @@ Automated 4-pass workflow for composing mechanically interesting attachments usi
 
 **Before running the pipeline, read `Docs/plans/2026-04-16-systemic-wiring-guide.md`.** Attachments use the same 40-effect composable system documented there. Understanding effect scopes, conditions, and the graph mutation capabilities changes what you decide to create — an attachment that uses `ChoiceSetEffect` with conditional visibility based on faction rank is alive in a way that a flat `PassiveEffect` with a reach bonus isn't.
 
+**Wounds and conditions in aftermath (THR-117):** If an attachment's use or acquisition triggers a condition on the holder or another agent, use the `condition_attachment` aftermath effect kind: `{ kind: 'condition_attachment', templateId: 'trait.condition.wounded' }`. This is the correct surface for `UnifiedActionTemplate` aftermath reactions — not `content_grant` (not an aftermath effect kind) and not `appliesWound` (legacy `EncounterTemplate` only). The `condition_attachment` kind auto-looks up default duration and triggers the wound → tier promotion signal automatically. See the wiring guide's "Conditions and wounds" subsection for the five subcategories.
+
 ## Game Design Direction Enforcement
 
 **Every attachment is a story object, not a stat block.** Read the game design direction principles in `Docs/plans/2026-04-16-game-design-direction.md` (summarized in `state-of-game-design` Part 0).

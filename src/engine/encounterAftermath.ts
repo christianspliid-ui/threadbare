@@ -13,6 +13,8 @@ import type {
 import { emitTrace } from './traceBuffer';
 import type { SimulationRuntime } from './simulationRuntime';
 import { touchWorld, touchStructure } from './simulationRuntime';
+import { CONDITION_DURATIONS } from '../data/condition-trait-content';
+import { CONDITION_ATTACHMENT_DEFAULT_STACK_COUNT } from '../data/attachment-slot-constants';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -67,6 +69,8 @@ export function resolveAftermathTarget(
 export interface AftermathMutationSummary {
   touchedWorld: boolean;
   touchedStructure: boolean;
+  /** True when a condition_attachment effect applied a wound-subcategory condition to the actor. Drives mid-encounter tier promotion. */
+  woundApplied: boolean;
 }
 
 // ─── Main function ────────────────────────────────────────────────────────────
@@ -92,7 +96,7 @@ export function applyEncounterAftermathReaction(
   let nextHiddenMarks: HiddenMark[] = [];
   let nextIntelligenceRecords: IntelligenceRecord[] = [];
 
-  let mutationSummary: AftermathMutationSummary = { touchedWorld: false, touchedStructure: false };
+  let mutationSummary: AftermathMutationSummary = { touchedWorld: false, touchedStructure: false, woundApplied: false };
 
   const encounterId = action?.templateId ?? 'unknown';
   const actionId = action?.actionId ?? 'unknown';
@@ -754,6 +758,129 @@ export function applyEncounterAftermathReaction(
           success: true,
           effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
           summary: `remove_condition[${i}]: removed ${removedCount} edge(s) of ${effect.conditionTraitId} from ${resolvedId}`,
+        });
+        break;
+      }
+
+      case 'condition_attachment': {
+        const resolvedId = target.kind !== 'actor_fallback' ? target.id : actorAgentId;
+        if (!resolvedId) {
+          emitTrace({
+            tick, category: 'aftermath_target_invalid', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'condition_attachment', reason: 'no_actor_id',
+            summary: `condition_attachment[${i}] skipped: no actor id`,
+          });
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'condition_attachment', effectDetail: { templateId: effect.templateId },
+            success: false, failReason: 'no_actor_id',
+            effectiveTargetId: '', effectiveTargetKind: 'actor_fallback',
+            summary: `condition_attachment[${i}] skipped: no actorId`,
+          });
+          break;
+        }
+        const caTargetNode = state.graph.getNode(resolvedId);
+        if (!caTargetNode) {
+          emitTrace({
+            tick, category: 'aftermath_target_invalid', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'condition_attachment', attemptedTargetId: resolvedId,
+            attemptedTargetKind: target.kind !== 'actor_fallback' ? target.kind : 'agent',
+            reason: 'target_node_missing',
+            summary: `condition_attachment[${i}] skipped: target node not found (${resolvedId})`,
+          });
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'condition_attachment', effectDetail: { targetId: resolvedId, templateId: effect.templateId },
+            success: false, failReason: 'target_node_missing',
+            effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+            summary: `condition_attachment[${i}] skipped: target node not found (${resolvedId})`,
+          });
+          break;
+        }
+        const caTraitNode = state.graph.getNode(effect.templateId);
+        if (!caTraitNode) {
+          emitTrace({
+            tick, category: 'aftermath_target_invalid', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'condition_attachment', reason: 'template_missing',
+            summary: `condition_attachment[${i}] skipped: trait template not found (${effect.templateId})`,
+          });
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'condition_attachment', effectDetail: { targetId: resolvedId, templateId: effect.templateId },
+            success: false, failReason: 'template_missing',
+            effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+            summary: `condition_attachment[${i}] skipped: trait template not found (${effect.templateId})`,
+          });
+          break;
+        }
+        const caStackCount = Math.max(1, effect.stackCount ?? CONDITION_ATTACHMENT_DEFAULT_STACK_COUNT);
+        const caDuration = (() => {
+          if (effect.durationOverride !== undefined) {
+            if (effect.durationOverride <= 0) {
+              emitTrace({
+                tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+                encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+                effectKind: 'condition_attachment', effectDetail: { warn: 'duration_override_invalid', templateId: effect.templateId },
+                success: true,
+                effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+                summary: `condition_attachment[${i}]: duration_override_invalid — falling back to template default`,
+              });
+              return CONDITION_DURATIONS[effect.templateId] ?? CONDITION_DEFAULT_DURATION_TICKS;
+            }
+            return effect.durationOverride;
+          }
+          return CONDITION_DURATIONS[effect.templateId] ?? CONDITION_DEFAULT_DURATION_TICKS;
+        })();
+        // Apply the condition once per stack
+        const caEdgeIds: string[] = [];
+        for (let s = 0; s < caStackCount; s++) {
+          const caEdgeId = `has_trait_${resolvedId}_${effect.templateId}_${tick}_${i}_s${s}`;
+          state.graph.addEdge({
+            id: caEdgeId,
+            source: resolvedId,
+            target: effect.templateId,
+            type: 'has_trait',
+            properties: {
+              appliedAt: tick,
+              durationTicks: caDuration,
+              intensity: CONDITION_DEFAULT_INTENSITY,
+              sourceEncounterId: encounterId,
+              sourceReactionId: reaction.id,
+            },
+          });
+          caEdgeIds.push(caEdgeId);
+        }
+        mutationSummary.touchedStructure = true;
+        // Set woundApplied when wound condition targets the actor (drives mid-encounter promotion)
+        const caIsWound = effect.templateId === 'trait.condition.wounded';
+        const caTargetsActor = !effect.targetAgentId || effect.targetAgentId === actorAgentId;
+        if (caIsWound && caTargetsActor) {
+          mutationSummary.woundApplied = true;
+        }
+        const caKind = (target.kind === 'agent' || target.kind === 'faction' || target.kind === 'sublocation')
+          ? target.kind
+          : 'agent' as const;
+        emitTrace({
+          tick, category: 'condition_applied', agentId: actorAgentId,
+          targetId: resolvedId, targetKind: caKind,
+          conditionTraitId: effect.templateId, durationTicks: caDuration, intensity: CONDITION_DEFAULT_INTENSITY,
+          encounterId, reactionId: reaction.id,
+          summary: `condition_attachment[${i}]: ${effect.templateId} → ${resolvedId} ×${caStackCount} (duration=${caDuration || 'indefinite'})`,
+        });
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'condition_attachment',
+          effectDetail: { targetId: resolvedId, templateId: effect.templateId, stackCount: caStackCount, durationTicks: caDuration, edgeIds: caEdgeIds, woundApplied: mutationSummary.woundApplied },
+          success: true,
+          effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+          summary: `condition_attachment[${i}]: ${effect.templateId} → ${resolvedId} ×${caStackCount}${caIsWound && caTargetsActor ? ' [woundApplied]' : ''}`,
         });
         break;
       }

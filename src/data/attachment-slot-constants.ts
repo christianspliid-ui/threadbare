@@ -93,6 +93,11 @@ export const SUBCATEGORY_TO_SLOT_TAG: Record<PossessionSubcategory, string> = {
   provisions: 'consumable',
 };
 
+// ─── Condition Attachment Defaults ───────────────────────────────
+
+/** Default stack count for condition_attachment aftermath effect when stackCount is omitted. */
+export const CONDITION_ATTACHMENT_DEFAULT_STACK_COUNT = 1;
+
 // ─── Slot Tag Display Names ───────────────────────────────────────
 
 export const SLOT_TAG_DISPLAY_NAMES: Record<string, string> = {

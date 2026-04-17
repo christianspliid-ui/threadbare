@@ -243,6 +243,22 @@ export type EncounterAftermathReactionEffect =
     readonly targetAgentId?: string;
     readonly targetFactionId?: string;
     readonly targetSublocationId?: string;
+  }
+  | {
+    readonly kind: 'condition_attachment';
+    /**
+     * Condition trait node ID from condition-trait-content (e.g. 'trait.condition.wounded').
+     * Unlike apply_condition's conditionTraitId, this surface also:
+     *   • looks up the template's default duration from CONDITION_DURATIONS if durationOverride is absent,
+     *   • surfaces a woundApplied signal for mid-encounter tier promotion when the template is the wounded condition.
+     */
+    readonly templateId: string;
+    /** Who receives the condition. Defaults to action.actorId (same fallback as other effect kinds). */
+    readonly targetAgentId?: string;
+    /** Duration override in ticks. If omitted, uses the template's default from CONDITION_DURATIONS. */
+    readonly durationOverride?: number;
+    /** Number of stacks to apply. Defaults to CONDITION_ATTACHMENT_DEFAULT_STACK_COUNT (1). */
+    readonly stackCount?: number;
   };
 
 export interface PendingEncounterSeed {

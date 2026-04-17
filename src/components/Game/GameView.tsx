@@ -154,6 +154,7 @@ import { executeEffect } from '../../engine/effectExecutors';
 import type { ExecutionContext } from '../../engine/effectExecutors';
 import { emitTrace } from '../../engine/traceBuffer';
 import { applyEncounterAftermathReaction } from '../../engine/encounterAftermath';
+import { checkMidEncounterPromotion } from '../../engine/attentionTier';
 import { consumeMatchingMarks } from '../../engine/hiddenMarks';
 import { observeResolutionIntelligence } from '../../engine/intelligence';
 import {
@@ -1930,8 +1931,33 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       // Store mutation summary for touch calls outside the updater
       pendingAftermathMutations.touchedWorld = reactionMutations.touchedWorld;
       pendingAftermathMutations.touchedStructure = reactionMutations.touchedStructure;
+
+      // THR-117: condition_attachment aftermath path — wire woundApplied into mid-encounter tier promotion.
+      // Mirrors the legacy resolveEncounter → orchestrator promotion contract.
+      let stateAfterPromotion = nextState;
+      if (reactionMutations.woundApplied && activeAction?.effectiveTier && activeAction.effectiveTier !== 'invisible') {
+        const newTier = checkMidEncounterPromotion(activeAction.effectiveTier, { wound: true });
+        if (newTier !== null) {
+          stateAfterPromotion = {
+            ...nextState,
+            unifiedActions: nextState.unifiedActions.map((a: UnifiedAction) =>
+              a.actionId === activeAction.actionId ? { ...a, effectiveTier: newTier } : a
+            ),
+          };
+          emitTrace({
+            type: 'encounter_promotion',
+            tick: prev.tick,
+            encounterId: activeAction.templateId ?? 'unknown',
+            agentId: activeAction.actorId,
+            fromTier: activeAction.effectiveTier,
+            toTier: newTier,
+            reason: 'wound',
+          } as unknown as Parameters<typeof emitTrace>[0]);
+        }
+      }
+
       const afterMarks = consumeMatchingMarks(
-        nextState,
+        stateAfterPromotion,
         activeAction?.actorId,
         activeAction?.templateId,
         prev.tick,
