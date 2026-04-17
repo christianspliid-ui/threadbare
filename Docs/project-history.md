@@ -3,6 +3,7 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ **THR-89** (2026-04-17) — Phase 1: 15 thieves guild templates migrated to UnifiedActionTemplate. Full Threadbare prose, enrichment placeholders, conditional blocks, aftermath reactions (seeds/marks/intel/tallies). Registry wiring updated; bulk shape test suite. Codex-reviewed.
 ✅ **THR-90** (2026-04-17) — Phase 0: EncounterTemplate deprecation + parity/audit tests. 4 test suites, Codex-reviewed. Unblocks THR-89 Phase 1 pilot.
 
 # Project Status
