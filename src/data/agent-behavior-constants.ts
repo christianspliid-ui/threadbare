@@ -735,3 +735,18 @@ export const ELDER_SITE_ESSENCE_REWARD = 5.0;
 /** Essence reward per non-elder hidden site discovery.
  * @range 0.5–3.0 */
 export const HIDDEN_SITE_ESSENCE_REWARD = 2.0;
+
+// ═══════════════════════════════════════════════════════════════════
+// HIDDEN MARKS — Reveal scoring (encounterScoring.ts)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Per-matching-mark additive scoring boost on an encounter candidate,
+ * scaled by the mark's severity. Higher = marked agents more strongly
+ * prefer revelation-family encounters.
+ * @range 0.1–0.8 */
+export const MARK_REVEAL_SCORING_BONUS = 0.3;
+
+/** Maximum additive boost from all matching marks on a single candidate.
+ * Prevents stacking above this value regardless of mark count.
+ * @range 0.3–2.0 */
+export const MARK_REVEAL_SCORING_CAP = 0.9;

@@ -5,13 +5,40 @@
  * effects. They persist on GameState (not on graph nodes) and are queryable by
  * future encounters to trigger investigation reveals.
  *
- * v1: Storage + query only. No automatic reveal system — encounter authors use
- * checkMarkReveals() to test if marks should surface during their encounter.
+ * v2: Full reveal loop. Marks score matching encounters higher, consume
+ * probabilistically at resolution, and decay over time.
  */
 
-import type { GameState } from '../types/gameState';
+import type { GameState, TickEvent } from '../types/gameState';
+import { MAX_RECENT_EVENTS } from '../types/gameState';
 import type { HiddenMark } from '../types/unifiedAction';
 import { emitTrace } from './traceBuffer';
+import { mulberry32 } from '../lib/prng';
+
+// ─── Decay constants (NFP #1) ─────────────────────────────────────
+
+/** Probability multiplier for mark consumption: severity * REVEAL_PROBABILITY_MULT.
+ * At severity 1.0 → 0.9 probability; at severity 0.5 → 0.45.
+ * @range 0.5–1.0 */
+export const REVEAL_PROBABILITY_MULT = 0.9;
+
+/** Ticks after placedTick before decay begins. Gives gameplay time for natural reveal.
+ * @range 10–40 */
+export const MARK_DECAY_GRACE_TICKS = 20;
+
+/** Fraction of current severity lost per tick once grace expires (exponential decay).
+ * @range 0.01–0.05 */
+export const MARK_DECAY_PER_TICK = 0.02;
+
+/** Severity threshold below which the mark is dropped via decay.
+ * @range 0.02–0.1 */
+export const MARK_DECAY_FLOOR = 0.05;
+
+/** Chronicle event significance for a successful revelation. High enough to toast.
+ * @range 0.5–1.0 */
+export const REVEAL_EVENT_SIGNIFICANCE = 0.7;
+
+// ─── Query helpers ────────────────────────────────────────────────
 
 /** Get all hidden marks on a specific agent. */
 export function getAgentHiddenMarks(state: GameState, agentId: string): readonly HiddenMark[] {
@@ -42,6 +69,8 @@ export function checkMarkReveals(
     m.revealFamilies?.some(f => encounterFamily.startsWith(f)),
   );
 }
+
+// ─── Mutation helpers ─────────────────────────────────────────────
 
 /** Remove a specific mark by ID (after it has been revealed). Does NOT emit a trace. */
 export function removeHiddenMark(state: GameState, markId: string): GameState {
@@ -77,4 +106,119 @@ export function revealHiddenMark(
     summary: `Hidden mark revealed: "${mark.label}" on ${mark.targetAgentId} by ${revealedBy}`,
   });
   return removeHiddenMark(state, markId);
+}
+
+// ─── Reveal-check helper ──────────────────────────────────────────
+
+export interface MarkRevealCandidate {
+  readonly mark: HiddenMark;
+  readonly templateId: string;
+  /** Probability of consumption at resolution: severity * REVEAL_PROBABILITY_MULT clamped [0,1] */
+  readonly revealProbability: number;
+}
+
+/**
+ * For a given agent and encounter templateId, returns all marks whose revealFamilies
+ * match the templateId by prefix. Pure query — does NOT consume the mark.
+ *
+ * Accepts either a GameState or a pre-extracted marks array to keep scoring
+ * functions dependency-minimal (they don't hold a full GameState).
+ *
+ * Used at scoring time (to boost matching candidates) and resolution time
+ * (to probabilistically consume matched marks).
+ */
+export function evaluateMarkReveals(
+  marksOrState: GameState | readonly HiddenMark[],
+  agentId: string,
+  templateId: string,
+): readonly MarkRevealCandidate[] {
+  const marks: readonly HiddenMark[] = Array.isArray(marksOrState)
+    ? (marksOrState as readonly HiddenMark[])
+    : ((marksOrState as GameState).hiddenMarks ?? []);
+  return marks
+    .filter(m =>
+      m.targetAgentId === agentId &&
+      m.revealFamilies?.some(f => templateId.startsWith(f)),
+    )
+    .map(m => ({
+      mark: m,
+      templateId,
+      revealProbability: Math.min(1, m.severity * REVEAL_PROBABILITY_MULT),
+    }));
+}
+
+// ─── Resolution-time consumption ─────────────────────────────────
+
+/**
+ * At encounter resolution, probabilistically consume any marks on the actor whose
+ * revealFamilies match the resolved templateId. Each matched mark rolls
+ * rng() < severity * REVEAL_PROBABILITY_MULT; on hit the mark is removed,
+ * hidden_mark_revealed is traced, and a chronicle event is appended.
+ *
+ * Deterministic: seed derived from (state.seed, tick, markId).
+ */
+export function consumeMatchingMarks(
+  state: GameState,
+  agentId: string | undefined,
+  templateId: string | undefined,
+  tick: number,
+): GameState {
+  if (!agentId || !templateId) return state;
+
+  const candidates = evaluateMarkReveals(state, agentId, templateId);
+  if (candidates.length === 0) return state;
+
+  let s = state;
+  for (const { mark } of candidates) {
+    // Derive a deterministic seed per mark: mix world seed, tick, and markId chars
+    let seedVal = s.seed + tick * 97;
+    for (let i = 0; i < mark.markId.length; i++) {
+      seedVal = (seedVal ^ (mark.markId.charCodeAt(i) * 2654435761)) >>> 0;
+    }
+    const rng = mulberry32(seedVal);
+    const roll = rng();
+    const threshold = Math.min(1, mark.severity * REVEAL_PROBABILITY_MULT);
+
+    if (roll >= threshold) continue;
+    // Never consume a mark placed this same tick — aftermath can plant a mark and this
+    // function would otherwise immediately consume it, defeating the delayed-reveal mechanic.
+    if (mark.placedTick >= tick) continue;
+
+    // Consumed — emit trace
+    try {
+      emitTrace({
+        tick,
+        category: 'hidden_mark_revealed',
+        agentId: mark.targetAgentId,
+        markId: mark.markId,
+        actorId: mark.targetAgentId,
+        revealedBy: templateId,
+        ticksSincePlacement: tick - mark.placedTick,
+        summary: `Hidden mark revealed: "${mark.label}" on ${mark.targetAgentId} by ${templateId}`,
+      });
+    } catch {
+      // Trace failure must never block aftermath (NFP #4)
+    }
+
+    // Chronicle event — high significance to surface in NarrativeLog + ToastStack
+    // TODO(THR-132): replace with per-category prose tables + enrichProse() placeholder support
+    // TODO(THR-133): emitTrace inside setGameState updater → StrictMode double-invokes in dev; move to caller side effect
+    const revealEvent: TickEvent = {
+      id: `mark_reveal_${mark.markId}_${tick}`,
+      tick,
+      type: 'ripple_consequence',
+      message: `A buried truth surfaces: ${mark.label}`,
+      significance: REVEAL_EVENT_SIGNIFICANCE,
+      actorId: mark.targetAgentId,
+    };
+
+    s = {
+      ...s,
+      hiddenMarks: (s.hiddenMarks ?? []).filter(m => m.markId !== mark.markId),
+      tickEvents: [...s.tickEvents, revealEvent],
+      recentEvents: [...s.recentEvents, revealEvent].slice(-MAX_RECENT_EVENTS),
+    };
+  }
+
+  return s;
 }

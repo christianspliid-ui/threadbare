@@ -55,7 +55,9 @@ import { computeBondModifier } from './socialEncounterGeneration';
 import { getScoringBoost } from './factionRankBonus';
 import { getTraitsForNode } from './traits';
 import type { TraitDefinitionProperties, ReputationEffects } from '../types/traits';
-import { REPUTATION_SCORING_WEIGHT } from '../data/agent-behavior-constants';
+import { REPUTATION_SCORING_WEIGHT, MARK_REVEAL_SCORING_BONUS, MARK_REVEAL_SCORING_CAP } from '../data/agent-behavior-constants';
+import type { HiddenMark } from '../types/unifiedAction';
+import { evaluateMarkReveals } from './hiddenMarks';
 import { getChainProgress, computeChainBonus } from './encounterChains';
 import { getNodeSphereAffinity, getDominantSphere, SPHERE_AXIOLOGICAL_MAP, applyAxiologicalShift } from './sphereAffinity';
 import { SPHERE_OPPOSITES } from './cosmology';
@@ -478,6 +480,7 @@ export interface ScoredCandidate {
   hunchBonus: number;
   rarityMultiplier: number;
   roleAffinityMultiplier: number;
+  markRevealBonus: number;
   finalScore: number;
   action: 'start_local' | 'queue_movement' | 'attempt_remote';
 }
@@ -724,6 +727,8 @@ export function scoreAndSelect(
   effectStates?: ReadonlyMap<string, EffectRuntimeState>,
   /** Combined encounter-type bias from doom identity + active omen. Capped at ±IDENTITY_ENCOUNTER_BIAS_CAP per source. */
   encounterTypeBias?: Partial<Record<string, number>>,
+  /** Active hidden marks for this agent — matching candidates score higher (THR-112). */
+  hiddenMarks?: readonly HiddenMark[],
 ): DecisionResult {
   // Fail-soft: missing agent → null result
   const agentNode = graph.getNode(agentId);
@@ -903,8 +908,15 @@ export function scoreAndSelect(
     const baseScore = valuePerTick * desireMultiplier + factionScoringBoost + reputationBonus + resonance + globalResonance;
     // 22. Doom identity + omen bias — additive, applied after all multipliers (already capped at source)
     const identityBiasBonus = encounterTypeBias?.[entry.encounterType] ?? 0;
+    // 23. Hidden mark reveal bonus — encounters matching an agent's marks score higher (THR-112)
+    let markRevealBonus = 0;
+    if (hiddenMarks && hiddenMarks.length > 0) {
+      const markMatches = evaluateMarkReveals(hiddenMarks, agentId, entry.templateId);
+      const rawBonus = markMatches.reduce((sum, m) => sum + MARK_REVEAL_SCORING_BONUS * m.mark.severity, 0);
+      markRevealBonus = Math.min(rawBonus, MARK_REVEAL_SCORING_CAP);
+    }
     const finalScore = baseScore * rarityMultiplier * roleAffinityMultiplier * (1 - familiarityPenalty) + explorationBonus + chainBonus
-      + ruinsBonus + anomalyBonus + attractionBonus + hunchBonus + identityBiasBonus;
+      + ruinsBonus + anomalyBonus + attractionBonus + hunchBonus + identityBiasBonus + markRevealBonus;
 
     // 17. Action classification
     let action: ScoredCandidate['action'];
@@ -939,6 +951,7 @@ export function scoreAndSelect(
       hunchBonus,
       rarityMultiplier,
       roleAffinityMultiplier,
+      markRevealBonus,
       finalScore,
       action,
     });

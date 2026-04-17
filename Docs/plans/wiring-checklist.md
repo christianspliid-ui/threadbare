@@ -42,6 +42,7 @@ Every engine module that produces per-tick state changes must be called from a p
 | 6 | `phaseNarrative` | Vignette & prose generation |
 | 7 | `phaseEssence` | Pool regeneration & decay |
 | 7.1 | `phaseReputationDecay` | Reputation time-decay |
+| 6.7 | `phaseHiddenMarkDecay` | Hidden mark severity decay + floor-drop trace |
 | 7.2 | `phaseDivineInfluenceDecay` | Divine presence fade |
 | 7.5 | `phaseTradeRouteDecay` | Route dissolution |
 | 8 | `phaseProsperity` | Settlement economic pulse |
@@ -78,6 +79,17 @@ Every engine module that produces per-tick state changes must be called from a p
 | `phaseQuintessence` (passive regen) | `quintessence_changed` / `reason: passive_regen` | No |
 | `phaseQuintessence` (threshold crossing) | `state_transition` / `threshold_X_to_Y` | No |
 | `orchestrator` (encounter failure) | `quintessence_changed` / `reason: encounter_failure_by_band` | ✅ Yes |
+
+**Hidden mark reveal wiring (THR-112, 2026-04-17):**
+
+| Source | Trace category | revealedBy value | Triggered by |
+|--------|---------------|-----------------|-------------|
+| `phaseHiddenMarkDecay` (floor drop) | `hidden_mark_revealed` | `decay:severity_floor` | Phase 6.7 per tick |
+| `consumeMatchingMarks` (encounter resolution) | `hidden_mark_revealed` | templateId | `GameView.tsx` aftermath call |
+| `revealHiddenMark` (direct) | `hidden_mark_revealed` | caller-supplied | Any explicit reveal |
+| `scoreAndSelect` (scoring boost) | — (no trace; scoring signal only) | — | `phaseAgentDecision` |
+
+Mark reveal scoring: `MARK_REVEAL_SCORING_BONUS=0.3`, cap `MARK_REVEAL_SCORING_CAP=0.9` in `agent-behavior-constants.ts`. Decay constants in `hiddenMarks.ts`.
 
 **Component-library foundation seams (2026-04-03):**
 

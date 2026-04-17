@@ -1,0 +1,260 @@
+import { describe, it, expect, beforeEach } from 'vitest';
+import {
+  evaluateMarkReveals,
+  consumeMatchingMarks,
+  REVEAL_PROBABILITY_MULT,
+  MARK_DECAY_FLOOR,
+} from '../hiddenMarks';
+import { clearTraces, enableTracing, getTraces } from '../traceBuffer';
+import type { GameState } from '../../types/gameState';
+import type { HiddenMark } from '../../types/unifiedAction';
+
+// ─── Fixtures ────────────────────────────────────────────────────
+
+const MARK_INVESTIGATION: HiddenMark = {
+  markId: 'mark-inv-001',
+  category: 'betrayal',
+  severity: 1.0,
+  label: 'Betrayed the guild',
+  sourceEncounterId: 'broker.quest.rival_shrine_betrayal',
+  placedTick: 5,
+  targetAgentId: 'agent-1',
+  revealFamilies: ['investigation', 'brinewall'],
+};
+
+const MARK_LOW_SEVERITY: HiddenMark = {
+  ...MARK_INVESTIGATION,
+  markId: 'mark-inv-low',
+  severity: 0.1,
+};
+
+const MARK_NO_FAMILIES: HiddenMark = {
+  markId: 'mark-nofam-001',
+  category: 'secret_knowledge',
+  severity: 0.8,
+  label: 'Knows the vault',
+  sourceEncounterId: 'ruins.quest',
+  placedTick: 5,
+  targetAgentId: 'agent-1',
+};
+
+const MARK_OTHER_AGENT: HiddenMark = {
+  ...MARK_INVESTIGATION,
+  markId: 'mark-other-001',
+  targetAgentId: 'agent-2',
+};
+
+function makeState(
+  marks: HiddenMark[],
+  seed = 42,
+  tick = 20,
+): GameState {
+  return {
+    hiddenMarks: marks,
+    seed,
+    tick,
+    tickEvents: [],
+    recentEvents: [],
+  } as unknown as GameState;
+}
+
+beforeEach(() => { enableTracing(); clearTraces(); });
+
+// ─── evaluateMarkReveals ─────────────────────────────────────────
+
+describe('evaluateMarkReveals — GameState overload', () => {
+  it('returns candidates matching by templateId prefix', () => {
+    const state = makeState([MARK_INVESTIGATION]);
+    const candidates = evaluateMarkReveals(state, 'agent-1', 'investigation.witness_account');
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0].mark.markId).toBe('mark-inv-001');
+  });
+
+  it('returns empty for non-matching template prefix', () => {
+    const state = makeState([MARK_INVESTIGATION]);
+    expect(evaluateMarkReveals(state, 'agent-1', 'shadow.stealth')).toHaveLength(0);
+  });
+
+  it('returns empty for wrong agent', () => {
+    const state = makeState([MARK_INVESTIGATION]);
+    expect(evaluateMarkReveals(state, 'agent-2', 'investigation.audit')).toHaveLength(0);
+  });
+
+  it('returns empty for marks without revealFamilies', () => {
+    const state = makeState([MARK_NO_FAMILIES]);
+    expect(evaluateMarkReveals(state, 'agent-1', 'investigation.audit')).toHaveLength(0);
+  });
+
+  it('computes revealProbability = severity * REVEAL_PROBABILITY_MULT', () => {
+    const state = makeState([MARK_INVESTIGATION]);
+    const [candidate] = evaluateMarkReveals(state, 'agent-1', 'investigation.audit');
+    expect(candidate.revealProbability).toBeCloseTo(1.0 * REVEAL_PROBABILITY_MULT);
+  });
+
+  it('clamps revealProbability to max 1.0', () => {
+    const highSeverityMark: HiddenMark = { ...MARK_INVESTIGATION, severity: 2.0 };
+    const state = makeState([highSeverityMark]);
+    const [candidate] = evaluateMarkReveals(state, 'agent-1', 'investigation.audit');
+    expect(candidate.revealProbability).toBe(1.0);
+  });
+});
+
+describe('evaluateMarkReveals — marks-array overload', () => {
+  it('accepts readonly HiddenMark[] directly', () => {
+    const marks: readonly HiddenMark[] = [MARK_INVESTIGATION, MARK_OTHER_AGENT];
+    const candidates = evaluateMarkReveals(marks, 'agent-1', 'investigation.audit');
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0].mark.markId).toBe('mark-inv-001');
+  });
+
+  it('returns empty array for empty marks list', () => {
+    expect(evaluateMarkReveals([], 'agent-1', 'investigation.audit')).toHaveLength(0);
+  });
+});
+
+// ─── consumeMatchingMarks ────────────────────────────────────────
+
+describe('consumeMatchingMarks — basic behavior', () => {
+  it('returns state unchanged for undefined agentId', () => {
+    const state = makeState([MARK_INVESTIGATION]);
+    const result = consumeMatchingMarks(state, undefined, 'investigation.audit', 20);
+    expect(result).toBe(state);
+  });
+
+  it('returns state unchanged for undefined templateId', () => {
+    const state = makeState([MARK_INVESTIGATION]);
+    const result = consumeMatchingMarks(state, 'agent-1', undefined, 20);
+    expect(result).toBe(state);
+  });
+
+  it('returns state unchanged when no marks match', () => {
+    const state = makeState([MARK_INVESTIGATION]);
+    const result = consumeMatchingMarks(state, 'agent-1', 'shadow.stealth', 20);
+    expect(result).toBe(state);
+  });
+
+  it('returns state unchanged for empty hiddenMarks', () => {
+    const state = makeState([]);
+    const result = consumeMatchingMarks(state, 'agent-1', 'investigation.audit', 20);
+    expect(result).toBe(state);
+  });
+});
+
+describe('consumeMatchingMarks — determinism', () => {
+  it('produces the same result for the same seed + tick + markId', () => {
+    const state = makeState([MARK_INVESTIGATION], 42, 20);
+    const result1 = consumeMatchingMarks(state, 'agent-1', 'investigation.audit', 20);
+    const result2 = consumeMatchingMarks(state, 'agent-1', 'investigation.audit', 20);
+    // Both runs consumed or both did not — must be the same
+    expect(result1.hiddenMarks?.length).toBe(result2.hiddenMarks?.length);
+  });
+
+  it('severity 1.0 with REVEAL_PROBABILITY_MULT=0.9 consumes mark in majority of seeded runs', () => {
+    let consumed = 0;
+    for (let seed = 0; seed < 50; seed++) {
+      const state = makeState([MARK_INVESTIGATION], seed, 20);
+      const result = consumeMatchingMarks(state, 'agent-1', 'investigation.audit', 20);
+      if ((result.hiddenMarks?.length ?? 0) === 0) consumed++;
+    }
+    // At probability 0.9, expect close to 45/50 consumed
+    expect(consumed).toBeGreaterThan(30);
+  });
+
+  it('severity 0.1 consumes mark in minority of seeded runs', () => {
+    let consumed = 0;
+    for (let seed = 0; seed < 50; seed++) {
+      const state = makeState([MARK_LOW_SEVERITY], seed, 20);
+      const result = consumeMatchingMarks(state, 'agent-1', 'investigation.audit', 20);
+      if ((result.hiddenMarks?.length ?? 0) === 0) consumed++;
+    }
+    // At probability 0.09, expect few consumed
+    expect(consumed).toBeLessThan(20);
+  });
+});
+
+describe('consumeMatchingMarks — on consumption', () => {
+  it('removes the consumed mark from state', () => {
+    // Use seed where severity=1.0 at REVEAL_PROBABILITY_MULT=0.9 is nearly certain to consume
+    let consumedState: GameState | null = null;
+    for (let seed = 0; seed < 100; seed++) {
+      const state = makeState([MARK_INVESTIGATION], seed, 20);
+      const result = consumeMatchingMarks(state, 'agent-1', 'investigation.audit', 20);
+      if ((result.hiddenMarks?.length ?? 1) === 0) {
+        consumedState = result;
+        break;
+      }
+    }
+    expect(consumedState).not.toBeNull();
+    expect(consumedState!.hiddenMarks).toHaveLength(0);
+  });
+
+  it('emits hidden_mark_revealed trace on consumption', () => {
+    clearTraces();
+    for (let seed = 0; seed < 100; seed++) {
+      const state = makeState([MARK_INVESTIGATION], seed, 20);
+      const result = consumeMatchingMarks(state, 'agent-1', 'investigation.audit', 20);
+      if ((result.hiddenMarks?.length ?? 1) === 0) {
+        const traces = getTraces().filter(t => t.category === 'hidden_mark_revealed');
+        expect(traces).toHaveLength(1);
+        expect((traces[0] as any).revealedBy).toBe('investigation.audit');
+        break;
+      }
+      clearTraces();
+    }
+  });
+
+  it('appends a ripple_consequence chronicle event', () => {
+    for (let seed = 0; seed < 100; seed++) {
+      const state = makeState([MARK_INVESTIGATION], seed, 20);
+      const result = consumeMatchingMarks(state, 'agent-1', 'investigation.audit', 20);
+      if ((result.hiddenMarks?.length ?? 1) === 0) {
+        const reveal = result.tickEvents.find(e => e.type === 'ripple_consequence' && e.message.includes('buried truth'));
+        expect(reveal).toBeDefined();
+        expect(reveal!.significance).toBe(0.7);
+        break;
+      }
+    }
+  });
+
+  it('does not consume mark that does not match templateId prefix', () => {
+    const state = makeState([MARK_INVESTIGATION], 42, 20);
+    const result = consumeMatchingMarks(state, 'agent-1', 'shadow.stealth', 20);
+    expect(result.hiddenMarks).toHaveLength(1);
+  });
+
+  it('leaves other marks untouched when one is consumed', () => {
+    const secondMark: HiddenMark = {
+      markId: 'mark-inv-002',
+      category: 'debt',
+      severity: 0.5,
+      label: 'Guild debt',
+      sourceEncounterId: 'merchant.quest',
+      placedTick: 5,
+      targetAgentId: 'agent-1',
+      revealFamilies: ['merchant'],
+    };
+    for (let seed = 0; seed < 100; seed++) {
+      const state = makeState([MARK_INVESTIGATION, secondMark], seed, 20);
+      const result = consumeMatchingMarks(state, 'agent-1', 'investigation.audit', 20);
+      if ((result.hiddenMarks?.length ?? 2) === 1) {
+        // Investigation mark consumed, merchant mark stays
+        expect(result.hiddenMarks![0].markId).toBe('mark-inv-002');
+        break;
+      }
+    }
+  });
+});
+
+describe('consumeMatchingMarks — below decay floor severity', () => {
+  it('correctly handles mark with severity below 1.0 * MARK_DECAY_FLOOR', () => {
+    const tinyMark: HiddenMark = {
+      ...MARK_INVESTIGATION,
+      severity: MARK_DECAY_FLOOR / 2,
+    };
+    // revealProbability = (MARK_DECAY_FLOOR/2) * 0.9 — very low, rarely fires
+    const state = makeState([tinyMark], 42, 20);
+    const result = consumeMatchingMarks(state, 'agent-1', 'investigation.audit', 20);
+    // Should not throw; may or may not consume — just verify no crash
+    expect(result).toBeDefined();
+  });
+});

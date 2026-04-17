@@ -544,6 +544,7 @@ export function phaseAgentDecision(
       }
 
       // Score and select (hex-distance travel cost, no distance matrix)
+      const agentHiddenMarks = (state.hiddenMarks ?? []).filter(m => m.targetAgentId === agentId);
       const decision = scoreAndSelect(
         candidates,
         agentId,
@@ -554,6 +555,7 @@ export function phaseAgentDecision(
         state.tiles,
         undefined,
         combinedBias,
+        agentHiddenMarks,
       );
 
       // Emit scoring trace

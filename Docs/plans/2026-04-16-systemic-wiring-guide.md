@@ -124,6 +124,11 @@ Hidden marks track secrets, debts, betrayals, and knowledge that persist invisib
 
 **Why this changes what you write:** Marks create dramatic irony — the player knows the secret exists, but the world doesn't yet. When you write a deception scene, the mark means the deception has *weight*. It's not just flavor text that says "they got away with it." It's a graph entity that future encounters in the `investigation` or `brinewall` families can detect and trigger consequences from. **Write scenes where the secret matters enough to track.** If a character lies, cheats, or hides something — and it would change the world if discovered — that's a hidden mark.
 
+**🟢 Reveal loop live (THR-112, 2026-04-17):** Hidden marks now actively shape gameplay in three ways:
+1. **Scoring boost** — encounters whose `templateId` starts with a mark's `revealFamilies` prefix score `+MARK_REVEAL_SCORING_BONUS * severity` (default +0.3), making agents drift toward encounters that could surface their secrets.
+2. **Probabilistic consumption** — when a matching encounter resolves in GameView, `consumeMatchingMarks()` rolls `severity * 0.9` to consume the mark, emit `hidden_mark_revealed`, and append a `ripple_consequence` chronicle event.
+3. **Decay** — Phase 6.7 (`phaseHiddenMarkDecay`) decays severity 2%/tick after a 20-tick grace period; marks below severity 0.05 are dropped with a `hidden_mark_revealed` trace (`revealedBy: 'decay:severity_floor'`). Unrevealed marks do not persist forever.
+
 ---
 
 ### Capability 4: Reputation Flow — How the World Remembers

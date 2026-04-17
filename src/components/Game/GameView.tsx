@@ -154,6 +154,7 @@ import { executeEffect } from '../../engine/effectExecutors';
 import type { ExecutionContext } from '../../engine/effectExecutors';
 import { emitTrace } from '../../engine/traceBuffer';
 import { applyEncounterAftermathReaction } from '../../engine/encounterAftermath';
+import { consumeMatchingMarks } from '../../engine/hiddenMarks';
 import {
   markEncounterProgressDisregarded,
   markUnifiedActionDisregarded,
@@ -1917,9 +1918,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         );
 
       const nextState = applyEncounterAftermathReaction(prev, activeAction, reaction, prev.tick);
+      const afterMarks = consumeMatchingMarks(
+        nextState,
+        activeAction?.actorId,
+        activeAction?.templateId,
+        prev.tick,
+      );
       return {
-        ...nextState,
-        encounterNotifications: (nextState.encounterNotifications ?? []).map(notification =>
+        ...afterMarks,
+        encounterNotifications: (afterMarks.encounterNotifications ?? []).map(notification =>
           notification.id === tieredEncounterState.notification.id
             ? { ...notification, resolved: true }
             : notification,
