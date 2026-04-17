@@ -201,7 +201,7 @@ export function buildPredicateContext(
   const healthHigh = doomFraction <= HEALTH_HIGH_THRESHOLD;
 
   // Alone / outnumbered — check co-located agents
-  // TODO(THR-??): allyCount and enemyCount are stubs. alone is always true, outnumbered always false.
+  // TODO(THR-144): allyCount and enemyCount are stubs. alone is always true, outnumbered always false.
   // Full implementation requires graph traversal to count co-located allies/enemies.
   const allyCount = 0;
   const enemyCount = 0;

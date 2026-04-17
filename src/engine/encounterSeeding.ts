@@ -75,7 +75,7 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
           // action IDs (e.g. "ua_42") and template IDs are NOT graph nodes, so this try
           // always falls through to causation_edge_creation_skipped. Full implementation
           // requires encounter history to create event nodes (see caused_by in edgeSchema.ts).
-          // TODO(THR-???): wire encounter-history event nodes so causation edges can land.
+          // TODO(THR-143): wire encounter-history event nodes so causation edges can land.
           const causedBySourceId = seed.sourceEncounterId;
           const causedByNewId = action.actionId;
           if (causedBySourceId && causedByNewId) {
