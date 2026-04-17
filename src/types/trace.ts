@@ -203,7 +203,14 @@ export interface NarrativeGenerationTrace extends TraceBase {
   templateId?: string;
   sphereWords?: string[];
   personalityClause?: string;
+  culturalFlavorApplied?: boolean;
   finalProse: string;
+  /** THR-86: structural shape chosen for routine prose */
+  shape?: string;
+  /** THR-86: placeholder names resolved via enrichProse */
+  placeholdersResolved?: string[];
+  /** THR-86: reason enrichProse was skipped for this routine event */
+  fallbackReason?: 'no_graph' | 'no_actor_id';
 }
 
 /** Trace: narrative context harvested for an event */

@@ -15,6 +15,8 @@ import type {
   NarrativeTier,
   ProseFragment,
   ProseContext,
+  ProseShape,
+  ShapedTemplate,
   VoiceMode,
   SphereVocabulary,
   ChronicleEntry,
@@ -24,6 +26,8 @@ import type { ValuePair } from '../types/agent';
 import type { WorldGraph } from './graph';
 import { emitTrace } from './traceBuffer';
 import { getCulturalFlavorWords, pickCulturalWord } from './culturalProse';
+import { gatherNarrativeContext, enrichProse } from './proseEnrichment';
+import { DEFAULT_SHAPE_WEIGHTS, SHAPE_REROLL_LIMIT } from './narrative-constants';
 
 // ─── Seeded PRNG ─────────────────────────────────────────────────
 
@@ -40,8 +44,15 @@ function mulberry32(seed: number): () => number {
 // ─── Prose Event Counter ────────────────────────────────────────
 // Monotonically increasing to avoid ID collisions across calls with the same seed.
 let narrativeEventCounter = 0;
+
+// ─── Shape Rotation State ────────────────────────────────────────
+// Per event type: last shape chosen, used to avoid back-to-back identical shapes.
+// Module-scope per-session — reset alongside narrativeEventCounter on game start.
+const shapeRotation: Map<string, ProseShape> = new Map();
+
 export function resetNarrativeEventCounter(): void {
   narrativeEventCounter = 0;
+  shapeRotation.clear();
 }
 
 // ─── Sphere Word Picker ──────────────────────────────────────────
@@ -141,6 +152,70 @@ function applyCulturalFlavor(
   };
 }
 
+// ─── Shape Picker ────────────────────────────────────────────────
+
+/**
+ * Pick a template from the pool by shape weight, with adjacent-repeat avoidance.
+ * Same seed + same rotation state = same output (deterministic).
+ */
+function weightedPick(
+  pool: ShapedTemplate[],
+  rng: () => number,
+): ShapedTemplate {
+  const byShape = new Map<ProseShape, ShapedTemplate[]>();
+  for (const t of pool) {
+    const bucket = byShape.get(t.shape);
+    if (bucket) bucket.push(t);
+    else byShape.set(t.shape, [t]);
+  }
+  const shapes = [...byShape.keys()];
+  const rawWeights = shapes.map(s => DEFAULT_SHAPE_WEIGHTS[s] ?? 0);
+  const total = rawWeights.reduce((a, b) => a + b, 0) || 1;
+
+  let r = rng() * total;
+  let chosenShape = shapes[shapes.length - 1];
+  for (let i = 0; i < shapes.length; i++) {
+    r -= rawWeights[i];
+    if (r <= 0) { chosenShape = shapes[i]; break; }
+  }
+
+  const candidates = byShape.get(chosenShape)!;
+  return candidates[Math.floor(rng() * candidates.length)];
+}
+
+function pickShape(pool: ShapedTemplate[], eventType: string, seed: number): ShapedTemplate {
+  const rng = mulberry32(seed);
+  const shapesPresent = new Set(pool.map(t => t.shape));
+  const lastShape = shapeRotation.get(eventType);
+
+  if (lastShape && shapesPresent.size > 1) {
+    for (let i = 0; i < SHAPE_REROLL_LIMIT; i++) {
+      const picked = weightedPick(pool, rng);
+      if (picked.shape !== lastShape) {
+        shapeRotation.set(eventType, picked.shape);
+        return picked;
+      }
+    }
+  }
+  const picked = weightedPick(pool, rng);
+  shapeRotation.set(eventType, picked.shape);
+  return picked;
+}
+
+// ─── Fallback Placeholder Resolution ─────────────────────────────
+
+function applyFallbacks(text: string, context: ProseContext): string {
+  return text
+    .replace(/\{name\}/g, context.actorName ?? 'the actor')
+    .replace(/\{actor\}/g, context.actorName ?? 'the actor')
+    .replace(/\{target\}/g, context.targetName ?? context.locationName ?? 'the target')
+    .replace(/\{location\}/g, context.locationName ?? 'the wilderness')
+    .replace(/\{they\}/g, 'they').replace(/\{them\}/g, 'them').replace(/\{their\}/g, 'their')
+    .replace(/\{They\}/g, 'They').replace(/\{Them\}/g, 'Them').replace(/\{Their\}/g, 'Their')
+    .replace(/\{\?has_\w+\}[\s\S]*?\{\/has_\w+\}/g, '')
+    .replace(/\{\?no_\w+\}([\s\S]*?)\{\/no_\w+\}/g, '$1');
+}
+
 // ─── Tier 1: Routine Template Stitching ──────────────────────────
 
 export function generateRoutineProse(
@@ -149,10 +224,9 @@ export function generateRoutineProse(
   seed: number,
   graph?: WorldGraph,
 ): ProseFragment {
-  const rng = mulberry32(seed);
   const sphere = context.sphere ?? 'force';
   const templates = ROUTINE_TEMPLATES[eventType] ?? ROUTINE_TEMPLATES.action_resolved;
-  const template = templates[Math.floor(rng() * templates.length)];
+  const shaped = pickShape(templates, eventType, seed);
 
   let { adj, verb, noun } = pickSphereWords(sphere, seed);
 
@@ -169,12 +243,36 @@ export function generateRoutineProse(
     }
   }
 
-  const text = template
-    .replace(/\{actor\}/g, context.actorName ?? 'the actor')
-    .replace(/\{target\}/g, context.targetName ?? context.locationName ?? 'the target')
+  // Sphere-word substitution always applied first
+  let text = shaped.template
     .replace(/\{adj\}/g, adj)
     .replace(/\{verb\}/g, verb)
     .replace(/\{noun\}/g, noun);
+
+  // Enrichment path vs safe fallback
+  const placeholdersResolved: string[] = [];
+  let fallbackReason: 'no_graph' | 'no_actor_id' | undefined;
+
+  if (graph && context.actorId) {
+    try {
+      const ctx = gatherNarrativeContext(graph, context.actorId);
+      text = text.replace(/\{target\}/g, context.targetName ?? context.locationName ?? 'the world');
+      text = enrichProse(text, ctx);
+      if (/{name}/.test(shaped.template)) placeholdersResolved.push('name');
+      if (/{location}/.test(shaped.template)) placeholdersResolved.push('location');
+      if (/\{\?has_faction\}/.test(shaped.template)) placeholdersResolved.push('has_faction');
+      if (/\{\?has_ally\}/.test(shaped.template)) placeholdersResolved.push('has_ally');
+    } catch {
+      fallbackReason = 'no_actor_id';
+      text = applyFallbacks(text, context);
+    }
+  } else {
+    fallbackReason = graph ? 'no_actor_id' : 'no_graph';
+    text = applyFallbacks(text, context);
+  }
+
+  // Residual strip — never leak raw {foo} tokens to players
+  text = text.replace(/\{[^}]+\}/g, '');
 
   emitTrace({
     tick: 0,
@@ -185,6 +283,9 @@ export function generateRoutineProse(
     sphereWords: [adj, verb, noun].filter(Boolean),
     culturalFlavorApplied,
     finalProse: text,
+    shape: shaped.shape,
+    placeholdersResolved,
+    fallbackReason,
   });
 
   return {
@@ -193,6 +294,7 @@ export function generateRoutineProse(
     tier: 'routine',
     eventId: `evt_prose_${seed}_${narrativeEventCounter++}`,
     sphereColoring: sphere,
+    shape: shaped.shape,
   };
 }
 

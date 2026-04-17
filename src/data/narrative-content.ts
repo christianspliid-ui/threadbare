@@ -21,7 +21,7 @@
  */
 
 import type { SphereName } from '../types/index';
-import type { SphereVocabulary } from '../types/narrative';
+import type { SphereVocabulary, ShapedTemplate } from '../types/narrative';
 import type { ValuePair } from '../types/agent';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -81,148 +81,455 @@ export const SPHERE_VOCABULARY: Record<SphereName, SphereVocabulary> = {
 
 /**
  * Template prose for Tier 1 (Routine) narrative events.
- * Each template is a sentence fragment with {placeholders} for substitution.
- * Placeholders: {actor}, {target}, {adj}, {verb}, {noun}
+ * Each template carries its structural shape for rotation-aware picking.
+ *
+ * Shapes: svo (direct), aftermath (consequence-first), inverted (prepositional-first),
+ *         compound (em-dash/semicolon join), fragment (staccato)
+ *
+ * Placeholders:
+ *   {name}                 → agent name (enrichProse) or actorName (fallback)
+ *   {target}               → target name or location
+ *   {location}             → current location name
+ *   {adj}/{verb}/{noun}    → sphere vocabulary slots
+ *   {they}/{them}/{their}  → gendered pronouns
+ *   {?has_faction}…{/has_faction}  → conditional faction block
+ *   {?has_ally}…{/has_ally}        → conditional ally block
+ *
+ * Author's checklist per template:
+ *   ✓ {name} used (not {actor})
+ *   ✓ {location} used or intentionally omitted
+ *   ✓ {target} used where event has an addressee
+ *   ✓ Sphere slots ({adj}/{verb}/{noun}) preserved
+ *   ✓ Conditional blocks only where state changes the sentence's meaning
+ *   ✓ Shape tag matches sentence structure
+ *   ✓ Reads well in isolation
  */
-export const ROUTINE_TEMPLATES: Record<string, string[]> = {
+export const ROUTINE_TEMPLATES: Record<string, ShapedTemplate[]> = {
   action_resolved: [
-    '{actor} {verb} toward {target}, a {adj} display of {noun}.',
-    'With {adj} resolve, {actor} moved against {target}. The air hummed with {noun}.',
-    '{actor} acted with {adj} purpose, their {noun} reshaping the fate of {target}.',
-    '{actor} moved deliberately, the weight of {adj} {noun} settling upon {target}.',
-    'The threads of fate {verb} through {actor}\'s hands as they grasped at {target}\'s {adj} {noun}.',
+    {
+      shape: 'svo',
+      template: '{name} {verb} against {target} in {location}, a {adj} {noun} taking shape in their wake.',
+    },
+    {
+      shape: 'svo',
+      template: '{name} pressed their work on {target} — the {adj} {noun} settled where they stood{?has_faction}, and {faction} will hear of it{/has_faction}.',
+    },
+    {
+      shape: 'aftermath',
+      template: 'A {adj} {noun} spreads through {location}; {name} has {verb} {target}, and the moment will not be undone.',
+    },
+    {
+      shape: 'inverted',
+      template: 'Through {adj} {noun}, {name} {verb} {target} — nothing grand, but nothing that comes apart.',
+    },
+    {
+      shape: 'compound',
+      template: '{name} {verb} {target}; the {adj} {noun} is the record{?has_ally}, and {ally:strongest} is the witness{/has_ally}.',
+    },
   ],
   action_failed: [
-    '{actor} reached for {target}, but the effort dissolved into {noun}.',
-    'The {adj} attempt by {actor} faltered, leaving only {noun} in its wake.',
-    '{target} slipped from {actor}\'s grasp like {noun}, {adj} and elusive.',
-    '{actor}\'s reach fell short, and {target} remained beyond the {adj} sweep of their {noun}.',
+    {
+      shape: 'svo',
+      template: '{name} reached for {target}, but the effort dissolved into {noun} — {adj} and gone.',
+    },
+    {
+      shape: 'svo',
+      template: '{target} slipped from {name}\'s grasp in {location}, {adj} and elusive as {noun}.',
+    },
+    {
+      shape: 'aftermath',
+      template: 'Only {adj} {noun} remains in {location}; {name} fell short of {target}, and the gap does not close.',
+    },
+    {
+      shape: 'fragment',
+      template: '{name} reached. {They} fell short. The {adj} {noun} held against them.',
+    },
   ],
   action_critical: [
-    '{actor} {verb} with {adj} force, and {target} was forever changed by the {noun}.',
-    'A {adj} moment — {actor} {verb} beyond all expectation, and {noun} reshaped the world.',
-    '{actor} struck at {target} with {adj} precision, and the threads of reality bent.',
-    'In a single {adj} breath, {actor} {verb} against {target}, leaving only {noun} in the aftermath.',
+    {
+      shape: 'svo',
+      template: '{name} {verb} with {adj} force, and {target} was changed by the {noun} that followed.',
+    },
+    {
+      shape: 'svo',
+      template: 'A {adj} moment — {name} {verb} beyond all expectation in {location}, and {noun} reshaped what was possible.',
+    },
+    {
+      shape: 'inverted',
+      template: 'Through {adj} {noun} and not by chance, {name} {verb} against {target} — the kind of act that is not forgotten.',
+    },
+    {
+      shape: 'compound',
+      template: '{name} {verb} against {target} — the {adj} {noun} is what remains{?has_faction}, and {faction} will mark it{/has_faction}.',
+    },
   ],
   trait_acquired: [
-    'Something shifted within {actor}. A new {noun} took root — {adj} and undeniable.',
-    '{actor} emerged changed, bearing the mark of {adj} {noun}.',
-    'The {adj} threads wove themselves into {actor}\'s essence, a new {noun} awakening.',
-    '{actor} felt the {adj} {noun} settle into their being, permanent as scar tissue.',
+    {
+      shape: 'svo',
+      template: '{name} gained something new — a {adj} {noun} settling into {them}{?has_faction}, a mark {faction} will recognize{/has_faction}.',
+    },
+    {
+      shape: 'svo',
+      template: 'Something shifted within {name}. The {adj} {noun} took root, and it will not leave.',
+    },
+    {
+      shape: 'aftermath',
+      template: 'A {adj} {noun} now walks {location}; {name} has learned what {they} did not know an hour ago.',
+    },
+    {
+      shape: 'inverted',
+      template: 'Through {adj} trial, {name} earned the {noun}{?has_ally} — a story for {ally:strongest} to hear{/has_ally}.',
+    },
+    {
+      shape: 'fragment',
+      template: '{name} is changed. The {adj} {noun} has settled in. It will not wash out.',
+    },
   ],
   tier_transition: [
-    'The bond between {actor} and the divine deepened, {adj} {noun} flowing through them.',
-    '{actor}\'s thread glowed brighter, {adj} with the weight of {noun}.',
-    'The divine veil thinned around {actor}, revealing the {adj} {noun} beneath.',
-    '{actor} rose higher in the hierarchy of {adj} {noun}, their station transformed.',
+    {
+      shape: 'svo',
+      template: '{name}\'s thread glowed brighter in {location}, {adj} with the weight of {noun}.',
+    },
+    {
+      shape: 'svo',
+      template: 'The divine veil thinned around {name}, revealing the {adj} {noun} beneath — a step that cannot be taken back.',
+    },
+    {
+      shape: 'aftermath',
+      template: 'A new {adj} {noun} settles across {location}; {name} has risen, and the world will feel the difference.',
+    },
+    {
+      shape: 'compound',
+      template: '{name} ascended — the {adj} {noun} is their marker now{?has_faction}, and {faction} watches the change{/has_faction}.',
+    },
   ],
   divine_intervention: [
-    'You reached into the dream of {actor}, a {adj} whisper carrying {noun}.',
-    'You stirred the {noun} within {actor}, a {adj} touch upon their sleeping mind.',
-    '{actor}\'s dreams fractured with your {adj} touch, {noun} blooming in the rifts.',
-    'In the threshold between waking and sleep, you laid {adj} {noun} upon {actor}\'s soul.',
+    {
+      shape: 'svo',
+      template: 'You reached into the dream of {name}, a {adj} whisper carrying {noun} to where {they} slept.',
+    },
+    {
+      shape: 'svo',
+      template: 'You stirred the {noun} within {name} in {location}, a {adj} touch upon {their} sleeping mind.',
+    },
+    {
+      shape: 'aftermath',
+      template: 'A {adj} {noun} blooms in the space you opened; {name} will wake changed, though {they} will not know why.',
+    },
+    {
+      shape: 'inverted',
+      template: 'Through {adj} {noun}, you laid your hand on {name}\'s dreaming — the kind of touch that reshapes a life.',
+    },
+    {
+      shape: 'compound',
+      template: 'You moved through {name}\'s sleep — the {adj} {noun} is what you left behind{?has_faction}, something {faction} may one day name{/has_faction}.',
+    },
   ],
   contested_action: [
-    'Two forces clashed over {target} — {adj} {noun} against {adj} resolve.',
-    '{actor} and another {verb} for dominion over {target}\'s {adj} {noun}.',
-    'Hands reached for {target}. Only {adj} {noun} could say which held stronger claim.',
-    '{actor} struggled against {target}\'s will, their {adj} {noun} colliding in the space between.',
+    {
+      shape: 'svo',
+      template: '{name} and another {verb} for dominion over {target}\'s {adj} {noun} — neither willing to yield.',
+    },
+    {
+      shape: 'svo',
+      template: 'Two wills clashed over {target} in {location}: {adj} {noun} against {adj} resolve.',
+    },
+    {
+      shape: 'aftermath',
+      template: 'The {adj} {noun} is all that survives the clash; {name} and {target} fought for it, and neither walked away whole.',
+    },
+    {
+      shape: 'compound',
+      template: '{name} struggled for {target} — the {adj} {noun} is the prize{?has_faction}, and {faction} waits to see who holds it{/has_faction}.',
+    },
   ],
   actor_death: [
-    '{actor} fell, their last breath a {adj} exhalation of {noun}.',
-    '{actor}\'s thread snapped, leaving only the ghost of {adj} {noun} behind.',
-    'The world diminished as {actor} passed, their {adj} {noun} fading into silence.',
-    '{actor} closed their eyes for the last time, and the {adj} {noun} they carried dissolved into void.',
+    {
+      shape: 'svo',
+      template: '{name} fell as all must, the {adj} {noun} the final word in {location}.',
+    },
+    {
+      shape: 'aftermath',
+      template: 'A {adj} {noun} lingers in {location}. {name} is gone.',
+    },
+    {
+      shape: 'fragment',
+      template: '{name} is still. The {noun} remains. A {adj} hour{?has_faction}, and {faction} will mourn{/has_faction}.',
+    },
+    {
+      shape: 'compound',
+      template: '{name} crossed over — the {adj} {noun} is what {they} leave behind{?has_faction}, and {faction} will carry it{/has_faction}.',
+    },
   ],
   doom_escalation: [
-    'The world {verb}. {adj} {noun} spreads across the land.',
-    'A crack widened in the sky. {adj} {noun} seeped through like a {noun}.',
-    'The Unmaking {verb} closer. The {adj} {noun} of endings draws nearer.',
-    '{adj} {noun} {verb} at the edges of existence, and those who see it know — the end is coming.',
+    {
+      shape: 'svo',
+      template: 'The world {verb}. {adj} {noun} spreads across the land, and those who see it know what is coming.',
+    },
+    {
+      shape: 'svo',
+      template: 'A crack widens in {location}. {adj} {noun} seeps through, irreversible as time.',
+    },
+    {
+      shape: 'aftermath',
+      template: 'The {adj} {noun} has already spread; the Unmaking {verb} closer, and the distance is no longer enough.',
+    },
+    {
+      shape: 'fragment',
+      template: '{adj} {noun}. The edge draws near. Those who know do not speak of it.',
+    },
   ],
   mandate_stage: [
-    'A threshold is crossed. The {adj} {noun} of destiny draws nearer.',
-    '{actor}\'s mandate deepens. The {adj} {noun} of their purpose tightens.',
-    'The mandate {verb} forward, pulling {actor} toward their {adj} {noun}.',
-    'One stage ends. Another begins. The {adj} {noun} of {actor}\'s path continues to unfold.',
+    {
+      shape: 'svo',
+      template: '{name}\'s mandate deepens. The {adj} {noun} of their purpose tightens around them.',
+    },
+    {
+      shape: 'svo',
+      template: 'One stage ends. Another begins. The {adj} {noun} of {name}\'s path continues to unfold in {location}.',
+    },
+    {
+      shape: 'inverted',
+      template: 'Through {adj} {noun}, the mandate {verb} forward — {name} pulled toward what cannot be avoided.',
+    },
+    {
+      shape: 'compound',
+      template: '{name} crossed a threshold — the {adj} {noun} marks the step{?has_faction}, and {faction} feels the shift{/has_faction}.',
+    },
   ],
   trait_lost: [
-    'Something faded within {actor}. The {adj} {noun} dimmed and was gone.',
-    '{actor}\'s {adj} {noun} unraveled like threads pulled from cloth.',
-    'The {noun} that once marked {actor} as {adj} slipped away, leaving only {noun}.',
-    '{actor} felt the {adj} {noun} leave them, a loosening, an emptiness spreading.',
+    {
+      shape: 'svo',
+      template: 'Something faded within {name}. The {adj} {noun} dimmed and was gone, leaving only absence.',
+    },
+    {
+      shape: 'svo',
+      template: '{name}\'s {adj} {noun} unraveled like threads pulled from cloth in {location}.',
+    },
+    {
+      shape: 'aftermath',
+      template: 'The {adj} {noun} is simply gone; {name} reaches for it and finds only {them}self, diminished.',
+    },
+    {
+      shape: 'fragment',
+      template: '{name} felt it leave. The {adj} {noun}. Gone. A space where there was weight.',
+    },
   ],
   dilemma_mutual_trust: [
-    '{actor} and {target} moved together, each honoring the other with {adj} {noun}.',
-    'A bond forged in {adj} trust — {actor} and {target} emerged from their test transformed.',
-    '{actor} chose belief, and {target} answered with {adj} {noun}. The world {verb} in recognition.',
-    '{actor} and {target} clasped hands, {adj} {noun} binding them tighter than thread.',
+    {
+      shape: 'svo',
+      template: '{name} and {target} moved together in {location}, each honoring the other with {adj} {noun}.',
+    },
+    {
+      shape: 'svo',
+      template: '{name} chose belief, and {target} answered with {adj} {noun} — the world {verb} in recognition.',
+    },
+    {
+      shape: 'aftermath',
+      template: 'A bond forged in {adj} trust remains in {location}; {name} and {target} emerged from their test transformed.',
+    },
+    {
+      shape: 'compound',
+      template: '{name} and {target} clasped hands — {adj} {noun} binding them tighter than thread{?has_faction}, witnessed by {faction}{/has_faction}.',
+    },
   ],
   dilemma_betrayed: [
-    '{actor} reached out to {target} with {adj} purpose, only to find {noun} instead of faith.',
-    'A wound that would not heal — {actor} {verb} with trust, but {target} offered only {noun}.',
-    'The {adj} sting of betrayal settled upon {actor}. {target} had chosen {noun} over the bond.',
-    '{actor}\'s hope curdled into {adj} {noun} as {target}\'s true nature revealed itself.',
+    {
+      shape: 'svo',
+      template: '{name} reached toward {target} with {adj} purpose, and found {noun} instead of faith.',
+    },
+    {
+      shape: 'svo',
+      template: '{name}\'s hope curdled into {adj} {noun} as {target}\'s true nature revealed itself in {location}.',
+    },
+    {
+      shape: 'aftermath',
+      template: 'A wound that will not heal — {adj} {noun} where trust once lived; {name} will not offer again what {target} destroyed.',
+    },
+    {
+      shape: 'fragment',
+      template: '{name} trusted. The faith was spent. Only {adj} {noun} remains.',
+    },
   ],
   dilemma_exploitation: [
-    '{actor} {verb} against {target}\'s trust, wielding {adj} {noun} without remorse.',
-    'Where {target} offered {adj} faith, {actor} carved out only {noun} and ruin.',
-    '{actor} took what {target} freely gave, leaving nothing but {adj} {noun} in return.',
-    '{actor} twisted {target}\'s {adj} {noun} into a weapon and struck without hesitation.',
+    {
+      shape: 'svo',
+      template: '{name} {verb} against {target}\'s trust in {location}, wielding {adj} {noun} without hesitation.',
+    },
+    {
+      shape: 'svo',
+      template: 'Where {target} offered {adj} faith, {name} carved out only {noun} and left nothing behind.',
+    },
+    {
+      shape: 'inverted',
+      template: 'Through {target}\'s {adj} {noun}, {name} took what was freely given and called it victory.',
+    },
+    {
+      shape: 'compound',
+      template: '{name} twisted {target}\'s {adj} {noun} into a weapon — the kind of act that cannot be unsaid{?has_faction}, and {faction} will remember it{/has_faction}.',
+    },
   ],
   dilemma_mutual_distrust: [
-    '{actor} and {target} circled each other warily, each seeing only {adj} {noun} where trust might have bloomed.',
-    'Two souls locked in {noun} — {actor} and {target} {verb} as one, neither willing to yield first.',
-    'Where connection might have grown, there bloomed only {adj} {noun} and suspicion between {actor} and {target}.',
-    '{actor} and {target} kept their distance, each safeguarding their {adj} {noun}.',
+    {
+      shape: 'svo',
+      template: '{name} and {target} circled each other in {location}, each seeing only {adj} {noun} where trust might have bloomed.',
+    },
+    {
+      shape: 'svo',
+      template: '{name} and {target} kept their distance, each safeguarding their {adj} {noun} from the other.',
+    },
+    {
+      shape: 'aftermath',
+      template: 'Where connection might have grown, there blooms only {adj} {noun}; {name} and {target} chose the wall instead of the door.',
+    },
+    {
+      shape: 'fragment',
+      template: '{name} held back. {target} held back. The {adj} {noun} between them had no name.',
+    },
   ],
   faction_formed: [
-    '{actor} gathered the scattered threads into a new {adj} {noun}.',
-    'A banner rose under {actor}\'s hand — {adj} and heavy with {noun}.',
-    '{actor} bound their followers in {adj} {noun}, forging something new from nothing.',
-    'From {adj} {noun}, {actor} wove a faction strong enough to resist the void.',
+    {
+      shape: 'svo',
+      template: '{name} gathered the scattered threads into a new {adj} {noun} in {location}.',
+    },
+    {
+      shape: 'svo',
+      template: '{name} bound their followers in {adj} {noun}, forging something new from what had been nothing.',
+    },
+    {
+      shape: 'aftermath',
+      template: 'A banner rises in {location}; {name} has {verb} the threads together, and the {adj} {noun} stands.',
+    },
+    {
+      shape: 'inverted',
+      template: 'From {adj} {noun} and common cause, {name} wove a faction strong enough to resist the void.',
+    },
   ],
   culture_clash: [
-    '{actor} and {target} collided, their {adj} cultures grinding against each other like {noun}.',
-    'Where {target}\'s ways met {actor}\'s, only {adj} {noun} could bridge the gap.',
-    'The {adj} traditions of {actor} and {target} {verb}, leaving {noun} in their wake.',
-    '{actor}\'s {adj} {noun} stood at odds with everything {target} held dear.',
+    {
+      shape: 'svo',
+      template: '{name} and {target} collided in {location}, their {adj} cultures grinding against each other like {noun}.',
+    },
+    {
+      shape: 'svo',
+      template: '{name}\'s {adj} {noun} stood at odds with everything {target} held dear, and neither would yield.',
+    },
+    {
+      shape: 'aftermath',
+      template: 'Only {adj} {noun} marks where {name} and {target} met; the traditions {verb}, and neither emerged unchanged.',
+    },
+    {
+      shape: 'compound',
+      template: '{name} and {target} {verb} for the shape of {location} — {adj} against {adj}, {noun} the eventual arbiter.',
+    },
   ],
   migration: [
-    '{actor} led their people toward {adj} {noun}, fleeing what could no longer be borne.',
-    'The threads pulled {actor} {adj}, drawing them and their followers toward {noun}.',
-    '{actor} walked a {adj} path, their people following into the {noun} beyond.',
-    'Necessity drove {actor} and theirs onward, seeking {adj} {noun} in untested lands.',
+    {
+      shape: 'svo',
+      template: '{name} led their people toward {adj} {noun}, leaving behind what could no longer be borne.',
+    },
+    {
+      shape: 'svo',
+      template: '{name} walked a {adj} path from {location}, their people following into the {noun} beyond.',
+    },
+    {
+      shape: 'inverted',
+      template: 'Through {adj} necessity, {name} and theirs moved on — seeking {noun} in untested lands.',
+    },
+    {
+      shape: 'fragment',
+      template: '{name} walked. Their people walked. The {adj} {noun} led them. What followed is not yet written.',
+    },
   ],
   construction_complete: [
-    '{actor} completed their {adj} work, and {noun} stood where once was {noun}.',
-    'Stone, wood, and {adj} {noun} shaped itself into being under {actor}\'s direction.',
-    'The {adj} structure rose beneath {actor}\'s hands, a monument of {noun}.',
-    '{actor} laid the final thread, and the {adj} {noun} was made whole.',
+    {
+      shape: 'svo',
+      template: '{name} completed their {adj} work in {location}, and {noun} stood where once was nothing.',
+    },
+    {
+      shape: 'svo',
+      template: '{name} laid the final thread, and the {adj} {noun} was made whole.',
+    },
+    {
+      shape: 'aftermath',
+      template: 'A {adj} {noun} rises in {location}; {name} has built what {they} set out to build, and it will stand.',
+    },
+    {
+      shape: 'inverted',
+      template: 'Through {adj} {noun} and patient labor, {name} raised what the world said could not be raised.',
+    },
   ],
   encounter_step_success: [
-    '{actor} faced the {adj} {noun} and emerged unbroken.',
-    'The {noun} tested {actor} with {adj} trials, yet they {verb} toward triumph.',
-    '{actor} endured the {adj} gauntlet, their {noun} proving stronger than the test.',
-    'Against {adj} odds, {actor} passed through the {noun} transformed.',
+    {
+      shape: 'svo',
+      template: '{name} faced the {adj} {noun} in {location} and emerged unbroken.',
+    },
+    {
+      shape: 'svo',
+      template: 'The {noun} tested {name} with {adj} trials, yet {they} {verb} toward triumph.',
+    },
+    {
+      shape: 'inverted',
+      template: 'Against {adj} odds, {name} passed through the {noun} transformed — the kind of step that cannot be taken back.',
+    },
+    {
+      shape: 'compound',
+      template: '{name} endured the {adj} gauntlet — their {noun} proved stronger than the test{?has_ally}, and {ally:strongest} will know it{/has_ally}.',
+    },
   ],
   encounter_step_failure: [
-    '{actor} crumbled before the {adj} {noun}, their resolve shattered.',
-    'The {noun} broke {actor}. When the {adj} encounter ended, little of them remained whole.',
-    '{actor} faced {adj} {noun} and fell short, their {noun} insufficient to the task.',
-    'Defeated by {adj} {noun}, {actor} staggered from the crucible diminished.',
+    {
+      shape: 'svo',
+      template: '{name} crumbled before the {adj} {noun} in {location}, their resolve shattered.',
+    },
+    {
+      shape: 'svo',
+      template: '{name} faced {adj} {noun} and fell short — {their} {noun} insufficient to the task.',
+    },
+    {
+      shape: 'aftermath',
+      template: 'Defeat lingers in {location}; the {adj} {noun} broke {name}, and little of what entered the test came through.',
+    },
+    {
+      shape: 'fragment',
+      template: '{name} tried. The {adj} {noun} was too much. {They} staggered from the crucible diminished.',
+    },
   ],
   encounter_completed: [
-    '{actor} emerged from their encounter {adj} and reborn, the {noun} within them transformed.',
-    'The {adj} trials completed, {actor} stood changed — no longer the person they were before.',
-    'Through {adj} {noun}, {actor}\'s encounter finally ended, etching itself into their essence.',
-    '{actor} crossed the threshold of {noun}, forever marked by what they had endured with {adj} {noun}.',
+    {
+      shape: 'svo',
+      template: '{name} emerged from {their} encounter {adj} and reborn, the {noun} within {them} transformed.',
+    },
+    {
+      shape: 'svo',
+      template: 'The {adj} trials complete, {name} stood changed in {location} — no longer the person they were before.',
+    },
+    {
+      shape: 'inverted',
+      template: 'Through {adj} {noun}, {name}\'s encounter finally ended — etching itself into {their} essence.',
+    },
+    {
+      shape: 'compound',
+      template: '{name} crossed the threshold of {noun} — the {adj} mark of it is permanent{?has_faction}, and {faction} will see the change{/has_faction}.',
+    },
   ],
   encounter_abandoned: [
-    '{actor} turned from their path, leaving the {adj} {noun} unfinished.',
-    'The encounter pulled at {actor}, but they chose to abandon the {adj} {noun}.',
-    '{actor} broke away from the trial, leaving only {adj} {noun} in their wake.',
-    'Too much. Too {adj}. {actor} left the {noun} behind and walked into {noun}.',
+    {
+      shape: 'svo',
+      template: '{name} turned from {their} path in {location}, leaving the {adj} {noun} unfinished.',
+    },
+    {
+      shape: 'svo',
+      template: 'Too much. {name} left the {adj} {noun} behind and walked into the open world.',
+    },
+    {
+      shape: 'aftermath',
+      template: 'The {adj} {noun} goes unresolved; {name} broke away, and what was left unfinished will wait — or rot.',
+    },
+    {
+      shape: 'fragment',
+      template: '{name} turned away. The {adj} {noun} remained. Nothing was resolved.',
+    },
   ],
 };
 

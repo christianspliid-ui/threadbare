@@ -66,16 +66,18 @@ describe('narrative-content expanded', () => {
       }
     });
 
-    it('all routine templates should contain {actor} or {target} or {adj} placeholder', () => {
+    it('all routine templates should contain {name}/{actor}/{target} or {adj} placeholder', () => {
       for (const [type, templates] of Object.entries(ROUTINE_TEMPLATES)) {
         for (const tmpl of templates) {
+          const t = tmpl.template;
           const hasPlaceholder =
-            tmpl.includes('{actor}') ||
-            tmpl.includes('{target}') ||
-            tmpl.includes('{adj}');
+            t.includes('{name}') ||
+            t.includes('{actor}') ||
+            t.includes('{target}') ||
+            t.includes('{adj}');
           expect(
             hasPlaceholder,
-            `routine ${type} template missing placeholders: "${tmpl.slice(0, 40)}..."`
+            `routine ${type} template missing placeholders: "${t.slice(0, 40)}..."`
           ).toBe(true);
         }
       }

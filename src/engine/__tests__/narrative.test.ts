@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import type {
   NarrativeTier,
   NarrativeEvent,
@@ -14,12 +14,17 @@ import {
 } from '../../types/narrative';
 import {
   generateRoutineProse,
+  resetNarrativeEventCounter,
   pickSphereWord,
   generateNotableProse,
   buildChronicleEntry,
   classifyEvent,
   routeEvent,
 } from '../narrative';
+
+beforeEach(() => {
+  resetNarrativeEventCounter();
+});
 
 describe('narrative type definitions', () => {
   it('exports all 3 narrative tiers', () => {
@@ -103,9 +108,11 @@ describe('routine prose generation (tier 1)', () => {
     expect(adj.length).toBeGreaterThan(0);
   });
 
-  it('generates deterministically for same seed', () => {
+  it('generates deterministically for same seed and rotation state', () => {
     const context: ProseContext = { actorName: 'Volkar', sphere: 'force' };
+    resetNarrativeEventCounter();
     const a = generateRoutineProse('action_resolved', context, 99);
+    resetNarrativeEventCounter();
     const b = generateRoutineProse('action_resolved', context, 99);
     expect(a.text).toBe(b.text);
   });

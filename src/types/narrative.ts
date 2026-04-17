@@ -5,6 +5,15 @@ import type { ValuePair } from './agent';
 
 export type NarrativeTier = 'routine' | 'notable' | 'chronicle';
 
+// ─── Prose Shapes ────────────────────────────────────────────────
+
+export type ProseShape = 'svo' | 'aftermath' | 'inverted' | 'compound' | 'fragment';
+
+export interface ShapedTemplate {
+  shape: ProseShape;
+  template: string;
+}
+
 export const NARRATIVE_TIERS: NarrativeTier[] = ['routine', 'notable', 'chronicle'];
 
 // ─── Voice ───────────────────────────────────────────────────────
@@ -58,6 +67,7 @@ export interface ProseFragment {
   tier: NarrativeTier;
   eventId: string;
   sphereColoring?: SphereName;
+  shape?: ProseShape;
 }
 
 export interface ProseContext {

@@ -1,5 +1,5 @@
 # Project Status
-> Updated 2026-04-17.
+> Updated 2026-04-18.
 ## Current Focus
 **Encounter Format Migration — Phase 0 + Phase 1.** 115 legacy EncounterTemplates migrating to UnifiedActionTemplate. Phase 0 (THR-110–118) establishes engine prerequisites. **THR-110 + THR-111 + THR-90 + THR-89 + THR-112 + THR-113 + THR-114 + THR-117 + THR-115 + THR-141 shipped.** THR-116, THR-118 next. Design doc: `Docs/plans/2026-04-16-encounter-template-migration.md`.
 
@@ -7,7 +7,7 @@
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
 - **v1.1 Optimization:** Shipped — Phases 19-22 (determinism, wiring, performance, hygiene)
 - **Encounter Format Migration (Now):** ✅ THR-110/111 shipped. ✅ THR-90 shipped. ✅ THR-89 shipped (Phase 1 pilot — 15 TG templates). ✅ THR-112 shipped (hidden mark reveal loop). ✅ THR-113 shipped (intelligence consumption pathway). ✅ THR-114 shipped (multi-target aftermath effects). ✅ THR-117 shipped (condition_attachment aftermath effect, wound promotion). ✅ THR-115 shipped (world-shaping aftermath: artifacts, omens, faction topology). ✅ THR-141 shipped (agent intelligence panel UI — player-visible record inspection). THR-116, THR-118 next.
-- **Content Architecture (Now):** Shell/primitive work — stateful shells (Phase 2), progress/service shells (Phase 3), starter libraries (Phase 4), governance (Phase 5). THR-86/88 absorbed from archived Prose Content Quality Pass.
+- **Content Architecture (Now):** Shell/primitive work — stateful shells (Phase 2), progress/service shells (Phase 3), starter libraries (Phase 4), governance (Phase 5). ✅ THR-86 shipped (routine template structural variety). THR-88 next.
 - **Attention Tier Model (Now):** UI integration ongoing.
 - **Social Systems Expansion (Next):** THR-28/27 shipped. THR-51/29/30/78 gated behind Phase 0 (THR-112/114/115).
 - **Thematic Pressure & Living World (Next):** THR-19 Omen Agenda shipped. THR-87 (cool failure prose) blocked by THR-116.
@@ -16,6 +16,9 @@
 - **Procedural Hex Vignettes (Next):** Phases 2-5 queued.
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** THR-116, THR-118 (Phase 0 remaining), then Phase 1 continues with next guild faction.
+
+## Recent Completions (2026-04-18)
+- **THR-86 — Routine template structural variety:** `ROUTINE_TEMPLATES` converted from flat `string[]` to `ShapedTemplate[]` (5 shapes: svo/aftermath/inverted/compound/fragment). All 23 event types have ≥4 templates and ≥3 distinct shapes. Shape rotation system in `generateRoutineProse` prevents consecutive identical shapes with weighted pick + SHAPE_REROLL_LIMIT=3. `enrichProse()` integration path for `{name}/{location}/{?has_faction}` placeholders with safe no-graph fallback. `applyFallbacks()` resolves all pronouns + strips residual `{foo}` tokens. `NarrativeGenerationTrace` extended with `shape`/`placeholdersResolved`/`fallbackReason`. 9 new tests in `narrative-shape-variety.test.ts`.
 
 ## Recent Completions (2026-04-17)
 - **THR-141 — Agent intelligence panel UI (deferral from THR-113):** `AgentIntelligencePanel` renders inside `ThreadDetailView`'s agent body. `buildIntelligenceDisplay` pure helper resolves records to display entries: category label, graph-resolved target, reliability chip, "N days ago" acquired label. Fog-gated (`tier >= 1`). Empty-state copy. Truncates at 24 with "+N more" footer. 34 new tests (22 engine + 9 component + 3 integration). Closes the player-facing half of the intel loop.
