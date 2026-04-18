@@ -34,6 +34,29 @@ import { calculateInitialMomentum, resolveBattle } from './battleResolution';
 import { emitTrace } from './traceBuffer';
 import { hexDistance } from './delivery';
 import type { BattleResolutionType } from '../types/battle';
+import { resolveEffectiveTier } from './attentionTier';
+import type { AttentionTier, DigestEntry, QueuedStoryBeat } from '../types/attention';
+import type { CourtPosition } from '../types/influence';
+import {
+  SIEGE_SPOTLIGHT_TEMPLATES,
+  SIEGE_REGIONAL_TEMPLATES,
+} from '../data/siege-encounter-content';
+
+// ─── Attention Tier Constants ────────────────────────────────────────────────
+
+/** Fallback tier when a spotlight template is missing intrinsicTier (content gap). */
+const SIEGE_SPOTLIGHT_TIER_DEFAULT: AttentionTier = 'shaping';
+
+/** Fallback tier when a regional template is missing intrinsicTier (content gap). */
+const SIEGE_REGIONAL_TIER_DEFAULT: AttentionTier = 'background';
+
+/**
+ * Court position used for tier resolution when no bonded actor is involved
+ * in the siege's factions. 'retinue' preserves intrinsic tier exactly
+ * (background→background, shaping→shaping, story_beat→story_beat),
+ * ensuring siege beats still surface to the player.
+ */
+const SIEGE_SPOTLIGHT_COURT_POSITION_FALLBACK: CourtPosition = 'retinue';
 
 // ─── PRNG ───────────────────────────────────────────────────────────────
 
@@ -82,6 +105,83 @@ export function getFortificationModifier(locationSubtype: string | undefined): n
     default:
       return 1; // No fortification
   }
+}
+
+// ─── Spotlight Tier Helpers ──────────────────────────────────────────────────
+
+const COURT_RANK: Record<CourtPosition, number> = {
+  the_first: 3, retinue: 2, watched: 1, dormant: 0,
+};
+
+/**
+ * Find the highest court position among agents bonded to the siege's
+ * participating factions. Used to resolve spotlight effectiveTier.
+ * Returns { courtPosition, bondedActorId } or the fallback if no match.
+ */
+function resolveSiegeFocusCourtPosition(
+  state: GameState,
+  bs: BattleState,
+): { courtPosition: CourtPosition; bondedActorId: string | null } {
+  if (!state.ascendantId) {
+    return { courtPosition: SIEGE_SPOTLIGHT_COURT_POSITION_FALLBACK, bondedActorId: null };
+  }
+
+  const threadEdges = state.graph.getOutgoingEdges(state.ascendantId, 'thread');
+  if (threadEdges.length === 0) {
+    return { courtPosition: SIEGE_SPOTLIGHT_COURT_POSITION_FALLBACK, bondedActorId: null };
+  }
+
+  // Collect faction IDs involved in the siege
+  const siegeFactionIds = new Set<string>();
+  const attackerFaction = state.graph.getOutgoingEdges(bs.attackerArmyId, 'member_of')[0]?.target;
+  if (attackerFaction) siegeFactionIds.add(attackerFaction);
+  if (bs.settlementId) {
+    const defenderFaction = state.graph.getOutgoingEdges(bs.settlementId, 'controlled_by')[0]?.target;
+    if (defenderFaction) siegeFactionIds.add(defenderFaction);
+  }
+
+  let bestPosition: CourtPosition | null = null;
+  let bestRank = -1;
+  let bestActorId: string | null = null;
+
+  for (const edge of threadEdges) {
+    const pos = edge.properties?.courtPosition as CourtPosition | undefined;
+    if (!pos || pos === 'dormant') continue;
+    const rank = COURT_RANK[pos] ?? -1;
+    if (rank <= bestRank) continue;
+
+    // Only count agents in one of the siege factions
+    const actorFaction = state.graph.getOutgoingEdges(edge.target, 'member_of')[0]?.target;
+    if (!actorFaction || !siegeFactionIds.has(actorFaction)) continue;
+
+    bestPosition = pos;
+    bestRank = rank;
+    bestActorId = edge.target;
+  }
+
+  if (!bestPosition) {
+    return { courtPosition: SIEGE_SPOTLIGHT_COURT_POSITION_FALLBACK, bondedActorId: null };
+  }
+  return { courtPosition: bestPosition, bondedActorId: bestActorId };
+}
+
+/**
+ * Select a spotlight template appropriate for the current siege phase.
+ * Prefers phase-specific templates; falls back to 'any' templates.
+ */
+function selectSpotlightTemplate(
+  phase: ReturnType<typeof getSiegePhase>,
+  rng: () => number,
+  templateId?: string,
+): import('../data/siege-encounter-content').SiegeSpotlightTemplate | null {
+  if (templateId) {
+    return SIEGE_SPOTLIGHT_TEMPLATES.find(t => t.id === templateId) ?? null;
+  }
+  const phaseMatches = SIEGE_SPOTLIGHT_TEMPLATES.filter(
+    t => t.phase === phase || t.phase === 'any',
+  );
+  if (phaseMatches.length === 0) return SIEGE_SPOTLIGHT_TEMPLATES[0] ?? null;
+  return phaseMatches[Math.floor(rng() * phaseMatches.length)];
 }
 
 // ─── Siege Creation ─────────────────────────────────────────────────────
@@ -225,6 +325,7 @@ export function tickSiege(state: GameState, siegeNodeId: string): void {
 
   // 2. Spotlight processing with siege pacing
   let momentumShift = 0;
+  let pacingSpotlightFired = false;
   const newTicksSinceSpotlight = bs.ticksSinceLastSpotlight + 1;
 
   if (newTicksSinceSpotlight >= pacingInterval) {
@@ -232,19 +333,104 @@ export function tickSiege(state: GameState, siegeNodeId: string): void {
     const roll = rng();
     if (roll < 0.35) {
       momentumShift = BATTLE_MOMENTUM_PER_SPOTLIGHT_BASE;
+      pacingSpotlightFired = true;
     } else if (roll < 0.75) {
       momentumShift = -BATTLE_MOMENTUM_PER_SPOTLIGHT_BASE; // Defenders have slight advantage in sieges
+      pacingSpotlightFired = true;
     }
   }
 
   // 3. Starvation check
   const starvationFired = siegeNode.properties.starvationFired as boolean;
+  let starvationSpotlightFired = false;
   if (ticksElapsed >= SIEGE_STARVATION_TICK && !starvationFired) {
     // Starvation shifts momentum toward attacker
     momentumShift += 1;
+    starvationSpotlightFired = true;
     graph.updateNode(siegeNodeId, {
       properties: { ...siegeNode.properties, starvationFired: true },
     });
+  }
+
+  // 3a. Emit attention-tier digest entries for spotlights that fired this tick
+  if (pacingSpotlightFired || starvationSpotlightFired) {
+    const { courtPosition, bondedActorId } = resolveSiegeFocusCourtPosition(state, bs);
+
+    const emitSpotlightDigest = (tplId: string | undefined) => {
+      const rng2 = mulberry32(state.seed + state.tick * 113 + siegeNodeId.length);
+      const tpl = selectSpotlightTemplate(phase, rng2, tplId);
+      if (!tpl) return;
+
+      const intrinsicTier = tpl.intrinsicTier ?? SIEGE_SPOTLIGHT_TIER_DEFAULT;
+      const resolved = resolveEffectiveTier(intrinsicTier, courtPosition);
+      const effectiveTier: AttentionTier = resolved === 'invisible' ? intrinsicTier : resolved;
+
+      // Digest entry — siege spotlights surface to the Read the Threads panel
+      const digestEntry: DigestEntry = {
+        agentId: bondedActorId ?? bs.attackerArmyId,
+        agentName: bondedActorId
+          ? (state.graph.getNode(bondedActorId)?.name ?? 'Unknown')
+          : (attackerNode.name ?? 'Siege'),
+        encounterId: tpl.id,
+        encounterName: tpl.title,
+        encounterType: 'lead',
+        reachPrimary: 'iron',
+        tick: state.tick,
+        success: true,
+        significantOutcomes: [tpl.prose],
+        capabilityChanges: {},
+        attachmentsGained: [],
+        attachmentsLost: [],
+        quintessenceDelta: 0,
+        isNotable: effectiveTier === 'story_beat',
+        wasCuratedOut: false,
+        isDormantAgent: false,
+        sourceType: 'location',
+      };
+      if (!state.digestBuffer) {
+        (state as { digestBuffer?: DigestEntry[] }).digestBuffer = [];
+      }
+      state.digestBuffer!.push(digestEntry);
+
+      // Story-beat tier → enqueue directly
+      if (effectiveTier === 'story_beat') {
+        const siegeHex = (() => {
+          const locEdge = state.graph.getOutgoingEdges(siegeNodeId, 'located_at')[0];
+          const hexNode = locEdge ? state.graph.getNode(locEdge.target) : null;
+          return {
+            hexCol: (hexNode?.properties.hexCol as number | undefined) ?? 0,
+            hexRow: (hexNode?.properties.hexRow as number | undefined) ?? 0,
+          };
+        })();
+        const beat: QueuedStoryBeat = {
+          encounterId: tpl.id,
+          agentId: bondedActorId ?? bs.attackerArmyId,
+          priority: 'template_intrinsic',
+          queuedTick: state.tick,
+          hexCol: siegeHex.hexCol,
+          hexRow: siegeHex.hexRow,
+        };
+        if (!state.storyBeatQueue) {
+          (state as { storyBeatQueue?: QueuedStoryBeat[] }).storyBeatQueue = [];
+        }
+        state.storyBeatQueue!.push(beat);
+      }
+
+      emitTrace({
+        tick: state.tick,
+        category: 'siege_spotlight_fired',
+        summary: `Siege spotlight fired: ${tpl.title} (${intrinsicTier}→${effectiveTier}) at ${siegeNode.name}`,
+        siegeId: siegeNodeId,
+        templateId: tpl.id,
+        intrinsicTier,
+        effectiveTier,
+        courtPositionUsed: courtPosition,
+        bondedActorId,
+      });
+    };
+
+    if (pacingSpotlightFired) emitSpotlightDigest(undefined);
+    if (starvationSpotlightFired) emitSpotlightDigest('siege.spotlight.starvation');
   }
 
   const newMomentum = bs.momentum + momentumShift;
@@ -370,17 +556,30 @@ export function generateRegionalEncounters(state: GameState, siegeNodeId: string
     const encounterType = selectRegionalEncounterType(state, actor.id, bs, attackerFaction);
     if (!encounterType) continue;
 
-    // Emit trace (encounter spawning is logged; actual encounter node creation
-    // happens through the standard encounter system when templates exist)
+    // Look up the regional template to get intrinsicTier
+    const regionalTemplate = SIEGE_REGIONAL_TEMPLATES.find(t => t.id === encounterType);
+    const intrinsicTier: AttentionTier = regionalTemplate?.intrinsicTier ?? SIEGE_REGIONAL_TIER_DEFAULT;
+
+    // Resolve actor's court position for effectiveTier
+    let actorCourtPos: CourtPosition | null = null;
+    if (state.ascendantId) {
+      const threadEdge = state.graph.getOutgoingEdges(state.ascendantId, 'thread')
+        .find(e => e.target === actor.id);
+      actorCourtPos = (threadEdge?.properties?.courtPosition as CourtPosition | undefined) ?? null;
+    }
+    const resolvedTier = resolveEffectiveTier(intrinsicTier, actorCourtPos);
+    const effectiveTier: AttentionTier = resolvedTier === 'invisible' ? 'background' : resolvedTier;
+
     emitTrace({
       tick: state.tick,
-      category: 'faction_ambition',
-      summary: `Siege at ${siegeHexNode.name} draws in ${actor.name}: ${encounterType} (${dist} hexes away)`,
-      event: 'siege_regional_encounter',
+      category: 'siege_regional_seeded',
+      summary: `Siege at ${siegeHexNode.name} draws in ${actor.name}: ${encounterType} (${intrinsicTier}→${effectiveTier}, ${dist} hexes)`,
       siegeId: siegeNodeId,
+      templateId: encounterType,
       actorId: actor.id,
-      encounterType,
-      distance: dist,
+      intrinsicTier,
+      effectiveTier,
+      triggerType: regionalTemplate?.triggerType ?? 'shadow',
     });
 
     newlySent.push(actor.id);

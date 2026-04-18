@@ -6,11 +6,13 @@ import type { LapseReason } from './controlEffect';
 import type { NarrativeLayer, StepOutcome } from './unifiedAction';
 import type { RarityTier } from './rarity';
 import type {
+  AttentionTier,
   EncounterPromotionTrace,
   CuratorDecisionTrace,
   AttentionPoolTrace,
   StoryBeatQueueTrace,
 } from './attention';
+import type { CourtPosition } from './influence';
 import type { BehaviorFamily, StrategicVerb, StrategicExecutionMode } from './strategicAction';
 import type { ComplicationSeverity } from './complication';
 import type { SyllableTemplate } from './culture';
@@ -133,7 +135,10 @@ export type TraceCategory =
   | 'ruins.divine_mark_discovered'
   | 'ruins.clue_suppressed_no_eligible_recipient'
   | 'ruins.clue_receiver_selected'
-  | 'ruins.density_seeded';
+  | 'ruins.density_seeded'
+  // Siege attention tier traces (THR-18)
+  | 'siege_spotlight_fired'
+  | 'siege_regional_seeded';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -254,6 +259,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'ruins.clue_suppressed_no_eligible_recipient',
   'ruins.clue_receiver_selected',
   'ruins.density_seeded',
+  // Siege attention tier traces (THR-18)
+  'siege_spotlight_fired',
+  'siege_regional_seeded',
 ];
 
 /** Base shape for all trace entries */
@@ -1306,7 +1314,10 @@ export type TraceEntry =
   | InitiativeFailedTrace
   // Portfolio-pinning traces (THR-148)
   | PortfolioPinnedTrace
-  | PortfolioUnpinnedTrace;
+  | PortfolioUnpinnedTrace
+  // Siege attention tier traces (THR-18)
+  | SiegeSpotlightFiredTrace
+  | SiegeRegionalSeededTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {
@@ -1481,4 +1492,28 @@ export interface PortfolioUnpinnedTrace extends TraceBase {
   agentName: string;
   pinnedCount: number;
   summary: string;
+}
+
+// ─── Siege Attention Tier Traces (THR-18) ────────────────────────────
+
+/** Trace: siege spotlight fired — tier context for attention pipeline */
+export interface SiegeSpotlightFiredTrace extends TraceBase {
+  category: 'siege_spotlight_fired';
+  siegeId: string;
+  templateId: string;
+  intrinsicTier: AttentionTier;
+  effectiveTier: AttentionTier;
+  courtPositionUsed: CourtPosition;
+  bondedActorId: string | null;
+}
+
+/** Trace: siege regional encounter seeded for a nearby actor */
+export interface SiegeRegionalSeededTrace extends TraceBase {
+  category: 'siege_regional_seeded';
+  siegeId: string;
+  templateId: string;
+  actorId: string;
+  intrinsicTier: AttentionTier;
+  effectiveTier: AttentionTier;
+  triggerType: 'allied_defender' | 'allied_attacker' | 'shadow' | 'heart' | 'sabotage';
 }

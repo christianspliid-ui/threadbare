@@ -8,7 +8,14 @@
  *
  * Spotlight templates fire at accelerating intervals during the siege.
  * Regional templates spawn for eligible actors within SIEGE_REGIONAL_ENCOUNTER_RANGE hexes.
+ *
+ * THR-18: intrinsicTier added to both interfaces. Tier assignments follow dramatic weight:
+ * spotlights that frame/sustain pacing = shaping; outcome-pivoting beats = story_beat;
+ * slow-burn atmospherics = background. Regionals default background, escalate to shaping
+ * when they invite explicit player agency.
  */
+
+import type { AttentionTier } from '../types/attention';
 
 // ─── Spotlight Templates ────────────────────────────────────────────────
 
@@ -19,6 +26,7 @@ export interface SiegeSpotlightTemplate {
   steps: number;
   reaches: string[];
   prose: string;
+  intrinsicTier: AttentionTier;
 }
 
 /**
@@ -33,6 +41,7 @@ export const SIEGE_SPOTLIGHT_TEMPLATES: SiegeSpotlightTemplate[] = [
     steps: 1,
     reaches: [],
     prose: 'The army draws up before the walls. Banners unfurl in the cold wind. The defenders watch from the ramparts, and the long waiting begins.',
+    intrinsicTier: 'shaping',
   },
   {
     id: 'siege.spotlight.sally_forth',
@@ -41,6 +50,7 @@ export const SIEGE_SPOTLIGHT_TEMPLATES: SiegeSpotlightTemplate[] = [
     steps: 2,
     reaches: ['Iron', 'Eye'],
     prose: 'The gates open and armored figures pour out — a desperate strike at the siege lines before they can be fully established.',
+    intrinsicTier: 'shaping',
   },
   {
     id: 'siege.spotlight.negotiate_terms',
@@ -49,6 +59,7 @@ export const SIEGE_SPOTLIGHT_TEMPLATES: SiegeSpotlightTemplate[] = [
     steps: 2,
     reaches: ['Heart', 'Heart'],
     prose: 'A white banner appears at the gatehouse. Whether it signals surrender or stalling, only time will tell.',
+    intrinsicTier: 'story_beat',
   },
   {
     id: 'siege.spotlight.starvation',
@@ -57,6 +68,7 @@ export const SIEGE_SPOTLIGHT_TEMPLATES: SiegeSpotlightTemplate[] = [
     steps: 1,
     reaches: ['Flesh'],
     prose: 'The granaries are running low. Gaunt faces at the walls. The smell of desperation drifts out over the siege lines.',
+    intrinsicTier: 'background',
   },
   {
     id: 'siege.spotlight.breach',
@@ -65,6 +77,7 @@ export const SIEGE_SPOTLIGHT_TEMPLATES: SiegeSpotlightTemplate[] = [
     steps: 2,
     reaches: ['Iron', 'Stone'],
     prose: 'A thunder-crack, then a cascade of falling masonry. Dust billows outward. Through the haze, a gap in the wall.',
+    intrinsicTier: 'story_beat',
   },
   {
     id: 'siege.spotlight.final_assault',
@@ -73,6 +86,7 @@ export const SIEGE_SPOTLIGHT_TEMPLATES: SiegeSpotlightTemplate[] = [
     steps: 3,
     reaches: ['Iron', 'Iron', 'Heart'],
     prose: 'The moment of decision. Every reserve is committed. The fate of the siege — and the city — will be decided before nightfall.',
+    intrinsicTier: 'story_beat',
   },
   {
     id: 'siege.spotlight.relief_arrives',
@@ -81,6 +95,7 @@ export const SIEGE_SPOTLIGHT_TEMPLATES: SiegeSpotlightTemplate[] = [
     steps: 1,
     reaches: [],
     prose: 'Horns sound in the distance. Banners crest the hill. Someone has answered the call.',
+    intrinsicTier: 'story_beat',
   },
 ];
 
@@ -91,6 +106,7 @@ export interface SiegeRegionalTemplate {
   title: string;
   triggerType: 'allied_defender' | 'allied_attacker' | 'shadow' | 'heart' | 'sabotage';
   prose: string;
+  intrinsicTier: AttentionTier;
 }
 
 /**
@@ -103,29 +119,34 @@ export const SIEGE_REGIONAL_TEMPLATES: SiegeRegionalTemplate[] = [
     title: 'The Besieged Call for Aid',
     triggerType: 'allied_defender',
     prose: 'A desperate plea has reached you. The defenders hold on, but not for much longer. Will you march to their relief?',
+    intrinsicTier: 'shaping',
   },
   {
     id: 'siege.regional.join_attackers',
     title: 'Join the Siege',
     triggerType: 'allied_attacker',
     prose: 'Your allies press the siege. Bringing your strength to bear now could tip the balance and hasten victory.',
+    intrinsicTier: 'background',
   },
   {
     id: 'siege.regional.smuggle_supplies',
     title: 'The Smuggler\'s Run',
     triggerType: 'shadow',
     prose: 'The siege lines are never airtight. Salt, grain, and medicine can be moved through shadow paths — for the right price, or the right cause.',
+    intrinsicTier: 'shaping',
   },
   {
     id: 'siege.regional.negotiate_terms',
     title: 'Seek a Negotiated End',
     triggerType: 'heart',
     prose: 'Blood need not water these fields. A neutral voice, respected by both sides, might broker terms that let both factions walk away intact.',
+    intrinsicTier: 'shaping',
   },
   {
     id: 'siege.regional.sabotage',
     title: 'Sabotage from the Shadows',
     triggerType: 'sabotage',
     prose: 'An opportunity presents itself: siege engines unguarded, supply lines exposed. One well-placed hand could change the outcome entirely.',
+    intrinsicTier: 'background',
   },
 ];
