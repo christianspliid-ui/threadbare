@@ -939,6 +939,550 @@ const SEASONAL_OMENS: OmenTrackTemplate[] = [
 ];
 
 // ═══════════════════════════════════════════════════════════════════
+// DOOM-ECHO OMENS — The Changing (Chaos/Flux/Identity)
+// ═══════════════════════════════════════════════════════════════════
+
+const CHANGING_OMENS: OmenTrackTemplate[] = [
+  {
+    id: 'omen.changing.restless_forms',
+    name: 'Restless Forms',
+    category: 'doom_echo',
+    tagline: 'Nothing holds its shape quite right anymore.',
+    doomArchetypes: ['changing'],
+    doomStageRange: [0, 1],
+    durationRange: [10, 15],
+    encounterBias: { explore: 0.2 },
+    vocabulary: {
+      adjectives: ['shifting', 'restless', 'uncertain', 'fluid', 'wrong'],
+      verbs: ['shifts', 'flickers', 'blurs', 'changes', 'wavers'],
+      nouns: ['flux', 'edge', 'shimmer', 'form', 'drift'],
+      atmosphere: [
+        'Things are not quite what they were this morning.',
+        'The familiar grows strange at the corners of vision.',
+        'Stability is a courtesy the world is withdrawing.',
+      ],
+    },
+    beats: [
+      {
+        interval: 4,
+        prose: [
+          'Livestock in {location} give birth to healthy young that look subtly, inexplicably different from their parents. The farmers cannot say how.',
+          'A portrait in the great hall of {location} has been changing slowly for weeks. No one agrees on what it used to look like.',
+          'Children in {location} play games they claim to have always known. No adult recognizes the rules.',
+          'The accent of {location} is drifting. Longtime residents find themselves mispronouncing their own names.',
+        ],
+        significance: 0.5,
+      },
+    ],
+    chronicleSignificance: 0.55,
+  },
+  {
+    id: 'omen.changing.the_slipping',
+    name: 'The Slipping',
+    category: 'doom_echo',
+    tagline: 'Identities blur. The edges that define a self are softening.',
+    doomArchetypes: ['changing'],
+    doomStageRange: [1, 2],
+    durationRange: [8, 12],
+    encounterBias: { social: 0.2, duel: -0.1 },
+    vocabulary: {
+      adjectives: ['blurred', 'uncertain', 'porous', 'borrowed', 'lost'],
+      verbs: ['slips', 'bleeds', 'borrows', 'forgets', 'becomes'],
+      nouns: ['mask', 'identity', 'self', 'boundary', 'seam'],
+      atmosphere: [
+        'Who was I before this? The question arrives without warning.',
+        'The line between self and other grows difficult to trace.',
+        'Borrowed habits. Borrowed faces. Borrowed names.',
+      ],
+    },
+    beats: [
+      {
+        interval: 3,
+        prose: [
+          'Two merchants in {location} have been completing each other\'s transactions. Neither has noticed yet.',
+          'A soldier returning to {location} found her family greeting her with the wrong name. They insist it has always been so.',
+          'The mirror-maker\'s shop in {location} has been closed for days. Locals say they could not bear what the mirrors showed.',
+        ],
+        significance: 0.6,
+      },
+    ],
+    chronicleSignificance: 0.65,
+  },
+  {
+    id: 'omen.changing.cascade_of_forms',
+    name: 'Cascade of Forms',
+    category: 'doom_echo',
+    tagline: 'Everything is becoming something else. No shape holds.',
+    doomArchetypes: ['changing'],
+    doomStageRange: [2, 3],
+    durationRange: [6, 9],
+    encounterBias: { explore: 0.2, trade: -0.2 },
+    vocabulary: {
+      adjectives: ['cascading', 'unbound', 'transforming', 'volatile', 'raw'],
+      verbs: ['transforms', 'cascades', 'erupts', 'unmakes', 'pours'],
+      nouns: ['cascade', 'transformation', 'torrent', 'unbinding', 'chaos'],
+      atmosphere: [
+        'The world cannot hold its own shape. Neither can anything within it.',
+        'Change without direction. Transformation without end.',
+        'By the time you name it, it is already something else.',
+      ],
+    },
+    beats: [
+      {
+        interval: 2,
+        prose: [
+          'The main road into {location} has rerouted itself overnight. The old path is meadow. The new path always was.',
+          'Scribes in {location} find their records rewriting themselves between readings. The earlier versions feel more true.',
+          'A temple in {location} has changed its dedication three times this week. The priests serve each new god with equal sincerity.',
+        ],
+        significance: 0.7,
+      },
+    ],
+    chronicleSignificance: 0.75,
+  },
+  {
+    id: 'omen.changing.the_great_unmaking',
+    name: 'The Great Unmaking',
+    category: 'doom_echo',
+    tagline: 'All categories collapse. What was fixed is fluid. What was certain is gone.',
+    doomArchetypes: ['changing'],
+    doomStageRange: [3, 4],
+    durationRange: [5, 7],
+    encounterBias: { explore: 0.3, duel: -0.3 },
+    vocabulary: {
+      adjectives: ['formless', 'dissolved', 'unmoored', 'absolute', 'total'],
+      verbs: ['dissolves', 'unmakes', 'abolishes', 'releases', 'ends'],
+      nouns: ['dissolution', 'flux', 'formlessness', 'freedom', 'void'],
+      atmosphere: [
+        'Nothing holds. This is the truth at the center of things.',
+        'Was anything ever fixed? The question answers itself.',
+        'Formlessness is not destruction. It is the original condition, remembered.',
+      ],
+    },
+    beats: [
+      {
+        interval: 2,
+        prose: [
+          'The name of {location} has changed twice today. Residents use both, neither, or a third name that no one introduced.',
+          'Laws in {location} no longer bind. Not because they are broken — because the concept has become difficult to hold.',
+          'A delegation arrived in {location} seeking someone who no longer exists. They match the description exactly. So does everyone else.',
+        ],
+        significance: 0.85,
+      },
+    ],
+    chronicleSignificance: 0.9,
+  },
+];
+
+// ═══════════════════════════════════════════════════════════════════
+// DOOM-ECHO OMENS — The Sundering (Force/Division/Severance)
+// ═══════════════════════════════════════════════════════════════════
+
+const SUNDERING_OMENS: OmenTrackTemplate[] = [
+  {
+    id: 'omen.sundering.hairline_fractures',
+    name: 'Hairline Fractures',
+    category: 'doom_echo',
+    tagline: 'The first cracks. So thin you must lean close to see them.',
+    doomArchetypes: ['sundering'],
+    doomStageRange: [0, 1],
+    durationRange: [10, 14],
+    encounterBias: { explore: 0.15 },
+    vocabulary: {
+      adjectives: ['cracked', 'thin', 'brittle', 'stressed', 'strained'],
+      verbs: ['cracks', 'strains', 'splits', 'separates', 'divides'],
+      nouns: ['crack', 'fracture', 'seam', 'gap', 'fissure'],
+      atmosphere: [
+        'Things that have held for years are showing their first flaws.',
+        'Small failures. Insignificant, separately.',
+        'A map of cracks is a map of what will break next.',
+      ],
+    },
+    beats: [
+      {
+        interval: 4,
+        prose: [
+          'The oldest bridge in {location} has developed a hairline crack down its center. Masons say it is nothing. Masons are worried.',
+          'Old friends in {location} find conversation suddenly difficult. They know each other too well to bridge the silence.',
+          'Ceramics in {location} fracture along lines that were always there, invisible. Potters cannot explain why now.',
+          'A partnership that built {location}\'s market has dissolved quietly. Both parties cite nothing in particular.',
+        ],
+        significance: 0.5,
+      },
+    ],
+    chronicleSignificance: 0.55,
+  },
+  {
+    id: 'omen.sundering.the_severance',
+    name: 'The Severance',
+    category: 'doom_echo',
+    tagline: 'Bonds break. What was joined refuses to hold.',
+    doomArchetypes: ['sundering'],
+    doomStageRange: [1, 2],
+    durationRange: [7, 11],
+    encounterBias: { duel: 0.2, social: -0.15 },
+    vocabulary: {
+      adjectives: ['severed', 'broken', 'cut', 'isolated', 'divided'],
+      verbs: ['severs', 'breaks', 'cuts', 'isolates', 'divides'],
+      nouns: ['severance', 'break', 'cut', 'isolation', 'division'],
+      atmosphere: [
+        'Alliances that seemed permanent prove otherwise.',
+        'The cut is clean. That is somehow worse.',
+        'What bound them is simply gone. No argument, no cause. Simply gone.',
+      ],
+    },
+    beats: [
+      {
+        interval: 3,
+        prose: [
+          'Three families in {location} that have shared a feast-table for generations ate in silence this season. None could say why.',
+          'The joint governing council of {location} split overnight — not in argument, but in quiet, mutual incomprehension.',
+          'Married couples in {location} report waking beside strangers. The person is unchanged. The recognition is gone.',
+        ],
+        significance: 0.6,
+      },
+    ],
+    chronicleSignificance: 0.65,
+  },
+  {
+    id: 'omen.sundering.violent_partition',
+    name: 'Violent Partition',
+    category: 'doom_echo',
+    tagline: 'Force does what fracture merely hinted at.',
+    doomArchetypes: ['sundering'],
+    doomStageRange: [2, 3],
+    durationRange: [5, 8],
+    encounterBias: { duel: 0.35, trade: -0.25 },
+    vocabulary: {
+      adjectives: ['violent', 'irreversible', 'forced', 'brutal', 'absolute'],
+      verbs: ['shatters', 'rends', 'forces', 'sunders', 'cleaves'],
+      nouns: ['shatter', 'rending', 'violence', 'cleavage', 'ruin'],
+      atmosphere: [
+        'What was merely cracked can no longer pretend to wholeness.',
+        'The force is not anger. It is something older than anger.',
+        'Every sundering makes the next easier.',
+      ],
+    },
+    beats: [
+      {
+        interval: 2,
+        prose: [
+          'The central square of {location} cracked along its length last night. No earthquake was felt. The crack is a yard wide by morning.',
+          'Three trade contracts in {location} dissolved simultaneously — the ink, witnesses claim, simply vanished from the parchment.',
+          'A war that had been at peace for forty years resumes near {location}. No provocation was offered. None was needed.',
+        ],
+        significance: 0.7,
+      },
+    ],
+    chronicleSignificance: 0.75,
+  },
+  {
+    id: 'omen.sundering.the_final_division',
+    name: 'The Final Division',
+    category: 'doom_echo',
+    tagline: 'The world splits. No bridge will span what remains.',
+    doomArchetypes: ['sundering'],
+    doomStageRange: [3, 4],
+    durationRange: [4, 6],
+    encounterBias: { duel: 0.45, social: -0.35 },
+    vocabulary: {
+      adjectives: ['final', 'absolute', 'unbridgeable', 'complete', 'permanent'],
+      verbs: ['splits', 'divides', 'severs', 'ends', 'completes'],
+      nouns: ['chasm', 'abyss', 'finality', 'division', 'end'],
+      atmosphere: [
+        'Nothing binds. Nothing joins. This is the conclusion of a very long argument.',
+        'The world discovers it was always two things, not one.',
+        'What separated things is not empty. It is where they were always going.',
+      ],
+    },
+    beats: [
+      {
+        interval: 2,
+        prose: [
+          'The road between {location} and its nearest neighbor has disappeared. Not destroyed — simply absent, as if it never was.',
+          'Debts owed to {location}\'s creditors are forgiven wholesale — not from mercy, but because the creditors cannot remember why they were owed.',
+          'The governing authority of {location} has divided into two factions that cannot perceive each other. Both continue to govern.',
+        ],
+        significance: 0.85,
+      },
+    ],
+    chronicleSignificance: 0.9,
+  },
+];
+
+// ═══════════════════════════════════════════════════════════════════
+// DOOM-ECHO OMENS — The Failing (Time/Entropy/Exhaustion)
+// ═══════════════════════════════════════════════════════════════════
+
+const FAILING_OMENS: OmenTrackTemplate[] = [
+  {
+    id: 'omen.failing.rust_and_forgetting',
+    name: 'Rust and Forgetting',
+    category: 'doom_echo',
+    tagline: 'Things deteriorate faster than they should. Memories are the first to go.',
+    doomArchetypes: ['failing'],
+    doomStageRange: [0, 1],
+    durationRange: [10, 15],
+    encounterBias: { explore: 0.1 },
+    vocabulary: {
+      adjectives: ['faded', 'worn', 'rusted', 'forgotten', 'dim'],
+      verbs: ['fades', 'rusts', 'wears', 'forgets', 'dims'],
+      nouns: ['rust', 'decay', 'forgetting', 'wear', 'fade'],
+      atmosphere: [
+        'Things age faster when no one is watching.',
+        'The past is losing its texture. History grows smooth and featureless.',
+        'What was sharp is dulled. What was vivid is grey.',
+      ],
+    },
+    beats: [
+      {
+        interval: 4,
+        prose: [
+          'Tools in {location} rust between one morning and the next. Kept oiled, kept dry — it makes no difference.',
+          'A chronicler in {location} found her records from last year indistinct. Not damaged. Simply... less.',
+          'Elders of {location} tell stories that grow shorter each telling. They cannot recall why they mattered.',
+          'Dyes in {location} fade within days of application. Colors are becoming a memory.',
+        ],
+        significance: 0.5,
+      },
+    ],
+    chronicleSignificance: 0.55,
+  },
+  {
+    id: 'omen.failing.the_forgetting',
+    name: 'The Forgetting',
+    category: 'doom_echo',
+    tagline: 'Skills learned over years vanish in days. Memory is not reliable.',
+    doomArchetypes: ['failing'],
+    doomStageRange: [1, 2],
+    durationRange: [8, 12],
+    encounterBias: { social: 0.1, trade: -0.2 },
+    vocabulary: {
+      adjectives: ['lost', 'blank', 'absent', 'empty', 'eroded'],
+      verbs: ['forgets', 'erodes', 'loses', 'empties', 'blanks'],
+      nouns: ['forgetting', 'loss', 'absence', 'void', 'erosion'],
+      atmosphere: [
+        'You reach for a memory and find the shelf bare.',
+        'Expertise is not permanent. It is a loan with hidden terms.',
+        'The elders do not know what they have forgotten. That is the cruelest part.',
+      ],
+    },
+    beats: [
+      {
+        interval: 3,
+        prose: [
+          'A master craftsman in {location} woke unable to perform work she has done for thirty years. Her hands remember nothing.',
+          'The written laws of {location} have become illegible — not damaged, but as if the meaning has drained out of the symbols.',
+          'Healers in {location} find themselves unable to recall remedies they knew yesterday. Patients wait in silence.',
+        ],
+        significance: 0.6,
+      },
+    ],
+    chronicleSignificance: 0.65,
+  },
+  {
+    id: 'omen.failing.things_fall_apart',
+    name: 'Things Fall Apart',
+    category: 'doom_echo',
+    tagline: 'Systems stop. Structures fail. The maintenance is losing.',
+    doomArchetypes: ['failing'],
+    doomStageRange: [2, 3],
+    durationRange: [5, 9],
+    encounterBias: { trade: -0.3, explore: 0.15 },
+    vocabulary: {
+      adjectives: ['collapsed', 'broken', 'exhausted', 'spent', 'failed'],
+      verbs: ['collapses', 'fails', 'stops', 'breaks', 'exhausts'],
+      nouns: ['collapse', 'failure', 'halt', 'ruin', 'end'],
+      atmosphere: [
+        'The effort of maintenance is greater than the system can bear.',
+        'Not destroyed. Simply done.',
+        'There was always an endpoint. This is it, arriving early.',
+      ],
+    },
+    beats: [
+      {
+        interval: 2,
+        prose: [
+          'The granary mechanisms of {location} have seized. Engineers sent to repair them cannot determine how they ever functioned.',
+          'Fires in {location} require more wood than they produce heat. The math has stopped working.',
+          'A mill that has ground grain for two centuries in {location} ground to a halt mid-rotation and refuses to move. The water still flows.',
+        ],
+        significance: 0.7,
+      },
+    ],
+    chronicleSignificance: 0.75,
+  },
+  {
+    id: 'omen.failing.exhaustion_of_the_age',
+    name: 'Exhaustion of the Age',
+    category: 'doom_echo',
+    tagline: 'The world is tired. It has held on long enough.',
+    doomArchetypes: ['failing'],
+    doomStageRange: [3, 4],
+    durationRange: [5, 7],
+    encounterBias: { explore: -0.2, social: -0.2 },
+    vocabulary: {
+      adjectives: ['exhausted', 'spent', 'ending', 'final', 'done'],
+      verbs: ['ends', 'stops', 'yields', 'ceases', 'releases'],
+      nouns: ['end', 'exhaustion', 'cessation', 'release', 'conclusion'],
+      atmosphere: [
+        'Something very old is finally allowed to rest.',
+        'Resistance requires effort no one has left.',
+        'This is not defeat. It is permission, long overdue.',
+      ],
+    },
+    beats: [
+      {
+        interval: 2,
+        prose: [
+          'The oldest person in {location} has stopped eating. Not in despair — in completion. She says the work is done.',
+          'Fields near {location} that have produced for generations produce nothing this season. The soil is not dead. It is simply finished.',
+          'Every clock and sundial in {location} stopped at the same moment yesterday. No one moved to restart them.',
+        ],
+        significance: 0.85,
+      },
+    ],
+    chronicleSignificance: 0.9,
+  },
+];
+
+// ═══════════════════════════════════════════════════════════════════
+// DOOM-ECHO OMENS — The Ascension (Spirit/Transcendence/Departure)
+// ═══════════════════════════════════════════════════════════════════
+
+const ASCENSION_OMENS: OmenTrackTemplate[] = [
+  {
+    id: 'omen.ascension.luminous_hunger',
+    name: 'Luminous Hunger',
+    category: 'doom_echo',
+    tagline: 'A longing without object. Something in everyone reaching upward.',
+    doomArchetypes: ['ascension'],
+    doomStageRange: [0, 1],
+    durationRange: [10, 15],
+    encounterBias: { social: 0.15, explore: 0.1 },
+    vocabulary: {
+      adjectives: ['yearning', 'reaching', 'luminous', 'restless', 'hungry'],
+      verbs: ['reaches', 'yearns', 'rises', 'hungers', 'longs'],
+      nouns: ['longing', 'yearning', 'light', 'height', 'beyond'],
+      atmosphere: [
+        'Something above the visible is calling.',
+        'The ordinary feels unbearably small.',
+        'What they want cannot be named. That does not stop the wanting.',
+      ],
+    },
+    beats: [
+      {
+        interval: 4,
+        prose: [
+          'Residents of {location} have begun sleeping on their rooftops. They cannot explain the habit, only that the floor feels wrong.',
+          'Children in {location} have stopped looking at each other when they speak. They address the sky instead.',
+          'A temple in {location} reports its congregation doubling in a week. None of the new attendants know why they came.',
+          'The birds over {location} fly in slow ascending spirals until they vanish. None descend.',
+        ],
+        significance: 0.5,
+      },
+    ],
+    chronicleSignificance: 0.55,
+  },
+  {
+    id: 'omen.ascension.the_rising',
+    name: 'The Rising',
+    category: 'doom_echo',
+    tagline: 'Gravity loosens. Things and people rise beyond their station.',
+    doomArchetypes: ['ascension'],
+    doomStageRange: [1, 2],
+    durationRange: [8, 12],
+    encounterBias: { social: 0.25, trade: -0.1 },
+    vocabulary: {
+      adjectives: ['elevated', 'rising', 'untethered', 'ascending', 'light'],
+      verbs: ['rises', 'ascends', 'lifts', 'floats', 'transcends'],
+      nouns: ['ascent', 'rise', 'height', 'transcendence', 'departure'],
+      atmosphere: [
+        'The tether between here and elsewhere is stretching.',
+        'Some things are becoming too good for the world they are in.',
+        'Gravity is a preference. Some have stopped preferring it.',
+      ],
+    },
+    beats: [
+      {
+        interval: 3,
+        prose: [
+          'A monk in {location} has not touched the ground in three days. She is not distressed.',
+          'The market prices in {location} have become untenable — not from greed, but because the sellers have lost interest in ordinary value.',
+          'Fires in {location} burn upward more steeply than physics allows. Smoke does not dissipate. It ascends with purpose.',
+        ],
+        significance: 0.6,
+      },
+    ],
+    chronicleSignificance: 0.65,
+  },
+  {
+    id: 'omen.ascension.departure',
+    name: 'Departure',
+    category: 'doom_echo',
+    tagline: 'People leave. Things become unreachable. The worthy are no longer here.',
+    doomArchetypes: ['ascension'],
+    doomStageRange: [2, 3],
+    durationRange: [5, 9],
+    encounterBias: { social: -0.2, explore: 0.2 },
+    vocabulary: {
+      adjectives: ['departed', 'absent', 'gone', 'lost', 'beyond'],
+      verbs: ['departs', 'vanishes', 'ascends', 'leaves', 'transcends'],
+      nouns: ['departure', 'absence', 'beyond', 'distance', 'void'],
+      atmosphere: [
+        'They did not die. They simply became unreachable.',
+        'The best ones are gone. This is not metaphor.',
+        'What remains is not what was. What was has moved on.',
+      ],
+    },
+    beats: [
+      {
+        interval: 2,
+        prose: [
+          'The wisest elder of {location} left without explanation three days ago. Her tracks end at a hillside. The hillside is unchanged.',
+          'Skilled artisans in {location} are vanishing — two or three per week. Their work remains. They do not.',
+          'A delegation seeking the leaders of {location} found only their former offices, still warm, still tidy. Gone.',
+        ],
+        significance: 0.7,
+      },
+    ],
+    chronicleSignificance: 0.75,
+  },
+  {
+    id: 'omen.ascension.the_hollow_world',
+    name: 'The Hollow World',
+    category: 'doom_echo',
+    tagline: 'Everything worth having has ascended. Only the shell remains.',
+    doomArchetypes: ['ascension'],
+    doomStageRange: [3, 4],
+    durationRange: [5, 7],
+    encounterBias: { social: -0.3, explore: 0.3 },
+    vocabulary: {
+      adjectives: ['hollow', 'empty', 'abandoned', 'remaining', 'left'],
+      verbs: ['empties', 'hollows', 'remains', 'persists', 'stays'],
+      nouns: ['hollow', 'shell', 'remainder', 'emptiness', 'husk'],
+      atmosphere: [
+        'This world is an aftermath.',
+        'What matters has gone. The rest has been left to sort itself out.',
+        'The sky is not empty. It is full — just not of anything still here.',
+      ],
+    },
+    beats: [
+      {
+        interval: 2,
+        prose: [
+          'The institutions of {location} continue to operate. No one inside them can explain why, or toward what.',
+          'Travelers passing through {location} report a light above the settlement — bright, unreachable, not descending.',
+          'The remaining population of {location} seem content in a way that unsettles visitors. They are not waiting for anything anymore.',
+        ],
+        significance: 0.85,
+      },
+    ],
+    chronicleSignificance: 0.9,
+  },
+];
+
+// ═══════════════════════════════════════════════════════════════════
 // Exported registry
 // ═══════════════════════════════════════════════════════════════════
 
@@ -946,6 +1490,10 @@ export const OMEN_TEMPLATES: OmenTrackTemplate[] = [
   ...BREACH_OMENS,
   ...CONVERGENCE_OMENS,
   ...RECKONING_OMENS,
+  ...CHANGING_OMENS,
+  ...SUNDERING_OMENS,
+  ...FAILING_OMENS,
+  ...ASCENSION_OMENS,
   ...SPHERE_SURGE_OMENS,
   ...CULTURAL_OMENS,
   ...SEASONAL_OMENS,
