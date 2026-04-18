@@ -14,7 +14,7 @@ import type { AxiologicalProfile } from '../types/agent';
 import { VALUE_PAIRS } from '../types/agent';
 import { DEFAULT_REPUTATION } from '../types/disposition';
 import { NARRATIVE_ARCHETYPES } from '../data/archetype-content';
-import type { CultureIdentity } from '../types/culture';
+import type { CultureIdentity, CulturePhoneticSignature } from '../types/culture';
 import { pickCulturalName } from '../data/culture-name-pools';
 import { assignCooperationStrategy } from './disposition';
 import { assignInitialAmbitions } from './ambitionAssignment';
@@ -190,15 +190,21 @@ export function phaseAgentLifecycle(
           ? parentCultureEntries[Math.floor(rng() * parentCultureEntries.length)]
           : null;
 
-        // Culture-aware naming from inherited culture
+        // Culture-aware naming from inherited culture (THR-15: pass phonetic signature)
         const inheritedIdentity = inheritedCulture
           ? inheritedCulture.culture.properties.cultureIdentity as CultureIdentity | undefined
+          : undefined;
+        const inheritedSig = inheritedCulture
+          ? inheritedCulture.culture.properties.culturePhoneticSignature as CulturePhoneticSignature | undefined
           : undefined;
         const name = pickCulturalName(
           inheritedIdentity?.foundationBias ?? '',
           inheritedIdentity?.veneratedSpheres[0] ?? '',
           rng,
           usedBornNames,
+          inheritedSig,
+          inheritedCulture?.culture.id,
+          state.tick,
         );
 
         // Inherit sphere from location's dominant sphere

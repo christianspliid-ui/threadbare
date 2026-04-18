@@ -34,9 +34,10 @@ import { SphereStateTabContent } from './SphereStateTabContent';
 import { CommandTab } from './CommandTab';
 import { HiddenMarksTab } from './HiddenMarksTab';
 import { EncounterSeedsTab } from './EncounterSeedsTab';
+import { CulturePhoneticsInspector } from './CulturePhoneticsInspector';
 import { EMPTY_STATE_STYLE } from './debugPanelStyles';
 
-export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens';
+export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens' | 'cultures';
 
 export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'feed', label: 'Feed' }, { id: 'agent-follow', label: 'Agent' },
@@ -46,7 +47,8 @@ export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'webgl', label: 'WebGL' }, { id: 'factions', label: 'Factions' },
   { id: 'spheres', label: 'Sphere State' }, { id: 'revelation-log', label: 'Revelations' },
   { id: 'knowledge-gaps', label: 'Knowledge' }, { id: 'armies', label: 'Armies' },
-  { id: 'strategic', label: 'Strategic' }, { id: 'omens', label: 'Omens' }, { id: 'cli', label: 'CLI' },
+  { id: 'strategic', label: 'Strategic' }, { id: 'omens', label: 'Omens' },
+  { id: 'cultures', label: 'Cultures' }, { id: 'cli', label: 'CLI' },
 ];
 
 export interface DebugTabContentProps {
@@ -120,6 +122,7 @@ export function DebugTabContent({
   if (viewMode === 'revelation-log') return <RevelationLogTab traces={allTraces as TraceEntry[]} agentKnowledge={agentKnowledge ?? new Map()} />;
   if (viewMode === 'knowledge-gaps') return <KnowledgeComparisonTab agentKnowledge={agentKnowledge ?? new Map()} graph={graph} />;
   if (viewMode === 'armies') return <ArmiesTabContent graph={graph} currentTick={currentTick} onZoomToLocation={onZoomToLocation} />;
+  if (viewMode === 'cultures') return <CulturePhoneticsInspector graph={graph} />;
   if (viewMode === 'cli') return <CommandTab retinueAgents={retinueAgents} followAgentId={effectiveAgentId} />;
   if (viewMode === 'strategic') return <StrategicDebugTab strategicState={strategicState} graph={graph} effectiveAgentId={effectiveAgentId} currentTick={currentTick} />;
   if (viewMode === 'social') {

@@ -11,8 +11,9 @@
 
 import type { SphereName, TerrainType, CosmologyProfile } from '../types/index';
 import { SPHERE_NAMES } from '../types/index';
-import type { CultureIdentity } from '../types/culture';
+import type { CultureIdentity, CulturePhoneticSignature } from '../types/culture';
 import type { ReachDomain } from '../types/traits';
+import { buildPhoneticSignature, generatePhoneticName } from './culturePhonetics';
 import { REACH_DOMAINS } from '../types/traits';
 import { REACH_VALUE_PAIR, ARCHETYPE_NAMES } from '../types/agent';
 import {
@@ -322,6 +323,7 @@ export interface PregenCulture {
   name: string;
   identity: CultureIdentity;
   flagSvg: string;
+  phoneticSignature?: CulturePhoneticSignature;
 }
 
 /** Extract the minimal projection needed by worldgen province seeding. */
@@ -421,7 +423,36 @@ export function generateCultureIdentities(
     const flagSeed = Math.floor(rng() * 0xFFFFFFFF);
     const flagSvg = generateCultureFlag(identity, flagSeed);
 
-    cultures.push({ id, name, identity, flagSvg });
+    // Build phonetic signature for this culture (THR-15)
+    const cultureSeed = Math.floor(rng() * 0xFFFFFFFF);
+    let phoneticSignature: CulturePhoneticSignature | undefined;
+    try {
+      phoneticSignature = buildPhoneticSignature(identity, cultureSeed, id);
+    } catch {
+      // Fail-soft: signature build failure falls back to pool-only naming
+    }
+
+    // Route demonym + homePlaceName through the phonetic signature when available (THR-15)
+    if (phoneticSignature) {
+      let s = (cultureSeed ^ 0xDEAD) | 0;
+      const sigRng = () => {
+        s = (s + 0x6d2b79f5) | 0;
+        let t = Math.imul(s ^ (s >>> 15), 1 | s);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+      const usedHomePlaceNames = new Set<string>();
+      try {
+        const phoneticDemonym = generatePhoneticName(phoneticSignature, 'personal', sigRng, usedHomePlaceNames, id, 0);
+        if (phoneticDemonym) identity.demonym = phoneticDemonym;
+        const phoneticHomePlaceName = generatePhoneticName(phoneticSignature, 'homeland', sigRng, usedHomePlaceNames, id, 0);
+        if (phoneticHomePlaceName) identity.homePlaceName = phoneticHomePlaceName;
+      } catch {
+        // Fail-soft: keep the charCode-derived demonym/homePlaceName
+      }
+    }
+
+    cultures.push({ id, name, identity, flagSvg, phoneticSignature });
   }
 
   return cultures;
@@ -441,7 +472,12 @@ export function registerPregenCultures(
       id: pc.id,
       type: 'actor',
       name: pc.name,
-      properties: { actorType: 'culture', cultureIdentity: pc.identity, flagSvg: pc.flagSvg },
+      properties: {
+        actorType: 'culture',
+        cultureIdentity: pc.identity,
+        flagSvg: pc.flagSvg,
+        ...(pc.phoneticSignature ? { culturePhoneticSignature: pc.phoneticSignature } : {}),
+      },
     });
 
     // Create culture trait node for gating

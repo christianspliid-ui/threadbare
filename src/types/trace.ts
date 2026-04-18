@@ -13,6 +13,7 @@ import type {
 } from './attention';
 import type { BehaviorFamily, StrategicVerb, StrategicExecutionMode } from './strategicAction';
 import type { ComplicationSeverity } from './complication';
+import type { SyllableTemplate } from './culture';
 
 /** Known trace categories for filtering in debug panel */
 export type TraceCategory =
@@ -51,6 +52,8 @@ export type TraceCategory =
   | 'settlement_reassessment'
   | 'culture_generation'
   | 'culture_sublocation'
+  | 'culture_phonetic_signature_built'
+  | 'phonetic_name_generated'
   | 'strategic_candidate_board'
   | 'strategic_action_started'
   | 'strategic_project_progress'
@@ -130,6 +133,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'settlement_reassessment',
   'culture_generation',
   'culture_sublocation',
+  'culture_phonetic_signature_built',
+  'phonetic_name_generated',
   'strategic_candidate_board',
   'strategic_action_started',
   'strategic_project_progress',
@@ -802,6 +807,32 @@ export interface SettlementReassessmentTrace extends TraceBase {
   archetypeChange: { from: string | null; to: string | null } | null;
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// Culture Phonetics Traces (THR-15)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Trace: phonetic signature built for a culture at worldgen */
+export interface CulturePhoneticSignatureBuiltTrace extends TraceBase {
+  category: 'culture_phonetic_signature_built';
+  cultureId: string;
+  seedHash: number;
+  vowelCount: number;
+  onsetCount: number;
+  codaCount: number;
+  templates: SyllableTemplate[];
+  personalRange: [number, number];
+  settlementRange: [number, number];
+}
+
+/** Trace: phonetic generator produced a name */
+export interface PhoneticNameGeneratedTrace extends TraceBase {
+  category: 'phonetic_name_generated';
+  cultureId: string;
+  mode: 'personal' | 'settlement' | 'homeland';
+  name: string;
+  attemptsUsed: number;
+}
+
 /** Trace: culture identity generation and trait assignment */
 export interface CultureGenerationTrace extends TraceBase {
   category: 'culture_generation';
@@ -1151,6 +1182,8 @@ export type TraceEntry =
   | SettlementReassessmentTrace
   | CultureGenerationTrace
   | CultureSublocationTrace
+  | CulturePhoneticSignatureBuiltTrace
+  | PhoneticNameGeneratedTrace
   | StrategicCandidateBoardTrace
   | StrategicActionStartedTrace
   | StrategicProjectProgressTrace

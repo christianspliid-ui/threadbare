@@ -19,7 +19,7 @@ import {
   type NpcRole,
 } from '../types/npc';
 import type { SublocationProperties } from '../types/sublocation';
-import type { CultureIdentity } from '../types/culture';
+import type { CultureIdentity, CulturePhoneticSignature } from '../types/culture';
 import { pickCulturalName } from '../data/culture-name-pools';
 import type { MemberOfEdgeProperties } from '../types/disposition';
 
@@ -215,16 +215,20 @@ export function seedNpcsAtLocations(
 
       const id = `npc_${npcCounter++}`;
 
-      // Culture-aware naming: resolve identity from the location's culture node
+      // Culture-aware naming: resolve identity + phonetic signature from culture node (THR-15)
       let npcName: string;
       if (cultureId !== null) {
         const cultureNode = graph.getNode(cultureId);
         const identity = cultureNode?.properties.cultureIdentity as CultureIdentity | undefined;
+        const sig = cultureNode?.properties.culturePhoneticSignature as CulturePhoneticSignature | undefined;
         npcName = pickCulturalName(
           identity?.foundationBias ?? '',
           identity?.veneratedSpheres[0] ?? '',
           rng,
           usedNpcNames,
+          sig,
+          cultureId,
+          0,
         );
       } else {
         npcName = pickCulturalName('', '', rng, usedNpcNames);

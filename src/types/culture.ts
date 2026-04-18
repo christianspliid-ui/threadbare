@@ -1,6 +1,49 @@
 import type { SphereName, TerrainType } from './index';
 import type { ReachDomain } from './traits';
 
+// ─── Phonetic Signature Types ────────────────────────────────────
+
+export type SyllableTemplate = 'CV' | 'CVC' | 'VC' | 'CVV' | 'CVVC';
+
+export type PhoneticOrthography = 'title' | 'compound' | 'apostrophe';
+
+/**
+ * Deterministic per-culture phoneme inventory and syllable rules.
+ * Built once at worldgen time and stored on the culture node.
+ * Drives name generation for agents, settlements, demonyms, and homelands.
+ */
+export interface CulturePhoneticSignature {
+  seedHash: number;
+  vowels: string[];
+  onsets: string[];
+  codas: string[];
+  syllableTemplates: SyllableTemplate[];
+  personalSyllableRange: { min: number; max: number };
+  settlementSyllableRange: { min: number; max: number };
+  nameSuffixes: string[];
+  settlementSuffixes: string[];
+  orthography: PhoneticOrthography;
+}
+
+// ─── Phonetic Generator Constants ────────────────────────────────
+
+export const PHONETIC_GENERATOR_ENABLED = true;
+export const PHONETIC_SEED_SALT = 0x9E3779B1;
+export const VOWEL_COUNT_RANGE = { min: 3, max: 5 };
+export const ONSET_COUNT_RANGE = { min: 4, max: 8 };
+export const CODA_COUNT_RANGE = { min: 0, max: 6 };
+export const OPEN_SYLLABLE_CHANCE_BY_FOUNDATION: Record<string, number> = {
+  chaos: 0.45, order: 0.1, light: 0.55, darkness: 0.15,
+};
+export const SYLLABLE_TEMPLATE_COUNT_RANGE = { min: 2, max: 3 };
+export const PERSONAL_SYLLABLE_RANGE = { min: 2, max: 3 };
+export const SETTLEMENT_SYLLABLE_RANGE = { min: 2, max: 4 };
+export const NAME_SUFFIX_CHANCE = 0.4;
+export const SETTLEMENT_SUFFIX_CHANCE = 0.7;
+export const MAX_PHONETIC_ATTEMPTS = 16;
+/** Chance phonetic generator is tried before curated pool. 0 = pool always first. */
+export const PHONETIC_PRIMARY_CHANCE = 0.35;
+
 /**
  * Composed culture identity — merged from foundation + creation sphere + biome modifiers.
  * Generated at world seeding time by cultureGenerator.ts.

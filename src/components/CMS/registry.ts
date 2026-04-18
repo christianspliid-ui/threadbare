@@ -51,6 +51,14 @@ import {
   SETTLEMENT_ROOTS_BY_FOUNDATION, SETTLEMENT_ROOTS_BY_SPHERE,
   SETTLEMENT_SUFFIXES_BY_FOUNDATION,
 } from '../../data/culture-name-pools';
+import {
+  VOWEL_MASTER_LIST_BY_FOUNDATION,
+  CONSONANT_MASTER_LIST_BY_SPHERE,
+  FOUNDATION_CONSONANT_BIAS,
+  NAME_SUFFIXES_BY_FOUNDATION,
+  SETTLEMENT_SUFFIXES_BY_FOUNDATION_PHONETIC,
+  SYLLABLE_TEMPLATE_BIAS_BY_FOUNDATION,
+} from '../../data/culture-phonetic-pools';
 
 // Cosmology & Divine
 import { ARCHETYPE_TITLES } from '../../data/ascendant-content';
@@ -779,6 +787,62 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
     data: SETTLEMENT_SUFFIXES_BY_FOUNDATION,
     viewer: 'record',
     sourceFile: 'src/data/culture-name-pools.ts',
+  },
+
+  // Phonetic pools (THR-15)
+  {
+    id: 'phonetic-vowels-by-foundation',
+    label: 'Phonetic Vowel Pools (Foundation)',
+    category: 'Culture & Society',
+    description: 'Master vowel inventory by foundation bias. Each culture draws 3–5 vowels from its foundation pool.',
+    data: VOWEL_MASTER_LIST_BY_FOUNDATION,
+    viewer: 'record',
+    sourceFile: 'src/data/culture-phonetic-pools.ts',
+  },
+  {
+    id: 'phonetic-consonants-by-sphere',
+    label: 'Phonetic Consonant Pools (Sphere)',
+    category: 'Culture & Society',
+    description: 'Master consonant inventory by creation sphere. Drives onset and coda selection for each culture.',
+    data: CONSONANT_MASTER_LIST_BY_SPHERE,
+    viewer: 'record',
+    sourceFile: 'src/data/culture-phonetic-pools.ts',
+  },
+  {
+    id: 'phonetic-consonant-bias-foundation',
+    label: 'Phonetic Consonant Bias (Foundation)',
+    category: 'Culture & Society',
+    description: 'Foundation-specific onset consonant bias injected on top of sphere consonants.',
+    data: FOUNDATION_CONSONANT_BIAS,
+    viewer: 'record',
+    sourceFile: 'src/data/culture-phonetic-pools.ts',
+  },
+  {
+    id: 'phonetic-name-suffixes-foundation',
+    label: 'Phonetic Name Suffixes (Foundation)',
+    category: 'Culture & Society',
+    description: 'Personal name morphological suffixes by foundation bias. Culture picks 3 at signature build time.',
+    data: NAME_SUFFIXES_BY_FOUNDATION,
+    viewer: 'record',
+    sourceFile: 'src/data/culture-phonetic-pools.ts',
+  },
+  {
+    id: 'phonetic-settlement-suffixes-foundation',
+    label: 'Phonetic Settlement Suffixes (Foundation)',
+    category: 'Culture & Society',
+    description: 'Settlement name suffixes for phonetic generator, by foundation. Culture picks 2 at build time.',
+    data: SETTLEMENT_SUFFIXES_BY_FOUNDATION_PHONETIC,
+    viewer: 'record',
+    sourceFile: 'src/data/culture-phonetic-pools.ts',
+  },
+  {
+    id: 'phonetic-syllable-templates-foundation',
+    label: 'Phonetic Syllable Templates (Foundation)',
+    category: 'Culture & Society',
+    description: 'Syllable template pools per foundation (CV/CVC/VC/CVV/CVVC). Culture picks 2–3 at signature build time.',
+    data: SYLLABLE_TEMPLATE_BIAS_BY_FOUNDATION,
+    viewer: 'record',
+    sourceFile: 'src/data/culture-phonetic-pools.ts',
   },
 
   // ─── Cosmology & Divine ─────────────────────────────────────
