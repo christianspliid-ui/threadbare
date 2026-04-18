@@ -29,9 +29,6 @@ import {
   STALENESS_PROSE_UNCERTAIN_TO_DUBIOUS,
 } from '../data/intelligence-staleness-prose';
 
-// Warn once per module load when legacy records missing acquiredTick are found.
-let warnedLegacyAcquiredTick = false;
-
 function resolveStalenessMessage(
   state: GameState,
   record: IntelligenceRecord,
@@ -42,6 +39,11 @@ function resolveStalenessMessage(
     oldBand === 'reliable' && newBand === 'uncertain'
       ? STALENESS_PROSE_RELIABLE_TO_UNCERTAIN
       : STALENESS_PROSE_UNCERTAIN_TO_DUBIOUS;
+
+  // Fail-soft guard: empty prose table must not throw (NFP #4)
+  if (table.length === 0) {
+    return `Knowledge of ${record.label ?? record.category} is fading for ${record.agentId}.`;
+  }
 
   // Deterministic pick: no PRNG read; stable across replays
   const idx = record.recordId.length % table.length;
@@ -90,11 +92,11 @@ export function phaseIntelligenceDecay(state: GameState): Partial<GameState> {
   let changed = false;
 
   for (const record of records) {
-    // Fail-soft for legacy records missing acquiredTick
+    // Fail-soft for legacy records missing acquiredTick — warn each occurrence
+    // (no dedup flag: module-level state causes test isolation issues per Codex review)
     const acquiredTick = record.acquiredTick ?? 0;
-    if (record.acquiredTick == null && !warnedLegacyAcquiredTick) {
+    if (record.acquiredTick == null) {
       console.warn('[phaseIntelligenceDecay] Record missing acquiredTick; treating as age 0:', record.recordId);
-      warnedLegacyAcquiredTick = true;
     }
 
     const age = tick - acquiredTick;
