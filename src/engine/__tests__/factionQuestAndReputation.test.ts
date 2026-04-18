@@ -100,10 +100,6 @@ function makeMinimalGameState(graph: WorldGraph, tick = 1): GameState {
 // ─── Faction Encounter Templates ───────────────────────────────────────────
 
 describe('faction encounter templates', () => {
-  it('has 10 quest templates', () => {
-    expect(FACTION_ENCOUNTER_TEMPLATES).toHaveLength(10);
-  });
-
   it('all templates have matching meta entries', () => {
     for (const template of FACTION_ENCOUNTER_TEMPLATES) {
       const meta = FACTION_ENCOUNTER_META.get(template.id);

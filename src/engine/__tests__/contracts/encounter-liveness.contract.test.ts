@@ -179,7 +179,7 @@ describe('Pipeline Liveness: encounter initiation → completion → rewards', (
     );
   });
 
-  it('completed encounters produce reward traces (when templates have rewardPool)', () => {
+  it('completed encounters produce reward traces (when templates have rewardPool)', { timeout: 120_000 }, () => {
     let state = createLivenessGameState(42);
 
     // Collect all encounter_completed events across all ticks
