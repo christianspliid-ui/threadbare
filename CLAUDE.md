@@ -215,7 +215,7 @@ Cross-boundary testing rules, contract test patterns, pre-commit verification ch
 2. `npx tsc --noEmit` — type check clean
 3. `npx vite build` — production build succeeds (confirms Vercel will deploy)
 
-> **CI enforces these automatically.** GitHub Actions runs all three on every push. Vercel deploys only after CI is green (the build gate is at CI, not Vercel — see `vercel.json` for the build command). You don't need to remember — but you should still run locally to catch failures before pushing.
+> **CI runs these automatically.** GitHub Actions runs tests, typecheck, and build on every push and PR to `main`. Vercel runs only `vite build` (no test gate). Branch protection (required before merge) is pending GitHub Pro — until then CI is a signal, not a hard gate. Still run locally before pushing to catch failures early.
 
 ## Known Sandbox Limitations
 
