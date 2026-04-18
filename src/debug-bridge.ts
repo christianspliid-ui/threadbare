@@ -85,11 +85,11 @@ if (import.meta.env.DEV) {
 
     pinAgent: (agentQuery: string) =>
       (_encounterBridge?.pinAgent as ((...a: unknown[]) => unknown) | undefined)?.(agentQuery)
-      ?? { success: false, message: 'Encounter bridge not registered' },
+      ?? { success: false, message: 'Encounter bridge not registered', pinnedCount: 0 },
 
     unpinAgent: (agentQuery: string) =>
       (_encounterBridge?.unpinAgent as ((...a: unknown[]) => unknown) | undefined)?.(agentQuery)
-      ?? { success: false, message: 'Encounter bridge not registered' },
+      ?? { success: false, message: 'Encounter bridge not registered', pinnedCount: 0 },
 
     /**
      * Inspect the encounter notification pipeline for a threaded agent.

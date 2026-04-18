@@ -93,6 +93,20 @@ describe('portfolioManager', () => {
     expect(result.success).toBe(true);
   });
 
+  it('pinAgent returns failure for non-actor node type', () => {
+    graph.addNode({ id: 'loc1', type: 'location', name: 'Forest', properties: {} });
+    const result = pinAgent(graph, 'loc1', 0);
+    expect(result.success).toBe(false);
+    expect(result.message).toMatch(/not an actor/i);
+  });
+
+  it('unpinAgent returns failure for non-actor node type', () => {
+    graph.addNode({ id: 'loc1', type: 'location', name: 'Forest', properties: {} });
+    const result = unpinAgent(graph, 'loc1', 0);
+    expect(result.success).toBe(false);
+    expect(result.message).toMatch(/not an actor/i);
+  });
+
   it('pin count in result reflects actual pinned count', () => {
     const id1 = makeActor(graph, 'a1', 'Alice');
     const id2 = makeActor(graph, 'a2', 'Bob');
