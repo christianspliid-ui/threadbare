@@ -3,6 +3,8 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ **THR-172 (2026-04-19)** — SphereIcon variant prop + sphereFromReach helper: SPHERE_COLORS_BASE, variant='base'|'bright', sphere alias, CSS var fills, shared/icons barrel exports, StyleGuide base/bright grid.
+
 ✅ **THR-170 (2026-04-19)** — Primitives library: ProgressBand, Divider, index.ts barrel; Card/Button spec-aligned; StyleGuide sections added.
 
 ✅ 2026-04-18 THR-181 — Codex is read-only bright-line: Rule 8 added to coordination protocol, matching paragraph in CLAUDE.md, cross-ref from retirement paragraph

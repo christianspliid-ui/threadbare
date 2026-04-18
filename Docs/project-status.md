@@ -8,7 +8,7 @@
 - **v1.1 Optimization:** Shipped — Phases 19-22 (determinism, wiring, performance, hygiene)
 - **Encounter Format Migration (Now):** ✅ Phase 0 complete. ✅ Phase 1 TG (THR-89). ✅ Phase 2 AC (THR-91). ✅ Phase 3 CG (THR-92). ✅ Phase 4 BF (THR-93). Merge held on BF until THR-134 U4 closes.
 - **Content Architecture (Now):** Shell/primitive work — stateful shells (Phase 2), progress/service shells (Phase 3), starter libraries (Phase 4), governance (Phase 5). ✅ THR-86 shipped (routine template structural variety). THR-88 next.
-- **UI Visual Overhaul — Design System v1 (Now):** ✅ THR-168 tokens. ✅ THR-169 typography floor. ✅ THR-170 primitives. ✅ THR-183 Vara seed. THR-172 SphereIcon next.
+- **UI Visual Overhaul — Design System v1 (Now):** ✅ THR-168 tokens. ✅ THR-169 typography floor. ✅ THR-170 primitives. ✅ THR-183 Vara seed. ✅ THR-172 SphereIcon. THR-173 Thread Panel next.
 - **Attention Tier Model (Now):** ✅ THR-16 curator metadata. ✅ THR-18 siege templates + digest wiring. UI integration ongoing.
 - **Social Systems Expansion (Now):** THR-28/27/30/51/29 shipped. THR-78 queued.
 - **Thematic Pressure & Living World (Next):** THR-19 Omen Agenda shipped. THR-87 (cool failure prose) blocked by THR-116.
@@ -17,6 +17,9 @@
 - **Procedural Hex Vignettes (Next):** Phases 2-5 queued.
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
+
+## Recent Completions (2026-04-19) — THR-172
+- **THR-172 — SphereIcon variant + sphereFromReach helper:** `SPHERE_COLORS_BASE` map (base-tier hex values matching CSS `--sphere-*` tokens). `sphereFromReach(reach)` exported from `icons/constants`, `icons/index`, and `shared/index`. `icons/SphereIcon`: `variant` prop (`'base'|'bright'`), SVG fill uses `var(--sphere-<name>[-bright])` with hex fallback. `shared/SphereIcon`: `sphere` alias alongside legacy `sphereName`, `variant` pass-through. StyleGuide: base/bright 12-sphere grid.
 
 ## Recent Completions (2026-04-19) — THR-183
 - **THR-183 — Vara seed for ascendant bar:** `devSeedAscendantTestPackage()` populates `?seeded` path with Vara/Witness test content: quintessence 0.45 (Rooted), mandate 0.67 (Kindling), 12-sphere essence pool (2 active / 4 faintly-active / 6 inactive), 4 conditions (Veiled/Thornmarked/Unforgotten/Cold of Eye), 3 clue traits, 4 agreements (Pact/Oath/Debt/Bound). `DEV_ASCENDANT_IDENTITY` updated to Vara with Sun-Oath mandate direction.
