@@ -1,12 +1,12 @@
 # Project Status
 > Updated 2026-04-19.
 ## Current Focus
-**Ascendant Bar shipped (THR-184).** 360px left rail showing ascendant self-state — identity, quintessence, essence, actions, mandate, hooks. Supersedes four chrome surfaces. Next: UI Overhaul continues (THR-174+).
+**Merchant Consortium upgrade shipped (THR-94).** 15 MC templates rewritten to canonical UnifiedActionTemplate shape with typed aftermath wiring (intelligence grants, encounter seeds, hidden marks, spawn_artifact), Threadbare prose, calculating-civil MC voice. Next: more faction content upgrades or UI Overhaul (THR-174+).
 
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
 - **v1.1 Optimization:** Shipped — Phases 19-22 (determinism, wiring, performance, hygiene)
-- **Encounter Format Migration (Now):** ✅ Phase 0 complete. ✅ Phase 1 TG (THR-89). ✅ Phase 2 AC (THR-91). ✅ Phase 3 CG (THR-92). ✅ Phase 4 BF (THR-93). Merge held on BF until THR-134 U4 closes.
+- **Encounter Format Migration (Now):** ✅ Phase 0 complete. ✅ Phase 1 TG (THR-89). ✅ Phase 2 AC (THR-91). ✅ Phase 3 CG (THR-92). ✅ Phase 4 BF (THR-93). ✅ Phase 5 MC (THR-94). Merge held on BF until THR-134 U4 closes.
 - **Content Architecture (Now):** Shell/primitive work — stateful shells (Phase 2), progress/service shells (Phase 3), starter libraries (Phase 4), governance (Phase 5). ✅ THR-86 shipped (routine template structural variety). THR-88 next.
 - **UI Visual Overhaul — Design System v1 (Now):** ✅ THR-168 tokens. ✅ THR-169 typography floor. ✅ THR-170 primitives. ✅ THR-183 Vara seed. ✅ THR-172 SphereIcon. THR-173 Thread Panel next.
 - **Attention Tier Model (Now):** ✅ THR-16 curator metadata. ✅ THR-18 siege templates + digest wiring. UI integration ongoing.
@@ -18,12 +18,8 @@
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
 
-## Recent Completions (2026-04-18) — THR-35
-- **THR-35 — Faction Reputation Aggregation:** Rank-weighted member tally aggregation sub-loop inside `phaseReputationTraits`, runs every 5 ticks. Senior members (high rep) contribute more than recruits via falloff formula. Faction-level tallies decay over time. `FactionDebugContent` shows faction trait pills. 4 new tuning constants. 5 new tests.
-
-## Recent Completions (2026-04-18) — THR-31 + THR-173
-- **THR-31 — Faction content migration to UnifiedActionTemplate (Phase 2):** All 10 factions now in unified format. Phase 2 pass migrated Underking Court, Rangers Brotherhood, Merchant Consortium, Mercenary Company, Lorekeepers Covenant, Temple of Spheres. Fixed lifecycle template shapes (rarityTier, duration, failBehavior) for mc/lk/ts join+promotion. Updated factionQuestGeneration.ts to use unifiedToEncounterTemplate() fallback. Voice lint test enforces 550 tests.
-- **THR-173 — ThreadsPanel visual rewrite:** ThreadPortrait SVG sub-component, 3px sphere-colored left border, AutoToggle replacing attention mode button, SphereIcon + ActivityIcon integration. All 12 data surfaces preserved. All 16 tests pass.
+## Recent Completions (2026-04-19) — THR-94
+- **THR-94 — Merchant Consortium encounter content upgrade:** All 15 MC templates rewritten from broken legacy shape to canonical UnifiedActionTemplate. Fields corrected (reach/intrinsicTier/crudType/scale/motivations/failBehavior, successMetadata/failureMetadata). BranchAwareAftermathConfig with typed effects: 5 intelligence grants (trade_route/political_secret/cultural_knowledge), 7 encounter seeds (renegotiation, summit→deal, resistance coalition, tasting→contract, factor→commission), 2 hidden marks (predatory pricing secret_knowledge, summit private concession debt), 1 spawn_artifact (Consortium Warehouse). Threadbare prose with MC voice lexicon (terms, split, margin, book price, street price, handshake, ledger, quiet). Pronouns + `{?has_faction}`/`{?no_faction}`/`{?has_ally}`/`{?has_artifact}` conditionals throughout. Zero tsc errors. All 2227 src/data tests pass. 550 faction voice lint tests pass.
 
 ## Recent Completions (2026-04-19) — THR-184
 - **THR-184 — Ascendant Bar:** Persistent 360px left rail for hexmap screen. Five sections: identity + quintessence (IdentityStrip with band-responsive halo: bloom/breathe/warn/flicker), essence rows (fill bars + trend arrows), action tray (core/self/rare tiers, spent/gated states), mandate (flavor line + progress fill + trend word), hooks (conditions/clues/vows chips from graph has_attachment edges with 600ms hover tooltip). QuintessenceBand type (6-level: transcendent/healthy/strained/weakened/critical/dissolving) added to quintessence.ts. Tray classifier in engine/ascendantTray.ts. All prose/content in data/ascendant-bar-content.ts. Debug bridge: setQuintessence/setBand helpers. Supersedes IdentityChip, AvatarHUD, EssencePanel, MandateTracker. All animations gated under prefers-reduced-motion.
@@ -43,20 +39,8 @@
 ## Recent Completions (2026-04-19) — THR-34
 - **THR-34 — Social bond shift from reputation reactions:** `computeReputationBondShift()` in `socialEncounterGeneration.ts` walks the target's `has_trait` edges and aggregates signed reaction contributions (`REPUTATION_REACTION_VALENCES`). Plugged into `computeBondModifier` for stranger and weak-bond cases; strong/hostile trust paths unchanged. 3 new constants (`REPUTATION_REACTION_MAX_LEVEL`, `REPUTATION_BOND_SHIFT_SCALE`, `REPUTATION_BOND_SHIFT_MAX`). 15 new tests.
 
-## Recent Completions (2026-04-19) — THR-152
-- **THR-152 — Delve encounter variant + 5-beat arc (Ruins Layer PR 4):** Three new tick phases (6.656-6.658): `phaseDelveAdmission` (scans for located clues at elder_ruin hexes, enforces scale caps saga=1/major=2/minor=3, queues blocked entries with expiry), `phaseDelveProgression` (seeded RNG capability roll vs difficulty threshold, dual-voice chronicle entry per beat, stalled outcome doubles next-beat delay), `phaseDelveEmergence` (rolls consequence, sets `pendingEmergenceDecision` for PR-5, auto-fires 'let' on timeout). New: `delveTypes.ts`, `delveVariant.ts`, `ruins-delve-content.ts` (45 prose vignettes 3 archetypes × 5 beats × 3 outcomes), `DelveProgressPanel.tsx`, 21 integration tests.
-
-## Recent Completions (2026-04-19) — THR-167
-- **THR-167 — Close dead-tally loophole (faction_reputation_gain effect + tally key validation):** Added `faction_reputation_gain` to `EncounterAftermathReactionEffect` — content authors can now grow faction rank as an encounter aftermath without off-axis tally hacks. Added `encounter_aftermath` cause to `FactionReputationTrace`. Tally key validation at `encounterAftermath.ts` write time: off-axis keys emit `aftermath_invalid_tally_key` trace with `suggestedReplacement` hint (rate-limited 50/tick) and are silently dropped. Migrated 4 tests using off-axis keys to valid reach-polarity keys. 5 new tests in `aftermathFactionReputation.test.ts`.
-
-## Recent Completions (2026-04-19) — THR-126
-- **THR-126 — Agent activity halo rings in HexMapV2:** `activityCategory?: ActivityCategory` added to `AgentRenderData`. `buildActivityHaloTexture()` builds a thin colored ring (8% ring width, thinner than avatar ring). `AgentSpriteMesh` creates `activityHaloSprite` behind the portrait sprite, hidden by default, shown only at hero-local zoom via `updateZoomVisibility`. Animation target moves halo with main sprite. `GameView` builds `agentActivityCategoryMap` (familiarityScore ≥ 0.2, non-idle gate) and `agentRenderDataWithActivity` enrichment memo. 7 new tests.
-
-## Recent Completions (2026-04-19) — THR-122
-- **THR-122 — THR-21 deferrals (death-site spirit pressure, returnEngine doom prose, trust-decay amplifier):** `phaseProsperity` emits `SpherePressureEvent{sphere:'spirit'}` for death-site locations when `IdentityLocationPressure.deathSiteSpiritPressure` is set (Reckoning matrix, `RECKONING_DEATH_SITE_SPIRIT_PRESSURE=2`). `returnEngine.ts` threads `DoomIdentityMatrix` into `getReturnProse`/`applyRippleConsequences` so `{doom_verb}/{doom_adj}/{doom_atmosphere}` placeholders resolve in return prose. `complicationEffects.ts` amplifies `trust_decay` magnitude by `IDENTITY_TRUST_DECAY_MODIFIER` (1.2×) when doom identity active. 6 new tests.
-
 ## Archived to project-history.md
-- THR-81/172/183/170/181/156/18/155/151/29/154/166/150 (2026-04-18/19) and earlier — see project-history.md
+- THR-152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 (2026-04-18/19) and earlier — see project-history.md
 
 
 ## Active Backlog Ideas

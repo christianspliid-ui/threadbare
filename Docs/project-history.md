@@ -3,6 +3,8 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ THR-94 (2026-04-19) — Merchant Consortium content upgrade: 15 templates → canonical UnifiedActionTemplate; typed aftermath (5 intelligence, 7 encounter seeds, 2 hidden marks, 1 spawn_artifact); MC voice lexicon + Threadbare prose; 0 tsc errors; all data tests (2227) + voice lint (550) pass
+
 ✅ THR-184 (2026-04-19) — Ascendant Bar: 360px left rail with identity+quintessence strip (band-responsive halo), essence rows, action tray (core/self/rare tiers), mandate block, hooks chips; supersedes IdentityChip/AvatarHUD/EssencePanel/MandateTracker; QuintessenceBand type; debug setQuintessence/setBand helpers
 
 ✅ THR-35 (2026-04-18) — Faction reputation aggregation: rank-weighted member tally sub-loop in phaseReputationTraits; 4 tuning constants; faction trait pills in FactionDebugContent; 5 tests
