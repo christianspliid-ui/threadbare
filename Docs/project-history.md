@@ -3,6 +3,8 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ 2026-04-19 THR-156 — Ruins Layer PR 8: Adventurer's Guild quest hook population — Phase 6.655 phaseRuinQuestHooks, evidenceStrength threshold + Guild proximity check, ruin node stamping, toast notifications, 5 sphere vignettes, priority boost for AG members, 2 trace categories, THR-180 deferral, 20 tests
+
 ✅ 2026-04-19 THR-18 — Siege template attention tier: intrinsicTier on both interfaces, 12 templates classified, regional materialization + spotlight digest wiring, 2 trace categories, 21 tests
 
 ✅ 2026-04-19 THR-155 — Ruins Layer PR 7: dual-voice chronicle — ChronicleEntry schema extended, ChronicleEntryCard + ChroniclePanel, GameView sidebar wired, rarity graduation dual-voiced, 13 tests

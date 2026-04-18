@@ -88,7 +88,9 @@ export interface TickEvent {
   // Complication outcome events (THR-20)
     | 'complication'
   // Intelligence reliability decay events (THR-137)
-    | 'intelligence_decay';
+    | 'intelligence_decay'
+  // Ruins quest hook events (THR-156)
+    | 'quest_hook_issued';
   message: string;
   /** Optional sphere coloring for UI */
   sphere?: SphereName;

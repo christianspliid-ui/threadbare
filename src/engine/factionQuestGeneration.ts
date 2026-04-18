@@ -34,6 +34,27 @@ import {
   getFactionEncounterById,
 } from '../data/faction-encounter-content';
 import type { MemberOfEdgeProperties } from '../types/disposition';
+import { QUEST_HOOK_PRIORITY_BOOST, QUEST_HOOK_COOLDOWN_TICKS } from './ruins/constants';
+
+// ─── Ruin Quest Hook Boost ───────────────────────────────────────────────────
+
+/**
+ * Return the set of quest template IDs that have an active ruin quest hook
+ * (questHookPostedTick within QUEST_HOOK_COOLDOWN_TICKS of current tick).
+ * Used to boost matching templates for Adventurer's Guild candidates.
+ */
+function getActiveRuinQuestTemplateIds(graph: WorldGraph, tick: number): Set<string> {
+  const active = new Set<string>();
+  for (const n of graph.getNodesByType('location')) {
+    const props = n.properties as Record<string, unknown>;
+    const hookTick = props.questHookPostedTick as number | undefined;
+    const templateId = props.questHookTemplateId as string | undefined;
+    if (hookTick != null && templateId && tick - hookTick < QUEST_HOOK_COOLDOWN_TICKS) {
+      active.add(templateId);
+    }
+  }
+  return active;
+}
 
 // ─── Main Generator ──────────────────────────────────────────────────────
 
@@ -61,6 +82,9 @@ export function generateFactionQuestCandidates(
   // Find all faction memberships for this agent
   const memberEdges = graph.getOutgoingEdges(agentId, 'member_of');
 
+  // Pre-collect active ruin quest hooks once — applies boost for Adventurer's Guild members
+  const activeRuinHooks = getActiveRuinQuestTemplateIds(graph, _tick);
+
   for (const edge of memberEdges) {
     const props = edge.properties as Partial<MemberOfEdgeProperties>;
     const factionDefId = props.factionDefId;
@@ -75,6 +99,9 @@ export function generateFactionQuestCandidates(
     // Get quest templates accessible at current rank
     const accessibleTemplates = getAccessibleTemplates(definition, currentRank);
 
+    // Quest hook boost applies only to Adventurer's Guild members (Channel 6)
+    const isAdventurersGuild = factionDefId === 'adventuring_guild';
+
     for (const template of accessibleTemplates) {
       const meta = FACTION_ENCOUNTER_META.get(template.id);
       const nextTier = getNextRank(definition, currentRank);
@@ -85,10 +112,15 @@ export function generateFactionQuestCandidates(
         || props.promotionPending
       ) ? FACTION_REPUTATION_MAINTENANCE_PRIORITY_BOOST : 0;
 
+      // Boost priority when the guild has posted an active quest hook for this template
+      const questHookBoost = isAdventurersGuild && activeRuinHooks.has(template.id)
+        ? QUEST_HOOK_PRIORITY_BOOST
+        : 0;
+
       candidates.push(buildCacheEntry(template, locationId, {
         visibleTo: [`faction:${edge.target}`],
         requiresPresence: false,
-        questPriority: (template.questPriority ?? (meta?.questType === 'elite' ? 8.0 : meta?.questType === 'senior' ? 5.0 : 3.0)) + maintenanceBoost,
+        questPriority: (template.questPriority ?? (meta?.questType === 'elite' ? 8.0 : meta?.questType === 'senior' ? 5.0 : 3.0)) + maintenanceBoost + questHookBoost,
         successRewardEstimate: meta?.reputationReward ?? 0.04,
       }));
     }

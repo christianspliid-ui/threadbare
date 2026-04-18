@@ -130,6 +130,7 @@ import { phaseHiddenMarkDecay } from './phaseHiddenMarkDecay';
 import { phaseIntelligenceDecay } from './phaseIntelligenceDecay';
 import { phaseSecretsFavors } from './phaseSecretsFavors';
 import { phaseClueDecay } from './ruins/clueLifecycle';
+import { phaseRuinQuestHooks } from './ruins/questHooks';
 import { generateSecret, createSecretEdge, createFavorEdge } from './secretGeneration';
 import { processFactionOutcome, resetFactionEventSeq } from './factionOutcome';
 import type { DistanceMatrix } from './distanceMatrix';
@@ -2209,6 +2210,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 6.654: Clue Decay — prune expired knows_clue_of edges (THR-150)
   s = { ...s, ...phaseClueDecay(s) };
   phaseEventCounts['clue_decay'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.655: Ruin Quest Hooks — Channel 6 Narrative Gravity (THR-156)
+  s = { ...s, ...phaseRuinQuestHooks(s) };
+  phaseEventCounts['ruin_quest_hooks'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.75: Agent Lifecycle (death, birth, migration)

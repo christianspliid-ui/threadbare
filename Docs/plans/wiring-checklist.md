@@ -2,7 +2,7 @@
 
 > **Living document.** Every design plan must include a wiring section that maps new modules to entries on this checklist. Every implementation must verify all listed connections before marking work complete. Maintaining this checklist is part of the Definition of Done for both design and implementation phases.
 >
-> **Last updated:** 2026-04-19 (THR-18 — Siege attention tier: 2 new trace categories siege_spotlight_fired/siege_regional_seeded registered in TRACE_CATEGORIES; no new orchestrator phases or UI surfaces)
+> **Last updated:** 2026-04-19 (THR-156 — Ruins Quest Hooks: Phase 6.655 `phaseRuinQuestHooks` added; 2 new trace categories `ruins.quest_hook_issued` / `ruins.quest_hook_suppressed`)
 
 ---
 
@@ -63,6 +63,7 @@ Every engine module that produces per-tick state changes must be called from a p
 | 13 | `phaseDoomExpiry` | Doom conclusion |
 
 | 6.6396 | `phaseQuintessence` | Quintessence event processing, regen, dissolution |
+| 6.655 | `phaseRuinQuestHooks` | Ruin quest hook issuance — evidence ≥ threshold + Guild within radius → toast + priority boost (THR-156) |
 
 **Phase 2 resolution wiring (2026-04-02):**
 
@@ -156,6 +157,29 @@ Per-surface coverage for the two authored aftermath effect kinds introduced by t
 * Constants: `src/engine/ruins/constants.ts` (`PERCEIVE_*`, `RELAY_*`, `ADJACENCY_GATE_HEX_RADIUS`)
 * Traces: `ruins.divine_mark_discovered` (category in `src/types/trace.ts`)
 * Tests: `src/engine/ruins/__tests__/perceiveRelay.test.ts` (20 tests)
+
+**Ruins Quest Hooks — Phase 6.655 (THR-156):**
+
+Channel 6 of Narrative Gravity: when a ruin accumulates `evidenceStrength ≥ CLUE_QUEST_THRESHOLD` (sum of non-consumed `knows_clue_of` edge magnitudes) AND an Adventurer's Guild hall is within `GUILD_QUEST_RADIUS` hexes, the Guild issues a quest hook toast and boosts matching encounter template priority for eligible members.
+
+| Surface | Wiring |
+|---------|--------|
+| Orchestrator phase | Phase 6.655 `phaseRuinQuestHooks` — runs every `RUIN_QUEST_GENERATION_INTERVAL_TICKS` ticks (every 12 ticks by default) |
+| Graph mutations | `graph.updateNode(ruinId, { properties: { ...props, questHookPostedTick: tick, questHookTemplateId } })` — stamped directly on the ruin location node |
+| Priority boost consumer | `generateFactionQuestCandidates` in `factionQuestGeneration.ts` — `getActiveRuinQuestTemplateIds()` reads `questHookPostedTick` within cooldown window and adds `QUEST_HOOK_PRIORITY_BOOST = 4.0` for Adventurer's Guild members |
+| Player UI | `quest_hook_issued` `TickEvent` with `notification: { channel: 'toast' }` → `ToastStack` (prose from `buildQuestHookMessage`, 5 sphere archetypes). No Guild quest panel — deferred to THR-180. |
+| Trace categories | `ruins.quest_hook_issued` (on successful issue), `ruins.quest_hook_suppressed` (on no-guild-in-radius skip) |
+| Debug visibility | Trace feed; ruin node properties `questHookPostedTick` + `questHookTemplateId` visible in RuinsDebugTab |
+| Duplicate prevention | `QUEST_HOOK_COOLDOWN_TICKS = 60` — ruin skipped if `tick - questHookPostedTick < 60` |
+
+**Constants** (all in `src/engine/ruins/constants.ts`): `CLUE_QUEST_THRESHOLD` (0.5), `GUILD_QUEST_RADIUS` (5 hexes), `QUEST_HOOK_COOLDOWN_TICKS` (60), `QUEST_HOOK_PRIORITY_BOOST` (4.0).
+
+**Verification pointers:**
+* Phase: `src/engine/ruins/questHooks.ts` — `phaseRuinQuestHooks`, `getEvidenceStrength`, `selectQuestTemplateForRuin`, `buildQuestHookMessage`
+* Priority boost: `src/engine/factionQuestGeneration.ts` — `getActiveRuinQuestTemplateIds`, `questHookBoost` in `generateFactionQuestCandidates`
+* Traces: `ruins.quest_hook_issued`, `ruins.quest_hook_suppressed` in `src/types/trace.ts`
+* Tests: `src/engine/ruins/__tests__/questHooks.test.ts` (20 tests)
+* Deferral: THR-180 (Guild quest panel in LocationDetail view)
 
 ---
 

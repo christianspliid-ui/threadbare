@@ -153,6 +153,17 @@ export const FACTION_DOSSIER_TIER_DELAY_TICKS = 20;
 /** Ticks between faction quest postings for undelved ruins */
 export const RUIN_QUEST_GENERATION_INTERVAL_TICKS = 30;
 
+// ── Quest hook spawning (PR 8 — THR-156) ─────────────────────────────────────
+
+/** Minimum evidenceStrength (sum of clue magnitudes) to trigger a quest hook */
+export const CLUE_QUEST_THRESHOLD = 0.5;
+/** Max hex distance from ruin to nearest Adventurer's Guild hall for a hook to fire */
+export const GUILD_QUEST_RADIUS = 5;
+/** Ticks between quest hook re-issuances for the same ruin (duplicate prevention) */
+export const QUEST_HOOK_COOLDOWN_TICKS = 60;
+/** questPriority boost applied to the matching template for Guild members when a hook is active */
+export const QUEST_HOOK_PRIORITY_BOOST = 4.0;
+
 // ── Perceive divine action essence costs ─────────────────────────────────────
 
 /** Essence cost (Spirit) for divine.perceive.cast_attention */

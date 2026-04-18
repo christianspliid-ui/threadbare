@@ -136,6 +136,9 @@ export type TraceCategory =
   | 'ruins.clue_suppressed_no_eligible_recipient'
   | 'ruins.clue_receiver_selected'
   | 'ruins.density_seeded'
+  // Ruins layer — quest hook traces (THR-156)
+  | 'ruins.quest_hook_issued'
+  | 'ruins.quest_hook_suppressed'
   // Siege attention tier traces (THR-18)
   | 'siege_spotlight_fired'
   | 'siege_regional_seeded';
@@ -259,6 +262,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'ruins.clue_suppressed_no_eligible_recipient',
   'ruins.clue_receiver_selected',
   'ruins.density_seeded',
+  // Quest hook traces (THR-156)
+  'ruins.quest_hook_issued',
+  'ruins.quest_hook_suppressed',
   // Siege attention tier traces (THR-18)
   'siege_spotlight_fired',
   'siege_regional_seeded',
