@@ -42,6 +42,12 @@ import {
   TG_JOIN_TEMPLATE,
   TG_PROMOTION_TEMPLATE,
 } from './thieves-guild-encounter-content';
+import {
+  ARCANE_CIRCLE_ENCOUNTER_TEMPLATES,
+  ARCANE_CIRCLE_SOCIAL_TEMPLATES,
+  AC_JOIN_TEMPLATE,
+  AC_PROMOTION_TEMPLATE,
+} from './arcane-circle-encounter-content';
 import { RIVAL_SHRINE_BETRAYAL_TEMPLATE } from './encounters/rival-shrine-betrayal';
 import { WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE } from './encounters/wandering-healer-shrine-access';
 import { FLAWED_STEEL_TEMPLATE } from './encounters/flawed-steel';
@@ -3477,6 +3483,11 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...THIEVES_GUILD_SOCIAL_TEMPLATES,
   TG_JOIN_TEMPLATE,
   TG_PROMOTION_TEMPLATE,
+  // Arcane Circle — pre-migrated to UnifiedActionTemplate (THR-91)
+  ...ARCANE_CIRCLE_ENCOUNTER_TEMPLATES,
+  ...ARCANE_CIRCLE_SOCIAL_TEMPLATES,
+  AC_JOIN_TEMPLATE,
+  AC_PROMOTION_TEMPLATE,
   RIVAL_SHRINE_BETRAYAL_TEMPLATE,
   WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE,
   FLAWED_STEEL_TEMPLATE,

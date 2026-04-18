@@ -294,9 +294,10 @@ describe('rarityTier — every template has a valid tier', () => {
     }
   });
 
-  it('at most 2 Legendary (tier 4) templates', () => {
+  it('at most 12 Legendary (tier 4) templates', () => {
+    // 2 divine hex legendaries + up to 1 capstone story beat per guild (10 guilds) = ~12 max
     const legendaryCount = UNIFIED_ACTION_TEMPLATES.filter(t => t.rarityTier === 4).length;
-    expect(legendaryCount).toBeLessThanOrEqual(2);
+    expect(legendaryCount).toBeLessThanOrEqual(12);
   });
 
   it('at least 50% of templates are tier 1 (Mundane)', () => {
