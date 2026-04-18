@@ -4,6 +4,8 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
 ### Recent Changes
 
+| 2026-04-19 | src/engine/gameInit.ts, src/components/Game/hooks/useSimulation.ts | THR-183: Vara/Witness ascendant bar test seed. devSeedAscendantTestPackage() populates ?seeded path with quintessence 0.45 (Rooted), mandateState.progress 0.67 (Kindling), 12-sphere essencePool (mind/spirit active, life/time/entropy/darkness faintly-active, others inactive), 4 conditions via has_trait (Veiled/Thornmarked/Unforgotten/Cold of Eye with valence tags), 3 clue traits (subcategory 'clue'), and 4 relates_to agreement edges (Pact/Oath/Debt/Bound with counterparty nodes). DEV_ASCENDANT_IDENTITY.mortalName/divineName updated to 'Vara', mandateDirection updated to Sun-Oath text. |
+
 | 2026-04-19 | src/components/shared/ProgressBand.tsx (new), src/components/shared/Divider.tsx (new), src/components/shared/index.ts (new), src/components/shared/Card.tsx, src/components/shared/Button.tsx, src/components/StyleGuide/StyleGuide.tsx | THR-170: Primitives library. ProgressBand: label + value bar + prose slot, glow transition. Divider: subtle/gold 1px rule. Card: padding prop, raised boxShadow, glass background inline (rgba+backdropFilter). Button: md/lg padding aligned to spec (14px/18px). index.ts barrel export for all 21 shared components. StyleGuide sections for ProgressBand + Divider. |
 
 | 2026-04-18 | CLAUDE.md, Docs/plans/2026-04-13-linear-coordination-protocol.md | THR-181: Rule 8 (Codex is read-only) added to coordination protocol hard-rules section. Matching paragraph added to CLAUDE.md CC section; cross-reference count updated from Rules 1–7 to 1–8; optional back-ref from retirement paragraph. |
