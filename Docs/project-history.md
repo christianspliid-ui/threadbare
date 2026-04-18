@@ -3,6 +3,9 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ THR-184 (2026-04-19) — Ascendant Bar: 360px left rail with identity+quintessence strip (band-responsive halo), essence rows, action tray (core/self/rare tiers), mandate block, hooks chips; supersedes IdentityChip/AvatarHUD/EssencePanel/MandateTracker; QuintessenceBand type; debug setQuintessence/setBand helpers
+
+✅ THR-35 (2026-04-18) — Faction reputation aggregation: rank-weighted member tally sub-loop in phaseReputationTraits; 4 tuning constants; faction trait pills in FactionDebugContent; 5 tests
 ✅ THR-173 (2026-04-18) — ThreadsPanel visual rewrite: ThreadPortrait SVG, sphere-colored left border, AutoToggle, SphereIcon+ActivityIcon; 16 tests pass
 ✅ THR-31 (2026-04-18) — Faction content migration Phase 2: all 10 factions in UnifiedActionTemplate; lifecycle shape fixes; factionQuestGeneration unifiedToEncounterTemplate fallback; 550 voice lint tests
 ✅ THR-127 (2026-04-19) — Living World summary bar: LiveLocationBar.tsx; top-3 non-quiet locations by pulse severity; rotation pool (9 entries, 3 per page); click → camera center; dismiss button; 10 tests

@@ -362,7 +362,8 @@ Every player-facing modal or overlay must appear in the GameView JSX return bloc
 | `NarrativeLog` | Event feed overlay |
 | `ToastStack` | Transient notifications |
 | `HexMapV2` | Main Three.js hex canvas |
-| `AvatarHUD` | Move/action/scry buttons |
+| `AscendantBar` | Persistent 360px left rail — identity+quintessence, essence, actions, mandate, hooks (THR-184). Supersedes IdentityChip, AvatarHUD, EssencePanel, MandateTracker. |
+| `AvatarHUD` | Move/action/scry buttons — superseded by AscendantBar (THR-184) |
 | `AgendaPicker` | Action selection overlay |
 | `InterventionConfirm` | Intervention confirmation popover |
 | `HexBreadcrumb` | Hex zoom breadcrumb |

@@ -1,7 +1,7 @@
 # Project Status
-> Updated 2026-04-18.
+> Updated 2026-04-19.
 ## Current Focus
-**Encounter Format Migration — all factions complete (THR-31).** All 10 factions now in UnifiedActionTemplate with Threadbare-voiced prose, enrichment placeholders, conditional blocks, and aftermathConfig. Voice lint test enforces structural quality on 550 tests across all unified factions.
+**Ascendant Bar shipped (THR-184).** 360px left rail showing ascendant self-state — identity, quintessence, essence, actions, mandate, hooks. Supersedes four chrome surfaces. Next: UI Overhaul continues (THR-174+).
 
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
@@ -10,7 +10,7 @@
 - **Content Architecture (Now):** Shell/primitive work — stateful shells (Phase 2), progress/service shells (Phase 3), starter libraries (Phase 4), governance (Phase 5). ✅ THR-86 shipped (routine template structural variety). THR-88 next.
 - **UI Visual Overhaul — Design System v1 (Now):** ✅ THR-168 tokens. ✅ THR-169 typography floor. ✅ THR-170 primitives. ✅ THR-183 Vara seed. ✅ THR-172 SphereIcon. THR-173 Thread Panel next.
 - **Attention Tier Model (Now):** ✅ THR-16 curator metadata. ✅ THR-18 siege templates + digest wiring. UI integration ongoing.
-- **Social Systems Expansion (Now):** THR-28/27/30/51/29/41/34/31 shipped. THR-78 queued.
+- **Social Systems Expansion (Now):** THR-28/27/30/51/29/41/34/31/35 shipped. THR-78 queued.
 - **Thematic Pressure & Living World (Next):** THR-19 Omen Agenda shipped. ✅ THR-122/125/126/80/128/127 shipped. Nothing left in Ready for Dev. THR-87 (cool failure prose) blocked by THR-116.
 - **Agent Success Redesign (Next):** Phases 1-4 shipped. Phases 5-8 queued.
 - **Rarity Model (Next):** Three deferred Phase D items.
@@ -18,9 +18,15 @@
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
 
+## Recent Completions (2026-04-18) — THR-35
+- **THR-35 — Faction Reputation Aggregation:** Rank-weighted member tally aggregation sub-loop inside `phaseReputationTraits`, runs every 5 ticks. Senior members (high rep) contribute more than recruits via falloff formula. Faction-level tallies decay over time. `FactionDebugContent` shows faction trait pills. 4 new tuning constants. 5 new tests.
+
 ## Recent Completions (2026-04-18) — THR-31 + THR-173
 - **THR-31 — Faction content migration to UnifiedActionTemplate (Phase 2):** All 10 factions now in unified format. Phase 2 pass migrated Underking Court, Rangers Brotherhood, Merchant Consortium, Mercenary Company, Lorekeepers Covenant, Temple of Spheres. Fixed lifecycle template shapes (rarityTier, duration, failBehavior) for mc/lk/ts join+promotion. Updated factionQuestGeneration.ts to use unifiedToEncounterTemplate() fallback. Voice lint test enforces 550 tests.
 - **THR-173 — ThreadsPanel visual rewrite:** ThreadPortrait SVG sub-component, 3px sphere-colored left border, AutoToggle replacing attention mode button, SphereIcon + ActivityIcon integration. All 12 data surfaces preserved. All 16 tests pass.
+
+## Recent Completions (2026-04-19) — THR-184
+- **THR-184 — Ascendant Bar:** Persistent 360px left rail for hexmap screen. Five sections: identity + quintessence (IdentityStrip with band-responsive halo: bloom/breathe/warn/flicker), essence rows (fill bars + trend arrows), action tray (core/self/rare tiers, spent/gated states), mandate (flavor line + progress fill + trend word), hooks (conditions/clues/vows chips from graph has_attachment edges with 600ms hover tooltip). QuintessenceBand type (6-level: transcendent/healthy/strained/weakened/critical/dissolving) added to quintessence.ts. Tray classifier in engine/ascendantTray.ts. All prose/content in data/ascendant-bar-content.ts. Debug bridge: setQuintessence/setBand helpers. Supersedes IdentityChip, AvatarHUD, EssencePanel, MandateTracker. All animations gated under prefers-reduced-motion.
 
 ## Recent Completions (2026-04-19) — THR-127
 - **THR-127 — Living World summary bar (top-3 active locations):** New `LiveLocationBar.tsx` component (absolute bottom-left of map area, z=20). Reads from `locationActivitySummaries` (already computed), sorts non-quiet locations by pulse severity (volatile > tense > busy > stirring), shows up to 3 per page. Rotates through a pool of 9 via `Math.floor(tick / ROTATE_EVERY_TICKS) % numPages`. Pulse glyph (◉/◎/●/·) + location name + first murmur line. Click → `hexMapRef.centerOn` zoom. Dismiss × button collapses bar. Wired into GameView `viewLevel === 'world'` block after AvatarHUD. 10 new tests.
