@@ -23,7 +23,7 @@ import { ARCANE_CIRCLE_ENCOUNTER_META } from './arcane-circle-encounter-content'
 import { RANGERS_BROTHERHOOD_ENCOUNTER_META, getRangersBrotherhoodEncounterById } from './rangers-brotherhood-encounter-content';
 import { CIVIC_GUARD_ENCOUNTER_META } from './civic-guard-encounter-content';
 import { UNDERKING_COURT_ENCOUNTER_META, getUnderkingCourtEncounterById } from './underking-court-encounter-content';
-import { HOLY_ORDER_DAWN_ENCOUNTER_META, getHolyOrderDawnEncounterById } from './holy-order-dawn-encounter-content';
+import { HOLY_ORDER_DAWN_ENCOUNTER_META } from './holy-order-dawn-encounter-content';
 import { BUILDERS_FELLOWSHIP_ENCOUNTER_META } from './builders-fellowship-encounter-content';
 import { LOREKEEPERS_COVENANT_ENCOUNTER_META, getLorekeeperCovenantEncounterById } from './lorekeepers-covenant-encounter-content';
 
@@ -1002,7 +1002,7 @@ export function getFactionEncounterById(id: string): EncounterTemplate | undefin
     ?? getRangersBrotherhoodEncounterById(id)
     // Civic Guard templates are pre-migrated to UnifiedActionTemplate — looked up via UNIFIED_ACTION_TEMPLATES
     ?? getUnderkingCourtEncounterById(id)
-    ?? getHolyOrderDawnEncounterById(id)
+    // Holy Order of the Dawn templates are pre-migrated to UnifiedActionTemplate — looked up via UNIFIED_ACTION_TEMPLATES
     // Builders Fellowship templates are pre-migrated to UnifiedActionTemplate — looked up via UNIFIED_ACTION_TEMPLATES
     ?? getLorekeeperCovenantEncounterById(id);
 }

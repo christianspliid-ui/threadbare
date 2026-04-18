@@ -27,6 +27,7 @@ import { FACTION_VOICE_BIBLE } from '../faction-voice-bible';
 import { THIEVES_GUILD_ENCOUNTER_TEMPLATES } from '../thieves-guild-encounter-content';
 import { ARCANE_CIRCLE_ENCOUNTER_TEMPLATES } from '../arcane-circle-encounter-content';
 import { CIVIC_GUARD_ENCOUNTER_TEMPLATES } from '../civic-guard-encounter-content';
+import { ALL_HOD_TEMPLATES } from '../holy-order-dawn-encounter-content';
 
 // ── Type guards ────────────────────────────────────────────────────────────
 
@@ -145,3 +146,4 @@ function lintUnifiedFaction(
 lintUnifiedFaction('Thieves Guild', 'thieves_guild', THIEVES_GUILD_ENCOUNTER_TEMPLATES);
 lintUnifiedFaction('Arcane Circle', 'arcane_circle', ARCANE_CIRCLE_ENCOUNTER_TEMPLATES);
 lintUnifiedFaction('Civic Guard', 'civic_guard', CIVIC_GUARD_ENCOUNTER_TEMPLATES);
+lintUnifiedFaction('Holy Order of the Dawn', 'holy_order_dawn', ALL_HOD_TEMPLATES);

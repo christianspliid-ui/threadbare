@@ -60,6 +60,14 @@ import {
   CG_JOIN_TEMPLATE,
   CG_PROMOTION_TEMPLATE,
 } from './civic-guard-encounter-content';
+import {
+  HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES,
+  HOLY_ORDER_DAWN_SENIOR_TEMPLATES,
+  HOLY_ORDER_DAWN_ELITE_TEMPLATES,
+  HOLY_ORDER_DAWN_SOCIAL_TEMPLATES,
+  HOD_JOIN_TEMPLATE,
+  HOD_PROMOTION_TEMPLATE,
+} from './holy-order-dawn-encounter-content';
 import { FACTION_ACTION_ENCOUNTER_TEMPLATES } from './faction-action-encounters';
 import {
   DIVINE_EDICT_ESSENCE_COST,
@@ -4020,6 +4028,13 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...CIVIC_GUARD_SOCIAL_TEMPLATES,
   CG_JOIN_TEMPLATE,
   CG_PROMOTION_TEMPLATE,
+  // Holy Order of the Dawn — pre-migrated to UnifiedActionTemplate (THR-31)
+  ...HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES,
+  ...HOLY_ORDER_DAWN_SENIOR_TEMPLATES,
+  ...HOLY_ORDER_DAWN_ELITE_TEMPLATES,
+  ...HOLY_ORDER_DAWN_SOCIAL_TEMPLATES,
+  HOD_JOIN_TEMPLATE,
+  HOD_PROMOTION_TEMPLATE,
   // Faction Action encounters — THR-29 (commission quest, rivalry, bounty, conclave, etc.)
   ...FACTION_ACTION_ENCOUNTER_TEMPLATES,
   RIVAL_SHRINE_BETRAYAL_TEMPLATE,
