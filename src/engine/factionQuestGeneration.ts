@@ -33,6 +33,7 @@ import {
   FACTION_PROMOTION_TEMPLATE,
   getFactionEncounterById,
 } from '../data/faction-encounter-content';
+import { getUnifiedTemplateById, unifiedToEncounterTemplate } from '../data/unified-action-templates';
 import type { MemberOfEdgeProperties } from '../types/disposition';
 import { QUEST_HOOK_PRIORITY_BOOST, QUEST_HOOK_COOLDOWN_TICKS } from './ruins/constants';
 
@@ -191,7 +192,12 @@ function getAccessibleTemplates(
     .filter(([id, meta]) =>
       meta.factionDefId === definition.id &&
       accessPrefixes.some(prefix => id.startsWith(prefix)))
-    .map(([id]) => getFactionEncounterById(id))
+    .map(([id]) => {
+      const legacy = getFactionEncounterById(id);
+      if (legacy) return legacy;
+      const unified = getUnifiedTemplateById(id);
+      return unified ? unifiedToEncounterTemplate(unified) : undefined;
+    })
     .filter((t): t is EncounterTemplate => t !== undefined);
 }
 
@@ -252,7 +258,9 @@ export function generateFactionLifecycleCandidates(
     // ── Join candidate ──
     // Use per-faction joinEncounterTemplateId if defined; fall back to ag.join default
     const joinTemplateId = definition.joinEncounterTemplateId;
-    const joinTemplate = joinTemplateId ? getFactionEncounterById(joinTemplateId) : FACTION_JOIN_TEMPLATE;
+    const joinTemplate = joinTemplateId
+      ? (() => { const l = getFactionEncounterById(joinTemplateId); if (l) return l; const u = getUnifiedTemplateById(joinTemplateId); return u ? unifiedToEncounterTemplate(u) : undefined; })()
+      : FACTION_JOIN_TEMPLATE;
     if (joinTemplate) {
       candidates.push(buildCacheEntry(joinTemplate, locationId, {
         sublocationId: guildHallId,
@@ -272,7 +280,9 @@ export function generateFactionLifecycleCandidates(
 
     // Use per-faction promotionEncounterTemplateId if defined; fall back to ag.promotion default
     const promoTemplateId = definition.promotionEncounterTemplateId;
-    const promoTemplate = promoTemplateId ? getFactionEncounterById(promoTemplateId) : FACTION_PROMOTION_TEMPLATE;
+    const promoTemplate = promoTemplateId
+      ? (() => { const l = getFactionEncounterById(promoTemplateId); if (l) return l; const u = getUnifiedTemplateById(promoTemplateId); return u ? unifiedToEncounterTemplate(u) : undefined; })()
+      : FACTION_PROMOTION_TEMPLATE;
 
     // Find next rank tier
     const currentTierIndex = definition.rankTiers.indexOf(currentRank);

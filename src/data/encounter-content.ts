@@ -10394,7 +10394,7 @@ export function getAnyEncounterById(id: string): EncounterTemplate | undefined {
     ?? ANOMALY_ENCOUNTER_TEMPLATES.find(encounter => encounter.id === id)
     ?? getSocialEncounterById(id)
     ?? getFactionEncounterById(id)
-    ?? getMercenaryEncounterById(id)
+    ?? (getMercenaryEncounterById(id) as unknown as EncounterTemplate | undefined)
     ?? getArmyEncounterById(id)
     ?? getMonsterEncounterById(id)
     ?? getBorderlandEncounterById(id)

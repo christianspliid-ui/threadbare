@@ -12,20 +12,17 @@
 import type { EncounterTemplate } from '../types/encounter';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { FactionEncounterMeta } from '../types/faction';
-import {
-  MERCENARY_ENCOUNTER_META,
-  getMercenaryEncounterById,
-} from './mercenary-encounter-content';
+import { MERCENARY_ENCOUNTER_META } from './mercenary-encounter-content';
 import { THIEVES_GUILD_ENCOUNTER_META } from './thieves-guild-encounter-content';
-import { MERCHANT_CONSORTIUM_ENCOUNTER_META, getMerchantConsortiumEncounterById } from './merchant-consortium-encounter-content';
-import { TEMPLE_OF_SPHERES_ENCOUNTER_META, getTempleOfSpheresEncounterById } from './temple-of-spheres-encounter-content';
+import { MERCHANT_CONSORTIUM_ENCOUNTER_META } from './merchant-consortium-encounter-content';
+import { TEMPLE_OF_SPHERES_ENCOUNTER_META } from './temple-of-spheres-encounter-content';
 import { ARCANE_CIRCLE_ENCOUNTER_META } from './arcane-circle-encounter-content';
-import { RANGERS_BROTHERHOOD_ENCOUNTER_META, getRangersBrotherhoodEncounterById } from './rangers-brotherhood-encounter-content';
+import { RANGERS_BROTHERHOOD_ENCOUNTER_META } from './rangers-brotherhood-encounter-content';
 import { CIVIC_GUARD_ENCOUNTER_META } from './civic-guard-encounter-content';
-import { UNDERKING_COURT_ENCOUNTER_META, getUnderkingCourtEncounterById } from './underking-court-encounter-content';
+import { UNDERKING_COURT_ENCOUNTER_META } from './underking-court-encounter-content';
 import { HOLY_ORDER_DAWN_ENCOUNTER_META } from './holy-order-dawn-encounter-content';
 import { BUILDERS_FELLOWSHIP_ENCOUNTER_META } from './builders-fellowship-encounter-content';
-import { LOREKEEPERS_COVENANT_ENCOUNTER_META, getLorekeeperCovenantEncounterById } from './lorekeepers-covenant-encounter-content';
+import { LOREKEEPERS_COVENANT_ENCOUNTER_META } from './lorekeepers-covenant-encounter-content';
 
 // ─── Constants ───────────────────────────────────────────────────────────
 
@@ -991,20 +988,15 @@ export const FACTION_LIFECYCLE_TEMPLATES: readonly EncounterTemplate[] = [
  * Look up a faction encounter template by ID (quests + lifecycle).
  */
 export function getFactionEncounterById(id: string): EncounterTemplate | undefined {
-  return FACTION_ENCOUNTER_TEMPLATES.find(t => t.id === id)
+  // Legacy EncounterTemplate lookup — for all remaining AG/BF templates still in this file.
+  // Migrated factions (UC, RB, MCT, MC, LK, TS, TG, AC, CG, HOD) are UnifiedActionTemplate
+  // and live in UNIFIED_ACTION_TEMPLATES. Callers that need unified templates should also call
+  // getUnifiedTemplateById from unified-action-templates.ts (no import here to avoid cycles).
+  return (
+    FACTION_ENCOUNTER_TEMPLATES.find(t => t.id === id)
     ?? FACTION_LIFECYCLE_TEMPLATES.find(t => t.id === id)
     ?? FACTION_SOCIAL_TEMPLATES.find(t => t.id === id)
-    ?? getMercenaryEncounterById(id)
-    // Thieves guild templates are pre-migrated to UnifiedActionTemplate — looked up via UNIFIED_ACTION_TEMPLATES
-    // Arcane Circle templates are pre-migrated to UnifiedActionTemplate — looked up via UNIFIED_ACTION_TEMPLATES
-    ?? getMerchantConsortiumEncounterById(id)
-    ?? getTempleOfSpheresEncounterById(id)
-    ?? getRangersBrotherhoodEncounterById(id)
-    // Civic Guard templates are pre-migrated to UnifiedActionTemplate — looked up via UNIFIED_ACTION_TEMPLATES
-    ?? getUnderkingCourtEncounterById(id)
-    // Holy Order of the Dawn templates are pre-migrated to UnifiedActionTemplate — looked up via UNIFIED_ACTION_TEMPLATES
-    // Builders Fellowship templates are pre-migrated to UnifiedActionTemplate — looked up via UNIFIED_ACTION_TEMPLATES
-    ?? getLorekeeperCovenantEncounterById(id);
+  );
 }
 
 /**

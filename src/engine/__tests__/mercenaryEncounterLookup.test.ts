@@ -12,6 +12,7 @@
 import { describe, it, expect } from 'vitest';
 import { getMercenaryEncounterById } from '../../data/mercenary-encounter-content';
 import { getAnyEncounterById } from '../../data/encounter-content';
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 
 describe('getMercenaryEncounterById — direct template access', () => {
   it('returns mc.join template by ID', () => {
@@ -103,11 +104,13 @@ describe('getAnyEncounterById — engine aggregated lookup includes mc.* templat
 });
 
 describe('mc.* template shape validation', () => {
-  it('mc.join has steps, reachPrimary, and encounterType', () => {
-    const t = getMercenaryEncounterById('mc.join')!;
+  it('mc.join has steps, step reach=iron, and aftermathConfig', () => {
+    const t = getMercenaryEncounterById('mc.join') as UnifiedActionTemplate;
+    expect(t).toBeDefined();
     expect(t.steps.length).toBeGreaterThan(0);
-    expect(t.reachPrimary).toBe('iron');
-    expect(t.encounterType).toBeDefined();
+    const firstStep = t.steps[0] as { reach?: string };
+    expect(firstStep.reach).toBe('iron');
+    expect(t.aftermathConfig).toBeDefined();
   });
 
   it('mc.quest.patrol has at least 2 steps', () => {

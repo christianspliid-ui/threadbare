@@ -28,6 +28,12 @@ import { THIEVES_GUILD_ENCOUNTER_TEMPLATES } from '../thieves-guild-encounter-co
 import { ARCANE_CIRCLE_ENCOUNTER_TEMPLATES } from '../arcane-circle-encounter-content';
 import { CIVIC_GUARD_ENCOUNTER_TEMPLATES } from '../civic-guard-encounter-content';
 import { ALL_HOD_TEMPLATES } from '../holy-order-dawn-encounter-content';
+import { ALL_UK_TEMPLATES } from '../underking-court-encounter-content';
+import { ALL_RB_TEMPLATES } from '../rangers-brotherhood-encounter-content';
+import { ALL_MCT_TEMPLATES } from '../merchant-consortium-encounter-content';
+import { ALL_MC_TEMPLATES } from '../mercenary-encounter-content';
+import { ALL_LK_TEMPLATES } from '../lorekeepers-covenant-encounter-content';
+import { ALL_TS_TEMPLATES } from '../temple-of-spheres-encounter-content';
 
 // ── Type guards ────────────────────────────────────────────────────────────
 
@@ -147,3 +153,9 @@ lintUnifiedFaction('Thieves Guild', 'thieves_guild', THIEVES_GUILD_ENCOUNTER_TEM
 lintUnifiedFaction('Arcane Circle', 'arcane_circle', ARCANE_CIRCLE_ENCOUNTER_TEMPLATES);
 lintUnifiedFaction('Civic Guard', 'civic_guard', CIVIC_GUARD_ENCOUNTER_TEMPLATES);
 lintUnifiedFaction('Holy Order of the Dawn', 'holy_order_dawn', ALL_HOD_TEMPLATES);
+lintUnifiedFaction('Underking Court', 'underking_court', ALL_UK_TEMPLATES);
+lintUnifiedFaction('Rangers Brotherhood', 'rangers_brotherhood', ALL_RB_TEMPLATES);
+lintUnifiedFaction('Merchant Consortium', 'merchant_consortium', ALL_MCT_TEMPLATES);
+lintUnifiedFaction('Mercenary Company', 'mercenary_company', ALL_MC_TEMPLATES);
+lintUnifiedFaction('Lorekeepers Covenant', 'lorekeepers_covenant', ALL_LK_TEMPLATES);
+lintUnifiedFaction('Temple of Spheres', 'temple_of_spheres', ALL_TS_TEMPLATES);
