@@ -107,7 +107,12 @@ export type TraceCategory =
   | 'favor_redeemed'
   | 'favor_broken'
   | 'favor_tension'
-  | 'secret_decayed';
+  | 'secret_decayed'
+  // Agent initiatives traces (THR-51)
+  | 'initiative_started'
+  | 'initiative_checkpoint'
+  | 'initiative_completed'
+  | 'initiative_failed';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -202,6 +207,11 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'favor_broken',
   'favor_tension',
   'secret_decayed',
+  // Agent initiatives traces (THR-51)
+  'initiative_started',
+  'initiative_checkpoint',
+  'initiative_completed',
+  'initiative_failed',
 ];
 
 /** Base shape for all trace entries */
@@ -1246,7 +1256,12 @@ export type TraceEntry =
   | ReputationSetAppliedTrace
   | ConditionAppliedTrace
   | ConditionRemovedTrace
-  | AftermathTargetInvalidTrace;
+  | AftermathTargetInvalidTrace
+  // Initiative traces (THR-51)
+  | InitiativeStartedTrace
+  | InitiativeCheckpointTrace
+  | InitiativeCompletedTrace
+  | InitiativeFailedTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {
@@ -1361,4 +1376,46 @@ export interface OmenBeatTrace extends TraceBase {
   omenId: string;
   slot: 'primary' | 'secondary';
   prose: string;
+}
+
+// ─── Initiative Traces (THR-51) ──────────────────────────────────
+
+/** Trace: agent starts a new initiative */
+export interface InitiativeStartedTrace extends TraceBase {
+  category: 'initiative_started';
+  initiativeId: string;
+  templateId: string;
+  locationId: string;
+  targetCompletionTick: number;
+  finalScore: number;
+  summary: string;
+}
+
+/** Trace: initiative checkpoint evaluation */
+export interface InitiativeCheckpointTrace extends TraceBase {
+  category: 'initiative_checkpoint';
+  initiativeId: string;
+  templateId: string;
+  passed: boolean;
+  checkpointIndex: number;
+  summary: string;
+}
+
+/** Trace: initiative completed — outcomes applied */
+export interface InitiativeCompletedTrace extends TraceBase {
+  category: 'initiative_completed';
+  initiativeId: string;
+  templateId: string;
+  locationId: string;
+  summary: string;
+}
+
+/** Trace: initiative failed — condition triggered */
+export interface InitiativeFailedTrace extends TraceBase {
+  category: 'initiative_failed';
+  initiativeId: string;
+  templateId: string;
+  locationId: string;
+  reason: string;
+  summary: string;
 }

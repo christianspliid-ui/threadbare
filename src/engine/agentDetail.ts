@@ -166,6 +166,8 @@ export interface AgentDetail {
   traits?: TraitSummary[];
   /** Social leverage data: secrets and favors (THR-30). Undefined if none. */
   leverage?: LeverageSummary;
+  /** Active initiative in progress, if any (THR-51). */
+  activeInitiative?: import('../types/initiative').InitiativeProgress;
 }
 
 /** Display-ready trait summary for the AgentDetailPanel */
@@ -506,6 +508,7 @@ export function getAgentDetail(
     quintessence: (props.quintessence as number | undefined),
     traits: traitSummaries.length > 0 ? traitSummaries : undefined,
     leverage,
+    activeInitiative: props.activeInitiative as import('../types/initiative').InitiativeProgress | undefined,
   };
 }
 

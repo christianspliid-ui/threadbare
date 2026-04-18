@@ -46,6 +46,7 @@ export type BehaviorFamily =
 export type DecisionFamily =
   | 'encounter'
   | 'strategic_action'
+  | 'initiative'
   | 'idle'
   | 'forced_travel';
 

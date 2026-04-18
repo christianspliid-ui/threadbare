@@ -17,6 +17,8 @@ import { StepDots } from '../shared/StepDots';
 import { getSublocationConceptArt, getLocationConceptArt } from '../../data/sublocation-concept-art';
 import { useNarration } from '../../services/narration/useNarration';
 import { Play, Square, Loader2 } from 'lucide-react';
+import { INITIATIVE_TEMPLATE_MAP } from '../../data/initiative-templates';
+import type { InitiativeProgress } from '../../types/initiative';
 
 interface LocationViewProps {
   location: GraphNode;
@@ -358,9 +360,18 @@ const AgentRow = memo(function AgentRow({
                 <span>step {encounters[0].currentEncounterIndex + 1}</span>
               </span>
             );
-          })() : (
-            <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>idle</span>
-          )}
+          })() : (() => {
+            const ini = (agent.properties as Record<string, unknown>).activeInitiative as InitiativeProgress | undefined;
+            if (ini) {
+              const tmpl = INITIATIVE_TEMPLATE_MAP.get(ini.templateId);
+              return (
+                <span style={{ color: 'var(--accent-purple, #a78bfa)', fontStyle: 'italic' }}>
+                  {tmpl?.name ?? 'Initiative'}
+                </span>
+              );
+            }
+            return <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>idle</span>;
+          })()}
         </p>
       </div>
 

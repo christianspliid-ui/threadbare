@@ -95,6 +95,7 @@ import { processTraitDecay } from './traits';
 import { phaseReputationTraits, processReputationTally } from './phaseReputationTraits';
 import { processEncounterMastery, processEncounterConditions } from './phaseEncounterTraits';
 import { phaseAgentDecision } from './phaseAgentDecision';
+import { phaseInitiativeProgress } from './phaseInitiativeProgress';
 import { phaseStrategicProjects } from './phaseStrategicProjects';
 import { phaseDivinePremonition } from './phaseDivinePremonition';
 import { phaseControlEffects, resetControlEffectsCounter } from './phaseControlEffects';
@@ -1906,6 +1907,13 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   const decisionEvents = s.tickEvents.length - prevEventCount;
   phaseEventCounts['agent_decision'] = decisionEvents;
   agentsProcessed += decisionEvents;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 2.32: Initiative Progress — advance active agent initiatives, expire temporary boosts
+  const initiativeRng = mulberry32(state.seed + state.tick * 53);
+  s = { ...s, ...phaseInitiativeProgress(s, initiativeRng) };
+  phaseEventCounts['initiative_progress'] = s.tickEvents.length - prevEventCount;
+  if (runtime && phaseEventCounts['initiative_progress'] > 0) touchStructure(runtime);
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.35: Agent Movement (goal-directed pathfinding)
