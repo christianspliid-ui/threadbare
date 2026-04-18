@@ -121,6 +121,14 @@ export interface DebugBridge {
   /** @internal GameView registers its fog toggle callback here */
   _registerFogToggle(fn: (enabled?: boolean) => boolean): void;
 
+  // ── Ascendant Bar: quintessence band visualisation (THR-184) ────────────
+  /** Set the ascendant's quintessence to the given ratio (0–1). Triggers a re-render. */
+  setQuintessence(ratio: number): void;
+  /** Set the ascendant's quintessence to the midpoint of the named band. */
+  setBand(band: 'transcendent' | 'healthy' | 'strained' | 'weakened' | 'critical' | 'dissolving'): void;
+  /** @internal AscendantBar / GameView registers its setQuintessence callback here */
+  _registerSetQuintessence(fn: (ratio: number) => void): void;
+
   // ── Spawn / world-spawn commands ────────────────────────────────────────
   /** Spawn an encounter on an agent. Opens the encounter modal by default. */
   spawnEncounter: (agentQuery: string, templateId: string, options?: DebugSpawnEncounterOptions & { open?: boolean }) => DebugSpawnEncounterResult & { notificationId?: string };

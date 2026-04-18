@@ -26,6 +26,8 @@ if (import.meta.env.DEV) {
   let _encounterBridge: Record<string, (...args: unknown[]) => unknown> | null = null;
   // GameView registers its fog toggle callback here
   let _fogToggle: ((enabled?: boolean) => boolean) | null = null;
+  // AscendantBar debug: GameView registers a callback to set ascendant quintessence
+  let _setQuintessenceCb: ((ratio: number) => void) | null = null;
 
   window.__DEBUG = {
     // Debug panel control — called from browser console or Playwright
@@ -53,6 +55,21 @@ if (import.meta.env.DEV) {
     toggleFog: () => _fogToggle?.() ?? false,
     setFog: (enabled: boolean) => { _fogToggle?.(enabled); },
     _registerFogToggle: (fn: (enabled?: boolean) => boolean) => { _fogToggle = fn; },
+
+    // ── Ascendant Bar: quintessence debug helpers (THR-184) ───────────────
+    setQuintessence: (ratio: number) => {
+      const clamped = Math.max(0, Math.min(1, ratio));
+      _setQuintessenceCb?.(clamped);
+    },
+    setBand: (band: string) => {
+      const BAND_MIDPOINTS: Record<string, number> = {
+        transcendent: 1.0, healthy: 0.75, strained: 0.4,
+        weakened: 0.175, critical: 0.05, dissolving: 0.0,
+      };
+      const ratio = BAND_MIDPOINTS[band] ?? 0.75;
+      _setQuintessenceCb?.(ratio);
+    },
+    _registerSetQuintessence: (fn: (ratio: number) => void) => { _setQuintessenceCb = fn; },
 
     // ── Spawn / world-spawn commands (delegated to encounter bridge) ──────
     spawnEncounter: (agentQuery: string, templateId: string, options?: Record<string, unknown>) =>

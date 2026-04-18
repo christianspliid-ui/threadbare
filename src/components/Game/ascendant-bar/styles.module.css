@@ -1,0 +1,313 @@
+/* Ascendant Bar — scoped styles. THR-184
+ * Keyframes ported 1:1 from Design/Claudedesignhandooffs/ascendant-bar/project/Ascendant Bar.html
+ * All color values use CSS tokens from colors_and_type.css — no hardcoded hex.
+ */
+
+.bar {
+  width: 360px;
+  flex-shrink: 0;
+  height: 100%;
+  background: var(--bg-deep, #0d0d10);
+  border-right: 1px solid var(--border-subtle);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* ── Halo animations ───────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  .haloBloom {
+    animation: haloBloom 4s ease-in-out infinite;
+  }
+  .haloBreathe {
+    animation: haloBreathe 5s ease-in-out infinite;
+  }
+  .haloBreatheWeak {
+    animation: haloBreathe 6s ease-in-out infinite;
+  }
+  .haloWarn {
+    animation: haloWarn 2.4s ease-in-out infinite;
+  }
+  .haloCritical {
+    animation: haloWarn 1.8s ease-in-out infinite;
+  }
+  .haloFlicker {
+    animation: haloFlicker 1.6s ease-in-out infinite;
+  }
+  .keywordBreathe {
+    animation: keywordBreathe 3.4s ease-in-out infinite;
+  }
+  .keywordBreatheFast {
+    animation: keywordBreathe 2.6s ease-in-out infinite;
+  }
+  .keywordBreatheFastest {
+    animation: keywordBreathe 1.8s ease-in-out infinite;
+  }
+  .keywordFlicker {
+    animation: keywordFlicker 2.2s ease-in-out infinite;
+  }
+  .keywordFlickerFast {
+    animation: keywordFlicker 1.6s ease-in-out infinite;
+  }
+  .panelWarn {
+    animation: panelWarn 2.4s ease-in-out infinite;
+  }
+}
+
+@keyframes haloBloom {
+  0%, 100% { opacity: 0.85; filter: blur(22px); }
+  50%       { opacity: 1.0;  filter: blur(28px); }
+}
+@keyframes haloBreathe {
+  0%, 100% { opacity: 0.55; }
+  50%       { opacity: 0.7;  }
+}
+@keyframes haloWarn {
+  0%, 100% { opacity: 0.55; }
+  50%       { opacity: 0.8;  }
+}
+@keyframes haloFlicker {
+  0%, 100% { opacity: 0.45; }
+  30%       { opacity: 0.7;  }
+  60%       { opacity: 0.2;  }
+  80%       { opacity: 0.55; }
+}
+@keyframes keywordBreathe {
+  0%, 100% { opacity: 1;    }
+  50%       { opacity: 0.6; }
+}
+@keyframes keywordFlicker {
+  0%, 100% { opacity: 1;    }
+  20%       { opacity: 0.4; }
+  40%       { opacity: 0.9; }
+  60%       { opacity: 0.3; }
+  80%       { opacity: 0.8; }
+}
+@keyframes panelWarn {
+  0%, 100% { background-color: transparent; }
+  50%       { background-color: rgba(220, 50, 50, 0.04); }
+}
+
+/* ── Section header ─────────────────────────────────────────────── */
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  background: none;
+  border: none;
+  padding: 0;
+  width: 100%;
+  text-align: left;
+}
+
+.sectionLabel {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  white-space: nowrap;
+}
+
+.sectionCount {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+}
+
+.sectionRule {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--border-subtle), transparent);
+}
+
+.sectionBody {
+  padding-left: 18px;
+}
+
+.chevron {
+  flex-shrink: 0;
+  transition: transform 0.18s ease;
+  color: var(--text-muted);
+}
+.chevronOpen {
+  transform: rotate(90deg);
+}
+
+/* ── Identity strip ─────────────────────────────────────────────── */
+.identityStrip {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.15s ease;
+}
+.identityStrip:hover {
+  background: var(--bg-hover);
+}
+
+.portraitFrame {
+  width: 68px;
+  height: 68px;
+  flex-shrink: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.portraitInner {
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #1a1612, #080605 85%);
+  box-shadow: inset 0 0 12px rgba(0,0,0,0.9);
+  overflow: hidden;
+}
+
+.portraitImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: filter 0.4s ease;
+}
+
+.nameText {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+/* ── Essence rows ───────────────────────────────────────────────── */
+.essenceRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.essenceRow:hover {
+  background: var(--bg-hover);
+}
+
+.essenceFillBar {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--bg-raised);
+  overflow: hidden;
+  flex: 1;
+}
+
+/* ── Action rows ────────────────────────────────────────────────── */
+.actionRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 5px 8px 5px 6px;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  text-align: left;
+  width: 100%;
+}
+.actionRow:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+.actionRow:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.actionGroupHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding-bottom: 2px;
+  border-bottom: 1px dotted var(--border-subtle);
+  cursor: pointer;
+  user-select: none;
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  width: 100%;
+  text-align: left;
+}
+
+/* ── Chip primitives ────────────────────────────────────────────── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  border: 1px solid;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  position: relative;
+  transition: opacity 0.15s ease;
+}
+.chip:hover {
+  opacity: 0.85;
+}
+
+.chipTooltip {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 220px;
+  padding: 10px 12px;
+  background: rgba(17,17,20,0.97);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+  z-index: 50;
+  pointer-events: none;
+  animation: fadeInChip 150ms ease-out both;
+}
+
+@keyframes fadeInChip {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Mandate block ──────────────────────────────────────────────── */
+.mandateBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 0;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.mandateFillBar {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--bg-raised);
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+}

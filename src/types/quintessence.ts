@@ -122,3 +122,47 @@ export function getQuintessenceThresholdState(node: QuintessenceNode): Quintesse
   if (ratio < QUINTESSENCE_THRESHOLDS.STRAINED) return 'strained';
   return 'healthy';
 }
+
+// ─── Ascendant Bar Band Vocabulary ───────────────────────────────────────────
+
+/**
+ * UI-facing quintessence band — extends the engine's threshold state with
+ * a 'transcendent' band for over-threshold ascendants.
+ * Maps onto the design spec's six-level visual vocabulary.
+ */
+export type QuintessenceBand =
+  | 'transcendent'
+  | 'healthy'
+  | 'strained'
+  | 'weakened'
+  | 'critical'
+  | 'dissolving';
+
+/** Ratio at or above which transcendent state is eligible (NFP #1: tunability). */
+export const QUINTESSENCE_TRANSCENDENCE_THRESHOLD = 1.0;
+
+/**
+ * True when the node's quintessenceMax has been elevated above its default
+ * AND the current ratio is at the transcendence threshold.
+ * Three-line helper per plan doc — purely derived from existing node properties.
+ */
+export function isAtTranscendence(node: QuintessenceNode): boolean {
+  const ratio = getQuintessenceRatio(node);
+  const max = (node.properties.quintessenceMax ?? QUINTESSENCE_MAX_DEFAULT) as number;
+  return ratio >= QUINTESSENCE_TRANSCENDENCE_THRESHOLD && max > QUINTESSENCE_MAX_DEFAULT;
+}
+
+/**
+ * Map an engine QuintessenceThresholdState + ratio to the UI QuintessenceBand.
+ * Transcendent requires both a healthy threshold state AND isAtTranscendence.
+ */
+export function getQuintessenceBand(node: QuintessenceNode): QuintessenceBand {
+  const state = getQuintessenceThresholdState(node);
+  switch (state) {
+    case 'healthy':  return isAtTranscendence(node) ? 'transcendent' : 'healthy';
+    case 'strained': return 'strained';
+    case 'weakened': return 'weakened';
+    case 'critical': return 'critical';
+    case 'broken':   return 'dissolving';
+  }
+}

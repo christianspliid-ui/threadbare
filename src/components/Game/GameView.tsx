@@ -97,6 +97,7 @@ import { useNotificationNavigation } from './hooks/useNotificationNavigation';
 import { useNotificationPreferences } from './hooks/useNotificationPreferences';
 import { RivalsButton } from './RivalsButton';
 import { IdentityChip } from './IdentityChip';
+import { AscendantBar } from './ascendant-bar/AscendantBar';
 import { AscendantSheet } from './AscendantSheet';
 import { EventPopup } from './EventPopup';
 import { SettingsPanel } from './SettingsPanel';
@@ -1505,6 +1506,21 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     });
   }, [fogDisabled]);
 
+  // ── Debug bridge: setQuintessence / setBand (THR-184) ─────────────────────
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerSetQuintessence((ratio: number) => {
+      setGameState(prev => {
+        const ascNode = prev.graph.getNode(prev.ascendantId);
+        if (!ascNode) return prev;
+        const props = ascNode.properties as Record<string, unknown>;
+        const max = (props.quintessenceMax as number) ?? 100;
+        props.quintessenceCurrent = Math.round(ratio * max);
+        return { ...prev, worldVersion: (prev.worldVersion ?? 0) + 1 };
+      });
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Debug bridge: listActions / fireAction ────────────────────────────────
   // A single ref captures the mutable state slices needed by both commands.
   // setGameState is a stable React dispatcher — it doesn't need the ref treatment.
@@ -2546,18 +2562,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       >
         {/* LEFT GROUP: identity · time · essence */}
         <div className="flex items-center flex-1 min-w-0" style={{ gap: 'var(--topbar-gap)' }}>
-          {/* Identity chip — avatar name + archetype, click to open sheet */}
-          <IdentityChip
-            avatarName={avatarName}
-            archetypeTitle={archetype.title}
-            cycle={gameState.cycle}
-            sphereColor={sphereColor}
-            primarySphere={archetype.sphereAlignment.primary}
-            originFragmentId={ascendantIdentity?.originFragmentId ?? ''}
-            onClick={() => setAscendantSheetOpen(true)}
-          />
-
-          <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
+          {/* IdentityChip superseded by AscendantBar (THR-184) */}
 
           {/* Time controls */}
           <SimulationControls
@@ -2572,17 +2577,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             compact
           />
 
-          <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
-
-          {/* Essence resource chips */}
-          <EssencePanel
-            pool={gameState.essencePool}
-            maxEssence={maxEssence}
-            primarySphere={archetype.sphereAlignment.primary}
-            secondarySphere={archetype.sphereAlignment.secondary}
-            income={essenceIncome}
-            compact
-          />
+          {/* EssencePanel superseded by AscendantBar (THR-184) */}
 
           {/* WorldSoulIndicator — prose description of dominant sphere */}
           {gameState.worldSoul?.aggregate && (
@@ -2647,25 +2642,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               />
             </>
           )}
-          {gameState.mandateDefinition && gameState.mandateState && (
-            <>
-              <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
-              <div
-                style={{ maxWidth: '180px', minWidth: 0, overflow: 'hidden', cursor: 'pointer' }}
-                role="button" tabIndex={0}
-                onClick={() => setMandateDetailOpen(true)}
-                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setMandateDetailOpen(true); } }}
-                aria-label="View mandate details"
-              >
-                <div style={{ pointerEvents: 'none' }}>
-                  <MandateTracker
-                    definition={gameState.mandateDefinition}
-                    state={gameState.mandateState}
-                  />
-                </div>
-              </div>
-            </>
-          )}
+          {/* MandateTracker superseded by AscendantBar (THR-184) */}
           {/* AlertBar disabled */}
           <RivalsButton
             definitions={gameState.rivalDefinitions}
@@ -2716,6 +2693,17 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
       {/* ═══ Main content area ═══ */}
       <div className="flex flex-1 overflow-hidden">
+        {/* ── Left rail: Ascendant Bar (THR-184) ── */}
+        <AscendantBar
+          gameState={gameState}
+          archetype={archetype}
+          ascendantIdentity={ascendantIdentity ?? null}
+          avatarName={avatarName}
+          worldVersion={runtime.worldVersion}
+          onOpenSheet={() => setAscendantSheetOpen(true)}
+          onOpenMandate={() => setMandateDetailOpen(true)}
+        />
+
         {/* ── Center: map / hex zoom / location ── */}
         <div className="flex-1 flex flex-col overflow-hidden relative">
           <div className="flex-1 overflow-hidden relative">
@@ -2767,14 +2755,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   locationActivityMap={locationActivityByHex}
                 />
 
-                <AvatarHUD
-                  sphereColor={sphereColor}
-                  onCenterOnAvatar={handleCenterOnAvatar}
-                  onMoveClick={handleAvatarMoveClick}
-                  onWheelClick={handleAvatarActionClick}
-                  onScryClick={handleScryWithMutex}
-                  moveMode={moveMode}
-                />
+                {/* AvatarHUD superseded by AscendantBar (THR-184) */}
 
                 {/* Living World summary bar — top-3 active locations (THR-127) */}
                 <LiveLocationBar
