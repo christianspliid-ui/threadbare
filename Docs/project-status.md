@@ -18,6 +18,9 @@
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
 
+## Recent Completions (2026-04-19) — THR-152
+- **THR-152 — Delve encounter variant + 5-beat arc (Ruins Layer PR 4):** Three new tick phases (6.656-6.658): `phaseDelveAdmission` (scans for located clues at elder_ruin hexes, enforces scale caps saga=1/major=2/minor=3, queues blocked entries with expiry), `phaseDelveProgression` (seeded RNG capability roll vs difficulty threshold, dual-voice chronicle entry per beat, stalled outcome doubles next-beat delay), `phaseDelveEmergence` (rolls consequence, sets `pendingEmergenceDecision` for PR-5, auto-fires 'let' on timeout). New: `delveTypes.ts`, `delveVariant.ts`, `ruins-delve-content.ts` (45 prose vignettes 3 archetypes × 5 beats × 3 outcomes), `DelveProgressPanel.tsx`, 21 integration tests.
+
 ## Recent Completions (2026-04-19) — THR-167
 - **THR-167 — Close dead-tally loophole (faction_reputation_gain effect + tally key validation):** Added `faction_reputation_gain` to `EncounterAftermathReactionEffect` — content authors can now grow faction rank as an encounter aftermath without off-axis tally hacks. Added `encounter_aftermath` cause to `FactionReputationTrace`. Tally key validation at `encounterAftermath.ts` write time: off-axis keys emit `aftermath_invalid_tally_key` trace with `suggestedReplacement` hint (rate-limited 50/tick) and are silently dropped. Migrated 4 tests using off-axis keys to valid reach-polarity keys. 5 new tests in `aftermathFactionReputation.test.ts`.
 
@@ -39,17 +42,8 @@
 ## Recent Completions (2026-04-19) — THR-81
 - **THR-81 — Wire omenEncounterBias into scoring traces:** The bias was already computed and passed to `scoreAndSelect()`. Added `identityBiasBonus: number` to `ScoredCandidate` and `ScoringTrace.topCandidates` so the per-candidate omen+doom bias contribution is inspectable in traces (NFP #2). 3 tests asserting bias shifts `finalScore` by the correct additive delta.
 
-## Recent Completions (2026-04-19) — THR-172
-- **THR-172 — SphereIcon variant + sphereFromReach helper:** `SPHERE_COLORS_BASE` map (base-tier hex values matching CSS `--sphere-*` tokens). `sphereFromReach(reach)` exported from `icons/constants`, `icons/index`, and `shared/index`. `icons/SphereIcon`: `variant` prop (`'base'|'bright'`), SVG fill uses `var(--sphere-<name>[-bright])` with hex fallback. `shared/SphereIcon`: `sphere` alias alongside legacy `sphereName`, `variant` pass-through. StyleGuide: base/bright 12-sphere grid.
-
-## Recent Completions (2026-04-19) — THR-183
-- **THR-183 — Vara seed for ascendant bar:** `devSeedAscendantTestPackage()` populates `?seeded` path with Vara/Witness test content: quintessence 0.45 (Rooted), mandate 0.67 (Kindling), 12-sphere essence pool (2 active / 4 faintly-active / 6 inactive), 4 conditions (Veiled/Thornmarked/Unforgotten/Cold of Eye), 3 clue traits, 4 agreements (Pact/Oath/Debt/Bound). `DEV_ASCENDANT_IDENTITY` updated to Vara with Sun-Oath mandate direction.
-
-## Recent Completions (2026-04-19) — THR-170
-- **THR-170 — Primitives library:** `ProgressBand.tsx` (label + value bar + prose slot with glow transition), `Divider.tsx` (subtle/gold 1px rule), `index.ts` barrel export for all shared components. `Card.tsx`: padding prop, raised boxShadow, glass rgba+backdropFilter inline. `Button.tsx`: md/lg padding aligned to spec (14px/18px). StyleGuide sections added for ProgressBand + Divider.
-
 ## Archived to project-history.md
-- THR-181/156/18/155/151/29/154/166/150 (2026-04-18/19) and earlier — see project-history.md
+- THR-172/183/170/181/156/18/155/151/29/154/166/150 (2026-04-18/19) and earlier — see project-history.md
 
 
 ## Active Backlog Ideas
