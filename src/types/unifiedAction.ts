@@ -92,7 +92,9 @@ export type HiddenMarkCategory =
   | 'concealed_action'
   | 'forbidden_contact'
   | 'soul_diminishment'
-  | 'mystical_contract';
+  | 'mystical_contract'
+  | 'reputation_note'
+  | 'divine_favor';
 
 /**
  * A persistent hidden mark on an agent — a concealed consequence that can be

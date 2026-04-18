@@ -257,9 +257,9 @@ export function filterByReputationGates(
   if (unlocked.size === 0 && blocked.size === 0) return [...entries];
 
   return entries.filter(entry => {
-    // Unlocks take priority over blocks
-    if (unlocked.has(entry.templateId)) return true;
+    // Blocks take priority over unlocks (explicit exclusion wins)
     if (blocked.has(entry.templateId)) return false;
+    if (unlocked.has(entry.templateId)) return true;
     return true;
   });
 }

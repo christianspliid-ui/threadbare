@@ -43,6 +43,21 @@ import {
 import {
   THE_RENOWNED_DUEL_TEMPLATE,
 } from '../../data/encounters/the-renowned-duel';
+import {
+  THE_EXECUTIONERS_COMMISSION_TEMPLATE,
+} from '../../data/encounters/the-executioners-commission';
+import {
+  THE_UNMARKED_CROSSING_TEMPLATE,
+} from '../../data/encounters/the-unmarked-crossing';
+import {
+  THE_SILENT_CHAMBER_TEMPLATE,
+} from '../../data/encounters/the-silent-chamber';
+import {
+  THE_JURY_OF_THE_RUINED_TEMPLATE,
+} from '../../data/encounters/the-jury-of-the-ruined';
+import {
+  THE_BLINDED_ORACLE_TEMPLATE,
+} from '../../data/encounters/the-blinded-oracle';
 import { REPUTATION_TRAIT_DEFINITIONS } from '../../data/reputation-trait-content';
 import type { EncounterCacheEntry } from '../encounterCache';
 import type { TargetContext } from '../../types/targetContext';
@@ -351,6 +366,63 @@ describe('Pattern 5 — tier-sensitive: the_stones_judgement (Stone L3)', () => 
   });
 });
 
+// ─── Pattern 6: Mixed-polarity (the-blinded-oracle) ───────────────
+
+describe('Pattern 6 — mixed-polarity: the_blinded_oracle (Eye- required, Iron+ blocks)', () => {
+  it('template declares requiredTargetTraits: [trait.reputation.eye.negative]', () => {
+    expect(THE_BLINDED_ORACLE_TEMPLATE.requiredTargetTraits).toEqual(['trait.reputation.eye.negative']);
+  });
+
+  it('eye.negative trait declares the_blinded_oracle in encounterGates.unlocks', () => {
+    const eyeNeg = REPUTATION_TRAIT_DEFINITIONS.find(t => t.id === 'trait.reputation.eye.negative');
+    expect(eyeNeg?.properties.reputationEffects?.encounterGates.unlocks).toContain(THE_BLINDED_ORACLE_TEMPLATE.id);
+  });
+
+  it('iron.positive trait declares the_blinded_oracle in encounterGates.blocks', () => {
+    const ironPos = REPUTATION_TRAIT_DEFINITIONS.find(t => t.id === 'trait.reputation.iron.positive');
+    expect(ironPos?.properties.reputationEffects?.encounterGates.blocks).toContain(THE_BLINDED_ORACLE_TEMPLATE.id);
+  });
+
+  it('filterByReputationGates blocks entry when agent has eye.negative AND iron.positive', () => {
+    const graph = makeGraph();
+    addAgent(graph, 'agent-mixed');
+    assignTrait(graph, 'agent-mixed', 'trait.reputation.eye.negative');
+    assignTrait(graph, 'agent-mixed', 'trait.reputation.iron.positive');
+    const entries = [makeEntry({ templateId: THE_BLINDED_ORACLE_TEMPLATE.id })];
+
+    const result = filterByReputationGates(entries, 'agent-mixed', graph);
+    expect(result.some(e => e.templateId === THE_BLINDED_ORACLE_TEMPLATE.id)).toBe(false);
+  });
+
+  it('filterByReputationGates passes entry when agent has eye.negative but NOT iron.positive', () => {
+    const graph = makeGraph();
+    addAgent(graph, 'agent-eye-only');
+    assignTrait(graph, 'agent-eye-only', 'trait.reputation.eye.negative');
+    const entries = [makeEntry({ templateId: THE_BLINDED_ORACLE_TEMPLATE.id })];
+
+    const result = filterByReputationGates(entries, 'agent-eye-only', graph);
+    expect(result.some(e => e.templateId === THE_BLINDED_ORACLE_TEMPLATE.id)).toBe(true);
+  });
+
+  it('ActionDrawer hides template when target lacks eye.negative', () => {
+    const result = getTargetActionSlots({
+      target: actorTarget({ traitIds: [] }),
+      templates: [THE_BLINDED_ORACLE_TEMPLATE] as unknown as UnifiedActionTemplate[],
+      pool: BASE_POOL,
+    });
+    expect(result).toHaveLength(0);
+  });
+
+  it('ActionDrawer shows template when target has eye.negative (iron.positive block not checked at ActionDrawer level)', () => {
+    const result = getTargetActionSlots({
+      target: actorTarget({ traitIds: ['trait.reputation.eye.negative'] }),
+      templates: [THE_BLINDED_ORACLE_TEMPLATE] as unknown as UnifiedActionTemplate[],
+      pool: BASE_POOL,
+    });
+    expect(result).toHaveLength(1);
+  });
+});
+
 // ─── Whole-tranche structural checks ──────────────────────────────
 
 describe('All five templates — structural invariants', () => {
@@ -366,6 +438,12 @@ describe('All five templates — structural invariants', () => {
     THE_STAR_PILGRIM_TEMPLATE,
     THE_INFILTRATORS_APPROACH_TEMPLATE,
     THE_RENOWNED_DUEL_TEMPLATE,
+    // Final tranche — THR-147
+    THE_EXECUTIONERS_COMMISSION_TEMPLATE,
+    THE_UNMARKED_CROSSING_TEMPLATE,
+    THE_SILENT_CHAMBER_TEMPLATE,
+    THE_JURY_OF_THE_RUINED_TEMPLATE,
+    THE_BLINDED_ORACLE_TEMPLATE,
   ];
 
   it('every template has at least one gate declared (requiredTargetTraits or encounterGates.blocks)', () => {
