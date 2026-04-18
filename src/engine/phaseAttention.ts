@@ -248,6 +248,23 @@ export function phaseAttention(
 
     if (!courtPosition || (courtPosition as string) === 'dormant') continue;
 
+    // Faction thread relevance (same walk as unified path)
+    let legacyFactionThreadCount = 0;
+    const legacyMemberEdges = state.graph.getOutgoingEdges(ep.actorId, 'member_of');
+    if (legacyMemberEdges.length > 0) {
+      const legacyFellows = new Set<string>();
+      for (const memberEdge of legacyMemberEdges) {
+        const incomingMembers = state.graph.getIncomingEdges(memberEdge.target, 'member_of');
+        for (const inc of incomingMembers) {
+          if (inc.source === ep.actorId) continue;
+          const hasThread = state.graph.getIncomingEdges(inc.source, 'thread')
+            .some(e => e.source === state.ascendantId);
+          if (hasThread) legacyFellows.add(inc.source);
+        }
+      }
+      legacyFactionThreadCount = legacyFellows.size;
+    }
+
     candidates.push({
       encounterId:        ep.encounterId,
       actionId:           ep.encounterId,
@@ -255,10 +272,10 @@ export function phaseAttention(
       courtPosition,
       threatRating:       'moderate',
       reachPrimary:       'combat',      // legacy encounters have no template ref here
-      isChainStage:       false,
-      isFinalChainStage:  false,
-      factionThreadCount: 0,
-      matchesAmbition:    false,
+      isChainStage:       false,         // no template id available on legacy path
+      isFinalChainStage:  false,         // no template id available on legacy path
+      factionThreadCount: legacyFactionThreadCount,
+      matchesAmbition:    false,         // reach='combat' is placeholder; would falsely bias
     });
   }
 
