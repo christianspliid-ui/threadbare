@@ -13,8 +13,8 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const SIZE_STYLES: Record<ButtonSize, React.CSSProperties> = {
   sm: { height: '28px', padding: '0 8px', fontSize: 'var(--text-xs)' },
-  md: { height: '36px', padding: '0 12px', fontSize: 'var(--text-sm)' },
-  lg: { height: '44px', padding: '0 16px', fontSize: 'var(--text-base)' },
+  md: { height: '36px', padding: '0 14px', fontSize: 'var(--text-sm)' },
+  lg: { height: '44px', padding: '0 18px', fontSize: 'var(--text-base)' },
 };
 
 const VARIANT_STYLES: Record<ButtonVariant, { base: React.CSSProperties; hover: React.CSSProperties }> = {

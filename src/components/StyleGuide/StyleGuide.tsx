@@ -30,6 +30,8 @@ import type { RarityTier } from '../../types/rarity';
 import { SPHERE_NAMES } from '../../types/index';
 import { ActivityIcon } from '../shared/ActivityIcon';
 import type { ActivityKind } from '../shared/ActivityIcon';
+import { ProgressBand } from '../shared/ProgressBand';
+import { Divider } from '../shared/Divider';
 import { CulturePhoneticsInspector } from '../Game/debug/CulturePhoneticsInspector';
 import { WorldGraph } from '../../engine/graph';
 import { buildPhoneticSignature } from '../../engine/culturePhonetics';
@@ -83,6 +85,8 @@ const SECTIONS = [
   { id: 'tooltip', label: 'Tooltip' },
   { id: 'dropdown', label: 'Dropdown' },
   { id: 'progressbar', label: 'ProgressBar' },
+  { id: 'progressband', label: 'ProgressBand' },
+  { id: 'divider', label: 'Divider' },
   { id: 'stepdots', label: 'StepDots' },
   { id: 'rarity', label: 'Rarity' },
   { id: 'spheres', label: 'SphereIcon' },
@@ -498,6 +502,38 @@ export default function StyleGuide() {
                 <ProgressBar progress={0.6} color="#4b0082" />
                 <Label>glow=false</Label>
                 <ProgressBar progress={0.4} color="#c87533" glow={false} />
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          {/* ── ProgressBand ───────────────────────────────────── */}
+          <section id="section-progressband" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>ProgressBand</SectionHeading>
+            <div style={{ marginTop: '1.25rem', maxWidth: '480px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <GameErrorBoundary>
+                <Label>low / mid / high values</Label>
+                <ProgressBand label="Prosperity" value={18} />
+                <ProgressBand label="Reputation" value={54} />
+                <ProgressBand label="Doom" value={87} />
+                <Label>with prose label</Label>
+                <ProgressBand label="Essence" value={62} prose="recovering slowly" />
+                <Label>sphere colors</Label>
+                <ProgressBand label="Force" value={40} color="var(--sphere-force, #e87040)" />
+                <ProgressBand label="Spirit" value={75} color="var(--sphere-spirit, #a070e8)" />
+                <ProgressBand label="Mind" value={30} color="var(--sphere-mind, #70b8e8)" />
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          {/* ── Divider ────────────────────────────────────────── */}
+          <section id="section-divider" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>Divider</SectionHeading>
+            <div style={{ marginTop: '1.25rem', maxWidth: '480px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <GameErrorBoundary>
+                <Label>subtle (default)</Label>
+                <Divider />
+                <Label>gold</Label>
+                <Divider gold />
               </GameErrorBoundary>
             </div>
           </section>

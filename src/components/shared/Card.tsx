@@ -5,6 +5,8 @@ type CardVariant = 'surface' | 'raised' | 'glass';
 
 interface CardProps {
   variant?: CardVariant;
+  /** Padding applied to the root container. Use for simple (non-compound) cards. */
+  padding?: number;
   children: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
@@ -18,24 +20,27 @@ const VARIANT_STYLES: Record<CardVariant, React.CSSProperties> = {
   raised: {
     backgroundColor: 'var(--bg-raised)',
     border: '1px solid var(--border-medium)',
+    boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
   },
   glass: {
+    background: 'rgba(17,17,20,0.72)',
+    backdropFilter: 'blur(10px)',
     border: '1px solid var(--border-subtle)',
   },
 };
 
-function CardRoot({ variant = 'surface', children, className, style }: CardProps) {
-  const isGlass = variant === 'glass';
+function CardRoot({ variant = 'surface', padding, children, className, style }: CardProps) {
   const baseStyle: React.CSSProperties = {
     ...VARIANT_STYLES[variant],
     borderRadius: 'var(--panel-radius)',
     overflow: 'hidden',
+    ...(padding !== undefined ? { padding } : {}),
     ...style,
   };
 
   return (
     <div
-      className={`${isGlass ? 'panel-glass' : ''} ${className ?? ''}`}
+      className={className ?? ''}
       style={baseStyle}
     >
       {children}

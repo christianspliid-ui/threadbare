@@ -21,10 +21,11 @@ describe('Card', () => {
     expect(el.style.backgroundColor).toBe('var(--bg-raised)');
   });
 
-  it('applies glass variant with panel-glass class', () => {
+  it('applies glass variant with rgba background and backdrop-filter', () => {
     render(<Card variant="glass">Content</Card>);
     const el = screen.getByText('Content').closest('div') as HTMLElement;
-    expect(el).toHaveClass('panel-glass');
+    expect(el.style.background).toContain('rgba');
+    expect(el.style.backdropFilter).toBe('blur(10px)');
   });
 
   it('renders Header with title', () => {
