@@ -3,6 +3,8 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ **THR-170 (2026-04-19)** — Primitives library: ProgressBand, Divider, index.ts barrel; Card/Button spec-aligned; StyleGuide sections added.
+
 ✅ 2026-04-18 THR-181 — Codex is read-only bright-line: Rule 8 added to coordination protocol, matching paragraph in CLAUDE.md, cross-ref from retirement paragraph
 
 ✅ 2026-04-19 THR-156 — Ruins Layer PR 8: Adventurer's Guild quest hook population — Phase 6.655 phaseRuinQuestHooks, evidenceStrength threshold + Guild proximity check, ruin node stamping, toast notifications, 5 sphere vignettes, priority boost for AG members, 2 trace categories, THR-180 deferral, 20 tests
