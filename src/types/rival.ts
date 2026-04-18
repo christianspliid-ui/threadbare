@@ -35,6 +35,8 @@ export interface RivalState {
   hostilityToPlayer: number;
   /** Ticks since last major action */
   ticksSinceAction?: number;
+  /** Per-agent awareness 0.0-1.0 — how much attention this rival is paying to each agent */
+  agentAwareness?: Partial<Record<string, number>>;
 }
 
 /** Rival archetype generation templates */

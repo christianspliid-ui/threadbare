@@ -64,6 +64,8 @@ export const ENCOUNTER_PRESSURE_PER_STEP = 1;
 export const DOOM_PRESSURE_PER_TIER = 4;
 /** Pressure from rival divine actions */
 export const RIVAL_PRESSURE_MAGNITUDE = 2;
+/** Weight applied to max agentAwareness when computing effective hostility for rival action selection */
+export const RIVAL_AWARENESS_HOSTILITY_WEIGHT = 0.2;
 /** Pressure from reaching mandate milestones */
 export const MANDATE_PRESSURE_MILESTONE = 2;
 /** Pressure from completing a mandate */

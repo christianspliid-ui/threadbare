@@ -279,6 +279,42 @@ describe('selectComplication', () => {
   });
 });
 
+// THR-121: rival_awareness complication effect writes to RivalState.agentAwareness
+describe('rival_awareness complication effect (THR-121)', () => {
+  function makeStateWithRivals() {
+    return {
+      rivalStates: [
+        { rivalId: 'rival-1', active: true, interventionCount: 0, agentsControlled: 0, regionsInfluenced: [], hostilityToPlayer: 0.5 },
+        { rivalId: 'rival-2', active: true, interventionCount: 0, agentsControlled: 0, regionsInfluenced: [], hostilityToPlayer: 0.3 },
+      ],
+    } as any;
+  }
+
+  it('writes agentAwareness to all rival states for the acting agent', () => {
+    const state = makeStateWithRivals();
+    const ctx = makeContext({});
+    applyComplicationEffects([{ type: 'rival_awareness', delta: 0.1 }], ctx, state, 1, 'Test');
+    expect(state.rivalStates[0].agentAwareness?.['actor-1']).toBeCloseTo(0.1, 5);
+    expect(state.rivalStates[1].agentAwareness?.['actor-1']).toBeCloseTo(0.1, 5);
+  });
+
+  it('accumulates awareness on repeated applications', () => {
+    const state = makeStateWithRivals();
+    const ctx = makeContext({});
+    applyComplicationEffects([{ type: 'rival_awareness', delta: 0.1 }], ctx, state, 1, 'Test');
+    applyComplicationEffects([{ type: 'rival_awareness', delta: 0.2 }], ctx, state, 2, 'Test');
+    expect(state.rivalStates[0].agentAwareness?.['actor-1']).toBeCloseTo(0.3, 5);
+  });
+
+  it('caps awareness at 1.0', () => {
+    const state = makeStateWithRivals();
+    const ctx = makeContext({});
+    applyComplicationEffects([{ type: 'rival_awareness', delta: 0.8 }], ctx, state, 1, 'Test');
+    applyComplicationEffects([{ type: 'rival_awareness', delta: 0.8 }], ctx, state, 2, 'Test');
+    expect(state.rivalStates[0].agentAwareness?.['actor-1']).toBe(1);
+  });
+});
+
 // THR-120: sphere_pressure complication effect writes to worldSoul.spherePressures
 describe('sphere_pressure complication effect (THR-120)', () => {
   function makeMinimalState() {

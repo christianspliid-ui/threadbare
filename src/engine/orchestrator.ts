@@ -137,7 +137,7 @@ import type { DistanceMatrix } from './distanceMatrix';
 import { clearTimelines, appendEvent } from './encounterTimeline';
 import { recordReward, clearRewardHistory } from './rewardHistory';
 import type { SpherePressureEvent } from '../types/sphereAffinity';
-import { ENCOUNTER_PRESSURE_PER_STEP, RIVAL_PRESSURE_MAGNITUDE } from '../types/sphereAffinity';
+import { ENCOUNTER_PRESSURE_PER_STEP, RIVAL_PRESSURE_MAGNITUDE, RIVAL_AWARENESS_HOSTILITY_WEIGHT } from '../types/sphereAffinity';
 import { ANOMALY_RESOURCE_MAP, RESOURCE_DEFINITIONS } from '../data/resource-content';
 import type { ResourceInstance } from '../types/resource';
 import { createEncounterEventNode } from './encounterEventNode';
@@ -1445,10 +1445,16 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
         interventionCount: rivalState.interventionCount + 1,
       };
 
-      // Select rival action type probabilistically (doom identity bias applied)
+      // Select rival action type probabilistically (doom identity bias applied).
+      // Boost effective hostility by max agentAwareness so aware rivals act more aggressively.
       const rivalRoll = rng();
       const identityRivalBias = state.doomIdentityMatrix?.rivalBehaviorBias;
-      const rivalAction = selectRivalAction(rival, rivalState, rivalRoll, identityRivalBias);
+      const awarenessValues = Object.values(rivalState.agentAwareness ?? {});
+      const maxAwareness = awarenessValues.length > 0 ? Math.max(...awarenessValues) : 0;
+      const effectiveRivalState = maxAwareness > 0
+        ? { ...rivalState, hostilityToPlayer: Math.min(1.0, rivalState.hostilityToPlayer + maxAwareness * RIVAL_AWARENESS_HOSTILITY_WEIGHT) }
+        : rivalState;
+      const rivalAction = selectRivalAction(rival, effectiveRivalState, rivalRoll, identityRivalBias);
       const actionType = rivalAction.type;
 
       const templates = RIVAL_ACTION_TEMPLATES[actionType] ?? ['{rival} acts against you'];

@@ -63,6 +63,16 @@ function applyEffect(
     };
     return;
   }
+  if (effect.type === 'rival_awareness') {
+    for (const rivalState of state.rivalStates) {
+      const current = (rivalState.agentAwareness ?? {})[ctx.action.actorId] ?? 0;
+      rivalState.agentAwareness = {
+        ...rivalState.agentAwareness,
+        [ctx.action.actorId]: Math.min(1, current + effect.delta),
+      };
+    }
+    return;
+  }
   if (effect.type === 'partial_progress') return;
 
   const actorNode = state.graph.getNode(ctx.action.actorId);
@@ -186,21 +196,6 @@ function applyEffect(
           type: 'relates_to',
           properties: { basis: effect.basis, createdAtTick: tick, origin: 'complication' },
         });
-      }
-      break;
-    }
-
-    case 'rival_awareness': {
-      // TODO(THR-121): RivalState.agentAwareness does not yet exist.
-      // The if (awarenessMap) guard makes this a no-op on all real rivals.
-      // Deferred until RivalState is extended and the rival targeting phase consumes the field.
-      for (const rivalState of state.rivalStates) {
-        const awarenessMap = (rivalState as Record<string, unknown>).agentAwareness as
-          Record<string, number> | undefined;
-        if (awarenessMap) {
-          const current = awarenessMap[ctx.action.actorId] ?? 0;
-          awarenessMap[ctx.action.actorId] = Math.min(1, current + effect.delta);
-        }
       }
       break;
     }
