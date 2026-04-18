@@ -8,6 +8,7 @@
 - **v1.1 Optimization:** Shipped — Phases 19-22 (determinism, wiring, performance, hygiene)
 - **Encounter Format Migration (Now):** ✅ Phase 0 complete. ✅ Phase 1 TG (THR-89). ✅ Phase 2 AC (THR-91). ✅ Phase 3 CG (THR-92). ✅ Phase 4 BF (THR-93). Merge held on BF until THR-134 U4 closes.
 - **Content Architecture (Now):** Shell/primitive work — stateful shells (Phase 2), progress/service shells (Phase 3), starter libraries (Phase 4), governance (Phase 5). ✅ THR-86 shipped (routine template structural variety). THR-88 next.
+- **UI Visual Overhaul — Design System v1 (Now):** ✅ THR-168 tokens. ✅ THR-169 typography floor. THR-170 primitives next.
 - **Attention Tier Model (Now):** ✅ THR-16 curator metadata wiring shipped. UI integration ongoing.
 - **Social Systems Expansion (Now):** THR-28/27/30/51/29 shipped. THR-78 queued.
 - **Thematic Pressure & Living World (Next):** THR-19 Omen Agenda shipped. THR-87 (cool failure prose) blocked by THR-116.
@@ -18,6 +19,7 @@
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
 
 ## Recent Completions (2026-04-18)
+- **THR-169 — UI Overhaul 02: Typography migration (16px floor):** Replaced all hardcoded `fontSize` and `fontFamily` values across `src/components/**` (82 files) and `src/App.tsx` with CSS design tokens. Three-pass sweep: px string/numeric values, sub-1rem rem values, and bare Cinzel/Alegreya fontFamily strings. Fixed IconButton ternary `14px/16px` and ActionCard SIZE_CONFIG constants. TaxonomyViewer CSS files updated. Verified zero computed-fontSize < 16px on all three primary views at 1920×1080.
 - **THR-168 — UI Overhaul 01: Design tokens foundation:** Added 12 sphere color tokens + `-bright` variants, 8 semantic `--type-*` font-shorthand tokens, `--accent-gold-glow` (was already present), and 8 `[data-reach="..."]` → `--reach-sphere` CSS mapping rules to `src/index.css`. Replaced Google Fonts `@import` with local `@font-face`; woff2 files (Cinzel variable, Alegreya Sans 4 weights) copied to `public/fonts/`. Additive only — no existing tokens changed. Fonts verified loaded. Foundation for issues 2–5.
 
 ## Recent Completions (2026-04-19)
