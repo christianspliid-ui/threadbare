@@ -218,10 +218,10 @@ Eight new `EncounterAftermathReactionEffect` kinds that change world topology fr
 | `when` gate | `encounterAftermath.ts` evaluates `effect.when` via `evaluatePredicate(buildPredicateContext(...))` before every effect dispatch. Emits `aftermath_effect_skipped_by_when` / `aftermath_effect_when_passed` traces. |
 | Thread mutations | `thread_strengthen/weaken/break/branch` cases in `applyEncounterAftermathReaction`. Strength clamped [0,1] via `THREAD_STRENGTH_MAX/MIN`. `thread_break` emits `TickEvent`. `thread_branch` wraps `addEdge` in try/catch for duplicate-edge safety. |
 | ThreadsPanel UI | `threadStrength` field on `ThreadedNodeBase` (from `edge.properties.strength`). CSS-transitioned bar renders when `threadStrength < 1.0`. |
-| Causation edges | `encounterSeeding.ts` tries `caused_by` addEdge on seed evaluation; always falls to `causation_edge_creation_skipped` in v1 (action IDs not graph nodes). |
+| Causation edges | THR-143: `createUnifiedActionEventNode()` in `encounterEventNode.ts` creates `event` nodes for unified-action steps. `executeStepResult` in `unifiedActionResolution.ts` emits `caused_by` edge on first step when `pendingCausationSourceEventId` is set. `applyEncounterAftermathReaction` threads `action.eventNodeId` into seeds as `sourceEventNodeId`. `evaluateEncounterSeeds` propagates to spawned action as `pendingCausationSourceEventId`. |
 | Prose placeholders | `{cause:label}` / `{cause:ticksAgo}` resolved in `enrichProse` from `ctx.cause`. |
 | Trace categories | `causation_edge_created`, `causation_edge_creation_skipped`, `aftermath_effect_skipped_by_when`, `aftermath_effect_when_passed`, `thread_mutation_applied`, `thread_mutation_skipped` |
-| Tests | `encounterAftermath.test.ts` (tests 3-10), `encounterSeeding.test.ts` (tests 1-2) |
+| Tests | `encounterAftermath.test.ts` (tests 3-10), `encounterSeeding.test.ts` (THR-143 causation contract tests 1-4), `encounterEventNode.test.ts` (`createUnifiedActionEventNode` tests 1-4) |
 
 **Component-library foundation seams (2026-04-03):**
 
