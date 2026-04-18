@@ -28,6 +28,8 @@ import { DomainCard } from '../shared/DomainCard';
 import { GameErrorBoundary } from '../shared/GameErrorBoundary';
 import type { RarityTier } from '../../types/rarity';
 import { SPHERE_NAMES } from '../../types/index';
+import { ActivityIcon } from '../shared/ActivityIcon';
+import type { ActivityKind } from '../shared/ActivityIcon';
 import { CulturePhoneticsInspector } from '../Game/debug/CulturePhoneticsInspector';
 import { WorldGraph } from '../../engine/graph';
 import { buildPhoneticSignature } from '../../engine/culturePhonetics';
@@ -89,6 +91,7 @@ const SECTIONS = [
   { id: 'animatemount', label: 'AnimateMount' },
   { id: 'entitycard', label: 'EntityCard' },
   { id: 'domaincard', label: 'DomainCard' },
+  { id: 'activityicon', label: 'ActivityIcon' },
   { id: 'culture-phonetics', label: 'CulturePhoneticsInspector' },
 ];
 
@@ -672,6 +675,33 @@ export default function StyleGuide() {
                     />
                   </div>
                 ))}
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          {/* ── ActivityIcon ───────────────────────────────────── */}
+          <section id="section-activityicon" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>ActivityIcon</SectionHeading>
+            <div style={{ marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <GameErrorBoundary>
+                <Label>All 6 kinds at size=18 (default color)</Label>
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                  {(['boot', 'swords', 'coin', 'hammer', 'bandage', 'hourglass'] as ActivityKind[]).map((k) => (
+                    <div key={k} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                      <ActivityIcon kind={k} size={18} />
+                      <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>{k}</span>
+                    </div>
+                  ))}
+                </div>
+                <Label>All 6 kinds at size=24, color=var(--accent-gold)</Label>
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                  {(['boot', 'swords', 'coin', 'hammer', 'bandage', 'hourglass'] as ActivityKind[]).map((k) => (
+                    <div key={k} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                      <ActivityIcon kind={k} size={24} color="var(--accent-gold)" />
+                      <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>{k}</span>
+                    </div>
+                  ))}
+                </div>
               </GameErrorBoundary>
             </div>
           </section>
