@@ -9,12 +9,12 @@ const EMPTY_STATE_STYLE: React.CSSProperties = {
   textAlign: 'center',
   color: 'var(--text-primary)',
   opacity: 0.4,
-  fontSize: '13px',
+  fontSize: 'var(--text-xs)',
 };
 
 const DETAIL_AREA_STYLE: React.CSSProperties = {
   padding: '12px',
-  fontSize: '12px',
+  fontSize: 'var(--text-xs)',
   fontFamily: 'monospace',
   color: 'var(--text-primary)',
   lineHeight: 1.5,
@@ -90,7 +90,7 @@ export function SphereStateTabContent({ aggregate }: SphereStateTabContentProps)
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
                 <span style={{
                   fontFamily: 'monospace',
-                  fontSize: '11px',
+                  fontSize: 'var(--text-xs)',
                   color,
                   fontWeight: isDominant ? 700 : 400,
                   textTransform: 'capitalize',
@@ -99,7 +99,7 @@ export function SphereStateTabContent({ aggregate }: SphereStateTabContentProps)
                 </span>
                 <span style={{
                   fontFamily: 'monospace',
-                  fontSize: '11px',
+                  fontSize: 'var(--text-xs)',
                   color: 'var(--text-muted)',
                 }}>
                   total: {total} | avg: {avgScore.toFixed(2)}

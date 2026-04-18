@@ -1139,7 +1139,7 @@ export const HexChronicle = memo(function HexChronicle({
                       marginTop: '4px',
                       cursor: 'pointer',
                       opacity: 0.9,
-                      fontSize: '13px',
+                      fontSize: 'var(--text-xs)',
                       color: '#D4A574',
                     }}
                   >

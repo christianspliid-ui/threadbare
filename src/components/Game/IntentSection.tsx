@@ -147,7 +147,7 @@ export function IntentSection({ intents, variant = 'modal' }: IntentSectionProps
     <div>
       <h3
         className="text-amber-200/80 text-xs font-semibold tracking-wider uppercase mb-2.5"
-        style={{ fontFamily: 'Cinzel, serif' }}
+        style={{ fontFamily: 'var(--font-display)' }}
       >
         Intent
       </h3>

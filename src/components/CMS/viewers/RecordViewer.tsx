@@ -66,7 +66,7 @@ export function RecordViewer({ data, searchQuery, selectedKey, onSelectItem }: P
                 <span
                   className="flex-none mt-0.5"
                   style={{
-                    fontSize: '0.6rem',
+                    fontSize: 'var(--text-xs)',
                     color: 'var(--text-muted)',
                     transition: 'transform 150ms',
                     transform: isExpanded ? 'rotate(90deg)' : 'rotate(0)',

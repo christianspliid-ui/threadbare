@@ -171,7 +171,7 @@ export const WorldPulse = React.memo(function WorldPulse({
         <div className="pt-3 space-y-1" style={{ borderTop: `1px solid var(--border-subtle)` }}>
           <span
             className="uppercase tracking-wider"
-            style={{ fontSize: '9px', color: 'var(--text-tertiary)', fontFamily: 'var(--font-display)' }}
+            style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', fontFamily: 'var(--font-display)' }}
           >
             World Omen
           </span>

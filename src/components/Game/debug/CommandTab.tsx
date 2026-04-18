@@ -32,7 +32,7 @@ const COMMAND_INPUT: React.CSSProperties = {
   background: 'var(--bg-deep)',
   color: 'var(--text-primary)',
   fontFamily: 'Consolas, Monaco, monospace',
-  fontSize: '12px',
+  fontSize: 'var(--text-xs)',
   resize: 'vertical',
   minHeight: '88px',
 };
@@ -54,7 +54,7 @@ const EXAMPLE_BUTTON: React.CSSProperties = {
   background: 'var(--bg-abyss)',
   color: 'var(--text-primary)',
   cursor: 'pointer',
-  fontSize: '11px',
+  fontSize: 'var(--text-xs)',
   textAlign: 'left',
 };
 
@@ -62,7 +62,7 @@ const OUTPUT_STYLE: React.CSSProperties = {
   ...PANEL_CARD,
   whiteSpace: 'pre-wrap',
   fontFamily: 'Consolas, Monaco, monospace',
-  fontSize: '12px',
+  fontSize: 'var(--text-xs)',
   color: 'var(--text-primary)',
   minHeight: '120px',
 };
@@ -263,7 +263,7 @@ export function CommandTab({ retinueAgents = [], followAgentId }: CommandTabProp
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '8px' }}>
       <div style={PANEL_CARD}>
         <div style={{ color: 'var(--accent-gold)', fontWeight: 600, marginBottom: '8px' }}>Encounter CLI</div>
-        <div style={{ color: 'var(--text-muted)', fontSize: '12px', lineHeight: 1.5, marginBottom: '10px' }}>
+        <div style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)', lineHeight: 1.5, marginBottom: '10px' }}>
           Use the in-game debug panel to spawn real encounters and inspect the encounter pipeline without leaving the sim.
         </div>
         <form
@@ -287,7 +287,7 @@ export function CommandTab({ retinueAgents = [], followAgentId }: CommandTabProp
             style={COMMAND_INPUT}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-            <div style={{ color: 'var(--text-muted)', fontSize: '11px' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>
               Supported: <code>spawn encounter-context</code>, <code>spawn encounter</code>, <code>spawn attachment</code>, <code>spawn location</code>, <code>spawn sublocation</code>, <code>spawn npc</code>, <code>move agent</code>, <code>inspect encounters</code>. Run one command per line, or press <code>Ctrl+Enter</code> to execute the whole batch.
             </div>
             <button type="submit" style={RUN_BUTTON}>Run</button>

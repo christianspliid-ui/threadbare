@@ -249,7 +249,7 @@ export function EncounterVeil({
             style={{
               fontFamily: FONT_PROSE,
               fontStyle: 'italic',
-              fontSize: '0.7rem',
+              fontSize: 'var(--text-xs)',
               color: TEXT_GHOST,
               marginLeft: 6,
               letterSpacing: '0.04em',
@@ -273,7 +273,7 @@ export function EncounterVeil({
           <div
             style={{
               fontFamily: FONT_DISPLAY,
-              fontSize: '0.65rem',
+              fontSize: 'var(--text-xs)',
               letterSpacing: '0.18em',
               textTransform: 'uppercase',
               color: GOLD,
@@ -309,7 +309,7 @@ export function EncounterVeil({
           <div
             style={{
               fontFamily: FONT_DISPLAY,
-              fontSize: '0.75rem',
+              fontSize: 'var(--text-xs)',
               letterSpacing: '0.14em',
               textTransform: 'uppercase',
               color: TEXT_GHOST,
@@ -339,7 +339,7 @@ export function EncounterVeil({
                 style={{
                   fontFamily: FONT_PROSE,
                   fontStyle: 'italic',
-                  fontSize: '0.95rem',
+                  fontSize: 'var(--text-xs)',
                   lineHeight: 1.85,
                   color: TEXT_WARM,
                   marginBottom: 24,
@@ -397,7 +397,7 @@ export function EncounterVeil({
                       justifyContent: 'center',
                       flexShrink: 0,
                       fontFamily: FONT_DISPLAY,
-                      fontSize: '0.9rem',
+                      fontSize: 'var(--text-xs)',
                       color: 'rgba(212, 175, 55, 0.5)',
                     }}
                   >
@@ -408,7 +408,7 @@ export function EncounterVeil({
                     <div
                       style={{
                         fontFamily: FONT_DISPLAY,
-                        fontSize: '0.8rem',
+                        fontSize: 'var(--text-xs)',
                         letterSpacing: '0.06em',
                         color: TEXT_WARM,
                         marginBottom: 4,
@@ -422,7 +422,7 @@ export function EncounterVeil({
                         style={{
                           fontFamily: FONT_PROSE,
                           fontStyle: 'italic',
-                          fontSize: '0.8rem',
+                          fontSize: 'var(--text-xs)',
                           lineHeight: 1.7,
                           color: TEXT_WHISPER,
                         }}
@@ -462,7 +462,7 @@ export function EncounterVeil({
                   <div
                     style={{
                       fontFamily: FONT_DISPLAY,
-                      fontSize: '0.78rem',
+                      fontSize: 'var(--text-xs)',
                       letterSpacing: '0.05em',
                       color: TEXT_WARM,
                       marginBottom: 4,
@@ -474,7 +474,7 @@ export function EncounterVeil({
                     style={{
                       fontFamily: FONT_PROSE,
                       fontStyle: 'italic',
-                      fontSize: '0.75rem',
+                      fontSize: 'var(--text-xs)',
                       color: TEXT_WHISPER,
                       lineHeight: 1.65,
                     }}
@@ -515,7 +515,7 @@ export function EncounterVeil({
                   <div
                     style={{
                       fontFamily: FONT_DISPLAY,
-                      fontSize: '0.78rem',
+                      fontSize: 'var(--text-xs)',
                       letterSpacing: '0.05em',
                       color: TEXT_WARM,
                     }}
@@ -526,7 +526,7 @@ export function EncounterVeil({
                     style={{
                       fontFamily: FONT_PROSE,
                       fontStyle: 'italic',
-                      fontSize: '0.75rem',
+                      fontSize: 'var(--text-xs)',
                       color: TEXT_WHISPER,
                       lineHeight: 1.65,
                     }}
@@ -555,7 +555,7 @@ export function EncounterVeil({
                   style={{
                     fontFamily: FONT_PROSE,
                     fontStyle: 'italic',
-                    fontSize: '0.75rem',
+                    fontSize: 'var(--text-xs)',
                     color: TEXT_GHOST,
                     marginBottom: 6,
                     letterSpacing: '0.04em',
@@ -575,7 +575,7 @@ export function EncounterVeil({
                     borderRadius: 2,
                     fontFamily: FONT_PROSE,
                     fontStyle: 'italic',
-                    fontSize: '0.85rem',
+                    fontSize: 'var(--text-xs)',
                     letterSpacing: '0.04em',
                     color: reaction.disabled ? TEXT_GHOST : TEXT_WARM,
                     cursor: reaction.disabled ? 'default' : 'pointer',
@@ -623,7 +623,7 @@ export function EncounterVeil({
               border: 'none',
               fontFamily: FONT_PROSE,
               fontStyle: 'italic',
-              fontSize: '0.85rem',
+              fontSize: 'var(--text-xs)',
               letterSpacing: '0.06em',
               color: GOLD,
               opacity: 0.6,
@@ -710,7 +710,7 @@ export function EncounterVeil({
           <div
             style={{
               fontFamily: FONT_DISPLAY,
-              fontSize: '0.65rem',
+              fontSize: 'var(--text-xs)',
               letterSpacing: '0.18em',
               textTransform: 'uppercase',
               color: GOLD,
@@ -723,7 +723,7 @@ export function EncounterVeil({
             style={{
               fontFamily: FONT_PROSE,
               fontStyle: 'italic',
-              fontSize: '0.7rem',
+              fontSize: 'var(--text-xs)',
               color: TEXT_GHOST,
               marginTop: 4,
               letterSpacing: '0.05em',
@@ -763,7 +763,7 @@ export function EncounterVeil({
               style={{
                 fontFamily: FONT_PROSE,
                 fontStyle: 'italic',
-                fontSize: '0.8rem',
+                fontSize: 'var(--text-xs)',
                 color: TEXT_WHISPER,
                 letterSpacing: '0.05em',
                 textAlign: 'center',
@@ -784,7 +784,7 @@ export function EncounterVeil({
                 borderRadius: 2,
                 fontFamily: FONT_PROSE,
                 fontStyle: 'italic',
-                fontSize: '0.85rem',
+                fontSize: 'var(--text-xs)',
                 letterSpacing: '0.06em',
                 color: 'rgba(212, 175, 55, 0.45)',
                 cursor: 'pointer',
@@ -830,7 +830,7 @@ export function EncounterVeil({
                     style={{
                       fontFamily: FONT_PROSE,
                       fontStyle: 'italic',
-                      fontSize: '0.9rem',
+                      fontSize: 'var(--text-xs)',
                       lineHeight: 1.85,
                       color: TEXT_WHISPER,
                       textAlign: 'center',
@@ -866,7 +866,7 @@ export function EncounterVeil({
                 style={{
                   fontFamily: FONT_PROSE,
                   fontStyle: 'italic',
-                  fontSize: '0.7rem',
+                  fontSize: 'var(--text-xs)',
                   color: TEXT_GHOST,
                   letterSpacing: '0.06em',
                   textTransform: 'uppercase',
@@ -921,7 +921,7 @@ export function EncounterVeil({
             style={{
               fontFamily: FONT_PROSE,
               fontStyle: 'italic',
-              fontSize: '0.75rem',
+              fontSize: 'var(--text-xs)',
               color: GOLD,
               opacity: 0.35,
               letterSpacing: '0.04em',
@@ -939,7 +939,7 @@ export function EncounterVeil({
                 border: 'none',
                 fontFamily: FONT_PROSE,
                 fontStyle: 'italic',
-                fontSize: '0.85rem',
+                fontSize: 'var(--text-xs)',
                 letterSpacing: '0.06em',
                 color: TEXT_GHOST,
                 cursor: 'pointer',
@@ -964,7 +964,7 @@ export function EncounterVeil({
                   border: 'none',
                   fontFamily: FONT_PROSE,
                   fontStyle: 'italic',
-                  fontSize: '0.85rem',
+                  fontSize: 'var(--text-xs)',
                   letterSpacing: '0.06em',
                   color: GOLD,
                   opacity: boostAmount > 0 ? 0.7 : 0.3,
@@ -1066,7 +1066,7 @@ export function EncounterVeil({
             style={{
               fontFamily: FONT_PROSE,
               fontStyle: 'italic',
-              fontSize: '0.65rem',
+              fontSize: 'var(--text-xs)',
               letterSpacing: '0.06em',
               color: 'rgba(212, 160, 55, 0.55)',
               whiteSpace: 'nowrap' as const,
@@ -1132,7 +1132,7 @@ export function EncounterVeil({
         <div
           style={{
             fontFamily: FONT_DISPLAY,
-            fontSize: '0.65rem',
+            fontSize: 'var(--text-xs)',
             letterSpacing: '0.18em',
             textTransform: 'uppercase',
             color: GOLD,
@@ -1145,7 +1145,7 @@ export function EncounterVeil({
           style={{
             fontFamily: FONT_PROSE,
             fontStyle: 'italic',
-            fontSize: '0.7rem',
+            fontSize: 'var(--text-xs)',
             color: TEXT_GHOST,
             marginTop: 4,
             letterSpacing: '0.05em',
@@ -1213,7 +1213,7 @@ export function EncounterVeil({
             style={{
               fontFamily: FONT_PROSE,
               fontStyle: 'italic',
-              fontSize: '0.7rem',
+              fontSize: 'var(--text-xs)',
               color: TEXT_GHOST,
               marginLeft: 6,
               letterSpacing: '0.04em',
@@ -1227,7 +1227,7 @@ export function EncounterVeil({
         <div
           style={{
             fontFamily: FONT_DISPLAY,
-            fontSize: '0.75rem',
+            fontSize: 'var(--text-xs)',
             letterSpacing: '0.14em',
             textTransform: 'uppercase',
             color: TEXT_GHOST,
@@ -1244,7 +1244,7 @@ export function EncounterVeil({
             style={{
               fontFamily: FONT_PROSE,
               fontStyle: 'italic',
-              fontSize: '0.8rem',
+              fontSize: 'var(--text-xs)',
               color: TEXT_WHISPER,
               marginBottom: 20,
               ...entranceStyle(ENTRANCE_DELAYS.agentLine, 0.8),
@@ -1278,7 +1278,7 @@ export function EncounterVeil({
                 style={{
                   fontFamily: FONT_PROSE,
                   fontStyle: 'italic',
-                  fontSize: '0.95rem',
+                  fontSize: 'var(--text-xs)',
                   lineHeight: 1.85,
                   color: TEXT_WARM,
                   marginBottom: 16,
@@ -1316,7 +1316,7 @@ export function EncounterVeil({
               style={{
                 fontFamily: FONT_PROSE,
                 fontStyle: 'italic',
-                fontSize: '0.8rem',
+                fontSize: 'var(--text-xs)',
                 color: GOLD,
                 opacity: 0.4,
                 marginTop: 8,
@@ -1346,16 +1346,16 @@ export function EncounterVeil({
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                  <span style={{ fontSize: '0.65rem', color: 'rgba(212, 175, 55, 0.5)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                  <span style={{ fontSize: 'var(--text-xs)', color: 'rgba(212, 175, 55, 0.5)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                     ⊘ {mostRecentComplication.name}
                   </span>
                   {mostRecentComplication.severity === 'severe' && (
-                    <span style={{ fontSize: '0.6rem', color: 'rgba(220, 100, 60, 0.7)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                    <span style={{ fontSize: 'var(--text-xs)', color: 'rgba(220, 100, 60, 0.7)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
                       severe
                     </span>
                   )}
                 </div>
-                <p style={{ fontFamily: 'Georgia, "Times New Roman", serif', fontStyle: 'italic', fontSize: '0.82rem', lineHeight: 1.7, color: 'rgba(212, 175, 55, 0.7)', margin: 0, maxWidth: 500 }}>
+                <p style={{ fontFamily: 'Georgia, "Times New Roman", serif', fontStyle: 'italic', fontSize: 'var(--text-xs)', lineHeight: 1.7, color: 'rgba(212, 175, 55, 0.7)', margin: 0, maxWidth: 500 }}>
                   {mostRecentComplication.prose}
                 </p>
               </div>
@@ -1402,7 +1402,7 @@ export function EncounterVeil({
           style={{
             fontFamily: FONT_PROSE,
             fontStyle: 'italic',
-            fontSize: '0.75rem',
+            fontSize: 'var(--text-xs)',
             color: GOLD,
             opacity: 0.35,
             letterSpacing: '0.04em',
@@ -1420,7 +1420,7 @@ export function EncounterVeil({
               border: 'none',
               fontFamily: FONT_PROSE,
               fontStyle: 'italic',
-              fontSize: '0.85rem',
+              fontSize: 'var(--text-xs)',
               letterSpacing: '0.06em',
               color: TEXT_GHOST,
               cursor: 'pointer',
@@ -1444,7 +1444,7 @@ export function EncounterVeil({
               border: 'none',
               fontFamily: FONT_PROSE,
               fontStyle: 'italic',
-              fontSize: '0.85rem',
+              fontSize: 'var(--text-xs)',
               letterSpacing: '0.06em',
               color: GOLD,
               opacity: selectedChoice ? 0.7 : 0.3,
@@ -1515,7 +1515,7 @@ function ResolutionReadoutBlock({
       <div
         style={{
           fontFamily: FONT_DISPLAY,
-          fontSize: '0.68rem',
+          fontSize: 'var(--text-xs)',
           letterSpacing: '0.16em',
           textTransform: 'uppercase',
           color: GOLD,
@@ -1554,7 +1554,7 @@ function ResolutionCheckCard({ entry }: { entry: EncounterStageResolutionCheckMo
         <div
           style={{
             fontFamily: FONT_DISPLAY,
-            fontSize: '0.72rem',
+            fontSize: 'var(--text-xs)',
             letterSpacing: '0.08em',
             color: TEXT_WARM,
           }}
@@ -1565,7 +1565,7 @@ function ResolutionCheckCard({ entry }: { entry: EncounterStageResolutionCheckMo
           style={{
             fontFamily: FONT_PROSE,
             fontStyle: 'italic',
-            fontSize: '0.68rem',
+            fontSize: 'var(--text-xs)',
             color: entry.state === 'pending' ? GOLD : TEXT_WHISPER,
             opacity: 0.7,
             whiteSpace: 'nowrap',
@@ -1578,7 +1578,7 @@ function ResolutionCheckCard({ entry }: { entry: EncounterStageResolutionCheckMo
         style={{
           fontFamily: FONT_PROSE,
           fontStyle: 'italic',
-          fontSize: '0.74rem',
+          fontSize: 'var(--text-xs)',
           lineHeight: 1.65,
           color: TEXT_WHISPER,
         }}
@@ -1679,7 +1679,7 @@ function ChoiceBlock({ choice, selected, onClick }: ChoiceBlockProps) {
         style={{
           fontFamily: FONT_PROSE,
           fontStyle: 'italic',
-          fontSize: '0.9rem',
+          fontSize: 'var(--text-xs)',
           lineHeight: 1.75,
           color: active ? TEXT_WARM : TEXT_WHISPER,
           transition: 'color 0.5s ease',
@@ -1697,7 +1697,7 @@ function ChoiceBlock({ choice, selected, onClick }: ChoiceBlockProps) {
           marginTop: 8,
           fontFamily: FONT_PROSE,
           fontStyle: 'italic',
-          fontSize: '0.7rem',
+          fontSize: 'var(--text-xs)',
           letterSpacing: '0.04em',
         }}
       >
@@ -1733,7 +1733,7 @@ function ChoiceBlock({ choice, selected, onClick }: ChoiceBlockProps) {
           style={{
             fontFamily: FONT_DISPLAY,
             fontStyle: 'italic',
-            fontSize: '0.8rem',
+            fontSize: 'var(--text-xs)',
             color: GOLD,
             opacity: selected ? 0.5 : 0,
             maxHeight: selected ? 80 : 0,

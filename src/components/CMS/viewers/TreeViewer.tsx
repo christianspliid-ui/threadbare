@@ -58,7 +58,7 @@ export function TreeViewer({ data, searchQuery, onSelectItem }: Props) {
             >
               <span
                 style={{
-                  fontSize: '0.6rem',
+                  fontSize: 'var(--text-xs)',
                   color: 'var(--text-muted)',
                   transition: 'transform 150ms',
                   transform: isExpanded ? 'rotate(90deg)' : 'rotate(0)',

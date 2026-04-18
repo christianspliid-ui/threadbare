@@ -14,13 +14,13 @@ const SECTION_STYLE: React.CSSProperties = {
   background: 'var(--bg-raised)',
   border: '1px solid var(--border-subtle)',
   borderRadius: '4px',
-  fontSize: '12px',
+  fontSize: 'var(--text-xs)',
   fontFamily: 'monospace',
   color: 'var(--text-primary)',
 };
 
 const HEADING_STYLE: React.CSSProperties = {
-  fontSize: '11px',
+  fontSize: 'var(--text-xs)',
   fontWeight: 600,
   textTransform: 'uppercase' as const,
   letterSpacing: '0.5px',
@@ -156,7 +156,7 @@ export const DecisionBreakdown = React.memo(function DecisionBreakdown({
           <div style={HEADING_STYLE}>Top {Math.min(latestScoring.topCandidates.length, MAX_TOP_CANDIDATES)} Candidates</div>
           {latestScoring.topCandidates.slice(0, MAX_TOP_CANDIDATES).map((c, idx) => (
             <div key={idx} style={{ marginBottom: '6px', padding: '4px', background: idx === 0 ? 'var(--bg-hover)' : 'transparent', borderRadius: '3px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-xs)' }}>
                 <span style={{ fontWeight: idx === 0 ? 600 : 400 }}>
                   {idx + 1}. {c.templateId}
                 </span>
@@ -164,7 +164,7 @@ export const DecisionBreakdown = React.memo(function DecisionBreakdown({
                   {c.finalScore.toFixed(2)}
                 </span>
               </div>
-              <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: '2px' }}>
                 {c.isLocal ? 'local' : `${c.travelCost} hops`}
                 {' | '}val/t: {c.valuePerTick.toFixed(2)}
                 {' | '}desire: {c.desireMultiplier.toFixed(1)}

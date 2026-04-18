@@ -39,7 +39,7 @@ export function ClearanceGatePanel({ shellState, signals }: ClearanceGatePanelPr
         >
           <div
             style={{
-              fontSize: 11,
+              fontSize: 'var(--text-xs)',
               textTransform: 'uppercase',
               letterSpacing: '0.12em',
               color: 'var(--text-tertiary)',
@@ -61,7 +61,7 @@ export function ClearanceGatePanel({ shellState, signals }: ClearanceGatePanelPr
           {shellState.stateHint && (
             <div
               style={{
-                fontSize: 12,
+                fontSize: 'var(--text-xs)',
                 lineHeight: 1.5,
                 color: 'var(--text-secondary)',
               }}
@@ -82,7 +82,7 @@ export function ClearanceGatePanel({ shellState, signals }: ClearanceGatePanelPr
       >
           <div
             style={{
-              fontSize: 11,
+              fontSize: 'var(--text-xs)',
               textTransform: 'uppercase',
               letterSpacing: '0.12em',
               color: 'var(--text-tertiary)',
@@ -101,13 +101,13 @@ export function ClearanceGatePanel({ shellState, signals }: ClearanceGatePanelPr
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'baseline' }}>
-                <span style={{ color: 'var(--text-primary)', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                <span style={{ color: 'var(--text-primary)', fontSize: 'var(--text-xs)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                   {signal.label}
                 </span>
                 <span
                   style={{
                     color: VISIBILITY_COLOR[signal.visibility],
-                    fontSize: 11,
+                    fontSize: 'var(--text-xs)',
                     textTransform: 'uppercase',
                     letterSpacing: '0.08em',
                   }}
@@ -115,7 +115,7 @@ export function ClearanceGatePanel({ shellState, signals }: ClearanceGatePanelPr
                   {signal.visibilityLabel ?? VISIBILITY_LABEL[signal.visibility]}
                 </span>
               </div>
-              <div style={{ color: 'var(--text-secondary)', fontSize: 12, lineHeight: 1.5 }}>
+              <div style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-xs)', lineHeight: 1.5 }}>
                 {signal.observation}
               </div>
             </div>

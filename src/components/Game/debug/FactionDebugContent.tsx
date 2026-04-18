@@ -9,7 +9,7 @@ const EMPTY_STATE_STYLE: React.CSSProperties = {
   textAlign: 'center',
   color: 'var(--text-primary)',
   opacity: 0.4,
-  fontSize: '13px',
+  fontSize: 'var(--text-xs)',
 };
 
 const DETAIL_BG = 'var(--bg-raised)';
@@ -99,17 +99,17 @@ export function FactionDebugContent({ graph, onZoomToLocation }: FactionDebugCon
       {factionData.map(faction => (
         <div key={faction.factionNodeId} style={{ marginBottom: '16px' }}>
           <div style={{ padding: '8px 12px', background: DETAIL_BG, borderRadius: '4px', marginBottom: '8px' }}>
-            <div style={{ fontWeight: 600, color: 'var(--accent-gold)', fontSize: '13px' }}>
+            <div style={{ fontWeight: 600, color: 'var(--accent-gold)', fontSize: 'var(--text-xs)' }}>
               {faction.name}
             </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-tertiary)', marginTop: '2px' }}>
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: '2px' }}>
               {faction.members.length} member{faction.members.length !== 1 ? 's' : ''}
             </div>
           </div>
 
           {faction.armies.length > 0 && (
             <div style={{ marginBottom: '8px' }}>
-              <div style={{ fontSize: '11px', color: 'var(--text-tertiary)', padding: '2px 12px', fontWeight: 600 }}>Armies</div>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', padding: '2px 12px', fontWeight: 600 }}>Armies</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 {faction.armies.map(army => (
                   <div
@@ -122,17 +122,17 @@ export function FactionDebugContent({ graph, onZoomToLocation }: FactionDebugCon
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
-                      fontSize: '12px',
+                      fontSize: 'var(--text-xs)',
                     }}
                   >
                     <span style={{ color: 'var(--text-primary)' }}>{army.name}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span style={{ color: 'var(--text-tertiary)', fontSize: '10px' }}>{army.locationName ?? '—'}</span>
+                      <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>{army.locationName ?? '—'}</span>
                       {onZoomToLocation && army.locationId && (
                         <button
                           onClick={() => onZoomToLocation(army.locationId!)}
                           title={`Zoom to ${army.locationName}`}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: '12px', lineHeight: 1 }}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 'var(--text-xs)', lineHeight: 1 }}
                         >&#x1F441;</button>
                       )}
                     </div>
@@ -143,12 +143,12 @@ export function FactionDebugContent({ graph, onZoomToLocation }: FactionDebugCon
           )}
 
           {faction.members.length === 0 ? (
-            <div style={{ padding: '8px 12px', fontSize: '11px', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
+            <div style={{ padding: '8px 12px', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
               No members
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <div style={{ fontSize: '11px', color: 'var(--text-tertiary)', padding: '2px 12px', fontWeight: 600 }}>Members</div>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', padding: '2px 12px', fontWeight: 600 }}>Members</div>
               {faction.members.map(member => (
                 <div
                   key={member.id}
@@ -160,7 +160,7 @@ export function FactionDebugContent({ graph, onZoomToLocation }: FactionDebugCon
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    fontSize: '12px',
+                    fontSize: 'var(--text-xs)',
                   }}
                 >
                   <div>
@@ -170,12 +170,12 @@ export function FactionDebugContent({ graph, onZoomToLocation }: FactionDebugCon
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     {member.locationName && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <span style={{ color: 'var(--text-tertiary)', fontSize: '10px' }}>{member.locationName}</span>
+                        <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>{member.locationName}</span>
                         {onZoomToLocation && member.locationId && (
                           <button
                             onClick={() => onZoomToLocation(member.locationId!)}
                             title={`Zoom to ${member.locationName}`}
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: '12px', lineHeight: 1 }}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 'var(--text-xs)', lineHeight: 1 }}
                           >&#x1F441;</button>
                         )}
                       </div>
@@ -183,7 +183,7 @@ export function FactionDebugContent({ graph, onZoomToLocation }: FactionDebugCon
                     <div style={{ width: '60px', height: '4px', background: 'var(--border-subtle)', borderRadius: '2px', overflow: 'hidden' }}>
                       <div style={{ width: `${Math.round(member.reputation * 100)}%`, height: '100%', background: 'var(--accent-gold)', borderRadius: '2px' }} />
                     </div>
-                    <span style={{ color: 'var(--text-tertiary)', fontSize: '10px', fontVariantNumeric: 'tabular-nums' }}>
+                    <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)', fontVariantNumeric: 'tabular-nums' }}>
                       {(member.reputation * 100).toFixed(1)}%
                     </span>
                   </div>

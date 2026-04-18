@@ -50,7 +50,7 @@ export function EventPopup({ popup, queueLength, onDismiss, onChoice }: EventPop
               <span
                 className="px-2 py-0.5 rounded-full font-bold"
                 style={{
-                  fontSize: '10px',
+                  fontSize: 'var(--text-xs)',
                   backgroundColor: 'var(--bg-raised)',
                   color: 'var(--text-muted)',
                   border: '1px solid var(--border-gold)',

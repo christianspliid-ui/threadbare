@@ -60,7 +60,7 @@ export function FragmentCard({
           style={{
             fontFamily: 'Georgia, "Times New Roman", serif',
             fontStyle: 'italic',
-            fontSize: '0.9rem',
+            fontSize: 'var(--text-xs)',
             color: isActive ? `${accentColor}cc` : 'rgba(180,170,160,0.5)',
             lineHeight: '1.7',
           }}

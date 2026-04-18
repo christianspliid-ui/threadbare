@@ -190,16 +190,16 @@ function StrategicDebugTab({
     : [];
 
   const sH: React.CSSProperties = {
-    fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)',
+    fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--text-muted)',
     textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px',
   };
   const row: React.CSSProperties = {
     display: 'flex', alignItems: 'center', gap: '6px',
-    padding: '2px 0', fontSize: '12px', color: 'var(--text-primary)',
+    padding: '2px 0', fontSize: 'var(--text-xs)', color: 'var(--text-primary)',
   };
   const sec: React.CSSProperties = { marginBottom: '14px' };
   const pill = (color: string): React.CSSProperties => ({
-    fontSize: '11px', color,
+    fontSize: 'var(--text-xs)', color,
     background: `color-mix(in srgb, ${color} 10%, transparent)`,
     padding: '1px 4px', borderRadius: '2px',
   });
@@ -244,7 +244,7 @@ function StrategicDebugTab({
         <div style={sec}>
           <div style={sH}>Followed Agent</div>
           {!agentSummary ? (
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>No strategic activity.</div>
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>No strategic activity.</div>
           ) : (
             <>
               {agentSummary.behaviorFamily && (() => {
@@ -258,14 +258,14 @@ function StrategicDebugTab({
               })()}
               {agentSummary.activeProject && (
                 <div style={indented}>
-                  <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>Active project</span>
+                  <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>Active project</span>
                   <span>{agentSummary.activeProject.displayName}</span>
-                  <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>{agentSummary.activeProject.progressLabel}</span>
+                  <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>{agentSummary.activeProject.progressLabel}</span>
                 </div>
               )}
               {agentSummary.primaryControl && (
                 <div style={indented}>
-                  <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>
+                  <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>
                     Primary control{agentSummary.controlCount > 1 ? ` (${agentSummary.controlCount} total)` : ''}
                   </span>
                   <span>{agentSummary.primaryControl.targetName} — {agentSummary.primaryControl.healthLabel}</span>
@@ -283,7 +283,7 @@ function StrategicDebugTab({
                         {entry.outcome === 'completed' ? '✓' : entry.outcome === 'failed' ? '✕' : '—'}
                       </span>
                       <span style={{ flex: 1 }}>{entry.displayName}</span>
-                      <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>{entry.ticksAgo}t ago</span>
+                      <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>{entry.ticksAgo}t ago</span>
                     </div>
                   ))}
                 </div>
@@ -302,11 +302,11 @@ function StrategicDebugTab({
             const fraction = proj.progressRequired > 0 ? proj.progress / proj.progressRequired : 1;
             return (
               <div key={proj.projectId} style={{ ...row, borderLeft: `2px solid ${pres.color}`, paddingLeft: '6px', marginBottom: '1px' }}>
-                <span style={{ color: pres.color, fontSize: '10px' }}>{pres.glyph}</span>
-                <span style={{ flex: 1, fontSize: '11px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span style={{ color: pres.color, fontSize: 'var(--text-xs)' }}>{pres.glyph}</span>
+                <span style={{ flex: 1, fontSize: 'var(--text-xs)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {proj.actorId.slice(-8)} — {proj.templateId}
                 </span>
-                <span style={{ color: 'var(--text-muted)', fontSize: '10px', flexShrink: 0 }}>
+                <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)', flexShrink: 0 }}>
                   {getProgressLabel(fraction)}
                 </span>
               </div>
@@ -324,11 +324,11 @@ function StrategicDebugTab({
             const targetNode = graph?.getNode(ctrl.targetNodeId);
             return (
               <div key={ctrl.controlId} style={{ ...row, borderLeft: `2px solid ${pres.color}`, paddingLeft: '6px', marginBottom: '1px' }}>
-                <span style={{ color: pres.color, fontSize: '10px' }}>{pres.glyph}</span>
-                <span style={{ flex: 1, fontSize: '11px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span style={{ color: pres.color, fontSize: 'var(--text-xs)' }}>{pres.glyph}</span>
+                <span style={{ flex: 1, fontSize: 'var(--text-xs)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {ctrl.actorId.slice(-8)} → {targetNode?.name ?? ctrl.targetNodeId.slice(-8)}
                 </span>
-                <span style={{ color: 'var(--text-muted)', fontSize: '10px', flexShrink: 0 }}>
+                <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)', flexShrink: 0 }}>
                   {getHealthLabel(ctrl.degradation)}
                 </span>
               </div>
@@ -352,11 +352,11 @@ function OmenDebugTab({ omenState, currentTick, doomIdentityMatrix }: { omenStat
   const recentHistory = [...history].reverse().slice(0, 10);
 
   return (
-    <div style={{ padding: '8px', fontSize: '11px', fontFamily: 'monospace' }}>
+    <div style={{ padding: '8px', fontSize: 'var(--text-xs)', fontFamily: 'monospace' }}>
       <div style={{ color: 'var(--accent-gold)', fontWeight: 600, marginBottom: '8px' }}>World Omens — Tick {currentTick}</div>
 
       <div style={{ marginBottom: '12px' }}>
-        <div style={{ color: 'var(--text-muted)', fontSize: '10px', textTransform: 'uppercase', marginBottom: '4px' }}>Active</div>
+        <div style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)', textTransform: 'uppercase', marginBottom: '4px' }}>Active</div>
         {primary ? (
           <div style={{ background: 'rgba(160,149,107,0.08)', border: '1px solid rgba(160,149,107,0.2)', borderRadius: '4px', padding: '6px', marginBottom: '4px' }}>
             <div style={{ color: 'var(--text-primary)', fontWeight: 600 }}>⊘ {primary.name} <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>[primary]</span></div>
@@ -380,7 +380,7 @@ function OmenDebugTab({ omenState, currentTick, doomIdentityMatrix }: { omenStat
 
       {recentHistory.length > 0 && (
         <div>
-          <div style={{ color: 'var(--text-muted)', fontSize: '10px', textTransform: 'uppercase', marginBottom: '4px' }}>History (last {recentHistory.length})</div>
+          <div style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)', textTransform: 'uppercase', marginBottom: '4px' }}>History (last {recentHistory.length})</div>
           {recentHistory.map((h, i) => (
             <div key={i} style={{ color: 'var(--text-tertiary)', marginBottom: '2px' }}>
               t{h.startTick}–{h.endTick} · {h.templateId}
@@ -391,10 +391,10 @@ function OmenDebugTab({ omenState, currentTick, doomIdentityMatrix }: { omenStat
 
       {doomIdentityMatrix && (
         <div style={{ marginTop: '12px' }}>
-          <div style={{ color: 'var(--text-muted)', fontSize: '10px', textTransform: 'uppercase', marginBottom: '4px' }}>
+          <div style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)', textTransform: 'uppercase', marginBottom: '4px' }}>
             Doom Identity — {doomIdentityMatrix.archetype}
           </div>
-          <div style={{ color: 'var(--text-secondary)', marginBottom: '6px', fontStyle: 'italic', fontSize: '10px' }}>
+          <div style={{ color: 'var(--text-secondary)', marginBottom: '6px', fontStyle: 'italic', fontSize: 'var(--text-xs)' }}>
             {doomIdentityMatrix.proseTone.atmospheres[0] ?? '—'}
           </div>
           {doomIdentityMatrix.identityMilestones.map((m, i) => (
@@ -427,11 +427,11 @@ function CluesDebugTab({ graph, focusedAgentId, currentTick }: { graph?: WorldGr
       }
     : null;
 
-  const ROW    = { display: 'flex', gap: '8px', alignItems: 'flex-start', padding: '2px 0', fontSize: '11px' };
-  const BADGE  = (color: string) => ({ background: color, color: '#fff', borderRadius: '3px', padding: '1px 5px', fontSize: '10px', flexShrink: 0 });
-  const MUTED  = { color: 'var(--text-muted)', fontSize: '10px' };
+  const ROW    = { display: 'flex', gap: '8px', alignItems: 'flex-start', padding: '2px 0', fontSize: 'var(--text-xs)' };
+  const BADGE  = (color: string) => ({ background: color, color: '#fff', borderRadius: '3px', padding: '1px 5px', fontSize: 'var(--text-xs)', flexShrink: 0 });
+  const MUTED  = { color: 'var(--text-muted)', fontSize: 'var(--text-xs)' };
   const SECTION = { marginBottom: '12px' };
-  const HEADER = { color: 'var(--accent-gold)', fontSize: '11px', fontWeight: 600, marginBottom: '4px', textTransform: 'uppercase' as const, letterSpacing: '0.05em' };
+  const HEADER = { color: 'var(--accent-gold)', fontSize: 'var(--text-xs)', fontWeight: 600, marginBottom: '4px', textTransform: 'uppercase' as const, letterSpacing: '0.05em' };
 
   const precisionColor: Record<string, string> = { vague: '#6b7280', narrowed: '#d97706', located: '#10b981' };
 
@@ -498,11 +498,11 @@ function SecretsFavorsDebugTab({ graph, focusedAgentId }: { graph?: WorldGraph; 
       }
     : null;
 
-  const ROW = { display: 'flex', gap: '8px', alignItems: 'flex-start', padding: '2px 0', fontSize: '11px' };
-  const BADGE = (color: string) => ({ background: color, color: '#fff', borderRadius: '3px', padding: '1px 5px', fontSize: '10px', flexShrink: 0 });
-  const MUTED = { color: 'var(--text-muted)', fontSize: '10px' };
+  const ROW = { display: 'flex', gap: '8px', alignItems: 'flex-start', padding: '2px 0', fontSize: 'var(--text-xs)' };
+  const BADGE = (color: string) => ({ background: color, color: '#fff', borderRadius: '3px', padding: '1px 5px', fontSize: 'var(--text-xs)', flexShrink: 0 });
+  const MUTED = { color: 'var(--text-muted)', fontSize: 'var(--text-xs)' };
   const SECTION = { marginBottom: '12px' };
-  const HEADER = { color: 'var(--accent-gold)', fontSize: '11px', fontWeight: 600, marginBottom: '4px', textTransform: 'uppercase' as const, letterSpacing: '0.05em' };
+  const HEADER = { color: 'var(--accent-gold)', fontSize: 'var(--text-xs)', fontWeight: 600, marginBottom: '4px', textTransform: 'uppercase' as const, letterSpacing: '0.05em' };
 
   function SecretRow({ edge }: { edge: ReturnType<WorldGraph['getAllEdges']>[number] }) {
     const holder = graph!.getNode(edge.source)?.name ?? edge.source.slice(0, 8);
@@ -585,10 +585,10 @@ function RuinsDebugTab({ graph }: { graph?: WorldGraph }) {
 
   const ruins = graph.getNodesByType('location').filter(n => n.properties?.locationType === 'elder_ruin');
 
-  const MUTED = { color: 'var(--text-muted)', fontSize: '10px' };
-  const ROW = { display: 'grid', gridTemplateColumns: '110px 55px 45px 55px 70px 1fr', gap: '6px', alignItems: 'center', padding: '2px 0', fontSize: '11px' };
+  const MUTED = { color: 'var(--text-muted)', fontSize: 'var(--text-xs)' };
+  const ROW = { display: 'grid', gridTemplateColumns: '110px 55px 45px 55px 70px 1fr', gap: '6px', alignItems: 'center', padding: '2px 0', fontSize: 'var(--text-xs)' };
   const HEADER_ROW = { ...ROW, color: 'var(--accent-gold)', fontWeight: 600, borderBottom: '1px solid var(--border-subtle)', paddingBottom: '4px', marginBottom: '4px' };
-  const BADGE = (color: string) => ({ background: color, color: '#fff', borderRadius: '3px', padding: '1px 5px', fontSize: '10px' });
+  const BADGE = (color: string) => ({ background: color, color: '#fff', borderRadius: '3px', padding: '1px 5px', fontSize: 'var(--text-xs)' });
 
   const scaleColor: Record<string, string> = { minor: '#6b7280', major: '#d97706', saga: '#7c3aed' };
   const archetypeColor: Record<string, string> = { vault: '#0ea5e9', temple: '#10b981', battlefield: '#ef4444' };

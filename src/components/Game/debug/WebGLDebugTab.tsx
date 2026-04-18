@@ -22,7 +22,7 @@ const SECTION_STYLE: React.CSSProperties = {
 
 const SECTION_HEADER_STYLE: React.CSSProperties = {
   padding: '6px 10px',
-  fontSize: '11px',
+  fontSize: 'var(--text-xs)',
   fontWeight: 600,
   textTransform: 'uppercase',
   letterSpacing: '0.5px',
@@ -35,7 +35,7 @@ const STAT_ROW_STYLE: React.CSSProperties = {
   display: 'flex',
   justifyContent: 'space-between',
   padding: '3px 10px',
-  fontSize: '12px',
+  fontSize: 'var(--text-xs)',
   fontFamily: 'monospace',
   color: 'var(--text-primary)',
 };
@@ -46,7 +46,7 @@ const STAT_LABEL_STYLE: React.CSSProperties = {
 
 const LOG_ENTRY_STYLE: React.CSSProperties = {
   padding: '3px 10px',
-  fontSize: '11px',
+  fontSize: 'var(--text-xs)',
   fontFamily: 'monospace',
   borderBottom: '1px solid var(--border-subtle)',
   lineHeight: 1.4,
@@ -63,7 +63,7 @@ const EMPTY_STYLE: React.CSSProperties = {
   textAlign: 'center',
   color: 'var(--text-primary)',
   opacity: 0.4,
-  fontSize: '13px',
+  fontSize: 'var(--text-xs)',
 };
 
 /**
@@ -79,7 +79,7 @@ const TOGGLE_LABEL_STYLE: React.CSSProperties = {
   alignItems: 'center',
   gap: '6px',
   padding: '4px 10px',
-  fontSize: '12px',
+  fontSize: 'var(--text-xs)',
   fontFamily: 'monospace',
   color: 'var(--text-primary)',
   cursor: 'pointer',

@@ -29,7 +29,7 @@ function ReachBadge({ reach }: { reach: string }) {
       borderRadius: '4px',
       padding: '2px 8px',
       fontFamily: 'var(--font-display)',
-      fontSize: '0.7rem',
+      fontSize: 'var(--text-xs)',
       letterSpacing: '0.08em',
       textTransform: 'uppercase',
       color: 'var(--text-secondary)',
@@ -66,7 +66,7 @@ export const StoryBeatModal = memo(function StoryBeatModal({
         }}>
           <span style={{
             fontFamily: 'var(--font-display)',
-            fontSize: '0.65rem',
+            fontSize: 'var(--text-xs)',
             letterSpacing: '0.12em',
             textTransform: 'uppercase',
             color: 'var(--accent-gold)',

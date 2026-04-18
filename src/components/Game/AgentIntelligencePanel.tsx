@@ -98,7 +98,7 @@ function IntelligenceRow({ entry }: { entry: IntelligenceDisplayEntry }) {
             title={entry.reliabilityDescriptor}
             style={{
               display: 'inline-block',
-              fontSize: '10px',
+              fontSize: 'var(--text-xs)',
               fontWeight: 600,
               color: chipColor,
               backgroundColor: chipBg,

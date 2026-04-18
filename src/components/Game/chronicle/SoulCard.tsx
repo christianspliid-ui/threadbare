@@ -77,7 +77,7 @@ export const SoulCard = memo(function SoulCard({
           style={{
             fontFamily: 'var(--font-display)',
             color: 'var(--text-primary)',
-            fontSize: '0.9rem',
+            fontSize: 'var(--text-xs)',
             fontWeight: 600,
             textDecoration: 'underline',
             textDecorationColor: 'var(--border-subtle)',

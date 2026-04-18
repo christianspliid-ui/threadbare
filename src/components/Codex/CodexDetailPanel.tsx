@@ -170,7 +170,7 @@ export const CodexDetailPanel = memo(function CodexDetailPanel({
                   key={idx}
                   className="inline-block px-2 py-0.5 rounded-sm"
                   style={{
-                    fontSize: '0.65rem',
+                    fontSize: 'var(--text-xs)',
                     backgroundColor: 'var(--bg-raised)',
                     color: 'var(--text-secondary)',
                     border: '1px solid var(--border-subtle)',

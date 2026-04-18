@@ -37,7 +37,7 @@ const EMPTY_STYLE: React.CSSProperties = {
   padding: '24px 16px',
   textAlign: 'center',
   color: 'var(--text-muted)',
-  fontSize: '12px',
+  fontSize: 'var(--text-xs)',
   opacity: 0.6,
 };
 
@@ -51,7 +51,7 @@ const ENTRY_STYLE: React.CSSProperties = {
 
 const TICK_STYLE: React.CSSProperties = {
   fontFamily: 'monospace',
-  fontSize: '10px',
+  fontSize: 'var(--text-xs)',
   color: 'var(--text-muted)',
   marginRight: '6px',
 };
@@ -103,7 +103,7 @@ export function RevelationLogTab({ traces, agentKnowledge: _agentKnowledge }: Re
 
   return (
     <div style={CONTAINER_STYLE}>
-      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '8px' }}>
+      <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginBottom: '8px' }}>
         {revelationTraces.length} revelation entries
       </div>
       <div style={SCROLL_AREA_STYLE}>
@@ -130,7 +130,7 @@ function RevelationEntry({ trace }: { trace: RevelationTrace }) {
     : trace.agentId;
 
   return (
-    <div style={{ fontFamily: 'monospace', fontSize: '11px', color: 'var(--text-primary)' }}>
+    <div style={{ fontFamily: 'monospace', fontSize: 'var(--text-xs)', color: 'var(--text-primary)' }}>
       <span style={TICK_STYLE}>t{trace.tick}</span>
       <span style={{ color: 'var(--text-muted)', marginRight: '4px' }}>{agentShort}</span>
       <span style={{ color: facetColor, fontWeight: 600, marginRight: '4px' }}>
@@ -139,7 +139,7 @@ function RevelationEntry({ trace }: { trace: RevelationTrace }) {
       <span style={{ color: 'var(--text-secondary)', marginRight: '4px' }}>
         {trace.facetId.length > 20 ? `${trace.facetId.slice(0, 20)}…` : trace.facetId}
       </span>
-      <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>
+      <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>
         via {SOURCE_ABBREV[trace.source] ?? trace.source}
       </span>
     </div>
@@ -153,11 +153,11 @@ function DepthEntry({ trace }: { trace: InteractionDepthTrace }) {
   const delta = trace.depthAfter - trace.depthBefore;
 
   return (
-    <div style={{ fontFamily: 'monospace', fontSize: '11px', color: 'var(--text-muted)' }}>
+    <div style={{ fontFamily: 'monospace', fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
       <span style={TICK_STYLE}>t{trace.tick}</span>
       <span style={{ marginRight: '4px' }}>{agentShort}</span>
       <span style={{ color: '#60a5fa' }}>depth +{delta.toFixed(2)}</span>
-      <span style={{ marginLeft: '4px', fontSize: '10px' }}>
+      <span style={{ marginLeft: '4px', fontSize: 'var(--text-xs)' }}>
         ({trace.source})
       </span>
     </div>

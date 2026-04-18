@@ -51,7 +51,7 @@ export function CMSSidebar({ selectedEntryId, onSelectEntry }: Props) {
                 className="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-semibold tracking-wider uppercase"
                 style={{ color: 'var(--text-muted)' }}
               >
-                <span style={{ fontSize: '0.6rem', transition: 'transform 150ms', transform: isExpanded ? 'rotate(90deg)' : 'rotate(0)' }}>
+                <span style={{ fontSize: 'var(--text-xs)', transition: 'transform 150ms', transform: isExpanded ? 'rotate(90deg)' : 'rotate(0)' }}>
                   &#9654;
                 </span>
                 {cat.label}

@@ -135,7 +135,7 @@ export function SettingsPanel({
   };
 
   const headerTitleStyle: React.CSSProperties = {
-    fontSize: '14px',
+    fontSize: 'var(--text-sm)',
     fontWeight: 600,
     color: 'var(--text-primary)',
   };
@@ -151,7 +151,7 @@ export function SettingsPanel({
 
   const sectionHeaderStyle: React.CSSProperties = {
     padding: '8px 16px 4px 16px',
-    fontSize: '11px',
+    fontSize: 'var(--text-xs)',
     fontWeight: 700,
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
@@ -167,7 +167,7 @@ export function SettingsPanel({
   };
 
   const settingLabelStyle: React.CSSProperties = {
-    fontSize: '13px',
+    fontSize: 'var(--text-xs)',
     color: 'var(--text-primary)',
     flex: 1,
   };
@@ -204,7 +204,7 @@ export function SettingsPanel({
     border: '1px solid rgba(212, 175, 55, 0.25)',
     borderRadius: '4px',
     padding: '4px 8px',
-    fontSize: '12px',
+    fontSize: 'var(--text-xs)',
     fontFamily: 'var(--font-body)',
     cursor: 'pointer',
     outline: 'none',
@@ -270,7 +270,7 @@ export function SettingsPanel({
               const catPrefs = notificationPrefs[key];
               return (
                 <div key={key} style={settingRowStyle}>
-                  <label style={{ ...settingLabelStyle, fontSize: '12px' }}>
+                  <label style={{ ...settingLabelStyle, fontSize: 'var(--text-xs)' }}>
                     {NOTIFICATION_CATEGORY_LABELS[key]}
                   </label>
                   {/* On/Off toggle */}
@@ -287,7 +287,7 @@ export function SettingsPanel({
                     <button
                       onClick={() => onSetNotificationMode(key, 'temporary')}
                       style={{
-                        fontSize: '12px',
+                        fontSize: 'var(--text-xs)',
                         padding: '2px 4px',
                         borderRadius: '3px',
                         border: 'none',
@@ -305,7 +305,7 @@ export function SettingsPanel({
                     <button
                       onClick={() => onSetNotificationMode(key, 'permanent')}
                       style={{
-                        fontSize: '12px',
+                        fontSize: 'var(--text-xs)',
                         padding: '2px 4px',
                         borderRadius: '3px',
                         border: 'none',
@@ -329,7 +329,7 @@ export function SettingsPanel({
                 <button
                   onClick={onResetNotificationPrefs}
                   style={{
-                    fontSize: '11px',
+                    fontSize: 'var(--text-xs)',
                     color: 'var(--text-tertiary)',
                     background: 'none',
                     border: '1px solid rgba(212, 175, 55, 0.2)',

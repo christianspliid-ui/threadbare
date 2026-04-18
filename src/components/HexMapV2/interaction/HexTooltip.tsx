@@ -61,7 +61,7 @@ function MovementBadge({ phase }: { phase: AgentActivityThread['movementPhase'] 
   if (!phase || phase === 'present') return null;
   const label = phase === 'arriving' ? '→' : '←';
   return (
-    <span style={{ color: 'var(--text-tertiary)', marginLeft: 4, fontSize: '10px' }}>
+    <span style={{ color: 'var(--text-tertiary)', marginLeft: 4, fontSize: 'var(--text-xs)' }}>
       {label}
     </span>
   );
@@ -126,7 +126,7 @@ export function HexTooltip({
 
   const dimStyle = {
     color:      'var(--text-tertiary)',
-    fontSize:   '10px',
+    fontSize: 'var(--text-xs)',
     fontWeight:  400 as const,
     fontFamily: 'monospace',
     lineHeight: 1.5,
@@ -159,7 +159,7 @@ export function HexTooltip({
           color:       'var(--accent-gold)',
           fontSize:    'var(--text-sm)',
           fontWeight:  600,
-          fontFamily:  'Alegreya Sans, sans-serif',
+          fontFamily: 'var(--font-body)',
           lineHeight:  1.3,
         }}
       >
@@ -175,7 +175,7 @@ export function HexTooltip({
           color:      'var(--text-secondary)',
           fontSize:   'var(--text-xs)',
           fontWeight: 400,
-          fontFamily: 'Alegreya Sans, sans-serif',
+          fontFamily: 'var(--font-body)',
           lineHeight: 1.4,
           marginBottom: locationActivity ? 4 : 0,
         }}
@@ -197,7 +197,7 @@ export function HexTooltip({
                 fontStyle:  'italic',
                 color:      'var(--text-secondary)',
                 fontSize:   'var(--text-xs)',
-                fontFamily: 'Alegreya Sans, sans-serif',
+                fontFamily: 'var(--font-body)',
                 lineHeight: 1.5,
                 whiteSpace: 'normal',
                 maxWidth:   `${estimatedWidth - 20}px`,
@@ -217,15 +217,15 @@ export function HexTooltip({
               key={thread.agentId}
               style={{
                 color:      'var(--text-secondary)',
-                fontSize:   '11px',
-                fontFamily: 'Alegreya Sans, sans-serif',
+                fontSize: 'var(--text-xs)',
+                fontFamily: 'var(--font-body)',
                 lineHeight: 1.4,
                 display:    'flex',
                 alignItems: 'center',
                 gap:        4,
               }}
             >
-              <span style={{ color: 'var(--text-tertiary)', fontSize: '8px' }}>●</span>
+              <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>●</span>
               <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {thread.visibleActivity}
               </span>
@@ -236,12 +236,12 @@ export function HexTooltip({
             <div
               style={{
                 color:      'var(--text-tertiary)',
-                fontSize:   '11px',
-                fontFamily: 'Alegreya Sans, sans-serif',
+                fontSize: 'var(--text-xs)',
+                fontFamily: 'var(--font-body)',
                 lineHeight: 1.4,
               }}
             >
-              <span style={{ color: 'var(--text-tertiary)', fontSize: '8px' }}>○</span>
+              <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>○</span>
               {' '}({overflowCount} {overflowCount === 1 ? 'other' : 'others'})
             </div>
           )}

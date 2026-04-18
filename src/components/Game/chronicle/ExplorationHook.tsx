@@ -28,7 +28,7 @@ export const ExplorationHook = memo(function ExplorationHook({ text }: Explorati
         style={{
           fontFamily: 'var(--font-prose)',
           color: 'var(--text-tertiary)',
-          fontSize: '0.85rem',
+          fontSize: 'var(--text-xs)',
           fontStyle: 'italic',
           lineHeight: 1.7,
           margin: 0,

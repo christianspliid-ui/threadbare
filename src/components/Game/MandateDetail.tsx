@@ -62,7 +62,7 @@ function SummaryCard({ label, value, color }: { label: string; value: string; co
       border: '1px solid var(--border-subtle)',
     }}>
       <div style={{
-        fontSize: '10px',
+        fontSize: 'var(--text-xs)',
         textTransform: 'uppercase',
         letterSpacing: '0.08em',
         color: 'var(--text-muted)',
@@ -71,7 +71,7 @@ function SummaryCard({ label, value, color }: { label: string; value: string; co
       </div>
       <div style={{
         marginTop: '4px',
-        fontSize: '14px',
+        fontSize: 'var(--text-sm)',
         fontWeight: 700,
         color: color ?? 'var(--text-primary)',
       }}>
@@ -114,14 +114,14 @@ function MetricTrack({
         }}>
           {label}
         </span>
-        <span style={{ fontSize: '11px', color: color, fontWeight: 700 }}>
+        <span style={{ fontSize: 'var(--text-xs)', color: color, fontWeight: 700 }}>
           {formatDelta(delta)} / {formatDelta(target)}
         </span>
       </div>
       <ProgressBar progress={progress} color={color} glow={progress >= 1} />
       <div style={{
         marginTop: '6px',
-        fontSize: '10px',
+        fontSize: 'var(--text-xs)',
         color: 'var(--text-muted)',
       }}>
         Baseline {formatMetricValue(baseline)} → Current {formatMetricValue(current)}
@@ -159,15 +159,15 @@ function CheckpointRow({
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center' }}>
         <div>
-          <div style={{ fontSize: '11px', color: 'var(--text-primary)', fontWeight: 600 }}>
+          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)', fontWeight: 600 }}>
             {checkpoint.label}
           </div>
-          <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: '2px' }}>
             {Math.round(checkpoint.doomProgressThreshold * 100)}% doom · needs {formatDelta(checkpoint.requiredPrimaryDelta)}
           </div>
         </div>
         <span style={{
-          fontSize: '10px',
+          fontSize: 'var(--text-xs)',
           fontWeight: 700,
           padding: '3px 8px',
           borderRadius: '3px',
@@ -182,7 +182,7 @@ function CheckpointRow({
         </span>
       </div>
       {result && (
-        <div style={{ marginTop: '6px', fontSize: '10px', color: 'var(--text-secondary)' }}>
+        <div style={{ marginTop: '6px', fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
           Observed {formatDelta(result.observedPrimaryDelta)} on tick {result.evaluatedTick}.
         </div>
       )}
@@ -230,7 +230,7 @@ export function MandateDetail({ open, onClose, definition, state }: MandateDetai
           </span>
           <span style={{
             marginLeft: 'auto',
-            fontSize: '10px',
+            fontSize: 'var(--text-xs)',
             fontWeight: 600,
             padding: '3px 8px',
             backgroundColor: `${color}15`,
@@ -265,7 +265,7 @@ export function MandateDetail({ open, onClose, definition, state }: MandateDetai
               <ProgressBar progress={state.progress} color={statusColor} glow={state.completed} />
             </div>
             <span style={{
-              fontSize: '10px',
+              fontSize: 'var(--text-xs)',
               fontWeight: 700,
               padding: '3px 10px',
               borderRadius: '3px',
@@ -306,7 +306,7 @@ export function MandateDetail({ open, onClose, definition, state }: MandateDetai
           <div style={{ flex: '0 0 210px' }}>
             <div style={{
               fontFamily: 'var(--font-display)',
-              fontSize: '10px',
+              fontSize: 'var(--text-xs)',
               color: 'var(--text-muted)',
               textTransform: 'uppercase',
               letterSpacing: '0.1em',
@@ -349,20 +349,20 @@ export function MandateDetail({ open, onClose, definition, state }: MandateDetai
                 border: '1px solid var(--border-subtle)',
               }}>
                 <div style={{
-                  fontSize: '10px',
+                  fontSize: 'var(--text-xs)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.08em',
                   color: 'var(--text-muted)',
                 }}>
                   Court Task
                 </div>
-                <div style={{ marginTop: '6px', fontSize: '12px', color: 'var(--text-primary)', fontWeight: 600 }}>
+                <div style={{ marginTop: '6px', fontSize: 'var(--text-xs)', color: 'var(--text-primary)', fontWeight: 600 }}>
                   {definition.secondaryObjective.label}
                 </div>
-                <div style={{ marginTop: '4px', fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                <div style={{ marginTop: '4px', fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                   {definition.secondaryObjective.description}
                 </div>
-                <div style={{ marginTop: '6px', fontSize: '10px', color: state.secondaryObjectiveCompleted ? SENTIMENT_GREEN : 'var(--text-muted)' }}>
+                <div style={{ marginTop: '6px', fontSize: 'var(--text-xs)', color: state.secondaryObjectiveCompleted ? SENTIMENT_GREEN : 'var(--text-muted)' }}>
                   {state.secondaryObjectiveCurrent ?? 0}/{definition.secondaryObjective.target}
                 </div>
               </div>
@@ -380,7 +380,7 @@ export function MandateDetail({ open, onClose, definition, state }: MandateDetai
               <>
                 <div style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: '10px',
+                  fontSize: 'var(--text-xs)',
                   color: 'var(--text-muted)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.1em',
@@ -410,7 +410,7 @@ export function MandateDetail({ open, onClose, definition, state }: MandateDetai
 
                 <div style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: '10px',
+                  fontSize: 'var(--text-xs)',
                   color: 'var(--text-muted)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.1em',
@@ -434,7 +434,7 @@ export function MandateDetail({ open, onClose, definition, state }: MandateDetai
 
             <div style={{
               fontFamily: 'var(--font-display)',
-              fontSize: '10px',
+              fontSize: 'var(--text-xs)',
               color: 'var(--text-muted)',
               textTransform: 'uppercase',
               letterSpacing: '0.1em',
@@ -474,7 +474,7 @@ export function MandateDetail({ open, onClose, definition, state }: MandateDetai
                         backgroundColor: isPast ? `${color}30` : isCurrent ? color : '#2a2a2e',
                         border: isFuture ? '1.5px solid #3a3a3e' : 'none',
                         boxShadow: isCurrent ? `0 0 8px ${color}60` : 'none',
-                        fontSize: '10px',
+                        fontSize: 'var(--text-xs)',
                         color: isPast ? color : isCurrent ? '#0a0a0e' : '#4a4a4e',
                         fontWeight: 700,
                       }}>
@@ -493,7 +493,7 @@ export function MandateDetail({ open, onClose, definition, state }: MandateDetai
                         </span>
                         {isPast && stageCompletedTick != null && (
                           <span style={{
-                            fontSize: '10px',
+                            fontSize: 'var(--text-xs)',
                             color: 'var(--text-muted)',
                             marginLeft: '8px',
                           }}>
@@ -504,7 +504,7 @@ export function MandateDetail({ open, onClose, definition, state }: MandateDetai
                     </div>
 
                     <div style={{
-                      fontSize: '11px',
+                      fontSize: 'var(--text-xs)',
                       color: isFuture ? 'var(--text-muted)' : 'var(--text-secondary)',
                       lineHeight: 1.5,
                       marginTop: '6px',
@@ -524,7 +524,7 @@ export function MandateDetail({ open, onClose, definition, state }: MandateDetai
                               display: 'flex',
                               alignItems: 'baseline',
                               gap: '6px',
-                              fontSize: '11px',
+                              fontSize: 'var(--text-xs)',
                               color: condColor,
                               marginBottom: '3px',
                               opacity: isFuture ? 0.5 : 1,
@@ -537,7 +537,7 @@ export function MandateDetail({ open, onClose, definition, state }: MandateDetai
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                fontSize: '9px',
+                                fontSize: 'var(--text-xs)',
                                 backgroundColor: met ? `${SENTIMENT_GREEN}20` : '#1a1a1e',
                                 border: met ? `1px solid ${SENTIMENT_GREEN}40` : '1px solid #2a2a2e',
                                 color: met ? SENTIMENT_GREEN : '#4a4a4e',
@@ -562,7 +562,7 @@ export function MandateDetail({ open, onClose, definition, state }: MandateDetai
         <div style={{
           width: '100%',
           textAlign: 'center',
-          fontSize: '11px',
+          fontSize: 'var(--text-xs)',
           color: 'var(--text-muted)',
           fontStyle: 'italic',
           opacity: 0.7,
@@ -585,9 +585,9 @@ function DetailRow({ label, value, color }: { label: string; value: string; colo
       gap: '12px',
       padding: '5px 0',
       borderBottom: '1px solid #1a1a1e',
-      fontSize: '11px',
+      fontSize: 'var(--text-xs)',
     }}>
-      <span style={{ color: 'var(--text-muted)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+      <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
         {label}
       </span>
       <span style={{

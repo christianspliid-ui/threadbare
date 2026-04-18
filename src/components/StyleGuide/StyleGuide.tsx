@@ -149,7 +149,7 @@ function Label({ children }: { children: React.ReactNode }) {
   return (
     <span
       style={{
-        fontSize: '11px',
+        fontSize: 'var(--text-xs)',
         color: 'var(--text-muted)',
         fontFamily: 'var(--font-mono, monospace)',
         display: 'block',
@@ -174,8 +174,8 @@ function Swatch({ token, hex }: { token: string; hex: string }) {
           flexShrink: 0,
         }}
       />
-      <code style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{token}</code>
-      <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{hex}</span>
+      <code style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>{token}</code>
+      <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>{hex}</span>
     </div>
   );
 }
@@ -217,7 +217,7 @@ export default function StyleGuide() {
       >
         <div
           style={{
-            fontSize: '11px',
+            fontSize: 'var(--text-xs)',
             fontWeight: 700,
             letterSpacing: '0.1em',
             textTransform: 'uppercase',
@@ -236,7 +236,7 @@ export default function StyleGuide() {
               width: '100%',
               textAlign: 'left',
               padding: '6px 1rem',
-              fontSize: '13px',
+              fontSize: 'var(--text-xs)',
               color: activeSection === s.id ? 'var(--accent-gold)' : 'var(--text-secondary)',
               backgroundColor: activeSection === s.id ? 'var(--accent-gold-glow)' : 'transparent',
               border: 'none',
@@ -275,8 +275,8 @@ export default function StyleGuide() {
                   { token: '--text-muted', label: 'Forgotten whispers.' },
                 ].map(({ token, label }) => (
                   <div key={token} style={{ marginBottom: '6px' }}>
-                    <span style={{ color: `var(${token})`, fontSize: '13px' }}>{label}</span>
-                    <code style={{ fontSize: '11px', color: 'var(--text-muted)', marginLeft: '8px' }}>{token}</code>
+                    <span style={{ color: `var(${token})`, fontSize: 'var(--text-xs)' }}>{label}</span>
+                    <code style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginLeft: '8px' }}>{token}</code>
                   </div>
                 ))}
               </div>
@@ -284,7 +284,7 @@ export default function StyleGuide() {
                 <Label>Gold Accent</Label>
                 <Swatch token="--accent-gold" hex="#d4a82f" />
                 <Swatch token="--accent-gold-dim" hex="#a07820" />
-                <div style={{ marginTop: '8px', padding: '6px 10px', backgroundColor: 'var(--accent-gold-glow)', border: '1px solid var(--accent-gold-dim)', borderRadius: '4px', fontSize: '12px', color: 'var(--accent-gold)' }}>
+                <div style={{ marginTop: '8px', padding: '6px 10px', backgroundColor: 'var(--accent-gold-glow)', border: '1px solid var(--accent-gold-dim)', borderRadius: '4px', fontSize: 'var(--text-xs)', color: 'var(--accent-gold)' }}>
                   --accent-gold-glow (bg tint)
                 </div>
               </div>
@@ -381,7 +381,7 @@ export default function StyleGuide() {
                 <Label>with leading + trailing + onClick</Label>
                 <ListRow
                   onClick={() => {}}
-                  trailing={<span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>→</span>}
+                  trailing={<span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>→</span>}
                 >
                   <ListRow.Leading>
                     <SphereIcon sphereName="force" size={16} />
@@ -443,7 +443,7 @@ export default function StyleGuide() {
                   <Tooltip label="Nested tooltip support" desc="Tooltips inside tooltips work up to depth 3.">
                     <span
                       style={{
-                        fontSize: '13px',
+                        fontSize: 'var(--text-xs)',
                         color: 'var(--text-secondary)',
                         borderBottom: '1px dashed var(--border-subtle)',
                         cursor: 'default',
@@ -507,12 +507,12 @@ export default function StyleGuide() {
                 {[0, 1, 2, 3, 4].map((current) => (
                   <div key={current} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <StepDots totalSteps={5} currentStepIndex={current} />
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>step {current + 1} of 5</span>
+                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>step {current + 1} of 5</span>
                   </div>
                 ))}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <StepDots totalSteps={3} currentStepIndex={1} size={8} />
-                  <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>size=8, 3 steps</span>
+                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>size=8, 3 steps</span>
                 </div>
               </GameErrorBoundary>
             </div>
@@ -528,7 +528,7 @@ export default function StyleGuide() {
                   {RARITY_TIERS.map((tier) => (
                     <span key={tier} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <RarityBadge tier={tier} />
-                      <code style={{ fontSize: '11px', color: 'var(--text-muted)' }}>tier={tier}</code>
+                      <code style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>tier={tier}</code>
                     </span>
                   ))}
                 </Row>
@@ -536,7 +536,7 @@ export default function StyleGuide() {
                 {RARITY_TIERS.map((tier) => (
                   <RarityBorderBox key={tier} tier={tier}>
                     <div style={{ padding: '8px 12px', backgroundColor: 'var(--bg-surface)' }}>
-                      <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                      <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
                         tier={tier} — <RarityBadge tier={tier} /> entity row content here
                       </span>
                     </div>
@@ -556,7 +556,7 @@ export default function StyleGuide() {
                   {SPHERE_NAMES.map((name) => (
                     <div key={name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                       <SphereIcon sphereName={name} size={28} />
-                      <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{name}</span>
+                      <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>{name}</span>
                     </div>
                   ))}
                 </div>
@@ -579,15 +579,15 @@ export default function StyleGuide() {
                 <Row gap={24}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
                     <RivalIcon spheres={['chaos', 'force']} size="2rem" />
-                    <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>2 spheres</span>
+                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>2 spheres</span>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
                     <RivalIcon spheres={['mind', 'spirit', 'entropy']} size="2rem" />
-                    <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>3 spheres</span>
+                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>3 spheres</span>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
                     <RivalIcon spheres={['light', 'order']} size="3rem" />
-                    <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>size="3rem"</span>
+                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>size="3rem"</span>
                   </div>
                 </Row>
               </GameErrorBoundary>

@@ -147,7 +147,7 @@ export function MagicGlowTiles() {
     <div className="min-h-screen bg-black p-10">
       <h1
         className="text-center text-2xl font-bold tracking-widest uppercase mb-2"
-        style={{ fontFamily: 'Cinzel, serif', color: '#d4af37' }}
+        style={{ fontFamily: 'var(--font-display)', color: '#d4af37' }}
       >
         Threadbearer
       </h1>

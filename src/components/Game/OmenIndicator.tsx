@@ -71,10 +71,10 @@ function OmenLine({
       </span>
       {isPrimary && template.tagline && (
         <>
-          <span style={{ color: 'var(--text-muted)', fontSize: '9px', flexShrink: 0 }}>—</span>
+          <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)', flexShrink: 0 }}>—</span>
           <span
             style={{
-              fontSize: '10px',
+              fontSize: 'var(--text-xs)',
               color: 'var(--text-muted)',
               fontStyle: 'italic',
               whiteSpace: 'nowrap',

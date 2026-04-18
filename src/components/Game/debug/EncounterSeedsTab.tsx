@@ -22,7 +22,7 @@ function truncateId(id: string): string {
   return id.length > 8 ? `…${id.slice(-8)}` : id;
 }
 
-const MONO: React.CSSProperties = { fontFamily: 'monospace', color: 'var(--text-muted)', fontSize: '11px' };
+const MONO: React.CSSProperties = { fontFamily: 'monospace', color: 'var(--text-muted)', fontSize: 'var(--text-xs)' };
 
 function SeedRow({ seed, currentTick, retinueAgents }: { seed: PendingEncounterSeed; currentTick: number; retinueAgents?: readonly RetinueAgent[] }) {
   const isReady = seed.eligibleAfterTick <= currentTick + ENCOUNTER_SEED_READY_LOOKAHEAD;
@@ -33,14 +33,14 @@ function SeedRow({ seed, currentTick, retinueAgents }: { seed: PendingEncounterS
 
   return (
     <div style={{
-      fontSize: '12px', color: 'var(--text-primary)',
+      fontSize: 'var(--text-xs)', color: 'var(--text-primary)',
       borderLeft: `2px solid ${isReady ? templateColor : 'var(--border-subtle)'}`,
       paddingLeft: '6px', marginBottom: '8px',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
         <span style={{ flex: 1, fontWeight: 500 }}>{seed.seedLabel}</span>
         <span style={{
-          fontSize: '11px',
+          fontSize: 'var(--text-xs)',
           color: isReady ? templateColor : 'var(--text-muted)',
           fontWeight: isReady ? 600 : 400,
         }}>
@@ -51,7 +51,7 @@ function SeedRow({ seed, currentTick, retinueAgents }: { seed: PendingEncounterS
       <div style={{ display: 'flex', gap: '6px', marginTop: '3px', flexWrap: 'wrap', alignItems: 'center' }}>
         {seed.templateId ? (
           <span style={{
-            fontSize: '11px', color: templateColor,
+            fontSize: 'var(--text-xs)', color: templateColor,
             background: `color-mix(in srgb, ${templateColor} 10%, transparent)`,
             padding: '1px 4px', borderRadius: '2px',
           }}>
@@ -59,24 +59,24 @@ function SeedRow({ seed, currentTick, retinueAgents }: { seed: PendingEncounterS
           </span>
         ) : (
           <span style={{
-            fontSize: '11px', color: familyColor,
+            fontSize: 'var(--text-xs)', color: familyColor,
             background: `color-mix(in srgb, ${familyColor} 10%, transparent)`,
             padding: '1px 4px', borderRadius: '2px',
           }}>
             family: {seed.encounterFamily ?? '—'}
           </span>
         )}
-        <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>
+        <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>
           → {resolveAgentName(seed.targetAgentId, retinueAgents)}
         </span>
-        <span style={{ color: 'var(--text-muted)', fontSize: '11px', marginLeft: 'auto' }}>
+        <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)', marginLeft: 'auto' }}>
           pri {seed.priority}
         </span>
       </div>
 
       <div style={{ display: 'flex', gap: '12px', marginTop: '3px', flexWrap: 'wrap' }}>
         <span style={MONO} title={seed.seedId}>{truncateId(seed.seedId)}</span>
-        <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>planted tick {seed.plantedTick} ({ticksAgo}t ago)</span>
+        <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>planted tick {seed.plantedTick} ({ticksAgo}t ago)</span>
       </div>
 
       <div style={{ display: 'flex', gap: '8px', marginTop: '2px', flexWrap: 'wrap' }}>
@@ -111,7 +111,7 @@ export function EncounterSeedsTab({ seeds, currentTick, retinueAgents }: Encount
   });
 
   const chipBase: React.CSSProperties = {
-    fontSize: '11px', padding: '2px 8px', borderRadius: '3px', cursor: 'pointer', border: 'none',
+    fontSize: 'var(--text-xs)', padding: '2px 8px', borderRadius: '3px', cursor: 'pointer', border: 'none',
   };
   const chipActive: React.CSSProperties = {
     ...chipBase, background: 'var(--accent-gold)', color: '#000', fontWeight: 600,
@@ -131,7 +131,7 @@ export function EncounterSeedsTab({ seeds, currentTick, retinueAgents }: Encount
       </div>
 
       {filtered.length === 0 ? (
-        <div style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', padding: '16px 0' }}>
+        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', textAlign: 'center', padding: '16px 0' }}>
           No seeds match this filter.
         </div>
       ) : (

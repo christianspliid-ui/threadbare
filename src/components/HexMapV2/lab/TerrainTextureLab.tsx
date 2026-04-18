@@ -1048,7 +1048,7 @@ export function TerrainTextureLab() {
                     backgroundColor: 'rgba(10,10,14,0.8)',
                     border: '1px solid var(--border-subtle)',
                     color: 'var(--text-secondary)',
-                    fontSize: '14px',
+                    fontSize: 'var(--text-sm)',
                     lineHeight: 1.4,
                   }}
                 >

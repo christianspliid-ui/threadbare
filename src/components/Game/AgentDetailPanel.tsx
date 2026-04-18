@@ -142,7 +142,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
         <div className="flex-1">
           <h2
             className="text-amber-100 text-sm font-semibold tracking-wide"
-            style={{ fontFamily: 'Cinzel, serif' }}
+            style={{ fontFamily: 'var(--font-display)' }}
           >
             {detail.name}
           </h2>
@@ -166,7 +166,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
             <Tooltip label={detail.archetype.name} desc={detail.archetype.storyShape}>
               <h3
                 className="text-amber-100 text-sm font-semibold tracking-wide cursor-help"
-                style={{ fontFamily: 'Cinzel, serif', textDecoration: 'underline', textDecorationStyle: 'dotted' }}
+                style={{ fontFamily: 'var(--font-display)', textDecoration: 'underline', textDecorationStyle: 'dotted' }}
               >
                 {detail.archetype.name}
               </h3>

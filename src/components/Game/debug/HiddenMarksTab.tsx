@@ -21,18 +21,18 @@ function truncateId(id: string): string {
 }
 
 const SH: React.CSSProperties = {
-  fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)',
+  fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--text-muted)',
   textTransform: 'uppercase', letterSpacing: '0.06em',
   marginBottom: '4px', marginTop: '10px',
 };
 
 const ROW: React.CSSProperties = {
-  fontSize: '12px', color: 'var(--text-primary)',
+  fontSize: 'var(--text-xs)', color: 'var(--text-primary)',
   borderLeft: '2px solid var(--border-subtle)',
   paddingLeft: '6px', marginBottom: '6px',
 };
 
-const MONO: React.CSSProperties = { fontFamily: 'monospace', color: 'var(--text-muted)', fontSize: '11px' };
+const MONO: React.CSSProperties = { fontFamily: 'monospace', color: 'var(--text-muted)', fontSize: 'var(--text-xs)' };
 
 function MarkRow({ mark, currentTick }: { mark: HiddenMark; currentTick: number }) {
   const clampedSeverity = Math.max(0, Math.min(1, isNaN(mark.severity) ? 0 : mark.severity));
@@ -45,7 +45,7 @@ function MarkRow({ mark, currentTick }: { mark: HiddenMark; currentTick: number 
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
         <span
           style={{
-            fontSize: '11px', color: categoryColor,
+            fontSize: 'var(--text-xs)', color: categoryColor,
             background: `color-mix(in srgb, ${categoryColor} 10%, transparent)`,
             padding: '1px 4px', borderRadius: '2px', flexShrink: 0,
           }}
@@ -53,7 +53,7 @@ function MarkRow({ mark, currentTick }: { mark: HiddenMark; currentTick: number 
           {mark.category}
         </span>
         <span style={{ flex: 1, fontWeight: 500 }}>{mark.label}</span>
-        {nearDecay && <span style={{ color: '#f97316', fontSize: '10px' }}>⚠ near decay</span>}
+        {nearDecay && <span style={{ color: '#f97316', fontSize: 'var(--text-xs)' }}>⚠ near decay</span>}
       </div>
 
       {/* Severity bar */}
@@ -69,7 +69,7 @@ function MarkRow({ mark, currentTick }: { mark: HiddenMark; currentTick: number 
 
       <div style={{ display: 'flex', gap: '12px', marginTop: '3px', flexWrap: 'wrap' }}>
         <span style={MONO} title={mark.markId}>{truncateId(mark.markId)}</span>
-        <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>
+        <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>
           tick {mark.placedTick} ({ticksAgo}t ago)
         </span>
         <span style={MONO} title={mark.sourceEncounterId}>src: {truncateId(mark.sourceEncounterId)}</span>
@@ -78,7 +78,7 @@ function MarkRow({ mark, currentTick }: { mark: HiddenMark; currentTick: number 
       {mark.revealFamilies && mark.revealFamilies.length > 0 && (
         <div style={{ display: 'flex', gap: '4px', marginTop: '3px', flexWrap: 'wrap' }}>
           {mark.revealFamilies.map(f => (
-            <span key={f} style={{ fontSize: '10px', color: 'var(--text-muted)', background: 'var(--bg-raised)', padding: '1px 4px', borderRadius: '2px' }}>
+            <span key={f} style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', background: 'var(--bg-raised)', padding: '1px 4px', borderRadius: '2px' }}>
               {f}
             </span>
           ))}
@@ -112,7 +112,7 @@ export function HiddenMarksTab({ marks, currentTick, focusedAgentId, retinueAgen
             {resolveAgentName(focusedAgentId, retinueAgents)} — {focused.length} mark{focused.length !== 1 ? 's' : ''}
           </div>
           {focused.length === 0 ? (
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px' }}>No marks on this agent.</div>
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginBottom: '8px' }}>No marks on this agent.</div>
           ) : (
             focused
               .slice()
@@ -120,7 +120,7 @@ export function HiddenMarksTab({ marks, currentTick, focusedAgentId, retinueAgen
               .map(m => <MarkRow key={m.markId} mark={m} currentTick={currentTick} />)
           )}
           {byAgent.size > 0 && (
-            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px', fontStyle: 'italic' }}>
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: '8px', fontStyle: 'italic' }}>
               {marks.length - focused.length} mark{marks.length - focused.length !== 1 ? 's' : ''} on other agents
             </div>
           )}

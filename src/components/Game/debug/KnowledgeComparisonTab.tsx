@@ -42,14 +42,14 @@ const EMPTY_STYLE: React.CSSProperties = {
   padding: '24px 16px',
   textAlign: 'center',
   color: 'var(--text-muted)',
-  fontSize: '12px',
+  fontSize: 'var(--text-xs)',
   opacity: 0.6,
 };
 
 const TABLE_STYLE: React.CSSProperties = {
   width: '100%',
   borderCollapse: 'collapse',
-  fontSize: '11px',
+  fontSize: 'var(--text-xs)',
   fontFamily: 'monospace',
 };
 
@@ -57,7 +57,7 @@ const TH_STYLE: React.CSSProperties = {
   padding: '4px 6px',
   textAlign: 'left',
   color: 'var(--text-muted)',
-  fontSize: '10px',
+  fontSize: 'var(--text-xs)',
   borderBottom: '1px solid var(--border-subtle)',
   fontWeight: 600,
   background: 'var(--bg-abyss)',
@@ -137,7 +137,7 @@ export function KnowledgeComparisonTab({ agentKnowledge, graph }: KnowledgeCompa
 
   return (
     <div style={CONTAINER_STYLE}>
-      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '8px' }}>
+      <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginBottom: '8px' }}>
         {agentRows.length} agents tracked
       </div>
       <table style={TABLE_STYLE}>
@@ -171,7 +171,7 @@ export function KnowledgeComparisonTab({ agentKnowledge, graph }: KnowledgeCompa
                 <span style={{ color: 'var(--text-secondary)' }}>{row.revealedPossessions}</span>
               </td>
               <td style={TD_STYLE}>
-                <span style={{ color: row.dispositionRevealed ? '#4ade80' : '#f87171', fontSize: '10px' }}>
+                <span style={{ color: row.dispositionRevealed ? '#4ade80' : '#f87171', fontSize: 'var(--text-xs)' }}>
                   {row.dispositionRevealed ? 'yes' : 'no'}
                 </span>
               </td>
@@ -196,7 +196,7 @@ function GapDisplay({ revealed, total, gap }: { revealed: number; total: number;
       <span style={{ color: 'var(--text-primary)' }}>{revealed}</span>
       <span style={{ color: 'var(--text-muted)' }}>/{total}</span>
       {gap > 0 && (
-        <span style={{ color: '#f87171', marginLeft: '3px', fontSize: '10px' }}>
+        <span style={{ color: '#f87171', marginLeft: '3px', fontSize: 'var(--text-xs)' }}>
           ({gap} hidden)
         </span>
       )}

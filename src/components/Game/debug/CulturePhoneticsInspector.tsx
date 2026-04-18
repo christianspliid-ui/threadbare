@@ -59,7 +59,7 @@ export function CulturePhoneticsInspector({ graph }: { graph?: WorldGraph }) {
   }
 
   return (
-    <div style={{ padding: '8px', fontSize: '12px', fontFamily: 'monospace' }}>
+    <div style={{ padding: '8px', fontSize: 'var(--text-xs)', fontFamily: 'monospace' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
         <span style={{ color: 'var(--accent-gold)', fontWeight: 600 }}>
           {cultures.length} culture{cultures.length !== 1 ? 's' : ''}
@@ -67,7 +67,7 @@ export function CulturePhoneticsInspector({ graph }: { graph?: WorldGraph }) {
         <button
           onClick={() => setRollSeed(s => s + 1)}
           style={{
-            fontSize: '11px', padding: '2px 8px',
+            fontSize: 'var(--text-xs)', padding: '2px 8px',
             background: 'var(--bg-raised)', border: '1px solid var(--border-subtle)',
             color: 'var(--text-primary)', borderRadius: '3px', cursor: 'pointer',
           }}
@@ -94,14 +94,14 @@ function CultureCard({
   const [expanded, setExpanded] = useState(false);
 
   const sH: React.CSSProperties = {
-    fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase',
+    fontSize: 'var(--text-xs)', color: 'var(--text-muted)', textTransform: 'uppercase',
     letterSpacing: '0.06em', marginBottom: '3px', marginTop: '8px',
   };
   const pill = (color = 'var(--text-secondary)'): React.CSSProperties => ({
     display: 'inline-block', padding: '1px 5px', borderRadius: '3px',
     marginRight: '3px', marginBottom: '2px',
     background: 'var(--bg-raised)', border: '1px solid var(--border-subtle)',
-    color, fontSize: '11px',
+    color, fontSize: 'var(--text-xs)',
   });
 
   return (
@@ -118,17 +118,17 @@ function CultureCard({
         <div>
           <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{name}</span>
           {identity?.demonym && (
-            <span style={{ color: 'var(--text-muted)', marginLeft: '6px', fontSize: '11px' }}>
+            <span style={{ color: 'var(--text-muted)', marginLeft: '6px', fontSize: 'var(--text-xs)' }}>
               ({identity.demonym})
             </span>
           )}
           {identity?.foundationBias && (
-            <span style={{ color: 'var(--text-muted)', marginLeft: '6px', fontSize: '11px' }}>
+            <span style={{ color: 'var(--text-muted)', marginLeft: '6px', fontSize: 'var(--text-xs)' }}>
               [{identity.foundationBias}]
             </span>
           )}
         </div>
-        <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>{expanded ? '▲' : '▼'}</span>
+        <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>{expanded ? '▲' : '▼'}</span>
       </div>
 
       {/* Sample names — always visible */}
@@ -137,13 +137,13 @@ function CultureCard({
         <div>
           {samples.personal.length > 0
             ? samples.personal.map((n, i) => <span key={i} style={pill('var(--accent-gold)')}>{n}</span>)
-            : <span style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '11px' }}>—</span>}
+            : <span style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: 'var(--text-xs)' }}>—</span>}
         </div>
         <div style={sH}>Settlements</div>
         <div>
           {samples.settlement.length > 0
             ? samples.settlement.map((n, i) => <span key={i} style={pill('#7eb5c4')}>{n}</span>)
-            : <span style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '11px' }}>—</span>}
+            : <span style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: 'var(--text-xs)' }}>—</span>}
         </div>
       </div>
 
@@ -151,7 +151,7 @@ function CultureCard({
       {expanded && (
         <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--border-subtle)' }}>
           <div style={sH}>Seed hash</div>
-          <div style={{ color: 'var(--text-muted)', fontSize: '11px' }}>
+          <div style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>
             0x{sig.seedHash.toString(16).toUpperCase().padStart(8, '0')}
           </div>
 
@@ -162,26 +162,26 @@ function CultureCard({
           <div>{sig.syllableTemplates.map((t, i) => <span key={i} style={pill()}>{t}</span>)}</div>
 
           <div style={sH}>Vowels ({sig.vowels.length})</div>
-          <div style={{ color: 'var(--text-secondary)', fontSize: '11px' }}>
+          <div style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-xs)' }}>
             {sig.vowels.join(', ')}
           </div>
 
           <div style={sH}>Onsets ({sig.onsets.length})</div>
-          <div style={{ color: 'var(--text-secondary)', fontSize: '11px' }}>
+          <div style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-xs)' }}>
             {sig.onsets.join(', ')}
           </div>
 
           <div style={sH}>
             Codas {sig.codas.length > 0 ? `(${sig.codas.length})` : '— open syllable'}
           </div>
-          <div style={{ color: 'var(--text-secondary)', fontSize: '11px' }}>
+          <div style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-xs)' }}>
             {sig.codas.length > 0
               ? sig.codas.join(', ')
               : <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>none</span>}
           </div>
 
           <div style={sH}>Syllable ranges</div>
-          <div style={{ color: 'var(--text-secondary)', fontSize: '11px' }}>
+          <div style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-xs)' }}>
             Personal {sig.personalSyllableRange.min}–{sig.personalSyllableRange.max}
             {' · '}
             Settlement {sig.settlementSyllableRange.min}–{sig.settlementSyllableRange.max}
@@ -205,7 +205,7 @@ function CultureCard({
             </>
           )}
 
-          <div style={{ marginTop: '8px', color: 'var(--text-tertiary)', fontSize: '10px' }}>
+          <div style={{ marginTop: '8px', color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
             {id}
           </div>
         </div>

@@ -19,7 +19,7 @@ export function JourneyDebugContent({
   const vignettes = pendingVignettes ?? [];
 
   return (
-    <div style={{ fontSize: '12px', color: TEXT_COLOR }}>
+    <div style={{ fontSize: 'var(--text-xs)', color: TEXT_COLOR }}>
       <div style={{ marginBottom: '16px' }}>
         <div style={{ fontWeight: 600, marginBottom: '6px', color: 'var(--accent-gold)' }}>
           Pending Vignettes ({vignettes.length})
@@ -39,11 +39,11 @@ export function JourneyDebugContent({
               }}
             >
               <div style={{ fontWeight: 500 }}>{v.data.agentName} — {v.data.phase}</div>
-              <div style={{ opacity: 0.7, fontSize: '11px' }}>
+              <div style={{ opacity: 0.7, fontSize: 'var(--text-xs)' }}>
                 Beat {v.data.beatIndex + 1} | Template: {v.data.templateId}
                 {v.data.isOrdeal && <span style={{ color: '#ffd700', marginLeft: '6px' }}>ORDEAL</span>}
               </div>
-              <div style={{ opacity: 0.6, fontSize: '11px', marginTop: '2px' }}>
+              <div style={{ opacity: 0.6, fontSize: 'var(--text-xs)', marginTop: '2px' }}>
                 {v.data.choices.length} choice{v.data.choices.length !== 1 ? 's' : ''}
               </div>
             </div>
@@ -73,13 +73,13 @@ export function JourneyDebugContent({
               <div style={{ fontWeight: 500 }}>
                 {n.agentName} — {n.encounterName}
                 {n.courtPosition && (
-                  <span style={{ opacity: 0.6, marginLeft: '6px', fontSize: '11px' }}>
+                  <span style={{ opacity: 0.6, marginLeft: '6px', fontSize: 'var(--text-xs)' }}>
                     [{n.courtPosition}]
                   </span>
                 )}
               </div>
-              <div style={{ opacity: 0.7, fontSize: '11px' }}>{n.prose}</div>
-              <div style={{ opacity: 0.5, fontSize: '11px', marginTop: '2px' }}>
+              <div style={{ opacity: 0.7, fontSize: 'var(--text-xs)' }}>{n.prose}</div>
+              <div style={{ opacity: 0.5, fontSize: 'var(--text-xs)', marginTop: '2px' }}>
                 Created tick {n.createdTick}
                 {n.autoResolveTick != null && ` | Auto-resolve tick ${n.autoResolveTick}`}
                 {n.viewed && ' | Viewed'}

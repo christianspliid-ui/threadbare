@@ -36,7 +36,7 @@ function PhaseBadge({ phase, doomPercent }: { phase: string; doomPercent: number
         borderRadius: '4px',
         padding: '2px 10px',
         fontFamily: 'var(--font-display)',
-        fontSize: '0.75rem',
+        fontSize: 'var(--text-xs)',
         letterSpacing: '0.08em',
         textTransform: 'uppercase',
         color: 'var(--accent-gold)',
@@ -44,7 +44,7 @@ function PhaseBadge({ phase, doomPercent }: { phase: string; doomPercent: number
         {phase}
       </span>
       <span style={{
-        fontSize: '0.7rem',
+        fontSize: 'var(--text-xs)',
         color: 'var(--text-muted)',
       }}>
         {Math.round(doomPercent * 100)}% doom
@@ -96,7 +96,7 @@ function ChoiceButton({
       <div style={{
         color: 'var(--text-primary)',
         fontFamily: 'var(--font-display)',
-        fontSize: '0.9rem',
+        fontSize: 'var(--text-xs)',
         marginBottom: choice.godVoice ? '4px' : 0,
       }}>
         {choice.text}
@@ -105,7 +105,7 @@ function ChoiceButton({
         <div style={{
           color: 'var(--accent-gold)',
           fontStyle: 'italic',
-          fontSize: '0.8rem',
+          fontSize: 'var(--text-xs)',
           opacity: 0.9,
         }}>
           "{choice.godVoice}"
@@ -114,7 +114,7 @@ function ChoiceButton({
       {essenceCost > 0 && (
         <div style={{
           color: 'var(--text-muted)',
-          fontSize: '0.75rem',
+          fontSize: 'var(--text-xs)',
           marginTop: '4px',
         }}>
           Cost: {essenceCost} essence
@@ -171,7 +171,7 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
         {/* Setup prose */}
         <div style={{
           color: 'var(--text-secondary)',
-          fontSize: '0.9rem',
+          fontSize: 'var(--text-xs)',
           lineHeight: 1.7,
           marginBottom: 'var(--space-4)',
           fontStyle: 'italic',
@@ -182,7 +182,7 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
         {/* Tension prose */}
         <div style={{
           color: 'var(--text-primary)',
-          fontSize: '0.95rem',
+          fontSize: 'var(--text-xs)',
           lineHeight: 1.7,
           marginBottom: 'var(--space-4)',
           paddingLeft: 'var(--space-3)',
@@ -199,7 +199,7 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
             borderRadius: '6px',
             padding: 'var(--space-2) var(--space-3)',
             marginBottom: 'var(--space-3)',
-            fontSize: '0.8rem',
+            fontSize: 'var(--text-xs)',
             color: 'var(--accent-gold)',
             textAlign: 'center',
           }}>
@@ -227,7 +227,7 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
           justifyContent: 'space-between',
           alignItems: 'center',
           width: '100%',
-          fontSize: '0.75rem',
+          fontSize: 'var(--text-xs)',
           color: 'var(--text-muted)',
         }}>
           <span>Beat {vignette.beatIndex + 1} — {phaseName}</span>

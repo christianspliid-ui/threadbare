@@ -171,7 +171,7 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
                 style={{
                   fontFamily: 'Georgia, "Times New Roman", serif',
                   fontStyle: 'italic',
-                  fontSize: '0.95rem',
+                  fontSize: 'var(--text-xs)',
                   lineHeight: 1.7,
                   color: 'rgba(200,190,170,0.85)',
                   maxWidth: '600px',

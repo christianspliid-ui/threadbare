@@ -77,7 +77,7 @@ export function AlertBar({ alerts, onDismiss, onSelectAgent, onNavigate }: Alert
             style={{
               width: '28px',
               height: '28px',
-              fontSize: '14px',
+              fontSize: 'var(--text-sm)',
               color,
               backgroundColor: color + '1a',
               border: `1px solid ${color}44`,

@@ -60,7 +60,7 @@ export const CodexCard = memo(function CodexCard({
         <span
           className="flex-shrink-0 px-1.5 py-0.5 rounded-sm uppercase tracking-wider"
           style={{
-            fontSize: '0.6rem',
+            fontSize: 'var(--text-xs)',
             color: entry.tierColor,
             backgroundColor: `${entry.tierColor}15`,
             border: `1px solid ${entry.tierColor}30`,

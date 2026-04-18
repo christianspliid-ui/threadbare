@@ -58,13 +58,13 @@ function OmenCard({ omen, currentTick, isPrimary }: { omen: ActiveOmen; currentT
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
         <span style={{ color, fontSize: '16px' }}>{glyph}</span>
         <div>
-          <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
+          <div style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--text-primary)' }}>
             {omen.name}
-            <span style={{ marginLeft: '8px', fontSize: '10px', color: 'var(--text-muted)', fontWeight: 400 }}>
+            <span style={{ marginLeft: '8px', fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontWeight: 400 }}>
               {isPrimary ? 'Primary' : 'Secondary'} · {OMEN_CATEGORY_LABELS[omen.category] ?? omen.category}
             </span>
           </div>
-          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
             {template.tagline}
           </div>
         </div>
@@ -72,13 +72,13 @@ function OmenCard({ omen, currentTick, isPrimary }: { omen: ActiveOmen; currentT
 
       {/* Atmosphere */}
       {template.vocabulary.atmosphere.length > 0 && (
-        <p style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: '6px 0', lineHeight: 1.5 }}>
+        <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', margin: '6px 0', lineHeight: 1.5 }}>
           "{template.vocabulary.atmosphere[0]}"
         </p>
       )}
 
       {/* Stats */}
-      <div style={{ display: 'flex', gap: '16px', fontSize: '10px', color: 'var(--text-muted)', marginTop: '8px' }}>
+      <div style={{ display: 'flex', gap: '16px', fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: '8px' }}>
         <span>{intensity} · {ticksLeft} ticks remaining</span>
         {biasParts.length > 0 && <span>{biasParts.join(', ')}</span>}
       </div>
@@ -102,7 +102,7 @@ export function OmenDetail({ omenState, currentTick, onClose }: OmenDetailProps)
           <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--accent-gold)', marginBottom: '4px', fontFamily: 'var(--font-display)' }}>
             World Omens
           </h2>
-          <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+          <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
             The world's current atmospheric pressure — atmospheric beats that bias events, color prose, and make the world's current mood legible.
           </p>
         </div>
@@ -111,7 +111,7 @@ export function OmenDetail({ omenState, currentTick, onClose }: OmenDetailProps)
         {omenState.primary ? (
           <OmenCard omen={omenState.primary} currentTick={currentTick} isPrimary />
         ) : (
-          <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: '8px' }}>
+          <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: '8px' }}>
             No primary omen active.
           </p>
         )}
@@ -122,13 +122,13 @@ export function OmenDetail({ omenState, currentTick, onClose }: OmenDetailProps)
         {/* Recent history */}
         {recentHistory.length > 0 && (
           <div style={{ marginTop: '16px', borderTop: '1px solid var(--border-subtle)', paddingTop: '12px' }}>
-            <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>
               Recent Omens
             </div>
             {recentHistory.map((h, i) => {
               const t = getOmenTemplateById(h.templateId);
               return (
-                <div key={i} style={{ fontSize: '11px', color: 'var(--text-tertiary)', marginBottom: '4px', display: 'flex', gap: '8px' }}>
+                <div key={i} style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginBottom: '4px', display: 'flex', gap: '8px' }}>
                   <span style={{ color: 'var(--text-muted)', minWidth: '60px' }}>
                     t{h.startTick}–{h.endTick}
                   </span>

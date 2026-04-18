@@ -190,7 +190,7 @@ export function SparkBeat({ visions, primarySphere, onSelect }: SparkBeatProps) 
                 style={{
                   fontFamily: 'Georgia, "Times New Roman", serif',
                   fontStyle: 'italic',
-                  fontSize: '0.95rem',
+                  fontSize: 'var(--text-xs)',
                   lineHeight: 1.7,
                   color: `${sphereColor}cc`,
                   maxWidth: '600px',

@@ -169,7 +169,7 @@ export function DoomClockDetail({
                   {state.expired ? '∞' : `${pct}%`}
                 </span>
                 <span style={{
-                  fontSize: '10px',
+                  fontSize: 'var(--text-xs)',
                   color: 'var(--text-muted)',
                   marginTop: '4px',
                   textTransform: 'uppercase',
@@ -256,7 +256,7 @@ export function DoomClockDetail({
                         backgroundColor: isPast ? `${color}30` : isCurrent ? color : '#2a2a2e',
                         border: isFuture ? '1.5px solid #3a3a3e' : 'none',
                         boxShadow: isCurrent ? `0 0 8px ${color}60` : 'none',
-                        fontSize: '10px',
+                        fontSize: 'var(--text-xs)',
                         color: isPast ? color : isCurrent ? '#0a0a0e' : '#4a4a4e',
                         fontWeight: 700,
                       }}>
@@ -276,7 +276,7 @@ export function DoomClockDetail({
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
                         {stage.stage === 5 && (
                           <span style={{
-                            fontSize: '9px',
+                            fontSize: 'var(--text-xs)',
                             textTransform: 'uppercase',
                             letterSpacing: '0.08em',
                             color: '#fbbf24',
@@ -285,7 +285,7 @@ export function DoomClockDetail({
                           </span>
                         )}
                         <span style={{
-                          fontSize: '10px',
+                          fontSize: 'var(--text-xs)',
                           fontFamily: 'var(--font-mono, monospace)',
                           color: isPast ? `${color}80` : 'var(--text-muted)',
                           opacity: isFuture ? 0.5 : 1,
@@ -299,7 +299,7 @@ export function DoomClockDetail({
                       <div style={{ marginTop: '8px', marginLeft: '26px' }}>
                         {stage.events.map((event, eventIdx) => (
                           <div key={`${stage.stage}-${eventIdx}`} style={{
-                            fontSize: '11px',
+                            fontSize: 'var(--text-xs)',
                             color: 'var(--text-secondary)',
                             lineHeight: 1.5,
                             marginBottom: '4px',
@@ -316,7 +316,7 @@ export function DoomClockDetail({
                       <div style={{ marginTop: '8px', marginLeft: '26px' }}>
                         {resolvedStageEvents.map((event) => (
                           <div key={event.id} style={{
-                            fontSize: '11px',
+                            fontSize: 'var(--text-xs)',
                             color: isCurrent ? color : 'var(--text-secondary)',
                             lineHeight: 1.5,
                             marginBottom: '4px',
@@ -345,7 +345,7 @@ export function DoomClockDetail({
               <div style={{ marginTop: '16px' }}>
                 <div style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: '10px',
+                  fontSize: 'var(--text-xs)',
                   color: 'var(--text-muted)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.1em',
@@ -361,10 +361,10 @@ export function DoomClockDetail({
                       backgroundColor: 'rgba(255,255,255,0.02)',
                       border: '1px solid var(--border-subtle)',
                     }}>
-                      <div style={{ fontSize: '11px', color: 'var(--text-primary)', fontWeight: 600 }}>
+                      <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)', fontWeight: 600 }}>
                         {event.title}
                       </div>
-                      <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                      <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: '2px' }}>
                         Chapter {event.stage} · severity {event.severity.toFixed(2)}x
                       </div>
                     </div>
@@ -380,7 +380,7 @@ export function DoomClockDetail({
         <div style={{
           width: '100%',
           textAlign: 'center',
-          fontSize: '11px',
+          fontSize: 'var(--text-xs)',
           color: 'var(--text-muted)',
           fontStyle: 'italic',
           opacity: 0.7,
@@ -401,9 +401,9 @@ function StatRow({ label, value, color }: { label: string; value: string; color?
       gap: '12px',
       padding: '5px 0',
       borderBottom: '1px solid #1a1a1e',
-      fontSize: '11px',
+      fontSize: 'var(--text-xs)',
     }}>
-      <span style={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: '10px' }}>
+      <span style={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: 'var(--text-xs)' }}>
         {label}
       </span>
       <span style={{

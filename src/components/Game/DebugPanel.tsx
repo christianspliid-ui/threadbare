@@ -134,9 +134,9 @@ export const DebugPanel = React.memo(function DebugPanel({
     <div data-testid="debug-panel" style={CONTAINER_STYLE}>
       <div style={HEADER_STYLE}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontWeight: 600, color: 'var(--accent-gold)', fontSize: '14px' }}>Debug Trace</span>
-          <span style={{ fontSize: '12px', color: PANEL_STYLES.tickColor, marginLeft: '8px' }}>tick = {currentTick}</span>
-          {onClose && <button onClick={onClose} aria-label="Close Debug Panel" title="Close (Esc)" style={{ background: 'transparent', border: 'none', color: PANEL_STYLES.textColor, cursor: 'pointer', fontSize: '15px' }}>✕</button>}
+          <span style={{ fontWeight: 600, color: 'var(--accent-gold)', fontSize: 'var(--text-sm)' }}>Debug Trace</span>
+          <span style={{ fontSize: 'var(--text-xs)', color: PANEL_STYLES.tickColor, marginLeft: '8px' }}>tick = {currentTick}</span>
+          {onClose && <button onClick={onClose} aria-label="Close Debug Panel" title="Close (Esc)" style={{ background: 'transparent', border: 'none', color: PANEL_STYLES.textColor, cursor: 'pointer', fontSize: 'var(--text-xs)' }}>✕</button>}
         </div>
       </div>
 
@@ -167,7 +167,7 @@ export const DebugPanel = React.memo(function DebugPanel({
 
       {viewMode === 'feed' && (
         <div style={FILTER_AREA_STYLE}>
-          <button onClick={() => setEnabledCategories(prev => prev.size === 0 ? new Set(TRACE_CATEGORIES) : new Set())} style={{ fontSize: '10px', padding: '2px 6px', marginBottom: '4px', cursor: 'pointer', background: 'var(--bg-raised)', color: 'var(--text-muted)', border: '1px solid var(--border-subtle)', borderRadius: '3px' }}>
+          <button onClick={() => setEnabledCategories(prev => prev.size === 0 ? new Set(TRACE_CATEGORIES) : new Set())} style={{ fontSize: 'var(--text-xs)', padding: '2px 6px', marginBottom: '4px', cursor: 'pointer', background: 'var(--bg-raised)', color: 'var(--text-muted)', border: '1px solid var(--border-subtle)', borderRadius: '3px' }}>
             {enabledCategories.size === 0 ? 'Enable All' : 'Disable All'}
           </button>
           {TRACE_CATEGORIES.map((category) => (
@@ -202,7 +202,7 @@ export const DebugPanel = React.memo(function DebugPanel({
       </div>
 
       {isScrolledUp && displayTraces.length > 0 && (
-        <button onClick={() => { if (scrollRef.current) scrollRef.current.scrollTop = 0; }} style={{ position: 'absolute', bottom: '16px', left: '50%', transform: 'translateX(-50%)', padding: '6px 12px', background: TRACE_CATEGORY_COLORS.action_selection, border: 'none', borderRadius: '12px', color: '#000', fontSize: '12px', fontWeight: 600, cursor: 'pointer', zIndex: 50 }}>
+        <button onClick={() => { if (scrollRef.current) scrollRef.current.scrollTop = 0; }} style={{ position: 'absolute', bottom: '16px', left: '50%', transform: 'translateX(-50%)', padding: '6px 12px', background: TRACE_CATEGORY_COLORS.action_selection, border: 'none', borderRadius: '12px', color: '#000', fontSize: 'var(--text-xs)', fontWeight: 600, cursor: 'pointer', zIndex: 50 }}>
           ↑ New traces
         </button>
       )}

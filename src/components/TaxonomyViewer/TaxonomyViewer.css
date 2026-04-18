@@ -38,7 +38,7 @@
   color: #d4a017;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: var(--text-xs);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -190,7 +190,7 @@
 
   .filter-button {
     padding: 4px 8px;
-    font-size: 11px;
+    font-size: var(--text-xs);
   }
 
   .graph-container {

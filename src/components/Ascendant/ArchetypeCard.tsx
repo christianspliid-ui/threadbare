@@ -44,7 +44,7 @@ export function ArchetypeCard({ archetype, selected, onClick }: ArchetypeCardPro
       {/* Title */}
       <h3
         className="text-lg font-bold tracking-wide mb-1"
-        style={{ fontFamily: 'Cinzel, serif', color: primaryColor }}
+        style={{ fontFamily: 'var(--font-display)', color: primaryColor }}
       >
         {archetype.title}
       </h3>

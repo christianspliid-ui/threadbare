@@ -42,11 +42,11 @@ export const AgentInfoCard: React.FC<AgentInfoCardProps> = ({ graph, agentId, on
     }}>
       <button onClick={onClose} style={{ float: 'right', cursor: 'pointer' }}>✕</button>
       <h2 style={{ margin: '0 0 8px 0', fontSize: 18 }}>{agent.name}</h2>
-      {archetype && <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 12 }}>{archetype}</div>}
+      {archetype && <div style={{ fontSize: 'var(--text-xs)', opacity: 0.7, marginBottom: 12 }}>{archetype}</div>}
 
       {/* Profile */}
       <section style={{ marginBottom: 16 }}>
-        <h3 style={{ fontSize: 14, borderBottom: '1px solid #333', paddingBottom: 4 }}>
+        <h3 style={{ fontSize: 'var(--text-sm)', borderBottom: '1px solid #333', paddingBottom: 4 }}>
           {AGENT_INFO_SECTION_LABELS.profile}
         </h3>
         {domains && (
@@ -57,7 +57,7 @@ export const AgentInfoCard: React.FC<AgentInfoCardProps> = ({ graph, agentId, on
               .map(([domain, value]) => (
                 <span key={domain} style={{
                   background: DOMAIN_COLORS[domain] ?? DEFAULT_AGENT_COLOR,
-                  padding: '2px 6px', borderRadius: 4, fontSize: 11,
+                  padding: '2px 6px', borderRadius: 4, fontSize: 'var(--text-xs)',
                 }}>
                   {domain}: {value.toFixed(1)}
                 </span>
@@ -68,24 +68,24 @@ export const AgentInfoCard: React.FC<AgentInfoCardProps> = ({ graph, agentId, on
 
       {/* Relationships */}
       <section style={{ marginBottom: 16 }}>
-        <h3 style={{ fontSize: 14, borderBottom: '1px solid #333', paddingBottom: 4 }}>
+        <h3 style={{ fontSize: 'var(--text-sm)', borderBottom: '1px solid #333', paddingBottom: 4 }}>
           {AGENT_INFO_SECTION_LABELS.relationships}
         </h3>
         {factions.length > 0 ? (
-          <ul style={{ margin: '8px 0', paddingLeft: 16, fontSize: 12 }}>
+          <ul style={{ margin: '8px 0', paddingLeft: 16, fontSize: 'var(--text-xs)' }}>
             {factions.map(f => f && <li key={f.id}>{f.name}</li>)}
           </ul>
         ) : (
-          <div style={{ fontSize: 12, opacity: 0.5, marginTop: 8 }}>No faction membership</div>
+          <div style={{ fontSize: 'var(--text-xs)', opacity: 0.5, marginTop: 8 }}>No faction membership</div>
         )}
       </section>
 
       {/* Movement */}
       <section style={{ marginBottom: 16 }}>
-        <h3 style={{ fontSize: 14, borderBottom: '1px solid #333', paddingBottom: 4 }}>
+        <h3 style={{ fontSize: 'var(--text-sm)', borderBottom: '1px solid #333', paddingBottom: 4 }}>
           {AGENT_INFO_SECTION_LABELS.movement}
         </h3>
-        <div style={{ fontSize: 12, marginTop: 8 }}>
+        <div style={{ fontSize: 'var(--text-xs)', marginTop: 8 }}>
           <div>Location: {currentLoc?.name ?? 'Unknown'}</div>
           {movementState?.destinationId && (
             <div>Destination: {graph.getNode(movementState.destinationId)?.name ?? movementState.destinationId}</div>

@@ -57,7 +57,7 @@ export const FactionEntry = memo(function FactionEntry({
       ) : (
         <span
           style={{
-            fontSize: '0.7rem',
+            fontSize: 'var(--text-xs)',
             color: 'var(--accent-gold)',
             flexShrink: 0,
             opacity: 0.8,
@@ -71,7 +71,7 @@ export const FactionEntry = memo(function FactionEntry({
           style={{
             fontFamily: 'var(--font-display)',
             color: 'var(--text-primary)',
-            fontSize: '0.85rem',
+            fontSize: 'var(--text-xs)',
             fontWeight: 500,
           }}
         >

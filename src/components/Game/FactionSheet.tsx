@@ -262,12 +262,12 @@ export const FactionSheet = React.memo(function FactionSheet({
                             <span style={{ color: 'var(--text-secondary)' }}>{relation.name}</span>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                               {relation.isRival && (
-                                <span style={{ fontSize: '10px', padding: '1px 5px', borderRadius: '3px', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171' }}>
+                                <span style={{ fontSize: 'var(--text-xs)', padding: '1px 5px', borderRadius: '3px', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171' }}>
                                   Rival
                                 </span>
                               )}
                               {relation.isAlliance && (
-                                <span style={{ fontSize: '10px', padding: '1px 5px', borderRadius: '3px', background: 'rgba(74, 222, 128, 0.12)', border: '1px solid rgba(74, 222, 128, 0.3)', color: '#4ade80' }}>
+                                <span style={{ fontSize: 'var(--text-xs)', padding: '1px 5px', borderRadius: '3px', background: 'rgba(74, 222, 128, 0.12)', border: '1px solid rgba(74, 222, 128, 0.3)', color: '#4ade80' }}>
                                   Allied
                                 </span>
                               )}

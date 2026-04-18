@@ -12,13 +12,13 @@ const HOSTILE_BOND_THRESHOLD = -0.3;
 // ─── Styles ─────────────────────────────────────────────────────
 
 const CONTAINER_STYLE: React.CSSProperties = {
-  fontSize: '12px',
+  fontSize: 'var(--text-xs)',
   fontFamily: 'monospace',
   color: 'var(--text-primary)',
 };
 
 const HEADING_STYLE: React.CSSProperties = {
-  fontSize: '11px',
+  fontSize: 'var(--text-xs)',
   fontWeight: 600,
   textTransform: 'uppercase' as const,
   letterSpacing: '0.5px',
@@ -37,7 +37,7 @@ const EDGE_ROW_STYLE: React.CSSProperties = {
 const STAT_ROW_STYLE: React.CSSProperties = {
   display: 'flex',
   gap: '12px',
-  fontSize: '10px',
+  fontSize: 'var(--text-xs)',
   color: 'var(--text-muted)',
   marginTop: '2px',
 };
@@ -50,7 +50,7 @@ const EMPTY_STYLE: React.CSSProperties = {
   opacity: 0.5,
   textAlign: 'center' as const,
   padding: '16px',
-  fontSize: '12px',
+  fontSize: 'var(--text-xs)',
   color: 'var(--text-muted)',
 };
 
@@ -228,7 +228,7 @@ export const RelationshipGraph = React.memo(function RelationshipGraph({
                 </span>
                 <span
                   style={{
-                    fontSize: '10px',
+                    fontSize: 'var(--text-xs)',
                     fontWeight: 600,
                     color: classificationColor(r.classification),
                     textTransform: 'uppercase',

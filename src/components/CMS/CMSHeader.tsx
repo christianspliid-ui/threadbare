@@ -103,7 +103,7 @@ export function CMSHeader({ searchQuery, onSearchChange, onSelectEntry }: Props)
                   onSearchChange('');
                 }}
               >
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>
+                <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>
                   {entry.category}
                 </span>
                 <span style={{ color: 'var(--text-primary)' }}>{entry.label}</span>

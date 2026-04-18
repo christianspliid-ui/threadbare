@@ -119,7 +119,7 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
                  top: 'calc(5vh + 2.2rem)',
                  fontFamily: 'Georgia, "Times New Roman", serif',
                  fontStyle: 'italic',
-                 fontSize: '0.95rem',
+                 fontSize: 'var(--text-xs)',
                  color: 'rgba(154,138,106,0.4)',
                  letterSpacing: '0.05em',
                  opacity: textVisible ? 1 : 0,
@@ -173,7 +173,7 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
                       <p style={{
                         fontFamily: 'Georgia, "Times New Roman", serif',
                         fontStyle: 'italic',
-                        fontSize: '0.9rem',
+                        fontSize: 'var(--text-xs)',
                         lineHeight: '1.7',
                         color: isHovered ? 'rgba(212,196,138,0.8)' : 'rgba(180,170,140,0.35)',
                         transition: 'color 0.5s ease',
@@ -400,7 +400,7 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
              style={{
                fontFamily: 'Georgia, "Times New Roman", serif',
                fontStyle: 'italic',
-               fontSize: '0.9rem',
+               fontSize: 'var(--text-xs)',
                color: 'rgba(120,120,120,0.5)',
                letterSpacing: '0.05em',
              }}>

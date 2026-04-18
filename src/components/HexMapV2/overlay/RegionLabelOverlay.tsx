@@ -78,7 +78,7 @@ const DOMAIN_STYLE: CSSProperties = {
 const PROVINCE_STYLE: CSSProperties = {
   ...LABEL_BASE,
   fontFamily: 'var(--font-display)',
-  fontSize: '14px',
+  fontSize: 'var(--text-sm)',
   fontWeight: 400,
   color: palette.labelLandColor,
   textShadow: LAND_HALO,
@@ -88,7 +88,7 @@ const PROVINCE_STYLE: CSSProperties = {
 const GEOGRAPHIC_STYLE: CSSProperties = {
   ...LABEL_BASE,
   fontFamily: 'var(--font-display)',
-  fontSize: '12px',
+  fontSize: 'var(--text-xs)',
   fontWeight: 400,
   fontStyle: 'italic',
   color: palette.labelLandColor,
@@ -99,7 +99,7 @@ const GEOGRAPHIC_STYLE: CSSProperties = {
 const RIVER_STYLE: CSSProperties = {
   ...LABEL_BASE,
   fontFamily: 'var(--font-display)',
-  fontSize: '12px',
+  fontSize: 'var(--text-xs)',
   fontWeight: 400,
   fontStyle: 'italic',
   color: palette.labelRiverColor,

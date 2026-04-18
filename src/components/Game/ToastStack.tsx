@@ -121,7 +121,7 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate }: Toa
                 <span
                   className="flex-shrink-0 px-1.5 py-0.5 rounded-full font-bold"
                   style={{
-                    fontSize: '10px',
+                    fontSize: 'var(--text-xs)',
                     backgroundColor: accentColor + '33',
                     color: accentColor,
                   }}
@@ -133,7 +133,7 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate }: Toa
               {navTarget ? (
                 <span
                   className="flex-shrink-0 transition-opacity"
-                  style={{ fontSize: '10px', color: accentColor, opacity: NAV_GLYPH_OPACITY }}
+                  style={{ fontSize: 'var(--text-xs)', color: accentColor, opacity: NAV_GLYPH_OPACITY }}
                   title={NAV_TOOLTIPS[navTarget.kind]}
                   aria-hidden="true"
                 >
@@ -142,7 +142,7 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate }: Toa
               ) : isNavigable && (
                 <span
                   className="flex-shrink-0"
-                  style={{ fontSize: '10px', color: accentColor, opacity: NAV_GLYPH_OPACITY }}
+                  style={{ fontSize: 'var(--text-xs)', color: accentColor, opacity: NAV_GLYPH_OPACITY }}
                   aria-hidden="true"
                 >
                   →
@@ -152,7 +152,7 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate }: Toa
               <button
                 className="flex-shrink-0 opacity-0 group-focus-within:opacity-100 hover:opacity-100 transition-opacity"
                 style={{
-                  fontSize: '12px',
+                  fontSize: 'var(--text-xs)',
                   color: 'var(--text-tertiary)',
                   background: 'none',
                   border: 'none',

@@ -156,7 +156,7 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, k
               const epithet = deriveArchetypeEpithet(card.axiologicalProfile!);
               return epithet ? (
                 <p style={{
-                  fontFamily: 'Cinzel, serif',
+                  fontFamily: 'var(--font-display)',
                   fontSize: 'var(--text-base)',
                   color: 'var(--accent-gold)',
                   letterSpacing: '0.04em',

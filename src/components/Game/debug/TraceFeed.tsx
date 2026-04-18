@@ -46,13 +46,13 @@ const TRACE_HEADER_STYLE: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   gap: '8px',
-  fontSize: '14px',
+  fontSize: 'var(--text-sm)',
 };
 
 const BADGE_BASE_STYLE: React.CSSProperties = {
   padding: '2px 6px',
   borderRadius: '3px',
-  fontSize: '10px',
+  fontSize: 'var(--text-xs)',
   fontWeight: 600,
   textTransform: 'uppercase',
   letterSpacing: '0.5px',
@@ -67,14 +67,14 @@ const getBadgeStyle = (category: string): React.CSSProperties => ({
 
 const TICK_NUMBER_STYLE: React.CSSProperties = {
   fontFamily: 'monospace',
-  fontSize: '12px',
+  fontSize: 'var(--text-xs)',
   color: PANEL_STYLES.tickColor,
   marginLeft: 'auto',
 };
 
 const DETAIL_AREA_STYLE: React.CSSProperties = {
   padding: '12px',
-  fontSize: '12px',
+  fontSize: 'var(--text-xs)',
   fontFamily: 'monospace',
   color: PANEL_STYLES.textColor,
   lineHeight: 1.5,
@@ -211,7 +211,7 @@ const DilemmaResolutionDetail = React.memo(function DilemmaResolutionDetail({ tr
       <div style={{ ...DETAIL_ROW_STYLE, borderTop: `1px solid ${PANEL_STYLES.borderColor}`, paddingTop: '8px', marginTop: '8px', marginBottom: '8px' }}>
         <div style={DETAIL_LABEL_STYLE}>Payoff</div>
       </div>
-      <table style={{ width: '100%', marginBottom: '8px', fontSize: '11px', borderCollapse: 'collapse' }}>
+      <table style={{ width: '100%', marginBottom: '8px', fontSize: 'var(--text-xs)', borderCollapse: 'collapse' }}>
         <tbody>
           <tr style={{ borderBottom: `1px solid ${PANEL_STYLES.borderColor}` }}>
             <td style={{ padding: '4px', color: PANEL_STYLES.tickColor }}>Actor</td>
@@ -561,7 +561,7 @@ const MovementDetail = React.memo(function MovementDetail({ trace }: { trace: Mo
       {trace.encounterId && (
         <div style={DETAIL_ROW_STYLE}>
           <div style={DETAIL_LABEL_STYLE}>Encounter</div>
-          <div style={{ ...DETAIL_VALUE_STYLE, fontSize: '10px', opacity: 0.8 }}>{trace.encounterId}</div>
+          <div style={{ ...DETAIL_VALUE_STYLE, fontSize: 'var(--text-xs)', opacity: 0.8 }}>{trace.encounterId}</div>
         </div>
       )}
       {trace.queueLength != null && (
@@ -647,7 +647,7 @@ export const TraceEntryItem = React.memo(function TraceEntryItem({ trace, isExpa
     >
       <div style={TRACE_HEADER_STYLE}>
         <div style={badgeStyle}>{trace.category}</div>
-        <div style={{ flex: 1, color: PANEL_STYLES.textColor, fontSize: '13px' }}>{trace.summary}</div>
+        <div style={{ flex: 1, color: PANEL_STYLES.textColor, fontSize: 'var(--text-xs)' }}>{trace.summary}</div>
         <div style={TICK_NUMBER_STYLE}>#{trace.tick}</div>
       </div>
       {isExpanded && <TraceDetailRenderer trace={trace} />}

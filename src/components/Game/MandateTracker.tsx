@@ -75,7 +75,7 @@ function SummaryPill({ label, value, color }: { label: string; value: string; co
       border: '1px solid var(--border-subtle)',
     }}>
       <div style={{
-        fontSize: '10px',
+        fontSize: 'var(--text-xs)',
         textTransform: 'uppercase',
         letterSpacing: '0.08em',
         color: 'var(--text-muted)',
@@ -84,7 +84,7 @@ function SummaryPill({ label, value, color }: { label: string; value: string; co
       </div>
       <div style={{
         marginTop: '4px',
-        fontSize: '12px',
+        fontSize: 'var(--text-xs)',
         fontWeight: 700,
         color: color ?? 'var(--text-primary)',
       }}>
@@ -151,12 +151,12 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
           <Tooltip id="ui.mandate_tracker">
             <span
               className="font-bold uppercase truncate"
-              style={{ fontSize: '10px', color, fontFamily: 'var(--font-display)' }}
+              style={{ fontSize: 'var(--text-xs)', color, fontFamily: 'var(--font-display)' }}
             >
               {definition.name}
             </span>
           </Tooltip>
-          <span className="font-mono flex-shrink-0" style={{ fontSize: '10px', color }}>
+          <span className="font-mono flex-shrink-0" style={{ fontSize: 'var(--text-xs)', color }}>
             {displayText}
           </span>
           <div className="flex gap-0.5 items-center ml-auto">
@@ -171,7 +171,7 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
         {isSphereGrowth && (
           <div
             className="flex items-center gap-1.5 min-w-0"
-            style={{ fontSize: '9px', color: 'var(--text-muted)' }}
+            style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}
           >
             <span className="truncate">
               {definition.primarySphere} {formatDelta(state.primaryDelta)}
@@ -256,7 +256,7 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
               {nextCheckpoint && (
                 <div style={{
                   marginTop: '10px',
-                  fontSize: '11px',
+                  fontSize: 'var(--text-xs)',
                   color: 'var(--text-muted)',
                 }}>
                   Next omen: {nextCheckpoint.label} at {Math.round(nextCheckpoint.doomProgressThreshold * 100)}% doom.

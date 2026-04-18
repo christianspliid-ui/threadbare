@@ -55,7 +55,7 @@ export const AgentEntry = memo(function AgentEntry({
         style={{
           fontFamily: 'var(--font-display)',
           color: 'var(--text-primary)',
-          fontSize: '0.85rem',
+          fontSize: 'var(--text-xs)',
           fontWeight: 600,
           textDecoration: 'underline',
           textDecorationColor: 'var(--border-subtle)',

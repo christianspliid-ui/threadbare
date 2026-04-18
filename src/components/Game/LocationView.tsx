@@ -146,7 +146,7 @@ const SublocationCard = memo(function SublocationCard({
               bottom: '4px',
               left: '50%',
               transform: 'translateX(-50%)',
-              fontSize: '8px',
+              fontSize: 'var(--text-xs)',
               color: conceptArt.glyphColor,
               opacity: 0.35,
               fontFamily: 'var(--font-display)',

@@ -106,7 +106,7 @@ export function StirringBeat({ images, onSelect }: StirringBeatProps) {
                     style={{
                       bottom: '12%',
                       fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif',
-                      fontSize: '0.85rem',
+                      fontSize: 'var(--text-xs)',
                       letterSpacing: '0.18em',
                       textTransform: 'uppercase' as const,
                       color: 'rgba(255,255,255,0.12)',

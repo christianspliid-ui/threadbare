@@ -125,7 +125,7 @@ export function TestingBeat({ candidate, dilemmas, locationName, godVoiceOverrid
                 style={{
                   fontFamily: 'Georgia, "Times New Roman", serif',
                   fontStyle: 'italic',
-                  fontSize: '0.9rem',
+                  fontSize: 'var(--text-xs)',
                   color: 'rgba(212,168,122,0.7)',
                   marginBottom: '12px',
                   lineHeight: 1.6,
@@ -159,7 +159,7 @@ export function TestingBeat({ candidate, dilemmas, locationName, godVoiceOverrid
                     style={{
                       fontFamily: 'Georgia, "Times New Roman", serif',
                       fontStyle: 'italic',
-                      fontSize: '0.95rem',
+                      fontSize: 'var(--text-xs)',
                       color: 'rgba(180,170,160,0.7)',
                       padding: '12px 16px',
                       borderRadius: '4px',
@@ -190,7 +190,7 @@ export function TestingBeat({ candidate, dilemmas, locationName, godVoiceOverrid
             className="absolute top-6 right-8"
             style={{
               fontFamily: 'Georgia, "Times New Roman", serif',
-              fontSize: '0.75rem',
+              fontSize: 'var(--text-xs)',
               color: 'rgba(160,140,180,0.3)',
               letterSpacing: '0.1em',
             }}

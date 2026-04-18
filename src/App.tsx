@@ -266,7 +266,7 @@ function App() {
                   }}
                 >
                   <div style={{ fontWeight: 600 }}>{preset.label}</div>
-                  <div style={{ fontSize: '0.65rem', opacity: 0.7, marginTop: '2px' }}>
+                  <div style={{ fontSize: 'var(--text-xs)', opacity: 0.7, marginTop: '2px' }}>
                     {preset.cols}&times;{preset.rows} &mdash; {preset.description}
                   </div>
                 </button>

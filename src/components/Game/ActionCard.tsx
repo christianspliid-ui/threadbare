@@ -153,10 +153,10 @@ const SIZE_CONFIG = {
     widthPx: 160,            // 160px wide × 110px tall (16:11 landscape — showcases 16:9 art)
     aspect: 11 / 16,         // landscape: height = width × 0.6875
     glyphSize: '1.75rem',    // 28px
-    nameSize: '0.875rem',    // 14px — larger for readability
-    descSize: '0.6875rem',   // 11px
+    nameSize: 'var(--text-sm)',
+    descSize: 'var(--text-xs)',
     descClamp: 'line-clamp-2',
-    costSize: '0.75rem',     // 12px
+    costSize: 'var(--text-xs)',
     padding: 'px-2 py-2',
     badgePos: 'top-2 right-2',
     badgePad: 'px-1.5 py-0.5',
@@ -166,9 +166,9 @@ const SIZE_CONFIG = {
     aspect: 7 / 5,           // portrait: height = width × 1.4
     glyphSize: '2.5rem',     // 40px
     nameSize: '1.25rem',     // 20px (25% up from 16px)
-    descSize: '0.9375rem',   // 15px (25% up from 12px)
+    descSize: 'var(--text-xs)',
     descClamp: '',            // no clamp
-    costSize: '0.9375rem',   // 15px
+    costSize: 'var(--text-xs)',
     padding: 'px-6 py-5',
     badgePos: 'top-4 right-4',
     badgePad: 'px-2.5 py-1.5',
@@ -500,7 +500,7 @@ export const ActionCard = React.memo(function ActionCard({
           >
             {slot.sphere
               ? <SphereIcon sphere={slot.sphere as SphereName} size={20} />
-              : <span style={{ fontSize: '0.9375rem' }}>{glyph}</span>
+              : <span style={{ fontSize: 'var(--text-xs)' }}>{glyph}</span>
             }
             <span data-testid="action-card-cost">
               {slot.essenceCost === 0 ? 'Free' : Math.round(slot.essenceCost)}
@@ -641,7 +641,7 @@ export const ActionCard = React.memo(function ActionCard({
               color: sphereColor || 'var(--text-secondary)',
             }}
           >
-            <span style={{ fontSize: '0.625rem' }}>&#x21BB;</span>
+            <span style={{ fontSize: 'var(--text-xs)' }}>&#x21BB;</span>
             <span>{slot.perTickCostLabel || 'Sustained'}</span>
           </div>
         )}

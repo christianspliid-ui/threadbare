@@ -33,7 +33,7 @@ export const EventBlock = memo(function EventBlock({ label, text }: EventBlockPr
         style={{
           fontFamily: 'var(--font-prose)',
           color: 'var(--text-secondary)',
-          fontSize: '0.85rem',
+          fontSize: 'var(--text-xs)',
           lineHeight: 1.7,
           margin: 0,
         }}

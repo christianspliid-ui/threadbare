@@ -166,7 +166,7 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
                 style={{
                   fontFamily: 'var(--font-display)',
                   color: 'var(--accent-gold)',
-                  fontSize: '14px',
+                  fontSize: 'var(--text-sm)',
                   fontWeight: '600',
                 }}
               >
@@ -174,7 +174,7 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
               </div>
               <div
                 style={{
-                  fontSize: '11px',
+                  fontSize: 'var(--text-xs)',
                   color: 'var(--text-tertiary)',
                   lineHeight: '1.3',
                 }}
@@ -188,7 +188,7 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
               style={{
                 fontFamily: 'var(--font-display)',
                 color: 'var(--text-tertiary)',
-                fontSize: '12px',
+                fontSize: 'var(--text-xs)',
               }}
             >
               {terrainLabel(props.terrain)}
@@ -199,7 +199,7 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
           {(props.dangerLevel ?? 0) > 0 && (
             <div
               style={{
-                fontSize: '11px',
+                fontSize: 'var(--text-xs)',
                 color: (props.dangerLevel ?? 0) >= 0.7 ? 'var(--color-danger, #e55)' : 'var(--text-tertiary)',
                 fontFamily: 'var(--font-display)',
               }}
@@ -220,7 +220,7 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
                   <div key={sphere} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                     <div
                       style={{
-                        fontSize: '9px',
+                        fontSize: 'var(--text-xs)',
                         color: 'var(--text-muted)',
                         textTransform: 'uppercase',
                         letterSpacing: '0.5px',
@@ -249,7 +249,7 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
                     </div>
                     <div
                       style={{
-                        fontSize: '9px',
+                        fontSize: 'var(--text-xs)',
                         color: 'var(--text-tertiary)',
                         textTransform: 'capitalize',
                       }}
@@ -266,7 +266,7 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
           {dominantCulture || dominantFaction ? (
             <div
               style={{
-                fontSize: '11px',
+                fontSize: 'var(--text-xs)',
                 color: 'var(--text-secondary)',
                 display: 'flex',
                 flexDirection: 'column',
@@ -277,13 +277,13 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
             >
               {dominantCulture && (
                 <div>
-                  <span style={{ color: 'var(--text-tertiary)', fontSize: '9px' }}>Culture: </span>
+                  <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>Culture: </span>
                   {dominantCulture.cultureName}
                 </div>
               )}
               {dominantFaction && (
                 <div>
-                  <span style={{ color: 'var(--text-tertiary)', fontSize: '9px' }}>Controls: </span>
+                  <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>Controls: </span>
                   {dominantFaction.factionName}
                 </div>
               )}
@@ -293,7 +293,7 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
           {/* Quick Stats */}
           <div
             style={{
-              fontSize: '11px',
+              fontSize: 'var(--text-xs)',
               color: 'var(--text-secondary)',
               display: 'flex',
               flexDirection: 'column',
@@ -341,7 +341,7 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
                       border: 'none',
                       color: 'var(--accent-gold)',
                       cursor: 'pointer',
-                      fontSize: '10px',
+                      fontSize: 'var(--text-xs)',
                       textAlign: 'left',
                       padding: '2px 4px',
                       transition: 'color 0.2s',
@@ -402,7 +402,7 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
                 <div
                   style={{
                     fontFamily: 'var(--font-display)',
-                    fontSize: '9px',
+                    fontSize: 'var(--text-xs)',
                     color: 'var(--text-tertiary)',
                     textTransform: 'uppercase',
                     letterSpacing: '0.12em',
@@ -414,7 +414,7 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
                 <div
                   style={{
                     fontFamily: 'var(--font-display)',
-                    fontSize: '13px',
+                    fontSize: 'var(--text-xs)',
                     color: 'var(--text-primary)',
                     lineHeight: '1.2',
                   }}
@@ -426,7 +426,7 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
                   <span
                     style={{
                       fontFamily: 'var(--font-display)',
-                      fontSize: '9px',
+                      fontSize: 'var(--text-xs)',
                       padding: '2px 5px',
                       background: 'var(--bg-raised)',
                       border: `1px solid ${isLegendary ? 'var(--accent-gold)' : 'var(--border-subtle)'}`,
@@ -441,7 +441,7 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
                   {dominantSphere && (
                     <span
                       style={{
-                        fontSize: '9px',
+                        fontSize: 'var(--text-xs)',
                         padding: '2px 5px',
                         background: 'var(--bg-raised)',
                         border: '1px solid var(--border-subtle)',
@@ -469,7 +469,7 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
                 {/* Danger zone */}
                 <div
                   style={{
-                    fontSize: '10px',
+                    fontSize: 'var(--text-xs)',
                     color: 'var(--text-tertiary)',
                   }}
                 >
@@ -479,7 +479,7 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
                 {namedEliteId && (
                   <div
                     style={{
-                      fontSize: '10px',
+                      fontSize: 'var(--text-xs)',
                       color: 'var(--text-secondary)',
                     }}
                   >
@@ -506,7 +506,7 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
               <div
                 style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: '9px',
+                  fontSize: 'var(--text-xs)',
                   color: 'var(--text-tertiary)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.12em',
@@ -517,7 +517,7 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
               <div
                 style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: '13px',
+                  fontSize: 'var(--text-xs)',
                   color: 'var(--text-tertiary)',
                   lineHeight: '1.2',
                 }}
@@ -526,7 +526,7 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
               </div>
               <div
                 style={{
-                  fontSize: '10px',
+                  fontSize: 'var(--text-xs)',
                   color: 'var(--text-tertiary)',
                   fontStyle: 'italic',
                 }}
@@ -541,7 +541,7 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
           {/* Collapsed View: Terrain Icon + Sphere Pips + Count */}
           <div
             style={{
-              fontSize: '10px',
+              fontSize: 'var(--text-xs)',
               color: 'var(--text-tertiary)',
               textAlign: 'center',
               wordBreak: 'break-word',
@@ -579,7 +579,7 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
           {/* Count badge */}
           <div
             style={{
-              fontSize: '9px',
+              fontSize: 'var(--text-xs)',
               color: 'var(--text-secondary)',
               textAlign: 'center',
               marginTop: 'auto',

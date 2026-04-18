@@ -253,7 +253,7 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
                   className="anim-card-fly-up mt-3 pointer-events-none"
                   style={{
                     fontFamily: 'var(--font-prose, serif)',
-                    fontSize: '13px',
+                    fontSize: 'var(--text-xs)',
                     color: 'var(--text-secondary, #a09880)',
                     fontStyle: 'italic',
                     textAlign: 'center',
@@ -311,7 +311,7 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
                       borderRadius: '6px',
                       border: 'none',
                       cursor: isLocked ? 'not-allowed' : 'pointer',
-                      fontSize: '12px',
+                      fontSize: 'var(--text-xs)',
                       fontFamily: 'var(--font-ui, sans-serif)',
                       fontWeight: isActive ? 600 : 400,
                       letterSpacing: '0.03em',
@@ -325,7 +325,7 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
                     {label}
                     <span style={{
                       marginLeft: '4px',
-                      fontSize: '10px',
+                      fontSize: 'var(--text-xs)',
                       opacity: 0.7,
                     }}>
                       {isLocked ? gatedCount : count}

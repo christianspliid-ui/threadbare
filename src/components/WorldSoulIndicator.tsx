@@ -58,7 +58,7 @@ export function WorldSoulIndicator({ aggregate }: WorldSoulIndicatorProps) {
       className="topbar-compact-hide"
       style={{
         fontFamily: 'var(--font-prose, serif)',
-        fontSize: '12px',
+        fontSize: 'var(--text-xs)',
         color: 'var(--text-secondary, #a09880)',
         fontStyle: 'italic',
         lineHeight: 1.4,

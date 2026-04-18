@@ -91,7 +91,7 @@ export function BondBeat({ candidate, vision, hungerId, primarySphere, onComplet
               background: 'transparent',
               border: 'none',
               borderBottom: `1px solid ${sphereColor}40`,
-              fontFamily: 'Cinzel, Georgia, serif',
+              fontFamily: 'var(--font-display)',
               fontSize: '1.8rem',
               color: '#e8e0d0',
               textAlign: 'center',
@@ -104,7 +104,7 @@ export function BondBeat({ candidate, vision, hungerId, primarySphere, onComplet
             onClick={() => setEditingName(true)}
             className="cursor-pointer"
             style={{
-              fontFamily: 'Cinzel, Georgia, serif',
+              fontFamily: 'var(--font-display)',
               fontSize: '1.8rem',
               color: '#e8e0d0',
               letterSpacing: '0.08em',
@@ -119,7 +119,7 @@ export function BondBeat({ candidate, vision, hungerId, primarySphere, onComplet
           style={{
             fontFamily: 'Georgia, "Times New Roman", serif',
             fontStyle: 'italic',
-            fontSize: '0.9rem',
+            fontSize: 'var(--text-xs)',
             color: 'rgba(200,190,170,0.6)',
             letterSpacing: '0.04em',
           }}

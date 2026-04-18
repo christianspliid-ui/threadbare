@@ -9,7 +9,7 @@ const EMPTY_STATE_STYLE: React.CSSProperties = {
   textAlign: 'center',
   color: 'var(--text-primary)',
   opacity: 0.4,
-  fontSize: '13px',
+  fontSize: 'var(--text-xs)',
 };
 
 const OVERLAY_TOGGLE_STYLE: React.CSSProperties = {
@@ -17,14 +17,14 @@ const OVERLAY_TOGGLE_STYLE: React.CSSProperties = {
   alignItems: 'center',
   gap: '6px',
   padding: '4px 8px',
-  fontSize: '11px',
+  fontSize: 'var(--text-xs)',
   color: 'var(--text-primary)',
   cursor: 'pointer',
   userSelect: 'none',
 };
 
 const SOCIAL_SECTION_HEADER_STYLE: React.CSSProperties = {
-  fontSize: '12px',
+  fontSize: 'var(--text-xs)',
   fontWeight: 600,
   color: 'var(--accent-gold)',
   padding: '8px 0 4px',

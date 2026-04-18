@@ -7,7 +7,7 @@ const EMPTY_STATE_STYLE: React.CSSProperties = {
   textAlign: 'center',
   color: 'var(--text-primary)',
   opacity: 0.4,
-  fontSize: '13px',
+  fontSize: 'var(--text-xs)',
 };
 
 const DETAIL_ROW_STYLE: React.CSSProperties = {
@@ -105,7 +105,7 @@ export function ArmiesTabContent({ graph, currentTick, onZoomToLocation }: Armie
                       <button
                         onClick={() => onZoomToLocation(location.id)}
                         title={`Zoom to ${location.name}`}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: '12px', lineHeight: 1 }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 'var(--text-xs)', lineHeight: 1 }}
                       >&#x1F441;</button>
                     )}
                   </span>

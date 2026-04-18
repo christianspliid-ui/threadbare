@@ -97,7 +97,7 @@ export function DoomBar({ definition, state, journeyLabel }: DoomBarProps) {
         </div>
         <div
           className="flex items-center justify-between gap-2 mb-1"
-          style={{ fontSize: '10px', color: 'var(--text-muted)' }}
+          style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}
         >
           <span className="truncate">{journeyHint}</span>
           <span className="truncate" style={{ maxWidth: '84px', textAlign: 'right' }}>{nextStageHint}</span>

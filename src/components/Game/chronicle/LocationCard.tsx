@@ -86,7 +86,7 @@ export const LocationCard = memo(function LocationCard({
             style={{
               fontFamily: 'var(--font-display)',
               color: 'var(--text-primary)',
-              fontSize: '0.95rem',
+              fontSize: 'var(--text-xs)',
               fontWeight: 600,
               transition: 'color 0.15s ease',
             }}
@@ -115,7 +115,7 @@ export const LocationCard = memo(function LocationCard({
             style={{
               fontFamily: 'var(--font-prose)',
               color: 'var(--text-secondary)',
-              fontSize: '0.8rem',
+              fontSize: 'var(--text-xs)',
               fontStyle: 'italic',
               lineHeight: 1.6,
               margin: '0 0 4px 0',

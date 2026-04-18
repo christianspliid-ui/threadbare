@@ -30,7 +30,7 @@ export const HEADER_STYLE: React.CSSProperties = {
   padding: '12px 16px',
   borderBottom: `1px solid ${PANEL_STYLES.borderColor}`,
   color: PANEL_STYLES.textColor,
-  fontSize: '13px',
+  fontSize: 'var(--text-xs)',
 };
 
 export const TAB_BAR_STYLE: React.CSSProperties = {
@@ -47,7 +47,7 @@ const TAB_BUTTON_BASE: React.CSSProperties = {
   background: 'transparent',
   color: PANEL_STYLES.textColor,
   cursor: 'pointer',
-  fontSize: '12px',
+  fontSize: 'var(--text-xs)',
   fontWeight: 500,
   transition: 'all 200ms ease-out',
 };
@@ -72,7 +72,7 @@ export const FILTER_AREA_STYLE: React.CSSProperties = {
   display: 'flex',
   flexWrap: 'wrap',
   gap: '6px',
-  fontSize: '11px',
+  fontSize: 'var(--text-xs)',
 };
 
 export const CHECKBOX_LABEL_STYLE: React.CSSProperties = {
@@ -96,7 +96,7 @@ export const EMPTY_STATE_STYLE: React.CSSProperties = {
   textAlign: 'center',
   color: PANEL_STYLES.textColor,
   opacity: 0.4,
-  fontSize: '13px',
+  fontSize: 'var(--text-xs)',
 };
 
 export const SELECT_STYLE: React.CSSProperties = {
@@ -106,6 +106,6 @@ export const SELECT_STYLE: React.CSSProperties = {
   border: `1px solid var(--border-subtle)`,
   color: 'var(--text-primary)',
   borderRadius: '3px',
-  fontSize: '12px',
+  fontSize: 'var(--text-xs)',
   cursor: 'pointer',
 };

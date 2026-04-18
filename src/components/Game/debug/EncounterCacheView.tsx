@@ -17,13 +17,13 @@ const SECTION_STYLE: React.CSSProperties = {
   background: 'var(--bg-raised)',
   border: '1px solid var(--border-subtle)',
   borderRadius: '4px',
-  fontSize: '12px',
+  fontSize: 'var(--text-xs)',
   fontFamily: 'monospace',
   color: 'var(--text-primary)',
 };
 
 const HEADING_STYLE: React.CSSProperties = {
-  fontSize: '11px',
+  fontSize: 'var(--text-xs)',
   fontWeight: 600,
   textTransform: 'uppercase' as const,
   letterSpacing: '0.5px',
@@ -59,7 +59,7 @@ const LOCATION_ROW_STYLE: React.CSSProperties = {
 
 const ENCOUNTER_ITEM_STYLE: React.CSSProperties = {
   padding: '4px 8px',
-  fontSize: '11px',
+  fontSize: 'var(--text-xs)',
   borderLeft: '2px solid var(--border-subtle)',
   marginLeft: '8px',
   marginBottom: '2px',
@@ -90,7 +90,7 @@ const EMPTY_STATE_STYLE: React.CSSProperties = {
   padding: '16px',
   textAlign: 'center',
   color: 'var(--text-muted)',
-  fontSize: '12px',
+  fontSize: 'var(--text-xs)',
   opacity: 0.6,
 };
 
@@ -249,7 +249,7 @@ export const EncounterCacheView = React.memo(function EncounterCacheView({
     <div data-testid="encounter-cache-view">
       {/* Export Controls */}
       <div style={{ ...SECTION_STYLE, display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-        <label style={{ ...LABEL_STYLE, minWidth: 'auto', fontSize: '11px' }}>Export Log:</label>
+        <label style={{ ...LABEL_STYLE, minWidth: 'auto', fontSize: 'var(--text-xs)' }}>Export Log:</label>
         <select
           value={effectiveExportAgent ?? ''}
           onChange={(e) => setSelectedExportAgent(e.target.value || null)}
@@ -260,7 +260,7 @@ export const EncounterCacheView = React.memo(function EncounterCacheView({
             border: '1px solid var(--border-subtle)',
             borderRadius: '3px',
             padding: '3px 6px',
-            fontSize: '11px',
+            fontSize: 'var(--text-xs)',
             fontFamily: 'monospace',
           }}
         >
@@ -279,7 +279,7 @@ export const EncounterCacheView = React.memo(function EncounterCacheView({
             border: '1px solid var(--border-subtle)',
             borderRadius: '3px',
             padding: '3px 10px',
-            fontSize: '11px',
+            fontSize: 'var(--text-xs)',
             fontFamily: 'monospace',
             fontWeight: 600,
             cursor: effectiveExportAgent ? 'pointer' : 'not-allowed',
@@ -299,7 +299,7 @@ export const EncounterCacheView = React.memo(function EncounterCacheView({
             border: '1px solid var(--border-subtle)',
             borderRadius: '3px',
             padding: '3px 10px',
-            fontSize: '11px',
+            fontSize: 'var(--text-xs)',
             fontFamily: 'monospace',
             fontWeight: 600,
             cursor: hasTrackedAgents ? 'pointer' : 'not-allowed',
@@ -458,7 +458,7 @@ export const EncounterCacheView = React.memo(function EncounterCacheView({
                   >
                     {getEncounterName(e.templateId)}
                   </div>
-                  <div style={{ color: 'var(--text-muted)', fontSize: '10px' }}>
+                  <div style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>
                     {e.reachPrimary}/{e.reachSecondary} | {e.encounterType} | {e.threatRating} | {e.stepCount} steps | ~{e.totalTickCost} ticks | reward {e.successRewardEstimate.toFixed(1)}
                   </div>
                 </div>
@@ -487,11 +487,11 @@ function EventNodeRow({ event, currentTick }: { event: GraphNode; currentTick: n
         <span style={{ color: 'var(--text-primary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {event.name}
         </span>
-        <span style={{ color, fontWeight: 600, whiteSpace: 'nowrap', fontSize: '10px' }}>
+        <span style={{ color, fontWeight: 600, whiteSpace: 'nowrap', fontSize: 'var(--text-xs)' }}>
           {outcome?.replace('_', ' ')}
         </span>
       </div>
-      <div style={{ color: 'var(--text-muted)', fontSize: '10px' }}>
+      <div style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>
         {event.properties.reachTested} | {event.properties.encounterType} | tick {event.properties.tick as number} ({formatEventTick(event.properties.tick as number, currentTick)})
       </div>
     </div>
@@ -570,7 +570,7 @@ const EventHistorySection = React.memo(function EventHistorySection({
       {/* Agent history (when following) */}
       {followAgentId && (
         <div style={{ marginTop: '8px' }}>
-          <div style={{ ...HEADING_STYLE, fontSize: '10px', color: 'var(--text-secondary)' }}>
+          <div style={{ ...HEADING_STYLE, fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
             Followed Agent History ({agentHistory.length})
           </div>
           {agentHistory.length === 0 ? (
@@ -586,7 +586,7 @@ const EventHistorySection = React.memo(function EventHistorySection({
       {/* Top locations by event count */}
       {topLocations.length > 0 && (
         <div style={{ marginTop: '8px' }}>
-          <div style={{ ...HEADING_STYLE, fontSize: '10px', color: 'var(--text-secondary)' }}>
+          <div style={{ ...HEADING_STYLE, fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
             Most Active Locations
           </div>
           {topLocations.map(loc => (

@@ -515,7 +515,7 @@ function CompactThreadRow({
           <span
             title={familyPresentation.label}
             style={{
-              fontSize: '12px',
+              fontSize: 'var(--text-xs)',
               color: familyPresentation.color,
               flexShrink: 0,
               lineHeight: 1,
@@ -538,7 +538,7 @@ function CompactThreadRow({
               border: 'none',
               width: '20px',
               height: '20px',
-              fontSize: '12px',
+              fontSize: 'var(--text-xs)',
               flexShrink: 0,
               backgroundColor: 'transparent',
             }}
@@ -806,7 +806,7 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
               onClick={() => toggleSection(category)}
               style={{ paddingLeft: 'var(--space-2)', paddingRight: 'var(--space-2)' }}
             >
-              <span style={{ fontSize: '10px', color: 'var(--text-tertiary)', flexShrink: 0 }}>
+              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', flexShrink: 0 }}>
                 {chevron}
               </span>
               <SectionHeading count={group.length}>{label}</SectionHeading>

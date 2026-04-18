@@ -49,7 +49,7 @@ export const SubLocationEntry = memo(function SubLocationEntry({
           style={{
             fontFamily: 'var(--font-display)',
             color: 'var(--text-secondary)',
-            fontSize: '0.85rem',
+            fontSize: 'var(--text-xs)',
             fontWeight: 500,
             textDecoration: 'underline',
             textDecorationColor: 'var(--border-subtle)',
@@ -65,7 +65,7 @@ export const SubLocationEntry = memo(function SubLocationEntry({
           style={{
             fontFamily: 'var(--font-prose)',
             color: 'var(--text-tertiary)',
-            fontSize: '0.75rem',
+            fontSize: 'var(--text-xs)',
             fontStyle: 'italic',
             lineHeight: 1.5,
             margin: '2px 0 0 0',

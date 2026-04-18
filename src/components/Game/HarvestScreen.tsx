@@ -53,7 +53,7 @@ export function HarvestScreen({ harvest, cycle, onBeginNextCycle }: HarvestScree
           <Tooltip id="ui.harvest_type">
             <h2
               className="text-2xl font-bold tracking-wide cursor-help"
-              style={{ color: style.color, fontFamily: 'Cinzel, serif' }}
+              style={{ color: style.color, fontFamily: 'var(--font-display)' }}
             >
               {style.title}
             </h2>
@@ -94,7 +94,7 @@ export function HarvestScreen({ harvest, cycle, onBeginNextCycle }: HarvestScree
             style={{
               backgroundColor: style.color,
               color: '#1c1917',
-              fontFamily: 'Cinzel, serif',
+              fontFamily: 'var(--font-display)',
               boxShadow: `0 0 20px ${style.color}40`,
             }}
           >
