@@ -91,7 +91,7 @@ function addSettlement(graph: WorldGraph, id: string, hexId: string, subtype: st
 
 function getSiegeRegionalTraces(_tick: number) {
   return getTraces().filter(
-    t => (t as Record<string, unknown>).event === 'siege_regional_encounter',
+    t => (t as Record<string, unknown>).category === 'siege_regional_seeded',
   );
 }
 
@@ -147,7 +147,7 @@ describe('generateRegionalEncounters', () => {
 
     generateRegionalEncounters(makeState(1, graph), siegeId);
     const traces = getSiegeRegionalTraces(1) as Array<Record<string, unknown>>;
-    const callForAid = traces.find(t => t.encounterType === 'siege.regional.call_for_aid');
+    const callForAid = traces.find(t => t.templateId === 'siege.regional.call_for_aid');
     expect(callForAid).toBeDefined();
     expect(callForAid?.actorId).toBe('defender_agent');
   });
@@ -171,7 +171,7 @@ describe('generateRegionalEncounters', () => {
 
     generateRegionalEncounters(makeState(1, graph), siegeId);
     const traces = getSiegeRegionalTraces(1) as Array<Record<string, unknown>>;
-    const smuggle = traces.find(t => t.encounterType === 'siege.regional.smuggle_supplies');
+    const smuggle = traces.find(t => t.templateId === 'siege.regional.smuggle_supplies');
     expect(smuggle).toBeDefined();
     expect(smuggle?.actorId).toBe('shadow_agent');
   });
@@ -195,7 +195,7 @@ describe('generateRegionalEncounters', () => {
 
     generateRegionalEncounters(makeState(1, graph), siegeId);
     const traces = getSiegeRegionalTraces(1) as Array<Record<string, unknown>>;
-    const negotiate = traces.find(t => t.encounterType === 'siege.regional.negotiate_terms');
+    const negotiate = traces.find(t => t.templateId === 'siege.regional.negotiate_terms');
     expect(negotiate).toBeDefined();
     expect(negotiate?.actorId).toBe('heart_agent');
   });

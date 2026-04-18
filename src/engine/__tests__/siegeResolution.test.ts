@@ -319,6 +319,8 @@ describe('regional materialization propagates effectiveTier (THR-18)', () => {
 
   beforeEach(() => {
     graph = new WorldGraph();
+    clearTraces();
+    enableTracing();
 
     // Siege hex at (0, 0)
     graph.addNode({ id: 'hex0', type: 'hex', name: 'Hex 0', properties: { hexCol: 0, hexRow: 0 } });
@@ -333,9 +335,15 @@ describe('regional materialization propagates effectiveTier (THR-18)', () => {
     graph.addEdge({ id: 'e_town_hex', source: 'town1', target: 'hex0', type: 'located_at', properties: {} });
 
     siegeId = createSiegeNode(makeState(0, graph), 'army1', 'town1', 'hex0')!;
+    clearTraces();
   });
 
-  it('smuggle_supplies for shadow-capable actor with retinue thread → shaping', () => {
+  afterEach(() => {
+    disableTracing();
+    clearTraces();
+  });
+
+  it('smuggle_supplies for shadow-capable actor with retinue thread → shaping trace', () => {
     // Add shadow-capable agent near siege
     graph.addNode({
       id: 'agent1',
@@ -358,13 +366,14 @@ describe('regional materialization propagates effectiveTier (THR-18)', () => {
     const state = makeState(1, graph, { ascendantId: 'asc1' });
     tickSiege(state, siegeId);
 
-    const regional = (state.encounterProgress as EncounterProgress[])
-      .find(ep => ep.encounterId === 'siege.regional.smuggle_supplies');
+    const traces = getTraces().filter(t => (t as Record<string, unknown>).category === 'siege_regional_seeded');
+    const regional = traces.find(t => (t as Record<string, unknown>).templateId === 'siege.regional.smuggle_supplies') as Record<string, unknown> | undefined;
     expect(regional).toBeDefined();
+    // retinue preserves intrinsic tier (shaping → shaping)
     expect(regional!.effectiveTier).toBe('shaping');
   });
 
-  it('join_attackers for attacker-allied actor (background tier) → background', () => {
+  it('join_attackers for attacker-allied actor (background) → background trace', () => {
     // Add agent in attacker faction near siege
     graph.addNode({
       id: 'agent2',
@@ -378,20 +387,17 @@ describe('regional materialization propagates effectiveTier (THR-18)', () => {
     const state = makeState(1, graph);
     tickSiege(state, siegeId);
 
-    const regional = (state.encounterProgress as EncounterProgress[])
-      .find(ep => ep.encounterId === 'siege.regional.join_attackers');
+    const traces = getTraces().filter(t => (t as Record<string, unknown>).category === 'siege_regional_seeded');
+    const regional = traces.find(t => (t as Record<string, unknown>).templateId === 'siege.regional.join_attackers') as Record<string, unknown> | undefined;
     expect(regional).toBeDefined();
-    // No thread → resolveEffectiveTier returns 'invisible' → falls back to 'background'
+    // No thread → 'invisible' → falls back to 'background'
     expect(regional!.effectiveTier).toBe('background');
   });
 
   it('fail-soft: regional template missing intrinsicTier defaults to background', () => {
-    // Force a scenario where the template lookup fails by using a non-existent encounter type
     // We test the fallback constant directly — regional default is 'background'
     const tpl = SIEGE_REGIONAL_TEMPLATES.find(t => t.id === 'siege.regional.join_attackers');
     expect(tpl).toBeDefined();
-    // If intrinsicTier were missing, SIEGE_REGIONAL_TIER_DEFAULT = 'background' would be used
-    // We verify the template has it set correctly (ensures the type is satisfied)
     expect(tpl!.intrinsicTier).toBeDefined();
     expect(['background', 'shaping', 'story_beat']).toContain(tpl!.intrinsicTier);
   });
