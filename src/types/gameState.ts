@@ -222,6 +222,10 @@ export interface GameState {
   // Cleared each tick. Each shock traces back to a discrete cause (encounter, route loss, etc.)
   prosperityShocks?: ProsperityShock[];
 
+  // Dynamic faction definitions — FactionDefinitions created at runtime by agent initiatives (THR-51)
+  // Keyed by definition ID. Merged with static FACTION_DEFINITIONS when looking up a faction.
+  dynamicFactionDefinitions?: Record<string, import('./faction').FactionDefinition>;
+
   // Strategic actions — proactive world-shaping behavior driven by ambitions
   strategicState?: StrategicRuntimeState;
 

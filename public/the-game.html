@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Threadbearer — A God-Game of Emergent Myth</title>
-<meta name="description" content="Shape a living world as a newly awakened god. Guide mortals, forge empires, and race against the unmaking of everything you've built.">
+<title>Threadbearer &mdash; A Turn-Based God-Game of Mortal Stories</title>
+<meta name="description" content="You are a new god in a world that's already alive. Follow the stories of mortals who don't know you're watching. Whisper. Nudge. Let them choose.">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Fira+Code:wght@300;400&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -381,15 +381,17 @@ section .lead {
 /* ═══ SPHERE STRIP ═══ */
 .sphere-strip {
   display: flex;
+  flex-wrap: wrap;
   gap: 0;
   width: 100vw;
   margin-left: calc(-50vw + 50%);
-  height: 200px;
   overflow: hidden;
 }
 
 .sphere-strip .sphere-cell {
-  flex: 1;
+  flex: 1 1 calc(100% / 12);
+  min-width: 0;
+  height: 200px;
   position: relative;
   overflow: hidden;
 }
@@ -507,7 +509,7 @@ footer {
   .pillar-text { padding: 2.5rem; border: 1px solid var(--line); border-top: none; }
   .pillar.reversed .pillar-text { border: 1px solid var(--line); border-top: none; }
   .features { grid-template-columns: 1fr; }
-  .sphere-strip { height: 120px; }
+  .sphere-strip .sphere-cell { flex: 1 1 calc(100% / 6); height: 120px; }
   section { padding: 5rem 2rem; }
 }
 
@@ -532,17 +534,29 @@ footer {
   </div>
   <div class="hero-content">
     <div class="hero-wordmark"><img src="/images/threadbearer-wordmarkv2.png" alt="Threadbearer"></div>
-    <div class="hero-tagline">A god-game of emergent myth</div>
+    <div class="hero-tagline">Pull the threads. Weave the world.</div>
     <a href="/?view=game" class="hero-cta">Enter the World</a>
   </div>
   <div class="scroll-hint">Scroll to discover</div>
 </div>
 
-<!-- ═══════════════ PITCH ═══ -->
+<!-- ═══════════════ I &middot; PREMISE ═══ -->
+<section class="reveal" style="text-align:center; max-width: 900px;">
+  <div class="section-tag">I &middot; The Premise</div>
+  <h2 style="font-style: italic;">A world without gods is not without prayer.</h2>
+  <p class="lead" style="font-style: italic; color: var(--gold-pale); max-width: 700px; margin-left: auto; margin-right: auto;">
+    Somewhere, a scholar is rereading a word that should not exist.<br>
+    Somewhere, a swordbearer is waking to a morning she will not survive.<br>
+    Somewhere, the wind is changing direction for the first time in an age.
+  </p>
+  <p class="lead" style="max-width: 700px; margin-left: auto; margin-right: auto;">You are new. The world is old. It will not wait for you to learn its name.</p>
+</section>
+
+<!-- ═══════════════ II &middot; THE WORKING ═══ -->
 <section class="reveal">
-  <div class="section-tag">The Promise</div>
-  <h2>You are a god.<br>The world is <em>yours to shape.</em></h2>
-  <p class="lead">Awaken as a newly formed deity in a world that doesn't know your name. Thread your will through mortal lives. Build civilizations. Forge empires. Wage wars. Watch as your choices ripple through a living simulation where every action shifts the cosmic balance &mdash; and the clock is always ticking toward the end of everything.</p>
+  <div class="section-tag">II &middot; The Working</div>
+  <h2>You whisper. <em>They choose.</em></h2>
+  <p class="lead">Awaken as a young god in a world that has forgotten what gods are. You will not move them; you will move what they see, what they dream, what falls in their path. Civilizations will rise and fall around the few mortals you watch most closely. Every thread you pull sends a tremor through the tapestry &mdash; and somewhere ahead, an age is ending.</p>
 </section>
 
 <!-- ═══════════════ ATMOSPHERE ART ═══ -->
@@ -551,61 +565,61 @@ footer {
   <div class="art-quote">"The world exists before you. It will exist after. What you do in between is the story."</div>
 </div>
 
-<!-- ═══════════════ FOUR PROMISES ═══ -->
+<!-- ═══════════════ III &middot; FOUR PROMISES ═══ -->
 <section class="reveal">
-  <div class="section-tag">What awaits</div>
-  <h2>A world that <em>lives</em></h2>
+  <div class="section-tag">III &middot; Four Promises</div>
+  <h2>What we promise the <em>thread you pull.</em></h2>
   <p class="lead">Threadbearer is not a game with a world attached. It is a world with a game discovered inside it.</p>
 
   <div class="promises">
     <div class="promise reveal">
       <span class="p-icon">&#x2726;</span>
-      <h3>Every run tells a different story</h3>
-      <p>Your divine mandate defines what kind of god you are this time. Build a trade empire. Shepherd a mortal to ascension. Unite warring kingdoms. Each playthrough is a unique myth written by the collision of your choices and a world that reacts to them.</p>
+      <h3>Your world is yours alone</h3>
+      <p>The same seed produces the same world; your choices produce a different age. No two reigns are the same myth twice. Share a world with a friend and watch your stories diverge from the same dawn.</p>
     </div>
     <div class="promise reveal">
       <span class="p-icon">&#x2737;</span>
-      <h3>Systems that surprise each other</h3>
-      <p>The economy reacts to war. War reacts to cosmic balance. Cosmic balance reacts to your divine interventions. No system exists in isolation &mdash; every thread you pull sends vibrations through the entire tapestry.</p>
+      <h3>Failure is a turn, not a loss</h3>
+      <p>A failed gambit deepens the story rather than ending it. A mortal who falls short of greatness becomes a cautionary saga. A war you lose redraws the map and the next age inherits the scars.</p>
     </div>
     <div class="promise reveal">
       <span class="p-icon">&#x2735;</span>
       <h3>Stories, not spreadsheets</h3>
-      <p>You'll never see a stat block. Your agents have character, not numbers. A merchant isn't "Gold: 7" &mdash; she's "a shrewd trader whose ambition outpaces her caution." The world speaks in prose. You read stories, not data.</p>
+      <p>You will never see a stat block. A merchant is not <em>Gold: 7</em> &mdash; she is a shrewd trader whose ambition outpaces her caution. The world speaks in prose. You read stories, not data.</p>
     </div>
     <div class="promise reveal">
       <span class="p-icon">&#x2739;</span>
-      <h3>The clock is always ticking</h3>
-      <p>The Doom Clock counts down to the Unmaking &mdash; the end of the current age. As it advances, the world frays: resources wither, armies converge, ancient debts come due. You must complete your mandate before everything you've built is unmade.</p>
+      <h3>Every age must end</h3>
+      <p>The world frays as your reign deepens. Resources wither. Old debts come due. Armies converge on places they have always converged. You do not race a clock &mdash; you choose what becomes of the world before its ending becomes your own.</p>
     </div>
   </div>
 </section>
 
-<!-- ═══════════════ PILLAR 1: DIVINE POWER ═══ -->
+<!-- ═══════════════ IV &middot; YOUR HAND ═══ -->
 <div class="pillar reveal">
   <div class="pillar-img">
-    <img src="/backgrounds/court/spirit.png" alt="Purple ethereal energy — divine power" loading="lazy">
+    <img src="/backgrounds/court/spirit.png" alt="Purple ethereal energy — divine influence" loading="lazy">
   </div>
   <div class="pillar-text">
-    <div class="section-tag">Divine Power</div>
-    <h3>Shape the world through <em>will alone</em></h3>
-    <p>You don't move units or click buttons. You are a god. Dream prophecies into mortal minds. Inspire heroes. Curse the land. Forge artifacts of terrible power. Shift the cosmic balance between Life and Entropy, Order and Chaos.</p>
-    <p>Your influence flows through the agents you've chosen &mdash; mortals threaded to your will. Your First, the hero whose journey defines your reign. Your retinue, the faithful who carry your purpose into the world.</p>
-    <div class="pillar-detail">43 divine actions across four narrative layers: Land, Soul, People, and Ruins. Eight intervention types from subtle dreams to devastating afflictions.</div>
+    <div class="section-tag">IV &middot; Your Hand</div>
+    <h3>You do not move units. <em>You send a dream.</em></h3>
+    <p>You are a god. You dream prophecies into the heads of sleeping kings. You inspire a coward to draw his sword. You curse a harvest. You set a single word into the mouth of a wandering scholar and watch what he builds with it. You shift the cosmic balance between Life and Entropy, Order and Chaos &mdash; not by command, but by where you place your weight.</p>
+    <p>Your will reaches the world through the few mortals you watch most closely &mdash; the one whose story you are most invested in, and the smaller circle of those drawn into their orbit. You whisper. They choose. Sometimes they hear you. Sometimes they hear something else.</p>
+    <div class="pillar-detail">Whispers, dreams, omens, blessings, curses, visions, calls and visitations &mdash; every divine touch arrives as something a mortal can refuse, misread, or carry too far.</div>
   </div>
 </div>
 
-<!-- ═══════════════ PILLAR 2: LIVING WORLD ═══ -->
+<!-- ═══════════════ V &middot; THE WEATHER ═══ -->
 <div class="pillar reversed reveal">
   <div class="pillar-img">
     <img src="/concept-art/locations/city.png" alt="A great coastal city at twilight" loading="lazy">
   </div>
   <div class="pillar-text">
-    <div class="section-tag">A Living World</div>
-    <h3>Civilizations that <em>grow, trade, and fall</em></h3>
+    <div class="section-tag">V &middot; The Weather</div>
+    <h3>Civilizations that <em>grow, trade, and fall.</em></h3>
     <p>Settlements rise from hamlets to cities. Markets open. Trade routes thread between capitals. Guilds form, compete, and scheme. Prosperity flows where commerce thrives &mdash; and collapses where war arrives.</p>
-    <p>Every settlement has character. A mining town in the mountains feels different from a port city on the coast. Not because we scripted it, but because the simulation produces it.</p>
-    <div class="pillar-detail">Dynamic prosperity, trade routes with decay, economic sublocations (mines, markets, harbors), faction-driven guilds, and settlement promotion from hamlet to metropolis.</div>
+    <p>Every settlement has character. A mining town in the mountains feels different from a port city on the coast &mdash; not because someone wrote each one, but because the world remembers what kind of place it is.</p>
+    <div class="pillar-detail">Markets and mines, harbors and shrines, ruined keeps and golden capitals. Settlements that climb, settlements that fall, and the trade roads that thread them together.</div>
   </div>
 </div>
 
@@ -619,72 +633,76 @@ footer {
   <div class="sphere-cell"><img src="/backgrounds/court/entropy.png" alt="Entropy sphere" loading="lazy"><span class="sphere-name">Entropy</span></div>
   <div class="sphere-cell"><img src="/backgrounds/court/matter.png" alt="Matter sphere" loading="lazy"><span class="sphere-name">Matter</span></div>
   <div class="sphere-cell"><img src="/backgrounds/court/energy.png" alt="Energy sphere" loading="lazy"><span class="sphere-name">Energy</span></div>
+  <div class="sphere-cell"><img src="/backgrounds/court/entropy.png" alt="Chaos sphere" loading="lazy"><span class="sphere-name">Chaos</span></div>
+  <div class="sphere-cell"><img src="/backgrounds/court/force.png" alt="Order sphere" loading="lazy"><span class="sphere-name">Order</span></div>
+  <div class="sphere-cell"><img src="/backgrounds/court/energy.png" alt="Light sphere" loading="lazy"><span class="sphere-name">Light</span></div>
+  <div class="sphere-cell"><img src="/backgrounds/court/spirit.png" alt="Darkness sphere" loading="lazy"><span class="sphere-name">Darkness</span></div>
 </div>
 
-<!-- ═══════════════ PILLAR 3: CONFLICT ═══ -->
+<!-- ═══════════════ VI &middot; WAR &amp; RUIN ═══ -->
 <div class="pillar reveal">
   <div class="pillar-img">
     <img src="/concept-art/locations/battleground.png" alt="The aftermath of a great battle" loading="lazy">
   </div>
   <div class="pillar-text">
-    <div class="section-tag">War & Ruin</div>
+    <div class="section-tag">VI &middot; War &amp; Ruin</div>
     <h3>Empires fall. <em>Cities burn.</em></h3>
     <p>Armies march across the hex map, led by faction champions with war goals of their own. Sieges grind against city walls. When a settlement is sacked, its markets close, its people flee, and what was once a thriving city becomes ruins for future adventurers to explore.</p>
     <p>Rival gods field their own armies. Ancient monsters roam the borderlands. The world is beautiful and dangerous in equal measure.</p>
-    <div class="pillar-detail">Faction-driven warfare, siege mechanics, location destruction and demotion, refugee generation, monster encounters scaled by province danger, and divine intervention in battle.</div>
+    <div class="pillar-detail">Sieges that grind. Cities that fall and become ruins for the next age to plunder. Rival gods who field armies of their own. Old monsters who remember when the borderlands were theirs.</div>
   </div>
 </div>
 
-<!-- ═══════════════ PILLAR 4: AGENTS ═══ -->
+<!-- ═══════════════ VII &middot; MORTAL LIVES ═══ -->
 <div class="pillar reversed reveal">
   <div class="pillar-img">
     <img src="/concept-art/locations/shrine.png" alt="A forest shrine — where mortals seek the divine" loading="lazy">
   </div>
   <div class="pillar-text">
-    <div class="section-tag">Mortal Lives</div>
-    <h3>Guide heroes through <em>their own stories</em></h3>
-    <p>Every mortal has values, ambitions, and a cooperation strategy shaped by their experiences. They don't follow orders &mdash; they have their own axiological profiles that determine how they respond to your divine influence.</p>
-    <p>Meet your First: the mortal whose journey defines your reign. Witness their origin through dilemmas you choose. Watch them grow from uncertain wanderer to legendary champion &mdash; or tragic cautionary tale.</p>
-    <div class="pillar-detail">19 narrative archetypes, axiological motivation engine, hero's journey arcs tied to the doom clock, familiarity-gated revelation, and prose-driven character sheets that unfold as you learn about each mortal.</div>
+    <div class="section-tag">VII &middot; Mortal Lives</div>
+    <h3>The one you <em>watch most closely.</em></h3>
+    <p>Every mortal carries values, ambitions, and a way of refusing the things they were not raised to want. They do not follow orders. They listen, sometimes, to the small voice between their thoughts &mdash; and decide what to do with what they heard.</p>
+    <p>One of them is your particular concern. Their origin unfolds through choices you only half-make for them. You watch them become an oathkeeper, or a wanderer, or a schemer, or a folk hero. You watch them become a cautionary tale. You read the page that turns next.</p>
+    <div class="pillar-detail">Seekers and oathkeepers, schemers and wanderers, doomed innocents and reluctant kings. A handful of shapes a life can take, all of them yours to witness as the page turns.</div>
   </div>
 </div>
 
 <!-- ═══════════════ ATMOSPHERE ART ═══ -->
 <div class="art-full reveal">
   <img src="/concept-art/locations/temple.png" alt="A great golden temple at sunset" loading="lazy">
-  <div class="art-quote">"Nine spheres of creation. Nine reaches of mortal endeavor. One clock counting down to the end."</div>
+  <div class="art-quote">"Twelve cosmic powers. Nine ways a mortal can reach. One world, fraying toward an ending only you can shape."</div>
 </div>
 
-<!-- ═══════════════ FEATURES ═══ -->
+<!-- ═══════════════ VIII &middot; THE CYCLE ═══ -->
 <section class="reveal">
-  <div class="section-tag">Under the Hood</div>
-  <h2>A simulation with <em>real depth</em></h2>
-  <p class="lead">Threadbearer's world is built on interconnected systems that produce emergent behavior. Nothing is scripted. Everything is deterministic.</p>
+  <div class="section-tag">VIII &middot; The Cycle</div>
+  <h2>Every age <em>turns.</em></h2>
+  <p class="lead">A reign is not a campaign. It is a season in the world&apos;s long memory.</p>
 
   <div class="features">
     <div class="feature reveal">
-      <h4>Seeded Determinism</h4>
-      <p>Every world is reproducible. Share a seed with a friend and play the same world. The same choices produce the same outcomes &mdash; but different choices unfold entirely new histories.</p>
+      <h4>A world you can re-enter</h4>
+      <p>Share a world with a friend and play the same dawn. Your choices write a different myth from the same starting page; their choices write theirs. The same world. Two reigns. Two endings.</p>
     </div>
     <div class="feature reveal">
-      <h4>Graph-Native World</h4>
-      <p>Every entity, relationship, and effect is a node or edge in a living graph. Armies, alliances, trade routes, curses &mdash; all the same data structure, all queryable, all traceable.</p>
+      <h4>Everything is connected</h4>
+      <p>An assassination redraws a trade route. A new heresy reshapes an army. A drought wakes an old monster. Pull a thread and the whole tapestry shifts &mdash; you find out where the ripples end only by following them.</p>
     </div>
     <div class="feature reveal">
-      <h4>Hex Map with Terrain Generation</h4>
-      <p>Procedurally generated worlds with realistic climate zones, river systems, biome distribution, and organic coastlines. Mountains form ranges. Rivers flow downhill. Deserts form in rain shadows.</p>
+      <h4>A world made by weather</h4>
+      <p>Mountains form ranges. Rivers flow downhill. Deserts gather behind rain shadows. Coasts curl around drowned valleys. The land is not decoration; it shapes what people grow, what they fight over, and where the old powers sleep.</p>
     </div>
     <div class="feature reveal">
-      <h4>Encounter System</h4>
-      <p>64+ encounter templates across 10 types and 20 location subtypes. Multi-step narratives with cultural overlays, difficulty tiers, and outcomes that ripple through the world.</p>
+      <h4>Encounters with their own weight</h4>
+      <p>Each meeting carries its own weather &mdash; a culture, a history, a way of going wrong. The same scene plays differently in a city, a shrine, a borderland, a ruin. Outcomes ripple outward.</p>
     </div>
     <div class="feature reveal">
-      <h4>Faction Ecology</h4>
-      <p>Guilds, cults, and factions form organically, recruit agents, assign quests, and compete for territory and influence. Join encounters, rank promotions, and inter-faction social dynamics.</p>
+      <h4>Factions that act on their own</h4>
+      <p>Guilds, cults and orders form, recruit, scheme, and turn on each other without your permission. Some will hate you and never know why. Some will pray to you and never reach you. They are playing their own game.</p>
     </div>
     <div class="feature reveal">
-      <h4>The Doom Clock</h4>
-      <p>Seven doom archetypes &mdash; The Breach, The Convergence, The Failing, The Sundering &mdash; each with five-stage thematic escalation that changes how the world feels as the end approaches.</p>
+      <h4>The shape of an age</h4>
+      <p>Each age fails its own way &mdash; a breach, a convergence, a slow failing, a sundering. The world feels different as the ending nears, and the ending it earns becomes the next age&apos;s foundation.</p>
     </div>
   </div>
 </section>
@@ -695,15 +713,17 @@ footer {
   <div class="art-quote">"What kind of god will you be?"</div>
 </div>
 
-<!-- ═══════════════ CLOSING ═══ -->
+<!-- ═══════════════ XII &middot; THE TAPESTRY WAITS ═══ -->
 <div class="closing reveal">
-  <h2>The world is waiting.<br>It doesn't know your name <em>yet.</em></h2>
-  <p>Threadbearer is a god-game for people who love emergent stories, deep simulations, and worlds that feel alive. It's inspired by Crusader Kings, Dwarf Fortress, and the feeling of reading a fantasy epic where you control the divine hand.</p>
-  <a href="/?view=game" class="hero-cta">Play Now</a>
+  <div class="section-tag" style="margin-bottom: 1rem;">XII &middot; The Tapestry Waits</div>
+  <h2>Pick a thread. <em>Pull.</em></h2>
+  <p style="font-style: italic; color: var(--gold-pale);">Somewhere, a scholar is rereading a word that should not exist.<br>Somewhere, a swordbearer is waking to a morning she will not survive.<br>Somewhere, the wind is changing direction for the first time in an age.</p>
+  <p>Threadbearer is for readers who love living casts who carry their own will into your plans, simulations deep enough to surprise their own makers, prose as the primary interface, and epics where the gods stand at the periphery and history is half-remembered.</p>
+  <a href="/?view=game" class="hero-cta">Enter the World</a>
 </div>
 
 <footer>
-  Threadbearer &mdash; The Fantasy World Simulator &middot; A systemic god-game of emergent myth &middot; In development
+  Threadbearer &mdash; The Fantasy World Simulator &middot; A turn-based god-game of living worlds &middot; In development
 </footer>
 
 <script>
