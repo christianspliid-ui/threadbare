@@ -56,7 +56,14 @@ import {
   REPUTATION_POWER_TIER_LEGENDARY,
   REPUTATION_POSITIVE_ENCOUNTER_TYPES,
   REPUTATION_NEGATIVE_ENCOUNTER_TYPES,
+  FACTION_REP_MIN_MEMBERS_FOR_TRAIT,
+  FACTION_REP_RANK_WEIGHT_FALLOFF,
+  FACTION_REP_AGGREGATION_INTERVAL_TICKS,
+  FACTION_REP_DECAY_PER_AGGREGATION,
 } from '../data/agent-behavior-constants';
+import { FACTION_DEFINITIONS } from '../data/faction-definitions';
+import type { MemberOfEdgeProperties } from '../types/disposition';
+import { computeRankFromReputation } from '../types/faction';
 
 // ─── Trait Node Initialization ─────────────────────────────────────
 
@@ -285,7 +292,143 @@ export function phaseReputationTraits(state: GameState): Partial<GameState> {
     }
   }
 
+  // ── Faction reputation aggregation (runs every N ticks) ──
+  if (tick % FACTION_REP_AGGREGATION_INTERVAL_TICKS === 0) {
+    aggregateFactionReputations(graph, tick);
+  }
+
   return {};
+}
+
+// ─── Faction Aggregation ───────────────────────────────────────────
+
+/**
+ * For each faction actor node, scan member_of edges, aggregate member tallies
+ * with rank-weighted contributions, and assign faction-level reputation traits.
+ * Runs every FACTION_REP_AGGREGATION_INTERVAL_TICKS ticks.
+ */
+function aggregateFactionReputations(graph: WorldGraph, tick: number): void {
+  const factionNodes = graph.getNodesByType('actor')
+    .filter(n => n.properties.actorType === 'faction');
+
+  for (const factionNode of factionNodes) {
+    const factionId = factionNode.id;
+    const factionDefId = factionNode.properties.factionDefId as string | undefined;
+
+    const definition = factionDefId ? FACTION_DEFINITIONS.get(factionDefId) : undefined;
+    if (!definition) {
+      emitTrace({
+        tick,
+        category: 'faction_reputation_trait',
+        agentId: factionId,
+        action: 'faction_aggregation_skipped',
+        summary: `Faction ${factionId}: no definition found, skipping aggregation`,
+      } as unknown as Parameters<typeof emitTrace>[0]);
+      continue;
+    }
+
+    const memberEdges = graph.getIncomingEdges(factionId, 'member_of');
+    if (memberEdges.length < FACTION_REP_MIN_MEMBERS_FOR_TRAIT) continue;
+
+    // Decay faction-level tallies first
+    const factionTallies = getTallies(graph, factionId);
+    for (const key of Object.keys(factionTallies) as ReputationTallyKey[]) {
+      const v = factionTallies[key] ?? 0;
+      if (v > 0) factionTallies[key] = Math.max(0, v - FACTION_REP_DECAY_PER_AGGREGATION);
+    }
+
+    // Aggregate member tallies per reach×polarity with rank weighting
+    const totalRanks = definition.rankTiers.length;
+    const aggregated: Partial<Record<ReputationTallyKey, number>> = {};
+
+    let validMemberCount = 0;
+    for (const edge of memberEdges) {
+      const memberId = edge.source;
+      const memberNode = graph.getNode(memberId);
+      if (!memberNode) continue; // fail-soft: skip missing members
+
+      const props = edge.properties as Partial<MemberOfEdgeProperties>;
+      const reputation = props.reputation ?? 0;
+
+      const currentRank = computeRankFromReputation(reputation, definition);
+      const tierIndex = definition.rankTiers.indexOf(currentRank);
+      const rankIndexFromTop = (totalRanks - 1) - Math.max(0, tierIndex);
+      const weight = 1 - (rankIndexFromTop / totalRanks) * FACTION_REP_RANK_WEIGHT_FALLOFF;
+
+      const memberTallies = getTallies(graph, memberId);
+      for (const reach of REACH_DOMAINS) {
+        for (const polarity of ['positive', 'negative'] as const) {
+          const key = tallyKey(reach, polarity);
+          const memberVal = (memberTallies[key] ?? 0) * weight;
+          aggregated[key] = (aggregated[key] ?? 0) + memberVal;
+        }
+      }
+      validMemberCount++;
+    }
+
+    if (validMemberCount === 0) continue;
+
+    // Normalize by member count and merge with decayed faction tallies
+    for (const reach of REACH_DOMAINS) {
+      for (const polarity of ['positive', 'negative'] as const) {
+        const key = tallyKey(reach, polarity);
+        const contributed = (aggregated[key] ?? 0) / validMemberCount;
+        const existing = factionTallies[key] ?? 0;
+        // Take max of existing (decayed) and contributed — let the higher value win
+        factionTallies[key] = Math.max(existing, contributed);
+      }
+    }
+
+    setTallies(graph, factionId, factionTallies);
+
+    // Assign/remove traits based on aggregated tallies
+    for (const reach of REACH_DOMAINS) {
+      const posKey = tallyKey(reach, 'positive');
+      const negKey = tallyKey(reach, 'negative');
+      const posTally = factionTallies[posKey] ?? 0;
+      const negTally = factionTallies[negKey] ?? 0;
+      const posLevel = levelFromTally(posTally);
+      const negLevel = levelFromTally(negTally);
+
+      const posTraitId = getReputationTraitId(reach, 'positive');
+      const negTraitId = getReputationTraitId(reach, 'negative');
+
+      if (posLevel > 0 && posLevel >= negLevel) {
+        syncReputationTrait(graph, factionId, posTraitId, posLevel, tick, reach, 'positive');
+        removeIfPresent(graph, factionId, negTraitId, tick, reach, 'negative');
+        emitTrace({
+          tick,
+          category: 'faction_reputation_trait',
+          agentId: factionId,
+          reach,
+          polarity: 'positive',
+          action: 'trait_assigned',
+          traitLevel: posLevel,
+          memberCount: validMemberCount,
+          aggregatedTally: posTally,
+          summary: `Faction ${factionId}: ${reach}.positive L${posLevel} (${validMemberCount} members, tally ${posTally.toFixed(2)})`,
+        } as unknown as Parameters<typeof emitTrace>[0]);
+      } else if (negLevel > 0 && negLevel > posLevel) {
+        syncReputationTrait(graph, factionId, negTraitId, negLevel, tick, reach, 'negative');
+        removeIfPresent(graph, factionId, posTraitId, tick, reach, 'positive');
+        emitTrace({
+          tick,
+          category: 'faction_reputation_trait',
+          agentId: factionId,
+          reach,
+          polarity: 'negative',
+          action: 'trait_assigned',
+          traitLevel: negLevel,
+          memberCount: validMemberCount,
+          aggregatedTally: negTally,
+          summary: `Faction ${factionId}: ${reach}.negative L${negLevel} (${validMemberCount} members, tally ${negTally.toFixed(2)})`,
+        } as unknown as Parameters<typeof emitTrace>[0]);
+      } else {
+        removeIfPresent(graph, factionId, posTraitId, tick, reach, 'positive');
+        removeIfPresent(graph, factionId, negTraitId, tick, reach, 'negative');
+      }
+    }
+  }
 }
 
 // ─── Sync Helpers ──────────────────────────────────────────────────

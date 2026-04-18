@@ -3,6 +3,7 @@ import type { WorldGraph } from '../../../engine/graph';
 import { FACTION_DEFINITIONS } from '../../../data/faction-definitions';
 import type { MemberOfEdgeProperties } from '../../../types/disposition';
 import { computeRankFromReputation } from '../../../types/faction';
+import { getTraitsForNode } from '../../../engine/traits';
 
 const EMPTY_STATE_STYLE: React.CSSProperties = {
   padding: '32px 16px',
@@ -28,6 +29,7 @@ export function FactionDebugContent({ graph, onZoomToLocation }: FactionDebugCon
       defId: string;
       name: string;
       factionNodeId: string;
+      reputationTraits: Array<{ traitId: string; label: string }>;
       members: Array<{ id: string; name: string; rank: string; reputation: number; locationId: string | null; locationName: string | null }>;
       armies: Array<{ id: string; name: string; locationId: string | null; locationName: string | null }>;
     }> = [];
@@ -78,10 +80,20 @@ export function FactionDebugContent({ graph, onZoomToLocation }: FactionDebugCon
             };
           });
 
+        const reputationTraits = getTraitsForNode(graph, factionNode.id)
+          .filter(e => e.target.startsWith('trait.reputation.') && !e.target.includes('power'))
+          .map(e => {
+            const level = (e.properties as { level?: number }).level ?? 1;
+            const stars = '★'.repeat(level) + '☆'.repeat(3 - level);
+            const label = `${e.target.replace('trait.reputation.', '').replace('.', ' ')} ${stars}`;
+            return { traitId: e.target, label };
+          });
+
         results.push({
           defId,
           name: factionNode.name,
           factionNodeId: factionNode.id,
+          reputationTraits,
           members,
           armies: armyMembers,
         });
@@ -105,6 +117,24 @@ export function FactionDebugContent({ graph, onZoomToLocation }: FactionDebugCon
             <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: '2px' }}>
               {faction.members.length} member{faction.members.length !== 1 ? 's' : ''}
             </div>
+            {faction.reputationTraits.length > 0 && (
+              <div style={{ marginTop: '4px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                {faction.reputationTraits.map(t => (
+                  <span
+                    key={t.traitId}
+                    title={t.traitId}
+                    style={{
+                      fontSize: 'var(--text-xs)',
+                      background: 'var(--bg-deep)',
+                      border: '1px solid var(--border-subtle)',
+                      borderRadius: '3px',
+                      padding: '1px 5px',
+                      color: 'var(--text-secondary)',
+                    }}
+                  >{t.label}</span>
+                ))}
+              </div>
+            )}
           </div>
 
           {faction.armies.length > 0 && (

@@ -733,6 +733,27 @@ export const REPUTATION_NEGATIVE_ENCOUNTER_TYPES: ReadonlySet<string> = new Set(
   'steal', 'duel',
 ]);
 
+/** Minimum member count for a faction to earn reputation traits via aggregation.
+ * Prevents 1-member factions from mirroring a single leader's reputation.
+ * @range 2–5 */
+export const FACTION_REP_MIN_MEMBERS_FOR_TRAIT = 3;
+
+/** Slope of member-weight decay with rank distance from top.
+ * 0 = all members weighted equally; 1 = only top rank contributes.
+ * Formula: weight = 1 - (rankIndexFromTop / totalRanks) * FALLOFF
+ * @range 0–1 */
+export const FACTION_REP_RANK_WEIGHT_FALLOFF = 0.7;
+
+/** How many ticks between faction reputation aggregation runs.
+ * Keeps the aggregation sub-loop cheap; per-actor loop still runs every tick.
+ * @range 3–10 */
+export const FACTION_REP_AGGREGATION_INTERVAL_TICKS = 5;
+
+/** Faction-level tally decay rate applied each aggregation run.
+ * Lower than actor decay (0.02/tick) because faction reputations are sticky.
+ * @range 0.005–0.05 */
+export const FACTION_REP_DECAY_PER_AGGREGATION = 0.02;
+
 /** Faction reputation gain multiplier bonus per aligned reputation trait.
  * Agent has a reputation trait the faction values → reputation gains boosted.
  * @range 0.1–0.5 */
