@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import * as outcomeConsequencesModule from '../outcomeConsequences';
 import {
   progressAllActions,
   collectCompletions,
@@ -718,6 +719,63 @@ describe('unifiedActionResolution', () => {
       expect(state.graph.getNode('actor-1')?.properties._complicationPartialProgress).toBeUndefined();
       // Step progress on the new step must be non-negative (may be >0 if partial_progress complication fired)
       expect(updatedAction.stepProgress).toBeGreaterThanOrEqual(0);
+    });
+
+    it('partial_progress complication applies head-start to next step proportional to fraction', () => {
+      const spy = vi.spyOn(outcomeConsequencesModule, 'computeOutcomeConsequence')
+        .mockReturnValueOnce({
+          growthMultiplier: 1.0,
+          quintessenceEvent: null,
+          narrativeTag: 'partial',
+          significanceBoost: 0.0,
+          complication: {
+            templateId: 'complication.partial_progress.incomplete',
+            category: 'partial_progress',
+            severity: 'minor' as const,
+            prose: 'Not quite.',
+            effects: [{ type: 'partial_progress' as const, fraction: 0.5 }],
+            narrativeTag: 'partial_progress',
+            significanceBoost: 0.0,
+            name: 'Close, Not Enough',
+          },
+        });
+
+      try {
+        const template: UnifiedActionTemplate = {
+          id: 'encounter.pp-headstart-test',
+          rarityTier: 1,
+          intrinsicTier: 'background',
+          name: 'Head-Start Test',
+          reach: 'eye',
+          crudType: 'read',
+          scale: 'local',
+          steps: [
+            { reach: 'eye', duration: { min: 2, max: 2 }, difficulty: 0.3, onSuccess: [], onFailure: [], failBehavior: 'fail_action' },
+            { reach: 'eye', duration: { min: 4, max: 4 }, difficulty: 0.3, onSuccess: [], onFailure: [], failBehavior: 'fail_action' },
+          ],
+          apCost: 1,
+          actorAffinities: ['individual'],
+          motivations: ['courage_prudence'],
+          narrativeTemplates: { initiation: 'begins', success: 'succeeds', failure: 'fails' },
+        };
+        const state = createMinimalGameState();
+        const action = createUnifiedAction({
+          actorId: 'actor-1', templateId: 'encounter.pp-headstart-test', targetId: 'loc-1',
+          scale: 'local', source: 'agent', tick: 0, template, rng: fixedRng,
+        });
+
+        // success_at_cost: step advances (not terminated) and complication fires
+        const { updatedAction } = executeStepResult(
+          action, template, 'success_at_cost', [], state, fixedRng, 10,
+        );
+
+        expect(updatedAction.resolved).toBe(false);
+        expect(updatedAction.currentStep).toBe(1);
+        // fraction 0.5 × stepDuration 4 = 2; cap = min(2, max(0, 4-1)=3) → headStart = 2
+        expect(updatedAction.stepProgress).toBe(2);
+      } finally {
+        spy.mockRestore();
+      }
     });
   });
 
