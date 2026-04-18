@@ -116,6 +116,17 @@ export function getFactionDefinitionForNode(node: GraphNode): FactionDefinition 
   return defId ? (FACTION_DEFINITIONS.get(defId) ?? null) : null;
 }
 
+/**
+ * Look up a FactionDefinition by ID, checking dynamic runtime definitions first
+ * (created by agent initiatives), then falling back to static FACTION_DEFINITIONS.
+ */
+export function getFactionDefinition(
+  id: string,
+  dynamicDefs?: Record<string, FactionDefinition>,
+): FactionDefinition | undefined {
+  return dynamicDefs?.[id] ?? FACTION_DEFINITIONS.get(id);
+}
+
 export function getFactionNetworkSummary(
   graph: WorldGraph,
   factionId: string,

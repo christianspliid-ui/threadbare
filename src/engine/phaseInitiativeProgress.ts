@@ -42,6 +42,8 @@ export function phaseInitiativeProgress(
 ): Partial<GameState> {
   const graph = state.graph;
   const newEvents: TickEvent[] = [];
+  const newEncounterSeeds: import('../types/unifiedAction').PendingEncounterSeed[] = [];
+  const newFactionDefinitions: Record<string, import('../types/faction').FactionDefinition> = {};
 
   // Collect all actors with an active initiative.
   const actorNodes = graph.getNodesByType('actor').filter(n => {
@@ -194,6 +196,8 @@ export function phaseInitiativeProgress(
       if (state.tick >= currentProgress.targetCompletionTick) {
         const outcomes = executeInitiativeOutcomes(state, graph, currentProgress, template);
         newEvents.push(...outcomes.newEvents);
+        newEncounterSeeds.push(...outcomes.newEncounterSeeds);
+        Object.assign(newFactionDefinitions, outcomes.newFactionDefinitions);
 
         // Mark complete, record cooldown tick, clear active initiative
         actorNode.properties.activeInitiative = undefined;
@@ -241,9 +245,16 @@ export function phaseInitiativeProgress(
     }
   }
 
-  return {
+  const result: Partial<GameState> = {
     tickEvents: [...state.tickEvents, ...newEvents],
   };
+  if (newEncounterSeeds.length > 0) {
+    result.pendingEncounterSeeds = [...(state.pendingEncounterSeeds ?? []), ...newEncounterSeeds];
+  }
+  if (Object.keys(newFactionDefinitions).length > 0) {
+    result.dynamicFactionDefinitions = { ...(state.dynamicFactionDefinitions ?? {}), ...newFactionDefinitions };
+  }
+  return result;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────

@@ -6,12 +6,20 @@ import type { GameState } from '../types/gameState';
 import type { WorldGraph } from './graph';
 import type { InitiativeProgress, InitiativeTemplate } from '../types/initiative';
 import type { TickEvent } from '../types/gameState';
+import type { FactionDefinition, FactionType } from '../types/faction';
+import type { PendingEncounterSeed } from '../types/unifiedAction';
 import { createSublocation, recordIntelligence } from './strategicGraphOps';
 import { getAgentsAtLocation } from './graphQueries';
+import { seedFactionFromDefinition } from './factionSeeding';
 import { emitTrace } from './traceBuffer';
+import { FACTION_REPUTATION_DECAY_PER_TICK } from '../data/faction-constants';
 
 export interface OutcomeResult {
   newEvents: TickEvent[];
+  /** New encounter seeds planted by spawn_encounter outcomes */
+  newEncounterSeeds: PendingEncounterSeed[];
+  /** Dynamic faction definitions created by create_faction outcomes */
+  newFactionDefinitions: Record<string, FactionDefinition>;
 }
 
 /**
@@ -25,8 +33,10 @@ export function executeInitiativeOutcomes(
   template: InitiativeTemplate,
 ): OutcomeResult {
   const newEvents: TickEvent[] = [];
+  const newEncounterSeeds: PendingEncounterSeed[] = [];
+  const newFactionDefinitions: Record<string, FactionDefinition> = {};
   const agentNode = graph.getNode(progress.actorId);
-  if (!agentNode) return { newEvents };
+  if (!agentNode) return { newEvents, newEncounterSeeds, newFactionDefinitions };
 
   for (const outcome of template.outcomes) {
     try {
@@ -143,13 +153,52 @@ export function executeInitiativeOutcomes(
           break;
         }
 
-        case 'spawn_encounter':
-          // TODO(THR-158): Dynamic quest encounter generation — see deep design §5
+        case 'spawn_encounter': {
+          // Push a pending encounter seed — evaluated by evaluateEncounterSeeds next tick.
+          const seed: PendingEncounterSeed = {
+            seedId: `initiative_seed_${progress.initiativeId}_${state.tick}`,
+            sourceEncounterId: progress.initiativeId,
+            sourceReactionId: 'initiative_outcome',
+            templateId: outcome.templateId,
+            targetAgentId: progress.actorId,
+            eligibleAfterTick: state.tick + 1,
+            priority: 2,
+            seedLabel: `initiative:${progress.templateId}`,
+            plantedTick: state.tick,
+          };
+          newEncounterSeeds.push(seed);
           break;
+        }
 
-        case 'create_faction':
-          // TODO(THR-157): Dynamic faction generation — see deep design §1
+        case 'create_faction': {
+          const locationNode = graph.getNode(progress.locationId);
+          if (!locationNode) break;
+          const def = buildDynamicFactionDefinition(
+            agentNode.name, progress.actorId, state.tick, progress.sphereColoring,
+            (agentNode.properties.domainCapabilities as Record<string, number> | undefined) ?? {},
+          );
+          const factionSeed = simpleHash(progress.actorId) + state.tick * 31;
+          seedFactionFromDefinition(graph, def, [progress.locationId], factionSeed);
+          newFactionDefinitions[def.id] = def;
+          emitTrace({
+            category: 'initiative_completed',
+            tick: state.tick,
+            agentId: progress.actorId,
+            initiativeId: progress.initiativeId,
+            templateId: progress.templateId,
+            locationId: progress.locationId,
+            summary: `${agentNode.name} founded '${def.nameTemplate}' at ${locationNode.name}`,
+          });
+          newEvents.push({
+            id: `initiative_faction_${progress.initiativeId}_${state.tick}`,
+            tick: state.tick,
+            type: 'faction_founded',
+            message: `${agentNode.name} founded ${def.nameTemplate} at ${locationNode.name}!`,
+            significance: 0.9,
+            actorId: progress.actorId,
+          });
           break;
+        }
       }
     } catch {
       // Fail-soft: one outcome failure doesn't abort others
@@ -165,7 +214,68 @@ export function executeInitiativeOutcomes(
     }
   }
 
-  return { newEvents };
+  return { newEvents, newEncounterSeeds, newFactionDefinitions };
+}
+
+// ─── Dynamic Faction Definition Builder ─────────────────────────────────────
+
+function buildDynamicFactionDefinition(
+  agentName: string,
+  agentId: string,
+  tick: number,
+  sphereColoring: string | undefined,
+  caps: Record<string, number>,
+): FactionDefinition {
+  const topDomains = Object.entries(caps)
+    .sort(([, a], [, b]) => (b as number) - (a as number))
+    .slice(0, 3)
+    .map(([d]) => d);
+
+  const factionType: FactionType =
+    topDomains.includes('star') || topDomains.includes('veil') ? 'religious' :
+    topDomains.includes('shadow') || topDomains.includes('eye') ? 'criminal' :
+    topDomains.includes('iron') ? 'military' : 'guild';
+
+  const iconGlyph = factionType === 'religious' ? '✦' :
+    factionType === 'criminal' ? '◈' :
+    factionType === 'military' ? '⚔' : '⚙';
+
+  const themeColor = sphereColoring === 'star' ? '#C0A070' :
+    sphereColoring === 'shadow' ? '#7060A0' : '#8090A0';
+
+  const reachWeights: Partial<Record<string, number>> = {};
+  for (const [d, v] of Object.entries(caps)) {
+    reachWeights[d] = Math.min(0.8, v as number);
+  }
+
+  return {
+    id: `dynamic_${agentId.slice(-8)}_${tick}`,
+    nameTemplate: `${agentName}'s ${factionType === 'religious' ? 'Order' : factionType === 'criminal' ? 'Brotherhood' : factionType === 'military' ? 'Company' : 'Guild'}`,
+    description: `A ${factionType} organization founded by ${agentName}.`,
+    iconGlyph,
+    themeColor,
+    factionType,
+    reachWeights: reachWeights as Partial<Record<import('../types/traits').ReachDomain, number>>,
+    locationTypes: ['town', 'city', 'capital'],
+    rankTiers: [
+      { id: 'member', name: 'Member', minReputation: 0, maxSlots: null, bonuses: [], encounterAccess: [] },
+      { id: 'leader', name: 'Leader', minReputation: 0.7, maxSlots: 1, bonuses: [], encounterAccess: [] },
+    ],
+    reputationDecayPerTick: FACTION_REPUTATION_DECAY_PER_TICK,
+    joinEncounterTemplateId: '',
+    promotionEncounterTemplateId: '',
+    questTemplateIds: [],
+    socialTemplateIds: [],
+    expulsionConsequences: [],
+  };
+}
+
+function simpleHash(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h);
 }
 
 function generateSublocationName(
