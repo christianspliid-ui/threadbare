@@ -48,6 +48,12 @@ import {
   AC_JOIN_TEMPLATE,
   AC_PROMOTION_TEMPLATE,
 } from './arcane-circle-encounter-content';
+import {
+  CIVIC_GUARD_ENCOUNTER_TEMPLATES,
+  CIVIC_GUARD_SOCIAL_TEMPLATES,
+  CG_JOIN_TEMPLATE,
+  CG_PROMOTION_TEMPLATE,
+} from './civic-guard-encounter-content';
 import { RIVAL_SHRINE_BETRAYAL_TEMPLATE } from './encounters/rival-shrine-betrayal';
 import { WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE } from './encounters/wandering-healer-shrine-access';
 import { FLAWED_STEEL_TEMPLATE } from './encounters/flawed-steel';
@@ -3609,6 +3615,11 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...ARCANE_CIRCLE_SOCIAL_TEMPLATES,
   AC_JOIN_TEMPLATE,
   AC_PROMOTION_TEMPLATE,
+  // Civic Guard — pre-migrated to UnifiedActionTemplate (THR-92)
+  ...CIVIC_GUARD_ENCOUNTER_TEMPLATES,
+  ...CIVIC_GUARD_SOCIAL_TEMPLATES,
+  CG_JOIN_TEMPLATE,
+  CG_PROMOTION_TEMPLATE,
   RIVAL_SHRINE_BETRAYAL_TEMPLATE,
   WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE,
   FLAWED_STEEL_TEMPLATE,

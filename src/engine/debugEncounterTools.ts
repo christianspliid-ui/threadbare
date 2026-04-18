@@ -124,6 +124,7 @@ function resolveTemplate(templateQuery: string): EncounterTemplate | undefined {
           onFailure: { narrative: step.narrativeTemplate ?? unified.narrativeTemplates.failure },
         };
       }),
+      locationTypes: (unified.locationSubtypes ?? []) as never,
       threatRating: 'moderate' as const,
       encounterType: 'assist' as const,
       supportBundle: unified.supportBundle,

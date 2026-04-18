@@ -21,7 +21,7 @@ import { MERCHANT_CONSORTIUM_ENCOUNTER_META, getMerchantConsortiumEncounterById 
 import { TEMPLE_OF_SPHERES_ENCOUNTER_META, getTempleOfSpheresEncounterById } from './temple-of-spheres-encounter-content';
 import { ARCANE_CIRCLE_ENCOUNTER_META } from './arcane-circle-encounter-content';
 import { RANGERS_BROTHERHOOD_ENCOUNTER_META, getRangersBrotherhoodEncounterById } from './rangers-brotherhood-encounter-content';
-import { CIVIC_GUARD_ENCOUNTER_META, getCivicGuardEncounterById } from './civic-guard-encounter-content';
+import { CIVIC_GUARD_ENCOUNTER_META } from './civic-guard-encounter-content';
 import { UNDERKING_COURT_ENCOUNTER_META, getUnderkingCourtEncounterById } from './underking-court-encounter-content';
 import { HOLY_ORDER_DAWN_ENCOUNTER_META, getHolyOrderDawnEncounterById } from './holy-order-dawn-encounter-content';
 import { BUILDERS_FELLOWSHIP_ENCOUNTER_META, getBuildersFellowshipEncounterById } from './builders-fellowship-encounter-content';
@@ -328,6 +328,7 @@ export const FACTION_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachPrimary: 'eye',
     reachSecondary: 'shadow',
     encounterType: 'acquire',
+    reputationPolarity: 'positive', // heroic recovery of an artifact for institutional preservation (2a)
     threatRating: 'hard',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.acquire,
@@ -999,7 +1000,7 @@ export function getFactionEncounterById(id: string): EncounterTemplate | undefin
     ?? getMerchantConsortiumEncounterById(id)
     ?? getTempleOfSpheresEncounterById(id)
     ?? getRangersBrotherhoodEncounterById(id)
-    ?? getCivicGuardEncounterById(id)
+    // Civic Guard templates are pre-migrated to UnifiedActionTemplate — looked up via UNIFIED_ACTION_TEMPLATES
     ?? getUnderkingCourtEncounterById(id)
     ?? getHolyOrderDawnEncounterById(id)
     ?? getBuildersFellowshipEncounterById(id)

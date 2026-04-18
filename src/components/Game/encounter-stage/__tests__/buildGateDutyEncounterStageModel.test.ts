@@ -139,7 +139,7 @@ describe('buildGateDutyEncounterStageModel', () => {
 
     expect(model.header.title).toBe('Gate Duty');
     expect(model.header.locationLabel).toBe('South Quarantine Gate');
-    expect(model.header.threatLabel).toBe('Easy');
+    expect(model.header.threatLabel).toBe('Mundane');
     expect(model.illustration?.src).toBeUndefined();
     expect(model.shellState?.state).toBe('flagged');
     expect(model.narrative.paragraphs).toHaveLength(3);

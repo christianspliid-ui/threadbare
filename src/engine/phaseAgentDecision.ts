@@ -781,8 +781,8 @@ export function phaseAgentDecision(
 
         if (sel.action === 'start_local' || sel.action === 'attempt_remote') {
           const template = getAnyEncounterById(sel.entry.templateId);
-          if (template) {
-            const unifiedTemplate = getUnifiedTemplateById(sel.entry.templateId);
+          const unifiedTemplate = getUnifiedTemplateById(sel.entry.templateId);
+          if (template || unifiedTemplate) {
             if (unifiedTemplate) {
               const supportBindings = prepareEncounterSupportBundle(
                 state,
@@ -834,7 +834,7 @@ export function phaseAgentDecision(
                 effectiveTier: uaEffectiveTier,
               };
               newUnifiedActions.push(action);
-            } else {
+            } else if (template) {
               const firstStepDuration = template.steps[0]?.duration ?? 1;
 
               // Resolve effectiveTier at creation time.

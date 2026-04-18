@@ -10,10 +10,10 @@ import type {
   EncounterSupportActorSpec,
   EncounterSupportBinding,
   EncounterSupportSpec,
-  EncounterTemplate,
 } from '../../../../types/encounter';
 import type { EncounterNotification } from '../../../../types/encounterVisibility';
-import { isStepSuccess, type UnifiedAction } from '../../../../types/unifiedAction';
+import { isStepSuccess, type UnifiedAction, type UnifiedActionTemplate } from '../../../../types/unifiedAction';
+import { getRarityName } from '../../../../types/rarity';
 import type { ReachDomain } from '../../../../types/traits';
 import type { ThreadTier } from '../types';
 import type { ActiveEncounterDisplay } from '../../encounterNotificationRuntime';
@@ -33,7 +33,7 @@ import type {
 import { buildLinkedParagraph } from '../narrativeLinker';
 
 interface BuildGateDutyEncounterStageModelArgs {
-  template: EncounterTemplate;
+  template: UnifiedActionTemplate;
   encounter: ActiveEncounterDisplay;
   notification: EncounterNotification;
   agentName: string;
@@ -136,7 +136,7 @@ function toNarrativeHandle(name: string, fallback: string): string {
   return isGenericEncounterRoleName(name) ? fallback : name;
 }
 
-function getSupportSpec(template: EncounterTemplate, key: string): EncounterSupportSpec | undefined {
+function getSupportSpec(template: UnifiedActionTemplate, key: string): EncounterSupportSpec | undefined {
   return template.supportBundle?.find(spec => spec.key === key);
 }
 
@@ -144,7 +144,7 @@ function getSupportBinding(action: UnifiedAction | undefined, key: string): Enco
   return action?.supportBindings?.find(binding => binding.key === key);
 }
 
-function getActorSpec(template: EncounterTemplate, key: string): EncounterSupportActorSpec | undefined {
+function getActorSpec(template: UnifiedActionTemplate, key: string): EncounterSupportActorSpec | undefined {
   const spec = getSupportSpec(template, key);
   return spec?.kind === 'actor' ? spec : undefined;
 }
@@ -304,7 +304,7 @@ function buildChoiceIntent(args: {
 }
 
 function buildSignalModels(
-  template: EncounterTemplate,
+  template: UnifiedActionTemplate,
   clearanceGateState: ClearanceGateRuntimeState | undefined,
 ): EncounterStageSignalModel[] {
   const gate = template.clearanceGates?.[0];
@@ -345,7 +345,7 @@ function buildSignalModels(
 }
 
 function buildCast(
-  template: EncounterTemplate,
+  template: UnifiedActionTemplate,
   graph: WorldGraph,
   activeAction: UnifiedAction | undefined,
   clearanceGateState: ClearanceGateRuntimeState | undefined,
@@ -411,7 +411,7 @@ function buildCast(
 }
 
 function buildHistory(
-  template: EncounterTemplate,
+  template: UnifiedActionTemplate,
   encounter: ActiveEncounterDisplay,
   activeAction: UnifiedAction | undefined,
 ): EncounterStageHistoryModel[] {
@@ -1276,7 +1276,7 @@ export function buildGateDutyEncounterStageModel({
       subtitle: getGateDutyHeaderSubtitle(currentStepIndex),
       locationLabel,
       urgencyLabel: 'Curfew pressure',
-      threatLabel: titleCaseWords(template.threatRating),
+      threatLabel: getRarityName(template.rarityTier),
       threadTier,
       familyLabel: 'Clearance Gate',
     },
