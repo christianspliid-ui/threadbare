@@ -281,10 +281,10 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     description: 'Encounter event occurred at this location. Properties: tick, sublocationId (optional).',
   },
 
-  // ── Causation (THR-116) ────────────────────────────────────
-  // NOTE: In v1, caused_by edge creation often fails silently because action IDs are not
-  // graph nodes. Full implementation requires event-node creation during encounter resolution.
-  // TODO(THR-???): wire encounter history event nodes so caused_by edges can be created reliably.
+  // ── Causation (THR-116, THR-143) ────────────────────────────
+  // caused_by edges connect encounter event nodes (evt_${actorId}_${tick}_${stepIndex}).
+  // Emitted in unifiedActionResolution.ts when a seed-spawned action resolves its first step.
+  // Family-only fires do NOT produce caused_by edges (v1 scope).
   caused_by: {
     type: 'caused_by',
     sourceNodeType: 'event',

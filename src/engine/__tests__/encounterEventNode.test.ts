@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
   createEncounterEventNode,
+  createUnifiedActionEventNode,
   getLocationEncounterHistory,
   getAgentEncounterHistory,
   EVENT_NODE_ID_PREFIX,
@@ -320,6 +321,106 @@ describe('createEncounterEventNode', () => {
     expect(node).toBeDefined();
     const occurredEdges = graph.getOutgoingEdges(eventNodeId!, 'occurred_at');
     expect(occurredEdges).toHaveLength(0);
+  });
+});
+
+// ─── createUnifiedActionEventNode (THR-143) ──────────────────────────
+
+describe('createUnifiedActionEventNode', () => {
+  beforeEach(() => { enableTracing(); clearTraces(); });
+  afterEach(() => disableTracing());
+
+  it('creates an event node with correct properties', () => {
+    const { graph, actorId } = buildTestGraph();
+
+    const eventNodeId = createUnifiedActionEventNode({
+      graph,
+      actorId,
+      templateId: 'broker.quest.test',
+      templateName: 'Broker Quest Test',
+      stepIndex: 0,
+      stepReach: 'shadow',
+      outcome: 'success',
+      tick: 12,
+      tierPromotionOccurred: false,
+    });
+
+    expect(eventNodeId).toBeDefined();
+    expect(eventNodeId).toMatch(new RegExp(`^${EVENT_NODE_ID_PREFIX}`));
+
+    const node = graph.getNode(eventNodeId!);
+    expect(node).toBeDefined();
+    expect(node!.type).toBe('event');
+    expect(node!.properties.eventType).toBe('encounter_outcome');
+    expect(node!.properties.templateId).toBe('broker.quest.test');
+    expect(node!.properties.templateName).toBe('Broker Quest Test');
+    expect(node!.properties.stepIndex).toBe(0);
+    expect(node!.properties.reachTested).toBe('shadow');
+    expect(node!.properties.outcome).toBe('success');
+    expect(node!.properties.tick).toBe(12);
+    expect(node!.properties.tierPromotionOccurred).toBe(false);
+  });
+
+  it('creates participated_in and occurred_at edges', () => {
+    const { graph, actorId, locationId } = buildTestGraph();
+
+    const eventNodeId = createUnifiedActionEventNode({
+      graph,
+      actorId,
+      templateId: 'test.template',
+      templateName: 'Test Template',
+      stepIndex: 1,
+      outcome: 'failure',
+      tick: 8,
+    });
+
+    const actorEdges = graph.getOutgoingEdges(actorId, 'participated_in');
+    expect(actorEdges).toHaveLength(1);
+    expect(actorEdges[0].target).toBe(eventNodeId);
+    expect(actorEdges[0].properties.role).toBe('primary');
+
+    const locEdges = graph.getOutgoingEdges(eventNodeId!, 'occurred_at');
+    expect(locEdges).toHaveLength(1);
+    expect(locEdges[0].target).toBe(locationId);
+  });
+
+  it('creates participated_in edge for target agent when different from actor', () => {
+    const { graph, actorId, targetId } = buildTestGraph();
+
+    const eventNodeId = createUnifiedActionEventNode({
+      graph,
+      actorId,
+      targetAgentId: targetId,
+      templateId: 'test.social',
+      templateName: 'Social Test',
+      stepIndex: 0,
+      outcome: 'success',
+      tick: 5,
+    });
+
+    const targetEdges = graph.getOutgoingEdges(targetId, 'participated_in');
+    expect(targetEdges).toHaveLength(1);
+    expect(targetEdges[0].target).toBe(eventNodeId);
+    expect(targetEdges[0].properties.role).toBe('target');
+  });
+
+  it('returns undefined and does not throw on duplicate node ID', () => {
+    const { graph, actorId } = buildTestGraph();
+    const params = {
+      graph,
+      actorId,
+      templateId: 'test.dup',
+      templateName: 'Dup Test',
+      stepIndex: 0,
+      outcome: 'success',
+      tick: 10,
+    };
+
+    const first = createUnifiedActionEventNode(params);
+    expect(first).toBeDefined();
+
+    const second = createUnifiedActionEventNode(params);
+    expect(second).toBeUndefined();
   });
 });
 

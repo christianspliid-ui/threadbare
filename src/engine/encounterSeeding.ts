@@ -23,7 +23,6 @@ import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import { createUnifiedAction } from './unifiedActionLifecycle';
 import { appendRecentEvent } from './encounterAftermath';
 import { emitTrace } from './traceBuffer';
-import { touchWorld } from './simulationRuntime';
 
 export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () => number, runtime?: SimulationRuntime): GameState {
   const seeds = state.pendingEncounterSeeds ?? [];
@@ -58,7 +57,10 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
           a => a.actorId === seed.targetAgentId && !a.resolved
         );
         if (!agentBusy) {
-          const action = createUnifiedAction({
+          // THR-143: set causation fields so executeStepResult can emit the edge once
+          // an event node exists for both endpoints. The edge is emitted in
+          // unifiedActionResolution.ts when the seeded action's first step resolves.
+          const spawnedAction = createUnifiedAction({
             actorId: seed.targetAgentId,
             templateId: seed.templateId,
             targetId: seed.targetAgentId, // self-targeting for seeded encounters
@@ -68,54 +70,15 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
             template,
             rng,
           });
+          const action = seed.sourceEventNodeId
+            ? {
+                ...spawnedAction,
+                pendingCausationSourceEventId: seed.sourceEventNodeId,
+                spawnedFromSeedId: seed.seedId,
+                spawnedFromSeedLabel: seed.seedLabel,
+              }
+            : spawnedAction;
           nextActions = [...nextActions, action];
-
-          // THR-116: record causation edge — new encounter action caused by the seeding encounter
-          // NOTE: addEdge throws if either endpoint is not a graph node. In production,
-          // action IDs (e.g. "ua_42") and template IDs are NOT graph nodes, so this try
-          // always falls through to causation_edge_creation_skipped. Full implementation
-          // requires encounter history to create event nodes (see caused_by in edgeSchema.ts).
-          // TODO(THR-143): wire encounter-history event nodes so causation edges can land.
-          const causedBySourceId = seed.sourceEncounterId;
-          const causedByNewId = action.actionId;
-          if (causedBySourceId && causedByNewId) {
-            try {
-              state.graph.addEdge({
-                id: `caused_by_${causedByNewId}_${seed.seedId}`,
-                source: causedByNewId,
-                target: causedBySourceId,
-                type: 'caused_by',
-                properties: {
-                  seedId: seed.seedId,
-                  seedLabel: seed.seedLabel,
-                  sourceReactionId: seed.sourceReactionId,
-                  plantedTick: seed.plantedTick,
-                  firedTick: tick,
-                  ticksBetween: ticksSincePlant,
-                  templateId: seed.templateId,
-                },
-              });
-              if (runtime) touchWorld(runtime);
-              emitTrace({
-                tick, category: 'causation_edge_created',
-                sourceEventId: causedByNewId,
-                causedByEventId: causedBySourceId,
-                seedId: seed.seedId,
-                seedLabel: seed.seedLabel,
-                ticksBetween: ticksSincePlant,
-                summary: `Causation edge: ${causedByNewId} caused_by ${causedBySourceId} (seed: "${seed.seedLabel}")`,
-              });
-            } catch {
-              emitTrace({
-                tick, category: 'causation_edge_creation_skipped',
-                sourceEventId: causedByNewId,
-                causedByEventId: causedBySourceId,
-                seedId: seed.seedId,
-                reason: 'edge_add_failed',
-                summary: `Causation edge skipped: add failed for ${causedByNewId}→${causedBySourceId}`,
-              });
-            }
-          }
 
           const spawnEvent: TickEvent = {
             id: `${seed.seedId}_spawned`,
@@ -148,45 +111,18 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
 
     // Family matching (v1: emit narrative event, don't auto-spawn)
     if (seed.encounterFamily) {
-      // THR-116: causation edge for family narrative fires (no actionId yet; use a synthetic event id)
+      // THR-143: family-only fires are advisory — no action is spawned, so no event node
+      // will be created and no caused_by edge is possible in v1 scope.
       const familyEventId = `${seed.seedId}_family_ready`;
-      if (seed.sourceEncounterId && familyEventId) {
-        try {
-          state.graph.addEdge({
-            id: `caused_by_${familyEventId}_${seed.seedId}`,
-            source: familyEventId,
-            target: seed.sourceEncounterId,
-            type: 'caused_by',
-            properties: {
-              seedId: seed.seedId,
-              seedLabel: seed.seedLabel,
-              sourceReactionId: seed.sourceReactionId,
-              plantedTick: seed.plantedTick,
-              firedTick: tick,
-              ticksBetween: ticksSincePlant,
-              family: seed.encounterFamily,
-            },
-          });
-          if (runtime) touchWorld(runtime);
-          emitTrace({
-            tick, category: 'causation_edge_created',
-            sourceEventId: familyEventId,
-            causedByEventId: seed.sourceEncounterId,
-            seedId: seed.seedId,
-            seedLabel: seed.seedLabel,
-            ticksBetween: ticksSincePlant,
-            summary: `Causation edge (family): ${familyEventId} caused_by ${seed.sourceEncounterId} (seed: "${seed.seedLabel}")`,
-          });
-        } catch {
-          emitTrace({
-            tick, category: 'causation_edge_creation_skipped',
-            sourceEventId: familyEventId,
-            causedByEventId: seed.sourceEncounterId,
-            seedId: seed.seedId,
-            reason: 'edge_add_failed',
-            summary: `Causation edge skipped (family): add failed for ${familyEventId}→${seed.sourceEncounterId}`,
-          });
-        }
+      if (seed.sourceEventNodeId) {
+        emitTrace({
+          tick, category: 'causation_edge_creation_skipped',
+          sourceEventId: familyEventId,
+          causedByEventId: seed.sourceEventNodeId,
+          seedId: seed.seedId,
+          reason: 'family_only_no_action_node',
+          summary: `Causation edge skipped (family-only): no action node spawned for "${seed.seedLabel}"`,
+        });
       }
 
       const familyEvent: TickEvent = {
