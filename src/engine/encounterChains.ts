@@ -224,6 +224,47 @@ export function recordChainStageCompletion(
 }
 
 /**
+ * Classify a template with respect to an agent's chain progress.
+ * Returns { isChainStage, isFinalChainStage } where:
+ * - isChainStage: template is the agent's next unlocked stage in at least one chain
+ * - isFinalChainStage: isChainStage AND stageIndex === chain.stages.length - 1
+ * Mirrors computeChainBonus semantics so curator metadata and scoring agree.
+ * Fail-soft: unknown template → both false.
+ */
+export function classifyChainStage(
+  templateId: string,
+  progress: ChainProgress,
+): { isChainStage: boolean; isFinalChainStage: boolean } {
+  ensureIndex();
+  const chainEntries = templateToChains.get(templateId);
+  if (!chainEntries || chainEntries.length === 0) {
+    return { isChainStage: false, isFinalChainStage: false };
+  }
+
+  const activeChainCount = Object.keys(progress.completed).length;
+
+  for (const { chain, stageIndex } of chainEntries) {
+    const completedIndex = progress.completed[chain.id];
+
+    const isNextStage =
+      (completedIndex === undefined && stageIndex === 0) ||
+      (completedIndex !== undefined && stageIndex === completedIndex + 1);
+
+    if (!isNextStage) continue;
+
+    // Mirror computeChainBonus: skip new chains once at MAX_ACTIVE_CHAINS
+    if (completedIndex === undefined && activeChainCount >= MAX_ACTIVE_CHAINS) {
+      continue;
+    }
+
+    const isFinalChainStage = stageIndex === chain.stages.length - 1;
+    return { isChainStage: true, isFinalChainStage };
+  }
+
+  return { isChainStage: false, isFinalChainStage: false };
+}
+
+/**
  * Get all chains and the agent's status within them.
  * Useful for debug display.
  */

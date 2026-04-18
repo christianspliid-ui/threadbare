@@ -160,6 +160,11 @@ export interface CuratorDecisionTrace extends TraceBase {
   decision: 'kept' | 'curated_out';
   curationScore: number;
   reason: string;
+  // THR-16: curator metadata signals
+  isChainStage: boolean;
+  isFinalChainStage: boolean;
+  factionThreadCount: number;
+  matchesAmbition: boolean;
 }
 
 /** Trace emitted when the attention pool changes. */
