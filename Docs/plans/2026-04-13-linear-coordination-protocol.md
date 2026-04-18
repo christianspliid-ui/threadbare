@@ -106,7 +106,6 @@ Every feature in this project touches three pillars: **Engine** (systems, tick l
 - [ ] `npm test` — all tests pass
 - [ ] `npx tsc --noEmit` — type check clean
 - [ ] `npx vite build` — production build succeeds
-- [ ] **If `Codex review: yes`**, run Codex review against the branch diff after build and before push. Address findings or add a commit with rationale for accepting each one. Re-run if changes were made.
 - [ ] **All pillar action items completed** — engine, content, UI, wiring. If any were deferred, deferral issues exist with rationale.
 - [ ] `project-status.md`, `project-history.md`, `changelog.md` updated
 - [ ] No orphan deferrals — every `// TODO`/`// DEFERRED` has a `THR-XX` reference
@@ -130,6 +129,87 @@ This makes role violations visible: if an issue is In Design but code changes ap
 
 ---
 
+## Coordination Failure Modes — Hard Rules
+
+Each rule below maps to a specific incident that has actually happened in this project. **These are not best practices — they are required rules.** Treat them like type-check errors: if you find yourself about to violate one, stop. Read them as suggestions and the failures recur.
+
+### Rule 1 — Claim before read
+
+**Rule:** When pulling an issue from Ready for Dev, the very first tool call is `save_issue(id, assignee: "me", state: "In Dev")`. Reading the description, plan doc, comments, or code happens *only after* the claim is confirmed.
+
+**Why:** Two CC instances pulled the same issue because the first one read first, claimed later (or never). The second instance saw `Ready for Dev` with empty assignee, took it as fair game, and started duplicate work.
+
+**How to apply:**
+- First action on any new issue: claim. No exceptions, no "let me just check the description first."
+- Then re-fetch the issue and verify `assignee` is you. If not, an earlier agent won the race — clear your (not-really-yours) claim with `assignee: null` and move to the next candidate.
+- Only after the claim is confirmed do you read the description, plan doc, or comments.
+
+### Rule 2 — Pull queries filter out claimed issues
+
+**Rule:** Any Ready-for-Dev scan adds `assignee: null` to the filter. Issues with an assignee are invisible to other agents until the assignee clears.
+
+**Why:** Closes the race window between query and save. Even with Rule 1, two agents that query at the same moment can both see the same unclaimed issue. Filtering claimed issues out of the pull queue narrows the window further.
+
+**How to apply:** When listing Ready-for-Dev candidates, the query is `list_issues state:"Ready for Dev" assignee:null`. Sort by priority client-side per the Linear MCP limitations note above.
+
+### Rule 3 — CC never manually transitions to Done
+
+**Rule:** Claude Code does not call `save_issue(state: "Done")` directly. Closure happens through exactly two paths: (1) the `Fixes THR-XX` keyword in a commit body that lands on `main`, which Linear auto-closes; (2) explicit human or Cowork action. If CC believes an issue is wrong, malformed, or already complete, it adds a comment and stops — it does not change the state.
+
+**Why:** A CC instance encountered a reopened issue, interpreted the reopen as a Cowork mistake, and closed it without reading the latest comment that explained the reason for the reopen. Removing the manual-close authority makes this failure mode impossible — not merely unlikely.
+
+**How to apply:**
+- After implementation, push the commit with `Fixes THR-XX` in the body. Don't touch the issue state — the merge to `main` triggers the close automatically.
+- If you think an issue shouldn't exist or the description is wrong: comment explaining why, leave the state as-is, surface it for human review.
+
+### Rule 4 — Read the most recent comment before acting
+
+**Rule:** Before claiming or otherwise acting on a Ready-for-Dev issue, read the most recent comment. If the latest comment is newer than the description's last update, that comment is the authoritative instruction set — the description is the frozen original spec.
+
+**Why:** Same reopen incident as Rule 3. The reopen comment contained the actual remaining work (cherry-pick, audit trail, merge to main). The description still showed the original handoff. Acting on the description alone either re-does finished work or, in the failure case, closes a still-active issue.
+
+**How to apply:** Right after the claim is confirmed (Rule 1), the next call is `list_comments(issue: THR-XX, sort: -createdAt, limit: 5)`. If the top comment is a reopen, correction, or scope change, it's the brief — read it before the description.
+
+### Rule 5 — Reopens get a `Reopened` label
+
+**Rule:** When an issue moves Done → Ready for Dev (or any transition that puts a previously-completed issue back into the work queue), add the `Reopened` label. The label is a visible signal in list views that this is not a fresh handoff and that the latest comment is authoritative.
+
+**Why:** CC had no visible signal in its list view that a reopened issue was different from a fresh one. State alone (`Ready for Dev`) didn't carry the history. The label makes the reopen visible without opening the issue.
+
+**How to apply:**
+- Cowork or human applies the `Reopened` label when reopening.
+- CC, when scanning Ready for Dev, treats `Reopened`-labeled issues as a flag to read all comments back to the original handoff before acting.
+- The label stays until the merge keyword closes the issue — don't strip it during implementation.
+
+### Rule 6 — WIP=1 across all sessions
+
+**Rule:** Even across separate worktrees, machines, or agent instances, only one CC has a given issue In Dev at a time. Parallel work happens on *different* issues, never the same one. Parallel candidates come from the current issue's `Parallel-safe with` line, not from re-pulling a duplicate.
+
+**Why:** The previous WIP=1 wording was per-project and per-session, leaving the cross-instance dimension implicit. Combined with claim-before-read, this makes the rule explicit and removes the "I thought the other session crashed" failure mode.
+
+**How to apply:** Trust the assignee field. If an issue has an assignee that isn't you, it's not yours regardless of how stale the claim looks. If a claim genuinely needs to be transferred (the original session is dead), a human releases the assignee first.
+
+### Rule 7 — Verify state changes stuck
+
+**Rule:** After any `save_issue` that changes `state` or `assignee`, re-query the issue with `get_issue` and confirm the change took. The Linear MCP has returned 200-success with no actual write before (impediment #48).
+
+**Why:** A claim that the MCP silently dropped is worse than no claim — you think you've claimed the issue, but the next agent sees it as fair game and Rules 1–2 don't fire. The verify step catches the silent-drop case before any other agent acts.
+
+**How to apply:** `save_issue(...)` → `get_issue(THR-XX)` → confirm `state` and `assignee` fields match what you wrote. If they don't, retry once, then surface to the user. Verify-after-write is the agent's responsibility on every state move — no skill or helper exempts you from it.
+
+### Rule 8 — Codex is read-only
+
+**Rule:** The codex integration is a review tool only. CC must never invoke codex slash-commands that modify code — specifically `/codex:rescue`, and any future codex command whose effect is a code change. Review produces findings; CC or Cowork act on the findings.
+
+**Why:** During the original inline-codex-review rollout (retired 2026-04-18), CC instances sometimes stalled on `/codex:review` calls — UI went silent for long stretches while the review ran, and when progress felt indeterminate CC reached for `/codex:rescue` as an escape hatch. Using the reviewer to fix the code defeats the purpose of independent review and was one of the proximate causes of the stalls that led to retiring the whole loop. The rule must be doctrinally bright-lined regardless of whether codex ever returns to the standard workflow — any future review shape must preserve it.
+
+**How to apply:**
+- Never call `/codex:rescue` from CC, in any context. The command exists but is not part of the CC toolkit.
+- If a codex review is stalled, ambiguous, or hit a timeout, exit via `/codex:cancel` and bounce to Cowork with a comment containing whatever partial findings exist. Do not try to unstick via any codex write-capable command.
+- Any future tooling that reinstates codex in the loop (e.g. a PR-gated GitHub Action — see THR-182) must be designed so the reviewer is structurally read-only: no write credentials to the repo, PR-comment-only output. Read-only in capability, not just in convention.
+
+---
+
 ## Agent Session Protocols
 
 ### Cowork Session Start
@@ -140,14 +220,14 @@ This makes role violations visible: if an issue is In Design but code changes ap
 5. Check if any "Ready for Dev" items have been sitting >2 sessions → flag to user
 
 ### Claude Code Session Start
-1. Query Linear: `list_issues state:"In Dev"` → resume active implementation first (finish before starting)
-2. Query Linear: `list_issues state:"Ready for Dev"` → pick up handoffs, sorted by priority — **pull from the top**
-3. **WIP check:** before pulling a Ready for Dev issue, verify no other issue from the same project is already In Dev. WIP limit is 1 per project — finish the current one first.
-4. **Model check:** read the `Suggested model` line in the handoff comment (or the `model:*` label) and use that model unless there's a specific reason to override.
-5. **Parallel check** (only when considering a concurrent worktree): confirm the second issue appears in the first issue's `Parallel-safe with:` list *and* does not collide with either issue's `Mutex with:` description. If unsure, run them serially.
-6. **Codex review check:** note whether the handoff comment says `Codex review: yes`. If so, run Codex review on the branch diff after tests/tsc/build pass and before push (see In Dev → Done exit criteria).
-7. Move picked-up issue: Ready for Dev → In Dev
-8. After completion: In Dev → Done (DoD hooks enforce pre-conditions)
+1. Query Linear: `list_issues state:"In Dev" assignee:"me"` → resume your own active implementation first (finish before starting).
+2. Query Linear: `list_issues state:"Ready for Dev" assignee:null` → the `assignee:null` filter is **required** — it excludes issues another agent has already claimed (Rule 2). Sort by priority in memory (impediment #49 rejects `orderBy:priority` at runtime); pull from the top.
+3. **Claim immediately (Rule 1):** before reading anything but the title, run `save_issue(id, assignee: "me", state: "In Dev")`. Then `get_issue(id)` to verify the write stuck (Rule 7 / impediment #48). Only after the claim is confirmed do you read the handoff comment and plan doc.
+4. **WIP check:** confirm no other issue is In Dev under your assignee across all projects (Rule 6 — WIP=1 is cross-session, not per-project-per-session). If you find one, finish or hand it off before claiming the next.
+5. **Reopened check (Rule 5):** if the issue carries a `Reopened` label, read all comments back to the original handoff *before* starting work — the latest comment supersedes the original plan (Rule 4).
+6. **Model check:** read the `Suggested model` line in the handoff comment (or the `model:*` label) and use that model unless there's a specific reason to override.
+7. **Parallel check** (only when considering a concurrent worktree): confirm the second issue appears in the first issue's `Parallel-safe with:` list *and* does not collide with either issue's `Mutex with:` description. If unsure, run them serially.
+8. On completion: commit with `Fixes THR-XX` in the body and push — the merge-to-main keyword auto-closes the issue. **Do not manually transition In Dev → Done (Rule 3).**
 
 ### Cowork Handoff (replaces HANDOVER.md)
 When Cowork finishes a design and writes the implementation plan:
@@ -186,7 +266,6 @@ When Cowork finishes a design and writes the implementation plan:
 **Suggested model:** sonnet | haiku | opus — one-line rationale.
 **Parallel-safe with:** THR-XX, THR-YY (file-surface analysis) — or "none" if no other Ready for Dev issue is safe to run concurrently.
 **Mutex with:** free-text description of files / surfaces this issue will conflict on.
-**Codex review:** yes | no — one-line rationale. If yes, Claude Code runs Codex review against the branch diff after tests pass and before push.
 ```
 
 4. This comment IS the handoff — no separate HANDOVER.md needed. **Every section must be present.** Empty sections without N/A rationale = incomplete plan.
@@ -196,30 +275,29 @@ When Cowork finishes a design and writes the implementation plan:
 - **Suggested model** — Cowork's recommendation on which Claude model Claude Code should use. Default is `sonnet`. Use `haiku` for mechanical work with low blast radius (renames, data-row additions, doc updates, boilerplate tests for existing patterns). Use `opus` for architectural judgment or cross-cutting work (touching high-impact files like `engine/graph.ts` or `types/index.ts`, novel node/edge types, new mechanics surface, multi-system refactors, debugging spanning 3+ subsystems). Also apply the matching `model:haiku` / `model:sonnet` / `model:opus` label so the suggestion is visible in list view and queryable.
 - **Parallel-safe with** — which other Ready for Dev issues this can run alongside in a separate worktree without merge conflicts. Based on file-surface analysis: do the two issues edit disjoint files? If yes, list the identifiers. If no, list "none." This is a soft signal — Claude Code still verifies before pulling a second issue into a concurrent worktree.
 - **Mutex with** — the files or surfaces this issue will make concurrent work collide on. Free-text (e.g., "any issue touching `src/types/trace.ts`" or "the legacy/unified enrichment boundary"). Used by Cowork when sizing up *future* handoffs — if an issue's Mutex description matches the new issue's surface, they can't parallelize.
-- **Codex review** — whether Claude Code should run Codex review on the branch diff after tests/tsc/build pass and before push. Apply this rubric:
-  - **yes** when any of: touches high-impact files (`engine/graph.ts`, `types/index.ts`, `types/gameState.ts`, `types/traits.ts`, `engine/traceBuffer.ts`); subtle correctness matters (parity between two paths, determinism-critical code, resolver/pipeline logic where tests can pass while intent diverges); first-in-pattern (code establishes a precedent others will copy); cross-cutting refactor across 10+ files; architectural judgment made during implementation that the plan couldn't fully anticipate. Opus-tagged issues almost always qualify.
-  - **no** when: doc-only updates; adding rows to an existing data table with no new shape; Nth implementation of an established pattern; mechanical renames or find-and-replace; boilerplate test scaffolding. Haiku-tagged issues almost always qualify.
-  - **Default: no.** The `yes` case should be explicit. Target roughly 30–40% `yes` at steady state — nearly all opus, a meaningful slice of sonnet, almost no haiku.
-  - **Rationale matters.** A `yes` with a specific concern ("placeholder parity in nested conditional blocks") tells Claude Code what to pay attention to in Codex's output and whether to escalate ambiguous findings back to the user.
+
+**Codex review retired (2026-04-18).** Running an automated Codex review against every branch diff stalled agents without a proportional quality gain. Reviews now happen on demand — if the user or Cowork wants a second-pair-of-eyes pass on a specific change, ask explicitly. The `Codex review: yes | no` line has been removed from the handoff template. See Rule 8 for the bright-line doctrine that applies regardless of whether codex is ever reintroduced to the workflow.
 
 **Why a convention, not a label.** File-surface collisions can't be expressed as structured metadata in Linear (there's no `touchesFiles` field, and `blockedBy` means hard sequencing, not "shares-surface-with"). A handover-comment convention keeps the signal present without abusing the schema. Promote to `area:*` labels only if querying parallel-safe slices by area becomes a frequent need.
 
 ### Claude Code Pickup Protocol
-When CC picks up a Ready for Dev issue:
-1. Read the handoff comment — verify all four action item sections are present (Engine, Content, UI, Wiring)
-2. **If any section is missing without N/A rationale:** Do not start work. Add a comment flagging the gap and move the issue back to Implementation Planning. This is not optional — an incomplete plan produces incomplete work.
-3. If all sections present: move to In Dev and begin implementation
-4. **Check the Claude Code coordination block** — use the `Suggested model` (or the `model:*` label) unless you have reason to override. If you're considering pulling a second issue into a concurrent worktree, verify the target issue is listed in this issue's `Parallel-safe with` line *and* doesn't collide with the `Mutex with` description. If `Codex review: yes`, plan to run Codex review against the branch diff after tests pass and before push.
+When CC picks up a Ready for Dev issue, the order is **claim → verify → read → decide**:
+1. **Claim first (Rule 1).** First tool call after selecting the issue is `save_issue(id, assignee: "me", state: "In Dev")`. Do not read the handoff comment, the plan doc, or anything else first. Claim-before-read is how concurrent agents avoid duplicate work.
+2. **Verify the claim stuck (Rule 7).** Immediately `get_issue(id)` and confirm both `assignee` and `state` match what you wrote. If they don't, retry once; if still wrong, surface to the user and stop — do not proceed on an unverified claim.
+3. **Read the latest comment first (Rule 4).** The most recent comment on the issue is the authoritative brief. If it's a reopen with a cleanup plan, it supersedes the original handoff. If the issue has a `Reopened` label (Rule 5), read all comments back to the original handoff to understand what changed.
+4. **Verify the handoff is complete.** All four action-item sections present (Engine, Content, UI, Wiring). If any section is missing without N/A rationale, do not start work — add a comment flagging the gap and move the issue back to Implementation Planning. (Release your claim by setting `assignee: null` when you do.) An incomplete plan produces incomplete work.
+5. **Check the Claude Code coordination block.** Use the `Suggested model` (or the `model:*` label) unless you have reason to override. If considering a concurrent worktree, verify the target is listed in `Parallel-safe with` *and* doesn't collide with `Mutex with`.
 
 ### Claude Code Closeout (replaces Definition of Done doc updates)
 When Claude Code finishes implementation:
-1. DoD hooks enforce: tests pass, types clean, build succeeds, docs updated, no orphan deferrals
+1. DoD hooks enforce: tests pass, types clean, build succeeds, docs updated, no orphan deferrals.
 2. **Create Linear issues for any deferrals** — every `// TODO`/`// DEFERRED` comment must have a `THR-XX` reference. Label `Deferral`, assign to same project, set dependencies.
-3. Move issue: In Dev → Done
-4. Add comment on the issue with:
-   - Commit hash(es)
-   - What was shipped
+3. **Commit with the close keyword, don't manually transition (Rule 3).** The closing commit's body must include `Fixes THR-XX` (or `Closes THR-XX` / `Resolves THR-XX`). Merging to `main` triggers Linear's auto-close, which also records the commit reference on the issue. **Never `save_issue(state: "Done")` from CC** — that pathway has caused premature closes of reopened issues and bypasses the merge-gated invariant that Done means shipped.
+4. Add a completion comment on the issue with:
+   - Commit hash(es) and the branch they landed on
+   - What was shipped (one-line summary matching the Linear issue title)
    - Deferral issues created (if any), with brief rationale for each deferral
+5. If the merge didn't fire the auto-close (wrong keyword, merge blocked, feature branch not yet on `main`), the issue **stays** in In Dev until the merge lands. Fix the merge situation rather than force-transitioning the issue.
 
 ---
 
@@ -243,6 +321,17 @@ Created in Linear (team: Threadbare):
 | model:haiku | #E8C547 | Cowork's suggested Claude model — mechanical, low blast radius |
 | model:sonnet | #6366F1 | Cowork's suggested Claude model — default; most engine/content work with a written plan |
 | model:opus | #8B5CF6 | Cowork's suggested Claude model — architectural judgment or cross-cutting work |
+
+---
+
+## Known Linear MCP Limitations
+
+The Linear MCP has a few rough edges that have bitten sessions repeatedly. **Read this before scripting batch operations.** (Added 2026-04-18 from retro impediments #48, #49.)
+
+- **`save_issue` silently fails to update state.** A `save_issue` call with `statusId` or `status` can return a 200 success response while leaving the issue in its previous state — no error surfaced, no indication that the write didn't stick. **Workaround:** always verify-after-write. After any `save_issue` that changes state, re-query the issue with `get_issue` and confirm the state field matches what you asked for. If it doesn't, retry or surface the discrepancy in the session log. Verify-after-write is the agent's responsibility on every state move.
+- **`list_issues orderBy: 'priority'` is rejected at runtime.** The `orderBy` field only accepts `createdAt` or `updatedAt`, even though the TypeScript schema exposes `priority` as a valid string. **Workaround:** omit `orderBy` (or use a timestamp sort) and sort by priority in memory from the returned array — Linear returns the `priority` numeric field on every issue, so sorting client-side is cheap.
+
+If you hit a new Linear MCP quirk, log it via `impediment-reporter` and add it here in the next retro.
 
 ---
 
