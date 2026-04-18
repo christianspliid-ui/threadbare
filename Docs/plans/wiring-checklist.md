@@ -135,6 +135,36 @@ Per-surface coverage for the two authored aftermath effect kinds introduced by t
 * Divine ops: `src/engine/graphOpExecutor.ts` + `src/data/unified-action-templates.ts`
 * Tests: `src/engine/__tests__/secretsFavors.test.ts` (17 tests)
 
+---
+
+## Faction Agency — Phase 6.652 (THR-29)
+
+> **Last updated:** 2026-04-19 (THR-29 — Faction Agency complete)
+
+| Capability | Orchestrator wiring | Graph mutations | Traces emitted | Debug visibility | Player-facing UI |
+|---|---|---|---|---|---|
+| Action evaluation | Phase 6.652 `phaseFactionActions` — runs every `FACTION_ACTION_INTERVAL=8` ticks | `factionActionHistory` + `lastActionTick` on faction node | `faction_action` category per action + `skipped_no_eligible` | Trace feed | None (background) |
+| Commission Quest | `executeCommissionQuest` | Creates `event` node (nodeSubtype:`faction_quest`) + `commissions` edge | `faction_action` (executed) | Trace feed | FactionSheet → Recent Actions |
+| Declare Rivalry | `executeDeclareRivalry` | Creates/updates `relates_to` edge (isRival:true, sentiment:-0.8) | `faction_action` (executed) | Trace feed | FactionSheet → Relations (Rival badge) |
+| Propose Alliance | `executeProposeAlliance` | Creates/updates `relates_to` edge (isAlliance:true, sentiment:0.8) | `faction_action` (executed) | Trace feed | FactionSheet → Relations (Allied badge) |
+| Excommunicate | `executeExcommunicate` | Removes `member_of` edge; creates `hostile_to` edge; adds `cast_out` condition; splashes reputation to other memberships | `faction_action` (executed) | Trace feed | FactionSheet → Recent Actions |
+| Hold Conclave | `executeHoldConclave` | Sets `activeConclave` property on faction node; resolves after 3 ticks → `dissenting`/`vindicated` conditions on participants | `faction_action` (executed) + conclave resolution | Trace feed | FactionSheet → Current Agenda (conclave block) |
+| Issue Bounty | `executeIssueBounty` | Creates `event` node (nodeSubtype:`bounty`) + `issues` edge; adds `hunted` condition to target | `faction_action` (executed) | Trace feed | FactionSheet → Recent Actions |
+| Conclave advancement | Every tick (off-interval) via `advanceAllConclaves` | Decrements `ticksRemaining`; clears on resolution | `faction_action` on resolution | Trace feed | FactionSheet → Current Agenda |
+| Divine Edict | `action.divine-edict` — ascendant targets faction node | Sets `conclaveLeverageShift: 0.3` on faction | None (via GraphOp) | ActionDrawer | ActionDrawer (star reach, 18 essence) |
+| Anoint Champion | `action.anoint-champion` — ascendant targets agent | Sets `championBlessing` property (15 ticks, 2× rep multiplier, 0.2 score boost) | None (via GraphOp) | ActionDrawer | ActionDrawer (iron reach, 14 essence) |
+
+**Tunables** (all in `src/types/factionAction.ts`): `FACTION_ACTION_INTERVAL` (8), `FACTION_ACTION_COOLDOWN` (5), `COMMISSION_QUEST_COST` (5), `RIVALRY_SENTIMENT_THRESHOLD` (-0.3), `ALLIANCE_SENTIMENT_THRESHOLD` (0.3), `BOUNTY_COST` (12), `CONCLAVE_BASE_FREQUENCY_TICKS` (180), `EXCOMMUNICATION_REPUTATION_SPLASH` (0.1), `DIVINE_EDICT_ESSENCE_COST` (18), `ANOINT_CHAMPION_ESSENCE_COST` (14).
+
+**Verification pointers:**
+* Types + constants: `src/types/factionAction.ts`
+* Phase: `src/engine/phaseFactionActions.ts` — Phase 6.652 in orchestrator
+* Encounter templates: `src/data/faction-action-encounters.ts` (8 templates registered in `unified-action-templates.ts`)
+* Divine actions: `src/data/unified-action-templates.ts` — `action.divine-edict`, `action.anoint-champion`
+* UI: `src/components/Game/FactionSheet.tsx` — Recent Actions, conclave indicator, rival/alliance badges
+* `factionNetwork.ts` — `FactionNetworkRelation.isRival/isAlliance`
+* Tests: `src/engine/__tests__/phaseFactionActions.test.ts` (10 tests)
+
 **Intelligence consumption pathway (THR-113, 2026-04-17):**
 
 Intelligence records are **granted** by aftermath reactions (`kind: 'intelligence'`, trace: `intelligence_granted`). THR-113 closes the loop by **consuming** them in three sites. All three emit `intelligence_referenced` with a `referencedBy` discriminator.
