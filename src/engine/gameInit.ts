@@ -694,15 +694,15 @@ export function devSeedTheFirst(state: GameState): string {
 
 /** Pre-baked AscendantIdentity for dev quick-start (seed 42, hunger.witness). */
 export const DEV_ASCENDANT_IDENTITY: AscendantIdentity = {
-  mortalName: 'The Dev Oracle',
+  mortalName: 'Vara',
   originFragmentId: 'origin.dev',
   driveFragmentId: 'drive.dev',
   timeSinceAscension: 'ancient',
   mortalTags: ['scholar', 'seeker', 'loss', 'mind'],
-  divineName: 'The Dev Oracle',
+  divineName: 'Vara',
   hungerId: 'hunger.witness',
   hungerName: 'Witness',
-  mandateDirection: 'Establish an information network that sees across the world',
+  mandateDirection: 'You swore to see the Sun-Oath broken before it could consume what remains of the Thornweaver. You do not know yet how it will break — only that you will be there when it does.',
   courtType: 'web',
   sphereAlignment: { primary: 'mind', secondary: 'spirit' },
   domainAffinities: { eye: 4, veil: 3, shadow: 2 },
@@ -718,3 +718,110 @@ export const DEV_ASCENDANT_IDENTITY: AscendantIdentity = {
     emotionalTone: 'Detached curiosity sharpened by an insatiable need to know.',
   },
 };
+
+/**
+ * Seed the ascendant test package for Vara (dev/testing only).
+ *
+ * Populates quintessence (Rooted), mandate progress (~2/3), essence pool, conditions,
+ * clues, and agreements to stress-test the ascendant bar UI across all valences.
+ *
+ * Call after devSeedTheFirst so the Thornweaver counterparty node exists.
+ * Only call from dev quick-start paths — never from production flows.
+ */
+export function devSeedAscendantTestPackage(state: GameState): void {
+  const { graph, ascendantId } = state;
+
+  // ─── Quintessence: Rooted (ratio 0.45 → index 4 in lexicon) ─────
+  const ascNode = graph.getNode(ascendantId);
+  if (ascNode) {
+    ascNode.properties.quintessence = 0.45;
+    ascNode.properties.quintessenceMax = 1.0;
+  }
+
+  // ─── Mandate progress: ~2/3 fill, rising (Kindling) ─────────────
+  if (state.mandateState) {
+    state.mandateState = { ...state.mandateState, progress: 0.67 };
+  }
+
+  // ─── Essence pool: active / faintly-active / inactive per spec ───
+  state.essencePool = {
+    chaos:    2,
+    order:    2,
+    light:    2,
+    darkness: 14,
+    force:    2,
+    matter:   2,
+    energy:   2,
+    life:     12,
+    mind:     38,
+    spirit:   30,
+    time:     12,
+    entropy:  10,
+  };
+
+  // ─── Conditions ───────────────────────────────────────────────────
+  const conditions: Array<{ id: string; name: string; tags: string[]; mechanical: string; flavor: string }> = [
+    { id: 'trait.dev.veiled',      name: 'Veiled',      tags: [],           mechanical: "Mortals' eyes slide past you.", flavor: "Mortals' eyes slide past you. You may walk in their halls unseen." },
+    { id: 'trait.dev.thornmarked', name: 'Thornmarked', tags: ['#curse'],   mechanical: 'The Thornweaver knows where you stand.', flavor: "The Thornweaver knows where you stand. Any thorn is her thorn." },
+    { id: 'trait.dev.unforgotten', name: 'Unforgotten', tags: ['#blessing'], mechanical: 'What you have witnessed cannot be denied.', flavor: "What you have witnessed cannot be denied. Mortals who hear you speak it are shaken." },
+    { id: 'trait.dev.cold_of_eye', name: 'Cold of Eye', tags: [],           mechanical: 'Your Whispers come out sharper than intended.', flavor: "Your Whispers come out sharper than intended. Interventions cut." },
+  ];
+  for (const c of conditions) {
+    if (!graph.getNode(c.id)) {
+      graph.addNode({ id: c.id, type: 'trait', name: c.name, properties: { subcategory: 'condition', tier: 1, tags: c.tags, mechanicalSummary: c.mechanical, flavorText: c.flavor, ticksRemaining: null } });
+    }
+    const eid = `edge.has_trait.${ascendantId}.${c.id}`;
+    if (!graph.getEdge(eid)) {
+      graph.addEdge({ id: eid, source: ascendantId, target: c.id, type: 'has_trait', properties: {} });
+    }
+  }
+
+  // ─── Clues (subcategory 'clue' — for future clue bar UI) ─────────
+  const clues: Array<{ id: string; name: string; note: string }> = [
+    { id: 'trait.dev.clue.first_fall',       name: 'Whisper of the First Fall',    note: "Something you have half-remembered about the original breaking of the Sun-Oath. A name, almost." },
+    { id: 'trait.dev.clue.sunken_vale',       name: 'Rumor: The Sunken Vale',       note: "A valley the mortals will not speak of in daylight. Three of your threads have dreamed of it." },
+    { id: 'trait.dev.clue.thornweaver_name',  name: "The Thornweaver's Third Name", note: "Kael has two names you know. The third is older, and it is listening." },
+  ];
+  for (const cl of clues) {
+    if (!graph.getNode(cl.id)) {
+      graph.addNode({ id: cl.id, type: 'trait', name: cl.name, properties: { subcategory: 'clue', tier: 1, tags: ['#clue'], mechanicalSummary: cl.note, flavorText: cl.note, ticksRemaining: null } });
+    }
+    const eid = `edge.has_trait.${ascendantId}.${cl.id}`;
+    if (!graph.getEdge(eid)) {
+      graph.addEdge({ id: eid, source: ascendantId, target: cl.id, type: 'has_trait', properties: {} });
+    }
+  }
+
+  // ─── Agreement counterparty nodes ────────────────────────────────
+  const counterparties: Array<{ id: string; name: string }> = [
+    { id: 'dev_entity_still_hour',       name: 'The Still Hour' },
+    { id: 'dev_entity_grey_seer',        name: 'The Grey Seer' },
+    { id: 'dev_location_watching_tower', name: 'The Watching Tower' },
+  ];
+  for (const cp of counterparties) {
+    if (!graph.getNode(cp.id)) {
+      graph.addNode({ id: cp.id, type: 'actor', name: cp.name, properties: { actorType: 'individual' } });
+    }
+  }
+
+  // ─── Agreements ───────────────────────────────────────────────────
+  // Pact: Thornweaver uses ind_dev_the_first if it exists, else the still-hour node as fallback.
+  const thornweaverId = graph.getNode('ind_dev_the_first') ? 'ind_dev_the_first' : 'dev_entity_still_hour';
+  const agreements: Array<{ id: string; target: string; displayName: string; type: string; tier: number; terms: string; tags: string[] }> = [
+    { id: 'edge.agreement.dev.thornweaver',    target: thornweaverId,               displayName: 'Pact: Thornweaver',        type: 'pact', tier: 2, terms: "You swore not to enter the Grove by the western approaches. You do not remember why you agreed.", tags: [] },
+    { id: 'edge.agreement.dev.still_hour',     target: 'dev_entity_still_hour',     displayName: 'Oath: The Still Hour',     type: 'oath', tier: 2, terms: "From dusk's last light to the first star, you will not speak, nor whisper, nor send a Vision.", tags: [] },
+    { id: 'edge.agreement.dev.grey_seer',      target: 'dev_entity_grey_seer',      displayName: 'Debt: The Grey Seer',      type: 'debt', tier: 1, terms: "A Vision owed, long unpaid. The lineage remembers.", tags: [] },
+    { id: 'edge.agreement.dev.watching_tower', target: 'dev_location_watching_tower', displayName: 'Bound: The Watching Tower', type: 'pact', tier: 1, terms: "You may return here at any tide; you may not stray beyond a fortnight without it calling you back.", tags: ['#bound'] },
+  ];
+  for (const ag of agreements) {
+    if (!graph.getEdge(ag.id)) {
+      graph.addEdge({
+        id: ag.id, source: ascendantId, target: ag.target, type: 'relates_to',
+        properties: {
+          agreementName: ag.displayName,
+          agreement: { type: ag.type, tier: ag.tier, tags: ag.tags, terms: ag.terms, fulfillmentCondition: '', ticksRemaining: null },
+        },
+      });
+    }
+  }
+}

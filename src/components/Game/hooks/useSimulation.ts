@@ -5,7 +5,7 @@ import type { CosmologyProfile } from '../../../types';
 import type { GameState } from '../../../types/gameState';
 import type { RiverPath } from '../../../engine/worldGenData';
 import type { RegionData } from '../../../engine/regionTypes';
-import { initializeGameState, initializeGameStateFromIdentity, devSeedTheFirst, MAP_SIZE_PRESETS, DEFAULT_MAP_SIZE } from '../../../engine/gameInit';
+import { initializeGameState, initializeGameStateFromIdentity, devSeedTheFirst, devSeedAscendantTestPackage, MAP_SIZE_PRESETS, DEFAULT_MAP_SIZE } from '../../../engine/gameInit';
 import type { MapSizePreset } from '../../../engine/gameInit';
 import type { AscendantIdentity } from '../../../types/remembrance';
 import { runTick, resetEventCounter } from '../../../engine/orchestrator';
@@ -54,9 +54,10 @@ export function useSimulation({
       const result = ascendantIdentity
         ? initializeGameStateFromIdentity(ascendantIdentity, seed, cosmology, mapSize)
         : initializeGameState(archetype, avatarName, cosmology, seed, COLS, ROWS);
-      // Dev pre-seeding: inject The First agent so the game starts fully populated
+      // Dev pre-seeding: inject The First agent and ascendant test content
       if (preSeeded) {
         devSeedTheFirst(result.state);
+        devSeedAscendantTestPackage(result.state);
       }
       return result;
     },
