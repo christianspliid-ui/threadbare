@@ -86,6 +86,12 @@ export interface WorldSoulState {
   resonance: ResonanceState;
   /** Global sphere aggregate computed each tick by phaseSphereAggregation */
   aggregate?: SphereAggregate;
+  /**
+   * Accumulated sphere pressures from worsening_convergence complications (THR-120).
+   * Keyed by sphere name; values are raw pressure magnitudes from `sphere_pressure` effects.
+   * Read by phaseOmenAgenda to bias secondary omen selection toward pressured spheres.
+   */
+  spherePressures?: Partial<Record<string, number>>;
 }
 
 // ── The Unmaking / Twilight Phase ───────────────────────────────

@@ -44,6 +44,8 @@ export const OMEN_ENCOUNTER_BIAS_CAP = 0.4;
 export const OMEN_SPHERE_PRESSURE_CAP = 0.05;
 /** Minimum sphere dominance fraction to trigger a sphere-surge omen (per-sphere normalized weight) */
 export const OMEN_SPHERE_DOMINANCE_THRESHOLD = 0.25;
+/** Weight applied when blending worldSoul.spherePressures into apparent sphere dominance (THR-120) */
+export const SPHERE_PRESSURE_OMEN_BIAS_WEIGHT = 1.0;
 /** Max completed omens retained in history */
 export const OMEN_MAX_HISTORY = 20;
 /** Whether doom stage transitions force-expire the primary omen */
@@ -176,8 +178,15 @@ function evaluateCulturalTemplate(
 // ─── Sphere dominance ───────────────────────────────────────────
 
 function getSphereDominance(state: GameState): Partial<Record<string, number>> {
-  // Use fundament.sphereWeights (normalized, updated each tick by phaseSphereAggregation)
-  return state.worldSoul.fundament.sphereWeights ?? {};
+  const base: Partial<Record<string, number>> = state.worldSoul.fundament.sphereWeights ?? {};
+  const pressures = state.worldSoul.spherePressures;
+  if (!pressures || Object.keys(pressures).length === 0) return base;
+
+  const result: Partial<Record<string, number>> = { ...base };
+  for (const [sphere, pressure] of Object.entries(pressures)) {
+    result[sphere] = (result[sphere] ?? 0) + pressure * SPHERE_PRESSURE_OMEN_BIAS_WEIGHT;
+  }
+  return result;
 }
 
 // ─── Selection pipelines ─────────────────────────────────────────

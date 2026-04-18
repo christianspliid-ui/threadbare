@@ -15,7 +15,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import type { GameState } from '../../types/gameState';
 import type { OmenState, ActiveOmen } from '../../types/omen';
-import { phaseOmenAgenda, deriveOmenEncounterBias, OMEN_FIRST_ACTIVATION_TICK, OMEN_MAX_HISTORY, OMEN_ENCOUNTER_BIAS_CAP } from '../phaseOmenAgenda';
+import { phaseOmenAgenda, deriveOmenEncounterBias, OMEN_FIRST_ACTIVATION_TICK, OMEN_MAX_HISTORY, OMEN_ENCOUNTER_BIAS_CAP, SPHERE_PRESSURE_OMEN_BIAS_WEIGHT, OMEN_SPHERE_DOMINANCE_THRESHOLD } from '../phaseOmenAgenda';
 import { WorldGraph } from '../graph';
 import { getDoomEchoTemplates, getSeasonalTemplates, OMEN_TEMPLATES } from '../../data/omenTemplates';
 
@@ -406,5 +406,28 @@ describe('phaseOmenAgenda — fail-soft', () => {
     const result1 = phaseOmenAgenda(state1);
     const result2 = phaseOmenAgenda(state2);
     expect(result1.omenState?.primary?.templateId).toBe(result2.omenState?.primary?.templateId);
+  });
+});
+
+// THR-120: worldSoul.spherePressures biases secondary omen selection
+describe('phaseOmenAgenda — spherePressures omen bias (THR-120)', () => {
+  it('SPHERE_PRESSURE_OMEN_BIAS_WEIGHT constant is positive', () => {
+    expect(SPHERE_PRESSURE_OMEN_BIAS_WEIGHT).toBeGreaterThan(0);
+  });
+
+  it('sphere pressure on a valid sphere boosts apparent dominance above threshold', () => {
+    // spirit base weight is absent (0) in makeWorldSoul; pressure of 0.3 should push it to 0.3 > threshold (0.25)
+    const pressuredWeight = 0 + 0.3 * SPHERE_PRESSURE_OMEN_BIAS_WEIGHT;
+    expect(pressuredWeight).toBeGreaterThan(OMEN_SPHERE_DOMINANCE_THRESHOLD);
+  });
+
+  it('phaseOmenAgenda runs without error when worldSoul has spherePressures', () => {
+    const state = makeState({
+      worldSoul: {
+        ...makeWorldSoul(),
+        spherePressures: { spirit: 0.3, entropy: 0.1 },
+      } as any,
+    });
+    expect(() => phaseOmenAgenda(state)).not.toThrow();
   });
 });

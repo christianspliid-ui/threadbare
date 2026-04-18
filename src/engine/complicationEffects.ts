@@ -53,6 +53,18 @@ function applyEffect(
   complicationName: string,
   events: TickEvent[],
 ): void {
+  // Actor-independent effects first — these must not be gated by actorNode presence
+  if (effect.type === 'sphere_pressure') {
+    if (!state.worldSoul) return;
+    const current = state.worldSoul.spherePressures?.[effect.sphere] ?? 0;
+    state.worldSoul.spherePressures = {
+      ...state.worldSoul.spherePressures,
+      [effect.sphere]: current + effect.magnitude,
+    };
+    return;
+  }
+  if (effect.type === 'partial_progress') return;
+
   const actorNode = state.graph.getNode(ctx.action.actorId);
   if (!actorNode) return;
 
@@ -139,24 +151,6 @@ function applyEffect(
         ...state.doomClock,
         currentTick: state.doomClock.currentTick + effect.magnitude,
       };
-      break;
-    }
-
-    case 'sphere_pressure': {
-      // TODO(THR-120): WorldSoulState.spherePressures does not yet exist.
-      // This writes to a cast object that nothing reads — deferred until
-      // WorldSoulState is extended and the omen/worldsoul phase consumes the field.
-      const worldSoul = state.worldSoul as Record<string, unknown> | null | undefined;
-      if (!worldSoul) break;
-      const pressures = (worldSoul.spherePressures as Record<string, number> | undefined) ?? {};
-      const current = pressures[effect.sphere] ?? 0;
-      worldSoul.spherePressures = { ...pressures, [effect.sphere]: current + effect.magnitude };
-      break;
-    }
-
-    case 'partial_progress': {
-      // Consumed in executeStepResult (unifiedActionResolution.ts) after advanceStep — THR-119.
-      // The fraction is read directly from the ComplicationResult effects array there.
       break;
     }
 

@@ -17,6 +17,7 @@ import {
   selectComplication,
   determineSeverity,
 } from '../complicationSelection';
+import { applyComplicationEffects } from '../complicationEffects';
 import type { ComplicationContext } from '../../types/complication';
 import { WorldGraph } from '../graph';
 import { COMPLICATION_TEMPLATES } from '../../data/complication-templates';
@@ -275,5 +276,52 @@ describe('selectComplication', () => {
     expect(selectionTraces.length).toBeGreaterThanOrEqual(1);
     disableTracing();
     clearTraces();
+  });
+});
+
+// THR-120: sphere_pressure complication effect writes to worldSoul.spherePressures
+describe('sphere_pressure complication effect (THR-120)', () => {
+  function makeMinimalState() {
+    return {
+      worldSoul: {
+        fundament: { sphereWeights: {} },
+        resonance: {},
+      },
+    } as any;
+  }
+
+  it('writes sphere pressure to worldSoul.spherePressures', () => {
+    const state = makeMinimalState();
+    const ctx = makeContext({});
+    applyComplicationEffects(
+      [{ type: 'sphere_pressure', sphere: 'spirit', magnitude: 0.15 }],
+      ctx, state, 1, 'Test',
+    );
+    expect(state.worldSoul.spherePressures?.spirit).toBeCloseTo(0.15, 5);
+  });
+
+  it('accumulates pressure on repeated writes to the same sphere', () => {
+    const state = makeMinimalState();
+    const ctx = makeContext({});
+    applyComplicationEffects(
+      [{ type: 'sphere_pressure', sphere: 'entropy', magnitude: 0.1 }],
+      ctx, state, 1, 'Test',
+    );
+    applyComplicationEffects(
+      [{ type: 'sphere_pressure', sphere: 'entropy', magnitude: 0.2 }],
+      ctx, state, 2, 'Test',
+    );
+    expect(state.worldSoul.spherePressures?.entropy).toBeCloseTo(0.3, 5);
+  });
+
+  it('does not mutate the actor node (_complicationPartialProgress absent)', () => {
+    const state = makeMinimalState();
+    state.graph = makeGraph();
+    const ctx = makeContext({});
+    applyComplicationEffects(
+      [{ type: 'sphere_pressure', sphere: 'force', magnitude: 0.1 }],
+      ctx, state, 1, 'Test',
+    );
+    expect(state.graph.getNode('actor-1')?.properties?._complicationPartialProgress).toBeUndefined();
   });
 });
