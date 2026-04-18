@@ -198,6 +198,7 @@ export const TAVERN_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     threatRating: 'easy',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.assist,
+    favorGeneration: { onSuccess: true, magnitudeRange: [0.1, 0.25], context: 'performed a kindness' },
     steps: [
       {
         id: 'bard.tuning',
@@ -435,6 +436,7 @@ export const TAVERN_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     threatRating: 'easy',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.assist,
+    favorGeneration: { onSuccess: true, magnitudeRange: [0.15, 0.30], context: 'listened to their confession' },
     steps: [
       {
         id: 'confession.opening',
@@ -541,6 +543,7 @@ export const TAVERN_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     threatRating: 'easy',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.assist,
+    favorGeneration: { onSuccess: true, magnitudeRange: [0.10, 0.20], context: 'passed them a warning' },
     steps: [
       {
         id: 'warning.approach',

@@ -401,6 +401,29 @@ export type EncounterAftermathReactionEffect =
     readonly initialStrength?: number;
     readonly reason?: string;
     readonly when?: EffectPredicate;
+  }
+  // ─── Secrets & Favors effects (THR-30) ────────────────────────────────────
+  | {
+    /**
+     * Attempt secret discovery: run secretGeneration.ts against the encounter target
+     * and create a knows_secret_of edge (actor → target) on success.
+     * Source is used to pick magnitude modifier and prose.
+     */
+    readonly kind: 'secret_discovery';
+    readonly source: 'confession' | 'observation' | 'spy_debrief' | 'tavern_gossip' | 'encounter_outcome';
+    /** Magnitude modifier applied on top of generation roll (0.0–1.0, default 0). */
+    readonly magnitudeBonus?: number;
+    readonly when?: EffectPredicate;
+  }
+  | {
+    /**
+     * Create an owes_favor edge (target → actor) when the encounter succeeds.
+     * The favor magnitude is sampled from magnitudeRange using the session RNG.
+     */
+    readonly kind: 'favor_creation';
+    readonly magnitudeRange: [number, number];
+    readonly context: string;
+    readonly when?: EffectPredicate;
   };
 
 export interface PendingEncounterSeed {

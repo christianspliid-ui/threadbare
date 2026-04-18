@@ -266,7 +266,33 @@ export interface EncounterTemplate {
   readonly illustrationUrl?: string;
   /** Alt text for the concept art image (accessibility). */
   readonly illustrationAlt?: string;
+  /**
+   * THR-30: If set, a successful outcome of this encounter creates an owes_favor edge
+   * from the encounter target → actor with magnitude sampled from magnitudeRange.
+   */
+  favorGeneration?: {
+    onSuccess: boolean;
+    magnitudeRange: [number, number];
+    context: string;
+  };
+  /**
+   * THR-30: If set, a successful outcome of this encounter attempts secret discovery
+   * via secretGeneration.ts. The encounterStep's outcome need not explicitly list effects.
+   * Primarily used for discovery-type encounter templates.
+   */
+  secretDiscovery?: {
+    onSuccess: boolean;
+    sourceName: SecretDiscoverySource;
+  };
 }
+
+// Referenced by EncounterTemplate.secretDiscovery — import avoidance (string literals only)
+export type SecretDiscoverySource =
+  | 'confession'
+  | 'observation'
+  | 'spy_debrief'
+  | 'tavern_gossip'
+  | 'encounter_outcome';
 
 // ─── Encounter Support Bundle Types ────────────────────────────
 
@@ -374,7 +400,9 @@ export interface LeverageHistoryEntry {
     | 'wealth_bonus'
     | 'power_bonus'
     | 'rank_bonus'
-    | 'divine_tip_scales';
+    | 'divine_tip_scales'
+    | 'secret_bonus'   // THR-30: actor holds unrevealed secret about target
+    | 'favor_bonus';   // THR-30: target owes actor a favor
 }
 
 // ─── Group Encounter Participant ────────────────────────────────

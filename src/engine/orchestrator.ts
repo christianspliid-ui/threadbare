@@ -126,6 +126,8 @@ import { validateTickOutput, appendCrashLog } from './tickHealthMonitor';
 import { phaseFactionReputationDecay, processFactionEncounterReputation } from './factionReputation';
 import { phaseHiddenMarkDecay } from './phaseHiddenMarkDecay';
 import { phaseIntelligenceDecay } from './phaseIntelligenceDecay';
+import { phaseSecretsFavors } from './phaseSecretsFavors';
+import { generateSecret, createSecretEdge, createFavorEdge } from './secretGeneration';
 import { processFactionOutcome, resetFactionEventSeq } from './factionOutcome';
 import type { DistanceMatrix } from './distanceMatrix';
 import { clearTimelines, appendEvent } from './encounterTimeline';
@@ -545,6 +547,81 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
       const outcomeRng = mulberry32(state.seed + state.tick * 43 + hashString(progress.actorId));
       const factionEvents = processFactionOutcome(state.graph, progress, state.tick, outcomeRng);
       events.push(...factionEvents);
+    }
+
+    // ── Secret discovery (THR-30): secretDiscovery template metadata ──
+    if (progress.status === 'completed' && result.success) {
+      const completedEncounter = getAnyEncounterById(progress.encounterId);
+      if (completedEncounter?.secretDiscovery?.onSuccess && progress.targetAgentId) {
+        const targetNode = state.graph.getNode(progress.targetAgentId);
+        if (targetNode) {
+          try {
+            const secretRng = mulberry32(
+              state.seed ^ state.tick * 53 ^ hashString(progress.actorId) ^ hashString(progress.targetAgentId)
+            );
+            const secret = generateSecret(targetNode, state.graph, completedEncounter.secretDiscovery.sourceName, secretRng);
+            const created = createSecretEdge(
+              progress.actorId,
+              progress.targetAgentId,
+              secret,
+              completedEncounter.secretDiscovery.sourceName,
+              state.tick,
+              state.graph,
+            );
+            if (created) {
+              emitTrace({
+                tick: state.tick,
+                category: 'secret_discovered',
+                event: 'secret_discovered',
+                discovererId: progress.actorId,
+                subjectId: progress.targetAgentId,
+                secretType: created.secretType,
+                magnitude: created.magnitude,
+                source: created.source,
+                encounterContext: progress.encounterId,
+                summary: `${progress.actorId} discovered secret (${created.secretType}) about ${progress.targetAgentId} via ${progress.encounterId}`,
+              });
+            }
+          } catch {
+            // fail-soft: secret discovery failure must not block encounter completion
+          }
+        }
+      }
+    }
+
+    // ── Favor creation (THR-30): favorGeneration template metadata ──
+    if (progress.status === 'completed' && result.success) {
+      const completedEncounter = getAnyEncounterById(progress.encounterId);
+      if (completedEncounter?.favorGeneration?.onSuccess && progress.targetAgentId) {
+        try {
+          const [magMin, magMax] = completedEncounter.favorGeneration.magnitudeRange;
+          const favorRng = mulberry32(state.seed ^ state.tick * 61 ^ hashString(progress.actorId));
+          const magnitude = magMin + favorRng() * (magMax - magMin);
+          const created = createFavorEdge(
+            progress.targetAgentId,
+            progress.actorId,
+            magnitude,
+            completedEncounter.favorGeneration.context,
+            state.tick,
+            state.graph,
+          );
+          if (created) {
+            emitTrace({
+              tick: state.tick,
+              category: 'favor_created',
+              event: 'favor_created',
+              debtorId: progress.targetAgentId,
+              creditorId: progress.actorId,
+              magnitude,
+              context: completedEncounter.favorGeneration.context,
+              encounterContext: progress.encounterId,
+              summary: `${progress.targetAgentId} owes a favor to ${progress.actorId} (${completedEncounter.favorGeneration.context}, mag ${magnitude.toFixed(2)})`,
+            });
+          }
+        } catch {
+          // fail-soft
+        }
+      }
     }
 
     // ── Reward processing (runs on encounter completion/abandonment) ──
@@ -2099,6 +2176,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
 
   // Phase 6.651: Faction Ambition Evaluation (TB-073 — faction-level ambition creation/update)
   phaseFactionAmbitions(s);
+
+  // Phase 6.653: Secrets & Favors Maintenance (THR-30 — decay, tension, expiry)
+  s = { ...s, ...phaseSecretsFavors(s) };
+  phaseEventCounts['secrets_favors'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
 
   // Phase 6.75: Agent Lifecycle (death, birth, migration)
   s = { ...s, ...phaseAgentLifecycle(s, nextEventId) };

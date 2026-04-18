@@ -17,6 +17,7 @@ import { ANOMALY_ENCOUNTER_TEMPLATES } from './encounter-anomaly-content';
 import { getArmyEncounterById } from './army-encounter-content';
 import { getMonsterEncounterById } from './monster-encounter-content';
 import { getBorderlandEncounterById, BORDERLAND_ENCOUNTER_TEMPLATES } from './borderland-encounter-content';
+import { SECRET_DISCOVERY_ENCOUNTER_TEMPLATES } from './secret-encounter-content';
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -3390,6 +3391,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     threatRating: 'moderate',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.assist,
+    favorGeneration: { onSuccess: true, magnitudeRange: [0.2, 0.35], context: 'tended to them through the vigil' },
     steps: [
       {
         id: 'healer.diagnosis',
@@ -7857,6 +7859,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     threatRating: 'moderate',
     intrinsicTier: 'shaping',
     motivations: ['mercy_ruthlessness', 'courage_prudence'],
+    favorGeneration: { onSuccess: true, magnitudeRange: [0.2, 0.40], context: 'stood between them and danger' },
     steps: [
       {
         id: 'defend_predators.detect',
@@ -10386,5 +10389,6 @@ export function getAnyEncounterById(id: string): EncounterTemplate | undefined {
     ?? getMercenaryEncounterById(id)
     ?? getArmyEncounterById(id)
     ?? getMonsterEncounterById(id)
-    ?? getBorderlandEncounterById(id);
+    ?? getBorderlandEncounterById(id)
+    ?? SECRET_DISCOVERY_ENCOUNTER_TEMPLATES.find(encounter => encounter.id === id);
 }

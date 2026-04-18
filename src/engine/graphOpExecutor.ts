@@ -143,6 +143,15 @@ function executeSingleOp(
       case 'set_thread_courtposition':
         return executeSetThreadCourtPosition(graph, op, ctx);
 
+      case 'reveal_secret':
+        return executeRevealSecret(graph, op, ctx);
+
+      case 'call_in_favor':
+        return executeCallInFavor(graph, op, ctx);
+
+      case 'plant_secret':
+        return executePlantSecret(graph, op, ctx);
+
       default:
         return {
           op,
@@ -462,4 +471,94 @@ function executeSetThreadCourtPosition(
   graph.updateEdge(edge.id, { properties: { courtPosition } });
 
   return { op, success: true };
+}
+
+// ─── THR-30: Secrets & Favors divine ops ─────────────────────────────────────
+
+function executeRevealSecret(
+  graph: WorldGraph,
+  op: GraphOp,
+  ctx: GraphOpContext,
+): GraphOpResult {
+  const actorId  = resolveRef(op.source ?? '$actor',  ctx);
+  const targetId = resolveRef(op.target ?? '$target', ctx);
+
+  // Reveal the best (highest magnitude) unrevealed secret the actor holds about the target
+  const secretEdges = graph.getOutgoingEdges(actorId, 'knows_secret_of')
+    .filter(e => e.target === targetId && !(e.properties.revealed as boolean));
+
+  if (secretEdges.length === 0) {
+    return { op, success: false, error: `No unrevealed secrets about ${targetId}` };
+  }
+
+  const best = secretEdges.reduce((a, b) =>
+    ((b.properties.magnitude as number) ?? 0) > ((a.properties.magnitude as number) ?? 0) ? b : a
+  );
+
+  graph.updateEdge(best.id, { properties: { ...best.properties, revealed: true } });
+  return { op, success: true, createdId: best.id };
+}
+
+function executeCallInFavor(
+  graph: WorldGraph,
+  op: GraphOp,
+  ctx: GraphOpContext,
+): GraphOpResult {
+  const actorId  = resolveRef(op.source ?? '$actor',  ctx);
+  const targetId = resolveRef(op.target ?? '$target', ctx);
+
+  // Redeem the target's best unredeemed/unbroken owes_favor edge directed TO the actor
+  const favorEdges = graph.getOutgoingEdges(targetId, 'owes_favor')
+    .filter(e =>
+      e.target === actorId &&
+      !(e.properties.redeemed as boolean) &&
+      !(e.properties.broken as boolean)
+    );
+
+  if (favorEdges.length === 0) {
+    return { op, success: false, error: `No redeemable favors owed by ${targetId}` };
+  }
+
+  const best = favorEdges.reduce((a, b) =>
+    ((b.properties.magnitude as number) ?? 0) > ((a.properties.magnitude as number) ?? 0) ? b : a
+  );
+
+  graph.updateEdge(best.id, { properties: { ...best.properties, redeemed: true } });
+  return { op, success: true, createdId: best.id };
+}
+
+function executePlantSecret(
+  graph: WorldGraph,
+  op: GraphOp,
+  ctx: GraphOpContext,
+): GraphOpResult {
+  const actorId  = resolveRef(op.source ?? '$actor',  ctx);
+  const targetId = resolveRef(op.target ?? '$target', ctx);
+  const tick = ctx.tick ?? 0;
+
+  const magnitude = (op.properties?.magnitude as number) ?? 0.45;
+  const secretType = (op.properties?.secretType as string) ?? 'hidden_weakness';
+  const detail = (op.properties?.detail as string) ?? `A fabricated secret about ${targetId}.`;
+
+  const edgeId = `secret_divine_${actorId}_${targetId}_${tick}`;
+  try {
+    graph.addEdge({
+      id: edgeId,
+      type: 'knows_secret_of',
+      source: actorId,
+      target: targetId,
+      properties: {
+        secretType,
+        magnitude,
+        discoveredTick: tick,
+        source: 'divine_revelation',
+        revealed: false,
+        detail,
+        planted: true,
+      },
+    });
+    return { op, success: true, createdId: edgeId };
+  } catch (err) {
+    return { op, success: false, error: err instanceof Error ? err.message : String(err) };
+  }
 }

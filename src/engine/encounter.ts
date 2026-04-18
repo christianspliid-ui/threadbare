@@ -181,8 +181,11 @@ export function initiateEncounter(
 
   // Compute initial leverage for social scene templates
   let initialLeverage: number | undefined;
+  let initialLeverageHistory: import('../types/encounter').LeverageHistoryEntry[] | undefined;
   if (encounter && isSocialSceneTemplate(encounter.steps) && targetAgentId) {
-    initialLeverage = computeInitialLeverage(state.graph, actorId, targetAgentId);
+    const leverageResult = computeInitialLeverage(state.graph, actorId, targetAgentId);
+    initialLeverage = leverageResult.leverage;
+    initialLeverageHistory = leverageResult.history;
   }
 
   const progress: EncounterProgress = {
@@ -197,7 +200,7 @@ export function initiateEncounter(
     occupiedUntilTick: tick + firstStepDuration,
     ...(initialLeverage !== undefined ? {
       leverage: initialLeverage,
-      leverageHistory: initialLeverage > 0 ? [] : [],
+      leverageHistory: initialLeverageHistory ?? [],
     } : {}),
   };
 

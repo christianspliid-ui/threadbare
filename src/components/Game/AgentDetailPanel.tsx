@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import type { AgentDetail, TraitSummary } from '../../engine/agentDetail';
+import type { AgentDetail, TraitSummary, LeverageSummary } from '../../engine/agentDetail';
 import type { ReachDomain } from '../../types/traits';
 import type { CooperationStrategy } from '../../types/disposition';
 import type { DigestEntry } from '../../types/attention';
@@ -634,6 +634,11 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
         </div>
       )}
 
+      {/* Leverage Section (THR-30): secrets & favors */}
+      {detail.leverage && (
+        <LeverageSection leverage={detail.leverage} />
+      )}
+
       {/* Recent Activity Log */}
       {recentEntries.length > 0 && (
         <div className="px-4 py-2 border-t border-amber-900/20">
@@ -704,5 +709,110 @@ function TraitRow({ trait }: { trait: TraitSummary }) {
         )}
       </div>
     </Tooltip>
+  );
+}
+
+// ─── Leverage Section Component (THR-30) ─────────────────────────
+
+const SECRET_TYPE_LABELS: Record<string, string> = {
+  hidden_allegiance: 'Hidden Allegiance',
+  betrayal_planned: 'Betrayal Planned',
+  financial_secret: 'Financial Secret',
+  past_crime: 'Past Crime',
+  secret_ambition: 'Secret Ambition',
+  hidden_weakness: 'Hidden Weakness',
+  dark_ritual: 'Dark Ritual',
+  forbidden_knowledge: 'Forbidden Knowledge',
+};
+
+function magnitudeLabel(mag: number): string {
+  if (mag >= 0.7) return 'Major';
+  if (mag >= 0.4) return 'Moderate';
+  return 'Minor';
+}
+
+function LeverageSection({ leverage }: { leverage: LeverageSummary }) {
+  const totalSecrets = leverage.secretsHeld.length + leverage.secretsAbout.length;
+  const totalFavors = leverage.favorsOwed.length + leverage.favorsOwedToMe.length;
+  if (totalSecrets === 0 && totalFavors === 0) return null;
+
+  return (
+    <div className="px-4 py-3 border-t border-amber-900/20">
+      <SectionHeading>Leverage</SectionHeading>
+      <div className="space-y-2 mt-2">
+
+        {leverage.secretsHeld.length > 0 && (
+          <div>
+            <div className="text-[10px] uppercase tracking-wider text-amber-400/60 mb-1">
+              Secrets held ({leverage.secretsHeld.length})
+            </div>
+            {leverage.secretsHeld.map((s, i) => (
+              <div key={i} className="flex items-center gap-2 py-0.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500/70 flex-shrink-0" />
+                <span className="text-xs text-amber-100/80 flex-1 truncate">
+                  {SECRET_TYPE_LABELS[s.secretType] ?? s.secretType}
+                  <span className="text-amber-400/50 ml-1">on {s.subjectName}</span>
+                </span>
+                <span className="text-[10px] text-amber-400/50">{magnitudeLabel(s.magnitude)}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {leverage.secretsAbout.length > 0 && (
+          <div>
+            <div className="text-[10px] uppercase tracking-wider text-red-400/60 mb-1">
+              Exposed ({leverage.secretsAbout.length})
+            </div>
+            {leverage.secretsAbout.map((s, i) => (
+              <div key={i} className="flex items-center gap-2 py-0.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500/70 flex-shrink-0" />
+                <span className="text-xs text-amber-100/60 flex-1 truncate">
+                  {SECRET_TYPE_LABELS[s.secretType] ?? s.secretType}
+                  <span className="text-amber-400/40 ml-1">known by {s.subjectName}</span>
+                </span>
+                <span className="text-[10px] text-amber-400/50">{magnitudeLabel(s.magnitude)}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {leverage.favorsOwedToMe.length > 0 && (
+          <div>
+            <div className="text-[10px] uppercase tracking-wider text-emerald-400/60 mb-1">
+              Favors owed ({leverage.favorsOwedToMe.length})
+            </div>
+            {leverage.favorsOwedToMe.map((f, i) => (
+              <div key={i} className="flex items-center gap-2 py-0.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/70 flex-shrink-0" />
+                <span className="text-xs text-amber-100/80 flex-1 truncate">
+                  {f.counterpartyName}
+                  {f.context && <span className="text-amber-400/40 ml-1">· {f.context}</span>}
+                </span>
+                <span className="text-[10px] text-amber-400/50">{magnitudeLabel(f.magnitude)}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {leverage.favorsOwed.length > 0 && (
+          <div>
+            <div className="text-[10px] uppercase tracking-wider text-stone-400/60 mb-1">
+              Owes favors ({leverage.favorsOwed.length})
+            </div>
+            {leverage.favorsOwed.map((f, i) => (
+              <div key={i} className="flex items-center gap-2 py-0.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-stone-500/70 flex-shrink-0" />
+                <span className="text-xs text-amber-100/60 flex-1 truncate">
+                  to {f.counterpartyName}
+                  {f.context && <span className="text-amber-400/40 ml-1">· {f.context}</span>}
+                </span>
+                <span className="text-[10px] text-amber-400/50">{magnitudeLabel(f.magnitude)}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

@@ -41,6 +41,7 @@ import { computeRewardEstimate, computeTotalTickCost } from './encounterCache';
 import { SOCIAL_ENCOUNTER_TEMPLATES } from '../data/social-encounter-content';
 import { SOCIAL_SCENE_TEMPLATES } from '../data/social-scene-templates';
 import { TAVERN_ENCOUNTER_TEMPLATES } from '../data/tavern-encounter-content';
+import { SECRET_DISCOVERY_ENCOUNTER_TEMPLATES } from '../data/secret-encounter-content';
 import { FACTION_SOCIAL_TEMPLATES } from '../data/faction-encounter-content';
 import { FACTION_DEFINITIONS } from '../data/faction-definitions';
 import type { MemberOfEdgeProperties } from '../types/disposition';
@@ -173,18 +174,27 @@ export function generateSocialCandidates(
 
     const questPriorityMultiplier = tavernBoostMultiplier + densityBonus;
 
-    // Filter standard social templates + deep social scene templates by location type
+    // Filter standard social templates + deep social scene templates + secret discovery by location type
     const matchingTemplates = [
       ...SOCIAL_ENCOUNTER_TEMPLATES,
       ...SOCIAL_SCENE_TEMPLATES,
+      // Secret discovery templates that don't require tavern sublocation (THR-30)
+      ...SECRET_DISCOVERY_ENCOUNTER_TEMPLATES.filter(t => !t.sublocationTypes?.length),
     ].filter(tmpl => tmpl.locationTypes.includes(locationType));
 
-    // Include tavern-exclusive templates when acting agent is at a tavern
+    // Include tavern-exclusive templates (tavern base + secret discovery tavern variants)
     const extraTemplates: EncounterTemplate[] = atTavern
-      ? TAVERN_ENCOUNTER_TEMPLATES.filter(tmpl =>
-          tmpl.sublocationTypes?.includes(TAVERN_SUBLOCATION_TYPE_ID)
-          && tmpl.locationTypes.includes(locationType),
-        )
+      ? [
+          ...TAVERN_ENCOUNTER_TEMPLATES.filter(tmpl =>
+            tmpl.sublocationTypes?.includes(TAVERN_SUBLOCATION_TYPE_ID)
+            && tmpl.locationTypes.includes(locationType),
+          ),
+          // Secret discovery templates that require tavern sublocation (THR-30)
+          ...SECRET_DISCOVERY_ENCOUNTER_TEMPLATES.filter(tmpl =>
+            tmpl.sublocationTypes?.includes(TAVERN_SUBLOCATION_TYPE_ID)
+            && tmpl.locationTypes.includes(locationType),
+          ),
+        ]
       : [];
 
     // Add faction-scoped social templates if agents share a faction (TB-062)

@@ -38,6 +38,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     threatRating: 'easy',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.assist,
+    favorGeneration: { onSuccess: true, magnitudeRange: [0.2, 0.4], context: 'forged an alliance' },
     steps: [
       {
         id: 'forge_alliance.overture',
@@ -303,6 +304,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     threatRating: 'moderate',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.assist,
+    favorGeneration: { onSuccess: true, magnitudeRange: [0.2, 0.35], context: 'spoke in their favor' },
     steps: [
       {
         id: 'persuade.appeal',
@@ -658,6 +660,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     encounterType: 'lead',
     threatRating: 'moderate',
     intrinsicTier: 'shaping',
+    favorGeneration: { onSuccess: true, magnitudeRange: [0.3, 0.5], context: 'offered patronage' },
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
     steps: [
       {
