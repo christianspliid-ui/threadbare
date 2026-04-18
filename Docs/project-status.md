@@ -1,12 +1,12 @@
 # Project Status
 > Updated 2026-04-18.
 ## Current Focus
-**Encounter Format Migration — Phase 0 complete, Phase 1 next.** 115 legacy EncounterTemplates migrating to UnifiedActionTemplate. Phase 0 (THR-110–118) engine prerequisites all shipped. Design doc: `Docs/plans/2026-04-16-encounter-template-migration.md`.
+**Encounter Format Migration — Phase 0 + Phase 1 Arcane Circle complete, Phase 2 next.** 115 legacy EncounterTemplates migrating to UnifiedActionTemplate. Phase 0 engine prerequisites shipped (THR-110–118). Phase 1 TG + Phase 2 AC guild content complete. Design doc: `Docs/plans/2026-04-16-encounter-template-migration.md`.
 
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
 - **v1.1 Optimization:** Shipped — Phases 19-22 (determinism, wiring, performance, hygiene)
-- **Encounter Format Migration (Now):** ✅ Phase 0 complete (THR-110/111/90/89/112/113/114/117/115/141/116/118 all shipped). Phase 1 content migration continues with next guild faction.
+- **Encounter Format Migration (Now):** ✅ Phase 0 complete (THR-110/111/90/89/112/113/114/117/115/141/116/118 all shipped). ✅ Phase 1 TG (THR-89) shipped. ✅ Phase 2 AC (THR-91) shipped. Next guild faction queued.
 - **Content Architecture (Now):** Shell/primitive work — stateful shells (Phase 2), progress/service shells (Phase 3), starter libraries (Phase 4), governance (Phase 5). ✅ THR-86 shipped (routine template structural variety). THR-88 next.
 - **Attention Tier Model (Now):** ✅ THR-16 curator metadata wiring shipped. UI integration ongoing.
 - **Social Systems Expansion (Next):** THR-28/27 shipped. THR-51/29/30/78 gated behind Phase 0 (THR-112/114/115).
@@ -18,6 +18,7 @@
 - **Next up:** Phase 1 content migration — next guild faction encounter templates.
 
 ## Recent Completions (2026-04-18)
+- **THR-91 — Phase 2: Arcane Circle encounter migration:** 15 `EncounterTemplate` objects in `arcane-circle-encounter-content.ts` converted to `UnifiedActionTemplate`. Arcane Circle voice prose (wonder/obsession, sentences that build then snap). Full enrichment wiring: `{name}`, pronouns, `{location}`, conditional blocks (`{?has_faction}`, `{?has_artifact}`, `{?has_ally}`), aftermathConfig reactions. Aftermath: encounter seeds (anomaly→planar_probe→seal_the_breach chain), hidden marks (arcane exposure, forbidden knowledge), intelligence grants, reputation tallies. Registered directly in `UNIFIED_ACTION_TEMPLATES` (bypasses `migrateEncounterTemplate`). `getFactionEncounterById` AC delegation removed. Tier-4 test cap updated 2→12 for guild capstone parity. Codex review: clean.
 - **THR-16 — Curator metadata wiring:** `CuratorDecisionTrace` extended with `isChainStage`, `isFinalChainStage`, `factionThreadCount`, `matchesAmbition`. `classifyChainStage()` added to `encounterChains.ts` (mirrors `computeChainBonus` semantics). `agentPursuesReach()` extracted from `encounterScoring.ts` and reused by `phaseAttention.ts`. Faction thread count: Set-based walk via `member_of` + `thread` edges. All 4 signals wired on both unified-action and legacy encounterProgress paths. Codex review: legacy path `factionThreadCount` also wired. 3 new test files (18 tests total).
 - **THR-118 — Wiring guide correction pass:** 6 corrections to `Docs/plans/2026-04-16-systemic-wiring-guide.md`: `How to verify` line added to Capability 1; Capability 5 restructured to clearly separate engine-internal helpers from the 18 authored aftermath effect kinds; `40 effect types` conflation fixed in Part 8; Capabilities 8/9 reordered; trace category reference table added to Part 5; downstream skill review confirmed no inherited overstatements. Phase 0 now complete.
 - **THR-116 — Causation edges + conditional aftermath effects:** `when?: EffectPredicate` gate on every `EncounterAftermathReactionEffect`. `buildPredicateContext`/`evaluatePredicate` in `effectPredicates.ts`. Four new thread-mutation effect kinds: `thread_strengthen/weaken/break/branch` with strength clamping [0,1]. `caused_by` EdgeType + schema entry (v1 creation deferred until event nodes exist). `{cause:label}`/`{cause:ticksAgo}` prose enrichment placeholders. `threadStrength` on `ThreadedNodeBase` + animated strength bar in `ThreadsPanel`. 6 new trace categories. 10 contract tests. Codex review: removed redundant cast, added thread_branch try/catch, annotated alone/outnumbered stubs, caused_by in EDGE_SCHEMA. Commit: `9429324a`.
