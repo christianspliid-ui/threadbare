@@ -3,6 +3,8 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ THR-127 (2026-04-19) — Living World summary bar: LiveLocationBar.tsx; top-3 non-quiet locations by pulse severity; rotation pool (9 entries, 3 per page); click → camera center; dismiss button; 10 tests
+
 ✅ THR-128 (2026-04-19) — Omen vocab injection into murmur prose: getOmenTemplateById in selectMurmurs; deterministic adj+atm picks; {omen_adj}/{omen_atmosphere} placeholder replacement; 0.4-probability atmosphere suffix; 6 tests
 
 ✅ THR-80 (2026-04-19) — Doom-echo templates for changing/sundering/failing/ascension: 16 templates, 4 stages each, vocab + {location} beats; 13 acceptance tests

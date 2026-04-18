@@ -11,12 +11,15 @@
 - **UI Visual Overhaul — Design System v1 (Now):** ✅ THR-168 tokens. ✅ THR-169 typography floor. ✅ THR-170 primitives. ✅ THR-183 Vara seed. ✅ THR-172 SphereIcon. THR-173 Thread Panel next.
 - **Attention Tier Model (Now):** ✅ THR-16 curator metadata. ✅ THR-18 siege templates + digest wiring. UI integration ongoing.
 - **Social Systems Expansion (Now):** THR-28/27/30/51/29/41/34 shipped. THR-78 queued.
-- **Thematic Pressure & Living World (Next):** THR-19 Omen Agenda shipped. ✅ THR-122/125/126/80/128 shipped. THR-127 Living World summary bar next. THR-87 (cool failure prose) blocked by THR-116.
+- **Thematic Pressure & Living World (Next):** THR-19 Omen Agenda shipped. ✅ THR-122/125/126/80/128/127 shipped. Nothing left in Ready for Dev. THR-87 (cool failure prose) blocked by THR-116.
 - **Agent Success Redesign (Next):** Phases 1-4 shipped. Phases 5-8 queued.
 - **Rarity Model (Next):** Three deferred Phase D items.
 - **Procedural Hex Vignettes (Next):** Phases 2-5 queued.
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
+
+## Recent Completions (2026-04-19) — THR-127
+- **THR-127 — Living World summary bar (top-3 active locations):** New `LiveLocationBar.tsx` component (absolute bottom-left of map area, z=20). Reads from `locationActivitySummaries` (already computed), sorts non-quiet locations by pulse severity (volatile > tense > busy > stirring), shows up to 3 per page. Rotates through a pool of 9 via `Math.floor(tick / ROTATE_EVERY_TICKS) % numPages`. Pulse glyph (◉/◎/●/·) + location name + first murmur line. Click → `hexMapRef.centerOn` zoom. Dismiss × button collapses bar. Wired into GameView `viewLevel === 'world'` block after AvatarHUD. 10 new tests.
 
 ## Recent Completions (2026-04-19) — THR-128
 - **THR-128 — Omen vocabulary injection into murmur prose:** `getOmenTemplateById` imported into `deriveLocationActivities.ts`. In `selectMurmurs`, after picking the murmur, the active omen's template vocabulary is resolved; two deterministic rng() calls pre-pick an adjective and atmosphere phrase. Replaces `{omen_adj}` / `{omen_atmosphere}` placeholders in the murmur string (forward-compat for future templates), and at `OMEN_VOCAB_INJECT_PROBABILITY=0.4` appends the atmosphere phrase as a second murmur line. Fail-soft: unknown templateId → no injection, no crash. 6 new tests.

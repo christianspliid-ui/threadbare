@@ -88,6 +88,7 @@ import { DebugPanel } from './DebugPanel';
 import { getEncounterCacheManager } from '../../engine/orchestrator';
 import { getLatestEncounterDecisionForAgent, getLatestEncounterDecisionsByAgent } from '../../engine/balanceTelemetry';
 import { AvatarHUD } from './AvatarHUD';
+import { LiveLocationBar } from './LiveLocationBar';
 import { WorldPulse } from './WorldPulse';
 import { ChroniclePanel } from './ChroniclePanel';
 import { ToastStack } from './ToastStack';
@@ -2773,6 +2774,17 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   onWheelClick={handleAvatarActionClick}
                   onScryClick={handleScryWithMutex}
                   moveMode={moveMode}
+                />
+
+                {/* Living World summary bar — top-3 active locations (THR-127) */}
+                <LiveLocationBar
+                  summaries={locationActivitySummaries}
+                  tick={gameState.tick}
+                  onCenterOnHex={(col, row) => {
+                    if (!hexMapRef.current) return;
+                    const px = hexToPixel({ col, row }, HEX_CONSTANTS.HEX_SIZE);
+                    hexMapRef.current.centerOn(px.x, -px.y, RETINUE_EYE_ZOOM_SCALE);
+                  }}
                 />
 
                 {/* Agenda picker overlay */}
