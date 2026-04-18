@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import type { AgentDetail, TraitSummary, LeverageSummary } from '../../engine/agentDetail';
+import { INITIATIVE_TEMPLATE_MAP } from '../../data/initiative-templates';
 import type { ReachDomain } from '../../types/traits';
 import type { CooperationStrategy } from '../../types/disposition';
 import type { DigestEntry } from '../../types/attention';
@@ -276,6 +277,39 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
                   {qWord}
                 </span>
               </Tooltip>
+            </div>
+          );
+        })()}
+
+        {/* Active Initiative */}
+        {detail.activeInitiative && (() => {
+          const ini = detail.activeInitiative!;
+          const tmpl = INITIATIVE_TEMPLATE_MAP.get(ini.templateId);
+          const tick = currentTick ?? 0;
+          const elapsed = Math.max(0, tick - ini.startedTick);
+          const total = Math.max(1, ini.targetCompletionTick - ini.startedTick);
+          const pct = Math.min(100, Math.round((elapsed / total) * 100));
+          return (
+            <div
+              className="rounded px-3 py-2"
+              style={{ backgroundColor: 'rgba(12, 10, 9, 0.45)', border: '1px solid rgba(139, 92, 246, 0.3)' }}
+            >
+              <div className="flex items-center justify-between gap-2 mb-1.5">
+                <span className="text-xs uppercase tracking-wide" style={{ color: 'rgb(167, 139, 250, 0.8)' }}>Initiative</span>
+                <span className="text-xs text-stone-400">{pct}%</span>
+              </div>
+              <div className="text-xs font-medium text-stone-200 mb-2">{tmpl?.name ?? ini.templateId}</div>
+              <div className="h-1.5 rounded-full overflow-hidden bg-stone-700/80">
+                <div
+                  className="h-full rounded-full transition-all duration-200"
+                  style={{ width: `${pct}%`, backgroundColor: 'rgb(139, 92, 246)', opacity: 0.8 }}
+                />
+              </div>
+              {ini.checkpoints.length > 0 && (
+                <div className="mt-1.5 text-xs text-stone-500">
+                  {ini.checkpoints.filter(c => c.passed).length}/{ini.checkpoints.length} checkpoints passed
+                </div>
+              )}
             </div>
           );
         })()}

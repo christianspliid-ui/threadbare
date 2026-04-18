@@ -3063,6 +3063,78 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       failure: 'the deep is too powerful here; the ward cannot form against such ancient forces',
     },
   },
+
+  // ─── Initiative Divine Actions (THR-51) ─────────────────────────────────
+
+  {
+    id: 'action.initiative.inspire',
+    name: 'Inspire Initiative',
+    spellName: 'Divine Inspiration',
+    rarityTier: 2,
+    intrinsicTier: 'present',
+    description: 'Breathe divine ambition into a mortal. Their next initiative scores 0.5 higher, almost guaranteeing they will pursue it over any encounter. Consume on use.',
+    reach: 'heart',
+    crudType: 'update',
+    scale: 'personal',
+    steps: [{
+      reach: 'heart',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [{
+        op: 'update_node',
+        nodeId: '$target',
+        changes: { initiativeInspireBonus: 0.5 },
+      }],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 12,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'spirit',
+    motivations: ['loyalty_ambition', 'sacrifice_survival'],
+    targetCategories: ['actor'],
+    narrativeTemplates: {
+      initiation: 'kindles a divine spark of purpose in a mortal soul',
+      success: 'the mortal\'s eyes catch fire — an initiative stirs in their heart',
+      failure: 'the spark finds no purchase in this weary soul',
+    },
+  },
+
+  {
+    id: 'action.initiative.sabotage',
+    name: 'Sabotage Initiative',
+    spellName: 'Divine Interference',
+    rarityTier: 2,
+    intrinsicTier: 'present',
+    description: 'Whisper doubt into an ongoing initiative. At the next checkpoint it may fail outright. Even if it survives, the setback costs extra ticks.',
+    reach: 'shadow',
+    crudType: 'update',
+    scale: 'personal',
+    steps: [{
+      reach: 'shadow',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [{
+        op: 'update_node',
+        nodeId: '$target',
+        changes: { initiativeSabotaged: true },
+      }],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 10,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'entropy',
+    motivations: ['honesty_cunning', 'mercy_ruthlessness'],
+    targetCategories: ['actor'],
+    narrativeTemplates: {
+      initiation: 'breathes invisible doubt into the threads of a mortal\'s ambition',
+      success: 'something goes wrong — the initiative will face a reckoning at its next milestone',
+      failure: 'the sabotage finds no grip — the mortal\'s resolve is too strong',
+    },
+  },
 ];
 
 // ─── Revelation Action Card Templates ─────────────────────────────
