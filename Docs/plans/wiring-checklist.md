@@ -2,7 +2,7 @@
 
 > **Living document.** Every design plan must include a wiring section that maps new modules to entries on this checklist. Every implementation must verify all listed connections before marking work complete. Maintaining this checklist is part of the Definition of Done for both design and implementation phases.
 >
-> **Last updated:** 2026-04-19 (THR-155 — Dual-voice chronicle: ChronicleEntryCard + ChroniclePanel wired in GameView sidebar)
+> **Last updated:** 2026-04-19 (THR-18 — Siege attention tier: 2 new trace categories siege_spotlight_fired/siege_regional_seeded registered in TRACE_CATEGORIES; no new orchestrator phases or UI surfaces)
 
 ---
 

@@ -3,6 +3,8 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ 2026-04-19 THR-18 — Siege template attention tier: intrinsicTier on both interfaces, 12 templates classified, regional materialization + spotlight digest wiring, 2 trace categories, 21 tests
+
 ✅ 2026-04-19 THR-155 — Ruins Layer PR 7: dual-voice chronicle — ChronicleEntry schema extended, ChronicleEntryCard + ChroniclePanel, GameView sidebar wired, rarity graduation dual-voiced, 13 tests
 
 ✅ 2026-04-19 THR-29 — Social Expansion C: Faction Agency — Phase 6.652, 6 action executors, leader personality bias, conclave, 8 encounter templates, Divine Edict + Anoint Champion, FactionSheet updates, 10 tests
