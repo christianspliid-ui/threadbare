@@ -324,6 +324,21 @@ export const SOCIAL_DENSITY_BONUS_PER_AGENT = 0.05;
  * @range 0.1–0.5 */
 export const SOCIAL_DENSITY_CAP = 0.3;
 
+/** Max reputation trait level used when scaling reaction contributions.
+ * Matches maxLevel on all reputation trait definitions.
+ * @range 2–5 */
+export const REPUTATION_REACTION_MAX_LEVEL = 3;
+
+/** Scale factor applied to the raw aggregated reputation reaction sum.
+ * Keeps reputation shift from dominating the bond modifier.
+ * @range 0.1–0.5 */
+export const REPUTATION_BOND_SHIFT_SCALE = 0.2;
+
+/** Maximum magnitude of the reputation bond shift (clamped after scaling).
+ * Prevents a single heavily-reacted-to trait from dominating encounter selection.
+ * @range 0.1–0.5 */
+export const REPUTATION_BOND_SHIFT_MAX = 0.25;
+
 /** Trust gain on successful cooperative encounter completion.
  * @range 0.01–0.2 */
 export const SOCIAL_COOPERATE_TRUST_BONUS = 0.05;

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import {
   generateSocialCandidates,
   computeBondModifier,
+  computeReputationBondShift,
   STRONG_BOND_THRESHOLD,
   HOSTILE_BOND_THRESHOLD,
   COOPERATIVE_BOND_BOOST,
@@ -12,6 +13,9 @@ import {
   MAX_SOCIAL_CANDIDATES_PER_AGENT,
   TAVERN_SOCIAL_ENCOUNTER_BOOST,
   SOCIAL_DENSITY_BONUS_PER_AGENT,
+  REPUTATION_REACTION_MAX_LEVEL,
+  REPUTATION_BOND_SHIFT_SCALE,
+  REPUTATION_BOND_SHIFT_MAX,
 } from '../socialEncounterGeneration';
 import { SOCIAL_ENCOUNTER_TEMPLATES } from '../../data/social-encounter-content';
 import { TAVERN_ENCOUNTER_TEMPLATES } from '../../data/tavern-encounter-content';
@@ -502,6 +506,225 @@ describe('socialEncounterGeneration', () => {
       for (const id of ids) {
         expect(id.startsWith('tavern.')).toBe(true);
       }
+    });
+  });
+
+  // ─── Helper for adding reputation traits in tests ──────────────
+  function addReputationTrait(
+    g: WorldGraph,
+    agentId: string,
+    traitId: string,
+    reactions: Array<{ target: string; effect: string; magnitude: number }>,
+    level = 1,
+  ): void {
+    g.addNode({
+      id: traitId,
+      type: 'trait',
+      name: traitId,
+      properties: {
+        reputationEffects: {
+          reactions,
+          encounterGates: { unlocks: [], blocks: [] },
+          scoringModifiers: {},
+          scopeByLevel: [0, 1, 3],
+        },
+      },
+    });
+    g.addEdge({
+      id: `has-trait-${agentId}-${traitId}`,
+      source: agentId,
+      target: traitId,
+      type: 'has_trait',
+      properties: { level },
+    });
+  }
+
+  describe('computeReputationBondShift', () => {
+    it('returns 0 when target has no traits', () => {
+      addLocation(graph, 'loc-1', 'town');
+      addAgent(graph, 'a', 'loc-1');
+      expect(computeReputationBondShift(graph, 'a')).toBe(0);
+    });
+
+    it('returns 0 when target traits have no reputationEffects', () => {
+      addLocation(graph, 'loc-1', 'town');
+      addAgent(graph, 'a', 'loc-1');
+      addTraitWithEye(graph, 'a', 5); // Eye mastery — no reputationEffects
+      expect(computeReputationBondShift(graph, 'a')).toBe(0);
+    });
+
+    it('returns positive shift for positive-valence reactions (approach)', () => {
+      addLocation(graph, 'loc-1', 'town');
+      addAgent(graph, 'a', 'loc-1');
+      // 1 approach reaction with magnitude 0.5 at level 1
+      // raw = 0.5 * 1.0 * (1/3) ≈ 0.167; scaled = 0.167 * 0.2 ≈ 0.033
+      addReputationTrait(graph, 'a', 'rep-trait-pos', [
+        { target: 'commoner', effect: 'approach', magnitude: 0.5 },
+      ], 1);
+      expect(computeReputationBondShift(graph, 'a')).toBeGreaterThan(0);
+    });
+
+    it('returns negative shift for negative-valence reactions (flee)', () => {
+      addLocation(graph, 'loc-1', 'town');
+      addAgent(graph, 'a', 'loc-1');
+      addReputationTrait(graph, 'a', 'rep-trait-neg', [
+        { target: 'commoner', effect: 'flee', magnitude: 0.5 },
+      ], 1);
+      expect(computeReputationBondShift(graph, 'a')).toBeLessThan(0);
+    });
+
+    it('scales with trait level — level 3 produces larger shift than level 1', () => {
+      addLocation(graph, 'loc-1', 'town');
+      addAgent(graph, 'a', 'loc-1');
+      addAgent(graph, 'b', 'loc-1');
+
+      addReputationTrait(graph, 'a', 'rep-trait-a', [
+        { target: 'commoner', effect: 'approach', magnitude: 1.0 },
+      ], 1);
+      addReputationTrait(graph, 'b', 'rep-trait-b', [
+        { target: 'commoner', effect: 'approach', magnitude: 1.0 },
+      ], 3);
+
+      const shiftLevel1 = computeReputationBondShift(graph, 'a');
+      const shiftLevel3 = computeReputationBondShift(graph, 'b');
+      expect(shiftLevel3).toBeGreaterThan(shiftLevel1);
+    });
+
+    it('level 3 shift is exactly 3× level 1 shift (linear scaling)', () => {
+      addLocation(graph, 'loc-1', 'town');
+      addAgent(graph, 'a', 'loc-1');
+      addAgent(graph, 'b', 'loc-1');
+
+      // Single reaction so no clamping interference
+      addReputationTrait(graph, 'a', 'rep-trait-a', [
+        { target: 'commoner', effect: 'approach', magnitude: 0.1 },
+      ], 1);
+      addReputationTrait(graph, 'b', 'rep-trait-b', [
+        { target: 'commoner', effect: 'approach', magnitude: 0.1 },
+      ], REPUTATION_REACTION_MAX_LEVEL);
+
+      const shiftLevel1 = computeReputationBondShift(graph, 'a');
+      const shiftLevelMax = computeReputationBondShift(graph, 'b');
+      expect(shiftLevelMax).toBeCloseTo(shiftLevel1 * REPUTATION_REACTION_MAX_LEVEL, 5);
+    });
+
+    it('clamps to +REPUTATION_BOND_SHIFT_MAX when reactions are extremely positive', () => {
+      addLocation(graph, 'loc-1', 'town');
+      addAgent(graph, 'a', 'loc-1');
+      // Many high-magnitude positive reactions at max level → raw sum will be large
+      addReputationTrait(graph, 'a', 'rep-trait-huge', [
+        { target: 'commoner', effect: 'approach', magnitude: 1.0 },
+        { target: 'merchant', effect: 'approach', magnitude: 1.0 },
+        { target: 'guard', effect: 'approach', magnitude: 1.0 },
+        { target: 'scholar', effect: 'reverence', magnitude: 1.0 },
+        { target: 'priest', effect: 'reverence', magnitude: 1.0 },
+      ], REPUTATION_REACTION_MAX_LEVEL);
+      expect(computeReputationBondShift(graph, 'a')).toBe(REPUTATION_BOND_SHIFT_MAX);
+    });
+
+    it('clamps to -REPUTATION_BOND_SHIFT_MAX when reactions are extremely negative', () => {
+      addLocation(graph, 'loc-1', 'town');
+      addAgent(graph, 'a', 'loc-1');
+      addReputationTrait(graph, 'a', 'rep-trait-huge-neg', [
+        { target: 'commoner', effect: 'flee', magnitude: 1.0 },
+        { target: 'merchant', effect: 'flee', magnitude: 1.0 },
+        { target: 'guard', effect: 'hostility', magnitude: 1.0 },
+        { target: 'scholar', effect: 'hostility', magnitude: 1.0 },
+        { target: 'priest', effect: 'flee', magnitude: 1.0 },
+      ], REPUTATION_REACTION_MAX_LEVEL);
+      expect(computeReputationBondShift(graph, 'a')).toBe(-REPUTATION_BOND_SHIFT_MAX);
+    });
+
+    it('level 3 shift = raw × REPUTATION_BOND_SHIFT_SCALE (before clamping)', () => {
+      addLocation(graph, 'loc-1', 'town');
+      addAgent(graph, 'a', 'loc-1');
+      // Single reaction: magnitude 0.1, valence +1 (approach), level max
+      // raw = 0.1 * 1.0 * 1.0 = 0.1; scaled = 0.1 * REPUTATION_BOND_SHIFT_SCALE
+      addReputationTrait(graph, 'a', 'rep-trait-scale', [
+        { target: 'commoner', effect: 'approach', magnitude: 0.1 },
+      ], REPUTATION_REACTION_MAX_LEVEL);
+      const expected = 0.1 * REPUTATION_BOND_SHIFT_SCALE;
+      expect(computeReputationBondShift(graph, 'a')).toBeCloseTo(expected, 5);
+    });
+  });
+
+  describe('computeBondModifier — reputation integration', () => {
+    it('stranger baseline includes positive reputation shift from beloved target', () => {
+      addLocation(graph, 'loc-1', 'town');
+      addAgent(graph, 'a', 'loc-1');
+      addAgent(graph, 'b', 'loc-1');
+      // b is beloved: approach with magnitude 1.0 at max level
+      addReputationTrait(graph, 'b', 'rep-beloved', [
+        { target: 'commoner', effect: 'approach', magnitude: 1.0 },
+      ], REPUTATION_REACTION_MAX_LEVEL);
+
+      const modifier = computeBondModifier(graph, 'a', 'b');
+      const expectedShift = 1.0 * REPUTATION_BOND_SHIFT_SCALE; // 0.2
+      expect(modifier).toBeCloseTo(STRANGER_MODIFIER + expectedShift, 5);
+    });
+
+    it('stranger baseline includes negative reputation shift from feared target', () => {
+      addLocation(graph, 'loc-1', 'town');
+      addAgent(graph, 'a', 'loc-1');
+      addAgent(graph, 'b', 'loc-1');
+      addReputationTrait(graph, 'b', 'rep-feared', [
+        { target: 'commoner', effect: 'flee', magnitude: 1.0 },
+      ], REPUTATION_REACTION_MAX_LEVEL);
+
+      const modifier = computeBondModifier(graph, 'a', 'b');
+      const expectedShift = -1.0 * REPUTATION_BOND_SHIFT_SCALE; // -0.2
+      expect(modifier).toBeCloseTo(STRANGER_MODIFIER + expectedShift, 5);
+    });
+
+    it('strong trust ignores reputation shift — cooperative boost unchanged', () => {
+      addLocation(graph, 'loc-1', 'town');
+      addAgent(graph, 'a', 'loc-1');
+      addAgent(graph, 'b', 'loc-1');
+      addRelatesTo(graph, 'a', 'b', STRONG_BOND_THRESHOLD + 0.1);
+      // b has extremely negative reputation — but trust is strong
+      addReputationTrait(graph, 'b', 'rep-feared-strong', [
+        { target: 'commoner', effect: 'flee', magnitude: 1.0 },
+        { target: 'guard', effect: 'hostility', magnitude: 1.0 },
+      ], REPUTATION_REACTION_MAX_LEVEL);
+
+      expect(computeBondModifier(graph, 'a', 'b')).toBe(COOPERATIVE_BOND_BOOST);
+    });
+
+    it('hostile trust ignores reputation shift — rival boost unchanged', () => {
+      addLocation(graph, 'loc-1', 'town');
+      addAgent(graph, 'a', 'loc-1');
+      addAgent(graph, 'b', 'loc-1');
+      addRelatesTo(graph, 'a', 'b', HOSTILE_BOND_THRESHOLD - 0.1);
+      // b has extremely positive reputation — but trust is hostile
+      addReputationTrait(graph, 'b', 'rep-beloved-hostile', [
+        { target: 'commoner', effect: 'approach', magnitude: 1.0 },
+        { target: 'merchant', effect: 'reverence', magnitude: 1.0 },
+      ], REPUTATION_REACTION_MAX_LEVEL);
+
+      expect(computeBondModifier(graph, 'a', 'b')).toBe(RIVAL_BOND_BOOST);
+    });
+
+    it('weak bond with no reputation returns 0', () => {
+      addLocation(graph, 'loc-1', 'town');
+      addAgent(graph, 'a', 'loc-1');
+      addAgent(graph, 'b', 'loc-1');
+      // Weak trust (above hostile, below strong, non-zero)
+      addRelatesTo(graph, 'a', 'b', 0.3);
+
+      expect(computeBondModifier(graph, 'a', 'b')).toBe(0);
+    });
+
+    it('weak bond uses reputation shift when target has reputation traits', () => {
+      addLocation(graph, 'loc-1', 'town');
+      addAgent(graph, 'a', 'loc-1');
+      addAgent(graph, 'b', 'loc-1');
+      addRelatesTo(graph, 'a', 'b', 0.3);
+      addReputationTrait(graph, 'b', 'rep-weak-bond', [
+        { target: 'commoner', effect: 'approach', magnitude: 1.0 },
+      ], REPUTATION_REACTION_MAX_LEVEL);
+
+      const expectedShift = 1.0 * REPUTATION_BOND_SHIFT_SCALE;
+      expect(computeBondModifier(graph, 'a', 'b')).toBeCloseTo(expectedShift, 5);
     });
   });
 

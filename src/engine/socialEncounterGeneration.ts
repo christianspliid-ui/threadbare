@@ -17,6 +17,9 @@
  * | STRANGER_CURIOSITY_THRESHOLD    | 0.3     | Eye capability threshold for curiosity bonus |
  * | STRANGER_CURIOSITY_BONUS        | 0.15    | Bonus for perceptive agents meeting strangers|
  * | MAX_SOCIAL_CANDIDATES_PER_AGENT | 3       | Max templates generated per target agent     |
+ * | REPUTATION_REACTION_MAX_LEVEL   | 3       | Max level for reputation trait scaling       |
+ * | REPUTATION_BOND_SHIFT_SCALE     | 0.2     | Dampens raw reputation reaction sum          |
+ * | REPUTATION_BOND_SHIFT_MAX       | 0.25    | Clamp on final reputation bond shift         |
  *
  * ─── Tracing ─────────────────────────────────────────────────
  * Emits 'social_encounter_generation' trace per agent.
@@ -37,6 +40,7 @@
 import type { EncounterCacheEntry } from './encounterCache';
 import type { WorldGraph } from './graph';
 import type { DistanceMatrix } from './distanceMatrix';
+import type { ReputationReactionEffect } from '../types/traits';
 import { computeRewardEstimate, computeTotalTickCost } from './encounterCache';
 import { SOCIAL_ENCOUNTER_TEMPLATES } from '../data/social-encounter-content';
 import { SOCIAL_SCENE_TEMPLATES } from '../data/social-scene-templates';
@@ -66,6 +70,9 @@ export {
   TAVERN_COLOCATION_PARENT,
   SOCIAL_DENSITY_BONUS_PER_AGENT,
   SOCIAL_DENSITY_CAP,
+  REPUTATION_REACTION_MAX_LEVEL,
+  REPUTATION_BOND_SHIFT_SCALE,
+  REPUTATION_BOND_SHIFT_MAX,
 } from '../data/agent-behavior-constants';
 
 import {
@@ -82,12 +89,33 @@ import {
   TAVERN_COLOCATION_PARENT,
   SOCIAL_DENSITY_BONUS_PER_AGENT,
   SOCIAL_DENSITY_CAP,
+  REPUTATION_REACTION_MAX_LEVEL,
+  REPUTATION_BOND_SHIFT_SCALE,
+  REPUTATION_BOND_SHIFT_MAX,
 } from '../data/agent-behavior-constants';
 
 // ─── Cooperative/Destructive encounter type classification ───
 
 const COOPERATIVE_TYPES = new Set(['assist', 'hire', 'trade', 'build', 'lead']);
 const DESTRUCTIVE_TYPES = new Set(['steal', 'duel']);
+
+// ─── Reputation reaction valences ───────────────────────────
+// Maps each ReputationReactionEffect to a signed social valence (-1 to +1).
+// Positive = reaction makes interaction more likely/favorable.
+// Negative = reaction makes interaction less likely/favorable.
+
+const REPUTATION_REACTION_VALENCES: Record<ReputationReactionEffect, number> = {
+  approach:    1.0,
+  reverence:   1.0,
+  defer:       0.5,
+  discount:    0.5,
+  recruit:     0.5,
+  avoid:      -0.5,
+  challenge:  -0.5,
+  price_gouge: -0.5,
+  flee:       -1.0,
+  hostility:  -1.0,
+};
 const RESERVED_FACTION_SOCIAL_SLOTS = 1;
 
 // ─── Core Functions ──────────────────────────────────────────
@@ -252,11 +280,52 @@ export function generateSocialCandidates(
 }
 
 /**
+ * Compute the bond modifier shift contributed by the target agent's reputation traits.
+ *
+ * Walks the target's has_trait edges, collects reputation traits with parseable
+ * reputationEffects.reactions, and sums signed reaction contributions:
+ *   approach / reverence → +1.0, defer / discount / recruit → +0.5
+ *   avoid / challenge / price_gouge → -0.5, flee / hostility → -1.0
+ *
+ * Each reaction contributes: magnitude × valence × (level / REPUTATION_REACTION_MAX_LEVEL)
+ * Final value is scaled by REPUTATION_BOND_SHIFT_SCALE and clamped to ±REPUTATION_BOND_SHIFT_MAX.
+ */
+export function computeReputationBondShift(
+  graph: WorldGraph,
+  targetAgentId: string,
+): number {
+  const traitEdges = graph.getOutgoingEdges(targetAgentId, 'has_trait');
+  if (traitEdges.length === 0) return 0;
+
+  let rawShift = 0;
+
+  for (const edge of traitEdges) {
+    const traitNode = graph.getNode(edge.target);
+    if (!traitNode) continue;
+
+    const reputationEffects = (traitNode.properties as { reputationEffects?: { reactions?: Array<{ effect: ReputationReactionEffect; magnitude: number }> } }).reputationEffects;
+    if (!reputationEffects?.reactions) continue;
+
+    const level = (edge.properties.level as number) ?? 1;
+    const levelScale = level / REPUTATION_REACTION_MAX_LEVEL;
+
+    for (const reaction of reputationEffects.reactions) {
+      const valence = REPUTATION_REACTION_VALENCES[reaction.effect] ?? 0;
+      rawShift += reaction.magnitude * valence * levelScale;
+    }
+  }
+
+  const scaled = rawShift * REPUTATION_BOND_SHIFT_SCALE;
+  return Math.max(-REPUTATION_BOND_SHIFT_MAX, Math.min(REPUTATION_BOND_SHIFT_MAX, scaled));
+}
+
+/**
  * Compute bond modifier for scoring social encounters.
  *
- * - Strong trust → cooperative boost for cooperative encounters
- * - Hostile trust → rival boost for destructive encounters
- * - No bond → stranger modifier (with curiosity bonus for perceptive agents)
+ * - Strong trust → cooperative boost (reputation not applied — personal history dominates)
+ * - Hostile trust → rival boost (reputation not applied — personal history dominates)
+ * - No bond → stranger modifier + curiosity bonus + reputation shift from target's traits
+ * - Weak bond → reputation shift only
  */
 export function computeBondModifier(
   graph: WorldGraph,
@@ -273,18 +342,17 @@ export function computeBondModifier(
     return RIVAL_BOND_BOOST;
   }
 
+  const reputationShift = computeReputationBondShift(graph, targetAgentId);
+
   // No significant bond → stranger
   if (trust === 0) {
-    // Check if the agent is perceptive (high Eye capability)
     const eyeCap = computeCapability(graph, agentId, 'eye');
-    if (eyeCap > STRANGER_CURIOSITY_THRESHOLD) {
-      return STRANGER_MODIFIER + STRANGER_CURIOSITY_BONUS;
-    }
-    return STRANGER_MODIFIER;
+    const curiosityBonus = eyeCap > STRANGER_CURIOSITY_THRESHOLD ? STRANGER_CURIOSITY_BONUS : 0;
+    return STRANGER_MODIFIER + curiosityBonus + reputationShift;
   }
 
-  // Weak bond — no modifier
-  return 0;
+  // Weak bond — reputation signal only
+  return reputationShift;
 }
 
 // ─── Internal Helpers ────────────────────────────────────────
