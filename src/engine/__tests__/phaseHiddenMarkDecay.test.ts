@@ -145,8 +145,8 @@ describe('phaseHiddenMarkDecay — floor removal', () => {
     for (let seed = 0; seed < 100; seed++) {
       const state = { hiddenMarks: [revealMark], tick: 20, seed, tickEvents: [], recentEvents: [] } as unknown as GameState;
       const result = consumeMatchingMarks(state, 'agent-1', 'investigation.audit', 20);
-      if ((result.hiddenMarks?.length ?? 1) === 0) {
-        encounterMsg = result.tickEvents.find(e => e.type === 'ripple_consequence')!.message;
+      if ((result.nextState.hiddenMarks?.length ?? 1) === 0) {
+        encounterMsg = result.nextState.tickEvents.find(e => e.type === 'ripple_consequence')!.message;
         break;
       }
     }

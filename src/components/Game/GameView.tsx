@@ -1915,6 +1915,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
     // THR-114: mutable object written inside updater, read outside (pattern per plan §D7)
     const pendingAftermathMutations = { touchedWorld: false, touchedStructure: false };
+    // THR-133: traces collected inside updater, emitted outside (StrictMode-safe)
+    let pendingMarkTraces: Parameters<typeof emitTrace>[0][] = [];
 
     setGameState(prev => {
       const activeAction =
@@ -1956,18 +1958,19 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         }
       }
 
-      const afterMarks = consumeMatchingMarks(
+      const { nextState: stateAfterMarks, tracesToEmit: markTraces } = consumeMatchingMarks(
         stateAfterPromotion,
         activeAction?.actorId,
         activeAction?.templateId,
         prev.tick,
       );
+      pendingMarkTraces = markTraces as Parameters<typeof emitTrace>[0][];
       // THR-113: passive observation — trace when a resolved encounter's target
       // matches an existing intelligence record held by the actor. No state mutation.
-      observeResolutionIntelligence(afterMarks, activeAction, reaction, prev.tick);
+      observeResolutionIntelligence(stateAfterMarks, activeAction, reaction, prev.tick);
       return {
-        ...afterMarks,
-        encounterNotifications: (afterMarks.encounterNotifications ?? []).map(notification =>
+        ...stateAfterMarks,
+        encounterNotifications: (stateAfterMarks.encounterNotifications ?? []).map(notification =>
           notification.id === tieredEncounterState.notification.id
             ? { ...notification, resolved: true }
             : notification,
@@ -1977,6 +1980,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     // THR-114: apply world/structure touches OUTSIDE setGameState updater (StrictMode-safe)
     if (pendingAftermathMutations.touchedStructure) touchStructure(runtime);
     else if (pendingAftermathMutations.touchedWorld) touchWorld(runtime);
+    // THR-133: emit hidden mark traces outside the updater (StrictMode-safe, avoids dedup)
+    for (const trace of pendingMarkTraces) emitTrace(trace);
 
     if (reaction.closeAfterSelection ?? true) {
       closeEncounterModalAndResume(tieredEncounterState.openedAsInterrupt);

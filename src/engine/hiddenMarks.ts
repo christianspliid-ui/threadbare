@@ -13,6 +13,7 @@ import type { GameState, TickEvent } from '../types/gameState';
 import { MAX_RECENT_EVENTS } from '../types/gameState';
 import type { HiddenMark } from '../types/unifiedAction';
 import { emitTrace } from './traceBuffer';
+import type { TraceEntry } from '../types/trace';
 import { mulberry32 } from '../lib/prng';
 import { generateMarkRevealMessage } from './hiddenMarkProse';
 
@@ -155,6 +156,12 @@ export function evaluateMarkReveals(
 
 // ─── Resolution-time consumption ─────────────────────────────────
 
+export interface ConsumeMarksResult {
+  nextState: GameState;
+  /** Traces to emit outside any setState updater (avoids StrictMode double-emit). */
+  tracesToEmit: Omit<TraceEntry, 'id' | 'timestamp'>[];
+}
+
 /**
  * At encounter resolution, probabilistically consume any marks on the actor whose
  * revealFamilies match the resolved templateId. Each matched mark rolls
@@ -162,19 +169,25 @@ export function evaluateMarkReveals(
  * hidden_mark_revealed is traced, and a chronicle event is appended.
  *
  * Deterministic: seed derived from (state.seed, tick, markId).
+ *
+ * Returns traces separately so the caller can emit them outside any React setState
+ * updater — React StrictMode double-invokes updaters, which would cause duplicate
+ * trace emission if emitTrace were called inside the updater.
  */
 export function consumeMatchingMarks(
   state: GameState,
   agentId: string | undefined,
   templateId: string | undefined,
   tick: number,
-): GameState {
-  if (!agentId || !templateId) return state;
+): ConsumeMarksResult {
+  if (!agentId || !templateId) return { nextState: state, tracesToEmit: [] };
 
   const candidates = evaluateMarkReveals(state, agentId, templateId);
-  if (candidates.length === 0) return state;
+  if (candidates.length === 0) return { nextState: state, tracesToEmit: [] };
 
   let s = state;
+  const tracesToEmit: Omit<TraceEntry, 'id' | 'timestamp'>[] = [];
+
   for (const { mark } of candidates) {
     // Derive a deterministic seed per mark: mix world seed, tick, and markId chars
     let seedVal = s.seed + tick * 97;
@@ -190,24 +203,19 @@ export function consumeMatchingMarks(
     // function would otherwise immediately consume it, defeating the delayed-reveal mechanic.
     if (mark.placedTick >= tick) continue;
 
-    // Consumed — emit trace
-    try {
-      emitTrace({
-        tick,
-        category: 'hidden_mark_revealed',
-        agentId: mark.targetAgentId,
-        markId: mark.markId,
-        actorId: mark.targetAgentId,
-        revealedBy: templateId,
-        ticksSincePlacement: tick - mark.placedTick,
-        summary: `Hidden mark revealed: "${mark.label}" on ${mark.targetAgentId} by ${templateId}`,
-      });
-    } catch {
-      // Trace failure must never block aftermath (NFP #4)
-    }
+    // Collect trace for emission outside the setState updater
+    tracesToEmit.push({
+      tick,
+      category: 'hidden_mark_revealed',
+      agentId: mark.targetAgentId,
+      markId: mark.markId,
+      actorId: mark.targetAgentId,
+      revealedBy: templateId,
+      ticksSincePlacement: tick - mark.placedTick,
+      summary: `Hidden mark revealed: "${mark.label}" on ${mark.targetAgentId} by ${templateId}`,
+    });
 
     // Chronicle event — high significance to surface in NarrativeLog + ToastStack
-    // TODO(THR-133): emitTrace inside setGameState updater → StrictMode double-invokes in dev; move to caller side effect
     const revealEvent: TickEvent = {
       id: `mark_reveal_${mark.markId}_${tick}`,
       tick,
@@ -225,5 +233,5 @@ export function consumeMatchingMarks(
     };
   }
 
-  return s;
+  return { nextState: s, tracesToEmit };
 }

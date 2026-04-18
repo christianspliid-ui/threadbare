@@ -118,25 +118,29 @@ describe('consumeMatchingMarks — basic behavior', () => {
   it('returns state unchanged for undefined agentId', () => {
     const state = makeState([MARK_INVESTIGATION]);
     const result = consumeMatchingMarks(state, undefined, 'investigation.audit', 20);
-    expect(result).toBe(state);
+    expect(result.nextState).toBe(state);
+    expect(result.tracesToEmit).toHaveLength(0);
   });
 
   it('returns state unchanged for undefined templateId', () => {
     const state = makeState([MARK_INVESTIGATION]);
     const result = consumeMatchingMarks(state, 'agent-1', undefined, 20);
-    expect(result).toBe(state);
+    expect(result.nextState).toBe(state);
+    expect(result.tracesToEmit).toHaveLength(0);
   });
 
   it('returns state unchanged when no marks match', () => {
     const state = makeState([MARK_INVESTIGATION]);
     const result = consumeMatchingMarks(state, 'agent-1', 'shadow.stealth', 20);
-    expect(result).toBe(state);
+    expect(result.nextState).toBe(state);
+    expect(result.tracesToEmit).toHaveLength(0);
   });
 
   it('returns state unchanged for empty hiddenMarks', () => {
     const state = makeState([]);
     const result = consumeMatchingMarks(state, 'agent-1', 'investigation.audit', 20);
-    expect(result).toBe(state);
+    expect(result.nextState).toBe(state);
+    expect(result.tracesToEmit).toHaveLength(0);
   });
 });
 
@@ -146,7 +150,7 @@ describe('consumeMatchingMarks — determinism', () => {
     const result1 = consumeMatchingMarks(state, 'agent-1', 'investigation.audit', 20);
     const result2 = consumeMatchingMarks(state, 'agent-1', 'investigation.audit', 20);
     // Both runs consumed or both did not — must be the same
-    expect(result1.hiddenMarks?.length).toBe(result2.hiddenMarks?.length);
+    expect(result1.nextState.hiddenMarks?.length).toBe(result2.nextState.hiddenMarks?.length);
   });
 
   it('severity 1.0 with REVEAL_PROBABILITY_MULT=0.9 consumes mark in majority of seeded runs', () => {
@@ -154,7 +158,7 @@ describe('consumeMatchingMarks — determinism', () => {
     for (let seed = 0; seed < 50; seed++) {
       const state = makeState([MARK_INVESTIGATION], seed, 20);
       const result = consumeMatchingMarks(state, 'agent-1', 'investigation.audit', 20);
-      if ((result.hiddenMarks?.length ?? 0) === 0) consumed++;
+      if ((result.nextState.hiddenMarks?.length ?? 0) === 0) consumed++;
     }
     // At probability 0.9, expect close to 45/50 consumed
     expect(consumed).toBeGreaterThan(30);
@@ -165,7 +169,7 @@ describe('consumeMatchingMarks — determinism', () => {
     for (let seed = 0; seed < 50; seed++) {
       const state = makeState([MARK_LOW_SEVERITY], seed, 20);
       const result = consumeMatchingMarks(state, 'agent-1', 'investigation.audit', 20);
-      if ((result.hiddenMarks?.length ?? 0) === 0) consumed++;
+      if ((result.nextState.hiddenMarks?.length ?? 0) === 0) consumed++;
     }
     // At probability 0.09, expect few consumed
     expect(consumed).toBeLessThan(20);
@@ -179,8 +183,8 @@ describe('consumeMatchingMarks — on consumption', () => {
     for (let seed = 0; seed < 100; seed++) {
       const state = makeState([MARK_INVESTIGATION], seed, 20);
       const result = consumeMatchingMarks(state, 'agent-1', 'investigation.audit', 20);
-      if ((result.hiddenMarks?.length ?? 1) === 0) {
-        consumedState = result;
+      if ((result.nextState.hiddenMarks?.length ?? 1) === 0) {
+        consumedState = result.nextState;
         break;
       }
     }
@@ -188,18 +192,16 @@ describe('consumeMatchingMarks — on consumption', () => {
     expect(consumedState!.hiddenMarks).toHaveLength(0);
   });
 
-  it('emits hidden_mark_revealed trace on consumption', () => {
-    clearTraces();
+  it('returns hidden_mark_revealed trace in tracesToEmit on consumption', () => {
     for (let seed = 0; seed < 100; seed++) {
       const state = makeState([MARK_INVESTIGATION], seed, 20);
       const result = consumeMatchingMarks(state, 'agent-1', 'investigation.audit', 20);
-      if ((result.hiddenMarks?.length ?? 1) === 0) {
-        const traces = getTraces().filter(t => t.category === 'hidden_mark_revealed');
-        expect(traces).toHaveLength(1);
-        expect((traces[0] as any).revealedBy).toBe('investigation.audit');
+      if ((result.nextState.hiddenMarks?.length ?? 1) === 0) {
+        expect(result.tracesToEmit).toHaveLength(1);
+        expect(result.tracesToEmit[0].category).toBe('hidden_mark_revealed');
+        expect((result.tracesToEmit[0] as any).revealedBy).toBe('investigation.audit');
         break;
       }
-      clearTraces();
     }
   });
 
@@ -207,8 +209,8 @@ describe('consumeMatchingMarks — on consumption', () => {
     for (let seed = 0; seed < 100; seed++) {
       const state = makeState([MARK_INVESTIGATION], seed, 20);
       const result = consumeMatchingMarks(state, 'agent-1', 'investigation.audit', 20);
-      if ((result.hiddenMarks?.length ?? 1) === 0) {
-        const reveal = result.tickEvents.find(e => e.type === 'ripple_consequence');
+      if ((result.nextState.hiddenMarks?.length ?? 1) === 0) {
+        const reveal = result.nextState.tickEvents.find(e => e.type === 'ripple_consequence');
         expect(reveal).toBeDefined();
         expect(reveal!.significance).toBe(0.7);
         // THR-132: message should NOT be the pre-prose debug string; it should
@@ -227,7 +229,7 @@ describe('consumeMatchingMarks — on consumption', () => {
   it('does not consume mark that does not match templateId prefix', () => {
     const state = makeState([MARK_INVESTIGATION], 42, 20);
     const result = consumeMatchingMarks(state, 'agent-1', 'shadow.stealth', 20);
-    expect(result.hiddenMarks).toHaveLength(1);
+    expect(result.nextState.hiddenMarks).toHaveLength(1);
   });
 
   it('leaves other marks untouched when one is consumed', () => {
@@ -244,9 +246,9 @@ describe('consumeMatchingMarks — on consumption', () => {
     for (let seed = 0; seed < 100; seed++) {
       const state = makeState([MARK_INVESTIGATION, secondMark], seed, 20);
       const result = consumeMatchingMarks(state, 'agent-1', 'investigation.audit', 20);
-      if ((result.hiddenMarks?.length ?? 2) === 1) {
+      if ((result.nextState.hiddenMarks?.length ?? 2) === 1) {
         // Investigation mark consumed, merchant mark stays
-        expect(result.hiddenMarks![0].markId).toBe('mark-inv-002');
+        expect(result.nextState.hiddenMarks![0].markId).toBe('mark-inv-002');
         break;
       }
     }
@@ -263,6 +265,7 @@ describe('consumeMatchingMarks — below decay floor severity', () => {
     const state = makeState([tinyMark], 42, 20);
     const result = consumeMatchingMarks(state, 'agent-1', 'investigation.audit', 20);
     // Should not throw; may or may not consume — just verify no crash
-    expect(result).toBeDefined();
+    expect(result.nextState).toBeDefined();
+    expect(Array.isArray(result.tracesToEmit)).toBe(true);
   });
 });
