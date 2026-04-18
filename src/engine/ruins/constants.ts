@@ -152,3 +152,33 @@ export const SAGA_CLUE_MIN_TIER: AttentionTier = 'shaping';
 export const FACTION_DOSSIER_TIER_DELAY_TICKS = 20;
 /** Ticks between faction quest postings for undelved ruins */
 export const RUIN_QUEST_GENERATION_INTERVAL_TICKS = 30;
+
+// ── Perceive divine action essence costs ─────────────────────────────────────
+
+/** Essence cost (Spirit) for divine.perceive.cast_attention */
+export const PERCEIVE_CAST_ATTENTION_COST = 1;
+/** Essence cost (Spirit) for divine.perceive.refine_the_hush — primary sphere */
+export const PERCEIVE_REFINE_HUSH_COST_SPIRIT = 2;
+/** Essence cost (Time) for divine.perceive.refine_the_hush — secondary sphere */
+export const PERCEIVE_REFINE_HUSH_COST_TIME = 1;
+/** Essence cost (Mind) for divine.perceive.listen_for_the_name — primary sphere */
+export const PERCEIVE_LISTEN_NAME_COST_MIND = 1;
+/** Essence cost (Star) for divine.perceive.listen_for_the_name — secondary sphere */
+export const PERCEIVE_LISTEN_NAME_COST_STAR = 1;
+/** Essence cost (Mind) for divine.perceive.read_the_threads — primary sphere */
+export const PERCEIVE_READ_THREADS_COST_MIND = 1;
+/** Essence cost (Time) for divine.perceive.read_the_threads — secondary sphere */
+export const PERCEIVE_READ_THREADS_COST_TIME = 1;
+/** Essence cost (Time) for divine.perceive.taste_the_wake — primary sphere */
+export const PERCEIVE_TASTE_WAKE_COST_TIME = 2;
+/** Essence cost (Spirit) for divine.perceive.taste_the_wake — secondary sphere */
+export const PERCEIVE_TASTE_WAKE_COST_SPIRIT = 1;
+
+// ── Relay divine action essence costs ────────────────────────────────────────
+
+/** Essence cost (Mind) for divine.relay.compose_a_clue — primary sphere */
+export const RELAY_COMPOSE_CLUE_COST_MIND = 1;
+/** Essence cost (secondary sphere, matching clue alignment) for divine.relay.compose_a_clue */
+export const RELAY_COMPOSE_CLUE_COST_SPHERE = 1;
+/** Essence cost (Mind) for divine.relay.whisper_direction */
+export const RELAY_WHISPER_DIRECTION_COST = 1;

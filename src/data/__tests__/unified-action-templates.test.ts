@@ -351,8 +351,13 @@ describe('divine templates', () => {
     }
   });
 
-  it('each step onSuccess contains exactly 1 apply_influence GraphOp', () => {
-    for (const t of divineTemplates) {
+  it('each step onSuccess contains exactly 1 apply_influence GraphOp (original 8 interventions)', () => {
+    // Perceive/Relay templates (divine.perceive.* and divine.relay.*) use the perceiveRelay
+    // resolver and have empty onSuccess arrays — exclude them from this invariant.
+    const interventionTemplates = divineTemplates.filter(
+      t => !t.id.startsWith('divine.perceive.') && !t.id.startsWith('divine.relay.')
+    );
+    for (const t of interventionTemplates) {
       for (const step of t.steps) {
         expect(step.onSuccess).toHaveLength(1);
         expect(step.onSuccess[0].op).toBe('apply_influence');

@@ -61,6 +61,7 @@ import { spawnControlEffect } from './controlEffectSpawn';
 import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { ACTION_PRESSURE_SUCCESS, ACTION_PRESSURE_FAILURE } from '../types/sphereAffinity';
 import { resolveRevelationAction } from './revelationEmitter';
+import { resolvePerceiveRelayAction, PERCEIVE_RELAY_TEMPLATE_IDS } from './ruins/perceiveRelay';
 import { accumulateImportance, getImportanceDelta, getRarityTier } from './rarity';
 import type { TraceEntry } from '../types/trace';
 import type { SimulationRuntime } from './simulationRuntime';
@@ -1842,6 +1843,24 @@ export function phaseUnifiedActionProgress(
         resolveRevelationAction(template.revelationAction, state, completing_action.targetId);
       } catch (revelationErr) {
         console.warn('[unifiedActionResolution] revelation action error:', revelationErr);
+      }
+    }
+
+    // Perceive/Relay divine actions (THR-151): dispatch to ruins resolver on success.
+    if (
+      updatedAction.resolved &&
+      isActionSuccess(updatedAction.outcome) &&
+      PERCEIVE_RELAY_TEMPLATE_IDS.has(completing_action.templateId)
+    ) {
+      try {
+        resolvePerceiveRelayAction(
+          completing_action.templateId,
+          state,
+          completing_action.targetId,
+          rng,
+        );
+      } catch (perceiveRelayErr) {
+        console.warn('[unifiedActionResolution] perceive/relay action error:', perceiveRelayErr);
       }
     }
 
