@@ -1,12 +1,12 @@
 # Project Status
 > Updated 2026-04-18.
 ## Current Focus
-**Encounter Format Migration — Phase 3 Civic Guard complete, Phase 4 next.** 115 legacy EncounterTemplates migrating to UnifiedActionTemplate. Phase 0 engine prerequisites shipped (THR-110–118). Phase 1 TG (THR-89) + Phase 2 AC (THR-91) + Phase 3 CG (THR-92) complete. Reputation polarity tagging complete (THR-33). Design doc: `Docs/plans/2026-04-16-encounter-template-migration.md`.
+**Encounter Format Migration — Phase 4 Builders Fellowship complete, remaining guilds next.** 115 legacy EncounterTemplates migrating to UnifiedActionTemplate. Phase 0 engine prerequisites shipped (THR-110–118). Phase 1 TG (THR-89) + Phase 2 AC (THR-91) + Phase 3 CG (THR-92) + Phase 4 BF (THR-93) complete. Reputation polarity tagging complete (THR-33). Design doc: `Docs/plans/2026-04-16-encounter-template-migration.md`.
 
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
 - **v1.1 Optimization:** Shipped — Phases 19-22 (determinism, wiring, performance, hygiene)
-- **Encounter Format Migration (Now):** ✅ Phase 0 complete. ✅ Phase 1 TG (THR-89). ✅ Phase 2 AC (THR-91). ✅ Phase 3 CG (THR-92). Engine fix: `phaseAgentDecision` now checks `getUnifiedTemplateById` independently for fully-migrated templates.
+- **Encounter Format Migration (Now):** ✅ Phase 0 complete. ✅ Phase 1 TG (THR-89). ✅ Phase 2 AC (THR-91). ✅ Phase 3 CG (THR-92). ✅ Phase 4 BF (THR-93). Merge held on BF until THR-134 U4 closes.
 - **Content Architecture (Now):** Shell/primitive work — stateful shells (Phase 2), progress/service shells (Phase 3), starter libraries (Phase 4), governance (Phase 5). ✅ THR-86 shipped (routine template structural variety). THR-88 next.
 - **Attention Tier Model (Now):** ✅ THR-16 curator metadata wiring shipped. UI integration ongoing.
 - **Social Systems Expansion (Now):** THR-28/27/30/51 shipped. THR-29/78 queued.

@@ -3,6 +3,8 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ 2026-04-18 THR-93 — Phase 4: Builders Fellowship encounter migration: 15 main templates (13 standard + 2 lifecycle) + 3 social templates rewritten to UnifiedActionTemplate. Patient-material Builders voice. 7 spawn_artifact GraphOps (persistent world nodes), 10 {?has_artifact} conditional branches, 3 named craft attachments, hidden marks for flawed work, encounter seeds, reputation tallies. v1 tally key substitution; THR-166 deferral filed for craftsmanship axis. 11 BF-specific tests. Merge held pending THR-134 U4.
+
 ✅ 2026-04-18 THR-149 — Ruins Layer PR 1: trace registry (16 ruins.* categories), knows_clue_of edge, knowledge.ts, elder_ruin/place_of_power LocationSubtype, ruins constants module (56 constants)
 
 ✅ **2026-04-18 THR-160 TB-120 Test Suite Repair Sprint** — `npm test` green on main. Fixed liveness contract test timeout; deleted brittle faction template count assertion.
