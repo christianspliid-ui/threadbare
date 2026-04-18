@@ -1,4 +1,32 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap');
+/* Design tokens foundation — 2026-04-18-ui-overhaul-01-tokens.md (THR-168) */
+@font-face {
+  font-family: 'Cinzel';
+  src: url('/fonts/cinzel-variable.woff2') format('woff2-variations'),
+       url('/fonts/cinzel-variable.woff2') format('woff2');
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Alegreya Sans';
+  src: url('/fonts/alegreya-sans-400-regular.woff2') format('woff2');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Alegreya Sans';
+  src: url('/fonts/alegreya-sans-400-italic.woff2') format('woff2');
+  font-weight: 400; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: 'Alegreya Sans';
+  src: url('/fonts/alegreya-sans-500-regular.woff2') format('woff2');
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Alegreya Sans';
+  src: url('/fonts/alegreya-sans-700-regular.woff2') format('woff2');
+  font-weight: 700; font-style: normal; font-display: swap;
+}
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -49,6 +77,43 @@
     --positive: #4ade80;
     --negative: #f87171;
     --warning: #fbbf24;
+
+    /* ── Sphere Colors (12) — THR-168 design tokens foundation ── */
+    /* Two values per sphere. BASE for resting-state UI. -BRIGHT for active/selected states. */
+    --sphere-force:           #ff4444;
+    --sphere-force-bright:    #ff6b6b;
+    --sphere-matter:          #a8886a;
+    --sphere-matter-bright:   #d4a87a;
+    --sphere-energy:          #ffd700;
+    --sphere-energy-bright:   #ffe44d;
+    --sphere-life:            #00cc55;
+    --sphere-life-bright:     #33ff77;
+    --sphere-mind:            #2288ff;
+    --sphere-mind-bright:     #44aaff;
+    --sphere-spirit:          #aa44dd;
+    --sphere-spirit-bright:   #cc66ff;
+    --sphere-time:            #ff9933;
+    --sphere-time-bright:     #ffb355;
+    --sphere-entropy:         #5a8a7a;
+    --sphere-entropy-bright:  #8fd4c0;
+    --sphere-order:           #d4af37;
+    --sphere-order-bright:    #e8c860;
+    --sphere-chaos:           #8a8a8e;
+    --sphere-chaos-bright:    #d4d4d8;
+    --sphere-light:           #ffeb99;
+    --sphere-light-bright:    #fef3c7;
+    --sphere-darkness:        #4a3a8a;
+    --sphere-darkness-bright: #8b7fbf;
+
+    /* ── Semantic typography — font shorthand tokens ─────────── */
+    --type-display-xl:    700 var(--text-2xl)/1.1  var(--font-display);
+    --type-display-lg:    600 var(--text-xl)/1.1   var(--font-display);
+    --type-display-md:    600 var(--text-lg)/1.15  var(--font-display);
+    --type-section-label: 700 var(--text-xs)/1.2   var(--font-display);
+    --type-body-prose:    400 var(--text-base)/1.7 var(--font-body);
+    --type-body:          400 var(--text-sm)/1.4   var(--font-body);
+    --type-body-small:    400 var(--text-xs)/1.4   var(--font-body);
+    --type-flavor:  italic 400 var(--text-base)/1.7 var(--font-body);
 
     /* ── Sublocation & Persistence ────────────────────────────── */
     /* Persistence badges */
@@ -169,6 +234,16 @@
   ::-webkit-scrollbar-thumb:hover {
     background: var(--text-muted);
   }
+
+  /* ── Reach → sphere mapping — THR-168 ── */
+  [data-reach="iron"]   { --reach-sphere: var(--sphere-force);   --reach-sphere-bright: var(--sphere-force-bright); }
+  [data-reach="stone"]  { --reach-sphere: var(--sphere-matter);  --reach-sphere-bright: var(--sphere-matter-bright); }
+  [data-reach="eye"]    { --reach-sphere: var(--sphere-energy);  --reach-sphere-bright: var(--sphere-energy-bright); }
+  [data-reach="gold"]   { --reach-sphere: var(--sphere-life);    --reach-sphere-bright: var(--sphere-life-bright); }
+  [data-reach="veil"]   { --reach-sphere: var(--sphere-mind);    --reach-sphere-bright: var(--sphere-mind-bright); }
+  [data-reach="heart"]  { --reach-sphere: var(--sphere-spirit);  --reach-sphere-bright: var(--sphere-spirit-bright); }
+  [data-reach="star"]   { --reach-sphere: var(--sphere-time);    --reach-sphere-bright: var(--sphere-time-bright); }
+  [data-reach="shadow"] { --reach-sphere: var(--sphere-entropy); --reach-sphere-bright: var(--sphere-entropy-bright); }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
