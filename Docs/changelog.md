@@ -4,6 +4,8 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
 ### Recent Changes
 
+| 2026-04-18 | src/types/trace.ts, src/types/graph.ts, src/types/index.ts, src/types/knowledge.ts (new), src/engine/ruins/constants.ts (new) | THR-149: Ruins Layer PR 1 — foundation. 16 ruins.* trace categories registered (TraceCategory union + TRACE_CATEGORIES array). knows_clue_of EdgeType added (sibling to knows_secret_of). New knowledge.ts: ClueSource, CluePrecision, KnowsClueOfEdgeProperties. elder_ruin + place_of_power added to LocationSubtype. constants.ts: 56 named tunables (clue decay/bias/spawn, delve concurrency/beat/consequence, PoP streams, worldgen density, Narrative Gravity tier gates). Codex review fixed: AttentionTier typing on SAGA_CLUE_MIN_TIER, beat-duration comment, magnitude-gap comment. |
+
 | 2026-04-18 | CLAUDE.md, Docs/impediments.md | THR-161: CI/CD pipeline docs cleanup. Corrected inaccurate claim that "Vercel runs tests before deploying" — Vercel buildCommand is `vite build` only; GitHub Actions (ci.yml) is the test gate. Logged impediment #56: branch protection blocked on private repo (requires GitHub Pro). Codex review addressed. |
 
 | 2026-04-18 | src/engine/__tests__/contracts/encounter-liveness.contract.test.ts, src/engine/__tests__/factionQuestAndReputation.test.ts | THR-160: Test suite repair. Added `{ timeout: 120_000 }` to liveness contract test's second case (was hitting vitest 5s default under full-suite load). Deleted `FACTION_ENCOUNTER_TEMPLATES.toHaveLength(10)` brittle count assertion. Suite now exits 0 consistently on 3/3 runs. |

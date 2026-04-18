@@ -3,6 +3,8 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ 2026-04-18 THR-149 — Ruins Layer PR 1: trace registry (16 ruins.* categories), knows_clue_of edge, knowledge.ts, elder_ruin/place_of_power LocationSubtype, ruins constants module (56 constants)
+
 ✅ **2026-04-18 THR-160 TB-120 Test Suite Repair Sprint** — `npm test` green on main. Fixed liveness contract test timeout; deleted brittle faction template count assertion.
 
 ✅ **THR-148** (2026-04-18) — Portfolio-pinning mechanism (Narrative Gravity prerequisite): `portfolioManager.ts` — `pinAgent`/`unpinAgent`/`isPortfolioPinned`/`getPortfolioPinnedAgents`, `PORTFOLIO_MAX_PINNED=7` cap, `PortfolioPinResult`. Trace categories `portfolio.pinned`/`portfolio.unpinned`. Debug bridge: `pin`/`unpin` CLI commands, `window.__DEBUG.pinAgent`/`unpinAgent`, `CommandTab.tsx` handlers. 12 tests. Codex fixes: bridge fallback `pinnedCount:0`, non-actor guard tests.
