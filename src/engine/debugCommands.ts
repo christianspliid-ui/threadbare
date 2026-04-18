@@ -10,7 +10,9 @@ export type ParsedDebugCommand =
   | { kind: 'spawn-npc'; role: string; locationQuery?: string; col?: number; row?: number; name?: string; factionDefId?: string; spotlightTier?: SpotlightTier }
   | { kind: 'move-agent'; agentQuery: string; locationQuery?: string; col?: number; row?: number }
   | { kind: 'inspect-encounters'; agentFilter?: string }
-  | { kind: 'fog'; mode: 'toggle' | 'on' | 'off' };
+  | { kind: 'fog'; mode: 'toggle' | 'on' | 'off' }
+  | { kind: 'pin-agent'; agentQuery: string }
+  | { kind: 'unpin-agent'; agentQuery: string };
 
 export function tokenizeDebugCommand(input: string): string[] {
   const tokens: string[] = [];
@@ -324,6 +326,16 @@ export function parseDebugCommand(input: string): ParsedDebugCommand | { error: 
     if (mode === 'on') return { kind: 'fog', mode: 'on' };
     if (mode === 'off') return { kind: 'fog', mode: 'off' };
     return { kind: 'fog', mode: 'toggle' };
+  }
+
+  if (head === 'pin') {
+    if (!second) return { error: 'Usage: pin <agent>' };
+    return { kind: 'pin-agent', agentQuery: second };
+  }
+
+  if (head === 'unpin') {
+    if (!second) return { error: 'Usage: unpin <agent>' };
+    return { kind: 'unpin-agent', agentQuery: second };
   }
 
   return { error: `Unknown command '${tokens.join(' ')}'.` };

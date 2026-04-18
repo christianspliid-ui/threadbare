@@ -223,6 +223,20 @@ export function CommandTab({ retinueAgents = [], followAgentId }: CommandTabProp
       return `Fog of war: ${enabled ? 'ON' : 'OFF'}`;
     }
 
+    if (parsed.kind === 'pin-agent') {
+      const result = window.__DEBUG.pinAgent(parsed.agentQuery);
+      return result.success
+        ? `${result.message} (${result.pinnedCount} pinned)`
+        : `Error: ${result.message}`;
+    }
+
+    if (parsed.kind === 'unpin-agent') {
+      const result = window.__DEBUG.unpinAgent(parsed.agentQuery);
+      return result.success
+        ? `${result.message} (${result.pinnedCount} pinned)`
+        : `Error: ${result.message}`;
+    }
+
     const inspect = window.__DEBUG.inspectEncounterPipeline(parsed.agentFilter);
     return formatInspectResult(inspect);
   };

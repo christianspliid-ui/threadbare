@@ -83,6 +83,14 @@ if (import.meta.env.DEV) {
       (_encounterBridge?.moveAgent as ((...a: unknown[]) => unknown) | undefined)?.(agentQuery, target, options)
       ?? { success: false, message: 'Encounter bridge not registered' },
 
+    pinAgent: (agentQuery: string) =>
+      (_encounterBridge?.pinAgent as ((...a: unknown[]) => unknown) | undefined)?.(agentQuery)
+      ?? { success: false, message: 'Encounter bridge not registered' },
+
+    unpinAgent: (agentQuery: string) =>
+      (_encounterBridge?.unpinAgent as ((...a: unknown[]) => unknown) | undefined)?.(agentQuery)
+      ?? { success: false, message: 'Encounter bridge not registered' },
+
     /**
      * Inspect the encounter notification pipeline for a threaded agent.
      * Pass an agent name/id fragment to filter, or omit to see all threaded agents.

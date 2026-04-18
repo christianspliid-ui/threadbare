@@ -112,7 +112,10 @@ export type TraceCategory =
   | 'initiative_started'
   | 'initiative_checkpoint'
   | 'initiative_completed'
-  | 'initiative_failed';
+  | 'initiative_failed'
+  // Portfolio-pinning traces (THR-148)
+  | 'portfolio.pinned'
+  | 'portfolio.unpinned';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -212,6 +215,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'initiative_checkpoint',
   'initiative_completed',
   'initiative_failed',
+  // Portfolio-pinning traces (THR-148)
+  'portfolio.pinned',
+  'portfolio.unpinned',
 ];
 
 /** Base shape for all trace entries */
@@ -1261,7 +1267,10 @@ export type TraceEntry =
   | InitiativeStartedTrace
   | InitiativeCheckpointTrace
   | InitiativeCompletedTrace
-  | InitiativeFailedTrace;
+  | InitiativeFailedTrace
+  // Portfolio-pinning traces (THR-148)
+  | PortfolioPinnedTrace
+  | PortfolioUnpinnedTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {
@@ -1417,5 +1426,23 @@ export interface InitiativeFailedTrace extends TraceBase {
   templateId: string;
   locationId: string;
   reason: string;
+  summary: string;
+}
+
+/** Trace: agent added to player's protagonist portfolio (THR-148) */
+export interface PortfolioPinnedTrace extends TraceBase {
+  category: 'portfolio.pinned';
+  agentId: string;
+  agentName: string;
+  pinnedCount: number;
+  summary: string;
+}
+
+/** Trace: agent removed from player's protagonist portfolio (THR-148) */
+export interface PortfolioUnpinnedTrace extends TraceBase {
+  category: 'portfolio.unpinned';
+  agentId: string;
+  agentName: string;
+  pinnedCount: number;
   summary: string;
 }

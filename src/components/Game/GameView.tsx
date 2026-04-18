@@ -147,6 +147,7 @@ import {
   spawnDebugNpc,
   spawnDebugSublocation,
 } from '../../engine/debugWorldSpawnTools';
+import { pinAgent as pinAgentDebug, unpinAgent as unpinAgentDebug } from '../../engine/portfolioManager';
 import type { UnifiedAction } from '../../types/unifiedAction';
 import type { ClearanceGateRuntimeState } from '../../types/contentShells';
 import { touchStructure, touchWorld } from '../../engine/simulationRuntime';
@@ -1706,6 +1707,30 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           touchStructure(runtime);
           setGameState(prev => ({ ...prev, graph: prev.graph }));
         }
+        return result;
+      },
+      pinAgent: (agentQuery: string) => {
+        const state = _gameStateRef.current;
+        const node = state.graph.getNodesByType('actor').find(
+          n => n.id === agentQuery
+            || n.name.toLowerCase() === agentQuery.toLowerCase()
+            || n.id.startsWith(agentQuery),
+        );
+        if (!node) return { success: false, message: `No actor matching '${agentQuery}'.`, pinnedCount: 0 };
+        const result = pinAgentDebug(state.graph, node.id, state.tick);
+        if (result.success) setGameState(prev => ({ ...prev, graph: prev.graph }));
+        return result;
+      },
+      unpinAgent: (agentQuery: string) => {
+        const state = _gameStateRef.current;
+        const node = state.graph.getNodesByType('actor').find(
+          n => n.id === agentQuery
+            || n.name.toLowerCase() === agentQuery.toLowerCase()
+            || n.id.startsWith(agentQuery),
+        );
+        if (!node) return { success: false, message: `No actor matching '${agentQuery}'.`, pinnedCount: 0 };
+        const result = unpinAgentDebug(state.graph, node.id, state.tick);
+        if (result.success) setGameState(prev => ({ ...prev, graph: prev.graph }));
         return result;
       },
     });

@@ -30,6 +30,16 @@ export type NodeType =
 /** Actor subtypes stored in properties.actorType */
 export type ActorType = 'god' | 'ascendant' | 'faction' | 'culture' | 'group' | 'individual';
 
+/**
+ * Typed properties for actor nodes (actorType: 'individual').
+ * Properties bag is Record<string, unknown> at runtime; this interface documents known fields.
+ */
+export interface AgentNodeProperties {
+  actorType: ActorType;
+  /** True when the player has explicitly marked this agent as part of their protagonist portfolio. */
+  isPortfolioPinned?: boolean;
+}
+
 /** Every edge in the world graph */
 export interface GraphEdge {
   id: string;

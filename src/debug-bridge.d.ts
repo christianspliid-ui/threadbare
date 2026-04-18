@@ -4,6 +4,7 @@ import type { RewardHistoryEntry } from './engine/rewardHistory';
 import type { BalanceRunSummary, BalanceTargets, BalanceEvaluationResult } from './types/balanceEval';
 import type { DebugSpawnEncounterResult, DebugSpawnEncounterContextResult, DebugSpawnEncounterOptions, DebugSpawnEncounterContextOptions } from './engine/debugEncounterTools';
 import type { DebugWorldSpawnResult, DebugSpawnLocationOptions, DebugSpawnSublocationOptions, DebugSpawnNpcOptions, DebugMoveAgentOptions, DebugSpawnAttachmentOptions } from './engine/debugWorldSpawnTools';
+import type { PortfolioPinResult } from './engine/portfolioManager';
 
 export interface EncounterLogExportResult {
   allAgentsTsv: string;
@@ -135,6 +136,10 @@ export interface DebugBridge {
   spawnNpc: (role: string, target: { locationQuery?: string; col?: number; row?: number }, options?: DebugSpawnNpcOptions) => DebugWorldSpawnResult;
   /** Move an agent to a target location or hex. */
   moveAgent: (agentQuery: string, target: { locationQuery?: string; col?: number; row?: number }, options?: DebugMoveAgentOptions) => DebugWorldSpawnResult;
+  /** Add an agent to the player's protagonist portfolio. */
+  pinAgent: (agentQuery: string) => PortfolioPinResult;
+  /** Remove an agent from the player's protagonist portfolio. */
+  unpinAgent: (agentQuery: string) => PortfolioPinResult;
 
   getEncounterLogAll: () => Promise<EncounterLogSummary>;
   exportEncounterLogAll: (agentNames?: Record<string, string>, seed?: string) => Promise<EncounterLogExportResult>;
