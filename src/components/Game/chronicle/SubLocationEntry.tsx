@@ -5,13 +5,15 @@ interface SubLocationEntryProps {
   name: string;
   flavorText?: string;
   onClick: () => void;
+  /** Number of souls currently at this sublocation */
+  soulCount?: number;
   /** Inline agent entries for this sublocation */
   children?: ReactNode;
 }
 
 /** Compact nested sublocation row for display within a parent LocationCard. */
 export const SubLocationEntry = memo(function SubLocationEntry({
-  name, flavorText, onClick, children,
+  name, flavorText, onClick, soulCount, children,
 }: SubLocationEntryProps) {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -58,6 +60,11 @@ export const SubLocationEntry = memo(function SubLocationEntry({
           }}
         >
           {name}
+          {soulCount !== undefined && soulCount > 0 && (
+            <span style={{ fontWeight: 400, opacity: 0.6, textDecoration: 'none', marginLeft: '4px' }}>
+              ({soulCount})
+            </span>
+          )}
         </span>
       </div>
       {flavorText && (

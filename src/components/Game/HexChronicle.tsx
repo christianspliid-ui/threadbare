@@ -735,6 +735,7 @@ export const HexChronicle = memo(function HexChronicle({
                             <SubLocationEntry
                               key={sub.id}
                               name={sub.name}
+                              soulCount={agentsByLocation[sub.id]?.length}
                               onClick={() => onLocationClick(sub.id)}
                             />
                         ))}

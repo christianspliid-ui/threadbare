@@ -7,6 +7,7 @@ interface UseTopBarHotkeysProps {
   onToggle: () => void;
   onSpeedChange: (speed: number) => void;
   onStep: () => void;
+  onMoveClick?: () => void;
 }
 
 function isInputActive(): boolean {
@@ -16,7 +17,7 @@ function isInputActive(): boolean {
   return tag === 'input' || tag === 'textarea' || el.hasAttribute('contenteditable');
 }
 
-export function useTopBarHotkeys({ running, speed, onToggle, onSpeedChange, onStep }: UseTopBarHotkeysProps) {
+export function useTopBarHotkeys({ running, speed, onToggle, onSpeedChange, onStep, onMoveClick }: UseTopBarHotkeysProps) {
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (isInputActive()) return;
@@ -44,10 +45,15 @@ export function useTopBarHotkeys({ running, speed, onToggle, onSpeedChange, onSt
           if (!running) onStep();
           break;
         }
+        case 'm':
+        case 'M': {
+          onMoveClick?.();
+          break;
+        }
       }
     }
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [running, speed, onToggle, onSpeedChange, onStep]);
+  }, [running, speed, onToggle, onSpeedChange, onStep, onMoveClick]);
 }

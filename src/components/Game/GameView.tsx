@@ -1136,6 +1136,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     onToggle: handleToggleRunning,
     onSpeedChange: setSpeed,
     onStep: doTick,
+    onMoveClick: handleAvatarMoveClick,
   });
 
   // ── Audio volume handlers ──
@@ -2641,12 +2642,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               </div>
             </>
           )}
-          <AlertBar
-            alerts={notificationState.alerts}
-            onDismiss={handleDismissAlert}
-            onSelectAgent={handleAgentSelect}
-            onNavigate={handleNotificationNavigate}
-          />
+          {/* AlertBar disabled */}
           <RivalsButton
             definitions={gameState.rivalDefinitions}
             states={gameState.rivalStates}
