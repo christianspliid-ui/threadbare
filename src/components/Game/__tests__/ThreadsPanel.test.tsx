@@ -421,7 +421,7 @@ describe('ThreadsPanel', () => {
     expect(onNodeSelect).not.toHaveBeenCalled();
   });
 
-  it('selected row has ring-2 class applied', () => {
+  it('selected row has aria-selected set', () => {
     render(
       <ThreadsPanel
         threadedNodes={[makeAgent()]}
@@ -431,7 +431,7 @@ describe('ThreadsPanel', () => {
       />
     );
     const row = screen.getByTestId('thread-entry');
-    expect(row.className).toContain('ring-2');
+    expect(row.getAttribute('aria-selected')).toBe('true');
   });
 
   it('faction secondary info shows sphere alignment first when dominantSphere is non-null', () => {
