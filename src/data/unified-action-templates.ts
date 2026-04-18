@@ -60,6 +60,12 @@ import {
   CG_JOIN_TEMPLATE,
   CG_PROMOTION_TEMPLATE,
 } from './civic-guard-encounter-content';
+import { FACTION_ACTION_ENCOUNTER_TEMPLATES } from './faction-action-encounters';
+import {
+  DIVINE_EDICT_ESSENCE_COST,
+  ANOINT_CHAMPION_ESSENCE_COST,
+  ANOINT_CHAMPION_DURATION,
+} from '../types/factionAction';
 import { RIVAL_SHRINE_BETRAYAL_TEMPLATE } from './encounters/rival-shrine-betrayal';
 import { WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE } from './encounters/wandering-healer-shrine-access';
 import { FLAWED_STEEL_TEMPLATE } from './encounters/flawed-steel';
@@ -796,6 +802,84 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       initiation: 'breathes a false truth into the space between certainties',
       success: 'the fabrication takes hold — a secret that was never real now carries the weight of one',
       failure: 'the planted untruth fails to root; the moment slips past unmarked',
+    },
+  },
+
+  // ─── Faction Divine Actions (THR-29) ─────────────────────────────────────
+
+  {
+    id: 'action.divine-edict',
+    name: 'Divine Edict',
+    spellName: 'Word of Dominion',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description: 'During a faction conclave, you speak a divine word into the debate — one position grows louder than the others, the room tilts, the vote shifts. The edict does not compel; it weights. The faction still decides, but the scales are no longer level.',
+    reach: 'star',
+    crudType: 'update',
+    scale: 'regional',
+    steps: [{
+      reach: 'star',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [{
+        op: 'update_node',
+        nodeId: '$target',
+        changes: { conclaveLeverageShift: 0.3 },
+      }],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: DIVINE_EDICT_ESSENCE_COST,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'mind',
+    motivations: ['preservation_transformation', 'loyalty_ambition'],
+    targetCategories: ['faction'] as unknown as readonly import('../types/targetContext').TargetCategory[],
+    narrativeTemplates: {
+      initiation: 'speaks a divine word into the chamber of debate',
+      success: 'the edict lands — the conclave tilts toward the ordained position',
+      failure: 'the divine word disperses unheeded; the debate continues unchanged',
+    },
+  },
+
+  {
+    id: 'action.anoint-champion',
+    name: 'Anoint Champion',
+    spellName: 'Mantle of Purpose',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description: 'You lay an invisible mantle on a mortal — the weight of divine favor made tangible. For a span of ticks they carry the blessing: their deeds within the faction earn double esteem, and their presence in encounters carries the authority of one touched by something greater.',
+    reach: 'iron',
+    crudType: 'update',
+    scale: 'personal',
+    steps: [{
+      reach: 'iron',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [{
+        op: 'update_node',
+        nodeId: '$target',
+        changes: {
+          championBlessing: {
+            ticksRemaining: ANOINT_CHAMPION_DURATION,
+            factionReputationGainMultiplier: 2.0,
+            encounterScoreBoost: 0.2,
+          },
+        },
+      }],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: ANOINT_CHAMPION_ESSENCE_COST,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'force',
+    motivations: ['loyalty_ambition', 'courage_prudence'],
+    targetCategories: ['agent'] as unknown as readonly import('../types/targetContext').TargetCategory[],
+    narrativeTemplates: {
+      initiation: 'lays the mantle of divine favor on a chosen mortal',
+      success: 'the blessing settles — the anointed moves with the authority of the chosen',
+      failure: 'the mantle finds no purchase; this mortal is not ready for the burden',
     },
   },
 ];
@@ -3703,6 +3787,8 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...CIVIC_GUARD_SOCIAL_TEMPLATES,
   CG_JOIN_TEMPLATE,
   CG_PROMOTION_TEMPLATE,
+  // Faction Action encounters — THR-29 (commission quest, rivalry, bounty, conclave, etc.)
+  ...FACTION_ACTION_ENCOUNTER_TEMPLATES,
   RIVAL_SHRINE_BETRAYAL_TEMPLATE,
   WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE,
   FLAWED_STEEL_TEMPLATE,

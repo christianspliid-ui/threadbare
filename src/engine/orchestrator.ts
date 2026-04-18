@@ -69,6 +69,7 @@ import { phaseIdleSelection, resetPhaseEventCounter } from './unifiedActionPhase
 import { UNIFIED_ACTION_TEMPLATES } from '../data/unified-action-templates';
 import { phaseAmbitionProgress, resetAmbitionEventCounter } from './ambitionTick';
 import { phaseFactionAmbitions } from './factionAmbitions';
+import { phaseFactionActions } from './phaseFactionActions';
 import { phaseArmyAttrition } from './armyAttrition';
 import { phaseArmyMovement } from './armyMovement';
 import { phaseBattleDetection, phaseBattleTick } from './battleResolution';
@@ -2185,6 +2186,9 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
 
   // Phase 6.651: Faction Ambition Evaluation (TB-073 — faction-level ambition creation/update)
   phaseFactionAmbitions(s);
+
+  // Phase 6.652: Faction Action Evaluation (THR-29 — factions as autonomous actors)
+  phaseFactionActions(s);
 
   // Phase 6.653: Secrets & Favors Maintenance (THR-30 — decay, tension, expiry)
   s = { ...s, ...phaseSecretsFavors(s) };

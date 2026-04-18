@@ -11,6 +11,7 @@ import type {
   FactionNetworkSummary,
 } from '../../engine/factionNetwork';
 import { getFactionNetworkSummary } from '../../engine/factionNetwork';
+import type { FactionActionRecord } from '../../types/factionAction';
 
 interface FactionSheetProps {
   factionId: string;
@@ -30,6 +31,22 @@ export const FactionSheet = React.memo(function FactionSheet({
   const summary = useMemo(
     () => (graph ? getFactionNetworkSummary(graph, factionId) : null),
     [graph, factionId],
+  );
+
+  const factionNode = useMemo(() => graph?.getNode(factionId) ?? null, [graph, factionId]);
+
+  const actionHistory = useMemo<FactionActionRecord[]>(
+    () => (factionNode?.properties?.factionActionHistory as FactionActionRecord[] | undefined) ?? [],
+    [factionNode],
+  );
+
+  const activeConclave = useMemo(
+    () => factionNode?.properties?.activeConclave as {
+      question: string;
+      participants: string[];
+      ticksRemaining: number;
+    } | null ?? null,
+    [factionNode],
   );
 
   const definition = useMemo(() => {
@@ -225,15 +242,37 @@ export const FactionSheet = React.memo(function FactionSheet({
                     ) : (
                       <MutedLine>No active faction agenda.</MutedLine>
                     )}
+                    {activeConclave && (
+                      <div style={{ marginTop: 'var(--space-2)', padding: '8px', borderRadius: '6px', background: 'rgba(139, 92, 246, 0.08)', border: '1px solid rgba(139, 92, 246, 0.25)' }}>
+                        <span style={{ color: '#a78bfa', fontSize: 'var(--text-xs)', display: 'block', marginBottom: '2px' }}>
+                          Conclave in session ({activeConclave.ticksRemaining} tick{activeConclave.ticksRemaining !== 1 ? 's' : ''} remaining)
+                        </span>
+                        <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)', fontStyle: 'italic' }}>
+                          {activeConclave.question}
+                        </span>
+                      </div>
+                    )}
                   </Section>
 
                   <Section title="Relations">
                     {summary.relations.length > 0 ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         {summary.relations.slice(0, 6).map(relation => (
-                          <div key={relation.factionId} style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-2)', fontSize: 'var(--text-xs)' }}>
+                          <div key={relation.factionId} style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-2)', fontSize: 'var(--text-xs)', alignItems: 'center' }}>
                             <span style={{ color: 'var(--text-secondary)' }}>{relation.name}</span>
-                            <span style={{ color: relationColor(relation.sentiment) }}>{relation.label}</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              {relation.isRival && (
+                                <span style={{ fontSize: '10px', padding: '1px 5px', borderRadius: '3px', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171' }}>
+                                  Rival
+                                </span>
+                              )}
+                              {relation.isAlliance && (
+                                <span style={{ fontSize: '10px', padding: '1px 5px', borderRadius: '3px', background: 'rgba(74, 222, 128, 0.12)', border: '1px solid rgba(74, 222, 128, 0.3)', color: '#4ade80' }}>
+                                  Allied
+                                </span>
+                              )}
+                              <span style={{ color: relationColor(relation.sentiment) }}>{relation.label}</span>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -241,6 +280,24 @@ export const FactionSheet = React.memo(function FactionSheet({
                       <MutedLine>No faction relations recorded.</MutedLine>
                     )}
                   </Section>
+
+                  {actionHistory.length > 0 && (
+                    <Section title="Recent Actions">
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        {actionHistory.slice(-5).reverse().map((record, i) => (
+                          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-2)', fontSize: 'var(--text-xs)', alignItems: 'baseline' }}>
+                            <span style={{ color: 'var(--text-secondary)', textTransform: 'capitalize' }}>
+                              {record.actionType.replace(/_/g, ' ')}
+                              {record.targetName ? ` → ${record.targetName}` : ''}
+                            </span>
+                            <span style={{ color: record.outcome === 'success' ? '#4ade80' : record.outcome === 'failed' ? '#f87171' : 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>
+                              {record.outcome}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </Section>
+                  )}
                 </div>
               </div>
             </>

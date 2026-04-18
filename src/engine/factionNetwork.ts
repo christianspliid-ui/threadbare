@@ -18,6 +18,8 @@ export interface FactionNetworkRelation {
   name: string;
   sentiment: number;
   label: string;
+  isRival: boolean;
+  isAlliance: boolean;
 }
 
 export interface FactionNetworkAmbition {
@@ -168,7 +170,13 @@ export function getFactionNetworkSummary(
     .filter(location => location.isGovernanceSeat);
 
   const relations = graph.getOutgoingEdges(factionId, 'relates_to')
-    .map(edge => buildRelationEntry(graph, edge.target, edge.properties.sentiment as number | undefined))
+    .map(edge => buildRelationEntry(
+      graph,
+      edge.target,
+      edge.properties.sentiment as number | undefined,
+      Boolean(edge.properties.isRival),
+      Boolean(edge.properties.isAlliance),
+    ))
     .filter((entry): entry is FactionNetworkRelation => entry != null)
     .sort((a, b) => Math.abs(b.sentiment) - Math.abs(a.sentiment));
 
@@ -330,6 +338,8 @@ function buildRelationEntry(
   graph: WorldGraph,
   factionId: string,
   sentiment?: number,
+  isRival = false,
+  isAlliance = false,
 ): FactionNetworkRelation | null {
   const node = graph.getNode(factionId);
   if (!node || node.type !== 'actor' || node.properties.actorType !== 'faction') return null;
@@ -339,6 +349,8 @@ function buildRelationEntry(
     name: node.name,
     sentiment: value,
     label: relationLabel(value),
+    isRival,
+    isAlliance,
   };
 }
 

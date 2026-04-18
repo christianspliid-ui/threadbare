@@ -3,6 +3,8 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ 2026-04-19 THR-29 — Social Expansion C: Faction Agency — Phase 6.652, 6 action executors, leader personality bias, conclave, 8 encounter templates, Divine Edict + Anoint Champion, FactionSheet updates, 10 tests
+
 ✅ 2026-04-18 THR-168 — UI Overhaul 01: design tokens foundation (sphere colors, type scale, local fonts, reach→sphere mapping) — `src/index.css`, `public/fonts/`
 
 ✅ **THR-154** (2026-04-19) — Ruins Layer PR 6: worldgen elder_ruin density pass — archetypes, seeding module, gameInit wiring, debug tab, 7 tests.
