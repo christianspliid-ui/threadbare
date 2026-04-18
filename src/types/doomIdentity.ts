@@ -43,8 +43,7 @@ export const IDENTITY_RIVAL_BIAS_WEIGHT = 0.4;
 export const IDENTITY_PROSPERITY_MODIFIER_CAP = 2.0;
 
 /** Multiplier on scar-complication trust decay driven by doom identity.
- * @todo(THR-122) Wire this into complicationEffects.ts trust_decay handler so
- * doom identity amplifies relationship damage from scar-type complications.
+ * Amplifies trust decay in complicationEffects.ts when a DoomIdentityMatrix is active.
  */
 export const IDENTITY_TRUST_DECAY_MODIFIER = 0.2;
 

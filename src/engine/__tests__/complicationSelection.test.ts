@@ -361,3 +361,49 @@ describe('sphere_pressure complication effect (THR-120)', () => {
     expect(state.graph.getNode('actor-1')?.properties?._complicationPartialProgress).toBeUndefined();
   });
 });
+
+// THR-122: trust_decay amplifier when doomIdentityMatrix is active
+describe('trust_decay doom amplifier (THR-122)', () => {
+  function makeStateWithTrustEdge(withDoomIdentity: boolean) {
+    const g = makeGraph();
+    g.addEdge({ source: 'actor-1', target: 'witness-1', type: 'relates_to', properties: { trust: 0.8 } });
+    return {
+      graph: g,
+      doomIdentityMatrix: withDoomIdentity ? { archetype: 'reckoning' } : null,
+    } as any;
+  }
+
+  it('decays trust without amplification when no doomIdentityMatrix', () => {
+    const state = makeStateWithTrustEdge(false);
+    const ctx = makeContext({ presentAgentIds: ['witness-1'] });
+    applyComplicationEffects(
+      [{ type: 'trust_decay', target: 'random_present', magnitude: 0.1 }],
+      ctx, state, 1, 'Test',
+    );
+    const edge = state.graph.getOutgoingEdges('actor-1', 'relates_to').find((e: any) => e.target === 'witness-1');
+    expect(edge?.properties?.trust).toBeCloseTo(0.7, 5);
+  });
+
+  it('amplifies trust decay by IDENTITY_TRUST_DECAY_MODIFIER when doomIdentityMatrix is active', () => {
+    const state = makeStateWithTrustEdge(true);
+    const ctx = makeContext({ presentAgentIds: ['witness-1'] });
+    applyComplicationEffects(
+      [{ type: 'trust_decay', target: 'random_present', magnitude: 0.1 }],
+      ctx, state, 1, 'Test',
+    );
+    const edge = state.graph.getOutgoingEdges('actor-1', 'relates_to').find((e: any) => e.target === 'witness-1');
+    // magnitude 0.1 * (1 + 0.2) = 0.12; 0.8 - 0.12 = 0.68
+    expect(edge?.properties?.trust).toBeCloseTo(0.68, 5);
+  });
+
+  it('clamps decayed trust at 0', () => {
+    const state = makeStateWithTrustEdge(true);
+    const ctx = makeContext({ presentAgentIds: ['witness-1'] });
+    applyComplicationEffects(
+      [{ type: 'trust_decay', target: 'random_present', magnitude: 1.0 }],
+      ctx, state, 1, 'Test',
+    );
+    const edge = state.graph.getOutgoingEdges('actor-1', 'relates_to').find((e: any) => e.target === 'witness-1');
+    expect(edge?.properties?.trust).toBe(0);
+  });
+});

@@ -17,6 +17,7 @@
 
 import type { ComplicationEffect, ComplicationContext } from '../types/complication';
 import type { GameState, TickEvent } from '../types/gameState';
+import { IDENTITY_TRUST_DECAY_MODIFIER } from '../types/doomIdentity';
 
 // ─── Effect application ───────────────────────────────────────────────────────
 
@@ -119,9 +120,11 @@ function applyEffect(
       if (relEdges.length > 0) {
         const current = typeof relEdges[0].properties?.trust === 'number'
           ? relEdges[0].properties.trust : 0.5;
+        // Amplify decay when doom identity is active (Reckoning's scar-complication theme)
+        const amplifier = state.doomIdentityMatrix ? (1 + IDENTITY_TRUST_DECAY_MODIFIER) : 1;
         relEdges[0].properties = {
           ...relEdges[0].properties,
-          trust: Math.max(0, current - effect.magnitude),
+          trust: Math.max(0, current - effect.magnitude * amplifier),
         };
       }
       break;

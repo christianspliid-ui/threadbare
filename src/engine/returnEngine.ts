@@ -52,6 +52,7 @@ import { emitTrace } from './traceBuffer';
 import { mulberry32 } from '../lib/prng';
 import { RETURN_OUTCOME_PROSE, RIPPLE_CONSEQUENCE_PROSE } from '../data/return-content';
 import { enrichProse, gatherNarrativeContext } from './proseEnrichment';
+import type { DoomIdentityMatrix } from '../types/doomIdentity';
 
 // ─── Founding Gates ────────────────────────────────────────────────
 
@@ -378,6 +379,7 @@ export function applyRippleConsequences(
   targets: RippleTarget[],
   tick: number,
   seed: number,
+  doomIdentityMatrix?: DoomIdentityMatrix | null,
 ): RippleConsequenceResult[] {
   const results: RippleConsequenceResult[] = [];
   const rng = mulberry32(seed);
@@ -390,10 +392,7 @@ export function applyRippleConsequences(
 
     let filledProse: string;
     try {
-      // TODO(THR-122): Pass doomIdentityMatrix here so {doom_verb}/{doom_adj}/{doom_atmosphere}
-      // resolve in return-engine prose. Requires threading GameState or doomIdentityMatrix
-      // through the return engine call chain.
-      const ctx = gatherNarrativeContext(graph, agentId);
+      const ctx = gatherNarrativeContext(graph, agentId, undefined, undefined, doomIdentityMatrix);
       filledProse = enrichProse(prose.replace(/{target}/g, target.name), ctx);
     } catch {
       // Fail-soft: simple replacement
@@ -763,9 +762,9 @@ export function executeReturn(
     meetingRecord, ordealOutcome, relationship, archetypeId, beatHistory,
   );
 
-  // Generate return prose (enriched with full narrative context)
+  // Generate return prose (enriched with full narrative context including doom vocabulary)
   const returnProse = getReturnProse(
-    outcome, agentName, archetypeId, graph, agentId, meetingRecord, beatHistory,
+    outcome, agentName, archetypeId, graph, agentId, meetingRecord, beatHistory, state.doomIdentityMatrix,
   );
 
   // Apply primary outcome
@@ -777,7 +776,7 @@ export function executeReturn(
   const rippleTargets = gatherRippleTargets(graph, agentId);
   const rippleSeed = hashSeed(seed, agentId, 'ripple');
   const rippleResults = applyRippleConsequences(
-    graph, agentId, agentName, outcome, rippleTargets, tick, rippleSeed,
+    graph, agentId, agentName, outcome, rippleTargets, tick, rippleSeed, state.doomIdentityMatrix,
   );
 
   // Apply court slot cooldown
@@ -822,12 +821,11 @@ function getReturnProse(
   agentId: string,
   meetingRecord?: MeetingChoiceRecord,
   beatHistory?: BeatOutcome[],
+  doomIdentityMatrix?: DoomIdentityMatrix | null,
 ): string {
   const prose = RETURN_OUTCOME_PROSE[outcome] ?? 'The journey reaches its conclusion.';
   try {
-    // TODO(THR-122): Pass doomIdentityMatrix so {doom_verb}/{doom_adj}/{doom_atmosphere}
-    // resolve in return outcome prose. See first call site above for wiring notes.
-    const ctx = gatherNarrativeContext(graph, agentId, meetingRecord, beatHistory);
+    const ctx = gatherNarrativeContext(graph, agentId, meetingRecord, beatHistory, doomIdentityMatrix);
     return enrichProse(prose, ctx);
   } catch {
     // Fail-soft: fall back to simple name replacement
