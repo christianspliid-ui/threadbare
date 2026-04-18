@@ -65,7 +65,7 @@ export const LAYER_NAMES = [
   'rivers', 'roads', 'geo_borders', 'borders_domain', 'borders_province',
   'signifiers', 'locations', 'agents_portrait', 'agents_dot',
   'agents_retinue', 'events', 'labels', 'fog',
-  'armies', 'battle_indicator', 'siege_ring',
+  'armies', 'battle_indicator', 'siege_ring', 'hex_pulse',
 ] as const;
 
 export type LayerName = typeof LAYER_NAMES[number];
@@ -221,6 +221,13 @@ export const ZOOM_VISIBILITY_MATRIX: Record<LayerName, Record<ZoomTier, boolean>
     'hero-local': true,
     'regional': true,
     'continental': true,
+    'full-world': false,
+  },
+  /** Ambient glow for tense/volatile hexes — hero-local and regional only */
+  hex_pulse: {
+    'hero-local': true,
+    'regional': true,
+    'continental': false,
     'full-world': false,
   },
 } as const;

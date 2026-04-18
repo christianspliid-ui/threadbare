@@ -52,6 +52,8 @@ import type { AgentAnimState } from './agents/agentAnimationState';
 import { createMovementTrailMesh, updateTrails } from './scene/MovementTrailMesh';
 import { spawnParticleBurst, tickParticleBursts } from './scene/ParticleBurstMesh';
 import type { ActiveBurst } from './scene/ParticleBurstMesh';
+import { createHexPulseMesh, updateHexPulseMesh, tickHexPulse } from './scene/HexPulseMesh';
+import type { HexPulseMeshResult } from './scene/HexPulseMesh';
 import { useAgentAnimations } from './hooks/useAgentAnimations';
 import type { AgentPrevPosition } from './hooks/useAgentAnimations';
 import { useFogCulling } from './hooks/useFogCulling';
@@ -66,6 +68,7 @@ import { createRoadMesh } from './scene/RoadMesh';
 import {
   getZoomTier,
   ZOOM_TIER_THRESHOLDS,
+  ZOOM_VISIBILITY_MATRIX,
 } from './scene/ZoomVisibilityMatrix';
 import type { ZoomTier } from './scene/ZoomVisibilityMatrix';
 import {
@@ -494,6 +497,10 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     // Debounce timer for camera-center ambient updates
     const cameraCenterDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+    // Hex pulse mesh ref — ambient glow for tense/volatile hexes (THR-125)
+    const hexPulseMeshRef = useRef<HexPulseMeshResult | null>(null);
+    const hexPulseMeshInstanceRef = useRef<THREE.InstancedMesh | null>(null);
+
     // Particle burst ref — active bursts ticked each frame, consumed by tickParticleBursts
     const activeBurstsRef = useRef<ActiveBurst[]>([]);
     // Clock ref — exposed for imperative handle (anomaly reveal flash timing)
@@ -796,6 +803,13 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         scene.add(roadGroup);
         roadGroupRef.current = roadGroup;
 
+        // Build hex pulse glow layer — ambient glow for tense/volatile hexes (THR-125)
+        // Renders at RENDER_ORDER.HEX_PULSE (7.5), between borders and signifiers.
+        const hexPulse = createHexPulseMesh();
+        scene.add(hexPulse.mesh);
+        hexPulseMeshRef.current = hexPulse;
+        hexPulseMeshInstanceRef.current = hexPulse.mesh;
+
         // Build set of hex keys that have centered (full/medium) location icons.
         // Signifiers on these hexes are hidden to avoid overlapping with the location art.
         const centeredLocationHexes = new Set<string>();
@@ -1095,6 +1109,11 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
               strategicMarkerLayer.tick(elapsedS);
             }
           }
+          // Breathe hex pulse glow (ambient tense/volatile hex effect)
+          const hexPulse = hexPulseMeshRef.current;
+          if (hexPulse && hexPulse.mesh.count > 0) {
+            tickHexPulse(hexPulse, clock.getElapsedTime());
+          }
           // Tick sphere-colored particle bursts (action activation feedback)
           if (activeBurstsRef.current.length > 0) {
             activeBurstsRef.current = tickParticleBursts(
@@ -1164,6 +1183,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           borderDomainRef.current   = null;
           borderProvinceRef.current = null;
           geoBorderRef.current = null;
+          hexPulseMeshRef.current?.dispose();
+          hexPulseMeshRef.current = null;
+          hexPulseMeshInstanceRef.current = null;
           // Dispose remaining particle bursts on unmount
           for (const burst of activeBurstsRef.current) {
             scene.remove(burst.points);
@@ -1360,6 +1382,12 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       trailGroup: trailGroupRef,
     });
 
+    // ── Hex pulse glow zoom visibility — hero-local and regional only (THR-125) ──
+    useEffect(() => {
+      const mesh = hexPulseMeshInstanceRef.current;
+      if (mesh) mesh.visible = ZOOM_VISIBILITY_MATRIX.hex_pulse[zoomTier];
+    }, [zoomTier]);
+
     // ── Anomaly shimmer/halo zoom sync — same visibility tier as locations ──
     useEffect(() => {
       const anomalyLayer = anomalyShimmerLayerRef.current;
@@ -1376,6 +1404,13 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         coastlineRef.current.visible = showOrganicShore;
       }
     }, [showOrganicShore]);
+
+    // ── Update hex pulse glow layer when locationActivityMap changes (THR-125) ──
+    useEffect(() => {
+      const pulse = hexPulseMeshRef.current;
+      if (!pulse) return;
+      updateHexPulseMesh(pulse, locationActivityMap, HEX_CONSTANTS.HEX_SIZE);
+    }, [locationActivityMap]);
 
     // ── Incremental army layer rebuild when armies prop changes ──
     useEffect(() => {

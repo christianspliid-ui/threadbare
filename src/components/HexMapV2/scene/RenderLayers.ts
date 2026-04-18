@@ -16,6 +16,7 @@ export const RENDER_ORDER = {
   ROADS:          5,
   GEO_BORDERS:    6,
   BORDERS:        7,
+  HEX_PULSE:      7.5,  // Ambient glow for tense/volatile hexes — below signifiers
   SIGNIFIERS:     8,
   ANOMALY_SHIMMER:8.2,   // Between signifiers and locations — undiscovered hint glow
   ANOMALY_HALO:   8.5,   // Between shimmer and locations — discovered ground ring
@@ -43,6 +44,7 @@ export const LAYER_Z = {
   ROADS:           0.030,
   GEO_BORDERS:     0.032,
   BORDERS:         0.035,
+  HEX_PULSE:       0.060,  // Ambient glow for tense/volatile hexes — below signifiers
   SIGNIFIERS:      0.070,
   ANOMALY_SHIMMER: 0.071,   // Just above signifiers — undiscovered hint glow
   ANOMALY_HALO:    0.075,   // Between signifiers and locations — discovered ground ring
