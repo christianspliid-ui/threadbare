@@ -43,6 +43,7 @@ Every engine module that produces per-tick state changes must be called from a p
 | 7 | `phaseEssence` | Pool regeneration & decay |
 | 7.1 | `phaseReputationDecay` | Reputation time-decay |
 | 6.7 | `phaseHiddenMarkDecay` | Hidden mark severity decay + floor-drop trace |
+| 6.71 | `phaseIntelligenceDecay` | Intelligence reliability decay + threshold-cross chronicle event (THR-137) |
 | 1.7a | `phaseEmittedOmenDecay` | Expire aftermath-spawned `EmittedOmen` entries where `tick > expiresTick` (THR-115) |
 | 7.2 | `phaseDivineInfluenceDecay` | Divine presence fade |
 | 7.5 | `phaseTradeRouteDecay` | Route dissolution |
@@ -120,7 +121,9 @@ Intelligence records are **granted** by aftermath reactions (`kind: 'intelligenc
 
 **Placeholder vocabulary:** `{intel:<category>}` (label), `{intel:<category>.detail}`, `{intel:<category>.reliability}` (descriptor: reliable/uncertain/dubious), `{?knows_<category>}…{/knows_<category>}`, `{?no_<category>}…{/no_<category>}`. Silent strip on missing record (NFP #4).
 
-**Tunables:** `INTEL_SCORING_BONUS` (`agent-behavior-constants.ts`, default 0.25); `RELIABILITY_THRESHOLD_RELIABLE` (0.7), `RELIABILITY_THRESHOLD_UNCERTAIN` (0.4), `INTEL_RESOLUTION_MATCH_REGIONS` (true), `INTEL_CATEGORIES`, `TEMPLATE_CATEGORY_MATCHERS` (all in `intelligence.ts`).
+**Tunables:** `INTEL_SCORING_BONUS` (`agent-behavior-constants.ts`, default 0.25); `RELIABILITY_THRESHOLD_RELIABLE` (0.7), `RELIABILITY_THRESHOLD_UNCERTAIN` (0.4), `INTEL_RESOLUTION_MATCH_REGIONS` (true), `INTEL_CATEGORIES`, `TEMPLATE_CATEGORY_MATCHERS` (all in `intelligence.ts`); decay: `INTEL_RELIABILITY_DECAY_PER_TICK` (0.001, ~12%/game day), `INTEL_RELIABILITY_FLOOR` (0.0), `INTEL_RELIABILITY_GRACE_TICKS` (20), `INTEL_DECAY_EVENT_SIGNIFICANCE` (0.25) (all in `intelligence.ts`, THR-137).
+
+**Intelligence decay (THR-137, 2026-04-18):** Records persist indefinitely but `reliability` decays linearly after `INTEL_RELIABILITY_GRACE_TICKS` ticks. Floor is `INTEL_RELIABILITY_FLOOR` (0.0) — records remain queryable at floor (dubious-band intel is still knowledge). When reliability crosses a descriptor threshold (`reliable→uncertain` or `uncertain→dubious`), a low-significance `intelligence_decay` `TickEvent` is emitted with prose from `src/data/intelligence-staleness-prose.ts`. Trace: `intelligence_decayed` with before/after/delta/crossedThreshold fields. Decay prose references `{agent.name}` and `{intel.label}` resolved at emission. Shared `reliabilityBand()` helper exported from `intelligence.ts` — used by decay phase, `reliabilityDescriptor()`, and any UI component displaying per-record bands.
 
 **Player-facing display (THR-141, 2026-04-17):**
 
@@ -140,7 +143,7 @@ Intelligence records are **granted** by aftermath reactions (`kind: 'intelligenc
 * Resolution site: `src/components/Game/GameView.tsx` — `observeResolutionIntelligence(afterMarks, activeAction, reaction, prev.tick)` after `consumeMatchingMarks`
 * Player display site: `src/components/Game/AgentIntelligencePanel.tsx` — rendered inside `ThreadDetailView` agent body; fog-gated by `node.tier`
 * Adapter wiring: `buildUnifiedEncounterStageModel.ts` and `buildSimpleEncounterStageModel.ts` both thread `gameState` and `tick` into `gatherNarrativeContext` so enrichment has access to the agent's records
-* Tests: `src/engine/__tests__/intelligenceView.test.ts` (18), `src/engine/__tests__/intelligenceConsumption.test.ts` (5), `src/engine/__tests__/contracts/intel-consumption-liveness.contract.test.ts` (4), `src/engine/__tests__/intelligenceDisplay.test.ts` (22), `src/components/Game/__tests__/AgentIntelligencePanel.test.tsx` (9), 3 new cases in `ThreadDetailView.test.tsx`, plus 9 new cases in `proseEnrichment.test.ts`
+* Tests: `src/engine/__tests__/intelligenceView.test.ts` (18), `src/engine/__tests__/intelligenceConsumption.test.ts` (5), `src/engine/__tests__/contracts/intel-consumption-liveness.contract.test.ts` (4), `src/engine/__tests__/intelligenceDisplay.test.ts` (22), `src/components/Game/__tests__/AgentIntelligencePanel.test.tsx` (9), 3 new cases in `ThreadDetailView.test.tsx`, plus 9 new cases in `proseEnrichment.test.ts`; decay: `src/engine/__tests__/phaseIntelligenceDecay.test.ts` (8 unit), `src/engine/__tests__/contracts/intel-decay-band-agreement.contract.test.ts` (1 contract), + integration extension to `intelligenceConsumption.test.ts` (THR-137)
 
 **Multi-target aftermath effects (THR-114, 2026-04-17):**
 

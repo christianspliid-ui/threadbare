@@ -9,8 +9,16 @@ import { WorldGraph } from '../graph';
 import { scoreAndSelect } from '../encounterScoring';
 import { INTEL_SCORING_BONUS } from '../../data/agent-behavior-constants';
 import { clearTraces, enableTracing, disableTracing, getTraces } from '../traceBuffer';
+import { phaseIntelligenceDecay } from '../phaseIntelligenceDecay';
+import {
+  INTEL_RELIABILITY_GRACE_TICKS,
+  INTEL_RELIABILITY_DECAY_PER_TICK,
+  RELIABILITY_THRESHOLD_RELIABLE,
+  reliabilityDescriptor,
+} from '../intelligence';
 import type { EncounterCacheEntry } from '../encounterCache';
 import type { IntelligenceRecord } from '../../types/unifiedAction';
+import type { GameState } from '../../types/gameState';
 import type { ReachDomain } from '../../types/traits';
 
 function makeGraph(): WorldGraph {
@@ -234,6 +242,69 @@ describe('scoreAndSelect — intelligence consumption', () => {
         (t as any).recordId === 'intel_shrine_1',
     );
     expect(traces).toHaveLength(1);
+  });
+});
+
+// ─── Integration: decay → scoring + prose + chronicle (THR-137) ───────────────
+
+describe('phaseIntelligenceDecay — integration with consumption pipeline', () => {
+  function makeMinimalState(records: IntelligenceRecord[], tick: number): GameState {
+    return {
+      tick,
+      intelligenceRecords: records,
+      tickEvents: [],
+      recentEvents: [],
+      graph: undefined as unknown as GameState['graph'],
+    } as unknown as GameState;
+  }
+
+  it('scoring bonus still applies after partial decay (reliability > 0 but below reliable)', () => {
+    const graph = makeGraph();
+    const candidate = mkCandidate({ templateId: 'pilgrim.shrine.visit' });
+
+    // Start below the reliable threshold but still above 0
+    const decayedRecord: IntelligenceRecord = {
+      ...INTEL_SHRINE,
+      reliability: RELIABILITY_THRESHOLD_RELIABLE - 0.1,
+    };
+
+    const result = scoreAndSelect(
+      [candidate],
+      'agent-1',
+      'loc-shrine',
+      graph,
+      50,
+      undefined, undefined, undefined, undefined, undefined,
+      [decayedRecord],
+    );
+
+    // Scoring bonus is presence-based, not reliability-scaled — intel still boosts
+    expect(result.rankedCandidates[0].intelBonus).toBeCloseTo(INTEL_SCORING_BONUS, 5);
+  });
+
+  it('reliabilityDescriptor demotes when reliability crosses threshold after decay ticks', () => {
+    // Start just above the reliable threshold
+    const startReliability = RELIABILITY_THRESHOLD_RELIABLE + INTEL_RELIABILITY_DECAY_PER_TICK * 0.5;
+    let record: IntelligenceRecord = { ...INTEL_SHRINE, acquiredTick: 0, reliability: startReliability };
+    let state = makeMinimalState([record], INTEL_RELIABILITY_GRACE_TICKS + 1);
+
+    expect(reliabilityDescriptor(record.reliability)).toBe('reliable');
+
+    // One decay tick crosses into uncertain
+    const result = phaseIntelligenceDecay(state);
+    const updatedRecords = result.intelligenceRecords ?? state.intelligenceRecords!;
+    expect(reliabilityDescriptor(updatedRecords[0].reliability)).toBe('uncertain');
+  });
+
+  it('chronicle event of type intelligence_decay appears on threshold crossing tick', () => {
+    const startReliability = RELIABILITY_THRESHOLD_RELIABLE + INTEL_RELIABILITY_DECAY_PER_TICK * 0.5;
+    const record: IntelligenceRecord = { ...INTEL_SHRINE, acquiredTick: 0, reliability: startReliability };
+    const state = makeMinimalState([record], INTEL_RELIABILITY_GRACE_TICKS + 1);
+
+    const result = phaseIntelligenceDecay(state);
+    const crossingEvent = (result.tickEvents ?? []).find(e => e.type === 'intelligence_decay');
+    expect(crossingEvent).toBeDefined();
+    expect(crossingEvent!.actorId).toBe('agent-1');
   });
 });
 

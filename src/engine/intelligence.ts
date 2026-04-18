@@ -33,6 +33,18 @@ export const RELIABILITY_THRESHOLD_RELIABLE = 0.7;
 /** Reliability ≥ this (and below reliable) → 'uncertain'. Below → 'dubious'. @range 0.3–0.5 */
 export const RELIABILITY_THRESHOLD_UNCERTAIN = 0.4;
 
+/** Linear reliability drop per tick past grace window (~12%/game day at 12 ticks/day). @range 0.0005–0.005 */
+export const INTEL_RELIABILITY_DECAY_PER_TICK = 0.001;
+
+/** Lower bound; records persist at floor (dubious-band intel is still queryable). @range 0.0–0.2 */
+export const INTEL_RELIABILITY_FLOOR = 0.0;
+
+/** Grace period after acquiredTick before decay begins. Matches hidden-mark decay cadence. @range 10–60 */
+export const INTEL_RELIABILITY_GRACE_TICKS = 20;
+
+/** Chronicle event significance on threshold crossing. Lower than hidden-mark decay (0.3). @range 0.1–0.4 */
+export const INTEL_DECAY_EVENT_SIGNIFICANCE = 0.25;
+
 /** Whether resolution-match considers targetRegion (not just targetEntityId). */
 export const INTEL_RESOLUTION_MATCH_REGIONS = true;
 
@@ -167,15 +179,23 @@ export function findActionableIntelligence(
   }
 }
 
+/** Three-tier reliability band — shared by decay phase, prose enrichment, and UI display. */
+export type ReliabilityBand = 'reliable' | 'uncertain' | 'dubious';
+
+/** Pure threshold function: map reliability [0,1] → band. Callers must guard for NaN/negative first. */
+export function reliabilityBand(reliability: number): ReliabilityBand {
+  if (reliability >= RELIABILITY_THRESHOLD_RELIABLE) return 'reliable';
+  if (reliability >= RELIABILITY_THRESHOLD_UNCERTAIN) return 'uncertain';
+  return 'dubious';
+}
+
 /**
  * Map raw reliability (0–1 float) to a prose-facing descriptor.
  * Conservative fallback: unknown/invalid reliability → 'dubious'.
  */
-export function reliabilityDescriptor(r: number): 'reliable' | 'uncertain' | 'dubious' {
+export function reliabilityDescriptor(r: number): ReliabilityBand {
   if (!Number.isFinite(r) || r < 0) return 'dubious';
-  if (r >= RELIABILITY_THRESHOLD_RELIABLE) return 'reliable';
-  if (r >= RELIABILITY_THRESHOLD_UNCERTAIN) return 'uncertain';
-  return 'dubious';
+  return reliabilityBand(r);
 }
 
 // ─── Trace emission ───────────────────────────────────────────────

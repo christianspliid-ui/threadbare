@@ -86,7 +86,9 @@ export interface TickEvent {
   // Omen agenda events (THR-19)
     | 'omen_started' | 'omen_expired' | 'omen_beat' | 'omen_forced_shift'
   // Complication outcome events (THR-20)
-    | 'complication';
+    | 'complication'
+  // Intelligence reliability decay events (THR-137)
+    | 'intelligence_decay';
   message: string;
   /** Optional sphere coloring for UI */
   sphere?: SphereName;

@@ -125,6 +125,7 @@ import {
 import { validateTickOutput, appendCrashLog } from './tickHealthMonitor';
 import { phaseFactionReputationDecay, processFactionEncounterReputation } from './factionReputation';
 import { phaseHiddenMarkDecay } from './phaseHiddenMarkDecay';
+import { phaseIntelligenceDecay } from './phaseIntelligenceDecay';
 import { processFactionOutcome, resetFactionEventSeq } from './factionOutcome';
 import type { DistanceMatrix } from './distanceMatrix';
 import { clearTimelines, appendEvent } from './encounterTimeline';
@@ -1972,6 +1973,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 6.7: Hidden Mark Decay (THR-112)
   s = { ...s, ...phaseHiddenMarkDecay(s) };
   phaseEventCounts['hidden_mark_decay'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.71: Intelligence Reliability Decay (THR-137)
+  s = { ...s, ...phaseIntelligenceDecay(s) };
+  phaseEventCounts['intelligence_decay'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // PHASE-D-DEFERRED(THR-25): Wire accumulateImportance(node, getImportanceDelta('divine_proximity'))

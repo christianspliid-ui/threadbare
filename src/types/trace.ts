@@ -14,6 +14,8 @@ import type {
 import type { BehaviorFamily, StrategicVerb, StrategicExecutionMode } from './strategicAction';
 import type { ComplicationSeverity } from './complication';
 import type { SyllableTemplate } from './culture';
+import type { ReliabilityBand } from '../engine/intelligence';
+import type { IntelligenceCategory } from './unifiedAction';
 
 /** Known trace categories for filtering in debug panel */
 export type TraceCategory =
@@ -95,7 +97,9 @@ export type TraceCategory =
   | 'aftermath_effect_skipped_by_when'
   | 'aftermath_effect_when_passed'
   | 'thread_mutation_applied'
-  | 'thread_mutation_skipped';
+  | 'thread_mutation_skipped'
+  // Intelligence reliability decay traces (THR-137)
+  | 'intelligence_decayed';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -180,6 +184,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'aftermath_effect_when_passed',
   'thread_mutation_applied',
   'thread_mutation_skipped',
+  // Intelligence reliability decay traces (THR-137)
+  'intelligence_decayed',
 ];
 
 /** Base shape for all trace entries */
@@ -1016,6 +1022,19 @@ export interface IntelligenceReferencedTrace extends TraceBase {
   intelCategory?: string;
 }
 
+/** Trace: intelligence record reliability decayed this tick (THR-137) */
+export interface IntelligenceDecayedTrace extends TraceBase {
+  category: 'intelligence_decayed';
+  recordId: string;
+  agentId: string;
+  intelCategory: IntelligenceCategory;
+  reliabilityBefore: number;
+  reliabilityAfter: number;
+  delta: number;
+  /** Non-undefined only when the decay crossed a descriptor boundary. */
+  crossedThreshold?: ReliabilityBand;
+}
+
 /** Trace: authored attachment created from encounter GraphOp, aftermath effect, or support bundle */
 export interface AuthoredAttachmentCreatedTrace extends TraceBase {
   category: 'authored_attachment_created';
@@ -1201,6 +1220,7 @@ export type TraceEntry =
   | HiddenMarkRevealedTrace
   | IntelligenceGrantedTrace
   | IntelligenceReferencedTrace
+  | IntelligenceDecayedTrace
   | AuthoredAttachmentCreatedTrace
   // Complication outcome traces (THR-20)
   | ComplicationSelectionTrace
