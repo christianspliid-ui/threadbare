@@ -131,6 +131,7 @@ import { phaseIntelligenceDecay } from './phaseIntelligenceDecay';
 import { phaseSecretsFavors } from './phaseSecretsFavors';
 import { phaseClueDecay } from './ruins/clueLifecycle';
 import { phaseRuinQuestHooks } from './ruins/questHooks';
+import { phaseDelveAdmission, phaseDelveProgression, phaseDelveEmergence } from './ruins/delveVariant';
 import { generateSecret, createSecretEdge, createFavorEdge } from './secretGeneration';
 import { processFactionOutcome, resetFactionEventSeq } from './factionOutcome';
 import type { DistanceMatrix } from './distanceMatrix';
@@ -2221,6 +2222,21 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 6.655: Ruin Quest Hooks — Channel 6 Narrative Gravity (THR-156)
   s = { ...s, ...phaseRuinQuestHooks(s) };
   phaseEventCounts['ruin_quest_hooks'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.656: Delve Admission — admit agents with located clues at ruin hexes (THR-152)
+  s = { ...s, ...phaseDelveAdmission(s) };
+  phaseEventCounts['delve_admission'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.657: Delve Progression — advance active delve beats (THR-152)
+  s = { ...s, ...phaseDelveProgression(s) };
+  phaseEventCounts['delve_progression'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.658: Delve Emergence — roll consequences for completed arcs (THR-152)
+  s = { ...s, ...phaseDelveEmergence(s) };
+  phaseEventCounts['delve_emergence'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.75: Agent Lifecycle (death, birth, migration)

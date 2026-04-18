@@ -88,6 +88,9 @@ export const DELVE_CONSEQUENCE_TRIUMPHANT_WEIGHT = 0.20;
 /** Weight for Transformed outcome (~10%) */
 export const DELVE_CONSEQUENCE_TRANSFORMED_WEIGHT = 0.10;
 
+/** Fraction of the sphere-essence spent to initiate a delve that is refunded on abort (0–1) */
+export const DELVE_ABORT_ESSENCE_REFUND_FRACTION = 0.5;
+
 // ── Emergence Dilemma ─────────────────────────────────────────────────────────
 
 /** Ticks before the default emergence choice is highlighted in UI */

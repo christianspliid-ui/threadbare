@@ -52,6 +52,8 @@ export interface DebugPanelProps {
   hiddenMarks?: readonly HiddenMark[];
   /** Pending encounter seeds for the Seeds inspector tab (THR-136). */
   pendingEncounterSeeds?: readonly PendingEncounterSeed[];
+  /** Active delves for the Ruins inspector tab (THR-152). */
+  activeDelves?: readonly import('../../engine/ruins/delveTypes').ActiveDelve[];
 }
 
 export const DebugPanel = React.memo(function DebugPanel({
@@ -61,6 +63,7 @@ export const DebugPanel = React.memo(function DebugPanel({
   onToggleOrganicShore, encounterNotifications, pendingVignettes, seed,
   sphereAggregate, agentKnowledge, preferredViewMode, preferredViewNonce,
   strategicState, omenState, doomIdentityMatrix, hiddenMarks, pendingEncounterSeeds,
+  activeDelves,
 }: DebugPanelProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('feed');
   const [enabledCategories, setEnabledCategories] = useState<Set<TraceCategory>>(new Set(TRACE_CATEGORIES));
@@ -198,6 +201,7 @@ export const DebugPanel = React.memo(function DebugPanel({
           doomIdentityMatrix={doomIdentityMatrix}
           hiddenMarks={hiddenMarks}
           pendingEncounterSeeds={pendingEncounterSeeds}
+          activeDelves={activeDelves}
         />
       </div>
 

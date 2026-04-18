@@ -14,6 +14,7 @@ import type { DoomClockState, DoomClockDefinition, DoomClockArchetype } from './
 import type { NarrativeEvent, ChronicleEntry } from './narrative';
 import type { EncounterProgress } from './encounter';
 import type { UnifiedAction, PendingEncounterSeed, HiddenMark, IntelligenceRecord } from './unifiedAction';
+import type { ActiveDelve, DelveQueueEntry, PendingEmergenceDecision } from '../engine/ruins/delveTypes';
 import type { HexMutation } from './hexMutation';
 import type { NotificationDirective } from './notification';
 import type { PendingVignette } from './journeyEngine';
@@ -206,6 +207,12 @@ export interface GameState {
   // Keyed by attachment identity (node ID for possessions/traits, edge ID for agreements).
   // Ticked by phaseEffectTick.
   effectStates?: Map<string, import('./effects').EffectRuntimeState>;
+
+  // Delve variant state (THR-152 — PR 4 of Ruins Layer)
+  activeDelves?: ActiveDelve[];
+  delveAdmissionQueue?: DelveQueueEntry[];
+  /** Set when a delve reaches beat 5; cleared when the player (or auto-fire) resolves it */
+  pendingEmergenceDecision?: PendingEmergenceDecision;
 
   // Pending encounter seeds — planted by aftermath reactions, consumed by evaluateEncounterSeeds phase
   pendingEncounterSeeds?: PendingEncounterSeed[];

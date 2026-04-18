@@ -88,6 +88,8 @@ export interface DebugTabContentProps {
   hiddenMarks?: readonly HiddenMark[];
   /** Pending encounter seeds — inspected in the Seeds tab (THR-136). */
   pendingEncounterSeeds?: readonly PendingEncounterSeed[];
+  /** Active delves — inspected in the Ruins tab (THR-152). */
+  activeDelves?: readonly import('../../../engine/ruins/delveTypes').ActiveDelve[];
 }
 
 export function DebugTabContent({
@@ -98,7 +100,7 @@ export function DebugTabContent({
   getWebGLDiagnostics, getZoomLevel, showOrganicShore, onToggleOrganicShore,
   encounterNotifications, pendingVignettes, seed, sphereAggregate, agentKnowledge,
   retinueAgents, strategicState, omenState, doomIdentityMatrix,
-  hiddenMarks, pendingEncounterSeeds,
+  hiddenMarks, pendingEncounterSeeds, activeDelves,
 }: DebugTabContentProps) {
   if (viewMode === 'omens') return <OmenDebugTab omenState={omenState} currentTick={currentTick} doomIdentityMatrix={doomIdentityMatrix} />;
   if (viewMode === 'journey') {
@@ -126,7 +128,7 @@ export function DebugTabContent({
   if (viewMode === 'cultures') return <CulturePhoneticsInspector graph={graph} />;
   if (viewMode === 'secrets-favors') return <SecretsFavorsDebugTab graph={graph} focusedAgentId={effectiveAgentId} />;
   if (viewMode === 'clues') return <CluesDebugTab graph={graph} focusedAgentId={effectiveAgentId} currentTick={currentTick} />;
-  if (viewMode === 'ruins') return <RuinsDebugTab graph={graph} />;
+  if (viewMode === 'ruins') return <RuinsDebugTab graph={graph} activeDelves={activeDelves} currentTick={currentTick} />;
   if (viewMode === 'cli') return <CommandTab retinueAgents={retinueAgents} followAgentId={effectiveAgentId} />;
   if (viewMode === 'strategic') return <StrategicDebugTab strategicState={strategicState} graph={graph} effectiveAgentId={effectiveAgentId} currentTick={currentTick} />;
   if (viewMode === 'social') {
@@ -580,18 +582,29 @@ function SecretsFavorsDebugTab({ graph, focusedAgentId }: { graph?: WorldGraph; 
 
 // ── Ruins Debug Tab (THR-154) ────────────────────────────────────────────────
 
-function RuinsDebugTab({ graph }: { graph?: WorldGraph }) {
+function RuinsDebugTab({
+  graph,
+  activeDelves,
+  currentTick,
+}: {
+  graph?: WorldGraph;
+  activeDelves?: readonly import('../../../engine/ruins/delveTypes').ActiveDelve[];
+  currentTick: number;
+}) {
   if (!graph) return <div style={EMPTY_STATE_STYLE}>No graph connected.</div>;
 
   const ruins = graph.getNodesByType('location').filter(n => n.properties?.locationType === 'elder_ruin');
 
   const MUTED = { color: 'var(--text-muted)', fontSize: 'var(--text-xs)' };
+  const SECTION = { color: 'var(--accent-gold)', fontWeight: 600, fontSize: 'var(--text-xs)', margin: '10px 0 4px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '3px' };
   const ROW = { display: 'grid', gridTemplateColumns: '110px 55px 45px 55px 70px 1fr', gap: '6px', alignItems: 'center', padding: '2px 0', fontSize: 'var(--text-xs)' };
   const HEADER_ROW = { ...ROW, color: 'var(--accent-gold)', fontWeight: 600, borderBottom: '1px solid var(--border-subtle)', paddingBottom: '4px', marginBottom: '4px' };
+  const DELVE_ROW = { display: 'grid', gridTemplateColumns: '1fr 70px 55px 60px 60px', gap: '6px', alignItems: 'center', padding: '2px 0', fontSize: 'var(--text-xs)' };
   const BADGE = (color: string) => ({ background: color, color: '#fff', borderRadius: '3px', padding: '1px 5px', fontSize: 'var(--text-xs)' });
 
   const scaleColor: Record<string, string> = { minor: '#6b7280', major: '#d97706', saga: '#7c3aed' };
   const archetypeColor: Record<string, string> = { vault: '#0ea5e9', temple: '#10b981', battlefield: '#ef4444' };
+  const outcomeColor: Record<string, string> = { advanced: '#10b981', partial: '#d97706', stalled: '#ef4444' };
 
   const byScale = ruins.reduce<Record<string, number>>((acc, n) => {
     const s = n.properties?.delveScale as string ?? 'unknown';
@@ -599,10 +612,42 @@ function RuinsDebugTab({ graph }: { graph?: WorldGraph }) {
     return acc;
   }, {});
 
+  const liveDelves = (activeDelves ?? []).filter(d => !d.aborted && d.beatIndex <= d.totalBeats);
+
   return (
     <div style={{ padding: '8px', fontFamily: 'monospace', overflowY: 'auto', height: '100%' }}>
+      {/* ── Active delves ─────────────────────────────────────────── */}
+      <div style={SECTION}>Active Delves ({liveDelves.length})</div>
+      {liveDelves.length === 0
+        ? <div style={MUTED}>No active delves. Agents need a &#39;located&#39; clue at an elder_ruin hex.</div>
+        : (
+          <>
+            <div style={{ ...DELVE_ROW, color: 'var(--accent-gold)', fontWeight: 600, borderBottom: '1px solid var(--border-subtle)', paddingBottom: '3px', marginBottom: '3px' }}>
+              <span>Agent → Ruin</span><span>Scale</span><span>Beat</span><span>Next</span><span>Last</span>
+            </div>
+            {liveDelves.map(d => {
+              const lastBeat = d.beatHistory[d.beatHistory.length - 1];
+              const ttn = Math.max(0, d.nextBeatTick - currentTick);
+              return (
+                <div key={d.delveId} style={DELVE_ROW}>
+                  <span style={{ color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {d.agentId.slice(0, 10)} → {d.ruinId.replace('elder_ruin_', 'er_').slice(0, 10)}
+                  </span>
+                  <span><span style={BADGE(scaleColor[d.delveScale] ?? '#6b7280')}>{d.delveScale}</span></span>
+                  <span>{d.beatIndex}/{d.totalBeats}</span>
+                  <span style={MUTED}>{ttn === 0 ? 'now' : `+${ttn}t`}</span>
+                  <span>{lastBeat ? <span style={BADGE(outcomeColor[lastBeat.outcome] ?? '#6b7280')}>{lastBeat.outcome}</span> : '—'}</span>
+                </div>
+              );
+            })}
+          </>
+        )
+      }
+
+      {/* ── Ruin inventory ────────────────────────────────────────── */}
+      <div style={SECTION}>Elder Ruins ({ruins.length})</div>
       <div style={{ ...MUTED, marginBottom: '8px' }}>
-        {ruins.length} elder ruin(s) seeded — minor:{byScale.minor ?? 0} major:{byScale.major ?? 0} saga:{byScale.saga ?? 0}
+        minor:{byScale.minor ?? 0} major:{byScale.major ?? 0} saga:{byScale.saga ?? 0}
       </div>
       <div style={HEADER_ROW}>
         <span>ID</span><span>Hex</span><span>Mag</span><span>Scale</span><span>Archetype</span><span>Sphere / Culture</span>
