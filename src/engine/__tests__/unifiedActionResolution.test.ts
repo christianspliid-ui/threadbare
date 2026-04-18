@@ -668,6 +668,57 @@ describe('unifiedActionResolution', () => {
       // base 0.4 (failure) + significanceBoost 0.1 = 0.5
       expect(resolved!.significance).toBeCloseTo(0.50, 5);
     });
+
+    // THR-119: partial_progress complication consumer
+    it('partial_progress complication does not leave stale _complicationPartialProgress on actor node', () => {
+      // Use a 2-step template with continue_weakened so a failure on step 0 advances to step 1
+      const template: import('../../types/unifiedAction').UnifiedActionTemplate = {
+        id: 'encounter.pp-continue-test',
+        rarityTier: 1,
+        intrinsicTier: 'background',
+        name: 'PP Continue Test',
+        reach: 'heart',
+        crudType: 'read',
+        scale: 'local',
+        steps: [
+          {
+            reach: 'heart',
+            duration: { min: 4, max: 4 },
+            difficulty: 0.3,
+            onSuccess: [],
+            onFailure: [],
+            failBehavior: 'continue_weakened',
+          },
+          {
+            reach: 'heart',
+            duration: { min: 4, max: 4 },
+            difficulty: 0.3,
+            onSuccess: [],
+            onFailure: [],
+            failBehavior: 'fail_action',
+          },
+        ],
+        apCost: 1,
+        actorAffinities: ['individual'],
+        motivations: ['courage_prudence'],
+        narrativeTemplates: { initiation: 'begins', success: 'succeeds', failure: 'fails' },
+      };
+      const state = createMinimalGameState();
+      const action = createUnifiedAction({
+        actorId: 'actor-1', templateId: 'encounter.pp-continue-test', targetId: 'loc-1',
+        scale: 'local', source: 'agent', tick: 0, template, rng: fixedRng,
+      });
+
+      const { updatedAction } = executeStepResult(action, template, 'failure', [], state, fixedRng, 10);
+
+      // Action must continue (continue_weakened), not resolve
+      expect(updatedAction.resolved).toBe(false);
+      expect(updatedAction.currentStep).toBe(1);
+      // THR-119: old code wrote _complicationPartialProgress to the actor node; verify it's gone
+      expect(state.graph.getNode('actor-1')?.properties._complicationPartialProgress).toBeUndefined();
+      // Step progress on the new step must be non-negative (may be >0 if partial_progress complication fired)
+      expect(updatedAction.stepProgress).toBeGreaterThanOrEqual(0);
+    });
   });
 
   describe('phaseUnifiedActionProgress', () => {

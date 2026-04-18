@@ -155,11 +155,8 @@ function applyEffect(
     }
 
     case 'partial_progress': {
-      // TODO(THR-119): The actor node receives a transient _complicationPartialProgress
-      // signal but nothing in unifiedActionLifecycle reads it yet. Deferred until the
-      // lifecycle is extended to consume this hint and advance step progress fractionally.
-      const fraction = Math.min(1, Math.max(0, effect.fraction));
-      actorNode.properties._complicationPartialProgress = fraction;
+      // Consumed in executeStepResult (unifiedActionResolution.ts) after advanceStep — THR-119.
+      // The fraction is read directly from the ComplicationResult effects array there.
       break;
     }
 

@@ -1028,6 +1028,36 @@ export function executeStepResult(
   // Advance step or complete action
   let finalAction = advanceStep(action, outcome, template, rng);
 
+  // Partial_progress complication: give the next step a head start (THR-119).
+  // Read fraction directly from the ComplicationResult effects — no transient node property needed.
+  if (!finalAction.resolved && consequence.complication) {
+    const ppEffect = consequence.complication.effects.find(
+      (e): e is { type: 'partial_progress'; fraction: number } => e.type === 'partial_progress',
+    );
+    if (ppEffect) {
+      const fraction = Math.min(1, Math.max(0, ppEffect.fraction));
+      // Never allow the head start to complete the step immediately (cap at duration - 1).
+      const headStart = Math.min(
+        Math.floor(fraction * finalAction.stepDuration),
+        Math.max(0, finalAction.stepDuration - 1),
+      );
+      if (headStart > 0) {
+        finalAction = { ...finalAction, stepProgress: headStart };
+        emitTrace({
+          tick,
+          category: 'complication_partial_progress',
+          agentId: action.actorId,
+          templateId: action.templateId,
+          stepIndex: action.currentStep,
+          fraction,
+          headStart,
+          stepDuration: finalAction.stepDuration,
+          summary: `partial_progress: next step gets ${headStart}/${finalAction.stepDuration} ticks head start`,
+        } as any);
+      }
+    }
+  }
+
   // Accumulate per-step complication result (THR-20)
   if (consequence.complication !== undefined) {
     const prevComplications = action.stepComplications ?? [];
