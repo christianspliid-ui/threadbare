@@ -10,13 +10,16 @@
 - **Content Architecture (Now):** Shell/primitive work — stateful shells (Phase 2), progress/service shells (Phase 3), starter libraries (Phase 4), governance (Phase 5). ✅ THR-86 shipped (routine template structural variety). THR-88 next.
 - **UI Visual Overhaul — Design System v1 (Now):** ✅ THR-168 tokens. ✅ THR-169 typography floor. ✅ THR-170 primitives. ✅ THR-183 Vara seed. ✅ THR-172 SphereIcon. THR-173 Thread Panel next.
 - **Attention Tier Model (Now):** ✅ THR-16 curator metadata. ✅ THR-18 siege templates + digest wiring. UI integration ongoing.
-- **Social Systems Expansion (Now):** THR-28/27/30/51/29/41 shipped. THR-78 queued.
+- **Social Systems Expansion (Now):** THR-28/27/30/51/29/41/34 shipped. THR-78 queued.
 - **Thematic Pressure & Living World (Next):** THR-19 Omen Agenda shipped. THR-87 (cool failure prose) blocked by THR-116.
 - **Agent Success Redesign (Next):** Phases 1-4 shipped. Phases 5-8 queued.
 - **Rarity Model (Next):** Three deferred Phase D items.
 - **Procedural Hex Vignettes (Next):** Phases 2-5 queued.
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
+
+## Recent Completions (2026-04-19) — THR-34
+- **THR-34 — Social bond shift from reputation reactions:** `computeReputationBondShift()` in `socialEncounterGeneration.ts` walks the target's `has_trait` edges and aggregates signed reaction contributions (`REPUTATION_REACTION_VALENCES`). Plugged into `computeBondModifier` for stranger and weak-bond cases; strong/hostile trust paths unchanged. 3 new constants (`REPUTATION_REACTION_MAX_LEVEL`, `REPUTATION_BOND_SHIFT_SCALE`, `REPUTATION_BOND_SHIFT_MAX`). 15 new tests.
 
 ## Recent Completions (2026-04-19) — THR-152
 - **THR-152 — Delve encounter variant + 5-beat arc (Ruins Layer PR 4):** Three new tick phases (6.656-6.658): `phaseDelveAdmission` (scans for located clues at elder_ruin hexes, enforces scale caps saga=1/major=2/minor=3, queues blocked entries with expiry), `phaseDelveProgression` (seeded RNG capability roll vs difficulty threshold, dual-voice chronicle entry per beat, stalled outcome doubles next-beat delay), `phaseDelveEmergence` (rolls consequence, sets `pendingEmergenceDecision` for PR-5, auto-fires 'let' on timeout). New: `delveTypes.ts`, `delveVariant.ts`, `ruins-delve-content.ts` (45 prose vignettes 3 archetypes × 5 beats × 3 outcomes), `DelveProgressPanel.tsx`, 21 integration tests.
