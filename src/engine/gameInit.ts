@@ -34,6 +34,7 @@ import {
 } from './sphereAffinity';
 import { createDefaultSphereAffinity } from '../types/sphereAffinity';
 import { seedMonsterLairs } from './lairSeeding';
+import { seedElderRuins } from './ruins/elderRuinSeeding';
 import { generateCultureIdentities, toCultureForWorldgen } from './cultureGenerator';
 import { mulberry32 } from '../lib/prng';
 import { seedAllRarityTiers } from './raritySeeding';
@@ -200,6 +201,10 @@ export function initializeGameState(
   // Placed after sphere affinity seeding so lairSeeding can read affinity if needed.
   // Placed before loc.start so lairs don't conflict with the starting shrine.
   seedMonsterLairs(graph, worldGenResult.provinceRoles, tiles, seed, cols);
+
+  // ── Seed elder ruins in historical culture territory ───────────────────────
+  // Placed after settlements (exclusion filter reads locationSubtype) and lairs.
+  seedElderRuins(graph, tiles, seed, cols, worldGenResult.provinceRoles);
 
   // ── Seed rarity tiers on all actor/location nodes ──────────────────
   {

@@ -38,7 +38,7 @@ import { CulturePhoneticsInspector } from './CulturePhoneticsInspector';
 import { EMPTY_STATE_STYLE } from './debugPanelStyles';
 import type { KnowsClueOfEdgeProperties } from '../../../types/knowledge';
 
-export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues';
+export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins';
 
 export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'feed', label: 'Feed' }, { id: 'agent-follow', label: 'Agent' },
@@ -49,7 +49,7 @@ export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'spheres', label: 'Sphere State' }, { id: 'revelation-log', label: 'Revelations' },
   { id: 'knowledge-gaps', label: 'Knowledge' }, { id: 'armies', label: 'Armies' },
   { id: 'strategic', label: 'Strategic' }, { id: 'omens', label: 'Omens' },
-  { id: 'cultures', label: 'Cultures' }, { id: 'secrets-favors', label: 'Secrets' }, { id: 'clues', label: 'Clues' }, { id: 'cli', label: 'CLI' },
+  { id: 'cultures', label: 'Cultures' }, { id: 'secrets-favors', label: 'Secrets' }, { id: 'clues', label: 'Clues' }, { id: 'ruins', label: 'Ruins' }, { id: 'cli', label: 'CLI' },
 ];
 
 export interface DebugTabContentProps {
@@ -126,6 +126,7 @@ export function DebugTabContent({
   if (viewMode === 'cultures') return <CulturePhoneticsInspector graph={graph} />;
   if (viewMode === 'secrets-favors') return <SecretsFavorsDebugTab graph={graph} focusedAgentId={effectiveAgentId} />;
   if (viewMode === 'clues') return <CluesDebugTab graph={graph} focusedAgentId={effectiveAgentId} currentTick={currentTick} />;
+  if (viewMode === 'ruins') return <RuinsDebugTab graph={graph} />;
   if (viewMode === 'cli') return <CommandTab retinueAgents={retinueAgents} followAgentId={effectiveAgentId} />;
   if (viewMode === 'strategic') return <StrategicDebugTab strategicState={strategicState} graph={graph} effectiveAgentId={effectiveAgentId} currentTick={currentTick} />;
   if (viewMode === 'social') {
@@ -573,6 +574,61 @@ function SecretsFavorsDebugTab({ graph, focusedAgentId }: { graph?: WorldGraph; 
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+// ── Ruins Debug Tab (THR-154) ────────────────────────────────────────────────
+
+function RuinsDebugTab({ graph }: { graph?: WorldGraph }) {
+  if (!graph) return <div style={EMPTY_STATE_STYLE}>No graph connected.</div>;
+
+  const ruins = graph.getNodesByType('location').filter(n => n.properties?.locationType === 'elder_ruin');
+
+  const MUTED = { color: 'var(--text-muted)', fontSize: '10px' };
+  const ROW = { display: 'grid', gridTemplateColumns: '110px 55px 45px 55px 70px 1fr', gap: '6px', alignItems: 'center', padding: '2px 0', fontSize: '11px' };
+  const HEADER_ROW = { ...ROW, color: 'var(--accent-gold)', fontWeight: 600, borderBottom: '1px solid var(--border-subtle)', paddingBottom: '4px', marginBottom: '4px' };
+  const BADGE = (color: string) => ({ background: color, color: '#fff', borderRadius: '3px', padding: '1px 5px', fontSize: '10px' });
+
+  const scaleColor: Record<string, string> = { minor: '#6b7280', major: '#d97706', saga: '#7c3aed' };
+  const archetypeColor: Record<string, string> = { vault: '#0ea5e9', temple: '#10b981', battlefield: '#ef4444' };
+
+  const byScale = ruins.reduce<Record<string, number>>((acc, n) => {
+    const s = n.properties?.delveScale as string ?? 'unknown';
+    acc[s] = (acc[s] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  return (
+    <div style={{ padding: '8px', fontFamily: 'monospace', overflowY: 'auto', height: '100%' }}>
+      <div style={{ ...MUTED, marginBottom: '8px' }}>
+        {ruins.length} elder ruin(s) seeded — minor:{byScale.minor ?? 0} major:{byScale.major ?? 0} saga:{byScale.saga ?? 0}
+      </div>
+      <div style={HEADER_ROW}>
+        <span>ID</span><span>Hex</span><span>Mag</span><span>Scale</span><span>Archetype</span><span>Sphere / Culture</span>
+      </div>
+      {ruins.length === 0
+        ? <div style={MUTED}>No elder ruins seeded. Historical culture territory required.</div>
+        : ruins.map(n => {
+            const p = n.properties ?? {};
+            const hex = `${p.hexCol},${p.hexRow}`;
+            const mag = typeof p.ruinMagnitude === 'number' ? p.ruinMagnitude.toFixed(2) : '—';
+            const scale = p.delveScale as string ?? '?';
+            const arch = p.archetype as string ?? '?';
+            const sphere = p.sphereAlignment as string ?? '?';
+            const cult = p.originCultureId ? String(p.originCultureId).slice(0, 10) : '—';
+            return (
+              <div key={n.id} style={ROW}>
+                <span style={{ color: 'var(--text-muted)' }}>{n.id.replace('elder_ruin_', 'er_')}</span>
+                <span>{hex}</span>
+                <span>{mag}</span>
+                <span><span style={BADGE(scaleColor[scale] ?? '#6b7280')}>{scale}</span></span>
+                <span><span style={BADGE(archetypeColor[arch] ?? '#6b7280')}>{arch}</span></span>
+                <span style={{ color: 'var(--text-muted)' }}>{sphere} · {cult}</span>
+              </div>
+            );
+          })
+      }
     </div>
   );
 }

@@ -33,6 +33,8 @@ export const PASS_SEED_VALIDATION = 70099;
 export const PASS_SEED_FANTASY = 70109;
 /** Lair seeding pass — monster lair placement at worldgen (m2.5) */
 export const PASS_SEED_LAIRS = 90211;
+/** Elder ruin density pass — systemic ruin placement (THR-154) */
+export const PASS_SEED_ELDER_RUINS = 97327;
 
 // ─── Province constants ──────────────────────────────────────────
 /** Maximum hexes any single province can claim via flood-fill */

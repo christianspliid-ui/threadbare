@@ -132,7 +132,8 @@ export type TraceCategory =
   | 'ruins.divine_mark_composed'
   | 'ruins.divine_mark_discovered'
   | 'ruins.clue_suppressed_no_eligible_recipient'
-  | 'ruins.clue_receiver_selected';
+  | 'ruins.clue_receiver_selected'
+  | 'ruins.density_seeded';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -252,6 +253,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'ruins.divine_mark_discovered',
   'ruins.clue_suppressed_no_eligible_recipient',
   'ruins.clue_receiver_selected',
+  'ruins.density_seeded',
 ];
 
 /** Base shape for all trace entries */
