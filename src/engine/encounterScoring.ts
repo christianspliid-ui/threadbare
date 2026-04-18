@@ -570,6 +570,27 @@ export function computeDesireScore(
 // ─── Ambition Boost ─────────────────────────────────────────────
 
 /**
+ * Check whether an agent has a pursues-edge to any ambition with positive
+ * reachAffinity for the given reach. Shared predicate for curator metadata
+ * and the encounter scoring boost so both stay in lockstep.
+ */
+export function agentPursuesReach(
+  graph: WorldGraph,
+  agentId: string,
+  reach: ReachDomain,
+): boolean {
+  const pursuesEdges = graph.getOutgoingEdges(agentId, 'pursues');
+  for (const edge of pursuesEdges) {
+    const ambition = graph.getNode(edge.target);
+    const reachAffinity = ambition?.properties?.reachAffinity as
+      | Partial<Record<ReachDomain, number>>
+      | undefined;
+    if (reachAffinity && (reachAffinity[reach] ?? 0) > 0) return true;
+  }
+  return false;
+}
+
+/**
  * Simple ambition boost: walk `pursues` edges from agent, check if any
  * ambition's reachAffinity has a non-zero value for the entry's primary reach.
  * Returns AMBITION_REACH_BOOST if any match, else 0.
@@ -579,18 +600,7 @@ function getAmbitionBoostForEntry(
   agentId: string,
   reachPrimary: ReachDomain,
 ): number {
-  const pursuesEdges = graph.getOutgoingEdges(agentId, 'pursues');
-  for (const edge of pursuesEdges) {
-    const ambitionNode = graph.getNode(edge.target);
-    if (!ambitionNode) continue;
-    const reachAffinity = ambitionNode.properties?.reachAffinity as
-      | Partial<Record<ReachDomain, number>>
-      | undefined;
-    if (reachAffinity && (reachAffinity[reachPrimary] ?? 0) > 0) {
-      return AMBITION_REACH_BOOST;
-    }
-  }
-  return 0;
+  return agentPursuesReach(graph, agentId, reachPrimary) ? AMBITION_REACH_BOOST : 0;
 }
 
 // ─── Axiological Profile Resolver ───────────────────────────────

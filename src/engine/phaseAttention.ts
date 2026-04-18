@@ -38,6 +38,8 @@ import {
 } from '../data/attention-constants';
 import { emitTrace } from './traceBuffer';
 import type { TraceEntry } from '../types/trace';
+import { classifyChainStage, getChainProgress } from './encounterChains';
+import { agentPursuesReach } from './encounterScoring';
 
 // ─── Threat rating helpers ──────────────────────────────────────────────────
 
@@ -187,6 +189,33 @@ export function phaseAttention(
     const reachPrimary: string = template?.reach ?? 'combat';
     const threatRating = template ? rarityToThreat(template.rarityTier) : 'moderate';
 
+    // Chain stage classification
+    const agentNode = state.graph.getNode(ua.actorId);
+    const chainProgress = getChainProgress(agentNode?.properties ?? {});
+    const { isChainStage, isFinalChainStage } = classifyChainStage(ua.templateId, chainProgress);
+
+    // Faction thread relevance: count fellow faction members who have an ascendant thread
+    let factionThreadCount = 0;
+    const memberOfEdges = state.graph.getOutgoingEdges(ua.actorId, 'member_of');
+    if (memberOfEdges.length > 0) {
+      const fellows = new Set<string>();
+      for (const memberEdge of memberOfEdges) {
+        const incomingMembers = state.graph.getIncomingEdges(memberEdge.target, 'member_of');
+        for (const inc of incomingMembers) {
+          if (inc.source === ua.actorId) continue;
+          const hasThread = state.graph.getIncomingEdges(inc.source, 'thread')
+            .some(e => e.source === state.ascendantId);
+          if (hasThread) fellows.add(inc.source);
+        }
+      }
+      factionThreadCount = fellows.size;
+    }
+
+    // Ambition alignment
+    const matchesAmbition = template
+      ? agentPursuesReach(state.graph, ua.actorId, template.reach as ReachDomain)
+      : false;
+
     candidates.push({
       encounterId:        ua.actionId,   // unified action id is the encounter unit
       actionId:           ua.actionId,
@@ -194,10 +223,10 @@ export function phaseAttention(
       courtPosition,
       threatRating,
       reachPrimary,
-      isChainStage:       false,         // TODO(THR-16): wire encounter chain metadata
-      isFinalChainStage:  false,         // TODO(THR-16): wire encounter chain metadata
-      factionThreadCount: 0,             // TODO(THR-16): wire faction thread relevance
-      matchesAmbition:    false,         // TODO(THR-16): wire ambition alignment
+      isChainStage,
+      isFinalChainStage,
+      factionThreadCount,
+      matchesAmbition,
     });
   }
 
@@ -219,6 +248,23 @@ export function phaseAttention(
 
     if (!courtPosition || (courtPosition as string) === 'dormant') continue;
 
+    // Faction thread relevance (same walk as unified path)
+    let legacyFactionThreadCount = 0;
+    const legacyMemberEdges = state.graph.getOutgoingEdges(ep.actorId, 'member_of');
+    if (legacyMemberEdges.length > 0) {
+      const legacyFellows = new Set<string>();
+      for (const memberEdge of legacyMemberEdges) {
+        const incomingMembers = state.graph.getIncomingEdges(memberEdge.target, 'member_of');
+        for (const inc of incomingMembers) {
+          if (inc.source === ep.actorId) continue;
+          const hasThread = state.graph.getIncomingEdges(inc.source, 'thread')
+            .some(e => e.source === state.ascendantId);
+          if (hasThread) legacyFellows.add(inc.source);
+        }
+      }
+      legacyFactionThreadCount = legacyFellows.size;
+    }
+
     candidates.push({
       encounterId:        ep.encounterId,
       actionId:           ep.encounterId,
@@ -226,10 +272,10 @@ export function phaseAttention(
       courtPosition,
       threatRating:       'moderate',
       reachPrimary:       'combat',      // legacy encounters have no template ref here
-      isChainStage:       false,
-      isFinalChainStage:  false,
-      factionThreadCount: 0,
-      matchesAmbition:    false,
+      isChainStage:       false,         // no template id available on legacy path
+      isFinalChainStage:  false,         // no template id available on legacy path
+      factionThreadCount: legacyFactionThreadCount,
+      matchesAmbition:    false,         // reach='combat' is placeholder; would falsely bias
     });
   }
 
@@ -325,6 +371,8 @@ export function phaseAttention(
       category: 'curator_decision', tick: state.tick, agentId: c.agentId,
       summary: `curator kept encounter ${c.encounterId} for agent ${c.agentId} (score ${score.toFixed(3)})`,
       encounterId: c.encounterId, decision: 'kept', curationScore: score, reason: 'selected_by_curator',
+      isChainStage: c.isChainStage, isFinalChainStage: c.isFinalChainStage,
+      factionThreadCount: c.factionThreadCount, matchesAmbition: c.matchesAmbition,
     } satisfies Omit<CuratorDecisionTrace, 'id' | 'timestamp'> as Omit<TraceEntry, 'id' | 'timestamp'>);
   }
 
@@ -333,6 +381,8 @@ export function phaseAttention(
       category: 'curator_decision', tick: state.tick, agentId: c.agentId,
       summary: `curator demoted encounter ${c.encounterId} for agent ${c.agentId} (score ${score.toFixed(3)})`,
       encounterId: c.encounterId, decision: 'curated_out', curationScore: score, reason: 'demoted_by_curator',
+      isChainStage: c.isChainStage, isFinalChainStage: c.isFinalChainStage,
+      factionThreadCount: c.factionThreadCount, matchesAmbition: c.matchesAmbition,
     } satisfies Omit<CuratorDecisionTrace, 'id' | 'timestamp'> as Omit<TraceEntry, 'id' | 'timestamp'>);
   }
 

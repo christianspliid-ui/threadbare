@@ -1139,3 +1139,69 @@ describe('computeRoleAffinityMultiplier', () => {
     expect(result).toBe(1.0);
   });
 });
+
+// ─── agentPursuesReach ─────────────────────────────────────────
+
+import { agentPursuesReach } from '../encounterScoring';
+
+function makePursuesGraph(agentId: string, ambitions: Array<{ reachAffinity: Partial<Record<ReachDomain, number>> }>) {
+  const graph = new WorldGraph();
+  graph.addNode({
+    id: agentId,
+    type: 'agent',
+    name: 'Test Agent',
+    properties: {},
+  });
+  ambitions.forEach((amb, i) => {
+    const ambId = `ambition_${i}`;
+    graph.addNode({
+      id: ambId,
+      type: 'ambition',
+      name: `Ambition ${i}`,
+      properties: { reachAffinity: amb.reachAffinity },
+    });
+    graph.addEdge({
+      id: `edge_pursues_${i}`,
+      source: agentId,
+      target: ambId,
+      type: 'pursues',
+      properties: { priority: 'primary', status: 'active' },
+    });
+  });
+  return graph;
+}
+
+describe('agentPursuesReach', () => {
+  it('returns false when agent has no pursues edges', () => {
+    const graph = makePursuesGraph('agent1', []);
+    expect(agentPursuesReach(graph, 'agent1', 'iron')).toBe(false);
+  });
+
+  it('returns false when ambition reachAffinity has zero value for target reach', () => {
+    const graph = makePursuesGraph('agent1', [{ reachAffinity: { iron: 0 } }]);
+    expect(agentPursuesReach(graph, 'agent1', 'iron')).toBe(false);
+  });
+
+  it('returns true when ambition has positive affinity for target reach', () => {
+    const graph = makePursuesGraph('agent1', [{ reachAffinity: { iron: 0.8 } }]);
+    expect(agentPursuesReach(graph, 'agent1', 'iron')).toBe(true);
+  });
+
+  it('returns false when ambition has affinity for a different reach', () => {
+    const graph = makePursuesGraph('agent1', [{ reachAffinity: { gold: 0.8 } }]);
+    expect(agentPursuesReach(graph, 'agent1', 'iron')).toBe(false);
+  });
+
+  it('returns true when any ambition (among multiple) has positive affinity', () => {
+    const graph = makePursuesGraph('agent1', [
+      { reachAffinity: { gold: 0.5 } },
+      { reachAffinity: { iron: 0.3 } },
+    ]);
+    expect(agentPursuesReach(graph, 'agent1', 'iron')).toBe(true);
+  });
+
+  it('returns false for missing agent id (fail-soft via empty edge set)', () => {
+    const graph = makePursuesGraph('agent1', [{ reachAffinity: { iron: 0.8 } }]);
+    expect(agentPursuesReach(graph, 'nonexistent', 'iron')).toBe(false);
+  });
+});
