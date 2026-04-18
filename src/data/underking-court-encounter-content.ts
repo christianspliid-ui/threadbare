@@ -117,6 +117,7 @@ export const UNDERKING_COURT_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachPrimary: 'gold',
     reachSecondary: 'shadow',
     encounterType: 'trade',
+    reputationPolarity: 'negative', // fencing stolen goods — explicitly criminal trade (2b)
     threatRating: 'easy',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
@@ -233,6 +234,7 @@ export const UNDERKING_COURT_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachPrimary: 'shadow',
     reachSecondary: 'gold',
     encounterType: 'trade',
+    reputationPolarity: 'negative', // blackmail / extortion — "pay or be exposed" (2b)
     threatRating: 'moderate',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
@@ -519,6 +521,7 @@ export const UNDERKING_COURT_SOCIAL_TEMPLATES: EncounterTemplate[] = [
     reachPrimary: 'gold',
     reachSecondary: 'eye',
     encounterType: 'trade',
+    reputationPolarity: 'negative', // black market — buying explicitly illegal contraband (2b)
     threatRating: 'easy',
     intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,

@@ -77,6 +77,7 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachPrimary: 'eye',
     reachSecondary: 'veil',
     encounterType: 'explore',
+    reputationPolarity: 'positive', // scholarly ruins documentation for institutional record (2a)
     threatRating: 'easy',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.explore,
@@ -112,6 +113,7 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachPrimary: 'eye',
     reachSecondary: 'veil',
     encounterType: 'explore',
+    reputationPolarity: 'positive', // scholarly translation for knowledge preservation (2a)
     threatRating: 'easy',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.explore,
@@ -152,6 +154,7 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachPrimary: 'eye',
     reachSecondary: 'gold',
     encounterType: 'acquire',
+    reputationPolarity: 'positive', // legitimate scholarly acquisition for institutional collection (2a)
     threatRating: 'easy',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.acquire,
@@ -193,6 +196,7 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachPrimary: 'veil',
     reachSecondary: 'eye',
     encounterType: 'explore',
+    reputationPolarity: 'positive', // scholarly ley line mapping for knowledge commons (2a)
     threatRating: 'moderate',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.explore,
@@ -233,6 +237,7 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachPrimary: 'eye',
     reachSecondary: 'heart',
     encounterType: 'acquire',
+    reputationPolarity: 'positive', // ethnographic oral history preservation — communal and scholarly (2a)
     threatRating: 'moderate',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.acquire,
@@ -276,6 +281,7 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachPrimary: 'eye',
     reachSecondary: 'veil',
     encounterType: 'explore',
+    reputationPolarity: 'positive', // scholarly prophecy investigation for institutional foreknowledge (2a)
     threatRating: 'hard',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.explore,
@@ -317,6 +323,7 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachPrimary: 'eye',
     reachSecondary: 'veil',
     encounterType: 'explore',
+    reputationPolarity: 'positive', // archaeological archive excavation for public scholarship (2a)
     threatRating: 'moderate',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.explore,

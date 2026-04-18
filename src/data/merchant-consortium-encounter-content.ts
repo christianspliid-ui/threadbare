@@ -326,6 +326,7 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachPrimary: 'gold',
     reachSecondary: 'heart',
     encounterType: 'trade',
+    reputationPolarity: 'negative', // predatory monopoly — undercut competitors and lock suppliers (2b)
     threatRating: 'hard',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
@@ -373,6 +374,7 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachPrimary: 'gold',
     reachSecondary: 'heart',
     encounterType: 'trade',
+    reputationPolarity: 'positive', // diplomatic fair trade with foreign delegation (2a)
     threatRating: 'moderate',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,

@@ -1744,6 +1744,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachPrimary: 'heart',
     reachSecondary: 'iron',
     encounterType: 'hire',
+    reputationPolarity: 'positive', // lawful community defense recruitment (2a)
     threatRating: 'easy',
     intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.hire,
@@ -1807,6 +1808,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachPrimary: 'gold',
     reachSecondary: 'iron',
     encounterType: 'hire',
+    reputationPolarity: 'positive', // legitimate mercenary hire — above-board offer with fair terms (2a)
     threatRating: 'moderate',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.hire,
@@ -1870,6 +1872,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachPrimary: 'heart',
     reachSecondary: 'gold',
     encounterType: 'hire',
+    reputationPolarity: 'positive', // legitimate courtly employment — service rendered by merit (2a)
     threatRating: 'hard',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.hire,
@@ -1996,6 +1999,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachPrimary: 'veil',
     reachSecondary: 'heart',
     encounterType: 'hire',
+    reputationPolarity: 'positive', // lawful religious community organization — communal and voluntary (2a)
     threatRating: 'moderate',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.hire,
@@ -2059,6 +2063,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachPrimary: 'star',
     reachSecondary: 'gold',
     encounterType: 'hire',
+    reputationPolarity: 'positive', // above-board guide hire for legitimate expedition (2a)
     threatRating: 'trivial',
     intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.hire,
@@ -4922,6 +4927,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachPrimary: 'gold',
     reachSecondary: 'iron',
     encounterType: 'hire',
+    reputationPolarity: 'positive', // legitimate debt enforcement — contract authority, not violence (2a)
     threatRating: 'moderate',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.hire,
@@ -5128,6 +5134,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachPrimary: 'iron',
     reachSecondary: 'gold',
     encounterType: 'hire',
+    reputationPolarity: 'positive', // legitimate escort contract — fair pay, clear terms (2a)
     threatRating: 'moderate',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.hire,
@@ -5200,6 +5207,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachPrimary: 'iron',
     reachSecondary: 'heart',
     encounterType: 'hire',
+    reputationPolarity: 'positive', // sanctioned institutional membership trial (2a)
     threatRating: 'moderate',
     intrinsicTier: 'shaping',
     motivations: ['mercy_ruthlessness', 'loyalty_ambition'],

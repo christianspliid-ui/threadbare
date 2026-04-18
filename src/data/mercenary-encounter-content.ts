@@ -124,6 +124,7 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachPrimary: 'iron',
     reachSecondary: 'gold',
     encounterType: 'trade',
+    reputationPolarity: 'positive', // legitimate escort service — fair labor for fair pay (2a)
     threatRating: 'moderate',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
@@ -367,6 +368,7 @@ export const MERCENARY_SOCIAL_TEMPLATES: EncounterTemplate[] = [
     reachPrimary: 'iron',
     reachSecondary: 'heart',
     encounterType: 'duel',
+    reputationPolarity: 'positive', // sanctioned company sparring — mutual respect, no hostile intent (2c)
     threatRating: 'easy',
     intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
@@ -460,6 +462,7 @@ export const MC_JOIN_TEMPLATE: EncounterTemplate = {
   reachPrimary: 'iron',
   reachSecondary: 'heart',
   encounterType: 'duel',
+  reputationPolarity: 'positive', // sanctioned trial-by-combat for membership — institutional ritual (2c)
   threatRating: 'easy',
   intrinsicTier: 'background',
   motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
@@ -484,6 +487,7 @@ export const MC_PROMOTION_TEMPLATE: EncounterTemplate = {
   reachPrimary: 'iron',
   reachSecondary: 'heart',
   encounterType: 'duel',
+  reputationPolarity: 'positive', // sanctioned promotion challenge — institutional recognition ritual (2c)
   threatRating: 'moderate',
   intrinsicTier: 'shaping',
   motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,

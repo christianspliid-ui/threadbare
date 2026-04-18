@@ -192,6 +192,7 @@ export const SECRET_DISCOVERY_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachPrimary: 'shadow',
     reachSecondary: 'eye',
     encounterType: 'threaten',
+    reputationPolarity: 'negative', // only threaten template — always negative (Rule 3)
     threatRating: 'moderate',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.threaten,

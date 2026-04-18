@@ -261,6 +261,7 @@ export const REFUGEE_AFTERMATH_TEMPLATE: EncounterTemplate = {
   reachPrimary: 'heart',
   reachSecondary: 'gold',
   encounterType: 'discovery',
+  reputationPolarity: 'positive', // compassionate welcome of displaced survivors; fiction is unambiguous (2a)
   threatRating: 'moderate',
   intrinsicTier: 'shaping',
   motivations: ENCOUNTER_TYPE_MOTIVATIONS.discovery,
