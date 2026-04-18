@@ -3,6 +3,7 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ **THR-33** (2026-04-18) — Reputation polarity tagging: 27 explicit `reputationPolarity` tags on EncounterTemplate instances across 8 content files. Rules 2a/2b/2c/3 rubric; 40-tag cap respected; ~126 ambiguous templates left for L2/L3 fallbacks.
 ✅ **THR-92** (2026-04-18) — Phase 3 Civic Guard encounter migration: 15 EncounterTemplates → UnifiedActionTemplate with Civic Guard voice prose, full systemic wiring (hidden marks, encounter seeds, intelligence grants, reputation tallies, conditional blocks). Engine fixes: `phaseAgentDecision` unified-template-first check, `debugEncounterTools` locationTypes shim, `buildGateDutyEncounterStageModel` accepts UnifiedActionTemplate.
 ✅ **THR-147** (2026-04-18) — Reputation-gated encounters final tranche: 5 templates (Iron-/Gold-/Veil-/Stone- required-negative, Eye- + Iron+ mixed-polarity), engine fix blocks-win-over-unlocks in filterByReputationGates, HiddenMarkCategory extended, TRANCHE 15 entries, 5 concept-art PNGs.
 ✅ **THR-146** (2026-04-18) — Reputation-gated encounters middle tranche: 5 templates (Gold+/Eye+/Star+blocked/Shadow+/power.renown), 6 gate trait arrays, TRANCHE extended to 10, Codex fixes, 5 concept-art webps.
