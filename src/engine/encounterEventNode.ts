@@ -180,6 +180,122 @@ export function createEncounterEventNode(
   return eventNodeId;
 }
 
+// ─── Unified Action Event Node Creation (THR-143) ────────────────────
+
+export interface CreateUnifiedActionEventParams {
+  graph: WorldGraph;
+  actorId: string;
+  targetAgentId?: string;
+  templateId: string;
+  templateName: string;
+  stepIndex: number;
+  stepReach?: string;
+  outcome: string;
+  tick: number;
+  tierPromotionOccurred?: boolean;
+}
+
+/**
+ * Create an encounter event node in the graph for a unified-action step resolution.
+ * Mirrors createEncounterEventNode but accepts unified action data instead of
+ * EncounterProgress+EncounterTemplate, since unified actions don't carry those types.
+ *
+ * Fail-soft: returns undefined on any error. Encounter resolution is unaffected.
+ */
+export function createUnifiedActionEventNode(
+  params: CreateUnifiedActionEventParams,
+): string | undefined {
+  if (!ENCOUNTER_EVENT_ENABLED) return undefined;
+
+  const { graph, actorId, targetAgentId, templateId, templateName, stepIndex, stepReach, outcome, tick, tierPromotionOccurred } = params;
+
+  const eventNodeId = `${EVENT_NODE_ID_PREFIX}${actorId}_${tick}_${stepIndex}`;
+
+  // ── Create event node ──
+  try {
+    graph.addNode({
+      id: eventNodeId,
+      type: 'event',
+      name: `${templateName} (step ${stepIndex})`,
+      properties: {
+        eventType: 'encounter_outcome',
+        templateId,
+        templateName,
+        stepIndex,
+        outcome,
+        ...(stepReach && { reachTested: stepReach }),
+        tick,
+        tierPromotionOccurred: tierPromotionOccurred ?? false,
+        ...(targetAgentId && { targetAgentId }),
+      },
+    });
+  } catch (err) {
+    console.warn(`[EncounterEventNode] Failed to create unified event node ${eventNodeId}:`, err);
+    return undefined;
+  }
+
+  // ── Add participated_in edge (primary actor -> event) ──
+  try {
+    graph.addEdge({
+      id: `${actorId}_participated_in_${eventNodeId}`,
+      source: actorId,
+      target: eventNodeId,
+      type: 'participated_in',
+      properties: { role: 'primary', outcome, tick },
+    });
+  } catch (err) {
+    console.warn(`[EncounterEventNode] Failed to add participated_in edge for ${actorId}:`, err);
+  }
+
+  // ── Add participated_in edge (target actor -> event, if different from actor) ──
+  if (targetAgentId && targetAgentId !== actorId) {
+    try {
+      graph.addEdge({
+        id: `${targetAgentId}_participated_in_${eventNodeId}`,
+        source: targetAgentId,
+        target: eventNodeId,
+        type: 'participated_in',
+        properties: { role: 'target', outcome, tick },
+      });
+    } catch (err) {
+      console.warn(`[EncounterEventNode] Failed to add participated_in edge for target ${targetAgentId}:`, err);
+    }
+  }
+
+  // ── Add occurred_at edge (event -> actor's current location) ──
+  const locEdges = graph.getOutgoingEdges(actorId, 'located_at');
+  const locationId = locEdges[0]?.target;
+  if (locationId) {
+    try {
+      graph.addEdge({
+        id: `${eventNodeId}_occurred_at_${locationId}`,
+        source: eventNodeId,
+        target: locationId,
+        type: 'occurred_at',
+        properties: { tick },
+      });
+    } catch (err) {
+      console.warn(`[EncounterEventNode] Failed to add occurred_at edge for ${eventNodeId}:`, err);
+    }
+  }
+
+  emitTrace({
+    category: 'encounter_resolution',
+    event: 'event_node_created',
+    tick,
+    agentId: actorId,
+    agentName: graph.getNode(actorId)?.name ?? '?',
+    eventNodeId,
+    templateId,
+    stepIndex,
+    outcome,
+    locationId: locationId ?? '?',
+    summary: `Unified event node ${eventNodeId} created for ${templateName} step ${stepIndex} (${outcome})`,
+  } as TraceEntry);
+
+  return eventNodeId;
+}
+
 // ─── Graph Query Utilities ───────────────────────────────────────────
 
 /**

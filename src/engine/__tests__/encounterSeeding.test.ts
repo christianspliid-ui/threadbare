@@ -462,45 +462,88 @@ describe('applyEncounterAftermathReaction with encounter_seed effect', () => {
   });
 });
 
-// ─── THR-116 Contract Tests: Causation Edges ──────────────────────
+// ─── THR-143 Contract Tests: Causation Edge Wiring ───────────────
 
-describe('THR-116 contract: causation edges (tests 1–2)', () => {
+describe('THR-143 contract: causation edge wiring', () => {
   let runtime: SimulationRuntime;
   beforeEach(() => { resetUnifiedActionCounter(); clearTraces(); enableTracing(); runtime = createSimulationRuntime(); });
   afterEach(() => { clearTraces(); disableTracing(); });
 
-  it('test 1: caused_by edge created on template-spawn when graph nodes exist', () => {
-    const SOURCE_ID = 'broker.quest.rival_shrine_betrayal';
-    const PREDICTED_ACTION_ID = 'ua_1'; // counter reset → first action is ua_1
+  it('spawned action carries pendingCausationSourceEventId when seed has sourceEventNodeId', () => {
+    const SOURCE_EVENT_ID = 'evt_actor-1_10_0';
     const seed = makeSeed({
-      seedId: 'seed_caus_1',
+      seedId: 'seed_caus_thr143',
       templateId: 'broker.quest.rival_shrine_betrayal',
-      sourceEncounterId: SOURCE_ID,
+      sourceEncounterId: 'broker.quest.rival_shrine_betrayal',
+      sourceEventNodeId: SOURCE_EVENT_ID,
       eligibleAfterTick: 20,
       encounterFamily: undefined,
     });
     const state = createMinimalGameState({ pendingEncounterSeeds: [seed] });
-    // Both endpoints must exist as graph nodes for addEdge to succeed
-    state.graph.addNode({ id: PREDICTED_ACTION_ID, type: 'actor', name: 'NewAction', properties: {} });
-    state.graph.addNode({ id: SOURCE_ID, type: 'actor', name: 'SourceEnc', properties: {} });
-
     const result = evaluateEncounterSeeds(state, 25, testRng(), runtime);
 
-    const causedByEdges = result.graph.getEdgesByType('caused_by');
-    expect(causedByEdges).toHaveLength(1);
-    expect(causedByEdges[0].source).toBe(PREDICTED_ACTION_ID);
-    expect(causedByEdges[0].target).toBe(SOURCE_ID);
-    expect(causedByEdges[0].properties.seedId).toBe('seed_caus_1');
-    expect(causedByEdges[0].properties.firedTick).toBe(25);
-
-    const traces = getTraces();
-    const edgeTrace = traces.filter(t => t.category === 'causation_edge_created');
-    expect(edgeTrace).toHaveLength(1);
+    expect(result.unifiedActions.length).toBeGreaterThan(0);
+    const spawnedAction = result.unifiedActions[result.unifiedActions.length - 1];
+    expect(spawnedAction.pendingCausationSourceEventId).toBe(SOURCE_EVENT_ID);
+    expect(spawnedAction.spawnedFromSeedId).toBe('seed_caus_thr143');
+    expect(spawnedAction.spawnedFromSeedLabel).toBe('Test encounter seed');
   });
 
-  it('test 2: no caused_by edge created on discarded seed; trace has outcome discarded', () => {
+  it('spawned action has no causation fields when seed lacks sourceEventNodeId', () => {
     const seed = makeSeed({
-      seedId: 'seed_caus_2',
+      templateId: 'broker.quest.rival_shrine_betrayal',
+      eligibleAfterTick: 20,
+      encounterFamily: undefined,
+      // no sourceEventNodeId
+    });
+    const state = createMinimalGameState({ pendingEncounterSeeds: [seed] });
+    const result = evaluateEncounterSeeds(state, 25, testRng(), runtime);
+
+    expect(result.unifiedActions.length).toBeGreaterThan(0);
+    const spawnedAction = result.unifiedActions[result.unifiedActions.length - 1];
+    expect(spawnedAction.pendingCausationSourceEventId).toBeUndefined();
+    expect(spawnedAction.spawnedFromSeedId).toBeUndefined();
+  });
+
+  it('aftermath plants seed with sourceEventNodeId from action.eventNodeId', () => {
+    const state = createMinimalGameState({ pendingEncounterSeeds: [] });
+    const action: UnifiedAction = {
+      actionId: 'ua_evt_test',
+      actorId: 'actor-1',
+      templateId: 'broker.quest.rival_shrine_betrayal',
+      targetId: 'actor-1',
+      scale: 'personal',
+      source: 'agent',
+      startTick: 10,
+      currentStep: 0,
+      stepProgress: 1,
+      stepDuration: 1,
+      resolved: false,
+      stepOutcomes: [],
+      eventNodeId: 'evt_actor-1_10_0',
+    };
+    const reaction: EncounterAftermathReaction = {
+      id: 'test_evt_reaction',
+      label: 'Test event node reaction',
+      effects: [
+        {
+          kind: 'encounter_seed',
+          encounterFamily: 'broker.quest',
+          delayTicks: 10,
+          seedLabel: 'Seeded from event node',
+        },
+      ],
+    };
+
+    const { state: updated } = applyEncounterAftermathReaction(state, action, reaction, 20, runtime);
+
+    expect(updated.pendingEncounterSeeds).toHaveLength(1);
+    expect(updated.pendingEncounterSeeds![0].sourceEventNodeId).toBe('evt_actor-1_10_0');
+  });
+
+  it('no caused_by edge created on discarded seed; trace has outcome discarded', () => {
+    const seed = makeSeed({
+      seedId: 'seed_caus_discard',
       templateId: undefined,
       encounterFamily: undefined,
       sourceEncounterId: 'some.source.enc',

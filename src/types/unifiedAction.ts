@@ -414,6 +414,8 @@ export interface PendingEncounterSeed {
   readonly priority: number;
   readonly seedLabel: string;
   readonly plantedTick: number;
+  /** Event node ID of the source encounter that planted this seed (THR-143). */
+  readonly sourceEventNodeId?: string;
 }
 
 export interface EncounterAftermathReaction {
@@ -756,6 +758,14 @@ export interface UnifiedAction {
    * Cast to ComplicationResult at consumer sites.
    */
   readonly stepComplications?: readonly (StepComplicationSlot | null)[];
+  /** Graph event node ID created when this action's first step resolved (THR-143). */
+  readonly eventNodeId?: string;
+  /** Source event node ID to emit a caused_by edge on first step resolution (THR-143). Cleared after use. */
+  readonly pendingCausationSourceEventId?: string;
+  /** Seed ID that spawned this action, for causation edge properties (THR-143). */
+  readonly spawnedFromSeedId?: string;
+  /** Seed label that spawned this action, for causation edge properties (THR-143). */
+  readonly spawnedFromSeedLabel?: string;
 }
 
 /**

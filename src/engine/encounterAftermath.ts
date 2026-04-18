@@ -567,6 +567,7 @@ export function applyEncounterAftermathReaction(
           priority: effect.priority ?? 1.0,
           seedLabel: effect.seedLabel,
           plantedTick: tick,
+          sourceEventNodeId: action?.eventNodeId,
         };
         nextSeeds = [...nextSeeds, seed];
         const seedEvent: TickEvent = {

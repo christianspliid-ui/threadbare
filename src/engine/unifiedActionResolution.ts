@@ -64,6 +64,8 @@ import { resolveRevelationAction } from './revelationEmitter';
 import { accumulateImportance, getImportanceDelta, getRarityTier } from './rarity';
 import type { TraceEntry } from '../types/trace';
 import type { SimulationRuntime } from './simulationRuntime';
+import { touchWorld } from './simulationRuntime';
+import { createUnifiedActionEventNode } from './encounterEventNode';
 import type { BalanceEvent } from '../types/balanceEval';
 import { DEFAULT_REPUTATION } from '../types/disposition';
 import { recordBalanceEvent } from './balanceTelemetry';
@@ -1415,6 +1417,81 @@ export function executeStepResult(
       actorId: action.actorId,
     });
   }
+
+  // ── THR-143: Create encounter event node for this unified action step ──
+  // Uses the input action's step index (pre-advance) to generate a stable ID.
+  // Only propagate targetAgentId for actor-typed targets; unified actions can target
+  // locations, artifacts, and other non-actor nodes that must not get participated_in edges.
+  const targetNodeType = action.targetId !== action.actorId
+    ? state.graph.getNode(action.targetId)?.type
+    : undefined;
+  const unifiedEventNodeId = createUnifiedActionEventNode({
+    graph: state.graph,
+    actorId: action.actorId,
+    targetAgentId: targetNodeType === 'actor' ? action.targetId : undefined,
+    templateId: template.id,
+    templateName: template.name,
+    stepIndex: action.currentStep,
+    stepReach: template.steps[action.currentStep]?.reach,
+    outcome,
+    tick,
+    tierPromotionOccurred: !!(promotionTraitGranted),
+  });
+
+  // ── THR-143: Emit caused_by edge if this is a seed-spawned action ──
+  if (action.pendingCausationSourceEventId) {
+    if (unifiedEventNodeId) {
+      try {
+        state.graph.addEdge({
+          id: `caused_by_${unifiedEventNodeId}_${action.pendingCausationSourceEventId}`,
+          source: unifiedEventNodeId,
+          target: action.pendingCausationSourceEventId,
+          type: 'caused_by',
+          properties: {
+            seedId: action.spawnedFromSeedId,
+            seedLabel: action.spawnedFromSeedLabel,
+            firedTick: tick,
+          },
+        });
+        if (runtime) touchWorld(runtime);
+        emitTrace({
+          tick,
+          category: 'causation_edge_created',
+          sourceEventId: unifiedEventNodeId,
+          causedByEventId: action.pendingCausationSourceEventId,
+          seedId: action.spawnedFromSeedId,
+          seedLabel: action.spawnedFromSeedLabel,
+          summary: `Causation edge: ${unifiedEventNodeId} caused_by ${action.pendingCausationSourceEventId} (seed: "${action.spawnedFromSeedLabel}")`,
+        } as TraceEntry);
+      } catch {
+        emitTrace({
+          tick,
+          category: 'causation_edge_creation_skipped',
+          sourceEventId: unifiedEventNodeId,
+          causedByEventId: action.pendingCausationSourceEventId,
+          seedId: action.spawnedFromSeedId,
+          reason: 'graph_add_edge_failed',
+          summary: `Causation edge skipped: add failed for ${unifiedEventNodeId}→${action.pendingCausationSourceEventId}`,
+        } as TraceEntry);
+      }
+    } else {
+      emitTrace({
+        tick,
+        category: 'causation_edge_creation_skipped',
+        causedByEventId: action.pendingCausationSourceEventId,
+        seedId: action.spawnedFromSeedId,
+        reason: 'no_new_event_node',
+        summary: `Causation edge skipped: event node creation failed for ${template.id} step ${action.currentStep}`,
+      } as TraceEntry);
+    }
+  }
+
+  // Persist event node ID; clear pending causation marker after first use.
+  finalAction = {
+    ...finalAction,
+    ...(unifiedEventNodeId !== undefined && { eventNodeId: unifiedEventNodeId }),
+    ...(action.pendingCausationSourceEventId !== undefined && { pendingCausationSourceEventId: undefined }),
+  };
 
   return { updatedAction: finalAction, events };
 }
