@@ -10,7 +10,7 @@
 - **Content Architecture (Now):** Shell/primitive work — stateful shells (Phase 2), progress/service shells (Phase 3), starter libraries (Phase 4), governance (Phase 5). ✅ THR-86 shipped (routine template structural variety). THR-88 next.
 - **UI Visual Overhaul — Design System v1 (Now):** ✅ THR-168 tokens. ✅ THR-169 typography floor. ✅ THR-170 primitives. ✅ THR-183 Vara seed. ✅ THR-172 SphereIcon. THR-173 Thread Panel next.
 - **Attention Tier Model (Now):** ✅ THR-16 curator metadata. ✅ THR-18 siege templates + digest wiring. UI integration ongoing.
-- **Social Systems Expansion (Now):** THR-28/27/30/51/29 shipped. THR-78 queued.
+- **Social Systems Expansion (Now):** THR-28/27/30/51/29/41 shipped. THR-78 queued.
 - **Thematic Pressure & Living World (Next):** THR-19 Omen Agenda shipped. THR-87 (cool failure prose) blocked by THR-116.
 - **Agent Success Redesign (Next):** Phases 1-4 shipped. Phases 5-8 queued.
 - **Rarity Model (Next):** Three deferred Phase D items.
@@ -45,7 +45,7 @@
 - **THR-150 — Ruins Layer PR 2 (clue lifecycle + Narrative Gravity):** `src/engine/ruins/clueLifecycle.ts` — `selectClueRecipient` (6-channel Narrative Gravity weighted-random, saga tier floor, score breakdown traces), `produceClueConsequence`, `consumeCluesOnConvergence` (prune → `knows_of` familiarity edges), `spawnClueFromEvent` (aftermath hook), `phaseClueDecay` (Phase 6.654, TTL-based knows_clue_of expiry), `findAnyRuinId` (dynamic `$nearest_ruin` resolution). `spawn_clue` aftermath effect kind added to `unifiedAction.ts` + handled in `encounterAftermath.ts`. Phase 6.654 wired in orchestrator after phaseSecretsFavors. 5 encounter templates seeded with spawn_clue hooks (oracle-consulted, silent-chamber, infiltrators-approach, veiled-consultation, blinded-oracle). CluesDebugTab added to DebugPanel. `knows_clue_of` + `knows_of` registered in edgeSchema. 11 tests including 1000-trial Kael/Mira worked example (193.0:14.0 ≈ 93%:7%).
 
 ## Recent Completions (2026-04-18) — archived to project-history.md
-- THR-149 (Ruins foundation), THR-161 (CI/CD), THR-160 (test repair), THR-148 (portfolio-pinning), THR-51 (agent initiatives), THR-33 (reputation polarity), THR-92 (CG migration), THR-147/146/30/137/32/133/143/144/15/91/16/118/116/86 — see project-history.md
+- THR-41 (aura faction filter correctness), THR-149 (Ruins foundation), THR-161 (CI/CD), THR-160 (test repair), THR-148 (portfolio-pinning), THR-51 (agent initiatives), THR-33 (reputation polarity), THR-92 (CG migration), THR-147/146/30/137/32/133/143/144/15/91/16/118/116/86 — see project-history.md
 
 
 ## Active Backlog Ideas

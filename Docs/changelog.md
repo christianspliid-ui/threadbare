@@ -4,6 +4,8 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
 ### Recent Changes
 
+| 2026-04-18 | src/types/effects.ts, src/engine/effectAura.ts, src/engine/factionNetwork.ts, src/engine/__tests__/effectAura.test.ts | THR-41: Faction hostility check in aura filtering. AuraEntry gains sourceFactionId. areFactionsHostile() added (relates_to isRival bidirectional check). allies/enemies branches in resolveAuraModifiers now correctly skip non-matching agents. 5 tests. |
+
 | 2026-04-19 | src/engine/encounterScoring.ts, src/types/trace.ts, src/engine/__tests__/encounterScoring.test.ts | THR-81: identityBiasBonus exposed in ScoredCandidate + ScoringTrace.topCandidates. Omen+doom bias was already wired in phaseAgentDecision.ts; this closes the NFP #2 gap so per-candidate bias is inspectable in scoring traces. 3 tests for additive delta, negative bias, empty bias. |
 
 | 2026-04-19 | src/components/icons/constants.ts, src/components/icons/SphereIcon.tsx, src/components/shared/SphereIcon.tsx, src/components/shared/index.ts, src/components/StyleGuide/StyleGuide.tsx | THR-172: SphereIcon variant prop + sphereFromReach helper. SPHERE_COLORS_BASE (base hex values). icons/SphereIcon: variant='base'|'bright', CSS var fill. shared/SphereIcon: sphere alias prop, variant pass-through. sphereFromReach(reach) exported from icons and shared barrels. StyleGuide: 12-sphere base/bright grid. |
