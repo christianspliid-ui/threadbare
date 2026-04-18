@@ -15,8 +15,10 @@ import type { HiddenMark, IntelligenceRecord } from '../../types/unifiedAction';
 import {
   HEALTH_LOW_THRESHOLD,
   HEALTH_HIGH_THRESHOLD,
+  OUTNUMBERED_MARGIN,
 } from '../../data/effect-constants';
 import { DEFAULT_REPUTATION } from '../../types/disposition';
+import { classifyCoLocatedActor } from './actorClassification';
 
 // ═══════════════════════════════════════════════════════════════════
 // Predicate Evaluation
@@ -200,13 +202,22 @@ export function buildPredicateContext(
   const healthLow = doomFraction >= HEALTH_LOW_THRESHOLD;
   const healthHigh = doomFraction <= HEALTH_HIGH_THRESHOLD;
 
-  // Alone / outnumbered — check co-located agents
-  // TODO(THR-144): allyCount and enemyCount are stubs. alone is always true, outnumbered always false.
-  // Full implementation requires graph traversal to count co-located allies/enemies.
-  const allyCount = 0;
-  const enemyCount = 0;
+  // Alone / outnumbered — count co-located allies/enemies at the actor's
+  // most-specific located_at node (strict same-node equality; see THR-144).
+  let allyCount = 0;
+  let enemyCount = 0;
+  if (locatedAtEdges.length > 0) {
+    const locationId = locatedAtEdges[0].target;
+    const coLocatedEdges = graph.getIncomingEdges(locationId, 'located_at');
+    for (const edge of coLocatedEdges) {
+      if (edge.source === agentId) continue;
+      const align = classifyCoLocatedActor(graph, agentId, edge.source);
+      if (align === 'ally') allyCount++;
+      else if (align === 'enemy') enemyCount++;
+    }
+  }
   const alone = allyCount === 0 && enemyCount === 0;
-  const outnumbered = enemyCount > (allyCount + 1);
+  const outnumbered = enemyCount > (allyCount + OUTNUMBERED_MARGIN);
 
   // Near water
   const nearWater = biome === 'coastal' || biome === 'river' || biome === 'lake'
@@ -281,6 +292,8 @@ export function buildPredicateContext(
     inWilderness,
     healthLow,
     healthHigh,
+    allyCount,
+    enemyCount,
     alone,
     outnumbered,
     nearWater,

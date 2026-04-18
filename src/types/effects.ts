@@ -916,6 +916,8 @@ export interface PredicateContext {
   /** Agent state */
   readonly healthLow: boolean;
   readonly healthHigh: boolean;
+  readonly allyCount: number;
+  readonly enemyCount: number;
   readonly alone: boolean;
   readonly outnumbered: boolean;
   /** Environment */

@@ -160,3 +160,14 @@ export const CHOICE_SET_MAX_OPTIONS = 6;
 
 /** Ticks the executor waits before AI auto-resolves (0 = immediate). */
 export const CHOICE_SET_AI_RESOLVE_DELAY_TICKS = 0;
+
+// ─── Alone / Outnumbered Predicates (THR-144) ─────────────────────
+
+/** relates_to.sentiment at or above this counts as an ally signal for alone/outnumbered predicates. */
+export const ALLY_SENTIMENT_THRESHOLD = 0.35;
+
+/** relates_to.sentiment at or below this counts as an enemy signal for alone/outnumbered predicates. */
+export const ENEMY_SENTIMENT_THRESHOLD = -0.35;
+
+/** outnumbered requires enemyCount > allyCount + OUTNUMBERED_MARGIN. */
+export const OUTNUMBERED_MARGIN = 1;

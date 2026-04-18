@@ -672,6 +672,8 @@ Every `EncounterAftermathReactionEffect` can carry an optional `when?: EffectPre
 | `'has_mark:suspicion'` | Actor has at least one hidden mark of that category |
 | `'has_intel:patrol_routes'` | Actor has an intelligence record in that category |
 | `'faction_controls:city_north'` | Actor's faction controls the named region |
+| `'alone'` | No allies or enemies share the actor's exact `located_at` node (see Capability 11) |
+| `'outnumbered'` | `enemies > allies + 1` at the actor's location (see Capability 11) |
 
 ```typescript
 // Effect fires only when the actor is reputation-worthy
@@ -681,7 +683,7 @@ Every `EncounterAftermathReactionEffect` can carry an optional `when?: EffectPre
 { kind: 'encounter_seed', encounterFamily: 'revenge', seedLabel: 'They remember the wound', delayTicks: 12, priority: 1.5, when: 'health_low' }
 ```
 
-**Note:** `alone` and `outnumbered` predicates exist in the type but are currently stubs (always evaluates alone=true, outnumbered=false) — annotated in source with TODO.
+See **Capability 11** for full documentation on `alone` and `outnumbered`.
 
 #### Thread mutation effects
 
@@ -715,6 +717,53 @@ If a seeded encounter carries a `sourceEncounterId`, prose can reference the cau
 - `{cause:ticksAgo}` — how many ticks ago the seed was planted
 
 These resolve from `ctx.cause` in `NarrativeContext`. If no cause is present, `{cause:*}` tokens strip cleanly.
+
+---
+
+### Capability 11: `alone` and `outnumbered` Predicates — Co-Location Arithmetic (THR-144)
+
+Two structural predicates that evaluate the actor's immediate scene. Use them to write content that plays differently when a character faces a crowd versus a solo journey.
+
+#### How co-location is determined
+
+An *ally* or *enemy* is any actor sharing the **exact same `located_at` node** as the subject. An agent at a sublocation is NOT co-located with an agent at the parent location — they occupy different scene nodes. Hex-level proximity does not count (a cave within the same hex is a different scene).
+
+#### Classification rules (first match wins)
+
+| Check | Result |
+|-------|--------|
+| Direct `relates_to` edge between the two actors (either direction) with `sentiment ≥ +0.35` | **ally** |
+| Direct `relates_to` edge with `sentiment ≤ −0.35` | **enemy** |
+| Both actors share the same `factionId` property | **ally** |
+| The two actors belong to different factions that have a `relates_to` edge with `sentiment ≥ +0.35` | **ally** |
+| The two actors belong to different factions with `relates_to sentiment ≤ −0.35` | **enemy** |
+| None of the above | **neutral** (does not affect either count) |
+
+#### Predicate semantics
+
+| Predicate | True when |
+|-----------|-----------|
+| `'alone'` | `allyCount === 0 && enemyCount === 0` — no allies or enemies at the scene node (neutrals don't count) |
+| `'outnumbered'` | `enemyCount > allyCount + 1` — strictly more enemies than allies plus the actor themselves |
+
+`PredicateContext` exposes `allyCount` and `enemyCount` as raw numbers — future parameterized predicates like `ally_count_above:2` can use them without rebuilding the traversal.
+
+#### Example usage
+
+```typescript
+// Last Stand — bonus fires only when facing multiple enemies
+{ kind: 'stat_bonus', reach: 'iron', value: 0.2, when: 'outnumbered' }
+
+// Lone Walk — reflective prose branch fires only when no one else is present
+{ kind: 'encounter_seed', encounterFamily: 'reflection', seedLabel: 'The road listens', delayTicks: 6, when: 'alone' }
+```
+
+#### Important constraints
+
+- **Sub-locations count separately.** An agent at a tavern sublocation is alone with respect to anyone at the parent tavern location node.
+- **Sentiment threshold is ±0.35.** Mid-range sentiment (−0.34 to +0.34) is neutral. Calibration constant: `ALLY_SENTIMENT_THRESHOLD`, `ENEMY_SENTIMENT_THRESHOLD` in `src/data/effect-constants.ts`.
+- **Outnumbered margin is 1.** A 2v2 scene is NOT outnumbered. A 3v1 scene IS. Constant: `OUTNUMBERED_MARGIN`.
+- **Faction-less strangers are neutral.** Two actors with no faction and no `relates_to` edges are neither allies nor enemies.
 
 ---
 
