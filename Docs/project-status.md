@@ -18,6 +18,9 @@
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
 
+## Recent Completions (2026-04-19) — THR-119
+- **THR-119 — Wire partial_progress complication to advance step progress:** Removed stale `_complicationPartialProgress` actor-node property write in `complicationEffects.ts`. Added consumer in `executeStepResult` that reads `fraction` directly from `ComplicationResult.effects` and applies `floor(fraction * stepDuration)` ticks as head-start on the next step's `stepProgress` (capped at `stepDuration - 1`). Emits `complication_partial_progress` trace. 1 regression test.
+
 ## Recent Completions (2026-04-19) — THR-81
 - **THR-81 — Wire omenEncounterBias into scoring traces:** The bias was already computed and passed to `scoreAndSelect()`. Added `identityBiasBonus: number` to `ScoredCandidate` and `ScoringTrace.topCandidates` so the per-candidate omen+doom bias contribution is inspectable in traces (NFP #2). 3 tests asserting bias shifts `finalScore` by the correct additive delta.
 
