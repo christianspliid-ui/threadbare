@@ -333,9 +333,9 @@ Every system should emit traces for inspectability (NFP #2). A trace category th
 
 ### 5. DebugPanel Tabs (`src/components/Game/DebugPanel.tsx`)
 
-Current ViewMode values: `feed`, `agent-follow`, `tick-inspector`, `social`, `encounters`, `journey`, `webgl`
+Current ViewMode values: `feed`, `agent-follow`, `tick-inspector`, `social`, `encounters`, `encounter-seeds`, `hidden-marks`, `journey`, `webgl`, `factions`, `spheres`, `revelation-log`, `knowledge-gaps`, `armies`, `cli`, `strategic`, `omens`, `cultures`
 
-Sub-components: `DecisionBreakdown`, `RelationshipGraph`, `EncounterCacheView`, `WebGLDebugTab`
+Sub-components: `DecisionBreakdown`, `RelationshipGraph`, `EncounterCacheView`, `WebGLDebugTab`, `HiddenMarksTab`, `EncounterSeedsTab`, `CulturePhoneticsInspector`
 
 **Verification:** If your feature adds significant inspectable state (journey progress, encounter notifications, prose enrichment context), decide whether it warrants a new DebugPanel tab or extension to an existing one.
 
