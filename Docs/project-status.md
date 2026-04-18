@@ -18,6 +18,9 @@
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
 
+## Recent Completions (2026-04-19) — THR-122
+- **THR-122 — THR-21 deferrals (death-site spirit pressure, returnEngine doom prose, trust-decay amplifier):** `phaseProsperity` emits `SpherePressureEvent{sphere:'spirit'}` for death-site locations when `IdentityLocationPressure.deathSiteSpiritPressure` is set (Reckoning matrix, `RECKONING_DEATH_SITE_SPIRIT_PRESSURE=2`). `returnEngine.ts` threads `DoomIdentityMatrix` into `getReturnProse`/`applyRippleConsequences` so `{doom_verb}/{doom_adj}/{doom_atmosphere}` placeholders resolve in return prose. `complicationEffects.ts` amplifies `trust_decay` magnitude by `IDENTITY_TRUST_DECAY_MODIFIER` (1.2×) when doom identity active. 6 new tests.
+
 ## Recent Completions (2026-04-19) — THR-121
 - **THR-121 — Add agentAwareness to RivalState + wire rival_awareness complication effect:** Added `agentAwareness?: Partial<Record<string, number>>` to `RivalState`. Added `RIVAL_AWARENESS_HOSTILITY_WEIGHT = 0.2` to `sphereAffinity.ts`. Moved `rival_awareness` handling to actor-independent section of `applyEffect` (removes silent no-op cast). `phaseRivalActions` computes max agentAwareness and adds it × weight to effective hostility for action selection. 3 new tests.
 

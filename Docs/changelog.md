@@ -4,6 +4,8 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
 ### Recent Changes
 
+| 2026-04-19 | src/types/doomIdentity.ts, src/data/doom-identity-matrices.ts, src/engine/phaseProsperity.ts, src/engine/complicationEffects.ts, src/engine/returnEngine.ts, src/engine/__tests__/phaseProsperity.test.ts, src/engine/__tests__/complicationSelection.test.ts | THR-122: death-site spirit pressure, returnEngine doom prose, trust-decay amplifier. phaseProsperity emits SpherePressureEvent for death-site locations (Reckoning). returnEngine threads DoomIdentityMatrix so doom placeholders resolve. trust_decay amplified 1.2× when doom identity active. 6 tests. |
+
 | 2026-04-19 | src/types/rival.ts, src/types/sphereAffinity.ts, src/engine/complicationEffects.ts, src/engine/orchestrator.ts, src/engine/__tests__/complicationSelection.test.ts | THR-121: agentAwareness field + rival_awareness complication wired. Added agentAwareness to RivalState; RIVAL_AWARENESS_HOSTILITY_WEIGHT constant; moved rival_awareness to actor-independent section of applyEffect; phaseRivalActions boosts effective hostility by max agentAwareness × weight. 3 new tests. |
 
 | 2026-04-19 | src/types/worldSoul.ts, src/engine/complicationEffects.ts, src/engine/phaseOmenAgenda.ts, src/engine/__tests__/complicationSelection.test.ts, src/engine/__tests__/phaseOmenAgenda.test.ts | THR-120: spherePressures field + sphere_pressure complication wired to omen bias. Added spherePressures to WorldSoulState; moved sphere_pressure case before actorNode guard; SPHERE_PRESSURE_OMEN_BIAS_WEIGHT constant + getSphereDominance() blends pressures into apparent sphere dominance. 6 new tests. |
