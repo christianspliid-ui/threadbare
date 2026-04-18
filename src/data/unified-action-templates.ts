@@ -56,6 +56,11 @@ import { ROAD_AMBUSH_TEMPLATE } from './encounters/road-ambush';
 import { COURTYARD_DUEL_TEMPLATE } from './encounters/the-courtyard-duel';
 import { BRINK_RESCUE_TEMPLATE } from './encounters/the-brink-rescue';
 import { LETTERS_OF_INTRODUCTION_TEMPLATE } from './encounters/the-letters-of-introduction';
+import { WARLORDS_TRIBUTE_TEMPLATE } from './encounters/warlords-tribute';
+import { SHADOW_COURT_AUDIENCE_TEMPLATE } from './encounters/shadow-court-audience';
+import { PILGRIMS_OFFERING_TEMPLATE } from './encounters/pilgrims-offering';
+import { VEILED_CONSULTATION_TEMPLATE } from './encounters/the-veiled-consultation';
+import { THE_STONES_JUDGEMENT_TEMPLATE } from './encounters/the-stones-judgement';
 
 // ─── Migration: ActionTemplateData → UnifiedActionTemplate ─────────
 
@@ -3496,6 +3501,12 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   COURTYARD_DUEL_TEMPLATE,
   BRINK_RESCUE_TEMPLATE,
   LETTERS_OF_INTRODUCTION_TEMPLATE,
+  // Reputation-gated encounters — THR-32 first tranche
+  WARLORDS_TRIBUTE_TEMPLATE,
+  SHADOW_COURT_AUDIENCE_TEMPLATE,
+  PILGRIMS_OFFERING_TEMPLATE,
+  VEILED_CONSULTATION_TEMPLATE,
+  THE_STONES_JUDGEMENT_TEMPLATE,
 ];
 
 /**
