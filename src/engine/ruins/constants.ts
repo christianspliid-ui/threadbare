@@ -3,6 +3,8 @@
  * All magic numbers live here — changing game feel = changing a number.
  */
 
+import type { AttentionTier } from '../../types/attention';
+
 // ── Clue decay ───────────────────────────────────────────────────────────────
 
 /** TTL in ticks for vague-precision clues */
@@ -62,11 +64,15 @@ export const MAX_MINOR_DELVES_CONCURRENT = 3;
 export const DELVE_ADMISSION_RETRY_INTERVAL = 5;
 /** Max ticks a delve can sit queued before abandonment */
 export const DELVE_ADMISSION_EXPIRY_TICKS = 40;
-/** Ticks per beat for minor delves (2-beat compressed arc) */
+/**
+ * Ticks per beat for minor delves (2-beat compressed arc).
+ * Both minor and major are 1 tick/beat — they differ in arc *length* (2 vs 5 beats),
+ * not beat duration. Only saga beats are extended (2 ticks each).
+ */
 export const DELVE_BEAT_DURATION_MINOR = 1;
-/** Ticks per beat for major delves (5-beat arc) */
+/** Ticks per beat for major delves (5-beat arc). Equal to minor by design — see comment above. */
 export const DELVE_BEAT_DURATION_MAJOR = 1;
-/** Ticks per beat for saga delves (5-beat extended arc) */
+/** Ticks per beat for saga delves (5-beat extended arc — 10 ticks total) */
 export const DELVE_BEAT_DURATION_SAGA = 2;
 
 // ── Delve consequence roll weights ───────────────────────────────────────────
@@ -116,9 +122,15 @@ export const RUIN_DENSITY_CAPITAL = 0.35;
 export const RUIN_MAX_PER_HEX_STANDARD = 1;
 /** Max ruins per capital hex */
 export const RUIN_MAX_PER_HEX_CAPITAL = 3;
-/** Upper bound of ruinMagnitude for minor-scale ruins */
+/** Upper bound of ruinMagnitude for minor-scale ruins (inclusive: <= 0.33 → minor) */
 export const RUIN_MAGNITUDE_MINOR_MAX = 0.33;
-/** Upper bound of ruinMagnitude for major-scale ruins */
+/**
+ * Upper bound of ruinMagnitude for major-scale ruins (inclusive: <= 0.66 → major).
+ * Note: the range (0.66, 0.67) is a deliberate gap matching the v1.1 design doc table
+ * (major: 0.34–0.66, saga: 0.67–1.0). Worldgen assigns magnitudes at 2-decimal precision,
+ * so no ruin ever lands in this gap in practice. For runtime tier gates, use
+ * SAGA_MAGNITUDE_THRESHOLD as the authoritative saga boundary.
+ */
 export const RUIN_MAGNITUDE_MAJOR_MAX = 0.66;
 /** Additional magnitude weight for ruins originating from culture capitals */
 export const RUIN_SAGA_CAPITAL_BIAS = 0.4;
@@ -132,7 +144,7 @@ export const SAGA_RUIN_PROXIMITY_HEXES = 3;
 /** ruinMagnitude at or above which saga-tier rules apply */
 export const SAGA_MAGNITUDE_THRESHOLD = 0.67;
 /** Minimum AttentionTier a candidate must meet to receive a saga clue */
-export const SAGA_CLUE_MIN_TIER = 'shaping' as const;
+export const SAGA_CLUE_MIN_TIER: AttentionTier = 'shaping';
 
 // ── Faction dossier propagation ───────────────────────────────────────────────
 
