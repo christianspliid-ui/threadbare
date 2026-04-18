@@ -4,6 +4,8 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
 ### Recent Changes
 
+| 2026-04-19 | src/engine/encounterScoring.ts, src/types/trace.ts, src/engine/__tests__/encounterScoring.test.ts | THR-81: identityBiasBonus exposed in ScoredCandidate + ScoringTrace.topCandidates. Omen+doom bias was already wired in phaseAgentDecision.ts; this closes the NFP #2 gap so per-candidate bias is inspectable in scoring traces. 3 tests for additive delta, negative bias, empty bias. |
+
 | 2026-04-19 | src/components/icons/constants.ts, src/components/icons/SphereIcon.tsx, src/components/shared/SphereIcon.tsx, src/components/shared/index.ts, src/components/StyleGuide/StyleGuide.tsx | THR-172: SphereIcon variant prop + sphereFromReach helper. SPHERE_COLORS_BASE (base hex values). icons/SphereIcon: variant='base'|'bright', CSS var fill. shared/SphereIcon: sphere alias prop, variant pass-through. sphereFromReach(reach) exported from icons and shared barrels. StyleGuide: 12-sphere base/bright grid. |
 
 | 2026-04-19 | src/engine/gameInit.ts, src/components/Game/hooks/useSimulation.ts | THR-183: Vara/Witness ascendant bar test seed. devSeedAscendantTestPackage() populates ?seeded path with quintessence 0.45 (Rooted), mandateState.progress 0.67 (Kindling), 12-sphere essencePool (mind/spirit active, life/time/entropy/darkness faintly-active, others inactive), 4 conditions via has_trait (Veiled/Thornmarked/Unforgotten/Cold of Eye with valence tags), 3 clue traits (subcategory 'clue'), and 4 relates_to agreement edges (Pact/Oath/Debt/Bound with counterparty nodes). DEV_ASCENDANT_IDENTITY.mortalName/divineName updated to 'Vara', mandateDirection updated to Sun-Oath text. |

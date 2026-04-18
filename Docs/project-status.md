@@ -18,6 +18,9 @@
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
 
+## Recent Completions (2026-04-19) — THR-81
+- **THR-81 — Wire omenEncounterBias into scoring traces:** The bias was already computed and passed to `scoreAndSelect()`. Added `identityBiasBonus: number` to `ScoredCandidate` and `ScoringTrace.topCandidates` so the per-candidate omen+doom bias contribution is inspectable in traces (NFP #2). 3 tests asserting bias shifts `finalScore` by the correct additive delta.
+
 ## Recent Completions (2026-04-19) — THR-172
 - **THR-172 — SphereIcon variant + sphereFromReach helper:** `SPHERE_COLORS_BASE` map (base-tier hex values matching CSS `--sphere-*` tokens). `sphereFromReach(reach)` exported from `icons/constants`, `icons/index`, and `shared/index`. `icons/SphereIcon`: `variant` prop (`'base'|'bright'`), SVG fill uses `var(--sphere-<name>[-bright])` with hex fallback. `shared/SphereIcon`: `sphere` alias alongside legacy `sphereName`, `variant` pass-through. StyleGuide: base/bright 12-sphere grid.
 
