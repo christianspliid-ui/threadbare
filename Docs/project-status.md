@@ -1,5 +1,5 @@
 # Project Status
-> Updated 2026-04-18.
+> Updated 2026-04-19.
 ## Current Focus
 **Encounter Format Migration — Phase 4 Builders Fellowship complete, remaining guilds next.** 115 legacy EncounterTemplates migrating to UnifiedActionTemplate. Phase 0 engine prerequisites shipped (THR-110–118). Phase 1 TG (THR-89) + Phase 2 AC (THR-91) + Phase 3 CG (THR-92) + Phase 4 BF (THR-93) complete. Reputation polarity tagging complete (THR-33). Design doc: `Docs/plans/2026-04-16-encounter-template-migration.md`.
 
@@ -16,6 +16,9 @@
 - **Procedural Hex Vignettes (Next):** Phases 2-5 queued.
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
+
+## Recent Completions (2026-04-19)
+- **THR-150 — Ruins Layer PR 2 (clue lifecycle + Narrative Gravity):** `src/engine/ruins/clueLifecycle.ts` — `selectClueRecipient` (6-channel Narrative Gravity weighted-random, saga tier floor, score breakdown traces), `produceClueConsequence`, `consumeCluesOnConvergence` (prune → `knows_of` familiarity edges), `spawnClueFromEvent` (aftermath hook), `phaseClueDecay` (Phase 6.654, TTL-based knows_clue_of expiry), `findAnyRuinId` (dynamic `$nearest_ruin` resolution). `spawn_clue` aftermath effect kind added to `unifiedAction.ts` + handled in `encounterAftermath.ts`. Phase 6.654 wired in orchestrator after phaseSecretsFavors. 5 encounter templates seeded with spawn_clue hooks (oracle-consulted, silent-chamber, infiltrators-approach, veiled-consultation, blinded-oracle). CluesDebugTab added to DebugPanel. `knows_clue_of` + `knows_of` registered in edgeSchema. 11 tests including 1000-trial Kael/Mira worked example (193.0:14.0 ≈ 93%:7%).
 
 ## Recent Completions (2026-04-18)
 - **THR-149 — Ruins Layer PR 1 (foundation):** 16 `ruins.*` trace categories registered in `src/types/trace.ts`. `knows_clue_of` edge type added to `src/types/graph.ts`. New `src/types/knowledge.ts`: `ClueSource`, `CluePrecision`, `KnowsClueOfEdgeProperties`. `'elder_ruin'` + `'place_of_power'` added to `LocationSubtype`. New `src/engine/ruins/constants.ts`: 56 named constants (clue decay/bias/spawn, delve concurrency/consequence/beat, PoP streams, worldgen density, Narrative Gravity tier gates). Foundation-only — no tick-phase wiring. Codex review: beat-duration comment, magnitude-gap comment, `SAGA_CLUE_MIN_TIER: AttentionTier` typing. Downstream PRs THR-150–156 unblocked.
