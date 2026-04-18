@@ -2,7 +2,7 @@
 
 > **Living document.** Every design plan must include a wiring section that maps new modules to entries on this checklist. Every implementation must verify all listed connections before marking work complete. Maintaining this checklist is part of the Definition of Done for both design and implementation phases.
 >
-> **Last updated:** 2026-04-18 (THR-30 — Secrets & Favors graph edges, phaseSecretsFavors, GraphOps, leverage UI)
+> **Last updated:** 2026-04-19 (THR-155 — Dual-voice chronicle: ChronicleEntryCard + ChroniclePanel wired in GameView sidebar)
 
 ---
 
@@ -344,6 +344,8 @@ Every player-facing modal or overlay must appear in the GameView JSX return bloc
 | `HexBreadcrumb` | Hex zoom breadcrumb |
 | `HexSidebar` | Hex detail sidebar |
 | `HexChronicle` | Hex event chronicle |
+| `ChroniclePanel` | Dual-voice chronicle display with Poet/Witness/Both toggle; wired in right sidebar when `chronicleEntries.length > 0` (THR-155) |
+| `ChronicleEntryCard` | Per-entry render of `poetProse` + `witnessFacts`; migration shim treats legacy `prose` as witness bullet (THR-155) |
 | `LocationView` | Location detail view |
 | `FactionSheet` | Faction network, leadership, holdings, and faction-targeted action surface |
 | `ActionDrawer` (×2) | Agent & non-agent intervention |

@@ -138,7 +138,12 @@ export interface ChronicleEntry {
   id: string;
   tier: 'chronicle';
   title: string;
+  /** Legacy single-voice prose. Migration shim: treated as Witness voice when poetProse is absent. */
   prose: string;
+  /** Poet's Voice — emotional/narrative surface (display serif, italic). */
+  poetProse?: string;
+  /** Witness's Voice — mechanical facts as bullet strings (body sans-serif). */
+  witnessFacts?: string[];
   promptContext: {
     actors: string[];
     location: string;

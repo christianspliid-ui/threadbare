@@ -89,6 +89,7 @@ import { getEncounterCacheManager } from '../../engine/orchestrator';
 import { getLatestEncounterDecisionForAgent, getLatestEncounterDecisionsByAgent } from '../../engine/balanceTelemetry';
 import { AvatarHUD } from './AvatarHUD';
 import { WorldPulse } from './WorldPulse';
+import { ChroniclePanel } from './ChroniclePanel';
 import { ToastStack } from './ToastStack';
 import { AlertBar } from './AlertBar';
 import { useNotificationNavigation } from './hooks/useNotificationNavigation';
@@ -3137,6 +3138,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                     onSpeedChange={setSpeed}
                   />
                 </div>
+                {gameState.chronicleEntries.length > 0 && (
+                  <div style={{ marginTop: 'var(--panel-padding)' }}>
+                    <ChroniclePanel entries={gameState.chronicleEntries} />
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -1002,11 +1002,16 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
               actorId: actorNodeForRarity.id,
               notification: { channel: 'toast' as const },
             });
+            const poetProse = graduationTier >= 4
+              ? `The weave folds around ${nodeName} like water around a stone that has always been there. What was mortal has become something else entirely.`
+              : `The name ${nodeName} is spoken differently now — with something between reverence and quiet dread.`;
             graduationChronicles.push({
               id: `rarity-grad-${actorNodeForRarity.id}-${state.tick}`,
               tier: 'chronicle',
               title: message,
               prose: message,
+              poetProse,
+              witnessFacts: [message],
               promptContext: {
                 actors: [actorNodeForRarity.id],
                 location: '',
@@ -1072,11 +1077,16 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
                 actorId: targetNode.id,
                 notification: { channel: 'toast' as const },
               });
+              const targetPoetProse = targetGradTier >= 4
+                ? `The weave folds around ${targetName} like water around a stone that has always been there. What was mortal has become something else entirely.`
+                : `The name ${targetName} is spoken differently now — with something between reverence and quiet dread.`;
               graduationChronicles.push({
                 id: `rarity-grad-${targetNode.id}-${state.tick}`,
                 tier: 'chronicle',
                 title: message,
                 prose: message,
+                poetProse: targetPoetProse,
+                witnessFacts: [message],
                 promptContext: {
                   actors: [targetNode.id],
                   location: '',
@@ -1513,6 +1523,7 @@ export function phaseNarrative(state: GameState): Partial<GameState> {
         tier: 'chronicle',
         title: event.message.slice(0, 50),
         prose: event.message,
+        witnessFacts: [event.message],
         promptContext: {
           actors: context.contextObjects
             .filter(co => co.category === 'character')
