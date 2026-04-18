@@ -3,6 +3,8 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ THR-173 (2026-04-18) — ThreadsPanel visual rewrite: ThreadPortrait SVG, sphere-colored left border, AutoToggle, SphereIcon+ActivityIcon; 16 tests pass
+✅ THR-31 (2026-04-18) — Faction content migration Phase 2: all 10 factions in UnifiedActionTemplate; lifecycle shape fixes; factionQuestGeneration unifiedToEncounterTemplate fallback; 550 voice lint tests
 ✅ THR-127 (2026-04-19) — Living World summary bar: LiveLocationBar.tsx; top-3 non-quiet locations by pulse severity; rotation pool (9 entries, 3 per page); click → camera center; dismiss button; 10 tests
 
 ✅ THR-128 (2026-04-19) — Omen vocab injection into murmur prose: getOmenTemplateById in selectMurmurs; deterministic adj+atm picks; {omen_adj}/{omen_atmosphere} placeholder replacement; 0.4-probability atmosphere suffix; 6 tests
