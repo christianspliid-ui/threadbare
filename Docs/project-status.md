@@ -18,6 +18,7 @@
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
 
 ## Recent Completions (2026-04-19)
+- **THR-166 — Register craftsmanship reputation axis for BF (deferral from THR-93):** Renamed all 17 `bf.craft_work`/`bf.construction_work`/`bf.fellowship_work`/`bf.master_craft` tally keys to `stone.positive` in `builders-fellowship-encounter-content.ts`. Delta values preserved. Removed v1-substitution header comment. Added regression test to `phaseReputationTraits.test.ts` asserting BF tallies promote to Steadfast Builder at Level 1.
 - **THR-150 — Ruins Layer PR 2 (clue lifecycle + Narrative Gravity):** `src/engine/ruins/clueLifecycle.ts` — `selectClueRecipient` (6-channel Narrative Gravity weighted-random, saga tier floor, score breakdown traces), `produceClueConsequence`, `consumeCluesOnConvergence` (prune → `knows_of` familiarity edges), `spawnClueFromEvent` (aftermath hook), `phaseClueDecay` (Phase 6.654, TTL-based knows_clue_of expiry), `findAnyRuinId` (dynamic `$nearest_ruin` resolution). `spawn_clue` aftermath effect kind added to `unifiedAction.ts` + handled in `encounterAftermath.ts`. Phase 6.654 wired in orchestrator after phaseSecretsFavors. 5 encounter templates seeded with spawn_clue hooks (oracle-consulted, silent-chamber, infiltrators-approach, veiled-consultation, blinded-oracle). CluesDebugTab added to DebugPanel. `knows_clue_of` + `knows_of` registered in edgeSchema. 11 tests including 1000-trial Kael/Mira worked example (193.0:14.0 ≈ 93%:7%).
 
 ## Recent Completions (2026-04-18)
