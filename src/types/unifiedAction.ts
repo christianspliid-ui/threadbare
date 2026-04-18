@@ -443,6 +443,21 @@ export type EncounterAftermathReactionEffect =
     readonly magnitudeRange: [number, number];
     readonly context: string;
     readonly when?: EffectPredicate;
+  }
+  // ─── Faction standing effects (THR-167) ──────────────────────────────────
+  | {
+    /**
+     * Grow (or reduce) an agent's standing within a specific faction by calling
+     * applyFactionReputationGain. This is the type-safe way for content authors
+     * to advance rank as an encounter aftermath — preferred over reputation_tally
+     * with off-axis keys.
+     */
+    readonly kind: 'faction_reputation_gain';
+    /** The faction node ID (e.g. 'faction.civic-guard'). */
+    readonly factionId: string;
+    /** Reputation delta. Applied as-is; clamped to [-1.0, +1.0] at runtime. */
+    readonly amount: number;
+    readonly when?: EffectPredicate;
   };
 
 export interface PendingEncounterSeed {

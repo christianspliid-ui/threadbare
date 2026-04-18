@@ -503,12 +503,12 @@ describe('reputation_tally faction target', () => {
     const action = makeAction();
     const reaction: EncounterAftermathReaction = {
       id: 'rx.tally_faction', label: 'test', closeAfterSelection: true,
-      effects: [{ kind: 'reputation_tally', targetFactionId: 'faction-guild', key: 'goodwill', delta: 2 }],
+      effects: [{ kind: 'reputation_tally', targetFactionId: 'faction-guild', key: 'iron.positive', delta: 2 }],
     };
     applyEncounterAftermathReaction(state, action, reaction, 10, runtime);
     const faction = state.graph.getNode('faction-guild');
     const tallies = faction?.properties?.reputationTallies as Record<string, number> | undefined;
-    expect(tallies?.goodwill).toBe(2);
+    expect(tallies?.['iron.positive']).toBe(2);
     const factionTrace = getTraces().find(t => t.category === 'faction_reputation_changed');
     expect(factionTrace).toBeDefined();
     if (factionTrace?.category === 'faction_reputation_changed') {

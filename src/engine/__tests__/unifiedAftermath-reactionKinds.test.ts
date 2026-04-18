@@ -117,7 +117,7 @@ describe('unifiedAftermath — all 7 effect kinds (THR-90)', () => {
         // 1. reputation_score
         { kind: 'reputation_score', delta: 0.05 },
         // 2. reputation_tally
-        { kind: 'reputation_tally', key: 'thr90.tally', delta: 1 },
+        { kind: 'reputation_tally', key: 'shadow.positive', delta: 1 },
         // 3. clearance_gate_tag (valid runtimeId in state)
         { kind: 'clearance_gate_tag', runtimeId: 'gate-thr90', tag: '#verified' },
         // 4. recent_event

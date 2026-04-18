@@ -43,6 +43,8 @@ import type { ArtifactTier, FactionMemberSelection } from '../types/unifiedActio
 import { mulberry32 } from '../lib/prng';
 import { generateSecret, createSecretEdge, createFavorEdge } from './secretGeneration';
 import { spawnClueFromEvent, findAnyRuinId } from './ruins/clueLifecycle';
+import { applyFactionReputationGain } from './factionReputation';
+import { REACH_DOMAINS } from '../types/traits';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -55,11 +57,43 @@ export const CONDITION_DEFAULT_INTENSITY = 0.5;
 /** Default durationTicks on apply_condition when omitted. 0 = indefinite (no auto-expiry). */
 export const CONDITION_DEFAULT_DURATION_TICKS = 0;
 
+/** Max aftermath_invalid_tally_key traces emitted per tick before rate-limiting. */
+export const INVALID_TALLY_KEY_TRACE_RATE_LIMIT = 50;
+
+/** Clamp applied to faction_reputation_gain effect amounts. */
+export const FACTION_REPUTATION_GAIN_AMOUNT_CLAMP = 1.0;
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function clamp01(value: number): number {
   return Math.max(0, Math.min(1, value));
 }
+
+// Valid reach-polarity tally keys — built once at module load.
+const VALID_TALLY_KEYS = new Set<string>(
+  REACH_DOMAINS.flatMap(d => [`${d}.positive`, `${d}.negative`]),
+);
+
+function isValidReputationTallyKey(k: string): boolean {
+  return VALID_TALLY_KEYS.has(k);
+}
+
+// Curated hint map for known off-axis keys — author guidance only, not a fallback write.
+const SUGGESTED_TALLY_REPLACEMENT: Readonly<Record<string, string>> = {
+  'bf.craft_work':       'faction_reputation_gain → faction.builders-fellowship',
+  'bf.construction_work':'faction_reputation_gain → faction.builders-fellowship',
+  'bf.fellowship_work':  'faction_reputation_gain → faction.builders-fellowship',
+  'bf.master_craft':     'faction_reputation_gain → faction.builders-fellowship',
+  'cg.watch_work':       'faction_reputation_gain → faction.civic-guard',
+  'cg.checkpoint_work':  'faction_reputation_gain → faction.civic-guard',
+  'cg.senior_work':      'faction_reputation_gain → faction.civic-guard',
+  'gate_duty.witness_story_followed': 'hearth.positive',
+  'gate_duty.captain_marked':         'faction_reputation_gain → faction.civic-guard',
+  'gate_duty.left_to_settle':         'hidden_mark (settlement_history)',
+};
+
+// Per-tick rate limiter for aftermath_invalid_tally_key traces.
+let _invalidTallyRateLimit = { tick: -1, count: 0 };
 
 export function appendRecentEvent(
   existing: readonly TickEvent[],
@@ -374,6 +408,28 @@ export function applyEncounterAftermathReaction(
           });
           break;
         }
+        if (!isValidReputationTallyKey(effect.key)) {
+          if (_invalidTallyRateLimit.tick !== tick) {
+            _invalidTallyRateLimit = { tick, count: 0 };
+          }
+          if (_invalidTallyRateLimit.count < INVALID_TALLY_KEY_TRACE_RATE_LIMIT) {
+            _invalidTallyRateLimit.count++;
+            emitTrace({
+              tick, category: 'aftermath_invalid_tally_key', agentId: actorAgentId,
+              encounterId, actionId, reactionId: reaction.id,
+              key: effect.key,
+              suggestedReplacement: SUGGESTED_TALLY_REPLACEMENT[effect.key],
+              summary: `invalid tally key '${effect.key}' in ${encounterId}: not a ${REACH_DOMAINS.join('|')}.positive|negative key`,
+            } as unknown as Parameters<typeof emitTrace>[0]);
+          } else if (_invalidTallyRateLimit.count === INVALID_TALLY_KEY_TRACE_RATE_LIMIT) {
+            _invalidTallyRateLimit.count++;
+            emitTrace({
+              tick, category: 'aftermath_invalid_tally_key_rate_limited',
+              summary: `aftermath_invalid_tally_key: rate limit (${INVALID_TALLY_KEY_TRACE_RATE_LIMIT}/tick) reached at tick ${tick}`,
+            } as unknown as Parameters<typeof emitTrace>[0]);
+          }
+          break;
+        }
         const tallies = {
           ...((node.properties?.reputationTallies as Record<string, number> | undefined) ?? {}),
         };
@@ -397,6 +453,59 @@ export function applyEncounterAftermathReaction(
           effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
           summary: `reputation_tally[${i}]: ${resolvedId} [${effect.key}] ${effect.delta >= 0 ? '+' : ''}${effect.delta}`,
         });
+        break;
+      }
+
+      case 'faction_reputation_gain': {
+        if (!actorAgentId) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'faction_reputation_gain',
+            effectDetail: { factionId: effect.factionId, amount: effect.amount },
+            success: false, failReason: 'no_actor_id',
+            effectiveTargetId: '', effectiveTargetKind: 'actor_fallback',
+            summary: `faction_reputation_gain[${i}] skipped: no actorId`,
+          } as unknown as Parameters<typeof emitTrace>[0]);
+          break;
+        }
+        if (!state.graph.getNode(effect.factionId)) {
+          emitTrace({
+            tick, category: 'faction_reputation_gain_error', agentId: actorAgentId,
+            factionId: effect.factionId, encounterId,
+            summary: `faction_reputation_gain[${i}]: faction '${effect.factionId}' not found`,
+          } as unknown as Parameters<typeof emitTrace>[0]);
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'faction_reputation_gain',
+            effectDetail: { factionId: effect.factionId, amount: effect.amount },
+            success: false, failReason: 'faction_not_found',
+            effectiveTargetId: effect.factionId, effectiveTargetKind: 'faction',
+            summary: `faction_reputation_gain[${i}] skipped: faction '${effect.factionId}' not found`,
+          } as unknown as Parameters<typeof emitTrace>[0]);
+          break;
+        }
+        const rawAmount = isNaN(effect.amount) ? 0 : effect.amount;
+        const clampedAmount = Math.max(-FACTION_REPUTATION_GAIN_AMOUNT_CLAMP, Math.min(FACTION_REPUTATION_GAIN_AMOUNT_CLAMP, rawAmount));
+        const result = applyFactionReputationGain(
+          state.graph, actorAgentId, effect.factionId, clampedAmount, tick, 'encounter_aftermath',
+        );
+        // "not a member" sentinel — skip silently per plan doc fail-soft table
+        if (result.newRank === 'none') break;
+        mutationSummary.touchedWorld = true;
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'faction_reputation_gain',
+          effectDetail: {
+            factionId: effect.factionId, amount: clampedAmount,
+            newReputation: result.newReputation, rankChanged: result.rankChanged, newRank: result.newRank,
+          },
+          success: true,
+          effectiveTargetId: effect.factionId, effectiveTargetKind: 'faction',
+          summary: `faction_reputation_gain[${i}]: ${actorAgentId} in ${effect.factionId} ${clampedAmount >= 0 ? '+' : ''}${clampedAmount.toFixed(3)}${result.rankChanged ? ` → rank ${result.newRank}` : ''}`,
+        } as unknown as Parameters<typeof emitTrace>[0]);
         break;
       }
 

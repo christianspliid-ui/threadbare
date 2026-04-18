@@ -4,6 +4,8 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
 ### Recent Changes
 
+| 2026-04-19 | src/types/unifiedAction.ts, src/types/faction.ts, src/engine/encounterAftermath.ts, src/engine/__tests__/aftermathFactionReputation.test.ts | THR-167: faction_reputation_gain effect kind + tally key validation. Adds faction_reputation_gain to EncounterAftermathReactionEffect (calls applyFactionReputationGain; fail-soft on missing member). Tally key validation blocks off-axis writes, emits aftermath_invalid_tally_key trace with suggestedReplacement hint, rate-limited 50/tick. 5 new tests; 4 existing tests migrated to valid keys. |
+
 | 2026-04-19 | src/types/doomIdentity.ts, src/data/doom-identity-matrices.ts, src/engine/phaseProsperity.ts, src/engine/complicationEffects.ts, src/engine/returnEngine.ts, src/engine/__tests__/phaseProsperity.test.ts, src/engine/__tests__/complicationSelection.test.ts | THR-122: death-site spirit pressure, returnEngine doom prose, trust-decay amplifier. phaseProsperity emits SpherePressureEvent for death-site locations (Reckoning). returnEngine threads DoomIdentityMatrix so doom placeholders resolve. trust_decay amplified 1.2× when doom identity active. 6 tests. |
 
 | 2026-04-19 | src/types/rival.ts, src/types/sphereAffinity.ts, src/engine/complicationEffects.ts, src/engine/orchestrator.ts, src/engine/__tests__/complicationSelection.test.ts | THR-121: agentAwareness field + rival_awareness complication wired. Added agentAwareness to RivalState; RIVAL_AWARENESS_HOSTILITY_WEIGHT constant; moved rival_awareness to actor-independent section of applyEffect; phaseRivalActions boosts effective hostility by max agentAwareness × weight. 3 new tests. |

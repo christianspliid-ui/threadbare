@@ -117,7 +117,7 @@ describe('applyEncounterAftermathReaction — trace emission (THR-111)', () => {
       label: 'Multi-effect',
       effects: [
         { kind: 'reputation_score', delta: 0.02 },
-        { kind: 'reputation_tally', key: 'test.tally', delta: 1 },
+        { kind: 'reputation_tally', key: 'heart.positive', delta: 1 },
         {
           kind: 'recent_event',
           eventType: 'ripple_consequence',
@@ -342,7 +342,7 @@ describe('applyEncounterAftermathReaction', () => {
       label: "Follow the witness's telling",
       effects: [
         { kind: 'reputation_score', delta: 0.03 },
-        { kind: 'reputation_tally', key: 'gate_duty.witness_story_followed', delta: 1 },
+        { kind: 'reputation_tally', key: 'heart.positive', delta: 1 },
         { kind: 'clearance_gate_tag', tag: '#witness_story_followed' },
         {
           kind: 'recent_event',
@@ -357,7 +357,7 @@ describe('applyEncounterAftermathReaction', () => {
     const { state: updated } = applyEncounterAftermathReaction(state, action, reaction, 20, runtime);
     const actor = updated.graph.getNode('actor-1');
     expect((actor?.properties?.reputationScore as number | undefined) ?? 0).toBeGreaterThan(0);
-    expect((actor?.properties?.reputationTallies as Record<string, number>)['gate_duty.witness_story_followed']).toBe(1);
+    expect((actor?.properties?.reputationTallies as Record<string, number>)['heart.positive']).toBe(1);
     expect(updated.clearanceGateStates?.get('gate-1')?.followOnTags).toContain('#witness_story_followed');
     expect(updated.recentEvents.at(-1)?.message).toContain('witness');
     expect(updated.tickEvents.at(-1)?.type).toBe('ripple_consequence');

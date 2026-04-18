@@ -3,6 +3,8 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ THR-167 (2026-04-19) — Close dead-tally loophole: `faction_reputation_gain` aftermath effect kind; tally key validation (off-axis keys blocked + `aftermath_invalid_tally_key` trace with hint); 4 existing tests migrated to valid reach-polarity keys; 5 new tests.
+
 ✅ THR-120 (2026-04-19) — spherePressures field + sphere_pressure complication wired to phaseOmenAgenda bias
 
 ✅ **THR-119 (2026-04-19)** — Wire partial_progress complication: removed stale actor-node property write; consumer in executeStepResult applies fraction-based head-start to next step's stepProgress; complication_partial_progress trace; 1 regression test.
