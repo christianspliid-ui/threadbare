@@ -658,6 +658,8 @@ export interface ScoringTrace extends TraceBase {
     pushBenefit?: number;
     /** Phase 4: Resist benefit estimate (downgrade protection) */
     resistBenefit?: number;
+    /** Doom identity + omen bias applied for this encounter type (THR-81) */
+    identityBiasBonus?: number;
   }>;
   selectedTemplateId: string | null;
   selectedLocationId: string | null;

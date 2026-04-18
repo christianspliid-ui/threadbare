@@ -1205,3 +1205,57 @@ describe('agentPursuesReach', () => {
     expect(agentPursuesReach(graph, 'nonexistent', 'iron')).toBe(false);
   });
 });
+
+// ─── encounterTypeBias (THR-81) ──────────────────────────────────
+
+describe('encounterTypeBias', () => {
+  it('boosts score for matching encounter type by the bias amount', () => {
+    const graph = buildTestGraph({});
+    const duelEntry = makeEntry({ templateId: 'duel_tmpl', encounterType: 'duel' as any });
+    const tradeEntry = makeEntry({ templateId: 'trade_tmpl', encounterType: 'trade' as any });
+
+    const noBias = scoreAndSelect([duelEntry, tradeEntry], 'agent_1', 'loc_a', graph, 1);
+    const withBias = scoreAndSelect(
+      [duelEntry, tradeEntry], 'agent_1', 'loc_a', graph, 1,
+      undefined, undefined, undefined, { duel: 0.3 },
+    );
+
+    const noBiasDuel = noBias.rankedCandidates.find(c => c.entry.templateId === 'duel_tmpl')!;
+    const withBiasDuel = withBias.rankedCandidates.find(c => c.entry.templateId === 'duel_tmpl')!;
+    const noBiasTrade = noBias.rankedCandidates.find(c => c.entry.templateId === 'trade_tmpl')!;
+    const withBiasTrade = withBias.rankedCandidates.find(c => c.entry.templateId === 'trade_tmpl')!;
+
+    expect(withBiasDuel.finalScore - noBiasDuel.finalScore).toBeCloseTo(0.3);
+    expect(withBiasDuel.identityBiasBonus).toBe(0.3);
+    expect(withBiasTrade.finalScore).toBeCloseTo(noBiasTrade.finalScore);
+    expect(withBiasTrade.identityBiasBonus).toBe(0);
+  });
+
+  it('negative bias reduces score for matching type', () => {
+    const graph = buildTestGraph({});
+    const entry = makeEntry({ templateId: 'duel_tmpl', encounterType: 'duel' as any });
+
+    const noBias = scoreAndSelect([entry], 'agent_1', 'loc_a', graph, 1);
+    const withBias = scoreAndSelect(
+      [entry], 'agent_1', 'loc_a', graph, 1,
+      undefined, undefined, undefined, { duel: -0.2 },
+    );
+
+    expect(withBias.rankedCandidates[0].finalScore).toBeLessThan(noBias.rankedCandidates[0].finalScore);
+    expect(withBias.rankedCandidates[0].identityBiasBonus).toBe(-0.2);
+  });
+
+  it('empty bias record applies no effect', () => {
+    const graph = buildTestGraph({});
+    const entry = makeEntry({ templateId: 'explore_tmpl', encounterType: 'explore' as any });
+
+    const noBias = scoreAndSelect([entry], 'agent_1', 'loc_a', graph, 1);
+    const emptyBias = scoreAndSelect(
+      [entry], 'agent_1', 'loc_a', graph, 1,
+      undefined, undefined, undefined, {},
+    );
+
+    expect(emptyBias.rankedCandidates[0].finalScore).toBeCloseTo(noBias.rankedCandidates[0].finalScore);
+    expect(emptyBias.rankedCandidates[0].identityBiasBonus).toBe(0);
+  });
+});

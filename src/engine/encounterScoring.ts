@@ -484,6 +484,8 @@ export interface ScoredCandidate {
   markRevealBonus: number;
   /** Flat additive boost from actionable intelligence held by the agent (THR-113). 0 or INTEL_SCORING_BONUS. */
   intelBonus: number;
+  /** Flat additive bias from doom identity + active omen state for this encounter type (THR-81). */
+  identityBiasBonus: number;
   finalScore: number;
   action: 'start_local' | 'queue_movement' | 'attempt_remote';
 }
@@ -1000,6 +1002,7 @@ export function scoreAndSelect(
       roleAffinityMultiplier,
       markRevealBonus,
       intelBonus,
+      identityBiasBonus,
       finalScore,
       action,
     });
@@ -1055,6 +1058,7 @@ function buildTrace(
       expectedUtility: c.expectedUtility,
       pushBenefit: c.pushBenefit,
       resistBenefit: c.resistBenefit,
+      identityBiasBonus: c.identityBiasBonus,
     })),
     selectedTemplateId: selected?.entry.templateId ?? null,
     selectedLocationId: selected?.entry.locationId ?? null,
