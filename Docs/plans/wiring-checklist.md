@@ -2,7 +2,7 @@
 
 > **Living document.** Every design plan must include a wiring section that maps new modules to entries on this checklist. Every implementation must verify all listed connections before marking work complete. Maintaining this checklist is part of the Definition of Done for both design and implementation phases.
 >
-> **Last updated:** 2026-04-18 (THR-116 — causation edges, conditional aftermath `when` gate, thread mutation effects)
+> **Last updated:** 2026-04-18 (THR-30 — Secrets & Favors graph edges, phaseSecretsFavors, GraphOps, leverage UI)
 
 ---
 
@@ -108,6 +108,32 @@ Per-surface coverage for the two authored aftermath effect kinds introduced by t
 * Hidden mark reveal / decay: `src/engine/hiddenMarks.ts`, `src/engine/phaseHiddenMarkDecay.ts`
 * Seed evaluation: `src/engine/encounterSeeding.ts`
 * Trace type definitions: `src/types/trace.ts` (categories `hidden_mark_placed`, `hidden_mark_revealed`, `encounter_seed_planted`, `encounter_seed_triggered`)
+
+**Secrets & Favors graph layer (THR-30, 2026-04-18):**
+
+`knows_secret_of` (discoverer→subject) and `owes_favor` (debtor→creditor) edges form a persistent social leverage layer. Both feed `computeInitialLeverage()` which is called at the start of every social encounter resolution.
+
+| Surface | Orchestrator phase | Data / Graph surface | Trace categories | Debug visibility | Player visibility |
+|---------|-------------------|---------------------|-----------------|-----------------|------------------|
+| Secret accumulation | Phase 2a encounter resolution — `secretDiscovery` metadata in template step; `secret_discovery` aftermath effect kind | `knows_secret_of` edges (source=discoverer, target=subject, props: secretType/magnitude/revealed/source/discoveredTick) | `secret_discovered` | DebugPanel → Secrets & Favors tab | AgentDetailPanel → LeverageSection ("Secrets held / Exposed") |
+| Favor accumulation | Phase 2a encounter resolution — `favorGeneration` metadata in template; `favor_creation` aftermath effect kind | `owes_favor` edges (source=debtor, target=creditor, props: magnitude/context/redeemed/broken/grantedTick) | `favor_created` | DebugPanel → Secrets & Favors tab | AgentDetailPanel → LeverageSection ("Favors owed / Owes favors") |
+| Phase maintenance | Phase 6.653 `phaseSecretsFavors` | Both edge types; reads graph, writes `revealed`/`broken` flags | `secret_tension_escalated`, `secret_expired`, `favor_expired` | Trace feed | None (background) |
+| Leverage calculation | `computeInitialLeverage()` (called at social encounter start, from `socialLeverage.ts`) | Reads outgoing `knows_secret_of` + incoming `owes_favor` edges | (returns LeverageResult, no trace) | AgentDetailPanel LeverageSection | LeverageSection (with magnitude labels) |
+| Divine ops | GraphOpExecutor: `reveal_secret`, `call_in_favor`, `plant_secret` | Mutates `revealed`/`redeemed` flags or creates new edge | (inline in op result) | DebugPanel trace feed | ActionDrawer (3 divine templates) |
+
+**Tunables:** `SECRET_LEVERAGE_MULTIPLIER` (0.30), `FAVOR_LEVERAGE_MULTIPLIER` (0.25), `MAX_SECRETS_PER_AGENT` (8), `MAX_FAVORS_PER_AGENT` (6) — all in `src/types/secretsFavors.ts`.
+
+**Verification pointers:**
+* Graph edge types: `src/types/edgeSchema.ts` (`knows_secret_of`, `owes_favor`)
+* Generation helpers: `src/engine/secretGeneration.ts` (`generateSecret`, `createSecretEdge`, `createFavorEdge`)
+* Phase: `src/engine/phaseSecretsFavors.ts` — Phase 6.653 in orchestrator
+* Aftermath cases: `src/engine/encounterAftermath.ts` (`case 'secret_discovery'`, `case 'favor_creation'`)
+* Template wiring: `src/engine/orchestrator.ts` (~line 552: `secretDiscovery`; ~line 595: `favorGeneration`)
+* Leverage: `src/engine/socialLeverage.ts` — `secret_bonus` + `favor_bonus` in `computeInitialLeverage()`
+* UI: `src/engine/agentDetail.ts` (`LeverageSummary`), `src/components/Game/AgentDetailPanel.tsx` (`LeverageSection`)
+* Debug: `src/components/Game/debug/DebugTabContent.tsx` (`SecretsFavorsDebugTab`)
+* Divine ops: `src/engine/graphOpExecutor.ts` + `src/data/unified-action-templates.ts`
+* Tests: `src/engine/__tests__/secretsFavors.test.ts` (17 tests)
 
 **Intelligence consumption pathway (THR-113, 2026-04-17):**
 

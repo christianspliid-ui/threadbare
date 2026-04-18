@@ -767,6 +767,101 @@ An *ally* or *enemy* is any actor sharing the **exact same `located_at` node** a
 
 ---
 
+### Capability 12: Secrets & Favors — Persistent Social Leverage (THR-30)
+
+Two graph edge types that model what agents know about each other and what debts they carry. Both feed into social encounter resolution as leverage bonuses.
+
+#### `knows_secret_of` edge (discoverer → subject)
+
+An agent who learns a secret about another agent gains a leverage advantage in social encounters. Secrets are typed and have magnitude (0.05–1.0).
+
+**Secret types and what produces them:**
+
+| Type | Source | Produces when |
+|------|--------|--------------|
+| `hidden_weakness` | Observation, any source | Fallback — always available |
+| `past_crime` | Spy debrief, observation | Agent has hostile `relates_to` edges or criminal faction membership |
+| `hidden_allegiance` | Confession, spy debrief | Agent belongs to 2+ factions |
+| `financial_desperation` | Tavern gossip, observation | Agent has `owes_favor` edges with high magnitude |
+| `shameful_origin` | Confession | Randomly surfaced biographical secret |
+| `forbidden_knowledge` | Archive access, spy debrief | Agent in knowledge/arcane factions |
+
+**How to wire secret discovery from encounter content:**
+
+Two surfaces:
+1. **Template metadata** (`secretDiscovery` on the template step): set on `UnifiedActionTemplate` — engine automatically calls `generateSecret` + `createSecretEdge` on step success.
+2. **Aftermath effect kind** (`secret_discovery`): explicit effect in `aftermathConfig.reactions[].effects` — use for story-significant discoveries with more control over timing.
+
+```typescript
+// Template metadata approach (auto-fires on step success):
+steps: [{
+  ...,
+  secretDiscovery: { source: 'observation', magnitudeBonus: 0.1 },
+}]
+
+// Aftermath effect approach (fires at reaction resolution):
+effects: [{ kind: 'secret_discovery', source: 'spy_debrief' }]
+```
+
+**Leverage bonus:** `secret.magnitude × SECRET_LEVERAGE_MULTIPLIER (0.30)`. Only unrevealed secrets contribute.
+
+**Cap:** `MAX_SECRETS_PER_AGENT = 8` total outgoing `knows_secret_of` edges per discoverer. Capped edges are silently dropped.
+
+#### `owes_favor` edge (debtor → creditor)
+
+An agent who receives significant aid owes a favor to the helper. The creditor gains leverage over the debtor in future encounters.
+
+**How to wire favor creation from encounter content:**
+
+Two surfaces:
+1. **Template metadata** (`favorGeneration`): auto-fires on step success.
+2. **Aftermath effect kind** (`favor_creation`): explicit, controlled timing.
+
+```typescript
+// Template metadata:
+steps: [{
+  ...,
+  favorGeneration: { onSuccess: true, magnitudeRange: [0.2, 0.4], context: 'healed their wound' },
+}]
+
+// Aftermath effect:
+effects: [{ kind: 'favor_creation', magnitudeRange: [0.1, 0.3], context: 'gave shelter in the storm' }]
+```
+
+**Leverage bonus:** `favor.magnitude × FAVOR_LEVERAGE_MULTIPLIER (0.25)`. Only unredeemed, unbroken favors contribute.
+
+**Cap:** `MAX_FAVORS_PER_AGENT = 6` active outgoing `owes_favor` edges per debtor.
+
+#### Divine GraphOps for Secrets & Favors
+
+Three GraphOps are available in `onSuccess` / `onFailure` step arrays:
+
+| Op | What it does | Requires |
+|----|-------------|---------|
+| `reveal_secret` | Marks the actor's highest-magnitude unrevealed secret about target as revealed (removes leverage) | Actor must hold a secret about target |
+| `call_in_favor` | Redeems the target's best unredeemed favor owed to the actor | Target must owe actor a favor |
+| `plant_secret` | Creates a fabricated `knows_secret_of` edge (actor→target) with `planted: true` | No prerequisites |
+
+```typescript
+onSuccess: [{ op: 'reveal_secret', target: '$target' }]
+onSuccess: [{ op: 'call_in_favor', target: '$target' }]
+onSuccess: [{ op: 'plant_secret', source: '$actor', target: '$target',
+              properties: { magnitude: 0.5, secretType: 'past_crime' } }]
+```
+
+#### Important constraints
+
+- **Edge direction is semantic.** `knows_secret_of` source=discoverer, target=subject. `owes_favor` source=debtor, target=creditor. Never reverse these.
+- **`reveal_secret` requires the actor to hold the secret.** If the actor doesn't personally have a `knows_secret_of` edge to the target, the op fails gracefully.
+- **`call_in_favor` only redeems favors owed to the actor.** A debtor's favors to third parties cannot be redeemed by the actor.
+- **Leverage is computed fresh per encounter.** There's no cached leverage value — it's recalculated from live graph edges at the start of each social encounter resolution.
+
+#### How to verify
+
+Filter DebugPanel Trace tab on `secret_discovered` + `favor_created`. Open DebugPanel → Secrets & Favors tab for a per-agent view of all edges. AgentDetailPanel shows the LeverageSection when the agent has any active secrets or favors.
+
+---
+
 ### Trace Categories You Can Filter On
 
 Content authoring often needs to verify "did my effect actually fire?" DebugPanel's Trace tab filters on any of the categories below, grouped by what they prove:
@@ -781,6 +876,7 @@ Content authoring often needs to verify "did my effect actually fire?" DebugPane
 | Multi-target aftermath (THR-114) | `aftermath_target_resolved`, `aftermath_target_invalid`, `faction_reputation_changed`, `reputation_set_applied`, `condition_applied`, `condition_removed` |
 | World-shaping aftermath (THR-115) | `artifact_spawned`, `omen_emitted`, `omen_decayed`, `faction_splintered`, `faction_absorbed`, `faction_dissolved`, `faction_war_declared`, `faction_peace_forced` |
 | Conditional / causation effects (THR-116) | `aftermath_effect_skipped_by_when`, `aftermath_effect_when_passed`, `thread_mutation_applied`, `thread_mutation_skipped` |
+| Secrets & favors (THR-30) | `secret_discovered`, `favor_created` |
 | Graph mutation & UI choice flow | `graph_op_execution`, `choice_set_player_resolved`, `choice_set_player_dismissed` |
 | Complication outcomes (THR-20) | `complication_selection` |
 

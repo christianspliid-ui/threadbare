@@ -3,6 +3,7 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ **THR-30** (2026-04-18) — Secrets & Favors Information Economy v1: `knows_secret_of` + `owes_favor` graph edges; `secretGeneration.ts`; `phaseSecretsFavors` Phase 6.653; encounter aftermath `secret_discovery`/`favor_creation`; `reveal_secret`/`call_in_favor`/`plant_secret` GraphOps (Codex: edge-direction bugs fixed); 6 secret encounter templates; 3 divine action templates; `AgentDetailPanel` LeverageSection; DebugPanel Secrets tab; 17 tests.
 ✅ **THR-137** (2026-04-18) — Intelligence reliability decay: `phaseIntelligenceDecay` (phase 6.71) decays record reliability linearly, threshold-cross chronicle events, `reliabilityBand()` shared helper, 16 tests.
 ✅ **THR-32** (2026-04-18) — Reputation-gated encounter first tranche: 5 `UnifiedActionTemplate` encounters (warlords-tribute/shadow-court-audience/pilgrims-offering/the-veiled-consultation/the-stones-judgement), 7 encounterGates arrays populated, 30-test contract suite, REPUTATION_GATED_README.md rubric, 5 concept-art JPGs.
 ✅ **THR-143** (2026-04-18) — Wire encounter-history event nodes for caused_by edges: `createUnifiedActionEventNode()` for unified-action step resolutions; causation data flow: source event node → seed → spawned action → first step → `caused_by` edge. Removes broken try/catch blocks from `encounterSeeding.ts`. 37 tests.
