@@ -170,13 +170,16 @@ function tintDark(hex: string): string {
 
 // ─── SVG Generator ───────────────────────────────────────────────────────────
 
-export function generateSphereIconSvg(sphere: SphereName, size: number): string {
-  const color = SPHERE_COLORS[sphere];
-  const bg = tintDark(color);
+export function generateSphereIconSvg(sphere: SphereName, size: number, variant: 'base' | 'bright' = 'bright'): string {
+  const fallback = SPHERE_COLORS[sphere];
+  const bg = tintDark(fallback);
   const cx = size / 2;
   const cy = size / 2;
   const outerR = size / 2 - 1;
   const symbolR = outerR * 0.58;
+  const color = variant === 'bright'
+    ? `var(--sphere-${sphere}-bright, ${fallback})`
+    : `var(--sphere-${sphere}, ${fallback})`;
 
   const symbol = SPHERE_SYMBOLS[sphere](cx, cy, symbolR, color);
 
@@ -194,10 +197,11 @@ interface SphereIconProps {
   sphere: SphereName;
   size: number;
   className?: string;
+  variant?: 'base' | 'bright';
 }
 
-export const SphereIcon = memo(function SphereIcon({ sphere, size, className }: SphereIconProps) {
-  const svgString = useMemo(() => generateSphereIconSvg(sphere, size), [sphere, size]);
+export const SphereIcon = memo(function SphereIcon({ sphere, size, className, variant = 'bright' }: SphereIconProps) {
+  const svgString = useMemo(() => generateSphereIconSvg(sphere, size, variant), [sphere, size, variant]);
 
   return (
     <span

@@ -16,6 +16,6 @@ export { RarityBadge } from './RarityBadge';
 export { RarityBorderBox } from './RarityBorderBox';
 export { RivalIcon } from './RivalIcon';
 export { SectionHeading } from './SectionHeading';
-export { SphereIcon } from './SphereIcon';
+export { SphereIcon, REACH_TO_SPHERE, sphereFromReach } from './SphereIcon';
 export { StepDots } from './StepDots';
 export { Tooltip } from './Tooltip';

@@ -12,10 +12,19 @@ import { SphereIcon as SvgSphereIcon } from '../icons/SphereIcon';
 import { getSphereImagePath } from '../../data/sphereIcons';
 import { SPHERE_NAMES } from '../../types/index';
 import type { SphereName } from '../../types/index';
+import { REACH_TO_SPHERE as _REACH_TO_SPHERE, sphereFromReach as _sphereFromReach } from '../icons/constants';
+
+export const REACH_TO_SPHERE: Record<string, SphereName> = _REACH_TO_SPHERE;
+
+export function sphereFromReach(reach: string | null | undefined): SphereName | null {
+  return _sphereFromReach(reach);
+}
 
 export interface SphereIconProps {
-  /** Sphere name (e.g., 'force', 'mind', 'chaos') */
-  sphereName: string;
+  /** Sphere name — primary prop (e.g., 'force', 'mind', 'chaos') */
+  sphere?: SphereName | string;
+  /** Legacy alias for sphere — accepted for backward compat */
+  sphereName?: string;
   /** CSS font size or pixel number (default: 1rem / 16px) */
   size?: string | number;
   /** Optional CSS class name */
@@ -28,6 +37,8 @@ export interface SphereIconProps {
   title?: string;
   /** When true, render the generated PNG image instead of the SVG icon */
   useImage?: boolean;
+  /** Which color token tier to use (default: 'bright') */
+  variant?: 'base' | 'bright';
 }
 
 /**
@@ -50,22 +61,26 @@ function toPxNumber(size: string | number | undefined): number {
  * <SphereIcon sphereName="mind" size={24} className="inline-block" />
  */
 export const SphereIcon = React.memo(function SphereIcon({
+  sphere: sphereProp,
   sphereName,
   size = '1rem',
   className,
   style,
   title,
   useImage = false,
+  variant = 'bright',
 }: SphereIconProps) {
+  const resolvedName = sphereProp ?? sphereName ?? '';
+
   // Image rendering path — keep existing behaviour for useImage=true
   if (useImage) {
-    const imagePath = getSphereImagePath(sphereName);
+    const imagePath = getSphereImagePath(resolvedName);
     if (imagePath) {
       const imgSize = toPxNumber(size);
       return (
         <img
           src={imagePath}
-          alt={title || sphereName}
+          alt={title || resolvedName}
           className={className}
           width={imgSize}
           height={imgSize}
@@ -81,16 +96,14 @@ export const SphereIcon = React.memo(function SphereIcon({
 
   const pxSize = toPxNumber(size);
 
-  // Validate that sphereName is a known SphereName
-  const isValid = (SPHERE_NAMES as readonly string[]).includes(sphereName);
+  const isValid = (SPHERE_NAMES as readonly string[]).includes(resolvedName);
 
   if (!isValid) {
-    // Gray circle fallback for unknown sphere names
     return (
       <span
         className={className}
         title={title}
-        aria-label={title || sphereName}
+        aria-label={title || resolvedName}
         style={{
           display: 'inline-block',
           width: pxSize,
@@ -106,13 +119,14 @@ export const SphereIcon = React.memo(function SphereIcon({
   return (
     <span
       title={title}
-      aria-label={title || sphereName}
+      aria-label={title || resolvedName}
       style={style}
     >
       <SvgSphereIcon
-        sphere={sphereName as SphereName}
+        sphere={resolvedName as SphereName}
         size={pxSize}
         className={className}
+        variant={variant}
       />
     </span>
   );

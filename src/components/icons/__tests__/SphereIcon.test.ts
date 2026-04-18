@@ -36,8 +36,8 @@ describe('generateSphereIconSvg', () => {
   it('contains outer circle element', () => {
     const svg = generateSphereIconSvg('order', 32);
     expect(svg).toContain('<circle');
-    // Stroke should be the canonical color
-    expect(svg).toContain(`stroke="${SPHERE_COLORS['order']}"`);
+    // Stroke uses a CSS var with the canonical color as fallback
+    expect(svg).toContain(SPHERE_COLORS['order']);
   });
 
   it('all 12 spheres produce unique SVG content', () => {

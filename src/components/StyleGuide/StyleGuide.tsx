@@ -590,21 +590,24 @@ export default function StyleGuide() {
             <SectionHeading ornamental>SphereIcon</SectionHeading>
             <div style={{ marginTop: '1.25rem' }}>
               <GameErrorBoundary>
-                <Label>All 12 spheres — SVG path (default). Use useImage=true for PNG fallback.</Label>
+                <Label>variant=&quot;base&quot; — size 16, all 12 spheres</Label>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '1rem' }}>
                   {SPHERE_NAMES.map((name) => (
                     <div key={name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                      <SphereIcon sphereName={name} size={28} />
+                      <SphereIcon sphereName={name} size={16} variant="base" />
                       <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>{name}</span>
                     </div>
                   ))}
                 </div>
-                <Label>size=16 (inline)</Label>
-                <Row gap={8}>
-                  {SPHERE_NAMES.slice(0, 4).map((name) => (
-                    <SphereIcon key={name} sphereName={name} size={16} />
+                <Label>variant=&quot;bright&quot; — size 24, all 12 spheres</Label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '1rem' }}>
+                  {SPHERE_NAMES.map((name) => (
+                    <div key={name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                      <SphereIcon sphereName={name} size={24} variant="bright" />
+                      <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>{name}</span>
+                    </div>
                   ))}
-                </Row>
+                </div>
               </GameErrorBoundary>
             </div>
           </section>

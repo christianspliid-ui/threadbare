@@ -8,10 +8,21 @@ export const SPHERE_COLORS: Record<SphereName, string> = {
   chaos: '#d4d4d8', order: '#fbbf24', light: '#fef3c7', darkness: '#8b7fbf',
 };
 
+export const SPHERE_COLORS_BASE: Record<SphereName, string> = {
+  force: '#ff4444', matter: '#a8886a', energy: '#ffd700', life: '#00cc55',
+  mind: '#2288ff', spirit: '#aa44dd', time: '#ff9933', entropy: '#5a8a7a',
+  chaos: '#8a8a8e', order: '#d4af37', light: '#ffeb99', darkness: '#4a3a8a',
+};
+
 export const REACH_TO_SPHERE: Record<ReachDomain, CreationSphereName> = {
   iron: 'force', stone: 'matter', eye: 'energy', gold: 'life',
   veil: 'mind', heart: 'spirit', star: 'time', shadow: 'entropy',
 };
+
+export function sphereFromReach(reach: string | null | undefined): SphereName | null {
+  if (!reach) return null;
+  return (REACH_TO_SPHERE as Record<string, SphereName>)[reach] ?? null;
+}
 
 export const SPHERE_TO_FOUNDATION: Record<CreationSphereName, FoundationSphereName> = {
   force: 'chaos', entropy: 'chaos', matter: 'light', energy: 'light',
