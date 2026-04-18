@@ -3,6 +3,10 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ THR-125 (2026-04-19) — Hex pulse ambient glow layer: InstancedMesh at RENDER_ORDER 7.5, tense=amber/volatile=red, AdditiveBlending, breathing opacity tick, 14 tests
+
+✅ THR-81 (2026-04-19) — Wire omenEncounterBias into scoring traces: identityBiasBonus in ScoredCandidate + ScoringTrace.topCandidates; 3 tests
+
 ✅ THR-34 (2026-04-19) — Social bond shift from reputation reactions: computeReputationBondShift() in socialEncounterGeneration.ts; REPUTATION_REACTION_VALENCES; plugged into computeBondModifier (stranger + weak bond); 3 constants; 15 new tests
 
 ✅ THR-152 (2026-04-19) — Delve encounter variant (Ruins Layer PR 4): phaseDelveAdmission/Progression/Emergence, 45 prose vignettes, DelveProgressPanel, 21 tests

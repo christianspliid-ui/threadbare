@@ -11,12 +11,15 @@
 - **UI Visual Overhaul — Design System v1 (Now):** ✅ THR-168 tokens. ✅ THR-169 typography floor. ✅ THR-170 primitives. ✅ THR-183 Vara seed. ✅ THR-172 SphereIcon. THR-173 Thread Panel next.
 - **Attention Tier Model (Now):** ✅ THR-16 curator metadata. ✅ THR-18 siege templates + digest wiring. UI integration ongoing.
 - **Social Systems Expansion (Now):** THR-28/27/30/51/29/41/34 shipped. THR-78 queued.
-- **Thematic Pressure & Living World (Next):** THR-19 Omen Agenda shipped. THR-87 (cool failure prose) blocked by THR-116.
+- **Thematic Pressure & Living World (Next):** THR-19 Omen Agenda shipped. ✅ THR-122/125/126 shipped. THR-87 (cool failure prose) blocked by THR-116.
 - **Agent Success Redesign (Next):** Phases 1-4 shipped. Phases 5-8 queued.
 - **Rarity Model (Next):** Three deferred Phase D items.
 - **Procedural Hex Vignettes (Next):** Phases 2-5 queued.
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
+
+## Recent Completions (2026-04-19) — THR-125
+- **THR-125 — Hex pulse ambient glow layer for tense/volatile hexes:** New `HexPulseMesh.ts` InstancedMesh sublayer (RENDER_ORDER.HEX_PULSE=7.5, LAYER_Z.HEX_PULSE=0.060) renders radial gradient quads at hexes where LocationActivitySummary.pulse is `tense` (amber) or `volatile` (red). AdditiveBlending keeps it atmospheric. `tickHexPulse` breathes material opacity at 0.6 Hz. Visible at hero-local + regional only. `updateHexPulseMesh` keyed from `locationActivityMap` prop via dedicated useEffect. 14 new tests.
 
 ## Recent Completions (2026-04-19) — THR-34
 - **THR-34 — Social bond shift from reputation reactions:** `computeReputationBondShift()` in `socialEncounterGeneration.ts` walks the target's `has_trait` edges and aggregates signed reaction contributions (`REPUTATION_REACTION_VALENCES`). Plugged into `computeBondModifier` for stranger and weak-bond cases; strong/hostile trust paths unchanged. 3 new constants (`REPUTATION_REACTION_MAX_LEVEL`, `REPUTATION_BOND_SHIFT_SCALE`, `REPUTATION_BOND_SHIFT_MAX`). 15 new tests.
@@ -42,11 +45,8 @@
 ## Recent Completions (2026-04-19) — THR-119
 - **THR-119 — Wire partial_progress complication to advance step progress:** Removed stale `_complicationPartialProgress` actor-node property write in `complicationEffects.ts`. Added consumer in `executeStepResult` that reads `fraction` directly from `ComplicationResult.effects` and applies `floor(fraction * stepDuration)` ticks as head-start on the next step's `stepProgress` (capped at `stepDuration - 1`). Emits `complication_partial_progress` trace. 1 regression test.
 
-## Recent Completions (2026-04-19) — THR-81
-- **THR-81 — Wire omenEncounterBias into scoring traces:** The bias was already computed and passed to `scoreAndSelect()`. Added `identityBiasBonus: number` to `ScoredCandidate` and `ScoringTrace.topCandidates` so the per-candidate omen+doom bias contribution is inspectable in traces (NFP #2). 3 tests asserting bias shifts `finalScore` by the correct additive delta.
-
 ## Archived to project-history.md
-- THR-172/183/170/181/156/18/155/151/29/154/166/150 (2026-04-18/19) and earlier — see project-history.md
+- THR-81/172/183/170/181/156/18/155/151/29/154/166/150 (2026-04-18/19) and earlier — see project-history.md
 
 
 ## Active Backlog Ideas
