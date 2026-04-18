@@ -128,6 +128,7 @@ import { phaseFactionReputationDecay, processFactionEncounterReputation } from '
 import { phaseHiddenMarkDecay } from './phaseHiddenMarkDecay';
 import { phaseIntelligenceDecay } from './phaseIntelligenceDecay';
 import { phaseSecretsFavors } from './phaseSecretsFavors';
+import { phaseClueDecay } from './ruins/clueLifecycle';
 import { generateSecret, createSecretEdge, createFavorEdge } from './secretGeneration';
 import { processFactionOutcome, resetFactionEventSeq } from './factionOutcome';
 import type { DistanceMatrix } from './distanceMatrix';
@@ -2188,6 +2189,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 6.653: Secrets & Favors Maintenance (THR-30 — decay, tension, expiry)
   s = { ...s, ...phaseSecretsFavors(s) };
   phaseEventCounts['secrets_favors'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.654: Clue Decay — prune expired knows_clue_of edges (THR-150)
+  s = { ...s, ...phaseClueDecay(s) };
+  phaseEventCounts['clue_decay'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.75: Agent Lifecycle (death, birth, migration)

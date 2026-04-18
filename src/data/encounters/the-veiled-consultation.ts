@@ -264,6 +264,12 @@ const PLAIN_AFTERMATH = {
           priority: 1.0,
           seedLabel: 'The sage returns with a larger question shaped by the first interpretation',
         },
+        {
+          kind: 'spawn_clue' as const,
+          source: 'spy_debrief' as const,
+          precision: 'vague' as const,
+          targetRuinId: '$nearest_ruin',
+        },
       ],
     },
     {

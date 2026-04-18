@@ -42,6 +42,7 @@ import type { EmittedOmen } from '../types/omen';
 import type { ArtifactTier, FactionMemberSelection } from '../types/unifiedAction';
 import { mulberry32 } from '../lib/prng';
 import { generateSecret, createSecretEdge, createFavorEdge } from './secretGeneration';
+import { spawnClueFromEvent, findAnyRuinId } from './ruins/clueLifecycle';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -1986,6 +1987,56 @@ export function applyEncounterAftermathReaction(
           }
         } catch {
           // fail-soft
+        }
+        break;
+      }
+
+      case 'spawn_clue': {
+        // Ruins layer — create a knows_clue_of edge via Narrative Gravity (THR-150)
+        if (!actorAgentId) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'spawn_clue', effectDetail: { targetRuinId: effect.targetRuinId },
+            success: false, failReason: 'no_actor_id',
+            effectiveTargetId: '', effectiveTargetKind: 'actor_fallback',
+            summary: `spawn_clue[${i}] skipped: no actorId`,
+          });
+          break;
+        }
+        try {
+          const scSeed = (state.seed ^ tick * 79) >>> 0;
+          const scRng = mulberry32(scSeed);
+          // Resolve '$nearest_ruin' placeholder to an actual ruin node ID
+          const resolvedRuinId = effect.targetRuinId === '$nearest_ruin'
+            ? findAnyRuinId(state.graph, scRng)
+            : effect.targetRuinId;
+          if (!resolvedRuinId) break; // no ruins in world yet — fail-soft
+          const recipientId = spawnClueFromEvent({
+            actorId: actorAgentId,
+            targetRuinId: resolvedRuinId,
+            source: effect.source,
+            precision: effect.precision,
+            state,
+            rng: scRng,
+          });
+          if (recipientId) {
+            touchWorld(runtime);
+            mutationSummary.touchedWorld = true;
+          }
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'spawn_clue',
+            effectDetail: { targetRuinId: resolvedRuinId, source: effect.source, recipientId: recipientId ?? 'suppressed' },
+            success: recipientId !== null,
+            failReason: recipientId === null ? 'clue_suppressed' : undefined,
+            effectiveTargetId: actorAgentId,
+            effectiveTargetKind: 'actor_fallback',
+            summary: `spawn_clue[${i}]: ruin=${resolvedRuinId} → recipient=${recipientId ?? 'suppressed'}`,
+          });
+        } catch {
+          // fail-soft: clue spawn failure is non-fatal
         }
         break;
       }

@@ -355,6 +355,25 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     requiredProperties: ['magnitude', 'context', 'grantedTick', 'redeemed', 'broken'],
     description: 'Debtor owes a social favor to the creditor. Properties: magnitude, context, grantedTick, redeemed, broken.',
   },
+  // ── Ruins Layer (THR-149, THR-150) ────────────────────────────────────────
+  knows_clue_of: {
+    type: 'knows_clue_of',
+    sourceNodeType: 'actor',
+    targetNodeType: 'location',
+    direction: 'directed',
+    cardinality: 'many-to-many',
+    requiredProperties: ['magnitude', 'precision', 'source', 'discoveredTick', 'consumed'],
+    description: 'Knower holds a transient clue about a ruin location. Properties: magnitude, precision, source, discoveredTick, consumed, consumedTick?, detail?, composedByGodId?.',
+  },
+  knows_of: {
+    type: 'knows_of',
+    sourceNodeType: 'actor',
+    targetNodeType: 'location',
+    direction: 'directed',
+    cardinality: 'many-to-many',
+    requiredProperties: [],
+    description: 'Familiarity edge created when a knows_clue_of clue is consumed at convergence. Properties: fromClue?, convergedTick?.',
+  },
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────

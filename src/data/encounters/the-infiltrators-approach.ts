@@ -178,6 +178,12 @@ const ACCEPT_AFTERMATH = {
           priority: 0.85,
           seedLabel: 'The betrayed master moves first',
         },
+        {
+          kind: 'spawn_clue' as const,
+          source: 'spy_debrief' as const,
+          precision: 'vague' as const,
+          targetRuinId: '$nearest_ruin',
+        },
       ],
     },
     {

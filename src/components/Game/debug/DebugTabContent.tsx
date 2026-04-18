@@ -36,8 +36,9 @@ import { HiddenMarksTab } from './HiddenMarksTab';
 import { EncounterSeedsTab } from './EncounterSeedsTab';
 import { CulturePhoneticsInspector } from './CulturePhoneticsInspector';
 import { EMPTY_STATE_STYLE } from './debugPanelStyles';
+import type { KnowsClueOfEdgeProperties } from '../../../types/knowledge';
 
-export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors';
+export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues';
 
 export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'feed', label: 'Feed' }, { id: 'agent-follow', label: 'Agent' },
@@ -48,7 +49,7 @@ export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'spheres', label: 'Sphere State' }, { id: 'revelation-log', label: 'Revelations' },
   { id: 'knowledge-gaps', label: 'Knowledge' }, { id: 'armies', label: 'Armies' },
   { id: 'strategic', label: 'Strategic' }, { id: 'omens', label: 'Omens' },
-  { id: 'cultures', label: 'Cultures' }, { id: 'secrets-favors', label: 'Secrets' }, { id: 'cli', label: 'CLI' },
+  { id: 'cultures', label: 'Cultures' }, { id: 'secrets-favors', label: 'Secrets' }, { id: 'clues', label: 'Clues' }, { id: 'cli', label: 'CLI' },
 ];
 
 export interface DebugTabContentProps {
@@ -124,6 +125,7 @@ export function DebugTabContent({
   if (viewMode === 'armies') return <ArmiesTabContent graph={graph} currentTick={currentTick} onZoomToLocation={onZoomToLocation} />;
   if (viewMode === 'cultures') return <CulturePhoneticsInspector graph={graph} />;
   if (viewMode === 'secrets-favors') return <SecretsFavorsDebugTab graph={graph} focusedAgentId={effectiveAgentId} />;
+  if (viewMode === 'clues') return <CluesDebugTab graph={graph} focusedAgentId={effectiveAgentId} currentTick={currentTick} />;
   if (viewMode === 'cli') return <CommandTab retinueAgents={retinueAgents} followAgentId={effectiveAgentId} />;
   if (viewMode === 'strategic') return <StrategicDebugTab strategicState={strategicState} graph={graph} effectiveAgentId={effectiveAgentId} currentTick={currentTick} />;
   if (viewMode === 'social') {
@@ -403,6 +405,75 @@ function OmenDebugTab({ omenState, currentTick, doomIdentityMatrix }: { omenStat
               </span>
             </div>
           ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Clues Debug Tab (THR-150) ────────────────────────────────────────────────
+
+function CluesDebugTab({ graph, focusedAgentId, currentTick }: { graph?: WorldGraph; focusedAgentId?: string; currentTick: number }) {
+  if (!graph) return <div style={EMPTY_STATE_STYLE}>No graph connected.</div>;
+
+  const clueEdges  = graph.getAllEdges().filter(e => e.type === 'knows_clue_of');
+  const knewEdges  = graph.getAllEdges().filter(e => e.type === 'knows_of');
+
+  const focused = focusedAgentId
+    ? {
+        held:  clueEdges.filter(e => e.source === focusedAgentId),
+        about: clueEdges.filter(e => e.target === focusedAgentId),
+      }
+    : null;
+
+  const ROW    = { display: 'flex', gap: '8px', alignItems: 'flex-start', padding: '2px 0', fontSize: '11px' };
+  const BADGE  = (color: string) => ({ background: color, color: '#fff', borderRadius: '3px', padding: '1px 5px', fontSize: '10px', flexShrink: 0 });
+  const MUTED  = { color: 'var(--text-muted)', fontSize: '10px' };
+  const SECTION = { marginBottom: '12px' };
+  const HEADER = { color: 'var(--accent-gold)', fontSize: '11px', fontWeight: 600, marginBottom: '4px', textTransform: 'uppercase' as const, letterSpacing: '0.05em' };
+
+  const precisionColor: Record<string, string> = { vague: '#6b7280', narrowed: '#d97706', located: '#10b981' };
+
+  function ClueRow({ edge }: { edge: ReturnType<WorldGraph['getAllEdges']>[number] }) {
+    const knower = graph!.getNode(edge.source)?.name ?? edge.source.slice(0, 8);
+    const ruin   = graph!.getNode(edge.target)?.name ?? edge.target.slice(0, 8);
+    const p = edge.properties as KnowsClueOfEdgeProperties;
+    const age = currentTick - p.discoveredTick;
+    return (
+      <div style={ROW}>
+        <span style={BADGE(p.consumed ? '#6b7280' : precisionColor[p.precision] ?? '#6b7280')}>{p.consumed ? 'consumed' : p.precision}</span>
+        <span style={{ color: 'var(--text-primary)', flex: 1 }}>
+          {knower} → {ruin}
+          <span style={MUTED}> via {p.source} · age {age}t · mag {((p.magnitude) ?? 0).toFixed(2)}</span>
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ padding: '8px', fontFamily: 'monospace', overflowY: 'auto', height: '100%' }}>
+      <div style={{ ...MUTED, marginBottom: '8px' }}>
+        {clueEdges.length} clue edge(s) · {knewEdges.length} knows_of familiarity edge(s) world-wide
+        {focusedAgentId && <span style={{ color: 'var(--accent-gold)', marginLeft: '8px' }}>Focused: {graph.getNode(focusedAgentId)?.name ?? focusedAgentId}</span>}
+      </div>
+
+      {focused ? (
+        <>
+          <div style={SECTION}>
+            <div style={HEADER}>Clues held by agent ({focused.held.length})</div>
+            {focused.held.length === 0 ? <div style={MUTED}>none</div> : focused.held.map(e => <ClueRow key={e.id} edge={e} />)}
+          </div>
+          <div style={SECTION}>
+            <div style={HEADER}>Clues pointing at agent's ruins ({focused.about.length})</div>
+            {focused.about.length === 0 ? <div style={MUTED}>none</div> : focused.about.map(e => <ClueRow key={e.id} edge={e} />)}
+          </div>
+        </>
+      ) : (
+        <div style={SECTION}>
+          <div style={HEADER}>All clues ({clueEdges.length})</div>
+          {clueEdges.length === 0
+            ? <div style={MUTED}>No clues yet. Clues form when encounter aftermath spawn_clue effects fire or ruin worldgen seeds them.</div>
+            : clueEdges.map(e => <ClueRow key={e.id} edge={e} />)}
         </div>
       )}
     </div>

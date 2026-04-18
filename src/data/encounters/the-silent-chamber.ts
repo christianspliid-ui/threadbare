@@ -218,6 +218,12 @@ const READ_AFTERMATH = {
           message: 'The {title} read the silenced text and then shared it. The guild\'s burial is undone. The remnant guild has a specific kind of problem now.',
           significance: 0.75,
         },
+        {
+          kind: 'spawn_clue' as const,
+          source: 'library_research' as const,
+          precision: 'narrowed' as const,
+          targetRuinId: '$nearest_ruin',
+        },
       ],
     },
   ],

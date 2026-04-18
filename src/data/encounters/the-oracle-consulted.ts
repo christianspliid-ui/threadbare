@@ -187,6 +187,12 @@ const READ_AFTERMATH = {
           message: 'The {title} read the lost script aloud. The scholars published it. A third scholar wrote.',
           significance: 0.55,
         },
+        {
+          kind: 'spawn_clue' as const,
+          source: 'library_research' as const,
+          precision: 'vague' as const,
+          targetRuinId: '$nearest_ruin',
+        },
       ],
     },
     {

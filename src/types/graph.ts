@@ -101,8 +101,9 @@ export type EdgeType =
   // Social leverage (THR-30)
   | 'knows_secret_of'  // discoverer → secret subject (KnowsSecretOfEdgeProperties)
   | 'owes_favor'       // debtor → creditor (OwesFavorEdgeProperties)
-  // Ruins layer (THR-149)
-  | 'knows_clue_of';   // knower → target ruin (KnowsClueOfEdgeProperties in src/types/knowledge.ts)
+  // Ruins layer (THR-149, THR-150)
+  | 'knows_clue_of'    // knower → target ruin (KnowsClueOfEdgeProperties in src/types/knowledge.ts)
+  | 'knows_of';        // knower → location; familiarity edge created when a clue is consumed at convergence
 
 /** Result type for graph mutations */
 export interface GraphMutation {

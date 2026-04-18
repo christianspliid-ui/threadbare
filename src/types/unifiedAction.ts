@@ -404,6 +404,23 @@ export type EncounterAftermathReactionEffect =
     readonly reason?: string;
     readonly when?: EffectPredicate;
   }
+  // ─── Ruins Layer clue effects (THR-150) ──────────────────────────────────
+  | {
+    /**
+     * Spawn a knows_clue_of edge on the actor (or a specified candidate pool).
+     * Runs Narrative Gravity to select the recipient.
+     */
+    readonly kind: 'spawn_clue';
+    readonly source: 'library_research' | 'tavern_rumor' | 'treasure_map' | 'spy_debrief' | 'encounter_outcome' | 'faction_dossier';
+    /** Precision of the clue. Defaults to 'vague'. */
+    readonly precision?: 'vague' | 'narrowed' | 'located';
+    /**
+     * ID of the ruin this clue points at.
+     * Use '$nearest_ruin' to let the runtime pick a ruin near the actor at resolution time.
+     */
+    readonly targetRuinId: string;
+    readonly when?: EffectPredicate;
+  }
   // ─── Secrets & Favors effects (THR-30) ────────────────────────────────────
   | {
     /**

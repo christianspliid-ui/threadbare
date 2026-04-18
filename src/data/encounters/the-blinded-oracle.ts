@@ -239,6 +239,12 @@ const PROPHECY_AFTERMATH = {
           message: 'The {title} received the prophecy and then began investigating the order that blinded the seer. The order\'s watchers have noticed both movements.',
           significance: 0.7,
         },
+        {
+          kind: 'spawn_clue' as const,
+          source: 'encounter_outcome' as const,
+          precision: 'vague' as const,
+          targetRuinId: '$nearest_ruin',
+        },
       ],
     },
   ],
