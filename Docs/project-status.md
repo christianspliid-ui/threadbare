@@ -18,6 +18,9 @@
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
 
+## Recent Completions (2026-04-19) — THR-120
+- **THR-120 — Add spherePressures to WorldSoulState and wire sphere_pressure complication effect:** Added `spherePressures?: Partial<Record<string, number>>` to `WorldSoulState`. Moved `sphere_pressure` case before `actorNode` guard in `applyEffect` (it doesn't need the actor). Added `SPHERE_PRESSURE_OMEN_BIAS_WEIGHT = 1.0` constant and modified `getSphereDominance()` in `phaseOmenAgenda.ts` to blend sphere pressures into apparent sphere dominance, biasing sphere-surge omen selection toward pressured spheres. 6 new tests.
+
 ## Recent Completions (2026-04-19) — THR-119
 - **THR-119 — Wire partial_progress complication to advance step progress:** Removed stale `_complicationPartialProgress` actor-node property write in `complicationEffects.ts`. Added consumer in `executeStepResult` that reads `fraction` directly from `ComplicationResult.effects` and applies `floor(fraction * stepDuration)` ticks as head-start on the next step's `stepProgress` (capped at `stepDuration - 1`). Emits `complication_partial_progress` trace. 1 regression test.
 

@@ -4,6 +4,7 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
 ### Recent Changes
 
+| 2026-04-19 | src/types/worldSoul.ts, src/engine/complicationEffects.ts, src/engine/phaseOmenAgenda.ts, src/engine/__tests__/complicationSelection.test.ts, src/engine/__tests__/phaseOmenAgenda.test.ts | THR-120: spherePressures field + sphere_pressure complication wired to omen bias. Added spherePressures to WorldSoulState; moved sphere_pressure case before actorNode guard; SPHERE_PRESSURE_OMEN_BIAS_WEIGHT constant + getSphereDominance() blends pressures into apparent sphere dominance. 6 new tests. |
 | 2026-04-19 | src/engine/complicationEffects.ts, src/engine/unifiedActionResolution.ts, src/engine/__tests__/unifiedActionResolution.test.ts | THR-119: partial_progress complication consumer. Removed stale _complicationPartialProgress actor-node write; added consumer in executeStepResult that applies floor(fraction * stepDuration) ticks as head-start on next step's stepProgress (capped at stepDuration-1); emits complication_partial_progress trace. 1 regression test. |
 
 | 2026-04-18 | src/types/effects.ts, src/engine/effectAura.ts, src/engine/factionNetwork.ts, src/engine/__tests__/effectAura.test.ts | THR-41: Faction hostility check in aura filtering. AuraEntry gains sourceFactionId. areFactionsHostile() added (relates_to isRival bidirectional check). allies/enemies branches in resolveAuraModifiers now correctly skip non-matching agents. 5 tests. |

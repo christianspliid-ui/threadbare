@@ -3,6 +3,8 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ THR-120 (2026-04-19) — spherePressures field + sphere_pressure complication wired to phaseOmenAgenda bias
+
 ✅ **THR-119 (2026-04-19)** — Wire partial_progress complication: removed stale actor-node property write; consumer in executeStepResult applies fraction-based head-start to next step's stepProgress; complication_partial_progress trace; 1 regression test.
 
 ✅ **THR-41 (2026-04-18)** — Faction hostility check in effect aura resolution: `sourceFactionId` stamped on AuraEntry, `areFactionsHostile()` added to factionNetwork.ts (relates_to isRival check), allies/enemies filter branches fixed in resolveAuraModifiers, 5 unit tests.
