@@ -30,6 +30,7 @@ import type {
   ReactiveEffect,
   EffectRuntimeState,
 } from '../types/effects';
+import { areFactionsHostile } from './factionNetwork';
 import { AURA_MAX_RADIUS } from '../data/effect-constants';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -60,7 +61,7 @@ function hexDistance(
 // Agent Position Resolution
 // ═══════════════════════════════════════════════════════════════════
 
-interface AgentPosition {
+export interface AgentPosition {
   agentId: string;
   hexCol: number;
   hexRow: number;
@@ -136,6 +137,7 @@ export function collectAuraEffects(
           entries.push({
             sourceAgentId: agent.id,
             sourceAttachmentId: node.id,
+            sourceFactionId: pos.factionId,
             radius: Math.min(aura.radius, AURA_MAX_RADIUS),
             targetFilter: aura.target,
             reach: aura.reach,
@@ -156,6 +158,7 @@ export function collectAuraEffects(
  * Returns the total per-reach modifier from all applicable auras.
  */
 export function resolveAuraModifiers(
+  graph: WorldGraph,
   auras: readonly AuraEntry[],
   targetAgentId: string,
   targetPos: AgentPosition,
@@ -175,17 +178,11 @@ export function resolveAuraModifiers(
 
     // Check faction filter
     if (aura.targetFilter === 'allies') {
-      if (targetPos.factionId !== aura.sourceAgentId) {
-        // Need to check if same faction — simplified: check if source agent's faction matches
-        // For now: same faction = ally
-        // TODO(THR-41): resolve source agent's faction from aura entry
-      }
-    }
-    if (aura.targetFilter === 'enemies') {
-      // TODO(THR-41): faction hostility check
+      if (!aura.sourceFactionId || aura.sourceFactionId !== targetPos.factionId) continue;
+    } else if (aura.targetFilter === 'enemies') {
+      if (!areFactionsHostile(graph, aura.sourceFactionId, targetPos.factionId)) continue;
     }
 
-    // Apply (filter logic is simplified for now — all auras apply based on distance only)
     modifiers[aura.reach] = (modifiers[aura.reach] ?? 0) + aura.value;
   }
 

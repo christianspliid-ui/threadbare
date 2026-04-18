@@ -1060,6 +1060,7 @@ export interface ActiveTerrainOverlay {
 export interface AuraEntry {
   readonly sourceAgentId: string;
   readonly sourceAttachmentId: string;
+  readonly sourceFactionId?: string;
   readonly radius: number;
   readonly targetFilter: 'allies' | 'enemies' | 'all';
   readonly reach: ReachDomain;

@@ -108,6 +108,23 @@ const OFFICER_ROLE_HINTS = [
   'enforcer',
 ];
 
+/**
+ * Returns true if factionA and factionB have a declared rivalry in either direction.
+ * Checks `relates_to` edges with `isRival: true`. Returns false if either faction
+ * is undefined or both are the same faction.
+ */
+export function areFactionsHostile(
+  graph: WorldGraph,
+  factionA: string | undefined,
+  factionB: string | undefined,
+): boolean {
+  if (!factionA || !factionB || factionA === factionB) return false;
+  const isRival = (src: string, tgt: string): boolean =>
+    graph.getOutgoingEdges(src, 'relates_to')
+      .some(e => e.target === tgt && e.properties.isRival === true);
+  return isRival(factionA, factionB) || isRival(factionB, factionA);
+}
+
 export function getFactionNodes(graph: WorldGraph): GraphNode[] {
   return graph.getNodesByType('actor')
     .filter(node => node.properties.actorType === 'faction');
