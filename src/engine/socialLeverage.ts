@@ -38,9 +38,14 @@
  */
 
 import type { WorldGraph } from './graph';
+import type { LeverageHistoryEntry } from '../types/encounter';
 import { getTrust } from './trustMechanics';
 import { computeCapability } from './domainCapability';
 import { STRONG_BOND_THRESHOLD } from '../data/agent-behavior-constants';
+import {
+  SECRET_LEVERAGE_MULTIPLIER,
+  FAVOR_LEVERAGE_MULTIPLIER,
+} from '../types/secretsFavors';
 
 // ─── Tunable Constants ─────────────────────────────────────────────────────
 
@@ -105,47 +110,54 @@ export function getHighestFactionRank(graph: WorldGraph, agentId: string): numbe
 
 // ─── Main API ──────────────────────────────────────────────────────────────
 
+export interface InitialLeverageResult {
+  leverage: number;
+  history: LeverageHistoryEntry[];
+}
+
 /**
  * Compute the starting leverage for a social scene.
  *
  * Called by `initiateEncounter()` when the template is a social scene
  * (i.e. has any step with `leverageOnSuccess` defined).
  *
- * @param graph  Current world graph
- * @param actorId  The agent initiating the social scene
+ * @param graph     Current world graph
+ * @param actorId   The agent initiating the social scene
  * @param targetId  The target agent (required for social scenes)
- * @returns Initial leverage value clamped to [0, LEVERAGE_INITIAL_CAP]
+ * @returns Initial leverage clamped to [0, LEVERAGE_INITIAL_CAP] and history entries
  */
 export function computeInitialLeverage(
   graph: WorldGraph,
   actorId: string,
   targetId: string,
-): number {
+): InitialLeverageResult {
   let leverage = 0.0;
+  const history: LeverageHistoryEntry[] = [];
 
   // ─── Bond strength ───────────────────────────────────────────────
   const trust = getTrust(graph, actorId, targetId);
   if (trust > STRONG_BOND_THRESHOLD) {
     leverage += LEVERAGE_BOND_BONUS;
+    history.push({ stepIndex: -1, delta: LEVERAGE_BOND_BONUS, source: 'bond_bonus' });
   }
 
   // ─── Wealth advantage ────────────────────────────────────────────
-  // Actor's Gold capability vs target's Gold capability (ratio check)
   const actorGold = computeCapability(graph, actorId, 'gold');
   const targetGold = computeCapability(graph, targetId, 'gold');
   if (targetGold > 0 && actorGold > targetGold * LEVERAGE_WEALTH_RATIO) {
     leverage += LEVERAGE_WEALTH_BONUS;
+    history.push({ stepIndex: -1, delta: LEVERAGE_WEALTH_BONUS, source: 'wealth_bonus' });
   } else if (targetGold === 0 && actorGold > 0) {
-    // Actor has wealth, target has none — full bonus
     leverage += LEVERAGE_WEALTH_BONUS;
+    history.push({ stepIndex: -1, delta: LEVERAGE_WEALTH_BONUS, source: 'wealth_bonus' });
   }
 
   // ─── Power advantage ─────────────────────────────────────────────
-  // Actor's Iron capability vs target's (absolute gap check)
   const actorIron = computeCapability(graph, actorId, 'iron');
   const targetIron = computeCapability(graph, targetId, 'iron');
   if (actorIron > targetIron + LEVERAGE_POWER_GAP) {
     leverage += LEVERAGE_POWER_BONUS;
+    history.push({ stepIndex: -1, delta: LEVERAGE_POWER_BONUS, source: 'power_bonus' });
   }
 
   // ─── Faction rank advantage ──────────────────────────────────────
@@ -153,10 +165,41 @@ export function computeInitialLeverage(
   const targetRank = getHighestFactionRank(graph, targetId);
   if (actorRank > targetRank + LEVERAGE_RANK_GAP) {
     leverage += LEVERAGE_RANK_BONUS;
+    history.push({ stepIndex: -1, delta: LEVERAGE_RANK_BONUS, source: 'rank_bonus' });
+  }
+
+  // ─── Secret bonus (THR-30) ───────────────────────────────────────
+  // Actor holds an unrevealed secret about the target
+  const secretEdges = graph.getOutgoingEdges(actorId, 'knows_secret_of')
+    .filter(e => e.target === targetId && !(e.properties.revealed as boolean));
+  if (secretEdges.length > 0) {
+    const bestSecret = secretEdges.reduce((best, e) =>
+      ((e.properties.magnitude as number) ?? 0) > ((best.properties.magnitude as number) ?? 0) ? e : best
+    );
+    const secretMagnitude = (bestSecret.properties.magnitude as number) ?? 0;
+    const secretBonus = secretMagnitude * SECRET_LEVERAGE_MULTIPLIER;
+    leverage += secretBonus;
+    history.push({ stepIndex: -1, delta: secretBonus, source: 'secret_bonus' });
+  }
+
+  // ─── Favor bonus (THR-30) ────────────────────────────────────────
+  // Target owes actor a favor
+  const favorEdges = graph.getOutgoingEdges(targetId, 'owes_favor')
+    .filter(e => e.target === actorId
+      && !(e.properties.redeemed as boolean)
+      && !(e.properties.broken as boolean));
+  if (favorEdges.length > 0) {
+    const bestFavor = favorEdges.reduce((best, e) =>
+      ((e.properties.magnitude as number) ?? 0) > ((best.properties.magnitude as number) ?? 0) ? e : best
+    );
+    const favorMagnitude = (bestFavor.properties.magnitude as number) ?? 0;
+    const favorBonus = favorMagnitude * FAVOR_LEVERAGE_MULTIPLIER;
+    leverage += favorBonus;
+    history.push({ stepIndex: -1, delta: favorBonus, source: 'favor_bonus' });
   }
 
   // Clamp to cap — can't start with a dominant advantage
-  return Math.min(leverage, LEVERAGE_INITIAL_CAP);
+  return { leverage: Math.min(leverage, LEVERAGE_INITIAL_CAP), history };
 }
 
 /**

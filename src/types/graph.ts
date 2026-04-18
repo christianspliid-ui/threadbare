@@ -87,7 +87,10 @@ export type EdgeType =
   // Spell System
   | 'knows_spell'      // actor → spell_template (learned spell)
   // Causation (THR-116)
-  | 'caused_by';       // event → event/seed (this encounter was set up by that one)
+  | 'caused_by'        // event → event/seed (this encounter was set up by that one)
+  // Social leverage (THR-30)
+  | 'knows_secret_of'  // discoverer → secret subject (KnowsSecretOfEdgeProperties)
+  | 'owes_favor';      // debtor → creditor (OwesFavorEdgeProperties)
 
 /** Result type for graph mutations */
 export interface GraphMutation {

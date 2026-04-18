@@ -100,6 +100,37 @@ export interface BondSummary {
   basis: string;
 }
 
+/** Compact summary of one known secret for UI display */
+export interface SecretSummary {
+  subjectId: string;
+  subjectName: string;
+  secretType: string;
+  magnitude: number;
+  revealed: boolean;
+}
+
+/** Compact summary of one favor for UI display */
+export interface FavorSummary {
+  counterpartyId: string;
+  counterpartyName: string;
+  magnitude: number;
+  context: string;
+  /** true = agent is the debtor; false = agent is the creditor */
+  isDebtor: boolean;
+}
+
+/** Social leverage data bundled into AgentDetail (THR-30) */
+export interface LeverageSummary {
+  /** Unrevealed secrets THIS agent knows about others */
+  secretsHeld: SecretSummary[];
+  /** Unrevealed secrets others hold about THIS agent */
+  secretsAbout: SecretSummary[];
+  /** Favors THIS agent owes to others (debts) */
+  favorsOwed: FavorSummary[];
+  /** Favors others owe to THIS agent (credits) */
+  favorsOwedToMe: FavorSummary[];
+}
+
 export interface AgentDetail {
   id: string;
   name: string;
@@ -133,6 +164,8 @@ export interface AgentDetail {
   quintessence?: number;
   /** Trait summaries for display — grouped by category. Only includes public traits. */
   traits?: TraitSummary[];
+  /** Social leverage data: secrets and favors (THR-30). Undefined if none. */
+  leverage?: LeverageSummary;
 }
 
 /** Display-ready trait summary for the AgentDetailPanel */
@@ -377,6 +410,73 @@ export function getAgentDetail(
   // ─── Trait data ─────────────────────────────────────────────────
   const traitSummaries = getAgentTraitSummaries(graph, agentId);
 
+  // ─── Leverage data (THR-30) ──────────────────────────────────────
+  const secretsHeld: SecretSummary[] = graph.getOutgoingEdges(agentId, 'knows_secret_of')
+    .filter(e => !(e.properties.revealed as boolean))
+    .map(e => {
+      const subjectNode = graph.getNode(e.target);
+      return {
+        subjectId: e.target,
+        subjectName: subjectNode?.name ?? '(unknown)',
+        secretType: (e.properties.secretType as string) ?? 'hidden_weakness',
+        magnitude: (e.properties.magnitude as number) ?? 0,
+        revealed: false,
+      };
+    })
+    .sort((a, b) => b.magnitude - a.magnitude)
+    .slice(0, 5);
+
+  const secretsAbout: SecretSummary[] = graph.getIncomingEdges(agentId, 'knows_secret_of')
+    .filter(e => !(e.properties.revealed as boolean))
+    .map(e => {
+      const holderNode = graph.getNode(e.source);
+      return {
+        subjectId: e.source,
+        subjectName: holderNode?.name ?? '(unknown)',
+        secretType: (e.properties.secretType as string) ?? 'hidden_weakness',
+        magnitude: (e.properties.magnitude as number) ?? 0,
+        revealed: false,
+      };
+    })
+    .sort((a, b) => b.magnitude - a.magnitude)
+    .slice(0, 5);
+
+  const favorsOwed: FavorSummary[] = graph.getOutgoingEdges(agentId, 'owes_favor')
+    .filter(e => !(e.properties.redeemed as boolean) && !(e.properties.broken as boolean))
+    .map(e => {
+      const creditorNode = graph.getNode(e.target);
+      return {
+        counterpartyId: e.target,
+        counterpartyName: creditorNode?.name ?? '(unknown)',
+        magnitude: (e.properties.magnitude as number) ?? 0,
+        context: (e.properties.context as string) ?? '',
+        isDebtor: true,
+      };
+    })
+    .sort((a, b) => b.magnitude - a.magnitude)
+    .slice(0, 5);
+
+  const favorsOwedToMe: FavorSummary[] = graph.getIncomingEdges(agentId, 'owes_favor')
+    .filter(e => !(e.properties.redeemed as boolean) && !(e.properties.broken as boolean))
+    .map(e => {
+      const debtorNode = graph.getNode(e.source);
+      return {
+        counterpartyId: e.source,
+        counterpartyName: debtorNode?.name ?? '(unknown)',
+        magnitude: (e.properties.magnitude as number) ?? 0,
+        context: (e.properties.context as string) ?? '',
+        isDebtor: false,
+      };
+    })
+    .sort((a, b) => b.magnitude - a.magnitude)
+    .slice(0, 5);
+
+  const hasLeverage = secretsHeld.length > 0 || secretsAbout.length > 0
+    || favorsOwed.length > 0 || favorsOwedToMe.length > 0;
+  const leverage: LeverageSummary | undefined = hasLeverage
+    ? { secretsHeld, secretsAbout, favorsOwed, favorsOwedToMe }
+    : undefined;
+
   return {
     id: agentId,
     name: agentNode.name,
@@ -405,6 +505,7 @@ export function getAgentDetail(
     portraitUrl,
     quintessence: (props.quintessence as number | undefined),
     traits: traitSummaries.length > 0 ? traitSummaries : undefined,
+    leverage,
   };
 }
 

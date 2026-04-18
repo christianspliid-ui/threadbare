@@ -88,7 +88,8 @@ describe('computeInitialLeverage', () => {
     graph.addNode({ id: 'a1', type: 'actor', name: 'Actor', properties: {} });
     graph.addNode({ id: 't1', type: 'actor', name: 'Target', properties: {} });
     const result = computeInitialLeverage(graph, 'a1', 't1');
-    expect(result).toBe(0);
+    expect(result.leverage).toBe(0);
+    expect(result.history).toEqual([]);
   });
 
   it('applies bond bonus when actor has strong trust with target', () => {
@@ -104,8 +105,9 @@ describe('computeInitialLeverage', () => {
       properties: { trust: 0.8 },
     });
     const result = computeInitialLeverage(graph, 'a1', 't1');
-    expect(result).toBeGreaterThan(0);
-    expect(result).toBeGreaterThanOrEqual(LEVERAGE_BOND_BONUS);
+    expect(result.leverage).toBeGreaterThan(0);
+    expect(result.leverage).toBeGreaterThanOrEqual(LEVERAGE_BOND_BONUS);
+    expect(result.history.some(h => h.source === 'bond_bonus')).toBe(true);
   });
 
   it('is capped at LEVERAGE_INITIAL_CAP (0.30)', () => {
@@ -120,21 +122,21 @@ describe('computeInitialLeverage', () => {
       properties: { trustScore: 1.0 },
     });
     const result = computeInitialLeverage(graph, 'a1', 't1');
-    expect(result).toBeLessThanOrEqual(LEVERAGE_INITIAL_CAP);
+    expect(result.leverage).toBeLessThanOrEqual(LEVERAGE_INITIAL_CAP);
   });
 
   it('returns 0 when actor node is missing (fail-soft)', () => {
     const graph = buildGraph();
     graph.addNode({ id: 't1', type: 'actor', name: 'Target', properties: {} });
     const result = computeInitialLeverage(graph, 'missing', 't1');
-    expect(result).toBe(0);
+    expect(result.leverage).toBe(0);
   });
 
   it('returns 0 when target node is missing (fail-soft)', () => {
     const graph = buildGraph();
     graph.addNode({ id: 'a1', type: 'actor', name: 'Actor', properties: {} });
     const result = computeInitialLeverage(graph, 'a1', 'missing');
-    expect(result).toBe(0);
+    expect(result.leverage).toBe(0);
   });
 });
 

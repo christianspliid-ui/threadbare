@@ -41,6 +41,7 @@ import {
 import type { EmittedOmen } from '../types/omen';
 import type { ArtifactTier, FactionMemberSelection } from '../types/unifiedAction';
 import { mulberry32 } from '../lib/prng';
+import { generateSecret, createSecretEdge, createFavorEdge } from './secretGeneration';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -1904,6 +1905,88 @@ export function applyEncounterAftermathReaction(
           reason: effect.reason,
           summary: `thread_branch[${i}]: ${effect.ascendantId}→${effect.newMortalId} (branched from ${effect.sourceMortalId}, strength ${tbrStrength.toFixed(2)})`,
         });
+        break;
+      }
+
+      case 'secret_discovery': {
+        // Explicit effect-level secret discovery (distinct from template-level secretDiscovery flag)
+        const sdActorId = actorAgentId;
+        const sdTargetId = action?.targetId;
+        if (!sdActorId || !sdTargetId) {
+          emitTrace({
+            tick, category: 'secret_discovered', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'secret_discovery', success: false, failReason: 'missing_actor_or_target',
+            summary: `secret_discovery[${i}] skipped: missing actor or target`,
+          });
+          break;
+        }
+        const sdTargetNode = state.graph.getNode(sdTargetId);
+        if (!sdTargetNode) {
+          emitTrace({
+            tick, category: 'secret_discovered', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'secret_discovery', success: false, failReason: 'target_node_missing', targetId: sdTargetId,
+            summary: `secret_discovery[${i}] skipped: target node ${sdTargetId} not found`,
+          });
+          break;
+        }
+        try {
+          const sdSeed = (state.seed ^ tick * 53) >>> 0;
+          const sdRng = mulberry32(sdSeed);
+          const sdSecret = generateSecret(sdTargetNode, state.graph, effect.source, sdRng, effect.magnitudeBonus);
+          const sdCreated = createSecretEdge(sdActorId, sdTargetId, sdSecret, effect.source, tick, state.graph);
+          if (sdCreated) {
+            touchWorld(runtime);
+            mutationSummary.touchedWorld = true;
+            emitTrace({
+              tick, category: 'secret_discovered', agentId: actorAgentId,
+              encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+              effectKind: 'secret_discovery', discovererId: sdActorId, subjectId: sdTargetId,
+              secretType: sdCreated.secretType, magnitude: sdCreated.magnitude, source: sdCreated.source,
+              summary: `secret_discovery[${i}]: ${sdActorId} learned (${sdCreated.secretType}) about ${sdTargetId} via ${effect.source} (mag ${sdCreated.magnitude.toFixed(2)})`,
+            });
+          }
+        } catch {
+          // fail-soft: secret discovery must not block encounter resolution
+        }
+        break;
+      }
+
+      case 'favor_creation': {
+        // Explicit effect-level favor creation (distinct from template-level favorGeneration flag)
+        const fcActorId = actorAgentId;
+        const fcTargetId = action?.targetId;
+        if (!fcActorId || !fcTargetId) {
+          emitTrace({
+            tick, category: 'favor_created', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'favor_creation', success: false, failReason: 'missing_actor_or_target',
+            summary: `favor_creation[${i}] skipped: missing actor or target`,
+          });
+          break;
+        }
+        try {
+          const [magMin, magMax] = effect.magnitudeRange;
+          const fcSeed = (state.seed ^ tick * 61) >>> 0;
+          const fcRng = mulberry32(fcSeed);
+          const fcMagnitude = magMin + fcRng() * (magMax - magMin);
+          // debtor = target (was helped), creditor = actor (did the helping)
+          const fcCreated = createFavorEdge(fcTargetId, fcActorId, fcMagnitude, effect.context, tick, state.graph);
+          if (fcCreated) {
+            touchWorld(runtime);
+            mutationSummary.touchedWorld = true;
+            emitTrace({
+              tick, category: 'favor_created', agentId: actorAgentId,
+              encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+              effectKind: 'favor_creation', debtorId: fcTargetId, creditorId: fcActorId,
+              magnitude: fcMagnitude, context: effect.context,
+              summary: `favor_creation[${i}]: ${fcTargetId} owes ${fcActorId} (${effect.context}, mag ${fcMagnitude.toFixed(2)})`,
+            });
+          }
+        } catch {
+          // fail-soft
+        }
         break;
       }
     }

@@ -99,7 +99,15 @@ export type TraceCategory =
   | 'thread_mutation_applied'
   | 'thread_mutation_skipped'
   // Intelligence reliability decay traces (THR-137)
-  | 'intelligence_decayed';
+  | 'intelligence_decayed'
+  // Secrets & Favors traces (THR-30)
+  | 'secret_discovered'
+  | 'secret_revealed'
+  | 'favor_created'
+  | 'favor_redeemed'
+  | 'favor_broken'
+  | 'favor_tension'
+  | 'secret_decayed';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -186,6 +194,14 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'thread_mutation_skipped',
   // Intelligence reliability decay traces (THR-137)
   'intelligence_decayed',
+  // Secrets & Favors traces (THR-30)
+  'secret_discovered',
+  'secret_revealed',
+  'favor_created',
+  'favor_redeemed',
+  'favor_broken',
+  'favor_tension',
+  'secret_decayed',
 ];
 
 /** Base shape for all trace entries */

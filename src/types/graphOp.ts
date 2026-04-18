@@ -73,7 +73,10 @@ export type GraphOpType =
   | 'remove_edge'
   | 'update_edge'
   | 'apply_influence'
-  | 'set_thread_courtposition';
+  | 'set_thread_courtposition'
+  | 'reveal_secret'    // THR-30: marks actor's best knows_secret_of→target as revealed
+  | 'call_in_favor'   // THR-30: marks target's best owes_favor→actor as redeemed
+  | 'plant_secret';   // THR-30: creates a fabricated knows_secret_of edge actor→target
 
 /**
  * Payload for the apply_influence GraphOp.

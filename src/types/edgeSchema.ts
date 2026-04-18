@@ -335,6 +335,26 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     requiredProperties: [],
     description: 'Army or agent participates in a battle node.',
   },
+
+  // ── Social Leverage (THR-30) ──────────────────────────────────────
+  knows_secret_of: {
+    type: 'knows_secret_of',
+    sourceNodeType: 'actor',
+    targetNodeType: 'actor',
+    direction: 'directed',
+    cardinality: 'many-to-many',
+    requiredProperties: ['secretType', 'magnitude', 'discoveredTick', 'source', 'revealed'],
+    description: 'Discoverer holds a secret about the subject. Properties: secretType, magnitude, discoveredTick, source, revealed, revealedTick?, revealedTo?, detail?.',
+  },
+  owes_favor: {
+    type: 'owes_favor',
+    sourceNodeType: 'actor',
+    targetNodeType: 'actor',
+    direction: 'directed',
+    cardinality: 'many-to-many',
+    requiredProperties: ['magnitude', 'context', 'grantedTick', 'redeemed', 'broken'],
+    description: 'Debtor owes a social favor to the creditor. Properties: magnitude, context, grantedTick, redeemed, broken.',
+  },
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────
