@@ -136,6 +136,14 @@ export type TraceCategory =
   | 'ruins.clue_suppressed_no_eligible_recipient'
   | 'ruins.clue_receiver_selected'
   | 'ruins.density_seeded'
+  // Ruins layer — delve variant traces (THR-152)
+  | 'ruins.delve_start'
+  | 'ruins.delve_tick'
+  | 'ruins.delve_success'
+  | 'ruins.delve_partial'
+  | 'ruins.delve_fail'
+  | 'ruins.delve_aborted'
+  | 'ruins.schema_drift'
   // Ruins layer — quest hook traces (THR-156)
   | 'ruins.quest_hook_issued'
   | 'ruins.quest_hook_suppressed'
@@ -262,6 +270,14 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'ruins.clue_suppressed_no_eligible_recipient',
   'ruins.clue_receiver_selected',
   'ruins.density_seeded',
+  // Delve variant traces (THR-152)
+  'ruins.delve_start',
+  'ruins.delve_tick',
+  'ruins.delve_success',
+  'ruins.delve_partial',
+  'ruins.delve_fail',
+  'ruins.delve_aborted',
+  'ruins.schema_drift',
   // Quest hook traces (THR-156)
   'ruins.quest_hook_issued',
   'ruins.quest_hook_suppressed',
@@ -318,6 +334,10 @@ export interface NarrativeGenerationTrace extends TraceBase {
   placeholdersResolved?: string[];
   /** THR-86: reason enrichProse was skipped for this routine event */
   fallbackReason?: 'no_graph' | 'no_actor_id';
+  /** THR-31: present when the template is faction-scoped */
+  factionId?: string;
+  /** THR-31: number of voice-bible lexicon hits (for voice lint debugging) */
+  voiceLintHits?: number;
 }
 
 /** Trace: narrative context harvested for an event */
@@ -1042,6 +1062,10 @@ export interface EncounterSeedPlantedTrace extends TraceBase {
   eligibleAfterTick: number;
   seedLabel: string;
   priority: number;
+  /** THR-31: present for faction-sourced seeds */
+  sourceFactionId?: string;
+  /** THR-31: human-readable cause, e.g. "betrayal follow-up" */
+  reason?: string;
 }
 
 /** Trace: encounter seed consumed — fired into an action, used as a narrative beat, or discarded */
@@ -1068,6 +1092,8 @@ export interface HiddenMarkPlacedTrace extends TraceBase {
   severity: number;
   revealFamilies: readonly string[];
   label: string;
+  /** THR-31: present for faction-sourced marks */
+  sourceFactionId?: string;
 }
 
 /** Trace: hidden mark revealed (consumed) by a matching encounter or action */

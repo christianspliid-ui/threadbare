@@ -67,3 +67,35 @@ export const FACTION_ALERT_GLYPH = '⚜';
 
 /** Amber/gold, Threadbare palette */
 export const FACTION_ALERT_COLOR = '#D4A574';
+
+// ─── Faction Prose Constants (THR-31) ────────────────────────────────────
+
+/** Cap on single-outcome reputation swing; enforced in review */
+export const FACTION_PROSE_MAX_REPUTATION_DELTA_PER_OUTCOME = 0.10;
+
+/** Default delayTicks for quest-seeded follow-up encounters */
+export const FACTION_PROSE_SEED_DELAY_QUEST_TICKS = 12;
+
+/** Default delayTicks for social-seeded follow-ups */
+export const FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS = 6;
+
+/** Default severity for faction-sourced hidden marks */
+export const FACTION_PROSE_HIDDEN_MARK_DEFAULT_SEVERITY = 0.4;
+
+/** Elevated severity for faction betrayal marks */
+export const FACTION_PROSE_HIDDEN_MARK_BETRAYAL_SEVERITY = 0.7;
+
+/** Minimum reactions per aftermath block */
+export const FACTION_PROSE_AFTERMATH_REACTION_MIN = 2;
+
+/** Maximum reactions per aftermath block (keeps UI readable) */
+export const FACTION_PROSE_AFTERMATH_REACTION_MAX = 4;
+
+/** Minimum enrichment placeholder per step narrative (lint-enforced) */
+export const FACTION_PROSE_PLACEHOLDER_MIN_PER_STEP = 1;
+
+/** Minimum conditional block per template (lint-enforced) */
+export const FACTION_PROSE_CONDITIONAL_MIN_PER_TEMPLATE = 1;
+
+/** Minimum voice-bible lexicon hits per template (voice lint advisory) */
+export const FACTION_PROSE_VOICE_LEXICON_MIN_HITS = 3;
