@@ -103,7 +103,10 @@ export type LocationSubtype =
   | 'corruption_zone'  // Entropy + Chaos — spreading wrongness
   | 'wilderness'   // default — no overlay icon
   | 'lair'         // monster lair (m2.5)
-  | 'cleared_lair'; // lair cleared by a faction (m2.5)
+  | 'cleared_lair' // lair cleared by a faction (m2.5)
+  // ── Ruins layer (THR-149) ──
+  | 'elder_ruin'      // systemic ruin eligible for delves (distinct from cosmetic 'ruins'/'ruined_*')
+  | 'place_of_power'; // transformed elder_ruin — permanent essence stream source
 
 /** A single hex tile with all computed properties */
 export interface HexTile {

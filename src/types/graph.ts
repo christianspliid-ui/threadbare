@@ -100,7 +100,9 @@ export type EdgeType =
   | 'caused_by'        // event → event/seed (this encounter was set up by that one)
   // Social leverage (THR-30)
   | 'knows_secret_of'  // discoverer → secret subject (KnowsSecretOfEdgeProperties)
-  | 'owes_favor';      // debtor → creditor (OwesFavorEdgeProperties)
+  | 'owes_favor'       // debtor → creditor (OwesFavorEdgeProperties)
+  // Ruins layer (THR-149)
+  | 'knows_clue_of';   // knower → target ruin (KnowsClueOfEdgeProperties in src/types/knowledge.ts)
 
 /** Result type for graph mutations */
 export interface GraphMutation {

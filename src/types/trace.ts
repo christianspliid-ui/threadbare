@@ -115,7 +115,24 @@ export type TraceCategory =
   | 'initiative_failed'
   // Portfolio-pinning traces (THR-148)
   | 'portfolio.pinned'
-  | 'portfolio.unpinned';
+  | 'portfolio.unpinned'
+  // Ruins layer traces (THR-149)
+  | 'ruins.clue_discovered'
+  | 'ruins.clue_consumed'
+  | 'ruins.clue_decayed'
+  | 'ruins.delve_admitted'
+  | 'ruins.delve_blocked'
+  | 'ruins.delve_beat'
+  | 'ruins.delve_emergence'
+  | 'ruins.delve_consequence'
+  | 'ruins.ruin_transformed'
+  | 'ruins.pop_stream'
+  | 'ruins.pop_holder_changed'
+  | 'ruins.pop_stream_decayed'
+  | 'ruins.divine_mark_composed'
+  | 'ruins.divine_mark_discovered'
+  | 'ruins.clue_suppressed_no_eligible_recipient'
+  | 'ruins.clue_receiver_selected';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -218,6 +235,23 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // Portfolio-pinning traces (THR-148)
   'portfolio.pinned',
   'portfolio.unpinned',
+  // Ruins layer (PR 1 — THR-149)
+  'ruins.clue_discovered',
+  'ruins.clue_consumed',
+  'ruins.clue_decayed',
+  'ruins.delve_admitted',
+  'ruins.delve_blocked',
+  'ruins.delve_beat',
+  'ruins.delve_emergence',
+  'ruins.delve_consequence',
+  'ruins.ruin_transformed',
+  'ruins.pop_stream',
+  'ruins.pop_holder_changed',
+  'ruins.pop_stream_decayed',
+  'ruins.divine_mark_composed',
+  'ruins.divine_mark_discovered',
+  'ruins.clue_suppressed_no_eligible_recipient',
+  'ruins.clue_receiver_selected',
 ];
 
 /** Base shape for all trace entries */
