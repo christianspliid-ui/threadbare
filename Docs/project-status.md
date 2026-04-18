@@ -11,12 +11,18 @@
 - **UI Visual Overhaul — Design System v1 (Now):** ✅ THR-168 tokens. ✅ THR-169 typography floor. ✅ THR-170 primitives. ✅ THR-183 Vara seed. ✅ THR-172 SphereIcon. THR-173 Thread Panel next.
 - **Attention Tier Model (Now):** ✅ THR-16 curator metadata. ✅ THR-18 siege templates + digest wiring. UI integration ongoing.
 - **Social Systems Expansion (Now):** THR-28/27/30/51/29/41/34 shipped. THR-78 queued.
-- **Thematic Pressure & Living World (Next):** THR-19 Omen Agenda shipped. ✅ THR-122/125/126 shipped. THR-87 (cool failure prose) blocked by THR-116.
+- **Thematic Pressure & Living World (Next):** THR-19 Omen Agenda shipped. ✅ THR-122/125/126/80/128 shipped. THR-127 Living World summary bar next. THR-87 (cool failure prose) blocked by THR-116.
 - **Agent Success Redesign (Next):** Phases 1-4 shipped. Phases 5-8 queued.
 - **Rarity Model (Next):** Three deferred Phase D items.
 - **Procedural Hex Vignettes (Next):** Phases 2-5 queued.
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
+
+## Recent Completions (2026-04-19) — THR-128
+- **THR-128 — Omen vocabulary injection into murmur prose:** `getOmenTemplateById` imported into `deriveLocationActivities.ts`. In `selectMurmurs`, after picking the murmur, the active omen's template vocabulary is resolved; two deterministic rng() calls pre-pick an adjective and atmosphere phrase. Replaces `{omen_adj}` / `{omen_atmosphere}` placeholders in the murmur string (forward-compat for future templates), and at `OMEN_VOCAB_INJECT_PROBABILITY=0.4` appends the atmosphere phrase as a second murmur line. Fail-soft: unknown templateId → no injection, no crash. 6 new tests.
+
+## Recent Completions (2026-04-19) — THR-80
+- **THR-80 — Doom-echo omen templates for 4 new archetypes:** 16 new `OmenTrackTemplate` entries (4 per archetype, stages 0–3): `changing` (chaos/flux), `sundering` (force/severing), `failing` (time/entropy), `ascension` (spirit/transcendence). Each template has prose beats with `{location}` placeholder, `vocabulary{adjectives,verbs,nouns,atmosphere}`, `doomStageRange`, `durationRange`. Spread into `OMEN_TEMPLATES` registry. 13 new acceptance tests in `omen-templates-content.test.ts`.
 
 ## Recent Completions (2026-04-19) — THR-125
 - **THR-125 — Hex pulse ambient glow layer for tense/volatile hexes:** New `HexPulseMesh.ts` InstancedMesh sublayer (RENDER_ORDER.HEX_PULSE=7.5, LAYER_Z.HEX_PULSE=0.060) renders radial gradient quads at hexes where LocationActivitySummary.pulse is `tense` (amber) or `volatile` (red). AdditiveBlending keeps it atmospheric. `tickHexPulse` breathes material opacity at 0.6 Hz. Visible at hero-local + regional only. `updateHexPulseMesh` keyed from `locationActivityMap` prop via dedicated useEffect. 14 new tests.
@@ -35,15 +41,6 @@
 
 ## Recent Completions (2026-04-19) — THR-122
 - **THR-122 — THR-21 deferrals (death-site spirit pressure, returnEngine doom prose, trust-decay amplifier):** `phaseProsperity` emits `SpherePressureEvent{sphere:'spirit'}` for death-site locations when `IdentityLocationPressure.deathSiteSpiritPressure` is set (Reckoning matrix, `RECKONING_DEATH_SITE_SPIRIT_PRESSURE=2`). `returnEngine.ts` threads `DoomIdentityMatrix` into `getReturnProse`/`applyRippleConsequences` so `{doom_verb}/{doom_adj}/{doom_atmosphere}` placeholders resolve in return prose. `complicationEffects.ts` amplifies `trust_decay` magnitude by `IDENTITY_TRUST_DECAY_MODIFIER` (1.2×) when doom identity active. 6 new tests.
-
-## Recent Completions (2026-04-19) — THR-121
-- **THR-121 — Add agentAwareness to RivalState + wire rival_awareness complication effect:** Added `agentAwareness?: Partial<Record<string, number>>` to `RivalState`. Added `RIVAL_AWARENESS_HOSTILITY_WEIGHT = 0.2` to `sphereAffinity.ts`. Moved `rival_awareness` handling to actor-independent section of `applyEffect` (removes silent no-op cast). `phaseRivalActions` computes max agentAwareness and adds it × weight to effective hostility for action selection. 3 new tests.
-
-## Recent Completions (2026-04-19) — THR-120
-- **THR-120 — Add spherePressures to WorldSoulState and wire sphere_pressure complication effect:** Added `spherePressures?: Partial<Record<string, number>>` to `WorldSoulState`. Moved `sphere_pressure` case before `actorNode` guard in `applyEffect` (it doesn't need the actor). Added `SPHERE_PRESSURE_OMEN_BIAS_WEIGHT = 1.0` constant and modified `getSphereDominance()` in `phaseOmenAgenda.ts` to blend sphere pressures into apparent sphere dominance, biasing sphere-surge omen selection toward pressured spheres. 6 new tests.
-
-## Recent Completions (2026-04-19) — THR-119
-- **THR-119 — Wire partial_progress complication to advance step progress:** Removed stale `_complicationPartialProgress` actor-node property write in `complicationEffects.ts`. Added consumer in `executeStepResult` that reads `fraction` directly from `ComplicationResult.effects` and applies `floor(fraction * stepDuration)` ticks as head-start on the next step's `stepProgress` (capped at `stepDuration - 1`). Emits `complication_partial_progress` trace. 1 regression test.
 
 ## Archived to project-history.md
 - THR-81/172/183/170/181/156/18/155/151/29/154/166/150 (2026-04-18/19) and earlier — see project-history.md

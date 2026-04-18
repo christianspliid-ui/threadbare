@@ -34,6 +34,7 @@ import type {
   HexPulseSummary,
 } from '../types/locationActivity';
 import { mulberry32 } from '../lib/prng';
+import { getOmenTemplateById } from '../data/omenTemplates';
 
 // ── NFP #1: Named constants ────────────────────────────────────────────────────
 
@@ -54,6 +55,8 @@ export const LOCATION_ACTIVITY_CONSTANTS = {
   TEMPERATURE_HEATED_LOOKBACK: 3,
   /** Prime multiplier for PRNG seeding per location (avoids correlation) */
   MURMUR_LOCATION_SEED_PRIME: 2654435761,
+  /** Probability [0,1] that an active omen appends an atmosphere phrase as a second murmur line */
+  OMEN_VOCAB_INJECT_PROBABILITY: 0.4,
 } as const;
 
 // ── Activity category inference ────────────────────────────────────────────────
@@ -472,12 +475,21 @@ function selectMurmurs(
   const idx = Math.floor(rng() * pool.length);
   let murmur = pool[idx] ?? GENERIC_MURMUR;
 
-  // Omen injection — replace placeholders when active omen vocabulary is available
+  // Omen injection — replace placeholders and optionally append atmosphere when omen is active.
+  // Consume vocab rng calls upfront (deterministic regardless of which substitution fires).
   const activeOmen = omenState?.primary ?? omenState?.secondary;
-  if (activeOmen) {
-    // We need the vocabulary — it lives in OmenTrackTemplate, not ActiveOmen.
-    // Since we don't want to import the full template registry here, we skip omen injection.
-    // TODO(THR-128): inject omen vocabulary once OmenTrackTemplate is accessible from runtime state.
+  const omenVocab = activeOmen ? getOmenTemplateById(activeOmen.templateId)?.vocabulary : undefined;
+  if (omenVocab) {
+    const adjPick = omenVocab.adjectives.length > 0
+      ? (omenVocab.adjectives[Math.floor(rng() * omenVocab.adjectives.length)] ?? '')
+      : (rng(), '');
+    const atmPick = omenVocab.atmosphere.length > 0
+      ? (omenVocab.atmosphere[Math.floor(rng() * omenVocab.atmosphere.length)] ?? '')
+      : (rng(), '');
+    murmur = murmur.replace(/\{omen_adj\}/g, adjPick).replace(/\{omen_atmosphere\}/g, atmPick);
+    if (rng() < LOCATION_ACTIVITY_CONSTANTS.OMEN_VOCAB_INJECT_PROBABILITY && atmPick) {
+      return [murmur, atmPick];
+    }
   }
 
   return [murmur];

@@ -1,5 +1,5 @@
 /**
- * Tests for deriveLocationActivities (THR-22).
+ * Tests for deriveLocationActivities (THR-22, THR-128).
  *
  * Tests cover:
  *   - Pulse computation from agent threads
@@ -8,6 +8,7 @@
  *   - Murmur template selection (deterministic)
  *   - Fog-hidden hex exclusion
  *   - Fail-soft: empty locations, missing agents
+ *   - Omen vocabulary injection into murmur prose (THR-128)
  */
 
 import { describe, it, expect } from 'vitest';
@@ -19,6 +20,7 @@ import {
 import type { AgentActivityThread } from '../../types/locationActivity';
 import { WorldGraph } from '../graph';
 import type { UnifiedAction } from '../../types/unifiedAction';
+import type { OmenState } from '../../types/omen';
 
 // ── Test helpers ──────────────────────────────────────────────────────────────
 
@@ -340,5 +342,150 @@ describe('deriveLocationActivities', () => {
     const summary = result.summaries.get('loc-1')!;
     expect(summary.murmurs.length).toBeGreaterThan(0);
     expect(summary.murmurs[0]).toBeTruthy();
+  });
+});
+
+// ── Omen vocabulary injection (THR-128) ───────────────────────────────────────
+
+function makeOmenState(templateId: string): OmenState {
+  return {
+    primary: {
+      templateId,
+      name: 'Test Omen',
+      category: 'doom_echo',
+      startTick: 0,
+      duration: 10,
+      slot: 'primary',
+      lastBeatTick: 0,
+    },
+    secondary: null,
+    history: [],
+  };
+}
+
+describe('omen vocabulary injection (THR-128)', () => {
+  it('murmurs are deterministic with same omenState', () => {
+    const graph = makeGraph();
+    addLocation(graph, 'loc-1', 5, 3);
+    const omenState = makeOmenState('omen.breach.thin_places');
+
+    const r1 = deriveLocationActivities({
+      graph, unifiedActions: [], familiarityMap: new Map(),
+      visibleHexKeys: new Set(['5,3']), tick: 5, omenState,
+    });
+    const r2 = deriveLocationActivities({
+      graph, unifiedActions: [], familiarityMap: new Map(),
+      visibleHexKeys: new Set(['5,3']), tick: 5, omenState,
+    });
+    expect(r1.summaries.get('loc-1')!.murmurs).toEqual(
+      r2.summaries.get('loc-1')!.murmurs,
+    );
+  });
+
+  it('omen injection does not throw for unknown templateId (fail-soft)', () => {
+    const graph = makeGraph();
+    addLocation(graph, 'loc-1', 5, 3);
+    const omenState = makeOmenState('omen.nonexistent.template');
+
+    expect(() => deriveLocationActivities({
+      graph, unifiedActions: [], familiarityMap: new Map(),
+      visibleHexKeys: new Set(['5,3']), tick: 1, omenState,
+    })).not.toThrow();
+  });
+
+  it('without omen, murmur is always a single line', () => {
+    const graph = makeGraph();
+    addLocation(graph, 'loc-1', 5, 3);
+
+    for (let tick = 0; tick < 10; tick++) {
+      const result = deriveLocationActivities({
+        graph, unifiedActions: [], familiarityMap: new Map(),
+        visibleHexKeys: new Set(['5,3']), tick,
+      });
+      expect(result.summaries.get('loc-1')!.murmurs).toHaveLength(1);
+    }
+  });
+
+  it('with active omen, some ticks produce a second murmur line (atmosphere injection)', () => {
+    const graph = makeGraph();
+    addLocation(graph, 'loc-1', 5, 3);
+    const omenState = makeOmenState('omen.breach.thin_places');
+    // The omen vocabulary atmosphere has 3 entries; at 0.4 probability over 30 ticks
+    // we expect at least 1 tick to produce a 2-line murmur.
+    let twoLineCount = 0;
+    for (let tick = 0; tick < 30; tick++) {
+      const result = deriveLocationActivities({
+        graph, unifiedActions: [], familiarityMap: new Map(),
+        visibleHexKeys: new Set(['5,3']), tick, omenState,
+      });
+      const murmurs = result.summaries.get('loc-1')!.murmurs;
+      expect(murmurs.length).toBeGreaterThanOrEqual(1);
+      expect(murmurs.length).toBeLessThanOrEqual(2);
+      if (murmurs.length === 2) twoLineCount++;
+    }
+    expect(twoLineCount).toBeGreaterThan(0);
+  });
+
+  it('injected atmosphere line comes from the omen template vocabulary', () => {
+    const graph = makeGraph();
+    addLocation(graph, 'loc-1', 5, 3);
+    const omenState = makeOmenState('omen.breach.thin_places');
+    const knownAtmosphere = [
+      'Something watches from the wrong side of the world.',
+      'The air tastes of distance and iron.',
+      'Shadows fall at angles that do not match the sun.',
+    ];
+
+    for (let tick = 0; tick < 50; tick++) {
+      const result = deriveLocationActivities({
+        graph, unifiedActions: [], familiarityMap: new Map(),
+        visibleHexKeys: new Set(['5,3']), tick, omenState,
+      });
+      const murmurs = result.summaries.get('loc-1')!.murmurs;
+      if (murmurs.length === 2) {
+        expect(knownAtmosphere).toContain(murmurs[1]);
+        return; // found a 2-line murmur with valid content — test passes
+      }
+    }
+    // If we didn't see a 2-line murmur, fail informatively
+    expect(true).toBe(false); // should have seen at least one injection in 50 ticks
+  });
+
+  it('secondary omen is used when primary is null', () => {
+    const graph = makeGraph();
+    addLocation(graph, 'loc-1', 5, 3);
+    const omenState: OmenState = {
+      primary: null,
+      secondary: {
+        templateId: 'omen.breach.thin_places',
+        name: 'Secondary Omen',
+        category: 'doom_echo',
+        startTick: 0,
+        duration: 10,
+        slot: 'secondary',
+        lastBeatTick: 0,
+      },
+      history: [],
+    };
+
+    // Secondary omen should still produce injections
+    let sawInjection = false;
+    for (let tick = 0; tick < 30; tick++) {
+      const result = deriveLocationActivities({
+        graph, unifiedActions: [], familiarityMap: new Map(),
+        visibleHexKeys: new Set(['5,3']), tick, omenState,
+      });
+      if (result.summaries.get('loc-1')!.murmurs.length === 2) {
+        sawInjection = true;
+        break;
+      }
+    }
+    expect(sawInjection).toBe(true);
+  });
+
+  it('OMEN_VOCAB_INJECT_PROBABILITY constant is defined and in [0,1]', () => {
+    const p = LOCATION_ACTIVITY_CONSTANTS.OMEN_VOCAB_INJECT_PROBABILITY;
+    expect(p).toBeGreaterThan(0);
+    expect(p).toBeLessThanOrEqual(1);
   });
 });

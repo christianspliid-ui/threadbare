@@ -3,6 +3,10 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ THR-128 (2026-04-19) — Omen vocab injection into murmur prose: getOmenTemplateById in selectMurmurs; deterministic adj+atm picks; {omen_adj}/{omen_atmosphere} placeholder replacement; 0.4-probability atmosphere suffix; 6 tests
+
+✅ THR-80 (2026-04-19) — Doom-echo templates for changing/sundering/failing/ascension: 16 templates, 4 stages each, vocab + {location} beats; 13 acceptance tests
+
 ✅ THR-125 (2026-04-19) — Hex pulse ambient glow layer: InstancedMesh at RENDER_ORDER 7.5, tense=amber/volatile=red, AdditiveBlending, breathing opacity tick, 14 tests
 
 ✅ THR-81 (2026-04-19) — Wire omenEncounterBias into scoring traces: identityBiasBonus in ScoredCandidate + ScoringTrace.topCandidates; 3 tests
