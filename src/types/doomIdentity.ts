@@ -60,6 +60,9 @@ export const BREACH_FRONTIER_PROSPERITY_PENALTY = -1;
 /** Prosperity bonus applied each tick to centre hexes under Convergence. */
 export const CONVERGENCE_CENTER_PROSPERITY_BONUS = 1;
 
+/** Spirit sphere pressure magnitude applied per tick to death-site locations under Reckoning. */
+export const RECKONING_DEATH_SITE_SPIRIT_PRESSURE = 2;
+
 // ─── Supporting types ────────────────────────────────────────────────────────
 
 /**
@@ -76,6 +79,11 @@ export interface IdentityLocationPressure {
    * Consumed by phaseProsperity; deathCount is incremented by phaseAgentLifecycle.
    */
   deathSiteUnrestBonus?: number;
+  /**
+   * Spirit sphere pressure applied per tick to death-site locations (deathCount > 0).
+   * Consumed by phaseProsperity alongside deathSiteUnrestBonus.
+   */
+  deathSiteSpiritPressure?: number;
 }
 
 /**

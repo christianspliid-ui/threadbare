@@ -557,6 +557,42 @@ describe('phaseProsperity constants', () => {
 
 // ─── computeBaseIncome tests ──────────────────────────────────────────────
 
+// THR-124: death-site spirit pressure variant
+describe('phaseProsperity — death-site spirit pressure (THR-124)', () => {
+  it('emits SpherePressureEvent for death-site location when deathSiteSpiritPressure is set', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'loc-1', type: 'location', name: 'Ashfield', properties: { locationSubtype: 'town', prosperity: 50, deathCount: 2 } });
+    const state = makeState(graph, {
+      doomIdentityMatrix: { locationPressure: { frontierDelta: 0, centerDelta: 0, deathSiteSpiritPressure: 2 } } as GameState['doomIdentityMatrix'],
+    });
+    const result = phaseProsperity(state);
+    expect(result.pendingSpherePressures).toHaveLength(1);
+    expect(result.pendingSpherePressures![0]).toMatchObject({ targetEntityId: 'loc-1', sphere: 'spirit', magnitude: 2, source: 'doom' });
+  });
+
+  it('does not emit spirit pressure when deathCount is 0', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'loc-1', type: 'location', name: 'Ashfield', properties: { locationSubtype: 'town', prosperity: 50, deathCount: 0 } });
+    const state = makeState(graph, {
+      doomIdentityMatrix: { locationPressure: { frontierDelta: 0, centerDelta: 0, deathSiteSpiritPressure: 2 } } as GameState['doomIdentityMatrix'],
+    });
+    const result = phaseProsperity(state);
+    expect(result.pendingSpherePressures ?? []).toHaveLength(0);
+  });
+
+  it('accumulates into existing pendingSpherePressures', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'loc-1', type: 'location', name: 'Ashfield', properties: { locationSubtype: 'town', prosperity: 50, deathCount: 1 } });
+    const existing = [{ targetEntityId: 'some-other', sphere: 'force' as const, magnitude: 3, source: 'rival' as const, sourceId: 'rival-1' }];
+    const state = makeState(graph, {
+      pendingSpherePressures: existing,
+      doomIdentityMatrix: { locationPressure: { frontierDelta: 0, centerDelta: 0, deathSiteSpiritPressure: 2 } } as GameState['doomIdentityMatrix'],
+    });
+    const result = phaseProsperity(state);
+    expect(result.pendingSpherePressures).toHaveLength(2);
+  });
+});
+
 describe('computeBaseIncome', () => {
   it('returns 0 for no resources', () => {
     expect(computeBaseIncome({})).toBe(0);

@@ -13,6 +13,7 @@
  */
 
 import type { DoomIdentityMatrix } from '../types/doomIdentity';
+import { RECKONING_DEATH_SITE_SPIRIT_PRESSURE } from '../types/doomIdentity';
 import type { DoomClockArchetype } from '../types/doomClock';
 
 // ─── Breach ──────────────────────────────────────────────────────────────────
@@ -232,7 +233,8 @@ const RECKONING: DoomIdentityMatrix = {
   locationPressure: {
     frontierDelta:  0,
     centerDelta:   -1,
-    deathSiteUnrestBonus: 3, // old violence remembered
+    deathSiteUnrestBonus: 3,     // old violence remembered
+    deathSiteSpiritPressure: RECKONING_DEATH_SITE_SPIRIT_PRESSURE,
   },
 
   familiarityGainModifier: 0.9, // wariness tempers openness

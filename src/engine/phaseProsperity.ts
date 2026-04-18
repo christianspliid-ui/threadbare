@@ -23,7 +23,7 @@ import type { GameState, ProsperityShock } from '../types/gameState';
 import type { WorldGraph } from './graph';
 import type { HexTile } from '../types/index';
 import type { ResourceInstance } from '../types/resource';
-import type { SphereAffinity } from '../types/sphereAffinity';
+import type { SphereAffinity, SpherePressureEvent } from '../types/sphereAffinity';
 import { emitTrace } from './traceBuffer';
 import { getNodeSphereAffinity } from './sphereAffinity';
 import { IDENTITY_PROSPERITY_MODIFIER_CAP } from '../types/doomIdentity';
@@ -419,6 +419,7 @@ export function phaseProsperity(state: GameState): Partial<GameState> {
   const { graph, tick, tiles } = state;
   const shocks = state.prosperityShocks ?? [];
   const locations = graph.getNodesByType('location');
+  const deathSiteSphereEvents: SpherePressureEvent[] = [];
 
   // Derive map bounds for frontier/center classification (identity location pressure)
   const identityPressure = state.doomIdentityMatrix?.locationPressure;
@@ -519,18 +520,35 @@ export function phaseProsperity(state: GameState): Partial<GameState> {
     loc.properties.prosperity = newProsperity;
     loc.properties.populationTrend = populationTrend;
 
-    // 9.5 Death-site haunting — locations where agents died gain unrest each tick.
+    // 9.5 Death-site haunting — locations where agents died gain unrest and Spirit pressure each tick.
     // deathCount is incremented by phaseAgentLifecycle when an agent dies here.
-    // Unrest is applied after prosperity so the penalty takes effect next tick.
-    // TODO(THR-124): wire RECKONING_DEATH_SITE_SPIRIT_PRESSURE sphere-pressure variant (deathSiteUnrestBonus wired here)
     const deathSiteUnrestBonus = identityPressure?.deathSiteUnrestBonus ?? 0;
+    const deathSiteSpiritPressure = identityPressure?.deathSiteSpiritPressure ?? 0;
     let deathSiteUnrestApplied = 0;
-    if (deathSiteUnrestBonus > 0) {
+    if ((deathSiteUnrestBonus > 0 || deathSiteSpiritPressure > 0)) {
       const deathCount = typeof loc.properties.deathCount === 'number' ? loc.properties.deathCount : 0;
       if (deathCount > 0) {
-        const prevUnrest = typeof loc.properties.unrest === 'number' ? loc.properties.unrest : 0;
-        deathSiteUnrestApplied = deathSiteUnrestBonus;
-        loc.properties.unrest = Math.min(100, prevUnrest + deathSiteUnrestApplied);
+        if (deathSiteUnrestBonus > 0) {
+          const prevUnrest = typeof loc.properties.unrest === 'number' ? loc.properties.unrest : 0;
+          deathSiteUnrestApplied = deathSiteUnrestBonus;
+          loc.properties.unrest = Math.min(100, prevUnrest + deathSiteUnrestApplied);
+        }
+        if (deathSiteSpiritPressure > 0) {
+          deathSiteSphereEvents.push({
+            targetEntityId: loc.id,
+            sphere: 'spirit',
+            magnitude: deathSiteSpiritPressure,
+            source: 'doom',
+            sourceId: loc.id,
+          });
+          emitTrace({
+            category: 'death_site_spirit_pressure',
+            tick,
+            agentId: loc.id,
+            summary: `${loc.name}: death-site spirit pressure +${deathSiteSpiritPressure} (deathCount=${deathCount})`,
+            locationId: loc.id,
+          });
+        }
       }
     }
 
@@ -562,6 +580,11 @@ export function phaseProsperity(state: GameState): Partial<GameState> {
     });
   }
 
-  // Clear shocks after consumption
-  return { prosperityShocks: [] };
+  // Clear shocks after consumption; propagate any death-site spirit pressure events
+  return {
+    prosperityShocks: [],
+    ...(deathSiteSphereEvents.length > 0
+      ? { pendingSpherePressures: [...(state.pendingSpherePressures ?? []), ...deathSiteSphereEvents] }
+      : {}),
+  };
 }
