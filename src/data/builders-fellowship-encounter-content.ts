@@ -8,9 +8,6 @@
  * contextual aftermath (spawn_artifact GraphOps for persistent world nodes, reputation
  * tallies for craft honour, hidden marks for flawed work, encounter seeds for futures).
  *
- * Axis note (v1 substitution): the 'craftsmanship' reputation axis is not yet registered.
- * This migration uses bf.craft_work, bf.construction_work, bf.fellowship_work, and
- * bf.master_craft tally keys. See deferral for axis registration.
  */
 
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
@@ -171,7 +168,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
             label: 'The section is sound. File the work.',
             intent: 'Work done, logged, and moved on from.',
             effects: [
-              { kind: 'reputation_tally', key: 'bf.construction_work', delta: 1 },
+              { kind: 'reputation_tally', key: 'stone.positive', delta: 1 },
             ],
             closeAfterSelection: true,
           },
@@ -305,7 +302,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
             label: 'The site is prepared. The work is logged.',
             intent: 'The record grows by one entry.',
             effects: [
-              { kind: 'reputation_tally', key: 'bf.construction_work', delta: 1 },
+              { kind: 'reputation_tally', key: 'stone.positive', delta: 1 },
             ],
             closeAfterSelection: true,
           },
@@ -452,7 +449,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
             label: 'The work is complete. Log it.',
             intent: 'The tools are made and delivered. Whatever quality they carry, they carry forward now.',
             effects: [
-              { kind: 'reputation_tally', key: 'bf.craft_work', delta: 1 },
+              { kind: 'reputation_tally', key: 'stone.positive', delta: 1 },
             ],
             closeAfterSelection: true,
           },
@@ -593,7 +590,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
             label: 'Plans delivered. Work logged.',
             intent: 'The survey is complete.',
             effects: [
-              { kind: 'reputation_tally', key: 'bf.craft_work', delta: 1 },
+              { kind: 'reputation_tally', key: 'stone.positive', delta: 1 },
             ],
             closeAfterSelection: true,
           },
@@ -737,7 +734,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
             label: 'Work delivered. Payment received.',
             intent: 'The commission is closed.',
             effects: [
-              { kind: 'reputation_tally', key: 'bf.craft_work', delta: 1 },
+              { kind: 'reputation_tally', key: 'stone.positive', delta: 1 },
             ],
             closeAfterSelection: true,
           },
@@ -899,7 +896,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
             label: 'The span is complete.',
             intent: 'The bridge is in the world. Whatever it connects, it connects now.',
             effects: [
-              { kind: 'reputation_tally', key: 'bf.construction_work', delta: 2 },
+              { kind: 'reputation_tally', key: 'stone.positive', delta: 2 },
             ],
             closeAfterSelection: true,
           },
@@ -1037,7 +1034,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
             label: 'The improvements are complete.',
             intent: 'The city is more defensible than it was. The record is complete.',
             effects: [
-              { kind: 'reputation_tally', key: 'bf.construction_work', delta: 2 },
+              { kind: 'reputation_tally', key: 'stone.positive', delta: 2 },
             ],
             closeAfterSelection: true,
           },
@@ -1187,7 +1184,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
             label: 'The piece speaks for itself.',
             intent: 'The challenge is over. The work enters the world now.',
             effects: [
-              { kind: 'reputation_tally', key: 'bf.master_craft', delta: 2 },
+              { kind: 'reputation_tally', key: 'stone.positive', delta: 2 },
             ],
             closeAfterSelection: true,
           },
@@ -1354,8 +1351,8 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
               'The monument is the kind of work that defines a career. ' +
               'Whatever follows it follows from it.',
             effects: [
-              { kind: 'reputation_tally', key: 'bf.master_craft', delta: 3 },
-              { kind: 'reputation_tally', key: 'bf.construction_work', delta: 2 },
+              { kind: 'reputation_tally', key: 'stone.positive', delta: 3 },
+              { kind: 'reputation_tally', key: 'stone.positive', delta: 2 },
             ],
             closeAfterSelection: true,
           },
@@ -1527,7 +1524,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
                   'Documented method for joint sequencing and deflection adjustment now exists.',
                 reliability: 0.95,
               },
-              { kind: 'reputation_tally', key: 'bf.master_craft', delta: 4 },
+              { kind: 'reputation_tally', key: 'stone.positive', delta: 4 },
             ],
             closeAfterSelection: true,
           },
@@ -1636,7 +1633,7 @@ export const BUILDERS_FELLOWSHIP_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
             label: 'The tour was worth the afternoon.',
             intent: 'The visit gave {name} something to think about.',
             effects: [
-              { kind: 'reputation_tally', key: 'bf.craft_work', delta: 1 },
+              { kind: 'reputation_tally', key: 'stone.positive', delta: 1 },
             ],
             closeAfterSelection: true,
           },
@@ -1737,7 +1734,7 @@ export const BUILDERS_FELLOWSHIP_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
             label: 'Good food and the right company.',
             intent: 'The feast was what it was supposed to be.',
             effects: [
-              { kind: 'reputation_tally', key: 'bf.fellowship_work', delta: 1 },
+              { kind: 'reputation_tally', key: 'stone.positive', delta: 1 },
             ],
             closeAfterSelection: true,
           },
@@ -1838,7 +1835,7 @@ export const BUILDERS_FELLOWSHIP_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
             label: 'The trade was fair.',
             intent: 'The exchange is complete. The fellowship functions because these transactions are generally honest.',
             effects: [
-              { kind: 'reputation_tally', key: 'bf.fellowship_work', delta: 1 },
+              { kind: 'reputation_tally', key: 'stone.positive', delta: 1 },
             ],
             closeAfterSelection: true,
           },
@@ -1922,7 +1919,7 @@ export const BF_JOIN_TEMPLATE: UnifiedActionTemplate = {
           label: '{name} is a Fellow.',
           intent: 'The apprenticeship begins formally. The guild has a record of this.',
           effects: [
-            { kind: 'reputation_tally', key: 'bf.craft_work', delta: 1 },
+            { kind: 'reputation_tally', key: 'stone.positive', delta: 1 },
           ],
           closeAfterSelection: true,
         },
@@ -2004,7 +2001,7 @@ export const BF_PROMOTION_TEMPLATE: UnifiedActionTemplate = {
             'The promotion is formal and recorded. ' +
             'The Fellowship treat{s} {name} differently now — not dramatically, but specifically.',
           effects: [
-            { kind: 'reputation_tally', key: 'bf.master_craft', delta: 2 },
+            { kind: 'reputation_tally', key: 'stone.positive', delta: 2 },
           ],
           closeAfterSelection: true,
         },
@@ -2014,7 +2011,7 @@ export const BF_PROMOTION_TEMPLATE: UnifiedActionTemplate = {
           intent:
             'The critique was specific and correct. That is useful regardless of the outcome.',
           effects: [
-            { kind: 'reputation_tally', key: 'bf.craft_work', delta: 1 },
+            { kind: 'reputation_tally', key: 'stone.positive', delta: 1 },
           ],
           closeAfterSelection: true,
         },

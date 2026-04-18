@@ -152,6 +152,18 @@ describe('phaseReputationTraits', () => {
 
       expect(hasReputationTrait(graph, 'agent-1', 'trait.reputation.iron.positive')).toBe(false);
     });
+
+    it('BF stone.positive tallies promote to Steadfast Builder at Level 1', () => {
+      // Regression: BF encounter aftermaths write stone.positive tallies; they must
+      // promote via phaseReputationTraits like any other reach tally (THR-166).
+      const graph = makeGraph();
+      setTallies(graph, 'agent-1', { 'stone.positive': REPUTATION_LEVEL_1_THRESHOLD + DECAY });
+
+      phaseReputationTraits(makeState(graph));
+
+      expect(hasReputationTrait(graph, 'agent-1', 'trait.reputation.stone.positive')).toBe(true);
+      expect(getTraitLevel(graph, 'agent-1', 'trait.reputation.stone.positive')).toBe(1);
+    });
   });
 
   describe('polarity competition', () => {
