@@ -27,6 +27,9 @@ import {
   AVATAR_Z_BUMP,
   AVATAR_PULSE_PERIOD_S,
   AVATAR_PULSE_OPACITY,
+  ACTIVITY_HALO_COLORS,
+  ACTIVITY_HALO_OPACITY,
+  ACTIVITY_HALO_SCALE_FRACTION,
 } from '../agents/agentSpriteTypes';
 import type { ZoomTier } from './ZoomVisibilityMatrix';
 import { ZOOM_VISIBILITY_MATRIX } from './ZoomVisibilityMatrix';
@@ -35,6 +38,7 @@ import {
   buildRetinueDotTexture,
   loadPortraitTexture,
   buildAvatarRingTexture,
+  buildActivityHaloTexture,
 } from '../agents/agentPortraitTextures';
 import { RENDER_ORDER } from './RenderLayers';
 import { HEX_CONSTANTS } from './HexFillMesh';
@@ -79,6 +83,8 @@ export interface AgentSpriteEntry {
   isAvatar?: boolean;
   /** Pulsing sphere-colored ring sprite (only for avatar) */
   pulseRingSprite?: THREE.Sprite;
+  /** Colored activity halo ring sprite (hero-local only, null when no activityCategory) */
+  activityHaloSprite?: THREE.Sprite;
 }
 
 /**
@@ -112,6 +118,9 @@ const retinueDotTextureCache = new Map<number, THREE.CanvasTexture>();
 for (let i = 0; i < FACTION_HERALDIC_COLORS.length; i++) {
   retinueDotTextureCache.set(i, buildRetinueDotTexture(FACTION_HERALDIC_COLORS[i]));
 }
+
+// Lazy cache: color hex string → halo ring texture. At most ~9 distinct colors.
+const activityHaloTextureCache = new Map<string, THREE.CanvasTexture>();
 
 // ── Factory ──────────────────────────────────────────────────────────────────
 
@@ -226,6 +235,32 @@ export function createAgentSpriteMesh(agents: AgentRenderData[]): AgentSpriteGro
         group.add(pulseRingSprite);
       }
 
+      // Activity halo (hero-local only, shown behind portrait sprite)
+      let activityHaloSprite: THREE.Sprite | undefined;
+      const haloColor = agent.activityCategory
+        ? ACTIVITY_HALO_COLORS[agent.activityCategory]
+        : undefined;
+      if (haloColor) {
+        let haloTexture = activityHaloTextureCache.get(haloColor);
+        if (!haloTexture) {
+          haloTexture = buildActivityHaloTexture(haloColor);
+          activityHaloTextureCache.set(haloColor, haloTexture);
+        }
+        const haloMaterial = new THREE.SpriteMaterial({
+          map: haloTexture,
+          transparent: true,
+          depthWrite: false,
+          opacity: ACTIVITY_HALO_OPACITY,
+        });
+        activityHaloSprite = new THREE.Sprite(haloMaterial);
+        const haloScale = portraitScale * ACTIVITY_HALO_SCALE_FRACTION;
+        activityHaloSprite.scale.set(haloScale, haloScale, 1);
+        activityHaloSprite.userData.baseScale = haloScale;
+        activityHaloSprite.position.set(wx, wy, spriteZ - 0.002); // Behind portrait
+        activityHaloSprite.visible = false; // Shown by updateZoomVisibility at hero-local
+        group.add(activityHaloSprite);
+      }
+
       spriteMap.set(agent.id, {
         sprite,
         materials: {
@@ -241,23 +276,25 @@ export function createAgentSpriteMesh(agents: AgentRenderData[]): AgentSpriteGro
         isRetinue: agent.isRetinue,
         isAvatar: agent.isAvatar,
         pulseRingSprite,
+        activityHaloSprite,
       });
 
-      // Build animation target wrapping the sprite (+ pulse ring if avatar)
-      if (pulseRingSprite) {
-        // Avatar: wrap both main sprite and pulse ring so they move together
-        const baseTarget = createAnimationTarget(sprite);
+      // Build animation target — moves main sprite + all satellite sprites together
+      const baseTarget = createAnimationTarget(sprite);
+      const satellites: { sprite: THREE.Sprite; zOff: number }[] = [];
+      if (pulseRingSprite) satellites.push({ sprite: pulseRingSprite, zOff: -0.001 });
+      if (activityHaloSprite) satellites.push({ sprite: activityHaloSprite, zOff: -0.002 });
+
+      if (satellites.length > 0) {
         animationTargets.set(agent.id, {
           setPosition(x: number, y: number, z: number) {
             baseTarget.setPosition(x, y, z);
-            pulseRingSprite!.position.set(x, y, z - 0.001);
+            for (const { sprite: s, zOff } of satellites) {
+              s.position.set(x, y, z + zOff);
+            }
           },
-          setScaleMultiplier(m: number) {
-            baseTarget.setScaleMultiplier(m);
-          },
-          resetScale() {
-            baseTarget.resetScale();
-          },
+          setScaleMultiplier(m: number) { baseTarget.setScaleMultiplier(m); },
+          resetScale() { baseTarget.resetScale(); },
         });
       } else {
         animationTargets.set(agent.id, createAnimationTarget(sprite));
@@ -275,6 +312,9 @@ export function createAgentSpriteMesh(agents: AgentRenderData[]): AgentSpriteGro
       }
       if (entry.pulseRingSprite) {
         entry.pulseRingSprite.material.dispose();
+      }
+      if (entry.activityHaloSprite) {
+        (entry.activityHaloSprite.material as THREE.SpriteMaterial).dispose();
       }
     }
     spriteMap.clear();
@@ -353,10 +393,22 @@ export function updateZoomVisibility(group: AgentSpriteGroup, tier: ZoomTier, zo
           entry.pulseRingSprite.scale.set(ringScale, ringScale, 1);
         }
       }
+      // Activity halo — visible only at hero-local (portrait tier)
+      if (entry.activityHaloSprite) {
+        entry.activityHaloSprite.visible = showPortrait;
+        if (showPortrait) {
+          const haloBase = entry.activityHaloSprite.userData.baseScale as number;
+          const haloScale = haloBase * zoomCompensation;
+          entry.activityHaloSprite.scale.set(haloScale, haloScale, 1);
+        }
+      }
     } else {
-      // Ensure pulse ring is hidden when main sprite is hidden
+      // Ensure satellite sprites are hidden when main sprite is hidden
       if (entry.pulseRingSprite) {
         entry.pulseRingSprite.visible = false;
+      }
+      if (entry.activityHaloSprite) {
+        entry.activityHaloSprite.visible = false;
       }
     }
   }

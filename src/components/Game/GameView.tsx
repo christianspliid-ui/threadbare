@@ -167,6 +167,7 @@ import {
 } from '../../engine/encounterChoiceMemory';
 import { AttentionPoolIndicator } from './AttentionPoolIndicator';
 import { ReadTheThreadsPanel } from './ReadTheThreadsPanel';
+import { DelveProgressPanel } from '../ruins/DelveProgressPanel';
 import { useLastViewedTick } from '../../hooks/useLastViewedTick';
 import type { SpotlightTier } from '../../types/npc';
 import { shouldRenderIndividualOnHexMap } from './hexMapAgentVisibility';
@@ -1283,6 +1284,28 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     omenState: gameState.omenState,
     worldVersion: runtime.worldVersion,
   });
+  // agentId → ActivityCategory lookup for halo rendering (stranger tier excluded)
+  const agentActivityCategoryMap = useMemo(() => {
+    const map = new Map<string, import('../../types/locationActivity').ActivityCategory>();
+    for (const summary of locationActivitySummaries.values()) {
+      for (const thread of summary.agentThreads) {
+        if (thread.familiarityScore >= 0.2 && thread.category !== 'idle') {
+          map.set(thread.agentId, thread.category);
+        }
+      }
+    }
+    return map;
+  }, [locationActivitySummaries]);
+
+  // Enrich agentRenderData with activityCategory for halo rendering (must follow agentActivityCategoryMap)
+  const agentRenderDataWithActivity = useMemo(
+    () => agentRenderData.map(a => ({
+      ...a,
+      activityCategory: agentActivityCategoryMap.get(a.id),
+    })),
+    [agentRenderData, agentActivityCategoryMap],
+  );
+
   // Re-key by "col,row" for O(1) lookup by hoveredHex in HexMapV2
   const locationActivityByHex = useMemo(() => {
     const byHex = new Map<string, import('../../types/locationActivity').LocationActivitySummary>();
@@ -2720,7 +2743,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   locations={locationNodes}
                   anomalies={anomalyNodes}
                   roadPaths={roadPaths}
-                  agents={agentRenderData}
+                  agents={agentRenderDataWithActivity}
                   armies={armyRenderData}
                   battles={battleRenderData}
                   sieges={siegeRenderData}
@@ -3014,6 +3037,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             doomIdentityMatrix={gameState.doomIdentityMatrix}
             hiddenMarks={gameState.hiddenMarks}
             pendingEncounterSeeds={gameState.pendingEncounterSeeds}
+            activeDelves={gameState.activeDelves}
           />
         ) : (
           <div className="flex flex-shrink-0" style={{ alignItems: 'stretch' }}>
@@ -3200,6 +3224,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           />
         )}
       </AnimateMount>
+
+      {/* Delve progress overlay — active delves for bonded agents (THR-152) */}
+      {(gameState.activeDelves?.some(d => !d.aborted && d.beatIndex <= d.totalBeats) || gameState.pendingEmergenceDecision) && (
+        <DelveProgressPanel
+          gameState={gameState}
+          graph={gameState.graph}
+          ascendantId={gameState.ascendantId}
+          onStateUpdate={(patch) => setGameState(prev => ({ ...prev, ...patch }))}
+        />
+      )}
 
       {/* Read the Threads panel — divine digest review */}
       <ReadTheThreadsPanel

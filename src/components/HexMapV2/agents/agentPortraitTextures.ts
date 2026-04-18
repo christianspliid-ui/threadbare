@@ -18,6 +18,7 @@ import {
   RETINUE_BORDER_COLOR,
   RETINUE_BORDER_ALT_COLOR,
   AVATAR_RING_WIDTH_FRACTION,
+  ACTIVITY_HALO_RING_WIDTH_FRACTION,
 } from './agentSpriteTypes';
 
 // ── Dot Texture Builders ─────────────────────────────────────────────────────
@@ -255,6 +256,40 @@ export function buildAvatarRingTexture(
   ctx.stroke();
   ctx.closePath();
   ctx.globalAlpha = 1.0;
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.needsUpdate = true;
+  return tex;
+}
+
+/**
+ * Builds a thin colored ring texture for the activity halo behind agent portraits.
+ *
+ * Thinner than the avatar ring (ACTIVITY_HALO_RING_WIDTH_FRACTION vs AVATAR_RING_WIDTH_FRACTION)
+ * to keep the visual subtle. Shown only at hero-local zoom.
+ *
+ * @param color — CSS color string for the ring
+ * @param size — canvas resolution (default PORTRAIT_TEXTURE_SIZE)
+ */
+export function buildActivityHaloTexture(
+  color: string,
+  size: number = PORTRAIT_TEXTURE_SIZE,
+): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d')!;
+  const cx = size / 2;
+  const cy = size / 2;
+  const radius = size / 2 - 2;
+  const ringWidth = Math.max(2, Math.round(radius * ACTIVITY_HALO_RING_WIDTH_FRACTION * 1.5));
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = ringWidth;
+  ctx.stroke();
+  ctx.closePath();
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.needsUpdate = true;

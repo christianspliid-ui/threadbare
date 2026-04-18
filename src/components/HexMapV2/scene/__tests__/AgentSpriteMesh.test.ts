@@ -368,3 +368,67 @@ describe('avatar visual treatment', () => {
     expect(entry.pulseRingSprite!.position.y).toBe(200);
   });
 });
+
+// THR-126: activity halo sprites
+describe('activity halo (THR-126)', () => {
+  let createAgentSpriteMesh: typeof import('../AgentSpriteMesh').createAgentSpriteMesh;
+  let updateZoomVisibility: typeof import('../AgentSpriteMesh').updateZoomVisibility;
+
+  beforeEach(async () => {
+    vi.resetModules();
+    const mod = await import('../AgentSpriteMesh');
+    createAgentSpriteMesh = mod.createAgentSpriteMesh;
+    updateZoomVisibility = mod.updateZoomVisibility;
+  });
+
+  it('creates activityHaloSprite when activityCategory is set', () => {
+    const agents = [{ ...makeAgent('a1', 3, 3), activityCategory: 'conflict' as const }];
+    const result = createAgentSpriteMesh(agents);
+    const entry = result.spriteMap.get('a1')!;
+    expect(entry.activityHaloSprite).toBeDefined();
+  });
+
+  it('does not create activityHaloSprite when activityCategory is absent', () => {
+    const result = createAgentSpriteMesh([makeAgent('a1', 3, 3)]);
+    const entry = result.spriteMap.get('a1')!;
+    expect(entry.activityHaloSprite).toBeUndefined();
+  });
+
+  it('activityHaloSprite starts hidden', () => {
+    const agents = [{ ...makeAgent('a1', 3, 3), activityCategory: 'commerce' as const }];
+    const result = createAgentSpriteMesh(agents);
+    expect(result.spriteMap.get('a1')!.activityHaloSprite!.visible).toBe(false);
+  });
+
+  it('updateZoomVisibility shows halo at hero-local tier', () => {
+    const agents = [{ ...makeAgent('a1', 3, 3), activityCategory: 'diplomacy' as const }];
+    const result = createAgentSpriteMesh(agents);
+    updateZoomVisibility(result, 'hero-local');
+    expect(result.spriteMap.get('a1')!.activityHaloSprite!.visible).toBe(true);
+  });
+
+  it('updateZoomVisibility hides halo at regional tier', () => {
+    const agents = [{ ...makeAgent('a1', 3, 3), activityCategory: 'intrigue' as const }];
+    const result = createAgentSpriteMesh(agents);
+    updateZoomVisibility(result, 'hero-local');
+    updateZoomVisibility(result, 'regional');
+    expect(result.spriteMap.get('a1')!.activityHaloSprite!.visible).toBe(false);
+  });
+
+  it('animation target moves activityHaloSprite with main sprite', () => {
+    const agents = [{ ...makeAgent('a1', 3, 3), activityCategory: 'craft' as const }];
+    const result = createAgentSpriteMesh(agents);
+    const target = result.animationTargets.get('a1')!;
+    const entry = result.spriteMap.get('a1')!;
+    target.setPosition(50, 75, 6);
+    expect(entry.sprite.position.x).toBe(50);
+    expect(entry.activityHaloSprite!.position.x).toBe(50);
+    expect(entry.activityHaloSprite!.position.y).toBe(75);
+  });
+
+  it('dispose does not throw with activityHaloSprite', () => {
+    const agents = [{ ...makeAgent('a1', 3, 3), activityCategory: 'exploration' as const }];
+    const result = createAgentSpriteMesh(agents);
+    expect(() => result.dispose()).not.toThrow();
+  });
+});
