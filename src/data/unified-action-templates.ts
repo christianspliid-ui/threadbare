@@ -66,6 +66,11 @@ import { THE_ORACLE_CONSULTED_TEMPLATE } from './encounters/the-oracle-consulted
 import { THE_STAR_PILGRIM_TEMPLATE } from './encounters/the-star-pilgrim';
 import { THE_INFILTRATORS_APPROACH_TEMPLATE } from './encounters/the-infiltrators-approach';
 import { THE_RENOWNED_DUEL_TEMPLATE } from './encounters/the-renowned-duel';
+import { THE_EXECUTIONERS_COMMISSION_TEMPLATE } from './encounters/the-executioners-commission';
+import { THE_UNMARKED_CROSSING_TEMPLATE } from './encounters/the-unmarked-crossing';
+import { THE_SILENT_CHAMBER_TEMPLATE } from './encounters/the-silent-chamber';
+import { THE_JURY_OF_THE_RUINED_TEMPLATE } from './encounters/the-jury-of-the-ruined';
+import { THE_BLINDED_ORACLE_TEMPLATE } from './encounters/the-blinded-oracle';
 
 // ─── Migration: ActionTemplateData → UnifiedActionTemplate ─────────
 
@@ -3624,6 +3629,12 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   THE_STAR_PILGRIM_TEMPLATE,
   THE_INFILTRATORS_APPROACH_TEMPLATE,
   THE_RENOWNED_DUEL_TEMPLATE,
+  // Reputation-gated encounters — THR-147 final tranche
+  THE_EXECUTIONERS_COMMISSION_TEMPLATE,
+  THE_UNMARKED_CROSSING_TEMPLATE,
+  THE_SILENT_CHAMBER_TEMPLATE,
+  THE_JURY_OF_THE_RUINED_TEMPLATE,
+  THE_BLINDED_ORACLE_TEMPLATE,
 ];
 
 /**

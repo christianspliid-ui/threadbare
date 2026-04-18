@@ -82,8 +82,12 @@ Add the template to the fixture array in `src/engine/__tests__/reputation-gated-
 | Required + blocked | `['trait.reputation.<reach>.positive']` | `unlocks` on positive, `blocks` on negative | `pilgrims-offering` |
 | Multi-trait AND | `['trait.A', 'trait.B']` | `unlocks` on each required trait | `the-veiled-consultation` |
 | Tier-sensitive | `['trait.reputation.<reach>.positive']` | `unlocks` on positive trait + `rarityTier: 3` | `the-stones-judgement` |
+| Required-negative | `['trait.reputation.<reach>.negative']` | `unlocks: ['<template.id>']` on negative trait | `the-executioners-commission` |
+| Mixed-polarity | `['trait.reputation.<reach>.negative']` | `unlocks` on negative trait; `blocks` on a **different polarity's positive** trait | `the-blinded-oracle` (eye.negative required, iron.positive blocks) |
 
 *Note: The tier-sensitive pattern currently gates on trait presence (any level). Engine-level min-level checking (`minTraitLevel` field) is a future enhancement — see THR-32a onwards.*
+
+*Note: The mixed-polarity pattern uses the engine's polarity-agnostic `encounterGates.blocks` — a positive trait can block a template just as a negative trait can. The `blocks` check fires regardless of which trait holds the entry; only the content of the array matters.*
 
 ---
 
