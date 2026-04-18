@@ -3,6 +3,10 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ 2026-04-18 THR-168 — UI Overhaul 01: design tokens foundation (sphere colors, type scale, local fonts, reach→sphere mapping) — `src/index.css`, `public/fonts/`
+
+✅ **THR-154** (2026-04-19) — Ruins Layer PR 6: worldgen elder_ruin density pass — archetypes, seeding module, gameInit wiring, debug tab, 7 tests.
+
 ✅ 2026-04-19 THR-150 — Ruins Layer PR 2: clueLifecycle.ts (selectClueRecipient/Narrative Gravity, phaseClueDecay, spawnClueFromEvent), spawn_clue aftermath effect, Phase 6.654 wired, 5 encounter hooks, CluesDebugTab, 11 tests incl. Kael/Mira 1000-trial worked example
 
 ✅ 2026-04-18 THR-93 — Phase 4: Builders Fellowship encounter migration: 15 main templates (13 standard + 2 lifecycle) + 3 social templates rewritten to UnifiedActionTemplate. Patient-material Builders voice. 7 spawn_artifact GraphOps (persistent world nodes), 10 {?has_artifact} conditional branches, 3 named craft attachments, hidden marks for flawed work, encounter seeds, reputation tallies. v1 tally key substitution; THR-166 deferral filed for craftsmanship axis. 11 BF-specific tests. Merge held pending THR-134 U4.
