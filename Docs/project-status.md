@@ -18,6 +18,9 @@
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
 
+## Recent Completions (2026-04-18)
+- **THR-181 — Codex is read-only bright-line:** Rule 8 added to "Coordination Failure Modes — Hard Rules" section of coordination protocol doc. Matching bright-line paragraph added to CLAUDE.md CC section, Rules 1–7 count updated to 1–8. Optional cross-ref added from Codex review retirement paragraph back to Rule 8.
+
 ## Recent Completions (2026-04-19)
 - **THR-156 — Ruins Layer PR 8 (Adventurer's Guild quest hook population):** Phase 6.655 `phaseRuinQuestHooks` — Channel 6 of Narrative Gravity; evidenceStrength ≥ `CLUE_QUEST_THRESHOLD` (0.5) + Guild within `GUILD_QUEST_RADIUS` (5 hexes) → stamps ruin node with `questHookPostedTick/questHookTemplateId` + emits toast. `QUEST_HOOK_PRIORITY_BOOST=4.0` for AG members via `factionQuestGeneration.ts`. 5 sphere-archetype vignettes. 2 trace categories. `QUEST_HOOK_COOLDOWN_TICKS=60` duplicate guard. THR-180 deferral (Guild quest panel). 20 tests.
 - **THR-18 — Siege Template Attention Tier Classification:** Added `intrinsicTier: AttentionTier` as required field on `SiegeSpotlightTemplate` and `SiegeRegionalTemplate`. All 12 templates classified (4 story_beat spotlights: breach/final_assault/relief_arrives/negotiate_terms; 3 shaping; 1 background spotlight; 3 shaping regionals; 2 background regionals). Regional materialization propagates tier into `EncounterProgress.effectiveTier` via `resolveEffectiveTier`. Spotlight firing emits `DigestEntry` + `QueuedStoryBeat` for story_beat tier. Siege focus court position resolved from bonded actors in siege factions; retinue fallback. 2 new trace categories. 21 tests.
