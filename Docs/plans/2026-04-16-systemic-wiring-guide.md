@@ -193,7 +193,7 @@ The attachment and spell systems compose effects from a category pool of ~40 pri
 | `FactionManipulateEffect` | Shift relationships, transfer control, splinter, absorb, declare war, force peace |
 | `SpawnEffect` | Brings entities into existence (agents, encounters, attachments, locations) |
 
-**For encounter aftermath authoring, use the typed aftermath effect kinds in Part 5 § "Aftermath Reaction Effect Types" (18 kinds).** Raw graph-mutation primitives are not exposed to authored aftermath — propose a new typed kind if you need one.
+**For encounter aftermath authoring, use the typed aftermath effect kinds in Part 5 § "Aftermath Reaction Effect Types" (19 kinds).** Raw graph-mutation primitives are not exposed to authored aftermath — propose a new typed kind if you need one.
 
 #### Authored aftermath surface for graph mutation
 
@@ -439,7 +439,7 @@ Before writing any encounter, answer these questions. If the answer to most of t
 
 5. **Do the outcomes use different systemic consequences?** Success and failure should produce different *kinds* of persistence, not just different prose. Success might create an edge and seed a follow-up. Failure might plant a hidden mark and damage reputation. **Different outcomes should leave different structural fingerprints.**
 
-6. **Are the aftermath reactions wired?** Each reaction in the aftermath config should declare its effects explicitly: `reputation_score`, `reputation_tally`, `encounter_seed`, `hidden_mark`, `intelligence`, `recent_event`. If a reaction has no effects, it's flavor text — and flavor text that doesn't change the world isn't pulling its weight in a game.
+6. **Are the aftermath reactions wired?** Each reaction in the aftermath config should declare its effects explicitly: `reputation_score`, `reputation_tally`, `faction_reputation_gain`, `encounter_seed`, `hidden_mark`, `intelligence`, `recent_event`. If a reaction has no effects, it's flavor text — and flavor text that doesn't change the world isn't pulling its weight in a game.
 
 ### After Writing (Systems Audit)
 
@@ -609,7 +609,8 @@ For implementation agents translating authored designs into template code.
 | Effect Kind | Purpose | Key Fields |
 |---|---|---|
 | `reputation_score` | Direct reputation delta (actor or faction) | `delta`, `targetAgentId?`, `targetFactionId?` |
-| `reputation_tally` | Named counter accumulation | `key`, `delta`, `targetAgentId?`, `targetFactionId?` |
+| `reputation_tally` | Named counter accumulation — key MUST be a valid `${reach}.positive` or `${reach}.negative` (8 reach domains). Off-axis keys are silently dropped with `aftermath_invalid_tally_key` trace. | `key`, `delta`, `targetAgentId?`, `targetFactionId?` |
+| `faction_reputation_gain` | Grow/shrink a faction member's standing directly. Agent must have a `member_of` edge to the faction; non-members are silently skipped. Amount clamped to [-1, +1]. Emits `faction_reputation` trace with `cause:'encounter_aftermath'`. | `factionId`, `amount` |
 | `reputation_set` | Absolute reputation assignment (hard reset) | `value` (clamped [0,1]), `targetAgentId?`, `targetFactionId?` |
 | `encounter_seed` | Plant future encounter | `templateId` or `encounterFamily`, `delayTicks`, `seedLabel` |
 | `hidden_mark` | Track discoverable secret on an agent | `category`, `severity`, `label`, `revealFamilies`, `targetAgentId?` |
