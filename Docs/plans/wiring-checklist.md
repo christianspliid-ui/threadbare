@@ -135,6 +135,28 @@ Per-surface coverage for the two authored aftermath effect kinds introduced by t
 * Divine ops: `src/engine/graphOpExecutor.ts` + `src/data/unified-action-templates.ts`
 * Tests: `src/engine/__tests__/secretsFavors.test.ts` (17 tests)
 
+**Perceive/Relay divine action resolution hook (THR-151, 2026-04-19):**
+
+7 divine action templates that bypass the standard `apply_influence` GraphOp path and instead dispatch to a dedicated resolver after action success. Hook is wired in `unifiedActionResolution.ts` alongside the `revelationAction` hook.
+
+| Template | Handler | Clue/Edge created | Adjacency gate |
+|----------|---------|------------------|---------------|
+| `divine.perceive.cast_attention` | `resolveCastAttention` | `knows_clue_of` (precision:vague, source:divine_whisper) via `produceClueConsequence` | ✅ bonded agent within 1 hex |
+| `divine.perceive.refine_the_hush` | `resolveRefineTheHush` | Upgrades existing vague→narrowed, or spawns new narrowed | ✅ bonded agent within 1 hex |
+| `divine.perceive.listen_for_a_name` | `resolveListenForAName` | `knows_clue_of` (narrowed + originCultureId detail) | ✅ bonded agent within 1 hex |
+| `divine.perceive.read_the_threads` | `resolveReadTheThreads` | `knows_clue_of` (vague) for PoP nodes at hex | ❌ no gate — uses all threaded agents |
+| `divine.perceive.taste_the_wake` | `resolveTasteTheWake` | Emits `ruins.divine_mark_discovered` traces for `knows_secret_of` (divine_mark) edges | ✅ bonded agent within 1 hex |
+| `divine.relay.compose_a_clue` | `resolveComposeAClue` | Direct `knows_clue_of` + `knows_secret_of` (divine_mark on agent) | Agent must be bonded |
+| `divine.relay.whisper_the_direction` | `resolveWhisperTheDirection` | Sets `movementState.destinationId` to nearest ruin | Agent must be bonded |
+
+**Verification pointers:**
+* Resolver: `src/engine/ruins/perceiveRelay.ts` — `resolvePerceiveRelayAction`, `PERCEIVE_RELAY_TEMPLATE_IDS`
+* Hook: `src/engine/unifiedActionResolution.ts` (after `revelationAction` hook)
+* Templates: `src/data/unified-action-templates.ts` (`divine.perceive.*`, `divine.relay.*`)
+* Constants: `src/engine/ruins/constants.ts` (`PERCEIVE_*`, `RELAY_*`, `ADJACENCY_GATE_HEX_RADIUS`)
+* Traces: `ruins.divine_mark_discovered` (category in `src/types/trace.ts`)
+* Tests: `src/engine/ruins/__tests__/perceiveRelay.test.ts` (20 tests)
+
 ---
 
 ## Faction Agency — Phase 6.652 (THR-29)
