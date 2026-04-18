@@ -1,12 +1,12 @@
 /**
- * Contract test: reputation-gated encounters (THR-32 first tranche).
+ * Contract test: reputation-gated encounters (THR-32 first tranche + THR-146 middle tranche).
  *
  * Tests two mechanisms:
  * 1. filterByReputationGates (Stage 3a) — agent pipeline, reads trait encounterGates
  * 2. getTargetActionSlots trait gate (Filter 3) — ActionDrawer, reads requiredTargetTraits
  *
  * Covers all five gate patterns: required-positive, blocked-by-negative, required+blocked,
- * multi-trait AND, tier-sensitive.
+ * multi-trait AND, tier-sensitive. All ten templates from both tranches are in the TRANCHE fixture.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -28,6 +28,21 @@ import {
 import {
   THE_STONES_JUDGEMENT_TEMPLATE,
 } from '../../data/encounters/the-stones-judgement';
+import {
+  THE_MERCHANTS_FAVOR_TEMPLATE,
+} from '../../data/encounters/the-merchants-favor';
+import {
+  THE_ORACLE_CONSULTED_TEMPLATE,
+} from '../../data/encounters/the-oracle-consulted';
+import {
+  THE_STAR_PILGRIM_TEMPLATE,
+} from '../../data/encounters/the-star-pilgrim';
+import {
+  THE_INFILTRATORS_APPROACH_TEMPLATE,
+} from '../../data/encounters/the-infiltrators-approach';
+import {
+  THE_RENOWNED_DUEL_TEMPLATE,
+} from '../../data/encounters/the-renowned-duel';
 import { REPUTATION_TRAIT_DEFINITIONS } from '../../data/reputation-trait-content';
 import type { EncounterCacheEntry } from '../encounterCache';
 import type { TargetContext } from '../../types/targetContext';
@@ -345,6 +360,12 @@ describe('All five templates — structural invariants', () => {
     PILGRIMS_OFFERING_TEMPLATE,
     THE_VEILED_CONSULTATION_TEMPLATE,
     THE_STONES_JUDGEMENT_TEMPLATE,
+    // Middle tranche — THR-146
+    THE_MERCHANTS_FAVOR_TEMPLATE,
+    THE_ORACLE_CONSULTED_TEMPLATE,
+    THE_STAR_PILGRIM_TEMPLATE,
+    THE_INFILTRATORS_APPROACH_TEMPLATE,
+    THE_RENOWNED_DUEL_TEMPLATE,
   ];
 
   it('every template has at least one gate declared (requiredTargetTraits or encounterGates.blocks)', () => {

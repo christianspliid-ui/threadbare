@@ -61,6 +61,11 @@ import { SHADOW_COURT_AUDIENCE_TEMPLATE } from './encounters/shadow-court-audien
 import { PILGRIMS_OFFERING_TEMPLATE } from './encounters/pilgrims-offering';
 import { VEILED_CONSULTATION_TEMPLATE } from './encounters/the-veiled-consultation';
 import { THE_STONES_JUDGEMENT_TEMPLATE } from './encounters/the-stones-judgement';
+import { THE_MERCHANTS_FAVOR_TEMPLATE } from './encounters/the-merchants-favor';
+import { THE_ORACLE_CONSULTED_TEMPLATE } from './encounters/the-oracle-consulted';
+import { THE_STAR_PILGRIM_TEMPLATE } from './encounters/the-star-pilgrim';
+import { THE_INFILTRATORS_APPROACH_TEMPLATE } from './encounters/the-infiltrators-approach';
+import { THE_RENOWNED_DUEL_TEMPLATE } from './encounters/the-renowned-duel';
 
 // ─── Migration: ActionTemplateData → UnifiedActionTemplate ─────────
 
@@ -3613,6 +3618,12 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   PILGRIMS_OFFERING_TEMPLATE,
   VEILED_CONSULTATION_TEMPLATE,
   THE_STONES_JUDGEMENT_TEMPLATE,
+  // Reputation-gated encounters — THR-146 middle tranche
+  THE_MERCHANTS_FAVOR_TEMPLATE,
+  THE_ORACLE_CONSULTED_TEMPLATE,
+  THE_STAR_PILGRIM_TEMPLATE,
+  THE_INFILTRATORS_APPROACH_TEMPLATE,
+  THE_RENOWNED_DUEL_TEMPLATE,
 ];
 
 /**
