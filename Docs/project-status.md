@@ -18,6 +18,9 @@
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
 
+## Recent Completions (2026-04-19) — THR-121
+- **THR-121 — Add agentAwareness to RivalState + wire rival_awareness complication effect:** Added `agentAwareness?: Partial<Record<string, number>>` to `RivalState`. Added `RIVAL_AWARENESS_HOSTILITY_WEIGHT = 0.2` to `sphereAffinity.ts`. Moved `rival_awareness` handling to actor-independent section of `applyEffect` (removes silent no-op cast). `phaseRivalActions` computes max agentAwareness and adds it × weight to effective hostility for action selection. 3 new tests.
+
 ## Recent Completions (2026-04-19) — THR-120
 - **THR-120 — Add spherePressures to WorldSoulState and wire sphere_pressure complication effect:** Added `spherePressures?: Partial<Record<string, number>>` to `WorldSoulState`. Moved `sphere_pressure` case before `actorNode` guard in `applyEffect` (it doesn't need the actor). Added `SPHERE_PRESSURE_OMEN_BIAS_WEIGHT = 1.0` constant and modified `getSphereDominance()` in `phaseOmenAgenda.ts` to blend sphere pressures into apparent sphere dominance, biasing sphere-surge omen selection toward pressured spheres. 6 new tests.
 

@@ -4,6 +4,8 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
 ### Recent Changes
 
+| 2026-04-19 | src/types/rival.ts, src/types/sphereAffinity.ts, src/engine/complicationEffects.ts, src/engine/orchestrator.ts, src/engine/__tests__/complicationSelection.test.ts | THR-121: agentAwareness field + rival_awareness complication wired. Added agentAwareness to RivalState; RIVAL_AWARENESS_HOSTILITY_WEIGHT constant; moved rival_awareness to actor-independent section of applyEffect; phaseRivalActions boosts effective hostility by max agentAwareness × weight. 3 new tests. |
+
 | 2026-04-19 | src/types/worldSoul.ts, src/engine/complicationEffects.ts, src/engine/phaseOmenAgenda.ts, src/engine/__tests__/complicationSelection.test.ts, src/engine/__tests__/phaseOmenAgenda.test.ts | THR-120: spherePressures field + sphere_pressure complication wired to omen bias. Added spherePressures to WorldSoulState; moved sphere_pressure case before actorNode guard; SPHERE_PRESSURE_OMEN_BIAS_WEIGHT constant + getSphereDominance() blends pressures into apparent sphere dominance. 6 new tests. |
 | 2026-04-19 | src/engine/complicationEffects.ts, src/engine/unifiedActionResolution.ts, src/engine/__tests__/unifiedActionResolution.test.ts | THR-119: partial_progress complication consumer. Removed stale _complicationPartialProgress actor-node write; added consumer in executeStepResult that applies floor(fraction * stepDuration) ticks as head-start on next step's stepProgress (capped at stepDuration-1); emits complication_partial_progress trace. 1 regression test. |
 
