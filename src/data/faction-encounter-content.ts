@@ -19,7 +19,7 @@ import {
 import { THIEVES_GUILD_ENCOUNTER_META } from './thieves-guild-encounter-content';
 import { MERCHANT_CONSORTIUM_ENCOUNTER_META, getMerchantConsortiumEncounterById } from './merchant-consortium-encounter-content';
 import { TEMPLE_OF_SPHERES_ENCOUNTER_META, getTempleOfSpheresEncounterById } from './temple-of-spheres-encounter-content';
-import { ARCANE_CIRCLE_ENCOUNTER_META, getArcaneCircleEncounterById } from './arcane-circle-encounter-content';
+import { ARCANE_CIRCLE_ENCOUNTER_META } from './arcane-circle-encounter-content';
 import { RANGERS_BROTHERHOOD_ENCOUNTER_META, getRangersBrotherhoodEncounterById } from './rangers-brotherhood-encounter-content';
 import { CIVIC_GUARD_ENCOUNTER_META, getCivicGuardEncounterById } from './civic-guard-encounter-content';
 import { UNDERKING_COURT_ENCOUNTER_META, getUnderkingCourtEncounterById } from './underking-court-encounter-content';
@@ -995,9 +995,9 @@ export function getFactionEncounterById(id: string): EncounterTemplate | undefin
     ?? FACTION_SOCIAL_TEMPLATES.find(t => t.id === id)
     ?? getMercenaryEncounterById(id)
     // Thieves guild templates are pre-migrated to UnifiedActionTemplate — looked up via UNIFIED_ACTION_TEMPLATES
+    // Arcane Circle templates are pre-migrated to UnifiedActionTemplate — looked up via UNIFIED_ACTION_TEMPLATES
     ?? getMerchantConsortiumEncounterById(id)
     ?? getTempleOfSpheresEncounterById(id)
-    ?? getArcaneCircleEncounterById(id)
     ?? getRangersBrotherhoodEncounterById(id)
     ?? getCivicGuardEncounterById(id)
     ?? getUnderkingCourtEncounterById(id)
