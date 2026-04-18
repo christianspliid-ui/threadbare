@@ -33,8 +33,9 @@ import {
   grantFormativeTraits,
   grantBehavioralTraits,
 } from './culturalTraits';
-import type { CultureIdentity } from '../types/culture';
+import type { CultureIdentity, CulturePhoneticSignature } from '../types/culture';
 import { CULTURE_SETTLEMENT_QUOTA } from '../types/culture';
+import { generatePhoneticName } from './culturePhonetics';
 import { detectRegions } from './regionDetection';
 import { hexDistance } from '../lib/hexMath';
 import { generateHistoricalCultures, assignHistoricalTerritories } from './historicalCulture';
@@ -301,6 +302,9 @@ export const DEFAULT_ROOTS = ['Stone', 'Grey', 'Iron', 'Silver', 'Raven', 'Wolf'
 /**
  * Generate a procedural location name from terrain + subtype.
  * Deterministic for a given rng state.
+ *
+ * THR-15: When a phonetic signature is provided, it is used as a second-pass
+ * generator after the curated root attempts, replacing the numbered fallback.
  */
 function generateLocationName(
   rng: () => number,
@@ -309,6 +313,8 @@ function generateLocationName(
   usedNames: Set<string>,
   foundationBias?: string,
   primarySphere?: string,
+  phoneticSignature?: CulturePhoneticSignature,
+  cultureId?: string,
 ): string {
   const maxAttempts = 5;
 
@@ -349,10 +355,17 @@ function generateLocationName(
         : `${root}${suffix}`;
     }
 
-    if (!usedNames.has(name) || attempt === maxAttempts - 1) {
+    if (!usedNames.has(name)) {
       return name;
     }
   }
+
+  // Second pass: phonetic generator (THR-15) — fires when all curated attempts collided
+  if (phoneticSignature && cultureId) {
+    const phonetic = generatePhoneticName(phoneticSignature, 'settlement', rng, usedNames, cultureId, 0);
+    if (phonetic !== null) return phonetic;
+  }
+
   // Final fallback — append a number
   return `Settlement ${usedNames.size + 1}`;
 }
@@ -612,12 +625,14 @@ export function seedWorld(
     Math.round(habitableTiles.length * densityFraction),
   );
 
-  // Build hex → culture identity lookup for culture-aware settlement naming
+  // Build hex → culture identity/signature lookup for culture-aware settlement naming
   const gridCols = tiles.reduce((max, t) => Math.max(max, t.coord.col), 0) + 1;
   const pregenCultureMap = new Map<string, CultureIdentity>();
+  const pregenCultureSignatureMap = new Map<string, CulturePhoneticSignature>();
   if (pregenCultures) {
     for (const pc of pregenCultures) {
       pregenCultureMap.set(pc.id, pc.identity);
+      if (pc.phoneticSignature) pregenCultureSignatureMap.set(pc.id, pc.phoneticSignature);
     }
   }
   const getHexCultureIdentity = (col: number, row: number): CultureIdentity | undefined => {
@@ -628,6 +643,16 @@ export function seedWorld(
     const cId = provinces[provId].cultureId;
     if (!cId) return undefined;
     return pregenCultureMap.get(cId);
+  };
+  const getHexCultureSignature = (col: number, row: number): { sig: CulturePhoneticSignature; cultureId: string } | undefined => {
+    if (!provinceIds || !provinces) return undefined;
+    const hexIdx = row * gridCols + col;
+    const provId = provinceIds[hexIdx];
+    if (provId === undefined || provId < 0 || provId >= provinces.length) return undefined;
+    const cId = provinces[provId].cultureId;
+    if (!cId) return undefined;
+    const sig = pregenCultureSignatureMap.get(cId);
+    return sig ? { sig, cultureId: cId } : undefined;
   };
 
   // Shuffle habitable tiles for unique hex placement (Fisher-Yates)
@@ -685,14 +710,16 @@ export function seedWorld(
 
     const id = `loc_${locIndex}`;
 
-    // Use handcrafted names first, then procedural generation
+    // Use handcrafted names first, then procedural generation (THR-15: pass phonetic sig)
     const hexCulture = getHexCultureIdentity(tile.coord.col, tile.coord.row);
+    const hexCultureSig = getHexCultureSignature(tile.coord.col, tile.coord.row);
     let name: string;
     if (locIndex < LOCATION_NAMES.length) {
       name = LOCATION_NAMES[locIndex];
     } else {
       name = generateLocationName(rng, tile.terrain, locationSubtype, usedLocationNames,
-        hexCulture?.foundationBias, hexCulture?.veneratedSpheres[0]);
+        hexCulture?.foundationBias, hexCulture?.veneratedSpheres[0],
+        hexCultureSig?.sig, hexCultureSig?.cultureId);
     }
     usedLocationNames.add(name);
 
@@ -811,8 +838,10 @@ export function seedWorld(
     const hexKey = `${tile.coord.col},${tile.coord.row}`;
     const id = `loc_${locIndex}`;
     const wonderCulture = getHexCultureIdentity(tile.coord.col, tile.coord.row);
+    const wonderCultureSig = getHexCultureSignature(tile.coord.col, tile.coord.row);
     const name = generateLocationName(wonderRng, tile.terrain, subtype, usedLocationNames,
-      wonderCulture?.foundationBias, wonderCulture?.veneratedSpheres[0]);
+      wonderCulture?.foundationBias, wonderCulture?.veneratedSpheres[0],
+      wonderCultureSig?.sig, wonderCultureSig?.cultureId);
     usedLocationNames.add(name);
 
     const sphereInfluence: Record<string, number> = {};
@@ -914,8 +943,10 @@ export function seedWorld(
     const hexKey = `${tile.coord.col},${tile.coord.row}`;
     const id = `loc_${locIndex}`;
     const wildCulture = getHexCultureIdentity(tile.coord.col, tile.coord.row);
+    const wildCultureSig = getHexCultureSignature(tile.coord.col, tile.coord.row);
     const name = generateLocationName(wildRng, tile.terrain, subtype, usedLocationNames,
-      wildCulture?.foundationBias, wildCulture?.veneratedSpheres[0]);
+      wildCulture?.foundationBias, wildCulture?.veneratedSpheres[0],
+      wildCultureSig?.sig, wildCultureSig?.cultureId);
     usedLocationNames.add(name);
 
     const sphereInfluence: Record<string, number> = {};
@@ -1014,8 +1045,10 @@ export function seedWorld(
     const hexKey = `${tile.coord.col},${tile.coord.row}`;
     const id = `loc_${locIndex}`;
     const anomalyCulture = getHexCultureIdentity(tile.coord.col, tile.coord.row);
+    const anomalyCultureSig = getHexCultureSignature(tile.coord.col, tile.coord.row);
     const name = generateLocationName(anomalyRng, tile.terrain, subtype, usedLocationNames,
-      anomalyCulture?.foundationBias, anomalyCulture?.veneratedSpheres[0]);
+      anomalyCulture?.foundationBias, anomalyCulture?.veneratedSpheres[0],
+      anomalyCultureSig?.sig, anomalyCultureSig?.cultureId);
     usedLocationNames.add(name);
 
     const sphereInfluence: Record<string, number> = {};
@@ -1335,6 +1368,7 @@ export function seedWorld(
     // Pick a culture-aware name based on the location's culture province
     const locCulture = locationCultureMap.get(locationId);
     const cultureIdentity = locCulture ? cultureIdentityMap.get(locCulture.cultureId) : undefined;
+    const cultureSig = locCulture ? pregenCultureSignatureMap.get(locCulture.cultureId) : undefined;
     let agentName: string;
     if (cultureIdentity) {
       agentName = pickCulturalName(
@@ -1342,6 +1376,9 @@ export function seedWorld(
         cultureIdentity.veneratedSpheres[0],
         rng,
         usedIndNames,
+        cultureSig,
+        locCulture?.cultureId,
+        0,
       );
     } else {
       // No culture for this location — pick from generic pool

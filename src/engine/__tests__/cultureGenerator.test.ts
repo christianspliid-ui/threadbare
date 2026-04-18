@@ -387,8 +387,10 @@ describe('generateCultureIdentities demonym and homePlaceName', () => {
     for (const c of cultures) {
       expect(c.identity.demonym).toBeTruthy();
       expect(c.identity.homePlaceName).toBeTruthy();
-      // homePlaceName should start with demonym
-      expect(c.identity.homePlaceName!.startsWith(c.identity.demonym!)).toBe(true);
+      // Both names should be non-empty strings (THR-15: phonetic generator produces
+      // culturally distinct names; no longer guarantees prefix relationship)
+      expect(typeof c.identity.demonym).toBe('string');
+      expect(typeof c.identity.homePlaceName).toBe('string');
     }
   });
 });

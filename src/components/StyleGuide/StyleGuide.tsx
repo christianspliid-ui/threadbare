@@ -7,7 +7,7 @@
  * No game state dependency — all sample data is hardcoded.
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '../shared/Button';
 import { IconButton } from '../shared/IconButton';
 import { Card } from '../shared/Card';
@@ -28,6 +28,40 @@ import { DomainCard } from '../shared/DomainCard';
 import { GameErrorBoundary } from '../shared/GameErrorBoundary';
 import type { RarityTier } from '../../types/rarity';
 import { SPHERE_NAMES } from '../../types/index';
+import { CulturePhoneticsInspector } from '../Game/debug/CulturePhoneticsInspector';
+import { WorldGraph } from '../../engine/graph';
+import { buildPhoneticSignature } from '../../engine/culturePhonetics';
+import type { CultureIdentity } from '../../types/culture';
+
+// ─── Phonetic sample graph ───────────────────────────────────────────────────
+
+function buildSamplePhoneticGraph(): WorldGraph {
+  const graph = new WorldGraph();
+  const makeId: (foundation: string, sphere: string) => CultureIdentity = (f, s) => ({
+    foundationBias: f, veneratedSpheres: [s as any],
+    primaryBiome: 'grasslands', preferredBiomes: ['grasslands'], toleratedBiomes: [],
+    archetypeLabel: `${f} / ${s}`, demonym: f === 'chaos' ? 'Kaoru' : 'Thalven',
+    homePlaceName: f === 'chaos' ? 'Kaorheim' : 'Thalvenar',
+    socialStructure: 'Flat', accountability: 'Personal',
+    behavioralKeywords: [], materialVocabulary: [], metaphorPalette: [],
+    formativeTraitSeedIds: [], behavioralTraitSeedIds: [],
+    reachPreferences: { iron: 0, gold: 0, shadow: 0, veil: 0, heart: 0, eye: 0, stone: 0, star: 0, flesh: 0 },
+  });
+  const cultures = [
+    { id: 'sample_chaos', name: 'The Storm Kin', foundation: 'chaos', sphere: 'force', seed: 42 },
+    { id: 'sample_order', name: 'The Stonewarden Pact', foundation: 'order', sphere: 'matter', seed: 77 },
+    { id: 'sample_light', name: 'Dawnchildren of the Veil', foundation: 'light', sphere: 'spirit', seed: 13 },
+  ];
+  for (const c of cultures) {
+    const identity = makeId(c.foundation, c.sphere);
+    const sig = buildPhoneticSignature(identity, c.seed, c.id);
+    graph.addNode({
+      id: c.id, type: 'culture', name: c.name,
+      properties: { cultureIdentity: identity, culturePhoneticSignature: sig },
+    });
+  }
+  return graph;
+}
 
 // ─── Layout constants ────────────────────────────────────────────────────────
 
@@ -55,6 +89,7 @@ const SECTIONS = [
   { id: 'animatemount', label: 'AnimateMount' },
   { id: 'entitycard', label: 'EntityCard' },
   { id: 'domaincard', label: 'DomainCard' },
+  { id: 'culture-phonetics', label: 'CulturePhoneticsInspector' },
 ];
 
 // ─── Sample data ──────────────────────────────────────────────────────────────
@@ -641,9 +676,29 @@ export default function StyleGuide() {
             </div>
           </section>
 
+          {/* ── CulturePhoneticsInspector ─────────────────────── */}
+          <section id="section-culture-phonetics" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>CulturePhoneticsInspector</SectionHeading>
+            <div style={{ marginTop: '1.25rem', maxWidth: '440px' }}>
+              <GameErrorBoundary>
+                <Label>Debug panel tab — shows phoneme inventory + sample names per culture. Re-roll samples button regenerates names.</Label>
+                <SamplePhoneticInspector />
+              </GameErrorBoundary>
+            </div>
+          </section>
+
           <div style={{ height: '4rem' }} />
         </div>
       </main>
+    </div>
+  );
+}
+
+function SamplePhoneticInspector() {
+  const graph = useMemo(() => buildSamplePhoneticGraph(), []);
+  return (
+    <div style={{ border: '1px solid var(--border-subtle)', borderRadius: '4px', overflow: 'hidden' }}>
+      <CulturePhoneticsInspector graph={graph} />
     </div>
   );
 }

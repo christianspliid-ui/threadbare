@@ -10,6 +10,10 @@
  * sphere adds domain coloring (martial vs scholarly vs natural etc).
  */
 
+import type { CulturePhoneticSignature } from '../types/culture';
+import { PHONETIC_GENERATOR_ENABLED, PHONETIC_PRIMARY_CHANCE } from '../types/culture';
+import { generatePhoneticName } from '../engine/culturePhonetics';
+
 // ─── Foundation-Keyed Names ──────────────────────────────────────
 // These set the broad cultural naming tradition.
 
@@ -170,23 +174,43 @@ export function buildCultureNamePool(
 }
 
 /**
- * Pick an unused name from a culture's pool, falling back to generic names.
+ * Pick an unused name from a culture's pool, falling back to the phonetic
+ * generator (when a signature is provided), then generic names.
+ *
+ * Layered picker order:
+ *   1. Phonetic generator (PHONETIC_PRIMARY_CHANCE chance to fire first)
+ *   2. Curated pool (foundation + sphere) — anchor flavor
+ *   3. Phonetic generator (if pool exhausted, and signature provided)
+ *   4. Generic pool
+ *   5. Wanderer-N last resort
  *
  * @param foundationBias - The culture's foundation (chaos/order/light/darkness)
  * @param primarySphere - The culture's first venerated sphere
  * @param rng - Seeded PRNG
  * @param usedNames - Set of already-assigned names (mutated: chosen name is added)
- * @returns A name string
+ * @param signature - Optional phonetic signature (THR-15)
+ * @param cultureId - For tracing
+ * @param tick - Current tick for tracing
  */
 export function pickCulturalName(
   foundationBias: string,
   primarySphere: string,
   rng: () => number,
   usedNames: Set<string>,
+  signature?: CulturePhoneticSignature,
+  cultureId?: string,
+  tick?: number,
 ): string {
-  const culturePool = buildCultureNamePool(foundationBias, primarySphere);
+  const hasSignature = PHONETIC_GENERATOR_ENABLED && signature != null && cultureId != null;
 
-  // Shuffle culture pool deterministically and pick the first unused
+  // Phonetic-first: PHONETIC_PRIMARY_CHANCE of trying generator before curated pool
+  if (hasSignature && rng() < PHONETIC_PRIMARY_CHANCE) {
+    const name = generatePhoneticName(signature!, 'personal', rng, usedNames, cultureId!, tick ?? 0);
+    if (name !== null) return name;
+  }
+
+  // Curated pool (foundation + sphere)
+  const culturePool = buildCultureNamePool(foundationBias, primarySphere);
   const shuffled = [...culturePool].sort(() => rng() - 0.5);
   for (const name of shuffled) {
     if (!usedNames.has(name)) {
@@ -195,7 +219,13 @@ export function pickCulturalName(
     }
   }
 
-  // Fallback to generic names
+  // Pool exhausted: fall through to phonetic generator
+  if (hasSignature) {
+    const name = generatePhoneticName(signature!, 'personal', rng, usedNames, cultureId!, tick ?? 0);
+    if (name !== null) return name;
+  }
+
+  // Generic names
   const genericShuffled = [...GENERIC_NAMES].sort(() => rng() - 0.5);
   for (const name of genericShuffled) {
     if (!usedNames.has(name)) {
@@ -204,7 +234,7 @@ export function pickCulturalName(
     }
   }
 
-  // Last resort: generate a unique name
+  // Last resort
   const suffix = usedNames.size;
   const fallback = `Wanderer-${suffix}`;
   usedNames.add(fallback);

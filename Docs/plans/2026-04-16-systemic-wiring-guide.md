@@ -799,3 +799,22 @@ Game Design Direction (emotional principles)
 ```
 
 Every link in this chain matters. Great prose without systemic wiring is a book page. Systemic wiring without great prose is a database entry. The game needs both.
+
+---
+
+## Appendix: Culture-Seeded Naming (THR-15, 2026-04-18)
+
+**Location names, agent names, demonyms, and homeland names are now culture-phonetic.** Each culture at worldgen time builds a deterministic `CulturePhoneticSignature` (vowel inventory, onset/coda consonants, syllable templates, orthography style) seeded from its foundation + sphere + demonym hash. All name generation routes through the layered picker in `pickCulturalName()`:
+
+1. 35% chance: phonetic generator first
+2. Curated pool (foundation + sphere flavor words)
+3. Phonetic fallback (if pool exhausted)
+4. Generic fallback, then `Wanderer-N`
+
+**What this means for content authors:**
+- Agent names will be audibly distinct per culture — Chaos/Force cultures sound harsh and percussive; Light/Spirit cultures are vowel-rich and open-syllable.
+- Settlement names seeded by nearby culture phonetics — a Chaos/Matter frontier town won't sound like an Order/Spirit holy city.
+- Demonyms and homeland names are phonetically consistent with the culture's agent names.
+- `{culture}` placeholder in prose resolves to the demonym — which is now phonetically generated, not a template word.
+
+**Debug Panel Cultures tab** (`DebugTabContent` → `'cultures'` → `CulturePhoneticsInspector`) shows live phoneme inventory + sample names per culture with Re-roll samples.
