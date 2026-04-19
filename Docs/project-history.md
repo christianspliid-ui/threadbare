@@ -3,6 +3,8 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ THR-100 Phase 3 (2026-04-19) — Migrate 14 social encounter templates to UnifiedActionTemplate: Threadbare relational/pressure-tempered prose; {?has_faction} in 11/14; {ally:strongest} in 6/14; 9 encounter seeds, 8 hidden marks, 4 ActionStepBranch forks; encounterCache.ts Unified helpers + RARITY_TO_THREAT/CRUD_TO_ENCOUNTER_TYPE; socialEncounterGeneration.ts slot priority fix (faction→tavern→unified→legacy); socialOutcome.ts unified template lookup; PR open, merge gated on THR-134 U4
+
 ✅ THR-188 (2026-04-19) — Hex→actor index for phaseFamiliarityGain: new `hexActorIndex.ts` helper (`buildHexActorIndex`/`getActorsOnHex`/`hexKey`); replaces O(N_all) walk + hexDistance guard with O(N_hex) index lookup; sublocation→parent resolution; rate-limited engine_warning trace; `engine_warning` trace category + EngineWarningTrace; EncounterCacheRebuildTrace added to TraceEntry union; 11 unit tests + 4 determinism contract tests
 
 ✅ THR-153 (2026-04-19) — PR 5: Ruin transformation + PlaceOfPower/Scar + elderEssenceReward refactor: new `ruinTransformation.ts` (7-row outcome matrix), `placeOfPowerStreams.ts` phase (holder-presence credit, decay, corrupt siphon), `awardElderEssence` core extracted from legacy `computeElderEssenceReward` wrapper, `holds_place_of_power` edge type, `place_of_power` HexMapV2 icon, `EmergenceDilemmaModal` 2×2 choice grid, `PlaceOfPowerInspector` inline panel, 6 transformation vignettes (3 archetypes × transformed/consumed), 29 new tests
