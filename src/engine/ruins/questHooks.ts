@@ -91,7 +91,7 @@ export function buildQuestHookMessage(
 
 // ─── Hex direction ────────────────────────────────────────────────────────────
 
-function hexDirection(
+export function hexDirection(
   from: { col: number; row: number },
   to: { col: number; row: number },
 ): string {

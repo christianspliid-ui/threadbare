@@ -18,6 +18,7 @@ import { getSublocationConceptArt, getLocationConceptArt } from '../../data/subl
 import { useNarration } from '../../services/narration/useNarration';
 import { Play, Square, Loader2 } from 'lucide-react';
 import { INITIATIVE_TEMPLATE_MAP } from '../../data/initiative-templates';
+import { GuildQuestPanel } from './GuildQuestPanel';
 import type { InitiativeProgress } from '../../types/initiative';
 
 interface LocationViewProps {
@@ -40,6 +41,8 @@ interface LocationViewProps {
   seed?: number;
   /** Current game tick — enables tick-based prose cache (PERF-01) */
   tick?: number;
+  /** Navigate to a ruin location on the map (reuses handleZoomToLocation from GameView) */
+  onNavigateToRuin?: (locationId: string) => void;
 }
 
 // ──── Sub-component: Sublocation Card ────
@@ -786,6 +789,7 @@ export const LocationView = memo(function LocationView({
   graph,
   seed,
   tick,
+  onNavigateToRuin,
 }: LocationViewProps) {
   const terrainLabel = hexTerrain.charAt(0).toUpperCase() + hexTerrain.slice(1).replace(/_/g, ' ');
   // RC-041: Safe property access with type guard
@@ -1193,6 +1197,15 @@ export const LocationView = memo(function LocationView({
               );
             })}
           </div>
+
+          {graph != null && tick != null && onNavigateToRuin != null && (
+            <GuildQuestPanel
+              location={location}
+              graph={graph}
+              tick={tick}
+              onNavigateToRuin={onNavigateToRuin}
+            />
+          )}
         </div>
       ) : (
         // ──── FLAT LAYOUT (NO SUBLOCATIONS) ────
