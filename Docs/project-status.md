@@ -18,6 +18,9 @@
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
 
+## Recent Completions (2026-04-19) — THR-162
+- **THR-162 — Tick loop scaling investigation:** Confirmed root cause of ?seeded vs --seed 42 divergence: DEV_ASCENDANT_IDENTITY uses hunger.witness → large map (48×36=1728 hexes) vs CLI medium (32×24=768 hexes). Fix: App.tsx now respects ?size= URL override in the seeded path (?view=game&seeded&size=medium for safe testing). Stall diagnosed as unbounded spotlight pool growth from lifecycle-born agents lacking explicit spotlightTier. Filed 3 follow-ups: THR-185 (spotlight default), THR-186 (O(N) ambient iterations), THR-187 (cache rebuild frequency). CLAUDE.md stale MAX_DISTANCE_MATRIX_SIZE corrected.
+
 ## Recent Completions (2026-04-19) — THR-174
 - **THR-174 — Viewport contract audit at 1920×1080:** All 5 primary views pass scroll check (scrollDelta=0, overflow:hidden at html/body/#root). Modal at 75vh < 85vh contract. InterventionConfirm + AgendaPicker use `absolute inset-0` correctly. No regressions after 16px typography floor. Audit doc: `Docs/viewport-audit-2026-04-18.md`. tsc clean, build green.
 
