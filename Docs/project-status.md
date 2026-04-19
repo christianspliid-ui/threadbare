@@ -1,7 +1,7 @@
 # Project Status
 > Updated 2026-04-19.
 ## Current Focus
-**THR-182 shipped (CC review replacement — heartbeat wrapper + PR Action).** `scripts/review/` TypeScript wrapper supervises subprocess with 60s heartbeat watchdog + 600s wall-clock kill. `.github/workflows/claude-review.yml` runs advisory structural review on every PR. `review:required` / `review:sample` labels created in Linear + GitHub. Coordination protocol doc updated with commit trailer vocabulary (`review:ok`, `review:skipped:<reason>`). Next: THR-183 (flip Action to blocking once GitHub Pro lands), THR-165 (structural assertion cleanup, model:haiku).
+**THR-165 shipped (structural assertion cleanup).** Replaced brittle `toHaveLength(10)` with per-tier prefix checks (ag.quest.*, ag.senior.*, ag.elite.*) in factionQuestAndReputation.test. Next: THR-95 (Holy Order of Dawn — 42 templates, model:sonnet). THR-183 pending GitHub Pro (flip review Action to blocking).
 
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
@@ -46,7 +46,7 @@
 - **THR-180 — GuildQuestPanel (deferral from THR-156):** New `GuildQuestPanel.tsx` renders active Adventurer's Guild quest hook postings in settlement LocationView sublocation branch. Collapsible panel, gated on Guild hall sublocation presence. Scans ruin nodes within GUILD_QUEST_RADIUS, filters by QUEST_HOOK_COOLDOWN_TICKS, sorts Saga→Major→Minor then by distance. Row click navigates camera to ruin via handleZoomToLocation. Exported hexDirection from questHooks.ts for prose parity. 10 unit tests. tsc clean, build green.
 
 ## Archived to project-history.md
-- THR-34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 (2026-04-18/19) and earlier — see project-history.md
+- THR-165/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 (2026-04-19/18) and earlier — see project-history.md
 
 
 ## Active Backlog Ideas
