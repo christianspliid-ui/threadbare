@@ -3,6 +3,12 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ THR-88 (2026-04-19) — Backstory strata 2-4 deepening: ~46 new prose templates across FEAR_PROSE, DECISIVE_NATURE_PROSE, DIVINE_TRANSFORMATION_PROSE, TRAIT_ORIGIN_PROSE, TURNING_POINT_PROSE, CONTRADICTION_PROSE, STORY_ARC_PROSE — all keys now at 4-templates-per-key; 4th template per key follows embodied/behavioral/sensory image pattern; voice rubric per stratum (biographer/confessor/oracular); pure content addition, no resolver or type changes
+
+✅ THR-187 (2026-04-19) — Encounter cache rebuild frequency reduction: `applyEncounterCacheUpdate()` helper in simulationRuntime.ts; removes 3 touchStructure callsites from orchestrator; per-promotion/sublocation-spawn/initiative-sublocation incremental cache updates; `encounter_cache_rebuild` trace + `encounterCacheRebuildCount` counter; debug bridge methods; 4+3 new contract tests
+
+✅ THR-97 (2026-04-19) — Rangers Brotherhood encounter migration: 15 templates (5 quest + 3 senior + 2 elite + 3 social + join + promotion) rewritten to UnifiedActionTemplate format with Rangers voice (terse, laconic, terrain-as-character), {location} in every template, {?has_ally}/{?has_faction} conditionals, encounter seeds, intelligence grants, hidden marks, reputation tallies; fixed wrong failBehavior/intrinsicTier/motivations/faction_reputation_gain field names from old format
+
 ✅ THR-186 (2026-04-19) — Ambient agent phase caps: early-exit predicates cut O(N_all) iterations in Effect Tick (skip agents with no possesses/bonded_to/has_trait edges), Mastery Decay (skip agents with no has_trait edges), Familiarity Gain (hexDistance > FAMILIARITY_PROXIMITY_HEX_RANGE=0 guard); TickPhaseProfileTrace aggregate per phase per tick; deferral THR-188 filed for hex→actor index
 
 ✅ THR-180 (2026-04-19) — GuildQuestPanel in settlement LocationView: active quest hook postings panel (Minor/Major/Saga tier badges, ruin direction+distance, click-to-navigate); deferral from THR-156; hexDirection exported from questHooks.ts; 10 tests; tsc clean
