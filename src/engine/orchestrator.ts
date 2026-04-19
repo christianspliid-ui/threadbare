@@ -150,7 +150,6 @@ import { RARITY_NOTIFICATION_THRESHOLD } from '../data/rarity-constants';
 import { RARITY_TIER_NAMES } from '../types/rarity';
 import {
   touchWorld,
-  touchStructure,
   ensureEncounterCache,
   ensureDistanceMatrix,
 } from './simulationRuntime';
@@ -1962,9 +1961,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
 
   // Phase 2.32: Initiative Progress — advance active agent initiatives, expire temporary boosts
   const initiativeRng = mulberry32(state.seed + state.tick * 53);
-  s = { ...s, ...phaseInitiativeProgress(s, initiativeRng) };
+  s = { ...s, ...phaseInitiativeProgress(s, initiativeRng, runtime) };
   phaseEventCounts['initiative_progress'] = s.tickEvents.length - prevEventCount;
-  if (runtime && phaseEventCounts['initiative_progress'] > 0) touchStructure(runtime);
+  // touchStructure removed (THR-187): create_sublocation outcomes now call applyEncounterCacheUpdate
+  // internally; other outcome kinds (bonds, boosts, faction) don't require cache invalidation.
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.35: Agent Movement (goal-directed pathfinding)
@@ -2179,10 +2179,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
 
   // Phase 6.635: Settlement Tier Promotion/Demotion (hamlet↔town↔city based on sustained prosperity)
   const prePromoEventCount = s.tickEvents.length;
-  s = { ...s, ...phaseSettlementPromotion(s) };
+  s = { ...s, ...phaseSettlementPromotion(s, runtime) };
   phaseEventCounts['settlement_tier_change'] = s.tickEvents.length - prePromoEventCount;
-  // TB-086: locationSubtype changes affect encounter scoring via getLocationType() fallback
-  if (runtime && s.tickEvents.length > prePromoEventCount) touchStructure(runtime);
+  // touchStructure removed (THR-187): phaseSettlementPromotion now calls applyEncounterCacheUpdate
+  // per-promotion inside the phase, which syncs encounterCacheBuiltAt to prevent full rebuilds.
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.636: Settlement Genome Reassessment (re-evaluate genome on tier changes or reach shifts)
@@ -2227,10 +2227,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.65: Gold Sublocations (conditional spawn/dissolve based on prosperity and wealth)
-  s = { ...s, ...phaseSublocations(s, activeEncounterCache) };
+  s = { ...s, ...phaseSublocations(s, activeEncounterCache, runtime) };
   phaseEventCounts['sublocations'] = s.tickEvents.length - prevEventCount;
-  // TB-086: sublocation spawn/dissolve adds/removes nodes and edges
-  if (runtime && s.tickEvents.length > prevEventCount) touchStructure(runtime);
+  // touchStructure removed (THR-187): phaseSublocations now calls applyEncounterCacheUpdate
+  // per spawn/dissolve when runtime is present, syncing encounterCacheBuiltAt incrementally.
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.66: Economic Chronicle (generate chronicle entries for economic state changes)

@@ -29,6 +29,8 @@ import {
   SETTLEMENT_DEMOTION_PROSPERITY,
 } from './phaseProsperity';
 import { resolveEconomicChronicle } from './economicChronicle';
+import type { SimulationRuntime } from './simulationRuntime';
+import { applyEncounterCacheUpdate } from './simulationRuntime';
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 
@@ -56,7 +58,7 @@ const SETTLEMENT_SUBTYPES = new Set(['hamlet', 'town', 'city', 'capital']);
  * Called once per tick, AFTER phaseProsperity.
  * Mutates graph node properties in place.
  */
-export function phaseSettlementPromotion(state: GameState): Partial<GameState> {
+export function phaseSettlementPromotion(state: GameState, runtime?: SimulationRuntime): Partial<GameState> {
   const { graph, tick, seed } = state;
   const events: TickEvent[] = [];
   const chapters: ChronicleChapter[] = [];
@@ -99,6 +101,11 @@ export function phaseSettlementPromotion(state: GameState): Partial<GameState> {
       loc.properties.locationSubtype = promotionTarget;
       loc.properties.prosperitySustainAboveTicks = 0;
       loc.properties.prosperitySustainBelowTicks = 0;
+
+      if (runtime) {
+        const locId = loc.id;
+        applyEncounterCacheUpdate(runtime, cache => cache.onLocationTypeChanged(graph, locId));
+      }
 
       emitTrace({
         category: 'settlement_tier_change',
@@ -154,6 +161,11 @@ export function phaseSettlementPromotion(state: GameState): Partial<GameState> {
       loc.properties.locationSubtype = demotionTarget;
       loc.properties.prosperitySustainAboveTicks = 0;
       loc.properties.prosperitySustainBelowTicks = 0;
+
+      if (runtime) {
+        const locId = loc.id;
+        applyEncounterCacheUpdate(runtime, cache => cache.onLocationTypeChanged(graph, locId));
+      }
 
       emitTrace({
         category: 'settlement_tier_change',

@@ -13,6 +13,8 @@ import { getAgentsAtLocation } from './graphQueries';
 import { seedFactionFromDefinition } from './factionSeeding';
 import { emitTrace } from './traceBuffer';
 import { FACTION_REPUTATION_DECAY_PER_TICK } from '../data/faction-constants';
+import type { SimulationRuntime } from './simulationRuntime';
+import { applyEncounterCacheUpdate } from './simulationRuntime';
 
 export interface OutcomeResult {
   newEvents: TickEvent[];
@@ -31,6 +33,7 @@ export function executeInitiativeOutcomes(
   graph: WorldGraph,
   progress: InitiativeProgress,
   template: InitiativeTemplate,
+  runtime?: SimulationRuntime,
 ): OutcomeResult {
   const newEvents: TickEvent[] = [];
   const newEncounterSeeds: PendingEncounterSeed[] = [];
@@ -47,7 +50,7 @@ export function executeInitiativeOutcomes(
           const name = generateSublocationName(
             agentNode.name, outcome.sublocationTypeId, progress.sphereColoring,
           );
-          createSublocation(
+          const result = createSublocation(
             graph,
             progress.locationId,
             progress.actorId,
@@ -55,6 +58,12 @@ export function executeInitiativeOutcomes(
             outcome.sublocationTypeId,
             state.tick,
           );
+          if (result.success && result.createdId && runtime) {
+            const createdId = result.createdId;
+            const parentId = progress.locationId;
+            applyEncounterCacheUpdate(runtime, cache =>
+              cache.onSublocationCreated(graph, createdId, parentId));
+          }
           newEvents.push({
             id: `initiative_sublocation_${progress.initiativeId}_${state.tick}`,
             tick: state.tick,

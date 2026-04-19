@@ -151,7 +151,9 @@ export type TraceCategory =
   | 'siege_spotlight_fired'
   | 'siege_regional_seeded'
   // Ambient agent phase profiling (THR-186)
-  | 'tick_phase_profile';
+  | 'tick_phase_profile'
+  // Encounter cache rebuild tracking (THR-187)
+  | 'encounter_cache_rebuild';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -288,6 +290,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'siege_regional_seeded',
   // Ambient agent phase profiling (THR-186)
   'tick_phase_profile',
+  // Encounter cache rebuild tracking (THR-187)
+  'encounter_cache_rebuild',
 ];
 
 /** Base shape for all trace entries */
@@ -1565,4 +1569,13 @@ export interface TickPhaseProfileTrace extends TraceBase {
   totalActors: number;
   processedActors: number;
   skippedActors: number;
+}
+
+/** Trace: encounter cache rebuilt from scratch (THR-187) */
+export interface EncounterCacheRebuildTrace extends TraceBase {
+  category: 'encounter_cache_rebuild';
+  reason: 'initial' | 'structural_invalidation' | 'fallback_after_failed_update';
+  locationCount: number;
+  totalRebuildsThisSession: number;
+  durationMs?: number;
 }
