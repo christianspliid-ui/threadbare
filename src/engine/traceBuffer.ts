@@ -24,6 +24,12 @@ export function emitTrace(
 
   if (buffer.length > BUFFER_SIZE) {
     buffer.shift();
+    // Keep IDs contiguous within the ring buffer so consumers relying on
+    // local ordering don't observe gaps after eviction.
+    for (let i = 0; i < buffer.length; i++) {
+      buffer[i] = { ...buffer[i], id: i };
+    }
+    nextId = buffer.length;
   }
 }
 

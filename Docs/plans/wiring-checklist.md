@@ -44,6 +44,7 @@ Every engine module that produces per-tick state changes must be called from a p
 | 7.1 | `phaseReputationDecay` | Reputation time-decay |
 | 6.7 | `phaseHiddenMarkDecay` | Hidden mark severity decay + floor-drop trace |
 | 6.71 | `phaseIntelligenceDecay` | Intelligence reliability decay + threshold-cross chronicle event (THR-137) |
+| 6.715 | `runDivineProximityPhase` | Divine proximity importance accumulation around ascendant hex (THR-25) |
 | 1.7a | `phaseEmittedOmenDecay` | Expire aftermath-spawned `EmittedOmen` entries where `tick > expiresTick` (THR-115) |
 | 7.2 | `phaseDivineInfluenceDecay` | Divine presence fade |
 | 7.5 | `phaseTradeRouteDecay` | Route dissolution |

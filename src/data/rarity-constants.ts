@@ -21,6 +21,8 @@
  * | IMPORTANCE_ENCOUNTER                  | 3                            | Importance delta for resolved encounters              |
  * | IMPORTANCE_CHRONICLE                  | 5                            | Importance delta for chronicle references             |
  * | IMPORTANCE_DIVINE_PROXIMITY           | 1                            | Importance delta per tick of divine proximity         |
+ * | DIVINE_PROXIMITY_RADIUS_HEXES         | 5                            | Hex radius for divine proximity importance scanning   |
+ * | DIVINE_PROXIMITY_TRACE_CAP            | 20                           | Max per-node divine proximity traces per tick         |
  * | IMPORTANCE_SPHERE_EVENT               | 8                            | Importance delta for sphere-triggered events          |
  */
 
@@ -133,6 +135,12 @@ export const IMPORTANCE_CHRONICLE = 5;
 
 /** Importance gained per tick while an entity is in divine proximity. */
 export const IMPORTANCE_DIVINE_PROXIMITY = 1;
+
+/** Hex radius within which entities accumulate divine proximity importance. */
+export const DIVINE_PROXIMITY_RADIUS_HEXES = 5;
+
+/** Max per-node divine proximity accumulation traces emitted per tick. */
+export const DIVINE_PROXIMITY_TRACE_CAP = 20;
 
 /** Importance gained when a sphere event directly involves an entity. */
 export const IMPORTANCE_SPHERE_EVENT = 8;

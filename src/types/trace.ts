@@ -41,6 +41,8 @@ export type TraceCategory =
   | 'reputation_trait'
   | 'rarity_graduation'
   | 'rarity_importance'
+  | 'divine_proximity_phase'
+  | 'divine_proximity_accumulation'
   | 'prose_rarity_bias'
   | 'encounter_promotion'
   | 'curator_decision'
@@ -182,6 +184,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'reputation_trait',
   'rarity_graduation',
   'rarity_importance',
+  'divine_proximity_phase',
+  'divine_proximity_accumulation',
   'prose_rarity_bias',
   'encounter_promotion',
   'curator_decision',
@@ -901,6 +905,27 @@ export interface RarityImportanceTrace extends TraceBase {
   currentTier: RarityTier;
 }
 
+/** Trace: divine proximity phase summary emitted once per tick. */
+export interface DivineProximityPhaseTrace extends TraceBase {
+  category: 'divine_proximity_phase';
+  ascendantCount: number;
+  scanCount: number;
+  accumulatedCount: number;
+  skippedAscendantCount: number;
+}
+
+/** Trace: per-node divine proximity accumulation (capped per tick). */
+export interface DivineProximityAccumulationTrace extends TraceBase {
+  category: 'divine_proximity_accumulation';
+  ascendantId: string;
+  nodeId: string;
+  nodeName: string;
+  hexDistance: number;
+  delta: number;
+  newImportance: number;
+  currentTier: RarityTier;
+}
+
 /** Trace: rarity floor elevated narrative tier classification */
 export interface ProseRarityBiasTrace extends TraceBase {
   category: 'prose_rarity_bias';
@@ -1331,6 +1356,8 @@ export type TraceEntry =
   | GraphOpExecutionTrace
   | RarityGraduationTrace
   | RarityImportanceTrace
+  | DivineProximityPhaseTrace
+  | DivineProximityAccumulationTrace
   | ProseRarityBiasTrace
   | EncounterPromotionTrace
   | CuratorDecisionTrace
