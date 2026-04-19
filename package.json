@@ -30,7 +30,11 @@
     "rebuild-index": "esbuild scripts/rebuild-index.ts --bundle --platform=node --format=esm --outfile=.cache/rebuild-index.mjs --external:fs --external:path && node .cache/rebuild-index.mjs",
     "rebuild-index:dry": "esbuild scripts/rebuild-index.ts --bundle --platform=node --format=esm --outfile=.cache/rebuild-index.mjs --external:fs --external:path && node .cache/rebuild-index.mjs --dry-run",
     "enhance-frontmatter": "esbuild scripts/enhance-frontmatter.ts --bundle --platform=node --format=esm --outfile=.cache/enhance-frontmatter.mjs --external:fs --external:path --external:child_process && node .cache/enhance-frontmatter.mjs",
-    "enhance-frontmatter:dry": "esbuild scripts/enhance-frontmatter.ts --bundle --platform=node --format=esm --outfile=.cache/enhance-frontmatter.mjs --external:fs --external:path --external:child_process && node .cache/enhance-frontmatter.mjs --dry-run"
+    "enhance-frontmatter:dry": "esbuild scripts/enhance-frontmatter.ts --bundle --platform=node --format=esm --outfile=.cache/enhance-frontmatter.mjs --external:fs --external:path --external:child_process && node .cache/enhance-frontmatter.mjs --dry-run",
+    "review:build": "esbuild scripts/review/wrapper.ts --bundle --platform=node --format=esm --outfile=.cache/review-wrapper.mjs --external:child_process --external:fs --external:path --external:url && esbuild scripts/review/review-client.ts --bundle --platform=node --format=esm --outfile=.cache/review-client.mjs --external:fs --external:path --external:url && esbuild scripts/review/test/clean-exit.ts --bundle --platform=node --format=esm --outfile=.cache/review-test-clean.mjs --external:fs --external:path && esbuild scripts/review/test/stall.ts --bundle --platform=node --format=esm --outfile=.cache/review-test-stall.mjs",
+    "review:run": "npm run review:build && node .cache/review-wrapper.mjs node .cache/review-client.mjs",
+    "review:test:clean": "npm run review:build && node .cache/review-wrapper.mjs node .cache/review-test-clean.mjs",
+    "review:test:stall": "npm run review:build && node .cache/review-wrapper.mjs node .cache/review-test-stall.mjs"
   },
   "dependencies": {
     "@types/d3": "^7.4.3",

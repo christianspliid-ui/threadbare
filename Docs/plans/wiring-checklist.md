@@ -441,6 +441,15 @@ Every system should emit traces for inspectability (NFP #2). A trace category th
 
 **All categories emitted (TB-057, 2026-03-26).** `tick_health` and `tick_crash` emitted from `orchestrator.ts` (health check failures and unhandled exceptions respectively). `control_effect` emitted from `phaseControlEffects.ts`. `revelation` emitted from `revelationResolver.ts`.
 
+**Review wrapper traces (THR-182, 2026-04-19):** Two new trace shapes written by the CC review surface — *not* engine traces, but structured logs persisted under `.cowork/review-traces/`:
+
+| Trace type | Written by | Location | Consumed by |
+|---|---|---|---|
+| `review-wrapper` (`ReviewWrapperTrace`) | `scripts/review/wrapper.ts` on every wrapper exit | `.cowork/review-traces/<timestamp>.json` | CC session reads the trace JSON line on wrapper stdout; commit trailer (`review:ok` / `review:skipped:*`) written to closing commit body |
+| `review-action` (`ReviewActionTrace`) | `.github/workflows/claude-review.yml` Action | GitHub Actions artifact (90-day retention) | GitHub PR check run + PR review comment |
+
+These are not `TraceCategory` entries in `src/types/trace.ts` — they are out-of-band infrastructure logs. No DebugPanel tab needed.
+
 **Verification:** For each trace category your feature defines, `grep 'category: "your_category"' src/engine/` must have at least one non-test hit.
 
 ### 5. DebugPanel Tabs (`src/components/Game/DebugPanel.tsx`)

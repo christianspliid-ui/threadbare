@@ -206,7 +206,8 @@ Each rule below maps to a specific incident that has actually happened in this p
 **How to apply:**
 - Never call `/codex:rescue` from CC, in any context. The command exists but is not part of the CC toolkit.
 - If a codex review is stalled, ambiguous, or hit a timeout, exit via `/codex:cancel` and bounce to Cowork with a comment containing whatever partial findings exist. Do not try to unstick via any codex write-capable command.
-- Any future tooling that reinstates codex in the loop (e.g. a PR-gated GitHub Action — see THR-182) must be designed so the reviewer is structurally read-only: no write credentials to the repo, PR-comment-only output. Read-only in capability, not just in convention.
+- Any future tooling that reinstates codex in the loop must be designed so the reviewer is structurally read-only: no write credentials to the repo, PR-comment-only output. Read-only in capability, not just in convention.
+- **See also:** `Docs/plans/2026-04-19-cc-review-replacement.md` — the heartbeat wrapper and PR-gated GitHub Action that replace the retired inline review. The Action enforces Rule 8 structurally (scope-restricted `GITHUB_TOKEN`, no `contents:write`).
 
 ---
 
@@ -288,6 +289,27 @@ When CC picks up a Ready for Dev issue, the order is **claim → verify → read
 4. **Verify the handoff is complete.** All four action-item sections present (Engine, Content, UI, Wiring). If any section is missing without N/A rationale, do not start work — add a comment flagging the gap and move the issue back to Implementation Planning. (Release your claim by setting `assignee: null` when you do.) An incomplete plan produces incomplete work.
 5. **Check the Claude Code coordination block.** Use the `Suggested model` (or the `model:*` label) unless you have reason to override. If considering a concurrent worktree, verify the target is listed in `Parallel-safe with` *and* doesn't collide with `Mutex with`.
 
+### Commit Trailer Vocabulary
+
+Commit trailers are single-word annotations in the commit message body (one per line, after a blank line) that document the review outcome for audit purposes. Three trailers are defined for the CC review system (see `Docs/plans/2026-04-19-cc-review-replacement.md`):
+
+| Trailer | Meaning |
+|---------|---------|
+| `review:ok` | Review ran to clean completion; verdict was `none` or `minor` |
+| `review:major-findings` | Review ran to clean completion; verdict was `major` (findings attached in trace) |
+| `review:skipped:<reason>` | Review did not complete — `<reason>` is `heartbeat-timeout`, `wall-clock-timeout`, `nonzero-exit`, or `wrapper-crash` |
+
+The wrapper writes the trailer automatically to the trace. CC reads the trace and includes the trailer in the closing commit body:
+
+```
+feat(thr-XX): my change description
+
+Fixes THR-XX
+review:ok
+```
+
+If review was skipped, the trailer documents why — this preserves the audit trail even for incomplete reviews. The `Fixes THR-XX` keyword must always be present regardless of review outcome.
+
 ### Claude Code Closeout (replaces Definition of Done doc updates)
 When Claude Code finishes implementation:
 1. DoD hooks enforce: tests pass, types clean, build succeeds, docs updated, no orphan deferrals.
@@ -321,6 +343,8 @@ Created in Linear (team: Threadbare):
 | model:haiku | #E8C547 | Cowork's suggested Claude model — mechanical, low blast radius |
 | model:sonnet | #6366F1 | Cowork's suggested Claude model — default; most engine/content work with a written plan |
 | model:opus | #8B5CF6 | Cowork's suggested Claude model — architectural judgment or cross-cutting work |
+| review:required | #e11d48 | PR must pass structural review before merge (gated once GitHub Pro + branch protection lands) |
+| review:sample | #f59e0b | Advisory review — runs for signal but never blocks merge |
 
 ---
 

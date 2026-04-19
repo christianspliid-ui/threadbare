@@ -1,0 +1,226 @@
+# CC Structural Review — PR-gated GitHub Action (THR-182)
+#
+# Runs a Claude-powered structural review on every PR.
+# Advisory mode until GitHub Pro + branch protection lands (tracked: Deferral THR-183).
+#
+# Label routing:
+#   review:required — run review and post findings (default for risky surfaces)
+#   review:sample   — run review for signal but never block
+#   (neither label) — treated as review:required if diff touches REVIEW_RISKY_SURFACES
+#
+# Commit trailers written by the in-session wrapper:
+#   review:ok                — clean pass
+#   review:major-findings    — major findings found (not blocking until GitHub Pro)
+#   review:skipped:<reason>  — skipped due to timeout/crash
+
+name: claude-review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: claude-review-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  REVIEW_WALL_CLOCK_TIMEOUT_SEC: "600"
+  REVIEW_HEARTBEAT_INTERVAL_SEC: "60"
+  REVIEW_ACTION_BLOCKING: "false"   # flip to "true" once GitHub Pro + branch protection land (THR-183)
+  REVIEW_ACTION_LABEL_REQUIRED: "review:required"
+  REVIEW_ACTION_LABEL_SAMPLE: "review:sample"
+  REVIEW_RISKY_SURFACES: "src/engine/**,src/types/**,src/components/HexMapV2/**,src/prose/**"
+
+jobs:
+  structural:
+    name: structural
+    runs-on: ubuntu-latest
+    # Skip draft PRs — review runs only when PR is ready for review
+    if: github.event.pull_request.draft == false
+
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: write
+
+    steps:
+      - name: Checkout PR head (read-only)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Determine review mode
+        id: review-mode
+        run: |
+          LABELS="${{ join(github.event.pull_request.labels.*.name, ',') }}"
+          echo "labels=$LABELS"
+
+          if echo "$LABELS" | grep -q "review:sample"; then
+            echo "mode=sample" >> "$GITHUB_OUTPUT"
+            echo "Review mode: sample (advisory only)"
+          elif echo "$LABELS" | grep -q "review:required"; then
+            echo "mode=required" >> "$GITHUB_OUTPUT"
+            echo "Review mode: required"
+          else
+            # Check if diff touches risky surfaces
+            git fetch origin ${{ github.base_ref }} --depth=1
+            CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+            echo "Changed files:"
+            echo "$CHANGED"
+
+            RISKY=false
+            while IFS= read -r file; do
+              if echo "$file" | grep -qE '^src/(engine|types|prose)/|^src/components/HexMapV2/'; then
+                RISKY=true
+                break
+              fi
+            done <<< "$CHANGED"
+
+            if [ "$RISKY" = "true" ]; then
+              echo "mode=required" >> "$GITHUB_OUTPUT"
+              echo "Review mode: required (risky surface detected, no label set)"
+            else
+              echo "mode=sample" >> "$GITHUB_OUTPUT"
+              echo "Review mode: sample (no risky surfaces, no label)"
+            fi
+          fi
+
+      - name: Build review scripts
+        run: npm run review:build
+
+      - name: Generate diff for review
+        id: gen-diff
+        run: |
+          git fetch origin ${{ github.base_ref }} --depth=1
+          git diff origin/${{ github.base_ref }}...HEAD > /tmp/pr-diff.txt
+          LINES=$(wc -l < /tmp/pr-diff.txt)
+          echo "diff_lines=$LINES" >> "$GITHUB_OUTPUT"
+          echo "Diff is $LINES lines"
+
+      - name: Run structural review
+        id: review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          # Check Rule 8: verify token has no push scope (structural Rule 8 preservation)
+          # GITHUB_TOKEN here has contents:read only — this is asserted at job permissions level above.
+          # If we somehow got a write token, abort loudly.
+          if git push --dry-run 2>&1 | grep -qv "not allowed\|permission\|fatal"; then
+            echo "::error::Rule 8 violation: review token appears to have push scope. Aborting."
+            exit 1
+          fi
+
+          TRACE=$(node .cache/review-wrapper.mjs node .cache/review-client.mjs --diff /tmp/pr-diff.txt 2>&1 | tail -1)
+          echo "trace=$TRACE" >> "$GITHUB_OUTPUT"
+
+          OUTCOME=$(echo "$TRACE" | node -e "process.stdin.resume(); let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>{ try{ const t=JSON.parse(d); process.stdout.write(t.outcome||'unknown'); } catch{ process.stdout.write('parse-error'); } })")
+          VERDICT=$(echo "$TRACE" | node -e "process.stdin.resume(); let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>{ try{ const t=JSON.parse(d); process.stdout.write(t.findings?.verdict||'unknown'); } catch{ process.stdout.write('parse-error'); } })")
+          TRAILER=$(echo "$TRACE" | node -e "process.stdin.resume(); let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>{ try{ const t=JSON.parse(d); process.stdout.write(t.commit_trailer||'none'); } catch{ process.stdout.write('parse-error'); } })")
+
+          echo "outcome=$OUTCOME" >> "$GITHUB_OUTPUT"
+          echo "verdict=$VERDICT" >> "$GITHUB_OUTPUT"
+          echo "trailer=$TRAILER" >> "$GITHUB_OUTPUT"
+          echo "Review outcome: $OUTCOME / verdict: $VERDICT / trailer: $TRAILER"
+
+      - name: Post review comment
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const outcome = '${{ steps.review.outputs.outcome }}';
+            const verdict = '${{ steps.review.outputs.verdict }}';
+            const trailer = '${{ steps.review.outputs.trailer }}';
+            const mode = '${{ steps.review-mode.outputs.mode }}';
+            const diffLines = '${{ steps.gen-diff.outputs.diff_lines }}';
+
+            let traceObj = null;
+            try { traceObj = JSON.parse('${{ steps.review.outputs.trace }}'.replace(/'/g, '"')); } catch {}
+
+            const verdictEmoji = { none: '✅', minor: '⚠️', major: '❌', skipped: '⏭️', error: '💥' }[verdict] ?? '❓';
+            const modeNote = mode === 'sample' ? ' _(sample mode — advisory only)_' : '';
+
+            let body = `### 🔍 CC Structural Review${modeNote}\n\n`;
+            body += `| Field | Value |\n|---|---|\n`;
+            body += `| Outcome | \`${outcome}\` |\n`;
+            body += `| Verdict | ${verdictEmoji} \`${verdict}\` |\n`;
+            body += `| Commit trailer | \`${trailer}\` |\n`;
+            body += `| Diff size | ${diffLines} lines |\n\n`;
+
+            if (traceObj?.findings?.findings?.length > 0) {
+              body += `**Findings:**\n\n`;
+              for (const f of traceObj.findings.findings) {
+                const sev = f.severity === 'major' ? '❌' : '⚠️';
+                body += `- ${sev} **[${f.category}]** ${f.description}`;
+                if (f.file) body += ` _(${f.file}${f.line ? `:${f.line}` : ''})_`;
+                body += '\n';
+              }
+              body += '\n';
+            } else if (traceObj?.findings?.summary) {
+              body += `**Summary:** ${traceObj.findings.summary}\n\n`;
+            }
+
+            if (outcome !== 'clean') {
+              body += `> _Review did not complete cleanly (${outcome}). Trailer: \`${trailer}\`. See Action logs for details._\n`;
+            }
+
+            body += `\n_Advisory mode — not blocking merge. [THR-183](https://linear.app/threadbare/issue/THR-183) tracks flip to blocking once GitHub Pro lands._`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
+
+      - name: Set check status
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const outcome = '${{ steps.review.outputs.outcome }}';
+            const verdict = '${{ steps.review.outputs.verdict }}';
+            const mode = '${{ steps.review-mode.outputs.mode }}';
+            const blocking = '${{ env.REVIEW_ACTION_BLOCKING }}' === 'true';
+
+            // In advisory mode OR sample mode, always report neutral (not failing)
+            // In required mode + blocking enabled: fail on major findings
+            let conclusion = 'neutral';
+            if (blocking && mode === 'required' && verdict === 'major' && outcome === 'clean') {
+              conclusion = 'failure';
+            } else if (outcome === 'clean' && (verdict === 'none' || verdict === 'minor')) {
+              conclusion = 'success';
+            }
+
+            const summaryMap = {
+              clean: `Review complete — verdict: ${verdict}`,
+              'heartbeat-timeout': 'Review timed out (heartbeat missed)',
+              'wall-clock-timeout': `Review timed out after ${process.env.REVIEW_WALL_CLOCK_TIMEOUT_SEC}s`,
+              'nonzero-exit': 'Review client exited with error',
+              'user-cancel': 'Review cancelled',
+              'wrapper-crash': 'Review wrapper crashed',
+            };
+
+            await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'claude-review / structural',
+              head_sha: context.payload.pull_request.head.sha,
+              status: 'completed',
+              conclusion,
+              output: {
+                title: summaryMap[outcome] ?? `Review outcome: ${outcome}`,
+                summary: `Mode: ${mode} | Blocking: ${blocking} | Trailer: ${{ steps.review.outputs.trailer }}`,
+              },
+            });
