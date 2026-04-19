@@ -1,7 +1,7 @@
 # Project Status
 > Updated 2026-04-19.
 ## Current Focus
-**Merchant Consortium upgrade shipped (THR-94).** 15 MC templates rewritten to canonical UnifiedActionTemplate shape with typed aftermath wiring (intelligence grants, encounter seeds, hidden marks, spawn_artifact), Threadbare prose, calculating-civil MC voice. Next: more faction content upgrades or UI Overhaul (THR-174+).
+**GuildQuestPanel shipped (THR-180).** Settlement LocationView now shows a "Guild Postings" panel (collapsible, default expanded) when an Adventurer's Guild hall sublocation is present. Reads active quest hooks stamped by phaseRuinQuestHooks (THR-156); click-through navigates to ruin hex. Next: THR-153 (PR 5 — Ruin transformation + PlaceOfPower, model:opus).
 
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
@@ -17,6 +17,9 @@
 - **Procedural Hex Vignettes (Next):** Phases 2-5 queued.
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
+
+## Recent Completions (2026-04-19) — THR-180
+- **THR-180 — GuildQuestPanel (deferral from THR-156):** New `GuildQuestPanel.tsx` renders active Adventurer's Guild quest hook postings in settlement LocationView sublocation branch. Collapsible panel, gated on Guild hall sublocation presence. Scans ruin nodes within GUILD_QUEST_RADIUS, filters by QUEST_HOOK_COOLDOWN_TICKS, sorts Saga→Major→Minor then by distance. Row click navigates camera to ruin via handleZoomToLocation. Exported hexDirection from questHooks.ts for prose parity. 10 unit tests. tsc clean, build green.
 
 ## Recent Completions (2026-04-19) — THR-162
 - **THR-162 — Tick loop scaling investigation:** Confirmed root cause of ?seeded vs --seed 42 divergence: DEV_ASCENDANT_IDENTITY uses hunger.witness → large map (48×36=1728 hexes) vs CLI medium (32×24=768 hexes). Fix: App.tsx now respects ?size= URL override in the seeded path (?view=game&seeded&size=medium for safe testing). Stall diagnosed as unbounded spotlight pool growth from lifecycle-born agents lacking explicit spotlightTier. Filed 3 follow-ups: THR-185 (spotlight default), THR-186 (O(N) ambient iterations), THR-187 (cache rebuild frequency). CLAUDE.md stale MAX_DISTANCE_MATRIX_SIZE corrected.

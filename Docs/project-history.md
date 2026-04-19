@@ -3,6 +3,8 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ THR-180 (2026-04-19) — GuildQuestPanel in settlement LocationView: active quest hook postings panel (Minor/Major/Saga tier badges, ruin direction+distance, click-to-navigate); deferral from THR-156; hexDirection exported from questHooks.ts; 10 tests; tsc clean
+
 ✅ THR-162 (2026-04-19) — Tick loop scaling investigation: world-gen divergence root cause confirmed (hunger.witness→large map); ?size= URL override added to App.tsx; lifecycle-born spotlight tier diagnosed as stall cause; 3 follow-ups filed (THR-185/186/187); CLAUDE.md MAX_DISTANCE_MATRIX_SIZE corrected
 
 ✅ THR-94 (2026-04-19) — Merchant Consortium content upgrade: 15 templates → canonical UnifiedActionTemplate; typed aftermath (5 intelligence, 7 encounter seeds, 2 hidden marks, 1 spawn_artifact); MC voice lexicon + Threadbare prose; 0 tsc errors; all data tests (2227) + voice lint (550) pass
