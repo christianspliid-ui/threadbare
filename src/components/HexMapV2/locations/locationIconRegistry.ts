@@ -71,7 +71,9 @@ export type LocationType =
   // Monster/danger locations
   | 'nest'
   | 'haunted_ground'
-  | 'corruption_zone';
+  | 'corruption_zone'
+  // Ruins layer (THR-153) — transformed elder_ruin
+  | 'place_of_power';
 
 /** Visual size class for a location — determines sprite scale on the hex. */
 export type LocationSizeClass = 'full' | 'medium' | 'small' | 'tiny';
@@ -171,6 +173,8 @@ export const LOCATION_IMPORTANCE_MAP: Record<LocationType, LocationImportance> =
   nest:            'small',
   haunted_ground:  'small',
   corruption_zone: 'small',
+  // Ruins layer (THR-153)
+  place_of_power:  'town',
 };
 
 // ── Production SVG paths ───────────────────────────────────────────────────────
@@ -525,6 +529,21 @@ const LEY_NEXUS_PATHS: LocationPathDef[] = [
   { d: 'M50 50 L50 18 M50 50 L50 82 M50 50 L22 34 M50 50 L78 34 M50 50 L22 66 M50 50 L78 66 M44 44 L56 56 M56 44 L44 56', opacity: 1.0 },
 ];
 
+/**
+ * Place of Power (THR-153) — luminous crown of rays around a cairn-stone.
+ * A transformed elder ruin: stable, holder-bound, broadcasts passive essence.
+ * Distinct from ley_nexus by the solid ring (stability) vs ley's starburst.
+ * 3 layers.
+ */
+const PLACE_OF_POWER_PATHS: LocationPathDef[] = [
+  // Outer aureole — soft halo
+  { d: 'M50 20 Q80 20 80 50 Q80 80 50 80 Q20 80 20 50 Q20 20 50 20 Z', opacity: 0.18 },
+  // Ring of rays (crown)
+  { d: 'M50 26 L52 12 L48 12 Z M74 38 L86 30 L84 34 Z M74 62 L86 70 L84 66 Z M50 74 L52 88 L48 88 Z M26 62 L14 70 L16 66 Z M26 38 L14 30 L16 34 Z', opacity: 0.7 },
+  // Central cairn / pedestal stone
+  { d: 'M42 66 L42 50 Q42 42 50 42 Q58 42 58 50 L58 66 Z', opacity: 1.0 },
+];
+
 // ── Wilderness Interest Location Icons ───────────────────────────────────────
 
 /**
@@ -715,4 +734,6 @@ export const LOCATION_ICON_REGISTRY: Record<LocationType, LocationIconDef> = {
   nest:            { paths: NEST_PATHS,            viewBox: '0 0 100 100', sizeClass: 'small'  },
   haunted_ground:  { paths: HAUNTED_GROUND_PATHS,  viewBox: '0 0 100 100', sizeClass: 'small'  },
   corruption_zone: { paths: CORRUPTION_ZONE_PATHS, viewBox: '0 0 100 100', sizeClass: 'small'  },
+  // ── Ruins layer (THR-153) ──
+  place_of_power:  { paths: PLACE_OF_POWER_PATHS,  viewBox: '0 0 100 100', sizeClass: 'medium' },
 };

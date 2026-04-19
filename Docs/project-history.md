@@ -3,6 +3,8 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ THR-153 (2026-04-19) — PR 5: Ruin transformation + PlaceOfPower/Scar + elderEssenceReward refactor: new `ruinTransformation.ts` (7-row outcome matrix), `placeOfPowerStreams.ts` phase (holder-presence credit, decay, corrupt siphon), `awardElderEssence` core extracted from legacy `computeElderEssenceReward` wrapper, `holds_place_of_power` edge type, `place_of_power` HexMapV2 icon, `EmergenceDilemmaModal` 2×2 choice grid, `PlaceOfPowerInspector` inline panel, 6 transformation vignettes (3 archetypes × transformed/consumed), 29 new tests
+
 ✅ THR-88 (2026-04-19) — Backstory strata 2-4 deepening: ~46 new prose templates across FEAR_PROSE, DECISIVE_NATURE_PROSE, DIVINE_TRANSFORMATION_PROSE, TRAIT_ORIGIN_PROSE, TURNING_POINT_PROSE, CONTRADICTION_PROSE, STORY_ARC_PROSE — all keys now at 4-templates-per-key; 4th template per key follows embodied/behavioral/sensory image pattern; voice rubric per stratum (biographer/confessor/oracular); pure content addition, no resolver or type changes
 
 ✅ THR-187 (2026-04-19) — Encounter cache rebuild frequency reduction: `applyEncounterCacheUpdate()` helper in simulationRuntime.ts; removes 3 touchStructure callsites from orchestrator; per-promotion/sublocation-spawn/initiative-sublocation incremental cache updates; `encounter_cache_rebuild` trace + `encounterCacheRebuildCount` counter; debug bridge methods; 4+3 new contract tests

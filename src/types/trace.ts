@@ -144,6 +144,9 @@ export type TraceCategory =
   | 'ruins.delve_fail'
   | 'ruins.delve_aborted'
   | 'ruins.schema_drift'
+  // Ruins layer — transformation traces (THR-153)
+  | 'ruins.elder_essence_awarded'
+  | 'ruins.emergence_orphaned'
   // Ruins layer — quest hook traces (THR-156)
   | 'ruins.quest_hook_issued'
   | 'ruins.quest_hook_suppressed'
@@ -282,6 +285,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'ruins.delve_fail',
   'ruins.delve_aborted',
   'ruins.schema_drift',
+  // Transformation traces (THR-153)
+  'ruins.elder_essence_awarded',
+  'ruins.emergence_orphaned',
   // Quest hook traces (THR-156)
   'ruins.quest_hook_issued',
   'ruins.quest_hook_suppressed',
