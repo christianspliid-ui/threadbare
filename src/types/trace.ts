@@ -149,7 +149,9 @@ export type TraceCategory =
   | 'ruins.quest_hook_suppressed'
   // Siege attention tier traces (THR-18)
   | 'siege_spotlight_fired'
-  | 'siege_regional_seeded';
+  | 'siege_regional_seeded'
+  // Ambient agent phase profiling (THR-186)
+  | 'tick_phase_profile';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -284,6 +286,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // Siege attention tier traces (THR-18)
   'siege_spotlight_fired',
   'siege_regional_seeded',
+  // Ambient agent phase profiling (THR-186)
+  'tick_phase_profile',
 ];
 
 /** Base shape for all trace entries */
@@ -1351,7 +1355,9 @@ export type TraceEntry =
   | PortfolioUnpinnedTrace
   // Siege attention tier traces (THR-18)
   | SiegeSpotlightFiredTrace
-  | SiegeRegionalSeededTrace;
+  | SiegeRegionalSeededTrace
+  // Ambient agent phase profiling (THR-186)
+  | TickPhaseProfileTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {
@@ -1550,4 +1556,13 @@ export interface SiegeRegionalSeededTrace extends TraceBase {
   intrinsicTier: AttentionTier;
   effectiveTier: AttentionTier;
   triggerType: 'allied_defender' | 'allied_attacker' | 'shadow' | 'heart' | 'sabotage';
+}
+
+/** Trace: per-tick aggregate profile for O(N_all) phase optimizations (THR-186) */
+export interface TickPhaseProfileTrace extends TraceBase {
+  category: 'tick_phase_profile';
+  phase: 'effect_tick' | 'familiarity_gain' | 'mastery_decay';
+  totalActors: number;
+  processedActors: number;
+  skippedActors: number;
 }

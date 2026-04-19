@@ -465,6 +465,15 @@ export const AGENT_COUNT_FALLBACK = { min: 8, max: 12 };
  * @range boolean */
 export const BORN_LATER_PREFER_CONTENT_LOCATIONS = true;
 
+// ═══════════════════════════════════════════════════════════════════
+// FAMILIARITY GAIN — Proximity-based familiarity accumulation (orchestrator.ts)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Max hex distance from the avatar at which proximity familiarity gain applies.
+ * 0 = same hex only (today's behavior). Set to 1–3 to extend reach.
+ * @range 0–5 */
+export const FAMILIARITY_PROXIMITY_HEX_RANGE = 0;
+
 /** Minimum encounter templates at a location for it to qualify as a content-rich spawn.
  * @range 1–10 */
 export const BORN_LATER_MIN_TEMPLATES = 3;

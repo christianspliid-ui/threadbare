@@ -55,6 +55,8 @@ import { getAnyEncounterById } from '../data/encounter-content';
 import type { EncounterOutcome } from '../types/encounter';
 import { getFamiliarity, addFamiliarity, checkThresholdCrossed } from './familiarity';
 import { FAMILIARITY_GAINS } from '../types/familiarity';
+import { hexDistance } from '../lib/hexMath';
+import { FAMILIARITY_PROXIMITY_HEX_RANGE } from '../data/agent-behavior-constants';
 import type { DivineInfluenceEntry } from '../types/dream';
 import { getCurrentStrength } from './decayCurve';
 import { checkDissolutions } from './sublocation';
@@ -1374,12 +1376,11 @@ export function phaseFamiliarityGain(state: GameState): Partial<GameState> {
 
   let map = state.familiarityMap;
 
-  // Find all agents in the avatar's hex
   const actors = state.graph.getNodesByType('actor')
     .filter(a => a.properties?.actorType === 'individual');
+  let processedFamiliarityActors = 0;
 
   for (const actor of actors) {
-    // Get actor's location via locationId property
     const locationId = actor.properties?.locationId as string | undefined;
     if (!locationId) continue;
 
@@ -1388,37 +1389,49 @@ export function phaseFamiliarityGain(state: GameState): Partial<GameState> {
 
     const actorHexCol = location.properties?.hexCol as number | undefined;
     const actorHexRow = location.properties?.hexRow as number | undefined;
+    if (actorHexCol === undefined || actorHexRow === undefined) continue;
 
-    // Check if actor is in the same hex as avatar
-    if (actorHexCol === avatarHex.col && actorHexRow === avatarHex.row) {
-      const familiarityModifier = state.doomIdentityMatrix?.familiarityGainModifier ?? 1.0;
-      const proximityGain = FAMILIARITY_GAINS.proximity * familiarityModifier;
-      const oldFamiliarity = getFamiliarity(map, actor.id);
-      const newMap = addFamiliarity(map, actor.id, proximityGain);
-      const newFamiliarity = getFamiliarity(newMap, actor.id);
-      const levelChanged = checkThresholdCrossed(oldFamiliarity, newFamiliarity);
+    // THR-186: skip actors outside proximity range — preserves same-hex-only behavior at range=0
+    // No hex→actor index available; fallback to full iteration with early-continue.
+    // TODO(THR-188): add hex→actor index to avoid O(N) location lookups here.
+    if (hexDistance({ col: actorHexCol, row: actorHexRow }, avatarHex) > FAMILIARITY_PROXIMITY_HEX_RANGE) continue;
 
-      // Emit trace for this familiarity gain (proximityGain already includes identity modifier)
-      const gain = proximityGain;
-      emitTrace({
-        tick: state.tick,
-        category: 'familiarity_change',
-        agentId: actor.id,
-        summary: `${actor.name} familiarity: ${oldFamiliarity.toFixed(2)} → ${newFamiliarity.toFixed(2)}`,
-        actorId: actor.id,
-        actorName: actor.name,
-        source: 'proximity',
-        oldFamiliarity,
-        newFamiliarity,
-        levelChanged: levelChanged !== null,
-        newLevel: levelChanged ?? undefined,
-        amount: gain,
-        multiplier: 1.0,
-      });
+    processedFamiliarityActors++;
+    const familiarityModifier = state.doomIdentityMatrix?.familiarityGainModifier ?? 1.0;
+    const proximityGain = FAMILIARITY_GAINS.proximity * familiarityModifier;
+    const oldFamiliarity = getFamiliarity(map, actor.id);
+    const newMap = addFamiliarity(map, actor.id, proximityGain);
+    const newFamiliarity = getFamiliarity(newMap, actor.id);
+    const levelChanged = checkThresholdCrossed(oldFamiliarity, newFamiliarity);
 
-      map = newMap;
-    }
+    emitTrace({
+      tick: state.tick,
+      category: 'familiarity_change',
+      agentId: actor.id,
+      summary: `${actor.name} familiarity: ${oldFamiliarity.toFixed(2)} → ${newFamiliarity.toFixed(2)}`,
+      actorId: actor.id,
+      actorName: actor.name,
+      source: 'proximity',
+      oldFamiliarity,
+      newFamiliarity,
+      levelChanged: levelChanged !== null,
+      newLevel: levelChanged ?? undefined,
+      amount: proximityGain,
+      multiplier: 1.0,
+    });
+
+    map = newMap;
   }
+
+  emitTrace({
+    tick: state.tick,
+    category: 'tick_phase_profile',
+    phase: 'familiarity_gain',
+    totalActors: actors.length,
+    processedActors: processedFamiliarityActors,
+    skippedActors: actors.length - processedFamiliarityActors,
+    summary: `familiarity_gain: ${processedFamiliarityActors}/${actors.length} actors processed`,
+  });
 
   return { familiarityMap: map };
 }
@@ -1839,7 +1852,15 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
       .filter(n => n.properties.actorType === 'individual' || n.properties.actorType === 'ascendant');
     let updatedEffectStates = new Map(effectStates);
     const effectHexMutations: import('../types/hexMutation').HexMutation[] = [];
+    let processedEffectActors = 0;
     for (const agent of agents) {
+      // THR-186: skip agents with no effect-bearing edges — avoids O(N_all) work for ambient NPCs
+      if (
+        s.graph.getOutgoingEdges(agent.id, 'possesses').length === 0 &&
+        s.graph.getOutgoingEdges(agent.id, 'bonded_to').length === 0 &&
+        s.graph.getOutgoingEdges(agent.id, 'has_trait').length === 0
+      ) continue;
+      processedEffectActors++;
       const result = tickEffects(s.graph, agent.id, s.tick, updatedEffectStates);
       updatedEffectStates = result.updatedStates;
       // Collect hex mutations from hex_effect primitives — passed to phaseHexState below
@@ -1857,6 +1878,15 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
         emitTrace(trace as unknown as TraceEntry);
       }
     }
+    emitTrace({
+      tick: s.tick,
+      category: 'tick_phase_profile',
+      phase: 'effect_tick',
+      totalActors: agents.length,
+      processedActors: processedEffectActors,
+      skippedActors: agents.length - processedEffectActors,
+      summary: `effect_tick: ${processedEffectActors}/${agents.length} actors processed`,
+    });
     const existingHexMutations = s.pendingHexMutations ?? [];
     s = { ...s, effectStates: updatedEffectStates,
       pendingHexMutations: [...existingHexMutations, ...effectHexMutations] };
@@ -2107,10 +2137,23 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
 
   // Phase 6.626: Mastery Trait Decay (mastery traits lose levels without reinforcement)
   try {
-    const agents = s.graph.getNodesByType('actor');
-    for (const agent of agents) {
+    const masteryAgents = s.graph.getNodesByType('actor');
+    let processedMasteryActors = 0;
+    for (const agent of masteryAgents) {
+      // THR-186: skip agents with no traits — avoids O(N_all) work for ambient NPCs
+      if (s.graph.getOutgoingEdges(agent.id, 'has_trait').length === 0) continue;
+      processedMasteryActors++;
       processTraitDecay(s.graph, agent.id, s.tick);
     }
+    emitTrace({
+      tick: s.tick,
+      category: 'tick_phase_profile',
+      phase: 'mastery_decay',
+      totalActors: masteryAgents.length,
+      processedActors: processedMasteryActors,
+      skippedActors: masteryAgents.length - processedMasteryActors,
+      summary: `mastery_decay: ${processedMasteryActors}/${masteryAgents.length} actors processed`,
+    });
   } catch {
     // fail-soft: trait decay failure is non-fatal
   }
