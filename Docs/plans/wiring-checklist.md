@@ -2,7 +2,7 @@
 
 > **Living document.** Every design plan must include a wiring section that maps new modules to entries on this checklist. Every implementation must verify all listed connections before marking work complete. Maintaining this checklist is part of the Definition of Done for both design and implementation phases.
 >
-> **Last updated:** 2026-04-19 (THR-156 — Ruins Quest Hooks: Phase 6.655 `phaseRuinQuestHooks` added; 2 new trace categories `ruins.quest_hook_issued` / `ruins.quest_hook_suppressed`)
+> **Last updated:** 2026-04-19 (THR-174 — Viewport contract audit complete; see [Docs/viewport-audit-2026-04-18.md](../viewport-audit-2026-04-18.md). All 5 primary views pass at 1920×1080.)
 
 ---
 
