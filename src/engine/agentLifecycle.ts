@@ -235,6 +235,7 @@ export function phaseAgentLifecycle(
           name,
           properties: {
             actorType: 'individual',
+            spotlightTier: 'ambient',
             axiologicalProfile,
             domainCapabilities: domainCaps,
             locationId: locId,
