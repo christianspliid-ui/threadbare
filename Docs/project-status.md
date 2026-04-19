@@ -30,6 +30,9 @@
 ## Recent Completions (2026-04-19) — THR-186
 - **THR-186 — Ambient agent phase caps (deferral from THR-162):** Early-exit predicates in three O(N_all) tick phases. Effect Tick: skip agents with no `possesses`/`bonded_to`/`has_trait` edges before calling `tickEffects` — avoids agentNode/location resolution for ~80% of ambient NPCs. Mastery Decay: skip agents with no `has_trait` edges — ambient NPCs never accumulate mastery traits. Familiarity Gain: `FAMILIARITY_PROXIMITY_HEX_RANGE=0` constant + `hexDistance` guard (same-hex behavior preserved). `TickPhaseProfileTrace` emitted once per phase per tick (totalActors/processedActors/skippedActors). Deferral THR-188 filed for hex→actor index. tsc clean, build green.
 
+## Recent Completions (2026-04-19) — THR-185
+- **THR-185 — Lifecycle-born agents default to spotlight tier (deferral from THR-162):** Added `spotlightTier: 'ambient'` to lifecycle-born agent node properties in `agentLifecycle.ts`. Prevents unbounded decision-pool growth (~360-720 extra spotlight agents by tick 72 on large maps). Agents now graduate via phaseNpcGraduation. tsc clean, build green.
+
 ## Recent Completions (2026-04-19) — THR-180
 - **THR-180 — GuildQuestPanel (deferral from THR-156):** New `GuildQuestPanel.tsx` renders active Adventurer's Guild quest hook postings in settlement LocationView sublocation branch. Collapsible panel, gated on Guild hall sublocation presence. Scans ruin nodes within GUILD_QUEST_RADIUS, filters by QUEST_HOOK_COOLDOWN_TICKS, sorts Saga→Major→Minor then by distance. Row click navigates camera to ruin via handleZoomToLocation. Exported hexDirection from questHooks.ts for prose parity. 10 unit tests. tsc clean, build green.
 
