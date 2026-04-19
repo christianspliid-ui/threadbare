@@ -2972,6 +2972,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                 graph={gameState.graph}
                 seed={gameState.seed}
                 tick={gameState.tick}
+                onNavigateToRuin={handleZoomToLocation}
               />
             )}
           </div>
