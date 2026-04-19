@@ -180,13 +180,19 @@ function App() {
 
     const isDevSeeded = viewParam === 'game' && new URLSearchParams(window.location.search).has('seeded');
 
+    // Allow ?size= URL param to override the hunger-derived map size.
+    // Useful for dev testing: ?view=game&seeded&size=medium avoids the large-map stall (THR-162).
+    const urlSizeOverride = parseMapSizeParam();
+    const urlHasExplicitSize = new URLSearchParams(window.location.search).has('size');
+    const resolvedMapSize = urlHasExplicitSize ? urlSizeOverride : deriveMapSize(gamePhase.identity.hungerId);
+
     return (
       <GameView
         archetype={compat}
         avatarName={gamePhase.identity.mortalName}
         cosmology={derivedCosmology}
         seed={seed}
-        mapSize={deriveMapSize(gamePhase.identity.hungerId)}
+        mapSize={resolvedMapSize}
         ascendantIdentity={gamePhase.identity}
         preSeeded={isDevSeeded}
       />
