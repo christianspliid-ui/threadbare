@@ -3,6 +3,8 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ THR-186 (2026-04-19) — Ambient agent phase caps: early-exit predicates cut O(N_all) iterations in Effect Tick (skip agents with no possesses/bonded_to/has_trait edges), Mastery Decay (skip agents with no has_trait edges), Familiarity Gain (hexDistance > FAMILIARITY_PROXIMITY_HEX_RANGE=0 guard); TickPhaseProfileTrace aggregate per phase per tick; deferral THR-188 filed for hex→actor index
+
 ✅ THR-180 (2026-04-19) — GuildQuestPanel in settlement LocationView: active quest hook postings panel (Minor/Major/Saga tier badges, ruin direction+distance, click-to-navigate); deferral from THR-156; hexDirection exported from questHooks.ts; 10 tests; tsc clean
 
 ✅ THR-162 (2026-04-19) — Tick loop scaling investigation: world-gen divergence root cause confirmed (hunger.witness→large map); ?size= URL override added to App.tsx; lifecycle-born spotlight tier diagnosed as stall cause; 3 follow-ups filed (THR-185/186/187); CLAUDE.md MAX_DISTANCE_MATRIX_SIZE corrected

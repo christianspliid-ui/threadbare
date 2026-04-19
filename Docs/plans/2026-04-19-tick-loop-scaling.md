@@ -121,8 +121,8 @@ Each `touchStructure` call causes `ensureEncounterCache` to rebuild the full cac
 ### THR-185: Lifecycle-born agents should default to `ambient`, not `spotlight`
 **Hypothesis:** `agentLifecycle.ts` creates born-later agents at `spotlight` tier (the legacy default). These agents accumulate in `phaseAgentDecision` and `phaseMovement` over time, growing the decision pool well beyond the initial seeded count. Changing born-later agents to `ambient` by default (with organic graduation via `phaseNpcGraduation`) would cap the active decision pool at the seeded spotlight count + graduates, rather than growing unboundedly.
 
-### THR-186: Profile and cap O(N_all) ambient agent iterations
-**Hypothesis:** Effect Tick, Mastery Trait Decay, and Familiarity Gain iterate over all 1010 actors including ambient NPCs that are unlikely to have effects or be near the avatar. Skipping ambient agents with no attachments (for effect tick) and no proximity to avatar (for familiarity) would reduce per-tick O(N) work.
+### THR-186: Profile and cap O(N_all) ambient agent iterations ✅ Done (2026-04-19)
+Early-exit predicates added to Effect Tick (skip agents with no `possesses`/`bonded_to`/`has_trait` edges), Mastery Decay (skip agents with no `has_trait` edges), and Familiarity Gain (`hexDistance > FAMILIARITY_PROXIMITY_HEX_RANGE` guard, constant=0). `TickPhaseProfileTrace` aggregate per phase per tick. Deferral THR-188 filed for hex→actor index to eliminate remaining O(N) location lookups in familiarity phase. Commit: `5ab98a08`.
 
 ### THR-187: Encounter cache rebuild frequency on large map
 **Hypothesis:** `touchStructure` fires frequently on large maps due to sublocation spawns and settlement promotions, causing full encounter cache rebuilds every few ticks. `buildFullCache` over 584 locations adds 20–50ms overhead. Investigate whether incremental cache updates (already implemented via `addLocation`/`removeLocation`) could replace full rebuilds for the common cases.
