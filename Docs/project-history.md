@@ -450,3 +450,5 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - THR-19 Omen Agenda System: ✅ Complete (2026-04-16) — phaseOmenAgenda (Phase 1.7), 36 templates, OmenIndicator UI, WorldPulse section, Debug Omens tab, 27 tests. Commit: 6fd3cbd8.
 - THR-20 Cool Failure & Complication Outcome Pass: ✅ Complete (2026-04-16) — 44 complication templates (9 categories × 3 severities), selection pipeline, prose placeholders, EncounterVeil amber display. Commits: 9af8aa98, 73f302c5.
 - THR-21 Doom Archetype Identity Pass: ✅ Complete (2026-04-16) — DoomIdentityMatrix for all 7 archetypes, 8 integration hooks wired, agentLifecycle ghost-reference bug fix. Commit: b8b0c166.
+- THR-190 raw event feed moved to Debug Panel: ✅ Complete (2026-04-19) — removed player-facing NarrativeLog overlay and added a debug-only Recent Events tab with opt-in stream toggle.
+- THR-190 closeout (2026-04-19): moved raw recent-events stream into Debug Panel (Recent Events tab + Stream toggle), removed player-facing NarrativeLog; commit 20c257b5.

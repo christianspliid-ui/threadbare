@@ -88,6 +88,8 @@ Each entry is a row in the table below. Append new entries at the bottom. Never 
 
 | 63 | 1 | 2026-04-19 | api-quirk | Linear `save_issue` with `id="THR-183"` (a Done issue) was called during THR-182 session to create a new Deferral issue. Passing an existing `id` updates the existing issue rather than creating a new one — the API does not distinguish "create" vs "update" by intent, only by `id` presence. Silently overwrote the closed THR-183 (Vara seed, UI Visual Overhaul) with Deferral metadata. | A completed issue in a shipped project was mutated; its title, labels, and description were overwritten. Required a fixup: restoring THR-183 fields is impractical (history preserved in Linear), so created a new issue (THR-189) and updated the YAML reference. | M | Yes | Never pass `id` when creating a new issue via `save_issue`. Omit the `id` field entirely for new issues — if you intend to reference an existing issue number for naming purposes, compute the number from the list response after creation. | THR-182 Deferral issue creation |
 
+| 64 | 1 | 2026-04-19 | environment | $CODEX_HOME was unset in the automation shell, so the required automation memory path could not be resolved from env vars. | Initial memory read failed until fallback path discovery was used. | S | Yes | Use $env:USERPROFILE\.codex\automations\<automation-id>\memory.md fallback when $CODEX_HOME is null. | THR-190 automation run |
+| 65 | 1 | 2026-04-19 | process-friction | THR-190 handoff comment referenced stale file paths (src/components/GameView.tsx, src/components/DebugPanel.tsx, src/components/NarrativeLog.tsx) while current files live under src/components/Game/. | Added an extra discovery pass before implementation. | S | Yes | Resolve handoff hook points by symbol search first (import NarrativeLog, DebugPanel) when line/path references are stale. | THR-190 pickup |
 ---
 **Retrospective conducted: 2026-03-29** — 13 impediments reviewed (19 occurrences), 2 improvements implemented, 1 backlogged. Report: `Docs/retrospectives/2026-03-29-retro.md`
 
@@ -95,3 +97,4 @@ Each entry is a row in the table below. Append new entries at the bottom. Never 
 
 **Retrospective conducted: 2026-04-11 (v2)** — 27 impediments reviewed (#13–39, collaborative review with user). 23 closed, 4 open. #1 systemic issue: npm test red for 8+ days (7 entries, ~15 occurrences). Root cause analysis: no CI gates, brittle count assertions, scoped-verification workaround normalized red state. Actions: TB-120 (test repair), TB-121 (CI/CD pipeline), delete count-based assertions, add Known Sandbox Limitations to CLAUDE.md. Report: `Docs/retrospectives/2026-04-11-retro-v2.md`
 ---
+
