@@ -60,7 +60,6 @@ import { OmenIndicator } from './OmenIndicator';
 import { DoomClockDetail } from './DoomClockDetail';
 import { MandateDetail } from './MandateDetail';
 import { ActionDrawer } from './ActionDrawer';
-import { NarrativeLog } from './NarrativeLog';
 import { HarvestScreen } from './HarvestScreen';
 import { RetinuePanel } from './RetinuePanel';
 import { AgentInfoCard } from './AgentInfoCard';
@@ -266,6 +265,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     () => new URLSearchParams(window.location.search).has('nofog')
   );
 
+  // ── Debug: omniscience mode (bypass familiarity gating on agent character sheets) ──
+  const [omniscienceMode, setOmniscienceMode] = useState(false);
+
   // ── Debug: organic shore toggle ──
   const [showOrganicShore, setShowOrganicShore] = useState(false);
 
@@ -374,6 +376,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     },
     runtime,
     setRunning,
+    omniscienceMode,
   });
 
   // ── Mark agent as viewed when detail panel opens ──
@@ -418,6 +421,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       hexMapRef.current?.triggerAnomalyReveal(hexCol, hexRow, color);
     }
   }, [gameState.recentEvents]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Keep recent events behind a lazy getter so debug streaming can opt in.
+  const recentEventsRef = useRef(gameState.recentEvents);
+  useEffect(() => {
+    recentEventsRef.current = gameState.recentEvents;
+  }, [gameState.recentEvents]);
+  const getRecentEvents = useCallback(() => recentEventsRef.current, []);
 
   // ── Avatar arrival event → auto-pause + toast ──
   // When the ascendant reaches its move target, pause the game and notify the player.
@@ -1507,6 +1517,20 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       return enabled;
     });
   }, [fogDisabled]);
+
+  // ── Debug bridge: omniscience toggle ─────────────────────────────────────
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerOmniscienceToggle((enabled?: boolean) => {
+      if (enabled === undefined) {
+        const next = !omniscienceMode;
+        setOmniscienceMode(next);
+        return next;
+      }
+      setOmniscienceMode(enabled);
+      return enabled;
+    });
+  }, [omniscienceMode]);
 
   // ── Debug bridge: setQuintessence / setBand (THR-184) ─────────────────────
   useEffect(() => {
@@ -2711,8 +2735,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         {/* ── Center: map / hex zoom / location ── */}
         <div className="flex-1 flex flex-col overflow-hidden relative">
           <div className="flex-1 overflow-hidden relative">
-            {/* NarrativeLog overlay */}
-            <NarrativeLog events={gameState.recentEvents} onSelectAgent={handleAgentSelect} />
             {/* Toast notifications */}
             <ToastStack
               toasts={[...notificationState.toasts, ...encounterToasts, ...actionToasts]}
@@ -3036,6 +3058,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             hiddenMarks={gameState.hiddenMarks}
             pendingEncounterSeeds={gameState.pendingEncounterSeeds}
             activeDelves={gameState.activeDelves}
+            getRecentEvents={getRecentEvents}
           />
         ) : (
           <div className="flex flex-shrink-0" style={{ alignItems: 'stretch' }}>
