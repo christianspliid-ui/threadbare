@@ -309,31 +309,37 @@ export const TRAIT_ORIGIN_PROSE: Record<string, string[]> = {
     'The {trait} in {name} is not a thing they acquired — it arrived with them, written into the way they respond to the world before they had the language to name it.',
     '{name}\'s {trait} is constitutional rather than chosen. They cannot remember a time without it, which means they also cannot imagine being without it.',
     'The {trait} is so fundamental to {name} that others mistake it for personality rather than property — a permanent feature of how they occupy space.',
+    'Someone who knew {name} as a child would recognize {trait} without introduction — there before the experiences that usually produce it, expressed in the unmodulated form of something constitutional that has not yet learned calibration. What {name} is was present before {name} was anyone who could claim it.',
   ],
   mastery: [
     'The {trait} in {name} was not born — it was worked into them through repetition and failure and the specific education that comes from doing something badly enough times to do it right.',
     '{name}\'s {trait} has the texture of something earned rather than given. It is present not because it is natural but because they spent themselves acquiring it.',
     'The {trait} carries {name}\'s history of labor in it. Every competency has a scar; this one has several.',
+    'Somewhere there is the workshop, the mentor, the repeated failure that pressed {trait} into {name} — a specific apprenticeship now invisible because it has been so thoroughly absorbed. The craft shows in how little apparent effort the {trait} requires. The effort that went into learning it does not show.',
   ],
   reputation: [
     'The {trait} attributed to {name} arrived through what others have said about them — a characteristic assembled from outside that they have now had long enough to make their own.',
     '{name}\'s {trait} is partly projection, partly accurate. People saw something and named it, and the name has been worn long enough to fit.',
     'The {trait} came to {name} through the testimony of people who had reason to know. Whether the reputation is entirely deserved is a question {name} has stopped asking.',
+    'A reputation is easier to give than to take back. Someone said {trait} about {name} early and clearly enough that others repeated it, and the repetition preceded them into rooms they had not yet entered. By the time they arrived, the attribution was load-bearing. They have been living inside it since.',
   ],
   scar: [
     'The {trait} in {name} is the specific result of a specific wound. Something happened, and this is what grew from it — not despite the event, but because of it.',
     '{name} carries {trait} the way people carry injuries that have healed badly: the original damage has become part of the structure, load-bearing in ways that cannot be removed without collapse.',
     'The {trait} that marks {name} arrived through cost. It was forged in something they would not choose again, which is precisely what makes it permanent.',
+    'The origin of {name}\'s {trait} is recoverable if you know where to look — the specific tension in how they hold themselves, the involuntary response to certain situations, the pattern that makes more sense once you know what formed it. The event has healed. The wound remains structural.',
   ],
   condition: [
     'The {trait} in {name} arrived through circumstance rather than intention — a characteristic shaped by the particular environment they occupied for long enough to leave a mark.',
     '{name}\'s {trait} is the deposit of conditions they did not design and could not escape. The world pressed a shape into them, and this is the shape.',
     'The {trait} came to {name} through the accumulated pressure of their situation — not a single event but a sustained weather that left a permanent pattern.',
+    'For long enough, in the right circumstances, any environment shapes what it contains. The {trait} in {name} arrived through sustained exposure — the particular pressure of a situation that, repeated long enough, changed the structure of the person enduring it. They are shaped in the precise dimensions of what they survived.',
   ],
   destiny: [
     'The {trait} in {name} feels less like something they developed and more like something that was waiting for them — a characteristic that arrived with the sense of inevitability rather than surprise.',
     '{name}\'s {trait} has a quality that others find almost predetermined — as if the story was already written and this was the form it was always going to take.',
     'The {trait} came to {name} as if by appointment: the right quality arriving at the moment it was needed, as though the world had arranged for it to be available.',
+    'There was an omen, a coincidence, or an inheritance that announced {trait} in {name} before they could produce the evidence themselves. The announcement came first. They have been growing into the claim it made ever since — not chosen, but recognized, which carries its own kind of weight.',
   ],
 };
 
@@ -353,21 +359,25 @@ export const TURNING_POINT_PROSE: Record<string, string[]> = {
     'Something shifted in {name} the day they chose {value} in a circumstance where scarcity or abundance made the choice real rather than abstract.',
     'The moment {name} settled into {value} as an operating principle came through a specific event that made the alternative visible and, ultimately, insufficient.',
     '{name}\'s relationship with {value} was established through a situation that required it to be enacted rather than merely believed. The enactment has been consistent since.',
+    'The day {name} settled into {value} came over a specific object or occasion that made the choice material rather than theoretical — an offer of abundance accepted or declined, an austerity chosen when comfort was available. What they chose told them what kind of life they were committing to. The commitment has been consistent since.',
   ],
   honesty_cunning: [
     'Something shifted in {name} when {value} became the operating principle rather than the occasional tactic — a moment when it moved from behavior to character.',
     'The turn toward {value} for {name} came through a situation where the alternative was possible and declined. The decline was a statement about the kind of person they intended to be.',
     '{name}\'s commitment to {value} was tested once in a specific way, and the test was passed at a cost. The cost has been consistent with having a principle.',
+    'The moment {name} committed to {value} arrived in a conversation where the gap between the true thing and the useful thing was visible, navigable, and closed. What they chose in that moment, and how quickly the choosing happened, told them something about themselves that could not afterwards be argued with.',
   ],
   tradition_novelty: [
     'Something shifted in {name} when they chose {value} in a situation where the alternative was not only available but recommended by people they respected. The choice was a declaration.',
     'The turn toward {value} arrived for {name} through a moment when the past and the future were both live options. What they chose in that moment has been their orientation since.',
     '{name}\'s relationship with {value} was forged in circumstances that made the choice between inheritance and change consequential and irreversible.',
+    'The turning point arrived for {name} through an inheritance — an object, a practice, a piece of accumulated knowledge — that could be preserved or discarded. How they handled it revealed which side of the argument they had always lived on, not as a position but as a reflex older than any reasoning they could give for it.',
   ],
   loyalty_ambition: [
     'Something shifted in {name} the day they chose {value} over its opposite — a decision that set a direction they have been traveling in since, further than they can see back to the origin.',
     '{name}\'s relationship with {value} was not always settled. There was a moment when the alternative was genuinely available, and the choice made then has been the organizing fact since.',
     'Something shifted in {name} when {value} was tested against something that made it genuinely costly. The test was passed. The passing left a mark.',
+    'The moment that settled which of the two was primary arrived through a situation where both were genuinely available and only one could be chosen. The choosing happened faster than {name} expected. That speed was the information — the hierarchy was already there, below the level of deliberation.',
   ],
   revelation_discretion: [
     'Something shifted in {name} when {value} became a reflex rather than a choice — the moment when speaking or withholding became character rather than tactic.',
@@ -392,6 +402,7 @@ export const TURNING_POINT_PROSE: Record<string, string[]> = {
     'Something shifted in {name} the day they chose {value} — not dramatically, but definitively, in a circumstance that required the thing to be named.',
     '{name}\'s relationship with {value} was forged in a situation that made the alternative visible and rejected it. The rejection was a declaration.',
     'The moment {name} settled into {value} arrived through a test that was not abstract. What it cost them to choose it is part of why the choice has held.',
+    'The moment that settled {value} for {name} arrived on a threshold — a door, a perimeter, the edge of a commitment — where stepping forward or back had to happen before reasoning could complete. The decision came from somewhere below deliberation. What comes from there is character, which is not revised by thinking afterward.',
   ],
 };
 
@@ -405,36 +416,43 @@ export const CONTRADICTION_PROSE: Record<string, string[]> = {
     '{name} holds {left_pole} and {right_pole} in approximately equal measure — both are genuine, neither is settled, and the question of which operates depends on circumstances they do not always control.',
     'The hardness and the softness in {name} have not resolved into a hierarchy. {left_pole} and {right_pole} coexist, each active in the circumstances that call for it.',
     'The balance of {left_pole} and {right_pole} in {name} produces something that looks like calm but is more accurately described as held tension. The patience is real; what it contains is also real.',
+    'Watch {name} across a single week and you see both {left_pole} and {right_pole} operating at full strength in their appropriate situations — neither forced, neither performed. The observer who decides they have identified which is real is looking at only half the evidence. Both are. That is the whole nature of this particular contradiction.',
   ],
   asceticism_extravagance: [
     '{name} holds both {left_pole} and {right_pole} in near-equal measure — they are often in direct competition, and the winner is situational.',
     'The {left_pole} part of {name} and the {right_pole} part are close enough in strength that the outcome is often a compromise neither fully satisfies.',
     'What the near-equal {left_pole} and {right_pole} produces in {name} is a person who experiences abundance and scarcity simultaneously — who can give in one moment and calculate the cost of giving in the next, and find both responses genuine.',
+    'In a single week, {name} refuses a comfort they could easily afford and then spends on something that matters to them for reasons they cannot articulate. The observer cannot find the pattern because {left_pole} and {right_pole} are not in sequence — they are simultaneous, each responding to a different axis of the same situation.',
   ],
   honesty_cunning: [
     '{name} is pulled toward both {left_pole} and {right_pole} with equal force — the honest part and the strategic part are in ongoing negotiation that neither wins.',
     'The contradiction between {left_pole} and {right_pole} in {name} has not simplified. They are sometimes more open than useful and sometimes more closed than comfortable.',
     'The war in {name} between {left_pole} and {right_pole} is not ethical. It is practical. Both work; which works better in a given circumstance is not always clear until after. This is what sustains the argument between them.',
+    'On one day {name} says the precise thing that needed saying at significant cost to the relationship. On another they navigate around a truth they could have told, with craft the other person does not register. An observer watching both days would think they were looking at different people — because in the relevant sense, they are.',
   ],
   tradition_novelty: [
     '{name} is equally drawn to {left_pole} and {right_pole} — the appeal of each is partly the critique it offers of the other, a loop without obvious exit.',
     'The {left_pole} and the {right_pole} in {name} are matched forces. They respect inheritance and resist it in approximately equal measure.',
     'What {name}\'s equal {left_pole} and {right_pole} produces is a specific restlessness: the sense that both the inherited and the invented are inadequate, that what is needed has no name yet.',
+    'In the same week, {name} performs a rite unchanged in living memory and proposes a reform that would make it unrecognizable. Neither is ironic. Both are fully meant. The {left_pole} and the {right_pole} operate in different registers simultaneously, each answering a real need the other cannot satisfy.',
   ],
   loyalty_ambition: [
     '{name} is both {left_pole} and {right_pole} — not in balance, but in war. The desire to achieve and the desire to stop achieving cancel each other in cycles that have become weather rather than choice.',
     '{name} is neither reliably {left_pole} nor reliably {right_pole} — the near-equal weight of both makes every significant relationship a variable outcome.',
     'The {left_pole} and {right_pole} in {name} are not in conflict so much as in ongoing negotiation about what any given relationship actually merits.',
+    'When the two poles fire close together — the commitment held at cost on one day, the opportunity taken at that commitment\'s expense days later — an observer sees what the war produces in practice. Not alternation. Competition. The outcome is not predictable from either value alone.',
   ],
   revelation_discretion: [
     '{name}\'s {left_pole} and {right_pole} wage constant war — the urge to speak plain and the instinct to smooth things over alternate without resolution.',
     'The contradiction between {left_pole} and {right_pole} in {name} surfaces in every conversation that matters. They say too much and then too little, and neither feels like the right amount.',
     'What others read as inconsistency in {name} is the genuine tension between {left_pole} and {right_pole} — knowing that every disclosure is also a concealment, and every silence is also a choice.',
+    'In the same conversation, {name} discloses something that surprises even them and then closes around a smaller thing as if it were critical infrastructure. The {left_pole} and the {right_pole} do not alternate — they operate in different registers within the same exchange, producing a pattern that neither value, examined in isolation, would predict.',
   ],
   preservation_transformation: [
     '{name} navigates between {left_pole} and {right_pole} without having resolved which is more natural. Both are genuine; neither is settled.',
     'The part of {name} that needs to be in charge and the part that needs to not be responsible are in approximate balance, making every situation of authority slightly uncomfortable.',
     '{name}\'s {left_pole} and {right_pole} produce the specific discomfort of someone who is always aware of both options — who cannot take authority without questioning it, and cannot decline it without questioning that too.',
+    'In the same season, {name} defends something that should have been let go and abandons something that should have been preserved. Neither decision is wrong in isolation. The {left_pole} fires when {right_pole} would have been wiser, and vice versa — an observer watching both sees two genuine values competing for the same terrain.',
   ],
   sacrifice_survival: [
     '{name}\'s pull toward {left_pole} and pull toward {right_pole} have reached suspended tension — they cannot fully give themselves over and cannot fully withdraw.',
@@ -446,6 +464,7 @@ export const CONTRADICTION_PROSE: Record<string, string[]> = {
     '{name} is pulled equally toward {left_pole} and {right_pole} — the part that faces danger and the part that calculates it are of equal influence, producing a person who acts and second-guesses with equal facility.',
     'The tension between {left_pole} and {right_pole} runs through every significant decision {name} makes. Neither wins cleanly. Both leave marks.',
     'What the balance of {left_pole} and {right_pole} produces in {name} is a person who acts and then second-guesses the action with equal investment. The doubt is not weakness; it is the other half of them, with equal claim.',
+    'Watch {name} when two decisions arrive close together — one taken before thinking completed, the second revised three times before acting. An observer would not call the first reckless or the second cowardly. But together, they reveal two temperaments sharing one body, taking turns at the controls, equally convinced of their authority.',
   ],
 };
 
@@ -459,6 +478,7 @@ export const DECISIVE_NATURE_PROSE: string[] = [
   'The contradictions that define most people are absent in {name}, or so thoroughly resolved that the resolution has become invisible. What looks like peace from the outside may be suppression from the inside.',
   'Unlike most people, {name} knows what they value and in what order. The knowing is real. The cost of having arrived at that knowing is something they do not discuss.',
   'What {name} has that most people do not is settled hierarchy — a clear answer to the question of what matters most, arrived at not through certainty but through having been forced to choose repeatedly until the question stopped feeling open.',
+  '{name} moves through a room the way settled people do — no weight shifted toward a decision still pending, no calculation running visibly behind the eyes. The difference is in the stillness. Clarity, when it is thorough, sits like that: not performed, not maintained, simply present.',
 ];
 
 // ─── Table 9: FEAR_PROSE ─────────────────────────────────────────────────────
@@ -576,10 +596,14 @@ export const FEAR_PROSE: Record<string, string[]> = {
   revelation_discretion_positive: [
     'What {name} will never admit is that their {value} is maintained against the {fear} of being silenced — of learning that the truth, spoken plainly, costs more than the silence it replaces.',
     'Beneath the {value} in {name} is the {fear} that bluntness, in the wrong moment, will do damage that diplomacy could have prevented. The {value} continues; the {fear} shapes every word.',
+    'The {fear} does not announce itself before {name} speaks — it arrives after, in the specific silence that follows the true thing said at the wrong moment. The regret is not for speaking. It is for the calculation that failed, the one that was supposed to indicate when silence would have served better.',
+    '{name} says what needs saying in the conversations everyone else is avoiding, then sits with what that costs. Not regret — recognition. The {fear} is not of the bluntness. It is of the growing catalog of people who received accuracy when they needed something else, and to whom something is still owed.',
   ],
   revelation_discretion_negative: [
     'What {name} will never admit is that behind the {value} they practise is the {fear} of exposure — of having the raw, unpolished self seen by someone who matters.',
     'The {value} in {name} sits over the {fear} that without the mask of courtesy, something unacceptable would be visible. The propriety is armour; the {fear} is of going without it.',
+    'The {fear} that drives {name}\'s {value} is not diffuse — it has a precise address: the knowledge that information disclosed at the wrong moment to the wrong person cannot be reclaimed. The {value} is not silence. It is control of the sequence, which is the only thing that turns raw fact into safe disclosure.',
+    '{name} deflects every question that probes too close, smoothly enough that most people cannot tell they have been redirected. The ones who notice do not get a second attempt. The {fear} is not of being known. It is of being known before being ready — and {name} is never quite ready.',
   ],
 };
 
@@ -632,96 +656,115 @@ export const STORY_ARC_PROSE: Record<string, string[]> = {
     'The thread of {name}\'s story bends toward its necessary conclusion — a {arc_phase} that was visible to anyone paying attention from the beginning. Whether they know it yet is irrelevant. The pattern is set.',
     'The arc of {name} is in {arc_phase}: they have not yet arrived at the event that will define their story\'s final shape, but the shape is already determined by the choices that have been made.',
     'Since the Ascendant first touched {name}, the arc has been visible: a {arc_phase} that was already written into the structure of who they are. Divine attention does not alter trajectories like {name}\'s — it accelerates them.',
+    'The signs are accumulating the way they always do before a tragedy — not announcing themselves, simply present. The shape of what comes next is being formed by decisions already made, and it is visible from a sufficient remove to anyone who has watched enough arcs like this one to recognize how they conclude.',
   ],
   trickster: [
     'The thread of {name}\'s story bends toward exposure — a {arc_phase} in which the irreconcilable versions of events they have been maintaining will need to be resolved, one way or another.',
     'The arc of {name} is in {arc_phase}: the confidence is constructed, the actors positioned, and the question of which element will prove unstable is the only remaining variable.',
     'The thread of {name}\'s story contains a {arc_phase} that the trickster\'s arc always contains: the moment when the audience discovers they have been watching an improvisation. Whether {name} knows this is coming is the remaining question.',
+    'The tell in {name}\'s performance is visible now to anyone who knows what to look for — a small asymmetry in how the same story gets told twice, a preference for exits that keeps repeating. The revelation will not arrive as exposure. It will arrive as the moment when the audience realizes they have been in the joke the whole time.',
   ],
   coming_of_age: [
     'The thread of {name}\'s story bends toward formation — a {arc_phase} in which the person they will be is being assembled from the materials the world is providing. The assembly is not finished.',
     'The arc of {name} is in {arc_phase}: old enough to understand the stakes, not yet experienced enough to have fixed their response to them. The world\'s real shape is becoming undeniable.',
     'The thread of {name}\'s story is in the long middle of {arc_phase}: the chapter that most stories gloss over because it contains more becoming than arriving. The arrival, when it comes, will be irreversible.',
+    'The formation is nearly complete in ways {name} cannot yet see from the inside. The materials have been assembled; the remaining work is not construction but recognition — the moment when the person being built notices they have been standing for some time, waiting to be inhabited.',
   ],
   brooding_warrior: [
     'The thread of {name}\'s story bends toward release — a {arc_phase} in which the pressure that has been gathering will find its occasion. Whether the release is productive or destructive is not yet determined.',
     'The arc of {name} is in {arc_phase}: the long middle of carrying what came before toward something that has not yet announced itself. The weight is visible; the destination is not.',
     'The thread of {name}\'s story has been moving through {arc_phase} for some time — the long endurance chapter in which the burden is carried because there is no one else and no credible reason to set it down.',
+    'The gathering has been proceeding long enough that the occasion is close. People who carry what {name} carries do not seek the moment that uses it — the moment finds them, as it finds everyone shaped for it. When it arrives, the release will be definitive. Whether it is toward something or away from it is the one remaining variable.',
   ],
   fallen_noble: [
     'The thread of {name}\'s story bends toward reckoning — a {arc_phase} in which the question of what one does with dispossession must be answered in a way that determines what comes next.',
     'The arc of {name} is in {arc_phase}: past the fall, in the territory where recovery and its impossibility are being assessed simultaneously.',
     'The thread of {name}\'s story turns on the question that dispossession always poses: {arc_phase}. Whether what was lost is recovered, transcended, or mourned into acceptance determines everything that follows.',
+    'The direction the arc bends after dispossession is no longer theoretical — the small choices made across a long time are pointing somewhere, and the direction is becoming legible. Not a return. A reckoning: with what having fallen has cost, and what remains possible inside those costs, and what does not.',
   ],
   true_believer: [
     'The thread of {name}\'s story bends toward cost — a {arc_phase} in which the full price of absolute conviction becomes visible, and the question of whether the belief is worth what it requires arrives.',
     'The arc of {name} is in {arc_phase}: the commitment is total, the cost is becoming visible, and the faith is being tested not by opposition but by the complexity of what it actually requires.',
     'The thread of {name}\'s story bends toward the test that conviction always encounters: {arc_phase}. When belief meets the full cost of itself, the question of whether it was ever really held is answered.',
+    'The test that will matter is approaching — not the tests that have strengthened the conviction, those are past. What approaches is the cost undisguised: the circumstance in which the belief must encounter what it actually requires, without the cushion of rehearsal. Whether it was ever unconditional is about to be answered.',
   ],
   schemer: [
     'The thread of {name}\'s story bends toward verification — a {arc_phase} in which the long calculation either proves accurate or reveals the variable that was not accounted for.',
     'The arc of {name} is in {arc_phase}: plans in motion, contingencies prepared, waiting for events to confirm which version of the future will arrive.',
     'The thread of {name}\'s story moves through {arc_phase}: the phase of the plan where the variables that were estimated must become concrete. What was projected and what exists are about to be compared.',
+    'One variable was not fully accounted for. {name} has been aware of this for some time, the way a builder is aware of a seam under increasing pressure. The plan has a specific place where it can fail. The remaining question is whether that place holds, and what holding it would require.',
   ],
   wanderer: [
     'The thread of {name}\'s story bends through — a {arc_phase} of the journey, not the destination. What they encounter now deposits something; what they carry forward will be slightly different than what they carried in.',
     'The arc of {name} is in {arc_phase}: defined by what they are passing through rather than what they are arriving at. The destination, if there is one, remains to be determined.',
     'The thread of {name}\'s story is in {arc_phase}: a passage between a place that is finished and a place that has not been found. The wanderer\'s arc is full of these — the in-between is their native country.',
+    'The particular road {name} is traveling has a quality the others did not — the sense of leading toward rather than simply through. Whether they follow it to its end is not yet decided. But it is the first road in some time that has produced the sensation that the motion itself may have a destination.',
   ],
   monster: [
     'The thread of {name}\'s story bends toward definition — a {arc_phase} in which the category that has been contested will be settled, one way or another, by what they do next.',
     'The arc of {name} is in {arc_phase}: what they are is not yet fixed in the permanent way it will eventually be. The current chapter is the one where definition is being made.',
     'The thread of {name}\'s story moves through {arc_phase}: the section in which the question of what they are is no longer purely a matter of perception but of choice. The monster archetype always contains the possibility of the other thing.',
+    'The definition is crystallizing from the inside now, which is different from the outside having formed it already. The choices being made in the current chapter have the coherence of someone who knows what they are and is deciding what to do about it. That deciding is the final phase of this arc.',
   ],
   folk_hero: [
     'The thread of {name}\'s story bends toward legend — a {arc_phase} in which the gap between the events and the stories of the events is widening, and the story is becoming more real than the facts.',
     'The arc of {name} is in {arc_phase}: the process by which fact becomes myth is in progress. They are living inside it.',
     'The thread of {name}\'s story is in {arc_phase}: the moment when the person and the myth have diverged enough to require, eventually, a choice about which one continues. The legend is growing; the person underneath it is unchanged.',
+    'The gap between the story and the person has grown wide enough that {name} can see it clearly from the inside — the legend operating in rooms before they enter, responding to the version that exists in the telling. The choice that approaches is whether to inhabit the legend, correct it, or outrun it. None of these options leaves the person underneath it intact.',
   ],
   reluctant_king: [
     'The thread of {name}\'s story bends toward demonstration — a {arc_phase} in which what it means to hold power without having wanted it must be shown rather than declared.',
     'The arc of {name} is in {arc_phase}: past refusal, not yet at resolution, still carrying the authority they did not seek with visible strain.',
     'The thread of {name}\'s story moves through {arc_phase}: the section where unwanted authority either hardens into willingness or breaks under the weight of what it costs. Neither outcome is comfortable. Both are endings of a kind.',
+    'The reluctance is becoming a position whether {name} intends it to or not — the way holding any posture long enough becomes a statement about what the posture was always for. How one holds unwanted authority long enough becomes an answer to the question of what authority is. The answer is being observed.',
   ],
   oathkeeper: [
     'The thread of {name}\'s story bends toward the test — a {arc_phase} in which the oath encounters something that makes keeping it significantly more difficult, and whether it holds will determine everything that follows.',
     'The arc of {name} is in {arc_phase}: the commitment is past its swearing and not yet at its completion. The long middle, where the structure of the oath is tested.',
     'The thread of {name}\'s story bends through {arc_phase}: the chapter in which the structure of the oath is visible as both architecture and cage, and the question of whether a promise that costs this much is still freely kept has not been answered.',
+    'The oath is approaching the test that was built into it from the beginning — the one the original swearing could not fully anticipate. What the test requires will be clear when it arrives. Whether the oath was made for a world that contained this particular demand, or for a world that didn\'t, is what the test will discover.',
   ],
   poisoned_court: [
     'The thread of {name}\'s story bends toward revelation — a {arc_phase} in which the true objectives of all the established relationships become visible simultaneously.',
     'The arc of {name} is in {arc_phase}: all the pieces are in position, the game is in progress, and the question of which move will prove to be the real one is still open.',
     'The thread of {name}\'s story moves through {arc_phase}: the point in every court intrigue where the board is visible and the pieces positioned, but which move is the decisive one has not yet announced itself.',
+    'The final arrangement is almost visible. The pieces are positioned, the incentives have aligned, and the event that will make all the prior moves legible is close. When it arrives, everything that appeared to be one thing will reveal itself as preparation. This is how the poisoned court arc concludes: not in action, but in recognition by everyone at once.',
   ],
   doomed_innocent: [
     'The thread of {name}\'s story bends toward the encounter — a {arc_phase} in which the goodness they carry meets the fact that goodness does not guarantee good outcomes.',
     'The arc of {name} is in {arc_phase}: innocence and experience in direct contact, the story either hardening the person or confirming that hardening was never the point.',
     'The thread of {name}\'s story bends through {arc_phase}: the section that the innocent archetype has to cross — the encounter with the world\'s actual terms, after which nothing will be quite as it was before.',
+    'The encounter that will determine whether the goodness in {name} is transformed or merely tested is approaching — not as assault but as complexity, the situation that presents the world\'s actual terms to someone who has not fully absorbed them yet. What happens in that encounter will determine what kind of story this is.',
   ],
   old_power: [
     'The thread of {name}\'s story bends toward judgment — a {arc_phase} in which accumulated knowledge must decide whether to be applied or withheld, and the decision has permanent consequences.',
     'The arc of {name} is in {arc_phase}: they can see the shape of things from a remove that younger people cannot achieve. What they do with that perspective is the question.',
     'The thread of {name}\'s story has entered {arc_phase}: not the beginning of the end but the chapter in which accumulated pattern-recognition must decide what to do with what it knows. The knowing is complete; the application is not.',
+    'The accumulated pattern-recognition has arrived at a threshold where it must either be applied or explicitly withheld. Neutrality is no longer an option. The choice ahead is not about strategy — it is about what this much knowledge, finally, is willing to do with itself.',
   ],
   kingmaker: [
     'The thread of {name}\'s story bends toward consequence — a {arc_phase} in which the structures they built or enabled must either hold or reveal their weaknesses.',
     'The arc of {name} is in {arc_phase}: the architecture of influence is established; the question is what it will be used for, and by whom, and at what cost.',
     'The thread of {name}\'s story bends through {arc_phase}: the chapter in which the architect\'s work is tested not by planning but by the behavior of the things they built and the people they made powerful.',
+    'The architecture is being tested now by forces its designer did not arrange — the behavior of people and structures made powerful, exercising that power in directions not fully anticipated. The test of every architect arrives when the building acts without them. That test is in progress.',
   ],
   seeker: [
     'The thread of {name}\'s story bends toward complication — a {arc_phase} in which what they have found has complicated what they are looking for in ways that must be integrated before proceeding.',
     'The arc of {name} is in {arc_phase}: deep enough in the search that the original question has been refined several times and may no longer be recognizable from its starting form.',
     'The thread of {name}\'s story moves through {arc_phase}: deep enough in the search that the original question has been revised several times, and the most important discovery may turn out to be about the nature of searching rather than the nature of the object sought.',
+    'The question has been refined so many times that its original form is no longer recognizable. What remains is not what was being sought at the beginning but something cleaner and closer to what was actually needed — which is not the same as what was wanted. The finding, when it comes, will be different from what was expected. This is the nature of real finding.',
   ],
   maker: [
     'The thread of {name}\'s story bends toward completion — a {arc_phase} in which the work is demanding things that were not anticipated when the making was begun.',
     'The arc of {name} is in {arc_phase}: the creation is in process, taking on its own requirements, developing a logic that was not fully present in the original intention.',
     'The thread of {name}\'s story bends through {arc_phase}: the chapter in which the created thing has started to make its own demands — in which making something brought something else into being that was not part of the original intention.',
+    'The created thing is acquiring its own requirements — demanding resources, taking directions, developing a logic that was not part of the original design. Every maker encounters the moment when what they made is no longer fully under their control. For {name}, that moment is now, and what they do with it will determine whose story the making turns out to have been.',
   ],
   noble_savage: [
     'The thread of {name}\'s story bends toward resolution — a {arc_phase} in which the two inheritances must reach a working arrangement, because the crossing cannot continue indefinitely.',
     'The arc of {name} is in {arc_phase}: between worlds, the two frameworks in active negotiation, neither settled, both present, the final form still being determined.',
     'The thread of {name}\'s story moves through {arc_phase}: the chapter in which two inheritances must reach a working arrangement, because they cannot both be held at full strength indefinitely and the moment of choosing is arriving.',
+    'The two inheritances have been in negotiation long enough that the negotiation is approaching its conclusion. Not resolution — resolution would require one to surrender what it is, and neither can. What approaches is something different: the shape of a person who has stopped trying to reconcile and begun simply being both, fully, at once.',
   ],
 };
 
@@ -735,20 +778,24 @@ export const DIVINE_TRANSFORMATION_PROSE: Record<string, string[]> = {
     'Since the Ascendant\'s touch first reached {name}, small things have shifted — a tendency, a sensitivity to certain patterns, a preference that was not there before and cannot be explained as personal history. The {ascendant_sphere} is faint but present.',
     'There is something in how {name} responds to certain situations that suggests the {ascendant_sphere} has been at work. The mark is recent, light, and has not yet fully settled.',
     'The first evidence of divine engagement is subtle in {name}: an instinct that arrives slightly before its cause, a quality of attention that was not present before the {ascendant_sphere} first touched them.',
+    'There was a specific moment when {name} first noticed the {ascendant_sphere} — not a vision, not a voice, but a small misalignment between what they expected to feel and what they actually felt. They noted it and moved on. The {ascendant_sphere} noted them.',
   ],
   medium: [
     'Since the Ascendant\'s touch deepened, {name} has adjusted to the {ascendant_sphere} the way one adjusts to a new altitude — not always consciously, but thoroughly. Something in the architecture of their thinking has been revised.',
     'The {ascendant_sphere} has left marks in {name} that are now structural: habits of attention, sensitivities to patterns, a direction of perception that only makes sense if something has been communicating through them for some time.',
     'The divine relationship has gone deep enough for {name} that the gaps between {ascendant_sphere} contact are noticed. Something in how they process the world has changed.',
+    'The {ascendant_sphere} has become a habit in {name} — a way of registering what is happening around them that settled in so gradually they cannot name the point at which it became reflex. It is simply what attention feels like now, indistinguishable from the rest of how they are.',
   ],
   high: [
     'The {ascendant_sphere} has become structural in {name} — not an experience they are having but a condition they are in. The self before it is retrievable only as memory.',
     'Since the Ascendant\'s touch went deep, what the {ascendant_sphere} has done to {name} is thorough: their responses, instincts, and sense of what matters have all been reoriented around a center that was not originally theirs.',
     'The {ascendant_sphere} runs through {name} now in the way that long practice runs through a skilled practitioner — not visible in any single action, but present in all of them.',
+    '{name} cannot remember not being able to read what the {ascendant_sphere} says through the world — not words, but the pattern it makes visible, the quality of attention it requires. The original state of not having it is no longer accessible from the inside.',
   ],
   massive: [
     'The transformation is complete in the sense that the original structure is no longer primary. {name} exists in relationship to the {ascendant_sphere} the way a riverbed exists in relationship to water — shaped entirely by what has moved through them.',
     'The Ascendant\'s sustained engagement has changed {name} into something that does not have a clean category. Not a god, not fully mortal, but a hybrid condition that operates according to rules the {ascendant_sphere} wrote.',
     'The {ascendant_sphere} has not merely influenced {name} — it has become a layer of their cognition. They perceive through a filter they did not build and cannot fully remove.',
+    'People reaching for language to describe what {name} has become under full {ascendant_sphere} saturation arrive at categories that are almost right and then wrong: prophet, instrument, embodiment, vessel. The approximations are understandable. None of them contain what is actually there.',
   ],
 };
