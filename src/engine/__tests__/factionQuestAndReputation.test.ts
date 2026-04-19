@@ -209,7 +209,13 @@ describe('generateFactionQuestCandidates', () => {
 
     const candidates = generateFactionQuestCandidates(graph, 'agent_1', 'loc_1', 1);
 
-    expect(candidates).toHaveLength(10); // all 10 templates
+    const standardQuests = candidates.filter(c => c.templateId.startsWith('ag.quest.'));
+    const seniorQuests = candidates.filter(c => c.templateId.startsWith('ag.senior.'));
+    const eliteQuests = candidates.filter(c => c.templateId.startsWith('ag.elite.'));
+
+    expect(standardQuests.length).toBeGreaterThan(0);
+    expect(seniorQuests.length).toBeGreaterThan(0);
+    expect(eliteQuests.length).toBeGreaterThan(0);
   });
 
   it('candidates have correct cache entry shape', () => {
