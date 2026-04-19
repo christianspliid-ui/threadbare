@@ -1,7 +1,7 @@
 # CC Structural Review — PR-gated GitHub Action (THR-182)
 #
 # Runs a Claude-powered structural review on every PR.
-# Advisory mode until GitHub Pro + branch protection lands (tracked: Deferral THR-183).
+# Advisory mode until GitHub Pro + branch protection lands (tracked: Deferral THR-189).
 #
 # Label routing:
 #   review:required — run review and post findings (default for risky surfaces)
@@ -174,7 +174,7 @@ jobs:
               body += `> _Review did not complete cleanly (${outcome}). Trailer: \`${trailer}\`. See Action logs for details._\n`;
             }
 
-            body += `\n_Advisory mode — not blocking merge. [THR-183](https://linear.app/threadbare/issue/THR-183) tracks flip to blocking once GitHub Pro lands._`;
+            body += `\n_Advisory mode — not blocking merge. [THR-189](https://linear.app/threadbare/issue/THR-189) tracks flip to blocking once GitHub Pro lands._`;
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
