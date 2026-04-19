@@ -156,7 +156,9 @@ export type TraceCategory =
   // Ambient agent phase profiling (THR-186)
   | 'tick_phase_profile'
   // Encounter cache rebuild tracking (THR-187)
-  | 'encounter_cache_rebuild';
+  | 'encounter_cache_rebuild'
+  // Hex→actor index unresolved actors warning (THR-188)
+  | 'engine_warning';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -298,6 +300,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'tick_phase_profile',
   // Encounter cache rebuild tracking (THR-187)
   'encounter_cache_rebuild',
+  // Hex→actor index unresolved actors warning (THR-188)
+  'engine_warning',
 ];
 
 /** Base shape for all trace entries */
@@ -1367,7 +1371,11 @@ export type TraceEntry =
   | SiegeSpotlightFiredTrace
   | SiegeRegionalSeededTrace
   // Ambient agent phase profiling (THR-186)
-  | TickPhaseProfileTrace;
+  | TickPhaseProfileTrace
+  // Encounter cache rebuild tracking (THR-187)
+  | EncounterCacheRebuildTrace
+  // Hex→actor index engine warning (THR-188)
+  | EngineWarningTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {
@@ -1584,4 +1592,11 @@ export interface EncounterCacheRebuildTrace extends TraceBase {
   locationCount: number;
   totalRebuildsThisSession: number;
   durationMs?: number;
+}
+
+/** Trace: hex→actor index found actors whose location could not be resolved (THR-188). Rate-limited to once per session. */
+export interface EngineWarningTrace extends TraceBase {
+  category: 'engine_warning';
+  source: 'hex_actor_index';
+  unresolvedCount: number;
 }

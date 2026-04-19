@@ -55,8 +55,7 @@ import { getAnyEncounterById } from '../data/encounter-content';
 import type { EncounterOutcome } from '../types/encounter';
 import { getFamiliarity, addFamiliarity, checkThresholdCrossed } from './familiarity';
 import { FAMILIARITY_GAINS } from '../types/familiarity';
-import { hexDistance } from '../lib/hexMath';
-import { FAMILIARITY_PROXIMITY_HEX_RANGE } from '../data/agent-behavior-constants';
+import { buildHexActorIndex, getActorsOnHex } from './hexActorIndex';
 import type { DivineInfluenceEntry } from '../types/dream';
 import { getCurrentStrength } from './decayCurve';
 import { checkDissolutions } from './sublocation';
@@ -1369,32 +1368,34 @@ export function phaseDilemmaDetection(state: GameState): Partial<GameState> {
 
 // ─── Phase 2.75: Familiarity Gain (Proximity) ────────────────────────
 
+// Rate-limited warning flag: fires at most once per JS session (once per page load).
+let _hexActorIndexWarnedOnce = false;
+
 export function phaseFamiliarityGain(state: GameState): Partial<GameState> {
-  // Get avatar's hex position
   const avatarHex = getAvatarHexPosition(state.graph, state.ascendantId);
   if (!avatarHex) return { familiarityMap: state.familiarityMap };
 
-  let map = state.familiarityMap;
+  const index = buildHexActorIndex(state.graph);
 
-  const actors = state.graph.getNodesByType('actor')
-    .filter(a => a.properties?.actorType === 'individual');
+  if (index.unresolvedCount > 0 && !_hexActorIndexWarnedOnce) {
+    _hexActorIndexWarnedOnce = true;
+    emitTrace({
+      tick: state.tick,
+      category: 'engine_warning',
+      source: 'hex_actor_index',
+      unresolvedCount: index.unresolvedCount,
+      summary: `hex_actor_index: ${index.unresolvedCount} actor(s) could not be resolved to a hex`,
+    });
+  }
+
+  const nearbyActorIds = getActorsOnHex(index, avatarHex.col, avatarHex.row);
+
+  let map = state.familiarityMap;
   let processedFamiliarityActors = 0;
 
-  for (const actor of actors) {
-    const locationId = actor.properties?.locationId as string | undefined;
-    if (!locationId) continue;
-
-    const location = state.graph.getNode(locationId);
-    if (!location || location.type !== 'location') continue;
-
-    const actorHexCol = location.properties?.hexCol as number | undefined;
-    const actorHexRow = location.properties?.hexRow as number | undefined;
-    if (actorHexCol === undefined || actorHexRow === undefined) continue;
-
-    // THR-186: skip actors outside proximity range — preserves same-hex-only behavior at range=0
-    // No hex→actor index available; fallback to full iteration with early-continue.
-    // TODO(THR-188): add hex→actor index to avoid O(N) location lookups here.
-    if (hexDistance({ col: actorHexCol, row: actorHexRow }, avatarHex) > FAMILIARITY_PROXIMITY_HEX_RANGE) continue;
+  for (const actorId of nearbyActorIds) {
+    const actor = state.graph.getNode(actorId);
+    if (!actor) continue; // fail-soft: actor deleted between index build and read
 
     processedFamiliarityActors++;
     const familiarityModifier = state.doomIdentityMatrix?.familiarityGainModifier ?? 1.0;
@@ -1427,10 +1428,10 @@ export function phaseFamiliarityGain(state: GameState): Partial<GameState> {
     tick: state.tick,
     category: 'tick_phase_profile',
     phase: 'familiarity_gain',
-    totalActors: actors.length,
+    totalActors: index.totalActors,
     processedActors: processedFamiliarityActors,
-    skippedActors: actors.length - processedFamiliarityActors,
-    summary: `familiarity_gain: ${processedFamiliarityActors}/${actors.length} actors processed`,
+    skippedActors: index.totalActors - processedFamiliarityActors,
+    summary: `familiarity_gain: ${processedFamiliarityActors}/${index.totalActors} actors processed`,
   });
 
   return { familiarityMap: map };

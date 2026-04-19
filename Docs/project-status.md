@@ -1,7 +1,7 @@
 # Project Status
 > Updated 2026-04-19.
 ## Current Focus
-**THR-153 shipped (PR 5 — Ruin transformation + PlaceOfPower/Scar + elderEssenceReward refactor).** Elder Magic & Ruins project closes: delve success → emergence dilemma → PlaceOfPower or Scar, with holder-bound passive essence streams, Corrupt-siphon, Bargain favor, and Claim cost debit. Next: project complete; prioritize highest-priority Ready-for-Dev item.
+**THR-188 shipped (hex→actor index for phaseFamiliarityGain).** Replaces O(N_all) actor walk with O(N_hex) index lookup — `buildHexActorIndex` new helper, 11 unit tests + 4 contract tests. Next: THR-165 (structural assertion cleanup in factionQuestAndReputation.test.ts, model:haiku).
 
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
@@ -17,6 +17,9 @@
 - **Procedural Hex Vignettes (Next):** Phases 2-5 queued.
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
+
+## Recent Completions (2026-04-19) — THR-188
+- **THR-188 — Hex→actor index for phaseFamiliarityGain:** New `src/engine/hexActorIndex.ts` with `buildHexActorIndex`, `getActorsOnHex`, `hexKey` exports. Replaces O(N_all) actor walk + hexDistance guard with O(N_hex) index lookup keyed by `{col},${row}`. Handles sublocation→parent resolution; actors with unresolvable locations counted in `unresolvedCount`. Rate-limited `engine_warning` trace on unresolved actors. `engine_warning` trace category + `EngineWarningTrace` added to trace.ts; `EncounterCacheRebuildTrace` also added to TraceEntry union (pre-existing omission from THR-187). 11 unit tests (7 plan cases + 2 utility + 2 edge cases) + 4 determinism contract tests. tsc clean, build green.
 
 ## Recent Completions (2026-04-19) — THR-153
 - **THR-153 — PR 5: Ruin transformation + PlaceOfPower/Scar + elderEssenceReward refactor:** New `ruinTransformation.ts` implements the 7-row outcome matrix (consequenceRoll × emergenceChoice → graph mutations). New `placeOfPowerStreams.ts` phase credits holder essence per tick with decay countdown + corrupt siphon. `elderEssenceReward.ts` refactored — `awardElderEssence` core extracted, legacy `computeElderEssenceReward` wrapped. New `holds_place_of_power` edge type + schema. New `place_of_power` HexMapV2 icon (crown+ring). `EmergenceDilemmaModal` with 2×2 choice grid (inviable options greyed). `PlaceOfPowerInspector` extends LocationView with holder/stream/decay readout. 6 transformation vignettes (vault/temple/battlefield × transformed/consumed). `phasePlaceOfPowerStreams` wired into orchestrator at 6.659. 29 new tests: transformation outcome matrix (17), stream phase (8), modal smoke (4). tsc clean, build green, all suite tests pass except pre-existing `traceBuffer-integration` flake.
