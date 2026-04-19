@@ -365,7 +365,6 @@ function buildCanonicalEncounterTemplates(): EncounterTemplate[] {
 
   addTemplates(ENCOUNTER_TEMPLATES);
   addTemplates(ANOMALY_ENCOUNTER_TEMPLATES);
-  addTemplates(SOCIAL_ENCOUNTER_TEMPLATES);
   addTemplates(MONSTER_ENCOUNTER_TEMPLATES);
 
   for (const id of FACTION_ENCOUNTER_META.keys()) {
@@ -4125,6 +4124,8 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...TEMPLE_OF_SPHERES_SOCIAL_TEMPLATES,
   TS_JOIN_TEMPLATE,
   TS_PROMOTION_TEMPLATE,
+  // Social encounters — migrated to UnifiedActionTemplate (THR-100 Phase 3)
+  ...SOCIAL_ENCOUNTER_TEMPLATES,
   // Faction Action encounters — THR-29 (commission quest, rivalry, bounty, conclave, etc.)
   ...FACTION_ACTION_ENCOUNTER_TEMPLATES,
   RIVAL_SHRINE_BETRAYAL_TEMPLATE,

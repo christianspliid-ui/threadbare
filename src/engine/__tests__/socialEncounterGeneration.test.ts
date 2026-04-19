@@ -411,27 +411,24 @@ describe('socialEncounterGeneration', () => {
       for (const tmpl of SOCIAL_ENCOUNTER_TEMPLATES) {
         expect(tmpl.id).toBeTruthy();
         expect(tmpl.name).toBeTruthy();
-        expect(tmpl.locationTypes.length).toBeGreaterThan(0);
+        expect((tmpl.locationSubtypes ?? []).length).toBeGreaterThan(0);
         expect(tmpl.steps.length).toBeGreaterThanOrEqual(2);
-        expect(tmpl.reachPrimary).toBeTruthy();
-        expect(tmpl.reachSecondary).toBeTruthy();
-        expect(tmpl.encounterType).toBeTruthy();
-        expect(tmpl.threatRating).toBeTruthy();
+        expect(tmpl.reach).toBeTruthy();
+        expect(tmpl.crudType).toBeTruthy();
+        expect(tmpl.rarityTier).toBeGreaterThan(0);
         expect(tmpl.motivations.length).toBeGreaterThan(0);
       }
     });
 
     it('all steps have required fields', () => {
       for (const tmpl of SOCIAL_ENCOUNTER_TEMPLATES) {
-        for (const step of tmpl.steps) {
-          expect(step.id).toBeTruthy();
-          expect(step.name).toBeTruthy();
+        for (const stepOrBranch of tmpl.steps) {
+          const step = 'branchOnStep' in stepOrBranch ? stepOrBranch.fallback : stepOrBranch;
           expect(step.reach).toBeTruthy();
           expect(step.difficulty).toBeGreaterThan(0);
-          expect(step.duration).toBeGreaterThan(0);
-          expect(step.narrative).toBeTruthy();
-          expect(step.onSuccess).toBeTruthy();
-          expect(step.onFailure).toBeTruthy();
+          expect(step.duration).toBeTruthy();
+          expect((step.duration as { min: number }).min).toBeGreaterThan(0);
+          expect(step.narrativeTemplate).toBeTruthy();
         }
       }
     });
@@ -439,8 +436,8 @@ describe('socialEncounterGeneration', () => {
     it('all templates target settlement locations', () => {
       const settlements = ['hamlet', 'town', 'city', 'capital'];
       for (const tmpl of SOCIAL_ENCOUNTER_TEMPLATES) {
-        const hasSettlement = tmpl.locationTypes.some(lt =>
-          settlements.includes(lt),
+        const hasSettlement = (tmpl.locationSubtypes ?? []).some(lt =>
+          settlements.includes(lt as string),
         );
         expect(hasSettlement).toBe(true);
       }

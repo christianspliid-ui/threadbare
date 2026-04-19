@@ -124,11 +124,24 @@ describe('migrateEncounterTemplate parity (THR-90)', () => {
     expect(guildTemplate.aftermathConfig.fallback).toBeDefined();
   });
 
-  // ─── Legacy migration: social + combat ────────────────────────────────
+  // ─── Social templates: pre-migrated shape (THR-100 Phase 3) ─────────────
 
-  it('social.forge_alliance (social / assist→update) passes full parity check', () => {
-    assertParity(socialTemplate, migrateEncounterTemplate(socialTemplate));
+  it('social.forge_alliance is a valid pre-migrated UnifiedActionTemplate', () => {
+    // Social templates were hand-authored in unified format (THR-100 Phase 3) — no migration needed.
+    expect(socialTemplate.id).toBe('social.forge_alliance');
+    expect(socialTemplate.crudType).toBe('update');
+    expect(socialTemplate.reach).toBeDefined();
+    expect(socialTemplate.steps.length).toBeGreaterThanOrEqual(2);
+    for (const step of socialTemplate.steps) {
+      expect(step.duration).toMatchObject({ min: expect.any(Number), max: expect.any(Number) });
+      expect(step.difficulty).toBeGreaterThanOrEqual(0);
+      expect(step.difficulty).toBeLessThanOrEqual(1);
+    }
+    expect(socialTemplate.aftermathConfig).toBeDefined();
+    expect(socialTemplate.aftermathConfig.fallback).toBeDefined();
   });
+
+  // ─── Legacy migration: combat only (social now pre-migrated) ─────────────
 
   it('monster.hunt.minor (combat/duel / duel→delete) passes full parity check', () => {
     assertParity(combatTemplate, migrateEncounterTemplate(combatTemplate));
@@ -137,15 +150,15 @@ describe('migrateEncounterTemplate parity (THR-90)', () => {
   // ─── Cross-template invariants ─────────────────────────────────────────
 
   it('encounterTypeToCrud produces correct crudType for legacy representatives', () => {
-    expect(encounterTypeToCrud(socialTemplate.encounterType)).toBe('update'); // assist
     expect(encounterTypeToCrud(combatTemplate.encounterType)).toBe('delete'); // duel
   });
 
   it('legacy migrated templates compile as UnifiedActionTemplate (type check via usage)', () => {
-    const s = migrateEncounterTemplate(socialTemplate);
     const c = migrateEncounterTemplate(combatTemplate);
-    expect(s.id).toBeTruthy();
     expect(c.id).toBeTruthy();
+    // social.forge_alliance is already a UnifiedActionTemplate — verify directly
+    expect(socialTemplate.id).toBeTruthy();
+    expect(socialTemplate.crudType).toBeTruthy();
   });
 });
 
