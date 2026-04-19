@@ -118,15 +118,86 @@ function ActionTierGroup({ tier, items, defaultOpen = true, onFire }: ActionTier
   );
 }
 
+// ─── Core action buttons (Move + Investiture) ────────────────────────────────
+
+interface CoreActionButtonProps {
+  label: string;
+  description: string;
+  onClick?: () => void;
+}
+
+function CoreActionButton({ label, description, onClick }: CoreActionButtonProps) {
+  return (
+    <button
+      className={styles.actionRow}
+      onClick={onClick}
+      type="button"
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
+        <span style={{
+          fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 600,
+          color: 'var(--text-primary)', letterSpacing: '0.03em',
+        }}>
+          {label}
+        </span>
+        <span style={{
+          fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic',
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          fontFamily: 'var(--font-body)',
+        }}>
+          {description}
+        </span>
+      </div>
+    </button>
+  );
+}
+
+function CoreTierGroup({ onMove, onInvestiture }: { onMove?: () => void; onInvestiture?: () => void }) {
+  const [open, setOpen] = useState(true);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <button
+        className={styles.actionGroupHeader}
+        onClick={() => setOpen((v) => !v)}
+        type="button"
+      >
+        <svg width="10" height="10" viewBox="0 0 10 10"
+          className={`${styles.chevron} ${open ? styles.chevronOpen : ''}`}>
+          <path d="M3 2 L7 5 L3 8" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        <span style={{
+          fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 600,
+          color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.22em',
+        }}>Core</span>
+        <span style={{ fontFamily: 'var(--font-body)', fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.08em' }}>
+          · 2
+        </span>
+        <span style={{
+          fontFamily: 'var(--font-body)', fontSize: 10, color: 'var(--text-muted)',
+          fontStyle: 'italic', marginLeft: 'auto',
+        }}>always available</span>
+      </button>
+      {open && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 1, paddingLeft: 14 }}>
+          <CoreActionButton label="Move" description="Navigate through the world" onClick={onMove} />
+          <CoreActionButton label="Investiture" description="Manage your divine court" onClick={onInvestiture} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface ActionsBlockProps {
   tray: ActionTrayView;
   onFire?: (templateId: string) => void;
+  onMove?: () => void;
+  onInvestiture?: () => void;
 }
 
-export function ActionsBlock({ tray, onFire }: ActionsBlockProps) {
+export function ActionsBlock({ tray, onFire, onMove, onInvestiture }: ActionsBlockProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      <ActionTierGroup tier="core" items={tray.core} defaultOpen={true} onFire={onFire} />
+      <CoreTierGroup onMove={onMove} onInvestiture={onInvestiture} />
       <ActionTierGroup tier="self" items={tray.self} defaultOpen={true} onFire={onFire} />
       <ActionTierGroup tier="rare" items={tray.rare} defaultOpen={false} onFire={onFire} />
       <div style={{

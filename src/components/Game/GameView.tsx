@@ -2704,6 +2704,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           worldVersion={runtime.worldVersion}
           onOpenSheet={() => setAscendantSheetOpen(true)}
           onOpenMandate={() => setMandateDetailOpen(true)}
+          onMove={handleAvatarMoveClick}
+          onInvestiture={handleScryWithMutex}
         />
 
         {/* ── Center: map / hex zoom / location ── */}

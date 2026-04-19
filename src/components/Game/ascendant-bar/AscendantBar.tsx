@@ -46,6 +46,8 @@ interface AscendantBarProps {
   worldVersion: number;
   onOpenSheet: () => void;
   onOpenMandate: () => void;
+  onMove?: () => void;
+  onInvestiture?: () => void;
 }
 
 export function AscendantBar({
@@ -56,6 +58,8 @@ export function AscendantBar({
   worldVersion,
   onOpenSheet,
   onOpenMandate,
+  onMove,
+  onInvestiture,
 }: AscendantBarProps) {
   const [open, setOpen] = useState({ ...ASCENDANT_BAR_SECTION_DEFAULT_OPEN });
   const toggle = (key: keyof typeof open) => setOpen((o) => ({ ...o, [key]: !o[key] }));
@@ -87,7 +91,7 @@ export function AscendantBar({
     [gameState, worldVersion],
   );
 
-  const actionCount = actionTray.core.length + actionTray.self.length + actionTray.rare.length;
+  const actionCount = 2 + actionTray.self.length + actionTray.rare.length; // 2 = hardcoded core (Move + Investiture)
   const hookCount = useMemo(() => {
     const ascendantId = gameState.ascendantId;
     return gameState.graph.getOutgoingEdges(ascendantId, 'has_attachment').length;
@@ -122,7 +126,7 @@ export function AscendantBar({
         onToggle={() => toggle('actions')}
         placeholder="No innate actions available."
       >
-        <ActionsBlock tray={actionTray} />
+        <ActionsBlock tray={actionTray} onMove={onMove} onInvestiture={onInvestiture} />
       </BarSection>
 
       {/* 4. Mandate */}
