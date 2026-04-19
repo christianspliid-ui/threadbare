@@ -81,6 +81,8 @@ Each entry is a row in the table below. Append new entries at the bottom. Never 
 
 | 59 | 1 | 2026-04-18 | process-friction | Working tree contains uncommitted changes in 8+ files from prior sessions (GameView.tsx AlertBar disable, useTopBarHotkeys M-key, SubLocationEntry soulCount, HexChronicle soulCount, SphereIcon variant prop, icons/constants.ts SPHERE_COLORS_BASE, icons/index.ts re-export, shared/SphereIcon.tsx dual-prop). These appear to belong to different issues but have no Linear issue attribution. Cannot safely commit them as part of an unrelated issue. | Orphan changes accumulate in the working tree across automated sessions, creating risk of accidental inclusion or permanent loss. | M | No | Left unstaged. Each change group needs to be traced to its Linear issue and committed separately. Human review recommended before next automated session. | THR-183 session closeout |
 
+| 60 | 1 | 2026-04-19 | environment | `Agent` tool with `model: "haiku"` returns "Prompt is too long" even for minimal prompts (under 300 tokens). The shared system prompt (CLAUDE.md + memory + codesight + session-reminder) exceeds haiku's context window, making haiku re-spawning effectively impossible in this project. | Could not save budget by re-spawning at haiku for model:haiku issues; ran all haiku-tier work on sonnet instead. | S | Yes | Run model:haiku work on sonnet when system context is too large for haiku. CLAUDE.md re-spawn instruction is inapplicable in this project. | THR-185 scheduled-task pickup |
+
 ---
 **Retrospective conducted: 2026-03-29** — 13 impediments reviewed (19 occurrences), 2 improvements implemented, 1 backlogged. Report: `Docs/retrospectives/2026-03-29-retro.md`
 
