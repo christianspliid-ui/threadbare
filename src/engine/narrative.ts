@@ -22,6 +22,7 @@ import type {
   ChronicleEntry,
 } from '../types/narrative';
 import { SPHERE_VOCABULARY, ROUTINE_TEMPLATES, NOTABLE_TEMPLATES, VALUE_FLAVORS } from '../data/narrative-content';
+import { MAX_RARITY_TIER, PROSE_TIER_FLOOR_BY_RARITY } from '../data/rarity-constants';
 import type { ValuePair } from '../types/agent';
 import type { WorldGraph } from './graph';
 import { emitTrace } from './traceBuffer';
@@ -412,20 +413,53 @@ const EVENT_TIER_MAP: Record<NarrativeEventType, NarrativeTier> = {
   contested_action: 'notable',
 };
 
-/**
- * Classify an event's narrative tier based on its type and tags.
- *
- * PHASE-D-DEFERRED: Wire rarityTier from node properties here to bias narrative tier
- * selection (Mundane→T1, Storied→T1-2, Mythic→T2, Legendary→T3). The node's rarityTier
- * should elevate the floor of the chosen prose tier so high-rarity entities consistently
- * get richer narrative treatment. See rarity-constants.ts for tier definitions.
- */
+const TIER_WEIGHT: Record<NarrativeTier, number> = {
+  routine: 1,
+  notable: 2,
+  chronicle: 3,
+};
+
+function resolveRarityFloor(eventType: NarrativeEventType, rarityTier?: number): NarrativeTier | null {
+  if (rarityTier === undefined) return null;
+  if (!Number.isFinite(rarityTier) || rarityTier < 0 || rarityTier > MAX_RARITY_TIER) {
+    console.warn(
+      `[narrative] classifyEvent received invalid rarityTier=${String(rarityTier)} for eventType=${eventType}; falling back to base tier.`,
+    );
+    return null;
+  }
+  return PROSE_TIER_FLOOR_BY_RARITY[rarityTier as 0 | 1 | 2 | 3 | 4] ?? null;
+}
+
+/** Classify an event's narrative tier based on type/tags plus optional rarity floor. */
 export function classifyEvent(
   eventType: NarrativeEventType,
   tags: string[],
+  rarityTier?: number,
+  subjectId?: string,
 ): NarrativeTier {
   if (tags.includes('legendary') || tags.includes('world_shaking')) return 'chronicle';
-  return EVENT_TIER_MAP[eventType] ?? 'routine';
+
+  const baseTier = EVENT_TIER_MAP[eventType] ?? 'routine';
+  const rarityFloor = resolveRarityFloor(eventType, rarityTier);
+  if (!rarityFloor) return baseTier;
+
+  const biasedTier = TIER_WEIGHT[rarityFloor] > TIER_WEIGHT[baseTier] ? rarityFloor : baseTier;
+  if (biasedTier !== baseTier) {
+    emitTrace({
+      tick: 0,
+      category: 'prose_rarity_bias',
+      agentId: subjectId,
+      summary: `Rarity floor elevated prose tier ${baseTier}→${biasedTier} (${eventType})`,
+      eventType,
+      subjectId,
+      rarityTier: rarityTier as number,
+      baseTier,
+      biasedTier,
+      tags,
+    });
+  }
+
+  return biasedTier;
 }
 
 /**

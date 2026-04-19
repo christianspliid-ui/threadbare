@@ -18,6 +18,7 @@ import type { ComplicationSeverity } from './complication';
 import type { SyllableTemplate } from './culture';
 import type { ReliabilityBand } from '../engine/intelligence';
 import type { IntelligenceCategory } from './unifiedAction';
+import type { NarrativeEventType, NarrativeTier } from './narrative';
 
 /** Known trace categories for filtering in debug panel */
 export type TraceCategory =
@@ -40,6 +41,7 @@ export type TraceCategory =
   | 'reputation_trait'
   | 'rarity_graduation'
   | 'rarity_importance'
+  | 'prose_rarity_bias'
   | 'encounter_promotion'
   | 'curator_decision'
   | 'attention_pool'
@@ -180,6 +182,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'reputation_trait',
   'rarity_graduation',
   'rarity_importance',
+  'prose_rarity_bias',
   'encounter_promotion',
   'curator_decision',
   'attention_pool',
@@ -898,6 +901,17 @@ export interface RarityImportanceTrace extends TraceBase {
   currentTier: RarityTier;
 }
 
+/** Trace: rarity floor elevated narrative tier classification */
+export interface ProseRarityBiasTrace extends TraceBase {
+  category: 'prose_rarity_bias';
+  eventType: NarrativeEventType;
+  subjectId?: string;
+  rarityTier: number;
+  baseTier: NarrativeTier;
+  biasedTier: NarrativeTier;
+  tags: string[];
+}
+
 /** Trace: settlement genome pipeline result at worldgen or reassessment */
 export interface SettlementGenomeTrace extends TraceBase {
   category: 'settlement_genome';
@@ -1317,6 +1331,7 @@ export type TraceEntry =
   | GraphOpExecutionTrace
   | RarityGraduationTrace
   | RarityImportanceTrace
+  | ProseRarityBiasTrace
   | EncounterPromotionTrace
   | CuratorDecisionTrace
   | AttentionPoolTrace

@@ -189,6 +189,7 @@ describe('chronicle prompt builder (tier 3)', () => {
 });
 
 describe('content pipeline router', () => {
+  // rarity: n/a — synthetic classification checks in this suite intentionally test baseline mapping
   it('classifies ordinary action_resolved as routine', () => {
     expect(classifyEvent('action_resolved', [])).toBe('routine');
   });

@@ -452,3 +452,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - THR-21 Doom Archetype Identity Pass: ✅ Complete (2026-04-16) — DoomIdentityMatrix for all 7 archetypes, 8 integration hooks wired, agentLifecycle ghost-reference bug fix. Commit: b8b0c166.
 - THR-190 raw event feed moved to Debug Panel: ✅ Complete (2026-04-19) — removed player-facing NarrativeLog overlay and added a debug-only Recent Events tab with opt-in stream toggle.
 - THR-190 closeout (2026-04-19): moved raw recent-events stream into Debug Panel (Recent Events tab + Stream toggle), removed player-facing NarrativeLog; commit 20c257b5.
+- THR-24 rarity-driven prose tier bias: ✅ Complete (2026-04-19) — classifyEvent now applies a rarity floor (`PROSE_TIER_FLOOR_BY_RARITY`), emits `prose_rarity_bias` traces only on promotion, and includes fail-soft test coverage for undefined/invalid rarity inputs.

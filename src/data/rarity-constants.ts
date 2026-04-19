@@ -25,6 +25,7 @@
  */
 
 import type { RarityTier } from '../types/rarity';
+import type { NarrativeTier } from '../types/narrative';
 
 // ─── Tier Cap ────────────────────────────────────────────────────
 
@@ -135,6 +136,15 @@ export const IMPORTANCE_DIVINE_PROXIMITY = 1;
 
 /** Importance gained when a sphere event directly involves an entity. */
 export const IMPORTANCE_SPHERE_EVENT = 8;
+
+/** Minimum prose tier floor by rarity tier (0 = undefined/unknown rarity). */
+export const PROSE_TIER_FLOOR_BY_RARITY: Readonly<Record<0 | RarityTier, NarrativeTier | null>> = {
+  0: null,
+  1: null,
+  2: 'notable',
+  3: 'notable',
+  4: 'chronicle',
+};
 
 // ─── Runtime Validation ──────────────────────────────────────────
 // Fail-soft: never throw — log a warning if distributions are misconfigured.
