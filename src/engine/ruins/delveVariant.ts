@@ -53,6 +53,8 @@ import type {
   PendingEmergenceDecision,
 } from './delveTypes';
 import { DELVE_BEAT_NAMES, MINOR_BEAT_NAMES } from './delveTypes';
+import { transformRuinConsequence, type EmergenceChoice } from './ruinTransformation';
+import type { SimulationRuntime } from '../simulationRuntime';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -555,11 +557,15 @@ export function phaseDelveProgression(state: GameState): Partial<GameState> {
  * Also handles auto-fire: if a pendingEmergenceDecision is past its autoFiresTick
  * and the player hasn't responded, it auto-resolves as 'let' and clears the pending state.
  */
-export function phaseDelveEmergence(state: GameState): Partial<GameState> {
+export function phaseDelveEmergence(
+  state: GameState,
+  runtime?: SimulationRuntime,
+): Partial<GameState> {
   const { tick } = state;
   const active = [...(state.activeDelves ?? [])];
   let pending = state.pendingEmergenceDecision;
   let pendingChanged = false;
+  let autoFirePatch: Partial<GameState> = {};
 
   // ── Auto-fire expired pending decision ────────────────────────────────────
   if (pending && tick >= pending.autoFiresTick) {
@@ -575,6 +581,23 @@ export function phaseDelveEmergence(state: GameState): Partial<GameState> {
       autoResolved: true,
       summary: `Emergence auto-fired (let) for delve ${pending.delveId}`,
     });
+    // Fire the PR-5 transformation pipeline with emergenceChoice='let'.
+    const auto = transformRuinConsequence(
+      state,
+      {
+        ruinId: pending.ruinId,
+        delveId: pending.delveId,
+        agentId: pending.agentId,
+        emergenceChoice: 'let',
+        consequenceRoll: pending.consequenceRoll,
+        ruinMagnitude: pending.ruinMagnitude,
+        sphereAlignment: pending.sphereAlignment,
+        actingGodId: '',
+      },
+      runtime,
+    );
+    autoFirePatch = auto.patch;
+
     // Mark delve as complete
     const idx = active.findIndex(d => d.delveId === pending!.delveId);
     if (idx !== -1) active[idx] = { ...active[idx], beatIndex: active[idx].totalBeats + 1 };
@@ -651,9 +674,65 @@ export function phaseDelveEmergence(state: GameState): Partial<GameState> {
     // (The EmergenceDilemmaModal in PR-5 will add the full dual-voice chronicle on resolution)
   }
 
-  const result: Partial<GameState> = { activeDelves: active };
+  const result: Partial<GameState> = { ...autoFirePatch, activeDelves: active };
   if (pendingChanged) result.pendingEmergenceDecision = pending;
   return result;
+}
+
+/**
+ * Resolve a pending emergence decision with an explicit player choice.
+ * Called from the EmergenceDilemmaModal on user confirm.
+ *
+ * Returns a GameState patch. Safe to spread into setState — clears the pending
+ * decision, advances the delve past its final beat, and applies the
+ * transformation pipeline's essence award + graph mutations.
+ */
+export function resolveEmergenceDecision(
+  state: GameState,
+  choice: EmergenceChoice,
+  actingGodId: string = '',
+  runtime?: SimulationRuntime,
+): Partial<GameState> {
+  const pending = state.pendingEmergenceDecision;
+  if (!pending) return {};
+
+  emitTrace({
+    category: 'ruins.delve_emergence',
+    tick: state.tick,
+    delveId: pending.delveId,
+    agentId: pending.agentId,
+    ruinId: pending.ruinId,
+    emergenceChoice: choice,
+    consequenceRoll: pending.consequenceRoll,
+    essenceCredited: 0, // actual amount lives in ruins.elder_essence_awarded
+    autoResolved: false,
+    summary: `Emergence resolved (${choice}) for delve ${pending.delveId}`,
+  });
+
+  const result = transformRuinConsequence(
+    state,
+    {
+      ruinId: pending.ruinId,
+      delveId: pending.delveId,
+      agentId: pending.agentId,
+      emergenceChoice: choice,
+      consequenceRoll: pending.consequenceRoll,
+      ruinMagnitude: pending.ruinMagnitude,
+      sphereAlignment: pending.sphereAlignment,
+      actingGodId,
+    },
+    runtime,
+  );
+
+  // Advance the delve past its final beat so the arc is considered closed.
+  const active = [...(state.activeDelves ?? [])];
+  const idx = active.findIndex(d => d.delveId === pending.delveId);
+  if (idx !== -1) active[idx] = { ...active[idx], beatIndex: active[idx].totalBeats + 1 };
+
+  return {
+    ...result.patch,
+    activeDelves: active,
+  };
 }
 
 // ── Public: abort a delve ─────────────────────────────────────────────────────

@@ -67,6 +67,8 @@ const EXPECTED_LOCATION_TYPES: LocationType[] = [
   'nest',
   'haunted_ground',
   'corruption_zone',
+  // Ruins layer (THR-153)
+  'place_of_power',
 ];
 
 describe('LOCATION_ICON_REGISTRY', () => {

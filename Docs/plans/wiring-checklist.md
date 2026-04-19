@@ -64,6 +64,10 @@ Every engine module that produces per-tick state changes must be called from a p
 
 | 6.6396 | `phaseQuintessence` | Quintessence event processing, regen, dissolution |
 | 6.655 | `phaseRuinQuestHooks` | Ruin quest hook issuance — evidence ≥ threshold + Guild within radius → toast + priority boost (THR-156) |
+| 6.656 | `phaseDelveAdmission` | Delve admission + queue retry (THR-152) |
+| 6.657 | `phaseDelveProgression` | Delve beat resolution (THR-152) |
+| 6.658 | `phaseDelveEmergence` | Consequence roll + auto-fire `transformRuinConsequence('let')` on expiry (THR-152/153) |
+| 6.659 | `phasePlaceOfPowerStreams` | PoP holder-presence credit + decay countdown + corrupt siphon (THR-153) |
 
 **Phase 2 resolution wiring (2026-04-02):**
 

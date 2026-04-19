@@ -113,6 +113,17 @@ export const POP_CORRUPT_UP_FRONT_COST = 4;
 /** Fraction of the stream the god receives passively under Corrupt */
 export const POP_CORRUPT_SIPHON_FRACTION = 0.33;
 
+// ── Ruin transformation multipliers (THR-153) ────────────────────────────────
+
+/** Multiplier on base elder-essence reward when the ruin is transformed (full reward). */
+export const TRANSFORMED_ELDER_ESSENCE_MULTIPLIER = 1.0;
+/** Multiplier when the ruin is consumed (scar outcome — half reward). */
+export const CONSUMED_ELDER_ESSENCE_MULTIPLIER = 0.5;
+/** Multiplier when the consequence roll is catastrophic (quarter reward for closure). */
+export const CATASTROPHIC_ELDER_ESSENCE_MULTIPLIER = 0.25;
+/** Ticks a "Haunted by Scar" condition lingers on the delve agent after a consumed outcome. */
+export const SCAR_CONDITION_ATTACH_DURATION = 40;
+
 // ── Ruin worldgen density ─────────────────────────────────────────────────────
 
 /** Per-hex probability for wilderness hexes inside a lost culture's territory */

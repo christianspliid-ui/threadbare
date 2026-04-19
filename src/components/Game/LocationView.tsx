@@ -1,6 +1,7 @@
 import { memo, useMemo, useState, useCallback, useRef } from 'react';
 import type { GraphNode } from '../../types/graph';
 import type { WorldGraph } from '../../engine/graph';
+import { PlaceOfPowerInspector } from '../ruins/PlaceOfPowerInspector';
 import type { EncounterTemplate, EncounterProgress } from '../../types/encounter';
 import type { SublocationProperties, SublocationPersistence } from '../../types/sublocation';
 import { THREAT_RATING_COLORS } from '../../types/encounter';
@@ -1059,6 +1060,10 @@ export const LocationView = memo(function LocationView({
                 </p>
               ))}
             </div>
+            {/* Place of Power inspector (THR-153) — stream rate, holder, decay */}
+            {locationSubtype === 'place_of_power' && (
+              <PlaceOfPowerInspector location={location} graph={graph} tick={tick ?? 0} />
+            )}
           </div>
           {/* Concept art placeholder — themed per location type */}
           <div

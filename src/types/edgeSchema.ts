@@ -374,6 +374,16 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     requiredProperties: [],
     description: 'Familiarity edge created when a knows_clue_of clue is consumed at convergence. Properties: fromClue?, convergedTick?.',
   },
+  // ── Ruins Layer (THR-153) ──────────────────────────────────────────────────
+  holds_place_of_power: {
+    type: 'holds_place_of_power',
+    sourceNodeType: 'actor',
+    targetNodeType: 'location',
+    direction: 'directed',
+    cardinality: 'many-to-one',
+    requiredProperties: ['holderType', 'heldSinceTick'],
+    description: 'Holder bond between an actor/faction/god and a place_of_power location. Properties: holderType (actor|god|faction), heldSinceTick, corruptMark, bargainFavor, sphere.',
+  },
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────

@@ -103,7 +103,9 @@ export type EdgeType =
   | 'owes_favor'       // debtor → creditor (OwesFavorEdgeProperties)
   // Ruins layer (THR-149, THR-150)
   | 'knows_clue_of'    // knower → target ruin (KnowsClueOfEdgeProperties in src/types/knowledge.ts)
-  | 'knows_of';        // knower → location; familiarity edge created when a clue is consumed at convergence
+  | 'knows_of'         // knower → location; familiarity edge created when a clue is consumed at convergence
+  // Ruins layer — PoP holder (THR-153)
+  | 'holds_place_of_power'; // actor | faction | ascendant → place_of_power location (HoldsPlaceOfPowerEdgeProperties)
 
 /** Result type for graph mutations */
 export interface GraphMutation {

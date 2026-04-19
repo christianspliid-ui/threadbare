@@ -170,6 +170,8 @@ import {
 import { AttentionPoolIndicator } from './AttentionPoolIndicator';
 import { ReadTheThreadsPanel } from './ReadTheThreadsPanel';
 import { DelveProgressPanel } from '../ruins/DelveProgressPanel';
+import { EmergenceDilemmaModal } from '../ruins/EmergenceDilemmaModal';
+import { resolveEmergenceDecision } from '../../engine/ruins/delveVariant';
 import { useLastViewedTick } from '../../hooks/useLastViewedTick';
 import type { SpotlightTier } from '../../types/npc';
 import { shouldRenderIndividualOnHexMap } from './hexMapAgentVisibility';
@@ -3226,6 +3228,19 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           graph={gameState.graph}
           ascendantId={gameState.ascendantId}
           onStateUpdate={(patch) => setGameState(prev => ({ ...prev, ...patch }))}
+        />
+      )}
+
+      {/* Emergence Dilemma — blocking modal when a delve awaits a divine decision (THR-153) */}
+      {gameState.pendingEmergenceDecision && (
+        <EmergenceDilemmaModal
+          gameState={gameState}
+          onResolve={(choice) => {
+            setGameState(prev => ({
+              ...prev,
+              ...resolveEmergenceDecision(prev, choice, prev.ascendantId),
+            }));
+          }}
         />
       )}
 

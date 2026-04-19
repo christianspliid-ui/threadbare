@@ -1,7 +1,7 @@
 # Project Status
 > Updated 2026-04-19.
 ## Current Focus
-**THR-88 shipped (backstory strata 2-4 deepening).** Added ~46 prose templates across 6 content tables (FEAR_PROSE, DECISIVE_NATURE, DIVINE_TRANSFORMATION, TRAIT_ORIGIN, TURNING_POINT, CONTRADICTION, STORY_ARC) — all keys now at 4-templates-per-key. Next: THR-153 (PR 5 — Ruin transformation + PlaceOfPower, model:opus — awaiting Opus agent).
+**THR-153 shipped (PR 5 — Ruin transformation + PlaceOfPower/Scar + elderEssenceReward refactor).** Elder Magic & Ruins project closes: delve success → emergence dilemma → PlaceOfPower or Scar, with holder-bound passive essence streams, Corrupt-siphon, Bargain favor, and Claim cost debit. Next: project complete; prioritize highest-priority Ready-for-Dev item.
 
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
@@ -17,6 +17,9 @@
 - **Procedural Hex Vignettes (Next):** Phases 2-5 queued.
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
+
+## Recent Completions (2026-04-19) — THR-153
+- **THR-153 — PR 5: Ruin transformation + PlaceOfPower/Scar + elderEssenceReward refactor:** New `ruinTransformation.ts` implements the 7-row outcome matrix (consequenceRoll × emergenceChoice → graph mutations). New `placeOfPowerStreams.ts` phase credits holder essence per tick with decay countdown + corrupt siphon. `elderEssenceReward.ts` refactored — `awardElderEssence` core extracted, legacy `computeElderEssenceReward` wrapped. New `holds_place_of_power` edge type + schema. New `place_of_power` HexMapV2 icon (crown+ring). `EmergenceDilemmaModal` with 2×2 choice grid (inviable options greyed). `PlaceOfPowerInspector` extends LocationView with holder/stream/decay readout. 6 transformation vignettes (vault/temple/battlefield × transformed/consumed). `phasePlaceOfPowerStreams` wired into orchestrator at 6.659. 29 new tests: transformation outcome matrix (17), stream phase (8), modal smoke (4). tsc clean, build green, all suite tests pass except pre-existing `traceBuffer-integration` flake.
 
 ## Recent Completions (2026-04-19) — THR-88
 - **THR-88 — Backstory strata 2-4 deepening:** ~46 new prose templates across 6 content tables bringing all backstory keys to 4-templates-per-key target. Each 4th template follows established embodied/behavioral/sensory image pattern. Voice rubric per stratum: biographer (stratum 2), confessor (stratum 3), oracular (stratum 4). No resolver, type, or UI changes. tsc clean, build green.
@@ -45,4 +48,4 @@
 - **TB-095–099 Social Systems Expansion** (v1.2 — designed, ready to sequence)
 - TB-071 Economy Second Pass · TB-069 Location NPCs · TB-051 Monster Encounters residual · TB-037 Onboarding
 
-Full backlog: `.planning/BACKLOG.md` · Completed work: `Docs/project-history.md`
+Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Completed work: `Docs/project-history.md` (one-liners) + Linear "Done" state · Pre-Linear history: `.planning/BACKLOG_HISTORY.md`

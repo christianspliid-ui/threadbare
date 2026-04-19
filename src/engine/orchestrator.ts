@@ -134,6 +134,7 @@ import { phaseSecretsFavors } from './phaseSecretsFavors';
 import { phaseClueDecay } from './ruins/clueLifecycle';
 import { phaseRuinQuestHooks } from './ruins/questHooks';
 import { phaseDelveAdmission, phaseDelveProgression, phaseDelveEmergence } from './ruins/delveVariant';
+import { phasePlaceOfPowerStreams } from './ruins/placeOfPowerStreams';
 import { generateSecret, createSecretEdge, createFavorEdge } from './secretGeneration';
 import { processFactionOutcome, resetFactionEventSeq } from './factionOutcome';
 import type { DistanceMatrix } from './distanceMatrix';
@@ -2278,8 +2279,14 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.658: Delve Emergence — roll consequences for completed arcs (THR-152)
-  s = { ...s, ...phaseDelveEmergence(s) };
+  // Also runs the PR-5 auto-fire transformation when a pending decision expires.
+  s = { ...s, ...phaseDelveEmergence(s, runtime) };
   phaseEventCounts['delve_emergence'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.659: Place of Power Streams — credit passive essence + decay (THR-153)
+  s = { ...s, ...phasePlaceOfPowerStreams(s) };
+  phaseEventCounts['pop_streams'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.75: Agent Lifecycle (death, birth, migration)
