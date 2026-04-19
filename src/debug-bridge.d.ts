@@ -151,6 +151,10 @@ export interface DebugBridge {
 
   getEncounterLogAll: () => Promise<EncounterLogSummary>;
   exportEncounterLogAll: (agentNames?: Record<string, string>, seed?: string) => Promise<EncounterLogExportResult>;
+  /** Returns total encounter cache full-rebuild count for this session (THR-187). */
+  getEncounterCacheRebuildCount: () => number;
+  /** Returns all encounter_cache_rebuild traces (THR-187). */
+  getEncounterCacheRebuildTraces: () => Promise<ReadonlyArray<TraceEntry>>;
 }
 
 declare global {

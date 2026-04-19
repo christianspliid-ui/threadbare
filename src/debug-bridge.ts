@@ -364,6 +364,17 @@ if (import.meta.env.DEV) {
         };
       }),
 
+    // Encounter cache diagnostics (THR-187)
+    getEncounterCacheRebuildCount: () => {
+      const runtime = _runtimeProvider?.();
+      return runtime?.encounterCacheRebuildCount ?? 0;
+    },
+    getEncounterCacheRebuildTraces: async () => {
+      const { getTraces } = await import('./engine/traceBuffer');
+      const traces = getTraces();
+      return traces.filter(t => t.category === 'encounter_cache_rebuild');
+    },
+
     // Strategic action inspection
     getStrategicDecisionSummary: async (agentId?: string) => {
       const state = _gameStateProvider?.();

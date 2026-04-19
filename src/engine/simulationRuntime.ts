@@ -34,6 +34,7 @@ import { clearRewardHistory } from './rewardHistory';
 import type { BalanceTelemetry } from './balanceTelemetry';
 import { createBalanceTelemetry } from './balanceTelemetry';
 import { BALANCE_TARGETS_VERSION } from './balanceTargets';
+import { emitTrace } from './traceBuffer';
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -50,6 +51,8 @@ export interface SimulationRuntime {
   encounterCacheBuiltAt: number;
   /** structuralCacheVersion at which the distance matrix was last built/rebuilt. */
   distanceMatrixBuiltAt: number;
+  /** Total full-rebuild count this session. Exposed via debug bridge for profiling. */
+  encounterCacheRebuildCount: number;
 
   // ── Balance Telemetry (phase 1 eval foundation) ──
   /** Session-owned balance telemetry. Owned here to prevent module-global bleed. */
@@ -69,6 +72,7 @@ export function createSimulationRuntime(): SimulationRuntime {
     distanceMatrix: null,
     encounterCacheBuiltAt: -1,
     distanceMatrixBuiltAt: -1,
+    encounterCacheRebuildCount: 0,
     balanceTelemetry: createBalanceTelemetry({ targetVersion: BALANCE_TARGETS_VERSION }),
     balanceTelemetryVersion: 0,
   };
@@ -119,6 +123,41 @@ export function touchStructure(runtime: SimulationRuntime): void {
 // ─── Cache Management ─────────────────────────────────────────────
 
 /**
+ * Apply an incremental encounter-cache update without forcing a full rebuild
+ * next tick. Bumps structuralCacheVersion (for UI memos and distance matrix)
+ * and syncs encounterCacheBuiltAt so ensureEncounterCache reuses the cache.
+ *
+ * If the cache hasn't been built yet (null), the callback is skipped — the
+ * lazy build path will produce a correct cache on demand.
+ *
+ * Fail-soft: if the callback throws, the cache is invalidated so the next
+ * ensureEncounterCache triggers a full rebuild.
+ */
+export function applyEncounterCacheUpdate(
+  runtime: SimulationRuntime,
+  update: (cache: EncounterCacheManager) => void,
+): void {
+  const cache = runtime.encounterCache;
+  if (cache) {
+    try {
+      update(cache);
+    } catch (err) {
+      console.warn(
+        '[applyEncounterCacheUpdate] incremental update failed, falling back to full rebuild',
+        err,
+      );
+      runtime.encounterCache = null;
+      runtime.encounterCacheBuiltAt = -1;
+    }
+  }
+  runtime.structuralCacheVersion++;
+  runtime.worldVersion++;
+  if (runtime.encounterCache) {
+    runtime.encounterCacheBuiltAt = runtime.structuralCacheVersion;
+  }
+}
+
+/**
  * Ensure the encounter cache is up-to-date. Rebuilds if structuralCacheVersion
  * has advanced since the last build.
  */
@@ -132,10 +171,24 @@ export function ensureEncounterCache(
     !runtime.encounterCache ||
     runtime.encounterCacheBuiltAt < runtime.structuralCacheVersion
   ) {
+    const reason = !runtime.encounterCache ? 'initial' : 'structural_invalidation';
+    const t0 = typeof performance !== 'undefined' ? performance.now() : 0;
     runtime.encounterCache = new EncounterCacheManager();
     const dangerMap = buildDangerMap(tiles);
     runtime.encounterCache.buildFullCache(graph, tick, dangerMap);
     runtime.encounterCacheBuiltAt = runtime.structuralCacheVersion;
+    runtime.encounterCacheRebuildCount++;
+    const durationMs = typeof performance !== 'undefined' ? performance.now() - t0 : undefined;
+    emitTrace({
+      category: 'encounter_cache_rebuild',
+      tick,
+      agentId: undefined,
+      reason,
+      locationCount: graph.getNodesByType('location').length + graph.getNodesByType('sublocation').length,
+      totalRebuildsThisSession: runtime.encounterCacheRebuildCount,
+      durationMs,
+      summary: `encounter cache rebuilt (${reason}), rebuild #${runtime.encounterCacheRebuildCount}`,
+    });
   }
   return runtime.encounterCache;
 }

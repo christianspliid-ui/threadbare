@@ -20,6 +20,7 @@ import { getAgentLocationId } from './graphQueries';
 import { executeInitiativeOutcomes } from './initiativeOutcomes';
 import { emitTrace } from './traceBuffer';
 import type { ReachDomain } from '../types/traits';
+import type { SimulationRuntime } from './simulationRuntime';
 
 // ─── Checkpoint Domain Map ───────────────────────────────────────────
 // Which capability domains to roll at each checkpoint, by template id.
@@ -39,6 +40,7 @@ const CHECKPOINT_DOMAINS: Record<string, readonly (readonly ReachDomain[])[]> = 
 export function phaseInitiativeProgress(
   state: GameState,
   rng: () => number,
+  runtime?: SimulationRuntime,
 ): Partial<GameState> {
   const graph = state.graph;
   const newEvents: TickEvent[] = [];
@@ -194,7 +196,7 @@ export function phaseInitiativeProgress(
       // ── Completion Check ─────────────────────────────────────────
       const currentProgress = actorNode.properties.activeInitiative as InitiativeProgress;
       if (state.tick >= currentProgress.targetCompletionTick) {
-        const outcomes = executeInitiativeOutcomes(state, graph, currentProgress, template);
+        const outcomes = executeInitiativeOutcomes(state, graph, currentProgress, template, runtime);
         newEvents.push(...outcomes.newEvents);
         newEncounterSeeds.push(...outcomes.newEncounterSeeds);
         Object.assign(newFactionDefinitions, outcomes.newFactionDefinitions);

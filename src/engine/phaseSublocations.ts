@@ -27,6 +27,8 @@ import type { SublocationProperties } from '../types/sublocation';
 import { evaluateConditionalPredicate, checkDissolutions } from './sublocation';
 import { mulberry32 } from '../lib/prng';
 import type { EncounterCacheManager } from './encounterCache';
+import type { SimulationRuntime } from './simulationRuntime';
+import { applyEncounterCacheUpdate } from './simulationRuntime';
 
 // ─── Constants (System 5) ──────────────────────────────────────────────────
 
@@ -188,6 +190,7 @@ const SETTLEMENT_SUBTYPES = new Set([
 export function phaseSublocations(
   state: GameState,
   encounterCache?: EncounterCacheManager | null,
+  runtime?: SimulationRuntime,
 ): Partial<GameState> {
   const { graph, tick, encounterProgress } = state;
 
@@ -197,9 +200,17 @@ export function phaseSublocations(
   const dissolutions = checkDissolutions(graph, tick, encounterProgress);
 
   // Update encounter cache for dissolved sublocations
-  if (encounterCache && dissolutions.length > 0) {
+  if (dissolutions.length > 0) {
     for (const d of dissolutions) {
-      encounterCache.onSublocationDestroyed(d.sublocationId, d.parentLocationId, graph);
+      if (runtime) {
+        const sublocationId = d.sublocationId;
+        const parentLocationId = d.parentLocationId;
+        applyEncounterCacheUpdate(runtime, cache =>
+          cache.onSublocationDestroyed(sublocationId, parentLocationId, graph));
+      } else if (encounterCache) {
+        // Legacy path — used by tests that don't pass a runtime
+        encounterCache.onSublocationDestroyed(d.sublocationId, d.parentLocationId, graph);
+      }
     }
   }
 
@@ -227,8 +238,15 @@ export function phaseSublocations(
       const instanceId = spawnConditionalSublocation(loc, spec, tick, graph);
 
       // Update encounter cache for newly spawned sublocation
-      if (encounterCache && instanceId) {
-        encounterCache.onSublocationCreated(graph, instanceId, loc.id);
+      if (instanceId) {
+        if (runtime) {
+          const locId = loc.id;
+          applyEncounterCacheUpdate(runtime, cache =>
+            cache.onSublocationCreated(graph, instanceId, locId));
+        } else if (encounterCache) {
+          // Legacy path — used by tests that don't pass a runtime
+          encounterCache.onSublocationCreated(graph, instanceId, loc.id);
+        }
       }
     }
   }

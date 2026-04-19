@@ -5,7 +5,7 @@
  * participates in the version system. If these tests break, UI selectors
  * and engine caches will silently serve stale data.
  */
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   createSimulationRuntime,
   touchWorld,
@@ -13,6 +13,7 @@ import {
   ensureEncounterCache,
   ensureDistanceMatrix,
   resetRuntimeCaches,
+  applyEncounterCacheUpdate,
 } from '../../simulationRuntime';
 import type { SimulationRuntime } from '../../simulationRuntime';
 import { initializeGameState, MAP_SIZE_PRESETS } from '../../gameInit';
@@ -173,5 +174,75 @@ describe('Mutation Observability — runTick Version Bumps', () => {
     // Should not throw — legacy path with module globals
     const next = runTick(state);
     expect(next.tick).toBe(state.tick + 1);
+  });
+});
+
+// ─── applyEncounterCacheUpdate Contracts (THR-187) ──────────────────────────
+
+describe('Mutation Observability — applyEncounterCacheUpdate Contracts', () => {
+  it('invokes callback with built cache, bumps both versions, syncs encounterCacheBuiltAt', () => {
+    const runtime = createSimulationRuntime();
+    const { state } = createTestWorld();
+
+    // Build cache first
+    ensureEncounterCache(runtime, state.graph, state.tick, state.tiles);
+    const svBefore = runtime.structuralCacheVersion;
+    const wvBefore = runtime.worldVersion;
+    const cache = runtime.encounterCache;
+
+    const fn = vi.fn();
+    applyEncounterCacheUpdate(runtime, fn);
+
+    expect(fn).toHaveBeenCalledOnce();
+    expect(fn).toHaveBeenCalledWith(cache);
+    expect(runtime.structuralCacheVersion).toBe(svBefore + 1);
+    expect(runtime.worldVersion).toBe(wvBefore + 1);
+    expect(runtime.encounterCacheBuiltAt).toBe(runtime.structuralCacheVersion);
+  });
+
+  it('skips callback when cache is null, still bumps versions', () => {
+    const runtime = createSimulationRuntime();
+    expect(runtime.encounterCache).toBeNull();
+    const svBefore = runtime.structuralCacheVersion;
+    const wvBefore = runtime.worldVersion;
+
+    const fn = vi.fn();
+    applyEncounterCacheUpdate(runtime, fn);
+
+    expect(fn).not.toHaveBeenCalled();
+    expect(runtime.structuralCacheVersion).toBe(svBefore + 1);
+    expect(runtime.worldVersion).toBe(wvBefore + 1);
+    // encounterCacheBuiltAt should NOT be synced (cache is null)
+    expect(runtime.encounterCacheBuiltAt).toBe(-1);
+  });
+
+  it('invalidates cache and logs warning when callback throws, still bumps versions', () => {
+    const runtime = createSimulationRuntime();
+    const { state } = createTestWorld();
+    ensureEncounterCache(runtime, state.graph, state.tick, state.tiles);
+
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const svBefore = runtime.structuralCacheVersion;
+
+    applyEncounterCacheUpdate(runtime, () => { throw new Error('test error'); });
+
+    expect(runtime.encounterCache).toBeNull();
+    expect(runtime.encounterCacheBuiltAt).toBe(-1);
+    expect(runtime.structuralCacheVersion).toBe(svBefore + 1);
+    expect(warnSpy).toHaveBeenCalled();
+    warnSpy.mockRestore();
+  });
+
+  it('after applyEncounterCacheUpdate on built cache, ensureEncounterCache does NOT rebuild', () => {
+    const runtime = createSimulationRuntime();
+    const { state } = createTestWorld();
+    ensureEncounterCache(runtime, state.graph, state.tick, state.tiles);
+    const rebuildCountBefore = runtime.encounterCacheRebuildCount;
+
+    applyEncounterCacheUpdate(runtime, () => { /* no-op incremental update */ });
+
+    // Should NOT trigger another rebuild
+    ensureEncounterCache(runtime, state.graph, state.tick, state.tiles);
+    expect(runtime.encounterCacheRebuildCount).toBe(rebuildCountBefore);
   });
 });
