@@ -3,9 +3,6 @@ import { z } from 'zod';
 import type {
   Composition,
   FilterQuery,
-  FindRenameCreateResolve,
-  MutationSet,
-  NodeClass,
   NodeSpec,
   PreconditionStrength,
   ResolveStrategy,
@@ -13,35 +10,10 @@ import type {
   Tier,
   WorldPredicate,
 } from './schema';
+import type { FindCardLog, WorldEdge, WorldNode, WorldSnapshot } from './findCard';
+import { resolveFindCard } from './findCard';
 import { parseComposition } from './schema';
-
-export interface WorldEdge {
-  type: string;
-  to: string;
-}
-
-export interface WorldTags {
-  archetype?: string[];
-  reach?: string[];
-  sphere?: string[];
-}
-
-export interface WorldNode {
-  id: string;
-  kind: string;
-  name?: string;
-  class?: NodeClass;
-  tags?: WorldTags;
-  props?: Record<string, unknown>;
-  edges?: WorldEdge[];
-}
-
-export interface WorldState {
-  nodes: WorldNode[];
-  worldFlags?: Record<string, unknown>;
-  doomClockTier?: number;
-  firedCompositions?: string[];
-}
+export type WorldState = WorldSnapshot;
 
 const worldEdgeSchema = z.object({
   type: z.string().trim().min(1),
@@ -103,8 +75,11 @@ export interface CreationPreview {
   source:
     | 'procedural'
     | 'find-rename-create-fallback'
+    | 'find-rename-create-rejected-fallback'
     | 'missing-literal'
     | 'missing-find-create-disabled';
+  createdId?: string;
+  inheritedRecipeTags?: string[];
 }
 
 export interface NodeResolutionResult {
@@ -126,6 +101,7 @@ export interface CompositionValidationReport {
   nodes: Record<string, NodeResolutionResult>;
   creations: CreationPreview[];
   mutations: MutationPreview[];
+  findCardLogs: FindCardLog[];
   errors: string[];
   warnings: string[];
 }
@@ -133,16 +109,7 @@ export interface CompositionValidationReport {
 interface EvaluationContext {
   world: WorldState;
   nodeById: Map<string, WorldNode>;
-}
-
-const NODE_CLASS_ORDER: Record<NodeClass, number> = {
-  generic: 0,
-  promoted: 1,
-  threaded: 2,
-};
-
-function normalizeNodeClass(node: WorldNode): NodeClass {
-  return node.class ?? 'generic';
+  findFilterCache: Map<string, boolean>;
 }
 
 function getTagValues(node: WorldNode, axis: TagAxis): string[] {
@@ -185,7 +152,7 @@ function evaluateFilterQuery(query: FilterQuery, node: WorldNode, ctx: Evaluatio
     case 'has-any-tag':
       return hasAnyTag(node, query.axis, query.values);
     case 'node-class':
-      return normalizeNodeClass(node) === query.class;
+      return (node.class ?? 'generic') === query.class;
     case 'has-edge':
       return (node.edges ?? []).some((edge) => {
         if (edge.type !== query.edgeType) {
@@ -202,41 +169,6 @@ function evaluateFilterQuery(query: FilterQuery, node: WorldNode, ctx: Evaluatio
     default:
       return false;
   }
-}
-
-function scoreTagMatch(query: FilterQuery, node: WorldNode): number {
-  switch (query.op) {
-    case 'and':
-      return query.terms.reduce((sum, term) => sum + scoreTagMatch(term, node), 0);
-    case 'or':
-      return query.terms.reduce((max, term) => Math.max(max, scoreTagMatch(term, node)), 0);
-    case 'not':
-      return 0;
-    case 'has-tag':
-      return hasTag(node, query.axis, query.value) ? 1 : 0;
-    case 'has-any-tag':
-      return query.values.filter((value) => hasTag(node, query.axis, value)).length;
-    default:
-      return 0;
-  }
-}
-
-function sortFindCandidates(query: FilterQuery, candidates: WorldNode[]): WorldNode[] {
-  return [...candidates].sort((left, right) => {
-    const leftScore = scoreTagMatch(query, left);
-    const rightScore = scoreTagMatch(query, right);
-    if (rightScore !== leftScore) {
-      return rightScore - leftScore;
-    }
-
-    const leftRank = NODE_CLASS_ORDER[normalizeNodeClass(left)];
-    const rightRank = NODE_CLASS_ORDER[normalizeNodeClass(right)];
-    if (leftRank !== rightRank) {
-      return leftRank - rightRank;
-    }
-
-    return left.id.localeCompare(right.id);
-  });
 }
 
 function evaluatePredicate(predicate: WorldPredicate, ctx: EvaluationContext): { passed: boolean; message: string } {
@@ -423,84 +355,57 @@ function resolveProceduralNode(nodeKey: string, nodeSpec: NodeSpec): NodeResolut
   };
 }
 
-function buildMutationPreview(nodeId: string, mark: MutationSet): MutationPreview {
-  return {
-    nodeId,
-    rename: mark.rename,
-    promoteClass: mark.promoteClass,
-    addEdges: mark.addEdges,
-  };
-}
-
 function resolveFindRenameCreateNode(
   nodeKey: string,
   nodeSpec: NodeSpec,
+  composition: Composition,
   ctx: EvaluationContext,
-  warnings: string[]
+  warnings: string[],
+  findCardLogs: FindCardLog[]
 ): NodeResolutionResult {
-  const resolve = nodeSpec.resolve as FindRenameCreateResolve;
-  const matching = ctx.world.nodes.filter((node) => evaluateFilterQuery(resolve.find, node, ctx));
-  const sorted = sortFindCandidates(resolve.find, matching);
-  const candidateIds = sorted.map((node) => node.id);
-  const winner = sorted[0];
+  const findResult = resolveFindCard(
+    nodeKey,
+    nodeSpec.resolve,
+    ctx.world,
+    composition,
+    {
+      nodeById: ctx.nodeById,
+      filterCache: ctx.findFilterCache,
+    }
+  );
+  findCardLogs.push(findResult.log);
 
-  if (winner) {
-    const result: NodeResolutionResult = {
+  if (findResult.outcome === 'FOUND_AND_MARKED') {
+    return {
       nodeKey,
       tier: nodeSpec.tier,
       strategy: 'find-rename-create',
       status: 'resolved',
-      matchedNodeId: winner.id,
-      matchedCandidateIds: candidateIds,
-      message: `Found ${candidateIds.length} candidate(s); selected ${winner.id} by deterministic ranking.`,
+      matchedNodeId: findResult.selectedNodeId,
+      matchedCandidateIds: findResult.candidateIds,
+      mutationPreview: findResult.mutationPreview,
+      message: findResult.message,
     };
-
-    if (resolve.mark) {
-      result.mutationPreview = buildMutationPreview(winner.id, resolve.mark);
-      // TODO(THR-224): enforce generic/promoted/threaded mutability gate here.
-      warnings.push(
-        `[${nodeKey}] Mutation gate (THR-224) is not enforced in v0 validator; mutation preview assumes node is mutable.`
-      );
-    }
-    return result;
   }
 
-  const allowCreate = resolve.allowCreate ?? true;
-  if (allowCreate) {
+  if (findResult.outcome === 'CREATED' || findResult.outcome === 'FOUND_BUT_REJECTED') {
+    if (findResult.rejectionReasons && findResult.rejectionReasons.length > 0) {
+      warnings.push(
+        `[${nodeKey}] Mutation step rejected candidate ${
+          findResult.selectedNodeId ?? '(unknown)'
+        }: ${findResult.rejectionReasons.join(' | ')}`
+      );
+    }
+
     return {
       nodeKey,
       tier: nodeSpec.tier,
       strategy: 'find-rename-create',
       status: 'would-create',
-      matchedCandidateIds: [],
-      creationPreview: {
-        nodeKey,
-        kind: resolve.create.kind,
-        tags: resolve.create.tags,
-        initialEdges: resolve.create.initialEdges,
-        proceduralFill: resolve.create.proceduralFill ?? true,
-        source: 'find-rename-create-fallback',
-      },
-      message: 'No candidates matched filter; fallback creation would run.',
-    };
-  }
-
-  if (nodeSpec.tier === 'essential') {
-    return {
-      nodeKey,
-      tier: nodeSpec.tier,
-      strategy: 'find-rename-create',
-      status: 'error',
-      matchedCandidateIds: [],
-      message: 'No candidates matched filter and allowCreate=false on essential node.',
-      creationPreview: {
-        nodeKey,
-        kind: resolve.create.kind,
-        tags: resolve.create.tags,
-        initialEdges: resolve.create.initialEdges,
-        proceduralFill: resolve.create.proceduralFill ?? true,
-        source: 'missing-find-create-disabled',
-      },
+      matchedNodeId: findResult.selectedNodeId,
+      matchedCandidateIds: findResult.candidateIds,
+      creationPreview: findResult.creationPreview,
+      message: findResult.message,
     };
   }
 
@@ -508,17 +413,39 @@ function resolveFindRenameCreateNode(
     nodeKey,
     tier: nodeSpec.tier,
     strategy: 'find-rename-create',
-    status: 'dropped',
-    matchedCandidateIds: [],
-    message: `No candidates matched filter, allowCreate=false; ${nodeSpec.tier} node dropped.`,
+    status: 'error',
+    matchedNodeId: findResult.selectedNodeId,
+    matchedCandidateIds: findResult.candidateIds,
+    message: findResult.message,
+    creationPreview: findResult.creationPreview
+      ? {
+          nodeKey,
+          kind: findResult.creationPreview.kind,
+          tags: findResult.creationPreview.tags,
+          initialEdges: findResult.creationPreview.initialEdges,
+          proceduralFill: findResult.creationPreview.proceduralFill,
+          source: findResult.creationPreview.source,
+          createdId: findResult.creationPreview.createdId,
+          inheritedRecipeTags: findResult.creationPreview.inheritedRecipeTags,
+        }
+      : {
+          nodeKey,
+          kind: nodeSpec.resolve.create.kind,
+          tags: nodeSpec.resolve.create.tags,
+          initialEdges: nodeSpec.resolve.create.initialEdges,
+          proceduralFill: nodeSpec.resolve.create.proceduralFill ?? true,
+          source: 'missing-find-create-disabled',
+        },
   };
 }
 
 function resolveNode(
   nodeKey: string,
   nodeSpec: NodeSpec,
+  composition: Composition,
   ctx: EvaluationContext,
-  warnings: string[]
+  warnings: string[],
+  findCardLogs: FindCardLog[]
 ): NodeResolutionResult {
   if (nodeSpec.resolve.type === 'literal') {
     return resolveLiteralNode(nodeKey, nodeSpec, ctx);
@@ -526,7 +453,7 @@ function resolveNode(
   if (nodeSpec.resolve.type === 'procedural') {
     return resolveProceduralNode(nodeKey, nodeSpec);
   }
-  return resolveFindRenameCreateNode(nodeKey, nodeSpec, ctx, warnings);
+  return resolveFindRenameCreateNode(nodeKey, nodeSpec, composition, ctx, warnings, findCardLogs);
 }
 
 export function parseWorldState(input: unknown): WorldState {
@@ -542,10 +469,12 @@ export function validateComposition(
   const ctx: EvaluationContext = {
     world,
     nodeById: new Map(world.nodes.map((node) => [node.id, node])),
+    findFilterCache: new Map<string, boolean>(),
   };
 
   const errors: string[] = [];
   const warnings: string[] = [];
+  const findCardLogs: FindCardLog[] = [];
 
   const preconditions: PreconditionResult[] = composition.preconditions.map((precondition, index) => {
     const evalResult = evaluatePredicate(precondition.predicate, ctx);
@@ -572,7 +501,7 @@ export function validateComposition(
 
   const nodes: Record<string, NodeResolutionResult> = {};
   for (const [nodeKey, nodeSpec] of Object.entries(composition.nodes)) {
-    const result = resolveNode(nodeKey, nodeSpec, ctx, warnings);
+    const result = resolveNode(nodeKey, nodeSpec, composition, ctx, warnings, findCardLogs);
     nodes[nodeKey] = result;
 
     if (result.status === 'error') {
@@ -600,6 +529,7 @@ export function validateComposition(
     nodes,
     creations,
     mutations,
+    findCardLogs,
     errors,
     warnings,
   };

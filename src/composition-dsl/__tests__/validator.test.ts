@@ -38,6 +38,16 @@ const CONSORTIUM_WORLD: WorldState = {
       },
       edges: [],
     },
+    {
+      id: 'encounter.market-gossip',
+      kind: 'encounter',
+      class: 'generic',
+      tags: {
+        archetype: ['market-gossip'],
+        sphere: ['gold'],
+      },
+      edges: [],
+    },
   ],
   doomClockTier: 1,
   worldFlags: {
@@ -92,6 +102,16 @@ const EVENT_READY_WORLD: WorldState = {
       edges: [],
     },
     {
+      id: 'encounter.fortune-chorus',
+      kind: 'encounter',
+      class: 'generic',
+      tags: {
+        archetype: ['fortune_chorus'],
+        sphere: ['spirit'],
+      },
+      edges: [],
+    },
+    {
       id: 'agent.merchant-clerk',
       kind: 'agent',
       class: 'generic',
@@ -108,6 +128,24 @@ const EVENT_READY_WORLD: WorldState = {
     'omens.luck-thinning': true,
   },
   firedCompositions: ['merchant-consortium-court'],
+};
+
+const EVENT_CREATED_WORLD: WorldState = {
+  ...EVENT_READY_WORLD,
+  nodes: EVENT_READY_WORLD.nodes.filter((node) => node.id !== 'agent.omen-whisperer'),
+};
+
+const EVENT_REJECTED_WORLD: WorldState = {
+  ...EVENT_READY_WORLD,
+  worldFlags: {
+    ...EVENT_READY_WORLD.worldFlags,
+    mutatingPromotedWithoutRespect: true,
+  },
+};
+
+const EVENT_HARD_FAIL_WORLD: WorldState = {
+  ...EVENT_READY_WORLD,
+  nodes: EVENT_READY_WORLD.nodes.filter((node) => node.id !== 'encounter.fortune-chorus'),
 };
 
 describe('composition DSL v0 validator', () => {
@@ -160,6 +198,19 @@ describe('composition DSL v0 validator', () => {
     expect(nodes.some((node) => node.tier === 'essential')).toBe(true);
     expect(nodes.some((node) => node.tier === 'flavor')).toBe(true);
     expect(nodes.some((node) => node.tier === 'atmospheric')).toBe(true);
+  });
+
+  it('emits find-card logs across all four outcomes via world fixtures', () => {
+    const foundAndMarked = validateComposition(WINNOWING_OF_LUCK_EVENT_RECIPE, EVENT_READY_WORLD);
+    const created = validateComposition(WINNOWING_OF_LUCK_EVENT_RECIPE, EVENT_CREATED_WORLD);
+    const rejected = validateComposition(WINNOWING_OF_LUCK_EVENT_RECIPE, EVENT_REJECTED_WORLD);
+    const hardFailed = validateComposition(WINNOWING_OF_LUCK_EVENT_RECIPE, EVENT_HARD_FAIL_WORLD);
+
+    expect(foundAndMarked.findCardLogs.some((log) => log.outcome === 'FOUND_AND_MARKED')).toBe(true);
+    expect(created.findCardLogs.some((log) => log.outcome === 'CREATED')).toBe(true);
+    expect(rejected.findCardLogs.some((log) => log.outcome === 'FOUND_BUT_REJECTED')).toBe(true);
+    expect(hardFailed.findCardLogs.some((log) => log.outcome === 'HARD_FAILED')).toBe(true);
+    expect(hardFailed.willFire).toBe(false);
   });
 
   it('formats harness output with a concise execution summary', () => {

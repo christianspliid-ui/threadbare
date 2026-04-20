@@ -21,6 +21,25 @@ The validator report distinguishes:
 - `mutations`: mutation preview.
 - `errors` and `warnings`.
 
+## How Find-Cards Resolve
+
+`find-rename-create` nodes are resolved by `findCard.ts` and emit structured `FindCardLog` entries for author debugging.
+
+Resolution outcomes:
+
+- `FOUND_AND_MARKED`: one candidate wins deterministic tie-break; optional mutations apply atomically.
+- `FOUND_BUT_REJECTED`: a candidate matched, but stub mutability gate/tripwire checks rejected mutation; fallback create path is used.
+- `CREATED`: no candidates matched and fallback creation ran.
+- `HARD_FAILED`: no candidates matched (or mutation was rejected) and `allowCreate=false`.
+
+Tie-break order is deterministic:
+
+1. Tag match score descending
+2. Node class ascending (`generic`, then `promoted`, then `threaded`)
+3. Node id ascending
+
+Filter evaluation is cached for the duration of one composition validation pass, so repeated subqueries reuse the same world-snapshot results.
+
 ## Divergences / Notes
 
 - `Composition.kind` is validated as non-empty string, with the known v0 set documented in `KNOWN_COMPOSITION_KINDS`. This preserves the brief's "open set" intent while still documenting today's canonical kinds.
