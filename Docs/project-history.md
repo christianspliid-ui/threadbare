@@ -457,3 +457,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - THR-193 CC skill-tree parity: ✅ Complete (2026-04-20) — copied encounter-pipeline + vault-{ingest,query,lint,enrich} from .agents/skills to .claude/skills with hash-parity verification.
 - THR-196 split-marker skill cleanup: ✅ Complete (2026-04-20) — removed redirect-only `hexmap-developer`, `prose-resolver`, and `impediments` stub skills from both `.claude/skills/` and `.agents/skills/`.
 - THR-222 composition DSL v0: ✅ Complete (2026-04-20) — added isolated schema+validator, reference faction/event recipes, harness output helpers, and passing validator round-trip tests across multiple world-state scenarios.
+- THR-232 node-type audit: ✅ Complete (2026-04-20) — produced `Docs/audits/node-type-audit-2026-04-20.md` with full node inventory, per-type tagging/recipe/edge assessments, and follow-up gap seeds for ontology finalization.
