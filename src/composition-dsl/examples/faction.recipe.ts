@@ -36,6 +36,7 @@ export const MERCHANT_CONSORTIUM_FACTION_RECIPE: Composition = {
         mark: {
           rename: 'Guild Factor',
           promoteClass: 'promoted',
+          statedAttributes: [{ field: 'name', value: 'Guild Factor' }],
           addEdges: [{ edgeType: 'serves', toNodeKey: 'patronFaction' }],
         },
         create: {

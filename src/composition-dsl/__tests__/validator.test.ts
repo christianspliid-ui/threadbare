@@ -137,10 +137,11 @@ const EVENT_CREATED_WORLD: WorldState = {
 
 const EVENT_REJECTED_WORLD: WorldState = {
   ...EVENT_READY_WORLD,
-  worldFlags: {
-    ...EVENT_READY_WORLD.worldFlags,
-    mutatingPromotedWithoutRespect: true,
-  },
+  nodes: EVENT_READY_WORLD.nodes.map((node) =>
+    node.id === 'artifact.luckstone-fragment'
+      ? { ...node, nodeClass: 'promoted', class: 'promoted' }
+      : node
+  ),
 };
 
 const EVENT_HARD_FAIL_WORLD: WorldState = {
@@ -198,6 +199,7 @@ describe('composition DSL v0 validator', () => {
     expect(nodes.some((node) => node.tier === 'essential')).toBe(true);
     expect(nodes.some((node) => node.tier === 'flavor')).toBe(true);
     expect(nodes.some((node) => node.tier === 'atmospheric')).toBe(true);
+    expect(report.renderPromotions.length).toBeGreaterThan(0);
   });
 
   it('emits find-card logs across all four outcomes via world fixtures', () => {

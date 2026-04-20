@@ -3,6 +3,7 @@ import { z } from 'zod';
 import type {
   Composition,
   FilterQuery,
+  NodeClass,
   NodeSpec,
   PreconditionStrength,
   ResolveStrategy,
@@ -10,9 +11,11 @@ import type {
   Tier,
   WorldPredicate,
 } from './schema';
-import type { FindCardLog, WorldEdge, WorldNode, WorldSnapshot } from './findCard';
+import { promoteIfGeneric } from './mutationGate';
+import type { FindCardLog } from './findCard';
 import { resolveFindCard } from './findCard';
 import { parseComposition } from './schema';
+import { getNodeClass, type WorldEdge, type WorldNode, type WorldSnapshot } from './worldTypes';
 export type WorldState = WorldSnapshot;
 
 const worldEdgeSchema = z.object({
@@ -24,6 +27,7 @@ const worldNodeSchema: z.ZodType<WorldNode> = z.object({
   id: z.string().trim().min(1),
   kind: z.string().trim().min(1),
   name: z.string().trim().min(1).optional(),
+  nodeClass: z.enum(['generic', 'promoted', 'threaded']).optional(),
   class: z.enum(['generic', 'promoted', 'threaded']).optional(),
   tags: z
     .object({
@@ -34,6 +38,18 @@ const worldNodeSchema: z.ZodType<WorldNode> = z.object({
     .optional(),
   props: z.record(z.string(), z.unknown()).optional(),
   edges: z.array(worldEdgeSchema).optional(),
+  statedAttributes: z
+    .array(
+      z.object({
+        field: z.string().trim().min(1),
+        value: z.unknown(),
+        source: z.object({
+          recipeId: z.string().trim().min(1),
+          firedAt: z.string().trim().min(1),
+        }),
+      })
+    )
+    .optional(),
 });
 
 export const worldStateSchema: z.ZodType<WorldState> = z.object({
@@ -59,7 +75,11 @@ export interface MutationPreview {
   nodeId: string;
   rename?: string;
   promoteClass?: 'promoted' | 'threaded';
+  setNodeClass?: NodeClass;
   addEdges?: Array<{ edgeType: string; toNodeKey: string }>;
+  setProps?: Record<string, unknown>;
+  statedAttributes?: Array<{ field: string; value: unknown }>;
+  resultingClass?: NodeClass;
 }
 
 export interface CreationPreview {
@@ -99,11 +119,19 @@ export interface CompositionValidationReport {
   willFire: boolean;
   preconditions: PreconditionResult[];
   nodes: Record<string, NodeResolutionResult>;
+  renderPromotions: RenderPromotion[];
   creations: CreationPreview[];
   mutations: MutationPreview[];
   findCardLogs: FindCardLog[];
   errors: string[];
   warnings: string[];
+}
+
+export interface RenderPromotion {
+  nodeId: string;
+  fromClass: NodeClass;
+  toClass: 'promoted';
+  reason: string;
 }
 
 interface EvaluationContext {
@@ -152,7 +180,7 @@ function evaluateFilterQuery(query: FilterQuery, node: WorldNode, ctx: Evaluatio
     case 'has-any-tag':
       return hasAnyTag(node, query.axis, query.values);
     case 'node-class':
-      return (node.class ?? 'generic') === query.class;
+      return getNodeClass(node) === query.class;
     case 'has-edge':
       return (node.edges ?? []).some((edge) => {
         if (edge.type !== query.edgeType) {
@@ -456,6 +484,50 @@ function resolveNode(
   return resolveFindRenameCreateNode(nodeKey, nodeSpec, composition, ctx, warnings, findCardLogs);
 }
 
+function applyRenderPromotions(
+  composition: Composition,
+  nodes: Record<string, NodeResolutionResult>,
+  ctx: EvaluationContext
+): RenderPromotion[] {
+  const promotions: RenderPromotion[] = [];
+  for (const [nodeKey, result] of Object.entries(nodes)) {
+    if (result.status !== 'resolved' || !result.matchedNodeId) {
+      continue;
+    }
+
+    const worldNode = ctx.nodeById.get(result.matchedNodeId);
+    if (!worldNode) {
+      continue;
+    }
+
+    const fromClass = getNodeClass(worldNode);
+    const promotion = promoteIfGeneric(worldNode, {
+      recipeId: composition.id,
+      surfacedAt: composition.metadata.createdAt,
+      reason: `render:${nodeKey}`,
+    });
+
+    if (!promotion.promoted) {
+      continue;
+    }
+
+    ctx.nodeById.set(worldNode.id, promotion.node);
+    const worldIndex = ctx.world.nodes.findIndex((node) => node.id === worldNode.id);
+    if (worldIndex >= 0) {
+      ctx.world.nodes[worldIndex] = promotion.node;
+    }
+
+    promotions.push({
+      nodeId: worldNode.id,
+      fromClass,
+      toClass: 'promoted',
+      reason: `render:${nodeKey}`,
+    });
+  }
+
+  return promotions;
+}
+
 export function parseWorldState(input: unknown): WorldState {
   return worldStateSchema.parse(input);
 }
@@ -521,12 +593,14 @@ export function validateComposition(
   const hasHardPreconditionFailure = preconditions.some((result) => result.status === 'blocked');
   const hasEssentialNodeFailure = Object.values(nodes).some((result) => result.status === 'error');
   const willFire = !hasHardPreconditionFailure && !hasEssentialNodeFailure;
+  const renderPromotions = willFire ? applyRenderPromotions(composition, nodes, ctx) : [];
 
   return {
     compositionId: composition.id,
     willFire,
     preconditions,
     nodes,
+    renderPromotions,
     creations,
     mutations,
     findCardLogs,

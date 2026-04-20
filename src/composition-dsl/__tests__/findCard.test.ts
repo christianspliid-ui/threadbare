@@ -124,7 +124,6 @@ describe('resolveFindCard', () => {
           kind: 'location',
           class: 'promoted',
           tags: { archetype: ['merchant_agent'] },
-          props: { mutatingPromotedWithoutRespect: true },
         },
       ],
     };
@@ -147,5 +146,36 @@ describe('resolveFindCard', () => {
     expect(result.rejectionReasons?.length).toBeGreaterThan(0);
     expect(result.mutationPreview).toBeUndefined();
     expect(result.log.mutationsApplied).toBeUndefined();
+    expect(result.log.gateStatus).toBe('rejected');
+  });
+
+  it('can mutate promoted nodes when mutationContext explicitly respects promoted content', () => {
+    const world: WorldSnapshot = {
+      nodes: [
+        {
+          id: 'agent.promoted-merchant',
+          kind: 'agent',
+          nodeClass: 'promoted',
+          class: 'promoted',
+          tags: { archetype: ['merchant_agent'] },
+        },
+      ],
+    };
+
+    const result = resolveFindCard(
+      'guildFactor',
+      buildSpec({
+        mutationContext: { respectsPromoted: true },
+        mark: {
+          rename: 'Trusted Guild Factor',
+        },
+      }),
+      world,
+      BASE_RECIPE
+    );
+
+    expect(result.outcome).toBe('FOUND_AND_MARKED');
+    expect(result.mutationPreview?.rename).toBe('Trusted Guild Factor');
+    expect(result.log.gateStatus).toBe('passed');
   });
 });

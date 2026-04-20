@@ -4,36 +4,18 @@ import type {
   FindRenameCreateResolve,
   MutationSet,
   NodeClass,
+  ResolveMutationContext,
   TagAxis,
 } from './schema';
+import {
+  mutateNode,
+  type MutationContext,
+  type MutationResult,
+  type NodeMutation,
+} from './mutationGate';
+import { getNodeClass, type WorldNode, type WorldSnapshot } from './worldTypes';
 
-export interface WorldEdge {
-  type: string;
-  to: string;
-}
-
-export interface WorldTags {
-  archetype?: string[];
-  reach?: string[];
-  sphere?: string[];
-}
-
-export interface WorldNode {
-  id: string;
-  kind: string;
-  name?: string;
-  class?: NodeClass;
-  tags?: WorldTags;
-  props?: Record<string, unknown>;
-  edges?: WorldEdge[];
-}
-
-export interface WorldSnapshot {
-  nodes: WorldNode[];
-  worldFlags?: Record<string, unknown>;
-  doomClockTier?: number;
-  firedCompositions?: string[];
-}
+export type { WorldEdge, WorldNode, WorldSnapshot } from './worldTypes';
 
 export type FindCardOutcome =
   | 'FOUND_AND_MARKED'
@@ -45,7 +27,11 @@ export interface FindCardMutationPreview {
   nodeId: string;
   rename?: string;
   promoteClass?: 'promoted' | 'threaded';
+  setNodeClass?: NodeClass;
   addEdges?: Array<{ edgeType: string; toNodeKey: string }>;
+  setProps?: Record<string, unknown>;
+  statedAttributes?: Array<{ field: string; value: unknown }>;
+  resultingClass?: NodeClass;
 }
 
 export interface FindCardCreationPreview {
@@ -71,6 +57,8 @@ export interface FindCardLog {
   selectedId?: string;
   rejectionReasons?: string[];
   mutationsApplied?: MutationSet;
+  gateStatus?: 'passed' | 'rejected';
+  tripwireStatus?: 'passed' | 'rejected';
   createdId?: string;
   durationMs: number;
 }
@@ -86,17 +74,11 @@ export interface FindCardResult {
   log: FindCardLog;
 }
 
-export interface MutationGateParams {
-  node: WorldNode;
-  mutation: MutationSet;
-  recipe: Composition;
-  world: WorldSnapshot;
-}
-
 export interface ResolveFindCardOptions {
   nodeById?: Map<string, WorldNode>;
   filterCache?: Map<string, boolean>;
-  gateCheck?: (params: MutationGateParams) => string[];
+  mutationContext?: Partial<ResolveMutationContext>;
+  mutateNodeFn?: (node: WorldNode, mutation: NodeMutation, context: MutationContext) => MutationResult;
   clock?: () => number;
 }
 
@@ -105,15 +87,18 @@ interface FilterContext {
   filterCache: Map<string, boolean>;
 }
 
+interface MutationAttempt {
+  mutationPreview?: FindCardMutationPreview;
+  rejectionReasons: string[];
+  gateStatus: 'passed' | 'rejected';
+  tripwireStatus: 'passed' | 'rejected';
+}
+
 const NODE_CLASS_ORDER: Record<NodeClass, number> = {
   generic: 0,
   promoted: 1,
   threaded: 2,
 };
-
-function normalizeNodeClass(node: WorldNode): NodeClass {
-  return node.class ?? 'generic';
-}
 
 function getTagValues(node: WorldNode, axis: TagAxis): string[] {
   return node.tags?.[axis] ?? [];
@@ -157,7 +142,7 @@ function evaluateFilterQuery(query: FilterQuery, node: WorldNode, ctx: FilterCon
       result = hasAnyTag(node, query.axis, query.values);
       break;
     case 'node-class':
-      result = normalizeNodeClass(node) === query.class;
+      result = getNodeClass(node) === query.class;
       break;
     case 'has-edge':
       result = (node.edges ?? []).some((edge) => {
@@ -208,72 +193,14 @@ function sortFindCandidates(query: FilterQuery, candidates: WorldNode[]): WorldN
       return rightScore - leftScore;
     }
 
-    const leftRank = NODE_CLASS_ORDER[normalizeNodeClass(left)];
-    const rightRank = NODE_CLASS_ORDER[normalizeNodeClass(right)];
+    const leftRank = NODE_CLASS_ORDER[getNodeClass(left)];
+    const rightRank = NODE_CLASS_ORDER[getNodeClass(right)];
     if (leftRank !== rightRank) {
       return leftRank - rightRank;
     }
 
     return left.id.localeCompare(right.id);
   });
-}
-
-function defaultGateCheck(params: MutationGateParams): string[] {
-  const nodeFlag = params.node.props?.mutatingPromotedWithoutRespect === true;
-  const worldFlag = params.world.worldFlags?.mutatingPromotedWithoutRespect === true;
-  if (nodeFlag || worldFlag) {
-    return ['Stub mutability gate rejected mutation (THR-224 integration point).'];
-  }
-  return [];
-}
-
-function validatePromotionTransition(node: WorldNode, promoteClass: 'promoted' | 'threaded'): string | undefined {
-  const currentClass = normalizeNodeClass(node);
-  if (currentClass === 'generic') {
-    if (promoteClass === 'threaded') {
-      return 'Cannot promote generic node directly to threaded; promote to promoted first.';
-    }
-    return undefined;
-  }
-
-  if (currentClass === 'promoted') {
-    return promoteClass === 'threaded'
-      ? undefined
-      : 'promoteClass=promoted is a no-op on a promoted node and should be omitted.';
-  }
-
-  return 'Cannot apply promoteClass mutation on a threaded node.';
-}
-
-function tryBuildMutationPreview(
-  node: WorldNode,
-  mutation: MutationSet,
-  recipe: Composition,
-  world: WorldSnapshot,
-  gateCheck: (params: MutationGateParams) => string[]
-): { mutationPreview?: FindCardMutationPreview; rejectionReasons: string[] } {
-  const rejectionReasons = gateCheck({ node, mutation, recipe, world });
-
-  if (mutation.promoteClass) {
-    const transitionError = validatePromotionTransition(node, mutation.promoteClass);
-    if (transitionError) {
-      rejectionReasons.push(transitionError);
-    }
-  }
-
-  if (rejectionReasons.length > 0) {
-    return { rejectionReasons };
-  }
-
-  return {
-    mutationPreview: {
-      nodeId: node.id,
-      rename: mutation.rename,
-      promoteClass: mutation.promoteClass,
-      addEdges: mutation.addEdges,
-    },
-    rejectionReasons,
-  };
 }
 
 function buildCreationPreview(
@@ -294,6 +221,69 @@ function buildCreationPreview(
   };
 }
 
+function buildMutationContext(
+  recipe: Composition,
+  specContext: ResolveMutationContext | undefined,
+  optionContext: Partial<ResolveMutationContext> | undefined
+): MutationContext {
+  const ownsThreads = new Set<string>();
+  for (const nodeId of specContext?.ownsThreads ?? []) {
+    ownsThreads.add(nodeId);
+  }
+  for (const nodeId of optionContext?.ownsThreads ?? []) {
+    ownsThreads.add(nodeId);
+  }
+
+  return {
+    recipeId: recipe.id,
+    firedAt: recipe.metadata.createdAt,
+    respectsPromoted:
+      optionContext?.respectsPromoted ?? specContext?.respectsPromoted ?? false,
+    ownsThreads: [...ownsThreads],
+    overrideTripwire:
+      optionContext?.overrideTripwire ?? specContext?.overrideTripwire ?? false,
+    overrideRationale:
+      optionContext?.overrideRationale ?? specContext?.overrideRationale,
+  };
+}
+
+function tryMutateNode(
+  node: WorldNode,
+  mutation: MutationSet,
+  recipe: Composition,
+  spec: FindRenameCreateResolve,
+  options: ResolveFindCardOptions
+): MutationAttempt {
+  const mutateNodeFn = options.mutateNodeFn ?? mutateNode;
+  const context = buildMutationContext(recipe, spec.mutationContext, options.mutationContext);
+  const result = mutateNodeFn(node, mutation as NodeMutation, context);
+
+  if (!result.ok) {
+    return {
+      rejectionReasons: result.errors,
+      gateStatus: result.gateDecision.ok ? 'passed' : 'rejected',
+      tripwireStatus:
+        result.tripwireDecision && !result.tripwireDecision.ok ? 'rejected' : 'passed',
+    };
+  }
+
+  return {
+    mutationPreview: {
+      nodeId: node.id,
+      rename: mutation.rename,
+      promoteClass: mutation.promoteClass,
+      setNodeClass: mutation.setNodeClass,
+      addEdges: mutation.addEdges,
+      setProps: mutation.setProps,
+      statedAttributes: mutation.statedAttributes,
+      resultingClass: getNodeClass(result.node),
+    },
+    rejectionReasons: [],
+    gateStatus: 'passed',
+    tripwireStatus: 'passed',
+  };
+}
+
 export function resolveFindCard(
   nodeKey: string,
   spec: FindRenameCreateResolve,
@@ -305,7 +295,6 @@ export function resolveFindCard(
   const startedAt = clock();
   const nodeById = options.nodeById ?? new Map(world.nodes.map((node) => [node.id, node]));
   const filterCache = options.filterCache ?? new Map<string, boolean>();
-  const gateCheck = options.gateCheck ?? defaultGateCheck;
   const filterCtx: FilterContext = { nodeById, filterCache };
 
   const candidates = world.nodes.filter((node) => evaluateFilterQuery(spec.find, node, filterCtx));
@@ -319,6 +308,8 @@ export function resolveFindCard(
     selectedId?: string;
     rejectionReasons?: string[];
     mutationsApplied?: MutationSet;
+    gateStatus?: 'passed' | 'rejected';
+    tripwireStatus?: 'passed' | 'rejected';
     createdId?: string;
   }): FindCardLog => ({
     nodeKey,
@@ -328,13 +319,15 @@ export function resolveFindCard(
     selectedId: params.selectedId,
     rejectionReasons: params.rejectionReasons,
     mutationsApplied: params.mutationsApplied,
+    gateStatus: params.gateStatus,
+    tripwireStatus: params.tripwireStatus,
     createdId: params.createdId,
     durationMs: Math.max(0, clock() - startedAt),
   });
 
   if (selected) {
     if (spec.mark) {
-      const mutationAttempt = tryBuildMutationPreview(selected, spec.mark, recipe, world, gateCheck);
+      const mutationAttempt = tryMutateNode(selected, spec.mark, recipe, spec, options);
       if (mutationAttempt.mutationPreview) {
         return {
           outcome: 'FOUND_AND_MARKED',
@@ -346,6 +339,8 @@ export function resolveFindCard(
             outcome: 'FOUND_AND_MARKED',
             selectedId: selected.id,
             mutationsApplied: spec.mark,
+            gateStatus: mutationAttempt.gateStatus,
+            tripwireStatus: mutationAttempt.tripwireStatus,
           }),
         };
       }
@@ -368,6 +363,8 @@ export function resolveFindCard(
             outcome: 'FOUND_BUT_REJECTED',
             selectedId: selected.id,
             rejectionReasons: mutationAttempt.rejectionReasons,
+            gateStatus: mutationAttempt.gateStatus,
+            tripwireStatus: mutationAttempt.tripwireStatus,
             createdId: creationPreview.createdId,
           }),
         };
@@ -383,6 +380,8 @@ export function resolveFindCard(
           outcome: 'HARD_FAILED',
           selectedId: selected.id,
           rejectionReasons: mutationAttempt.rejectionReasons,
+          gateStatus: mutationAttempt.gateStatus,
+          tripwireStatus: mutationAttempt.tripwireStatus,
         }),
       };
     }

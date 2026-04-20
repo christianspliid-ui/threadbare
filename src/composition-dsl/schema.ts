@@ -80,10 +80,25 @@ export interface MutationEdgeSpec {
   toNodeKey: string;
 }
 
+export interface StatedAttributeDeclaration {
+  field: string;
+  value: unknown;
+}
+
 export interface MutationSet {
   rename?: string;
   promoteClass?: 'promoted' | 'threaded';
+  setNodeClass?: NodeClass;
   addEdges?: MutationEdgeSpec[];
+  setProps?: Record<string, unknown>;
+  statedAttributes?: StatedAttributeDeclaration[];
+}
+
+export interface ResolveMutationContext {
+  respectsPromoted?: boolean;
+  ownsThreads?: string[];
+  overrideTripwire?: boolean;
+  overrideRationale?: string;
 }
 
 export interface CreationEdgeSpec {
@@ -119,6 +134,7 @@ export interface FindRenameCreateResolve {
   mark?: MutationSet;
   create: CreationSpec;
   allowCreate?: boolean;
+  mutationContext?: ResolveMutationContext;
 }
 
 export type ResolveStrategy = LiteralResolve | ProceduralResolve | FindRenameCreateResolve;
@@ -243,7 +259,24 @@ const mutationEdgeSpecSchema = z.object({
 const mutationSetSchema: z.ZodType<MutationSet> = z.object({
   rename: nonEmptyStringSchema.optional(),
   promoteClass: z.enum(['promoted', 'threaded']).optional(),
+  setNodeClass: nodeClassSchema.optional(),
   addEdges: z.array(mutationEdgeSpecSchema).optional(),
+  setProps: z.record(nonEmptyStringSchema, z.unknown()).optional(),
+  statedAttributes: z
+    .array(
+      z.object({
+        field: nonEmptyStringSchema,
+        value: z.unknown(),
+      })
+    )
+    .optional(),
+});
+
+const resolveMutationContextSchema: z.ZodType<ResolveMutationContext> = z.object({
+  respectsPromoted: z.boolean().optional(),
+  ownsThreads: z.array(nonEmptyStringSchema).optional(),
+  overrideTripwire: z.boolean().optional(),
+  overrideRationale: nonEmptyStringSchema.optional(),
 });
 
 const creationEdgeSpecSchema = z.object({
@@ -316,6 +349,7 @@ const resolveStrategySchema: z.ZodType<ResolveStrategy> = z.discriminatedUnion('
     mark: mutationSetSchema.optional(),
     create: creationSpecSchema,
     allowCreate: z.boolean().optional(),
+    mutationContext: resolveMutationContextSchema.optional(),
   }),
 ]);
 

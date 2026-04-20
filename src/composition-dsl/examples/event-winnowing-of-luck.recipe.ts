@@ -53,6 +53,7 @@ export const WINNOWING_OF_LUCK_EVENT_RECIPE: Composition = {
         mark: {
           rename: 'Tower of Measured Fortune',
           promoteClass: 'promoted',
+          statedAttributes: [{ field: 'name', value: 'Tower of Measured Fortune' }],
           addEdges: [{ edgeType: 'advises', toNodeKey: 'consortiumCouncil' }],
         },
         create: {
@@ -78,6 +79,7 @@ export const WINNOWING_OF_LUCK_EVENT_RECIPE: Composition = {
         },
         mark: {
           rename: 'Salt-Cracked Luck Stone',
+          statedAttributes: [{ field: 'name', value: 'Salt-Cracked Luck Stone' }],
           addEdges: [{ edgeType: 'housed-in', toNodeKey: 'wizardTower' }],
         },
         create: {

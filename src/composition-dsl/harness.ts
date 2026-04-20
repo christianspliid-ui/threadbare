@@ -26,6 +26,7 @@ export function formatValidationReport(report: CompositionValidationReport): str
   lines.push('');
   lines.push(`Creations preview: ${report.creations.length}`);
   lines.push(`Mutations preview: ${report.mutations.length}`);
+  lines.push(`Render promotions: ${report.renderPromotions.length}`);
   lines.push(`Warnings: ${report.warnings.length}`);
   lines.push(`Errors: ${report.errors.length}`);
   return lines.join('\n');

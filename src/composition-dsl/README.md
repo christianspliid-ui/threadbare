@@ -40,6 +40,18 @@ Tie-break order is deterministic:
 
 Filter evaluation is cached for the duration of one composition validation pass, so repeated subqueries reuse the same world-snapshot results.
 
+## Mutability Gate + Tripwire (THR-224)
+
+Mutations are validated through `mutationGate.ts` before they are accepted:
+
+- `generic` nodes are mutable.
+- `promoted` nodes require `mutationContext.respectsPromoted=true`.
+- `threaded` nodes require the node id in `mutationContext.ownsThreads`.
+
+Tripwire checks run on stated attributes (`node.statedAttributes`) and reject contradictory writes unless an explicit author override is supplied (`overrideTripwire=true` with rationale). Additive array growth is allowed.
+
+`promoteIfGeneric` is called during validation report rendering to model first player-surface promotion (`generic -> promoted`) and to persist a stated `name` attribute when available.
+
 ## Divergences / Notes
 
 - `Composition.kind` is validated as non-empty string, with the known v0 set documented in `KNOWN_COMPOSITION_KINDS`. This preserves the brief's "open set" intent while still documenting today's canonical kinds.
@@ -47,8 +59,7 @@ Filter evaluation is cached for the duration of one composition validation pass,
 
 ## Known Deferred v1 Features
 
-- Node-class mutability gate enforcement (`generic|promoted|threaded`) is intentionally not implemented in this validator pass (`TODO(THR-224)` marker in `validator.ts`).
-- Stated-attribute tripwire extraction is not implemented (`THR-224`).
+- LLM-backed stated-attribute extraction from generated prose is not implemented. v0 only protects author-declared stated attributes.
 - `find` ordering overrides (author-specified `orderBy`) are deferred.
 - Mutation operations remain limited to:
   - `rename`
