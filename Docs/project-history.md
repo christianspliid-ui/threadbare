@@ -3,6 +3,8 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ THR-233 (2026-04-20) — Checklist instantiation protocol (trial): plan doc committed; CC instantiates full DoD on claim-verified pickup, posts Linear comment persistence layer; Cowork instantiates Design Workflow Checklist on In Design pickup; 5-issue trial starts here
+
 ✅ THR-165 (2026-04-19) — Replace brittle count assertion in factionQuestAndReputation.test: replaced `expect(candidates).toHaveLength(10)` with per-tier prefix checks (ag.quest.*, ag.senior.*, ag.elite.* each `toBeGreaterThan(0)`); forward-compatible with new template additions; mirrors peer test pattern from THR-160
 
 ✅ THR-188 (2026-04-19) — Hex→actor index for phaseFamiliarityGain: new `hexActorIndex.ts` helper (`buildHexActorIndex`/`getActorsOnHex`/`hexKey`); replaces O(N_all) walk + hexDistance guard with O(N_hex) index lookup; sublocation→parent resolution; rate-limited engine_warning trace; `engine_warning` trace category + EngineWarningTrace; EncounterCacheRebuildTrace added to TraceEntry union; 11 unit tests + 4 determinism contract tests
@@ -458,3 +460,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - THR-196 split-marker skill cleanup: ✅ Complete (2026-04-20) — removed redirect-only `hexmap-developer`, `prose-resolver`, and `impediments` stub skills from both `.claude/skills/` and `.agents/skills/`.
 - THR-222 composition DSL v0: ✅ Complete (2026-04-20) — added isolated schema+validator, reference faction/event recipes, harness output helpers, and passing validator round-trip tests across multiple world-state scenarios.
 - THR-232 node-type audit: ✅ Complete (2026-04-20) — produced `Docs/audits/node-type-audit-2026-04-20.md` with full node inventory, per-type tagging/recipe/edge assessments, and follow-up gap seeds for ontology finalization.
+- THR-221 inspiration ingest scaffold: ✅ Complete (2026-04-20) — added file/directory/URL ingest CLI, idempotent content-hash persistence into CMS-backed inspiration records, deferred THR-220 tagging hook stub, and integration coverage.

@@ -1,5 +1,5 @@
 # Project Status
-> Updated 2026-04-19.
+> Updated 2026-04-20.
 ## Current Focus
 **THR-96 shipped (Lorekeepers Covenant migration — 15 templates, 13 intelligence grants, 6 seeds, 6 marks).** Merge held pending THR-134 U4. Next: THR-95 (Holy Order of Dawn — 42 templates, model:sonnet). THR-183 pending GitHub Pro (flip review Action to blocking).
 
@@ -17,6 +17,9 @@
 - **Procedural Hex Vignettes (Next):** Phases 2-5 queued.
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
+
+## Recent Completions (2026-04-20) — THR-233
+- **THR-233 — Checklist instantiation protocol (trial):** Plan doc committed (`Docs/plans/2026-04-20-checklist-instantiation-protocol.md`). Two trigger points: Cowork instantiates Design Workflow Checklist on In Design pickup; CC instantiates full DoD + action items on claim-verified pickup and posts a Linear comment as the persistence layer. 5-issue trial begins with this issue.
 
 ## Recent Completions (2026-04-19) — THR-182
 - **THR-182 — CC review replacement (heartbeat wrapper + PR-gated Action):** `scripts/review/wrapper.ts` — TypeScript process supervisor with 60s heartbeat watchdog, 600s wall-clock kill (SIGTERM→SIGKILL), structured `ReviewWrapperTrace` output written to `.cowork/review-traces/`. `scripts/review/review-client.ts` — Claude API review subprocess that emits heartbeat JSON + findings JSON. Test subprocesses (`test/clean-exit.ts`, `test/stall.ts`) for infrastructure verification. `.github/workflows/claude-review.yml` — advisory PR review Action; reads `review:required`/`review:sample` labels, defaults risky surfaces to required, posts findings comment + named check run. `review:required` and `review:sample` labels in both Linear and GitHub. Coordination protocol updated: commit trailer vocabulary (`review:ok`, `review:major-findings`, `review:skipped:<reason>`) + new labels row + Rule 8 "See also" pointer. CLAUDE.md Rule 8 section + Known Sandbox Limitations both back-point to `Docs/plans/2026-04-19-cc-review-replacement.md`. Wiring checklist updated with `ReviewWrapperTrace` + `ReviewActionTrace` entries. Wrapper exercised: clean path (3 heartbeats → review:ok) + stall path (wall-clock-timeout → review:skipped:wall-clock-timeout). tsc clean, vite build green, pre-existing test flake unrelated to this change.
