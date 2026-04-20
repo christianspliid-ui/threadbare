@@ -4,11 +4,15 @@ This folder contains The Fantasy World Simulator — a systemic god-game/rogue-l
 
 ## Cowork vs Claude Code — Read This First
 
-**If you are running in Cowork mode:** You must NOT write code or run git commands. Your job is design, research, documentation (via MCP), and implementation plans. Use **Linear** (Threadbare team) for all issue tracking — query and update issue states via the Linear MCP. When a design is complete, move the issue to **"Ready for Dev"** and add a comment with the plan doc link and action items. **Every Ready for Dev handoff must include a Claude Code coordination block** — `Suggested model` (with matching `model:haiku` / `model:sonnet` / `model:opus` label), `Parallel-safe with`, and `Mutex with` lines — see the handoff template in `Docs/plans/2026-04-13-linear-coordination-protocol.md`. **The Ready-for-Dev transition plus the handoff comment is the handoff.** Claude Code polls Linear on an hourly cycle and picks up the top Ready-for-Dev item; no Slack message, no out-of-band notification, nothing else required.
+**Three agents, two executor queues.** Cowork designs and plans. **Claude Code** and **Codex** are executor agents — both implement, both commit with `Fixes THR-XX`, both rely on the merge-to-main auto-close. They pull from separate Linear states so neither ever claims the other's work. Cowork picks which queue an issue lands in based on fit: mechanical / pattern-following work goes to **Ready for Codex**; judgment-heavy / prose / novel-system work goes to **Ready for Dev** (CC's queue). See "Choosing the executor" in `Docs/plans/2026-04-13-linear-coordination-protocol.md`.
 
-**If you are running in Claude Code:** You do the coding, testing, committing, and pushing. Check **Linear** for issues in **"Ready for Dev"** state with `assignee:null` — the filter is required; it excludes issues another agent has already claimed. Sort by priority in memory (the API rejects `orderBy:priority` at runtime, impediment #49) and **pull from the top.** **Claim before you read:** first tool call after selecting an issue is `save_issue(id, assignee: "me", state: "In Dev")`, then `get_issue(id)` to confirm the write stuck (Linear can silently drop state writes — impediment #48). Only after the claim is verified do you read the plan doc. **Read the latest comment first** — it supersedes the original handoff when an issue has been reopened. **Issues with the `Reopened` label** require reading all comments back to the original handoff before acting. **Never `save_issue(state: "Done")` from CC** — commit with `Fixes THR-XX` in the body and let the merge-to-main auto-close fire. Manual Done transitions have caused premature closes of reopened issues and bypass the merge-gated invariant that Done means shipped. **Use the model suggested by the `model:*` label** (or the `Suggested model` line in the handover) unless you have a specific reason to override. **WIP limit: 1 In Dev issue at a time, across all sessions and worktrees** — parallel work happens on *different* issues, never the same one. **Before pulling a second issue into a concurrent worktree**, check the first issue's `Parallel-safe with` and `Mutex with` lines to confirm file surfaces don't collide. Check `Docs/plans/` for design docs before starting work. See `Docs/plans/2026-04-13-linear-coordination-protocol.md` for the full protocol — the "Coordination Failure Modes — Hard Rules" section (Rules 1–8) explains why each of these is non-negotiable.
+**If you are running in Cowork mode:** You must NOT write code or run git commands. Your job is design, research, documentation (via MCP), and implementation plans. Use **Linear** (Threadbare team) for all issue tracking — query and update issue states via the Linear MCP. When a design is complete, move the issue to **Ready for Dev** (CC handoff) or **Ready for Codex** (Codex handoff) based on the work's fit, and add the corresponding handoff comment with the plan doc link and action items. **Every handoff must include a coordination block** — CC handoffs need `Suggested model` (with matching `model:haiku` / `model:sonnet` / `model:opus` label), `Parallel-safe with`, and `Mutex with` lines; Codex handoffs need `Parallel-safe with`, `Mutex with`, a `Files to touch` block, and a `Done when` checklist (no `Suggested model` — Codex's model is configured at the automation level). See the handoff templates in `Docs/plans/2026-04-13-linear-coordination-protocol.md`. **The state transition plus the handoff comment is the handoff.** Both executors poll Linear on an hourly cycle and pick up the top item from their respective queue; no Slack message, no out-of-band notification, nothing else required.
 
-**Codex is read-only.** CC must never invoke codex commands that modify code (e.g. `/codex:rescue`). The codex integration is a review tool only — review produces findings, CC or Cowork act on them. If a review stalls or produces ambiguous output, exit via `/codex:cancel` and bounce to Cowork with the partial findings, never `/codex:rescue`. See Rule 8 in the coordination protocol for the full doctrine. **The replacement review surface** (heartbeat wrapper + PR-gated GitHub Action) is documented in `Docs/plans/2026-04-19-cc-review-replacement.md`; run in-session via `npm run review:run` or invoked automatically by `.github/workflows/claude-review.yml` on PRs.
+**If you are running in Claude Code:** You do the coding, testing, committing, and pushing for judgment-heavy work. Check **Linear** for issues in **"Ready for Dev"** state with `assignee:null` — the filter is required; it excludes issues another agent has already claimed. **Never query Ready for Codex** — that queue belongs to Codex. Expanding the filter across queues defeats the separation the two-queue design exists to provide. Sort by priority in memory (the API rejects `orderBy:priority` at runtime, impediment #49) and **pull from the top.** **Claim before you read:** first tool call after selecting an issue is `save_issue(id, assignee: "me", state: "In Dev")`, then `get_issue(id)` to confirm the write stuck (Linear can silently drop state writes — impediment #48). Only after the claim is verified do you read the plan doc. **Read the latest comment first** — it supersedes the original handoff when an issue has been reopened. **Issues with the `Reopened` label** require reading all comments back to the original handoff before acting. **Never `save_issue(state: "Done")` from CC** — commit with `Fixes THR-XX` in the body and let the merge-to-main auto-close fire. Manual Done transitions have caused premature closes of reopened issues and bypass the merge-gated invariant that Done means shipped. **Use the model suggested by the `model:*` label** (or the `Suggested model` line in the handover) unless you have a specific reason to override. **WIP limit: 1 In Dev issue at a time per executor**, across all sessions and worktrees — parallel work happens on *different* issues, never the same one. **Cross-executor parallel:** if Codex has an In Dev issue, verify your candidate appears in Codex's `Parallel-safe with` and does not collide with its `Mutex with` before claiming. Check `Docs/plans/` for design docs before starting work. See `Docs/plans/2026-04-13-linear-coordination-protocol.md` for the full protocol — the "Coordination Failure Modes — Hard Rules" section (Rules 1–8) explains why each of these is non-negotiable.
+
+**If you are running in Codex:** Same discipline as CC — claim-before-read, verify-after-write, WIP=1, never `save_issue(state: "Done")`. Query **"Ready for Codex"** with `assignee:null`, never Ready for Dev. Commit with `Fixes THR-XX` in the body; the merge auto-close handles the state transition. See the "Codex Session Start", "Codex Pickup Protocol", and "Codex Closeout" sections in `Docs/plans/2026-04-13-linear-coordination-protocol.md`.
+
+**The codex *reviewer* is read-only** (distinct from Codex-the-executor above). CC must never invoke codex slash-commands that modify code (e.g. `/codex:rescue`). The `/codex:*` review integration is a review tool only — review produces findings, CC, Cowork, or Codex-the-executor act on them. If a review stalls or produces ambiguous output, exit via `/codex:cancel` and bounce to Cowork with the partial findings, never `/codex:rescue`. See Rule 8 in the coordination protocol for the full doctrine — the disambiguation note clarifies that this rule governs the `/codex:*` reviewer, not Codex-the-executor pulling from Ready for Codex. **The replacement review surface** (heartbeat wrapper + PR-gated GitHub Action) is documented in `Docs/plans/2026-04-19-cc-review-replacement.md`; run in-session via `npm run review:run` or invoked automatically by `.github/workflows/claude-review.yml` on PRs.
 
 ### Prioritization: Finish Before You Start
 
@@ -260,10 +264,12 @@ Every feature touches three pillars: **Engine** (systems, tick loop, graph), **C
 ### Design workflow checklist
 
 - [ ] **Draft** the system design — covering all three pillars (Engine, Content, UI)
+- [ ] **Draft the Brainstorm companion** alongside the plan — same pass, not retrofit. Capture considered alternatives, tensions surfaced, Vision premises invoked.
 - [ ] **Audit** against all 7 NFPs, load-bearing decisions, and rejected approaches
 - [ ] **Revise** — integrate remediations inline (not in a separate appendix)
 - [ ] **Summarize** — NFP Compliance table at the end (PASS / PASS with note per priority)
 - [ ] **Three-pillar check** — Engine section present? Content section present? UI section present? Wiring section connecting them?
+- [ ] **Vision audit** — does this plan contradict or update any Vision premise? If so, the Vision edit is part of this ticket's scope, not a follow-up.
 - [ ] **Present** the finished, compliant design to the user
 
 ### Per-system required sections (inline, not appendix)
@@ -350,9 +356,11 @@ Work is not "done" until it is deployed and documented. Do all of these automati
 
 - [ ] Read this file for orientation
 - [ ] **Check Linear for work** — query issues by state per the protocol in `Docs/plans/2026-04-13-linear-coordination-protocol.md`:
-  - **Cowork:** `list_issues state:"In Design"` (resume design), `list_issues state:"Implementation Planning"` (resume planning), `list_issues state:"Ready for Dev"` (verify handoffs), `list_issues state:"Todo"` (what's next)
-  - **Claude Code:** `list_issues state:"Ready for Dev"` (pick up handoffs), `list_issues state:"In Dev"` (resume active work)
+  - **Cowork:** `list_issues state:"In Design"` (resume design), `list_issues state:"Implementation Planning"` (resume planning), `list_issues state:"Ready for Dev"` and `list_issues state:"Ready for Codex"` (verify both executor queues), `list_issues state:"Todo"` (what's next)
+  - **Claude Code:** `list_issues state:"Ready for Dev" assignee:null` (pick up handoffs — CC queue only, never Ready for Codex), `list_issues state:"In Dev" assignee:"me"` (resume active work)
+  - **Codex:** `list_issues state:"Ready for Codex" assignee:null` (pick up handoffs — Codex queue only, never Ready for Dev), `list_issues state:"In Dev" assignee:"me"` (resume active work)
 - [ ] Read Obsidian `Index.md` via MCP → follow links to the relevant system. Index.md is the comprehensive catalog — use it as the LLM's navigation system.
+- [ ] **For design work**, read `Vision/` via Obsidian MCP before drafting plans.
 - [ ] **Check Linear Projects for milestone context** — `list_projects` to see which milestones are in Now/Discovery/Research. Issues belong to projects; projects show the big picture.
 - [ ] Check `.planning/ROADMAP.md` for legacy milestone overview
 - [ ] Read relevant design doc in `Docs/plans/` before writing code
@@ -360,6 +368,21 @@ Work is not "done" until it is deployed and documented. Do all of these automati
 - [ ] After completing work, follow the **Definition of Done** above
 - [ ] **Update Linear** — move issue to appropriate state, add completion comment
 - [ ] **Update vault log** — Append to `log.md` via Obsidian MCP what was changed in this session
+
+## Skill Tree Layout
+
+The repo has two skill directories; they serve different agents and do NOT have precedence between them — they are audience-separated.
+
+| Directory | Read by | Canonical for |
+|-----------|---------|---------------|
+| `.claude/skills/` | Claude Code (hardcoded path in the CC binary) | Any skill CC needs to invoke |
+| `.agents/skills/` | Non-CC agents: local Cowork (when running via local CLI), Gemini CLI, future agent runtimes. **Invisible to CC.** | Skills CC does not need |
+
+**Shared skills (used by both audiences) exist in both trees.** Drift between copies is prevented by a pre-commit hook (planned — see Continuous Improvement project) that syncs `.claude/skills/` → `.agents/skills/` for any skill name present in both. `.claude/` is canonical for shared skills — edit there, the hook mirrors to `.agents/`.
+
+**Skills that only exist in `.agents/skills/`** are Cowork/Gemini-only by design (currently: `content-catalog-manager`, `defuddle`, `json-canvas`, `obsidian-bases`, `obsidian-cli`, `obsidian-markdown`). CC cannot load these — do not route CC to them.
+
+**When adding a new skill:** decide its audience first. CC-needed → `.claude/skills/`. Cowork/Gemini-only → `.agents/skills/`. Both → `.claude/skills/` and let the hook mirror.
 
 ## Domain Skills
 
@@ -370,7 +393,7 @@ Context for specific problem types lives in on-demand skills. **Always load `sta
 | Domain | Skill | When to load |
 |--------|-------|-------------|
 | **Foundational (load first)** | `state-of-game-design` | Always — before any other domain skill. Cosmology, reaches, spheres, action verbs, prerequisites, architectural decisions. |
-| **Game design direction** | `game-design-direction` | During In Design phase for player-facing features. Core loop, encounter principles, emotional architecture, design quality gate. Load alongside `state-of-game-design`. |
+| **Game design direction** | `game-design-direction` | During In Design phase for player-facing features. Loads `Vision/` (north-star, core-loop, non-negotiables, tensions), prompts Brainstorm-companion drafting alongside the plan, runs a Vision audit at plan finalization. Load alongside `state-of-game-design`. |
 | **Systemic wiring guide** | `Docs/plans/2026-04-16-systemic-wiring-guide.md` | **Before any content authoring.** The 7 engine capabilities content authors must know: enrichment placeholders, encounter seeding, hidden marks, reputation flow, graph ops, intelligence, divine intervention. Read this before encounter-pipeline, attachment-pipeline, or prose-content-systems. If you don't know what the engine can do, you'll write hardcoded fiction. |
 | Engine & code architecture | `engine-architecture` | Writing engine modules, tick loop work, tracing, resolution, PRNG |
 | Encounter & actor systems | `encounter-actor-systems` | Analysing, debugging, tuning encounter pipeline, actor capability, resolution, awareness, scoring. Also maintains `encounters-agents-reference.html` and `tick-cycle-reference.html`. |
