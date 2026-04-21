@@ -647,6 +647,14 @@ export function TerrainTextureLab() {
                   />
                   Animate preview
                 </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
+                  <input
+                    type="checkbox"
+                    checked={viewSettings.useImageTextures}
+                    onChange={(event) => updateViewSettings({ useImageTextures: event.target.checked })}
+                  />
+                  Use Meshy image textures
+                </label>
               </div>
             </Card.Body>
           </Card>

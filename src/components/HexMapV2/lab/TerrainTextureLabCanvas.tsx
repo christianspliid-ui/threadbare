@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useCallback } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type {
@@ -338,6 +338,8 @@ export function TerrainTextureLabCanvas({
   const resolvedTemplateRef = useRef<Map<string, THREE.Group>>(new Map());
   const raycasterRef = useRef(new THREE.Raycaster());
   const pointerRef = useRef(new THREE.Vector2());
+  const terrainTextureArrayRef = useRef<THREE.DataArrayTexture | null>(null);
+  const textureLoadedRef = useRef(false);
 
   const sceneBounds = useMemo(() => {
     const centers = previewHexes.map(hex => getTerrainTextureLabHexCenter(hex.col, hex.row, TERRAIN_TEXTURE_LAB_CONSTANTS.HEX_RADIUS));
@@ -566,6 +568,9 @@ export function TerrainTextureLabCanvas({
       material.dispose();
       renderer.dispose();
       scene.clear();
+      terrainTextureArrayRef.current?.dispose();
+      terrainTextureArrayRef.current = null;
+      textureLoadedRef.current = false;
       sceneRef.current = null;
       loaderRef.current = null;
     };
@@ -657,6 +662,87 @@ export function TerrainTextureLabCanvas({
       TERRAIN_TEXTURE_LAB_CONSTANTS.MODEL_LAYER_Z + 1.25,
     );
   }, [clickTargets, selectedClickTargetId]);
+
+  // Build a DataArrayTexture from 6 terrain PNG files (one per recipe index).
+  // Layers: 0=grassland, 1=forest, 2=mountain, 3=dunes, 4=water, 5=swamp
+  const loadTerrainTextureArray = useCallback(async (): Promise<THREE.DataArrayTexture | null> => {
+    const names = [
+      'terrain-grassland',
+      'terrain-forest',
+      'terrain-mountain',
+      'terrain-dunes',
+      'terrain-water',
+      'terrain-swamp',
+    ];
+
+    try {
+      const images = await Promise.all(
+        names.map(name => new Promise<HTMLImageElement>((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = () => reject(new Error(`Failed to load /textures/terrain/${name}.png`));
+          img.src = `/textures/terrain/${name}.png`;
+        })),
+      );
+
+      const width = images[0].naturalWidth;
+      const height = images[0].naturalHeight;
+      const data = new Uint8Array(width * height * 4 * images.length);
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return null;
+
+      for (let i = 0; i < images.length; i++) {
+        ctx.clearRect(0, 0, width, height);
+        ctx.drawImage(images[i], 0, 0);
+        const imageData = ctx.getImageData(0, 0, width, height);
+        data.set(imageData.data, i * width * height * 4);
+      }
+
+      const tex = new THREE.DataArrayTexture(data, width, height, images.length);
+      tex.format = THREE.RGBAFormat;
+      tex.type = THREE.UnsignedByteType;
+      tex.minFilter = THREE.LinearMipMapLinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      tex.generateMipmaps = true;
+      tex.needsUpdate = true;
+      return tex;
+    } catch (err) {
+      console.warn('[TerrainTextureLab] Could not load terrain texture array:', err);
+      return null;
+    }
+  }, []);
+
+  // Toggle image-texture mode: load on first enable, swap uniform.
+  useEffect(() => {
+    const sceneRefs = sceneRef.current;
+    if (!sceneRefs) return;
+
+    if (!viewSettings.useImageTextures) {
+      sceneRefs.material.uniforms.uUseImageTextures.value = false;
+      return;
+    }
+
+    // Already loaded — just flip the flag.
+    if (textureLoadedRef.current && terrainTextureArrayRef.current) {
+      sceneRefs.material.uniforms.uTerrainTextures.value = terrainTextureArrayRef.current;
+      sceneRefs.material.uniforms.uUseImageTextures.value = true;
+      return;
+    }
+
+    // First enable: load textures then activate.
+    void loadTerrainTextureArray().then(tex => {
+      if (!tex) return;
+      terrainTextureArrayRef.current = tex;
+      textureLoadedRef.current = true;
+      const refs = sceneRef.current;
+      if (!refs) return;
+      refs.material.uniforms.uTerrainTextures.value = tex;
+      refs.material.uniforms.uUseImageTextures.value = true;
+    });
+  }, [viewSettings.useImageTextures, loadTerrainTextureArray]);
 
   useEffect(() => {
     const sceneRefs = sceneRef.current;

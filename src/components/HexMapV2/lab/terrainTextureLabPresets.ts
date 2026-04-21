@@ -108,6 +108,7 @@ export interface TerrainTextureLabViewSettings {
   tiltDegrees: number;
   rotationDegrees: number;
   zoom: number;
+  useImageTextures: boolean;
 }
 
 export type TerrainTextureLabVignetteScope = 'selected_forest' | 'all_forests' | 'selected_mountain' | 'all_mountains';
@@ -491,6 +492,7 @@ export function getDefaultTerrainTextureLabViewSettings(): TerrainTextureLabView
     tiltDegrees: TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_CAMERA_TILT_DEGREES,
     rotationDegrees: TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_CAMERA_ROTATION_DEGREES,
     zoom: TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_CAMERA_ZOOM,
+    useImageTextures: false,
   };
 }
 
@@ -551,6 +553,8 @@ export function parseTerrainTextureLabViewSettings(raw: string): TerrainTextureL
       tiltDegrees: parsed.tiltDegrees,
       rotationDegrees: parsed.rotationDegrees,
       zoom: parsed.zoom,
+      // Optional; defaults to false so old saved data still loads cleanly.
+      useImageTextures: parsed.useImageTextures === true,
     };
   } catch {
     return null;
