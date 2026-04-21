@@ -13,3 +13,4 @@
 - **ops** | no ready-for-codex work this cycle (2026-04-21T09:54:59.9483043+02:00)
 - **ops** | no ready-for-codex work this cycle (2026-04-21T10.54.37+02:00)
 - **work** | THR-235 shipped: added pull-work pickup skill and CC startup routing to /pull-work.
+- **work** | THR-236 shipped: removed deprecated session-handoff skill mirrors; closeout remains Linear-only.
