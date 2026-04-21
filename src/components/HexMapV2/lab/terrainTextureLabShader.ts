@@ -6,26 +6,25 @@ export const TERRAIN_TEXTURE_LAB_SHADER_CONSTANTS = {
   BACKGROUND_COLOR: '#0a0a0e',
 } as const;
 
-// GLSL3 vertex shader — attribute → in, varying → out
 export const TERRAIN_TEXTURE_LAB_VERTEX_SHADER = /* glsl */ `
-  in vec3 aBaseColor;
-  in vec3 aHighlightColor;
-  in vec3 aShadowColor;
-  in vec4 aNoiseParams1;
-  in vec4 aNoiseParams2;
-  in float aAnimationSpeed;
-  in float aRecipe;
-  in float aInstanceSeed;
+  attribute vec3 aBaseColor;
+  attribute vec3 aHighlightColor;
+  attribute vec3 aShadowColor;
+  attribute vec4 aNoiseParams1;
+  attribute vec4 aNoiseParams2;
+  attribute float aAnimationSpeed;
+  attribute float aRecipe;
+  attribute float aInstanceSeed;
 
-  out vec2 vUv;
-  out vec3 vBaseColor;
-  out vec3 vHighlightColor;
-  out vec3 vShadowColor;
-  out vec4 vNoiseParams1;
-  out vec4 vNoiseParams2;
-  out float vAnimationSpeed;
-  out float vRecipe;
-  out float vInstanceSeed;
+  varying vec2 vUv;
+  varying vec3 vBaseColor;
+  varying vec3 vHighlightColor;
+  varying vec3 vShadowColor;
+  varying vec4 vNoiseParams1;
+  varying vec4 vNoiseParams2;
+  varying float vAnimationSpeed;
+  varying float vRecipe;
+  varying float vInstanceSeed;
 
   void main() {
     vUv = uv;
@@ -43,25 +42,19 @@ export const TERRAIN_TEXTURE_LAB_VERTEX_SHADER = /* glsl */ `
   }
 `;
 
-// GLSL3 fragment shader — varying → in, gl_FragColor → fragColor out
-// Supports both procedural noise (default) and sampler2DArray image textures (uUseImageTextures).
 export const TERRAIN_TEXTURE_LAB_FRAGMENT_SHADER = /* glsl */ `
   uniform float uTime;
   uniform float uGlobalSeed;
-  uniform sampler2DArray uTerrainTextures;
-  uniform bool uUseImageTextures;
 
-  in vec2 vUv;
-  in vec3 vBaseColor;
-  in vec3 vHighlightColor;
-  in vec3 vShadowColor;
-  in vec4 vNoiseParams1;
-  in vec4 vNoiseParams2;
-  in float vAnimationSpeed;
-  in float vRecipe;
-  in float vInstanceSeed;
-
-  out vec4 fragColor;
+  varying vec2 vUv;
+  varying vec3 vBaseColor;
+  varying vec3 vHighlightColor;
+  varying vec3 vShadowColor;
+  varying vec4 vNoiseParams1;
+  varying vec4 vNoiseParams2;
+  varying float vAnimationSpeed;
+  varying float vRecipe;
+  varying float vInstanceSeed;
 
   float hash21(vec2 p) {
     p = fract(p * vec2(123.34, 456.21));
@@ -195,15 +188,6 @@ export const TERRAIN_TEXTURE_LAB_FRAGMENT_SHADER = /* glsl */ `
   }
 
   void main() {
-    // Image-texture path: sample from the DataArrayTexture using recipe index as layer.
-    // DataArrayTexture pixel data is bottom-to-top (WebGL convention), so flip Y.
-    if (uUseImageTextures) {
-      vec2 flippedUv = vec2(vUv.x, 1.0 - vUv.y);
-      fragColor = texture(uTerrainTextures, vec3(flippedUv, vRecipe));
-      return;
-    }
-
-    // Procedural path (default).
     float warpScale = max(vNoiseParams1.z, 0.001);
     float warpStrength = max(vNoiseParams1.w, 0.0);
     float contrast = max(vNoiseParams2.y, 0.01);
@@ -223,18 +207,15 @@ export const TERRAIN_TEXTURE_LAB_FRAGMENT_SHADER = /* glsl */ `
     float vignette = smoothstep(0.58, 0.08, length(centeredUv));
     color = mix(color * 0.82, color * 1.05, vignette);
 
-    fragColor = vec4(color, 1.0);
+    gl_FragColor = vec4(color, 1.0);
   }
 `;
 
 export function createTerrainTextureLabMaterial(): THREE.ShaderMaterial {
   return new THREE.ShaderMaterial({
-    glslVersion: THREE.GLSL3,
     uniforms: {
       uTime: { value: 0 },
       uGlobalSeed: { value: 42 },
-      uTerrainTextures: { value: null },
-      uUseImageTextures: { value: false },
     },
     vertexShader: TERRAIN_TEXTURE_LAB_VERTEX_SHADER,
     fragmentShader: TERRAIN_TEXTURE_LAB_FRAGMENT_SHADER,

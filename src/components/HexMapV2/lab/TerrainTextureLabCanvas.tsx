@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useCallback } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type {
@@ -51,6 +51,7 @@ interface SceneRefs {
   mesh: THREE.InstancedMesh;
   material: THREE.ShaderMaterial;
   modelGroup: THREE.Group;
+  terrainGlbGroup: THREE.Group;
   zoneGroup: THREE.Group;
   slotAnchorGroup: THREE.Group;
   fillerDotGroup: THREE.Group;
@@ -65,6 +66,18 @@ const RECIPE_INDEX: Record<TerrainTextureLabConfig['recipe'], number> = {
   dunes: 3,
   ripples: 4,
   marsh: 5,
+};
+
+// Map each preview terrain key to a Meshy-generated GLB hex tile.
+// Each GLB has geometry + UV unwrap + baked PBR textures aligned, so we use them directly.
+const TERRAIN_HEXTILE_GLB: Record<LabTerrainKey, string> = {
+  grassland: '/models/hextile-grassland.glb',
+  temperate_forest: '/models/hextile-forest.glb',
+  mountains: '/models/hextile-mountain.glb',
+  mountain_plateau: '/models/hextile-mountain.glb',
+  sand_dunes: '/models/hextile-dunes.glb',
+  coast: '/models/hextile-water.glb',
+  swamp: '/models/hextile-swamp.glb',
 };
 
 function buildHexGeometry(size: number): THREE.BufferGeometry {
@@ -338,8 +351,8 @@ export function TerrainTextureLabCanvas({
   const resolvedTemplateRef = useRef<Map<string, THREE.Group>>(new Map());
   const raycasterRef = useRef(new THREE.Raycaster());
   const pointerRef = useRef(new THREE.Vector2());
-  const terrainTextureArrayRef = useRef<THREE.DataArrayTexture | null>(null);
-  const textureLoadedRef = useRef(false);
+  const terrainTileTemplatePromiseRef = useRef<Map<LabTerrainKey, Promise<THREE.Group>>>(new Map());
+  const terrainTileTemplateRef = useRef<Map<LabTerrainKey, THREE.Group>>(new Map());
 
   const sceneBounds = useMemo(() => {
     const centers = previewHexes.map(hex => getTerrainTextureLabHexCenter(hex.col, hex.row, TERRAIN_TEXTURE_LAB_CONSTANTS.HEX_RADIUS));
@@ -436,6 +449,11 @@ export function TerrainTextureLabCanvas({
     modelGroup.name = 'TerrainTextureLabModels';
     scene.add(modelGroup);
 
+    const terrainGlbGroup = new THREE.Group();
+    terrainGlbGroup.name = 'TerrainTextureLabTerrainGlbs';
+    terrainGlbGroup.visible = false;
+    scene.add(terrainGlbGroup);
+
     const zoneGroup = new THREE.Group();
     zoneGroup.name = 'TerrainTextureLabZones';
     scene.add(zoneGroup);
@@ -469,6 +487,7 @@ export function TerrainTextureLabCanvas({
       mesh,
       material,
       modelGroup,
+      terrainGlbGroup,
       zoneGroup,
       slotAnchorGroup,
       fillerDotGroup,
@@ -561,16 +580,17 @@ export function TerrainTextureLabCanvas({
       disposeLineLoop(selectionOutline);
       disposeLineLoop(landmarkSelectionRing);
       clearGroupChildren(modelGroup);
+      clearGroupChildren(terrainGlbGroup);
       resolvedTemplateRef.current.forEach(template => disposeObjectResources(template));
       resolvedTemplateRef.current.clear();
       templateCacheRef.current.clear();
+      terrainTileTemplateRef.current.forEach(template => disposeObjectResources(template));
+      terrainTileTemplateRef.current.clear();
+      terrainTileTemplatePromiseRef.current.clear();
       geometry.dispose();
       material.dispose();
       renderer.dispose();
       scene.clear();
-      terrainTextureArrayRef.current?.dispose();
-      terrainTextureArrayRef.current = null;
-      textureLoadedRef.current = false;
       sceneRef.current = null;
       loaderRef.current = null;
     };
@@ -663,86 +683,114 @@ export function TerrainTextureLabCanvas({
     );
   }, [clickTargets, selectedClickTargetId]);
 
-  // Build a DataArrayTexture from 6 terrain PNG files (one per recipe index).
-  // Layers: 0=grassland, 1=forest, 2=mountain, 3=dunes, 4=water, 5=swamp
-  const loadTerrainTextureArray = useCallback(async (): Promise<THREE.DataArrayTexture | null> => {
-    const names = [
-      'terrain-grassland',
-      'terrain-forest',
-      'terrain-mountain',
-      'terrain-dunes',
-      'terrain-water',
-      'terrain-swamp',
-    ];
-
-    try {
-      const images = await Promise.all(
-        names.map(name => new Promise<HTMLImageElement>((resolve, reject) => {
-          const img = new Image();
-          img.onload = () => resolve(img);
-          img.onerror = () => reject(new Error(`Failed to load /textures/terrain/${name}.png`));
-          img.src = `/textures/terrain/${name}.png`;
-        })),
-      );
-
-      const width = images[0].naturalWidth;
-      const height = images[0].naturalHeight;
-      const data = new Uint8Array(width * height * 4 * images.length);
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return null;
-
-      for (let i = 0; i < images.length; i++) {
-        ctx.clearRect(0, 0, width, height);
-        ctx.drawImage(images[i], 0, 0);
-        const imageData = ctx.getImageData(0, 0, width, height);
-        data.set(imageData.data, i * width * height * 4);
-      }
-
-      const tex = new THREE.DataArrayTexture(data, width, height, images.length);
-      tex.format = THREE.RGBAFormat;
-      tex.type = THREE.UnsignedByteType;
-      tex.minFilter = THREE.LinearMipMapLinearFilter;
-      tex.magFilter = THREE.LinearFilter;
-      tex.generateMipmaps = true;
-      tex.needsUpdate = true;
-      return tex;
-    } catch (err) {
-      console.warn('[TerrainTextureLab] Could not load terrain texture array:', err);
-      return null;
-    }
-  }, []);
-
-  // Toggle image-texture mode: load on first enable, swap uniform.
+  // Toggle between procedural shader hexes and Meshy-generated textured GLB hex tiles.
+  // Each GLB is a complete hex tile with geometry + UV + baked PBR material, placed
+  // at the corresponding preview hex center. The procedural InstancedMesh is hidden
+  // while the GLB layer is visible so we don't see two hexes stacked.
   useEffect(() => {
     const sceneRefs = sceneRef.current;
-    if (!sceneRefs) return;
+    const loader = loaderRef.current;
+    if (!sceneRefs || !loader) return;
 
     if (!viewSettings.useImageTextures) {
-      sceneRefs.material.uniforms.uUseImageTextures.value = false;
+      sceneRefs.mesh.visible = true;
+      sceneRefs.terrainGlbGroup.visible = false;
       return;
     }
 
-    // Already loaded — just flip the flag.
-    if (textureLoadedRef.current && terrainTextureArrayRef.current) {
-      sceneRefs.material.uniforms.uTerrainTextures.value = terrainTextureArrayRef.current;
-      sceneRefs.material.uniforms.uUseImageTextures.value = true;
-      return;
+    sceneRefs.mesh.visible = false;
+    sceneRefs.terrainGlbGroup.visible = true;
+
+    let cancelled = false;
+    clearGroupChildren(sceneRefs.terrainGlbGroup);
+
+    async function loadTerrainTile(terrainKey: LabTerrainKey): Promise<THREE.Group> {
+      const cached = terrainTileTemplatePromiseRef.current.get(terrainKey);
+      if (cached) return cached;
+
+      const url = TERRAIN_HEXTILE_GLB[terrainKey];
+      const promise = loader.loadAsync(url).then((gltf) => {
+        // GLB comes in with PBR MeshStandardMaterial — our scene has no lights, so
+        // convert to MeshBasicMaterial (unlit) while preserving the baked base-color
+        // texture. The retexture output already has "remove_lighting: true" baked in,
+        // so unlit shading is the correct presentation.
+        const materialCache = new Map<THREE.Material, THREE.MeshBasicMaterial>();
+        gltf.scene.traverse((child) => {
+          if (!(child instanceof THREE.Mesh)) return;
+          const original = Array.isArray(child.material) ? child.material[0] : child.material;
+          let basic = materialCache.get(original);
+          if (!basic) {
+            const baseColor = original instanceof THREE.MeshStandardMaterial || original instanceof THREE.MeshBasicMaterial
+              ? original.color.clone()
+              : new THREE.Color('#ffffff');
+            const baseMap = original instanceof THREE.MeshStandardMaterial || original instanceof THREE.MeshBasicMaterial
+              ? original.map
+              : null;
+            basic = new THREE.MeshBasicMaterial({
+              color: baseColor,
+              map: baseMap,
+              side: THREE.DoubleSide,
+            });
+            materialCache.set(original, basic);
+          }
+          child.material = basic;
+          child.castShadow = false;
+          child.receiveShadow = false;
+        });
+
+        // Normalize the tile so it fits a single hex cell (flat on z=0, radius = HEX_RADIUS).
+        const bounds = new THREE.Box3().setFromObject(gltf.scene);
+        const size = bounds.getSize(new THREE.Vector3());
+        const center = bounds.getCenter(new THREE.Vector3());
+        const footprintRadius = Math.max(size.x, size.y) * 0.5;
+        const autoScale = footprintRadius > 0
+          ? TERRAIN_TEXTURE_LAB_CONSTANTS.HEX_RADIUS / footprintRadius
+          : 1;
+
+        gltf.scene.position.x -= center.x * autoScale;
+        gltf.scene.position.y -= center.y * autoScale;
+        gltf.scene.position.z -= bounds.min.z * autoScale;
+        gltf.scene.scale.setScalar(autoScale);
+
+        terrainTileTemplateRef.current.set(terrainKey, gltf.scene);
+        return gltf.scene;
+      });
+
+      terrainTileTemplatePromiseRef.current.set(terrainKey, promise);
+      return promise;
     }
 
-    // First enable: load textures then activate.
-    void loadTerrainTextureArray().then(tex => {
-      if (!tex) return;
-      terrainTextureArrayRef.current = tex;
-      textureLoadedRef.current = true;
-      const refs = sceneRef.current;
-      if (!refs) return;
-      refs.material.uniforms.uTerrainTextures.value = tex;
-      refs.material.uniforms.uUseImageTextures.value = true;
-    });
-  }, [viewSettings.useImageTextures, loadTerrainTextureArray]);
+    async function placeTerrainTiles() {
+      for (const previewHex of previewHexes) {
+        try {
+          const template = await loadTerrainTile(previewHex.terrainKey);
+          if (cancelled) return;
+          const clone = template.clone(true);
+          const hexCenter = getTerrainTextureLabHexCenter(
+            previewHex.col,
+            previewHex.row,
+            TERRAIN_TEXTURE_LAB_CONSTANTS.HEX_RADIUS,
+          );
+          // Apply the same normalization offset already baked into template.position.
+          clone.position.set(
+            hexCenter.x + template.position.x,
+            hexCenter.y + template.position.y,
+            template.position.z,
+          );
+          clone.scale.copy(template.scale);
+          sceneRefs.terrainGlbGroup.add(clone);
+        } catch (error) {
+          console.warn(`[TerrainTextureLab] Failed to load hextile ${TERRAIN_HEXTILE_GLB[previewHex.terrainKey]}:`, error);
+        }
+      }
+    }
+
+    void placeTerrainTiles();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [viewSettings.useImageTextures, previewHexes]);
 
   useEffect(() => {
     const sceneRefs = sceneRef.current;
