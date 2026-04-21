@@ -409,7 +409,7 @@ Context for specific problem types lives in on-demand skills. **Always load `sta
 | Hex map — quick reference | `hexmap-renderer` | Quick reference for settled renderer decisions and patterns. Lighter than `hexmap-core`. |
 | Art direction & visual style | `art-direction` | Hex tiles, prompt construction, STYLE.md, Threadbare aesthetic |
 | Blender → HexMap pipeline | `blender-to-hexmap` | Building 3D models in Blender MCP and importing GLB into HexMapV2. Palette, merge, bake rotation, export, Three.js wiring. |
-| Creative fiction writing | `cw-*` (platform) | `cw-brainstorming` for story ideas, `cw-prose-writing` for narrative fiction drafts, `cw-official-docs` for lore wikis, `cw-story-critique` for review. Use *instead of* prose skills only for pure narrative fiction unrelated to the game engine. |
+| Creative fiction writing | `anthropic-skills:cw-*` *(platform — not in `.claude/skills/`)* | `anthropic-skills:cw-brainstorming` for story ideas, `anthropic-skills:cw-prose-writing` for narrative fiction drafts, `anthropic-skills:cw-official-docs` for lore wikis, `anthropic-skills:cw-story-critique` for review. Use *instead of* prose skills only for pure narrative fiction unrelated to the game engine. |
 | Post-implementation docs | `gamedocumenter` | Obsidian/changelog/backlog updates after completing work |
 | Vault — ingest sources | `vault-ingest` | Compile raw sources into wiki pages. `/kb-ingest` |
 | Vault — query knowledge | `vault-query` | Ask questions against the vault. `/kb-query <question>` |
@@ -429,7 +429,7 @@ Two skills form a feedback loop:
 1. **`impediment-reporter`** — Every agent logs friction as it happens → `Docs/impediments.md`
 2. **`retrospective`** — Periodically analyze the log, implement quick wins, backlog bigger fixes → `Docs/retrospectives/`
 
-Repetitive workflows → propose a skill. Use `skill-creator` to build and eval 
+Repetitive workflows → propose a skill. Use `anthropic-skills:skill-creator` to build and eval 
 
 
 # Codesight — Codebase Intelligence
