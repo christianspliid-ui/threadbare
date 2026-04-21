@@ -1518,6 +1518,32 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     });
   }, [fogDisabled]);
 
+  // ── Debug bridge: scene snapshot + viewport/hex conversion ────────────────
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+
+    window.__DEBUG._registerSceneSnapshot(() => (
+      hexMapRef.current?.snapshotScene() ?? {
+        hexCount: 0,
+        agentsVisible: 0,
+        locationsVisible: 0,
+        armiesVisible: 0,
+        battlesVisible: 0,
+        siegesVisible: 0,
+        threadLines: 0,
+        activityIcons: 0,
+        fogEnabled: !fogDisabled,
+        layersActive: [],
+      }
+    ));
+    window.__DEBUG._registerViewportForHex((col: number, row: number) =>
+      hexMapRef.current?.getViewportForHex(col, row) ?? null
+    );
+    window.__DEBUG._registerHexAtViewport((x: number, y: number) =>
+      hexMapRef.current?.getHexAtViewport(x, y) ?? null
+    );
+  }, [fogDisabled, hexMapRef]);
+
   // ── Debug bridge: omniscience toggle ─────────────────────────────────────
   useEffect(() => {
     if (!import.meta.env.DEV || !window.__DEBUG) return;

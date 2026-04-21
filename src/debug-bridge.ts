@@ -6,6 +6,38 @@
  * by Vite, so the entire module becomes dead code in prod builds.
  */
 if (import.meta.env.DEV) {
+  interface SceneSnapshot {
+    hexCount: number;
+    agentsVisible: number;
+    locationsVisible: number;
+    armiesVisible: number;
+    battlesVisible: number;
+    siegesVisible: number;
+    threadLines: number;
+    activityIcons: number;
+    fogEnabled: boolean;
+    layersActive: string[];
+  }
+
+  interface ViewportHexProjection {
+    x: number;
+    y: number;
+    visible: boolean;
+  }
+
+  const getEmptySceneSnapshot = (): SceneSnapshot => ({
+    hexCount: 0,
+    agentsVisible: 0,
+    locationsVisible: 0,
+    armiesVisible: 0,
+    battlesVisible: 0,
+    siegesVisible: 0,
+    threadLines: 0,
+    activityIcons: 0,
+    fogEnabled: false,
+    layersActive: [],
+  });
+
   // React components register their debug-panel toggle here
   let _debugPanelToggle: ((open?: boolean) => void) | null = null;
   // GameView registers this to zoom + select an agent by id/name
@@ -26,6 +58,12 @@ if (import.meta.env.DEV) {
   let _encounterBridge: Record<string, (...args: unknown[]) => unknown> | null = null;
   // GameView registers its fog toggle callback here
   let _fogToggle: ((enabled?: boolean) => boolean) | null = null;
+  // GameView registers scene and viewport projection callbacks here
+  let _sceneSnapshot: (() => SceneSnapshot) | null = null;
+  let _viewportForHex: ((col: number, row: number) => ViewportHexProjection | null) | null = null;
+  let _hexAtViewport: ((x: number, y: number) => { col: number; row: number } | null) | null = null;
+  // GameView registers its omniscience toggle callback here
+  let _omniscienceToggle: ((enabled?: boolean) => boolean) | null = null;
   // AscendantBar debug: GameView registers a callback to set ascendant quintessence
   let _setQuintessenceCb: ((ratio: number) => void) | null = null;
 
@@ -55,6 +93,19 @@ if (import.meta.env.DEV) {
     toggleFog: () => _fogToggle?.() ?? false,
     setFog: (enabled: boolean) => { _fogToggle?.(enabled); },
     _registerFogToggle: (fn: (enabled?: boolean) => boolean) => { _fogToggle = fn; },
+
+    // ── Scene snapshot + coordinate conversion for interface playtests ───────
+    snapshotScene: async () => _sceneSnapshot?.() ?? getEmptySceneSnapshot(),
+    getViewportForHex: (col: number, row: number) => _viewportForHex?.(col, row) ?? null,
+    getHexAtViewport: (x: number, y: number) => _hexAtViewport?.(x, y) ?? null,
+    _registerSceneSnapshot: (fn: () => SceneSnapshot) => { _sceneSnapshot = fn; },
+    _registerViewportForHex: (fn: (col: number, row: number) => ViewportHexProjection | null) => { _viewportForHex = fn; },
+    _registerHexAtViewport: (fn: (x: number, y: number) => { col: number; row: number } | null) => { _hexAtViewport = fn; },
+
+    // ── Omniscience mode: bypass familiarity gating on agent character sheets ──
+    toggleOmniscience: () => _omniscienceToggle?.() ?? false,
+    setOmniscience: (enabled: boolean) => { _omniscienceToggle?.(enabled); },
+    _registerOmniscienceToggle: (fn: (enabled?: boolean) => boolean) => { _omniscienceToggle = fn; },
 
     // ── Ascendant Bar: quintessence debug helpers (THR-184) ───────────────
     setQuintessence: (ratio: number) => {

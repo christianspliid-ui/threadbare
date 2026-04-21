@@ -8,3 +8,4 @@
 - **ops** | no ready-for-codex work this cycle (2026-04-20T23:03:59.2814928+02:00)
 - **ops** | no ready-for-codex work this cycle (2026-04-21T00:03:07.6283304+02:00)
 - **work** | THR-192 shipped: husky pre-commit shared-skill drift guard + canonical mirror normalization.
+- **work** | THR-207 shipped: __DEBUG scene snapshot + viewport/hex coordinate bridge for interface playtests.
