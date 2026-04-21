@@ -10,3 +10,6 @@
 - **work** | THR-192 shipped: husky pre-commit shared-skill drift guard + canonical mirror normalization.
 - **work** | THR-207 shipped: __DEBUG scene snapshot + viewport/hex coordinate bridge for interface playtests.
 - **work** | THR-208 shipped: __DEBUG open-modals/UI-state/event-window assertions wired + tested.
+- **ops** | no ready-for-codex work this cycle (2026-04-21T09:54:59.9483043+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-21T10.54.37+02:00)
+- **work** | THR-235 shipped: added pull-work pickup skill and CC startup routing to /pull-work.
