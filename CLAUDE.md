@@ -378,7 +378,7 @@ The repo has two skill directories; they serve different agents and do NOT have 
 | `.claude/skills/` | Claude Code (hardcoded path in the CC binary) | Any skill CC needs to invoke |
 | `.agents/skills/` | Non-CC agents: local Cowork (when running via local CLI), Gemini CLI, future agent runtimes. **Invisible to CC.** | Skills CC does not need |
 
-**Shared skills (used by both audiences) exist in both trees.** Drift between copies is prevented by a pre-commit hook (planned — see Continuous Improvement project) that syncs `.claude/skills/` → `.agents/skills/` for any skill name present in both. `.claude/` is canonical for shared skills — edit there, the hook mirrors to `.agents/`.
+**Shared skills (used by both audiences) exist in both trees.** Drift between copies is enforced by the THR-192 pre-commit hook that checks `.claude/skills/` ↔ `.agents/skills/` for any skill name present in both. `.claude/` is canonical for shared skills — edit there, then mirror `.agents/` by running `npm run check:skill-sync:sync`.
 
 **Skills that only exist in `.agents/skills/`** are Cowork/Gemini-only by design (currently: `content-catalog-manager`, `defuddle`, `json-canvas`, `obsidian-bases`, `obsidian-cli`, `obsidian-markdown`). CC cannot load these — do not route CC to them.
 

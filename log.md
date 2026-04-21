@@ -4,3 +4,7 @@
 - **work** | THR-224 shipped: composition DSL mutability gate + stated-attribute tripwire + render-triggered promotion wiring.
 - **work** | THR-229 shipped: documented pacing-system map + event integration hooks (THR-225 precursor).
 - **work** | THR-197 shipped: removed duplicate root change-spec and moved undated CLAUDE/skills instructions into Docs/plans.
+- **ops** | no ready-for-codex work this cycle (2026-04-20T22:43:08.8869979+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-20T23:03:59.2814928+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-21T00:03:07.6283304+02:00)
+- **work** | THR-192 shipped: husky pre-commit shared-skill drift guard + canonical mirror normalization.

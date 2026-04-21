@@ -12,6 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:regression": "vitest run --passWithNoTests \"regression|contract\"",
+    "check:skill-sync": "node scripts/check-skill-sync.js",
+    "check:skill-sync:sync": "node scripts/check-skill-sync.js --sync",
     "generate-vault": "esbuild scripts/generate-vault.ts --bundle --platform=node --format=esm --outfile=/tmp/generate-vault.mjs --external:fs --external:path && node /tmp/generate-vault.mjs",
     "generate-vault:dry": "esbuild scripts/generate-vault.ts --bundle --platform=node --format=esm --outfile=/tmp/generate-vault.mjs --external:fs --external:path && node /tmp/generate-vault.mjs --dry-run",
     "validate-model": "esbuild scripts/validate-world-model.ts --bundle --platform=node --format=esm --outfile=/tmp/validate-world-model.mjs --external:fs --external:path && node /tmp/validate-world-model.mjs",
@@ -35,7 +37,8 @@
     "review:build": "esbuild scripts/review/wrapper.ts --bundle --platform=node --format=esm --outfile=.cache/review-wrapper.mjs --external:child_process --external:fs --external:path --external:url && esbuild scripts/review/review-client.ts --bundle --platform=node --format=esm --outfile=.cache/review-client.mjs --external:fs --external:path --external:url && esbuild scripts/review/test/clean-exit.ts --bundle --platform=node --format=esm --outfile=.cache/review-test-clean.mjs --external:fs --external:path && esbuild scripts/review/test/stall.ts --bundle --platform=node --format=esm --outfile=.cache/review-test-stall.mjs",
     "review:run": "npm run review:build && node .cache/review-wrapper.mjs node .cache/review-client.mjs",
     "review:test:clean": "npm run review:build && node .cache/review-wrapper.mjs node .cache/review-test-clean.mjs",
-    "review:test:stall": "npm run review:build && node .cache/review-wrapper.mjs node .cache/review-test-stall.mjs"
+    "review:test:stall": "npm run review:build && node .cache/review-wrapper.mjs node .cache/review-test-stall.mjs",
+    "prepare": "husky"
   },
   "dependencies": {
     "@sentry/react": "^10.49.0",
@@ -63,6 +66,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "husky": "^9.1.7",
     "jsdom": "^28.1.0",
     "sharp": "^0.34.5",
     "tailwindcss": "^4.2.1",

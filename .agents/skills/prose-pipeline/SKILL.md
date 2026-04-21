@@ -19,6 +19,8 @@ model: opus
 
 This skill covers the **graph-walking prose generator architecture**: how resolvers work, how to implement new ones, and the Threadbare writing aesthetic. Load `prose-content-systems` for adding encounter templates, faction content, or spell flavor text. Load `prose-vignettes-and-enrichment` for enrichment placeholders and vignette authoring.
 
+> **See also:** `Docs/plans/2026-04-16-systemic-wiring-guide.md` — explains the other side of the prose-to-graph bridge: how encounter outcomes *create* the graph state that resolvers later walk. Resolvers consume graph data; encounters produce it. Both skills together form the full loop.
+
 ## Architecture Overview
 
 Prose generation is a **multi-layer pipeline** where content flows through four distinct systems:

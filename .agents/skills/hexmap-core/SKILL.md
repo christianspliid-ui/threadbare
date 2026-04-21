@@ -350,4 +350,4 @@ When adding or modifying hex map code, verify:
 - [ ] **Fail-soft**: Empty/null/undefined inputs produce graceful fallbacks, not throws
 - [ ] **Performance**: No per-frame allocations, textures built once, draw calls minimized
 - [ ] **Tests**: Unit test for mesh creation, fail-soft cases, and deterministic output
-- [ ] **Visual verification**: Checked via Codex in Chrome (not just Playwright)
+- [ ] **Visual verification**: Checked via Claude in Chrome (not just Playwright)

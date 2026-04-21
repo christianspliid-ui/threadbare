@@ -49,7 +49,7 @@ Ask the user which mode to run, or default to Mode 1 if they said "run QA" witho
 
 **Every QA session runs its own Vite dev server on an isolated port.** This prevents conflicts with:
 - The user's own `npm run dev` on port 5173
-- Other Codex agents or worktrees running concurrently
+- Other Claude Code agents or worktrees running concurrently
 - Previous QA sessions that weren't cleaned up
 
 ### How it works
@@ -320,7 +320,7 @@ const traces = await window.__DEBUG.getTraces();
 | Hardcoding `localhost:5173` in agent prompts | Always use `{QA_URL}` from `scripts/qa-server.sh start` output. The user's dev server may be on 5173. |
 | Forgetting to stop the QA server | Always run `bash scripts/qa-server.sh stop` after the sweep — even on failure. Leaked processes block ports. |
 | Running agents in parallel | Playwright MCP is single-browser. Run sequentially. |
-| Using Playwright screenshots for WebGL/Three.js content | Playwright `browser_snapshot` and `browser_take_screenshot` cannot see WebGL canvas content — they only capture a blank `<canvas>`. For hex map (HexMapV2) visual verification, use **Codex in Chrome** tools: `tabs_context_mcp` → `navigate` → `computer` with `action: "screenshot"`. Playwright is still correct for console errors, DOM-based UI, and network checks. |
+| Using Playwright screenshots for WebGL/Three.js content | Playwright `browser_snapshot` and `browser_take_screenshot` cannot see WebGL canvas content — they only capture a blank `<canvas>`. For hex map (HexMapV2) visual verification, use **Claude in Chrome** tools: `tabs_context_mcp` → `navigate` → `computer` with `action: "screenshot"`. Playwright is still correct for console errors, DOM-based UI, and network checks. |
 | Skipping server start (using user's dev server) | QA must be isolated. Start your own server — don't share port 5173. |
 | Passing `{QA_URL}` as a literal string | Substitute the actual URL (e.g., `http://localhost:5183`) before dispatching agents. |
 | Fixing during sweep | Collect first, fix later. Changing code mid-sweep invalidates later agents. |

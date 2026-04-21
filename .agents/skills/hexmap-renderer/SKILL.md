@@ -26,9 +26,9 @@ Playwright/preview tools **cannot** see WebGL canvas content — snapshots and i
 | What to check | Tool |
 |----------------|------|
 | Console errors, network, DOM UI around canvas | Playwright `preview_console_logs`, `preview_network`, `preview_snapshot` |
-| Actual rendered hex map visuals (terrain, coastlines, signifiers, colors) | **Codex in Chrome** — `tabs_context_mcp` → `navigate` to `localhost:5173/?view=game&seeded` → `computer` with `action: "screenshot"` or `action: "zoom"` for detail. |
+| Actual rendered hex map visuals (terrain, coastlines, signifiers, colors) | **Claude in Chrome** — `tabs_context_mcp` → `navigate` to `localhost:5173/?view=game&seeded` → `computer` with `action: "screenshot"` or `action: "zoom"` for detail. |
 
-When verifying hex map changes, always check both: Playwright for errors, Codex in Chrome for visual correctness.
+When verifying hex map changes, always check both: Playwright for errors, Claude in Chrome for visual correctness.
 
 ## Coordinate System
 

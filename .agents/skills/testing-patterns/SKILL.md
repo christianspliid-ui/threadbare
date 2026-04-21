@@ -10,7 +10,7 @@ description: >
 
 # Testing Patterns — Domain Context
 
-> Load this skill when writing or reviewing tests for engine or HexMapV2 changes. The root AGENTS.md has the rules; this skill has the maps, examples, and checklists.
+> Load this skill when writing or reviewing tests for engine or HexMapV2 changes. The root CLAUDE.md has the rules; this skill has the maps, examples, and checklists.
 
 ## The Core Problem This Skill Solves
 

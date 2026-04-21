@@ -16,7 +16,7 @@ Log an impediment **immediately** when any of these happen:
 1. **A tool call fails** and you retry with a different approach
 2. **An API or MCP call** returns unexpected results or errors
 3. **A permission or environment issue** blocks you
-4. **You discover a skill or AGENTS.md instruction** is wrong, outdated, or missing
+4. **You discover a skill or CLAUDE.md instruction** is wrong, outdated, or missing
 5. **A process step** takes significantly longer than expected
 6. **You work around a known quirk** (even if you already know the workaround)
 7. **Requirements are ambiguous** and you have to guess or ask

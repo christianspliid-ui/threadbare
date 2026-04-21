@@ -1,6 +1,6 @@
 ---
 name: retrospective
-description: Review the impediment log (Docs/impediments.md) and conduct a structured retrospective. Analyzes patterns, proposes concrete improvements to tools, skills, AGENTS.md, and processes. Trigger with "/retrospective" or "run a retro" or "review impediments" or "continuous improvement review".
+description: Review the impediment log (Docs/impediments.md) and conduct a structured retrospective. Analyzes patterns, proposes concrete improvements to tools, skills, CLAUDE.md, and processes. Trigger with "/retrospective" or "run a retro" or "review impediments" or "continuous improvement review".
 ---
 
 # Retrospective
@@ -33,7 +33,7 @@ For each top friction source (and all unresolved blockers), propose a concrete f
 |----------|--------------|---------|
 | **skill-update** | Modify an existing skill's instructions | Add workaround to gamedocumenter for Obsidian MCP quirk |
 | **skill-create** | Create a new skill | Reusable pattern that agents keep rediscovering |
-| **Codex-md-update** | Add/modify instruction in AGENTS.md | New architectural decision, new gotcha |
+| **claude-md-update** | Add/modify instruction in CLAUDE.md | New architectural decision, new gotcha |
 | **tool-config** | Change MCP server config, permissions, hooks | Fix a permission that keeps blocking agents |
 | **process-change** | Change a workflow or convention | Reorder steps in Definition of Done |
 | **cant-fix** | External limitation we can't change | Platform bug, API limitation — document and move on |
@@ -54,7 +54,7 @@ Sort by ROI descending. The top items are the most valuable improvements.
 For any fix with effort=1 (trivial) and ROI > 3, **implement it immediately**:
 
 - Edit the skill file
-- Edit AGENTS.md
+- Edit CLAUDE.md
 - Update the relevant process doc
 
 For larger fixes, add entries to `.planning/BACKLOG.md` under the appropriate section:

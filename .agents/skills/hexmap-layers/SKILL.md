@@ -157,7 +157,7 @@ Playwright `preview_snapshot` and `preview_inspect` see only a blank `<canvas>` 
 | What to Verify | Tool |
 |---------------|------|
 | Console errors, network requests, DOM UI | Playwright: `preview_console_logs`, `preview_network`, `preview_snapshot` |
-| Actual rendered hex map visuals | **Codex in Chrome**: `tabs_context_mcp` → `navigate` to `localhost:5173/?view=game&seeded` → `computer` with `action: "screenshot"` or `action: "zoom"` |
+| Actual rendered hex map visuals | **Claude in Chrome**: `tabs_context_mcp` → `navigate` to `localhost:5173/?view=game&seeded` → `computer` with `action: "screenshot"` or `action: "zoom"` |
 
 ### Dev URLs for Testing
 
@@ -170,8 +170,8 @@ Playwright `preview_snapshot` and `preview_inspect` see only a blank `<canvas>` 
 ### Screenshot Tips
 
 - Always `preview_resize` to **1920x1080** before screenshots — default viewport varies
-- `preview_screenshot` times out on WebGL content (headless compositing too slow) — use Codex in Chrome or Playwright MCP instead
-- For detail inspection, use `action: "zoom"` with a region parameter in Codex in Chrome
+- `preview_screenshot` times out on WebGL content (headless compositing too slow) — use Claude in Chrome or Playwright MCP instead
+- For detail inspection, use `action: "zoom"` with a region parameter in Claude in Chrome
 
 ---
 
