@@ -25,6 +25,18 @@ if (import.meta.env.DEV) {
     visible: boolean;
   }
 
+  interface ActiveUIState {
+    view: string;
+    selectedAgentId: string | null;
+    selectedLocationId: string | null;
+    selectedFactionId: string | null;
+    selectedHex: { col: number; row: number } | null;
+    openModals: string[];
+    actionDrawerOpen: boolean;
+    scryActive: boolean;
+    cameraFocusHex: { col: number; row: number } | null;
+  }
+
   const getEmptySceneSnapshot = (): SceneSnapshot => ({
     hexCount: 0,
     agentsVisible: 0,
@@ -36,6 +48,18 @@ if (import.meta.env.DEV) {
     activityIcons: 0,
     fogEnabled: false,
     layersActive: [],
+  });
+
+  const getEmptyActiveUIState = (): ActiveUIState => ({
+    view: 'game',
+    selectedAgentId: null,
+    selectedLocationId: null,
+    selectedFactionId: null,
+    selectedHex: null,
+    openModals: [],
+    actionDrawerOpen: false,
+    scryActive: false,
+    cameraFocusHex: null,
   });
 
   // React components register their debug-panel toggle here
@@ -62,6 +86,9 @@ if (import.meta.env.DEV) {
   let _sceneSnapshot: (() => SceneSnapshot) | null = null;
   let _viewportForHex: ((col: number, row: number) => ViewportHexProjection | null) | null = null;
   let _hexAtViewport: ((x: number, y: number) => { col: number; row: number } | null) | null = null;
+  // GameView registers modal + UI state providers for playtest assertions
+  let _openModalsProvider: (() => string[]) | null = null;
+  let _activeUIStateProvider: (() => ActiveUIState) | null = null;
   // GameView registers its omniscience toggle callback here
   let _omniscienceToggle: ((enabled?: boolean) => boolean) | null = null;
   // AscendantBar debug: GameView registers a callback to set ascendant quintessence
@@ -98,9 +125,22 @@ if (import.meta.env.DEV) {
     snapshotScene: async () => _sceneSnapshot?.() ?? getEmptySceneSnapshot(),
     getViewportForHex: (col: number, row: number) => _viewportForHex?.(col, row) ?? null,
     getHexAtViewport: (x: number, y: number) => _hexAtViewport?.(x, y) ?? null,
+    getOpenModals: async () => _openModalsProvider?.() ?? [],
+    getActiveUIState: async () => {
+      const openModals = _openModalsProvider?.() ?? [];
+      const uiState = _activeUIStateProvider?.() ?? getEmptyActiveUIState();
+      return { ...uiState, openModals };
+    },
+    getEventsSince: async (tick: number) => {
+      const state = _gameStateProvider?.();
+      const recentEvents = state?.recentEvents ?? [];
+      return recentEvents.filter((event) => event.tick > tick);
+    },
     _registerSceneSnapshot: (fn: () => SceneSnapshot) => { _sceneSnapshot = fn; },
     _registerViewportForHex: (fn: (col: number, row: number) => ViewportHexProjection | null) => { _viewportForHex = fn; },
     _registerHexAtViewport: (fn: (x: number, y: number) => { col: number; row: number } | null) => { _hexAtViewport = fn; },
+    _registerOpenModalsProvider: (fn: () => string[]) => { _openModalsProvider = fn; },
+    _registerActiveUIStateProvider: (fn: () => ActiveUIState) => { _activeUIStateProvider = fn; },
 
     // ── Omniscience mode: bypass familiarity gating on agent character sheets ──
     toggleOmniscience: () => _omniscienceToggle?.() ?? false,

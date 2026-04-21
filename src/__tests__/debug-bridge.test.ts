@@ -8,6 +8,16 @@ function requireDebugBridge() {
   return window.__DEBUG!;
 }
 
+function makeTickEvent(id: string, tick: number): import('../types/gameState').TickEvent {
+  return {
+    id,
+    tick,
+    type: 'narrative',
+    message: `event-${id}`,
+    significance: 0.5,
+  };
+}
+
 describe('debug bridge scene snapshot contract', () => {
   beforeEach(() => {
     const debug = requireDebugBridge();
@@ -25,6 +35,19 @@ describe('debug bridge scene snapshot contract', () => {
     }));
     debug._registerViewportForHex(() => null);
     debug._registerHexAtViewport(() => null);
+    debug._registerOpenModalsProvider(() => []);
+    debug._registerActiveUIStateProvider(() => ({
+      view: 'game',
+      selectedAgentId: null,
+      selectedLocationId: null,
+      selectedFactionId: null,
+      selectedHex: null,
+      openModals: [],
+      actionDrawerOpen: false,
+      scryActive: false,
+      cameraFocusHex: null,
+    }));
+    debug._registerGameStateProvider(() => null);
   });
 
   it('snapshotScene returns registered structural counts', async () => {
@@ -62,5 +85,50 @@ describe('debug bridge scene snapshot contract', () => {
 
     expect(debug.getViewportForHex(3, 4)).toEqual({ x: 30, y: 80, visible: true });
     expect(debug.getHexAtViewport(39, 81)).toEqual({ col: 3, row: 4 });
+  });
+
+  it('getEventsSince returns recentEvents with tick strictly greater than threshold', async () => {
+    const debug = requireDebugBridge();
+    const events = [
+      makeTickEvent('e-1', 9),
+      makeTickEvent('e-2', 10),
+      makeTickEvent('e-3', 12),
+    ];
+
+    debug._registerGameStateProvider(() => ({
+      recentEvents: events,
+    } as unknown as import('../types/gameState').GameState));
+
+    await expect(debug.getEventsSince(9)).resolves.toEqual([events[1], events[2]]);
+    await expect(debug.getEventsSince(0)).resolves.toEqual(events);
+  });
+
+  it('getOpenModals and getActiveUIState expose registered UI snapshot', async () => {
+    const debug = requireDebugBridge();
+    debug._registerOpenModalsProvider(() => ['AgendaPicker', 'PremonitionModal']);
+    debug._registerActiveUIStateProvider(() => ({
+      view: 'game',
+      selectedAgentId: 'agent-1',
+      selectedLocationId: 'location-1',
+      selectedFactionId: null,
+      selectedHex: { col: 8, row: 13 },
+      openModals: [],
+      actionDrawerOpen: true,
+      scryActive: true,
+      cameraFocusHex: { col: 7, row: 11 },
+    }));
+
+    await expect(debug.getOpenModals()).resolves.toEqual(['AgendaPicker', 'PremonitionModal']);
+    await expect(debug.getActiveUIState()).resolves.toEqual({
+      view: 'game',
+      selectedAgentId: 'agent-1',
+      selectedLocationId: 'location-1',
+      selectedFactionId: null,
+      selectedHex: { col: 8, row: 13 },
+      openModals: ['AgendaPicker', 'PremonitionModal'],
+      actionDrawerOpen: true,
+      scryActive: true,
+      cameraFocusHex: { col: 7, row: 11 },
+    });
   });
 });

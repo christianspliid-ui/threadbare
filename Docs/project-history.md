@@ -467,3 +467,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - THR-197 root change-spec cleanup: ✅ Complete (2026-04-20) — removed duplicate root design-governance spec and moved undated CLAUDE/skills instruction spec into Docs/plans with dated filename.
 - THR-192 shared-skill pre-commit guard: ✅ Complete (2026-04-21) — added Husky gate (check:skill-sync), normalized shared .agents/skills mirrors to .claude, and updated the Skill Tree Layout contract in CLAUDE.md.
 - THR-207 __DEBUG scene/viewport extensions: ✅ Complete (2026-04-21) — added snapshotScene/getViewportForHex/getHexAtViewport through HexMapV2 + GameView bridge wiring and unit coverage in src/__tests__/debug-bridge.test.ts.
+- THR-208 __DEBUG UI state + event window extensions: ✅ Complete (2026-04-21) — shipped getOpenModals/getActiveUIState/getEventsSince bridge methods, GameView live-provider registration, and debug-bridge unit coverage for event filtering + UI snapshot reads.

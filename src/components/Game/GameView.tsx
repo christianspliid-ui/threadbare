@@ -2552,6 +2552,108 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     }
   }, [activeStoryBeatId, interruptsSuppressed, running, setRunning]);
 
+  const getDebugOpenModals = useCallback((): string[] => {
+    const openModals: string[] = [];
+
+    if (debugPanelOpen) openModals.push('DebugPanel');
+    if (settingsPanelOpen) openModals.push('SettingsPanel');
+    if (readThreadsOpen) openModals.push('ReadTheThreadsPanel');
+    if (scryVisible) openModals.push('ScryOverlay');
+    if (agendaPickerOpen && !!pendingAgendas) openModals.push('AgendaPicker');
+    if (drawerOpen && !!selectedAgentId) openModals.push('ActionDrawer');
+    if (nonAgentDrawerOpen && !!enrichedNonAgentSlots?.length && !selectedAgentId) openModals.push('ActionDrawer');
+    if (profileModalAgentId && !!agentInfoCard) openModals.push('AgentProfileModal');
+    if (stubModalState) {
+      if (stubModalState.category === 'location') openModals.push('LocationProfileModal');
+      if (stubModalState.category === 'faction') openModals.push('FactionSheet');
+      if (stubModalState.category === 'army') openModals.push('ArmySheet');
+      if (stubModalState.category === 'artifact') openModals.push('ArtifactSheet');
+    }
+    if (tieredEncounterState && encounterVeilModel) openModals.push('EncounterVeil');
+    if (meetingState && ascendantIdentity) openModals.push('MeetTheFirstFlow');
+    if (activeVignette && !interruptsSuppressed) openModals.push('JourneyVignetteModal');
+    if (activeStoryBeatId && activeStoryBeatTemplate && !interruptsSuppressed) openModals.push('StoryBeatModal');
+    if (activePremonition && !interruptsSuppressed) openModals.push('PremonitionModal');
+    if (ascendantSheetOpen) openModals.push('AscendantSheet');
+    if (doomDetailOpen) openModals.push('DoomClockDetail');
+    if (mandateDetailOpen && gameState.mandateDefinition && gameState.mandateState) openModals.push('MandateDetail');
+    if (harvestResult) openModals.push('HarvestScreen');
+
+    return openModals;
+  }, [
+    activePremonition,
+    activeStoryBeatId,
+    activeStoryBeatTemplate,
+    activeVignette,
+    agendaPickerOpen,
+    agentInfoCard,
+    ascendantIdentity,
+    ascendantSheetOpen,
+    debugPanelOpen,
+    doomDetailOpen,
+    drawerOpen,
+    encounterVeilModel,
+    enrichedNonAgentSlots,
+    gameState.mandateDefinition,
+    gameState.mandateState,
+    harvestResult,
+    interruptsSuppressed,
+    mandateDetailOpen,
+    meetingState,
+    nonAgentDrawerOpen,
+    pendingAgendas,
+    profileModalAgentId,
+    readThreadsOpen,
+    scryVisible,
+    selectedAgentId,
+    settingsPanelOpen,
+    stubModalState,
+    tieredEncounterState,
+  ]);
+
+  const getDebugActiveUIState = useCallback(() => {
+    const urlView = new URLSearchParams(window.location.search).get('view') ?? 'game';
+    const openModals = getDebugOpenModals();
+    const selectedFactionId = stubModalState?.category === 'faction'
+      ? stubModalState.nodeId
+      : selectedThreadNode?.category === 'faction'
+        ? selectedThreadNode.nodeId
+        : null;
+
+    return {
+      view: urlView,
+      selectedAgentId: selectedAgentId ?? null,
+      selectedLocationId: focusedLocationId,
+      selectedFactionId,
+      selectedHex: selectedHexCoord ?? selectedHex ?? focusedHex ?? null,
+      openModals,
+      actionDrawerOpen: (drawerOpen && !!selectedAgentId)
+        || (nonAgentDrawerOpen && !!enrichedNonAgentSlots?.length && !selectedAgentId),
+      scryActive: scryVisible,
+      cameraFocusHex: cameraCenter ?? null,
+    };
+  }, [
+    cameraCenter,
+    drawerOpen,
+    enrichedNonAgentSlots,
+    focusedHex,
+    focusedLocationId,
+    getDebugOpenModals,
+    nonAgentDrawerOpen,
+    scryVisible,
+    selectedAgentId,
+    selectedHex,
+    selectedHexCoord,
+    selectedThreadNode,
+    stubModalState,
+  ]);
+
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerOpenModalsProvider(getDebugOpenModals);
+    window.__DEBUG._registerActiveUIStateProvider(getDebugActiveUIState);
+  }, [getDebugActiveUIState, getDebugOpenModals]);
+
   // Close detail panel on Escape key
   useEffect(() => {
     if (!selectedThreadNode && !selectedHexCoord) return;
