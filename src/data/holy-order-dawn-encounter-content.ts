@@ -420,7 +420,58 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     },
     aftermathConfig: {
       branchOnStep: 1,
-      variants: {},
+      variants: {
+        1: {
+          failure: {
+            overview:
+              'The attack on the road cost someone. The pilgrims arrived — most of them — but the wound from the road travels with them.',
+            changes: [
+              {
+                id: 'pilgrims_attacked',
+                kind: 'faction_reputation',
+                title: 'Pilgrims were attacked.',
+                detail: 'The order will hear about it from the arrival log at the high temple.',
+                polarity: 'loss' as const,
+              },
+            ],
+            reactionPrompt: 'What does the god carry away from the pilgrim road?',
+            reactions: [
+              {
+                id: 'hod.pilgrims.fail.mark',
+                label: 'Mark the road. Something happened there that should be remembered.',
+                intent:
+                  'The attack left a wound the road won\'t shed quickly. ' +
+                  'You preserve the memory — not to punish, but so the order knows where the dark sits.',
+                effects: [
+                  {
+                    kind: 'hidden_mark' as const,
+                    category: 'soul_diminishment',
+                    severity: FACTION_PROSE_HIDDEN_MARK_DEFAULT_SEVERITY,
+                    label: 'Was present when pilgrims were attacked on the road near {location}',
+                    revealFamilies: ['holy_order', 'investigation'],
+                  },
+                ],
+                closeAfterSelection: true,
+              },
+              {
+                id: 'hod.pilgrims.fail.seed',
+                label: 'Those who attacked the road are still there.',
+                intent: 'You plant the thread. The order will send someone who asks the right questions at the right crossroads.',
+                effects: [
+                  {
+                    kind: 'encounter_seed' as const,
+                    templateId: 'hod.quest.slay_abomination',
+                    delayTicks: FACTION_PROSE_SEED_DELAY_QUEST_TICKS,
+                    priority: 1.1,
+                    seedLabel: 'Bandits who attacked pilgrims on the road near {location} have not been cleared.',
+                  },
+                ],
+                closeAfterSelection: true,
+              },
+            ],
+          },
+        },
+      },
       fallback: {
         overview:
           'The pilgrims are delivered. The road behind {name} is empty.',
@@ -682,6 +733,63 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
       branchOnStep: 1,
       variants: {
         1: {
+          success: {
+            overview:
+              'Judgment spoken and entered. The record is clear. The resentment takes longer to settle than the verdict.',
+            changes: [
+              {
+                id: 'judgment_spoken',
+                kind: 'faction_reputation',
+                title: 'Judgment spoken.',
+                detail: 'The order\'s record is updated. The faithful know the verdict held.',
+                polarity: 'gain' as const,
+              },
+            ],
+            reactionPrompt: 'What does the god press into the spoken verdict?',
+            reactions: [
+              {
+                id: 'hod.judgment.success.mark',
+                label: 'Mark the one who received the verdict. They will remember it differently than {name} does.',
+                intent:
+                  'The judgment was correct — but correct judgments land differently on the one who receives them. ' +
+                  'The mark is not punitive. It is honest.',
+                effects: [
+                  {
+                    kind: 'hidden_mark' as const,
+                    category: 'reputation_note',
+                    severity: FACTION_PROSE_HIDDEN_MARK_DEFAULT_SEVERITY - 0.1,
+                    label: 'Delivered the order\'s judgment at {location}; the verdict was spoken and held',
+                    revealFamilies: ['holy_order', 'investigation'],
+                  },
+                ],
+                closeAfterSelection: false,
+              },
+              {
+                id: 'hod.judgment.success.seed',
+                label: 'A verdict always has a sequel. Plant the thread.',
+                intent:
+                  'The accused accepted the judgment in the hall. What made the judgment necessary is still somewhere. ' +
+                  'You plant the thread for the order to follow.',
+                effects: [
+                  {
+                    kind: 'encounter_seed' as const,
+                    templateId: 'hod.senior.cleanse_corruption',
+                    delayTicks: FACTION_PROSE_SEED_DELAY_QUEST_TICKS * 2,
+                    priority: 1.0,
+                    seedLabel: 'The judgment at {location} was the symptom. The source of the heresy has not been addressed.',
+                  },
+                ],
+                closeAfterSelection: true,
+              },
+              {
+                id: 'hod.judgment.success.pass',
+                label: 'Withdraw. The verdict stands on its own.',
+                intent: 'You withdraw. Justice is a human thing — it does not require the god\'s hand to hold it upright.',
+                effects: [],
+                closeAfterSelection: true,
+              },
+            ],
+          },
           failure: {
             overview:
               'The verdict was questioned in open assembly. This will be noted.',
@@ -691,7 +799,7 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 kind: 'faction_reputation',
                 title: 'The verdict did not hold.',
                 detail: 'The order hears these things eventually.',
-                polarity: 'negative',
+                polarity: 'loss' as const,
               },
             ],
             reactionPrompt: 'What does the god do when the verdict falls?',
@@ -971,7 +1079,112 @@ export const HOLY_ORDER_DAWN_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
     },
     aftermathConfig: {
       branchOnStep: 1,
-      variants: {},
+      variants: {
+        1: {
+          success: {
+            overview:
+              'The stronghold falls. The enemy of the faith has lost its house. What was found inside will matter to the order\'s records.',
+            changes: [
+              {
+                id: 'crusade_succeeded',
+                kind: 'faction_reputation',
+                title: 'The crusade was victorious.',
+                detail: 'The order\'s banner is raised. The faith holds in this region.',
+                polarity: 'gain' as const,
+              },
+            ],
+            reactionPrompt: 'What does the god press into the moment the gates opened?',
+            reactions: [
+              {
+                id: 'hod.crusade.success.mark',
+                label: 'Mark what {name} found inside the stronghold.',
+                intent:
+                  'The stronghold had its secrets. What {name} found inside before the order took inventory ' +
+                  'is knowledge the second hand will not record.',
+                effects: [
+                  {
+                    kind: 'hidden_mark' as const,
+                    category: 'secret_knowledge',
+                    severity: FACTION_PROSE_HIDDEN_MARK_DEFAULT_SEVERITY + 0.05,
+                    label: 'Knows what was found in the enemy stronghold after the crusade at {location}',
+                    revealFamilies: ['holy_order', 'investigation'],
+                  },
+                  { kind: 'reputation_tally' as const, key: 'star.positive', delta: 2 },
+                ],
+                closeAfterSelection: true,
+              },
+              {
+                id: 'hod.crusade.success.pass',
+                label: 'Let the order have this. It is their victory.',
+                intent: 'You withdraw. The victory belongs to the faithful who held — and the cost belongs to them too.',
+                effects: [
+                  { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
+                ],
+                closeAfterSelection: true,
+              },
+            ],
+          },
+          failure: {
+            overview:
+              'The assault is repelled. The order retreats in order, which is the best thing that can be said of it. ' +
+              'What {name} saw at the wall will not be spoken of publicly — but it should be recorded somewhere.',
+            changes: [
+              {
+                id: 'crusade_failed',
+                kind: 'faction_reputation',
+                title: 'The assault was repelled.',
+                detail: 'The order withdrew. The faithful will hear it called a tactical withdrawal.',
+                polarity: 'loss' as const,
+              },
+            ],
+            reactionPrompt: 'What does the god keep from the field where the order broke?',
+            reactions: [
+              {
+                id: 'hod.crusade.fail.mark',
+                label: 'Mark what {name} saw at the wall — the enemy\'s real strength.',
+                intent:
+                  'The defeat contained specific knowledge. What {name} saw at the gate before the retreat ' +
+                  'is something the order needs before it tries again.',
+                effects: [
+                  {
+                    kind: 'hidden_mark' as const,
+                    category: 'secret_knowledge',
+                    severity: FACTION_PROSE_HIDDEN_MARK_DEFAULT_SEVERITY + 0.1,
+                    label: 'Witnessed the repelled assault — knows the enemy\'s true defensive strength at {location}',
+                    revealFamilies: ['holy_order', 'investigation'],
+                  },
+                  { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
+                ],
+                closeAfterSelection: false,
+              },
+              {
+                id: 'hod.crusade.fail.seed',
+                label: 'The cause is not finished. Plant the thread for the next attempt.',
+                intent:
+                  'The crusade failed at the gates. The work is not done — only deferred. ' +
+                  'You plant the thread for the order to follow when it is ready.',
+                effects: [
+                  {
+                    kind: 'encounter_seed' as const,
+                    templateId: 'hod.elite.holy_war',
+                    delayTicks: FACTION_PROSE_SEED_DELAY_QUEST_TICKS * 3,
+                    priority: 1.5,
+                    seedLabel: 'The crusade at {location} was repelled. The enemy remains. The order will need a larger answer.',
+                  },
+                ],
+                closeAfterSelection: true,
+              },
+              {
+                id: 'hod.crusade.fail.withdraw',
+                label: 'Withdraw. Let the order grieve in the way it knows.',
+                intent: 'You withdraw. The order has its rites for defeat. They do not need the god\'s hand in them.',
+                effects: [],
+                closeAfterSelection: true,
+              },
+            ],
+          },
+        },
+      },
       fallback: {
         overview: 'The crusade is concluded. The order counts its faithful.',
         changes: [],
@@ -1102,6 +1315,13 @@ export const HOLY_ORDER_DAWN_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
                     severity: FACTION_PROSE_HIDDEN_MARK_DEFAULT_SEVERITY + 0.2,
                     label: 'Holds the cult\'s full network map from the inquisition at {location}',
                     revealFamilies: ['investigation', 'holy_order', 'intrigue'],
+                  },
+                  {
+                    kind: 'intelligence' as const,
+                    category: 'agent_network',
+                    label: 'Cult leadership network from the {location} inquisition',
+                    detail: 'Names, addresses, meeting sites — the full hierarchy the inquisition documented. Active affiliates outside {location} remain unaddressed and represent a follow-on threat.',
+                    reliability: 0.9,
                   },
                   { kind: 'reputation_tally' as const, key: 'star.positive', delta: 2 },
                 ],
@@ -1247,7 +1467,107 @@ export const HOLY_ORDER_DAWN_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
     },
     aftermathConfig: {
       branchOnStep: 2,
-      variants: {},
+      variants: {
+        2: {
+          success: {
+            overview:
+              'Victory. The enemy is vanquished and the faith is vindicated in blood and silence. ' +
+              '{name} walks the enemy\'s seat of power for the first time and sees what was hidden there.',
+            changes: [
+              {
+                id: 'holy_war_won',
+                kind: 'faction_reputation' as const,
+                title: 'The holy war was won.',
+                detail: 'The order\'s faithful remember who led the charge. That memory has weight.',
+                polarity: 'gain' as const,
+              },
+            ],
+            reactionPrompt: 'What does the god press into the hands that won the war?',
+            reactions: [
+              {
+                id: 'hod.war.success.mark',
+                label: 'Seal what was found in the enemy\'s stronghold. Some knowledge changes the bearer.',
+                intent: 'You mark what {name} witnessed in the enemy\'s seat of power — and the weight it carries.',
+                effects: [
+                  {
+                    kind: 'hidden_mark' as const,
+                    category: 'secret_knowledge',
+                    severity: FACTION_PROSE_HIDDEN_MARK_DEFAULT_SEVERITY,
+                    label: 'Knows what was found in the enemy\'s seat of power after the holy war at {location}',
+                    revealFamilies: ['holy_order', 'investigation'],
+                  },
+                  { kind: 'reputation_tally' as const, key: 'star.positive', delta: 3 },
+                ],
+                closeAfterSelection: true,
+              },
+              {
+                id: 'hod.war.success.witness',
+                label: 'Bear witness to the victory without taking it.',
+                intent: 'The faith vindicated itself. {name} carried it. You saw.',
+                effects: [
+                  { kind: 'reputation_tally' as const, key: 'star.positive', delta: 2 },
+                ],
+                closeAfterSelection: true,
+              },
+            ],
+          },
+          failure: {
+            overview:
+              'Defeat. The order retreats with its wounded and its silence. ' +
+              '{name} has seen the enemy\'s true strength now — seen it in the way the line held, in what the defenders did not lose. ' +
+              'The rite for a failed holy war is not in the books because no one survived the last one to write it.',
+            changes: [
+              {
+                id: 'holy_war_lost',
+                kind: 'faction_reputation' as const,
+                title: 'The holy war was lost.',
+                detail: 'The order retreated. Whatever happens next is shaped by that retreat.',
+                polarity: 'loss' as const,
+              },
+            ],
+            reactionPrompt: 'What does the god press into the hands that survived the defeat?',
+            reactions: [
+              {
+                id: 'hod.war.fail.mark',
+                label: 'Witness what {name} now knows about the enemy. That knowledge has a cost.',
+                intent: 'You seal what {name} learned about the enemy\'s true strength — the thing that will not stop pressing.',
+                effects: [
+                  {
+                    kind: 'hidden_mark' as const,
+                    category: 'secret_knowledge',
+                    severity: FACTION_PROSE_HIDDEN_MARK_DEFAULT_SEVERITY,
+                    label: 'Witnessed the repelled assault — knows the enemy\'s true defensive strength at {location}',
+                    revealFamilies: ['holy_order', 'investigation'],
+                  },
+                ],
+                closeAfterSelection: true,
+              },
+              {
+                id: 'hod.war.fail.seed',
+                label: 'The enemy remains. Plant the order\'s intent to answer it.',
+                intent: 'You press the seed of the next answer into the order\'s hands. The war is not over — only interrupted.',
+                effects: [
+                  {
+                    kind: 'encounter_seed' as const,
+                    templateId: 'hod.elite.holy_war',
+                    delayTicks: FACTION_PROSE_SEED_DELAY_QUEST_TICKS,
+                    priority: 2,
+                    seedLabel: 'The holy war at {location} was repelled. The enemy remains and the order has not forgotten.',
+                  },
+                ],
+                closeAfterSelection: true,
+              },
+              {
+                id: 'hod.war.fail.withdraw',
+                label: 'Withdraw. The faithful carry their costs without the god.',
+                intent: 'You step back. The order has always known that some losses must be carried alone.',
+                effects: [],
+                closeAfterSelection: true,
+              },
+            ],
+          },
+        },
+      },
       fallback: {
         overview:
           'The holy war is concluded. The order counts its faithful and files the record.',
