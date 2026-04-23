@@ -14,7 +14,7 @@ Premise → Draft (Opus) → Editorial+Revised (Opus) → Systems+Final (Sonnet)
 
 ## Systemic Wiring — READ BEFORE AUTHORING
 
-**Before running the pipeline, read `Docs/plans/2026-04-16-systemic-wiring-guide.md`.** This guide explains the seven engine capabilities that should shape what you decide to write: enrichment placeholders, encounter seeding, hidden marks, reputation flow, graph operations, intelligence/content grants, and divine intervention choices. If you don't know what the engine can do, you'll write hardcoded fiction instead of game content. The guide includes a worked example (Pyra's festival) and a wiring checklist to audit against.
+**Before running the pipeline, read `Docs/authoring-brief.md`** — the compiled preamble covering all 7 engine capabilities and the editorial rejection triggers. It is faster to read and more consistent than the full source. If `Docs/authoring-brief.md` is missing or `npm run check:authoring-brief` reports it stale, fall back to reading `Docs/plans/2026-04-16-systemic-wiring-guide.md` directly.
 
 **Wounds and conditions in aftermath (THR-117):** To apply a physical or mental condition (wound, exhaustion, disease, blessing, …) in a `UnifiedActionTemplate` aftermath reaction, use the `condition_attachment` effect kind — not a legacy `content_grant` (which is not an aftermath effect kind) and not `appliesWound` (which is `EncounterTemplate`-only). Example: `{ kind: 'condition_attachment', templateId: 'trait.condition.wounded' }`. Applying the wound condition automatically triggers mid-encounter tier promotion from `background → shaping` (so the combat failure becomes visible in the chronicle) and feeds into the overflow pipeline (third wound → incapacitation check). You do not need to wire the overflow — it fires automatically. See the "Conditions and wounds" subsection of `Docs/plans/2026-04-16-systemic-wiring-guide.md` for all five subcategories and relevant constants.
 
@@ -24,14 +24,7 @@ Premise → Draft (Opus) → Editorial+Revised (Opus) → Systems+Final (Sonnet)
 
 **Before running the pipeline, read the issue's design doc in `Docs/plans/`.** If the design doc has Section 9 benchmark moments, inject them into the draft agent's prompt as the quality bar. Every encounter authored in this pipeline must meet or exceed the benchmark's emotional specificity and forward-hook quality.
 
-**Always inject the game design direction principles into the draft agent's context** (from `Docs/plans/2026-04-16-game-design-direction.md`). The six principles that every encounter must satisfy:
-
-1. **Emotional read** — the player understands what's happening through human conditions, not mechanics
-2. **Genuine dilemmas** — choices where there's no obviously right answer
-3. **Cool failure** — failure outcomes produce narrative texture, not dead ends
-4. **Turn compatibility** — works in both quick turns and deep turns
-5. **Prose carries narrative** — mechanics communicated through story
-6. **Content is design** — the prose IS the player experience
+**Inject the design direction principles into the draft agent's context.** The principles are compiled into `Docs/authoring-brief.md` (Section C). Prefer the brief; fall back to `Docs/plans/2026-04-16-game-design-direction.md` when the brief is absent.
 
 **Player-as-god framing constraint.** The player is a god who observes through threads and intervenes indirectly. They NEVER make choices for the character. When writing encounter choices, intervention options, or any player-facing decision point: the choices must be what the *god* does (whisper, send vision, steady, strengthen, withdraw), never what the *mortal* does (say this, go there, fight). The mortal acts according to their personality and the god's influence. "Let them handle it" must always be a valid option.
 
@@ -87,6 +80,7 @@ The orchestrator (this skill) follows this state machine. No manual file editing
 
 Before dispatching any agent, the orchestrator reads these files ONCE and injects them as context into agent prompts:
 
+0. `Docs/authoring-brief.md` — compiled capability + principle preamble (preferred). If missing or stale, fall back: read `Docs/plans/2026-04-16-systemic-wiring-guide.md` and `Docs/plans/2026-04-16-game-design-direction.md` instead.
 1. `Docs/encounter-building-checklist.md`
 2. `Docs/encounter-branching-templates.md`
 3. Obsidian vault pages via MCP:
