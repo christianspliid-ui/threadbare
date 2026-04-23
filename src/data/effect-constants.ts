@@ -171,3 +171,20 @@ export const ENEMY_SENTIMENT_THRESHOLD = -0.35;
 
 /** outnumbered requires enemyCount > allyCount + OUTNUMBERED_MARGIN. */
 export const OUTNUMBERED_MARGIN = 1;
+
+// ─── Content Shells (THR-53) ──────────────────────────────────────
+
+/** Authoring sanity cap on flip_table variants per template. Lint flag if exceeded. */
+export const MAX_FLIP_VARIANTS_PER_TEMPLATE = 6;
+
+/** Fallback duplicate-gain policy when template omits duplicateGainPolicy. */
+export const DEFAULT_DUPLICATE_GAIN_POLICY = 'refresh' as const;
+
+/** Authoring hint for result-band count; no runtime enforcement. */
+export const DEFAULT_RESULT_BAND_COUNT = 3;
+
+/** Sentinel band ID recorded when no result band matches the margin. */
+export const RESULT_BAND_FALLBACK_ID = '__fallback__';
+
+/** Default maxApplications for DuplicateGainWorsenRule when not specified. */
+export const DUPLICATE_WORSEN_DEFAULT_MAX = 3;

@@ -145,6 +145,7 @@ import { QUINTESSENCE_LEXICON, QUINTESSENCE_TOOLTIPS } from '../../data/quintess
 import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
 
 // Traits
+import { REPUTATION_TRAIT_DEFINITIONS } from '../../data/reputation-trait-content';
 import { LOS_TRAIT_DEFINITIONS } from '../../data/trait-modifiers';
 import { NARRATIVE_LEXICON } from '../../types/traits';
 import { CULTURAL_STRENGTH_THRESHOLDS } from '../../engine/culturalTraits';
@@ -1404,6 +1405,26 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
     ],
     searchFields: ['id', 'name', 'properties.description'],
     sourceFile: 'src/data/economic-trait-content.ts',
+  },
+  {
+    id: 'reputation-trait-definitions',
+    label: 'Reputation Traits',
+    category: 'Traits',
+    description: '17 reach-polarity reputations (8 reaches × 2 polarities + power renown) — reactions, scoring modifiers, and encounter gates per trait.',
+    data: REPUTATION_TRAIT_DEFINITIONS,
+    viewer: 'table',
+    columns: [
+      { key: 'id', label: 'ID' },
+      { key: 'name', label: 'Name' },
+      { key: 'properties.subcategory', label: 'Category', render: 'badge', badgeColors: TRAIT_CATEGORY_COLORS },
+      { key: 'properties.description', label: 'Description' },
+      { key: 'properties.tags', label: 'Tags', render: 'tags' },
+      { key: 'properties.reputationEffects.reactions', label: 'Reactions', render: 'json' },
+      { key: 'properties.reputationEffects.scoringModifiers', label: 'Scoring Modifiers', render: 'json' },
+      { key: 'properties.reputationEffects.encounterGates', label: 'Encounter Gates', render: 'json' },
+    ],
+    searchFields: ['id', 'name', 'properties.description'],
+    sourceFile: 'src/data/reputation-trait-content.ts',
   },
   {
     id: 'economic-chronicle-templates',
