@@ -23,6 +23,7 @@ import { applyEncounterAftermathReaction } from '../../engine/encounterAftermath
 import { clearTraces, enableTracing, disableTracing } from '../../engine/traceBuffer';
 import { createSimulationRuntime, type SimulationRuntime } from '../../engine/simulationRuntime';
 import type { GameState } from '../../types/gameState';
+import { assertNoDuplicateIds, assertValidUnifiedTemplate } from '../../testing/contentInvariants';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -91,11 +92,11 @@ function makeAction(actorId: string, templateId: string): UnifiedAction {
 
 describe('Builders Fellowship — template structure', () => {
   it('exports 10 encounter templates', () => {
-    expect(BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES).toHaveLength(10);
+    expect(BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES.length).toBeGreaterThanOrEqual(10);
   });
 
   it('exports 3 social templates', () => {
-    expect(BUILDERS_FELLOWSHIP_SOCIAL_TEMPLATES).toHaveLength(3);
+    expect(BUILDERS_FELLOWSHIP_SOCIAL_TEMPLATES.length).toBeGreaterThanOrEqual(3);
   });
 
   it('exports BF_JOIN_TEMPLATE and BF_PROMOTION_TEMPLATE (lifecycle)', () => {
@@ -104,7 +105,7 @@ describe('Builders Fellowship — template structure', () => {
   });
 
   it('15 total templates (13 standard + 2 lifecycle)', () => {
-    expect(ALL_TEMPLATES).toHaveLength(15);
+    expect(ALL_TEMPLATES.length).toBeGreaterThanOrEqual(15);
   });
 
   it('all template IDs are unique', () => {
@@ -119,10 +120,15 @@ describe('Builders Fellowship — template structure', () => {
   });
 
   it('BUILDERS_FELLOWSHIP_ENCOUNTER_META covers all 15 templates', () => {
-    expect(BUILDERS_FELLOWSHIP_ENCOUNTER_META.size).toBe(15);
+    expect(BUILDERS_FELLOWSHIP_ENCOUNTER_META.size).toBe(ALL_TEMPLATES.length);
     for (const t of ALL_TEMPLATES) {
       expect(BUILDERS_FELLOWSHIP_ENCOUNTER_META.has(t.id), `${t.id} missing from META`).toBe(true);
     }
+  });
+
+  it('passes structural invariants', () => {
+    ALL_TEMPLATES.forEach(assertValidUnifiedTemplate);
+    assertNoDuplicateIds(ALL_TEMPLATES);
   });
 });
 

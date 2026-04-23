@@ -471,3 +471,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - THR-235 pull-work skill: ✅ Complete (2026-04-21) — added canonical/mirrored pickup-checklist skill with refusal gates and updated CLAUDE.md to route CC pickup through `/pull-work`.
 - THR-236 session-handoff skill removal: ✅ Complete (2026-04-21) — deleted deprecated Slack-based session-handoff skills from both .claude and .agents mirrors to match the Linear-only closeout protocol.
 - THR-240 process lint automation: ✅ Complete (2026-04-23) — added `npm run check:process`, advisory CI wiring, and deterministic workflow checks for TODO/DEFERRED refs, plan link hygiene, project assignment, and Ready-for-Dev coordination blocks.
+- THR-237 content invariant helper sweep: ✅ Complete (2026-04-23) — shipped shared test invariants, replaced brittle count assertions in the v1 target files, and filed THR-245 for the fixed-enum/vocabulary v2 pass.

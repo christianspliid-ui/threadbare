@@ -14,3 +14,18 @@
 - **ops** | no ready-for-codex work this cycle (2026-04-21T10.54.37+02:00)
 - **work** | THR-235 shipped: added pull-work pickup skill and CC startup routing to /pull-work.
 - **work** | THR-236 shipped: removed deprecated session-handoff skill mirrors; closeout remains Linear-only.
+- **ops** | no ready-for-codex work this cycle (2026-04-22T09.55.41.0323170+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-22T11.02.19.6411109+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-22T12.03.08.7921635+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-22T13.03.32.9905494+02:00)
+- **work** | no ready-for-codex work this cycle
+- **ops** | no ready-for-codex work this cycle (2026-04-22T16.02.50.1941442+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-22T17.03.15.9765788+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-22T18.04.10.0382993+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-22T19:02:26.9257114+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-22T20.02.22.6741729+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-22T21.03.42+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-22T22:04:03.2100691+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-23T07.52.55.8917583+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-23T08.02.08+02:00)
+- **work** | THR-237 shipped: shared content invariants helper + brittle-count test sweep (deferral filed: THR-245).
