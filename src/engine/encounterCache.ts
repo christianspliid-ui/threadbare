@@ -22,6 +22,8 @@
 
 import type { ReachDomain } from '../types/traits';
 import type { ThreatRating, EncounterType, EncounterTemplate } from '../types/encounter';
+import type { UnifiedActionTemplate } from '../types/unifiedAction';
+import { isActionStepBranch } from '../types/unifiedAction';
 import type { ValuePair } from '../types/agent';
 import type { HexTile, SphereName } from '../types/index';
 import type { GraphNode } from '../types/graph';
@@ -138,6 +140,57 @@ export function computeTotalTickCost(template: EncounterTemplate): number {
   let total = 0;
   for (const step of template.steps) {
     total += step.duration ?? 1;
+  }
+  return total;
+}
+
+// ─── UnifiedActionTemplate Helpers ─────────────────────────────
+
+/** Maps rarityTier to legacy ThreatRating. */
+export const RARITY_TO_THREAT: Record<number, ThreatRating> = {
+  1: 'trivial',
+  2: 'moderate',
+  3: 'hard',
+};
+
+/** Maps crudType to legacy EncounterType for cache entries. */
+export const CRUD_TO_ENCOUNTER_TYPE: Record<string, EncounterType> = {
+  update: 'assist',
+  create: 'build',
+  delete: 'duel',
+  read:   'explore',
+};
+
+/**
+ * Estimate total reward value for a UnifiedActionTemplate.
+ * Uses successMetadata.reputationDelta and successMetadata.rewardPool on each step.
+ */
+export function computeRewardEstimateUnified(template: UnifiedActionTemplate): number {
+  let reputationSum = 0;
+  let hasRewardPool = false;
+
+  for (const stepOrBranch of template.steps) {
+    const step = isActionStepBranch(stepOrBranch) ? stepOrBranch.fallback : stepOrBranch;
+    reputationSum += step.successMetadata?.reputationDelta ?? 0;
+    if (step.successMetadata?.rewardPool) hasRewardPool = true;
+  }
+
+  return (
+    reputationSum * REPUTATION_REWARD_WEIGHT +
+    (hasRewardPool ? LOOT_REWARD_WEIGHT : 0) +
+    DOMAIN_EXERCISE_WEIGHT
+  );
+}
+
+/**
+ * Total tick cost of a UnifiedActionTemplate.
+ * Uses step.duration.min; defaults to 1 if missing.
+ */
+export function computeTotalTickCostUnified(template: UnifiedActionTemplate): number {
+  let total = 0;
+  for (const stepOrBranch of template.steps) {
+    const step = isActionStepBranch(stepOrBranch) ? stepOrBranch.fallback : stepOrBranch;
+    total += step.duration?.min ?? 1;
   }
   return total;
 }

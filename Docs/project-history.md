@@ -3,15 +3,17 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
-- ✅ **THR-134** (2026-04-23) — Pilot-phase UI + CLI verification close-out: U1–U3 PASS, U4 CONDITIONAL PASS (code-verified, aftermath toasts confirmed), U5 CONDITIONAL PASS (WebGL confirmed via Claude-in-Chrome), X6 PASS (encounter log exports valid TSV). No U-pillar blocker; Phase 2 migration unblocked. Follow-ups: THR-255/256/257.
+✅ THR-134 (2026-04-23) — Pilot-phase UI + CLI verification close-out: U1–U3 PASS, U4 CONDITIONAL PASS (code-verified, aftermath toasts confirmed), U5 CONDITIONAL PASS (WebGL confirmed via Claude-in-Chrome), X6 PASS (encounter log exports valid TSV). No U-pillar blocker; Phase 2 migration unblocked. Follow-ups: THR-255/256/257.
 
-- ✅ **THR-225** (2026-04-23) — Event recipe phased activation tied to doom-clock tiers. Phase DSL, phase runner, Chain Weakens recipe, CompositionView debug tab. 12 unit tests. Four deferrals: THR-251/252/253/254.
+✅ THR-225 (2026-04-23) — Event recipe phased activation tied to doom-clock tiers. Phase DSL, phase runner, Chain Weakens recipe, CompositionView debug tab. 12 unit tests. Four deferrals: THR-251/252/253/254.
 
 ✅ THR-164 (2026-04-23) — Linear workflow hardening research: plan doc committed; 5 investigations (In Review auto-close repoint, default team filter skip, Reopened label automation, stale-claim cron, atomic pull-work wrapper); 4 follow-up tickets filed (THR-247/248/249/250)
 
 ✅ THR-246 (2026-04-23) — Linear MCP rate-limit relief: Cowork session-start board scan (5 calls → 1), pull-work Step 0 rate-limit guard + Step 1 board-scan rewrite, Codex automation prompt dedupe + :30 offset, THR-234 plan updated, weekly-hygiene draft updated, CLAUDE.md pointer added, impediment #79 logged
 
 ✅ THR-233 (2026-04-20) — Checklist instantiation protocol (trial): plan doc committed; CC instantiates full DoD on claim-verified pickup, posts Linear comment persistence layer; Cowork instantiates Design Workflow Checklist on In Design pickup; 5-issue trial starts here
+
+✅ THR-100 Phase 3 (2026-04-19) — Migrate 14 social encounter templates to UnifiedActionTemplate: Threadbare relational/pressure-tempered prose; {?has_faction} in 11/14; {ally:strongest} in 6/14; 9 encounter seeds, 8 hidden marks, 4 ActionStepBranch forks; encounterCache.ts Unified helpers + RARITY_TO_THREAT/CRUD_TO_ENCOUNTER_TYPE; socialEncounterGeneration.ts slot priority fix (faction→tavern→unified→legacy); socialOutcome.ts unified template lookup; GameView activity icon fallback fixed.
 
 ✅ THR-165 (2026-04-19) — Replace brittle count assertion in factionQuestAndReputation.test: replaced `expect(candidates).toHaveLength(10)` with per-tier prefix checks (ag.quest.*, ag.senior.*, ag.elite.* each `toBeGreaterThan(0)`); forward-compatible with new template additions; mirrors peer test pattern from THR-160
 

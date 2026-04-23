@@ -30,6 +30,8 @@
 import type { WorldGraph } from './graph';
 import type { EncounterProgress } from '../types/encounter';
 import { getAnyEncounterById } from '../data/encounter-content';
+import { getUnifiedTemplateById } from '../data/unified-action-templates';
+import { CRUD_TO_ENCOUNTER_TYPE } from './encounterCache';
 import { getTrust } from './trustMechanics';
 import { emitTrace } from './traceBuffer';
 import {
@@ -113,9 +115,12 @@ export function processSocialOutcome(
     return { isSocial: true, trustDelta: 0 };
   }
 
-  // Look up the encounter template
-  const template = getAnyEncounterById(progress.encounterId);
-  const encounterType = template?.encounterType;
+  // Look up the encounter template — check UnifiedActionTemplate first (migrated social templates)
+  const unifiedTemplate = getUnifiedTemplateById(progress.encounterId);
+  const legacyTemplate = unifiedTemplate ? undefined : getAnyEncounterById(progress.encounterId);
+  const encounterType = unifiedTemplate
+    ? (CRUD_TO_ENCOUNTER_TYPE[unifiedTemplate.crudType] ?? undefined)
+    : legacyTemplate?.encounterType;
 
   // Determine trust delta
   let trustDelta = 0;
