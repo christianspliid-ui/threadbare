@@ -54,6 +54,20 @@ export const TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS = {
   MOUNTAIN_SOFT_SCALE_MIN: 3.0,
   MOUNTAIN_SOFT_SCALE_MAX: 5.0,
   DEFAULT_MOUNTAIN_LANDMARK_MODEL_ID: 'builtin-mountain-temple',
+  // Phase 2: Chunked filler layer constants
+  VIGNETTE_CHUNK_COLS: 12,
+  VIGNETTE_CHUNK_ROWS: 12,
+  SCATTER_DENSITY_LIGHT_FOREST_FREE: 45,
+  SCATTER_DENSITY_LIGHT_FOREST_SOFT: 14,
+  SCATTER_DENSITY_SWAMP_FREE: 55,
+  SCATTER_DENSITY_SWAMP_SOFT: 16,
+  LANDMARK_MAX_MATERIAL_SLOTS: 3,
+  FILLER_MAX_MATERIAL_SLOTS: 2,
+  LOCATION_CLICK_RADIUS_PX: 24,
+  REMEMBERED_TINT_MIX: 0.55,
+  FILLER_HIDE_ZOOM_THRESHOLD: 5,
+  SHADER_REDUCED_OCTAVE_ZOOM_THRESHOLD: 5,
+  SCATTER_MAX_INSTANCES_PER_BATCH: 3072,
 } as const;
 
 export const TERRAIN_RECIPE_OPTIONS = [
@@ -121,6 +135,7 @@ export interface TerrainTextureLabVignetteSettings {
   showSlotAnchors: boolean;
   showZones: boolean;
   showFillerDots: boolean;
+  showChunkBounds: boolean;
 }
 
 export interface TerrainTextureLabModelDefinition {
@@ -509,6 +524,7 @@ export function getDefaultTerrainTextureLabVignetteSettings(): TerrainTextureLab
     showSlotAnchors: true,
     showZones: false,
     showFillerDots: false,
+    showChunkBounds: false,
   };
 }
 
@@ -585,6 +601,7 @@ export function parseTerrainTextureLabVignetteSettings(raw: string): TerrainText
       showSlotAnchors: parsed.showSlotAnchors,
       showZones: parsed.showZones,
       showFillerDots: parsed.showFillerDots,
+      showChunkBounds: parsed.showChunkBounds === true,
     };
   } catch {
     return null;

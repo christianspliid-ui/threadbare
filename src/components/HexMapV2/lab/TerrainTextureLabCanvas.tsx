@@ -23,6 +23,8 @@ import type {
   TerrainTextureLabVignetteSlotAnchor,
   TerrainTextureLabVignetteZoneRule,
 } from './terrainTextureLabVignettePrototype';
+import { ChunkedFillerLayer } from './vignette/ChunkedFillerLayer';
+import type { ResolvedHexFiller } from './vignette/VignetteResolver';
 
 interface TerrainTextureLabCanvasProps {
   configs: Record<LabTerrainKey, TerrainTextureLabConfig>;
@@ -33,6 +35,8 @@ interface TerrainTextureLabCanvasProps {
   zoneRules: TerrainTextureLabVignetteZoneRule[];
   fillerDots: TerrainTextureLabVignetteDebugDot[];
   clickTargets: TerrainTextureLabVignetteClickTarget[];
+  fillerSpec: ResolvedHexFiller[];
+  showChunkBounds: boolean;
   selectedHexId: string | null;
   selectedClickTargetId: string | null;
   seed: number;
@@ -323,6 +327,8 @@ export function TerrainTextureLabCanvas({
   zoneRules,
   fillerDots,
   clickTargets,
+  fillerSpec,
+  showChunkBounds,
   selectedHexId,
   selectedClickTargetId,
   seed,
@@ -353,6 +359,7 @@ export function TerrainTextureLabCanvas({
   const pointerRef = useRef(new THREE.Vector2());
   const terrainTileTemplatePromiseRef = useRef<Map<LabTerrainKey, Promise<THREE.Group>>>(new Map());
   const terrainTileTemplateRef = useRef<Map<LabTerrainKey, THREE.Group>>(new Map());
+  const fillerLayerRef = useRef<ChunkedFillerLayer | null>(null);
 
   const sceneBounds = useMemo(() => {
     const centers = previewHexes.map(hex => getTerrainTextureLabHexCenter(hex.col, hex.row, TERRAIN_TEXTURE_LAB_CONSTANTS.HEX_RADIUS));
@@ -593,6 +600,8 @@ export function TerrainTextureLabCanvas({
       scene.clear();
       sceneRef.current = null;
       loaderRef.current = null;
+      fillerLayerRef.current?.dispose();
+      fillerLayerRef.current = null;
     };
   }, [previewHexes, sceneBounds]);
 
@@ -683,6 +692,32 @@ export function TerrainTextureLabCanvas({
     );
   }, [clickTargets, selectedClickTargetId]);
 
+  useEffect(() => {
+    const scene = sceneRef.current?.scene;
+    const loader = loaderRef.current;
+    if (!scene || !loader) return;
+
+    const layer = new ChunkedFillerLayer(scene, loader);
+    fillerLayerRef.current?.dispose();
+    fillerLayerRef.current = layer;
+
+    let active = true;
+    void layer.build(fillerSpec).then(success => {
+      if (!active) { layer.dispose(); return; }
+      if (!success) layer.setVisible(false);
+    });
+
+    return () => {
+      active = false;
+      layer.dispose();
+      if (fillerLayerRef.current === layer) fillerLayerRef.current = null;
+    };
+  }, [fillerSpec]);
+
+  useEffect(() => {
+    fillerLayerRef.current?.setChunkBoundsVisible(showChunkBounds);
+  }, [showChunkBounds]);
+
   // Toggle between procedural shader hexes and Meshy-generated textured GLB hex tiles.
   // Each GLB is a complete hex tile with geometry + UV + baked PBR material, placed
   // at the corresponding preview hex center. The procedural InstancedMesh is hidden
@@ -738,7 +773,13 @@ export function TerrainTextureLabCanvas({
           child.receiveShadow = false;
         });
 
-        // Normalize the tile so it fits a single hex cell (flat on z=0, radius = HEX_RADIUS).
+        // glTF is Y-up but our scene is Z-up (camera.up = (0,0,1)). Rotate the tile
+        // so its flat face lies in the X-Y plane with thickness along Z.
+        gltf.scene.rotation.x = Math.PI / 2;
+
+        // Normalize the tile so it fits a single hex cell (centered at origin, footprint
+        // matching HEX_RADIUS). Bounds are computed AFTER the rotation so size.x / size.y
+        // reflect the flat face extents and size.z is the thickness.
         const bounds = new THREE.Box3().setFromObject(gltf.scene);
         const size = bounds.getSize(new THREE.Vector3());
         const center = bounds.getCenter(new THREE.Vector3());
@@ -747,9 +788,9 @@ export function TerrainTextureLabCanvas({
           ? TERRAIN_TEXTURE_LAB_CONSTANTS.HEX_RADIUS / footprintRadius
           : 1;
 
-        gltf.scene.position.x -= center.x * autoScale;
-        gltf.scene.position.y -= center.y * autoScale;
-        gltf.scene.position.z -= bounds.min.z * autoScale;
+        gltf.scene.position.x = -center.x * autoScale;
+        gltf.scene.position.y = -center.y * autoScale;
+        gltf.scene.position.z = -bounds.min.z * autoScale;
         gltf.scene.scale.setScalar(autoScale);
 
         terrainTileTemplateRef.current.set(terrainKey, gltf.scene);

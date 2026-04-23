@@ -61,7 +61,8 @@ describe('terrainTextureLab vignette prototype', () => {
     expect(result.clickTargets[0]?.modelId).toBe('builtin-village');
     expect(result.fillerDots.length).toBeGreaterThan(40);
     expect(result.autoPlacements.some(placement => placement.modelId === 'builtin-village')).toBe(true);
-    expect(result.autoPlacements.some(placement => /oak|elm|birch/.test(placement.modelId))).toBe(true);
+    // Filler trees are now rendered via ChunkedFillerLayer, not autoPlacements
+    expect(result.autoPlacements.some(placement => /oak|elm|birch/.test(placement.modelId))).toBe(false);
   });
 
   it('can target all forest sample hexes when scope is widened', () => {

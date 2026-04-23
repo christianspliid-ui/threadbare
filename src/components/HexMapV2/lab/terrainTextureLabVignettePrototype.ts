@@ -81,17 +81,6 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
-function getForestTreeModels(models: TerrainTextureLabModelDefinition[]): TerrainTextureLabModelDefinition[] {
-  const explicitTrees = models.filter(model => /oak|elm|birch|tree/i.test(model.id) || /oak|elm|birch|tree/i.test(model.label));
-  if (explicitTrees.length > 0) return explicitTrees;
-  return models.filter(model => /forest/i.test(model.id) === false);
-}
-
-function getMountainFillerModels(models: TerrainTextureLabModelDefinition[]): TerrainTextureLabModelDefinition[] {
-  const explicitRocks = models.filter(model => /cairn|rock|outcrop/i.test(model.id) || /cairn|rock|outcrop/i.test(model.label));
-  if (explicitRocks.length > 0) return explicitRocks;
-  return [];
-}
 
 function chooseLandmarkModel(
   models: TerrainTextureLabModelDefinition[],
@@ -267,9 +256,6 @@ export function buildTerrainTextureLabVignettePrototype(
   const landmarkModel = isMountainScope
     ? chooseMountainLandmarkModel(models, settings.landmarkModelId)
     : chooseLandmarkModel(models, settings.landmarkModelId);
-  const fillerModels = isMountainScope
-    ? getMountainFillerModels(models)
-    : getForestTreeModels(models);
 
   const autoPlacements: TerrainTextureLabModelPlacement[] = [];
   const slotAnchors: TerrainTextureLabVignetteSlotAnchor[] = [];
@@ -376,19 +362,6 @@ export function buildTerrainTextureLabVignettePrototype(
         mode: candidate.mode,
         position: { x: candidate.x, y: candidate.y },
         scale: candidate.scale,
-      });
-
-      if (fillerModels.length === 0) continue;
-      const fillerModel = fillerModels[Math.floor(rng() * fillerModels.length)] ?? fillerModels[0];
-      autoPlacements.push({
-        id: `${previewHex.id}-filler-${index}`,
-        modelId: fillerModel.id,
-        hexId: previewHex.id,
-        scale: candidate.scale,
-        heightOffset: fillerModel.suggestedHeightOffset,
-        rotationDegrees: Math.round(rng() * 360 - 180),
-        x: candidate.x,
-        y: candidate.y,
       });
     }
   }
