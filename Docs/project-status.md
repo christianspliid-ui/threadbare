@@ -18,6 +18,9 @@
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
 
+## Recent Completions (2026-04-23) — THR-10
+- **THR-10 — Procedural Hex Vignettes Phase 2 (chunked filler layer):** Replaced clone-per-tree rendering in the terrain lab with chunked InstancedMesh filler via a custom unlit GLSL shader. New `vignette/` module tree: FillerProfiles (per-terrain density/scale/model-weight profiles for temperate_forest, light_forest, swamp), VignetteResolver (pure scatter resolver emitting ResolvedHexFiller[]), VignetteInstanceMaterial (ShaderMaterial with instanceMatrix + per-instance visibility/hover), ChunkedFillerLayer (groups by modelUrl, GLB cache, fresh submesh clone per build, fail-soft), VignetteDebugOverlay (density presets + chunk bounds toggle). Removed filler autoPlacements from vignettePrototype. 8 new tests. tsc clean, build green, 10581 tests passed.
+
 ## Recent Completions (2026-04-23) — THR-246
 - **THR-246 — Linear MCP rate-limit relief:** Cowork session-start collapsed from 5 per-state `list_issues` calls to one board scan with in-memory bucketing. pull-work skill adds Step 0 (rate-limit guard on 429) and rewrites Steps 1+2 to derive all slices from one scan. Codex automation prompt updated with same board-scan pattern + `:30` cadence offset. THR-234 label-split plan backfill audit updated (5 calls → 1). Weekly hygiene skill draft updated. CLAUDE.md Cowork bullet now points to coordination protocol §. Impediment #79 logged. tsc clean, build green, 671 tests passed.
 
