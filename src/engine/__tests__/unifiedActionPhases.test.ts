@@ -148,6 +148,8 @@ function runTicks(
 // ─── Tests ──────────────────────────────────────────────────────
 
 describe('unifiedActionPhases — multi-step integration', () => {
+  // THR-255: assert scenario-local event behavior, not whole-suite event totals.
+  // Global totals can change as encounter/template content is expanded.
   beforeEach(() => {
     resetUnifiedActionCounter();
     resetOpCounter();
