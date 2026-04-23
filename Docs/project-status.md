@@ -1,12 +1,12 @@
 # Project Status
-> Updated 2026-04-20.
+> Updated 2026-04-23.
 ## Current Focus
-**THR-96 shipped (Lorekeepers Covenant migration — 15 templates, 13 intelligence grants, 6 seeds, 6 marks).** Merge held pending THR-134 U4. Next: THR-95 (Holy Order of Dawn — 42 templates, model:sonnet). THR-183 pending GitHub Pro (flip review Action to blocking).
+**THR-95 shipped (Holy Order of Dawn — 15 templates, audit+uplift pass).** Merge held pending THR-134 U4. THR-183 pending GitHub Pro (flip review Action to blocking).
 
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
 - **v1.1 Optimization:** Shipped — Phases 19-22 (determinism, wiring, performance, hygiene)
-- **Encounter Format Migration (Now):** ✅ Phase 0 complete. ✅ Phase 1 TG (THR-89). ✅ Phase 2 AC (THR-91). ✅ Phase 3 CG (THR-92). ✅ Phase 4 BF (THR-93). ✅ Phase 5 MC (THR-94). ✅ Phase 6 RB (THR-97). ✅ Phase 7 LC (THR-96). Merge held on BF/LC until THR-134 U4 closes.
+- **Encounter Format Migration (Now):** ✅ Phase 0 complete. ✅ Phase 1 TG (THR-89). ✅ Phase 2 AC (THR-91). ✅ Phase 3 CG (THR-92). ✅ Phase 4 BF (THR-93). ✅ Phase 5 MC (THR-94). ✅ Phase 6 RB (THR-97). ✅ Phase 7 LC (THR-96). ✅ Phase 8 HOD (THR-95). Merge held on all until THR-134 U4 closes.
 - **Content Architecture (Now):** Shell/primitive work — stateful shells (Phase 2), progress/service shells (Phase 3), starter libraries (Phase 4), governance (Phase 5). ✅ THR-86 shipped (routine template structural variety). ✅ THR-88 shipped (backstory strata 2-4 deepening).
 - **UI Visual Overhaul — Design System v1 (Now):** ✅ THR-168 tokens. ✅ THR-169 typography floor. ✅ THR-170 primitives. ✅ THR-183 Vara seed. ✅ THR-172 SphereIcon. ✅ THR-173 Thread Panel. ✅ THR-174 viewport audit. **Project complete.**
 - **Attention Tier Model (Now):** ✅ THR-16 curator metadata. ✅ THR-18 siege templates + digest wiring. UI integration ongoing.
@@ -17,6 +17,9 @@
 - **Procedural Hex Vignettes (Next):** Phases 2-5 queued.
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
+
+## Recent Completions (2026-04-23) — THR-95
+- **THR-95 — Holy Order of Dawn encounter audit+uplift:** 15 templates reviewed against quality bar and systemic wiring targets. 5 templates uplifted: `inquisition` success got intelligence grant (agent_network, cult hierarchy); `escort_pilgrims` failure got soul_diminishment hidden mark + encounter_seed → slay_abomination; `deliver_judgment` success got reputation_note hidden mark + encounter_seed → cleanse_corruption; `lead_crusade` got success (mark + rep tally) and failure (mark + rep tally + seed → holy_war) variants; `holy_war` got success (mark + rep tally +3) and failure (mark + seed → holy_war retry) variants. Merge held pending THR-134 U4.
 
 ## Recent Completions (2026-04-20) — THR-233
 - **THR-233 — Checklist instantiation protocol (trial):** Plan doc committed (`Docs/plans/2026-04-20-checklist-instantiation-protocol.md`). Two trigger points: Cowork instantiates Design Workflow Checklist on In Design pickup; CC instantiates full DoD + action items on claim-verified pickup and posts a Linear comment as the persistence layer. 5-issue trial begins with this issue.
