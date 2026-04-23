@@ -32,3 +32,4 @@
 - **work** | THR-241 shipped: added session-precheck sandbox fingerprint script and required Session Workflow first-step run in CLAUDE.md.
 - **work** | THR-242 shipped: deterministic retro-draft generator + retrospective skill draft-first workflow update.
 - **work** | THR-43 shipped: bind_thread_army now requires `armyState` via `requiredNodeProperties`, with regression test coverage.
+- **work** | THR-213 shipped: added verification-evidence hard rule in CLAUDE.md + coordination protocol Rule 9.

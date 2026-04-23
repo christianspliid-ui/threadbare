@@ -209,6 +209,32 @@ Each rule below maps to a specific incident that has actually happened in this p
 - Any future tooling that reinstates codex in the loop must be designed so the reviewer is structurally read-only: no write credentials to the repo, PR-comment-only output. Read-only in capability, not just in convention.
 - **See also:** `Docs/plans/2026-04-19-cc-review-replacement.md` — the heartbeat wrapper and PR-gated GitHub Action that replace the retired inline review. The Action enforces Rule 8 structurally (scope-restricted `GITHUB_TOKEN`, no `contents:write`).
 
+### Rule 9 — Verification evidence is required before completion (bridge discipline)
+
+**Rule:** Executor agents (CC, Codex) must not claim completion on an issue without verification evidence. Before posting a completion comment or using a close keyword (`Fixes THR-XX`, `Closes THR-XX`, `Resolves THR-XX`), include either raw terminal output for the required checks or a link to a green CI run for the same commit.
+
+**Why:** "Tests pass" claims are otherwise unverifiable and can be hallucinated or stale. This rule creates an auditable artifact until hard CI merge gates are enforced.
+
+**How to apply:**
+- Capture and paste output from `npm test`, `npx tsc --noEmit`, and `npx vite build` in the closing commit body or completion comment.
+- A green CI URL is acceptable evidence if it clearly corresponds to the same commit that contains the close keyword.
+- Treat this as a bridge discipline until branch protection + CI hard gates land (tracked by THR-183); then this manual requirement can be revisited.
+
+Example commit-message format:
+
+```
+feat(encounters): wire hidden marks through aftermath
+
+Fixes THR-XXX
+
+Verification:
+$ npm test
+… 412 passed
+$ npx tsc --noEmit
+(clean)
+$ npx vite build
+✓ built in 4.2s
+```
 ---
 
 ## Agent Session Protocols
