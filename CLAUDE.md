@@ -405,6 +405,7 @@ Context for specific problem types lives in on-demand skills. **Always load `sta
 | Prose — content authoring | `prose-content-systems` | Adding encounter templates, narrative event prose, faction content, spell flavor, content tables. High-volume daily work. |
 | Prose — dynamic systems | `prose-vignettes-and-enrichment` | Enrichment placeholders `{name}/{artifact}/{ally}`, vignette authoring, backstory strata, encounter history → prose. |
 | Encounter authoring pipeline | `encounter-pipeline` | Automated 4-pass encounter authoring: draft → editorial → systems audit → final merge. Run with `/encounter-pipeline <scale> <premise>`. |
+| Template encounter rewrite | `template-encounter-rewrite` | Rewriting guild/social/tavern/combat `EncounterTemplate`-format files to meet prose quality bar + systemic wiring. NOT for branching encounters — those use `encounter-pipeline`. |
 | Attachment authoring pipeline | `attachment-pipeline` | Automated 4-pass attachment authoring: draft composable attachments using primitive vocabulary → editorial → systems audit → final merge. Run with `/attachment-pipeline <category> <premise>`. |
 | Content systems & worldbuilding | `content-worldbuilding` | Content packages, graph data, constraint layers, world-model.json |
 | Hex map — architecture | `hexmap-core` | Always before any HexMapV2 work. Coordinates, zoom, render layers, camera, Three.js color, performance, lessons learned. |
