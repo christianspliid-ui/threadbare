@@ -4,6 +4,10 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
 ### Recent Changes
 
+| 2026-04-23 | src/components/CMS/registry.ts, src/engine/deriveLocationActivities.ts | THR-259: Hex Tooltip Murmurs in CMS Registry. Exported MURMUR_TEMPLATES; added hex-murmurs entry (Narrative & Prose, ProseViewer) flattening pulse × activity-category into "pulse / category" keys. |
+
+| 2026-04-23 | src/components/CMS/registry.ts, src/data/effect-constants.ts | THR-36: Reputation Traits in CMS Registry. Added REPUTATION_TRAIT_DEFINITIONS import + reputation-trait-definitions entry (Traits, TableViewer, 8 columns). Landed staged effect-constants.ts additions (MAX_FLIP_VARIANTS_PER_TEMPLATE, RESULT_BAND_FALLBACK_ID) that were blocking the build. |
+
 | 2026-04-23 | src/engine/phaseComposition.ts, src/engine/__tests__/phaseComposition.worldPredicates.test.ts (new), src/engine/__tests__/phaseComposition.chainWeakens.test.ts (new), src/composition-dsl/examples/event-chain-weakens.recipe.ts, src/data/story-beat-templates/chain-weakens.ts, src/components/Game/debug/CompositionView.tsx | THR-252: Phase-runner WorldPredicate ops. Extends evaluatePhasePredicateV1 with world-flag (reads state.worldFlags), has-faction-of-archetype (counts by factionDefId), has-agent-of-archetype (counts individual actors by archetypeId). Adds countActorsByArchetype + satisfiesCountBounds helpers. Unknown-op fallthrough preserved. Chain Weakens recipe gains phase-5-reckoning (three-term and). Story-beat stub chain-weakens-reckoning. CompositionView predicate-summary lines. Deferral: edge-exists predicate (new Linear issue). 39 new tests. |
 
 | 2026-04-23 | Docs/plans/2026-04-17-encounter-migration-audit-checklist.md | THR-134: Pilot-phase verification close-out. Appended 2026-04-23 run results to audit checklist History. U1–U3 PASS, U4 CONDITIONAL PASS (code-verified), U5 CONDITIONAL PASS (WebGL confirmed), X6 PASS. No U-pillar blocker. Phase 2 unblocked. Follow-ups: THR-255/256/257. |

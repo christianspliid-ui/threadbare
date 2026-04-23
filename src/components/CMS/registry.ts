@@ -73,6 +73,7 @@ import { FOUNDATION_OPPOSITION_MATRIX, CREATION_SPHERE_TENSIONS, ARCHETYPE_FRICT
 
 // Narrative & Prose
 import { SPHERE_VOCABULARY, ROUTINE_TEMPLATES, NOTABLE_TEMPLATES } from '../../data/narrative-content';
+import { MURMUR_TEMPLATES } from '../../engine/deriveLocationActivities';
 import { CHRONICLER_VIGNETTES, SUBLOCATION_FLAVOR, ARTIFACT_LORE, LOCATION_TYPE_FLAVOR } from '../../data/chronicler-content';
 import {
   BIOME_PROSE, SUBTYPE_ESTABLISHING_PROSE,
@@ -405,6 +406,15 @@ const LOCATION_GROUP_COLORS: Record<string, string> = {
   'Monster/Danger':     '#991b1b',
   'Default':            '#525252',
 };
+
+// ── Derived: murmur templates flattened for ProseViewer ──────────
+// Keys are "pulse / category" — e.g. "stirring / idle"
+const MURMUR_PROSE_FLAT: Record<string, string[]> = {};
+for (const [pulse, categories] of Object.entries(MURMUR_TEMPLATES)) {
+  for (const [category, lines] of Object.entries(categories)) {
+    MURMUR_PROSE_FLAT[`${pulse} / ${category}`] = [...lines];
+  }
+}
 
 // ── The Registry ─────────────────────────────────────────────────
 
@@ -962,6 +972,15 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
   },
 
   // ─── Narrative & Prose ──────────────────────────────────────
+  {
+    id: 'hex-murmurs',
+    label: 'Hex Tooltip Murmurs',
+    category: 'Narrative & Prose',
+    description: 'Atmospheric prose shown in hex map tooltips. Keyed by pulse level × activity category (e.g. "stirring / idle").',
+    data: MURMUR_PROSE_FLAT,
+    viewer: 'prose',
+    sourceFile: 'src/engine/deriveLocationActivities.ts',
+  },
   {
     id: 'sphere-vocabulary',
     label: 'Sphere Vocabulary',
@@ -1746,7 +1765,6 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
     viewer: 'record',
     sourceFile: 'src/data/profile-content.ts',
   },
-
   // Journey
   {
     id: 'journey-beat-templates',
