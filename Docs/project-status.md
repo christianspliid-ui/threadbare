@@ -1,12 +1,12 @@
 # Project Status
 > Updated 2026-04-23.
 ## Current Focus
-**THR-95 shipped (Holy Order of Dawn — 15 templates, audit+uplift pass).** Merge held pending THR-134 U4. THR-183 pending GitHub Pro (flip review Action to blocking).
+**THR-99 shipped (Temple of Spheres — 15 templates, format migration+uplift pass).** Merge held pending THR-134 U4. THR-183 pending GitHub Pro (flip review Action to blocking).
 
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
 - **v1.1 Optimization:** Shipped — Phases 19-22 (determinism, wiring, performance, hygiene)
-- **Encounter Format Migration (Now):** ✅ Phase 0 complete. ✅ Phase 1 TG (THR-89). ✅ Phase 2 AC (THR-91). ✅ Phase 3 CG (THR-92). ✅ Phase 4 BF (THR-93). ✅ Phase 5 MC (THR-94). ✅ Phase 6 RB (THR-97). ✅ Phase 7 LC (THR-96). ✅ Phase 8 HOD (THR-95). Merge held on all until THR-134 U4 closes.
+- **Encounter Format Migration (Now):** ✅ Phase 0 complete. ✅ Phase 1 TG (THR-89). ✅ Phase 2 AC (THR-91). ✅ Phase 3 CG (THR-92). ✅ Phase 4 BF (THR-93). ✅ Phase 5 MC (THR-94). ✅ Phase 6 RB (THR-97). ✅ Phase 7 LC (THR-96). ✅ Phase 8 HOD (THR-95). ✅ Phase 9 TS (THR-99). Merge held on all until THR-134 U4 closes.
 - **Content Architecture (Now):** Shell/primitive work — stateful shells (Phase 2), progress/service shells (Phase 3), starter libraries (Phase 4), governance (Phase 5). ✅ THR-86 shipped (routine template structural variety). ✅ THR-88 shipped (backstory strata 2-4 deepening).
 - **UI Visual Overhaul — Design System v1 (Now):** ✅ THR-168 tokens. ✅ THR-169 typography floor. ✅ THR-170 primitives. ✅ THR-183 Vara seed. ✅ THR-172 SphereIcon. ✅ THR-173 Thread Panel. ✅ THR-174 viewport audit. **Project complete.**
 - **Attention Tier Model (Now):** ✅ THR-16 curator metadata. ✅ THR-18 siege templates + digest wiring. UI integration ongoing.
@@ -17,6 +17,12 @@
 - **Procedural Hex Vignettes (Next):** Phases 2-5 queued.
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
+
+## Recent Completions (2026-04-23) — THR-164
+- **THR-164 — Linear workflow hardening research:** Plan doc committed (`Docs/plans/2026-04-23-linear-workflow-hardening.md`). Evaluates 5 candidate structural enforcement mechanisms: In Review auto-close repoint (SHIP), default team filter (SKIP), Reopened label automation (SHIP), stale-claim cron (SHIP), pull-work atomic claim wrapper (SHIP). Four follow-up issues filed (THR-247/248/249/250). Implementation order: wrapper → automation → auto-close → stale-claim cron.
+
+## Recent Completions (2026-04-23) — THR-99
+- **THR-99 — Temple of Spheres encounter migration:** 15 templates fully migrated from invalid legacy format (wrong `failBehavior: 'block'`, flat `aftermathConfig.reactions`) to valid `UnifiedActionTemplate` shape with Threadbare prose (cosmological-that-weighs voice). All 15 fire on 2+ sphere-aligned axes; 11 hidden marks; 9 encounter seeds; 5 `{?has_artifact}` branches; 1 intelligence grant. Fixed `factionDefId`→`factionId`. PR open; merge held pending THR-134 U4. tsc clean, build green, 10581 tests passed.
 
 ## Recent Completions (2026-04-23) — THR-10
 - **THR-10 — Procedural Hex Vignettes Phase 2 (chunked filler layer):** Replaced clone-per-tree rendering in the terrain lab with chunked InstancedMesh filler via a custom unlit GLSL shader. New `vignette/` module tree: FillerProfiles (per-terrain density/scale/model-weight profiles for temperate_forest, light_forest, swamp), VignetteResolver (pure scatter resolver emitting ResolvedHexFiller[]), VignetteInstanceMaterial (ShaderMaterial with instanceMatrix + per-instance visibility/hover), ChunkedFillerLayer (groups by modelUrl, GLB cache, fresh submesh clone per build, fail-soft), VignetteDebugOverlay (density presets + chunk bounds toggle). Removed filler autoPlacements from vignettePrototype. 8 new tests. tsc clean, build green, 10581 tests passed.
@@ -45,9 +51,6 @@
 
 ## Recent Completions (2026-04-19) — THR-96
 - **THR-96 — Lorekeepers Covenant encounter migration:** 15 templates rewritten to UnifiedActionTemplate format. Lorekeepers voice preserved (record, annal, margin, hand — never story/myth); `{?has_artifact}` conditionals in 10 templates. 13 intelligence grants (cultural_knowledge, political_secret, shrine_location), 6 encounter seeds (research threads, lore-debt follow-ups), 6 hidden marks (secret_knowledge, forbidden_contact, political_secret). Corrects old format's `failBehavior: 'block'`, missing intrinsicTier/motivations, wrong faction_reputation_gain field names. PR open; merge held pending THR-134 U4. tsc clean, build green.
-
-## Recent Completions (2026-04-19) — THR-97
-- **THR-97 — Rangers Brotherhood encounter migration:** 15 templates rewritten to UnifiedActionTemplate format. Rangers voice: terse, laconic, terrain-as-character; `{location}` in every template; `{?has_ally}`/`{?has_faction}` conditionals; encounter seeds, intelligence grants, hidden marks. Corrects old format's wrong `failBehavior` values, missing `intrinsicTier`/`motivations`, wrong `faction_reputation_gain` field names. tsc clean, build green.
 
 ## Archived to project-history.md
 - THR-165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 (2026-04-19/18) and earlier — see project-history.md

@@ -3,6 +3,8 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ THR-164 (2026-04-23) — Linear workflow hardening research: plan doc committed; 5 investigations (In Review auto-close repoint, default team filter skip, Reopened label automation, stale-claim cron, atomic pull-work wrapper); 4 follow-up tickets filed (THR-247/248/249/250)
+
 ✅ THR-246 (2026-04-23) — Linear MCP rate-limit relief: Cowork session-start board scan (5 calls → 1), pull-work Step 0 rate-limit guard + Step 1 board-scan rewrite, Codex automation prompt dedupe + :30 offset, THR-234 plan updated, weekly-hygiene draft updated, CLAUDE.md pointer added, impediment #79 logged
 
 ✅ THR-233 (2026-04-20) — Checklist instantiation protocol (trial): plan doc committed; CC instantiates full DoD on claim-verified pickup, posts Linear comment persistence layer; Cowork instantiates Design Workflow Checklist on In Design pickup; 5-issue trial starts here
@@ -478,3 +480,5 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - THR-242 retrospective deterministic draft: ✅ Complete (2026-04-23) — shipped `scripts/retro-draft.ts`, `npm run retro-draft`, and retrospective skill Step 1 draft-first guidance with mirrored skill sync.
 - THR-43 bind_thread_army property filter: ✅ Complete (2026-04-23) — added `requiredNodeProperties: { armyState: undefined }` to the `bind_thread_army` template and added focused regression coverage in `unifiedActionResolution.test.ts`.
 - THR-213 verification-evidence hard rule: ✅ Complete (2026-04-23) — documented mandatory verification evidence (raw terminal output or green CI link) in CLAUDE.md and added Rule 9 to the Linear coordination protocol with explicit application guidance and example commit format.
+- THR-99 Temple of Spheres encounter migration: ✅ Complete (2026-04-23) — 15 templates migrated to UnifiedActionTemplate format, cosmological-that-weighs prose, 11 hidden marks, 9 encounter seeds, 5 {?has_artifact} branches, 1 intelligence grant. PR open; merge held pending THR-134 U4.
+- THR-97 Rangers Brotherhood encounter migration: ✅ Complete (2026-04-23) — 15 templates rewritten to UnifiedActionTemplate format, Rangers voice, terse/terrain-as-character prose, encounter seeds/intelligence/hidden marks, corrected failBehavior/intrinsicTier/motivations/factionId.
