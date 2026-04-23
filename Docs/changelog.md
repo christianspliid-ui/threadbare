@@ -4,6 +4,8 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
 ### Recent Changes
 
+| 2026-04-24 | src/engine/phaseComposition.ts, src/data/story-beat-templates/, src/composition-dsl/schema.ts, src/types/trace.ts | THR-254: Chronicle dual-voice for phased events. Phase Chronicle entries now use poetProse/witnessFacts from STORY_BEAT_TEMPLATE_REGISTRY. Added PhaseStoryBeatVoice DSL field, fail-soft trace, 5 Chain Weakens templates migrated, 32 new tests. |
+
 | 2026-04-23 | src/components/CMS/registry.ts, src/engine/deriveLocationActivities.ts | THR-259: Hex Tooltip Murmurs in CMS Registry. Exported MURMUR_TEMPLATES; added hex-murmurs entry (Narrative & Prose, ProseViewer) flattening pulse × activity-category into "pulse / category" keys. |
 
 | 2026-04-23 | src/components/CMS/registry.ts, src/data/effect-constants.ts | THR-36: Reputation Traits in CMS Registry. Added REPUTATION_TRAIT_DEFINITIONS import + reputation-trait-definitions entry (Traits, TableViewer, 8 columns). Landed staged effect-constants.ts additions (MAX_FLIP_VARIANTS_PER_TEMPLATE, RESULT_BAND_FALLBACK_ID) that were blocking the build. |

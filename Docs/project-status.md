@@ -1,7 +1,7 @@
 # Project Status
 > Updated 2026-04-24.
 ## Current Focus
-**Phase 2 migration unblocked.** THR-257 + THR-259 shipped. CI workflow fixes landed (claude-review `persist-credentials` + Rule 8 redesign). No Ready-for-Dev issues in queue — next work comes from Cowork.
+**THR-254 shipped (PR #13 open).** Chronicle dual-voice phased events wired: phase Chronicle entries now use `poetProse`/`witnessFacts` from template registry instead of `phase.rationale`. Unlocks THR-253 prose polish.
 
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
@@ -10,7 +10,7 @@
 - **Content Architecture (Now):** Shell/primitive work — stateful shells (Phase 2), progress/service shells (Phase 3), starter libraries (Phase 4), governance (Phase 5). ✅ THR-86 shipped (routine template structural variety). ✅ THR-88 shipped (backstory strata 2-4 deepening). ✅ THR-239 shipped (authoring brief — compiled content-pipeline preamble).
 - **UI Visual Overhaul — Design System v1 (Now):** ✅ THR-168 tokens. ✅ THR-169 typography floor. ✅ THR-170 primitives. ✅ THR-183 Vara seed. ✅ THR-172 SphereIcon. ✅ THR-173 Thread Panel. ✅ THR-174 viewport audit. **Project complete.**
 - **Attention Tier Model (Now):** ✅ THR-16 curator metadata. ✅ THR-18 siege templates + digest wiring. UI integration ongoing.
-- **Social Systems Expansion (Now):** THR-28/27/30/51/29/41/34/31/35 shipped. THR-78 queued.
+- **Social Systems Expansion (Now):** THR-28/27/30/51/29/41/34/31/35 shipped. ✅ THR-254 dual-voice Chronicle phased events (PR #13). THR-78 queued.
 - **Thematic Pressure & Living World (Next):** THR-19 Omen Agenda shipped. ✅ THR-122/125/126/80/128/127 shipped. Nothing left in Ready for Dev. THR-87 (cool failure prose) blocked by THR-116.
 - **Agent Success Redesign (Next):** Phases 1-4 shipped. Phases 5-8 queued.
 - **Rarity Model (Next):** Three deferred Phase D items.
@@ -27,7 +27,7 @@
 - **THR-36:** Reputation Traits CMS. 17 traits browsable at `?view=cms`.
 
 ## Archived to project-history.md
-- THR-259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
+- THR-254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
 
 
 ## Active Backlog Ideas
