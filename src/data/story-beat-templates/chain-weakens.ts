@@ -36,6 +36,14 @@ export const CHAIN_WEAKENS_STORY_BEAT_TEMPLATES: CompositionStoryBeatTemplate[] 
       "A sound like a mountain's heartbeat, felt in the bones: the Azath glyph has fractured. Whatever was held within is no longer fully contained. This moment will not be undone.",
     sphere: 'void',
   },
+  {
+    // TODO(THR-253): prose polish — placeholder only
+    id: 'story-beat.chain-weakens-reckoning',
+    title: 'The Chain Weakens — The Reckoning',
+    prose:
+      'The order that stood against the herald has not looked away. They have witnessed the cracking of the Azath glyph, and they name what it means. A reckoning has begun.',
+    sphere: 'order',
+  },
 ];
 
 export const CHAIN_WEAKENS_STORY_BEAT_MAP = new Map(

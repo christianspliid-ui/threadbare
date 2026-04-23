@@ -95,6 +95,22 @@ function CompositionEntry({ comp, currentTick }: { comp: ActiveComposition; curr
                       waiting doom-clock {phase.activatesAt.comparator} {phase.activatesAt.tier}
                     </span>
                   )}
+                  {!activated && phase.activatesAt.op === 'world-flag' && (
+                    <span style={{ marginLeft: '6px', color: '#555', fontSize: '10px' }}>
+                      waiting flag {phase.activatesAt.key} = {String(phase.activatesAt.value)}
+                    </span>
+                  )}
+                  {!activated && (phase.activatesAt.op === 'has-faction-of-archetype' || phase.activatesAt.op === 'has-agent-of-archetype') && (
+                    <span style={{ marginLeft: '6px', color: '#555', fontSize: '10px' }}>
+                      waiting {phase.activatesAt.op === 'has-faction-of-archetype' ? 'faction' : 'agent'}:{phase.activatesAt.archetype}
+                      {phase.activatesAt.count?.gte !== undefined && ` ≥${phase.activatesAt.count.gte}`}
+                    </span>
+                  )}
+                  {!activated && phase.activatesAt.op === 'and' && (
+                    <span style={{ marginLeft: '6px', color: '#555', fontSize: '10px' }}>
+                      waiting and({phase.activatesAt.terms.map((t) => t.op).join(', ')})
+                    </span>
+                  )}
                   {phase.rationale && (
                     <div style={{ color: '#666', fontSize: '10px', marginTop: '1px' }}>
                       {phase.rationale}

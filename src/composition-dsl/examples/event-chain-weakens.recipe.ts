@@ -152,6 +152,30 @@ export const CHAIN_WEAKENS_EVENT_RECIPE: Composition = {
       },
       rationale: 'Azath structurally cracks — climax of the event.',
     },
+    {
+      // Conditional phases. A phase's activatesAt can reference state other phases have produced.
+      // This lets you gate a beat on "did something prior happen?" without hardcoding phase ordering.
+      // Use world-flag for cross-phase and cross-recipe flags.
+      // Use has-faction-of-archetype / has-agent-of-archetype to gate on presence of actors.
+      // Use and / or / not to compose.
+      id: 'phase-5-reckoning',
+      activatesAt: {
+        op: 'and',
+        terms: [
+          { op: 'doom-clock', comparator: 'gte', tier: 4 },
+          { op: 'world-flag', key: 'chain-weakens.plague-materialized', value: true },
+          { op: 'has-faction-of-archetype', archetype: 'divine_champion_order', count: { gte: 1 } },
+        ],
+      },
+      activates: [],
+      storyBeat: {
+        tier: 'story_beat',
+        template: 'story-beat.chain-weakens-reckoning',
+        priority: 'doom_clock',
+      },
+      rationale:
+        'After the Azath cracks, if the plague materialized AND an aligned order survived to witness it, a reckoning beat fires. Exercises world-flag + has-faction-of-archetype predicates.',
+    },
   ],
   effects: [{ op: 'mark-composition-fired', id: 'the-chain-weakens' }],
   metadata: {

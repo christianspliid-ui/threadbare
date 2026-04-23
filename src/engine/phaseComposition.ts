@@ -19,7 +19,35 @@ import {
 } from '../data/composition-config';
 
 // ─── Predicate evaluation ─────────────────────────────────────────
-// v1 whitelist: doom-clock, composition-fired. Others treated as false with a warning.
+// v1 whitelist: doom-clock, composition-fired, world-flag, has-faction-of-archetype,
+// has-agent-of-archetype. Unknown ops treated as false with a warning (fail-soft).
+
+function countActorsByArchetype(
+  state: GameState,
+  actorType: 'faction' | 'individual',
+  archetype: string
+): number {
+  const actors = state.graph.getNodesByType('actor');
+  const archetypeField = actorType === 'faction' ? 'factionDefId' : 'archetypeId';
+  let count = 0;
+  for (const node of actors) {
+    if (node.properties.actorType !== actorType) continue;
+    if (node.properties[archetypeField] === archetype) count += 1;
+  }
+  return count;
+}
+
+function satisfiesCountBounds(
+  count: number,
+  bounds: { gte?: number; lte?: number } | undefined
+): boolean {
+  if (!bounds || (bounds.gte === undefined && bounds.lte === undefined)) {
+    return count >= 1;
+  }
+  if (bounds.gte !== undefined && count < bounds.gte) return false;
+  if (bounds.lte !== undefined && count > bounds.lte) return false;
+  return true;
+}
 
 function evaluatePhasePredicateV1(
   predicate: WorldPredicate,
@@ -35,6 +63,18 @@ function evaluatePhasePredicateV1(
     case 'composition-fired': {
       const fired = new Set(state.firedCompositions ?? []);
       return fired.has(predicate.id);
+    }
+    case 'world-flag': {
+      const flags = state.worldFlags ?? {};
+      return flags[predicate.key] === predicate.value;
+    }
+    case 'has-faction-of-archetype': {
+      const count = countActorsByArchetype(state, 'faction', predicate.archetype);
+      return satisfiesCountBounds(count, predicate.count);
+    }
+    case 'has-agent-of-archetype': {
+      const count = countActorsByArchetype(state, 'individual', predicate.archetype);
+      return satisfiesCountBounds(count, predicate.count);
     }
     case 'and':
       return predicate.terms.every((t) => evaluatePhasePredicateV1(t, state));
@@ -193,7 +233,6 @@ export function phaseComposition(state: GameState): Partial<GameState> {
     // The phase runner reads phases from the composition found in the game's recipe store.
     // For v1 we store phases inline on ActiveComposition via a phases field added at fire-time.
     // TODO(THR-226): wire recipe registry so phaseComposition can look up recipes by id
-    // TODO(THR-252): extend evaluatePhasePredicateV1 with world-flag, edge-exists, has-faction ops
     const phases = (active as ActiveComposition & { phases?: Phase[] }).phases;
     if (!phases || phases.length === 0) continue;
 
