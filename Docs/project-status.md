@@ -18,6 +18,10 @@
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
 
+## Recent Completions (2026-04-23) — THR-259 + THR-36
+- **THR-259 — Hex Tooltip Murmurs in CMS Registry:** Exported `MURMUR_TEMPLATES` from `deriveLocationActivities.ts` + added `hex-murmurs` registry entry (Narrative & Prose, ProseViewer). All pulse × activity-category rows browsable at `?view=cms`.
+- **THR-36 — Reputation Traits in CMS Registry:** Added `reputation-trait-definitions` entry (Traits, TableViewer, 8 columns). All 17 reputation traits browsable at `?view=cms`. Also landed staged `effect-constants.ts` additions that were blocking the build.
+
 ## Recent Completions (2026-04-23) — THR-134
 - **THR-134 — Pilot-phase UI + CLI verification (THR-129 deferral):** All remaining UNABLE checks closed. U1–U3 PASS; U4 CONDITIONAL PASS (code-verified: `hidden_mark`/`intelligence`/`encounter_seed` confirmed writing to `nextTickEvents`); U5 CONDITIONAL PASS (WebGL agent portraits confirmed via Claude-in-Chrome); X6 PASS (103 events / 17 agents / valid TSV). No U-pillar blocker. Phase 2 migration unblocked. Follow-ups: THR-255 (E1 snapshot), THR-256 (trace hygiene), THR-257 (CLI aftermath hook).
 

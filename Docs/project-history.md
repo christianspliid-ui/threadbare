@@ -3,6 +3,9 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ THR-259 (2026-04-23) — Hex Tooltip Murmurs in CMS Registry: exported MURMUR_TEMPLATES, added hex-murmurs ProseViewer entry at ?view=cms.
+✅ THR-36 (2026-04-23) — Reputation Traits in CMS Registry: 17 traits (8 reaches × 2 polarities + power renown) in TableViewer with reactions/scoring/gate columns. Also fixed effect-constants.ts build break.
+
 ✅ THR-134 (2026-04-23) — Pilot-phase UI + CLI verification close-out: U1–U3 PASS, U4 CONDITIONAL PASS (code-verified, aftermath toasts confirmed), U5 CONDITIONAL PASS (WebGL confirmed via Claude-in-Chrome), X6 PASS (encounter log exports valid TSV). No U-pillar blocker; Phase 2 migration unblocked. Follow-ups: THR-255/256/257.
 
 ✅ THR-225 (2026-04-23) — Event recipe phased activation tied to doom-clock tiers. Phase DSL, phase runner, Chain Weakens recipe, CompositionView debug tab. 12 unit tests. Four deferrals: THR-251/252/253/254.
