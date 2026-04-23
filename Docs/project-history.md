@@ -3,6 +3,8 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+- ✅ **THR-134** (2026-04-23) — Pilot-phase UI + CLI verification close-out: U1–U3 PASS, U4 CONDITIONAL PASS (code-verified, aftermath toasts confirmed), U5 CONDITIONAL PASS (WebGL confirmed via Claude-in-Chrome), X6 PASS (encounter log exports valid TSV). No U-pillar blocker; Phase 2 migration unblocked. Follow-ups: THR-255/256/257.
+
 - ✅ **THR-225** (2026-04-23) — Event recipe phased activation tied to doom-clock tiers. Phase DSL, phase runner, Chain Weakens recipe, CompositionView debug tab. 12 unit tests. Four deferrals: THR-251/252/253/254.
 
 ✅ THR-164 (2026-04-23) — Linear workflow hardening research: plan doc committed; 5 investigations (In Review auto-close repoint, default team filter skip, Reopened label automation, stale-claim cron, atomic pull-work wrapper); 4 follow-up tickets filed (THR-247/248/249/250)
