@@ -4,8 +4,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { DebugPanel } from '../DebugPanel';
 import { emitTrace, enableTracing, clearTraces } from '../../../engine/traceBuffer';
 
-// TODO(THR-42): modifier_resolution rendering not yet implemented in DebugPanel
-describe.skip('DebugPanel — modifier_resolution renderer', () => {
+describe('DebugPanel — modifier_resolution renderer', () => {
   beforeEach(() => {
     enableTracing();
     clearTraces();
