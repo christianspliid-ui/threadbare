@@ -37,3 +37,4 @@
 - **work** | THR-257 shipped: shared aftermath resolver + CLI/debug headless reaction hooks with trace/test coverage.
 - **work** | THR-259 shipped: hex tooltip murmur prose now visible in CMS via hex-murmurs registry entry.
 - **work** | CI workflow fix: removed persist-credentials:false, fixed Rule 8 exit-code check. Impediment #80 resolved. PR #10 merged. (2026-04-24)
+- **work** | THR-255 closed: unifiedActionPhases 9331→9362 mismatch is stale; added scenario-scoped event assertion note and reverified full test/type/build gates.
