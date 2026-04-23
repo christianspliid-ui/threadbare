@@ -138,6 +138,7 @@ import { useTargetActions } from './hooks/useTargetActions';
 import { templateIdFromSlotId } from '../../engine/targetActions';
 import type { WheelSlot } from '../../engine/wheel';
 import { getUnifiedTemplateById, UNIFIED_ACTION_TEMPLATES, resolveEncounterTemplate } from '../../data/unified-action-templates';
+import { CRUD_TO_ENCOUNTER_TYPE } from '../../engine/encounterCache';
 import { createUnifiedAction } from '../../engine/unifiedActionLifecycle';
 import { mulberry32 } from '../../lib/prng';
 import { DIVINE_INFLUENCE_CONSTANTS } from '../../data/intervention-feedback-content';
@@ -713,8 +714,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     // Also scan legacy encounterProgress so agents in old-system encounters show icons too.
     for (const ep of gameState.encounterProgress) {
       if (ep.status !== 'active') continue;
-      const epTemplate = getAnyEncounterById(ep.encounterId);
-      if (!epTemplate) continue;
+      const legacyTemplate = getAnyEncounterById(ep.encounterId);
+      const unifiedTemplate = legacyTemplate ? undefined : getUnifiedTemplateById(ep.encounterId);
+      if (!legacyTemplate && !unifiedTemplate) continue;
+      const encounterType = legacyTemplate
+        ? legacyTemplate.encounterType
+        : CRUD_TO_ENCOUNTER_TYPE[unifiedTemplate!.crudType] ?? 'assist';
       const epTier = ep.effectiveTier;
       const epTierOpacity =
         epTier === 'story_beat'  ? ACTIVITY_ICON_OPACITY_STORY :
@@ -723,7 +728,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       upsertIcon(
         ep.actorId,
         {
-          iconKey: getEncounterActivityIconKey(epTemplate.encounterType, 'start_local'),
+          iconKey: getEncounterActivityIconKey(encounterType, 'start_local'),
           tierOpacity: epTierOpacity,
         },
         2,
