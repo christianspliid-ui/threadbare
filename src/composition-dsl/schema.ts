@@ -225,11 +225,19 @@ export interface CompositionMetadata {
 
 export type PhaseStoryBeatTier = 'routine' | 'notable' | 'story_beat';
 export type PhasePriority = 'template_intrinsic' | 'doom_clock';
+export type PhaseStoryBeatVoice = 'divine' | 'mortal';
 
 export interface PhaseStoryBeatSpec {
   tier: PhaseStoryBeatTier;
   template: string;
   priority?: PhasePriority;
+  /**
+   * Primary narrative register for the Chronicle entry.
+   * 'divine'  → lead with Poet voice (poetProse field populated by template).
+   * 'mortal'  → lead with Witness voice (witnessFacts field populated by template).
+   * If omitted, runner uses template.defaultVoice, else 'divine'.
+   */
+  voice?: PhaseStoryBeatVoice;
 }
 
 export interface Phase {
@@ -452,6 +460,7 @@ const phaseStoryBeatSpecSchema: z.ZodType<PhaseStoryBeatSpec> = z.object({
   tier: z.enum(['routine', 'notable', 'story_beat']),
   template: nonEmptyStringSchema,
   priority: z.enum(['template_intrinsic', 'doom_clock']).optional(),
+  voice: z.enum(['divine', 'mortal']).optional(),
 });
 
 const phaseSchema: z.ZodType<Phase> = z.object({

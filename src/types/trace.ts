@@ -169,7 +169,9 @@ export type TraceCategory =
   // Composition phase runner (THR-225)
   | 'composition.phase_activated'
   | 'composition.failed'
-  | 'composition.phase_eval_failed';
+  | 'composition.phase_eval_failed'
+  // Composition dual-voice story-beat wiring (THR-254)
+  | 'composition.story_beat_template_missing';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -323,6 +325,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'composition.phase_activated',
   'composition.failed',
   'composition.phase_eval_failed',
+  // Composition dual-voice story-beat wiring (THR-254)
+  'composition.story_beat_template_missing',
 ];
 
 /** Base shape for all trace entries */
@@ -1450,7 +1454,9 @@ export type TraceEntry =
   // Composition phase runner traces (THR-225)
   | CompositionPhaseActivatedTrace
   | CompositionFailedTrace
-  | CompositionPhaseEvalFailedTrace;
+  | CompositionPhaseEvalFailedTrace
+  // Composition dual-voice story-beat wiring (THR-254)
+  | CompositionStoryBeatTemplateMissingTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {
@@ -1750,6 +1756,16 @@ export interface CompositionPhaseActivatedTrace extends TraceBase {
   phaseId: string;
   activatedNodes: string[];
   storyBeatQueued: boolean;
+  voiceHint?: 'divine' | 'mortal';
+  templateResolved: boolean;
+}
+
+/** Trace: phase story-beat template id not found in registry (fail-soft path) */
+export interface CompositionStoryBeatTemplateMissingTrace extends TraceBase {
+  category: 'composition.story_beat_template_missing';
+  compositionId: string;
+  phaseId: string;
+  templateId: string;
 }
 
 /** Trace: a composition transitioned to failed status */

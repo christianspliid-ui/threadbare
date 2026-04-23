@@ -16,7 +16,11 @@ import {
   PHASE_RUNNER_MAX_COMPOSITIONS_PER_TICK,
   PHASE_ACTIVATION_COOLDOWN_TICKS,
   COMPOSITION_FAILED_RETENTION_TICKS,
+  STORY_BEAT_DEFAULT_MOOD,
+  STORY_BEAT_DEFAULT_SPHERE,
+  STORY_BEAT_DEFAULT_VOICE,
 } from '../data/composition-config';
+import { lookupStoryBeatTemplate } from '../data/story-beat-templates';
 
 // ─── Predicate evaluation ─────────────────────────────────────────
 // v1 whitelist: doom-clock, composition-fired, world-flag, has-faction-of-archetype,
@@ -176,20 +180,65 @@ function makePhaseChronicleEntry(
   compositionId: string,
   tick: number
 ): import('../types/narrative').ChronicleEntry {
-  const label = phase.rationale ?? `Phase ${phase.id} activated`;
+  const beat = phase.storyBeat;
+  const template = beat ? lookupStoryBeatTemplate(beat.template) : undefined;
+
+  // Fail-soft: no beat or template → rationale-based fallback
+  if (!beat || !template) {
+    if (beat && !template) {
+      emitTrace({
+        category: 'composition.story_beat_template_missing' as const,
+        tick,
+        summary: `story-beat template "${beat.template}" not in registry`,
+        compositionId,
+        phaseId: phase.id,
+        templateId: beat.template,
+      });
+    }
+    return {
+      id: `composition_phase_${compositionId}_${phase.id}_${tick}`,
+      tier: 'chronicle',
+      title: `${compositionId} — ${phase.id}`,
+      prose: phase.rationale ?? `Phase ${phase.id} activated`,
+      promptContext: {
+        actors: [],
+        location: 'world',
+        sphere: STORY_BEAT_DEFAULT_SPHERE,
+        mood: STORY_BEAT_DEFAULT_MOOD,
+      },
+      tick,
+    };
+  }
+
+  const hasPoet = Boolean(template.poetProse);
+  const hasWitness = Boolean(template.witnessFacts && template.witnessFacts.length > 0);
+
+  // Migration shim: legacy single-prose becomes witnessFacts when no dual fields
+  const witnessFallback: string[] | undefined =
+    !hasPoet && !hasWitness && template.prose ? [template.prose] : undefined;
+
   return {
     id: `composition_phase_${compositionId}_${phase.id}_${tick}`,
     tier: 'chronicle',
-    title: `${compositionId} — ${phase.id}`,
-    prose: label,
+    title: template.title,
+    prose: template.poetProse ?? template.witnessFacts?.[0] ?? template.prose ?? '',
+    poetProse: template.poetProse,
+    witnessFacts: template.witnessFacts ?? witnessFallback,
     promptContext: {
       actors: [],
       location: 'world',
-      sphere: 'entropy',
-      mood: 'ominous',
+      sphere: template.sphere,
+      mood: template.mood ?? STORY_BEAT_DEFAULT_MOOD,
     },
     tick,
   };
+}
+
+function resolveVoiceHint(
+  phase: Phase,
+  template: import('../data/story-beat-templates').CompositionStoryBeatTemplate | undefined
+): 'divine' | 'mortal' {
+  return phase.storyBeat?.voice ?? template?.defaultVoice ?? STORY_BEAT_DEFAULT_VOICE;
 }
 
 // ─── Main runner ──────────────────────────────────────────────────
@@ -216,6 +265,7 @@ export function phaseComposition(state: GameState): Partial<GameState> {
       phaseId: '__backpressure__',
       activatedNodes: [],
       storyBeatQueued: false,
+      templateResolved: false,
     });
   }
 
@@ -298,6 +348,12 @@ export function phaseComposition(state: GameState): Partial<GameState> {
         }
       }
 
+      // Resolve template for Chronicle entry and trace enrichment
+      const beatSpec = phase.storyBeat;
+      const resolvedTemplate = beatSpec ? lookupStoryBeatTemplate(beatSpec.template) : undefined;
+      const templateResolved = Boolean(beatSpec && resolvedTemplate);
+      const voiceHint = resolveVoiceHint(phase, resolvedTemplate);
+
       // Add Chronicle entry
       chronicleEntries = [
         ...chronicleEntries,
@@ -327,6 +383,8 @@ export function phaseComposition(state: GameState): Partial<GameState> {
         phaseId: phase.id,
         activatedNodes: phase.activates,
         storyBeatQueued,
+        voiceHint: beatSpec ? voiceHint : undefined,
+        templateResolved,
       });
     }
 
