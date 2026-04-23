@@ -26,42 +26,60 @@ Two agents (Cowork and Claude Code) coordinate via markdown files: BACKLOG.md fo
 
 ## Workflow States
 
-Seven custom states organized into two swimlanes. **Review** is a label (not a state) that can be applied to any issue in any column.
+Eight custom states organized into two swimlanes with two handoff lanes (one per executor agent). **Review** is a label (not a state) that can be applied to any issue in any column.
 
 | State | Linear Type | Swimlane | Owner | Meaning |
 |-------|-------------|----------|-------|---------|
 | **Idea** | backlog | — | Anyone | Raw idea, not committed. Equivalent to 💡 |
 | **Todo** | unstarted | — | Cowork | Committed to doing, needs design/planning. Equivalent to 📋 |
 | **In Design** | started | Discovery & Design | Cowork | Cowork is actively designing or researching. Equivalent to 🎨 |
-| **Implementation Planning** | started | Discovery & Design | Cowork | Cowork is writing the specific implementation plan and action items for Claude Code. Equivalent to 📐 |
-| **Ready for Dev** | started | Handoff | Cowork → CC | Plan complete, handoff comment written. CC pulls from here. |
-| **In Dev** | started | Implementation | Claude Code | Claude Code is implementing. Equivalent to 🏗️ |
+| **Implementation Planning** | started | Discovery & Design | Cowork | Cowork is writing the specific implementation plan and action items for the executor agent. Equivalent to 📐 |
+| **Ready for Dev** | started | Handoff (CC) | Cowork → CC | Plan complete, handoff comment written. **Claude Code** pulls from here. |
+| **Ready for Codex** | started | Handoff (Codex) | Cowork → Codex | Plan complete, handoff comment written. **Codex** pulls from here. Structurally separate from Ready for Dev so CC's hourly poll never grabs Codex work. |
+| **In Dev** | started | Implementation | CC or Codex | An executor agent is implementing. Equivalent to 🏗️ |
 | **Done** | completed | — | — | Shipped, documented, deployed. Equivalent to ✅ |
 
-### Two Swimlanes
+### Two Swimlanes, Two Handoff Lanes
 
-**Discovery & Design (Cowork):** Idea → Todo → In Design → Implementation Planning → Ready for Dev
-**Implementation (Claude Code):** In Dev → Done
+**Discovery & Design (Cowork):** Idea → Todo → In Design → Implementation Planning → {Ready for Dev | Ready for Codex}
+**Implementation (CC or Codex):** In Dev → Done
 
-The handoff between lanes is **Ready for Dev → In Dev**. When Cowork finishes the implementation plan, it moves the issue to Ready for Dev with a comment containing the plan doc link and action items. CC pulls from Ready for Dev, sorted by priority.
+The two handoff states are mutually exclusive queues. Cowork picks one when moving an issue out of Implementation Planning based on which executor is the better fit (see "Choosing the executor" below). The executor agent then pulls from its own queue only.
+
+- **CC pulls from Ready for Dev** (`list_issues state:"Ready for Dev" assignee:null`) on an hourly cycle.
+- **Codex pulls from Ready for Codex** (`list_issues state:"Ready for Codex" assignee:null`) on an hourly cycle.
+- Neither agent's pull query includes the other queue — queue separation is structural, not discipline-based.
 
 **Review** is orthogonal — apply the "Review" label to any issue in any state when it needs review (design review in In Design, code review in In Dev, etc.). Filter by label to see everything awaiting review.
+
+### Choosing the executor (Cowork decision)
+
+When Cowork finishes an Implementation Planning doc, it picks the handoff queue:
+
+- **Ready for Codex** when the work is pattern-following execution with low design judgment: mechanical refactors, rename/extract-helper passes, data-row additions, tests to a spec, narrow bug fixes with clear repro, boilerplate scaffolding following an established module shape, engine wiring at a pinpointed hook line.
+- **Ready for Dev** when the work needs taste or judgment: prose that must meet the quality bar, new graph node/edge types, cross-cutting refactors, UI requiring design judgment, novel systems, or anything where "correct" is under-specified.
+
+When in doubt, pick Ready for Dev — CC has higher capability ceiling and can handle Codex-shaped work fine. The split exists to make Codex's workload safe, not to offload CC.
 
 ### State Transition Rules
 
 ```
-Idea → Todo → In Design → Implementation Planning → Ready for Dev → In Dev → Done
-  │                                                                          │
-  └──────────────────────────── Canceled ◄────────────────────────────────────┘
+                                          ┌─→ Ready for Dev ─→ In Dev (CC)    ─┐
+Idea → Todo → In Design → Implementation ─┤                                    ├─→ Done
+                          Planning        └─→ Ready for Codex ─→ In Dev (Codex)┘
+  │                                                                              │
+  └──────────────────────── Canceled ◄──────────────────────────────────────────┘
 ```
 
 **Forward-only flow.** Backward transitions (e.g., In Dev → In Design) indicate a plan gap — they should be accompanied by a comment explaining why.
 
-**WIP limit: 1 In Dev issue per project.** CC must finish and ship the current In Dev issue before pulling another from the same project. This prevents merge conflicts and write collisions from parallel work in overlapping files. Issues from *different* projects can be In Dev simultaneously if they don't share files, but same-project work is strictly serial.
+**Re-routing between handoff lanes.** If Cowork routes to Ready for Codex but realizes the work is too judgment-heavy, move it to Ready for Dev (and vice versa). This is a lateral move, not a backward transition, and doesn't need justification beyond a one-line comment noting the reroute. Never have an issue simultaneously in both handoff states — Linear enforces single-state so this is structural.
+
+**WIP limit: 1 In Dev issue per executor per project.** Each executor (CC and Codex) must finish and ship its current In Dev issue before pulling another from the same project. This prevents merge conflicts and write collisions from parallel work in overlapping files. Issues from *different* projects can be In Dev simultaneously if they don't share files, but same-project work is strictly serial per executor. **Cross-executor WIP:** CC and Codex can each have 1 In Dev issue at the same time *if* those issues are listed as `Parallel-safe with` each other and neither appears in the other's `Mutex with`.
 
 **Handoff point:**
-- **Implementation Planning** is where Cowork writes the plan. **Ready for Dev** is the handoff — Cowork moves issues here when the plan is complete and the handoff comment is written. This is the CC pull queue.
-- **Done** is the Claude Code closeout. When Claude Code moves an issue here, the DoD hooks have already enforced tests/build/docs.
+- **Implementation Planning** is where Cowork writes the plan. **Ready for Dev** is the CC handoff queue; **Ready for Codex** is the Codex handoff queue. Cowork moves issues to the appropriate queue when the plan is complete and the handoff comment is written.
+- **Done** is the executor closeout. When the executor finishes and pushes with `Fixes THR-XX` in the commit body, merge to `main` triggers Linear's auto-close.
 
 ### Exit Criteria (per transition)
 
@@ -119,11 +137,12 @@ Every feature in this project touches three pillars: **Engine** (systems, tick l
 
 | Agent | Can move TO | Cannot move TO |
 |-------|-----------|----------------|
-| Cowork | Idea, Todo, In Design, Implementation Planning, Ready for Dev | In Dev, Done |
-| Claude Code | In Dev, Done | Idea, Todo, In Design, Implementation Planning, Ready for Dev |
+| Cowork | Idea, Todo, In Design, Implementation Planning, Ready for Dev, Ready for Codex | In Dev, Done |
+| Claude Code | In Dev (from Ready for Dev only), Done (via merge-keyword only) | Idea, Todo, In Design, Implementation Planning, Ready for Dev, Ready for Codex |
+| Codex | In Dev (from Ready for Codex only), Done (via merge-keyword only) | Idea, Todo, In Design, Implementation Planning, Ready for Dev, Ready for Codex |
 | User | Any state | — |
 
-This makes role violations visible: if an issue is In Design but code changes appear, something went wrong.
+This makes role violations visible: if an issue is In Design but code changes appear, something went wrong. **Cross-queue claims are the most important boundary** — CC must never claim from Ready for Codex and vice versa. Queue separation is enforced structurally by each agent's polling filter targeting only its own state name; never widen a filter to `state:"Ready*"` or similar.
 
 **Note:** Linear doesn't enforce these role boundaries programmatically — it's still convention-based in terms of *who* can change state. But the audit trail makes violations immediately visible (Linear records who changed what and when), which is a significant improvement over markdown where changes are invisible.
 
@@ -197,9 +216,11 @@ Each rule below maps to a specific incident that has actually happened in this p
 
 **How to apply:** `save_issue(...)` → `get_issue(THR-XX)` → confirm `state` and `assignee` fields match what you wrote. If they don't, retry once, then surface to the user. Verify-after-write is the agent's responsibility on every state move — no skill or helper exempts you from it.
 
-### Rule 8 — Codex is read-only
+### Rule 8 — The codex *reviewer* is read-only
 
-**Rule:** The codex integration is a review tool only. CC must never invoke codex slash-commands that modify code — specifically `/codex:rescue`, and any future codex command whose effect is a code change. Review produces findings; CC or Cowork act on the findings.
+> **Disambiguation.** "Codex" refers to two distinct things in this codebase. This rule is about **codex-the-reviewer** (the `/codex:*` slash commands inside a CC session). **Codex-the-executor** — the Codex CLI running as its own agent loop polling the Ready for Codex queue — is a separate integration introduced 2026-04-19 and is governed by the Codex Session Protocols below, not this rule. The two share a name but are different tools.
+
+**Rule:** The codex *review* integration is a review tool only. CC must never invoke codex slash-commands that modify code — specifically `/codex:rescue`, and any future codex command whose effect is a code change. Review produces findings; CC, Cowork, or Codex-the-executor act on the findings.
 
 **Why:** During the original inline-codex-review rollout (retired 2026-04-18), CC instances sometimes stalled on `/codex:review` calls — UI went silent for long stretches while the review ran, and when progress felt indeterminate CC reached for `/codex:rescue` as an escape hatch. Using the reviewer to fix the code defeats the purpose of independent review and was one of the proximate causes of the stalls that led to retiring the whole loop. The rule must be doctrinally bright-lined regardless of whether codex ever returns to the standard workflow — any future review shape must preserve it.
 
@@ -209,16 +230,40 @@ Each rule below maps to a specific incident that has actually happened in this p
 - Any future tooling that reinstates codex in the loop must be designed so the reviewer is structurally read-only: no write credentials to the repo, PR-comment-only output. Read-only in capability, not just in convention.
 - **See also:** `Docs/plans/2026-04-19-cc-review-replacement.md` — the heartbeat wrapper and PR-gated GitHub Action that replace the retired inline review. The Action enforces Rule 8 structurally (scope-restricted `GITHUB_TOKEN`, no `contents:write`).
 
+### Rule 9 — Verification evidence is required before completion (bridge discipline)
+
+**Rule:** Executor agents (CC, Codex) must not claim completion on an issue without verification evidence. Before posting a completion comment or using a close keyword (`Fixes THR-XX`, `Closes THR-XX`, `Resolves THR-XX`), include either raw terminal output for the required checks or a link to a green CI run for the same commit.
+
+**Why:** "Tests pass" claims are otherwise unverifiable and can be hallucinated or stale. This rule creates an auditable artifact until hard CI merge gates are enforced.
+
+**How to apply:**
+- Capture and paste output from `npm test`, `npx tsc --noEmit`, and `npx vite build` in the closing commit body or completion comment.
+- A green CI URL is acceptable evidence if it clearly corresponds to the same commit that contains the close keyword.
+- Treat this as a bridge discipline until branch protection + CI hard gates land (tracked by THR-183); then this manual requirement can be revisited.
+
+Example commit-message format:
+
+```
+feat(encounters): wire hidden marks through aftermath
+
+Fixes THR-XXX
+
+Verification:
+$ npm test
+… 412 passed
+$ npx tsc --noEmit
+(clean)
+$ npx vite build
+✓ built in 4.2s
+```
+
 ---
 
 ## Agent Session Protocols
 
 ### Cowork Session Start
-1. Query Linear: `list_issues state:"In Design"` → resume active design work
-2. Query Linear: `list_issues state:"Implementation Planning"` → resume active planning work
-3. Query Linear: `list_issues state:"Ready for Dev"` → verify handoffs are being picked up
-4. Query Linear: `list_issues state:"Todo" priority:1` + `priority:2` → see what's next
-5. Check if any "Ready for Dev" items have been sitting >2 sessions → flag to user
+1. **Board scan (single Linear MCP call):** `list_issues(team:"Threadbare", limit:250, orderBy:"updatedAt", includeArchived:false)`. Bucket results in memory by `status` to cover In Design, Implementation Planning, Ready for Dev, and Todo (priority 1 + 2) at once.
+2. Check if any "Ready for Dev" items have been sitting >2 sessions → flag to user.
 
 ### Claude Code Session Start
 1. Query Linear: `list_issues state:"In Dev" assignee:"me"` → resume your own active implementation first (finish before starting).
@@ -321,6 +366,72 @@ When Claude Code finishes implementation:
    - Deferral issues created (if any), with brief rationale for each deferral
 5. If the merge didn't fire the auto-close (wrong keyword, merge blocked, feature branch not yet on `main`), the issue **stays** in In Dev until the merge lands. Fix the merge situation rather than force-transitioning the issue.
 
+### Codex Session Start
+Codex is an executor agent introduced 2026-04-19 to absorb well-specified, pattern-following work. It runs as a separate automation on an hourly cycle, querying its own queue only. All nine Hard Rules above apply to Codex identically to CC — claim-before-read, verify-after-write, WIP=1, no manual Done transitions.
+1. Query Linear: `list_issues state:"In Dev" assignee:"me"` → resume your own active implementation first (finish before starting).
+2. Query Linear: `list_issues state:"Ready for Codex" assignee:null` → the `assignee:null` filter is **required** (Rule 2). Sort by priority in memory (impediment #49); pull from the top. **Never query Ready for Dev** — that queue belongs to CC. Expanding the filter across queues defeats the separation the two-queue design exists to provide.
+3. **Claim immediately (Rule 1):** before reading anything but the title, run `save_issue(id, assignee: "me", state: "In Dev")`. Then `get_issue(id)` to verify the write stuck (Rule 7 / impediment #48). Only after the claim is confirmed do you read the handoff comment and plan doc.
+4. **WIP check (Rule 6):** confirm no other issue is In Dev under your assignee across all projects. If you find one, finish or hand it off before claiming the next.
+5. **Reopened check (Rule 5):** if the issue carries a `Reopened` label, read all comments back to the original handoff before starting work.
+6. **Cross-executor parallel check:** if CC has an In Dev issue, verify this Codex issue appears in CC's `Parallel-safe with:` and does not collide with CC's `Mutex with:`. If uncertain, wait for CC to finish — correctness beats throughput.
+7. On completion: commit with `Fixes THR-XX` in the body and push — the merge-to-main keyword auto-closes the issue. **Do not manually transition In Dev → Done (Rule 3).**
+
+### Codex Handoff (Cowork → Codex)
+When Cowork finishes a design and writes the implementation plan and determines Codex is the right executor:
+1. **Verify exit criteria** — same three-pillar + constants + tracing gate as CC handoffs. Codex-shaped work still needs all three pillars covered in the plan, even when the surface is narrow.
+2. Move issue: Implementation Planning → **Ready for Codex**
+3. Add handoff comment using this template:
+
+```
+## Codex Handoff: [Issue title]
+
+**Plan doc:** `Docs/plans/YYYY-MM-DD-topic.md`
+
+### Engine action items
+1. ...
+(or: N/A — [rationale])
+
+### Content action items
+1. ...
+(or: N/A — [rationale])
+
+### UI action items
+1. ...
+(or: N/A — [rationale])
+
+### Wiring action items
+1. ...
+
+### Files to touch
+- `path/to/file.ts` — what changes
+- `path/to/test.ts` — what tests cover this
+
+### Done when
+- [ ] Acceptance checklist copied from plan doc
+- [ ] `npm test` passes
+- [ ] `npx tsc --noEmit` clean
+- [ ] `npx vite build` succeeds
+- [ ] Deferrals (if any) have Linear issues with `THR-XX` references
+
+### Codex coordination
+**Parallel-safe with:** THR-XX, THR-YY (file-surface analysis) — or "none".
+**Mutex with:** free-text description of files / surfaces this issue will conflict on.
+```
+
+4. The handoff comment is the brief — Codex reads it after claiming. **No `Suggested model` line** — Codex runs on its own model configured at the automation level, not at the handoff.
+5. **No codex-review line** — the review integration (Rule 8) is separate. Reviews are requested on demand by CC or Cowork, not scheduled as part of a Codex handoff.
+
+### Codex Pickup Protocol
+Same order as CC: **claim → verify → read → decide**. Every step mirrors the CC pickup protocol; only the source queue name differs.
+1. **Claim first (Rule 1).** `save_issue(id, assignee: "me", state: "In Dev")`.
+2. **Verify the claim stuck (Rule 7).** `get_issue(id)` and confirm `assignee` and `state`.
+3. **Read the latest comment first (Rule 4).** If `Reopened` label is present (Rule 5), read all comments back to the original handoff.
+4. **Verify the handoff is complete.** All four action-item sections present (Engine, Content, UI, Wiring). If any section is missing without N/A rationale, do not start work — add a comment flagging the gap, release the claim with `assignee: null`, and move the issue back to Implementation Planning. An incomplete plan produces incomplete work regardless of which executor picks it up.
+5. **Check the Codex coordination block.** Verify `Parallel-safe with` and `Mutex with` against any In Dev issues across both executors.
+
+### Codex Closeout
+Identical to CC closeout with one clarification: Codex commits and pushes through the same `Fixes THR-XX` keyword path. The merge-to-main auto-close fires regardless of which executor opened the PR. **Codex must never call `save_issue(state: "Done")` (Rule 3 applies).** Deferrals, impediment logs, changelog / project-status / project-history updates are all the executor's responsibility — no different from CC.
+
 ---
 
 ## Labels
@@ -354,6 +465,7 @@ The Linear MCP has a few rough edges that have bitten sessions repeatedly. **Rea
 
 - **`save_issue` silently fails to update state.** A `save_issue` call with `statusId` or `status` can return a 200 success response while leaving the issue in its previous state — no error surfaced, no indication that the write didn't stick. **Workaround:** always verify-after-write. After any `save_issue` that changes state, re-query the issue with `get_issue` and confirm the state field matches what you asked for. If it doesn't, retry or surface the discrepancy in the session log. Verify-after-write is the agent's responsibility on every state move.
 - **`list_issues orderBy: 'priority'` is rejected at runtime.** The `orderBy` field only accepts `createdAt` or `updatedAt`, even though the TypeScript schema exposes `priority` as a valid string. **Workaround:** omit `orderBy` (or use a timestamp sort) and sort by priority in memory from the returned array — Linear returns the `priority` numeric field on every issue, so sorting client-side is cheap.
+- **Linear MCP has a rate limit that is easy to hit with the default protocol.** Session-start fan-outs, per-state loops in plan docs, and overlapping CC + Codex hourly pollers compound into a query storm. **Workaround:** (a) collapse multi-state scans into a single `list_issues(limit:250)` call with client-side bucketing by `status`; (b) in pull-work / Codex pickup, guard the first call with a rate-limit check and back off 2 min on 429 before retrying once; (c) CC polls at :00, Codex polls at :30 — never both at the same instant. See `Docs/plans/2026-04-23-linear-mcp-rate-limits.md` for the full rationale. (Impediment #79, 2026-04-23.)
 
 If you hit a new Linear MCP quirk, log it via `impediment-reporter` and add it here in the next retro.
 
@@ -478,7 +590,7 @@ The pre-push hook (Gate 2) still checks that `changelog.md`, `project-status.md`
 
 ## Setup Instructions (User Action Required)
 
-### Final Workflow States (completed 2026-04-13)
+### Final Workflow States (updated 2026-04-19 with Ready for Codex)
 
 | Order | State name | Category |
 |-------|-----------|----------|
@@ -486,12 +598,24 @@ The pre-push hook (Gate 2) still checks that `changelog.md`, `project-status.md`
 | 2 | **Todo** | Unstarted |
 | 3 | **In Design** | Started |
 | 4 | **Implementation Planning** | Started |
-| 5 | **In Dev** | Started |
-| 6 | **Done** | Completed |
+| 5 | **Ready for Dev** | Started |
+| 6 | **Ready for Codex** | Started |
+| 7 | **In Dev** | Started |
+| 8 | **In Review** | Started |
+| 9 | **Done** | Completed |
 | — | Canceled | Canceled |
 | — | Duplicate | Canceled |
 
-**Review** is a label (not a state) — apply it to any issue in any column when it needs review.
+**Review** is a label (not a state) — apply it to any issue in any column when it needs review. (The separate "In Review" state exists for PRs under structural review via the claude-review Action.)
+
+### Adding Ready for Codex (user action, 2026-04-19)
+
+Linear's MCP does not expose workflow-state creation. To add the Ready for Codex state:
+
+1. Linear → Threadbare team → Settings → Workflow.
+2. Add a new status named `Ready for Codex` with category `Started` (matches Ready for Dev).
+3. Position it immediately below Ready for Dev in the ordering so the board reads left-to-right by handoff order.
+4. No other config needed — Cowork's `save_issue(state: "Ready for Codex")` calls will start resolving the moment the state exists.
 
 ---
 

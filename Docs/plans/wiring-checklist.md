@@ -28,6 +28,7 @@ Every engine module that produces per-tick state changes must be called from a p
 | 1.5 | `phaseJourneyBeat` | Journey beat progression |
 | 2a | `phaseUnifiedActionProgress` | Action execution & resolution |
 | 2a.3 | `phaseEncounterProgressionV2` | Encounter step advancement |
+| 2a.52 | `phaseEffectShells` | Non-step-outcome flip_table triggers (attachment_gained, manual); step_outcome triggers fire inline in executeStepResult (THR-53) |
 | 2a.4 | `tickEffects` (inline orchestrator block) | Generic effect runtime bookkeeping: duration, cooldown, decay, stacking, attachment removal |
 | 2a.6 | `phaseEncounterVisibility` | Encounter notifications |
 | 2a.55 | `phaseStrategicProjects` | Strategic project progression + control degradation |
@@ -44,6 +45,7 @@ Every engine module that produces per-tick state changes must be called from a p
 | 7.1 | `phaseReputationDecay` | Reputation time-decay |
 | 6.7 | `phaseHiddenMarkDecay` | Hidden mark severity decay + floor-drop trace |
 | 6.71 | `phaseIntelligenceDecay` | Intelligence reliability decay + threshold-cross chronicle event (THR-137) |
+| 6.715 | `runDivineProximityPhase` | Divine proximity importance accumulation around ascendant hex (THR-25) |
 | 1.7a | `phaseEmittedOmenDecay` | Expire aftermath-spawned `EmittedOmen` entries where `tick > expiresTick` (THR-115) |
 | 7.2 | `phaseDivineInfluenceDecay` | Divine presence fade |
 | 7.5 | `phaseTradeRouteDecay` | Route dissolution |

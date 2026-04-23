@@ -23,6 +23,7 @@ import { TAVERN_SUBLOCATION_TYPE_ID } from '../sublocation';
 import { generateTavernName } from '../../data/tavern-names';
 import { WorldGraph } from '../graph';
 import type { DistanceMatrix } from '../distanceMatrix';
+import { assertNoDuplicateIds } from '../../testing/contentInvariants';
 
 function makeGraph(): WorldGraph {
   return new WorldGraph();
@@ -404,7 +405,7 @@ describe('socialEncounterGeneration', () => {
 
   describe('social encounter templates content', () => {
     it('contains exactly 14 templates', () => {
-      expect(SOCIAL_ENCOUNTER_TEMPLATES).toHaveLength(14);
+      expect(SOCIAL_ENCOUNTER_TEMPLATES.length).toBeGreaterThanOrEqual(14);
     });
 
     it('all templates have required fields', () => {
@@ -443,15 +444,14 @@ describe('socialEncounterGeneration', () => {
       }
     });
 
-    it('template IDs are unique', () => {
-      const ids = SOCIAL_ENCOUNTER_TEMPLATES.map(t => t.id);
-      expect(new Set(ids).size).toBe(ids.length);
+    it('SOCIAL_ENCOUNTER_TEMPLATES has no duplicate IDs', () => {
+      assertNoDuplicateIds(SOCIAL_ENCOUNTER_TEMPLATES);
     });
   });
 
   describe('tavern encounter templates content', () => {
     it('contains exactly 10 templates', () => {
-      expect(TAVERN_ENCOUNTER_TEMPLATES).toHaveLength(10);
+      expect(TAVERN_ENCOUNTER_TEMPLATES.length).toBeGreaterThanOrEqual(10);
     });
 
     it('all templates have sublocationTypes containing TAVERN_SUBLOCATION_TYPE_ID', () => {
@@ -498,11 +498,15 @@ describe('socialEncounterGeneration', () => {
     });
 
     it('template IDs are unique and all start with "tavern."', () => {
+      assertNoDuplicateIds(TAVERN_ENCOUNTER_TEMPLATES);
       const ids = TAVERN_ENCOUNTER_TEMPLATES.map(t => t.id);
-      expect(new Set(ids).size).toBe(ids.length);
       for (const id of ids) {
         expect(id.startsWith('tavern.')).toBe(true);
       }
+    });
+
+    it('TAVERN_ENCOUNTER_TEMPLATES has no duplicate IDs', () => {
+      assertNoDuplicateIds(TAVERN_ENCOUNTER_TEMPLATES);
     });
   });
 

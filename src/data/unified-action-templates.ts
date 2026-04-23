@@ -145,6 +145,7 @@ import { THE_UNMARKED_CROSSING_TEMPLATE } from './encounters/the-unmarked-crossi
 import { THE_SILENT_CHAMBER_TEMPLATE } from './encounters/the-silent-chamber';
 import { THE_JURY_OF_THE_RUINED_TEMPLATE } from './encounters/the-jury-of-the-ruined';
 import { THE_BLINDED_ORACLE_TEMPLATE } from './encounters/the-blinded-oracle';
+import { EFFECT_SHELL_PROOF_TEMPLATES } from './effect-shell-proof-templates';
 import {
   PERCEIVE_CAST_ATTENTION_COST,
   PERCEIVE_REFINE_HUSH_COST_SPIRIT,
@@ -3799,12 +3800,11 @@ export const THREAD_CREATION_TEMPLATES: UnifiedActionTemplate[] = [
     essenceCost: 15,
     actorAffinities: ['ascendant'],
     targetCategories: ['actor'],
-    // targetSubtypes: ['group'] would match armies (actorType: 'group') but also guilds.
-    // Armies are distinguished by the presence of armyState property on the node.
-    // For now, this template matches all 'group' subtype actors. The ThreadsPanel
-    // classifies thread targets post-hoc so army vs guild distinction is preserved in the UI.
-    // TODO(THR-43): add targetRequiredProperties: ['armyState'] when targetActions.ts supports property filtering.
+    // Narrow 'group' subtype to actors that are actually armies - they carry
+    // an armyState property bag (guilds are also 'group' subtype but have no armyState).
+    // See Gate 3b (requiredNodeProperties) in src/engine/targetActions.ts.
     targetSubtypes: ['group'],
+    requiredNodeProperties: { armyState: undefined },
     bypassRevelationGate: true,
     motivations: ['courage_prudence', 'sacrifice_survival'],
     narrativeTemplates: {
@@ -4154,6 +4154,8 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   THE_SILENT_CHAMBER_TEMPLATE,
   THE_JURY_OF_THE_RUINED_TEMPLATE,
   THE_BLINDED_ORACLE_TEMPLATE,
+  // Effect shell proof pack — flip_table + result_bands (THR-53)
+  ...EFFECT_SHELL_PROOF_TEMPLATES,
 ];
 
 /**

@@ -37,6 +37,7 @@ describe('TraceEntry types', () => {
     // Phase 11: agent revelation system
     expect(TRACE_CATEGORIES).toContain('agent_revelation');
     expect(TRACE_CATEGORIES).toContain('interaction_depth');
+    expect(TRACE_CATEGORIES).toContain('prose_rarity_bias');
   });
 
   it('ActionSelectionTrace satisfies TraceEntry union', () => {
@@ -157,7 +158,7 @@ describe('TraceEntry types', () => {
       // Revelation system
       'revelation', 'agent_revelation', 'interaction_depth',
       // Reputation & rarity
-      'reputation_trait', 'rarity_graduation', 'rarity_importance',
+      'reputation_trait', 'rarity_graduation', 'rarity_importance', 'prose_rarity_bias',
       // Attention tier
       'encounter_promotion', 'curator_decision', 'attention_pool', 'story_beat_queue',
       // Slot system

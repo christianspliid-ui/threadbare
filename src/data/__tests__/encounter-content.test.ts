@@ -9,12 +9,18 @@ import {
   getEncountersByLocationType,
   getEncounterById,
 } from '../encounter-content';
+import { assertNoDuplicateIds, assertValidEncounterTemplate } from '../../testing/contentInvariants';
 
 describe('encounter-content', () => {
   describe('ENCOUNTER_TEMPLATES', () => {
     it('every template should have a unique id', () => {
       const ids = ENCOUNTER_TEMPLATES.map(t => t.id);
       expect(new Set(ids).size).toBe(ids.length);
+    });
+
+    it('passes shared structural invariants', () => {
+      assertNoDuplicateIds(ENCOUNTER_TEMPLATES);
+      ENCOUNTER_TEMPLATES.forEach(assertValidEncounterTemplate);
     });
 
     it('every template should have 2-4 encounters', () => {

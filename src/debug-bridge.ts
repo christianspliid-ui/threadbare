@@ -6,6 +6,62 @@
  * by Vite, so the entire module becomes dead code in prod builds.
  */
 if (import.meta.env.DEV) {
+  interface SceneSnapshot {
+    hexCount: number;
+    agentsVisible: number;
+    locationsVisible: number;
+    armiesVisible: number;
+    battlesVisible: number;
+    siegesVisible: number;
+    threadLines: number;
+    activityIcons: number;
+    fogEnabled: boolean;
+    layersActive: string[];
+  }
+
+  interface ViewportHexProjection {
+    x: number;
+    y: number;
+    visible: boolean;
+  }
+
+  interface ActiveUIState {
+    view: string;
+    selectedAgentId: string | null;
+    selectedLocationId: string | null;
+    selectedFactionId: string | null;
+    selectedHex: { col: number; row: number } | null;
+    openModals: string[];
+    actionDrawerOpen: boolean;
+    scryActive: boolean;
+    cameraFocusHex: { col: number; row: number } | null;
+  }
+
+  const getEmptySceneSnapshot = (): SceneSnapshot => ({
+    hexCount: 0,
+    agentsVisible: 0,
+    locationsVisible: 0,
+    armiesVisible: 0,
+    battlesVisible: 0,
+    siegesVisible: 0,
+    threadLines: 0,
+    activityIcons: 0,
+    fogEnabled: false,
+    layersActive: [],
+  });
+
+  const getEmptyActiveUIState = (): ActiveUIState => ({
+    view: 'game',
+    selectedAgentId: null,
+    selectedLocationId: null,
+    selectedFactionId: null,
+    selectedHex: null,
+    openModals: [],
+    actionDrawerOpen: false,
+    scryActive: false,
+    cameraFocusHex: null,
+  });
+
   // React components register their debug-panel toggle here
   let _debugPanelToggle: ((open?: boolean) => void) | null = null;
   // GameView registers this to zoom + select an agent by id/name
@@ -26,6 +82,15 @@ if (import.meta.env.DEV) {
   let _encounterBridge: Record<string, (...args: unknown[]) => unknown> | null = null;
   // GameView registers its fog toggle callback here
   let _fogToggle: ((enabled?: boolean) => boolean) | null = null;
+  // GameView registers scene and viewport projection callbacks here
+  let _sceneSnapshot: (() => SceneSnapshot) | null = null;
+  let _viewportForHex: ((col: number, row: number) => ViewportHexProjection | null) | null = null;
+  let _hexAtViewport: ((x: number, y: number) => { col: number; row: number } | null) | null = null;
+  // GameView registers modal + UI state providers for playtest assertions
+  let _openModalsProvider: (() => string[]) | null = null;
+  let _activeUIStateProvider: (() => ActiveUIState) | null = null;
+  // GameView registers its omniscience toggle callback here
+  let _omniscienceToggle: ((enabled?: boolean) => boolean) | null = null;
   // AscendantBar debug: GameView registers a callback to set ascendant quintessence
   let _setQuintessenceCb: ((ratio: number) => void) | null = null;
 
@@ -55,6 +120,32 @@ if (import.meta.env.DEV) {
     toggleFog: () => _fogToggle?.() ?? false,
     setFog: (enabled: boolean) => { _fogToggle?.(enabled); },
     _registerFogToggle: (fn: (enabled?: boolean) => boolean) => { _fogToggle = fn; },
+
+    // ── Scene snapshot + coordinate conversion for interface playtests ───────
+    snapshotScene: async () => _sceneSnapshot?.() ?? getEmptySceneSnapshot(),
+    getViewportForHex: (col: number, row: number) => _viewportForHex?.(col, row) ?? null,
+    getHexAtViewport: (x: number, y: number) => _hexAtViewport?.(x, y) ?? null,
+    getOpenModals: async () => _openModalsProvider?.() ?? [],
+    getActiveUIState: async () => {
+      const openModals = _openModalsProvider?.() ?? [];
+      const uiState = _activeUIStateProvider?.() ?? getEmptyActiveUIState();
+      return { ...uiState, openModals };
+    },
+    getEventsSince: async (tick: number) => {
+      const state = _gameStateProvider?.();
+      const recentEvents = state?.recentEvents ?? [];
+      return recentEvents.filter((event) => event.tick > tick);
+    },
+    _registerSceneSnapshot: (fn: () => SceneSnapshot) => { _sceneSnapshot = fn; },
+    _registerViewportForHex: (fn: (col: number, row: number) => ViewportHexProjection | null) => { _viewportForHex = fn; },
+    _registerHexAtViewport: (fn: (x: number, y: number) => { col: number; row: number } | null) => { _hexAtViewport = fn; },
+    _registerOpenModalsProvider: (fn: () => string[]) => { _openModalsProvider = fn; },
+    _registerActiveUIStateProvider: (fn: () => ActiveUIState) => { _activeUIStateProvider = fn; },
+
+    // ── Omniscience mode: bypass familiarity gating on agent character sheets ──
+    toggleOmniscience: () => _omniscienceToggle?.() ?? false,
+    setOmniscience: (enabled: boolean) => { _omniscienceToggle?.(enabled); },
+    _registerOmniscienceToggle: (fn: (enabled?: boolean) => boolean) => { _omniscienceToggle = fn; },
 
     // ── Ascendant Bar: quintessence debug helpers (THR-184) ───────────────
     setQuintessence: (ratio: number) => {
@@ -392,6 +483,13 @@ if (import.meta.env.DEV) {
       if (!state?.strategicState) return [];
       const history = state.strategicState.history;
       return agentId ? history.filter(h => h.actorId === agentId) : history;
+    },
+
+    // Composition phase runner inspection (THR-225)
+    getActiveCompositions: () => {
+      const state = _gameStateProvider?.();
+      if (!state) return [];
+      return state.activeCompositions ?? [];
     },
   };
 }

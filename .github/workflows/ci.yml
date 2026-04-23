@@ -26,6 +26,12 @@ jobs:
 
       - run: npm ci
 
+      - name: Process lint (advisory)
+        continue-on-error: true
+        env:
+          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+        run: npm run check:process
+
       - name: Run tests
         run: npm test
 

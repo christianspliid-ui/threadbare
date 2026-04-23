@@ -62,19 +62,6 @@ When building prompts for image generation:
 5. Include exclusions (what to avoid)
 6. Use the `image-generation` platform skill for the actual API call
 
-## Attachment Catalog Art
-
-Attachment images (possessions, conditions, mounts, relics — everything in the game codex/library) use a distinct style from other content types:
-
-- **Items in action** — show the item being used in the Threadbearer world, not isolated on black
-- **Remembrance-style rendering** — clean atmospheric digital painting, NOT heavy oil impasto
-- **Scene composition** — character wielding/wearing/using the item in an environment, 16:9 landscape
-- **Magic threads** — sphere-colored threads clinging to the item and nearby surfaces, 10-25% coverage
-
-This style was validated in the 2026-04-07 art review session. See STYLE.md → "Attachment Art: Items in Action" for the full prompt template and direction. The Remembrance art direction doc (`Docs/plans/2026-04-06-remembrance-art-direction.md`) is the style benchmark.
-
-**Do NOT use this style for in-game UI slots** (inventory, status panels) — those still use isolated game-asset style.
-
 ## Color System
 
 Sphere colors are defined in STYLE.md and must be used consistently across:

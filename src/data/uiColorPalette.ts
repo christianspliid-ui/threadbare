@@ -85,6 +85,8 @@ export const TRACE_CATEGORY_COLORS: Record<string, string> = {
   hidden_mark_revealed: '#fbbf24',  // amber-400 (revelation)
   encounter_seed_planted: '#2dd4bf', // teal-400 (planted future)
   encounter_seed_triggered: '#0d9488', // teal-600 (fired/consumed)
+  // THR-53: effect shell traces
+  effect_shell: '#a78bfa',           // violet-400 (shell state transition)
 };
 
 // ============================================================================

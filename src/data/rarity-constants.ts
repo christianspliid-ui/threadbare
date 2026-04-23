@@ -21,10 +21,13 @@
  * | IMPORTANCE_ENCOUNTER                  | 3                            | Importance delta for resolved encounters              |
  * | IMPORTANCE_CHRONICLE                  | 5                            | Importance delta for chronicle references             |
  * | IMPORTANCE_DIVINE_PROXIMITY           | 1                            | Importance delta per tick of divine proximity         |
+ * | DIVINE_PROXIMITY_RADIUS_HEXES         | 5                            | Hex radius for divine proximity importance scanning   |
+ * | DIVINE_PROXIMITY_TRACE_CAP            | 20                           | Max per-node divine proximity traces per tick         |
  * | IMPORTANCE_SPHERE_EVENT               | 8                            | Importance delta for sphere-triggered events          |
  */
 
 import type { RarityTier } from '../types/rarity';
+import type { NarrativeTier } from '../types/narrative';
 
 // ─── Tier Cap ────────────────────────────────────────────────────
 
@@ -133,8 +136,23 @@ export const IMPORTANCE_CHRONICLE = 5;
 /** Importance gained per tick while an entity is in divine proximity. */
 export const IMPORTANCE_DIVINE_PROXIMITY = 1;
 
+/** Hex radius within which entities accumulate divine proximity importance. */
+export const DIVINE_PROXIMITY_RADIUS_HEXES = 5;
+
+/** Max per-node divine proximity accumulation traces emitted per tick. */
+export const DIVINE_PROXIMITY_TRACE_CAP = 20;
+
 /** Importance gained when a sphere event directly involves an entity. */
 export const IMPORTANCE_SPHERE_EVENT = 8;
+
+/** Minimum prose tier floor by rarity tier (0 = undefined/unknown rarity). */
+export const PROSE_TIER_FLOOR_BY_RARITY: Readonly<Record<0 | RarityTier, NarrativeTier | null>> = {
+  0: null,
+  1: null,
+  2: 'notable',
+  3: 'notable',
+  4: 'chronicle',
+};
 
 // ─── Runtime Validation ──────────────────────────────────────────
 // Fail-soft: never throw — log a warning if distributions are misconfigured.

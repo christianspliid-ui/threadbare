@@ -13,6 +13,7 @@ import type { StrategicRuntimeState, BehaviorFamily } from '../../../types/strat
 import type { OmenState } from '../../../types/omen';
 import type { DoomIdentityMatrix } from '../../../types/doomIdentity';
 import type { HiddenMark, PendingEncounterSeed } from '../../../types/unifiedAction';
+import type { TickEvent } from '../../../types/gameState';
 import {
   BEHAVIOR_FAMILY_PRESENTATION,
   getBehaviorFamilyPresentation,
@@ -35,10 +36,14 @@ import { CommandTab } from './CommandTab';
 import { HiddenMarksTab } from './HiddenMarksTab';
 import { EncounterSeedsTab } from './EncounterSeedsTab';
 import { CulturePhoneticsInspector } from './CulturePhoneticsInspector';
+import { RecentEventsView } from './RecentEventsView';
+import { ShellsDebugTab } from './ShellsDebugTab';
+import { CompositionView } from './CompositionView';
 import { EMPTY_STATE_STYLE } from './debugPanelStyles';
 import type { KnowsClueOfEdgeProperties } from '../../../types/knowledge';
+import type { FlipTableRuntimeState } from '../../../types/contentShells';
 
-export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins';
+export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events' | 'shells' | 'compositions';
 
 export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'feed', label: 'Feed' }, { id: 'agent-follow', label: 'Agent' },
@@ -50,6 +55,9 @@ export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'knowledge-gaps', label: 'Knowledge' }, { id: 'armies', label: 'Armies' },
   { id: 'strategic', label: 'Strategic' }, { id: 'omens', label: 'Omens' },
   { id: 'cultures', label: 'Cultures' }, { id: 'secrets-favors', label: 'Secrets' }, { id: 'clues', label: 'Clues' }, { id: 'ruins', label: 'Ruins' }, { id: 'cli', label: 'CLI' },
+  { id: 'recent-events', label: 'Recent Events' },
+  { id: 'shells', label: 'Shells' },
+  { id: 'compositions', label: 'Compositions' },
 ];
 
 export interface DebugTabContentProps {
@@ -90,6 +98,14 @@ export interface DebugTabContentProps {
   pendingEncounterSeeds?: readonly PendingEncounterSeed[];
   /** Active delves — inspected in the Ruins tab (THR-152). */
   activeDelves?: readonly import('../../../engine/ruins/delveTypes').ActiveDelve[];
+  /** Lazy getter so the recent-events debug tab can opt-in to stream subscription. */
+  getRecentEvents?: () => readonly TickEvent[];
+  /** Flip table runtime states for the Shells inspector tab (THR-53). */
+  flipTableStates?: ReadonlyMap<string, FlipTableRuntimeState>;
+  /** Active compositions for the Compositions debug tab (THR-225). */
+  activeCompositions?: readonly import('../../../types/gameState').ActiveComposition[];
+  /** Current doom clock stage (1-5) for context in compositions tab. */
+  doomClockStage?: number;
 }
 
 export function DebugTabContent({
@@ -101,6 +117,7 @@ export function DebugTabContent({
   encounterNotifications, pendingVignettes, seed, sphereAggregate, agentKnowledge,
   retinueAgents, strategicState, omenState, doomIdentityMatrix,
   hiddenMarks, pendingEncounterSeeds, activeDelves,
+  getRecentEvents, flipTableStates, activeCompositions, doomClockStage,
 }: DebugTabContentProps) {
   if (viewMode === 'omens') return <OmenDebugTab omenState={omenState} currentTick={currentTick} doomIdentityMatrix={doomIdentityMatrix} />;
   if (viewMode === 'journey') {
@@ -129,6 +146,9 @@ export function DebugTabContent({
   if (viewMode === 'secrets-favors') return <SecretsFavorsDebugTab graph={graph} focusedAgentId={effectiveAgentId} />;
   if (viewMode === 'clues') return <CluesDebugTab graph={graph} focusedAgentId={effectiveAgentId} currentTick={currentTick} />;
   if (viewMode === 'ruins') return <RuinsDebugTab graph={graph} activeDelves={activeDelves} currentTick={currentTick} />;
+  if (viewMode === 'recent-events') return <RecentEventsView getRecentEvents={getRecentEvents} />;
+  if (viewMode === 'shells') return <ShellsDebugTab flipTableStates={flipTableStates} currentTick={currentTick} focusedAgentId={effectiveAgentId} />;
+  if (viewMode === 'compositions') return <CompositionView activeCompositions={activeCompositions} currentTick={currentTick} doomClockStage={doomClockStage} />;
   if (viewMode === 'cli') return <CommandTab retinueAgents={retinueAgents} followAgentId={effectiveAgentId} />;
   if (viewMode === 'strategic') return <StrategicDebugTab strategicState={strategicState} graph={graph} effectiveAgentId={effectiveAgentId} currentTick={currentTick} />;
   if (viewMode === 'social') {

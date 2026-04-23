@@ -96,6 +96,7 @@ import { recordReward } from './rewardHistory';
 import { mulberry32 } from '../lib/prng';
 import { buildPredicateContext, collectTestShapers } from './effectResolver';
 import { applyClearanceGateStepOutcome, summarizeClearanceGateUpdates } from './clearanceGate';
+import { applyFlipTableTriggerWithConfig, matchesStepOutcomeTrigger } from './effectShellRuntime';
 import { getEffectiveUnifiedActionChoiceMemory } from './encounterChoiceMemory';
 import type { EncounterChoiceMemory } from '../types/encounter';
 import type { ClearanceGateRuntimeState, ClearanceGateState } from '../types/contentShells';
@@ -851,6 +852,39 @@ export function executeStepResult(
   );
   state.clearanceGateStates = clearanceGateResult.clearanceGateStates;
   let clearanceSuffix = summarizeClearanceGateUpdates(clearanceGateResult.updates);
+
+  // Flip table step_outcome triggers (THR-53)
+  if (template.flipTables && template.flipTables.length > 0) {
+    for (const config of template.flipTables) {
+      if (config.flipTrigger.kind !== 'step_outcome') continue;
+      if (!matchesStepOutcomeTrigger(config.flipTrigger, action.currentStep, outcome)) continue;
+      const runtimeId = `flip_table_${template.id}_${config.id}_${action.actorId}`;
+      const flipResult = applyFlipTableTriggerWithConfig(
+        state.flipTableStates,
+        runtimeId,
+        config,
+        state.seed,
+        tick,
+      );
+      state.flipTableStates = flipResult.flipTableStates;
+      if (flipResult.transition) {
+        const { previousState, nextState, variantKey } = flipResult.transition;
+        emitTrace({
+          category: 'effect_shell',
+          subkind: 'flip_revealed',
+          tick,
+          actorId: action.actorId,
+          runtimeId,
+          templateId: action.templateId,
+          flipId: config.id,
+          variantKey,
+          previousState,
+          nextState,
+          summary: `flip_table ${config.id}: ${previousState} → ${nextState} (variant: ${variantKey})`,
+        } as import('../types/trace').EffectShellFlipRevealedTrace);
+      }
+    }
+  }
 
   // Execute GraphOps (fail-soft)
   if (ops.length > 0) {

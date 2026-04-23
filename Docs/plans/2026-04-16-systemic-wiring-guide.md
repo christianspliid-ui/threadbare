@@ -863,6 +863,35 @@ Filter DebugPanel Trace tab on `secret_discovered` + `favor_created`. Open Debug
 
 ---
 
+---
+
+### Capability 13: Stateful Effect Shells — Hidden State That Evolves Through Play (THR-53)
+
+Three shell primitives let an encounter or attachment carry state that evolves as actions unfold:
+
+**flip_table** — A binary (or small-N) hidden state machine attached to a template. Each config has a set of `variants` (with weights), an `initialState` (`front`/`flipped`/`revealed`), and a `flipTrigger`. The `step_outcome` trigger fires inside `executeStepResult` when the specified step resolves with any of the listed outcomes. Use it for: fate cards, sealed letters, deferred reveals, loot-box tension, branching destiny.
+
+```ts
+flipTables: [{
+  id: 'sealed_fate',
+  variants: [{ key: 'boon', weight: 2, label: 'Fortune' }, { key: 'bane', weight: 1, label: 'Doom' }],
+  initialState: 'front',
+  flipTrigger: { kind: 'step_outcome', stepIndex: 1, outcomes: ['success', 'critical_success'] },
+  revealPolicy: 'on_trigger',   // or 'immediate' to pick variant at first flip
+  persistence: 'must-persist',
+}]
+```
+
+`revealPolicy: 'immediate'` selects a variant the first time the trigger fires (front→flipped). `revealPolicy: 'on_trigger'` defers variant selection to the second trigger (flipped→revealed). Runtime state lives in `GameState.flipTableStates` and is visible in DebugPanel → **Shells** tab.
+
+**duplicate_gain_policy** (on `PossessionNodeProperties`) — Controls what happens when an actor tries to gain an attachment they already hold. Options: `stack` (multiple copies), `refresh` (reset duration), `ignore` (no-op), `flip` (trigger a flip table on the held copy), `worsen` (apply escalating negative effects, up to `maxApplications`). Default is `refresh`.
+
+**result_bands** — A ladder of threshold→outcome mappings on a template. When a step resolves, the margin is compared against declared bands to select a tier. Bands declare effects and optional follow-on tags. Runtime selections are recorded in `GameState.resultBandHistory`. Hooks: `selectResultBand` / `buildBandSelectionRecord` in `effectShellRuntime.ts`.
+
+#### How to verify
+
+Open DebugPanel → **Shells** tab to see all active flip table runtime states (state, variant key, owner actor, last updated tick). Filter Trace Feed on `effect_shell` to see every transition as it fires.
+
 ### Trace Categories You Can Filter On
 
 Content authoring often needs to verify "did my effect actually fire?" DebugPanel's Trace tab filters on any of the categories below, grouped by what they prove:
@@ -880,6 +909,7 @@ Content authoring often needs to verify "did my effect actually fire?" DebugPane
 | Secrets & favors (THR-30) | `secret_discovered`, `favor_created` |
 | Graph mutation & UI choice flow | `graph_op_execution`, `choice_set_player_resolved`, `choice_set_player_dismissed` |
 | Complication outcomes (THR-20) | `complication_selection` |
+| Effect shell transitions (THR-53) | `effect_shell` (subkind: `flip_revealed`, `gate_transition`, `band_selected`, `duplicate_policy_applied`) |
 
 **How to use:** Open DebugPanel (backtick or F1), select the Trace tab, check the category filter chips. Full TypeScript interface definitions for each trace type live in `src/types/trace.ts`.
 

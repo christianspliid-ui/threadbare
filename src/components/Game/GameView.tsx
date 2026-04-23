@@ -60,7 +60,6 @@ import { OmenIndicator } from './OmenIndicator';
 import { DoomClockDetail } from './DoomClockDetail';
 import { MandateDetail } from './MandateDetail';
 import { ActionDrawer } from './ActionDrawer';
-import { NarrativeLog } from './NarrativeLog';
 import { HarvestScreen } from './HarvestScreen';
 import { RetinuePanel } from './RetinuePanel';
 import { AgentInfoCard } from './AgentInfoCard';
@@ -267,6 +266,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     () => new URLSearchParams(window.location.search).has('nofog')
   );
 
+  // ── Debug: omniscience mode (bypass familiarity gating on agent character sheets) ──
+  const [omniscienceMode, setOmniscienceMode] = useState(false);
+
   // ── Debug: organic shore toggle ──
   const [showOrganicShore, setShowOrganicShore] = useState(false);
 
@@ -375,6 +377,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     },
     runtime,
     setRunning,
+    omniscienceMode,
   });
 
   // ── Mark agent as viewed when detail panel opens ──
@@ -419,6 +422,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       hexMapRef.current?.triggerAnomalyReveal(hexCol, hexRow, color);
     }
   }, [gameState.recentEvents]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Keep recent events behind a lazy getter so debug streaming can opt in.
+  const recentEventsRef = useRef(gameState.recentEvents);
+  useEffect(() => {
+    recentEventsRef.current = gameState.recentEvents;
+  }, [gameState.recentEvents]);
+  const getRecentEvents = useCallback(() => recentEventsRef.current, []);
 
   // ── Avatar arrival event → auto-pause + toast ──
   // When the ascendant reaches its move target, pause the game and notify the player.
@@ -1513,6 +1523,46 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     });
   }, [fogDisabled]);
 
+  // ── Debug bridge: scene snapshot + viewport/hex conversion ────────────────
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+
+    window.__DEBUG._registerSceneSnapshot(() => (
+      hexMapRef.current?.snapshotScene() ?? {
+        hexCount: 0,
+        agentsVisible: 0,
+        locationsVisible: 0,
+        armiesVisible: 0,
+        battlesVisible: 0,
+        siegesVisible: 0,
+        threadLines: 0,
+        activityIcons: 0,
+        fogEnabled: !fogDisabled,
+        layersActive: [],
+      }
+    ));
+    window.__DEBUG._registerViewportForHex((col: number, row: number) =>
+      hexMapRef.current?.getViewportForHex(col, row) ?? null
+    );
+    window.__DEBUG._registerHexAtViewport((x: number, y: number) =>
+      hexMapRef.current?.getHexAtViewport(x, y) ?? null
+    );
+  }, [fogDisabled, hexMapRef]);
+
+  // ── Debug bridge: omniscience toggle ─────────────────────────────────────
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerOmniscienceToggle((enabled?: boolean) => {
+      if (enabled === undefined) {
+        const next = !omniscienceMode;
+        setOmniscienceMode(next);
+        return next;
+      }
+      setOmniscienceMode(enabled);
+      return enabled;
+    });
+  }, [omniscienceMode]);
+
   // ── Debug bridge: setQuintessence / setBand (THR-184) ─────────────────────
   useEffect(() => {
     if (!import.meta.env.DEV || !window.__DEBUG) return;
@@ -2507,6 +2557,108 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     }
   }, [activeStoryBeatId, interruptsSuppressed, running, setRunning]);
 
+  const getDebugOpenModals = useCallback((): string[] => {
+    const openModals: string[] = [];
+
+    if (debugPanelOpen) openModals.push('DebugPanel');
+    if (settingsPanelOpen) openModals.push('SettingsPanel');
+    if (readThreadsOpen) openModals.push('ReadTheThreadsPanel');
+    if (scryVisible) openModals.push('ScryOverlay');
+    if (agendaPickerOpen && !!pendingAgendas) openModals.push('AgendaPicker');
+    if (drawerOpen && !!selectedAgentId) openModals.push('ActionDrawer');
+    if (nonAgentDrawerOpen && !!enrichedNonAgentSlots?.length && !selectedAgentId) openModals.push('ActionDrawer');
+    if (profileModalAgentId && !!agentInfoCard) openModals.push('AgentProfileModal');
+    if (stubModalState) {
+      if (stubModalState.category === 'location') openModals.push('LocationProfileModal');
+      if (stubModalState.category === 'faction') openModals.push('FactionSheet');
+      if (stubModalState.category === 'army') openModals.push('ArmySheet');
+      if (stubModalState.category === 'artifact') openModals.push('ArtifactSheet');
+    }
+    if (tieredEncounterState && encounterVeilModel) openModals.push('EncounterVeil');
+    if (meetingState && ascendantIdentity) openModals.push('MeetTheFirstFlow');
+    if (activeVignette && !interruptsSuppressed) openModals.push('JourneyVignetteModal');
+    if (activeStoryBeatId && activeStoryBeatTemplate && !interruptsSuppressed) openModals.push('StoryBeatModal');
+    if (activePremonition && !interruptsSuppressed) openModals.push('PremonitionModal');
+    if (ascendantSheetOpen) openModals.push('AscendantSheet');
+    if (doomDetailOpen) openModals.push('DoomClockDetail');
+    if (mandateDetailOpen && gameState.mandateDefinition && gameState.mandateState) openModals.push('MandateDetail');
+    if (harvestResult) openModals.push('HarvestScreen');
+
+    return openModals;
+  }, [
+    activePremonition,
+    activeStoryBeatId,
+    activeStoryBeatTemplate,
+    activeVignette,
+    agendaPickerOpen,
+    agentInfoCard,
+    ascendantIdentity,
+    ascendantSheetOpen,
+    debugPanelOpen,
+    doomDetailOpen,
+    drawerOpen,
+    encounterVeilModel,
+    enrichedNonAgentSlots,
+    gameState.mandateDefinition,
+    gameState.mandateState,
+    harvestResult,
+    interruptsSuppressed,
+    mandateDetailOpen,
+    meetingState,
+    nonAgentDrawerOpen,
+    pendingAgendas,
+    profileModalAgentId,
+    readThreadsOpen,
+    scryVisible,
+    selectedAgentId,
+    settingsPanelOpen,
+    stubModalState,
+    tieredEncounterState,
+  ]);
+
+  const getDebugActiveUIState = useCallback(() => {
+    const urlView = new URLSearchParams(window.location.search).get('view') ?? 'game';
+    const openModals = getDebugOpenModals();
+    const selectedFactionId = stubModalState?.category === 'faction'
+      ? stubModalState.nodeId
+      : selectedThreadNode?.category === 'faction'
+        ? selectedThreadNode.nodeId
+        : null;
+
+    return {
+      view: urlView,
+      selectedAgentId: selectedAgentId ?? null,
+      selectedLocationId: focusedLocationId,
+      selectedFactionId,
+      selectedHex: selectedHexCoord ?? selectedHex ?? focusedHex ?? null,
+      openModals,
+      actionDrawerOpen: (drawerOpen && !!selectedAgentId)
+        || (nonAgentDrawerOpen && !!enrichedNonAgentSlots?.length && !selectedAgentId),
+      scryActive: scryVisible,
+      cameraFocusHex: cameraCenter ?? null,
+    };
+  }, [
+    cameraCenter,
+    drawerOpen,
+    enrichedNonAgentSlots,
+    focusedHex,
+    focusedLocationId,
+    getDebugOpenModals,
+    nonAgentDrawerOpen,
+    scryVisible,
+    selectedAgentId,
+    selectedHex,
+    selectedHexCoord,
+    selectedThreadNode,
+    stubModalState,
+  ]);
+
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerOpenModalsProvider(getDebugOpenModals);
+    window.__DEBUG._registerActiveUIStateProvider(getDebugActiveUIState);
+  }, [getDebugActiveUIState, getDebugOpenModals]);
+
   // Close detail panel on Escape key
   useEffect(() => {
     if (!selectedThreadNode && !selectedHexCoord) return;
@@ -2716,8 +2868,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         {/* ── Center: map / hex zoom / location ── */}
         <div className="flex-1 flex flex-col overflow-hidden relative">
           <div className="flex-1 overflow-hidden relative">
-            {/* NarrativeLog overlay */}
-            <NarrativeLog events={gameState.recentEvents} onSelectAgent={handleAgentSelect} />
             {/* Toast notifications */}
             <ToastStack
               toasts={[...notificationState.toasts, ...encounterToasts, ...actionToasts]}
@@ -3041,6 +3191,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             hiddenMarks={gameState.hiddenMarks}
             pendingEncounterSeeds={gameState.pendingEncounterSeeds}
             activeDelves={gameState.activeDelves}
+            getRecentEvents={getRecentEvents}
+            flipTableStates={gameState.flipTableStates}
+            activeCompositions={gameState.activeCompositions}
+            doomClockStage={gameState.doomClock?.currentStage}
           />
         ) : (
           <div className="flex flex-shrink-0" style={{ alignItems: 'stretch' }}>

@@ -16,6 +16,7 @@ import type { StrategicRuntimeState } from '../../types/strategicAction';
 import type { OmenState } from '../../types/omen';
 import type { DoomIdentityMatrix } from '../../types/doomIdentity';
 import type { HiddenMark, PendingEncounterSeed } from '../../types/unifiedAction';
+import type { TickEvent, ActiveComposition } from '../../types/gameState';
 import { DebugTabContent, TABS, type ViewMode } from './debug/DebugTabContent';
 import {
   PANEL_STYLES, CONTAINER_STYLE, HEADER_STYLE, TAB_BAR_STYLE,
@@ -54,6 +55,14 @@ export interface DebugPanelProps {
   pendingEncounterSeeds?: readonly PendingEncounterSeed[];
   /** Active delves for the Ruins inspector tab (THR-152). */
   activeDelves?: readonly import('../../engine/ruins/delveTypes').ActiveDelve[];
+  /** Lazy getter for recent events (debug tab opt-in stream). */
+  getRecentEvents?: () => readonly TickEvent[];
+  /** Flip table runtime states for the Shells inspector tab (THR-53). */
+  flipTableStates?: ReadonlyMap<string, import('../../types/contentShells').FlipTableRuntimeState>;
+  /** Active compositions for the Compositions inspector tab (THR-225). */
+  activeCompositions?: readonly ActiveComposition[];
+  /** Current doom clock stage for the Compositions inspector tab (THR-225). */
+  doomClockStage?: number;
 }
 
 export const DebugPanel = React.memo(function DebugPanel({
@@ -63,7 +72,7 @@ export const DebugPanel = React.memo(function DebugPanel({
   onToggleOrganicShore, encounterNotifications, pendingVignettes, seed,
   sphereAggregate, agentKnowledge, preferredViewMode, preferredViewNonce,
   strategicState, omenState, doomIdentityMatrix, hiddenMarks, pendingEncounterSeeds,
-  activeDelves,
+  activeDelves, getRecentEvents, flipTableStates, activeCompositions, doomClockStage,
 }: DebugPanelProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('feed');
   const [enabledCategories, setEnabledCategories] = useState<Set<TraceCategory>>(new Set(TRACE_CATEGORIES));
@@ -202,6 +211,10 @@ export const DebugPanel = React.memo(function DebugPanel({
           hiddenMarks={hiddenMarks}
           pendingEncounterSeeds={pendingEncounterSeeds}
           activeDelves={activeDelves}
+          getRecentEvents={getRecentEvents}
+          flipTableStates={flipTableStates}
+          activeCompositions={activeCompositions}
+          doomClockStage={doomClockStage}
         />
       </div>
 

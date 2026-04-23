@@ -50,7 +50,7 @@ Run the lightweight subset (Steps 1-2 only) for:
 
 ### Step 2: Update Project Status
 
-**What:** Update `Docs/project-status.md` (full phase-by-phase status) AND the compact summary in `AGENTS.md` `## Project Status`.
+**What:** Update `Docs/project-status.md` (full phase-by-phase status) AND the compact summary in `CLAUDE.md` `## Project Status`.
 
 **Changes needed in `Docs/project-status.md`:**
 1. Add the completed feature to the "Latest implementation" or "Recent completions" summary
@@ -63,7 +63,7 @@ Run the lightweight subset (Steps 1-2 only) for:
 1. Append a one-line `✅ Complete` entry for each completed feature/system with date, key details, and design doc reference
 2. Update the engine/content stats at the bottom
 
-**Note:** AGENTS.md no longer has a `## Project Status` section — project status lives entirely in `Docs/project-status.md`. Do not add status content to AGENTS.md.
+**Note:** CLAUDE.md no longer has a `## Project Status` section — project status lives entirely in `Docs/project-status.md`. Do not add status content to CLAUDE.md.
 
 **How to get accurate stats:**
 ```bash
@@ -99,8 +99,6 @@ Read **`obsidian-system-note-template.md`** (in this skill directory) for the fu
 
 **What:** Add links to new system notes in the vault's Index.md.
 
-Index.md is now the LLM-maintained comprehensive catalog of ALL vault pages. When adding new pages, add them to the appropriate category section.
-
 **CRITICAL WORKAROUND:**
 - Index.md headings contain inline styling like `## UI Components *(added 2026-03-06)*` which makes `obsidian_patch_content` with heading targets FAIL every time.
 - **Do NOT attempt `obsidian_patch_content` with heading targets on Index.md.** It will waste time.
@@ -112,21 +110,6 @@ Index.md is now the LLM-maintained comprehensive catalog of ALL vault pages. Whe
 ```markdown
 - [[System Name]] — One-line description *(added YYYY-MM-DD)*
 ```
-
-### Step 4.5: Update Vault Log
-
-**What:** Append a summary of vault changes to `log.md`.
-
-**How:** Use `obsidian_append_content` on `TheFantasyWorldSimulator/log.md`.
-
-**Format:**
-```markdown
-## YYYY-MM-DD
-- **update** | Created [[System Name]] — one-line description
-- **update** | Updated [[Existing System]] — what changed and why
-```
-
-If today's date section already exists in log.md, append the entries under it. If not, create a new date heading.
 
 ### Step 5: Update Backlog
 
@@ -143,28 +126,28 @@ If today's date section already exists in log.md, append the entries under it. I
 **What:** Stage and commit any repo-level documentation changes.
 
 ```bash
-git add AGENTS.md Docs/changelog.md Docs/project-status.md Docs/project-history.md .planning/BACKLOG.md
+git add CLAUDE.md Docs/changelog.md Docs/project-status.md Docs/project-history.md .planning/BACKLOG.md
 git commit -m "docs: update project status for Phase 6X completion
 
 <brief summary of what was documented>
 
-Co-Authored-By: Codex Opus 4.6 <noreply@anthropic.com>"
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 ```
 
-Commit all repo-level docs: AGENTS.md, `Docs/changelog.md`, `Docs/project-status.md`, `Docs/project-history.md`, `.planning/BACKLOG.md`, and files in `Docs/plans/`. Obsidian changes are made via MCP API.
+Commit all repo-level docs: CLAUDE.md, `Docs/changelog.md`, `Docs/project-status.md`, `Docs/project-history.md`, `.planning/BACKLOG.md`, and files in `Docs/plans/`. Obsidian changes are made via MCP API.
 
 ## Quick Reference: Tool → Purpose
 
 | Tool | Use For | Notes |
 |------|---------|-------|
-| `Edit` | AGENTS.md, Docs/changelog.md, Docs/project-status.md, .planning/BACKLOG.md | Normal filesystem files |
+| `Edit` | CLAUDE.md, Docs/changelog.md, Docs/project-status.md, .planning/BACKLOG.md | Normal filesystem files |
 | `obsidian_get_file_contents` | Read vault notes | Via MCP, not filesystem |
 | `obsidian_append_content` | Create new notes / add content | ALWAYS works |
 | `obsidian_patch_content` | Edit existing note content | UNRELIABLE — use with caution, simple targets only |
 | `obsidian_list_files_in_dir` | Check what notes exist | Use before creating to avoid duplicates |
-| `git commit` | Commit doc changes | AGENTS.md + Docs/ + .planning/BACKLOG.md |
+| `git commit` | Commit doc changes | CLAUDE.md + Docs/ + .planning/BACKLOG.md |
 
-> **Note:** Design vision docs and archetype libraries were migrated from Notion to Obsidian (2026-04-04). Dilemma templates remain in Notion pending TypeScript import. All backlog and status tracking lives in repo markdown files.
+> **Note:** Notion has some remaining content (not yet migrated to Obsidian) but is not used for active tracking. All backlog and status tracking lives in repo markdown files.
 
 ## Common Mistakes
 

@@ -960,6 +960,14 @@ describe('unifiedActionResolution', () => {
       expect(template.targetSubtypes).toContain('group');
     });
 
+    it('bind_thread_army requires armyState property (narrows group subtype to armies)', () => {
+      const template = UNIFIED_ACTION_TEMPLATES.find(t => t.id === 'bind_thread_army')!;
+      expect(template.requiredNodeProperties).toBeDefined();
+      expect(template.requiredNodeProperties).toHaveProperty('armyState');
+      // Presence check (undefined value) rather than exact-value match.
+      expect(template.requiredNodeProperties!.armyState).toBeUndefined();
+    });
+
     it('bind_thread_artifact targets artifact category', () => {
       const template = UNIFIED_ACTION_TEMPLATES.find(t => t.id === 'bind_thread_artifact')!;
       expect(template.targetCategories).toContain('artifact');

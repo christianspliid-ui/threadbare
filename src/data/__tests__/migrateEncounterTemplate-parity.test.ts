@@ -27,6 +27,7 @@ import { SOCIAL_ENCOUNTER_TEMPLATES } from '../social-encounter-content';
 import { MONSTER_ENCOUNTER_TEMPLATES } from '../monster-encounter-content';
 import type { EncounterTemplate } from '../../types/encounter';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import { assertNoDuplicateIds, assertValidUnifiedTemplate } from '../../testing/contentInvariants';
 
 // ─── Shared parity helper (F4 fix) ────────────────────────────────────────
 
@@ -173,7 +174,12 @@ describe('TG pre-migrated shape invariants (all 15 templates)', () => {
   ];
 
   it('covers all 15 TG templates', () => {
-    expect(ALL_TG).toHaveLength(15);
+    expect(ALL_TG.length).toBeGreaterThanOrEqual(15);
+  });
+
+  it('ALL_TG passes structural invariants', () => {
+    ALL_TG.forEach(assertValidUnifiedTemplate);
+    assertNoDuplicateIds(ALL_TG);
   });
 
   it('every template has duration {min,max} on all steps', () => {

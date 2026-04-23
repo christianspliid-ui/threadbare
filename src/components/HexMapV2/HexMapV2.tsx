@@ -328,6 +328,32 @@ export interface HexMapV2Handle {
    */
   getZoomLevel: () => number;
   /**
+   * Structural scene snapshot for debug/playtest assertions.
+   * Counts currently mounted/visible scene elements without using screenshots.
+   */
+  snapshotScene: () => {
+    hexCount: number;
+    agentsVisible: number;
+    locationsVisible: number;
+    armiesVisible: number;
+    battlesVisible: number;
+    siegesVisible: number;
+    threadLines: number;
+    activityIcons: number;
+    fogEnabled: boolean;
+    layersActive: string[];
+  };
+  /**
+   * Project a hex coordinate to viewport pixel coordinates.
+   * Returns null when the projected position is outside the canvas viewport.
+   */
+  getViewportForHex: (col: number, row: number) => { x: number; y: number; visible: boolean } | null;
+  /**
+   * Inverse projection from viewport pixel coordinates to a hex coordinate.
+   * Returns null when the pixel does not map to a valid map hex.
+   */
+  getHexAtViewport: (x: number, y: number) => { col: number; row: number } | null;
+  /**
    * Spawn a sphere-colored particle burst at the given hex coordinate.
    * Particles expand radially and fade over PARTICLE_CONSTANTS.LIFETIME_MS ms.
    * No-op if the scene is not yet initialized.
@@ -628,6 +654,84 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       },
       getZoomLevel(): number {
         return zoomLevel;
+      },
+      snapshotScene() {
+        const visibleChildrenCount = (group: THREE.Group | null): number =>
+          group ? group.children.filter(child => child.visible).length : 0;
+
+        const agentSpriteGroup = agentSpriteGroupRef.current;
+        const agentVisibleCount = agentSpriteGroup
+          ? [...agentSpriteGroup.spriteMap.values()].filter(entry => entry.sprite.visible).length
+          : 0;
+
+        const battleEntries = battles ?? [];
+        const battleLayerVisibleCount = visibleChildrenCount(battleIndicatorLayerRef.current?.group ?? null);
+        const battleCount = battleEntries.length > 0
+          ? battleEntries.filter(entry => !entry.isSiege).length
+          : battleLayerVisibleCount;
+        const siegeCount = battleEntries.length > 0
+          ? battleEntries.filter(entry => entry.isSiege).length
+          : 0;
+
+        const layersActive: string[] = [];
+        if (signifierGroupRef.current?.visible) layersActive.push('signifiers');
+        if (locationGroupRef.current?.visible) layersActive.push('locations');
+        if (agentSpriteGroup?.group.visible) layersActive.push('agents');
+        if (armyLayerRef.current?.group.visible) layersActive.push('armies');
+        if (battleIndicatorLayerRef.current?.group.visible) layersActive.push('battles');
+        if (threadLineLayerRef.current?.group.visible) layersActive.push('threads');
+        if (activityIconLayerRef.current?.group.visible) layersActive.push('activityIcons');
+        if (fogEnabledRef.current) layersActive.push('fog');
+
+        return {
+          hexCount: fillResultRef.current?.landMesh.count ?? tiles.length,
+          agentsVisible: agentVisibleCount,
+          locationsVisible: visibleChildrenCount(locationGroupRef.current),
+          armiesVisible: visibleChildrenCount(armyLayerRef.current?.group ?? null),
+          battlesVisible: battleCount,
+          siegesVisible: siegeCount,
+          threadLines: visibleChildrenCount(threadLineLayerRef.current?.group ?? null),
+          activityIcons: visibleChildrenCount(activityIconLayerRef.current?.group ?? null),
+          fogEnabled: fogEnabledRef.current,
+          layersActive,
+        };
+      },
+      getViewportForHex(col: number, row: number) {
+        const camera = cameraRef.current;
+        const canvas = canvasRef.current;
+        if (!camera || !canvas) return null;
+
+        const world = hexToWorld({ col, row }, HEX_CONSTANTS.HEX_SIZE);
+        const local = worldToScreen(new THREE.Vector3(world.x, world.y, 0), camera, canvas);
+        const rect = canvas.getBoundingClientRect();
+        const viewportPoint = {
+          x: rect.left + local.x,
+          y: rect.top + local.y,
+          visible: true,
+        };
+
+        const inViewport =
+          viewportPoint.x >= rect.left &&
+          viewportPoint.x <= rect.right &&
+          viewportPoint.y >= rect.top &&
+          viewportPoint.y <= rect.bottom;
+
+        return inViewport ? viewportPoint : null;
+      },
+      getHexAtViewport(x: number, y: number) {
+        const camera = cameraRef.current;
+        const canvas = canvasRef.current;
+        if (!camera || !canvas) return null;
+
+        const rect = canvas.getBoundingClientRect();
+        const localX = x - rect.left;
+        const localY = y - rect.top;
+
+        if (localX < 0 || localX > rect.width || localY < 0 || localY > rect.height) {
+          return null;
+        }
+
+        return screenToHex(localX, localY, camera, canvas);
       },
       spawnParticleBurst(hexCol: number, hexRow: number, sphereColor: string): void {
         const scene = sceneRef.current;

@@ -18,6 +18,7 @@ import type { ComplicationSeverity } from './complication';
 import type { SyllableTemplate } from './culture';
 import type { ReliabilityBand } from '../engine/intelligence';
 import type { IntelligenceCategory } from './unifiedAction';
+import type { NarrativeEventType, NarrativeTier } from './narrative';
 
 /** Known trace categories for filtering in debug panel */
 export type TraceCategory =
@@ -40,6 +41,9 @@ export type TraceCategory =
   | 'reputation_trait'
   | 'rarity_graduation'
   | 'rarity_importance'
+  | 'divine_proximity_phase'
+  | 'divine_proximity_accumulation'
+  | 'prose_rarity_bias'
   | 'encounter_promotion'
   | 'curator_decision'
   | 'attention_pool'
@@ -158,7 +162,13 @@ export type TraceCategory =
   // Encounter cache rebuild tracking (THR-187)
   | 'encounter_cache_rebuild'
   // Hex→actor index unresolved actors warning (THR-188)
-  | 'engine_warning';
+  | 'engine_warning'
+  // Effect shells (THR-53)
+  | 'effect_shell'
+  // Composition phase runner (THR-225)
+  | 'composition.phase_activated'
+  | 'composition.failed'
+  | 'composition.phase_eval_failed';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -180,6 +190,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'reputation_trait',
   'rarity_graduation',
   'rarity_importance',
+  'divine_proximity_phase',
+  'divine_proximity_accumulation',
+  'prose_rarity_bias',
   'encounter_promotion',
   'curator_decision',
   'attention_pool',
@@ -302,6 +315,12 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'encounter_cache_rebuild',
   // Hex→actor index unresolved actors warning (THR-188)
   'engine_warning',
+  // Effect shells (THR-53)
+  'effect_shell',
+  // Composition phase runner (THR-225)
+  'composition.phase_activated',
+  'composition.failed',
+  'composition.phase_eval_failed',
 ];
 
 /** Base shape for all trace entries */
@@ -898,6 +917,38 @@ export interface RarityImportanceTrace extends TraceBase {
   currentTier: RarityTier;
 }
 
+/** Trace: divine proximity phase summary emitted once per tick. */
+export interface DivineProximityPhaseTrace extends TraceBase {
+  category: 'divine_proximity_phase';
+  ascendantCount: number;
+  scanCount: number;
+  accumulatedCount: number;
+  skippedAscendantCount: number;
+}
+
+/** Trace: per-node divine proximity accumulation (capped per tick). */
+export interface DivineProximityAccumulationTrace extends TraceBase {
+  category: 'divine_proximity_accumulation';
+  ascendantId: string;
+  nodeId: string;
+  nodeName: string;
+  hexDistance: number;
+  delta: number;
+  newImportance: number;
+  currentTier: RarityTier;
+}
+
+/** Trace: rarity floor elevated narrative tier classification */
+export interface ProseRarityBiasTrace extends TraceBase {
+  category: 'prose_rarity_bias';
+  eventType: NarrativeEventType;
+  subjectId?: string;
+  rarityTier: number;
+  baseTier: NarrativeTier;
+  biasedTier: NarrativeTier;
+  tags: string[];
+}
+
 /** Trace: settlement genome pipeline result at worldgen or reassessment */
 export interface SettlementGenomeTrace extends TraceBase {
   category: 'settlement_genome';
@@ -1317,6 +1368,9 @@ export type TraceEntry =
   | GraphOpExecutionTrace
   | RarityGraduationTrace
   | RarityImportanceTrace
+  | DivineProximityPhaseTrace
+  | DivineProximityAccumulationTrace
+  | ProseRarityBiasTrace
   | EncounterPromotionTrace
   | CuratorDecisionTrace
   | AttentionPoolTrace
@@ -1375,7 +1429,16 @@ export type TraceEntry =
   // Encounter cache rebuild tracking (THR-187)
   | EncounterCacheRebuildTrace
   // Hex→actor index engine warning (THR-188)
-  | EngineWarningTrace;
+  | EngineWarningTrace
+  // Effect shell traces (THR-53)
+  | EffectShellFlipRevealedTrace
+  | EffectShellGateTransitionTrace
+  | EffectShellBandSelectedTrace
+  | EffectShellDuplicatePolicyAppliedTrace
+  // Composition phase runner traces (THR-225)
+  | CompositionPhaseActivatedTrace
+  | CompositionFailedTrace
+  | CompositionPhaseEvalFailedTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {
@@ -1599,4 +1662,96 @@ export interface EngineWarningTrace extends TraceBase {
   category: 'engine_warning';
   source: 'hex_actor_index';
   unresolvedCount: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Effect Shell Traces (THR-53)
+// ═══════════════════════════════════════════════════════════════════
+
+import type {
+  FlipTableState,
+  DuplicateGainPolicy,
+  ResultBandConfig,
+} from './contentShells';
+import type { ClearanceGateState } from './contentShells';
+
+/** Trace: flip_table variant revealed */
+export interface EffectShellFlipRevealedTrace extends TraceBase {
+  category: 'effect_shell';
+  subkind: 'flip_revealed';
+  actorId: string;
+  runtimeId: string;
+  templateId: string;
+  flipId: string;
+  variantKey: string;
+  previousState: FlipTableState;
+  nextState: FlipTableState;
+}
+
+/** Trace: clearance_gate state transitioned */
+export interface EffectShellGateTransitionTrace extends TraceBase {
+  category: 'effect_shell';
+  subkind: 'gate_transition';
+  actorId: string;
+  runtimeId: string;
+  previousState: ClearanceGateState;
+  nextState: ClearanceGateState;
+  revealedSignals: readonly string[];
+  followOnTagsAdded: readonly string[];
+}
+
+/** Trace: result band selected for an action resolution */
+export interface EffectShellBandSelectedTrace extends TraceBase {
+  category: 'effect_shell';
+  subkind: 'band_selected';
+  actorId: string;
+  templateId: string;
+  margin: number;
+  selectedBandId: string;
+  selectedOutcomeBand: ResultBandConfig['outcomeBand'];
+}
+
+/** Trace: duplicate-gain policy consulted at attachment grant time */
+export interface EffectShellDuplicatePolicyAppliedTrace extends TraceBase {
+  category: 'effect_shell';
+  subkind: 'duplicate_policy_applied';
+  actorId: string;
+  templateId: string;
+  policy: DuplicateGainPolicy;
+  outcome: 'stacked' | 'refreshed' | 'flipped' | 'worsened' | 'ignored';
+}
+
+export type EffectShellTrace =
+  | EffectShellFlipRevealedTrace
+  | EffectShellGateTransitionTrace
+  | EffectShellBandSelectedTrace
+  | EffectShellDuplicatePolicyAppliedTrace;
+
+// ═══════════════════════════════════════════════════════════════════
+// Composition Phase Runner Traces (THR-225)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Trace: a composition phase activated successfully */
+export interface CompositionPhaseActivatedTrace extends TraceBase {
+  category: 'composition.phase_activated';
+  compositionId: string;
+  phaseId: string;
+  activatedNodes: string[];
+  storyBeatQueued: boolean;
+}
+
+/** Trace: a composition transitioned to failed status */
+export interface CompositionFailedTrace extends TraceBase {
+  category: 'composition.failed';
+  compositionId: string;
+  failingPhaseId?: string;
+  reason: string;
+}
+
+/** Trace: phase predicate evaluation threw an error */
+export interface CompositionPhaseEvalFailedTrace extends TraceBase {
+  category: 'composition.phase_eval_failed';
+  compositionId: string;
+  phaseId: string;
+  error: string;
 }

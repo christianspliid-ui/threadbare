@@ -2,6 +2,7 @@ import type { TraceEntry } from './types/trace';
 import type { AgentAttachments } from './engine/agentAttachments';
 import type { RewardHistoryEntry } from './engine/rewardHistory';
 import type { BalanceRunSummary, BalanceTargets, BalanceEvaluationResult } from './types/balanceEval';
+import type { TickEvent } from './types/gameState';
 import type { DebugSpawnEncounterResult, DebugSpawnEncounterContextResult, DebugSpawnEncounterOptions, DebugSpawnEncounterContextOptions } from './engine/debugEncounterTools';
 import type { DebugWorldSpawnResult, DebugSpawnLocationOptions, DebugSpawnSublocationOptions, DebugSpawnNpcOptions, DebugMoveAgentOptions, DebugSpawnAttachmentOptions } from './engine/debugWorldSpawnTools';
 import type { PortfolioPinResult } from './engine/portfolioManager';
@@ -52,6 +53,37 @@ export interface DebugForceGraduateResult {
   message: string;
   previousTier?: number;
   newTier?: number;
+}
+
+export interface DebugSceneSnapshot {
+  hexCount: number;
+  agentsVisible: number;
+  locationsVisible: number;
+  armiesVisible: number;
+  battlesVisible: number;
+  siegesVisible: number;
+  threadLines: number;
+  activityIcons: number;
+  fogEnabled: boolean;
+  layersActive: string[];
+}
+
+export interface DebugViewportProjection {
+  x: number;
+  y: number;
+  visible: boolean;
+}
+
+export interface DebugActiveUIState {
+  view: string;
+  selectedAgentId: string | null;
+  selectedLocationId: string | null;
+  selectedFactionId: string | null;
+  selectedHex: { col: number; row: number } | null;
+  openModals: string[];
+  actionDrawerOpen: boolean;
+  scryActive: boolean;
+  cameraFocusHex: { col: number; row: number } | null;
 }
 
 export interface DebugBridge {
@@ -120,6 +152,35 @@ export interface DebugBridge {
   setFog(enabled: boolean): void;
   /** @internal GameView registers its fog toggle callback here */
   _registerFogToggle(fn: (enabled?: boolean) => boolean): void;
+  /** Structural scene snapshot for test/audit assertions without screenshots. */
+  snapshotScene(): Promise<DebugSceneSnapshot>;
+  /** Convert a hex coordinate to viewport pixels. Returns null when off-canvas. */
+  getViewportForHex(col: number, row: number): DebugViewportProjection | null;
+  /** Inverse conversion from viewport pixel coordinate to hex. */
+  getHexAtViewport(x: number, y: number): { col: number; row: number } | null;
+  /** Names of currently-open modal/overlay components in GameView. */
+  getOpenModals(): Promise<string[]>;
+  /** Snapshot of current high-level UI state for test assertions. */
+  getActiveUIState(): Promise<DebugActiveUIState>;
+  /** Returns recent UI tick-events where event.tick > provided tick. */
+  getEventsSince(tick: number): Promise<TickEvent[]>;
+  /** @internal GameView registers scene snapshot provider here */
+  _registerSceneSnapshot(fn: () => DebugSceneSnapshot): void;
+  /** @internal GameView registers hex -> viewport projection callback here */
+  _registerViewportForHex(fn: (col: number, row: number) => DebugViewportProjection | null): void;
+  /** @internal GameView registers viewport -> hex projection callback here */
+  _registerHexAtViewport(fn: (x: number, y: number) => { col: number; row: number } | null): void;
+  /** @internal GameView registers open-modal provider here */
+  _registerOpenModalsProvider(fn: () => string[]): void;
+  /** @internal GameView registers active UI state provider here */
+  _registerActiveUIStateProvider(fn: () => DebugActiveUIState): void;
+
+  /** Toggle omniscience mode — bypasses familiarity gating, shows all agent character sheet data. Returns the new enabled state. */
+  toggleOmniscience(): boolean;
+  /** Explicitly set omniscience mode enabled state. */
+  setOmniscience(enabled: boolean): void;
+  /** @internal GameView registers its omniscience toggle callback here */
+  _registerOmniscienceToggle(fn: (enabled?: boolean) => boolean): void;
 
   // ── Ascendant Bar: quintessence band visualisation (THR-184) ────────────
   /** Set the ascendant's quintessence to the given ratio (0–1). Triggers a re-render. */
@@ -155,6 +216,8 @@ export interface DebugBridge {
   getEncounterCacheRebuildCount: () => number;
   /** Returns all encounter_cache_rebuild traces (THR-187). */
   getEncounterCacheRebuildTraces: () => Promise<ReadonlyArray<TraceEntry>>;
+  /** Returns all active compositions from the current game state (THR-225). */
+  getActiveCompositions: () => import('./types/gameState').ActiveComposition[];
 }
 
 declare global {

@@ -30,6 +30,12 @@ import {
   type TerrainTextureLabVignetteSettings,
 } from './terrainTextureLabPresets';
 import { buildTerrainTextureLabVignettePrototype } from './terrainTextureLabVignettePrototype';
+import type { TerrainTextureLabVignetteZoneRule } from './terrainTextureLabVignettePrototype';
+import { resolveAllHexFiller } from './vignette/VignetteResolver';
+import type { ResolvedHexFiller } from './vignette/VignetteResolver';
+import { FILLER_PROFILE_TERRAIN_TYPES } from './vignette/FillerProfiles';
+import { VignetteDebugOverlay } from './vignette/VignetteDebugOverlay';
+import { getTerrainTextureLabHexCenter } from './terrainTextureLabLayout';
 
 const GLOBAL_CONTROL_STYLES: CSSProperties = {
   display: 'flex',
@@ -185,6 +191,28 @@ export function TerrainTextureLab() {
     () => [...vignettePrototype.autoPlacements, ...placements],
     [placements, vignettePrototype.autoPlacements],
   );
+
+  const fillerSpec = useMemo<ResolvedHexFiller[]>(() => {
+    const fillerHexes = TERRAIN_TEXTURE_PREVIEW_HEXES.filter(hex =>
+      FILLER_PROFILE_TERRAIN_TYPES.has(hex.terrainKey),
+    );
+    const scopedHexIds = new Set(vignettePrototype.zoneRules.map(z => z.hexId));
+    const extraZones: TerrainTextureLabVignetteZoneRule[] = fillerHexes
+      .filter(hex => !scopedHexIds.has(hex.id))
+      .map(hex => {
+        const center = getTerrainTextureLabHexCenter(hex.col, hex.row);
+        return {
+          id: `${hex.id}-zone-center-default`,
+          hexId: hex.id,
+          slot: 'CENTER' as const,
+          mode: 'hard_keepout' as const,
+          center,
+          radius: TERRAIN_TEXTURE_LAB_CONSTANTS.HEX_RADIUS * TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.ZONE_RADIUS_CENTER_FRACTION,
+        };
+      });
+    const allZoneRules = [...vignettePrototype.zoneRules, ...extraZones];
+    return resolveAllHexFiller(fillerHexes, allZoneRules, seed, vignetteSettings.densityScale);
+  }, [vignettePrototype.zoneRules, seed, vignetteSettings.densityScale]);
   const selectedClickTarget = selectedClickTargetId
     ? vignettePrototype.clickTargets.find(target => target.id === selectedClickTargetId) ?? null
     : null;
@@ -647,6 +675,14 @@ export function TerrainTextureLab() {
                   />
                   Animate preview
                 </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
+                  <input
+                    type="checkbox"
+                    checked={viewSettings.useImageTextures}
+                    onChange={(event) => updateViewSettings({ useImageTextures: event.target.checked })}
+                  />
+                  Use Meshy image textures
+                </label>
               </div>
             </Card.Body>
           </Card>
@@ -744,6 +780,13 @@ export function TerrainTextureLab() {
                     Show filler dots
                   </label>
                 </div>
+
+                <VignetteDebugOverlay
+                  showChunkBounds={vignetteSettings.showChunkBounds}
+                  densityScale={vignetteSettings.densityScale}
+                  onShowChunkBoundsChange={(showChunkBounds) => updateVignetteSettings({ showChunkBounds })}
+                  onDensityScaleChange={(densityScale) => updateVignetteSettings({ densityScale })}
+                />
 
                 <div
                   style={{
@@ -1092,6 +1135,8 @@ export function TerrainTextureLab() {
             zoneRules={vignetteSettings.showZones ? vignettePrototype.zoneRules : []}
             fillerDots={vignetteSettings.showFillerDots ? vignettePrototype.fillerDots : []}
             clickTargets={vignettePrototype.clickTargets}
+            fillerSpec={fillerSpec}
+            showChunkBounds={vignetteSettings.showChunkBounds}
             selectedHexId={selectedHexId}
             selectedClickTargetId={selectedClickTargetId}
             seed={seed}

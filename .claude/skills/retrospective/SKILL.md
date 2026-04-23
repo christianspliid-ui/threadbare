@@ -11,11 +11,13 @@ Turn accumulated impediment data into concrete improvements. This is the "act" s
 
 ## Workflow
 
-### Step 1: Load and Analyze the Impediment Log
+### Step 1: Generate Deterministic Draft, Then Validate
 
-Read `Docs/impediments.md`. Count entries since the last retrospective (check `Docs/retrospectives/` for the most recent one).
+Run `npm run retro-draft` first. This writes `Docs/retrospectives/YYYY-MM-DD-retro-draft.md` from `Docs/impediments.md` using deterministic parsing and stable ordering.
 
-Produce these analytics:
+Open the generated draft and cross-check it against `Docs/impediments.md` before writing narrative conclusions. Treat the impediment log as the source of truth if anything disagrees.
+
+Produce/verify these analytics:
 
 1. **Volume**: Total new impediments since last retro
 2. **By category**: Count per category, sorted descending

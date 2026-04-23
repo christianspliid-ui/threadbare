@@ -101,6 +101,7 @@ import { phaseInitiativeProgress } from './phaseInitiativeProgress';
 import { phaseStrategicProjects } from './phaseStrategicProjects';
 import { phaseDivinePremonition } from './phaseDivinePremonition';
 import { phaseControlEffects, resetControlEffectsCounter } from './phaseControlEffects';
+import { phaseEffectShells } from './phaseEffectShells';
 // phaseDoom and phaseMandate are extracted to their own files with sphere pressure wiring.
 // Imported for internal runTick use; re-exported for backward compatibility (tests import from orchestrator).
 import { phaseDoom, resetDoomCounter } from './phaseDoom';
@@ -112,9 +113,11 @@ import { resetMeetingCounter } from './meetingEncounter';
 import { phaseJourneyBeat } from './journeyEngine';
 import { JOURNEY_BEAT_TEMPLATES } from '../data/journey-content';
 import { phaseOmenAgenda, resetOmenCounter, phaseEmittedOmenDecay } from './phaseOmenAgenda';
+import { phaseComposition } from './phaseComposition';
 import { phaseEncounterVisibility } from './encounterVisibility';
 import { evaluateEncounterSeeds } from './encounterSeeding';
 import { EncounterCacheManager, buildDangerMap } from './encounterCache';
+import { resolveLocationToHex } from './encounterAwareness';
 import { decayAllTrust } from './trustMechanics';
 import { phaseNpcGraduation } from './npcGraduation';
 import { buildDistanceMatrix } from './distanceMatrix';
@@ -146,8 +149,13 @@ import type { ResourceInstance } from '../types/resource';
 import { createEncounterEventNode } from './encounterEventNode';
 import type { SimulationRuntime } from './simulationRuntime';
 import { accumulateImportance, checkGraduationThreshold, graduateRarity, getImportanceDelta, getRarityTier } from './rarity';
-import { RARITY_NOTIFICATION_THRESHOLD } from '../data/rarity-constants';
+import {
+  DIVINE_PROXIMITY_RADIUS_HEXES,
+  DIVINE_PROXIMITY_TRACE_CAP,
+  RARITY_NOTIFICATION_THRESHOLD,
+} from '../data/rarity-constants';
 import { RARITY_TIER_NAMES } from '../types/rarity';
+import { hexDistance } from '../lib/hexMath';
 import {
   touchWorld,
   ensureEncounterCache,
@@ -1366,6 +1374,155 @@ export function phaseDilemmaDetection(state: GameState): Partial<GameState> {
   return { tickEvents: [...state.tickEvents, ...events] };
 }
 
+interface DivineProximityCandidate {
+  node: import('../types/graph').GraphNode;
+  distance: number;
+}
+
+interface DivineProximityPhaseResult {
+  scanCount: number;
+  accumulatedCount: number;
+  skippedAscendantCount: number;
+}
+
+const DIVINE_PROXIMITY_NODE_TYPES: Array<'actor' | 'location' | 'sublocation'> = [
+  'actor',
+  'location',
+  'sublocation',
+];
+
+let _divineProximityRadiusWarnedOnce = false;
+let _divineProximityTraceCapWarnedOnce = false;
+
+function getDivineProximityRadius(): number {
+  if (Number.isInteger(DIVINE_PROXIMITY_RADIUS_HEXES) && DIVINE_PROXIMITY_RADIUS_HEXES > 0) {
+    return DIVINE_PROXIMITY_RADIUS_HEXES;
+  }
+  if (!_divineProximityRadiusWarnedOnce) {
+    _divineProximityRadiusWarnedOnce = true;
+    console.warn(
+      `[orchestrator] DIVINE_PROXIMITY_RADIUS_HEXES=${String(DIVINE_PROXIMITY_RADIUS_HEXES)} is invalid; falling back to 1.`,
+    );
+  }
+  return 1;
+}
+
+function getDivineProximityTraceCap(): number {
+  if (Number.isInteger(DIVINE_PROXIMITY_TRACE_CAP) && DIVINE_PROXIMITY_TRACE_CAP > 0) {
+    return DIVINE_PROXIMITY_TRACE_CAP;
+  }
+  if (!_divineProximityTraceCapWarnedOnce) {
+    _divineProximityTraceCapWarnedOnce = true;
+    console.warn(
+      `[orchestrator] DIVINE_PROXIMITY_TRACE_CAP=${String(DIVINE_PROXIMITY_TRACE_CAP)} is invalid; falling back to 1.`,
+    );
+  }
+  return 1;
+}
+
+function resolveActorHex(graph: WorldGraph, actorId: string): { col: number; row: number } | null {
+  const locatedAtEdges = graph.getOutgoingEdges(actorId, 'located_at');
+  if (locatedAtEdges.length === 0) return null;
+  return resolveLocationToHex(graph, locatedAtEdges[0].target);
+}
+
+function resolveNodeHexForDivineProximity(
+  graph: WorldGraph,
+  node: import('../types/graph').GraphNode,
+): { col: number; row: number } | null {
+  if (node.type === 'actor') return resolveActorHex(graph, node.id);
+  if (node.type === 'location' || node.type === 'sublocation') return resolveLocationToHex(graph, node.id);
+  return null;
+}
+
+function collectDivineProximityCandidates(
+  graph: WorldGraph,
+  centerHex: { col: number; row: number },
+  radius: number,
+): DivineProximityCandidate[] {
+  const seen = new Set<string>();
+  const matches: DivineProximityCandidate[] = [];
+  for (const nodeType of DIVINE_PROXIMITY_NODE_TYPES) {
+    const nodes = graph.getNodesByType(nodeType);
+    for (const node of nodes) {
+      if (seen.has(node.id)) continue;
+      const nodeHex = resolveNodeHexForDivineProximity(graph, node);
+      if (!nodeHex) continue;
+      const distance = hexDistance(centerHex, nodeHex);
+      if (distance > radius) continue;
+      seen.add(node.id);
+      matches.push({ node, distance });
+    }
+  }
+  matches.sort((a, b) => a.node.id.localeCompare(b.node.id));
+  return matches;
+}
+
+export function runDivineProximityPhase(state: GameState): DivineProximityPhaseResult {
+  const ascendantId = state.ascendantId;
+  const ascendantCount = ascendantId ? 1 : 0;
+  const radius = getDivineProximityRadius();
+  const traceCap = getDivineProximityTraceCap();
+  const delta = getImportanceDelta('divine_proximity');
+
+  let scanCount = 0;
+  let accumulatedCount = 0;
+  let skippedAscendantCount = 0;
+  let emittedAccumulationTraces = 0;
+
+  if (!ascendantId) {
+    skippedAscendantCount = 1;
+  } else {
+    const ascendantHex = getAvatarHexPosition(state.graph, ascendantId);
+    if (!ascendantHex) {
+      skippedAscendantCount = 1;
+    } else {
+      const candidates = collectDivineProximityCandidates(state.graph, ascendantHex, radius);
+      scanCount += candidates.length;
+
+      for (const candidate of candidates) {
+        const node = candidate.node;
+        if (node.properties.rarityTracked === false) continue;
+        try {
+          const currentTier = getRarityTier(node);
+          const newImportance = accumulateImportance(node, delta);
+          accumulatedCount++;
+          if (emittedAccumulationTraces < traceCap) {
+            emitTrace({
+              tick: state.tick,
+              category: 'divine_proximity_accumulation',
+              summary: `Divine proximity raised importance for ${node.name}`,
+              ascendantId,
+              nodeId: node.id,
+              nodeName: node.name,
+              hexDistance: candidate.distance,
+              delta,
+              newImportance,
+              currentTier,
+            });
+            emittedAccumulationTraces++;
+          }
+        } catch {
+          // fail-soft: continue processing remaining nearby nodes
+          continue;
+        }
+      }
+    }
+  }
+
+  emitTrace({
+    tick: state.tick,
+    category: 'divine_proximity_phase',
+    summary: `divine_proximity: scanned ${scanCount}, accumulated ${accumulatedCount}`,
+    ascendantCount,
+    scanCount,
+    accumulatedCount,
+    skippedAscendantCount,
+  });
+
+  return { scanCount, accumulatedCount, skippedAscendantCount };
+}
+
 // ─── Phase 2.75: Familiarity Gain (Proximity) ────────────────────────
 
 // Rate-limited warning flag: fires at most once per JS session (once per page load).
@@ -1811,6 +1968,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 1.7a: Emitted omen decay — expire aftermath-spawned omens (THR-115)
   s = { ...s, ...phaseEmittedOmenDecay(s) };
 
+  // Phase 1.8: Composition phase runner — advance phased event recipes tied to doom clock (THR-225)
+  s = { ...s, ...phaseComposition(s) };
+  phaseEventCounts['composition'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
   // ─── Unified Action Pipeline (replaces old phaseAgentActions + phaseEncounterProgression + phaseActionProgress) ───
   // Phase 2a: Progress + resolve existing unified actions (Phases 1-6 of unified pipeline)
   const uaRng = mulberry32(state.seed + state.tick * 31);
@@ -1897,6 +2059,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   s = { ...s, ...phaseEncounterProgressionV2(s, runtime) };
   phaseEventCounts['encounter_progression'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
+
+  // Phase 2a.52: Effect Shells — process non-step-outcome flip_table triggers (THR-53)
+  // step_outcome triggers are handled inline in executeStepResult; this phase handles the rest.
+  s = { ...s, ...phaseEffectShells(s) };
 
   // Phase 2a.55: Strategic Projects — advance multi-tick projects and tick control degradation
   {
@@ -2118,12 +2284,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseEventCounts['intelligence_decay'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
-  // PHASE-D-DEFERRED(THR-25): Wire accumulateImportance(node, getImportanceDelta('divine_proximity'))
-  // for entities near active ascendant hex. Needs a per-tick spatial scan: find all actor/location
-  // nodes within N hexes of the ascendant's current hex position, then call accumulateImportance
-  // on each. Insert here, after divine influence decay and before trade route decay, so the
-  // importance accumulation benefits from the same tick's divine influence values.
-  // See rarity-constants.ts IMPORTANCE_DIVINE_PROXIMITY for the delta value.
+  // Phase 6.715: Divine Proximity Importance (THR-25)
+  const divineProximityStats = runDivineProximityPhase(s);
+  phaseEventCounts['divineProximityScanned'] = divineProximityStats.scanCount;
+  phaseEventCounts['divineProximityAccumulated'] = divineProximityStats.accumulatedCount;
 
   // Phase 6.62: Trade Route Decay (stale routes lose volume; dead routes removed)
   s = { ...s, ...phaseTradeRouteDecay(s) };

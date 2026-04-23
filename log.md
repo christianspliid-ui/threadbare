@@ -1,0 +1,35 @@
+# log`n
+- **work** | THR-221 scaffold shipped: inspiration ingest CLI + idempotent CMS write path (tagging deferred to THR-220).
+- **work** | THR-223 shipped: composition DSL find-card resolver outcomes + validator logging/tests.
+- **work** | THR-224 shipped: composition DSL mutability gate + stated-attribute tripwire + render-triggered promotion wiring.
+- **work** | THR-229 shipped: documented pacing-system map + event integration hooks (THR-225 precursor).
+- **work** | THR-197 shipped: removed duplicate root change-spec and moved undated CLAUDE/skills instructions into Docs/plans.
+- **ops** | no ready-for-codex work this cycle (2026-04-20T22:43:08.8869979+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-20T23:03:59.2814928+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-21T00:03:07.6283304+02:00)
+- **work** | THR-192 shipped: husky pre-commit shared-skill drift guard + canonical mirror normalization.
+- **work** | THR-207 shipped: __DEBUG scene snapshot + viewport/hex coordinate bridge for interface playtests.
+- **work** | THR-208 shipped: __DEBUG open-modals/UI-state/event-window assertions wired + tested.
+- **ops** | no ready-for-codex work this cycle (2026-04-21T09:54:59.9483043+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-21T10.54.37+02:00)
+- **work** | THR-235 shipped: added pull-work pickup skill and CC startup routing to /pull-work.
+- **work** | THR-236 shipped: removed deprecated session-handoff skill mirrors; closeout remains Linear-only.
+- **ops** | no ready-for-codex work this cycle (2026-04-22T09.55.41.0323170+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-22T11.02.19.6411109+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-22T12.03.08.7921635+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-22T13.03.32.9905494+02:00)
+- **work** | no ready-for-codex work this cycle
+- **ops** | no ready-for-codex work this cycle (2026-04-22T16.02.50.1941442+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-22T17.03.15.9765788+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-22T18.04.10.0382993+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-22T19:02:26.9257114+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-22T20.02.22.6741729+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-22T21.03.42+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-22T22:04:03.2100691+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-23T07.52.55.8917583+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-23T08.02.08+02:00)
+- **work** | THR-237 shipped: shared content invariants helper + brittle-count test sweep (deferral filed: THR-245).
+- **work** | THR-241 shipped: added session-precheck sandbox fingerprint script and required Session Workflow first-step run in CLAUDE.md.
+- **work** | THR-242 shipped: deterministic retro-draft generator + retrospective skill draft-first workflow update.
+- **work** | THR-43 shipped: bind_thread_army now requires `armyState` via `requiredNodeProperties`, with regression test coverage.
+- **work** | THR-213 shipped: added verification-evidence hard rule in CLAUDE.md + coordination protocol Rule 9.

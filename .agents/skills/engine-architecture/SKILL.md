@@ -11,7 +11,7 @@ description: >
 
 > **Prerequisite:** Load `state-of-game-design` first for foundational context.
 
-This skill provides the deep engine context that the root AGENTS.md intentionally omits to keep context lean. Load this before writing or modifying any engine code.
+This skill provides the deep engine context that the root CLAUDE.md intentionally omits to keep context lean. Load this before writing or modifying any engine code.
 
 ## Inspectability: The Trace System
 
