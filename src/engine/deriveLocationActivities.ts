@@ -221,7 +221,7 @@ function dominantActivityFrom(threads: AgentActivityThread[]): ActivityCategory 
  * Quality bar: every murmur must feel specific to the activity, not generic.
  * If a murmur could describe any settlement interchangeably, it fails.
  */
-const MURMUR_TEMPLATES: Readonly<Record<LocationPulse, Readonly<Record<ActivityCategory, readonly string[]>>>> = {
+export const MURMUR_TEMPLATES: Readonly<Record<LocationPulse, Readonly<Record<ActivityCategory, readonly string[]>>>> = {
   quiet: {
     idle: [
       'Smoke rises from a single chimney. Otherwise, stillness.',
