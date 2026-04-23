@@ -33,7 +33,7 @@ export const CHAIN_WEAKENS_STORY_BEAT_TEMPLATES: CompositionStoryBeatTemplate[] 
     id: 'story-beat.chain-weakens-azath-cracks',
     title: 'The Chain Weakens — The Structure Cracks',
     prose:
-      'A sound like a mountain's heartbeat, felt in the bones: the Azath glyph has fractured. Whatever was held within is no longer fully contained. This moment will not be undone.',
+      "A sound like a mountain's heartbeat, felt in the bones: the Azath glyph has fractured. Whatever was held within is no longer fully contained. This moment will not be undone.",
     sphere: 'void',
   },
 ];
