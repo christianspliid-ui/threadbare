@@ -18,6 +18,9 @@
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
 
+## Recent Completions (2026-04-23) — THR-225
+- **THR-225 — Event recipe phased activation (doom-clock tiers):** Phase DSL added to Composition schema (`phases?: Phase[]`), `ActiveComposition` in GameState. New `phaseComposition.ts` tick runner evaluates doom-clock + composition-fired predicates per tick; activates phases, applies effects (set-world-flag, mark-composition-fired), enqueues story beats via existing pacingGovernor path, emits Chronicle entries. Three new trace types (`composition.phase_activated`, `composition.failed`, `composition.phase_eval_failed`). Chain Weakens reference recipe (4 phases over tiers 1-4) + Winnowing of Luck retrofit (3 phases). CompositionView debug tab wired through DebugPanel → GameView. `window.__DEBUG.getActiveCompositions()` exposed. Placeholder story-beat prose for all four Chain Weakens phases. 12 unit tests. Four deferral issues: THR-251 (GC), THR-252 (non-doom predicates), THR-253 (prose polish), THR-254 (dual-voice Chronicle). tsc clean, build green, 10619 tests passed.
+
 ## Recent Completions (2026-04-23) — THR-164
 - **THR-164 — Linear workflow hardening research:** Plan doc committed (`Docs/plans/2026-04-23-linear-workflow-hardening.md`). Evaluates 5 candidate structural enforcement mechanisms: In Review auto-close repoint (SHIP), default team filter (SKIP), Reopened label automation (SHIP), stale-claim cron (SHIP), pull-work atomic claim wrapper (SHIP). Four follow-up issues filed (THR-247/248/249/250). Implementation order: wrapper → automation → auto-close → stale-claim cron.
 

@@ -3,6 +3,8 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+- ✅ **THR-225** (2026-04-23) — Event recipe phased activation tied to doom-clock tiers. Phase DSL, phase runner, Chain Weakens recipe, CompositionView debug tab. 12 unit tests. Four deferrals: THR-251/252/253/254.
+
 ✅ THR-164 (2026-04-23) — Linear workflow hardening research: plan doc committed; 5 investigations (In Review auto-close repoint, default team filter skip, Reopened label automation, stale-claim cron, atomic pull-work wrapper); 4 follow-up tickets filed (THR-247/248/249/250)
 
 ✅ THR-246 (2026-04-23) — Linear MCP rate-limit relief: Cowork session-start board scan (5 calls → 1), pull-work Step 0 rate-limit guard + Step 1 board-scan rewrite, Codex automation prompt dedupe + :30 offset, THR-234 plan updated, weekly-hygiene draft updated, CLAUDE.md pointer added, impediment #79 logged

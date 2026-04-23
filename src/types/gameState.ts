@@ -35,6 +35,19 @@ import type { AgentKnowledge } from './agentKnowledge';
 import type { DigestEntry, ThreadTug, QueuedStoryBeat } from './attention';
 import type { StrategicRuntimeState } from './strategicAction';
 import type { OmenState, EmittedOmen } from './omen';
+
+// ─── Active Composition ─────────────────────────────────────────
+
+/** Runtime ledger entry for a live phased composition. */
+export interface ActiveComposition {
+  compositionId: string;
+  firedAtTick: number;
+  activatedPhaseIds: string[];
+  phaseActivationTicks: Record<string, number>;
+  resolvedNodes: Record<string, string>;
+  status: 'active' | 'completed' | 'failed';
+  lastEvaluationTick: number;
+}
 import type { DoomIdentityMatrix } from './doomIdentity';
 import { DEFAULT_DOOM_TICKS as CONFIG_DEFAULT_DOOM_TICKS } from '../data/game-config';
 
@@ -200,6 +213,12 @@ export interface GameState {
   // Clearance gates — runtime state for checkpoint/scrutiny encounter shells
   clearanceGateStates?: Map<string, import('./contentShells').ClearanceGateRuntimeState>;
 
+  // Flip tables — runtime state for binary/small-N state flip shells (THR-53)
+  flipTableStates?: Map<string, import('./contentShells').FlipTableRuntimeState>;
+
+  // Result band history — deterministic band selections across all templates (THR-53)
+  resultBandHistory?: Array<import('./contentShells').ResultBandSelectionRecord>;
+
   // Control effects — sustained divine effects with per-tick costs, ticked by phaseControlEffects
   controlEffects?: ControlEffect[];
 
@@ -243,6 +262,14 @@ export interface GameState {
 
   // Emitted omens — aftermath-spawned regional/global omen events (THR-115)
   emittedOmens?: EmittedOmen[];
+
+  // Composition DSL runtime state (THR-225)
+  /** Live phased compositions being tracked by the phase runner. */
+  activeCompositions?: ActiveComposition[];
+  /** World flags set by composition effects. Key: flag key, value: arbitrary. */
+  worldFlags?: Record<string, unknown>;
+  /** IDs of compositions that have fired (mark-composition-fired effect). */
+  firedCompositions?: string[];
 
   // Onboarding — one-shot flags for auto-triggered encounters
   meetTheFirstAutoTriggered?: boolean;

@@ -216,6 +216,8 @@ export interface DebugBridge {
   getEncounterCacheRebuildCount: () => number;
   /** Returns all encounter_cache_rebuild traces (THR-187). */
   getEncounterCacheRebuildTraces: () => Promise<ReadonlyArray<TraceEntry>>;
+  /** Returns all active compositions from the current game state (THR-225). */
+  getActiveCompositions: () => import('./types/gameState').ActiveComposition[];
 }
 
 declare global {

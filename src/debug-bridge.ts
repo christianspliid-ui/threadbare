@@ -484,5 +484,12 @@ if (import.meta.env.DEV) {
       const history = state.strategicState.history;
       return agentId ? history.filter(h => h.actorId === agentId) : history;
     },
+
+    // Composition phase runner inspection (THR-225)
+    getActiveCompositions: () => {
+      const state = _gameStateProvider?.();
+      if (!state) return [];
+      return state.activeCompositions ?? [];
+    },
   };
 }

@@ -113,6 +113,7 @@ import { resetMeetingCounter } from './meetingEncounter';
 import { phaseJourneyBeat } from './journeyEngine';
 import { JOURNEY_BEAT_TEMPLATES } from '../data/journey-content';
 import { phaseOmenAgenda, resetOmenCounter, phaseEmittedOmenDecay } from './phaseOmenAgenda';
+import { phaseComposition } from './phaseComposition';
 import { phaseEncounterVisibility } from './encounterVisibility';
 import { evaluateEncounterSeeds } from './encounterSeeding';
 import { EncounterCacheManager, buildDangerMap } from './encounterCache';
@@ -1966,6 +1967,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
 
   // Phase 1.7a: Emitted omen decay — expire aftermath-spawned omens (THR-115)
   s = { ...s, ...phaseEmittedOmenDecay(s) };
+
+  // Phase 1.8: Composition phase runner — advance phased event recipes tied to doom clock (THR-225)
+  s = { ...s, ...phaseComposition(s) };
+  phaseEventCounts['composition'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
 
   // ─── Unified Action Pipeline (replaces old phaseAgentActions + phaseEncounterProgression + phaseActionProgress) ───
   // Phase 2a: Progress + resolve existing unified actions (Phases 1-6 of unified pipeline)

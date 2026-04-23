@@ -180,6 +180,42 @@ export const WINNOWING_OF_LUCK_EVENT_RECIPE: Composition = {
       },
     },
   },
+  phases: [
+    {
+      id: 'phase-1-thinning',
+      activatesAt: { op: 'doom-clock', comparator: 'gte', tier: 1 },
+      activates: ['crackedLedgerRumor', 'tariffRiots'],
+      storyBeat: {
+        tier: 'notable',
+        template: 'story-beat.winnowing-luck-thinning',
+        priority: 'doom_clock',
+      },
+      rationale: 'Luck thins at the edges — first rumors and unrest.',
+    },
+    {
+      id: 'phase-2-broker',
+      activatesAt: { op: 'doom-clock', comparator: 'gte', tier: 2 },
+      activates: ['omenBroker'],
+      storyBeat: {
+        tier: 'notable',
+        template: 'story-beat.winnowing-omen-broker',
+        priority: 'doom_clock',
+      },
+      rationale: 'Omen broker emerges as luck-trade intensifies.',
+    },
+    {
+      id: 'phase-3-displacement',
+      activatesAt: { op: 'doom-clock', comparator: 'gte', tier: 3 },
+      activates: ['displacedTribe', 'fortuneChorus'],
+      effects: [{ op: 'set-world-flag', key: 'events.winnowing-active', value: true }],
+      storyBeat: {
+        tier: 'story_beat',
+        template: 'story-beat.winnowing-displacement',
+        priority: 'doom_clock',
+      },
+      rationale: 'Displacement and fortune-chorus signal full winnowing.',
+    },
+  ],
   effects: [
     { op: 'advance-doom-clock', by: 1 },
     { op: 'set-world-flag', key: 'events.winnowing-active', value: true },

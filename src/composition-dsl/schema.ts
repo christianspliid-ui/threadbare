@@ -223,12 +223,31 @@ export interface CompositionMetadata {
   tags: string[];
 }
 
+export type PhaseStoryBeatTier = 'routine' | 'notable' | 'story_beat';
+export type PhasePriority = 'template_intrinsic' | 'doom_clock';
+
+export interface PhaseStoryBeatSpec {
+  tier: PhaseStoryBeatTier;
+  template: string;
+  priority?: PhasePriority;
+}
+
+export interface Phase {
+  id: string;
+  activatesAt: WorldPredicate;
+  activates: string[];
+  effects?: Effect[];
+  storyBeat?: PhaseStoryBeatSpec;
+  rationale?: string;
+}
+
 export interface Composition {
   id: string;
   kind: CompositionKind;
   preconditions: Precondition[];
   nodes: Record<string, NodeSpec>;
   effects?: Effect[];
+  phases?: Phase[];
   metadata: CompositionMetadata;
 }
 
@@ -429,6 +448,24 @@ const compositionMetadataSchema: z.ZodType<CompositionMetadata> = z.object({
   tags: z.array(nonEmptyStringSchema),
 });
 
+const phaseStoryBeatSpecSchema: z.ZodType<PhaseStoryBeatSpec> = z.object({
+  tier: z.enum(['routine', 'notable', 'story_beat']),
+  template: nonEmptyStringSchema,
+  priority: z.enum(['template_intrinsic', 'doom_clock']).optional(),
+});
+
+const phaseSchema: z.ZodType<Phase> = z.object({
+  id: nonEmptyStringSchema.regex(
+    /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+    'phase id must be kebab-case'
+  ),
+  activatesAt: worldPredicateSchema,
+  activates: z.array(nonEmptyStringSchema),
+  effects: z.array(effectSchema).optional(),
+  storyBeat: phaseStoryBeatSpecSchema.optional(),
+  rationale: nonEmptyStringSchema.optional(),
+});
+
 export const compositionSchema: z.ZodType<Composition> = z.object({
   id: nonEmptyStringSchema.regex(
     /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
@@ -438,6 +475,7 @@ export const compositionSchema: z.ZodType<Composition> = z.object({
   preconditions: z.array(preconditionSchema),
   nodes: z.record(nonEmptyStringSchema, nodeSpecSchema),
   effects: z.array(effectSchema).optional(),
+  phases: z.array(phaseSchema).optional(),
   metadata: compositionMetadataSchema,
 });
 
