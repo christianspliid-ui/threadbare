@@ -14,6 +14,7 @@
     "test:regression": "vitest run --passWithNoTests \"regression|contract\"",
     "check:skill-sync": "node scripts/check-skill-sync.js",
     "check:skill-sync:sync": "node scripts/check-skill-sync.js --sync",
+    "retro-draft": "esbuild scripts/retro-draft.ts --bundle --platform=node --format=esm --outfile=.cache/retro-draft.mjs --external:crypto --external:fs --external:path --external:process --external:url && node .cache/retro-draft.mjs",
     "check:process": "esbuild scripts/check-process.ts --bundle --platform=node --format=esm --outfile=.cache/check-process.mjs --external:child_process --external:fs --external:path --external:process --external:url && node .cache/check-process.mjs",
     "generate-vault": "esbuild scripts/generate-vault.ts --bundle --platform=node --format=esm --outfile=/tmp/generate-vault.mjs --external:fs --external:path && node /tmp/generate-vault.mjs",
     "generate-vault:dry": "esbuild scripts/generate-vault.ts --bundle --platform=node --format=esm --outfile=/tmp/generate-vault.mjs --external:fs --external:path && node /tmp/generate-vault.mjs --dry-run",

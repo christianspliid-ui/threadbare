@@ -30,3 +30,4 @@
 - **ops** | no ready-for-codex work this cycle (2026-04-23T08.02.08+02:00)
 - **work** | THR-237 shipped: shared content invariants helper + brittle-count test sweep (deferral filed: THR-245).
 - **work** | THR-241 shipped: added session-precheck sandbox fingerprint script and required Session Workflow first-step run in CLAUDE.md.
+- **work** | THR-242 shipped: deterministic retro-draft generator + retrospective skill draft-first workflow update.
