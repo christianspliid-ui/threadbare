@@ -223,6 +223,7 @@ Cross-boundary testing rules, contract test patterns, pre-commit verification ch
 1. `npm test` — all tests pass
 2. `npx tsc --noEmit` — type check clean
 3. `npx vite build` — production build succeeds (confirms Vercel will deploy)
+4. `npm run check:process` — advisory workflow/process lint (non-blocking while it stabilizes)
 
 > **CI runs these automatically.** GitHub Actions runs tests, typecheck, and build on every push and PR to `main`. Vercel runs only `vite build` (no test gate). Branch protection (required before merge) is pending GitHub Pro — until then CI is a signal, not a hard gate. Still run locally before pushing to catch failures early. The structural review Action (`.github/workflows/claude-review.yml`) runs on every PR in advisory mode; it flips to blocking once GitHub Pro + branch protection lands (tracked: THR-183). See `Docs/plans/2026-04-19-cc-review-replacement.md`.
 
