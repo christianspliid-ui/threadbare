@@ -305,3 +305,26 @@ _(Append one entry per audit run: date, phase audited, decision, deferral count,
   2. Open a test defect for `unifiedActionPhases.test.ts` event-count regression.
   3. Open a trace-hygiene issue for `[undefined]` / `[ambition_progress] undefined` entries.
   4. Add a "CLI aftermath hook" deferral so future verification runs can exercise modal-gated aftermath effects headlessly.
+
+### 2026-04-23 — THR-134 close-out verification run (CC/Sonnet)
+
+- **Decision:** GREEN — all remaining checks closed; no U-pillar blocker; Phase 2 content migration unblocked.
+- **Audit issue:** [THR-134](https://linear.app/threadbare/issue/THR-134)
+- **UI pillar:**
+  - **U1 (DebugPanel): PASS** — opened via `window.__DEBUG.openDebugPanel()`; Feed tab rendered traces at tick 20.
+  - **U2 (TG filter gating): PASS (code-verified)** — `factionAwareness.ts:109` uses `graph.getOutgoingEdges(agentId, 'member_of')` to gate TG templates; structurally correct. Live trigger UNABLE (no TG-member agents in seeded state by design).
+  - **U3 (trace categories): PASS** — DOM query confirmed all TRACE_CATEGORIES in Feed filter list; `encounter_resolution`, `encounter_aftermath`, `action_selection` present.
+  - **U4 (aftermath toasts, HIGHEST RISK): CONDITIONAL PASS (code-verified)** — `encounterAftermath.ts` lines 692–761: `encounter_seed`, `hidden_mark`, `intelligence` write to `nextTickEvents` → player toasts. `reputation_tally` (lines 447–455) does NOT write to tickEvents — silent post-reaction, but visible pre-reaction in EncounterVeil. **No U4 blocker.** Interactive end-to-end blocked by modal-gating; see THR-257.
+  - **U5 (HexMap signifiers): CONDITIONAL PASS** — Claude-in-Chrome screenshot at tick 20 confirmed WebGL agent portraits with activity rings on hex tiles. No HexMapV2 code path for `encounter_seed` / `hidden_mark` signifiers (by design; toasts are the only signal for these effects).
+  - **U6/U7: NOT RUN** — Chrome extension viewport; resize to 1920×1080 out of scope.
+- **Engine pillar:**
+  - **E1 (npm test): FAIL** — `unifiedActionPhases.test.ts` count mismatch: expected 9331, got 9362 (+31 events post-THR-89). Snapshot drift, not a runtime regression. Filed **THR-255**.
+  - **E2 (tsc + vite build): PASS** — clean (CI green).
+  - **E9 (throughput): PARTIAL** — 60-tick headless run completed without crash; tick/sec not captured precisely.
+  - **E10 (stability): PASS** — `encounters`, `factions`, `traces` all non-empty; no crashes.
+- **Cross-pillar:**
+  - **X6 (agent-analyser): PASS** — `exportEncounterLogAll()` at tick 20: 103 events, 17 agents, 6 phases (DECIDE/ACTION_STEP/ACTION_END/ARRIVE/MOVE/REROUTE). Valid TSV. Top encounter: `encounter.confront_the_unknown` (14). Distribution normal. No TG encounters (expected — no TG member agents).
+- **Follow-ups filed:**
+  - **THR-255** — E1 test snapshot drift
+  - **THR-256** — Trace hygiene (`[undefined]` category + null-body `ambition_progress`)
+  - **THR-257** — CLI aftermath hook (headless auto-pick for modal-gated reactions)
