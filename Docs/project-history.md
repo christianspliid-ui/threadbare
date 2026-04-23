@@ -3,6 +3,8 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ THR-246 (2026-04-23) — Linear MCP rate-limit relief: Cowork session-start board scan (5 calls → 1), pull-work Step 0 rate-limit guard + Step 1 board-scan rewrite, Codex automation prompt dedupe + :30 offset, THR-234 plan updated, weekly-hygiene draft updated, CLAUDE.md pointer added, impediment #79 logged
+
 ✅ THR-233 (2026-04-20) — Checklist instantiation protocol (trial): plan doc committed; CC instantiates full DoD on claim-verified pickup, posts Linear comment persistence layer; Cowork instantiates Design Workflow Checklist on In Design pickup; 5-issue trial starts here
 
 ✅ THR-165 (2026-04-19) — Replace brittle count assertion in factionQuestAndReputation.test: replaced `expect(candidates).toHaveLength(10)` with per-tier prefix checks (ag.quest.*, ag.senior.*, ag.elite.* each `toBeGreaterThan(0)`); forward-compatible with new template additions; mirrors peer test pattern from THR-160

@@ -359,7 +359,7 @@ Work is not "done" until it is deployed and documented. Do all of these automati
 - [ ] Read this file for orientation
 - [ ] **First tool call of any coding session:** run `node --experimental-strip-types scripts/session-precheck.ts` and compare its `fingerprint ...` line against expected sandbox capabilities before starting feature work
 - [ ] **Check Linear for work** — query issues by state per the protocol in `Docs/plans/2026-04-13-linear-coordination-protocol.md`:
-  - **Cowork:** `list_issues state:"In Design"` (resume design), `list_issues state:"Implementation Planning"` (resume planning), `list_issues state:"Ready for Dev"` and `list_issues state:"Ready for Codex"` (verify both executor queues), `list_issues state:"Todo"` (what's next)
+  - **Cowork:** Run the board scan from `Docs/plans/2026-04-13-linear-coordination-protocol.md` § Cowork Session Start — one `list_issues(limit:250)` call, bucket in memory by `status`. Covers In Design, Implementation Planning, Ready for Dev, Ready for Codex, and Todo in a single query.
   - **Claude Code:** `list_issues state:"Ready for Dev" assignee:null` (pick up handoffs — CC queue only, never Ready for Codex), `list_issues state:"In Dev" assignee:"me"` (resume active work)
   - **Codex:** `list_issues state:"Ready for Codex" assignee:null` (pick up handoffs — Codex queue only, never Ready for Dev), `list_issues state:"In Dev" assignee:"me"` (resume active work)
 - [ ] Read Obsidian `Index.md` via MCP → follow links to the relevant system. Index.md is the comprehensive catalog — use it as the LLM's navigation system.

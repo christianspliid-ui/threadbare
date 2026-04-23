@@ -18,6 +18,9 @@
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
 
+## Recent Completions (2026-04-23) — THR-246
+- **THR-246 — Linear MCP rate-limit relief:** Cowork session-start collapsed from 5 per-state `list_issues` calls to one board scan with in-memory bucketing. pull-work skill adds Step 0 (rate-limit guard on 429) and rewrites Steps 1+2 to derive all slices from one scan. Codex automation prompt updated with same board-scan pattern + `:30` cadence offset. THR-234 label-split plan backfill audit updated (5 calls → 1). Weekly hygiene skill draft updated. CLAUDE.md Cowork bullet now points to coordination protocol §. Impediment #79 logged. tsc clean, build green, 671 tests passed.
+
 ## Recent Completions (2026-04-23) — THR-95
 - **THR-95 — Holy Order of Dawn encounter audit+uplift:** 15 templates reviewed against quality bar and systemic wiring targets. 5 templates uplifted: `inquisition` success got intelligence grant (agent_network, cult hierarchy); `escort_pilgrims` failure got soul_diminishment hidden mark + encounter_seed → slay_abomination; `deliver_judgment` success got reputation_note hidden mark + encounter_seed → cleanse_corruption; `lead_crusade` got success (mark + rep tally) and failure (mark + rep tally + seed → holy_war) variants; `holy_war` got success (mark + rep tally +3) and failure (mark + seed → holy_war retry) variants. Merge held pending THR-134 U4.
 

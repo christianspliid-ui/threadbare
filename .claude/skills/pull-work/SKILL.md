@@ -19,18 +19,24 @@ Run as `/pull-work` (auto-pick top Ready for Dev issue) or `/pull-work THR-123` 
 
 ## Steps
 
-### Step 1 - Query candidate issue
+### Step 0 — Rate-limit guard
 
-If no issue id was provided:
-1. Query `list_issues state:"Ready for Dev" assignee:null`.
-2. Sort in memory by priority, then oldest `createdAt` as tie-break.
-3. Pick the top candidate.
+If any Linear MCP call in this session returns a rate-limit error (HTTP 429 / MCP rate-limit response), pause 2 minutes, retry once, then if still limited log an impediment via `impediment-reporter` and exit cleanly without claiming. Do not retry in tight loops.
 
-Rationale: impediment #49 shows `orderBy:priority` is rejected at runtime, so priority sorting must happen client-side.
+### Step 1 — Single board scan
+
+If no issue id was provided, fire one call: `list_issues(team:"Threadbare", limit:250, orderBy:"updatedAt", includeArchived:false)`. In memory, bucket the response by `status` to produce:
+- The "In Dev" slice filtered to `assignee:"me"` — for WIP check
+- The "Ready for Dev" slice filtered to `assignee:null` — for pickup candidates
+- The "In Dev" slice across all assignees — for cross-executor parallel check (Step 2)
+
+Sort the Ready-for-Dev candidates by priority in memory (impediment #49 rejects `orderBy:priority` at runtime); oldest `createdAt` is tie-break. Pick the top.
+
+If a specific issue id was provided, skip to Step 3.
 
 ### Step 2 - Cross-executor parallel check
 
-1. Query `list_issues state:"In Dev"` to detect active Codex work.
+1. From the Step 1 board scan's "In Dev" slice (all assignees), detect active Codex work.
 2. If a Codex issue is active, verify the candidate appears in that issue's `Parallel-safe with` line.
 3. Confirm the candidate does not collide with that issue's `Mutex with` line.
 
