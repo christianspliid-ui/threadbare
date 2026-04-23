@@ -35,3 +35,4 @@
 - **work** | THR-213 shipped: added verification-evidence hard rule in CLAUDE.md + coordination protocol Rule 9.
 - **work** | THR-42 unskipped DebugPanel modifier_resolution tests and verified all gates (2026-04-23T22.27.11+02:00)
 - **work** | THR-257 shipped: shared aftermath resolver + CLI/debug headless reaction hooks with trace/test coverage.
+- **work** | THR-259 shipped: hex tooltip murmur prose now visible in CMS via hex-murmurs registry entry.

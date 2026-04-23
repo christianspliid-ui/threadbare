@@ -48,7 +48,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: false
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -112,11 +111,13 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          # Check Rule 8: verify token has no push scope (structural Rule 8 preservation)
-          # GITHUB_TOKEN here has contents:read only — this is asserted at job permissions level above.
-          # If we somehow got a write token, abort loudly.
-          if git push --dry-run 2>&1 | grep -qv "not allowed\|permission\|fatal"; then
-            echo "::error::Rule 8 violation: review token appears to have push scope. Aborting."
+          # Check Rule 8: verify token cannot push (structural Rule 8 preservation)
+          # GITHUB_TOKEN has contents:read — it must NOT be able to push.
+          # Use exit code: dry-run fails (non-zero) → safe. Dry-run succeeds (zero) → violation.
+          # Branch protection messages vary ("GH013: Repository rule violations", "not allowed",
+          # "fatal: auth") — exit code is the only reliable signal.
+          if git push --dry-run origin HEAD 2>/dev/null; then
+            echo "::error::Rule 8 violation: push dry-run succeeded unexpectedly. Aborting."
             exit 1
           fi
 
