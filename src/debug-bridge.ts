@@ -71,7 +71,12 @@ if (import.meta.env.DEV) {
     listActions: (agentId?: string) => import('./debug-bridge.d').DebugActionInfo[];
     fireAction: (agentId: string, templateId: string) => import('./debug-bridge.d').DebugFireResult;
   }
+  interface AftermathBridge {
+    listAftermathReactions: (agentId: string) => import('./debug-bridge.d').DebugAftermathListResult;
+    pickAftermathReaction: (agentId: string, reactionId?: string) => import('./debug-bridge.d').DebugAftermathPickResult;
+  }
   let _actionBridge: ActionBridge | null = null;
+  let _aftermathBridge: AftermathBridge | null = null;
   // GameView registers a provider for the live WorldGraph
   let _graphProvider: (() => import('./engine/graph').WorldGraph | null) | null = null;
   // GameView registers a provider for the live GameState
@@ -109,6 +114,11 @@ if (import.meta.env.DEV) {
     fireAction: (agentId: string, templateId: string) =>
       _actionBridge?.fireAction(agentId, templateId) ?? { success: false, message: 'Game not loaded' },
     _registerActionBridge: (cb) => { _actionBridge = cb as ActionBridge; },
+    listAftermathReactions: (agentId: string) =>
+      _aftermathBridge?.listAftermathReactions(agentId) ?? { reactions: [], error: 'Game not loaded' },
+    pickAftermathReaction: (agentId: string, reactionId?: string) =>
+      _aftermathBridge?.pickAftermathReaction(agentId, reactionId) ?? { success: false, message: 'Game not loaded' },
+    _registerAftermathBridge: (cb) => { _aftermathBridge = cb as AftermathBridge; },
     /** @internal GameView registers its graph provider here */
     _registerGraphProvider: (fn: () => import('./engine/graph').WorldGraph | null) => { _graphProvider = fn; },
     /** @internal GameView registers a provider for the live GameState here */

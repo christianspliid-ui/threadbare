@@ -131,4 +131,43 @@ describe('debug bridge scene snapshot contract', () => {
       cameraFocusHex: { col: 7, row: 11 },
     });
   });
+
+  it('listAftermathReactions and pickAftermathReaction delegate to registered callbacks', () => {
+    const debug = requireDebugBridge();
+    debug._registerAftermathBridge({
+      listAftermathReactions: (agentId: string) => {
+        if (agentId !== 'serafina') return { reactions: [], error: 'No agent' };
+        return {
+          reactions: [
+            { id: 'reaction-a', label: 'Take the safer route' },
+            { id: 'reaction-b', label: 'Take the risky route' },
+          ],
+        };
+      },
+      pickAftermathReaction: (agentId: string, reactionId?: string) => {
+        if (agentId !== 'serafina') return { success: false, message: 'No agent' };
+        return {
+          success: true,
+          reactionId: reactionId ?? 'reaction-a',
+          touchedWorld: true,
+          touchedStructure: false,
+          message: 'Applied aftermath reaction.',
+        };
+      },
+    });
+
+    expect(debug.listAftermathReactions('serafina')).toEqual({
+      reactions: [
+        { id: 'reaction-a', label: 'Take the safer route' },
+        { id: 'reaction-b', label: 'Take the risky route' },
+      ],
+    });
+    expect(debug.pickAftermathReaction('serafina')).toEqual({
+      success: true,
+      reactionId: 'reaction-a',
+      touchedWorld: true,
+      touchedStructure: false,
+      message: 'Applied aftermath reaction.',
+    });
+  });
 });

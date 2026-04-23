@@ -70,6 +70,7 @@ export type TraceCategory =
   | 'omen_selection'
   | 'omen_beat'
   // Encounter aftermath traces (THR-111)
+  | 'cli_auto_aftermath'
   | 'encounter_aftermath_applied'
   | 'encounter_aftermath_effect'
   | 'encounter_seed_planted'
@@ -222,6 +223,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'choice_set_player_resolved',
   'choice_set_player_dismissed',
   // New encounter aftermath traces (THR-111)
+  'cli_auto_aftermath',
   'encounter_aftermath_applied',
   'encounter_aftermath_effect',
   'encounter_seed_planted',
@@ -1085,6 +1087,15 @@ export interface StrategicWorldChangeTrace extends TraceBase {
 // Encounter Aftermath Traces (THR-111)
 // ═══════════════════════════════════════════════════════════════════
 
+/** Trace: headless aftermath reaction pick from CLI/debug bridge tooling. */
+export interface CliAutoAftermathTrace extends TraceBase {
+  category: 'cli_auto_aftermath';
+  encounterId: string;
+  actionId: string;
+  reactionId: string;
+  source: 'cli' | 'debug-bridge';
+}
+
 /** Trace: encounter aftermath reaction applied — summary of all effects fired */
 export interface EncounterAftermathAppliedTrace extends TraceBase {
   category: 'encounter_aftermath_applied';
@@ -1394,6 +1405,7 @@ export type TraceEntry =
   | OmenSelectionTrace
   | OmenBeatTrace
   // Encounter aftermath traces (THR-111)
+  | CliAutoAftermathTrace
   | EncounterAftermathAppliedTrace
   | EncounterAftermathEffectTrace
   | EncounterSeedPlantedTrace

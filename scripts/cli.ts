@@ -2,11 +2,11 @@
  * Interactive CLI — headless game REPL for testing.
  *
  * Usage:
- *   npm run cli [--seed N] [--map small|medium|large|epic]
+ *   npm run cli [--seed N] [--map small|medium|large|epic] [--auto-aftermath]
  *
  * Once running, type commands at the prompt:
  *   tick [N]       — advance N ticks (default 1)
- *   run [N]        — auto-run at speed N ticks/sec (default 2), prints a summary every 10 ticks
+ *   run [N] [--auto-aftermath] — auto-run at speed N ticks/sec (default 2), prints a summary every 10 ticks
  *   pause          — stop auto-run
  *   speed N        — set auto-run speed to N ticks/sec
  *   status         — print game state summary
@@ -24,6 +24,8 @@
  *   traces [N]     — show last N trace entries (default 10)
  *   seed           — print the current seed
  *   eval <expr>    — evaluate a JS expression with `state` in scope
+ *   aftermath list <agent|@hero>          — list pending aftermath reactions
+ *   aftermath pick <agent|@hero> [id]     — apply aftermath reaction (id optional: first reaction)
  *   help           — print this help
  *   quit / exit    — exit
  */
@@ -40,8 +42,9 @@ import {
   enableTracing,
   getTraces,
   clearTraces,
+  emitTrace,
 } from '../src/engine/traceBuffer';
-import { createSimulationRuntime } from '../src/engine/simulationRuntime';
+import { createSimulationRuntime, touchStructure, touchWorld } from '../src/engine/simulationRuntime';
 import type { SimulationRuntime } from '../src/engine/simulationRuntime';
 import { setTrackedAgents, getBalanceEvents, selectDefaultTrackedHero } from '../src/engine/balanceTelemetry';
 import { buildBalanceRunSummary, buildBalanceAgentJourneySummary } from '../src/engine/balanceSummary';
@@ -49,6 +52,12 @@ import { evaluateBalanceSummary, evaluateAgentJourney, formatEvaluationReport } 
 import { getDefaultBalanceTargets } from '../src/engine/balanceTargets';
 import { getAttentionVisualState } from '../src/engine/attentionPool';
 import { ATTENTION_BASE_CAPACITY, ATTENTION_BASE_REGEN } from '../src/data/attention-constants';
+import {
+  applyEncounterAftermathReaction,
+  AUTO_AFTERMATH_MAX_PICKS_PER_TICK,
+  AUTO_AFTERMATH_TRACE_CATEGORY,
+  resolveAftermathContextForAgent,
+} from '../src/engine/encounterAftermath';
 
 import type { GameState, TickEvent } from '../src/types/gameState';
 import type { GraphNode } from '../src/types/graph';
@@ -63,11 +72,12 @@ import { STARTER_POSSESSIONS, STARTER_CONDITIONS } from '../src/data/starter-att
 interface CliArgs {
   seed: number;
   mapSize: MapSizePreset;
+  autoAftermath: boolean;
 }
 
 function parseArgs(): CliArgs {
   const args = process.argv.slice(2);
-  const result: CliArgs = { seed: 42, mapSize: 'medium' };
+  const result: CliArgs = { seed: 42, mapSize: 'medium', autoAftermath: false };
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--seed' && i + 1 < args.length) {
@@ -78,6 +88,8 @@ function parseArgs(): CliArgs {
       const m = args[i + 1] as MapSizePreset;
       if (m in MAP_SIZE_PRESETS) result.mapSize = m;
       i++;
+    } else if (args[i] === '--auto-aftermath') {
+      result.autoAftermath = true;
     }
   }
   return result;
@@ -113,6 +125,8 @@ let state: GameState;
 let runtime: SimulationRuntime;
 let autoRunTimer: ReturnType<typeof setInterval> | null = null;
 let autoRunSpeed = 2; // ticks per second
+let autoAftermathDefault = false;
+let autoAftermathEnabledForRun = false;
 let ticksSinceLastSummary = 0;
 
 // ─── Commands ─────────────────────────────────────────────────────
@@ -488,16 +502,21 @@ function printBalance(subCmd?: string, subArg?: string): void {
   console.log(`${RED}Usage: balance [summary|idle|templates|eval|targets|recent [N]|agent <id>]${RESET}`);
 }
 
-function startAutoRun(speed?: number): void {
+function startAutoRun(speed?: number, autoAftermath = autoAftermathDefault): void {
   if (speed !== undefined && speed > 0) autoRunSpeed = speed;
+  autoAftermathEnabledForRun = autoAftermath;
   stopAutoRun();
   ticksSinceLastSummary = 0;
 
   const interval = Math.max(50, 1000 / autoRunSpeed);
-  console.log(`${GREEN}▶ Running at ${autoRunSpeed} ticks/sec${RESET} (Ctrl+C or type 'pause' to stop)`);
+  const autoAftermathLabel = autoAftermathEnabledForRun ? 'on' : 'off';
+  console.log(`${GREEN}▶ Running at ${autoRunSpeed} ticks/sec${RESET} (auto-aftermath: ${autoAftermathLabel}) (Ctrl+C or type 'pause' to stop)`);
 
   autoRunTimer = setInterval(() => {
     state = runTick(state, [], runtime);
+    if (autoAftermathEnabledForRun) {
+      applyAutoAftermathForTick();
+    }
     ticksSinceLastSummary++;
 
     if (ticksSinceLastSummary % 10 === 0) {
@@ -523,7 +542,7 @@ function stopAutoRun(): void {
 function printHelp(): void {
   console.log(header('Commands'));
   console.log(`  ${BOLD}tick${RESET} [N]         Advance N ticks (default 1)`);
-  console.log(`  ${BOLD}run${RESET} [N]          Auto-run at N ticks/sec (default 2)`);
+  console.log(`  ${BOLD}run${RESET} [N] [--auto-aftermath]  Auto-run at N ticks/sec (default 2)`);
   console.log(`  ${BOLD}pause${RESET}            Stop auto-run`);
   console.log(`  ${BOLD}speed${RESET} N           Set auto-run speed`);
   console.log(`  ${BOLD}status${RESET}           Game state overview`);
@@ -553,6 +572,8 @@ function printHelp(): void {
   console.log(`  ${BOLD}balance agent${RESET} <id> Show agent journey`);
   console.log(`  ${BOLD}spawn encounter${RESET} <agent|@hero> <templateId>  Spawn an encounter on an agent`);
   console.log(`  ${BOLD}spawn attachment${RESET} <agent|@hero> <templateId> Attach an item/trait to an agent`);
+  console.log(`  ${BOLD}aftermath list${RESET} <agent|@hero>   List pending aftermath reactions for an agent`);
+  console.log(`  ${BOLD}aftermath pick${RESET} <agent|@hero> [reactionId]  Apply an aftermath reaction`);
   console.log(`  ${BOLD}strategic${RESET} [agent] Strategic action summary (global or per-agent)`);
   console.log(`  ${BOLD}projects${RESET}         Active strategic projects`);
   console.log(`  ${BOLD}history${RESET} [agent]   Strategic action history`);
@@ -728,25 +749,122 @@ const ALL_ATTACHMENT_TEMPLATES: GraphNode[] = [
   ...STARTER_POSSESSIONS, ...STARTER_CONDITIONS,
 ];
 
-function handleSpawnAttachment(agentQuery: string, templateQuery: string): void {
-  // Resolve @hero
+interface CliAftermathApplyResult {
+  success: boolean;
+  message: string;
+  reactionId?: string;
+  encounterId?: string;
+  actionId?: string;
+  effectCount?: number;
+  touchedWorld?: boolean;
+  touchedStructure?: boolean;
+}
+
+function resolveAgentNode(agentQuery: string): GraphNode | null {
   let resolvedQuery = agentQuery;
   if (agentQuery === '@hero') {
     const heroNode = state.ascendantId ? state.graph.getNode(state.ascendantId) : undefined;
-    if (!heroNode) {
-      console.log(`${RED}No hero/ascendant found in current game state${RESET}`);
-      return;
-    }
+    if (!heroNode) return null;
     resolvedQuery = heroNode.id;
   }
 
-  // Find agent
   const agents = state.graph.getNodesByType('actor')
-    .filter(n => n.properties.actorType === 'individual' || n.properties.actorType === 'ascendant');
-  const agent = agents.find(n =>
-    n.id === resolvedQuery || n.id.includes(resolvedQuery) ||
-    (n.name ?? '').toLowerCase().includes(resolvedQuery.toLowerCase()),
+    .filter(node => node.properties.actorType === 'individual' || node.properties.actorType === 'ascendant');
+
+  return agents.find(node =>
+    node.id === resolvedQuery
+    || node.id.includes(resolvedQuery)
+    || (node.name ?? '').toLowerCase().includes(resolvedQuery.toLowerCase())
+    || ((node.properties.name as string | undefined) ?? '').toLowerCase().includes(resolvedQuery.toLowerCase()),
+  ) ?? null;
+}
+
+function markAftermathNotificationsResolved(
+  notifications: readonly import('../src/types/encounterVisibility').EncounterNotification[] | undefined,
+  action: import('../src/types/unifiedAction').UnifiedAction,
+): import('../src/types/encounterVisibility').EncounterNotification[] {
+  return (notifications ?? []).map(notification => {
+    if (notification.resolved) return notification;
+    const matchesActionId = Boolean(notification.actionId) && notification.actionId === action.actionId;
+    const matchesTemplate = notification.agentId === action.actorId && notification.encounterId === action.templateId;
+    if (!matchesActionId && !matchesTemplate) return notification;
+    return { ...notification, resolved: true };
+  });
+}
+
+function applyAftermathForAgent(agentId: string, reactionId?: string, source: 'cli' | 'debug-bridge' = 'cli'): CliAftermathApplyResult {
+  const resolved = resolveAftermathContextForAgent(state, agentId, reactionId);
+  if ('error' in resolved) {
+    return { success: false, message: resolved.error };
+  }
+
+  try {
+    const { state: nextState, mutationSummary } = applyEncounterAftermathReaction(
+      state,
+      resolved.action,
+      resolved.reaction,
+      state.tick,
+      runtime,
+    );
+
+    state = {
+      ...nextState,
+      encounterNotifications: markAftermathNotificationsResolved(nextState.encounterNotifications, resolved.action),
+    };
+
+    if (mutationSummary.touchedStructure) touchStructure(runtime);
+    else if (mutationSummary.touchedWorld) touchWorld(runtime);
+
+    emitTrace({
+      tick: state.tick,
+      category: AUTO_AFTERMATH_TRACE_CATEGORY,
+      agentId,
+      encounterId: resolved.action.templateId,
+      actionId: resolved.action.actionId,
+      reactionId: resolved.reaction.id,
+      source,
+      summary: `headless aftermath (${source}) ${agentId} -> ${resolved.reaction.id}`,
+    });
+
+    return {
+      success: true,
+      message: `Applied aftermath reaction '${resolved.reaction.id}'.`,
+      reactionId: resolved.reaction.id,
+      encounterId: resolved.action.templateId,
+      actionId: resolved.action.actionId,
+      effectCount: resolved.reaction.effects.length,
+      touchedWorld: mutationSummary.touchedWorld,
+      touchedStructure: mutationSummary.touchedStructure,
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return {
+      success: false,
+      message: `Failed to apply aftermath reaction: ${message}`,
+    };
+  }
+}
+
+function applyAutoAftermathForTick(): number {
+  const pendingNotifications = (state.encounterNotifications ?? []).filter(
+    notification => !notification.resolved && (notification.kind === 'aftermath' || notification.kind === undefined),
   );
+  const pendingAgentIds = [...new Set(pendingNotifications.map(notification => notification.agentId))];
+
+  let appliedCount = 0;
+  for (const agentId of pendingAgentIds) {
+    if (appliedCount >= AUTO_AFTERMATH_MAX_PICKS_PER_TICK) break;
+    const result = applyAftermathForAgent(agentId, undefined, 'cli');
+    if (!result.success) continue;
+    appliedCount++;
+    console.log(`  ${dim(`tick ${state.tick}`)} auto-aftermath ${agentId} -> ${result.reactionId}`);
+  }
+
+  return appliedCount;
+}
+
+function handleSpawnAttachment(agentQuery: string, templateQuery: string): void {
+  const agent = resolveAgentNode(agentQuery);
   if (!agent) {
     console.log(`${RED}Agent not found: ${agentQuery}${RESET}`);
     return;
@@ -792,27 +910,7 @@ function handleSpawnAttachment(agentQuery: string, templateQuery: string): void 
 }
 
 function handleSpawnEncounter(agentQuery: string, templateId: string): void {
-  // Resolve @hero to the ascendant
-  let resolvedQuery = agentQuery;
-  if (agentQuery === '@hero') {
-    const heroNode = state.ascendantId ? state.graph.getNode(state.ascendantId) : undefined;
-    if (!heroNode) {
-      console.log(`${RED}No hero/ascendant found in current game state${RESET}`);
-      return;
-    }
-    resolvedQuery = heroNode.id;
-  }
-
-  // Find agent by partial name/id match
-  const agents = state.graph.getNodesByType('actor')
-    .filter(n => n.properties.actorType === 'individual' || n.properties.actorType === 'ascendant');
-
-  const match = agents.find(a =>
-    a.id === resolvedQuery ||
-    a.id.includes(resolvedQuery) ||
-    (a.properties.name as string ?? '').toLowerCase().includes(resolvedQuery.toLowerCase())
-  );
-
+  const match = resolveAgentNode(agentQuery);
   if (!match) {
     console.log(`${RED}No agent matching "${agentQuery}"${RESET}`);
     return;
@@ -867,6 +965,78 @@ function handleSpawnEncounter(agentQuery: string, templateId: string): void {
   console.log(`  Advance with: tick ${action.stepDuration}`);
 }
 
+function parseRunCommandArgs(args: string[]): { speed?: number; autoAftermath: boolean } {
+  let speed: number | undefined;
+  let autoAftermath = autoAftermathDefault;
+
+  for (const token of args) {
+    if (token === '--auto-aftermath') {
+      autoAftermath = true;
+      continue;
+    }
+    if (token === '--no-auto-aftermath') {
+      autoAftermath = false;
+      continue;
+    }
+    const parsed = parseFloat(token);
+    if (!isNaN(parsed) && parsed > 0) {
+      speed = parsed;
+    }
+  }
+
+  return { speed, autoAftermath };
+}
+
+function handleAftermathCommand(args: string[]): void {
+  const [subcommand, agentQuery, reactionId] = args;
+  if (!subcommand || !agentQuery) {
+    console.log(`${RED}Usage: aftermath list <agent|@hero> | aftermath pick <agent|@hero> [reactionId]${RESET}`);
+    return;
+  }
+
+  const agent = resolveAgentNode(agentQuery);
+  if (!agent) {
+    console.log(`${RED}No agent matching "${agentQuery}"${RESET}`);
+    return;
+  }
+
+  if (subcommand === 'list') {
+    const resolved = resolveAftermathContextForAgent(state, agent.id);
+    if ('error' in resolved) {
+      console.log(dim('(no pending aftermath)'));
+      return;
+    }
+    const reactions = resolved.action.aftermathSummary?.reactions ?? [];
+    if (reactions.length === 0) {
+      console.log(dim('(no pending aftermath)'));
+      return;
+    }
+    console.log(header(`Aftermath reactions for ${agent.name ?? agent.id}`));
+    console.log(`  encounter: ${resolved.action.templateId}`);
+    for (const reaction of reactions) {
+      console.log(`  ${reaction.id} — ${reaction.label}`);
+    }
+    return;
+  }
+
+  if (subcommand === 'pick') {
+    const result = applyAftermathForAgent(agent.id, reactionId, 'cli');
+    if (!result.success) {
+      console.log(`${RED}${result.message}${RESET}`);
+      return;
+    }
+    const selectedLabel = reactionId ? result.reactionId : `${result.reactionId} ${dim('(auto-picked first reaction)')}`;
+    console.log(`${GREEN}✓${RESET} applied ${selectedLabel}`);
+    console.log(`  encounter: ${result.encounterId}`);
+    console.log(`  action:    ${result.actionId}`);
+    console.log(`  effects:   ${result.effectCount ?? 0}`);
+    console.log(`  touchedWorld: ${result.touchedWorld ? 'yes' : 'no'}  touchedStructure: ${result.touchedStructure ? 'yes' : 'no'}`);
+    return;
+  }
+
+  console.log(`${RED}Usage: aftermath list <agent|@hero> | aftermath pick <agent|@hero> [reactionId]${RESET}`);
+}
+
 // ─── REPL ─────────────────────────────────────────────────────────
 
 function handleCommand(line: string): boolean {
@@ -885,8 +1055,8 @@ function handleCommand(line: string): boolean {
     }
     case 'run':
     case 'start': {
-      const n = parseFloat(arg);
-      startAutoRun(isNaN(n) ? undefined : n);
+      const { speed, autoAftermath } = parseRunCommandArgs(rest);
+      startAutoRun(speed, autoAftermath);
       break;
     }
     case 'pause':
@@ -1004,6 +1174,9 @@ function handleCommand(line: string): boolean {
       }
       break;
     }
+    case 'aftermath':
+      handleAftermathCommand(rest);
+      break;
     case 'genome': {
       const locationName = arg;
       const loc = state.graph.getNodesByType('location')
@@ -1145,6 +1318,7 @@ function printStrategicHistory(agentName?: string): void {
 
 function main(): void {
   const args = parseArgs();
+  autoAftermathDefault = args.autoAftermath;
 
   console.log(`${BOLD}${CYAN}`);
   console.log(`  ╔══════════════════════════════════════╗`);
@@ -1153,7 +1327,7 @@ function main(): void {
   console.log('');
 
   // Initialize
-  console.log(`Initializing... seed:${args.seed}  map:${args.mapSize}`);
+  console.log(`Initializing... seed:${args.seed}  map:${args.mapSize}  auto-aftermath:${args.autoAftermath ? 'on' : 'off'}`);
   resetEventCounter();
   clearTraces();
   enableTracing();

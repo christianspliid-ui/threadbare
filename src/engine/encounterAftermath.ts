@@ -63,6 +63,21 @@ export const INVALID_TALLY_KEY_TRACE_RATE_LIMIT = 50;
 /** Clamp applied to faction_reputation_gain effect amounts. */
 export const FACTION_REPUTATION_GAIN_AMOUNT_CLAMP = 1.0;
 
+/** Trace category emitted by headless aftermath pick paths (CLI + debug bridge). */
+export const AUTO_AFTERMATH_TRACE_CATEGORY = 'cli_auto_aftermath' as const;
+
+/** Safety cap for automatic headless aftermath picks per tick. */
+export const AUTO_AFTERMATH_MAX_PICKS_PER_TICK = 8;
+
+export interface ResolvedAftermathContext {
+  readonly action: UnifiedAction;
+  readonly reaction: EncounterAftermathReaction;
+}
+
+interface ResolveAftermathContextError {
+  readonly error: string;
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function clamp01(value: number): number {
@@ -124,6 +139,98 @@ export function resolveAftermathTarget(
   if (e.actorId) return { kind: 'agent', id: e.actorId }; // legacy fallback
   if (action?.actorId) return { kind: 'agent', id: action.actorId };
   return { kind: 'actor_fallback' };
+}
+
+function sortAftermathCandidates(
+  actions: readonly UnifiedAction[],
+): UnifiedAction[] {
+  return [...actions].sort((left, right) => {
+    if (left.startTick !== right.startTick) return right.startTick - left.startTick;
+    return left.actionId.localeCompare(right.actionId);
+  });
+}
+
+function resolveActionFromNotification(
+  state: GameState,
+  candidateActions: readonly UnifiedAction[],
+  agentId: string,
+): UnifiedAction | null | undefined {
+  const notifications = (state.encounterNotifications ?? []).filter(
+    notification => notification.agentId === agentId,
+  );
+  if (notifications.length === 0) return undefined;
+
+  const pendingNotifications = notifications.filter(notification => !notification.resolved);
+  if (pendingNotifications.length === 0) return null;
+
+  for (const notification of pendingNotifications) {
+    const matched =
+      (notification.actionId
+        ? candidateActions.find(action => action.actionId === notification.actionId)
+        : undefined)
+      ?? candidateActions.find(action => action.templateId === notification.encounterId);
+    if (matched) return matched;
+  }
+  return null;
+}
+
+/**
+ * Resolve the current pending aftermath action + reaction for an agent.
+ *
+ * Deterministic selection rules:
+ * 1) Prefer unresolved encounter notifications for the agent (actionId match first, then encounterId/templateId)
+ * 2) If no notifications exist for the agent, fall back to latest candidate action by startTick
+ * 3) If reactionId omitted, pick the first authored reaction in array order
+ */
+export function resolveAftermathContextForAgent(
+  state: GameState,
+  agentId: string,
+  reactionId?: string,
+): ResolvedAftermathContext | ResolveAftermathContextError {
+  const candidateActions = state.unifiedActions.filter(
+    action => action.actorId === agentId && Boolean(action.aftermathSummary),
+  );
+  if (candidateActions.length === 0) {
+    return { error: `No pending aftermath for agent '${agentId}'.` };
+  }
+
+  const notificationSelectedAction = resolveActionFromNotification(state, candidateActions, agentId);
+  if (notificationSelectedAction === undefined) {
+    const fallbackAction = sortAftermathCandidates(candidateActions)[0];
+    const reactions = fallbackAction.aftermathSummary?.reactions;
+    if (!reactions || reactions.length === 0) {
+      return { error: `Pending aftermath for agent '${agentId}' has no authored reactions.` };
+    }
+    if (reactionId) {
+      const explicitReaction = reactions.find(reaction => reaction.id === reactionId);
+      if (!explicitReaction) {
+        return {
+          error: `Unknown aftermath reaction '${reactionId}' for agent '${agentId}'. Available: ${reactions.map(reaction => reaction.id).join(', ') || 'none'}.`,
+        };
+      }
+      return { action: fallbackAction, reaction: explicitReaction };
+    }
+    return { action: fallbackAction, reaction: reactions[0] };
+  }
+
+  if (notificationSelectedAction === null) {
+    return { error: `No unresolved aftermath notification for agent '${agentId}'.` };
+  }
+
+  const reactions = notificationSelectedAction.aftermathSummary?.reactions;
+  if (!reactions || reactions.length === 0) {
+    return { error: `Pending aftermath for agent '${agentId}' has no authored reactions.` };
+  }
+  if (reactionId) {
+    const explicitReaction = reactions.find(reaction => reaction.id === reactionId);
+    if (!explicitReaction) {
+      return {
+        error: `Unknown aftermath reaction '${reactionId}' for agent '${agentId}'. Available: ${reactions.map(reaction => reaction.id).join(', ') || 'none'}.`,
+      };
+    }
+    return { action: notificationSelectedAction, reaction: explicitReaction };
+  }
+  return { action: notificationSelectedAction, reaction: reactions[0] };
 }
 
 // ─── World-shaping helpers ────────────────────────────────────────────────────

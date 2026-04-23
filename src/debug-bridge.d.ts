@@ -41,6 +41,24 @@ export interface DebugFireResult {
   message: string;
 }
 
+export interface DebugAftermathReaction {
+  id: string;
+  label: string;
+}
+
+export interface DebugAftermathListResult {
+  reactions: DebugAftermathReaction[];
+  error?: string;
+}
+
+export interface DebugAftermathPickResult {
+  success: boolean;
+  reactionId?: string;
+  touchedWorld?: boolean;
+  touchedStructure?: boolean;
+  message: string;
+}
+
 export interface DebugRarityInfo {
   tier: number;
   tierName: string;
@@ -102,6 +120,15 @@ export interface DebugBridge {
   fireAction: (agentId: string, templateId: string) => DebugFireResult;
   /** @internal GameView registers action bridge callbacks here */
   _registerActionBridge: (callbacks: { listActions: (agentId?: string) => DebugActionInfo[]; fireAction: (agentId: string, templateId: string) => DebugFireResult }) => void;
+  /** List pending aftermath reactions for the agent query (id, id prefix, or partial name). */
+  listAftermathReactions: (agentId: string) => DebugAftermathListResult;
+  /** Apply a pending aftermath reaction for the agent query. Omitting reactionId picks the first authored reaction. */
+  pickAftermathReaction: (agentId: string, reactionId?: string) => DebugAftermathPickResult;
+  /** @internal GameView registers aftermath bridge callbacks here */
+  _registerAftermathBridge: (callbacks: {
+    listAftermathReactions: (agentId: string) => DebugAftermathListResult;
+    pickAftermathReaction: (agentId: string, reactionId?: string) => DebugAftermathPickResult;
+  }) => void;
   /** @internal GameView registers a provider for the live WorldGraph here */
   _registerGraphProvider: (fn: () => import('./engine/graph').WorldGraph | null) => void;
   /** @internal GameView registers a provider for the live GameState here */
