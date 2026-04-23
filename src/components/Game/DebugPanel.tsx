@@ -57,6 +57,8 @@ export interface DebugPanelProps {
   activeDelves?: readonly import('../../engine/ruins/delveTypes').ActiveDelve[];
   /** Lazy getter for recent events (debug tab opt-in stream). */
   getRecentEvents?: () => readonly TickEvent[];
+  /** Flip table runtime states for the Shells inspector tab (THR-53). */
+  flipTableStates?: ReadonlyMap<string, import('../../types/contentShells').FlipTableRuntimeState>;
 }
 
 export const DebugPanel = React.memo(function DebugPanel({
@@ -66,7 +68,7 @@ export const DebugPanel = React.memo(function DebugPanel({
   onToggleOrganicShore, encounterNotifications, pendingVignettes, seed,
   sphereAggregate, agentKnowledge, preferredViewMode, preferredViewNonce,
   strategicState, omenState, doomIdentityMatrix, hiddenMarks, pendingEncounterSeeds,
-  activeDelves, getRecentEvents,
+  activeDelves, getRecentEvents, flipTableStates,
 }: DebugPanelProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('feed');
   const [enabledCategories, setEnabledCategories] = useState<Set<TraceCategory>>(new Set(TRACE_CATEGORIES));
@@ -206,6 +208,7 @@ export const DebugPanel = React.memo(function DebugPanel({
           pendingEncounterSeeds={pendingEncounterSeeds}
           activeDelves={activeDelves}
           getRecentEvents={getRecentEvents}
+          flipTableStates={flipTableStates}
         />
       </div>
 

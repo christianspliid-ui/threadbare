@@ -37,10 +37,12 @@ import { HiddenMarksTab } from './HiddenMarksTab';
 import { EncounterSeedsTab } from './EncounterSeedsTab';
 import { CulturePhoneticsInspector } from './CulturePhoneticsInspector';
 import { RecentEventsView } from './RecentEventsView';
+import { ShellsDebugTab } from './ShellsDebugTab';
 import { EMPTY_STATE_STYLE } from './debugPanelStyles';
 import type { KnowsClueOfEdgeProperties } from '../../../types/knowledge';
+import type { FlipTableRuntimeState } from '../../../types/contentShells';
 
-export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events';
+export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events' | 'shells';
 
 export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'feed', label: 'Feed' }, { id: 'agent-follow', label: 'Agent' },
@@ -53,6 +55,7 @@ export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'strategic', label: 'Strategic' }, { id: 'omens', label: 'Omens' },
   { id: 'cultures', label: 'Cultures' }, { id: 'secrets-favors', label: 'Secrets' }, { id: 'clues', label: 'Clues' }, { id: 'ruins', label: 'Ruins' }, { id: 'cli', label: 'CLI' },
   { id: 'recent-events', label: 'Recent Events' },
+  { id: 'shells', label: 'Shells' },
 ];
 
 export interface DebugTabContentProps {
@@ -95,6 +98,8 @@ export interface DebugTabContentProps {
   activeDelves?: readonly import('../../../engine/ruins/delveTypes').ActiveDelve[];
   /** Lazy getter so the recent-events debug tab can opt-in to stream subscription. */
   getRecentEvents?: () => readonly TickEvent[];
+  /** Flip table runtime states for the Shells inspector tab (THR-53). */
+  flipTableStates?: ReadonlyMap<string, FlipTableRuntimeState>;
 }
 
 export function DebugTabContent({
@@ -106,7 +111,7 @@ export function DebugTabContent({
   encounterNotifications, pendingVignettes, seed, sphereAggregate, agentKnowledge,
   retinueAgents, strategicState, omenState, doomIdentityMatrix,
   hiddenMarks, pendingEncounterSeeds, activeDelves,
-  getRecentEvents,
+  getRecentEvents, flipTableStates,
 }: DebugTabContentProps) {
   if (viewMode === 'omens') return <OmenDebugTab omenState={omenState} currentTick={currentTick} doomIdentityMatrix={doomIdentityMatrix} />;
   if (viewMode === 'journey') {
@@ -136,6 +141,7 @@ export function DebugTabContent({
   if (viewMode === 'clues') return <CluesDebugTab graph={graph} focusedAgentId={effectiveAgentId} currentTick={currentTick} />;
   if (viewMode === 'ruins') return <RuinsDebugTab graph={graph} activeDelves={activeDelves} currentTick={currentTick} />;
   if (viewMode === 'recent-events') return <RecentEventsView getRecentEvents={getRecentEvents} />;
+  if (viewMode === 'shells') return <ShellsDebugTab flipTableStates={flipTableStates} currentTick={currentTick} focusedAgentId={effectiveAgentId} />;
   if (viewMode === 'cli') return <CommandTab retinueAgents={retinueAgents} followAgentId={effectiveAgentId} />;
   if (viewMode === 'strategic') return <StrategicDebugTab strategicState={strategicState} graph={graph} effectiveAgentId={effectiveAgentId} currentTick={currentTick} />;
   if (viewMode === 'social') {

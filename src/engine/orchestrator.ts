@@ -101,6 +101,7 @@ import { phaseInitiativeProgress } from './phaseInitiativeProgress';
 import { phaseStrategicProjects } from './phaseStrategicProjects';
 import { phaseDivinePremonition } from './phaseDivinePremonition';
 import { phaseControlEffects, resetControlEffectsCounter } from './phaseControlEffects';
+import { phaseEffectShells } from './phaseEffectShells';
 // phaseDoom and phaseMandate are extracted to their own files with sphere pressure wiring.
 // Imported for internal runTick use; re-exported for backward compatibility (tests import from orchestrator).
 import { phaseDoom, resetDoomCounter } from './phaseDoom';
@@ -2052,6 +2053,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   s = { ...s, ...phaseEncounterProgressionV2(s, runtime) };
   phaseEventCounts['encounter_progression'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
+
+  // Phase 2a.52: Effect Shells — process non-step-outcome flip_table triggers (THR-53)
+  // step_outcome triggers are handled inline in executeStepResult; this phase handles the rest.
+  s = { ...s, ...phaseEffectShells(s) };
 
   // Phase 2a.55: Strategic Projects — advance multi-tick projects and tick control degradation
   {

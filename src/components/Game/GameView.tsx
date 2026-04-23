@@ -3187,6 +3187,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             pendingEncounterSeeds={gameState.pendingEncounterSeeds}
             activeDelves={gameState.activeDelves}
             getRecentEvents={getRecentEvents}
+            flipTableStates={gameState.flipTableStates}
           />
         ) : (
           <div className="flex flex-shrink-0" style={{ alignItems: 'stretch' }}>

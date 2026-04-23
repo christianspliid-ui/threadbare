@@ -28,6 +28,7 @@ Every engine module that produces per-tick state changes must be called from a p
 | 1.5 | `phaseJourneyBeat` | Journey beat progression |
 | 2a | `phaseUnifiedActionProgress` | Action execution & resolution |
 | 2a.3 | `phaseEncounterProgressionV2` | Encounter step advancement |
+| 2a.52 | `phaseEffectShells` | Non-step-outcome flip_table triggers (attachment_gained, manual); step_outcome triggers fire inline in executeStepResult (THR-53) |
 | 2a.4 | `tickEffects` (inline orchestrator block) | Generic effect runtime bookkeeping: duration, cooldown, decay, stacking, attachment removal |
 | 2a.6 | `phaseEncounterVisibility` | Encounter notifications |
 | 2a.55 | `phaseStrategicProjects` | Strategic project progression + control degradation |
