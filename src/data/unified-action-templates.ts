@@ -3800,12 +3800,11 @@ export const THREAD_CREATION_TEMPLATES: UnifiedActionTemplate[] = [
     essenceCost: 15,
     actorAffinities: ['ascendant'],
     targetCategories: ['actor'],
-    // targetSubtypes: ['group'] would match armies (actorType: 'group') but also guilds.
-    // Armies are distinguished by the presence of armyState property on the node.
-    // For now, this template matches all 'group' subtype actors. The ThreadsPanel
-    // classifies thread targets post-hoc so army vs guild distinction is preserved in the UI.
-    // TODO(THR-43): add targetRequiredProperties: ['armyState'] when targetActions.ts supports property filtering.
+    // Narrow 'group' subtype to actors that are actually armies - they carry
+    // an armyState property bag (guilds are also 'group' subtype but have no armyState).
+    // See Gate 3b (requiredNodeProperties) in src/engine/targetActions.ts.
     targetSubtypes: ['group'],
+    requiredNodeProperties: { armyState: undefined },
     bypassRevelationGate: true,
     motivations: ['courage_prudence', 'sacrifice_survival'],
     narrativeTemplates: {
