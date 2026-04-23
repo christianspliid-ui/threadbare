@@ -356,6 +356,7 @@ Work is not "done" until it is deployed and documented. Do all of these automati
 ## Session Workflow
 
 - [ ] Read this file for orientation
+- [ ] **First tool call of any coding session:** run `node --experimental-strip-types scripts/session-precheck.ts` and compare its `fingerprint ...` line against expected sandbox capabilities before starting feature work
 - [ ] **Check Linear for work** — query issues by state per the protocol in `Docs/plans/2026-04-13-linear-coordination-protocol.md`:
   - **Cowork:** `list_issues state:"In Design"` (resume design), `list_issues state:"Implementation Planning"` (resume planning), `list_issues state:"Ready for Dev"` and `list_issues state:"Ready for Codex"` (verify both executor queues), `list_issues state:"Todo"` (what's next)
   - **Claude Code:** `list_issues state:"Ready for Dev" assignee:null` (pick up handoffs — CC queue only, never Ready for Codex), `list_issues state:"In Dev" assignee:"me"` (resume active work)
