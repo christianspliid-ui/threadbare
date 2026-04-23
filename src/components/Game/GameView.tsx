@@ -157,7 +157,11 @@ import { touchStructure, touchWorld } from '../../engine/simulationRuntime';
 import { executeEffect } from '../../engine/effectExecutors';
 import type { ExecutionContext } from '../../engine/effectExecutors';
 import { emitTrace } from '../../engine/traceBuffer';
-import { applyEncounterAftermathReaction } from '../../engine/encounterAftermath';
+import {
+  applyEncounterAftermathReaction,
+  AUTO_AFTERMATH_TRACE_CATEGORY,
+  resolveAftermathContextForAgent,
+} from '../../engine/encounterAftermath';
 import { checkMidEncounterPromotion } from '../../engine/attentionTier';
 import { consumeMatchingMarks } from '../../engine/hiddenMarks';
 import { observeResolutionIntelligence } from '../../engine/intelligence';
@@ -2026,48 +2030,59 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     closeEncounterModalAndResume(tieredEncounterState?.openedAsInterrupt);
   }, [closeEncounterModalAndResume, gameState.tick, setGameState, tieredEncounterState]);
 
-  const handleEncounterAftermathReaction = useCallback((reactionId: string) => {
-    const reactions = tieredEncounterState?.encounter.aftermathSummary?.reactions;
-    if (!tieredEncounterState || !reactions?.length) return;
-    const reaction = reactions.find(entry => entry.id === reactionId);
-    if (!reaction) return;
-
-    if (tieredEncounterState.notification?.id) {
-      suppressedEncounterNotificationId.current = tieredEncounterState.notification.id;
-      setInterruptSuppressedUntilTick(gameState.tick + 1);
-    }
-
+  const applyAftermathReactionForAgent = useCallback((
+    agentId: string,
+    reactionId?: string,
+    source: 'modal' | 'debug-bridge' = 'modal',
+  ): {
+    success: boolean;
+    message: string;
+    reactionId?: string;
+    touchedWorld?: boolean;
+    touchedStructure?: boolean;
+    closeAfterSelection?: boolean;
+  } => {
     // THR-114: mutable object written inside updater, read outside (pattern per plan §D7)
     const pendingAftermathMutations = { touchedWorld: false, touchedStructure: false };
     // THR-133: traces collected inside updater, emitted outside (StrictMode-safe)
     let pendingMarkTraces: Parameters<typeof emitTrace>[0][] = [];
+    const resolvedContext = resolveAftermathContextForAgent(_gameStateRef.current, agentId, reactionId);
+    if ('error' in resolvedContext) {
+      return {
+        success: false,
+        message: resolvedContext.error,
+      };
+    }
+
+    const selectedReactionId = resolvedContext.reaction.id;
+    const selectedActionId = resolvedContext.action.actionId;
+    const selectedEncounterId = resolvedContext.action.templateId;
+    const selectedCloseAfterSelection = resolvedContext.reaction.closeAfterSelection ?? true;
 
     setGameState(prev => {
-      const activeAction =
-        (tieredEncounterState.activeActionId
-          ? prev.unifiedActions.find(action => action.actionId === tieredEncounterState.activeActionId)
-          : undefined)
-        ?? prev.unifiedActions.find(action =>
-          action.actorId === tieredEncounterState.agentId
-          && action.templateId === tieredEncounterState.notification.encounterId
-          && Boolean(action.aftermathSummary),
-        );
+      const activeAction = prev.unifiedActions.find(action => action.actionId === selectedActionId) ?? resolvedContext.action;
+      const reaction = activeAction.aftermathSummary?.reactions?.find(entry => entry.id === selectedReactionId) ?? resolvedContext.reaction;
 
-      const { state: nextState, mutationSummary: reactionMutations } = applyEncounterAftermathReaction(prev, activeAction, reaction, prev.tick, runtime);
-      // Store mutation summary for touch calls outside the updater
+      const { state: nextState, mutationSummary: reactionMutations } = applyEncounterAftermathReaction(
+        prev,
+        activeAction,
+        reaction,
+        prev.tick,
+        runtime,
+      );
       pendingAftermathMutations.touchedWorld = reactionMutations.touchedWorld;
       pendingAftermathMutations.touchedStructure = reactionMutations.touchedStructure;
 
       // THR-117: condition_attachment aftermath path — wire woundApplied into mid-encounter tier promotion.
       // Mirrors the legacy resolveEncounter → orchestrator promotion contract.
       let stateAfterPromotion = nextState;
-      if (reactionMutations.woundApplied && activeAction?.effectiveTier && activeAction.effectiveTier !== 'invisible') {
+      if (reactionMutations.woundApplied && activeAction.effectiveTier && activeAction.effectiveTier !== 'invisible') {
         const newTier = checkMidEncounterPromotion(activeAction.effectiveTier, { wound: true });
         if (newTier !== null) {
           stateAfterPromotion = {
             ...nextState,
-            unifiedActions: nextState.unifiedActions.map((a: UnifiedAction) =>
-              a.actionId === activeAction.actionId ? { ...a, effectiveTier: newTier } : a
+            unifiedActions: nextState.unifiedActions.map((action: UnifiedAction) =>
+              action.actionId === activeAction.actionId ? { ...action, effectiveTier: newTier } : action
             ),
           };
           emitTrace({
@@ -2084,8 +2099,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
       const { nextState: stateAfterMarks, tracesToEmit: markTraces } = consumeMatchingMarks(
         stateAfterPromotion,
-        activeAction?.actorId,
-        activeAction?.templateId,
+        activeAction.actorId,
+        activeAction.templateId,
         prev.tick,
       );
       pendingMarkTraces = markTraces as Parameters<typeof emitTrace>[0][];
@@ -2094,23 +2109,103 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       observeResolutionIntelligence(stateAfterMarks, activeAction, reaction, prev.tick);
       return {
         ...stateAfterMarks,
-        encounterNotifications: (stateAfterMarks.encounterNotifications ?? []).map(notification =>
-          notification.id === tieredEncounterState.notification.id
-            ? { ...notification, resolved: true }
-            : notification,
-        ),
+        encounterNotifications: (stateAfterMarks.encounterNotifications ?? []).map(notification => {
+          if (notification.resolved) return notification;
+          const matchesActionId = Boolean(notification.actionId) && notification.actionId === activeAction.actionId;
+          const matchesTemplate = notification.agentId === activeAction.actorId && notification.encounterId === activeAction.templateId;
+          if (!matchesActionId && !matchesTemplate) return notification;
+          return { ...notification, resolved: true };
+        }),
       };
     });
-    // THR-114: apply world/structure touches OUTSIDE setGameState updater (StrictMode-safe)
+
     if (pendingAftermathMutations.touchedStructure) touchStructure(runtime);
     else if (pendingAftermathMutations.touchedWorld) touchWorld(runtime);
-    // THR-133: emit hidden mark traces outside the updater (StrictMode-safe, avoids dedup)
     for (const trace of pendingMarkTraces) emitTrace(trace);
 
-    if (reaction.closeAfterSelection ?? true) {
+    if (source === 'debug-bridge') {
+      emitTrace({
+        tick: _gameStateRef.current.tick,
+        category: AUTO_AFTERMATH_TRACE_CATEGORY,
+        agentId,
+        encounterId: selectedEncounterId,
+        actionId: selectedActionId,
+        reactionId: selectedReactionId,
+        source: 'debug-bridge',
+        summary: `headless aftermath (debug-bridge) ${agentId} -> ${selectedReactionId}`,
+      } as unknown as Parameters<typeof emitTrace>[0]);
+    }
+
+    return {
+      success: true,
+      message: `Applied aftermath reaction '${selectedReactionId}'.`,
+      reactionId: selectedReactionId,
+      touchedWorld: pendingAftermathMutations.touchedWorld,
+      touchedStructure: pendingAftermathMutations.touchedStructure,
+      closeAfterSelection: selectedCloseAfterSelection,
+    };
+  }, [runtime, setGameState]);
+
+  const handleEncounterAftermathReaction = useCallback((reactionId: string) => {
+    if (!tieredEncounterState) return;
+    const result = applyAftermathReactionForAgent(tieredEncounterState.agentId, reactionId, 'modal');
+    if (!result.success) return;
+
+    if (tieredEncounterState.notification?.id) {
+      suppressedEncounterNotificationId.current = tieredEncounterState.notification.id;
+      setInterruptSuppressedUntilTick(gameState.tick + 1);
+    }
+
+    if (result.closeAfterSelection ?? true) {
       closeEncounterModalAndResume(tieredEncounterState.openedAsInterrupt);
     }
-  }, [closeEncounterModalAndResume, gameState.tick, setGameState, tieredEncounterState]);
+  }, [applyAftermathReactionForAgent, closeEncounterModalAndResume, gameState.tick, tieredEncounterState]);
+
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+
+    const resolveAgentId = (agentQuery: string): string | null => {
+      const actors = _gameStateRef.current.graph.getNodesByType('actor');
+      const match = actors.find(node =>
+        node.id === agentQuery
+        || node.id.startsWith(agentQuery)
+        || ((node.properties.name as string | undefined) ?? '').toLowerCase().includes(agentQuery.toLowerCase())
+      );
+      return match?.id ?? null;
+    };
+
+    window.__DEBUG._registerAftermathBridge({
+      listAftermathReactions: (agentQuery: string) => {
+        const resolvedAgentId = resolveAgentId(agentQuery);
+        if (!resolvedAgentId) {
+          return { reactions: [], error: `No agent matching '${agentQuery}'.` };
+        }
+
+        const resolvedContext = resolveAftermathContextForAgent(_gameStateRef.current, resolvedAgentId);
+        if ('error' in resolvedContext) {
+          return { reactions: [], error: resolvedContext.error };
+        }
+
+        const reactions = resolvedContext.action.aftermathSummary?.reactions ?? [];
+        return { reactions: reactions.map(reaction => ({ id: reaction.id, label: reaction.label })) };
+      },
+      pickAftermathReaction: (agentQuery: string, reactionId?: string) => {
+        const resolvedAgentId = resolveAgentId(agentQuery);
+        if (!resolvedAgentId) {
+          return { success: false, message: `No agent matching '${agentQuery}'.` };
+        }
+
+        const result = applyAftermathReactionForAgent(resolvedAgentId, reactionId, 'debug-bridge');
+        return {
+          success: result.success,
+          reactionId: result.reactionId,
+          touchedWorld: result.touchedWorld,
+          touchedStructure: result.touchedStructure,
+          message: result.message,
+        };
+      },
+    });
+  }, [applyAftermathReactionForAgent]);
 
   /** Intervention handler — player chose an intervention for the current encounter step */
   const handleEncounterIntervene = useCallback((choiceId: string, essenceSpent: number) => {

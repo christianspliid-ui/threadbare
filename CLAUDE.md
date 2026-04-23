@@ -72,9 +72,10 @@ An interactive REPL for testing the game engine without a browser. **Use this fo
 ```bash
 npm run cli                          # default seed 42, medium map
 npm run cli -- --seed 99 --map small # custom seed + map size
+npm run cli -- --seed 42 --map medium --auto-aftermath # default auto-pick enabled for run command
 ```
 
-Key commands at the `fws>` prompt: `tick [N]` (advance ticks), `run [N]` (auto-run at N ticks/sec), `pause`, `status` (game overview), `agents`, `agent <name>` (inspect one), `events [N]`, `doom`, `mandate`, `essence`, `encounters [agent]`, `spawn encounter <agent|@hero> <encounterId> [--courtPosition X]`, `spawn encounter-context <encounterId> [--agent <agent|@hero>] [--at <location|actor>] [--hex <col> <row>]`, `spawn attachment <agent|@hero> <templateId|name> [--tick N]`, `spawn location <subtype> --hex <col> <row> [--name "..."]`, `spawn sublocation <typeId> (--at <location|actor|@hero> | --hex <col> <row>)`, `spawn npc <role> (--at <location|actor|@hero> | --hex <col> <row>) [--name "..."] [--faction <factionDefId>]`, `move agent <agent|@hero> (--to <location|actor> | --hex <col> <row>)`, `factions`, `traces [N]`, `graph` (node counts), `fog` (toggle fog of war on/off), `fog on`, `fog off`, `eval <expr>` (JS with `state` in scope). Type `help` for the full list.
+Key commands at the `fws>` prompt: `tick [N]` (advance ticks), `run [N] [--auto-aftermath]` (auto-run at N ticks/sec, optional headless aftermath auto-pick), `pause`, `status` (game overview), `agents`, `agent <name>` (inspect one), `events [N]`, `doom`, `mandate`, `essence`, `encounters [agent]`, `aftermath list <agent|@hero>`, `aftermath pick <agent|@hero> [reactionId]`, `spawn encounter <agent|@hero> <encounterId> [--courtPosition X]`, `spawn encounter-context <encounterId> [--agent <agent|@hero>] [--at <location|actor>] [--hex <col> <row>]`, `spawn attachment <agent|@hero> <templateId|name> [--tick N]`, `spawn location <subtype> --hex <col> <row> [--name "..."]`, `spawn sublocation <typeId> (--at <location|actor|@hero> | --hex <col> <row>)`, `spawn npc <role> (--at <location|actor|@hero> | --hex <col> <row>) [--name "..."] [--faction <factionDefId>]`, `move agent <agent|@hero> (--to <location|actor> | --hex <col> <row>)`, `factions`, `traces [N]`, `graph` (node counts), `fog` (toggle fog of war on/off), `fog on`, `fog off`, `eval <expr>` (JS with `state` in scope). Type `help` for the full list.
 
 **When to use the CLI:**
 - After modifying tick phases or orchestrator logic — run `tick 30` and check `status` + `events`
@@ -120,6 +121,11 @@ window.__DEBUG.listActions('Serafina')     // same list, but returns [] if agent
 window.__DEBUG.fireAction('Serafina', 'action.charm.heart')   // exact template id
 window.__DEBUG.fireAction('abc123', 'charm')                   // partial template id/name match
 // Returns {success, actionId, templateName, message}
+
+// List/apply pending encounter aftermath reactions headlessly:
+window.__DEBUG.listAftermathReactions('Serafina')              // -> { reactions: [{id, label}] } or { error }
+window.__DEBUG.pickAftermathReaction('Serafina', 'reaction-id') // reactionId optional; defaults to first reaction
+// Returns {success, reactionId, touchedWorld, touchedStructure, message}
 
 // Fog of war control:
 window.__DEBUG.toggleFog()                // toggle fog on/off, returns new enabled state
@@ -456,4 +462,3 @@ Codesight is installed as both a **static analysis output** (`.codesight/`) and 
 - `src/engine/traceBuffer.ts` (imported by 106 files)
 
 Wiki articles are navigation aids, not implementation guides — always read source files before implementing.
-
