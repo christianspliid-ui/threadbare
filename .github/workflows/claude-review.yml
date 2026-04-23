@@ -26,7 +26,7 @@ concurrency:
 env:
   REVIEW_WALL_CLOCK_TIMEOUT_SEC: "600"
   REVIEW_HEARTBEAT_INTERVAL_SEC: "60"
-  REVIEW_ACTION_BLOCKING: "false"   # flip to "true" once GitHub Pro + branch protection land (THR-183)
+  REVIEW_ACTION_BLOCKING: "true"
   REVIEW_ACTION_LABEL_REQUIRED: "review:required"
   REVIEW_ACTION_LABEL_SAMPLE: "review:sample"
   REVIEW_RISKY_SURFACES: "src/engine/**,src/types/**,src/components/HexMapV2/**,src/prose/**"
@@ -174,7 +174,7 @@ jobs:
               body += `> _Review did not complete cleanly (${outcome}). Trailer: \`${trailer}\`. See Action logs for details._\n`;
             }
 
-            body += `\n_Advisory mode — not blocking merge. [THR-189](https://linear.app/threadbare/issue/THR-189) tracks flip to blocking once GitHub Pro lands._`;
+            body += `\n_Blocking mode — major findings on risky surfaces will fail the check._`;
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
