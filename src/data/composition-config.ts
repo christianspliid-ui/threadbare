@@ -10,6 +10,11 @@ export const PHASE_STORY_BEAT_DEFAULT_PRIORITY = 'doom_clock' as const;
 /** Ticks a failed composition persists in activeCompositions before garbage collection. */
 export const COMPOSITION_FAILED_RETENTION_TICKS = 20;
 
+/** Ticks a completed composition persists in activeCompositions before garbage collection.
+ *  Longer than failed retention so recent successful phased events remain inspectable in the
+ *  DebugPanel composition view (CompositionView.tsx) for roughly one short-beat window. */
+export const COMPOSITION_COMPLETED_RETENTION_TICKS = 50;
+
 /** Fallback mood for ChronicleEntry.promptContext.mood when a story-beat template omits one. */
 export const STORY_BEAT_DEFAULT_MOOD = 'ominous' as const;
 

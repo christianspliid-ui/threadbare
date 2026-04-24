@@ -47,3 +47,4 @@
 - **work** | THR-243 shipped: added Docs/exemplars.md and centralized encounter-pipeline exemplar references to prevent drift.
 - **work** | THR-273 shipped: weekly drift scan workflow + four-signal script (S1-S4) with fail-soft isolation, synthetic tests, and drift-scan issue publishing.
 - **work** | THR-245 shipped: completed contentInvariants v2 sweep across vocabulary/fixed-enum data tests with fixed-enum source annotations.
+- **work** | THR-251 shipped: added completed-composition retention GC path in phase runner plus six lifecycle tests.

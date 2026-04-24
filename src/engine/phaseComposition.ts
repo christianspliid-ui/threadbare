@@ -16,6 +16,7 @@ import {
   PHASE_RUNNER_MAX_COMPOSITIONS_PER_TICK,
   PHASE_ACTIVATION_COOLDOWN_TICKS,
   COMPOSITION_FAILED_RETENTION_TICKS,
+  COMPOSITION_COMPLETED_RETENTION_TICKS,
   STORY_BEAT_DEFAULT_MOOD,
   STORY_BEAT_DEFAULT_SPHERE,
   STORY_BEAT_DEFAULT_VOICE,
@@ -333,7 +334,6 @@ export function phaseComposition(state: GameState): Partial<GameState> {
       worldFlags = effectResult.worldFlags;
       firedCompositions = effectResult.firedCompositions;
       // Note: doomClockAdvance from phase effects deferred (TODO(THR-227): wire doom clock advance)
-      // TODO(THR-251): GC completed compositions after a retention window
 
       // Enqueue story beat
       let storyBeatQueued = false;
@@ -403,11 +403,24 @@ export function phaseComposition(state: GameState): Partial<GameState> {
     }
   }
 
-  // Garbage-collect expired failed compositions
+  // Garbage-collect expired completed/failed compositions. Active compositions never GC.
   updatedCompositions = updatedCompositions.filter((c) => {
-    if (c.status !== 'failed') return true;
-    const failedAtTick = Math.min(...Object.values(c.phaseActivationTicks ?? {}).concat([c.firedAtTick]));
-    return state.tick - failedAtTick < COMPOSITION_FAILED_RETENTION_TICKS;
+    if (c.status === 'active') return true;
+
+    const phaseTicks = Object.values(c.phaseActivationTicks ?? {});
+    // Completed: reference tick = max activation (all phases fired, so max == completion tick).
+    // Failed:    reference tick = earliest of fired/phase-activation (matches v1 behaviour).
+    const referenceTick =
+      c.status === 'completed'
+        ? (phaseTicks.length > 0 ? Math.max(...phaseTicks) : c.firedAtTick)
+        : Math.min(...phaseTicks.concat([c.firedAtTick]));
+
+    const retention =
+      c.status === 'completed'
+        ? COMPOSITION_COMPLETED_RETENTION_TICKS
+        : COMPOSITION_FAILED_RETENTION_TICKS;
+
+    return state.tick - referenceTick < retention;
   });
 
   return {
