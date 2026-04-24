@@ -44,3 +44,4 @@
 - **work** | THR-247 shipped: pull-work atomic pickup wrapper documented with retry traces + protocol wrapper-first guidance; PR #26 merged.
 - **work** | THR-209 shipped: added scripts/audit-ia-manifest.ts + npm run audit-ia advisory structural checks for IA reader definitions/mounts/state-path hints.
 - **work** | THR-272 shipped: added mirrored grill-me skill docs and design governance checklist step 0 pre-pass.
+- **work** | THR-243 shipped: added Docs/exemplars.md and centralized encounter-pipeline exemplar references to prevent drift.
