@@ -17,7 +17,46 @@ Run as `/pull-work` (auto-pick top Ready for Dev issue) or `/pull-work THR-123` 
 - Audience: Claude Code executor
 - Outcome: either a verified `In Dev` claim, or a safe refusal with a bounce note
 
+## pullNextReadyForDev — Atomic Pickup Procedure
+
+**Canonical path for Rules 1, 4, and 7.** Execute this 6-step sequence as a single atomic unit instead of hand-rolling claim + verify + comment-read separately. Steps 1–4 below are the documented fallback for agents that bypass the wrapper.
+
+**Constant:** `MAX_CLAIM_RETRIES = 3`
+
+1. **Board scan** — consume the Step 1 board-scan (already built): one `list_issues(team:"Threadbare", limit:250, orderBy:"updatedAt", includeArchived:false)` call, bucket in memory by `status`. Sort Ready-for-Dev candidates by priority (1=Urgent first), then oldest `createdAt` as tie-break. Pick the top unassigned candidate.
+2. **Claim** — `save_issue(id, assignee:"me", state:"In Dev")`.
+3. **Verify** — `get_issue(id)`. Confirm both `assignee` and `state` match.
+   - On mismatch (silent drop, impediment #48): release claim with `save_issue(id, assignee:null)`. Output trace line (see below). Move to the next candidate. Retry up to `MAX_CLAIM_RETRIES` total attempts.
+   - On all retries exhausted: output final trace line and exit the wrapper — fall back to the hand-rolled Step 1–4 path below.
+4. **Fetch latest comment** — `list_comments(id, orderBy:"createdAt", limit:5)`. Extract the most recent entry.
+5. **Return bundle** — `{ issueId, state, assignee, latestComment }`. Continue from Step 5 (Reopened check) using this data.
+
+**Trace output format** (documents retry behavior for inspectability — NFP #2):
+
+Happy path:
+```
+[pullNextReadyForDev] Attempt 1/3: claiming THR-247... OK
+[pullNextReadyForDev] Verify: assignee=Christian Spliid, state=In Dev ✓ — claim confirmed
+```
+
+Silent-drop retry:
+```
+[pullNextReadyForDev] Attempt 1/3: claiming THR-247... OK
+[pullNextReadyForDev] Verify: assignee=null — silent drop (impediment #48). Releasing, trying next candidate.
+[pullNextReadyForDev] Attempt 2/3: claiming THR-248... OK
+[pullNextReadyForDev] Verify: assignee=Christian Spliid, state=In Dev ✓ — claim confirmed
+```
+
+All retries exhausted:
+```
+[pullNextReadyForDev] All 3/3 attempts failed — silent drops on all candidates. Surfacing error. Use hand-rolled Rule 1 path and log impediment via impediment-reporter.
+```
+
+---
+
 ## Steps
+
+> **Prefer `pullNextReadyForDev` above** for the canonical one-call path. These steps are the documented fallback and expand exactly what the wrapper does internally.
 
 ### Step 0 — Rate-limit guard
 
@@ -50,10 +89,12 @@ If collision or uncertainty remains, refuse and ask for rerouting instead of cla
 
 ### Step 4 - Claim before deep read, then verify
 
+> **Preferred:** use `pullNextReadyForDev` (§ above) — it bundles Steps 1–4 with retry-on-silent-drop. This step-by-step is the documented fallback.
+
 1. First mutating call: `save_issue(id, assignee:"me", state:"In Dev")`.
 2. Immediately call `get_issue(id)` and verify both `assignee` and `state` stuck.
-3. Retry once if mismatch.
-4. If still mismatched, refuse to proceed and surface the write failure.
+3. On mismatch: release claim (`save_issue(id, assignee:null)`), move to the next candidate, retry up to `MAX_CLAIM_RETRIES = 3` total attempts.
+4. On all retries exhausted: refuse to proceed, surface the write failure, log impediment.
 
 Rationale: impediment #48 documents silent state-write drops; verify-after-write is mandatory.
 
