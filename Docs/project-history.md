@@ -3,6 +3,8 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ THR-247 (2026-04-24) — pullNextReadyForDev atomic wrapper: named atomic pickup procedure in pull-work skill bundling Rules 1/4/7 (claim → verify → latest-comment-read) with retry-on-silent-drop (MAX_CLAIM_RETRIES=3, NFP #1) and documented trace output format (NFP #2). Step 4 fallback retries upgraded 1→3. Coordination protocol updated. Agents mirror synced.
+
 ✅ THR-253 (2026-04-24) — Chain Weakens prose polish: rewrote `title`, `poetProse`, `witnessFacts` on all five story-beat templates to Threadbare aesthetic bar (Poet ≤35 words, one sensory hit + implication; Witness 3–5 factual bullets; mortal-voice phases name the Order of the Grey Watch by title). Removed both TODO(THR-253) comments. Deferral from THR-225. 10682 tests pass.
 
 ✅ THR-101 (2026-04-24) — Tavern encounters Phase 3 migration: 10 tavern templates migrated to UnifiedActionTemplate with Threadbare place-bound prose (every opening beat at {location} carries ≥1 sensory channel); systemic wiring of 3+ intel grants, 6 encounter seeds, 7 hidden marks, 4 {?has_faction} branches, 4 {ally:strongest} refs, 2 ActionStepBranch forks (shady_deal, the_challenge); legacy appliesWound converted to condition_attachment onFailureEffects; socialEncounterGeneration.ts slot priority updated (faction → unified tavern → extra → unified social → legacy); central registration in unified-action-templates.ts. 10659 tests pass.

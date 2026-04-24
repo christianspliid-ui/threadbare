@@ -18,6 +18,9 @@
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
 
+## Recent Completions (2026-04-24) — THR-247 pullNextReadyForDev atomic wrapper
+- **THR-247:** Added `pullNextReadyForDev` named atomic procedure to the pull-work skill, bundling Rules 1/4/7 (claim + verify + latest-comment-read) into a single sequence with retry-on-silent-drop (`MAX_CLAIM_RETRIES = 3`). Documented trace output format satisfies NFP #2 inspectability. Step 4 fallback upgraded from 1 to 3 retries. Coordination protocol updated to point CC pickup at the wrapper as canonical. Agents mirror synced. 10682 tests pass, tsc clean, vite build succeeds. PR #26.
+
 ## Recent Completions (2026-04-24) — THR-253 Chain Weakens prose polish
 - **THR-253:** Rewrote `title`, `poetProse`, and `witnessFacts` on all five Chain Weakens story-beat templates (chain-weakens-rumor, chain-weakens-plague-bringer, chain-weakens-shield-anvil, chain-weakens-azath-cracks, chain-weakens-reckoning). Poet voice: single sentence, present tense, ≤35 words, one sensory hit + one implication. Witness voice: 3–5 concrete factual bullets. Mortal-voice phases name the Order of the Grey Watch by title. Unicode escapes throughout. Removed both `TODO(THR-253)` comments. 10682 tests pass, tsc clean, vite build succeeds. PR #25 with auto-merge enabled.
 
@@ -36,7 +39,7 @@
 - **THR-36:** Reputation Traits CMS. 17 traits browsable at `?view=cms`.
 
 ## Archived to project-history.md
-- THR-253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
+- THR-247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
 
 
 ## Active Backlog Ideas
