@@ -501,3 +501,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - THR-255 unifiedActionPhases tick-event mismatch: ✅ Complete (2026-04-24) — no repro on current main; documented scenario-scoped event assertion intent and closed the stale deferral.
 - THR-26 hex map rarity signifiers: ✅ Complete (2026-04-24) — added Mythic/Legendary rarity halo layer in HexMapV2 with render-order wiring, ticked legendary pulse behavior, and 8-case scene unit coverage.
 - THR-234 model-label split (Opus 4.6 vs 4.7): ✅ Complete (2026-04-24) — created model:opus-4-6/model:opus-4-7, updated coordination docs, and completed scoped model:opus backfill audit (no relabels needed).
+- THR-206 IA manifest TS module: ✅ Complete (2026-04-24) — shipped src/data/ia-manifest.ts with 59 typed surfaces + openUrl routing hints and posted downstream unblock comments for THR-209/210/212.
