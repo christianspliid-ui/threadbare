@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { loadMandateTemplates, loadMandateMilestoneProse, validateMandateJson } from '../mandate-loader';
 import type { SphereName } from '../../types/index';
+import { assertNoDuplicateIds } from '../../testing/contentInvariants';
 
 const VALID_CONDITION_TYPES = ['node_count', 'edge_count', 'sphere_weight', 'actor_tier'];
 const VALID_STAGES = ['setup', 'escalation', 'culmination'];
@@ -8,12 +9,15 @@ const VALID_TYPES = ['graph_state', 'narrative', 'sphere_dominance', 'simulation
 const VALID_SPHERES: SphereName[] = ['force', 'matter', 'energy', 'life', 'mind', 'spirit', 'time', 'entropy'];
 const VALID_PROSE_KEYS = ['setup_to_escalation', 'escalation_to_culmination', 'completed', 'failed'];
 
+// contentInvariants sweep v2 (THR-245): kept 1 structural (fixed-enum), replaced 1 growth-tracking
+
 describe('mandate-loader', () => {
   describe('loadMandateTemplates', () => {
     const templates = loadMandateTemplates();
 
-    it('loads exactly 12 templates', () => {
-      expect(templates).toHaveLength(12);
+    it('loads template rows with unique mandate ids', () => {
+      expect(templates.length).toBeGreaterThan(0);
+      assertNoDuplicateIds(templates);
     });
 
     it('every template has required fields', () => {
@@ -23,7 +27,8 @@ describe('mandate-loader', () => {
         expect(t.name).toBeTruthy();
         expect(t.description).toBeTruthy();
         expect(t.sphereAffinities.length).toBeGreaterThan(0);
-        expect(t.stages).toHaveLength(3);
+        // Fixed mandate stage enum — setup/escalation/culmination.
+        expect(t.stages).toHaveLength(VALID_STAGES.length);
       });
     });
 

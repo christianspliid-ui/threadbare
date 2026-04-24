@@ -516,3 +516,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - THR-272 grill-me skill + design governance step 0: ✅ Complete (2026-04-24) — shipped mirrored grill-me skill docs and prepended the non-trivial grill-me pre-pass to the design workflow checklist.
 - THR-243 exemplar index and skill reference centralization: ✅ Complete (2026-04-24) — added Docs/exemplars.md and moved encounter-pipeline exemplar guidance to the centralized index with mirrored skill sync.
 - THR-273 weekly drift scan automation: ✅ Complete (2026-04-24) — shipped `.github/workflows/drift-scan.yml`, `scripts/drift-scan/index.ts`, and synthetic tests for all four signals with fail-soft isolation and Linear issue publishing.
+- THR-245 content invariant v2 sweep: ✅ Complete (2026-04-24) — replaced growth-tracking count assertions with `contentInvariants` usage across five data test suites and retained fixed-enum cardinality assertions with explicit source comments.
