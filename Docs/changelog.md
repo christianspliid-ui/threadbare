@@ -6,6 +6,8 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
 | Date | Files | Change | Why |
 |------|-------|--------|-----|
+| 2026-04-24 | .agents/skills/playtest-interface/SKILL.md, RUBRIC.md, EXPECTED-FINDINGS.md, .gitignore, CLAUDE.md | THR-210: shipped playtest-interface skill — 10-step Chrome MCP runbook + 54-surface assertion rubric derived from IA_SURFACES + baseline noise template. Added .playtest-runs/ to .gitignore. Added playtest-interface to CLAUDE.md Domain Skills table. THR-211 (first playtest run) unblocked. | Interface regression sweep was missing — Cowork had no structured path to verify every IA manifest surface is reachable |
+
 | 2026-04-24 | .claude/skills/pull-work/SKILL.md, .agents/skills/pull-work/SKILL.md, Docs/plans/2026-04-13-linear-coordination-protocol.md | THR-247: added `pullNextReadyForDev` atomic pickup procedure (6-step sequence bundling Rules 1/4/7, MAX_CLAIM_RETRIES=3, documented trace output for retry scenarios); updated Step 4 from 1→3 retries; coordination protocol points CC pickup at wrapper as canonical | Prevent claim-race and silent-drop failures by making the correct path easier than the wrong path |
 
 | 2026-04-24 | src/data/story-beat-templates/chain-weakens.ts | THR-253: Chain Weakens prose polish. Rewrote `title`, `poetProse`, and `witnessFacts` on all five templates to Threadbare aesthetic bar (Poet ≤35 words/1–2 sentences/present tense/one sensory hit + one implication; Witness 3–5 concrete factual bullets). Mortal-voice phases (shield-anvil, reckoning) name the Order of the Grey Watch. Unicode escapes consistent throughout. Removed both `TODO(THR-253)` comments. No engine/UI/test changes. |

@@ -3,6 +3,8 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ THR-210 (2026-04-24) — playtest-interface skill: shipped `.agents/skills/playtest-interface/` with SKILL.md (10-step Chrome MCP runbook, preflight, output contract), RUBRIC.md (54-surface assertion checklist derived from IA_SURFACES — every surface has ≥1 P/S assertion using __DEBUG methods, no pixel assertions), EXPECTED-FINDINGS.md (baseline noise template, seeded empty). Added .playtest-runs/ to .gitignore, playtest-interface to CLAUDE.md Domain Skills table. THR-211 (first playtest run) unblocked. 10682 tests pass, tsc clean, vite build ✓.
+
 ✅ THR-247 (2026-04-24) — pullNextReadyForDev atomic wrapper: named atomic pickup procedure in pull-work skill bundling Rules 1/4/7 (claim → verify → latest-comment-read) with retry-on-silent-drop (MAX_CLAIM_RETRIES=3, NFP #1) and documented trace output format (NFP #2). Step 4 fallback retries upgraded 1→3. Coordination protocol updated. Agents mirror synced.
 
 ✅ THR-253 (2026-04-24) — Chain Weakens prose polish: rewrote `title`, `poetProse`, `witnessFacts` on all five story-beat templates to Threadbare aesthetic bar (Poet ≤35 words, one sensory hit + implication; Witness 3–5 factual bullets; mortal-voice phases name the Order of the Grey Watch by title). Removed both TODO(THR-253) comments. Deferral from THR-225. 10682 tests pass.
