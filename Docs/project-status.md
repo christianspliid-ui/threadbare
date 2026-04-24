@@ -1,6 +1,8 @@
 # Project Status
 > Updated 2026-04-24.
 ## Current Focus
+**THR-234 shipped — model:* label taxonomy extended.** `model:opus-4-6` / `model:opus-4-7` labels created in Linear; CLAUDE.md and linear-coordination-protocol.md updated with routing rules. Ready for Dev queue empty — awaiting Cowork handoff.
+
 **THR-26 shipped — Hex Map Rarity Signifiers.** Mythic (tier 3) and Legendary (tier 4) locations now show rarity halo rings on the hex map. Tier 3: static violet ring at `RARITY_SIGNIFIER_STATIC_OPACITY`. Tier 4: pulsing gold ring following the anomaly shimmer pattern. 8 scene unit tests pass. THR-101 (tavern encounters Phase 3) and THR-254 (dual-voice Chronicle) also shipped earlier this session.
 
 ## Milestone Status
@@ -17,6 +19,9 @@
 - **Procedural Hex Vignettes (Next):** Phases 2-5 queued.
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
+
+## Recent Completions (2026-04-24) — THR-234 label taxonomy
+- **THR-234:** Extended `model:*` Linear label taxonomy — new `model:opus-4-6` (#A78BFA, creative writing) and `model:opus-4-7` (#8B5CF6, architectural Opus) labels. CLAUDE.md CC handoff clause and pickup block updated with explicit version routing. Protocol doc Labels table and Suggested model description updated. Backfill audit: no-op. PR #19.
 
 ## Recent Completions (2026-04-24) — THR-26 rarity signifiers
 - **THR-26:** New `LocationRaritySignifierMesh.ts` scene layer adds Mythic (tier 3 static ring, `#4b0082`) and Legendary (tier 4 pulsing ring, `#d4a017`) rarity halos on the hex map. Wired via `locationRaritySignifierLayerRef` in HexMapV2 (tick after anomaly shimmers, zoom-visibility sync, dispose). `rarityTier` forwarded in `GameView.tsx` locationNodes memo. 10 tunable constants in `rarityVisualConstants.ts`. Render order `8.7` slots between anomaly halo and location icon. 8-case scene unit test passes. `npx tsc --noEmit` clean, `npx vite build` passes, 10682 tests pass.
