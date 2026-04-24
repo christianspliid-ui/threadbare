@@ -510,3 +510,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - THR-206 IA manifest TS module: ✅ Complete (2026-04-24) — shipped src/data/ia-manifest.ts with 59 typed surfaces + openUrl routing hints and posted downstream unblock comments for THR-209/210/212.
 - THR-209 IA manifest audit script: ✅ Complete (2026-04-24) — shipped `scripts/audit-ia-manifest.ts` + `npm run audit-ia` advisory command with definition/mount/state-path checks and intentional-break verification.
 - THR-272 grill-me skill + design governance step 0: ✅ Complete (2026-04-24) — shipped mirrored grill-me skill docs and prepended the non-trivial grill-me pre-pass to the design workflow checklist.
+- THR-243 exemplar index and skill reference centralization: ✅ Complete (2026-04-24) — added Docs/exemplars.md and moved encounter-pipeline exemplar guidance to the centralized index with mirrored skill sync.
