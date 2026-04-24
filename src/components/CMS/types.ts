@@ -9,7 +9,7 @@
 // ── Viewer Types ─────────────────────────────────────────────────
 
 /** Available viewer components. Add new viewers here when data shapes diverge. */
-export type ViewerType = 'table' | 'record' | 'tree' | 'constants' | 'prose' | 'config-manager';
+export type ViewerType = 'table' | 'record' | 'tree' | 'constants' | 'prose' | 'config-manager' | 'ia-surface';
 
 // ── Column Definitions ───────────────────────────────────────────
 

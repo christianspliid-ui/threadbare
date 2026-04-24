@@ -57,6 +57,7 @@ npm run dev    # start Vite dev server with hot reload
 | `?view=codex` | Game codex — browsable catalog of divine actions, possessions, conditions, agreements, mortal actions |
 | `?view=styleguide` | **Visual component reference.** All shared primitives with sample data — see what components look like before building UI. |
 | `?view=cms` | Content browser |
+| `?view=cms#ia-surfaces` | **IA manifest viewer.** Browsable Information Architecture commitment doc — all surfaces with view/mount badges, reads[] tables, and "Open this surface" links. |
 | `?nofog` | Disable fog of war (fog is ON by default). Combinable: `?view=game&seeded&nofog` |
 
 **For all testing, use `?view=game&seeded`** — this skips the remembrance flow, ascendant selection, AND the Meet The First encounter, loading directly into a fully populated game with a bonded First agent. Only use bare `?view=game` when testing identity-less paths, and only test the worldgen/selection/remembrance screens when those screens are the subject of the test.

@@ -18,6 +18,9 @@
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
 
+## Recent Completions (2026-04-24) — THR-212 CMS IA manifest viewer
+- **THR-212:** New `IASurfaceViewer` component surfaces `src/data/ia-manifest.ts` at `?view=cms` under Configuration → "Information Architecture". Filter chips (view/mount), surface list with badges + reader count, detail panel with full `reads[]` table and "Open this surface" button. New `useDebugOpenModal` dev-only hook (tree-shaken in prod) reads `?debug.openModal=<target>` on mount and auto-opens the named modal. Added `openAgentProfileForId` to `useAgentInteraction` return. `CLAUDE.md` Dev Quick-Start URLs updated. 10682 tests pass, tsc clean, vite build ✓, `grep debug.openModal dist/` → NOT FOUND. PR #31.
+
 ## Recent Completions (2026-04-24) — THR-210 playtest-interface skill
 - **THR-210:** Shipped `.agents/skills/playtest-interface/` — SKILL.md (10-step runbook, preflight, output contract), RUBRIC.md (assertion checklist covering all 54 IA manifest surfaces, ≥1 P/S assertion each, using `__DEBUG` methods only), EXPECTED-FINDINGS.md (baseline noise template seeded empty). Added `.playtest-runs/` to `.gitignore`. Added `playtest-interface` row to CLAUDE.md Domain Skills table. THR-211 (first playtest run) unblocked. 10682 tests pass, tsc clean, vite build ✓. PR #29.
 

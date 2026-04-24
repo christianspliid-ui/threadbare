@@ -25,6 +25,7 @@ import { getSphereColor } from '../../data/sphereIcons';
 import { ANOMALY_SPHERE_MAP } from '../../components/HexMapV2/scene/anomalyConstants';
 export type { ViewLevel } from './hooks/useViewNavigation';
 
+import { useDebugOpenModal } from './useDebugOpenModal';
 import { GameErrorBoundary } from '../shared/GameErrorBoundary';
 import { IconButton } from '../shared/IconButton';
 import { AnimateMount } from '../shared/AnimateMount';
@@ -364,6 +365,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     handleAvatarActionClick,
     handleViewProfile,
     handleCloseProfile,
+    openAgentProfileForId,
     closeAllAgentOverlays,
     handleThreadDetailClose,
     selectedHexCoord,
@@ -2357,6 +2359,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
   // ── Stub modal state for non-agent thread types (Plan 16-02) ──
   const [stubModalState, setStubModalState] = useState<{ nodeId: string; category: import('../../engine/retinue').ThreadCategory } | null>(null);
+
+  // ── Debug modal auto-opener (dev-only, tree-shaken in prod) ──
+  useDebugOpenModal(_gameStateRef, {
+    openAgentProfileForId,
+    openStubModal: (nodeId, category) => setStubModalState({ nodeId, category }),
+  });
 
   // ── Auto-pause when encounter modal opens, auto-resume on close ──
   /** Tracks whether the game was running before an encounter modal opened */

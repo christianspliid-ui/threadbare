@@ -12,6 +12,8 @@ import { ConstantsViewer } from './viewers/ConstantsViewer';
 import { ProseViewer } from './viewers/ProseViewer';
 import { TreeViewer } from './viewers/TreeViewer';
 import { ConfigManager } from './viewers/ConfigManager';
+import { IASurfaceViewer } from './viewers/IASurfaceViewer';
+import type { IASurface } from '../../data/ia-manifest';
 
 interface Props {
   entry: ContentRegistryEntry | null;
@@ -116,6 +118,15 @@ function renderViewer(
         <ConfigManager
           groups={entry.data as TunableGroup[]}
           searchQuery={searchQuery}
+        />
+      );
+    case 'ia-surface':
+      return (
+        <IASurfaceViewer
+          data={entry.data as IASurface[]}
+          searchQuery={searchQuery}
+          selectedKey={selectedItemKey}
+          onSelectItem={onSelectItem}
         />
       );
     default:
