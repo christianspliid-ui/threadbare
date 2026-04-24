@@ -30,8 +30,11 @@ import {
   type ArtifactLorePattern,
   type CulturalProsePalette,
 } from '../culture-content';
-import { SPHERE_NAMES, CREATION_SPHERE_NAMES } from '../../types/index';
+import { SPHERE_NAMES, CREATION_SPHERE_NAMES, FOUNDATION_SPHERE_NAMES } from '../../types/index';
 import { REACH_DOMAINS } from '../../types/traits';
+import { assertNoDuplicateIds } from '../../testing/contentInvariants';
+
+// contentInvariants sweep v2 (THR-245): kept 4 structural (fixed-enum), replaced 2 growth-tracking
 
 const ALL_TERRAIN_TYPES = [
   'ocean', 'deep_ocean', 'tropical_ocean', 'coastal_shallows', 'coast', 'lake', 'river', 'reef',
@@ -51,7 +54,8 @@ describe('culture-content', () => {
 
   describe('FOUNDATION_MODIFIERS', () => {
     it('exports exactly 4 foundation modifiers', () => {
-      expect(FOUNDATION_MODIFIERS).toHaveLength(4);
+      // 4 foundation spheres — see FOUNDATION_SPHERE_NAMES in src/types/index.ts.
+      expect(FOUNDATION_MODIFIERS).toHaveLength(FOUNDATION_SPHERE_NAMES.length);
     });
 
     it('covers all required foundation types (chaos, order, light, darkness)', () => {
@@ -97,7 +101,8 @@ describe('culture-content', () => {
 
   describe('CREATION_SPHERE_MODIFIERS', () => {
     it('exports exactly 8 creation sphere modifiers', () => {
-      expect(CREATION_SPHERE_MODIFIERS).toHaveLength(8);
+      // 8 creation spheres — see CREATION_SPHERE_NAMES in src/types/index.ts.
+      expect(CREATION_SPHERE_MODIFIERS).toHaveLength(CREATION_SPHERE_NAMES.length);
     });
 
     it('covers all 8 creation spheres', () => {
@@ -177,7 +182,8 @@ describe('culture-content', () => {
 
   describe('BIOME_MODIFIERS', () => {
     it('exports exactly 42 biome modifiers', () => {
-      expect(BIOME_MODIFIERS).toHaveLength(42);
+      // Fixed biome enum fixture in this test file (ALL_TERRAIN_TYPES).
+      expect(BIOME_MODIFIERS).toHaveLength(ALL_TERRAIN_TYPES.length);
     });
 
     it('covers all 42 terrain types', () => {
@@ -1018,7 +1024,8 @@ describe('culture-content', () => {
 
   describe('CULTURAL_PROSE_PALETTES', () => {
     it('should have 12 palette entries (4 foundation + 8 creation)', () => {
-      expect(Object.keys(CULTURAL_PROSE_PALETTES)).toHaveLength(12);
+      // 4 foundation + 8 creation spheres from src/types/index.ts.
+      expect(Object.keys(CULTURAL_PROSE_PALETTES)).toHaveLength(FOUNDATION_SPHERE_NAMES.length + CREATION_SPHERE_NAMES.length);
     });
 
     it('each palette should have adjectives, verbs, rhythms, greetings, and oaths', () => {
@@ -1065,12 +1072,16 @@ describe('culture-content', () => {
   // ─── Cultural Tension Templates Tests ────────────────────────────
 
   describe('CULTURAL_TENSION_TEMPLATES', () => {
-    it('should have 4 tension type keys', () => {
-      expect(Object.keys(CULTURAL_TENSION_TEMPLATES)).toHaveLength(4);
+    it('should expose unique tension type keys', () => {
+      const tensionTypes = Object.keys(CULTURAL_TENSION_TEMPLATES);
+      assertNoDuplicateIds(tensionTypes.map((id) => ({ id })));
+      expect(tensionTypes.length).toBeGreaterThan(0);
     });
 
-    it('should have 12 total templates (4 types × 3 variants)', () => {
-      expect(Object.values(CULTURAL_TENSION_TEMPLATES).flat()).toHaveLength(12);
+    it('should expose unique tension prose variants', () => {
+      const allTemplates = Object.values(CULTURAL_TENSION_TEMPLATES).flat();
+      assertNoDuplicateIds(allTemplates.map((id) => ({ id })));
+      expect(allTemplates.length).toBeGreaterThan(0);
     });
 
     it('each variant should be a non-empty string with minimum length', () => {

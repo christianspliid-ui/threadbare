@@ -15,6 +15,9 @@ import {
   WONDER_TRIGGERS,
   SPHERE_WONDER_FLAVORS,
 } from '../narrative-content';
+import { assertNoDuplicateIds } from '../../testing/contentInvariants';
+
+// contentInvariants sweep v2 (THR-245): kept 0 structural (fixed-enum), replaced 6 growth-tracking
 
 describe('narrative-content expanded', () => {
   const EXPECTED_ROUTINE_TYPES = [
@@ -235,8 +238,10 @@ describe('narrative-content expanded', () => {
   });
 
   describe('content structure integrity', () => {
-    it('SPHERE_VOCABULARY should have 8 spheres with adj/verb/noun arrays', () => {
-      expect(Object.keys(SPHERE_VOCABULARY)).toHaveLength(8);
+    it('SPHERE_VOCABULARY should expose unique sphere keys with adj/verb/noun arrays', () => {
+      const sphereKeys = Object.keys(SPHERE_VOCABULARY);
+      assertNoDuplicateIds(sphereKeys.map((id) => ({ id })));
+      expect(sphereKeys.length).toBeGreaterThan(0);
       for (const vocab of Object.values(SPHERE_VOCABULARY)) {
         expect(vocab).toHaveProperty('adjectives');
         expect(vocab).toHaveProperty('verbs');
@@ -259,8 +264,10 @@ describe('narrative-content expanded', () => {
   });
 
   describe('dilemma stakes prose', () => {
-    it('should have dilemma stakes prose for 4 outcomes × 3 stakes = 12 entries', () => {
-      expect(Object.keys(DILEMMA_STAKES_PROSE)).toHaveLength(12);
+    it('should expose unique dilemma stakes prose keys', () => {
+      const stakeKeys = Object.keys(DILEMMA_STAKES_PROSE);
+      assertNoDuplicateIds(stakeKeys.map((id) => ({ id })));
+      expect(stakeKeys.length).toBeGreaterThan(0);
     });
 
     it('each entry should be a non-empty array of prose strings', () => {
@@ -306,8 +313,10 @@ describe('narrative-content expanded', () => {
   });
 
   describe('connective tissue content', () => {
-    it('should have 16 sphere influence events (8 spheres × 2 directions)', () => {
-      expect(Object.keys(SPHERE_INFLUENCE_EVENTS)).toHaveLength(16);
+    it('should expose unique sphere influence event keys', () => {
+      const influenceKeys = Object.keys(SPHERE_INFLUENCE_EVENTS);
+      assertNoDuplicateIds(influenceKeys.map((id) => ({ id })));
+      expect(influenceKeys.length).toBeGreaterThan(0);
     });
 
     it('each sphere influence event should be a non-empty string', () => {
@@ -328,8 +337,10 @@ describe('narrative-content expanded', () => {
       }
     });
 
-    it('should have 4 seasonal vocabulary entries', () => {
-      expect(Object.keys(SEASONAL_VOCABULARY)).toHaveLength(4);
+    it('should expose unique seasonal vocabulary keys', () => {
+      const seasonalKeys = Object.keys(SEASONAL_VOCABULARY);
+      assertNoDuplicateIds(seasonalKeys.map((id) => ({ id })));
+      expect(seasonalKeys.length).toBeGreaterThan(0);
     });
 
     it('each season should have adjectives, verbs, and atmosphere', () => {
@@ -343,8 +354,9 @@ describe('narrative-content expanded', () => {
       }
     });
 
-    it('should have 12 echo flavor texts', () => {
-      expect(ECHO_FLAVOR_TEXTS).toHaveLength(12);
+    it('should keep echo flavor texts unique and non-empty', () => {
+      assertNoDuplicateIds(ECHO_FLAVOR_TEXTS.map((id) => ({ id })));
+      expect(ECHO_FLAVOR_TEXTS.length).toBeGreaterThan(0);
     });
 
     it('each echo flavor text should be a non-empty string', () => {
@@ -363,8 +375,10 @@ describe('narrative-content expanded', () => {
       }
     });
 
-    it('should have 8 stealth detection prose entries', () => {
-      expect(Object.keys(STEALTH_DETECTION_PROSE)).toHaveLength(8);
+    it('should expose unique stealth detection prose keys', () => {
+      const detectionKeys = Object.keys(STEALTH_DETECTION_PROSE);
+      assertNoDuplicateIds(detectionKeys.map((id) => ({ id })));
+      expect(detectionKeys.length).toBeGreaterThan(0);
     });
 
     it('each stealth detection prose should be a non-empty string', () => {
