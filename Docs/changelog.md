@@ -6,6 +6,8 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
 | Date | Files | Change | Why |
 |------|-------|--------|-----|
+| 2026-04-24 | src/components/CMS/viewers/IASurfaceViewer.tsx (new), src/components/CMS/types.ts, registry.ts, CMSMainPanel.tsx, src/components/Game/useDebugOpenModal.ts (new), useAgentInteraction.ts, GameView.tsx, CLAUDE.md | THR-212: CMS IA manifest viewer. IASurfaceViewer with filter chips, surface list, detail panel + reads[] table + "Open this surface" button. useDebugOpenModal dev-only hook (tree-shaken prod). openAgentProfileForId export added to useAgentInteraction. |
+
 | 2026-04-24 | .agents/skills/playtest-interface/SKILL.md, RUBRIC.md, EXPECTED-FINDINGS.md, .gitignore, CLAUDE.md | THR-210: shipped playtest-interface skill — 10-step Chrome MCP runbook + 54-surface assertion rubric derived from IA_SURFACES + baseline noise template. Added .playtest-runs/ to .gitignore. Added playtest-interface to CLAUDE.md Domain Skills table. THR-211 (first playtest run) unblocked. | Interface regression sweep was missing — Cowork had no structured path to verify every IA manifest surface is reachable |
 
 | 2026-04-24 | .claude/skills/pull-work/SKILL.md, .agents/skills/pull-work/SKILL.md, Docs/plans/2026-04-13-linear-coordination-protocol.md | THR-247: added `pullNextReadyForDev` atomic pickup procedure (6-step sequence bundling Rules 1/4/7, MAX_CLAIM_RETRIES=3, documented trace output for retry scenarios); updated Step 4 from 1→3 retries; coordination protocol points CC pickup at wrapper as canonical | Prevent claim-race and silent-drop failures by making the correct path easier than the wrong path |
