@@ -4,6 +4,8 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
 ### Recent Changes
 
+| 2026-04-24 | src/data/tavern-encounter-content.ts, src/engine/socialEncounterGeneration.ts, src/data/unified-action-templates.ts, src/engine/__tests__/socialEncounterGeneration.test.ts | THR-101: Phase 3 tavern encounters migration. 10 tavern templates (`tavern.brawl`/overheard_rumor/drinking_contest/bardic_performance/shady_deal/recruiting_drive/the_challenge/confession_over_drinks/merchants_pitch/the_warning) migrated from EncounterTemplate to UnifiedActionTemplate with Threadbare place-bound prose. Systemic wiring: 3+ intel grants, 6 encounter seeds, 7 hidden marks, 4 {?has_faction} branches, 4 {ally:strongest} refs, 2 ActionStepBranch forks. Legacy appliesWound converted to condition_attachment onFailureEffects. Slot priority updated: faction → unified tavern → extra → unified social → legacy. Central registration added. 10659 tests pass. |
+
 | 2026-04-24 | src/engine/phaseComposition.ts, src/data/story-beat-templates/, src/composition-dsl/schema.ts, src/types/trace.ts | THR-254: Chronicle dual-voice for phased events. Phase Chronicle entries now use poetProse/witnessFacts from STORY_BEAT_TEMPLATE_REGISTRY. Added PhaseStoryBeatVoice DSL field, fail-soft trace, 5 Chain Weakens templates migrated, 32 new tests. |
 
 | 2026-04-23 | src/components/CMS/registry.ts, src/engine/deriveLocationActivities.ts | THR-259: Hex Tooltip Murmurs in CMS Registry. Exported MURMUR_TEMPLATES; added hex-murmurs entry (Narrative & Prose, ProseViewer) flattening pulse × activity-category into "pulse / category" keys. |
