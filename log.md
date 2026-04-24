@@ -40,3 +40,4 @@
 - **work** | THR-255 closed: unifiedActionPhases 9331→9362 mismatch is stale; added scenario-scoped event assertion note and reverified full test/type/build gates.
 - **work** | THR-26 shipped: HexMapV2 now renders Mythic/Legendary rarity signifier halos with wired tick/zoom/dispose behavior and passing scene tests.
 - **work** | THR-234 shipped: added model:opus-4-6/model:opus-4-7 labels, updated coordination docs, model:opus backfill audit no-op.
+- **work** | THR-206 shipped: converted IA manifest to typed src/data/ia-manifest.ts (59 surfaces) and unblocked THR-209/210/212.
