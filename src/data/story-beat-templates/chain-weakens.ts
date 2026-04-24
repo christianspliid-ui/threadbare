@@ -16,17 +16,16 @@ export interface CompositionStoryBeatTemplate {
   mood?: string;
 }
 
-// TODO(THR-253): prose polish pass — these are placeholder-plus quality (sufficient to render dual-voice)
 export const CHAIN_WEAKENS_STORY_BEAT_TEMPLATES: CompositionStoryBeatTemplate[] = [
   {
     id: 'story-beat.chain-weakens-rumor',
-    title: 'The Chain Weakens — Whispers',
+    title: 'The Chain Weakens \u2014 A Loose Thread',
     poetProse:
-      'A note in the weave goes slack. Not a sound, not yet — a looseness where a bond used to hold. The air in three settlements turns wrong before anyone remembers why.',
+      'A bond in the weave goes slack, and four villages that share no road wake with the wrong air in their lungs.',
     witnessFacts: [
-      'Rumors surface in settlements with no shared road.',
-      'A warden\u2019s charm cracks in its stone box.',
-      'No one yet says the word \u201cchain.\u201d They think it.',
+      'Unease is reported from settlements with no common road between them.',
+      'The warden of Halvern finds her ward-stone split along its seam.',
+      'No one says the word. Everyone thinks it.',
     ],
     defaultVoice: 'divine',
     sphere: 'entropy',
@@ -34,14 +33,14 @@ export const CHAIN_WEAKENS_STORY_BEAT_TEMPLATES: CompositionStoryBeatTemplate[] 
   },
   {
     id: 'story-beat.chain-weakens-plague-bringer',
-    title: 'The Chain Weakens — The Herald Arrives',
+    title: 'The Chain Weakens \u2014 The Herald',
     poetProse:
-      'Something walks the night roads that is not of the night. Grass withers where it passes; the warden, old and certain, names it by the oldest name \u2014 plague-bringer \u2014 and the air admits the word.',
+      'A figure walks the night roads and the grass withers behind it in a precise band, and a warden names it and the air admits the word.',
     witnessFacts: [
-      'A lone figure sighted on three roads in one watch.',
-      'Vegetation along the route dies in a precise band.',
-      'Warden publicly names the threat: \u201cplague-bringer.\u201d',
-      'The rumor is no longer rumor.',
+      'Scouts sight the same lone figure on three roads within one watch.',
+      'Vegetation dies along its path in a band exactly one stride wide.',
+      'Warden Halvern speaks the old name aloud: \u201cplague-bringer.\u201d',
+      'Nothing has yet turned the herald back.',
     ],
     defaultVoice: 'divine',
     sphere: 'entropy',
@@ -49,14 +48,14 @@ export const CHAIN_WEAKENS_STORY_BEAT_TEMPLATES: CompositionStoryBeatTemplate[] 
   },
   {
     id: 'story-beat.chain-weakens-shield-anvil',
-    title: 'The Chain Weakens — A Counter-Force Rises',
+    title: 'The Chain Weakens \u2014 Oath Wakes',
     poetProse:
-      'An oath older than most of the kingdoms wakes in one living throat. The Shield-Anvil begins \u2014 slowly, because absorption is always slow \u2014 to take the weight of what is coming.',
+      'An oath older than the kingdoms wakes in one living throat, slow because the oath was always slow, certain because it was always certain.',
     witnessFacts: [
-      'A champion of a forgotten order takes the field.',
-      'They assume the Shield-Anvil burden: absorb the herald\u2019s harm into themselves.',
-      'Local aid begins to organise behind them.',
-      'The chain still weakens. There is now something between it and the world.',
+      'A sworn of the Order of the Grey Watch takes the field before the herald.',
+      'They assume the Shield-Anvil burden: the herald\u2019s harm is drawn into their own body.',
+      'Smiths, healers, and farmhands of three villages organise behind them.',
+      'The bond still slackens. There is now a body between it and the world.',
     ],
     defaultVoice: 'mortal',
     sphere: 'order',
@@ -64,13 +63,13 @@ export const CHAIN_WEAKENS_STORY_BEAT_TEMPLATES: CompositionStoryBeatTemplate[] 
   },
   {
     id: 'story-beat.chain-weakens-azath-cracks',
-    title: 'The Chain Weakens — The Structure Cracks',
+    title: 'The Chain Weakens \u2014 The Seal Fails',
     poetProse:
-      'A sound like a mountain\u2019s heartbeat, felt in the bones. The Azath glyph \u2014 the prison-sigil itself \u2014 fractures along a line no tool could have cut. Whatever was held within is no longer fully contained.',
+      'A sound like a mountain\u2019s heartbeat passes through bone, and the Azath glyph splits along a single line no tool could have cut.',
     witnessFacts: [
-      'The Azath glyph visibly cracks along a single line.',
-      'Containment is no longer complete.',
-      'Some of what was held inside is now out. Not all. Yet.',
+      'The Azath glyph fractures along one clean line from apex to base.',
+      'Containment of the prison-sigil is no longer complete.',
+      'Some of what was held within is now out. Not all. Not yet.',
       'This moment will not be undone.',
     ],
     defaultVoice: 'divine',
@@ -78,16 +77,15 @@ export const CHAIN_WEAKENS_STORY_BEAT_TEMPLATES: CompositionStoryBeatTemplate[] 
     mood: 'catastrophic',
   },
   {
-    // TODO(THR-253): prose polish
     id: 'story-beat.chain-weakens-reckoning',
-    title: 'The Chain Weakens — The Reckoning',
+    title: 'The Chain Weakens \u2014 The Reckoning',
     poetProse:
-      'The order has not looked away. They have watched the crack open and they remember what oath meant \u2014 before it meant nothing. They speak the name of what has happened, and in the speaking, begin.',
+      'The order remembers what their oath meant before it meant nothing, and they speak the name of it, and in the speaking, begin.',
     witnessFacts: [
-      'The divine-champion order witnesses the glyph-crack directly.',
-      'They publicly name the event: \u201cThe Chain has broken.\u201d',
-      'Mandates change; old doctrines wake.',
-      'A reckoning has begun.',
+      'The Order of the Grey Watch witnesses the glyph-crack with their own eyes.',
+      'Their First Sworn names the event aloud: \u201cThe Chain has broken.\u201d',
+      'Standing mandates are revoked. Older doctrines wake in their place.',
+      'Riders go out before dawn to every road the herald has touched.',
     ],
     defaultVoice: 'mortal',
     sphere: 'order',
