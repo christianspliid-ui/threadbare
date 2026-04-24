@@ -3,6 +3,8 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ THR-101 (2026-04-24) — Tavern encounters Phase 3 migration: 10 tavern templates migrated to UnifiedActionTemplate with Threadbare place-bound prose (every opening beat at {location} carries ≥1 sensory channel); systemic wiring of 3+ intel grants, 6 encounter seeds, 7 hidden marks, 4 {?has_faction} branches, 4 {ally:strongest} refs, 2 ActionStepBranch forks (shady_deal, the_challenge); legacy appliesWound converted to condition_attachment onFailureEffects; socialEncounterGeneration.ts slot priority updated (faction → unified tavern → extra → unified social → legacy); central registration in unified-action-templates.ts. 10659 tests pass.
+
 ✅ THR-254 (2026-04-24) — Chronicle dual-voice for phased events: `phaseComposition` registry wiring, 5 Chain Weakens templates migrated to dual-voice, `PhaseStoryBeatVoice` DSL field, fail-soft trace, 32 tests.
 
 ✅ THR-259 (2026-04-23) — Hex Tooltip Murmurs in CMS Registry: exported MURMUR_TEMPLATES, added hex-murmurs ProseViewer entry at ?view=cms.
