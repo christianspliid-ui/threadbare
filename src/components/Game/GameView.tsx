@@ -795,6 +795,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         hexCol: n.properties.hexCol as number,
         hexRow: n.properties.hexRow as number,
         name: n.name,
+        rarityTier: n.properties.rarityTier as number | undefined,
         isCapital: n.properties.locationType === 'capital' || n.properties.locationSubtype === 'capital',
         isAnomalyLocation: n.properties.isAnomalyLocation === true,
         discoveredByExploration: n.properties.discoveredByExploration === true,

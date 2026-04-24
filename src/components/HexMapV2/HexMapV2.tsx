@@ -47,6 +47,11 @@ import type { HexStrategicOverlay } from '../../engine/strategicPresentation';
 import { ACTIVITY_ICON_ZOOM_HIDE_THRESHOLD } from '../../data/attention-constants';
 import { createAnomalyShimmerLayer, tickAnomalyShimmers, triggerAnomalyRevealFlash } from './scene/AnomalyShimmerMesh';
 import type { AnomalyShimmerLayerGroup } from './scene/AnomalyShimmerMesh';
+import {
+  createLocationRaritySignifierLayer,
+  tickLocationRaritySignifiers,
+} from './scene/LocationRaritySignifierMesh';
+import type { LocationRaritySignifierLayerGroup } from './scene/LocationRaritySignifierMesh';
 import { tickAgentAnimations } from './agents/agentAnimationState';
 import type { AgentAnimState } from './agents/agentAnimationState';
 import { createMovementTrailMesh, updateTrails } from './scene/MovementTrailMesh';
@@ -507,6 +512,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const armyLayerRef = useRef<ArmyLayerGroup | null>(null);
     const battleIndicatorLayerRef = useRef<BattleIndicatorLayerGroup | null>(null);
     const anomalyShimmerLayerRef = useRef<AnomalyShimmerLayerGroup | null>(null);
+    const locationRaritySignifierLayerRef = useRef<LocationRaritySignifierLayerGroup | null>(null);
 
     // Thread line and activity icon layer refs (Attention UI)
     const threadLineLayerRef = useRef<ThreadLineLayer | null>(null);
@@ -943,6 +949,11 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           scene.add(locationGroup);
           locationGroup.visible = false; // Hidden until zoom reaches regional tier
 
+          const rarityLayer = createLocationRaritySignifierLayer(locations);
+          scene.add(rarityLayer.signifierGroup);
+          rarityLayer.signifierGroup.visible = false;
+          locationRaritySignifierLayerRef.current = rarityLayer;
+
           // Derive location label data from location nodes
           const labelData: LocationLabelData[] = locations.map(loc => ({
             id: `loc-${loc.hexCol}-${loc.hexRow}-${loc.name}`,
@@ -954,6 +965,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           }));
           setLocationLabels(labelData);
         } else {
+          locationRaritySignifierLayerRef.current = null;
           setLocationLabels([]);
         }
         locationGroupRef.current = locationGroup;
@@ -1197,6 +1209,10 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           if (anomalyLayer) {
             tickAnomalyShimmers(anomalyLayer, clock.getElapsedTime());
           }
+          const rarityLayer = locationRaritySignifierLayerRef.current;
+          if (rarityLayer) {
+            tickLocationRaritySignifiers(rarityLayer, clock.getElapsedTime());
+          }
           // Tick thread lines, activity icons, and strategic markers (Attention UI)
           const threadLineLayer = threadLineLayerRef.current;
           const activityIconLayer = activityIconLayerRef.current;
@@ -1395,6 +1411,10 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             anomalyShimmerLayerRef.current.dispose();
             anomalyShimmerLayerRef.current = null;
           }
+          if (locationRaritySignifierLayerRef.current) {
+            locationRaritySignifierLayerRef.current.dispose();
+            locationRaritySignifierLayerRef.current = null;
+          }
           if (threadLineLayerRef.current) {
             threadLineLayerRef.current.dispose();
             threadLineLayerRef.current = null;
@@ -1500,6 +1520,13 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       const visible = locGroup?.visible ?? false;
       anomalyLayer.shimmerGroup.visible = visible;
       anomalyLayer.haloGroup.visible = visible;
+    }, [zoomTier]);
+
+    useEffect(() => {
+      const rarityLayer = locationRaritySignifierLayerRef.current;
+      const locGroup = locationGroupRef.current;
+      if (!rarityLayer) return;
+      rarityLayer.signifierGroup.visible = locGroup?.visible ?? false;
     }, [zoomTier]);
 
     // Toggle organic shore (coastline) mesh visibility
