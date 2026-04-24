@@ -509,3 +509,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - THR-234 model-label split (Opus 4.6 vs 4.7): ✅ Complete (2026-04-24) — created model:opus-4-6/model:opus-4-7, updated coordination docs, and completed scoped model:opus backfill audit (no relabels needed).
 - THR-206 IA manifest TS module: ✅ Complete (2026-04-24) — shipped src/data/ia-manifest.ts with 59 typed surfaces + openUrl routing hints and posted downstream unblock comments for THR-209/210/212.
 - THR-209 IA manifest audit script: ✅ Complete (2026-04-24) — shipped `scripts/audit-ia-manifest.ts` + `npm run audit-ia` advisory command with definition/mount/state-path checks and intentional-break verification.
+- THR-272 grill-me skill + design governance step 0: ✅ Complete (2026-04-24) — shipped mirrored grill-me skill docs and prepended the non-trivial grill-me pre-pass to the design workflow checklist.
