@@ -5,12 +5,14 @@ Derived from `src/data/ia-manifest.ts` → `IA_SURFACES`.
 Each surface gets at least one assertion. Use `__DEBUG` methods — not pixel assertions.
 
 **Methods used:**
-- `window.__DEBUG.getActiveUIState()` — current view, selections, open modals, camera focus, actionDrawerOpen
-- `window.__DEBUG.getOpenModals()` — list of currently-open modal names
-- `window.__DEBUG.snapshotScene()` — counts of mounted scene elements, fog state, layer list
+- `window.__DEBUG.getActiveUIState()` — current view, selections, open modals, camera focus, actionDrawerOpen. **THR-211 note:** only 9 fields are exposed: `view`, `selectedAgentId`, `selectedLocationId`, `selectedFactionId`, `selectedHex`, `openModals`, `actionDrawerOpen`, `scryActive`, `cameraFocusHex`. Fields like `tick`, `essencePool`, `doomClock`, `omenState`, `mandateState`, `ascendantIdentity`, `activeThreadTugs`, `rivalStates`, `phase`, `breadcrumb` are **NOT present** — use DOM or `snapshotScene()` instead for those assertions.
+- `window.__DEBUG.getOpenModals()` — list of currently-open modal names. **Caveats:** (1) returns `[]` on the start page — debug bridge only registers within GameView; use DOM dialog assertions for start page modals. (2) Inline/unregistered surfaces (RivalPanel, OmenDetail) never appear here — use DOM assertions instead.
+- `window.__DEBUG.snapshotScene()` — counts of mounted scene elements, fog state, layer list. **Caveat:** after `setFog()`, wait ~200ms before calling `snapshotScene()` — React state propagation lag causes stale `fogEnabled` if queried immediately.
+- `window.__DEBUG.gotoAgent(id)` — zooms camera to agent hex and opens detail panel. **Requires exact graph node ID** (e.g., `'ind_dev_the_first'`); partial names and display names return `false`.
 - `window.__DEBUG.getEventsSince(tick)` — filtered recentEvents after a given tick
 - `window.__DEBUG.getViewportForHex(col, row)` — hex coord → viewport pixel (null if offscreen)
 - `window.__DEBUG.getHexAtViewport(x, y)` — inverse of above
+- `?debug.openModal=<target>` — URL param that auto-opens a named modal on mount. **Requires 5s wait** after navigation with `?seeded` — game state takes ~5s to initialize; the hook fires at 500ms and silently fails if state is not ready. Supported targets: `agent`, `location`, `faction`.
 
 **Assertion tiers:**
 - **P** (Presence): the reader is mounted / the surface is reachable
