@@ -318,7 +318,7 @@ When Cowork finishes a design and writes the implementation plan:
 
 #### Claude Code coordination lines — what they mean
 
-- **Suggested model** — Cowork's recommendation on which Claude model Claude Code should use. Default is `sonnet`. Use `haiku` for mechanical work with low blast radius (renames, data-row additions, doc updates, boilerplate tests for existing patterns). Use `opus` for architectural judgment or cross-cutting work (touching high-impact files like `engine/graph.ts` or `types/index.ts`, novel node/edge types, new mechanics surface, multi-system refactors, debugging spanning 3+ subsystems). Also apply the matching `model:haiku` / `model:sonnet` / `model:opus` label so the suggestion is visible in list view and queryable.
+- **Suggested model** — Cowork's recommendation on which Claude model Claude Code should use. Default is `sonnet`. Use `haiku` for mechanical work with low blast radius (renames, data-row additions, doc updates, boilerplate tests for existing patterns). Use `opus` for architectural judgment or cross-cutting work (touching high-impact files like `engine/graph.ts` or `types/index.ts`, novel node/edge types, new mechanics surface, multi-system refactors, debugging spanning 3+ subsystems). Also apply the matching `model:haiku` / `model:sonnet` / `model:opus` label so the suggestion is visible in list view and queryable. For Opus-tier work, prefer the versioned labels `model:opus-4-6` (creative-writing work — `cw-*`, `prose-pipeline`, `prose-content-systems`, `prose-vignettes-and-enrichment`, `encounter-pipeline`, `attachment-pipeline`) or `model:opus-4-7` (architectural non-creative work). The bare `model:opus` label remains as a legacy alias for `model:opus-4-7`; if both `model:opus` and a versioned label appear on the same issue, the versioned label wins.
 - **Parallel-safe with** — which other Ready for Dev issues this can run alongside in a separate worktree without merge conflicts. Based on file-surface analysis: do the two issues edit disjoint files? If yes, list the identifiers. If no, list "none." This is a soft signal — Claude Code still verifies before pulling a second issue into a concurrent worktree.
 - **Mutex with** — the files or surfaces this issue will make concurrent work collide on. Free-text (e.g., "any issue touching `src/types/trace.ts`" or "the legacy/unified enrichment boundary"). Used by Cowork when sizing up *future* handoffs — if an issue's Mutex description matches the new issue's surface, they can't parallelize.
 
@@ -453,7 +453,9 @@ Created in Linear (team: Threadbare):
 | Deferral | #E8590C | Work deferred during implementation — must be completed before parent project is done |
 | model:haiku | #E8C547 | Cowork's suggested Claude model — mechanical, low blast radius |
 | model:sonnet | #6366F1 | Cowork's suggested Claude model — default; most engine/content work with a written plan |
-| model:opus | #8B5CF6 | Cowork's suggested Claude model — architectural judgment or cross-cutting work |
+| model:opus-4-6 | #A78BFA | Cowork's suggested Claude model — Opus 4.6, for creative-writing work (cw-*, prose-pipeline, encounter-pipeline, attachment-pipeline). Overrides bare `model:opus`. |
+| model:opus-4-7 | #8B5CF6 | Cowork's suggested Claude model — Opus 4.7 (current default). Explicit version of `model:opus` for architectural non-creative work. |
+| model:opus | #8B5CF6 | Legacy alias for `model:opus-4-7`. Kept for backward compatibility; prefer explicit versioned labels on new handoffs. |
 | review:required | #e11d48 | PR must pass structural review before merge (gated once GitHub Pro + branch protection lands) |
 | review:sample | #f59e0b | Advisory review — runs for signal but never blocks merge |
 
