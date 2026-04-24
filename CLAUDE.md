@@ -272,6 +272,7 @@ Every feature touches three pillars: **Engine** (systems, tick loop, graph), **C
 
 ### Design workflow checklist
 
+- [ ] **Step 0 - grill-me pre-pass (if non-trivial)** — run `grill-me` before drafting when scope is large, multi-pillar, ambiguous, or explicitly requested. Auto-trigger asks permission first; synthesis lands in `Docs/plans/YYYY-MM-DD-<topic>-grill-me.md`.
 - [ ] **Draft** the system design — covering all three pillars (Engine, Content, UI)
 - [ ] **Draft the Brainstorm companion** alongside the plan — same pass, not retrofit. Capture considered alternatives, tensions surfaced, Vision premises invoked.
 - [ ] **Audit** against all 7 NFPs, load-bearing decisions, and rejected approaches
