@@ -12,6 +12,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:regression": "vitest run --passWithNoTests \"regression|contract\"",
+    "drift-scan": "node --experimental-strip-types scripts/drift-scan/index.ts",
     "check:skill-sync": "node scripts/check-skill-sync.js",
     "check:skill-sync:sync": "node scripts/check-skill-sync.js --sync",
     "retro-draft": "esbuild scripts/retro-draft.ts --bundle --platform=node --format=esm --outfile=.cache/retro-draft.mjs --external:crypto --external:fs --external:path --external:process --external:url && node .cache/retro-draft.mjs",
