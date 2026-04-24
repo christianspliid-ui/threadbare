@@ -54,6 +54,9 @@ scripts/playtest.mjs
 # Playwright MCP screenshots
 .playwright-mcp/
 
+# Interface playtest run artifacts (ephemeral diagnostics — surface findings as Linear issues)
+.playtest-runs/
+
 # Temporary verification screenshots (root level)
 *.png
 !public/**/*.png
