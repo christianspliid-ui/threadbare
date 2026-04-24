@@ -499,3 +499,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - THR-259 Hex Tooltip Murmurs CMS registry: ✅ Complete (2026-04-23/24) — exported MURMUR_TEMPLATES, added hex-murmurs CMS entry (Narrative & Prose, ProseViewer) flattening pulse × activity-category. All murmur lines browsable at ?view=cms.
 - CI workflow fix (claude-review): ✅ Complete (2026-04-24) — removed persist-credentials:false from checkout (blocking git fetch), replaced grep-based Rule 8 check with exit-code check. Impediment #80 resolved. PR #10.
 - THR-255 unifiedActionPhases tick-event mismatch: ✅ Complete (2026-04-24) — no repro on current main; documented scenario-scoped event assertion intent and closed the stale deferral.
+- THR-26 hex map rarity signifiers: ✅ Complete (2026-04-24) — added Mythic/Legendary rarity halo layer in HexMapV2 with render-order wiring, ticked legendary pulse behavior, and 8-case scene unit coverage.

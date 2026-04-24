@@ -1,7 +1,7 @@
 # Project Status
 > Updated 2026-04-24.
 ## Current Focus
-**THR-101 shipped — Phase 3 tavern encounters migration.** 10 tavern templates rewritten to UnifiedActionTemplate with Threadbare place-bound prose (every opening beat at {location} carries ≥1 sensory channel) and full systemic payload (3+ intel grants, 6 encounter seeds, 7 hidden marks, 4 {?has_faction} branches, 2 ActionStepBranch forks). THR-254 also shipped (dual-voice Chronicle).
+**THR-26 shipped — Hex Map Rarity Signifiers.** Mythic (tier 3) and Legendary (tier 4) locations now show rarity halo rings on the hex map. Tier 3: static violet ring at `RARITY_SIGNIFIER_STATIC_OPACITY`. Tier 4: pulsing gold ring following the anomaly shimmer pattern. 8 scene unit tests pass. THR-101 (tavern encounters Phase 3) and THR-254 (dual-voice Chronicle) also shipped earlier this session.
 
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
@@ -13,10 +13,13 @@
 - **Social Systems Expansion (Now):** THR-28/27/30/51/29/41/34/31/35 shipped. ✅ THR-254 dual-voice Chronicle phased events (PR #13). THR-78 queued.
 - **Thematic Pressure & Living World (Next):** THR-19 Omen Agenda shipped. ✅ THR-122/125/126/80/128/127 shipped. Nothing left in Ready for Dev. THR-87 (cool failure prose) blocked by THR-116.
 - **Agent Success Redesign (Next):** Phases 1-4 shipped. Phases 5-8 queued.
-- **Rarity Model (Next):** Three deferred Phase D items.
+- **Rarity Model (Next):** ✅ THR-26 hex map rarity signifiers shipped. Two deferred Phase D items remaining.
 - **Procedural Hex Vignettes (Next):** Phases 2-5 queued.
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
+
+## Recent Completions (2026-04-24) — THR-26 rarity signifiers
+- **THR-26:** New `LocationRaritySignifierMesh.ts` scene layer adds Mythic (tier 3 static ring, `#4b0082`) and Legendary (tier 4 pulsing ring, `#d4a017`) rarity halos on the hex map. Wired via `locationRaritySignifierLayerRef` in HexMapV2 (tick after anomaly shimmers, zoom-visibility sync, dispose). `rarityTier` forwarded in `GameView.tsx` locationNodes memo. 10 tunable constants in `rarityVisualConstants.ts`. Render order `8.7` slots between anomaly halo and location icon. 8-case scene unit test passes. `npx tsc --noEmit` clean, `npx vite build` passes, 10682 tests pass.
 
 ## Recent Completions (2026-04-24) — THR-101 tavern encounters Phase 3
 - **THR-101:** 10 tavern templates (`tavern.brawl`, `overheard_rumor`, `drinking_contest`, `bardic_performance`, `shady_deal`, `recruiting_drive`, `the_challenge`, `confession_over_drinks`, `merchants_pitch`, `the_warning`) migrated to UnifiedActionTemplate. Threadbare place-bound voice, systemic wiring (intel/seeds/marks/faction-branches/ActionStepBranch), legacy `appliesWound` converted to `condition_attachment` on failure. Engine: slot priority faction → unified tavern → extra → unified social → legacy. Central registration in `unified-action-templates.ts`. 10659 tests pass.
@@ -30,7 +33,7 @@
 - **THR-36:** Reputation Traits CMS. 17 traits browsable at `?view=cms`.
 
 ## Archived to project-history.md
-- THR-101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
+- THR-26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
 
 
 ## Active Backlog Ideas
