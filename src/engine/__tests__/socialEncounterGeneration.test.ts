@@ -18,7 +18,7 @@ import {
   REPUTATION_BOND_SHIFT_MAX,
 } from '../socialEncounterGeneration';
 import { SOCIAL_ENCOUNTER_TEMPLATES } from '../../data/social-encounter-content';
-import { TAVERN_ENCOUNTER_TEMPLATES } from '../../data/tavern-encounter-content';
+import { TAVERN_UNIFIED_ENCOUNTER_TEMPLATES } from '../../data/tavern-encounter-content';
 import { TAVERN_SUBLOCATION_TYPE_ID } from '../sublocation';
 import { generateTavernName } from '../../data/tavern-names';
 import { WorldGraph } from '../graph';
@@ -354,7 +354,7 @@ describe('socialEncounterGeneration', () => {
       const dm = makeDistanceMatrix([['town-1', 'town-1', 0]]);
       const candidates = generateSocialCandidates(graph, 'agent-a', 'tavern-1', dm);
 
-      const tavernTemplateIds = new Set(TAVERN_ENCOUNTER_TEMPLATES.map(t => t.id));
+      const tavernTemplateIds = new Set(TAVERN_UNIFIED_ENCOUNTER_TEMPLATES.map(t => t.id));
       const hasTavernTemplate = candidates.some(c => tavernTemplateIds.has(c.templateId));
       expect(hasTavernTemplate).toBe(true);
     });
@@ -367,7 +367,7 @@ describe('socialEncounterGeneration', () => {
       const dm = makeDistanceMatrix([['town-1', 'town-1', 0]]);
       const candidates = generateSocialCandidates(graph, 'agent-a', 'town-1', dm);
 
-      const tavernTemplateIds = new Set(TAVERN_ENCOUNTER_TEMPLATES.map(t => t.id));
+      const tavernTemplateIds = new Set(TAVERN_UNIFIED_ENCOUNTER_TEMPLATES.map(t => t.id));
       for (const c of candidates) {
         expect(tavernTemplateIds.has(c.templateId)).toBe(false);
       }
@@ -451,62 +451,51 @@ describe('socialEncounterGeneration', () => {
 
   describe('tavern encounter templates content', () => {
     it('contains exactly 10 templates', () => {
-      expect(TAVERN_ENCOUNTER_TEMPLATES.length).toBeGreaterThanOrEqual(10);
+      expect(TAVERN_UNIFIED_ENCOUNTER_TEMPLATES.length).toBeGreaterThanOrEqual(10);
     });
 
-    it('all templates have sublocationTypes containing TAVERN_SUBLOCATION_TYPE_ID', () => {
-      for (const tmpl of TAVERN_ENCOUNTER_TEMPLATES) {
-        expect(tmpl.sublocationTypes).toBeDefined();
-        expect(tmpl.sublocationTypes).toContain(TAVERN_SUBLOCATION_TYPE_ID);
+    it('all templates gate on sublocation-type.tavern via locationSubtypes', () => {
+      for (const tmpl of TAVERN_UNIFIED_ENCOUNTER_TEMPLATES) {
+        expect(tmpl.locationSubtypes).toBeDefined();
+        expect(tmpl.locationSubtypes).toContain(TAVERN_SUBLOCATION_TYPE_ID);
       }
     });
 
-    it('all templates target settlement locations', () => {
-      const settlements = ['hamlet', 'town', 'city', 'capital'];
-      for (const tmpl of TAVERN_ENCOUNTER_TEMPLATES) {
-        const hasSettlement = tmpl.locationTypes.some(lt => settlements.includes(lt));
-        expect(hasSettlement).toBe(true);
-      }
-    });
-
-    it('all templates have required fields', () => {
-      for (const tmpl of TAVERN_ENCOUNTER_TEMPLATES) {
+    it('all templates have required UnifiedActionTemplate fields', () => {
+      for (const tmpl of TAVERN_UNIFIED_ENCOUNTER_TEMPLATES) {
         expect(tmpl.id).toBeTruthy();
         expect(tmpl.name).toBeTruthy();
         expect(tmpl.steps.length).toBeGreaterThanOrEqual(1);
-        expect(tmpl.reachPrimary).toBeTruthy();
-        expect(tmpl.reachSecondary).toBeTruthy();
-        expect(tmpl.encounterType).toBeTruthy();
-        expect(tmpl.threatRating).toBeTruthy();
+        expect(tmpl.reach).toBeTruthy();
+        expect(tmpl.crudType).toBeTruthy();
+        expect(tmpl.rarityTier).toBeGreaterThan(0);
         expect(tmpl.motivations.length).toBeGreaterThan(0);
       }
     });
 
-    it('all steps have required fields', () => {
-      for (const tmpl of TAVERN_ENCOUNTER_TEMPLATES) {
-        for (const step of tmpl.steps) {
-          expect(step.id).toBeTruthy();
-          expect(step.name).toBeTruthy();
+    it('all steps have required UnifiedActionTemplate fields', () => {
+      for (const tmpl of TAVERN_UNIFIED_ENCOUNTER_TEMPLATES) {
+        for (const stepOrBranch of tmpl.steps) {
+          const step = 'branchOnStep' in stepOrBranch ? stepOrBranch.fallback : stepOrBranch;
           expect(step.reach).toBeTruthy();
           expect(step.difficulty).toBeGreaterThan(0);
-          expect(step.duration).toBeGreaterThan(0);
-          expect(step.narrative).toBeTruthy();
-          expect(step.onSuccess).toBeTruthy();
-          expect(step.onFailure).toBeTruthy();
+          expect(step.duration).toBeTruthy();
+          expect((step.duration as { min: number }).min).toBeGreaterThan(0);
+          expect(step.narrativeTemplate).toBeTruthy();
         }
       }
     });
 
     it('template IDs are unique and all start with "tavern."', () => {
-      assertNoDuplicateIds(TAVERN_ENCOUNTER_TEMPLATES);
-      const ids = TAVERN_ENCOUNTER_TEMPLATES.map(t => t.id);
+      assertNoDuplicateIds(TAVERN_UNIFIED_ENCOUNTER_TEMPLATES);
+      const ids = TAVERN_UNIFIED_ENCOUNTER_TEMPLATES.map(t => t.id);
       for (const id of ids) {
         expect(id.startsWith('tavern.')).toBe(true);
       }
     });
 
-    it('TAVERN_ENCOUNTER_TEMPLATES has no duplicate IDs', () => {
-      assertNoDuplicateIds(TAVERN_ENCOUNTER_TEMPLATES);
+    it('TAVERN_UNIFIED_ENCOUNTER_TEMPLATES has no duplicate IDs', () => {
+      assertNoDuplicateIds(TAVERN_UNIFIED_ENCOUNTER_TEMPLATES);
     });
   });
 

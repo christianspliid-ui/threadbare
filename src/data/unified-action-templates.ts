@@ -24,6 +24,7 @@ import { ACTION_TEMPLATES, type ActionTemplateData } from './action-template-con
 import { ENCOUNTER_TEMPLATES, getAnyEncounterById } from './encounter-content';
 import { ANOMALY_ENCOUNTER_TEMPLATES } from './encounter-anomaly-content';
 import { SOCIAL_ENCOUNTER_TEMPLATES } from './social-encounter-content';
+import { TAVERN_UNIFIED_ENCOUNTER_TEMPLATES } from './tavern-encounter-content';
 import { FACTION_ENCOUNTER_META, getFactionEncounterById } from './faction-encounter-content';
 import { ARMY_ENCOUNTER_META, getArmyEncounterById } from './army-encounter-content';
 import { MONSTER_ENCOUNTER_TEMPLATES } from './monster-encounter-content';
@@ -4126,6 +4127,8 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   TS_PROMOTION_TEMPLATE,
   // Social encounters — migrated to UnifiedActionTemplate (THR-100 Phase 3)
   ...SOCIAL_ENCOUNTER_TEMPLATES,
+  // Tavern encounters — migrated to UnifiedActionTemplate (THR-101 Phase 3)
+  ...TAVERN_UNIFIED_ENCOUNTER_TEMPLATES,
   // Faction Action encounters — THR-29 (commission quest, rivalry, bounty, conclave, etc.)
   ...FACTION_ACTION_ENCOUNTER_TEMPLATES,
   RIVAL_SHRINE_BETRAYAL_TEMPLATE,

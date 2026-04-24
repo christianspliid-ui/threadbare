@@ -50,7 +50,7 @@ import { isActionStepBranch } from '../types/unifiedAction';
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { SOCIAL_ENCOUNTER_TEMPLATES } from '../data/social-encounter-content';
 import { SOCIAL_SCENE_TEMPLATES } from '../data/social-scene-templates';
-import { TAVERN_ENCOUNTER_TEMPLATES } from '../data/tavern-encounter-content';
+import { TAVERN_UNIFIED_ENCOUNTER_TEMPLATES } from '../data/tavern-encounter-content';
 import { SECRET_DISCOVERY_ENCOUNTER_TEMPLATES } from '../data/secret-encounter-content';
 import { FACTION_SOCIAL_TEMPLATES } from '../data/faction-encounter-content';
 import { FACTION_DEFINITIONS } from '../data/faction-definitions';
@@ -212,6 +212,15 @@ export function generateSocialCandidates(
     const matchingUnifiedSocial: UnifiedActionTemplate[] = SOCIAL_ENCOUNTER_TEMPLATES
       .filter(tmpl => (tmpl.locationSubtypes ?? []).includes(locationType as never));
 
+    // Filter UnifiedActionTemplate tavern encounters (THR-101 Phase 3).
+    // Tavern templates gate by sublocation-type.tavern; engine dispatches them
+    // only when agent is at a tavern sublocation (atTavern === true).
+    const matchingUnifiedTavern: UnifiedActionTemplate[] = atTavern
+      ? TAVERN_UNIFIED_ENCOUNTER_TEMPLATES.filter(tmpl =>
+          (tmpl.locationSubtypes ?? []).includes(TAVERN_SUBLOCATION_TYPE_ID as never),
+        )
+      : [];
+
     // Filter legacy EncounterTemplate social scenes + secret discovery by locationTypes
     const matchingTemplates = [
       ...SOCIAL_SCENE_TEMPLATES,
@@ -219,13 +228,11 @@ export function generateSocialCandidates(
       ...SECRET_DISCOVERY_ENCOUNTER_TEMPLATES.filter(t => !t.sublocationTypes?.length),
     ].filter(tmpl => tmpl.locationTypes.includes(locationType));
 
-    // Tavern-exclusive templates (highest priority when agent is at a tavern)
+    // Legacy tavern-exclusive templates — retained for secret-discovery only
+    // (THR-30). Tavern-specific templates migrated to UnifiedActionTemplate in
+    // THR-101; see matchingUnifiedTavern above.
     const extraTemplates: EncounterTemplate[] = atTavern
       ? [
-          ...TAVERN_ENCOUNTER_TEMPLATES.filter(tmpl =>
-            tmpl.sublocationTypes?.includes(TAVERN_SUBLOCATION_TYPE_ID)
-            && tmpl.locationTypes.includes(locationType),
-          ),
           // Secret discovery templates that require tavern sublocation (THR-30)
           ...SECRET_DISCOVERY_ENCOUNTER_TEMPLATES.filter(tmpl =>
             tmpl.sublocationTypes?.includes(TAVERN_SUBLOCATION_TYPE_ID)
@@ -239,14 +246,21 @@ export function generateSocialCandidates(
       graph, agentId, targetAgentId, locationType,
     );
 
-    // Slot priority: faction (reserved) → extra/tavern → unified social → legacy scene
+    // Slot priority: faction (reserved) → unified tavern → extra (secret-discovery)
+    //   → unified social → legacy scene
     const factionSlots = Math.min(factionTemplates.length, RESERVED_FACTION_SOCIAL_SLOTS);
     const slotsAfterFaction = Math.max(0, MAX_SOCIAL_CANDIDATES_PER_AGENT - factionSlots);
 
-    // Tavern templates fill next (highest priority for location-specific encounters)
     const selectedFaction = factionTemplates.slice(0, factionSlots);
-    const selectedExtra = extraTemplates.slice(0, slotsAfterFaction);
-    const slotsAfterExtra = Math.max(0, slotsAfterFaction - selectedExtra.length);
+
+    // Unified tavern templates fill next when at a tavern (highest priority for
+    // location-specific encounters — THR-101).
+    const selectedUnifiedTavern = matchingUnifiedTavern.slice(0, slotsAfterFaction);
+    const slotsAfterTavern = Math.max(0, slotsAfterFaction - selectedUnifiedTavern.length);
+
+    // Legacy tavern-adjacent templates (secret-discovery only) fill next
+    const selectedExtra = extraTemplates.slice(0, slotsAfterTavern);
+    const slotsAfterExtra = Math.max(0, slotsAfterTavern - selectedExtra.length);
 
     // Unified social templates (migrated 14 main templates) fill remaining
     const selectedUnified = matchingUnifiedSocial.slice(0, slotsAfterExtra);
@@ -282,7 +296,41 @@ export function generateSocialCandidates(
       });
     }
 
-    // Emit extra (tavern) candidates (legacy format)
+    // Emit unified tavern candidates (THR-101 Phase 3).
+    // Always resident at the tavern sublocation (agentLocationId when atTavern).
+    for (const tmpl of selectedUnifiedTavern) {
+      const stepReaches = tmpl.steps.map(s =>
+        (isActionStepBranch(s) ? s.fallback.reach : s.reach),
+      );
+      const stepDifficulties = tmpl.steps.map(s =>
+        (isActionStepBranch(s) ? s.fallback.difficulty : s.difficulty),
+      );
+      candidates.push({
+        templateId: tmpl.id,
+        locationId: targetLocationId,
+        sublocationId: atTavern ? agentLocationId : null,
+        sublocationTypeId: atTavern ? TAVERN_SUBLOCATION_TYPE_ID : null,
+        targetAgentId,
+        reachPrimary: tmpl.reach,
+        reachSecondary: tmpl.reach,
+        threatRating: RARITY_TO_THREAT[tmpl.rarityTier] ?? 'trivial',
+        encounterType: CRUD_TO_ENCOUNTER_TYPE[tmpl.crudType] ?? 'assist',
+        motivations: [...(tmpl.motivations ?? [])],
+        visibleTo: undefined,
+        requiresPresence: true,
+        remotePenalty: 0,
+        remoteMaxRange: undefined,
+        sphereAffinity: undefined,
+        questPriority: questPriorityMultiplier,
+        totalTickCost: computeTotalTickCostUnified(tmpl),
+        successRewardEstimate: computeRewardEstimateUnified(tmpl),
+        stepCount: tmpl.steps.length,
+        stepDifficulties,
+        stepReaches,
+      });
+    }
+
+    // Emit extra (legacy secret-discovery) candidates
     for (const tmpl of selectedExtra) {
       candidates.push({
         templateId: tmpl.id,
