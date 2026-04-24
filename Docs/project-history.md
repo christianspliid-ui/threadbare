@@ -500,3 +500,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - CI workflow fix (claude-review): ✅ Complete (2026-04-24) — removed persist-credentials:false from checkout (blocking git fetch), replaced grep-based Rule 8 check with exit-code check. Impediment #80 resolved. PR #10.
 - THR-255 unifiedActionPhases tick-event mismatch: ✅ Complete (2026-04-24) — no repro on current main; documented scenario-scoped event assertion intent and closed the stale deferral.
 - THR-26 hex map rarity signifiers: ✅ Complete (2026-04-24) — added Mythic/Legendary rarity halo layer in HexMapV2 with render-order wiring, ticked legendary pulse behavior, and 8-case scene unit coverage.
+- THR-234 model-label split (Opus 4.6 vs 4.7): ✅ Complete (2026-04-24) — created model:opus-4-6/model:opus-4-7, updated coordination docs, and completed scoped model:opus backfill audit (no relabels needed).

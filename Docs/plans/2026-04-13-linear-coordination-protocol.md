@@ -453,7 +453,9 @@ Created in Linear (team: Threadbare):
 | Deferral | #E8590C | Work deferred during implementation — must be completed before parent project is done |
 | model:haiku | #E8C547 | Cowork's suggested Claude model — mechanical, low blast radius |
 | model:sonnet | #6366F1 | Cowork's suggested Claude model — default; most engine/content work with a written plan |
-| model:opus | #8B5CF6 | Cowork's suggested Claude model — architectural judgment or cross-cutting work |
+| model:opus-4-6 | #A78BFA | Cowork's suggested Claude model — Opus 4.6, for creative-writing work (cw-*, prose-pipeline, encounter-pipeline, attachment-pipeline). Overrides bare model:opus. |
+| model:opus-4-7 | #8B5CF6 | Cowork's suggested Claude model — Opus 4.7 (current default). Explicit version of model:opus for architectural non-creative work. |
+| model:opus | #8B5CF6 | Legacy alias for model:opus-4-7. Kept for backward compatibility; prefer explicit versioned labels on new handoffs. |
 | review:required | #e11d48 | PR must pass structural review before merge (gated once GitHub Pro + branch protection lands) |
 | review:sample | #f59e0b | Advisory review — runs for signal but never blocks merge |
 
