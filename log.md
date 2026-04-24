@@ -43,3 +43,4 @@
 - **work** | THR-206 shipped: converted IA manifest to typed src/data/ia-manifest.ts (59 surfaces) and unblocked THR-209/210/212.
 - **work** | THR-247 shipped: pull-work atomic pickup wrapper documented with retry traces + protocol wrapper-first guidance; PR #26 merged.
 - **work** | THR-209 shipped: added scripts/audit-ia-manifest.ts + npm run audit-ia advisory structural checks for IA reader definitions/mounts/state-path hints.
+- **work** | THR-272 shipped: added mirrored grill-me skill docs and design governance checklist step 0 pre-pass.

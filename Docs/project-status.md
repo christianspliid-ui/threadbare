@@ -1,7 +1,7 @@
 # Project Status
 > Updated 2026-04-24.
 ## Current Focus
-**THR-210 shipped — playtest-interface skill.** Cowork now has a runnable interface regression sweep: 10-step Chrome MCP runbook + 54-surface rubric derived from `IA_SURFACES` + baseline noise template. THR-211 (first run) is unblocked and ready for Cowork.
+**THR-272 shipped — grill-me skill (first-wave 2/4).** Adversarial design-concept extraction pre-pass with conversational default, async-batch mode, and synthesis artifact. CLAUDE.md design governance step 0 added. Next: THR-271 (Ubiquitous Language v1, model:opus), which unblocks THR-273 (drift scan) and THR-274 (retro cadence sync).
 
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
@@ -18,34 +18,17 @@
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
 
+## Recent Completions (2026-04-24) — THR-272 grill-me skill
+- **THR-272:** Shipped `.claude/skills/grill-me/SKILL.md` + `.agents/skills/grill-me/` mirror. 4 invocation triggers (explicit, effort >1 day, multi-pillar, high-ambiguity), conversational default, async-batch mode (generates `Docs/plans/*-grill-me.md`), "I don't know" parking + grey-zone handling, synthesis artifact with 7 required sections. CLAUDE.md design governance checklist gains step 0. First-wave 2/4. PR #32.
+
 ## Recent Completions (2026-04-24) — THR-212 CMS IA manifest viewer
 - **THR-212:** New `IASurfaceViewer` component surfaces `src/data/ia-manifest.ts` at `?view=cms` under Configuration → "Information Architecture". Filter chips (view/mount), surface list with badges + reader count, detail panel with full `reads[]` table and "Open this surface" button. New `useDebugOpenModal` dev-only hook (tree-shaken in prod) reads `?debug.openModal=<target>` on mount and auto-opens the named modal. Added `openAgentProfileForId` to `useAgentInteraction` return. `CLAUDE.md` Dev Quick-Start URLs updated. 10682 tests pass, tsc clean, vite build ✓, `grep debug.openModal dist/` → NOT FOUND. PR #31.
 
 ## Recent Completions (2026-04-24) — THR-210 playtest-interface skill
 - **THR-210:** Shipped `.agents/skills/playtest-interface/` — SKILL.md (10-step runbook, preflight, output contract), RUBRIC.md (assertion checklist covering all 54 IA manifest surfaces, ≥1 P/S assertion each, using `__DEBUG` methods only), EXPECTED-FINDINGS.md (baseline noise template seeded empty). Added `.playtest-runs/` to `.gitignore`. Added `playtest-interface` row to CLAUDE.md Domain Skills table. THR-211 (first playtest run) unblocked. 10682 tests pass, tsc clean, vite build ✓. PR #29.
 
-## Recent Completions (2026-04-24) — THR-247 pullNextReadyForDev atomic wrapper
-- **THR-247:** Added `pullNextReadyForDev` named atomic procedure to the pull-work skill, bundling Rules 1/4/7 (claim + verify + latest-comment-read) into a single sequence with retry-on-silent-drop (`MAX_CLAIM_RETRIES = 3`). Documented trace output format satisfies NFP #2 inspectability. Step 4 fallback upgraded from 1 to 3 retries. Coordination protocol updated to point CC pickup at the wrapper as canonical. Agents mirror synced. 10682 tests pass, tsc clean, vite build succeeds. PR #26.
-
-## Recent Completions (2026-04-24) — THR-253 Chain Weakens prose polish
-- **THR-253:** Rewrote `title`, `poetProse`, and `witnessFacts` on all five Chain Weakens story-beat templates (chain-weakens-rumor, chain-weakens-plague-bringer, chain-weakens-shield-anvil, chain-weakens-azath-cracks, chain-weakens-reckoning). Poet voice: single sentence, present tense, ≤35 words, one sensory hit + one implication. Witness voice: 3–5 concrete factual bullets. Mortal-voice phases name the Order of the Grey Watch by title. Unicode escapes throughout. Removed both `TODO(THR-253)` comments. 10682 tests pass, tsc clean, vite build succeeds. PR #25 with auto-merge enabled.
-
-## Recent Completions (2026-04-24) — THR-26 rarity signifiers
-- **THR-26:** New `LocationRaritySignifierMesh.ts` scene layer adds Mythic (tier 3 static ring, `#4b0082`) and Legendary (tier 4 pulsing ring, `#d4a017`) rarity halos on the hex map. Wired via `locationRaritySignifierLayerRef` in HexMapV2 (tick after anomaly shimmers, zoom-visibility sync, dispose). `rarityTier` forwarded in `GameView.tsx` locationNodes memo. 10 tunable constants in `rarityVisualConstants.ts`. Render order `8.7` slots between anomaly halo and location icon. 8-case scene unit test passes. `npx tsc --noEmit` clean, `npx vite build` passes, 10682 tests pass.
-
-## Recent Completions (2026-04-24) — THR-101 tavern encounters Phase 3
-- **THR-101:** 10 tavern templates (`tavern.brawl`, `overheard_rumor`, `drinking_contest`, `bardic_performance`, `shady_deal`, `recruiting_drive`, `the_challenge`, `confession_over_drinks`, `merchants_pitch`, `the_warning`) migrated to UnifiedActionTemplate. Threadbare place-bound voice, systemic wiring (intel/seeds/marks/faction-branches/ActionStepBranch), legacy `appliesWound` converted to `condition_attachment` on failure. Engine: slot priority faction → unified tavern → extra → unified social → legacy. Central registration in `unified-action-templates.ts`. 10659 tests pass.
-
-## Recent Completions (2026-04-24) — CI workflow fixes
-- **claude-review.yml:** Removed `persist-credentials:false` from checkout (was blocking `git fetch origin main`). Replaced grep-based Rule 8 check with exit-code check (branch protection error messages weren't matching old patterns). Impediment #80 resolved.
-
-## Recent Completions (2026-04-23/24) — THR-257 + THR-259 + THR-36
-- **THR-257:** CLI aftermath hook — shared context resolver, CLI `aftermath list/pick` + `run --auto-aftermath`, debug bridge `listAftermathReactions/pickAftermathReaction`, unified GameView modal path. Unattended aftermath verification now possible.
-- **THR-259:** Hex Tooltip Murmurs CMS. `MURMUR_TEMPLATES` exported; `hex-murmurs` entry (Narrative & Prose, ProseViewer). All pulse × activity-category rows at `?view=cms`.
-- **THR-36:** Reputation Traits CMS. 17 traits browsable at `?view=cms`.
-
 ## Archived to project-history.md
-- THR-210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
+- THR-272/212/210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
 
 
 ## Active Backlog Ideas
