@@ -45,3 +45,4 @@
 - **work** | THR-209 shipped: added scripts/audit-ia-manifest.ts + npm run audit-ia advisory structural checks for IA reader definitions/mounts/state-path hints.
 - **work** | THR-272 shipped: added mirrored grill-me skill docs and design governance checklist step 0 pre-pass.
 - **work** | THR-243 shipped: added Docs/exemplars.md and centralized encounter-pipeline exemplar references to prevent drift.
+- **work** | THR-273 shipped: weekly drift scan workflow + four-signal script (S1-S4) with fail-soft isolation, synthetic tests, and drift-scan issue publishing.
