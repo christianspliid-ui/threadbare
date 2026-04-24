@@ -994,3 +994,42 @@ Every link in this chain matters. Great prose without systemic wiring is a book 
 - `{culture}` placeholder in prose resolves to the demonym — which is now phonetically generated, not a template word.
 
 **Debug Panel Cultures tab** (`DebugTabContent` → `'cultures'` → `CulturePhoneticsInspector`) shows live phoneme inventory + sample names per culture with Re-roll samples.
+
+
+---
+
+## 8. Phase Story-Beats (THR-254)
+
+Phased events (e.g. The Chain Weakens, THR-225) emit `ChronicleEntry` records when a phase activates. Since THR-254, these entries carry dual-voice content — `poetProse` (divine/cosmic register) and `witnessFacts` (mortal/grounded bullets) — sourced from a static template registry.
+
+### How to author phase story-beats
+
+1. **Define templates** in a per-composition file: `src/data/story-beat-templates/<your-event>.ts`.
+   - Implement `CompositionStoryBeatTemplate` (from `chain-weakens.ts`).
+   - Provide both `poetProse` and `witnessFacts` when possible.
+   - Set `defaultVoice: "divine" | "mortal"` to guide the phase runner.
+   - Set `sphere: SphereName` (never `"void"` — map to `"entropy"` or another canonical sphere).
+   - Set `mood` (e.g. `"uneasy"`, `"dread"`, `"resolute"`).
+2. **Register templates** by adding them to `STORY_BEAT_TEMPLATE_REGISTRY` in `src/data/story-beat-templates/index.ts`.
+3. **Wire to phases** in the recipe (`.recipe.ts`): each `storyBeat` block takes an optional `voice: "divine" | "mortal"` field that overrides the template's `defaultVoice`.
+
+### Voice convention
+
+| Voice | ChronicleEntry field | Register | When to use |
+|---|---|---|---|
+| `divine` | `poetProse` | Cosmic/emotional, italic serif | The ascendant perceives before mortals name it |
+| `mortal` | `witnessFacts` | Factual bullets, body sans | Ground-level action, mortal agency |
+
+Both fields can be populated regardless of `voice` hint — the hint is a lead indicator, not an exclusion.
+
+### Fail-soft
+
+If a `storyBeat.template` id is not in the registry, `makePhaseChronicleEntry` falls back to `phase.rationale` as prose and emits a `composition.story_beat_template_missing` trace. No crash.
+
+### Constants
+
+| Constant | Default | File |
+|---|---|---|
+| `STORY_BEAT_DEFAULT_MOOD` | `"ominous"` | `src/data/composition-config.ts` |
+| `STORY_BEAT_DEFAULT_SPHERE` | `"entropy"` | same |
+| `STORY_BEAT_DEFAULT_VOICE` | `"divine"` | same |

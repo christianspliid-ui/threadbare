@@ -166,4 +166,45 @@ describe('Chain Weakens — phase-5-reckoning integration', () => {
     const updated = result.activeCompositions?.find((c) => c.compositionId === 'the-chain-weakens');
     expect(updated?.activatedPhaseIds).not.toContain('phase-5-reckoning');
   });
+
+  describe('dual-voice Chronicle entries per phase', () => {
+    it('divine phases (1, 2, 4) produce a poetProse Chronicle entry', () => {
+      const divinePhaseIds = ['phase-1-rumor', 'phase-2-plague', 'phase-4-crack'];
+      for (const phaseId of divinePhaseIds) {
+        const alreadyActivated = ['phase-1-rumor', 'phase-2-plague', 'phase-3-absorbing', 'phase-4-crack'].filter(
+          (id) => id !== phaseId
+        );
+        const comp = makeChainWeakensComposition(alreadyActivated);
+        const state = makeState([comp], {
+          worldFlags: { 'chain-weakens.plague-materialized': true },
+        });
+        const result = phaseComposition(state);
+        const entry = result.chronicleEntries?.find((e) => e.id.includes(phaseId));
+        expect(entry, `${phaseId} should produce a Chronicle entry`).toBeDefined();
+        expect(
+          entry?.poetProse,
+          `${phaseId} (divine voice) should have poetProse`
+        ).toBeTruthy();
+      }
+    });
+
+    it('mortal phases (3, 5) produce witnessFacts with multiple bullets', () => {
+      // phase-3-absorbing
+      const comp3 = makeChainWeakensComposition(['phase-1-rumor', 'phase-2-plague']);
+      const state3 = makeState([comp3]);
+      const result3 = phaseComposition(state3);
+      const entry3 = result3.chronicleEntries?.find((e) => e.id.includes('phase-3-absorbing'));
+      expect(entry3?.witnessFacts?.length).toBeGreaterThan(1);
+
+      // phase-5-reckoning
+      const comp5 = makeChainWeakensComposition(['phase-1-rumor', 'phase-2-plague', 'phase-3-absorbing', 'phase-4-crack']);
+      const state5 = makeState([comp5], {
+        worldFlags: { 'chain-weakens.plague-materialized': true },
+      });
+      addFaction(state5.graph as WorldGraph, 'f1', 'divine_champion_order');
+      const result5 = phaseComposition(state5);
+      const entry5 = result5.chronicleEntries?.find((e) => e.id.includes('phase-5-reckoning'));
+      expect(entry5?.witnessFacts?.length).toBeGreaterThan(1);
+    });
+  });
 });

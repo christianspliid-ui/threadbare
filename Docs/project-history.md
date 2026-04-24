@@ -3,6 +3,8 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ THR-254 (2026-04-24) — Chronicle dual-voice for phased events: `phaseComposition` registry wiring, 5 Chain Weakens templates migrated to dual-voice, `PhaseStoryBeatVoice` DSL field, fail-soft trace, 32 tests.
+
 ✅ THR-259 (2026-04-23) — Hex Tooltip Murmurs in CMS Registry: exported MURMUR_TEMPLATES, added hex-murmurs ProseViewer entry at ?view=cms.
 ✅ THR-36 (2026-04-23) — Reputation Traits in CMS Registry: 17 traits (8 reaches × 2 polarities + power renown) in TableViewer with reactions/scoring/gate columns. Also fixed effect-constants.ts build break.
 
