@@ -4,6 +4,10 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
 ### Recent Changes
 
+| Date | Files | Change | Why |
+|------|-------|--------|-----|
+| 2026-04-24 | .claude/skills/pull-work/SKILL.md, .agents/skills/pull-work/SKILL.md, Docs/plans/2026-04-13-linear-coordination-protocol.md | THR-247: added `pullNextReadyForDev` atomic pickup procedure (6-step sequence bundling Rules 1/4/7, MAX_CLAIM_RETRIES=3, documented trace output for retry scenarios); updated Step 4 from 1→3 retries; coordination protocol points CC pickup at wrapper as canonical | Prevent claim-race and silent-drop failures by making the correct path easier than the wrong path |
+
 | 2026-04-24 | src/data/story-beat-templates/chain-weakens.ts | THR-253: Chain Weakens prose polish. Rewrote `title`, `poetProse`, and `witnessFacts` on all five templates to Threadbare aesthetic bar (Poet ≤35 words/1–2 sentences/present tense/one sensory hit + one implication; Witness 3–5 concrete factual bullets). Mortal-voice phases (shield-anvil, reckoning) name the Order of the Grey Watch. Unicode escapes consistent throughout. Removed both `TODO(THR-253)` comments. No engine/UI/test changes. |
 
 | 2026-04-24 | src/data/tavern-encounter-content.ts, src/engine/socialEncounterGeneration.ts, src/data/unified-action-templates.ts, src/engine/__tests__/socialEncounterGeneration.test.ts | THR-101: Phase 3 tavern encounters migration. 10 tavern templates (`tavern.brawl`/overheard_rumor/drinking_contest/bardic_performance/shady_deal/recruiting_drive/the_challenge/confession_over_drinks/merchants_pitch/the_warning) migrated from EncounterTemplate to UnifiedActionTemplate with Threadbare place-bound prose. Systemic wiring: 3+ intel grants, 6 encounter seeds, 7 hidden marks, 4 {?has_faction} branches, 4 {ally:strongest} refs, 2 ActionStepBranch forks. Legacy appliesWound converted to condition_attachment onFailureEffects. Slot priority updated: faction → unified tavern → extra → unified social → legacy. Central registration added. 10659 tests pass. |

@@ -267,8 +267,9 @@ $ npx vite build
 
 ### Claude Code Session Start
 1. Query Linear: `list_issues state:"In Dev" assignee:"me"` → resume your own active implementation first (finish before starting).
-2. Query Linear: `list_issues state:"Ready for Dev" assignee:null` → the `assignee:null` filter is **required** — it excludes issues another agent has already claimed (Rule 2). Sort by priority in memory (impediment #49 rejects `orderBy:priority` at runtime); pull from the top.
-3. **Claim immediately (Rule 1):** before reading anything but the title, run `save_issue(id, assignee: "me", state: "In Dev")`. Then `get_issue(id)` to verify the write stuck (Rule 7 / impediment #48). Only after the claim is confirmed do you read the handoff comment and plan doc.
+2. Use **`pullNextReadyForDev`** (canonical path — see pull-work skill § Atomic Pickup Procedure, THR-247). This bundles Rules 1, 4, and 7 into one atomic sequence: board-scan → sort by priority → claim → verify → fetch latest comment. Retry on silent drops up to `MAX_CLAIM_RETRIES = 3`. The hand-rolled sequence below is the documented fallback.
+   - *Fallback (hand-rolled):* `list_issues state:"Ready for Dev" assignee:null`, sort by priority in memory (impediment #49), `save_issue(id, assignee:"me", state:"In Dev")`, `get_issue(id)` to verify.
+3. **Claim immediately (Rule 1):** before reading anything but the title, the first mutating call is `save_issue(id, assignee: "me", state: "In Dev")`. Then `get_issue(id)` to verify the write stuck (Rule 7 / impediment #48). `pullNextReadyForDev` does this atomically; if hand-rolling, do it explicitly. Only after the claim is confirmed do you read the handoff comment and plan doc.
 4. **WIP check:** confirm no other issue is In Dev under your assignee across all projects (Rule 6 — WIP=1 is cross-session, not per-project-per-session). If you find one, finish or hand it off before claiming the next.
 5. **Reopened check (Rule 5):** if the issue carries a `Reopened` label, read all comments back to the original handoff *before* starting work — the latest comment supersedes the original plan (Rule 4).
 6. **Model check:** read the `Suggested model` line in the handoff comment (or the `model:*` label) and use that model unless there's a specific reason to override.
@@ -328,8 +329,11 @@ When Cowork finishes a design and writes the implementation plan:
 
 ### Claude Code Pickup Protocol
 When CC picks up a Ready for Dev issue, the order is **claim → verify → read → decide**:
+
+> **Canonical path:** Use `pullNextReadyForDev` from the pull-work skill (THR-247). It bundles steps 1–3 below into one atomic sequence with retry-on-silent-drop (`MAX_CLAIM_RETRIES = 3`). The step-by-step below is the documented fallback for agents that bypass the wrapper.
+
 1. **Claim first (Rule 1).** First tool call after selecting the issue is `save_issue(id, assignee: "me", state: "In Dev")`. Do not read the handoff comment, the plan doc, or anything else first. Claim-before-read is how concurrent agents avoid duplicate work.
-2. **Verify the claim stuck (Rule 7).** Immediately `get_issue(id)` and confirm both `assignee` and `state` match what you wrote. If they don't, retry once; if still wrong, surface to the user and stop — do not proceed on an unverified claim.
+2. **Verify the claim stuck (Rule 7).** Immediately `get_issue(id)` and confirm both `assignee` and `state` match what you wrote. On mismatch: release claim (`save_issue(id, assignee:null)`), try the next candidate, retry up to `MAX_CLAIM_RETRIES = 3` times total; if all retries fail, surface to the user and stop — do not proceed on an unverified claim.
 3. **Read the latest comment first (Rule 4).** The most recent comment on the issue is the authoritative brief. If it's a reopen with a cleanup plan, it supersedes the original handoff. If the issue has a `Reopened` label (Rule 5), read all comments back to the original handoff to understand what changed.
 4. **Verify the handoff is complete.** All four action-item sections present (Engine, Content, UI, Wiring). If any section is missing without N/A rationale, do not start work — add a comment flagging the gap and move the issue back to Implementation Planning. (Release your claim by setting `assignee: null` when you do.) An incomplete plan produces incomplete work.
 5. **Check the Claude Code coordination block.** Use the `Suggested model` (or the `model:*` label) unless you have reason to override. If considering a concurrent worktree, verify the target is listed in `Parallel-safe with` *and* doesn't collide with `Mutex with`.
