@@ -1,7 +1,7 @@
 # Project Status
 > Updated 2026-04-24.
 ## Current Focus
-**THR-26 shipped — Hex Map Rarity Signifiers.** Mythic (tier 3) and Legendary (tier 4) locations now show rarity halo rings on the hex map. Tier 3: static violet ring at `RARITY_SIGNIFIER_STATIC_OPACITY`. Tier 4: pulsing gold ring following the anomaly shimmer pattern. 8 scene unit tests pass. THR-101 (tavern encounters Phase 3) and THR-254 (dual-voice Chronicle) also shipped earlier this session.
+**THR-210 shipped — playtest-interface skill.** Cowork now has a runnable interface regression sweep: 10-step Chrome MCP runbook + 54-surface rubric derived from `IA_SURFACES` + baseline noise template. THR-211 (first run) is unblocked and ready for Cowork.
 
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
@@ -17,6 +17,9 @@
 - **Procedural Hex Vignettes (Next):** Phases 2-5 queued.
 - **Prose Content Quality Pass (Archived 2026-04-16):** Scope subsumed. THR-86/88 → Content Architecture; THR-87 → Thematic Pressure; THR-82/83/84/85 → Encounter Format Migration.
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
+
+## Recent Completions (2026-04-24) — THR-210 playtest-interface skill
+- **THR-210:** Shipped `.agents/skills/playtest-interface/` — SKILL.md (10-step runbook, preflight, output contract), RUBRIC.md (assertion checklist covering all 54 IA manifest surfaces, ≥1 P/S assertion each, using `__DEBUG` methods only), EXPECTED-FINDINGS.md (baseline noise template seeded empty). Added `.playtest-runs/` to `.gitignore`. Added `playtest-interface` row to CLAUDE.md Domain Skills table. THR-211 (first playtest run) unblocked. 10682 tests pass, tsc clean, vite build ✓. PR #29.
 
 ## Recent Completions (2026-04-24) — THR-247 pullNextReadyForDev atomic wrapper
 - **THR-247:** Added `pullNextReadyForDev` named atomic procedure to the pull-work skill, bundling Rules 1/4/7 (claim + verify + latest-comment-read) into a single sequence with retry-on-silent-drop (`MAX_CLAIM_RETRIES = 3`). Documented trace output format satisfies NFP #2 inspectability. Step 4 fallback upgraded from 1 to 3 retries. Coordination protocol updated to point CC pickup at the wrapper as canonical. Agents mirror synced. 10682 tests pass, tsc clean, vite build succeeds. PR #26.
@@ -39,7 +42,7 @@
 - **THR-36:** Reputation Traits CMS. 17 traits browsable at `?view=cms`.
 
 ## Archived to project-history.md
-- THR-247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
+- THR-210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
 
 
 ## Active Backlog Ideas
