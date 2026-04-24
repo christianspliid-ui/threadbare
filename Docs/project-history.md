@@ -3,6 +3,10 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ THR-211 (2026-04-24) — first playtest-interface run: 27 PASS / 2 FAIL / 10 SURPRISE / 10 SKIP against `?view=game&seeded&nofog&size=medium`. RUBRIC.md annotated with `getActiveUIState()` 9-field actual contract, `getOpenModals()` game-view-only + inline-panel caveats, `gotoAgent()` exact-ID requirement, `setFog()` 200ms delay, `?debug.openModal` 5s init timing. EXPECTED-FINDINGS.md seeded with 9 baseline entries. THR-275 filed (HexSidebar exploration path FAIL). Report gitignored at `.playtest-runs/2026-04-24-1215.md`.
+
+✅ THR-243 (2026-04-24) — centralized exemplars index: `Docs/exemplars.md` single source of truth for quality exemplars. Two encounter exemplars (rival-shrine-betrayal 10/10, flawed-steel 9/10); placeholder rows for prose and attachment exemplars. PR #34 merged.
+
 ✅ THR-210 (2026-04-24) — playtest-interface skill: shipped `.agents/skills/playtest-interface/` with SKILL.md (10-step Chrome MCP runbook, preflight, output contract), RUBRIC.md (54-surface assertion checklist derived from IA_SURFACES — every surface has ≥1 P/S assertion using __DEBUG methods, no pixel assertions), EXPECTED-FINDINGS.md (baseline noise template, seeded empty). Added .playtest-runs/ to .gitignore, playtest-interface to CLAUDE.md Domain Skills table. THR-211 (first playtest run) unblocked. 10682 tests pass, tsc clean, vite build ✓.
 
 ✅ THR-247 (2026-04-24) — pullNextReadyForDev atomic wrapper: named atomic pickup procedure in pull-work skill bundling Rules 1/4/7 (claim → verify → latest-comment-read) with retry-on-silent-drop (MAX_CLAIM_RETRIES=3, NFP #1) and documented trace output format (NFP #2). Step 4 fallback retries upgraded 1→3. Coordination protocol updated. Agents mirror synced.
