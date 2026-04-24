@@ -88,6 +88,7 @@ import { TERRAIN_OPENINGS } from '../../data/hex-vignette-content';
 import { VALUE_LABELS, FEAR_DESCRIPTIONS } from '../../data/strand-content';
 
 // Configuration
+import { IA_SURFACES } from '../../data/ia-manifest';
 import * as threat from '../../data/threat-content';
 import * as agentVisual from '../../data/agent-visual-content';
 import * as gameConfig from '../../data/game-config';
@@ -1180,6 +1181,17 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
     ),
     viewer: 'constants',
     sourceFile: 'src/data/agent-visual-content.ts',
+  },
+
+  {
+    id: 'ia-surfaces',
+    label: 'Information Architecture',
+    category: 'Configuration',
+    description: 'What the player should see, where. Commitment document audited by npm run audit-ia.',
+    data: IA_SURFACES,
+    viewer: 'ia-surface',
+    searchFields: ['surface', 'view', 'reads.reader', 'reads.state_path'],
+    sourceFile: 'src/data/ia-manifest.ts',
   },
 
   // ─── Factions & Military ───────────────────────────────────

@@ -749,6 +749,7 @@ export function useAgentInteraction({
     handleAvatarActionClick,
     handleViewProfile,
     handleCloseProfile,
+    openAgentProfileForId: setProfileModalAgentId,
     closeAllAgentOverlays,
   };
 }
