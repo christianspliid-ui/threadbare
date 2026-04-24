@@ -3,6 +3,7 @@
 ## custom
 - action.star.consecrate — `Actions\Star\action.star.consecrate.md`
 - action.star.desecrate — `Actions\Star\action.star.desecrate.md`
+- consent-integrate — `Design\distributions\design-council-v1.0\prompts\consent-integrate.md`
 - 2026-03-06-content-strategy — `Docs\plans\2026-03-06-content-strategy.md`
 - 2026-03-10-qa-test-strategy — `Docs\plans\2026-03-10-qa-test-strategy.md`
 - 2026-03-10-visual-asset-strategy — `Docs\plans\2026-03-10-visual-asset-strategy.md`
@@ -37,10 +38,14 @@
 - strategicBehaviorFamilies.test — `src\engine\__tests__\strategicBehaviorFamilies.test.ts`
 - strategicAction — `src\types\strategicAction.ts`
 
+## auth
+- authoring-brief — `Docs\authoring-brief.md`
+- courtStrategicPack — `src\data\strategic-packs\courtStrategicPack.ts`
+
+## rate-limit
+- 2026-04-23-linear-mcp-rate-limits — `Docs\plans\2026-04-23-linear-mcp-rate-limits.md`
+
 ## validation
 - generate-vault — `scripts\generate-vault.ts`
-- generate-vault — `tmp\generate-vault.mjs`
-
-## auth
 - civic-guard-encounter-content — `src\data\civic-guard-encounter-content.ts`
-- courtStrategicPack — `src\data\strategic-packs\courtStrategicPack.ts`
+- generate-vault — `tmp\generate-vault.mjs`
