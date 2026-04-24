@@ -2,10 +2,62 @@
 
 > **Navigation aid.** Component inventory and prop signatures extracted via AST. Read the source files before adding props or modifying component logic.
 
-**171 components** (react)
+**247 components** (react)
 
 ## Components
 
+- **App** — `Design\Claudedesignhandooffs\Ascendant bar-handoff\ascendant-bar\project\lib\App.jsx`
+- **VARA_ESSENCE** — `Design\Claudedesignhandooffs\Ascendant bar-handoff\ascendant-bar\project\lib\AscendantBar.jsx`
+- **ChipTooltip** — props: title, body, kindLabel, tone — `Design\Claudedesignhandooffs\Ascendant bar-handoff\ascendant-bar\project\lib\Chips.jsx`
+- **TopBarStub** — props: onOpenMenu — `Design\Claudedesignhandooffs\Ascendant bar-handoff\ascendant-bar\project\lib\Chrome.jsx`
+- **TREND_COLOR** — `Design\Claudedesignhandooffs\Ascendant bar-handoff\ascendant-bar\project\lib\EssenceStrip.jsx`
+- **Overlay** — props: open, onClose, title, eyebrow, width — `Design\Claudedesignhandooffs\Ascendant bar-handoff\ascendant-bar\project\lib\Overlays.jsx`
+- **SectionHeading** — props: count, ornamental — `Design\Claudedesignhandooffs\Ascendant bar-handoff\ascendant-bar\project\lib\Primitives.jsx`
+- **SphereIcon** — props: sphere, size — `Design\Claudedesignhandooffs\Ascendant bar-handoff\ascendant-bar\project\lib\SphereIcon.jsx`
+- **LEXICON** — `Design\Claudedesignhandooffs\Ascendant bar-handoff\ascendant-bar\project\lib\SphereIconDecay.jsx`
+- **App** — `Design\Claudedesignhandooffs\ascendant-bar\project\lib\App.jsx`
+- **VARA_ACTIONS** — `Design\Claudedesignhandooffs\ascendant-bar\project\lib\AscendantBar.jsx`
+- **ChipTooltip** — props: title, body, kindLabel, tone — `Design\Claudedesignhandooffs\ascendant-bar\project\lib\Chips.jsx`
+- **TopBarStub** — props: onOpenMenu — `Design\Claudedesignhandooffs\ascendant-bar\project\lib\Chrome.jsx`
+- **TREND_COLOR** — `Design\Claudedesignhandooffs\ascendant-bar\project\lib\EssenceStrip.jsx`
+- **Overlay** — props: open, onClose, title, eyebrow, width — `Design\Claudedesignhandooffs\ascendant-bar\project\lib\Overlays.jsx`
+- **SectionHeading** — props: count, ornamental — `Design\Claudedesignhandooffs\ascendant-bar\project\lib\Primitives.jsx`
+- **SphereIcon** — props: sphere, size — `Design\Claudedesignhandooffs\ascendant-bar\project\lib\SphereIcon.jsx`
+- **LEXICON** — `Design\Claudedesignhandooffs\ascendant-bar\project\lib\SphereIconDecay.jsx`
+- **ACTION_BAR_TOOLS** — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\ActionBar.jsx`
+- **ActivityIcon** — props: kind, size, color — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\ActivityIcon.jsx`
+- **AGENTS** — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\App.jsx`
+- **DEMO_SPHERES** — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\ComponentsPage.jsx`
+- **EssencePanel** — props: spheres, variant — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\EssencePanel.jsx`
+- **HexTile** — props: cx, cy, r, fill, stroke, borderColor, borderEdges — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\MapStage.jsx`
+- **NOTIFICATION_KIND** — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\NotificationFeed.jsx`
+- **SectionHeading** — props: count, ornamental — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\Primitives.jsx`
+- **MandateBlock** — props: compact — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\RightRail.jsx`
+- **SphereIcon** — props: sphere, size, color — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\SphereIcon.jsx`
+- **ThreadPortrait** — props: agent, size, selected — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\Threads.jsx`
+- **LucideIcon** — props: name, size, stroke, color — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\TopBar.jsx`
+- **APortraits** — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\landing\direction-a.jsx`
+- **BPortraits** — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\landing\direction-b.jsx`
+- **CPortraits** — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\landing\direction-c.jsx`
+- **Portrait** — props: sphere, name, src — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\ui_kits\threadbearer-game\AgentDetail.jsx`
+- **App** — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\ui_kits\threadbearer-game\App.jsx`
+- **InterventionModal** — props: kind, agent, onClose, onConfirm — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\ui_kits\threadbearer-game\InterventionModal.jsx`
+- **SectionHeading** — props: count, ornamental — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\ui_kits\threadbearer-game\Primitives.jsx`
+- **RETINUE** — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\ui_kits\threadbearer-game\RetinuePanel.jsx`
+- **OMENS** — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\ui_kits\threadbearer-game\RightRail.jsx`
+- **SphereIcon** — props: sphere, size — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\ui_kits\threadbearer-game\SphereIcon.jsx`
+- **TopBar** — props: cycle, season, doom, onSettings — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\ui_kits\threadbearer-game\TopBar.jsx`
+- **APortraits** — `Design\Claudedesignhandooffs\threadbearer-design-system\project\landing\direction-a.jsx`
+- **BPortraits** — `Design\Claudedesignhandooffs\threadbearer-design-system\project\landing\direction-b.jsx`
+- **CPortraits** — `Design\Claudedesignhandooffs\threadbearer-design-system\project\landing\direction-c.jsx`
+- **Portrait** — props: sphere, name, src — `Design\Claudedesignhandooffs\threadbearer-design-system\project\ui_kits\threadbearer-game\AgentDetail.jsx`
+- **App** — `Design\Claudedesignhandooffs\threadbearer-design-system\project\ui_kits\threadbearer-game\App.jsx`
+- **InterventionModal** — props: kind, agent, onClose, onConfirm — `Design\Claudedesignhandooffs\threadbearer-design-system\project\ui_kits\threadbearer-game\InterventionModal.jsx`
+- **SectionHeading** — props: count, ornamental — `Design\Claudedesignhandooffs\threadbearer-design-system\project\ui_kits\threadbearer-game\Primitives.jsx`
+- **RETINUE** — `Design\Claudedesignhandooffs\threadbearer-design-system\project\ui_kits\threadbearer-game\RetinuePanel.jsx`
+- **OMENS** — `Design\Claudedesignhandooffs\threadbearer-design-system\project\ui_kits\threadbearer-game\RightRail.jsx`
+- **SphereIcon** — props: sphere, size — `Design\Claudedesignhandooffs\threadbearer-design-system\project\ui_kits\threadbearer-game\SphereIcon.jsx`
+- **TopBar** — props: cycle, season, doom, onSettings — `Design\Claudedesignhandooffs\threadbearer-design-system\project\ui_kits\threadbearer-game\TopBar.jsx`
 - **ContentBrowser** — `src\App.tsx`
 - **AgentInfoCard** — props: graph, agentId, onClose — `src\components\AgentInfoCard\AgentInfoCard.tsx`
 - **ArchetypeCard** — props: archetype, selected, onClick — `src\components\Ascendant\ArchetypeCard.tsx`
@@ -32,14 +84,22 @@
 - **AgendaPicker** — props: agendas, onSelect, onCancel, sphere — `src\components\Game\AgendaPicker.tsx`
 - **AgentDetailPanel** — props: detail, activity, onBack, onViewPsyche, onIntervene, onLocationClick, onAttachmentClick, digestBuffer, currentTick, lastViewedTick — `src\components\Game\AgentDetailPanel.tsx`
 - **AgentInfoCard** — props: card, onViewProfile, onBack, onZoomToLocation, graph, seed, tick, strategicState — `src\components\Game\AgentInfoCard.tsx`
+- **AgentIntelligencePanel** — props: entries, isStranger, maxRecords — `src\components\Game\AgentIntelligencePanel.tsx`
 - **AgentProfileModal** — props: card, profile, onClose, scrollToNewStrata, knowledge — `src\components\Game\AgentProfileModal.tsx`
 - **AgentWheel** — props: slots, agentName, agentTitle, cx, cy, onSlotClick, onDismiss — `src\components\Game\AgentWheel.tsx`
 - **AlertBar** — props: alerts, onDismiss, onSelectAgent, onNavigate — `src\components\Game\AlertBar.tsx`
 - **ArmySheet** — props: name, onClose — `src\components\Game\ArmySheet.tsx`
 - **ArtifactSheet** — props: name, onClose — `src\components\Game\ArtifactSheet.tsx`
+- **ActionsBlock** — props: tray, onFire, onMove, onInvestiture — `src\components\Game\ascendant-bar\ActionsBlock.tsx`
+- **AscendantBar** — props: gameState, archetype, _ascendantIdentity, avatarName, worldVersion, onOpenSheet, onOpenMandate, onMove, onInvestiture — `src\components\Game\ascendant-bar\AscendantBar.tsx`
+- **BarSection** — props: label, count, open, onToggle, placeholder — `src\components\Game\ascendant-bar\BarSection.tsx`
+- **EssenceBlock** — props: rows — `src\components\Game\ascendant-bar\EssenceBlock.tsx`
+- **HooksBlock** — props: gameState — `src\components\Game\ascendant-bar\HooksBlock.tsx`
+- **IdentityStrip** — props: identity, quintessence, treatment, onOpen — `src\components\Game\ascendant-bar\IdentityStrip.tsx`
+- **MandateBlock** — props: mandate, onOpen — `src\components\Game\ascendant-bar\MandateBlock.tsx`
 - **AscendantSheet** — props: open, onClose, gameState, archetype, avatarName, sphereColor, originFragmentId — `src\components\Game\AscendantSheet.tsx`
 - **AttachmentDetailView** — props: attachment, onBack, onViewCodex — `src\components\Game\AttachmentDetailView.tsx`
-- **AttachmentRow** — props: name, subcategory, tier, mechanicalSummary, ticksRemaining, totalTicks, durationLabel, onClick — `src\components\Game\AttachmentRow.tsx`
+- **AttachmentRow** — props: name, subcategory, tier, mechanicalSummary, ticksRemaining, totalTicks, durationLabel, onClick, sourceEncounterId — `src\components\Game\AttachmentRow.tsx`
 - **AttentionPoolIndicator** — props: attentionPool, attentionCapacity, attentionRegen — `src\components\Game\AttentionPoolIndicator.tsx`
 - **AvatarHUD** — props: sphereColor, onCenterOnAvatar, onMoveClick, onWheelClick, onScryClick, moveMode — `src\components\Game\AvatarHUD.tsx`
 - **ChoiceSetModal** — props: pending, onResolve, onDismiss — `src\components\Game\ChoiceSetModal.tsx`
@@ -49,19 +109,27 @@
 - **FactionEntry** — props: name, guildType, locationName, onClick, factionDef — `src\components\Game\chronicle\FactionEntry.tsx`
 - **LocationCard** — props: name, subtype, agentCount, flavorText, onClick — `src\components\Game\chronicle\LocationCard.tsx`
 - **SoulCard** — props: name, role, rarityTier, locationName, parentLocationName, sphereColor, archetypeName, flavorText, onClick, onNarrate — `src\components\Game\chronicle\SoulCard.tsx`
-- **SubLocationEntry** — props: name, flavorText, onClick — `src\components\Game\chronicle\SubLocationEntry.tsx`
+- **SubLocationEntry** — props: name, flavorText, onClick, soulCount — `src\components\Game\chronicle\SubLocationEntry.tsx`
+- **ChronicleEntryCard** — props: entry, voiceMode — `src\components\Game\ChronicleEntryCard.tsx`
+- **ChroniclePanel** — props: entries — `src\components\Game\ChroniclePanel.tsx`
 - **ScryProvider** — props: value — `src\components\Game\contexts\ScryContext.tsx`
 - **ArmiesTabContent** — props: graph, currentTick, onZoomToLocation — `src\components\Game\debug\ArmiesTabContent.tsx`
 - **BondOverlay** — props: graph, hexSize, visibleAgents, showBonds, showDecisionVectors — `src\components\Game\debug\BondOverlay.tsx`
 - **CommandTab** — props: retinueAgents, followAgentId — `src\components\Game\debug\CommandTab.tsx`
+- **CompositionView** — props: activeCompositions, currentTick, doomClockStage — `src\components\Game\debug\CompositionView.tsx`
+- **CulturePhoneticsInspector** — props: graph — `src\components\Game\debug\CulturePhoneticsInspector.tsx`
 - **DebugTabContent** — props: viewMode, currentTick, graph, allTraces, displayTraces, expandedTraceId, onToggleTrace, effectiveAgentId, showBonds, showDecisionVectors — `src\components\Game\debug\DebugTabContent.tsx`
 - **DecisionBreakdown** — props: agentId, traces — `src\components\Game\debug\DecisionBreakdown.tsx`
 - **EncounterCacheView** — props: cacheEntries, encounterProgress, currentTick, followAgentId, onZoomToLocation, graph, seed — `src\components\Game\debug\EncounterCacheView.tsx`
+- **EncounterSeedsTab** — props: seeds, currentTick, retinueAgents — `src\components\Game\debug\EncounterSeedsTab.tsx`
 - **FactionDebugContent** — props: graph, onZoomToLocation — `src\components\Game\debug\FactionDebugContent.tsx`
+- **HiddenMarksTab** — props: marks, currentTick, focusedAgentId, retinueAgents — `src\components\Game\debug\HiddenMarksTab.tsx`
 - **JourneyDebugContent** — props: encounterNotifications, pendingVignettes, _currentTick — `src\components\Game\debug\JourneyDebugContent.tsx`
 - **KnowledgeComparisonTab** — props: agentKnowledge, graph — `src\components\Game\debug\KnowledgeComparisonTab.tsx`
+- **RecentEventsView** — props: getRecentEvents — `src\components\Game\debug\RecentEventsView.tsx`
 - **RelationshipGraph** — props: agentId, graph — `src\components\Game\debug\RelationshipGraph.tsx`
 - **RevelationLogTab** — props: traces, _agentKnowledge — `src\components\Game\debug\RevelationLogTab.tsx`
+- **ShellsDebugTab** — props: flipTableStates, currentTick, focusedAgentId — `src\components\Game\debug\ShellsDebugTab.tsx`
 - **SocialTabContent** — props: followAgentId, graph, traces, showBonds, showDecisionVectors, onToggleBonds, onToggleDecisionVectors — `src\components\Game\debug\SocialTabContent.tsx`
 - **SphereStateTabContent** — props: aggregate — `src\components\Game\debug\SphereStateTabContent.tsx`
 - **TraceEntryItem** — props: trace, isExpanded, onToggle — `src\components\Game\debug\TraceFeed.tsx`
@@ -77,6 +145,7 @@
 - **EventPopup** — props: popup, queueLength, onDismiss, onChoice — `src\components\Game\EventPopup.tsx`
 - **FactionSheet** — props: factionId, name, graph, onClose, onOpenTargetActions — `src\components\Game\FactionSheet.tsx`
 - **GameView** — props: archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity, preSeeded — `src\components\Game\GameView.tsx`
+- **GuildQuestPanel** — props: location, graph, tick, onNavigateToRuin — `src\components\Game\GuildQuestPanel.tsx`
 - **HarvestScreen** — props: harvest, cycle, onBeginNextCycle — `src\components\Game\HarvestScreen.tsx`
 - **HexBreadcrumb** — props: hexCol, hexRow, terrain, locationCount, agentCount, lineOfSight, sphereInfluence, cultures, factions, regionName — `src\components\Game\HexBreadcrumb.tsx`
 - **HexChronicle** — props: terrain, hexCol, hexRow, lineOfSight, sphereInfluence, cultures, factions, locations, agentsByLocation, factionsByLocation — `src\components\Game\HexChronicle.tsx`
@@ -89,13 +158,13 @@
 - **IntentSection** — props: intents, variant — `src\components\Game\IntentSection.tsx`
 - **InterventionConfirm** — props: interventionType, label, deliveryMode, essenceCost, sphere, detectionRisk, rangeStatus, hexDistance, description, availableEssence — `src\components\Game\InterventionConfirm.tsx`
 - **JourneyVignetteModal** — props: open, onClose, onChoice, vignette — `src\components\Game\JourneyVignetteModal.tsx`
+- **LiveLocationBar** — props: summaries, tick, onCenterOnHex — `src\components\Game\LiveLocationBar.tsx`
 - **LocationProfileModal** — props: name, onClose — `src\components\Game\LocationProfileModal.tsx`
 - **LocationView** — props: location, agents, hexTerrain, hexCol, hexRow, onAgentClick, onBack, availableEncounters, activeEncounters, getAgentName — `src\components\Game\LocationView.tsx`
 - **MandateDetail** — props: open, onClose, definition, state — `src\components\Game\MandateDetail.tsx`
 - **MandateTracker** — props: definition, state — `src\components\Game\MandateTracker.tsx`
 - **MeetingEncounterModal** — props: open, onClose, onComplete, state, onStateChange, graph, ascendantId, ascendantSphere, ascendantSecondSphere, locationId — `src\components\Game\MeetingEncounterModal.tsx`
 - **NarrativeFeed** — props: events — `src\components\Game\NarrativeFeed.tsx`
-- **NarrativeLog** — props: events, onSelectAgent — `src\components\Game\NarrativeLog.tsx`
 - **NpcDetailView** — props: npc, traits, factionName — `src\components\Game\NpcDetailView.tsx`
 - **OmenDetail** — props: omenState, currentTick, onClose — `src\components\Game\OmenDetail.tsx`
 - **OmenIndicator** — props: omenState, currentTick — `src\components\Game\OmenIndicator.tsx`
@@ -134,12 +203,13 @@
 - **HexV2View** — props: tiles, cols, rows, seed, riverPaths, lakeIds, locations, agents, armies, battles — `src\components\HexMapV2\HexV2View.tsx`
 - **HexTooltip** — props: terrainName, coord, screenX, screenY, canvasWidth, canvasHeight, terrainKey, geoParams, hasRiver, locationActivity — `src\components\HexMapV2\interaction\HexTooltip.tsx`
 - **TerrainTextureLab** — `src\components\HexMapV2\lab\TerrainTextureLab.tsx`
-- **TerrainTextureLabCanvas** — props: configs, previewHexes, models, placements, slotAnchors, zoneRules, fillerDots, clickTargets, selectedHexId, selectedClickTargetId — `src\components\HexMapV2\lab\TerrainTextureLabCanvas.tsx`
+- **TerrainTextureLabCanvas** — props: configs, previewHexes, models, placements, slotAnchors, zoneRules, fillerDots, clickTargets, fillerSpec, showChunkBounds — `src\components\HexMapV2\lab\TerrainTextureLabCanvas.tsx`
+- **VignetteDebugOverlay** — props: showChunkBounds, densityScale, onShowChunkBoundsChange, onDensityScaleChange — `src\components\HexMapV2\lab\vignette\VignetteDebugOverlay.tsx`
 - **LocationLabelOverlay** — props: locations, cameraRef, canvasWidth, canvasHeight, zoomLevel, prePlacedBBoxesRef — `src\components\HexMapV2\overlay\LocationLabelOverlay.tsx`
 - **RegionLabelOverlay** — props: labels, cameraRef, canvasWidth, canvasHeight, zoomLevel, placedBBoxesRef — `src\components\HexMapV2\overlay\RegionLabelOverlay.tsx`
 - **CoatOfArms** — props: definition, size, prominenceLevel, className — `src\components\icons\CoatOfArms.tsx`
 - **ReachIcon** — props: reach, size, className — `src\components\icons\ReachIcon.tsx`
-- **SphereIcon** — props: sphere, size, className — `src\components\icons\SphereIcon.tsx`
+- **SphereIcon** — props: sphere, size, className, variant — `src\components\icons\SphereIcon.tsx`
 - **BondBeat** — props: candidate, vision, hungerId, primarySphere, onComplete — `src\components\MeetTheFirst\BondBeat.tsx`
 - **ComicPanel** — props: sceneImagePath, scenePlaceholder, characterImagePath, characterPlaceholder, characterPosition — `src\components\MeetTheFirst\ComicPanel.tsx`
 - **MeetTheFirstFlow** — props: ascendantIdentity, graph, ascendantId, locationId, seed, tick, onComplete, onClose — `src\components\MeetTheFirst\MeetTheFirstFlow.tsx`
@@ -154,19 +224,25 @@
 - **RevealBeat** — props: originFragment, driveFragment, hunger, mortalName, courtType, suggestedDivineName, onComplete — `src\components\Remembrance\RevealBeat.tsx`
 - **StirringBeat** — props: images, onSelect — `src\components\Remembrance\StirringBeat.tsx`
 - **TransformationBeat** — props: hungers, driveFragment, onSelect — `src\components\Remembrance\TransformationBeat.tsx`
+- **DelveProgressPanel** — props: gameState, graph, ascendantId, onStateUpdate — `src\components\ruins\DelveProgressPanel.tsx`
+- **EmergenceDilemmaModal** — props: gameState, onResolve — `src\components\ruins\EmergenceDilemmaModal.tsx`
+- **PlaceOfPowerInspector** — props: location, graph, tick — `src\components\ruins\PlaceOfPowerInspector.tsx`
+- **ActivityIcon** — props: kind, size, color — `src\components\shared\ActivityIcon.tsx`
 - **AnimateMount** — props: show, animation, duration — `src\components\shared\AnimateMount.tsx`
+- **Divider** — props: gold — `src\components\shared\Divider.tsx`
 - **DomainCard** — props: reach, tier, agentName, gender, revealed — `src\components\shared\DomainCard.tsx`
 - **Dropdown** — props: trigger, open, onOpenChange, align — `src\components\shared\Dropdown.tsx`
 - **EntityCard** — props: header, sections, onBack, onViewCodex, onZoomToLocation — `src\components\shared\EntityCard.tsx`
 - **IconButton** — props: icon, badge, active, size, variant, disabled, style, className — `src\components\shared\IconButton.tsx`
 - **ListRow** — props: accentColor, selected, onClick, trailing, className — `src\components\shared\ListRow.tsx`
 - **Modal** — props: open, onClose, maxWidth, animation — `src\components\shared\Modal.tsx`
+- **ProgressBand** — props: label, value, prose, color — `src\components\shared\ProgressBand.tsx`
 - **ProgressBar** — props: progress, color, glow, className, dataTestId — `src\components\shared\ProgressBar.tsx`
 - **RarityBadge** — props: tier, opacity, className — `src\components\shared\RarityBadge.tsx`
 - **RarityBorderBox** — props: tier, className, style — `src\components\shared\RarityBorderBox.tsx`
 - **RivalIcon** — props: spheres, size, className, style, title — `src\components\shared\RivalIcon.tsx`
 - **SectionHeading** — props: count, Tag, ornamental — `src\components\shared\SectionHeading.tsx`
-- **SphereIcon** — props: sphereName, size, className, style, title, useImage — `src\components\shared\SphereIcon.tsx`
+- **SphereIcon** — props: sphereProp, sphereName, size, className, style, title, useImage, variant — `src\components\shared\SphereIcon.tsx`
 - **StepDots** — props: totalSteps, currentStepIndex, size — `src\components\shared\StepDots.tsx`
 - **CreditsModal** — props: open, onClose — `src\components\StartPage\CreditsModal.tsx`
 - **SettingsModal** — props: open, onClose, volume, onVolumeChange, muted, onToggleMute — `src\components\StartPage\SettingsModal.tsx`

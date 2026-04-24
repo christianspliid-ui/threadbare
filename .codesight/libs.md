@@ -4,6 +4,14 @@
   - function create_hex_mask: (width, height)
   - function clip_hex_tile: (input_path, output_path)
   - function main: ()
+- `scripts\build-authoring-brief.ts`
+  - function hashContent: (content) => string
+  - function extractSection: (lines, startPattern, stopPattern) => string[]
+  - function distillCapabilitySection: (section, capNum) => string[]
+  - function extractCapabilitySection: (lines, capNum) => string[]
+  - function extractPrinciplesSections: (lines) => string[]
+  - function buildBrief: (wiringGuideContent, directionDocContent, wiringHash, directionHash, generatedAt) => string
+  - _...9 more_
 - `scripts\clip-hex-tiles.py`
   - function create_hexagon_mask: (width, height)
   - function process_hex_tile: (input_path, output_path)
@@ -21,6 +29,11 @@
   - function getCategoryFolder: (category, properties, any>) => string
   - function generateNoteContent: (node, edges, nodeMap, Node>, relTypeMap, Node>) => void
   - function generateVault: (options) => void
+- `scripts\inspiration-ingest\hash.ts` — function createContentHash: (content) => string
+- `scripts\inspiration-ingest\normalize.ts` — function normalizeInspirationSource: (source, ingestedAt) => InspirationContentRecord
+- `scripts\inspiration-ingest\runIngest.ts` — function runInspirationIngest: (source, options) => Promise<IngestionResult>
+- `scripts\inspiration-ingest\sources.ts` — function loadRawInspirationSources: (source) => Promise<RawInspirationSource[]>
+- `scripts\inspiration-ingest\writeInspiration.ts` — function writeInspirationRecords: (incomingRecords, options) => Promise<IngestionResult>, const DEFAULT_INSPIRATION_DATA_PATH
 - `scripts\playtest-format.ts`
   - function formatDashboard: (seed, totalTicks, snapshots) => string
   - function formatNarrativeLog: (events, groupSize, minSignificance, chronicleEntries) => string
@@ -30,6 +43,13 @@
   - interface PlaytestReportData
   - _...3 more_
 - `scripts\rebuild-index.ts` — function rebuildIndex: (options) => void
+- `scripts\review\types.ts`
+  - function isHeartbeat: (line) => line is HeartbeatLine
+  - function isFindings: (line) => line is ReviewFindings
+  - interface ReviewFinding
+  - interface ReviewFindings
+  - interface ReviewWrapperTrace
+  - interface HeartbeatLine
 - `scripts\tests\test_pipeline.py`
   - function test_magic_registry_has_12_spheres: ()
   - function test_magic_registry_entries_have_required_keys: ()
@@ -83,6 +103,14 @@
   - function getCodexCategories: () => CodexCategory[]
   - interface CodexEntry
   - interface CodexCategory
+- `src\components\Game\ascendant-bar\selectors.ts`
+  - function selectAscendantIdentityView: (gameState, archetype, avatarName) => AscendantIdentityView
+  - function selectQuintessenceView: (gameState) => QuintessenceView
+  - function selectEssenceRows: (gameState, archetype) => EssenceRowView[]
+  - function selectActionTray: (gameState) => ActionTrayView
+  - function selectMandateRow: (gameState) => MandateRowView | null
+  - interface AscendantIdentityView
+  - _...5 more_
 - `src\components\Game\attachmentGlyphs.ts` — function getAttachmentGlyph: (subcategory) => string, function getEffectTypeGlyph: (effectType) => string
 - `src\components\Game\encounter-stage\adapters\buildGateDutyEncounterStageModel.ts` — function buildGateDutyEncounterStageModel: ({...}, encounter, notification, threadTier, graph, activeAction, clearanceGateState, essence, }) => EncounterStageModel
 - `src\components\Game\encounter-stage\adapters\buildSimpleEncounterStageModel.ts` — function buildSimpleEncounterStageModel: (args) => EncounterStageModel, interface BuildSimpleEncounterStageModelArgs
@@ -139,7 +167,7 @@
 - `src\components\Game\hooks\useScry.ts` — function useScry: ({...}, setGameState, archetype, scryState, setScryState }) => void
 - `src\components\Game\hooks\useSimulation.ts` — function useSimulation: ({...}, avatarName, cosmology, seed, scryState, mapSize, ascendantIdentity, preSeeded, }) => void
 - `src\components\Game\hooks\useTargetActions.ts` — function useTargetActions: ({...}, gameState, archetype, drawerOpen, }) => WheelSlot[] | null
-- `src\components\Game\hooks\useTopBarHotkeys.ts` — function useTopBarHotkeys: ({...}, speed, onToggle, onSpeedChange, onStep }) => void
+- `src\components\Game\hooks\useTopBarHotkeys.ts` — function useTopBarHotkeys: ({...}, speed, onToggle, onSpeedChange, onStep, onMoveClick }) => void
 - `src\components\Game\hooks\useViewNavigation.ts` — function useViewNavigation: ({...}, setGameState, avatarPixelPos, tiles, COLS, ROWS, scryState, fogDisabled, setRunning, }) => UseViewNavigationReturn, type ViewLevel
 - `src\components\HexMap\useCoastline.ts` — function useCoastline: (tiles, hexSize, cols, rows, seed, config) => CoastlineData
 - `src\components\HexMap\useRivers.ts` — function useRivers: (cols, rows, seed) => RiverPath[]
@@ -162,8 +190,9 @@
   - function buildRetinueDotTexture: (factionColor, size) => THREE.CanvasTexture
   - function loadPortraitTexture: (url, ringColor, isRetinue, options?) => Promise<THREE.CanvasTexture>
   - function buildAvatarRingTexture: (sphereColor, size) => THREE.CanvasTexture
+  - function buildActivityHaloTexture: (color, size) => THREE.CanvasTexture
   - function buildFactionDotTextureCache: (factionColors) => Map<number, THREE.CanvasTexture>
-  - interface PortraitOptions
+  - _...1 more_
 - `src\components\HexMapV2\agents\agentSpriteTarget.ts` — function createAnimationTarget: (sprite) => AgentAnimationTarget, interface AgentAnimationTarget
 - `src\components\HexMapV2\agents\eventIndicatorRegistry.ts`
   - function buildEventIconTextureCache: () => Map<string, THREE.CanvasTexture>
@@ -229,6 +258,21 @@
   - interface TerrainTextureLabVignetteClickTarget
   - interface TerrainTextureLabVignettePrototypeSummary
   - _...2 more_
+- `src\components\HexMapV2\lab\vignette\ChunkedFillerLayer.ts` — class ChunkedFillerLayer
+- `src\components\HexMapV2\lab\vignette\FillerProfiles.ts`
+  - function getFillerProfile: (terrainType) => FillerProfile | null
+  - function weightedModelUrl: (profile, rng) => void
+  - interface FillerProfile
+  - const FILLER_PROFILES: Record<string, FillerProfile>
+  - const FILLER_PROFILE_TERRAIN_TYPES: Set<string>
+- `src\components\HexMapV2\lab\vignette\VignetteInstanceMaterial.ts` — function createVignetteInstanceMaterial: (baseColorLinear) => THREE.ShaderMaterial
+- `src\components\HexMapV2\lab\vignette\VignetteResolver.ts`
+  - function resolveHexFiller: (hex, zoneRules, seed, densityScale) => ResolvedHexFiller
+  - function resolveAllHexFiller: (hexes, allZoneRules, seed, densityScale?) => ResolvedHexFiller[]
+  - interface FillerInstance
+  - interface VignetteResolveTrace
+  - interface ResolvedHexFiller
+- `src\components\HexMapV2\lab\vignette\VignetteSlots.ts` — function getZoneRadius: (slot, hexRadius?) => number
 - `src\components\HexMapV2\locations\locationIconTextures.ts`
   - function buildLocationIconTexture: (def, size, fillColorOverride?) => THREE.CanvasTexture
   - function buildLocationIconTextureCache: (registry, LocationIconDef>) => Map<string, THREE.CanvasTexture>
@@ -355,6 +399,12 @@
   - interface HexFillMeshResult
   - const HEX_CONSTANTS
 - `src\components\HexMapV2\scene\HexGridLines.ts` — function createHexGridLines: (tiles) => THREE.Mesh
+- `src\components\HexMapV2\scene\HexPulseMesh.ts`
+  - function createHexPulseMesh: () => HexPulseMeshResult
+  - function updateHexPulseMesh: (result, map, LocationActivitySummary> | undefined, hexSize) => number
+  - function tickHexPulse: (result, elapsedS) => void
+  - interface HexPulseMeshResult
+  - const HEX_PULSE_CONSTANTS
 - `src\components\HexMapV2\scene\HexSceneSetup.ts`
   - function createHexScene: (canvas, width, height) => HexScene
   - function resizeHexScene: (hexScene, width, height) => void
@@ -365,6 +415,10 @@
   - interface LocationNode
   - const LOCATION_ICON_Z
   - const LOCATION_ICON_THRESHOLD
+- `src\components\HexMapV2\scene\LocationRaritySignifierMesh.ts`
+  - function createLocationRaritySignifierLayer: (locations) => LocationRaritySignifierLayerGroup
+  - function tickLocationRaritySignifiers: (layer, elapsedS) => void
+  - interface LocationRaritySignifierLayerGroup
 - `src\components\HexMapV2\scene\MovementTrailMesh.ts`
   - function createMovementTrailMesh: () => THREE.Group
   - function addTrailSegment: (group, segment) => void
@@ -428,6 +482,14 @@
   - function buildSignifierTextureCache: (registry) => Map<string, THREE.CanvasTexture>
   - const SIGNIFIER_TEXTURE_SIZE
   - const SIGNIFIER_FILL_COLOR
+- `src\components\icons\constants.ts`
+  - function sphereFromReach: (reach) => SphereName | null
+  - type DivisionType
+  - type ProminenceLevel
+  - const SPHERE_COLORS: Record<SphereName, string>
+  - const SPHERE_COLORS_BASE: Record<SphereName, string>
+  - const REACH_TO_SPHERE: Record<ReachDomain, CreationSphereName>
+  - _...4 more_
 - `src\components\icons\heraldry\borders.ts` — function renderBorder: (level, color) => string
 - `src\components\icons\heraldry\charges.ts` — function renderCharge: (reach, color, scale, cx, cy) => string
 - `src\components\icons\heraldry\divisions.ts` — function renderDivision: (type, colors, clipId) => string
@@ -438,6 +500,53 @@
   - const SHIELD_PATH
 - `src\components\icons\heraldry\tinctures.ts` — function deriveTinctures: (reach) => TinctureSet, interface TinctureSet
 - `src\components\StartPage\useThemeMusic.ts` — function useThemeMusic: () => void
+- `src\composition-dsl\findCard.ts`
+  - function resolveFindCard: (nodeKey, spec, world, recipe, options) => FindCardResult
+  - interface FindCardMutationPreview
+  - interface FindCardCreationPreview
+  - interface FindCardLog
+  - interface FindCardResult
+  - interface ResolveFindCardOptions
+  - _...1 more_
+- `src\composition-dsl\harness.ts` — function runValidationHarness: (compositionInput, worldInput) => CompositionValidationReport, function formatValidationReport: (report) => string
+- `src\composition-dsl\mutationGate.ts`
+  - function evaluateMutabilityGate: (node, context) => GateDecision
+  - function checkTripwire: (node, fieldWrites, unknown>, context) => TripwireDecision
+  - function mutateNode: (node, mutation, context) => MutationResult
+  - function promoteIfGeneric: (node, args) => PromoteIfGenericResult
+  - interface MutationContext
+  - interface StatedAttributeInput
+  - _...13 more_
+- `src\composition-dsl\schema.ts`
+  - function parseComposition: (input) => Composition
+  - function safeParseComposition: (input) => void
+  - interface FilterAndOrQuery
+  - interface FilterNotQuery
+  - interface FilterHasTagQuery
+  - interface FilterHasAnyTagQuery
+  - _...44 more_
+- `src\composition-dsl\validator.ts`
+  - function parseWorldState: (input) => WorldState
+  - function validateComposition: (compositionInput, worldInput) => CompositionValidationReport
+  - interface PreconditionResult
+  - interface MutationPreview
+  - interface CreationPreview
+  - interface NodeResolutionResult
+  - _...4 more_
+- `src\composition-dsl\worldTypes.ts`
+  - function getNodeClass: (node) => NodeClass
+  - function withNodeClass: (node, nodeClass) => WorldNode
+  - interface WorldEdge
+  - interface WorldTags
+  - interface StatedAttributeSource
+  - interface StatedAttribute
+  - _...2 more_
+- `src\content\ruins\archetypes.ts`
+  - function pickRuinArchetype: (roll) => RuinArchetype
+  - interface RuinArchetypeDescriptor
+  - type RuinArchetype
+  - const RUIN_ARCHETYPES: Record<RuinArchetype, RuinArchetypeDescriptor>
+  - const ARCHETYPE_WEIGHTS: Record<RuinArchetype, number>
 - `src\data\action-template-content.ts`
   - function getActionTemplateById: (id) => ActionTemplateData | undefined
   - function getActionsByReach: (reach) => ActionTemplateData[]
@@ -457,12 +566,12 @@
   - interface AgreementRewardTemplate
   - const AGREEMENT_REWARD_TEMPLATES: AgreementRewardTemplate[]
 - `src\data\arcane-circle-encounter-content.ts`
-  - function getArcaneCircleEncounterById: (id) => EncounterTemplate | undefined
+  - function getArcaneCircleEncounterById: (id) => UnifiedActionTemplate | undefined
   - const ARCANE_CIRCLE_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterMeta>
-  - const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: EncounterTemplate[]
-  - const ARCANE_CIRCLE_SOCIAL_TEMPLATES: EncounterTemplate[]
-  - const AC_JOIN_TEMPLATE: EncounterTemplate
-  - const AC_PROMOTION_TEMPLATE: EncounterTemplate
+  - const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[]
+  - const ARCANE_CIRCLE_SOCIAL_TEMPLATES: UnifiedActionTemplate[]
+  - const AC_JOIN_TEMPLATE: UnifiedActionTemplate
+  - const AC_PROMOTION_TEMPLATE: UnifiedActionTemplate
   - _...1 more_
 - `src\data\archetype-content.ts`
   - function getArchetype: (id) => NarrativeArchetype | undefined
@@ -489,6 +598,14 @@
   - function getArtifactTemplate: (id) => ArtifactTemplate | undefined
   - interface ArtifactTemplate
   - const ARTIFACT_TEMPLATES: ArtifactTemplate[]
+- `src\data\ascendant-bar-content.ts`
+  - function quintessenceLine: (sphere, band) => string
+  - interface ArchetypeCopy
+  - interface SphereCopy
+  - const ARCHETYPE_COPY: Record<string, ArchetypeCopy>
+  - const SPHERE_COPY: Partial<Record<SphereName, SphereCopy>>
+  - const BAND_TOOLTIP: Record<QuintessenceBand, { label: string; body: string }>
+  - _...6 more_
 - `src\data\ascendant-lens-content.ts`
   - function getAscendantLensLine: (sphere, context, rng) => void
   - type SceneContext
@@ -503,12 +620,12 @@
   - const AVATAR_PORTRAITS: Record<SphereName, string>
 - `src\data\borderland-encounter-content.ts` — function getBorderlandEncounterById: (id) => EncounterTemplate | undefined, const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[]
 - `src\data\builders-fellowship-encounter-content.ts`
-  - function getBuildersFellowshipEncounterById: (id) => EncounterTemplate | undefined
+  - function getBuildersFellowshipEncounterById: (id) => UnifiedActionTemplate | undefined
   - const BUILDERS_FELLOWSHIP_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterMeta>
-  - const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: EncounterTemplate[]
-  - const BUILDERS_FELLOWSHIP_SOCIAL_TEMPLATES: EncounterTemplate[]
-  - const BF_JOIN_TEMPLATE: EncounterTemplate
-  - const BF_PROMOTION_TEMPLATE: EncounterTemplate
+  - const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[]
+  - const BUILDERS_FELLOWSHIP_SOCIAL_TEMPLATES: UnifiedActionTemplate[]
+  - const BF_JOIN_TEMPLATE: UnifiedActionTemplate
+  - const BF_PROMOTION_TEMPLATE: UnifiedActionTemplate
   - _...1 more_
 - `src\data\chronicler-content.ts`
   - function getVignetteByContext: (context) => string | undefined
@@ -519,12 +636,12 @@
   - const LOCATION_TYPE_FLAVOR: Record<string, string>
   - _...1 more_
 - `src\data\civic-guard-encounter-content.ts`
-  - function getCivicGuardEncounterById: (id) => EncounterTemplate | undefined
+  - function getCivicGuardEncounterById: (id) => UnifiedActionTemplate | undefined
   - const CIVIC_GUARD_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterMeta>
-  - const CIVIC_GUARD_ENCOUNTER_TEMPLATES: EncounterTemplate[]
-  - const CIVIC_GUARD_SOCIAL_TEMPLATES: EncounterTemplate[]
-  - const CG_JOIN_TEMPLATE: EncounterTemplate
-  - const CG_PROMOTION_TEMPLATE: EncounterTemplate
+  - const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[]
+  - const CIVIC_GUARD_SOCIAL_TEMPLATES: UnifiedActionTemplate[]
+  - const CG_JOIN_TEMPLATE: UnifiedActionTemplate
+  - const CG_PROMOTION_TEMPLATE: UnifiedActionTemplate
   - _...1 more_
 - `src\data\concept-art-assets.ts`
   - function pickConceptArt: (terrain, locations, sphereInfluence) => string
@@ -584,6 +701,10 @@
   - const FACTION_JOIN_TEMPLATE: EncounterTemplate
   - const FACTION_PROMOTION_TEMPLATE: EncounterTemplate
   - _...2 more_
+- `src\data\faction-voice-bible.ts`
+  - function getFactionVoice: (factionDefId) => FactionVoiceEntry | undefined
+  - interface FactionVoiceEntry
+  - const FACTION_VOICE_BIBLE: readonly FactionVoiceEntry[]
 - `src\data\game-theory-content.ts` — function getStrategyWeights: (archetypeId) => Record<CooperationStrategy, number>, const SOCIAL_ORIENTATION_MAP: Record<string, SocialOrientation>
 - `src\data\hex-tile-assets.ts`
   - function getHexTileUrl: (_terrain) => string
@@ -592,13 +713,13 @@
   - type AllSphereName
   - const OVERLAY_ICON_MAP: Partial<Record<LocationSubtype, string>>
 - `src\data\holy-order-dawn-encounter-content.ts`
-  - function getHolyOrderDawnEncounterById: (id) => EncounterTemplate | undefined
+  - function getHolyOrderDawnEncounterById: (id) => UnifiedActionTemplate | undefined
   - const HOLY_ORDER_DAWN_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterMeta>
-  - const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: EncounterTemplate[]
-  - const HOLY_ORDER_DAWN_SOCIAL_TEMPLATES: EncounterTemplate[]
-  - const HOD_JOIN_TEMPLATE: EncounterTemplate
-  - const HOD_PROMOTION_TEMPLATE: EncounterTemplate
-  - _...1 more_
+  - const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[]
+  - const HOLY_ORDER_DAWN_SENIOR_TEMPLATES: UnifiedActionTemplate[]
+  - const HOLY_ORDER_DAWN_ELITE_TEMPLATES: UnifiedActionTemplate[]
+  - const HOLY_ORDER_DAWN_SOCIAL_TEMPLATES: UnifiedActionTemplate[]
+  - _...4 more_
 - `src\data\intervention-feedback-content.ts`
   - function getConsequenceMessage: (interventionType, params, seed) => string
   - const DIVINE_INFLUENCE_CONSTANTS
@@ -607,13 +728,13 @@
 - `src\data\item-art-registry.ts` — function getItemArt: (id) => string | undefined
 - `src\data\location-concept-art.ts` — function getLocationConceptArtUrl: (subtype) => string
 - `src\data\lorekeepers-covenant-encounter-content.ts`
-  - function getLorekeeperCovenantEncounterById: (id) => EncounterTemplate | undefined
+  - function getLorekeeperCovenantEncounterById: (id) => UnifiedActionTemplate | undefined
   - const LOREKEEPERS_COVENANT_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterMeta>
-  - const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: EncounterTemplate[]
-  - const LOREKEEPERS_COVENANT_SOCIAL_TEMPLATES: EncounterTemplate[]
-  - const LK_JOIN_TEMPLATE: EncounterTemplate
-  - const LK_PROMOTION_TEMPLATE: EncounterTemplate
-  - _...1 more_
+  - const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[]
+  - const LOREKEEPERS_SENIOR_TEMPLATES: UnifiedActionTemplate[]
+  - const LOREKEEPERS_ELITE_TEMPLATES: UnifiedActionTemplate[]
+  - const LOREKEEPERS_SOCIAL_TEMPLATES: UnifiedActionTemplate[]
+  - _...4 more_
 - `src\data\mandate-loader.ts`
   - function validateMandateJson: (raw, filename) => MandateTemplate
   - function loadMandateTemplates: () => MandateTemplate[]
@@ -633,21 +754,21 @@
   - const GOD_GIVEN_TRAITS: GodGivenTraitOption[]
   - _...1 more_
 - `src\data\mercenary-encounter-content.ts`
-  - function getMercenaryEncounterById: (id) => EncounterTemplate | undefined
+  - function getMercenaryEncounterById: (id) => UnifiedActionTemplate | undefined
   - const MERCENARY_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterMeta>
-  - const MERCENARY_ENCOUNTER_TEMPLATES: EncounterTemplate[]
-  - const MERCENARY_SOCIAL_TEMPLATES: EncounterTemplate[]
-  - const MC_JOIN_TEMPLATE: EncounterTemplate
-  - const MC_PROMOTION_TEMPLATE: EncounterTemplate
-  - _...1 more_
+  - const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[]
+  - const MERCENARY_SENIOR_TEMPLATES: UnifiedActionTemplate[]
+  - const MERCENARY_ELITE_TEMPLATES: UnifiedActionTemplate[]
+  - const MERCENARY_SOCIAL_TEMPLATES: UnifiedActionTemplate[]
+  - _...4 more_
 - `src\data\merchant-consortium-encounter-content.ts`
-  - function getMerchantConsortiumEncounterById: (id) => EncounterTemplate | undefined
+  - function getMerchantConsortiumEncounterById: (id) => UnifiedActionTemplate | undefined
   - const MERCHANT_CONSORTIUM_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterMeta>
-  - const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: EncounterTemplate[]
-  - const MERCHANT_CONSORTIUM_SOCIAL_TEMPLATES: EncounterTemplate[]
-  - const MCT_JOIN_TEMPLATE: EncounterTemplate
-  - const MCT_PROMOTION_TEMPLATE: EncounterTemplate
-  - _...1 more_
+  - const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[]
+  - const MERCHANT_CONSORTIUM_SENIOR_TEMPLATES: UnifiedActionTemplate[]
+  - const MERCHANT_CONSORTIUM_ELITE_TEMPLATES: UnifiedActionTemplate[]
+  - const MERCHANT_CONSORTIUM_SOCIAL_TEMPLATES: UnifiedActionTemplate[]
+  - _...4 more_
 - `src\data\monster-encounter-content.ts` — function getMonsterEncounterById: (id) => EncounterTemplate | undefined, const MONSTER_ENCOUNTER_TEMPLATES: EncounterTemplate[]
 - `src\data\monster-faction-definitions.ts` — function getMonsterFactionBySphere: (sphere) => FactionDefinition | undefined, const MONSTER_FACTION_DEFINITIONS: FactionDefinition[]
 - `src\data\movement-content.ts`
@@ -693,23 +814,32 @@
   - function getRandomClosingTemplate: (index) => string
   - const QUOTE_TEMPLATES
   - _...4 more_
+- `src\data\prose\ruinsTransformation.ts`
+  - function resolveTransformationProse: (archetype, fate) => TransformationProseEntry
+  - interface TransformationProseEntry
+  - type TransformationFate
+  - const RUINS_TRANSFORMATION_PROSE: Lookup
 - `src\data\rangers-brotherhood-encounter-content.ts`
-  - function getRangersBrotherhoodEncounterById: (id) => EncounterTemplate | undefined
+  - function getRangersBrotherhoodEncounterById: (id) => UnifiedActionTemplate | undefined
   - const RANGERS_BROTHERHOOD_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterMeta>
-  - const RANGERS_BROTHERHOOD_ENCOUNTER_TEMPLATES: EncounterTemplate[]
-  - const RANGERS_BROTHERHOOD_SOCIAL_TEMPLATES: EncounterTemplate[]
-  - const RB_JOIN_TEMPLATE: EncounterTemplate
-  - const RB_PROMOTION_TEMPLATE: EncounterTemplate
-  - _...1 more_
+  - const RANGERS_BROTHERHOOD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[]
+  - const RANGERS_BROTHERHOOD_SENIOR_TEMPLATES: UnifiedActionTemplate[]
+  - const RANGERS_BROTHERHOOD_ELITE_TEMPLATES: UnifiedActionTemplate[]
+  - const RANGERS_BROTHERHOOD_SOCIAL_TEMPLATES: UnifiedActionTemplate[]
+  - _...4 more_
 - `src\data\reputation-trait-content.ts`
   - function getReputationTraitId: (reach, polarity) => string
   - const REPUTATION_TRAIT_DEFINITIONS: ReputationTraitNode[]
   - const REPUTATION_TRAIT_MAP: ReadonlyMap<string, ReputationTraitNode>
   - const REACH_REPUTATION_TRAIT_IDS: readonly string[]
+- `src\data\ruins-delve-content.ts`
+  - function resolveDelveProseEntry: (archetype, beatName, outcome) => DelveProseEntry
+  - interface DelveProseEntry
+  - const DELVE_PROSE: DelveProseLookup
 - `src\data\social-encounter-content.ts`
   - function getSocialEncountersByLocationType: (locationType) => EncounterTemplate[]
   - function getSocialEncounterById: (id) => EncounterTemplate | undefined
-  - const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[]
+  - const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[]
   - const ALL_SOCIAL_TEMPLATES: EncounterTemplate[]
 - `src\data\social-scene-sphere-coloring.ts`
   - function getSphereFlavorPhrase: (approach, sphere) => string | undefined
@@ -726,6 +856,7 @@
   - function getAgentColor: (name) => string
   - interface SphereIconDef
   - _...3 more_
+- `src\data\story-beat-templates\index.ts` — function lookupStoryBeatTemplate: (id) => CompositionStoryBeatTemplate | undefined, const STORY_BEAT_TEMPLATE_REGISTRY: ReadonlyMap<string, CompositionStoryBeatTemplate>
 - `src\data\strategic-packs\builderStrategicPack.ts` — function getBuilderTemplate: (id) => StrategicActionTemplate | undefined, const BUILDER_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[]
 - `src\data\strategic-packs\courtStrategicPack.ts` — function getCourtTemplate: (id) => StrategicActionTemplate | undefined, const COURT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[]
 - `src\data\strategic-packs\merchantStrategicPack.ts` — function getMerchantTemplate: (id) => StrategicActionTemplate | undefined, const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[]
@@ -740,13 +871,13 @@
   - const LOCATION_TYPE_CONCEPT_ART: Record<string, SublocationConceptArt>
 - `src\data\tavern-names.ts` — function generateTavernName: (rng) => void
 - `src\data\temple-of-spheres-encounter-content.ts`
-  - function getTempleOfSpheresEncounterById: (id) => EncounterTemplate | undefined
+  - function getTempleOfSpheresEncounterById: (id) => UnifiedActionTemplate | undefined
   - const TEMPLE_OF_SPHERES_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterMeta>
-  - const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: EncounterTemplate[]
-  - const TEMPLE_OF_SPHERES_SOCIAL_TEMPLATES: EncounterTemplate[]
-  - const TS_JOIN_TEMPLATE: EncounterTemplate
-  - const TS_PROMOTION_TEMPLATE: EncounterTemplate
-  - _...1 more_
+  - const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[]
+  - const TEMPLE_OF_SPHERES_SENIOR_TEMPLATES: UnifiedActionTemplate[]
+  - const TEMPLE_OF_SPHERES_ELITE_TEMPLATES: UnifiedActionTemplate[]
+  - const TEMPLE_OF_SPHERES_SOCIAL_TEMPLATES: UnifiedActionTemplate[]
+  - _...4 more_
 - `src\data\terrain-modifiers.ts` — function getTerrainModifiers: (terrain) => Record<string, number>, const TERRAIN_MODIFIERS: Partial<Record<TerrainType, Record<string, number>>>
 - `src\data\terrain-transformation-content.ts`
   - function getTerrainTransformation: (trigger, terrain) => TerrainType | null
@@ -775,13 +906,13 @@
   - const SENTIMENT_GREEN
   - _...24 more_
 - `src\data\underking-court-encounter-content.ts`
-  - function getUnderkingCourtEncounterById: (id) => EncounterTemplate | undefined
+  - function getUnderkingCourtEncounterById: (id) => UnifiedActionTemplate | undefined
   - const UNDERKING_COURT_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterMeta>
-  - const UNDERKING_COURT_ENCOUNTER_TEMPLATES: EncounterTemplate[]
-  - const UNDERKING_COURT_SOCIAL_TEMPLATES: EncounterTemplate[]
-  - const UK_JOIN_TEMPLATE: EncounterTemplate
-  - const UK_PROMOTION_TEMPLATE: EncounterTemplate
-  - _...1 more_
+  - const UNDERKING_COURT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[]
+  - const UNDERKING_COURT_SENIOR_TEMPLATES: UnifiedActionTemplate[]
+  - const UNDERKING_COURT_ELITE_TEMPLATES: UnifiedActionTemplate[]
+  - const UNDERKING_COURT_SOCIAL_TEMPLATES: UnifiedActionTemplate[]
+  - _...4 more_
 - `src\data\unified-action-templates.ts`
   - function encounterTypeToCrud: (encounterType) => 'create' | 'read' | 'update' | 'delete'
   - function migrateActionTemplate: (old) => UnifiedActionTemplate
@@ -814,7 +945,7 @@
   - interface ActiveIntent
   - interface TopValue
   - interface BondSummary
-  - _...6 more_
+  - _...9 more_
 - `src\engine\agentLifecycle.ts`
   - function resetLifecycleCounter: () => void
   - function phaseAgentLifecycle: (state, nextEventId) => void
@@ -901,6 +1032,11 @@
   - function resolveLensOverlay: (overlays, hungerId) => LensOverlay | undefined
   - function shouldFireMortalEcho: (lens, dilemmaEmotionalTags, echoThreshold) => boolean
   - function composeLensedProse: (baseProse, overlays, lens, dilemmaEmotionalTags) => string
+- `src\engine\ascendantTray.ts`
+  - function classifyTrayTier: (template, 'rarityTier' | 'intrinsicTier' | 'actorAffinities' | 'targetCategories'>, ctx) => AscendantTrayTier
+  - type AscendantTrayTier
+  - const TRAY_RARE_RARITY_TIER_MIN
+  - const TRAY_SELF_TARGET_CATEGORIES
 - `src\engine\attachmentSlotResolver.ts`
   - function resolveSlotTag: (slotTag, subcategory) => string | undefined
   - function collectAgentAttachmentInventory: (graph, agentId) => SlotInventoryEntry[]
@@ -1101,6 +1237,7 @@
   - function generateCultureIdentities: (cosmology, rng) => void
   - _...4 more_
 - `src\engine\cultureMores.ts` — function composeCultureMores: (identity, seed) => string | null
+- `src\engine\culturePhonetics.ts` — function buildPhoneticSignature: (identity, cultureSeed, cultureId) => CulturePhoneticSignature, function generatePhoneticName: (signature, mode, rng) => void
 - `src\engine\curator.ts`
   - function scoreCurationCandidates: (candidates, lastTugAgentTicks, number>, lastTugReach, currentTick, sustainableRate, rng) => void
   - interface CurationCandidate
@@ -1152,6 +1289,7 @@
   - interface DeriveLocationActivitiesInput
   - interface DeriveLocationActivitiesResult
   - const LOCATION_ACTIVITY_CONSTANTS
+  - const MURMUR_TEMPLATES: Readonly<Record<LocationPulse, Readonly<Record<ActivityCategory, readonly string[]>>>>
 - `src\engine\digestBuffer.ts`
   - function appendDigestEntry: (buffer, entry) => void
   - function pruneDigestBuffer: (buffer, currentTick, retention) => DigestEntry[]
@@ -1223,8 +1361,9 @@
   - interface EconomicChronicleResult
 - `src\engine\effectAura.ts`
   - function collectAuraEffects: (graph) => AuraEntry[]
-  - function resolveAuraModifiers: (auras, targetAgentId, targetPos) => Partial<Record<string, number>>
+  - function resolveAuraModifiers: (graph, auras, targetAgentId, targetPos) => Partial<Record<string, number>>
   - function checkReactiveEffects: (graph, agentId, eventTrigger, tick, effectStates?, EffectRuntimeState>) => ReactiveCheckResult[]
+  - interface AgentPosition
   - interface ReactiveCheckResult
 - `src\engine\effectExecutors.ts`
   - function executeTeleport: (effect, ctx) => ExecutionResult
@@ -1246,6 +1385,7 @@
   - function checkAndFireActionTriggers: (effects, event, ctx, effectStates, EffectRuntimeState>) => ActionTriggerResult
   - interface ActionTriggerContext
   - interface ActionTriggerResult
+- `src\engine\effects\actorClassification.ts` — function classifyCoLocatedActor: (graph, selfId, otherId) => ActorAlignment, type ActorAlignment
 - `src\engine\effects\effectEvents.ts`
   - function processEffectEvent: (graph, agentId, event, effectStates, EffectRuntimeState>, tick, rng) => void
   - function applyEffectEventResult: (graph, result) => Map<string, EffectRuntimeState>
@@ -1254,7 +1394,7 @@
 - `src\engine\effects\effectPredicates.ts`
   - function evaluatePredicate: (predicate, ctx) => boolean
   - function evaluateOptionalCondition: (condition, ctx?) => boolean
-  - function buildPredicateContext: (graph, agentId, stepReach?, encounterType?) => PredicateContext
+  - function buildPredicateContext: (graph, agentId, stepReach?, encounterType?, hiddenMarks?, intelligenceRecords?) => PredicateContext
 - `src\engine\effects\effectQueries.ts`
   - function hasGrantedTrait: (graph, agentId, traitId, effectStates?, EffectRuntimeState>) => boolean
   - function getActionGates: (graph, agentId, effectStates?, EffectRuntimeState>, ctx?) => void
@@ -1273,11 +1413,25 @@
   - interface ResourceDeltaInput
   - interface ResourceDeltaResult
 - `src\engine\effectScope.ts` — function resolveScope: (graph, scope, casterId, targetId?) => ScopeResolution, interface ScopeResolution
+- `src\engine\effectShellRuntime.ts`
+  - function initializeFlipTables: (existingStates, FlipTableRuntimeState> | undefined, templateId, flipTables, ownerActorId, anchorAttachmentId, tick) => void
+  - function applyFlipTableTrigger: (existingStates, FlipTableRuntimeState> | undefined, runtimeId, globalSeed, tick) => FlipTableTriggerResult
+  - function applyFlipTableTriggerWithConfig: (existingStates, FlipTableRuntimeState> | undefined, runtimeId, config, globalSeed, tick) => FlipTableTriggerResult
+  - function resolveDuplicateGain: (policy, worsenRule, currentApplicationCount) => DuplicateGainResolution
+  - function selectResultBand: (bands, margin) => ResultBandConfig | undefined
+  - function buildBandSelectionRecord: (templateId, actorId, margin, tick, selected) => ResultBandSelectionRecord
+  - _...4 more_
 - `src\engine\effectTick.ts`
   - function tickEffects: (graph, agentId, tick, effectStates, EffectRuntimeState>) => EffectTickResult
   - function addEventStack: (attachmentId, effectStates, EffectRuntimeState>, trigger, maxStacks) => EffectRuntimeState | undefined
   - interface EffectTickResult
-- `src\engine\elderEssenceReward.ts` — function computeElderEssenceReward: (reveal, tick) => EssenceRewardResult, interface EssenceRewardResult
+- `src\engine\elderEssenceReward.ts`
+  - function awardElderEssence: (input) => EssenceRewardResult
+  - function computeElderEssenceReward: (reveal, tick, essencePool?) => EssenceRewardResult
+  - interface EssenceRewardResult
+  - interface AwardElderEssenceInput
+  - type EssenceDistributionMode
+  - type EssenceAwardSource
 - `src\engine\encounter.ts`
   - function applyGroupSupportLeverage: (progress, resolvingAgentId) => void
   - function selectGroupStepResolver: (state) => void
@@ -1286,7 +1440,14 @@
   - function advanceEncounter: (state, progress, success, tick, resolutionSnapshot?) => void
   - function isEncounterOccupied: (progress, currentTick) => boolean
   - _...4 more_
-- `src\engine\encounterAftermath.ts` — function appendRecentEvent: (existing, event) => TickEvent[], function applyEncounterAftermathReaction: (state, action, reaction, tick) => GameState
+- `src\engine\encounterAftermath.ts`
+  - function appendRecentEvent: (existing, event) => TickEvent[]
+  - function resolveAftermathTarget: (effect, action) => AftermathTarget
+  - function resolveAftermathContextForAgent: (state, agentId, reactionId?) => ResolvedAftermathContext | ResolveAftermathContextError
+  - function applyEncounterAftermathReaction: (state, action, reaction, tick, runtime) => void
+  - interface ResolvedAftermathContext
+  - interface AftermathMutationSummary
+  - _...7 more_
 - `src\engine\encounterAwareness.ts`
   - function resolveLocationToHex: (graph, locationId) => void
   - function computeAwarenessHops: (capability, reach) => number
@@ -1296,17 +1457,17 @@
   - function getDifficultyMultiplier: (tier) => number
   - function computeRewardEstimate: (template) => number
   - function computeTotalTickCost: (template) => number
-  - function buildDangerMap: (tiles) => Map<string, number>
-  - class EncounterCacheManager
-  - _...1 more_
+  - function computeRewardEstimateUnified: (template) => number
+  - function computeTotalTickCostUnified: (template) => number
+  - _...5 more_
 - `src\engine\encounterChains.ts`
   - function getChainProgress: (agentProperties, unknown>) => ChainProgress
   - function isChainStageUnlocked: (templateId, progress) => boolean
   - function computeChainBonus: (templateId, progress) => number
   - function recordChainStageCompletion: (templateId, progress) => void
+  - function classifyChainStage: (templateId, progress) => void
   - function getChainStatus: (progress) => Array<
-  - interface EncounterChain
-  - _...2 more_
+  - _...3 more_
 - `src\engine\encounterChoiceMemory.ts`
   - function getEncounterChoiceMemory: (progress, 'choiceHistory'>, stepIndex) => EncounterChoiceMemory | undefined
   - function getUnifiedActionChoiceMemory: (action, 'choiceHistory'>, stepIndex) => EncounterChoiceMemory | undefined
@@ -1317,12 +1478,12 @@
   - _...1 more_
 - `src\engine\encounterEventNode.ts`
   - function createEncounterEventNode: (params) => string | undefined
+  - function createUnifiedActionEventNode: (params) => string | undefined
   - function getLocationEncounterHistory: (graph, locationId, maxResults) => GraphNode[]
   - function getAgentEncounterHistory: (graph, agentId, maxResults) => GraphNode[]
   - interface CreateEncounterEventParams
-  - const ENCOUNTER_EVENT_ENABLED
-  - const ENCOUNTER_EVENT_PROFILE_THRESHOLD
-  - _...6 more_
+  - interface CreateUnifiedActionEventParams
+  - _...8 more_
 - `src\engine\encounterFilterPipeline.ts`
   - function filterByVisibility: (entries, agentId, graph) => EncounterCacheEntry[]
   - function filterByPrerequisites: (entries, agentId, graph) => EncounterCacheEntry[]
@@ -1345,7 +1506,7 @@
   - function computeFamiliarityPenalty: (record, templateId) => number
   - function computeExplorationBonus: (record, locationId, currentTick) => number
   - function computeRuinsBonus: (graph, locationId, agentId) => number
-  - _...21 more_
+  - _...22 more_
 - `src\engine\encounterSeeding.ts` — function evaluateEncounterSeeds: (state, tick, rng) => void
 - `src\engine\encounterSupportBundle.ts`
   - function prepareEncounterSupportBundle: (state, template, targetId, fallbackLocationId?) => EncounterSupportBinding[]
@@ -1375,13 +1536,13 @@
   - const DIVINE_MANDATE_THREAD_THRESHOLD
 - `src\engine\factionAwareness.ts` — function getFactionAwarenessEntries: (allEntries, agentId, graph, alreadyVisible) => EncounterCacheEntry[]
 - `src\engine\factionNetwork.ts`
+  - function areFactionsHostile: (graph, factionA, factionB) => boolean
   - function getFactionNodes: (graph) => GraphNode[]
   - function getFactionDefinitionForNode: (node) => FactionDefinition | null
+  - function getFactionDefinition: (id, dynamicDefs?, FactionDefinition>) => FactionDefinition | undefined
   - function getFactionNetworkSummary: (graph, factionId) => FactionNetworkSummary | null
   - interface FactionNetworkLocation
-  - interface FactionNetworkRelation
-  - interface FactionNetworkAmbition
-  - _...2 more_
+  - _...4 more_
 - `src\engine\factionOutcome.ts`
   - function processFactionJoinOutcome: (graph, progress, tick) => boolean
   - function processFactionPromotionOutcome: (graph, progress, tick, rng) => void
@@ -1420,10 +1581,10 @@
   - function initializeGameState: (archetype, avatarName, cosmology, seed, cols, rows) => void
   - function initializeGameStateFromIdentity: (identity, seed, cosmologyOverride?, mapSizeOverride?) => ReturnType<typeof initializeGameState>
   - function devSeedTheFirst: (state) => string
+  - function devSeedAscendantTestPackage: (state) => void
   - type MapSizePreset
   - const MAP_SIZE_PRESETS: Record<MapSizePreset, { cols: number; rows: number; label: string; description: string }>
-  - const DEFAULT_MAP_SIZE: MapSizePreset
-  - _...4 more_
+  - _...5 more_
 - `src\engine\ghostDots.ts`
   - function ghostDotOpacity: (createdTick, currentTick) => number
   - function updateGhostDots: (existing, previousAgentLocations, {...}, currentVisibleAgentIds, currentTick) => GhostDotEntry[]
@@ -1459,6 +1620,12 @@
   - interface HexActionResult
   - const HEX_BLESS_INFLUENCE_DELTA
   - _...24 more_
+- `src\engine\hexActorIndex.ts`
+  - function hexKey: (col, row) => HexKey
+  - function buildHexActorIndex: (graph) => HexActorIndex
+  - function getActorsOnHex: (index, col, row) => readonly string[]
+  - interface HexActorIndex
+  - type HexKey
 - `src\engine\hexGrid.ts` — function generateWorld: (cosmology, cols, rows, seed, livingCultures?, lostCultures?, cultureNameMap?, string>, cultureFoundationMap?, string>) => WorldGenResult, interface WorldGenResult
 - `src\engine\hexMovementPath.ts`
   - function findOrCreateLocationAtHex: (graph, hex, terrain?) => string
@@ -1483,6 +1650,7 @@
   - function getLineOfSight: (graph, ascendantId, hexCoord) => LineOfSight
   - function getHexCultures: (graph, col, row) => HexCultureSummary[]
   - _...6 more_
+- `src\engine\hiddenMarkProse.ts` — function generateMarkRevealMessage: (state, mark, revealedBy, tick) => string
 - `src\engine\hiddenMarks.ts`
   - function getAgentHiddenMarks: (state, agentId) => readonly HiddenMark[]
   - function getHiddenMarksByCategory: (state, category) => readonly HiddenMark[]
@@ -1490,7 +1658,7 @@
   - function checkMarkReveals: (state, agentId, encounterFamily) => readonly HiddenMark[]
   - function removeHiddenMark: (state, markId) => GameState
   - function revealHiddenMark: (state, markId, tick, revealedBy) => GameState
-  - _...8 more_
+  - _...10 more_
 - `src\engine\historicalCulture.ts` — function generateHistoricalCultures: (graph, cosmology, rng) => void, function assignHistoricalTerritories: (graph, historicalCultureIds, clusters, rng) => void
 - `src\engine\idleBehavior.ts`
   - function deriveAmbitionTarget: (agentId, agentLocationId, graph, distanceMatrix) => string | null
@@ -1505,6 +1673,9 @@
   - function generateEssence: (pool, generation, maxEssence) => void
   - function computeEssenceGeneration: (graph, ascendantId, controlEffects?) => EssenceGeneration
   - _...8 more_
+- `src\engine\initiativeCandidates.ts` — function generateInitiativeCandidates: (graph, agentId, locationId, tick, activeAmbitionTemplateIds) => InitiativeCandidateResult, interface InitiativeCandidateResult
+- `src\engine\initiativeLifecycle.ts` — function startInitiative: (graph, candidate, tick, rng) => void
+- `src\engine\initiativeOutcomes.ts` — function executeInitiativeOutcomes: (state, graph, progress, template, runtime?) => OutcomeResult, interface OutcomeResult
 - `src\engine\insiderBeatDetection.ts` — function getAvailableInsiderBeats: (graph, actorId) => InsiderBeat[]
 - `src\engine\intelligence.ts`
   - function getAgentIntelligence: (state, agentId) => readonly IntelligenceRecord[]
@@ -1512,6 +1683,8 @@
   - function hasIntelligenceAbout: (state, agentId, targetEntityId) => boolean
   - function getRegionIntelligence: (state, region) => readonly IntelligenceRecord[]
   - function hasRegionIntelligence: (state, category, region) => boolean
+  - function buildIntelligenceView: (state, agentId) => IntelligenceView
+  - _...25 more_
 - `src\engine\interventionCost.ts`
   - function triangularCost: (percentagePoints) => number
   - function computeSphereMultiplier: (agentSphere, encounterSphere) => number
@@ -1620,8 +1793,8 @@
   - function resetEventCounter: () => void
   - function phaseEncounterProgressionV2: (state, runtime?) => Partial<GameState>
   - function phaseDilemmaDetection: (state) => Partial<GameState>
-  - function phaseFamiliarityGain: (state) => Partial<GameState>
-  - _...9 more_
+  - function runDivineProximityPhase: (state) => DivineProximityPhaseResult
+  - _...10 more_
 - `src\engine\outcomeConsequences.ts`
   - function isProvingSliceTemplate: (templateId) => boolean
   - function computeOutcomeConsequence: (templateId, outcome, actorId, tick, context?) => OutcomeConsequence
@@ -1645,6 +1818,7 @@
 - `src\engine\phaseAgentDecision.ts` — function phaseAgentDecision: (state, encounterCache, distanceMatrix, rng) => void
 - `src\engine\phaseAttention.ts` — function resetTugCounter: () => void, function phaseAttention: (state, templates, rng) => void
 - `src\engine\phaseColocationDetection.ts` — function resetColocationEventCounter: () => void, function phaseColocationDetection: (state) => Partial<GameState>
+- `src\engine\phaseComposition.ts` — function phaseComposition: (state) => Partial<GameState>
 - `src\engine\phaseControlEffects.ts`
   - function resetControlEffectsCounter: () => void
   - function phaseControlEffects: (state) => Partial<GameState>
@@ -1656,10 +1830,12 @@
 - `src\engine\phaseDoom.ts` — function resetDoomCounter: () => void, function phaseDoom: (state) => Partial<GameState>
 - `src\engine\phaseEconomicChronicle.ts` — function phaseEconomicChronicle: (state) => Partial<GameState>
 - `src\engine\phaseEconomicTraits.ts` — function phaseEconomicTraits: (state) => Partial<GameState>
+- `src\engine\phaseEffectShells.ts` — function phaseEffectShells: (state) => Partial<GameState>
 - `src\engine\phaseEncounterTraits.ts`
   - function resetEncounterTraitInit: () => void
   - function processEncounterMastery: (graph, actorId, encounterId, stepSuccess, isCompleted, tick) => void
   - function processEncounterConditions: (graph, actorId, encounterId, stepSuccess, isCompleted, tick) => void
+- `src\engine\phaseFactionActions.ts` — function phaseFactionActions: (state) => void, const FACTION_ACTION_TEMPLATES: ReadonlyMap<FactionActionType, FactionActionTemplate>
 - `src\engine\phaseHexState.ts`
   - function phaseHexState: (state, pendingMutations) => Partial<GameState>
   - const HEX_DIVINE_INFLUENCE_DECAY_RATE
@@ -1669,6 +1845,8 @@
   - const HEX_TRANSFORM_COOLDOWN_TICKS
   - _...1 more_
 - `src\engine\phaseHiddenMarkDecay.ts` — function phaseHiddenMarkDecay: (state) => Partial<GameState>
+- `src\engine\phaseInitiativeProgress.ts` — function phaseInitiativeProgress: (state, rng) => void
+- `src\engine\phaseIntelligenceDecay.ts` — function phaseIntelligenceDecay: (state) => Partial<GameState>
 - `src\engine\phaseInteractionDepth.ts` — function phaseInteractionDepth: (state) => void
 - `src\engine\phaseMagicalSaturation.ts`
   - function phaseMagicalSaturation: (state) => Partial<GameState>
@@ -1681,10 +1859,10 @@
   - function resetOmenCounter: () => void
   - function phaseOmenAgenda: (state) => Partial<GameState>
   - function deriveOmenEncounterBias: (omenState) => Partial<Record<string, number>>
+  - function phaseEmittedOmenDecay: (state) => Partial<GameState>
+  - function deriveEmittedOmenEncounterBias: (emittedOmens, agentHexCol, agentHexRow) => Partial<Record<string, number>>
   - const OMEN_FIRST_ACTIVATION_TICK
-  - const OMEN_SECONDARY_THRESHOLD
-  - const OMEN_BEAT_INTERVAL_DEFAULT
-  - _...7 more_
+  - _...10 more_
 - `src\engine\phaseProsperity.ts`
   - function getProsperityTier: (prosperity) => ProsperityTier
   - function computeBaseIncome: (props, unknown>) => number
@@ -1699,7 +1877,8 @@
   - function determinePolarity: (template, graph, agentId) => 'positive' | 'negative' | null
   - function processReputationTally: (graph, agentId, encounterId, stepSuccess, encounterCompleted, tick) => void
   - function phaseReputationTraits: (state) => Partial<GameState>
-- `src\engine\phaseSettlementPromotion.ts` — function phaseSettlementPromotion: (state) => Partial<GameState>
+- `src\engine\phaseSecretsFavors.ts` — function phaseSecretsFavors: (state) => Partial<GameState>
+- `src\engine\phaseSettlementPromotion.ts` — function phaseSettlementPromotion: (state, runtime?) => Partial<GameState>
 - `src\engine\phaseSettlementReassessment.ts` — function phaseSettlementReassessment: (state) => Partial<GameState>
 - `src\engine\phaseSlotCaps.ts` — function phaseSlotCaps: (state) => void, function phaseDisposalTimeout: (state) => void
 - `src\engine\phaseSphereAggregation.ts`
@@ -1717,7 +1896,7 @@
   - interface SpherePressureTrace
 - `src\engine\phaseStrategicProjects.ts` — function phaseStrategicProjects: (state, rng) => void
 - `src\engine\phaseSublocations.ts`
-  - function phaseSublocations: (state, encounterCache?) => Partial<GameState>
+  - function phaseSublocations: (state, encounterCache?, runtime?) => Partial<GameState>
   - const SUBLOC_MARKET_SPAWN_PROSPERITY
   - const SUBLOC_MARKET_DISSOLVE_PROSPERITY
   - const SUBLOC_SMUGGLER_SPAWN_PROSPERITY
@@ -1739,6 +1918,13 @@
   - function forecastEncounterExpectedUtility: (entry, agentId, graph, rewardScale?) => EncounterForecast
   - interface EncounterForecast
   - _...9 more_
+- `src\engine\portfolioManager.ts`
+  - function isPortfolioPinned: (node) => boolean
+  - function getPortfolioPinnedAgents: (graph) => GraphNode[]
+  - function pinAgent: (graph, agentId, tick) => PortfolioPinResult
+  - function unpinAgent: (graph, agentId, tick) => PortfolioPinResult
+  - interface PortfolioPinResult
+  - const PORTFOLIO_MAX_PINNED
 - `src\engine\premonitionActions.ts`
   - function resetPremonitionCounter: () => void
   - function applyWhisperChoice: (state, agentId, agentName, nudge) => WhisperResult
@@ -1757,7 +1943,7 @@
   - _...1 more_
 - `src\engine\proseComposer.ts` — function composeProse: (layers) => string, function composeSummary: (layers) => string
 - `src\engine\proseEnrichment.ts`
-  - function gatherNarrativeContext: (graph, agentId, meetingRecord?, beatHistory?, doomIdentityMatrix?) => NarrativeContext
+  - function gatherNarrativeContext: (graph, agentId, meetingRecord?, beatHistory?, doomIdentityMatrix?, state?, tick?) => NarrativeContext
   - function enrichProse: (template, ctx) => string
   - function generateMeetingCallback: (ctx, rng) => void
   - interface NarrativeContext
@@ -1851,7 +2037,7 @@
   - function buildRelationshipState: (threadProps) => ReturnRelationshipState
   - function resolveReturn: (meetingRecord, ordeal, relationship, archetypeId, beatHistory) => void
   - function gatherRippleTargets: (graph, agentId) => RippleTarget[]
-  - function applyRippleConsequences: (graph, agentId, agentName, outcome, targets, tick, seed) => RippleConsequenceResult[]
+  - function applyRippleConsequences: (graph, agentId, agentName, outcome, targets, tick, seed, doomIdentityMatrix?) => RippleConsequenceResult[]
   - _...3 more_
 - `src\engine\revelationEmitter.ts`
   - function resetRevEventCounter: () => void
@@ -1903,6 +2089,36 @@
   - interface RoadPath
   - type RoadType
   - const ROAD_NETWORK_CONSTANTS
+- `src\engine\ruins\clueLifecycle.ts`
+  - function getAgentAttentionTier: (agentId, encounterProgress) => AttentionTier
+  - function selectClueRecipient: (params) => SelectClueRecipientResult
+  - function produceClueConsequence: (params) => string | null
+  - function spawnClueFromEvent: (params) => string | null
+  - function consumeCluesOnConvergence: (ruinId, graph, tick, delveId) => void
+  - function phaseClueDecay: (state) => Partial<GameState>
+  - _...6 more_
+- `src\engine\ruins\delveVariant.ts`
+  - function rollDelveConsequence: (scale, ruinMagnitude, partialCount, rng) => void
+  - function phaseDelveAdmission: (state) => Partial<GameState>
+  - function phaseDelveProgression: (state) => Partial<GameState>
+  - function phaseDelveEmergence: (state, runtime?) => Partial<GameState>
+  - function resolveEmergenceDecision: (state, choice, actingGodId, runtime?) => Partial<GameState>
+  - function abortDelve: (delveId, state) => Partial<GameState>
+- `src\engine\ruins\elderRuinSeeding.ts` — function seedElderRuins: (graph, tiles, seed, cols, provinceRoles) => void
+- `src\engine\ruins\perceiveRelay.ts` — function resolvePerceiveRelayAction: (templateId, state, targetId, rng) => void, const PERCEIVE_RELAY_TEMPLATE_IDS
+- `src\engine\ruins\placeOfPowerStreams.ts` — function phasePlaceOfPowerStreams: (state) => Partial<GameState>
+- `src\engine\ruins\questHooks.ts`
+  - function getEvidenceStrength: (ruinId, graph) => number
+  - function selectQuestTemplateForRuin: (ruinMagnitude) => string
+  - function buildQuestHookMessage: (ruinName, direction, guildName, sphereAlignment) => string
+  - function hexDirection: (from, to) => string
+  - function resetQuestHookEventCounter: () => void
+  - function phaseRuinQuestHooks: (state) => Partial<GameState>
+- `src\engine\ruins\ruinTransformation.ts`
+  - function transformRuinConsequence: (state, input, runtime?) => TransformRuinResult &
+  - interface TransformRuinInput
+  - interface TransformRuinResult
+  - type EmergenceChoice
 - `src\engine\scry.ts`
   - function createScryState: () => ScryState
   - function getCourtStructureDefinition: (structureType) => CourtStructureDefinition | null
@@ -1911,6 +2127,20 @@
   - function getEligiblePositions: (state, agentTier) => Position[]
   - function assignAgentToPosition: (state, positionId, agentId, title, essenceCost, tick) => ScryState
   - _...3 more_
+- `src\engine\secretGeneration.ts`
+  - function generateSecret: (targetAgent, graph, source, rng) => void
+  - function createSecretEdge: (discovererId, subjectId, secret, source, tick, graph) => KnowsSecretOfEdgeProperties | undefined
+  - function createFavorEdge: (debtorId, creditorId, magnitude, context, tick, graph) => boolean
+  - interface GeneratedSecret
+- `src\engine\secretsConsequences.ts`
+  - function applySecretRevelationConsequences: (secretEdgeId, secret, subjectId, revealerId, revealedToId, tick, graph) => SecretRevelationResult
+  - function applyFavorBreakingConsequences: (favorEdgeId, favor, debtorId, creditorId, tick, graph) => FavorBreakingResult
+  - interface SecretRevelationResult
+  - interface FavorBreakingResult
+- `src\engine\secretsFavorsConsequences.ts`
+  - function applySecretRevelationConsequences: (secret, edgeId, revealerId, subjectId, revealedToId, state) => Partial<GameState>
+  - function applyFavorBreakingConsequences: (favor, edgeId, debtorId, creditorId, state) => Partial<GameState>
+  - function applyFavorRedemptionConsequences: (edgeId, debtorId, creditorId, graph, tick) => void
 - `src\engine\seedAttachments.ts` — function seedAttachments: (graph) => void
 - `src\engine\settlementGenome\materialize.ts` — function materializeGenome: (graph, locationId, result, _seed) => void
 - `src\engine\settlementGenome\runGenome.ts`
@@ -1932,9 +2162,9 @@
   - function resetBalanceTelemetry: (runtime) => void
   - function touchWorld: (runtime) => void
   - function touchStructure: (runtime) => void
+  - function applyEncounterCacheUpdate: (runtime, update) => void
   - function ensureEncounterCache: (runtime, graph, tick, tiles) => EncounterCacheManager
-  - function ensureDistanceMatrix: (runtime, graph) => DistanceMatrix
-  - _...2 more_
+  - _...3 more_
 - `src\engine\socialCounterArgument.ts`
   - function findDominantAxis: (profile) => void
   - function selectCounterArgument: (graph, targetId, actorReach, leverage) => CounterArgumentResult | null
@@ -1942,16 +2172,17 @@
   - interface CounterArgumentResult
 - `src\engine\socialEncounterGeneration.ts`
   - function generateSocialCandidates: (graph, agentId, agentLocationId, distanceMatrix) => EncounterCacheEntry[]
+  - function computeReputationBondShift: (graph, targetAgentId) => number
   - function computeBondModifier: (graph, agentId, targetAgentId) => number
   - function getSharedFactionSocialTemplates: (graph, agentId, targetAgentId, locationType) => EncounterTemplate[]
 - `src\engine\socialLeverage.ts`
   - function getHighestFactionRank: (graph, agentId) => number
-  - function computeInitialLeverage: (graph, actorId, targetId) => number
+  - function computeInitialLeverage: (graph, actorId, targetId) => InitialLeverageResult
   - function isSocialSceneTemplate: (steps) => boolean
+  - interface InitialLeverageResult
   - const LEVERAGE_BOND_BONUS
   - const LEVERAGE_WEALTH_BONUS
-  - const LEVERAGE_WEALTH_RATIO
-  - _...5 more_
+  - _...6 more_
 - `src\engine\socialOutcome.ts`
   - function processSocialOutcome: (graph, progress, success, tick) => SocialOutcomeResult
   - interface SocialOutcomeResult
@@ -2243,6 +2474,12 @@
 - `src\services\narration\ServerBackend.ts` — class ServerBackend
 - `src\services\narration\useNarration.ts` — function useNarration: () => void
 - `src\services\narration\WorkerBackend.ts` — function encodeWav: (samples, sampleRate) => ArrayBuffer, class WorkerBackend
+- `src\testing\contentInvariants.ts`
+  - function assertValidUnifiedTemplate: (template) => void
+  - function assertValidEncounterTemplate: (template) => void
+  - function assertValidStep: (step, templateId) => void
+  - function assertNoDuplicateIds: (items) => void
+  - function assertAllValidReaches: (templates) => void
 - `src\types\agentKnowledge.ts`
   - function createEmptyAgentKnowledge: () => AgentKnowledge
   - interface AgentKnowledge
@@ -2299,9 +2536,9 @@
   - function getQuintessenceRatio: (node) => number
   - function clampQuintessence: (node) => number
   - function getQuintessenceThresholdState: (node) => QuintessenceThresholdState
-  - interface QuintessenceEvent
-  - const QUINTESSENCE_THRESHOLDS
-  - _...6 more_
+  - function isAtTranscendence: (node) => boolean
+  - function getQuintessenceBand: (node) => QuintessenceBand
+  - _...10 more_
 - `src\types\rarity.ts`
   - function getRarityName: (tier) => string
   - function getRarityColor: (tier) => string
@@ -2316,6 +2553,14 @@
   - interface TerrainResourceEntry
   - const RESOURCE_ABUNDANCE_THRESHOLDS
   - const RESOURCE_ICONS: Record<string, string>
+- `src\types\secretsFavors.ts`
+  - function secretMagnitudeProse: (magnitude) => string
+  - function favorMagnitudeProse: (magnitude) => string
+  - function secretTypeProse: (type) => string
+  - interface KnowsSecretOfEdgeProperties
+  - interface OwesFavorEdgeProperties
+  - type SecretType
+  - _...21 more_
 - `src\types\sphereAffinity.ts`
   - function triangleCost: (n) => number
   - function triangleTotal: (n) => number
@@ -2323,7 +2568,7 @@
   - function getTerrainSphereScores: (terrain) => Partial<Record<SphereName, number>>
   - interface SphereAffinity
   - interface SpherePressureEvent
-  - _...16 more_
+  - _...17 more_
 - `src\types\unifiedAction.ts`
   - function createDefaultHexRevelation: () => HexRevelation
   - function isActionStepBranch: (step) => step is ActionStepBranch
@@ -2331,7 +2576,7 @@
   - function isStepFailure: (outcome) => boolean
   - interface ActionStepOutcomeMetadata
   - interface IntelligenceRecord
-  - _...28 more_
+  - _...32 more_
 - `src\utils\portraitCompositor.ts`
   - function composePortrait: (originFragmentId, primarySphere, width, height) => Promise<HTMLCanvasElement | null>
   - function composePortraitCircular: (originFragmentId, primarySphere, diameter) => Promise<HTMLCanvasElement | null>
