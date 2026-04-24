@@ -427,6 +427,7 @@ Context for specific problem types lives in on-demand skills. **Always load `sta
 | Vault — enrich pages | `vault-enrich` | Add cross-refs, expand content, fix issues. `/kb-enrich [page]` |
 | Image manipulation | `image-manipulation` | Geometric clipping, alpha masks, hex tile pipeline |
 | QA sweeps | `qa-orchestrator` | Systematic UI/UX/frontend QA |
+| Interface regression sweep | `playtest-interface` | Cowork-runnable interface playtest — drives Chrome MCP through the game, asserts every IA manifest surface via `__DEBUG`, produces structured PASS/FAIL/SURPRISE report. `/playtest-interface [url]` |
 | Testing & contracts | `testing-patterns` | Writing tests for engine or HexMapV2 changes. Contract test patterns, dependency maps, anti-patterns, coverage gap reference. |
 | Encounter tuning & analysis | `agent-analyser` | Analysing encounter log TSV exports for agent behavior, balance, variety, movement, capability growth, idle rates. Upload logs and ask for analysis. |
 | **Impediment reporting (always active)** | `impediment-reporter` | **Every session, every agent.** Log blockers and workarounds to `Docs/impediments.md` as they occur. Part of Definition of Done. |
