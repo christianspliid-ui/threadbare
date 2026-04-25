@@ -380,6 +380,20 @@ Work is not "done" until it is deployed and documented. Do all of these automati
 - [ ] **Update Linear** — move issue to appropriate state, add completion comment
 - [ ] **Update vault log** — Append to `log.md` via Obsidian MCP what was changed in this session
 
+**Weekly continuous-improvement cycle (Fridays):**
+1. 14:00 UTC — GitHub Action drift scan runs and posts per-signal Linear issues (label: `drift-scan`) in Continuous Improvement.
+2. ~15:00 UTC — Weekly retrospective (via `retrospective` skill) reads that week's `drift-scan`-labeled issues as its **first input** before the impediment log. Run via the `weekly-retro` scheduled task or manually with `/retrospective`.
+
+To create the `weekly-retro` scheduled task (do this once in a non-scheduled CC session):
+```
+create_scheduled_task(
+  taskId: "weekly-retro",
+  description: "Run weekly retrospective reading drift-scan issues + impediments log (Fridays ~1 hour after drift scan)",
+  cronExpression: "0 17 * * 5",  // adjust to your local time equivalent of 15:00 UTC
+  prompt: "Run the weekly retrospective. Invoke the retrospective skill via the Skill tool and follow it exactly. It will load this week's drift-scan-labeled Linear issues from Continuous Improvement as Step 0, then synthesize with Docs/impediments.md. Write output to Docs/retrospectives/YYYY-MM-DD-retro.md. Implement quick wins. Open Linear issues for larger improvements. Execute autonomously."
+)
+```
+
 ## Skill Tree Layout
 
 The repo has two skill directories; they serve different agents and do NOT have precedence between them — they are audience-separated.
