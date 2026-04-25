@@ -49,3 +49,4 @@
 - **work** | THR-245 shipped: completed contentInvariants v2 sweep across vocabulary/fixed-enum data tests with fixed-enum source annotations.
 - **work** | THR-251 shipped: added completed-composition retention GC path in phase runner plus six lifecycle tests.
 - **work** | THR-256 shipped: traceBuffer now normalizes missing category/summary (legacy type fallback) and ambition_progress traces emit explicit summaries; CLI traces no longer show [undefined].
+- **work** | THR-258 shipped: phaseComposition now evaluates edge-exists world predicates with runtime FilterQuery support (`and`/`or`/`not`/`prop-equals`/`has-edge`) plus fail-soft warnings and 15 edge-exists tests.
