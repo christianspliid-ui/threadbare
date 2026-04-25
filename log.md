@@ -48,3 +48,4 @@
 - **work** | THR-273 shipped: weekly drift scan workflow + four-signal script (S1-S4) with fail-soft isolation, synthetic tests, and drift-scan issue publishing.
 - **work** | THR-245 shipped: completed contentInvariants v2 sweep across vocabulary/fixed-enum data tests with fixed-enum source annotations.
 - **work** | THR-251 shipped: added completed-composition retention GC path in phase runner plus six lifecycle tests.
+- **work** | THR-256 shipped: traceBuffer now normalizes missing category/summary (legacy type fallback) and ambition_progress traces emit explicit summaries; CLI traces no longer show [undefined].

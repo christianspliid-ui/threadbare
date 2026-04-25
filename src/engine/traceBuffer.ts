@@ -1,10 +1,39 @@
 import type { TraceEntry } from '../types/trace';
 
 const BUFFER_SIZE = 500;
+const FALLBACK_TRACE_CATEGORY = 'engine_warning';
+const FALLBACK_TRACE_SUMMARY_PREFIX = 'trace';
 
 let buffer: TraceEntry[] = [];
 let nextId = 0;
 let enabled = false;
+
+function asNonEmptyString(value: unknown): string | null {
+  return typeof value === 'string' && value.trim().length > 0 ? value : null;
+}
+
+function normalizeTraceEntry(
+  entry: Omit<TraceEntry, 'id' | 'timestamp'>
+): Omit<TraceEntry, 'id' | 'timestamp'> {
+  const raw = entry as Record<string, unknown>;
+  const legacyType = asNonEmptyString(raw.type);
+  const legacyAction = asNonEmptyString(raw.action);
+
+  const normalizedCategory =
+    asNonEmptyString(raw.category) ?? legacyType ?? FALLBACK_TRACE_CATEGORY;
+  const normalizedSummary =
+    asNonEmptyString(raw.summary) ??
+    asNonEmptyString(raw.message) ??
+    (legacyType && legacyAction ? `${legacyType}:${legacyAction}` : null) ??
+    (legacyType ? `${legacyType}` : null) ??
+    `${FALLBACK_TRACE_SUMMARY_PREFIX}:${normalizedCategory}`;
+
+  return {
+    ...(entry as TraceEntry),
+    category: normalizedCategory,
+    summary: normalizedSummary,
+  };
+}
 
 /**
  * Emit a trace entry to the buffer.
@@ -15,9 +44,10 @@ export function emitTrace(
   entry: Omit<TraceEntry, 'id' | 'timestamp'>
 ): void {
   if (!enabled) return;
+  const normalizedEntry = normalizeTraceEntry(entry);
 
   buffer.push({
-    ...entry,
+    ...normalizedEntry,
     id: nextId++,
     timestamp: Date.now(),
   } as TraceEntry);
