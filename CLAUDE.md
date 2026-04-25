@@ -365,6 +365,7 @@ Work is not "done" until it is deployed and documented. Do all of these automati
 ## Session Workflow
 
 - [ ] Read this file for orientation
+- [ ] Load `Docs/ubiquitous-language/README.md` (always-load UL index) and use its canonical terms for this session
 - [ ] **First tool call of any coding session:** run `node --experimental-strip-types scripts/session-precheck.ts` and compare its `fingerprint ...` line against expected sandbox capabilities before starting feature work
 - [ ] **Check Linear for work** — query issues by state per the protocol in `Docs/plans/2026-04-13-linear-coordination-protocol.md`:
   - **Cowork:** Run the board scan from `Docs/plans/2026-04-13-linear-coordination-protocol.md` § Cowork Session Start — one `list_issues(limit:250)` call, bucket in memory by `status`. Covers In Design, Implementation Planning, Ready for Dev, Ready for Codex, and Todo in a single query.
@@ -376,6 +377,7 @@ Work is not "done" until it is deployed and documented. Do all of these automati
 - [ ] Check `.planning/ROADMAP.md` for legacy milestone overview
 - [ ] Read relevant design doc in `Docs/plans/` before writing code
 - [ ] **Upstream health check** — if the feature depends on upstream pipeline throughput, verify the pipeline is producing output before coding. A feature wired to a dead pipeline is wasted work.
+- [ ] **Terminology authority check** — if sources disagree on term definitions, UL wins (`Docs/ubiquitous-language/README.md` + shard entries)
 - [ ] After completing work, follow the **Definition of Done** above
 - [ ] **Update Linear** — move issue to appropriate state, add completion comment
 - [ ] **Update vault log** — Append to `log.md` via Obsidian MCP what was changed in this session
