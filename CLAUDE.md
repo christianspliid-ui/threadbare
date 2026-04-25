@@ -365,6 +365,7 @@ Work is not "done" until it is deployed and documented. Do all of these automati
 ## Session Workflow
 
 - [ ] Read this file for orientation
+- [ ] **Read the Ubiquitous Language index** — `Docs/ubiquitous-language/README.md` (always-load, ~3k tokens). Load individual shard files on demand when the task touches their domain. **UL wins on terminology disagreements** — when this file, Obsidian, plan docs, or code comments conflict with the UL, the UL definition is correct and the conflicting source needs reconciliation (open a `UL-proposal` Linear issue).
 - [ ] **First tool call of any coding session:** run `node --experimental-strip-types scripts/session-precheck.ts` and compare its `fingerprint ...` line against expected sandbox capabilities before starting feature work
 - [ ] **Check Linear for work** — query issues by state per the protocol in `Docs/plans/2026-04-13-linear-coordination-protocol.md`:
   - **Cowork:** Run the board scan from `Docs/plans/2026-04-13-linear-coordination-protocol.md` § Cowork Session Start — one `list_issues(limit:250)` call, bucket in memory by `status`. Covers In Design, Implementation Planning, Ready for Dev, Ready for Codex, and Todo in a single query.
@@ -403,6 +404,7 @@ Context for specific problem types lives in on-demand skills. **Always load `sta
 
 | Domain | Skill | When to load |
 |--------|-------|-------------|
+| **Terminology (always active)** | `ubiquitous-language` | Session start — load `Docs/ubiquitous-language/README.md` as orientation. Load specific shards on demand. Propose new terms via Linear `UL-proposal` when encountering undeclared concepts. UL wins on all terminology disagreements. |
 | **Foundational (load first)** | `state-of-game-design` | Always — before any other domain skill. Cosmology, reaches, spheres, action verbs, prerequisites, architectural decisions. |
 | **Game design direction** | `game-design-direction` | During In Design phase for player-facing features. Loads Vision/ + taste profile, runs pre-design debate when direction is contested, runs Vision audit at finalization. Load alongside `state-of-game-design`. |
 | **Systemic wiring guide** | `Docs/plans/2026-04-16-systemic-wiring-guide.md` | **Before any content authoring.** The 7 engine capabilities content authors must know: enrichment placeholders, encounter seeding, hidden marks, reputation flow, graph ops, intelligence, divine intervention. Read this before encounter-pipeline, attachment-pipeline, or prose-content-systems. If you don't know what the engine can do, you'll write hardcoded fiction. |
