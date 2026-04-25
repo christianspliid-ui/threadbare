@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { phaseComposition } from '../phaseComposition';
 import type { GameState, ActiveComposition } from '../../types/gameState';
-import type { Phase, WorldPredicate } from '../../composition-dsl/schema';
+import type { FilterQuery, Phase, WorldPredicate } from '../../composition-dsl/schema';
 import { WorldGraph } from '../graph';
-import type { GraphNode } from '../../types/graph';
+import type { EdgeType, GraphEdge, GraphNode } from '../../types/graph';
 
 // ─── Minimal GameState factory ─────────────────────────────────────
 
@@ -374,5 +374,348 @@ describe('evaluatePhasePredicateV1 — and/or/not wrapping new ops', () => {
     const result = phaseComposition(state);
     const updated = result.activeCompositions?.find((c) => c.compositionId === 'comp-1');
     expect(updated?.activatedPhaseIds).toContain('p5');
+  });
+});
+
+// ─── edge-exists tests ─────────────────────────────────────────────
+
+function addNode(
+  graph: WorldGraph,
+  id: string,
+  type: GraphNode['type'],
+  properties: Record<string, unknown>
+): void {
+  graph.addNode({
+    id,
+    type,
+    name: id,
+    properties,
+  });
+}
+
+function addEdge(
+  graph: WorldGraph,
+  id: string,
+  source: string,
+  target: string,
+  type: EdgeType
+): void {
+  const edge: GraphEdge = {
+    id,
+    source,
+    target,
+    type,
+    properties: {},
+  };
+  graph.addEdge(edge);
+}
+
+function runEdgeExistsPredicate(
+  predicate: WorldPredicate,
+  setupGraph: (graph: WorldGraph) => void
+): { activated: boolean } {
+  const comp = makeActiveComposition('comp-edge', [makePhase('p-edge', predicate)]);
+  const state = makeState([comp]);
+  setupGraph(state.graph as WorldGraph);
+  const result = phaseComposition(state);
+  const updated = result.activeCompositions?.find((c) => c.compositionId === 'comp-edge');
+  return { activated: Boolean(updated?.activatedPhaseIds.includes('p-edge')) };
+}
+
+describe('evaluatePhasePredicateV1 — edge-exists predicate', () => {
+  it('passes when a from-node has the configured edge and toFilter is omitted', () => {
+    const result = runEdgeExistsPredicate(
+      {
+        op: 'edge-exists',
+        fromFilter: { op: 'prop-equals', prop: 'role', value: 'source' },
+        edgeType: 'relates_to',
+      },
+      (graph) => {
+        addNode(graph, 'a', 'actor', { role: 'source' });
+        addNode(graph, 'b', 'actor', { role: 'target' });
+        addEdge(graph, 'e1', 'a', 'b', 'relates_to');
+      }
+    );
+    expect(result.activated).toBe(true);
+  });
+
+  it('fails when no node matches fromFilter', () => {
+    const result = runEdgeExistsPredicate(
+      {
+        op: 'edge-exists',
+        fromFilter: { op: 'prop-equals', prop: 'role', value: 'source' },
+        edgeType: 'relates_to',
+      },
+      (graph) => {
+        addNode(graph, 'a', 'actor', { role: 'other' });
+        addNode(graph, 'b', 'actor', { role: 'target' });
+        addEdge(graph, 'e1', 'a', 'b', 'relates_to');
+      }
+    );
+    expect(result.activated).toBe(false);
+  });
+
+  it('fails when from-node matches but does not have the requested edge type', () => {
+    const result = runEdgeExistsPredicate(
+      {
+        op: 'edge-exists',
+        fromFilter: { op: 'prop-equals', prop: 'role', value: 'source' },
+        edgeType: 'relates_to',
+      },
+      (graph) => {
+        addNode(graph, 'a', 'actor', { role: 'source' });
+        addNode(graph, 'b', 'location', { role: 'target' });
+        addEdge(graph, 'e1', 'a', 'b', 'located_at');
+      }
+    );
+    expect(result.activated).toBe(false);
+  });
+
+  it('passes when toFilter is provided and an edge target matches it', () => {
+    const result = runEdgeExistsPredicate(
+      {
+        op: 'edge-exists',
+        fromFilter: { op: 'prop-equals', prop: 'role', value: 'source' },
+        edgeType: 'relates_to',
+        toFilter: { op: 'prop-equals', prop: 'factionDefId', value: 'divine_order' },
+      },
+      (graph) => {
+        addNode(graph, 'a', 'actor', { role: 'source' });
+        addNode(graph, 'b', 'actor', { actorType: 'faction', factionDefId: 'divine_order' });
+        addEdge(graph, 'e1', 'a', 'b', 'relates_to');
+      }
+    );
+    expect(result.activated).toBe(true);
+  });
+
+  it('fails when toFilter is provided and no edge target matches it', () => {
+    const result = runEdgeExistsPredicate(
+      {
+        op: 'edge-exists',
+        fromFilter: { op: 'prop-equals', prop: 'role', value: 'source' },
+        edgeType: 'relates_to',
+        toFilter: { op: 'prop-equals', prop: 'factionDefId', value: 'divine_order' },
+      },
+      (graph) => {
+        addNode(graph, 'a', 'actor', { role: 'source' });
+        addNode(graph, 'b', 'actor', { actorType: 'faction', factionDefId: 'other_order' });
+        addEdge(graph, 'e1', 'a', 'b', 'relates_to');
+      }
+    );
+    expect(result.activated).toBe(false);
+  });
+
+  it('passes when any matching from-node satisfies the edge condition', () => {
+    const result = runEdgeExistsPredicate(
+      {
+        op: 'edge-exists',
+        fromFilter: { op: 'prop-equals', prop: 'role', value: 'source' },
+        edgeType: 'relates_to',
+        toFilter: { op: 'prop-equals', prop: 'status', value: 'chosen' },
+      },
+      (graph) => {
+        addNode(graph, 's1', 'actor', { role: 'source' });
+        addNode(graph, 's2', 'actor', { role: 'source' });
+        addNode(graph, 't1', 'actor', { status: 'other' });
+        addNode(graph, 't2', 'actor', { status: 'chosen' });
+        addEdge(graph, 'e1', 's1', 't1', 'relates_to');
+        addEdge(graph, 'e2', 's2', 't2', 'relates_to');
+      }
+    );
+    expect(result.activated).toBe(true);
+  });
+
+  it('supports and in fromFilter', () => {
+    const result = runEdgeExistsPredicate(
+      {
+        op: 'edge-exists',
+        fromFilter: {
+          op: 'and',
+          terms: [
+            { op: 'prop-equals', prop: 'role', value: 'source' },
+            { op: 'prop-equals', prop: 'tier', value: 2 },
+          ],
+        },
+        edgeType: 'relates_to',
+      },
+      (graph) => {
+        addNode(graph, 'a', 'actor', { role: 'source', tier: 2 });
+        addNode(graph, 'b', 'actor', {});
+        addEdge(graph, 'e1', 'a', 'b', 'relates_to');
+      }
+    );
+    expect(result.activated).toBe(true);
+  });
+
+  it('supports or in fromFilter', () => {
+    const result = runEdgeExistsPredicate(
+      {
+        op: 'edge-exists',
+        fromFilter: {
+          op: 'or',
+          terms: [
+            { op: 'prop-equals', prop: 'role', value: 'missing' },
+            { op: 'prop-equals', prop: 'role', value: 'source' },
+          ],
+        },
+        edgeType: 'relates_to',
+      },
+      (graph) => {
+        addNode(graph, 'a', 'actor', { role: 'source' });
+        addNode(graph, 'b', 'actor', {});
+        addEdge(graph, 'e1', 'a', 'b', 'relates_to');
+      }
+    );
+    expect(result.activated).toBe(true);
+  });
+
+  it('supports not in fromFilter', () => {
+    const result = runEdgeExistsPredicate(
+      {
+        op: 'edge-exists',
+        fromFilter: {
+          op: 'not',
+          term: { op: 'prop-equals', prop: 'blocked', value: true },
+        },
+        edgeType: 'relates_to',
+      },
+      (graph) => {
+        addNode(graph, 'a', 'actor', { blocked: false });
+        addNode(graph, 'b', 'actor', {});
+        addEdge(graph, 'e1', 'a', 'b', 'relates_to');
+      }
+    );
+    expect(result.activated).toBe(true);
+  });
+
+  it('supports has-edge inside toFilter', () => {
+    const result = runEdgeExistsPredicate(
+      {
+        op: 'edge-exists',
+        fromFilter: { op: 'prop-equals', prop: 'role', value: 'source' },
+        edgeType: 'located_at',
+        toFilter: {
+          op: 'has-edge',
+          edgeType: 'contains',
+          toFilter: { op: 'prop-equals', prop: 'marker', value: 'anchor' },
+        },
+      },
+      (graph) => {
+        addNode(graph, 'source', 'actor', { role: 'source' });
+        addNode(graph, 'target', 'location', {});
+        addNode(graph, 'anchor', 'location', { marker: 'anchor' });
+        addEdge(graph, 'e1', 'source', 'target', 'located_at');
+        addEdge(graph, 'e2', 'target', 'anchor', 'contains');
+      }
+    );
+    expect(result.activated).toBe(true);
+  });
+
+  it('warns and fails for unsupported has-tag in fromFilter', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const result = runEdgeExistsPredicate(
+        {
+          op: 'edge-exists',
+          fromFilter: { op: 'has-tag', axis: 'archetype', value: 'witness' },
+          edgeType: 'relates_to',
+        },
+        (graph) => {
+          addNode(graph, 'a', 'actor', { tags: ['witness'] });
+          addNode(graph, 'b', 'actor', {});
+          addEdge(graph, 'e1', 'a', 'b', 'relates_to');
+        }
+      );
+      expect(result.activated).toBe(false);
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('FilterQuery op "has-tag"'));
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
+  it('warns and fails for unsupported has-any-tag in fromFilter', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const result = runEdgeExistsPredicate(
+        {
+          op: 'edge-exists',
+          fromFilter: { op: 'has-any-tag', axis: 'reach', values: ['mind'] },
+          edgeType: 'relates_to',
+        },
+        (graph) => {
+          addNode(graph, 'a', 'actor', { tags: ['mind'] });
+          addNode(graph, 'b', 'actor', {});
+          addEdge(graph, 'e1', 'a', 'b', 'relates_to');
+        }
+      );
+      expect(result.activated).toBe(false);
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('FilterQuery op "has-any-tag"'));
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
+  it('warns and fails for unsupported node-class in fromFilter', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const result = runEdgeExistsPredicate(
+        {
+          op: 'edge-exists',
+          fromFilter: { op: 'node-class', class: 'generic' },
+          edgeType: 'relates_to',
+        },
+        (graph) => {
+          addNode(graph, 'a', 'actor', {});
+          addNode(graph, 'b', 'actor', {});
+          addEdge(graph, 'e1', 'a', 'b', 'relates_to');
+        }
+      );
+      expect(result.activated).toBe(false);
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('FilterQuery op "node-class"'));
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
+  it('warns and fails for unknown FilterQuery op in fromFilter', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const result = runEdgeExistsPredicate(
+        {
+          op: 'edge-exists',
+          fromFilter: {
+            op: 'unknown-filter-op',
+          } as unknown as FilterQuery,
+          edgeType: 'relates_to',
+        },
+        (graph) => {
+          addNode(graph, 'a', 'actor', {});
+          addNode(graph, 'b', 'actor', {});
+          addEdge(graph, 'e1', 'a', 'b', 'relates_to');
+        }
+      );
+      expect(result.activated).toBe(false);
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Unknown FilterQuery op "unknown-filter-op"'));
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
+  it('preserves unknown WorldPredicate warning behavior', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const comp = makeActiveComposition('comp-unknown', [
+        makePhase('p1', { op: 'unknown-world-op' } as unknown as WorldPredicate),
+      ]);
+      const state = makeState([comp]);
+      const result = phaseComposition(state);
+      const updated = result.activeCompositions?.find((c) => c.compositionId === 'comp-unknown');
+      expect(updated?.activatedPhaseIds).not.toContain('p1');
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('[phaseComposition] Unknown predicate op "unknown-world-op"')
+      );
+    } finally {
+      warnSpy.mockRestore();
+    }
   });
 });

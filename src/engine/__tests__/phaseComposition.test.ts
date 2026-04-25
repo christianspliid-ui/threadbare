@@ -3,7 +3,11 @@ import { phaseComposition } from '../phaseComposition';
 import type { GameState, ActiveComposition } from '../../types/gameState';
 import type { Phase } from '../../composition-dsl/schema';
 import { WorldGraph } from '../graph';
-import { PHASE_RUNNER_MAX_COMPOSITIONS_PER_TICK } from '../../data/composition-config';
+import {
+  PHASE_RUNNER_MAX_COMPOSITIONS_PER_TICK,
+  COMPOSITION_COMPLETED_RETENTION_TICKS,
+  COMPOSITION_FAILED_RETENTION_TICKS,
+} from '../../data/composition-config';
 
 // ─── Minimal GameState factory ──────────────────────────────────────
 
@@ -172,6 +176,95 @@ describe('phaseComposition', () => {
       const updatedAll = result.activeCompositions ?? [];
       const activated = updatedAll.filter((c) => c.activatedPhaseIds.includes('p1'));
       expect(activated.length).toBe(PHASE_RUNNER_MAX_COMPOSITIONS_PER_TICK);
+    });
+  });
+
+  describe('composition GC', () => {
+    it('does not garbage-collect active compositions', () => {
+      const comp = {
+        ...makeActiveComposition('comp-active', []),
+        firedAtTick: 0,
+        lastEvaluationTick: 0,
+      };
+      const state = makeState([comp], 2, { tick: 1000 });
+      const result = phaseComposition(state);
+
+      expect(result.activeCompositions?.some((c) => c.compositionId === 'comp-active')).toBe(true);
+    });
+
+    it('keeps completed compositions within retention', () => {
+      const comp: ActiveComposition & { phases: Phase[] } = {
+        ...makeActiveComposition('comp-completed-keep', []),
+        status: 'completed',
+        firedAtTick: 5,
+        activatedPhaseIds: ['p1'],
+        phaseActivationTicks: { p1: 10 },
+      };
+      const state = makeState([comp], 2, {
+        tick: 10 + COMPOSITION_COMPLETED_RETENTION_TICKS - 1,
+      });
+      const result = phaseComposition(state);
+
+      expect(result.activeCompositions?.some((c) => c.compositionId === 'comp-completed-keep')).toBe(true);
+    });
+
+    it('drops completed compositions beyond retention', () => {
+      const comp: ActiveComposition & { phases: Phase[] } = {
+        ...makeActiveComposition('comp-completed-drop', []),
+        status: 'completed',
+        firedAtTick: 5,
+        activatedPhaseIds: ['p1'],
+        phaseActivationTicks: { p1: 10 },
+      };
+      const state = makeState([comp], 2, {
+        tick: 10 + COMPOSITION_COMPLETED_RETENTION_TICKS + 1,
+      });
+      const result = phaseComposition(state);
+
+      expect(result.activeCompositions?.some((c) => c.compositionId === 'comp-completed-drop')).toBe(false);
+    });
+
+    it('keeps failed compositions within retention', () => {
+      const comp: ActiveComposition & { phases: Phase[] } = {
+        ...makeActiveComposition('comp-failed-keep', []),
+        status: 'failed',
+        firedAtTick: 100,
+      };
+      const state = makeState([comp], 2, {
+        tick: 100 + COMPOSITION_FAILED_RETENTION_TICKS - 1,
+      });
+      const result = phaseComposition(state);
+
+      expect(result.activeCompositions?.some((c) => c.compositionId === 'comp-failed-keep')).toBe(true);
+    });
+
+    it('drops failed compositions beyond retention', () => {
+      const comp: ActiveComposition & { phases: Phase[] } = {
+        ...makeActiveComposition('comp-failed-drop', []),
+        status: 'failed',
+        firedAtTick: 100,
+      };
+      const state = makeState([comp], 2, {
+        tick: 100 + COMPOSITION_FAILED_RETENTION_TICKS + 5,
+      });
+      const result = phaseComposition(state);
+
+      expect(result.activeCompositions?.some((c) => c.compositionId === 'comp-failed-drop')).toBe(false);
+    });
+
+    it('uses firedAtTick fallback for completed compositions with empty phaseActivationTicks', () => {
+      const comp: ActiveComposition & { phases: Phase[] } = {
+        ...makeActiveComposition('comp-completed-fallback', []),
+        status: 'completed',
+        firedAtTick: 10,
+        phaseActivationTicks: {},
+      };
+      const state = makeState([comp], 2, {
+        tick: 10 + COMPOSITION_COMPLETED_RETENTION_TICKS + 1,
+      });
+      const result = phaseComposition(state);
+
+      expect(result.activeCompositions?.some((c) => c.compositionId === 'comp-completed-fallback')).toBe(false);
     });
   });
 

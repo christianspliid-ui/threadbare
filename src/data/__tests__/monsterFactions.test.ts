@@ -12,11 +12,14 @@ import type { LairTier, DangerZone } from '../../types/monster';
 import { MONSTER_FACTION_DEFINITIONS, getMonsterFactionBySphere } from '../monster-faction-definitions';
 import { CREATION_SPHERE_NAMES } from '../../types/index';
 
+// contentInvariants sweep v2 (THR-245): kept 3 structural (fixed-enum), replaced 0 growth-tracking
+
 // ─── Test 1: LairTier type validation ────────────────────────────────────────
 
 describe('LairTier type', () => {
   it('accepts valid values: minor, major, legendary', () => {
     const validTiers: LairTier[] = ['minor', 'major', 'legendary'];
+    // Fixed LairTier union in src/types/monster.ts.
     expect(validTiers).toHaveLength(3);
     expect(validTiers).toContain('minor');
     expect(validTiers).toContain('major');
@@ -36,7 +39,8 @@ describe('LairTier type', () => {
 describe('SPHERE_ARCHETYPE_MAP', () => {
   it('has exactly 8 creation sphere entries', () => {
     const keys = Object.keys(SPHERE_ARCHETYPE_MAP);
-    expect(keys).toHaveLength(8);
+    // 8 creation spheres — see CREATION_SPHERE_NAMES in src/types/index.ts.
+    expect(keys).toHaveLength(CREATION_SPHERE_NAMES.length);
   });
 
   it('covers all 8 creation spheres', () => {
@@ -135,7 +139,8 @@ describe('MONSTER_FACTION_DEFINITIONS shape', () => {
 
 describe('MONSTER_FACTION_DEFINITIONS count', () => {
   it('has exactly 8 entries (one per creation sphere)', () => {
-    expect(MONSTER_FACTION_DEFINITIONS).toHaveLength(8);
+    // One monster faction per creation sphere in src/types/index.ts.
+    expect(MONSTER_FACTION_DEFINITIONS).toHaveLength(CREATION_SPHERE_NAMES.length);
   });
 
   it('has one entry per creation sphere', () => {

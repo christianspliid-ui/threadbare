@@ -9,13 +9,15 @@
  */
 
 import type { GameState, ActiveComposition } from '../types/gameState';
-import type { Phase, WorldPredicate } from '../composition-dsl/schema';
+import type { FilterQuery, Phase, WorldPredicate } from '../composition-dsl/schema';
 import type { StoryBeatPriority } from '../types/attention';
+import type { EdgeType, GraphNode, NodeType } from '../types/graph';
 import { emitTrace } from './traceBuffer';
 import {
   PHASE_RUNNER_MAX_COMPOSITIONS_PER_TICK,
   PHASE_ACTIVATION_COOLDOWN_TICKS,
   COMPOSITION_FAILED_RETENTION_TICKS,
+  COMPOSITION_COMPLETED_RETENTION_TICKS,
   STORY_BEAT_DEFAULT_MOOD,
   STORY_BEAT_DEFAULT_SPHERE,
   STORY_BEAT_DEFAULT_VOICE,
@@ -24,7 +26,70 @@ import { lookupStoryBeatTemplate } from '../data/story-beat-templates';
 
 // ─── Predicate evaluation ─────────────────────────────────────────
 // v1 whitelist: doom-clock, composition-fired, world-flag, has-faction-of-archetype,
-// has-agent-of-archetype. Unknown ops treated as false with a warning (fail-soft).
+// has-agent-of-archetype, edge-exists. Unknown ops treated as false with a warning (fail-soft).
+
+const ALL_NODE_TYPES: NodeType[] = [
+  'actor',
+  'location',
+  'trait',
+  'artifact',
+  'artifact_legendary',
+  'resource',
+  'action_template',
+  'event',
+  'cosmology',
+  'region',
+  'ambition',
+];
+
+function findNodesMatchingFilter(
+  state: GameState,
+  query: FilterQuery
+): GraphNode[] {
+  const matches: GraphNode[] = [];
+  for (const nodeType of ALL_NODE_TYPES) {
+    const nodes = state.graph.getNodesByType(nodeType);
+    for (const node of nodes) {
+      if (evaluatePhaseFilterQuery(query, node, state)) {
+        matches.push(node);
+      }
+    }
+  }
+  return matches;
+}
+
+function evaluatePhaseFilterQuery(
+  query: FilterQuery,
+  node: GraphNode,
+  state: GameState
+): boolean {
+  switch (query.op) {
+    case 'and':
+      return query.terms.every((term) => evaluatePhaseFilterQuery(term, node, state));
+    case 'or':
+      return query.terms.some((term) => evaluatePhaseFilterQuery(term, node, state));
+    case 'not':
+      return !evaluatePhaseFilterQuery(query.term, node, state);
+    case 'prop-equals':
+      return node.properties[query.prop] === query.value;
+    case 'has-edge':
+      return state.graph.getOutgoingEdges(node.id, query.edgeType as EdgeType).some((edge) => {
+        if (!query.toFilter) {
+          return true;
+        }
+        const target = state.graph.getNode(edge.target);
+        return target ? evaluatePhaseFilterQuery(query.toFilter, target, state) : false;
+      });
+    case 'has-tag':
+    case 'has-any-tag':
+    case 'node-class':
+      console.warn(`[phaseComposition] FilterQuery op "${query.op}" not supported in phase predicates — treating as false`);
+      return false;
+    default:
+      console.warn(`[phaseComposition] Unknown FilterQuery op "${(query as { op: string }).op}" — treating as false`);
+      return false;
+  }
+}
 
 function countActorsByArchetype(
   state: GameState,
@@ -79,6 +144,18 @@ function evaluatePhasePredicateV1(
     case 'has-agent-of-archetype': {
       const count = countActorsByArchetype(state, 'individual', predicate.archetype);
       return satisfiesCountBounds(count, predicate.count);
+    }
+    case 'edge-exists': {
+      const fromNodes = findNodesMatchingFilter(state, predicate.fromFilter);
+      return fromNodes.some((fromNode) =>
+        state.graph.getOutgoingEdges(fromNode.id, predicate.edgeType as EdgeType).some((edge) => {
+          if (!predicate.toFilter) {
+            return true;
+          }
+          const target = state.graph.getNode(edge.target);
+          return target ? evaluatePhaseFilterQuery(predicate.toFilter, target, state) : false;
+        })
+      );
     }
     case 'and':
       return predicate.terms.every((t) => evaluatePhasePredicateV1(t, state));
@@ -333,7 +410,6 @@ export function phaseComposition(state: GameState): Partial<GameState> {
       worldFlags = effectResult.worldFlags;
       firedCompositions = effectResult.firedCompositions;
       // Note: doomClockAdvance from phase effects deferred (TODO(THR-227): wire doom clock advance)
-      // TODO(THR-251): GC completed compositions after a retention window
 
       // Enqueue story beat
       let storyBeatQueued = false;
@@ -403,11 +479,24 @@ export function phaseComposition(state: GameState): Partial<GameState> {
     }
   }
 
-  // Garbage-collect expired failed compositions
+  // Garbage-collect expired completed/failed compositions. Active compositions never GC.
   updatedCompositions = updatedCompositions.filter((c) => {
-    if (c.status !== 'failed') return true;
-    const failedAtTick = Math.min(...Object.values(c.phaseActivationTicks ?? {}).concat([c.firedAtTick]));
-    return state.tick - failedAtTick < COMPOSITION_FAILED_RETENTION_TICKS;
+    if (c.status === 'active') return true;
+
+    const phaseTicks = Object.values(c.phaseActivationTicks ?? {});
+    // Completed: reference tick = max activation (all phases fired, so max == completion tick).
+    // Failed:    reference tick = earliest of fired/phase-activation (matches v1 behaviour).
+    const referenceTick =
+      c.status === 'completed'
+        ? (phaseTicks.length > 0 ? Math.max(...phaseTicks) : c.firedAtTick)
+        : Math.min(...phaseTicks.concat([c.firedAtTick]));
+
+    const retention =
+      c.status === 'completed'
+        ? COMPOSITION_COMPLETED_RETENTION_TICKS
+        : COMPOSITION_FAILED_RETENTION_TICKS;
+
+    return state.tick - referenceTick < retention;
   });
 
   return {

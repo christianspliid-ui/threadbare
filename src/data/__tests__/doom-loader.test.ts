@@ -6,6 +6,8 @@ import {
   validateArchetypeJson,
 } from '../doom-loader';
 
+// contentInvariants sweep v2 (THR-245): kept 4 structural (fixed-enum), replaced 0 growth-tracking
+
 // ── loadArchetypeStageNames ───────────────────────────────────────
 
 describe('loadArchetypeStageNames', () => {
@@ -22,6 +24,7 @@ describe('loadArchetypeStageNames', () => {
 
   it('each archetype has exactly 5 stage names', () => {
     for (const [key, names] of Object.entries(stageNames)) {
+      // Archetype schema fixes each progression to five stage names.
       expect(names, `${key} stage names`).toHaveLength(5);
       for (const name of names) {
         expect(typeof name).toBe('string');
@@ -65,8 +68,11 @@ describe('loadDoomVocabulary', () => {
 
   it('each stage has 5 adjectives, 5 verbs, 3 nouns, and atmosphere', () => {
     for (const [stage, entry] of Object.entries(vocab)) {
+      // Doom vocabulary schema uses 5 adjectives per stage.
       expect(entry.adjectives, `${stage} adjectives`).toHaveLength(5);
+      // Doom vocabulary schema uses 5 verbs per stage.
       expect(entry.verbs, `${stage} verbs`).toHaveLength(5);
+      // Doom vocabulary schema uses 3 nouns per stage.
       expect(entry.nouns, `${stage} nouns`).toHaveLength(3);
       expect(entry.atmosphere.length, `${stage} atmosphere`).toBeGreaterThan(10);
     }
