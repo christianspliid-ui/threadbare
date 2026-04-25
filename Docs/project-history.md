@@ -520,3 +520,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - THR-251 phase-runner composition GC: ✅ Complete (2026-04-24) — added completed-composition retention GC path and six lifecycle tests covering active/completed/failed retention boundaries.
 - THR-256 trace hygiene: ✅ Complete (2026-04-25) — normalized missing trace category/summary fallback in traceBuffer and added explicit ambition_progress summaries to eliminate `[undefined]` trace lines.
 - THR-258 phase predicate edge-exists: ✅ Complete (2026-04-25) — added runtime edge-exists world-predicate evaluation in phaseComposition with phase-side FilterQuery support and 15 new edge-exists tests.
+- THR-271 ubiquitous language v1 foundation: ✅ Complete (2026-04-25) — added UL glossary shards + index, mirrored ubiquitous-language skill, and CLAUDE Session Workflow terminology authority checks.
