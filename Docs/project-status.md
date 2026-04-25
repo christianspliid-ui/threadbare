@@ -1,5 +1,5 @@
 # Project Status
-> Updated 2026-04-24.
+> Updated 2026-04-25.
 ## Current Focus
 **THR-211 complete — first playtest run.** 27 PASS / 2 FAIL / 10 SURPRISE / 10 SKIP. RUBRIC.md and EXPECTED-FINDINGS.md populated with baseline findings. THR-275 filed (HexSidebar exploration path). Next: address FAILs and re-run to validate fixes.
 
@@ -24,6 +24,9 @@
 
 ## Recent Completions (2026-04-24) — THR-272 grill-me skill
 - **THR-272:** Shipped `.claude/skills/grill-me/SKILL.md` + `.agents/skills/grill-me/` mirror. 4 invocation triggers (explicit, effort >1 day, multi-pillar, high-ambiguity), conversational default, async-batch mode (generates `Docs/plans/*-grill-me.md`), "I don't know" parking + grey-zone handling, synthesis artifact with 7 required sections. CLAUDE.md design governance checklist gains step 0. First-wave 2/4. PR #32.
+
+## Recent Completions (2026-04-25) — THR-258 phase predicate edge-exists
+- **THR-258:** Shipped runtime phase-predicate support for `edge-exists` in `phaseComposition`, including phase-side FilterQuery evaluation for `and`/`or`/`not`/`prop-equals`/`has-edge`, fail-soft warnings for unsupported `has-tag`/`has-any-tag`/`node-class` and unknown filter ops, and 15 new edge-exists unit cases in `phaseComposition.worldPredicates.test.ts`.
 
 ## Archived to project-history.md
 - THR-211/243/272/212/210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
