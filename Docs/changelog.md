@@ -6,6 +6,8 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
 | Date | Files | Change | Why |
 |------|-------|--------|-----|
+| 2026-04-25 | Docs/ubiquitous-language/ (new: 8 files), .claude/skills/ubiquitous-language/SKILL.md (new), .agents/skills/ubiquitous-language/SKILL.md (new), CLAUDE.md | THR-271: UL v1. 7 sharded glossary files + README index (73 terms: Cosmology, Agents, Encounters, Prose, Graph, Coordination, Process). ubiquitous-language skill with propose-new-term/retirement flows opening UL-proposal Linear issues. CLAUDE.md: UL orientation step + UL-wins rule + skill in Domain Skills table. | Establish canonical terminology foundation (first-wave 1/4) |
+|------|-------|--------|-----|
 | 2026-04-24 | src/components/CMS/viewers/IASurfaceViewer.tsx (new), src/components/CMS/types.ts, registry.ts, CMSMainPanel.tsx, src/components/Game/useDebugOpenModal.ts (new), useAgentInteraction.ts, GameView.tsx, CLAUDE.md | THR-212: CMS IA manifest viewer. IASurfaceViewer with filter chips, surface list, detail panel + reads[] table + "Open this surface" button. useDebugOpenModal dev-only hook (tree-shaken prod). openAgentProfileForId export added to useAgentInteraction. |
 
 | 2026-04-24 | .agents/skills/playtest-interface/SKILL.md, RUBRIC.md, EXPECTED-FINDINGS.md, .gitignore, CLAUDE.md | THR-210: shipped playtest-interface skill — 10-step Chrome MCP runbook + 54-surface assertion rubric derived from IA_SURFACES + baseline noise template. Added .playtest-runs/ to .gitignore. Added playtest-interface to CLAUDE.md Domain Skills table. THR-211 (first playtest run) unblocked. | Interface regression sweep was missing — Cowork had no structured path to verify every IA manifest surface is reachable |
