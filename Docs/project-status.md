@@ -27,7 +27,7 @@
 
 ## Recent Completions (2026-04-25) — THR-271 UL v1 + THR-274 retro cadence sync
 - **THR-271:** Shipped Ubiquitous Language v1. 7 sharded markdown files (`Docs/ubiquitous-language/`) with 73 canonical terms across Cosmology, Agents, Encounters, Prose, Graph, Coordination, Process. Always-load README index. `ubiquitous-language` skill with propose-new-term (UL-proposal Linear issues) + retirement flows. CLAUDE.md wired: UL orientation step + "UL wins on terminology disagreements" rule. First-wave 1/4. PR #44.
-- **THR-274:** Wired `retrospective` skill to read weekly `drift-scan`-labeled Linear issues as first input. CLAUDE.md updated with `weekly-retro` scheduled task setup instructions and weekly CI cadence. First-wave 4/4. PR #41 (pending CI after billing restore).
+- **THR-274:** Retro × drift-scan cadence sync. `retrospective` skill wired to read this week's `drift-scan`-labeled Linear issues as Step 0. New cross-signal synthesis step, Tuning Recommendations section, failure-handling for 3 consecutive empty scan weeks. CLAUDE.md documents Friday cadence. PR #41 pending merge (CI blocked by billing — impediment #91). First-wave 4/4.
 
 ## Recent Completions (2026-04-25) — THR-258 phase predicate edge-exists
 - **THR-258:** Shipped runtime phase-predicate support for `edge-exists` in `phaseComposition`, including phase-side FilterQuery evaluation for `and`/`or`/`not`/`prop-equals`/`has-edge`, fail-soft warnings for unsupported `has-tag`/`has-any-tag`/`node-class` and unknown filter ops, and 15 new edge-exists unit cases in `phaseComposition.worldPredicates.test.ts`.
