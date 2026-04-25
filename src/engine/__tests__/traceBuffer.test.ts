@@ -203,4 +203,16 @@ describe('traceBuffer', () => {
 
     expect(getTraces()[0].id).toBe(0);
   });
+
+  it('normalizes traces missing category and summary', () => {
+    emitTrace({
+      tick: 7,
+      message: 'Legacy trace message',
+    } as unknown as TickSummaryTrace);
+
+    const traces = getTraces();
+    expect(traces).toHaveLength(1);
+    expect(traces[0].category).toBe('engine_warning');
+    expect(traces[0].summary).toBe('Legacy trace message');
+  });
 });

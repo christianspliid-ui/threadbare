@@ -518,3 +518,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - THR-273 weekly drift scan automation: ✅ Complete (2026-04-24) — shipped `.github/workflows/drift-scan.yml`, `scripts/drift-scan/index.ts`, and synthetic tests for all four signals with fail-soft isolation and Linear issue publishing.
 - THR-245 content invariant v2 sweep: ✅ Complete (2026-04-24) — replaced growth-tracking count assertions with `contentInvariants` usage across five data test suites and retained fixed-enum cardinality assertions with explicit source comments.
 - THR-251 phase-runner composition GC: ✅ Complete (2026-04-24) — added completed-composition retention GC path and six lifecycle tests covering active/completed/failed retention boundaries.
+- THR-256 trace hygiene: ✅ Complete (2026-04-25) — normalized missing trace category/summary fallback in traceBuffer and added explicit ambition_progress summaries to eliminate `[undefined]` trace lines.

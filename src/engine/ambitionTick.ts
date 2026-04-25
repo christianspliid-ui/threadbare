@@ -52,6 +52,8 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
   );
 
   for (const actor of actors) {
+    const actorLabel = actor.name || actor.id;
+
     // Get active pursues edges
     const pursuesEdges = graph.getOutgoingEdges(actor.id, 'pursues');
     const activeEdges = pursuesEdges.filter(
@@ -114,6 +116,7 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
         emitTrace({
           tick,
           category: 'ambition_progress',
+          summary: `${actorLabel} ${result.status} ambition ${template.displayName}`,
           actorId: actor.id,
           templateId,
           result: result.status,
@@ -150,6 +153,7 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
           emitTrace({
             tick,
             category: 'ambition_progress',
+            summary: `${actorLabel} reached milestone ${milestoneId} for ${template.displayName}`,
             actorId: actor.id,
             templateId,
             result: 'milestone',
@@ -274,6 +278,7 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
             emitTrace({
               tick,
               category: 'ambition_progress',
+              summary: `${actorLabel} assigned ambition ${assignment.templateId} (${assignment.priority})`,
               actorId: actor.id,
               templateId: assignment.templateId,
               result: 'assigned',
