@@ -746,7 +746,7 @@
     <img src="/screens/title-screen.png" alt="The Fantasy World Simulator — cosmic energy streams through ancient ruins" loading="eager">
   </div>
   <h1>Build the world first.<br>Find the <em>game</em> inside it.</h1>
-  <div class="subtitle">Product Strategy &mdash; Updated 12 April 2026</div>
+  <div class="subtitle">Product Strategy &mdash; Updated 26 April 2026</div>
   <div class="divider"></div>
   <div class="thesis">
     The Fantasy World Simulator is a systemic god-game where <strong>emergent narrative</strong> comes from the collision of deep, interconnected systems &mdash; not from scripted events. Like CK3 and Stellaris, the simulation comes first. The game emerges from watching systems interact in surprising ways.
@@ -860,14 +860,54 @@
 
   <div class="devlog-current fade-in">
     <h4>Currently in progress</h4>
-    <div class="wip-item">TB-120: Test Suite Repair Sprint &mdash; full npm test has been red since early April; triaging and fixing all failing tests to restore the safety net</div>
-    <div class="wip-item">TB-121: CI/CD Pipeline Setup &mdash; GitHub Actions + branch protection so red tests block deployment</div>
-    <div class="wip-item">TB-097 Phase 8: Strategic Actions expansion &mdash; builder, scholar, zealot behavior families, UI/Threads visibility, HexMap overlays</div>
-    <div class="wip-item">TB-104 Procedural Content Component Library &mdash; remaining primitives (resource_delta, action_trigger, choice_set) and stateful shells</div>
-    <div class="wip-item">TB-105–108 Thematic Pressure & Living World Pass &mdash; omen agendas, cool-failure outcomes, doom identity, intent/activity visibility</div>
+    <div class="wip-item">First playtest results in hand (27 PASS / 2 FAIL / 10 SURPRISE) &mdash; addressing failures and re-running to validate fixes</div>
+    <div class="wip-item">Content Architecture &mdash; stateful shells (Phase 2), progress/service shells (Phase 3), starter libraries (Phase 4), governance (Phase 5)</div>
+    <div class="wip-item">Agent Success Redesign Phases 5–8 &mdash; queued for pickup after content architecture work</div>
+    <div class="wip-item">Encounter format migration Phase 4 &mdash; next guild faction encounter templates</div>
+    <div class="wip-item">Procedural Hex Vignettes Phases 2–5 &mdash; queued</div>
   </div>
 
   <div class="devlog">
+    <div class="devlog-entry devlog-system fade-in">
+      <div class="devlog-date">26 April 2026</div>
+      <h4>First Playtest Run</h4>
+      <p>The playtest-interface skill drove Chrome through the full game at 1920&times;1080, asserting every IA manifest surface via the debug bridge. 27 PASS, 2 FAIL, 10 SURPRISE, 10 SKIP. RUBRIC and EXPECTED-FINDINGS seeded with baseline data. The game is now testable end-to-end by an automated agent.</p>
+    </div>
+    <div class="devlog-entry devlog-system fade-in">
+      <div class="devlog-date">25 April 2026</div>
+      <h4>Ubiquitous Language v1</h4>
+      <p>73 canonical terms across seven shards (Cosmology, Agents, Encounters, Prose, Graph, Coordination, Process). Always-load index, propose-new-term workflow via Linear, and a hard rule: the UL wins on all terminology disagreements. The project now has a shared vocabulary that agents and humans both defer to.</p>
+    </div>
+    <div class="devlog-entry devlog-system fade-in">
+      <div class="devlog-date">24 April 2026</div>
+      <h4>Encounter Format Migration &mdash; All Ten Phases Complete</h4>
+      <p>Every faction&rsquo;s encounter templates migrated to UnifiedActionTemplate format with Threadbare prose, systemic wiring (intel grants, encounter seeds, hidden marks, faction conditionals, ally references, ActionStepBranch forks), and voice-lint tests. Ten phases across Thieves&rsquo; Guild, Artisans&rsquo; Collective, Champions&rsquo; Guild, Brotherhood of the Forge, Merchant Consortium, Rangers Brotherhood, Lorekeeper Circle, Hands of the Divine, Tavern Social, and Social encounters. Phase 2 content work unblocked.</p>
+    </div>
+    <div class="devlog-entry devlog-system fade-in">
+      <div class="devlog-date">24 April 2026</div>
+      <h4>Chronicle Dual-Voice &amp; Phased Event Recipes</h4>
+      <p>Event recipes now activate in phases tied to doom-clock tiers. The Chain Weakens recipe fires its five story beats across escalating doom stages. Chronicle entries carry dual voice (Poet prose + Witness facts) for phased events, giving the player both atmosphere and clarity in a single entry.</p>
+    </div>
+    <div class="devlog-entry devlog-system fade-in">
+      <div class="devlog-date">23 April 2026</div>
+      <h4>Ruin Transformation &amp; Places of Power</h4>
+      <p>Ruins now transform into Places of Power or Scars through a 7-row outcome matrix. Holders accumulate elder essence through presence credit; decay and corrupt siphon create tension. Emergence dilemma modal presents a 2&times;2 choice grid. Six transformation vignettes across three archetypes. The world&rsquo;s ruins are no longer static set dressing.</p>
+    </div>
+    <div class="devlog-entry devlog-system fade-in">
+      <div class="devlog-date">19 April 2026</div>
+      <h4>UI Design System v1 &mdash; Project Complete</h4>
+      <p>Design tokens, typography floor, primitives library, Vara seed font, SphereIcon system, Thread Panel visual rewrite, and viewport audit &mdash; all shipped. Every UI component now draws from a shared design language. The threadbare aesthetic is consistent from hex map to modals.</p>
+    </div>
+    <div class="devlog-entry devlog-soul fade-in">
+      <div class="devlog-date">19 April 2026</div>
+      <h4>Thematic Pressure &amp; Living World &mdash; Core Shipped</h4>
+      <p>Omen agendas bias encounter scoring toward doom-relevant themes. Doom-echo templates inject dread vocabulary into hex murmurs across four doom stages. Hex pulse ambient glow layers paint tense amber and volatile red onto the map. Sphere pressure complications warp encounter resolution. The world now visibly darkens as doom advances.</p>
+    </div>
+    <div class="devlog-entry devlog-system fade-in">
+      <div class="devlog-date">19 April 2026</div>
+      <h4>Performance &amp; Scaling Hardening</h4>
+      <p>Ambient agent phase caps cut O(N) walks in Effect Tick, Mastery Decay, and Familiarity Gain. Hex-to-actor index replaces brute-force spatial queries. Encounter cache rebuild frequency reduced via incremental updates. Tick loop scaling investigation confirmed large-map viability with the &ldquo;?size=&rdquo; URL override for dev flexibility.</p>
+    </div>
     <div class="devlog-entry devlog-system fade-in">
       <div class="devlog-date">12 April 2026</div>
       <h4>Ambition-Driven Strategic Actions &mdash; Merchant Proving Slice</h4>
@@ -1027,7 +1067,7 @@
 <section id="gaps">
   <div class="section-label fade-in">Journey Audit</div>
   <h2 class="fade-in">Known gaps and <em>where they land</em></h2>
-  <p class="fade-in">Ten gaps identified by tracing the end-to-end player journey. Seven are now resolved or partially resolved. Each remaining gap is mapped to the milestone where it naturally resolves.</p>
+  <p class="fade-in">Ten gaps identified by tracing the end-to-end player journey. Seven resolved or partially resolved, one more progressing steadily. Each remaining gap is mapped to the milestone where it naturally resolves.</p>
 
   <table class="gaps-table fade-in">
     <thead>
@@ -1067,7 +1107,7 @@
         <td><span class="gap-id">A</span></td>
         <td>Doom has no mechanical teeth</td>
         <td><span class="gap-severity gap-critical"></span>Critical</td>
-        <td><span class="gap-landing gap-m2">In progress</span> &mdash; objective triangle sync shipped (doom chapters, debt, counter-omens); army/monster spawning next</td>
+        <td><span class="gap-landing gap-m2">In progress</span> &mdash; omen agendas, doom-echo murmurs, phased event recipes, sphere pressure complications, and objective triangle sync all shipped; cool-failure prose and doom-spawned threats next</td>
       </tr>
       <tr>
         <td><span class="gap-id">B</span></td>
@@ -1105,7 +1145,7 @@
 
 <!-- ═══════════════════════════════════════ FOOTER ═══ -->
 <footer>
-  Threadbearer &middot; Product Strategy &middot; Last updated 12 April 2026 &middot; Build the world, find the game
+  Threadbearer &middot; Product Strategy &middot; Last updated 26 April 2026 &middot; Build the world, find the game
 </footer>
 
 <script>
