@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Threadbearer — Tech Stack</title>
+<style>
+  :root {
+    --bg: #0f1014;
+    --panel: #171922;
+    --ink: #e9eaf0;
+    --muted: #8b8fa3;
+    --line: #2a2d3a;
+
+    --runtime: #fde68a;   /* amber */
+    --engine: #bbf7d0;    /* green */
+    --content: #bfdbfe;   /* blue */
+    --tools: #fbcfe8;     /* pink */
+    --quality: #fecaca;   /* red */
+    --infra: #e9d5ff;     /* purple */
+    --coord: #fed7aa;     /* orange */
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
+    padding: 32px;
+  }
+  .stack {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 28px;
+    margin: 0 0 4px;
+    letter-spacing: -0.01em;
+  }
+  .sub {
+    color: var(--muted);
+    margin-bottom: 28px;
+    font-size: 13px;
+  }
+  .layer {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 16px;
+    margin-bottom: 14px;
+    align-items: stretch;
+  }
+  .layer-label {
+    background: var(--panel);
+    border-left: 4px solid var(--accent, #444);
+    padding: 14px 16px;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .layer-label h3 {
+    margin: 0 0 4px;
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent, #fff);
+  }
+  .layer-label p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .layer-body {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--accent, #444);
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+  .card h4 {
+    margin: 0 0 4px;
+    font-size: 13px;
+    color: #fff;
+  }
+  .card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 11.5px;
+    line-height: 1.35;
+  }
+  .card code {
+    color: var(--ink);
+    background: #0b0c11;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 11px;
+  }
+
+  .legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 11.5px;
+  }
+  .legend span {
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .legend i {
+    display: inline-block; width: 10px; height: 10px; border-radius: 2px;
+  }
+
+  /* Layer accent colors */
+  .l-runtime { --accent: var(--runtime); }
+  .l-engine  { --accent: var(--engine); }
+  .l-content { --accent: var(--content); }
+  .l-tools   { --accent: var(--tools); }
+  .l-quality { --accent: var(--quality); }
+  .l-infra   { --accent: var(--infra); }
+  .l-coord   { --accent: var(--coord); }
+</style>
+</head>
+<body>
+
+<div class="stack">
+
+  <h1>Threadbearer — Technology Stack</h1>
+  <div class="sub">The end-to-end software stack that supports a solo-developed, AI-assisted simulation game. Layered by responsibility.</div>
+
+  <!-- LAYER 1: Browser runtime -->
+  <div class="layer l-runtime">
+    <div class="layer-label">
+      <h3>Browser Runtime</h3>
+      <p>What the player (or agent QA) actually sees and clicks.</p>
+    </div>
+    <div class="layer-body">
+      <div class="card"><h4>UI shell</h4><p>React 19 · TypeScript · Tailwind 4 · 244 components incl. Game, Codex, Remembrance, MeetTheFirst, StyleGuide</p></div>
+      <div class="card"><h4>WebGL hex map</h4><p>Three.js (raw, no R3F) · 30+ <code>InstancedMesh</code> layers · custom fog shader · d3-zoom camera</p></div>
+      <div class="card"><h4>Audio</h4><p><code>AudioMaster</code> with Music / UI / Background channels · TTS via <code>kokoro-js</code></p></div>
+      <div class="card"><h4>Error capture</h4><p>Sentry React SDK (dev-only DSN — no production telemetry)</p></div>
+    </div>
+  </div>
+
+  <!-- LAYER 2: Game engine -->
+  <div class="layer l-engine">
+    <div class="layer-label">
+      <h3>Game Engine</h3>
+      <p>The simulation itself — pure functions over a graph.</p>
+    </div>
+    <div class="layer-body">
+      <div class="card"><h4>Graph core</h4><p>Everything is a node/edge · <code>WorldGraph</code> in-place mutation with <code>worldVersion</code> / <code>structuralCacheVersion</code> touch API</p></div>
+      <div class="card"><h4>Tick loop</h4><p>~292 engine modules · phased orchestrator · seeded PRNG everywhere · fail-soft (never throws)</p></div>
+      <div class="card"><h4>Agent &amp; encounter systems</h4><p>Ambitions, agendas, factions, attachments, conditions, divine intervention, hex actor index</p></div>
+      <div class="card"><h4>Prose pipeline</h4><p>Graph-walking resolvers · enrichment placeholders (<code>{name}</code>, <code>{ally}</code>) · vignettes &amp; backstory strata</p></div>
+    </div>
+  </div>
+
+  <!-- LAYER 3: Content / CMS -->
+  <div class="layer l-content">
+    <div class="layer-label">
+      <h3>Content &amp; CMS</h3>
+      <p>The data the engine reads from. Authored, not generated at runtime.</p>
+    </div>
+    <div class="layer-body">
+      <div class="card"><h4>world-model.json</h4><p>Single canonical world definition · validated by <code>npm run validate-model</code></p></div>
+      <div class="card"><h4>Content tables</h4><p>200+ files in <code>src/data/</code> — encounters, attachments, agendas, archetypes, factions, prose</p></div>
+      <div class="card"><h4>CMS browser</h4><p><code>?view=cms</code> · in-app content browser, detail panel, viewers, registry</p></div>
+      <div class="card"><h4>Composition DSL</h4><p><code>src/composition-dsl/</code> · schema + validator + mutation gate for composable content</p></div>
+    </div>
+  </div>
+
+  <!-- LAYER 4: Authoring & worldgen tools -->
+  <div class="layer l-tools">
+    <div class="layer-label">
+      <h3>Authoring Tools</h3>
+      <p>How content, art, and knowledge get produced.</p>
+    </div>
+    <div class="layer-body">
+      <div class="card"><h4>Obsidian vault</h4><p>LLM knowledge base · <code>generate-vault</code> + <code>rebuild-index</code> · ingest / query / lint / enrich skills</p></div>
+      <div class="card"><h4>Hex tile generator</h4><p>Python pipeline (<code>generate-hex-tile.py</code>) · batch &amp; audit modes · <code>sharp</code>-based resize</p></div>
+      <div class="card"><h4>3D asset MCPs</h4><p>Blender MCP for modelling · Meshy AI MCP for generated meshes</p></div>
+      <div class="card"><h4>Design handoff</h4><p>claude.ai/design exports staged in <code>Design/Claudedesignhandooffs/</code></p></div>
+    </div>
+  </div>
+
+  <!-- LAYER 5: Debug / observability -->
+  <div class="layer l-quality">
+    <div class="layer-label">
+      <h3>Debug &amp; Observability</h3>
+      <p>How problems get found, traced, and reproduced.</p>
+    </div>
+    <div class="layer-body">
+      <div class="card"><h4>Trace buffer</h4><p>Per-tick <code>traceBuffer</code> · typed trace categories · imported by 106 files for inspectability</p></div>
+      <div class="card"><h4>Debug bridge</h4><p><code>window.__DEBUG</code> dev API — open panel, fire actions, goto agent, export encounter logs · tree-shaken in prod</p></div>
+      <div class="card"><h4>In-game CLI &amp; F1 panel</h4><p>Multi-line command panel inside the game · same commands as the headless REPL</p></div>
+      <div class="card"><h4>Headless CLI &amp; balance evals</h4><p><code>npm run cli</code> REPL · <code>balance:smoke</code> / <code>cadence</code> / <code>journey</code> for tuning</p></div>
+    </div>
+  </div>
+
+  <!-- LAYER 6: Build, test, quality -->
+  <div class="layer l-infra">
+    <div class="layer-label">
+      <h3>Build, Test &amp; Quality</h3>
+      <p>Local toolchain and quality gates.</p>
+    </div>
+    <div class="layer-body">
+      <div class="card"><h4>Build</h4><p>Vite 7 · TypeScript 5.9 · Tailwind 4 (Vite plugin) · esbuild for Node scripts</p></div>
+      <div class="card"><h4>Test</h4><p>Vitest 4 · jsdom · Testing Library · contract / regression suites</p></div>
+      <div class="card"><h4>Lint &amp; static analysis</h4><p>ESLint 9 · typescript-eslint · Codesight (MCP + <code>.codesight/</code> wiki regenerated each session)</p></div>
+      <div class="card"><h4>Pre-commit gates</h4><p>Husky · skill-sync check · custom <code>.claude/hooks/</code> typecheck + test gate before <code>git commit</code></p></div>
+    </div>
+  </div>
+
+  <!-- LAYER 7: Coordination & CI/CD -->
+  <div class="layer l-coord">
+    <div class="layer-label">
+      <h3>Coordination &amp; CI/CD</h3>
+      <p>How work, agents, and deploys are orchestrated.</p>
+    </div>
+    <div class="layer-body">
+      <div class="card"><h4>Linear (Threadbare team)</h4><p>Single source of truth · <code>Ready for Dev</code> + <code>Ready for Codex</code> queues · <code>model:*</code> labels</p></div>
+      <div class="card"><h4>GitHub Actions</h4><p><code>ci.yml</code> (test/typecheck/build) · <code>claude-review.yml</code> (Sonnet 4-6 PR review) · <code>linear-autoclose.yml</code></p></div>
+      <div class="card"><h4>Vercel</h4><p>Auto-deploys on push to <code>main</code></p></div>
+      <div class="card"><h4>MCP servers &amp; agent skills</h4><p>Codesight, Chrome DevTools, Meshy, Blender, Obsidian · 30+ project skills in <code>.claude/skills/</code></p></div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><i style="background:var(--runtime)"></i>Runtime</span>
+    <span><i style="background:var(--engine)"></i>Engine</span>
+    <span><i style="background:var(--content)"></i>Content</span>
+    <span><i style="background:var(--tools)"></i>Authoring</span>
+    <span><i style="background:var(--quality)"></i>Debug</span>
+    <span><i style="background:var(--infra)"></i>Build / quality</span>
+    <span><i style="background:var(--coord)"></i>Coordination / CI</span>
+  </div>
+
+</div>
+
+</body>
+</html>
