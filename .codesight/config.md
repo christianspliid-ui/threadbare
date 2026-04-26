@@ -5,6 +5,7 @@
 - `ANTHROPIC_API_KEY` **required** — scripts\review\review-client.ts
 - `CODEX_INTERNAL_ORIGINATOR_OVERRIDE` **required** — scripts\session-precheck.ts
 - `DEV` **required** — src\components\Game\GameView.tsx
+- `DRIFT_SCAN_BASELINE_PATH` **required** — scripts\drift-scan\index.ts
 - `LINEAR_API_KEY` **required** — scripts\check-process.ts
 - `NANOBANANANA_API_KEY` (has default) — .env.example
 - `NODE_ENV` **required** — src\components\Game\GuildQuestPanel.tsx

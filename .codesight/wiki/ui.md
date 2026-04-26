@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Component inventory and prop signatures extracted via AST. Read the source files before adding props or modifying component logic.
 
-**247 components** (react)
+**248 components** (react)
 
 ## Components
 
@@ -69,6 +69,7 @@
 - **ContentBrowser** — `src\components\CMS\ContentBrowser.tsx`
 - **ConfigManager** — props: groups, searchQuery — `src\components\CMS\viewers\ConfigManager.tsx`
 - **ConstantsViewer** — props: data, searchQuery — `src\components\CMS\viewers\ConstantsViewer.tsx`
+- **IASurfaceViewer** — props: data, searchQuery, selectedKey, onSelectItem — `src\components\CMS\viewers\IASurfaceViewer.tsx`
 - **ProseViewer** — props: data, searchQuery — `src\components\CMS\viewers\ProseViewer.tsx`
 - **RecordViewer** — props: data, searchQuery, selectedKey, onSelectItem — `src\components\CMS\viewers\RecordViewer.tsx`
 - **TableViewer** — props: data, columns, searchQuery, searchFields, selectedKey, onSelectItem — `src\components\CMS\viewers\TableViewer.tsx`
