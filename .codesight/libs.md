@@ -16,6 +16,15 @@
   - function create_hexagon_mask: (width, height)
   - function process_hex_tile: (input_path, output_path)
   - function main: ()
+- `scripts\drift-scan\index.ts`
+  - function parseCodesightImporters: (graphText, limit) => ImporterCount[]
+  - function evaluateCouplingCreep: (current, prior, thresholdPct) => SignalResult
+  - function countBrokenWindowsFromCorpus: (corpus) => BrokenWindowsCounts
+  - function evaluateBrokenWindows: (current, priorTotal, thresholdPct) => SignalResult
+  - function evaluateTestSuiteHealth: (params, boolean[]>;
+  runtimeRegressionPct?) => S3Evaluation
+  - function parseUlShardTerms: (shardText, shardName) => UlTerm[]
+  - _...22 more_
 - `scripts\enhance-frontmatter.ts` — function enhanceFrontmatter: (options) => void
 - `scripts\generate-hex-tile.py`
   - function make_hex_mask: (size, inset, feather) -> Image.Image
@@ -169,6 +178,7 @@
 - `src\components\Game\hooks\useTargetActions.ts` — function useTargetActions: ({...}, gameState, archetype, drawerOpen, }) => WheelSlot[] | null
 - `src\components\Game\hooks\useTopBarHotkeys.ts` — function useTopBarHotkeys: ({...}, speed, onToggle, onSpeedChange, onStep, onMoveClick }) => void
 - `src\components\Game\hooks\useViewNavigation.ts` — function useViewNavigation: ({...}, setGameState, avatarPixelPos, tiles, COLS, ROWS, scryState, fogDisabled, setRunning, }) => UseViewNavigationReturn, type ViewLevel
+- `src\components\Game\useDebugOpenModal.ts` — function useDebugOpenModal: (gameStateRef, openers) => void
 - `src\components\HexMap\useCoastline.ts` — function useCoastline: (tiles, hexSize, cols, rows, seed, config) => CoastlineData
 - `src\components\HexMap\useRivers.ts` — function useRivers: (cols, rows, seed) => RiverPath[]
 - `src\components\HexMapV2\agents\activityIndicatorRegistry.ts`
