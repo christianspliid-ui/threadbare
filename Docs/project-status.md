@@ -65,3 +65,6 @@ Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Compl
 
 ## Recent Completions (2026-04-27) — THR-286 placeholder test cleanup
 - **THR-286:** Deleted src/__tests__/App.test.tsx, src/components/StartPage/__tests__/StartPage.test.tsx, and src/components/StartPage/__tests__/useThemeMusic.test.ts (todo-only stubs) to remove skipped-test noise from local/CI runs. Full npm test, npx tsc --noEmit, and npx vite build passed.
+
+## Recent Completions (2026-04-27) — THR-285 trace buffer headroom
+- **THR-285:** Raised BUFFER_SIZE from 500 to 2000 in 	raceBuffer.ts and updated all dependent unit/integration expectations (including eviction loop bound 510→2010) to keep overflow behavior tested without early saturation under high trace volume.

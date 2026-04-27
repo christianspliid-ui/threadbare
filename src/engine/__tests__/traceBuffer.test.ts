@@ -157,7 +157,7 @@ describe('traceBuffer', () => {
   });
 
   it('buffer evicts oldest entries when exceeding BUFFER_SIZE', () => {
-    for (let i = 0; i < 510; i++) {
+    for (let i = 0; i < 2010; i++) {
       emitTrace({
         tick: i,
         category: 'tick_summary',
@@ -171,7 +171,7 @@ describe('traceBuffer', () => {
     }
 
     const traces = getTraces();
-    expect(traces.length).toBeLessThanOrEqual(500);
+    expect(traces.length).toBeLessThanOrEqual(2000);
     // Oldest should have been evicted
     expect(traces[0].tick).toBeGreaterThan(0);
   });

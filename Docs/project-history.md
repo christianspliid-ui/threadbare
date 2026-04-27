@@ -529,3 +529,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - THR-271 ubiquitous language v1 foundation: ✅ Complete (2026-04-25) — added UL glossary shards + index, mirrored ubiquitous-language skill, and CLAUDE Session Workflow terminology authority checks.
 - THR-283 schema drift fix: added `hostile_to` edge registration and allowed `contains` location→sublocation targets; verification gates green.
 - THR-286 todo-only StartPage/App/useThemeMusic placeholders removed: ✅ Complete (2026-04-27) — deleted three stub-only test files to eliminate skipped-test noise; verification gates green.
+- THR-285 trace buffer capacity increase: ✅ Complete (2026-04-27) — raised BUFFER_SIZE to 2000 and updated dependent traceBuffer unit/integration tests; verification gates green.
