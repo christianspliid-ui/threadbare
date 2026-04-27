@@ -76,7 +76,7 @@ Pages that exist in the vault but are NOT listed in Index.md.
 
 ### Step 3: Generate Report
 
-Write the health report to `TheFantasyWorldSimulator/output/audits/vault-health-YYYY-MM-DD.md` via Obsidian MCP:
+Write the health report to `TheFantasyWorldSimulator/output/audits/vault-health-YYYY-MM-DD.md` via `obsidian_append_content`. If the MCP call fails, apply the **Filesystem Fallback Protocol** below — construct the full path as `$OBSIDIAN_VAULT_PATH/TheFantasyWorldSimulator/output/audits/vault-health-YYYY-MM-DD.md` and use the `Write` tool.
 
 ```markdown
 ---
@@ -124,12 +124,20 @@ tags: [kb-infrastructure, audit, output]
 
 ### Step 4: Log the Lint Pass
 
-Append to `TheFantasyWorldSimulator/log.md`:
+Append to `TheFantasyWorldSimulator/log.md` following the **vault-log** skill procedure (MCP first, filesystem fallback if MCP is unreachable, loud failure if neither path is available).
+
 ```
 - **lint** | Health check: found N orphans, N broken links, N stale pages, N missing frontmatter. Grade: X. Report: [[vault-health-YYYY-MM-DD]]
 ```
 
-Use `obsidian_append_content` on `TheFantasyWorldSimulator/log.md`.
+## Filesystem Fallback Protocol
+
+When any `obsidian_*` MCP call fails (unreachable, connection refused, timeout):
+
+1. **Resolve vault path** — Run `Bash: echo $OBSIDIAN_VAULT_PATH`. This must be the absolute path to the Obsidian vault root folder (the folder *containing* `TheFantasyWorldSimulator/`).
+2. **Fail loud if missing** — If `OBSIDIAN_VAULT_PATH` is empty and the MCP is also unavailable, stop immediately and report: `"Obsidian MCP is unreachable and OBSIDIAN_VAULT_PATH is not configured. Vault write failed."` Do not silently skip.
+3. **Filesystem write** — If `OBSIDIAN_VAULT_PATH` is set, construct the full path by joining: `$OBSIDIAN_VAULT_PATH/<vault-relative-path>`. Use `Write` to create new files, `Read` then `Edit` to append. Write the exact same content the MCP path would have written.
+4. **Note the fallback** — Mention in your response that the filesystem fallback was used and which files were written.
 
 ## Tool Reference
 
