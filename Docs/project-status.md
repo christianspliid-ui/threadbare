@@ -1,6 +1,8 @@
 # Project Status
 > Updated 2026-04-27.
 ## Current Focus
+**THR-277 complete — pull-work Step 4.5 worktree isolation.** Breaks dirty-worktree doom loop (impediments #87/#88/#89). Pickup now isolates into a fresh git worktree on origin/main when home is dirty. Synced to .agents/ via skill-sync. Merged PR #52.
+
 **THR-281 complete — test suite triage.** Suite is empirically green (0 failures, 10,709 tests pass). 4 child issues filed: THR-283 (schema drift: hostile_to + contains), THR-284 (constructed_by direction), THR-285 (BUFFER_SIZE 500→2000), THR-286 (delete orphan todo test files). Phase 2 fix work ready to pick up.
 
 ## Repo Health Sprint v2 (Now)
@@ -46,7 +48,7 @@
 - **THR-258:** Shipped runtime phase-predicate support for `edge-exists` in `phaseComposition`, including phase-side FilterQuery evaluation for `and`/`or`/`not`/`prop-equals`/`has-edge`, fail-soft warnings for unsupported `has-tag`/`has-any-tag`/`node-class` and unknown filter ops, and 15 new edge-exists unit cases in `phaseComposition.worldPredicates.test.ts`.
 
 ## Archived to project-history.md
-- THR-211/243/272/212/210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
+- THR-277/281/211/243/272/212/210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
 
 
 ## Active Backlog Ideas
