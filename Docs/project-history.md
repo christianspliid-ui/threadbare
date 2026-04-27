@@ -528,3 +528,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - THR-276 linear auto-close audit: ✅ Complete (2026-04-27) — audited 12 merge-to-main events in the 2026-04-24–2026-04-27 window; 0 stragglers (8 auto-close fires, 3 manual closes during gap). Skip-event hypotheses documented. Audit report: Docs/audits/2026-04-27-linear-autoclose-audit.md.
 - THR-271 ubiquitous language v1 foundation: ✅ Complete (2026-04-25) — added UL glossary shards + index, mirrored ubiquitous-language skill, and CLAUDE Session Workflow terminology authority checks.
 - THR-283 schema drift fix: added `hostile_to` edge registration and allowed `contains` location→sublocation targets; verification gates green.
+- THR-286 todo-only StartPage/App/useThemeMusic placeholders removed: ✅ Complete (2026-04-27) — deleted three stub-only test files to eliminate skipped-test noise; verification gates green.

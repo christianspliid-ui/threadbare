@@ -52,3 +52,4 @@
 - **work** | THR-258 shipped: phaseComposition now evaluates edge-exists world predicates with runtime FilterQuery support (`and`/`or`/`not`/`prop-equals`/`has-edge`) plus fail-soft warnings and 15 edge-exists tests.
 - **work** | THR-271 shipped: UL v1 glossary shards + index and mirrored ubiquitous-language skill with CLAUDE session-load terminology authority checks.
 - **work** | THR-283 shipped: registered hostile_to edge schema and expanded contains target to include sublocation (tests/typecheck/build green).
+- **work** | THR-286 shipped: removed todo-only StartPage/App/useThemeMusic placeholder tests (3 files) to eliminate skipped-test noise.

@@ -62,3 +62,6 @@ Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Compl
 ## Recent Completions (2026-04-27) — THR-283 schema registration fix
 - **THR-283:** Added hostile_to to EdgeType + EDGE_SCHEMA, widened contains.targetNodeType to ['location', 'sublocation'], and verified zero matching GraphSchema warnings for hostile_to/contains in full npm test output.
 
+
+## Recent Completions (2026-04-27) — THR-286 placeholder test cleanup
+- **THR-286:** Deleted src/__tests__/App.test.tsx, src/components/StartPage/__tests__/StartPage.test.tsx, and src/components/StartPage/__tests__/useThemeMusic.test.ts (todo-only stubs) to remove skipped-test noise from local/CI runs. Full npm test, npx tsc --noEmit, and npx vite build passed.
