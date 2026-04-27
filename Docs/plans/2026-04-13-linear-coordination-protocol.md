@@ -433,6 +433,8 @@ Same order as CC: **claim → verify → read → decide**. Every step mirrors t
 4. **Verify the handoff is complete.** All four action-item sections present (Engine, Content, UI, Wiring). If any section is missing without N/A rationale, do not start work — add a comment flagging the gap, release the claim with `assignee: null`, and move the issue back to Implementation Planning. An incomplete plan produces incomplete work regardless of which executor picks it up.
 5. **Check the Codex coordination block.** Verify `Parallel-safe with` and `Mutex with` against any In Dev issues across both executors.
 
+**Worktree isolation (Step 4.5).** After the claim is verified, the `pull-work` skill runs Step 4.5 — if the home worktree is dirty (`git status --porcelain` returns non-empty), pickup continues inside a fresh `git worktree` rooted at `origin/main` rather than bouncing. All subsequent work (plan-doc read, implementation, verification trio, commit, push) happens in that isolated worktree. See `.claude/skills/pull-work/SKILL.md` § Step 4.5 for the exact commands, constants, trace lines, and failure-recovery path. This step was added in THR-277 to break the dirty-worktree doom loop that blocked automation for 4 cycles (impediments #87, #88, #89).
+
 ### Codex Closeout
 Identical to CC closeout with one clarification: Codex commits and pushes through the same `Fixes THR-XX` keyword path. The merge-to-main auto-close fires regardless of which executor opened the PR. **Codex must never call `save_issue(state: "Done")` (Rule 3 applies).** Deferrals, impediment logs, changelog / project-status / project-history updates are all the executor's responsibility — no different from CC.
 

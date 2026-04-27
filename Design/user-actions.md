@@ -41,6 +41,8 @@ When an item resolves: delete it from this file, mark the corresponding impedime
 
 **What breaks if not done.** This is the upstream cause of the Codex dirty-worktree bounces (#87/#88/#89, ~50% of automation slots wasted). [THR-277](https://linear.app/threadbare/issue/THR-277) makes Codex resilient *to* dirty state, but it doesn't clean the state. Until the orphan changes are triaged, the dirty worktree stays dirty.
 
+**Mitigated by:** [THR-277](https://linear.app/threadbare/issue/THR-277) — worktree isolation in pull-work routes Codex pickup around dirty state while orphan triage is pending.
+
 ---
 
 ## 4. GitHub Pro upgrade decision · NOT URGENT
