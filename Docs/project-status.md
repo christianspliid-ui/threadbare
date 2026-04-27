@@ -1,7 +1,20 @@
 # Project Status
-> Updated 2026-04-25.
+> Updated 2026-04-27.
 ## Current Focus
-**THR-211 complete — first playtest run.** 27 PASS / 2 FAIL / 10 SURPRISE / 10 SKIP. RUBRIC.md and EXPECTED-FINDINGS.md populated with baseline findings. THR-275 filed (HexSidebar exploration path). Next: address FAILs and re-run to validate fixes.
+**THR-281 complete — test suite triage.** Suite is empirically green (0 failures, 10,709 tests pass). 4 child issues filed: THR-283 (schema drift: hostile_to + contains), THR-284 (constructed_by direction), THR-285 (BUFFER_SIZE 500→2000), THR-286 (delete orphan todo test files). Phase 2 fix work ready to pick up.
+
+## Repo Health Sprint v2 (Now)
+- **THR-280** (parent): Test Suite Stabilization Sprint v2
+- ✅ **THR-281:** Survey complete — suite is green, triage report at `Docs/audits/2026-04-27-test-suite-triage.md`
+- **THR-283** (Ready for Codex, haiku): Register `hostile_to` + fix `contains` sublocation target
+- **THR-284** (Ready for Dev, sonnet): Fix `constructed_by` EDGE_SCHEMA semantic direction
+- **THR-285** (Ready for Codex, haiku): Raise BUFFER_SIZE 500→2000
+- **THR-286** (Ready for Codex, haiku): Delete orphan todo-only test placeholder files
+
+## Recent Completions (2026-04-24) — THR-211 first playtest run + THR-243 exemplars index
+**THR-211:** First `playtest-interface` run. 27 PASS, 2 FAIL, 10 SURPRISE, 10 SKIP. RUBRIC.md annotated with `getActiveUIState()` 9-field contract, `getOpenModals()` caveats, `gotoAgent()` exact-ID requirement, `setFog()` 200ms delay, `?debug.openModal` 5s init timing. EXPECTED-FINDINGS.md seeded with 9 baseline entries. THR-275 filed (HexSidebar exploration path bug). Report: `.playtest-runs/2026-04-24-1215.md`.
+
+## Milestone Status 27 PASS / 2 FAIL / 10 SURPRISE / 10 SKIP. RUBRIC.md and EXPECTED-FINDINGS.md populated with baseline findings. THR-275 filed (HexSidebar exploration path). Next: address FAILs and re-run to validate fixes.
 
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)

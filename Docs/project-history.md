@@ -3,6 +3,8 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ THR-281 (2026-04-27) — test suite triage: suite is empirically green (0 failures across 3 consecutive runs, 10,709 tests pass). GraphSchema warnings documented as schema drift. 4 child issues filed (THR-283/284/285/286) for Phase 2 fix work. Triage report: `Docs/audits/2026-04-27-test-suite-triage.md`.
+
 ✅ THR-211 (2026-04-24) — first playtest-interface run: 27 PASS / 2 FAIL / 10 SURPRISE / 10 SKIP against `?view=game&seeded&nofog&size=medium`. RUBRIC.md annotated with `getActiveUIState()` 9-field actual contract, `getOpenModals()` game-view-only + inline-panel caveats, `gotoAgent()` exact-ID requirement, `setFog()` 200ms delay, `?debug.openModal` 5s init timing. EXPECTED-FINDINGS.md seeded with 9 baseline entries. THR-275 filed (HexSidebar exploration path FAIL). Report gitignored at `.playtest-runs/2026-04-24-1215.md`.
 
 ✅ THR-243 (2026-04-24) — centralized exemplars index: `Docs/exemplars.md` single source of truth for quality exemplars. Two encounter exemplars (rival-shrine-betrayal 10/10, flawed-steel 9/10); placeholder rows for prose and attachment exemplars. PR #34 merged.
