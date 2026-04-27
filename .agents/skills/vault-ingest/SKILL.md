@@ -79,7 +79,8 @@ Format: `- [[Page Name]] — one-line summary`
 
 ### Step 6: Log the Ingest
 
-Append to `TheFantasyWorldSimulator/log.md`:
+Append to `TheFantasyWorldSimulator/log.md` via `obsidian_append_content`. If the MCP call fails, apply the **Filesystem Fallback Protocol** below.
+
 ```
 - **ingest** | Source: <source title/path> → Created: [[New Page 1]], [[New Page 2]]. Updated: [[Existing Page 1]], [[Existing Page 2]]
 ```
@@ -119,3 +120,12 @@ When ingesting game design documents:
 - `obsidian_patch_content` fails on headings with special characters like `*(added 2026-03-06)*`
 - Block targets containing wikilinks `[[like this]]` cause errors
 - For Index.md edits, ONLY use `obsidian_append_content`
+
+## Filesystem Fallback Protocol
+
+When any `obsidian_*` MCP call fails (unreachable, connection refused, timeout):
+
+1. **Resolve vault path** — Run `Bash: echo $OBSIDIAN_VAULT_PATH`. This must be the absolute path to the Obsidian vault root folder (the folder *containing* `TheFantasyWorldSimulator/`).
+2. **Fail loud if missing** — If `OBSIDIAN_VAULT_PATH` is empty and the MCP is also unavailable, stop immediately and report: `"Obsidian MCP is unreachable and OBSIDIAN_VAULT_PATH is not configured. Vault write failed."` Do not silently skip.
+3. **Filesystem write** — If `OBSIDIAN_VAULT_PATH` is set, construct the full path by joining: `$OBSIDIAN_VAULT_PATH/<vault-relative-path>` (e.g., `$OBSIDIAN_VAULT_PATH/TheFantasyWorldSimulator/log.md`). Use `Read` then `Edit` to append, or `Write` to create new files. Write the exact same content the MCP path would have written.
+4. **Note the fallback** — Mention in your response that the filesystem fallback was used and which files were written, so the user knows the MCP was unavailable.
