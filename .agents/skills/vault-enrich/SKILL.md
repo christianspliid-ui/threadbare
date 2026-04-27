@@ -51,7 +51,8 @@ When enriching a page, DON'T just add links to the target page. Also update the 
 
 ## Logging
 
-After each enrichment, append to `TheFantasyWorldSimulator/log.md`:
+After each enrichment, append to `TheFantasyWorldSimulator/log.md` following the **vault-log** skill procedure (MCP first, filesystem fallback if MCP is unreachable, loud failure if neither path is available).
+
 ```
 - **enrichment** | Enriched [[Page Name]] — added N cross-references, expanded N sections, fixed N issues
 ```
@@ -72,3 +73,12 @@ After each enrichment, append to `TheFantasyWorldSimulator/log.md`:
 - `obsidian_patch_content` fails on complex targets — use simple, unique heading text
 - For Index.md edits, ONLY use `obsidian_append_content`
 - After enriching, verify with `obsidian_get_file_contents` that changes took effect
+
+## Filesystem Fallback Protocol
+
+When any `obsidian_*` MCP call fails (unreachable, connection refused, timeout):
+
+1. **Resolve vault path** — Run `Bash: echo $OBSIDIAN_VAULT_PATH`. This must be the absolute path to the Obsidian vault root folder (the folder *containing* `TheFantasyWorldSimulator/`).
+2. **Fail loud if missing** — If `OBSIDIAN_VAULT_PATH` is empty and the MCP is also unavailable, stop immediately and report: `"Obsidian MCP is unreachable and OBSIDIAN_VAULT_PATH is not configured. Vault write failed."` Do not silently skip.
+3. **Filesystem write** — If `OBSIDIAN_VAULT_PATH` is set, construct the full path by joining: `$OBSIDIAN_VAULT_PATH/<vault-relative-path>` (e.g., `$OBSIDIAN_VAULT_PATH/TheFantasyWorldSimulator/log.md`). Use `Read` then `Edit` to append, or `Write` to create new files. Write the exact same content the MCP path would have written.
+4. **Note the fallback** — Mention in your response that the filesystem fallback was used and which files were written, so the user knows the MCP was unavailable.

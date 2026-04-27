@@ -248,6 +248,7 @@ The Cowork/Codex agent sandboxes have several quirks that recur often enough tha
 - **`web.open` ref IDs from earlier in a session can expire** mid-conversation (impediment #17). **Workaround:** reopen the page from its canonical URL rather than chaining from a stored ref.
 - **Linear `save_issue` returns 200 but does not always update state** (impediment #48). **Workaround:** always verify-after-write by re-querying the issue; do not trust the success response alone.
 - **Linear `list_issues orderBy: 'priority'` is rejected at runtime** even though the schema accepts it (impediment #49). **Workaround:** omit `orderBy` (or use `createdAt` / `updatedAt`) and sort by priority in memory.
+- **Obsidian MCP unreachable** (~12 occurrences over 8 days, impediments #66, #71, #75, #86) — vault-log appends (`log.md`, retro outputs, ingest results) silently dropped. **Workaround:** vault skills now auto-fall back to filesystem writes when the MCP fails. Requires `OBSIDIAN_VAULT_PATH` set to the vault root (see vault-log skill). If unset, the fallback fails loud rather than silently dropping the entry. Add to `.claude/settings.local.json`: `{ "env": { "OBSIDIAN_VAULT_PATH": "C:\\Users\\chris\\Dev\\Obsidian" } }`.
 
 If you discover a new sandbox limitation, log it via `impediment-reporter` and add it here in the next retro.
 
