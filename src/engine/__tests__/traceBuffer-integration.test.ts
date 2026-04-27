@@ -165,8 +165,8 @@ describe('trace buffer integration', { timeout: 120000 }, () => {
     expect(traces.length).toBeGreaterThan(0);
 
     // Check for tick_summary entries (one per tick)
-    // Note: exact count depends on BUFFER_SIZE (500) and trace volume per tick.
-    // Buffer size is 500 entries. Each tick produces multiple trace categories,
+    // Note: exact count depends on BUFFER_SIZE (2000) and trace volume per tick.
+    // Buffer size is 2000 entries. Each tick produces multiple trace categories,
     // so older tick_summaries may be evicted after many ticks.
     // We verify that tick_summaries are produced (at least some survive buffer eviction).
     const tickSummaries = traces.filter((t) => t.category === 'tick_summary');
@@ -217,14 +217,14 @@ describe('trace buffer integration', { timeout: 120000 }, () => {
     }
   });
 
-  it('buffer does not exceed BUFFER_SIZE (500)', () => {
+  it('buffer does not exceed BUFFER_SIZE (2000)', () => {
     // Run enough ticks to potentially overflow the buffer
     for (let i = 0; i < 200; i++) {
       state = runTick(state);
     }
 
     const traces = getTraces();
-    expect(traces.length).toBeLessThanOrEqual(500);
+    expect(traces.length).toBeLessThanOrEqual(2000);
   });
 
   it('disabling tracing prevents new entries from being recorded', () => {

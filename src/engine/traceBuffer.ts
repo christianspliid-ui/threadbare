@@ -1,6 +1,6 @@
 import type { TraceEntry } from '../types/trace';
 
-const BUFFER_SIZE = 500;
+const BUFFER_SIZE = 2000;
 const FALLBACK_TRACE_CATEGORY = 'engine_warning';
 const FALLBACK_TRACE_SUMMARY_PREFIX = 'trace';
 
