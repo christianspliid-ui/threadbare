@@ -248,6 +248,7 @@ The Cowork/Codex agent sandboxes have several quirks that recur often enough tha
 - **`web.open` ref IDs from earlier in a session can expire** mid-conversation (impediment #17). **Workaround:** reopen the page from its canonical URL rather than chaining from a stored ref.
 - **Linear `save_issue` returns 200 but does not always update state** (impediment #48). **Workaround:** always verify-after-write by re-querying the issue; do not trust the success response alone.
 - **Linear `list_issues orderBy: 'priority'` is rejected at runtime** even though the schema accepts it (impediment #49). **Workaround:** omit `orderBy` (or use `createdAt` / `updatedAt`) and sort by priority in memory.
+- **Obsidian MCP unreachable** (~12 occurrences over 8 days, impediments #66, #71, #75, #86) — vault-log appends (`log.md`, retro outputs, ingest results) silently dropped. **Workaround:** vault skills now auto-fall back to filesystem writes when the MCP fails. Requires `OBSIDIAN_VAULT_PATH` set to the vault root (see vault-log skill). If unset, the fallback fails loud rather than silently dropping the entry. Add to `.claude/settings.local.json`: `{ "env": { "OBSIDIAN_VAULT_PATH": "C:\\Users\\chris\\Dev\\Obsidian" } }`.
 
 If you discover a new sandbox limitation, log it via `impediment-reporter` and add it here in the next retro.
 
@@ -365,6 +366,7 @@ Work is not "done" until it is deployed and documented. Do all of these automati
 ## Session Workflow
 
 - [ ] Read this file for orientation
+- [ ] **Read the Ubiquitous Language index** — `Docs/ubiquitous-language/README.md` (always-load, ~3k tokens). Load individual shard files on demand when the task touches their domain. **UL wins on terminology disagreements** — when this file, Obsidian, plan docs, or code comments conflict with the UL, the UL definition is correct and the conflicting source needs reconciliation (open a `UL-proposal` Linear issue).
 - [ ] **First tool call of any coding session:** run `node --experimental-strip-types scripts/session-precheck.ts` and compare its `fingerprint ...` line against expected sandbox capabilities before starting feature work
 - [ ] **Check Linear for work** — query issues by state per the protocol in `Docs/plans/2026-04-13-linear-coordination-protocol.md`:
   - **Cowork:** Run the board scan from `Docs/plans/2026-04-13-linear-coordination-protocol.md` § Cowork Session Start — one `list_issues(limit:250)` call, bucket in memory by `status`. Covers In Design, Implementation Planning, Ready for Dev, Ready for Codex, and Todo in a single query.
@@ -376,9 +378,24 @@ Work is not "done" until it is deployed and documented. Do all of these automati
 - [ ] Check `.planning/ROADMAP.md` for legacy milestone overview
 - [ ] Read relevant design doc in `Docs/plans/` before writing code
 - [ ] **Upstream health check** — if the feature depends on upstream pipeline throughput, verify the pipeline is producing output before coding. A feature wired to a dead pipeline is wasted work.
+- [ ] **Terminology authority check** — if sources disagree on term definitions, UL wins (`Docs/ubiquitous-language/README.md` + shard entries)
 - [ ] After completing work, follow the **Definition of Done** above
 - [ ] **Update Linear** — move issue to appropriate state, add completion comment
 - [ ] **Update vault log** — Append to `log.md` via Obsidian MCP what was changed in this session
+
+**Weekly continuous-improvement cycle (Fridays):**
+1. 14:00 UTC — GitHub Action drift scan runs and posts per-signal Linear issues (label: `drift-scan`) in Continuous Improvement.
+2. ~15:00 UTC — Weekly retrospective (via `retrospective` skill) reads that week's `drift-scan`-labeled issues as its **first input** before the impediment log. Run via the `weekly-retro` scheduled task or manually with `/retrospective`.
+
+To create the `weekly-retro` scheduled task (do this once in a non-scheduled CC session):
+```
+create_scheduled_task(
+  taskId: "weekly-retro",
+  description: "Run weekly retrospective reading drift-scan issues + impediments log (Fridays ~1 hour after drift scan)",
+  cronExpression: "0 17 * * 5",  // adjust to your local time equivalent of 15:00 UTC
+  prompt: "Run the weekly retrospective. Invoke the retrospective skill via the Skill tool and follow it exactly. It will load this week's drift-scan-labeled Linear issues from Continuous Improvement as Step 0, then synthesize with Docs/impediments.md. Write output to Docs/retrospectives/YYYY-MM-DD-retro.md. Implement quick wins. Open Linear issues for larger improvements. Execute autonomously."
+)
+```
 
 ## Skill Tree Layout
 
@@ -403,6 +420,7 @@ Context for specific problem types lives in on-demand skills. **Always load `sta
 
 | Domain | Skill | When to load |
 |--------|-------|-------------|
+| **Terminology (always active)** | `ubiquitous-language` | Session start — load `Docs/ubiquitous-language/README.md` as orientation. Load specific shards on demand. Propose new terms via Linear `UL-proposal` when encountering undeclared concepts. UL wins on all terminology disagreements. |
 | **Foundational (load first)** | `state-of-game-design` | Always — before any other domain skill. Cosmology, reaches, spheres, action verbs, prerequisites, architectural decisions. |
 | **Game design direction** | `game-design-direction` | During In Design phase for player-facing features. Loads Vision/ + taste profile, runs pre-design debate when direction is contested, runs Vision audit at finalization. Load alongside `state-of-game-design`. |
 | **Systemic wiring guide** | `Docs/plans/2026-04-16-systemic-wiring-guide.md` | **Before any content authoring.** The 7 engine capabilities content authors must know: enrichment placeholders, encounter seeding, hidden marks, reputation flow, graph ops, intelligence, divine intervention. Read this before encounter-pipeline, attachment-pipeline, or prose-content-systems. If you don't know what the engine can do, you'll write hardcoded fiction. |

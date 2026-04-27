@@ -25,6 +25,10 @@
 ## Recent Completions (2026-04-24) — THR-272 grill-me skill
 - **THR-272:** Shipped `.claude/skills/grill-me/SKILL.md` + `.agents/skills/grill-me/` mirror. 4 invocation triggers (explicit, effort >1 day, multi-pillar, high-ambiguity), conversational default, async-batch mode (generates `Docs/plans/*-grill-me.md`), "I don't know" parking + grey-zone handling, synthesis artifact with 7 required sections. CLAUDE.md design governance checklist gains step 0. First-wave 2/4. PR #32.
 
+## Recent Completions (2026-04-25) — THR-271 UL v1 + THR-274 retro cadence sync
+- **THR-271:** Shipped Ubiquitous Language v1. 7 sharded markdown files (`Docs/ubiquitous-language/`) with 73 canonical terms across Cosmology, Agents, Encounters, Prose, Graph, Coordination, Process. Always-load README index. `ubiquitous-language` skill with propose-new-term (UL-proposal Linear issues) + retirement flows. CLAUDE.md wired: UL orientation step + "UL wins on terminology disagreements" rule. First-wave 1/4. PR #44.
+- **THR-274:** Retro × drift-scan cadence sync. `retrospective` skill wired to read this week's `drift-scan`-labeled Linear issues as Step 0. New cross-signal synthesis step, Tuning Recommendations section, failure-handling for 3 consecutive empty scan weeks. CLAUDE.md documents Friday cadence. PR #41 pending merge (CI blocked by billing — impediment #91). First-wave 4/4.
+
 ## Recent Completions (2026-04-25) — THR-258 phase predicate edge-exists
 - **THR-258:** Shipped runtime phase-predicate support for `edge-exists` in `phaseComposition`, including phase-side FilterQuery evaluation for `and`/`or`/`not`/`prop-equals`/`has-edge`, fail-soft warnings for unsupported `has-tag`/`has-any-tag`/`node-class` and unknown filter ops, and 15 new edge-exists unit cases in `phaseComposition.worldPredicates.test.ts`.
 

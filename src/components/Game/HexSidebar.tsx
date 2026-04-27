@@ -34,6 +34,8 @@ export interface HexSidebarProps {
   factions: HexFactionSummary[];
   /** Positional danger level (0.0–1.0). 0 = safe center, 1.0 = dangerous corner. */
   dangerLevel?: number;
+  /** Called when a location entry is clicked; opens LocationProfileModal for that location. */
+  onLocationClick?: (locationId: string) => void;
 }
 
 /**
@@ -349,6 +351,7 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
                       alignItems: 'center',
                       gap: '4px',
                     }}
+                    onClick={() => props.onLocationClick?.(loc.id)}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.color = 'var(--accent-gold-dim)';
                     }}

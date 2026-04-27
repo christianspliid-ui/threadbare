@@ -2,9 +2,9 @@
 
 > **Stack:** raw-http | none | react | typescript
 
-> 0 routes | 0 models | 247 components | 548 lib files | 15 env vars | 42 middleware | 1 events | 0% test coverage
-> **Token savings:** this file is ~56.000 tokens. Without it, AI exploration would cost ~244.900 tokens. **Saves ~189.000 tokens per conversation.**
-> **Last scanned:** 2026-04-24 04:04 — re-run after significant changes
+> 0 routes | 0 models | 248 components | 550 lib files | 16 env vars | 42 middleware | 1 events | 0% test coverage
+> **Token savings:** this file is ~56.200 tokens. Without it, AI exploration would cost ~245.900 tokens. **Saves ~189.700 tokens per conversation.**
+> **Last scanned:** 2026-04-27 09:40 — re-run after significant changes
 
 ---
 
@@ -73,6 +73,7 @@
 - **ContentBrowser** — `src\components\CMS\ContentBrowser.tsx`
 - **ConfigManager** — props: groups, searchQuery — `src\components\CMS\viewers\ConfigManager.tsx`
 - **ConstantsViewer** — props: data, searchQuery — `src\components\CMS\viewers\ConstantsViewer.tsx`
+- **IASurfaceViewer** — props: data, searchQuery, selectedKey, onSelectItem — `src\components\CMS\viewers\IASurfaceViewer.tsx`
 - **ProseViewer** — props: data, searchQuery — `src\components\CMS\viewers\ProseViewer.tsx`
 - **RecordViewer** — props: data, searchQuery, selectedKey, onSelectItem — `src\components\CMS\viewers\RecordViewer.tsx`
 - **TableViewer** — props: data, columns, searchQuery, searchFields, selectedKey, onSelectItem — `src\components\CMS\viewers\TableViewer.tsx`
@@ -278,6 +279,15 @@
   - function create_hexagon_mask: (width, height)
   - function process_hex_tile: (input_path, output_path)
   - function main: ()
+- `scripts\drift-scan\index.ts`
+  - function parseCodesightImporters: (graphText, limit) => ImporterCount[]
+  - function evaluateCouplingCreep: (current, prior, thresholdPct) => SignalResult
+  - function countBrokenWindowsFromCorpus: (corpus) => BrokenWindowsCounts
+  - function evaluateBrokenWindows: (current, priorTotal, thresholdPct) => SignalResult
+  - function evaluateTestSuiteHealth: (params, boolean[]>;
+  runtimeRegressionPct?) => S3Evaluation
+  - function parseUlShardTerms: (shardText, shardName) => UlTerm[]
+  - _...22 more_
 - `scripts\enhance-frontmatter.ts` — function enhanceFrontmatter: (options) => void
 - `scripts\generate-hex-tile.py`
   - function make_hex_mask: (size, inset, feather) -> Image.Image
@@ -431,6 +441,7 @@
 - `src\components\Game\hooks\useTargetActions.ts` — function useTargetActions: ({...}, gameState, archetype, drawerOpen, }) => WheelSlot[] | null
 - `src\components\Game\hooks\useTopBarHotkeys.ts` — function useTopBarHotkeys: ({...}, speed, onToggle, onSpeedChange, onStep, onMoveClick }) => void
 - `src\components\Game\hooks\useViewNavigation.ts` — function useViewNavigation: ({...}, setGameState, avatarPixelPos, tiles, COLS, ROWS, scryState, fogDisabled, setRunning, }) => UseViewNavigationReturn, type ViewLevel
+- `src\components\Game\useDebugOpenModal.ts` — function useDebugOpenModal: (gameStateRef, openers) => void
 - `src\components\HexMap\useCoastline.ts` — function useCoastline: (tiles, hexSize, cols, rows, seed, config) => CoastlineData
 - `src\components\HexMap\useRivers.ts` — function useRivers: (cols, rows, seed) => RiverPath[]
 - `src\components\HexMapV2\agents\activityIndicatorRegistry.ts`
@@ -2862,6 +2873,7 @@
 - `ANTHROPIC_API_KEY` **required** — scripts\review\review-client.ts
 - `CODEX_INTERNAL_ORIGINATOR_OVERRIDE` **required** — scripts\session-precheck.ts
 - `DEV` **required** — src\components\Game\GameView.tsx
+- `DRIFT_SCAN_BASELINE_PATH` **required** — scripts\drift-scan\index.ts
 - `LINEAR_API_KEY` **required** — scripts\check-process.ts
 - `NANOBANANANA_API_KEY` (has default) — .env.example
 - `NODE_ENV` **required** — src\components\Game\GuildQuestPanel.tsx
@@ -2948,12 +2960,12 @@
 ## Most Imported Files (change these carefully)
 
 - `src\engine\graph.ts` — imported by **453** files
-- `src\types\gameState.ts` — imported by **264** files
+- `src\types\gameState.ts` — imported by **265** files
 - `src\types\index.ts` — imported by **201** files
 - `src\types\traits.ts` — imported by **186** files
 - `src\types\unifiedAction.ts` — imported by **170** files
 - `src\engine\traceBuffer.ts` — imported by **161** files
-- `src\types\graph.ts` — imported by **106** files
+- `src\types\graph.ts` — imported by **107** files
 - `src\types\encounter.ts` — imported by **103** files
 - `src\types\agent.ts` — imported by **102** files
 - `src\types\influence.ts` — imported by **96** files
@@ -2971,12 +2983,12 @@
 ## Import Map (who imports what)
 
 - `src\engine\graph.ts` ← `src\components\AgentInfoCard\AgentInfoCard.tsx`, `src\components\Game\AgentInfoCard.tsx`, `src\components\Game\debug\ArmiesTabContent.tsx`, `src\components\Game\debug\BondOverlay.tsx`, `src\components\Game\debug\CulturePhoneticsInspector.tsx` +448 more
-- `src\types\gameState.ts` ← `scripts\cli.ts`, `scripts\playtest-format.ts`, `scripts\playtest.ts`, `scripts\__tests__\playtest-format.test.ts`, `src\components\Game\ascendant-bar\AscendantBar.tsx` +259 more
+- `src\types\gameState.ts` ← `scripts\cli.ts`, `scripts\playtest-format.ts`, `scripts\playtest.ts`, `scripts\__tests__\playtest-format.test.ts`, `src\components\Game\ascendant-bar\AscendantBar.tsx` +260 more
 - `src\types\index.ts` ← `scripts\cli.ts`, `scripts\playtest.ts`, `src\components\Game\ActionCard.tsx`, `src\components\Game\DoomBar.tsx`, `src\components\Game\InterventionConfirm.tsx` +196 more
 - `src\types\traits.ts` ← `src\components\CMS\registry.ts`, `src\components\Game\AgentDetailPanel.tsx`, `src\components\Game\AgentInfoCard.tsx`, `src\components\Game\AscendantSheet.tsx`, `src\components\Game\AscendantSheet.tsx` +181 more
 - `src\types\unifiedAction.ts` ← `scripts\cli.ts`, `src\components\Game\ActionDrawer.tsx`, `src\components\Game\ActionDrawer.tsx`, `src\components\Game\ascendant-bar\selectors.ts`, `src\components\Game\debug\DebugTabContent.tsx` +165 more
 - `src\engine\traceBuffer.ts` ← `src\components\Game\DebugPanel.tsx`, `src\components\Game\GameView.tsx`, `src\components\Game\hooks\useAvatarData.ts`, `src\components\Game\__tests__\DebugPanel-intervention.test.tsx`, `src\components\Game\__tests__\DebugPanel-modifier.test.tsx` +156 more
-- `src\types\graph.ts` ← `scripts\cli.ts`, `src\components\Codex\codexRegistry.ts`, `src\components\Game\debug\BondOverlay.tsx`, `src\components\Game\debug\EncounterCacheView.tsx`, `src\components\Game\debug\RelationshipGraph.tsx` +101 more
+- `src\types\graph.ts` ← `scripts\cli.ts`, `src\components\Codex\codexRegistry.ts`, `src\components\Game\debug\BondOverlay.tsx`, `src\components\Game\debug\EncounterCacheView.tsx`, `src\components\Game\debug\RelationshipGraph.tsx` +102 more
 - `src\types\encounter.ts` ← `src\components\Game\debug\DebugTabContent.tsx`, `src\components\Game\debug\EncounterCacheView.tsx`, `src\components\Game\debug\EncounterCacheView.tsx`, `src\components\Game\DebugPanel.tsx`, `src\components\Game\encounter-stage\adapters\buildSimpleEncounterStageModel.ts` +98 more
 - `src\types\agent.ts` ← `src\data\action-template-content.ts`, `src\data\agenda-content.ts`, `src\data\counter-argument-content.ts`, `src\data\domain-words.ts`, `src\data\narrative-content.ts` +97 more
 - `src\types\influence.ts` ← `src\App.tsx`, `src\components\Ascendant\ArchetypeCard.tsx`, `src\components\Ascendant\AscendantSelection.tsx`, `src\components\Game\ascendant-bar\AscendantBar.tsx`, `src\components\Game\ascendant-bar\selectors.ts` +91 more
@@ -2992,7 +3004,7 @@
 # Test Coverage
 
 > **0%** of routes and models are covered by tests
-> 685 test files found
+> 686 test files found
 
 ---
 

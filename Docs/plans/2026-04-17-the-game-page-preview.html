@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threadbearer — Pull the threads. Weave the world.</title>
+<meta name="description" content="A turn-based god-game. You are a young god over a living world. A handful of mortals will remake it. Find them. Shape them. Watch the age turn.">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Fira+Code:wght@300;400&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --parchment: #f4ead5;
+  --parchment-dark: #e0d0b0;
+  --parchment-mid: #ecdcc0;
+  --ink: #1a1008;
+  --ink-mid: #2c1810;
+  --ink-light: #5a3d2b;
+  --ink-faint: #8b7560;
+  --gold: #c4993c;
+  --gold-bright: #e6b84d;
+  --gold-dim: #a07830;
+  --gold-pale: #d4b978;
+  --ember: #c44b2f;
+  --cosmos: #0a0e16;
+  --cosmos-warm: #0f1018;
+  --soul-purple: #7b5ea7;
+  --iron-red: #9e3b3b;
+  --life-green: #4a7c59;
+  --line: rgba(196, 153, 60, 0.12);
+  --line-strong: rgba(196, 153, 60, 0.25);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--cosmos);
+  color: var(--parchment);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* ═══ GRAIN ═══ */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ═══ HERO ═══ */
+.hero {
+  height: 100vh;
+  min-height: 700px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.hero-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.35) saturate(0.6);
+}
+
+.hero-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(10,14,22,0.3) 0%, transparent 30%, transparent 50%, rgba(10,14,22,0.85) 80%, var(--cosmos) 100%),
+    radial-gradient(ellipse at 50% 40%, transparent 0%, rgba(10,14,22,0.5) 100%);
+}
+
+.hero-content {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  text-align: center;
+  padding: 2rem 2rem 0;
+}
+
+.hero-wordmark {
+  margin-bottom: auto;
+  position: relative;
+}
+
+.hero-wordmark::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: -15%;
+  right: -15%;
+  bottom: -30%;
+  background: radial-gradient(ellipse at 50% 45%, rgba(10,14,22,0.7) 0%, rgba(10,14,22,0.4) 40%, transparent 70%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.hero-wordmark img {
+  width: clamp(480px, 90vw, 1400px);
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  filter: drop-shadow(0 0 30px rgba(196,153,60,0.2));
+}
+
+.hero-tagline {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-style: italic;
+  font-size: clamp(1.3rem, 2.8vw, 1.9rem);
+  color: var(--gold-pale);
+  letter-spacing: 0.04em;
+  margin-bottom: 1.5rem;
+  padding-bottom: 4rem;
+  opacity: 0.9;
+}
+
+.hero-cta {
+  display: inline-block;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold);
+  border: 1px solid var(--gold-dim);
+  padding: 0.9rem 2.5rem;
+  text-decoration: none;
+  transition: all 0.4s;
+}
+
+.hero-cta:hover {
+  background: rgba(196,153,60,0.08);
+  border-color: var(--gold);
+  color: var(--gold-bright);
+}
+
+.scroll-hint {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  opacity: 0.4;
+  animation: bob 3s ease-in-out infinite;
+}
+
+@keyframes bob {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(6px); }
+}
+
+/* ═══ SECTIONS ═══ */
+section {
+  padding: 7rem 3rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-tag {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  opacity: 0.6;
+  margin-bottom: 0.75rem;
+}
+
+section h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 1.25;
+  color: var(--parchment);
+  margin-bottom: 1.5rem;
+}
+
+section h2 em {
+  color: var(--gold);
+  font-style: italic;
+}
+
+section .lead {
+  font-size: 1.1rem;
+  color: var(--parchment-dark);
+  max-width: 640px;
+  line-height: 1.85;
+  margin-bottom: 2rem;
+}
+
+/* ═══ FULL-WIDTH ART ═══ */
+.art-full {
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  position: relative;
+  overflow: hidden;
+}
+
+.art-full img {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+  display: block;
+  filter: brightness(0.45) saturate(0.6);
+}
+
+.art-full::before,
+.art-full::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 120px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.art-full::before {
+  top: 0;
+  background: linear-gradient(180deg, var(--cosmos) 0%, transparent 100%);
+}
+
+.art-full::after {
+  bottom: 0;
+  background: linear-gradient(0deg, var(--cosmos) 0%, transparent 100%);
+}
+
+.art-full .art-quote {
+  position: absolute;
+  z-index: 2;
+  bottom: 2.5rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.4rem;
+  color: var(--parchment);
+  opacity: 0.8;
+  padding: 0 3rem;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.8);
+}
+
+/* ═══ LOOP (THE THREE BEATS) ═══ */
+.loop {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+  margin-top: 3.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.loop-beat {
+  padding: 2.5rem 2rem 0.5rem;
+  border-right: 1px solid var(--line);
+  position: relative;
+}
+
+.loop-beat:last-child {
+  border-right: none;
+}
+
+.loop-beat .loop-num {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
+  color: var(--gold-dim);
+  opacity: 0.7;
+  margin-bottom: 1.25rem;
+  display: block;
+}
+
+.loop-beat h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.9rem;
+  font-weight: 400;
+  color: var(--parchment);
+  margin-bottom: 0.6rem;
+  line-height: 1.25;
+}
+
+.loop-beat h3 em {
+  color: var(--gold);
+  font-style: italic;
+}
+
+.loop-beat .loop-sub {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--gold-pale);
+  opacity: 0.85;
+  margin-bottom: 1rem;
+}
+
+.loop-beat p {
+  font-size: 0.92rem;
+  color: var(--parchment-dark);
+  line-height: 1.8;
+}
+
+/* ═══ PROMISE CARDS ═══ */
+.promises {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--line);
+  margin-top: 3rem;
+}
+
+.promise {
+  background: var(--cosmos);
+  padding: 2.5rem;
+  transition: background 0.4s;
+}
+
+.promise:hover {
+  background: rgba(255,255,255,0.015);
+}
+
+.promise h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.35rem;
+  font-weight: 500;
+  color: var(--parchment);
+  margin-bottom: 0.75rem;
+}
+
+.promise p {
+  font-size: 0.9rem;
+  color: var(--ink-faint);
+  line-height: 1.75;
+}
+
+.promise .p-icon {
+  font-size: 1.6rem;
+  margin-bottom: 1rem;
+  opacity: 0.7;
+  display: block;
+  filter: grayscale(0.5);
+}
+
+/* ═══ PILLAR SHOWCASE ═══ */
+.pillar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  margin-bottom: 0;
+  min-height: 500px;
+}
+
+.pillar.reversed { direction: rtl; }
+.pillar.reversed > * { direction: ltr; }
+
+.pillar-img {
+  position: relative;
+  overflow: hidden;
+}
+
+.pillar-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.35) saturate(0.6);
+  transition: filter 0.6s;
+}
+
+.pillar:hover .pillar-img img {
+  filter: brightness(0.65) saturate(0.85);
+}
+
+.pillar-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 4rem;
+  border: 1px solid var(--line);
+  border-left: none;
+}
+
+.pillar.reversed .pillar-text {
+  border-left: 1px solid var(--line);
+  border-right: none;
+}
+
+.pillar-text .section-tag { margin-bottom: 0.5rem; }
+
+.pillar-text h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: var(--parchment);
+  margin-bottom: 1rem;
+  line-height: 1.3;
+}
+
+.pillar-text h3 em {
+  color: var(--gold);
+  font-style: italic;
+}
+
+.pillar-text p {
+  font-size: 0.95rem;
+  color: var(--parchment-dark);
+  line-height: 1.8;
+  margin-bottom: 1rem;
+  max-width: 440px;
+}
+
+.pillar-text .pillar-detail {
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+  font-style: italic;
+  line-height: 1.7;
+  max-width: 440px;
+}
+
+/* ═══ SPHERE STRIP ═══ */
+.sphere-strip {
+  display: flex;
+  gap: 0;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  height: 200px;
+  overflow: hidden;
+}
+
+.sphere-strip .sphere-cell {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.sphere-strip .sphere-cell img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.5) saturate(0.8);
+  transition: filter 0.4s, transform 0.6s;
+}
+
+.sphere-strip .sphere-cell:hover img {
+  filter: brightness(0.7) saturate(1);
+  transform: scale(1.05);
+}
+
+.sphere-strip .sphere-cell .sphere-name {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.5rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--parchment);
+  opacity: 0;
+  transition: opacity 0.3s;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.8);
+}
+
+.sphere-strip .sphere-cell:hover .sphere-name {
+  opacity: 0.7;
+}
+
+/* ═══ FEATURES LIST ═══ */
+.features {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 2.5rem;
+  margin-top: 3rem;
+}
+
+.feature {
+  border-top: 1px solid var(--line);
+  padding-top: 1.5rem;
+}
+
+.feature h4 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--parchment);
+  margin-bottom: 0.5rem;
+}
+
+.feature p {
+  font-size: 0.85rem;
+  color: var(--ink-faint);
+  line-height: 1.7;
+}
+
+/* ═══ CLOSING ═══ */
+.closing {
+  text-align: center;
+  padding: 8rem 3rem;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.closing h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: clamp(2rem, 4vw, 3rem);
+  margin-bottom: 1.5rem;
+}
+
+.closing p {
+  font-size: 1.05rem;
+  color: var(--parchment-dark);
+  line-height: 1.85;
+  margin-bottom: 2.5rem;
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.closing .hero-cta {
+  margin-top: 1rem;
+}
+
+/* ═══ FOOTER ═══ */
+footer {
+  padding: 3rem;
+  text-align: center;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  opacity: 0.35;
+  border-top: 1px solid var(--line);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 900px) {
+  .loop { grid-template-columns: 1fr; }
+  .loop-beat { border-right: none; border-bottom: 1px solid var(--line); padding: 2rem; }
+  .loop-beat:last-child { border-bottom: none; }
+  .promises { grid-template-columns: 1fr; }
+  .pillar { grid-template-columns: 1fr; min-height: auto; }
+  .pillar.reversed { direction: ltr; }
+  .pillar-img { height: 300px; }
+  .pillar-text { padding: 2.5rem; border: 1px solid var(--line); border-top: none; }
+  .pillar.reversed .pillar-text { border: 1px solid var(--line); border-top: none; }
+  .features { grid-template-columns: 1fr; }
+  .sphere-strip { height: 120px; }
+  section { padding: 5rem 2rem; }
+}
+
+/* ═══ SCROLL ANIMATIONS ═══ */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.9s ease, transform 0.9s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ HERO ═══ -->
+<div class="hero">
+  <div class="hero-bg">
+    <img src="/images/start-page-background.png" alt="Threadbearer — a living world awaits" loading="eager">
+  </div>
+  <div class="hero-content">
+    <div class="hero-wordmark"><img src="/images/threadbearer-wordmarkv2.png" alt="Threadbearer"></div>
+    <div class="hero-tagline">Pull the threads. Weave the world.</div>
+    <a href="/?view=game" class="hero-cta">Enter the World</a>
+  </div>
+  <div class="scroll-hint">Scroll</div>
+</div>
+
+<!-- ═══════════════ PITCH ═══ -->
+<section class="reveal">
+  <div class="section-tag">The Premise</div>
+  <h2>You are a young god.<br>The world below is <em>already alive.</em></h2>
+  <p class="lead">Thousands of mortals live out their days. A handful carry a thread that, pulled at, will remake the age. You find them. You shape them. You watch what they do with the lives you've touched.</p>
+</section>
+
+<!-- ═══════════════ ATMOSPHERE ART ═══ -->
+<div class="art-full reveal">
+  <img src="/concept-art/grassland.png" alt="Golden grasslands stretching to the horizon" loading="lazy">
+  <div class="art-quote">"You did not make this world. You will not outlast it. The threads that pass between — those are yours."</div>
+</div>
+
+<!-- ═══════════════ THE LOOP ═══ -->
+<section class="reveal">
+  <div class="section-tag">How It Plays</div>
+  <h2>Uncover. Shape. <em>Witness.</em></h2>
+  <p class="lead">Threadbearer is turn-based. Nothing moves until you let it. Each turn is yours.</p>
+
+  <div class="loop">
+    <div class="loop-beat reveal">
+      <span class="loop-num">01 &middot; Uncover</span>
+      <h3>Your world is <em>full of people.</em></h3>
+      <div class="loop-sub">You listen.</div>
+      <p>A scholar finds a word that shouldn't exist. A swordbearer wakes the morning of a duel she won't survive. A refugee crosses a border that no longer exists.<br><br>You pick one. You follow her.</p>
+    </div>
+    <div class="loop-beat reveal">
+      <span class="loop-num">02 &middot; Shape</span>
+      <h3>You don't <em>command.</em></h3>
+      <div class="loop-sub">You whisper a dream.</div>
+      <p>You send a sign at the crossroads. You place an old coin where she'll find it. You let rain fall on the night she rides out.<br><br>She decides what to do with it. She always does.</p>
+    </div>
+    <div class="loop-beat reveal">
+      <span class="loop-num">03 &middot; Witness</span>
+      <h3>Seasons later, <em>she comes home.</em></h3>
+      <div class="loop-sub">Her left hand is hidden.</div>
+      <p>The scholar has started a heresy. The refugee has founded a new faith in a cold place.<br><br>The thread you pulled is now a seam in the world. You choose the next one.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ FOUR PROMISES ═══ -->
+<section class="reveal">
+  <div class="section-tag">What you get</div>
+  <h2>A world that <em>lives</em></h2>
+  <p class="lead">Threadbearer isn't a game with a world attached. It's a world with a game you discover inside it.</p>
+
+  <div class="promises">
+    <div class="promise reveal">
+      <span class="p-icon">&#x2726;</span>
+      <h3>Your world is yours alone.</h3>
+      <p>A new world every time. New peoples, new gods, new cycles. The same seed gives you the same world — so you can share one. No two runs ever play out the same.</p>
+    </div>
+    <div class="promise reveal">
+      <span class="p-icon">&#x2737;</span>
+      <h3>Failure is a turn, not a loss.</h3>
+      <p>Your swordbearer loses the duel. She doesn't die on a screen — she wakes in a cell, with a pact she shouldn't have made and a debt that will follow her home. That's not a game over. That's the next chapter.</p>
+    </div>
+    <div class="promise reveal">
+      <span class="p-icon">&#x2735;</span>
+      <h3>You whisper. They choose.</h3>
+      <p>You're a god, not a general. No units, no abilities. You send a dream. You plant a doubt. You withhold a sign when a mortal begs for one. They decide. You decide what they get to see.</p>
+    </div>
+    <div class="promise reveal">
+      <span class="p-icon">&#x2739;</span>
+      <h3>Prose, not spreadsheets.</h3>
+      <p>No stat blocks. No hit points. A merchant isn't <em>Gold: 7</em> — she's a shrewd trader whose ambition outruns her caution. The world is told to you. You read your characters the way a novelist reads hers.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ PILLAR 1: PROTAGONISTS ═══ -->
+<div class="pillar reveal">
+  <div class="pillar-img">
+    <img src="/concept-art/locations/shrine.png" alt="A forest shrine — where mortals seek the divine" loading="lazy">
+  </div>
+  <div class="pillar-text">
+    <div class="section-tag">Your Protagonists</div>
+    <h3>The uncut <em>gem.</em></h3>
+    <p>A world has thousands of people. Most live quiet lives — bakers, soldiers, farmers counting rainy springs. A few are different. A few carry something that, pulled at, changes everything.</p>
+    <p>You find them by paying attention. The apprentice who asked the wrong question. The exile who crossed the wrong border. The child who saw what others couldn't.</p>
+    <p>You don't save them. You follow them. You pull when the moment matters.</p>
+    <div class="pillar-detail">You start with one. You grow to two. At the peak — perhaps five, their stories braiding together like chapters of the same book.</div>
+  </div>
+</div>
+
+<!-- ═══════════════ PILLAR 2: WHAT A GOD CAN DO ═══ -->
+<div class="pillar reversed reveal">
+  <div class="pillar-img">
+    <img src="/backgrounds/court/spirit.png" alt="Purple ethereal energy — divine influence" loading="lazy">
+  </div>
+  <div class="pillar-text">
+    <div class="section-tag">Your Hand</div>
+    <h3>What a <em>god can do.</em></h3>
+    <p>You can give her a dream the night before she decides. You can send a crow at the right window. You can let the rain fall on the night she rides out. You can place an old coin where she'll find it.</p>
+    <p>Every whisper costs something. Every whisper can be misread. Some of your best moments will be failures you didn't see coming.</p>
+    <p>Your reach widens with the age. What starts as a nudge can become a prophecy across a generation — a curse that outlives the one who spoke it.</p>
+    <div class="pillar-detail">Dreams, signs, withholdings, visions. A vocabulary of divine hands across a long run.</div>
+  </div>
+</div>
+
+<!-- ═══════════════ SPHERE STRIP ═══ -->
+<div class="sphere-strip reveal">
+  <div class="sphere-cell"><img src="/backgrounds/court/life.png" alt="Life sphere" loading="lazy"><span class="sphere-name">Life</span></div>
+  <div class="sphere-cell"><img src="/backgrounds/court/force.png" alt="Force sphere" loading="lazy"><span class="sphere-name">Force</span></div>
+  <div class="sphere-cell"><img src="/backgrounds/court/mind.png" alt="Mind sphere" loading="lazy"><span class="sphere-name">Mind</span></div>
+  <div class="sphere-cell"><img src="/backgrounds/court/spirit.png" alt="Spirit sphere" loading="lazy"><span class="sphere-name">Spirit</span></div>
+  <div class="sphere-cell"><img src="/backgrounds/court/time.png" alt="Time sphere" loading="lazy"><span class="sphere-name">Time</span></div>
+  <div class="sphere-cell"><img src="/backgrounds/court/entropy.png" alt="Entropy sphere" loading="lazy"><span class="sphere-name">Entropy</span></div>
+  <div class="sphere-cell"><img src="/backgrounds/court/matter.png" alt="Matter sphere" loading="lazy"><span class="sphere-name">Matter</span></div>
+  <div class="sphere-cell"><img src="/backgrounds/court/energy.png" alt="Energy sphere" loading="lazy"><span class="sphere-name">Energy</span></div>
+</div>
+
+<!-- ═══════════════ PILLAR 3: THE WORLD AROUND THEM ═══ -->
+<div class="pillar reveal">
+  <div class="pillar-img">
+    <img src="/concept-art/locations/city.png" alt="A great coastal city at twilight" loading="lazy">
+  </div>
+  <div class="pillar-text">
+    <div class="section-tag">The Weather</div>
+    <h3>The world doesn't <em>wait.</em></h3>
+    <p>Kingdoms rise while you watch a single baker. Wars start in languages you aren't listening to. A plague takes a city three seasons' walk from anyone you care about.</p>
+    <p>Your protagonists live in this weather. The scholar's library is requisitioned. The mercenary stops hearing news from home. The exile finds the border he crossed no longer exists.</p>
+    <p>You can't stop the storm. You can be a hand at a shoulder when it lands.</p>
+    <div class="pillar-detail">Factions, guilds, sieges, trade routes, plagues — a living substrate your protagonists live inside.</div>
+  </div>
+</div>
+
+<!-- ═══════════════ ATMOSPHERE ART ═══ -->
+<div class="art-full reveal">
+  <img src="/concept-art/locations/temple.png" alt="A great golden temple at sunset" loading="lazy">
+  <div class="art-quote">"Eight spheres of creation. Four hidden foundations. One age, and everyone alive inside it."</div>
+</div>
+
+<!-- ═══════════════ PILLAR 4: THE AGE TURNING ═══ -->
+<div class="pillar reversed reveal">
+  <div class="pillar-img">
+    <img src="/concept-art/locations/battleground.png" alt="The aftermath of a great battle — an age's ending" loading="lazy">
+  </div>
+  <div class="pillar-text">
+    <div class="section-tag">The Cycle</div>
+    <h3>Every age <em>turns.</em></h3>
+    <p>The world has a shape. It begins, it frays, it ends. The fraying doesn't come at you as a countdown. It comes as texture — harvests that fall short, prophets that stop sleeping, a moon that looks slightly wrong.</p>
+    <p>You can't stop it. You probably shouldn't try. What you can do is choose whose hands hold the last light, and whose story survives into what comes after.</p>
+    <p>When the cycle closes, the threads you pulled are the seams of the age that follows.</p>
+    <div class="pillar-detail">Seven Unmaking archetypes — each a distinct shape an age can end in. The Breach. The Convergence. The Failing. Each changes how the world speaks as it closes.</div>
+  </div>
+</div>
+
+<!-- ═══════════════ FEATURES ═══ -->
+<section class="reveal">
+  <div class="section-tag">Under the Hood</div>
+  <h2>What makes it <em>work</em></h2>
+  <p class="lead">Threadbearer's world is built on systems that talk to each other. Nothing is scripted. Everything is deterministic. The story you get is the story the simulation grew.</p>
+
+  <div class="features">
+    <div class="feature reveal">
+      <h4>A living cosmology</h4>
+      <p>Eight spheres of creation. Four hidden foundations at the edges — old magic, waiting in ruins for someone patient enough to find it. The stars are not decoration.</p>
+    </div>
+    <div class="feature reveal">
+      <h4>Turn-based, always</h4>
+      <p>Nothing happens until you let it. The kettle stays warm. Read a scene twice. Walk away and come back. The world is patient.</p>
+    </div>
+    <div class="feature reveal">
+      <h4>Seeded and shareable</h4>
+      <p>Every world is reproducible. Share a seed, play the same world. Your choices inside it won't be anyone else's.</p>
+    </div>
+    <div class="feature reveal">
+      <h4>Graph-native</h4>
+      <p>Every mortal, oath, curse, and trade route lives in one graph. If the world can feel it, the game can reason about it. That's how stories come out emergent instead of scripted.</p>
+    </div>
+    <div class="feature reveal">
+      <h4>Procedural, but coherent</h4>
+      <p>Real climate. Rivers that flow downhill. Mountains that make sense. Every world new. Every world holds together.</p>
+    </div>
+    <div class="feature reveal">
+      <h4>Stories with shape</h4>
+      <p>Every age bends toward an ending it already carries. The world's voice thickens as the age closes. You don't race a clock. You live inside one.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ GALLERY ═══ -->
+<div class="art-full reveal">
+  <img src="/concept-art/locations/capital.png" alt="A golden capital city bathed in divine light" loading="lazy">
+  <div class="art-quote">"What kind of god will you be — to them?"</div>
+</div>
+
+<!-- ═══════════════ CLOSING ═══ -->
+<div class="closing reveal">
+  <h2>The tapestry <em>waits.</em></h2>
+  <p>You are a young god. The world beneath you is already alive. Somewhere in it, a scholar is rereading a word that shouldn't exist. Somewhere, a swordbearer is waking to a morning she won't survive.</p>
+  <p>Pick a thread. Pull.</p>
+  <a href="/?view=game" class="hero-cta">Enter the World</a>
+</div>
+
+<footer>
+  Threadbearer &mdash; The Fantasy World Simulator &middot; Pull the threads. Weave the world. &middot; In development
+</footer>
+
+<script>
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>

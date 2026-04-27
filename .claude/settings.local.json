@@ -1,18 +1,4 @@
 {
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "npx codesight --wiki 2>/dev/null || true",
-            "timeout": 120,
-            "statusMessage": "Refreshing codesight analysis..."
-          }
-        ]
-      }
-    ]
-  },
   "permissions": {
     "allow": [
       "Bash(dir:*)",
@@ -96,7 +82,29 @@
       "Bash(grep -v \"^$\")",
       "Bash(grep -v \"^\\\\[WorldGen\\\\]\\\\|^\\\\[2mBalance\\\\|^$\")",
       "Bash(grep -n \"kind === ''aftermath''\" /c/Users/chris/Dev/Projects/TheFantasyWorldSimulator/src/components/Game/GameView.tsx)",
-      "Bash(python3 -c:*)"
+      "Bash(python3 -c:*)",
+      "Bash(mkdir -p .agents/skills/ubiquitous-language)",
+      "Bash(cp .claude/skills/ubiquitous-language/SKILL.md .agents/skills/ubiquitous-language/SKILL.md)",
+      "Bash(cp \".claude/skills/vault-ingest/SKILL.md\" \".agents/skills/vault-ingest/SKILL.md\")",
+      "Bash(cp \".claude/skills/vault-enrich/SKILL.md\" \".agents/skills/vault-enrich/SKILL.md\")",
+      "Bash(cp \".claude/skills/vault-lint/SKILL.md\" \".agents/skills/vault-lint/SKILL.md\")",
+      "Bash(cp \".claude/skills/vault-query/SKILL.md\" \".agents/skills/vault-query/SKILL.md\")",
+      "Bash(mkdir -p \".agents/skills/vault-log\")",
+      "Bash(cp \".claude/skills/vault-log/SKILL.md\" \".agents/skills/vault-log/SKILL.md\")"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx codesight --wiki 2>/dev/null || true",
+            "timeout": 120,
+            "statusMessage": "Refreshing codesight analysis..."
+          }
+        ]
+      }
     ]
   }
 }

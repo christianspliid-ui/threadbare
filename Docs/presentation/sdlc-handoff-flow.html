@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Threadbearer — SDLC Handoff Flow</title>
+<style>
+  body { margin: 0; padding: 24px; background: #fafaf9; font: 14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif; color: #111; }
+  h1 { margin: 0 0 4px; font-size: 22px; }
+  p.sub { margin: 0 0 18px; color: #555; font-size: 13px; }
+  .toolbar { margin-bottom: 12px; display: flex; gap: 8px; align-items: center; }
+  .toolbar button {
+    background: #fff; border: 1px solid #ccc; border-radius: 6px;
+    padding: 6px 12px; cursor: pointer; font-size: 13px;
+  }
+  .toolbar button:hover { background: #f1f1ef; }
+  .frame {
+    background: #fff; border: 1px solid #e3e3df; border-radius: 8px; padding: 16px;
+    overflow: auto; max-height: 88vh;
+  }
+  .mermaid { font-size: 14px; }
+  /* Make Mermaid render at full natural size — easier to screenshot at any resolution */
+  .mermaid svg { max-width: none !important; height: auto !important; }
+  .footer { margin-top: 12px; color: #888; font-size: 12px; }
+</style>
+</head>
+<body>
+  <h1>Threadbearer — SDLC handoff flow</h1>
+  <p class="sub">How work moves between human direction, AI agents, and CI. Open in browser to zoom, right-click the SVG to save as image.</p>
+
+  <div class="toolbar">
+    <button onclick="downloadSvg()">Download as SVG</button>
+    <button onclick="downloadPng()">Download as PNG</button>
+    <span style="color:#888; font-size:12px;">Or use your browser's screenshot/zoom.</span>
+  </div>
+
+  <div class="frame">
+    <div class="mermaid" id="diagram">
+flowchart TD
+    classDef human fill:#fde68a,stroke:#92400e,color:#000
+    classDef cowork fill:#bfdbfe,stroke:#1e40af,color:#000
+    classDef design fill:#fbcfe8,stroke:#9d174d,color:#000
+    classDef cc fill:#bbf7d0,stroke:#166534,color:#000
+    classDef codex fill:#fecaca,stroke:#991b1b,color:#000
+    classDef ci fill:#e9d5ff,stroke:#6b21a8,color:#000
+    classDef store fill:#e5e7eb,stroke:#374151,color:#000
+
+    Human([Human director]):::human
+    Vision[Vision/ + Obsidian vault]:::store
+    Linear[(Linear · Threadbare team)]:::store
+    Plans[Docs/plans/ design docs]:::store
+    Handoffs[Design/Claudedesignhandooffs/<br/>JSX + CSS exports]:::store
+    Repo[GitHub repo · main branch]:::store
+    Vercel((Vercel deploy)):::store
+    Sentry{{Sentry runtime errors}}:::store
+    Impediments[Docs/impediments.md]:::store
+
+    Cowork[Cowork agent<br/>design · plans · Linear<br/>blocked from src/ + git]:::cowork
+    ClaudeDesign[claude.ai/design<br/>UI + design-system sketchpad]:::design
+    CC[Claude Code executor<br/>queue: Ready for Dev]:::cc
+    Codex[Codex executor<br/>queue: Ready for Codex]:::codex
+    CodexRev[Codex reviewer<br/>read-only · AGENTS.md]:::codex
+    CIReview[claude-review.yml<br/>Sonnet 4-6 structural review]:::ci
+    CI[ci.yml<br/>test · typecheck · build]:::ci
+    AutoClose[linear-autoclose.yml<br/>parses Fixes THR-XX]:::ci
+
+    Human -- "intent · steers" --> Cowork
+    Human -- "UI direction · prompts" --> ClaudeDesign
+    Vision --> Cowork
+    Cowork -- "writes" --> Plans
+    Cowork -- "moves issue + handoff comment" --> Linear
+    ClaudeDesign -- "exports JSX/CSS" --> Handoffs
+
+    Linear -- "Ready for Dev pull" --> CC
+    Linear -- "Ready for Codex pull" --> Codex
+
+    Plans --> CC
+    Plans --> Codex
+    Handoffs -- "translate into src/components/" --> CC
+    Handoffs -- "translate into src/components/" --> Codex
+
+    CC -- "PR + Fixes THR-XX" --> Repo
+    Codex -- "PR + Fixes THR-XX" --> Repo
+
+    Repo -- "PR opened" --> CIReview
+    Repo -- "PR opened" --> CodexRev
+    CIReview -- "findings comment" --> CC
+    CodexRev -- "findings" --> Cowork
+    CodexRev -- "findings" --> CC
+
+    Repo -- "merge to main" --> CI
+    CI -- "green" --> Vercel
+    CI -- "green" --> AutoClose
+    AutoClose -- "issue → Done" --> Linear
+
+    Vercel -- "runtime errors" --> Sentry
+    Sentry -- "incident" --> Human
+    CC -- "logs friction" --> Impediments
+    Codex -- "logs friction" --> Impediments
+    Cowork -- "logs friction" --> Impediments
+    Impediments -- "/retrospective → new tickets" --> Linear
+    </div>
+  </div>
+
+  <p class="footer">Source: <code>Docs/presentation/sdlc-handoff-flow.html</code></p>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'default', flowchart: { curve: 'basis' } });
+
+  window.downloadSvg = function () {
+    const svg = document.querySelector('#diagram svg');
+    if (!svg) return alert('Diagram not rendered yet.');
+    const xml = new XMLSerializer().serializeToString(svg);
+    const blob = new Blob([xml], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'threadbearer-sdlc-handoff.svg'; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  window.downloadPng = function () {
+    const svg = document.querySelector('#diagram svg');
+    if (!svg) return alert('Diagram not rendered yet.');
+    const xml = new XMLSerializer().serializeToString(svg);
+    const svg64 = btoa(unescape(encodeURIComponent(xml)));
+    const img = new Image();
+    img.onload = function () {
+      const scale = 2;
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.scale(scale, scale);
+      ctx.drawImage(img, 0, 0);
+      canvas.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'threadbearer-sdlc-handoff.png'; a.click();
+        URL.revokeObjectURL(url);
+      });
+    };
+    img.src = 'data:image/svg+xml;base64,' + svg64;
+  };
+</script>
+</body>
+</html>

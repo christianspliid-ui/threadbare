@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Library inventory extracted via AST. Read the source files listed here before modifying exported functions.
 
-**548 library files** across 16 modules
+**550 library files** across 16 modules
 
 ## Engine (318 files)
 
@@ -33,7 +33,7 @@
 - `src\engine\encounterEventNode.ts` — createEncounterEventNode, createUnifiedActionEventNode, getLocationEncounterHistory, getAgentEncounterHistory, CreateEncounterEventParams, CreateUnifiedActionEventParams, …
 - _…and 293 more files_
 
-## Components (100 files)
+## Components (101 files)
 
 - `src\components\HexMapV2\lab\terrainTextureLabPresets.ts` — getDefaultTerrainTextureLabConfigs, serializeTerrainTextureLabConfigs, getDefaultTerrainTextureLabViewSettings, serializeTerrainTextureLabViewSettings, getDefaultTerrainTextureLabVignetteSettings, serializeTerrainTextureLabVignetteSettings, …
 - `src\components\Game\encounter-stage\types.ts` — courtPositionToThreadTier, EncounterStageHeaderModel, EncounterStageIllustrationModel, EncounterStageSceneModel, EncounterStageCastModel, EncounterStageFactionModel, …
@@ -60,7 +60,7 @@
 - `src\components\HexMapV2\palette\waterPalette.ts` — getDepthBandColor, getWaterColor, WATER_PALETTE, SEA_LEVEL, DEPTH_BAND_THRESHOLDS, WATER_TERRAIN_KEYS
 - `src\components\HexMapV2\scene\ArmySpriteMesh.ts` — getArmySizeScale, getShieldTexture, createArmySpriteMesh, ArmyRenderData, ARMY_SIZE_SMALL_MAX, ARMY_SIZE_MEDIUM_MAX
 - `src\components\HexMapV2\scene\BattleIndicatorMesh.ts` — createBattleIndicatorMesh, tickBattlePulse, BattleRenderData, BATTLE_PULSE_PERIOD_MS, BATTLE_PULSE_MIN, BATTLE_PULSE_MAX
-- _…and 75 more files_
+- _…and 76 more files_
 
 ## Data (71 files)
 
@@ -91,8 +91,9 @@
 - `src\data\chronicler-content.ts` — getVignetteByContext, getSubLocationFlavor, getArtifactLore, CHRONICLER_VIGNETTES, SUBLOCATION_FLAVOR, LOCATION_TYPE_FLAVOR, …
 - _…and 46 more files_
 
-## Scripts (15 files)
+## Scripts (16 files)
 
+- `scripts\drift-scan\index.ts` — parseCodesightImporters, evaluateCouplingCreep, countBrokenWindowsFromCorpus, evaluateBrokenWindows, evaluateTestSuiteHealth, parseUlShardTerms, …
 - `scripts\build-authoring-brief.ts` — hashContent, extractSection, distillCapabilitySection, extractCapabilitySection, extractPrinciplesSections, buildBrief, …
 - `scripts\tests\test_pipeline.py` — test_magic_registry_has_12_spheres, test_magic_registry_entries_have_required_keys, test_build_magic_prompt_contains_sphere_color, test_build_magic_prompt_all_spheres, test_black_to_transparent_converts_black_pixels, test_black_to_transparent_handles_near_black, …
 - `scripts\generate-hex-tile.py` — make_hex_mask, apply_hex_mask, black_to_transparent, build_prompt, build_magic_prompt, generate_image, …
