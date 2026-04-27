@@ -58,3 +58,7 @@
 - TB-071 Economy Second Pass · TB-069 Location NPCs · TB-051 Monster Encounters residual · TB-037 Onboarding
 
 Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Completed work: `Docs/project-history.md` (one-liners) + Linear "Done" state · Pre-Linear history: `.planning/BACKLOG_HISTORY.md`
+
+## Recent Completions (2026-04-27) — THR-283 schema registration fix
+- **THR-283:** Added hostile_to to EdgeType + EDGE_SCHEMA, widened contains.targetNodeType to ['location', 'sublocation'], and verified zero matching GraphSchema warnings for hostile_to/contains in full npm test output.
+

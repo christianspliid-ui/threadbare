@@ -45,7 +45,7 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
   contains: {
     type: 'contains',
     sourceNodeType: ['region', 'location'],
-    targetNodeType: 'location',
+    targetNodeType: ['location', 'sublocation'],
     direction: 'directed',
     cardinality: 'one-to-many',
     requiredProperties: [],
@@ -110,6 +110,15 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     cardinality: 'many-to-many',
     requiredProperties: [],
     description: 'Inter-actor relationship bond. Edge properties: sentiment, trust, strength, basis.',
+  },
+  hostile_to: {
+    type: 'hostile_to',
+    sourceNodeType: 'actor',
+    targetNodeType: 'actor',
+    direction: 'directed',
+    cardinality: 'many-to-many',
+    requiredProperties: [],
+    description: 'Faction/actor is hostile toward an excommunicated or rival actor. Created by excommunicate action.',
   },
   member_of: {
     type: 'member_of',
