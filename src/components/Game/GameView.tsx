@@ -3188,6 +3188,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                       cultures={hexCultures}
                       factions={hexFactions}
                       dangerLevel={hexDangerLevel}
+                      onLocationClick={(locationId) => setStubModalState({ nodeId: locationId, category: 'location' })}
                     />
 
                     {/* Main: Narrative chronicle */}
