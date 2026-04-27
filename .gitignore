@@ -54,6 +54,12 @@ scripts/playtest.mjs
 # Playwright MCP screenshots
 .playwright-mcp/
 
+# Codesight analysis output (auto-regenerated every session by session-start hook)
+.codesight/
+
+# Scheduled-tasks MCP runtime lock (session-specific, ephemeral)
+.claude/scheduled_tasks.lock
+
 # Interface playtest run artifacts (ephemeral diagnostics — surface findings as Linear issues)
 .playtest-runs/
 
