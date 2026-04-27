@@ -62,6 +62,7 @@ export type EdgeType =
   | 'controls'         // faction/actor controls resource
   // Social
   | 'relates_to'       // inter-actor relationship (sentiment, strength, basis)
+  | 'hostile_to'       // inter-actor hostility relation (e.g. excommunicated/rival targets)
   | 'member_of'        // individual is member of group/faction
   | 'belongs_to'       // actor/location belongs to culture (culturalStrength, cultureLayer)
   | 'thread'           // ascendant → mortal divine thread (god reaches down)
