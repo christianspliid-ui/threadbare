@@ -308,12 +308,12 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
   // ── Construction ──────────────────────────────────────────
   constructed_by: {
     type: 'constructed_by',
-    sourceNodeType: 'actor',
-    targetNodeType: 'location',
+    sourceNodeType: ['location', 'sublocation'],
+    targetNodeType: 'actor',
     direction: 'directed',
     cardinality: 'many-to-many',
     requiredProperties: [],
-    description: 'Actor (faction/individual) constructed a structure at this location. Edge properties: structureType.',
+    description: 'Structure or sublocation was built by this actor. Source is the thing built; target is the builder. Edge properties: structureType.',
   },
 
   // ── Military (TB-073) ──

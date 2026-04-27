@@ -1316,8 +1316,8 @@ export function seedWorld(
         const builder = factionIds[Math.floor(rng() * factionIds.length)];
         graph.addEdge({
           id: `edge_built_${li}_${si}`,
-          source: builder,
-          target: locId,
+          source: locId,
+          target: builder,
           type: 'constructed_by',
           properties: { structureType: si === 0 ? 'settlement' : 'fortification' },
         });
