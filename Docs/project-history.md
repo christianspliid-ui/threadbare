@@ -3,6 +3,7 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ THR-277 (2026-04-27) — pull-work Step 4.5 worktree isolation: breaks dirty-worktree doom loop (impediments #87/#88/#89). Pickup now isolates into a fresh git worktree on origin/main when home is dirty; closeout removes it. PR #52.
 ✅ THR-281 (2026-04-27) — test suite triage: suite is empirically green (0 failures across 3 consecutive runs, 10,709 tests pass). GraphSchema warnings documented as schema drift. 4 child issues filed (THR-283/284/285/286) for Phase 2 fix work. Triage report: `Docs/audits/2026-04-27-test-suite-triage.md`.
 
 ✅ THR-211 (2026-04-24) — first playtest-interface run: 27 PASS / 2 FAIL / 10 SURPRISE / 10 SKIP against `?view=game&seeded&nofog&size=medium`. RUBRIC.md annotated with `getActiveUIState()` 9-field actual contract, `getOpenModals()` game-view-only + inline-panel caveats, `gotoAgent()` exact-ID requirement, `setFog()` 200ms delay, `?debug.openModal` 5s init timing. EXPECTED-FINDINGS.md seeded with 9 baseline entries. THR-275 filed (HexSidebar exploration path FAIL). Report gitignored at `.playtest-runs/2026-04-24-1215.md`.
