@@ -19,7 +19,7 @@ Run as `/pull-work` (auto-pick top Ready for Dev issue) or `/pull-work THR-123` 
 
 ## pullNextReadyForDev — Atomic Pickup Procedure
 
-**Canonical path for Rules 1, 4, and 7.** Execute this 6-step sequence as a single atomic unit instead of hand-rolling claim + verify + comment-read separately. Steps 1–4 below are the documented fallback for agents that bypass the wrapper.
+**Canonical path for Rules 1, 4, and 7.** Execute this 6-step sequence as a single atomic unit instead of hand-rolling claim + verify + comment-read separately. Steps 1–4 below are the documented fallback for agents that bypass the wrapper. After verified claim, runs Step 4.5 worktree-isolation if home is dirty.
 
 **Constant:** `MAX_CLAIM_RETRIES = 3`
 
@@ -98,6 +98,56 @@ If collision or uncertainty remains, refuse and ask for rerouting instead of cla
 
 Rationale: impediment #48 documents silent state-write drops; verify-after-write is mandatory.
 
+### Step 4.5 — Worktree isolation when home is dirty
+
+After the claim is verified (Step 4) and before any plan-doc read or implementation, gate
+on `git status --porcelain` of the home worktree. If non-empty, isolate the rest of the
+session in a fresh worktree rooted at `origin/main`. If empty, continue in place.
+
+**Constants:** `WORKTREE_DIR_PREFIX="../tfws-pickup-"`, `WORKTREE_BRANCH_PREFIX="pickup/"`,
+`WORKTREE_BASE="origin/main"`, `MAX_WORKTREE_RETRIES=1`.
+
+```bash
+cd "$REPO_ROOT"
+if [ -n "$(git status --porcelain)" ]; then
+  ISSUE_ID_LC=$(echo "$ISSUE_ID" | tr '[:upper:]' '[:lower:]')
+  WORKTREE_DIR="${WORKTREE_DIR_PREFIX}${ISSUE_ID_LC}"
+  WORKTREE_BRANCH="${WORKTREE_BRANCH_PREFIX}${ISSUE_ID_LC}"
+  git fetch origin main
+  if ! git worktree add -b "$WORKTREE_BRANCH" "$WORKTREE_DIR" "$WORKTREE_BASE" 2>/dev/null; then
+    WORKTREE_DIR="${WORKTREE_DIR}-2"
+    WORKTREE_BRANCH="${WORKTREE_BRANCH}-2"
+    if ! git worktree add -b "$WORKTREE_BRANCH" "$WORKTREE_DIR" "$WORKTREE_BASE"; then
+      echo "[pull-work] Step 4.5: worktree add failed twice. Releasing claim."
+      # release claim via Linear MCP (save_issue id assignee:null) and exit
+      exit 1
+    fi
+  fi
+  cd "$WORKTREE_DIR"
+  npm install
+  echo "[pull-work] Step 4.5: home dirty. Isolated to $WORKTREE_DIR on origin/main."
+else
+  echo "[pull-work] Step 4.5: home clean. Continuing in-place."
+fi
+```
+
+All subsequent steps run from `$WORKTREE_DIR` if isolation engaged, else from
+`$REPO_ROOT`. The closing commit, push, and merge-keyword auto-close all happen
+in the same location.
+
+**Trace lines** (one of three appears per session, NFP #2):
+
+```
+[pull-work] Step 4.5: home clean. Continuing in-place.
+[pull-work] Step 4.5: home dirty. Isolated to ../tfws-pickup-thr-XXX on origin/main.
+[pull-work] Step 4.5: worktree add failed twice. Releasing claim.
+```
+
+**Failure recovery.** On `git worktree add` failure, retry once with a `-2` suffix on
+both the path and branch name (handles a stale worktree from a prior aborted run).
+On second failure, release the claim with `save_issue(id, assignee:null)` and exit
+cleanly. Surfaced as a worktree-creation failure rather than a dirty-state failure.
+
 ### Step 5 - Reopened safety check
 
 If the issue has label `Reopened`, read all comments back to the original handoff before making implementation decisions.
@@ -125,3 +175,18 @@ If the issue has label `Reopened`, read all comments back to the original handof
 On success: issue is claimed (`In Dev`, assigned to `me`), plan doc loaded, and pickup context is ready for implementation.
 
 On refusal: leave the issue unclaimed when possible, post a concise bounce note, and stop.
+
+## Closeout — remove the temporary worktree
+
+After the merge-to-main auto-close fires (or after a clean push if auto-close is
+unavailable per THR-276), remove the worktree from the home worktree:
+
+```bash
+cd "$REPO_ROOT"
+git worktree remove "$WORKTREE_DIR"
+git branch -D "$WORKTREE_BRANCH"
+```
+
+If `git worktree remove` fails (worktree not fully clean), use `--force`. Failure
+to remove is non-fatal — the merge has already landed and a future
+`git worktree prune` will collect the orphan.
