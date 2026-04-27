@@ -3,6 +3,7 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ THR-287 (2026-04-27) — flush-plan-docs skill: hourly scheduled task that commits Cowork-authored plan docs (`plan-pending-commit` label) to origin/main, removes label, posts confirmation. CLAUDE.md updated with Cowork plan-doc workflow. Smoke test passed. PR #57.
 ✅ THR-284 (2026-04-27) — fix `constructed_by` EDGE_SCHEMA semantic direction: Option B (thing-built → builder, passive voice, consistent with `commanded_by`). Updated schema sourceNodeType to `['location', 'sublocation']`, fixed worldSeed.ts source/target swap. Zero GraphSchema constructed_by warnings. PR #54.
 ✅ THR-277 (2026-04-27) — pull-work Step 4.5 worktree isolation: breaks dirty-worktree doom loop (impediments #87/#88/#89). Pickup now isolates into a fresh git worktree on origin/main when home is dirty; closeout removes it. PR #52.
 ✅ THR-281 (2026-04-27) — test suite triage: suite is empirically green (0 failures across 3 consecutive runs, 10,709 tests pass). GraphSchema warnings documented as schema drift. 4 child issues filed (THR-283/284/285/286) for Phase 2 fix work. Triage report: `Docs/audits/2026-04-27-test-suite-triage.md`.
