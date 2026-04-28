@@ -158,6 +158,7 @@ The vault follows the Karpathy LLM Knowledge Base pattern — a persistent, comp
 - **`raw/`** — Immutable source materials (design docs, research, web clips). LLM reads but never modifies.
 - **Wiki** (Systems/, Cosmology/, etc.) — LLM-compiled and maintained pages. The LLM owns this content.
 - **`output/`** — Generated reports, query results, audit outputs filed back into the vault.
+- **`Ubiquitous-Language/`** — Auto-mirrored glossary shard pages generated from `Docs/ubiquitous-language/` via `npm run mirror-ul`.
 
 **Infrastructure files:**
 - **`Index.md`** — Comprehensive catalog of ALL vault pages with one-line summaries. LLM-maintained. Read this first to navigate.
@@ -175,6 +176,9 @@ The vault follows the Karpathy LLM Knowledge Base pattern — a persistent, comp
 | Script | What it does |
 |--------|-------------|
 | `npm run generate-vault` | Regenerate graph-node pages from world-model.json (does NOT touch Index.md or Systems/) |
+| `npm run mirror-ul` | Mirror UL shard docs into `Ubiquitous-Language/` in the Obsidian vault and append a vault log entry |
+| `npm run mirror-ul:dry` | Print planned UL mirror writes without touching the vault |
+| `npm run sync-vault` | Run `generate-vault` then `mirror-ul` in sequence |
 | `npm run rebuild-index` | One-time rebuild of Index.md from all vault files |
 | `npm run enhance-frontmatter` | One-time bulk update of frontmatter on hand-curated files |
 

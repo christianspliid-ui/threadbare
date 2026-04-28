@@ -155,3 +155,4 @@ The following impediments are candidates for Resolved as of the THR-280 sprint w
 - **#57** — traceBuffer-integration sequential IDs fail when phaseFactionActions adds traces
 
 Verification: 2026-04-28 run from clean origin/main worktree (pickup/thr-280): **682/682 test files passed, 10,709/10,709 tests passed.**
+| 97 | 1 | 2026-04-28 | environment | npm script commands using Linux-style `/tmp/*.mjs` outfiles fail on Windows Codex shells: esbuild writes to `./tmp/*.mjs` while `node /tmp/*.mjs` resolves to `C:\tmp\*.mjs` and throws MODULE_NOT_FOUND. | `mirror-ul`/`sync-vault` acceptance commands could not run as authored until path handling was changed. | S | Yes | Switched vault/mirror npm scripts to `.cache/*.mjs` so build output and node execution resolve consistently across Windows and Unix shells. | THR-288 UL Obsidian mirror implementation |
