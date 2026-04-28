@@ -78,6 +78,23 @@ The bridge does the *mechanical* conversion today. What it doesn't do is add any
 | monster-encounter-content.ts | 17 | Combat/monster |
 | encounter-anomaly-content.ts | 10 | Anomaly/magical |
 
+> **2026-04-28 audit corrections (Cowork, THR-102 + Phase 4 audit).** The original audit script overcounted multiple files by treating nested aftermath-reaction effect IDs and aggregated META map entries as templates. Verified counts based on top-level `id: '...'` matches in each file's templates array:
+>
+> | File | Audit | Actual top-level templates | Status |
+> |---|---|---|---|
+> | `social-encounter-content.ts` | 47 | **14** | Already migrated (THR-100) |
+> | `tavern-encounter-content.ts` | 30 | **10** | Already migrated (THR-101) |
+> | `faction-encounter-content.ts` | 58 | **18** | Pending (THR-102, in Ready for Dev) — 5 standard + 3 senior + 2 elite + 2 lifecycle + 6 social, all `ag.*` |
+> | `monster-encounter-content.ts` | 17 | **5** | Pending (THR-103) — `monster.hunt.minor`, `monster.hunt.named_elite`, `monster.encounter.ambush/lair_defense/horde_raid` |
+> | `army-encounter-content.ts` | 17 | **6** | Pending (THR-104) — `mc.army.raise`, four `army.threshold.*`, `army.aftermath.refugees`. Raise + refugee aftermath are programmatically spawned, not pool-drawn |
+> | `mercenary-encounter-content.ts` | 32 | **13** | **Already migrated** under THR-31 Phase 2f — header note confirms. THR-105 is stranded; close as Cancelled. |
+> | `encounter-anomaly-content.ts` | 10 | **10** | Pending (THR-106) — count correct |
+> | `borderland-encounter-content.ts` | 60 | **20** | Pending (THR-107) — file's own header reads "20 templates" |
+>
+> **Effective remaining migration scope:** 18 (THR-102, faction) + 5 (THR-103, monster) + 6 (THR-104, army) + 10 (THR-106, anomaly) + 20 (THR-107, borderland) = **59 templates across five issues.** The original audit suggested ~174 across seven files; the real number is roughly a third of that.
+>
+> **Subtle reading-trap to avoid in future audits:** `faction-encounter-content.ts` exposes `FACTION_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[]` at line 1242, but builds it via a runtime `toUnifiedTemplate()` adapter applied to three internal `EncounterTemplate[]` arrays (`LEGACY_FACTION_QUEST_TEMPLATES`, `FACTION_LIFECYCLE_TEMPLATES`, `FACTION_SOCIAL_TEMPLATES`). The runtime shape is unified; the source data is not — and the adapter doesn't add authored aftermath. Any file registered through `addTemplates()` in `unified-action-templates.ts` (currently `ANOMALY_*`, `MONSTER_*`) likely uses the same pattern. When auditing migration scope, look at the source-array element type, not the public-export type.
+
 ### Hand-Authored Branching Encounters (8, already in UnifiedActionTemplate)
 
 soul-ferryman, flawed-steel, road-ambush, the-courtyard-duel, the-brink-rescue, the-letters-of-introduction, rival-shrine-betrayal, wandering-healer-shrine-access

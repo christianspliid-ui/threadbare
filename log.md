@@ -59,3 +59,7 @@
 - **ops** | no ready-for-codex work this cycle (2026-04-28T17.02.10+02:00)
 - **ops** | no ready-for-codex work this cycle (2026-04-28T18.02.53+02:00)
 - **work** | THR-106 shipped: anomaly encounters migrated to unified templates with authored aftermath and choice cards.
+- **work** | THR-106 prose upgrade: replaced Codex mechanical migration prose with Threadbare-quality rewrites across all 10 anomaly templates — {name}/{they}/{location} enrichment, {?has_faction} conditionals, scene-first openings, cool-failure forward hooks; merged cleanly with Codex's structural changes.
+- **ops** | no ready-for-codex work this cycle (2026-04-28T20.01.54+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-28T21.02.50+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-28T22.02.14+02:00)

@@ -13,7 +13,6 @@ import type { LocationSubtype } from '../types/index';
 import { getSocialEncounterById } from './social-encounter-content';
 import { getFactionEncounterById } from './faction-encounter-content';
 import { getMercenaryEncounterById } from './mercenary-encounter-content';
-import { LEGACY_ANOMALY_ENCOUNTER_TEMPLATES } from './encounter-anomaly-content';
 import { getArmyEncounterById } from './army-encounter-content';
 import { getMonsterEncounterById } from './monster-encounter-content';
 import { getBorderlandEncounterById, BORDERLAND_ENCOUNTER_TEMPLATES } from './borderland-encounter-content';
@@ -10327,10 +10326,9 @@ export function resolveEncounterNarrative(
 
 // ─── Lookup Functions ───────────────────────────────────────────
 
-/** All templates including anomaly encounters — used by lookup functions. */
+/** All templates used by location-based lookup functions. */
 const ALL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
   ...ENCOUNTER_TEMPLATES,
-  ...LEGACY_ANOMALY_ENCOUNTER_TEMPLATES,
 ];
 
 /**
@@ -10391,7 +10389,6 @@ export function getEncounterById(id: string): EncounterTemplate | undefined {
  */
 export function getAnyEncounterById(id: string): EncounterTemplate | undefined {
   return ENCOUNTER_TEMPLATES.find(encounter => encounter.id === id)
-    ?? LEGACY_ANOMALY_ENCOUNTER_TEMPLATES.find(encounter => encounter.id === id)
     ?? getSocialEncounterById(id)
     ?? getFactionEncounterById(id)
     ?? (getMercenaryEncounterById(id) as unknown as EncounterTemplate | undefined)
