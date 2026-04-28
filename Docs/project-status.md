@@ -1,6 +1,8 @@
 # Project Status
 > Updated 2026-04-28.
 ## Current Focus
+**THR-102 complete — Adventuring Guild faction migration (Phase 3).** `src/data/faction-encounter-content.ts` now exports 18 unified faction templates with per-template aftermath reactions and authored elite choices for dragon lair/lost city, while keeping legacy EncounterTemplate exports for generation compatibility.
+
 **THR-280 closed — Repo Health Sprint v2 complete.** Empirical verification 2026-04-28: 682/682 files, 10,709 tests pass. 3-day green watch active (day 2 of 3). THR-282 (re-enable branch protection) targets 2026-04-30. Impediments #22/#30/#31/#32/#34/#38/#39/#54/#57 flagged resolved-candidate.
 
 **THR-287 complete — flush-plan-docs skill.** Hourly scheduled task that commits Cowork plan docs from `plan-pending-commit` label. Scheduled task registration requires a regular CC session (impediment #90). Merged PR #57.
