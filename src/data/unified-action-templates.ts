@@ -22,7 +22,7 @@ import type {
 import type { ActorType } from '../types/graph';
 import { ACTION_TEMPLATES, type ActionTemplateData } from './action-template-content';
 import { ENCOUNTER_TEMPLATES, getAnyEncounterById } from './encounter-content';
-import { ANOMALY_ENCOUNTER_TEMPLATES } from './encounter-anomaly-content';
+import { ANOMALY_ENCOUNTER_TEMPLATES, LEGACY_ANOMALY_ENCOUNTER_TEMPLATES } from './encounter-anomaly-content';
 import { SOCIAL_ENCOUNTER_TEMPLATES } from './social-encounter-content';
 import { TAVERN_UNIFIED_ENCOUNTER_TEMPLATES } from './tavern-encounter-content';
 import {
@@ -368,7 +368,7 @@ function buildCanonicalEncounterTemplates(): EncounterTemplate[] {
   };
 
   addTemplates(ENCOUNTER_TEMPLATES);
-  addTemplates(ANOMALY_ENCOUNTER_TEMPLATES);
+  addTemplates(LEGACY_ANOMALY_ENCOUNTER_TEMPLATES);
   addTemplates(MONSTER_ENCOUNTER_TEMPLATES);
 
   for (const id of ARMY_ENCOUNTER_META.keys()) {
