@@ -3,6 +3,7 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ THR-288 (2026-04-28) - UL Obsidian mirror: added scripts/mirror-ul.ts + package scripts (mirror-ul/mirror-ul:dry/sync-vault), rewrote intra-UL links to Obsidian wikilinks, mirrored 7 shards + README into Vault/Ubiquitous-Language, idempotent Index.md insertion, and per-run vault log append.
 ✅ THR-280 (2026-04-28) — Repo Health Sprint v2 wrap-up: empirical npm test run confirms 682/682 files, 10,709 tests pass. 3-day green watch started 2026-04-27; THR-282 (re-enable branch protection) targets 2026-04-30. Impediments #22/#30/#31/#32/#34/#38/#39/#54/#57 flagged resolved-candidate. PR #63.
 ✅ THR-287 (2026-04-27) — flush-plan-docs skill: hourly scheduled task that commits Cowork-authored plan docs (`plan-pending-commit` label) to origin/main, removes label, posts confirmation. CLAUDE.md updated with Cowork plan-doc workflow. Smoke test passed. PR #57.
 ✅ THR-284 (2026-04-27) — fix `constructed_by` EDGE_SCHEMA semantic direction: Option B (thing-built → builder, passive voice, consistent with `commanded_by`). Updated schema sourceNodeType to `['location', 'sublocation']`, fixed worldSeed.ts source/target swap. Zero GraphSchema constructed_by warnings. PR #54.
@@ -531,3 +532,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - THR-283 schema drift fix: added `hostile_to` edge registration and allowed `contains` location→sublocation targets; verification gates green.
 - THR-286 todo-only StartPage/App/useThemeMusic placeholders removed: ✅ Complete (2026-04-27) — deleted three stub-only test files to eliminate skipped-test noise; verification gates green.
 - THR-285 trace buffer capacity increase: ✅ Complete (2026-04-27) — raised BUFFER_SIZE to 2000 and updated dependent traceBuffer unit/integration tests; verification gates green.
+
