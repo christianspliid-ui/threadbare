@@ -58,3 +58,4 @@
 - **work** | THR-290 shipped: AG unified registry wiring + consumer normalization (no duplicate IDs, ag count 18).
 - **ops** | no ready-for-codex work this cycle (2026-04-28T17.02.10+02:00)
 - **ops** | no ready-for-codex work this cycle (2026-04-28T18.02.53+02:00)
+- **work** | THR-106 shipped: anomaly encounters migrated to unified templates with authored aftermath and choice cards.

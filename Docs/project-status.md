@@ -1,6 +1,8 @@
 # Project Status
 > Updated 2026-04-28.
 ## Current Focus
+**THR-106 complete — Phase 4 anomaly migration shipped.** All 10 anomaly templates now export as UnifiedActionTemplate, each with authored aftermath reactions; fallen_star and dreaming_light include authored choice cards, while legacy anomaly lookup remains compatible through getAnyEncounterById.
+
 **THR-290 complete — AG unified registry wired.** Spread `FACTION_ENCOUNTER_TEMPLATES` into `UNIFIED_ACTION_TEMPLATES` (18 AG + lifecycle + social templates), routed `factionQuestGeneration` and `phaseReputationTraits` consumers through `resolveEncounterTemplate`, eliminating the mixed-shape hazard. All 10,709 tests pass.
 
 **Encounter Format Migration queue clear.** No Ready for Dev issues remain. All 10 guilds now wired into the unified registry.
@@ -28,3 +30,5 @@
 - TB-071 Economy Second Pass · TB-069 Location NPCs · TB-051 Monster Encounters residual · TB-037 Onboarding
 
 Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Completed work: `Docs/project-history.md` + Linear "Done" state · Pre-Linear history: `.planning/BACKLOG_HISTORY.md`
+
+

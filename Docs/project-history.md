@@ -534,3 +534,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - THR-286 todo-only StartPage/App/useThemeMusic placeholders removed: ✅ Complete (2026-04-27) — deleted three stub-only test files to eliminate skipped-test noise; verification gates green.
 - THR-285 trace buffer capacity increase: ✅ Complete (2026-04-27) — raised BUFFER_SIZE to 2000 and updated dependent traceBuffer unit/integration tests; verification gates green.
 - THR-290 AG unified registry wiring: ✅ Complete (2026-04-28) — added Adventurers Guild unified spread, normalized faction/reputation lookups via resolveEncounterTemplate, and verified no duplicate unified IDs (ag count 18).
+- THR-106 anomaly migration: ✅ Complete (2026-04-28) — converted all 10 anomaly templates to UnifiedActionTemplate, added authored aftermath + two authored choice-card encounters, and kept legacy lookup compatibility.

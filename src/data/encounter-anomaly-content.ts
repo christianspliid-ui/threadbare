@@ -14,6 +14,7 @@
  */
 
 import type { EncounterTemplate } from '../types/encounter';
+import type { AuthoredChoiceCard, BranchAwareAftermathConfig, UnifiedActionTemplate } from '../types/unifiedAction';
 
 // ── Difficulty Constants ─────────────────────────────────────────────────────
 // Anomaly encounters are exploration-focused — moderate difficulty, Eye primary.
@@ -32,7 +33,7 @@ const COMPLICATION_DIFFICULTY = 28;
 
 // ── Encounter Templates ──────────────────────────────────────────────────────
 
-export const ANOMALY_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
+export const LEGACY_ANOMALY_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
   // ── gem_deposit: "The Gleaming Vein" (2-step) ──────────────────────
   {
     id: 'encounter.anomaly.gleaming_vein',
@@ -601,3 +602,257 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     ],
   },
 ];
+
+function encounterTypeToCrud(encounterType: string): 'create' | 'read' | 'update' | 'delete' {
+  switch (encounterType) {
+    case 'create':
+    case 'hire':
+    case 'build':
+      return 'create';
+    case 'explore':
+    case 'acquire':
+    case 'steal':
+    case 'trade':
+      return 'read';
+    case 'duel':
+      return 'delete';
+    default:
+      return 'update';
+  }
+}
+
+function rarityTierForTemplate(templateId: string): 1 | 2 | 3 {
+  if (templateId === 'encounter.anomaly.fallen_star' || templateId === 'encounter.anomaly.dreaming_light') {
+    return 3;
+  }
+  if (
+    templateId === 'encounter.anomaly.sealed_chamber'
+    || templateId === 'encounter.anomaly.singing_dark'
+    || templateId === 'encounter.anomaly.drowned_hoard'
+  ) {
+    return 2;
+  }
+  return 1;
+}
+
+function intrinsicTierForRarity(rarityTier: 1 | 2 | 3): 'background' | 'shaping' | 'story_beat' {
+  if (rarityTier >= 3) return 'story_beat';
+  if (rarityTier === 2) return 'shaping';
+  return 'background';
+}
+
+function buildAftermathConfig(templateId: string, templateName: string, sphereAffinity?: string): BranchAwareAftermathConfig {
+  const anomalyKey = templateId.replace('encounter.anomaly.', 'anomaly.');
+  const sphereTag = sphereAffinity ?? 'untyped';
+  const baseEffects = [
+    {
+      kind: 'reputation_tally' as const,
+      key: 'anomaly.encounters',
+      delta: 1,
+    },
+    {
+      kind: 'intelligence' as const,
+      category: 'cultural_knowledge' as const,
+      label: `${templateName} field notes`,
+      detail: `Observed ${sphereTag}-aligned anomaly signatures during ${templateName.toLowerCase()}.`,
+      reliability: 0.74,
+    },
+  ];
+
+  const seedEffects = (
+    templateId === 'encounter.anomaly.sealed_chamber'
+    || templateId === 'encounter.anomaly.drowned_hoard'
+    || templateId === 'encounter.anomaly.fallen_star'
+  ) ? [
+    {
+      kind: 'encounter_seed' as const,
+      encounterFamily: 'encounter.anomaly',
+      delayTicks: 18,
+      priority: 1.1,
+      seedLabel: `${templateName} leaves unstable residue worth revisiting`,
+    },
+  ] : [];
+
+  const hiddenMarkEffects = (
+    templateId === 'encounter.anomaly.dreaming_light'
+    || templateId === 'encounter.anomaly.singing_dark'
+    || templateId === 'encounter.anomaly.moons_tears'
+  ) ? [
+    {
+      kind: 'hidden_mark' as const,
+      category: 'secret_knowledge' as const,
+      severity: 0.44,
+      label: `${templateName} left a private anomaly resonance mark`,
+      revealFamilies: ['encounter.anomaly', 'investigation', 'ag.quest'],
+    },
+  ] : [];
+
+  return {
+    branchOnStep: 0,
+    variants: {},
+    fallback: {
+      overview:
+        `The anomaly from ${templateName.toLowerCase()} does not close cleanly. ` +
+        'Something of it lingers in memory, rumor, and the local weave.',
+      changes: [
+        {
+          id: `${anomalyKey}.aftermath`,
+          kind: 'future_hook',
+          title: 'Anomaly Residue',
+          detail: 'The encounter leaves knowledge and pressure that can trigger follow-up events.',
+          polarity: 'mixed',
+        },
+      ],
+      reactionPrompt: 'Which residue does the god preserve?',
+      reactions: [
+        {
+          id: `${anomalyKey}.archive`,
+          label: 'Archive the anomaly residue.',
+          intent:
+            'Keep the encounter in active memory so nearby agents, factions, and future investigations inherit its pressure.',
+          effects: [
+            ...baseEffects,
+            ...seedEffects,
+            ...hiddenMarkEffects,
+          ],
+          closeAfterSelection: true,
+        },
+      ],
+    },
+  };
+}
+
+const AUTHORED_CHOICES: Readonly<Record<string, Readonly<Record<number, readonly AuthoredChoiceCard[]>>>> = {
+  'encounter.anomaly.fallen_star': {
+    1: [
+      {
+        id: 'supportive',
+        label: 'Steady the Extraction',
+        intent:
+          'Lend {name} a precise pulse of force so the star-metal comes free without splintering into unusable shards.',
+        targetLabel: '{name}',
+        essenceCost: 3,
+        likelyBurden: 'The intervention leaves a visible celestial signature around the crater.',
+        interventionType: 'supportive',
+      },
+      {
+        id: 'coercive',
+        label: 'Break the Bedrock',
+        intent:
+          'Drive raw divine pressure through the crater wall and tear the vein out fast, accepting collateral collapse around {name}.',
+        targetLabel: '{name}',
+        essenceCost: 5,
+        likelyBurden: 'Nearby terrain destabilizes and draws dangerous attention.',
+        interventionType: 'coercive',
+      },
+      {
+        id: 'withdrawn',
+        label: 'Let Mortals Wrest It Free',
+        intent:
+          'Keep divine hands off the crater and let the outcome belong to mortal endurance and technique.',
+        targetLabel: '{name}',
+        essenceCost: 0,
+        likelyBurden: 'Failure may bury the star-metal for another generation.',
+        interventionType: 'withdrawn',
+      },
+    ],
+  },
+  'encounter.anomaly.dreaming_light': {
+    1: [
+      {
+        id: 'supportive',
+        label: 'Filter the Spore-Haze',
+        intent:
+          'Shield {name} from the first wave of hallucinogenic spores so the harvest can proceed without losing coherence.',
+        targetLabel: '{name}',
+        essenceCost: 3,
+        likelyBurden: 'The glowcaps adapt, becoming harder to read on the next pass.',
+        interventionType: 'supportive',
+      },
+      {
+        id: 'coercive',
+        label: 'Compel the Colony',
+        intent:
+          'Force the colony to open all caps at once, creating a massive yield while flooding the hollow with aggressive visions.',
+        targetLabel: '{name}',
+        essenceCost: 5,
+        likelyBurden: 'Witnesses may carry lasting mind-sphere disturbance.',
+        interventionType: 'coercive',
+      },
+      {
+        id: 'withdrawn',
+        label: 'Observe the Bloom',
+        intent:
+          'Withhold intervention and let {name} read the colony on mortal terms, risk and wonder unsoftened.',
+        targetLabel: '{name}',
+        essenceCost: 0,
+        likelyBurden: 'A missed window can collapse the harvest and embolden rival claimants.',
+        interventionType: 'withdrawn',
+      },
+    ],
+  },
+};
+
+function toUnifiedTemplate(template: EncounterTemplate): UnifiedActionTemplate {
+  const rarityTier = rarityTierForTemplate(template.id);
+  const steps = template.steps.map((step, index) => {
+    const duration = step.duration ?? 1;
+    return {
+      reach: step.reach,
+      duration: { min: duration, max: duration },
+      difficulty: step.difficulty / 100,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: index < template.steps.length - 1 ? 'continue_weakened' as const : 'fail_action' as const,
+      narrativeTemplate: step.narrative,
+      successAfterimage: step.onSuccess.narrative,
+      failureAfterimage: step.onFailure.narrative,
+      successMetadata: {
+        rewardPool: step.onSuccess.rewardPool,
+        tierPromotionEligible: step.onSuccess.tierPromotionEligible,
+        reputationDelta: step.onSuccess.reputationDelta,
+      },
+      failureMetadata: {
+        rewardPool: step.onFailure.rewardPool,
+        tierPromotionEligible: step.onFailure.tierPromotionEligible,
+        reputationDelta: step.onFailure.reputationDelta,
+      },
+    };
+  });
+
+  const lastStep = template.steps[template.steps.length - 1];
+  const authoredChoices = AUTHORED_CHOICES[template.id];
+
+  return {
+    id: template.id,
+    name: template.name,
+    rarityTier,
+    intrinsicTier: intrinsicTierForRarity(rarityTier),
+    reach: template.reachPrimary,
+    crudType: encounterTypeToCrud(template.encounterType),
+    scale: 'local',
+    steps,
+    apCost: 1,
+    actorAffinities: ['individual'],
+    locationSubtypes: [
+      ...template.locationTypes,
+      ...(template.sublocationTypes ?? []),
+    ],
+    sphereAffinity: template.sphereAffinity,
+    motivations: template.motivations,
+    narrativeTemplates: {
+      initiation: template.steps[0]?.narrative ?? `${template.name} begins.`,
+      success: lastStep?.onSuccess.narrative ?? `${template.name} succeeds.`,
+      failure: lastStep?.onFailure.narrative ?? `${template.name} fails.`,
+    },
+    authoredChoices,
+    aftermathConfig: buildAftermathConfig(template.id, template.name, template.sphereAffinity),
+  };
+}
+
+export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = LEGACY_ANOMALY_ENCOUNTER_TEMPLATES
+  .map(toUnifiedTemplate);
+
+export function getAnomalyEncounterById(id: string): EncounterTemplate | undefined {
+  return LEGACY_ANOMALY_ENCOUNTER_TEMPLATES.find(encounter => encounter.id === id);
+}
