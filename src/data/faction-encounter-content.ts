@@ -12,6 +12,7 @@
 import type { EncounterTemplate } from '../types/encounter';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { FactionEncounterMeta } from '../types/faction';
+import type { AuthoredChoiceCard, BranchAwareAftermathConfig, UnifiedActionTemplate } from '../types/unifiedAction';
 import { MERCENARY_ENCOUNTER_META } from './mercenary-encounter-content';
 import { THIEVES_GUILD_ENCOUNTER_META } from './thieves-guild-encounter-content';
 import { MERCHANT_CONSORTIUM_ENCOUNTER_META } from './merchant-consortium-encounter-content';
@@ -78,7 +79,7 @@ export const FACTION_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterMeta> =
 
 // ─── Templates ───────────────────────────────────────────────────────────
 
-export const FACTION_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
+const LEGACY_FACTION_QUEST_TEMPLATES: EncounterTemplate[] = [
   // ── Standard Quests (Journeyman+) ──────────────────────────────────
 
   {
@@ -984,6 +985,266 @@ export const FACTION_LIFECYCLE_TEMPLATES: readonly EncounterTemplate[] = [
   FACTION_PROMOTION_TEMPLATE,
 ];
 
+// ─── Unified Templates (THR-102 Phase 3) ─────────────────────────────────
+
+function encounterTypeToCrud(encounterType: string): 'create' | 'read' | 'update' | 'delete' {
+  switch (encounterType) {
+    case 'create':
+    case 'hire':
+    case 'build':
+      return 'create';
+    case 'explore':
+    case 'acquire':
+    case 'steal':
+    case 'trade':
+      return 'read';
+    case 'duel':
+      return 'delete';
+    default:
+      return 'update';
+  }
+}
+
+function rarityTierForTemplate(templateId: string): 1 | 2 | 3 {
+  if (templateId.startsWith('ag.elite.')) return 3;
+  if (templateId.startsWith('ag.senior.') || templateId === 'ag.promotion') return 2;
+  if (templateId === 'ag.quest.recover_artifact') return 2;
+  return 1;
+}
+
+function intrinsicTierForRarity(rarityTier: 1 | 2 | 3): 'background' | 'shaping' | 'story_beat' {
+  if (rarityTier >= 3) return 'story_beat';
+  if (rarityTier === 2) return 'shaping';
+  return 'background';
+}
+
+function buildAftermathConfig(templateId: string, templateName: string): BranchAwareAftermathConfig {
+  const changes = [
+    {
+      id: `${templateId}.standing`,
+      kind: 'reputation' as const,
+      title: 'Guild Standing',
+      detail: 'Results from this contract reshape how the Adventuring Guild reads the agent.',
+      polarity: 'mixed' as const,
+    },
+  ];
+
+  const baseEffects = [
+    {
+      kind: 'reputation_tally' as const,
+      key: 'ag.guild_contracts',
+      delta: 1,
+    },
+  ];
+
+  const intelligenceEffects = (
+    templateId === 'ag.quest.wilderness_survey'
+    || templateId === 'ag.senior.map_uncharted'
+    || templateId === 'ag.social.share_maps'
+  ) ? [
+    {
+      kind: 'intelligence' as const,
+      category: 'agent_network' as const,
+      label: `${templateName} notes`,
+      detail: `Fresh route, terrain, and contact intelligence gathered during ${templateName.toLowerCase()}.`,
+      reliability: 0.72,
+    },
+  ] : [];
+
+  const seedEffects = (
+    templateId === 'ag.quest.escort_caravan'
+    || templateId === 'ag.quest.recover_artifact'
+    || templateId === 'ag.senior.deep_expedition'
+    || templateId === 'ag.elite.lost_city'
+  ) ? [
+    {
+      kind: 'encounter_seed' as const,
+      encounterFamily: 'ag.quest',
+      delayTicks: 16,
+      seedLabel: `${templateName} leaves unfinished consequences in the guild network`,
+      priority: 1.05,
+    },
+  ] : [];
+
+  const hiddenMarkEffects = (
+    templateId === 'ag.elite.dragon_lair'
+    || templateId === 'ag.social.rivalry'
+  ) ? [
+    {
+      kind: 'hidden_mark' as const,
+      category: 'reputation_note' as const,
+      severity: 0.45,
+      label: `${templateName} was witnessed and discussed across guild circles`,
+      revealFamilies: ['ag.quest', 'ag.social', 'investigation'],
+    },
+  ] : [];
+
+  return {
+    branchOnStep: 0,
+    variants: {},
+    fallback: {
+      overview:
+        `The guild records ${templateName.toLowerCase()} in ledger ink and tavern retellings. ` +
+        'Whatever happened now shapes which contracts find this agent next.',
+      changes,
+      reactionPrompt: 'What does the god keep from this contract?',
+      reactions: [
+        {
+          id: `${templateId}.record_outcome`,
+          label: 'Record the outcome in guild memory.',
+          intent:
+            'The guild remembers who finishes hard work, who improvises under pressure, and who comes back changed. ' +
+            'The god preserves that pressure in the network.',
+          effects: [
+            ...baseEffects,
+            ...intelligenceEffects,
+            ...seedEffects,
+            ...hiddenMarkEffects,
+          ],
+          closeAfterSelection: true,
+        },
+      ],
+    },
+  };
+}
+
+const ELITE_AUTHORED_CHOICES: Readonly<Record<string, Readonly<Record<number, readonly AuthoredChoiceCard[]>>>> = {
+  'ag.elite.dragon_lair': {
+    2: [
+      {
+        id: 'supportive',
+        label: 'Steady the Line',
+        intent:
+          'Send a pulse of resolve through {name} and the nearby line-holders. The breath still burns, ' +
+          'but panic breaks before the formation does.',
+        targetLabel: '{name}',
+        essenceCost: 3,
+        likelyBurden: 'Intervention leaves a visible mythic signature in guild rumor.',
+        interventionType: 'supportive',
+      },
+      {
+        id: 'coercive',
+        label: 'Bind the Beast',
+        intent:
+          'Force the dragon into a narrow opening of movement, granting a lethal window at the price of raw fear. ' +
+          'Victory is possible, but the scene will not be gentle on anyone present.',
+        targetLabel: '{name}',
+        essenceCost: 5,
+        likelyBurden: 'Collateral panic may seed lingering terror in witnesses.',
+        interventionType: 'coercive',
+      },
+      {
+        id: 'withdrawn',
+        label: 'Let Mortals Decide',
+        intent:
+          'Withhold intervention and let courage, preparation, and luck decide the line between legend and obituary.',
+        targetLabel: '{name}',
+        essenceCost: 0,
+        likelyBurden: 'Failure can harden into a lasting scar against guild morale.',
+        interventionType: 'withdrawn',
+      },
+    ],
+  },
+  'ag.elite.lost_city': {
+    2: [
+      {
+        id: 'supportive',
+        label: 'Illuminate the Way',
+        intent:
+          'Thread a clear line of perception through collapsed galleries and sealed courts so {name} can read danger ' +
+          'before danger reads {them}.',
+        targetLabel: '{name}',
+        essenceCost: 3,
+        likelyBurden: 'The city may answer with deeper wards once disturbed.',
+        interventionType: 'supportive',
+      },
+      {
+        id: 'coercive',
+        label: 'Break the Seal',
+        intent:
+          'Tear open the oldest chamber and force access to what the city has kept buried, prioritizing gains over caution.',
+        targetLabel: '{name}',
+        essenceCost: 5,
+        likelyBurden: 'Unsealed remnants can seed hostile follow-on encounters.',
+        interventionType: 'coercive',
+      },
+      {
+        id: 'withdrawn',
+        label: 'Watch the Expedition',
+        intent:
+          'Keep divine hands off the stone. Let the expedition earn or lose its own legacy in the dust.',
+        targetLabel: '{name}',
+        essenceCost: 0,
+        likelyBurden: 'The mission may stall, but the resulting intelligence stays mortal-authentic.',
+        interventionType: 'withdrawn',
+      },
+    ],
+  },
+};
+
+function toUnifiedTemplate(template: EncounterTemplate): UnifiedActionTemplate {
+  const rarityTier = rarityTierForTemplate(template.id);
+  const steps = template.steps.map((step, index) => {
+    const duration = step.duration ?? 1;
+    return {
+      reach: step.reach,
+      duration: { min: duration, max: duration },
+      difficulty: step.difficulty / 100,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: index < template.steps.length - 1 ? 'continue_weakened' as const : 'fail_action' as const,
+      narrativeTemplate: step.narrative,
+      successAfterimage: step.onSuccess.narrative,
+      failureAfterimage: step.onFailure.narrative,
+      successMetadata: {
+        rewardPool: step.onSuccess.rewardPool,
+        tierPromotionEligible: step.onSuccess.tierPromotionEligible,
+        reputationDelta: step.onSuccess.reputationDelta,
+      },
+      failureMetadata: {
+        rewardPool: step.onFailure.rewardPool,
+        tierPromotionEligible: step.onFailure.tierPromotionEligible,
+        reputationDelta: step.onFailure.reputationDelta,
+      },
+    };
+  });
+
+  const lastStep = template.steps[template.steps.length - 1];
+  const authoredChoices = ELITE_AUTHORED_CHOICES[template.id];
+
+  return {
+    id: template.id,
+    name: template.name,
+    rarityTier,
+    intrinsicTier: intrinsicTierForRarity(rarityTier),
+    reach: template.reachPrimary,
+    crudType: encounterTypeToCrud(template.encounterType),
+    scale: 'local',
+    steps,
+    apCost: 1,
+    actorAffinities: ['individual'],
+    locationSubtypes: [
+      ...template.locationTypes,
+      ...(template.sublocationTypes ?? []),
+    ],
+    sphereAffinity: template.sphereAffinity,
+    motivations: template.motivations,
+    narrativeTemplates: {
+      initiation: template.steps[0]?.narrative ?? `${template.name} begins.`,
+      success: lastStep?.onSuccess.narrative ?? `${template.name} succeeds.`,
+      failure: lastStep?.onFailure.narrative ?? `${template.name} fails.`,
+    },
+    authoredChoices,
+    aftermathConfig: buildAftermathConfig(template.id, template.name),
+  };
+}
+
+export const FACTION_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
+  ...LEGACY_FACTION_QUEST_TEMPLATES,
+  ...FACTION_LIFECYCLE_TEMPLATES,
+  ...FACTION_SOCIAL_TEMPLATES,
+].map(toUnifiedTemplate);
+
 /**
  * Look up a faction encounter template by ID (quests + lifecycle).
  */
@@ -993,7 +1254,7 @@ export function getFactionEncounterById(id: string): EncounterTemplate | undefin
   // and live in UNIFIED_ACTION_TEMPLATES. Callers that need unified templates should also call
   // getUnifiedTemplateById from unified-action-templates.ts (no import here to avoid cycles).
   return (
-    FACTION_ENCOUNTER_TEMPLATES.find(t => t.id === id)
+    LEGACY_FACTION_QUEST_TEMPLATES.find(t => t.id === id)
     ?? FACTION_LIFECYCLE_TEMPLATES.find(t => t.id === id)
     ?? FACTION_SOCIAL_TEMPLATES.find(t => t.id === id)
   );
