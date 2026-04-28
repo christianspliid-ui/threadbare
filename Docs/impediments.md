@@ -138,3 +138,20 @@ Each entry is a row in the table below. Append new entries at the bottom. Never 
 | 94 | 1 | 2026-04-27 | process-friction | Required status check "Test Â· Typecheck Â· Build" caused all PRs to hang indefinitely â€” the CI test step has no timeout guard and the test suite stalls in CI. No `paths-ignore` filter meant doc-only PRs (gitignore changes, plan docs) triggered the full suite. Attempts to force-merge via `--admin` failed because GitHub blocks admin bypass on in-progress checks; cancelling the run then left the check in "cancelled" state which also blocked merge. Required checks were ultimately removed from branch protection entirely, rolling back the intended enforcement. Root cause: test suite instability (see #22, #30, #31, #34, #57 etc.) makes required CI gates unworkable until the suite is reliable and fast. | Branch protection upgrade (GitHub Pro) had to be rolled back after one PR. Doc-only changes can no longer be gated by CI until tests are fixed. | L | Partial | Remove required status checks until the test suite is stable. To re-enable: (1) fix the hanging test suite (TB-120), (2) add `paths-ignore` to `ci.yml` for `Docs/**`, `.claude/**`, `*.md`, `.gitignore`, (3) re-enable "Test Â· Typecheck Â· Build" as a required check in repo branch protection settings. | THR-279 merge |
 | 95 | 1 | 2026-04-27 | process-friction | Local `main` was tracking a non-main upstream branch (`origin/christianspliid/thr-275-hexsidebar-location-entries-have-no-click-handler`) and was diverged (`ahead 28, behind 1`), so direct branch-based publish risked bundling unrelated history. | Required setup overhead before implementation closeout; work had to be replayed in a clean worktree. | S | Yes | Create a fresh `git worktree` from `origin/main` for the run and commit/push from that isolated branch; avoid publishing from the mis-tracked home branch. | THR-283 automation run |
 | 96 | 2 | 2026-04-27 | dependency | Obsidian MCP connector tools were still unavailable during THR-286 closeout, so required vault log append could not run through MCP. | Closeout used direct filesystem append to log.md instead of the connector path. | S | Partial | Continue local log.md fallback and replay through Obsidian MCP when connector tools are exposed. | THR-286 closeout; THR-285 closeout |
+
+
+## Resolution Candidates — 2026-04-28
+
+The following impediments are candidates for Resolved as of the THR-280 sprint wrap-up (empirical test run confirms clean main 2026-04-28). Final close fires when THR-282 (re-enable branch protection) ships after the 3-day green watch completes.
+
+- **#22** — full npm test red on main (pre-existing baseline)
+- **#30** — full npm test red, broad pre-existing failures (movement-content, portrait compositor, etc.)
+- **#31** — npm test exceeded default Codex timeout
+- **#32** — full npm test red during encounter reference page sync
+- **#34** — full npm test red during Threads-area follow-up
+- **#38** — full npm test red during strategic-actions design-doc closeout
+- **#39** — full npm test red during strategic-actions implementation-plan closeout
+- **#54** — unifiedActionPhases.test.ts count assertion failure
+- **#57** — traceBuffer-integration sequential IDs fail when phaseFactionActions adds traces
+
+Verification: 2026-04-28 run from clean origin/main worktree (pickup/thr-280): **682/682 test files passed, 10,709/10,709 tests passed.**
