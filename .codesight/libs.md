@@ -43,6 +43,7 @@
 - `scripts\inspiration-ingest\runIngest.ts` — function runInspirationIngest: (source, options) => Promise<IngestionResult>
 - `scripts\inspiration-ingest\sources.ts` — function loadRawInspirationSources: (source) => Promise<RawInspirationSource[]>
 - `scripts\inspiration-ingest\writeInspiration.ts` — function writeInspirationRecords: (incomingRecords, options) => Promise<IngestionResult>, const DEFAULT_INSPIRATION_DATA_PATH
+- `scripts\mirror-ul.ts` — function mirrorUbiquitousLanguage: (options) => void, interface MirrorUlOptions
 - `scripts\playtest-format.ts`
   - function formatDashboard: (seed, totalTicks, snapshots) => string
   - function formatNarrativeLog: (events, groupSize, minSignificance, chronicleEntries) => string
@@ -707,9 +708,9 @@
   - function getFactionEncounterById: (id) => EncounterTemplate | undefined
   - function getFactionTemplateIds: (factionDefId) => string[]
   - const FACTION_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterMeta>
-  - const FACTION_ENCOUNTER_TEMPLATES: EncounterTemplate[]
   - const FACTION_JOIN_TEMPLATE: EncounterTemplate
   - const FACTION_PROMOTION_TEMPLATE: EncounterTemplate
+  - const FACTION_SOCIAL_TEMPLATES: EncounterTemplate[]
   - _...2 more_
 - `src\data\faction-voice-bible.ts`
   - function getFactionVoice: (factionDefId) => FactionVoiceEntry | undefined
