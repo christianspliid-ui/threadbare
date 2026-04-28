@@ -269,30 +269,36 @@ export function generateSocialCandidates(
     // Legacy scene templates fill any remaining slots
     const selectedLegacy = matchingTemplates.slice(0, slotsAfterUnified);
 
-    // Emit faction candidates (legacy format)
+    // Emit faction candidates (unified format — migrated THR-102)
     for (const tmpl of selectedFaction) {
+      const stepReaches = tmpl.steps.map(s =>
+        (isActionStepBranch(s) ? s.fallback.reach : s.reach),
+      );
+      const stepDifficulties = tmpl.steps.map(s =>
+        (isActionStepBranch(s) ? s.fallback.difficulty : s.difficulty),
+      );
       candidates.push({
         templateId: tmpl.id,
         locationId: targetLocationId,
         sublocationId: atTavern ? agentLocationId : null,
         sublocationTypeId: atTavern ? TAVERN_SUBLOCATION_TYPE_ID : null,
         targetAgentId,
-        reachPrimary: tmpl.reachPrimary,
-        reachSecondary: tmpl.reachSecondary,
-        threatRating: tmpl.threatRating,
-        encounterType: tmpl.encounterType,
+        reachPrimary: tmpl.reach,
+        reachSecondary: undefined,
+        threatRating: RARITY_TO_THREAT[tmpl.rarityTier],
+        encounterType: CRUD_TO_ENCOUNTER_TYPE[tmpl.crudType],
         motivations: [...tmpl.motivations],
-        visibleTo: tmpl.visibleTo ? [...tmpl.visibleTo] : undefined,
-        requiresPresence: !tmpl.remoteAttempt,
+        visibleTo: undefined,
+        requiresPresence: true,
         remotePenalty: 0,
         remoteMaxRange: undefined,
         sphereAffinity: tmpl.sphereAffinity,
-        questPriority: (tmpl.questPriority ?? 1.0) * questPriorityMultiplier,
-        totalTickCost: computeTotalTickCost(tmpl),
-        successRewardEstimate: computeRewardEstimate(tmpl),
+        questPriority: 1.0 * questPriorityMultiplier,
+        totalTickCost: computeTotalTickCostUnified(tmpl),
+        successRewardEstimate: computeRewardEstimateUnified(tmpl),
         stepCount: tmpl.steps.length,
-        stepDifficulties: tmpl.steps.map(s => s.difficulty),
-        stepReaches: tmpl.steps.map(s => s.reach),
+        stepDifficulties,
+        stepReaches,
       });
     }
 
@@ -581,7 +587,7 @@ export function getSharedFactionSocialTemplates(
   agentId: string,
   targetAgentId: string,
   locationType: string,
-): EncounterTemplate[] {
+): UnifiedActionTemplate[] {
   const agentFactions = graph.getOutgoingEdges(agentId, 'member_of');
   const targetFactions = graph.getOutgoingEdges(targetAgentId, 'member_of');
 
@@ -604,7 +610,7 @@ export function getSharedFactionSocialTemplates(
   if (sharedDefIds.length === 0) return [];
 
   // Collect social templates from all shared factions
-  const templates: EncounterTemplate[] = [];
+  const templates: UnifiedActionTemplate[] = [];
   const templateIdSet = new Set<string>();
 
   for (const defId of sharedDefIds) {
@@ -616,7 +622,7 @@ export function getSharedFactionSocialTemplates(
       templateIdSet.add(templateId);
 
       const tmpl = FACTION_SOCIAL_TEMPLATES.find(t => t.id === templateId);
-      if (tmpl && tmpl.locationTypes.includes(locationType)) {
+      if (tmpl && (tmpl.locationSubtypes ?? []).includes(locationType)) {
         templates.push(tmpl);
       }
     }

@@ -179,11 +179,17 @@ export function processReputationTally(
   const template = getAnyEncounterById(encounterId);
   if (!template) return;
 
-  const polarity = determinePolarity(template, graph, agentId);
-  if (!polarity) return;
+  // Unified templates (migrated from EncounterTemplate) carry `reach` not `reachPrimary`.
+  // getAnyEncounterById casts them as EncounterTemplate without conversion, so reachPrimary is
+  // undefined for any template that came through getFactionEncounterById or getMercenaryEncounterById.
+  const reach: ReachDomain = (template.reachPrimary ?? (template as any).reach) as ReachDomain;
+  if (!reach) return;
 
-  const reach = template.reachPrimary;
-  const key = tallyKey(reach, polarity);
+  const polarity = determinePolarity(template, graph, agentId);
+  // Unified templates lack encounterType/reputationPolarity — derive polarity from crudType.
+  // 'delete' maps to negative (duel/steal semantics); all others are positive.
+  const effectivePolarity = polarity ?? ((template as any).crudType === 'delete' ? 'negative' : 'positive');
+  const key = tallyKey(reach, effectivePolarity);
 
   const tallies = getTallies(graph, agentId);
   const oldValue = tallies[key] ?? 0;
@@ -198,11 +204,11 @@ export function processReputationTally(
     category: 'reputation_trait',
     agentId,
     reach,
-    polarity,
+    polarity: effectivePolarity,
     action: 'tally_increment',
     tallyValue: newValue,
     cause: encounterId,
-    summary: `${agentId} +${increment} ${reach}.${polarity} reputation tally (now ${newValue.toFixed(1)})`,
+    summary: `${agentId} +${increment} ${reach}.${effectivePolarity} reputation tally (now ${newValue.toFixed(1)})`,
   } as unknown as Parameters<typeof emitTrace>[0]);
 }
 

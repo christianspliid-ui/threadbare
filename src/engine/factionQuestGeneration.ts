@@ -194,7 +194,7 @@ function getAccessibleTemplates(
       accessPrefixes.some(prefix => id.startsWith(prefix)))
     .map(([id]) => {
       const legacy = getFactionEncounterById(id);
-      if (legacy) return legacy;
+      if (legacy) return unifiedToEncounterTemplate(legacy);
       const unified = getUnifiedTemplateById(id);
       return unified ? unifiedToEncounterTemplate(unified) : undefined;
     })
@@ -259,8 +259,8 @@ export function generateFactionLifecycleCandidates(
     // Use per-faction joinEncounterTemplateId if defined; fall back to ag.join default
     const joinTemplateId = definition.joinEncounterTemplateId;
     const joinTemplate = joinTemplateId
-      ? (() => { const l = getFactionEncounterById(joinTemplateId); if (l) return l; const u = getUnifiedTemplateById(joinTemplateId); return u ? unifiedToEncounterTemplate(u) : undefined; })()
-      : FACTION_JOIN_TEMPLATE;
+      ? (() => { const l = getFactionEncounterById(joinTemplateId); if (l) return unifiedToEncounterTemplate(l); const u = getUnifiedTemplateById(joinTemplateId); return u ? unifiedToEncounterTemplate(u) : undefined; })()
+      : unifiedToEncounterTemplate(FACTION_JOIN_TEMPLATE);
     if (joinTemplate) {
       candidates.push(buildCacheEntry(joinTemplate, locationId, {
         sublocationId: guildHallId,
@@ -281,8 +281,8 @@ export function generateFactionLifecycleCandidates(
     // Use per-faction promotionEncounterTemplateId if defined; fall back to ag.promotion default
     const promoTemplateId = definition.promotionEncounterTemplateId;
     const promoTemplate = promoTemplateId
-      ? (() => { const l = getFactionEncounterById(promoTemplateId); if (l) return l; const u = getUnifiedTemplateById(promoTemplateId); return u ? unifiedToEncounterTemplate(u) : undefined; })()
-      : FACTION_PROMOTION_TEMPLATE;
+      ? (() => { const l = getFactionEncounterById(promoTemplateId); if (l) return unifiedToEncounterTemplate(l); const u = getUnifiedTemplateById(promoTemplateId); return u ? unifiedToEncounterTemplate(u) : undefined; })()
+      : unifiedToEncounterTemplate(FACTION_PROMOTION_TEMPLATE);
 
     // Find next rank tier
     const currentTierIndex = definition.rankTiers.indexOf(currentRank);
