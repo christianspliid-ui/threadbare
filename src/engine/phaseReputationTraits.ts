@@ -44,7 +44,7 @@ import { REACH_VALUE_PAIR } from '../types/agent';
 import { assignTrait, removeTrait, reinforceTrait, getTraitsForNode } from './traits';
 import { computeCapability, computeTier } from './domainCapability';
 import { emitTrace } from './traceBuffer';
-import { getAnyEncounterById } from '../data/encounter-content';
+import { resolveEncounterTemplate } from '../data/unified-action-templates';
 import { REPUTATION_TRAIT_DEFINITIONS, getReputationTraitId } from '../data/reputation-trait-content';
 import {
   REPUTATION_LEVEL_1_THRESHOLD,
@@ -176,7 +176,7 @@ export function processReputationTally(
 ): void {
   if (!stepSuccess) return;
 
-  const template = getAnyEncounterById(encounterId);
+  const template = resolveEncounterTemplate(encounterId);
   if (!template) return;
 
   const polarity = determinePolarity(template, graph, agentId);

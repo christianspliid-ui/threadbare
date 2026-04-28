@@ -55,3 +55,4 @@
 - **work** | THR-286 shipped: removed todo-only StartPage/App/useThemeMusic placeholder tests (3 files) to eliminate skipped-test noise.
 - **work** | THR-285 shipped: raised trace buffer cap to 2000 and updated dependent traceBuffer tests (unit + integration).
 - **work** | THR-102 shipped: Adventuring Guild templates now exported as 18 unified faction encounters with authored aftermath and elite choice cards.
+- **work** | THR-290 shipped: AG unified registry wiring + consumer normalization (no duplicate IDs, ag count 18).
