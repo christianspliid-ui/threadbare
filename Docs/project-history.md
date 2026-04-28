@@ -533,3 +533,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - THR-283 schema drift fix: added `hostile_to` edge registration and allowed `contains` location→sublocation targets; verification gates green.
 - THR-286 todo-only StartPage/App/useThemeMusic placeholders removed: ✅ Complete (2026-04-27) — deleted three stub-only test files to eliminate skipped-test noise; verification gates green.
 - THR-285 trace buffer capacity increase: ✅ Complete (2026-04-27) — raised BUFFER_SIZE to 2000 and updated dependent traceBuffer unit/integration tests; verification gates green.
+- THR-290 AG unified registry wiring: ✅ Complete (2026-04-28) — added Adventurers Guild unified spread, normalized faction/reputation lookups via resolveEncounterTemplate, and verified no duplicate unified IDs (ag count 18).
