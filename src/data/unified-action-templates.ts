@@ -15,9 +15,7 @@
 
 import type {
   UnifiedActionTemplate,
-  ActionStep,
   ActionScale,
-  ActionStepOutcomeMetadata,
 } from '../types/unifiedAction';
 import type { ActorType } from '../types/graph';
 import { ACTION_TEMPLATES, type ActionTemplateData } from './action-template-content';
@@ -31,12 +29,6 @@ import {
 import { ARMY_ENCOUNTER_TEMPLATES } from './army-encounter-content';
 import { MONSTER_ENCOUNTER_TEMPLATES } from './monster-encounter-content';
 import { BORDERLAND_ENCOUNTER_TEMPLATES } from './borderland-encounter-content';
-import {
-  ENCOUNTER_TYPE_MOTIVATIONS,
-  type EncounterTemplate,
-  type EncounterStep,
-  type EncounterOutcome,
-} from '../types/encounter';
 import { DECAY_CONSTANTS } from '../engine/decayCurve';
 import { INTERVENTION_DEFINITIONS } from './dream-content';
 import { NPC_ACTION_TEMPLATES } from './npc-action-templates';
@@ -223,59 +215,6 @@ export function encounterTypeToCrud(
   }
 }
 
-/**
- * Convert an EncounterStep to an ActionStep.
- * EncounterStep difficulty is on 0–100 scale; ActionStep uses 0–1.
- *
- * Important: this migration only carries consequence fields with a clean
- * unified-runtime consumer today. Anything richer belongs in the encounter
- * migration audit/ledger until the supporting primitive exists.
- */
-function migrateEncounterOutcomeMetadata(outcome: EncounterOutcome): ActionStepOutcomeMetadata | undefined {
-  if (
-    outcome.rewardPool === undefined &&
-    outcome.tierPromotionEligible === undefined &&
-    outcome.reputationDelta === undefined
-  ) {
-    return undefined;
-  }
-
-  return {
-    rewardPool: outcome.rewardPool,
-    tierPromotionEligible: outcome.tierPromotionEligible,
-    reputationDelta: outcome.reputationDelta,
-  };
-}
-
-function inferEncounterFailBehavior(
-  template: EncounterTemplate,
-  stepIndex: number,
-): ActionStep['failBehavior'] {
-  // Phase 5: migrated encounters should fail forward by default on early steps.
-  // The final step still hard-stops unless/until we author a more specific
-  // consequence contract for that encounter.
-  return stepIndex < template.steps.length - 1 ? 'continue_weakened' : 'fail_action';
-}
-
-function migrateEncounterStep(
-  template: EncounterTemplate,
-  step: EncounterStep,
-  stepIndex: number,
-): ActionStep {
-  const duration = step.duration ?? 1;
-
-  return {
-    reach: step.reach,
-    duration: { min: duration, max: duration },
-    difficulty: step.difficulty / 100,
-    onSuccess: [],
-    onFailure: [],
-    failBehavior: inferEncounterFailBehavior(template, stepIndex),
-    narrativeTemplate: step.narrative,
-    successMetadata: migrateEncounterOutcomeMetadata(step.onSuccess),
-    failureMetadata: migrateEncounterOutcomeMetadata(step.onFailure),
-  };
-}
 
 /**
  * Convert an old ActionTemplateData (1-step CRUD action) to a UnifiedActionTemplate.
@@ -319,65 +258,6 @@ export function migrateActionTemplate(old: ActionTemplateData): UnifiedActionTem
     intrinsicTier: 'background',
   };
 }
-
-/**
- * Convert an EncounterTemplate (multi-step) to a UnifiedActionTemplate.
- */
-export function migrateEncounterTemplate(old: EncounterTemplate): UnifiedActionTemplate {
-  const crudType = encounterTypeToCrud(old.encounterType);
-  const motivations = ENCOUNTER_TYPE_MOTIVATIONS[old.encounterType] ?? old.motivations;
-
-  // Use first step for initiation narrative, last step for success/failure
-  const firstStep = old.steps[0];
-  const lastStep = old.steps[old.steps.length - 1];
-
-  return {
-    id: old.id,
-    name: old.name,
-    reach: old.reachPrimary,
-    crudType,
-    scale: 'local',
-    steps: old.steps.map((step, index) => migrateEncounterStep(old, step, index)),
-    apCost: 1,
-    actorAffinities: ['individual'],
-    locationSubtypes: [
-      ...old.locationTypes,
-      ...(old.sublocationTypes ?? []),
-    ],
-    sphereAffinity: old.sphereAffinity,
-    motivations,
-    narrativeTemplates: {
-      initiation: firstStep?.narrative ?? `${old.name} begins.`,
-      success: lastStep?.onSuccess.narrative ?? `${old.name} succeeds.`,
-      failure: lastStep?.onFailure.narrative ?? `${old.name} fails.`,
-    },
-    supportBundle: old.supportBundle,
-    clearanceGates: old.clearanceGates,
-    // TB-100: encounter templates default to tier 1 (Mundane); derive intrinsicTier from rarity
-    rarityTier: 1,
-    intrinsicTier: rarityTierToIntrinsicTier(1),
-  };
-}
-
-function buildCanonicalEncounterTemplates(): EncounterTemplate[] {
-  const deduped = new Map<string, EncounterTemplate>();
-
-  const addTemplates = (templates: readonly EncounterTemplate[]): void => {
-    for (const template of templates) {
-      deduped.set(template.id, template);
-    }
-  };
-
-  addTemplates(ENCOUNTER_TEMPLATES);
-  // Monster templates (THR-103) and army templates (THR-104) are now
-  // UnifiedActionTemplate[] and registered via direct spread into
-  // UNIFIED_ACTION_TEMPLATES below; they no longer pass through the legacy
-  // EncounterTemplate canonicalisation path.
-
-  return [...deduped.values()];
-}
-
-const CANONICAL_ENCOUNTER_TEMPLATES = buildCanonicalEncounterTemplates();
 
 // ─── Divine Intervention Templates ───────────────────────────────
 
@@ -4037,7 +3917,7 @@ export const THREAD_MANAGEMENT_TEMPLATES: UnifiedActionTemplate[] = [
  */
 export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...ACTION_TEMPLATES.map(migrateActionTemplate),
-  ...CANONICAL_ENCOUNTER_TEMPLATES.map(migrateEncounterTemplate),
+  ...ENCOUNTER_TEMPLATES,
   ...DIVINE_ACTION_TEMPLATES,
   ...LOCATION_ACTION_TEMPLATES,
   ...ATTACHMENT_ACTION_TEMPLATES,
@@ -4164,52 +4044,8 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
 /**
  * Look up a template by its ID. Returns undefined if not found.
+ * Checks UNIFIED_ACTION_TEMPLATES first, then all encounter pools via getAnyEncounterById.
  */
 export function getUnifiedTemplateById(id: string): UnifiedActionTemplate | undefined {
-  const existing = UNIFIED_ACTION_TEMPLATES.find(t => t.id === id);
-  if (existing) return existing;
-
-  const legacyEncounter = getAnyEncounterById(id);
-  return legacyEncounter?.supportBundle ? migrateEncounterTemplate(legacyEncounter) : undefined;
-}
-
-/**
- * Convert a UnifiedActionTemplate to a minimal EncounterTemplate shape for UI display.
- * Used so encounter modals can open for unified-only templates that have no legacy entry.
- */
-export function unifiedToEncounterTemplate(ut: UnifiedActionTemplate): EncounterTemplate {
-  return {
-    id: ut.id,
-    name: ut.name,
-    steps: ut.steps.map((s, i) => {
-      const step = 'branchOnStep' in s ? s.fallback : s;
-      return {
-        id: `${ut.id}.step${i}`,
-        reach: step.reach,
-        difficulty: Math.round(step.difficulty * 100),
-        duration: step.duration.min,
-        onSuccess: { narrative: step.narrativeTemplate ?? ut.narrativeTemplates.success },
-        onFailure: { narrative: step.narrativeTemplate ?? ut.narrativeTemplates.failure },
-      };
-    }),
-    threatRating: 'moderate' as const,
-    encounterType: 'assist' as const,
-    supportBundle: ut.supportBundle,
-    locationTypes: [],
-    reachPrimary: ut.reach,
-    reachSecondary: ut.reach,
-    intrinsicTier: ut.intrinsicTier,
-    motivations: ut.motivations,
-  } as EncounterTemplate;
-}
-
-/**
- * Resolve an EncounterTemplate by ID, trying legacy content first then unified templates.
- * Prefer this over getAnyEncounterById when the caller must handle unified-only templates.
- */
-export function resolveEncounterTemplate(id: string): EncounterTemplate | undefined {
-  const legacy = getAnyEncounterById(id);
-  if (legacy) return legacy;
-  const unified = UNIFIED_ACTION_TEMPLATES.find(t => t.id === id);
-  return unified ? unifiedToEncounterTemplate(unified) : undefined;
+  return UNIFIED_ACTION_TEMPLATES.find(t => t.id === id) ?? getAnyEncounterById(id);
 }

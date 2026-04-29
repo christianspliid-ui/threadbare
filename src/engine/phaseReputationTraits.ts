@@ -38,13 +38,14 @@ import type { GameState } from '../types/gameState';
 import type { WorldGraph } from './graph';
 import type { ReachDomain } from '../types/traits';
 import type { ReputationTallyKey, ReputationTallies } from '../types/agent';
-import type { EncounterTemplate } from '../types/encounter';
+import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { REACH_DOMAINS } from '../types/traits';
 import { REACH_VALUE_PAIR } from '../types/agent';
 import { assignTrait, removeTrait, reinforceTrait, getTraitsForNode } from './traits';
 import { computeCapability, computeTier } from './domainCapability';
 import { emitTrace } from './traceBuffer';
-import { resolveEncounterTemplate } from '../data/unified-action-templates';
+import { getUnifiedTemplateById } from '../data/unified-action-templates';
+import { CRUD_TO_ENCOUNTER_TYPE } from './encounterCache';
 import { REPUTATION_TRAIT_DEFINITIONS, getReputationTraitId } from '../data/reputation-trait-content';
 import {
   REPUTATION_LEVEL_1_THRESHOLD,
@@ -129,7 +130,7 @@ function levelFromTally(tally: number): number {
  * Layer 3: Agent axiological profile tiebreaker
  */
 export function determinePolarity(
-  template: EncounterTemplate,
+  template: UnifiedActionTemplate,
   graph: WorldGraph,
   agentId: string,
 ): 'positive' | 'negative' | null {
@@ -139,15 +140,16 @@ export function determinePolarity(
   }
 
   // Layer 2: encounter type heuristic
-  if (REPUTATION_POSITIVE_ENCOUNTER_TYPES.has(template.encounterType)) {
+  const encounterType = CRUD_TO_ENCOUNTER_TYPE[template.crudType] ?? 'explore';
+  if (REPUTATION_POSITIVE_ENCOUNTER_TYPES.has(encounterType)) {
     return 'positive';
   }
-  if (REPUTATION_NEGATIVE_ENCOUNTER_TYPES.has(template.encounterType)) {
+  if (REPUTATION_NEGATIVE_ENCOUNTER_TYPES.has(encounterType)) {
     return 'negative';
   }
 
   // Layer 3: axiological profile tiebreaker
-  const valuePair = REACH_VALUE_PAIR[template.reachPrimary];
+  const valuePair = REACH_VALUE_PAIR[template.reach];
   if (!valuePair) return null;
 
   const agentNode = graph.getNode(agentId);
@@ -176,13 +178,13 @@ export function processReputationTally(
 ): void {
   if (!stepSuccess) return;
 
-  const template = resolveEncounterTemplate(encounterId);
+  const template = getUnifiedTemplateById(encounterId);
   if (!template) return;
 
   const polarity = determinePolarity(template, graph, agentId);
   if (!polarity) return;
 
-  const reach = template.reachPrimary;
+  const reach = template.reach;
   const key = tallyKey(reach, polarity);
 
   const tallies = getTallies(graph, agentId);

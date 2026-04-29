@@ -130,13 +130,13 @@ describe('faction join and promotion templates', () => {
   it('ag.join template exists with correct shape', () => {
     expect(FACTION_JOIN_TEMPLATE.id).toBe('ag.join');
     expect(FACTION_JOIN_TEMPLATE.steps).toHaveLength(2);
-    expect(FACTION_JOIN_TEMPLATE.encounterType).toBe('hire');
+    expect(FACTION_JOIN_TEMPLATE.crudType).toBe('create');
   });
 
   it('ag.promotion template exists with correct shape', () => {
     expect(FACTION_PROMOTION_TEMPLATE.id).toBe('ag.promotion');
     expect(FACTION_PROMOTION_TEMPLATE.steps).toHaveLength(2);
-    expect(FACTION_PROMOTION_TEMPLATE.encounterType).toBe('lead');
+    expect(FACTION_PROMOTION_TEMPLATE.crudType).toBe('update');
   });
 
   it('both have meta entries', () => {

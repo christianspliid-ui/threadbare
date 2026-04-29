@@ -13,13 +13,97 @@
  * ═══════════════════════════════════════════════════════════════════
  */
 
-import type { EncounterTemplate } from '../types/encounter';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
+import type { SecretDiscoverySource } from '../types/encounter';
+import type { UnifiedActionTemplate } from '../types/unifiedAction';
+
+// ─── Local Raw Type ───────────────────────────────────────────────
+
+type SecretEntry = {
+  id: string;
+  name: string;
+  locationTypes: readonly string[];
+  sublocationTypes?: string[];
+  reachPrimary: string;
+  reachSecondary?: string;
+  encounterType: string;
+  threatRating?: string;
+  intrinsicTier?: string;
+  motivations?: readonly unknown[];
+  reputationPolarity?: 'positive' | 'negative';
+  secretDiscovery: { onSuccess: boolean; sourceName: SecretDiscoverySource };
+  steps: ReadonlyArray<{
+    id?: string;
+    name?: string;
+    reach: string;
+    difficulty: number;
+    duration?: number;
+    narrative: string;
+    onSuccess: { narrative: string; reputationDelta?: number };
+    onFailure: { narrative: string; reputationDelta?: number };
+  }>;
+};
+
+// ─── Converter ────────────────────────────────────────────────────
+
+function toCrudType(encounterType: string): UnifiedActionTemplate['crudType'] {
+  switch (encounterType) {
+    case 'create': case 'hire': case 'build': return 'create';
+    case 'explore': case 'acquire': case 'steal': case 'trade': return 'read';
+    case 'duel': return 'delete';
+    default: return 'update';
+  }
+}
+
+function toSecretTemplate(e: SecretEntry): UnifiedActionTemplate {
+  const motivations = (ENCOUNTER_TYPE_MOTIVATIONS as Record<string, readonly import('../types/agent').ValuePair[]>)[e.encounterType]
+    ?? (e.motivations as readonly import('../types/agent').ValuePair[] ?? []);
+  const firstStep = e.steps[0];
+  const lastStep = e.steps[e.steps.length - 1];
+  return {
+    id: e.id,
+    name: e.name,
+    reach: e.reachPrimary as import('../types/traits').ReachDomain,
+    crudType: toCrudType(e.encounterType),
+    scale: 'local',
+    steps: e.steps.map((step, index) => {
+      const dur = step.duration ?? 1;
+      return {
+        reach: step.reach as import('../types/traits').ReachDomain,
+        duration: { min: dur, max: dur },
+        difficulty: step.difficulty / 100,
+        onSuccess: [],
+        onFailure: [],
+        failBehavior: (index < e.steps.length - 1 ? 'continue_weakened' : 'fail_action') as 'continue_weakened' | 'fail_action',
+        narrativeTemplate: step.narrative,
+        successMetadata: step.onSuccess.reputationDelta !== undefined ? { reputationDelta: step.onSuccess.reputationDelta } : undefined,
+        failureMetadata: step.onFailure.reputationDelta !== undefined ? { reputationDelta: step.onFailure.reputationDelta } : undefined,
+      };
+    }),
+    apCost: 1,
+    actorAffinities: ['individual'],
+    locationSubtypes: [
+      ...e.locationTypes,
+      ...(e.sublocationTypes ?? []),
+    ] as UnifiedActionTemplate['locationSubtypes'],
+    motivations,
+    narrativeTemplates: {
+      initiation: firstStep?.narrative ?? `${e.name} begins.`,
+      success: lastStep?.onSuccess.narrative ?? `${e.name} succeeds.`,
+      failure: lastStep?.onFailure.narrative ?? `${e.name} fails.`,
+    },
+    rarityTier: 1,
+    intrinsicTier: 'background',
+    secretDiscovery: e.secretDiscovery,
+  };
+}
+
+// ─── Raw Data ──────────────────────────────────────────────────────
 
 const SETTLEMENT_LOCATIONS = ['hamlet', 'town', 'city', 'capital'] as const;
 const TAVERN_SUBLOCATION = ['sublocation-type.tavern'];
 
-export const SECRET_DISCOVERY_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
+const SECRET_DISCOVERY_ENCOUNTER_TEMPLATES_RAW: SecretEntry[] = [
 
   // ─── 1. Confession Over Drinks (Heart, Tavern) ────────────────────────────
   {
@@ -217,3 +301,5 @@ export const SECRET_DISCOVERY_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     ],
   },
 ];
+
+export const SECRET_DISCOVERY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = SECRET_DISCOVERY_ENCOUNTER_TEMPLATES_RAW.map(toSecretTemplate);

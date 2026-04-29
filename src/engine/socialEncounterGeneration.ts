@@ -42,7 +42,6 @@ import type { WorldGraph } from './graph';
 import type { DistanceMatrix } from './distanceMatrix';
 import type { ReputationReactionEffect } from '../types/traits';
 import {
-  computeRewardEstimate, computeTotalTickCost,
   computeRewardEstimateUnified, computeTotalTickCostUnified,
   RARITY_TO_THREAT, CRUD_TO_ENCOUNTER_TYPE,
 } from './encounterCache';
@@ -52,10 +51,9 @@ import { SOCIAL_ENCOUNTER_TEMPLATES } from '../data/social-encounter-content';
 import { SOCIAL_SCENE_TEMPLATES } from '../data/social-scene-templates';
 import { TAVERN_UNIFIED_ENCOUNTER_TEMPLATES } from '../data/tavern-encounter-content';
 import { SECRET_DISCOVERY_ENCOUNTER_TEMPLATES } from '../data/secret-encounter-content';
-import { FACTION_SOCIAL_TEMPLATES } from '../data/faction-encounter-content';
+import { FACTION_ENCOUNTER_TEMPLATES } from '../data/faction-encounter-content';
 import { FACTION_DEFINITIONS } from '../data/faction-definitions';
 import type { MemberOfEdgeProperties } from '../types/disposition';
-import type { EncounterTemplate } from '../types/encounter';
 import { getTrust } from './trustMechanics';
 import { computeCapability } from './domainCapability';
 import { emitTrace } from './traceBuffer';
@@ -221,22 +219,21 @@ export function generateSocialCandidates(
         )
       : [];
 
-    // Filter legacy EncounterTemplate social scenes + secret discovery by locationTypes
-    const matchingTemplates = [
+    // Filter social scenes + secret discovery templates by locationSubtypes
+    const matchingTemplates: UnifiedActionTemplate[] = [
       ...SOCIAL_SCENE_TEMPLATES,
-      // Secret discovery templates that don't require tavern sublocation (THR-30)
-      ...SECRET_DISCOVERY_ENCOUNTER_TEMPLATES.filter(t => !t.sublocationTypes?.length),
-    ].filter(tmpl => tmpl.locationTypes.includes(locationType));
+      // Secret discovery templates that don't require a sublocation (THR-30)
+      ...SECRET_DISCOVERY_ENCOUNTER_TEMPLATES.filter(t =>
+        !t.locationSubtypes?.some(s => s.startsWith('sublocation-type.')),
+      ),
+    ].filter(tmpl => tmpl.locationSubtypes?.includes(locationType as never) ?? false);
 
-    // Legacy tavern-exclusive templates — retained for secret-discovery only
-    // (THR-30). Tavern-specific templates migrated to UnifiedActionTemplate in
-    // THR-101; see matchingUnifiedTavern above.
-    const extraTemplates: EncounterTemplate[] = atTavern
+    // Tavern-exclusive secret-discovery templates (THR-30)
+    const extraTemplates: UnifiedActionTemplate[] = atTavern
       ? [
-          // Secret discovery templates that require tavern sublocation (THR-30)
           ...SECRET_DISCOVERY_ENCOUNTER_TEMPLATES.filter(tmpl =>
-            tmpl.sublocationTypes?.includes(TAVERN_SUBLOCATION_TYPE_ID)
-            && tmpl.locationTypes.includes(locationType),
+            tmpl.locationSubtypes?.includes(TAVERN_SUBLOCATION_TYPE_ID as never)
+            && (tmpl.locationSubtypes?.includes(locationType as never) ?? false),
           ),
         ]
       : [];
@@ -269,30 +266,36 @@ export function generateSocialCandidates(
     // Legacy scene templates fill any remaining slots
     const selectedLegacy = matchingTemplates.slice(0, slotsAfterUnified);
 
-    // Emit faction candidates (legacy format)
+    // Emit faction candidates
     for (const tmpl of selectedFaction) {
+      const stepReaches = tmpl.steps.map(s =>
+        (isActionStepBranch(s) ? s.fallback.reach : s.reach),
+      );
+      const stepDifficulties = tmpl.steps.map(s =>
+        (isActionStepBranch(s) ? s.fallback.difficulty : s.difficulty),
+      );
       candidates.push({
         templateId: tmpl.id,
         locationId: targetLocationId,
         sublocationId: atTavern ? agentLocationId : null,
         sublocationTypeId: atTavern ? TAVERN_SUBLOCATION_TYPE_ID : null,
         targetAgentId,
-        reachPrimary: tmpl.reachPrimary,
-        reachSecondary: tmpl.reachSecondary,
-        threatRating: tmpl.threatRating,
-        encounterType: tmpl.encounterType,
-        motivations: [...tmpl.motivations],
-        visibleTo: tmpl.visibleTo ? [...tmpl.visibleTo] : undefined,
-        requiresPresence: !tmpl.remoteAttempt,
+        reachPrimary: tmpl.reach,
+        reachSecondary: tmpl.reach,
+        threatRating: RARITY_TO_THREAT[tmpl.rarityTier] ?? 'trivial',
+        encounterType: CRUD_TO_ENCOUNTER_TYPE[tmpl.crudType] ?? 'assist',
+        motivations: [...(tmpl.motivations ?? [])],
+        visibleTo: undefined,
+        requiresPresence: true,
         remotePenalty: 0,
         remoteMaxRange: undefined,
         sphereAffinity: tmpl.sphereAffinity,
-        questPriority: (tmpl.questPriority ?? 1.0) * questPriorityMultiplier,
-        totalTickCost: computeTotalTickCost(tmpl),
-        successRewardEstimate: computeRewardEstimate(tmpl),
+        questPriority: questPriorityMultiplier,
+        totalTickCost: computeTotalTickCostUnified(tmpl),
+        successRewardEstimate: computeRewardEstimateUnified(tmpl),
         stepCount: tmpl.steps.length,
-        stepDifficulties: tmpl.steps.map(s => s.difficulty),
-        stepReaches: tmpl.steps.map(s => s.reach),
+        stepDifficulties,
+        stepReaches,
       });
     }
 
@@ -330,30 +333,36 @@ export function generateSocialCandidates(
       });
     }
 
-    // Emit extra (legacy secret-discovery) candidates
+    // Emit extra (secret-discovery) candidates
     for (const tmpl of selectedExtra) {
+      const stepReaches = tmpl.steps.map(s =>
+        (isActionStepBranch(s) ? s.fallback.reach : s.reach),
+      );
+      const stepDifficulties = tmpl.steps.map(s =>
+        (isActionStepBranch(s) ? s.fallback.difficulty : s.difficulty),
+      );
       candidates.push({
         templateId: tmpl.id,
         locationId: targetLocationId,
         sublocationId: atTavern ? agentLocationId : null,
         sublocationTypeId: atTavern ? TAVERN_SUBLOCATION_TYPE_ID : null,
         targetAgentId,
-        reachPrimary: tmpl.reachPrimary,
-        reachSecondary: tmpl.reachSecondary,
-        threatRating: tmpl.threatRating,
-        encounterType: tmpl.encounterType,
-        motivations: [...tmpl.motivations],
-        visibleTo: tmpl.visibleTo ? [...tmpl.visibleTo] : undefined,
-        requiresPresence: !tmpl.remoteAttempt,
+        reachPrimary: tmpl.reach,
+        reachSecondary: tmpl.reach,
+        threatRating: RARITY_TO_THREAT[tmpl.rarityTier] ?? 'trivial',
+        encounterType: CRUD_TO_ENCOUNTER_TYPE[tmpl.crudType] ?? 'explore',
+        motivations: [...(tmpl.motivations ?? [])],
+        visibleTo: undefined,
+        requiresPresence: true,
         remotePenalty: 0,
         remoteMaxRange: undefined,
         sphereAffinity: tmpl.sphereAffinity,
-        questPriority: (tmpl.questPriority ?? 1.0) * questPriorityMultiplier,
-        totalTickCost: computeTotalTickCost(tmpl),
-        successRewardEstimate: computeRewardEstimate(tmpl),
+        questPriority: questPriorityMultiplier,
+        totalTickCost: computeTotalTickCostUnified(tmpl),
+        successRewardEstimate: computeRewardEstimateUnified(tmpl),
         stepCount: tmpl.steps.length,
-        stepDifficulties: tmpl.steps.map(s => s.difficulty),
-        stepReaches: tmpl.steps.map(s => s.reach),
+        stepDifficulties,
+        stepReaches,
       });
     }
 
@@ -390,30 +399,36 @@ export function generateSocialCandidates(
       });
     }
 
-    // Emit legacy scene candidates
+    // Emit scene candidates
     for (const tmpl of selectedLegacy) {
+      const stepReaches = tmpl.steps.map(s =>
+        (isActionStepBranch(s) ? s.fallback.reach : s.reach),
+      );
+      const stepDifficulties = tmpl.steps.map(s =>
+        (isActionStepBranch(s) ? s.fallback.difficulty : s.difficulty),
+      );
       candidates.push({
         templateId: tmpl.id,
         locationId: targetLocationId,
         sublocationId: atTavern ? agentLocationId : null,
         sublocationTypeId: atTavern ? TAVERN_SUBLOCATION_TYPE_ID : null,
         targetAgentId,
-        reachPrimary: tmpl.reachPrimary,
-        reachSecondary: tmpl.reachSecondary,
-        threatRating: tmpl.threatRating,
-        encounterType: tmpl.encounterType,
-        motivations: [...tmpl.motivations],
-        visibleTo: tmpl.visibleTo ? [...tmpl.visibleTo] : undefined,
-        requiresPresence: !tmpl.remoteAttempt,
+        reachPrimary: tmpl.reach,
+        reachSecondary: tmpl.reach,
+        threatRating: RARITY_TO_THREAT[tmpl.rarityTier] ?? 'trivial',
+        encounterType: CRUD_TO_ENCOUNTER_TYPE[tmpl.crudType] ?? 'assist',
+        motivations: [...(tmpl.motivations ?? [])],
+        visibleTo: undefined,
+        requiresPresence: true,
         remotePenalty: 0,
         remoteMaxRange: undefined,
         sphereAffinity: tmpl.sphereAffinity,
-        questPriority: (tmpl.questPriority ?? 1.0) * questPriorityMultiplier,
-        totalTickCost: computeTotalTickCost(tmpl),
-        successRewardEstimate: computeRewardEstimate(tmpl),
+        questPriority: questPriorityMultiplier,
+        totalTickCost: computeTotalTickCostUnified(tmpl),
+        successRewardEstimate: computeRewardEstimateUnified(tmpl),
         stepCount: tmpl.steps.length,
-        stepDifficulties: tmpl.steps.map(s => s.difficulty),
-        stepReaches: tmpl.steps.map(s => s.reach),
+        stepDifficulties,
+        stepReaches,
       });
     }
   }
@@ -581,7 +596,7 @@ export function getSharedFactionSocialTemplates(
   agentId: string,
   targetAgentId: string,
   locationType: string,
-): EncounterTemplate[] {
+): UnifiedActionTemplate[] {
   const agentFactions = graph.getOutgoingEdges(agentId, 'member_of');
   const targetFactions = graph.getOutgoingEdges(targetAgentId, 'member_of');
 
@@ -604,7 +619,7 @@ export function getSharedFactionSocialTemplates(
   if (sharedDefIds.length === 0) return [];
 
   // Collect social templates from all shared factions
-  const templates: EncounterTemplate[] = [];
+  const templates: UnifiedActionTemplate[] = [];
   const templateIdSet = new Set<string>();
 
   for (const defId of sharedDefIds) {
@@ -615,8 +630,8 @@ export function getSharedFactionSocialTemplates(
       if (templateIdSet.has(templateId)) continue;
       templateIdSet.add(templateId);
 
-      const tmpl = FACTION_SOCIAL_TEMPLATES.find(t => t.id === templateId);
-      if (tmpl && tmpl.locationTypes.includes(locationType)) {
+      const tmpl = FACTION_ENCOUNTER_TEMPLATES.find(t => t.id === templateId);
+      if (tmpl && (tmpl.locationSubtypes?.includes(locationType as never) ?? false)) {
         templates.push(tmpl);
       }
     }

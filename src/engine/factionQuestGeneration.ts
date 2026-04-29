@@ -17,7 +17,9 @@
 
 import type { WorldGraph } from './graph';
 import type { EncounterCacheEntry } from './encounterCache';
-import type { EncounterTemplate } from '../types/encounter';
+import { CRUD_TO_ENCOUNTER_TYPE, RARITY_TO_THREAT } from './encounterCache';
+import type { UnifiedActionTemplate } from '../types/unifiedAction';
+import { isActionStepBranch } from '../types/unifiedAction';
 import type { FactionDefinition, FactionRankTier } from '../types/faction';
 import { computeRankFromReputation } from '../types/faction';
 import {
@@ -32,7 +34,7 @@ import {
   FACTION_JOIN_TEMPLATE,
   FACTION_PROMOTION_TEMPLATE,
 } from '../data/faction-encounter-content';
-import { resolveEncounterTemplate } from '../data/unified-action-templates';
+import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import type { MemberOfEdgeProperties } from '../types/disposition';
 import { QUEST_HOOK_PRIORITY_BOOST, QUEST_HOOK_COOLDOWN_TICKS } from './ruins/constants';
 
@@ -120,7 +122,7 @@ export function generateFactionQuestCandidates(
       candidates.push(buildCacheEntry(template, locationId, {
         visibleTo: [`faction:${edge.target}`],
         requiresPresence: false,
-        questPriority: (template.questPriority ?? (meta?.questType === 'elite' ? 8.0 : meta?.questType === 'senior' ? 5.0 : 3.0)) + maintenanceBoost + questHookBoost,
+        questPriority: (meta?.questType === 'elite' ? 8.0 : meta?.questType === 'senior' ? 5.0 : 3.0) + maintenanceBoost + questHookBoost,
         successRewardEstimate: meta?.reputationReward ?? 0.04,
       }));
     }
@@ -141,15 +143,18 @@ function getNextRank(
 // ─── Helpers ─────────────────────────────────────────────────────────────
 
 /**
- * Build an EncounterCacheEntry from an encounter template with overrides.
+ * Build an EncounterCacheEntry from a UnifiedActionTemplate with overrides.
  */
 function buildCacheEntry(
-  template: EncounterTemplate,
+  template: UnifiedActionTemplate,
   locationId: string,
   overrides: Partial<EncounterCacheEntry>,
 ): EncounterCacheEntry {
   const totalTickCost = template.steps.reduce(
-    (sum, step) => sum + (step.duration ?? 1), 0,
+    (sum, stepOrBranch) => {
+      const step = isActionStepBranch(stepOrBranch) ? stepOrBranch.fallback : stepOrBranch;
+      return sum + (step.duration?.min ?? 1);
+    }, 0,
   );
 
   return {
@@ -157,20 +162,20 @@ function buildCacheEntry(
     locationId,
     sublocationId: null,
     sublocationTypeId: null,
-    reachPrimary: template.reachPrimary,
-    reachSecondary: template.reachSecondary,
-    threatRating: template.threatRating,
-    encounterType: template.encounterType,
-    motivations: template.motivations,
+    reachPrimary: template.reach,
+    reachSecondary: template.reach,
+    threatRating: RARITY_TO_THREAT[template.rarityTier] ?? 'trivial',
+    encounterType: CRUD_TO_ENCOUNTER_TYPE[template.crudType] ?? 'explore',
+    motivations: (template.motivations ?? []) as import('../types/agent').ValuePair[],
     requiresPresence: false,
     remotePenalty: 0,
     sphereAffinity: template.sphereAffinity,
-    questPriority: template.questPriority ?? 3.0,
+    questPriority: 3.0,
     totalTickCost,
     successRewardEstimate: 0.04,
     stepCount: template.steps.length,
-    stepDifficulties: template.steps.map(s => s.difficulty),
-    stepReaches: template.steps.map(s => s.reach),
+    stepDifficulties: template.steps.map(s => isActionStepBranch(s) ? s.fallback.difficulty : s.difficulty),
+    stepReaches: template.steps.map(s => isActionStepBranch(s) ? s.fallback.reach : s.reach),
     ...overrides,
   };
 }
@@ -183,7 +188,7 @@ function buildCacheEntry(
 function getAccessibleTemplates(
   definition: FactionDefinition,
   currentRank: FactionRankTier,
-): EncounterTemplate[] {
+): UnifiedActionTemplate[] {
   const accessPrefixes = currentRank.encounterAccess;
   if (accessPrefixes.length === 0) return [];
 
@@ -191,8 +196,8 @@ function getAccessibleTemplates(
     .filter(([id, meta]) =>
       meta.factionDefId === definition.id &&
       accessPrefixes.some(prefix => id.startsWith(prefix)))
-    .map(([id]) => resolveEncounterTemplate(id))
-    .filter((t): t is EncounterTemplate => t !== undefined);
+    .map(([id]) => getUnifiedTemplateById(id))
+    .filter((t): t is UnifiedActionTemplate => t !== undefined);
 }
 
 // ─── Lifecycle Candidates (Join & Promotion) — TB-061 ────────────────────
@@ -253,7 +258,7 @@ export function generateFactionLifecycleCandidates(
     // Use per-faction joinEncounterTemplateId if defined; fall back to ag.join default
     const joinTemplateId = definition.joinEncounterTemplateId;
     const joinTemplate = joinTemplateId
-      ? resolveEncounterTemplate(joinTemplateId)
+      ? getUnifiedTemplateById(joinTemplateId)
       : FACTION_JOIN_TEMPLATE;
     if (joinTemplate) {
       candidates.push(buildCacheEntry(joinTemplate, locationId, {
@@ -261,7 +266,7 @@ export function generateFactionLifecycleCandidates(
         sublocationTypeId: 'sublocation-type.guild-hall',
         visibleTo: [`not_faction:${factionDefId}`],
         requiresPresence: true,
-        questPriority: joinTemplate.questPriority ?? 6.0,
+        questPriority: 6.0,
         successRewardEstimate: 0.05,
       }));
     }
@@ -275,7 +280,7 @@ export function generateFactionLifecycleCandidates(
     // Use per-faction promotionEncounterTemplateId if defined; fall back to ag.promotion default
     const promoTemplateId = definition.promotionEncounterTemplateId;
     const promoTemplate = promoTemplateId
-      ? resolveEncounterTemplate(promoTemplateId)
+      ? getUnifiedTemplateById(promoTemplateId)
       : FACTION_PROMOTION_TEMPLATE;
 
     // Find next rank tier
@@ -303,7 +308,7 @@ export function generateFactionLifecycleCandidates(
           sublocationTypeId: 'sublocation-type.guild-hall',
           visibleTo: [`faction:${edge.target}`],
           requiresPresence: true,
-          questPriority: promoTemplate.questPriority ?? 7.0,
+          questPriority: 7.0,
           successRewardEstimate: 0.05,
         }));
       }

@@ -335,7 +335,8 @@ describe('EncounterCacheEntry field correctness', () => {
       expect(tmpl).toBeDefined();
       expect(entry.stepCount).toBe(tmpl.steps.length);
       // C.1: Difficulty tier scaling — at tick 0 (default), tier is 'early'
-      expect(entry.stepDifficulties).toEqual(tmpl.steps.map(s => Math.round(s.difficulty * DIFFICULTY_TIER_MULTIPLIERS.early)));
+      // UAT difficulty is 0-1; cache stores 0-100 scale (multiply by 100 for scoring compatibility)
+      expect(entry.stepDifficulties).toEqual(tmpl.steps.map(s => Math.round(s.difficulty * 100 * DIFFICULTY_TIER_MULTIPLIERS.early)));
       expect(entry.stepReaches).toEqual(tmpl.steps.map(s => s.reach));
     }
   });

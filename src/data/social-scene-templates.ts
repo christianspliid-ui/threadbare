@@ -26,8 +26,107 @@
  * ═══════════════════════════════════════════════════════════════════
  */
 
-import type { EncounterTemplate } from '../types/encounter';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
+import type { UnifiedActionTemplate } from '../types/unifiedAction';
+
+// ─── Local Raw Types ──────────────────────────────────────────────
+
+type SocialEntry = {
+  id: string;
+  name: string;
+  locationTypes: readonly string[];
+  reachPrimary: string;
+  reachSecondary?: string;
+  encounterType: string;
+  threatRating?: string;
+  intrinsicTier?: string;
+  motivations?: readonly unknown[];
+  sphereAffinity?: string;
+  steps: ReadonlyArray<{
+    id?: string;
+    name?: string;
+    reach: string;
+    difficulty: number;
+    duration?: number;
+    narrative: string;
+    // Leverage fields — present in raw data but not used in UnifiedActionTemplate
+    leverageOnSuccess?: number;
+    leverageOnFailure?: number;
+    leverageModifiesDifficulty?: boolean;
+    conditional?: unknown;
+    onSuccess: {
+      narrative: string;
+      reputationDelta?: number;
+      tierPromotionEligible?: boolean;
+      rewardPool?: import('../types/attachments').RewardPoolRecipe;
+    };
+    onFailure: {
+      narrative: string;
+      reputationDelta?: number;
+      rewardPool?: import('../types/attachments').RewardPoolRecipe;
+    };
+  }>;
+};
+
+// ─── Converter ────────────────────────────────────────────────────
+
+function toCrudType(encounterType: string): UnifiedActionTemplate['crudType'] {
+  switch (encounterType) {
+    case 'create': case 'hire': case 'build': return 'create';
+    case 'explore': case 'acquire': case 'steal': case 'trade': return 'read';
+    case 'duel': return 'delete';
+    default: return 'update';
+  }
+}
+
+function toOutcomeMeta(
+  outcome: { rewardPool?: import('../types/attachments').RewardPoolRecipe; tierPromotionEligible?: boolean; reputationDelta?: number },
+): import('../types/unifiedAction').ActionStepOutcomeMetadata | undefined {
+  if (outcome.rewardPool === undefined && outcome.tierPromotionEligible === undefined && outcome.reputationDelta === undefined) {
+    return undefined;
+  }
+  return { rewardPool: outcome.rewardPool, tierPromotionEligible: outcome.tierPromotionEligible, reputationDelta: outcome.reputationDelta };
+}
+
+function toSocialTemplate(e: SocialEntry): UnifiedActionTemplate {
+  const motivations = (ENCOUNTER_TYPE_MOTIVATIONS as Record<string, readonly import('../types/agent').ValuePair[]>)[e.encounterType]
+    ?? (e.motivations as readonly import('../types/agent').ValuePair[] ?? []);
+  const firstStep = e.steps[0];
+  const lastStep = e.steps[e.steps.length - 1];
+  return {
+    id: e.id,
+    name: e.name,
+    reach: e.reachPrimary as import('../types/traits').ReachDomain,
+    crudType: toCrudType(e.encounterType),
+    scale: 'local',
+    steps: e.steps.map((step, index) => {
+      const dur = step.duration ?? 1;
+      return {
+        reach: step.reach as import('../types/traits').ReachDomain,
+        duration: { min: dur, max: dur },
+        difficulty: step.difficulty / 100,
+        onSuccess: [],
+        onFailure: [],
+        failBehavior: (index < e.steps.length - 1 ? 'continue_weakened' : 'fail_action') as 'continue_weakened' | 'fail_action',
+        narrativeTemplate: step.narrative,
+        successMetadata: toOutcomeMeta(step.onSuccess),
+        failureMetadata: toOutcomeMeta(step.onFailure),
+      };
+    }),
+    apCost: 1,
+    actorAffinities: ['individual'],
+    locationSubtypes: e.locationTypes as UnifiedActionTemplate['locationSubtypes'],
+    sphereAffinity: e.sphereAffinity as UnifiedActionTemplate['sphereAffinity'],
+    motivations,
+    narrativeTemplates: {
+      initiation: firstStep?.narrative ?? `${e.name} begins.`,
+      success: lastStep?.onSuccess.narrative ?? `${e.name} succeeds.`,
+      failure: lastStep?.onFailure.narrative ?? `${e.name} fails.`,
+    },
+    rarityTier: 1,
+    intrinsicTier: 'background',
+  };
+}
 
 // ─── Difficulty Curves ─────────────────────────────────────────────────────
 
@@ -44,7 +143,7 @@ const MAJOR       = ['city', 'capital'] as const;
 
 // ─── Persuasion Templates (5) ─────────────────────────────────────────────
 
-const PERSUASION_TEMPLATES: EncounterTemplate[] = [
+const PERSUASION_TEMPLATES: SocialEntry[] = [
 
   // 1. Political Audience
   {
@@ -572,7 +671,7 @@ const PERSUASION_TEMPLATES: EncounterTemplate[] = [
 
 // ─── Negotiation Templates (5) ─────────────────────────────────────────────
 
-const NEGOTIATION_TEMPLATES: EncounterTemplate[] = [
+const NEGOTIATION_TEMPLATES: SocialEntry[] = [
 
   // 6. Tavern Negotiation
   {
@@ -1103,7 +1202,7 @@ const NEGOTIATION_TEMPLATES: EncounterTemplate[] = [
 
 // ─── Intrigue Templates (5) ────────────────────────────────────────────────
 
-const INTRIGUE_TEMPLATES: EncounterTemplate[] = [
+const INTRIGUE_TEMPLATES: SocialEntry[] = [
 
   // 11. Betrayal Reveal
   {
@@ -1626,7 +1725,7 @@ const INTRIGUE_TEMPLATES: EncounterTemplate[] = [
 
 // ─── Intimidation Templates (4) ───────────────────────────────────────────
 
-const INTIMIDATION_TEMPLATES: EncounterTemplate[] = [
+const INTIMIDATION_TEMPLATES: SocialEntry[] = [
 
   // 16. The Confrontation
   {
@@ -2032,7 +2131,7 @@ const INTIMIDATION_TEMPLATES: EncounterTemplate[] = [
 
 // ─── Ceremony Templates (4) ───────────────────────────────────────────────
 
-const CEREMONY_TEMPLATES: EncounterTemplate[] = [
+const CEREMONY_TEMPLATES: SocialEntry[] = [
 
   // 20. Oath Swearing
   {
@@ -2335,7 +2434,7 @@ const CEREMONY_TEMPLATES: EncounterTemplate[] = [
 
 // ─── Community Templates (4) ──────────────────────────────────────────────
 
-const COMMUNITY_TEMPLATES: EncounterTemplate[] = [
+const COMMUNITY_TEMPLATES: SocialEntry[] = [
 
   // 24. Festival Gathering
   {
@@ -2654,7 +2753,7 @@ const COMMUNITY_TEMPLATES: EncounterTemplate[] = [
 
 // ─── Investigation Templates (3) ─────────────────────────────────────────
 
-const INVESTIGATION_TEMPLATES: EncounterTemplate[] = [
+const INVESTIGATION_TEMPLATES: SocialEntry[] = [
 
   // 28. The Interrogation
   {
@@ -2902,7 +3001,7 @@ const INVESTIGATION_TEMPLATES: EncounterTemplate[] = [
 
 // ─── Combined Export ───────────────────────────────────────────────────────
 
-export const SOCIAL_SCENE_TEMPLATES: EncounterTemplate[] = [
+const SOCIAL_SCENE_TEMPLATES_RAW: SocialEntry[] = [
   ...PERSUASION_TEMPLATES,
   ...NEGOTIATION_TEMPLATES,
   ...INTRIGUE_TEMPLATES,
@@ -2911,5 +3010,7 @@ export const SOCIAL_SCENE_TEMPLATES: EncounterTemplate[] = [
   ...COMMUNITY_TEMPLATES,
   ...INVESTIGATION_TEMPLATES,
 ];
+
+export const SOCIAL_SCENE_TEMPLATES: UnifiedActionTemplate[] = SOCIAL_SCENE_TEMPLATES_RAW.map(toSocialTemplate);
 
 export default SOCIAL_SCENE_TEMPLATES;
