@@ -6,10 +6,8 @@
  * rival behaviour, location pressure, complication selection, prose
  * vocabulary, and chronicle titles toward the archetype's character.
  *
- * All 7 archetypes are present; 3 are fully authored (breach, convergence,
- * reckoning), 4 are stub-authored (changing, sundering, failing, ascension)
- * with placeholder prose vocabulary and neutral biases — sufficient for the
- * engine to function, easy to upgrade with richer content.
+ * All 7 archetypes are fully authored: breach, convergence, reckoning
+ * (THR-21) and changing, sundering, failing, ascension (THR-79).
  */
 
 import type { DoomIdentityMatrix } from '../types/doomIdentity';
@@ -301,161 +299,254 @@ const RECKONING: DoomIdentityMatrix = {
   ],
 };
 
-// ─── Stub archetypes ──────────────────────────────────────────────────────────
-// Neutral biases; prose vocabulary is placeholder-quality but covers the
-// enrichment pipeline. Upgrade in a future content pass.
+// ─── Changing ─────────────────────────────────────────────────────────────────
+// THR-79 (2026-04-29) — Chaos pressure: substitution, not destruction. Old powers
+// stop working; new ones do not yet have names. The terror is forgetting what
+// things used to be while they change shape under your hands.
 
 const CHANGING: DoomIdentityMatrix = {
   archetype: 'changing',
 
   encounterPoolBias: {
-    investigation: 0.15,
-    recovery:      0.10,
-    social:        0.10,
+    investigation: 0.25,
+    social:        0.20,
+    political:     0.20,
+    recovery:      0.05,
+    combat:       -0.15,
+    threat:       -0.10,
   },
 
   rivalBehaviorBias: {
-    intervene: 0.20,
-    recruit:   0.15,
-    wait:     -0.10,
+    recruit:   0.30,  // jockeying for position in the new order
+    intervene: 0.25,
+    expand:    0.05,
+    wait:     -0.20,
+    attack:   -0.20,
   },
 
   locationPressure: {
-    frontierDelta:  0,
+    frontierDelta:  1,  // the edges flourish strangely
     centerDelta:    0,
   },
 
-  familiarityGainModifier: 1.1,
+  familiarityGainModifier: 1.2, // people cling to each other when the world is unrecognisable
 
   complicationBias: {
-    collateral_success: 0.20,
-    partial_progress:   0.15,
-    broken_trust:       0.10,
+    collateral_success:    0.25,  // success looks like something you didn't aim at
+    partial_progress:      0.20,  // progress is half-shaped
+    broken_trust:          0.20,  // old loyalties are being rewritten
+    worsening_convergence: 0.10,
+    witness:               0.05,
+    rival_attention:       0.05,
+    scar:                 -0.10,
+    debt:                 -0.10,
+    location_fallout:     -0.05,
   },
 
   proseTone: {
-    verbs: ['shifts', 'transforms', 'unmakes', 'reorders', 'dissolves into'],
-    adjectives: ['mutable', 'transitional', 'unformed', 'half-remembered', 'becoming'],
+    verbs: [
+      'shifts', 'transmutes', 'translates', 'reshapes',
+      'rewrites', 'transposes', 'recasts', 'unmoors',
+    ],
+    adjectives: [
+      'half-formed', 'transitional', 'unfamiliar', 'untaught',
+      'nameless', 'provisional', 'mutable', 'unrecognised',
+    ],
     atmospheres: [
-      'the old shapes blur at the edges',
-      'nothing stays the same shape twice',
-      'the new order has not yet named itself',
+      'the old names slip from the tongue mid-sentence',
+      'tools answer to gestures their owners do not remember teaching',
+      'the season turns at the wrong hour and no one corrects it',
+      'what was law yesterday no longer compels',
+      'the hands relearn what the fingers used to know',
     ],
   },
 
   chronicleChapterTitles: [
-    'The First Metamorphosis',
-    'When the Old Names Failed',
-    'The Great Unmaking',
-    'New Shapes, New Laws',
-    'The World Reborn Unknown',
+    'The First Wrongness',
+    'When the Old Powers Stopped Answering',
+    'Shapes Nobody Yet Knows',
+    'The Old Order, Unmade',
+    'Naming the New World',
   ],
 
   identityMilestones: [
-    { label: 'First Shift',         progressThreshold: 0.10, description: 'The old order cracks for the first time.' },
-    { label: 'Accelerating Change', progressThreshold: 0.40, description: 'Transformation is now visible week to week.' },
-    { label: 'No Return',           progressThreshold: 0.70, description: 'The old world is gone. The new has no name yet.' },
-    { label: 'The Final Form',      progressThreshold: 0.90, description: 'The transformation completes. Something new has arrived.' },
+    {
+      label:             'First Refusal',
+      progressThreshold: 0.10,
+      description:       'A spell, a season, or a sworn word that always held simply stops holding, with no replacement in sight.',
+    },
+    {
+      label:             'The Founding Fails',
+      progressThreshold: 0.35,
+      description:       'A faction unravels because the logic it was built on no longer applies; nothing remains to inherit.',
+    },
+    {
+      label:             'Untimed',
+      progressThreshold: 0.65,
+      description:       'The calendar drifts off true; harvests, festivals, and tides no longer align with the names they bore.',
+    },
+    {
+      label:             'Unrecognised',
+      progressThreshold: 0.90,
+      description:       'What stood at the start of the doom is gone in form and in fact; no one remembers the world before.',
+    },
   ],
 };
+
+// ─── Sundering ────────────────────────────────────────────────────────────────
+// THR-79 (2026-04-29) — Force pressure: the world breaking apart at fundamental
+// seams. Distinct from Breach (something coming through) — Sundering is coming
+// apart. Geography and bonds both fracture; nothing intrudes, but nothing holds.
 
 const SUNDERING: DoomIdentityMatrix = {
   archetype: 'sundering',
 
   encounterPoolBias: {
-    combat:  0.20,
-    threat:  0.15,
-    social: -0.15,
+    combat:        0.25,
+    threat:        0.20,
+    recovery:      0.15,  // people trying to hold things together
+    investigation: 0.05,
+    social:       -0.20,  // the bonds that make social encounters possible are breaking
+    political:    -0.10,
   },
 
   rivalBehaviorBias: {
-    attack:   0.25,
-    expand:   0.20,
-    intervene: 0.15,
-    wait:    -0.25,
-    recruit: -0.10,
+    attack:    0.30,  // claiming pieces of the breaking world
+    expand:    0.25,
+    intervene: 0.10,
+    wait:     -0.30,  // there is no time to build
+    recruit:  -0.20,
   },
 
   locationPressure: {
-    frontierDelta: -1,
+    frontierDelta: -1,  // the only archetype with no safe geography
     centerDelta:   -1,
-    deathSiteUnrestBonus: 2,
+    deathSiteUnrestBonus: 1,
   },
 
-  familiarityGainModifier: 0.6,
+  familiarityGainModifier: 0.6, // bonds shatter alongside the land
 
   complicationBias: {
-    broken_trust:   0.20,
-    location_fallout: 0.20,
-    scar:           0.15,
-    witness:        0.10,
+    broken_trust:          0.25,
+    location_fallout:      0.25,
+    scar:                  0.20,  // everyone takes a wound
+    witness:               0.15,  // the breaking is visible to all
+    worsening_convergence: 0.10,
+    collateral_success:    0.05,
+    rival_attention:      -0.05,
+    debt:                 -0.10,
+    partial_progress:     -0.10,
   },
 
   proseTone: {
-    verbs: ['breaks apart', 'sunders', 'severs', 'collapses', 'fragments'],
-    adjectives: ['broken', 'severed', 'isolated', 'fractured', 'disconnected'],
+    verbs: [
+      'severs', 'halves', 'cleaves', 'splits',
+      'divides', 'separates', 'parts', 'wrenches apart',
+    ],
+    adjectives: [
+      'severed', 'fissured', 'halved', 'unjoined',
+      'riven', 'sundered', 'disjointed', 'cloven',
+    ],
     atmospheres: [
-      'what was whole is now in pieces',
-      'the seams of the world give way',
-      'every bond that can break, breaks',
+      'the seams between regions show visibly through the air',
+      'what was joined yesterday refuses to meet today',
+      'stone, oath, and blood all part along the same lines',
+      'the road ends where it did not end last week',
+      'voices that should reach no longer carry',
     ],
   },
 
   chronicleChapterTitles: [
-    'When the First Things Broke',
+    'The First Crack',
     'The Splitting Season',
     'All Bonds Undone',
-    'Pieces of a World',
+    'A World in Pieces',
     'The Final Severance',
   ],
 
   identityMilestones: [
-    { label: 'First Fracture',   progressThreshold: 0.10, description: 'The world\'s first visible crack appears.' },
-    { label: 'Widening Rifts',   progressThreshold: 0.35, description: 'Communication between regions breaks down.' },
-    { label: 'The Great Split',  progressThreshold: 0.65, description: 'Physical geography changes as the land tears.' },
-    { label: 'No Reunion',       progressThreshold: 0.85, description: 'Reunification is impossible. The pieces drift apart.' },
+    {
+      label:             'First Crack',
+      progressThreshold: 0.10,
+      description:       'A visible fissure opens in the geography; a road, a wall, or a riverbed no longer holds its shape.',
+    },
+    {
+      label:             'Voices Break Down',
+      progressThreshold: 0.35,
+      description:       'Communication between regions becomes unreliable; messengers do not arrive, signals fail to carry.',
+    },
+    {
+      label:             'The Land Reshaped',
+      progressThreshold: 0.65,
+      description:       'Physical geography has shifted: a road is gone, a river runs the wrong way, a coastline has receded.',
+    },
+    {
+      label:             'No Reunion',
+      progressThreshold: 0.90,
+      description:       'Reunification is impossible — the pieces drift apart, and no force present can pull them back.',
+    },
   ],
 };
+
+// ─── Failing ──────────────────────────────────────────────────────────────────
+// THR-79 (2026-04-29) — Time pressure: slow erosion of whatever sustains life.
+// Springs run dry, crops thin, magic flickers. There is no enemy. Time itself,
+// or the world's reservoirs, just runs out. The dread is patient and total.
 
 const FAILING: DoomIdentityMatrix = {
   archetype: 'failing',
 
   encounterPoolBias: {
-    recovery:      0.20,
-    investigation: 0.15,
-    combat:       -0.10,
-    social:       -0.05,
+    recovery:      0.25,  // everyone is trying to hoard or resurrect
+    investigation: 0.20,  // where did the power go?
+    political:     0.10,
+    combat:       -0.15,  // there is no enemy to fight, just emptiness
+    social:       -0.10,
+    threat:       -0.05,
   },
 
   rivalBehaviorBias: {
-    wait:      0.20,
-    intervene: 0.15,
-    recruit:   0.10,
-    attack:   -0.20,
-    expand:   -0.15,
+    wait:      0.25,  // they conserve
+    intervene: 0.20,
+    recruit:   0.05,
+    attack:   -0.30,  // no surplus to fund aggression
+    expand:   -0.25,
   },
 
   locationPressure: {
     frontierDelta:  0,
-    centerDelta:   -1,
+    centerDelta:   -1,  // capitals cannot sustain their populations
   },
 
-  familiarityGainModifier: 1.0,
+  familiarityGainModifier: 1.0, // nothing pulls people apart, but nothing pulls them together either
 
   complicationBias: {
-    partial_progress:   0.25,
-    scar:               0.15,
-    worsening_convergence: 0.15,
-    collateral_success: 0.10,
+    partial_progress:      0.30,  // every success is incomplete because resources weren't there
+    worsening_convergence: 0.20,  // the failing accelerates
+    scar:                  0.15,  // exhaustion leaves marks
+    debt:                  0.10,
+    broken_trust:          0.05,
+    collateral_success:   -0.05,
+    witness:              -0.05,
+    rival_attention:      -0.10,
+    location_fallout:     -0.10,
   },
 
   proseTone: {
-    verbs: ['fades', 'diminishes', 'drains away', 'ebbs', 'exhausts itself'],
-    adjectives: ['fading', 'hollow', 'depleted', 'dim', 'guttering'],
+    verbs: [
+      'ebbs', 'dims', 'exhausts', 'quietens',
+      'runs thin', 'withers', 'attenuates', 'hushes',
+    ],
+    adjectives: [
+      'hollow', 'attenuated', 'guttering', 'thin',
+      'dwindled', 'faltering', 'sparse', 'sere',
+    ],
     atmospheres: [
-      'the light is somehow less than it was',
-      'creation forgets how to replenish itself',
-      'the world grows quieter by degrees',
+      'the lamps need more oil than they did last month',
+      'wells deepen each season but yield less each draw',
+      'songs are sung shorter, with fewer verses than the singer recalls',
+      'the year\'s first warmth never fully arrives',
+      'every loaf is a little smaller than the last by hands no one can name',
     ],
   },
 
@@ -463,75 +554,125 @@ const FAILING: DoomIdentityMatrix = {
     'The First Dimming',
     'When the Springs Ran Dry',
     'The Long Exhaustion',
-    'Last Light',
-    'When Nothing Was Left',
+    'The Last Light',
+    'The Silence After',
   ],
 
   identityMilestones: [
-    { label: 'First Diminishment', progressThreshold: 0.10, description: 'A power that was reliable begins to fail.' },
-    { label: 'Widespread Scarcity', progressThreshold: 0.40, description: 'Multiple systems begin to break down at once.' },
-    { label: 'Critical Depletion',  progressThreshold: 0.70, description: 'The core force is nearly spent.' },
-    { label: 'Final Flicker',       progressThreshold: 0.90, description: 'The last reserves are burning.' },
+    {
+      label:             'First Dimming',
+      progressThreshold: 0.10,
+      description:       'A power that ran reliable for generations begins to falter — a well, a hearth-fire, a season\'s gift.',
+    },
+    {
+      label:             'Many Failures At Once',
+      progressThreshold: 0.40,
+      description:       'Multiple systems break down within the same season; rationing becomes the language of councils.',
+    },
+    {
+      label:             'The Reserves Run Low',
+      progressThreshold: 0.70,
+      description:       'The core force is nearly spent; what remains is rationed, hoarded, and resented in equal measure.',
+    },
+    {
+      label:             'The Last Burning',
+      progressThreshold: 0.90,
+      description:       'The last reserves are committed; whatever does not survive this winter will not be rebuilt.',
+    },
   ],
 };
+
+// ─── Ascension ────────────────────────────────────────────────────────────────
+// THR-79 (2026-04-29) — Spirit pressure: a specific being approaching godhood.
+// The dread is not catastrophe but replacement — the world will continue, but
+// with a new god in it, and those who knew the ascendant before will be small.
 
 const ASCENSION: DoomIdentityMatrix = {
   archetype: 'ascension',
 
   encounterPoolBias: {
-    social:        0.20,
-    investigation: 0.15,
-    political:     0.15,
-    threat:       -0.10,
-    combat:       -0.05,
+    social:        0.25,  // everyone is positioning relative to the rising power
+    political:     0.25,
+    investigation: 0.20,  // mortals trying to understand
+    recovery:      0.05,
+    threat:       -0.20,  // direct opposition no longer works
+    combat:       -0.20,
   },
 
   rivalBehaviorBias: {
-    recruit:   0.25,
-    intervene: 0.20,
-    expand:    0.15,
-    attack:   -0.15,
-    wait:     -0.10,
+    recruit:   0.30,  // building factions of devotees
+    intervene: 0.25,  // manipulating the ascendant or those near them
+    expand:    0.10,
+    attack:   -0.25,  // too late to fight
+    wait:     -0.15,  // there is no time
   },
 
   locationPressure: {
     frontierDelta:  0,
-    centerDelta:    1,
+    centerDelta:    1,  // the seat of the ascending being prospers, briefly
   },
 
-  familiarityGainModifier: 1.3,
+  familiarityGainModifier: 1.3, // people gather around the ascending light
 
   complicationBias: {
-    rival_attention: 0.25,
-    witness:         0.20,
-    debt:            0.15,
-    broken_trust:    0.10,
-    scar:           -0.10,
+    rival_attention:       0.30,  // everyone is watching the ascension
+    witness:               0.25,  // the moment is being recorded
+    debt:                  0.20,  // alliances bend toward the rising power
+    broken_trust:          0.15,
+    worsening_convergence: 0.10,
+    partial_progress:     -0.05,
+    collateral_success:   -0.10,
+    scar:                 -0.10,
+    location_fallout:     -0.10,
   },
 
   proseTone: {
-    verbs: ['rises', 'ascends', 'transcends', 'elevates', 'surpasses'],
-    adjectives: ['transcendent', 'radiant', 'elevated', 'singular', 'apotheosised'],
+    verbs: [
+      'rises', 'surpasses', 'outgrows', 'leaves behind',
+      'transcends', 'ascends', 'eclipses', 'lifts away',
+    ],
+    adjectives: [
+      'singular', 'unprecedented', 'set apart', 'beyond',
+      'sovereign', 'untouchable', 'exalted', 'heightened',
+    ],
     atmospheres: [
-      'something approaches the threshold of divinity',
-      'the gap between mortal and divine narrows dangerously',
-      'reverence and terror become the same feeling',
+      'those who knew them as a child can no longer meet their eyes',
+      'the air at their elbow tastes of incense though no incense is lit',
+      'their shadow is steady when nothing else\'s is',
+      'names spoken in their hearing arrive smaller than they left the mouth',
+      'their hands have stopped being the size they were last year',
     ],
   },
 
   chronicleChapterTitles: [
     'The First Signs of Elevation',
     'Above the Common Reach',
-    'When One Became More Than One',
+    'The Ones Who Knew Them Before',
     'The Apotheosis Approaches',
     'The New God\'s First Breath',
   ],
 
   identityMilestones: [
-    { label: 'First Ascent',         progressThreshold: 0.10, description: 'The ascending being first crosses a mortal threshold.' },
-    { label: 'Beyond Challenge',     progressThreshold: 0.35, description: 'No mortal force can stop the ascension now.' },
-    { label: 'The Penultimate Step', progressThreshold: 0.65, description: 'Godhood is palpable — visible in the flesh.' },
-    { label: 'Apotheosis',           progressThreshold: 0.90, description: 'The ascension completes. The world has a new god.' },
+    {
+      label:             'First Threshold',
+      progressThreshold: 0.10,
+      description:       'The ascending being does something no mortal has done — survives a wound, hears a god, walks unburned.',
+    },
+    {
+      label:             'Beyond Opposition',
+      progressThreshold: 0.35,
+      description:       'Every organised attempt to stop the ascension has failed; what is left is supplication or flight.',
+    },
+    {
+      label:             'Godhood In The Flesh',
+      progressThreshold: 0.65,
+      description:       'Physical signs of divinity show — light without source, presence without arrival, voice that compels.',
+    },
+    {
+      label:             'Apotheosis',
+      progressThreshold: 0.90,
+      description:       'The ascension completes; the world has a new god, and those who knew them before are small forever.',
+    },
   ],
 };
 
