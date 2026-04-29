@@ -1,13 +1,13 @@
 # Project Status
 > Updated 2026-04-29.
 ## Current Focus
-**THR-104 complete — Phase 4 army migration shipped.** All 6 army-lifecycle templates (mc.army.raise, four army.threshold.*, army.aftermath.refugees) now export as UnifiedActionTemplate with Threadbare-aesthetic prose (sergeants speak, captain offstage, mud-and-rations realism) and authored aftermath: reputation tallies for command performance, hidden marks for witnessed cowardice/heroism, encounter seeds for cascading consequences (supply crisis → desertion → mutiny → disbandment → refugees). Programmatic-spawn signal preserved (`locationSubtypes: []`); threshold IDs in `armyAttrition.ts` still resolve. All 10,709 tests pass.
+**THR-104 complete — Phase 4 army migration shipped.** All 6 army-lifecycle templates (`mc.army.raise`, four `army.threshold.*`, `army.aftermath.refugees`) now export as UnifiedActionTemplate with Threadbare-aesthetic prose (sergeants speak, captain offstage, mud-and-rations realism) and authored aftermath: reputation tallies for command performance, hidden marks for witnessed cowardice/heroism, encounter seeds for cascading consequences (supply crisis → desertion → mutiny → disbandment → refugees). Programmatic-spawn signal preserved (`locationSubtypes: []`); threshold IDs in `armyAttrition.ts` still resolve.
+
+**THR-103 complete — Phase 4 monster migration shipped.** All 5 monster templates (`monster.hunt.minor`, `monster.hunt.named_elite`, `monster.encounter.ambush`, `monster.encounter.lair_defense`, `monster.encounter.horde_raid`) now export as `UnifiedActionTemplate`, each with authored aftermath reactions (hidden marks for witnessed combat, encounter seeds for territorial returns, intelligence grants for creature lore, emit_omen for horde outcomes). `lair_defense` and `horde_raid` author `update_node` GraphOps for world-mutating prosperity/defense changes.
 
 **THR-106 complete — Phase 4 anomaly migration shipped.** All 10 anomaly templates now export as UnifiedActionTemplate, each with authored aftermath reactions; fallen_star and dreaming_light include authored choice cards, while legacy anomaly lookup remains compatible through getAnyEncounterById.
 
-**THR-290 complete — AG unified registry wired.** Spread `FACTION_ENCOUNTER_TEMPLATES` into `UNIFIED_ACTION_TEMPLATES` (18 AG + lifecycle + social templates), routed `factionQuestGeneration` and `phaseReputationTraits` consumers through `resolveEncounterTemplate`, eliminating the mixed-shape hazard.
-
-**Encounter Format Migration: 4 of 5 Phase 4 issues shipped.** THR-103 (monster, 5 templates) is the remaining queue item, currently In Dev with Christian.
+**Phase 4 Encounter Format Migration progress:** ✅ Anomaly (THR-106) · ✅ Monster (THR-103) · ✅ Army (THR-104). Remaining: Borderland (THR-107, 20 templates).
 
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
@@ -24,7 +24,7 @@
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
 
 ## Archived to project-history.md
-- THR-290/102/280/285/286/283/287/276/284/277/281/211/243/272/212/210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
+- THR-106/290/102/280/285/286/283/287/276/284/277/281/211/243/272/212/210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)

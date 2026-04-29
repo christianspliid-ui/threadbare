@@ -368,10 +368,10 @@ function buildCanonicalEncounterTemplates(): EncounterTemplate[] {
   };
 
   addTemplates(ENCOUNTER_TEMPLATES);
-  addTemplates(MONSTER_ENCOUNTER_TEMPLATES);
-  // Army templates are now UnifiedActionTemplate[] (THR-104) and registered via
-  // direct spread into UNIFIED_ACTION_TEMPLATES below; they no longer pass through
-  // the legacy EncounterTemplate canonicalisation path.
+  // Monster templates (THR-103) and army templates (THR-104) are now
+  // UnifiedActionTemplate[] and registered via direct spread into
+  // UNIFIED_ACTION_TEMPLATES below; they no longer pass through the legacy
+  // EncounterTemplate canonicalisation path.
 
   return [...deduped.values()];
 }
@@ -4117,6 +4117,8 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   TS_PROMOTION_TEMPLATE,
   // Anomaly encounters — migrated to UnifiedActionTemplate (THR-106)
   ...ANOMALY_ENCOUNTER_TEMPLATES,
+  // Monster encounters — migrated to UnifiedActionTemplate (THR-103)
+  ...MONSTER_ENCOUNTER_TEMPLATES,
   // Army encounters — migrated to UnifiedActionTemplate (THR-104)
   ...ARMY_ENCOUNTER_TEMPLATES,
   // Adventurers Guild — migrated to UnifiedActionTemplate (THR-102, wired THR-290)
