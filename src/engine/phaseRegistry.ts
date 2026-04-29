@@ -38,6 +38,7 @@ export type PhaseResult = Partial<GameState>;
  * - `post-doom`       — after the doom/omen/composition cluster, before unified action progress.
  * - `post-resolution` — after the Phase 2a unified-action cluster, before agent decision.
  * - `post-decision`   — after agent decision, movement, colocation, social, before rival actions.
+ * - `pre-economy`     — after the rival/stealth/essence/control cluster, before reputation/decay/settlement work.
  * - `post-economy`    — after settlement/prosperity/economic chronicle, before ambition progress.
  * - `pre-lifecycle`   — after the ruin/delve cluster, before agent lifecycle (death/birth).
  * - `post-narrative`  — after phaseNarrative, before mandate/doom-expiry.
@@ -47,6 +48,7 @@ export type PhaseSlot =
   | 'post-doom'
   | 'post-resolution'
   | 'post-decision'
+  | 'pre-economy'
   | 'post-economy'
   | 'pre-lifecycle'
   | 'post-narrative';
@@ -57,6 +59,7 @@ export const PHASE_SLOTS: readonly PhaseSlot[] = [
   'post-doom',
   'post-resolution',
   'post-decision',
+  'pre-economy',
   'post-economy',
   'pre-lifecycle',
   'post-narrative',

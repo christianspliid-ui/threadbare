@@ -24,7 +24,6 @@ import {
   resolveDilemma,
   applyDilemmaEffects,
   logInteraction,
-  decayReputation,
 } from './disposition';
 import {
   DILEMMA_STAKES_THRESHOLD,
@@ -114,13 +113,12 @@ import { resetInfluenceCounter } from './interventionEffects';
 import { resetMeetingCounter } from './meetingEncounter';
 import { phaseJourneyBeat } from './journeyEngine';
 import { JOURNEY_BEAT_TEMPLATES } from '../data/journey-content';
-import { phaseOmenAgenda, resetOmenCounter, phaseEmittedOmenDecay } from './phaseOmenAgenda';
+import { phaseOmenAgenda, resetOmenCounter } from './phaseOmenAgenda';
 import { phaseComposition } from './phaseComposition';
 import { phaseEncounterVisibility } from './encounterVisibility';
 import { evaluateEncounterSeeds } from './encounterSeeding';
 import { EncounterCacheManager, buildDangerMap } from './encounterCache';
 import { resolveLocationToHex } from './encounterAwareness';
-import { decayAllTrust } from './trustMechanics';
 import { phaseNpcGraduation } from './npcGraduation';
 import { buildDistanceMatrix } from './distanceMatrix';
 import {
@@ -1769,27 +1767,6 @@ export function phaseEssence(state: GameState): Partial<GameState> {
   };
 }
 
-// ─── Phase 6.5: Reputation Decay ──────────────────────────────────────
-
-export function phaseReputationDecay(state: GameState): Partial<GameState> {
-  const graph = state.graph;
-
-  // Iterate all individual actors — decay legacy reputationScore
-  const actors = graph.getNodesByType('actor')
-    .filter(node => node.properties?.actorType === 'individual');
-
-  for (const actor of actors) {
-    const currentRep = actor.properties?.reputationScore ?? DEFAULT_REPUTATION;
-    const decayedRep = decayReputation(currentRep);
-    actor.properties.reputationScore = decayedRep;
-  }
-
-  // Decay trust on all relates_to edges (social fabric)
-  decayAllTrust(graph);
-
-  return {};
-}
-
 // ─── Phase 6.6: Divine Influence Decay ────────────────────────────
 
 export function phaseDivineInfluenceDecay(state: GameState): Partial<GameState> {
@@ -1974,16 +1951,15 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseEventCounts['omen_agenda'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
-  // Phase 1.7a: Emitted omen decay — expire aftermath-spawned omens (THR-115)
-  s = { ...s, ...phaseEmittedOmenDecay(s) };
+  // Slot anchor: post-doom — fires between phaseOmenAgenda and phaseComposition.
+  // Placement preserves byte-equivalent ordering for phaseEmittedOmenDecay (THR-238 Land 2).
+  // Future post-doom phases run AFTER phaseDoom/Journey/Omen and BEFORE phaseComposition.
+  s = runRegisteredPhases(s, phaseCtx, 'post-doom', PHASE_PLAN);
+  prevEventCount = s.tickEvents.length;
 
   // Phase 1.8: Composition phase runner — advance phased event recipes tied to doom clock (THR-225)
   s = { ...s, ...phaseComposition(s) };
   phaseEventCounts['composition'] = s.tickEvents.length - prevEventCount;
-  prevEventCount = s.tickEvents.length;
-
-  // Slot anchor: post-doom — after the doom/journey/omen/composition cluster.
-  s = runRegisteredPhases(s, phaseCtx, 'post-doom', PHASE_PLAN);
   prevEventCount = s.tickEvents.length;
 
   // ─── Unified Action Pipeline (replaces old phaseAgentActions + phaseEncounterProgression + phaseActionProgress) ───
@@ -2279,9 +2255,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Entropy pulls everything toward zero. Reputation, influence, trade, and magic
   // all fade without reinforcement.
 
-  // Phase 6.5: Reputation Decay
-  s = { ...s, ...phaseReputationDecay(s) };
-  phaseEventCounts['reputation_decay'] = s.tickEvents.length - prevEventCount;
+  // Slot anchor: pre-economy — fires between the rival/stealth/essence/control cluster
+  // and the decay/settlement work. Placement preserves byte-equivalent ordering for
+  // phaseReputationDecay (THR-238 Land 2).
+  s = runRegisteredPhases(s, phaseCtx, 'pre-economy', PHASE_PLAN);
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.55: Faction Reputation Decay (TB-060)

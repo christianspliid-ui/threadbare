@@ -20,7 +20,23 @@
 
 ### 1. Orchestrator Tick Loop (`src/engine/orchestrator.ts`)
 
-Every engine module that produces per-tick state changes must be called from a phase in the orchestrator. Current phases in order:
+Every engine module that produces per-tick state changes must be called from a phase in the orchestrator. Phases come in two flavours:
+
+1. **Registered phases (declarative — THR-238).** Authored as descriptors in `src/engine/phases/<id>.ts` and wired by adding to `ENGINE_PHASES` in `src/engine/phases/index.ts`. The orchestrator imports `PHASE_PLAN`, topo-sorts at module-load time, and runs each slot via `runRegisteredPhases(state, ctx, slot, PHASE_PLAN)`. Adding a new phase = create the descriptor file + register it. No `orchestrator.ts` edit required. Missing dependencies, cycles, and id collisions throw at boot.
+2. **Inline orchestrator phases.** Direct `s = { ...s, ...phaseFoo(s) };` calls in `runTick`. Used for phases that need orchestrator-shared state (`uaRng`, `prevActions`, `effectStates` accumulators) the registry context doesn't yet expose. These remain inline by design — see THR-238 plan § *Phases explicitly out of scope*.
+
+#### Registered phases (declarative — THR-238)
+
+Phases below ship as descriptors and are picked up automatically by `runRegisteredPhases` from the slot anchor in `runTick`. Land 3 will continue migrating phases from the inline table into this one.
+
+| Slot | Phase id | Source descriptor | Implementation file |
+|------|----------|-------------------|---------------------|
+| `post-doom` | `emitted_omen_decay` | `src/engine/phases/emittedOmenDecay.ts` | `src/engine/phaseOmenAgenda.ts` |
+| `pre-economy` | `reputation_decay` | `src/engine/phases/reputationDecay.ts` | `src/engine/phaseReputationDecay.ts` |
+
+Slot anchor positions in `runTick`: `pre-doom`, `post-doom`, `post-resolution`, `post-decision`, `pre-economy`, `post-economy`, `pre-lifecycle`, `post-narrative`. See `src/engine/phaseRegistry.ts` for slot semantics.
+
+#### Inline orchestrator phases — current order:
 
 | Phase | Function | What it does |
 |-------|----------|-------------|
@@ -42,11 +58,9 @@ Every engine module that produces per-tick state changes must be called from a p
 | 5.5 | `phaseStealth` | Exposure detection |
 | 6 | `phaseNarrative` | Vignette & prose generation |
 | 7 | `phaseEssence` | Pool regeneration & decay |
-| 7.1 | `phaseReputationDecay` | Reputation time-decay |
 | 6.7 | `phaseHiddenMarkDecay` | Hidden mark severity decay + floor-drop trace |
 | 6.71 | `phaseIntelligenceDecay` | Intelligence reliability decay + threshold-cross chronicle event (THR-137) |
 | 6.715 | `runDivineProximityPhase` | Divine proximity importance accumulation around ascendant hex (THR-25) |
-| 1.7a | `phaseEmittedOmenDecay` | Expire aftermath-spawned `EmittedOmen` entries where `tick > expiresTick` (THR-115) |
 | 7.2 | `phaseDivineInfluenceDecay` | Divine presence fade |
 | 7.5 | `phaseTradeRouteDecay` | Route dissolution |
 | 8 | `phaseProsperity` | Settlement economic pulse |

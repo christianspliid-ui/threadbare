@@ -18,11 +18,13 @@
  * Land 1 (THR-238): registry skeleton lands empty. Land 2 onward populates it.
  */
 import { buildPhasePlan, type EnginePhase } from '../phaseRegistry';
+import { emittedOmenDecayPhase } from './emittedOmenDecay';
+import { reputationDecayPhase } from './reputationDecay';
 
 export const ENGINE_PHASES: readonly EnginePhase[] = [
-  // Land 2 will register canary phases here:
-  //   emittedOmenDecayPhase,
-  //   reputationDecayPhase,
+  // Land 2 canary migrations.
+  emittedOmenDecayPhase,
+  reputationDecayPhase,
   // Land 3 will sweep the remaining file-extracted phases per the plan in
   // Docs/plans/2026-04-29-declarative-engine-phase-registry.md.
 ];
