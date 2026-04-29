@@ -598,13 +598,13 @@
   - interface ArchetypeToneOverlay
   - const ARCHETYPE_TONE_OVERLAYS: Record<ReachDomain, ArchetypeToneOverlay>
 - `src\data\army-encounter-content.ts`
-  - function getArmyEncounterById: (id) => EncounterTemplate | undefined
+  - function getArmyEncounterById: (id) => UnifiedActionTemplate | undefined
   - interface ArmyEncounterMeta
   - const ARMY_ENCOUNTER_META: ReadonlyMap<string, ArmyEncounterMeta>
-  - const ARMY_RAISE_TEMPLATE: EncounterTemplate
-  - const ARMY_THRESHOLD_TEMPLATES: EncounterTemplate[]
-  - const REFUGEE_AFTERMATH_TEMPLATE: EncounterTemplate
-  - _...1 more_
+  - const ARMY_RAISE_TEMPLATE: UnifiedActionTemplate
+  - const ARMY_THRESHOLD_SUPPLY_CRISIS_TEMPLATE: UnifiedActionTemplate
+  - const ARMY_THRESHOLD_DESERTION_TEMPLATE: UnifiedActionTemplate
+  - _...5 more_
 - `src\data\artifact-templates.ts`
   - function getArtifactTemplate: (id) => ArtifactTemplate | undefined
   - interface ArtifactTemplate
@@ -629,7 +629,7 @@
   - const ORIGIN_PORTRAITS: Record<string, string>
   - const SPHERE_FRAMES: Record<SphereName, string>
   - const AVATAR_PORTRAITS: Record<SphereName, string>
-- `src\data\borderland-encounter-content.ts` — function getBorderlandEncounterById: (id) => EncounterTemplate | undefined, const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[]
+- `src\data\borderland-encounter-content.ts` — function getBorderlandEncounterById: (id) => UnifiedActionTemplate | undefined, const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[]
 - `src\data\builders-fellowship-encounter-content.ts`
   - function getBuildersFellowshipEncounterById: (id) => UnifiedActionTemplate | undefined
   - const BUILDERS_FELLOWSHIP_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterMeta>
@@ -698,19 +698,19 @@
   - interface DoomVocabularyEntry
 - `src\data\encounter-content.ts`
   - function resolveEncounterNarrative: (narrative, actorName, stepId, threatRating) => string
-  - function getEncountersByLocationType: (locationType) => EncounterTemplate[]
-  - function getEncountersBySublocationAndLocation: (sublocationTypeId, locationType) => EncounterTemplate[]
-  - function getEncountersForLocation: (locationType, sublocationTypeIds) => EncounterTemplate[]
-  - function getEncounterById: (id) => EncounterTemplate | undefined
-  - function getAnyEncounterById: (id) => EncounterTemplate | undefined
+  - function getEncountersByLocationType: (locationType) => UnifiedActionTemplate[]
+  - function getEncountersBySublocationAndLocation: (sublocationTypeId, locationType) => UnifiedActionTemplate[]
+  - function getEncountersForLocation: (locationType, sublocationTypeIds) => UnifiedActionTemplate[]
+  - function getEncounterById: (id) => UnifiedActionTemplate | undefined
+  - function getAnyEncounterById: (id) => UnifiedActionTemplate | undefined
   - _...9 more_
 - `src\data\faction-encounter-content.ts`
-  - function getFactionEncounterById: (id) => EncounterTemplate | undefined
+  - function getFactionEncounterById: (id) => UnifiedActionTemplate | undefined
   - function getFactionTemplateIds: (factionDefId) => string[]
   - const FACTION_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterMeta>
-  - const FACTION_JOIN_TEMPLATE: EncounterTemplate
-  - const FACTION_PROMOTION_TEMPLATE: EncounterTemplate
-  - const FACTION_SOCIAL_TEMPLATES: EncounterTemplate[]
+  - const FACTION_SOCIAL_TEMPLATES: FactionEntry[]
+  - const FACTION_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[]
+  - const FACTION_JOIN_TEMPLATE: UnifiedActionTemplate
   - _...2 more_
 - `src\data\faction-voice-bible.ts`
   - function getFactionVoice: (factionDefId) => FactionVoiceEntry | undefined
@@ -780,7 +780,7 @@
   - const MERCHANT_CONSORTIUM_ELITE_TEMPLATES: UnifiedActionTemplate[]
   - const MERCHANT_CONSORTIUM_SOCIAL_TEMPLATES: UnifiedActionTemplate[]
   - _...4 more_
-- `src\data\monster-encounter-content.ts` — function getMonsterEncounterById: (id) => EncounterTemplate | undefined, const MONSTER_ENCOUNTER_TEMPLATES: EncounterTemplate[]
+- `src\data\monster-encounter-content.ts` — function getMonsterEncounterById: (id) => UnifiedActionTemplate | undefined, const MONSTER_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[]
 - `src\data\monster-faction-definitions.ts` — function getMonsterFactionBySphere: (sphere) => FactionDefinition | undefined, const MONSTER_FACTION_DEFINITIONS: FactionDefinition[]
 - `src\data\movement-content.ts`
   - function getTerrainTax: (terrain) => number
@@ -848,10 +848,10 @@
   - interface DelveProseEntry
   - const DELVE_PROSE: DelveProseLookup
 - `src\data\social-encounter-content.ts`
-  - function getSocialEncountersByLocationType: (locationType) => EncounterTemplate[]
-  - function getSocialEncounterById: (id) => EncounterTemplate | undefined
+  - function getSocialEncountersByLocationType: (locationType) => UnifiedActionTemplate[]
+  - function getSocialEncounterById: (id) => UnifiedActionTemplate | undefined
   - const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[]
-  - const ALL_SOCIAL_TEMPLATES: EncounterTemplate[]
+  - const ALL_SOCIAL_TEMPLATES: UnifiedActionTemplate[]
 - `src\data\social-scene-sphere-coloring.ts`
   - function getSphereFlavorPhrase: (approach, sphere) => string | undefined
   - type SocialApproach
@@ -927,11 +927,10 @@
 - `src\data\unified-action-templates.ts`
   - function encounterTypeToCrud: (encounterType) => 'create' | 'read' | 'update' | 'delete'
   - function migrateActionTemplate: (old) => UnifiedActionTemplate
-  - function migrateEncounterTemplate: (old) => UnifiedActionTemplate
   - function getUnifiedTemplateById: (id) => UnifiedActionTemplate | undefined
-  - function unifiedToEncounterTemplate: (ut) => EncounterTemplate
-  - function resolveEncounterTemplate: (id) => EncounterTemplate | undefined
-  - _...3 more_
+  - const THREAD_CREATION_TEMPLATES: UnifiedActionTemplate[]
+  - const THREAD_MANAGEMENT_TEMPLATES: UnifiedActionTemplate[]
+  - const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[]
 - `src\engine\actionCandidates.ts` — function generateActionCandidates: (graph, actorId, locationId) => ActionCandidate[]
 - `src\engine\actionLifecycle.ts`
   - function resetActionCounter: () => void
@@ -2185,7 +2184,7 @@
   - function generateSocialCandidates: (graph, agentId, agentLocationId, distanceMatrix) => EncounterCacheEntry[]
   - function computeReputationBondShift: (graph, targetAgentId) => number
   - function computeBondModifier: (graph, agentId, targetAgentId) => number
-  - function getSharedFactionSocialTemplates: (graph, agentId, targetAgentId, locationType) => EncounterTemplate[]
+  - function getSharedFactionSocialTemplates: (graph, agentId, targetAgentId, locationType) => UnifiedActionTemplate[]
 - `src\engine\socialLeverage.ts`
   - function getHighestFactionRank: (graph, agentId) => number
   - function computeInitialLeverage: (graph, actorId, targetId) => InitialLeverageResult

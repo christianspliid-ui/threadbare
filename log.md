@@ -75,3 +75,6 @@
 - **ops** | no ready-for-codex work this cycle (2026-04-29T18.03.08+02:00)
 - **work** | THR-103 shipped: 5 monster encounter templates migrated to UnifiedActionTemplate with Threadbare-quality prose, conditional blocks ({?has_faction}/{?has_artifact}/{?has_ally}), authored aftermath reactions (hidden marks for witnessed combat, encounter seeds for territorial returns, intelligence on creature lore, emit_omen on horde outcomes), and update_node GraphOps for world-mutating events (lair defense reduces lair defense rating, horde raid mutates settlement prosperity). Spread into UNIFIED_ACTION_TEMPLATES; legacy addTemplates(MONSTER_ENCOUNTER_TEMPLATES) removed. All 10,713 tests pass.
 - **work** | THR-109 shipped: unified-format documentation closeout — template/encounter skills now target UnifiedActionTemplate only, Notion prompt refs replaced with Obsidian/vault sources, and systemic wiring/checklist docs updated to the post-migration baseline.
+- **ops** | no ready-for-codex work this cycle (2026-04-29T20.02.46+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-29T21.04.27+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-04-29T22.02.32+02:00)
