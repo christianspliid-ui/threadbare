@@ -1,6 +1,8 @@
 # Project Status
 > Updated 2026-04-29.
 ## Current Focus
+**THR-238 complete — Declarative engine phase registry shipped (3 landings).** `src/engine/phaseRegistry.ts` defines `EnginePhase`, `PhaseSlot`, `PhaseContext`, `buildPhasePlan`, and `runRegisteredPhases`. `src/engine/phases/index.ts` holds the registry (14 phases migrated: doom, emittedOmenDecay, reputationDecay, mandate, ambitionProgress, factionAmbitions, factionActions, secretsFavors, clueDecay, ruinQuestHooks, delveAdmission/Progression/Emergence, popStreams). New DebugPanel "Phases" tab shows registry contents, per-phase tick cost, and event deltas. Equivalence baseline test proves byte-identical output. Phases needing orchestrator-local state (uaRng, shared RNG) stay inline by design. PR #91.
+
 **THR-79 complete — Doom Identity Matrix remaining 4 archetypes upgraded.** CHANGING (Chaos), SUNDERING (Force), FAILING (Time), ASCENSION (Spirit) replaced from stub-quality (5/5/3-entry vocab, neutral biases, terse milestones) to BREACH/CONVERGENCE/RECKONING parity (8 verbs / 8 adjectives / 5 atmospheres each, 5 chronicle titles, 4 milestones with ≥40-char descriptions, archetype-shaped encounter / rival / complication / location-pressure / familiarity bias). Content-only — no engine, type, or UI changes; the `getDoomIdentityMatrix()` consumers (encounter scoring, rival weighting, prosperity pressure, prose enrichment, complication scoring, chronicle theming) pick up upgraded content automatically. 10,692 tests pass; tsc clean; vite build clean.
 
 **THR-109 complete — Phase 6 skills/documentation unified-format closeout.** Updated `template-encounter-rewrite` and `encounter-pipeline` skills to target `UnifiedActionTemplate` only, replaced stale Notion references in encounter draft prompts with Obsidian/vault sources, and updated systemic wiring + wiring checklist docs to mark the unified encounter format baseline.
@@ -30,7 +32,7 @@
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
 
 ## Archived to project-history.md
-- THR-109/79/108/107/104/103/106/290/102/280/285/286/283/287/276/284/277/281/211/243/272/212/210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
+- THR-238/109/79/108/107/104/103/106/290/102/280/285/286/283/287/276/284/277/281/211/243/272/212/210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
