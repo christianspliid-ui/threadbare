@@ -10393,7 +10393,7 @@ export function getAnyEncounterById(id: string): EncounterTemplate | undefined {
     ?? getFactionEncounterById(id)
     ?? (getMercenaryEncounterById(id) as unknown as EncounterTemplate | undefined)
     ?? getArmyEncounterById(id)
-    ?? getMonsterEncounterById(id)
+    ?? (getMonsterEncounterById(id) as unknown as EncounterTemplate | undefined)
     ?? getBorderlandEncounterById(id)
     ?? SECRET_DISCOVERY_ENCOUNTER_TEMPLATES.find(encounter => encounter.id === id);
 }
