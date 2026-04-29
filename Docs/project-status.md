@@ -1,9 +1,13 @@
 # Project Status
 > Updated 2026-04-29.
 ## Current Focus
-**THR-103 complete — Phase 4 monster migration shipped.** All 5 monster templates (`monster.hunt.minor`, `monster.hunt.named_elite`, `monster.encounter.ambush`, `monster.encounter.lair_defense`, `monster.encounter.horde_raid`) now export as `UnifiedActionTemplate`, each with authored aftermath reactions (hidden marks for witnessed combat, encounter seeds for territorial returns, intelligence grants for creature lore, emit_omen for horde outcomes). `lair_defense` and `horde_raid` author `update_node` GraphOps for world-mutating prosperity/defense changes. All 10,713 tests pass.
+**THR-104 complete — Phase 4 army migration shipped.** All 6 army-lifecycle templates (`mc.army.raise`, four `army.threshold.*`, `army.aftermath.refugees`) now export as UnifiedActionTemplate with Threadbare-aesthetic prose (sergeants speak, captain offstage, mud-and-rations realism) and authored aftermath: reputation tallies for command performance, hidden marks for witnessed cowardice/heroism, encounter seeds for cascading consequences (supply crisis → desertion → mutiny → disbandment → refugees). Programmatic-spawn signal preserved (`locationSubtypes: []`); threshold IDs in `armyAttrition.ts` still resolve.
 
-**Phase 4 Encounter Format Migration progress:** ✅ Anomaly (THR-106) · ✅ Monster (THR-103). Remaining: Army (THR-104, 6 templates), Borderland (THR-107, 20 templates).
+**THR-103 complete — Phase 4 monster migration shipped.** All 5 monster templates (`monster.hunt.minor`, `monster.hunt.named_elite`, `monster.encounter.ambush`, `monster.encounter.lair_defense`, `monster.encounter.horde_raid`) now export as `UnifiedActionTemplate`, each with authored aftermath reactions (hidden marks for witnessed combat, encounter seeds for territorial returns, intelligence grants for creature lore, emit_omen for horde outcomes). `lair_defense` and `horde_raid` author `update_node` GraphOps for world-mutating prosperity/defense changes.
+
+**THR-106 complete — Phase 4 anomaly migration shipped.** All 10 anomaly templates now export as UnifiedActionTemplate, each with authored aftermath reactions; fallen_star and dreaming_light include authored choice cards, while legacy anomaly lookup remains compatible through getAnyEncounterById.
+
+**Phase 4 Encounter Format Migration progress:** ✅ Anomaly (THR-106) · ✅ Monster (THR-103) · ✅ Army (THR-104). Remaining: Borderland (THR-107, 20 templates).
 
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
