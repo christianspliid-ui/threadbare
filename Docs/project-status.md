@@ -1,7 +1,7 @@
 # Project Status
 > Updated 2026-04-29.
 ## Current Focus
-**THR-107 complete — Phase 4 borderland migration shipped.** All 20 borderland templates (7 bandits/outlaws, 6 wild beasts, 7 scavengers/frontier) now export as `UnifiedActionTemplate` with low-fantasy plain-observational prose (mud, weather, hunger, fear — no bardic elevation) and authored aftermath where the systemic payoff is highest: encounter seeds (spared deserter returns as informant, wolf pack returns to the same hex in winter, smuggler's seal-stamp opens an underworld contact), hidden marks for formative reputation moments (deserter mercy/cruelty witnessed, bandit-band carrying {name}'s face home, plague-handling rumour traveling downwind), intelligence grants on outlaw networks and curse-grammar. `{?has_ally}` conditionals on 12/20 templates; `{location}` placeholders throughout. Spread into `UNIFIED_ACTION_TEMPLATES`; `getBorderlandEncounterById` cast at consumer site for backward-compat.
+**THR-108 complete — Phase 5 migration bridge removal + encounter pipeline fix.** Removed `resolveEncounterTemplate` bridge from `unified-action-templates.ts`; all 5 encounter content files now export `UnifiedActionTemplate[]` directly. Fixed critical pipeline throughput bug in `buildEntryUnified`: UAT difficulty is 0–1 but cache must store 0–100 for scoring; missing `* 100` factor caused `filterByOutgrowth` to discard all encounters for agents with capability ≥ 0.55 (nearly all spotlight agents). Deleted `encounter-migration-audit.ts` + 2 parity test files. 10692 tests pass. PR #85.
 
 **THR-104 complete — Phase 4 army migration shipped.** All 6 army-lifecycle templates (`mc.army.raise`, four `army.threshold.*`, `army.aftermath.refugees`) now export as UnifiedActionTemplate with Threadbare-aesthetic prose (sergeants speak, captain offstage, mud-and-rations realism) and authored aftermath: reputation tallies for command performance, hidden marks for witnessed cowardice/heroism, encounter seeds for cascading consequences (supply crisis → desertion → mutiny → disbandment → refugees). Programmatic-spawn signal preserved (`locationSubtypes: []`); threshold IDs in `armyAttrition.ts` still resolve.
 
@@ -26,7 +26,7 @@
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
 
 ## Archived to project-history.md
-- THR-107/104/103/106/290/102/280/285/286/283/287/276/284/277/281/211/243/272/212/210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
+- THR-108/107/104/103/106/290/102/280/285/286/283/287/276/284/277/281/211/243/272/212/210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
