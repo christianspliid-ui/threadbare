@@ -24,7 +24,6 @@ import {
   resolveDilemma,
   applyDilemmaEffects,
   logInteraction,
-  decayReputation,
 } from './disposition';
 import {
   DILEMMA_STAKES_THRESHOLD,
@@ -41,6 +40,8 @@ import {
 } from '../data/narrative-content';
 import { phaseAgentLifecycle, resetLifecycleCounter } from './agentLifecycle';
 import { emitTrace } from './traceBuffer';
+import { runRegisteredPhases, type PhaseContext } from './phaseRegistry';
+import { PHASE_PLAN } from './phases';
 import { tickEffects } from './effectTick';
 import { processEffectEvent, applyEffectEventResult } from './effects/effectEvents';
 import { executeEffect } from './effectExecutors';
@@ -68,9 +69,7 @@ import { emitEncounterRevelations, emitDilemmaRevelations, emitColocationRevelat
 import { phaseUnifiedActionProgress } from './unifiedActionResolution';
 import { phaseIdleSelection, resetPhaseEventCounter } from './unifiedActionPhases';
 import { UNIFIED_ACTION_TEMPLATES } from '../data/unified-action-templates';
-import { phaseAmbitionProgress, resetAmbitionEventCounter } from './ambitionTick';
-import { phaseFactionAmbitions } from './factionAmbitions';
-import { phaseFactionActions } from './phaseFactionActions';
+import { resetAmbitionEventCounter } from './ambitionTick';
 import { phaseArmyAttrition } from './armyAttrition';
 import { phaseArmyMovement } from './armyMovement';
 import { phaseBattleDetection, phaseBattleTick } from './battleResolution';
@@ -112,13 +111,12 @@ import { resetInfluenceCounter } from './interventionEffects';
 import { resetMeetingCounter } from './meetingEncounter';
 import { phaseJourneyBeat } from './journeyEngine';
 import { JOURNEY_BEAT_TEMPLATES } from '../data/journey-content';
-import { phaseOmenAgenda, resetOmenCounter, phaseEmittedOmenDecay } from './phaseOmenAgenda';
+import { phaseOmenAgenda, resetOmenCounter } from './phaseOmenAgenda';
 import { phaseComposition } from './phaseComposition';
 import { phaseEncounterVisibility } from './encounterVisibility';
 import { evaluateEncounterSeeds } from './encounterSeeding';
 import { EncounterCacheManager, buildDangerMap } from './encounterCache';
 import { resolveLocationToHex } from './encounterAwareness';
-import { decayAllTrust } from './trustMechanics';
 import { phaseNpcGraduation } from './npcGraduation';
 import { buildDistanceMatrix } from './distanceMatrix';
 import {
@@ -132,11 +130,6 @@ import { validateTickOutput, appendCrashLog } from './tickHealthMonitor';
 import { phaseFactionReputationDecay, processFactionEncounterReputation } from './factionReputation';
 import { phaseHiddenMarkDecay } from './phaseHiddenMarkDecay';
 import { phaseIntelligenceDecay } from './phaseIntelligenceDecay';
-import { phaseSecretsFavors } from './phaseSecretsFavors';
-import { phaseClueDecay } from './ruins/clueLifecycle';
-import { phaseRuinQuestHooks } from './ruins/questHooks';
-import { phaseDelveAdmission, phaseDelveProgression, phaseDelveEmergence } from './ruins/delveVariant';
-import { phasePlaceOfPowerStreams } from './ruins/placeOfPowerStreams';
 import { generateSecret, createSecretEdge, createFavorEdge } from './secretGeneration';
 import { processFactionOutcome, resetFactionEventSeq } from './factionOutcome';
 import type { DistanceMatrix } from './distanceMatrix';
@@ -1767,27 +1760,6 @@ export function phaseEssence(state: GameState): Partial<GameState> {
   };
 }
 
-// ─── Phase 6.5: Reputation Decay ──────────────────────────────────────
-
-export function phaseReputationDecay(state: GameState): Partial<GameState> {
-  const graph = state.graph;
-
-  // Iterate all individual actors — decay legacy reputationScore
-  const actors = graph.getNodesByType('actor')
-    .filter(node => node.properties?.actorType === 'individual');
-
-  for (const actor of actors) {
-    const currentRep = actor.properties?.reputationScore ?? DEFAULT_REPUTATION;
-    const decayedRep = decayReputation(currentRep);
-    actor.properties.reputationScore = decayedRep;
-  }
-
-  // Decay trust on all relates_to edges (social fabric)
-  decayAllTrust(graph);
-
-  return {};
-}
-
 // ─── Phase 6.6: Divine Influence Decay ────────────────────────────
 
 export function phaseDivineInfluenceDecay(state: GameState): Partial<GameState> {
@@ -1950,9 +1922,13 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Track initial event count
   let prevEventCount = s.tickEvents.length;
 
-  // Phase 1: Doom
-  s = { ...s, ...phaseDoom(s) };
-  phaseEventCounts['doom'] = s.tickEvents.length - prevEventCount;
+  // Shared context passed to declaratively-registered phases (THR-238).
+  const phaseCtx: PhaseContext = { runtime };
+
+  // Slot anchor: pre-doom — registered phases include `doom` (THR-238 Land 3,
+  // moved here from inline; was at the same byte position as this anchor so the
+  // migration is byte-equivalent).
+  s = runRegisteredPhases(s, phaseCtx, 'pre-doom', PHASE_PLAN);
   prevEventCount = s.tickEvents.length;
 
   // Phase 1.5: Journey Beat — check if doom clock crossed a beat threshold for The First
@@ -1965,8 +1941,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseEventCounts['omen_agenda'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
-  // Phase 1.7a: Emitted omen decay — expire aftermath-spawned omens (THR-115)
-  s = { ...s, ...phaseEmittedOmenDecay(s) };
+  // Slot anchor: post-doom — fires between phaseOmenAgenda and phaseComposition.
+  // Placement preserves byte-equivalent ordering for phaseEmittedOmenDecay (THR-238 Land 2).
+  // Future post-doom phases run AFTER phaseDoom/Journey/Omen and BEFORE phaseComposition.
+  s = runRegisteredPhases(s, phaseCtx, 'post-doom', PHASE_PLAN);
+  prevEventCount = s.tickEvents.length;
 
   // Phase 1.8: Composition phase runner — advance phased event recipes tied to doom clock (THR-225)
   s = { ...s, ...phaseComposition(s) };
@@ -2118,6 +2097,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     prevEventCount = s.tickEvents.length;
   }
 
+  // Slot anchor: post-resolution — after the Phase 2a unified-action cluster.
+  s = runRegisteredPhases(s, phaseCtx, 'post-resolution', PHASE_PLAN);
+  prevEventCount = s.tickEvents.length;
+
   // Phase 2b: Agent Decision — unified encounter-driven decision pipeline (replaces phaseIdleSelection)
   // @deprecated — phaseIdleSelection replaced by phaseAgentDecision
   const decisionRng = mulberry32(state.seed + state.tick * 37);
@@ -2229,6 +2212,9 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseEventCounts['interaction_depth'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
+  // Slot anchor: post-decision — after agent decision, movement, colocation, social.
+  s = runRegisteredPhases(s, phaseCtx, 'post-decision', PHASE_PLAN);
+  prevEventCount = s.tickEvents.length;
 
   // Phase 3: Rival Actions
 
@@ -2259,9 +2245,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Entropy pulls everything toward zero. Reputation, influence, trade, and magic
   // all fade without reinforcement.
 
-  // Phase 6.5: Reputation Decay
-  s = { ...s, ...phaseReputationDecay(s) };
-  phaseEventCounts['reputation_decay'] = s.tickEvents.length - prevEventCount;
+  // Slot anchor: pre-economy — fires between the rival/stealth/essence/control cluster
+  // and the decay/settlement work. Placement preserves byte-equivalent ordering for
+  // phaseReputationDecay (THR-238 Land 2).
+  s = runRegisteredPhases(s, phaseCtx, 'pre-economy', PHASE_PLAN);
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.55: Faction Reputation Decay (TB-060)
@@ -2404,54 +2391,20 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseEventCounts['economic_chronicle'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
+  // Slot anchor: post-economy — after settlement/prosperity/economic chronicle.
+  s = runRegisteredPhases(s, phaseCtx, 'post-economy', PHASE_PLAN);
+  prevEventCount = s.tickEvents.length;
+
   // ─── Long-term Progress ─────────────────────────────────────────────────────────
-  // Slow-moving systems: ambitions, faction strategy, population dynamics.
+  // Migrated to the post-economy slot in THR-238 Land 3 (registry-driven now):
+  //   ambition_progress → faction_ambitions → faction_actions → secrets_favors →
+  //   clue_decay → ruin_quest_hooks → delve_admission → delve_progression →
+  //   delve_emergence → pop_streams. afterPhase chain in the descriptors
+  //   preserves the inline order. delve_emergence reads ctx.runtime for cache
+  //   invalidation on ruin transformation.
 
-  // Phase 6.65: Ambition Progress (milestones, completion, abandonment, re-evaluation)
-  s = { ...s, ...phaseAmbitionProgress(s) };
-  phaseEventCounts['ambition_progress'] = s.tickEvents.length - prevEventCount;
-  prevEventCount = s.tickEvents.length;
-
-  // Phase 6.651: Faction Ambition Evaluation (TB-073 — faction-level ambition creation/update)
-  phaseFactionAmbitions(s);
-
-  // Phase 6.652: Faction Action Evaluation (THR-29 — factions as autonomous actors)
-  phaseFactionActions(s);
-
-  // Phase 6.653: Secrets & Favors Maintenance (THR-30 — decay, tension, expiry)
-  s = { ...s, ...phaseSecretsFavors(s) };
-  phaseEventCounts['secrets_favors'] = s.tickEvents.length - prevEventCount;
-  prevEventCount = s.tickEvents.length;
-
-  // Phase 6.654: Clue Decay — prune expired knows_clue_of edges (THR-150)
-  s = { ...s, ...phaseClueDecay(s) };
-  phaseEventCounts['clue_decay'] = s.tickEvents.length - prevEventCount;
-  prevEventCount = s.tickEvents.length;
-
-  // Phase 6.655: Ruin Quest Hooks — Channel 6 Narrative Gravity (THR-156)
-  s = { ...s, ...phaseRuinQuestHooks(s) };
-  phaseEventCounts['ruin_quest_hooks'] = s.tickEvents.length - prevEventCount;
-  prevEventCount = s.tickEvents.length;
-
-  // Phase 6.656: Delve Admission — admit agents with located clues at ruin hexes (THR-152)
-  s = { ...s, ...phaseDelveAdmission(s) };
-  phaseEventCounts['delve_admission'] = s.tickEvents.length - prevEventCount;
-  prevEventCount = s.tickEvents.length;
-
-  // Phase 6.657: Delve Progression — advance active delve beats (THR-152)
-  s = { ...s, ...phaseDelveProgression(s) };
-  phaseEventCounts['delve_progression'] = s.tickEvents.length - prevEventCount;
-  prevEventCount = s.tickEvents.length;
-
-  // Phase 6.658: Delve Emergence — roll consequences for completed arcs (THR-152)
-  // Also runs the PR-5 auto-fire transformation when a pending decision expires.
-  s = { ...s, ...phaseDelveEmergence(s, runtime) };
-  phaseEventCounts['delve_emergence'] = s.tickEvents.length - prevEventCount;
-  prevEventCount = s.tickEvents.length;
-
-  // Phase 6.659: Place of Power Streams — credit passive essence + decay (THR-153)
-  s = { ...s, ...phasePlaceOfPowerStreams(s) };
-  phaseEventCounts['pop_streams'] = s.tickEvents.length - prevEventCount;
+  // Slot anchor: pre-lifecycle — after the ruin/delve cluster, before death/birth.
+  s = runRegisteredPhases(s, phaseCtx, 'pre-lifecycle', PHASE_PLAN);
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.75: Agent Lifecycle (death, birth, migration)
@@ -2468,15 +2421,16 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseEventCounts['narrative'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
+  // Slot anchor: post-narrative — registered phases include `mandate` (THR-238
+  // Land 3, migrated here). `doom_expiry` stays inline because phaseDoomExpiry
+  // is defined in this file and depends on module-local `nextEventId`.
+  s = runRegisteredPhases(s, phaseCtx, 'post-narrative', PHASE_PLAN);
+  prevEventCount = s.tickEvents.length;
+
 
   // ─── Victory & Defeat ──────────────────────────────────────────────────────────
 
-  // Phase 7: Mandate
-  s = { ...s, ...phaseMandate(s) };
-  phaseEventCounts['mandate'] = s.tickEvents.length - prevEventCount;
-  prevEventCount = s.tickEvents.length;
-
-  // Phase 8: Doom Expiry
+  // Phase 8: Doom Expiry (kept inline — depends on module-local nextEventId)
   s = { ...s, ...phaseDoomExpiry(s) };
   phaseEventCounts['doom_expiry'] = s.tickEvents.length - prevEventCount;
 

@@ -6,12 +6,12 @@ import {
   phaseStealth,
   phaseNarrative,
   phaseEssence,
-  phaseReputationDecay,
   phaseMandate,
   phaseDoomExpiry,
   runTick,
   resetEventCounter,
 } from '../orchestrator';
+import { phaseReputationDecay } from '../phaseReputationDecay';
 import { startTwilight, runTwilightTick, computeHarvest, transitionToNewCycle } from '../cycleEnd';
 import { seedWorld } from '../worldSeed';
 import { createAscendant } from '../ascendant';
