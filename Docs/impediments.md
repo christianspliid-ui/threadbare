@@ -140,19 +140,19 @@ Each entry is a row in the table below. Append new entries at the bottom. Never 
 | 96 | 2 | 2026-04-27 | dependency | Obsidian MCP connector tools were still unavailable during THR-286 closeout, so required vault log append could not run through MCP. | Closeout used direct filesystem append to log.md instead of the connector path. | S | Partial | Continue local log.md fallback and replay through Obsidian MCP when connector tools are exposed. | THR-286 closeout; THR-285 closeout |
 
 
-## Resolution Candidates — 2026-04-28
+## Resolution Candidates ï¿½ 2026-04-28
 
 The following impediments are candidates for Resolved as of the THR-280 sprint wrap-up (empirical test run confirms clean main 2026-04-28). Final close fires when THR-282 (re-enable branch protection) ships after the 3-day green watch completes.
 
-- **#22** — full npm test red on main (pre-existing baseline)
-- **#30** — full npm test red, broad pre-existing failures (movement-content, portrait compositor, etc.)
-- **#31** — npm test exceeded default Codex timeout
-- **#32** — full npm test red during encounter reference page sync
-- **#34** — full npm test red during Threads-area follow-up
-- **#38** — full npm test red during strategic-actions design-doc closeout
-- **#39** — full npm test red during strategic-actions implementation-plan closeout
-- **#54** — unifiedActionPhases.test.ts count assertion failure
-- **#57** — traceBuffer-integration sequential IDs fail when phaseFactionActions adds traces
+- **#22** ï¿½ full npm test red on main (pre-existing baseline)
+- **#30** ï¿½ full npm test red, broad pre-existing failures (movement-content, portrait compositor, etc.)
+- **#31** ï¿½ npm test exceeded default Codex timeout
+- **#32** ï¿½ full npm test red during encounter reference page sync
+- **#34** ï¿½ full npm test red during Threads-area follow-up
+- **#38** ï¿½ full npm test red during strategic-actions design-doc closeout
+- **#39** ï¿½ full npm test red during strategic-actions implementation-plan closeout
+- **#54** ï¿½ unifiedActionPhases.test.ts count assertion failure
+- **#57** ï¿½ traceBuffer-integration sequential IDs fail when phaseFactionActions adds traces
 
 Verification: 2026-04-28 run from clean origin/main worktree (pickup/thr-280): **682/682 test files passed, 10,709/10,709 tests passed.**
 | 97 | 1 | 2026-04-28 | environment | npm script commands using Linux-style `/tmp/*.mjs` outfiles fail on Windows Codex shells: esbuild writes to `./tmp/*.mjs` while `node /tmp/*.mjs` resolves to `C:\tmp\*.mjs` and throws MODULE_NOT_FOUND. | `mirror-ul`/`sync-vault` acceptance commands could not run as authored until path handling was changed. | S | Yes | Switched vault/mirror npm scripts to `.cache/*.mjs` so build output and node execution resolve consistently across Windows and Unix shells. | THR-288 UL Obsidian mirror implementation |
@@ -161,3 +161,4 @@ Verification: 2026-04-28 run from clean origin/main worktree (pickup/thr-280): *
 | 100 | 1 | 2026-04-28 | environment | g.exe remained blocked in Codex desktop (Access is denied from packaged WindowsApps path) during THR-290 orientation/protocol reads. | Repository search steps had to switch to PowerShell-only fallbacks before implementation. | S | Yes | Use scoped Get-ChildItem + Select-String fallback in this environment; treat g as unavailable for Threadbearer automation runs. | THR-290 automation run |
 | 101 | 1 | 2026-04-28 | environment | THR-106 worktree run hit recurring Codex desktop friction: `rg.exe` access denied (WindowsApps packaged path) and fresh git worktree lacked local dependencies (`npx tsc --noEmit` failed until `npm install`). | Startup/verification delayed before implementation. | S | Yes | Use PowerShell `Get-ChildItem` + `Select-String` as search fallback when `rg` fails, and run `npm install` once in fresh worktrees before verification commands. | THR-106 automation run |
 | 102 | 1 | 2026-04-28 | dependency | Obsidian MCP connector tools were not available in this Codex session (no Obsidian tool surfaced via tool discovery), so the required vault `log.md` append could not be executed through MCP. | Closeout used repository-local `log.md` append as fallback. | S | Partial | Keep local `log.md` fallback for this run and replay the vault entry through Obsidian MCP when the connector is exposed again. | THR-106 closeout |
+| 103 | 1 | 2026-04-29 | api-quirk | Linear's GitHub integration auto-moved THR-238 to Done when PR #79 (`docs(plan): THR-238 Declarative engine phase registry`) merged â€” the issue ID in the PR title triggered the close pattern, even though the PR only committed the plan doc, not the implementation. THR-79's PR #78 with similar title format did NOT auto-close â€” possibly inconsistent or race-conditioned. | THR-238 prematurely closed despite implementation work being unstarted; required manual revert to Ready for Dev. | S | Yes | When committing plan docs via flush-plan-docs (or its manual equivalent), put the issue ID in the body only, not the PR title. Use a generic title like `docs(plan): <topic>` and reference the Linear issue in the body. Verify-after-merge: re-query the issue state to catch the auto-close and revert if needed. | THR-291 manual flush-plan-docs run; THR-238 plan doc commit |
