@@ -1,19 +1,21 @@
 ---
 name: template-encounter-rewrite
 description: >
-  Rewrite UnifiedActionTemplate encounter prose to meet the quality bar AND use the engine's
-  systemic capabilities. Use whenever rewriting or improving guild, social,
-  tavern, combat, or other template-format encounter files (NOT branching
-  encounters in src/data/encounters/ — those use encounter-pipeline).
+  Write or improve linear (non-branching) encounters in UnifiedActionTemplate format.
+  Use for guild, social, tavern, combat, borderland, and other repeating template
+  encounters. NOT for branching encounters with authored player choices — those use
+  encounter-pipeline.
   Triggers on "rewrite encounter", "improve encounter prose", "guild encounter
   quality", "social encounter rewrite", "tavern encounter rewrite", "template
-  encounter", "encounter quality pass", "prose quality pass".
+  encounter", "encounter quality pass", "prose quality pass", "write encounter".
 model: opus
 ---
 
-# Template Encounter Rewrite — Prose + Systemic Wiring
+# Template Encounter Write/Rewrite — Prose + Systemic Wiring
 
-This skill is for rewriting guild/social/tavern/combat/borderland encounter content that now ships as `UnifiedActionTemplate` entries. It covers **both** prose quality **and** systemic wiring — because beautiful prose without dynamic capabilities is a book page, not game content.
+This skill is for writing or improving **linear template encounters** in `UnifiedActionTemplate` format — guild, social, tavern, combat, borderland, and other repeating encounter types. These are single-step or multi-step linear encounters (no player-choice branches). For fully branching encounters with authored approach cards and player choices, use the `encounter-pipeline` skill.
+
+All encounters now use `UnifiedActionTemplate`. `EncounterTemplate` was removed in THR-108. If you see a file still exporting `EncounterTemplate[]`, stop — that's a type error that must be fixed before authoring prose.
 
 **This skill is NOT for branching encounters** (the hand-authored `ActionStepBranch` format in `src/data/encounters/`). Those use the `encounter-pipeline` skill.
 
@@ -23,53 +25,105 @@ This skill is for rewriting guild/social/tavern/combat/borderland encounter cont
 
 Read these in order. Skipping any of them produces content that fails the quality bar:
 
-1. **`Docs/plans/2026-04-16-systemic-wiring-guide.md`** — The 7 engine capabilities that should shape your creative decisions. If you don't know what encounter seeds, hidden marks, and conditional blocks can do, you'll write hardcoded fiction.
+1. **`Docs/plans/2026-04-16-systemic-wiring-guide.md`** — The engine capabilities that should shape your creative decisions. If you don't know what encounter seeds, hidden marks, and conditional blocks can do, you'll write hardcoded fiction.
 2. **`Docs/plans/2026-04-16-design-quality-gate.md`** — Section 9 benchmark moments. Your output must meet this standard.
-3. **The file you're rewriting** — Read the current template to understand the TypeScript structure, step count, reaches, difficulty curve, and reward pools. You're replacing prose, not restructuring the template.
-4. **One benchmark encounter** — Read `src/data/encounters/soul-ferryman.ts` or `src/data/encounters/the-courtyard-duel.ts` to calibrate your ear for what quality prose sounds like in this game.
+3. **The file you're working on** — Read the current template to understand the TypeScript structure, step count, reaches, difficulty curve, and reward pools.
+4. **One benchmark encounter** — Read `src/data/encounters/soul-ferryman.ts` or `src/data/borderland-encounter-content.ts` (top entry) to calibrate the quality standard.
 
 ---
 
-## The Unified Template Format
+## The UnifiedActionTemplate Format
 
-Encounter entries now use `UnifiedActionTemplate` with this structure:
+All linear template encounters use this shape. You are responsible for authoring the prose fields; the structural fields (IDs, reaches, difficulties, reward pools) are set by the engine designer.
 
 ```typescript
 {
   id: 'guild.quest.task_name',
   name: 'Human-Readable Name',
+  rarityTier: 1,             // 1=common, 2=uncommon, 3=rare, 4=legendary
+  intrinsicTier: 'background', // 'background' | 'shaping' | 'story_beat'
   reach: 'shadow',
-  crudType: 'read',
+  crudType: 'read',          // 'create' | 'read' | 'update' | 'delete'
   scale: 'local',
-  rarityTier: 1,
-  intrinsicTier: 'shaping',
+  locationSubtypes: ['market', 'settlement'],
+  apCost: 1,
+  actorAffinities: ['individual'],
+  motivations: ENCOUNTER_TYPE_MOTIVATIONS.acquire,
+
   steps: [
     {
       reach: 'shadow',
-      narrativeTemplate: '...',   // ← YOU REWRITE THIS
-      reach: 'shadow',
-      difficulty: 0.35,
       duration: { min: 1, max: 2 },
-      failBehavior: 'continue_weakened',
-      onSuccess: [],
+      difficulty: 0.35,          // ← 0-1 scale (NOT 0-100)
+      failBehavior: 'continue_weakened', // or 'fail_action' on final step
+      onSuccess: [],             // GraphOps if needed, otherwise []
       onFailure: [],
-      successAfterimage: '...',   // ← YOU REWRITE THIS
-      failureAfterimage: '...',   // ← YOU REWRITE THIS
-      successMetadata: { reputationDelta: 0.05, tierPromotionEligible: true },
+
+      narrativeTemplate: '...',  // ← YOU WRITE THIS — scene-setting prose for the step
+      successAfterimage: '...',  // ← YOU WRITE THIS — brief outcome on success (1-2 sentences)
+      failureAfterimage: '...',  // ← YOU WRITE THIS — brief outcome on failure (1-2 sentences)
+
+      successMetadata: {
+        reputationDelta: 0.05,
+        tierPromotionEligible: true,
+        rewardPool: { categoryWeights: { possession: 1.0 }, tagFilters: ['#guild'] },
+      },
       failureMetadata: { reputationDelta: -0.02 },
     },
     // ... more steps
   ],
+
   narrativeTemplates: {
-    initiation: '...',            // ← YOU REWRITE THIS
-    success: '...',               // ← YOU REWRITE THIS
-    failure: '...',               // ← YOU REWRITE THIS
+    initiation: '...',   // ← YOU WRITE THIS — one-sentence scene summary (used in UI)
+    success: '...',      // ← YOU WRITE THIS — one-sentence success summary
+    failure: '...',      // ← YOU WRITE THIS — one-sentence failure summary
   },
-  aftermathConfig: { ... },       // Optional branch-aware aftermath
+
+  aftermathConfig: {     // ← YOU WIRE THIS — aftermath reaction choices
+    branchOnStep: 0,
+    variants: {},
+    fallback: {
+      overview: '...',   // ← YOU WRITE THIS — 1-2 sentence aftermath framing
+      changes: [
+        {
+          id: 'unique_change_id',
+          kind: 'reputation_tally',
+          title: 'Change Title',
+          detail: '...',
+          polarity: 'mixed', // 'positive' | 'negative' | 'mixed'
+        },
+      ],
+      reactionPrompt: 'What does the god mark in this moment?',
+      reactions: [
+        {
+          id: 'unique_reaction_id',
+          label: 'Short label for the reaction card.',
+          intent: '...',  // ← YOU WRITE THIS — 2-3 sentences of narrative intent
+          effects: [
+            { kind: 'reputation_tally', key: 'shadow.positive', delta: 1 },
+            // See systemic wiring guide for all effect kinds
+          ],
+          closeAfterSelection: true,
+        },
+      ],
+    },
+  },
 }
 ```
 
-You rewrite the authored prose surfaces (`narrativeTemplate`, `successAfterimage`, `failureAfterimage`, and `narrativeTemplates.*`). You may also add enrichment placeholders, conditional blocks, and aftermath wiring improvements — but the structural skeleton (steps, reaches, difficulties, rewards, motivations, ids) stays unless it's clearly wrong.
+### What You Author vs. What You Preserve
+
+| Field | Your Role |
+|---|---|
+| `narrativeTemplate` | Author the scene-setting prose for this step — where, who, what's at stake |
+| `successAfterimage` | 1-2 sentences — what the player sees after this step succeeds |
+| `failureAfterimage` | 1-2 sentences — what the player sees after this step fails |
+| `narrativeTemplates.initiation` | One sentence — shown when the encounter starts (UI card text) |
+| `narrativeTemplates.success` | One sentence — shown when the whole encounter succeeds |
+| `narrativeTemplates.failure` | One sentence — shown when the whole encounter fails |
+| `aftermathConfig.fallback.overview` | 1-2 sentences framing what the aftermath is about |
+| `aftermathConfig.fallback.reactions[].intent` | 2-3 sentences of narrative intent for the reaction |
+| `id`, `rarityTier`, `reach`, `difficulty`, `failBehavior`, `onSuccess`, `onFailure`, `successMetadata`, `failureMetadata` | Preserve — do not change the structural skeleton |
 
 ---
 
@@ -87,7 +141,7 @@ Every narrative field must meet the Threadbare aesthetic:
 
 **Show change, not labels.** Success: don't say "The alliance is forged." Show what shifts — a behavioral change, a new tension, something the agent notices about themselves. Failure: must be "cool failure" — story-generative, not a dead end. "The lock held, and the sound carried further than expected" creates forward momentum.
 
-**Minimum 2-3 sentences per narrative field.** One-sentence narratives are labels, not scenes.
+**Minimum 2-3 sentences per `narrativeTemplate` field.** One-sentence narratives are labels, not scenes. `successAfterimage` and `failureAfterimage` can be shorter (1-2 sentences) — they're glimpses, not scenes.
 
 **Reduce {adj} dependency.** The `{adj}` placeholder draws from sphere vocabulary (e.g., "crushing", "verdant", "crackling"). It's useful for sphere-flavoring a setting detail ("the {adj} glow of the forge") but destructive when asked to carry emotional weight ("the {adj} accord takes root" — "crushing accord"? "verdant accord"?). Use {adj} for atmospheric texture, never for emotional payload. If you can remove {adj} and the sentence still works, it probably shouldn't have been there.
 
@@ -100,7 +154,7 @@ Every narrative field should use the engine's dynamic capabilities. Ask yourself
 | Capability | Minimum | Where |
 |---|---|---|
 | `{name}`, `{they}/{them}/{their}/{s}` | Every narrative field | Basic identity |
-| One conditional block | At least one step's narrative | `{?has_faction}...{/has_faction}` or `{?has_ally}...{/has_ally}` |
+| One conditional block | At least one step's `narrativeTemplate` | `{?has_faction}...{/has_faction}` or `{?has_ally}...{/has_ally}` |
 | Structurally different success/failure | Every step | Different *kinds* of persistence, not just different prose |
 
 **Stretch wiring (use when the fiction calls for it):**
@@ -182,7 +236,7 @@ Each guild has a distinct voice AND a natural affinity for certain systemic capa
 
 Before submitting rewritten prose, check every field against these seven questions. If any answer is NO, revise.
 
-1. **Does every narrative field use `{name}` and `{they}/{them}/{their}`?** Static names break immersion when a different agent runs the encounter.
+1. **Does every `narrativeTemplate` field use `{name}` and `{they}/{them}/{their}`?** Static names break immersion when a different agent runs the encounter.
 
 2. **Does at least one step use a conditional block?** `{?has_faction}`, `{?has_ally}`, `{?has_artifact}` — at least one moment should read differently based on who the agent is.
 
@@ -200,77 +254,167 @@ Before submitting rewritten prose, check every field against these seven questio
 
 ## Worked Before/After
 
-### BEFORE (current thieves guild — "Pick Pocket" encounter)
+### BEFORE (EncounterTemplate format — "Pick Pocket" encounter, pre-migration)
 
 ```typescript
-narrative: 'The guild assigns a busy market square. You study the flow of coin.',
-onSuccess: {
-  narrative: 'Nimble fingers and a steady nerve. Time to work.',
-},
-onFailure: {
-  narrative: 'The mark shifts at the wrong moment. Nothing taken.',
-},
+{
+  id: 'tg.quest.pocket_run',
+  name: 'Pick Pocket',
+  steps: [
+    {
+      id: 'tg.quest.pocket_run.1',
+      name: 'Case the Mark',
+      narrative: 'The guild assigns a busy market square. You study the flow of coin.',
+      reach: 'shadow',
+      difficulty: 35,
+      duration: 2,
+      onSuccess: {
+        narrative: 'Nimble fingers and a steady nerve. Time to work.',
+        reputationDelta: 0.05,
+      },
+      onFailure: {
+        narrative: 'The mark shifts at the wrong moment. Nothing taken.',
+        reputationDelta: -0.02,
+      },
+    },
+  ],
+  reachPrimary: 'shadow',
+  encounterType: 'acquire',
+}
 ```
 
-**Problems:** Static strings (no `{name}`, no pronouns, no conditionals). Success is a label, not a scene. Failure is a negation of success. No sensory detail. No emotional stakes. No systemic wiring. This reads the same for every agent in every context.
+**Problems:** Static strings (no `{name}`, no pronouns, no conditionals). Success is a label, not a scene. Failure is a negation of success. No sensory detail. No emotional stakes. No systemic wiring. Wrong difficulty scale (35, not 0.35). Missing required fields (`rarityTier`, `intrinsicTier`, `narrativeTemplates`, `aftermathConfig`). This reads the same for every agent in every context.
 
-### AFTER (rewritten)
+### AFTER (UnifiedActionTemplate format — correctly authored)
 
 ```typescript
-narrative:
-  'The market at {location} moves in patterns if you know how to read them — ' +
-  'the pause before a purse opens, the way a merchant\'s eyes track left when ' +
-  'counting change, the moment between transactions when attention is spent ' +
-  'and not yet replenished. {name} finds a post near the cloth-seller\'s stall ' +
-  'where two lanes of foot traffic cross. {?has_faction}The guild marked this ' +
-  'square as active — three good lifts reported this week, which means the ' +
-  'merchants haven\'t adjusted yet.{/has_faction}{?no_faction}No guild ' +
-  'intelligence to lean on. Just eyes, timing, and the particular arithmetic ' +
-  'of crowds.{/no_faction}',
-onSuccess: {
-  narrative:
-    'The lift is clean — wrist-turn, two fingers, gone before the mark\'s ' +
-    'hand reaches the empty pocket. {name} doesn\'t look back. Looking back ' +
-    'is how you get remembered, and in this trade, being forgotten is the ' +
-    'highest skill. Three streets away, {they} count{s} what {they} took: ' +
-    'enough to matter, not enough to warrant a search. ' +
-    '{?has_faction}The guild handler nods once when {name} reports. In their ' +
-    'vocabulary, that\'s high praise.{/has_faction}',
-  reputationDelta: 0.05,
-},
-onFailure: {
-  narrative:
-    'The timing is right but the angle is wrong — {name}\'s fingers brush ' +
-    'the purse-strings and the mark stiffens, hand dropping to {their} belt ' +
-    'with the speed of someone who\'s been robbed before. {name} is already ' +
-    'moving, already someone else in the crowd, but the mark is turning, ' +
-    'scanning faces with the particular fury of the almost-victimized. ' +
-    'Nothing taken. But the market is mapped now — the traffic patterns, the ' +
-    'blind spots, the cloth-seller who never looks up. What was learned today ' +
-    'makes the next attempt a different kind of proposition.',
-  reputationDelta: -0.02,
-},
+{
+  id: 'tg.quest.pocket_run',
+  name: 'Pick Pocket',
+  rarityTier: 1,
+  intrinsicTier: 'background',
+  reach: 'shadow',
+  crudType: 'read',
+  scale: 'local',
+  locationSubtypes: ['market', 'settlement'],
+  apCost: 1,
+  actorAffinities: ['individual'],
+  motivations: ENCOUNTER_TYPE_MOTIVATIONS.acquire,
+  steps: [
+    {
+      reach: 'shadow',
+      duration: { min: 1, max: 2 },
+      difficulty: 0.35,
+      failBehavior: 'fail_action',
+      onSuccess: [],
+      onFailure: [],
+      successMetadata: {
+        reputationDelta: 0.05,
+        tierPromotionEligible: true,
+        rewardPool: { categoryWeights: { coin: 1.0 }, tagFilters: ['#guild'] },
+      },
+      failureMetadata: { reputationDelta: -0.02 },
+      narrativeTemplate:
+        'The market at {location} moves in patterns if you know how to read them — ' +
+        'the pause before a purse opens, the way a merchant\'s eyes track left when ' +
+        'counting change, the moment between transactions when attention is spent ' +
+        'and not yet replenished. {name} finds a post near the cloth-seller\'s stall ' +
+        'where two lanes of foot traffic cross. ' +
+        '{?has_faction}The guild marked this square as active — three good lifts ' +
+        'reported this week, which means the merchants haven\'t adjusted yet.{/has_faction}' +
+        '{?no_faction}No guild intelligence to lean on. Just eyes, timing, and the ' +
+        'particular arithmetic of crowds.{/no_faction}',
+      successAfterimage:
+        'The lift is clean — wrist-turn, two fingers, gone before the mark\'s hand ' +
+        'reaches the empty pocket. {name} doesn\'t look back. Looking back is how you get remembered.',
+      failureAfterimage:
+        'The timing is right but the angle is wrong — {name}\'s fingers brush the purse-strings ' +
+        'and the mark stiffens. Already moving. Already someone else in the crowd.',
+    },
+  ],
+  narrativeTemplates: {
+    initiation: '{name} scouts a mark in the {location} market, reading the crowd for the right moment.',
+    success: 'The lift is clean. {name} walks away three streets before counting.',
+    failure: 'The mark felt it. {name} is already gone, but the market is mapped now.',
+  },
+  aftermathConfig: {
+    branchOnStep: 0,
+    variants: {},
+    fallback: {
+      overview:
+        'A clean job leaves no thread. A failed one leaves exactly the kind of thread ' +
+        'the guild uses to evaluate whose hands can be trusted.',
+      changes: [
+        {
+          id: 'pocket_run_outcome',
+          kind: 'reputation_tally',
+          title: 'Guild Craft Record',
+          detail: 'Lifts reported, lifts blown — the guild tracks both.',
+          polarity: 'mixed',
+        },
+      ],
+      reactionPrompt: 'What does the god note in this small theft?',
+      reactions: [
+        {
+          id: 'pocket_run_shadow_tally',
+          label: 'A clean hand in a crowded market is its own kind of mastery.',
+          intent:
+            'The guild does not measure a shadow-worker by reputation or rank. ' +
+            'It measures them by the ratio of clean work to blown work. ' +
+            '{name} has just added to that ratio, one way or the other.',
+          effects: [
+            { kind: 'reputation_tally', key: 'shadow.positive', delta: 1 },
+            { kind: 'recent_event', message: '{name} works a market lift at {location}.', significance: 0.2 },
+          ],
+          closeAfterSelection: true,
+        },
+        {
+          id: 'pocket_run_intelligence',
+          label: 'The market is mapped now, clean or not.',
+          intent:
+            'Whether the lift succeeded or failed, {name} spent time reading this square. ' +
+            'The foot-traffic patterns, the merchant habits, the blind spots — that knowledge has value.',
+          effects: [
+            {
+              kind: 'intelligence',
+              category: 'trade_route',
+              label: 'Market layout at {location}',
+              detail: 'Foot-traffic flow, shift changes, merchant attention patterns. One blind spot near the cloth-seller\'s stall.',
+              reliability: 0.7,
+            },
+          ],
+          closeAfterSelection: true,
+        },
+      ],
+    },
+  },
+}
 ```
 
 **What changed:**
-- `{name}`, `{they}/{them}/{their}/{s}` throughout (identity)
+- All narrative fields use `{name}`, `{they}/{them}/{their}` (identity)
 - `{location}` grounds the scene in a specific place
 - `{?has_faction}` / `{?no_faction}` creates two emotional textures: guild-backed vs. alone
-- Success shows behavioral change (the handler's nod, the specific skill of being forgotten)
-- Failure is "cool" — the market is mapped, the next attempt will be different (forward hook)
-- Sensory detail: wrist-turn, two fingers, cloth-seller's stall, two lanes of foot traffic
-- No `{adj}` carrying emotional weight
+- `narrativeTemplate` is the scene-setting prose (not crammed with outcome text)
+- `successAfterimage`/`failureAfterimage` are brief outcome glimpses (separate from the scene narrative)
+- `successMetadata` and `failureMetadata` hold the mechanical signals (reputationDelta, rewardPool)
+- Top-level `narrativeTemplates` provides UI summary text
+- `aftermathConfig` gives the player reaction choices with authored prose
+- Aftermath includes an intelligence grant — the market is mapped, regardless of outcome
+- Difficulty is 0.35, not 35 (unified format is 0-1 scale)
+- All required fields are present (`rarityTier`, `intrinsicTier`, `crudType`, etc.)
 
 ---
 
 ## Process
 
-For each encounter file you rewrite:
+For each encounter file you write or rewrite:
 
 1. **Read the file** — understand the template count, step structure, reaches, difficulty curves
-2. **Read the systemic wiring guide** — know what the 7 capabilities can do
+2. **Read the systemic wiring guide** — know what the capabilities can do
 3. **Identify the guild voice** — use the voice guide above
 4. **For each template, write the scene first** — before touching the TypeScript, write the moment as prose. What is the agent doing? What goes wrong (or right)? What does the player read? Then fit the prose into the template fields.
 5. **Wire the dynamics** — add enrichment placeholders, conditional blocks, and ensure success/failure produce structurally different persistence
 6. **Run the editorial checklist** — all 7 questions must pass
 7. **Preserve the TypeScript skeleton** — same IDs, same reaches, same difficulties, same reward pools unless clearly wrong. You're upgrading prose and adding wiring, not restructuring encounters.
+8. **Author `aftermathConfig`** — even simple encounters deserve 1-2 reaction choices. The aftermath is where the player-god touches the world.
