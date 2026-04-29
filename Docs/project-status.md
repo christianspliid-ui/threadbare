@@ -1,13 +1,15 @@
 # Project Status
 > Updated 2026-04-29.
 ## Current Focus
+**THR-107 complete — Phase 4 borderland migration shipped.** All 20 borderland templates (7 bandits/outlaws, 6 wild beasts, 7 scavengers/frontier) now export as `UnifiedActionTemplate` with low-fantasy plain-observational prose (mud, weather, hunger, fear — no bardic elevation) and authored aftermath where the systemic payoff is highest: encounter seeds (spared deserter returns as informant, wolf pack returns to the same hex in winter, smuggler's seal-stamp opens an underworld contact), hidden marks for formative reputation moments (deserter mercy/cruelty witnessed, bandit-band carrying {name}'s face home, plague-handling rumour traveling downwind), intelligence grants on outlaw networks and curse-grammar. `{?has_ally}` conditionals on 12/20 templates; `{location}` placeholders throughout. Spread into `UNIFIED_ACTION_TEMPLATES`; `getBorderlandEncounterById` cast at consumer site for backward-compat.
+
 **THR-104 complete — Phase 4 army migration shipped.** All 6 army-lifecycle templates (`mc.army.raise`, four `army.threshold.*`, `army.aftermath.refugees`) now export as UnifiedActionTemplate with Threadbare-aesthetic prose (sergeants speak, captain offstage, mud-and-rations realism) and authored aftermath: reputation tallies for command performance, hidden marks for witnessed cowardice/heroism, encounter seeds for cascading consequences (supply crisis → desertion → mutiny → disbandment → refugees). Programmatic-spawn signal preserved (`locationSubtypes: []`); threshold IDs in `armyAttrition.ts` still resolve.
 
-**THR-103 complete — Phase 4 monster migration shipped.** All 5 monster templates (`monster.hunt.minor`, `monster.hunt.named_elite`, `monster.encounter.ambush`, `monster.encounter.lair_defense`, `monster.encounter.horde_raid`) now export as `UnifiedActionTemplate`, each with authored aftermath reactions (hidden marks for witnessed combat, encounter seeds for territorial returns, intelligence grants for creature lore, emit_omen for horde outcomes). `lair_defense` and `horde_raid` author `update_node` GraphOps for world-mutating prosperity/defense changes.
+**THR-103 complete — Phase 4 monster migration shipped.** All 5 monster templates now export as `UnifiedActionTemplate`, each with authored aftermath reactions (hidden marks for witnessed combat, encounter seeds for territorial returns, intelligence grants for creature lore, emit_omen for horde outcomes). `lair_defense` and `horde_raid` author `update_node` GraphOps for world-mutating prosperity/defense changes.
 
 **THR-106 complete — Phase 4 anomaly migration shipped.** All 10 anomaly templates now export as UnifiedActionTemplate, each with authored aftermath reactions; fallen_star and dreaming_light include authored choice cards, while legacy anomaly lookup remains compatible through getAnyEncounterById.
 
-**Phase 4 Encounter Format Migration progress:** ✅ Anomaly (THR-106) · ✅ Monster (THR-103) · ✅ Army (THR-104). Remaining: Borderland (THR-107, 20 templates).
+**Phase 4 Encounter Format Migration progress:** ✅ Anomaly (THR-106) · ✅ Monster (THR-103) · ✅ Army (THR-104) · ✅ Borderland (THR-107). Phase 4 content migration complete.
 
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
