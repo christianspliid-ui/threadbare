@@ -86,7 +86,7 @@ The bridge does the *mechanical* conversion today. What it doesn't do is add any
 > | `tavern-encounter-content.ts` | 30 | **10** | Already migrated (THR-101) |
 > | `faction-encounter-content.ts` | 58 | **18** | Pending (THR-102, in Ready for Dev) — 5 standard + 3 senior + 2 elite + 2 lifecycle + 6 social, all `ag.*` |
 > | `monster-encounter-content.ts` | 17 | **5** | Pending (THR-103) — `monster.hunt.minor`, `monster.hunt.named_elite`, `monster.encounter.ambush/lair_defense/horde_raid` |
-> | `army-encounter-content.ts` | 17 | **6** | Pending (THR-104) — `mc.army.raise`, four `army.threshold.*`, `army.aftermath.refugees`. Raise + refugee aftermath are programmatically spawned, not pool-drawn |
+> | `army-encounter-content.ts` | 17 | **6** | **Shipped** (THR-104, 2026-04-29) — `mc.army.raise`, four `army.threshold.*`, `army.aftermath.refugees` migrated to `UnifiedActionTemplate[]` with Threadbare prose and authored aftermath. Programmatic-spawn signal (`locationSubtypes: []`) preserved; threshold IDs still resolve via `armyAttrition.ts`. |
 > | `mercenary-encounter-content.ts` | 32 | **13** | **Already migrated** under THR-31 Phase 2f — header note confirms. THR-105 is stranded; close as Cancelled. |
 > | `encounter-anomaly-content.ts` | 10 | **10** | Pending (THR-106) — count correct |
 > | `borderland-encounter-content.ts` | 60 | **20** | Pending (THR-107) — file's own header reads "20 templates" |

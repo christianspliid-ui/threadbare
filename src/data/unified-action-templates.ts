@@ -28,7 +28,7 @@ import { TAVERN_UNIFIED_ENCOUNTER_TEMPLATES } from './tavern-encounter-content';
 import {
   FACTION_ENCOUNTER_TEMPLATES,
 } from './faction-encounter-content';
-import { ARMY_ENCOUNTER_META, getArmyEncounterById } from './army-encounter-content';
+import { ARMY_ENCOUNTER_TEMPLATES } from './army-encounter-content';
 import { MONSTER_ENCOUNTER_TEMPLATES } from './monster-encounter-content';
 import {
   ENCOUNTER_TYPE_MOTIVATIONS,
@@ -369,13 +369,9 @@ function buildCanonicalEncounterTemplates(): EncounterTemplate[] {
 
   addTemplates(ENCOUNTER_TEMPLATES);
   addTemplates(MONSTER_ENCOUNTER_TEMPLATES);
-
-  for (const id of ARMY_ENCOUNTER_META.keys()) {
-    const template = getArmyEncounterById(id);
-    if (template) {
-      deduped.set(template.id, template);
-    }
-  }
+  // Army templates are now UnifiedActionTemplate[] (THR-104) and registered via
+  // direct spread into UNIFIED_ACTION_TEMPLATES below; they no longer pass through
+  // the legacy EncounterTemplate canonicalisation path.
 
   return [...deduped.values()];
 }
@@ -4121,6 +4117,8 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   TS_PROMOTION_TEMPLATE,
   // Anomaly encounters — migrated to UnifiedActionTemplate (THR-106)
   ...ANOMALY_ENCOUNTER_TEMPLATES,
+  // Army encounters — migrated to UnifiedActionTemplate (THR-104)
+  ...ARMY_ENCOUNTER_TEMPLATES,
   // Adventurers Guild — migrated to UnifiedActionTemplate (THR-102, wired THR-290)
   ...FACTION_ENCOUNTER_TEMPLATES,
   // Social encounters — migrated to UnifiedActionTemplate (THR-100 Phase 3)
