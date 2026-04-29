@@ -41,6 +41,8 @@ import {
 } from '../data/narrative-content';
 import { phaseAgentLifecycle, resetLifecycleCounter } from './agentLifecycle';
 import { emitTrace } from './traceBuffer';
+import { runRegisteredPhases, type PhaseContext } from './phaseRegistry';
+import { PHASE_PLAN } from './phases';
 import { tickEffects } from './effectTick';
 import { processEffectEvent, applyEffectEventResult } from './effects/effectEvents';
 import { executeEffect } from './effectExecutors';
@@ -1950,6 +1952,13 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Track initial event count
   let prevEventCount = s.tickEvents.length;
 
+  // Shared context passed to declaratively-registered phases (THR-238).
+  const phaseCtx: PhaseContext = { runtime };
+
+  // Slot anchor: pre-doom — earliest hook, before any orchestrator work.
+  s = runRegisteredPhases(s, phaseCtx, 'pre-doom', PHASE_PLAN);
+  prevEventCount = s.tickEvents.length;
+
   // Phase 1: Doom
   s = { ...s, ...phaseDoom(s) };
   phaseEventCounts['doom'] = s.tickEvents.length - prevEventCount;
@@ -1971,6 +1980,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 1.8: Composition phase runner — advance phased event recipes tied to doom clock (THR-225)
   s = { ...s, ...phaseComposition(s) };
   phaseEventCounts['composition'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Slot anchor: post-doom — after the doom/journey/omen/composition cluster.
+  s = runRegisteredPhases(s, phaseCtx, 'post-doom', PHASE_PLAN);
   prevEventCount = s.tickEvents.length;
 
   // ─── Unified Action Pipeline (replaces old phaseAgentActions + phaseEncounterProgression + phaseActionProgress) ───
@@ -2118,6 +2131,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     prevEventCount = s.tickEvents.length;
   }
 
+  // Slot anchor: post-resolution — after the Phase 2a unified-action cluster.
+  s = runRegisteredPhases(s, phaseCtx, 'post-resolution', PHASE_PLAN);
+  prevEventCount = s.tickEvents.length;
+
   // Phase 2b: Agent Decision — unified encounter-driven decision pipeline (replaces phaseIdleSelection)
   // @deprecated — phaseIdleSelection replaced by phaseAgentDecision
   const decisionRng = mulberry32(state.seed + state.tick * 37);
@@ -2229,6 +2246,9 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseEventCounts['interaction_depth'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
+  // Slot anchor: post-decision — after agent decision, movement, colocation, social.
+  s = runRegisteredPhases(s, phaseCtx, 'post-decision', PHASE_PLAN);
+  prevEventCount = s.tickEvents.length;
 
   // Phase 3: Rival Actions
 
@@ -2404,6 +2424,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseEventCounts['economic_chronicle'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
+  // Slot anchor: post-economy — after settlement/prosperity/economic chronicle.
+  s = runRegisteredPhases(s, phaseCtx, 'post-economy', PHASE_PLAN);
+  prevEventCount = s.tickEvents.length;
+
   // ─── Long-term Progress ─────────────────────────────────────────────────────────
   // Slow-moving systems: ambitions, faction strategy, population dynamics.
 
@@ -2454,6 +2478,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseEventCounts['pop_streams'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
+  // Slot anchor: pre-lifecycle — after the ruin/delve cluster, before death/birth.
+  s = runRegisteredPhases(s, phaseCtx, 'pre-lifecycle', PHASE_PLAN);
+  prevEventCount = s.tickEvents.length;
+
   // Phase 6.75: Agent Lifecycle (death, birth, migration)
   s = { ...s, ...phaseAgentLifecycle(s, nextEventId) };
   phaseEventCounts['agent_lifecycle'] = s.tickEvents.length - prevEventCount;
@@ -2466,6 +2494,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 5: Narrative (moved here from before economy — now captures ALL tick events)
   s = { ...s, ...phaseNarrative(s) };
   phaseEventCounts['narrative'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Slot anchor: post-narrative — after phaseNarrative, before mandate/doom-expiry.
+  s = runRegisteredPhases(s, phaseCtx, 'post-narrative', PHASE_PLAN);
   prevEventCount = s.tickEvents.length;
 
 

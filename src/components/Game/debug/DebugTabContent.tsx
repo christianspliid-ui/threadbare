@@ -39,11 +39,12 @@ import { CulturePhoneticsInspector } from './CulturePhoneticsInspector';
 import { RecentEventsView } from './RecentEventsView';
 import { ShellsDebugTab } from './ShellsDebugTab';
 import { CompositionView } from './CompositionView';
+import { PhasesDebugTab } from './PhasesDebugTab';
 import { EMPTY_STATE_STYLE } from './debugPanelStyles';
 import type { KnowsClueOfEdgeProperties } from '../../../types/knowledge';
 import type { FlipTableRuntimeState } from '../../../types/contentShells';
 
-export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events' | 'shells' | 'compositions';
+export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events' | 'shells' | 'compositions' | 'phases';
 
 export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'feed', label: 'Feed' }, { id: 'agent-follow', label: 'Agent' },
@@ -58,6 +59,7 @@ export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'recent-events', label: 'Recent Events' },
   { id: 'shells', label: 'Shells' },
   { id: 'compositions', label: 'Compositions' },
+  { id: 'phases', label: 'Phases' },
 ];
 
 export interface DebugTabContentProps {
@@ -149,6 +151,7 @@ export function DebugTabContent({
   if (viewMode === 'recent-events') return <RecentEventsView getRecentEvents={getRecentEvents} />;
   if (viewMode === 'shells') return <ShellsDebugTab flipTableStates={flipTableStates} currentTick={currentTick} focusedAgentId={effectiveAgentId} />;
   if (viewMode === 'compositions') return <CompositionView activeCompositions={activeCompositions} currentTick={currentTick} doomClockStage={doomClockStage} />;
+  if (viewMode === 'phases') return <PhasesDebugTab traces={allTraces as TraceEntry[]} />;
   if (viewMode === 'cli') return <CommandTab retinueAgents={retinueAgents} followAgentId={effectiveAgentId} />;
   if (viewMode === 'strategic') return <StrategicDebugTab strategicState={strategicState} graph={graph} effectiveAgentId={effectiveAgentId} currentTick={currentTick} />;
   if (viewMode === 'social') {

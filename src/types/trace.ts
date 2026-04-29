@@ -1657,13 +1657,28 @@ export interface SiegeRegionalSeededTrace extends TraceBase {
   triggerType: 'allied_defender' | 'allied_attacker' | 'shadow' | 'heart' | 'sabotage';
 }
 
-/** Trace: per-tick aggregate profile for O(N_all) phase optimizations (THR-186) */
+/**
+ * Trace: per-tick aggregate profile.
+ *
+ * Originally introduced for O(N_all) phase optimizations (THR-186): emitted by
+ * `effect_tick` / `familiarity_gain` / `mastery_decay` with actor-counter payloads.
+ * Widened by THR-238 to also serve as the registry's per-phase profile trace —
+ * registered phases emit `phase: <id>` with `durationMs` + `eventDelta`. The
+ * actor-counter fields remain optional so legacy emitters keep their existing payload.
+ */
 export interface TickPhaseProfileTrace extends TraceBase {
   category: 'tick_phase_profile';
-  phase: 'effect_tick' | 'familiarity_gain' | 'mastery_decay';
-  totalActors: number;
-  processedActors: number;
-  skippedActors: number;
+  /** Free-form phase id. Legacy values: 'effect_tick' | 'familiarity_gain' | 'mastery_decay'. */
+  phase: string;
+  // ── Legacy actor-counter payload (THR-186 emitters) ───────────────────────
+  totalActors?: number;
+  processedActors?: number;
+  skippedActors?: number;
+  // ── Registry payload (THR-238 emitters) ───────────────────────────────────
+  /** Wall-clock duration of `phase.run` in milliseconds. */
+  durationMs?: number;
+  /** Number of `tickEvents` added by this phase. */
+  eventDelta?: number;
 }
 
 /** Trace: encounter cache rebuilt from scratch (THR-187) */
