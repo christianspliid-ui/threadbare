@@ -7,9 +7,9 @@
  * ═══════════════════════════════════════════════════════════════════
  */
 
-import type { EncounterTemplate } from '../types/encounter';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { LocationSubtype } from '../types/index';
+import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { getSocialEncounterById } from './social-encounter-content';
 import { getFactionEncounterById } from './faction-encounter-content';
 import { getMercenaryEncounterById } from './mercenary-encounter-content';
@@ -109,6 +109,117 @@ export const ENCOUNTER_DIFFICULTY_TIERS: Record<string, EncounterDifficultyTier>
   },
 };
 
+// ─── Local Raw Type ──────────────────────────────────────────────
+
+/** Shape used for raw encounter data in this file. Converted to UnifiedActionTemplate at export. */
+type EncounterEntry = {
+  id: string;
+  name: string;
+  locationTypes: LocationSubtype[];
+  sublocationTypes?: string[];
+  reachPrimary: string;
+  reachSecondary?: string;
+  encounterType: string;
+  threatRating?: string;
+  intrinsicTier?: string;
+  motivations?: readonly string[];
+  sphereAffinity?: string;
+  reputationPolarity?: 'positive' | 'negative';
+  favorGeneration?: { onSuccess: boolean; magnitudeRange: [number, number]; context: string };
+  steps: ReadonlyArray<{
+    id?: string;
+    name?: string;
+    reach: string;
+    difficulty: number;
+    duration?: number;
+    narrative: string;
+    onSuccess: {
+      narrative: string;
+      rewardPool?: import('../types/attachments').RewardPoolRecipe;
+      tierPromotionEligible?: boolean;
+      reputationDelta?: number;
+    };
+    onFailure: {
+      narrative: string;
+      rewardPool?: import('../types/attachments').RewardPoolRecipe;
+      reputationDelta?: number;
+    };
+  }>;
+};
+
+// ─── Converter ───────────────────────────────────────────────────
+
+// Map legacy reach domains to their nearest valid equivalents.
+// 'spirit' → 'veil' (mystical/spiritual), 'dominance' → 'stone' (structural authority)
+function normalizeReach(reach: string): import('../types/traits').ReachDomain {
+  if (reach === 'spirit') return 'veil';
+  if (reach === 'dominance') return 'stone';
+  return reach as import('../types/traits').ReachDomain;
+}
+
+function toCrudType(encounterType: string): UnifiedActionTemplate['crudType'] {
+  switch (encounterType) {
+    case 'create': case 'hire': case 'build': return 'create';
+    case 'explore': case 'acquire': case 'steal': case 'trade': return 'read';
+    case 'duel': return 'delete';
+    default: return 'update';
+  }
+}
+
+function toOutcomeMeta(
+  outcome: { rewardPool?: import('../types/attachments').RewardPoolRecipe; tierPromotionEligible?: boolean; reputationDelta?: number },
+): import('../types/unifiedAction').ActionStepOutcomeMetadata | undefined {
+  if (outcome.rewardPool === undefined && outcome.tierPromotionEligible === undefined && outcome.reputationDelta === undefined) {
+    return undefined;
+  }
+  return { rewardPool: outcome.rewardPool, tierPromotionEligible: outcome.tierPromotionEligible, reputationDelta: outcome.reputationDelta };
+}
+
+function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
+  const motivations = (ENCOUNTER_TYPE_MOTIVATIONS as Record<string, readonly import('../types/agent').ValuePair[]>)[e.encounterType]
+    ?? (e.motivations as readonly import('../types/agent').ValuePair[] ?? []);
+  const firstStep = e.steps[0];
+  const lastStep = e.steps[e.steps.length - 1];
+  return {
+    id: e.id,
+    name: e.name,
+    reach: normalizeReach(e.reachPrimary),
+    crudType: toCrudType(e.encounterType),
+    scale: 'local',
+    steps: e.steps.map((step, index) => {
+      const dur = step.duration ?? 1;
+      return {
+        reach: normalizeReach(step.reach),
+        duration: { min: dur, max: dur },
+        difficulty: step.difficulty / 100,
+        onSuccess: [],
+        onFailure: [],
+        failBehavior: (index < e.steps.length - 1 ? 'continue_weakened' : 'fail_action') as 'continue_weakened' | 'fail_action',
+        narrativeTemplate: step.narrative,
+        successAfterimage: step.onSuccess.narrative,
+        failureAfterimage: step.onFailure.narrative,
+        successMetadata: toOutcomeMeta(step.onSuccess),
+        failureMetadata: toOutcomeMeta(step.onFailure),
+      };
+    }),
+    apCost: 1,
+    actorAffinities: ['individual'],
+    locationSubtypes: [
+      ...e.locationTypes,
+      ...(e.sublocationTypes ?? []),
+    ],
+    sphereAffinity: e.sphereAffinity as UnifiedActionTemplate['sphereAffinity'],
+    motivations,
+    narrativeTemplates: {
+      initiation: firstStep?.narrative ?? `${e.name} begins.`,
+      success: lastStep?.onSuccess.narrative ?? `${e.name} succeeds.`,
+      failure: lastStep?.onFailure.narrative ?? `${e.name} fails.`,
+    },
+    rarityTier: 1,
+    intrinsicTier: 'background',
+  };
+}
+
 // ─── Encounter Templates ──────────────────────────────────────
 
 /**
@@ -117,7 +228,7 @@ export const ENCOUNTER_DIFFICULTY_TIERS: Record<string, EncounterDifficultyTier>
  * Universal: 2 steps, lower difficulty (20 → 25), available at every location type.
  * Reach-agnostic: 2 steps, extra-low difficulty (15 → 20), near-guaranteed pass.
  */
-export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
+const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   {
     id: 'encounter.deep_descent',
     name: 'The Deep Descent',
@@ -10056,6 +10167,8 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
 
 ];
 
+export const ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = ENCOUNTER_TEMPLATES_RAW.map(toUnifiedTemplate);
+
 // ─── Cultural Encounter Overlays ───────────────────────────────────
 
 /**
@@ -10326,35 +10439,30 @@ export function resolveEncounterNarrative(
 
 // ─── Lookup Functions ───────────────────────────────────────────
 
-/** All templates used by location-based lookup functions. */
-const ALL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
-  ...ENCOUNTER_TEMPLATES,
-];
-
 /**
  * Return all encounters available at a given location type.
  */
-export function getEncountersByLocationType(locationType: string): EncounterTemplate[] {
-  return ALL_ENCOUNTER_TEMPLATES.filter(encounter =>
-    encounter.locationTypes.includes(locationType)
+export function getEncountersByLocationType(locationType: string): UnifiedActionTemplate[] {
+  return ENCOUNTER_TEMPLATES.filter(encounter =>
+    encounter.locationSubtypes?.includes(locationType as LocationSubtype)
   );
 }
 
 /**
  * Get encounter templates that match a sublocation's type.
- * Templates with `sublocationTypes` field are matched against the sublocation type ID.
- * Templates without `sublocationTypes` are included as fallback (matched via locationTypes).
+ * Templates with sublocation entries in locationSubtypes are matched against the sublocation type ID.
+ * Templates without sublocation entries use locationSubtypes for fallback (locationTypes).
  */
 export function getEncountersBySublocationAndLocation(
   sublocationTypeId: string,
   locationType: string,
-): EncounterTemplate[] {
-  return ALL_ENCOUNTER_TEMPLATES.filter(t => {
-    if (t.sublocationTypes && t.sublocationTypes.length > 0) {
-      return t.sublocationTypes.includes(sublocationTypeId);
+): UnifiedActionTemplate[] {
+  return ENCOUNTER_TEMPLATES.filter(t => {
+    const hasSublocation = t.locationSubtypes?.some(s => s.startsWith('sublocation-type.'));
+    if (hasSublocation) {
+      return t.locationSubtypes?.includes(sublocationTypeId as LocationSubtype);
     }
-    // Fallback: templates without sublocationTypes use locationTypes
-    return t.locationTypes.includes(locationType);
+    return t.locationSubtypes?.includes(locationType as LocationSubtype);
   });
 }
 
@@ -10366,34 +10474,35 @@ export function getEncountersBySublocationAndLocation(
 export function getEncountersForLocation(
   locationType: string,
   sublocationTypeIds: string[],
-): EncounterTemplate[] {
+): UnifiedActionTemplate[] {
   return ENCOUNTER_TEMPLATES.filter(t => {
-    if (t.sublocationTypes && t.sublocationTypes.length > 0) {
-      return t.sublocationTypes.some(st => sublocationTypeIds.includes(st));
+    const hasSublocation = t.locationSubtypes?.some(s => s.startsWith('sublocation-type.'));
+    if (hasSublocation) {
+      return t.locationSubtypes?.some(st => sublocationTypeIds.includes(st));
     }
-    return t.locationTypes.includes(locationType);
+    return t.locationSubtypes?.includes(locationType as LocationSubtype);
   });
 }
 
 /**
  * Retrieve a specific encounter by ID (exploration templates only).
  */
-export function getEncounterById(id: string): EncounterTemplate | undefined {
+export function getEncounterById(id: string): UnifiedActionTemplate | undefined {
   return ENCOUNTER_TEMPLATES.find(encounter => encounter.id === id);
 }
 
 /**
  * Retrieve any encounter by ID — checks exploration templates first,
- * then social encounter templates. Use this everywhere an encounter
- * might be either type (resolution, advancement, display).
+ * then social/faction/mercenary/army/monster/borderland/secret templates.
+ * Use this everywhere an encounter might be any type (resolution, advancement, display).
  */
-export function getAnyEncounterById(id: string): EncounterTemplate | undefined {
+export function getAnyEncounterById(id: string): UnifiedActionTemplate | undefined {
   return ENCOUNTER_TEMPLATES.find(encounter => encounter.id === id)
     ?? getSocialEncounterById(id)
     ?? getFactionEncounterById(id)
-    ?? (getMercenaryEncounterById(id) as unknown as EncounterTemplate | undefined)
+    ?? getMercenaryEncounterById(id)
     ?? getArmyEncounterById(id)
-    ?? (getMonsterEncounterById(id) as unknown as EncounterTemplate | undefined)
-    ?? (getBorderlandEncounterById(id) as unknown as EncounterTemplate | undefined)
+    ?? getMonsterEncounterById(id)
+    ?? getBorderlandEncounterById(id)
     ?? SECRET_DISCOVERY_ENCOUNTER_TEMPLATES.find(encounter => encounter.id === id);
 }

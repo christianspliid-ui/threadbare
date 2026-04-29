@@ -9,10 +9,47 @@
  * Design doc: Docs/plans/2026-03-27-faction-vertical-slice-design.md — Phase 2
  */
 
-import type { EncounterTemplate } from '../types/encounter';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { FactionEncounterMeta } from '../types/faction';
 import type { AuthoredChoiceCard, BranchAwareAftermathConfig, UnifiedActionTemplate } from '../types/unifiedAction';
+
+// ─── Local Raw Type ───────────────────────────────────────────────
+
+/** Shape used for raw faction encounter data. Converted to UnifiedActionTemplate at export. */
+type FactionEntry = {
+  id: string;
+  name: string;
+  locationTypes: readonly string[];
+  sublocationTypes?: string[];
+  reachPrimary: string;
+  reachSecondary?: string;
+  encounterType: string;
+  threatRating?: string;
+  intrinsicTier?: string;
+  motivations?: readonly import('../types/agent').ValuePair[];
+  sphereAffinity?: string;
+  questPriority?: number;
+  steps: ReadonlyArray<{
+    id?: string;
+    name?: string;
+    reach: string;
+    difficulty: number;
+    duration?: number;
+    narrative: string;
+    onSuccess: {
+      narrative: string;
+      rewardPool?: import('../types/attachments').RewardPoolRecipe;
+      tierPromotionEligible?: boolean;
+      reputationDelta?: number;
+    };
+    onFailure: {
+      narrative: string;
+      rewardPool?: import('../types/attachments').RewardPoolRecipe;
+      tierPromotionEligible?: boolean;
+      reputationDelta?: number;
+    };
+  }>;
+};
 import { MERCENARY_ENCOUNTER_META } from './mercenary-encounter-content';
 import { THIEVES_GUILD_ENCOUNTER_META } from './thieves-guild-encounter-content';
 import { MERCHANT_CONSORTIUM_ENCOUNTER_META } from './merchant-consortium-encounter-content';
@@ -79,7 +116,7 @@ export const FACTION_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterMeta> =
 
 // ─── Templates ───────────────────────────────────────────────────────────
 
-const LEGACY_FACTION_QUEST_TEMPLATES: EncounterTemplate[] = [
+const LEGACY_FACTION_QUEST_TEMPLATES: FactionEntry[] = [
   // ── Standard Quests (Journeyman+) ──────────────────────────────────
 
   {
@@ -614,7 +651,7 @@ const LEGACY_FACTION_QUEST_TEMPLATES: EncounterTemplate[] = [
  * Faction join encounter — appears at guild hall sublocations,
  * visible only to non-members (excludeIfMemberOf filter in questVisibility).
  */
-export const FACTION_JOIN_TEMPLATE: EncounterTemplate = {
+const _FACTION_JOIN_RAW: FactionEntry = {
   id: 'ag.join',
   name: 'Petition the Adventurers Guild',
   locationTypes: ['town', 'city', 'capital'],
@@ -654,7 +691,7 @@ export const FACTION_JOIN_TEMPLATE: EncounterTemplate = {
  * Faction promotion encounter — appears when reputation >= next tier threshold.
  * Partial success mechanic: roll within PROMOTION_PARTIAL_SUCCESS_MARGIN of threshold → promoted with complication.
  */
-export const FACTION_PROMOTION_TEMPLATE: EncounterTemplate = {
+const _FACTION_PROMOTION_RAW: FactionEntry = {
   id: 'ag.promotion',
   name: 'Guild Promotion Trial',
   locationTypes: ['town', 'city', 'capital'],
@@ -700,7 +737,7 @@ const FACTION_SOCIAL_DIFFICULTY_STEP = 10;
  * who share faction membership. These model guild camaraderie,
  * mentorship, competition, and shared purpose.
  */
-export const FACTION_SOCIAL_TEMPLATES: EncounterTemplate[] = [
+export const FACTION_SOCIAL_TEMPLATES: FactionEntry[] = [
   // 1. Sparring Match — iron/flesh, cooperative training
   {
     id: 'ag.social.sparring',
@@ -980,9 +1017,9 @@ export const FACTION_SOCIAL_TEMPLATES: EncounterTemplate[] = [
 // ─── Lookup ──────────────────────────────────────────────────────────────
 
 /** All faction lifecycle templates (join, promotion) — separate from quest templates. */
-export const FACTION_LIFECYCLE_TEMPLATES: readonly EncounterTemplate[] = [
-  FACTION_JOIN_TEMPLATE,
-  FACTION_PROMOTION_TEMPLATE,
+const _FACTION_LIFECYCLE_RAW: readonly FactionEntry[] = [
+  _FACTION_JOIN_RAW,
+  _FACTION_PROMOTION_RAW,
 ];
 
 // ─── Unified Templates (THR-102 Phase 3) ─────────────────────────────────
@@ -1182,7 +1219,7 @@ const ELITE_AUTHORED_CHOICES: Readonly<Record<string, Readonly<Record<number, re
   },
 };
 
-function toUnifiedTemplate(template: EncounterTemplate): UnifiedActionTemplate {
+function toUnifiedTemplate(template: FactionEntry): UnifiedActionTemplate {
   const rarityTier = rarityTierForTemplate(template.id);
   const steps = template.steps.map((step, index) => {
     const duration = step.duration ?? 1;
@@ -1241,23 +1278,19 @@ function toUnifiedTemplate(template: EncounterTemplate): UnifiedActionTemplate {
 
 export const FACTION_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   ...LEGACY_FACTION_QUEST_TEMPLATES,
-  ...FACTION_LIFECYCLE_TEMPLATES,
+  ..._FACTION_LIFECYCLE_RAW,
   ...FACTION_SOCIAL_TEMPLATES,
 ].map(toUnifiedTemplate);
+
+export const FACTION_JOIN_TEMPLATE: UnifiedActionTemplate = FACTION_ENCOUNTER_TEMPLATES.find(t => t.id === 'ag.join')!;
+export const FACTION_PROMOTION_TEMPLATE: UnifiedActionTemplate = FACTION_ENCOUNTER_TEMPLATES.find(t => t.id === 'ag.promotion')!;
+export const FACTION_LIFECYCLE_TEMPLATES: readonly UnifiedActionTemplate[] = [FACTION_JOIN_TEMPLATE, FACTION_PROMOTION_TEMPLATE];
 
 /**
  * Look up a faction encounter template by ID (quests + lifecycle).
  */
-export function getFactionEncounterById(id: string): EncounterTemplate | undefined {
-  // Legacy EncounterTemplate lookup — for all remaining AG/BF templates still in this file.
-  // Migrated factions (UC, RB, MCT, MC, LK, TS, TG, AC, CG, HOD) are UnifiedActionTemplate
-  // and live in UNIFIED_ACTION_TEMPLATES. Callers that need unified templates should also call
-  // getUnifiedTemplateById from unified-action-templates.ts (no import here to avoid cycles).
-  return (
-    LEGACY_FACTION_QUEST_TEMPLATES.find(t => t.id === id)
-    ?? FACTION_LIFECYCLE_TEMPLATES.find(t => t.id === id)
-    ?? FACTION_SOCIAL_TEMPLATES.find(t => t.id === id)
-  );
+export function getFactionEncounterById(id: string): UnifiedActionTemplate | undefined {
+  return FACTION_ENCOUNTER_TEMPLATES.find(t => t.id === id);
 }
 
 /**

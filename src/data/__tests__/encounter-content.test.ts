@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-import type { EncounterType } from '../../types/encounter';
 import {
   ENCOUNTER_TEMPLATES,
   CULTURAL_ENCOUNTER_OVERLAYS,
@@ -9,7 +8,8 @@ import {
   getEncountersByLocationType,
   getEncounterById,
 } from '../encounter-content';
-import { assertNoDuplicateIds, assertValidEncounterTemplate } from '../../testing/contentInvariants';
+import { assertNoDuplicateIds, assertValidUnifiedTemplate } from '../../testing/contentInvariants';
+import { isActionStepBranch } from '../../types/unifiedAction';
 
 describe('encounter-content', () => {
   describe('ENCOUNTER_TEMPLATES', () => {
@@ -20,36 +20,33 @@ describe('encounter-content', () => {
 
     it('passes shared structural invariants', () => {
       assertNoDuplicateIds(ENCOUNTER_TEMPLATES);
-      ENCOUNTER_TEMPLATES.forEach(assertValidEncounterTemplate);
+      ENCOUNTER_TEMPLATES.forEach(assertValidUnifiedTemplate);
     });
 
-    it('every template should have 2-4 encounters', () => {
+    it('every template should have 2-4 steps', () => {
       for (const template of ENCOUNTER_TEMPLATES) {
         expect(template.steps.length).toBeGreaterThanOrEqual(2);
         expect(template.steps.length).toBeLessThanOrEqual(4);
       }
     });
 
-    it('every encounter should have success and failure prose', () => {
+    it('every template should have success and failure prose', () => {
       for (const template of ENCOUNTER_TEMPLATES) {
-        for (const enc of template.steps) {
-          expect(enc.onSuccess.narrative.length).toBeGreaterThan(10);
-          expect(enc.onFailure.narrative.length).toBeGreaterThan(10);
-        }
+        expect(template.narrativeTemplates.success.length).toBeGreaterThan(10);
+        expect(template.narrativeTemplates.failure.length).toBeGreaterThan(10);
       }
     });
 
-    it('every template should have valid reachPrimary and reachSecondary', () => {
-      const validReaches = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'gold'];
+    it('every template should have a valid reach', () => {
+      const validReaches = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star'];
       for (const template of ENCOUNTER_TEMPLATES) {
-        expect(validReaches).toContain(template.reachPrimary);
-        expect(validReaches).toContain(template.reachSecondary);
+        expect(validReaches).toContain(template.reach);
       }
     });
 
-    it('every template should have at least 1 locationTypes entry', () => {
+    it('every template should have at least 1 locationSubtypes entry', () => {
       for (const template of ENCOUNTER_TEMPLATES) {
-        expect(template.locationTypes.length).toBeGreaterThanOrEqual(1);
+        expect((template.locationSubtypes?.length ?? 0)).toBeGreaterThanOrEqual(1);
       }
     });
 
@@ -66,30 +63,31 @@ describe('encounter-content', () => {
         'ruined_village', 'battleground', 'oasis', 'unexplored_poi', 'wilderness'
       ];
       for (const st of allSubtypes) {
-        const matches = ENCOUNTER_TEMPLATES.filter(t => t.locationTypes.includes(st));
+        const matches = ENCOUNTER_TEMPLATES.filter(t => t.locationSubtypes?.includes(st as never));
         expect(matches.length).toBeGreaterThanOrEqual(3);
       }
     });
 
-    it('every EncounterType has at least 4 templates', () => {
-      const allTypes: EncounterType[] = ['explore', 'acquire', 'create', 'hire', 'duel', 'steal', 'trade', 'assist', 'build', 'lead'];
-      for (const et of allTypes) {
-        const matches = ENCOUNTER_TEMPLATES.filter(t => t.encounterType === et);
-        expect(matches.length).toBeGreaterThanOrEqual(4);
+    it('each crudType has at least 4 templates', () => {
+      const counts: Record<string, number> = {};
+      for (const t of ENCOUNTER_TEMPLATES) {
+        counts[t.crudType] = (counts[t.crudType] ?? 0) + 1;
+      }
+      for (const [type, count] of Object.entries(counts)) {
+        expect(count, `crudType ${type} has only ${count} templates`).toBeGreaterThanOrEqual(4);
       }
     });
 
-    it('all templates have valid encounterType', () => {
-      const validTypes: EncounterType[] = ['explore', 'acquire', 'create', 'hire', 'duel', 'steal', 'trade', 'assist', 'build', 'lead'];
+    it('all templates have valid crudType', () => {
+      const validTypes = ['create', 'read', 'update', 'delete'];
       for (const t of ENCOUNTER_TEMPLATES) {
-        expect(validTypes).toContain(t.encounterType);
+        expect(validTypes).toContain(t.crudType);
       }
     });
 
-    it('all templates have valid threatRating', () => {
-      const validRatings = ['trivial', 'easy', 'moderate', 'hard', 'deadly'];
+    it('all templates have rarityTier 1', () => {
       for (const t of ENCOUNTER_TEMPLATES) {
-        expect(validRatings).toContain(t.threatRating);
+        expect(t.rarityTier).toBe(1);
       }
     });
 
@@ -104,28 +102,12 @@ describe('encounter-content', () => {
         expect(t.steps.length).toBeGreaterThanOrEqual(2);
         expect(t.steps.length).toBeLessThanOrEqual(4);
         for (let i = 1; i < t.steps.length; i++) {
-          expect(t.steps[i].difficulty).toBeGreaterThan(t.steps[i-1].difficulty);
+          const prev = t.steps[i - 1];
+          const curr = t.steps[i];
+          const prevDiff = isActionStepBranch(prev) ? prev.fallback.difficulty : prev.difficulty;
+          const currDiff = isActionStepBranch(curr) ? curr.fallback.difficulty : curr.difficulty;
+          expect(currDiff).toBeGreaterThan(prevDiff);
         }
-      }
-    });
-
-    it('all step IDs are unique within their template', () => {
-      for (const t of ENCOUNTER_TEMPLATES) {
-        const stepIds = t.steps.map(s => s.id);
-        expect(new Set(stepIds).size).toBe(stepIds.length);
-      }
-    });
-
-    it('threat rating distribution is balanced (not all moderate)', () => {
-      const distribution: Record<string, number> = {};
-      for (const t of ENCOUNTER_TEMPLATES) {
-        distribution[t.threatRating] = (distribution[t.threatRating] || 0) + 1;
-      }
-      // At least 3 different threat ratings used
-      expect(Object.keys(distribution).length).toBeGreaterThanOrEqual(3);
-      // No single rating has more than 50% of templates
-      for (const count of Object.values(distribution)) {
-        expect(count).toBeLessThanOrEqual(ENCOUNTER_TEMPLATES.length * 0.5);
       }
     });
   });
@@ -145,7 +127,7 @@ describe('encounter-content', () => {
       const ruinsEncounters = getEncountersByLocationType('ruins');
       expect(ruinsEncounters.length).toBeGreaterThan(0);
       for (const o of ruinsEncounters) {
-        expect(o.locationTypes).toContain('ruins');
+        expect(o.locationSubtypes).toContain('ruins');
       }
     });
 

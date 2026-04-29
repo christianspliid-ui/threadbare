@@ -391,7 +391,10 @@ export function prepareDebugEncounterSpawn(
     };
   }
 
-  const firstStepDuration = template.steps[0]?.duration ?? 1;
+  const rawDur = template.steps[0]?.duration;
+  const firstStepDuration = (rawDur !== null && rawDur !== undefined && typeof rawDur === 'object')
+    ? (rawDur as { min: number }).min
+    : ((rawDur as number | undefined) ?? 1);
   const progress = makeUiProgress(template, agent.id, state.tick, state.tick + firstStepDuration);
 
   return {

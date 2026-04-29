@@ -1,7 +1,6 @@
 // src/components/Game/hooks/useAmbientContext.ts
 import { useEffect, useRef } from 'react';
 import type { HexCoord, HexTile, LocationSubtype } from '../../../types';
-import type { EncounterTemplate } from '../../../types/encounter';
 import { terrainToSoundKey } from '../../../audio/terrainSoundKey';
 import { locationToSoundKey } from '../../../audio/locationSoundKey';
 import { pushAmbient, popAmbient } from '../../../audio/BackgroundChannel';
@@ -17,7 +16,7 @@ export interface AmbientContextInput {
   /** Location subtype of the currently open location detail panel, else null */
   locationDetailSubtype: LocationSubtype | null;
   /** The active encounter template if one is in progress, else null */
-  activeEncounterTemplate: EncounterTemplate | null;
+  activeEncounterTemplate: { musicTrack?: string; backgroundTrack?: string } | null;
 }
 
 export function useAmbientContext({

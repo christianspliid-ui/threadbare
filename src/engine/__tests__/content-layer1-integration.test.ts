@@ -58,8 +58,8 @@ describe('Layer 1 content data', () => {
     for (const template of ENCOUNTER_TEMPLATES) {
       expect(template.id).toBeDefined();
       expect(template.name).toBeDefined();
-      expect(template.locationTypes).toBeDefined();
-      expect(template.reachPrimary).toBeDefined();
+      expect(template.locationSubtypes).toBeDefined();
+      expect(template.reach).toBeDefined();
       expect(template.steps).toBeDefined();
       expect(Array.isArray(template.steps)).toBe(true);
     }

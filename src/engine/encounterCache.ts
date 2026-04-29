@@ -217,7 +217,8 @@ function getSublocations(graph: WorldGraph, locationId: string): GraphNode[] {
 }
 
 /**
- * Build a single cache entry from a template, with sublocation context.
+ * Build a single cache entry from a legacy EncounterTemplate, with sublocation context.
+ * @deprecated Use buildEntryUnified for UnifiedActionTemplate-sourced encounters.
  */
 function buildEntry(
   tmpl: EncounterTemplate,
@@ -238,7 +239,7 @@ function buildEntry(
     motivations: [...tmpl.motivations],
     visibleTo: tmpl.visibleTo ? [...tmpl.visibleTo] : undefined,
     requiresPresence: !tmpl.remoteAttempt,
-    remotePenalty: 0, // Phase 2 concern
+    remotePenalty: 0,
     remoteMaxRange: undefined,
     sphereAffinity: tmpl.sphereAffinity,
     questPriority: tmpl.questPriority ?? 1.0,
@@ -247,6 +248,48 @@ function buildEntry(
     stepCount: tmpl.steps.length,
     stepDifficulties: tmpl.steps.map(s => Math.round(s.difficulty * difficultyMultiplier)),
     stepReaches: tmpl.steps.map(s => s.reach),
+  };
+}
+
+/**
+ * Build a single cache entry from a UnifiedActionTemplate, with sublocation context.
+ * Maps UAT fields to the legacy EncounterCacheEntry shape used by the scoring pipeline.
+ */
+function buildEntryUnified(
+  tmpl: UnifiedActionTemplate,
+  locationId: string,
+  sublocationId: string | null,
+  sublocationTypeId: string | null,
+  difficultyMultiplier: number = 1.0,
+): EncounterCacheEntry {
+  return {
+    templateId: tmpl.id,
+    locationId,
+    sublocationId,
+    sublocationTypeId,
+    reachPrimary: tmpl.reach,
+    reachSecondary: tmpl.reach,
+    threatRating: RARITY_TO_THREAT[tmpl.rarityTier] ?? 'moderate',
+    encounterType: CRUD_TO_ENCOUNTER_TYPE[tmpl.crudType] ?? 'explore',
+    motivations: [...tmpl.motivations],
+    visibleTo: undefined,
+    requiresPresence: true,
+    remotePenalty: 0,
+    remoteMaxRange: undefined,
+    sphereAffinity: tmpl.sphereAffinity,
+    questPriority: 1.0,
+    totalTickCost: computeTotalTickCostUnified(tmpl),
+    successRewardEstimate: computeRewardEstimateUnified(tmpl),
+    stepCount: tmpl.steps.length,
+    // UAT difficulty is 0-1; convert to legacy 0-100 scale for scoring compatibility.
+    stepDifficulties: tmpl.steps.map(sb => {
+      const s = isActionStepBranch(sb) ? sb.fallback : sb;
+      return Math.round(s.difficulty * 100 * difficultyMultiplier);
+    }),
+    stepReaches: tmpl.steps.map(sb => {
+      const s = isActionStepBranch(sb) ? sb.fallback : sb;
+      return s.reach;
+    }),
   };
 }
 
@@ -269,13 +312,13 @@ function buildEntriesForLocationAndSublocations(
       const subTypeId = (sub.properties as Record<string, unknown>).sublocationTypeId as string;
       const templates = getEncountersBySublocationAndLocation(subTypeId, locationType);
       for (const tmpl of templates) {
-        entries.push(buildEntry(tmpl, locationId, sub.id, subTypeId, difficultyMultiplier));
+        entries.push(buildEntryUnified(tmpl, locationId, sub.id, subTypeId, difficultyMultiplier));
       }
     }
   } else {
     const templates = getEncountersByLocationType(locationType);
     for (const tmpl of templates) {
-      entries.push(buildEntry(tmpl, locationId, null, null, difficultyMultiplier));
+      entries.push(buildEntryUnified(tmpl, locationId, null, null, difficultyMultiplier));
     }
   }
 

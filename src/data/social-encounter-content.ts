@@ -2269,30 +2269,24 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 // ─── Lookup Functions ───────────────────────────────────────
 
 import { SOCIAL_SCENE_TEMPLATES } from './social-scene-templates';
-import type { EncounterTemplate } from '../types/encounter';
+import type { UnifiedActionTemplate } from '../types/unifiedAction';
 
-/**
- * Combined pool of legacy EncounterTemplate social scene templates.
- * The 14 main social encounter templates are in UNIFIED_ACTION_TEMPLATES.
- */
-export const ALL_SOCIAL_TEMPLATES: EncounterTemplate[] = [
+export const ALL_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
   ...SOCIAL_SCENE_TEMPLATES,
 ];
 
 /**
- * Return legacy social scene encounters available at a given location type.
- * For the 14 main social encounter templates, use UNIFIED_ACTION_TEMPLATES.
+ * Return social scene encounters available at a given location type.
  */
-export function getSocialEncountersByLocationType(locationType: string): EncounterTemplate[] {
+export function getSocialEncountersByLocationType(locationType: string): UnifiedActionTemplate[] {
   return SOCIAL_SCENE_TEMPLATES.filter(encounter =>
-    encounter.locationTypes.includes(locationType),
+    encounter.locationSubtypes?.includes(locationType),
   );
 }
 
 /**
- * Get a social scene encounter template by ID (legacy EncounterTemplate pool).
- * The 14 main social encounter templates are registered in UNIFIED_ACTION_TEMPLATES.
+ * Get a social scene encounter template by ID.
  */
-export function getSocialEncounterById(id: string): EncounterTemplate | undefined {
+export function getSocialEncounterById(id: string): UnifiedActionTemplate | undefined {
   return SOCIAL_SCENE_TEMPLATES.find(t => t.id === id);
 }

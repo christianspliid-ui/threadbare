@@ -10,7 +10,7 @@ import { CAMERA_CONSTANTS } from '../HexMapV2/camera/D3ZoomCamera';
 import type { ScryState } from '../../types/scry';
 import { createScryState } from '../../engine/scry';
 import { useSimulation } from './hooks/useSimulation';
-import type { EncounterTemplate } from '../../types/encounter';
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { getEncountersForLocation, getAnyEncounterById } from '../../data/encounter-content';
 import { SUBTYPE_SUBLOCATION_MAP } from '../../engine/sublocation';
 import { useHexZoomData } from './hooks/useHexZoomData';
@@ -137,7 +137,7 @@ import { buildActorTargetContext, buildHexTargetContext, buildLocationTargetCont
 import { useTargetActions } from './hooks/useTargetActions';
 import { templateIdFromSlotId } from '../../engine/targetActions';
 import type { WheelSlot } from '../../engine/wheel';
-import { getUnifiedTemplateById, UNIFIED_ACTION_TEMPLATES, resolveEncounterTemplate } from '../../data/unified-action-templates';
+import { getUnifiedTemplateById, UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
 import { CRUD_TO_ENCOUNTER_TYPE } from '../../engine/encounterCache';
 import { createUnifiedAction } from '../../engine/unifiedActionLifecycle';
 import { mulberry32 } from '../../lib/prng';
@@ -710,7 +710,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
     for (const action of gameState.unifiedActions) {
       if (action.resolved) continue;
-      const template = resolveEncounterTemplate(action.templateId);
+      const template = getUnifiedTemplateById(action.templateId);
       if (!template) continue;
       const tier = action.effectiveTier ?? template.intrinsicTier;
       const tierOpacity =
@@ -997,7 +997,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const [tieredEncounterState, setTieredEncounterState] = useState<{
     notification: EncounterNotification;
     encounter: ActiveEncounterDisplay;
-    template: EncounterTemplate;
+    template: UnifiedActionTemplate;
     agentId: string;
     agentName: string;
     threadTier: ReturnType<typeof courtPositionToThreadTier>;
@@ -1120,7 +1120,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // ── Encounter notification surfacing (TB-040 / TB-055) ──
   /** Open the tiered encounter modal from a notification (toast click or auto-interrupt) */
   const handleOpenEncounterFromNotification = useCallback((notif: EncounterNotification) => {
-    const template = resolveEncounterTemplate(notif.encounterId);
+    const template = getUnifiedTemplateById(notif.encounterId);
     if (!template) return;
     const { encounter, activeAction } = selectEncounterRuntimeForNotification(
       notif,
@@ -1370,10 +1370,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [viewLevel, focusedLocation]);
 
   /** Active encounter template for audio override (priority 3). */
-  const activeEncounterTemplate = useMemo<EncounterTemplate | null>(() => {
+  const activeUnifiedActionTemplate = useMemo<UnifiedActionTemplate | null>(() => {
     const active = gameState.encounterProgress.find(ep => ep.status === 'active');
     if (!active) return null;
-    return resolveEncounterTemplate(active.encounterId) ?? null;
+    return getUnifiedTemplateById(active.encounterId) ?? null;
   }, [gameState.encounterProgress]);
 
   // ── Ambient audio context ──
@@ -1382,7 +1382,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     tiles,
     hexChronicleSubtype,
     locationDetailSubtype,
-    activeEncounterTemplate,
+    activeUnifiedActionTemplate,
   });
 
   // ── Location encounter data (available + active) ──
@@ -1417,7 +1417,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
     for (const action of gameState.unifiedActions) {
       if (action.resolved) continue;
-      if (!resolveEncounterTemplate(action.templateId)) continue;
+      if (!getUnifiedTemplateById(action.templateId)) continue;
       if (!actorAtFocusedLocation(action.actorId)) continue;
       activeByActor.set(action.actorId, buildActiveEncounterDisplayFromUnifiedAction(action, gameState.tick));
     }
@@ -1859,10 +1859,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const retinueActiveEncounters = useMemo(() => {
-    const map = new Map<string, { encounter: ActiveEncounterDisplay; template: EncounterTemplate }>();
+    const map = new Map<string, { encounter: ActiveEncounterDisplay; template: UnifiedActionTemplate }>();
     for (const p of gameState.encounterProgress) {
       if (p.status !== 'active') continue;
-      const tmpl = resolveEncounterTemplate(p.encounterId);
+      const tmpl = getUnifiedTemplateById(p.encounterId);
       if (tmpl) {
         map.set(p.actorId, {
           encounter: buildActiveEncounterDisplayFromLegacyProgress(p),
@@ -1872,7 +1872,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     }
     for (const action of gameState.unifiedActions) {
       if (action.resolved) continue;
-      const tmpl = resolveEncounterTemplate(action.templateId);
+      const tmpl = getUnifiedTemplateById(action.templateId);
       if (!tmpl) continue;
       map.set(action.actorId, {
         encounter: buildActiveEncounterDisplayFromUnifiedAction(action, gameState.tick),
@@ -1886,7 +1886,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const handleEncounterClick = useCallback((
     agentId: string,
     encounter: ActiveEncounterDisplay,
-    template: EncounterTemplate,
+    template: UnifiedActionTemplate,
   ) => {
     // Resolve live runtime first so the modal opens from unified state when available.
     const { encounter: runtimeEncounter, activeAction } = selectEncounterRuntimeForDisplay(
@@ -3232,7 +3232,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                 activeEncounters={locationEncounters.active}
                 getAgentName={getAgentName}
                 onEncounterClick={handleEncounterClick}
-                getEncounterTemplate={resolveEncounterTemplate}
+                getUnifiedActionTemplate={getUnifiedTemplateById}
                 graph={gameState.graph}
                 seed={gameState.seed}
                 tick={gameState.tick}

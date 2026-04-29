@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import {
   UNIFIED_ACTION_TEMPLATES,
   migrateActionTemplate,
-  migrateEncounterTemplate,
   getUnifiedTemplateById,
 } from '../unified-action-templates';
 import { ACTION_TEMPLATES } from '../action-template-content';
@@ -73,40 +72,32 @@ describe('migrateActionTemplate', () => {
   });
 });
 
-describe('migrateEncounterTemplate', () => {
-  it('converts each encounter step to an ActionStep with difficulty 0-1', () => {
+describe('ENCOUNTER_TEMPLATES (UnifiedActionTemplate[])', () => {
+  it('every step has difficulty in [0, 1]', () => {
     for (const enc of ENCOUNTER_TEMPLATES) {
-      const unified = migrateEncounterTemplate(enc);
-      for (const step of unified.steps) {
+      for (const step of enc.steps) {
         expect(step.difficulty).toBeGreaterThanOrEqual(0);
         expect(step.difficulty).toBeLessThanOrEqual(1);
       }
     }
   });
 
-  it('step count matches original encounter step count', () => {
-    for (const enc of ENCOUNTER_TEMPLATES) {
-      const unified = migrateEncounterTemplate(enc);
-      expect(unified.steps).toHaveLength(enc.steps.length);
-    }
-  });
-
   it('scale is always local', () => {
     for (const enc of ENCOUNTER_TEMPLATES) {
-      const unified = migrateEncounterTemplate(enc);
-      expect(unified.scale).toBe('local');
+      expect(enc.scale).toBe('local');
     }
   });
 
-  it('reach is reachPrimary from the encounter', () => {
-    const enc = ENCOUNTER_TEMPLATES[0];
-    const unified = migrateEncounterTemplate(enc);
-    expect(unified.reach).toBe(enc.reachPrimary);
+  it('reach is defined', () => {
+    for (const enc of ENCOUNTER_TEMPLATES) {
+      expect(enc.reach).toBeTruthy();
+    }
   });
 
-  it('actorAffinities is [individual]', () => {
-    const unified = migrateEncounterTemplate(ENCOUNTER_TEMPLATES[0]);
-    expect(unified.actorAffinities).toContain('individual');
+  it('actorAffinities includes individual', () => {
+    for (const enc of ENCOUNTER_TEMPLATES) {
+      expect(enc.actorAffinities).toContain('individual');
+    }
   });
 });
 
@@ -319,10 +310,9 @@ describe('rarityTier — every template has a valid tier', () => {
     expect(unified.rarityTier).toBe(1);
   });
 
-  it('migrateEncounterTemplate always produces tier 1', () => {
+  it('all encounter templates have rarityTier 1', () => {
     for (const enc of ENCOUNTER_TEMPLATES) {
-      const unified = migrateEncounterTemplate(enc);
-      expect(unified.rarityTier).toBe(1);
+      expect(enc.rarityTier).toBe(1);
     }
   });
 });

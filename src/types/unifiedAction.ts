@@ -708,6 +708,22 @@ export interface UnifiedActionTemplate {
    * branch resolution picks up the player's choice correctly.
    */
   readonly authoredChoices?: Readonly<Record<number, readonly AuthoredChoiceCard[]>>;
+
+  /**
+   * When present, triggers secret discovery aftermath on success.
+   * Drives secretGeneration.ts — creates `knows_secret_of` edges.
+   */
+  readonly secretDiscovery?: {
+    readonly onSuccess: boolean;
+    readonly sourceName: import('./encounter').SecretDiscoverySource;
+  };
+
+  /**
+   * Explicit reputation polarity override. When set, overrides the heuristic
+   * in phaseReputationTraits.ts for templates where the default crudType mapping
+   * would produce the wrong sign (e.g. 'threaten' templates that are read/explore).
+   */
+  readonly reputationPolarity?: 'positive' | 'negative';
 }
 
 /**

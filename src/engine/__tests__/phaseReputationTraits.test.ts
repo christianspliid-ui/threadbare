@@ -12,7 +12,7 @@ import {
 } from '../phaseReputationTraits';
 import { getTraitsForNode } from '../traits';
 import type { GameState } from '../../types/gameState';
-import type { EncounterTemplate } from '../../types/encounter';
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import {
   REPUTATION_LEVEL_1_THRESHOLD,
   REPUTATION_LEVEL_2_THRESHOLD,
@@ -253,44 +253,42 @@ describe('determinePolarity', () => {
     const graph = makeGraph();
     const template = {
       reputationPolarity: 'negative' as const,
-      encounterType: 'assist',
-      reachPrimary: 'iron',
-    } as EncounterTemplate;
+      crudType: 'update',
+      reach: 'iron',
+    } as unknown as UnifiedActionTemplate;
 
     expect(determinePolarity(template, graph, 'agent-1')).toBe('negative');
   });
 
-  it('Layer 2: positive for assist/build/create/lead types', () => {
+  it('Layer 2: positive for update/create crudTypes (assist/build heuristic)', () => {
     const graph = makeGraph();
-    for (const type of ['assist', 'build', 'create', 'lead']) {
-      const template = { encounterType: type, reachPrimary: 'iron' } as EncounterTemplate;
+    for (const type of ['update', 'create'] as const) {
+      const template = { crudType: type, reach: 'iron' } as unknown as UnifiedActionTemplate;
       expect(determinePolarity(template, graph, 'agent-1')).toBe('positive');
     }
   });
 
-  it('Layer 2: negative for steal/duel types', () => {
+  it('Layer 2: negative for delete crudType (duel heuristic)', () => {
     const graph = makeGraph();
-    for (const type of ['steal', 'duel']) {
-      const template = { encounterType: type, reachPrimary: 'iron' } as EncounterTemplate;
-      expect(determinePolarity(template, graph, 'agent-1')).toBe('negative');
-    }
+    const template = { crudType: 'delete', reach: 'iron' } as unknown as UnifiedActionTemplate;
+    expect(determinePolarity(template, graph, 'agent-1')).toBe('negative');
   });
 
-  it('Layer 3: uses axiological profile for neutral types', () => {
+  it('Layer 3: uses axiological profile for neutral crudTypes', () => {
     const graph = makeGraph();
 
     // Iron reach → mercy_ruthlessness pair, agent has +0.5 (virtue) → positive
     const ironTemplate = {
-      encounterType: 'explore',
-      reachPrimary: 'iron',
-    } as EncounterTemplate;
+      crudType: 'read',
+      reach: 'iron',
+    } as unknown as UnifiedActionTemplate;
     expect(determinePolarity(ironTemplate, graph, 'agent-1')).toBe('positive');
 
     // Gold reach → asceticism_extravagance pair, agent has -0.3 (flaw) → negative
     const goldTemplate = {
-      encounterType: 'trade',
-      reachPrimary: 'gold',
-    } as EncounterTemplate;
+      crudType: 'read',
+      reach: 'gold',
+    } as unknown as UnifiedActionTemplate;
     expect(determinePolarity(goldTemplate, graph, 'agent-1')).toBe('negative');
   });
 
@@ -299,9 +297,9 @@ describe('determinePolarity', () => {
 
     // Shadow reach → honesty_cunning pair, agent has 0 → null
     const template = {
-      encounterType: 'explore',
-      reachPrimary: 'shadow',
-    } as EncounterTemplate;
+      crudType: 'read',
+      reach: 'shadow',
+    } as unknown as UnifiedActionTemplate;
     expect(determinePolarity(template, graph, 'agent-1')).toBeNull();
   });
 });

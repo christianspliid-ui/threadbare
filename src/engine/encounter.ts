@@ -37,6 +37,8 @@ import { appendEvent } from './encounterTimeline';
 import { computeInitialLeverage, isSocialSceneTemplate } from './socialLeverage';
 import { selectCounterArgument, applyCounterModifier } from './socialCounterArgument';
 import type { ReachDomain } from '../types/traits';
+import type { ActionStep, ActionStepOrBranch } from '../types/unifiedAction';
+import { isActionStepBranch } from '../types/unifiedAction';
 
 // ─── Group Scene Constants ────────────────────────────────────────────────
 
@@ -48,6 +50,50 @@ export const GROUP_SCENE_MIN_PARTICIPANTS = 3;
 
 /** Maximum agents for a group scene. */
 export const GROUP_SCENE_MAX_PARTICIPANTS = 6;
+
+// ─── ActionStep Compatibility ─────────────────────────────────────────────────
+// getAnyEncounterById returns UnifiedActionTemplate (steps: ActionStepOrBranch[]).
+// These helpers bridge the gap while encounter.ts still uses EncounterStep-style logic.
+
+function toConcreteStep(stepOrBranch: ActionStepOrBranch): ActionStep {
+  return (isActionStepBranch(stepOrBranch) ? stepOrBranch.fallback : stepOrBranch) as ActionStep;
+}
+
+function makeStepId(encounterId: string, stepIndex: number): string {
+  return `${encounterId}.step${stepIndex}`;
+}
+
+function makeStepName(step: ActionStep, stepIndex: number): string {
+  return step.narrativeTemplate?.slice(0, 50) ?? `Step ${stepIndex + 1}`;
+}
+
+function getStepDuration(stepOrBranch: ActionStepOrBranch): number {
+  const s = toConcreteStep(stepOrBranch);
+  const dur = s.duration as unknown;
+  // ActionStep: { min, max } object. Legacy EncounterStep mocks: number or absent.
+  if (dur !== null && typeof dur === 'object') {
+    return (dur as { min: number }).min;
+  }
+  return (dur as number | undefined) ?? 1;
+}
+
+function buildOutcomeCompat(step: ActionStep, success: boolean): EncounterOutcome {
+  // Legacy EncounterStep mocks have onSuccess/onFailure as EncounterOutcome objects.
+  // UAT ActionStep has onSuccess/onFailure as readonly GraphOp[] (arrays).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const legacyOn = success ? (step as any).onSuccess : (step as any).onFailure;
+  if (!Array.isArray(legacyOn) && typeof legacyOn === 'object' && legacyOn !== null && 'narrative' in legacyOn) {
+    return legacyOn as EncounterOutcome;
+  }
+  const meta = success ? step.successMetadata : step.failureMetadata;
+  return {
+    narrative: (success ? step.successAfterimage : step.failureAfterimage) ?? '',
+    reputationDelta: meta?.reputationDelta,
+    tierPromotionEligible: meta?.tierPromotionEligible,
+    rewardPool: meta?.rewardPool,
+    appliesWound: false,
+  };
+}
 
 // ────────────────────────────────────────────────────────────────────────
 // INTERNAL HELPERS
@@ -177,12 +223,12 @@ export function initiateEncounter(
   targetAgentId?: string,
 ): EncounterProgress {
   const encounter = getAnyEncounterById(encounterId);
-  const firstStepDuration = encounter?.steps[0]?.duration ?? 1;
+  const firstStepDuration = encounter?.steps[0] ? getStepDuration(encounter.steps[0]) : 1;
 
   // Compute initial leverage for social scene templates
   let initialLeverage: number | undefined;
   let initialLeverageHistory: import('../types/encounter').LeverageHistoryEntry[] | undefined;
-  if (encounter && isSocialSceneTemplate(encounter.steps) && targetAgentId) {
+  if (encounter && isSocialSceneTemplate(encounter.steps as ReadonlyArray<{ leverageOnSuccess?: number }>) && targetAgentId) {
     const leverageResult = computeInitialLeverage(state.graph, actorId, targetAgentId);
     initialLeverage = leverageResult.leverage;
     initialLeverageHistory = leverageResult.history;
@@ -206,15 +252,16 @@ export function initiateEncounter(
 
   state.encounterProgress.push(progress);
 
-  const firstStep = encounter?.steps[0];
+  const firstStepRaw = encounter?.steps[0];
+  const firstStep = firstStepRaw ? toConcreteStep(firstStepRaw) : undefined;
   const trace: Omit<EncounterResolutionTrace, 'id' | 'timestamp'> = {
     tick,
     category: 'encounter_resolution',
     agentId: actorId,
     encounterId,
     actorId,
-    stepId: firstStep?.id ?? 'unknown',
-    stepName: firstStep?.name ?? 'Unknown Step',
+    stepId: firstStep ? makeStepId(encounterId, 0) : 'unknown',
+    stepName: firstStep ? makeStepName(firstStep, 0) : 'Unknown Step',
     difficulty: firstStep?.difficulty ?? 0,
     capability: 0,
     probability: 0,
@@ -233,7 +280,7 @@ export function initiateEncounter(
     tick,
     encounter: encounterId,
     steps: encounter?.steps.length ?? 0,
-    threat: (firstStep?.difficulty ?? 0) / 100,
+    threat: firstStep?.difficulty ?? 0,
     reach: firstStep?.reach ?? 'unknown',
   });
 
@@ -320,12 +367,13 @@ export function resolveEncounter(
     };
   }
 
-  const step = encounter.steps[progress.currentEncounterIndex];
+  const stepRaw = encounter.steps[progress.currentEncounterIndex];
+  const step = stepRaw ? toConcreteStep(stepRaw) : undefined;
   if (!step) {
     const { resolution, resolutionSnapshot } = buildFailSoftResolution(
       'unknown',
       'Unknown Step',
-      encounter.reachPrimary,
+      encounter.reach,
       0,
     );
     return {
@@ -408,10 +456,10 @@ export function resolveEncounter(
     effectiveDifficulty = applyCounterModifier(effectiveDifficulty, counter);
   }
 
-  // Phase 2: Use shared resolution service with difficulty normalization.
-  // Legacy encounter difficulty is integer-like (e.g. 12, 25, 30) — normalize to 0..1
-  // at this boundary before calling the shared resolver.
-  const normalizedDifficulty = normalizeLegacyDifficulty(effectiveDifficulty);
+  // UAT ActionStep.duration is {min,max}; legacy EncounterStep.duration is number/absent.
+  // Apply normalizeLegacyDifficulty (÷100) only for legacy-style difficulty (0-100 scale).
+  const isUATStep = step.duration !== null && typeof step.duration === 'object';
+  const normalizedDifficulty = isUATStep ? effectiveDifficulty : normalizeLegacyDifficulty(effectiveDifficulty);
 
   const resolutionInput: ResolutionInput = {
     actorId: progress.actorId,
@@ -436,8 +484,8 @@ export function resolveEncounter(
   const success = isSuccessOutcome(resolution.outcome);
   const resolutionSnapshot: EncounterResolutionSnapshot = {
     stepIndex: progress.currentEncounterIndex,
-    stepId: step.id,
-    stepName: step.name,
+    stepId: makeStepId(progress.encounterId, progress.currentEncounterIndex),
+    stepName: makeStepName(step, progress.currentEncounterIndex),
     reach: step.reach,
     difficulty: effectiveDifficulty,
     normalizedDifficulty,
@@ -473,17 +521,18 @@ export function resolveEncounter(
     }
   }
 
-  // Select the appropriate outcome
-  const outcome = success ? step.onSuccess : step.onFailure;
+  // Build EncounterOutcome from ActionStep metadata
+  const outcome = buildOutcomeCompat(step, success);
 
+  const _syntheticStepId = makeStepId(progress.encounterId, progress.currentEncounterIndex);
   const trace: Omit<EncounterResolutionTrace, 'id' | 'timestamp'> = {
     tick: state.tick,
     category: 'encounter_resolution',
     agentId: progress.actorId,
     encounterId: progress.encounterId,
     actorId: progress.actorId,
-    stepId: step.id,
-    stepName: step.name,
+    stepId: _syntheticStepId,
+    stepName: makeStepName(step, progress.currentEncounterIndex),
     difficulty: step.difficulty,
     capability,
     probability: resolution.probability,
@@ -491,7 +540,7 @@ export function resolveEncounter(
     success,
     status: 'active',
     traitChanges: outcome.traitChanges ?? [],
-    summary: `${step.id}: ${resolution.outcome} (roll ${resolution.roll.toFixed(2)})`,
+    summary: `${_syntheticStepId}: ${resolution.outcome} (roll ${resolution.roll.toFixed(2)})`,
   };
 
   emitTrace(trace);
@@ -578,12 +627,13 @@ export function advanceEncounter(
   const encounter = getAnyEncounterById(progress.encounterId);
   if (!encounter) return;
 
-  const step = encounter.steps[progress.currentEncounterIndex];
-  if (!step) return;
+  const stepRaw = encounter.steps[progress.currentEncounterIndex];
+  if (!stepRaw) return;
+  const step = toConcreteStep(stepRaw);
 
   // Record in history
   progress.history.push({
-    encounterId: step.id,
+    encounterId: makeStepId(progress.encounterId, progress.currentEncounterIndex),
     success,
     tick,
   });
@@ -598,7 +648,9 @@ export function advanceEncounter(
       let nextIndex = progress.currentEncounterIndex + 1;
       while (nextIndex < encounter.steps.length) {
         const candidate = encounter.steps[nextIndex];
-        if (!candidate.conditional || isConditionMet(candidate.conditional, progress)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const conditional = (candidate as any).conditional as import('../types/encounter').EncounterStep['conditional'] | undefined;
+        if (!conditional || isConditionMet(conditional, progress)) {
           break;
         }
         // Condition not met — skip this step
@@ -608,7 +660,7 @@ export function advanceEncounter(
       if (nextIndex < encounter.steps.length) {
         progress.currentEncounterIndex = nextIndex;
         const nextStep = encounter.steps[nextIndex];
-        const nextDuration = nextStep?.duration ?? 1;
+        const nextDuration = nextStep ? getStepDuration(nextStep) : 1;
         progress.occupiedUntilTick = tick + nextDuration;
       } else {
         // All remaining steps were conditional and skipped — encounter complete
@@ -632,8 +684,8 @@ export function advanceEncounter(
     agentId: progress.actorId,
     encounterId: progress.encounterId,
     actorId: progress.actorId,
-    stepId: step.id,
-    stepName: step.name,
+    stepId: makeStepId(progress.encounterId, progress.currentEncounterIndex),
+    stepName: makeStepName(step, progress.currentEncounterIndex),
     difficulty: step.difficulty,
     capability: 0,
     probability: 0,
