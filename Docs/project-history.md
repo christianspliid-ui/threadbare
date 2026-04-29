@@ -540,3 +540,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - THR-285 trace buffer capacity increase: ✅ Complete (2026-04-27) — raised BUFFER_SIZE to 2000 and updated dependent traceBuffer unit/integration tests; verification gates green.
 - THR-290 AG unified registry wiring: ✅ Complete (2026-04-28) — added Adventurers Guild unified spread, normalized faction/reputation lookups via resolveEncounterTemplate, and verified no duplicate unified IDs (ag count 18).
 - THR-106 anomaly migration: ✅ Complete (2026-04-28) — converted all 10 anomaly templates to UnifiedActionTemplate, added authored aftermath + two authored choice-card encounters, and kept legacy lookup compatibility.
+- THR-109 skills/docs unified-format closeout: ✅ Complete (2026-04-29) — updated template-encounter-rewrite + encounter-pipeline skills/prompts to UnifiedActionTemplate baseline, replaced stale Notion references, and refreshed systemic wiring/checklist docs.

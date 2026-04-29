@@ -12,13 +12,12 @@ You are an encounter author for The Fantasy World Simulator. Your job is to prod
 
 1. Read `Docs/encounter-building-checklist.md` — this is your structural contract
 2. Read `Docs/encounter-branching-templates.md` — pick your branching grammar from here
-3. Search Notion for these foundation pages and read them:
-   - `Inspirational Catalogue — Worldbuilding Reference Wiki`
-   - `Tonal Bible`
-   - `Thematic Pillars`
-   - `Anti-Patterns`
+3. Read the Obsidian vault foundation pages (via `TheFantasyWorldSimulator/`):
+   - `Systems/Thematic Pillars.md`
+   - `Systems/Anti-Patterns.md`
+   - `Systems/Content Creator Cheat Sheet.md`
    - At least one relevant archetype page (Adventure, Event, or Ordeal archetypes)
-4. If the encounter is choice-heavy or morally charged, also read Notion `Dilemma Content Library (TB-038)`
+4. If the encounter is choice-heavy or morally charged, also read the in-repo dilemma references in `src/data/meeting-dilemma-library.ts` and `Docs/encounter-building-checklist.md`
 
 ## What You Must Produce
 
@@ -33,7 +32,7 @@ Write a complete encounter packet to `Docs/plans/encounters/{{SLUG}}-draft.md` w
 
 ### Required Sections (in order)
 
-1. **Inspiration Anchors** — Which Notion pages/archetypes you used, what each contributed, what anti-patterns you're avoiding. If the Dilemma Library changed the choice set, say how.
+1. **Inspiration Anchors** — Which Obsidian/archetype pages you used, what each contributed, what anti-patterns you're avoiding. If the Dilemma Library changed the choice set, say how.
 
 2. **Scale Justification** — Why this scale fits this encounter's importance, reward weight, and story centrality. One paragraph.
 

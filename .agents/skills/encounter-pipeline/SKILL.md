@@ -12,6 +12,10 @@ Automated 4-pass encounter pipeline: premise → deployed code. Each agent pass 
 Premise → Draft (Opus) → Editorial+Revised (Opus) → Systems+Final (Sonnet) → Implementation (Sonnet)
 ```
 
+## Unified Format Baseline (THR-109)
+
+All encounter authoring in this pipeline targets `UnifiedActionTemplate` entries only. Do not produce or request `EncounterTemplate` output. Branching encounters and migrated guild/faction templates both live on the same unified surface; differences are authored via `ActionStepBranch`, `authoredChoices`, and `aftermathConfig`, not via separate legacy types.
+
 ## Systemic Wiring — READ BEFORE AUTHORING
 
 **Before running the pipeline, read `Docs/authoring-brief.md`** — the compiled preamble covering all 7 engine capabilities and the editorial rejection triggers. It is faster to read and more consistent than the full source. If `Docs/authoring-brief.md` is missing or `npm run check:authoring-brief` reports it stale, fall back to reading `Docs/plans/2026-04-16-systemic-wiring-guide.md` directly.
