@@ -1,8 +1,9 @@
 /**
- * Monster Encounter Content Tests — TDD RED phase
+ * Monster Encounter Content Tests — UnifiedActionTemplate (THR-103).
  *
- * Tests for monster encounter templates, encounter pool registration,
- * and Adventuring Guild quest wiring.
+ * Tests for monster encounter templates after Phase 4 migration. Verifies
+ * unified shape, lookup behavior, encounter pool registration via the unified
+ * registry, and Adventuring Guild quest wiring.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -11,48 +12,114 @@ import {
   getMonsterEncounterById,
 } from '../monster-encounter-content';
 import { getAnyEncounterById } from '../encounter-content';
+import { getUnifiedTemplateById } from '../unified-action-templates';
 import { ADVENTURING_GUILD_DEFINITION } from '../faction-definitions';
+import { assertNoDuplicateIds, assertValidUnifiedTemplate } from '../../testing/contentInvariants';
 
-describe('monster-encounter-content', () => {
+describe('monster-encounter-content (THR-103 migration)', () => {
   describe('MONSTER_ENCOUNTER_TEMPLATES', () => {
-    it('has at least 4 entries', () => {
-      expect(MONSTER_ENCOUNTER_TEMPLATES.length).toBeGreaterThanOrEqual(4);
+    it('has the five expected templates', () => {
+      const ids = MONSTER_ENCOUNTER_TEMPLATES.map(t => t.id).sort();
+      expect(ids).toEqual([
+        'monster.encounter.ambush',
+        'monster.encounter.horde_raid',
+        'monster.encounter.lair_defense',
+        'monster.hunt.minor',
+        'monster.hunt.named_elite',
+      ]);
     });
 
-    it('every template has a valid EncounterTemplate shape (id, locationTypes, steps)', () => {
-      for (const template of MONSTER_ENCOUNTER_TEMPLATES) {
-        expect(typeof template.id).toBe('string');
-        expect(template.id.length).toBeGreaterThan(0);
-        expect(Array.isArray(template.locationTypes)).toBe(true);
-        expect(template.locationTypes.length).toBeGreaterThanOrEqual(1);
-        expect(Array.isArray(template.steps)).toBe(true);
-        expect(template.steps.length).toBeGreaterThanOrEqual(1);
-      }
+    it('every template passes structural unified-template invariants', () => {
+      MONSTER_ENCOUNTER_TEMPLATES.forEach(assertValidUnifiedTemplate);
+      assertNoDuplicateIds(MONSTER_ENCOUNTER_TEMPLATES);
     });
 
-    it('every template has required fields: reachPrimary, reachSecondary, encounterType, threatRating, motivations', () => {
-      const validReaches = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'flesh'];
-      for (const template of MONSTER_ENCOUNTER_TEMPLATES) {
-        expect(validReaches).toContain(template.reachPrimary);
-        expect(validReaches).toContain(template.reachSecondary);
-        expect(typeof template.encounterType).toBe('string');
-        expect(typeof template.threatRating).toBe('string');
-        expect(Array.isArray(template.motivations)).toBe(true);
-      }
-    });
-
-    it('every step has success and failure outcomes', () => {
-      for (const template of MONSTER_ENCOUNTER_TEMPLATES) {
-        for (const step of template.steps) {
-          expect(step.onSuccess.narrative.length).toBeGreaterThan(10);
-          expect(step.onFailure.narrative.length).toBeGreaterThan(10);
+    it('every template has duration {min,max} and difficulty 0..1 on every step', () => {
+      for (const t of MONSTER_ENCOUNTER_TEMPLATES) {
+        for (const step of t.steps) {
+          expect(step.duration, `${t.id} step duration`).toMatchObject({
+            min: expect.any(Number),
+            max: expect.any(Number),
+          });
+          expect(step.difficulty, `${t.id} step difficulty`).toBeGreaterThanOrEqual(0);
+          expect(step.difficulty, `${t.id} step difficulty`).toBeLessThanOrEqual(1);
         }
       }
     });
 
-    it('template ids are unique', () => {
-      const ids = MONSTER_ENCOUNTER_TEMPLATES.map(t => t.id);
-      expect(new Set(ids).size).toBe(ids.length);
+    it('every template final step has failBehavior fail_action', () => {
+      for (const t of MONSTER_ENCOUNTER_TEMPLATES) {
+        const lastStep = t.steps[t.steps.length - 1];
+        expect(lastStep.failBehavior, `${t.id} final step failBehavior`).toBe('fail_action');
+      }
+    });
+
+    it('every template has aftermathConfig with a fallback', () => {
+      for (const t of MONSTER_ENCOUNTER_TEMPLATES) {
+        expect(t.aftermathConfig, `${t.id} aftermathConfig`).toBeDefined();
+        expect(t.aftermathConfig?.fallback, `${t.id} aftermathConfig.fallback`).toBeDefined();
+      }
+    });
+
+    it('every template authors at least one aftermath reaction with a typed effect', () => {
+      // Hard requirement: contextual aftermath, not just generic reward pools.
+      for (const t of MONSTER_ENCOUNTER_TEMPLATES) {
+        const reactions = t.aftermathConfig?.fallback.reactions ?? [];
+        expect(reactions.length, `${t.id} should author at least one aftermath reaction`).toBeGreaterThan(0);
+        const hasTypedEffect = reactions.some(r =>
+          r.effects.some(e =>
+            e.kind === 'hidden_mark'
+            || e.kind === 'encounter_seed'
+            || e.kind === 'intelligence'
+            || e.kind === 'reputation_tally'
+            || e.kind === 'emit_omen',
+          ),
+        );
+        expect(hasTypedEffect, `${t.id} should author at least one hidden_mark / encounter_seed / intelligence / reputation_tally / emit_omen`).toBe(true);
+      }
+    });
+
+    it('every step has narrativeTemplate prose at least 40 chars (no placeholder stubs)', () => {
+      for (const t of MONSTER_ENCOUNTER_TEMPLATES) {
+        for (const step of t.steps) {
+          expect(step.narrativeTemplate?.length ?? 0, `${t.id} step narrativeTemplate`).toBeGreaterThan(40);
+        }
+      }
+    });
+
+    it('every step has authored success and failure afterimages', () => {
+      for (const t of MONSTER_ENCOUNTER_TEMPLATES) {
+        for (const step of t.steps) {
+          expect(step.successAfterimage?.length ?? 0, `${t.id} step successAfterimage`).toBeGreaterThan(20);
+          expect(step.failureAfterimage?.length ?? 0, `${t.id} step failureAfterimage`).toBeGreaterThan(20);
+        }
+      }
+    });
+
+    it('every narrative field uses {name} enrichment placeholder', () => {
+      for (const t of MONSTER_ENCOUNTER_TEMPLATES) {
+        for (const step of t.steps) {
+          const fields = [step.narrativeTemplate, step.successAfterimage, step.failureAfterimage].filter(
+            (s): s is string => typeof s === 'string',
+          );
+          for (const field of fields) {
+            expect(field, `${t.id} field should reference {name}`).toMatch(/\{name\}/);
+          }
+        }
+      }
+    });
+
+    it('lair_defense and horde_raid (world-mutating events) author update_node GraphOps on the climactic step', () => {
+      const lairDefense = MONSTER_ENCOUNTER_TEMPLATES.find(t => t.id === 'monster.encounter.lair_defense')!;
+      const hordeRaid = MONSTER_ENCOUNTER_TEMPLATES.find(t => t.id === 'monster.encounter.horde_raid')!;
+
+      const lairFinalStep = lairDefense.steps[lairDefense.steps.length - 1];
+      expect(lairFinalStep.onSuccess.length, 'lair_defense climactic onSuccess should mutate the world').toBeGreaterThan(0);
+      expect(lairFinalStep.onSuccess[0].op).toBe('update_node');
+
+      const hordeFinalStep = hordeRaid.steps[hordeRaid.steps.length - 1];
+      expect(hordeFinalStep.onSuccess.length, 'horde_raid climactic onSuccess should mutate prosperity').toBeGreaterThan(0);
+      expect(hordeFinalStep.onFailure.length, 'horde_raid climactic onFailure should mutate prosperity').toBeGreaterThan(0);
     });
   });
 
@@ -67,34 +134,34 @@ describe('monster-encounter-content', () => {
       expect(getMonsterEncounterById('nonexistent.template')).toBeUndefined();
     });
 
-    it('template monster.hunt.minor has locationTypes containing lair', () => {
+    it('template monster.hunt.minor has locationSubtypes containing lair', () => {
       const template = getMonsterEncounterById('monster.hunt.minor');
-      expect(template?.locationTypes).toContain('lair');
+      expect(template?.locationSubtypes).toContain('lair');
     });
 
-    it('template monster.encounter.ambush has locationTypes containing wilderness', () => {
+    it('template monster.encounter.ambush has locationSubtypes containing wilderness', () => {
       const template = getMonsterEncounterById('monster.encounter.ambush');
-      expect(template?.locationTypes).toContain('wilderness');
+      expect(template?.locationSubtypes).toContain('wilderness');
     });
   });
 
-  describe('getAnyEncounterById — pool registration', () => {
-    it('returns monster template for monster.hunt.minor (pool registration works)', () => {
-      const template = getAnyEncounterById('monster.hunt.minor');
-      expect(template).toBeDefined();
-      expect(template?.id).toBe('monster.hunt.minor');
+  describe('Unified pool registration', () => {
+    it('getUnifiedTemplateById resolves all five monster templates', () => {
+      for (const t of MONSTER_ENCOUNTER_TEMPLATES) {
+        const resolved = getUnifiedTemplateById(t.id);
+        expect(resolved, `${t.id} should be in unified pool`).toBeDefined();
+        expect(resolved?.id).toBe(t.id);
+      }
     });
 
-    it('returns monster template for monster.hunt.named_elite', () => {
-      const template = getAnyEncounterById('monster.hunt.named_elite');
-      expect(template).toBeDefined();
-      expect(template?.id).toBe('monster.hunt.named_elite');
-    });
-
-    it('returns monster template for monster.encounter.ambush', () => {
-      const template = getAnyEncounterById('monster.encounter.ambush');
-      expect(template).toBeDefined();
-      expect(template?.id).toBe('monster.encounter.ambush');
+    it('getAnyEncounterById fallback chain still resolves monster templates', () => {
+      // Backward-compat path: encounter resolution that goes through legacy
+      // getAnyEncounterById should still find migrated monster templates.
+      for (const id of ['monster.hunt.minor', 'monster.hunt.named_elite', 'monster.encounter.ambush']) {
+        const template = getAnyEncounterById(id);
+        expect(template, `${id} via getAnyEncounterById`).toBeDefined();
+        expect(template?.id).toBe(id);
+      }
     });
   });
 

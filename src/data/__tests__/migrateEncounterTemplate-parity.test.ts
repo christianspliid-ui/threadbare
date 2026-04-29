@@ -1,22 +1,18 @@
 /**
- * Migration parity tests (THR-90 task 2).
+ * Migration parity tests (THR-90 task 2; updated for THR-103).
  *
- * For 2 representative legacy templates (social, combat/duel), verify that
- * migrateEncounterTemplate() preserves all consequential fields:
- *   - difficulty correctly scaled 0–100 → 0–1
- *   - duration correctly converted to { min, max } range
- *   - encounterType correctly mapped to crudType via encounterTypeToCrud()
- *   - rewardPool, tierPromotionEligible, reputationDelta carried into
- *     successMetadata / failureMetadata on each step
- *   - failBehavior: 'continue_weakened' on non-final steps, 'fail_action' on final
- *   - top-level fields (id, name, reach, scale, actorAffinities) preserved
+ * Originally exercised migrateEncounterTemplate() against representative legacy
+ * templates. As Phase 4 migrations land (THR-89 thieves guild, THR-100 social,
+ * THR-101 tavern, THR-103 monster), more templates become pre-migrated unified
+ * templates that no longer round-trip through migrateEncounterTemplate.
  *
- * Note: Thieves guild templates were migrated to UnifiedActionTemplate in THR-89.
- * They no longer go through migrateEncounterTemplate — they are pre-authored unified
- * templates. The guild section of this test was updated to verify the pre-migrated shape.
+ * After THR-103 the file's combat representative is itself unified, so the
+ * "legacy → unified" parity check is replaced with an "unified shape valid"
+ * check matching the social/TG patterns. The encounterTypeToCrud invariant is
+ * still verified directly with literal encounter-type strings.
  */
 import { describe, it, expect } from 'vitest';
-import { migrateEncounterTemplate, encounterTypeToCrud } from '../unified-action-templates';
+import { encounterTypeToCrud } from '../unified-action-templates';
 import {
   THIEVES_GUILD_ENCOUNTER_TEMPLATES,
   THIEVES_GUILD_SOCIAL_TEMPLATES,
@@ -25,72 +21,7 @@ import {
 } from '../thieves-guild-encounter-content';
 import { SOCIAL_ENCOUNTER_TEMPLATES } from '../social-encounter-content';
 import { MONSTER_ENCOUNTER_TEMPLATES } from '../monster-encounter-content';
-import type { EncounterTemplate } from '../../types/encounter';
-import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { assertNoDuplicateIds, assertValidUnifiedTemplate } from '../../testing/contentInvariants';
-
-// ─── Shared parity helper (F4 fix) ────────────────────────────────────────
-
-function assertParity(legacy: EncounterTemplate, migrated: UnifiedActionTemplate): void {
-  // Top-level identity
-  expect(migrated.id).toBe(legacy.id);
-  expect(migrated.name).toBe(legacy.name);
-  expect(migrated.reach).toBe(legacy.reachPrimary);
-  expect(migrated.crudType).toBe(encounterTypeToCrud(legacy.encounterType));
-  expect(migrated.scale).toBe('local');
-  expect(migrated.actorAffinities).toContain('individual');
-  expect(migrated.steps).toHaveLength(legacy.steps.length);
-
-  const lastIdx = legacy.steps.length - 1;
-
-  for (let i = 0; i < legacy.steps.length; i++) {
-    const legacyStep = legacy.steps[i];
-    const migratedStep = migrated.steps[i];
-
-    // Difficulty: 0–100 → 0–1
-    expect(migratedStep.difficulty, `step ${i} difficulty`).toBeCloseTo(legacyStep.difficulty / 100, 10);
-    expect(migratedStep.difficulty).toBeGreaterThanOrEqual(0);
-    expect(migratedStep.difficulty).toBeLessThanOrEqual(1);
-
-    // Duration: scalar → { min, max }
-    const legacyDuration = legacyStep.duration ?? 1;
-    expect(migratedStep.duration, `step ${i} duration`).toEqual({ min: legacyDuration, max: legacyDuration });
-
-    // failBehavior: continue_weakened on non-final, fail_action on final
-    if (i < lastIdx) {
-      expect(migratedStep.failBehavior, `step ${i} failBehavior`).toBe('continue_weakened');
-    } else {
-      expect(migratedStep.failBehavior, `step ${i} failBehavior (final)`).toBe('fail_action');
-    }
-
-    // successMetadata: fields carried from onSuccess
-    const onSuccess = legacyStep.onSuccess;
-    if (onSuccess.rewardPool !== undefined || onSuccess.tierPromotionEligible !== undefined || onSuccess.reputationDelta !== undefined) {
-      expect(migratedStep.successMetadata, `step ${i} successMetadata`).toBeDefined();
-      if (onSuccess.rewardPool !== undefined) {
-        expect(migratedStep.successMetadata?.rewardPool).toEqual(onSuccess.rewardPool);
-      }
-      if (onSuccess.tierPromotionEligible !== undefined) {
-        expect(migratedStep.successMetadata?.tierPromotionEligible).toBe(onSuccess.tierPromotionEligible);
-      }
-      if (onSuccess.reputationDelta !== undefined) {
-        expect(migratedStep.successMetadata?.reputationDelta).toBe(onSuccess.reputationDelta);
-      }
-    }
-
-    // failureMetadata: fields carried from onFailure
-    const onFailure = legacyStep.onFailure;
-    if (onFailure.rewardPool !== undefined || onFailure.reputationDelta !== undefined) {
-      expect(migratedStep.failureMetadata, `step ${i} failureMetadata`).toBeDefined();
-      if (onFailure.rewardPool !== undefined) {
-        expect(migratedStep.failureMetadata?.rewardPool).toEqual(onFailure.rewardPool);
-      }
-      if (onFailure.reputationDelta !== undefined) {
-        expect(migratedStep.failureMetadata?.reputationDelta).toBe(onFailure.reputationDelta);
-      }
-    }
-  }
-}
 
 // ─── Pick representative templates ────────────────────────────────────────
 
@@ -99,7 +30,7 @@ const guildTemplate = THIEVES_GUILD_ENCOUNTER_TEMPLATES.find(t => t.id === 'tg.q
 const socialTemplate = SOCIAL_ENCOUNTER_TEMPLATES.find(t => t.id === 'social.forge_alliance')!;
 const combatTemplate = MONSTER_ENCOUNTER_TEMPLATES.find(t => t.id === 'monster.hunt.minor')!;
 
-describe('migrateEncounterTemplate parity (THR-90)', () => {
+describe('migrateEncounterTemplate parity (THR-90; updated for THR-103)', () => {
   it('all three source templates are found in their arrays', () => {
     expect(guildTemplate, 'tg.quest.pocket_run').toBeDefined();
     expect(socialTemplate, 'social.forge_alliance').toBeDefined();
@@ -142,24 +73,42 @@ describe('migrateEncounterTemplate parity (THR-90)', () => {
     expect(socialTemplate.aftermathConfig.fallback).toBeDefined();
   });
 
-  // ─── Legacy migration: combat only (social now pre-migrated) ─────────────
+  // ─── Combat: pre-migrated shape (THR-103) ──────────────────────────────
 
-  it('monster.hunt.minor (combat/duel / duel→delete) passes full parity check', () => {
-    assertParity(combatTemplate, migrateEncounterTemplate(combatTemplate));
+  it('monster.hunt.minor is a valid pre-migrated UnifiedActionTemplate', () => {
+    // Monster templates were migrated to unified format (THR-103) — no longer
+    // round-trip through migrateEncounterTemplate.
+    expect(combatTemplate.id).toBe('monster.hunt.minor');
+    expect(combatTemplate.crudType).toBe('delete'); // duel → delete
+    expect(combatTemplate.reach).toBe('iron');
+    expect(combatTemplate.steps.length).toBeGreaterThanOrEqual(2);
+    for (const step of combatTemplate.steps) {
+      expect(step.duration).toMatchObject({ min: expect.any(Number), max: expect.any(Number) });
+      expect(step.difficulty).toBeGreaterThanOrEqual(0);
+      expect(step.difficulty).toBeLessThanOrEqual(1);
+    }
+    expect(combatTemplate.aftermathConfig).toBeDefined();
+    expect(combatTemplate.aftermathConfig?.fallback).toBeDefined();
   });
 
   // ─── Cross-template invariants ─────────────────────────────────────────
 
-  it('encounterTypeToCrud produces correct crudType for legacy representatives', () => {
-    expect(encounterTypeToCrud(combatTemplate.encounterType)).toBe('delete'); // duel
+  it('encounterTypeToCrud preserves the legacy encounter-type → CRUD mapping', () => {
+    // The adapter is still used by the few remaining legacy template files
+    // (army, borderland) until those migrations land.
+    expect(encounterTypeToCrud('duel')).toBe('delete');
+    expect(encounterTypeToCrud('explore')).toBe('read');
+    expect(encounterTypeToCrud('hire')).toBe('create');
+    expect(encounterTypeToCrud('lead')).toBe('update');
   });
 
-  it('legacy migrated templates compile as UnifiedActionTemplate (type check via usage)', () => {
-    const c = migrateEncounterTemplate(combatTemplate);
-    expect(c.id).toBeTruthy();
-    // social.forge_alliance is already a UnifiedActionTemplate — verify directly
+  it('all three pre-migrated representatives compile as UnifiedActionTemplate (structural check)', () => {
+    expect(guildTemplate.id).toBeTruthy();
     expect(socialTemplate.id).toBeTruthy();
+    expect(combatTemplate.id).toBeTruthy();
+    expect(guildTemplate.crudType).toBeTruthy();
     expect(socialTemplate.crudType).toBeTruthy();
+    expect(combatTemplate.crudType).toBeTruthy();
   });
 });
 

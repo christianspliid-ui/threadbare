@@ -368,7 +368,6 @@ function buildCanonicalEncounterTemplates(): EncounterTemplate[] {
   };
 
   addTemplates(ENCOUNTER_TEMPLATES);
-  addTemplates(MONSTER_ENCOUNTER_TEMPLATES);
 
   for (const id of ARMY_ENCOUNTER_META.keys()) {
     const template = getArmyEncounterById(id);
@@ -4121,6 +4120,8 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   TS_PROMOTION_TEMPLATE,
   // Anomaly encounters — migrated to UnifiedActionTemplate (THR-106)
   ...ANOMALY_ENCOUNTER_TEMPLATES,
+  // Monster encounters — migrated to UnifiedActionTemplate (THR-103)
+  ...MONSTER_ENCOUNTER_TEMPLATES,
   // Adventurers Guild — migrated to UnifiedActionTemplate (THR-102, wired THR-290)
   ...FACTION_ENCOUNTER_TEMPLATES,
   // Social encounters — migrated to UnifiedActionTemplate (THR-100 Phase 3)
