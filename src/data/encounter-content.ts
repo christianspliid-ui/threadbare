@@ -15,7 +15,7 @@ import { getFactionEncounterById } from './faction-encounter-content';
 import { getMercenaryEncounterById } from './mercenary-encounter-content';
 import { getArmyEncounterById } from './army-encounter-content';
 import { getMonsterEncounterById } from './monster-encounter-content';
-import { getBorderlandEncounterById, BORDERLAND_ENCOUNTER_TEMPLATES } from './borderland-encounter-content';
+import { getBorderlandEncounterById } from './borderland-encounter-content';
 import { SECRET_DISCOVERY_ENCOUNTER_TEMPLATES } from './secret-encounter-content';
 
 // ─── Types ──────────────────────────────────────────────────────────
@@ -10051,8 +10051,8 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     ],
   },
 
-  // ─── Borderland Encounters (easy/trivial combat for frontier agents) ───
-  ...BORDERLAND_ENCOUNTER_TEMPLATES,
+  // Borderland encounters migrated to UnifiedActionTemplate (THR-107) —
+  // now spread into UNIFIED_ACTION_TEMPLATES via unified-action-templates.ts.
 
 ];
 
@@ -10394,6 +10394,6 @@ export function getAnyEncounterById(id: string): EncounterTemplate | undefined {
     ?? (getMercenaryEncounterById(id) as unknown as EncounterTemplate | undefined)
     ?? getArmyEncounterById(id)
     ?? (getMonsterEncounterById(id) as unknown as EncounterTemplate | undefined)
-    ?? getBorderlandEncounterById(id)
+    ?? (getBorderlandEncounterById(id) as unknown as EncounterTemplate | undefined)
     ?? SECRET_DISCOVERY_ENCOUNTER_TEMPLATES.find(encounter => encounter.id === id);
 }

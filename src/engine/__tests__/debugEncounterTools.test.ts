@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { GameState } from '../../types/gameState';
 import { WorldGraph } from '../graph';
 import { prepareDebugEncounterContext, prepareDebugEncounterSpawn } from '../debugEncounterTools';
-import { BORDERLAND_ENCOUNTER_TEMPLATES } from '../../data/borderland-encounter-content';
+import { ENCOUNTER_TEMPLATES } from '../../data/encounter-content';
 import * as unifiedActionTemplates from '../../data/unified-action-templates';
 
 function makeState(graph: WorldGraph): GameState {
@@ -225,7 +225,7 @@ describe('prepareDebugEncounterSpawn', () => {
   });
 
   it('falls back to a legacy encounter progress payload for non-migrated templates', () => {
-    const template = BORDERLAND_ENCOUNTER_TEMPLATES[0];
+    const template = ENCOUNTER_TEMPLATES[0];
     expect(template).toBeDefined();
 
     const graph = new WorldGraph();
@@ -278,7 +278,7 @@ describe('alias resolution and output clarity', () => {
 
   it('@hero resolves to the avatar, not an alphabetically-earlier individual', () => {
     const state = makeStateWithAvatar();
-    const template = BORDERLAND_ENCOUNTER_TEMPLATES[0];
+    const template = ENCOUNTER_TEMPLATES[0];
     if (!template) return; // skip if no templates available
     const result = prepareDebugEncounterSpawn(state, '@hero', template.id);
     expect(result.success).toBe(true);
@@ -288,7 +288,7 @@ describe('alias resolution and output clarity', () => {
 
   it('@avatar resolves to the avatar via avatar_of edge', () => {
     const state = makeStateWithAvatar();
-    const template = BORDERLAND_ENCOUNTER_TEMPLATES[0];
+    const template = ENCOUNTER_TEMPLATES[0];
     if (!template) return;
     const result = prepareDebugEncounterSpawn(state, '@avatar', template.id);
     expect(result.success).toBe(true);
@@ -297,7 +297,7 @@ describe('alias resolution and output clarity', () => {
 
   it('resolution echo appears in message when query is an alias', () => {
     const state = makeStateWithAvatar();
-    const template = BORDERLAND_ENCOUNTER_TEMPLATES[0];
+    const template = ENCOUNTER_TEMPLATES[0];
     if (!template) return;
     const result = prepareDebugEncounterSpawn(state, '@hero', template.id);
     expect(result.success).toBe(true);
@@ -309,7 +309,7 @@ describe('alias resolution and output clarity', () => {
 
   it('no resolution echo when agent name matches exactly', () => {
     const state = makeStateWithAvatar();
-    const template = BORDERLAND_ENCOUNTER_TEMPLATES[0];
+    const template = ENCOUNTER_TEMPLATES[0];
     if (!template) return;
     const result = prepareDebugEncounterSpawn(state, 'Ashara', template.id);
     expect(result.success).toBe(true);

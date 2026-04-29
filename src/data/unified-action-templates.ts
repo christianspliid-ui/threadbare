@@ -30,6 +30,7 @@ import {
 } from './faction-encounter-content';
 import { ARMY_ENCOUNTER_TEMPLATES } from './army-encounter-content';
 import { MONSTER_ENCOUNTER_TEMPLATES } from './monster-encounter-content';
+import { BORDERLAND_ENCOUNTER_TEMPLATES } from './borderland-encounter-content';
 import {
   ENCOUNTER_TYPE_MOTIVATIONS,
   type EncounterTemplate,
@@ -4121,6 +4122,8 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...MONSTER_ENCOUNTER_TEMPLATES,
   // Army encounters — migrated to UnifiedActionTemplate (THR-104)
   ...ARMY_ENCOUNTER_TEMPLATES,
+  // Borderland encounters — migrated to UnifiedActionTemplate (THR-107)
+  ...BORDERLAND_ENCOUNTER_TEMPLATES,
   // Adventurers Guild — migrated to UnifiedActionTemplate (THR-102, wired THR-290)
   ...FACTION_ENCOUNTER_TEMPLATES,
   // Social encounters — migrated to UnifiedActionTemplate (THR-100 Phase 3)
