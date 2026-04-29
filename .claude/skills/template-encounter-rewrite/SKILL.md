@@ -1,7 +1,7 @@
 ---
 name: template-encounter-rewrite
 description: >
-  Rewrite EncounterTemplate prose to meet the quality bar AND use the engine's
+  Rewrite UnifiedActionTemplate encounter prose to meet the quality bar AND use the engine's
   systemic capabilities. Use whenever rewriting or improving guild, social,
   tavern, combat, or other template-format encounter files (NOT branching
   encounters in src/data/encounters/ — those use encounter-pipeline).
@@ -13,7 +13,7 @@ model: opus
 
 # Template Encounter Rewrite — Prose + Systemic Wiring
 
-This skill is for rewriting `EncounterTemplate`-format encounters (guild, social, tavern, combat, borderland, etc.) to meet the quality bar set by the meeting encounter prose eval. It covers **both** prose quality **and** systemic wiring — because beautiful prose without dynamic capabilities is a book page, not game content.
+This skill is for rewriting guild/social/tavern/combat/borderland encounter content that now ships as `UnifiedActionTemplate` entries. It covers **both** prose quality **and** systemic wiring — because beautiful prose without dynamic capabilities is a book page, not game content.
 
 **This skill is NOT for branching encounters** (the hand-authored `ActionStepBranch` format in `src/data/encounters/`). Those use the `encounter-pipeline` skill.
 
@@ -30,43 +30,46 @@ Read these in order. Skipping any of them produces content that fails the qualit
 
 ---
 
-## The Template Encounter Format
+## The Unified Template Format
 
-Template encounters use `EncounterTemplate` with this structure per step:
+Encounter entries now use `UnifiedActionTemplate` with this structure:
 
 ```typescript
 {
   id: 'guild.quest.task_name',
   name: 'Human-Readable Name',
+  reach: 'shadow',
+  crudType: 'read',
+  scale: 'local',
+  rarityTier: 1,
+  intrinsicTier: 'shaping',
   steps: [
     {
-      id: 'guild.quest.task_name.1',
-      name: 'Step Name',
-      narrative: '...',           // ← YOU REWRITE THIS
       reach: 'shadow',
-      difficulty: 35,
-      duration: 2,
-      onSuccess: {
-        narrative: '...',         // ← YOU REWRITE THIS
-        reputationDelta: 0.05,
-        tierPromotionEligible: true,
-        rewardPool: { ... },
-      },
-      onFailure: {
-        narrative: '...',         // ← YOU REWRITE THIS
-        reputationDelta: -0.02,
-      },
+      narrativeTemplate: '...',   // ← YOU REWRITE THIS
+      reach: 'shadow',
+      difficulty: 0.35,
+      duration: { min: 1, max: 2 },
+      failBehavior: 'continue_weakened',
+      onSuccess: [],
+      onFailure: [],
+      successAfterimage: '...',   // ← YOU REWRITE THIS
+      failureAfterimage: '...',   // ← YOU REWRITE THIS
+      successMetadata: { reputationDelta: 0.05, tierPromotionEligible: true },
+      failureMetadata: { reputationDelta: -0.02 },
     },
     // ... more steps
   ],
-  reachPrimary: 'shadow',
-  reachSecondary: 'eye',
-  encounterType: 'acquire',
-  // ... scoring fields
+  narrativeTemplates: {
+    initiation: '...',            // ← YOU REWRITE THIS
+    success: '...',               // ← YOU REWRITE THIS
+    failure: '...',               // ← YOU REWRITE THIS
+  },
+  aftermathConfig: { ... },       // Optional branch-aware aftermath
 }
 ```
 
-You rewrite the three `narrative` strings per step. You may also add enrichment placeholders, conditional blocks, and suggest aftermath wiring improvements — but the structural skeleton (steps, reaches, difficulties, reward pools) stays unless it's clearly wrong.
+You rewrite the authored prose surfaces (`narrativeTemplate`, `successAfterimage`, `failureAfterimage`, and `narrativeTemplates.*`). You may also add enrichment placeholders, conditional blocks, and aftermath wiring improvements — but the structural skeleton (steps, reaches, difficulties, rewards, motivations, ids) stays unless it's clearly wrong.
 
 ---
 

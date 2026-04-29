@@ -7,6 +7,16 @@
 
 **Core principle:** If the prose can't change based on who's experiencing it, what happened before, or what happens after — you've written a book page, not game content. We're making a game.
 
+## Post-Migration Format Baseline (THR-109)
+
+`EncounterTemplate` is retired from authoring flow. Encounter content now ships through `UnifiedActionTemplate` only (including faction/guild templates and branching packets). If a document, prompt, or skill asks for `EncounterTemplate`, treat it as stale and update it.
+
+Phase 1-5 migration audit callouts now codified in this guide:
+- Encounter seeds (`encounter_seed`) are the default follow-on mechanism.
+- Hidden marks (`hidden_mark`) are the default discoverable-secret mechanism.
+- Intelligence grants (`intelligence`) are consumed by scoring, prose enrichment, and resolution-match traces.
+- Reputation persistence should use both score deltas and tallies (`reputation_tally`) where long-memory matters.
+
 ---
 
 ## Part 1: Why This Matters — The Book vs. Game Distinction

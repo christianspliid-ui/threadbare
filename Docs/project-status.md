@@ -3,6 +3,8 @@
 ## Current Focus
 **THR-79 complete — Doom Identity Matrix remaining 4 archetypes upgraded.** CHANGING (Chaos), SUNDERING (Force), FAILING (Time), ASCENSION (Spirit) replaced from stub-quality (5/5/3-entry vocab, neutral biases, terse milestones) to BREACH/CONVERGENCE/RECKONING parity (8 verbs / 8 adjectives / 5 atmospheres each, 5 chronicle titles, 4 milestones with ≥40-char descriptions, archetype-shaped encounter / rival / complication / location-pressure / familiarity bias). Content-only — no engine, type, or UI changes; the `getDoomIdentityMatrix()` consumers (encounter scoring, rival weighting, prosperity pressure, prose enrichment, complication scoring, chronicle theming) pick up upgraded content automatically. 10,692 tests pass; tsc clean; vite build clean.
 
+**THR-109 complete — Phase 6 skills/documentation unified-format closeout.** Updated `template-encounter-rewrite` and `encounter-pipeline` skills to target `UnifiedActionTemplate` only, replaced stale Notion references in encounter draft prompts with Obsidian/vault sources, and updated systemic wiring + wiring checklist docs to mark the unified encounter format baseline.
+
 **THR-108 complete — Phase 5 migration bridge removal + encounter pipeline fix.** Removed `resolveEncounterTemplate` bridge from `unified-action-templates.ts`; all 5 encounter content files now export `UnifiedActionTemplate[]` directly. Fixed critical pipeline throughput bug in `buildEntryUnified`: UAT difficulty is 0–1 but cache must store 0–100 for scoring; missing `* 100` factor caused `filterByOutgrowth` to discard all encounters for agents with capability ≥ 0.55 (nearly all spotlight agents). Deleted `encounter-migration-audit.ts` + 2 parity test files. 10692 tests pass. PR #85.
 
 **THR-104 complete — Phase 4 army migration shipped.** All 6 army-lifecycle templates (`mc.army.raise`, four `army.threshold.*`, `army.aftermath.refugees`) now export as UnifiedActionTemplate with Threadbare-aesthetic prose (sergeants speak, captain offstage, mud-and-rations realism) and authored aftermath: reputation tallies for command performance, hidden marks for witnessed cowardice/heroism, encounter seeds for cascading consequences (supply crisis → desertion → mutiny → disbandment → refugees). Programmatic-spawn signal preserved (`locationSubtypes: []`); threshold IDs in `armyAttrition.ts` still resolve.
@@ -36,5 +38,4 @@
 - TB-071 Economy Second Pass · TB-069 Location NPCs · TB-051 Monster Encounters residual · TB-037 Onboarding
 
 Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Completed work: `Docs/project-history.md` + Linear "Done" state · Pre-Linear history: `.planning/BACKLOG_HISTORY.md`
-
 

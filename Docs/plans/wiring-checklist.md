@@ -412,7 +412,7 @@ Engine phases write to GameState fields. UI components must read them. An engine
 | `pendingHexMutations` | `phaseHexState` | Cleared after use (internal) | ✅ Internal |
 | `prosperityShocks` | `phaseProsperity` | Cleared after use (internal) | ✅ Internal |
 | `effectStates` | Orchestrator Phase 2a.4 (`tickEffects`) | No dedicated player UI; currently engine/runtime only | ⚠️ Debug visibility should improve before shell-heavy effect features land |
-| `EncounterTemplate.backgroundTrack` / `.musicTrack` | Authored encounter templates | `useAmbientContext` reads active encounter's track fields to override BackgroundChannel/MusicChannel | ✅ (2026-04-06) |
+| `UnifiedActionTemplate.narrativeTemplates` / `aftermathConfig` / `illustrationUrl` / `backgroundTrack` / `musicTrack` | Authored encounter templates (single unified format) | Encounter stage adapters + `useAmbientContext` consume unified template fields for prose, aftermath, concept-art, and audio overrides | ✅ (2026-04-29, THR-109 format baseline) |
 | `emittedOmens?: EmittedOmen[]` | `applyEncounterAftermathReaction` (`emit_omen` effect) + Phase 1.7a `phaseEmittedOmenDecay` | No dedicated player UI — omens influence encounter bias in `phaseAgentDecision` (invisible to player) + decay trace visible in DebugPanel feed. ⚠️ No UI readout for active emitted omens (tracked as THR-136 scope). | ⚠️ Engine-only (THR-115) |
 
 **Verification:** For each new GameState field in your feature, name the component that reads it and how the data reaches the player.
