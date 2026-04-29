@@ -239,7 +239,7 @@ describe('prepareDebugEncounterSpawn', () => {
       id: 'loc_1',
       type: 'location',
       name: 'Test Location',
-      properties: { locationSubtype: template!.locationTypes[0] },
+      properties: { locationSubtype: template!.locationSubtypes?.[0] ?? 'wilderness' },
     });
     addIndividual(graph, 'agent_1', 'Scout', { spotlightTier: 'spotlight' }, 'loc_1');
 

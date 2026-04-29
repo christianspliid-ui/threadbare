@@ -22,6 +22,7 @@ import {
 import { SOCIAL_ENCOUNTER_TEMPLATES } from '../social-encounter-content';
 import { MONSTER_ENCOUNTER_TEMPLATES } from '../monster-encounter-content';
 import { assertNoDuplicateIds, assertValidUnifiedTemplate } from '../../testing/contentInvariants';
+import { BORDERLAND_ENCOUNTER_TEMPLATES } from '../borderland-encounter-content';
 
 // ─── Pick representative templates ────────────────────────────────────────
 
@@ -94,8 +95,6 @@ describe('migrateEncounterTemplate parity (THR-90; updated for THR-103)', () => 
   // ─── Cross-template invariants ─────────────────────────────────────────
 
   it('encounterTypeToCrud preserves the legacy encounter-type → CRUD mapping', () => {
-    // The adapter is still used by the few remaining legacy template files
-    // (army, borderland) until those migrations land.
     expect(encounterTypeToCrud('duel')).toBe('delete');
     expect(encounterTypeToCrud('explore')).toBe('read');
     expect(encounterTypeToCrud('hire')).toBe('create');
@@ -168,6 +167,72 @@ describe('TG pre-migrated shape invariants (all 15 templates)', () => {
   it('no template has rarityTier 4', () => {
     for (const t of ALL_TG) {
       expect(t.rarityTier, `${t.id} rarityTier`).toBeLessThanOrEqual(3);
+    }
+  });
+});
+
+// ─── Bulk shape assertions: all 20 borderland templates (THR-107) ─────────────
+
+describe('Borderland pre-migrated shape invariants (all 20 templates)', () => {
+  it('covers all 20 borderland templates', () => {
+    expect(BORDERLAND_ENCOUNTER_TEMPLATES.length).toBe(20);
+  });
+
+  it('all 20 borderland templates pass structural invariants', () => {
+    BORDERLAND_ENCOUNTER_TEMPLATES.forEach(assertValidUnifiedTemplate);
+    assertNoDuplicateIds(BORDERLAND_ENCOUNTER_TEMPLATES);
+  });
+
+  it('every template has duration {min,max} on all steps', () => {
+    for (const t of BORDERLAND_ENCOUNTER_TEMPLATES) {
+      for (const step of t.steps) {
+        expect(step.duration, `${t.id} step duration`).toMatchObject({
+          min: expect.any(Number),
+          max: expect.any(Number),
+        });
+      }
+    }
+  });
+
+  it('every template has difficulty 0-1 on all steps', () => {
+    for (const t of BORDERLAND_ENCOUNTER_TEMPLATES) {
+      for (const step of t.steps) {
+        expect(step.difficulty, `${t.id} step difficulty`).toBeGreaterThanOrEqual(0);
+        expect(step.difficulty, `${t.id} step difficulty`).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
+  it('every template final step has failBehavior fail_action', () => {
+    for (const t of BORDERLAND_ENCOUNTER_TEMPLATES) {
+      const lastStep = t.steps[t.steps.length - 1];
+      expect(lastStep.failBehavior, `${t.id} final step failBehavior`).toBe('fail_action');
+    }
+  });
+
+  it('every template has aftermathConfig with a fallback', () => {
+    for (const t of BORDERLAND_ENCOUNTER_TEMPLATES) {
+      expect(t.aftermathConfig, `${t.id} aftermathConfig`).toBeDefined();
+      expect(t.aftermathConfig!.fallback, `${t.id} aftermathConfig.fallback`).toBeDefined();
+    }
+  });
+
+  it('every template has narrativeTemplate on all steps', () => {
+    for (const t of BORDERLAND_ENCOUNTER_TEMPLATES) {
+      for (const step of t.steps) {
+        expect(step.narrativeTemplate, `${t.id} step narrativeTemplate`).toBeTruthy();
+      }
+    }
+  });
+
+  it('every template uses {name} in all narrative fields', () => {
+    for (const t of BORDERLAND_ENCOUNTER_TEMPLATES) {
+      const allNarrative = t.steps.flatMap(s => [
+        s.narrativeTemplate ?? '',
+        s.successAfterimage ?? '',
+        s.failureAfterimage ?? '',
+      ]).join(' ');
+      expect(allNarrative, `${t.id} should contain {name}`).toContain('{name}');
     }
   });
 });
