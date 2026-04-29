@@ -51,11 +51,30 @@ const TICKS = 10;
  * Expected per-tick sequence of registered-phase ids in execution order.
  *
  * Captured against the seed-42, mind/spirit ascendant world after 10 ticks.
- * Update deliberately — see file header for protocol.
+ * Order matches PHASE_SLOTS plus per-slot topo-sort (alphabetical tie-break,
+ * `afterPhase` chains where present). Update deliberately — see file header
+ * for protocol.
  */
 const EXPECTED_PHASE_IDS: readonly string[] = [
-  'emitted_omen_decay', // post-doom slot
-  'reputation_decay',   // pre-economy slot
+  // pre-doom slot
+  'doom',
+  // post-doom slot
+  'emitted_omen_decay',
+  // pre-economy slot
+  'reputation_decay',
+  // post-economy slot (afterPhase chain preserves inline ordering)
+  'ambition_progress',
+  'faction_ambitions',
+  'faction_actions',
+  'secrets_favors',
+  'clue_decay',
+  'ruin_quest_hooks',
+  'delve_admission',
+  'delve_progression',
+  'delve_emergence',
+  'pop_streams',
+  // post-narrative slot
+  'mandate',
 ];
 
 function captureRegisteredPhaseSequence(seed: number): string[][] {

@@ -31,8 +31,20 @@ Phases below ship as descriptors and are picked up automatically by `runRegister
 
 | Slot | Phase id | Source descriptor | Implementation file |
 |------|----------|-------------------|---------------------|
+| `pre-doom` | `doom` | `src/engine/phases/doom.ts` | `src/engine/phaseDoom.ts` |
 | `post-doom` | `emitted_omen_decay` | `src/engine/phases/emittedOmenDecay.ts` | `src/engine/phaseOmenAgenda.ts` |
 | `pre-economy` | `reputation_decay` | `src/engine/phases/reputationDecay.ts` | `src/engine/phaseReputationDecay.ts` |
+| `post-economy` | `ambition_progress` | `src/engine/phases/ambitionProgress.ts` | `src/engine/ambitionTick.ts` |
+| `post-economy` | `faction_ambitions` (after `ambition_progress`) | `src/engine/phases/factionAmbitions.ts` | `src/engine/factionAmbitions.ts` |
+| `post-economy` | `faction_actions` (after `faction_ambitions`) | `src/engine/phases/factionActions.ts` | `src/engine/phaseFactionActions.ts` |
+| `post-economy` | `secrets_favors` (after `faction_actions`) | `src/engine/phases/secretsFavors.ts` | `src/engine/phaseSecretsFavors.ts` |
+| `post-economy` | `clue_decay` (after `secrets_favors`) | `src/engine/phases/clueDecay.ts` | `src/engine/ruins/clueLifecycle.ts` |
+| `post-economy` | `ruin_quest_hooks` (after `clue_decay`) | `src/engine/phases/ruinQuestHooks.ts` | `src/engine/ruins/questHooks.ts` |
+| `post-economy` | `delve_admission` (after `ruin_quest_hooks`) | `src/engine/phases/delveAdmission.ts` | `src/engine/ruins/delveVariant.ts` |
+| `post-economy` | `delve_progression` (after `delve_admission`) | `src/engine/phases/delveProgression.ts` | `src/engine/ruins/delveVariant.ts` |
+| `post-economy` | `delve_emergence` (after `delve_progression`, reads `ctx.runtime`) | `src/engine/phases/delveEmergence.ts` | `src/engine/ruins/delveVariant.ts` |
+| `post-economy` | `pop_streams` (after `delve_emergence`) | `src/engine/phases/popStreams.ts` | `src/engine/ruins/placeOfPowerStreams.ts` |
+| `post-narrative` | `mandate` | `src/engine/phases/mandate.ts` | `src/engine/phaseMandate.ts` |
 
 Slot anchor positions in `runTick`: `pre-doom`, `post-doom`, `post-resolution`, `post-decision`, `pre-economy`, `post-economy`, `pre-lifecycle`, `post-narrative`. See `src/engine/phaseRegistry.ts` for slot semantics.
 
@@ -40,7 +52,6 @@ Slot anchor positions in `runTick`: `pre-doom`, `post-doom`, `post-resolution`, 
 
 | Phase | Function | What it does |
 |-------|----------|-------------|
-| 0 | `phaseDoom` | Doom clock escalation |
 | 1.5 | `phaseJourneyBeat` | Journey beat progression |
 | 2a | `phaseUnifiedActionProgress` | Action execution & resolution |
 | 2a.3 | `phaseEncounterProgressionV2` | Encounter step advancement |
@@ -73,17 +84,10 @@ Slot anchor positions in `runTick`: `pre-doom`, `post-doom`, `post-resolution`, 
 | 10 | `phaseInfluenceTierPromotion` | Backstory unlocks |
 | 10.1 | `phaseSublocations` | Sublocation spawn/dissolve |
 | 10.5 | `phaseEconomicChronicle` | Economic state records |
-| 11 | `phaseAmbitionProgress` | Ambition milestone/completion |
 | 12 | `phaseAgentLifecycle` | Birth, death, migration |
-| 12.1 | `phaseMandate` | Player mandate progress, checkpoint feedback, doom debt, counter-omens |
-| 13 | `phaseDoomExpiry` | Doom conclusion |
+| 13 | `phaseDoomExpiry` | Doom conclusion (kept inline — depends on module-local `nextEventId`) |
 
 | 6.6396 | `phaseQuintessence` | Quintessence event processing, regen, dissolution |
-| 6.655 | `phaseRuinQuestHooks` | Ruin quest hook issuance — evidence ≥ threshold + Guild within radius → toast + priority boost (THR-156) |
-| 6.656 | `phaseDelveAdmission` | Delve admission + queue retry (THR-152) |
-| 6.657 | `phaseDelveProgression` | Delve beat resolution (THR-152) |
-| 6.658 | `phaseDelveEmergence` | Consequence roll + auto-fire `transformRuinConsequence('let')` on expiry (THR-152/153) |
-| 6.659 | `phasePlaceOfPowerStreams` | PoP holder-presence credit + decay countdown + corrupt siphon (THR-153) |
 
 **Phase 2 resolution wiring (2026-04-02):**
 

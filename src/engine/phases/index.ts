@@ -18,15 +18,46 @@
  * Land 1 (THR-238): registry skeleton lands empty. Land 2 onward populates it.
  */
 import { buildPhasePlan, type EnginePhase } from '../phaseRegistry';
+// Land 2 canary migrations.
 import { emittedOmenDecayPhase } from './emittedOmenDecay';
 import { reputationDecayPhase } from './reputationDecay';
+// Land 3 sweep (THR-238): phases with clean (state) -> Partial<GameState> shape
+// living between cleanly bracketed slot anchors. Phases that need orchestrator-local
+// state (uaRng, decisionRng, nextEventId) and the Phase 2a.1 / 2a.4 inline blocks
+// stay inline by design — see plan § "Phases explicitly out of scope".
+import { doomPhase } from './doom';
+import { ambitionProgressPhase } from './ambitionProgress';
+import { factionAmbitionsPhase } from './factionAmbitions';
+import { factionActionsPhase } from './factionActions';
+import { secretsFavorsPhase } from './secretsFavors';
+import { clueDecayPhase } from './clueDecay';
+import { ruinQuestHooksPhase } from './ruinQuestHooks';
+import { delveAdmissionPhase } from './delveAdmission';
+import { delveProgressionPhase } from './delveProgression';
+import { delveEmergencePhase } from './delveEmergence';
+import { popStreamsPhase } from './popStreams';
+import { mandatePhase } from './mandate';
 
 export const ENGINE_PHASES: readonly EnginePhase[] = [
-  // Land 2 canary migrations.
+  // pre-doom
+  doomPhase,
+  // post-doom
   emittedOmenDecayPhase,
+  // pre-economy
   reputationDecayPhase,
-  // Land 3 will sweep the remaining file-extracted phases per the plan in
-  // Docs/plans/2026-04-29-declarative-engine-phase-registry.md.
+  // post-economy (chained via afterPhase to preserve inline order)
+  ambitionProgressPhase,
+  factionAmbitionsPhase,
+  factionActionsPhase,
+  secretsFavorsPhase,
+  clueDecayPhase,
+  ruinQuestHooksPhase,
+  delveAdmissionPhase,
+  delveProgressionPhase,
+  delveEmergencePhase,
+  popStreamsPhase,
+  // post-narrative
+  mandatePhase,
 ];
 
 /** Slot-keyed, topo-sorted execution plan. Computed once at module load. */
