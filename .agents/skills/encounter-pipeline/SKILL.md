@@ -12,9 +12,15 @@ Automated 4-pass encounter pipeline: premise → deployed code. Each agent pass 
 Premise → Draft (Opus) → Editorial+Revised (Opus) → Systems+Final (Sonnet) → Implementation (Sonnet)
 ```
 
-## Unified Format Baseline (THR-109)
+## Scope
 
-All encounter authoring in this pipeline targets `UnifiedActionTemplate` entries only. Do not produce or request `EncounterTemplate` output. Branching encounters and migrated guild/faction templates both live on the same unified surface; differences are authored via `ActionStepBranch`, `authoredChoices`, and `aftermathConfig`, not via separate legacy types.
+This pipeline produces **branching encounters** in `UnifiedActionTemplate` format — encounters with authored player-choice branches (`ActionStepBranch`) and full aftermath reaction suites. These go into `src/data/encounters/`.
+
+For **linear template encounters** (guild, social, tavern, combat, borderland — single-step or multi-step without player-choice branches), use the `template-encounter-rewrite` skill instead. The migration to `UnifiedActionTemplate` is complete as of THR-108; `EncounterTemplate` no longer exists. Both encounter types now use the same unified format.
+
+**Vault and documentation:** All encounter documentation lives in the Obsidian vault (`TheFantasyWorldSimulator/Systems/`). There are no Notion encounter pages; Notion content was migrated to Obsidian in April 2026.
+
+---
 
 ## Systemic Wiring — READ BEFORE AUTHORING
 

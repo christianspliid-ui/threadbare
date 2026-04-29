@@ -437,7 +437,7 @@ Before writing any encounter, answer these questions. If the answer to most of t
 
 ### Before the First Word
 
-1. **Who is this encounter for?** Not just "any agent" — what reach domain, what capability tier, what faction or archetype? This determines `locationTypes`, `visibleTo`, `requiredTraits`, `encounterType`, and `motivations`. These fields aren't metadata — they're the scoring system's input for deciding whether this encounter surfaces for the right agents.
+1. **Who is this encounter for?** Not just "any agent" — what reach domain, what capability tier, what faction or archetype? This determines `locationSubtypes`, `actorAffinities`, `requiredTargetTraits`, `crudType`, and `motivations`. These fields aren't metadata — they're the scoring system's input for deciding whether this encounter surfaces for the right agents.
 
 2. **What graph state makes this encounter interesting?** Does the agent have allies who could be implicated? Rivals who could interfere? A faction that would care? Artifacts that change the meaning of the scene? **Write scenes where graph state matters** — use conditional blocks to make the prose respond to it.
 
@@ -445,7 +445,7 @@ Before writing any encounter, answer these questions. If the answer to most of t
 
 ### During Writing
 
-4. **Are the narrative fields templates or strings?** Every `narrative` field in steps and outcomes should use enrichment placeholders where the agent's identity, relationships, or possessions would change the emotional texture. `{name}` is the minimum. Conditional blocks (`{?has_faction}...{/has_faction}`) are where the real dynamism lives.
+4. **Are the narrative fields templates or strings?** Every `narrativeTemplate` field in steps (and `intent` in aftermath reactions) should use enrichment placeholders where the agent's identity, relationships, or possessions would change the emotional texture. `{name}` is the minimum. Conditional blocks (`{?has_faction}...{/has_faction}`) are where the real dynamism lives.
 
 5. **Do the outcomes use different systemic consequences?** Success and failure should produce different *kinds* of persistence, not just different prose. Success might create an edge and seed a follow-up. Failure might plant a hidden mark and damage reputation. **Different outcomes should leave different structural fingerprints.**
 
@@ -575,44 +575,45 @@ For implementation agents translating authored designs into template code.
 
 ### Template-Level Fields That Affect Scoring/Filtering
 
+All encounters use `UnifiedActionTemplate` (migrated as of THR-108). `EncounterTemplate` no longer exists.
+
 | Field | Type | What It Controls |
 |---|---|---|
-| `locationTypes` | `LocationSubtype[]` | Which location subtypes surface this encounter |
-| `sublocationTypes` | `string[]` | Further refinement within locations |
-| `visibleTo` | `string[]` | `'faction:<id>'`, `'agent:<id>'`, `'archetype:<id>'`, `'culture:<id>'`, `'all'` |
-| `requiredTraits` | `Array<{traitId, minLevel?}>` | Agent must have these traits |
-| `blockedByTraits` | `string[]` | Agent must NOT have these traits |
-| `encounterType` | `EncounterType` | Controls motivation alignment scoring |
+| `locationSubtypes` | `string[]` | Which location subtypes surface this encounter |
+| `actorAffinities` | `ActorType[]` | Which entity types can perform this (`'individual'`, `'faction'`, etc.) |
+| `requiredTargetTraits` | `string[]` | Target node must have all listed traits (AND logic) |
+| `requiredNodeProperties` | `Record<string, unknown>` | Target node property key/value pairs that must match |
+| `crudType` | `'create'\|'read'\|'update'\|'delete'` | Determines motivation alignment scoring and reputation polarity heuristic |
 | `motivations` | `ValuePair[]` | Which axiological value pairs drive agent interest |
-| `threatRating` | `ThreatRating` | Trivial → Deadly; feeds threat tolerance filter |
-| `reachPrimary` / `reachSecondary` | `ReachDomain` | Which capability domains are tested |
+| `rarityTier` | `1\|2\|3\|4` | Narrative significance (1=common, 4=legendary); drives visual treatment and unlock logic |
+| `reach` | `ReachDomain` | Primary capability domain tested across all steps |
 | `sphereAffinity` | `SphereName` | Resonance scoring with hex sphere and world-soul |
-| `intrinsicTier` | `AttentionTier` | Background / Shaping / Crescendo attention tier |
-| `questPriority` | `number` | Score multiplier (1.0 normal, 2.0+ quest importance) |
-| `reputationPolarity` | `'positive' \| 'negative'` | Which direction reputation flows |
-| `remoteAttempt` | `boolean` | Can be attempted without physical presence |
+| `intrinsicTier` | `AttentionTier` | `'background'` / `'shaping'` / `'story_beat'` attention tier |
+| `reputationPolarity` | `'positive' \| 'negative'` | Optional explicit override; if omitted, derived from `crudType` |
 
 ### Step-Level Fields
 
 | Field | Type | What It Controls |
 |---|---|---|
 | `reach` | `ReachDomain` | Which capability domain resolves this step |
-| `difficulty` | `number` | 0-100 scale → sigmoid → probability |
-| `duration` | `number` | Ticks to resolve (1 = quick, 3-5 = multi-day, 5-10 = siege) |
-| `narrative` | `string` | Supports all enrichment placeholders |
-| `leverageOnSuccess/Failure` | `number` | Accumulated social leverage for gated steps |
-| `conditional` | `object` | Leverage-range or partial-success gating |
+| `difficulty` | `number` | **0–1 scale** → sigmoid → probability (NOT 0-100) |
+| `duration` | `{ min: number, max: number }` | Tick range to resolve (e.g. `{ min: 1, max: 2 }`) |
+| `failBehavior` | `'continue_weakened' \| 'fail_action'` | What happens on step failure: continue with disadvantage or end encounter |
+| `onSuccess` | `GraphOp[]` | Graph mutations applied immediately on success (usually `[]` for simple encounters) |
+| `onFailure` | `GraphOp[]` | Graph mutations applied immediately on failure (usually `[]` for simple encounters) |
+| `narrativeTemplate` | `string` | Scene-setting prose; supports all enrichment placeholders |
+| `successAfterimage` | `string` | Brief outcome shown in Scene So Far on success (1-2 sentences) |
+| `failureAfterimage` | `string` | Brief outcome shown in Scene So Far on failure (1-2 sentences) |
+| `successMetadata` | `ActionStepOutcomeMetadata` | Mechanical consequence of success: rewardPool, reputationDelta, tierPromotionEligible |
+| `failureMetadata` | `ActionStepOutcomeMetadata` | Mechanical consequence of failure: reputationDelta |
 
-### Outcome-Level Fields
+### Outcome Metadata Fields (ActionStepOutcomeMetadata)
 
 | Field | Type | What It Controls |
 |---|---|---|
-| `narrative` | `string` | Supports all enrichment placeholders |
-| `traitModifiers` | `Record<string, number>` | Trait gain/loss |
-| `reputationDelta` | `number` | Direct reputation score change |
-| `tierPromotionEligible` | `boolean` | Allows capability tier promotion on this outcome |
-| `rewardPool` | `RewardPoolRecipe` | Attachment generation |
-| `appliesWound` | `boolean` | **Legacy only (`EncounterTemplate` only).** Triggers mid-encounter tier promotion on wound. Not available on `UnifiedActionTemplate` — use the `condition_attachment` aftermath effect instead. |
+| `reputationDelta` | `number` | Direct reputation score change on this outcome |
+| `tierPromotionEligible` | `boolean` | Allows capability tier promotion if this outcome fires |
+| `rewardPool` | `RewardPoolRecipe` | Attachment pool draw on success |
 
 ### Aftermath Reaction Effect Types
 
@@ -949,7 +950,7 @@ These encounters demonstrate championship-level systemic wiring. Read them befor
 The author writes beautiful prose, then asks "what systemic effects should this have?" and bolts on a `reputationDelta: 0.05`. The prose and the wiring are disconnected. **Fix:** Write the systemic consequences first (what seeds, what marks, what graph changes), then write prose that makes those consequences emotionally resonant.
 
 ### Anti-Pattern 2: "Static Strings in Dynamic Fields"
-The `narrative` field contains prose with no placeholders, no conditionals, no reference to the agent's actual state. Every agent reads the same text. **Fix:** Use at minimum `{name}`, `{they}/{them}/{their}`, and one conditional block per narrative field. If the prose doesn't change based on who's experiencing it, ask why.
+The `narrativeTemplate` field contains prose with no placeholders, no conditionals, no reference to the agent's actual state. Every agent reads the same text. **Fix:** Use at minimum `{name}`, `{they}/{them}/{their}`, and one conditional block per narrative field. If the prose doesn't change based on who's experiencing it, ask why.
 
 ### Anti-Pattern 3: "Aftermath as Epilogue"
 Aftermath reactions have evocative prose but no effects array, or only a `recent_event`. The aftermath doesn't change the world — it just describes what happened. **Fix:** Every aftermath reaction should have at least one effect that creates persistent state: a seed, a mark, a tally, or intelligence.
@@ -958,7 +959,7 @@ Aftermath reactions have evocative prose but no effects array, or only a `recent
 An encounter plants seeds using `encounterFamily` only, with no `templateId`. Since family-matching is v1/narrative-only, the seed emits a narrative event but doesn't spawn an actual follow-up encounter. **Fix:** Use `templateId` for guaranteed follow-up spawning. Use `encounterFamily` only when you intentionally want a narrative event without a specific follow-up.
 
 ### Anti-Pattern 5: "Scoring Blindness"
-The author doesn't set `encounterType`, `motivations`, `locationTypes`, or `visibleTo` thoughtfully. The encounter exists in the content registry but never surfaces for appropriate agents because the scoring system can't match it. **Fix:** Think about scoring as design. A festival encounter should be `encounterType: 'lead'` with `motivations: ['loyalty_ambition']` and `locationTypes: ['market_district', 'settlement_square']`. These fields determine whether the encounter finds its audience.
+The author doesn't set `crudType`, `motivations`, `locationSubtypes`, or `actorAffinities` thoughtfully. The encounter exists in the content registry but never surfaces for appropriate agents because the scoring system can't match it. **Fix:** Think about scoring as design. A festival encounter should be `crudType: 'update'` with `motivations: [['loyalty', 'ambition']]` and `locationSubtypes: ['market', 'settlement']`. These fields determine whether the encounter finds its audience.
 
 ### Anti-Pattern 6: "Symmetric Outcomes"
 Success and failure both produce the same kind of persistence — maybe both add reputation, or both add a recent_event. There's no reason the world would feel different after success vs. failure. **Fix:** Success and failure should leave *structurally different* fingerprints. Success creates an ally edge and seeds a gratitude encounter. Failure plants a hidden mark and seeds a confrontation encounter. The world should be observably different.

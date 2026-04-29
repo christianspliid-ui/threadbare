@@ -2,7 +2,7 @@
 
 > **Living document.** Every design plan must include a wiring section that maps new modules to entries on this checklist. Every implementation must verify all listed connections before marking work complete. Maintaining this checklist is part of the Definition of Done for both design and implementation phases.
 >
-> **Last updated:** 2026-04-19 (THR-174 — Viewport contract audit complete; see [Docs/viewport-audit-2026-04-18.md](../viewport-audit-2026-04-18.md). All 5 primary views pass at 1920×1080.)
+> **Last updated:** 2026-04-29 (THR-109 — Added branch-aware aftermath selection surface (`BranchAwareAftermathConfig` / `resolveAftermathVariant`). Previous: 2026-04-19 THR-174 viewport audit.)
 
 ---
 
@@ -321,6 +321,24 @@ Eight new `EncounterAftermathReactionEffect` kinds that change world topology fr
 * Trace definitions: `src/types/trace.ts` — `aftermath_target_resolved`, `aftermath_target_invalid`, `faction_reputation_changed`, `reputation_set_applied`, `condition_applied`, `condition_removed`
 * Example content: `src/data/encounters/examples/` — `example.betrayal_multi_target.ts`, `example.council_disowns.ts`, `example.shrine_consecration.ts`
 * Tests: `src/engine/__tests__/encounterAftermath-multi-target.test.ts` (35+ tests)
+
+**Branch-aware aftermath selection (THR-108, 2026-04-29):**
+
+`resolveAftermathVariant()` in `unifiedActionResolution.ts` selects the authored `AftermathVariant` for a `UnifiedActionTemplate` encounter based on the player's choice at `aftermathConfig.branchOnStep`. Called at the end of encounter resolution (Phase 2a), before `aftermathSummary` is assembled.
+
+| Surface | Wiring |
+|---------|--------|
+| Variant selection | `resolveAftermathVariant(template, action.choiceHistory)` reads `config.branchOnStep`, finds the matching `EncounterChoiceMemory` entry, returns `config.variants[choiceId]` or `config.fallback` |
+| Aftermath assembly | Result folded into `EncounterAftermathSummary` at `unifiedActionResolution.ts:~1422`: authored `overview` replaces computed summary; `variant.changes` appended to mechanical changes; `variant.reactions` replaces default reaction set; `variant.reactionPrompt` used when present |
+| `aftermathSummary` consumer | `buildUnifiedEncounterStageModel.ts:353` reads `activeAction.aftermathSummary` to build the aftermath stage for `EncounterVeil` |
+| Player reactions UI | `EncounterVeil` aftermath stage renders `reactions[]` from `aftermathSummary` — player selects one, `GameView.tsx` calls `applyEncounterAftermathReaction` on pick |
+| No `aftermathConfig` path | If `template.aftermathConfig` is absent (linear/simple encounters), `resolveAftermathVariant` returns `undefined` and overview + reactions are computed from mechanical changes |
+
+**Key invariant:** `branchOnStep` must reference a step index containing an `ActionStepBranch`. A wrong index falls through to `config.fallback` silently.
+
+**Types:** `BranchAwareAftermathConfig` / `AftermathVariant` — `src/types/unifiedAction.ts:545`. Resolver — `src/engine/unifiedActionResolution.ts:400`. Tests — `src/engine/__tests__/actionStepBranch.test.ts`.
+
+---
 
 **Causation edges + conditional aftermath (THR-116, 2026-04-18):**
 
