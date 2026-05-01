@@ -88,3 +88,6 @@
 - **ops** | no ready-for-codex work this cycle (2026-04-30T15.02.11+02:00)
 - **ops** | CC threadbearer-code-work pickup: Ready for Dev queue empty, no In Dev to resume — idle cycle (2026-04-30T17.09.42+00:00)
 - **ops** | no ready-for-codex work this cycle (2026-05-01T20.03.57+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-05-01T21.03.13+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-05-01T22.03.08+02:00)
+- **ops** | CC check-slack-for-new-dev-work pickup: Ready for Dev queue empty all day — idle cycle. Confirmed flush-plan-docs skill has branch-protection fallback but is not registered as scheduled task (2026-05-01T22.35+02:00)
