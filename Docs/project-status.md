@@ -1,6 +1,8 @@
 # Project Status
-> Updated 2026-04-30.
+> Updated 2026-05-01.
 ## Current Focus
+**THR-294 complete — UL drift triage (2026-05-01 scan).** 15 used-uncanonical candidates triaged: 5 aliases added (ReachDomain, SphereName, CosmologyProfile, GraphNode, TickEvent), 6 new canonical promotions (GameState, HexTile, TerrainType, AxiologicalProfile, ValuePair, Implementation Plan), 4 stopwords (debugpanel, gameview, hexmapv2, tech stack). UL v1.1 / 79 terms. Vault mirrored. PR #98.
+
 **THR-282 complete — Branch protection re-enabled on `main` (Repo Health Sprint v2 Phase 3).** GitHub Pro now active. Required check: `Test · Typecheck · Build` (strict=true). 3-day CI watch window confirmed green. Impediment #56 resolved. PR #96.
 
 **THR-238 complete — Declarative engine phase registry shipped (3 landings).** `src/engine/phaseRegistry.ts` defines `EnginePhase`, `PhaseSlot`, `PhaseContext`, `buildPhasePlan`, and `runRegisteredPhases`. `src/engine/phases/index.ts` holds the registry (14 phases migrated: doom, emittedOmenDecay, reputationDecay, mandate, ambitionProgress, factionAmbitions, factionActions, secretsFavors, clueDecay, ruinQuestHooks, delveAdmission/Progression/Emergence, popStreams). New DebugPanel "Phases" tab shows registry contents, per-phase tick cost, and event deltas. Equivalence baseline test proves byte-identical output. Phases needing orchestrator-local state (uaRng, shared RNG) stay inline by design. PR #91.
