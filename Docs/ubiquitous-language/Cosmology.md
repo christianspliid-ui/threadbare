@@ -6,7 +6,7 @@ Content-adjacent shard. Terms covering the cosmic system: Reaches, Spheres, doma
 
 ### Reach
 
-**Aliases:** Action Domain, Domain
+**Aliases:** Action Domain, Domain, ReachDomain
 **Also see:** `[[Domain Capability]]`, `[[Sphere]]`
 **Status:** canonical
 
@@ -20,7 +20,7 @@ The ninth Reach, Flesh, was absorbed into the Quintessence system in TB-075. Do 
 
 ### Sphere
 
-**Aliases:** Cosmic Energy, Sphere of Influence
+**Aliases:** Cosmic Energy, Sphere of Influence, SphereName
 **Also see:** `[[Foundation]]`, `[[Creation]]`, `[[Sphere Alignment]]`
 **Status:** canonical
 
@@ -70,7 +70,7 @@ A tiered measure of how proficient an actor is across a Reach. Domain Capability
 
 ### Cosmology Profile
 
-**Aliases:** World Cosmology, Seeded Cosmology
+**Aliases:** World Cosmology, Seeded Cosmology, CosmologyProfile
 **Also see:** `[[Sphere]]`, `[[Foundation]]`, `[[Creation]]`
 **Status:** canonical
 
