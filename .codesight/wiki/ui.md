@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Component inventory and prop signatures extracted via AST. Read the source files before adding props or modifying component logic.
 
-**248 components** (react)
+**249 components** (react)
 
 ## Components
 
@@ -127,6 +127,7 @@
 - **HiddenMarksTab** — props: marks, currentTick, focusedAgentId, retinueAgents — `src\components\Game\debug\HiddenMarksTab.tsx`
 - **JourneyDebugContent** — props: encounterNotifications, pendingVignettes, _currentTick — `src\components\Game\debug\JourneyDebugContent.tsx`
 - **KnowledgeComparisonTab** — props: agentKnowledge, graph — `src\components\Game\debug\KnowledgeComparisonTab.tsx`
+- **PhasesDebugTab** — props: traces — `src\components\Game\debug\PhasesDebugTab.tsx`
 - **RecentEventsView** — props: getRecentEvents — `src\components\Game\debug\RecentEventsView.tsx`
 - **RelationshipGraph** — props: agentId, graph — `src\components\Game\debug\RelationshipGraph.tsx`
 - **RevelationLogTab** — props: traces, _agentKnowledge — `src\components\Game\debug\RevelationLogTab.tsx`
