@@ -111,3 +111,13 @@ The weekly synthesis of the impediment log (`Docs/impediments.md`) + drift scan 
 **Status:** canonical
 
 The Linear issue label used by the `ubiquitous-language` skill when proposing a new canonical term or a retirement of a stale term. Issues land in Continuous Improvement with this label. A `UL-proposal` issue must include: proposed term + definition, where/why it was encountered (with quote), its relationship to existing terms, and content-adjacency assessment. Approval is always human — no auto-merge.
+
+---
+
+### Implementation Plan
+
+**Aliases:** Plan Doc, Design Doc, Plan
+**Also see:** `[[Design Governance]]`, `[[Definition of Done]]`, `[[Coordination Block]]`
+**Status:** canonical
+
+The Cowork-authored design artifact in `Docs/plans/YYYY-MM-DD-<topic>.md` that turns a Linear issue into something an executor can implement. Each plan covers all three pillars (Engine, Content, UI), runs the NFP audit, lists constants and traces, marks fail-soft cases, and produces the wiring section that connects new modules to orchestrator phases, UI components, and trace categories. The plan-pending-commit label gates an hourly scheduled task that commits the file to `origin/main`. Distinct from the Linear state **Implementation Planning**, which is the workflow phase where the plan is being written.

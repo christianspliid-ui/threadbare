@@ -46,6 +46,8 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Rival](./Agents.md#rival)** — competing divine entity generated from the World-Soul; always procedural, never hand-authored
 - **[Portfolio Pin](./Agents.md#portfolio-pin)** — player-marked agent (`isPortfolioPinned: true`) with elevated narrative prominence
 - **[Avatar](./Agents.md#avatar)** — a physical Ascendant manifestation connected via `avatar_of` edge
+- **[AxiologicalProfile](./Agents.md#axiologicalprofile)** — signed score across every ValuePair; drives epithet, social response, ambition selection
+- **[ValuePair](./Agents.md#valuepair)** — a single virtue/flaw axis (e.g. mercy_ruthlessness); nine pairs total, eight Reach-bound plus one meta
 
 ### Encounters
 
@@ -84,6 +86,9 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[worldVersion / touchWorld()](./Graph.md#worldversion--touchworld)** — version counter bumped on graph mutations; UI selectors depend on this, not object reference
 - **[structuralCacheVersion / touchStructure()](./Graph.md#structuralcacheversion--touchstructure)** — version counter for distance matrix and encounter cache; call after structural mutations
 - **[SimulationRuntime](./Graph.md#simulationruntime)** — per-session cache owner; scoped to playthrough; module-level singletons were rejected
+- **[GameState](./Graph.md#gamestate)** — per-session simulation container; mutated in place per tick; UI reads via worldVersion
+- **[HexTile](./Graph.md#hextile)** — one cell on the world's hex grid; top tier of the three-tier position model
+- **[TerrainType](./Graph.md#terraintype)** — 42-value biome enum on every HexTile; drives encounter scoring and awareness
 
 ### Coordination
 
@@ -115,7 +120,8 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Drift Scan](./Process.md#drift-scan)** — weekly GitHub Action producing `drift-scan`-labeled Linear issues from four codebase health signals
 - **[Retrospective](./Process.md#retrospective)** — weekly synthesis of impediment log + drift scan issues; run via `retrospective` skill
 - **[UL-proposal](./Process.md#ul-proposal)** — Linear issue label for proposed new terms or retirements; always human-approved, never auto-merged
+- **[Implementation Plan](./Process.md#implementation-plan)** — Cowork-authored design artifact in Docs/plans/; the executor's input
 
 ---
 
-*v1 — 73 canonical terms. Coverage expands via the propose-new-term flow. UL wins on terminology disagreements.*
+*v1.1 — 79 canonical terms (THR-294 added GameState, HexTile, TerrainType, Implementation Plan, AxiologicalProfile, ValuePair). Coverage expands via the propose-new-term flow. UL wins on terminology disagreements.*

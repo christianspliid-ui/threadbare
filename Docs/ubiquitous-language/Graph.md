@@ -6,7 +6,7 @@ Not content-adjacent. Terms covering the world graph data model: nodes, edges, v
 
 ### Node
 
-**Aliases:** Graph Node, World Node
+**Aliases:** Graph Node, World Node, GraphNode
 **Also see:** `[[Edge]]`, `[[WorldGraph]]`, `[[NodeType]]`
 **Status:** canonical
 
@@ -111,3 +111,33 @@ The version counter for structural caches — the distance matrix and encounter 
 **Status:** canonical
 
 The per-session owner of engine caches (encounter cache, distance matrix), version counters, and lazy rebuild logic. Owned by `useSimulation` and scoped to the current playthrough. Module-level singleton caches were rejected — they persist across game sessions without a full page reload. The SimulationRuntime pattern ensures each game session starts clean.
+
+---
+
+### GameState
+
+**Aliases:** Game State, Session State
+**Also see:** `[[WorldGraph]]`, `[[Cosmology Profile]]`, `[[HexTile]]`
+**Status:** canonical
+
+The per-session container for everything the simulation needs to advance one tick. Holds meta (`tick`, `cycle`, `phase`, `seed`), the world graph, the cosmology profile, all hex tiles, the simulation clock, the player's Ascendant identity and essence pool, the mandate, the doom track, encounter queues, and tick-event buffers. `GameState` is mutated in place by the orchestrator each tick; UI selectors read it via `worldVersion` rather than object reference. Definition: `src/types/gameState.ts`.
+
+---
+
+### HexTile
+
+**Aliases:** Hex, Tile, Hex Cell
+**Also see:** `[[Three-tier Position Model]]`, `[[TerrainType]]`, `[[GameState]]`
+**Status:** canonical
+
+One cell on the world's hex grid — the top tier of the three-tier position model. A `HexTile` carries its axial coordinate, geographic parameters (elevation, moisture, temperature), terrain biome, optional river flag, region assignment, plus mutable per-tick state: divine influence, corruption, exploration attraction, base terrain (for restoration), and positional danger. Stored in `GameState.tiles`. Agents resolve their hex by walking up the `located_at` edge chain to the first hex they reach.
+
+---
+
+### TerrainType
+
+**Aliases:** Biome, Terrain Biome
+**Also see:** `[[HexTile]]`
+**Status:** canonical
+
+The 42-value biome enum on every `HexTile.terrain`. Categories include water (`ocean`, `lake`, `river`, `reef`), lowlands (`grassland`, `farmland`, `savanna`), forest (`temperate_forest`, `dense_forest`, `boreal_forest`, `jungle`), wet (`swamp`, `marsh`, `moor_bog`), elevated (`hills`, `mountains`, `plateau`, `badlands`), special (`great_home_trees`, `broken_lands`, `oasis`), and extreme (`desert`, `tundra`, `glacier`, `volcano`). Used by encounter scoring, awareness rules, sublocation eligibility, and prose tier biasing. Definition: `src/types/index.ts`.

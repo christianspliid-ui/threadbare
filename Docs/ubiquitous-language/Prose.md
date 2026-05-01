@@ -66,7 +66,7 @@ A persistent record of a significant event in an agent or faction's history (`Ch
 
 ### Narrative Event
 
-**Aliases:** Tick Event, World Event
+**Aliases:** Tick Event, World Event, TickEvent
 **Also see:** `[[Chronicle Entry]]`, `[[Thread Tug]]`
 **Status:** canonical
 

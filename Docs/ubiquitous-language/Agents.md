@@ -101,3 +101,23 @@ A player-marked agent (`isPortfolioPinned: true` on the actor node properties) d
 **Status:** canonical
 
 An agent created as a physical manifestation of the Ascendant's divine presence. Connected to the Ascendant via an `avatar_of` edge. Avatars are rare and structurally distinct from the Ascendant's normal thread-based influence.
+
+---
+
+### AxiologicalProfile
+
+**Aliases:** Axiological Profile, Value Profile, Agent Values
+**Also see:** `[[ValuePair]]`, `[[Reach]]`, `[[Agent]]`
+**Status:** canonical
+
+An actor's signed score across every `ValuePair` — `Record<ValuePair, number>` ranging from −1.0 (flaw pole) to +1.0 (virtue pole). Drives epithet generation, social-encounter responses, ambition selection, and cross-agent compatibility scoring. The eight Reach-bound pairs plus the meta pair `courage_prudence` make nine slots per profile. Definition: `src/types/agent.ts`.
+
+---
+
+### ValuePair
+
+**Aliases:** Axiological Pair, Virtue/Flaw Axis
+**Also see:** `[[AxiologicalProfile]]`, `[[Reach]]`
+**Status:** canonical
+
+A single virtue-flaw axis composing an `AxiologicalProfile`. The eight Reach-bound pairs are: `mercy_ruthlessness` (Iron), `asceticism_extravagance` (Gold), `honesty_cunning` (Shadow), `tradition_novelty` (Veil), `loyalty_ambition` (Heart), `revelation_discretion` (Eye), `preservation_transformation` (Stone), `sacrifice_survival` (Star). Plus one meta pair: `courage_prudence`. Convention: +1.0 = first pole (virtue), −1.0 = second pole (flaw). The pre-TB-075 pairs `frankness_propriety`, `humility_pride`, and `stoicism_passion` are deprecated; do not reintroduce them.
