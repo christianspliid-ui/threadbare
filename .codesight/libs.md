@@ -1804,7 +1804,7 @@
   - function phaseEncounterProgressionV2: (state, runtime?) => Partial<GameState>
   - function phaseDilemmaDetection: (state) => Partial<GameState>
   - function runDivineProximityPhase: (state) => DivineProximityPhaseResult
-  - _...10 more_
+  - _...9 more_
 - `src\engine\outcomeConsequences.ts`
   - function isProvingSliceTemplate: (templateId) => boolean
   - function computeOutcomeConsequence: (templateId, outcome, actorId, tick, context?) => OutcomeConsequence
@@ -1882,6 +1882,15 @@
   - type PopulationTrend
   - _...39 more_
 - `src\engine\phaseQuintessence.ts` — function phaseQuintessence: (state, runtime?) => Partial<GameState>
+- `src\engine\phaseRegistry.ts`
+  - function buildPhasePlan: (phases) => PhasePlan
+  - function runRegisteredPhases: (state, ctx, slot, plan) => GameState
+  - interface PhaseContext
+  - interface EnginePhase
+  - type PhaseResult
+  - type PhaseSlot
+  - _...2 more_
+- `src\engine\phaseReputationDecay.ts` — function phaseReputationDecay: (state) => Partial<GameState>
 - `src\engine\phaseReputationTraits.ts`
   - function resetReputationTraitInit: () => void
   - function determinePolarity: (template, graph, agentId) => 'positive' | 'negative' | null
