@@ -93,6 +93,9 @@
       "Bash(cp \".claude/skills/vault-log/SKILL.md\" \".agents/skills/vault-log/SKILL.md\")"
     ]
   },
+  "env": {
+    "OBSIDIAN_VAULT_PATH": "C:\\Users\\chris\\Dev\\Obsidian"
+  },
   "hooks": {
     "SessionStart": [
       {
