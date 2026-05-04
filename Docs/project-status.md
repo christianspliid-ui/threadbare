@@ -1,7 +1,7 @@
 # Project Status
 > Updated 2026-05-04.
 ## Current Focus
-**Maintenance cycle (2026-05-04 hourly pickup) — board empty, cleanup done.** No Ready-for-Dev issues on board. Actions taken: (1) pushed unmerged `docs/plan-flush-thr-300` branch to remote and opened PR #116 (THR-300 grill-me plan doc, CI pending); (2) removed stale `plan-pending-commit` labels from Done issues THR-296/297/298; (3) logged impediment #112 — flush-plan-docs branch-fallback path missing remote push. PR #116 requires merge by next session or user.
+**Maintenance cycle (2026-05-04) — board empty, all design artifacts committed.** No Ready-for-Dev issues on board. THR-300 Encounter Experience design exploration complete (Done); all artifacts committed across PRs #115–#119: grill-me synthesis, experiments HTML, player-journey.md, concept art, build-toolkit.md, v6+v7 UI prototypes. Next action: user needs to create implementation issues for THR-300 design decisions (Tarot Loom / Witnessed Scene / Knot of Threads experiments).
 
 **THR-299 complete — orphaned weekly hygiene docs committed.** Committed orphaned Cowork changes from the 2026-05-04 weekly sweep: AGENTS.md full Linear-first rewrite, CLAUDE.md branch-protection note + 5 new Domain Skills rows, encounter-building-checklist Backlog Escalation Rule updated to Linear. PR #113.
 
