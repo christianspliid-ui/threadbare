@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Encounter Experience v5 — Eira Hero Panel</title>
+<style>
+  :root {
+    --bg: #07080d;
+    --bg-2: #0e1019;
+    --panel: #14172a;
+    --stroke: #2c3247;
+    --parchment: #e0d4b4;
+    --parchment-dim: #a89e80;
+    --muted: #5a6177;
+    --gold: #d4a766;
+    --gold-bright: #f4cb86;
+    --iron: #c46b3a;
+    --eye: #8aa6c8;
+    --heart: #c47894;
+    --spirit: #b39ad2;
+    --life: #4ea878;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--parchment); font-family: 'Inter', system-ui, sans-serif; }
+  header.page-head { padding: 24px 48px 16px; border-bottom: 1px solid var(--stroke); background: linear-gradient(180deg, var(--bg-2), var(--bg)); }
+  header.page-head h1 { margin: 0 0 4px; font-family: 'Cormorant Garamond', 'Georgia', serif; font-weight: 500; font-size: 26px; color: var(--gold-bright); letter-spacing: 0.5px; }
+  header.page-head .meta { margin: 0 0 10px; color: var(--muted); font-size: 13px; }
+  header.page-head .change-note { color: var(--parchment-dim); font-size: 13px; line-height: 1.6; max-width: 1180px; }
+  header.page-head .change-note strong { color: var(--parchment); }
+  header.page-head .change-note .added { color: var(--gold); }
+  header.page-head .change-note .killed { color: #888; text-decoration: line-through; }
+
+  main { padding: 24px 48px 48px; max-width: 1920px; margin: 0 auto; }
+  .frame-label { margin: 32px 0 12px; display: flex; align-items: baseline; gap: 16px; }
+  .frame-label h2 { margin: 0; font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--gold-bright); letter-spacing: 0.5px; }
+  .frame-label .sub { color: var(--muted); font-size: 13px; letter-spacing: 1px; }
+  .stage { position: relative; width: 100%; aspect-ratio: 16/9; border-radius: 6px; overflow: hidden; box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px var(--stroke); background: #050609; }
+  .stage svg { display: block; width: 100%; height: 100%; }
+
+  footer.page-foot { margin: 0 auto; max-width: 1920px; padding: 24px 48px 64px; border-top: 1px solid var(--stroke); color: var(--muted); font-size: 13px; line-height: 1.65; }
+  footer.page-foot strong { color: var(--parchment); }
+  footer.page-foot h2 { color: var(--gold); font-family: 'Cormorant Garamond', serif; font-size: 18px; margin: 0 0 8px; }
+  footer.page-foot ul { margin: 0 0 12px; padding-left: 20px; }
+  footer.page-foot li { margin-bottom: 6px; color: var(--parchment); }
+  footer.page-foot .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 24px; }
+
+  .svg-serif { font-family: 'Cormorant Garamond', 'Georgia', serif; }
+  .svg-sans { font-family: 'Inter', system-ui, sans-serif; }
+</style>
+</head>
+<body>
+
+<header class="page-head">
+  <h1>Encounter Experience — v5 (Eira Hero Panel)</h1>
+  <p class="meta">2026-05-04 · double-clicking the protagonist · scene-filtered identity</p>
+  <p class="change-note">
+    <strong>What changed.</strong> <span class="killed">Divine Court</span> removed from encounter UI (it's a world-view concept, not encounter-time). <span class="added">Eira Hero Panel</span> now occupies the full left rail — a dedicated, scene-filtered view of the threaded protagonist: portrait at scale, capability profile (qualitative sphere strengths), items active in this scene, her relationships to <em>each cast member specifically</em>, recent moments that could echo here, and her current state. Cast strips compact and move to the right rail above the Ascendant hand. <span class="added">In Frame 2</span> the registration moment fires <em>inside</em> Eira&apos;s panel — new items materialise in her items section, a new face appears in her relationships, recent-moments grows by one. The change happens in the protagonist&apos;s zone, not as a separate notification.
+  </p>
+</header>
+
+<main>
+
+<!-- ============================================================
+     FRAME 1 — ACTIVE BEAT (pre-dice)
+============================================================ -->
+<div class="frame-label">
+  <h2>Frame 1 — Active beat (pre-dice)</h2>
+  <span class="sub">CHOICE MOMENT &middot; Eira-grounded</span>
+</div>
+
+<div class="stage">
+<svg viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs>
+  <radialGradient id="V5-bg" cx="50%" cy="40%" r="80%">
+    <stop offset="0%" stop-color="#101321"/>
+    <stop offset="60%" stop-color="#070810"/>
+    <stop offset="100%" stop-color="#04050a"/>
+  </radialGradient>
+  <linearGradient id="V5-card" x1="0" x2="0" y1="0" y2="1">
+    <stop offset="0%" stop-color="#1a1d2c"/>
+    <stop offset="100%" stop-color="#0e1019"/>
+  </linearGradient>
+  <linearGradient id="V5-hero-panel" x1="0" x2="0" y1="0" y2="1">
+    <stop offset="0%" stop-color="#181b2a"/>
+    <stop offset="100%" stop-color="#0c0e16"/>
+  </linearGradient>
+  <radialGradient id="V5-iron-glow" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#c46b3a" stop-opacity="0.45"/>
+    <stop offset="60%" stop-color="#c46b3a" stop-opacity="0.10"/>
+    <stop offset="100%" stop-color="#c46b3a" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="V5-rare-pulse" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#f4cb86" stop-opacity="0.7"/>
+    <stop offset="60%" stop-color="#d4a766" stop-opacity="0.20"/>
+    <stop offset="100%" stop-color="#d4a766" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="V5-asc-glow" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#d4a766" stop-opacity="0.7"/>
+    <stop offset="60%" stop-color="#d4a766" stop-opacity="0.15"/>
+    <stop offset="100%" stop-color="#d4a766" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="V5-eira-glow" cx="50%" cy="40%" r="60%">
+    <stop offset="0%" stop-color="#d4a766" stop-opacity="0.18"/>
+    <stop offset="100%" stop-color="#d4a766" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="V5-port-asc" cx="50%" cy="32%" r="68%"><stop offset="0%" stop-color="#6a4a8a"/><stop offset="60%" stop-color="#241828"/><stop offset="100%" stop-color="#080510"/></radialGradient>
+  <filter id="V5-soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>
+  <filter id="V5-soft-strong" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="14"/></filter>
+  <clipPath id="V5-clip-eira-hero"><rect width="200" height="200" rx="3"/></clipPath>
+  <clipPath id="V5-clip-veiren"><circle cx="22" cy="22" r="22"/></clipPath>
+  <clipPath id="V5-clip-trader"><circle cx="22" cy="22" r="22"/></clipPath>
+  <clipPath id="V5-clip-halren"><circle cx="22" cy="22" r="22"/></clipPath>
+  <clipPath id="V5-clip-place"><rect width="568" height="220" rx="3"/></clipPath>
+</defs>
+
+<rect width="1920" height="1080" fill="url(#V5-bg)"/>
+
+<!-- background threads -->
+<g opacity="0.4" stroke-linecap="round" fill="none">
+  <path d="M 0 920 Q 480 800 960 880 T 1920 820" stroke="#2a2436" stroke-width="1"/>
+  <path d="M 0 200 Q 600 260 1100 220 T 1920 260" stroke="#1f2230" stroke-width="1"/>
+</g>
+
+<!-- HEADER -->
+<g>
+  <text x="60" y="50" class="svg-serif" font-size="22" fill="#d4a766" letter-spacing="2">EIRA AT THE SOUTH GATE</text>
+  <text x="60" y="76" class="svg-sans" font-size="13" fill="#5a6177" letter-spacing="1">FAVORED THREAD &middot; CIVIC GUARD QUEUE &middot; SECOND CALL</text>
+  <g transform="translate(1620 50)">
+    <text x="-10" y="0" class="svg-sans" font-size="11" fill="#5a6177" text-anchor="end" letter-spacing="1">BEAT</text>
+    <circle cx="20" cy="-4" r="5" fill="#5a6177"/>
+    <circle cx="50" cy="-4" r="6" fill="#d4a766" filter="url(#V5-soft)"/>
+    <circle cx="50" cy="-4" r="5" fill="#f4cb86"/>
+    <circle cx="80" cy="-4" r="5" fill="#1c1f2a" stroke="#2c3247"/>
+    <circle cx="110" cy="-4" r="5" fill="#1c1f2a" stroke="#2c3247"/>
+    <text x="140" y="0" class="svg-sans" font-size="11" fill="#5a6177" letter-spacing="1">2 OF 4</text>
+  </g>
+</g>
+
+<!-- =================== EIRA HERO PANEL — full left rail =================== -->
+<g transform="translate(40 110)">
+  <!-- subtle hero glow behind whole panel -->
+  <ellipse cx="160" cy="380" rx="220" ry="380" fill="url(#V5-eira-glow)"/>
+
+  <!-- panel container -->
+  <rect width="320" height="800" rx="6" fill="url(#V5-hero-panel)" stroke="#2c3247"/>
+  <!-- top accent stripe -->
+  <rect width="320" height="4" rx="2" fill="#d4a766" opacity="0.7"/>
+  <text x="16" y="32" class="svg-serif" font-size="13" fill="#d4a766" letter-spacing="3">EIRA &middot; THE PROTAGONIST</text>
+
+  <!-- HERO PORTRAIT -->
+  <g transform="translate(60 50)">
+    <image xlink:href="encounter-cast-eira.png" x="0" y="0" width="200" height="200" clip-path="url(#V5-clip-eira-hero)" preserveAspectRatio="xMidYMid slice"/>
+    <rect width="200" height="200" rx="3" fill="none" stroke="#d4a766" stroke-width="1.5"/>
+    <!-- thread overlay -->
+    <line x1="0" y1="40" x2="200" y2="60" stroke="#d4a766" stroke-width="1" opacity="0.4"/>
+  </g>
+
+  <!-- Identity block -->
+  <g transform="translate(16 274)">
+    <text x="0" y="0" class="svg-serif" font-size="22" fill="#e0d4b4">Eira of Bren</text>
+    <text x="0" y="22" class="svg-sans" font-size="11" fill="#a89e80" letter-spacing="1">IRON-VOICE &middot; DRAWN BOND &middot; 28 WINTERS</text>
+    <!-- state -->
+    <g transform="translate(0 36)">
+      <rect width="288" height="32" rx="2" fill="#0d0f17" stroke="#3a322c"/>
+      <circle cx="14" cy="16" r="5" fill="#6ec890" opacity="0.85" filter="url(#V5-soft)"/>
+      <circle cx="14" cy="16" r="3" fill="#6ec890"/>
+      <text x="28" y="20" class="svg-serif" font-size="13" fill="#cdc09a" font-style="italic">steady, but reading the room</text>
+    </g>
+  </g>
+
+  <!-- CAPABILITY (qualitative sphere strengths) -->
+  <g transform="translate(16 350)">
+    <text x="0" y="0" class="svg-sans" font-size="10.5" fill="#a89e80" letter-spacing="2">CAPABILITY IN THIS SCENE</text>
+    <!-- Iron -->
+    <g transform="translate(0 14)">
+      <text x="0" y="14" class="svg-sans" font-size="11" fill="#e89678" letter-spacing="1">IRON</text>
+      <g transform="translate(54 4)">
+        <circle cx="6" cy="6" r="5" fill="#c46b3a"/>
+        <circle cx="22" cy="6" r="5" fill="#c46b3a"/>
+        <circle cx="38" cy="6" r="5" fill="#c46b3a" opacity="0.45"/>
+        <circle cx="54" cy="6" r="5" fill="#c46b3a" opacity="0.20"/>
+        <circle cx="70" cy="6" r="5" fill="none" stroke="#3a322c"/>
+      </g>
+      <text x="190" y="14" class="svg-sans" font-size="10.5" fill="#a89e80" font-style="italic">a steady arm</text>
+    </g>
+    <!-- Eye -->
+    <g transform="translate(0 36)">
+      <text x="0" y="14" class="svg-sans" font-size="11" fill="#a8c4e6" letter-spacing="1">EYE</text>
+      <g transform="translate(54 4)">
+        <circle cx="6" cy="6" r="5" fill="#8aa6c8"/>
+        <circle cx="22" cy="6" r="5" fill="#8aa6c8"/>
+        <circle cx="38" cy="6" r="5" fill="#8aa6c8" opacity="0.6"/>
+        <circle cx="54" cy="6" r="5" fill="#8aa6c8" opacity="0.20"/>
+        <circle cx="70" cy="6" r="5" fill="none" stroke="#3a322c"/>
+      </g>
+      <text x="190" y="14" class="svg-sans" font-size="10.5" fill="#a89e80" font-style="italic">she misses little</text>
+    </g>
+    <!-- Heart -->
+    <g transform="translate(0 58)">
+      <text x="0" y="14" class="svg-sans" font-size="11" fill="#e2a4b4" letter-spacing="1">HEART</text>
+      <g transform="translate(54 4)">
+        <circle cx="6" cy="6" r="5" fill="#c47894"/>
+        <circle cx="22" cy="6" r="5" fill="#c47894"/>
+        <circle cx="38" cy="6" r="5" fill="#c47894"/>
+        <circle cx="54" cy="6" r="5" fill="#c47894"/>
+        <circle cx="70" cy="6" r="5" fill="#c47894" opacity="0.45"/>
+      </g>
+      <text x="190" y="14" class="svg-sans" font-size="10.5" fill="#a89e80" font-style="italic">her deepest thread</text>
+    </g>
+  </g>
+
+  <!-- ITEMS / VOWS in this scene -->
+  <g transform="translate(16 446)">
+    <text x="0" y="0" class="svg-sans" font-size="10.5" fill="#a89e80" letter-spacing="2">SHE CARRIES INTO THIS SCENE</text>
+    <!-- Captain's token -->
+    <g transform="translate(0 12)">
+      <rect width="288" height="40" rx="3" fill="#0d0f17" stroke="#2c3247"/>
+      <circle cx="22" cy="20" r="8" fill="none" stroke="#d4a766" stroke-width="1.2"/>
+      <circle cx="22" cy="20" r="3" fill="#d4a766" opacity="0.85"/>
+      <text x="42" y="18" class="svg-sans" font-size="12" fill="#e0d4b4">Captain&apos;s token</text>
+      <text x="42" y="34" class="svg-sans" font-size="10" fill="#8a8169">small favor &middot; civic guard remembers her</text>
+    </g>
+    <!-- Vow ACTIVE NOW -->
+    <g transform="translate(0 56)">
+      <ellipse cx="144" cy="22" rx="160" ry="22" fill="#c47894" opacity="0.10"/>
+      <rect width="288" height="44" rx="3" fill="#1a1018" stroke="#c47894" stroke-width="1.2"/>
+      <path d="M 0 0 L 12 0 L 0 12 Z" fill="#c47894" opacity="0.7"/>
+      <path d="M 18 24 Q 22 16 26 24 Q 22 32 18 24 Z" fill="#c47894"/>
+      <text x="40" y="16" class="svg-sans" font-size="9.5" fill="#c47894" letter-spacing="1.5">VOW &middot; ACTIVE NOW</text>
+      <text x="40" y="32" class="svg-serif" font-size="13" fill="#e0d4b4">Vow to the small folk</text>
+      <text x="40" y="46" class="svg-sans" font-size="10" fill="#a89e80" font-style="italic">she will not crush a frightened man</text>
+    </g>
+  </g>
+
+  <!-- KNOWS THESE — relationships to cast (NEW V5) -->
+  <g transform="translate(16 566)">
+    <text x="0" y="0" class="svg-sans" font-size="10.5" fill="#a89e80" letter-spacing="2">SHE KNOWS THESE FACES</text>
+
+    <g transform="translate(0 12)">
+      <rect width="288" height="34" rx="3" fill="#0d0f17" stroke="#2c3247"/>
+      <g transform="translate(8 5)">
+        <image xlink:href="encounter-cast-captain-veiren.png" x="0" y="0" width="44" height="44" clip-path="url(#V5-clip-veiren)" preserveAspectRatio="xMidYMid slice"/>
+        <circle cx="22" cy="22" r="22" fill="none" stroke="#c46b3a" stroke-width="1" opacity="0.7"/>
+      </g>
+      <text x="60" y="16" class="svg-sans" font-size="11" fill="#cdc09a">Captain Veiren —</text>
+      <text x="60" y="30" class="svg-sans" font-size="10" fill="#a89e80" font-style="italic">a debt and a winter ago</text>
+    </g>
+
+    <g transform="translate(0 50)">
+      <rect width="288" height="34" rx="3" fill="#0d0f17" stroke="#2c3247"/>
+      <g transform="translate(8 5)">
+        <image xlink:href="encounter-cast-trader.png" x="0" y="0" width="44" height="44" clip-path="url(#V5-clip-trader)" preserveAspectRatio="xMidYMid slice"/>
+        <circle cx="22" cy="22" r="22" fill="none" stroke="#5a6177" stroke-width="1" opacity="0.5"/>
+      </g>
+      <text x="60" y="16" class="svg-sans" font-size="11" fill="#cdc09a">A nervous trader —</text>
+      <text x="60" y="30" class="svg-sans" font-size="10" fill="#a89e80" font-style="italic">a stranger to her</text>
+    </g>
+
+    <g transform="translate(0 88)">
+      <rect width="288" height="34" rx="3" fill="#0d0f17" stroke="#2c3247"/>
+      <g transform="translate(8 5)">
+        <image xlink:href="encounter-cast-halren.png" x="0" y="0" width="44" height="44" clip-path="url(#V5-clip-halren)" preserveAspectRatio="xMidYMid slice"/>
+        <circle cx="22" cy="22" r="22" fill="none" stroke="#c47894" stroke-width="1" opacity="0.5"/>
+      </g>
+      <text x="60" y="16" class="svg-sans" font-size="11" fill="#cdc09a">Halren the Lawful —</text>
+      <text x="60" y="30" class="svg-sans" font-size="10" fill="#a89e80" font-style="italic">a face she has seen at council</text>
+    </g>
+  </g>
+
+  <!-- COULD ECHO — recent moments (callback fuel) -->
+  <g transform="translate(16 706)">
+    <text x="0" y="0" class="svg-sans" font-size="10.5" fill="#a89e80" letter-spacing="2">MOMENTS THAT COULD ECHO HERE</text>
+    <g transform="translate(0 12)">
+      <rect width="288" height="32" rx="3" fill="#0d0f17" stroke="#3a322c"/>
+      <path d="M 6 10 L 11 16 L 6 22 Z" fill="#d4a766" opacity="0.7"/>
+      <text x="20" y="14" class="svg-serif" font-size="11" fill="#cdc09a" font-style="italic">The iron market, last winter.</text>
+      <text x="20" y="28" class="svg-sans" font-size="9.5" fill="#5a6177" letter-spacing="0.5">VEIREN-RELATED &middot; INVOKED THIS BEAT</text>
+    </g>
+    <g transform="translate(0 48)">
+      <rect width="288" height="32" rx="3" fill="#0a0b12" stroke="#2c3247"/>
+      <text x="14" y="14" class="svg-serif" font-size="11" fill="#a89e80" font-style="italic">A frightened smuggler. 3 turns ago.</text>
+      <text x="14" y="28" class="svg-sans" font-size="9.5" fill="#5a6177" letter-spacing="0.5">VOW-RELATED &middot; ELIGIBLE</text>
+    </g>
+    <g transform="translate(0 84)">
+      <text x="0" y="14" class="svg-sans" font-size="10" fill="#5a6177">+ 4 more in her biography</text>
+      <text x="288" y="14" text-anchor="end" class="svg-sans" font-size="10" fill="#5a6177">→ open her sheet</text>
+    </g>
+  </g>
+</g>
+
+<!-- past beat strip -->
+<g transform="translate(420 100)" opacity="0.4">
+  <rect width="900" height="40" rx="3" fill="#13141d" stroke="#2c3247"/>
+  <text x="14" y="26" class="svg-serif" font-size="12" fill="#5a6177" letter-spacing="2">BEAT 1 RESOLVED</text>
+  <text x="180" y="26" class="svg-serif" font-size="13" fill="#8a8169" font-style="italic">She read the queue and found him on the seventh face.</text>
+  <line x1="860" y1="14" x2="876" y2="14" stroke="#4ea878" stroke-width="2"/>
+  <text x="852" y="28" class="svg-sans" font-size="9.5" fill="#4ea878" text-anchor="end" letter-spacing="1">SUCCEEDED</text>
+</g>
+
+<!-- ACTIVE CARD -->
+<g transform="translate(400 160)">
+  <ellipse cx="460" cy="380" rx="520" ry="380" fill="url(#V5-iron-glow)" opacity="0.55"/>
+  <rect width="920" height="720" rx="6" fill="url(#V5-card)" stroke="#c46b3a" stroke-width="1.4"/>
+  <path d="M 0 0 L 24 0 L 0 24 Z" fill="#c46b3a" opacity="0.6"/>
+  <path d="M 920 0 L 896 0 L 920 24 Z" fill="#c46b3a" opacity="0.6"/>
+  <path d="M 0 720 L 24 720 L 0 696 Z" fill="#c46b3a" opacity="0.6"/>
+  <path d="M 920 720 L 896 720 L 920 696 Z" fill="#c46b3a" opacity="0.6"/>
+
+  <text x="32" y="36" class="svg-serif" font-size="13" fill="#c46b3a" letter-spacing="3">BEAT 2 &middot; NOW</text>
+  <text x="32" y="68" class="svg-serif" font-size="28" fill="#e0d4b4">The Captain Stops</text>
+  <line x1="32" y1="80" x2="160" y2="80" stroke="#c46b3a" stroke-width="1"/>
+
+  <g transform="translate(32 96)">
+    <image xlink:href="encounter-place-south-gate.png" x="0" y="0" width="568" height="220" clip-path="url(#V5-clip-place)" preserveAspectRatio="xMidYMid slice"/>
+    <rect width="568" height="220" rx="3" fill="none" stroke="#3a322c" stroke-width="0.8"/>
+    <text x="8" y="236" class="svg-sans" font-size="10.5" fill="#8a8169" letter-spacing="2">SOUTH GATE OF BREN &middot; SEVENTH FACE OF THE QUEUE &middot; DUSK</text>
+  </g>
+
+  <g transform="translate(620 96)">
+    <text x="0" y="0" class="svg-serif" font-size="13" fill="#d4a766" letter-spacing="3">WHAT HAPPENS NOW</text>
+    <g transform="translate(244 -10)">
+      <circle cx="0" cy="0" r="11" fill="#0d0f17" stroke="#d4a766" stroke-width="1.2"/>
+      <path d="M -3 -4 L -3 4 L 1 4 L 5 7 L 5 -7 L 1 -4 Z" fill="#d4a766"/>
+      <path d="M 7 -3 Q 11 0 7 3" stroke="#d4a766" stroke-width="1" fill="none"/>
+    </g>
+
+    <g transform="translate(0 14)">
+      <rect width="276" height="34" rx="2" fill="#1a1610" stroke="#d4a766" stroke-width="0.8"/>
+      <path d="M 6 17 L 11 12 L 11 22 Z" fill="#d4a766"/>
+      <text x="20" y="22" class="svg-serif" font-size="12" fill="#f4cb86" font-style="italic">She invokes the night Veiren tested her</text>
+      <text x="20" y="32" class="svg-serif" font-size="10" fill="#a89e80" font-style="italic">at the iron market last winter.</text>
+    </g>
+
+    <g class="svg-serif" font-size="17" fill="#cdc09a">
+      <text x="0" y="74">Veiren plants his bootheel in front of</text>
+      <text x="0" y="98">Eira and stops.</text>
+      <text x="0" y="130" font-style="italic" fill="#e0d4b4">"You. Step forward."</text>
+      <text x="0" y="162">The queue holds its breath. Behind</text>
+      <text x="0" y="186">Eira, the trader thinks about <tspan fill="#a8c4e6" text-decoration="underline" text-decoration-style="dotted">running</tspan></text>
+      <text x="0" y="210">— she can hear it in the way he stops</text>
+      <text x="0" y="234">breathing. Halren coughs from <tspan fill="#e2a4b4" text-decoration="underline" text-decoration-style="dotted">three</tspan></text>
+      <text x="0" y="258"><tspan fill="#e2a4b4" text-decoration="underline" text-decoration-style="dotted">places back</tspan>.</text>
+    </g>
+    <text x="0" y="294" class="svg-sans" font-size="11" fill="#8a8169" letter-spacing="1">EIRA HAS NOT YET DECIDED</text>
+  </g>
+
+  <!-- Lean primitives -->
+  <g transform="translate(32 348)">
+    <text x="0" y="0" class="svg-serif" font-size="13" fill="#d4a766" letter-spacing="3">LEAN ON HER &middot; OR DON&apos;T</text>
+    <text x="856" y="0" text-anchor="end" class="svg-sans" font-size="10.5" fill="#5a6177" letter-spacing="1">EACH LEAN TILTS A DIFFERENT KIND OF CHANGE</text>
+
+    <g transform="translate(0 16)">
+      <rect width="276" height="208" rx="4" fill="#0d0f17" stroke="#c46b3a" stroke-width="1.2"/>
+      <text x="16" y="30" class="svg-sans" font-size="10.5" fill="#c46b3a" letter-spacing="2">IRON &middot; A SMALL BREATH</text>
+      <text x="16" y="60" class="svg-serif" font-size="22" fill="#e0d4b4" font-style="italic">Stir her resolve.</text>
+      <line x1="16" y1="74" x2="64" y2="74" stroke="#c46b3a" stroke-width="1.5"/>
+      <g class="svg-sans" font-size="12" fill="#cdc09a">
+        <text x="16" y="100">Her shoulders set. She closes</text>
+        <text x="16" y="118">the distance and meets Veiren&apos;s</text>
+        <text x="16" y="136">eye.</text>
+      </g>
+      <text x="16" y="162" class="svg-sans" font-size="10.5" fill="#a89e80" font-style="italic">Tilts toward: a wound, a debt,</text>
+      <text x="16" y="176" class="svg-sans" font-size="10.5" fill="#a89e80" font-style="italic">or his favour earned.</text>
+      <text x="16" y="200" class="svg-sans" font-size="10.5" fill="#d4a766">↗ if she fails — a new thread opens.</text>
+    </g>
+
+    <g transform="translate(290 16)">
+      <rect width="276" height="208" rx="4" fill="#0d0f17" stroke="#8aa6c8" stroke-width="1.2"/>
+      <text x="16" y="30" class="svg-sans" font-size="10.5" fill="#8aa6c8" letter-spacing="2">EYE &middot; A FULLER BREATH</text>
+      <text x="16" y="60" class="svg-serif" font-size="22" fill="#e0d4b4" font-style="italic">Sharpen her sight.</text>
+      <line x1="16" y1="74" x2="86" y2="74" stroke="#8aa6c8" stroke-width="1.5"/>
+      <g class="svg-sans" font-size="12" fill="#cdc09a">
+        <text x="16" y="100">Her gaze flicks past Veiren to</text>
+        <text x="16" y="118">the trader. If he is hiding</text>
+        <text x="16" y="136">anything, she will see it.</text>
+      </g>
+      <text x="16" y="162" class="svg-sans" font-size="10.5" fill="#a89e80" font-style="italic">Tilts toward: knowledge,</text>
+      <text x="16" y="176" class="svg-sans" font-size="10.5" fill="#a89e80" font-style="italic">a thread to follow.</text>
+      <text x="16" y="200" class="svg-sans" font-size="10.5" fill="#d4a766">↗ if she fails — a new thread opens.</text>
+    </g>
+
+    <g transform="translate(580 16)">
+      <rect width="276" height="208" rx="4" fill="#0d0f17" stroke="#c47894" stroke-width="1.2"/>
+      <text x="16" y="30" class="svg-sans" font-size="10.5" fill="#c47894" letter-spacing="2">HEART &middot; A DEEP DRAUGHT</text>
+      <text x="16" y="60" class="svg-serif" font-size="22" fill="#e0d4b4" font-style="italic">Soften her stance.</text>
+      <line x1="16" y1="74" x2="98" y2="74" stroke="#c47894" stroke-width="1.5"/>
+      <g class="svg-sans" font-size="12" fill="#cdc09a">
+        <text x="16" y="100">She finds the small folk&apos;s</text>
+        <text x="16" y="118">silence and gives it. Veiren</text>
+        <text x="16" y="136">picks another.</text>
+      </g>
+      <text x="16" y="162" class="svg-sans" font-size="10.5" fill="#a89e80" font-style="italic">Tilts toward: a vow deepened,</text>
+      <text x="16" y="176" class="svg-sans" font-size="10.5" fill="#a89e80" font-style="italic">a story moved sideways.</text>
+      <text x="16" y="200" class="svg-sans" font-size="10.5" fill="#d4a766">↗ if she fails — a new thread opens.</text>
+    </g>
+  </g>
+
+  <g transform="translate(32 612)">
+    <line x1="0" y1="0" x2="856" y2="0" stroke="#2c3247" stroke-width="0.6"/>
+    <text x="0" y="22" class="svg-sans" font-size="11" fill="#5a6177" letter-spacing="0.5">After you choose, the threads decide. The result will turn the next card.</text>
+    <text x="856" y="22" text-anchor="end" class="svg-sans" font-size="11" fill="#d4a766" letter-spacing="0.5">Failure is a complication, not an ending.</text>
+  </g>
+</g>
+
+<!-- next beat (face-down) -->
+<g transform="translate(420 920)" opacity="0.7">
+  <rect width="900" height="32" rx="3" fill="#0a0b12" stroke="#2c3247" stroke-dasharray="3 3"/>
+  <text x="450" y="20" class="svg-serif" font-size="12" fill="#5a6177" letter-spacing="3" text-anchor="middle">BEAT 3 &middot; UNREAD &middot; A CARD WAITS</text>
+</g>
+
+<!-- =================== RIGHT RAIL — CAST + ASCENDANT HAND =================== -->
+<g transform="translate(1340 110)">
+  <text x="0" y="22" class="svg-serif" font-size="13" fill="#d4a766" letter-spacing="3">CAST IN THIS SCENE</text>
+  <text x="0" y="42" class="svg-sans" font-size="10.5" fill="#5a6177" letter-spacing="0.5">three faces &middot; their dispositions toward Eira</text>
+
+  <!-- Veiren compact -->
+  <g transform="translate(0 56)">
+    <rect width="540" height="76" rx="3" fill="#0d0f17" stroke="#2c3247"/>
+    <g transform="translate(10 10)">
+      <image xlink:href="encounter-cast-captain-veiren.png" x="0" y="0" width="56" height="56" clip-path="url(#V5-clip-veiren)" preserveAspectRatio="xMidYMid slice" transform="scale(1.27)"/>
+      <circle cx="28" cy="28" r="28" fill="none" stroke="#c46b3a" stroke-width="1.4" opacity="0.85"/>
+    </g>
+    <text x="80" y="26" class="svg-serif" font-size="15" fill="#e0d4b4">Captain Veiren</text>
+    <text x="80" y="44" class="svg-sans" font-size="11" fill="#a89e80">disposition: <tspan fill="#e89678" text-decoration="underline" text-decoration-style="dotted">suspicious</tspan> &middot; iron-rooted, honour-bound</text>
+    <text x="80" y="62" class="svg-sans" font-size="10.5" fill="#8a8169" font-style="italic">tags: testing the queue, looking for a face</text>
+    <text x="528" y="26" text-anchor="end" class="svg-sans" font-size="10" fill="#c46b3a" letter-spacing="1">IRON</text>
+  </g>
+
+  <!-- Trader compact -->
+  <g transform="translate(0 142)">
+    <rect width="540" height="76" rx="3" fill="#0d0f17" stroke="#2c3247"/>
+    <g transform="translate(10 10)">
+      <image xlink:href="encounter-cast-trader.png" x="0" y="0" width="56" height="56" clip-path="url(#V5-clip-trader)" preserveAspectRatio="xMidYMid slice"/>
+      <circle cx="28" cy="28" r="28" fill="none" stroke="#8aa6c8" stroke-width="1" opacity="0.6"/>
+    </g>
+    <text x="80" y="26" class="svg-serif" font-size="15" fill="#e0d4b4">A nervous trader</text>
+    <text x="80" y="44" class="svg-sans" font-size="11" fill="#a89e80">disposition: <tspan fill="#a8c4e6" text-decoration="underline" text-decoration-style="dotted">about to bolt</tspan> &middot; <tspan fill="#a8c4e6" text-decoration="underline" text-decoration-style="dotted">hidden cargo</tspan></text>
+    <text x="80" y="62" class="svg-sans" font-size="10.5" fill="#8a8169" font-style="italic">tags: indebted, calculating an alley</text>
+    <text x="528" y="26" text-anchor="end" class="svg-sans" font-size="10" fill="#8aa6c8" letter-spacing="1">EYE</text>
+  </g>
+
+  <!-- Halren compact -->
+  <g transform="translate(0 228)">
+    <rect width="540" height="76" rx="3" fill="#0d0f17" stroke="#2c3247"/>
+    <g transform="translate(10 10)">
+      <image xlink:href="encounter-cast-halren.png" x="0" y="0" width="56" height="56" clip-path="url(#V5-clip-halren)" preserveAspectRatio="xMidYMid slice"/>
+      <circle cx="28" cy="28" r="28" fill="none" stroke="#c47894" stroke-width="1" opacity="0.55"/>
+    </g>
+    <text x="80" y="26" class="svg-serif" font-size="15" fill="#e0d4b4">Halren the Lawful</text>
+    <text x="80" y="44" class="svg-sans" font-size="11" fill="#a89e80">disposition: <tspan fill="#e2a4b4" text-decoration="underline" text-decoration-style="dotted">late for council</tspan> &middot; spice merchant</text>
+    <text x="80" y="62" class="svg-sans" font-size="10.5" fill="#8a8169" font-style="italic">tags: known face, watching closely</text>
+    <text x="528" y="26" text-anchor="end" class="svg-sans" font-size="10" fill="#c47894" letter-spacing="1">HEART</text>
+  </g>
+
+  <!-- ASCENDANT HAND — now the only major thing on this rail -->
+  <g transform="translate(0 336)">
+    <text x="0" y="0" class="svg-serif" font-size="13" fill="#d4a766" letter-spacing="3">YOUR HAND</text>
+    <text x="0" y="20" class="svg-sans" font-size="10.5" fill="#5a6177" letter-spacing="0.5">scene-relevant moves &middot; from your full deck of 12</text>
+    <g transform="translate(478 -2)">
+      <rect width="60" height="18" rx="9" fill="#1a1610" stroke="#d4a766" stroke-width="1"/>
+      <text x="30" y="12" text-anchor="middle" class="svg-sans" font-size="9" fill="#f4cb86" letter-spacing="1">+1 NEW</text>
+    </g>
+
+    <!-- Send a sign -->
+    <g transform="translate(0 36)">
+      <rect width="540" height="74" rx="4" fill="#0d0f17" stroke="#3a322c" stroke-width="1"/>
+      <g transform="translate(20 18)">
+        <circle cx="20" cy="20" r="20" fill="#0a0b12" stroke="#b39ad2" stroke-width="1"/>
+        <path d="M 12 20 Q 16 16 20 20 Q 24 16 28 20" stroke="#b39ad2" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      </g>
+      <text x="76" y="26" class="svg-serif" font-size="15" fill="#e0d4b4">Send a sign</text>
+      <text x="76" y="44" class="svg-sans" font-size="11" fill="#a89e80">divine.omen &middot; black bird, lantern guttering.</text>
+      <text x="76" y="60" class="svg-sans" font-size="11" fill="#a89e80">Cast disposition softens toward unease.</text>
+      <text x="528" y="26" text-anchor="end" class="svg-sans" font-size="10" fill="#b39ad2" letter-spacing="1">2 ESSENCE</text>
+    </g>
+
+    <!-- Veil -->
+    <g transform="translate(0 122)">
+      <rect width="540" height="74" rx="4" fill="#0d0f17" stroke="#3a322c" stroke-width="1"/>
+      <g transform="translate(20 18)">
+        <circle cx="20" cy="20" r="20" fill="#0a0b12" stroke="#8aa6c8" stroke-width="1"/>
+        <path d="M 8 14 Q 20 6 32 14 L 32 30 Q 20 36 8 30 Z" fill="none" stroke="#8aa6c8" stroke-width="1"/>
+      </g>
+      <text x="76" y="26" class="svg-serif" font-size="15" fill="#e0d4b4">Veil the trader&apos;s cargo</text>
+      <text x="76" y="44" class="svg-sans" font-size="11" fill="#a89e80">divine.deceive &middot; Veiren will not see what is</text>
+      <text x="76" y="60" class="svg-sans" font-size="11" fill="#a89e80">under the cloak. One beat of cover.</text>
+      <text x="528" y="26" text-anchor="end" class="svg-sans" font-size="10" fill="#8aa6c8" letter-spacing="1">2 ESSENCE</text>
+    </g>
+
+    <!-- Mark her with fate (RARE) -->
+    <g transform="translate(0 208)">
+      <ellipse cx="270" cy="37" rx="290" ry="50" fill="url(#V5-rare-pulse)" opacity="0.6">
+        <animate attributeName="opacity" values="0.6;0.25;0.6" dur="2.6s" repeatCount="indefinite"/>
+      </ellipse>
+      <rect width="540" height="74" rx="4" fill="#0d0f17" stroke="#d4a766" stroke-width="1.4"/>
+      <g transform="translate(20 18)">
+        <circle cx="20" cy="20" r="20" fill="#0a0b12" stroke="#d4a766" stroke-width="1.2"/>
+        <path d="M 20 8 Q 30 20 20 32 Q 10 20 20 8 Z" fill="none" stroke="#d4a766" stroke-width="1.2"/>
+        <circle cx="20" cy="20" r="2.5" fill="#f4cb86"/>
+      </g>
+      <text x="76" y="26" class="svg-serif" font-size="15" fill="#f4cb86">Mark her with fate</text>
+      <text x="76" y="44" class="svg-sans" font-size="11" fill="#a89e80">divine.coincidence &middot; this scene becomes</text>
+      <text x="76" y="60" class="svg-sans" font-size="11" fill="#a89e80">load-bearing in her biography.</text>
+      <text x="528" y="26" text-anchor="end" class="svg-sans" font-size="10" fill="#d4a766" letter-spacing="1">4 ESS &middot; RARE</text>
+    </g>
+
+    <!-- + N more -->
+    <g transform="translate(0 294)">
+      <rect width="540" height="40" rx="4" fill="#0a0b12" stroke="#2c3247" stroke-dasharray="3 3"/>
+      <text x="20" y="18" class="svg-sans" font-size="11" fill="#a89e80">+ four more playable here &middot; three dimmed (need essence or threads)</text>
+      <text x="20" y="32" class="svg-sans" font-size="10" fill="#5a6177">12 cards in your deck &middot; click to open the full hand</text>
+      <text x="528" y="24" text-anchor="end" class="svg-sans" font-size="11" fill="#5a6177">→</text>
+    </g>
+  </g>
+</g>
+
+<!-- BOTTOM STRIP -->
+<g transform="translate(0 920)">
+  <rect x="0" y="0" width="1920" height="160" fill="#0a0b12" opacity="0.92"/>
+  <line x1="0" y1="0" x2="1920" y2="0" stroke="#2c3247"/>
+  <g transform="translate(60 26)">
+    <ellipse cx="55" cy="55" rx="68" ry="68" fill="url(#V5-asc-glow)" filter="url(#V5-soft-strong)"/>
+    <circle cx="55" cy="55" r="44" fill="url(#V5-port-asc)" stroke="#d4a766" stroke-width="1.2"/>
+    <path d="M 30 64 Q 55 30 80 64 L 80 86 L 30 86 Z" fill="#1f1828"/>
+    <text x="130" y="38" class="svg-serif" font-size="16" fill="#e0d4b4">You, the Ascendant</text>
+    <text x="130" y="58" class="svg-sans" font-size="11.5" fill="#a89e80">Quintessence &middot; the breath behind your voice</text>
+    <g transform="translate(130 70)">
+      <circle cx="10" cy="14" r="8" fill="#d4a766" opacity="0.95" filter="url(#V5-soft)"/>
+      <circle cx="10" cy="14" r="6" fill="#f4cb86"/>
+      <circle cx="34" cy="14" r="8" fill="#d4a766" opacity="0.85" filter="url(#V5-soft)"/>
+      <circle cx="34" cy="14" r="6" fill="#d4a766"/>
+      <circle cx="58" cy="14" r="8" fill="#d4a766" opacity="0.55"/>
+      <circle cx="82" cy="14" r="8" fill="#d4a766" opacity="0.20"/>
+      <circle cx="106" cy="14" r="8" fill="none" stroke="#3a322c" stroke-width="0.8"/>
+    </g>
+    <text x="130" y="110" class="svg-sans" font-size="10.5" fill="#8a8169">tonight you are warm &middot; enough for two firm acts, three soft</text>
+  </g>
+  <g transform="translate(960 50)">
+    <text class="svg-serif" font-size="14" fill="#a89e80" text-anchor="middle" letter-spacing="2">LEAN ON HER &middot; PLAY A CARD &middot; OR LET THE DICE FALL</text>
+    <text x="0" y="32" class="svg-sans" font-size="11" fill="#5a6177" text-anchor="middle" letter-spacing="1">no act is also a story &middot; the world stays uncertain either way</text>
+  </g>
+  <g transform="translate(1500 26)">
+    <rect width="360" height="108" rx="4" fill="#0d0f17" stroke="#2c3247"/>
+    <text x="20" y="32" class="svg-serif" font-size="15" fill="#e0d4b4">Watch only</text>
+    <text x="20" y="56" class="svg-sans" font-size="11.5" fill="#a89e80">Let her face this on her own. The dice fall.</text>
+    <text x="20" y="74" class="svg-sans" font-size="11.5" fill="#a89e80">The story still writes itself — just without you.</text>
+    <text x="20" y="100" class="svg-sans" font-size="10" fill="#5a6177" letter-spacing="1">no quintessence &middot; the default</text>
+  </g>
+</g>
+
+</svg>
+</div>
+
+
+<!-- ============================================================
+     FRAME 2 — REGISTRATION HAPPENS INSIDE EIRA'S PANEL
+============================================================ -->
+<div class="frame-label">
+  <h2>Frame 2 — Outcome registers inside Eira&apos;s panel</h2>
+  <span class="sub">REGISTRATION MOMENT &middot; her zone is the focal point of change</span>
+</div>
+
+<div class="stage">
+<svg viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs>
+  <radialGradient id="V5-bg2" cx="50%" cy="40%" r="80%"><stop offset="0%" stop-color="#101321"/><stop offset="60%" stop-color="#070810"/><stop offset="100%" stop-color="#04050a"/></radialGradient>
+  <linearGradient id="V5-card2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#1a1d2c"/><stop offset="100%" stop-color="#0e1019"/></linearGradient>
+  <linearGradient id="V5-hero-panel-glow" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#1f2238"/><stop offset="100%" stop-color="#0c0e16"/></linearGradient>
+  <radialGradient id="V5-eye-glow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#8aa6c8" stop-opacity="0.55"/><stop offset="60%" stop-color="#8aa6c8" stop-opacity="0.10"/><stop offset="100%" stop-color="#8aa6c8" stop-opacity="0"/></radialGradient>
+  <radialGradient id="V5-gold-glow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#f4cb86" stop-opacity="0.7"/><stop offset="50%" stop-color="#d4a766" stop-opacity="0.18"/><stop offset="100%" stop-color="#d4a766" stop-opacity="0"/></radialGradient>
+  <radialGradient id="V5-asc-glow2" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#d4a766" stop-opacity="0.7"/><stop offset="60%" stop-color="#d4a766" stop-opacity="0.15"/><stop offset="100%" stop-color="#d4a766" stop-opacity="0"/></radialGradient>
+  <radialGradient id="V5-port-asc2" cx="50%" cy="32%" r="68%"><stop offset="0%" stop-color="#6a4a8a"/><stop offset="60%" stop-color="#241828"/><stop offset="100%" stop-color="#080510"/></radialGradient>
+  <filter id="V5-soft2" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>
+  <filter id="V5-soft-strong2" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="14"/></filter>
+  <clipPath id="V5-clip-eira-hero2"><rect width="200" height="200" rx="3"/></clipPath>
+  <clipPath id="V5-clip-veiren2"><circle cx="22" cy="22" r="22"/></clipPath>
+  <clipPath id="V5-clip-trader2"><circle cx="22" cy="22" r="22"/></clipPath>
+  <clipPath id="V5-clip-halren2"><circle cx="22" cy="22" r="22"/></clipPath>
+  <clipPath id="V5-clip-place2"><rect width="568" height="180" rx="3"/></clipPath>
+</defs>
+
+<rect width="1920" height="1080" fill="url(#V5-bg2)"/>
+
+<g>
+  <text x="60" y="50" class="svg-serif" font-size="22" fill="#d4a766" letter-spacing="2">EIRA AT THE SOUTH GATE</text>
+  <text x="60" y="76" class="svg-sans" font-size="13" fill="#5a6177" letter-spacing="1">THE THREADS HELD &middot; SHE SLIPPED THROUGH WITH KNOWLEDGE</text>
+  <g transform="translate(1620 50)">
+    <text x="-10" y="0" class="svg-sans" font-size="11" fill="#5a6177" text-anchor="end" letter-spacing="1">BEAT</text>
+    <circle cx="20" cy="-4" r="5" fill="#5a6177"/>
+    <circle cx="50" cy="-4" r="5" fill="#5a6177"/>
+    <circle cx="80" cy="-4" r="6" fill="#d4a766" filter="url(#V5-soft2)"/>
+    <circle cx="80" cy="-4" r="5" fill="#f4cb86"/>
+    <circle cx="110" cy="-4" r="5" fill="#1c1f2a" stroke="#2c3247"/>
+    <text x="140" y="0" class="svg-sans" font-size="11" fill="#5a6177" letter-spacing="1">3 OF 4</text>
+  </g>
+</g>
+
+<!-- =================== EIRA HERO PANEL — NOW SHOWING REGISTRATION =================== -->
+<g transform="translate(40 110)">
+  <ellipse cx="160" cy="380" rx="240" ry="380" fill="url(#V5-gold-glow)" opacity="0.6"/>
+  <rect width="320" height="800" rx="6" fill="url(#V5-hero-panel-glow)" stroke="#d4a766" stroke-width="1.4"/>
+  <rect width="320" height="4" rx="2" fill="#d4a766"/>
+
+  <!-- "registration" badge at top -->
+  <g transform="translate(110 16)">
+    <rect width="100" height="20" rx="10" fill="#1a1610" stroke="#d4a766" stroke-width="1"/>
+    <text x="50" y="14" text-anchor="middle" class="svg-sans" font-size="9" fill="#f4cb86" letter-spacing="1.5">+ REGISTERING</text>
+  </g>
+
+  <text x="16" y="50" class="svg-serif" font-size="13" fill="#d4a766" letter-spacing="3">EIRA &middot; THE PROTAGONIST</text>
+
+  <!-- HERO PORTRAIT -->
+  <g transform="translate(60 68)">
+    <image xlink:href="encounter-cast-eira.png" x="0" y="0" width="200" height="200" clip-path="url(#V5-clip-eira-hero2)" preserveAspectRatio="xMidYMid slice"/>
+    <rect width="200" height="200" rx="3" fill="none" stroke="#d4a766" stroke-width="1.5"/>
+  </g>
+
+  <!-- Identity -->
+  <g transform="translate(16 292)">
+    <text x="0" y="0" class="svg-serif" font-size="22" fill="#e0d4b4">Eira of Bren</text>
+    <text x="0" y="22" class="svg-sans" font-size="11" fill="#a89e80" letter-spacing="1">IRON-VOICE &middot; DRAWN BOND &middot; 28 WINTERS</text>
+    <g transform="translate(0 36)">
+      <rect width="288" height="32" rx="2" fill="#0d0f17" stroke="#3a322c"/>
+      <circle cx="14" cy="16" r="5" fill="#6ec890" opacity="0.85" filter="url(#V5-soft2)"/>
+      <circle cx="14" cy="16" r="3" fill="#6ec890"/>
+      <text x="28" y="20" class="svg-serif" font-size="13" fill="#cdc09a" font-style="italic">steady &middot; she walked through</text>
+    </g>
+  </g>
+
+  <!-- ITEMS / VOWS — NEW ITEM MATERIALISING -->
+  <g transform="translate(16 368)">
+    <text x="0" y="0" class="svg-sans" font-size="10.5" fill="#a89e80" letter-spacing="2">SHE CARRIES</text>
+
+    <!-- Captain's token (existing) -->
+    <g transform="translate(0 12)">
+      <rect width="288" height="40" rx="3" fill="#0d0f17" stroke="#2c3247"/>
+      <circle cx="22" cy="20" r="8" fill="none" stroke="#d4a766" stroke-width="1.2"/>
+      <circle cx="22" cy="20" r="3" fill="#d4a766" opacity="0.85"/>
+      <text x="42" y="18" class="svg-sans" font-size="12" fill="#e0d4b4">Captain&apos;s token</text>
+      <text x="42" y="34" class="svg-sans" font-size="10" fill="#8a8169">small favor &middot; civic guard remembers her</text>
+    </g>
+
+    <!-- NEW: intelligence materialising -->
+    <g transform="translate(0 56)">
+      <ellipse cx="144" cy="22" rx="160" ry="22" fill="url(#V5-gold-glow)" opacity="0.7"/>
+      <rect width="288" height="44" rx="3" fill="#1a1610" stroke="#d4a766" stroke-width="1.4"/>
+      <path d="M 0 0 L 14 0 L 0 14 Z" fill="#d4a766" opacity="0.7"/>
+      <circle cx="22" cy="22" r="8" fill="none" stroke="#8aa6c8" stroke-width="1.2"/>
+      <circle cx="22" cy="22" r="3" fill="#8aa6c8" opacity="0.85"/>
+      <text x="42" y="14" class="svg-sans" font-size="9" fill="#f4cb86" letter-spacing="1.5">+ INTELLIGENCE &middot; NEW</text>
+      <text x="42" y="30" class="svg-serif" font-size="13" fill="#e0d4b4">The trader runs salt.</text>
+      <text x="42" y="44" class="svg-sans" font-size="10" fill="#a89e80" font-style="italic">unlocks: thread to follow him</text>
+    </g>
+
+    <!-- NEW: faction tilt -->
+    <g transform="translate(0 108)">
+      <ellipse cx="144" cy="22" rx="160" ry="22" fill="url(#V5-gold-glow)" opacity="0.5"/>
+      <rect width="288" height="44" rx="3" fill="#1a1610" stroke="#d4a766" stroke-width="1.2"/>
+      <path d="M 0 0 L 12 0 L 0 12 Z" fill="#d4a766" opacity="0.7"/>
+      <path d="M 16 22 L 22 16 L 28 22 L 22 28 Z" fill="#c46b3a"/>
+      <text x="42" y="14" class="svg-sans" font-size="9" fill="#f4cb86" letter-spacing="1.5">+ FACTION TILT &middot; NEW</text>
+      <text x="42" y="30" class="svg-serif" font-size="13" fill="#e0d4b4">Civic Guard standing</text>
+      <text x="42" y="44" class="svg-sans" font-size="10" fill="#a89e80" font-style="italic">small &middot; she is now remembered</text>
+    </g>
+
+    <!-- Vow (held — identification beat fires here) -->
+    <g transform="translate(0 160)">
+      <rect width="288" height="44" rx="3" fill="#1a1018" stroke="#c47894" stroke-width="1.2"/>
+      <path d="M 0 0 L 12 0 L 0 12 Z" fill="#c47894" opacity="0.7"/>
+      <path d="M 18 24 Q 22 16 26 24 Q 22 32 18 24 Z" fill="#c47894"/>
+      <text x="40" y="14" class="svg-sans" font-size="9" fill="#c47894" letter-spacing="1.5">VOW &middot; HELD</text>
+      <text x="40" y="30" class="svg-serif" font-size="13" fill="#e0d4b4">Vow to the small folk</text>
+      <text x="40" y="44" class="svg-sans" font-size="10" fill="#a89e80" font-style="italic">she did not crush a frightened man</text>
+    </g>
+  </g>
+
+  <!-- KNOWS THESE — relationships UPDATED -->
+  <g transform="translate(16 588)">
+    <text x="0" y="0" class="svg-sans" font-size="10.5" fill="#a89e80" letter-spacing="2">SHE KNOWS THESE FACES</text>
+
+    <!-- Veiren — relationship updated -->
+    <g transform="translate(0 12)">
+      <rect width="288" height="34" rx="3" fill="#1a1610" stroke="#d4a766" stroke-width="1"/>
+      <g transform="translate(8 5)">
+        <image xlink:href="encounter-cast-captain-veiren.png" x="0" y="0" width="44" height="44" clip-path="url(#V5-clip-veiren2)" preserveAspectRatio="xMidYMid slice"/>
+      </g>
+      <text x="60" y="16" class="svg-sans" font-size="11" fill="#cdc09a">Captain Veiren —</text>
+      <text x="60" y="30" class="svg-sans" font-size="10" fill="#f4cb86" font-style="italic">she has earned his eye twice now</text>
+    </g>
+
+    <!-- Trader — NEW threadable -->
+    <g transform="translate(0 50)">
+      <ellipse cx="144" cy="17" rx="160" ry="20" fill="url(#V5-gold-glow)" opacity="0.5"/>
+      <rect width="288" height="34" rx="3" fill="#1a1610" stroke="#d4a766" stroke-width="1.2"/>
+      <g transform="translate(8 5)">
+        <image xlink:href="encounter-cast-trader.png" x="0" y="0" width="44" height="44" clip-path="url(#V5-clip-trader2)" preserveAspectRatio="xMidYMid slice"/>
+      </g>
+      <text x="60" y="16" class="svg-sans" font-size="11" fill="#cdc09a">A nervous trader —</text>
+      <text x="60" y="30" class="svg-sans" font-size="10" fill="#f4cb86" font-style="italic">no longer a stranger &middot; threadable ↗</text>
+    </g>
+
+    <!-- Halren -->
+    <g transform="translate(0 88)">
+      <rect width="288" height="34" rx="3" fill="#0d0f17" stroke="#2c3247"/>
+      <g transform="translate(8 5)">
+        <image xlink:href="encounter-cast-halren.png" x="0" y="0" width="44" height="44" clip-path="url(#V5-clip-halren2)" preserveAspectRatio="xMidYMid slice"/>
+      </g>
+      <text x="60" y="16" class="svg-sans" font-size="11" fill="#cdc09a">Halren the Lawful —</text>
+      <text x="60" y="30" class="svg-sans" font-size="10" fill="#a89e80" font-style="italic">he saw her hold her vow</text>
+    </g>
+  </g>
+
+  <!-- COULD ECHO — added new moment -->
+  <g transform="translate(16 728)">
+    <text x="0" y="0" class="svg-sans" font-size="10.5" fill="#a89e80" letter-spacing="2">+ ADDED TO HER BIOGRAPHY</text>
+    <g transform="translate(0 12)">
+      <ellipse cx="144" cy="16" rx="160" ry="20" fill="url(#V5-gold-glow)" opacity="0.6"/>
+      <rect width="288" height="32" rx="3" fill="#1a1610" stroke="#d4a766" stroke-width="1.2"/>
+      <path d="M 6 10 L 11 16 L 6 22 Z" fill="#d4a766"/>
+      <text x="20" y="14" class="svg-serif" font-size="11" fill="#f4cb86" font-style="italic">The night she slipped through.</text>
+      <text x="20" y="28" class="svg-sans" font-size="9.5" fill="#d4a766" letter-spacing="0.5">CALLBACK-ELIGIBLE FOR FUTURE BEATS</text>
+    </g>
+  </g>
+</g>
+
+<!-- CENTER — OUTCOME CARD -->
+<g transform="translate(400 100)">
+  <ellipse cx="460" cy="280" rx="520" ry="280" fill="url(#V5-eye-glow)" opacity="0.55"/>
+  <rect width="920" height="540" rx="6" fill="url(#V5-card2)" stroke="#8aa6c8" stroke-width="1.4"/>
+  <path d="M 0 0 L 24 0 L 0 24 Z" fill="#8aa6c8" opacity="0.7"/>
+  <path d="M 920 0 L 896 0 L 920 24 Z" fill="#8aa6c8" opacity="0.7"/>
+
+  <text x="32" y="36" class="svg-serif" font-size="13" fill="#8aa6c8" letter-spacing="3">BEAT 2 → 3 &middot; OUTCOME</text>
+  <text x="32" y="68" class="svg-serif" font-size="28" fill="#e0d4b4">She Saw the Satchel</text>
+  <line x1="32" y1="80" x2="180" y2="80" stroke="#8aa6c8" stroke-width="1"/>
+
+  <!-- shorter place painting -->
+  <g transform="translate(32 96)">
+    <image xlink:href="encounter-place-south-gate.png" x="0" y="0" width="568" height="180" clip-path="url(#V5-clip-place2)" preserveAspectRatio="xMidYMid slice"/>
+    <rect width="568" height="180" rx="3" fill="none" stroke="#3a322c" stroke-width="0.8"/>
+  </g>
+
+  <!-- prose -->
+  <g transform="translate(620 96)">
+    <text x="0" y="0" class="svg-serif" font-size="13" fill="#d4a766" letter-spacing="3">WHAT JUST HAPPENED</text>
+    <g transform="translate(244 -10)">
+      <circle cx="0" cy="0" r="11" fill="#0d0f17" stroke="#d4a766" stroke-width="1.2"/>
+      <path d="M -3 -4 L -3 4 L 1 4 L 5 7 L 5 -7 L 1 -4 Z" fill="#d4a766"/>
+      <path d="M 7 -3 Q 11 0 7 3" stroke="#d4a766" stroke-width="1" fill="none"/>
+    </g>
+    <g class="svg-serif" font-size="17" fill="#cdc09a">
+      <text x="0" y="32"><tspan fill="#f4cb86" font-style="italic">Because you sharpened her sight,</tspan></text>
+      <text x="0" y="56">Eira&apos;s gaze flicks past Veiren —</text>
+      <text x="0" y="80">and finds, beneath the cloak,</text>
+      <text x="0" y="104">two days of contraband salt.</text>
+      <text x="0" y="136">Halren coughs again, sharper.</text>
+      <text x="0" y="160">Veiren has not seen what she</text>
+      <text x="0" y="184">sees. The captain looks at her;</text>
+      <text x="0" y="208">she looks past him; he steps</text>
+      <text x="0" y="232">aside and waves her through.</text>
+    </g>
+  </g>
+
+  <!-- Dice/threads moment, compact, beneath place painting -->
+  <g transform="translate(32 296)">
+    <rect width="568" height="142" rx="3" fill="#0a0b12" stroke="#3a322c"/>
+    <text x="14" y="20" class="svg-sans" font-size="10.5" fill="#a89e80" letter-spacing="2">THE THREADS HELD &middot; SUCCESS WITH WEIGHT</text>
+
+    <!-- thread starburst -->
+    <g transform="translate(80 80)">
+      <line x1="0" y1="-46" x2="0" y2="-22" stroke="#8aa6c8" stroke-width="2"/>
+      <line x1="32" y1="-32" x2="16" y2="-16" stroke="#8aa6c8" stroke-width="1.4" opacity="0.85"/>
+      <line x1="46" y1="0" x2="22" y2="0" stroke="#8aa6c8" stroke-width="2"/>
+      <line x1="32" y1="32" x2="16" y2="16" stroke="#8aa6c8" stroke-width="1.4" opacity="0.85"/>
+      <line x1="0" y1="46" x2="0" y2="22" stroke="#8aa6c8" stroke-width="1.4"/>
+      <line x1="-32" y1="32" x2="-16" y2="16" stroke="#8aa6c8" stroke-width="1.4" opacity="0.85"/>
+      <line x1="-46" y1="0" x2="-22" y2="0" stroke="#8aa6c8" stroke-width="2"/>
+      <line x1="-32" y1="-32" x2="-16" y2="-16" stroke="#8aa6c8" stroke-width="1.4" opacity="0.85"/>
+      <circle r="22" fill="none" stroke="#8aa6c8" stroke-width="1.2"/>
+      <circle r="6" fill="#f4cb86" filter="url(#V5-soft2)"/>
+      <circle r="3" fill="#f4cb86"/>
+    </g>
+
+    <!-- outcome ladder -->
+    <g transform="translate(180 50)">
+      <text x="0" y="0" class="svg-sans" font-size="10" fill="#a89e80" letter-spacing="1.5">THE THREADS LANDED HERE</text>
+      <g transform="translate(0 12)">
+        <rect width="370" height="22" rx="2" fill="#0a0b12" stroke="#2c3247"/>
+        <rect x="2" y="2" width="72" height="18" rx="1" fill="#3a1818" opacity="0.4"/>
+        <rect x="76" y="2" width="72" height="18" rx="1" fill="#2a2418" opacity="0.4"/>
+        <rect x="150" y="2" width="72" height="18" rx="1" fill="#2a2418" opacity="0.4"/>
+        <rect x="224" y="2" width="72" height="18" rx="1" fill="#1d2a1a" stroke="#6ec890" stroke-width="1"/>
+        <rect x="298" y="2" width="70" height="18" rx="1" fill="#1d2a1a" opacity="0.4"/>
+      </g>
+      <g class="svg-sans" font-size="9" fill="#5a6177" letter-spacing="0.5">
+        <text x="2" y="50">crit fail</text>
+        <text x="76" y="50">fail</text>
+        <text x="150" y="50">forward</text>
+        <text x="224" y="50" fill="#6ec890">success/cost</text>
+        <text x="298" y="50">crit success</text>
+      </g>
+      <text x="0" y="74" class="svg-sans" font-size="10.5" fill="#a89e80" font-style="italic">she earned the gate &middot; someone else paid the iron</text>
+    </g>
+  </g>
+
+  <!-- Continue button -->
+  <g transform="translate(640 460)">
+    <rect width="240" height="48" rx="24" fill="#1a1610" stroke="#d4a766" stroke-width="1.4"/>
+    <text x="120" y="30" text-anchor="middle" class="svg-serif" font-size="15" fill="#f4cb86" letter-spacing="1.5">Continue → Beat 3</text>
+  </g>
+</g>
+
+<!-- =================== RIGHT RAIL — CAST + ASCENDANT (same as Frame 1) =================== -->
+<g transform="translate(1340 110)">
+  <text x="0" y="22" class="svg-serif" font-size="13" fill="#d4a766" letter-spacing="3">CAST IN THIS SCENE</text>
+  <text x="0" y="42" class="svg-sans" font-size="10.5" fill="#5a6177" letter-spacing="0.5">three faces &middot; how the moment changed them</text>
+
+  <g transform="translate(0 56)">
+    <rect width="540" height="76" rx="3" fill="#0d0f17" stroke="#2c3247"/>
+    <g transform="translate(10 10)">
+      <image xlink:href="encounter-cast-captain-veiren.png" x="0" y="0" width="56" height="56" clip-path="url(#V5-clip-veiren2)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    <text x="80" y="26" class="svg-serif" font-size="15" fill="#e0d4b4">Captain Veiren</text>
+    <text x="80" y="44" class="svg-sans" font-size="11" fill="#a89e80">disposition: <tspan fill="#6ec890" text-decoration="underline" text-decoration-style="dotted">recognising</tspan> &middot; he stepped aside</text>
+    <text x="80" y="62" class="svg-sans" font-size="10.5" fill="#8a8169" font-style="italic">tags: did not see what she saw</text>
+  </g>
+
+  <g transform="translate(0 142)">
+    <rect width="540" height="76" rx="3" fill="#0d0f17" stroke="#2c3247"/>
+    <g transform="translate(10 10)">
+      <image xlink:href="encounter-cast-trader.png" x="0" y="0" width="56" height="56" clip-path="url(#V5-clip-trader2)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    <text x="80" y="26" class="svg-serif" font-size="15" fill="#e0d4b4">A nervous trader</text>
+    <text x="80" y="44" class="svg-sans" font-size="11" fill="#a89e80">disposition: <tspan fill="#a8c4e6" text-decoration="underline" text-decoration-style="dotted">caught between</tspan> &middot; bolted</text>
+    <text x="80" y="62" class="svg-sans" font-size="10.5" fill="#8a8169" font-style="italic">tags: she sees him &middot; he does not know</text>
+  </g>
+
+  <g transform="translate(0 228)">
+    <rect width="540" height="76" rx="3" fill="#0d0f17" stroke="#2c3247"/>
+    <g transform="translate(10 10)">
+      <image xlink:href="encounter-cast-halren.png" x="0" y="0" width="56" height="56" clip-path="url(#V5-clip-halren2)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    <text x="80" y="26" class="svg-serif" font-size="15" fill="#e0d4b4">Halren the Lawful</text>
+    <text x="80" y="44" class="svg-sans" font-size="11" fill="#a89e80">disposition: <tspan fill="#e2a4b4" text-decoration="underline" text-decoration-style="dotted">satisfied</tspan> &middot; spoke up at the right moment</text>
+    <text x="80" y="62" class="svg-sans" font-size="10.5" fill="#8a8169" font-style="italic">tags: a face she will remember</text>
+  </g>
+
+  <!-- Ascendant Hand — quiet, post-resolution -->
+  <g transform="translate(0 336)">
+    <text x="0" y="0" class="svg-serif" font-size="13" fill="#d4a766" letter-spacing="3">YOUR HAND</text>
+    <text x="0" y="20" class="svg-sans" font-size="10.5" fill="#5a6177" letter-spacing="0.5">resolution registering &middot; quintessence will replenish next turn</text>
+
+    <g transform="translate(0 36)">
+      <rect width="540" height="74" rx="4" fill="#0d0f17" stroke="#3a322c" stroke-width="1" opacity="0.55"/>
+      <g transform="translate(20 18)" opacity="0.5">
+        <circle cx="20" cy="20" r="20" fill="#0a0b12" stroke="#b39ad2" stroke-width="1"/>
+        <path d="M 12 20 Q 16 16 20 20 Q 24 16 28 20" stroke="#b39ad2" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      </g>
+      <text x="76" y="26" class="svg-serif" font-size="15" fill="#a89e80">Send a sign</text>
+      <text x="76" y="44" class="svg-sans" font-size="11" fill="#5a6177">2 essence &middot; available for next beat</text>
+      <text x="76" y="60" class="svg-sans" font-size="11" fill="#5a6177">Beat 3 will offer this again</text>
+    </g>
+
+    <g transform="translate(0 122)">
+      <rect width="540" height="74" rx="4" fill="#0d0f17" stroke="#3a322c" stroke-width="1" opacity="0.55"/>
+      <g transform="translate(20 18)" opacity="0.5">
+        <circle cx="20" cy="20" r="20" fill="#0a0b12" stroke="#8aa6c8" stroke-width="1"/>
+        <path d="M 8 14 Q 20 6 32 14 L 32 30 Q 20 36 8 30 Z" fill="none" stroke="#8aa6c8" stroke-width="1"/>
+      </g>
+      <text x="76" y="26" class="svg-serif" font-size="15" fill="#a89e80">Veil the trader&apos;s cargo</text>
+      <text x="76" y="44" class="svg-sans" font-size="11" fill="#5a6177">no longer relevant &middot; she already saw</text>
+    </g>
+
+    <g transform="translate(0 208)">
+      <rect width="540" height="74" rx="4" fill="#0d0f17" stroke="#d4a766" stroke-width="1.4"/>
+      <g transform="translate(20 18)">
+        <circle cx="20" cy="20" r="20" fill="#0a0b12" stroke="#d4a766" stroke-width="1.2"/>
+        <path d="M 20 8 Q 30 20 20 32 Q 10 20 20 8 Z" fill="none" stroke="#d4a766" stroke-width="1.2"/>
+        <circle cx="20" cy="20" r="2.5" fill="#f4cb86"/>
+      </g>
+      <text x="76" y="26" class="svg-serif" font-size="15" fill="#f4cb86">Mark her with fate</text>
+      <text x="76" y="44" class="svg-sans" font-size="11" fill="#a89e80">last call before this scene closes &middot;</text>
+      <text x="76" y="60" class="svg-sans" font-size="11" fill="#a89e80">make this night biographical</text>
+      <text x="528" y="26" text-anchor="end" class="svg-sans" font-size="10" fill="#d4a766" letter-spacing="1">4 ESS</text>
+    </g>
+
+    <g transform="translate(0 294)">
+      <rect width="540" height="40" rx="4" fill="#0a0b12" stroke="#2c3247" stroke-dasharray="3 3"/>
+      <text x="20" y="26" class="svg-sans" font-size="11" fill="#a89e80">+ four more in your deck &middot; replenishes after the encounter</text>
+    </g>
+  </g>
+</g>
+
+<!-- BOTTOM STRIP -->
+<g transform="translate(0 920)">
+  <rect x="0" y="0" width="1920" height="160" fill="#0a0b12" opacity="0.92"/>
+  <line x1="0" y1="0" x2="1920" y2="0" stroke="#2c3247"/>
+  <g transform="translate(60 26)">
+    <ellipse cx="55" cy="55" rx="68" ry="68" fill="url(#V5-asc-glow2)" filter="url(#V5-soft-strong2)"/>
+    <circle cx="55" cy="55" r="44" fill="url(#V5-port-asc2)" stroke="#d4a766" stroke-width="1.2"/>
+    <path d="M 30 64 Q 55 30 80 64 L 80 86 L 30 86 Z" fill="#1f1828"/>
+    <text x="130" y="38" class="svg-serif" font-size="16" fill="#e0d4b4">You, the Ascendant</text>
+    <text x="130" y="58" class="svg-sans" font-size="11.5" fill="#a89e80">Quintessence &middot; one breath spent on her sight</text>
+    <g transform="translate(130 70)">
+      <circle cx="10" cy="14" r="8" fill="#d4a766" opacity="0.95" filter="url(#V5-soft2)"/>
+      <circle cx="10" cy="14" r="6" fill="#f4cb86"/>
+      <circle cx="34" cy="14" r="8" fill="#d4a766" opacity="0.55"/>
+      <circle cx="58" cy="14" r="8" fill="#d4a766" opacity="0.20"/>
+      <circle cx="82" cy="14" r="8" fill="none" stroke="#3a322c" stroke-width="0.8"/>
+      <circle cx="106" cy="14" r="8" fill="none" stroke="#3a322c" stroke-width="0.8"/>
+    </g>
+    <text x="130" y="110" class="svg-sans" font-size="10.5" fill="#8a8169">your warmth has cooled by one &middot; replenishes next turn</text>
+  </g>
+  <g transform="translate(960 50)">
+    <text class="svg-serif" font-size="14" fill="#a89e80" text-anchor="middle" letter-spacing="2">SHE SLIPPED THROUGH &middot; THE STORY TURNS A PAGE</text>
+    <text x="0" y="32" class="svg-sans" font-size="11" fill="#5a6177" text-anchor="middle" letter-spacing="1">three changes registered to her &middot; one new thread offered to your hand</text>
+  </g>
+  <g transform="translate(1500 26)">
+    <rect width="360" height="108" rx="4" fill="#1a1610" stroke="#d4a766" stroke-width="1.2"/>
+    <text x="20" y="32" class="svg-serif" font-size="15" fill="#f4cb86">Continue with her</text>
+    <text x="20" y="56" class="svg-sans" font-size="11.5" fill="#a89e80">Beat 3 awaits. The trader is in the alley.</text>
+    <text x="20" y="74" class="svg-sans" font-size="11.5" fill="#a89e80">Halren is watching her now.</text>
+    <text x="20" y="100" class="svg-sans" font-size="10" fill="#5a6177" letter-spacing="1">→ next beat &middot; or end the spotlight</text>
+  </g>
+</g>
+
+</svg>
+</div>
+
+
+</main>
+
+<footer class="page-foot">
+  <div class="grid">
+    <div>
+      <h2>What v5 commits to</h2>
+      <ul>
+        <li><strong>Eira gets her own zone.</strong> Full left rail, 320 wide × 800 tall. Big portrait, identity, capability profile, items, vows, relationships to <em>each cast member</em>, recent moments that could echo. The protagonist is the <em>centre of gravity</em> of the encounter screen, not just the subject of its prose.</li>
+        <li><strong>The panel is scene-filtered.</strong> Not her full character sheet. Only what matters here: items the encounter could touch, vows that could fire, faces she has met, moments adjacent to <em>this</em> place / <em>this</em> cast. Encounter authoring agent does the filtering at scene build time.</li>
+        <li><strong>Capability shown qualitatively.</strong> Five-mote bands per sphere with text colour ("a steady arm", "she misses little", "her deepest thread"). No numbers, on-style.</li>
+        <li><strong>Identification telegraphed in her zone.</strong> The vow is highlighted in pink with "ACTIVE NOW" — players see the protagonist invoking her established self before they choose. After the dice land, the same vow shows "HELD" — recognition closes the loop.</li>
+        <li><strong>Cast moves to right rail.</strong> Compact strips with portrait + disposition + tags + sphere. They&apos;re still there but no longer competing with Eira for the player&apos;s primary attention.</li>
+        <li><strong>Divine Court removed from encounter UI.</strong> It&apos;s a world-view concept. The cross-reference back to other threaded agents lives on the world view, not in the encounter scene.</li>
+        <li><strong>Frame 2: registration happens IN her panel.</strong> New items materialise into her items section with gold glow and "+ NEW" badges. Her relationships update ("the trader is no longer a stranger"). Her recent-moments grows by one. Her state shifts from "steady, but reading the room" to "steady &middot; she walked through". The change is visible <em>where she lives</em>, not as a separate notification panel.</li>
+      </ul>
+    </div>
+    <div>
+      <h2>What I&apos;m asking your verdict on</h2>
+      <ul>
+        <li><strong>Eira panel scope.</strong> Five sections: identity + state, capability, items+vows, relationships, recent moments. Right slice? Anything missing? Anything overkill?</li>
+        <li><strong>Capability strips.</strong> Five-mote bands plus a one-line italic descriptor. Right balance of legibility and qualitative tone?</li>
+        <li><strong>Relationships sub-panel.</strong> One line per cast member describing what they are <em>to her</em> ("a debt and a winter ago", "a stranger", "a face she has seen at council"). The right level of grounding? Or should it carry more weight?</li>
+        <li><strong>Recent moments / could-echo.</strong> Two visible entries plus "+ 4 more". Useful? Or does it pull attention from the active beat?</li>
+        <li><strong>Frame 2 registration in-panel.</strong> The "+ INTELLIGENCE NEW" / "+ FACTION TILT NEW" / "VOW HELD" / updated relationships / new biography moment — all crystallising visibly in Eira&apos;s zone. Right level of celebration? Or too gacha?</li>
+        <li><strong>Right rail balance.</strong> Cast strips at top (288 high) + Ascendant hand (~520 high). Right ratio, or should cast be smaller and hand bigger (or vice versa)?</li>
+      </ul>
+      <p style="margin-top: 16px;"><strong>Next.</strong> Once these land, I move to the encounter build toolkit analysis — the full primitive vocabulary (attachments, monsters, events, items, reputations, factions, conditions, traits, places, sub-locations, etc.) and how the same scaffolds compose from any of them. The Eira-at-the-Gate scene only uses a subset; the toolkit doc shows what a combat encounter, a ritual, a market, a shipwreck, a court intrigue, a haunting would each look like in this same UI.</p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

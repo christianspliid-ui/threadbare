@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Encounter Experience v2 — Cards + Graph, Concrete Prose</title>
+<style>
+  :root {
+    --bg: #07080d;
+    --bg-2: #0e1019;
+    --panel: #14172a;
+    --stroke: #2c3247;
+    --stroke-warm: #3a322c;
+    --parchment: #e0d4b4;
+    --parchment-dim: #a89e80;
+    --muted: #5a6177;
+    --gold: #d4a766;
+    --gold-bright: #f4cb86;
+    --iron: #c46b3a;
+    --eye: #8aa6c8;
+    --heart: #c47894;
+    --spirit: #b39ad2;
+    --voice: #d4a766;
+    --life: #4ea878;
+    --danger: #b04a3a;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--parchment); font-family: 'Inter', system-ui, sans-serif; }
+
+  header.page-head {
+    padding: 24px 48px 12px;
+    border-bottom: 1px solid var(--stroke);
+    background: linear-gradient(180deg, var(--bg-2), var(--bg));
+  }
+  header.page-head h1 {
+    margin: 0 0 4px;
+    font-family: 'Cormorant Garamond', 'Georgia', serif;
+    font-weight: 500;
+    font-size: 26px;
+    letter-spacing: 0.5px;
+    color: var(--gold-bright);
+  }
+  header.page-head .meta {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    letter-spacing: 0.4px;
+  }
+  header.page-head .change-note {
+    margin-top: 8px;
+    color: var(--parchment-dim);
+    font-size: 13px;
+    line-height: 1.55;
+    max-width: 1100px;
+  }
+  header.page-head .change-note strong { color: var(--parchment); }
+  header.page-head .change-note .killed { color: #888; text-decoration: line-through; }
+  header.page-head .change-note .added { color: var(--gold); }
+
+  main {
+    padding: 24px 48px 48px;
+    max-width: 1920px;
+    margin: 0 auto;
+  }
+
+  .stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px var(--stroke);
+    background: #050609;
+  }
+  .stage svg { display: block; width: 100%; height: 100%; }
+
+  footer.page-foot {
+    margin: 0 auto;
+    max-width: 1920px;
+    padding: 24px 48px 64px;
+    border-top: 1px solid var(--stroke);
+    color: var(--muted);
+    font-size: 13px;
+    letter-spacing: 0.3px;
+    line-height: 1.6;
+  }
+  footer.page-foot strong { color: var(--parchment); }
+  footer.page-foot h2 {
+    color: var(--gold);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    margin: 0 0 8px;
+    letter-spacing: 0.6px;
+  }
+  footer.page-foot ul { margin: 0 0 16px; padding-left: 20px; }
+  footer.page-foot li { margin-bottom: 6px; color: var(--parchment); }
+  footer.page-foot li em { color: var(--parchment-dim); font-style: italic; }
+  footer.page-foot .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 24px; }
+
+  .svg-serif { font-family: 'Cormorant Garamond', 'Georgia', serif; }
+  .svg-sans { font-family: 'Inter', system-ui, sans-serif; }
+</style>
+</head>
+<body>
+
+<header class="page-head">
+  <h1>Encounter Experience — v2 (cards + graph)</h1>
+  <p class="meta">2026-05-04 · responding to feedback on v1 · single merged experiment</p>
+  <p class="change-note">
+    <strong>What changed.</strong> <span class="killed">B. Witnessed Scene</span> dropped — wasn't reading as a clear shape. <span class="added">A + C merged</span>: card spine kept (a beat is a card), C's graph used as an inset that <strong>labels what the relationships are</strong> instead of just drawing them. Prose pulled back from lyric to short-story-with-action — Erikson coding, dialogue, iron and dust. Lean choices reframed as <strong>directorial notes</strong> (make her step forward / look past him / step aside) with concrete consequence. Place painting added so the player can see where they are. Cast portraits given more weight.
+  </p>
+</header>
+
+<main>
+
+<div class="stage">
+<svg viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <radialGradient id="V-bg" cx="50%" cy="40%" r="80%">
+    <stop offset="0%" stop-color="#101321"/>
+    <stop offset="60%" stop-color="#070810"/>
+    <stop offset="100%" stop-color="#04050a"/>
+  </radialGradient>
+  <linearGradient id="V-card" x1="0" x2="0" y1="0" y2="1">
+    <stop offset="0%" stop-color="#1a1d2c"/>
+    <stop offset="100%" stop-color="#0e1019"/>
+  </linearGradient>
+
+  <!-- place painting gradients -->
+  <linearGradient id="V-sky" x1="0" x2="0" y1="0" y2="1">
+    <stop offset="0%" stop-color="#1d1f2e"/>
+    <stop offset="40%" stop-color="#2a2438"/>
+    <stop offset="80%" stop-color="#3a2a30"/>
+    <stop offset="100%" stop-color="#1a1418"/>
+  </linearGradient>
+  <linearGradient id="V-stone" x1="0" x2="0" y1="0" y2="1">
+    <stop offset="0%" stop-color="#3a3535"/>
+    <stop offset="100%" stop-color="#1a1614"/>
+  </linearGradient>
+  <linearGradient id="V-stone-dark" x1="0" x2="0" y1="0" y2="1">
+    <stop offset="0%" stop-color="#2a2528"/>
+    <stop offset="100%" stop-color="#0e0c0d"/>
+  </linearGradient>
+  <linearGradient id="V-ground" x1="0" x2="0" y1="0" y2="1">
+    <stop offset="0%" stop-color="#2a201a"/>
+    <stop offset="100%" stop-color="#0d0a08"/>
+  </linearGradient>
+  <radialGradient id="V-lantern" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#ffd07a" stop-opacity="0.95"/>
+    <stop offset="40%" stop-color="#d4a766" stop-opacity="0.4"/>
+    <stop offset="100%" stop-color="#d4a766" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="V-iron-glow" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#c46b3a" stop-opacity="0.5"/>
+    <stop offset="60%" stop-color="#c46b3a" stop-opacity="0.10"/>
+    <stop offset="100%" stop-color="#c46b3a" stop-opacity="0"/>
+  </radialGradient>
+
+  <!-- portrait gradients per character -->
+  <radialGradient id="V-port-veiren" cx="50%" cy="32%" r="68%">
+    <stop offset="0%" stop-color="#5a4438"/>
+    <stop offset="60%" stop-color="#241914"/>
+    <stop offset="100%" stop-color="#0a0808"/>
+  </radialGradient>
+  <radialGradient id="V-port-trader" cx="50%" cy="32%" r="68%">
+    <stop offset="0%" stop-color="#3a3a48"/>
+    <stop offset="60%" stop-color="#1a1c2a"/>
+    <stop offset="100%" stop-color="#080a10"/>
+  </radialGradient>
+  <radialGradient id="V-port-halren" cx="50%" cy="32%" r="68%">
+    <stop offset="0%" stop-color="#4a3e30"/>
+    <stop offset="60%" stop-color="#221c18"/>
+    <stop offset="100%" stop-color="#0a0808"/>
+  </radialGradient>
+  <radialGradient id="V-port-eira" cx="50%" cy="32%" r="68%">
+    <stop offset="0%" stop-color="#5a3a44"/>
+    <stop offset="60%" stop-color="#241620"/>
+    <stop offset="100%" stop-color="#0a0608"/>
+  </radialGradient>
+  <radialGradient id="V-port-court" cx="50%" cy="32%" r="68%">
+    <stop offset="0%" stop-color="#3a3247"/>
+    <stop offset="100%" stop-color="#0d0e15"/>
+  </radialGradient>
+  <radialGradient id="V-port-asc" cx="50%" cy="32%" r="68%">
+    <stop offset="0%" stop-color="#5a4a6a"/>
+    <stop offset="60%" stop-color="#241828"/>
+    <stop offset="100%" stop-color="#080510"/>
+  </radialGradient>
+
+  <filter id="V-soft" x="-50%" y="-50%" width="200%" height="200%">
+    <feGaussianBlur stdDeviation="6"/>
+  </filter>
+  <filter id="V-soft-strong" x="-50%" y="-50%" width="200%" height="200%">
+    <feGaussianBlur stdDeviation="14"/>
+  </filter>
+  <filter id="V-paint" x="-10%" y="-10%" width="120%" height="120%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3"/>
+    <feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.06 0"/>
+    <feComposite in2="SourceGraphic" operator="in"/>
+    <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode/></feMerge>
+  </filter>
+</defs>
+
+<rect width="1920" height="1080" fill="url(#V-bg)"/>
+
+<!-- decorative thin background threads (very low key) -->
+<g opacity="0.4" stroke-linecap="round" fill="none">
+  <path d="M 0 920 Q 480 800 960 880 T 1920 820" stroke="#2a2436" stroke-width="1"/>
+  <path d="M 0 200 Q 600 260 1100 220 T 1920 260" stroke="#1f2230" stroke-width="1"/>
+  <circle cx="320" cy="240" r="2" fill="#d4a766" opacity="0.7"/>
+  <circle cx="1620" cy="280" r="2" fill="#d4a766" opacity="0.7"/>
+</g>
+
+<!-- HEADER -->
+<g>
+  <text x="60" y="50" class="svg-serif" font-size="22" fill="#d4a766" letter-spacing="2">EIRA AT THE SOUTH GATE</text>
+  <text x="60" y="76" class="svg-sans" font-size="13" fill="#5a6177" letter-spacing="1">FAVORED THREAD &middot; CIVIC GUARD QUEUE &middot; SECOND CALL</text>
+  <g transform="translate(1620 50)">
+    <text x="-10" y="0" class="svg-sans" font-size="11" fill="#5a6177" text-anchor="end" letter-spacing="1">BEAT</text>
+    <circle cx="20" cy="-4" r="5" fill="#5a6177"/>
+    <circle cx="50" cy="-4" r="6" fill="#d4a766" filter="url(#V-soft)"/>
+    <circle cx="50" cy="-4" r="5" fill="#f4cb86"/>
+    <circle cx="80" cy="-4" r="5" fill="#1c1f2a" stroke="#2c3247"/>
+    <circle cx="110" cy="-4" r="5" fill="#1c1f2a" stroke="#2c3247"/>
+    <text x="140" y="0" class="svg-sans" font-size="11" fill="#5a6177" letter-spacing="1">2 OF 4</text>
+  </g>
+</g>
+
+<!-- =================== LEFT RAIL — CAST + ITEMS =================== -->
+<g transform="translate(60 130)">
+  <text x="0" y="0" class="svg-serif" font-size="13" fill="#d4a766" letter-spacing="3">CAST IN THE SCENE</text>
+
+  <!-- Captain Veiren -->
+  <g transform="translate(0 22)">
+    <rect width="280" height="124" rx="3" fill="#0d0f17" stroke="#2c3247"/>
+    <!-- portrait -->
+    <g transform="translate(12 12)">
+      <circle cx="40" cy="44" r="40" fill="url(#V-port-veiren)"/>
+      <!-- helmet rim -->
+      <path d="M 8 40 Q 40 4 72 40" stroke="#5a4438" stroke-width="2" fill="none"/>
+      <!-- shoulders/cloak -->
+      <path d="M 6 60 Q 40 30 74 60 L 78 96 L 2 96 Z" fill="#2a201a" stroke="#3a322c"/>
+      <!-- iron pin -->
+      <circle cx="40" cy="74" r="3" fill="#c46b3a"/>
+      <circle cx="40" cy="74" r="6" fill="none" stroke="#c46b3a" stroke-width="0.6" opacity="0.6"/>
+      <!-- iron sphere ring -->
+      <circle cx="40" cy="44" r="40" fill="none" stroke="#c46b3a" stroke-width="1.4" opacity="0.85"/>
+    </g>
+    <text x="106" y="32" class="svg-serif" font-size="16" fill="#e0d4b4">Captain Veiren</text>
+    <text x="106" y="52" class="svg-sans" font-size="11" fill="#a89e80" letter-spacing="0.5">Civic Guard &middot; the gate is his</text>
+    <text x="106" y="72" class="svg-sans" font-size="11" fill="#8a8169">disposition: suspicious</text>
+    <text x="106" y="90" class="svg-sans" font-size="11" fill="#8a8169">tags: iron-rooted, honour-bound</text>
+    <line x1="106" y1="104" x2="138" y2="104" stroke="#c46b3a" stroke-width="2"/>
+    <text x="148" y="108" class="svg-sans" font-size="10" fill="#c46b3a" letter-spacing="1">IRON</text>
+  </g>
+
+  <!-- Trader -->
+  <g transform="translate(0 162)">
+    <rect width="280" height="124" rx="3" fill="#0d0f17" stroke="#2c3247"/>
+    <g transform="translate(12 12)">
+      <circle cx="40" cy="44" r="40" fill="url(#V-port-trader)"/>
+      <!-- hood -->
+      <path d="M 8 36 Q 40 -4 72 36 L 76 60 Q 40 22 4 60 Z" fill="#1a1c2a" stroke="#2c3247"/>
+      <path d="M 8 60 Q 40 32 72 60 L 78 96 L 2 96 Z" fill="#16182a" stroke="#2c3247"/>
+      <!-- subtle satchel hint -->
+      <path d="M 18 78 L 22 96 L 30 96 L 26 78 Z" fill="#2a2228"/>
+      <circle cx="40" cy="44" r="40" fill="none" stroke="#8aa6c8" stroke-width="1" opacity="0.55"/>
+    </g>
+    <text x="106" y="32" class="svg-serif" font-size="16" fill="#e0d4b4">A nervous trader</text>
+    <text x="106" y="52" class="svg-sans" font-size="11" fill="#a89e80" letter-spacing="0.5">name unknown &middot; hooded</text>
+    <text x="106" y="72" class="svg-sans" font-size="11" fill="#8a8169">disposition: trying not to bolt</text>
+    <text x="106" y="90" class="svg-sans" font-size="11" fill="#8a8169">tags: hidden cargo, indebted</text>
+    <line x1="106" y1="104" x2="138" y2="104" stroke="#8aa6c8" stroke-width="2"/>
+    <text x="148" y="108" class="svg-sans" font-size="10" fill="#8aa6c8" letter-spacing="1">EYE</text>
+  </g>
+
+  <!-- Halren -->
+  <g transform="translate(0 302)">
+    <rect width="280" height="124" rx="3" fill="#0d0f17" stroke="#2c3247"/>
+    <g transform="translate(12 12)">
+      <circle cx="40" cy="44" r="40" fill="url(#V-port-halren)"/>
+      <!-- balding pate -->
+      <path d="M 14 28 Q 40 12 66 28 Q 40 42 14 28 Z" fill="#3a2e22"/>
+      <path d="M 8 56 Q 40 28 72 56 L 76 96 L 4 96 Z" fill="#241c14" stroke="#3a322c"/>
+      <!-- merchant brooch -->
+      <circle cx="50" cy="78" r="4" fill="#d4a766"/>
+      <circle cx="40" cy="44" r="40" fill="none" stroke="#c47894" stroke-width="1" opacity="0.5"/>
+    </g>
+    <text x="106" y="32" class="svg-serif" font-size="16" fill="#e0d4b4">Halren the Lawful</text>
+    <text x="106" y="52" class="svg-sans" font-size="11" fill="#a89e80" letter-spacing="0.5">spice merchant &middot; impatient</text>
+    <text x="106" y="72" class="svg-sans" font-size="11" fill="#8a8169">disposition: late for council</text>
+    <text x="106" y="90" class="svg-sans" font-size="11" fill="#8a8169">tags: known face, watching closely</text>
+    <line x1="106" y1="104" x2="138" y2="104" stroke="#c47894" stroke-width="2"/>
+    <text x="148" y="108" class="svg-sans" font-size="10" fill="#c47894" letter-spacing="1">HEART</text>
+  </g>
+
+  <!-- Items Eira carries -->
+  <g transform="translate(0 446)">
+    <text x="0" y="0" class="svg-serif" font-size="13" fill="#d4a766" letter-spacing="3">EIRA CARRIES</text>
+    <g transform="translate(0 16)">
+      <rect width="280" height="44" rx="3" fill="#0d0f17" stroke="#2c3247"/>
+      <circle cx="22" cy="22" r="9" fill="none" stroke="#d4a766" stroke-width="1.2"/>
+      <circle cx="22" cy="22" r="3" fill="#d4a766" opacity="0.85"/>
+      <text x="42" y="20" class="svg-sans" font-size="12" fill="#e0d4b4">Captain&apos;s token</text>
+      <text x="42" y="36" class="svg-sans" font-size="10.5" fill="#8a8169">small favor &middot; civic guard remembers her</text>
+    </g>
+    <g transform="translate(0 68)">
+      <rect width="280" height="44" rx="3" fill="#0d0f17" stroke="#2c3247"/>
+      <path d="M 16 22 Q 22 14 28 22 Q 22 30 16 22 Z" fill="#c47894"/>
+      <text x="42" y="20" class="svg-sans" font-size="12" fill="#e0d4b4">Vow to the small folk</text>
+      <text x="42" y="36" class="svg-sans" font-size="10.5" fill="#8a8169">she will not crush a frightened man</text>
+    </g>
+  </g>
+</g>
+
+<!-- =================== CENTER — ACTIVE CARD =================== -->
+<!-- past card (small, faded, top of stack) -->
+<g transform="translate(420 100)" opacity="0.4">
+  <rect width="900" height="40" rx="3" fill="#13141d" stroke="#2c3247"/>
+  <text x="14" y="26" class="svg-serif" font-size="12" fill="#5a6177" letter-spacing="2">BEAT 1 RESOLVED</text>
+  <text x="180" y="26" class="svg-serif" font-size="13" fill="#8a8169" font-style="italic">She read the queue and found him on the seventh face.</text>
+  <line x1="860" y1="14" x2="876" y2="14" stroke="#4ea878" stroke-width="2"/>
+  <text x="852" y="28" class="svg-sans" font-size="9.5" fill="#4ea878" text-anchor="end" letter-spacing="1">SUCCEEDED</text>
+</g>
+
+<!-- ACTIVE BEAT CARD -->
+<g transform="translate(360 160)">
+  <!-- glow halo behind card -->
+  <ellipse cx="480" cy="380" rx="540" ry="380" fill="url(#V-iron-glow)" opacity="0.55"/>
+
+  <!-- main card -->
+  <rect width="960" height="720" rx="6" fill="url(#V-card)" stroke="#c46b3a" stroke-width="1.4"/>
+  <!-- corner ornaments -->
+  <path d="M 0 0 L 24 0 L 0 24 Z" fill="#c46b3a" opacity="0.6"/>
+  <path d="M 960 0 L 936 0 L 960 24 Z" fill="#c46b3a" opacity="0.6"/>
+  <path d="M 0 720 L 24 720 L 0 696 Z" fill="#c46b3a" opacity="0.6"/>
+  <path d="M 960 720 L 936 720 L 960 696 Z" fill="#c46b3a" opacity="0.6"/>
+
+  <!-- card header -->
+  <text x="32" y="36" class="svg-serif" font-size="13" fill="#c46b3a" letter-spacing="3">BEAT 2 &middot; NOW</text>
+  <text x="32" y="68" class="svg-serif" font-size="28" fill="#e0d4b4">The Captain Stops</text>
+  <line x1="32" y1="80" x2="160" y2="80" stroke="#c46b3a" stroke-width="1"/>
+
+  <!-- =================== PLACE PAINTING =================== -->
+  <g transform="translate(32 96)">
+    <!-- Painted scene of South Gate of Bren — painterly SVG -->
+    <clipPath id="V-place-clip"><rect width="568" height="200" rx="3"/></clipPath>
+    <g clip-path="url(#V-place-clip)">
+      <!-- sky -->
+      <rect width="568" height="120" fill="url(#V-sky)"/>
+      <!-- distant city silhouette -->
+      <path d="M 0 110 L 22 96 L 38 102 L 60 84 L 78 92 L 96 80 L 124 90 L 142 78 L 168 88 L 192 76 L 220 90 L 250 80 L 278 94 L 310 86 L 340 96 L 372 86 L 410 96 L 444 88 L 478 100 L 512 90 L 548 98 L 568 92 L 568 120 L 0 120 Z" fill="#181620"/>
+      <!-- ground -->
+      <rect y="116" width="568" height="84" fill="url(#V-ground)"/>
+      <!-- gate arch (large stone form) -->
+      <path d="M 184 200 L 184 80 Q 184 20 280 20 Q 376 20 376 80 L 376 200 Z" fill="url(#V-stone)"/>
+      <!-- inner darkness of gate -->
+      <path d="M 220 200 L 220 92 Q 220 50 280 50 Q 340 50 340 92 L 340 200 Z" fill="#0a0708"/>
+      <!-- iron portcullis bars -->
+      <g stroke="#3a322c" stroke-width="2" opacity="0.85">
+        <line x1="232" y1="96" x2="232" y2="200"/>
+        <line x1="248" y1="84" x2="248" y2="200"/>
+        <line x1="266" y1="74" x2="266" y2="200"/>
+        <line x1="280" y1="68" x2="280" y2="200"/>
+        <line x1="294" y1="74" x2="294" y2="200"/>
+        <line x1="312" y1="84" x2="312" y2="200"/>
+        <line x1="328" y1="96" x2="328" y2="200"/>
+      </g>
+      <!-- side towers -->
+      <rect x="80" y="40" width="80" height="160" fill="url(#V-stone-dark)"/>
+      <rect x="400" y="40" width="80" height="160" fill="url(#V-stone-dark)"/>
+      <!-- crenellations -->
+      <g fill="url(#V-stone-dark)">
+        <rect x="80" y="32" width="14" height="10"/>
+        <rect x="100" y="32" width="14" height="10"/>
+        <rect x="120" y="32" width="14" height="10"/>
+        <rect x="140" y="32" width="14" height="10"/>
+        <rect x="400" y="32" width="14" height="10"/>
+        <rect x="420" y="32" width="14" height="10"/>
+        <rect x="440" y="32" width="14" height="10"/>
+        <rect x="460" y="32" width="14" height="10"/>
+      </g>
+      <!-- lanterns at gate -->
+      <g>
+        <circle cx="180" cy="78" r="22" fill="url(#V-lantern)"/>
+        <circle cx="180" cy="78" r="3" fill="#ffd07a"/>
+        <line x1="180" y1="64" x2="180" y2="56" stroke="#3a322c" stroke-width="1"/>
+        <circle cx="380" cy="78" r="22" fill="url(#V-lantern)"/>
+        <circle cx="380" cy="78" r="3" fill="#ffd07a"/>
+        <line x1="380" y1="64" x2="380" y2="56" stroke="#3a322c" stroke-width="1"/>
+      </g>
+      <!-- crowd silhouettes in queue -->
+      <g fill="#0d0a0a" opacity="0.95">
+        <ellipse cx="40" cy="170" rx="14" ry="22"/>
+        <ellipse cx="40" cy="142" rx="9" ry="9"/>
+        <ellipse cx="68" cy="172" rx="13" ry="20"/>
+        <ellipse cx="68" cy="148" rx="8" ry="8"/>
+        <ellipse cx="96" cy="174" rx="14" ry="22"/>
+        <ellipse cx="96" cy="146" rx="9" ry="9"/>
+        <ellipse cx="124" cy="172" rx="12" ry="20"/>
+        <ellipse cx="124" cy="148" rx="8" ry="8"/>
+        <ellipse cx="156" cy="174" rx="14" ry="22"/>
+        <ellipse cx="156" cy="146" rx="9" ry="9"/>
+      </g>
+      <!-- captain in foreground (silhouette with iron rim glow) -->
+      <g>
+        <ellipse cx="280" cy="186" rx="22" ry="32" fill="#0d0a0a"/>
+        <ellipse cx="280" cy="148" rx="13" ry="14" fill="#0d0a0a"/>
+        <!-- iron rim glow on his outline -->
+        <ellipse cx="280" cy="186" rx="23" ry="33" fill="none" stroke="#c46b3a" stroke-width="0.8" opacity="0.55"/>
+      </g>
+      <!-- thin magic thread crossing scene (5-15% magic principle) -->
+      <path d="M 0 60 Q 200 40 360 70 Q 480 90 568 56" stroke="#d4a766" stroke-width="0.7" fill="none" opacity="0.55"/>
+      <circle cx="200" cy="44" r="1.5" fill="#d4a766" opacity="0.9"/>
+      <circle cx="380" cy="76" r="1.5" fill="#d4a766" opacity="0.9"/>
+    </g>
+    <rect width="568" height="200" rx="3" fill="none" stroke="#3a322c" stroke-width="0.8"/>
+    <text x="8" y="216" class="svg-sans" font-size="10.5" fill="#8a8169" letter-spacing="2">SOUTH GATE OF BREN &middot; SEVENTH FACE OF THE QUEUE &middot; DUSK</text>
+  </g>
+
+  <!-- =================== PROSE (concrete, action) =================== -->
+  <g transform="translate(620 96)">
+    <text x="0" y="0" class="svg-serif" font-size="13" fill="#d4a766" letter-spacing="3">WHAT HAPPENS NOW</text>
+    <g class="svg-serif" font-size="17" fill="#cdc09a">
+      <text x="0" y="28">Veiren plants his bootheel in front of</text>
+      <text x="0" y="52">Eira and stops.</text>
+      <text x="0" y="84" font-style="italic" fill="#e0d4b4">"You. Step forward."</text>
+      <text x="0" y="116">The queue holds its breath. Behind</text>
+      <text x="0" y="140">Eira, the trader thinks about running</text>
+      <text x="0" y="164">— she can hear it in the way he stops</text>
+      <text x="0" y="188">breathing. Halren coughs, loud and</text>
+      <text x="0" y="212">deliberate, from three places back.</text>
+    </g>
+    <text x="0" y="252" class="svg-sans" font-size="11" fill="#8a8169" letter-spacing="1">EIRA HAS NOT YET DECIDED</text>
+  </g>
+
+  <!-- =================== LEAN PRIMITIVES (directorial notes) =================== -->
+  <g transform="translate(32 332)">
+    <text x="0" y="0" class="svg-serif" font-size="13" fill="#d4a766" letter-spacing="3">LEAN ON THIS BEAT &middot; OR DON&apos;T</text>
+
+    <!-- Iron — step forward -->
+    <g transform="translate(0 16)">
+      <rect width="290" height="200" rx="4" fill="#0d0f17" stroke="#c46b3a" stroke-width="1.2"/>
+      <text x="16" y="32" class="svg-sans" font-size="11" fill="#c46b3a" letter-spacing="2">IRON &middot; PUSH HER FORWARD</text>
+      <text x="16" y="60" class="svg-serif" font-size="20" fill="#e0d4b4" font-style="italic">Make her step up.</text>
+      <text x="16" y="92" class="svg-sans" font-size="12" fill="#cdc09a">She closes the distance and meets</text>
+      <text x="16" y="110" class="svg-sans" font-size="12" fill="#cdc09a">Veiren&apos;s eye. He&apos;ll have his answer</text>
+      <text x="16" y="128" class="svg-sans" font-size="12" fill="#cdc09a">either way.</text>
+      <line x1="16" y1="148" x2="92" y2="148" stroke="#c46b3a" stroke-width="2"/>
+      <text x="16" y="166" class="svg-sans" font-size="10.5" fill="#a89e80">Better odds vs his test &middot; she may</text>
+      <text x="16" y="182" class="svg-sans" font-size="10.5" fill="#a89e80">take a wound or a debt if she fails.</text>
+      <text x="270" y="32" class="svg-sans" font-size="10" fill="#c46b3a" text-anchor="end" letter-spacing="1">SMALL BREATH</text>
+    </g>
+
+    <!-- Eye — look past him -->
+    <g transform="translate(308 16)">
+      <rect width="290" height="200" rx="4" fill="#0d0f17" stroke="#8aa6c8" stroke-width="1.2"/>
+      <text x="16" y="32" class="svg-sans" font-size="11" fill="#8aa6c8" letter-spacing="2">EYE &middot; SHIFT WHAT SHE NOTICES</text>
+      <text x="16" y="60" class="svg-serif" font-size="20" fill="#e0d4b4" font-style="italic">Make her look past him.</text>
+      <text x="16" y="92" class="svg-sans" font-size="12" fill="#cdc09a">Her gaze flicks to the trader. If he&apos;s</text>
+      <text x="16" y="110" class="svg-sans" font-size="12" fill="#cdc09a">hiding something, she&apos;ll see it. What</text>
+      <text x="16" y="128" class="svg-sans" font-size="12" fill="#cdc09a">she does about it is hers.</text>
+      <line x1="16" y1="148" x2="116" y2="148" stroke="#8aa6c8" stroke-width="2"/>
+      <text x="16" y="166" class="svg-sans" font-size="10.5" fill="#a89e80">Reveal the trader&apos;s contraband to her</text>
+      <text x="16" y="182" class="svg-sans" font-size="10.5" fill="#a89e80">&middot; tilts the next beat sideways.</text>
+      <text x="270" y="32" class="svg-sans" font-size="10" fill="#8aa6c8" text-anchor="end" letter-spacing="1">FULLER BREATH</text>
+    </g>
+
+    <!-- Heart — step aside -->
+    <g transform="translate(616 16)">
+      <rect width="290" height="200" rx="4" fill="#0d0f17" stroke="#c47894" stroke-width="1.2"/>
+      <text x="16" y="32" class="svg-sans" font-size="11" fill="#c47894" letter-spacing="2">HEART &middot; LET THE STORM PASS</text>
+      <text x="16" y="60" class="svg-serif" font-size="20" fill="#e0d4b4" font-style="italic">Make her step aside.</text>
+      <text x="16" y="92" class="svg-sans" font-size="12" fill="#cdc09a">She gives Veiren the small folk&apos;s</text>
+      <text x="16" y="110" class="svg-sans" font-size="12" fill="#cdc09a">silence. He picks another. The story</text>
+      <text x="16" y="128" class="svg-sans" font-size="12" fill="#cdc09a">moves around her, not through her.</text>
+      <line x1="16" y1="148" x2="156" y2="148" stroke="#c47894" stroke-width="2"/>
+      <text x="16" y="166" class="svg-sans" font-size="10.5" fill="#a89e80">She avoids this test &middot; the trader</text>
+      <text x="16" y="182" class="svg-sans" font-size="10.5" fill="#a89e80">may bolt; Halren may lose patience.</text>
+      <text x="270" y="32" class="svg-sans" font-size="10" fill="#c47894" text-anchor="end" letter-spacing="1">DEEP DRAUGHT</text>
+    </g>
+  </g>
+
+  <!-- footer note inside card -->
+  <g transform="translate(32 580)">
+    <line x1="0" y1="0" x2="896" y2="0" stroke="#2c3247" stroke-width="0.6"/>
+    <text x="0" y="22" class="svg-sans" font-size="11" fill="#5a6177" letter-spacing="0.5">After you choose, Veiren rolls against Eira&apos;s thread. The result will turn the next card.</text>
+    <text x="896" y="22" text-anchor="end" class="svg-sans" font-size="11" fill="#5a6177" letter-spacing="0.5">Failure is not an ending — it&apos;s a complication.</text>
+  </g>
+</g>
+
+<!-- next beat (face-down, below card) -->
+<g transform="translate(420 920)" opacity="0.7">
+  <rect width="900" height="32" rx="3" fill="#0a0b12" stroke="#2c3247" stroke-dasharray="3 3"/>
+  <text x="450" y="20" class="svg-serif" font-size="12" fill="#5a6177" letter-spacing="3" text-anchor="middle">BEAT 3 &middot; UNREAD &middot; A CARD WAITS</text>
+</g>
+
+<!-- =================== RIGHT RAIL — GRAPH INSET + COURT =================== -->
+<g transform="translate(1380 130)">
+  <!-- Header -->
+  <text x="0" y="0" class="svg-serif" font-size="13" fill="#d4a766" letter-spacing="3">THE WEB AROUND HER</text>
+  <text x="0" y="18" class="svg-sans" font-size="10.5" fill="#5a6177" letter-spacing="0.5">click an edge to see the prose. these are the threads in play this beat.</text>
+
+  <!-- Mini graph -->
+  <g transform="translate(0 38)">
+    <rect width="500" height="380" rx="4" fill="#0a0b12" stroke="#2c3247"/>
+
+    <!-- edges with labels -->
+    <!-- Eira → Captain Veiren  (TESTS) -->
+    <line x1="250" y1="190" x2="120" y2="80" stroke="#c46b3a" stroke-width="3" opacity="0.95"/>
+    <rect x="148" y="120" width="56" height="18" rx="2" fill="#0a0b12" stroke="#c46b3a"/>
+    <text x="176" y="133" text-anchor="middle" class="svg-sans" font-size="10" fill="#c46b3a" letter-spacing="1">TESTS</text>
+
+    <!-- Eira → Trader (BLOCKS HER PATH) -->
+    <line x1="250" y1="190" x2="380" y2="80" stroke="#8aa6c8" stroke-width="2.5" opacity="0.9"
+          stroke-dasharray="0">
+      <animate attributeName="stroke-dasharray" values="0,500;500,0" dur="2.4s" repeatCount="indefinite"/>
+    </line>
+    <rect x="306" y="124" width="92" height="18" rx="2" fill="#0a0b12" stroke="#8aa6c8"/>
+    <text x="352" y="137" text-anchor="middle" class="svg-sans" font-size="10" fill="#8aa6c8" letter-spacing="1">BEHIND HER &middot; HIDING</text>
+
+    <!-- Eira → Halren (WATCHES) -->
+    <line x1="250" y1="190" x2="380" y2="320" stroke="#c47894" stroke-width="1.8" opacity="0.8" stroke-dasharray="5 4"/>
+    <rect x="316" y="248" width="74" height="18" rx="2" fill="#0a0b12" stroke="#c47894"/>
+    <text x="353" y="261" text-anchor="middle" class="svg-sans" font-size="10" fill="#c47894" letter-spacing="1">WATCHES &middot; IMPATIENT</text>
+
+    <!-- Eira → Captain's Token (CARRIES — small favor) -->
+    <line x1="250" y1="190" x2="120" y2="320" stroke="#d4a766" stroke-width="1.6" opacity="0.9"/>
+    <rect x="146" y="248" width="84" height="18" rx="2" fill="#0a0b12" stroke="#d4a766"/>
+    <text x="188" y="261" text-anchor="middle" class="svg-sans" font-size="10" fill="#d4a766" letter-spacing="1">CARRIES (FAVOR)</text>
+
+    <!-- Eira → Vow (HOLDS) -->
+    <line x1="250" y1="190" x2="250" y2="50" stroke="#c47894" stroke-width="1.4" opacity="0.85" stroke-dasharray="3 4"/>
+    <rect x="222" y="116" width="56" height="18" rx="2" fill="#0a0b12" stroke="#c47894"/>
+    <text x="250" y="129" text-anchor="middle" class="svg-sans" font-size="10" fill="#c47894" letter-spacing="1">HOLDS</text>
+
+    <!-- Eira → Gate (STANDS AT) -->
+    <line x1="250" y1="190" x2="250" y2="340" stroke="#3a322c" stroke-width="1.6" opacity="0.9"/>
+    <rect x="218" y="266" width="64" height="18" rx="2" fill="#0a0b12" stroke="#3a322c"/>
+    <text x="250" y="279" text-anchor="middle" class="svg-sans" font-size="10" fill="#a89e80" letter-spacing="1">STANDS AT</text>
+
+    <!-- nodes -->
+    <!-- Eira (center) -->
+    <g transform="translate(250 190)">
+      <circle r="36" fill="#0a0b12" stroke="#d4a766" stroke-width="2"/>
+      <circle cy="-6" r="14" fill="url(#V-port-eira)"/>
+      <path d="M -10 8 Q 0 -10 10 8 L 10 22 L -10 22 Z" fill="#241620"/>
+      <text x="0" y="52" text-anchor="middle" class="svg-serif" font-size="12" fill="#d4a766" letter-spacing="1">EIRA</text>
+    </g>
+    <!-- Captain Veiren -->
+    <g transform="translate(120 80)">
+      <circle r="28" fill="#0a0b12" stroke="#c46b3a" stroke-width="1.4"/>
+      <circle cy="-6" r="11" fill="url(#V-port-veiren)"/>
+      <path d="M -8 6 Q 0 -8 8 6 L 8 18 L -8 18 Z" fill="#2a201a"/>
+      <text x="0" y="44" text-anchor="middle" class="svg-sans" font-size="10.5" fill="#cdc09a">Capt. Veiren</text>
+    </g>
+    <!-- Trader -->
+    <g transform="translate(380 80)">
+      <circle r="28" fill="#0a0b12" stroke="#8aa6c8" stroke-width="1.4"/>
+      <circle cy="-6" r="11" fill="url(#V-port-trader)"/>
+      <path d="M -8 6 Q 0 -10 8 6 L 8 18 L -8 18 Z" fill="#1a1c2a"/>
+      <text x="0" y="44" text-anchor="middle" class="svg-sans" font-size="10.5" fill="#cdc09a">the trader</text>
+    </g>
+    <!-- Halren -->
+    <g transform="translate(380 320)">
+      <circle r="26" fill="#0a0b12" stroke="#c47894" stroke-width="1.2"/>
+      <circle cy="-6" r="10" fill="url(#V-port-halren)"/>
+      <path d="M -7 6 Q 0 -8 7 6 L 7 16 L -7 16 Z" fill="#241c14"/>
+      <text x="0" y="42" text-anchor="middle" class="svg-sans" font-size="10.5" fill="#cdc09a">Halren</text>
+    </g>
+    <!-- Captain's Token -->
+    <g transform="translate(120 320)">
+      <circle r="22" fill="#0a0b12" stroke="#d4a766" stroke-width="1.2"/>
+      <circle r="5" fill="#d4a766" opacity="0.75"/>
+      <text x="0" y="38" text-anchor="middle" class="svg-sans" font-size="10.5" fill="#cdc09a">Capt&apos;s token</text>
+    </g>
+    <!-- Vow -->
+    <g transform="translate(250 50)">
+      <circle r="22" fill="#0a0b12" stroke="#c47894" stroke-width="1.2"/>
+      <path d="M -6 0 Q 0 -8 6 0 Q 0 8 -6 0 Z" fill="#c47894"/>
+      <text x="0" y="-30" text-anchor="middle" class="svg-sans" font-size="10.5" fill="#cdc09a">vow to small folk</text>
+    </g>
+    <!-- Gate -->
+    <g transform="translate(250 340)">
+      <rect x="-22" y="-18" width="44" height="32" fill="#0a0b12" stroke="#3a322c"/>
+      <path d="M -14 14 L -14 -2 Q -14 -14 0 -14 Q 14 -14 14 -2 L 14 14 Z" fill="none" stroke="#a89e80" stroke-width="1"/>
+      <text x="0" y="34" text-anchor="middle" class="svg-sans" font-size="10.5" fill="#cdc09a">South Gate</text>
+    </g>
+
+    <!-- legend / tooltip -->
+    <text x="14" y="368" class="svg-sans" font-size="10" fill="#5a6177" letter-spacing="1">EDGE THICKNESS = TENSION &middot; DASHED = FRAYING &middot; PULSE = ACTIVE THIS BEAT</text>
+  </g>
+
+  <!-- DIVINE COURT (compact, below graph) -->
+  <g transform="translate(0 442)">
+    <text x="0" y="0" class="svg-serif" font-size="13" fill="#d4a766" letter-spacing="3">DIVINE COURT</text>
+    <text x="0" y="20" class="svg-sans" font-size="10.5" fill="#5a6177" letter-spacing="0.5">FOUR THREADED &middot; ONE SPOTLIT</text>
+    <!-- Eira spotlit -->
+    <g transform="translate(0 36)">
+      <rect width="500" height="48" rx="3" fill="#1c1f2e" stroke="#d4a766" stroke-width="1.3"/>
+      <circle cx="26" cy="24" r="16" fill="url(#V-port-eira)" stroke="#d4a766"/>
+      <text x="54" y="22" class="svg-serif" font-size="14" fill="#e0d4b4">Eira</text>
+      <text x="54" y="38" class="svg-sans" font-size="10" fill="#d4a766" letter-spacing="1">SPOTLIT NOW &middot; AT THE GATE</text>
+      <text x="486" y="22" text-anchor="end" class="svg-sans" font-size="10" fill="#a89e80">Iron &middot; Voice</text>
+    </g>
+    <!-- Kael -->
+    <g transform="translate(0 92)">
+      <rect width="500" height="44" rx="3" fill="#0d0f17" stroke="#2c3247"/>
+      <circle cx="26" cy="22" r="14" fill="url(#V-port-court)"/>
+      <text x="54" y="20" class="svg-serif" font-size="13" fill="#cdc09a">Kael Thornweaver</text>
+      <text x="54" y="36" class="svg-sans" font-size="10" fill="#5a6177">resting &middot; nothing brewing</text>
+      <text x="486" y="20" text-anchor="end" class="svg-sans" font-size="10" fill="#a89e80">Eye &middot; Spirit</text>
+    </g>
+    <!-- Serafina -->
+    <g transform="translate(0 144)">
+      <rect width="500" height="44" rx="3" fill="#0d0f17" stroke="#c47894" stroke-width="0.8"/>
+      <circle cx="26" cy="22" r="14" fill="url(#V-port-court)"/>
+      <text x="54" y="20" class="svg-serif" font-size="13" fill="#cdc09a">Serafina the Quiet</text>
+      <text x="54" y="36" class="svg-sans" font-size="10" fill="#c47894">a beat brews &middot; click to peek</text>
+      <text x="486" y="20" text-anchor="end" class="svg-sans" font-size="10" fill="#a89e80">Heart &middot; Spirit</text>
+      <circle cx="478" cy="38" r="3" fill="#c47894"><animate attributeName="opacity" values="1;0.3;1" dur="2.4s" repeatCount="indefinite"/></circle>
+    </g>
+    <!-- Maro -->
+    <g transform="translate(0 196)">
+      <rect width="500" height="44" rx="3" fill="#0d0f17" stroke="#2c3247"/>
+      <circle cx="26" cy="22" r="14" fill="url(#V-port-court)"/>
+      <text x="54" y="20" class="svg-serif" font-size="13" fill="#cdc09a">Maro of the Vine</text>
+      <text x="54" y="36" class="svg-sans" font-size="10" fill="#5a6177">walking the road</text>
+      <text x="486" y="20" text-anchor="end" class="svg-sans" font-size="10" fill="#a89e80">Life &middot; Heart</text>
+    </g>
+  </g>
+</g>
+
+<!-- =================== BOTTOM STRIP — ASCENDANT + WATCH ONLY =================== -->
+<g transform="translate(0 920)">
+  <rect x="0" y="0" width="1920" height="160" fill="#0a0b12" opacity="0.92"/>
+  <line x1="0" y1="0" x2="1920" y2="0" stroke="#2c3247"/>
+
+  <!-- Ascendant + quintessence light -->
+  <g transform="translate(60 26)">
+    <ellipse cx="55" cy="55" rx="68" ry="68" fill="#d4a766" opacity="0.22" filter="url(#V-soft-strong)"/>
+    <circle cx="55" cy="55" r="44" fill="url(#V-port-asc)" stroke="#d4a766" stroke-width="1.2"/>
+    <path d="M 30 64 Q 55 30 80 64 L 80 86 L 30 86 Z" fill="#1f1828"/>
+    <text x="130" y="38" class="svg-serif" font-size="16" fill="#e0d4b4">You, the Ascendant</text>
+    <text x="130" y="58" class="svg-sans" font-size="11.5" fill="#a89e80" letter-spacing="0.5">Quintessence &middot; the breath behind your voice</text>
+    <!-- light meter as orb sequence -->
+    <g transform="translate(130 70)">
+      <circle cx="10" cy="14" r="8" fill="#d4a766" opacity="0.95" filter="url(#V-soft)"/>
+      <circle cx="10" cy="14" r="6" fill="#f4cb86"/>
+      <circle cx="34" cy="14" r="8" fill="#d4a766" opacity="0.85" filter="url(#V-soft)"/>
+      <circle cx="34" cy="14" r="6" fill="#d4a766"/>
+      <circle cx="58" cy="14" r="8" fill="#d4a766" opacity="0.55"/>
+      <circle cx="82" cy="14" r="8" fill="#d4a766" opacity="0.20"/>
+      <circle cx="106" cy="14" r="8" fill="none" stroke="#3a322c" stroke-width="0.8"/>
+    </g>
+    <text x="130" y="110" class="svg-sans" font-size="10.5" fill="#8a8169" letter-spacing="0.5">tonight you are warm &middot; enough for two firm acts, three soft</text>
+  </g>
+
+  <!-- centre hint -->
+  <g transform="translate(960 50)">
+    <text class="svg-serif" font-size="14" fill="#a89e80" text-anchor="middle" letter-spacing="2">PULL A THREAD &middot; OR LET THE DICE FALL ON THEIR OWN</text>
+    <text x="0" y="32" class="svg-sans" font-size="11" fill="#5a6177" text-anchor="middle" letter-spacing="1">no pull is also a story &middot; the world stays uncertain either way</text>
+  </g>
+
+  <!-- watch only -->
+  <g transform="translate(1500 26)">
+    <rect width="360" height="108" rx="4" fill="#0d0f17" stroke="#2c3247"/>
+    <text x="20" y="32" class="svg-serif" font-size="15" fill="#e0d4b4">Watch only</text>
+    <text x="20" y="56" class="svg-sans" font-size="11.5" fill="#a89e80">Let her face this on her own. Veiren rolls.</text>
+    <text x="20" y="74" class="svg-sans" font-size="11.5" fill="#a89e80">The story still writes itself — just without you.</text>
+    <text x="20" y="100" class="svg-sans" font-size="10" fill="#5a6177" letter-spacing="1">no quintessence &middot; the default</text>
+  </g>
+</g>
+
+</svg>
+</div>
+
+</main>
+
+<footer class="page-foot">
+  <div class="grid">
+    <div>
+      <h2>What this v2 commits to</h2>
+      <ul>
+        <li><strong>Cards spine, with a graph inset.</strong> A beat is still a card; the graph on the right shows <em>which threads are in play right now and what kind of relation each one is</em> — TESTS, BEHIND HER &middot; HIDING, WATCHES, CARRIES, HOLDS, STANDS AT. <em>This is C keeping A honest.</em></li>
+        <li><strong>Place painting in every active beat.</strong> Atmospheric scene at the top of the card so the player can see the gate, the dusk, the queue, the lanterns, the captain's silhouette. The thin gold thread crossing the sky is the only magic visible — concentrated, networked, on-style.</li>
+        <li><strong>Cast portraits with weight.</strong> Each cast member has a portrait, a one-line role, a disposition line, tags, and the sphere they answer to (Iron / Eye / Heart). Reminds the player who's in the room.</li>
+        <li><strong>Concrete prose.</strong> "Veiren plants his bootheel in front of Eira and stops." Dialogue, action, dust. Halren coughs from three places back. The lyric note (italic) is reserved for the dialogue line and one or two strikes per beat.</li>
+        <li><strong>Lean choices as directorial notes.</strong> "Make her step up." "Make her look past him." "Make her step aside." Each says <em>what she does</em>, then <em>what it costs</em>, then <em>what the consequence shape is</em>. No flowery euphemism.</li>
+        <li><strong>"Watch only" right-edge panel</strong> — opt-out remains free; the default. The hint underneath: <em>"the world stays uncertain either way."</em></li>
+      </ul>
+    </div>
+    <div>
+      <h2>What I'm asking your verdict on</h2>
+      <ul>
+        <li><strong>Prose tone.</strong> Did I land the "less flowery, more short-story" target? Or is it still drifting? If it's still off, point me to one line that nails it and one that doesn't and I'll calibrate.</li>
+        <li><strong>Lean phrasing.</strong> "Make her step up / look past him / step aside" — does that feel right? Or should it be even more practical (e.g. "Step forward · IRON · small breath" with no narrator framing at all)?</li>
+        <li><strong>Graph inset.</strong> Does seeing labelled relations alongside the card give the clarity you wanted from C? Or is it cluttered? It can be collapsed to a strip with edge labels only if it's competing too hard with the prose.</li>
+        <li><strong>Place painting fidelity.</strong> SVG-painterly is doing a job here, but for a real "movie in the head" we likely want generated concept art slotted into this frame. If yes, I'll run an image-generation pass next.</li>
+        <li><strong>Cast portrait fidelity.</strong> Same question — gradient silhouettes are placeholder; do we want generated portraits for the named cast?</li>
+      </ul>
+    </div>
+  </div>
+
+  <p style="margin-top:24px"><strong>Drop or evolve?</strong> If this v2 is roughly the right shape, I'll write the long-form design plan against it (Engine / Content / UI pillars, lean-primitive vocabulary, change vocabulary, content-author handbook). If it's still off, tell me where to push and I'll iterate the wireframe before anything else.</p>
+</footer>
+
+</body>
+</html>
