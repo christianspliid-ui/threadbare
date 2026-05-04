@@ -1,6 +1,8 @@
 # Project Status
-> Updated 2026-05-01.
+> Updated 2026-05-04.
 ## Current Focus
+**THR-298 complete — repo root markdown hygiene.** Moved orphan root files into Docs-owned locations: `slack-thoughts-2026-03-11.md` → `Docs/research/slack-thoughts-2026-03-11.md`, `brainstorm-hex-actions-and-control-mechanic.md` → `Docs/plans/2026-03-17-brainstorm-hex-actions-and-control-mechanic.md`, `log.md` → `Docs/ops/repo-automation-log.md`; updated mirrored `state-of-game-design` + `engine-architecture` skill references to new brainstorm path.
+
 **THR-294 complete — UL drift triage (2026-05-01 scan).** 15 used-uncanonical candidates triaged: 5 aliases added (ReachDomain, SphereName, CosmologyProfile, GraphNode, TickEvent), 6 new canonical promotions (GameState, HexTile, TerrainType, AxiologicalProfile, ValuePair, Implementation Plan), 4 stopwords (debugpanel, gameview, hexmapv2, tech stack). UL v1.1 / 79 terms. Vault mirrored. PR #98.
 
 **THR-282 complete — Branch protection re-enabled on `main` (Repo Health Sprint v2 Phase 3).** GitHub Pro now active. Required check: `Test · Typecheck · Build` (strict=true). 3-day CI watch window confirmed green. Impediment #56 resolved. PR #96.
@@ -44,4 +46,3 @@
 - TB-071 Economy Second Pass · TB-069 Location NPCs · TB-051 Monster Encounters residual · TB-037 Onboarding
 
 Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Completed work: `Docs/project-history.md` + Linear "Done" state · Pre-Linear history: `.planning/BACKLOG_HISTORY.md`
-

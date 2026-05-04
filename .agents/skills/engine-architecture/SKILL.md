@@ -138,7 +138,7 @@ A 5th action verb beyond CRUD: sustained actions requiring ongoing resources/foc
 - Three sustain models: essence drain, state threshold, ritual investment
 - Active controls spawn visible encounter nodes that rivals can contest
 - Prerequisites: Reach tier + Sphere alignment gate who can see/attempt contestation
-- Brainstorm: `brainstorm-hex-actions-and-control-mechanic.md`
+- Brainstorm: `Docs/plans/2026-03-17-brainstorm-hex-actions-and-control-mechanic.md`
 
 ## Module Conventions
 
