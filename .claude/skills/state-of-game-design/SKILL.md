@@ -378,7 +378,7 @@ When in tension, higher priorities win.
 | Spheres and Reaches | `TheFantasyWorldSimulator/Cosmology/Spheres and Reaches.md` via Obsidian MCP |
 | Generalized Action Targeting | `Docs/plans/2026-03-17-generalized-action-targeting-design.md` |
 | Hex state + hex actions | `Docs/plans/2026-03-17-world-state-and-hex-actions-design.md` |
-| Hex action brainstorm | `brainstorm-hex-actions-and-control-mechanic.md` |
+| Hex action brainstorm | `Docs/plans/2026-03-17-brainstorm-hex-actions-and-control-mechanic.md` |
 | Domain Capability design | `Docs/plans/2026-03-04-disc13-domain-capability-and-resolution-design.md` |
 | Original CRUD design | `Docs/plans/2026-03-03-actor-crud-action-system.md` |
 | Visual style guide | `STYLE.md` |
@@ -434,7 +434,7 @@ Load the domain-specific skill for your task:
 | Spheres and Reaches | `TheFantasyWorldSimulator/Cosmology/Spheres and Reaches.md` via Obsidian MCP |
 | Generalized Action Targeting | `Docs/plans/2026-03-17-generalized-action-targeting-design.md` |
 | Hex state + hex actions | `Docs/plans/2026-03-17-world-state-and-hex-actions-design.md` |
-| Hex action brainstorm | `brainstorm-hex-actions-and-control-mechanic.md` |
+| Hex action brainstorm | `Docs/plans/2026-03-17-brainstorm-hex-actions-and-control-mechanic.md` |
 | Domain Capability design | `Docs/plans/2026-03-04-disc13-domain-capability-and-resolution-design.md` |
 | Original CRUD design | `Docs/plans/2026-03-03-actor-crud-action-system.md` |
 | Visual style guide | `STYLE.md` |
