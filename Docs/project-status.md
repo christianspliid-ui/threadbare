@@ -1,6 +1,8 @@
 # Project Status
 > Updated 2026-05-04.
 ## Current Focus
+**Maintenance cycle (2026-05-04 hourly pickup) — board empty, cleanup done.** No Ready-for-Dev issues on board. Actions taken: (1) pushed unmerged `docs/plan-flush-thr-300` branch to remote and opened PR #116 (THR-300 grill-me plan doc, CI pending); (2) removed stale `plan-pending-commit` labels from Done issues THR-296/297/298; (3) logged impediment #112 — flush-plan-docs branch-fallback path missing remote push. PR #116 requires merge by next session or user.
+
 **THR-299 complete — orphaned weekly hygiene docs committed.** Committed orphaned Cowork changes from the 2026-05-04 weekly sweep: AGENTS.md full Linear-first rewrite, CLAUDE.md branch-protection note + 5 new Domain Skills rows, encounter-building-checklist Backlog Escalation Rule updated to Linear. PR #113.
 
 **THR-298 complete — repo root markdown hygiene.** Moved orphan root files into Docs-owned locations: `slack-thoughts-2026-03-11.md` → `Docs/research/slack-thoughts-2026-03-11.md`, `brainstorm-hex-actions-and-control-mechanic.md` → `Docs/plans/2026-03-17-brainstorm-hex-actions-and-control-mechanic.md`, `log.md` → `Docs/ops/repo-automation-log.md`; updated mirrored `state-of-game-design` + `engine-architecture` skill references to new brainstorm path.
