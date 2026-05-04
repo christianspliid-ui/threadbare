@@ -237,7 +237,7 @@ Cross-boundary testing rules, contract test patterns, pre-commit verification ch
 4. `npm run check:process` — advisory workflow/process lint (non-blocking while it stabilizes)
 5. Verification evidence is mandatory at closeout: paste raw terminal output for steps 1-3 in the closing commit body or Linear completion comment, or link to a green CI run for the same commit.
 
-> **CI runs these automatically.** GitHub Actions runs tests, typecheck, and build on every push and PR to `main`. Vercel runs only `vite build` (no test gate). Branch protection (required before merge) is pending GitHub Pro — until then CI is a signal, not a hard gate. Still run locally before pushing to catch failures early. The structural review Action (`.github/workflows/claude-review.yml`) runs on every PR in advisory mode; it flips to blocking once GitHub Pro + branch protection lands (tracked: THR-183). See `Docs/plans/2026-04-19-cc-review-replacement.md`.
+> **CI runs these automatically.** GitHub Actions runs tests, typecheck, and build on every push and PR to `main`. Vercel runs only `vite build` (no test gate). **Branch protection is active on `main`** — `Test · Typecheck · Build` is a required status check, strict mode (branches must be up to date), no admin bypass on in-progress checks (THR-282 shipped 2026-04-30). Direct `git push origin main` is rejected — all changes must go through a PR. Still run locally before pushing to catch failures early. The structural review Action (`.github/workflows/claude-review.yml`) runs on every PR in advisory mode; flipping it to blocking is tracked under THR-183. See `Docs/plans/2026-04-19-cc-review-replacement.md`.
 
 ## Known Sandbox Limitations
 
@@ -413,7 +413,7 @@ The repo has two skill directories; they serve different agents and do NOT have 
 
 **Shared skills (used by both audiences) exist in both trees.** Drift between copies is enforced by the THR-192 pre-commit hook that checks `.claude/skills/` ↔ `.agents/skills/` for any skill name present in both. `.claude/` is canonical for shared skills — edit there, then mirror `.agents/` by running `npm run check:skill-sync:sync`.
 
-**Skills that only exist in `.agents/skills/`** are Cowork/Gemini-only by design (currently: `content-catalog-manager`, `defuddle`, `json-canvas`, `obsidian-bases`, `obsidian-cli`, `obsidian-markdown`). CC cannot load these — do not route CC to them.
+**Skills that only exist in `.agents/skills/`** are Cowork/Gemini-only by design (currently: `content-catalog-manager`, `defuddle`, `design-council`, `json-canvas`, `obsidian-bases`, `obsidian-cli`, `obsidian-markdown`, `playtest-interface`). CC cannot load these — do not route CC to them.
 
 **When adding a new skill:** decide its audience first. CC-needed → `.claude/skills/`. Cowork/Gemini-only → `.agents/skills/`. Both → `.claude/skills/` and let the hook mirror.
 
@@ -457,6 +457,11 @@ Context for specific problem types lives in on-demand skills. **Always load `sta
 | Encounter tuning & analysis | `agent-analyser` | Analysing encounter log TSV exports for agent behavior, balance, variety, movement, capability growth, idle rates. Upload logs and ask for analysis. |
 | **Impediment reporting (always active)** | `impediment-reporter` | **Every session, every agent.** Log blockers and workarounds to `Docs/impediments.md` as they occur. Part of Definition of Done. |
 | Continuous improvement | `retrospective` | Review impediment log, analyze patterns, implement quick-fix improvements, backlog larger ones. Run with `/retrospective`. |
+| Multi-perspective design | `design-council` *(.agents/ only)* | Run a sociocratic, consent-based design discussion with multiple perspectives (content, engine, coordination, etc.). Forward-looking counterpart to `retrospective`. Trigger with `/design-council` or "let's get multiple perspectives on this". |
+| Pickup entrypoint (CC) | `pull-work` | Canonical pickup flow for CC and Codex: safe-claim, verify-after-write, dirty-worktree fallback, mutex check. Run with `/pull-work`. |
+| Plan-doc flush (Cowork) | `flush-plan-docs` | Hourly scheduled task that commits files referenced by `plan-pending-commit` label to `origin/main` and clears the label. Cowork applies the label after writing a plan doc; do not commit plan docs directly. |
+| Pre-design grilling | `grill-me` | Optional Step 0 of the design workflow when scope is large, multi-pillar, or ambiguous. Synthesizes into `Docs/plans/YYYY-MM-DD-<topic>-grill-me.md`. |
+| Vault log append | `vault-log` | Append a `- **<type>** | <description>` entry to the Obsidian vault `log.md`. Auto-falls-back to filesystem write when Obsidian MCP is unreachable; requires `OBSIDIAN_VAULT_PATH`. |
 
 ## Continuous Improvement
 

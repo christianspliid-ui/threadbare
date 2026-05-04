@@ -2,9 +2,13 @@ This folder contains The Fantasy World Simulator — a systemic god-game/rogue-l
 
 ## Cowork vs Codex — Read This First
 
-**If you are running in Cowork mode:** You must NOT write code or run git commands. You CAN write to `.planning/` coordination files (BACKLOG.md, HANDOVER.md, ROADMAP.md) — **snapshot before every write** (see `Docs/cowork-ways-of-working.md` → "Coordination File Versioning"). Your job is design, research, documentation (via MCP), and implementation plans. Hand coding tasks to Codex with a plan link.
+**Three agents, two executor queues.** Cowork designs and plans. **Claude Code** and **Codex** are executor agents — both implement, both commit with `Fixes THR-XX` (lets the merge-to-main auto-close fire), both pull from separate Linear states so neither claims the other's work. Cowork picks which queue an issue lands in: mechanical / pattern-following work goes to **Ready for Codex**; judgment-heavy / prose / novel-system work goes to **Ready for Dev** (CC's queue). See `Docs/plans/2026-04-13-linear-coordination-protocol.md`.
 
-**If you are running in Codex:** You do the coding, testing, committing, and pushing. Check for implementation plans in `Docs/plans/` before starting work.
+**If you are running in Cowork mode:** You must NOT write code or run git commands. Your job is design, research, documentation (via MCP), and implementation plans. Use **Linear** (Threadbare team) for all issue tracking — query and update issue states via the Linear MCP. After writing a plan doc into `Docs/plans/` or `Docs/audits/`, apply the `plan-pending-commit` label to the corresponding Linear issue; the hourly `flush-plan-docs` scheduled task commits the file to `origin/main` and removes the label. Move the issue to **Ready for Dev** (CC handoff) or **Ready for Codex** (Codex handoff) immediately after writing the plan, with a coordination-block comment. The state transition plus the handoff comment IS the handoff — nothing else required. `.planning/BACKLOG.md` and `.planning/HANDOVER.md` are retired (2026-04-13). Only `.planning/ROADMAP.md` remains as a legacy milestone overview.
+
+**If you are running in Codex:** You do the coding, testing, committing, and pushing. Query Linear for issues in **"Ready for Codex"** state with `assignee:null`, never Ready for Dev. Claim before reading, verify-after-write, WIP=1 In Dev issue, never `save_issue(state: "Done")` — commit with `Fixes THR-XX` in the body and let the merge auto-close fire. Check `Docs/plans/` for design docs before starting. See "Codex Session Start" / "Codex Pickup Protocol" in `Docs/plans/2026-04-13-linear-coordination-protocol.md`.
+
+**If you are running in Claude Code:** Start pickup with `/pull-work`. Query Linear "Ready for Dev" with `assignee:null` (never Ready for Codex — that queue belongs to Codex). Same claim discipline as Codex. See "Coordination Failure Modes — Hard Rules" (Rules 1–9) in the protocol doc.
 
 ## Running the Prototype
 
@@ -103,15 +107,19 @@ See `src/debug-bridge.ts` for the full API and `src/debug-bridge.d.ts` for types
 Three surfaces, each with a distinct purpose. Full ownership rules and duplication policy: **`Docs/documentation-ownership.md`**
 
 - **Obsidian vault** — Domain model: systems, mechanics, terminology (wikilinks). Read `Index.md` first.
-- **Repo `.planning/`** — Backlog, milestone roadmap, handover notes, coordination files
-- **Repo `Docs/`** — Implementation rationale (`plans/`), changelog, UI patterns, project status
+- **Repo `.planning/`** — Legacy milestone roadmap (`ROADMAP.md`) and pre-Linear history (`BACKLOG_HISTORY.md`, `HANDOVER_HISTORY.md`). `BACKLOG.md` and `HANDOVER.md` retired 2026-04-13.
+- **Repo `Docs/`** — Implementation rationale (`plans/`), changelog, UI patterns, project status, ubiquitous language
+- **Linear** ([Threadbare team](https://linear.app/threadbare)) — Issue tracking, handoff comments, project milestones, agent coordination state
 
 *Notion content migrated to Obsidian 2026-04-04. Dilemma templates remain in Notion pending TypeScript import.*
 
 ## Key Links
 
-- Backlog: `.planning/BACKLOG.md` · Completed items: `.planning/BACKLOG_HISTORY.md`
-- Active milestone roadmap: `.planning/ROADMAP.md`
+- **Backlog & issue tracking: [Linear (Threadbare team)](https://linear.app/threadbare)** — single source of truth for all issues, states, and dependencies
+- Linear coordination protocol: `Docs/plans/2026-04-13-linear-coordination-protocol.md`
+- **Roadmap milestones: [Linear Projects](https://linear.app/threadbare/projects)** (lifecycle: Idea → Next → Research → Discovery → Now → Done)
+- Legacy milestone roadmap: `.planning/ROADMAP.md`
+- Pre-Linear completed-item archive: `.planning/BACKLOG_HISTORY.md`
 - Obsidian vault index: read via Obsidian MCP → `TheFantasyWorldSimulator/Index.md`
 - Documentation ownership: `Docs/documentation-ownership.md`
 - Integration wiring checklist: `Docs/plans/wiring-checklist.md`
@@ -191,7 +199,7 @@ Settled. Do not revisit.
 - **Encounter awareness is hex-granular.** If an agent can see a hex, they can see everything on it — every location, every sublocation, every encounter. Within-hex visibility is automatic (distance 0). Cross-hex visibility is computed as hex coordinate distance vs. per-reach awareness hops. The distance matrix between locations is NOT used for encounter awareness — use hex distance (`encounterAwareness.ts`). This means an agent at a sublocation sees all encounters across all locations and sublocations on their hex, plus encounters on hexes within their awareness range.
 - **The world graph is mutated in place — never depend on graph object identity for change detection.** `WorldGraph` methods and direct `node.properties` writes modify internal state without changing the object reference. Any `useMemo`, selector, or cache that keys on `gameState.graph` identity will silently serve stale data. Use explicit version counters (`worldVersion` for UI selectors, `structuralCacheVersion` for structural caches such as the distance matrix and encounter cache) via exported `touchWorld()` / `touchStructure()` calls. Property mutations like `locationSubtype` changes in settlement promotion affect encounter scoring via the fallback in `getLocationType()` — versioning only works if every meaningful mutation participates, including property edits. Both tick phases and UI hooks (e.g. `useAgentInteraction`) must use the same touch API. `worldVersion` will bump nearly every tick during active simulation — that's intentional; memos gate paused/idle states, not per-tick skipping. `structuralCacheVersion` intentionally over-invalidates for v1 (a subtype change triggers distance matrix rebuild even though only encounter scoring changed); split into finer-grained versions only if profiling shows unnecessary rebuilds are costly.
 - **Engine caches must be owned per session, not stored at module scope.** Module-level singletons (encounter cache, distance matrix, etc.) persist across game sessions if the page isn't fully reloaded. A lightweight `SimulationRuntime` owned by `useSimulation` should hold caches, version counters, and lazy rebuild logic, scoped to the current playthrough.
-- **The distance matrix has a location cap that supported map sizes exceed.** `MAX_DISTANCE_MATRIX_SIZE` (currently 500) is smaller than the location count on `large` (584) and `epic` (805) presets. Systems that depend on distance matrix lookups must handle unlisted locations — silent truncation is a bug, not a feature.
+- **The distance matrix caps indexed locations at `MAX_DISTANCE_MATRIX_SIZE`.** Raised to 1200 in TB-088 — now covers all supported presets (`large` ~584, `epic` ~805). If location count ever exceeds 1200, systems that depend on distance matrix lookups must handle unlisted locations — a `console.warn` fires when the cap is reached.
 
 ## Rejected Approaches (do not reintroduce)
 
@@ -218,23 +226,22 @@ When modifying Obsidian vault notes:
 
 Work is not "done" until it is deployed and documented. Do all of these automatically — do not ask, do not stop at "ready to push?", just do it.
 
-- [ ] **Commit** all changes
-- [ ] **Push** to GitHub (`git push`, with `-u origin <branch>` if needed)
-- [ ] **Merge** feature branches into main immediately — don't leave branches waiting
-- [ ] **Deploy** — Vercel auto-deploys from GitHub on push to `main`. Just ensure the push succeeded.
-- [ ] **Update docs** — `BACKLOG.md` (mark `✅`, archive to `BACKLOG_HISTORY.md`), `project-status.md` (≤60 lines, move old entries to `project-history.md`), `project-history.md` (one-line `✅` entry), `changelog.md` (append rows)
+- [ ] **Commit** all changes — the closing commit's message body **must** include `Fixes THR-XX` (or `Closes`/`Resolves`) so the Linear auto-close workflow fires on push to `main`. Branch protection is active on `main` (THR-282 shipped 2026-04-30) — direct push is rejected; open a PR.
+- [ ] **Push** the feature branch and open a PR via `gh pr create`; merge after CI is green (`Test · Typecheck · Build` is the required check).
+- [ ] **Deploy** — Vercel auto-deploys from GitHub on push to `main`. Just ensure the merge succeeded.
+- [ ] **Update docs** — `Docs/project-status.md` (≤60 lines, move old entries to `project-history.md`), `Docs/project-history.md` (one-line `✅` entry), `Docs/changelog.md` (append rows). Add a completion comment to the Linear issue (the `Fixes THR-XX` keyword auto-closes it; the human-readable comment is still expected).
 - [ ] **Verify wiring** — Check every new module against `Docs/plans/wiring-checklist.md`. Engine modules called from orchestrator, modals rendered in GameView JSX, GameState fields consumed by UI, traces emitted, player controls connected. Update the checklist if new surfaces added.
 - [ ] **Log impediments** — Any blockers or workarounds → `Docs/impediments.md`. Load `impediment-reporter` skill for format. Mandatory — unlogged friction is invisible.
-- [ ] **Close out** — Tell the user: *"Session ready to archive — all work is tested, deployed, and documented. No loose ends."*
+- [ ] **Close out** — The Linear state transition IS the closeout. Cowork hands off by moving to "Ready for Dev"/"Ready for Codex" with the coordination-block comment; executors land work with `Fixes THR-XX` and let the auto-close fire. No Slack, no DM, nothing out of band.
 
-**Where to find completed work history:** `.planning/BACKLOG_HISTORY.md` (full descriptions) and `Docs/project-history.md` (one-line entries).
+**Where to find completed work history:** Linear issues in "Done" state (current), `.planning/BACKLOG_HISTORY.md` (pre-Linear history), and `Docs/project-history.md` (one-line entries).
 
 ## Session Workflow
 
 - [ ] Read this file for orientation
-- [ ] **Check `.planning/HANDOVER.md`** — act on pending Cowork handovers before starting new work
+- [ ] **Check Linear for work** — query issues by state per the protocol in `Docs/plans/2026-04-13-linear-coordination-protocol.md`. CC: `list_issues state:"Ready for Dev" assignee:null`. Codex: `list_issues state:"Ready for Codex" assignee:null`. Both: `list_issues state:"In Dev" assignee:"me"` for resume.
 - [ ] Read Obsidian `Index.md` via MCP → follow links to the relevant system
-- [ ] Check `.planning/BACKLOG.md` + `.planning/ROADMAP.md` for priorities
+- [ ] Check Linear Projects (`list_projects`) for milestone context; `.planning/ROADMAP.md` for legacy overview
 - [ ] Read relevant design doc in `Docs/plans/` before writing code
 - [ ] **Upstream health check** — if the feature depends on upstream pipeline throughput, verify the pipeline is producing output before coding. A feature wired to a dead pipeline is wasted work.
 - [ ] After completing work, follow the **Definition of Done** above
