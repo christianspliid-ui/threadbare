@@ -1,6 +1,6 @@
 ---
 name: gamedocumenter
-description: Use after completing any implementation work on The Fantasy World Simulator to update all documentation layers (Docs/changelog.md + Docs/project-status.md + .planning/BACKLOG.md, and Obsidian vault system notes). Trigger whenever you finish a phase, task, or group of commits — even small ones. Also trigger when someone says "update docs", "document this", "update the backlog", or "update obsidian". Note: Notion backlog was archived 2026-03-22 — all tracking now lives in .planning/BACKLOG.md. This skill encodes critical workarounds for Obsidian MCP API quirks that will save you from wasting time on failed API calls.
+description: Use after completing any implementation work on The Fantasy World Simulator to update all documentation layers (Docs/changelog.md + Docs/project-status.md + Docs/project-history.md, Linear closeout, and Obsidian vault system notes). Trigger whenever you finish a phase, task, or group of commits — even small ones. Also trigger when someone says "update docs", "document this", "update Linear", or "update obsidian". Linear (Threadbare team) is the single source of truth for backlog and issue state; `.planning/BACKLOG.md` was retired 2026-04-13. This skill encodes critical workarounds for Obsidian MCP API quirks that will save you from wasting time on failed API calls.
 ---
 
 # Game Documenter
@@ -11,7 +11,7 @@ A rigid post-implementation checklist for updating The Fantasy World Simulator's
 
 The documentation layers serve different purposes and must stay in sync:
 - **`Docs/changelog.md`** + **`Docs/project-status.md`** + **`Docs/project-history.md`** (in repo) — changelog + project status. Says "what changed and where we are."
-- **`.planning/BACKLOG.md`** + **`.planning/BACKLOG_HISTORY.md`** (in repo) — backlog and completed items archive. Says "what to build next."
+- **Linear (Threadbare team)** — backlog, implementation state, and handoffs. Says "what to build next."
 - **Obsidian vault** (via MCP) — system specs and graph relationships. Says "what the system IS."
 
 ## When to Run This Checklist
@@ -111,22 +111,22 @@ Read **`obsidian-system-note-template.md`** (in this skill directory) for the fu
 - [[System Name]] — One-line description *(added YYYY-MM-DD)*
 ```
 
-### Step 5: Update Backlog
+### Step 5: Update Linear Closeout
 
-**What:** Update `.planning/BACKLOG.md` to reflect completed work and any new items discovered.
+**What:** Complete the Linear executor closeout for the issue you shipped (never manual Done transition).
 
 **Actions:**
-1. Read `.planning/BACKLOG.md`
-2. If any backlog items were completed, change their kanban state to `✅` and add a completion date. Kanban states: `💡` idea · `📋` todo · `🎨` design · `📐` plan · `🏗️` dev · `✅` done
-3. If the work revealed new future tasks, add them with a `TB-XXX` ID (check "Next ID" in the file header)
-4. Periodically move `✅` items to `.planning/BACKLOG_HISTORY.md` to keep the active backlog readable
+1. Add a completion comment summarizing what shipped, commit SHA, and any deferrals created.
+2. Ensure your merge-path commit body includes `Fixes THR-XX` so merge-to-main auto-close fires.
+3. If any deferrals were introduced, create linked Linear issues and include `// TODO(THR-XX)` references in code.
+4. Keep issue tracking in Linear only and do not recreate retired backlog files.
 
 ### Step 6: Commit Documentation Changes
 
 **What:** Stage and commit any repo-level documentation changes.
 
 ```bash
-git add CLAUDE.md Docs/changelog.md Docs/project-status.md Docs/project-history.md .planning/BACKLOG.md
+git add CLAUDE.md Docs/changelog.md Docs/project-status.md Docs/project-history.md
 git commit -m "docs: update project status for Phase 6X completion
 
 <brief summary of what was documented>
@@ -134,24 +134,24 @@ git commit -m "docs: update project status for Phase 6X completion
 Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 ```
 
-Commit all repo-level docs: CLAUDE.md, `Docs/changelog.md`, `Docs/project-status.md`, `Docs/project-history.md`, `.planning/BACKLOG.md`, and files in `Docs/plans/`. Obsidian changes are made via MCP API.
+Commit all repo-level docs: CLAUDE.md, `Docs/changelog.md`, `Docs/project-status.md`, `Docs/project-history.md`, and files in `Docs/plans/`. Obsidian changes are made via MCP API.
 
 ## Quick Reference: Tool → Purpose
 
 | Tool | Use For | Notes |
 |------|---------|-------|
-| `Edit` | CLAUDE.md, Docs/changelog.md, Docs/project-status.md, .planning/BACKLOG.md | Normal filesystem files |
+| `Edit` | CLAUDE.md, Docs/changelog.md, Docs/project-status.md, Docs/project-history.md | Normal filesystem files |
 | `obsidian_get_file_contents` | Read vault notes | Via MCP, not filesystem |
 | `obsidian_append_content` | Create new notes / add content | ALWAYS works |
 | `obsidian_patch_content` | Edit existing note content | UNRELIABLE — use with caution, simple targets only |
 | `obsidian_list_files_in_dir` | Check what notes exist | Use before creating to avoid duplicates |
-| `git commit` | Commit doc changes | CLAUDE.md + Docs/ + .planning/BACKLOG.md |
+| `git commit` | Commit doc changes | CLAUDE.md + Docs/ |
 
-> **Note:** Notion has some remaining content (not yet migrated to Obsidian) but is not used for active tracking. All backlog and status tracking lives in repo markdown files.
+> **Note:** Notion content migrated to Obsidian on 2026-04-04. Dilemma templates remain in Notion pending TypeScript import; active tracking stays in Linear + repo docs.
 
 ## Common Mistakes
 
-**Forgetting a layer.** The most common failure is updating the changelog but skipping Obsidian or the backlog. The checklist exists to prevent this — follow all 6 steps.
+**Forgetting a layer.** The most common failure is updating the changelog but skipping Obsidian or Linear closeout. The checklist exists to prevent this — follow all 6 steps.
 
 **Using `obsidian_patch_content` on Index.md headings.** This WILL fail because headings contain `*(added ...)` suffixes. Use `obsidian_append_content` instead.
 
