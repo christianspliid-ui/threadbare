@@ -1,6 +1,8 @@
 # Project Status
-> Updated 2026-05-01.
+> Updated 2026-05-04.
 ## Current Focus
+**THR-297 complete (partial) — Weekly retro gap investigated.** Confirmed `weekly-retro` scheduled task was never registered; 3 Fridays missed. Manual retrospective run for 2026-04-12 → 2026-05-04 (76 impediments, ~10.6h lost). Blocker: `create_scheduled_task` cannot run in scheduled sessions — must be registered in an interactive CC session. PR #111.
+
 **THR-294 complete — UL drift triage (2026-05-01 scan).** 15 used-uncanonical candidates triaged: 5 aliases added (ReachDomain, SphereName, CosmologyProfile, GraphNode, TickEvent), 6 new canonical promotions (GameState, HexTile, TerrainType, AxiologicalProfile, ValuePair, Implementation Plan), 4 stopwords (debugpanel, gameview, hexmapv2, tech stack). UL v1.1 / 79 terms. Vault mirrored. PR #98.
 
 **THR-282 complete — Branch protection re-enabled on `main` (Repo Health Sprint v2 Phase 3).** GitHub Pro now active. Required check: `Test · Typecheck · Build` (strict=true). 3-day CI watch window confirmed green. Impediment #56 resolved. PR #96.
