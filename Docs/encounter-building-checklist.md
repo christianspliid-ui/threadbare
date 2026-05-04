@@ -500,26 +500,27 @@ When that happens:
 
 ## Backlog Escalation Rule
 
-Every `blocked-primitive` discovered during encounter work must produce a same-pass backlog update in [.planning/BACKLOG.md](/C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/.planning/BACKLOG.md).
+Every `blocked-primitive` discovered during encounter work must produce a same-pass Linear issue in the **Threadbare** team. (`.planning/BACKLOG.md` retired 2026-04-13 — Linear is the single source of truth.)
 
 Default routing:
 
-- If the gap is a content primitive or shell, add it under `TB-104 · Procedural Content Component Library Foundation`.
+- If the gap is a content primitive or shell, file it in the **Content Architecture** project as a child of the open `Procedural Content Component Library` work.
 - Cite the encounter packet or template ID that exposed the gap.
 - Name the missing primitive family explicitly.
 
-Escalate to a dedicated new TB item instead of a TB-104 note when:
+Open a standalone Linear issue (still under Content Architecture) instead of an inline note when:
 
 - the same primitive is hit by multiple encounter packets
 - the primitive is clearly large enough to deserve its own implementation slice
 - the primitive is blocking more than one active content stream
 
-Minimum backlog payload:
+Minimum issue payload:
 
 - primitive name / shell name
 - source encounter(s)
 - why the encounter quality is blocked without it
 - whether it is a strict dependency for active content work
+- label `Deferral` if the gap was deferred from active encounter work
 
 ## Definition Of Done
 
@@ -579,7 +580,7 @@ Minimum verification for a serious encounter pass:
 - Verify that every `lazy-materialize-on-trigger` object has an authored persistence/follow-on contract instead of disappearing without consequence.
 - Verify that every `lazy-materialize-on-trigger` object reuses an existing suitable object when one is already present, instead of duplicating world support.
 - If a primitive gap was discovered, document it instead of hiding it.
-- If a primitive gap was discovered, update `.planning/BACKLOG.md` in the same pass.
+- If a primitive gap was discovered, open a Linear issue in the Threadbare team in the same pass (see Backlog Escalation Rule above).
 - Review the encounter as a reading experience, not only as a systems test:
   - does the opening read like a scene?
   - do the choices imply clear manipulations or interventions?
