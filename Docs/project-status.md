@@ -1,6 +1,8 @@
 # Project Status
 > Updated 2026-05-04.
 ## Current Focus
+**THR-299 complete — orphaned weekly hygiene docs committed.** Committed orphaned Cowork changes from the 2026-05-04 weekly sweep: AGENTS.md full Linear-first rewrite, CLAUDE.md branch-protection note + 5 new Domain Skills rows, encounter-building-checklist Backlog Escalation Rule updated to Linear. PR #113.
+
 **THR-298 complete — repo root markdown hygiene.** Moved orphan root files into Docs-owned locations: `slack-thoughts-2026-03-11.md` → `Docs/research/slack-thoughts-2026-03-11.md`, `brainstorm-hex-actions-and-control-mechanic.md` → `Docs/plans/2026-03-17-brainstorm-hex-actions-and-control-mechanic.md`, `log.md` → `Docs/ops/repo-automation-log.md`; updated mirrored `state-of-game-design` + `engine-architecture` skill references to new brainstorm path.
 
 **THR-297 complete (partial) — Weekly retro gap investigated.** Confirmed `weekly-retro` scheduled task was never registered; 3 Fridays missed. Manual retrospective run for 2026-04-12 → 2026-05-04 (76 impediments, ~10.6h lost). Blocker: `create_scheduled_task` cannot run in scheduled sessions — must be registered in an interactive CC session. PR #111.
@@ -40,7 +42,7 @@
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
 
 ## Archived to project-history.md
-- THR-282/238/109/79/108/107/104/103/106/290/102/280/285/286/283/287/276/284/277/281/211/243/272/212/210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
+- THR-299/298/297/296/294/282/238/109/79/108/107/104/103/106/290/102/280/285/286/283/287/276/284/277/281/211/243/272/212/210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
