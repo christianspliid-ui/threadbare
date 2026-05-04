@@ -383,7 +383,7 @@ When in tension, higher priorities win.
 | Original CRUD design | `Docs/plans/2026-03-03-actor-crud-action-system.md` |
 | Visual style guide | `STYLE.md` |
 | Design system | `Docs/design-system/INDEX.md` |
-| Backlog | `.planning/BACKLOG.md` |
+| Backlog & issue tracking | [Linear (Threadbare team)](https://linear.app/threadbare) - `.planning/BACKLOG.md` retired 2026-04-13 |
 | Project status | `Docs/project-status.md` |
 | Project history | `Docs/project-history.md` |
 
@@ -400,7 +400,7 @@ Load the domain-specific skill for your task:
 | Content & worldbuilding | `content-worldbuilding` | Content packages, graph data, constraint layers |
 | Art direction | `art-direction` | Hex tiles, prompt construction, Threadbare aesthetic |
 | Creative prose & content | `cw-*` (platform) | Brainstorming, prose drafting, wiki docs, critique |
-| Post-implementation docs | `gamedocumenter` | Notion/Obsidian/changelog updates |
+| Post-implementation docs | `gamedocumenter` | Linear/Obsidian/changelog updates |
 | Image manipulation | `image-manipulation` | Geometric clipping, alpha masks, hex pipeline |
 | QA sweeps | `qa-orchestrator` | Systematic UI/UX/frontend QA |
 - **Maslow pipeline for agent AI.** No utility functions, no behaviour trees.
@@ -439,7 +439,7 @@ Load the domain-specific skill for your task:
 | Original CRUD design | `Docs/plans/2026-03-03-actor-crud-action-system.md` |
 | Visual style guide | `STYLE.md` |
 | Design system | `Docs/design-system/INDEX.md` |
-| Backlog | `.planning/BACKLOG.md` |
+| Backlog & issue tracking | [Linear (Threadbare team)](https://linear.app/threadbare) - `.planning/BACKLOG.md` retired 2026-04-13 |
 | Project status | `Docs/project-status.md` |
 | Project history | `Docs/project-history.md` |
 
@@ -456,6 +456,6 @@ Load the domain-specific skill for your task:
 | Content & worldbuilding | `content-worldbuilding` | Content packages, graph data, constraint layers |
 | Art direction | `art-direction` | Hex tiles, prompt construction, Threadbare aesthetic |
 | Creative prose & content | `cw-*` (platform) | Brainstorming, prose drafting, wiki docs, critique |
-| Post-implementation docs | `gamedocumenter` | Notion/Obsidian/changelog updates |
+| Post-implementation docs | `gamedocumenter` | Linear/Obsidian/changelog updates |
 | Image manipulation | `image-manipulation` | Geometric clipping, alpha masks, hex pipeline |
 | QA sweeps | `qa-orchestrator` | Systematic UI/UX/frontend QA |

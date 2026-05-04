@@ -5,7 +5,7 @@ description: Use when running a QA sweep of The Fantasy World Simulator UI. Trig
 
 # QA Orchestrator
 
-Systematic QA sweep of The Fantasy World Simulator. Three modes, four specialist agents, structured findings with backlog routing.
+Systematic QA sweep of The Fantasy World Simulator. Three modes, four specialist agents, structured findings with Linear routing.
 
 ## Test Surface Registry
 
@@ -105,13 +105,13 @@ No browser needed. Just verify the project directory is correct and `npm test` c
 
 ## Prerequisites (All Modes)
 
-- **`.planning/BACKLOG.md` exists** — for routing findings to the project backlog
+- **Linear access available** — findings are routed into Linear projects/issues, not `.planning/BACKLOG.md` (retired 2026-04-13)
 - Read `STYLE.md` for visual reference
 - Initialize findings collection: `findings = []`
 
 ## Finding Schema
 
-Every agent produces findings in this exact JSON structure. Consistent schema enables merging, deduplication, and Notion import.
+Every agent produces findings in this exact JSON structure. Consistent schema enables merging, deduplication, and direct Linear issue creation.
 
 ```json
 {
@@ -119,8 +119,8 @@ Every agent produces findings in this exact JSON structure. Consistent schema en
   "agent": "visual",
   "severity": "critical",
   "category": "color-violation",
-  "backlog": "visual-assets",
-  "notionPrefix": "ART",
+  "linearProject": "UI Visual Overhaul",
+  "linearLabels": ["UI"],
   "surfaceIds": ["S-030"],
   "title": "Hex map background exceeds brightness ceiling",
   "description": "Background color rgb(244,232,193) computes to 88% brightness. STYLE.md requires world surfaces in 10-40% range.",
@@ -140,8 +140,8 @@ Every agent produces findings in this exact JSON structure. Consistent schema en
 | `agent` | enum | `visual` \| `info-arch` \| `interaction` \| `react-code` |
 | `severity` | enum | `critical` \| `major` \| `minor` \| `suggestion` |
 | `category` | string | Free-form: `color-violation`, `redundant-text`, `broken-flow`, `anti-pattern`, etc. |
-| `backlog` | enum | `content` \| `frontend` \| `architecture` \| `visual-assets` |
-| `notionPrefix` | enum | `CB` \| `FE` \| `SYS` \| `ART` |
+| `linearProject` | enum | `Content Architecture` \| `UI Visual Overhaul` \| `Code Hygiene` |
+| `linearLabels` | string[] | One or more of: `Content` \| `UI` \| `Infrastructure` \| `Bug` \| `Improvement` \| `Deferral` |
 | `surfaceIds` | string[] | Surface IDs from `test-surfaces.md` (e.g., `["S-030", "S-031"]`). Every finding must map to at least one surface. |
 | `title` | string | One-line summary |
 | `description` | string | Full description with reproduction steps |
@@ -158,21 +158,21 @@ Every agent produces findings in this exact JSON structure. Consistent schema en
 - **Minor:** Polish issue, no functional impact
 - **Suggestion:** Improvement opportunity, not a defect
 
-### Backlog Routing Decision Tree
+### Linear Project Routing Decision Tree
 
-Apply this tree to every finding to set `backlog` and `notionPrefix`:
+Apply this tree to every finding to set `linearProject` and baseline labels:
 
 ```
 Finding -> Is it a crash, type error, or engine logic bug?
-  YES -> backlog: "architecture", notionPrefix: "SYS"
+  YES -> linearProject: "Code Hygiene", labels: ["Infrastructure", "Bug"]
   NO  -> Is it a STYLE.md violation, missing art, or brightness issue?
-    YES -> backlog: "visual-assets", notionPrefix: "ART"
+    YES -> linearProject: "UI Visual Overhaul", labels: ["UI", "Improvement"]
     NO  -> Is it repetitive text, thin content pool, or missing template?
-      YES -> backlog: "content", notionPrefix: "CB"
-      NO  -> backlog: "frontend", notionPrefix: "FE"
+      YES -> linearProject: "Content Architecture", labels: ["Content", "Improvement"]
+      NO  -> linearProject: "Code Hygiene", labels: ["UI", "Improvement"]
 ```
 
-Edge case: findings spanning two backlogs get filed to whichever backlog owns the fix.
+Edge case: findings spanning two projects get filed where the fixing code lives, and cross-link related issues.
 
 ### Agent ID Prefixes
 
@@ -210,7 +210,7 @@ This is the rigid flow for a full QA sweep. Do not skip steps. Do not reorder.
 2. Read `test-surfaces.md` (companion file in this skill directory) — this is your surface checklist
 3. Read `STYLE.md` for current visual spec
 4. **Start isolated QA server:** Run `bash scripts/qa-server.sh start`. Parse the JSON output to get `QA_URL` (e.g., `http://localhost:5183`). If it fails, check the log and tell the user.
-5. Pre-flight: `browser_navigate` to `{QA_URL}/?view=game` — must load into game view. Test Notion MCP responds.
+5. Pre-flight: `browser_navigate` to `{QA_URL}/?view=game` - must load into game view.
 6. Initialize findings collection and surface coverage tracker (all surface IDs start as "untested")
 
 ### Phase 2: Agent Dispatch (Sequential)
@@ -227,14 +227,14 @@ This is the rigid flow for a full QA sweep. Do not skip steps. Do not reorder.
 ### Phase 3: Merge & Report
 
 11. **Deduplicate:** Same UI element + same issue -> merge, keep the more detailed description. Cross-agent links: if Agent 1 flags a color and Agent 4 finds the hardcoded value -> reference both.
-12. **Route:** Apply the Backlog Routing Decision Tree to every finding.
+12. **Route:** Apply the Linear Project Routing Decision Tree to every finding.
 13. **Sort:** Primary: severity (critical->suggestion). Secondary: effort (S->L).
 14. **Coverage report:** Collect all `surfaceIds` from all findings. Compare against the full surface registry. Produce coverage summary showing tested vs. untested surfaces and coverage percentage. Flag any non-dev surfaces that no agent touched.
-15. **Present:** Show summary to user — "QA sweep found N findings: X critical, Y major, Z minor, W suggestions. Coverage: N/49 surfaces tested (XX%)." Table format with ID, severity, title, effort, backlog. Ask: "Which findings should I add to the backlog? (all / critical+major / select specific IDs)"
+15. **Present:** Show summary to user — "QA sweep found N findings: X critical, Y major, Z minor, W suggestions. Coverage: N/49 surfaces tested (XX%)." Table format with ID, severity, title, effort, linearProject. Ask: "Which findings should I file as Linear issues? (all / critical+major / select specific IDs)"
 
-### Phase 4: Backlog Integration
+### Phase 4: Linear Integration
 
-16. **Backlog:** Add user-approved findings to `.planning/BACKLOG.md`. Create a section "## QA Findings [YYYY-MM-DD]" with entries using the project's status emoji convention (🔲 Ready to build). Include ID, Severity, Category, Title, and Effort for each finding.
+16. **Linear:** Create one Linear issue per user-approved finding. Put each issue in the routed `linearProject`, copy severity/category/effort into the issue body, apply baseline labels from the routing tree, and add `Deferral` when findings are spun off from active implementation work.
 17. **Save raw JSON:** Write all findings to `Docs/qa/YYYY-MM-DD-qa-findings.json` for future diffing. Include a top-level `coverage` object with `tested`, `skipped`, `crossCutting`, and `percentage` fields.
 
 ### Phase 5: Surface Registry Maintenance
@@ -259,10 +259,10 @@ No browser needed. Run these CLI checks and parse output for failures:
 4. If playtest runner is available: `npm run playtest -- --seeds 1,42,100,999 --ticks 100` — multi-seed stability. Parse for anomalies (doom stall, zero dilemmas, population collapse).
 
 **Output:** Summarize results. Any failures become findings with:
-- Test failures -> agent "react-code", backlog "architecture", notionPrefix "SYS"
-- Type errors -> agent "react-code", backlog "architecture", notionPrefix "SYS"
-- Model validation errors -> agent "info-arch", backlog "content", notionPrefix "CB"
-- Playtest anomalies -> agent "interaction", backlog "architecture", notionPrefix "SYS"
+- Test failures -> agent "react-code", linearProject "Code Hygiene", labels ["Infrastructure", "Bug"]
+- Type errors -> agent "react-code", linearProject "Code Hygiene", labels ["Infrastructure", "Bug"]
+- Model validation errors -> agent "info-arch", linearProject "Content Architecture", labels ["Content", "Bug"]
+- Playtest anomalies -> agent "interaction", linearProject "Code Hygiene", labels ["Infrastructure", "Bug"]
 
 Then proceed to Phase 3 (Merge & Report) and Phase 4 (Backlog Integration) from the Mode 1 checklist.
 
@@ -325,8 +325,8 @@ const traces = await window.__DEBUG.getTraces();
 | Passing `{QA_URL}` as a literal string | Substitute the actual URL (e.g., `http://localhost:5183`) before dispatching agents. |
 | Fixing during sweep | Collect first, fix later. Changing code mid-sweep invalidates later agents. |
 | Not saving raw JSON | You lose the ability to diff between QA runs |
-| Merging all findings to backlog without asking | Ask user first — they may want to defer suggestions |
-| Forgetting backlog routing | Every finding needs `backlog` and `notionPrefix` fields |
+| Filing all findings to Linear without asking | Ask user first - they may want to defer suggestions |
+| Forgetting Linear routing | Every finding needs `linearProject` and baseline labels |
 | Not reading test-surfaces.md | Every sweep must start by reading the surface registry |
 | Adding components without updating registry | New components = new registry entry, same session |
 | Findings without surfaceIds | Every finding must map to at least one surface ID |

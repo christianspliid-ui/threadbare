@@ -105,3 +105,4 @@
 - **ops** | no ready-for-codex work this cycle (2026-05-02T15.02.38+02:00)
 - **ops** | no ready-for-codex work this cycle (2026-05-02T16.01.57+02:00)
 - **ops** | CC check-slack-for-new-dev-work pickup: Ready for Dev queue empty — idle cycle. All queues empty (Ready for Dev, In Dev, Ready for Codex). Slack channel confirmed no new work. No work claimed. (2026-05-02T17.00+02:00)
+- **work** | THR-296 shipped: updated shared skills to Linear-first workflow (state-of-game-design, qa-orchestrator, gamedocumenter).

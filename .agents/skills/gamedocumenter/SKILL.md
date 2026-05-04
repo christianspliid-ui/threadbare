@@ -1,6 +1,6 @@
 ---
 name: gamedocumenter
-description: Use after completing any implementation work on The Fantasy World Simulator to update all documentation layers (Docs/changelog.md + Docs/project-status.md + .planning/BACKLOG.md, and Obsidian vault system notes). Trigger whenever you finish a phase, task, or group of commits — even small ones. Also trigger when someone says "update docs", "document this", "update the backlog", or "update obsidian". Note: Notion backlog was archived 2026-03-22 — all tracking now lives in .planning/BACKLOG.md. This skill encodes critical workarounds for Obsidian MCP API quirks that will save you from wasting time on failed API calls.
+description: Use after completing any implementation work on The Fantasy World Simulator to update all documentation layers (Docs/changelog.md + Docs/project-status.md + Docs/project-history.md), update Linear closeout state/comments, and update Obsidian vault system notes. Trigger whenever you finish a phase, task, or group of commits — even small ones. Also trigger when someone says "update docs", "document this", "update Linear", or "update obsidian". Note: `.planning/BACKLOG.md` and `.planning/HANDOVER.md` were retired 2026-04-13; Linear is the active backlog. This skill encodes critical workarounds for Obsidian MCP API quirks that will save you from wasting time on failed API calls.
 ---
 
 # Game Documenter
@@ -11,7 +11,7 @@ A rigid post-implementation checklist for updating The Fantasy World Simulator's
 
 The documentation layers serve different purposes and must stay in sync:
 - **`Docs/changelog.md`** + **`Docs/project-status.md`** + **`Docs/project-history.md`** (in repo) — changelog + project status. Says "what changed and where we are."
-- **`.planning/BACKLOG.md`** + **`.planning/BACKLOG_HISTORY.md`** (in repo) — backlog and completed items archive. Says "what to build next."
+- **Linear (Threadbare team)** — backlog and issue lifecycle state. Says "what to build next."
 - **Obsidian vault** (via MCP) — system specs and graph relationships. Says "what the system IS."
 
 ## When to Run This Checklist
@@ -35,7 +35,7 @@ Run the lightweight subset (Steps 1-2 only) for:
 
 **Rules:**
 - One row per logical change (not per file — group related files)
-- "Where" uses short labels: `Repo: src/engine/`, `Obsidian: Systems/`, `Backlog: .planning/`
+- "Where" uses short labels: `Repo: src/engine/`, `Obsidian: Systems/`, `Linear: THR-XXX`
 - "What changed" is specific: file names, line counts, test counts
 - "Why" references the phase/task that motivated it
 - Date is ISO format (YYYY-MM-DD)
@@ -111,22 +111,23 @@ Read **`obsidian-system-note-template.md`** (in this skill directory) for the fu
 - [[System Name]] — One-line description *(added YYYY-MM-DD)*
 ```
 
-### Step 5: Update Backlog
+### Step 5: Update Linear Issue Tracking
 
-**What:** Update `.planning/BACKLOG.md` to reflect completed work and any new items discovered.
+**What:** Close out the active Linear issue and create any deferrals discovered during implementation.
 
 **Actions:**
-1. Read `.planning/BACKLOG.md`
-2. If any backlog items were completed, change their kanban state to `✅` and add a completion date. Kanban states: `💡` idea · `📋` todo · `🎨` design · `📐` plan · `🏗️` dev · `✅` done
-3. If the work revealed new future tasks, add them with a `TB-XXX` ID (check "Next ID" in the file header)
-4. Periodically move `✅` items to `.planning/BACKLOG_HISTORY.md` to keep the active backlog readable
+1. Confirm the issue was worked from `Ready for Dev` or `Ready for Codex` and is now `In Dev` under your assignee.
+2. Ensure the closing commit body includes `Fixes THR-XX` (or `Closes` / `Resolves`) so merge-to-main auto-closes the issue.
+3. Add a completion comment to the issue with shipped scope, verification evidence (`npm test`, `npx tsc --noEmit`, `npx vite build`), commit SHA, and deferrals if any.
+4. If you created `// TODO` / `// DEFERRED` markers, create matching Linear issues and include their `THR-XX` IDs in code comments.
+5. Do not manually transition to `Done`; closure is merge-gated.
 
 ### Step 6: Commit Documentation Changes
 
 **What:** Stage and commit any repo-level documentation changes.
 
 ```bash
-git add CLAUDE.md Docs/changelog.md Docs/project-status.md Docs/project-history.md .planning/BACKLOG.md
+git add CLAUDE.md Docs/changelog.md Docs/project-status.md Docs/project-history.md
 git commit -m "docs: update project status for Phase 6X completion
 
 <brief summary of what was documented>
@@ -134,24 +135,25 @@ git commit -m "docs: update project status for Phase 6X completion
 Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 ```
 
-Commit all repo-level docs: CLAUDE.md, `Docs/changelog.md`, `Docs/project-status.md`, `Docs/project-history.md`, `.planning/BACKLOG.md`, and files in `Docs/plans/`. Obsidian changes are made via MCP API.
+Commit all repo-level docs: CLAUDE.md, `Docs/changelog.md`, `Docs/project-status.md`, `Docs/project-history.md`, and files in `Docs/plans/`. Obsidian changes are made via MCP API.
 
 ## Quick Reference: Tool → Purpose
 
 | Tool | Use For | Notes |
 |------|---------|-------|
-| `Edit` | CLAUDE.md, Docs/changelog.md, Docs/project-status.md, .planning/BACKLOG.md | Normal filesystem files |
+| `Edit` | CLAUDE.md, Docs/changelog.md, Docs/project-status.md, Docs/project-history.md | Normal filesystem files |
 | `obsidian_get_file_contents` | Read vault notes | Via MCP, not filesystem |
 | `obsidian_append_content` | Create new notes / add content | ALWAYS works |
 | `obsidian_patch_content` | Edit existing note content | UNRELIABLE — use with caution, simple targets only |
 | `obsidian_list_files_in_dir` | Check what notes exist | Use before creating to avoid duplicates |
-| `git commit` | Commit doc changes | CLAUDE.md + Docs/ + .planning/BACKLOG.md |
+| `save_issue` + `save_comment` (Linear MCP) | Closeout status + completion comment | Use `Fixes THR-XX`; never force `Done` |
+| `git commit` | Commit doc changes | CLAUDE.md + Docs/ |
 
-> **Note:** Notion has some remaining content (not yet migrated to Obsidian) but is not used for active tracking. All backlog and status tracking lives in repo markdown files.
+> **Note:** Notion was archived for active tracking on 2026-04-04. Dilemma templates remain pending TypeScript import.
 
 ## Common Mistakes
 
-**Forgetting a layer.** The most common failure is updating the changelog but skipping Obsidian or the backlog. The checklist exists to prevent this — follow all 6 steps.
+**Forgetting a layer.** The most common failure is updating the changelog but skipping Obsidian or Linear closeout. The checklist exists to prevent this - follow all 6 steps.
 
 **Using `obsidian_patch_content` on Index.md headings.** This WILL fail because headings contain `*(added ...)` suffixes. Use `obsidian_append_content` instead.
 
