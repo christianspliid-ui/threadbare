@@ -112,3 +112,4 @@
 - **work** | THR-308 shipped: canon drift propagation completed for repo docs/skills/public references (2026-05-05T10:30+02:00)
 - **work** | THR-302 shipped: removed deprecated EncounterTemplate, completed UnifiedActionTemplate retyping across encounter engine/UI/tests, and documented CMS Option C follow-up for THR-301 (2026-05-05T13:12+02:00)
 - **work** | THR-307 shipped: completed Obsidian cosmology canon propagation (`[[Reaches]]` links + Flesh migration + canonical cosmology pages) (2026-05-05T14:25+02:00)
+- **work** | THR-306 shipped: encounter-pipeline skill now loads Docs/canon/encounters.md as Step 0 (Canon-first), with mirrored .claude/.agents sync and full verification trio green (2026-05-05T15:06+02:00)

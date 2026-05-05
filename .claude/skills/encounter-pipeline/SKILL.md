@@ -86,9 +86,11 @@ All output files go to `Docs/plans/encounters/<slug>-<pass>.md`.
 
 The orchestrator (this skill) follows this state machine. No manual file editing, no assembly, no text surgery.
 
-### Step 0: Pre-Read Reference Material
+### Step 0: Canon-First Pre-Read
 
-Before dispatching any agent, the orchestrator reads these files ONCE and injects them as context into agent prompts:
+Before dispatching any agent, the orchestrator reads `Docs/canon/encounters.md` first. This Canon page is the Step 0 entrypoint for encounter authoring and establishes the current format, rejected approaches, and active-plan pointers.
+
+Then the orchestrator reads the files the Canon page links to and injects them as context into agent prompts:
 
 0. `Docs/authoring-brief.md` — compiled capability + principle preamble (preferred). If missing or stale, fall back: read `Docs/plans/2026-04-16-systemic-wiring-guide.md` and `Docs/plans/2026-04-16-game-design-direction.md` instead.
 1. `Docs/encounter-building-checklist.md`
