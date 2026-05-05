@@ -121,3 +121,13 @@ The Linear issue label used by the `ubiquitous-language` skill when proposing a 
 **Status:** canonical
 
 The Cowork-authored design artifact in `Docs/plans/YYYY-MM-DD-<topic>.md` that turns a Linear issue into something an executor can implement. Each plan covers all three pillars (Engine, Content, UI), runs the NFP audit, lists constants and traces, marks fail-soft cases, and produces the wiring section that connects new modules to orchestrator phases, UI components, and trace categories. The plan-pending-commit label gates an hourly scheduled task that commits the file to `origin/main`. Distinct from the Linear state **Implementation Planning**, which is the workflow phase where the plan is being written.
+
+---
+
+### Domain Canon Page
+
+**Aliases:** Canon Page
+**Also see:** `[[Ubiquitous Language]]`, `[[Documentation Ownership]]`
+**Status:** canonical
+
+A short (≤200 lines) navigation document at `Docs/canon/<domain>.md` that serves as the agent Step-0 entrypoint for authoring work in that domain. A Canon page does not contain definitions (UL owns those) or rationale (plans own that). It enumerates: current spec pointers, current rejected approaches, current open questions, and last-reviewed date with reviewer attribution. Authoring skills load the relevant Canon page before any other reference material. Canon pages are Cowork-drafted and user-verdicted; the `last_reviewed` field carries provenance.

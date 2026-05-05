@@ -80,11 +80,11 @@ The seeded configuration of Sphere weights, alignments, and relationships for a 
 
 ### Quintessence
 
-**Aliases:** Flesh Reach (deprecated), Quintessence Reach
+**Aliases:** Flesh Reach (deprecated), Quintessence Reach (deprecated naming — Quintessence is NOT a Reach)
 **Also see:** `[[Reach]]`
 **Status:** canonical
 
-The system that absorbed the deprecated Flesh Reach in TB-075. Manages vitality, life force, and physical existence as a cosmological current rather than a Reach domain. Do not confuse with the old Flesh reach or re-introduce "Flesh" as a ninth Reach.
+The meta-property tracking an actor's integrity-of-self and centrality to the simulated story. Stored as a derived score, not a Reach domain. High Quintessence means sovereignty, resilience, and difficulty of being owned, dependent, or written out. Low Quintessence means thinning confidence, easier indirect manipulation, narrowing options, and growing risk of becoming a vessel, symbol, or tool — eventually exiting the story by death, transformation, or symbolic capture. Functions as a phase-transition threshold (a meter) rather than a personality axis; descriptors like "Remnant" and "Paragon" appear at extremes but are not a value spectrum. Replaces the deprecated Flesh Reach (TB-075, 2026-03-28); do not reintroduce Flesh as a 9th Reach.
 
 ---
 
