@@ -1,0 +1,392 @@
+/* =========================================================================
+   Threadbearer — Design Tokens
+   Dark parchment-and-gold. Single viewport. Never light.
+   Ground-truth: src/index.css in the game repo.
+   ========================================================================= */
+
+@font-face {
+  font-family: 'Cinzel';
+  src: url('fonts/cinzel-variable.woff2') format('woff2-variations'),
+       url('fonts/cinzel-variable.woff2') format('woff2');
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Alegreya Sans';
+  src: url('fonts/alegreya-sans-400-regular.woff2') format('woff2');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Alegreya Sans';
+  src: url('fonts/alegreya-sans-400-italic.woff2') format('woff2');
+  font-weight: 400; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: 'Alegreya Sans';
+  src: url('fonts/alegreya-sans-500-regular.woff2') format('woff2');
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Alegreya Sans';
+  src: url('fonts/alegreya-sans-700-regular.woff2') format('woff2');
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+
+:root {
+  /* ── Background Layers (deepest → most raised) ────────────────── */
+  --bg-abyss:   #0a0a0e;   /* page background, fullscreen overlays  */
+  --bg-deep:    #111114;   /* top bar, sidebar backgrounds          */
+  --bg-surface: #1a1a1f;   /* cards, panels                         */
+  --bg-raised:  #222228;   /* rows, chips, interactive at rest      */
+  --bg-hover:   #2a2a32;   /* hover state for interactives          */
+
+  /* ── Text Hierarchy (warm parchment, never bright white) ──────── */
+  --text-primary:   #e8dcc8;
+  --text-secondary: #c8b89a;
+  --text-tertiary:  #a89880;
+  --text-muted:     #7a6e60;
+
+  /* ── Accent — Gold (single accent; sparingly) ─────────────────── */
+  --accent-gold:      #d4a040;
+  --accent-gold-dim:  #d4a04060;
+  --accent-gold-glow: #d4a04030;
+
+  /* ── Borders ──────────────────────────────────────────────────── */
+  --border-subtle: #2a2520;
+  --border-medium: #3a3530;
+  --border-accent: #d4a04025;
+  --border-gold:   #d4a04025;     /* alias used in modals          */
+  --border-gold-strong: #d4a04060;
+
+  /* ── Semantic ─────────────────────────────────────────────────── */
+  --positive: #4ade80;
+  --negative: #f87171;
+  --warning:  #fbbf24;
+
+  /* ── Sphere Colors (12) — semantic vocabulary, never hardcode ─── */
+  /* Two values per sphere. Use BASE for resting-state UI (retinue rows,
+     dim chips, background tints). Use -BRIGHT only for active/selected
+     states and sphere pulse glows. */
+  --sphere-force:           #ff4444;
+  --sphere-force-bright:    #ff6b6b;
+  --sphere-matter:          #a8886a;
+  --sphere-matter-bright:   #d4a87a;
+  --sphere-energy:          #ffd700;
+  --sphere-energy-bright:   #ffe44d;
+  --sphere-life:            #00cc55;
+  --sphere-life-bright:     #33ff77;
+  --sphere-mind:            #2288ff;
+  --sphere-mind-bright:     #44aaff;
+  --sphere-spirit:          #aa44dd;
+  --sphere-spirit-bright:   #cc66ff;
+  --sphere-time:            #ff9933;
+  --sphere-time-bright:     #ffb355;
+  --sphere-entropy:         #5a8a7a;
+  --sphere-entropy-bright:  #8fd4c0;
+  --sphere-order:           #d4af37;          /* distinct from --warning #fbbf24 */
+  --sphere-order-bright:    #e8c860;
+  --sphere-chaos:           #8a8a8e;
+  --sphere-chaos-bright:    #d4d4d8;
+  --sphere-light:           #ffeb99;
+  --sphere-light-bright:    #fef3c7;
+  --sphere-darkness:        #4a3a8a;
+  --sphere-darkness-bright: #8b7fbf;
+
+  /* ── Hex terrain tokens ─ Golden Hour defaults (warm sunlit) ──── */
+  /* ⚠️ NOT AUTHORITATIVE. These exist only to render legacy preview
+     cards locally. The source of truth lives in the repo:
+       src/components/HexMapV2/palette/paletteTheme.ts
+       src/components/HexMapV2/palette/terrainPalette.ts
+       src/components/HexMapV2/palette/waterPalette.ts
+     If you need terrain colors in a new artifact, read those files.
+     NB: Only these change between themes — UI chrome stays constant. */
+  --terrain-grassland:        #9CA85C;
+  --terrain-savanna:          #B4A654;
+  --terrain-steppe:           #BCC272;
+  --terrain-floodplain:       #88945A;
+  --terrain-light-forest:     #849A52;
+  --terrain-woodland:         #748C48;
+  --terrain-temperate-forest: #5C783E;
+  --terrain-dense-forest:     #4C6436;
+  --terrain-boreal-forest:    #5C783E;
+  --terrain-tropical-forest:  #426440;
+  --terrain-marsh:            #8E905A;
+  --terrain-swamp:            #748046;
+  --terrain-moor-bog:         #80B488;
+  --terrain-hills:            #C0A05A;
+  --terrain-forested-hills:   #687844;
+  --terrain-mountains:        #A47A3C;
+  --terrain-high-mountains:   #908680;
+  --terrain-plateau:          #B69450;
+  --terrain-mountain-pass:    #A68C58;
+  --terrain-sand-desert:      #CEAE72;
+  --terrain-sand-dunes:       #C8A460;
+  --terrain-rocky-desert:     #B88C50;
+  --terrain-hardened-clay:    #C69A84;
+  --terrain-badlands:         #B4764A;
+  --terrain-tundra:           #E2DCD0;
+  --terrain-snow-fields:      #DAD4C8;
+  --terrain-glacier:          #C6CCD2;
+  --terrain-volcanic:         #8A8480;
+  --terrain-volcano:          #884C38;
+  --terrain-lava:             #C46C3C;
+  --terrain-broken-lands:     #9C9284;
+  --terrain-dead-forest:      #929080;
+  --terrain-fallback:         #888888;
+  --water-shallows:           #6AA2C0;
+  --water-ocean:              #4886B0;
+  --water-deep-ocean:         #366A98;
+  --water-lake:               #4280A8;
+  --water-river:              #6AA2C0;
+
+  /* ── Hex map scene chrome — Golden Hour defaults ──────────────── */
+  --scene-bg:          #0a0a0c;
+  --road-major:        #6b5a40;
+  --road-trail:        #4a3d2c;
+  --border-political:  #C83030;
+  --capital-ring:      #cc3333;
+  --border-geo:        #000000;
+  --grid-line:         #5D5E66;
+  --elevation-tick:    #2a1a0a;
+  --fog-unexplored:    #0a0a0c;
+  --label-land:        #1a1410;
+  --label-river:       #1a4070;
+  --label-location:    #1a1a1a;
+  --label-halo-rgb:    240,235,220;
+  --label-halo-inner:  0.9;
+  --label-halo-outer:  0.6;
+
+  /* ── Typography — Cinzel (display) + Alegreya Sans (body) ─────── */
+  /* Load order: brand @font-face above takes precedence. Family names must match. */
+  --font-display: 'Cinzel', 'Trajan Pro', 'Times New Roman', serif;
+  --font-body:    'Alegreya Sans', 'Segoe UI', system-ui, sans-serif;
+
+  /* Type scale. 16px floor — never smaller in UI. */
+  --text-xs:   1rem;        /* 16px — minimum */
+  --text-sm:   1.0625rem;   /* 17px */
+  --text-base: 1.125rem;    /* 18px */
+  --text-lg:   1.3125rem;   /* 21px */
+  --text-xl:   1.625rem;    /* 26px */
+  --text-2xl:  1.9375rem;   /* 31px */
+
+  /* ── Spacing (4px base) ───────────────────────────────────────── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* ── Panel geometry ───────────────────────────────────────────── */
+  --panel-padding: 1rem;
+  --panel-radius:  0.5rem;
+  --sidebar-width: 360px;    /* 1920px target */
+  --topbar-height: 48px;
+
+  /* ── Motion ───────────────────────────────────────────────────── */
+  --anim-fast:   150ms;
+  --anim-normal: 200ms;
+  --anim-slow:   400ms;
+}
+
+/* ── Semantic typography — name these so agents compose, not rebuild ── */
+:root {
+  /* Display (Cinzel) — titles, names of narrative weight */
+  --type-display-xl: 700 var(--text-2xl)/1.1 var(--font-display);
+  --type-display-lg: 600 var(--text-xl)/1.1  var(--font-display);
+  --type-display-md: 600 var(--text-lg)/1.15 var(--font-display);
+
+  /* Section label — ALLCAPS, spaced, 16px, Cinzel */
+  --type-section-label: 700 var(--text-xs)/1.2 var(--font-display);
+
+  /* Body (Alegreya Sans) */
+  --type-body-prose:  400 var(--text-base)/1.7 var(--font-body);
+  --type-body:        400 var(--text-sm)/1.4   var(--font-body);
+  --type-body-small:  400 var(--text-xs)/1.4   var(--font-body);
+
+  /* Flavor / italic prose — omens, whispers, quotes */
+  --type-flavor: italic 400 var(--text-base)/1.7 var(--font-body);
+}
+
+/* =========================================================================
+   Global styles — dark parchment page
+   ========================================================================= */
+
+html, body {
+  background-color: var(--bg-abyss);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  color: var(--text-primary);
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  margin: 0;
+}
+
+h1 { font-size: var(--text-2xl); font-weight: 700; }
+h2 { font-size: var(--text-xl);  font-weight: 600; }
+h3 { font-size: var(--text-lg);  font-weight: 600; }
+h4 { font-size: var(--text-base); font-weight: 600; }
+
+p  { margin: 0; }
+
+/* Section heading — the panel label primitive.
+   ALWAYS uppercase, Cinzel, tertiary text, letter-spaced. */
+.section-heading {
+  font: var(--type-section-label);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin: 0;
+}
+
+/* Flanked ornamental rules around a heading (LoL Universe style) */
+.ornamental-rule {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--text-tertiary);
+}
+.ornamental-rule::before,
+.ornamental-rule::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent-gold-dim), transparent);
+}
+
+/* Interactive row — list items, rows in panels.
+   Hover is applied via JS style-mutation for dynamic accent colors;
+   this class handles padding, radius, and transition only.          */
+.interactive-row {
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.375rem;
+  transition:
+    background-color var(--anim-fast) ease,
+    border-color    var(--anim-fast) ease,
+    color           var(--anim-fast) ease;
+}
+
+/* Glass panel — FLOATING OVERLAYS ONLY.
+   Allowed: Dropdown, Tooltip, modal backdrops, short-lived floating chrome.
+   FORBIDDEN: persistent panels over the hex map, sidebar panels, top bar,
+   right-rail chronicle. The Threadbare aesthetic is austere and ancient;
+   glassmorphism is a trendy-modern exception, never the default.         */
+.panel-glass {
+  background: rgba(17, 17, 20, 0.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--panel-radius);
+}
+
+/* =========================================================================
+   Animation primitives — ease-out entrances, ease-in exits. No bounce.
+   ========================================================================= */
+
+@keyframes fadeInOnly       { from { opacity: 0 } to { opacity: 1 } }
+@keyframes fadeOutOnly      { from { opacity: 1 } to { opacity: 0 } }
+@keyframes fadeSlideUpIn    { from { opacity: 0; transform: translateY(8px)  } to { opacity: 1; transform: none } }
+@keyframes fadeSlideUpOut   { from { opacity: 1; transform: none } to { opacity: 0; transform: translateY(8px)  } }
+@keyframes fadeSlideDownIn  { from { opacity: 0; transform: translateY(-8px) } to { opacity: 1; transform: none } }
+@keyframes fadeSlideDownOut { from { opacity: 1; transform: none } to { opacity: 0; transform: translateY(-8px) } }
+
+@keyframes breathe          { 0%,100% { opacity: .4 } 50% { opacity: .8 } }
+@keyframes pulseGoldFlare   { 0%,100% { box-shadow: 0 0 0 0 rgba(212,160,64,0) } 50% { box-shadow: 0 0 24px 4px rgba(212,160,64,.35) } }
+@keyframes shakeNo          { 0%,100% { transform: translateX(0) } 20%,60% { transform: translateX(-4px) } 40%,80% { transform: translateX(4px) } }
+
+.anim-fade-enter      { animation: fadeInOnly       var(--anim-normal) ease-out both; }
+.anim-fade-exit       { animation: fadeOutOnly      var(--anim-normal) ease-in  both; }
+.anim-fade-up-enter   { animation: fadeSlideUpIn    var(--anim-normal) ease-out both; }
+.anim-fade-up-exit    { animation: fadeSlideUpOut   var(--anim-normal) ease-in  both; }
+.anim-fade-down-enter { animation: fadeSlideDownIn  var(--anim-normal) ease-out both; }
+.anim-fade-down-exit  { animation: fadeSlideDownOut var(--anim-normal) ease-in  both; }
+
+.animate-breathe { animation: breathe 2.4s ease-in-out infinite; }
+.pulse-gold      { animation: pulseGoldFlare 900ms ease-out 1; }
+.anim-shake-no   { animation: shakeNo 350ms ease-in-out 1; }
+
+/* =========================================================================
+   Focus ring — keyboard only, gold, never suppressed.
+   ========================================================================= */
+:focus-visible {
+  outline: 2px solid var(--accent-gold-dim);
+  outline-offset: -2px;
+}
+
+/* =========================================================================
+   Hex map themes — scope terrain + scene chrome only.
+   UI chrome (abyss/parchment/gold) stays constant across themes.
+   ========================================================================= */
+.theme-golden-hour {
+  /* :root defaults are already Golden Hour — no overrides needed. */
+}
+
+.theme-dark-parchment {
+  /* Scene chrome — cool moonlit cartography */
+  --scene-bg:          #08080a;
+  --road-major:        #4a5060;
+  --road-trail:        #333a48;
+  --border-political:  #3088A0;
+  --capital-ring:      #3090a8;
+  --border-geo:        #000000;
+  --grid-line:         #484a52;
+  --elevation-tick:    #1a1a2a;
+  --fog-unexplored:    #08080a;
+  --label-land:        #c8c4b8;
+  --label-river:       #70a0c0;
+  --label-location:    #b8b4a8;
+  --label-halo-rgb:    12,12,16;
+  --label-halo-inner:  0.85;
+  --label-halo-outer:  0.5;
+
+  /* Terrain — cool-shifted */
+  --terrain-grassland:        #6A7A58;
+  --terrain-savanna:          #7A7854;
+  --terrain-steppe:           #8A9068;
+  --terrain-floodplain:       #5E6E50;
+  --terrain-light-forest:     #5A7048;
+  --terrain-woodland:         #4C6240;
+  --terrain-temperate-forest: #3E5436;
+  --terrain-dense-forest:     #344A30;
+  --terrain-boreal-forest:    #3E5436;
+  --terrain-tropical-forest:  #2E4A38;
+  --terrain-marsh:            #5E6450;
+  --terrain-swamp:            #4E5A3C;
+  --terrain-moor-bog:         #5A7A64;
+  --terrain-hills:            #8A7A58;
+  --terrain-forested-hills:   #4A5C3C;
+  --terrain-mountains:        #6A5A40;
+  --terrain-high-mountains:   #686468;
+  --terrain-plateau:          #7A6A48;
+  --terrain-mountain-pass:    #6E6448;
+  --terrain-sand-desert:      #A0906A;
+  --terrain-sand-dunes:       #968858;
+  --terrain-rocky-desert:     #8A7050;
+  --terrain-hardened-clay:    #907060;
+  --terrain-badlands:         #7A5844;
+  --terrain-tundra:           #B0B4B8;
+  --terrain-snow-fields:      #A8ACB0;
+  --terrain-glacier:          #909CA8;
+  --terrain-volcanic:         #585458;
+  --terrain-volcano:          #5C3430;
+  --terrain-lava:             #8A4830;
+  --terrain-broken-lands:     #6A6460;
+  --terrain-dead-forest:      #606060;
+  --terrain-fallback:         #606060;
+
+  /* Water — cool-shifted */
+  --water-shallows:    #4A7A90;
+  --water-ocean:       #305878;
+  --water-deep-ocean:  #1E4060;
+  --water-lake:        #2A5878;
+  --water-river:       #4A7A90;
+}

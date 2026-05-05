@@ -27,8 +27,8 @@ This plan ships an encounter surface that **scales from short resource-building 
 
 - **Rule 1 — Path over adjective.** Every player choice in the encounter UI must change the path, not the adjective. If three options collapse to "same outcome, different prose," cut to one and let the engine pick the prose from scene context.
 - **Rule 2 — The moral axis is structural.** Every reach has an archetype-pair axis (Iron→Protector/Conqueror, Heart→Sworn/Renegade, etc., per the cosmological pattern). Each encounter choice tilts the agent toward one pole. Aggregate drift is the moral cost of being a god, surfaced structurally. A scene's primary reach drives the tilt; when an encounter exposes two distinct reaches whose axes both matter, the author can specify a dual-axis tilt and the engine accumulates drift on both.
-- **Rule 3 — Verbs are encounter-specific prose, soft-power flavored.** Each encounter writes its own god-verbs ("Stir her resolve," "Speak when not asked," "Open the lantern"). Verbs convey *influence, nudging, manipulation* — never full control. The verb is independent of the mechanical reach + sphere + moral-axis-pole layer; those are separate metadata the engine reads, not anchors the verb is constrained by.
-- **Rule 4 — Every primitive is clickable; every node has a detail page.** The encounter UI shows shorthand for primitives that fit the screen. The player learns the world by clicking through: every cast tile, item, clue, place caption, callback note, faction chip, Ascendant card, dotted-underline term opens a detail overlay (modal-on-modal stacking allowed). Hover for a taster; click for the page. Players hover/click less as they internalise the world; the depth stays available for new players, complex situations, and generated content. This is a project-wide commitment, not just an encounter feature — every node type has a detail page.
+- **Rule 3 — Verbs are encounter prose; the mechanical layer is independent metadata.** When an encounter author writes a choice card, they author *two independent layers, side by side*. **Layer 1 — what the player reads:** the verb (*"Stir her resolve" / "Speak when not asked" / "Open the lantern"*), the agent reaction, the tilts-toward note. Pure prose, encounter-specific, soft-power flavored — influence, nudging, manipulation, never full control. Author has free creative latitude. **Layer 2 — what the engine reads:** `reach`, `cost`, `moral_axis_pole`, `consumes_item?`. Structural metadata for probability tilt, drift, essence cost. **The two layers are independent.** *"Stir her resolve"* is not derived from `iron` — it's just the right verb for this scene. The same Iron-rooted choice in a different scene could have a completely different verb (*"Hold the line," "Refuse to bend," "Don't look away"*). What we are NOT doing: making verbs anchor to a fixed vocabulary derived from the reach (*"every Iron choice uses Stir/Steel/Harden"*). That would turn the verb into a label and kill the craft. The verb is craft; the metadata is plumbing; they sit on the same card but they're not the same thing.
+- **Rule 4 — Every primitive is clickable; every node has a detail page.** The encounter UI shows shorthand for primitives that fit the screen. The player learns the world by clicking through: every cast tile, item, clue, place caption, callback note, faction chip, Ascendant card, dotted-underline term opens a detail overlay (modal-on-modal stacking allowed). Hover for a taster; click for the page. Players hover/click less as they internalise the world; the depth stays available for new players, complex situations, and generated content. **This is a project-wide commitment, not just an encounter feature** — every node type has a detail page. **Implementation builds on existing primitives**, doesn't rebuild from scratch: `src/components/shared/Modal.tsx`, `shared/Tooltip.tsx`, `shared/TooltipChain` (chaining already supported), `src/components/ProseKeyword.tsx` (IPK-style underlining), `src/components/ruins/EmergenceDilemmaModal.tsx` (worked example of a modal-based interaction surface). The encounter UI extends these so they support modal-on-modal stacking and a uniform `DetailPage` component pattern usable across the game. Other patterns continue to coexist where appropriate (e.g., the chevron-expand lists in the Ascendant left bar on the hex map use a different affordance suited to long lists, not concept exploration). The rule applies to *concept exploration*; not all UI must be modals.
 
 ---
 
@@ -127,10 +127,11 @@ The encounter-template-graph-node decision (2.1) supports this via `spawns_from`
 
 **Migration status (audit 2026-05-04):** all encounter content in the codebase is functionally migrated to `UnifiedActionTemplate`. There are no encounters in the legacy format. **However, architectural cleanup lags:** the deprecated `EncounterTemplate` type definition still exists in `src/types/encounter.ts` (lines 184–287) with a stale comment claiming "115 templates await migration"; the CMS registry imports encounter content from 8+ separate sources (`encounter-content.ts`, `social-encounter-content.ts`, `faction-encounter-content.ts`, etc.) and surfaces them under separate "Encounters" sub-categories despite all being unified under the hood; canonical doc `Systems/Encounter System.md` claims the type "was removed" — it wasn't.
 
-**Phase 0 cleanup work** rides along with this plan:
+**Phase 0 cleanup work is a SEPARATE TICKET** (THR-302, see below) that runs first. Encounter UI work waits for the cleanup to land because we expect to learn things from it that change the encounter UI's assumptions. Items in scope for Phase 0:
 - Delete the deprecated `EncounterTemplate` interface from `src/types/encounter.ts`.
 - Refactor `src/components/CMS/registry.ts` to filter `UNIFIED_ACTION_TEMPLATES` by metadata tags (e.g. `narrativeLayer: 'encounter'`, `category: 'social' | 'tavern' | ...`) rather than importing 8+ separate sources.
 - Update `Systems/Encounter System.md` to accurately reflect: *"All encounter templates are functionally migrated to UnifiedActionTemplate. The deprecated EncounterTemplate type was removed in <merge-commit>."*
+- Surface any architectural surprises that the cleanup turns up; those feed back into this plan before encounter UI implementation begins.
 
 **Pipeline shape kept**, with these additions:
 
@@ -519,6 +520,19 @@ The four worked examples in the toolkit (§5.1 Eira at the Gate, §5.2 The Taver
 - Quality bar examples for editorial pass
 
 Each must be authored to the contract in §4.1 with full prose, tooltipped terms wired to graph entities, and aftermath effect kinds enumerated.
+
+### 4.10 Predecessor reference: the Gate Duty proto-encounter
+
+The Gate Duty encounter (`cg.quest.gate_duty`) and its derived design docs are the prior generation's most advanced thinking about encounter authoring craft. They remain valuable as **predecessor reference** for content authors looking at concrete examples of "pressure knot" encounter structure, conditional-block prose, and effect-chain aftermaths.
+
+Reference docs:
+- `Docs/plans/2026-04-03-encounter-packet-cg-gate-duty.md` — worked-example encounter packet with support matrix, intervention fantasy, bundle contract
+- `Docs/plans/2026-04-03-clearance-gate-proto-primitive-pattern.md` — reusable state-machine shell for inspection drama (pending → flagged → exposed → compromised → cleared); a separate engine concern this plan does not absorb
+- `Docs/plans/encounter-building-checklist.md` — the "pressure knot" design heuristic with Gate Duty as exemplar
+
+**What this plan does NOT carry forward as separate concerns:** support-object persistence contracts (the graph-native architecture in Vision Non-Negotiable #4 + the §3.5 aftermath effect kinds already handle persistence), reuse-first binding (implicit in graph-native), aftermath effect chains (§3.5 + §4.1's `changes[]` array already supports this), reward pool tagging (unverified against existing reward system; revisit during implementation), omen prose variants (speculative authoring burden against an unsettled omen system), and the clearance-gate proto-primitive itself (separate engine concern, no UI coupling needed).
+
+**What carried forward into this plan, in their right place:** Narrative Engine prose-tier discipline (§4.3 — Routine / Notable / Chronicle), the existing `successAfterimage` / `failureAfterimage` per step as the branching-memory mechanism (§4.1 authoring contract), failure-as-forward-pressure (§15.8). Each integrated where it belongs, not enumerated as carry-forwards.
 
 ---
 
