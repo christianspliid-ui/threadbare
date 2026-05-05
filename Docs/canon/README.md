@@ -84,6 +84,7 @@ and (when relevant) `superseded_by: <path>`. A plan with no status is treated as
 |------|--------|--------|---------------|
 | [encounters.md](encounters.md) | Encounters | live | 2026-05-05 |
 | [cosmology.md](cosmology.md) | Cosmology | live | 2026-05-05 |
+| [engine.md](engine.md) | Engine | live | 2026-05-05 |
 
 ## When to update a Canon page
 

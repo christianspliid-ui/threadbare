@@ -1,5 +1,7 @@
 # Project History
 
+✅ **THR-315** (2026-05-05) — Canon Phase 2b engine page: created `Docs/canon/engine.md` (122 lines) with current spec pointers, NFP order, load-bearing decisions, rejected approaches, open questions; wired `engine-architecture` skill (both mirrors) to load the canon as Step 0; added engine row to `Docs/canon/README.md`. Skill-sync clean; tsc/vite/test all green.
+✅ **THR-309** (2026-05-05) — UL proposal closeout: added `Domain Canon Page` term to Process shard; rewrote `Quintessence` in Cosmology shard to integrity-of-self / centrality-to-story framing; mirrored shards to Obsidian.
 ✅ **THR-307** (2026-05-05) — Canon Phase 5a: vault cosmology propagation — created `Cosmology/The Cosmological Pattern.md` + `Cosmology/Reaches.md`; updated 8 vault pages; bulk-fixed 30 [[Flesh]] wikilinks across 13 Archetypes files per Flesh→Quintessence migration (TB-075 Phase 6).
 ✅ **THR-308** (2026-05-05) — Encounter experience design plan minor edits: retracted §2.3 divine marks, added Rule 4 (no XP treadmill), clarified Rule 3. PR #127.
 ✅ **THR-302** (2026-05-05) — Phase 0: deleted `EncounterTemplate` interface, retyped all 20 callers to `UnifiedActionTemplate`. PR #129.
