@@ -1,6 +1,8 @@
 # Project Status
 > Updated 2026-05-05.
 ## Current Focus
+**THR-309 complete — UL proposal closeout for canon terminology (Continuous Improvement).** Added `Domain Canon Page` to `Docs/ubiquitous-language/Process.md` as the canonical Step 0 authoring entrypoint term for `Docs/canon/<domain>.md`. Rewrote `Quintessence` in `Docs/ubiquitous-language/Cosmology.md` to the user-verdicted integrity-of-self / centrality-to-story framing (explicitly not a Reach, Flesh remains deprecated). Ran `npm run mirror-ul` with explicit `OBSIDIAN_VAULT_PATH` override to mirror shard updates into Obsidian.
+
 **THR-307 complete — Canon Phase 5a: Cosmological canon doc propagation (Obsidian vault, Continuous Improvement).** Created `Cosmology/The Cosmological Pattern.md` and `Cosmology/Reaches.md` as canonical vault destinations (repairing 14+ broken wikilinks). Updated 8 existing vault pages: `Domain Word Scales.md` (drop Flesh row, retitle to Eight Reaches, add Quintessence section), `Systems Overview.md` (16 Nine Reaches → Reaches, remove Flesh row), `Index.md`, `CLAUDE.md`, `Visual Style Tile.md`, `taste-profile.md`. Bulk-fixed 30 [[Flesh]] wikilinks across 13 Archetypes files per migration table (healing→Gold, athletics→Iron, body-mod→Stone, survival→Star). Closes the drift loop that misled the 2026-05-04 vision audit. Note: ran at sonnet; model label is opus — creative prose was constrained by spec/voice-anchors, judged acceptable.
 
 **THR-305 complete — Canon pages bootstrapped (Continuous Improvement).** Created `Docs/canon/` with three files: `README.md` (schema + 4 rules), `encounters.md` (current encounter spec), `cosmology.md` (user-verdicted 8 Reaches + Quintessence, explicit stale-source warnings). PR #124.
@@ -29,4 +31,3 @@
 - TB-071 Economy Second Pass · TB-069 Location NPCs · TB-051 Monster Encounters residual · TB-037 Onboarding
 
 Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Completed work: `Docs/project-history.md` + Linear "Done" state · Pre-Linear history: `.planning/BACKLOG_HISTORY.md`
-

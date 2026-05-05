@@ -560,3 +560,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - ✅ 2026-05-05: THR-302 removed deprecated `EncounterTemplate`, completed `UnifiedActionTemplate` retyping across encounter engine/UI surfaces and fixtures, and documented CMS Option C follow-up for THR-301.
 - ✅ 2026-05-05: THR-307 finished vault-side cosmology canon propagation (new `Cosmology/Reaches.md`, repaired reach links, removed Flesh-as-reach references, archetype mapping migration, vault log appended).
 - ✅ 2026-05-05: THR-306 updated encounter-pipeline skill to enforce Canon-first Step 0 (Docs/canon/encounters.md) and synced .claude/.agents mirrors with full verification gates green.
+- ✅ 2026-05-05: THR-309 updated UL shards by adding canonical `Domain Canon Page` process term and rewriting `Quintessence` to integrity-of-self / narrative-centrality framing (explicitly non-Reach), then mirrored UL to the Obsidian vault.
