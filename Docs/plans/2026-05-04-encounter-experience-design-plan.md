@@ -21,13 +21,14 @@
 
 The encounter is the chapter in Threadbearer's reading. Everything in the player's session — the scan of their portfolio, the hours of soft simmer, the eventual choice to spend essence — exists to set up moments where one threaded mortal's situation crystallises and the player decides what kind of god to be toward it.
 
-This plan ships an encounter surface that **scales from short resource-building beats to multi-step story arcs**, surfaces the full primitive vocabulary of the world graph, makes failure a complication, and turns every lean into a small structural moral act through the cosmological pattern's archetype axes.
+This plan ships an encounter surface that **scales from short resource-building beats to multi-step story arcs**, surfaces the full primitive vocabulary of the world graph, makes failure a complication, and turns every choice into a small structural moral act through the cosmological pattern's archetype axes.
 
-**Three load-bearing rules** (from the toolkit, repeated here because the rest of the plan keeps citing them):
+**Four load-bearing rules** (the rest of the plan keeps citing them):
 
 - **Rule 1 — Path over adjective.** Every player choice in the encounter UI must change the path, not the adjective. If three options collapse to "same outcome, different prose," cut to one and let the engine pick the prose from scene context.
-- **Rule 2 — The moral axis is structural.** Every reach has an archetype-pair axis (Iron→Protector/Conqueror, Heart→Sworn/Renegade, etc., per the cosmological pattern). Each lean tilts the agent toward one pole. Aggregate drift is the moral cost of being a god, surfaced structurally.
-- **Rule 3 — Encounter-specific verbs, not a fixed vocabulary.** Each encounter writes its own god-verbs ("Stir her resolve," "Speak when not asked," "Open the lantern"). The cosmological pattern (Rule 2) keeps every verb anchored to a reach + sphere + moral axis underneath.
+- **Rule 2 — The moral axis is structural.** Every reach has an archetype-pair axis (Iron→Protector/Conqueror, Heart→Sworn/Renegade, etc., per the cosmological pattern). Each encounter choice tilts the agent toward one pole. Aggregate drift is the moral cost of being a god, surfaced structurally. A scene's primary reach drives the tilt; when an encounter exposes two distinct reaches whose axes both matter, the author can specify a dual-axis tilt and the engine accumulates drift on both.
+- **Rule 3 — Verbs are encounter-specific prose, soft-power flavored.** Each encounter writes its own god-verbs ("Stir her resolve," "Speak when not asked," "Open the lantern"). Verbs convey *influence, nudging, manipulation* — never full control. The verb is independent of the mechanical reach + sphere + moral-axis-pole layer; those are separate metadata the engine reads, not anchors the verb is constrained by.
+- **Rule 4 — Every primitive is clickable; every node has a detail page.** The encounter UI shows shorthand for primitives that fit the screen. The player learns the world by clicking through: every cast tile, item, clue, place caption, callback note, faction chip, Ascendant card, dotted-underline term opens a detail overlay (modal-on-modal stacking allowed). Hover for a taster; click for the page. Players hover/click less as they internalise the world; the depth stays available for new players, complex situations, and generated content. This is a project-wide commitment, not just an encounter feature — every node type has a detail page.
 
 ---
 
@@ -58,45 +59,65 @@ Add a reified `relationship` node, symmetric between two actors, carrying:
 
 The cast tile's *"to her: ..."* line reads from this node when it exists; falls back to the existing `relates_to` edge when it doesn't. **Backward compatible.** Encounter authors can author relationships explicitly or let them emerge from accumulated `relates_to` edges.
 
-### 2.3 Divine marks as distinct primitives — **YES**
+### 2.3 Divine marks as distinct primitives — **NO, retracted**
 
-New node type `divine_mark` with subtypes:
-- `blessing` — beneficial, source god ID, magnitude, decay schedule
-- `curse` — detrimental, source god ID, magnitude, decay schedule
-- `mark_of_passage` — neutral but cosmically significant ("she walked through and was seen")
+Original proposal was to introduce a `divine_mark` node type for blessings/curses/marks-of-passage. Retracted on user review: the rationale didn't justify a new graph schema. Blessings and curses are already covered by the **attachment** system; what they need is an optional `source_god_id` field on the existing attachment shape, plus a UI rendering rule that gives divinely-sourced attachments a distinct visual treatment (e.g. glowing portrait rim) when the field is set.
 
-Distinct from generic attachments because they're **cosmically anchored** (source god ID is required) and surface differently in scene state (a glowing rim around the marked actor's portrait, an italic sub-line on the cast tile). Existing `blessed`/`cursed` edges remain valid; they auto-promote to `divine_mark` nodes when a god ID is set.
+**Decision.** No new node type. Extend the existing `Attachment` shape with `source_god_id?: ActorId`. UI renders divine-source attachments with cosmic-tinted edges. Cost: one additive field, no schema migration, no new traversal logic.
 
-### 2.4 Item consumption in leans — **YES, optional per-lean**
+### 2.4 Item consumption in choices — **YES, optional per-choice**
 
 Lean schema gains an optional `consumes_item: item_id` field. When present:
-- The item shows on the lean card in a small "spends:" indicator
+- The item shows on the choice card in a small "spends:" indicator
 - Player sees the cost inline before committing
 - At resolution, the `possesses` edge from actor to item is removed (or the item's `quantity` decremented)
 - The item is gone from the agent's inventory next beat
 
-**Use case.** Worked example 5.4 (Ritual): Eira places the Captain's token at the threshold. The lean *spends* the token. This is mechanically powerful (a real material cost) and narratively load-bearing (the player is making the agent give up something specific).
+**Use case.** Worked example 5.4 (Ritual): Eira places the Captain's token at the threshold. The choice *spends* the token. This is mechanically powerful (a real material cost) and narratively load-bearing (the player is making the agent give up something specific).
 
-### 2.5 Cast scaling beyond 4 — **TIERED**
+### 2.5 Cast scaling beyond 4 — **EDITORIAL DISCIPLINE, NOT MECHANISM**
 
-Cast members get an `attention_priority` per scene:
-- `primary` — full cast tile, always rendered (limit: 4 in-rail)
-- `background` — collapsed by default into a *"+ N background figures"* tile that expands on click
-- `offstage` — represented as a faction chip or pseudo-cast tile (see 2.7)
+**Decision.** Cast tiles are reserved for actors who *can be acted on or whose disposition shapes the moment*. Background patrons, ambient figures, and crowd noise live in the place painting and the prose — not as cast tiles. There is no "+ N background figures" collapse mechanism; if 8 patrons fill the tavern, they're texture, not roster.
 
-A scene with 10 cast members renders as 4 primary tiles + a background-figures expander.
+A scene with > 4 primary cast members triggers editorial review: is the cast really focused, or has it bloated? Hard cap: 6 cast tiles (per `CAST_TILES_PRIMARY_HARD_CAP`). Above that, the scene needs to be split or some cast moved to prose.
 
-### 2.6 Place-of-power Ascendant moves — **PREREQ TOOLTIPS ON DIMMED CARDS**
+**Rationale.** *"If we don't put this in the encounter, what would the player lose?"* For a background patron with no name, no disposition, no act they could take: nothing. The place painting carries the room's density. Showing them as a cast tile is noise. The earlier "tiered priority" mechanism was over-engineering.
 
-When a hand card is dimmed for place-gating reasons (e.g., `loc.consecrate` requires sphere alignment), the prereq line on the dimmed card reads explicitly: *"available at sphere-aligned places"*. The card's icon and name remain visible but desaturated. Player learns place-gating by repeated viewing — the dimmed card is its own teacher.
+### 2.6 The Ascendant hand — **FLEXIBLE FILTER SURFACE**
 
-### 2.7 Off-stage cast representation — **TWO PATTERNS**
+The Ascendant card system itself is unfinished and likely to evolve. The encounter UI's right-rail "hand" must therefore be a **flexible filter surface**, not a hard-coded view of one specific Ascendant system shape.
 
-Encounter authors pick per scene:
-- **Faction-rim chip** — used when the influence is collective and not personified. *"Civic Guard (off-stage)"* in the court intrigue. Renders as a small chip in the scene-state factions panel.
-- **Pseudo-cast tile with "off-stage" badge** — used when there's a specific actor or actor-group whose presence matters but isn't physical. *"The small folk, dying"* in the ritual. Renders as a cast tile but with reduced opacity and an "off-stage" badge in the corner.
+**Decision.** The hand connects to whatever the Ascendant system becomes. Filter rules can be:
+- **Encounter-specific** — the encounter author lists eligible templates explicitly (`ascendant_hand_filter.eligible[]`)
+- **System-derived** — the engine computes scene-relevance from the Ascendant's deck against the present primitives (cast types, place type, sphere alignment, bond tier, faction presence, current essence)
+- **Hybrid** — the author can pin some, the engine fills the rest
 
-The author marks each off-stage participant with `representation: faction_chip | cast_tile`. Rule of thumb: *if the off-stage thing has a name and a disposition, it's a cast tile. If it's a generic influence with a colour and a presence, it's a chip.*
+Implementation contract: the encounter UI consumes a `getAscendantHand(encounterContext)` interface; the *implementation* of that interface lives with whatever Ascendant system is canonical at the time. As the Ascendant system evolves, the encounter UI keeps working without changes.
+
+**Place-gated cards specifically:** when a hand card is dimmed for place-gating reasons (e.g., `loc.consecrate` requires sphere alignment), the prereq line reads explicitly: *"available at sphere-aligned places"*. The card's icon and name remain visible but desaturated. Player learns place-gating by repeated viewing — the dimmed card is its own teacher. Per Rule 4, clicking the dimmed card opens its detail page where the full prereqs are explained.
+
+### 2.7 Off-stage representation — **ONLY WHEN STAKES-CREATING**
+
+**Decision.** Off-stage actors and forces appear in the encounter UI *only when they create the stakes that make this beat matter*. If we wouldn't lose context by omitting them, we omit them.
+
+When an off-stage thing IS stakes-creating, the author picks one of two representations:
+- **Faction chip** — the off-stage thing is a collective influence pressing on the scene. *"Civic Guard, off-stage"* in the court intrigue when their authority shapes the room. Renders in the scene-state factions panel.
+- **Cast tile with off-stage badge** — the off-stage thing is a specific actor or group whose state creates the stakes. *"The small folk, dying"* in the ritual: their off-stage suffering is why we're here tonight. Renders as a cast tile with reduced opacity and an "off-stage" badge.
+
+Rule of thumb: *if the off-stage thing has a name and a disposition, it's a cast tile. If it's a generic influence with a colour and a presence, it's a chip.*
+
+**Sanity check the author must apply:** *"If I omit this from the encounter, what does the player lose?"* If the answer is *"nothing — the prose carries it"*, omit. If the answer is *"the player won't understand why this beat matters"*, include.
+
+### 2.8 Place-specific encounters — first-class authoring affordance
+
+A place can host *only* certain encounters when specific other primitives are present. Examples:
+- A ritual at the dolmen only fires when the dolmen is sphere-aligned to Spirit AND it's midnight AND a wraith is present
+- A court intrigue at the Marble Hall only fires when a faction conclave is in session AND the protagonist is threaded to a faction representative
+- A smuggler scene only fires at port locations where the Salt-runner faction has active presence
+
+The encounter-template-graph-node decision (2.1) supports this via `spawns_from` edges that reference *combinations* of primitives, not just place types. The encounter authoring contract (§4.1) lets authors specify required co-present primitives.
+
+**This makes places into authoring affordances**, not just rendering surfaces. A worked place (a sphere-aligned dolmen, a war camp, a rival's keep) becomes a *pool of latent encounters* keyed to the surrounding state of the world. The simulation produces situations; the place gates which encounter chapters are eligible to frame them.
 
 ---
 
@@ -104,19 +125,26 @@ The author marks each off-stage participant with `representation: faction_chip |
 
 ### 3.1 Encounter pipeline updates
 
-The existing encounter pipeline (per `Systems/Encounter System.md`) already runs `UnifiedActionTemplate` encounters through sigmoid → d100 resolution with `aftermathConfig.reactions[]` as the player-god intervention surface. This plan keeps the pipeline shape and changes:
+**Migration status (audit 2026-05-04):** all encounter content in the codebase is functionally migrated to `UnifiedActionTemplate`. There are no encounters in the legacy format. **However, architectural cleanup lags:** the deprecated `EncounterTemplate` type definition still exists in `src/types/encounter.ts` (lines 184–287) with a stale comment claiming "115 templates await migration"; the CMS registry imports encounter content from 8+ separate sources (`encounter-content.ts`, `social-encounter-content.ts`, `faction-encounter-content.ts`, etc.) and surfaces them under separate "Encounters" sub-categories despite all being unified under the hood; canonical doc `Systems/Encounter System.md` claims the type "was removed" — it wasn't.
 
-1. **Encounter selection** — `generateEncounterCandidates()` now also reads `encounter_template` graph nodes (when present) via `gates_to`/`spawns_from` traversal. The static array-scored path remains as fallback.
+**Phase 0 cleanup work** rides along with this plan:
+- Delete the deprecated `EncounterTemplate` interface from `src/types/encounter.ts`.
+- Refactor `src/components/CMS/registry.ts` to filter `UNIFIED_ACTION_TEMPLATES` by metadata tags (e.g. `narrativeLayer: 'encounter'`, `category: 'social' | 'tavern' | ...`) rather than importing 8+ separate sources.
+- Update `Systems/Encounter System.md` to accurately reflect: *"All encounter templates are functionally migrated to UnifiedActionTemplate. The deprecated EncounterTemplate type was removed in <merge-commit>."*
+
+**Pipeline shape kept**, with these additions:
+
+1. **Encounter selection** — `generateEncounterCandidates()` reads `encounter_template` graph nodes (when present) via `gates_to`/`spawns_from` traversal. The array-scored path remains as fallback during the additive migration of the new node type.
 2. **Beat structure** — `ActionStep` gains optional `forecast_factors[]` that the engine surfaces in the new outcome forecast band (see §3.3).
-3. **Lean resolution** — leans on a beat are typed by the cosmological pattern (reach + sphere is automatic; moral_axis_pole is required). Resolution applies a probability tilt + a moral drift accumulator (see §3.6).
+3. **Encounter choice resolution** — encounter choices on a beat are typed by the cosmological pattern (reach + sphere is automatic; moral_axis_pole is required). Resolution applies a probability tilt + a moral drift accumulator (see §3.6). Verbs are author prose, not anchored to mechanics (Rule 3).
 4. **Aftermath** — existing `aftermathConfig.reactions[]` is preserved. Each reaction effect kind drives a corresponding registration animation in the protagonist panel (see §5.5). New optional reaction kind: `archetype_drift_register` (for surfacing cumulative drift crossing a threshold).
 
-### 3.2 Lean resolution
+### 3.2 Choice resolution
 
-A lean is a typed primitive with this shape (TypeScript):
+An encounter choice is a typed primitive with this shape (TypeScript):
 
 ```typescript
-interface LeanPrimitive {
+interface EncounterChoice {
   reach: ReachId;                          // 1 of 8 — Iron, Gold, Shadow, Veil, Heart, Eye, Stone, Star
   cost: 'small_breath' | 'fuller_breath' | 'deep_draught';  // narrative tier
   god_verb: string;                         // encounter-author-written, e.g. "Stir her resolve."
@@ -125,18 +153,18 @@ interface LeanPrimitive {
   moral_axis_pole: ArchetypePole;           // canonical per cosmological pattern (e.g. 'conqueror')
   fail_forward: string;                     // encounter-author-written; default "a new thread opens"
   consumes_item?: ItemId;                   // optional item consumption (decision 2.4)
-  probability_tilt: number;                 // engine-computed: how much the lean shifts the d100
+  probability_tilt: number;                 // engine-computed: how much the choice shifts the d100
   drift_magnitude: number;                  // engine-computed: how much the moral axis drifts on commit
 }
 ```
 
-When the player commits a lean:
+When the player commits a choice:
 1. Probability tilt is added to the beat's resolution roll.
 2. If `consumes_item` is set, the corresponding `possesses` edge is queued for removal.
-3. `drift_magnitude` is added to the agent's archetype-drift accumulator on the moral axis paired with the lean's reach (see §3.6).
+3. `drift_magnitude` is added to the agent's archetype-drift accumulator on the moral axis paired with the choice's reach (see §3.6).
 4. Essence is spent from the Ascendant.
 5. The d100 rolls against the (tilted) sigmoid. Outcome lands in one of five bands (critical fail / fail / fail-forward / success / critical success).
-6. Prose for the outcome is selected from the lean's outcome variants OR the engine's prose-lookup table (the 240 consequence templates, see §3.5).
+6. Prose for the outcome is selected from the choice's outcome variants OR the engine's prose-lookup table (the 240 consequence templates, see §3.5).
 
 **Probability tilt calibration** — initial constants (see §7):
 - `small_breath` → `+0.05` to base probability
@@ -164,7 +192,7 @@ The new outcome forecast band (rendered above the prose in v7) is computed at be
 3. Selects 1–3 narrative factors from the beat's available factor pool (sphere alignment, trait synergies, place conditions, recent omens). Factors are written by the encounter author in `forecast_factors[]`.
 4. Renders the band as: *"the threads stand uncertain · iron-rooted, but Halren is watching."* Hover expands to all available factors.
 
-**This subsumes the legacy `Systems/Fate Forecast.md` surface.** No separate Forecast modal. The qualitative read is always visible above the prose; the legacy Nudge/Amplify/Force/Block verb vocabulary is dissolved (Block → Watch-only; the rest → lean cost tiers).
+**This subsumes the legacy `Systems/Fate Forecast.md` surface.** No separate Forecast modal. The qualitative read is always visible above the prose; the legacy Nudge/Amplify/Force/Block verb vocabulary is dissolved (Block → Watch-only; the rest → choice cost tiers).
 
 ### 3.4 Hand filter
 
@@ -196,7 +224,7 @@ The existing `aftermathConfig.reactions[]` system supports 8 effect kinds. The p
 | `recent_event` | Event node added to actor's history | Card slides into "moments that could echo" |
 | `spawn_artifact` | Item attached to actor | Card slides into items rail |
 | `faction_*` | Faction-level effects (status, alliances) | Faction chip update |
-| **`archetype_drift_register`** *(new)* | Surfaces accumulated drift crossing a threshold | "Eira has tilted toward Conqueror across her last 14 leans" line in scene state |
+| **`archetype_drift_register`** *(new)* | Surfaces accumulated drift crossing a threshold | "Eira has tilted toward Conqueror across her last 14 choices" line in scene state |
 
 The new `archetype_drift_register` effect kind doesn't add new graph state — it's purely a UI surface trigger when the engine detects a threshold crossing on the cumulative drift accumulator.
 
@@ -208,7 +236,7 @@ Each agent has a per-axis drift accumulator (TypeScript):
 interface ArchetypeDrift {
   axis_id: AxisId;                // one of 8 (paired with each reach) + meta-axis
   position: number;                // -1.0 (one pole) to +1.0 (other pole)
-  history: DriftEntry[];           // each lean that touched this axis
+  history: DriftEntry[];           // each choice that touched this axis
   last_threshold_crossed?: ThresholdCrossing;
 }
 
@@ -217,16 +245,16 @@ interface DriftEntry {
   encounter_id: string;
   beat_index: number;
   magnitude: number;               // signed
-  source: 'lean' | 'aftermath_effect' | 'event';
+  source: 'choice' | 'aftermath_effect' | 'event';
 }
 ```
 
-Drift accumulates additively from each lean. Thresholds trigger UI events:
+Drift accumulates additively from each choice. Thresholds trigger UI events:
 - Crossing `±0.30` → soft drift indicator appears in scene state
 - Crossing `±0.60` → identification banner fires in protagonist panel
 - Crossing `±0.85` → archetype-pole "becoming" event registers as recent_event with prose
 
-Drift slowly decays (`-0.001 per tick`) toward zero when no lean reinforces it — the agent reverts toward their natural axiological pole over time.
+Drift slowly decays (`-0.001 per tick`) toward zero when no choice reinforces it — the agent reverts toward their natural axiological pole over time.
 
 ### 3.7 Detection escalation
 
@@ -303,12 +331,12 @@ interface DivineMarkNode {
 
 Surfaces in scene state when active on protagonist or place. Glowing portrait rim for marked actors; marked place gets a sub-line in place conditions.
 
-### 3.11 Item consumption in leans
+### 3.11 Item consumption in choices
 
-Per decision 2.4. At lean resolution time:
+Per decision 2.4. At choice resolution time:
 
 1. If `consumes_item` is set, queue removal of the `possesses` edge from actor → item.
-2. Apply at the same tick as the resolution (atomic with the lean commit).
+2. Apply at the same tick as the resolution (atomic with the choice commit).
 3. UI animates the item out of the items rail with a small dissolve effect.
 
 ### 3.12 Graph mutation discipline
@@ -364,7 +392,7 @@ encounter:
       prose: string
       prose_tooltips:
         "phrase": condition_or_secret_or_event_ref
-      leans:
+      encounter_choices:
         - reach: reach_id
           cost: 'small_breath' | 'fuller_breath' | 'deep_draught'
           god_verb: string
@@ -395,7 +423,7 @@ encounter:
     enables: [encounter_template_id]
 ```
 
-### 4.2 Lean primitive cosmological pattern v1 (enumerated)
+### 4.2 Encounter choice cosmological pattern v1 (enumerated)
 
 Per Rule 2 and `Brainstorms/brainstorm-cosmological-symmetry.md`, every reach has its sphere pair and archetype-pole pair:
 
@@ -409,15 +437,17 @@ Per Rule 2 and `Brainstorms/brainstorm-cosmological-symmetry.md`, every reach ha
 | Eye | Energy | Revelation ↔ Discretion | Seeker | Sentinel |
 | Stone | Matter | Preservation ↔ Transformation | Guardian | Shaper |
 | Star | Time | Sacrifice ↔ Survival | Martyr | Survivor |
-| meta | — | Courage ↔ Prudence | Vanguard | Watcher |
+| Quintessence (meta) | — | Courage ↔ Prudence | Vanguard | Watcher |
 
-The encounter author specifies the moral_axis_pole on each lean. The engine validates against the reach (must match one of the two poles paired with that reach, OR the meta-axis poles).
+Quintessence is not a reach — it's the meta-property covering boldness of expression and the cosmological phase-transition threshold (per `Brainstorms/brainstorm-cosmological-symmetry.md`). It carries the meta archetype pair Vanguard ↔ Watcher and is available as a moral axis on choices that don't fit any single reach (e.g. the Watch-only opt-out tilts the agent toward Watcher).
+
+The encounter author specifies the moral_axis_pole on each choice. The engine validates against the reach (must match one of the two poles paired with that reach, OR the Quintessence-axis poles when the choice is reachless).
 
 ### 4.3 Prose authoring discipline
 
 Per `Systems/Narrative Engine.md` three-tier model:
 
-- **Routine prose** for typical beats (resolution prose, default lean reactions, default aftermath receipts) — template-stitched from authored fragments.
+- **Routine prose** for typical beats (resolution prose, default choice reactions, default aftermath receipts) — template-stitched from authored fragments.
 - **Notable prose** for tier-2 beats (criticals, callbacks, identification beats) — enhanced templates with multiple variants and conditional clauses.
 - **Chronicle prose** for tier-3 beats (doom escalations, mandate milestones) — LLM-generated literary quality from structured prompt.
 
@@ -500,7 +530,7 @@ The v7 wireframe (`2026-05-04-encounter-experience-v7.html`) is the canonical en
 
 Key layout primitives:
 - **Eira Hero Panel** — left rail, 440px, full body height. Portrait + identity + capability + items + recent moments.
-- **Active Card** — center, 800px wide, full body height. Place painting → forecast band → callback note → prose → leans.
+- **Active Card** — center, 800px wide, full body height. Place painting → forecast band → callback note → prose → choices.
 - **Right Rail** — 540px. Cast (top) → Hand (middle) → Scene state (bottom).
 - **Bottom Bar** — slim 100px. Quintessence + scene pacing + watch-only.
 
@@ -514,9 +544,9 @@ New component `OutcomeForecastBand`:
 - Computed by engine per beat (§3.3)
 - No numbers. Ever. Per taste-profile.
 
-### 5.3 Lean primitive card
+### 5.3 Encounter choice card
 
-Updated component `LeanCard`:
+Updated component `EncounterChoiceCard`:
 - SPHERE label · cost (top)
 - God-verb (display, large italic)
 - Agent reaction (body)
@@ -559,7 +589,7 @@ In the scene-state panel, when the protagonist's drift on any axis crosses ±0.3
 
 ```
 RECENT TILT
-Eira has tilted toward Conqueror across her last 14 leans.
+Eira has tilted toward Conqueror across her last 14 choices.
 ```
 
 Subtle, italic, one line. Becomes more emphatic at ±0.60 and ±0.85. The player can dismiss it (it returns next time it crosses a fresh threshold).
@@ -600,23 +630,23 @@ Per `Docs/plans/wiring-checklist.md`. Module → integration points:
 | Module | Orchestrator phase | UI component | GameState flow | Traces | Debug visibility | Prose pipeline |
 |---|---|---|---|---|---|---|
 | Encounter selection v2 | `phaseEncounterCandidates` | (none — internal) | reads/writes `gameState.activeEncounters` | `encounter_selection_v2` | DebugPanel encounter inspector | n/a |
-| Lean resolution | `phaseLeanResolution` (new) | `LeanCard` (commit handler) | writes `gameState.activeEncounters[i].lastResolvedBeat` + `agent.archetypeDrift` | `lean_resolved` | DebugPanel lean inspector + drift visualiser | enrichProse on `agent_reaction` + outcome variants |
+| Choice resolution | `phaseChoiceResolution` (new) | `EncounterChoiceCard` (commit handler) | writes `gameState.activeEncounters[i].lastResolvedBeat` + `agent.archetypeDrift` | `choice_resolved` | DebugPanel choice inspector + drift visualiser | enrichProse on `agent_reaction` + outcome variants |
 | Outcome forecast | `phaseEncounterProgressionV2` | `OutcomeForecastBand` | derived from beat resolution call | `forecast_computed` | DebugPanel forecast factors | enrichProse on factor strings |
 | Ascendant hand filter | `phaseAscendantHandFilter` (new) | `AscendantHand` | reads `gameState.ascendant.deck` | `hand_filtered` | DebugPanel hand state | n/a |
 | Aftermath effects | `phaseAftermathExecution` (existing) | various registration animations | writes through GraphOps | `aftermath_effect` (existing) | DebugPanel aftermath | enrichProse on receipt + change descriptions |
 | Drift tracking | `phaseDriftDecay` (new) | drift indicator in scene state | mutates `agent.archetypeDrift` | `drift_threshold_crossed` | DebugPanel drift visualiser | n/a |
 | Detection escalation | `phaseDetectionPressure` (new) | thread in scene state | mutates `gameState.regionDetection` | `detection_threshold_crossed` | DebugPanel detection state | n/a |
-| Item consumption | (within `phaseLeanResolution`) | items rail dissolve animation | removes `possesses` edge | `item_consumed_by_lean` | DebugPanel actor inspector | n/a |
+| Item consumption | (within `phaseChoiceResolution`) | items rail dissolve animation | removes `possesses` edge | `item_consumed_by_choice` | DebugPanel actor inspector | n/a |
 | Encounter handoff | (UI side; no orchestrator phase) | retinue panel + hex pulse | `gameState.spotlightedAgent` set | `spotlight_changed` | DebugPanel spotlight tracker | n/a |
 
 **`Docs/plans/wiring-checklist.md` updates required:**
-- Add `phaseLeanResolution` to orchestrator phases list
+- Add `phaseChoiceResolution` to orchestrator phases list
 - Add `phaseAscendantHandFilter` to orchestrator phases
 - Add `phaseDriftDecay` to orchestrator phases
 - Add `phaseDetectionPressure` to orchestrator phases
 - Add `archetype_drift_register` to aftermath effect kinds
 - Add new GameState fields: `agent.archetypeDrift`, `regionDetection`, `spotlightedAgent`
-- Add new trace categories: `lean_resolved`, `forecast_computed`, `hand_filtered`, `drift_threshold_crossed`, `detection_threshold_crossed`, `item_consumed_by_lean`, `spotlight_changed`
+- Add new trace categories: `choice_resolved`, `forecast_computed`, `hand_filtered`, `drift_threshold_crossed`, `detection_threshold_crossed`, `item_consumed_by_choice`, `spotlight_changed`
 
 ---
 
@@ -626,19 +656,19 @@ Every tunable number named, with default and purpose.
 
 | Constant | Default | Purpose |
 |---|---|---|
-| `LEAN_PROBABILITY_TILT_SMALL` | 0.05 | Probability shift for `small_breath` lean |
-| `LEAN_PROBABILITY_TILT_FULLER` | 0.10 | Probability shift for `fuller_breath` lean |
-| `LEAN_PROBABILITY_TILT_DEEP` | 0.20 | Probability shift for `deep_draught` lean |
-| `LEAN_DRIFT_MAGNITUDE_SMALL` | 0.04 | Moral-axis drift per `small_breath` lean |
-| `LEAN_DRIFT_MAGNITUDE_FULLER` | 0.07 | Moral-axis drift per `fuller_breath` lean |
-| `LEAN_DRIFT_MAGNITUDE_DEEP` | 0.12 | Moral-axis drift per `deep_draught` lean |
-| `LEAN_ESSENCE_COST_SMALL` | 1 | Essence cost for `small_breath` |
-| `LEAN_ESSENCE_COST_FULLER` | 2 | Essence cost for `fuller_breath` |
-| `LEAN_ESSENCE_COST_DEEP` | 3 | Essence cost for `deep_draught` |
+| `CHOICE_PROBABILITY_TILT_SMALL` | 0.05 | Probability shift for `small_breath` choice |
+| `CHOICE_PROBABILITY_TILT_FULLER` | 0.10 | Probability shift for `fuller_breath` choice |
+| `CHOICE_PROBABILITY_TILT_DEEP` | 0.20 | Probability shift for `deep_draught` choice |
+| `CHOICE_DRIFT_MAGNITUDE_SMALL` | 0.04 | Moral-axis drift per `small_breath` choice |
+| `CHOICE_DRIFT_MAGNITUDE_FULLER` | 0.07 | Moral-axis drift per `fuller_breath` choice |
+| `CHOICE_DRIFT_MAGNITUDE_DEEP` | 0.12 | Moral-axis drift per `deep_draught` choice |
+| `CHOICE_ESSENCE_COST_SMALL` | 1 | Essence cost for `small_breath` |
+| `CHOICE_ESSENCE_COST_FULLER` | 2 | Essence cost for `fuller_breath` |
+| `CHOICE_ESSENCE_COST_DEEP` | 3 | Essence cost for `deep_draught` |
 | `DRIFT_THRESHOLD_SOFT` | 0.30 | Drift level that triggers scene-state indicator |
 | `DRIFT_THRESHOLD_BANNER` | 0.60 | Drift level that triggers identification banner |
 | `DRIFT_THRESHOLD_BECOMING` | 0.85 | Drift level that registers a "becoming" event |
-| `DRIFT_DECAY_RATE_PER_TICK` | 0.001 | Slow reversion toward baseline when no lean reinforces |
+| `DRIFT_DECAY_RATE_PER_TICK` | 0.001 | Slow reversion toward baseline when no choice reinforces |
 | `DETECTION_THRESHOLD_NOTICE` | 0.50 | "rivals are starting to notice" |
 | `DETECTION_THRESHOLD_TURN` | 0.80 | "a rival god turns its head" |
 | `DETECTION_THRESHOLD_ENCOUNTER` | 1.00 | Triggers scripted rival-detection encounter |
@@ -652,8 +682,8 @@ Every tunable number named, with default and purpose.
 | `CAST_TILES_PRIMARY_SOFT_CAP` | 4 | Cast tiles shown as primary; over → editorial review |
 | `CAST_TILES_BACKGROUND_COLLAPSE_THRESHOLD` | 5 | Background tiles collapse to "+ N" expander |
 | `HAND_VISIBLE_CARDS_DEFAULT` | 3 | Cards visible without "+ N more" expansion |
-| `LEAN_OPTIONS_PER_BEAT_DEFAULT` | 3 | Default lean cards per beat |
-| `LEAN_OPTIONS_PER_BEAT_MAX` | 6 | Hard cap (anything over → editorial review) |
+| `CHOICE_OPTIONS_PER_BEAT_DEFAULT` | 3 | Default choice cards per beat |
+| `CHOICE_OPTIONS_PER_BEAT_MAX` | 6 | Hard cap (anything over → editorial review) |
 | `BEAT_COUNT_DEFAULT` | 4 | Typical encounter length |
 | `BEAT_COUNT_MAX` | 8 | Hard cap |
 | `AFTERMATH_ANIMATION_FADE_IN_MS` | 600 | Registration card fade-in |
@@ -669,8 +699,8 @@ All constants live in `src/data/encounter-experience-constants.ts`.
 New trace types to be added. TypeScript interfaces:
 
 ```typescript
-interface LeanResolvedTrace {
-  category: 'lean_resolved';
+interface ChoiceResolvedTrace {
+  category: 'choice_resolved';
   tick: number;
   encounterId: string;
   beatIndex: number;
@@ -728,8 +758,8 @@ interface DetectionThresholdCrossedTrace {
   thresholdCrossed: 'notice' | 'turn' | 'encounter';
 }
 
-interface ItemConsumedByLeanTrace {
-  category: 'item_consumed_by_lean';
+interface ItemConsumedByChoiceTrace {
+  category: 'item_consumed_by_choice';
   tick: number;
   encounterId: string;
   beatIndex: number;
@@ -764,13 +794,13 @@ Failure modes and graceful fallbacks. The tick loop must never crash.
 | Aftermath effect kind unknown | Engine logs warning, skips that effect, proceeds with others |
 | Cast tile portrait missing | Render gradient silhouette with sphere-tinted halo |
 | Place painting missing | Render solid sphere-tinted rectangle with caption only |
-| Encounter authored without leans | Auto-generate three Watcher-pole leans with default reach + cost |
+| Encounter authored without choices | Auto-generate three Watcher-pole choices with default reach + cost |
 | Encounter authored without aftermath | Default to single-line `recent_event` aftermath |
 | Drift accumulator overflow | Clamp to ±1.0 |
 | Detection pressure overflow | Clamp to 1.0; prevent re-firing of scripted encounter |
 | Cast member with `actor_id` not in graph | Engine logs warning, omits cast tile, proceeds |
 | Encounter graph node has dangling `gates_to` | Treat as no gating (open) |
-| Item to consume not in actor's possessions | Engine logs warning, lean proceeds without consumption |
+| Item to consume not in actor's possessions | Engine logs warning, choice proceeds without consumption |
 | Relationship node references missing actor | Falls back to `relates_to` edge sentiment |
 
 ---
@@ -791,7 +821,7 @@ Per Vision Non-Negotiable #5 (the Vision edit is part of this ticket's scope, no
    - Slot mapping (from this plan §5)
    - The path-vs-adjective rule
    - The moral-axis tilt structure
-   - Component inventory (LeanCard, AscendantHand, OutcomeForecastBand, etc.)
+   - Component inventory (EncounterChoiceCard, AscendantHand, OutcomeForecastBand, etc.)
    - Animation spec for aftermath registration
    - The handoff transition
 
@@ -803,40 +833,33 @@ Per Vision Non-Negotiable #5 (the Vision edit is part of this ticket's scope, no
 
 ---
 
-## 11. Migration strategy
+## 11. Migration strategy — deferred
 
-The codebase has 100+ existing UnifiedActionTemplate encounters. Migration strategy is **additive, backward-compatible, phased**.
+The implementation phasing originally drafted here was speculative. Per user direction, we are **not ready to commit to phasing yet** — more exploration is needed on what the executor work actually looks like, what dependencies exist, what's CC vs Codex fit, and how Phase 0 cleanup (§3.1) sequences with new feature work.
 
-### Phase 1 — Engine + UI scaffold (no content migration)
-- Implement new orchestrator phases (lean resolution v2, drift tracking, detection escalation, hand filter)
-- Build new components (LeanCard, AscendantHand, OutcomeForecastBand, drift indicator, detection thread)
-- v7 layout becomes the new default encounter surface
-- **Existing encounters render via a compatibility adapter** — old `aftermathConfig.reactions[]` map to lean cards via reach inference; default moral_axis_pole assigned per reach (Iron→Protector by default, etc.). Looks similar to v7 but without authored moral_axis_poles.
+**Approach.** After this plan is approved at design level, we run a separate exploration ticket that produces an implementation phasing plan. That plan covers:
+- Phase 0 (architecture cleanup): deprecated type removal, CMS registry refactor, doc accuracy fixes
+- Engine + UI scaffold sequencing
+- Reference content authoring (the four worked examples)
+- Existing 100+ encounter content audit (default `moral_axis_pole` inference + human review)
+- New primitive types rollout (encounter_template, relationship)
+- Canonical doc updates
+- Vault audit and surface retirement
 
-### Phase 2 — Reference content authored to new contract
-- The four worked examples (gate, tavern, court, ritual) authored to the §4.1 contract with full `moral_axis_pole`, `forecast_factors`, `consumes_item` where applicable.
-- These become the editorial quality bar.
+Each phase becomes child Linear issues at that point. Phasing exits this plan; child issues exit the implementation phasing exploration.
 
-### Phase 3 — Existing content audit and bulk update
-- Author pass over the 100+ existing encounters. Each gains:
-  - `moral_axis_pole` per lean (default-inferred, then human-reviewed)
-  - `forecast_factors` (default empty if not authored; the band still renders the qualitative tier)
-  - Cast `attention_priority` per scene
-  - `consumes_item` only where narratively earned (most encounters: none)
+**What we DO commit to here:**
+- The decisions (§2)
+- The engine/content/UI architecture (§3-§5)
+- The wiring contract (§6)
+- The constants, traces, fail-soft (§7-§9)
+- The canonical doc updates that ride along (§10)
 
-### Phase 4 — New primitive types implementation
-- `encounter_template` graph node (decision 2.1)
-- `relationship` graph node (decision 2.2)
-- `divine_mark` graph node (decision 2.3)
-- Each rolled out additively; existing edges remain valid as fallbacks.
-
-### Phase 5 — Canonical doc updates landed
-- All updates from §10 written and committed.
-
-### Phase 6 — Vault audit, retire old surfaces
-- Mark `Systems/Fate Forecast.md` superseded.
-- Update Obsidian Index.
-- Run `vault-lint` to catch any orphaned references.
+**What we DON'T commit to here:**
+- Order of implementation
+- Time estimates
+- CC vs Codex assignment
+- Phase boundaries
 
 ---
 
@@ -845,7 +868,7 @@ The codebase has 100+ existing UnifiedActionTemplate encounters. Migration strat
 Per `testing-patterns` skill. Cross-boundary tests are required for:
 
 ### Engine unit tests
-- Lean resolution: probability tilt math; drift accumulator math; outcome band selection.
+- Choice resolution: probability tilt math; drift accumulator math; outcome band selection.
 - Forecast band computation.
 - Hand filter cascade (target match, cost, sphere, bond, place gating).
 - Aftermath effect kind execution.
@@ -857,7 +880,7 @@ Per `testing-patterns` skill. Cross-boundary tests are required for:
 - Full encounter run-through: select → progress beats → aftermath → state changes registered.
 - Drift threshold crossing fires `archetype_drift_register` effect.
 - Detection threshold crossing fires scripted rival-detection encounter.
-- Item-consuming lean removes the item.
+- Item-consuming choice removes the item.
 - Encounter graph node `gates_to` correctly unlocks downstream encounters.
 
 ### UI snapshot tests
@@ -870,32 +893,21 @@ Per `testing-patterns` skill. Cross-boundary tests are required for:
 
 ### Content lint tests
 - Tooltip terms must reference graph entities.
-- `moral_axis_pole` must be valid for the lean's reach.
+- `moral_axis_pole` must be valid for the choice's reach.
 - `consumes_item` must reference an item in the actor's possessions at scene start.
 - Forecast factor strings must not include numbers.
 - Prose must pass the meeting-encounter quality bar (heuristic: no flowery euphemism flag count above threshold).
 
 ### Playtest checks
-- A new player opens an encounter cold and identifies the three primary affordances within 30 seconds (lean cards, hand, watch-only).
+- A new player opens an encounter cold and identifies the three primary affordances within 30 seconds (choice cards, hand, watch-only).
 - Tooltip discoverability: 5+ players hover the dotted-underline within 60 seconds.
-- The "your hand on her" feeling when a lean is committed: report as 4+/5 on subjective scale.
+- The "your hand on her" feeling when a choice is committed: report as 4+/5 on subjective scale.
 
 ---
 
-## 13. Phasing / rollout
+## 13. Phasing / rollout — deferred
 
-Phases align with the migration strategy (§11):
-
-| Phase | Linear scope | Estimated executor scale | Done when |
-|---|---|---|---|
-| 1 | Engine + UI scaffold | Multi-week, multi-issue | New v7 surface renders existing encounters via compatibility adapter; orchestrator phases land; no regressions in existing encounter behaviour |
-| 2 | Reference content | 1–2 weeks | Four worked examples shipped at editorial quality bar |
-| 3 | Existing content audit | 2–3 weeks (largely Codex executor work — mechanical pattern-following) | All 100+ existing encounters have `moral_axis_pole` authored or default-inferred |
-| 4 | New primitive types | 2–4 weeks per primitive | `encounter_template`, `relationship`, `divine_mark` nodes implemented additively; backward compat preserved |
-| 5 | Canonical doc updates | 1 week | All §10 updates landed; vault index reflects new state |
-| 6 | Vault audit | 0.5 week | `vault-lint` runs clean; no orphaned references; old surfaces retired |
-
-Phase boundaries are merge-points; child Linear issues are scoped within phases.
+See §11. Phasing exits this plan; child Linear issues are produced from a separate implementation phasing exploration after design-level approval.
 
 ---
 
@@ -924,19 +936,21 @@ Per CLAUDE.md Definition of Done:
 
 1. **Drift balance.** The cumulative drift mechanic is novel. If thresholds are too low, the "becoming" events fire too often and lose weight. Too high, the moral cost is invisible. Mitigation: ship tunable constants (§7); playtest-tune.
 
-2. **Tooltip discoverability.** Dotted-underline coloured text is subtle by design. If players miss it, the world-depth layer never opens. Mitigation: onboarding scenario that explicitly demonstrates a tooltip; first-encounter tutorial card.
+2. **Tooltip and detail-page reading rhythm.** The intended pattern (Rule 4): player reads the prose, stops at dotted-underline terms, hovers for a taster, clicks for the detail page. Over time the player relies on this less as they internalize the concepts; for new players, complex situations, and generated content the depth stays available. The risk is the affordance not being legible at first encounter — players don't notice the dotted underlines or don't realise they can click. Mitigation: discoverable on the first encounter via a single targeted tooltip-and-click moment; modal-on-modal stacking is canonical so players who do click are not punished by losing context.
 
-3. **The "lurker" player.** Some players will never click Ascendant cards because they don't trust they understand them. Mitigation: an early scripted encounter where the lean primitives don't suffice and an Ascendant card is required to unlock a third path.
+3. **The "lurker" player.** Some players will never click Ascendant cards because they don't trust they understand them. **Decision: defer the mitigation.** This game is for players who want to explore details. We don't try to coach the lurker in v1. Revisit if it shows up in playtest.
 
-4. **Cast scaling scroll loss.** When cast > 4, primary tiles scroll. The player loses peripheral awareness. Mitigation: scroll only when truly forced; collapse aggressively to background figures (decision 2.5).
+4. **Cast scaling.** The scene grows past comfortable cast tile count. **Mitigation per Rule 4: open detail/expansion modals on top rather than expanding the in-rail surface.** Humans read one UI at a time; modals deliver more content without crowding the primary frame. The cast tile rail stays at its natural size; clicking a cast member opens a detail modal. Editorial discipline (§2.5) keeps primary cast counts low.
 
-5. **Migration content drift.** Existing 100+ encounters get default-inferred `moral_axis_pole`. Defaults won't always match author intent. Mitigation: editorial pass in Phase 3 reviews each.
+5. **Migration content drift.** Existing 100+ encounters get default-inferred `moral_axis_pole`. Defaults won't always match author intent. Mitigation: editorial pass when migration phasing is planned (deferred — see §11).
 
-6. **The Kokomoro voice.** TTS quality is "get it right or kill it." If the voice is uncanny, players will turn it off and never use it. Mitigation: voice acceptance gate before Phase 1 ships; if voice fails the bar, defer the feature and remove the icon.
+6. **The Kokomoro voice.** Used elsewhere in the game; voice quality already validated. Use here as the encounter prose TTS surface. No special acceptance gate.
 
-7. **Encounter graph node migration.** Existing encounters as static data need graph-node companions. If migration is buggy, encounter selection regresses. Mitigation: array-scored fallback path stays valid throughout; canary on a few encounters first.
+7. **Encounter format architecture cleanup.** Per §3.1, the migration to `UnifiedActionTemplate` is functionally complete but architectural cleanup lags (deprecated type still defined, CMS surfaces 8+ separate categories, stale doc claims). **Phase 0 cleanup work** is part of this plan's scope. Without it the architecture confusion compounds.
 
-8. **Failure-as-complication discipline at content time.** Every encounter author must write a *better* failure than success. If most authors give up and write generic "she couldn't" failures, the principle dies. Mitigation: failure prose included in editorial rubric with specific exemplar from the gate encounter.
+8. **Failure-as-complication discipline at content time.** Every encounter author must write a *better* failure than success. This is a content-authoring discipline that the editorial pass enforces. If most authors give up and write generic "she couldn't" failures, the principle dies. Mitigation: failure prose included in editorial rubric with the gate-encounter exemplar as quality bar.
+
+9. **Click-through depth without lost context.** Players clicking from cast tile → faction detail → faction member detail → that member's previous encounter could lose track of where they were. Mitigation: modal stack always shows breadcrumb + "back" affordance; modal close always returns to the prior level cleanly; the underlying encounter state never advances while modals are open (turn-based confirmation).
 
 ---
 
@@ -946,7 +960,7 @@ Per CLAUDE.md Definition of Done:
 |---|---|---|
 | 1. Tunability | ✅ PASS | Full constants table §7, all values named |
 | 2. Inspectability | ✅ PASS | Trace types §8 with TS interfaces; DebugPanel inspectors specified |
-| 3. Determinism | ✅ PASS | Same seed + same lean → same probability tilt + drift; PRNG callouts in resolution path |
+| 3. Determinism | ✅ PASS | Same seed + same choice → same probability tilt + drift; PRNG callouts in resolution path |
 | 4. Fail-soft | ✅ PASS | Failure modes table §9; tick loop never crashes |
 | 5. Narrative over mechanical perfection | ✅ PASS | Drift mechanic is mechanically uneven (8 reaches × 2 poles, asymmetric) but narratively rich; we accept the unevenness |
 | 6. Additive over destructive | ✅ PASS | All new node types are additive; existing edges remain valid; old encounter format renders via compatibility adapter |
@@ -954,14 +968,30 @@ Per CLAUDE.md Definition of Done:
 
 ---
 
-## 17. Verdict question
+## 17. Verdict status
 
-Three things I want your verdict on before this becomes the contract handed to executors:
+Resolutions from the previous round:
 
-1. **The seven decisions in §2.** Each is a load-bearing call. Read them in order and tell me which (if any) you want me to revise. My recommendation: take all seven as written.
+- **(1) The seven decisions in §2.** Substantially revised:
+  - 2.1 (encounter templates as graph nodes): kept
+  - 2.2 (relationship state): kept
+  - 2.3 (divine marks distinct primitive): **retracted** — fold into existing attachment with `source_god_id`
+  - 2.4 (item consumption): kept
+  - 2.5 (cast scaling tiered): **simplified** to editorial discipline, no collapse mechanism
+  - 2.6 (place-of-power moves): kept, recontextualised as part of a flexible Ascendant filter surface
+  - 2.7 (off-stage representation two patterns): **simplified** — two patterns retained but only when stakes-creating
+  - 2.8 (place-specific encounters as authoring affordance): **new** — places become first-class authoring opportunities
 
-2. **The cosmological-pattern moral axis as the structural moral cost.** This is the most novel design move in the plan. It commits us to surfacing archetype drift as a first-class feature. If you want a softer version (drift exists but is invisible until thresholded), say so.
+- **(2) Moral axis as structural cost.** Confirmed. With the addition: scenes with two foregrounded reaches can specify dual-axis tilts, and the engine accumulates drift on both. Most scenes are single-axis; some are dual.
 
-3. **The migration phasing.** Six phases, additive-throughout. Estimated 2–3 months of implementation across CC + Codex executors. Confirm the shape, or tell me to compress / split.
+- **(3) Migration phasing.** Pulled. §11 and §13 deferred to a separate implementation phasing exploration after design approval.
 
-Once you verdict, this plan moves to Implementation Planning state in Linear. Child issues get broken out per phase, and the executor work begins.
+**Three new things I want your verdict on:**
+
+1. **Rule 4 (every primitive clickable, every node has a detail page) as a project-wide commitment.** This is the biggest structural addition this round — it expands beyond the encounter UI into a game-wide architectural rule. If you accept it, the encounter UI work will surface a modal-stack architecture and a Detail Page component pattern that other surfaces will inherit. If you want to scope it just to encounters, say so.
+
+2. **Rule 3 reframe (verbs are encounter prose, not anchored to mechanics).** I rewrote it. The verb is independent of the reach + sphere + moral-axis-pole metadata. Encounter authors get full prose latitude; the engine reads the metadata for resolution. Confirm this matches your intent.
+
+3. **Phase 0 architecture cleanup as in-scope.** §3.1 now treats the deprecated `EncounterTemplate` type, the CMS registry refactor, and the doc accuracy fix as Phase 0 work that rides along with this plan. If you'd rather split that into a separate ticket entirely, say so. My recommendation: keep it in scope — it's small enough that splitting adds coordination cost without proportional benefit.
+
+Once these land, the plan is design-approved and we move to the implementation phasing exploration.

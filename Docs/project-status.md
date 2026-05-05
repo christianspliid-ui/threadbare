@@ -1,7 +1,7 @@
 # Project Status
 > Updated 2026-05-05.
 ## Current Focus
-**Maintenance cycle (2026-05-05) — board empty, design artifacts landed.** No Ready-for-Dev issues on board. THR-300 vision-audit resolution artifacts committed: encounter build toolkit with three load-bearing rules (path-over-adjective, moral axis structural, encounter-specific verbs), complete archetype-pair table (8 reaches × sphere × tension × archetype), vision audit doc with all six §9 verdict items resolved. PR #121. Next action: user needs to create implementation issues from THR-300 design decisions.
+**Maintenance cycle (2026-05-05) — board empty, encounter experience design plan on main.** No Ready-for-Dev issues on board. PR #122 merged: THR-301 long-form encounter experience design plan landed on main (`Docs/plans/2026-05-04-encounter-experience-design-plan.md`, 967 lines). `plan-pending-commit` label cleared from THR-301. THR-301 stays In Design awaiting user verdict on §17 (three open points). Next action: user verdict on the encounter experience design plan triggers child issue breakdown per phase.
 
 **THR-299 complete — orphaned weekly hygiene docs committed.** Committed orphaned Cowork changes from the 2026-05-04 weekly sweep: AGENTS.md full Linear-first rewrite, CLAUDE.md branch-protection note + 5 new Domain Skills rows, encounter-building-checklist Backlog Escalation Rule updated to Linear. PR #113.
 
