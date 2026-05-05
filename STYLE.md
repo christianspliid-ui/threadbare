@@ -248,20 +248,19 @@ Ghostly remnants of previous worlds. Faded, semi-transparent, rendered in desatu
 ### Rival Gods
 Dark divine figures with their own sphere-colored emanations. More imposing, alien, threatening. Their magic is as vivid as the player's but with different color combinations. Often shown in opposition or looming over territory.
 
-### Nine Reaches (Action Domains)
+### Eight Reaches (Action Domains)
 When a scene is set in a specific Reach, its domain color should subtly tint the magic in that scene:
 
 | Reach | Domain | Tint Color | Scene Feel |
 |-------|--------|------------|------------|
-| Iron | Warfare | `#c45c5c` | Crimson-tinged battlefields, burning dark |
-| Gold | Trade | `#c4a535` | Amber marketplaces, warm lamplight |
-| Shadow | Stealth | `#7b5ea7` | Purple-tinged darkness, barely visible |
-| Veil | Magic | `#4a9b8e` | Teal arcane glow, ritual spaces |
-| Heart | Social | `#c47a7a` | Warm rose-tinged gatherings, hearthlight |
-| Eye | Knowledge | `#6a8fb5` | Cool blue libraries, observation towers |
-| Stone | Construction | `#8b7d6b` | Amber-lit forges, monumental dark stone |
-| Star | Fate | `#b8a04a` | Golden celestial light, night skies |
-| Flesh | Biology | `#b07850` | Warm organic amber, living spaces |
+| Iron | Warfare | `#ff4444` | Crimson-tinged battlefields, burning dark |
+| Gold | Trade | `#00cc55` | Verdant marketplaces, living abundance |
+| Shadow | Stealth | `#5a8a7a` | Sea-green dusk, dissolving silhouettes |
+| Veil | Magic | `#2288ff` | Electric blue arcane glow, ritual spaces |
+| Heart | Social | `#aa44dd` | Violet-tinged gatherings, oath-lit hearthlight |
+| Eye | Knowledge | `#ffd700` | Golden observatories, revelation-lit archives |
+| Stone | Construction | `#8b6b4a` | Umber-lit forges, monumental dark stone |
+| Star | Fate | `#ff9933` | Amber-copper celestial light, prophetic skies |
 
 ---
 
