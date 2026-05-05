@@ -1,6 +1,6 @@
 # Cosmological Symmetry Refactor — Implementation Plan
 
-> **TB-075** | Design: 2026-03-28 | Status: Ready for implementation
+> **TB-075** | Design: 2026-03-28 | Status: Phase 1 shipped (types/engine, 2026-03-28). Documentation phases: THR-307 (vault), THR-308 (repo/skills) in progress 2026-05-05.
 > Canonical source: Obsidian → `TheFantasyWorldSimulator/Cosmology/The Cosmological Pattern.md`
 > Brainstorm: Obsidian → `TheFantasyWorldSimulator/Brainstorms/brainstorm-cosmological-symmetry.md`
 

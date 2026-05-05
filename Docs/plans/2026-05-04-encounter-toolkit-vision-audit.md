@@ -45,7 +45,7 @@
 | Aftermath crystallises change as graph artifacts | Encounter System: `aftermathConfig.reactions[]` with typed effects | **✅ Aligned, but not specific enough** — see §4.6 |
 | Failure is a complication, not an ending | Vision tension: "The world resolves, and sometimes the world resolves against them" | **✅ Aligned** |
 | Turn-based; world freezes during encounter | Strong opinion: turn-based; world advances on player input | **✅ Aligned** |
-| 8 reach domains | **Canonical: 9 reaches** (Iron, Gold, Shadow, Veil, Heart, Eye, Stone, Star, **Flesh**) | **❌ Drift — fix** |
+| 8 reach domains | **Canonical: 8 reaches** (Iron, Gold, Shadow, Veil, Heart, Eye, Stone, Star). *Verdict reversed 2026-05-05: toolkit was correct. Audit was misled by stale `Systems/Domain Word Scales.md` (2026-03-08, predates TB-075). See `Docs/audits/2026-05-05-cosmological-canon-drift-audit.md`.* | **✅ Aligned — audit error corrected** |
 | "Spirit reach" used in ritual example | Spirit is a *Creation Sphere*, not a Reach | **❌ Terminology drift — fix** |
 | "Voice reach" used in court example | Voice does not exist as a Reach in the canonical scale | **❌ Invented term — fix** |
 | Three lean cards per beat | Taste profile: "Three intervention verbs — nudge / whisper / vision. No fourth verb without a Vision audit." | **⚠️ Partial — names not connected** — see §4.1 |

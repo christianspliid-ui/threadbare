@@ -248,7 +248,7 @@ Ghostly remnants of previous worlds. Faded, semi-transparent, rendered in desatu
 ### Rival Gods
 Dark divine figures with their own sphere-colored emanations. More imposing, alien, threatening. Their magic is as vivid as the player's but with different color combinations. Often shown in opposition or looming over territory.
 
-### Nine Reaches (Action Domains)
+### Eight Reaches (Action Domains)
 When a scene is set in a specific Reach, its domain color should subtly tint the magic in that scene:
 
 | Reach | Domain | Tint Color | Scene Feel |
@@ -261,7 +261,6 @@ When a scene is set in a specific Reach, its domain color should subtly tint the
 | Eye | Knowledge | `#6a8fb5` | Cool blue libraries, observation towers |
 | Stone | Construction | `#8b7d6b` | Amber-lit forges, monumental dark stone |
 | Star | Fate | `#b8a04a` | Golden celestial light, night skies |
-| Flesh | Biology | `#b07850` | Warm organic amber, living spaces |
 
 ---
 
