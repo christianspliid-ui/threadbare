@@ -1,9 +1,7 @@
 # Project Status
 > Updated 2026-05-05.
 ## Current Focus
-**THR-307 complete — Canon Phase 5a: Cosmological canon doc propagation (Obsidian vault, Continuous Improvement).** Created `Cosmology/The Cosmological Pattern.md` and `Cosmology/Reaches.md` as canonical vault destinations (repairing 14+ broken wikilinks). Updated 8 existing vault pages: `Domain Word Scales.md` (drop Flesh row, retitle to Eight Reaches, add Quintessence section), `Systems Overview.md` (16 Nine Reaches → Reaches, remove Flesh row), `Index.md`, `CLAUDE.md`, `Visual Style Tile.md`, `taste-profile.md`. Bulk-fixed 30 [[Flesh]] wikilinks across 13 Archetypes files per migration table (healing→Gold, athletics→Iron, body-mod→Stone, survival→Star). Closes the drift loop that misled the 2026-05-04 vision audit. Note: ran at sonnet; model label is opus — creative prose was constrained by spec/voice-anchors, judged acceptable.
-
-**THR-305 complete — Canon pages bootstrapped (Continuous Improvement).** Created `Docs/canon/` with three files: `README.md` (schema + 4 rules), `encounters.md` (current encounter spec), `cosmology.md` (user-verdicted 8 Reaches + Quintessence, explicit stale-source warnings). PR #124.
+**THR-309 PR #137 open — awaiting user verdict (UL-proposal, Continuous Improvement).** Two UL changes: (1) added `Domain Canon Page` term to Process shard — the canonical Step-0 entrypoint term for `Docs/canon/<domain>.md`; (2) rewrote `Quintessence` in Cosmology shard to the user-verdicted integrity-of-self / centrality-to-story framing (explicitly NOT a Reach, Flesh remains deprecated). `npm run mirror-ul` run — vault shards updated. Per UL-proposal policy, user verdict required before merge.
 
 **THR-301 In Design — Encounter experience long-form design plan on main.** PR #122 merged. THR-301 stays In Design awaiting user verdict on §17 (three open points). Next action: user verdict triggers child issue breakdown per phase.
 
@@ -16,7 +14,7 @@
 - **Encounter Format Migration (Now):** ✅ Phases 0-9 complete. All guilds migrated.
 - **Content Architecture (Now):** ✅ THR-86/88/239 shipped.
 - **UI Visual Overhaul — Design System v1 (Now):** ✅ Project complete.
-- **Continuous Improvement (Now):** THR-305/306/307 ✅. THR-303 (plan pending flush) queued.
+- **Continuous Improvement (Now):** THR-305/306/307/308/302 ✅. THR-309 PR open (user verdict). THR-303 queued.
 - **Social Systems Expansion (Now):** THR-28/27/30/51/29/41/34/31/35 shipped. ✅ THR-254/253. THR-78 queued.
 - **Thematic Pressure & Living World (Next):** ✅ THR-19/122/125/126/80/128/127. THR-87 blocked by THR-116.
 
