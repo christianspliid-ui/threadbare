@@ -9,6 +9,8 @@ description: >
 
 # Engine Architecture — Domain Context
 
+> **Step 0 — Canon page (read first):** [`Docs/canon/engine.md`](../../../Docs/canon/engine.md). This is your single-page navigation layer — current spec pointers, NFP order, load-bearing decisions, rejected approaches, open questions. Everything else this skill teaches is the deep context behind those pointers. If the Canon page contradicts an older note in this file, the Canon page wins.
+>
 > **Prerequisite:** Load `state-of-game-design` first for foundational context.
 
 This skill provides the deep engine context that the root CLAUDE.md intentionally omits to keep context lean. Load this before writing or modifying any engine code.
