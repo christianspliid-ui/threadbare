@@ -1,0 +1,1792 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Threadbearer · Encounter UI — three under-specified moments</title>
+<link rel="stylesheet" href="tokens.css" />
+<style>
+  html,body { margin:0; background:#f0eee9; }
+  /* The design-system tokens.css restyles html/body to dark — override for the canvas page itself. */
+  body { background:#f0eee9 !important; color:#2a251f; font-family: var(--font-body); }
+  /* Each artboard is its own dark world — let it set its own bg. */
+  .tb-stage {
+    background: var(--bg-abyss);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    width: 100%; height: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+  .tb-stage *::selection { background: var(--accent-gold-glow); }
+
+  /* Threadbearer-specific reused classes (kept here so per-component files stay small) */
+  .label { font-family: var(--font-display); font-size: 14px; letter-spacing: .14em;
+           text-transform: uppercase; color: var(--text-tertiary); }
+  .gold-label { color: var(--accent-gold); }
+  .display { font-family: var(--font-display); letter-spacing: .04em; color: var(--text-primary); font-weight: 600; }
+  .prose { font-family: var(--font-body); color: var(--text-secondary); line-height: 1.7; font-size: 17px; }
+  .flavor { font-family: var(--font-body); font-style: italic; color: var(--text-secondary); line-height: 1.65; }
+  .panel { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 8px; }
+  .panel.gold { border: 1px solid var(--border-accent); }
+  .hairline { height:1px; background: var(--border-subtle); }
+  .gold-bar { height:1px; width: 56px; background: var(--accent-gold); }
+
+  /* — moment-1 thread animation — */
+  @keyframes thrum-fade { 0% { opacity:0 } 12% { opacity:.85 } 100% { opacity:.3 } }
+  @keyframes thread-draw { from { stroke-dashoffset: 600 } to { stroke-dashoffset: 0 } }
+  @keyframes mote-drift  { 0% { transform: translate(0,0); opacity:0 }
+                           20% { opacity:1 }
+                           100% { transform: translate(var(--mx,0), var(--my,0)); opacity:0 } }
+  @keyframes pull-taut   { 0%,100% { transform: scaleX(1) } 50% { transform: scaleX(1.02) } }
+  @keyframes hold-glow   { 0%,100% { filter: drop-shadow(0 0 6px currentColor) }
+                           50%     { filter: drop-shadow(0 0 12px currentColor) } }
+
+  /* — moment-2 effect-card flip — */
+  @keyframes card-flip-in {
+    0%   { opacity:0; transform: rotateX(80deg) translateY(-6px); filter: brightness(.6); }
+    60%  { opacity:1; transform: rotateX(-6deg) translateY(0);    filter: brightness(1.15); }
+    100% { opacity:1; transform: rotateX(0)    translateY(0);    filter: brightness(1); }
+  }
+  @keyframes mark-pulse  { 0%,100% { box-shadow: 0 0 0 0 var(--mark-color, var(--accent-gold-dim)); }
+                           50%     { box-shadow: 0 0 22px 1px var(--mark-color, var(--accent-gold-dim)); } }
+
+  /* breadcrumb dot */
+  .crumb-dot { width:4px; height:4px; border-radius:99px; background: var(--text-muted); display:inline-block; }
+
+  /* dotted-underline term */
+  .term { color: var(--text-secondary); border-bottom: 1px dotted var(--accent-gold-dim); cursor: pointer; }
+  .term:hover { color: var(--accent-gold); }
+
+  /* selection ring used by reveal storyboard */
+  .ring-iron { box-shadow: 0 0 0 1px var(--sphere-force-bright) inset, 0 0 18px -2px var(--sphere-force-bright); }
+  .ring-eye  { box-shadow: 0 0 0 1px var(--sphere-mind-bright) inset,  0 0 18px -2px var(--sphere-mind-bright); }
+  .ring-heart{ box-shadow: 0 0 0 1px var(--sphere-spirit-bright) inset,0 0 18px -2px var(--sphere-spirit-bright); }
+</style>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+// === design-canvas.jsx ===
+
+// DesignCanvas.jsx — Figma-ish design canvas wrapper
+// Warm gray grid bg + Sections + Artboards + PostIt notes.
+// Artboards are reorderable (grip-drag), labels/titles are inline-editable,
+// and any artboard can be opened in a fullscreen focus overlay (←/→/Esc).
+// State persists to a .design-canvas.state.json sidecar via the host
+// bridge. No assets, no deps.
+//
+// Usage:
+//   <DesignCanvas>
+//     <DCSection id="onboarding" title="Onboarding" subtitle="First-run variants">
+//       <DCArtboard id="a" label="A · Dusk" width={260} height={480}>…</DCArtboard>
+//       <DCArtboard id="b" label="B · Minimal" width={260} height={480}>…</DCArtboard>
+//     </DCSection>
+//   </DesignCanvas>
+
+const DC = {
+  bg: '#f0eee9',
+  grid: 'rgba(0,0,0,0.06)',
+  label: 'rgba(60,50,40,0.7)',
+  title: 'rgba(40,30,20,0.85)',
+  subtitle: 'rgba(60,50,40,0.6)',
+  postitBg: '#fef4a8',
+  postitText: '#5a4a2a',
+  font: '-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+};
+
+// One-time CSS injection (classes are dc-prefixed so they don't collide with
+// the hosted design's own styles).
+if (typeof document !== 'undefined' && !document.getElementById('dc-styles')) {
+  const s = document.createElement('style');
+  s.id = 'dc-styles';
+  s.textContent = [
+    '.dc-editable{cursor:text;outline:none;white-space:nowrap;border-radius:3px;padding:0 2px;margin:0 -2px}',
+    '.dc-editable:focus{background:#fff;box-shadow:0 0 0 1.5px #c96442}',
+    '[data-dc-slot]{transition:transform .18s cubic-bezier(.2,.7,.3,1)}',
+    '[data-dc-slot].dc-dragging{transition:none;z-index:10;pointer-events:none}',
+    '[data-dc-slot].dc-dragging .dc-card{box-shadow:0 12px 40px rgba(0,0,0,.25),0 0 0 2px #c96442;transform:scale(1.02)}',
+    '.dc-card{transition:box-shadow .15s,transform .15s}',
+    '.dc-card *{scrollbar-width:none}',
+    '.dc-card *::-webkit-scrollbar{display:none}',
+    '.dc-labelrow{display:flex;align-items:center;gap:4px;height:24px}',
+    '.dc-grip{cursor:grab;display:flex;align-items:center;padding:5px 4px;border-radius:4px;transition:background .12s}',
+    '.dc-grip:hover{background:rgba(0,0,0,.08)}',
+    '.dc-grip:active{cursor:grabbing}',
+    '.dc-labeltext{cursor:pointer;border-radius:4px;padding:3px 6px;display:flex;align-items:center;transition:background .12s}',
+    '.dc-labeltext:hover{background:rgba(0,0,0,.05)}',
+    '.dc-expand{position:absolute;bottom:100%;right:0;margin-bottom:5px;z-index:2;opacity:0;transition:opacity .12s,background .12s;',
+    '  width:22px;height:22px;border-radius:5px;border:none;cursor:pointer;padding:0;',
+    '  background:transparent;color:rgba(60,50,40,.7);display:flex;align-items:center;justify-content:center}',
+    '.dc-expand:hover{background:rgba(0,0,0,.06);color:#2a251f}',
+    '[data-dc-slot]:hover .dc-expand{opacity:1}',
+  ].join('\n');
+  document.head.appendChild(s);
+}
+
+const DCCtx = React.createContext(null);
+
+// ─────────────────────────────────────────────────────────────
+// DesignCanvas — stateful wrapper around the pan/zoom viewport.
+// Owns runtime state (per-section order, renamed titles/labels, focused
+// artboard). Order/titles/labels persist to a .design-canvas.state.json
+// sidecar next to the HTML. Reads go via plain fetch() so the saved
+// arrangement is visible anywhere the HTML + sidecar are served together
+// (omelette preview, direct link, downloaded zip). Writes go through the
+// host's window.omelette bridge — editing requires the omelette runtime.
+// Focus is ephemeral.
+// ─────────────────────────────────────────────────────────────
+const DC_STATE_FILE = '.design-canvas.state.json';
+
+function DesignCanvas({ children, minScale, maxScale, style }) {
+  const [state, setState] = React.useState({ sections: {}, focus: null });
+  // Hold rendering until the sidecar read settles so the saved order/titles
+  // appear on first paint (no source-order flash). didRead gates writes until
+  // the read settles so the empty initial state can't clobber a slow read;
+  // skipNextWrite suppresses the one echo-write that would otherwise follow
+  // hydration.
+  const [ready, setReady] = React.useState(false);
+  const didRead = React.useRef(false);
+  const skipNextWrite = React.useRef(false);
+
+  React.useEffect(() => {
+    let off = false;
+    fetch('./' + DC_STATE_FILE)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((saved) => {
+        if (off || !saved || !saved.sections) return;
+        skipNextWrite.current = true;
+        setState((s) => ({ ...s, sections: saved.sections }));
+      })
+      .catch(() => {})
+      .finally(() => { didRead.current = true; if (!off) setReady(true); });
+    const t = setTimeout(() => { if (!off) setReady(true); }, 150);
+    return () => { off = true; clearTimeout(t); };
+  }, []);
+
+  React.useEffect(() => {
+    if (!didRead.current) return;
+    if (skipNextWrite.current) { skipNextWrite.current = false; return; }
+    const t = setTimeout(() => {
+      window.omelette?.writeFile(DC_STATE_FILE, JSON.stringify({ sections: state.sections })).catch(() => {});
+    }, 250);
+    return () => clearTimeout(t);
+  }, [state.sections]);
+
+  // Build registries synchronously from children so FocusOverlay can read
+  // them in the same render. Only direct DCSection > DCArtboard children are
+  // walked — wrapping them in other elements opts out of focus/reorder.
+  const registry = {};     // slotId -> { sectionId, artboard }
+  const sectionMeta = {};  // sectionId -> { title, subtitle, slotIds[] }
+  const sectionOrder = [];
+  React.Children.forEach(children, (sec) => {
+    if (!sec || sec.type !== DCSection) return;
+    const sid = sec.props.id ?? sec.props.title;
+    if (!sid) return;
+    sectionOrder.push(sid);
+    const persisted = state.sections[sid] || {};
+    const srcIds = [];
+    React.Children.forEach(sec.props.children, (ab) => {
+      if (!ab || ab.type !== DCArtboard) return;
+      const aid = ab.props.id ?? ab.props.label;
+      if (!aid) return;
+      registry[`${sid}/${aid}`] = { sectionId: sid, artboard: ab };
+      srcIds.push(aid);
+    });
+    const kept = (persisted.order || []).filter((k) => srcIds.includes(k));
+    sectionMeta[sid] = {
+      title: persisted.title ?? sec.props.title,
+      subtitle: sec.props.subtitle,
+      slotIds: [...kept, ...srcIds.filter((k) => !kept.includes(k))],
+    };
+  });
+
+  const api = React.useMemo(() => ({
+    state,
+    section: (id) => state.sections[id] || {},
+    patchSection: (id, p) => setState((s) => ({
+      ...s,
+      sections: { ...s.sections, [id]: { ...s.sections[id], ...(typeof p === 'function' ? p(s.sections[id] || {}) : p) } },
+    })),
+    setFocus: (slotId) => setState((s) => ({ ...s, focus: slotId })),
+  }), [state]);
+
+  // Esc exits focus; any outside pointerdown commits an in-progress rename.
+  React.useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') api.setFocus(null); };
+    const onPd = (e) => {
+      const ae = document.activeElement;
+      if (ae && ae.isContentEditable && !ae.contains(e.target)) ae.blur();
+    };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('pointerdown', onPd, true);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('pointerdown', onPd, true);
+    };
+  }, [api]);
+
+  return (
+    <DCCtx.Provider value={api}>
+      <DCViewport minScale={minScale} maxScale={maxScale} style={style}>{ready && children}</DCViewport>
+      {state.focus && registry[state.focus] && (
+        <DCFocusOverlay entry={registry[state.focus]} sectionMeta={sectionMeta} sectionOrder={sectionOrder} />
+      )}
+    </DCCtx.Provider>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// DCViewport — transform-based pan/zoom (internal)
+//
+// Input mapping (Figma-style):
+//   • trackpad pinch  → zoom   (ctrlKey wheel; Safari gesture* events)
+//   • trackpad scroll → pan    (two-finger)
+//   • mouse wheel     → zoom   (notched; distinguished from trackpad scroll)
+//   • middle-drag / primary-drag-on-bg → pan
+//
+// Transform state lives in a ref and is written straight to the DOM
+// (translate3d + will-change) so wheel ticks don't go through React —
+// keeps pans at 60fps on dense canvases.
+// ─────────────────────────────────────────────────────────────
+function DCViewport({ children, minScale = 0.1, maxScale = 8, style = {} }) {
+  const vpRef = React.useRef(null);
+  const worldRef = React.useRef(null);
+  const tf = React.useRef({ x: 0, y: 0, scale: 1 });
+
+  const apply = React.useCallback(() => {
+    const { x, y, scale } = tf.current;
+    const el = worldRef.current;
+    if (el) el.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${scale})`;
+  }, []);
+
+  React.useEffect(() => {
+    const vp = vpRef.current;
+    if (!vp) return;
+
+    const zoomAt = (cx, cy, factor) => {
+      const r = vp.getBoundingClientRect();
+      const px = cx - r.left, py = cy - r.top;
+      const t = tf.current;
+      const next = Math.min(maxScale, Math.max(minScale, t.scale * factor));
+      const k = next / t.scale;
+      // keep the world point under the cursor fixed
+      t.x = px - (px - t.x) * k;
+      t.y = py - (py - t.y) * k;
+      t.scale = next;
+      apply();
+    };
+
+    // Mouse-wheel vs trackpad-scroll heuristic. A physical wheel sends
+    // line-mode deltas (Firefox) or large integer pixel deltas with no X
+    // component (Chrome/Safari, typically multiples of 100/120). Trackpad
+    // two-finger scroll sends small/fractional pixel deltas, often with
+    // non-zero deltaX. ctrlKey is set by the browser for trackpad pinch.
+    const isMouseWheel = (e) =>
+      e.deltaMode !== 0 ||
+      (e.deltaX === 0 && Number.isInteger(e.deltaY) && Math.abs(e.deltaY) >= 40);
+
+    const onWheel = (e) => {
+      e.preventDefault();
+      if (isGesturing) return; // Safari: gesture* owns the pinch — discard concurrent wheels
+      if (e.ctrlKey) {
+        // trackpad pinch (or explicit ctrl+wheel)
+        zoomAt(e.clientX, e.clientY, Math.exp(-e.deltaY * 0.01));
+      } else if (isMouseWheel(e)) {
+        // notched mouse wheel — fixed-ratio step per click
+        zoomAt(e.clientX, e.clientY, Math.exp(-Math.sign(e.deltaY) * 0.18));
+      } else {
+        // trackpad two-finger scroll — pan
+        tf.current.x -= e.deltaX;
+        tf.current.y -= e.deltaY;
+        apply();
+      }
+    };
+
+    // Safari sends native gesture* events for trackpad pinch with a smooth
+    // e.scale; preferring these over the ctrl+wheel fallback gives a much
+    // better feel there. No-ops on other browsers. Safari also fires
+    // ctrlKey wheel events during the same pinch — isGesturing makes
+    // onWheel drop those entirely so they neither zoom nor pan.
+    let gsBase = 1;
+    let isGesturing = false;
+    const onGestureStart = (e) => { e.preventDefault(); isGesturing = true; gsBase = tf.current.scale; };
+    const onGestureChange = (e) => {
+      e.preventDefault();
+      zoomAt(e.clientX, e.clientY, (gsBase * e.scale) / tf.current.scale);
+    };
+    const onGestureEnd = (e) => { e.preventDefault(); isGesturing = false; };
+
+    // Drag-pan: middle button anywhere, or primary button on canvas
+    // background (anything that isn't an artboard or an inline editor).
+    let drag = null;
+    const onPointerDown = (e) => {
+      const onBg = !e.target.closest('[data-dc-slot], .dc-editable');
+      if (!(e.button === 1 || (e.button === 0 && onBg))) return;
+      e.preventDefault();
+      vp.setPointerCapture(e.pointerId);
+      drag = { id: e.pointerId, lx: e.clientX, ly: e.clientY };
+      vp.style.cursor = 'grabbing';
+    };
+    const onPointerMove = (e) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      tf.current.x += e.clientX - drag.lx;
+      tf.current.y += e.clientY - drag.ly;
+      drag.lx = e.clientX; drag.ly = e.clientY;
+      apply();
+    };
+    const onPointerUp = (e) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      vp.releasePointerCapture(e.pointerId);
+      drag = null;
+      vp.style.cursor = '';
+    };
+
+    vp.addEventListener('wheel', onWheel, { passive: false });
+    vp.addEventListener('gesturestart', onGestureStart, { passive: false });
+    vp.addEventListener('gesturechange', onGestureChange, { passive: false });
+    vp.addEventListener('gestureend', onGestureEnd, { passive: false });
+    vp.addEventListener('pointerdown', onPointerDown);
+    vp.addEventListener('pointermove', onPointerMove);
+    vp.addEventListener('pointerup', onPointerUp);
+    vp.addEventListener('pointercancel', onPointerUp);
+    return () => {
+      vp.removeEventListener('wheel', onWheel);
+      vp.removeEventListener('gesturestart', onGestureStart);
+      vp.removeEventListener('gesturechange', onGestureChange);
+      vp.removeEventListener('gestureend', onGestureEnd);
+      vp.removeEventListener('pointerdown', onPointerDown);
+      vp.removeEventListener('pointermove', onPointerMove);
+      vp.removeEventListener('pointerup', onPointerUp);
+      vp.removeEventListener('pointercancel', onPointerUp);
+    };
+  }, [apply, minScale, maxScale]);
+
+  const gridSvg = `url("data:image/svg+xml,%3Csvg width='120' height='120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M120 0H0v120' fill='none' stroke='${encodeURIComponent(DC.grid)}' stroke-width='1'/%3E%3C/svg%3E")`;
+  return (
+    <div
+      ref={vpRef}
+      className="design-canvas"
+      style={{
+        height: '100vh', width: '100vw',
+        background: DC.bg,
+        overflow: 'hidden',
+        overscrollBehavior: 'none',
+        touchAction: 'none',
+        position: 'relative',
+        fontFamily: DC.font,
+        boxSizing: 'border-box',
+        ...style,
+      }}
+    >
+      <div
+        ref={worldRef}
+        style={{
+          position: 'absolute', top: 0, left: 0,
+          transformOrigin: '0 0',
+          willChange: 'transform',
+          width: 'max-content', minWidth: '100%',
+          minHeight: '100%',
+          padding: '60px 0 80px',
+        }}
+      >
+        <div style={{ position: 'absolute', inset: -6000, backgroundImage: gridSvg, backgroundSize: '120px 120px', pointerEvents: 'none', zIndex: -1 }} />
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// DCSection — editable title + h-row of artboards in persisted order
+// ─────────────────────────────────────────────────────────────
+function DCSection({ id, title, subtitle, children, gap = 48 }) {
+  const ctx = React.useContext(DCCtx);
+  const sid = id ?? title;
+  const all = React.Children.toArray(children);
+  const artboards = all.filter((c) => c && c.type === DCArtboard);
+  const rest = all.filter((c) => !(c && c.type === DCArtboard));
+  const srcOrder = artboards.map((a) => a.props.id ?? a.props.label);
+  const sec = (ctx && sid && ctx.section(sid)) || {};
+
+  const order = React.useMemo(() => {
+    const kept = (sec.order || []).filter((k) => srcOrder.includes(k));
+    return [...kept, ...srcOrder.filter((k) => !kept.includes(k))];
+  }, [sec.order, srcOrder.join('|')]);
+
+  const byId = Object.fromEntries(artboards.map((a) => [a.props.id ?? a.props.label, a]));
+
+  return (
+    <div data-dc-section={sid} style={{ marginBottom: 80, position: 'relative' }}>
+      <div style={{ padding: '0 60px 56px' }}>
+        <DCEditable tag="div" value={sec.title ?? title}
+          onChange={(v) => ctx && sid && ctx.patchSection(sid, { title: v })}
+          style={{ fontSize: 28, fontWeight: 600, color: DC.title, letterSpacing: -0.4, marginBottom: 6, display: 'inline-block' }} />
+        {subtitle && <div style={{ fontSize: 16, color: DC.subtitle }}>{subtitle}</div>}
+      </div>
+      <div style={{ display: 'flex', gap, padding: '0 60px', alignItems: 'flex-start', width: 'max-content' }}>
+        {order.map((k) => (
+          <DCArtboardFrame key={k} sectionId={sid} artboard={byId[k]} order={order}
+            label={(sec.labels || {})[k] ?? byId[k].props.label}
+            onRename={(v) => ctx && ctx.patchSection(sid, (x) => ({ labels: { ...x.labels, [k]: v } }))}
+            onReorder={(next) => ctx && ctx.patchSection(sid, { order: next })}
+            onFocus={() => ctx && ctx.setFocus(`${sid}/${k}`)} />
+        ))}
+      </div>
+      {rest}
+    </div>
+  );
+}
+
+// DCArtboard — marker; rendered by DCArtboardFrame via DCSection.
+function DCArtboard() { return null; }
+
+function DCArtboardFrame({ sectionId, artboard, label, order, onRename, onReorder, onFocus }) {
+  const { id: rawId, label: rawLabel, width = 260, height = 480, children, style = {} } = artboard.props;
+  const id = rawId ?? rawLabel;
+  const ref = React.useRef(null);
+
+  // Live drag-reorder: dragged card sticks to cursor; siblings slide into
+  // their would-be slots in real time via transforms. DOM order only
+  // changes on drop.
+  const onGripDown = (e) => {
+    e.preventDefault(); e.stopPropagation();
+    const me = ref.current;
+    // translateX is applied in local (pre-scale) space but pointer deltas and
+    // getBoundingClientRect().left are screen-space — divide by the viewport's
+    // current scale so the dragged card tracks the cursor at any zoom level.
+    const scale = me.getBoundingClientRect().width / me.offsetWidth || 1;
+    const peers = Array.from(document.querySelectorAll(`[data-dc-section="${sectionId}"] [data-dc-slot]`));
+    const homes = peers.map((el) => ({ el, id: el.dataset.dcSlot, x: el.getBoundingClientRect().left }));
+    const slotXs = homes.map((h) => h.x);
+    const startIdx = order.indexOf(id);
+    const startX = e.clientX;
+    let liveOrder = order.slice();
+    me.classList.add('dc-dragging');
+
+    const layout = () => {
+      for (const h of homes) {
+        if (h.id === id) continue;
+        const slot = liveOrder.indexOf(h.id);
+        h.el.style.transform = `translateX(${(slotXs[slot] - h.x) / scale}px)`;
+      }
+    };
+
+    const move = (ev) => {
+      const dx = ev.clientX - startX;
+      me.style.transform = `translateX(${dx / scale}px)`;
+      const cur = homes[startIdx].x + dx;
+      let nearest = 0, best = Infinity;
+      for (let i = 0; i < slotXs.length; i++) {
+        const d = Math.abs(slotXs[i] - cur);
+        if (d < best) { best = d; nearest = i; }
+      }
+      if (liveOrder.indexOf(id) !== nearest) {
+        liveOrder = order.filter((k) => k !== id);
+        liveOrder.splice(nearest, 0, id);
+        layout();
+      }
+    };
+
+    const up = () => {
+      document.removeEventListener('pointermove', move);
+      document.removeEventListener('pointerup', up);
+      const finalSlot = liveOrder.indexOf(id);
+      me.classList.remove('dc-dragging');
+      me.style.transform = `translateX(${(slotXs[finalSlot] - homes[startIdx].x) / scale}px)`;
+      // After the settle transition, kill transitions + clear transforms +
+      // commit the reorder in the same frame so there's no visual snap-back.
+      setTimeout(() => {
+        for (const h of homes) { h.el.style.transition = 'none'; h.el.style.transform = ''; }
+        if (liveOrder.join('|') !== order.join('|')) onReorder(liveOrder);
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          for (const h of homes) h.el.style.transition = '';
+        }));
+      }, 180);
+    };
+    document.addEventListener('pointermove', move);
+    document.addEventListener('pointerup', up);
+  };
+
+  return (
+    <div ref={ref} data-dc-slot={id} style={{ position: 'relative', flexShrink: 0 }}>
+      <div className="dc-labelrow" style={{ position: 'absolute', bottom: '100%', left: -4, marginBottom: 4, color: DC.label }}>
+        <div className="dc-grip" onPointerDown={onGripDown} title="Drag to reorder">
+          <svg width="9" height="13" viewBox="0 0 9 13" fill="currentColor"><circle cx="2" cy="2" r="1.1"/><circle cx="7" cy="2" r="1.1"/><circle cx="2" cy="6.5" r="1.1"/><circle cx="7" cy="6.5" r="1.1"/><circle cx="2" cy="11" r="1.1"/><circle cx="7" cy="11" r="1.1"/></svg>
+        </div>
+        <div className="dc-labeltext" onClick={onFocus} title="Click to focus">
+          <DCEditable value={label} onChange={onRename} onClick={(e) => e.stopPropagation()}
+            style={{ fontSize: 15, fontWeight: 500, color: DC.label, lineHeight: 1 }} />
+        </div>
+      </div>
+      <button className="dc-expand" onClick={onFocus} onPointerDown={(e) => e.stopPropagation()} title="Focus">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M7 1h4v4M5 11H1V7M11 1L7.5 4.5M1 11l3.5-3.5"/></svg>
+      </button>
+      <div className="dc-card"
+        style={{ borderRadius: 2, boxShadow: '0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.06)', overflow: 'hidden', width, height, background: '#fff', ...style }}>
+        {children || <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#bbb', fontSize: 13, fontFamily: DC.font }}>{id}</div>}
+      </div>
+    </div>
+  );
+}
+
+// Inline rename — commits on blur or Enter.
+function DCEditable({ value, onChange, style, tag = 'span', onClick }) {
+  const T = tag;
+  return (
+    <T className="dc-editable" contentEditable suppressContentEditableWarning
+      onClick={onClick}
+      onPointerDown={(e) => e.stopPropagation()}
+      onBlur={(e) => onChange && onChange(e.currentTarget.textContent)}
+      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur(); } }}
+      style={style}>{value}</T>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Focus mode — overlay one artboard; ←/→ within section, ↑/↓ across
+// sections, Esc or backdrop click to exit.
+// ─────────────────────────────────────────────────────────────
+function DCFocusOverlay({ entry, sectionMeta, sectionOrder }) {
+  const ctx = React.useContext(DCCtx);
+  const { sectionId, artboard } = entry;
+  const sec = ctx.section(sectionId);
+  const meta = sectionMeta[sectionId];
+  const peers = meta.slotIds;
+  const aid = artboard.props.id ?? artboard.props.label;
+  const idx = peers.indexOf(aid);
+  const secIdx = sectionOrder.indexOf(sectionId);
+
+  const go = (d) => { const n = peers[(idx + d + peers.length) % peers.length]; if (n) ctx.setFocus(`${sectionId}/${n}`); };
+  const goSection = (d) => {
+    const ns = sectionOrder[(secIdx + d + sectionOrder.length) % sectionOrder.length];
+    const first = sectionMeta[ns] && sectionMeta[ns].slotIds[0];
+    if (first) ctx.setFocus(`${ns}/${first}`);
+  };
+
+  React.useEffect(() => {
+    const k = (e) => {
+      if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); go(1); }
+      if (e.key === 'ArrowUp') { e.preventDefault(); goSection(-1); }
+      if (e.key === 'ArrowDown') { e.preventDefault(); goSection(1); }
+    };
+    document.addEventListener('keydown', k);
+    return () => document.removeEventListener('keydown', k);
+  });
+
+  const { width = 260, height = 480, children } = artboard.props;
+  const [vp, setVp] = React.useState({ w: window.innerWidth, h: window.innerHeight });
+  React.useEffect(() => { const r = () => setVp({ w: window.innerWidth, h: window.innerHeight }); window.addEventListener('resize', r); return () => window.removeEventListener('resize', r); }, []);
+  const scale = Math.max(0.1, Math.min((vp.w - 200) / width, (vp.h - 260) / height, 2));
+
+  const [ddOpen, setDd] = React.useState(false);
+  const Arrow = ({ dir, onClick }) => (
+    <button onClick={(e) => { e.stopPropagation(); onClick(); }}
+      style={{ position: 'absolute', top: '50%', [dir]: 28, transform: 'translateY(-50%)',
+        border: 'none', background: 'rgba(255,255,255,.08)', color: 'rgba(255,255,255,.9)',
+        width: 44, height: 44, borderRadius: 22, fontSize: 18, cursor: 'pointer',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background .15s' }}
+      onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,.18)')}
+      onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,.08)')}>
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <path d={dir === 'left' ? 'M11 3L5 9l6 6' : 'M7 3l6 6-6 6'} /></svg>
+    </button>
+  );
+
+  // Portal to body so position:fixed is the real viewport regardless of any
+  // transform on DesignCanvas's ancestors (including the canvas zoom itself).
+  return ReactDOM.createPortal(
+    <div onClick={() => ctx.setFocus(null)}
+      onWheel={(e) => e.preventDefault()}
+      style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(24,20,16,.6)', backdropFilter: 'blur(14px)',
+        fontFamily: DC.font, color: '#fff' }}>
+
+      {/* top bar: section dropdown (left) · close (right) */}
+      <div onClick={(e) => e.stopPropagation()}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 72, display: 'flex', alignItems: 'flex-start', padding: '16px 20px 0', gap: 16 }}>
+        <div style={{ position: 'relative' }}>
+          <button onClick={() => setDd((o) => !o)}
+            style={{ border: 'none', background: 'transparent', color: '#fff', cursor: 'pointer', padding: '6px 8px',
+              borderRadius: 6, textAlign: 'left', fontFamily: 'inherit' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 18, fontWeight: 600, letterSpacing: -0.3 }}>{meta.title}</span>
+              <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" style={{ opacity: .7 }}><path d="M2 4l3.5 3.5L9 4"/></svg>
+            </span>
+            {meta.subtitle && <span style={{ display: 'block', fontSize: 13, opacity: .6, fontWeight: 400, marginTop: 2 }}>{meta.subtitle}</span>}
+          </button>
+          {ddOpen && (
+            <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 4, background: '#2a251f', borderRadius: 8,
+              boxShadow: '0 8px 32px rgba(0,0,0,.4)', padding: 4, minWidth: 200, zIndex: 10 }}>
+              {sectionOrder.map((sid) => (
+                <button key={sid} onClick={() => { setDd(false); const f = sectionMeta[sid].slotIds[0]; if (f) ctx.setFocus(`${sid}/${f}`); }}
+                  style={{ display: 'block', width: '100%', textAlign: 'left', border: 'none', cursor: 'pointer',
+                    background: sid === sectionId ? 'rgba(255,255,255,.1)' : 'transparent', color: '#fff',
+                    padding: '8px 12px', borderRadius: 5, fontSize: 14, fontWeight: sid === sectionId ? 600 : 400, fontFamily: 'inherit' }}>
+                  {sectionMeta[sid].title}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        <div style={{ flex: 1 }} />
+        <button onClick={() => ctx.setFocus(null)}
+          onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,.12)')}
+          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+          style={{ border: 'none', background: 'transparent', color: 'rgba(255,255,255,.7)', width: 32, height: 32,
+            borderRadius: 16, fontSize: 20, cursor: 'pointer', lineHeight: 1, transition: 'background .12s' }}>×</button>
+      </div>
+
+      {/* card centered, label + index below — only the card itself stops
+          propagation so any backdrop click (including the margins around
+          the card) exits focus */}
+      <div
+        style={{ position: 'absolute', top: 64, bottom: 56, left: 100, right: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+        <div onClick={(e) => e.stopPropagation()} style={{ width: width * scale, height: height * scale, position: 'relative' }}>
+          <div style={{ width, height, transform: `scale(${scale})`, transformOrigin: 'top left', background: '#fff', borderRadius: 2, overflow: 'hidden',
+            boxShadow: '0 20px 80px rgba(0,0,0,.4)' }}>
+            {children || <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#bbb' }}>{aid}</div>}
+          </div>
+        </div>
+        <div onClick={(e) => e.stopPropagation()} style={{ fontSize: 14, fontWeight: 500, opacity: .85, textAlign: 'center' }}>
+          {(sec.labels || {})[aid] ?? artboard.props.label}
+          <span style={{ opacity: .5, marginLeft: 10, fontVariantNumeric: 'tabular-nums' }}>{idx + 1} / {peers.length}</span>
+        </div>
+      </div>
+
+      <Arrow dir="left" onClick={() => go(-1)} />
+      <Arrow dir="right" onClick={() => go(1)} />
+
+      {/* dots */}
+      <div onClick={(e) => e.stopPropagation()}
+        style={{ position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 8 }}>
+        {peers.map((p, i) => (
+          <button key={p} onClick={() => ctx.setFocus(`${sectionId}/${p}`)}
+            style={{ border: 'none', padding: 0, cursor: 'pointer', width: 6, height: 6, borderRadius: 3,
+              background: i === idx ? '#fff' : 'rgba(255,255,255,.3)' }} />
+        ))}
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Post-it — absolute-positioned sticky note
+// ─────────────────────────────────────────────────────────────
+function DCPostIt({ children, top, left, right, bottom, rotate = -2, width = 180 }) {
+  return (
+    <div style={{
+      position: 'absolute', top, left, right, bottom, width,
+      background: DC.postitBg, padding: '14px 16px',
+      fontFamily: '"Comic Sans MS", "Marker Felt", "Segoe Print", cursive',
+      fontSize: 14, lineHeight: 1.4, color: DC.postitText,
+      boxShadow: '0 2px 8px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08)',
+      transform: `rotate(${rotate}deg)`,
+      zIndex: 5,
+    }}>{children}</div>
+  );
+}
+
+Object.assign(window, { DesignCanvas, DCSection, DCArtboard, DCPostIt });
+
+
+</script>
+<script type="text/babel" data-presets="react">
+// === parts/encounter-shell.jsx ===
+// encounter-shell.jsx — a tight recreation of the v7 layout for use as
+// backdrop in moments 1 & 2. Sized for a 1280×800 artboard so the canvas
+// holds several side-by-side. Faithful to v7 structure; uses placeholder
+// regions for portraits / place painting (registered as flagged for real
+// art per design system note).
+
+const SPHERE = {
+  iron:  { color:'var(--sphere-force-bright)',  dim:'var(--sphere-force)',  label:'IRON',  word:'small breath' },
+  eye:   { color:'var(--sphere-mind-bright)',   dim:'var(--sphere-mind)',   label:'EYE',   word:'fuller breath' },
+  heart: { color:'var(--sphere-spirit-bright)', dim:'var(--sphere-spirit)', label:'HEART', word:'deep draught' },
+};
+
+// Placeholder painted-portrait swatch (deep charcoal w/ a single warm rim
+// thread of gold — matches "thin luminous threads at concentrated nodes")
+function PortraitPlaceholder({ w=170, h=210, sphere='heart', subject='figure' }) {
+  const c = sphere==='heart' ? '#7d4d52' : sphere==='eye' ? '#3a4a60' : '#5a3d2c';
+  return (
+    <div style={{
+      width:w, height:h, borderRadius:6, position:'relative', overflow:'hidden',
+      background: `radial-gradient(120% 90% at 35% 30%, ${c}55 0%, #181820 65%, #0c0c10 100%)`,
+      boxShadow:'inset 0 0 0 1px var(--border-medium)',
+    }}>
+      {/* lantern thread */}
+      <div style={{ position:'absolute', left:'42%', top:'18%', width:18, height:18, borderRadius:99,
+        background:'radial-gradient(circle, #ffd28055 0%, transparent 60%)' }}/>
+      <div style={{ position:'absolute', left:'46%', top:'24%', width:1, height:'52%',
+        background:'linear-gradient(180deg, #ffd280 0%, transparent 90%)', opacity:.55 }}/>
+      <div style={{ position:'absolute', inset:0, display:'grid', placeItems:'center',
+        fontFamily:'var(--font-display)', color:'var(--text-muted)', fontSize:11, letterSpacing:'.18em' }}>
+        {subject.toUpperCase()}
+      </div>
+    </div>
+  );
+}
+
+function PlacePlaceholder({ w='100%', h=170 }) {
+  return (
+    <div style={{ width:w, height:h, borderRadius:6, position:'relative', overflow:'hidden',
+      background:
+        'radial-gradient(70% 60% at 50% 65%, #2a201a 0%, #100c0e 80%),'+
+        'linear-gradient(180deg, #100b14, #0a0a0e)',
+      boxShadow:'inset 0 0 0 1px var(--border-subtle)' }}>
+      {/* gate silhouettes */}
+      <div style={{ position:'absolute', inset:'10% 8% 10% 8%',
+        background:
+          'linear-gradient(90deg, #0a0a0e 0 14%, transparent 14% 86%, #0a0a0e 86% 100%)' }}/>
+      {/* lanterns + falling spark thread */}
+      <div style={{ position:'absolute', left:'28%', top:'28%', width:8, height:8, borderRadius:99,
+        background:'#ffb84a', boxShadow:'0 0 14px 2px #ffb84a88' }}/>
+      <div style={{ position:'absolute', right:'30%', top:'30%', width:8, height:8, borderRadius:99,
+        background:'#ffb84a', boxShadow:'0 0 14px 2px #ffb84a88' }}/>
+      <svg style={{ position:'absolute', inset:0, width:'100%', height:'100%' }} viewBox="0 0 400 170" preserveAspectRatio="none">
+        <path d="M120,55 C170,40 210,60 260,30" stroke="#ffd180" strokeWidth=".9" fill="none" opacity=".7" />
+        <circle cx="260" cy="30" r="2.5" fill="#ffd180" />
+      </svg>
+      <div style={{ position:'absolute', left:'45%', bottom:'10%', width:18, height:46,
+        background:'#0a0a0e', borderTop:'1px solid #2a2520' }}/>
+    </div>
+  );
+}
+
+// Three lean cards (compressed). selected: 'iron' | 'eye' | 'heart' | null
+function ChoiceCards({ selected, dim=false, ringFor }) {
+  const Card = ({ id, title, body, tilt }) => {
+    const s = SPHERE[id];
+    const isSel = selected === id;
+    const isRing = ringFor === id;
+    return (
+      <div className={isRing ? `ring-${id}` : ''}
+        style={{
+          flex:1, padding:14, borderRadius:8,
+          background:'var(--bg-surface)',
+          border: `1px solid ${isSel ? s.color : 'var(--border-subtle)'}`,
+          opacity: dim && !isSel ? .35 : 1,
+          transition:'opacity .3s, border-color .3s',
+          position:'relative',
+        }}>
+        <div className="label" style={{ color: s.color, fontSize:11 }}>
+          {s.label} · {s.word}
+        </div>
+        <div className="display" style={{ fontSize:18, marginTop:6, fontStyle:'italic', fontFamily:'var(--font-body)', fontWeight:400 }}>
+          {title}
+        </div>
+        <div style={{ height:1, width:36, background:s.dim, margin:'8px 0 10px' }}/>
+        <div className="prose" style={{ fontSize:13, lineHeight:1.55 }}>{body}</div>
+        <div className="flavor" style={{ fontSize:12, marginTop:10, color:'var(--text-tertiary)' }}>
+          {tilt}
+        </div>
+      </div>
+    );
+  };
+  return (
+    <div style={{ display:'flex', gap:10 }}>
+      <Card id="iron"  title="Stir her resolve."  body="Her shoulders set. She closes the distance and meets Veiren's eye." tilt="Tilts toward: a wound, a debt, or his favour earned."/>
+      <Card id="eye"   title="Sharpen her sight." body="Her gaze flicks past Veiren to the trader. Whatever he hides, she will see it." tilt="Tilts toward: knowledge, a thread to follow."/>
+      <Card id="heart" title="Soften her stance." body="She finds the small folk's silence and gives it. Veiren picks another." tilt="Tilts toward: a vow deepened, a story moved sideways."/>
+    </div>
+  );
+}
+
+// Compressed v7 stage. width≈1240, height≈760 by default.
+function EncounterShell({ selected=null, dim=false, ringFor=null, paused=false, children }) {
+  return (
+    <div className="tb-stage" style={{ padding:18, display:'flex', flexDirection:'column', gap:12 }}>
+      {/* top thread strip */}
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
+        <div>
+          <div className="display gold-label" style={{ fontSize:18 }}>EIRA AT THE SOUTH GATE</div>
+          <div className="label" style={{ fontSize:11, marginTop:4 }}>FAVORED THREAD · CIVIC GUARD QUEUE · SECOND CALL</div>
+        </div>
+        <div className="label" style={{ fontSize:11, display:'flex', alignItems:'center', gap:8 }}>
+          BEAT
+          <span style={{ display:'flex', gap:5 }}>
+            <i style={{ width:6, height:6, borderRadius:99, background:'var(--text-muted)' }}/>
+            <i style={{ width:8, height:8, borderRadius:99, background:'var(--accent-gold)', boxShadow:'0 0 10px var(--accent-gold-dim)' }}/>
+            <i style={{ width:6, height:6, borderRadius:99, background:'var(--text-muted)' }}/>
+            <i style={{ width:6, height:6, borderRadius:99, background:'var(--text-muted)' }}/>
+          </span>
+          <span style={{ marginLeft:6, color:'var(--text-tertiary)' }}>2 OF 4</span>
+        </div>
+      </div>
+
+      <div style={{ display:'grid', gridTemplateColumns:'260px 1fr 290px', gap:12, flex:1, minHeight:0 }}>
+        {/* — Hero panel — */}
+        <div className="panel" style={{ padding:14, display:'flex', flexDirection:'column', gap:10, position:'relative' }}>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+            <div className="label gold-label" style={{ fontSize:10 }}>THE PROTAGONIST</div>
+            <div className="label" style={{ fontSize:10, color:'var(--text-muted)' }}>↗ open her sheet</div>
+          </div>
+          <div style={{ display:'grid', placeItems:'center' }}>
+            <PortraitPlaceholder w={210} h={230} sphere="heart" subject="Eira of Bren" />
+          </div>
+          <div className="display" style={{ fontSize:22, marginTop:2 }}>Eira of Bren</div>
+          <div className="label" style={{ fontSize:10 }}>IRON · DRAWN BOND · 28 WINTERS</div>
+          <div className="prose" style={{ fontSize:12, color:'var(--text-tertiary)', marginTop:-4 }}>
+            <span style={{ display:'inline-block', width:6, height:6, borderRadius:99, background:'var(--positive)', marginRight:6 }}/>
+            steady, but reading the room
+          </div>
+
+          <div style={{ marginTop:6 }}>
+            <div className="label" style={{ fontSize:10, marginBottom:6 }}>CAPABILITY IN THIS SCENE</div>
+            {[
+              { k:'IRON',  c:'var(--sphere-force-bright)',  dots:3, prose:'a steady arm in a tight queue' },
+              { k:'EYE',   c:'var(--sphere-mind-bright)',   dots:3, prose:'she misses little' },
+              { k:'HEART', c:'var(--sphere-spirit-bright)', dots:5, prose:'her deepest thread' },
+            ].map(b => (
+              <div key={b.k} style={{ display:'flex', alignItems:'center', gap:8, padding:'4px 0' }}>
+                <div className="label" style={{ width:46, fontSize:10, color:b.c }}>{b.k}</div>
+                <div style={{ display:'flex', gap:3 }}>
+                  {[0,1,2,3,4].map(i => (
+                    <i key={i} style={{ width:7, height:7, borderRadius:99,
+                      background: i<b.dots ? b.c : 'var(--bg-raised)' }}/>
+                  ))}
+                </div>
+                <div className="prose" style={{ fontSize:11, fontStyle:'italic', color:'var(--text-tertiary)', marginLeft:4 }}>{b.prose}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="label" style={{ fontSize:10, marginTop:8 }}>SHE CARRIES INTO THIS SCENE</div>
+          <div className="panel" style={{ padding:'8px 10px', display:'flex', alignItems:'center', gap:8 }}>
+            <i style={{ width:14, height:14, borderRadius:99, border:'1.5px solid var(--accent-gold)' }}/>
+            <div>
+              <div style={{ fontSize:13 }}>Captain's token</div>
+              <div className="prose" style={{ fontSize:11, color:'var(--text-tertiary)' }}>small favor · civic guard remembers her</div>
+            </div>
+          </div>
+          <div className="panel gold" style={{ padding:'8px 10px',
+              background:'linear-gradient(90deg, rgba(170,68,221,.12), transparent)',
+              borderColor:'var(--sphere-spirit)' }}>
+            <div className="label" style={{ fontSize:9, color:'var(--sphere-spirit-bright)' }}>VOW · ACTIVE NOW</div>
+            <div style={{ fontSize:13 }}>Vow to the small folk</div>
+            <div className="prose" style={{ fontSize:11, fontStyle:'italic', color:'var(--text-tertiary)' }}>she will not crush a frightened man</div>
+          </div>
+
+          {/* Slot for moment-2 registrations to land */}
+          {children}
+        </div>
+
+        {/* — Center column — */}
+        <div className="panel gold" style={{ padding:18, display:'flex', flexDirection:'column', gap:12, minHeight:0, position:'relative' }}>
+          <div>
+            <div className="label gold-label" style={{ fontSize:10 }}>BEAT 2 · NOW</div>
+            <div className="display" style={{ fontSize:26, marginTop:2 }}>The Captain Stops</div>
+            <div className="gold-bar" style={{ marginTop:6 }}/>
+          </div>
+          <PlacePlaceholder h={210} />
+          <div className="label" style={{ fontSize:10 }}>SOUTH GATE OF BREN · SEVENTH FACE OF THE QUEUE · DUSK</div>
+
+          <div className="panel" style={{
+            border:'1px solid var(--border-accent)',
+            background:'linear-gradient(90deg, rgba(212,160,64,.08), transparent)',
+            padding:'8px 12px' }}>
+            <div className="flavor" style={{ fontSize:13 }}>
+              ◀ <em>She invokes the night Veiren tested her at the iron market last winter.</em>
+            </div>
+            <div className="label" style={{ fontSize:9, marginTop:2 }}>CALLBACK FROM 47 TURNS AGO · INVOKED THIS BEAT</div>
+          </div>
+
+          <div className="label" style={{ fontSize:10 }}>WHAT HAPPENS NOW</div>
+          <div className="prose" style={{ fontSize:14 }}>
+            Veiren plants his bootheel in front of Eira and stops.
+            <br/><em>"You. Step forward."</em>
+            <br/>The queue holds its breath. Behind Eira, the trader thinks about <span className="term">running</span> — she can hear it in the way he stops breathing. Halren coughs from <span className="term">three places back</span>, loud and deliberate.
+          </div>
+          <div className="label" style={{ fontSize:10, color: paused ? 'var(--accent-gold)' : 'var(--text-tertiary)' }}>
+            {paused ? 'EIRA HAS COMMITTED · THE WORLD RESOLVES' : 'EIRA HAS NOT YET DECIDED'}
+          </div>
+
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
+            <div className="label gold-label" style={{ fontSize:11 }}>LEAN ON HER · OR DON'T</div>
+            <div className="label" style={{ fontSize:10, color:'var(--text-muted)' }}>EACH LEAN TILTS A KIND OF CHANGE</div>
+          </div>
+          <ChoiceCards selected={selected} dim={dim} ringFor={ringFor}/>
+        </div>
+
+        {/* — Right rail — */}
+        <div style={{ display:'flex', flexDirection:'column', gap:10, minHeight:0 }}>
+          <div className="panel" style={{ padding:12, display:'flex', flexDirection:'column', gap:8 }}>
+            <div style={{ display:'flex', justifyContent:'space-between' }}>
+              <div className="label" style={{ fontSize:10 }}>CAST IN THE SCENE</div>
+              <div className="label" style={{ fontSize:10, color:'var(--text-muted)' }}>3 OF 3</div>
+            </div>
+            {[
+              { name:'Captain Veiren',    role:'IRON · CIVIC GUARD',   disp:'suspicious',   to:'a debt and a winter ago', tag:'honour-bound', s:'iron' },
+              { name:'A nervous trader',  role:'EYE · HOODED',         disp:'about to bolt',to:'a stranger',              tag:'hidden cargo', s:'eye' },
+              { name:'Halren the Lawful', role:'HEART · SPICE MERCHANT',disp:'late for council',to:'a face she has seen at council', tag:'watching', s:'heart' },
+            ].map(c => (
+              <div key={c.name} style={{ display:'flex', gap:8, padding:'2px 0' }}>
+                <PortraitPlaceholder w={42} h={42} sphere={c.s} subject="" />
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ display:'flex', justifyContent:'space-between' }}>
+                    <div className="display" style={{ fontSize:13 }}>{c.name}</div>
+                    <div className="label" style={{ fontSize:9, color:'var(--text-muted)' }}>{c.tag}</div>
+                  </div>
+                  <div className="label" style={{ fontSize:9, color: SPHERE[c.s].color }}>{c.role}</div>
+                  <div className="prose" style={{ fontSize:11, color:'var(--text-tertiary)' }}>
+                    disposition: <span className="term">{c.disp}</span><br/>
+                    <em>to her: {c.to}</em>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="panel" style={{ padding:12 }}>
+            <div className="label" style={{ fontSize:10, marginBottom:6 }}>YOUR HAND</div>
+            {[
+              { t:'Send a sign',         d:'divine.omen · cast unease · tilts dispositions soft', cost:'2 ESS' },
+              { t:'Veil the trader\'s cargo', d:'divine.deceive · one beat of cover for the trader',  cost:'2 ESS' },
+              { t:'Mark her with fate',  d:'divine.coincidence · this scene becomes biographical', cost:'4 ESS · RARE', gold:true },
+            ].map(c => (
+              <div key={c.t} className="panel"
+                style={{ marginBottom:6, padding:'8px 10px', borderColor: c.gold ? 'var(--accent-gold)' : 'var(--border-subtle)' }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:8 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:8, minWidth:0 }}>
+                    <i style={{ width:14, height:14, borderRadius:99, border: `1.5px solid ${c.gold?'var(--accent-gold)':'var(--text-muted)'}` }}/>
+                    <div>
+                      <div style={{ fontSize:13 }}>{c.t}</div>
+                      <div className="prose" style={{ fontSize:11, color:'var(--text-tertiary)' }}>{c.d}</div>
+                    </div>
+                  </div>
+                  <div className="label" style={{ fontSize:9, color: c.gold?'var(--accent-gold)':'var(--text-muted)' }}>{c.cost}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="panel" style={{ padding:12 }}>
+            <div className="label" style={{ fontSize:10, marginBottom:6 }}>THE STATE OF THE SCENE</div>
+            <div className="label" style={{ fontSize:9, color:'var(--text-muted)' }}>THREADS IN PLAY · FACTIONS</div>
+            <div style={{ display:'flex', flexWrap:'wrap', gap:6, marginTop:6 }}>
+              {[
+                ['authority taut','var(--sphere-force-bright)'],
+                ['hidden satchel','var(--sphere-mind-bright)'],
+                ['patience fraying','var(--sphere-time-bright)'],
+                ['crowd\'s want','var(--sphere-spirit-bright)'],
+              ].map(([t,c]) => (
+                <span key={t} style={{ fontSize:11, color:'var(--text-secondary)' }}>
+                  <i style={{ display:'inline-block', width:18, height:1, background:c, marginRight:6, verticalAlign:'middle' }}/>
+                  {t}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* bottom strip */}
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', paddingTop:6 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+          <i style={{ width:24, height:24, borderRadius:99, border:'1px solid var(--border-accent)',
+                      background:'radial-gradient(circle, var(--sphere-darkness) 30%, transparent 70%)' }}/>
+          <div>
+            <div className="display" style={{ fontSize:13 }}>Quintessence</div>
+            <div className="label" style={{ fontSize:9, color:'var(--text-muted)' }}>two firm acts, three soft</div>
+          </div>
+        </div>
+        <div style={{ textAlign:'center' }}>
+          <div className="label" style={{ fontSize:11 }}>LEAN ON HER · PLAY A CARD · OR LET THE DICE FALL</div>
+          <div className="prose" style={{ fontSize:11, fontStyle:'italic', color:'var(--text-tertiary)' }}>
+            no act is also a story · the world stays uncertain either way
+          </div>
+        </div>
+        <div className="panel" style={{ padding:'6px 10px', minWidth:160 }}>
+          <div className="display" style={{ fontSize:12 }}>Watch only</div>
+          <div className="prose" style={{ fontSize:10.5, color:'var(--text-tertiary)' }}>
+            Let her face this on her own.<br/>The dice fall. The story holds.
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { EncounterShell, ChoiceCards, PortraitPlaceholder, PlacePlaceholder, SPHERE });
+
+</script>
+<script type="text/babel" data-presets="react">
+// === parts/moment1-reveal.jsx ===
+// moment1-reveal.jsx — the dice/threads tension reveal.
+// 5 frames: COMMIT → INHALE → THREADS DRAW → TENSION (taut) → RESOLVE (one holds, others slack).
+// Each frame is a small artboard (660×420) showing only the active card area
+// + a thread overlay; we use the EncounterShell as the wider context only on
+// the leftmost "in-place" frame.
+
+function Caption({ idx, label, beat }) {
+  return (
+    <div style={{ display:'flex', alignItems:'baseline', gap:10, padding:'10px 14px',
+      background:'var(--bg-deep)', borderTop:'1px solid var(--border-subtle)' }}>
+      <div className="display gold-label" style={{ fontSize:14 }}>0{idx}</div>
+      <div>
+        <div className="display" style={{ fontSize:13 }}>{label}</div>
+        <div className="label" style={{ fontSize:9, color:'var(--text-muted)' }}>{beat}</div>
+      </div>
+    </div>
+  );
+}
+
+// Threadboard — the painterly thread overlay. Stretches across the three
+// choice cards; each thread emerges from the player's hand and connects
+// to one card. State knobs control draw / pull / hold.
+function ThreadOverlay({ phase /* 'pre' | 'draw' | 'taut' | 'resolve' */, chosen='heart' }) {
+  // anchor: bottom-center of overlay (player's hand). targets: top of each card.
+  const ANCHOR = [330, 380];
+  const T = {
+    iron:  { color:'#ff6b6b', x:110 },
+    eye:   { color:'#44aaff', x:330 },
+    heart: { color:'#cc66ff', x:550 },
+  };
+  const path = (id) => `M${ANCHOR[0]},${ANCHOR[1]} C${ANCHOR[0]},260 ${T[id].x},220 ${T[id].x},90`;
+  const opacity = (id) => {
+    if (phase==='pre') return 0;
+    if (phase==='resolve') return id===chosen ? 1 : .15;
+    return .85;
+  };
+  const stroke = (id) => phase==='resolve' && id===chosen ? 2 : 1.1;
+  return (
+    <svg style={{ position:'absolute', inset:0, pointerEvents:'none' }} viewBox="0 0 660 420" preserveAspectRatio="none">
+      <defs>
+        {Object.entries(T).map(([id, t]) => (
+          <filter key={id} id={`g-${id}`}>
+            <feGaussianBlur stdDeviation={phase==='resolve' && id===chosen ? 2.4 : 1.2} />
+          </filter>
+        ))}
+      </defs>
+      {Object.entries(T).map(([id, t]) => (
+        <g key={id} style={{ transition:'opacity .4s ease' }} opacity={opacity(id)}>
+          {/* glow */}
+          <path d={path(id)} stroke={t.color} strokeWidth={4} fill="none" filter={`url(#g-${id})`} opacity={.45}
+            strokeDasharray="600" strokeDashoffset={phase==='pre' ? 600 : 0}
+            style={{ transition: phase==='draw' ? 'stroke-dashoffset 700ms ease-out' : 'stroke-dashoffset 200ms' }}
+          />
+          {/* core */}
+          <path d={path(id)} stroke={t.color} strokeWidth={stroke(id)} fill="none" opacity={.95}
+            strokeDasharray="600" strokeDashoffset={phase==='pre' ? 600 : 0}
+            style={{ transition: phase==='draw' ? 'stroke-dashoffset 700ms ease-out' : 'stroke-dashoffset 200ms' }}
+          />
+          {/* node — node breathes during taut */}
+          <circle cx={t.x} cy={90} r={phase==='taut' ? 4.5 : 3} fill={t.color}>
+            {phase==='taut' && (
+              <animate attributeName="r" values="3;5;3" dur="900ms" repeatCount="indefinite"/>
+            )}
+          </circle>
+          {/* anchor mote */}
+          <circle cx={ANCHOR[0]} cy={ANCHOR[1]} r="2.5" fill={t.color} opacity=".8"/>
+        </g>
+      ))}
+      {/* breath fog (whole frame) — only during INHALE */}
+      {phase==='pre' && (
+        <rect x="0" y="0" width="660" height="420" fill="url(#breath)" opacity=".25"/>
+      )}
+    </svg>
+  );
+}
+
+// A small mock of just the choice-card row, scaled to fit 660×420
+function MiniStage({ phase, chosen, dim, ringFor }) {
+  return (
+    <div style={{ position:'relative', width:'100%', height:'100%',
+      background: 'radial-gradient(80% 60% at 50% 100%, #1a1418 0%, var(--bg-abyss) 80%)',
+      padding:'24px 30px', boxSizing:'border-box', overflow:'hidden' }}>
+      <div className="label" style={{ fontSize:10, marginBottom:6, color: phase==='pre' ? 'var(--accent-gold)' : 'var(--text-tertiary)' }}>
+        { phase==='pre'      ? 'EIRA HAS COMMITTED · THE WORLD HOLDS ITS BREATH'
+        : phase==='draw'     ? 'THE THREADS COME UP'
+        : phase==='taut'     ? 'THEY GO TAUT — ONE WILL HOLD'
+        :                      'ONE THREAD HOLDS · THE OTHERS GO SLACK' }
+      </div>
+      <div style={{ position:'relative', height:'calc(100% - 22px)' }}>
+        <ChoiceCards selected={chosen} dim={dim} ringFor={ringFor}/>
+        <ThreadOverlay phase={phase} chosen={chosen}/>
+        {/* dust motes */}
+        {phase==='taut' && Array.from({length:8}).map((_,i)=>(
+          <i key={i} style={{
+            position:'absolute', left: 30 + i*70, bottom: 30 + (i%3)*16,
+            width:2, height:2, borderRadius:99, background:'#ffd28066',
+            animation:`mote-drift ${1.6 + (i%4)*.3}s ease-in-out ${i*.12}s infinite`,
+            ['--mx']:`${(i%2?-1:1) * 30}px`, ['--my']:`-${30+i*4}px`,
+          }}/>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MotionSoundBrief() {
+  return (
+    <div style={{ padding:'20px 24px', background:'var(--bg-deep)', borderRadius:8,
+      border:'1px solid var(--border-subtle)', height:'100%', boxSizing:'border-box', overflow:'auto' }}>
+      <div className="label gold-label" style={{ fontSize:11 }}>MOTION + SOUND BRIEF</div>
+      <div className="display" style={{ fontSize:18, marginTop:6 }}>The held-breath, in five beats</div>
+      <div className="gold-bar" style={{ marginTop:8, marginBottom:14 }}/>
+
+      <div className="prose" style={{ fontSize:14 }}>
+        <p>The reveal is the only moment in the encounter where the world stops listening to the player. From the click to the resolution we have <strong>1.6 seconds</strong>. The frame is divided into five micro-beats: <em>commit (60ms)</em> — <em>inhale (380ms)</em> — <em>threads draw (520ms)</em> — <em>tension (420ms)</em> — <em>resolve (240ms)</em>. The cards do not move. The world dims by 8%. The chosen lean's card holds its color; the other two desaturate to 35% opacity over the resolve beat.</p>
+
+        <p>Threads emerge from <strong>below the lean cards</strong> — the player's hand position, the only spot in the layout the eye accepts as a god's-eye-view origin. There are exactly three threads, one per choice, each in its sphere color (Iron <span className="term" style={{borderBottomColor:'var(--sphere-force-bright)'}}>force-red</span>, Eye <span className="term" style={{borderBottomColor:'var(--sphere-mind-bright)'}}>mind-blue</span>, Heart <span className="term" style={{borderBottomColor:'var(--sphere-spirit-bright)'}}>spirit-violet</span>). They draw with <code>stroke-dashoffset</code>, ease-out, <strong>720ms</strong> — the only moving lines in the frame, intensely bright but no thicker than 1.2px. They do not glow ambient; only the bright node at each card's top breathes.</p>
+
+        <p>At <strong>tension</strong>, all three threads pulse subtly along their length (1px width oscillation, 900ms ease-in-out, single cycle) — the audible-thrum-before-Hades-picks beat. Dust motes drift upward along each thread at 30% opacity. <strong>This is the moment the player's hand is off the mouse.</strong> Hold it for 420ms — long enough that an experienced player will lean in, short enough that a casual one doesn't reach for the keyboard.</p>
+
+        <p>At <strong>resolve</strong>, two threads go slack and dim to 15% opacity over 240ms ease-in. The chosen thread <em>brightens</em> by 30% and its card receives a single one-shot <code>pulse-gold</code> ring (designed primitive — never continuous). The dimmed cards do not animate further; their stillness is the message. The next-beat affordance fades in below at +400ms.</p>
+
+        <div className="label" style={{ fontSize:10, marginTop:18 }}>SOUND</div>
+        <p style={{ marginTop:6 }}>One layered cue, three textures stacked. (1) <em>Inhale</em> — a held breath at -28dB, 380ms, mono center, low-pass at 800Hz. (2) <em>Thrum</em> — a low cello drone fading in across the draw + tension beats, root only, no harmony, peaks at -16dB on the taut beat. (3) <em>Resolve</em> — a single struck struck-string node, sphere-tinted: a low fourth on Iron, an open fifth on Eye, a soft minor third on Heart. The two slackening threads emit a barely-audible <em>release</em> — fingertip leaving wet thread. No drum. No riser. No vocalisation. The total cue is shorter than the visual sequence so the prose log lands in silence.</p>
+
+        <div className="label" style={{ fontSize:10, marginTop:18 }}>WHAT TO BUILD FIRST</div>
+        <p style={{ marginTop:6 }}>The <code>ThreadOverlay</code> SVG component (one per encounter) drawn over the choice card row. Phase machine: <code>idle → committed → drawing → taut → resolving → settled</code>. Settled is the existing post-resolve UI; the overlay unmounts after 600ms. The pulse-gold ring on the winning card uses the existing <code>pulseGoldFlare</code> keyframe — <strong>do not invent a new glow</strong>. Other lean cards desaturate via <code>filter: saturate(0.35) opacity(0.35)</code>; do not transition the layout.</p>
+      </div>
+    </div>
+  );
+}
+
+window.MiniStage = MiniStage;
+window.MotionSoundBrief = MotionSoundBrief;
+
+</script>
+<script type="text/babel" data-presets="react">
+// === parts/moment2-aftermath.jsx ===
+// moment2-aftermath.jsx — the registration animation set + sequencing.
+// Each of the nine effect kinds gets a small "card flip" landing animation
+// that crystallises into the part of the hero panel where the eye already is.
+// We render nine static-but-animated example tiles plus a sequencing diagram.
+
+const EFFECTS = [
+  {
+    kind: 'intelligence',
+    sphere: 'eye',
+    where: 'Items rail · hero panel',
+    title: 'A piece of intelligence lands',
+    body: 'A new clue card materialises in her items rail. The clue is not numerical — it is a sentence she now knows.',
+    sample: { label:'CLUE · NEW', name:"The trader's satchel is sewn shut from the inside.", tail:'eye · she will see it in him next time' },
+    motion: 'Card-flip in (rotateX 80→0, 420ms ease-out) at the items rail. Single mind-blue thread draws from the choice node into the slot at +120ms. One pulse-gold ring on settle.',
+  },
+  {
+    kind: 'condition_attachment',
+    sphere: 'spirit',
+    where: 'Disposition strip · hero panel',
+    title: 'A condition attaches',
+    body: 'The protagonist now carries a state. The condition strip beneath her name swaps in a new pill, with a single italicised qualifier.',
+    sample: { label:'CONDITION', name:'Sworn-witness', tail:'she has spoken what she saw' },
+    motion: 'Old pill cross-fades out 200ms; new pill fades up + 4px slide, 240ms; spirit-violet thread tugs from her chest in the portrait into the pill on settle.',
+  },
+  {
+    kind: 'reputation_tally',
+    sphere: 'iron',
+    where: 'Cast tile · right rail',
+    title: 'A reputation tally moves',
+    body: 'Someone in the cast adjusts their disposition. Their tile receives a soft sphere-pulse along its left edge; the disposition phrase rewrites in place with a one-character-at-a-time draw.',
+    sample: { label:'CAPTAIN VEIREN', name:'disposition: cooled, watching', tail:'iron · he marks her now' },
+    motion: 'Sphere-coloured 3px left border pulses once (pulseGoldFlare keyframe, retinted). Old phrase fades out 160ms; new phrase types in 280ms; never a numeric tick.',
+  },
+  {
+    kind: 'reputation_score',
+    sphere: 'iron',
+    where: 'Cast tile · prose band',
+    title: 'A reputation score crosses a threshold',
+    body: 'The qualitative band a faction holds her in moves up or down a step. The band-word rewrites; no numbers, ever.',
+    sample: { label:'CIVIC GUARD OF BREN', name:'a quiet certainty → a name they remember', tail:'crossed: from useful to known' },
+    motion: 'Old band word fades through a thread of force-red (180ms), the new word lands; soft horizontal pull (taut→relax, single cycle) along the cast tile.',
+  },
+  {
+    kind: 'encounter_seed',
+    sphere: 'time',
+    where: 'Bottom of hero panel · "moments that could echo"',
+    title: 'An encounter seed plants',
+    body: 'A future beat becomes possible. A fresh card slides into the moments-that-could-echo strip with a faint orange ring. It is dim — it is not yet promised.',
+    sample: { label:'SEED · ELIGIBLE', name:'A reckoning at the iron market.', tail:'time · 3–7 turns from now · veiren-related' },
+    motion: 'Slide-up 8px + fade, 360ms. Time-orange node pulses once at the corner. The strip auto-scrolls so the new card is visible if it would otherwise sit below the fold.',
+  },
+  {
+    kind: 'hidden_mark',
+    sphere: 'darkness',
+    where: 'Portrait · hero panel',
+    title: 'A hidden mark settles on her',
+    body: 'Something is true of her now that she does not know. The portrait gains a single rim-thread visible only to the player; copy in the strip is honest about what it is and is not.',
+    sample: { label:'HIDDEN · ONLY YOU SEE THIS', name:'Marked by coincidence', tail:'this scene becomes biographical' },
+    motion: 'A single dark-violet thread draws around the portrait edge (700ms). Pill appears beneath the portrait with the player-only treatment (dotted outline, 35% opacity background).',
+  },
+  {
+    kind: 'recent_event',
+    sphere: 'heart',
+    where: '"Moments that could echo" · hero panel',
+    title: 'A recent event registers',
+    body: 'What just happened becomes biography. A new card slides into the echo strip, marked INVOKED THIS BEAT — the same place callbacks come from in future encounters.',
+    sample: { label:'INVOKED THIS BEAT', name:'She held the captain\'s eye and did not look away.', tail:'heart-related · 0 turns ago' },
+    motion: 'Card-flip-in into the echo strip; the gold callback ring (the same primitive used for the active callback above the prose) pulses on settle.',
+  },
+  {
+    kind: 'spawn_artifact',
+    sphere: 'matter',
+    where: 'Items rail · hero panel',
+    title: 'An artifact comes into her hand',
+    body: 'A physical thing exists with her now. The items rail flips a new tile; the tile carries a single matter-thread along its edge (per the artifact-art spec).',
+    sample: { label:'ITEM · NEW', name:"A pressed iron coin, warm.", tail:'matter · favor of the captain' },
+    motion: 'Card-flip-in (rotateX 80→0, 460ms — slightly heavier than intelligence). Faint matter-umber rim glow holds for 600ms then settles to none.',
+  },
+  {
+    kind: 'faction_*',
+    sphere: 'order',
+    where: 'Scene state · right rail',
+    title: 'A faction moves',
+    body: 'A faction chip in the scene-state pulses; the new tone is verbal, not numerical. If the change is large enough, the chip swaps colour-class (allied → opposed, etc.).',
+    sample: { label:'CIVIC GUARD OF BREN', name:'allied → wary', tail:'order · because of what she said' },
+    motion: 'Chip border pulses once with the faction\'s sphere colour (single cycle, 800ms). Cross-fade between old and new tone-words, 200ms.',
+  },
+  {
+    kind: 'archetype_drift_register',
+    sphere: 'chaos',
+    where: 'Capability bands · hero panel',
+    title: 'Her archetype drifts',
+    body: 'Who-she-is moves a half-step. One of the IRON / EYE / HEART bands grows or shrinks by one dot, and the band\'s italic qualifier rewrites.',
+    sample: { label:'HEART · DRIFT', name:'her deepest thread → the thread she lives by', tail:'+1 dot · she is more this now' },
+    motion: 'The dot fills (single dot, 240ms ease-out, sphere colour). The italic phrase fades through and lands. A faint chaos-grey particle drifts up from the band — drift, never a stat-up animation.',
+  },
+];
+
+function EffectTile({ e, idx, animate }) {
+  const sCol = `var(--sphere-${e.sphere==='iron' ? 'force' : e.sphere==='eye' ? 'mind' : e.sphere==='heart' ? 'spirit' : e.sphere}-bright)`;
+  const [rev, setRev] = React.useState(0);
+  React.useEffect(() => {
+    if (!animate) return;
+    const t = setInterval(() => setRev(r => r+1), 4200 + idx*120);
+    return () => clearInterval(t);
+  }, [animate, idx]);
+  return (
+    <div className="panel" style={{ padding:14, display:'flex', flexDirection:'column', gap:8, position:'relative', overflow:'hidden' }}>
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
+        <div className="label gold-label" style={{ fontSize:10 }}>0{idx+1} · {e.kind.toUpperCase()}</div>
+        <div className="label" style={{ fontSize:9, color: sCol }}>{e.sphere.toUpperCase()}</div>
+      </div>
+      <div className="display" style={{ fontSize:15 }}>{e.title}</div>
+      <div className="prose" style={{ fontSize:12, color:'var(--text-tertiary)' }}>{e.body}</div>
+      <div className="label" style={{ fontSize:9, marginTop:2, color:'var(--text-muted)' }}>LANDS IN: {e.where.toUpperCase()}</div>
+
+      {/* The "card lands" preview — keyed off rev so it replays */}
+      <div key={rev} className="panel" style={{
+        padding:'8px 10px', marginTop:4, perspective:'600px',
+        animation: animate ? 'card-flip-in 600ms cubic-bezier(.2,.7,.2,1) 1' : 'none',
+        ['--mark-color']: sCol,
+        borderColor: sCol, background: 'linear-gradient(90deg, color-mix(in oklab, '+sCol+' 8%, transparent), transparent)'
+      }}>
+        <div className="label" style={{ fontSize:9, color: sCol }}>{e.sample.label}</div>
+        <div style={{ fontSize:13, marginTop:2 }}>{e.sample.name}</div>
+        <div className="prose" style={{ fontSize:11, fontStyle:'italic', color:'var(--text-tertiary)' }}>{e.sample.tail}</div>
+      </div>
+
+      <div className="prose" style={{ fontSize:11, color:'var(--text-secondary)', marginTop:6,
+        borderTop:'1px solid var(--border-subtle)', paddingTop:8 }}>
+        <em>Motion · </em>{e.motion}
+      </div>
+    </div>
+  );
+}
+
+function NineEffectsGrid() {
+  return (
+    <div style={{ padding:18, height:'100%', boxSizing:'border-box', overflow:'auto', background:'var(--bg-abyss)' }}>
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom:14 }}>
+        <div>
+          <div className="label gold-label" style={{ fontSize:11 }}>AFTERMATH · NINE EFFECT KINDS</div>
+          <div className="display" style={{ fontSize:20, marginTop:4 }}>Crystallisation, not notification</div>
+          <div className="prose" style={{ fontSize:12, color:'var(--text-tertiary)', marginTop:4 }}>
+            Each effect lands where the eye already is. None of these is a banner; none of these is a list.
+          </div>
+        </div>
+        <div className="gold-bar"/>
+      </div>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:12 }}>
+        {EFFECTS.map((e, i) => <EffectTile key={e.kind} e={e} idx={i} animate />)}
+      </div>
+    </div>
+  );
+}
+
+function SequencingPlan() {
+  // visual timeline: a single resolution can fire 1-N effects. Cap visible
+  // simultaneous landings at 3; queue the rest with 220ms gaps. Player-facing
+  // effects (hidden mark, archetype drift) get explicit slots regardless of queue.
+  const lanes = [
+    { name:'PROSE LOG',          color:'var(--text-secondary)', ranges:[[0,1.0,'the line that resolved']] },
+    { name:'CHOICE CARDS',       color:'var(--accent-gold)',    ranges:[[0,0.6,'winner brightens · others slack']] },
+    { name:'HERO PANEL',         color:'var(--sphere-spirit-bright)', ranges:[[0.6,1.5,'first registration · card flip'],[1.7,2.4,'second registration']] },
+    { name:'RIGHT RAIL · CAST',  color:'var(--sphere-force-bright)',  ranges:[[1.0,1.7,'reputation tally']] },
+    { name:'RIGHT RAIL · STATE', color:'var(--sphere-mind-bright)',   ranges:[[1.4,2.0,'faction chip · scene threads']] },
+    { name:'ECHO STRIP',         color:'var(--sphere-time-bright)',   ranges:[[2.4,3.2,'recent_event · this beat']] },
+    { name:'PLAYER-ONLY',        color:'var(--sphere-darkness-bright)',ranges:[[3.2,4.0,'hidden_mark · last']] },
+  ];
+  const T = 4.2;
+  return (
+    <div style={{ padding:'20px 24px', height:'100%', boxSizing:'border-box', background:'var(--bg-deep)', overflow:'auto' }}>
+      <div className="label gold-label" style={{ fontSize:11 }}>SEQUENCING PLAN</div>
+      <div className="display" style={{ fontSize:18, marginTop:6 }}>Many effects, one breath</div>
+      <div className="gold-bar" style={{ marginTop:8, marginBottom:14 }}/>
+
+      <div className="prose" style={{ fontSize:13, marginBottom:14 }}>
+        <p>A single resolution can fire up to nine effects. They cannot all land at once — the eye splits, the dopamine flattens. The order is fixed by <em>scope</em>, not by content: tightest first, widest last. Player-only effects (<code>hidden_mark</code>) always land last so the world resolves before the secret does.</p>
+      </div>
+
+      <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+        {lanes.map(l => (
+          <div key={l.name} style={{ display:'grid', gridTemplateColumns:'170px 1fr', gap:10, alignItems:'center' }}>
+            <div className="label" style={{ fontSize:10, color: l.color }}>{l.name}</div>
+            <div style={{ position:'relative', height:22, background:'var(--bg-surface)', border:'1px solid var(--border-subtle)', borderRadius:4 }}>
+              {l.ranges.map(([a,b,lbl],i) => (
+                <div key={i} style={{
+                  position:'absolute', left:`${(a/T)*100}%`, width:`${((b-a)/T)*100}%`, top:2, bottom:2,
+                  background: `linear-gradient(90deg, ${l.color}40, ${l.color}20)`,
+                  border:`1px solid ${l.color}`, borderRadius:3,
+                  display:'flex', alignItems:'center', paddingLeft:8,
+                  fontSize:10, color:'var(--text-secondary)', fontStyle:'italic', whiteSpace:'nowrap',
+                }}>{lbl}</div>
+              ))}
+            </div>
+          </div>
+        ))}
+        {/* time axis */}
+        <div style={{ display:'grid', gridTemplateColumns:'170px 1fr', gap:10, marginTop:6 }}>
+          <div/>
+          <div style={{ display:'flex', justifyContent:'space-between' }}>
+            {[0,1,2,3,4].map(s => (
+              <span key={s} className="label" style={{ fontSize:9, color:'var(--text-muted)' }}>{s}.0s</span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="prose" style={{ fontSize:12, marginTop:18, color:'var(--text-secondary)' }}>
+        <p><strong>Rules of thumb.</strong> No two card-flips overlap by more than 50%. Pulse rings (gold or sphere) never stack — the second is suppressed if a first is still in its decay. Audio is cued only on the <em>first</em> registration; further effects land in the silence the resolve cue leaves behind. If more than five effects fire from one resolution, the second wave is gated until the first completes (a "second breath" pattern), with a faint <code>… more is settling</code> line in the prose log.</p>
+      </div>
+    </div>
+  );
+}
+
+window.NineEffectsGrid = NineEffectsGrid;
+window.SequencingPlan = SequencingPlan;
+
+</script>
+<script type="text/babel" data-presets="react">
+// === parts/moment3-detail.jsx ===
+// moment3-detail.jsx — the click-through detail-page pattern.
+// Five node types: actor, item, faction, place, event.
+// Each rendered as a self-contained modal, sized to fit a 720×620 artboard.
+// Plus: a stacked-modals + breadcrumb diagram + a paused-encounter behaviour note.
+
+function Crumbs({ trail, active }) {
+  return (
+    <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10, flexWrap:'wrap' }}>
+      {trail.map((c, i) => (
+        <React.Fragment key={i}>
+          <span className="label" style={{
+            fontSize:10,
+            color: i === active ? 'var(--accent-gold)' : 'var(--text-muted)',
+            cursor: i < trail.length-1 ? 'pointer' : 'default',
+          }}>{c}</span>
+          {i < trail.length - 1 && <span className="crumb-dot"/>}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+}
+
+function ModalShell({ trail, kind, title, sub, sphere, children, w=720, h=620 }) {
+  const sCol = sphere ? `var(--sphere-${sphere}-bright)` : 'var(--accent-gold)';
+  return (
+    <div style={{
+      width:w, height:h, position:'relative',
+      background:'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))',
+      border:'1px solid var(--border-gold)',
+      borderRadius:12,
+      boxShadow:'0 8px 32px rgba(0,0,0,0.6)',
+      overflow:'hidden', display:'flex', flexDirection:'column',
+    }}>
+      {/* header */}
+      <div style={{ padding:'14px 18px', borderBottom:'1px solid var(--border-subtle)' }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
+          <div style={{ flex:1, minWidth:0 }}>
+            <Crumbs trail={trail} active={trail.length-1}/>
+            <div className="label" style={{ fontSize:10, color: sCol }}>{kind.toUpperCase()}</div>
+            <div className="display" style={{ fontSize:22, marginTop:2 }}>{title}</div>
+            {sub && <div className="label" style={{ fontSize:10, marginTop:4, color:'var(--text-tertiary)' }}>{sub}</div>}
+          </div>
+          <div style={{ display:'flex', gap:6, alignItems:'center' }}>
+            <button style={btn}>← back</button>
+            <button style={{...btn, padding:'4px 8px'}}>✕</button>
+          </div>
+        </div>
+      </div>
+      <div style={{ flex:1, minHeight:0, overflow:'auto', padding:'14px 18px' }}>{children}</div>
+      <div style={{ padding:'10px 18px', borderTop:'1px solid var(--border-subtle)',
+                    display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+        <div className="label" style={{ fontSize:9, color:'var(--text-muted)' }}>ESC closes · ← steps back · the encounter remains paused</div>
+        <button style={{...btn, color:'var(--accent-gold)', borderColor:'var(--border-accent)'}}>open her sheet ↗</button>
+      </div>
+    </div>
+  );
+}
+
+const btn = {
+  background:'transparent', color:'var(--text-tertiary)',
+  border:'1px solid var(--border-subtle)', borderRadius:6,
+  padding:'4px 10px', fontFamily:'var(--font-display)', fontSize:11,
+  letterSpacing:'.1em', textTransform:'uppercase', cursor:'pointer',
+};
+
+function Section({ label, children, gold }) {
+  return (
+    <div style={{ marginBottom:14 }}>
+      <div className="label" style={{ fontSize:10, marginBottom:6, color: gold?'var(--accent-gold)':'var(--text-tertiary)' }}>{label}</div>
+      {children}
+    </div>
+  );
+}
+
+// ── ACTOR ─────────────────────────────────────────────────────────
+function ActorDetail() {
+  return (
+    <ModalShell
+      trail={['ENCOUNTER', 'CAPTAIN VEIREN']}
+      kind="ACTOR" title="Captain Veiren"
+      sub="IRON · CIVIC GUARD · HONOUR-BOUND" sphere="force">
+      <div style={{ display:'grid', gridTemplateColumns:'180px 1fr', gap:14 }}>
+        <PortraitPlaceholder w={180} h={220} sphere="iron" subject="Veiren" />
+        <div>
+          <Section label="DISPOSITION TOWARD HER" gold>
+            <div className="prose" style={{ fontSize:14 }}>
+              <em>suspicious, but he remembers her.</em> Her name has weight in his mouth. He has not yet decided what to do with that weight.
+            </div>
+          </Section>
+          <Section label="WHAT SHE IS TO HIM">
+            <div className="prose" style={{ fontSize:13 }}>
+              A debt and a winter ago. The girl who held a frightened smuggler's life in her hand at the iron market and gave it back. He has not forgiven himself for what he asked of her.
+            </div>
+          </Section>
+        </div>
+      </div>
+      <Section label="THREADS BETWEEN THEM">
+        <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+          {[
+            ['authority taut','var(--sphere-force-bright)'],
+            ['the iron market debt','var(--accent-gold)'],
+            ['her vow, his witness','var(--sphere-spirit-bright)'],
+          ].map(([t,c]) => (
+            <span key={t} className="panel" style={{ padding:'4px 10px', fontSize:12, color:'var(--text-secondary)', borderColor:c }}>
+              <i style={{ display:'inline-block', width:14, height:1, background:c, marginRight:6, verticalAlign:'middle' }}/>
+              {t}
+            </span>
+          ))}
+        </div>
+      </Section>
+      <Section label="WHEN THIS THREAD LAST PULLED">
+        <div className="panel" style={{ padding:'10px 12px' }}>
+          <div className="label" style={{ fontSize:9 }}>47 TURNS AGO · THE IRON MARKET</div>
+          <div className="prose" style={{ fontSize:12, fontStyle:'italic', color:'var(--text-secondary)', marginTop:4 }}>
+            "She held the boy's life in her hand and gave it back. The captain asked her, and she answered."
+          </div>
+        </div>
+      </Section>
+    </ModalShell>
+  );
+}
+
+// ── ITEM ──────────────────────────────────────────────────────────
+function ItemDetail() {
+  return (
+    <ModalShell
+      trail={['ENCOUNTER', 'EIRA OF BREN', "CAPTAIN'S TOKEN"]}
+      kind="ITEM · IN HER POSSESSION" title="Captain's token"
+      sub="MATTER · A SMALL FAVOR · WORN AT THE COLLAR" sphere="matter">
+      <div style={{ display:'grid', gridTemplateColumns:'160px 1fr', gap:14 }}>
+        <div className="panel" style={{ width:160, height:160, display:'grid', placeItems:'center',
+          background:'radial-gradient(circle at 50% 40%, #3a2a1a 0%, #0c0c10 80%)' }}>
+          <div style={{ width:60, height:60, borderRadius:99, border:'2px solid var(--sphere-matter-bright)',
+            boxShadow:'0 0 20px var(--sphere-matter)', position:'relative' }}>
+            <i style={{ position:'absolute', inset:8, borderRadius:99,
+              background:'radial-gradient(circle, #d4a87a 0%, #5a3d2c 70%)' }}/>
+          </div>
+        </div>
+        <div>
+          <Section label="WHAT IT MEANS HERE" gold>
+            <div className="prose" style={{ fontSize:14 }}>
+              The civic guard remembers her. Pressed iron, warm from her skin. <em>Bringing it into a queue is not nothing.</em>
+            </div>
+          </Section>
+          <Section label="WHO GAVE IT">
+            <div className="prose" style={{ fontSize:13 }}>
+              <span className="term">Captain Veiren</span>, the night of the iron market. He pressed it into her hand and did not say why.
+            </div>
+          </Section>
+        </div>
+      </div>
+      <Section label="HOW IT TILTS THIS SCENE">
+        <div className="prose" style={{ fontSize:13 }}>
+          On any IRON lean, the captain hesitates a half-beat longer. He cannot pretend he does not see her.
+        </div>
+      </Section>
+    </ModalShell>
+  );
+}
+
+// ── FACTION ───────────────────────────────────────────────────────
+function FactionDetail() {
+  return (
+    <ModalShell
+      trail={['ENCOUNTER', 'SCENE STATE', 'CIVIC GUARD OF BREN']}
+      kind="FACTION" title="Civic Guard of Bren"
+      sub="ORDER · IRON-WEIGHTED · HEADQUARTERED AT THE SOUTH GATE" sphere="order">
+      <Section label="HOW THEY HOLD HER" gold>
+        <div className="prose" style={{ fontSize:14 }}>
+          <em>A name they remember.</em> Not yet useful. Not yet dangerous. They have not decided.
+        </div>
+      </Section>
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+        <Section label="ALLIED WITH">
+          <div className="panel" style={{ padding:'8px 10px', borderColor:'var(--positive)' }}>
+            <div style={{ fontSize:13 }}>The Council of Bren</div>
+            <div className="prose" style={{ fontSize:11, color:'var(--text-tertiary)', fontStyle:'italic' }}>thin treaty · the gates open at council's word</div>
+          </div>
+        </Section>
+        <Section label="OPPOSED">
+          <div className="panel" style={{ padding:'8px 10px', borderColor:'var(--negative)' }}>
+            <div style={{ fontSize:13 }}>The Salt-runners</div>
+            <div className="prose" style={{ fontSize:11, color:'var(--text-tertiary)', fontStyle:'italic' }}>suspected · this scene's nervous trader</div>
+          </div>
+        </Section>
+      </div>
+      <Section label="REPUTATIONS THEY HOLD">
+        <div className="panel" style={{ padding:10 }}>
+          <div style={{ display:'flex', justifyContent:'space-between', fontSize:13 }}>
+            <span>Eira of Bren</span><em style={{ color:'var(--text-tertiary)' }}>a name they remember</em>
+          </div>
+          <div style={{ height:1, background:'var(--border-subtle)', margin:'8px 0' }}/>
+          <div style={{ display:'flex', justifyContent:'space-between', fontSize:13 }}>
+            <span>Halren the Lawful</span><em style={{ color:'var(--text-tertiary)' }}>useful, late for council</em>
+          </div>
+        </div>
+      </Section>
+    </ModalShell>
+  );
+}
+
+// ── PLACE ─────────────────────────────────────────────────────────
+function PlaceDetail() {
+  return (
+    <ModalShell
+      trail={['ENCOUNTER', 'SOUTH GATE OF BREN']}
+      kind="PLACE" title="South Gate of Bren"
+      sub="DUSK · LANTERNS LIT · A CHOKE-POINT" sphere="time">
+      <PlacePlaceholder h={180}/>
+      <Section label="WHAT THIS PLACE WANTS" gold>
+        <div className="prose" style={{ fontSize:14 }}>
+          The room tilts toward AUTHORITY. Lanterns are lit; the captain has the light at his back. Anyone who speaks softly here will be heard by the wrong people.
+        </div>
+      </Section>
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+        <Section label="CONDITIONS HERE">
+          <div className="prose" style={{ fontSize:12 }}>
+            choke-point · lanterns lit · the queue will not turn back without violence
+          </div>
+        </Section>
+        <Section label="MEMORY">
+          <div className="prose" style={{ fontSize:12, fontStyle:'italic', color:'var(--text-tertiary)' }}>
+            "She passed through this gate the night the iron market burned. She remembers the smell."
+          </div>
+        </Section>
+      </div>
+    </ModalShell>
+  );
+}
+
+// ── EVENT ─────────────────────────────────────────────────────────
+function EventDetail() {
+  return (
+    <ModalShell
+      trail={['ENCOUNTER', 'EIRA', 'MOMENTS', 'THE IRON MARKET']}
+      kind="EVENT · LAST WINTER" title="The iron market"
+      sub="VEIREN-RELATED · INVOKED THIS BEAT · 47 TURNS AGO" sphere="time">
+      <Section label="WHAT HAPPENED" gold>
+        <div className="prose" style={{ fontSize:14 }}>
+          A frightened smuggler ran into her arms in the iron market and Captain Veiren came after him with a drawn sword. She put her body between them and would not move. The boy lived. The captain pressed a token into her hand and did not speak of it.
+        </div>
+      </Section>
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+        <Section label="WHO WAS THERE">
+          <div className="panel" style={{ padding:'8px 10px', display:'flex', gap:8 }}>
+            <PortraitPlaceholder w={36} h={36} sphere="iron" subject=""/>
+            <div>
+              <div style={{ fontSize:12 }}><span className="term">Captain Veiren</span></div>
+              <div className="prose" style={{ fontSize:10.5, color:'var(--text-tertiary)' }}>witness · his honour now hers</div>
+            </div>
+          </div>
+        </Section>
+        <Section label="WHAT IT BECAME">
+          <div className="prose" style={{ fontSize:12 }}>
+            The vow to the small folk · the captain's token · a name the civic guard remembers
+          </div>
+        </Section>
+      </div>
+      <Section label="HOW IT INVOKES NOW">
+        <div className="panel" style={{ padding:'8px 10px', borderColor:'var(--accent-gold)',
+            background:'linear-gradient(90deg, var(--accent-gold-glow), transparent)' }}>
+          <div className="prose" style={{ fontSize:13, fontStyle:'italic' }}>
+            The captain stops in front of her. He has not forgotten the iron market. <em>This beat invokes that one.</em>
+          </div>
+        </div>
+      </Section>
+    </ModalShell>
+  );
+}
+
+// ── STACKING DIAGRAM ──────────────────────────────────────────────
+function StackingDiagram() {
+  // miniature representation: encounter dimmed, two stacked modals offset.
+  return (
+    <div style={{ width:'100%', height:'100%', position:'relative', overflow:'hidden',
+      background:'var(--bg-abyss)' }}>
+      {/* dimmed encounter behind */}
+      <div style={{ position:'absolute', inset:0, opacity:.32, filter:'blur(2px)' }}>
+        <EncounterShell paused selected="heart" dim ringFor="heart"/>
+      </div>
+      <div style={{ position:'absolute', inset:0, background:'rgba(10,10,14,.72)' }}/>
+
+      {/* modal 1 — actor */}
+      <div style={{ position:'absolute', left:60, top:50, transform:'translateZ(0)' }}>
+        <div style={{ transform:'scale(.62)', transformOrigin:'top left', filter:'brightness(.8) saturate(.85)' }}>
+          <ActorDetail />
+        </div>
+      </div>
+      {/* modal 2 — event, stacked above */}
+      <div style={{ position:'absolute', left:160, top:130 }}>
+        <div style={{ transform:'scale(.62)', transformOrigin:'top left' }}>
+          <EventDetail />
+        </div>
+      </div>
+
+      {/* annotation */}
+      <div style={{ position:'absolute', right:24, bottom:24, width:300 }}>
+        <div className="panel gold" style={{ padding:14, background:'rgba(17,17,20,.92)' }}>
+          <div className="label gold-label" style={{ fontSize:10 }}>STACKING BEHAVIOUR</div>
+          <div className="prose" style={{ fontSize:12, marginTop:6 }}>
+            Each modal tints the layer beneath by 28% black. The encounter underneath is <em>paused</em> — beat indicator dims, no auto-advance, ambient sound ducks 6dB. ESC closes the topmost; ← walks the breadcrumb back. Max stack depth: 4 — beyond that, the trail collapses into a "…" segment.
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+window.ActorDetail = ActorDetail;
+window.ItemDetail = ItemDetail;
+window.FactionDetail = FactionDetail;
+window.PlaceDetail = PlaceDetail;
+window.EventDetail = EventDetail;
+window.StackingDiagram = StackingDiagram;
+
+</script>
+<script type="text/babel" data-presets="react">
+// === parts/app.jsx ===
+// app.jsx — top-level composition. Lays out three sections in a design canvas.
+const { DesignCanvas, DCSection, DCArtboard, DCNote } = window;
+
+function App() {
+  return (
+    <DesignCanvas>
+      {/* ── MOMENT 1 ─────────────────────────────────────────────── */}
+      <DCSection id="m1" title="Moment 1 · Dice / threads tension reveal"
+        subtitle="From commit to resolve in five frames. The held-breath, the thrum, the one-thread-holds.">
+
+        <DCArtboard id="m1-frame1" label="01 · Commit · the world holds its breath" width={680} height={460}>
+          <div className="tb-stage"><MiniStage phase="pre" chosen="heart"/></div>
+        </DCArtboard>
+
+        <DCArtboard id="m1-frame2" label="02 · Threads draw" width={680} height={460}>
+          <div className="tb-stage"><MiniStage phase="draw" chosen="heart"/></div>
+        </DCArtboard>
+
+        <DCArtboard id="m1-frame3" label="03 · Tension · they go taut" width={680} height={460}>
+          <div className="tb-stage"><MiniStage phase="taut" chosen="heart"/></div>
+        </DCArtboard>
+
+        <DCArtboard id="m1-frame4" label="04 · Resolve · one thread holds" width={680} height={460}>
+          <div className="tb-stage"><MiniStage phase="resolve" chosen="heart" dim ringFor="heart"/></div>
+        </DCArtboard>
+
+        <DCArtboard id="m1-frame5" label="05 · In place · what the player actually sees" width={1280} height={780}>
+          <EncounterShell paused selected="heart" dim ringFor="heart"/>
+        </DCArtboard>
+
+        <DCArtboard id="m1-brief" label="Motion + sound brief" width={620} height={780}>
+          <div className="tb-stage"><MotionSoundBrief/></div>
+        </DCArtboard>
+      </DCSection>
+
+      {/* ── MOMENT 2 ─────────────────────────────────────────────── */}
+      <DCSection id="m2" title="Moment 2 · Aftermath registration"
+        subtitle="Nine effect kinds. Each lands where the eye already is. Sequencing for many-at-once.">
+
+        <DCArtboard id="m2-grid" label="Nine effect kinds · landings + motion specs" width={1280} height={1100}>
+          <NineEffectsGrid/>
+        </DCArtboard>
+
+        <DCArtboard id="m2-seq" label="Sequencing plan · many effects, one breath" width={840} height={620}>
+          <SequencingPlan/>
+        </DCArtboard>
+      </DCSection>
+
+      {/* ── MOMENT 3 ─────────────────────────────────────────────── */}
+      <DCSection id="m3" title="Moment 3 · Click-through detail pages"
+        subtitle="Five node types · breadcrumbs · stacked modals · the encounter stays paused.">
+
+        <DCArtboard id="m3-actor" label="Actor · Captain Veiren" width={720} height={620}>
+          <div className="tb-stage" style={{ display:'grid', placeItems:'center', background:'var(--bg-abyss)' }}>
+            <ActorDetail/>
+          </div>
+        </DCArtboard>
+
+        <DCArtboard id="m3-item" label="Item · Captain's token" width={720} height={620}>
+          <div className="tb-stage" style={{ display:'grid', placeItems:'center', background:'var(--bg-abyss)' }}>
+            <ItemDetail/>
+          </div>
+        </DCArtboard>
+
+        <DCArtboard id="m3-faction" label="Faction · Civic Guard of Bren" width={720} height={620}>
+          <div className="tb-stage" style={{ display:'grid', placeItems:'center', background:'var(--bg-abyss)' }}>
+            <FactionDetail/>
+          </div>
+        </DCArtboard>
+
+        <DCArtboard id="m3-place" label="Place · South Gate of Bren" width={720} height={620}>
+          <div className="tb-stage" style={{ display:'grid', placeItems:'center', background:'var(--bg-abyss)' }}>
+            <PlaceDetail/>
+          </div>
+        </DCArtboard>
+
+        <DCArtboard id="m3-event" label="Event · The iron market" width={720} height={620}>
+          <div className="tb-stage" style={{ display:'grid', placeItems:'center', background:'var(--bg-abyss)' }}>
+            <EventDetail/>
+          </div>
+        </DCArtboard>
+
+        <DCArtboard id="m3-stack" label="Modal stacking · encounter paused beneath" width={1280} height={780}>
+          <StackingDiagram/>
+        </DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+
+</script>
+</body>
+</html>
