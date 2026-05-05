@@ -11,6 +11,7 @@
 - 2026-04-09-ambition-driven-strategic-actions-implementation-plan — `Docs\plans\2026-04-09-ambition-driven-strategic-actions-implementation-plan.md`
 - 2026-04-12-encounter-actor-test-strategy — `Docs\plans\2026-04-12-encounter-actor-test-strategy.md`
 - 2026-04-15-strategic-actions-ui-visibility-design — `Docs\plans\2026-04-15-strategic-actions-ui-visibility-design.md`
+- 2026-05-05-canonical-documentation-strategy-brainstorm — `Docs\plans\2026-05-05-canonical-documentation-strategy-brainstorm.md`
 - rel.generates — `Relationships\rel.generates.md`
 - rel.venerates — `Relationships\rel.venerates.md`
 - generate-hex-tile — `scripts\generate-hex-tile.py`
@@ -39,6 +40,7 @@
 
 ## auth
 - authoring-brief — `Docs\authoring-brief.md`
+- 2026-05-05-canonical-documentation-strategy — `Docs\plans\2026-05-05-canonical-documentation-strategy.md`
 - courtStrategicPack — `src\data\strategic-packs\courtStrategicPack.ts`
 
 ## rate-limit

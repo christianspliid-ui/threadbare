@@ -52,6 +52,12 @@
 - **OMENS** — `Design\Claudedesignhandooffs\threadbearer-design-system\project\ui_kits\threadbearer-game\RightRail.jsx`
 - **SphereIcon** — props: sphere, size — `Design\Claudedesignhandooffs\threadbearer-design-system\project\ui_kits\threadbearer-game\SphereIcon.jsx`
 - **TopBar** — props: cycle, season, doom, onSettings — `Design\Claudedesignhandooffs\threadbearer-design-system\project\ui_kits\threadbearer-game\TopBar.jsx`
+- **DC** — `Docs\plans\v7-design-pass\design-canvas.jsx`
+- **App** — `Docs\plans\v7-design-pass\parts\app.jsx`
+- **SPHERE** — `Docs\plans\v7-design-pass\parts\encounter-shell.jsx`
+- **Caption** — props: idx, label, beat — `Docs\plans\v7-design-pass\parts\moment1-reveal.jsx`
+- **EFFECTS** — `Docs\plans\v7-design-pass\parts\moment2-aftermath.jsx`
+- **Crumbs** — props: trail, active — `Docs\plans\v7-design-pass\parts\moment3-detail.jsx`
 - **ContentBrowser** — `src\App.tsx`
 - **AgentInfoCard** — props: graph, agentId, onClose — `src\components\AgentInfoCard\AgentInfoCard.tsx`
 - **ArchetypeCard** — props: archetype, selected, onClick — `src\components\Ascendant\ArchetypeCard.tsx`

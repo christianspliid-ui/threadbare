@@ -177,7 +177,7 @@
 
 ## Testing (1 files)
 
-- `src\testing\contentInvariants.ts` — assertValidUnifiedTemplate, assertValidEncounterTemplate, assertValidStep, assertNoDuplicateIds, assertAllValidReaches
+- `src\testing\contentInvariants.ts` — assertValidUnifiedTemplate, assertValidStep, assertNoDuplicateIds, assertAllValidReaches
 
 ## Tts-server.py (1 files)
 

@@ -113,3 +113,5 @@
 - **work** | THR-302 shipped: removed deprecated EncounterTemplate, completed UnifiedActionTemplate retyping across encounter engine/UI/tests, and documented CMS Option C follow-up for THR-301 (2026-05-05T13:12+02:00)
 - **work** | THR-307 shipped: completed Obsidian cosmology canon propagation (`[[Reaches]]` links + Flesh migration + canonical cosmology pages) (2026-05-05T14:25+02:00)
 - **work** | THR-306 shipped: encounter-pipeline skill now loads Docs/canon/encounters.md as Step 0 (Canon-first), with mirrored .claude/.agents sync and full verification trio green (2026-05-05T15:06+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-05-05T16.01.39+02:00)
+- **ops** | CC idle cycle — board empty (Ready for Dev: 0, In Dev: 0); codesight refreshed after THR-302/306/307 changes (2026-05-05T17:05+02:00)

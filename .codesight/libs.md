@@ -1465,11 +1465,11 @@
 - `src\engine\encounterCache.ts`
   - function selectDifficultyTier: (tick) => string
   - function getDifficultyMultiplier: (tier) => number
-  - function computeRewardEstimate: (template) => number
-  - function computeTotalTickCost: (template) => number
   - function computeRewardEstimateUnified: (template) => number
   - function computeTotalTickCostUnified: (template) => number
-  - _...5 more_
+  - function buildDangerMap: (tiles) => Map<string, number>
+  - class EncounterCacheManager
+  - _...3 more_
 - `src\engine\encounterChains.ts`
   - function getChainProgress: (agentProperties, unknown>) => ChainProgress
   - function isChainStageUnlocked: (templateId, progress) => boolean
@@ -2495,7 +2495,6 @@
 - `src\services\narration\WorkerBackend.ts` — function encodeWav: (samples, sampleRate) => ArrayBuffer, class WorkerBackend
 - `src\testing\contentInvariants.ts`
   - function assertValidUnifiedTemplate: (template) => void
-  - function assertValidEncounterTemplate: (template) => void
   - function assertValidStep: (step, templateId) => void
   - function assertNoDuplicateIds: (items) => void
   - function assertAllValidReaches: (templates) => void
