@@ -14,6 +14,13 @@ import type { ClearanceGateConfig } from './contentShells';
 import type { AttentionTier } from './attention';
 import type { OutcomeType, ResolutionRollBreakdown } from './resolution';
 
+/**
+ * Encounter UI Phase A contract note:
+ * Canonical encounter authoring schema now lives in `encounter-contract.ts`.
+ * This legacy runtime shape remains for backward compatibility in existing systems.
+ */
+export type { EncounterContract } from './encounter-contract';
+
 // ─── Encounter Types & Threat Ratings ───────────────────────────
 
 export type EncounterType =
