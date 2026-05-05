@@ -1,6 +1,8 @@
 # Project Status
 > Updated 2026-05-05.
 ## Current Focus
+**THR-302 complete — Encounter format architecture cleanup shipped (Encounter Experience).** Removed deprecated `EncounterTemplate`, retyped encounter engine/UI/test callsites to `UnifiedActionTemplate`, and captured CMS Option C (authored package taxonomy retained; metadata-filter revisit deferred to THR-301). PR #129.
+
 **THR-305 complete — Canon pages bootstrapped (Continuous Improvement).** Created `Docs/canon/` with three files: `README.md` (schema + 4 rules), `encounters.md` (current encounter spec, UnifiedActionTemplate since THR-108, stale-source warnings, reach→archetype table), `cosmology.md` (user-verdicted 8 Reaches + Quintessence as meta-property, explicit stale-source list for Domain Word Scales / state-of-game-design skill / STYLE.md). Updated `CLAUDE.md` (4th documentation surface + Session Workflow Step 0 for authoring) and `Docs/documentation-ownership.md` (Canon Pages row). Plan doc status flipped to `current`. PR #124.
 
 **THR-301 In Design — Encounter experience long-form design plan on main.** PR #122 merged. THR-301 stays In Design awaiting user verdict on §17 (three open points). Next action: user verdict triggers child issue breakdown per phase.
