@@ -80,11 +80,11 @@ The seeded configuration of Sphere weights, alignments, and relationships for a 
 
 ### Quintessence
 
-**Aliases:** Flesh Reach (deprecated), Quintessence Reach
+**Aliases:** Flesh Reach (deprecated), Quintessence Reach (deprecated naming — Quintessence is not a Reach)
 **Also see:** `[[Reach]]`
 **Status:** canonical
 
-The system that absorbed the deprecated Flesh Reach in TB-075. Manages vitality, life force, and physical existence as a cosmological current rather than a Reach domain. Do not confuse with the old Flesh reach or re-introduce "Flesh" as a ninth Reach.
+The derived meta-property tracking an actor's integrity-of-self and centrality to the simulated story. Quintessence is not a Reach domain. Higher Quintessence signals sovereignty, resilience, and resistance to being owned, reduced, or written out; lower Quintessence signals thinning confidence, narrower options, and rising risk of becoming a vessel, symbol, or tool. It functions as a threshold meter for phase shifts (including death, transformation, or symbolic capture), not as a personality axis. Replaces the deprecated Flesh Reach (TB-075, 2026-03-28); do not reintroduce Flesh as a ninth Reach.
 
 ---
 

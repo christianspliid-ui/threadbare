@@ -54,6 +54,16 @@ The sharded canonical glossary (`Docs/ubiquitous-language/`) establishing the au
 
 ---
 
+### Domain Canon Page
+
+**Aliases:** Canon Page
+**Also see:** `[[Ubiquitous Language]]`, `[[Documentation Ownership]]`
+**Status:** canonical
+
+A short (<=200 lines) navigation document at `Docs/canon/<domain>.md` used as the agent Step 0 entrypoint for authoring work in that domain. A Domain Canon Page does not own term definitions (UL owns those) or implementation rationale (plan docs own that). It lists current spec pointers, current rejected approaches, current open questions, and a `last_reviewed` field with reviewer attribution. Authoring skills load the relevant Domain Canon Page before any other reference material.
+
+---
+
 ### Grill-me
 
 **Aliases:** Grill-me Skill, Adversarial Questioning
