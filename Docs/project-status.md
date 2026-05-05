@@ -1,6 +1,8 @@
 # Project Status
-> Updated 2026-05-05.
+> Updated 2026-05-06.
 ## Current Focus
+**THR-311 complete — Canon Phase 2b: attachment canon page + skill wiring (Continuous Improvement).** Added `Docs/canon/attachments.md` (110 lines) as the canonical attachment-system entrypoint (categories, slot caps, primitive vocabulary, effect-walker seams, active plans, rejected approaches, open questions), then updated attachment-pipeline skill mirrors so Step 0 always reads the canon page before existing pre-reads (`Docs/authoring-brief.md` and systemic fallbacks). Verification gates green (`npm test`, `npx tsc --noEmit`, `npx vite build`).
+
 **THR-315 complete — Canon Phase 2b: engine canon page (Continuous Improvement).** Created `Docs/canon/engine.md` (122 lines) — Step-0 navigation page for engine work covering tick entry, WorldGraph mutated-in-place, SimulationRuntime caches, resolution service (sigmoid + doubles crit), seeded PRNG, traceBuffer, three-tier position model, NFP order, load-bearing decisions, rejected approaches, open questions. Wired `engine-architecture` skill (both `.claude/` and `.agents/` mirrors) to load the canon page as Step 0 above the existing `state-of-game-design` prerequisite. Added engine row to `Docs/canon/README.md` index. Skill-sync clean; tsc, vite build, and 10,709 tests all green.
 
 **THR-309 complete — UL proposal closeout for canon terminology (Continuous Improvement).** Added `Domain Canon Page` to `Docs/ubiquitous-language/Process.md` as the canonical Step 0 authoring entrypoint term for `Docs/canon/<domain>.md`. Rewrote `Quintessence` in `Docs/ubiquitous-language/Cosmology.md` to the user-verdicted integrity-of-self / centrality-to-story framing (explicitly not a Reach, Flesh remains deprecated). Ran `npm run mirror-ul` with explicit `OBSIDIAN_VAULT_PATH` override to mirror shard updates into Obsidian.
