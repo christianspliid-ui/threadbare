@@ -1,5 +1,6 @@
 # Project History
 
+✅ **THR-307** (2026-05-05) — Canon Phase 5a: vault cosmology propagation — created `Cosmology/The Cosmological Pattern.md` + `Cosmology/Reaches.md`; updated 8 vault pages; bulk-fixed 30 [[Flesh]] wikilinks across 13 Archetypes files per Flesh→Quintessence migration (TB-075 Phase 6).
 ✅ **THR-308** (2026-05-05) — Encounter experience design plan minor edits: retracted §2.3 divine marks, added Rule 4 (no XP treadmill), clarified Rule 3. PR #127.
 ✅ **THR-302** (2026-05-05) — Phase 0: deleted `EncounterTemplate` interface, retyped all 20 callers to `UnifiedActionTemplate`. PR #129.
 
@@ -557,3 +558,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - ✅ 2026-05-04: THR-298 moved orphan root markdown files into Docs-owned locations (Docs/research/slack-thoughts-2026-03-11.md, Docs/plans/2026-03-17-brainstorm-hex-actions-and-control-mechanic.md, Docs/ops/repo-automation-log.md) and updated mirrored skill references to the new brainstorm path.
 - ✅ 2026-05-05: THR-308 propagated cosmology canon across repo docs/skills/public references (8 reaches + Quintessence), corrected the 2026-05-04 audit inversion row, and removed stale cosmology-symmetry-backup.html.
 - ✅ 2026-05-05: THR-302 removed deprecated `EncounterTemplate`, completed `UnifiedActionTemplate` retyping across encounter engine/UI surfaces and fixtures, and documented CMS Option C follow-up for THR-301.
+- ✅ 2026-05-05: THR-307 finished vault-side cosmology canon propagation (new `Cosmology/Reaches.md`, repaired reach links, removed Flesh-as-reach references, archetype mapping migration, vault log appended).
