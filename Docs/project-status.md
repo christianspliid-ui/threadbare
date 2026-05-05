@@ -1,7 +1,11 @@
 # Project Status
 > Updated 2026-05-05.
 ## Current Focus
-**Maintenance cycle (2026-05-05) — board empty, encounter experience design plan on main.** No Ready-for-Dev issues on board. PR #122 merged: THR-301 long-form encounter experience design plan landed on main (`Docs/plans/2026-05-04-encounter-experience-design-plan.md`, 967 lines). `plan-pending-commit` label cleared from THR-301. THR-301 stays In Design awaiting user verdict on §17 (three open points). Next action: user verdict on the encounter experience design plan triggers child issue breakdown per phase.
+**THR-302 Phase 0 — EncounterTemplate deleted, all callers retyped to UnifiedActionTemplate.** PR #129 open, CI running. Deleted `EncounterTemplate` interface from `src/types/encounter.ts`, removed `assertValidEncounterTemplate`, deleted `encounter-quest.test.ts`, and retyped all 20 callers across engine modules, UI components, and test fixtures. 10709 tests pass, typecheck clean, build green.
+
+**THR-308 complete — encounter experience design plan minor edits.** Retracted §2.3 (divine marks), added Rule 4 (no XP treadmill), clarified Rule 3. PR #127 merged.
+
+**THR-301 encounter experience design plan on main.** PR #122 merged: 967-line design plan at `Docs/plans/2026-05-04-encounter-experience-design-plan.md`. THR-301 stays In Design awaiting user verdict on §17 (three open points).
 
 **THR-299 complete — orphaned weekly hygiene docs committed.** Committed orphaned Cowork changes from the 2026-05-04 weekly sweep: AGENTS.md full Linear-first rewrite, CLAUDE.md branch-protection note + 5 new Domain Skills rows, encounter-building-checklist Backlog Escalation Rule updated to Linear. PR #113.
 
@@ -44,7 +48,7 @@
 - **Next up:** Phase 4 content migration — next guild faction encounter templates.
 
 ## Archived to project-history.md
-- THR-299/298/297/296/294/282/238/109/79/108/107/104/103/106/290/102/280/285/286/283/287/276/284/277/281/211/243/272/212/210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
+- THR-308/299/298/297/296/294/282/238/109/79/108/107/104/103/106/290/102/280/285/286/283/287/276/284/277/281/211/243/272/212/210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)

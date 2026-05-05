@@ -1,5 +1,8 @@
 # Project History
 
+✅ **THR-308** (2026-05-05) — Encounter experience design plan minor edits: retracted §2.3 divine marks, added Rule 4 (no XP treadmill), clarified Rule 3. PR #127.
+✅ **THR-302** (2026-05-05) — Phase 0: deleted `EncounterTemplate` interface, retyped all 20 callers to `UnifiedActionTemplate`. PR #129.
+
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
