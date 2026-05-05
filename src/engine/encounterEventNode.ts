@@ -202,7 +202,7 @@ export interface CreateUnifiedActionEventParams {
 /**
  * Create an encounter event node in the graph for a unified-action step resolution.
  * Mirrors createEncounterEventNode but accepts unified action data instead of
- * EncounterProgress+EncounterTemplate, since unified actions don't carry those types.
+ * legacy encounter progress/template pair types.
  *
  * Fail-soft: returns undefined on any error. Encounter resolution is unaffected.
  */

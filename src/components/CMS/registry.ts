@@ -33,6 +33,8 @@ import {
 } from '../../types/npc';
 
 // Encounters
+// THR-302 Option C: keep authored encounter-package imports as the CMS taxonomy source.
+// We intentionally defer metadata-driven registry filtering to THR-301 follow-up.
 import { ENCOUNTER_TEMPLATES, ENCOUNTER_DIFFICULTY_TIERS } from '../../data/encounter-content';
 import { SOCIAL_ENCOUNTER_TEMPLATES } from '../../data/social-encounter-content';
 import * as colocation from '../../data/colocation-content';
