@@ -6,7 +6,7 @@ import {
   isEncounterOccupied,
 } from '../encounter';
 import type { GameState, EncounterProgress } from '../../types';
-import type { EncounterTemplate } from '../../types/encounter';
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { WorldGraph } from '../graph';
 import { enableTracing, disableTracing, clearTraces } from '../traceBuffer';
 import * as encounterContent from '../../data/encounter-content';
@@ -17,49 +17,46 @@ import { vi } from 'vitest';
 // ──────────────────────────────────────────────────────────────────────
 
 /** Minimal 3-step encounter template with varied durations for testing. */
-const MULTI_TICK_TEMPLATE: EncounterTemplate = {
+const MULTI_TICK_TEMPLATE: UnifiedActionTemplate = {
   id: 'encounter.multi_tick_test',
   name: 'Multi-Tick Test',
   intrinsicTier: 'background',
-  locationTypes: ['town'],
-  reachPrimary: 'iron',
-  reachSecondary: 'heart',
-  encounterType: 'explore',
-  threatRating: 'moderate',
+  rarityTier: 2,
+  reach: 'iron',
+  crudType: 'read',
+  scale: 'local',
+  apCost: 1,
+  actorAffinities: ['individual'],
   motivations: ['courage_prudence'],
+  locationSubtypes: ['town'],
+  narrativeTemplates: { initiation: 'A test begins.', success: 'Success.', failure: 'Failure.' },
   steps: [
     {
-      id: 'mt.step1',
-      name: 'Step One',
       reach: 'iron',
-      difficulty: 30,
-      duration: 3,
-      narrative: 'A three-tick step.',
-      onSuccess: { narrative: 'Step 1 success.' },
-      onFailure: { narrative: 'Step 1 failure.' },
+      difficulty: 0.30,
+      duration: { min: 3, max: 3 },
+      onSuccess: { narrative: 'Step 1 success.' } as never,
+      onFailure: { narrative: 'Step 1 failure.' } as never,
+      failBehavior: 'continue_weakened',
     },
     {
-      id: 'mt.step2',
-      name: 'Step Two',
       reach: 'heart',
-      difficulty: 40,
-      duration: 5,
-      narrative: 'A five-tick step.',
-      onSuccess: { narrative: 'Step 2 success.' },
-      onFailure: { narrative: 'Step 2 failure.' },
+      difficulty: 0.40,
+      duration: { min: 5, max: 5 },
+      onSuccess: { narrative: 'Step 2 success.' } as never,
+      onFailure: { narrative: 'Step 2 failure.' } as never,
+      failBehavior: 'continue_weakened',
     },
     {
-      id: 'mt.step3',
-      name: 'Step Three',
       reach: 'iron',
-      difficulty: 50,
+      difficulty: 0.50,
       // No duration field — should default to 1
-      narrative: 'A default-duration step.',
-      onSuccess: { narrative: 'Step 3 success.' },
-      onFailure: { narrative: 'Step 3 failure.' },
+      onSuccess: { narrative: 'Step 3 success.' } as never,
+      onFailure: { narrative: 'Step 3 failure.' } as never,
+      failBehavior: 'continue_weakened',
     },
   ],
-};
+} as unknown as UnifiedActionTemplate;
 
 function buildTestState(): { state: GameState; actorId: string } {
   const graph = new WorldGraph();

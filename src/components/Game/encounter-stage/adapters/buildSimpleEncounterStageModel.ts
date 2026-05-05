@@ -8,7 +8,8 @@
  * Prose enrichment logic ported from TieredEncounterModal lines 699-722.
  */
 
-import type { EncounterTemplate } from '../../../../types/encounter';
+import type { UnifiedActionTemplate } from '../../../../types/unifiedAction';
+import { isActionStepBranch } from '../../../../types/unifiedAction';
 import type { EncounterNotification } from '../../../../types/encounterVisibility';
 import type { ActiveEncounterDisplay } from '../../encounterNotificationRuntime';
 import type { WorldGraph } from '../../../../engine/graph';
@@ -22,20 +23,17 @@ import type {
   EncounterStageResolutionCheckModel,
 } from '../types';
 import { enrichProse, gatherNarrativeContext } from '../../../../engine/proseEnrichment';
-import { resolveEncounterNarrative } from '../../../../data/encounter-content';
 import { computeCapability } from '../../../../engine/domainCapability';
 import { computeResolutionModifiers } from '../../../../engine/resolutionModifiers';
-import {
-  forecastAction,
-  normalizeLegacyDifficulty,
-} from '../../../../engine/resolutionService';
+import { forecastAction } from '../../../../engine/resolutionService';
+import { RARITY_TO_THREAT } from '../../../../engine/encounterCache';
 
 // ── Types ────────────────────────────────────────────────
 
 export interface BuildSimpleEncounterStageModelArgs {
   notification: EncounterNotification;
   encounter: ActiveEncounterDisplay;
-  template: EncounterTemplate;
+  template: UnifiedActionTemplate;
   agentName: string;
   agentId: string;
   graph: WorldGraph;
@@ -92,11 +90,13 @@ function formatForecastLabel(raw: string): string {
 function buildCurrentResolutionCheck(
   graph: WorldGraph,
   agentId: string,
-  template: EncounterTemplate,
+  template: UnifiedActionTemplate,
   currentStepIndex: number,
 ): EncounterStageResolutionCheckModel | undefined {
-  const currentStep = template.steps[currentStepIndex];
-  if (!currentStep) return undefined;
+  const stepOrBranch = template.steps[currentStepIndex];
+  if (!stepOrBranch) return undefined;
+  const currentStep = isActionStepBranch(stepOrBranch) ? stepOrBranch.fallback : stepOrBranch;
+  const stepLabel = `Step ${currentStepIndex + 1}`;
 
   const capability = computeCapability(graph, agentId, currentStep.reach);
   const locEdges = graph.getOutgoingEdges(agentId, 'located_at');
@@ -108,26 +108,25 @@ function buildCurrentResolutionCheck(
     currentStep.reach,
     template.sphereAffinity,
   );
-  const normalizedDifficulty = normalizeLegacyDifficulty(currentStep.difficulty);
   const summary = forecastAction({
     actorId: agentId,
     domain: currentStep.reach,
     capability,
-    difficulty: normalizedDifficulty,
+    difficulty: currentStep.difficulty,
     sphereFactor: 0,
     actionModifiers: modifiers.totalModifier,
     testShapers: modifiers.testShapers,
   });
 
   return {
-    id: `current:${currentStep.id}`,
-    stepId: currentStep.id,
-    stepLabel: currentStep.name,
+    id: `current:step-${currentStepIndex}`,
+    stepId: `step-${currentStepIndex}`,
+    stepLabel,
     state: 'pending',
     reach: currentStep.reach,
     reachLabel: titleCaseWord(currentStep.reach),
     difficulty: currentStep.difficulty,
-    difficultyLabel: `${currentStep.difficulty}/100`,
+    difficultyLabel: `${Math.round(currentStep.difficulty * 100)}/100`,
     capability,
     modifierTotal: modifiers.totalModifier,
     probability: summary.successProbability,
@@ -138,12 +137,12 @@ function buildCurrentResolutionCheck(
 
 function buildResolvedResolutionChecks(
   encounter: ActiveEncounterDisplay,
-  template: EncounterTemplate,
+  template: UnifiedActionTemplate,
 ): EncounterStageResolutionCheckModel[] {
   return (encounter.resolutionHistory ?? []).map((entry) => ({
     id: `resolved:${entry.stepIndex}:${entry.stepId}:${entry.tick}`,
     stepId: entry.stepId,
-    stepLabel: entry.stepName || template.steps[entry.stepIndex]?.name || entry.stepId,
+    stepLabel: entry.stepName || `Step ${entry.stepIndex + 1}`,
     state: 'resolved',
     reach: entry.reach,
     reachLabel: titleCaseWord(entry.reach),
@@ -168,10 +167,9 @@ function buildResolvedResolutionChecks(
 export function buildSimpleEncounterStageModel(
   args: BuildSimpleEncounterStageModelArgs,
 ): EncounterStageModel {
-  const { notification, encounter, template, agentName, agentId, graph, threadTier, essence } = args;
+  const { notification, encounter, template, agentId, graph, threadTier, essence } = args;
 
   const currentIndex = Math.min(encounter.currentStepIndex, template.steps.length - 1);
-  const currentStep = template.steps[currentIndex];
   const isEncounterFinished = encounter.status === 'completed' || encounter.status === 'abandoned';
   const narrativeCtx = gatherNarrativeContext(
     graph,
@@ -184,10 +182,8 @@ export function buildSimpleEncounterStageModel(
   );
   const depth = proseDepthForTier(threadTier);
 
-  // ── Prose enrichment (ported from TieredEncounterModal) ──
-  const rawNarrative = currentStep
-    ? resolveEncounterNarrative(currentStep.narrative, agentName, currentStep.id, template.threatRating)
-    : notification.prose;
+  // ── Prose enrichment ──
+  const rawNarrative = notification.prose;
   const enriched = enrichProse(rawNarrative, narrativeCtx);
   const proseTexts = buildProseParagraphs(enriched, depth);
 
@@ -211,9 +207,9 @@ export function buildSimpleEncounterStageModel(
   }));
 
   // ── History ──
-  const history: EncounterStageHistoryModel[] = template.steps.map((step, i) => ({
-    stepId: step.id,
-    stepLabel: step.name,
+  const history: EncounterStageHistoryModel[] = template.steps.map((_step, i) => ({
+    stepId: `step-${i}`,
+    stepLabel: `Step ${i + 1}`,
     status: i < currentIndex ? 'resolved' as const
       : i === currentIndex ? (isEncounterFinished ? 'resolved' as const : 'current' as const)
       : 'future' as const,
@@ -235,13 +231,13 @@ export function buildSimpleEncounterStageModel(
     header: {
       title: template.name,
       locationLabel: '',
-      threatLabel: template.threatRating,
+      threatLabel: RARITY_TO_THREAT[template.rarityTier] ?? 'moderate',
       threadTier,
     },
     illustration,
     scene: {
       situationProse: enriched,
-      pressureProse: currentStep?.narrative ?? '',
+      pressureProse: '',
       noticeLines: [],
     },
     narrative: {

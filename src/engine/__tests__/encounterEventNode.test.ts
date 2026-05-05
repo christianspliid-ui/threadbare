@@ -8,7 +8,8 @@ import {
 } from '../encounterEventNode';
 import { WorldGraph } from '../graph';
 import { enableTracing, disableTracing, clearTraces, getTraces } from '../traceBuffer';
-import type { EncounterProgress, EncounterTemplate } from '../../types/encounter';
+import type { EncounterProgress } from '../../types/encounter';
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 
 // ─── Helpers ──────────────────────────────────────────────────────────
 
@@ -55,37 +56,43 @@ function buildTestGraph(): {
   return { graph, actorId, targetId, locationId };
 }
 
-function buildTemplate(overrides?: Partial<EncounterTemplate>): EncounterTemplate {
+function buildTemplate(overrides?: Partial<UnifiedActionTemplate>): UnifiedActionTemplate {
   return {
     id: 'enc.deep_descent',
     name: 'The Deep Descent',
-    locationTypes: ['cave'],
-    steps: [
-      {
-        id: 'step.1',
-        name: 'Enter the Darkness',
-        narrative: 'test',
-        reach: 'iron',
-        difficulty: 40,
-        onSuccess: { narrative: 'ok', traitModifiers: {} },
-        onFailure: { narrative: 'bad', traitModifiers: {} },
-      },
-      {
-        id: 'step.2',
-        name: 'Face the Guardian',
-        narrative: 'test2',
-        reach: 'shadow',
-        difficulty: 60,
-        onSuccess: { narrative: 'ok2', traitModifiers: {} },
-        onFailure: { narrative: 'bad2', traitModifiers: {} },
-      },
-    ],
-    reachPrimary: 'iron',
-    reachSecondary: 'shadow',
-    encounterType: 'explore',
-    threatRating: 'moderate',
+    intrinsicTier: 'background',
+    rarityTier: 2,
+    reach: 'iron',
+    crudType: 'read',
+    scale: 'local',
+    apCost: 1,
+    actorAffinities: ['individual'],
     motivations: [],
     sphereAffinity: 'force',
+    locationSubtypes: ['cave'],
+    steps: [
+      {
+        reach: 'iron',
+        duration: { min: 1, max: 2 },
+        difficulty: 0.4,
+        onSuccess: [],
+        onFailure: [],
+        failBehavior: 'continue_weakened',
+      },
+      {
+        reach: 'shadow',
+        duration: { min: 1, max: 2 },
+        difficulty: 0.6,
+        onSuccess: [],
+        onFailure: [],
+        failBehavior: 'continue_weakened',
+      },
+    ],
+    narrativeTemplates: {
+      initiation: 'test',
+      success: 'ok',
+      failure: 'bad',
+    },
     ...overrides,
   };
 }
@@ -136,7 +143,7 @@ describe('createEncounterEventNode', () => {
     expect(node!.properties.templateId).toBe('enc.deep_descent');
     expect(node!.properties.encounterType).toBe('explore');
     expect(node!.properties.stepIndex).toBe(0);
-    expect(node!.properties.stepName).toBe('Enter the Darkness');
+    expect(node!.properties.stepName).toBe('Step 1');
     expect(node!.properties.outcome).toBe('success');
     expect(node!.properties.reachTested).toBe('iron');
     expect(node!.properties.threatRating).toBe('moderate');
@@ -191,7 +198,7 @@ describe('createEncounterEventNode', () => {
 
   it('creates participated_in edges for both actors in social encounters', () => {
     const { graph, actorId, targetId } = buildTestGraph();
-    const template = buildTemplate({ encounterType: 'trade' });
+    const template = buildTemplate();
     const progress = buildProgress(actorId, { targetAgentId: targetId });
 
     const eventNodeId = createEncounterEventNode({
@@ -511,7 +518,7 @@ describe('getAgentEncounterHistory', () => {
 
   it('includes events where agent was target (social encounters)', () => {
     const { graph, actorId, targetId, locationId } = buildTestGraph();
-    const template = buildTemplate({ encounterType: 'trade' });
+    const template = buildTemplate();
 
     // Also need target to be located somewhere for the occurred_at edge
     graph.addEdge({

@@ -21,7 +21,7 @@
  */
 
 import type { ReachDomain } from '../types/traits';
-import type { ThreatRating, EncounterType, EncounterTemplate } from '../types/encounter';
+import type { ThreatRating, EncounterType } from '../types/encounter';
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { isActionStepBranch } from '../types/unifiedAction';
 import type { ValuePair } from '../types/agent';
@@ -106,44 +106,6 @@ export interface EncounterCacheEntry {
 
 // ─── Pure Computation Helpers ───────────────────────────────────
 
-/**
- * Estimate total reward value for an encounter template.
- *
- * Formula:
- *   Σ(step.onSuccess.reputationDelta ?? 0) * REPUTATION_REWARD_WEIGHT
- *   + (hasAnyRewardPool ? LOOT_REWARD_WEIGHT : 0)
- *   + DOMAIN_EXERCISE_WEIGHT
- */
-export function computeRewardEstimate(template: EncounterTemplate): number {
-  let reputationSum = 0;
-  let hasRewardPool = false;
-
-  for (const step of template.steps) {
-    reputationSum += step.onSuccess.reputationDelta ?? 0;
-    if (step.onSuccess.rewardPool) {
-      hasRewardPool = true;
-    }
-  }
-
-  return (
-    reputationSum * REPUTATION_REWARD_WEIGHT +
-    (hasRewardPool ? LOOT_REWARD_WEIGHT : 0) +
-    DOMAIN_EXERCISE_WEIGHT
-  );
-}
-
-/**
- * Total tick cost of an encounter template.
- * Each step's duration defaults to 1 if omitted.
- */
-export function computeTotalTickCost(template: EncounterTemplate): number {
-  let total = 0;
-  for (const step of template.steps) {
-    total += step.duration ?? 1;
-  }
-  return total;
-}
-
 // ─── UnifiedActionTemplate Helpers ─────────────────────────────
 
 /** Maps rarityTier to legacy ThreatRating. */
@@ -214,41 +176,6 @@ function getSublocations(graph: WorldGraph, locationId: string): GraphNode[] {
     }
   }
   return subs;
-}
-
-/**
- * Build a single cache entry from a legacy EncounterTemplate, with sublocation context.
- * @deprecated Use buildEntryUnified for UnifiedActionTemplate-sourced encounters.
- */
-function buildEntry(
-  tmpl: EncounterTemplate,
-  locationId: string,
-  sublocationId: string | null,
-  sublocationTypeId: string | null,
-  difficultyMultiplier: number = 1.0,
-): EncounterCacheEntry {
-  return {
-    templateId: tmpl.id,
-    locationId,
-    sublocationId,
-    sublocationTypeId,
-    reachPrimary: tmpl.reachPrimary,
-    reachSecondary: tmpl.reachSecondary,
-    threatRating: tmpl.threatRating,
-    encounterType: tmpl.encounterType,
-    motivations: [...tmpl.motivations],
-    visibleTo: tmpl.visibleTo ? [...tmpl.visibleTo] : undefined,
-    requiresPresence: !tmpl.remoteAttempt,
-    remotePenalty: 0,
-    remoteMaxRange: undefined,
-    sphereAffinity: tmpl.sphereAffinity,
-    questPriority: tmpl.questPriority ?? 1.0,
-    totalTickCost: computeTotalTickCost(tmpl),
-    successRewardEstimate: computeRewardEstimate(tmpl),
-    stepCount: tmpl.steps.length,
-    stepDifficulties: tmpl.steps.map(s => Math.round(s.difficulty * difficultyMultiplier)),
-    stepReaches: tmpl.steps.map(s => s.reach),
-  };
 }
 
 /**

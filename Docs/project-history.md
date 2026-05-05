@@ -6,6 +6,8 @@
 > Append-only archive of completed milestones. Added 2026-03-12 as part of DOC-01 — split from project-status.md.
 > Consulted during troubleshooting and reflection. For current focus, see: Docs/project-status.md
 
+✅ **THR-305** (2026-05-05) — Canon pages bootstrapped: `Docs/canon/` created with README (schema + 4 rules), `encounters.md` (current spec, UnifiedActionTemplate, stale-source warnings), `cosmology.md` (user-verdicted 8 Reaches + Quintessence framing, stale-source list). CLAUDE.md and documentation-ownership.md updated. PR #124.
+
 ✅ THR-299 (2026-05-04) — Committed orphaned 2026-05-04 weekly hygiene docs: AGENTS.md full Linear-first rewrite (retired `.planning/BACKLOG.md` references removed, three-agent protocol, updated DoD); CLAUDE.md 5 new Domain Skills rows + branch-protection note update; encounter-building-checklist Backlog Escalation Rule → Linear; impediment #58 occurrence count updated. PR #113.
 ✅ THR-297 (2026-05-04) — Weekly retro gap investigated: confirmed `weekly-retro` scheduled task never registered (3 Fridays missed). Manual retrospective for 2026-04-12→2026-05-04 run (76 impediments, ~10.6h lost). `create_scheduled_task` blocked in scheduled sessions; task registration deferred to interactive session. PR #111.
 ✅ THR-282 (2026-04-30) — Branch protection re-enabled on `main` (Repo Health Sprint v2 Phase 3). GitHub Pro now active; `Test · Typecheck · Build` required status check, strict=true. 3-day CI watch window (2026-04-28 → 2026-04-30) confirmed 0 failures. Impediment #56 resolved. `claude-review.yml` advisory→blocking deferred to THR-183. PR #96.
@@ -553,3 +555,5 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - THR-294 UL drift triage: ✅ Complete (2026-05-01) — triaged 15 used-uncanonical candidates: 5 aliases, 6 new canonical promotions, 4 stopwords; UL v1.1 / 79 terms; vault mirrored.
 - ✅ 2026-05-04: THR-296 updated shared state-of-game-design, qa-orchestrator, and gamedocumenter skills (both .claude/.agents mirrors) to Linear-first workflow; removed retired BACKLOG.md and Notion execution guidance.
 - ✅ 2026-05-04: THR-298 moved orphan root markdown files into Docs-owned locations (Docs/research/slack-thoughts-2026-03-11.md, Docs/plans/2026-03-17-brainstorm-hex-actions-and-control-mechanic.md, Docs/ops/repo-automation-log.md) and updated mirrored skill references to the new brainstorm path.
+- ✅ 2026-05-05: THR-308 propagated cosmology canon across repo docs/skills/public references (8 reaches + Quintessence), corrected the 2026-05-04 audit inversion row, and removed stale cosmology-symmetry-backup.html.
+- ✅ 2026-05-05: THR-302 removed deprecated `EncounterTemplate`, completed `UnifiedActionTemplate` retyping across encounter engine/UI surfaces and fixtures, and documented CMS Option C follow-up for THR-301.

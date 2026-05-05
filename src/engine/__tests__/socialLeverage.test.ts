@@ -33,7 +33,8 @@ import {
   advanceEncounter,
 } from '../encounter';
 import type { GameState } from '../../types';
-import type { EncounterProgress, EncounterTemplate } from '../../types/encounter';
+import type { EncounterProgress } from '../../types/encounter';
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { LEVERAGE_STEP_SUCCESS, LEVERAGE_STEP_FAILURE } from '../../types/encounter';
 import * as encounterContent from '../../data/encounter-content';
 
@@ -282,33 +283,40 @@ describe('applyCounterModifier', () => {
 // ─── Conditional Step Skipping ───────────────────────────────────────────────
 
 describe('advanceEncounter — conditional step skipping', () => {
-  const mockTemplate: EncounterTemplate = {
+  const mockTemplate = {
     id: 'test.social.scene',
     name: 'Test Scene',
-    locationTypes: ['town'],
-    reachPrimary: 'heart',
-    reachSecondary: 'eye',
-    encounterType: 'assist',
-    threatRating: 'easy',
     intrinsicTier: 'present',
+    rarityTier: 1,
+    reach: 'heart',
+    crudType: 'update',
+    scale: 'local',
+    apCost: 1,
+    actorAffinities: ['individual'],
     motivations: ['loyalty_ambition'],
+    locationSubtypes: ['town'],
+    narrativeTemplates: { initiation: 'A scene.', success: 'Win.', failure: 'Lose.' },
     steps: [
       {
-        id: 'step.1', name: 'Step 1', reach: 'eye', difficulty: 25, narrative: 'S1',
-        leverageOnSuccess: 0.15, onSuccess: { narrative: 'OK' }, onFailure: { narrative: 'FAIL' },
+        reach: 'eye', difficulty: 0.25, duration: { min: 1, max: 1 },
+        leverageOnSuccess: 0.15,
+        onSuccess: { narrative: 'OK' }, onFailure: { narrative: 'FAIL' },
+        failBehavior: 'continue_weakened',
       },
       {
-        id: 'step.counter', name: 'Counter', reach: 'heart', difficulty: 38, narrative: 'Counter',
+        reach: 'heart', difficulty: 0.38, duration: { min: 1, max: 1 },
         conditional: { type: 'leverage_range', leverageMax: 0.69 },
         onSuccess: { narrative: 'OK' }, onFailure: { narrative: 'FAIL' },
+        failBehavior: 'continue_weakened',
       },
       {
-        id: 'step.resolution', name: 'Resolution', reach: 'heart', difficulty: 52, narrative: 'Final',
+        reach: 'heart', difficulty: 0.52, duration: { min: 1, max: 1 },
         leverageModifiesDifficulty: true,
         onSuccess: { narrative: 'WIN' }, onFailure: { narrative: 'LOSE' },
+        failBehavior: 'continue_weakened',
       },
     ],
-  };
+  } as unknown as UnifiedActionTemplate;
 
   beforeEach(() => {
     vi.spyOn(encounterContent, 'getAnyEncounterById').mockReturnValue(mockTemplate);
@@ -346,25 +354,29 @@ describe('advanceEncounter — conditional step skipping', () => {
 // ─── Leverage Accumulation via resolveEncounter ──────────────────────────────
 
 describe('resolveEncounter — leverage accumulation', () => {
-  const mockTemplateWithLeverage: EncounterTemplate = {
+  const mockTemplateWithLeverage = {
     id: 'test.leverage.template',
     name: 'Leverage Test',
-    locationTypes: ['town'],
-    reachPrimary: 'heart',
-    reachSecondary: 'eye',
-    encounterType: 'assist',
-    threatRating: 'easy',
     intrinsicTier: 'present',
+    rarityTier: 1,
+    reach: 'heart',
+    crudType: 'update',
+    scale: 'local',
+    apCost: 1,
+    actorAffinities: ['individual'],
     motivations: ['loyalty_ambition'],
+    locationSubtypes: ['town'],
+    narrativeTemplates: { initiation: 'A test.', success: 'Win.', failure: 'Lose.' },
     steps: [
       {
-        id: 'lev.step1', name: 'Leverage Step', reach: 'heart', difficulty: 30, narrative: 'S',
+        reach: 'heart', difficulty: 0.30, duration: { min: 1, max: 1 },
         leverageOnSuccess: 0.20,
         leverageOnFailure: -0.10,
         onSuccess: { narrative: 'OK' }, onFailure: { narrative: 'FAIL' },
+        failBehavior: 'continue_weakened',
       },
     ],
-  };
+  } as unknown as UnifiedActionTemplate;
 
   beforeEach(() => {
     vi.spyOn(encounterContent, 'getAnyEncounterById').mockReturnValue(mockTemplateWithLeverage);
@@ -394,14 +406,15 @@ describe('resolveEncounter — leverage accumulation', () => {
   });
 
   it('does NOT modify leverage on steps without leverageOnSuccess defined', () => {
-    const noLevTemplate: EncounterTemplate = {
+    const noLevTemplate = {
       ...mockTemplateWithLeverage,
       id: 'test.no.leverage',
       steps: [{
-        id: 'no.lev', name: 'Plain Step', reach: 'heart', difficulty: 30, narrative: 'S',
+        reach: 'heart', difficulty: 0.30, duration: { min: 1, max: 1 },
         onSuccess: { narrative: 'OK' }, onFailure: { narrative: 'FAIL' },
+        failBehavior: 'continue_weakened',
       }],
-    };
+    } as unknown as UnifiedActionTemplate;
     vi.spyOn(encounterContent, 'getAnyEncounterById').mockReturnValue(noLevTemplate);
 
     const graph = buildGraph();
@@ -423,24 +436,28 @@ describe('resolveEncounter — leverage accumulation', () => {
 // ─── Divine Effects ──────────────────────────────────────────────────────────
 
 describe('resolveEncounter — divine effects', () => {
-  const mockTemplate: EncounterTemplate = {
+  const mockTemplate = {
     id: 'test.divine.template',
     name: 'Divine Test',
-    locationTypes: ['town'],
-    reachPrimary: 'heart',
-    reachSecondary: 'eye',
-    encounterType: 'assist',
-    threatRating: 'easy',
     intrinsicTier: 'present',
+    rarityTier: 1,
+    reach: 'heart',
+    crudType: 'update',
+    scale: 'local',
+    apCost: 1,
+    actorAffinities: ['individual'],
     motivations: ['loyalty_ambition'],
+    locationSubtypes: ['town'],
+    narrativeTemplates: { initiation: 'A test.', success: 'Win.', failure: 'Lose.' },
     steps: [
       {
-        id: 'div.step1', name: 'Social Step', reach: 'heart', difficulty: 30, narrative: 'S',
+        reach: 'heart', difficulty: 0.30, duration: { min: 1, max: 1 },
         leverageOnSuccess: 0.10,
         onSuccess: { narrative: 'OK' }, onFailure: { narrative: 'FAIL' },
+        failBehavior: 'continue_weakened',
       },
     ],
-  };
+  } as unknown as UnifiedActionTemplate;
 
   beforeEach(() => {
     vi.spyOn(encounterContent, 'getAnyEncounterById').mockReturnValue(mockTemplate);

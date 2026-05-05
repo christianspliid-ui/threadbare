@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import type { ThreadedNode, ThreadCategory } from '../../engine/retinue';
 import { groupThreadedNodes } from '../../engine/retinue';
-import type { EncounterTemplate } from '../../types/encounter';
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import type { BalanceEvent, BalanceEncounterPoolCandidate } from '../../types/balanceEval';
 import type { ActiveEncounterDisplay } from './encounterNotificationRuntime';
 import { SectionHeading } from '../shared/SectionHeading';
@@ -37,9 +37,9 @@ interface ThreadsPanelProps {
   onNodeSelect: (nodeId: string, category: ThreadCategory) => void;
   onCenterOnHex: (locationIdOrHexCoords: string) => void;
   onZoomToLocation?: (locationId: string) => void;
-  activeEncounters?: Map<string, { encounter: ActiveEncounterDisplay; template: EncounterTemplate }>;
+  activeEncounters?: Map<string, { encounter: ActiveEncounterDisplay; template: UnifiedActionTemplate }>;
   agentEncounterDecisions?: Map<string, BalanceEvent>;
-  onEncounterClick?: (agentId: string, encounter: ActiveEncounterDisplay, template: EncounterTemplate) => void;
+  onEncounterClick?: (agentId: string, encounter: ActiveEncounterDisplay, template: UnifiedActionTemplate) => void;
   onToggleAttentionMode?: (threadEdgeId: string) => void;
   /** Per-agent strategic summaries for badge display. Only agents with strategic activity will have entries. */
   agentStrategicSummaries?: Map<string, AgentStrategicSummary>;
@@ -59,9 +59,9 @@ interface CompactThreadRowProps {
   isSelected: boolean;
   onNodeSelect: (nodeId: string, category: ThreadCategory) => void;
   onCenterOnHex: (locationId: string) => void;
-  activeEncounters?: Map<string, { encounter: ActiveEncounterDisplay; template: EncounterTemplate }>;
+  activeEncounters?: Map<string, { encounter: ActiveEncounterDisplay; template: UnifiedActionTemplate }>;
   agentEncounterDecision?: BalanceEvent;
-  onEncounterClick?: (agentId: string, encounter: ActiveEncounterDisplay, template: EncounterTemplate) => void;
+  onEncounterClick?: (agentId: string, encounter: ActiveEncounterDisplay, template: UnifiedActionTemplate) => void;
   onToggleAttentionMode?: (threadEdgeId: string) => void;
   onOpenEncounterPool?: (agentName: string, decision: BalanceEvent) => void;
   /** Strategic summary for this agent, if they have active strategic activity. */

@@ -6,7 +6,6 @@ import type {
   UnifiedActionTemplate,
 } from '../types/unifiedAction';
 import { isActionStepBranch } from '../types/unifiedAction';
-import type { EncounterTemplate } from '../types/encounter';
 import { REACH_DOMAINS } from '../types/traits';
 
 const VALID_REACHES = new Set<string>(REACH_DOMAINS);
@@ -140,38 +139,6 @@ export function assertValidUnifiedTemplate(template: UnifiedActionTemplate): voi
   assertKnownAftermathKinds(template);
 }
 
-export function assertValidEncounterTemplate(template: EncounterTemplate): void {
-  expect(
-    isNonEmptyString(template.id),
-    'encounter template id must be a non-empty string',
-  ).toBe(true);
-  expect(
-    isNonEmptyString(template.name),
-    `${template.id} must have a non-empty name`,
-  ).toBe(true);
-
-  assertValidReach(template.reachPrimary, `${template.id} reachPrimary`, true);
-  assertValidReach(template.reachSecondary, `${template.id} reachSecondary`, true);
-
-  expect(
-    template.steps.length >= 2 && template.steps.length <= 4,
-    `${template.id} must have 2-4 steps (got ${template.steps.length})`,
-  ).toBe(true);
-  expect(
-    template.locationTypes.length >= 1,
-    `${template.id} must have at least one location type`,
-  ).toBe(true);
-  expect(
-    template.motivations.length >= 1,
-    `${template.id} must have at least one motivation`,
-  ).toBe(true);
-
-  for (const step of template.steps) {
-    assertValidReach(step.reach, `${template.id}.${step.id} reach`, true);
-    assertValidNarrative(step.onSuccess.narrative, `${template.id}.${step.id} onSuccess`);
-    assertValidNarrative(step.onFailure.narrative, `${template.id}.${step.id} onFailure`);
-  }
-}
 
 export function assertValidStep(step: ActionStepOrBranch, templateId: string): void {
   if (isActionStepBranch(step)) {

@@ -56,7 +56,7 @@ This skill is the canonical reference for game design context. Load it before an
 
 Every action in the world is described by two independent dimensions.
 
-**Reaches = What You Do** (activity categories). Nine domains covering every type of action:
+**Reaches = What You Do** (activity categories). Eight domains covering every type of action:
 
 | Reach | Theme | God-Scale |
 |-------|-------|-----------|
@@ -68,7 +68,6 @@ Every action in the world is described by two independent dimensions.
 | **Eye** | Perception, understanding, memory, truth | Omniscience, deep memory, oracle |
 | **Stone** | Building, shaping land, territory, travel | Terraform, reshape landscape |
 | **Star** | Faith, devotion, divine connection, transcendence | Divine communion, cosmic pact |
-| **Flesh** | Endurance, athletics, survival, craft by hand | Shape biology, plague, evolution |
 
 Each Reach operates at four scales: **Individual** → **Group** → **Faction** → **God**.
 
@@ -354,7 +353,7 @@ When in tension, higher priorities win.
 
 | Deprecated | Replaced By |
 |-----------|-------------|
-| Classical stats (STR/DEX/INT) | Domain Capability across Nine Reaches |
+| Classical stats (STR/DEX/INT) | Domain Capability across Eight Reaches |
 | Fixed rival pantheon | Generated rivals from World-Soul |
 | Old 5-force cosmology | Foundation + Creation Sphere model |
 | Pure template-based prose | Hybrid layered engine |
@@ -364,7 +363,7 @@ When in tension, higher priorities win.
 | React Three Fiber (R3F) | Raw Three.js with canvas ref |
 | V1 SVG hex map | HexMapV2 (Three.js InstancedMesh) |
 | Spheres as fixed Reach pairings | Orthogonal axes that combine freely |
-| 8 Action Domains | 9 Reaches (Flesh was missing, domains renamed) |
+| 9 Reaches (including Flesh) | 8 Reaches + Quintessence meta-property |
 | Utility-function AI | Maslow need hierarchy |
 | Behaviour trees | Maslow need hierarchy |
 
@@ -412,7 +411,7 @@ Load the domain-specific skill for your task:
 
 | Deprecated | Replaced By |
 |-----------|-------------|
-| Classical stats (STR/DEX/INT) | Domain Capability across Nine Reaches |
+| Classical stats (STR/DEX/INT) | Domain Capability across Eight Reaches |
 | Fixed rival pantheon | Generated rivals from World-Soul |
 | Old 5-force cosmology | Foundation + Creation Sphere model |
 | Pure template-based prose | Hybrid layered engine (3 tiers) |
@@ -420,7 +419,7 @@ Load the domain-specific skill for your task:
 | Intervention wheel (AgentWheel) | ActionDrawer with Generalized Action Targeting |
 | Fixed action count / capped slots | Open-ended, data-driven template pool |
 | Spheres as fixed Reach pairings | Orthogonal axes that combine freely |
-| 8 Action Domains | 9 Reaches (Flesh was missing, domains renamed) |
+| 9 Reaches (including Flesh) | 8 Reaches + Quintessence meta-property |
 | Utility-function AI | Maslow need hierarchy |
 | Behaviour trees | Maslow need hierarchy |
 

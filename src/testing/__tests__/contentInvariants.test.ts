@@ -1,10 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type { EncounterTemplate } from '../../types/encounter';
 import type { ActionStep, ActionStepOrBranch, UnifiedActionTemplate } from '../../types/unifiedAction';
 import {
   assertAllValidReaches,
   assertNoDuplicateIds,
-  assertValidEncounterTemplate,
   assertValidStep,
   assertValidUnifiedTemplate,
 } from '../contentInvariants';
@@ -43,55 +41,9 @@ function makeUnifiedTemplate(overrides: Partial<UnifiedActionTemplate> = {}): Un
   };
 }
 
-function makeEncounterTemplate(overrides: Partial<EncounterTemplate> = {}): EncounterTemplate {
-  return {
-    id: 'enc.test.valid',
-    name: 'Valid Encounter Template',
-    locationTypes: ['town'],
-    steps: [
-      {
-        id: 'step.1',
-        name: 'Opening',
-        narrative: 'The opening beat begins in earnest.',
-        reach: 'iron',
-        difficulty: 40,
-        onSuccess: { narrative: 'Success unfolds with palpable narrative consequence.' },
-        onFailure: { narrative: 'Failure unfolds with palpable narrative consequence.' },
-      },
-      {
-        id: 'step.2',
-        name: 'Resolution',
-        narrative: 'The scene tightens and then resolves.',
-        reach: 'gold',
-        difficulty: 55,
-        onSuccess: { narrative: 'Success closes the arc with meaningful momentum.' },
-        onFailure: { narrative: 'Failure closes the arc with meaningful momentum.' },
-      },
-    ],
-    reachPrimary: 'iron',
-    reachSecondary: 'gold',
-    encounterType: 'assist',
-    threatRating: 'easy',
-    intrinsicTier: 'background',
-    motivations: ['courage_prudence'],
-    ...overrides,
-  };
-}
-
 describe('assertValidUnifiedTemplate', () => {
   it('passes a minimally valid unified template', () => {
     expect(() => assertValidUnifiedTemplate(makeUnifiedTemplate())).not.toThrow();
-  });
-});
-
-describe('assertValidEncounterTemplate', () => {
-  it('passes a minimally valid encounter template', () => {
-    expect(() => assertValidEncounterTemplate(makeEncounterTemplate())).not.toThrow();
-  });
-
-  it('throws when encounter reach is invalid', () => {
-    const template = makeEncounterTemplate({ reachPrimary: 'invalid_reach' as never });
-    expect(() => assertValidEncounterTemplate(template)).toThrow();
   });
 });
 

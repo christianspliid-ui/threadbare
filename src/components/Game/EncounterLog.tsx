@@ -1,13 +1,15 @@
 import { memo } from 'react';
-import type { EncounterTemplate, EncounterProgress } from '../../types/encounter';
+import type { EncounterProgress } from '../../types/encounter';
 import { THREAT_RATING_COLORS, LEVERAGE_TIER_HIGH, LEVERAGE_TIER_MID } from '../../types/encounter';
-import { resolveEncounterNarrative } from '../../data/encounter-content';
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import { isActionStepBranch } from '../../types/unifiedAction';
+import { RARITY_TO_THREAT } from '../../engine/encounterCache';
 import { Tooltip } from '../shared/Tooltip';
 import { ProgressBar } from '../shared/ProgressBar';
 
 interface EncounterLogProps {
   progress: EncounterProgress;
-  template: EncounterTemplate;
+  template: UnifiedActionTemplate;
   agentName: string;
   onClick?: () => void;
 }
@@ -22,14 +24,18 @@ export const EncounterLog = memo(function EncounterLog({
   agentName,
   onClick,
 }: EncounterLogProps) {
-  const currentStep = template.steps[progress.currentEncounterIndex];
+  const stepOrBranch = template.steps[progress.currentEncounterIndex];
+  const currentStep = stepOrBranch
+    ? (isActionStepBranch(stepOrBranch) ? stepOrBranch.fallback : stepOrBranch)
+    : undefined;
 
   // Determine status styling
   const isActive = progress.status === 'active';
   const isCompleted = progress.status === 'completed';
   const isAbandoned = progress.status === 'abandoned';
 
-  const threatColor = THREAT_RATING_COLORS[template.threatRating] ?? '#a78bfa';
+  const threatLabel = RARITY_TO_THREAT[template.rarityTier] ?? 'moderate';
+  const threatColor = THREAT_RATING_COLORS[threatLabel] ?? '#a78bfa';
 
   // Leverage color: green (high) → amber (mid) → slate (low)
   const lev = progress.leverage;
@@ -78,7 +84,7 @@ export const EncounterLog = memo(function EncounterLog({
               borderColor: threatColor,
             }}
           >
-            {template.threatRating}
+            {threatLabel}
           </div>
         </Tooltip>
 
@@ -100,16 +106,16 @@ export const EncounterLog = memo(function EncounterLog({
           role="group"
           aria-label={`Encounter progress: step ${progress.currentEncounterIndex + 1} of ${template.steps.length}`}
         >
-        {template.steps.map((step, idx) => {
+        {template.steps.map((_step, idx) => {
           const isCurrentOrPassed = idx <= progress.currentEncounterIndex;
           const isCurrent = idx === progress.currentEncounterIndex;
           const stepLabel = isCurrent ? 'current' : isCurrentOrPassed ? 'completed' : 'upcoming';
           return (
             <div
-              key={step.id}
+              key={idx}
               className="w-2 h-2 rounded-full transition-opacity"
               role="img"
-              aria-label={`Step ${idx + 1}: ${step.name} (${stepLabel})`}
+              aria-label={`Step ${idx + 1} (${stepLabel})`}
               style={{
                 backgroundColor: isCurrentOrPassed
                   ? 'var(--accent-gold)'
@@ -150,35 +156,16 @@ export const EncounterLog = memo(function EncounterLog({
         </Tooltip>
       )}
 
-      {/* Current step narrative */}
+      {/* Current step label */}
       {currentStep && (
-        <div>
-          <Tooltip id="ui.encounter_step">
-            <p
-              className="text-xs font-semibold mb-2 uppercase tracking-wider cursor-help"
-              style={{
-                color: 'var(--text-secondary)',
-              }}
-            >
-              {currentStep.name}
-            </p>
-          </Tooltip>
+        <Tooltip id="ui.encounter_step">
           <p
-            className="text-xs leading-relaxed"
-            style={{
-              color: isAbandoned
-                ? 'var(--text-tertiary)'
-                : 'var(--text-primary)',
-            }}
+            className="text-xs font-semibold mb-2 uppercase tracking-wider cursor-help"
+            style={{ color: 'var(--text-secondary)' }}
           >
-            {resolveEncounterNarrative(
-              currentStep.narrative,
-              agentName,
-              currentStep.id,
-              template.threatRating,
-            )}
+            {`Step ${progress.currentEncounterIndex + 1}`}
           </p>
-        </div>
+        </Tooltip>
       )}
 
       {/* Glow effect for active encounters */}
