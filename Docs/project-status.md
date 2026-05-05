@@ -1,7 +1,7 @@
 # Project Status
-> Updated 2026-05-04.
+> Updated 2026-05-05.
 ## Current Focus
-**Maintenance cycle (2026-05-04) — board empty, all design artifacts committed.** No Ready-for-Dev issues on board. THR-300 Encounter Experience design exploration complete (Done); all artifacts committed across PRs #115–#119: grill-me synthesis, experiments HTML, player-journey.md, concept art, build-toolkit.md, v6+v7 UI prototypes. Next action: user needs to create implementation issues for THR-300 design decisions (Tarot Loom / Witnessed Scene / Knot of Threads experiments).
+**Maintenance cycle (2026-05-05) — board empty, design artifacts landed.** No Ready-for-Dev issues on board. THR-300 vision-audit resolution artifacts committed: encounter build toolkit with three load-bearing rules (path-over-adjective, moral axis structural, encounter-specific verbs), complete archetype-pair table (8 reaches × sphere × tension × archetype), vision audit doc with all six §9 verdict items resolved. PR #121. Next action: user needs to create implementation issues from THR-300 design decisions.
 
 **THR-299 complete — orphaned weekly hygiene docs committed.** Committed orphaned Cowork changes from the 2026-05-04 weekly sweep: AGENTS.md full Linear-first rewrite, CLAUDE.md branch-protection note + 5 new Domain Skills rows, encounter-building-checklist Backlog Escalation Rule updated to Linear. PR #113.
 
