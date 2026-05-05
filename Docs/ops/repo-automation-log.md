@@ -109,3 +109,4 @@
 - **ops** | CC check-slack-for-new-dev-work pickup: Ready for Dev queue empty — idle cycle. Ran flush-plan-docs for THR-300 (plan-pending-commit): committed Docs/plans/2026-05-04-encounter-experience-grill-me.md at e22160b4, PR #115 auto-merge enabled. No work claimed. (2026-05-04T14.41+02:00)
 - **ops** | no ready-for-codex work this cycle (2026-05-05T08.55.35+02:00)
 - **ops** | no ready-for-codex work this cycle (2026-05-05T10.02.22+02:00)
+- **work** | THR-308 shipped: canon drift propagation completed for repo docs/skills/public references (2026-05-05T10:30+02:00)

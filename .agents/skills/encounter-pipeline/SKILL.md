@@ -52,7 +52,7 @@ Every encounter must meet the quality standard demonstrated by "Gate Duty" (Clea
 - **Cool failure at every branch** — the failure path must be as narratively interesting as the success path. If the failure outcome reads like punishment, it's not done.
 - **Human conditions, not mechanical labels** — aftermath prose describes what the protagonist *feels* and *becomes*, not what numbers changed
 
-If a draft reads like a functional template with structural bones but no experiential flesh, the editorial agent will reject it.
+If a draft reads like a functional template with structural bones but no experiential depth, the editorial agent will reject it.
 
 ## Invocation
 
