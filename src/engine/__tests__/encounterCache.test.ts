@@ -2,14 +2,14 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { WorldGraph } from '../graph';
 import {
   EncounterCacheManager,
-  computeRewardEstimate,
-  computeTotalTickCost,
+  computeRewardEstimateUnified,
+  computeTotalTickCostUnified,
   REPUTATION_REWARD_WEIGHT,
   LOOT_REWARD_WEIGHT,
   DOMAIN_EXERCISE_WEIGHT,
 } from '../encounterCache';
-import { getEncountersByLocationType, ENCOUNTER_TEMPLATES } from '../../data/encounter-content';
-import type { EncounterTemplate, EncounterStep } from '../../types/encounter';
+import { getEncountersByLocationType } from '../../data/encounter-content';
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { DIFFICULTY_TIER_MULTIPLIERS } from '../../data/agent-behavior-constants';
 
 // ─── Helpers ────────────────────────────────────────────────────
@@ -33,39 +33,44 @@ function addLocation(
 }
 
 /** Build a minimal template for unit-testing pure functions */
-function makeTemplate(overrides: Partial<EncounterTemplate> = {}): EncounterTemplate {
+function makeTemplate(overrides: Partial<UnifiedActionTemplate> = {}): UnifiedActionTemplate {
   return {
     id: 'test.template',
     name: 'Test Template',
-    intrinsicTier: 'background' as const,
-    locationTypes: ['town'],
+    intrinsicTier: 'background',
+    rarityTier: 2,
+    reach: 'iron',
+    crudType: 'read',
+    scale: 'local',
+    apCost: 1,
+    actorAffinities: ['individual'],
+    motivations: ['courage_prudence'],
+    locationSubtypes: ['town'],
     steps: [
       {
-        id: 'step.1',
-        name: 'Step One',
         reach: 'iron',
-        difficulty: 40,
-        duration: 2,
-        narrative: 'test',
-        onSuccess: { narrative: 'ok', reputationDelta: 0.1 },
-        onFailure: { narrative: 'fail' },
+        duration: { min: 2, max: 2 },
+        difficulty: 0.4,
+        onSuccess: [],
+        onFailure: [],
+        failBehavior: 'continue_weakened',
+        successMetadata: { reputationDelta: 0.1 },
       },
       {
-        id: 'step.2',
-        name: 'Step Two',
         reach: 'gold',
-        difficulty: 50,
-        duration: 3,
-        narrative: 'test',
-        onSuccess: { narrative: 'ok', reputationDelta: 0.2 },
-        onFailure: { narrative: 'fail' },
+        duration: { min: 3, max: 3 },
+        difficulty: 0.5,
+        onSuccess: [],
+        onFailure: [],
+        failBehavior: 'continue_weakened',
+        successMetadata: { reputationDelta: 0.2 },
       },
     ],
-    reachPrimary: 'iron',
-    reachSecondary: 'gold',
-    encounterType: 'explore',
-    threatRating: 'moderate',
-    motivations: ['courage_prudence'],
+    narrativeTemplates: {
+      initiation: 'test',
+      success: 'ok',
+      failure: 'fail',
+    },
     ...overrides,
   };
 }
@@ -216,28 +221,27 @@ describe('EncounterCacheManager', () => {
 });
 
 describe('computeRewardEstimate', () => {
-  // 7. computeRewardEstimate calculates correctly
+  // 7. computeRewardEstimateUnified calculates correctly
   it('sums reputationDelta with weight + loot flag + base domain exercise', () => {
     const tmpl = makeTemplate({
       steps: [
         {
-          id: 's1', name: 'S1', reach: 'iron', difficulty: 40, narrative: 'x',
-          onSuccess: {
-            narrative: 'ok',
+          reach: 'iron', duration: { min: 1, max: 1 }, difficulty: 0.4,
+          onSuccess: [], onFailure: [], failBehavior: 'continue_weakened',
+          successMetadata: {
             reputationDelta: 0.1,
             rewardPool: { category: 'weapon', minTier: 1, maxTier: 3, quantity: 1 },
           },
-          onFailure: { narrative: 'fail' },
         },
         {
-          id: 's2', name: 'S2', reach: 'gold', difficulty: 50, narrative: 'x',
-          onSuccess: { narrative: 'ok', reputationDelta: 0.2 },
-          onFailure: { narrative: 'fail' },
+          reach: 'gold', duration: { min: 1, max: 1 }, difficulty: 0.5,
+          onSuccess: [], onFailure: [], failBehavior: 'continue_weakened',
+          successMetadata: { reputationDelta: 0.2 },
         },
       ],
     });
 
-    const reward = computeRewardEstimate(tmpl);
+    const reward = computeRewardEstimateUnified(tmpl);
     const expected =
       (0.1 + 0.2) * REPUTATION_REWARD_WEIGHT +
       LOOT_REWARD_WEIGHT +   // has at least one rewardPool
@@ -245,60 +249,60 @@ describe('computeRewardEstimate', () => {
     expect(reward).toBeCloseTo(expected);
   });
 
-  // 8. computeRewardEstimate defaults 0 for missing reputationDelta
+  // 8. computeRewardEstimateUnified defaults 0 for missing reputationDelta
   it('defaults 0 for missing reputationDelta', () => {
     const tmpl = makeTemplate({
       steps: [
         {
-          id: 's1', name: 'S1', reach: 'iron', difficulty: 40, narrative: 'x',
-          onSuccess: { narrative: 'ok' },      // no reputationDelta
-          onFailure: { narrative: 'fail' },
+          reach: 'iron', duration: { min: 1, max: 1 }, difficulty: 0.4,
+          onSuccess: [], onFailure: [], failBehavior: 'continue_weakened',
+          // no successMetadata → reputationDelta defaults to 0
         },
       ],
     });
 
-    const reward = computeRewardEstimate(tmpl);
+    const reward = computeRewardEstimateUnified(tmpl);
     // 0 * weight + 0 (no loot) + base
     expect(reward).toBeCloseTo(DOMAIN_EXERCISE_WEIGHT);
   });
 });
 
 describe('computeTotalTickCost', () => {
-  // 9. computeTotalTickCost sums step durations
+  // 9. computeTotalTickCostUnified sums step durations
   it('sums step durations', () => {
     const tmpl = makeTemplate({
       steps: [
         {
-          id: 's1', name: 'S1', reach: 'iron', difficulty: 40, duration: 2,
-          narrative: 'x', onSuccess: { narrative: 'ok' }, onFailure: { narrative: 'fail' },
+          reach: 'iron', duration: { min: 2, max: 2 }, difficulty: 0.4,
+          onSuccess: [], onFailure: [], failBehavior: 'continue_weakened',
         },
         {
-          id: 's2', name: 'S2', reach: 'gold', difficulty: 50, duration: 3,
-          narrative: 'x', onSuccess: { narrative: 'ok' }, onFailure: { narrative: 'fail' },
+          reach: 'gold', duration: { min: 3, max: 3 }, difficulty: 0.5,
+          onSuccess: [], onFailure: [], failBehavior: 'continue_weakened',
         },
       ],
     });
 
-    expect(computeTotalTickCost(tmpl)).toBe(5);
+    expect(computeTotalTickCostUnified(tmpl)).toBe(5);
   });
 
-  // 10. computeTotalTickCost defaults 1 for missing duration
+  // 10. computeTotalTickCostUnified defaults 1 for missing duration
   it('defaults 1 for missing duration', () => {
     const tmpl = makeTemplate({
       steps: [
         {
-          id: 's1', name: 'S1', reach: 'iron', difficulty: 40,
-          narrative: 'x', onSuccess: { narrative: 'ok' }, onFailure: { narrative: 'fail' },
+          reach: 'iron', difficulty: 0.4,
+          onSuccess: [], onFailure: [], failBehavior: 'continue_weakened',
           // duration omitted → defaults to 1
         },
         {
-          id: 's2', name: 'S2', reach: 'gold', difficulty: 50, duration: 4,
-          narrative: 'x', onSuccess: { narrative: 'ok' }, onFailure: { narrative: 'fail' },
+          reach: 'gold', duration: { min: 4, max: 4 }, difficulty: 0.5,
+          onSuccess: [], onFailure: [], failBehavior: 'continue_weakened',
         },
       ],
     });
 
-    expect(computeTotalTickCost(tmpl)).toBe(5); // 1 + 4
+    expect(computeTotalTickCostUnified(tmpl)).toBe(5); // 1 + 4
   });
 });
 

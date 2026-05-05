@@ -110,3 +110,4 @@
 - **ops** | no ready-for-codex work this cycle (2026-05-05T08.55.35+02:00)
 - **ops** | no ready-for-codex work this cycle (2026-05-05T10.02.22+02:00)
 - **work** | THR-308 shipped: canon drift propagation completed for repo docs/skills/public references (2026-05-05T10:30+02:00)
+- **work** | THR-302 shipped: removed deprecated EncounterTemplate, completed UnifiedActionTemplate retyping across encounter engine/UI/tests, and documented CMS Option C follow-up for THR-301 (2026-05-05T13:12+02:00)

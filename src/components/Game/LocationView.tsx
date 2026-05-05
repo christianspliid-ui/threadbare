@@ -2,9 +2,11 @@ import { memo, useMemo, useState, useCallback, useRef } from 'react';
 import type { GraphNode } from '../../types/graph';
 import type { WorldGraph } from '../../engine/graph';
 import { PlaceOfPowerInspector } from '../ruins/PlaceOfPowerInspector';
-import type { EncounterTemplate, EncounterProgress } from '../../types/encounter';
+import type { EncounterProgress } from '../../types/encounter';
 import type { SublocationProperties, SublocationPersistence } from '../../types/sublocation';
 import { THREAT_RATING_COLORS } from '../../types/encounter';
+import { RARITY_TO_THREAT, CRUD_TO_ENCOUNTER_TYPE } from '../../engine/encounterCache';
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import type { RarityTier } from '../../types/rarity';
 import { RARITY_TIER_COLORS } from '../../types/rarity';
 import { getAgentColor } from '../../data/sphereIcons';
@@ -31,12 +33,12 @@ interface LocationViewProps {
   onAgentClick: (agentId: string) => void;
   onBack: () => void;
   // Encounter data
-  availableEncounters: EncounterTemplate[];
+  availableEncounters: UnifiedActionTemplate[];
   activeEncounters: EncounterProgress[];
   getAgentName: (id: string) => string;
-  getEncounterTemplate: (id: string) => EncounterTemplate | undefined;
+  getUnifiedActionTemplate: (id: string) => UnifiedActionTemplate | undefined;
   // Click-to-open encounter vignette
-  onEncounterClick?: (agentId: string, progress: EncounterProgress, template: EncounterTemplate) => void;
+  onEncounterClick?: (agentId: string, progress: EncounterProgress, template: UnifiedActionTemplate) => void;
   // Prose generation (optional)
   graph?: WorldGraph;
   seed?: number;
@@ -55,12 +57,12 @@ interface SublocationCardProps {
   badgeBg: string;
   badgeText: string;
   divineOrigin?: { creatorGodId: string; purpose: string; createdAtTick: number };
-  availableEncounters: EncounterTemplate[];
+  availableEncounters: UnifiedActionTemplate[];
   activeEncounters: EncounterProgress[];
-  getEncounterTemplate: (id: string) => EncounterTemplate | undefined;
+  getUnifiedActionTemplate: (id: string) => UnifiedActionTemplate | undefined;
   getAgentName: (id: string) => string;
   onAgentClick: (agentId: string) => void;
-  onEncounterClick?: (agentId: string, progress: EncounterProgress, template: EncounterTemplate) => void;
+  onEncounterClick?: (agentId: string, progress: EncounterProgress, template: UnifiedActionTemplate) => void;
   onEnter: (sublocationId: string) => void;
 }
 
@@ -74,7 +76,7 @@ const SublocationCard = memo(function SublocationCard({
   divineOrigin,
   availableEncounters,
   activeEncounters,
-  getEncounterTemplate,
+  getUnifiedActionTemplate,
   getAgentName,
   onAgentClick,
   onEncounterClick,
@@ -224,7 +226,7 @@ const SublocationCard = memo(function SublocationCard({
                     agent={agent}
                     actorType={actorType as string}
                     encounters={agentEncounters}
-                    getEncounterTemplate={getEncounterTemplate}
+                    getUnifiedActionTemplate={getUnifiedActionTemplate}
                     onAgentClick={onAgentClick}
                     onEncounterClick={onEncounterClick}
                   />
@@ -278,16 +280,16 @@ interface AgentRowProps {
   agent: GraphNode;
   actorType: string;
   encounters: EncounterProgress[];
-  getEncounterTemplate: (id: string) => EncounterTemplate | undefined;
+  getUnifiedActionTemplate: (id: string) => UnifiedActionTemplate | undefined;
   onAgentClick: (agentId: string) => void;
-  onEncounterClick?: (agentId: string, progress: EncounterProgress, template: EncounterTemplate) => void;
+  onEncounterClick?: (agentId: string, progress: EncounterProgress, template: UnifiedActionTemplate) => void;
 }
 
 const AgentRow = memo(function AgentRow({
   agent,
   actorType,
   encounters,
-  getEncounterTemplate,
+  getUnifiedActionTemplate,
   onAgentClick,
   onEncounterClick,
 }: AgentRowProps) {
@@ -338,7 +340,7 @@ const AgentRow = memo(function AgentRow({
           }}
         >
           {encounters.length > 0 ? (() => {
-            const tmpl = getEncounterTemplate(encounters[0].encounterId);
+            const tmpl = getUnifiedActionTemplate(encounters[0].encounterId);
             return (
               <span
                 role="button"
@@ -381,7 +383,7 @@ const AgentRow = memo(function AgentRow({
 
       {/* Step dots */}
       {encounters.length > 0 && (() => {
-        const tmpl = getEncounterTemplate(encounters[0].encounterId);
+        const tmpl = getUnifiedActionTemplate(encounters[0].encounterId);
         return tmpl ? (
           <StepDots
             totalSteps={tmpl.steps.length}
@@ -395,7 +397,7 @@ const AgentRow = memo(function AgentRow({
 
 // ──── Sub-component: Available Encounters Hint ────
 interface AvailableEncountersHintProps {
-  encounters: EncounterTemplate[];
+  encounters: UnifiedActionTemplate[];
 }
 
 const AvailableEncountersHint = memo(function AvailableEncountersHint({
@@ -431,7 +433,7 @@ const AvailableEncountersHint = memo(function AvailableEncountersHint({
           >
             <span>{encounter.name}</span>
             <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
-              {encounter.threatRating}
+              {RARITY_TO_THREAT[encounter.rarityTier] ?? 'moderate'}
             </span>
           </p>
         ))}
@@ -445,9 +447,9 @@ interface SublocationDetailViewProps {
   sublocation: GraphNode;
   parentLocationName: string;
   agents: GraphNode[];
-  availableEncounters: EncounterTemplate[];
+  availableEncounters: UnifiedActionTemplate[];
   activeEncounters: EncounterProgress[];
-  getEncounterTemplate: (id: string) => EncounterTemplate | undefined;
+  getUnifiedActionTemplate: (id: string) => UnifiedActionTemplate | undefined;
   getAgentName: (id: string) => string;
   onAgentClick: (agentId: string) => void;
   onBack: () => void;
@@ -466,7 +468,7 @@ const SublocationDetailView = memo(function SublocationDetailView({
   agents,
   availableEncounters,
   activeEncounters,
-  getEncounterTemplate,
+  getUnifiedActionTemplate,
   getAgentName,
   onAgentClick,
   onBack,
@@ -651,7 +653,7 @@ const SublocationDetailView = memo(function SublocationDetailView({
                     agent={agent}
                     actorType={actorType}
                     encounters={agentEncounters}
-                    getEncounterTemplate={getEncounterTemplate}
+                    getUnifiedActionTemplate={getUnifiedActionTemplate}
                     onAgentClick={onAgentClick}
                     onEncounterClick={onEncounterClick}
                   />
@@ -677,7 +679,7 @@ const SublocationDetailView = memo(function SublocationDetailView({
                 </h4>
                 <div className="space-y-2">
                   {activeEncounters.map(progress => {
-                    const template = getEncounterTemplate(progress.encounterId);
+                    const template = getUnifiedActionTemplate(progress.encounterId);
                     if (!template) return null;
                     const agentName = getAgentName(progress.actorId);
                     return (
@@ -705,7 +707,8 @@ const SublocationDetailView = memo(function SublocationDetailView({
                 </h4>
                 <div className="space-y-2">
                   {availableEncounters.map(encounter => {
-                    const threatColor = THREAT_RATING_COLORS[encounter.threatRating] ?? '#a78bfa';
+                    const threatLabel = RARITY_TO_THREAT[encounter.rarityTier] ?? 'moderate';
+                    const threatColor = THREAT_RATING_COLORS[threatLabel] ?? '#a78bfa';
                     return (
                       <div
                         key={encounter.id}
@@ -739,14 +742,14 @@ const SublocationDetailView = memo(function SublocationDetailView({
                               borderColor: threatColor,
                             }}
                           >
-                            {encounter.threatRating}
+                            {threatLabel}
                           </div>
                         </div>
                         <p
                           className="text-xs"
                           style={{ color: 'var(--text-tertiary)' }}
                         >
-                          {encounter.encounterType} · {encounter.reachPrimary}
+                          {CRUD_TO_ENCOUNTER_TYPE[encounter.crudType] ?? encounter.crudType} · {encounter.reach}
                         </p>
                       </div>
                     );
@@ -786,7 +789,7 @@ export const LocationView = memo(function LocationView({
   activeEncounters,
   getAgentName,
   onEncounterClick,
-  getEncounterTemplate,
+  getUnifiedActionTemplate,
   graph,
   seed,
   tick,
@@ -908,7 +911,7 @@ export const LocationView = memo(function LocationView({
         agents={subAgents}
         availableEncounters={subAvailableEncounters}
         activeEncounters={subActiveEncounters}
-        getEncounterTemplate={getEncounterTemplate}
+        getUnifiedActionTemplate={getUnifiedActionTemplate}
         getAgentName={getAgentName}
         onAgentClick={onAgentClick}
         onBack={handleBackToLocation}
@@ -1193,7 +1196,7 @@ export const LocationView = memo(function LocationView({
                   divineOrigin={divineOrigin}
                   availableEncounters={filteredEncounters}
                   activeEncounters={activeEncounters}
-                  getEncounterTemplate={getEncounterTemplate}
+                  getUnifiedActionTemplate={getUnifiedActionTemplate}
                   getAgentName={getAgentName}
                   onAgentClick={onAgentClick}
                   onEncounterClick={onEncounterClick}
@@ -1352,7 +1355,7 @@ export const LocationView = memo(function LocationView({
                   </h4>
                   <div className="space-y-2">
                     {activeEncounters.map(progress => {
-                      const template = getEncounterTemplate(progress.encounterId);
+                      const template = getUnifiedActionTemplate(progress.encounterId);
                       if (!template) return null;
                       const agentName = getAgentName(progress.actorId);
                       return (
@@ -1381,8 +1384,8 @@ export const LocationView = memo(function LocationView({
                   </h4>
                   <div className="space-y-2">
                     {availableEncounters.map(encounter => {
-                      const threatColor =
-                        THREAT_RATING_COLORS[encounter.threatRating] ?? '#a78bfa';
+                      const threatLabel = RARITY_TO_THREAT[encounter.rarityTier] ?? 'moderate';
+                      const threatColor = THREAT_RATING_COLORS[threatLabel] ?? '#a78bfa';
 
                       return (
                         <div
@@ -1417,7 +1420,7 @@ export const LocationView = memo(function LocationView({
                                 borderColor: threatColor,
                               }}
                             >
-                              {encounter.threatRating}
+                              {threatLabel}
                             </div>
                           </div>
                           <p
@@ -1426,7 +1429,7 @@ export const LocationView = memo(function LocationView({
                               color: 'var(--text-tertiary)',
                             }}
                           >
-                            {encounter.encounterType} · {encounter.reachPrimary}
+                            {CRUD_TO_ENCOUNTER_TYPE[encounter.crudType] ?? encounter.crudType} · {encounter.reach}
                           </p>
                         </div>
                       );

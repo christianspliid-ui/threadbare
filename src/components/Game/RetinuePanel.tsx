@@ -1,6 +1,7 @@
 import React from 'react';
 import type { RetinueAgent } from '../../engine/retinue';
-import type { EncounterProgress, EncounterTemplate } from '../../types/encounter';
+import type { EncounterProgress } from '../../types/encounter';
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { Tooltip } from '../shared/Tooltip';
 import { SectionHeading } from '../shared/SectionHeading';
 import { IconButton } from '../shared/IconButton';
@@ -14,8 +15,8 @@ interface RetinuePanelProps {
   onAgentSelect: (agentId: string) => void;
   onCenterOnHex?: (locationId: string) => void;
   onZoomToLocation?: (locationId: string) => void;
-  activeEncounters?: Map<string, { progress: EncounterProgress; template: EncounterTemplate }>;
-  onEncounterClick?: (agentId: string, progress: EncounterProgress, template: EncounterTemplate) => void;
+  activeEncounters?: Map<string, { progress: EncounterProgress; template: UnifiedActionTemplate }>;
+  onEncounterClick?: (agentId: string, progress: EncounterProgress, template: UnifiedActionTemplate) => void;
   onToggleAttentionMode?: (threadEdgeId: string) => void;
 }
 
