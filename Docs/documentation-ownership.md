@@ -11,6 +11,7 @@
 | **Repo** (`Docs/`, `.planning/`) | Implementation rationale, design plans, changelog, UI patterns, project status, milestone roadmaps | System definitions, issue tracking (that's Linear) |
 | **Linear** ([Threadbare team](https://linear.app/threadbare)) | Issue tracking, backlog prioritization, handoff comments, project milestones, agent coordination state | System definitions, implementation rationale |
 | **`CLAUDE.md`** | Session workflow, architectural decisions, non-functional priorities, skill routing, rejected approaches | Anything duplicated from the above — link, don't copy |
+| **Canon pages** (`Docs/canon/`) | Per-domain navigation layer: current spec pointers, rejected approaches, open questions, last-reviewed date. Agent Step 0 for authoring work. | Definitions (those live in UL), rationale (those live in plans) |
 
 ### Archived surfaces
 
@@ -71,6 +72,7 @@
 - `project-history.md` — append-only completed milestone archive (troubleshooting reference)
 - `changelog.md` — append-only log of changes (date | where | what | why)
 - `ubiquitous-language/` — canonical terminology (UL wins on disagreements)
+- `canon/` — per-domain Canon pages (agent Step 0 for authoring tasks); schema in `canon/README.md`
 - `documentation-ownership.md` — this file
 
 ---

@@ -142,11 +142,23 @@ See `src/debug-bridge.ts` for the full API and `src/debug-bridge.d.ts` for types
 
 ## Documentation Strategy
 
-Three surfaces, each with a distinct purpose. Full ownership rules and duplication policy: **`Docs/documentation-ownership.md`**
+Four surfaces, each with a distinct purpose. Full ownership rules and duplication policy: **`Docs/documentation-ownership.md`**
 
 - **Obsidian vault** — Domain model: systems, mechanics, terminology (wikilinks). Read `Index.md` first.
 - **Repo `.planning/`** — Legacy milestone roadmap, phase history (backlog and handover retired — use Linear)
 - **Repo `Docs/`** — Implementation rationale (`plans/`), changelog, UI patterns, project status
+- **Canon pages** (`Docs/canon/`) — Per-domain navigation layer (current spec pointers, rejected approaches, open questions). **Agent Step 0 for authoring tasks.** See `Docs/canon/README.md` for the schema.
+
+### Canon Pages (agent Step 0 for authoring)
+
+When starting any encounter, prose, attachment, or other content authoring task, load the relevant Canon page **before any other reference material**:
+
+| Domain | Canon page | When to load |
+|--------|-----------|-------------|
+| Encounters | `Docs/canon/encounters.md` | Before running `encounter-pipeline`, `template-encounter-rewrite`, or any encounter content work |
+| Cosmology | `Docs/canon/cosmology.md` | Before any content that references Reaches, Spheres, or Quintessence — includes encounters, agents, and faction content |
+
+**Why Canon pages exist:** agents triangulating canonical content from 6–12 files make silent errors (wrong reach count, stale formats, deprecated systems). A Canon page is a single ≤200-line entrypoint that answers "what is current?" and lists stale sources to avoid. The UL remains the terminology authority; Canon pages point to UL and add the navigation layer on top.
 
 *Notion content migrated to Obsidian 2026-04-04. Dilemma templates remain in Notion pending TypeScript import.*
 
@@ -382,6 +394,7 @@ Work is not "done" until it is deployed and documented. Do all of these automati
 - [ ] **Check Linear Projects for milestone context** — `list_projects` to see which milestones are in Now/Discovery/Research. Issues belong to projects; projects show the big picture.
 - [ ] Check `.planning/ROADMAP.md` for legacy milestone overview
 - [ ] Read relevant design doc in `Docs/plans/` before writing code
+- [ ] **For content authoring tasks (encounters, attachments, prose, faction content):** load `Docs/canon/<domain>.md` **before any other reference material**. The Canon page is the agent's Step 0 entrypoint — it lists the current spec, canonical pointers, and stale sources to avoid. Start with `Docs/canon/encounters.md` for encounter work, `Docs/canon/cosmology.md` for anything that references Reaches or Spheres.
 - [ ] **Upstream health check** — if the feature depends on upstream pipeline throughput, verify the pipeline is producing output before coding. A feature wired to a dead pipeline is wasted work.
 - [ ] **Terminology authority check** — if sources disagree on term definitions, UL wins (`Docs/ubiquitous-language/README.md` + shard entries)
 - [ ] After completing work, follow the **Definition of Done** above
