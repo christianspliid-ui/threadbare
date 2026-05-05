@@ -3,7 +3,8 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { LocationView } from '../LocationView';
 import type { GraphNode } from '../../../types/graph';
-import type { EncounterTemplate, EncounterProgress } from '../../../types/encounter';
+import type { EncounterProgress } from '../../../types/encounter';
+import type { UnifiedActionTemplate } from '../../../types/unifiedAction';
 
 const mockLocation: GraphNode = {
   id: 'loc.tavern',
@@ -17,35 +18,37 @@ const mockAgents: GraphNode[] = [
   { id: 'a.2', type: 'actor', name: 'Mirael', properties: { actorType: 'individual' } },
 ];
 
-const mockEncounterTemplate: EncounterTemplate = {
+const mockEncounterTemplate: UnifiedActionTemplate = {
   id: 'encounter.test_quest',
   name: 'Test Quest',
-  locationTypes: ['tavern'],
+  intrinsicTier: 'background',
+  rarityTier: 2,
+  reach: 'eye',
+  crudType: 'read',
+  scale: 'local',
+  apCost: 1,
+  actorAffinities: ['individual'],
+  motivations: ['courage_prudence'],
+  locationSubtypes: ['tavern'],
+  narrativeTemplates: { initiation: 'You approach the tavern...', success: 'You succeed!', failure: 'You fail...' },
   steps: [
     {
-      id: 'step1',
-      name: 'Enter',
-      narrative: 'You approach the tavern...',
       reach: 'eye',
-      difficulty: 35,
-      onSuccess: { narrative: 'You succeed!' },
-      onFailure: { narrative: 'You fail...' },
+      difficulty: 0.35,
+      duration: { min: 1, max: 1 },
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'continue_weakened',
     },
     {
-      id: 'step2',
-      name: 'Explore',
-      narrative: 'Deeper within...',
       reach: 'iron',
-      difficulty: 45,
-      onSuccess: { narrative: 'Victory!' },
-      onFailure: { narrative: 'Defeat...' },
+      difficulty: 0.45,
+      duration: { min: 1, max: 1 },
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'continue_weakened',
     },
   ],
-  reachPrimary: 'eye',
-  reachSecondary: 'iron',
-  encounterType: 'explore',
-  threatRating: 'moderate',
-  motivations: ['courage_prudence'],
 };
 
 const mockEncounterProgress: EncounterProgress = {
@@ -66,10 +69,10 @@ describe('LocationView', () => {
     hexRow: 4,
     onAgentClick: vi.fn(),
     onBack: vi.fn(),
-    availableEncounters: [] as EncounterTemplate[],
+    availableEncounters: [] as UnifiedActionTemplate[],
     activeEncounters: [] as EncounterProgress[],
     getAgentName: (id: string) => `Agent ${id}`,
-    getEncounterTemplate: vi.fn(() => undefined),
+    getUnifiedActionTemplate: vi.fn(() => undefined),
   };
 
   it('renders location name', () => {
@@ -168,7 +171,7 @@ describe('LocationView', () => {
       <LocationView
         {...defaultProps}
         activeEncounters={[mockEncounterProgress]}
-        getEncounterTemplate={getTemplate}
+        getUnifiedActionTemplate={getTemplate}
         getAgentName={getAgent}
       />
     );

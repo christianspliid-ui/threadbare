@@ -10,7 +10,7 @@ import { WorldGraph } from '../graph';
 import { enableTracing, disableTracing, clearTraces } from '../traceBuffer';
 import { getEncountersByLocationType } from '../../data/encounter-content';
 import * as encounterContent from '../../data/encounter-content';
-import type { EncounterTemplate } from '../../types/encounter';
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 
 // ──────────────────────────────────────────────────────────────────────
 // HELPERS
@@ -383,29 +383,29 @@ describe('Encounter Engine', () => {
   });
 
   describe('woundApplied flag', () => {
-    function makeWoundEncounter(failureAppliesWound: boolean): EncounterTemplate {
+    function makeWoundEncounter(failureAppliesWound: boolean): UnifiedActionTemplate {
       return {
         id: 'test.wound_encounter',
         name: 'Wound Test Encounter',
-        description: 'Test',
-        reachPrimary: 'iron',
-        locationSubtypes: ['town'],
-        sphereAffinity: 'none',
-        encounterType: 'challenge',
-        threatRating: 'low',
         intrinsicTier: 'background',
+        rarityTier: 1,
+        reach: 'iron',
+        crudType: 'delete',
+        scale: 'local',
+        apCost: 1,
+        actorAffinities: ['individual'],
+        motivations: [],
+        locationSubtypes: ['town'],
+        narrativeTemplates: { initiation: 'A test.', success: 'Success.', failure: 'Failure.' },
         steps: [
           {
-            id: 'test.wound_encounter.step1',
-            name: 'Test Step',
-            narrative: 'A test.',
-            reach: 'iron',
-            difficulty: 50,
-            onSuccess: { narrative: 'Success.', appliesWound: false },
-            onFailure: { narrative: 'Failure.', appliesWound: failureAppliesWound },
+            reach: 'iron', difficulty: 0.5, duration: { min: 1, max: 1 },
+            onSuccess: { narrative: 'Success.', appliesWound: false } as never,
+            onFailure: { narrative: 'Failure.', appliesWound: failureAppliesWound } as never,
+            failBehavior: 'continue_weakened',
           },
         ],
-      };
+      } as unknown as UnifiedActionTemplate;
     }
 
     it('returns woundApplied: false for standard encounters without appliesWound', () => {

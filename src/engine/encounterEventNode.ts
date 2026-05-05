@@ -11,7 +11,9 @@ import type { WorldGraph } from './graph';
 import type { GraphNode } from '../types/graph';
 import type { EncounterProgress } from '../types/encounter';
 import type { OutcomeType } from '../types/resolution';
-import type { EncounterTemplate } from '../types/encounter';
+import type { UnifiedActionTemplate } from '../types/unifiedAction';
+import { isActionStepBranch } from '../types/unifiedAction';
+import { RARITY_TO_THREAT, CRUD_TO_ENCOUNTER_TYPE } from './encounterCache';
 import { emitTrace } from './traceBuffer';
 import type { TraceEntry } from '../types/trace';
 
@@ -46,7 +48,7 @@ export const EVENT_PROSE_MIN_TICK_GAP = 5;
 export interface CreateEncounterEventParams {
   graph: WorldGraph;
   progress: EncounterProgress;
-  template: EncounterTemplate;
+  template: UnifiedActionTemplate;
   stepIndex: number;
   outcomeType: OutcomeType;
   tick: number;
@@ -70,8 +72,10 @@ export function createEncounterEventNode(
 
   const { graph, progress, template, stepIndex, outcomeType, tick, rewardInstanceId, tierPromotionOccurred } = params;
 
-  const step = template.steps[stepIndex];
-  if (!step) return undefined;
+  const stepOrBranch = template.steps[stepIndex];
+  if (!stepOrBranch) return undefined;
+  const step = isActionStepBranch(stepOrBranch) ? stepOrBranch.fallback : stepOrBranch;
+  const stepLabel = `Step ${stepIndex + 1}`;
 
   const eventNodeId = `${EVENT_NODE_ID_PREFIX}${progress.actorId}_${tick}_${stepIndex}`;
 
@@ -80,17 +84,17 @@ export function createEncounterEventNode(
     graph.addNode({
       id: eventNodeId,
       type: 'event',
-      name: `${template.name} (${step.name})`,
+      name: `${template.name} (${stepLabel})`,
       properties: {
         eventType: 'encounter_outcome',
         templateId: template.id,
         templateName: template.name,
-        encounterType: template.encounterType,
+        encounterType: CRUD_TO_ENCOUNTER_TYPE[template.crudType] ?? 'explore',
         stepIndex,
-        stepName: step.name,
+        stepName: stepLabel,
         outcome: outcomeType,
         reachTested: step.reach,
-        threatRating: template.threatRating,
+        threatRating: RARITY_TO_THREAT[template.rarityTier] ?? 'moderate',
         ...(template.sphereAffinity && { sphereAffinity: template.sphereAffinity }),
         tick,
         tierPromotionOccurred,

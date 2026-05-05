@@ -1,5 +1,6 @@
 import type { GameState } from '../types/gameState';
-import type { EncounterProgress, EncounterTemplate } from '../types/encounter';
+import type { EncounterProgress } from '../types/encounter';
+import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import type { EncounterNotification } from '../types/encounterVisibility';
 import type { CourtPosition, ThreadEdgeProperties } from '../types/influence';
 import type { UnifiedAction } from '../types/unifiedAction';
@@ -62,7 +63,7 @@ export interface PreparedDebugEncounterSpawn {
   message: string;
   mode?: 'unified' | 'legacy';
   agent?: { id: string; name: string };
-  template?: EncounterTemplate;
+  template?: UnifiedActionTemplate;
   notification?: EncounterNotification;
   encounterProgress?: EncounterProgress;
   unifiedAction?: UnifiedAction;
@@ -99,39 +100,8 @@ function findAgent(state: GameState, agentQuery: string) {
   );
 }
 
-function resolveTemplate(templateQuery: string): EncounterTemplate | undefined {
-  const exact = getAnyEncounterById(templateQuery);
-  if (exact) return exact;
-
-  // Also check unified action templates — they can be spawned as encounters
-  // if they have multi-step or support bundle configurations.
-  const unified = getUnifiedTemplateById(templateQuery);
-  if (unified) {
-    // Adapt unified template to the EncounterTemplate shape expected downstream.
-    // This is a lightweight shim — the real spawn path at line 297+ already
-    // checks getUnifiedTemplateById and uses the unified path when found.
-    return {
-      id: unified.id,
-      name: unified.name,
-      steps: unified.steps.map((s, i) => {
-        const step = 'branchOnStep' in s ? s.fallback : s;
-        return {
-          id: `${unified.id}.${i}`,
-          reach: step.reach,
-          difficulty: Math.round(step.difficulty * 100),
-          duration: step.duration.min,
-          onSuccess: { narrative: step.narrativeTemplate ?? unified.narrativeTemplates.success },
-          onFailure: { narrative: step.narrativeTemplate ?? unified.narrativeTemplates.failure },
-        };
-      }),
-      locationTypes: (unified.locationSubtypes ?? []) as never,
-      threatRating: 'moderate' as const,
-      encounterType: 'assist' as const,
-      supportBundle: unified.supportBundle,
-    } as EncounterTemplate;
-  }
-
-  return undefined;
+function resolveTemplate(templateQuery: string): UnifiedActionTemplate | undefined {
+  return getAnyEncounterById(templateQuery) ?? getUnifiedTemplateById(templateQuery);
 }
 
 function normalizeAnchorLocationId(state: GameState, locationId: string): string {
@@ -181,7 +151,7 @@ function resolveLocationAnchor(state: GameState, query: string) {
 
 function chooseAnchorLocation(
   state: GameState,
-  template: EncounterTemplate,
+  template: UnifiedActionTemplate,
   options: DebugSpawnEncounterContextOptions,
 ): { locationId: string; locationName: string; createdAnchor: boolean } | { error: string } {
   if (options.locationQuery) {
@@ -200,7 +170,7 @@ function chooseAnchorLocation(
     const locationsAtHex = topLevelLocationsAtHex(state, options.col, options.row);
     const validAtHex = locationsAtHex.find(node => {
       const subtype = node.properties.locationSubtype as string | undefined;
-      return subtype !== undefined && template.locationTypes.includes(subtype as never);
+      return subtype !== undefined && (template.locationSubtypes ?? []).includes(subtype);
     });
     if (validAtHex) {
       return {
@@ -212,11 +182,11 @@ function chooseAnchorLocation(
 
     if (locationsAtHex.length > 0) {
       return {
-        error: `Hex ${options.col},${options.row} is already occupied by ${formatHexLocationSummary(state, options.col, options.row)} and cannot safely host a temporary ${template.locationTypes[0] ?? 'encounter'} anchor. Use --at <settlement>, choose an empty hex, or move the agent first.`,
+        error: `Hex ${options.col},${options.row} is already occupied by ${formatHexLocationSummary(state, options.col, options.row)} and cannot safely host a temporary ${template.locationSubtypes?.[0] ?? 'encounter'} anchor. Use --at <settlement>, choose an empty hex, or move the agent first.`,
       };
     }
 
-    const fallbackSubtype = template.locationTypes[0];
+    const fallbackSubtype = template.locationSubtypes?.[0];
     if (!fallbackSubtype) {
       return { error: `Encounter '${template.id}' has no valid anchor location type.` };
     }
@@ -270,7 +240,7 @@ function getThreadContext(
   return { courtPosition, attentionMode };
 }
 
-function makeUiProgress(template: EncounterTemplate, actorId: string, tick: number, occupiedUntilTick?: number): EncounterProgress {
+function makeUiProgress(template: UnifiedActionTemplate, actorId: string, tick: number, occupiedUntilTick?: number): EncounterProgress {
   return {
     encounterId: template.id,
     actorId,

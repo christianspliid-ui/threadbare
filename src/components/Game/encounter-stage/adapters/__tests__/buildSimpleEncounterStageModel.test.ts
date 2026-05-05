@@ -1,36 +1,37 @@
 import { describe, expect, it } from 'vitest';
 import { buildSimpleEncounterStageModel } from '../buildSimpleEncounterStageModel';
-import type { EncounterTemplate } from '../../../../../types/encounter';
+import type { UnifiedActionTemplate } from '../../../../../types/unifiedAction';
 import type { EncounterNotification } from '../../../../../types/encounterVisibility';
 import type { ActiveEncounterDisplay } from '../../../encounterNotificationRuntime';
 import type { ThreadTier } from '../../types';
 import { WorldGraph } from '../../../../../engine/graph';
 
-function buildTemplate(overrides?: Partial<EncounterTemplate>): EncounterTemplate {
+function buildTemplate(overrides?: Partial<UnifiedActionTemplate>): UnifiedActionTemplate {
   return {
     id: 'test.encounter',
     name: 'Test Encounter',
+    intrinsicTier: 'background',
+    rarityTier: 2,
+    reach: 'iron',
+    crudType: 'read',
+    scale: 'local',
+    apCost: 1,
+    actorAffinities: ['individual'],
+    motivations: [],
+    locationSubtypes: [],
+    narrativeTemplates: { initiation: 'A test encounter unfolds.', success: 'You succeeded.', failure: 'You failed.' },
     steps: [
       {
-        id: 'step-1',
-        name: 'First Step',
-        narrative: 'A test encounter unfolds.',
         reach: 'iron',
-        difficulty: 50,
-        duration: 1,
-        onSuccess: { narrative: 'You succeeded.' },
-        onFailure: { narrative: 'You failed.' },
+        difficulty: 0.5,
+        duration: { min: 1, max: 1 },
+        onSuccess: [],
+        onFailure: [],
+        failBehavior: 'continue_weakened',
       },
     ],
-    reachPrimary: 'iron',
-    reachSecondary: 'gold',
-    encounterType: 'explore',
-    threatRating: 'moderate',
-    intrinsicTier: 'background',
-    motivations: [],
-    locationTypes: [],
     ...overrides,
-  } as EncounterTemplate;
+  } as UnifiedActionTemplate;
 }
 
 function buildNotification(overrides?: Partial<EncounterNotification>): EncounterNotification {
@@ -127,7 +128,7 @@ describe('buildSimpleEncounterStageModel', () => {
   it('builds step history from template steps', () => {
     const model = buildSimpleEncounterStageModel(baseArgs);
     expect(model.history).toHaveLength(1);
-    expect(model.history[0].stepLabel).toBe('First Step');
+    expect(model.history[0].stepLabel).toBe('Step 1');
     expect(model.history[0].status).toBe('current');
   });
 

@@ -2,38 +2,43 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { EncounterLog } from '../EncounterLog';
-import type { EncounterTemplate, EncounterProgress } from '../../../types/encounter';
+import type { EncounterProgress } from '../../../types/encounter';
+import type { UnifiedActionTemplate } from '../../../types/unifiedAction';
 
-const mockTemplate: EncounterTemplate = {
+const mockTemplate: UnifiedActionTemplate = {
   id: 'encounter.test_quest',
   name: 'Test Quest',
   intrinsicTier: 'background',
-  locationTypes: ['ruins'],
+  rarityTier: 2,
+  reach: 'eye',
+  crudType: 'update',
+  scale: 'local',
+  apCost: 1,
+  actorAffinities: ['individual'],
+  motivations: ['courage_prudence'],
   steps: [
     {
-      id: 'step1',
-      name: 'Enter',
-      narrative: 'You approach the ruins...',
       reach: 'eye',
-      difficulty: 35,
-      onSuccess: { narrative: 'You succeed!' },
-      onFailure: { narrative: 'You fail...' },
+      duration: { min: 1, max: 2 },
+      difficulty: 0.35,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'continue_weakened',
     },
     {
-      id: 'step2',
-      name: 'Explore',
-      narrative: 'Deeper within...',
       reach: 'iron',
-      difficulty: 45,
-      onSuccess: { narrative: 'Victory!' },
-      onFailure: { narrative: 'Defeat...' },
+      duration: { min: 1, max: 2 },
+      difficulty: 0.45,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'continue_weakened',
     },
   ],
-  reachPrimary: 'eye',
-  reachSecondary: 'iron',
-  encounterType: 'explore',
-  threatRating: 'moderate',
-  motivations: ['courage_prudence'],
+  narrativeTemplates: {
+    initiation: 'You approach the ruins...',
+    success: 'You succeed!',
+    failure: 'You fail...',
+  },
 };
 
 const mockProgress: EncounterProgress = {
@@ -57,7 +62,7 @@ describe('EncounterLog', () => {
     expect(screen.getByText(/Kael faces Test Quest/)).toBeTruthy();
   });
 
-  it('renders threat rating badge', () => {
+  it('renders threat rating badge derived from rarityTier', () => {
     render(
       <EncounterLog
         progress={mockProgress}
@@ -65,6 +70,7 @@ describe('EncounterLog', () => {
         agentName="Kael"
       />
     );
+    // rarityTier 2 → 'moderate' per RARITY_TO_THREAT
     const badge = screen.getByText('moderate');
     expect(badge).toBeTruthy();
   });
@@ -77,12 +83,11 @@ describe('EncounterLog', () => {
         agentName="Kael"
       />
     );
-    // Should have 2 dot elements (one for each step)
     const dots = document.querySelectorAll('[class*="w-2 h-2"]');
     expect(dots.length).toBe(2);
   });
 
-  it('renders current step name and narrative', () => {
+  it('renders current step label', () => {
     render(
       <EncounterLog
         progress={mockProgress}
@@ -90,8 +95,7 @@ describe('EncounterLog', () => {
         agentName="Kael"
       />
     );
-    expect(screen.getByText('Enter')).toBeTruthy();
-    expect(screen.getByText('You approach the ruins...')).toBeTruthy();
+    expect(screen.getByText('Step 1')).toBeTruthy();
   });
 
   it('renders active status indicator', () => {
@@ -102,7 +106,6 @@ describe('EncounterLog', () => {
         agentName="Kael"
       />
     );
-    // Check that there's a golden glow effect (inset shadow)
     const div = container.querySelector('div[style*="accent-gold"]');
     expect(div).toBeTruthy();
   });
@@ -144,7 +147,7 @@ describe('EncounterLog', () => {
     expect(mainDiv.style.opacity).toBe('0.6');
   });
 
-  it('renders step at non-zero index correctly', () => {
+  it('renders step label at non-zero index', () => {
     const progressStep2 = { ...mockProgress, currentEncounterIndex: 1 };
     render(
       <EncounterLog
@@ -153,12 +156,12 @@ describe('EncounterLog', () => {
         agentName="Kael"
       />
     );
-    expect(screen.getByText('Explore')).toBeTruthy();
-    expect(screen.getByText('Deeper within...')).toBeTruthy();
+    expect(screen.getByText('Step 2')).toBeTruthy();
   });
 
-  it('renders different threat ratings with different colors', () => {
-    const hardTemplate = { ...mockTemplate, threatRating: 'hard' as const };
+  it('renders different threat ratings from rarityTier', () => {
+    // rarityTier 3 → 'hard'
+    const hardTemplate = { ...mockTemplate, rarityTier: 3 as const };
     render(
       <EncounterLog
         progress={mockProgress}
@@ -168,10 +171,8 @@ describe('EncounterLog', () => {
     );
     expect(screen.getByText('hard')).toBeTruthy();
 
-    const trivialTemplate = {
-      ...mockTemplate,
-      threatRating: 'trivial' as const,
-    };
+    // rarityTier 1 → 'trivial'
+    const trivialTemplate = { ...mockTemplate, rarityTier: 1 as const };
     const { unmount } = render(
       <EncounterLog
         progress={mockProgress}
