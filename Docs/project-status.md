@@ -3,6 +3,8 @@
 ## Current Focus
 **THR-302 complete — Encounter format architecture cleanup shipped (Encounter Experience).** Removed deprecated `EncounterTemplate`, retyped encounter engine/UI/test callsites to `UnifiedActionTemplate`, and captured CMS Option C (authored package taxonomy retained; metadata-filter revisit deferred to THR-301). PR #129.
 
+**THR-308 complete — encounter experience design plan minor edits.** Retracted §2.3 (divine marks), added Rule 4 (no XP treadmill), clarified Rule 3. PR #127 merged.
+
 **THR-305 complete — Canon pages bootstrapped (Continuous Improvement).** Created `Docs/canon/` with three files: `README.md` (schema + 4 rules), `encounters.md` (current encounter spec, UnifiedActionTemplate since THR-108, stale-source warnings, reach→archetype table), `cosmology.md` (user-verdicted 8 Reaches + Quintessence as meta-property, explicit stale-source list for Domain Word Scales / state-of-game-design skill / STYLE.md). Updated `CLAUDE.md` (4th documentation surface + Session Workflow Step 0 for authoring) and `Docs/documentation-ownership.md` (Canon Pages row). Plan doc status flipped to `current`. PR #124.
 
 **THR-301 In Design — Encounter experience long-form design plan on main.** PR #122 merged. THR-301 stays In Design awaiting user verdict on §17 (three open points). Next action: user verdict triggers child issue breakdown per phase.
@@ -22,7 +24,7 @@
 - **Thematic Pressure & Living World (Next):** ✅ THR-19/122/125/126/80/128/127. THR-87 blocked by THR-116.
 
 ## Archived to project-history.md
-- THR-305/301/299/298/297/296/294/282/238/109/79/108/107/104/103/106/290/102/280/285/286/283/287/276/284/277/281/211/243/272/212/210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
+- THR-308/302/305/301/299/298/297/296/294/282/238/109/79/108/107/104/103/106/290/102/280/285/286/283/287/276/284/277/281/211/243/272/212/210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
