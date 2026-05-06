@@ -18,6 +18,7 @@ description: >
 This skill is the canonical reference for game design context. Load it before any domain-specific skill.
 
 **Obsidian world model:** `TheFantasyWorldSimulator/Index.md` via Obsidian MCP — follow wikilinks for deep dives.
+**Agent-domain cross-reference:** For actor/agent/faction/Ascendant/thread/archetype/value-pair questions, read `Docs/canon/agents.md` as Step 0 before domain implementation.
 
 ---
 
