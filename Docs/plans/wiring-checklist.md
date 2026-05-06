@@ -18,6 +18,15 @@
 
 ## Integration Surfaces
 
+### Encounter Experience Foundation (THR-321, Phase A2)
+
+| Surface | Path | Notes |
+|---|---|---|
+| Constants table | `src/data/encounter-experience-constants.ts` | Named defaults for choice tilts, drift thresholds, detection thresholds, forecast boundaries, cast/hand caps, and animation timings. |
+| Trace interfaces | `src/types/traces/encounter-traces.ts` | Defines `ChoiceResolvedTrace`, `ForecastComputedTrace`, `HandFilteredTrace`, `DriftThresholdCrossedTrace`, `DetectionThresholdCrossedTrace`, `ItemConsumedByChoiceTrace`, `SpotlightChangedTrace`. |
+| Trace category registration | `src/engine/traceBuffer.ts` | Adds `TRACE_CATEGORIES` entries for the encounter experience traces. |
+| GameState scaffolding | `src/types/gameState.ts` / `src/engine/gameInit.ts` | Adds and initializes `archetypeDrift`, `regionDetection`, and optional `spotlightedAgent`. |
+
 ### 1. Orchestrator Tick Loop (`src/engine/orchestrator.ts`)
 
 Every engine module that produces per-tick state changes must be called from a phase in the orchestrator. Phases come in two flavours:

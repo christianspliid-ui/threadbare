@@ -1,6 +1,8 @@
 # Project Status
 > Updated 2026-05-06.
 ## Current Focus
+**THR-321 complete — Encounter UI Phase A2 foundation scaffolding (Encounter Experience).** Added `src/data/encounter-experience-constants.ts` with the full tunables table from the design plan, added `src/types/traces/encounter-traces.ts` and trace-category registration in `src/engine/traceBuffer.ts`, and scaffolded `GameState`/init fields (`archetypeDrift`, `regionDetection`, `spotlightedAgent`) with wiring-checklist updates. Verification gates: `npm test`, `npx tsc --noEmit`, `npx vite build` all green.
+
 **THR-320 complete — Encounter UI Phase A1 contract foundation (Encounter Experience).** Added `src/types/encounter-contract.ts` as the canonical TS schema for design-plan §4.1, shipped `src/data/encounter-contract-validators.ts` with Zod + cross-field reach↔moral-axis validation, and added `src/engine/encounter-contract-adapter.ts` for bidirectional EncounterContract↔UnifiedActionTemplate mapping with four worked-example round-trip checks. Verification gates green (`npm test`, `npx tsc --noEmit`, `npx vite build`).
 
 **THR-311 complete — Canon Phase 2b: attachment canon page + skill wiring (Continuous Improvement).** Added `Docs/canon/attachments.md` (110 lines) as the canonical attachment-system entrypoint (categories, slot caps, primitive vocabulary, effect-walker seams, active plans, rejected approaches, open questions), then updated attachment-pipeline skill mirrors so Step 0 always reads the canon page before existing pre-reads (`Docs/authoring-brief.md` and systemic fallbacks). Verification gates green (`npm test`, `npx tsc --noEmit`, `npx vite build`).
@@ -27,7 +29,7 @@
 - **Thematic Pressure & Living World (Next):** ✅ THR-19/122/125/126/80/128/127. THR-87 blocked by THR-116.
 
 ## Archived to project-history.md
-- THR-320/315/309/307/308/306/302/305/301/299/298/297/296/294/282/238/109/79/108/107/104/103/106/290/102/280/285/286/283/287/276/284/277/281/211/243/272/212/210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
+- THR-321/320/315/309/307/308/306/302/305/301/299/298/297/296/294/282/238/109/79/108/107/104/103/106/290/102/280/285/286/283/287/276/284/277/281/211/243/272/212/210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
