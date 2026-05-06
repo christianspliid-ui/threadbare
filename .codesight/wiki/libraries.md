@@ -2,9 +2,9 @@
 
 > **Navigation aid.** Library inventory extracted via AST. Read the source files listed here before modifying exported functions.
 
-**553 library files** across 16 modules
+**555 library files** across 16 modules
 
-## Engine (320 files)
+## Engine (321 files)
 
 - `src\engine\phaseProsperity.ts` — getProsperityTier, computeBaseIncome, computeEquilibriumTargetWithSphere, phaseProsperity, ProsperityTier, PopulationTrend, …
 - `src\engine\graphQueries.ts` — getAgentsAtLocation, getAllActorsAtLocation, getAgentLocation, getAgentLocationId, getSublocationsAt, getLocationsInRegion, …
@@ -31,7 +31,7 @@
 - `src\engine\plannerForecast.ts` — isPushEligible, isResistEligible, forecastStepProbabilities, forecastStepExpectedUtility, forecastEncounterExpectedUtility, EncounterForecast, …
 - `src\engine\worldSeed.ts` — seedWorld, SeedResult, INDIVIDUAL_COUNT, FACTION_COUNT, LOCATION_COUNT, LOCATION_DENSITY, …
 - `src\engine\encounterEventNode.ts` — createEncounterEventNode, createUnifiedActionEventNode, getLocationEncounterHistory, getAgentEncounterHistory, CreateEncounterEventParams, CreateUnifiedActionEventParams, …
-- _…and 295 more files_
+- _…and 296 more files_
 
 ## Components (101 files)
 
@@ -62,7 +62,7 @@
 - `src\components\HexMapV2\scene\BattleIndicatorMesh.ts` — createBattleIndicatorMesh, tickBattlePulse, BattleRenderData, BATTLE_PULSE_PERIOD_MS, BATTLE_PULSE_MIN, BATTLE_PULSE_MAX
 - _…and 76 more files_
 
-## Data (71 files)
+## Data (72 files)
 
 - `src\data\uiColorPalette.ts` — getHostilityColor, STRAND_COLORS, SENTIMENT_POSITIVE, SENTIMENT_NEUTRAL, SENTIMENT_NEGATIVE, SENTIMENT_GREEN, …
 - `src\data\culture-content.ts` — getFoundationModifier, getCreationSphereModifier, getBiomeModifier, getFormativeTraitSeed, getBehavioralTraitSeed, getInsiderBeat, …
@@ -89,7 +89,7 @@
 - `src\data\builders-fellowship-encounter-content.ts` — getBuildersFellowshipEncounterById, BUILDERS_FELLOWSHIP_ENCOUNTER_META, BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES, BUILDERS_FELLOWSHIP_SOCIAL_TEMPLATES, BF_JOIN_TEMPLATE, BF_PROMOTION_TEMPLATE, …
 - `src\data\chronicler-content.ts` — getVignetteByContext, getSubLocationFlavor, getArtifactLore, CHRONICLER_VIGNETTES, SUBLOCATION_FLAVOR, LOCATION_TYPE_FLAVOR, …
 - `src\data\civic-guard-encounter-content.ts` — getCivicGuardEncounterById, CIVIC_GUARD_ENCOUNTER_META, CIVIC_GUARD_ENCOUNTER_TEMPLATES, CIVIC_GUARD_SOCIAL_TEMPLATES, CG_JOIN_TEMPLATE, CG_PROMOTION_TEMPLATE, …
-- _…and 46 more files_
+- _…and 47 more files_
 
 ## Scripts (17 files)
 

@@ -704,6 +704,10 @@
   - function getEncounterById: (id) => UnifiedActionTemplate | undefined
   - function getAnyEncounterById: (id) => UnifiedActionTemplate | undefined
   - _...9 more_
+- `src\data\encounter-contract-validators.ts`
+  - function parseEncounterContract: (contract) => EncounterContract
+  - function isEncounterContract: (contract) => contract is EncounterContract
+  - const encounterContractSchema: z.ZodType<EncounterContract>
 - `src\data\faction-encounter-content.ts`
   - function getFactionEncounterById: (id) => UnifiedActionTemplate | undefined
   - function getFactionTemplateIds: (factionDefId) => string[]
@@ -1442,6 +1446,12 @@
   - interface AwardElderEssenceInput
   - type EssenceDistributionMode
   - type EssenceAwardSource
+- `src\engine\encounter-contract-adapter.ts`
+  - function adaptEncounterContractToUnifiedActionTemplate: (contract) => UnifiedActionTemplate
+  - function adaptUnifiedActionTemplateToEncounterContract: (template) => EncounterContract
+  - function runEncounterContractRoundTripExamples: () => readonly EncounterContractRoundTripResult[]
+  - interface EncounterContractRoundTripResult
+  - const ENCOUNTER_CONTRACT_WORKED_EXAMPLES: readonly EncounterContract[]
 - `src\engine\encounter.ts`
   - function applyGroupSupportLeverage: (progress, resolvingAgentId) => void
   - function selectGroupStepResolver: (state) => void
@@ -2328,7 +2338,7 @@
   - function clearTraces: () => void
   - function enableTracing: () => void
   - function disableTracing: () => void
-  - _...1 more_
+  - _...4 more_
 - `src\engine\tradeRoute.ts`
   - function readTradeRouteProps: (raw, unknown>) => Required<TradeRouteProperties>
   - function isRouteStale: (lastTraded, currentTick) => boolean

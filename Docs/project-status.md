@@ -1,7 +1,9 @@
 # Project Status
 > Updated 2026-05-06.
 ## Current Focus
-**THR-337 complete — Encounter UI Phase E1 DetailModal shell + breadcrumb stacking (Encounter Experience).** Shipped the canonical stacked detail shell surface with new `DetailModal`, `DetailBreadcrumb`, and `Section` primitives plus a stack context (`push/pop/popTo/replace`) and `useDetailModal` pause contract outputs (`pausedBeatIndicatorOpacity=0.5`, `ambientDuckDb=-6`) for encounter-shell integration. Added size/dimming tunables in `src/types/detailPage.ts` (default 720×620; place/event 800×720; 28% per-layer dim), depth snapshot coverage at 1/2/4/5, and hook contract tests. Updated `Docs/plans/wiring-checklist.md` with a dedicated Detail Pages integration block.
+**THR-323 complete — Encounter UI Phase B1: choice resolution + drift accumulator + threshold detection (Encounter Experience).** Added `choiceResolution.ts` (d100 → 5-band outcome), `driftAccumulator.ts` (additive signed drift ±1.0, outward threshold detection at 0.30/0.60/0.85, per-tick decay), `itemConsumption.ts` (atomic `possesses`-edge removal, fail-soft), `phaseChoiceResolution.ts` (orchestrator Phase 2a.61), `phaseDriftDecay.ts` (end-of-tick decay). 53 new tests. All 10808 tests pass. PR #154.
+
+**Board empty as of 2026-05-06 ~14:00 UTC.** Canon Phase 2b complete (THR-311/312/313/314/315/316). Active design: THR-319 (detail page data model, Implementation Planning, PR #150 open with CI green + auto-merge). THR-318 In Design (encounter content authoring epic). THR-304 Implementation Planning (canonical documentation strategy + Phase 5b/UL children pending). Next CC pickup: implementation child tickets from THR-319 and THR-304 Phase 5b when Cowork moves them to Ready for Dev.
 
 **THR-314 complete — Canon Phase 2b: agents page + skill wiring (Continuous Improvement).** Added `Docs/canon/agents.md` (91 lines, ≤200 cap) as the canonical Step-0 entrypoint for actor-domain work (actor taxonomy, Ascendant/The First, thread system, factions, axiological profile, rivals, and cosmology-canon archetype cross-reference without duplication). Updated `.claude/skills/encounter-actor-systems/SKILL.md` to require both `Docs/canon/agents.md` and `Docs/canon/encounters.md` as Step-0 pre-read, and updated `.claude/skills/state-of-game-design/SKILL.md` with an explicit agents-canon cross-reference for actor-design questions. Synced mirrored `.agents/skills/*` copies via `npm run check:skill-sync:sync`; verification gates green (`npm run check:skill-sync`, `npm test`, `npx tsc --noEmit`, `npx vite build`).
 
@@ -27,10 +29,6 @@
 
 **THR-307 complete — Canon Phase 5a: Cosmological canon doc propagation (Obsidian vault, Continuous Improvement).** Created `Cosmology/The Cosmological Pattern.md` and `Cosmology/Reaches.md` as canonical vault destinations (repairing 14+ broken wikilinks). Updated 8 existing vault pages and bulk-fixed 30 [[Flesh]] wikilinks per migration table (healing→Gold, athletics→Iron, body-mod→Stone, survival→Star). Closes the drift loop that misled the 2026-05-04 vision audit.
 
-**THR-301 In Design — Encounter experience long-form design plan on main.** PR #122 merged. THR-301 stays In Design awaiting user verdict on §17 (three open points). Next action: user verdict triggers child issue breakdown per phase.
-
-**Board — Canonical documentation strategy (Continuous Improvement project).**
-- **THR-303** (Medium / plan-pending-commit) — WORKFLOW.md handoff-comment schema. Plan doc pending flush.
 
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
@@ -38,13 +36,13 @@
 - **Encounter Format Migration (Now):** ✅ Phases 0-9 complete. All guilds migrated.
 - **Content Architecture (Now):** ✅ THR-86/88/239 shipped.
 - **UI Visual Overhaul — Design System v1 (Now):** ✅ Project complete.
-- **Continuous Improvement (Now):** THR-305/306/307/311/312/313/315/316 ✅. THR-314 (Canon Phase 2b agents sibling) Ready for Dev. THR-303 (plan pending flush) queued.
+- **Continuous Improvement (Now):** THR-303/305/306/307/309/311/312/313/314/315/316 ✅. THR-304 In Implementation Planning (Phase 5b/UL children pending).
 - **Social Systems Expansion (Now):** THR-28/27/30/51/29/41/34/31/35 shipped. ✅ THR-254/253. THR-78 queued.
 - **Thematic Pressure & Living World (Next):** ✅ THR-19/122/125/126/80/128/127. THR-87 blocked by THR-116.
 
 ## Archived to project-history.md
 - THR-322/321/320/315/309/307/308/306/302/305/301/299/298/297/296/294/282/238/109/79/108/107/104/103/106/290/102/280/285/286/283/287/276/284/277/281/211/243/272/212/210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
-- 2026-05-06 batch: THR-313, THR-316, THR-312
+- 2026-05-06 batch: THR-311, THR-312, THR-313, THR-314, THR-315, THR-316, THR-317, THR-320, THR-321, THR-322, THR-323, THR-336
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)

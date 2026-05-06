@@ -1,4 +1,7 @@
 {
+  "env": {
+    "OBSIDIAN_VAULT_PATH": "C:\\Users\\chris\\Dev\\Obsidian"
+  },
   "permissions": {
     "allow": [
       "Bash(dir:*)",
@@ -90,11 +93,11 @@
       "Bash(cp \".claude/skills/vault-lint/SKILL.md\" \".agents/skills/vault-lint/SKILL.md\")",
       "Bash(cp \".claude/skills/vault-query/SKILL.md\" \".agents/skills/vault-query/SKILL.md\")",
       "Bash(mkdir -p \".agents/skills/vault-log\")",
-      "Bash(cp \".claude/skills/vault-log/SKILL.md\" \".agents/skills/vault-log/SKILL.md\")"
+      "Bash(cp \".claude/skills/vault-log/SKILL.md\" \".agents/skills/vault-log/SKILL.md\")",
+      "Bash(node --experimental-strip-types scripts/session-precheck.ts)",
+      "mcp__7aa97de8-78a2-4b5d-a6e0-0aabc5d0bb68__list_issues",
+      "mcp__7aa97de8-78a2-4b5d-a6e0-0aabc5d0bb68__get_issue"
     ]
-  },
-  "env": {
-    "OBSIDIAN_VAULT_PATH": "C:\\Users\\chris\\Dev\\Obsidian"
   },
   "hooks": {
     "SessionStart": [
