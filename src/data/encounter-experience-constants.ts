@@ -78,3 +78,11 @@ export const AFTERMATH_ANIMATION_FADE_IN_MS = 600;
 export const AFTERMATH_ANIMATION_SETTLE_MS = 400;
 // World-to-encounter handoff transition duration.
 export const ENCOUNTER_HANDOFF_TRANSITION_MS = 400;
+
+// Outcome band cutoffs for choice resolution (THR-323, Phase B1).
+// Within the success zone (roll <= p), bottom CRITICAL_SUCCESS_ZONE_FRACTION → critical_success.
+export const OUTCOME_CRITICAL_SUCCESS_ZONE_FRACTION = 0.3;
+// Within the failure zone (roll > p), bottom FAIL_FORWARD_ZONE_FRACTION → fail_forward.
+export const OUTCOME_FAIL_FORWARD_ZONE_FRACTION = 0.2;
+// Within the failure zone (roll > p), top CRITICAL_FAIL_ZONE_FRACTION → critical_fail.
+export const OUTCOME_CRITICAL_FAIL_ZONE_FRACTION = 0.15;
