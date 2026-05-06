@@ -564,3 +564,5 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - ✅ 2026-05-05: THR-307 finished vault-side cosmology canon propagation (new `Cosmology/Reaches.md`, repaired reach links, removed Flesh-as-reach references, archetype mapping migration, vault log appended).
 - ✅ 2026-05-05: THR-306 updated encounter-pipeline skill to enforce Canon-first Step 0 (Docs/canon/encounters.md) and synced .claude/.agents mirrors with full verification gates green.
 - ✅ 2026-05-05: THR-309 updated UL shards by adding canonical `Domain Canon Page` process term and rewriting `Quintessence` to integrity-of-self / narrative-centrality framing (explicitly non-Reach), then mirrored UL to the Obsidian vault.
+- ✅ 2026-05-06: THR-311 added `Docs/canon/attachments.md` and updated attachment-pipeline skill mirrors to enforce Canon-first Step 0 before existing pre-reads.
+- ✅ 2026-05-06: THR-320 shipped EncounterContract Phase A1 foundation (new schema, Zod validator, bidirectional UAT adapter, and 4 worked-example round-trip checks).

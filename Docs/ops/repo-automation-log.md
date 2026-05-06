@@ -119,3 +119,5 @@
 - **work** | THR-309 shipped: UL updated with Domain Canon Page term + Quintessence rewrite and mirrored to Obsidian shards (2026-05-05T18:10+02:00)
 - **ops** | no ready-for-codex work this cycle (2026-05-05T19.02.51+02:00)
 - **ops** | CC idle cycle — board empty (Ready for Dev: 0, In Dev: 0); no implementation work available this cycle (2026-05-05T20:02+02:00)
+- **work** | THR-311 shipped: added Docs/canon/attachments.md and rewired attachment-pipeline skill Step 0 to Canon-first pre-read (2026-05-06T00.04+02:00)
+- **work** | THR-320 shipped: EncounterContract schema + validator + UAT adapter foundation with round-trip example checks (2026-05-06T01:30+02:00)
