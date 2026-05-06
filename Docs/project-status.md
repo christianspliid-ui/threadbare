@@ -1,6 +1,8 @@
 # Project Status
 > Updated 2026-05-06.
 ## Current Focus
+**THR-313 complete — Canon Phase 2b: hex-map page + 3 hex-map skills wired (Continuous Improvement).** Added `Docs/canon/hex-map.md` (105 lines, ≤200 cap) as the Step-0 hex-map entrypoint covering HexMapV2 architecture, three-tier position model, coordinate/Y-flip conventions, 13 render layers, d3-zoom ownership, stencil coastline clipping, color pipeline constraints, rejected approaches, and open questions. Wired Canon-first Step 0 pre-read into `hexmap-core`, `hexmap-layers`, and `hexmap-renderer` skill files, then mirrored to `.agents/` via `npm run check:skill-sync:sync` (35 shared skills in sync). Verification gates green (`npm run check:skill-sync`, `npm test`, `npx tsc --noEmit`, `npx vite build`).
+
 **THR-312 complete — Canon Phase 2b: prose page + 3 prose skills wired (Continuous Improvement).** Added `Docs/canon/prose.md` (110 lines, ≤200 cap) — single Step-0 entrypoint partitioning prose work across the three prose skills (`prose-pipeline`, `prose-content-systems`, `prose-vignettes-and-enrichment`), naming the four pipelines (graph-walking resolvers, narrative engine, vignette prose, prose enrichment), pointing to UL/wiring/cosmology/encounters canon, and asserting Threadbare voice rules and player-as-god framing as hard rules. Wired Step-0 Canon-First Pre-Read into all three prose skills; mirrored to `.agents/` via `check:skill-sync:sync` (35 shared skills in sync). Updated `CLAUDE.md` Canon Pages table and `Docs/canon/README.md` index. Verification gates green (`npm test` 10,709 tests, `npx tsc --noEmit`, `npx vite build`, `npm run check:skill-sync`).
 
 **THR-316 complete — Canon Phase 2b: process page (Continuous Improvement).** Added `Docs/canon/process.md` (92 lines, ≤200 cap) — meta-canon pointer page for every Cowork session covering NFPs (in priority order), three-pillar rule, definition of done, design governance 8-step, coordination protocol (queue separation, claim-before-read, WIP=1, merge-gated Done, coordination block), drift-scan signals, retrospective cadence, UL-proposal flow, and plan-doc lifecycle. Linked to CLAUDE.md sections + `UL/Process` and `UL/Coordination` shards rather than duplicating definitions. Updated `CLAUDE.md` Canon Pages table and `Docs/canon/README.md` index. Verification gates green (`npm test` 10,709 tests, `npx tsc --noEmit`, `npx vite build`).
@@ -32,13 +34,13 @@
 - **Encounter Format Migration (Now):** ✅ Phases 0-9 complete. All guilds migrated.
 - **Content Architecture (Now):** ✅ THR-86/88/239 shipped.
 - **UI Visual Overhaul — Design System v1 (Now):** ✅ Project complete.
-- **Continuous Improvement (Now):** THR-305/306/307/311/312/315/316 ✅. THR-313/314 (Canon Phase 2b siblings — hex-map, agents) Ready for Dev. THR-303 (plan pending flush) queued.
+- **Continuous Improvement (Now):** THR-305/306/307/311/312/313/315/316 ✅. THR-314 (Canon Phase 2b agents sibling) Ready for Dev. THR-303 (plan pending flush) queued.
 - **Social Systems Expansion (Now):** THR-28/27/30/51/29/41/34/31/35 shipped. ✅ THR-254/253. THR-78 queued.
 - **Thematic Pressure & Living World (Next):** ✅ THR-19/122/125/126/80/128/127. THR-87 blocked by THR-116.
 
 ## Archived to project-history.md
 - THR-322/321/320/315/309/307/308/306/302/305/301/299/298/297/296/294/282/238/109/79/108/107/104/103/106/290/102/280/285/286/283/287/276/284/277/281/211/243/272/212/210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
-- 2026-05-06 batch: THR-316, THR-312 (this session)
+- 2026-05-06 batch: THR-313, THR-316, THR-312
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
