@@ -29,6 +29,7 @@
 
 **THR-307 complete — Canon Phase 5a: Cosmological canon doc propagation (Obsidian vault, Continuous Improvement).** Created `Cosmology/The Cosmological Pattern.md` and `Cosmology/Reaches.md` as canonical vault destinations (repairing 14+ broken wikilinks). Updated 8 existing vault pages and bulk-fixed 30 [[Flesh]] wikilinks per migration table (healing→Gold, athletics→Iron, body-mod→Stone, survival→Star). Closes the drift loop that misled the 2026-05-04 vision audit.
 
+- ✅ 2026-05-06: THR-324 shipped Encounter UI B2 outcome forecast computation (new outcomeForecast module, phase wiring in phaseAscendantHandFilter, forecast_computed traces, and boundary/fallback coverage tests).
 
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
