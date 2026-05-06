@@ -122,3 +122,4 @@
 - **work** | THR-311 shipped: added Docs/canon/attachments.md and rewired attachment-pipeline skill Step 0 to Canon-first pre-read (2026-05-06T00.04+02:00)
 - **work** | THR-320 shipped: EncounterContract schema + validator + UAT adapter foundation with round-trip example checks (2026-05-06T01:30+02:00)
 - **work** | THR-322 shipped: promoted Encounter UI Phase A3 keyframes to src/index.css (`thread-draw`, `thread-pulse`, `mote-drift`, `pull-taut`, `hold-glow`, `card-flip-in`, `mark-pulse`) (2026-05-06T03.05+02:00)
+- **work** | THR-336 shipped: mapped existing dual-mode Kokomoro narration API and added 5-line encounter UI TTS integration spec (`speakEncounter` + cancel/fail-soft contract) (2026-05-06T04.05+02.00)

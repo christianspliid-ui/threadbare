@@ -567,3 +567,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - ✅ 2026-05-06: THR-311 added `Docs/canon/attachments.md` and updated attachment-pipeline skill mirrors to enforce Canon-first Step 0 before existing pre-reads.
 - ✅ 2026-05-06: THR-320 shipped EncounterContract Phase A1 foundation (new schema, Zod validator, bidirectional UAT adapter, and 4 worked-example round-trip checks).
 - ✅ 2026-05-06: THR-322 promoted Encounter UI Phase A3 animation keyframes into `src/index.css` (`thread-draw`, `thread-pulse`, `mote-drift`, `pull-taut`, `hold-glow`, `card-flip-in`, `mark-pulse`) with verification gates green.
+- ✅ 2026-05-06: THR-336 completed TTS integration discovery for Encounter UI and added `Docs/plans/2026-05-05-tts-encounter-ui-spec.md` with the 5-line `speakEncounter` contract, Kokomoro voice key, cancellation semantics, optional context metadata, and fail-soft error behavior for H3.
