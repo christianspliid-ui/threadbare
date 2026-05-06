@@ -141,6 +141,21 @@ export interface RegionDetectionState {
   lastUpdatedTick: number;
 }
 
+// A player-committed encounter choice queued for resolution by phaseChoiceResolution.
+export interface PendingChoiceCommit {
+  agentId: string;
+  encounterId: string;
+  beatIndex: number;
+  /** The reach category of the choice (determines drift axis). */
+  reach: string;
+  cost: 'small_breath' | 'fuller_breath' | 'deep_draught';
+  moralAxisPole: 'virtue' | 'flaw';
+  /** Pre-computed effective probability (base + tilt, clamped 0–1). */
+  effectiveProbability: number;
+  driftMagnitude: number;
+  consumesItemId?: string;
+}
+
 // ─── Game State ─────────────────────────────────────────────────
 
 export interface GameState {
@@ -260,6 +275,8 @@ export interface GameState {
   archetypeDrift: ArchetypeDrift[];
   regionDetection: RegionDetectionState[];
   spotlightedAgent?: string;
+  // Queued by the UI when the player commits a choice; consumed by phaseChoiceResolution (THR-323).
+  pendingChoiceCommits?: PendingChoiceCommit[];
 
   // Layer revelation — per-hex, per-layer visibility. Key: hexKey(col,row)
   // Land auto-reveals with fog of war. Soul/People/Ruins require Find actions.

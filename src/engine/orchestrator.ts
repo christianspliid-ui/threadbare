@@ -115,6 +115,9 @@ import { phaseOmenAgenda, resetOmenCounter } from './phaseOmenAgenda';
 import { phaseComposition } from './phaseComposition';
 import { phaseEncounterVisibility } from './encounterVisibility';
 import { phaseAscendantHandFilter } from './orchestrator/phaseAscendantHandFilter';
+import { phaseChoiceResolution } from './orchestrator/phaseChoiceResolution';
+import { phaseDriftDecay } from './orchestrator/phaseDriftDecay';
+import { mulberry32 as libMulberry32 } from '../lib/prng';
 import { evaluateEncounterSeeds } from './encounterSeeding';
 import { EncounterCacheManager, buildDangerMap } from './encounterCache';
 import { resolveLocationToHex } from './encounterAwareness';
@@ -2070,6 +2073,18 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseEventCounts['encounter_visibility'] = encVisResult.notifications.length;
   prevEventCount = s.tickEvents.length;
 
+  // Phase 2a.61: Choice Resolution — process pending player choice commits (THR-323)
+  {
+    const choiceRng = libMulberry32(state.seed + state.tick * 89);
+    const choiceResult = phaseChoiceResolution(s, choiceRng);
+    s = {
+      ...s,
+      archetypeDrift: choiceResult.archetypeDrift,
+      pendingChoiceCommits: choiceResult.pendingChoiceCommits,
+    };
+    phaseEventCounts['choice_resolution'] = choiceResult.resolvedCount;
+  }
+
   // Phase 2a.62: Ascendant Hand Filter — encounter-scoped hand partitioning
   const handFilterStats = phaseAscendantHandFilter(s);
   phaseEventCounts['ascendant_hand_filter'] = handFilterStats.filteredCount;
@@ -2514,6 +2529,13 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   }
 
 
+
+  // Phase end: Drift Decay — passive per-tick decay toward zero (THR-323)
+  {
+    const decayResult = phaseDriftDecay(s);
+    s = { ...s, archetypeDrift: decayResult.archetypeDrift };
+    phaseEventCounts['drift_decay'] = decayResult.decayedCount;
+  }
 
   // ─── Health Validation ─────────────────────────────────────────
 
