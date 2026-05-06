@@ -27,6 +27,16 @@
 | Trace category registration | `src/engine/traceBuffer.ts` | Adds `TRACE_CATEGORIES` entries for the encounter experience traces. |
 | GameState scaffolding | `src/types/gameState.ts` / `src/engine/gameInit.ts` | Adds and initializes `archetypeDrift`, `regionDetection`, and optional `spotlightedAgent`. |
 
+### Detail Pages (THR-337, Phase E1)
+
+| Surface | Path | Notes |
+|---|---|---|
+| Detail page type contract + tunables | `src/types/detailPage.ts` | Defines `DetailPage`, `Section` discriminated union, stack/size/pause constants, and fail-soft accent defaults. |
+| Stack context + navigation | `src/contexts/DetailModalStackContext.tsx` | Stack state (`push`, `pop`, `popTo`, `replace`) and global ESC/ArrowLeft handling for topmost modal behavior. |
+| Encounter pause bridge hook | `src/hooks/useDetailModal.ts` | Exposes `isOpen` + pause contract outputs (`pausedBeatIndicatorOpacity`, `ambientDuckDb`) for encounter-shell wiring. |
+| Detail shell + composable primitives | `src/components/shared/DetailModal.tsx`, `src/components/shared/DetailBreadcrumb.tsx`, `src/components/shared/Section.tsx` | Portal-stacked modal shell with breadcrumb collapse, 28% per-layer dimming, section dispatcher placeholders for all five section kinds. |
+| Verification coverage | `src/components/shared/__tests__/DetailModal.test.tsx`, `src/hooks/__tests__/useDetailModal.test.tsx` | Snapshot coverage at depths 1/2/4/5, stack controls, section rendering, size constants, and pause-state hook contract. |
+
 ### 1. Orchestrator Tick Loop (`src/engine/orchestrator.ts`)
 
 Every engine module that produces per-tick state changes must be called from a phase in the orchestrator. Phases come in two flavours:

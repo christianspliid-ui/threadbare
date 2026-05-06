@@ -572,3 +572,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - ✅ 2026-05-06: THR-336 completed TTS integration discovery for Encounter UI and added `Docs/plans/2026-05-05-tts-encounter-ui-spec.md` with the 5-line `speakEncounter` contract, Kokomoro voice key, cancellation semantics, optional context metadata, and fail-soft error behavior for H3.
 - ✅ 2026-05-06: THR-313 added `Docs/canon/hex-map.md` and wired `hexmap-core`/`hexmap-layers`/`hexmap-renderer` skill mirrors to require Canon-first Step 0 pre-read.
 - ✅ 2026-05-06: THR-314 added `Docs/canon/agents.md` and wired `encounter-actor-systems`/`state-of-game-design` skill mirrors to load or cross-reference agents canon at Step 0.
+- ✅ 2026-05-06 — THR-337 shipped DetailModal Phase E1 shell + breadcrumb stacking + section dispatcher placeholders with depth snapshots/tests and wiring-checklist update.
