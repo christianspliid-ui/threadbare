@@ -14,6 +14,7 @@ description: >
 # Encounter & Actor Systems — Analysis, Debugging & Iteration
 
 > **Prerequisite:** Load `state-of-game-design` first for foundational cosmology and reaches/spheres context.
+> **Step 0 (Canon pre-read):** Read `Docs/canon/agents.md` and `Docs/canon/encounters.md` before using this skill. This skill spans both domains; both canon pages are required context.
 
 This skill is for **working with** the encounter and actor systems — debugging pipelines, tuning constants, understanding why agents behave a certain way, iterating on encounter design, and keeping reference documentation current. For *authoring new encounter content*, use `encounter-pipeline` instead.
 
