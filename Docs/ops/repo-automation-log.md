@@ -126,3 +126,4 @@
 - **work** | THR-313 shipped: added Docs/canon/hex-map.md and wired hexmap-core/hexmap-layers/hexmap-renderer skills to Canon-first Step 0 pre-read (2026-05-06T11:05+02:00)
 - **work** | THR-314 shipped: added Docs/canon/agents.md and wired encounter-actor-systems/state-of-game-design skills to load or cross-reference agents canon at Step 0 (2026-05-06T12.07.03+02:00)
 - **work** | THR-337 shipped: DetailModal Phase E1 shell + breadcrumb stacking + section dispatcher placeholders with depth snapshots/tests and wiring checklist update (2026-05-06T17:12+02:00)
+- **work** | THR-325 shipped: Ascendant Hand Filter B3 (5-stage cascade + place gating + per-tick hand_filtered traces + tests) (2026-05-06T18.18.17+02:00)

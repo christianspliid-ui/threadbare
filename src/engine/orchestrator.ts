@@ -114,6 +114,7 @@ import { JOURNEY_BEAT_TEMPLATES } from '../data/journey-content';
 import { phaseOmenAgenda, resetOmenCounter } from './phaseOmenAgenda';
 import { phaseComposition } from './phaseComposition';
 import { phaseEncounterVisibility } from './encounterVisibility';
+import { phaseAscendantHandFilter } from './orchestrator/phaseAscendantHandFilter';
 import { evaluateEncounterSeeds } from './encounterSeeding';
 import { EncounterCacheManager, buildDangerMap } from './encounterCache';
 import { resolveLocationToHex } from './encounterAwareness';
@@ -2068,6 +2069,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   };
   phaseEventCounts['encounter_visibility'] = encVisResult.notifications.length;
   prevEventCount = s.tickEvents.length;
+
+  // Phase 2a.62: Ascendant Hand Filter — encounter-scoped hand partitioning
+  const handFilterStats = phaseAscendantHandFilter(s);
+  phaseEventCounts['ascendant_hand_filter'] = handFilterStats.filteredCount;
 
   // Phase 2a.65: Attention Pool — regen pool, expire tugs, generate new tugs for shaping encounters
   {

@@ -26,6 +26,7 @@
 | Trace interfaces | `src/types/traces/encounter-traces.ts` | Defines `ChoiceResolvedTrace`, `ForecastComputedTrace`, `HandFilteredTrace`, `DriftThresholdCrossedTrace`, `DetectionThresholdCrossedTrace`, `ItemConsumedByChoiceTrace`, `SpotlightChangedTrace`. |
 | Trace category registration | `src/engine/traceBuffer.ts` | Adds `TRACE_CATEGORIES` entries for the encounter experience traces. |
 | GameState scaffolding | `src/types/gameState.ts` / `src/engine/gameInit.ts` | Adds and initializes `archetypeDrift`, `regionDetection`, and optional `spotlightedAgent`. |
+| Ascendant hand filter cascade | `src/engine/encounters/handFilter.ts`, `src/engine/encounters/placeGating.ts`, `src/engine/orchestrator/phaseAscendantHandFilter.ts` | Computes playable/dimmed/hidden partition for encounter-scoped ascendant hand, including author-pinned eligibility override and `hand_filtered` trace partition telemetry. |
 
 ### Detail Pages (THR-337, Phase E1)
 
@@ -77,6 +78,7 @@ Slot anchor positions in `runTick`: `pre-doom`, `post-doom`, `post-resolution`, 
 | 2a.52 | `phaseEffectShells` | Non-step-outcome flip_table triggers (attachment_gained, manual); step_outcome triggers fire inline in executeStepResult (THR-53) |
 | 2a.4 | `tickEffects` (inline orchestrator block) | Generic effect runtime bookkeeping: duration, cooldown, decay, stacking, attachment removal |
 | 2a.6 | `phaseEncounterVisibility` | Encounter notifications |
+| 2a.62 | `phaseAscendantHandFilter` | Encounter-scoped ascendant hand partition + `hand_filtered` traces |
 | 2a.55 | `phaseStrategicProjects` | Strategic project progression + control degradation |
 | 2a.85 | `phaseSlotCaps` + `phaseDisposalTimeout` | Attachment slot cap enforcement + disposal timeout |
 | 2b | `phaseAgentDecision` | Goal selection & movement initiation (+ strategic candidate merge) |

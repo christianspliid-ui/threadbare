@@ -573,3 +573,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - ✅ 2026-05-06: THR-313 added `Docs/canon/hex-map.md` and wired `hexmap-core`/`hexmap-layers`/`hexmap-renderer` skill mirrors to require Canon-first Step 0 pre-read.
 - ✅ 2026-05-06: THR-314 added `Docs/canon/agents.md` and wired `encounter-actor-systems`/`state-of-game-design` skill mirrors to load or cross-reference agents canon at Step 0.
 - ✅ 2026-05-06 — THR-337 shipped DetailModal Phase E1 shell + breadcrumb stacking + section dispatcher placeholders with depth snapshots/tests and wiring-checklist update.
+- ✅ 2026-05-06: THR-325 shipped Ascendant Hand Filter B3 (target/cost/sphere/bond/place cascade + trace + orchestrator phase + tests).

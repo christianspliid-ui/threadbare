@@ -52,3 +52,5 @@
 - TB-071 Economy Second Pass · TB-069 Location NPCs · TB-051 Monster Encounters residual · TB-037 Onboarding
 
 Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Completed work: `Docs/project-history.md` + Linear "Done" state · Pre-Linear history: `.planning/BACKLOG_HISTORY.md`
+
+**THR-325 complete — Encounter UI B3 Ascendant hand filtering (Encounter Experience).** Added `phaseAscendantHandFilter` immediately after encounter visibility, with deterministic per-tick partitions (`eligible`, `dimmed`, `hidden`) from a 5-stage cascade (target, cost, sphere, bond, place) plus `rare_pulse` tagging. Added dedicated unit + phase tests and wiring checklist entries.
