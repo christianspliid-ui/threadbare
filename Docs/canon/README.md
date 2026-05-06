@@ -87,6 +87,7 @@ and (when relevant) `superseded_by: <path>`. A plan with no status is treated as
 | [engine.md](engine.md) | Engine | live | 2026-05-05 |
 | [process.md](process.md) | Process | live | 2026-05-06 |
 | [prose.md](prose.md) | Prose | live | 2026-05-06 |
+| [hex-map.md](hex-map.md) | Hex Map | live | 2026-05-06 |
 
 ## When to update a Canon page
 
