@@ -1,6 +1,8 @@
 # Project Status
 > Updated 2026-05-06.
 ## Current Focus
+**THR-336 complete — Encounter UI Phase D3 TTS discovery + 5-line integration spec (Encounter Experience).** Added `Docs/plans/2026-05-05-tts-encounter-ui-spec.md` with verified dual-mode narration surface mapping (`useNarration`/`NarrationService`), Kokomoro voice key (`bm_george`), cancellation contract, optional encounter context metadata, and fail-soft error semantics for post-v1 H3 wiring.
+
 **THR-322 complete — Encounter UI Phase A3 animation keyframe promotion (Encounter Experience).** Added the required shared animation primitives directly to `src/index.css`: `thread-draw`, `thread-pulse`, `mote-drift`, `pull-taut`, `hold-glow`, `card-flip-in`, and `mark-pulse`, with a source-reference comment to `Docs/plans/v7-design-pass/index.html`. Existing keyframes were left intact. Verification gates: `npm test`, `npx tsc --noEmit`, `npx vite build` all green.
 
 **THR-321 complete — Encounter UI Phase A2 foundation scaffolding (Encounter Experience).** Added `src/data/encounter-experience-constants.ts` with the full tunables table from the design plan, added `src/types/traces/encounter-traces.ts` and trace-category registration in `src/engine/traceBuffer.ts`, and scaffolded `GameState`/init fields (`archetypeDrift`, `regionDetection`, `spotlightedAgent`) with wiring-checklist updates. Verification gates: `npm test`, `npx tsc --noEmit`, `npx vite build` all green.
