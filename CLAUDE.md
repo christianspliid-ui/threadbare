@@ -158,6 +158,7 @@ When starting any encounter, prose, attachment, or other content authoring task,
 | Encounters | `Docs/canon/encounters.md` | Before running `encounter-pipeline`, `template-encounter-rewrite`, or any encounter content work |
 | Cosmology | `Docs/canon/cosmology.md` | Before any content that references Reaches, Spheres, or Quintessence — includes encounters, agents, and faction content |
 | Process | `Docs/canon/process.md` | At session start, instead of re-reading CLAUDE.md sections on NFPs, three-pillar rule, definition of done, design governance, coordination protocol, drift scan, retrospectives, and UL-proposal flow. Meta-canon for every Cowork session. |
+| Prose | `Docs/canon/prose.md` | Before any prose, vignette, enrichment, or content-table work — picks the right prose skill (`prose-pipeline`, `prose-content-systems`, `prose-vignettes-and-enrichment`), names the four pipelines, and asserts Threadbare voice + player-as-god framing. |
 
 **Why Canon pages exist:** agents triangulating canonical content from 6–12 files make silent errors (wrong reach count, stale formats, deprecated systems). A Canon page is a single ≤200-line entrypoint that answers "what is current?" and lists stale sources to avoid. The UL remains the terminology authority; Canon pages point to UL and add the navigation layer on top.
 
