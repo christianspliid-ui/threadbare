@@ -13,6 +13,10 @@ description: >
 
 This skill captures hard-won decisions from the Hex Map V2 implementation (Phases 1-8). HexMapV2 is the sole hex map renderer — the old V1 SVG map was deleted in Phase 8. Load before modifying any rendering code.
 
+## Step 0: Canon-First Pre-Read
+
+Before doing any work in this skill, read [`Docs/canon/hex-map.md`](../../../Docs/canon/hex-map.md) first. The Canon page is the Step-0 entrypoint for all hex-map-domain work: it picks the right hex-map skill (`hexmap-core` / `hexmap-layers` / `hexmap-renderer`), names the load-bearing decisions (raw Three.js / no R3F, three-tier position model, Y-flip, stencil clipping, hex-distance awareness), and lists current rejected approaches and open questions. Skim it once, then return here for quick-reference renderer patterns. If a pointer in this skill disagrees with the Canon page, the Canon page wins and this skill needs an update — open a `drift-scan`-labeled Linear issue.
+
 ## Architecture
 
 - **Raw Three.js** — no React Three Fiber. Direct Three.js gives full control over InstancedMesh, render loop, and d3-zoom integration.

@@ -16,6 +16,10 @@ description: >
 
 Feature-level guide for working on individual visual layers in HexMapV2. Load this alongside `hexmap-core` (which covers architecture, coordinates, render layers, zoom, and color system).
 
+## Step 0: Canon-First Pre-Read
+
+Before doing any work in this skill, read [`Docs/canon/hex-map.md`](../../../Docs/canon/hex-map.md) first. The Canon page is the Step-0 entrypoint for all hex-map-domain work: it picks the right hex-map skill (`hexmap-core` / `hexmap-layers` / `hexmap-renderer`), names the load-bearing decisions (raw Three.js / no R3F, three-tier position model, Y-flip, stencil clipping, hex-distance awareness), and lists current rejected approaches and open questions. Skim it once, then return here for feature-level layer guidance. If a pointer in this skill disagrees with the Canon page, the Canon page wins and this skill needs an update — open a `drift-scan`-labeled Linear issue.
+
 ---
 
 ## 1. Directory Structure

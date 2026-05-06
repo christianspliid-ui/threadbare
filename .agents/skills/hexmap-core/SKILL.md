@@ -16,6 +16,10 @@ description: >
 
 Foundation reference for the HexMapV2 Three.js hex map renderer. This is the **sole map renderer** — the V1 SVG hex map was deleted in Phase 8. Load this before any HexMapV2 code work. Load `hexmap-layers` alongside this when building or modifying a specific visual layer.
 
+## Step 0: Canon-First Pre-Read
+
+Before doing any work in this skill, read [`Docs/canon/hex-map.md`](../../../Docs/canon/hex-map.md) first. The Canon page is the Step-0 entrypoint for all hex-map-domain work: it picks the right hex-map skill (`hexmap-core` / `hexmap-layers` / `hexmap-renderer`), names the load-bearing decisions (raw Three.js / no R3F, three-tier position model, Y-flip, stencil clipping, hex-distance awareness), and lists current rejected approaches and open questions. Skim it once, then return here for foundation-level architecture detail. If a pointer in this skill disagrees with the Canon page, the Canon page wins and this skill needs an update — open a `drift-scan`-labeled Linear issue.
+
 ---
 
 ## 1. Technology Stack
