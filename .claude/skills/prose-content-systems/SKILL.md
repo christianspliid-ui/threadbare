@@ -21,6 +21,12 @@ High-volume, day-to-day prose work: adding encounter templates, writing narrativ
 
 ---
 
+## Step 0: Canon-First Pre-Read
+
+Before authoring any prose content, read [`Docs/canon/prose.md`](../../../Docs/canon/prose.md) first. The Canon page is the Step-0 entrypoint for all prose-domain authoring: it identifies which of the three prose skills to load, names the four pipelines content flows through, asserts the Threadbare voice rules and the player-as-god framing constraint, and lists current rejected approaches (hardcoded names, single-variant tables, `{actor}` instead of `{name}`, etc.). Skim it once, then return here for content-table detail. If a pointer in this skill disagrees with the Canon page, the Canon page wins and this skill needs an update — open a `drift-scan`-labeled Linear issue.
+
+---
+
 ## Content Quality Enforcement — READ FIRST
 
 **Prerequisite 1:** Load `state-of-game-design` (Part 0: Game Design Direction) before authoring any content. Every template, prose line, and content table entry is a player experience, not a data record.

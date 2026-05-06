@@ -17,6 +17,12 @@ Covers the four dynamic prose systems that run at generation time. Load `prose-p
 
 ---
 
+## Step 0: Canon-First Pre-Read
+
+Before authoring vignettes or enrichment placeholders, read [`Docs/canon/prose.md`](../../../Docs/canon/prose.md) first. The Canon page is the Step-0 entrypoint for all prose-domain authoring: it identifies which of the three prose skills to load, names the four pipelines, asserts the Threadbare voice rules and player-as-god framing, and points to Capability 1 of the systemic wiring guide (the prose-author chapter for placeholders and conditional blocks). Skim it once, then return here for vignette and enrichment detail. If a pointer in this skill disagrees with the Canon page, the Canon page wins and this skill needs an update — open a `drift-scan`-labeled Linear issue.
+
+---
+
 ## System 3: Vignette Prose (Encounter Steps)
 
 **Files:** `src/engine/vignetteProse.ts`
