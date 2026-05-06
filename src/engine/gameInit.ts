@@ -327,6 +327,9 @@ export function initializeGameState(
     pendingEncounterSeeds: [],
     hiddenMarks: [],
     intelligenceRecords: [],
+    archetypeDrift: [],
+    regionDetection: [],
+    spotlightedAgent: undefined,
     meetTheFirstAutoTriggered: false,
     worldSoul: {
       fundament: {

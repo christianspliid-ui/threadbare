@@ -1,6 +1,8 @@
 # Project Status
-> Updated 2026-05-05.
+> Updated 2026-05-06.
 ## Current Focus
+**THR-321 complete — Encounter UI Phase A2 foundation scaffolding (Encounter Experience).** Added `src/data/encounter-experience-constants.ts` with the full tunables table from the design plan, added `src/types/traces/encounter-traces.ts` and trace-category registration in `src/engine/traceBuffer.ts`, and scaffolded `GameState`/init fields (`archetypeDrift`, `regionDetection`, `spotlightedAgent`) with wiring-checklist updates. Verification gates: `npm test`, `npx tsc --noEmit`, `npx vite build` all green.
+
 **THR-315 complete — Canon Phase 2b: engine canon page (Continuous Improvement).** Created `Docs/canon/engine.md` (122 lines) — Step-0 navigation page for engine work covering tick entry, WorldGraph mutated-in-place, SimulationRuntime caches, resolution service (sigmoid + doubles crit), seeded PRNG, traceBuffer, three-tier position model, NFP order, load-bearing decisions, rejected approaches, open questions. Wired `engine-architecture` skill (both `.claude/` and `.agents/` mirrors) to load the canon page as Step 0 above the existing `state-of-game-design` prerequisite. Added engine row to `Docs/canon/README.md` index. Skill-sync clean; tsc, vite build, and 10,709 tests all green.
 
 **THR-309 complete — UL proposal closeout for canon terminology (Continuous Improvement).** Added `Domain Canon Page` to `Docs/ubiquitous-language/Process.md` as the canonical Step 0 authoring entrypoint term for `Docs/canon/<domain>.md`. Rewrote `Quintessence` in `Docs/ubiquitous-language/Cosmology.md` to the user-verdicted integrity-of-self / centrality-to-story framing (explicitly not a Reach, Flesh remains deprecated). Ran `npm run mirror-ul` with explicit `OBSIDIAN_VAULT_PATH` override to mirror shard updates into Obsidian.
@@ -23,7 +25,7 @@
 - **Thematic Pressure & Living World (Next):** ✅ THR-19/122/125/126/80/128/127. THR-87 blocked by THR-116.
 
 ## Archived to project-history.md
-- THR-315/309/307/308/306/302/305/301/299/298/297/296/294/282/238/109/79/108/107/104/103/106/290/102/280/285/286/283/287/276/284/277/281/211/243/272/212/210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
+- THR-321/315/309/307/308/306/302/305/301/299/298/297/296/294/282/238/109/79/108/107/104/103/106/290/102/280/285/286/283/287/276/284/277/281/211/243/272/212/210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)

@@ -127,6 +127,20 @@ export interface TickEvent {
   witnessAgentIds?: readonly string[];
 }
 
+export interface ArchetypeDrift {
+  agentId: string;
+  axisId: string;
+  fromPosition: number;
+  toPosition: number;
+  lastUpdatedTick: number;
+}
+
+export interface RegionDetectionState {
+  regionId: string;
+  pressure: number;
+  lastUpdatedTick: number;
+}
+
 // ─── Game State ─────────────────────────────────────────────────
 
 export interface GameState {
@@ -241,6 +255,11 @@ export interface GameState {
 
   // Intelligence records — structured knowledge held by agents, queryable by future encounters
   intelligenceRecords?: IntelligenceRecord[];
+
+  // Encounter experience scaffolding — Phase A2 foundational state surfaces.
+  archetypeDrift: ArchetypeDrift[];
+  regionDetection: RegionDetectionState[];
+  spotlightedAgent?: string;
 
   // Layer revelation — per-hex, per-layer visibility. Key: hexKey(col,row)
   // Land auto-reveals with fog of war. Soul/People/Ruins require Find actions.
