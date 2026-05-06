@@ -125,3 +125,5 @@
 - **work** | THR-336 shipped: mapped existing dual-mode Kokomoro narration API and added 5-line encounter UI TTS integration spec (`speakEncounter` + cancel/fail-soft contract) (2026-05-06T04.05+02.00)
 - **work** | THR-313 shipped: added Docs/canon/hex-map.md and wired hexmap-core/hexmap-layers/hexmap-renderer skills to Canon-first Step 0 pre-read (2026-05-06T11:05+02:00)
 - **work** | THR-314 shipped: added Docs/canon/agents.md and wired encounter-actor-systems/state-of-game-design skills to load or cross-reference agents canon at Step 0 (2026-05-06T12.07.03+02:00)
+- **ops** | no ready-for-codex work this cycle (2026-05-06T13.01.36+02:00)
+- **ops** | CC idle cycle — board empty (Ready for Dev: 0, In Dev: 0); ran flush-plan-docs for THR-317 + THR-319 (plan-pending-commit labels). PRs #149 + #150 raised, auto-merge enabled. Impediment #115 logged (YYYY-MM-DD placeholder breaks skill regex). (2026-05-06T13:25+02:00)
