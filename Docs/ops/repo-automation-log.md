@@ -135,3 +135,5 @@
 - **work** | THR-351 shipped: finalized Encounter UI A2 typed scaffold (callback eligibility trace + additive regionalDetectionPressure/encounterSpotlight state + safe game-init defaults) (2026-05-07T09.17+02:00)
 - **work** | THR-352 shipped: Encounter UI Phase A3 keyframe canonicalization + verification (2026-05-07T11.05.59+02:00)
 - **work** | THR-357 shipped: migrated all 23 branching encounter templates to encoded EncounterContract metadata with authored moral-axis poles + added migration smoke test (2026-05-07T12.15+02:00)
+- **work** | THR-328 shipped: wired archetype drift threshold registration in encounter aftermath (archetype_drift_register) with typed traces + fail-soft guards + focused tests (2026-05-07T14:15+02:00)
+

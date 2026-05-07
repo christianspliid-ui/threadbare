@@ -587,3 +587,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - ✅ 2026-05-07: THR-352 finalized Encounter UI Phase A3 CSS motion primitives in `src/index.css` (added missing `thrum-fade`, canonical alias keyframes, and consumer comments for Moment 1/2 beats) with full verification gates green.
 - ✅ 2026-05-07: THR-357 migrated all 23 branching encounter templates in `src/data/encounters/` to encoded EncounterContract metadata with authored `moral_axis_pole` values and added full-folder migration smoke coverage.
 - ✅ 2026-05-07: THR-326 shipped Encounter UI B4 regional detection pressure (new phase + engine helpers + threshold traces + rival encounter-seed enqueue), wired before choice resolution, and exposed per-region pressure in DebugPanel Encounter Seeds tab.
+- ✅ 2026-05-07: THR-328 shipped archetype drift register aftermath support (new reaction effect variant, threshold/event handling in aftermath reducer, and dedicated unit tests).

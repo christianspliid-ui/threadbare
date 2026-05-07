@@ -24,6 +24,11 @@ import {
 import { CONDITION_DURATIONS } from '../data/condition-trait-content';
 import { CONDITION_ATTACHMENT_DEFAULT_STACK_COUNT } from '../data/attachment-slot-constants';
 import {
+  DRIFT_THRESHOLD_SOFT,
+  DRIFT_THRESHOLD_BANNER,
+  DRIFT_THRESHOLD_BECOMING,
+} from '../data/encounter-experience-constants';
+import {
   SPAWN_ARTIFACT_DEFAULT_SIGNIFICANCE_COMMON,
   SPAWN_ARTIFACT_DEFAULT_SIGNIFICANCE_SHAPING,
   SPAWN_ARTIFACT_DEFAULT_SIGNIFICANCE_LEGENDARY,
@@ -68,6 +73,9 @@ export const AUTO_AFTERMATH_TRACE_CATEGORY = 'cli_auto_aftermath' as const;
 
 /** Safety cap for automatic headless aftermath picks per tick. */
 export const AUTO_AFTERMATH_MAX_PICKS_PER_TICK = 8;
+
+/** Significance for drift registration events surfaced by archetype_drift_register. */
+export const ARCHETYPE_DRIFT_REGISTER_SIGNIFICANCE = 0.6;
 
 export interface ResolvedAftermathContext {
   readonly action: UnifiedAction;
@@ -2122,6 +2130,91 @@ export function applyEncounterAftermathReaction(
           reason: effect.reason,
           summary: `thread_branch[${i}]: ${effect.ascendantId}→${effect.newMortalId} (branched from ${effect.sourceMortalId}, strength ${tbrStrength.toFixed(2)})`,
         });
+        break;
+      }
+
+      case 'archetype_drift_register': {
+        const resolvedAgentId = effect.targetAgentId
+          ?? (target.kind === 'agent' ? target.id : actorAgentId);
+
+        if (!resolvedAgentId) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'archetype_drift_register',
+            effectDetail: { axisId: effect.axisId, threshold: effect.threshold },
+            success: false, failReason: 'no_actor_id',
+            effectiveTargetId: '', effectiveTargetKind: 'actor_fallback',
+            summary: `archetype_drift_register[${i}] skipped: no actorId`,
+          } as unknown as Parameters<typeof emitTrace>[0]);
+          break;
+        }
+
+        const driftEntry = (state.archetypeDrift ?? []).find(
+          entry => entry.agentId === resolvedAgentId && entry.axisId === effect.axisId,
+        );
+        if (!driftEntry) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'archetype_drift_register',
+            effectDetail: { axisId: effect.axisId, threshold: effect.threshold, targetId: resolvedAgentId },
+            success: false, failReason: 'drift_entry_missing',
+            effectiveTargetId: resolvedAgentId, effectiveTargetKind: 'agent',
+            summary: `archetype_drift_register[${i}] skipped: no drift entry for axis '${effect.axisId}'`,
+          } as unknown as Parameters<typeof emitTrace>[0]);
+          break;
+        }
+
+        const thresholdValue = effect.threshold === 'soft'
+          ? DRIFT_THRESHOLD_SOFT
+          : effect.threshold === 'banner'
+            ? DRIFT_THRESHOLD_BANNER
+            : DRIFT_THRESHOLD_BECOMING;
+        const magnitude = Math.abs(driftEntry.toPosition);
+        if (magnitude < thresholdValue) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'archetype_drift_register',
+            effectDetail: { axisId: effect.axisId, threshold: effect.threshold, targetId: resolvedAgentId, magnitude },
+            success: false, failReason: 'threshold_not_held',
+            effectiveTargetId: resolvedAgentId, effectiveTargetKind: 'agent',
+            summary: `archetype_drift_register[${i}] skipped: |${driftEntry.toPosition.toFixed(2)}| < ${thresholdValue} on '${effect.axisId}'`,
+          } as unknown as Parameters<typeof emitTrace>[0]);
+          break;
+        }
+
+        const pole = driftEntry.toPosition >= 0 ? 'virtue' : 'flaw';
+        const event: TickEvent = {
+          id: `drift_register_${reaction.id}_${tick}_${nextRecentEvents.length}`,
+          tick,
+          type: 'narrative',
+          message: `Drift registered: ${resolvedAgentId} leans ${pole} on '${effect.axisId}' (${effect.threshold}).`,
+          significance: ARCHETYPE_DRIFT_REGISTER_SIGNIFICANCE,
+          actorId: resolvedAgentId,
+        };
+        nextRecentEvents = appendRecentEvent(nextRecentEvents, event);
+        nextTickEvents = [...nextTickEvents, event];
+
+        emitTrace({
+          tick, category: 'drift_threshold_crossed', agentId: resolvedAgentId,
+          axisId: effect.axisId,
+          fromPosition: driftEntry.fromPosition,
+          toPosition: driftEntry.toPosition,
+          thresholdCrossed: effect.threshold,
+          pole,
+          summary: `drift_threshold_crossed: ${resolvedAgentId} ${effect.axisId} ${effect.threshold} (${pole})`,
+        });
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'archetype_drift_register',
+          effectDetail: { axisId: effect.axisId, threshold: effect.threshold, targetId: resolvedAgentId, magnitude, pole },
+          success: true,
+          effectiveTargetId: resolvedAgentId, effectiveTargetKind: 'agent',
+          summary: `archetype_drift_register[${i}]: ${resolvedAgentId} ${effect.threshold} on '${effect.axisId}' (${pole})`,
+        } as unknown as Parameters<typeof emitTrace>[0]);
         break;
       }
 
