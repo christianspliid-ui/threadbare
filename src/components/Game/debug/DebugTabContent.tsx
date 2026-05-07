@@ -13,7 +13,7 @@ import type { StrategicRuntimeState, BehaviorFamily } from '../../../types/strat
 import type { OmenState } from '../../../types/omen';
 import type { DoomIdentityMatrix } from '../../../types/doomIdentity';
 import type { HiddenMark, PendingEncounterSeed } from '../../../types/unifiedAction';
-import type { TickEvent } from '../../../types/gameState';
+import type { TickEvent, RegionDetectionState } from '../../../types/gameState';
 import {
   BEHAVIOR_FAMILY_PRESENTATION,
   getBehaviorFamilyPresentation,
@@ -98,6 +98,8 @@ export interface DebugTabContentProps {
   hiddenMarks?: readonly HiddenMark[];
   /** Pending encounter seeds — inspected in the Seeds tab (THR-136). */
   pendingEncounterSeeds?: readonly PendingEncounterSeed[];
+  /** Detection pressure state by region — shown in the Seeds tab (THR-326). */
+  regionalDetectionPressure?: readonly RegionDetectionState[];
   /** Active delves — inspected in the Ruins tab (THR-152). */
   activeDelves?: readonly import('../../../engine/ruins/delveTypes').ActiveDelve[];
   /** Lazy getter so the recent-events debug tab can opt-in to stream subscription. */
@@ -118,7 +120,7 @@ export function DebugTabContent({
   getWebGLDiagnostics, getZoomLevel, showOrganicShore, onToggleOrganicShore,
   encounterNotifications, pendingVignettes, seed, sphereAggregate, agentKnowledge,
   retinueAgents, strategicState, omenState, doomIdentityMatrix,
-  hiddenMarks, pendingEncounterSeeds, activeDelves,
+  hiddenMarks, pendingEncounterSeeds, regionalDetectionPressure, activeDelves,
   getRecentEvents, flipTableStates, activeCompositions, doomClockStage,
 }: DebugTabContentProps) {
   if (viewMode === 'omens') return <OmenDebugTab omenState={omenState} currentTick={currentTick} doomIdentityMatrix={doomIdentityMatrix} />;
@@ -137,7 +139,14 @@ export function DebugTabContent({
     return <HiddenMarksTab marks={hiddenMarks ?? []} currentTick={currentTick} focusedAgentId={effectiveAgentId} retinueAgents={retinueAgents} />;
   }
   if (viewMode === 'encounter-seeds') {
-    return <EncounterSeedsTab seeds={pendingEncounterSeeds ?? []} currentTick={currentTick} retinueAgents={retinueAgents} />;
+    return (
+      <EncounterSeedsTab
+        seeds={pendingEncounterSeeds ?? []}
+        currentTick={currentTick}
+        retinueAgents={retinueAgents}
+        regionalDetectionPressure={regionalDetectionPressure ?? []}
+      />
+    );
   }
   if (viewMode === 'factions') return <FactionDebugContent graph={graph} onZoomToLocation={onZoomToLocation} />;
   if (viewMode === 'spheres') return <SphereStateTabContent aggregate={sphereAggregate} />;

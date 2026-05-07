@@ -3295,6 +3295,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             doomIdentityMatrix={gameState.doomIdentityMatrix}
             hiddenMarks={gameState.hiddenMarks}
             pendingEncounterSeeds={gameState.pendingEncounterSeeds}
+            regionalDetectionPressure={gameState.regionalDetectionPressure}
             activeDelves={gameState.activeDelves}
             getRecentEvents={getRecentEvents}
             flipTableStates={gameState.flipTableStates}
