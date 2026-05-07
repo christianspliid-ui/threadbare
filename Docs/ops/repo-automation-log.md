@@ -130,3 +130,4 @@
 - **ops** | no ready-for-codex work this cycle (2026-05-06T15.02.05+02:00)
 - **ops** | no ready-for-codex work this cycle (2026-05-06T16.02.04+02:00)
 - **work** | THR-325 shipped: Ascendant Hand Filter B3 (5-stage cascade + place gating + per-tick hand_filtered traces + tests) (2026-05-06T18.18.17+02:00)
+- **work** | THR-350 shipped: tightened EncounterContract A1 fidelity (typed 1-3 forecast tuple + matching Zod tuple union + adapter AP cost constant + encounter.ts ownership notes) (2026-05-07T08.08.53+02:00)
