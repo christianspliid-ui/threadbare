@@ -13,6 +13,8 @@ related_linear: TB-075 (cosmological symmetry refactor; Phase 1 shipped, Phases 
 
 **Verdict:** The toolkit was right. The vision audit was misled by `Systems/Domain Word Scales.md`, a 2026-03-08 page that predates the 2026-03-28 Flesh→Quintessence decision and was never updated. Most documentation surfaces still present 9 Reaches with Flesh as canonical, even though the runtime code is on 8 Reaches. **The 2026-03-28 cosmological refactor (TB-075) shipped Phase 1 (types/engine) but Phases 4–5 (vault + repo docs) never propagated.** This is the structural cause of recurring agent confusion — agents reading vault and repo docs find conflicting answers and silently default to whichever they read last.
 
+> **Pre-flight verification (2026-05-07, THR-359 Phase 5b).** Before editing, the executor re-grepped each Category A surface and found that `STYLE.md`, `public/encounters-agents-reference.html`, `public/tick-cycle-reference.html`, and `.claude/skills/encounter-pipeline/SKILL.md` had already been cleaned by intermediate work and required no edits. The remaining repo-side residue addressed by Phase 5b is: (a) duplicate Part 6/7 in `state-of-game-design` SKILL.md (both mirrors), (b) §4.4 + §7 of `Docs/plans/2026-05-04-encounter-toolkit-vision-audit.md` still treating 9 reaches as canonical. This audit doc remains historically accurate as a snapshot of 2026-05-05; future readers should not assume Category A is current.
+
 **Canonical source of the decision** (the user's "discussion in Obsidian"):
 `TheFantasyWorldSimulator/Brainstorms/brainstorm-cosmological-symmetry.md`
 - Session: 2026-03-28, Spliid + Claude (Cowork)
