@@ -682,6 +682,34 @@
   50% { box-shadow: 0 0 22px 1px var(--mark-color, var(--accent-gold-dim)); }
 }
 
+/* AgentPulseOverlay — spotlighted agent's hex flare during world → encounter handoff (THR-340). */
+@keyframes agent-pulse {
+  0%, 100% {
+    opacity: 0.35;
+    transform: translate(-50%, -50%) scale(0.85);
+  }
+  50% {
+    opacity: 0.85;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+}
+
+/* Encounter handoff fade-up — used when transitioning into the encounter screen (THR-340). */
+@keyframes encounter-handoff-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.anim-encounter-handoff-fade-up {
+  animation: encounter-handoff-fade-up 400ms ease-out both;
+}
+
 @keyframes shakeNo {
   0%, 100% { transform: translateX(0); }
   15% { transform: translateX(-4px); }

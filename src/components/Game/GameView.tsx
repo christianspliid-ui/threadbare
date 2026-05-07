@@ -65,6 +65,9 @@ import { HarvestScreen } from './HarvestScreen';
 import { RetinuePanel } from './RetinuePanel';
 import { AgentInfoCard } from './AgentInfoCard';
 import { ThreadsPanel } from './ThreadsPanel';
+import { prepareEncounterHandoff } from './encounterHandoff';
+import { REACH_TO_SPHERE, SPHERE_COLORS } from '../icons/constants';
+import type { ReachDomain } from '../../types/traits';
 import { ThreadDetailView } from './ThreadDetailView';
 import { HexDetailView } from './HexDetailView';
 import { LocationProfileModal } from './LocationProfileModal';
@@ -461,6 +464,23 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     () => selectedAgentId ? retinueAgents.find(a => a.id === selectedAgentId) : undefined,
     [retinueAgents, selectedAgentId],
   );
+
+  // Spotlight thread color (THR-340): sphere color of the spotlighted agent's primary domain.
+  // Looks up the agent first in retinueAgents, then in threadedNodes (non-retinue threaded agents).
+  // Falls back to undefined → AgentPulseOverlay uses gold default.
+  const spotlightThreadColor = useMemo<string | undefined>(() => {
+    const id = gameState.spotlightedAgent;
+    if (!id) return undefined;
+    const fromRetinue = retinueAgents.find(a => a.id === id);
+    let domain: ReachDomain | null = fromRetinue?.primaryDomain ?? null;
+    if (!domain) {
+      const fromThread = threadedNodes.find(n => n.category === 'agent' && n.id === id);
+      if (fromThread && fromThread.category === 'agent') domain = fromThread.primaryDomain;
+    }
+    if (!domain) return undefined;
+    const sphere = REACH_TO_SPHERE[domain];
+    return sphere ? SPHERE_COLORS[sphere] : undefined;
+  }, [gameState.spotlightedAgent, retinueAgents, threadedNodes]);
 
   const latestThreadEncounterDecisions = useMemo(() => {
     const threadedAgentIds = threadedNodes
@@ -1932,6 +1952,24 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     const clearanceGateStateSnapshot = clearanceGateRuntimeId
       ? gameState.clearanceGateStates?.get(clearanceGateRuntimeId)
       : undefined;
+
+    // World view → encounter handoff (THR-340 / Phase F2):
+    // emit `spotlight_changed` trace, then write the new spotlightedAgent to GameState.
+    // The world freeze (turn-based contract) is enforced by the existing
+    // `encounterModalOpen` effect which runs `setRunning(false)` when tieredEncounterState mounts.
+    const prevSpotlight = gameState.spotlightedAgent ?? null;
+    if (prevSpotlight !== agentId) {
+      prepareEncounterHandoff({
+        fromAgentId: prevSpotlight,
+        toAgentId: agentId,
+        trigger: 'world_handoff',
+        tick: gameState.tick,
+      });
+      setGameState(prev => (prev.spotlightedAgent === agentId
+        ? prev
+        : { ...prev, spotlightedAgent: agentId }));
+    }
+
     setTieredEncounterState({
       notification,
       encounter: runtimeEncounter,
@@ -1945,7 +1983,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       activeActionSnapshot: activeAction,
       clearanceGateStateSnapshot,
     });
-  }, [gameState.clearanceGateStates, gameState.encounterNotifications, gameState.encounterProgress, gameState.graph, gameState.tick, gameState.unifiedActions]);
+  }, [gameState.clearanceGateStates, gameState.encounterNotifications, gameState.encounterProgress, gameState.graph, gameState.spotlightedAgent, gameState.tick, gameState.unifiedActions, setGameState]);
 
   const resumeAfterEncounterCommit = useRef<boolean>(false);
   const suppressedEncounterNotificationId = useRef<string | null>(null);
@@ -1953,11 +1991,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const closeEncounterModalAndResume = useCallback((openedAsInterrupt?: boolean) => {
     resumeAfterEncounterCommit.current = false;
     setTieredEncounterState(null);
+    // Clear the spotlight so AgentPulseOverlay stops pulsing once the encounter screen unmounts (THR-340).
+    setGameState(prev => (prev.spotlightedAgent === undefined
+      ? prev
+      : { ...prev, spotlightedAgent: undefined }));
     if (wasRunningBeforeEncounterPause.current || openedAsInterrupt) {
       wasRunningBeforeEncounterPause.current = false;
       setRunning(true);
     }
-  }, [setRunning]);
+  }, [setGameState, setRunning]);
 
   const handleEncounterDisregard = useCallback(() => {
     if (tieredEncounterState?.notification?.id) {
@@ -3016,6 +3058,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   onArmyClick={(armyId) => handleOpenProfileModal(armyId, 'army')}
                   strategicOverlays={hexStrategicOverlays}
                   locationActivityMap={locationActivityByHex}
+                  spotlightedAgentId={gameState.spotlightedAgent}
+                  spotlightThreadColor={spotlightThreadColor}
                 />
 
                 {/* AvatarHUD superseded by AscendantBar (THR-184) */}
@@ -3576,22 +3620,26 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         })()}
       </AnimateMount>
 
-      {/* EncounterVeil — unified encounter display for all encounter types */}
+      {/* EncounterVeil — unified encounter display for all encounter types.
+          Wrapped in `anim-encounter-handoff-fade-up` so the world view → encounter
+          transition lands as a 400ms fade-up (THR-340 / design plan §5.8). */}
       {tieredEncounterState && encounterVeilModel && (
-        <EncounterVeil
-          open={true}
-          model={encounterVeilModel}
-          threadTier={tieredEncounterState.threadTier}
-          essence={SPHERE_NAMES.reduce((sum, s) => sum + gameState.essencePool[s], 0)}
-          tick={gameState.tick}
-          autoResolveTick={tieredEncounterState.notification.autoResolveTick}
-          onIntervene={handleEncounterIntervene}
-          onBoost={handleEncounterBoost}
-          onPeek={handleEncounterPeek}
-          onDisregard={handleEncounterDisregard}
-          onAcknowledgeAftermath={handleEncounterAcknowledgeAftermath}
-          onAftermathReaction={handleEncounterAftermathReaction}
-        />
+        <div className="anim-encounter-handoff-fade-up" data-testid="encounter-handoff-fade-up">
+          <EncounterVeil
+            open={true}
+            model={encounterVeilModel}
+            threadTier={tieredEncounterState.threadTier}
+            essence={SPHERE_NAMES.reduce((sum, s) => sum + gameState.essencePool[s], 0)}
+            tick={gameState.tick}
+            autoResolveTick={tieredEncounterState.notification.autoResolveTick}
+            onIntervene={handleEncounterIntervene}
+            onBoost={handleEncounterBoost}
+            onPeek={handleEncounterPeek}
+            onDisregard={handleEncounterDisregard}
+            onAcknowledgeAftermath={handleEncounterAcknowledgeAftermath}
+            onAftermathReaction={handleEncounterAftermathReaction}
+          />
+        </div>
       )}
 
       {/* Meeting encounter — full-screen narrative flow */}

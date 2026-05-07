@@ -105,6 +105,23 @@ export const RetinuePanel = React.memo(function RetinuePanel({ agents, selectedA
                 {/* Agent name and optional tier badge */}
                 <div className="flex items-center justify-between gap-2 mb-0.5">
                   <span className="flex items-center gap-1 truncate flex-1">
+                    {/* Priority pip — visible when this agent has a pending encounter (THR-340 §5.8) */}
+                    {activeEncounters?.has(agent.id) && (
+                      <span
+                        data-testid="retinue-priority-pip"
+                        aria-label="Needs attention"
+                        title="Needs attention"
+                        style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: '50%',
+                          backgroundColor: 'var(--accent-gold, #d4a040)',
+                          boxShadow: '0 0 6px var(--accent-gold, #d4a040)',
+                          flexShrink: 0,
+                          animation: 'mark-pulse 1.6s ease-in-out infinite',
+                        }}
+                      />
+                    )}
                     <span
                       className="font-medium truncate"
                       style={{
