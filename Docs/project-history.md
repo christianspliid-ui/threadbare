@@ -580,3 +580,5 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - ✅ 2026-05-06: THR-324 shipped outcome forecast band computation (engine module + trace + tests).
 - ✅ 2026-05-07: THR-350 tightened EncounterContract Phase A1 schema fidelity (typed 1-3 forecast tuple + matching Zod tuple union + adapter tunability constant + encounter.ts ownership notes).
 - ✅ 2026-05-07: THR-330 shipped Encounter UI Phase C1 scaffold (`EncounterScreen` shell + `EiraHeroPanel` + `CapabilityStrip`) with tests, preserving fixed 440/540/100 layout contract at 1920×1080.
+- ✅ 2026-05-07: THR-351 shipped — finalized Encounter UI Phase A2 scaffold by adding callback-eligibility trace typing plus additive `regionalDetectionPressure`/`encounterSpotlight` GameState fields with safe game-init defaults (legacy aliases preserved).
+
