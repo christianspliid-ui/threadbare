@@ -15,9 +15,8 @@ import {
 import { SPHERE_NAMES } from '../types/index';
 import { REACH_DOMAINS } from '../types/traits';
 
-const MIN_FORECAST_FACTORS = 1;
-const MAX_FORECAST_FACTORS = 3;
 const PROTAGONIST_CAPABILITY_AXIS_COUNT = 3;
+const FORECAST_FACTOR_SCHEMA = z.string().min(1);
 
 const threadSchema = z.object({
   name: z.string().min(1),
@@ -56,7 +55,11 @@ const choiceSchema = z.object({
 const beatSchema = z.object({
   title: z.string().min(1),
   invokes: z.string().min(1).optional(),
-  forecast_factors: z.array(z.string().min(1)).min(MIN_FORECAST_FACTORS).max(MAX_FORECAST_FACTORS),
+  forecast_factors: z.union([
+    z.tuple([FORECAST_FACTOR_SCHEMA]),
+    z.tuple([FORECAST_FACTOR_SCHEMA, FORECAST_FACTOR_SCHEMA]),
+    z.tuple([FORECAST_FACTOR_SCHEMA, FORECAST_FACTOR_SCHEMA, FORECAST_FACTOR_SCHEMA]),
+  ]),
   prose: z.string().min(1),
   prose_tooltips: z.record(z.string().min(1), z.string().min(1)),
   encounter_choices: z.array(choiceSchema).min(1),

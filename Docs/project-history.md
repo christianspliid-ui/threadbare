@@ -578,3 +578,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - ✅ 2026-05-06 — THR-337 shipped DetailModal Phase E1 shell + breadcrumb stacking + section dispatcher placeholders with depth snapshots/tests and wiring-checklist update.
 - ✅ 2026-05-06: THR-325 shipped Ascendant Hand Filter B3 (target/cost/sphere/bond/place cascade + trace + orchestrator phase + tests).
 - ✅ 2026-05-06: THR-324 shipped outcome forecast band computation (engine module + trace + tests).
+- ✅ 2026-05-07: THR-350 tightened EncounterContract Phase A1 schema fidelity (typed 1-3 forecast tuple + matching Zod tuple union + adapter tunability constant + encounter.ts ownership notes).
