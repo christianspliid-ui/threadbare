@@ -2,11 +2,9 @@
 > Updated 2026-05-07.
 
 ## Current Focus
-**THR-349 complete — Protocol patch: filter Done/Canceled from session-start Linear scans (Agent Coordination Protocol).** Updated `Docs/plans/2026-04-13-linear-coordination-protocol.md` with state-filtered board scan guidance for Cowork, Claude Code, and Codex session starts. Added Known Limitations bullet for context-overflow failure (386KB response). PR #157.
+**THR-338 complete — Encounter UI Phase E2: five typed detail page instances (Encounter Experience).** Engine: `detailPageGenerator` (cached, fail-soft), `detailPageResolvers` (graph-walking section resolvers per `(pageKind, typeId)` row + mandatory-floor fallback resolvers), schema registry in `src/data/detailPageTemplates.ts`, fallback prose pools in `src/data/detail-page-fallback-templates.ts`, empty `SHOWCASE_AUTHORING` stub in `src/data/detail-page-showcase.ts` for THR-318 Stream 2. UI: `useOpenDetailPage(gameState)` hook returning typed `openActor/Item/Faction/Place/Event/Ref` callbacks; `DetailPageOpenerContext` lets the Section dispatcher route chip / event-card / `data-term` clicks through a single provider. Tests: 13 generator unit tests + 12 integration snapshot tests at 1920×1080 covering all 5 kinds + 4-deep stack + chip-click → opener invocation. 10,836 tests pass; tsc clean; vite build green. PR pending.
 
-**THR-338 in Ready for Dev — Encounter UI Phase E2: five typed detail page instances (Encounter Experience).** Model: opus-4-6. Plan doc: `Docs/plans/2026-05-06-detail-page-data-model.md`. Waiting for an Opus-tier session.
-
-**Encounter Experience — active:** THR-338 (E2 five typed detail pages, Ready for Dev / model:opus). Recent: THR-323 (B1 choice resolution + drift), THR-324 (B2 outcome forecast), THR-325 (B3 hand filter). Plan docs landing for the full phase suite.
+**Encounter Experience — active:** THR-338 ✅ (E2 five typed detail pages). Recent: THR-323 (B1 choice resolution + drift), THR-324 (B2 outcome forecast), THR-325 (B3 hand filter), THR-337 (E1 DetailModal shell). Plan docs landing for the remaining phase suite.
 
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
