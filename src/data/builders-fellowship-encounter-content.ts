@@ -13,6 +13,7 @@
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { FactionEncounterMeta } from '../types/faction';
+import { withEncounterContract } from './encounter-contract-builder';
 
 // ─── Constants ────────────────────────────────────────────────────────────
 
@@ -48,7 +49,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_META: ReadonlyMap<string, FactionEnco
 export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── Standard Quests (Apprentice+) ──────────────────────────────
 
-  {
+  withEncounterContract({
     id: 'bf.quest.repair_wall',
     name: 'Repair the Wall',
     rarityTier: 1,
@@ -175,9 +176,9 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'bf.quest.lay_foundation',
     name: 'Lay a Foundation',
     rarityTier: 1,
@@ -309,9 +310,9 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'bf.quest.forge_tools',
     name: 'Forge New Tools',
     rarityTier: 1,
@@ -456,9 +457,9 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'bf.quest.survey_site',
     name: 'Survey a Building Site',
     rarityTier: 2,
@@ -597,9 +598,9 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'bf.quest.craft_commission',
     name: 'Fulfill a Craft Commission',
     rarityTier: 2,
@@ -741,11 +742,11 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         ],
       },
     },
-  },
+  }),
 
   // ── Senior Quests (Journeyman+) ──────────────────────────────────
 
-  {
+  withEncounterContract({
     id: 'bf.senior.raise_bridge',
     name: 'Raise a Bridge',
     rarityTier: 3,
@@ -903,9 +904,9 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'bf.senior.design_fortification',
     name: 'Design Fortifications',
     rarityTier: 2,
@@ -1041,9 +1042,9 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'bf.senior.master_craft',
     name: 'Master Craft Challenge',
     rarityTier: 3,
@@ -1191,11 +1192,11 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         ],
       },
     },
-  },
+  }),
 
   // ── Elite Quests (Master Builder+) ────────────────────────────────
 
-  {
+  withEncounterContract({
     id: 'bf.elite.grand_monument',
     name: 'Raise a Grand Monument',
     rarityTier: 4,
@@ -1359,9 +1360,9 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'bf.elite.engineer_wonder',
     name: 'Engineer a Wonder',
     rarityTier: 4,
@@ -1531,13 +1532,13 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         ],
       },
     },
-  },
+  }),
 ];
 
 // ─── Social Encounters ─────────────────────────────────────────────────────
 
 export const BUILDERS_FELLOWSHIP_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
-  {
+  withEncounterContract({
     id: 'bf.social.workshop_tour',
     name: 'Workshop Tour',
     rarityTier: 1,
@@ -1640,9 +1641,9 @@ export const BUILDERS_FELLOWSHIP_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'bf.social.guild_feast',
     name: 'Guild Feast',
     rarityTier: 1,
@@ -1741,9 +1742,9 @@ export const BUILDERS_FELLOWSHIP_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'bf.social.material_trade',
     name: 'Material Trading',
     rarityTier: 1,
@@ -1842,7 +1843,7 @@ export const BUILDERS_FELLOWSHIP_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 ];
 
 // ─── Join & Promotion ──────────────────────────────────────────────────────

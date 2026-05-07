@@ -23,6 +23,7 @@
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import type { FactionEncounterMeta } from '../types/faction';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
+import { withEncounterContract } from './encounter-contract-builder';
 import {
   FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS,
   FACTION_PROSE_HIDDEN_MARK_DEFAULT_SEVERITY,
@@ -62,7 +63,7 @@ export const UNDERKING_COURT_ENCOUNTER_META: ReadonlyMap<string, FactionEncounte
 
 export const UNDERKING_COURT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
-  {
+  withEncounterContract({
     id: 'uk.quest.pickpocket_run',
     name: 'Pickpocket Run',
     rarityTier: 1,
@@ -147,9 +148,9 @@ export const UNDERKING_COURT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'uk.quest.fence_goods',
     name: 'Fence Stolen Goods',
     rarityTier: 1,
@@ -234,9 +235,9 @@ export const UNDERKING_COURT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'uk.quest.protection_racket',
     name: 'Run the Racket',
     rarityTier: 1,
@@ -322,9 +323,9 @@ export const UNDERKING_COURT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'uk.quest.smuggle_cargo',
     name: 'Smuggle Cargo',
     rarityTier: 1,
@@ -409,9 +410,9 @@ export const UNDERKING_COURT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'uk.quest.blackmail_mark',
     name: 'Blackmail a Mark',
     rarityTier: 1,
@@ -505,7 +506,7 @@ export const UNDERKING_COURT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 ];
 
 // ─── Senior Quest Templates ───────────────────────────────────────────────
@@ -1030,7 +1031,7 @@ export const UNDERKING_COURT_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
 
 export const UNDERKING_COURT_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
-  {
+  withEncounterContract({
     id: 'uk.social.gambling_den',
     name: 'The Gambling Den',
     rarityTier: 1,
@@ -1104,9 +1105,9 @@ export const UNDERKING_COURT_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'uk.social.black_market',
     name: 'Black Market Browse',
     rarityTier: 1,
@@ -1180,9 +1181,9 @@ export const UNDERKING_COURT_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'uk.social.whisper_network',
     name: 'Whisper Network',
     rarityTier: 1,
@@ -1270,7 +1271,7 @@ export const UNDERKING_COURT_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 ];
 
 // ─── Join & Promotion ─────────────────────────────────────────────────────

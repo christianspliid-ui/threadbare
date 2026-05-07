@@ -141,3 +141,4 @@
 - **work** | THR-358 shipped: encounter-pipeline canon-first Step 0 + advisory check:canon-staleness script (2026-05-07T17.08.38+02:00)
 - **work** | THR-341 shipped: completed canonical documentation sweep (Encounter UI promotion, Fate Forecast supersession, encounter/action/intervention/taste-profile sync) (2026-05-07T19.08.26+02:00)
 - **work** | THR-333 shipped: Encounter UI Phase C4 SceneStatePanel + drift/detection indicators with threshold snapshots (2026-05-07T21:15+02:00)
+- **work** | THR-362 shipped: extracted shared encounter-contract builder + migrated 11 faction encounter modules (encounter/social arrays) to encoded contract metadata with migration smoke test (2026-05-07T23:15+02:00)

@@ -12,6 +12,7 @@
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { FactionEncounterMeta } from '../types/faction';
+import { withEncounterContract } from './encounter-contract-builder';
 
 // ─── Constants ───────────────────────────────────────────────────────────
 
@@ -54,7 +55,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterM
 export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── Standard Quests (Apprentice+) ──────────────────────────────────
 
-  {
+  withEncounterContract({
     id: 'ac.quest.ley_survey',
     name: 'Ley Line Survey',
     rarityTier: 1,
@@ -198,9 +199,9 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'ac.quest.reagent_gather',
     name: 'Gather Arcane Reagents',
     rarityTier: 1,
@@ -325,9 +326,9 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'ac.quest.ward_inspection',
     name: 'Ward Inspection',
     rarityTier: 2,
@@ -466,9 +467,9 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'ac.quest.translate_tome',
     name: 'Translate an Ancient Tome',
     rarityTier: 2,
@@ -630,9 +631,9 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'ac.quest.anomaly_report',
     name: 'Investigate Arcane Anomaly',
     rarityTier: 1,
@@ -761,11 +762,11 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
   // ── Senior Quests (Magister+) ─────────────────────────────────
 
-  {
+  withEncounterContract({
     id: 'ac.senior.planar_probe',
     name: 'Planar Probe',
     rarityTier: 3,
@@ -929,9 +930,9 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'ac.senior.enchant_artifact',
     name: 'Enchant an Artifact',
     rarityTier: 2,
@@ -1062,9 +1063,9 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'ac.senior.ruin_expedition',
     name: 'Arcane Ruin Expedition',
     rarityTier: 3,
@@ -1219,11 +1220,11 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
   // ── Elite Quests (Archmage+) ────────────────────────────────────
 
-  {
+  withEncounterContract({
     id: 'ac.elite.arcane_thesis',
     name: 'Present the Grand Thesis',
     rarityTier: 4,
@@ -1419,9 +1420,9 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'ac.elite.seal_the_breach',
     name: 'Seal the Planar Breach',
     rarityTier: 3,
@@ -1594,13 +1595,13 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 ];
 
 // ─── Social Encounters ──────────────────────────────────────────────────
 
 export const ARCANE_CIRCLE_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
-  {
+  withEncounterContract({
     id: 'ac.social.lecture_hall',
     name: 'Attend a Lecture',
     rarityTier: 1,
@@ -1705,9 +1706,9 @@ export const ARCANE_CIRCLE_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'ac.social.spell_exchange',
     name: 'Spell Exchange',
     rarityTier: 1,
@@ -1810,9 +1811,9 @@ export const ARCANE_CIRCLE_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'ac.social.library_browse',
     name: 'Browse the Library',
     rarityTier: 1,
@@ -1915,7 +1916,7 @@ export const ARCANE_CIRCLE_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 ];
 
 // ─── Join & Promotion ───────────────────────────────────────────────────
