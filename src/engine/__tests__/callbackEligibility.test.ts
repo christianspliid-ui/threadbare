@@ -260,4 +260,32 @@ describe('getCallbackCandidates', () => {
 
     expect(result).toEqual([]);
   });
+
+  it('preserves authored pin order even when newer derived events score higher', () => {
+    const graph = buildGraph();
+    addEncounterEvent(graph, { id: 'event.pinned.older', tick: 5, locationId: FOREST_LOCATION_ID });
+    addEncounterEvent(graph, { id: 'event.pinned.newer', tick: 6, locationId: FOREST_LOCATION_ID });
+    addEncounterEvent(graph, {
+      id: 'event.high.score',
+      tick: 120,
+      participants: [AGENT_ID, CAST_ONE_ID],
+      locationId: TOWN_LOCATION_ID,
+      sphereAffinity: 'force',
+      callbackWeight: 'structural',
+    });
+
+    const result = getCallbackCandidates({
+      graph,
+      agentId: AGENT_ID,
+      currentTick: 125,
+      currentBeat: CURRENT_BEAT,
+      authorPinnedEventIds: ['event.pinned.newer', 'event.pinned.older'],
+    });
+
+    expect(result.map((eventNode) => eventNode.id)).toEqual([
+      'event.pinned.newer',
+      'event.pinned.older',
+      'event.high.score',
+    ]);
+  });
 });

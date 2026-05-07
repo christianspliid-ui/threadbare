@@ -44,4 +44,28 @@ describe('detectionPressure', () => {
     expect(getDetectionThresholdCrossings(0.7, 1.0)).toEqual(['turn', 'encounter']);
     expect(getDetectionThresholdCrossings(1.0, 0.8)).toEqual([]);
   });
+
+  it('decays monotonically to floor across repeated ticks', () => {
+    let pressure = [{ regionId: 'region.a', pressure: 1, lastUpdatedTick: 10 }];
+    const seen: number[] = [];
+    for (let tick = 11; tick <= 260; tick += 1) {
+      pressure = decayDetectionPressure(pressure, 0.005, tick);
+      seen.push(pressure[0]?.pressure ?? 0);
+    }
+
+    for (let index = 1; index < seen.length; index += 1) {
+      expect(seen[index]).toBeLessThanOrEqual(seen[index - 1] + 1e-9);
+    }
+    expect(seen.at(-1)).toBe(0);
+  });
+
+  it('stays clamped at max pressure when repeatedly saturated', () => {
+    const first = applyDetectionDelta([], 'region.a', 'deep_draught', 10, 10);
+    const second = applyDetectionDelta(first.regionalDetectionPressure, 'region.a', 'deep_draught', 10, 11);
+
+    expect(first.toPressure).toBe(MAX_DETECTION_PRESSURE);
+    expect(second.fromPressure).toBe(MAX_DETECTION_PRESSURE);
+    expect(second.toPressure).toBe(MAX_DETECTION_PRESSURE);
+    expect(getDetectionThresholdCrossings(second.fromPressure, second.toPressure)).toEqual([]);
+  });
 });

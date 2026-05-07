@@ -115,6 +115,16 @@ describe('resolveEncounterChoice', () => {
       );
       expect(outcome.effectiveProbability).toBe(0);
     });
+
+    it('fails soft when effectiveProbability is NaN', () => {
+      const outcome = resolveEncounterChoice(
+        makeCommit({ effectiveProbability: Number.NaN }),
+        constantPrng(0.5),
+      );
+      expect(outcome.outcomeBand).toBe('fail');
+      expect(Number.isNaN(outcome.effectiveProbability)).toBe(true);
+      expect(outcome.rolledD100).toBe(51);
+    });
   });
 
   describe('output fields', () => {

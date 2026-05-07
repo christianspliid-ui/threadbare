@@ -594,3 +594,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - ✅ 2026-05-07: THR-358 wired encounter-pipeline skill to canon-first Step 0 and added advisory canon staleness checker (`npm run check:canon-staleness`).
 - ✅ 2026-05-07: THR-359 removed duplicated state-of-game-design skill tail blocks (both mirrors), inverted stale 9-reach guidance in encounter-toolkit vision audit §4.4/§7, and added pre-flight verification note to the cosmology drift audit; filed follow-on THR-360 for out-of-scope code-side Category B residues.
 - ✅ THR-341 canonical docs sweep complete (Encounter UI promotion + Fate Forecast supersession + encounter canon sync).
+- ✅ 2026-05-07: THR-343 shipped — Encounter UI Phase G1 engine test hardening (new encounter-experience contract suite + Phase B unit coverage extensions; npm test 57.92s, tsc clean, build clean).

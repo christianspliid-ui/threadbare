@@ -56,4 +56,16 @@ describe('outcomeForecast', () => {
     expect(threeFactors.factors).toEqual(['a', 'b', 'c']);
     expect(empty.factors).toEqual([]);
   });
+
+  it('keeps forecast factors prose-safe (no digits) when authored factors are prose-safe', () => {
+    const forecast = computeForecast(
+      { forecastFactors: ['iron-rooted omen', 'wind-turning thread', 'ashen vow'] },
+      { baseProbability: 0.8, modifiers: [] },
+    );
+
+    expect(forecast.factors.length).toBeGreaterThan(0);
+    for (const factor of forecast.factors) {
+      expect(factor).not.toMatch(/\d/);
+    }
+  });
 });
