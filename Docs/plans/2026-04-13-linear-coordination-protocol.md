@@ -257,6 +257,21 @@ $ npx vite build
 ✓ built in 4.2s
 ```
 
+### Rule 10 — Model lanes are pull-filter boundaries, not advisory
+
+**Rule:** The `model:*` label on a Ready-for-Dev issue determines which CC automation can claim it. The Sonnet automation's pull query excludes opus-tagged issues; the Opus automation's pull query requires an opus tag. An automation that pulls a label outside its lane is a coordination violation, not a discretion call.
+
+**Why:** The original "use the suggested model unless you have reason to override" wording assumed the running agent could choose its model at session start. That assumption was wrong — scheduled CC sessions run at whatever model the schedule launched them as, and a Sonnet session that ignored the suggestion silently shipped Sonnet-quality output on Opus-labeled work (architectural judgment, prose at quality bar, novel systems). With two scheduled lanes (Sonnet and Opus) running on independent cycles, the only safe behavior is to make the model label gate visibility, not just inform a downstream choice.
+
+**How to apply:**
+- **Sonnet automation pull query:** `list_issues state:"Ready for Dev" assignee:null`, then in-memory filter out anything labeled `model:opus`, `model:opus-4-6`, or `model:opus-4-7`. Issues tagged `model:haiku`, `model:sonnet`, or no `model:*` label at all are eligible.
+- **Opus automation pull query:** `list_issues state:"Ready for Dev" assignee:null`, then in-memory filter to only issues with one of `model:opus`, `model:opus-4-6`, or `model:opus-4-7`.
+- **No re-spawning, no model switching mid-run.** If a Sonnet automation's lane is empty, it stops — it doesn't widen the filter to fish in the Opus queue. The Opus automation will pick up its own work on its own cycle.
+- **Cowork must apply the right label on every Ready-for-Dev handoff.** The label is the queue filter, not a hint. An untagged issue defaults to the Sonnet lane; if the work needs Opus quality, the `model:opus*` label is required, not optional.
+- **Interactive sessions started by the user can still override.** Rule 10 governs scheduled automations. A user opening CC manually may pick up any issue regardless of label — the user's judgment supersedes the lane filter for hand-driven work.
+
+This rule supersedes the prior "use the model suggested by the `model:*` label unless you have a specific reason to override" guidance for scheduled automations. The override clause now means "the user, sitting at the keyboard," not "the automation itself."
+
 ---
 
 ## Agent Session Protocols
@@ -275,7 +290,7 @@ $ npx vite build
 3. **Claim immediately (Rule 1):** before reading anything but the title, the first mutating call is `save_issue(id, assignee: "me", state: "In Dev")`. Then `get_issue(id)` to verify the write stuck (Rule 7 / impediment #48). `pullNextReadyForDev` does this atomically; if hand-rolling, do it explicitly. Only after the claim is confirmed do you read the handoff comment and plan doc.
 4. **WIP check:** confirm no other issue is In Dev under your assignee across all projects (Rule 6 — WIP=1 is cross-session, not per-project-per-session). If you find one, finish or hand it off before claiming the next.
 5. **Reopened check (Rule 5):** if the issue carries a `Reopened` label, read all comments back to the original handoff *before* starting work — the latest comment supersedes the original plan (Rule 4).
-6. **Model check:** read the `Suggested model` line in the handoff comment (or the `model:*` label) and use that model unless there's a specific reason to override.
+6. **Model lane check (Rule 10).** Your automation's model is fixed at startup; the `model:*` label on the issue must already match your lane because your pull query filtered on it. The Sonnet automation excludes `model:opus`, `model:opus-4-6`, `model:opus-4-7` from its query. The Opus automation requires one of those three. If you ever see an out-of-lane issue here, your filter is wrong — fix the filter, do not silently process the work. The `Suggested model` line in the handoff comment is now confirmation, not a choice point.
 7. **Parallel check** (only when considering a concurrent worktree): confirm the second issue appears in the first issue's `Parallel-safe with:` list *and* does not collide with either issue's `Mutex with:` description. If unsure, run them serially.
 8. On completion: commit with `Fixes THR-XX` in the body and push — the merge-to-main keyword auto-closes the issue. **Do not manually transition In Dev → Done (Rule 3).**
 
@@ -322,7 +337,7 @@ When Cowork finishes a design and writes the implementation plan:
 
 #### Claude Code coordination lines — what they mean
 
-- **Suggested model** — Cowork's recommendation on which Claude model Claude Code should use. Default is `sonnet`. Use `haiku` for mechanical work with low blast radius (renames, data-row additions, doc updates, boilerplate tests for existing patterns). Use `opus` for architectural judgment or cross-cutting work (touching high-impact files like `engine/graph.ts` or `types/index.ts`, novel node/edge types, new mechanics surface, multi-system refactors, debugging spanning 3+ subsystems). Also apply the matching `model:haiku` / `model:sonnet` / `model:opus` label so the suggestion is visible in list view and queryable.
+- **Suggested model** — Determines which CC automation lane will be able to claim the issue (Rule 10). The matching `model:*` label is **required**, not optional, because the label is the pull-query filter for each scheduled automation. Default is `sonnet`. Use `haiku` for mechanical work with low blast radius (renames, data-row additions, doc updates, boilerplate tests for existing patterns) — these flow through the Sonnet automation alongside ordinary sonnet work. Use `model:opus-4-6` for creative-writing / prose-quality work, `model:opus-4-7` for architectural judgment and cross-cutting refactors (touching high-impact files like `engine/graph.ts` or `types/index.ts`, novel node/edge types, new mechanics surface, multi-system refactors, debugging spanning 3+ subsystems) — both flow through the Opus automation. Apply the matching `model:haiku` / `model:sonnet` / `model:opus-4-6` / `model:opus-4-7` label *every time*; an untagged issue silently defaults to the Sonnet lane and will not be visible to the Opus automation even if the handoff text asked for Opus.
 - **Parallel-safe with** — which other Ready for Dev issues this can run alongside in a separate worktree without merge conflicts. Based on file-surface analysis: do the two issues edit disjoint files? If yes, list the identifiers. If no, list "none." This is a soft signal — Claude Code still verifies before pulling a second issue into a concurrent worktree.
 - **Mutex with** — the files or surfaces this issue will make concurrent work collide on. Free-text (e.g., "any issue touching `src/types/trace.ts`" or "the legacy/unified enrichment boundary"). Used by Cowork when sizing up *future* handoffs — if an issue's Mutex description matches the new issue's surface, they can't parallelize.
 
@@ -339,7 +354,7 @@ When CC picks up a Ready for Dev issue, the order is **claim → verify → read
 2. **Verify the claim stuck (Rule 7).** Immediately `get_issue(id)` and confirm both `assignee` and `state` match what you wrote. On mismatch: release claim (`save_issue(id, assignee:null)`), try the next candidate, retry up to `MAX_CLAIM_RETRIES = 3` times total; if all retries fail, surface to the user and stop — do not proceed on an unverified claim.
 3. **Read the latest comment first (Rule 4).** The most recent comment on the issue is the authoritative brief. If it's a reopen with a cleanup plan, it supersedes the original handoff. If the issue has a `Reopened` label (Rule 5), read all comments back to the original handoff to understand what changed.
 4. **Verify the handoff is complete.** All four action-item sections present (Engine, Content, UI, Wiring). If any section is missing without N/A rationale, do not start work — add a comment flagging the gap and move the issue back to Implementation Planning. (Release your claim by setting `assignee: null` when you do.) An incomplete plan produces incomplete work.
-5. **Check the Claude Code coordination block.** Use the `Suggested model` (or the `model:*` label) unless you have reason to override. If considering a concurrent worktree, verify the target is listed in `Parallel-safe with` *and* doesn't collide with `Mutex with`.
+5. **Check the Claude Code coordination block.** The `Suggested model` line and `model:*` label are now load-bearing — they gate which automation could claim the issue at all (Rule 10). For a scheduled run, your lane is already fixed and the label match is verification, not a choice. For an interactive run started by the user, the user's judgment supersedes the lane. If considering a concurrent worktree, verify the target is listed in `Parallel-safe with` *and* doesn't collide with `Mutex with`.
 
 ### Commit Trailer Vocabulary
 
