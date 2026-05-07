@@ -131,3 +131,4 @@
 - **ops** | no ready-for-codex work this cycle (2026-05-06T16.02.04+02:00)
 - **work** | THR-325 shipped: Ascendant Hand Filter B3 (5-stage cascade + place gating + per-tick hand_filtered traces + tests) (2026-05-06T18.18.17+02:00)
 - **work** | THR-350 shipped: tightened EncounterContract A1 fidelity (typed 1-3 forecast tuple + matching Zod tuple union + adapter AP cost constant + encounter.ts ownership notes) (2026-05-07T08.08.53+02:00)
+- **work** | THR-330 shipped: Encounter UI C1 scaffold (EncounterScreen, EiraHeroPanel, CapabilityStrip) with layout contract tests and full verification gates green (2026-05-07T08.46.21+02:00)

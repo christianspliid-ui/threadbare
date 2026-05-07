@@ -33,6 +33,8 @@ import type { ActivityKind } from '../shared/ActivityIcon';
 import { ProgressBand } from '../shared/ProgressBand';
 import { Divider } from '../shared/Divider';
 import { CulturePhoneticsInspector } from '../Game/debug/CulturePhoneticsInspector';
+import { EncounterScreen, ENCOUNTER_SCREEN_LAYOUT } from '../Game/Encounter/EncounterScreen';
+import type { EncounterHeroPanelData } from '../Game/Encounter/EiraHeroPanel';
 import { WorldGraph } from '../../engine/graph';
 import { buildPhoneticSignature } from '../../engine/culturePhonetics';
 import type { CultureIdentity } from '../../types/culture';
@@ -97,6 +99,7 @@ const SECTIONS = [
   { id: 'domaincard', label: 'DomainCard' },
   { id: 'activityicon', label: 'ActivityIcon' },
   { id: 'culture-phonetics', label: 'CulturePhoneticsInspector' },
+  { id: 'encounter-screen', label: 'EncounterScreen (C1)' },
 ];
 
 // ─── Sample data ──────────────────────────────────────────────────────────────
@@ -141,6 +144,27 @@ const SAMPLE_ENTITY_SECTIONS = [
     },
   },
 ];
+
+const STYLEGUIDE_HERO_FIXTURE: EncounterHeroPanelData = {
+  name: 'Eira of Bren',
+  subtitle: 'IRON - DRAWN BOND - 28 WINTERS',
+  statusLine: 'steady, but reading the room',
+  capabilities: [
+    { id: 'force', label: 'Force', sphereLabel: 'IRON', filledDots: 3, narrativeHint: 'a steady arm in a tight queue', accentColor: 'var(--sphere-force-bright)' },
+    { id: 'mind', label: 'Mind', sphereLabel: 'EYE', filledDots: 3, narrativeHint: 'she misses little', accentColor: 'var(--sphere-mind-bright)' },
+    { id: 'spirit', label: 'Spirit', sphereLabel: 'HEART', filledDots: 5, narrativeHint: 'her deepest thread', accentColor: 'var(--sphere-spirit-bright)' },
+  ],
+  items: [
+    { id: 'captain-token', title: "Captain's token", detail: 'small favor - civic guard remembers her' },
+  ],
+  activeVow: {
+    title: 'Vow to the small folk',
+    detail: 'she will not crush a frightened man',
+  },
+  recentMoments: [
+    { id: 'echo-1', title: 'Iron market in winter', detail: 'Veiren tested her patience in the open queue.' },
+  ],
+};
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -752,6 +776,93 @@ export default function StyleGuide() {
               <GameErrorBoundary>
                 <Label>Debug panel tab — shows phoneme inventory + sample names per culture. Re-roll samples button regenerates names.</Label>
                 <SamplePhoneticInspector />
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          {/* ── EncounterScreen (Phase C1) ────────────────────── */}
+          <section id="section-encounter-screen" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>EncounterScreen (C1)</SectionHeading>
+            <div style={{ marginTop: '1.25rem' }}>
+              <GameErrorBoundary>
+                <Label>
+                  Three-zone layout shell at {ENCOUNTER_SCREEN_LAYOUT.HERO_PANEL_WIDTH_PX}px left rail +
+                  flex-1 center + {ENCOUNTER_SCREEN_LAYOUT.RIGHT_RAIL_WIDTH_PX}px right rail +
+                  {ENCOUNTER_SCREEN_LAYOUT.BOTTOM_STRIP_HEIGHT_PX}px bottom strip. Center and right are
+                  Phase C2/C3/C4 stubs. Left rail (EiraHeroPanel) is fully built.
+                </Label>
+                <div
+                  style={{
+                    marginTop: '1rem',
+                    height: '75vh',
+                    border: '1px solid var(--border-medium)',
+                    borderRadius: 8,
+                    overflow: 'hidden',
+                    position: 'relative',
+                  }}
+                >
+                  <EncounterScreen
+                    heroPanel={STYLEGUIDE_HERO_FIXTURE}
+                    header={
+                      <div style={{ color: 'var(--text-muted)', fontSize: 11, letterSpacing: '0.15em', textTransform: 'uppercase', fontFamily: 'var(--font-display)' }}>
+                        Eira at the South Gate · Beat 2 of 4
+                      </div>
+                    }
+                    centerColumn={
+                      <div
+                        style={{
+                          display: 'flex',
+                          height: '100%',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'var(--text-muted)',
+                          fontFamily: 'var(--font-body)',
+                          fontStyle: 'italic',
+                          fontSize: 14,
+                        }}
+                      >
+                        Choice cards · Phase C2
+                      </div>
+                    }
+                    rightRail={
+                      <div
+                        style={{
+                          display: 'flex',
+                          height: '100%',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'var(--text-muted)',
+                          fontFamily: 'var(--font-body)',
+                          fontStyle: 'italic',
+                          fontSize: 14,
+                        }}
+                      >
+                        Cast + Hand + Scene state · Phase C3/C4
+                      </div>
+                    }
+                    bottomStrip={
+                      <div
+                        style={{
+                          display: 'flex',
+                          height: '100%',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 32,
+                          padding: '0 24px',
+                          color: 'var(--text-muted)',
+                          fontFamily: 'var(--font-display)',
+                          fontSize: 12,
+                          letterSpacing: '0.12em',
+                          textTransform: 'uppercase',
+                        }}
+                      >
+                        <span>Quintessence</span>
+                        <span>Lean on her · play a card · or let the dice fall</span>
+                        <span>Watch only</span>
+                      </div>
+                    }
+                  />
+                </div>
               </GameErrorBoundary>
             </div>
           </section>
