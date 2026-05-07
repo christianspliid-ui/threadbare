@@ -2,6 +2,7 @@
 > Updated 2026-05-07.
 
 ## Current Focus
+**THR-341 complete — Encounter UI canonical doc sweep landed.** Promoted `Systems/Encounter UI.md` from the v7 canonical spec, superseded `Systems/Fate Forecast.md` to forward to encounter outcome forecast band, updated `Systems/Action Narrative System.md`/`Systems/Encounter System.md`/`Systems/Intervention Effects.md` to current encounter-ui architecture, and revised `Vision/taste-profile.md` away from fixed three-verb framing.
 **THR-359 complete — Phase 5b repo-side cosmological canon cleanup.** Removed duplicated Part 6/7 tail block from `state-of-game-design` skill (both mirrors). Inverted stale 9-reaches guidance in encounter-toolkit vision audit §4.4/§7. Added pre-flight verification note to cosmological drift audit. Follow-on THR-360 filed for code-side Category B residue.
 **THR-332 complete — Encounter UI Phase C3 right rail shipped.** Added AscendantHand (playable/dimmed/hidden card states from B3 partition + three-card disclosure + rare pulse + direct-commit callback), CastRail grouped by attention_priority (primary/background/offstage), and CastTile with relationship-node-first "to her" fallback to edge sentiment plus E1/E2 click-gate TODO marker. Added 1920x1080 snapshot coverage for cast cardinalities (0/1/4/6) and hand states (0/3/7+, dimmed prereq).
 **THR-355 complete — Phase 1 canon convention verified and closed.** Confirmed all THR-304 Phase 1 deliverables (`Docs/canon/README.md`, `encounters.md`, `cosmology.md`, CLAUDE.md Canon Pages table, documentation-ownership.md entry) are complete from prior THR-305 work. Added missing `2026-05-05-encounter-ui-implementation-phasing.md` pointer to `Docs/canon/encounters.md` Active design plans.
@@ -37,4 +38,6 @@
 - TB-071 Economy Second Pass · TB-069 Location NPCs · TB-051 Monster Encounters residual · TB-037 Onboarding
 
 Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Completed work: `Docs/project-history.md` + Linear "Done" state · Pre-Linear history: `.planning/BACKLOG_HISTORY.md`
+
+
 
