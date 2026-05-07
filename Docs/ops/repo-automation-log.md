@@ -134,3 +134,4 @@
 - **work** | THR-330 shipped: Encounter UI C1 scaffold (EncounterScreen, EiraHeroPanel, CapabilityStrip) with layout contract tests and full verification gates green (2026-05-07T08.46.21+02:00)
 - **work** | THR-351 shipped: finalized Encounter UI A2 typed scaffold (callback eligibility trace + additive regionalDetectionPressure/encounterSpotlight state + safe game-init defaults) (2026-05-07T09.17+02:00)
 - **work** | THR-352 shipped: Encounter UI Phase A3 keyframe canonicalization + verification (2026-05-07T11.05.59+02:00)
+- **work** | THR-357 shipped: migrated all 23 branching encounter templates to encoded EncounterContract metadata with authored moral-axis poles + added migration smoke test (2026-05-07T12.15+02:00)
