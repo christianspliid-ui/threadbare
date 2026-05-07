@@ -24,6 +24,12 @@ const MAX_ATTACHMENT_ROWS = 5;
 /** Max trait rows shown before overflow */
 const MAX_TRAIT_ROWS = 8;
 
+/** Number of dots in the v7 capability meter (per reach). */
+const CAPABILITY_DOTS = 5;
+
+/** Domain capability is scored 0-10; map to 0-5 dots by halving and rounding. */
+const CAPABILITY_SCORE_MAX = 10;
+
 /** Trait category display colors (muted, thematic) */
 const TRAIT_CATEGORY_COLORS: Record<string, string> = {
   innate: '#a8a29e',   // stone-400
@@ -92,10 +98,10 @@ const STRATEGY_DISPLAY: Record<CooperationStrategy, string> = {
   'always-defect': 'Always Defect',
 };
 
-// Grid layout order: 2x4 (TB-075 Phase 1: flesh reach removed)
-const DOMAINS_GRID: ReachDomain[][] = [
-  ['iron', 'gold', 'shadow', 'veil'],
-  ['heart', 'eye', 'stone', 'star'],
+// Display order for capability rows. Reach-to-sphere mapping resolves via
+// the `data-reach` cascade in src/index.css (--reach-sphere-bright).
+const DOMAINS_ORDER: ReachDomain[] = [
+  'iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star',
 ];
 
 export const AgentDetailPanel = React.memo(function AgentDetailPanel({
@@ -110,7 +116,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
   currentTick,
   lastViewedTick = 0,
 }: AgentDetailPanelProps) {
-  const tierColor = TIER_COLORS[detail.tier] || '#78716c';
+  const tierColor = TIER_COLORS[detail.tier] || 'var(--text-muted)';
   const archetypeReaches = detail.archetype?.reachAffinities || [];
 
   const recentEntries = useMemo(() => {
@@ -123,9 +129,18 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
   }, [digestBuffer, currentTick, detail.id]);
 
   return (
-    <div className="flex flex-col h-full bg-stone-900 overflow-y-auto">
+    <div
+      className="flex flex-col h-full overflow-y-auto"
+      style={{ background: 'var(--bg-deep)' }}
+    >
       {/* Header Bar */}
-      <div className="flex items-center gap-3 px-4 py-3 bg-stone-800/90 border-b border-amber-900/30 flex-shrink-0">
+      <div
+        className="flex items-center gap-3 px-4 py-3 flex-shrink-0"
+        style={{
+          background: 'var(--bg-deep)',
+          borderBottom: '1px solid var(--border-subtle)',
+        }}
+      >
         {/* Portrait thumbnail */}
         {detail.portraitUrl && (
           <div className="w-8 h-10 rounded overflow-hidden flex-shrink-0">
@@ -141,8 +156,8 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
         {/* Agent name and tier */}
         <div className="flex-1">
           <h2
-            className="text-amber-100 text-sm font-semibold tracking-wide"
-            style={{ fontFamily: 'var(--font-display)' }}
+            className="text-sm font-semibold tracking-wide"
+            style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
           >
             {detail.name}
           </h2>
@@ -151,7 +166,9 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
               className="w-2 h-2 rounded-full flex-shrink-0"
               style={{ backgroundColor: tierColor }}
             />
-            <span className="text-xs text-amber-400/80">{detail.tierName}</span>
+            <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+              {detail.tierName}
+            </span>
           </div>
         </div>
 
@@ -162,16 +179,30 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
         {/* Archetype Banner */}
         {detail.archetype && (
-          <div className="bg-stone-800/50 border border-amber-900/30 rounded px-3 py-2.5">
+          <div
+            className="rounded px-3 py-2.5"
+            style={{
+              background: 'var(--bg-raised)',
+              border: '1px solid var(--border-subtle)',
+            }}
+          >
             <Tooltip label={detail.archetype.name} desc={detail.archetype.storyShape}>
               <h3
-                className="text-amber-100 text-sm font-semibold tracking-wide cursor-help"
-                style={{ fontFamily: 'var(--font-display)', textDecoration: 'underline', textDecorationStyle: 'dotted' }}
+                className="text-sm font-semibold tracking-wide cursor-help"
+                style={{
+                  color: 'var(--text-primary)',
+                  fontFamily: 'var(--font-display)',
+                  textDecoration: 'underline',
+                  textDecorationStyle: 'dotted',
+                }}
               >
                 {detail.archetype.name}
               </h3>
             </Tooltip>
-            <p className="text-amber-400/80 text-xs italic mt-1">
+            <p
+              className="text-xs italic mt-1"
+              style={{ color: 'var(--text-tertiary)' }}
+            >
               {detail.archetype.storyShape}
             </p>
 
@@ -217,12 +248,17 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
               <div
                 className="rounded px-3 py-2"
                 style={{
-                  backgroundColor: 'rgba(12, 10, 9, 0.45)',
-                  border: `1px solid ${detail.factionThemeColor ? `${detail.factionThemeColor}40` : 'rgba(217, 119, 6, 0.2)'}`,
+                  backgroundColor: 'var(--bg-raised)',
+                  border: `1px solid ${detail.factionThemeColor ? `${detail.factionThemeColor}40` : 'var(--border-subtle)'}`,
                 }}
               >
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-xs uppercase tracking-wide text-amber-400/70">Faction Standing</span>
+                  <span
+                    className="text-xs uppercase tracking-wide"
+                    style={{ color: 'var(--text-tertiary)' }}
+                  >
+                    Faction Standing
+                  </span>
                   {detail.factionRank && (
                     <span
                       className="text-xs font-medium"
@@ -234,7 +270,10 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
                 </div>
                 {detail.factionReputation != null && (
                   <div className="flex items-center gap-2 mt-2">
-                    <div className="flex-1 h-1.5 rounded-full overflow-hidden bg-stone-700/80">
+                    <div
+                      className="flex-1 h-1.5 rounded-full overflow-hidden"
+                      style={{ background: 'var(--bg-raised)' }}
+                    >
                       <div
                         className="h-full rounded-full transition-all duration-200"
                         style={{
@@ -244,7 +283,10 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
                         }}
                       />
                     </div>
-                    <span className="text-xs tabular-nums text-amber-200/80">
+                    <span
+                      className="text-xs tabular-nums"
+                      style={{ color: 'var(--text-secondary)' }}
+                    >
                       {Math.round(detail.factionReputation * 100)}%
                     </span>
                   </div>
@@ -292,21 +334,40 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
           return (
             <div
               className="rounded px-3 py-2"
-              style={{ backgroundColor: 'rgba(12, 10, 9, 0.45)', border: '1px solid rgba(139, 92, 246, 0.3)' }}
+              style={{
+                backgroundColor: 'var(--bg-raised)',
+                border: '1px solid var(--border-subtle)',
+              }}
             >
               <div className="flex items-center justify-between gap-2 mb-1.5">
-                <span className="text-xs uppercase tracking-wide" style={{ color: 'rgb(167, 139, 250, 0.8)' }}>Initiative</span>
-                <span className="text-xs text-stone-400">{pct}%</span>
+                <span
+                  className="text-xs uppercase tracking-wide"
+                  style={{ color: 'var(--sphere-spirit-bright)' }}
+                >
+                  Initiative
+                </span>
+                <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{pct}%</span>
               </div>
-              <div className="text-xs font-medium text-stone-200 mb-2">{tmpl?.name ?? ini.templateId}</div>
-              <div className="h-1.5 rounded-full overflow-hidden bg-stone-700/80">
+              <div
+                className="text-xs font-medium mb-2"
+                style={{ color: 'var(--text-primary)' }}
+              >
+                {tmpl?.name ?? ini.templateId}
+              </div>
+              <div
+                className="h-1.5 rounded-full overflow-hidden"
+                style={{ background: 'var(--bg-raised)', outline: '1px solid var(--border-subtle)' }}
+              >
                 <div
                   className="h-full rounded-full transition-all duration-200"
-                  style={{ width: `${pct}%`, backgroundColor: 'rgb(139, 92, 246)', opacity: 0.8 }}
+                  style={{ width: `${pct}%`, backgroundColor: 'var(--sphere-spirit-bright)', opacity: 0.85 }}
                 />
               </div>
               {ini.checkpoints.length > 0 && (
-                <div className="mt-1.5 text-xs text-stone-500">
+                <div
+                  className="mt-1.5 text-xs"
+                  style={{ color: 'var(--text-muted)' }}
+                >
                   {ini.checkpoints.filter(c => c.passed).length}/{ini.checkpoints.length} checkpoints passed
                 </div>
               )}
@@ -314,15 +375,15 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
           );
         })()}
 
-        {/* Domain Grid */}
+        {/* Capability profile — 5-dot meter rows, sphere-coloured per reach */}
         <div>
           <SectionHeading>
-            Domains
+            Capability
           </SectionHeading>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
-            {DOMAINS_GRID.flat().map(domain => {
+          <div className="space-y-1">
+            {DOMAINS_ORDER.map(domain => {
               const score = detail.domainCapabilities[domain] || 0;
-              const percentage = Math.min((score / 10) * 100, 100);
+              const dots = Math.round((Math.min(score, CAPABILITY_SCORE_MAX) / CAPABILITY_SCORE_MAX) * CAPABILITY_DOTS);
               const isAffinity = archetypeReaches.includes(domain);
 
               // Build trait contribution breakdown for tooltip
@@ -338,23 +399,45 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
 
               return (
                 <Tooltip key={domain} content={domainTooltip}>
-                  <div className="flex flex-col cursor-default">
+                  <div
+                    data-reach={domain}
+                    className="flex items-center gap-2 cursor-default"
+                    style={{ padding: '4px 0' }}
+                  >
                     <span
-                      className={`inline-flex items-center gap-1 text-xs font-medium mb-1 ${
-                        isAffinity ? 'text-amber-100' : 'text-amber-400/70'
-                      }`}
+                      className="inline-flex items-center gap-1 text-xs font-medium"
+                      style={{
+                        width: 70,
+                        color: isAffinity
+                          ? 'var(--reach-sphere-bright)'
+                          : 'var(--text-tertiary)',
+                      }}
                     >
                       <ReachIcon reach={domain} size={14} />
                       {DOMAIN_NAMES[domain]}
                     </span>
-                    <div className="bg-stone-700 rounded h-1.5 overflow-hidden">
-                      <div
-                        className="bg-amber-400 h-full transition-all duration-200"
-                        style={{ width: `${percentage}%` }}
-                      />
+                    <div className="flex" style={{ gap: 3 }}>
+                      {Array.from({ length: CAPABILITY_DOTS }, (_, i) => (
+                        <span
+                          key={i}
+                          aria-hidden="true"
+                          style={{
+                            width: 7,
+                            height: 7,
+                            borderRadius: 99,
+                            background: i < dots
+                              ? 'var(--reach-sphere-bright)'
+                              : 'var(--bg-raised)',
+                            outline: i < dots ? 'none' : '1px solid var(--border-subtle)',
+                          }}
+                        />
+                      ))}
                     </div>
-                    <span className="text-xs text-amber-400/70 mt-0.5">
-                      {score}
+                    <span
+                      className="text-xs tabular-nums ml-auto"
+                      style={{ color: 'var(--text-muted)' }}
+                    >
+                      {score.toFixed(1)}
                     </span>
                   </div>
                 </Tooltip>
@@ -378,13 +461,22 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
 
               return (
                 <div key={val.pair} className="flex items-center gap-2">
-                  <span className="text-xs text-amber-400/70 flex-1 truncate">
+                  <span
+                    className="text-xs flex-1 truncate"
+                    style={{ color: 'var(--text-tertiary)' }}
+                  >
                     {val.label}
                   </span>
-                  <div className="w-16 bg-stone-700 rounded h-1 overflow-hidden flex-shrink-0">
+                  <div
+                    className="w-16 rounded h-1 overflow-hidden flex-shrink-0"
+                    style={{ background: 'var(--bg-raised)' }}
+                  >
                     <div
-                      className="bg-amber-400 h-full"
-                      style={{ width: `${percentage}%` }}
+                      className="h-full"
+                      style={{
+                        width: `${percentage}%`,
+                        background: 'var(--accent-gold)',
+                      }}
                     />
                   </div>
                 </div>
@@ -400,7 +492,9 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
           </SectionHeading>
 
           {detail.topBonds.length === 0 ? (
-            <p className="text-amber-400/60 text-xs italic">No known bonds</p>
+            <p className="text-xs italic" style={{ color: 'var(--text-muted)' }}>
+              No known bonds
+            </p>
           ) : (
             <div className="space-y-1.5">
               {detail.topBonds.map(bond => {
@@ -413,14 +507,23 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
                 return (
                   <div key={bond.targetId} className="space-y-0.5">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-amber-100 flex-1 truncate">
+                      <span
+                        className="text-xs flex-1 truncate"
+                        style={{ color: 'var(--text-primary)' }}
+                      >
                         {bond.targetName}
                       </span>
-                      <span className="text-xs text-amber-400/70">
+                      <span
+                        className="text-xs"
+                        style={{ color: 'var(--text-tertiary)' }}
+                      >
                         {bond.basis}
                       </span>
                     </div>
-                    <div className="w-full bg-stone-700 rounded h-1 overflow-hidden">
+                    <div
+                      className="w-full rounded h-1 overflow-hidden"
+                      style={{ background: 'var(--bg-raised)' }}
+                    >
                       <div
                         className="h-full transition-all duration-200"
                         style={{
@@ -448,7 +551,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
                 <TraitRow key={trait.id} trait={trait} />
               ))}
               {detail.traits.length > MAX_TRAIT_ROWS && (
-                <p className="text-amber-400/60 text-xs italic">
+                <p className="text-xs italic" style={{ color: 'var(--text-muted)' }}>
                   and {detail.traits.length - MAX_TRAIT_ROWS} more…
                 </p>
               )}
@@ -477,7 +580,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
                 />
               ))}
               {detail.possessions.length > MAX_ATTACHMENT_ROWS && (
-                <p className="text-amber-400/60 text-xs italic">
+                <p className="text-xs italic" style={{ color: 'var(--text-muted)' }}>
                   and {detail.possessions.length - MAX_ATTACHMENT_ROWS} more…
                 </p>
               )}
@@ -489,7 +592,12 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
             <SectionHeading>
               Possessions
             </SectionHeading>
-            <p className="text-amber-400/60 text-xs italic animate-breathe">They carry nothing of note.</p>
+            <p
+              className="text-xs italic animate-breathe"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              They carry nothing of note.
+            </p>
           </div>
         )}
 
@@ -515,7 +623,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
                 />
               ))}
               {detail.conditions.length > MAX_ATTACHMENT_ROWS && (
-                <p className="text-amber-400/60 text-xs italic">
+                <p className="text-xs italic" style={{ color: 'var(--text-muted)' }}>
                   and {detail.conditions.length - MAX_ATTACHMENT_ROWS} more…
                 </p>
               )}
@@ -523,14 +631,16 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
           </div>
         )}
 
-        {/* Powers & Agreements Section */}
+        {/* Powers & Agreements Section.
+            The first row in this list demonstrates the active-vow treatment
+            (panel-gold border + sphere-spirit wash) per v7 §Hero panel. */}
         {detail.powersAndAgreements && detail.powersAndAgreements.length > 0 && (
           <div>
             <SectionHeading>
               Powers & Agreements
             </SectionHeading>
             <div className="space-y-1.5">
-              {detail.powersAndAgreements.slice(0, MAX_ATTACHMENT_ROWS).map(att => (
+              {detail.powersAndAgreements.slice(0, MAX_ATTACHMENT_ROWS).map((att, idx) => (
                 <AttachmentRow
                   key={att.id}
                   name={att.name}
@@ -541,10 +651,11 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
                   totalTicks={att.totalTicks}
                   durationLabel={att.durationLabel}
                   onClick={onAttachmentClick ? () => onAttachmentClick(att.id) : undefined}
+                  activeVow={idx === 0}
                 />
               ))}
               {detail.powersAndAgreements.length > MAX_ATTACHMENT_ROWS && (
-                <p className="text-amber-400/60 text-xs italic">
+                <p className="text-xs italic" style={{ color: 'var(--text-muted)' }}>
                   and {detail.powersAndAgreements.length - MAX_ATTACHMENT_ROWS} more…
                 </p>
               )}
@@ -559,13 +670,17 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
           </SectionHeading>
 
           {detail.cooperationStrategy == null ? (
-            <p className="text-amber-400/60 text-xs italic">No known strategy</p>
+            <p className="text-xs italic" style={{ color: 'var(--text-muted)' }}>
+              No known strategy
+            </p>
           ) : (
             <div className="space-y-2.5">
               {/* Strategy name */}
               <div className="flex items-center gap-2">
-                <span className="text-xs text-amber-400/70">Strategy:</span>
-                <span className="text-xs text-amber-100">
+                <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                  Strategy:
+                </span>
+                <span className="text-xs" style={{ color: 'var(--text-primary)' }}>
                   {STRATEGY_DISPLAY[detail.cooperationStrategy]}
                 </span>
               </div>
@@ -573,16 +688,23 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
               {/* Reputation bar */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs text-amber-400/70">Reputation</span>
-                  <span className="text-xs text-amber-400/70">
+                  <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Reputation</span>
+                  <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
                     {detail.reputationScore.toFixed(2)}
                   </span>
                 </div>
-                <div className="w-full bg-stone-700 rounded h-1.5 overflow-hidden relative">
+                <div
+                  className="w-full rounded h-1.5 overflow-hidden relative"
+                  style={{ background: 'var(--bg-raised)' }}
+                >
                   {/* Center marker at 0.5 */}
                   <div
-                    className="absolute top-0 bottom-0 w-px bg-amber-400/30"
-                    style={{ left: '50%' }}
+                    className="absolute top-0 bottom-0"
+                    style={{
+                      left: '50%',
+                      width: 1,
+                      background: 'var(--border-subtle)',
+                    }}
                   />
                   <div
                     className="h-full transition-all duration-200 rounded"
@@ -598,7 +720,10 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
               {/* Recent interactions */}
               {detail.recentInteractions.length > 0 && (
                 <div className="space-y-1">
-                  <span className="text-xs text-amber-400/70 uppercase tracking-wider">
+                  <span
+                    className="text-xs uppercase tracking-wider"
+                    style={{ color: 'var(--text-tertiary)' }}
+                  >
                     Recent
                   </span>
                   {detail.recentInteractions.map((ir, idx) => (
@@ -606,17 +731,23 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
                       key={`${ir.tick}-${idx}`}
                       className="flex items-center gap-2 text-xs"
                     >
-                      <span className="text-amber-400/60 w-8 text-right flex-shrink-0">
+                      <span
+                        className="w-8 text-right flex-shrink-0"
+                        style={{ color: 'var(--text-muted)' }}
+                      >
                         t{ir.tick}
                       </span>
                       <span title={`Actor: ${ir.actorMove}`}>
                         {ir.actorMove === 'cooperate' ? '✓' : '✗'}
                       </span>
-                      <span className="text-amber-400/70">vs</span>
+                      <span style={{ color: 'var(--text-tertiary)' }}>vs</span>
                       <span title={`Target: ${ir.targetMove}`}>
                         {ir.targetMove === 'cooperate' ? '✓' : '✗'}
                       </span>
-                      <span className="text-amber-400/60 flex-1 truncate">
+                      <span
+                        className="flex-1 truncate"
+                        style={{ color: 'var(--text-muted)' }}
+                      >
                         {ir.stakes === 'high' ? '✦' : ''} {ir.context}
                       </span>
                     </div>
@@ -629,10 +760,11 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
 
         {/* Location Link */}
         <div className="text-xs">
-          <span className="text-amber-400/70">Location: </span>
+          <span style={{ color: 'var(--text-tertiary)' }}>Location: </span>
           <button
             onClick={() => onLocationClick(detail.locationId)}
-            className="text-amber-100 hover:text-amber-200 underline transition-colors"
+            className="underline transition-colors"
+            style={{ color: 'var(--accent-gold)' }}
           >
             {detail.locationName}
           </button>
@@ -641,27 +773,44 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
 
       {/* Activity Section */}
       {activity && (
-        <div className="px-4 py-2 border-t border-amber-900/20">
-          <div className="text-xs text-amber-400/70 mb-1">Activity</div>
+        <div
+          className="px-4 py-2"
+          style={{ borderTop: '1px solid var(--border-subtle)' }}
+        >
+          <div className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>
+            Activity
+          </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-amber-100 font-medium truncate flex-1">
+            <span
+              className="text-xs font-medium truncate flex-1"
+              style={{ color: 'var(--text-primary)' }}
+            >
               {activity.actionName}
             </span>
-            <span className="text-xs text-amber-400/60 whitespace-nowrap">
+            <span
+              className="text-xs whitespace-nowrap"
+              style={{ color: 'var(--text-muted)' }}
+            >
               {activity.stepLabel}
             </span>
           </div>
-          <div className="mt-1 h-1 bg-stone-700 rounded-full overflow-hidden">
+          <div
+            className="mt-1 h-1 rounded-full overflow-hidden"
+            style={{ background: 'var(--bg-raised)' }}
+          >
             <div
               className="h-full rounded-full transition-all duration-300"
               style={{
                 width: `${Math.round(activity.progressFraction * 100)}%`,
-                backgroundColor: activity.isContested ? '#dc2626' : '#d97706',
+                backgroundColor: activity.isContested ? 'var(--negative)' : 'var(--accent-gold)',
               }}
             />
           </div>
           {activity.isContested && activity.opponentName && (
-            <div className="text-xs text-red-400/70 mt-0.5">
+            <div
+              className="text-xs mt-0.5"
+              style={{ color: 'var(--negative)' }}
+            >
               Contested by {activity.opponentName}
             </div>
           )}
@@ -675,13 +824,22 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
 
       {/* Recent Activity Log */}
       {recentEntries.length > 0 && (
-        <div className="px-4 py-2 border-t border-amber-900/20">
+        <div
+          className="px-4 py-2"
+          style={{ borderTop: '1px solid var(--border-subtle)' }}
+        >
           <RecentActivityLog entries={recentEntries} lastViewedTick={lastViewedTick} />
         </div>
       )}
 
       {/* Action Row Footer */}
-      <div className="flex gap-2 px-4 py-3 bg-stone-800/50 border-t border-amber-900/30 flex-shrink-0">
+      <div
+        className="flex gap-2 px-4 py-3 flex-shrink-0"
+        style={{
+          background: 'var(--bg-raised)',
+          borderTop: '1px solid var(--border-subtle)',
+        }}
+      >
         <Button variant="secondary" size="sm" fullWidth onClick={onViewPsyche}>
           View Psyche
         </Button>
@@ -696,7 +854,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
 // ─── Trait Row Component ──────────────────────────────────────────
 
 function TraitRow({ trait }: { trait: TraitSummary }) {
-  const catColor = TRAIT_CATEGORY_COLORS[trait.category] ?? '#78716c';
+  const catColor = TRAIT_CATEGORY_COLORS[trait.category] ?? 'var(--text-muted)';
   const catLabel = TRAIT_CATEGORY_LABELS[trait.category] ?? trait.category;
 
   // Build domain contribution tooltip content
@@ -724,10 +882,13 @@ function TraitRow({ trait }: { trait: TraitSummary }) {
   return (
     <Tooltip content={tooltipContent || trait.description}>
       <div
-        className="flex items-center gap-2 px-2 py-1 rounded hover:bg-stone-800/60 transition-colors cursor-default"
+        className="flex items-center gap-2 px-2 py-1 rounded transition-colors cursor-default trait-row"
         style={{ borderLeft: `2px solid ${catColor}` }}
       >
-        <span className="text-xs text-amber-100 flex-1 truncate">
+        <span
+          className="text-xs flex-1 truncate"
+          style={{ color: 'var(--text-primary)' }}
+        >
           {trait.name}
         </span>
         <span
@@ -737,7 +898,10 @@ function TraitRow({ trait }: { trait: TraitSummary }) {
           {catLabel}
         </span>
         {trait.maxLevel > 1 && (
-          <span className="text-[10px] text-amber-400/50">
+          <span
+            className="text-[10px]"
+            style={{ color: 'var(--text-muted)' }}
+          >
             {trait.level}/{trait.maxLevel}
           </span>
         )}
@@ -771,23 +935,42 @@ function LeverageSection({ leverage }: { leverage: LeverageSummary }) {
   if (totalSecrets === 0 && totalFavors === 0) return null;
 
   return (
-    <div className="px-4 py-3 border-t border-amber-900/20">
+    <div
+      className="px-4 py-3"
+      style={{ borderTop: '1px solid var(--border-subtle)' }}
+    >
       <SectionHeading>Leverage</SectionHeading>
       <div className="space-y-2 mt-2">
 
         {leverage.secretsHeld.length > 0 && (
           <div>
-            <div className="text-[10px] uppercase tracking-wider text-amber-400/60 mb-1">
+            <div
+              className="text-[10px] uppercase tracking-wider mb-1"
+              style={{ color: 'var(--accent-gold)' }}
+            >
               Secrets held ({leverage.secretsHeld.length})
             </div>
             {leverage.secretsHeld.map((s, i) => (
               <div key={i} className="flex items-center gap-2 py-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500/70 flex-shrink-0" />
-                <span className="text-xs text-amber-100/80 flex-1 truncate">
+                <span
+                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                  style={{ background: 'var(--accent-gold)', opacity: 0.7 }}
+                />
+                <span
+                  className="text-xs flex-1 truncate"
+                  style={{ color: 'var(--text-primary)' }}
+                >
                   {SECRET_TYPE_LABELS[s.secretType] ?? s.secretType}
-                  <span className="text-amber-400/50 ml-1">on {s.subjectName}</span>
+                  <span style={{ color: 'var(--text-muted)', marginLeft: 4 }}>
+                    on {s.subjectName}
+                  </span>
                 </span>
-                <span className="text-[10px] text-amber-400/50">{magnitudeLabel(s.magnitude)}</span>
+                <span
+                  className="text-[10px]"
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  {magnitudeLabel(s.magnitude)}
+                </span>
               </div>
             ))}
           </div>
@@ -795,17 +978,33 @@ function LeverageSection({ leverage }: { leverage: LeverageSummary }) {
 
         {leverage.secretsAbout.length > 0 && (
           <div>
-            <div className="text-[10px] uppercase tracking-wider text-red-400/60 mb-1">
+            <div
+              className="text-[10px] uppercase tracking-wider mb-1"
+              style={{ color: 'var(--negative)' }}
+            >
               Exposed ({leverage.secretsAbout.length})
             </div>
             {leverage.secretsAbout.map((s, i) => (
               <div key={i} className="flex items-center gap-2 py-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500/70 flex-shrink-0" />
-                <span className="text-xs text-amber-100/60 flex-1 truncate">
+                <span
+                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                  style={{ background: 'var(--negative)', opacity: 0.7 }}
+                />
+                <span
+                  className="text-xs flex-1 truncate"
+                  style={{ color: 'var(--text-secondary)' }}
+                >
                   {SECRET_TYPE_LABELS[s.secretType] ?? s.secretType}
-                  <span className="text-amber-400/40 ml-1">known by {s.subjectName}</span>
+                  <span style={{ color: 'var(--text-muted)', marginLeft: 4 }}>
+                    known by {s.subjectName}
+                  </span>
                 </span>
-                <span className="text-[10px] text-amber-400/50">{magnitudeLabel(s.magnitude)}</span>
+                <span
+                  className="text-[10px]"
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  {magnitudeLabel(s.magnitude)}
+                </span>
               </div>
             ))}
           </div>
@@ -813,17 +1012,35 @@ function LeverageSection({ leverage }: { leverage: LeverageSummary }) {
 
         {leverage.favorsOwedToMe.length > 0 && (
           <div>
-            <div className="text-[10px] uppercase tracking-wider text-emerald-400/60 mb-1">
+            <div
+              className="text-[10px] uppercase tracking-wider mb-1"
+              style={{ color: 'var(--positive)' }}
+            >
               Favors owed ({leverage.favorsOwedToMe.length})
             </div>
             {leverage.favorsOwedToMe.map((f, i) => (
               <div key={i} className="flex items-center gap-2 py-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/70 flex-shrink-0" />
-                <span className="text-xs text-amber-100/80 flex-1 truncate">
+                <span
+                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                  style={{ background: 'var(--positive)', opacity: 0.7 }}
+                />
+                <span
+                  className="text-xs flex-1 truncate"
+                  style={{ color: 'var(--text-primary)' }}
+                >
                   {f.counterpartyName}
-                  {f.context && <span className="text-amber-400/40 ml-1">· {f.context}</span>}
+                  {f.context && (
+                    <span style={{ color: 'var(--text-muted)', marginLeft: 4 }}>
+                      · {f.context}
+                    </span>
+                  )}
                 </span>
-                <span className="text-[10px] text-amber-400/50">{magnitudeLabel(f.magnitude)}</span>
+                <span
+                  className="text-[10px]"
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  {magnitudeLabel(f.magnitude)}
+                </span>
               </div>
             ))}
           </div>
@@ -831,17 +1048,35 @@ function LeverageSection({ leverage }: { leverage: LeverageSummary }) {
 
         {leverage.favorsOwed.length > 0 && (
           <div>
-            <div className="text-[10px] uppercase tracking-wider text-stone-400/60 mb-1">
+            <div
+              className="text-[10px] uppercase tracking-wider mb-1"
+              style={{ color: 'var(--text-tertiary)' }}
+            >
               Owes favors ({leverage.favorsOwed.length})
             </div>
             {leverage.favorsOwed.map((f, i) => (
               <div key={i} className="flex items-center gap-2 py-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-stone-500/70 flex-shrink-0" />
-                <span className="text-xs text-amber-100/60 flex-1 truncate">
+                <span
+                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                  style={{ background: 'var(--text-muted)' }}
+                />
+                <span
+                  className="text-xs flex-1 truncate"
+                  style={{ color: 'var(--text-secondary)' }}
+                >
                   to {f.counterpartyName}
-                  {f.context && <span className="text-amber-400/40 ml-1">· {f.context}</span>}
+                  {f.context && (
+                    <span style={{ color: 'var(--text-muted)', marginLeft: 4 }}>
+                      · {f.context}
+                    </span>
+                  )}
                 </span>
-                <span className="text-[10px] text-amber-400/50">{magnitudeLabel(f.magnitude)}</span>
+                <span
+                  className="text-[10px]"
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  {magnitudeLabel(f.magnitude)}
+                </span>
               </div>
             ))}
           </div>

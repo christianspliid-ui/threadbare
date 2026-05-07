@@ -344,6 +344,13 @@
     background: linear-gradient(90deg, transparent, var(--accent-gold-dim), transparent);
   }
 
+  /* AgentDetail trait row hover — subtle bg lift for the per-trait listing
+     in AgentDetailPanel. Traits are not clickable, but the hover signals
+     "tooltip available". Replaces hover:bg-stone-800/60 from the pre-v7 pass. */
+  .trait-row:hover {
+    background-color: var(--bg-hover);
+  }
+
   /* ── LoL Universe Aesthetic ─────────────────────────────────────── */
 
   /* Panel with gold border accent — used on cards, sidebars, modals */
