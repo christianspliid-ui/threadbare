@@ -2,6 +2,7 @@
 > Updated 2026-05-07.
 
 ## Current Focus
+**THR-333 complete — Encounter UI Phase C4 scene-state panel shipped.** Added right-rail bottom surface components (`SceneStatePanel`, `ThreadStrip`, `DriftIndicator`, `DetectionThread`) with qualitative-only rendering of scene threads/factions/place/protagonist conditions, drift tier emphasis (soft/banner/becoming) with dismiss + fresh-threshold return, and detection thread escalation (notice/turn/encounter). Added 1920x1080 snapshot coverage in `SceneStatePanel.test.tsx`; full verification green (`npm test`, `npx tsc --noEmit`, `npx vite build`).
 **THR-343 complete — Encounter UI Phase G1 engine test hardening shipped.** Added new contract suite src/engine/__tests__/contracts/encounter-experience.contract.test.ts (choice-resolution + drift registration, detection threshold one-shot seeding, item consumption ordering, gates_to unlock behavior, hand-filter cascade, and 30-tick medium-map smoke) and extended Phase B unit suites for choice-resolution fail-soft NaN handling, hand-filter cascade/empty hand coverage, detection-pressure decay/clamp behavior, aftermath drift-register routing, callback pin-order enforcement, and prose-safe forecast factors. Verification gates green: 
 pm test 57.92s, 
 px tsc --noEmit, 
@@ -41,6 +42,7 @@ px vite build.
 - TB-071 Economy Second Pass · TB-069 Location NPCs · TB-051 Monster Encounters residual · TB-037 Onboarding
 
 Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Completed work: `Docs/project-history.md` + Linear "Done" state · Pre-Linear history: `.planning/BACKLOG_HISTORY.md`
+
 
 
 
