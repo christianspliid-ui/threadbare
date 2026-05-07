@@ -127,6 +127,22 @@ describe('resolveEncounterChoice', () => {
     });
   });
 
+  describe('fail-soft: undefined fields', () => {
+    it('does not throw when reach is undefined', () => {
+      expect(() => resolveEncounterChoice(
+        makeCommit({ reach: undefined as never }),
+        constantPrng(0.5),
+      )).not.toThrow();
+    });
+
+    it('does not throw when moralAxisPole is undefined', () => {
+      expect(() => resolveEncounterChoice(
+        makeCommit({ moralAxisPole: undefined as never }),
+        constantPrng(0.5),
+      )).not.toThrow();
+    });
+  });
+
   describe('output fields', () => {
     it('preserves agentId, encounterId, beatIndex', () => {
       const commit = makeCommit({ agentId: 'agt', encounterId: 'enc-42', beatIndex: 3 });

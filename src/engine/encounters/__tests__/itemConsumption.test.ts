@@ -16,6 +16,15 @@ function makeGraph(agentId: string, itemId?: string): WorldGraph {
 
 describe('consumeItemForChoice', () => {
   describe('happy path', () => {
+    it('removes the edge atomically — graph reflects removal before caller inspects return value', () => {
+      const g = makeGraph('agt', 'item-1');
+      expect(g.getOutgoingEdges('agt', 'possesses')).toHaveLength(1);
+      const result = consumeItemForChoice(g, 'agt', 'item-1', CTX);
+      // Edge is gone synchronously; any code running after this call sees the updated graph
+      expect(g.getOutgoingEdges('agt', 'possesses')).toHaveLength(0);
+      expect(result.consumed).toBe(true);
+    });
+
     it('returns consumed=true when the possesses edge exists', () => {
       const g = makeGraph('agt', 'item-1');
       const result = consumeItemForChoice(g, 'agt', 'item-1', CTX);

@@ -91,6 +91,16 @@ describe('phaseDetectionPressure', () => {
     expect(result.pendingEncounterSeeds).toHaveLength(1);
   });
 
+  it('detection_threshold_crossed trace carries regionId, fromPressure, and toPressure', () => {
+    phaseDetectionPressure(makeState([makeCommit()]));
+    const trace = getTraces().find(t => t.category === 'detection_threshold_crossed') as Record<string, unknown> | undefined;
+    expect(trace).toBeDefined();
+    expect(typeof trace!['regionId']).toBe('string');
+    expect(trace!['regionId']).toBe('region.alpha');
+    expect(typeof trace!['fromPressure']).toBe('number');
+    expect(typeof trace!['toPressure']).toBe('number');
+  });
+
   it('applies per-tick decay even without new commits', () => {
     const state = makeState([]);
     state.regionalDetectionPressure = [{ regionId: 'region.alpha', pressure: 1, lastUpdatedTick: 10 }];
