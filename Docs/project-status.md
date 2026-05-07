@@ -2,6 +2,7 @@
 > Updated 2026-05-07.
 
 ## Current Focus
+**THR-357 complete — branching encounter contract metadata migration shipped.** All 23 files in `src/data/encounters/` now emit encoded `EncounterContract` metadata from authored choice data, replacing default-inferred `moral_axis_pole` at adapter fallback. Added `encounter-contract-migration.test.ts` smoke coverage to assert every branching template loads encoded metadata and round-trips through `adaptUnifiedActionTemplateToEncounterContract` with explicit poles present on every choice.
 **THR-352 complete — Encounter UI Phase A3 keyframes canonicalized in runtime CSS.** Added missing `thrum-fade` and canonical aliases (`threadDraw`, `threadPulseTaut`, `dustMoteDrift`, `cardFlipReveal`, `pageDim8pct`, `breatheBrightNode`) in `src/index.css`, retained hyphen-case compatibility for v7 references, and annotated each keyframe with Moment/beat consumer comments for inspectability.
 **THR-331 complete — Encounter UI Phase C2: EncounterChoiceCard + OutcomeForecastBand + MoralAxisTilt.** Three new UI primitives in `src/components/Game/Encounter/` rendering the center-column divine-choice surface. Forecast band derives a 5-tier qualitative read (`doomed`/`perilous`/`uncertain`/`favorable`/`favored`) from a numeric `successProbability` prop and surfaces 1 factor by default, hover-expanding to up to `FORECAST_FACTORS_VISIBLE_HOVER_MAX = 4`; the numeric input is never displayed. Choice card renders the full §5.3 anatomy — sphere label · cost, god-verb, agent reaction, tilts-toward, `MoralAxisTilt` line (`↬ tilts toward CONQUEROR`-style), fail-forward (`↗ on fail — …`), optional consumes-item indicator. Sphere colour resolution uses the `data-reach` cascade in `src/index.css`; `quintessence` falls back to `--accent-gold`. Wired into `?view=styleguide` for visual verification at 1920×1080. 26 jsdom tests cover keyboard activation, selected-state border, all five tier labels, and a numeric-string regression check (`/[0-9]/`).
 **THR-351 complete — Encounter UI Phase A2 scaffold finalized.** Added callback-eligibility trace interface and explicit additive GameState scaffold fields (`regionalDetectionPressure`, `encounterSpotlight`) with safe defaults in `initializeGameState`, preserving legacy aliases for compatibility.
@@ -31,6 +32,5 @@
 - TB-071 Economy Second Pass · TB-069 Location NPCs · TB-051 Monster Encounters residual · TB-037 Onboarding
 
 Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Completed work: `Docs/project-history.md` + Linear "Done" state · Pre-Linear history: `.planning/BACKLOG_HISTORY.md`
-
 
 

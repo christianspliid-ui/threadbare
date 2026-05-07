@@ -585,3 +585,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - ✅ 2026-05-07: THR-351 shipped — finalized Encounter UI Phase A2 scaffold by adding callback-eligibility trace typing plus additive `regionalDetectionPressure`/`encounterSpotlight` GameState fields with safe game-init defaults (legacy aliases preserved).
 
 - ✅ 2026-05-07: THR-352 finalized Encounter UI Phase A3 CSS motion primitives in `src/index.css` (added missing `thrum-fade`, canonical alias keyframes, and consumer comments for Moment 1/2 beats) with full verification gates green.
+- ✅ 2026-05-07: THR-357 migrated all 23 branching encounter templates in `src/data/encounters/` to encoded EncounterContract metadata with authored `moral_axis_pole` values and added full-folder migration smoke coverage.
