@@ -17,6 +17,7 @@
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { FactionEncounterMeta } from '../types/faction';
+import { withEncounterContract } from './encounter-contract-builder';
 
 // ─── Constants ───────────────────────────────────────────────────────────
 
@@ -51,7 +52,7 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_META: ReadonlyMap<string, FactionEnco
 
 export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
-  {
+  withEncounterContract({
     id: 'mct.quest.market_survey',
     name: 'Market Survey',
     rarityTier: 1,
@@ -175,9 +176,9 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'mct.quest.negotiate_contract',
     name: 'Negotiate a Contract',
     rarityTier: 1,
@@ -301,9 +302,9 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'mct.quest.caravan_escort',
     name: 'Manage the Caravan',
     rarityTier: 1,
@@ -428,9 +429,9 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'mct.quest.settle_dispute',
     name: 'Settle a Trade Dispute',
     rarityTier: 1,
@@ -554,9 +555,9 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'mct.quest.appraise_goods',
     name: 'Appraise Rare Goods',
     rarityTier: 1,
@@ -681,7 +682,7 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         ],
       },
     },
-  },
+  }),
 ];
 
 // ─── Senior Quest Templates ───────────────────────────────────────────────
@@ -1430,7 +1431,7 @@ export const MERCHANT_CONSORTIUM_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
 
 export const MERCHANT_CONSORTIUM_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
-  {
+  withEncounterContract({
     id: 'mct.social.wine_tasting',
     name: 'Wine Tasting Evening',
     rarityTier: 1,
@@ -1530,9 +1531,9 @@ export const MERCHANT_CONSORTIUM_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'mct.social.ledger_review',
     name: 'Quarterly Ledger Review',
     rarityTier: 1,
@@ -1630,9 +1631,9 @@ export const MERCHANT_CONSORTIUM_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'mct.social.guild_feast',
     name: 'Consortium Feast',
     rarityTier: 1,
@@ -1732,7 +1733,7 @@ export const MERCHANT_CONSORTIUM_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 ];
 
 // ─── Join & Promotion ─────────────────────────────────────────────────────

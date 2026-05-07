@@ -600,3 +600,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - ✅ THR-341 canonical docs sweep complete (Encounter UI promotion + Fate Forecast supersession + encounter canon sync).
 - ✅ 2026-05-07: THR-343 shipped — Encounter UI Phase G1 engine test hardening (new encounter-experience contract suite + Phase B unit coverage extensions; npm test 57.92s, tsc clean, build clean).
 
+- ✅ 2026-05-07: THR-362 shipped shared faction encounter contract-builder extraction + faction template metadata migration (Pass 2) with round-trip smoke tests.

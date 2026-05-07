@@ -17,6 +17,7 @@
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { FactionEncounterMeta } from '../types/faction';
+import { withEncounterContract } from './encounter-contract-builder';
 import {
   FACTION_PROSE_SEED_DELAY_QUEST_TICKS,
   FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS,
@@ -56,7 +57,7 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_META: ReadonlyMap<string, FactionEncoun
 
 export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
-  {
+  withEncounterContract({
     id: 'ts.quest.tend_shrine',
     name: 'Tend the Shrine',
     rarityTier: 1,
@@ -176,9 +177,9 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'ts.quest.heal_the_sick',
     name: 'Heal the Sick',
     rarityTier: 1,
@@ -302,9 +303,9 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'ts.quest.meditate_on_spheres',
     name: 'Meditate on the Spheres',
     rarityTier: 1,
@@ -431,9 +432,9 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'ts.quest.consecrate_ground',
     name: 'Consecrate the Ground',
     rarityTier: 1,
@@ -572,9 +573,9 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'ts.quest.copy_scriptures',
     name: 'Copy the Scriptures',
     rarityTier: 1,
@@ -709,7 +710,7 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 ];
 
 // ─── Senior Quest Templates ───────────────────────────────────────────────
@@ -1529,7 +1530,7 @@ export const TEMPLE_OF_SPHERES_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
 
 export const TEMPLE_OF_SPHERES_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
-  {
+  withEncounterContract({
     id: 'ts.social.evening_prayer',
     name: 'Evening Prayer',
     rarityTier: 1,
@@ -1635,9 +1636,9 @@ export const TEMPLE_OF_SPHERES_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'ts.social.alms_giving',
     name: 'Alms Giving',
     rarityTier: 1,
@@ -1746,9 +1747,9 @@ export const TEMPLE_OF_SPHERES_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'ts.social.theological_debate',
     name: 'Theological Debate',
     rarityTier: 1,
@@ -1888,7 +1889,7 @@ export const TEMPLE_OF_SPHERES_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 ];
 
 // ─── Lifecycle Templates ──────────────────────────────────────────────────

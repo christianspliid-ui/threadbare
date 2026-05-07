@@ -11,6 +11,7 @@
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { FactionEncounterMeta } from '../types/faction';
+import { withEncounterContract } from './encounter-contract-builder';
 
 // ─── Constants ───────────────────────────────────────────────────────────
 
@@ -53,7 +54,7 @@ export const THIEVES_GUILD_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterM
 export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── Standard Quests (Pickpocket+) ──────────────────────────────────
 
-  {
+  withEncounterContract({
     id: 'tg.quest.pocket_run',
     name: 'Pocket Run',
     rarityTier: 1,
@@ -173,9 +174,9 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'tg.quest.fence_goods',
     name: 'Fence Stolen Goods',
     rarityTier: 1,
@@ -289,9 +290,9 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'tg.quest.case_the_mark',
     name: 'Case the Mark',
     rarityTier: 2,
@@ -407,9 +408,9 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'tg.quest.warehouse_raid',
     name: 'Warehouse Raid',
     rarityTier: 2,
@@ -537,9 +538,9 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'tg.quest.blackmail_ledger',
     name: 'Blackmail Ledger',
     rarityTier: 2,
@@ -670,11 +671,11 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
   // ── Senior Quests (Shadowblade+) ─────────────────────────────────
 
-  {
+  withEncounterContract({
     id: 'tg.senior.jewel_heist',
     name: 'The Jewel Heist',
     rarityTier: 3,
@@ -830,9 +831,9 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'tg.senior.smuggler_route',
     name: 'Establish Smuggler Route',
     rarityTier: 2,
@@ -948,9 +949,9 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'tg.senior.noble_con',
     name: 'The Noble Con',
     rarityTier: 3,
@@ -1090,11 +1091,11 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
   // ── Elite Quests (Guildmaster+) ────────────────────────────────────
 
-  {
+  withEncounterContract({
     id: 'tg.elite.vault_break',
     name: 'The Vault Break',
     rarityTier: 3,
@@ -1275,9 +1276,9 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'tg.elite.shadow_war',
     name: 'Shadow War',
     rarityTier: 3,
@@ -1436,13 +1437,13 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 ];
 
 // ─── Social Encounters ──────────────────────────────────────────────────
 
 export const THIEVES_GUILD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
-  {
+  withEncounterContract({
     id: 'tg.social.dice_game',
     name: 'Back-Alley Dice',
     rarityTier: 1,
@@ -1537,9 +1538,9 @@ export const THIEVES_GUILD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'tg.social.fence_deal',
     name: 'Meet the Fence',
     rarityTier: 1,
@@ -1633,9 +1634,9 @@ export const THIEVES_GUILD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'tg.social.rumor_trade',
     name: 'Trade Rumors',
     rarityTier: 1,
@@ -1733,7 +1734,7 @@ export const THIEVES_GUILD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 ];
 
 // ─── Join & Promotion ───────────────────────────────────────────────────
