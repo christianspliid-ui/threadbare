@@ -20,6 +20,12 @@ For **linear template encounters** (guild, social, tavern, combat, borderland �
 
 **Vault and documentation:** All encounter documentation lives in the Obsidian vault (`TheFantasyWorldSimulator/Systems/`). There are no Notion encounter pages; Notion content was migrated to Obsidian in April 2026.
 
+## Step 0 — Read the Canon page first
+
+Before any other reference material, read `Docs/canon/encounters.md`. It is the per-domain Step-0 entrypoint and points to the current spec, current rejected approaches, and current open questions. Everything below ("Systemic Wiring", "Game Design Direction Enforcement", etc.) is material the Canon page links to, and should be read after the Canon page, not instead of it.
+
+If `Docs/canon/encounters.md` is missing or inaccessible, fall back to the pre-read list below and log the missing Canon page as a drift signal (open a `drift-scan`-labeled Linear issue per the canonical-documentation-strategy plan).
+
 ---
 
 ## Systemic Wiring — READ BEFORE AUTHORING
