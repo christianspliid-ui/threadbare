@@ -274,7 +274,7 @@ Subsequent tickets follow the same shape with phase-appropriate file lists and d
 
 THR-302 chose Option C (retain authored encounter-package taxonomy in CMS, defer metadata-filter contract work to THR-301 follow-up). This phasing plan honors that defer by filing F4 — *CMS metadata-filter contract finalize* — as a Phase F ticket.
 
-F4's job: settle whether `narrativeLayer: 'encounter'` (currently never set) becomes the canonical filter signal (Option A from THR-302's plan), or whether a side-table id registry is preferred (Option B), or whether the authored taxonomy stays as-is permanently (Option C made permanent). Decision lives in F4, not pre-empted here.
+F4 resolved 2026-05-07 (THR-342): **Option C made permanent.** Authored encounter-package imports remain the CMS taxonomy source; no metadata-filter contract is migrated. Resolution doc: `Docs/plans/2026-05-07-thr-F4-cms-metadata-filter-spec.md`. Reversal triggers documented there.
 
 ### 7.2 Vault-side `Systems/Encounter System.md` update (from THR-302 impediment #113)
 

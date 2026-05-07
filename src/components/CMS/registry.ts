@@ -33,8 +33,12 @@ import {
 } from '../../types/npc';
 
 // Encounters
-// THR-302 Option C: keep authored encounter-package imports as the CMS taxonomy source.
-// We intentionally defer metadata-driven registry filtering to THR-301 follow-up.
+// THR-342 (Phase F4) made Option C permanent: keep authored encounter-package imports
+// as the CMS taxonomy source. Reasons:
+//   - The 8-import structure mirrors how authors think about encounter packages.
+//   - No runtime engine system needs to filter UNIFIED_ACTION_TEMPLATES by encounter-vs-non-encounter.
+//   - Encounter UI (THR-301 Phases C/D/E) consumes encounter arrays directly, not via CMS filtering.
+// Reversal triggers documented in Docs/plans/2026-05-07-thr-F4-cms-metadata-filter-spec.md §1.
 import { ENCOUNTER_TEMPLATES, ENCOUNTER_DIFFICULTY_TIERS } from '../../data/encounter-content';
 import { SOCIAL_ENCOUNTER_TEMPLATES } from '../../data/social-encounter-content';
 import * as colocation from '../../data/colocation-content';
