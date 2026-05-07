@@ -183,3 +183,4 @@ Verification: 2026-04-28 run from clean origin/main worktree (pickup/thr-280): *
 
 
 
+| 115 | 1 | 2026-05-07 | dependency | Linear MCP in this session still exposes no create-comment method (read/delete only), so required human-readable completion comments cannot be posted from automation runs. | THR-328 closeout could not post the expected completion comment directly on Linear despite successful implementation/verification. | S | Yes | Use Fixes THR-328 commit-body auto-close and record completion in repo automation logs as fallback; add comment-write support to the Linear connector for executor closeout parity. | THR-328 automation closeout |
