@@ -2,6 +2,7 @@
 > Updated 2026-05-07.
 
 ## Current Focus
+**THR-330 complete — Encounter UI Phase C1 scaffold landed.** Added `EncounterScreen` (440px hero rail + flex center + 540px right rail + 100px bottom strip), `EiraHeroPanel`, and `CapabilityStrip` with jsdom coverage for shell zones and protagonist sections.
 **THR-338 complete — Encounter UI Phase E2: five typed detail page instances (Encounter Experience).** Engine: `detailPageGenerator` (cached, fail-soft), `detailPageResolvers` (graph-walking section resolvers per `(pageKind, typeId)` row + mandatory-floor fallback resolvers), schema registry in `src/data/detailPageTemplates.ts`, fallback prose pools in `src/data/detail-page-fallback-templates.ts`, empty `SHOWCASE_AUTHORING` stub in `src/data/detail-page-showcase.ts` for THR-318 Stream 2. UI: `useOpenDetailPage(gameState)` hook returning typed `openActor/Item/Faction/Place/Event/Ref` callbacks; `DetailPageOpenerContext` lets the Section dispatcher route chip / event-card / `data-term` clicks through a single provider. Tests: 13 generator unit tests + 12 integration snapshot tests at 1920×1080 covering all 5 kinds + 4-deep stack + chip-click → opener invocation. 10,836 tests pass; tsc clean; vite build green. PR pending.
 
 **Encounter Experience — active:** THR-338 ✅ (E2 five typed detail pages). Recent: THR-323 (B1 choice resolution + drift), THR-324 (B2 outcome forecast), THR-325 (B3 hand filter), THR-337 (E1 DetailModal shell). Plan docs landing for the remaining phase suite.

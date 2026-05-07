@@ -28,6 +28,15 @@
 | GameState scaffolding | `src/types/gameState.ts` / `src/engine/gameInit.ts` | Adds and initializes `archetypeDrift`, `regionDetection`, and optional `spotlightedAgent`. |
 | Ascendant hand filter cascade | `src/engine/encounters/handFilter.ts`, `src/engine/encounters/placeGating.ts`, `src/engine/orchestrator/phaseAscendantHandFilter.ts` | Computes playable/dimmed/hidden partition for encounter-scoped ascendant hand, including author-pinned eligibility override and `hand_filtered` trace partition telemetry. |
 
+### Encounter UI Shell (THR-330, Phase C1)
+
+| Surface | Path | Notes |
+|---|---|---|
+| Layout shell | `src/components/Game/Encounter/EncounterScreen.tsx` | Three-zone grid (440px hero rail + flex-1 center + 540px right rail) + 100px bottom strip. Exports `ENCOUNTER_SCREEN_LAYOUT` constants. **Not yet wired to GameView — C1 scope. Full data wiring in Phase F2 (THR-TBD).** |
+| Hero panel | `src/components/Game/Encounter/EiraHeroPanel.tsx` | Left-rail protagonist panel: portrait fallback, name/subtitle/status, capability strips, items, active vow, recent moments, registration slot for aftermath UI. |
+| Capability strip | `src/components/Game/Encounter/CapabilityStrip.tsx` | Single-row reach display: sphere label, dot pips (filled/empty), narrative hint. |
+| Verification coverage | `src/components/Game/Encounter/__tests__/EncounterScreen.test.tsx` | Shell zones data-testid presence, `BOTTOM_STRIP_HEIGHT_PX` constraint, protagonist panel sections. |
+
 ### Detail Pages (THR-337, Phase E1)
 
 | Surface | Path | Notes |
