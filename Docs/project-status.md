@@ -2,6 +2,7 @@
 > Updated 2026-05-07.
 
 ## Current Focus
+**THR-329 complete — Encounter UI Phase B7 callback eligibility computation shipped.** Added `src/engine/callbackEligibility.ts` as a deterministic pure scoring module that resolves “moments that could echo” with author-pinned `callback_candidates[]` priority and graph-derived slack fill up to 3 candidates. Ranking uses named tunable constants for recency decay (50+ ticks => 0.5x), beat-context relevance overlap (cast/place/faction/sphere), and structural/incidental emotional weighting (1.5x/1.0x), with fail-soft empty-history handling and deterministic tie-break ordering. Added focused tests in `src/engine/__tests__/callbackEligibility.test.ts` for pinned override, heuristic ranking, tie-breaking, and empty-history behavior.
 **THR-326 complete — Encounter UI Phase B4 regional detection pressure shipped.** Added a dedicated `phaseDetectionPressure` run before `phaseChoiceResolution` to apply per-choice pressure gain by region, per-tick decay, threshold crossing traces (`detection_threshold_crossed`), and rival encounter seed enqueue at encounter threshold. Added deterministic helper module coverage and surfaced `regionalDetectionPressure` in DebugPanel Encounter Seeds tab for inspectability.
 **THR-357 complete — branching encounter contract metadata migration shipped.** All 23 files in `src/data/encounters/` now emit encoded `EncounterContract` metadata from authored choice data, replacing default-inferred `moral_axis_pole` at adapter fallback. Added `encounter-contract-migration.test.ts` smoke coverage to assert every branching template loads encoded metadata and round-trips through `adaptUnifiedActionTemplateToEncounterContract` with explicit poles present on every choice.
 **THR-352 complete — Encounter UI Phase A3 keyframes canonicalized in runtime CSS.** Added missing `thrum-fade` and canonical aliases (`threadDraw`, `threadPulseTaut`, `dustMoteDrift`, `cardFlipReveal`, `pageDim8pct`, `breatheBrightNode`) in `src/index.css`, retained hyphen-case compatibility for v7 references, and annotated each keyframe with Moment/beat consumer comments for inspectability.
@@ -33,4 +34,3 @@
 - TB-071 Economy Second Pass · TB-069 Location NPCs · TB-051 Monster Encounters residual · TB-037 Onboarding
 
 Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Completed work: `Docs/project-history.md` + Linear "Done" state · Pre-Linear history: `.planning/BACKLOG_HISTORY.md`
-
