@@ -21,7 +21,7 @@
 - **Encounter Format Migration (Now):** ✅ Phases 0-9 complete. All guilds migrated.
 - **Content Architecture (Now):** ✅ THR-86/88/239 shipped.
 - **UI Visual Overhaul — Design System v1 (Now):** ✅ Project complete.
-- **Continuous Improvement (Now):** THR-303/305/306/307/309/311/312/313/314/315/316/355 ✅. THR-304 In Implementation Planning (Phase 5a vault propagation + Phase 5b repo pending).
+- **Continuous Improvement (Now):** THR-303/305/306/307/309/311/312/313/314/315/316/355/358 ✅. THR-304 In Implementation Planning (Phase 5a vault propagation + Phase 5b repo pending).
 - **Social Systems Expansion (Now):** THR-28/27/30/51/29/41/34/31/35 shipped. ✅ THR-254/253. THR-78 queued.
 - **Thematic Pressure & Living World (Next):** ✅ THR-19/122/125/126/80/128/127. THR-87 blocked by THR-116.
 

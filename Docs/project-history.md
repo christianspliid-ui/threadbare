@@ -591,3 +591,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - ✅ 2026-05-07: THR-329 shipped callback eligibility computation (`src/engine/callbackEligibility.ts`) with author-pinned override, graph-derived ranking (recency/relevance/emotional weighting), deterministic tie-breaks, and focused unit coverage.
 - ✅ 2026-05-07: THR-355 Phase 1 canon convention closeout — verified all deliverables from THR-305 are complete and accurate; added phasing plan pointer to `Docs/canon/encounters.md` Active design plans.
 - ✅ 2026-05-07: THR-332 shipped Encounter UI C3 right-rail primitives (AscendantHand + CastRail + CastTile) with snapshot coverage for cast and hand state boundaries.
+- ✅ 2026-05-07: THR-358 wired encounter-pipeline skill to canon-first Step 0 and added advisory canon staleness checker (`npm run check:canon-staleness`).
