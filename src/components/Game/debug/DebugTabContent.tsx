@@ -13,7 +13,7 @@ import type { StrategicRuntimeState, BehaviorFamily } from '../../../types/strat
 import type { OmenState } from '../../../types/omen';
 import type { DoomIdentityMatrix } from '../../../types/doomIdentity';
 import type { HiddenMark, PendingEncounterSeed } from '../../../types/unifiedAction';
-import type { TickEvent, RegionDetectionState } from '../../../types/gameState';
+import type { TickEvent, RegionDetectionState, ArchetypeDrift } from '../../../types/gameState';
 import {
   BEHAVIOR_FAMILY_PRESENTATION,
   getBehaviorFamilyPresentation,
@@ -40,11 +40,16 @@ import { RecentEventsView } from './RecentEventsView';
 import { ShellsDebugTab } from './ShellsDebugTab';
 import { CompositionView } from './CompositionView';
 import { PhasesDebugTab } from './PhasesDebugTab';
+import { EncounterChoiceInspector } from './EncounterChoiceInspector';
+import { DriftVisualiser } from './DriftVisualiser';
+import { HandStateInspector } from './HandStateInspector';
+import { DetectionStateInspector } from './DetectionStateInspector';
+import { ForecastFactorsInspector } from './ForecastFactorsInspector';
 import { EMPTY_STATE_STYLE } from './debugPanelStyles';
 import type { KnowsClueOfEdgeProperties } from '../../../types/knowledge';
 import type { FlipTableRuntimeState } from '../../../types/contentShells';
 
-export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events' | 'shells' | 'compositions' | 'phases';
+export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events' | 'shells' | 'compositions' | 'phases' | 'choices' | 'drift' | 'hand' | 'detection' | 'forecast';
 
 export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'feed', label: 'Feed' }, { id: 'agent-follow', label: 'Agent' },
@@ -60,6 +65,11 @@ export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'shells', label: 'Shells' },
   { id: 'compositions', label: 'Compositions' },
   { id: 'phases', label: 'Phases' },
+  { id: 'choices', label: 'Choices' },
+  { id: 'drift', label: 'Drift' },
+  { id: 'hand', label: 'Hand' },
+  { id: 'detection', label: 'Detection' },
+  { id: 'forecast', label: 'Forecast' },
 ];
 
 export interface DebugTabContentProps {
@@ -98,8 +108,10 @@ export interface DebugTabContentProps {
   hiddenMarks?: readonly HiddenMark[];
   /** Pending encounter seeds — inspected in the Seeds tab (THR-136). */
   pendingEncounterSeeds?: readonly PendingEncounterSeed[];
-  /** Detection pressure state by region — shown in the Seeds tab (THR-326). */
+  /** Detection pressure state by region — shown in the Seeds tab (THR-326) and Detection inspector (THR-339). */
   regionalDetectionPressure?: readonly RegionDetectionState[];
+  /** Per-agent archetype drift positions — shown in the Drift inspector (THR-339). */
+  archetypeDrift?: readonly ArchetypeDrift[];
   /** Active delves — inspected in the Ruins tab (THR-152). */
   activeDelves?: readonly import('../../../engine/ruins/delveTypes').ActiveDelve[];
   /** Lazy getter so the recent-events debug tab can opt-in to stream subscription. */
@@ -120,7 +132,7 @@ export function DebugTabContent({
   getWebGLDiagnostics, getZoomLevel, showOrganicShore, onToggleOrganicShore,
   encounterNotifications, pendingVignettes, seed, sphereAggregate, agentKnowledge,
   retinueAgents, strategicState, omenState, doomIdentityMatrix,
-  hiddenMarks, pendingEncounterSeeds, regionalDetectionPressure, activeDelves,
+  hiddenMarks, pendingEncounterSeeds, regionalDetectionPressure, archetypeDrift, activeDelves,
   getRecentEvents, flipTableStates, activeCompositions, doomClockStage,
 }: DebugTabContentProps) {
   if (viewMode === 'omens') return <OmenDebugTab omenState={omenState} currentTick={currentTick} doomIdentityMatrix={doomIdentityMatrix} />;
@@ -161,6 +173,11 @@ export function DebugTabContent({
   if (viewMode === 'shells') return <ShellsDebugTab flipTableStates={flipTableStates} currentTick={currentTick} focusedAgentId={effectiveAgentId} />;
   if (viewMode === 'compositions') return <CompositionView activeCompositions={activeCompositions} currentTick={currentTick} doomClockStage={doomClockStage} />;
   if (viewMode === 'phases') return <PhasesDebugTab traces={allTraces as TraceEntry[]} />;
+  if (viewMode === 'choices') return <EncounterChoiceInspector traces={allTraces as TraceEntry[]} retinueAgents={retinueAgents} />;
+  if (viewMode === 'drift') return <DriftVisualiser archetypeDrift={archetypeDrift} traces={allTraces as TraceEntry[]} retinueAgents={retinueAgents} />;
+  if (viewMode === 'hand') return <HandStateInspector traces={allTraces as TraceEntry[]} />;
+  if (viewMode === 'detection') return <DetectionStateInspector regionalDetectionPressure={regionalDetectionPressure} traces={allTraces as TraceEntry[]} currentTick={currentTick} />;
+  if (viewMode === 'forecast') return <ForecastFactorsInspector traces={allTraces as TraceEntry[]} />;
   if (viewMode === 'cli') return <CommandTab retinueAgents={retinueAgents} followAgentId={effectiveAgentId} />;
   if (viewMode === 'strategic') return <StrategicDebugTab strategicState={strategicState} graph={graph} effectiveAgentId={effectiveAgentId} currentTick={currentTick} />;
   if (viewMode === 'social') {

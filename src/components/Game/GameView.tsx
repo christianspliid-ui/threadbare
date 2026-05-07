@@ -3296,6 +3296,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             hiddenMarks={gameState.hiddenMarks}
             pendingEncounterSeeds={gameState.pendingEncounterSeeds}
             regionalDetectionPressure={gameState.regionalDetectionPressure}
+            archetypeDrift={gameState.archetypeDrift}
             activeDelves={gameState.activeDelves}
             getRecentEvents={getRecentEvents}
             flipTableStates={gameState.flipTableStates}
