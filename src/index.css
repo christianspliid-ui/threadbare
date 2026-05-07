@@ -551,46 +551,113 @@
   to { opacity: 0; transform: translateY(-8px); }
 }
 
+/* Consumer: Moment 1 resolve beat winner ring; reused by Moment 2 registration settle pulses. */
 @keyframes pulseGoldFlare {
   0% { box-shadow: 0 0 0 0 rgba(212, 160, 64, 0); }
   50% { box-shadow: 0 0 12px 4px rgba(212, 160, 64, 0.4); }
   100% { box-shadow: 0 0 0 0 rgba(212, 160, 64, 0); }
 }
 
+/* Consumer: doom-tinted negative pulse outside encounter UI. */
 @keyframes pulseDoomFlare {
   0% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0); }
   50% { box-shadow: 0 0 12px 4px rgba(248, 113, 113, 0.4); }
   100% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0); }
 }
 
-/* Encounter UI Phase A3 keyframes source:
-   Docs/plans/v7-design-pass/index.html (plus canonical width oscillation note for thread-pulse). */
+/* Encounter UI Phase A3 keyframes.
+   Source: Docs/plans/v7-design-pass/index.html + parts/moment1-reveal.jsx + parts/moment2-aftermath.jsx.
+   Foundation only: consumed later by C1/D1/D2 surfaces. */
+
+/* Consumer: Moment 1 inhale beat ambient thrum fog layer opacity curve. */
+@keyframes thrum-fade {
+  0% { opacity: 0; }
+  12% { opacity: 0.85; }
+  100% { opacity: 0.3; }
+}
+
+/* Consumer: Moment 1 inhale beat page-level 8% dim overlay. */
+@keyframes pageDim8pct {
+  from { opacity: 0; }
+  to { opacity: 0.08; }
+}
+
+/* Consumer: Moment 1 taut beat bright node breathing on thread endpoints. */
+@keyframes breatheBrightNode {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.66); }
+}
+
+/* Consumer: Moment 1 threads-draw beat (canonical camelCase alias). */
+@keyframes threadDraw {
+  from { stroke-dashoffset: 600; }
+  to { stroke-dashoffset: 0; }
+}
+
+/* Consumer: Moment 1 threads-draw beat (v7 hyphen-case reference). */
 @keyframes thread-draw {
   from { stroke-dashoffset: 600; }
   to { stroke-dashoffset: 0; }
 }
 
-@keyframes thread-pulse {
-  0%, 100% { stroke-width: 2; }
-  50% { stroke-width: 2.8; }
+/* Consumer: Moment 1 tension/taut beat width oscillation (canonical camelCase alias). */
+@keyframes threadPulseTaut {
+  0%, 100% { stroke-width: 1.2; }
+  50% { stroke-width: 2.2; }
 }
 
+/* Consumer: Moment 1 tension/taut beat width oscillation (legacy hyphen-case alias). */
+@keyframes thread-pulse {
+  0%, 100% { stroke-width: 1.2; }
+  50% { stroke-width: 2.2; }
+}
+
+/* Consumer: Moment 1 dust motes during the taut beat (canonical camelCase alias). */
+@keyframes dustMoteDrift {
+  0% { transform: translate(0, 0); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translate(var(--mx, 0), var(--my, 0)); opacity: 0; }
+}
+
+/* Consumer: Moment 1 dust motes during the taut beat (v7 hyphen-case reference). */
 @keyframes mote-drift {
   0% { transform: translate(0, 0); opacity: 0; }
   20% { opacity: 1; }
   100% { transform: translate(var(--mx, 0), var(--my, 0)); opacity: 0; }
 }
 
+/* Consumer: Moment 2 reputation-score tile soft horizontal pull (single taut/relax cycle). */
 @keyframes pull-taut {
   0%, 100% { transform: scaleX(1); }
   50% { transform: scaleX(1.02); }
 }
 
+/* Consumer: Moment 1 resolve winner thread brightening hold. */
 @keyframes hold-glow {
   0%, 100% { filter: drop-shadow(0 0 6px currentColor); }
   50% { filter: drop-shadow(0 0 12px currentColor); }
 }
 
+/* Consumer: Moment 2 aftermath effect-card landing (canonical camelCase alias). */
+@keyframes cardFlipReveal {
+  0% {
+    opacity: 0;
+    transform: rotateX(80deg) translateY(-6px);
+    filter: brightness(0.6);
+  }
+  60% {
+    opacity: 1;
+    transform: rotateX(-6deg) translateY(0);
+    filter: brightness(1.15);
+  }
+  100% {
+    opacity: 1;
+    transform: rotateX(0) translateY(0);
+    filter: brightness(1);
+  }
+}
+
+/* Consumer: Moment 2 aftermath effect-card landing (v7 hyphen-case reference). */
 @keyframes card-flip-in {
   0% {
     opacity: 0;
@@ -609,6 +676,7 @@
   }
 }
 
+/* Consumer: Moment 2 retinted pulse ring for effect registration settle states. */
 @keyframes mark-pulse {
   0%, 100% { box-shadow: 0 0 0 0 var(--mark-color, var(--accent-gold-dim)); }
   50% { box-shadow: 0 0 22px 1px var(--mark-color, var(--accent-gold-dim)); }
