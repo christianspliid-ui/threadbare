@@ -2,7 +2,6 @@
 > Updated 2026-05-07.
 
 ## Current Focus
-**THR-341 complete — Encounter UI canonical doc sweep landed.** Promoted `Systems/Encounter UI.md` from the v7 canonical spec, superseded `Systems/Fate Forecast.md` to forward to encounter outcome forecast band, updated `Systems/Action Narrative System.md`/`Systems/Encounter System.md`/`Systems/Intervention Effects.md` to current encounter-ui architecture, and revised `Vision/taste-profile.md` away from fixed three-verb framing.
 **THR-359 complete — Phase 5b repo-side cosmological canon cleanup.** Removed duplicated Part 6/7 tail block from `state-of-game-design` skill (both mirrors). Inverted stale 9-reaches guidance in encounter-toolkit vision audit §4.4/§7. Added pre-flight verification note to cosmological drift audit. Follow-on THR-360 filed for code-side Category B residue.
 **THR-332 complete — Encounter UI Phase C3 right rail shipped.** Added AscendantHand (playable/dimmed/hidden card states from B3 partition + three-card disclosure + rare pulse + direct-commit callback), CastRail grouped by attention_priority (primary/background/offstage), and CastTile with relationship-node-first "to her" fallback to edge sentiment plus E1/E2 click-gate TODO marker. Added 1920x1080 snapshot coverage for cast cardinalities (0/1/4/6) and hand states (0/3/7+, dimmed prereq).
 **THR-355 complete — Phase 1 canon convention verified and closed.** Confirmed all THR-304 Phase 1 deliverables (`Docs/canon/README.md`, `encounters.md`, `cosmology.md`, CLAUDE.md Canon Pages table, documentation-ownership.md entry) are complete from prior THR-305 work. Added missing `2026-05-05-encounter-ui-implementation-phasing.md` pointer to `Docs/canon/encounters.md` Active design plans.
@@ -30,7 +29,7 @@
 ## Archived to project-history.md
 - THR-322/321/320/315/309/307/308/306/302/305/301/299/298/297/296/294/282/238/109/79/108/107/104/103/106/290/102/280/285/286/283/287/276/284/277/281/211/243/272/212/210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
 - 2026-05-06 batch: THR-311, THR-312, THR-313, THR-314, THR-315, THR-316, THR-317, THR-320, THR-321, THR-322, THR-323, THR-336
-- 2026-05-07 batch: THR-324, THR-325, THR-329, THR-349, THR-350, THR-354, THR-355, THR-356, THR-357, THR-358, THR-359
+- 2026-05-07 batch: THR-324, THR-325, THR-329, THR-341, THR-349, THR-350, THR-354, THR-355, THR-356, THR-357, THR-358, THR-359
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
