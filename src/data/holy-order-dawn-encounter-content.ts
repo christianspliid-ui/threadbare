@@ -14,6 +14,7 @@
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { FactionEncounterMeta } from '../types/faction';
+import { withEncounterContract } from './encounter-contract-builder';
 import {
   FACTION_PROSE_SEED_DELAY_QUEST_TICKS,
   FACTION_PROSE_HIDDEN_MARK_DEFAULT_SEVERITY,
@@ -58,7 +59,7 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_META: ReadonlyMap<string, FactionEncounte
 
 export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
-  {
+  withEncounterContract({
     id: 'hod.quest.temple_vigil',
     name: 'Temple Vigil',
     rarityTier: 1,
@@ -206,9 +207,9 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'hod.quest.purify_shrine',
     name: 'Purify a Shrine',
     rarityTier: 1,
@@ -350,9 +351,9 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'hod.quest.escort_pilgrims',
     name: 'Escort Pilgrims',
     rarityTier: 1,
@@ -510,9 +511,9 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'hod.quest.slay_abomination',
     name: 'Slay the Abomination',
     rarityTier: 1,
@@ -661,9 +662,9 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'hod.quest.deliver_judgment',
     name: 'Deliver Judgment',
     rarityTier: 1,
@@ -854,7 +855,7 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 ];
 
 // ─── Senior Quests ───────────────────────────────────────────────────────
@@ -1775,7 +1776,7 @@ export const HOLY_ORDER_DAWN_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
 
 export const HOLY_ORDER_DAWN_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
-  {
+  withEncounterContract({
     id: 'hod.social.dawn_prayer',
     name: 'Dawn Prayer',
     rarityTier: 1,
@@ -1846,9 +1847,9 @@ export const HOLY_ORDER_DAWN_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'hod.social.blessing_ceremony',
     name: 'Blessing Ceremony',
     rarityTier: 1,
@@ -1920,9 +1921,9 @@ export const HOLY_ORDER_DAWN_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'hod.social.tend_wounded',
     name: 'Tend the Wounded',
     rarityTier: 1,
@@ -2000,7 +2001,7 @@ export const HOLY_ORDER_DAWN_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 ];
 
 // ─── Join & Promotion ────────────────────────────────────────────────────

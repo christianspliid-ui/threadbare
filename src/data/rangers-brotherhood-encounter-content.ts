@@ -18,6 +18,7 @@
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { FactionEncounterMeta } from '../types/faction';
+import { withEncounterContract } from './encounter-contract-builder';
 import {
   FACTION_PROSE_SEED_DELAY_QUEST_TICKS,
   FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS,
@@ -57,7 +58,7 @@ export const RANGERS_BROTHERHOOD_ENCOUNTER_META: ReadonlyMap<string, FactionEnco
 
 export const RANGERS_BROTHERHOOD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
-  {
+  withEncounterContract({
     id: 'rb.quest.trail_patrol',
     name: 'Trail Patrol',
     rarityTier: 1,
@@ -176,9 +177,9 @@ export const RANGERS_BROTHERHOOD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'rb.quest.track_beast',
     name: 'Track a Beast',
     rarityTier: 1,
@@ -320,9 +321,9 @@ export const RANGERS_BROTHERHOOD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'rb.quest.survey_border',
     name: 'Border Survey',
     rarityTier: 1,
@@ -454,9 +455,9 @@ export const RANGERS_BROTHERHOOD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'rb.quest.clear_threat',
     name: 'Clear the Threat',
     rarityTier: 1,
@@ -579,9 +580,9 @@ export const RANGERS_BROTHERHOOD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'rb.quest.wilderness_rescue',
     name: 'Wilderness Rescue',
     rarityTier: 1,
@@ -711,7 +712,7 @@ export const RANGERS_BROTHERHOOD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         ],
       },
     },
-  },
+  }),
 ];
 
 // ─── Senior Quest Templates ───────────────────────────────────────────────
@@ -1529,7 +1530,7 @@ export const RANGERS_BROTHERHOOD_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
 
 export const RANGERS_BROTHERHOOD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
-  {
+  withEncounterContract({
     id: 'rb.social.campfire_tales',
     name: 'Campfire Tales',
     rarityTier: 1,
@@ -1630,9 +1631,9 @@ export const RANGERS_BROTHERHOOD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'rb.social.tracking_lesson',
     name: 'Tracking Lesson',
     rarityTier: 1,
@@ -1735,9 +1736,9 @@ export const RANGERS_BROTHERHOOD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'rb.social.equipment_trade',
     name: 'Trade Equipment',
     rarityTier: 1,
@@ -1824,7 +1825,7 @@ export const RANGERS_BROTHERHOOD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 ];
 
 // ─── Join & Promotion ─────────────────────────────────────────────────────

@@ -9,6 +9,7 @@
 
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import type { FactionEncounterMeta } from '../types/faction';
+import { withEncounterContract } from './encounter-contract-builder';
 import {
   FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS,
   FACTION_PROSE_HIDDEN_MARK_DEFAULT_SEVERITY,
@@ -47,7 +48,7 @@ export const MERCENARY_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterMeta>
 
 export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
-  {
+  withEncounterContract({
     id: 'mc.quest.patrol',
     name: 'Road Patrol',
     locationSubtypes: ['town', 'city', 'capital'],
@@ -87,9 +88,9 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         { kind: 'recent_event', label: 'road_patrol', delay: 0 },
       ],
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'mc.quest.guard_caravan',
     name: 'Guard the Caravan',
     locationSubtypes: ['town', 'city', 'capital', 'border_crossing'],
@@ -130,9 +131,9 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         { kind: 'recent_event', label: 'caravan_guard', delay: 0 },
       ],
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'mc.quest.collect_bounty',
     name: 'Collect a Bounty',
     locationSubtypes: ['town', 'city', 'capital', 'crossroads'],
@@ -173,9 +174,9 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         { kind: 'recent_event', label: 'bounty_collected', delay: 2 },
       ],
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'mc.quest.siege_work',
     name: 'Siege Work',
     locationSubtypes: ['town', 'city', 'capital', 'fortress'],
@@ -215,9 +216,9 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         { kind: 'recent_event', label: 'siege_participation', delay: 3 },
       ],
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'mc.quest.escort_prisoner',
     name: 'Escort a Prisoner',
     locationSubtypes: ['town', 'city', 'capital'],
@@ -257,7 +258,7 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         { kind: 'recent_event', label: 'prisoner_escort', delay: 0 },
       ],
     },
-  },
+  }),
 ];
 
 // ─── Senior Quest Templates ───────────────────────────────────────────────
@@ -527,7 +528,7 @@ export const MERCENARY_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
 
 export const MERCENARY_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
-  {
+  withEncounterContract({
     id: 'mc.social.sparring_ring',
     name: 'The Sparring Ring',
     locationSubtypes: ['town', 'city', 'capital', 'fortress', 'barracks'],
@@ -554,9 +555,9 @@ export const MERCENARY_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         { kind: 'recent_event', label: 'sparring_ring', delay: FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS },
       ],
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'mc.social.war_stories',
     name: 'War Stories by the Fire',
     locationSubtypes: ['town', 'city', 'capital', 'tavern', 'barracks'],
@@ -583,9 +584,9 @@ export const MERCENARY_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         { kind: 'recent_event', label: 'war_stories', delay: FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS },
       ],
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'mc.social.contract_negotiation',
     name: 'Contract Negotiation Practice',
     locationSubtypes: ['town', 'city', 'capital'],
@@ -626,7 +627,7 @@ export const MERCENARY_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         { kind: 'recent_event', label: 'contract_negotiated', delay: FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS },
       ],
     },
-  },
+  }),
 ];
 
 // ─── Lifecycle Templates ──────────────────────────────────────────────────

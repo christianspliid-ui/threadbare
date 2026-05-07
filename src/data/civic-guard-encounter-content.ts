@@ -11,6 +11,7 @@
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { FactionEncounterMeta } from '../types/faction';
+import { withEncounterContract } from './encounter-contract-builder';
 
 // ─── Constants ───────────────────────────────────────────────────────────
 
@@ -51,7 +52,7 @@ export const CIVIC_GUARD_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterMet
 export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── Standard Quests (Recruit+) ──────────────────────────────────
 
-  {
+  withEncounterContract({
     id: 'cg.quest.wall_patrol',
     name: 'Wall Patrol',
     rarityTier: 1,
@@ -179,9 +180,9 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'cg.quest.gate_duty',
     name: 'Gate Duty',
     rarityTier: 1,
@@ -450,9 +451,9 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'cg.quest.break_up_brawl',
     name: 'Break Up a Brawl',
     rarityTier: 1,
@@ -572,9 +573,9 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'cg.quest.escort_prisoner',
     name: 'Escort Prisoner',
     rarityTier: 2,
@@ -707,9 +708,9 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'cg.quest.investigate_disturbance',
     name: 'Investigate Disturbance',
     rarityTier: 2,
@@ -841,11 +842,11 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
   // ── Senior Quests (Sergeant+) ─────────────────────────────────
 
-  {
+  withEncounterContract({
     id: 'cg.senior.raid_hideout',
     name: 'Raid Criminal Hideout',
     rarityTier: 3,
@@ -988,9 +989,9 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'cg.senior.defend_gate',
     name: 'Defend the Gate',
     rarityTier: 3,
@@ -1123,9 +1124,9 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'cg.senior.command_watch',
     name: 'Command the Night Watch',
     rarityTier: 2,
@@ -1255,11 +1256,11 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
   // ── Elite Quests (Captain+) ───────────────────────────────────
 
-  {
+  withEncounterContract({
     id: 'cg.elite.siege_defense',
     name: 'Siege Defense',
     rarityTier: 4,
@@ -1431,9 +1432,9 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'cg.elite.purge_corruption',
     name: 'Purge Corruption',
     rarityTier: 3,
@@ -1602,13 +1603,13 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 ];
 
 // ─── Social Encounters ──────────────────────────────────────────────────
 
 export const CIVIC_GUARD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
-  {
+  withEncounterContract({
     id: 'cg.social.training_yard',
     name: 'Training Yard',
     rarityTier: 1,
@@ -1692,9 +1693,9 @@ export const CIVIC_GUARD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'cg.social.barracks_meal',
     name: 'Barracks Meal',
     rarityTier: 1,
@@ -1780,9 +1781,9 @@ export const CIVIC_GUARD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'cg.social.citizen_petition',
     name: 'Citizen Petition',
     rarityTier: 1,
@@ -1884,7 +1885,7 @@ export const CIVIC_GUARD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 ];
 
 // ─── Join & Promotion ───────────────────────────────────────────────────
