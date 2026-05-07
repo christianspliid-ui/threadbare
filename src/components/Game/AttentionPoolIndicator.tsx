@@ -76,47 +76,60 @@ export function AttentionPoolIndicator({
 
   return (
     <div
-      className="flex items-center"
-      style={{ gap: 'var(--space-1)', opacity }}
+      className="topbar-tier"
+      style={{ opacity }}
       title={tooltipTitle}
       aria-label={tooltipTitle}
     >
-      {/* Progress bar track */}
-      <div
-        style={{
-          width: 40,
-          height: 4,
-          borderRadius: 2,
-          backgroundColor: 'var(--bg-surface)',
-          overflow: 'hidden',
-          flexShrink: 0,
-        }}
-      >
-        {/* Filled portion */}
+      <span className="topbar-section-label">Attention</span>
+      <div className="flex items-center" style={{ gap: 'var(--space-1)' }}>
+        {/* Progress bar track */}
         <div
           style={{
-            width: `${ratio * 100}%`,
-            height: '100%',
-            backgroundColor: color,
+            width: 40,
+            height: 4,
             borderRadius: 2,
-            transition: 'width 0.3s ease, background-color 0.3s ease',
-          }}
-        />
-      </div>
-
-      {/* State label — only shown when not focused */}
-      {label && (
-        <span
-          style={{
-            fontSize: 'var(--text-xs)',
-            color,
-            lineHeight: 1,
-            whiteSpace: 'nowrap',
+            backgroundColor: 'var(--bg-surface)',
+            overflow: 'hidden',
+            flexShrink: 0,
           }}
         >
-          {label}
-        </span>
-      )}
+          {/* Filled portion */}
+          <div
+            style={{
+              width: `${ratio * 100}%`,
+              height: '100%',
+              backgroundColor: color,
+              borderRadius: 2,
+              transition: 'width 0.3s ease, background-color 0.3s ease',
+            }}
+          />
+        </div>
+
+        {/* State label — only shown when not focused */}
+        {label && (
+          <span
+            style={{
+              fontSize: 'var(--text-xs)',
+              color,
+              lineHeight: 1,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {label}
+          </span>
+        )}
+      </div>
+      <span
+        style={{
+          font: 'var(--type-body-small)',
+          color: 'var(--text-tertiary)',
+          fontStyle: 'italic',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        regen {regenDisplay}/tick
+      </span>
     </div>
   );
 }

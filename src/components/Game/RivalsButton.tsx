@@ -17,13 +17,16 @@ export function RivalsButton({ definitions, states }: RivalsButtonProps) {
   return (
     <Dropdown
       trigger={
-        <IconButton
-          icon={<span>⚔</span>}
-          badge={definitions.length > 0 ? definitions.length : undefined}
-          active={open}
-          aria-label={`${definitions.length} Rival God${definitions.length !== 1 ? 's' : ''}${maxHostility > 0 ? ` (highest hostility: ${Math.round(maxHostility * 100)}%)` : ''}`}
-          onClick={() => setOpen(o => !o)}
-        />
+        <div className="flex items-center" style={{ gap: 'var(--space-2)' }}>
+          <IconButton
+            icon={<span>⚔</span>}
+            badge={definitions.length > 0 ? definitions.length : undefined}
+            active={open}
+            aria-label={`${definitions.length} Rival God${definitions.length !== 1 ? 's' : ''}${maxHostility > 0 ? ` (highest hostility: ${Math.round(maxHostility * 100)}%)` : ''}`}
+            onClick={() => setOpen(o => !o)}
+          />
+          <span className="topbar-section-label topbar-compact-hide">Rivals</span>
+        </div>
       }
       open={open}
       onOpenChange={setOpen}

@@ -295,6 +295,27 @@
     letter-spacing: 0.14em;
   }
 
+  /* TopBar section label — neutral parchment small caps for the persistent top bar.
+     Used as the small ALLCAPS label tier above each topbar value (TIME, WORLD-SOUL,
+     ATTENTION, DOOM, OMEN, RIVALS). Distinct from .section-heading which is gold;
+     gold is reserved for active/important states per STYLE.md "single accent; sparingly". */
+  .topbar-section-label {
+    font: var(--type-section-label);
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    white-space: nowrap;
+  }
+
+  /* TopBar two-tier stack — section label above value tier with 2px gap, vertically centered. */
+  .topbar-tier {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    justify-content: center;
+    min-width: 0;
+  }
+
   /* Sphere glow — adds colored ambient light */
   .sphere-glow {
     box-shadow: 0 0 20px var(--sphere-color, transparent);

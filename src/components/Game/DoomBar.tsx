@@ -80,8 +80,9 @@ export function DoomBar({ definition, state, journeyLabel }: DoomBarProps) {
       id="ui.doom_bar"
       label={`${definition.archetype} — Stage ${state.currentStage}: ${stageName}${journeyLabel ? ` — ${journeyHint}` : ''}`}
     >
-      <div className="min-w-0" style={{ minWidth: '170px' }}>
-        <div className="flex items-center justify-between mb-1">
+      <div className="topbar-tier min-w-0" style={{ minWidth: '170px' }}>
+        <span className="topbar-section-label">Doom</span>
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             {archetypeSphere
               ? <SphereIcon sphere={archetypeSphere} size={14} />
@@ -96,7 +97,7 @@ export function DoomBar({ definition, state, journeyLabel }: DoomBarProps) {
           </span>
         </div>
         <div
-          className="flex items-center justify-between gap-2 mb-1"
+          className="flex items-center justify-between gap-2"
           style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}
         >
           <span className="truncate">{journeyHint}</span>
