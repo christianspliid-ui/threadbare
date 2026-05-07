@@ -602,3 +602,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - ✅ 2026-05-07: THR-343 shipped — Encounter UI Phase G1 engine test hardening (new encounter-experience contract suite + Phase B unit coverage extensions; npm test 57.92s, tsc clean, build clean).
 
 - ✅ 2026-05-07: THR-362 shipped shared faction encounter contract-builder extraction + faction template metadata migration (Pass 2) with round-trip smoke tests.
+- ✅ 2026-05-08: THR-342 resolved CMS metadata-filter contract as permanent Option C (registry rationale comment finalized + THR-302/phasing plan decision docs updated, no runtime behavior changes).
