@@ -38,6 +38,19 @@
 | Detail shell + composable primitives | `src/components/shared/DetailModal.tsx`, `src/components/shared/DetailBreadcrumb.tsx`, `src/components/shared/Section.tsx` | Portal-stacked modal shell with breadcrumb collapse, 28% per-layer dimming, section dispatcher placeholders for all five section kinds. |
 | Verification coverage | `src/components/shared/__tests__/DetailModal.test.tsx`, `src/hooks/__tests__/useDetailModal.test.tsx` | Snapshot coverage at depths 1/2/4/5, stack controls, section rendering, size constants, and pause-state hook contract. |
 
+### Detail Pages (THR-338, Phase E2 — typed instances)
+
+| Surface | Path | Notes |
+|---|---|---|
+| Section resolver registry | `src/data/detailPageTemplates.ts` | Per-kind schema entries (Actor / Item / Faction / Place / Event) wiring `defaultResolver`, `fallbackResolver`, `mandatory` floor, and `showcaseOverridable` flag. Adding a section row here is the only way to change a page's shape. |
+| Section resolvers | `src/engine/detailPageResolvers.ts` | Graph-walking resolvers per `(pageKind, typeId)` row. Each takes `SectionResolverContext`, returns `Section | null`. Includes `actorPortraitFallback`, `itemIconFallback`, `factionRepFallback`, `placeWantsFallback`, `eventSkeletalFallback` for the mandatory floor. |
+| Detail page generator | `src/engine/detailPageGenerator.ts` | `generateDetailPage(input)` entry point. Pure read of graph + encounter context. Per-tick cache (auto-evicts on tick advance), unknown-entity stub for missing/mismatched nodes, authored-showcase override path. |
+| Fallback prose templates | `src/data/detail-page-fallback-templates.ts` | Per-kind template pools (≥5 variants per slot per `DETAIL_FALLBACK_PROSE_VARIANTS`). Used by mandatory-floor fallback resolvers when graph data is sparse. |
+| Showcase authoring contract | `src/data/detail-page-showcase.ts` | Empty `SHOWCASE_AUTHORING` map for THR-318 Stream 2 to fill. `getShowcaseAuthoring(nodeId, templateId)` is the engine read path. |
+| Click-through opener context | `src/contexts/DetailPageOpenerContext.tsx` | Provides `openByRef(ref)` to all descendants of the encounter shell so chips / event-cards / `data-term` prose spans navigate without re-wiring `graph + tick + seed + push`. Section dispatcher consumes via `useDetailPageOpener()`. |
+| Typed open hooks | `src/components/Game/Encounter/DetailPage/openDetailPage.ts` | `useOpenDetailPage(gameState)` returns `{ openActor, openItem, openFaction, openPlace, openEvent, openRef }` for click handlers on cast tiles, items rail, faction chips, place captions, callback notes. Wire the encounter shell's `DetailPageOpenerProvider` value to `openRef` from this hook. |
+| Verification coverage | `src/engine/__tests__/detailPageGenerator.test.ts`, `src/components/Game/Encounter/DetailPage/__tests__/TypedDetailPages.test.tsx` | Generator unit tests across 5 kinds + fail-soft + cache invalidation. Integration snapshots at 1920×1080 for each typed instance, modal stacking 4-deep, chip-click → opener invocation. |
+
 ### 1. Orchestrator Tick Loop (`src/engine/orchestrator.ts`)
 
 Every engine module that produces per-tick state changes must be called from a phase in the orchestrator. Phases come in two flavours:
