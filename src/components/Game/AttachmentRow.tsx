@@ -17,6 +17,11 @@ export interface AttachmentRowProps {
   onClick?: () => void;
   /** Encounter ID that applied this condition via aftermath effect. Shown as a tooltip. */
   sourceEncounterId?: string;
+  /**
+   * Active-vow visual treatment: panel-gold border + sphere-tinted background wash.
+   * Per v7 §Hero panel — used to mark binding commitments active in the current scene.
+   */
+  activeVow?: boolean;
 }
 
 export const AttachmentRow = React.memo(function AttachmentRow({
@@ -29,6 +34,7 @@ export const AttachmentRow = React.memo(function AttachmentRow({
   durationLabel,
   onClick,
   sourceEncounterId,
+  activeVow = false,
 }: AttachmentRowProps) {
   const tierColor = ATTACHMENT_TIER_COLORS[tier];
   const tierName = ATTACHMENT_TIER_NAMES[tier];
@@ -45,32 +51,55 @@ export const AttachmentRow = React.memo(function AttachmentRow({
     }
   };
 
+  const baseBorder = activeVow ? 'var(--sphere-spirit)' : 'var(--border-gold)';
+  const baseBackground = activeVow
+    ? 'linear-gradient(90deg, rgba(170, 68, 221, 0.12), rgba(34, 34, 40, 0.95))'
+    : 'var(--bg-raised)';
+
   return (
     <div
       role="button"
       tabIndex={0}
       onClick={onClick}
       onKeyDown={handleKeyDown}
-      aria-label={`${name}, ${tierName} ${subcategory}`}
+      aria-label={`${name}, ${tierName} ${subcategory}${activeVow ? ', active vow' : ''}`}
       title={sourceEncounterId ? `from: ${sourceEncounterId}` : undefined}
       className={`transition-colors cursor-pointer${isLegendary ? ` ${RARITY_LEGENDARY_PULSE_ANIMATION}` : ''}`}
       data-testid="attachment-row"
+      data-active-vow={activeVow ? 'true' : undefined}
       style={{
-        backgroundColor: 'var(--bg-raised)',
-        border: '1px solid var(--border-gold)',
+        background: baseBackground,
+        border: `1px solid ${baseBorder}`,
         borderLeft: `3px solid ${tierColor}`,
         borderRadius: '4px',
         padding: '0.5rem 0.75rem',
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = 'var(--accent-gold-dim)';
+        e.currentTarget.style.borderColor = activeVow
+          ? 'var(--sphere-spirit-bright)'
+          : 'var(--accent-gold-dim)';
         e.currentTarget.style.borderLeftColor = tierColor;
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = 'var(--border-gold)';
+        e.currentTarget.style.borderColor = baseBorder;
         e.currentTarget.style.borderLeftColor = tierColor;
       }}
     >
+      {activeVow && (
+        <div
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: '9px',
+            fontWeight: 700,
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            color: 'var(--sphere-spirit-bright)',
+            marginBottom: '2px',
+          }}
+        >
+          Vow · Active Now
+        </div>
+      )}
       {/* Top row: glyph + name + tier */}
       <div className="flex items-center gap-2">
         <span style={{ fontSize: 'var(--text-xs)', lineHeight: 1 }}>{glyph}</span>
