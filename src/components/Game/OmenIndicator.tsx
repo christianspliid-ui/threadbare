@@ -115,29 +115,21 @@ export function OmenIndicator({ omenState, currentTick }: OmenIndicatorProps) {
             setDetailOpen(true);
           }
         }}
+        className="topbar-tier"
         style={{
           cursor: 'pointer',
-          padding: '2px 8px',
-          borderRadius: '4px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '2px',
           minWidth: 0,
           maxWidth: '340px',
-          background: 'rgba(10,10,14,0.3)',
-          border: '1px solid rgba(160,149,107,0.1)',
-          transition: 'border-color 0.2s, background 0.2s',
-          alignSelf: 'center',
+          transition: 'opacity var(--anim-fast) ease',
         }}
         onMouseEnter={e => {
-          (e.currentTarget as HTMLElement).style.borderColor = 'rgba(160,149,107,0.25)';
-          (e.currentTarget as HTMLElement).style.background = 'rgba(10,10,14,0.5)';
+          (e.currentTarget as HTMLElement).style.opacity = '0.85';
         }}
         onMouseLeave={e => {
-          (e.currentTarget as HTMLElement).style.borderColor = 'rgba(160,149,107,0.1)';
-          (e.currentTarget as HTMLElement).style.background = 'rgba(10,10,14,0.3)';
+          (e.currentTarget as HTMLElement).style.opacity = '1';
         }}
       >
+        <span className="topbar-section-label">Omen</span>
         <OmenLine omen={omenState.primary} isPrimary />
         {omenState.secondary && (
           <OmenLine omen={omenState.secondary} isPrimary={false} />

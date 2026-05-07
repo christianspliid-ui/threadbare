@@ -2851,12 +2851,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   return (
     <GameErrorBoundary>
       <div className="h-screen flex flex-col overflow-hidden relative grain" style={{ backgroundColor: 'var(--bg-abyss)' }}>
-      {/* ═══ Top bar — Stellaris-style: identity + time + essence ║ doom + mandate + alerts + rivals + debug ═══ */}
+      {/* ═══ Top bar — v7 visual language: solid bg, hairline border, two-tier label/value pattern ═══ */}
       <div
         className="w-full flex items-center relative z-30 flex-shrink-0"
         style={{
-          background: 'linear-gradient(180deg, rgba(17,17,20,0.98), rgba(10,10,14,0.95))',
-          borderBottom: `1px solid rgba(var(--accent-gold-rgb, 212,175,55), 0.3)`,
+          background: 'var(--bg-deep)',
+          borderBottom: '1px solid var(--border-subtle)',
           minHeight: 'var(--topbar-height)',
           paddingTop: '4px',
           paddingBottom: '4px',
@@ -2909,19 +2909,17 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           })()}
         </div>
 
-        {/* Group divider */}
+        {/* Group divider — hairline, neutral; gold reserved for active states */}
         <div
           className="w-px self-stretch ml-auto flex-shrink-0"
-          style={{ background: 'rgba(212,175,55,0.4)' }}
+          style={{ background: 'var(--border-subtle)' }}
         />
 
-        {/* RIGHT GROUP: doom · mandate · alerts · rivals · debug */}
+        {/* RIGHT GROUP: doom · mandate · alerts · rivals · debug — spacing-only separation */}
         <div
-          className="flex items-center flex-shrink-0 rounded"
+          className="flex items-center flex-shrink-0"
           style={{
             gap: 'var(--topbar-gap)',
-            padding: '0 var(--space-2)',
-            backgroundColor: 'rgba(10, 10, 14, 0.4)',
           }}
         >
           <div

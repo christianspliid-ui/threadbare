@@ -37,16 +37,41 @@ export function SimulationControls({
   }
 
   if (compact) {
+    const statusText = running ? `running ×${speed}` : 'paused';
     return (
-      <Tooltip label={`Tick ${tick}`} desc="Current simulation tick">
-        <IconButton
-          icon={<span>{running ? '⏸' : '⏵'}</span>}
-          size="sm"
-          active={running}
-          onClick={onToggle}
-          aria-label={running ? 'Pause simulation' : 'Play simulation'}
-        />
-      </Tooltip>
+      <div className="topbar-tier">
+        <span className="topbar-section-label">Time</span>
+        <div className="flex items-center" style={{ gap: 'var(--space-2)' }}>
+          <Tooltip label={`Tick ${tick}`} desc="Current simulation tick">
+            <IconButton
+              icon={<span>{running ? '⏸' : '⏵'}</span>}
+              size="sm"
+              active={running}
+              onClick={onToggle}
+              aria-label={running ? 'Pause simulation' : 'Play simulation'}
+            />
+          </Tooltip>
+          <span
+            style={{
+              font: 'var(--type-body-small)',
+              color: 'var(--text-primary)',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            tick {tick} · {season} · year {year}
+          </span>
+        </div>
+        <span
+          style={{
+            font: 'var(--type-body-small)',
+            color: 'var(--text-tertiary)',
+            fontStyle: 'italic',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {statusText}
+        </span>
+      </div>
     );
   }
 
