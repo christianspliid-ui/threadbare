@@ -137,3 +137,4 @@
 - **work** | THR-357 shipped: migrated all 23 branching encounter templates to encoded EncounterContract metadata with authored moral-axis poles + added migration smoke test (2026-05-07T12.15+02:00)
 - **work** | THR-328 shipped: wired archetype drift threshold registration in encounter aftermath (archetype_drift_register) with typed traces + fail-soft guards + focused tests (2026-05-07T14:15+02:00)
 - **work** | THR-329 shipped: added deterministic callback eligibility computation (author-pinned override + graph-derived recency/relevance/emotional scoring) with focused unit coverage (2026-05-07T15:10+02:00)
+- **work** | THR-332 shipped: added Encounter UI C3 right-rail primitives (AscendantHand/CastRail/CastTile) with hand-state + cast-cardinality snapshots and full verification gates green (2026-05-07T16.09+02:00)
