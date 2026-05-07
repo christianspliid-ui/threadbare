@@ -141,6 +141,14 @@ export interface RegionDetectionState {
   lastUpdatedTick: number;
 }
 
+export interface EncounterSpotlightState {
+  agentId: string;
+  encounterId?: string;
+  beatIndex?: number;
+  trigger: 'world_handoff' | 'manual_select' | 'beat_advancement';
+  updatedTick: number;
+}
+
 // A player-committed encounter choice queued for resolution by phaseChoiceResolution.
 export interface PendingChoiceCommit {
   agentId: string;
@@ -273,7 +281,11 @@ export interface GameState {
 
   // Encounter experience scaffolding — Phase A2 foundational state surfaces.
   archetypeDrift: ArchetypeDrift[];
+  regionalDetectionPressure: RegionDetectionState[];
+  encounterSpotlight?: EncounterSpotlightState;
+  /** @deprecated Phase A2 legacy alias. Use regionalDetectionPressure. */
   regionDetection: RegionDetectionState[];
+  /** @deprecated Phase A2 legacy alias. Use encounterSpotlight?.agentId. */
   spotlightedAgent?: string;
   // Queued by the UI when the player commits a choice; consumed by phaseChoiceResolution (THR-323).
   pendingChoiceCommits?: PendingChoiceCommit[];
