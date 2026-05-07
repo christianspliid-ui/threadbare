@@ -696,6 +696,23 @@
   animation: shakeNo var(--anim-slow) ease-out;
 }
 
+/* Rare-card subtle pulse for AscendantHand. Slow, low-amplitude gold
+   glow so a rare card reads as "uncommon" without flashing. Design
+   plan §5.4 ("rare cards pulse subtly"). Suppressed under
+   prefers-reduced-motion. */
+@keyframes pulseRareCardSubtle {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212, 160, 64, 0); }
+  50% { box-shadow: 0 0 8px 0 rgba(212, 160, 64, 0.32); }
+}
+
+.pulse-rare {
+  animation: pulseRareCardSubtle 4200ms ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-rare { animation: none; }
+}
+
 /* ── StS card fly-up animation ── */
 @keyframes cardFlyUp {
   from {

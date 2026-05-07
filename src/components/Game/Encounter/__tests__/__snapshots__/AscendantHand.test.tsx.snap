@@ -1,0 +1,454 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AscendantHand > renders snapshots at 1920x1080 for the three card-count boundaries (0 / 3 / 7+) plus dimmed-only > 0 cards (empty) 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <section
+      data-testid="ascendant-hand"
+      style="display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 12px; border: 1px solid var(--border-subtle); background: var(--bg-surface);"
+    >
+      <header
+        style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 4px;"
+      >
+        <span
+          style="color: var(--text-tertiary); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.12em;"
+        >
+          Your Hand
+        </span>
+      </header>
+      <div
+        data-testid="ascendant-hand-empty"
+        style="color: var(--text-muted); font-size: var(--text-xs); font-style: italic; padding: 12px 4px;"
+      >
+        no moves are within reach.
+      </div>
+    </section>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`AscendantHand > renders snapshots at 1920x1080 for the three card-count boundaries (0 / 3 / 7+) plus dimmed-only > 3 cards (no disclosure) 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <section
+      data-testid="ascendant-hand"
+      style="display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 12px; border: 1px solid var(--border-subtle); background: var(--bg-surface);"
+    >
+      <header
+        style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 4px;"
+      >
+        <span
+          style="color: var(--text-tertiary); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.12em;"
+        >
+          Your Hand
+        </span>
+      </header>
+      <div
+        data-testid="ascendant-hand-list"
+        style="display: flex; flex-direction: column; gap: 6px;"
+      >
+        <div
+          aria-disabled="false"
+          aria-label="Send a sign"
+          data-rare="false"
+          data-reach="heart"
+          data-state="playable"
+          data-testid="ascendant-hand-card-a"
+          role="button"
+          style="padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-raised); opacity: 1; cursor: pointer; outline: none; transition: opacity 200ms ease-out, border-color 200ms ease-out; position: relative;"
+          tabindex="0"
+        >
+          <div
+            style="display: flex; align-items: center; justify-content: space-between; gap: 8px;"
+          >
+            <div
+              style="display: flex; align-items: center; gap: 8px; min-width: 0px;"
+            >
+              <i
+                aria-hidden="true"
+                style="width: 14px; height: 14px; flex-shrink: 0; border-radius: 99px; border: 1.5px solid var(--text-muted);"
+              />
+              <div
+                style="min-width: 0px;"
+              >
+                <div
+                  data-testid="ascendant-hand-card-name-a"
+                  style="font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                >
+                  Send a sign
+                </div>
+              </div>
+            </div>
+            <div
+              data-testid="ascendant-hand-card-cost-a"
+              style="flex-shrink: 0; font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted);"
+            >
+              fuller breath
+            </div>
+          </div>
+        </div>
+        <div
+          aria-disabled="false"
+          aria-label="Veil the trader's cargo"
+          data-rare="false"
+          data-reach="veil"
+          data-state="playable"
+          data-testid="ascendant-hand-card-b"
+          role="button"
+          style="padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-raised); opacity: 1; cursor: pointer; outline: none; transition: opacity 200ms ease-out, border-color 200ms ease-out; position: relative;"
+          tabindex="0"
+        >
+          <div
+            style="display: flex; align-items: center; justify-content: space-between; gap: 8px;"
+          >
+            <div
+              style="display: flex; align-items: center; gap: 8px; min-width: 0px;"
+            >
+              <i
+                aria-hidden="true"
+                style="width: 14px; height: 14px; flex-shrink: 0; border-radius: 99px; border: 1.5px solid var(--text-muted);"
+              />
+              <div
+                style="min-width: 0px;"
+              >
+                <div
+                  data-testid="ascendant-hand-card-name-b"
+                  style="font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                >
+                  Veil the trader's cargo
+                </div>
+              </div>
+            </div>
+            <div
+              data-testid="ascendant-hand-card-cost-b"
+              style="flex-shrink: 0; font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted);"
+            >
+              fuller breath
+            </div>
+          </div>
+        </div>
+        <div
+          aria-disabled="false"
+          aria-label="Still the guard"
+          data-rare="false"
+          data-reach="iron"
+          data-state="playable"
+          data-testid="ascendant-hand-card-c"
+          role="button"
+          style="padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-raised); opacity: 1; cursor: pointer; outline: none; transition: opacity 200ms ease-out, border-color 200ms ease-out; position: relative;"
+          tabindex="0"
+        >
+          <div
+            style="display: flex; align-items: center; justify-content: space-between; gap: 8px;"
+          >
+            <div
+              style="display: flex; align-items: center; gap: 8px; min-width: 0px;"
+            >
+              <i
+                aria-hidden="true"
+                style="width: 14px; height: 14px; flex-shrink: 0; border-radius: 99px; border: 1.5px solid var(--text-muted);"
+              />
+              <div
+                style="min-width: 0px;"
+              >
+                <div
+                  data-testid="ascendant-hand-card-name-c"
+                  style="font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                >
+                  Still the guard
+                </div>
+              </div>
+            </div>
+            <div
+              data-testid="ascendant-hand-card-cost-c"
+              style="flex-shrink: 0; font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted);"
+            >
+              fuller breath
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`AscendantHand > renders snapshots at 1920x1080 for the three card-count boundaries (0 / 3 / 7+) plus dimmed-only > 7 cards (with disclosure + rare) 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <section
+      data-testid="ascendant-hand"
+      style="display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 12px; border: 1px solid var(--border-subtle); background: var(--bg-surface);"
+    >
+      <header
+        style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 4px;"
+      >
+        <span
+          style="color: var(--text-tertiary); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.12em;"
+        >
+          Your Hand
+        </span>
+      </header>
+      <div
+        data-testid="ascendant-hand-list"
+        style="display: flex; flex-direction: column; gap: 6px;"
+      >
+        <div
+          aria-disabled="false"
+          aria-label="Send a sign"
+          data-rare="false"
+          data-reach="heart"
+          data-state="playable"
+          data-testid="ascendant-hand-card-a"
+          role="button"
+          style="padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-raised); opacity: 1; cursor: pointer; outline: none; transition: opacity 200ms ease-out, border-color 200ms ease-out; position: relative;"
+          tabindex="0"
+        >
+          <div
+            style="display: flex; align-items: center; justify-content: space-between; gap: 8px;"
+          >
+            <div
+              style="display: flex; align-items: center; gap: 8px; min-width: 0px;"
+            >
+              <i
+                aria-hidden="true"
+                style="width: 14px; height: 14px; flex-shrink: 0; border-radius: 99px; border: 1.5px solid var(--text-muted);"
+              />
+              <div
+                style="min-width: 0px;"
+              >
+                <div
+                  data-testid="ascendant-hand-card-name-a"
+                  style="font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                >
+                  Send a sign
+                </div>
+              </div>
+            </div>
+            <div
+              data-testid="ascendant-hand-card-cost-a"
+              style="flex-shrink: 0; font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted);"
+            >
+              fuller breath
+            </div>
+          </div>
+        </div>
+        <div
+          aria-disabled="false"
+          aria-label="Veil the trader's cargo"
+          data-rare="false"
+          data-reach="veil"
+          data-state="playable"
+          data-testid="ascendant-hand-card-b"
+          role="button"
+          style="padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-raised); opacity: 1; cursor: pointer; outline: none; transition: opacity 200ms ease-out, border-color 200ms ease-out; position: relative;"
+          tabindex="0"
+        >
+          <div
+            style="display: flex; align-items: center; justify-content: space-between; gap: 8px;"
+          >
+            <div
+              style="display: flex; align-items: center; gap: 8px; min-width: 0px;"
+            >
+              <i
+                aria-hidden="true"
+                style="width: 14px; height: 14px; flex-shrink: 0; border-radius: 99px; border: 1.5px solid var(--text-muted);"
+              />
+              <div
+                style="min-width: 0px;"
+              >
+                <div
+                  data-testid="ascendant-hand-card-name-b"
+                  style="font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                >
+                  Veil the trader's cargo
+                </div>
+              </div>
+            </div>
+            <div
+              data-testid="ascendant-hand-card-cost-b"
+              style="flex-shrink: 0; font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted);"
+            >
+              fuller breath
+            </div>
+          </div>
+        </div>
+        <div
+          aria-disabled="false"
+          aria-label="Still the guard"
+          data-rare="false"
+          data-reach="iron"
+          data-state="playable"
+          data-testid="ascendant-hand-card-c"
+          role="button"
+          style="padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-raised); opacity: 1; cursor: pointer; outline: none; transition: opacity 200ms ease-out, border-color 200ms ease-out; position: relative;"
+          tabindex="0"
+        >
+          <div
+            style="display: flex; align-items: center; justify-content: space-between; gap: 8px;"
+          >
+            <div
+              style="display: flex; align-items: center; gap: 8px; min-width: 0px;"
+            >
+              <i
+                aria-hidden="true"
+                style="width: 14px; height: 14px; flex-shrink: 0; border-radius: 99px; border: 1.5px solid var(--text-muted);"
+              />
+              <div
+                style="min-width: 0px;"
+              >
+                <div
+                  data-testid="ascendant-hand-card-name-c"
+                  style="font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                >
+                  Still the guard
+                </div>
+              </div>
+            </div>
+            <div
+              data-testid="ascendant-hand-card-cost-c"
+              style="flex-shrink: 0; font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted);"
+            >
+              fuller breath
+            </div>
+          </div>
+        </div>
+      </div>
+      <button
+        aria-expanded="false"
+        data-testid="ascendant-hand-disclosure"
+        style="margin-top: 4px; padding: 4px 8px; background: transparent; border: 1px dashed var(--border-subtle); border-radius: 6px; color: var(--text-muted); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.1em; cursor: pointer;"
+        type="button"
+      >
+        + 4 more ▾
+      </button>
+    </section>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`AscendantHand > renders snapshots at 1920x1080 for the three card-count boundaries (0 / 3 / 7+) plus dimmed-only > dimmed cards only 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <section
+      data-testid="ascendant-hand"
+      style="display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 12px; border: 1px solid var(--border-subtle); background: var(--bg-surface);"
+    >
+      <header
+        style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 4px;"
+      >
+        <span
+          style="color: var(--text-tertiary); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.12em;"
+        >
+          Your Hand
+        </span>
+      </header>
+      <div
+        data-testid="ascendant-hand-list"
+        style="display: flex; flex-direction: column; gap: 6px;"
+      >
+        <div
+          aria-disabled="true"
+          aria-label="Send a sign"
+          data-rare="false"
+          data-reach="heart"
+          data-state="dimmed"
+          data-testid="ascendant-hand-card-a"
+          style="padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-raised); opacity: 0.35; cursor: help; outline: none; transition: opacity 200ms ease-out, border-color 200ms ease-out; position: relative;"
+          tabindex="-1"
+          title="not enough essence for this move"
+        >
+          <div
+            style="display: flex; align-items: center; justify-content: space-between; gap: 8px;"
+          >
+            <div
+              style="display: flex; align-items: center; gap: 8px; min-width: 0px;"
+            >
+              <i
+                aria-hidden="true"
+                style="width: 14px; height: 14px; flex-shrink: 0; border-radius: 99px; border: 1.5px solid var(--text-muted);"
+              />
+              <div
+                style="min-width: 0px;"
+              >
+                <div
+                  data-testid="ascendant-hand-card-name-a"
+                  style="font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                >
+                  Send a sign
+                </div>
+              </div>
+            </div>
+            <div
+              data-testid="ascendant-hand-card-cost-a"
+              style="flex-shrink: 0; font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted);"
+            >
+              fuller breath
+            </div>
+          </div>
+          <div
+            data-testid="ascendant-hand-card-prereq-a"
+            style="margin-top: 6px; font-size: 10px; color: var(--text-muted); font-style: italic;"
+          >
+            ✕ not enough essence for this move
+          </div>
+        </div>
+        <div
+          aria-disabled="true"
+          aria-label="Veil the trader's cargo"
+          data-rare="false"
+          data-reach="veil"
+          data-state="dimmed"
+          data-testid="ascendant-hand-card-b"
+          style="padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-raised); opacity: 0.35; cursor: help; outline: none; transition: opacity 200ms ease-out, border-color 200ms ease-out; position: relative;"
+          tabindex="-1"
+          title="sphere attunement missing"
+        >
+          <div
+            style="display: flex; align-items: center; justify-content: space-between; gap: 8px;"
+          >
+            <div
+              style="display: flex; align-items: center; gap: 8px; min-width: 0px;"
+            >
+              <i
+                aria-hidden="true"
+                style="width: 14px; height: 14px; flex-shrink: 0; border-radius: 99px; border: 1.5px solid var(--text-muted);"
+              />
+              <div
+                style="min-width: 0px;"
+              >
+                <div
+                  data-testid="ascendant-hand-card-name-b"
+                  style="font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                >
+                  Veil the trader's cargo
+                </div>
+              </div>
+            </div>
+            <div
+              data-testid="ascendant-hand-card-cost-b"
+              style="flex-shrink: 0; font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted);"
+            >
+              fuller breath
+            </div>
+          </div>
+          <div
+            data-testid="ascendant-hand-card-prereq-b"
+            style="margin-top: 6px; font-size: 10px; color: var(--text-muted); font-style: italic;"
+          >
+            ✕ sphere attunement missing
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</DocumentFragment>
+`;

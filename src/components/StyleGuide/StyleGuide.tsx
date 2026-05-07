@@ -37,7 +37,12 @@ import { EncounterScreen, ENCOUNTER_SCREEN_LAYOUT } from '../Game/Encounter/Enco
 import type { EncounterHeroPanelData } from '../Game/Encounter/EiraHeroPanel';
 import { EncounterChoiceCard } from '../Game/Encounter/EncounterChoiceCard';
 import { OutcomeForecastBand } from '../Game/Encounter/OutcomeForecastBand';
+import { CastRail } from '../Game/Encounter/CastRail';
+import type { CastTileData } from '../Game/Encounter/CastTile';
+import { AscendantHand } from '../Game/Encounter/AscendantHand';
+import type { AscendantHandPartition } from '../../engine/encounters/handFilter';
 import type { EncounterChoiceContract } from '../../types/encounter-contract';
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { WorldGraph } from '../../engine/graph';
 import { buildPhoneticSignature } from '../../engine/culturePhonetics';
 import type { CultureIdentity } from '../../types/culture';
@@ -104,6 +109,7 @@ const SECTIONS = [
   { id: 'culture-phonetics', label: 'CulturePhoneticsInspector' },
   { id: 'encounter-screen', label: 'EncounterScreen (C1)' },
   { id: 'encounter-choice-c2', label: 'EncounterChoiceCard / OutcomeForecastBand (C2)' },
+  { id: 'encounter-cast-hand-c3', label: 'CastRail / AscendantHand / CastTile (C3)' },
 ];
 
 // ─── Sample data ──────────────────────────────────────────────────────────────
@@ -208,6 +214,119 @@ const STYLEGUIDE_CHOICE_FIXTURES: readonly EncounterChoiceContract[] = [
     fail_forward: 'the trader runs anyway; the vow holds',
   },
 ];
+
+const STYLEGUIDE_CAST_FIXTURE: readonly CastTileData[] = [
+  {
+    id: 'veiren',
+    name: 'Captain Veiren',
+    sphere: 'iron',
+    roleInScene: 'civic guard',
+    disposition: 'suspicious',
+    toHerLabel: 'a debt and a winter ago',
+    tag: 'honour-bound',
+    attentionPriority: 'primary',
+  },
+  {
+    id: 'trader',
+    name: 'A nervous trader',
+    sphere: 'eye',
+    roleInScene: 'hooded',
+    disposition: 'about to bolt',
+    tag: 'hidden cargo',
+    attentionPriority: 'primary',
+  },
+  {
+    id: 'halren',
+    name: 'Halren the Lawful',
+    sphere: 'heart',
+    roleInScene: 'spice merchant',
+    disposition: 'late for council',
+    toHerLabel: 'a face she has seen at council',
+    tag: 'watching',
+    attentionPriority: 'background',
+  },
+  {
+    id: 'rival',
+    name: 'The rival god',
+    sphere: 'shadow',
+    roleInScene: 'whose mark may be on this place',
+    disposition: 'turning its head',
+    attentionPriority: 'offstage',
+  },
+];
+
+function makeStyleguideTemplate(
+  id: string,
+  name: string,
+  description: string,
+  reach: UnifiedActionTemplate['reach'],
+  essenceCost: number,
+): UnifiedActionTemplate {
+  return {
+    id,
+    rarityTier: 1,
+    intrinsicTier: 'subtle',
+    name,
+    reach,
+    crudType: 'update',
+    scale: 'character',
+    steps: [],
+    apCost: 0,
+    essenceCost,
+    actorAffinities: [],
+    description,
+  } as unknown as UnifiedActionTemplate;
+}
+
+const STYLEGUIDE_HAND_PARTITION: AscendantHandPartition = {
+  playable: [
+    {
+      template: makeStyleguideTemplate(
+        'divine.omen',
+        'Send a sign',
+        'cast unease · tilts dispositions soft',
+        'heart',
+        2,
+      ),
+    },
+    {
+      template: makeStyleguideTemplate(
+        'divine.deceive',
+        "Veil the trader's cargo",
+        'one beat of cover for the trader',
+        'veil',
+        2,
+      ),
+    },
+    {
+      template: makeStyleguideTemplate(
+        'divine.coincidence',
+        'Mark her with fate',
+        'this scene becomes biographical',
+        'star',
+        4,
+      ),
+    },
+  ],
+  dimmed: [
+    {
+      template: makeStyleguideTemplate(
+        'divine.compel.still',
+        'Still the guard',
+        'his hand pauses before it falls',
+        'iron',
+        3,
+      ),
+      prereq: {
+        stage: 'sphere_prereq',
+        code: 'sphere_prereq_missing',
+        message: 'sphere attunement missing',
+      },
+    },
+  ],
+  hidden: [],
+  rarePulses: ['divine.coincidence'],
+};
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -871,16 +990,29 @@ export default function StyleGuide() {
                       <div
                         style={{
                           display: 'flex',
+                          flexDirection: 'column',
+                          gap: 12,
                           height: '100%',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: 'var(--text-muted)',
-                          fontFamily: 'var(--font-body)',
-                          fontStyle: 'italic',
-                          fontSize: 14,
+                          padding: 12,
+                          overflowY: 'auto',
                         }}
                       >
-                        Cast + Hand + Scene state · Phase C3/C4
+                        <CastRail tiles={STYLEGUIDE_CAST_FIXTURE} />
+                        <AscendantHand
+                          partition={STYLEGUIDE_HAND_PARTITION}
+                          newCardIds={new Set(['divine.coincidence'])}
+                        />
+                        <div
+                          style={{
+                            color: 'var(--text-muted)',
+                            fontFamily: 'var(--font-body)',
+                            fontStyle: 'italic',
+                            fontSize: 12,
+                            textAlign: 'center',
+                          }}
+                        >
+                          Scene state · Phase C4
+                        </div>
                       </div>
                     }
                     bottomStrip={
@@ -947,6 +1079,42 @@ export default function StyleGuide() {
                       />
                     ))}
                   </div>
+                </div>
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          {/* ── CastRail / AscendantHand / CastTile (Phase C3) ── */}
+          <section id="section-encounter-cast-hand-c3" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>CastRail / AscendantHand / CastTile (C3)</SectionHeading>
+            <div style={{ marginTop: '1.25rem' }}>
+              <GameErrorBoundary>
+                <Label>
+                  Right-rail primitives. CastRail orders by attention priority (primary →
+                  background → offstage). The offstage rival god gets a reduced-opacity badge.
+                  AscendantHand reads a partition from `filterAscendantHand`: playable cards
+                  bright; the dimmed "Still the guard" card sits at 35% opacity with its prereq
+                  inline. Click commits direct — no inner picker. Mark her with fate is rare and
+                  pulses subtly via the `pulse-rare` keyframe.
+                </Label>
+                <div
+                  style={{
+                    marginTop: '1rem',
+                    padding: '1.5rem',
+                    background: 'var(--bg-deep)',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: 8,
+                    display: 'grid',
+                    gridTemplateColumns: 'minmax(300px, 1fr) minmax(300px, 1fr)',
+                    gap: '1rem',
+                    alignItems: 'start',
+                  }}
+                >
+                  <CastRail tiles={STYLEGUIDE_CAST_FIXTURE} />
+                  <AscendantHand
+                    partition={STYLEGUIDE_HAND_PARTITION}
+                    newCardIds={new Set(['divine.coincidence'])}
+                  />
                 </div>
               </GameErrorBoundary>
             </div>

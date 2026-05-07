@@ -1,0 +1,778 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CastRail > renders 4-cast and 6-cast rails matching snapshots at 1920x1080 > 4 cast members 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <section
+      data-testid="encounter-cast-rail"
+      style="display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 12px; border: 1px solid var(--border-subtle); background: var(--bg-surface);"
+    >
+      <header
+        style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px;"
+      >
+        <span
+          style="color: var(--text-tertiary); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.12em;"
+        >
+          Cast In The Scene
+        </span>
+        <span
+          data-testid="encounter-cast-rail-count"
+          style="color: var(--text-muted); font-size: var(--text-xs); letter-spacing: 0.08em;"
+        >
+          4 of 4
+        </span>
+      </header>
+      <div
+        data-testid="encounter-cast-rail-list"
+        style="display: flex; flex-direction: column; gap: 2px;"
+      >
+        <div
+          data-attention-priority="primary"
+          data-reach="iron"
+          data-testid="cast-tile-veiren"
+          style="display: flex; gap: 8px; padding: 6px 4px; border-radius: 6px; opacity: 1; cursor: default; outline: none; position: relative;"
+        >
+          <div
+            aria-hidden="true"
+            data-reach="iron"
+            data-testid="cast-tile-portrait-fallback"
+            style="width: 42px; height: 42px; flex-shrink: 0; border-radius: 6px; background: radial-gradient(120% 90% at 35% 30%, color-mix(in srgb, var(--reach-sphere-bright) 30%, transparent) 0%, var(--bg-deep) 70%); border: 1px solid var(--border-subtle); display: grid; place-items: center; color: var(--text-muted); font-family: var(--font-display); font-size: 16px;"
+          >
+            C
+          </div>
+          <div
+            style="flex: 1 1 0%; min-width: 0px;"
+          >
+            <div
+              style="display: flex; justify-content: space-between; align-items: baseline; gap: 6px;"
+            >
+              <div
+                data-testid="cast-tile-name"
+                style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+              >
+                Captain Veiren
+              </div>
+              <div
+                data-testid="cast-tile-tag"
+                style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;"
+              >
+                honour-bound
+              </div>
+            </div>
+            <div
+              data-testid="cast-tile-role"
+              style="font-size: 9px; color: var(--reach-sphere-bright); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 2px;"
+            >
+              iron · civic guard
+            </div>
+            <div
+              style="font-size: 11px; color: var(--text-tertiary); line-height: 1.4; margin-top: 4px;"
+            >
+              <span
+                data-testid="cast-tile-disposition-row"
+              >
+                disposition: 
+                <span
+                  data-testid="cast-tile-disposition"
+                  style="color: var(--text-secondary); border-bottom: 1px dotted var(--border-subtle);"
+                >
+                  suspicious
+                </span>
+              </span>
+              <br />
+              <em
+                data-testid="cast-tile-to-her"
+              >
+                to her: a debt and a winter ago
+              </em>
+            </div>
+          </div>
+        </div>
+        <div
+          data-attention-priority="primary"
+          data-reach="eye"
+          data-testid="cast-tile-trader"
+          style="display: flex; gap: 8px; padding: 6px 4px; border-radius: 6px; opacity: 1; cursor: default; outline: none; position: relative;"
+        >
+          <div
+            aria-hidden="true"
+            data-reach="eye"
+            data-testid="cast-tile-portrait-fallback"
+            style="width: 42px; height: 42px; flex-shrink: 0; border-radius: 6px; background: radial-gradient(120% 90% at 35% 30%, color-mix(in srgb, var(--reach-sphere-bright) 30%, transparent) 0%, var(--bg-deep) 70%); border: 1px solid var(--border-subtle); display: grid; place-items: center; color: var(--text-muted); font-family: var(--font-display); font-size: 16px;"
+          >
+            A
+          </div>
+          <div
+            style="flex: 1 1 0%; min-width: 0px;"
+          >
+            <div
+              style="display: flex; justify-content: space-between; align-items: baseline; gap: 6px;"
+            >
+              <div
+                data-testid="cast-tile-name"
+                style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+              >
+                A nervous trader
+              </div>
+              <div
+                data-testid="cast-tile-tag"
+                style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;"
+              >
+                hidden cargo
+              </div>
+            </div>
+            <div
+              data-testid="cast-tile-role"
+              style="font-size: 9px; color: var(--reach-sphere-bright); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 2px;"
+            >
+              eye · hooded
+            </div>
+            <div
+              style="font-size: 11px; color: var(--text-tertiary); line-height: 1.4; margin-top: 4px;"
+            >
+              <span
+                data-testid="cast-tile-disposition-row"
+              >
+                disposition: 
+                <span
+                  data-testid="cast-tile-disposition"
+                  style="color: var(--text-secondary); border-bottom: 1px dotted var(--border-subtle);"
+                >
+                  about to bolt
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div
+          data-attention-priority="background"
+          data-reach="heart"
+          data-testid="cast-tile-halren"
+          style="display: flex; gap: 8px; padding: 6px 4px; border-radius: 6px; opacity: 1; cursor: default; outline: none; position: relative;"
+        >
+          <div
+            aria-hidden="true"
+            data-reach="heart"
+            data-testid="cast-tile-portrait-fallback"
+            style="width: 42px; height: 42px; flex-shrink: 0; border-radius: 6px; background: radial-gradient(120% 90% at 35% 30%, color-mix(in srgb, var(--reach-sphere-bright) 30%, transparent) 0%, var(--bg-deep) 70%); border: 1px solid var(--border-subtle); display: grid; place-items: center; color: var(--text-muted); font-family: var(--font-display); font-size: 16px;"
+          >
+            H
+          </div>
+          <div
+            style="flex: 1 1 0%; min-width: 0px;"
+          >
+            <div
+              style="display: flex; justify-content: space-between; align-items: baseline; gap: 6px;"
+            >
+              <div
+                data-testid="cast-tile-name"
+                style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+              >
+                Halren the Lawful
+              </div>
+              <div
+                data-testid="cast-tile-tag"
+                style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;"
+              >
+                watching
+              </div>
+            </div>
+            <div
+              data-testid="cast-tile-role"
+              style="font-size: 9px; color: var(--reach-sphere-bright); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 2px;"
+            >
+              heart · spice merchant
+            </div>
+            <div
+              style="font-size: 11px; color: var(--text-tertiary); line-height: 1.4; margin-top: 4px;"
+            >
+              <span
+                data-testid="cast-tile-disposition-row"
+              >
+                disposition: 
+                <span
+                  data-testid="cast-tile-disposition"
+                  style="color: var(--text-secondary); border-bottom: 1px dotted var(--border-subtle);"
+                >
+                  late for council
+                </span>
+              </span>
+              <br />
+              <em
+                data-testid="cast-tile-to-her"
+              >
+                to her: a face she has seen at council
+              </em>
+            </div>
+          </div>
+        </div>
+        <div
+          data-attention-priority="offstage"
+          data-reach="shadow"
+          data-testid="cast-tile-rival"
+          style="display: flex; gap: 8px; padding: 6px 4px; border-radius: 6px; opacity: 0.65; cursor: default; outline: none; position: relative;"
+        >
+          <div
+            aria-hidden="true"
+            data-reach="shadow"
+            data-testid="cast-tile-portrait-fallback"
+            style="width: 42px; height: 42px; flex-shrink: 0; border-radius: 6px; background: radial-gradient(120% 90% at 35% 30%, color-mix(in srgb, var(--reach-sphere-bright) 30%, transparent) 0%, var(--bg-deep) 70%); border: 1px solid var(--border-subtle); display: grid; place-items: center; color: var(--text-muted); font-family: var(--font-display); font-size: 16px;"
+          >
+            T
+          </div>
+          <div
+            style="flex: 1 1 0%; min-width: 0px;"
+          >
+            <div
+              style="display: flex; justify-content: space-between; align-items: baseline; gap: 6px;"
+            >
+              <div
+                data-testid="cast-tile-name"
+                style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+              >
+                The rival god
+              </div>
+            </div>
+            <div
+              data-testid="cast-tile-role"
+              style="font-size: 9px; color: var(--reach-sphere-bright); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 2px;"
+            >
+              shadow · whose mark may be on this place
+            </div>
+            <div
+              style="font-size: 11px; color: var(--text-tertiary); line-height: 1.4; margin-top: 4px;"
+            >
+              <span
+                data-testid="cast-tile-disposition-row"
+              >
+                disposition: 
+                <span
+                  data-testid="cast-tile-disposition"
+                  style="color: var(--text-secondary); border-bottom: 1px dotted var(--border-subtle);"
+                >
+                  turning its head
+                </span>
+              </span>
+            </div>
+          </div>
+          <div
+            data-testid="cast-tile-offstage-badge"
+            style="position: absolute; top: 4px; right: 4px; font-size: 8px; color: var(--text-muted); background: var(--bg-deep); border: 1px solid var(--border-subtle); padding: 1px 5px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.12em;"
+          >
+            offstage
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`CastRail > renders 4-cast and 6-cast rails matching snapshots at 1920x1080 > 6 cast members 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <section
+      data-testid="encounter-cast-rail"
+      style="display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 12px; border: 1px solid var(--border-subtle); background: var(--bg-surface);"
+    >
+      <header
+        style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px;"
+      >
+        <span
+          style="color: var(--text-tertiary); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.12em;"
+        >
+          Cast In The Scene
+        </span>
+        <span
+          data-testid="encounter-cast-rail-count"
+          style="color: var(--text-muted); font-size: var(--text-xs); letter-spacing: 0.08em;"
+        >
+          6 of 6
+        </span>
+      </header>
+      <div
+        data-testid="encounter-cast-rail-list"
+        style="display: flex; flex-direction: column; gap: 2px;"
+      >
+        <div
+          data-attention-priority="primary"
+          data-reach="iron"
+          data-testid="cast-tile-veiren"
+          style="display: flex; gap: 8px; padding: 6px 4px; border-radius: 6px; opacity: 1; cursor: default; outline: none; position: relative;"
+        >
+          <div
+            aria-hidden="true"
+            data-reach="iron"
+            data-testid="cast-tile-portrait-fallback"
+            style="width: 42px; height: 42px; flex-shrink: 0; border-radius: 6px; background: radial-gradient(120% 90% at 35% 30%, color-mix(in srgb, var(--reach-sphere-bright) 30%, transparent) 0%, var(--bg-deep) 70%); border: 1px solid var(--border-subtle); display: grid; place-items: center; color: var(--text-muted); font-family: var(--font-display); font-size: 16px;"
+          >
+            C
+          </div>
+          <div
+            style="flex: 1 1 0%; min-width: 0px;"
+          >
+            <div
+              style="display: flex; justify-content: space-between; align-items: baseline; gap: 6px;"
+            >
+              <div
+                data-testid="cast-tile-name"
+                style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+              >
+                Captain Veiren
+              </div>
+              <div
+                data-testid="cast-tile-tag"
+                style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;"
+              >
+                honour-bound
+              </div>
+            </div>
+            <div
+              data-testid="cast-tile-role"
+              style="font-size: 9px; color: var(--reach-sphere-bright); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 2px;"
+            >
+              iron · civic guard
+            </div>
+            <div
+              style="font-size: 11px; color: var(--text-tertiary); line-height: 1.4; margin-top: 4px;"
+            >
+              <span
+                data-testid="cast-tile-disposition-row"
+              >
+                disposition: 
+                <span
+                  data-testid="cast-tile-disposition"
+                  style="color: var(--text-secondary); border-bottom: 1px dotted var(--border-subtle);"
+                >
+                  suspicious
+                </span>
+              </span>
+              <br />
+              <em
+                data-testid="cast-tile-to-her"
+              >
+                to her: a debt and a winter ago
+              </em>
+            </div>
+          </div>
+        </div>
+        <div
+          data-attention-priority="primary"
+          data-reach="eye"
+          data-testid="cast-tile-trader"
+          style="display: flex; gap: 8px; padding: 6px 4px; border-radius: 6px; opacity: 1; cursor: default; outline: none; position: relative;"
+        >
+          <div
+            aria-hidden="true"
+            data-reach="eye"
+            data-testid="cast-tile-portrait-fallback"
+            style="width: 42px; height: 42px; flex-shrink: 0; border-radius: 6px; background: radial-gradient(120% 90% at 35% 30%, color-mix(in srgb, var(--reach-sphere-bright) 30%, transparent) 0%, var(--bg-deep) 70%); border: 1px solid var(--border-subtle); display: grid; place-items: center; color: var(--text-muted); font-family: var(--font-display); font-size: 16px;"
+          >
+            A
+          </div>
+          <div
+            style="flex: 1 1 0%; min-width: 0px;"
+          >
+            <div
+              style="display: flex; justify-content: space-between; align-items: baseline; gap: 6px;"
+            >
+              <div
+                data-testid="cast-tile-name"
+                style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+              >
+                A nervous trader
+              </div>
+              <div
+                data-testid="cast-tile-tag"
+                style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;"
+              >
+                hidden cargo
+              </div>
+            </div>
+            <div
+              data-testid="cast-tile-role"
+              style="font-size: 9px; color: var(--reach-sphere-bright); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 2px;"
+            >
+              eye · hooded
+            </div>
+            <div
+              style="font-size: 11px; color: var(--text-tertiary); line-height: 1.4; margin-top: 4px;"
+            >
+              <span
+                data-testid="cast-tile-disposition-row"
+              >
+                disposition: 
+                <span
+                  data-testid="cast-tile-disposition"
+                  style="color: var(--text-secondary); border-bottom: 1px dotted var(--border-subtle);"
+                >
+                  about to bolt
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div
+          data-attention-priority="background"
+          data-reach="heart"
+          data-testid="cast-tile-halren"
+          style="display: flex; gap: 8px; padding: 6px 4px; border-radius: 6px; opacity: 1; cursor: default; outline: none; position: relative;"
+        >
+          <div
+            aria-hidden="true"
+            data-reach="heart"
+            data-testid="cast-tile-portrait-fallback"
+            style="width: 42px; height: 42px; flex-shrink: 0; border-radius: 6px; background: radial-gradient(120% 90% at 35% 30%, color-mix(in srgb, var(--reach-sphere-bright) 30%, transparent) 0%, var(--bg-deep) 70%); border: 1px solid var(--border-subtle); display: grid; place-items: center; color: var(--text-muted); font-family: var(--font-display); font-size: 16px;"
+          >
+            H
+          </div>
+          <div
+            style="flex: 1 1 0%; min-width: 0px;"
+          >
+            <div
+              style="display: flex; justify-content: space-between; align-items: baseline; gap: 6px;"
+            >
+              <div
+                data-testid="cast-tile-name"
+                style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+              >
+                Halren the Lawful
+              </div>
+              <div
+                data-testid="cast-tile-tag"
+                style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;"
+              >
+                watching
+              </div>
+            </div>
+            <div
+              data-testid="cast-tile-role"
+              style="font-size: 9px; color: var(--reach-sphere-bright); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 2px;"
+            >
+              heart · spice merchant
+            </div>
+            <div
+              style="font-size: 11px; color: var(--text-tertiary); line-height: 1.4; margin-top: 4px;"
+            >
+              <span
+                data-testid="cast-tile-disposition-row"
+              >
+                disposition: 
+                <span
+                  data-testid="cast-tile-disposition"
+                  style="color: var(--text-secondary); border-bottom: 1px dotted var(--border-subtle);"
+                >
+                  late for council
+                </span>
+              </span>
+              <br />
+              <em
+                data-testid="cast-tile-to-her"
+              >
+                to her: a face she has seen at council
+              </em>
+            </div>
+          </div>
+        </div>
+        <div
+          data-attention-priority="background"
+          data-reach="veil"
+          data-testid="cast-tile-scribe"
+          style="display: flex; gap: 8px; padding: 6px 4px; border-radius: 6px; opacity: 1; cursor: default; outline: none; position: relative;"
+        >
+          <div
+            aria-hidden="true"
+            data-reach="veil"
+            data-testid="cast-tile-portrait-fallback"
+            style="width: 42px; height: 42px; flex-shrink: 0; border-radius: 6px; background: radial-gradient(120% 90% at 35% 30%, color-mix(in srgb, var(--reach-sphere-bright) 30%, transparent) 0%, var(--bg-deep) 70%); border: 1px solid var(--border-subtle); display: grid; place-items: center; color: var(--text-muted); font-family: var(--font-display); font-size: 16px;"
+          >
+            T
+          </div>
+          <div
+            style="flex: 1 1 0%; min-width: 0px;"
+          >
+            <div
+              style="display: flex; justify-content: space-between; align-items: baseline; gap: 6px;"
+            >
+              <div
+                data-testid="cast-tile-name"
+                style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+              >
+                The royal scribe
+              </div>
+            </div>
+            <div
+              data-testid="cast-tile-role"
+              style="font-size: 9px; color: var(--reach-sphere-bright); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 2px;"
+            >
+              veil · taking minutes
+            </div>
+            <div
+              style="font-size: 11px; color: var(--text-tertiary); line-height: 1.4; margin-top: 4px;"
+            >
+              <span
+                data-testid="cast-tile-disposition-row"
+              >
+                disposition: 
+                <span
+                  data-testid="cast-tile-disposition"
+                  style="color: var(--text-secondary); border-bottom: 1px dotted var(--border-subtle);"
+                >
+                  measuring every word
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div
+          data-attention-priority="offstage"
+          data-reach="shadow"
+          data-testid="cast-tile-rival"
+          style="display: flex; gap: 8px; padding: 6px 4px; border-radius: 6px; opacity: 0.65; cursor: default; outline: none; position: relative;"
+        >
+          <div
+            aria-hidden="true"
+            data-reach="shadow"
+            data-testid="cast-tile-portrait-fallback"
+            style="width: 42px; height: 42px; flex-shrink: 0; border-radius: 6px; background: radial-gradient(120% 90% at 35% 30%, color-mix(in srgb, var(--reach-sphere-bright) 30%, transparent) 0%, var(--bg-deep) 70%); border: 1px solid var(--border-subtle); display: grid; place-items: center; color: var(--text-muted); font-family: var(--font-display); font-size: 16px;"
+          >
+            T
+          </div>
+          <div
+            style="flex: 1 1 0%; min-width: 0px;"
+          >
+            <div
+              style="display: flex; justify-content: space-between; align-items: baseline; gap: 6px;"
+            >
+              <div
+                data-testid="cast-tile-name"
+                style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+              >
+                The rival god
+              </div>
+            </div>
+            <div
+              data-testid="cast-tile-role"
+              style="font-size: 9px; color: var(--reach-sphere-bright); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 2px;"
+            >
+              shadow · whose mark may be on this place
+            </div>
+            <div
+              style="font-size: 11px; color: var(--text-tertiary); line-height: 1.4; margin-top: 4px;"
+            >
+              <span
+                data-testid="cast-tile-disposition-row"
+              >
+                disposition: 
+                <span
+                  data-testid="cast-tile-disposition"
+                  style="color: var(--text-secondary); border-bottom: 1px dotted var(--border-subtle);"
+                >
+                  turning its head
+                </span>
+              </span>
+            </div>
+          </div>
+          <div
+            data-testid="cast-tile-offstage-badge"
+            style="position: absolute; top: 4px; right: 4px; font-size: 8px; color: var(--text-muted); background: var(--bg-deep); border: 1px solid var(--border-subtle); padding: 1px 5px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.12em;"
+          >
+            offstage
+          </div>
+        </div>
+        <div
+          data-attention-priority="offstage"
+          data-reach="gold"
+          data-testid="cast-tile-smallfolk"
+          style="display: flex; gap: 8px; padding: 6px 4px; border-radius: 6px; opacity: 0.65; cursor: default; outline: none; position: relative;"
+        >
+          <div
+            aria-hidden="true"
+            data-reach="gold"
+            data-testid="cast-tile-portrait-fallback"
+            style="width: 42px; height: 42px; flex-shrink: 0; border-radius: 6px; background: radial-gradient(120% 90% at 35% 30%, color-mix(in srgb, var(--reach-sphere-bright) 30%, transparent) 0%, var(--bg-deep) 70%); border: 1px solid var(--border-subtle); display: grid; place-items: center; color: var(--text-muted); font-family: var(--font-display); font-size: 16px;"
+          >
+            T
+          </div>
+          <div
+            style="flex: 1 1 0%; min-width: 0px;"
+          >
+            <div
+              style="display: flex; justify-content: space-between; align-items: baseline; gap: 6px;"
+            >
+              <div
+                data-testid="cast-tile-name"
+                style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+              >
+                The small folk
+              </div>
+            </div>
+            <div
+              data-testid="cast-tile-role"
+              style="font-size: 9px; color: var(--reach-sphere-bright); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 2px;"
+            >
+              gold · dying
+            </div>
+            <div
+              style="font-size: 11px; color: var(--text-tertiary); line-height: 1.4; margin-top: 4px;"
+            >
+              <span
+                data-testid="cast-tile-disposition-row"
+              >
+                disposition: 
+                <span
+                  data-testid="cast-tile-disposition"
+                  style="color: var(--text-secondary); border-bottom: 1px dotted var(--border-subtle);"
+                >
+                  praying for sundown
+                </span>
+              </span>
+            </div>
+          </div>
+          <div
+            data-testid="cast-tile-offstage-badge"
+            style="position: absolute; top: 4px; right: 4px; font-size: 8px; color: var(--text-muted); background: var(--bg-deep); border: 1px solid var(--border-subtle); padding: 1px 5px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.12em;"
+          >
+            offstage
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`CastRail > renders a single-tile snapshot at 1920x1080 > 1 cast member 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <section
+      data-testid="encounter-cast-rail"
+      style="display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 12px; border: 1px solid var(--border-subtle); background: var(--bg-surface);"
+    >
+      <header
+        style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px;"
+      >
+        <span
+          style="color: var(--text-tertiary); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.12em;"
+        >
+          Cast In The Scene
+        </span>
+        <span
+          data-testid="encounter-cast-rail-count"
+          style="color: var(--text-muted); font-size: var(--text-xs); letter-spacing: 0.08em;"
+        >
+          1 of 1
+        </span>
+      </header>
+      <div
+        data-testid="encounter-cast-rail-list"
+        style="display: flex; flex-direction: column; gap: 2px;"
+      >
+        <div
+          data-attention-priority="primary"
+          data-reach="iron"
+          data-testid="cast-tile-veiren"
+          style="display: flex; gap: 8px; padding: 6px 4px; border-radius: 6px; opacity: 1; cursor: default; outline: none; position: relative;"
+        >
+          <div
+            aria-hidden="true"
+            data-reach="iron"
+            data-testid="cast-tile-portrait-fallback"
+            style="width: 42px; height: 42px; flex-shrink: 0; border-radius: 6px; background: radial-gradient(120% 90% at 35% 30%, color-mix(in srgb, var(--reach-sphere-bright) 30%, transparent) 0%, var(--bg-deep) 70%); border: 1px solid var(--border-subtle); display: grid; place-items: center; color: var(--text-muted); font-family: var(--font-display); font-size: 16px;"
+          >
+            C
+          </div>
+          <div
+            style="flex: 1 1 0%; min-width: 0px;"
+          >
+            <div
+              style="display: flex; justify-content: space-between; align-items: baseline; gap: 6px;"
+            >
+              <div
+                data-testid="cast-tile-name"
+                style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+              >
+                Captain Veiren
+              </div>
+              <div
+                data-testid="cast-tile-tag"
+                style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;"
+              >
+                honour-bound
+              </div>
+            </div>
+            <div
+              data-testid="cast-tile-role"
+              style="font-size: 9px; color: var(--reach-sphere-bright); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 2px;"
+            >
+              iron · civic guard
+            </div>
+            <div
+              style="font-size: 11px; color: var(--text-tertiary); line-height: 1.4; margin-top: 4px;"
+            >
+              <span
+                data-testid="cast-tile-disposition-row"
+              >
+                disposition: 
+                <span
+                  data-testid="cast-tile-disposition"
+                  style="color: var(--text-secondary); border-bottom: 1px dotted var(--border-subtle);"
+                >
+                  suspicious
+                </span>
+              </span>
+              <br />
+              <em
+                data-testid="cast-tile-to-her"
+              >
+                to her: a debt and a winter ago
+              </em>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`CastRail > renders an empty-state snapshot at 1920x1080 > 0 cast members 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <section
+      data-testid="encounter-cast-rail"
+      style="display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 12px; border: 1px solid var(--border-subtle); background: var(--bg-surface);"
+    >
+      <header
+        style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px;"
+      >
+        <span
+          style="color: var(--text-tertiary); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.12em;"
+        >
+          Cast In The Scene
+        </span>
+        <span
+          data-testid="encounter-cast-rail-count"
+          style="color: var(--text-muted); font-size: var(--text-xs); letter-spacing: 0.08em;"
+        >
+          no one
+        </span>
+      </header>
+      <div
+        data-testid="encounter-cast-rail-empty"
+        style="color: var(--text-muted); font-size: var(--text-xs); font-style: italic; padding: 12px 4px;"
+      >
+        she stands alone in this beat.
+      </div>
+    </section>
+  </div>
+</DocumentFragment>
+`;

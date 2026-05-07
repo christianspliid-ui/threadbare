@@ -1,0 +1,72 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CastTile > matches the snapshot for a primary tile with full data in a 1920x1080 container 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <div
+      data-attention-priority="primary"
+      data-reach="iron"
+      data-testid="cast-tile-veiren"
+      style="display: flex; gap: 8px; padding: 6px 4px; border-radius: 6px; opacity: 1; cursor: default; outline: none; position: relative;"
+    >
+      <div
+        aria-hidden="true"
+        data-reach="iron"
+        data-testid="cast-tile-portrait-fallback"
+        style="width: 42px; height: 42px; flex-shrink: 0; border-radius: 6px; background: radial-gradient(120% 90% at 35% 30%, color-mix(in srgb, var(--reach-sphere-bright) 30%, transparent) 0%, var(--bg-deep) 70%); border: 1px solid var(--border-subtle); display: grid; place-items: center; color: var(--text-muted); font-family: var(--font-display); font-size: 16px;"
+      >
+        C
+      </div>
+      <div
+        style="flex: 1 1 0%; min-width: 0px;"
+      >
+        <div
+          style="display: flex; justify-content: space-between; align-items: baseline; gap: 6px;"
+        >
+          <div
+            data-testid="cast-tile-name"
+            style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+          >
+            Captain Veiren
+          </div>
+          <div
+            data-testid="cast-tile-tag"
+            style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;"
+          >
+            honour-bound
+          </div>
+        </div>
+        <div
+          data-testid="cast-tile-role"
+          style="font-size: 9px; color: var(--reach-sphere-bright); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 2px;"
+        >
+          iron · civic guard
+        </div>
+        <div
+          style="font-size: 11px; color: var(--text-tertiary); line-height: 1.4; margin-top: 4px;"
+        >
+          <span
+            data-testid="cast-tile-disposition-row"
+          >
+            disposition: 
+            <span
+              data-testid="cast-tile-disposition"
+              style="color: var(--text-secondary); border-bottom: 1px dotted var(--border-subtle);"
+            >
+              suspicious
+            </span>
+          </span>
+          <br />
+          <em
+            data-testid="cast-tile-to-her"
+          >
+            to her: a debt and a winter ago
+          </em>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
