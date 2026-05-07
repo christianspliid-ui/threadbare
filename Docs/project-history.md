@@ -584,3 +584,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - ✅ 2026-05-07: THR-330 shipped Encounter UI Phase C1 scaffold (`EncounterScreen` shell + `EiraHeroPanel` + `CapabilityStrip`) with tests, preserving fixed 440/540/100 layout contract at 1920×1080.
 - ✅ 2026-05-07: THR-351 shipped — finalized Encounter UI Phase A2 scaffold by adding callback-eligibility trace typing plus additive `regionalDetectionPressure`/`encounterSpotlight` GameState fields with safe game-init defaults (legacy aliases preserved).
 
+- ✅ 2026-05-07: THR-352 finalized Encounter UI Phase A3 CSS motion primitives in `src/index.css` (added missing `thrum-fade`, canonical alias keyframes, and consumer comments for Moment 1/2 beats) with full verification gates green.
