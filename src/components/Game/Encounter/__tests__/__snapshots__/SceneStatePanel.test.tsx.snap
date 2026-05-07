@@ -1,0 +1,835 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`DetectionThread threshold tiers > renders ENCOUNTER band snapshot at pressure ≥ 1.00 > detection-encounter 1`] = `
+<DocumentFragment>
+  <div
+    data-band="encounter"
+    data-testid="encounter-detection-thread"
+    style="display: flex; align-items: center; gap: 10px; opacity: 1;"
+  >
+    <svg
+      aria-hidden="true"
+      height="8"
+      style="flex-shrink: 0;"
+      width="48"
+    >
+      <line
+        stroke="var(--text-primary)"
+        stroke-linecap="round"
+        stroke-width="4"
+        x1="0"
+        x2="48"
+        y1="4"
+        y2="4"
+      />
+    </svg>
+    <span
+      style="font-size: 13px; font-weight: 700; color: var(--text-primary); font-style: italic; line-height: 1.35;"
+    >
+      a rival god has fixed its gaze on her
+    </span>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`DetectionThread threshold tiers > renders NOTICE band snapshot at pressure ≥ 0.50 > detection-notice 1`] = `
+<DocumentFragment>
+  <div
+    data-band="notice"
+    data-testid="encounter-detection-thread"
+    style="display: flex; align-items: center; gap: 10px; opacity: 0.7;"
+  >
+    <svg
+      aria-hidden="true"
+      height="5.5"
+      style="flex-shrink: 0;"
+      width="48"
+    >
+      <line
+        stroke="var(--text-primary)"
+        stroke-linecap="round"
+        stroke-width="1.5"
+        x1="0"
+        x2="48"
+        y1="2.75"
+        y2="2.75"
+      />
+    </svg>
+    <span
+      style="font-size: 12px; font-weight: 400; color: var(--text-tertiary); font-style: italic; line-height: 1.35;"
+    >
+      rivals are starting to notice
+    </span>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`DetectionThread threshold tiers > renders TURN band snapshot at pressure ≥ 0.80 > detection-turn 1`] = `
+<DocumentFragment>
+  <div
+    data-band="turn"
+    data-testid="encounter-detection-thread"
+    style="display: flex; align-items: center; gap: 10px; opacity: 0.95;"
+  >
+    <svg
+      aria-hidden="true"
+      height="7"
+      style="flex-shrink: 0;"
+      width="48"
+    >
+      <line
+        stroke="var(--text-primary)"
+        stroke-linecap="round"
+        stroke-width="3"
+        x1="0"
+        x2="48"
+        y1="3.5"
+        y2="3.5"
+      />
+    </svg>
+    <span
+      style="font-size: 13px; font-weight: 600; color: var(--text-secondary); font-style: italic; line-height: 1.35;"
+    >
+      a rival god turns its head
+    </span>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`DriftIndicator threshold tiers > renders BANNER tier snapshot > drift-banner 1`] = `
+<DocumentFragment>
+  <div
+    data-axis-id="protector_conqueror"
+    data-band="banner"
+    data-testid="encounter-drift-indicator"
+    style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 8px; border-top: 1px solid var(--border-subtle);"
+  >
+    <em
+      style="font-size: 12px; color: var(--text-secondary); letter-spacing: 0.02em; font-weight: 500; line-height: 1.4; flex: 1 1 0%;"
+    >
+      Eira has tilted toward Conqueror at the banner tier.
+    </em>
+    <button
+      aria-label="dismiss drift indicator"
+      data-testid="encounter-drift-indicator-dismiss"
+      style="background: transparent; border: medium; color: var(--text-muted); font-size: 14px; cursor: pointer; padding: 0px 4px; line-height: 1;"
+      type="button"
+    >
+      ×
+    </button>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`DriftIndicator threshold tiers > renders BECOMING tier snapshot > drift-becoming 1`] = `
+<DocumentFragment>
+  <div
+    data-axis-id="protector_conqueror"
+    data-band="becoming"
+    data-testid="encounter-drift-indicator"
+    style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 8px; border-top: 1px solid var(--border-subtle);"
+  >
+    <em
+      style="font-size: 13px; color: var(--accent-gold-dim); letter-spacing: 0.04em; font-weight: 600; line-height: 1.4; flex: 1 1 0%;"
+    >
+      Eira has tilted toward Conqueror at the becoming tier.
+    </em>
+    <button
+      aria-label="dismiss drift indicator"
+      data-testid="encounter-drift-indicator-dismiss"
+      style="background: transparent; border: medium; color: var(--text-muted); font-size: 14px; cursor: pointer; padding: 0px 4px; line-height: 1;"
+      type="button"
+    >
+      ×
+    </button>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`DriftIndicator threshold tiers > renders SOFT tier snapshot > drift-soft 1`] = `
+<DocumentFragment>
+  <div
+    data-axis-id="protector_conqueror"
+    data-band="soft"
+    data-testid="encounter-drift-indicator"
+    style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 8px; border-top: 1px solid var(--border-subtle);"
+  >
+    <em
+      style="font-size: 11px; color: var(--text-tertiary); letter-spacing: 0.01em; font-weight: 400; line-height: 1.4; flex: 1 1 0%;"
+    >
+      Eira has tilted toward Conqueror at the soft tier.
+    </em>
+    <button
+      aria-label="dismiss drift indicator"
+      data-testid="encounter-drift-indicator-dismiss"
+      style="background: transparent; border: medium; color: var(--text-muted); font-size: 14px; cursor: pointer; padding: 0px 4px; line-height: 1;"
+      type="button"
+    >
+      ×
+    </button>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`SceneStatePanel (C4) > renders the empty-fallback snapshot when nothing is present 1`] = `
+<DocumentFragment>
+  <section
+    data-testid="encounter-scene-state-panel"
+    style="display: flex; flex-direction: column; gap: 12px; padding: 12px; background: var(--bg-surface); border-top: 1px solid var(--border-subtle);"
+  >
+    <div
+      data-testid="encounter-scene-threads"
+    >
+      <div
+        style="font-family: var(--font-display); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px;"
+      >
+        Threads In Play
+      </div>
+      <div
+        style="font-size: 11px; font-style: italic; color: var(--text-muted); line-height: 1.4;"
+      >
+        no threads pulled tight
+      </div>
+    </div>
+    <div
+      data-testid="encounter-scene-factions"
+    >
+      <div
+        style="font-family: var(--font-display); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px;"
+      >
+        Factions Present
+      </div>
+      <div
+        style="font-size: 11px; font-style: italic; color: var(--text-muted); line-height: 1.4;"
+      >
+        no factions present
+      </div>
+    </div>
+    <div
+      data-testid="encounter-scene-place-conditions"
+    >
+      <div
+        style="font-family: var(--font-display); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px;"
+      >
+        Place Conditions
+      </div>
+      <div
+        style="font-size: 11px; font-style: italic; color: var(--text-muted); line-height: 1.4;"
+      >
+        the place rests ordinary
+      </div>
+    </div>
+    <div
+      data-testid="encounter-scene-protagonist-conditions"
+    >
+      <div
+        style="font-family: var(--font-display); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px;"
+      >
+        Conditions On Her
+      </div>
+      <div
+        style="font-size: 11px; font-style: italic; color: var(--text-muted); line-height: 1.4;"
+      >
+        she carries nothing unusual
+      </div>
+    </div>
+  </section>
+</DocumentFragment>
+`;
+
+exports[`SceneStatePanel (C4) > renders the populated baseline snapshot 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <section
+      data-testid="encounter-scene-state-panel"
+      style="display: flex; flex-direction: column; gap: 12px; padding: 12px; background: var(--bg-surface); border-top: 1px solid var(--border-subtle);"
+    >
+      <div
+        data-testid="encounter-scene-threads"
+      >
+        <div
+          style="font-family: var(--font-display); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px;"
+        >
+          Threads In Play
+        </div>
+        <div
+          style="display: flex; flex-direction: column; gap: 6px;"
+        >
+          <div
+            data-testid="encounter-thread-strip-oath"
+            data-weight="taut"
+            style="display: flex; align-items: center; gap: 10px; opacity: 1;"
+          >
+            <svg
+              aria-hidden="true"
+              height="6"
+              style="flex-shrink: 0;"
+              width="48"
+            >
+              <line
+                stroke="var(--sphere-spirit-bright)"
+                stroke-linecap="round"
+                stroke-width="2"
+                x1="0"
+                x2="48"
+                y1="3"
+                y2="3"
+              />
+            </svg>
+            <span
+              style="font-size: 12px; color: var(--text-secondary); font-style: normal; line-height: 1.35;"
+            >
+              an oath she has not paid
+            </span>
+          </div>
+          <div
+            data-testid="encounter-thread-strip-rumor"
+            data-weight="thin"
+            style="display: flex; align-items: center; gap: 10px; opacity: 0.75;"
+          >
+            <svg
+              aria-hidden="true"
+              height="5.2"
+              style="flex-shrink: 0;"
+              width="48"
+            >
+              <line
+                stroke="var(--sphere-mind-bright)"
+                stroke-linecap="round"
+                stroke-width="1.2"
+                x1="0"
+                x2="48"
+                y1="2.6"
+                y2="2.6"
+              />
+            </svg>
+            <span
+              style="font-size: 12px; color: var(--text-secondary); font-style: normal; line-height: 1.35;"
+            >
+              a rumor sharpening into a name
+            </span>
+          </div>
+        </div>
+      </div>
+      <div
+        data-testid="encounter-scene-factions"
+      >
+        <div
+          style="font-family: var(--font-display); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px;"
+        >
+          Factions Present
+        </div>
+        <div
+          style="display: flex; flex-wrap: wrap; gap: 6px;"
+        >
+          <span
+            data-testid="encounter-scene-faction-Civic Guard"
+            style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent-gold-dim); border: 1px solid var(--border-subtle); border-radius: 999px; padding: 2px 8px; background: var(--bg-raised);"
+          >
+            Civic Guard
+          </span>
+        </div>
+      </div>
+      <div
+        data-testid="encounter-scene-place-conditions"
+      >
+        <div
+          style="font-family: var(--font-display); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px;"
+        >
+          Place Conditions
+        </div>
+        <ul
+          style="list-style: none; margin: 0px; padding: 0px; display: flex; flex-direction: column; gap: 3px;"
+        >
+          <li
+            data-testid="encounter-scene-place-condition-0"
+            style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;"
+          >
+            the gate is shut
+          </li>
+        </ul>
+      </div>
+      <div
+        data-testid="encounter-scene-protagonist-conditions"
+      >
+        <div
+          style="font-family: var(--font-display); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px;"
+        >
+          Conditions On Her
+        </div>
+        <ul
+          style="list-style: none; margin: 0px; padding: 0px; display: flex; flex-direction: column; gap: 3px;"
+        >
+          <li
+            data-testid="encounter-scene-protagonist-condition-0"
+            style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;"
+          >
+            her name is known here
+          </li>
+        </ul>
+      </div>
+    </section>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`SceneStatePanel — composite tiered renders > renders detection NOTICE + drift SOFT snapshot 1`] = `
+<DocumentFragment>
+  <section
+    data-testid="encounter-scene-state-panel"
+    style="display: flex; flex-direction: column; gap: 12px; padding: 12px; background: var(--bg-surface); border-top: 1px solid var(--border-subtle);"
+  >
+    <div
+      data-testid="encounter-scene-threads"
+    >
+      <div
+        style="font-family: var(--font-display); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px;"
+      >
+        Threads In Play
+      </div>
+      <div
+        style="display: flex; flex-direction: column; gap: 6px;"
+      >
+        <div
+          data-testid="encounter-thread-strip-oath"
+          data-weight="taut"
+          style="display: flex; align-items: center; gap: 10px; opacity: 1;"
+        >
+          <svg
+            aria-hidden="true"
+            height="6"
+            style="flex-shrink: 0;"
+            width="48"
+          >
+            <line
+              stroke="var(--sphere-spirit-bright)"
+              stroke-linecap="round"
+              stroke-width="2"
+              x1="0"
+              x2="48"
+              y1="3"
+              y2="3"
+            />
+          </svg>
+          <span
+            style="font-size: 12px; color: var(--text-secondary); font-style: normal; line-height: 1.35;"
+          >
+            an oath she has not paid
+          </span>
+        </div>
+        <div
+          data-testid="encounter-thread-strip-rumor"
+          data-weight="thin"
+          style="display: flex; align-items: center; gap: 10px; opacity: 0.75;"
+        >
+          <svg
+            aria-hidden="true"
+            height="5.2"
+            style="flex-shrink: 0;"
+            width="48"
+          >
+            <line
+              stroke="var(--sphere-mind-bright)"
+              stroke-linecap="round"
+              stroke-width="1.2"
+              x1="0"
+              x2="48"
+              y1="2.6"
+              y2="2.6"
+            />
+          </svg>
+          <span
+            style="font-size: 12px; color: var(--text-secondary); font-style: normal; line-height: 1.35;"
+          >
+            a rumor sharpening into a name
+          </span>
+        </div>
+        <div
+          data-band="notice"
+          data-testid="encounter-detection-thread"
+          style="display: flex; align-items: center; gap: 10px; opacity: 0.7;"
+        >
+          <svg
+            aria-hidden="true"
+            height="5.5"
+            style="flex-shrink: 0;"
+            width="48"
+          >
+            <line
+              stroke="var(--text-primary)"
+              stroke-linecap="round"
+              stroke-width="1.5"
+              x1="0"
+              x2="48"
+              y1="2.75"
+              y2="2.75"
+            />
+          </svg>
+          <span
+            style="font-size: 12px; font-weight: 400; color: var(--text-tertiary); font-style: italic; line-height: 1.35;"
+          >
+            rivals are starting to notice
+          </span>
+        </div>
+      </div>
+    </div>
+    <div
+      data-testid="encounter-scene-factions"
+    >
+      <div
+        style="font-family: var(--font-display); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px;"
+      >
+        Factions Present
+      </div>
+      <div
+        style="display: flex; flex-wrap: wrap; gap: 6px;"
+      >
+        <span
+          data-testid="encounter-scene-faction-Civic Guard"
+          style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent-gold-dim); border: 1px solid var(--border-subtle); border-radius: 999px; padding: 2px 8px; background: var(--bg-raised);"
+        >
+          Civic Guard
+        </span>
+      </div>
+    </div>
+    <div
+      data-testid="encounter-scene-place-conditions"
+    >
+      <div
+        style="font-family: var(--font-display); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px;"
+      >
+        Place Conditions
+      </div>
+      <ul
+        style="list-style: none; margin: 0px; padding: 0px; display: flex; flex-direction: column; gap: 3px;"
+      >
+        <li
+          data-testid="encounter-scene-place-condition-0"
+          style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;"
+        >
+          the gate is shut
+        </li>
+      </ul>
+    </div>
+    <div
+      data-testid="encounter-scene-protagonist-conditions"
+    >
+      <div
+        style="font-family: var(--font-display); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px;"
+      >
+        Conditions On Her
+      </div>
+      <ul
+        style="list-style: none; margin: 0px; padding: 0px; display: flex; flex-direction: column; gap: 3px;"
+      >
+        <li
+          data-testid="encounter-scene-protagonist-condition-0"
+          style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;"
+        >
+          her name is known here
+        </li>
+      </ul>
+    </div>
+    <div
+      data-axis-id="protector_conqueror"
+      data-band="soft"
+      data-testid="encounter-drift-indicator"
+      style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 8px; border-top: 1px solid var(--border-subtle);"
+    >
+      <em
+        style="font-size: 11px; color: var(--text-tertiary); letter-spacing: 0.01em; font-weight: 400; line-height: 1.4; flex: 1 1 0%;"
+      >
+        Eira has tilted toward Conqueror.
+      </em>
+      <button
+        aria-label="dismiss drift indicator"
+        data-testid="encounter-drift-indicator-dismiss"
+        style="background: transparent; border: medium; color: var(--text-muted); font-size: 14px; cursor: pointer; padding: 0px 4px; line-height: 1;"
+        type="button"
+      >
+        ×
+      </button>
+    </div>
+  </section>
+</DocumentFragment>
+`;
+
+exports[`SceneStatePanel — composite tiered renders > renders detection TURN + drift BECOMING snapshot 1`] = `
+<DocumentFragment>
+  <section
+    data-testid="encounter-scene-state-panel"
+    style="display: flex; flex-direction: column; gap: 12px; padding: 12px; background: var(--bg-surface); border-top: 1px solid var(--border-subtle);"
+  >
+    <div
+      data-testid="encounter-scene-threads"
+    >
+      <div
+        style="font-family: var(--font-display); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px;"
+      >
+        Threads In Play
+      </div>
+      <div
+        style="display: flex; flex-direction: column; gap: 6px;"
+      >
+        <div
+          data-testid="encounter-thread-strip-oath"
+          data-weight="taut"
+          style="display: flex; align-items: center; gap: 10px; opacity: 1;"
+        >
+          <svg
+            aria-hidden="true"
+            height="6"
+            style="flex-shrink: 0;"
+            width="48"
+          >
+            <line
+              stroke="var(--sphere-spirit-bright)"
+              stroke-linecap="round"
+              stroke-width="2"
+              x1="0"
+              x2="48"
+              y1="3"
+              y2="3"
+            />
+          </svg>
+          <span
+            style="font-size: 12px; color: var(--text-secondary); font-style: normal; line-height: 1.35;"
+          >
+            an oath she has not paid
+          </span>
+        </div>
+        <div
+          data-testid="encounter-thread-strip-rumor"
+          data-weight="thin"
+          style="display: flex; align-items: center; gap: 10px; opacity: 0.75;"
+        >
+          <svg
+            aria-hidden="true"
+            height="5.2"
+            style="flex-shrink: 0;"
+            width="48"
+          >
+            <line
+              stroke="var(--sphere-mind-bright)"
+              stroke-linecap="round"
+              stroke-width="1.2"
+              x1="0"
+              x2="48"
+              y1="2.6"
+              y2="2.6"
+            />
+          </svg>
+          <span
+            style="font-size: 12px; color: var(--text-secondary); font-style: normal; line-height: 1.35;"
+          >
+            a rumor sharpening into a name
+          </span>
+        </div>
+        <div
+          data-band="turn"
+          data-testid="encounter-detection-thread"
+          style="display: flex; align-items: center; gap: 10px; opacity: 0.95;"
+        >
+          <svg
+            aria-hidden="true"
+            height="7"
+            style="flex-shrink: 0;"
+            width="48"
+          >
+            <line
+              stroke="var(--text-primary)"
+              stroke-linecap="round"
+              stroke-width="3"
+              x1="0"
+              x2="48"
+              y1="3.5"
+              y2="3.5"
+            />
+          </svg>
+          <span
+            style="font-size: 13px; font-weight: 600; color: var(--text-secondary); font-style: italic; line-height: 1.35;"
+          >
+            a rival god turns its head
+          </span>
+        </div>
+      </div>
+    </div>
+    <div
+      data-testid="encounter-scene-factions"
+    >
+      <div
+        style="font-family: var(--font-display); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px;"
+      >
+        Factions Present
+      </div>
+      <div
+        style="display: flex; flex-wrap: wrap; gap: 6px;"
+      >
+        <span
+          data-testid="encounter-scene-faction-Civic Guard"
+          style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent-gold-dim); border: 1px solid var(--border-subtle); border-radius: 999px; padding: 2px 8px; background: var(--bg-raised);"
+        >
+          Civic Guard
+        </span>
+      </div>
+    </div>
+    <div
+      data-testid="encounter-scene-place-conditions"
+    >
+      <div
+        style="font-family: var(--font-display); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px;"
+      >
+        Place Conditions
+      </div>
+      <ul
+        style="list-style: none; margin: 0px; padding: 0px; display: flex; flex-direction: column; gap: 3px;"
+      >
+        <li
+          data-testid="encounter-scene-place-condition-0"
+          style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;"
+        >
+          the gate is shut
+        </li>
+      </ul>
+    </div>
+    <div
+      data-testid="encounter-scene-protagonist-conditions"
+    >
+      <div
+        style="font-family: var(--font-display); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px;"
+      >
+        Conditions On Her
+      </div>
+      <ul
+        style="list-style: none; margin: 0px; padding: 0px; display: flex; flex-direction: column; gap: 3px;"
+      >
+        <li
+          data-testid="encounter-scene-protagonist-condition-0"
+          style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;"
+        >
+          her name is known here
+        </li>
+      </ul>
+    </div>
+    <div
+      data-axis-id="protector_conqueror"
+      data-band="becoming"
+      data-testid="encounter-drift-indicator"
+      style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 8px; border-top: 1px solid var(--border-subtle);"
+    >
+      <em
+        style="font-size: 13px; color: var(--accent-gold-dim); letter-spacing: 0.04em; font-weight: 600; line-height: 1.4; flex: 1 1 0%;"
+      >
+        Eira has become the Conqueror.
+      </em>
+      <button
+        aria-label="dismiss drift indicator"
+        data-testid="encounter-drift-indicator-dismiss"
+        style="background: transparent; border: medium; color: var(--text-muted); font-size: 14px; cursor: pointer; padding: 0px 4px; line-height: 1;"
+        type="button"
+      >
+        ×
+      </button>
+    </div>
+  </section>
+</DocumentFragment>
+`;
+
+exports[`ThreadStrip weight tiers > renders each weight tier snapshot > thread-fraying 1`] = `
+<DocumentFragment>
+  <div
+    data-testid="encounter-thread-strip-a"
+    data-weight="fraying"
+    style="display: flex; align-items: center; gap: 10px; opacity: 0.45;"
+  >
+    <svg
+      aria-hidden="true"
+      height="5"
+      style="flex-shrink: 0;"
+      width="48"
+    >
+      <line
+        stroke="var(--sphere-spirit-bright)"
+        stroke-dasharray="4 4"
+        stroke-linecap="round"
+        stroke-width="1"
+        x1="0"
+        x2="48"
+        y1="2.5"
+        y2="2.5"
+      />
+    </svg>
+    <span
+      style="font-size: 12px; color: var(--text-secondary); font-style: italic; line-height: 1.35;"
+    >
+      a held promise
+    </span>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`ThreadStrip weight tiers > renders each weight tier snapshot > thread-taut 1`] = `
+<DocumentFragment>
+  <div
+    data-testid="encounter-thread-strip-a"
+    data-weight="taut"
+    style="display: flex; align-items: center; gap: 10px; opacity: 1;"
+  >
+    <svg
+      aria-hidden="true"
+      height="6"
+      style="flex-shrink: 0;"
+      width="48"
+    >
+      <line
+        stroke="var(--sphere-spirit-bright)"
+        stroke-linecap="round"
+        stroke-width="2"
+        x1="0"
+        x2="48"
+        y1="3"
+        y2="3"
+      />
+    </svg>
+    <span
+      style="font-size: 12px; color: var(--text-secondary); font-style: normal; line-height: 1.35;"
+    >
+      a held promise
+    </span>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`ThreadStrip weight tiers > renders each weight tier snapshot > thread-thin 1`] = `
+<DocumentFragment>
+  <div
+    data-testid="encounter-thread-strip-a"
+    data-weight="thin"
+    style="display: flex; align-items: center; gap: 10px; opacity: 0.75;"
+  >
+    <svg
+      aria-hidden="true"
+      height="5.2"
+      style="flex-shrink: 0;"
+      width="48"
+    >
+      <line
+        stroke="var(--sphere-spirit-bright)"
+        stroke-linecap="round"
+        stroke-width="1.2"
+        x1="0"
+        x2="48"
+        y1="2.6"
+        y2="2.6"
+      />
+    </svg>
+    <span
+      style="font-size: 12px; color: var(--text-secondary); font-style: normal; line-height: 1.35;"
+    >
+      a held promise
+    </span>
+  </div>
+</DocumentFragment>
+`;

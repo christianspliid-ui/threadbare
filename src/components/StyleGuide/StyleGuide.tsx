@@ -37,6 +37,7 @@ import { EncounterScreen, ENCOUNTER_SCREEN_LAYOUT } from '../Game/Encounter/Enco
 import type { EncounterHeroPanelData } from '../Game/Encounter/EiraHeroPanel';
 import { EncounterChoiceCard } from '../Game/Encounter/EncounterChoiceCard';
 import { OutcomeForecastBand } from '../Game/Encounter/OutcomeForecastBand';
+import { SceneStatePanel, type SceneStatePanelData } from '../Game/Encounter/SceneStatePanel';
 import type { EncounterChoiceContract } from '../../types/encounter-contract';
 import { WorldGraph } from '../../engine/graph';
 import { buildPhoneticSignature } from '../../engine/culturePhonetics';
@@ -104,7 +105,63 @@ const SECTIONS = [
   { id: 'culture-phonetics', label: 'CulturePhoneticsInspector' },
   { id: 'encounter-screen', label: 'EncounterScreen (C1)' },
   { id: 'encounter-choice-c2', label: 'EncounterChoiceCard / OutcomeForecastBand (C2)' },
+  { id: 'encounter-scene-state-c4', label: 'SceneStatePanel (C4)' },
 ];
+
+const STYLEGUIDE_SCENE_STATE_BASE: SceneStatePanelData = {
+  threads: [
+    { id: 'oath', name: 'an oath she has not paid', weight: 'taut', sphereColor: 'spirit' },
+    { id: 'rumor', name: 'a rumor sharpening into a name', weight: 'thin', sphereColor: 'mind' },
+    { id: 'debt', name: 'a debt fraying at the edges', weight: 'fraying', sphereColor: 'matter' },
+  ],
+  factionsPresent: ['Civic Guard', 'Hollow Bell'],
+  placeConditions: ['the gate is shut', 'lanterns gutter low'],
+  protagonistConditions: ['her cloak is wet', 'her name is known here'],
+};
+
+const STYLEGUIDE_SCENE_STATE_QUIET: SceneStatePanelData = {
+  threads: [],
+  factionsPresent: [],
+  placeConditions: [],
+  protagonistConditions: [],
+};
+
+const STYLEGUIDE_SCENE_STATE_NOTICE: SceneStatePanelData = {
+  ...STYLEGUIDE_SCENE_STATE_BASE,
+  detectionPressure: 0.55,
+};
+
+const STYLEGUIDE_SCENE_STATE_TURN: SceneStatePanelData = {
+  ...STYLEGUIDE_SCENE_STATE_BASE,
+  detectionPressure: 0.85,
+};
+
+const STYLEGUIDE_SCENE_STATE_DRIFT_SOFT: SceneStatePanelData = {
+  ...STYLEGUIDE_SCENE_STATE_BASE,
+  drift: {
+    axisId: 'protector_conqueror',
+    band: 'soft',
+    prose: 'Eira has tilted toward Conqueror across her last several choices.',
+  },
+};
+
+const STYLEGUIDE_SCENE_STATE_DRIFT_BANNER: SceneStatePanelData = {
+  ...STYLEGUIDE_SCENE_STATE_BASE,
+  drift: {
+    axisId: 'protector_conqueror',
+    band: 'banner',
+    prose: 'Eira keeps tilting toward Conqueror — the lean is becoming her habit.',
+  },
+};
+
+const STYLEGUIDE_SCENE_STATE_DRIFT_BECOMING: SceneStatePanelData = {
+  ...STYLEGUIDE_SCENE_STATE_BASE,
+  drift: {
+    axisId: 'protector_conqueror',
+    band: 'becoming',
+    prose: 'Eira has become the Conqueror — the choice is no longer a choice.',
+  },
+};
 
 // ─── Sample data ──────────────────────────────────────────────────────────────
 
@@ -946,6 +1003,79 @@ export default function StyleGuide() {
                         dimmed={false}
                       />
                     ))}
+                  </div>
+                </div>
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          {/* ── SceneStatePanel (Phase C4) ─────────────────────── */}
+          <section id="section-encounter-scene-state-c4" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>SceneStatePanel (C4)</SectionHeading>
+            <div style={{ marginTop: '1.25rem' }}>
+              <GameErrorBoundary>
+                <Label>
+                  Bottom of the right rail. Renders threads in play (sphere-coded, weight-tiered),
+                  factions present, place conditions, conditions on the protagonist, plus the
+                  cumulative archetype drift indicator and the regional detection thread when
+                  pressure is high enough. No numbers visible — every signal is prose + visual
+                  weight.
+                </Label>
+                <div
+                  style={{
+                    marginTop: '1rem',
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(2, minmax(0, 360px))',
+                    gap: '1rem',
+                  }}
+                >
+                  <div>
+                    <Label>Quiet — empty fallbacks</Label>
+                    <div style={{ width: 360, border: '1px solid var(--border-medium)', borderRadius: 8, overflow: 'hidden' }}>
+                      <SceneStatePanel data={STYLEGUIDE_SCENE_STATE_QUIET} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>Populated — threads · factions · conditions</Label>
+                    <div style={{ width: 360, border: '1px solid var(--border-medium)', borderRadius: 8, overflow: 'hidden' }}>
+                      <SceneStatePanel data={STYLEGUIDE_SCENE_STATE_BASE} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>Detection — NOTICE (≥0.50)</Label>
+                    <div style={{ width: 360, border: '1px solid var(--border-medium)', borderRadius: 8, overflow: 'hidden' }}>
+                      <SceneStatePanel data={STYLEGUIDE_SCENE_STATE_NOTICE} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>Detection — TURN (≥0.80)</Label>
+                    <div style={{ width: 360, border: '1px solid var(--border-medium)', borderRadius: 8, overflow: 'hidden' }}>
+                      <SceneStatePanel data={STYLEGUIDE_SCENE_STATE_TURN} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>Drift — SOFT (≥0.30)</Label>
+                    <div style={{ width: 360, border: '1px solid var(--border-medium)', borderRadius: 8, overflow: 'hidden' }}>
+                      <SceneStatePanel data={STYLEGUIDE_SCENE_STATE_DRIFT_SOFT} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>Drift — BANNER (≥0.60)</Label>
+                    <div style={{ width: 360, border: '1px solid var(--border-medium)', borderRadius: 8, overflow: 'hidden' }}>
+                      <SceneStatePanel data={STYLEGUIDE_SCENE_STATE_DRIFT_BANNER} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>Drift — BECOMING (≥0.85)</Label>
+                    <div style={{ width: 360, border: '1px solid var(--border-medium)', borderRadius: 8, overflow: 'hidden' }}>
+                      <SceneStatePanel data={STYLEGUIDE_SCENE_STATE_DRIFT_BECOMING} />
+                    </div>
                   </div>
                 </div>
               </GameErrorBoundary>
