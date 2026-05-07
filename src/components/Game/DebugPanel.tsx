@@ -16,7 +16,7 @@ import type { StrategicRuntimeState } from '../../types/strategicAction';
 import type { OmenState } from '../../types/omen';
 import type { DoomIdentityMatrix } from '../../types/doomIdentity';
 import type { HiddenMark, PendingEncounterSeed } from '../../types/unifiedAction';
-import type { TickEvent, ActiveComposition } from '../../types/gameState';
+import type { TickEvent, ActiveComposition, RegionDetectionState } from '../../types/gameState';
 import { DebugTabContent, TABS, type ViewMode } from './debug/DebugTabContent';
 import {
   PANEL_STYLES, CONTAINER_STYLE, HEADER_STYLE, TAB_BAR_STYLE,
@@ -53,6 +53,8 @@ export interface DebugPanelProps {
   hiddenMarks?: readonly HiddenMark[];
   /** Pending encounter seeds for the Seeds inspector tab (THR-136). */
   pendingEncounterSeeds?: readonly PendingEncounterSeed[];
+  /** Per-region encounter detection pressure state (THR-326). */
+  regionalDetectionPressure?: readonly RegionDetectionState[];
   /** Active delves for the Ruins inspector tab (THR-152). */
   activeDelves?: readonly import('../../engine/ruins/delveTypes').ActiveDelve[];
   /** Lazy getter for recent events (debug tab opt-in stream). */
@@ -72,6 +74,7 @@ export const DebugPanel = React.memo(function DebugPanel({
   onToggleOrganicShore, encounterNotifications, pendingVignettes, seed,
   sphereAggregate, agentKnowledge, preferredViewMode, preferredViewNonce,
   strategicState, omenState, doomIdentityMatrix, hiddenMarks, pendingEncounterSeeds,
+  regionalDetectionPressure,
   activeDelves, getRecentEvents, flipTableStates, activeCompositions, doomClockStage,
 }: DebugPanelProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('feed');
@@ -210,6 +213,7 @@ export const DebugPanel = React.memo(function DebugPanel({
           doomIdentityMatrix={doomIdentityMatrix}
           hiddenMarks={hiddenMarks}
           pendingEncounterSeeds={pendingEncounterSeeds}
+          regionalDetectionPressure={regionalDetectionPressure}
           activeDelves={activeDelves}
           getRecentEvents={getRecentEvents}
           flipTableStates={flipTableStates}

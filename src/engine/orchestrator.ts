@@ -116,6 +116,7 @@ import { phaseComposition } from './phaseComposition';
 import { phaseEncounterVisibility } from './encounterVisibility';
 import { phaseAscendantHandFilter } from './orchestrator/phaseAscendantHandFilter';
 import { phaseChoiceResolution } from './orchestrator/phaseChoiceResolution';
+import { phaseDetectionPressure } from './orchestrator/phaseDetectionPressure';
 import { phaseDriftDecay } from './orchestrator/phaseDriftDecay';
 import { mulberry32 as libMulberry32 } from '../lib/prng';
 import { evaluateEncounterSeeds } from './encounterSeeding';
@@ -2072,6 +2073,18 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   };
   phaseEventCounts['encounter_visibility'] = encVisResult.notifications.length;
   prevEventCount = s.tickEvents.length;
+
+  // Phase 2a.605: Detection Pressure — regional escalation from committed choices + passive decay
+  {
+    const detectionResult = phaseDetectionPressure(s);
+    s = {
+      ...s,
+      regionalDetectionPressure: detectionResult.regionalDetectionPressure,
+      regionDetection: detectionResult.regionDetection,
+      pendingEncounterSeeds: detectionResult.pendingEncounterSeeds,
+    };
+    phaseEventCounts['detection_pressure'] = detectionResult.updatedRegions;
+  }
 
   // Phase 2a.61: Choice Resolution — process pending player choice commits (THR-323)
   {
