@@ -2,6 +2,7 @@
 > Updated 2026-05-07.
 
 ## Current Focus
+**THR-355 complete — Phase 1 canon convention verified and closed.** Confirmed all THR-304 Phase 1 deliverables (`Docs/canon/README.md`, `encounters.md`, `cosmology.md`, CLAUDE.md Canon Pages table, documentation-ownership.md entry) are complete from prior THR-305 work. Added missing `2026-05-05-encounter-ui-implementation-phasing.md` pointer to `Docs/canon/encounters.md` Active design plans.
 **THR-329 complete — Encounter UI Phase B7 callback eligibility computation shipped.** Added `src/engine/callbackEligibility.ts` as a deterministic pure scoring module that resolves “moments that could echo” with author-pinned `callback_candidates[]` priority and graph-derived slack fill up to 3 candidates. Ranking uses named tunable constants for recency decay (50+ ticks => 0.5x), beat-context relevance overlap (cast/place/faction/sphere), and structural/incidental emotional weighting (1.5x/1.0x), with fail-soft empty-history handling and deterministic tie-break ordering. Added focused tests in `src/engine/__tests__/callbackEligibility.test.ts` for pinned override, heuristic ranking, tie-breaking, and empty-history behavior.
 **THR-326 complete — Encounter UI Phase B4 regional detection pressure shipped.** Added a dedicated `phaseDetectionPressure` run before `phaseChoiceResolution` to apply per-choice pressure gain by region, per-tick decay, threshold crossing traces (`detection_threshold_crossed`), and rival encounter seed enqueue at encounter threshold. Added deterministic helper module coverage and surfaced `regionalDetectionPressure` in DebugPanel Encounter Seeds tab for inspectability.
 **THR-357 complete — branching encounter contract metadata migration shipped.** All 23 files in `src/data/encounters/` now emit encoded `EncounterContract` metadata from authored choice data, replacing default-inferred `moral_axis_pole` at adapter fallback. Added `encounter-contract-migration.test.ts` smoke coverage to assert every branching template loads encoded metadata and round-trips through `adaptUnifiedActionTemplateToEncounterContract` with explicit poles present on every choice.
@@ -19,14 +20,14 @@
 - **Encounter Format Migration (Now):** ✅ Phases 0-9 complete. All guilds migrated.
 - **Content Architecture (Now):** ✅ THR-86/88/239 shipped.
 - **UI Visual Overhaul — Design System v1 (Now):** ✅ Project complete.
-- **Continuous Improvement (Now):** THR-303/305/306/307/309/311/312/313/314/315/316 ✅. THR-304 In Implementation Planning (Phase 5b/UL children pending).
+- **Continuous Improvement (Now):** THR-303/305/306/307/309/311/312/313/314/315/316/355 ✅. THR-304 In Implementation Planning (Phase 5a vault propagation + Phase 5b repo pending).
 - **Social Systems Expansion (Now):** THR-28/27/30/51/29/41/34/31/35 shipped. ✅ THR-254/253. THR-78 queued.
 - **Thematic Pressure & Living World (Next):** ✅ THR-19/122/125/126/80/128/127. THR-87 blocked by THR-116.
 
 ## Archived to project-history.md
 - THR-322/321/320/315/309/307/308/306/302/305/301/299/298/297/296/294/282/238/109/79/108/107/104/103/106/290/102/280/285/286/283/287/276/284/277/281/211/243/272/212/210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
 - 2026-05-06 batch: THR-311, THR-312, THR-313, THR-314, THR-315, THR-316, THR-317, THR-320, THR-321, THR-322, THR-323, THR-336
-- 2026-05-07 batch: THR-324, THR-325, THR-349, THR-350, THR-354
+- 2026-05-07 batch: THR-324, THR-325, THR-329, THR-349, THR-350, THR-354, THR-355
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
