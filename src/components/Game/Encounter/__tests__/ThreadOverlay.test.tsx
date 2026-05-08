@@ -239,3 +239,57 @@ describe('ThreadOverlay', () => {
     );
   });
 });
+
+describe('ThreadOverlay 1920×1080 snapshot grid', () => {
+  const viewportWidth = 1920;
+  const viewportHeight = 1080;
+
+  const phaseCases: Array<{
+    label: string;
+    phase: 'idle' | 'committed' | 'drawing' | 'taut' | 'resolving' | 'settled';
+    chosenReach: EncounterChoiceContract['reach'] | null;
+  }> = [
+    { label: 'phase-idle-1920x1080', phase: 'idle', chosenReach: null },
+    {
+      label: 'phase-committed-1920x1080',
+      phase: 'committed',
+      chosenReach: null,
+    },
+    { label: 'phase-drawing-1920x1080', phase: 'drawing', chosenReach: null },
+    { label: 'phase-taut-1920x1080', phase: 'taut', chosenReach: null },
+    {
+      label: 'phase-resolving-1920x1080',
+      phase: 'resolving',
+      chosenReach: 'veil',
+    },
+    {
+      label: 'phase-settled-1920x1080',
+      phase: 'settled',
+      chosenReach: 'veil',
+    },
+  ];
+
+  for (const { label, phase, chosenReach } of phaseCases) {
+    it(`matches snapshot for ${label}`, () => {
+      const { asFragment } = render(
+        <div
+          style={{
+            position: 'relative',
+            width: viewportWidth,
+            height: viewportHeight,
+          }}
+        >
+          <ThreadOverlay
+            choices={sampleChoices}
+            chosenReach={chosenReach}
+            phase={phase}
+            width={viewportWidth}
+            height={viewportHeight}
+          />
+        </div>,
+      );
+
+      expect(asFragment()).toMatchSnapshot(label);
+    });
+  }
+});

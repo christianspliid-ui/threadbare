@@ -620,3 +620,4 @@ px vite build).
 - ✅ 2026-05-08: THR-265 shipped skill freshness infrastructure — bootstrapped `last_validated_against` across all SKILL.md files, added S5 drift-scan freshness signal + baseline tracking, and documented the skill-date bump convention in CLAUDE Skill Tree Layout.
 - ✅ 2026-05-08: THR-363 shipped — Phase 2b Canon Step-0 wiring across prose/hexmap/template skills in both trees; check:skill-sync + test/typecheck/build all green.
 - ✅ 2026-05-08: THR-178 shipped — right rail v7 overhaul (Deferral): added .panel CSS class, applied panel containers to ThreadsPanel and WorldPulse, converted WorldPulse headings to SectionHeading, replaced unicode omen glyphs with sphere-colored inline rule, updated GameView sidebar border to --border-subtle.
+- ✅ 2026-05-08: THR-365 shipped — added six 1920x1080 ThreadOverlay phase snapshots (idle→settled) while preserving the existing 800x400 taut snapshot; npm test, tsc, and build all green.
