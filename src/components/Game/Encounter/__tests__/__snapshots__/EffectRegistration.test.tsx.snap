@@ -1,9 +1,9 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`EffectRegistration components — settled snapshots > ArchetypeDriftLanding renders Heart-band dot fill + chaos particle 1`] = `
+exports[`EffectRegistration 1920×1080 snapshot grid > renders ArchetypeDriftLanding at 1920×1080 1`] = `
 <DocumentFragment>
   <div
-    style="width: 1920px; height: 1080px;"
+    style="position: relative; width: 1920px; height: 1080px;"
   >
     <div
       data-phase="settled"
@@ -39,10 +39,10 @@ exports[`EffectRegistration components — settled snapshots > ArchetypeDriftLan
 </DocumentFragment>
 `;
 
-exports[`EffectRegistration components — settled snapshots > ConditionAttachmentLanding renders spirit-violet pill 1`] = `
+exports[`EffectRegistration 1920×1080 snapshot grid > renders ConditionAttachmentLanding at 1920×1080 1`] = `
 <DocumentFragment>
   <div
-    style="width: 1920px; height: 1080px;"
+    style="position: relative; width: 1920px; height: 1080px;"
   >
     <div
       data-phase="settled"
@@ -69,10 +69,10 @@ exports[`EffectRegistration components — settled snapshots > ConditionAttachme
 </DocumentFragment>
 `;
 
-exports[`EffectRegistration components — settled snapshots > EncounterSeedLanding renders time-orange dim seed card 1`] = `
+exports[`EffectRegistration 1920×1080 snapshot grid > renders EncounterSeedLanding at 1920×1080 1`] = `
 <DocumentFragment>
   <div
-    style="width: 1920px; height: 1080px;"
+    style="position: relative; width: 1920px; height: 1080px;"
   >
     <div
       data-phase="settled"
@@ -103,10 +103,10 @@ exports[`EffectRegistration components — settled snapshots > EncounterSeedLand
 </DocumentFragment>
 `;
 
-exports[`EffectRegistration components — settled snapshots > FactionLanding renders order-gold chip with tone swap 1`] = `
+exports[`EffectRegistration 1920×1080 snapshot grid > renders FactionLanding at 1920×1080 1`] = `
 <DocumentFragment>
   <div
-    style="width: 1920px; height: 1080px;"
+    style="position: relative; width: 1920px; height: 1080px;"
   >
     <div
       data-phase="settled"
@@ -138,10 +138,10 @@ exports[`EffectRegistration components — settled snapshots > FactionLanding re
 </DocumentFragment>
 `;
 
-exports[`EffectRegistration components — settled snapshots > HiddenMarkLanding renders dotted-outline player-only pill 1`] = `
+exports[`EffectRegistration 1920×1080 snapshot grid > renders HiddenMarkLanding at 1920×1080 1`] = `
 <DocumentFragment>
   <div
-    style="width: 1920px; height: 1080px;"
+    style="position: relative; width: 1920px; height: 1080px;"
   >
     <div
       data-phase="settled"
@@ -168,10 +168,10 @@ exports[`EffectRegistration components — settled snapshots > HiddenMarkLanding
 </DocumentFragment>
 `;
 
-exports[`EffectRegistration components — settled snapshots > IntelligenceLanding renders mind-blue clue card 1`] = `
+exports[`EffectRegistration 1920×1080 snapshot grid > renders IntelligenceLanding at 1920×1080 1`] = `
 <DocumentFragment>
   <div
-    style="width: 1920px; height: 1080px;"
+    style="position: relative; width: 1920px; height: 1080px;"
   >
     <div
       data-phase="settled"
@@ -198,10 +198,10 @@ exports[`EffectRegistration components — settled snapshots > IntelligenceLandi
 </DocumentFragment>
 `;
 
-exports[`EffectRegistration components — settled snapshots > RecentEventLanding renders heart-coloured echo card 1`] = `
+exports[`EffectRegistration 1920×1080 snapshot grid > renders RecentEventLanding at 1920×1080 1`] = `
 <DocumentFragment>
   <div
-    style="width: 1920px; height: 1080px;"
+    style="position: relative; width: 1920px; height: 1080px;"
   >
     <div
       data-phase="settled"
@@ -228,10 +228,10 @@ exports[`EffectRegistration components — settled snapshots > RecentEventLandin
 </DocumentFragment>
 `;
 
-exports[`EffectRegistration components — settled snapshots > ReputationScoreLanding renders cast tile prose band swap 1`] = `
+exports[`EffectRegistration 1920×1080 snapshot grid > renders ReputationScoreLanding at 1920×1080 1`] = `
 <DocumentFragment>
   <div
-    style="width: 1920px; height: 1080px;"
+    style="position: relative; width: 1920px; height: 1080px;"
   >
     <div
       data-phase="settled"
@@ -263,10 +263,10 @@ exports[`EffectRegistration components — settled snapshots > ReputationScoreLa
 </DocumentFragment>
 `;
 
-exports[`EffectRegistration components — settled snapshots > ReputationTallyLanding renders cast tile pulse + new disposition 1`] = `
+exports[`EffectRegistration 1920×1080 snapshot grid > renders ReputationTallyLanding at 1920×1080 1`] = `
 <DocumentFragment>
   <div
-    style="width: 1920px; height: 1080px;"
+    style="position: relative; width: 1920px; height: 1080px;"
   >
     <div
       data-phase="settled"
@@ -292,10 +292,10 @@ exports[`EffectRegistration components — settled snapshots > ReputationTallyLa
 </DocumentFragment>
 `;
 
-exports[`EffectRegistration components — settled snapshots > SpawnArtifactLanding renders matter-umber items rail tile 1`] = `
+exports[`EffectRegistration 1920×1080 snapshot grid > renders SpawnArtifactLanding at 1920×1080 1`] = `
 <DocumentFragment>
   <div
-    style="width: 1920px; height: 1080px;"
+    style="position: relative; width: 1920px; height: 1080px;"
   >
     <div
       data-phase="settled"

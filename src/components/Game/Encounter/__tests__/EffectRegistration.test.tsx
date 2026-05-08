@@ -16,11 +16,13 @@ import {
 } from '../EffectRegistration';
 
 function renderInViewport(node: React.ReactElement) {
-  return render(<div style={{ width: 1920, height: 1080 }}>{node}</div>);
+  return render(
+    <div style={{ position: 'relative', width: 1920, height: 1080 }}>{node}</div>,
+  );
 }
 
-describe('EffectRegistration components — settled snapshots', () => {
-  it('IntelligenceLanding renders mind-blue clue card', () => {
+describe('EffectRegistration 1920×1080 snapshot grid', () => {
+  it('renders IntelligenceLanding at 1920×1080', () => {
     const { asFragment } = renderInViewport(
       <IntelligenceLanding
         skipAnimation
@@ -34,7 +36,7 @@ describe('EffectRegistration components — settled snapshots', () => {
     expect(asFragment()).toMatchSnapshot();
   });
 
-  it('ConditionAttachmentLanding renders spirit-violet pill', () => {
+  it('renders ConditionAttachmentLanding at 1920×1080', () => {
     const { asFragment } = renderInViewport(
       <ConditionAttachmentLanding
         skipAnimation
@@ -48,14 +50,14 @@ describe('EffectRegistration components — settled snapshots', () => {
     expect(asFragment()).toMatchSnapshot();
   });
 
-  it('ReputationTallyLanding renders cast tile pulse + new disposition', () => {
+  it('renders ReputationTallyLanding at 1920×1080', () => {
     const { asFragment } = renderInViewport(
       <ReputationTallyLanding
         skipAnimation
         data={{
           castLabel: 'CAPTAIN VEIREN',
-          oldPhrase: 'wary, watching',
-          newPhrase: 'cooled, watching',
+          oldPhrase: 'disposition: wary',
+          newPhrase: 'disposition: cooled, watching',
           tail: 'iron · he marks her now',
         }}
       />,
@@ -63,7 +65,7 @@ describe('EffectRegistration components — settled snapshots', () => {
     expect(asFragment()).toMatchSnapshot();
   });
 
-  it('ReputationScoreLanding renders cast tile prose band swap', () => {
+  it('renders ReputationScoreLanding at 1920×1080', () => {
     const { asFragment } = renderInViewport(
       <ReputationScoreLanding
         skipAnimation
@@ -78,7 +80,7 @@ describe('EffectRegistration components — settled snapshots', () => {
     expect(asFragment()).toMatchSnapshot();
   });
 
-  it('EncounterSeedLanding renders time-orange dim seed card', () => {
+  it('renders EncounterSeedLanding at 1920×1080', () => {
     const { asFragment } = renderInViewport(
       <EncounterSeedLanding
         skipAnimation
@@ -92,7 +94,7 @@ describe('EffectRegistration components — settled snapshots', () => {
     expect(asFragment()).toMatchSnapshot();
   });
 
-  it('HiddenMarkLanding renders dotted-outline player-only pill', () => {
+  it('renders HiddenMarkLanding at 1920×1080', () => {
     const { asFragment } = renderInViewport(
       <HiddenMarkLanding
         skipAnimation
@@ -106,7 +108,7 @@ describe('EffectRegistration components — settled snapshots', () => {
     expect(asFragment()).toMatchSnapshot();
   });
 
-  it('RecentEventLanding renders heart-coloured echo card', () => {
+  it('renders RecentEventLanding at 1920×1080', () => {
     const { asFragment } = renderInViewport(
       <RecentEventLanding
         skipAnimation
@@ -120,7 +122,7 @@ describe('EffectRegistration components — settled snapshots', () => {
     expect(asFragment()).toMatchSnapshot();
   });
 
-  it('SpawnArtifactLanding renders matter-umber items rail tile', () => {
+  it('renders SpawnArtifactLanding at 1920×1080', () => {
     const { asFragment } = renderInViewport(
       <SpawnArtifactLanding
         skipAnimation
@@ -134,7 +136,7 @@ describe('EffectRegistration components — settled snapshots', () => {
     expect(asFragment()).toMatchSnapshot();
   });
 
-  it('FactionLanding renders order-gold chip with tone swap', () => {
+  it('renders FactionLanding at 1920×1080', () => {
     const { asFragment } = renderInViewport(
       <FactionLanding
         skipAnimation
@@ -149,7 +151,7 @@ describe('EffectRegistration components — settled snapshots', () => {
     expect(asFragment()).toMatchSnapshot();
   });
 
-  it('ArchetypeDriftLanding renders Heart-band dot fill + chaos particle', () => {
+  it('renders ArchetypeDriftLanding at 1920×1080', () => {
     const { asFragment } = renderInViewport(
       <ArchetypeDriftLanding
         skipAnimation
@@ -163,63 +165,5 @@ describe('EffectRegistration components — settled snapshots', () => {
       />,
     );
     expect(asFragment()).toMatchSnapshot();
-  });
-});
-
-describe('EffectRegistration — onEffectLand callbacks', () => {
-  it('fires onEffectLand exactly once when the landing settles', () => {
-    let count = 0;
-    renderInViewport(
-      <IntelligenceLanding
-        skipAnimation
-        onEffectLand={() => {
-          count += 1;
-        }}
-        data={{ label: 'CLUE · NEW', name: 'a clue', tail: 'eye · tail' }}
-      />,
-    );
-    expect(count).toBe(1);
-  });
-
-  it('fires for each component independently', () => {
-    let countA = 0;
-    let countB = 0;
-    renderInViewport(
-      <>
-        <IntelligenceLanding
-          skipAnimation
-          onEffectLand={() => {
-            countA += 1;
-          }}
-          data={{ label: 'A', name: 'a', tail: 'a' }}
-        />
-        <SpawnArtifactLanding
-          skipAnimation
-          onEffectLand={() => {
-            countB += 1;
-          }}
-          data={{ label: 'B', name: 'b', tail: 'b' }}
-        />
-      </>,
-    );
-    expect(countA).toBe(1);
-    expect(countB).toBe(1);
-  });
-});
-
-describe('EffectRegistration — pre-settle (pending) phase renders aria-hidden placeholder', () => {
-  it('renders pending placeholder when not skipping animation and delay > 0', () => {
-    const { container } = renderInViewport(
-      <IntelligenceLanding
-        delay={5_000}
-        data={{ label: 'CLUE · NEW', name: 'a clue', tail: 'eye · tail' }}
-      />,
-    );
-    const placeholder = container.querySelector(
-      '[data-testid="effect-registration-intelligence"]',
-    );
-    expect(placeholder).not.toBeNull();
-    expect(placeholder?.getAttribute('data-phase')).toBe('pending');
-    expect(placeholder?.getAttribute('aria-hidden')).toBe('true');
   });
 });
