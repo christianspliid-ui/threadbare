@@ -122,7 +122,7 @@ describe('factionAwareness', () => {
     it('limits entries for low-rank agent (rank 0.1 → 2 max)', () => {
       const graph = makeGraph();
       addAgent(graph, 'agent-1');
-      addFaction(graph, 'faction-1', { gold: 1.0, iron: 0.1, shadow: 0.1, veil: 0.1, heart: 0.1, eye: 0.1, stone: 0.1, star: 0.1, flesh: 0.1 });
+      addFaction(graph, 'faction-1', { gold: 1.0, iron: 0.1, shadow: 0.1, veil: 0.1, heart: 0.1, eye: 0.1, stone: 0.1, star: 0.1 });
       addLocation(graph, 'loc-1');
       addMemberEdge(graph, 'agent-1', 'faction-1', 0.1);
       addLocatedAtEdge(graph, 'faction-1', 'loc-1');
@@ -143,7 +143,7 @@ describe('factionAwareness', () => {
     it('allows many entries for high-rank agent (rank 0.9 → 18 max)', () => {
       const graph = makeGraph();
       addAgent(graph, 'agent-1');
-      addFaction(graph, 'faction-1', { gold: 1.0, iron: 0.1, shadow: 0.1, veil: 0.1, heart: 0.1, eye: 0.1, stone: 0.1, star: 0.1, flesh: 0.1 });
+      addFaction(graph, 'faction-1', { gold: 1.0, iron: 0.1, shadow: 0.1, veil: 0.1, heart: 0.1, eye: 0.1, stone: 0.1, star: 0.1 });
       addLocation(graph, 'loc-1');
       addMemberEdge(graph, 'agent-1', 'faction-1', 0.9);
       addLocatedAtEdge(graph, 'faction-1', 'loc-1');
@@ -163,7 +163,7 @@ describe('factionAwareness', () => {
     it('filters entries by faction primary reach', () => {
       const graph = makeGraph();
       addAgent(graph, 'agent-1');
-      addFaction(graph, 'faction-1', { gold: 1.0, iron: 0.1, shadow: 0.1, veil: 0.1, heart: 0.1, eye: 0.1, stone: 0.1, star: 0.1, flesh: 0.1 });
+      addFaction(graph, 'faction-1', { gold: 1.0, iron: 0.1, shadow: 0.1, veil: 0.1, heart: 0.1, eye: 0.1, stone: 0.1, star: 0.1 });
       addLocation(graph, 'loc-1');
       addMemberEdge(graph, 'agent-1', 'faction-1', 0.5);
       addLocatedAtEdge(graph, 'faction-1', 'loc-1');
@@ -186,7 +186,7 @@ describe('factionAwareness', () => {
       const graph = makeGraph();
       addAgent(graph, 'agent-1');
       // gold=1.0 (primary), heart=0.5 (secondary, above 0.3 threshold), rest low
-      addFaction(graph, 'faction-1', { gold: 1.0, heart: 0.5, iron: 0.1, shadow: 0.1, veil: 0.1, eye: 0.1, stone: 0.1, star: 0.1, flesh: 0.1 });
+      addFaction(graph, 'faction-1', { gold: 1.0, heart: 0.5, iron: 0.1, shadow: 0.1, veil: 0.1, eye: 0.1, stone: 0.1, star: 0.1 });
       addLocation(graph, 'loc-1');
       addMemberEdge(graph, 'agent-1', 'faction-1', 0.5);
       addLocatedAtEdge(graph, 'faction-1', 'loc-1');
@@ -207,7 +207,7 @@ describe('factionAwareness', () => {
     it('returns [] when agent rank is below minimum for intel', () => {
       const graph = makeGraph();
       addAgent(graph, 'agent-1');
-      addFaction(graph, 'faction-1', { gold: 1.0, iron: 0.1, shadow: 0.1, veil: 0.1, heart: 0.1, eye: 0.1, stone: 0.1, star: 0.1, flesh: 0.1 });
+      addFaction(graph, 'faction-1', { gold: 1.0, iron: 0.1, shadow: 0.1, veil: 0.1, heart: 0.1, eye: 0.1, stone: 0.1, star: 0.1 });
       addLocation(graph, 'loc-1');
       addMemberEdge(graph, 'agent-1', 'faction-1', 0.01); // below 0.05 threshold
       addLocatedAtEdge(graph, 'faction-1', 'loc-1');
@@ -243,7 +243,7 @@ describe('factionAwareness', () => {
     it('excludes entries already in alreadyVisible set', () => {
       const graph = makeGraph();
       addAgent(graph, 'agent-1');
-      addFaction(graph, 'faction-1', { gold: 1.0, iron: 0.1, shadow: 0.1, veil: 0.1, heart: 0.1, eye: 0.1, stone: 0.1, star: 0.1, flesh: 0.1 });
+      addFaction(graph, 'faction-1', { gold: 1.0, iron: 0.1, shadow: 0.1, veil: 0.1, heart: 0.1, eye: 0.1, stone: 0.1, star: 0.1 });
       addLocation(graph, 'loc-1');
       addMemberEdge(graph, 'agent-1', 'faction-1', 0.5);
       addLocatedAtEdge(graph, 'faction-1', 'loc-1');
@@ -266,7 +266,7 @@ describe('factionAwareness', () => {
     it('returns entries sorted by questPriority descending', () => {
       const graph = makeGraph();
       addAgent(graph, 'agent-1');
-      addFaction(graph, 'faction-1', { gold: 1.0, iron: 0.1, shadow: 0.1, veil: 0.1, heart: 0.1, eye: 0.1, stone: 0.1, star: 0.1, flesh: 0.1 });
+      addFaction(graph, 'faction-1', { gold: 1.0, iron: 0.1, shadow: 0.1, veil: 0.1, heart: 0.1, eye: 0.1, stone: 0.1, star: 0.1 });
       addLocation(graph, 'loc-1');
       addMemberEdge(graph, 'agent-1', 'faction-1', 0.5);
       addLocatedAtEdge(graph, 'faction-1', 'loc-1');
@@ -288,7 +288,7 @@ describe('factionAwareness', () => {
     it('uses default rank when edge has no rank property', () => {
       const graph = makeGraph();
       addAgent(graph, 'agent-1');
-      addFaction(graph, 'faction-1', { gold: 1.0, iron: 0.1, shadow: 0.1, veil: 0.1, heart: 0.1, eye: 0.1, stone: 0.1, star: 0.1, flesh: 0.1 });
+      addFaction(graph, 'faction-1', { gold: 1.0, iron: 0.1, shadow: 0.1, veil: 0.1, heart: 0.1, eye: 0.1, stone: 0.1, star: 0.1 });
       addLocation(graph, 'loc-1');
       addMemberEdge(graph, 'agent-1', 'faction-1'); // no rank → default 0.1
       addLocatedAtEdge(graph, 'faction-1', 'loc-1');
@@ -308,7 +308,7 @@ describe('factionAwareness', () => {
     it('includes entries whose secondary reach matches faction primary', () => {
       const graph = makeGraph();
       addAgent(graph, 'agent-1');
-      addFaction(graph, 'faction-1', { gold: 1.0, iron: 0.1, shadow: 0.1, veil: 0.1, heart: 0.1, eye: 0.1, stone: 0.1, star: 0.1, flesh: 0.1 });
+      addFaction(graph, 'faction-1', { gold: 1.0, iron: 0.1, shadow: 0.1, veil: 0.1, heart: 0.1, eye: 0.1, stone: 0.1, star: 0.1 });
       addLocation(graph, 'loc-1');
       addMemberEdge(graph, 'agent-1', 'faction-1', 0.5);
       addLocatedAtEdge(graph, 'faction-1', 'loc-1');
@@ -328,8 +328,8 @@ describe('factionAwareness', () => {
     it('aggregates entries from multiple factions', () => {
       const graph = makeGraph();
       addAgent(graph, 'agent-1');
-      addFaction(graph, 'faction-gold', { gold: 1.0, iron: 0.1, shadow: 0.1, veil: 0.1, heart: 0.1, eye: 0.1, stone: 0.1, star: 0.1, flesh: 0.1 });
-      addFaction(graph, 'faction-iron', { iron: 1.0, gold: 0.1, shadow: 0.1, veil: 0.1, heart: 0.1, eye: 0.1, stone: 0.1, star: 0.1, flesh: 0.1 });
+      addFaction(graph, 'faction-gold', { gold: 1.0, iron: 0.1, shadow: 0.1, veil: 0.1, heart: 0.1, eye: 0.1, stone: 0.1, star: 0.1 });
+      addFaction(graph, 'faction-iron', { iron: 1.0, gold: 0.1, shadow: 0.1, veil: 0.1, heart: 0.1, eye: 0.1, stone: 0.1, star: 0.1 });
       addLocation(graph, 'loc-gold');
       addLocation(graph, 'loc-iron');
       addMemberEdge(graph, 'agent-1', 'faction-gold', 0.5);

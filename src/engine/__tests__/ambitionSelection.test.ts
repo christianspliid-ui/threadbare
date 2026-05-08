@@ -11,7 +11,7 @@ import type { ReachDomain } from '../../types/traits';
 
 const ZERO_CAPABILITIES: Record<ReachDomain, number> = {
   iron: 0, gold: 0, shadow: 0, veil: 0, heart: 0,
-  eye: 0, stone: 0, star: 0, flesh: 0,
+  eye: 0, stone: 0, star: 0,
 };
 
 const tradeTemplate: AmbitionTemplate = {

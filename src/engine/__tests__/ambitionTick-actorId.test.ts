@@ -135,7 +135,7 @@ describe('ambitionTick — actorId + notification directives', () => {
     const ACTOR_ID = 'actor.aband';
     // Build agent state that triggers abandonment
     // Many templates abandon when agent lacks a required reach — set all to 0
-    addActor(graph, ACTOR_ID, { gold: 0, iron: 0, shadow: 0, veil: 0, heart: 0, eye: 0, stone: 0, star: 0, flesh: 0 });
+    addActor(graph, ACTOR_ID, { gold: 0, iron: 0, shadow: 0, veil: 0, heart: 0, eye: 0, stone: 0, star: 0 });
     addActiveAmbition(graph, ACTOR_ID, template.id);
 
     const state = makeState(graph, MILESTONE_CHECK_INTERVAL);

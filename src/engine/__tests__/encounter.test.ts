@@ -129,7 +129,6 @@ function addTraitToActor(
         heart: reachDomain === 'heart' ? contribution : 0,
         stone: reachDomain === 'stone' ? contribution : 0,
         star: reachDomain === 'star' ? contribution : 0,
-        flesh: reachDomain === 'gold' ? contribution : 0,
       },
     },
   });

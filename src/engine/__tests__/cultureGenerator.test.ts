@@ -52,7 +52,7 @@ describe('culture types', () => {
       metaphorPalette: ['the unbroken wave'],
       formativeTraitSeedIds: ['weapon_mastery'],
       behavioralTraitSeedIds: ['challenge_compulsion'],
-      reachPreferences: { iron: 0, gold: 0, shadow: 0, veil: 0, heart: 0, eye: 0, stone: 0, star: 0, flesh: 0 },
+      reachPreferences: { iron: 0, gold: 0, shadow: 0, veil: 0, heart: 0, eye: 0, stone: 0, star: 0 },
     };
     expect(identity.foundationBias).toBe('chaos');
     expect(identity.veneratedSpheres).toHaveLength(1);
@@ -163,7 +163,7 @@ const mockIdentity: CultureIdentity = {
   metaphorPalette: ['the steady river'],
   formativeTraitSeedIds: ['discipline'],
   behavioralTraitSeedIds: ['loyalty'],
-  reachPreferences: { iron: 0, gold: 0, shadow: 0, veil: 0, heart: 0, eye: 0, stone: 0, star: 0, flesh: 0 },
+  reachPreferences: { iron: 0, gold: 0, shadow: 0, veil: 0, heart: 0, eye: 0, stone: 0, star: 0 },
 };
 
 // ─── Helper for tests ──────────────────────────────────────────────
