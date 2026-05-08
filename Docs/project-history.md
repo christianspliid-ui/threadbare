@@ -611,3 +611,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 pm test, 
 px tsc --noEmit, 
 px vite build).
+- ✅ 2026-05-08: THR-360 shipped — completed Bucket 0 mechanical cleanup by removing stale `flesh` residues from quest hook sphere-set, style/test fixtures, and domain-word legacy comments (full verification trio green).
