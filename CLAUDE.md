@@ -427,7 +427,7 @@ Current recurring task registry:
 | Task | Cadence | Purpose | Status |
 |------|---------|---------|--------|
 | `flush-plan-docs` | Hourly at :15 | Commit `plan-pending-commit`-labeled plan docs to `origin/main` | Active |
-| Weekly drift scan | Friday 14:00 UTC | GitHub Action drift signals → Linear `drift-scan` issues | Active |
+| Weekly drift scan | Friday 14:00 UTC | GitHub Action — drift signals → Linear `drift-scan` issues | Active (GitHub Action) |
 | `weekly-retro` | Friday ~15:00 UTC | Weekly retrospective from drift-scan issues + impediments log | Active |
 | `weekly-memory-grooming` | Sunday 16:03 UTC (18:03 Europe/Copenhagen on 2026-05-08) | Consolidate Cowork / CC / Codex memory files | Active |
 
