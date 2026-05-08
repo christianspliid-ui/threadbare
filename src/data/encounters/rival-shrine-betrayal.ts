@@ -103,6 +103,7 @@ const step1AcceptExtraction: ActionStep = {
   reach: 'shadow',
   duration: { min: 3, max: 4 },
   difficulty: 0.45,
+  difficultyContext: 'intel_sensitive',
   onSuccess: [
     // Create the intelligence attachment (shrine map artifact)
     {

@@ -95,6 +95,7 @@ const step1ThreadTheSurvivorOut: ActionStep = {
   reach: 'star',
   duration: { min: 2, max: 3 },
   difficulty: 0.45,
+  difficultyContext: 'intel_sensitive',
   onSuccess: [
     {
       op: 'update_node',
@@ -125,6 +126,7 @@ const step1WorkThroughTheBystander: ActionStep = {
   reach: 'iron',
   duration: { min: 2, max: 3 },
   difficulty: 0.40,
+  difficultyContext: 'intel_sensitive',
   onSuccess: [
     {
       op: 'update_node',

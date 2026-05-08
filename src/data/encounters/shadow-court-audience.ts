@@ -81,6 +81,7 @@ const step1PresentHonestly: ActionStep = {
   reach: 'shadow',
   duration: { min: 3, max: 4 },
   difficulty: 0.40,
+  difficultyContext: 'intel_sensitive',
   onSuccess: [
     {
       op: 'update_node',
@@ -120,6 +121,7 @@ const step1VeiledThreat: ActionStep = {
   reach: 'shadow',
   duration: { min: 3, max: 4 },
   difficulty: 0.45,
+  difficultyContext: 'intel_sensitive',
   onSuccess: [
     {
       op: 'update_node',
