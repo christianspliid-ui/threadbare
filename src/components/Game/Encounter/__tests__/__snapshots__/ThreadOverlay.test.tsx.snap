@@ -1,0 +1,201 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ThreadOverlay > matches snapshot for phase=taut with 3 choices > taut-three-choices 1`] = `
+<DocumentFragment>
+  <div
+    style="position: relative; width: 800px; height: 400px;"
+  >
+    <div
+      data-phase="taut"
+      data-testid="thread-overlay-root"
+      style="position: absolute; inset: 0px; pointer-events: none;"
+    >
+      <div
+        data-testid="thread-overlay-page-dim"
+        style="position: absolute; inset: 0px; background: black; opacity: 0.08; animation: pageDim8pct 380ms ease-out forwards; pointer-events: none;"
+      />
+      <div
+        data-testid="thread-overlay-mote-0"
+        style="position: absolute; left: 80px; bottom: 40px; width: 2px; height: 2px; border-radius: 99px; background: rgba(255, 210, 128, 0.4); animation: dustMoteDrift 1.6s ease-in-out 0s infinite; --mx: 30px; --my: -30px; pointer-events: none;"
+      />
+      <div
+        data-testid="thread-overlay-mote-1"
+        style="position: absolute; left: 160px; bottom: 60.00000000000001px; width: 2px; height: 2px; border-radius: 99px; background: rgba(255, 210, 128, 0.4); animation: dustMoteDrift 1.9000000000000001s ease-in-out 0.12s infinite; --mx: -30px; --my: -34px; pointer-events: none;"
+      />
+      <div
+        data-testid="thread-overlay-mote-2"
+        style="position: absolute; left: 240.00000000000003px; bottom: 80px; width: 2px; height: 2px; border-radius: 99px; background: rgba(255, 210, 128, 0.4); animation: dustMoteDrift 2.2s ease-in-out 0.24s infinite; --mx: 30px; --my: -38px; pointer-events: none;"
+      />
+      <div
+        data-testid="thread-overlay-mote-3"
+        style="position: absolute; left: 320px; bottom: 40px; width: 2px; height: 2px; border-radius: 99px; background: rgba(255, 210, 128, 0.4); animation: dustMoteDrift 2.5s ease-in-out 0.36s infinite; --mx: -30px; --my: -42px; pointer-events: none;"
+      />
+      <div
+        data-testid="thread-overlay-mote-4"
+        style="position: absolute; left: 400px; bottom: 60.00000000000001px; width: 2px; height: 2px; border-radius: 99px; background: rgba(255, 210, 128, 0.4); animation: dustMoteDrift 1.6s ease-in-out 0.48s infinite; --mx: 30px; --my: -46px; pointer-events: none;"
+      />
+      <div
+        data-testid="thread-overlay-mote-5"
+        style="position: absolute; left: 480px; bottom: 80px; width: 2px; height: 2px; border-radius: 99px; background: rgba(255, 210, 128, 0.4); animation: dustMoteDrift 1.9000000000000001s ease-in-out 0.6s infinite; --mx: -30px; --my: -50px; pointer-events: none;"
+      />
+      <div
+        data-testid="thread-overlay-mote-6"
+        style="position: absolute; left: 560px; bottom: 40px; width: 2px; height: 2px; border-radius: 99px; background: rgba(255, 210, 128, 0.4); animation: dustMoteDrift 2.2s ease-in-out 0.72s infinite; --mx: 30px; --my: -54px; pointer-events: none;"
+      />
+      <div
+        data-testid="thread-overlay-mote-7"
+        style="position: absolute; left: 640px; bottom: 60.00000000000001px; width: 2px; height: 2px; border-radius: 99px; background: rgba(255, 210, 128, 0.4); animation: dustMoteDrift 2.5s ease-in-out 0.84s infinite; --mx: -30px; --my: -58px; pointer-events: none;"
+      />
+      <svg
+        data-testid="thread-overlay-svg"
+        height="400"
+        style="position: absolute; inset: 0px; overflow: visible; pointer-events: none;"
+        viewBox="0 0 800 400"
+        width="800"
+      >
+        <g
+          data-chosen="false"
+          data-testid="thread-overlay-thread-iron"
+          style="opacity: 1; transition: opacity 400ms ease-out;"
+        >
+          <path
+            d="M400,368 C400,240 133.33333333333331,120 133.33333333333331,40"
+            fill="none"
+            opacity="0.3825"
+            stroke="var(--sphere-force-bright)"
+            stroke-dasharray="600"
+            stroke-dashoffset="0"
+            stroke-linecap="round"
+            stroke-width="4"
+            style="filter: blur(3px); transition: stroke-dashoffset 520ms ease-out, opacity 400ms ease-out, stroke-width 240ms ease-out;"
+          />
+          <path
+            d="M400,368 C400,240 133.33333333333331,120 133.33333333333331,40"
+            data-testid="thread-overlay-thread-core-iron"
+            fill="none"
+            opacity="0.8075"
+            stroke="var(--sphere-force-bright)"
+            stroke-dasharray="600"
+            stroke-dashoffset="0"
+            stroke-linecap="round"
+            stroke-width="1.2"
+            style="transition: stroke-dashoffset 520ms ease-out, opacity 400ms ease-out, stroke-width 240ms ease-out;"
+          />
+          <circle
+            cx="133.33333333333331"
+            cy="40"
+            fill="var(--sphere-force-bright)"
+            opacity="0.85"
+            r="3"
+            style="transition: opacity 400ms ease-out;"
+          >
+            <animate
+              attributeName="r"
+              dur="0.9s"
+              repeatCount="indefinite"
+              values="3;5;3"
+            />
+          </circle>
+        </g>
+        <g
+          data-chosen="false"
+          data-testid="thread-overlay-thread-veil"
+          style="opacity: 1; transition: opacity 400ms ease-out;"
+        >
+          <path
+            d="M400,368 C400,240 400,120 400,40"
+            fill="none"
+            opacity="0.3825"
+            stroke="var(--sphere-mind-bright)"
+            stroke-dasharray="600"
+            stroke-dashoffset="0"
+            stroke-linecap="round"
+            stroke-width="4"
+            style="filter: blur(3px); transition: stroke-dashoffset 520ms ease-out, opacity 400ms ease-out, stroke-width 240ms ease-out;"
+          />
+          <path
+            d="M400,368 C400,240 400,120 400,40"
+            data-testid="thread-overlay-thread-core-veil"
+            fill="none"
+            opacity="0.8075"
+            stroke="var(--sphere-mind-bright)"
+            stroke-dasharray="600"
+            stroke-dashoffset="0"
+            stroke-linecap="round"
+            stroke-width="1.2"
+            style="transition: stroke-dashoffset 520ms ease-out, opacity 400ms ease-out, stroke-width 240ms ease-out;"
+          />
+          <circle
+            cx="400"
+            cy="40"
+            fill="var(--sphere-mind-bright)"
+            opacity="0.85"
+            r="3"
+            style="transition: opacity 400ms ease-out;"
+          >
+            <animate
+              attributeName="r"
+              dur="0.9s"
+              repeatCount="indefinite"
+              values="3;5;3"
+            />
+          </circle>
+        </g>
+        <g
+          data-chosen="false"
+          data-testid="thread-overlay-thread-heart"
+          style="opacity: 1; transition: opacity 400ms ease-out;"
+        >
+          <path
+            d="M400,368 C400,240 666.6666666666667,120 666.6666666666667,40"
+            fill="none"
+            opacity="0.3825"
+            stroke="var(--sphere-spirit-bright)"
+            stroke-dasharray="600"
+            stroke-dashoffset="0"
+            stroke-linecap="round"
+            stroke-width="4"
+            style="filter: blur(3px); transition: stroke-dashoffset 520ms ease-out, opacity 400ms ease-out, stroke-width 240ms ease-out;"
+          />
+          <path
+            d="M400,368 C400,240 666.6666666666667,120 666.6666666666667,40"
+            data-testid="thread-overlay-thread-core-heart"
+            fill="none"
+            opacity="0.8075"
+            stroke="var(--sphere-spirit-bright)"
+            stroke-dasharray="600"
+            stroke-dashoffset="0"
+            stroke-linecap="round"
+            stroke-width="1.2"
+            style="transition: stroke-dashoffset 520ms ease-out, opacity 400ms ease-out, stroke-width 240ms ease-out;"
+          />
+          <circle
+            cx="666.6666666666667"
+            cy="40"
+            fill="var(--sphere-spirit-bright)"
+            opacity="0.85"
+            r="3"
+            style="transition: opacity 400ms ease-out;"
+          >
+            <animate
+              attributeName="r"
+              dur="0.9s"
+              repeatCount="indefinite"
+              values="3;5;3"
+            />
+          </circle>
+        </g>
+        <circle
+          cx="400"
+          cy="368"
+          data-testid="thread-overlay-anchor-mote"
+          fill="var(--accent-gold)"
+          opacity="0.8"
+          r="2.5"
+          style="transition: opacity 400ms ease-out;"
+        />
+      </svg>
+    </div>
+  </div>
+</DocumentFragment>
+`;
