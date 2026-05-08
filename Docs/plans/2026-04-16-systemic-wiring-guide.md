@@ -248,7 +248,7 @@ Two aftermath reaction types give agents tangible knowledge or items:
 { kind: 'content_grant', templateId: 'patrons_backing' }
 ```
 
-#### Intelligence is consumed in three places (THR-113)
+#### Intelligence is consumed in four places (THR-113, THR-140)
 
 Granting intelligence without consuming it is write-only theatre. The engine now closes the loop at three sites. As an author, you get this automatically — but knowing the sites tells you what prose can reference what.
 
@@ -257,8 +257,11 @@ Granting intelligence without consuming it is write-only theatre. The engine now
 | `scoring_boost` | `scoreAndSelect` in `encounterScoring.ts` | Candidates whose `templateId` / `locationId` / `targetAgentId` / region match an actionable record gain `INTEL_SCORING_BONUS` (default `0.25`). `intelBonus` is exposed on `ScoredCandidate` for trace inspection. |
 | `prose_enrichment` | `enrichProse` in `proseEnrichment.ts` | `{intel:<category>}` placeholders resolve to the most recent record's label/detail/reliability. `{?knows_<category>}...{/knows_<category>}` and `{?no_<category>}...{/no_<category>}` conditionals gate whole sentences. |
 | `resolution_match` | `observeResolutionIntelligence` after `consumeMatchingMarks` in GameView | Passive observation: when a resolved action matches any of the acting agent's records, a trace fires. No game-state mutation — this is the "I noticed" hook for auditing what intel actually paid off. |
+| `difficulty_modifier` | `resolveUncontestedStep` in `unifiedActionResolution.ts` | Steps that opt in with `difficultyContext: 'intel_sensitive'` reduce effective difficulty by `INTEL_DIFFICULTY_BONUS` scaled by reliability (`reliable` full, `uncertain` half, `dubious` none). |
 
-Every consumption emits an `intelligence_referenced` trace with a `referencedBy` discriminator (`scoring_boost` | `prose_enrichment` | `resolution_match`), the `recordId`, and the consuming context. Dedup is per-call (scoring loop and enrichProse each only emit once per unique record).
+Every consumption emits an `intelligence_referenced` trace with a `referencedBy` discriminator (`scoring_boost` | `prose_enrichment` | `resolution_match` | `difficulty_modifier`), the `recordId`, and the consuming context. Dedup is per-call (scoring loop and enrichProse each only emit once per unique record).
+
+**Author opt-in for resolution difficulty (THR-140):** the difficulty modifier is intentionally inert unless a step explicitly sets `difficultyContext: 'intel_sensitive'`. Use this on beats where prior reconnaissance should make execution easier (ambush prep, route interception, spy leverage). Leave it unset for beats where intelligence should shape discovery/prose only.
 
 **Placeholder vocabulary for prose authors:**
 

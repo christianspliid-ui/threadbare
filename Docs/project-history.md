@@ -612,3 +612,4 @@ pm test,
 px tsc --noEmit, 
 px vite build).
 - ✅ 2026-05-08: THR-360 shipped — completed Bucket 0 mechanical cleanup by removing stale `flesh` residues from quest hook sphere-set, style/test fixtures, and domain-word legacy comments (full verification trio green).
+- ✅ 2026-05-08: THR-140 shipped intel-derived difficulty bonus scaffold (`difficultyContext: 'intel_sensitive'`, reliability-scaled `INTEL_DIFFICULTY_BONUS`, `difficulty_modifier` trace discriminator, and six-case resolution tests); follow-up THR-368 opened for content opt-in pass.
