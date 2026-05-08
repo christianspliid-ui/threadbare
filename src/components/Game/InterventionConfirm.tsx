@@ -1,3 +1,4 @@
+import { useEffect, useCallback } from 'react';
 import type { InterventionType, DeliveryMode, LocalEncounterMode } from '../../types/dream';
 import type { SphereName } from '../../types/index';
 import { getSphereColor } from '../../data/sphereIcons';
@@ -46,14 +47,24 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
 
   // Range display text
   const rangeText = (() => {
-    if (rangeStatus === 'unlimited') return 'Unlimited range';
+    if (rangeStatus === 'unlimited') return 'Unlimited';
     if (rangeStatus === 'out_of_range') return `Out of range (${hexDistance} hexes)`;
     if (rangeStatus === 'in_range' && hexDistance != null) {
       if (deliveryMode === 'local') return 'Same hex';
-      return `${hexDistance} hexes (in range)`;
+      return `${hexDistance} hexes`;
     }
     return '';
   })();
+
+  // Escape key → cancel (matches Modal primitive behaviour)
+  const handleEscape = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') onCancel();
+  }, [onCancel]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [handleEscape]);
 
   return (
     <div
@@ -66,103 +77,173 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
         onClick={(e) => { e.stopPropagation(); onCancel(); }}
       />
 
-      {/* Panel — widened from w-72 to max-w-md (28rem/448px) for art + readability */}
+      {/* Panel — v7 sphere-bright ring + glow via boxShadow */}
       <div
-        className="relative border rounded-xl shadow-2xl overflow-hidden"
+        data-testid="intervention-panel"
+        className="relative rounded-xl overflow-hidden"
         style={{
           backgroundColor: 'var(--bg-raised)',
-          borderColor: 'var(--border-medium)',
+          border: '1px solid var(--border-medium)',
+          boxShadow: `0 0 0 1px ${sphereColor} inset, 0 0 18px -2px ${sphereColor}, 0 20px 40px rgba(0,0,0,0.6)`,
           width: 'min(28rem, 90vw)',
         }}
       >
-        {/* Art banner placeholder — sphere-colored gradient strip.
-            Replace inner div with <img> when generated art is available. */}
+        {/* Art banner — height reduced from 8rem to 6rem per v7 spec */}
         <div
           data-testid="intervention-art-banner"
           className="w-full flex items-center justify-center"
           style={{
-            height: '8rem',
+            height: '6rem',
             background: `linear-gradient(135deg, ${sphereColor}30 0%, var(--bg-deep) 60%, ${sphereColor}18 100%)`,
-            borderBottom: `2px solid ${sphereColor}40`,
+            borderBottom: `1px solid ${sphereColor}40`,
           }}
         >
           <span style={{ opacity: 0.35 }} aria-hidden="true">
-            {/* Sphere SVG icon as placeholder art — will be replaced by generated image */}
             <SphereIcon sphere={sphere} size={48} />
           </span>
         </div>
 
         {/* Content area */}
-        <div className="px-6 pt-5 pb-5">
-          {/* Header */}
-          <h3
-            className="font-bold mb-2"
+        <div className="px-6 pt-4 pb-5">
+          {/* Sphere · delivery line — v7 ALLCAPS Cinzel above the title */}
+          <p
+            data-testid="sphere-delivery-line"
+            className="mb-2"
             style={{
               fontFamily: 'var(--font-display)',
+              fontSize: '10px',
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              color: sphereColor,
+              fontWeight: 600,
+            }}
+          >
+            {sphere} · {deliveryMode}
+          </p>
+
+          {/* Title — italic display Cinzel per v7 */}
+          <h3
+            className="mb-3"
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '18px',
+              fontStyle: 'italic',
+              fontWeight: 400,
               color: 'var(--text-primary)',
-              fontSize: 'var(--text-xl)',
               lineHeight: 1.2,
             }}
           >
             {label}
           </h3>
+
+          {/* Gold bar separator */}
+          <div
+            style={{
+              width: '36px',
+              height: '1px',
+              backgroundColor: 'var(--accent-gold)',
+              marginBottom: '12px',
+            }}
+          />
+
+          {/* Description prose */}
           <p
-            className="mb-4 leading-relaxed"
+            className="mb-3 leading-relaxed"
             style={{
               color: 'var(--text-secondary)',
-              fontSize: 'var(--text-base)',
+              fontSize: 'var(--text-sm)',
             }}
           >
             {description}
           </p>
 
-          {/* Agenda display */}
-          {props.agendaName && (
-            <div
-              className="mb-4 p-3 border rounded-lg"
-              style={{ backgroundColor: 'var(--bg-deep)', borderColor: 'var(--border-gold)' }}
-            >
-              <div
-                className="font-bold"
-                style={{
-                  color: 'var(--text-primary)',
-                  fontSize: 'var(--text-sm)',
-                }}
-              >
-                {props.agendaName}
-              </div>
+          {/* Tilts toward — agenda narrative hook in v7 idiom */}
+          {(props.agendaName || props.agendaNarrativeHook) && (
+            <div className="mb-3">
+              {props.agendaName && (
+                <span
+                  style={{
+                    fontFamily: 'var(--font-display)',
+                    fontSize: '10px',
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    color: 'var(--text-tertiary)',
+                    display: 'block',
+                    marginBottom: '2px',
+                  }}
+                >
+                  {props.agendaName}
+                </span>
+              )}
               {props.agendaNarrativeHook && (
                 <p
-                  className="mt-1.5 italic leading-relaxed"
+                  className="italic leading-relaxed"
                   style={{
-                    color: 'var(--text-secondary)',
+                    color: 'var(--text-tertiary)',
                     fontSize: 'var(--text-sm)',
                   }}
                 >
-                  &ldquo;{props.agendaNarrativeHook}&rdquo;
+                  tilts toward: {props.agendaNarrativeHook}
                 </p>
               )}
             </div>
           )}
 
-          {/* Stats — bumped to --text-base */}
-          <div className="space-y-2 mb-4">
-            <div className="flex justify-between" style={{ fontSize: 'var(--text-base)' }}>
-              <span className="font-semibold" style={{ color: 'var(--text-tertiary)' }}>Cost</span>
-              <span className="font-bold" style={{ color: 'var(--text-primary)' }}>
+          {/* Utility lines — cost / detection / range (no pill backgrounds) */}
+          <div className="mb-4" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div>
+              <span
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: '10px',
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  color: 'var(--text-tertiary)',
+                  display: 'block',
+                }}
+              >
+                Cost
+              </span>
+              <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
                 {Math.round(essenceCost)} {sphere} essence
               </span>
             </div>
-            <div className="flex justify-between" style={{ fontSize: 'var(--text-base)' }}>
-              <span className="font-semibold" style={{ color: 'var(--text-tertiary)' }}>Detection</span>
-              <span className="font-bold" style={{ color: 'var(--text-primary)' }}>{riskPercent}% risk</span>
+            <div>
+              <span
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: '10px',
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  color: 'var(--text-tertiary)',
+                  display: 'block',
+                }}
+              >
+                Detection
+              </span>
+              <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
+                {riskPercent}% risk
+              </span>
             </div>
             {rangeText && (
-              <div className="flex justify-between" style={{ fontSize: 'var(--text-base)' }}>
-                <span className="font-semibold" style={{ color: 'var(--text-tertiary)' }}>Range</span>
+              <div>
                 <span
-                  className="font-bold"
-                  style={{ color: isOutOfRange ? 'var(--negative)' : 'var(--text-primary)' }}
+                  style={{
+                    fontFamily: 'var(--font-display)',
+                    fontSize: '10px',
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    color: 'var(--text-tertiary)',
+                    display: 'block',
+                  }}
+                >
+                  Range
+                </span>
+                <span
+                  style={{
+                    fontSize: 'var(--text-sm)',
+                    color: isOutOfRange ? 'var(--negative)' : 'var(--text-secondary)',
+                  }}
                 >
                   {rangeText}
                 </span>
@@ -170,36 +251,22 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
             )}
           </div>
 
-          {/* Out of range message */}
+          {/* State warnings — inline, no pill backgrounds */}
           {isOutOfRange && (
-            <div
-              className="mb-4 p-3 border rounded-lg text-center font-semibold"
-              style={{
-                backgroundColor: 'var(--negative)',
-                borderColor: 'var(--negative)',
-                color: 'var(--text-primary)',
-                fontSize: 'var(--text-sm)',
-                opacity: 0.85,
-              }}
+            <p
+              className="mb-4 italic"
+              style={{ color: 'var(--negative)', fontSize: 'var(--text-sm)' }}
             >
               Out of range — move avatar closer
-            </div>
+            </p>
           )}
-
-          {/* Insufficient essence message */}
           {!isOutOfRange && !canAfford && (
-            <div
-              className="mb-4 p-3 border rounded-lg text-center font-semibold"
-              style={{
-                backgroundColor: 'var(--negative)',
-                borderColor: 'var(--negative)',
-                color: 'var(--text-primary)',
-                fontSize: 'var(--text-sm)',
-                opacity: 0.85,
-              }}
+            <p
+              className="mb-4 italic"
+              style={{ color: 'var(--negative)', fontSize: 'var(--text-sm)' }}
             >
               Insufficient {sphere} essence (need {Math.round(essenceCost)}, have {Math.round(props.availableEssence ?? 0)})
-            </div>
+            </p>
           )}
 
           {/* Actions */}
