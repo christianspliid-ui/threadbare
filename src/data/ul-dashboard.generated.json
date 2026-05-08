@@ -1,0 +1,2304 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-08T05:12:42.798Z",
+  "shards": [
+    {
+      "id": "cosmology",
+      "filename": "Cosmology.md",
+      "title": "Cosmology",
+      "contentAdjacent": true,
+      "termCount": 9,
+      "blurb": "Content-adjacent shard. Terms covering the cosmic system: Reaches, Spheres, domain capability, prerequisites."
+    },
+    {
+      "id": "agents",
+      "filename": "Agents.md",
+      "title": "Agents",
+      "contentAdjacent": true,
+      "termCount": 12,
+      "blurb": "Content-adjacent shard. Terms covering entities in the simulation: agents, actors, Ascendant, factions, and their relationships."
+    },
+    {
+      "id": "encounters",
+      "filename": "Encounters.md",
+      "title": "Encounters",
+      "contentAdjacent": true,
+      "termCount": 10,
+      "blurb": "Content-adjacent shard. Terms covering the encounter pipeline: templates, resolution, aftermath, awareness, and causation."
+    },
+    {
+      "id": "prose",
+      "filename": "Prose.md",
+      "title": "Prose",
+      "contentAdjacent": true,
+      "termCount": 8,
+      "blurb": "Content-adjacent shard. Terms covering the prose pipeline: resolvers, enrichment, strata, lexicon, and narrative output."
+    },
+    {
+      "id": "graph",
+      "filename": "Graph.md",
+      "title": "Graph",
+      "contentAdjacent": false,
+      "termCount": 14,
+      "blurb": "Not content-adjacent. Terms covering the world graph data model: nodes, edges, versioning, position, and cache architecture."
+    },
+    {
+      "id": "coordination",
+      "filename": "Coordination.md",
+      "title": "Coordination",
+      "contentAdjacent": false,
+      "termCount": 14,
+      "blurb": "Not content-adjacent. Terms covering the multi-agent coordination protocol: roles, Linear states, claim discipline, and handoff structure."
+    },
+    {
+      "id": "process",
+      "filename": "Process.md",
+      "title": "Process",
+      "contentAdjacent": false,
+      "termCount": 13,
+      "blurb": "Not content-adjacent. Terms covering the development process: NFPs, design governance, definitions, and continuous improvement tooling."
+    }
+  ],
+  "terms": [
+    {
+      "shardId": "cosmology",
+      "slug": "reach",
+      "name": "Reach",
+      "aliases": [
+        "Action Domain",
+        "Domain",
+        "ReachDomain"
+      ],
+      "status": "canonical",
+      "oneLiner": "one of eight action domains (iron, gold, shadow, veil, heart, eye, stone, star); classifies *what* an actor does",
+      "body": "One of eight axes along which actors develop capability. Reaches classify *what* an actor does, not what fuels it.\n\nThe eight Reaches are: **iron** (martial/force), **gold** (commerce/resources), **shadow** (stealth/deception), **veil** (magic/perception), **heart** (social/emotional), **eye** (intelligence/knowledge), **stone** (endurance/construction), **star** (faith/divine).\n\nThe ninth Reach, Flesh, was absorbed into the Quintessence system in TB-075. Do not reintroduce it.",
+      "seeAlso": [
+        {
+          "raw": "Domain Capability",
+          "termName": "Domain Capability",
+          "resolvedSlug": "cosmology#domain-capability"
+        },
+        {
+          "raw": "Sphere",
+          "termName": "Sphere",
+          "resolvedSlug": "cosmology#sphere"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Cosmology.md#reach",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "cosmology",
+      "slug": "sphere",
+      "name": "Sphere",
+      "aliases": [
+        "Cosmic Energy",
+        "Sphere of Influence",
+        "SphereName"
+      ],
+      "status": "canonical",
+      "oneLiner": "a cosmic energy that fuels action; orthogonal to Reaches, not a subcategory of them",
+      "body": "One of the cosmic energies that *fuel* action. Spheres are orthogonal to Reaches — the same Reach action can be performed with different Sphere colorings, producing different flavors and eligibility. Sphere ≠ Reach. Neither subsumes the other.",
+      "seeAlso": [
+        {
+          "raw": "Foundation",
+          "termName": "Foundation",
+          "resolvedSlug": "cosmology#foundation"
+        },
+        {
+          "raw": "Creation",
+          "termName": "Creation",
+          "resolvedSlug": "cosmology#creation"
+        },
+        {
+          "raw": "Sphere Alignment",
+          "termName": "Sphere Alignment",
+          "resolvedSlug": "cosmology#sphere-alignment"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Cosmology.md#sphere",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "cosmology",
+      "slug": "foundation",
+      "name": "Foundation",
+      "aliases": [
+        "Foundation Sphere"
+      ],
+      "status": "canonical",
+      "oneLiner": "root Sphere anchoring stability and permanence",
+      "body": "One of the two root Spheres. Anchors stability, permanence, memory, and continuity. Foundation-aligned cosmologies tend toward order, preservation, and deep time.",
+      "seeAlso": [
+        {
+          "raw": "Sphere",
+          "termName": "Sphere",
+          "resolvedSlug": "cosmology#sphere"
+        },
+        {
+          "raw": "Creation",
+          "termName": "Creation",
+          "resolvedSlug": "cosmology#creation"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Cosmology.md#foundation",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "cosmology",
+      "slug": "creation",
+      "name": "Creation",
+      "aliases": [
+        "Creation Sphere"
+      ],
+      "status": "canonical",
+      "oneLiner": "root Sphere driving change and generativity",
+      "body": "One of the two root Spheres. Drives change, generativity, transformation, and emergence. Creation-aligned cosmologies tend toward dynamism, experimentation, and renewal.",
+      "seeAlso": [
+        {
+          "raw": "Sphere",
+          "termName": "Sphere",
+          "resolvedSlug": "cosmology#sphere"
+        },
+        {
+          "raw": "Foundation",
+          "termName": "Foundation",
+          "resolvedSlug": "cosmology#foundation"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Cosmology.md#creation",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "cosmology",
+      "slug": "sphere-alignment",
+      "name": "Sphere Alignment",
+      "aliases": [
+        "Alignment"
+      ],
+      "status": "canonical",
+      "oneLiner": "an actor or location's affinity for a Sphere; stored as `aligned_with` edge",
+      "body": "The affinity of an actor or location for a particular Sphere, stored as an `aligned_with` edge in the world graph. Sphere alignment affects which actions an actor can perform, how those actions resolve, and how NPCs perceive the actor. Alignment is not binary — strength is a property on the edge.",
+      "seeAlso": [
+        {
+          "raw": "Sphere",
+          "termName": "Sphere",
+          "resolvedSlug": "cosmology#sphere"
+        },
+        {
+          "raw": "Cosmology Profile",
+          "termName": "Cosmology Profile",
+          "resolvedSlug": "cosmology#cosmology-profile"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Cosmology.md#sphere-alignment",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "cosmology",
+      "slug": "domain-capability",
+      "name": "Domain Capability",
+      "aliases": [
+        "Capability Tier",
+        "Domain Tier"
+      ],
+      "status": "canonical",
+      "oneLiner": "tiered proficiency across a Reach; gates action access with a tier + alignment prerequisite check",
+      "body": "A tiered measure of how proficient an actor is across a Reach. Domain Capability gates access to actions — an actor must meet the capability tier plus sphere alignment check to perform certain actions. Ascendants use the same prerequisite system as mortal agents; power level is tunable, not structurally special-cased.",
+      "seeAlso": [
+        {
+          "raw": "Reach",
+          "termName": "Reach",
+          "resolvedSlug": "cosmology#reach"
+        },
+        {
+          "raw": "Prerequisite",
+          "termName": "Prerequisite",
+          "resolvedSlug": "cosmology#prerequisite"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Cosmology.md#domain-capability",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "cosmology",
+      "slug": "cosmology-profile",
+      "name": "Cosmology Profile",
+      "aliases": [
+        "World Cosmology",
+        "Seeded Cosmology",
+        "CosmologyProfile"
+      ],
+      "status": "canonical",
+      "oneLiner": "the seeded sphere configuration for a world instance; stored in `GameState.cosmology`",
+      "body": "The seeded configuration of Sphere weights, alignments, and relationships for a particular world instance. Generated at world creation from the seed and the Ascendant's identity choices. Different profiles produce different gameplay and encounter ecosystems. Stored in `GameState.cosmology`.",
+      "seeAlso": [
+        {
+          "raw": "Sphere",
+          "termName": "Sphere",
+          "resolvedSlug": "cosmology#sphere"
+        },
+        {
+          "raw": "Foundation",
+          "termName": "Foundation",
+          "resolvedSlug": "cosmology#foundation"
+        },
+        {
+          "raw": "Creation",
+          "termName": "Creation",
+          "resolvedSlug": "cosmology#creation"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Cosmology.md#cosmology-profile",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "cosmology",
+      "slug": "quintessence",
+      "name": "Quintessence",
+      "aliases": [
+        "Flesh Reach (deprecated)",
+        "Quintessence Reach (deprecated naming — Quintessence is not a Reach)"
+      ],
+      "status": "canonical",
+      "oneLiner": "the system that absorbed the deprecated Flesh Reach in TB-075; not a ninth Reach",
+      "body": "The derived meta-property tracking an actor's integrity-of-self and centrality to the simulated story. Quintessence is not a Reach domain. Higher Quintessence signals sovereignty, resilience, and resistance to being owned, reduced, or written out; lower Quintessence signals thinning confidence, narrower options, and rising risk of becoming a vessel, symbol, or tool. It functions as a threshold meter for phase shifts (including death, transformation, or symbolic capture), not as a personality axis. Replaces the deprecated Flesh Reach (TB-075, 2026-03-28); do not reintroduce Flesh as a ninth Reach.",
+      "seeAlso": [
+        {
+          "raw": "Reach",
+          "termName": "Reach",
+          "resolvedSlug": "cosmology#reach"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Cosmology.md#quintessence",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "cosmology",
+      "slug": "prerequisite",
+      "name": "Prerequisite",
+      "aliases": [
+        "Action Prerequisite",
+        "Eligibility Check"
+      ],
+      "status": "canonical",
+      "oneLiner": "domain tier + sphere alignment check gating action availability; uniform for Ascendants and mortals",
+      "body": "A guard on action availability combining a Domain Capability tier threshold and a Sphere alignment check. Applied uniformly to Ascendants and mortal agents — there is no special-cased eligibility logic for player-characters. Both conditions must pass for the action to appear in the action pool.",
+      "seeAlso": [
+        {
+          "raw": "Domain Capability",
+          "termName": "Domain Capability",
+          "resolvedSlug": "cosmology#domain-capability"
+        },
+        {
+          "raw": "Sphere Alignment",
+          "termName": "Sphere Alignment",
+          "resolvedSlug": "cosmology#sphere-alignment"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Cosmology.md#prerequisite",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "agent",
+      "name": "Agent",
+      "aliases": [
+        "Individual",
+        "Mortal Agent"
+      ],
+      "status": "canonical",
+      "oneLiner": "an individual actor node (`actorType: 'individual'`); the basic simulated person",
+      "body": "An individual entity (actor node with `actorType: 'individual'`) in the world simulation. Agents have spatial position, traits, domain capability, relationships, and ambitions. They move, encounter each other, form factions, and develop through tick-driven behavior. \"Agent\" means a living individual — not all actors are agents.",
+      "seeAlso": [
+        {
+          "raw": "Actor",
+          "termName": "Actor",
+          "resolvedSlug": "agents#actor"
+        },
+        {
+          "raw": "ActorType",
+          "termName": "ActorType",
+          "resolvedSlug": "agents#actortype"
+        },
+        {
+          "raw": "NPC",
+          "termName": "NPC",
+          "resolvedSlug": null
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#agent",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "actor",
+      "name": "Actor",
+      "aliases": [
+        "Actor Node"
+      ],
+      "status": "canonical",
+      "oneLiner": "graph node type `'actor'`; covers individual, faction, culture, group, god, ascendant",
+      "body": "The graph node type (`type: 'actor'`) representing any simulated entity: individual, faction, culture, group, god, or ascendant. The `actorType` property on the node distinguishes the subtype. \"Actor\" is the graph-level term; \"agent\" is the semantic term for individuals.",
+      "seeAlso": [
+        {
+          "raw": "Agent",
+          "termName": "Agent",
+          "resolvedSlug": "agents#agent"
+        },
+        {
+          "raw": "ActorType",
+          "termName": "ActorType",
+          "resolvedSlug": "agents#actortype"
+        },
+        {
+          "raw": "Node",
+          "termName": "Node",
+          "resolvedSlug": "graph#node"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#actor",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "actortype",
+      "name": "ActorType",
+      "aliases": [
+        "Actor Subtype"
+      ],
+      "status": "canonical",
+      "oneLiner": "actor subtype taxonomy: `god`, `ascendant`, `faction`, `culture`, `group`, `individual`",
+      "body": "The taxonomy of actor subtypes stored in `actor.properties.actorType`: `god`, `ascendant`, `faction`, `culture`, `group`, `individual`. Drives behavior routing, action availability, and encounter scoring. Do not add new actor types without verifying they don't already exist under a different name.",
+      "seeAlso": [
+        {
+          "raw": "Actor",
+          "termName": "Actor",
+          "resolvedSlug": "agents#actor"
+        },
+        {
+          "raw": "Agent",
+          "termName": "Agent",
+          "resolvedSlug": "agents#agent"
+        },
+        {
+          "raw": "Faction",
+          "termName": "Faction",
+          "resolvedSlug": "agents#faction"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#actortype",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "ascendant",
+      "name": "Ascendant",
+      "aliases": [
+        "The Ascendant",
+        "Player Character",
+        "God-Self"
+      ],
+      "status": "canonical",
+      "oneLiner": "the player-character; a former mortal transcended to divine status; uses same prerequisite system as mortals",
+      "body": "The player-character: a powerful former mortal who has transcended to divine status. Stored as an actor node with `actorType: 'ascendant'`. Uses the same Domain Capability prerequisite system as mortal agents — no special-cased entity logic. Power level is tunable via constants, not architecturally different.",
+      "seeAlso": [
+        {
+          "raw": "The First",
+          "termName": "The First",
+          "resolvedSlug": "agents#the-first"
+        },
+        {
+          "raw": "Thread",
+          "termName": "Thread",
+          "resolvedSlug": "agents#thread"
+        },
+        {
+          "raw": "Actor",
+          "termName": "Actor",
+          "resolvedSlug": "agents#actor"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#ascendant",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "the-first",
+      "name": "The First",
+      "aliases": [
+        "Bonded First",
+        "First Agent"
+      ],
+      "status": "canonical",
+      "oneLiner": "the bonded mortal agent anchoring the Ascendant's divine presence; seeded in `?view=game&seeded`",
+      "body": "The bonded mortal agent who anchors the Ascendant's divine presence in the world. The First is a regular individual agent who has been formally bonded via a `thread` edge. They are the Ascendant's narrative anchor and the primary interface to mortal affairs. Seeded automatically in `?view=game&seeded` — use that URL for all standard testing.",
+      "seeAlso": [
+        {
+          "raw": "Ascendant",
+          "termName": "Ascendant",
+          "resolvedSlug": "agents#ascendant"
+        },
+        {
+          "raw": "Thread",
+          "termName": "Thread",
+          "resolvedSlug": "agents#thread"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#the-first",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "thread",
+      "name": "Thread",
+      "aliases": [
+        "Divine Thread"
+      ],
+      "status": "canonical",
+      "oneLiner": "a `thread` edge from Ascendant to mortal; the mechanism for divine influence",
+      "body": "A `thread` edge type connecting an Ascendant to a mortal agent. Threads are the mechanism by which divine influence flows into the world. Thread stress produces Thread Tugs in the attention system. The Ascendant can maintain multiple threads but the First thread is the anchor.",
+      "seeAlso": [
+        {
+          "raw": "Ascendant",
+          "termName": "Ascendant",
+          "resolvedSlug": "agents#ascendant"
+        },
+        {
+          "raw": "The First",
+          "termName": "The First",
+          "resolvedSlug": "agents#the-first"
+        },
+        {
+          "raw": "EdgeType",
+          "termName": "EdgeType",
+          "resolvedSlug": "graph#edgetype"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#thread",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "faction",
+      "name": "Faction",
+      "aliases": [
+        "Organization",
+        "Group (formal)"
+      ],
+      "status": "canonical",
+      "oneLiner": "structured social entity; `actorType: 'faction'`; agents join via `member_of` edges",
+      "body": "A structured social entity modeled as an actor node with `actorType: 'faction'`. Agents join factions via `member_of` edges. Factions have agency, goals, and can be created or dissolved dynamically during simulation. Faction behavior is simulation-driven, not hand-scripted.",
+      "seeAlso": [
+        {
+          "raw": "Actor",
+          "termName": "Actor",
+          "resolvedSlug": "agents#actor"
+        },
+        {
+          "raw": "ActorType",
+          "termName": "ActorType",
+          "resolvedSlug": "agents#actortype"
+        },
+        {
+          "raw": "Member Of",
+          "termName": "Member Of",
+          "resolvedSlug": null
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#faction",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "rival",
+      "name": "Rival",
+      "aliases": [
+        "Rival God",
+        "Rival Ascendant"
+      ],
+      "status": "canonical",
+      "oneLiner": "competing divine entity generated from the World-Soul; always procedural, never hand-authored",
+      "body": "A competing divine entity generated from the World-Soul at world creation. Rivals are not hand-authored — they emerge from the seeded cosmological configuration. The fixed rival pantheon design was rejected; rivals are always procedurally generated. Stored as actor nodes with `actorType: 'god'`.",
+      "seeAlso": [
+        {
+          "raw": "Ascendant",
+          "termName": "Ascendant",
+          "resolvedSlug": "agents#ascendant"
+        },
+        {
+          "raw": "Actor",
+          "termName": "Actor",
+          "resolvedSlug": "agents#actor"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#rival",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "portfolio-pin",
+      "name": "Portfolio Pin",
+      "aliases": [
+        "Pinned Agent",
+        "Portfolio Agent"
+      ],
+      "status": "canonical",
+      "oneLiner": "player-marked agent (`isPortfolioPinned: true`) with elevated narrative prominence",
+      "body": "A player-marked agent (`isPortfolioPinned: true` on the actor node properties) designated for elevated attention in the UI. Pinned agents receive higher narrative prominence in the digest and thread panel. The Ascendant chooses which agents to pin; unpinned agents still receive full simulation treatment.",
+      "seeAlso": [
+        {
+          "raw": "Agent",
+          "termName": "Agent",
+          "resolvedSlug": "agents#agent"
+        },
+        {
+          "raw": "Ascendant",
+          "termName": "Ascendant",
+          "resolvedSlug": "agents#ascendant"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#portfolio-pin",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "avatar",
+      "name": "Avatar",
+      "aliases": [
+        "Divine Avatar"
+      ],
+      "status": "canonical",
+      "oneLiner": "a physical Ascendant manifestation connected via `avatar_of` edge",
+      "body": "An agent created as a physical manifestation of the Ascendant's divine presence. Connected to the Ascendant via an `avatar_of` edge. Avatars are rare and structurally distinct from the Ascendant's normal thread-based influence.",
+      "seeAlso": [
+        {
+          "raw": "Ascendant",
+          "termName": "Ascendant",
+          "resolvedSlug": "agents#ascendant"
+        },
+        {
+          "raw": "EdgeType",
+          "termName": "EdgeType",
+          "resolvedSlug": "graph#edgetype"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#avatar",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "axiologicalprofile",
+      "name": "AxiologicalProfile",
+      "aliases": [
+        "Axiological Profile",
+        "Value Profile",
+        "Agent Values"
+      ],
+      "status": "canonical",
+      "oneLiner": "signed score across every ValuePair; drives epithet, social response, ambition selection",
+      "body": "An actor's signed score across every `ValuePair` — `Record<ValuePair, number>` ranging from −1.0 (flaw pole) to +1.0 (virtue pole). Drives epithet generation, social-encounter responses, ambition selection, and cross-agent compatibility scoring. The eight Reach-bound pairs plus the meta pair `courage_prudence` make nine slots per profile. Definition: `src/types/agent.ts`.",
+      "seeAlso": [
+        {
+          "raw": "ValuePair",
+          "termName": "ValuePair",
+          "resolvedSlug": "agents#valuepair"
+        },
+        {
+          "raw": "Reach",
+          "termName": "Reach",
+          "resolvedSlug": "cosmology#reach"
+        },
+        {
+          "raw": "Agent",
+          "termName": "Agent",
+          "resolvedSlug": "agents#agent"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#axiologicalprofile",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "valuepair",
+      "name": "ValuePair",
+      "aliases": [
+        "Axiological Pair",
+        "Virtue/Flaw Axis"
+      ],
+      "status": "canonical",
+      "oneLiner": "a single virtue/flaw axis (e.g. mercy_ruthlessness); nine pairs total, eight Reach-bound plus one meta",
+      "body": "A single virtue-flaw axis composing an `AxiologicalProfile`. The eight Reach-bound pairs are: `mercy_ruthlessness` (Iron), `asceticism_extravagance` (Gold), `honesty_cunning` (Shadow), `tradition_novelty` (Veil), `loyalty_ambition` (Heart), `revelation_discretion` (Eye), `preservation_transformation` (Stone), `sacrifice_survival` (Star). Plus one meta pair: `courage_prudence`. Convention: +1.0 = first pole (virtue), −1.0 = second pole (flaw). The pre-TB-075 pairs `frankness_propriety`, `humility_pride`, and `stoicism_passion` are deprecated; do not reintroduce them.",
+      "seeAlso": [
+        {
+          "raw": "AxiologicalProfile",
+          "termName": "AxiologicalProfile",
+          "resolvedSlug": "agents#axiologicalprofile"
+        },
+        {
+          "raw": "Reach",
+          "termName": "Reach",
+          "resolvedSlug": "cosmology#reach"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#valuepair",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "encounter",
+      "name": "Encounter",
+      "aliases": [
+        "Encounter Event"
+      ],
+      "status": "canonical",
+      "oneLiner": "a narrative event resolved through the encounter pipeline",
+      "body": "A narrative event resolved through the encounter pipeline. Encounters are instantiated from templates, progress through steps, and conclude with an Aftermath phase that produces consequences in the world graph. Encounters are the primary narrative output of the simulation tick loop.",
+      "seeAlso": [
+        {
+          "raw": "EncounterTemplate",
+          "termName": "EncounterTemplate",
+          "resolvedSlug": "encounters#encountertemplate"
+        },
+        {
+          "raw": "Aftermath",
+          "termName": "Aftermath",
+          "resolvedSlug": "encounters#aftermath"
+        },
+        {
+          "raw": "Encounter Awareness",
+          "termName": "Encounter Awareness",
+          "resolvedSlug": "encounters#encounter-awareness"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#encounter",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "encountertemplate",
+      "name": "EncounterTemplate",
+      "aliases": [
+        "Encounter Definition",
+        "Template"
+      ],
+      "status": "canonical",
+      "oneLiner": "data-driven definition of an encounter's structure, steps, and outcomes",
+      "body": "A data-driven definition specifying an encounter's structure: premise, steps, reactions, outcome branches, scope, scale, and prerequisite checks. Templates are the authored unit of encounter content. A template becomes an Encounter when instantiated at a location for a specific agent. Stored as `action_template` nodes with encounter-specific properties.",
+      "seeAlso": [
+        {
+          "raw": "Encounter",
+          "termName": "Encounter",
+          "resolvedSlug": "encounters#encounter"
+        },
+        {
+          "raw": "UnifiedActionTemplate",
+          "termName": "UnifiedActionTemplate",
+          "resolvedSlug": "encounters#unifiedactiontemplate"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#encountertemplate",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "unifiedactiontemplate",
+      "name": "UnifiedActionTemplate",
+      "aliases": [
+        "UAT",
+        "Action Template",
+        "Unified Action"
+      ],
+      "status": "canonical",
+      "oneLiner": "unified definition covering divine interventions and mortal encounter actions; replaces fixed action slots",
+      "body": "The unified definition covering both divine interventions (Ascendant actions on agents) and mortal encounter actions. Stored as `action_template` nodes in the world graph. Replaces the deprecated Intervention Wheel and fixed action slot designs. The full pool is filtered per target context at runtime — there is no fixed action count.",
+      "seeAlso": [
+        {
+          "raw": "EncounterTemplate",
+          "termName": "EncounterTemplate",
+          "resolvedSlug": "encounters#encountertemplate"
+        },
+        {
+          "raw": "Reach",
+          "termName": "Reach",
+          "resolvedSlug": "cosmology#reach"
+        },
+        {
+          "raw": "Sphere",
+          "termName": "Sphere",
+          "resolvedSlug": "cosmology#sphere"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#unifiedactiontemplate",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "aftermath",
+      "name": "Aftermath",
+      "aliases": [
+        "Encounter Aftermath",
+        "Resolution Phase"
+      ],
+      "status": "canonical",
+      "oneLiner": "the resolution phase; presents Reactions, applies world-graph consequences",
+      "body": "The resolution phase of an encounter, reached after all encounter steps complete. The Aftermath presents the player with Reactions to choose from and applies the selected consequences to the world graph. Aftermath picks can be made headlessly via `aftermath pick` in the CLI or `window.__DEBUG.pickAftermathReaction()`.",
+      "seeAlso": [
+        {
+          "raw": "Encounter",
+          "termName": "Encounter",
+          "resolvedSlug": "encounters#encounter"
+        },
+        {
+          "raw": "Reaction",
+          "termName": "Reaction",
+          "resolvedSlug": "encounters#reaction"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#aftermath",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "reaction",
+      "name": "Reaction",
+      "aliases": [
+        "Aftermath Reaction",
+        "Player Choice"
+      ],
+      "status": "canonical",
+      "oneLiner": "a player/agent choice in the Aftermath phase; applies world-graph mutations",
+      "body": "A player or agent choice presented during the Aftermath phase. Each Reaction has an ID, label, and a set of world-graph mutations it applies when selected. Reactions are the primary mechanism through which players shape the simulation through encounter outcomes.",
+      "seeAlso": [
+        {
+          "raw": "Aftermath",
+          "termName": "Aftermath",
+          "resolvedSlug": "encounters#aftermath"
+        },
+        {
+          "raw": "Encounter",
+          "termName": "Encounter",
+          "resolvedSlug": "encounters#encounter"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#reaction",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "encounter-seed",
+      "name": "Encounter Seed",
+      "aliases": [
+        "Pending Seed",
+        "Seed"
+      ],
+      "status": "canonical",
+      "oneLiner": "a `PendingEncounterSeed` that matures into an encounter at a future tick",
+      "body": "A `PendingEncounterSeed` that catalyzes an encounter at a future tick. Seeds are created by engine phases, prior encounter outcomes, and divine actions. When a seed matures, it instantiates an encounter at the appropriate location. Seeds represent the causal prehistory of encounters.",
+      "seeAlso": [
+        {
+          "raw": "Encounter",
+          "termName": "Encounter",
+          "resolvedSlug": "encounters#encounter"
+        },
+        {
+          "raw": "Hidden Mark",
+          "termName": "Hidden Mark",
+          "resolvedSlug": "encounters#hidden-mark"
+        },
+        {
+          "raw": "Causation",
+          "termName": "Causation",
+          "resolvedSlug": "encounters#causation"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#encounter-seed",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "hidden-mark",
+      "name": "Hidden Mark",
+      "aliases": [
+        "Concealed Seed",
+        "Mark"
+      ],
+      "status": "canonical",
+      "oneLiner": "a concealed seed attached to an agent; invisible until triggered",
+      "body": "A concealed encounter seed (`HiddenMark`) attached to an agent and invisible to other agents until triggered by a convergence condition. Hidden Marks are the engine's mechanism for slow-burn narrative setups — the player can see them via the Debug Panel but they are not visible in normal play.",
+      "seeAlso": [
+        {
+          "raw": "Encounter Seed",
+          "termName": "Encounter Seed",
+          "resolvedSlug": "encounters#encounter-seed"
+        },
+        {
+          "raw": "Encounter",
+          "termName": "Encounter",
+          "resolvedSlug": "encounters#encounter"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#hidden-mark",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "encounter-awareness",
+      "name": "Encounter Awareness",
+      "aliases": [
+        "Awareness",
+        "Agent Awareness"
+      ],
+      "status": "canonical",
+      "oneLiner": "hex-granular visibility; agent sees all encounters on hexes within awareness range",
+      "body": "The hex-granular visibility system determining which encounters an agent can see. If an agent can see a hex, they can see all encounters on it (all locations, sublocations). Within-hex visibility is automatic. Cross-hex visibility is computed as hex coordinate distance vs. per-reach awareness hops. The old location-hop awareness model (BFS via `adjacent` edges) was replaced — do not reintroduce it.",
+      "seeAlso": [
+        {
+          "raw": "Encounter",
+          "termName": "Encounter",
+          "resolvedSlug": "encounters#encounter"
+        },
+        {
+          "raw": "Hex",
+          "termName": "Hex",
+          "resolvedSlug": "graph#hextile"
+        },
+        {
+          "raw": "Three-tier Position Model",
+          "termName": "Three-tier Position Model",
+          "resolvedSlug": "graph#three-tier-position-model"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#encounter-awareness",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "court-position",
+      "name": "Court Position",
+      "aliases": [
+        "Position",
+        "Encounter Role"
+      ],
+      "status": "canonical",
+      "oneLiner": "the role an agent plays in an encounter's framing; affects scoring and prose",
+      "body": "The role an agent plays in an encounter's social or political framing. Court Position affects encounter scoring, available reactions, and prose generation. Stored as a numeric property; can be specified when spawning encounters via the CLI `--courtPosition` flag.",
+      "seeAlso": [
+        {
+          "raw": "Encounter",
+          "termName": "Encounter",
+          "resolvedSlug": "encounters#encounter"
+        },
+        {
+          "raw": "EncounterTemplate",
+          "termName": "EncounterTemplate",
+          "resolvedSlug": "encounters#encountertemplate"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#court-position",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "causation",
+      "name": "Causation",
+      "aliases": [
+        "Encounter Causation",
+        "Causal Chain"
+      ],
+      "status": "canonical",
+      "oneLiner": "the `caused_by` edge linking encounter events to their seeds; makes causal chains inspectable",
+      "body": "The `caused_by` edge linking one encounter event to the encounter seed or prior event that triggered it. Causation makes the causal chain of encounters inspectable — you can trace why an encounter happened back through prior seeds and events. Used by the trace system and the Debug Panel's encounter inspector.",
+      "seeAlso": [
+        {
+          "raw": "Encounter Seed",
+          "termName": "Encounter Seed",
+          "resolvedSlug": "encounters#encounter-seed"
+        },
+        {
+          "raw": "Encounter",
+          "termName": "Encounter",
+          "resolvedSlug": "encounters#encounter"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#causation",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "prose",
+      "slug": "ipk-instant-prose-kernel",
+      "name": "IPK (Instant Prose Kernel)",
+      "aliases": [
+        "Instant Prose Kernel",
+        "Prose Kernel"
+      ],
+      "status": "canonical",
+      "oneLiner": "the minimal core prose fragment before enrichment resolution",
+      "body": "The minimal prose fragment that forms the core of a narrative beat before enrichment. An IPK contains the essential action and outcome in the most compact prose form. Enrichment Placeholders within the IPK are resolved at display time by the Resolver, expanding it into contextually rich narrative.",
+      "seeAlso": [
+        {
+          "raw": "Resolver",
+          "termName": "Resolver",
+          "resolvedSlug": "prose#resolver"
+        },
+        {
+          "raw": "Enrichment Placeholder",
+          "termName": "Enrichment Placeholder",
+          "resolvedSlug": "prose#enrichment-placeholder"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Prose.md#ipk-instant-prose-kernel",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "prose",
+      "slug": "enrichment-placeholder",
+      "name": "Enrichment Placeholder",
+      "aliases": [
+        "Placeholder",
+        "Dynamic Variable",
+        "Enrichment Variable"
+      ],
+      "status": "canonical",
+      "oneLiner": "template variable (`{name}`, `{artifact}`, `{ally}`) resolved at display time by walking the graph",
+      "body": "A template variable (e.g., `{name}`, `{artifact}`, `{ally}`) embedded in prose that the Resolver fills in at display time by walking the world graph. Placeholders make static template prose dynamically alive — the same IPK produces different prose for different agents, locations, and world states. Pure template-based prose (without enrichment) was rejected as an architecture.",
+      "seeAlso": [
+        {
+          "raw": "IPK",
+          "termName": "IPK",
+          "resolvedSlug": "prose#ipk-instant-prose-kernel"
+        },
+        {
+          "raw": "Resolver",
+          "termName": "Resolver",
+          "resolvedSlug": "prose#resolver"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Prose.md#enrichment-placeholder",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "prose",
+      "slug": "resolver",
+      "name": "Resolver",
+      "aliases": [
+        "Prose Resolver",
+        "Enrichment Resolver"
+      ],
+      "status": "canonical",
+      "oneLiner": "prose pipeline component that fills Enrichment Placeholders; implemented via `enrichProse()`",
+      "body": "The prose pipeline component that walks the world graph to fill in Enrichment Placeholders at display time. The Resolver takes a prose template with placeholders and a world graph context and returns fully-formed prose. Resolvers are the boundary between static templates and dynamic narrative. Implemented in `enrichProse()`.",
+      "seeAlso": [
+        {
+          "raw": "IPK",
+          "termName": "IPK",
+          "resolvedSlug": "prose#ipk-instant-prose-kernel"
+        },
+        {
+          "raw": "Enrichment Placeholder",
+          "termName": "Enrichment Placeholder",
+          "resolvedSlug": "prose#enrichment-placeholder"
+        },
+        {
+          "raw": "Prose Pipeline",
+          "termName": "Prose Pipeline",
+          "resolvedSlug": null
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Prose.md#resolver",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "prose",
+      "slug": "strata",
+      "name": "Strata",
+      "aliases": [
+        "Prose Strata",
+        "Narrative Strata",
+        "Prose Layer"
+      ],
+      "status": "canonical",
+      "oneLiner": "layered prose tiers that compose a full narrative beat from multiple engine signals",
+      "body": "Layered prose tiers that compose a full narrative beat from engine signals. Different strata contribute different narrative registers (immediate action, context, consequence, atmosphere). Strata are assembled by the prose pipeline from multiple sources and then resolved together, allowing modular prose composition without monolithic templates.",
+      "seeAlso": [
+        {
+          "raw": "IPK",
+          "termName": "IPK",
+          "resolvedSlug": "prose#ipk-instant-prose-kernel"
+        },
+        {
+          "raw": "Resolver",
+          "termName": "Resolver",
+          "resolvedSlug": "prose#resolver"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Prose.md#strata",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "prose",
+      "slug": "narrative-lexicon",
+      "name": "Narrative Lexicon",
+      "aliases": [
+        "Domain Lexicon",
+        "Reach Lexicon",
+        "10-tier Lexicon"
+      ],
+      "status": "canonical",
+      "oneLiner": "10-tier per-Reach vocabulary (`NARRATIVE_LEXICON`); translates capability scores into evocative prose labels",
+      "body": "The 10-tier, per-Reach vocabulary table (`NARRATIVE_LEXICON` in `src/types/traits.ts`) that translates domain capability scores into prose labels. Example: stone Reach tier 5 = \"Rooted\", tier 9 = \"Eternal\". The lexicon ensures that capability levels have consistent, evocative prose expressions across all narrative contexts.",
+      "seeAlso": [
+        {
+          "raw": "Reach",
+          "termName": "Reach",
+          "resolvedSlug": "cosmology#reach"
+        },
+        {
+          "raw": "Domain Capability",
+          "termName": "Domain Capability",
+          "resolvedSlug": "cosmology#domain-capability"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Prose.md#narrative-lexicon",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "prose",
+      "slug": "chronicle-entry",
+      "name": "Chronicle Entry",
+      "aliases": [
+        "Chronicle",
+        "History Entry"
+      ],
+      "status": "canonical",
+      "oneLiner": "persistent record of a significant event in an agent or faction's history",
+      "body": "A persistent record of a significant event in an agent or faction's history (`ChronicleEntry` type). Chronicle entries accumulate as agents participate in encounters and world events, forming a personal narrative history. The Great Chronicle collects entries world-wide. The UI exposes agent chronicles through the agent detail panel.",
+      "seeAlso": [
+        {
+          "raw": "Narrative Event",
+          "termName": "Narrative Event",
+          "resolvedSlug": "prose#narrative-event"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Prose.md#chronicle-entry",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "prose",
+      "slug": "narrative-event",
+      "name": "Narrative Event",
+      "aliases": [
+        "Tick Event",
+        "World Event",
+        "TickEvent"
+      ],
+      "status": "canonical",
+      "oneLiner": "`TickEvent` carrying a prose message; flows to the UI event feed",
+      "body": "A `TickEvent` produced during the tick loop carrying a prose message and optional sphere coloring, significance score, and spatial coordinates. Narrative events flow to the UI's event feed and may trigger notifications. The significance score (0–1) controls UI prominence — high-significance events produce alerts; low-significance events appear in the chronicle.",
+      "seeAlso": [
+        {
+          "raw": "Chronicle Entry",
+          "termName": "Chronicle Entry",
+          "resolvedSlug": "prose#chronicle-entry"
+        },
+        {
+          "raw": "Thread Tug",
+          "termName": "Thread Tug",
+          "resolvedSlug": "prose#thread-tug"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Prose.md#narrative-event",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "prose",
+      "slug": "thread-tug",
+      "name": "Thread Tug",
+      "aliases": [
+        "Tug",
+        "Attention Signal"
+      ],
+      "status": "canonical",
+      "oneLiner": "attention signal (`ThreadTug`) directing player focus to stressed divine threads",
+      "body": "An attention signal (`ThreadTug`) created when a divine thread is under stress or producing notable events. Thread Tugs surface in the player's digest and thread panel to direct attention toward agents who need divine involvement. They are the bridge between the engine's continuous simulation and the player's turn-by-turn decision-making.",
+      "seeAlso": [
+        {
+          "raw": "Thread",
+          "termName": "Thread",
+          "resolvedSlug": "agents#thread"
+        },
+        {
+          "raw": "Narrative Event",
+          "termName": "Narrative Event",
+          "resolvedSlug": "prose#narrative-event"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Prose.md#thread-tug",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "graph",
+      "slug": "node",
+      "name": "Node",
+      "aliases": [
+        "Graph Node",
+        "World Node",
+        "GraphNode"
+      ],
+      "status": "canonical",
+      "oneLiner": "`GraphNode`; the basic entity in the world graph; everything is a node",
+      "body": "A `GraphNode`: the basic entity in the world graph. Every entity in the game — agents, locations, traits, artifacts, encounters, cosmology nodes — is a node. Nodes have an id, type, name, and a properties bag. \"Everything is a graph node\" is a settled architectural decision; there are no separate relational tables.",
+      "seeAlso": [
+        {
+          "raw": "Edge",
+          "termName": "Edge",
+          "resolvedSlug": "graph#edge"
+        },
+        {
+          "raw": "WorldGraph",
+          "termName": "WorldGraph",
+          "resolvedSlug": "graph#worldgraph"
+        },
+        {
+          "raw": "NodeType",
+          "termName": "NodeType",
+          "resolvedSlug": "graph#nodetype"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Graph.md#node",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "graph",
+      "slug": "edge",
+      "name": "Edge",
+      "aliases": [
+        "Graph Edge",
+        "Relationship Edge"
+      ],
+      "status": "canonical",
+      "oneLiner": "`GraphEdge`; typed directed relationship between nodes; everything meaningful is an edge",
+      "body": "A `GraphEdge`: a typed directed relationship between two nodes. Every meaningful relationship between entities is an edge — never a string ID field in a node's properties bag. Edges have an id, source, target, type, and a properties bag for relationship attributes.",
+      "seeAlso": [
+        {
+          "raw": "Node",
+          "termName": "Node",
+          "resolvedSlug": "graph#node"
+        },
+        {
+          "raw": "WorldGraph",
+          "termName": "WorldGraph",
+          "resolvedSlug": "graph#worldgraph"
+        },
+        {
+          "raw": "EdgeType",
+          "termName": "EdgeType",
+          "resolvedSlug": "graph#edgetype"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Graph.md#edge",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "graph",
+      "slug": "worldgraph",
+      "name": "WorldGraph",
+      "aliases": [
+        "World Graph",
+        "Graph"
+      ],
+      "status": "canonical",
+      "oneLiner": "central data structure; mutated in place; object reference never changes; use version counters for stale-detection",
+      "body": "The central data structure containing all nodes and edges. The world graph is mutated in place — its object reference never changes even when nodes/edges are added, removed, or updated. Any cache or memo that keys on `gameState.graph` identity will serve stale data. Use `worldVersion` and `structuralCacheVersion` instead.",
+      "seeAlso": [
+        {
+          "raw": "Node",
+          "termName": "Node",
+          "resolvedSlug": "graph#node"
+        },
+        {
+          "raw": "Edge",
+          "termName": "Edge",
+          "resolvedSlug": "graph#edge"
+        },
+        {
+          "raw": "worldVersion",
+          "termName": "worldVersion",
+          "resolvedSlug": "graph#worldversion-touchworld"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Graph.md#worldgraph",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "graph",
+      "slug": "nodetype",
+      "name": "NodeType",
+      "aliases": [
+        "Node Category"
+      ],
+      "status": "canonical",
+      "oneLiner": "node categories: `actor`, `location`, `trait`, `artifact`, `action_template`, `event`, `cosmology`, `region`, `ambition`",
+      "body": "The typed categories of nodes in the world graph: `actor`, `location`, `trait`, `artifact`, `artifact_legendary`, `resource`, `action_template`, `event`, `cosmology`, `region`, `ambition`. Do not invent new node types without verifying none of the existing types covers the concept. New types require full design before any code changes.",
+      "seeAlso": [
+        {
+          "raw": "Node",
+          "termName": "Node",
+          "resolvedSlug": "graph#node"
+        },
+        {
+          "raw": "ActorType",
+          "termName": "ActorType",
+          "resolvedSlug": "agents#actortype"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Graph.md#nodetype",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "graph",
+      "slug": "edgetype",
+      "name": "EdgeType",
+      "aliases": [
+        "Edge Category",
+        "Relationship Type"
+      ],
+      "status": "canonical",
+      "oneLiner": "edge categories; see `src/types/graph.ts` for full list; check before adding a new type",
+      "body": "The typed categories of edges. Key examples: `located_at` (agent → position), `has_trait` (actor → trait), `thread` (ascendant → mortal), `caused_by` (event → seed), `participated_in` (actor → event), `knows_secret_of` (discoverer → subject), `holds_place_of_power`. Check `src/types/graph.ts` for the complete list before adding a new edge type.",
+      "seeAlso": [
+        {
+          "raw": "Edge",
+          "termName": "Edge",
+          "resolvedSlug": "graph#edge"
+        },
+        {
+          "raw": "Property-vs-Edge Rule",
+          "termName": "Property-vs-Edge Rule",
+          "resolvedSlug": "graph#property-vs-edge-rule"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Graph.md#edgetype",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "graph",
+      "slug": "property-vs-edge-rule",
+      "name": "Property-vs-Edge Rule",
+      "aliases": [
+        "Edge Rule",
+        "Relationship Encoding Rule"
+      ],
+      "status": "canonical",
+      "oneLiner": "relationships are edges, not property fields; traversal is the default",
+      "body": "The governing rule: relationships between entities are graph edges, never string ID fields in a property bag. Properties are for data internal to a node (scores, flags, statuses). If two entities have a meaningful relationship, it must be an edge type. Before adding a property to encode a relationship, justify why graph traversal isn't needed — the default answer is \"it is needed.\"",
+      "seeAlso": [
+        {
+          "raw": "Edge",
+          "termName": "Edge",
+          "resolvedSlug": "graph#edge"
+        },
+        {
+          "raw": "EdgeType",
+          "termName": "EdgeType",
+          "resolvedSlug": "graph#edgetype"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Graph.md#property-vs-edge-rule",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "graph",
+      "slug": "three-tier-position-model",
+      "name": "Three-tier Position Model",
+      "aliases": [
+        "Position Model",
+        "Spatial Hierarchy"
+      ],
+      "status": "canonical",
+      "oneLiner": "spatial hierarchy: hex → location → sublocation; agent occupies exactly one tier via a single `located_at` edge",
+      "body": "The spatial hierarchy: **hex → location → sublocation**. An agent always occupies exactly one tier via a single `located_at` edge pointing to the most specific node they occupy. Resolution upward: sublocation → parent location → hex. All systems needing spatial reasoning must resolve to hex level. An agent at a sublocation sees all encounters on their hex automatically.",
+      "seeAlso": [
+        {
+          "raw": "located_at Edge",
+          "termName": "located_at Edge",
+          "resolvedSlug": "graph#located_at-edge"
+        },
+        {
+          "raw": "Hex",
+          "termName": "Hex",
+          "resolvedSlug": "graph#hextile"
+        },
+        {
+          "raw": "Location",
+          "termName": "Location",
+          "resolvedSlug": null
+        },
+        {
+          "raw": "Sublocation",
+          "termName": "Sublocation",
+          "resolvedSlug": null
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Graph.md#three-tier-position-model",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "graph",
+      "slug": "located_at-edge",
+      "name": "located_at Edge",
+      "aliases": [
+        "Position Edge",
+        "Location Edge"
+      ],
+      "status": "canonical",
+      "oneLiner": "the single edge connecting an agent to their current position; authoritative source of agent location",
+      "body": "The `located_at` edge connecting an agent to their current position in the three-tier model. An agent has exactly one `located_at` edge at any time. Changing an agent's position means removing the old edge and adding a new one. This is the authoritative source of agent position — do not store position as a node property.",
+      "seeAlso": [
+        {
+          "raw": "Three-tier Position Model",
+          "termName": "Three-tier Position Model",
+          "resolvedSlug": "graph#three-tier-position-model"
+        },
+        {
+          "raw": "EdgeType",
+          "termName": "EdgeType",
+          "resolvedSlug": "graph#edgetype"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Graph.md#located_at-edge",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "graph",
+      "slug": "worldversion-touchworld",
+      "name": "worldVersion / touchWorld()",
+      "aliases": [
+        "worldVersion",
+        "touchWorld"
+      ],
+      "status": "canonical",
+      "oneLiner": "The version counter that increments on any meaningful graph mutation.",
+      "body": "The version counter that increments on any meaningful graph mutation. UI selectors must depend on `worldVersion`, not on the graph object reference (which never changes). Call `touchWorld()` after every mutation that should trigger a UI update. `worldVersion` bumps nearly every tick during active simulation — that is intentional.",
+      "seeAlso": [
+        {
+          "raw": "WorldGraph",
+          "termName": "WorldGraph",
+          "resolvedSlug": "graph#worldgraph"
+        },
+        {
+          "raw": "structuralCacheVersion",
+          "termName": "structuralCacheVersion",
+          "resolvedSlug": "graph#structuralcacheversion-touchstructure"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Graph.md#worldversion-touchworld",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "graph",
+      "slug": "structuralcacheversion-touchstructure",
+      "name": "structuralCacheVersion / touchStructure()",
+      "aliases": [
+        "structuralCacheVersion",
+        "touchStructure"
+      ],
+      "status": "canonical",
+      "oneLiner": "The version counter for structural caches — the distance matrix and encounter cache.",
+      "body": "The version counter for structural caches — the distance matrix and encounter cache. Call `touchStructure()` after mutations that affect structural relationships (e.g., location subtype changes, new locations). Intentionally over-invalidates for v1; split into finer-grained versions only after profiling reveals unnecessary rebuilds.",
+      "seeAlso": [
+        {
+          "raw": "worldVersion",
+          "termName": "worldVersion",
+          "resolvedSlug": "graph#worldversion-touchworld"
+        },
+        {
+          "raw": "WorldGraph",
+          "termName": "WorldGraph",
+          "resolvedSlug": "graph#worldgraph"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Graph.md#structuralcacheversion-touchstructure",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "graph",
+      "slug": "simulationruntime",
+      "name": "SimulationRuntime",
+      "aliases": [
+        "Runtime",
+        "Session Runtime"
+      ],
+      "status": "canonical",
+      "oneLiner": "per-session cache owner; scoped to playthrough; module-level singletons were rejected",
+      "body": "The per-session owner of engine caches (encounter cache, distance matrix), version counters, and lazy rebuild logic. Owned by `useSimulation` and scoped to the current playthrough. Module-level singleton caches were rejected — they persist across game sessions without a full page reload. The SimulationRuntime pattern ensures each game session starts clean.",
+      "seeAlso": [
+        {
+          "raw": "WorldGraph",
+          "termName": "WorldGraph",
+          "resolvedSlug": "graph#worldgraph"
+        },
+        {
+          "raw": "structuralCacheVersion",
+          "termName": "structuralCacheVersion",
+          "resolvedSlug": "graph#structuralcacheversion-touchstructure"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Graph.md#simulationruntime",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "graph",
+      "slug": "gamestate",
+      "name": "GameState",
+      "aliases": [
+        "Game State",
+        "Session State"
+      ],
+      "status": "canonical",
+      "oneLiner": "per-session simulation container; mutated in place per tick; UI reads via worldVersion",
+      "body": "The per-session container for everything the simulation needs to advance one tick. Holds meta (`tick`, `cycle`, `phase`, `seed`), the world graph, the cosmology profile, all hex tiles, the simulation clock, the player's Ascendant identity and essence pool, the mandate, the doom track, encounter queues, and tick-event buffers. `GameState` is mutated in place by the orchestrator each tick; UI selectors read it via `worldVersion` rather than object reference. Definition: `src/types/gameState.ts`.",
+      "seeAlso": [
+        {
+          "raw": "WorldGraph",
+          "termName": "WorldGraph",
+          "resolvedSlug": "graph#worldgraph"
+        },
+        {
+          "raw": "Cosmology Profile",
+          "termName": "Cosmology Profile",
+          "resolvedSlug": "cosmology#cosmology-profile"
+        },
+        {
+          "raw": "HexTile",
+          "termName": "HexTile",
+          "resolvedSlug": "graph#hextile"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Graph.md#gamestate",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "graph",
+      "slug": "hextile",
+      "name": "HexTile",
+      "aliases": [
+        "Hex",
+        "Tile",
+        "Hex Cell"
+      ],
+      "status": "canonical",
+      "oneLiner": "one cell on the world's hex grid; top tier of the three-tier position model",
+      "body": "One cell on the world's hex grid — the top tier of the three-tier position model. A `HexTile` carries its axial coordinate, geographic parameters (elevation, moisture, temperature), terrain biome, optional river flag, region assignment, plus mutable per-tick state: divine influence, corruption, exploration attraction, base terrain (for restoration), and positional danger. Stored in `GameState.tiles`. Agents resolve their hex by walking up the `located_at` edge chain to the first hex they reach.",
+      "seeAlso": [
+        {
+          "raw": "Three-tier Position Model",
+          "termName": "Three-tier Position Model",
+          "resolvedSlug": "graph#three-tier-position-model"
+        },
+        {
+          "raw": "TerrainType",
+          "termName": "TerrainType",
+          "resolvedSlug": "graph#terraintype"
+        },
+        {
+          "raw": "GameState",
+          "termName": "GameState",
+          "resolvedSlug": "graph#gamestate"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Graph.md#hextile",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "graph",
+      "slug": "terraintype",
+      "name": "TerrainType",
+      "aliases": [
+        "Biome",
+        "Terrain Biome"
+      ],
+      "status": "canonical",
+      "oneLiner": "42-value biome enum on every HexTile; drives encounter scoring and awareness",
+      "body": "The 42-value biome enum on every `HexTile.terrain`. Categories include water (`ocean`, `lake`, `river`, `reef`), lowlands (`grassland`, `farmland`, `savanna`), forest (`temperate_forest`, `dense_forest`, `boreal_forest`, `jungle`), wet (`swamp`, `marsh`, `moor_bog`), elevated (`hills`, `mountains`, `plateau`, `badlands`), special (`great_home_trees`, `broken_lands`, `oasis`), and extreme (`desert`, `tundra`, `glacier`, `volcano`). Used by encounter scoring, awareness rules, sublocation eligibility, and prose tier biasing. Definition: `src/types/index.ts`.",
+      "seeAlso": [
+        {
+          "raw": "HexTile",
+          "termName": "HexTile",
+          "resolvedSlug": "graph#hextile"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Graph.md#terraintype",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "coordination",
+      "slug": "cowork",
+      "name": "Cowork",
+      "aliases": [
+        "Cowork Agent",
+        "Design Agent"
+      ],
+      "status": "canonical",
+      "oneLiner": "design/planning agent; produces plans and Linear transitions; never writes code",
+      "body": "The design and planning agent. Cowork produces plans, manages Linear issues, updates documentation, and authors design docs. Cowork does not write code or run git commands. Its output is design artifacts and Linear state transitions. When a design is complete, Cowork posts a Handoff Comment and moves the issue to Ready for Dev or Ready for Codex.",
+      "seeAlso": [
+        {
+          "raw": "Claude Code",
+          "termName": "Claude Code",
+          "resolvedSlug": "coordination#claude-code-cc"
+        },
+        {
+          "raw": "Codex",
+          "termName": "Codex",
+          "resolvedSlug": "coordination#codex"
+        },
+        {
+          "raw": "Handoff Comment",
+          "termName": "Handoff Comment",
+          "resolvedSlug": "coordination#handoff-comment"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Coordination.md#cowork",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "coordination",
+      "slug": "claude-code-cc",
+      "name": "Claude Code (CC)",
+      "aliases": [
+        "CC",
+        "Claude Code Agent"
+      ],
+      "status": "canonical",
+      "oneLiner": "primary executor; claims Ready for Dev; WIP limit 1",
+      "body": "The primary executor agent. CC claims Ready for Dev issues, implements them, commits with `Fixes THR-XX`, and follows the full Definition of Done. CC's queue is Ready for Dev exclusively — never Ready for Codex. CC handles judgment-heavy, prose, and novel-system work. WIP limit: 1 In Dev issue per session.",
+      "seeAlso": [
+        {
+          "raw": "Cowork",
+          "termName": "Cowork",
+          "resolvedSlug": "coordination#cowork"
+        },
+        {
+          "raw": "Codex",
+          "termName": "Codex",
+          "resolvedSlug": "coordination#codex"
+        },
+        {
+          "raw": "Ready for Dev",
+          "termName": "Ready for Dev",
+          "resolvedSlug": "coordination#ready-for-dev"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Coordination.md#claude-code-cc",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "coordination",
+      "slug": "codex",
+      "name": "Codex",
+      "aliases": [
+        "Codex Agent",
+        "Codex Executor"
+      ],
+      "status": "canonical",
+      "oneLiner": "secondary executor; claims Ready for Codex; WIP limit 1",
+      "body": "The secondary executor agent. Codex claims Ready for Codex issues — mechanical, pattern-following work. Codex's queue is Ready for Codex exclusively — never Ready for Dev. The separation exists to prevent queue conflicts between executors. Codex and CC are parallel-safe when their active issues don't share Mutex files.\n\nNote: The `/codex:*` skill integration is a code review tool only, distinct from Codex-the-executor.",
+      "seeAlso": [
+        {
+          "raw": "Claude Code",
+          "termName": "Claude Code",
+          "resolvedSlug": "coordination#claude-code-cc"
+        },
+        {
+          "raw": "Ready for Codex",
+          "termName": "Ready for Codex",
+          "resolvedSlug": "coordination#ready-for-codex"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Coordination.md#codex",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "coordination",
+      "slug": "linear",
+      "name": "Linear",
+      "aliases": [
+        "Linear App",
+        "Issue Tracker"
+      ],
+      "status": "canonical",
+      "oneLiner": "single source of truth for all issues, states, and dependencies",
+      "body": "The single source of truth for all issues, states, and dependencies in the Threadbare team workspace. All issue tracking, state transitions, and coordination happens through Linear. The backlog file (BACKLOG.md) and Notion were deprecated when Linear was adopted on 2026-04-13.",
+      "seeAlso": [
+        {
+          "raw": "Ready for Dev",
+          "termName": "Ready for Dev",
+          "resolvedSlug": "coordination#ready-for-dev"
+        },
+        {
+          "raw": "In Dev",
+          "termName": "In Dev",
+          "resolvedSlug": "coordination#in-dev"
+        },
+        {
+          "raw": "Coordination Block",
+          "termName": "Coordination Block",
+          "resolvedSlug": "coordination#coordination-block"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Coordination.md#linear",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "coordination",
+      "slug": "claim-before-read",
+      "name": "Claim-before-read",
+      "aliases": [
+        "Claim First",
+        "Atomic Claim"
+      ],
+      "status": "canonical",
+      "oneLiner": "`save_issue(In Dev, me)` before reading any plan doc; verified with `get_issue` immediately after",
+      "body": "The protocol requiring `save_issue(state: \"In Dev\", assignee: \"me\")` as the first mutating action after selecting an issue — before reading the plan doc or any other implementation detail. Immediately followed by `get_issue(id)` to verify the write stuck. This prevents two executors from working the same issue concurrently. Silent state drops (impediment #48) make the verify step mandatory.",
+      "seeAlso": [
+        {
+          "raw": "Claude Code",
+          "termName": "Claude Code",
+          "resolvedSlug": "coordination#claude-code-cc"
+        },
+        {
+          "raw": "In Dev",
+          "termName": "In Dev",
+          "resolvedSlug": "coordination#in-dev"
+        },
+        {
+          "raw": "WIP Limit",
+          "termName": "WIP Limit",
+          "resolvedSlug": "coordination#wip-limit"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Coordination.md#claim-before-read",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "coordination",
+      "slug": "wip-limit",
+      "name": "WIP Limit",
+      "aliases": [
+        "Work In Progress Limit",
+        "Single WIP"
+      ],
+      "status": "canonical",
+      "oneLiner": "1 In Dev issue per executor at a time, across all sessions and worktrees",
+      "body": "Maximum 1 In Dev issue per executor at a time, across all sessions and worktrees. Parallel work happens on different issues by different executors — never two executors on the same issue. Before claiming, verify no other In Dev issue is already assigned to you.",
+      "seeAlso": [
+        {
+          "raw": "Claim-before-read",
+          "termName": "Claim-before-read",
+          "resolvedSlug": "coordination#claim-before-read"
+        },
+        {
+          "raw": "In Dev",
+          "termName": "In Dev",
+          "resolvedSlug": "coordination#in-dev"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Coordination.md#wip-limit",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "coordination",
+      "slug": "handoff-comment",
+      "name": "Handoff Comment",
+      "aliases": [
+        "Coordination Comment",
+        "Handover Comment"
+      ],
+      "status": "canonical",
+      "oneLiner": "Cowork's final comment moving an issue to Ready-for-Dev/Codex; supersedes original description when it diverges",
+      "body": "The final comment posted by Cowork when moving an issue to Ready for Dev or Ready for Codex. The Handoff Comment is the authoritative statement of what to build — it supersedes the original description when it diverges. Must contain the full Coordination Block. For reopened issues, read ALL comments back to the original handoff before acting.",
+      "seeAlso": [
+        {
+          "raw": "Cowork",
+          "termName": "Cowork",
+          "resolvedSlug": "coordination#cowork"
+        },
+        {
+          "raw": "Coordination Block",
+          "termName": "Coordination Block",
+          "resolvedSlug": "coordination#coordination-block"
+        },
+        {
+          "raw": "Ready for Dev",
+          "termName": "Ready for Dev",
+          "resolvedSlug": "coordination#ready-for-dev"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Coordination.md#handoff-comment",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "coordination",
+      "slug": "ready-for-dev",
+      "name": "Ready for Dev",
+      "aliases": [
+        "RFD"
+      ],
+      "status": "canonical",
+      "oneLiner": "Linear state: CC pickup queue; filter `assignee: null`",
+      "body": "The Linear state indicating an issue is designed, planned, and ready for Claude Code to claim. CC polls for `state: \"Ready for Dev\", assignee: null` as its pickup queue. Never query Ready for Codex — that queue belongs to Codex.",
+      "seeAlso": [
+        {
+          "raw": "Claude Code",
+          "termName": "Claude Code",
+          "resolvedSlug": "coordination#claude-code-cc"
+        },
+        {
+          "raw": "Handoff Comment",
+          "termName": "Handoff Comment",
+          "resolvedSlug": "coordination#handoff-comment"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Coordination.md#ready-for-dev",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "coordination",
+      "slug": "ready-for-codex",
+      "name": "Ready for Codex",
+      "aliases": [
+        "RFC"
+      ],
+      "status": "canonical",
+      "oneLiner": "Linear state: Codex pickup queue; filter `assignee: null`",
+      "body": "The Linear state indicating an issue is ready for Codex to claim. Codex polls for `state: \"Ready for Codex\", assignee: null`. Never query Ready for Dev — that queue belongs to CC.",
+      "seeAlso": [
+        {
+          "raw": "Codex",
+          "termName": "Codex",
+          "resolvedSlug": "coordination#codex"
+        },
+        {
+          "raw": "Handoff Comment",
+          "termName": "Handoff Comment",
+          "resolvedSlug": "coordination#handoff-comment"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Coordination.md#ready-for-codex",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "coordination",
+      "slug": "in-dev",
+      "name": "In Dev",
+      "aliases": [
+        "In Progress",
+        "Active"
+      ],
+      "status": "canonical",
+      "oneLiner": "Linear state: active implementation; never close manually; use `Fixes THR-XX` auto-close",
+      "body": "The Linear state indicating an issue has been claimed and is being implemented. Set by the executor via `save_issue(state: \"In Dev\")` as part of Claim-before-read. Issues stay In Dev until the merge commit fires the auto-close via `Fixes THR-XX`. Never call `save_issue(state: \"Done\")` manually — the merge-to-main auto-close is the only valid Done transition.",
+      "seeAlso": [
+        {
+          "raw": "Claim-before-read",
+          "termName": "Claim-before-read",
+          "resolvedSlug": "coordination#claim-before-read"
+        },
+        {
+          "raw": "WIP Limit",
+          "termName": "WIP Limit",
+          "resolvedSlug": "coordination#wip-limit"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Coordination.md#in-dev",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "coordination",
+      "slug": "coordination-block",
+      "name": "Coordination Block",
+      "aliases": [
+        "Coordination Lines",
+        "Handoff Block"
+      ],
+      "status": "canonical",
+      "oneLiner": "mandatory handoff fields: Suggested model, Parallel-safe with, Mutex with",
+      "body": "The mandatory fields in every Handoff Comment: `Suggested model`, `Parallel-safe with`, `Mutex with`. CC's coordination block also requires `model:*` label. Codex's block additionally requires `Files to touch` and `Done when` checklist. Missing coordination block = don't claim; post a bounce note and stop.",
+      "seeAlso": [
+        {
+          "raw": "Handoff Comment",
+          "termName": "Handoff Comment",
+          "resolvedSlug": "coordination#handoff-comment"
+        },
+        {
+          "raw": "Parallel-safe",
+          "termName": "Parallel-safe",
+          "resolvedSlug": "coordination#parallel-safe"
+        },
+        {
+          "raw": "Mutex",
+          "termName": "Mutex",
+          "resolvedSlug": "coordination#mutex"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Coordination.md#coordination-block",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "coordination",
+      "slug": "parallel-safe",
+      "name": "Parallel-safe",
+      "aliases": [
+        "Parallel Safe With",
+        "Safe to Parallelize"
+      ],
+      "status": "canonical",
+      "oneLiner": "issues that can be worked concurrently without file conflicts",
+      "body": "Issues that can be worked simultaneously by different executors without file surface conflicts. Listed in the Coordination Block as `Parallel-safe with: THR-XXX`. Before claiming, verify your candidate appears in the active Codex issue's Parallel-safe list and does not appear in its Mutex list.",
+      "seeAlso": [
+        {
+          "raw": "Coordination Block",
+          "termName": "Coordination Block",
+          "resolvedSlug": "coordination#coordination-block"
+        },
+        {
+          "raw": "Mutex",
+          "termName": "Mutex",
+          "resolvedSlug": "coordination#mutex"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Coordination.md#parallel-safe",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "coordination",
+      "slug": "mutex",
+      "name": "Mutex",
+      "aliases": [
+        "Mutex With",
+        "Exclusive",
+        "Blocking"
+      ],
+      "status": "canonical",
+      "oneLiner": "issues that cannot be worked concurrently due to shared file surfaces",
+      "body": "Issues that cannot be worked simultaneously because they share file surfaces and would produce merge conflicts. Listed in the Coordination Block as `Mutex with: THR-XXX`. If your candidate collides with an active Codex issue's Mutex list, do not claim — pick a different issue.",
+      "seeAlso": [
+        {
+          "raw": "Coordination Block",
+          "termName": "Coordination Block",
+          "resolvedSlug": "coordination#coordination-block"
+        },
+        {
+          "raw": "Parallel-safe",
+          "termName": "Parallel-safe",
+          "resolvedSlug": "coordination#parallel-safe"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Coordination.md#mutex",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "coordination",
+      "slug": "fixes-thr-xx",
+      "name": "Fixes THR-XX",
+      "aliases": [
+        "Auto-close Keyword",
+        "Closing Keyword"
+      ],
+      "status": "canonical",
+      "oneLiner": "commit body keyword that triggers Linear auto-close on merge to main; the only valid Done transition",
+      "body": "The commit body keyword (`Fixes THR-XX`, `Closes THR-XX`, or `Resolves THR-XX`) that triggers Linear's auto-close workflow when the commit merges to main. This is the only valid way to mark an issue Done — never call `save_issue(state: \"Done\")` manually. The merge-to-main auto-close is the merge-gated invariant that Done means shipped.",
+      "seeAlso": [
+        {
+          "raw": "In Dev",
+          "termName": "In Dev",
+          "resolvedSlug": "coordination#in-dev"
+        },
+        {
+          "raw": "Definition of Done",
+          "termName": "Definition of Done",
+          "resolvedSlug": "process#definition-of-done"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Coordination.md#fixes-thr-xx",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "process",
+      "slug": "non-functional-priority-nfp",
+      "name": "Non-Functional Priority (NFP)",
+      "aliases": [
+        "NFP",
+        "Non-Functional Requirement"
+      ],
+      "status": "canonical",
+      "oneLiner": "seven ordered priorities: Tunability, Inspectability, Determinism, Fail-soft, Narrative, Additive, Performance",
+      "body": "One of seven ordered development priorities that govern design trade-offs when in tension. In order: (1) Tunability, (2) Inspectability, (3) Determinism, (4) Fail-soft, (5) Narrative over mechanical, (6) Additive over destructive, (7) Performance budget. Higher-numbered NFPs yield to lower-numbered ones when they conflict.",
+      "seeAlso": [
+        {
+          "raw": "Three-Pillar Rule",
+          "termName": "Three-Pillar Rule",
+          "resolvedSlug": "process#three-pillar-rule"
+        },
+        {
+          "raw": "Definition of Done",
+          "termName": "Definition of Done",
+          "resolvedSlug": "process#definition-of-done"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Process.md#non-functional-priority-nfp",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "process",
+      "slug": "three-pillar-rule",
+      "name": "Three-Pillar Rule",
+      "aliases": [
+        "Three Pillars",
+        "Engine/Content/UI Rule"
+      ],
+      "status": "canonical",
+      "oneLiner": "every feature addresses Engine, Content, and UI; mark each N/A with rationale if not applicable",
+      "body": "Every feature must address all three pillars — **Engine** (systems, tick loop, graph), **Content** (encounters, prose, templates, data), and **UI** (components, player controls, debug visibility) — or explicitly mark each as N/A with rationale. Designs and plans covering only one or two pillars produce incomplete features. Incomplete features are not forwarded to executors.",
+      "seeAlso": [
+        {
+          "raw": "Non-Functional Priority",
+          "termName": "Non-Functional Priority",
+          "resolvedSlug": "process#non-functional-priority-nfp"
+        },
+        {
+          "raw": "Design Governance",
+          "termName": "Design Governance",
+          "resolvedSlug": "process#design-governance"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Process.md#three-pillar-rule",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "process",
+      "slug": "definition-of-done",
+      "name": "Definition of Done",
+      "aliases": [
+        "DoD",
+        "Done Criteria",
+        "Closeout Checklist"
+      ],
+      "status": "canonical",
+      "oneLiner": "mandatory closeout: commit, push, merge, deploy, update docs, log deferrals + impediments",
+      "body": "The mandatory closeout checklist for every completed issue: commit (with `Fixes THR-XX`), push, merge to main, verify deploy, update `project-status.md` and `project-history.md`, update `changelog.md`, update `wiring-checklist.md` if new surfaces added, update systemic wiring guide if new engine capabilities added, log all deferrals as Linear issues, log impediments. Work is not done until all items are checked.",
+      "seeAlso": [
+        {
+          "raw": "Fixes THR-XX",
+          "termName": "Fixes THR-XX",
+          "resolvedSlug": "coordination#fixes-thr-xx"
+        },
+        {
+          "raw": "Coordination Block",
+          "termName": "Coordination Block",
+          "resolvedSlug": "coordination#coordination-block"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Process.md#definition-of-done",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "process",
+      "slug": "design-governance",
+      "name": "Design Governance",
+      "aliases": [
+        "Design Checklist",
+        "Design Workflow"
+      ],
+      "status": "canonical",
+      "oneLiner": "8-step checklist: grill-me → draft → brainstorm → audit → revise → NFP table → three-pillar check → Vision audit → present",
+      "body": "The 8-step checklist governing how features are designed before implementation: (0) grill-me pre-pass, (1) draft covering all three pillars, (2) draft brainstorm companion, (3) audit against NFPs, (4) revise inline, (5) add NFP compliance table, (6) three-pillar check, (7) Vision audit, (8) present finished design. Steps 1–4 happen in a single internal pass — never present a non-compliant design.",
+      "seeAlso": [
+        {
+          "raw": "Three-Pillar Rule",
+          "termName": "Three-Pillar Rule",
+          "resolvedSlug": "process#three-pillar-rule"
+        },
+        {
+          "raw": "Vision Audit",
+          "termName": "Vision Audit",
+          "resolvedSlug": "process#vision-audit"
+        },
+        {
+          "raw": "Grill-me",
+          "termName": "Grill-me",
+          "resolvedSlug": "process#grill-me"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Process.md#design-governance",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "process",
+      "slug": "ubiquitous-language-ul",
+      "name": "Ubiquitous Language (UL)",
+      "aliases": [
+        "UL",
+        "Glossary",
+        "Canonical Terms"
+      ],
+      "status": "canonical",
+      "oneLiner": "this sharded glossary; authority on terminology when sources disagree",
+      "body": "The sharded canonical glossary (`Docs/ubiquitous-language/`) establishing the authoritative definition of every domain concept used across code, documentation, and agent communication. When CLAUDE.md, Obsidian, code comments, or agent output disagree on terminology, UL wins. UL is the foundation layer — content taxonomies sit above it, not the other way around.",
+      "seeAlso": [
+        {
+          "raw": "Drift Scan",
+          "termName": "Drift Scan",
+          "resolvedSlug": "process#drift-scan"
+        },
+        {
+          "raw": "UL-proposal",
+          "termName": "UL-proposal",
+          "resolvedSlug": "process#ul-proposal"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Process.md#ubiquitous-language-ul",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "process",
+      "slug": "domain-canon-page",
+      "name": "Domain Canon Page",
+      "aliases": [
+        "Canon Page"
+      ],
+      "status": "canonical",
+      "oneLiner": "A short (<=200 lines) navigation document at `Docs/canon/<domain>.md` used as the agent Step 0 entrypoint for authoring work in that domain.",
+      "body": "A short (<=200 lines) navigation document at `Docs/canon/<domain>.md` used as the agent Step 0 entrypoint for authoring work in that domain. A Domain Canon Page does not own term definitions (UL owns those) or implementation rationale (plan docs own that). It lists current spec pointers, current rejected approaches, current open questions, and a `last_reviewed` field with reviewer attribution. Authoring skills load the relevant Domain Canon Page before any other reference material.",
+      "seeAlso": [
+        {
+          "raw": "Ubiquitous Language",
+          "termName": "Ubiquitous Language",
+          "resolvedSlug": "process#ubiquitous-language-ul"
+        },
+        {
+          "raw": "Documentation Ownership",
+          "termName": "Documentation Ownership",
+          "resolvedSlug": null
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Process.md#domain-canon-page",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "process",
+      "slug": "grill-me",
+      "name": "Grill-me",
+      "aliases": [
+        "Grill-me Skill",
+        "Adversarial Questioning"
+      ],
+      "status": "canonical",
+      "oneLiner": "adversarial pre-design questioning skill; Design Governance step 0 for non-trivial work",
+      "body": "The adversarial pre-design questioning skill that extracts scope ambiguities, alternative approaches, and grey zones before implementation begins. Invoked as step 0 of Design Governance for non-trivial work. Auto-triggers on large scope, multi-pillar tasks, or explicit user request. Output is written to `Docs/plans/YYYY-MM-DD-<topic>-grill-me.md` and consumed by step 1 of the design checklist.",
+      "seeAlso": [
+        {
+          "raw": "Design Governance",
+          "termName": "Design Governance",
+          "resolvedSlug": "process#design-governance"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Process.md#grill-me",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "process",
+      "slug": "vision-audit",
+      "name": "Vision Audit",
+      "aliases": [
+        "Vision Check"
+      ],
+      "status": "canonical",
+      "oneLiner": "Design Governance step 7; verify design doesn't silently contradict a Vision premise",
+      "body": "Step 7 of Design Governance: verifying that a design does not contradict or silently update any Vision premise. If a Vision premise is contradicted, the edit to `Vision/` is part of the current ticket's scope — not a follow-up. Vision premises are in the Obsidian vault under `Vision/`.",
+      "seeAlso": [
+        {
+          "raw": "Design Governance",
+          "termName": "Design Governance",
+          "resolvedSlug": "process#design-governance"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Process.md#vision-audit",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "process",
+      "slug": "wiring-checklist",
+      "name": "Wiring Checklist",
+      "aliases": [
+        "Integration Checklist"
+      ],
+      "status": "canonical",
+      "oneLiner": "`Docs/plans/wiring-checklist.md`; verification that new modules are connected across all surfaces",
+      "body": "The verification document (`Docs/plans/wiring-checklist.md`) confirming that every new module is connected across all required surfaces: orchestrator phase, UI component, GameState fields, traces emitted, player controls connected. Updated as part of every Definition of Done that adds new surfaces.",
+      "seeAlso": [
+        {
+          "raw": "Definition of Done",
+          "termName": "Definition of Done",
+          "resolvedSlug": "process#definition-of-done"
+        },
+        {
+          "raw": "Three-Pillar Rule",
+          "termName": "Three-Pillar Rule",
+          "resolvedSlug": "process#three-pillar-rule"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Process.md#wiring-checklist",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "process",
+      "slug": "drift-scan",
+      "name": "Drift Scan",
+      "aliases": [
+        "Weekly Drift Scan",
+        "Codebase Drift Scan"
+      ],
+      "status": "canonical",
+      "oneLiner": "weekly GitHub Action producing `drift-scan`-labeled Linear issues from four codebase health signals",
+      "body": "The weekly GitHub Action (`.github/workflows/drift-scan.yml`) that runs four signals against `main` and produces per-signal Linear issues (label: `drift-scan`) in Continuous Improvement. Signals: coupling creep, broken-windows tally, test suite health, and UL drift. The retrospective reads `drift-scan`-labeled issues as its first input. The scan runs ~1 hour before the retrospective on Fridays.",
+      "seeAlso": [
+        {
+          "raw": "Retrospective",
+          "termName": "Retrospective",
+          "resolvedSlug": "process#retrospective"
+        },
+        {
+          "raw": "UL-proposal",
+          "termName": "UL-proposal",
+          "resolvedSlug": "process#ul-proposal"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Process.md#drift-scan",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "process",
+      "slug": "retrospective",
+      "name": "Retrospective",
+      "aliases": [
+        "Weekly Retro",
+        "Retrospective Skill"
+      ],
+      "status": "canonical",
+      "oneLiner": "weekly synthesis of impediment log + drift scan issues; run via `retrospective` skill",
+      "body": "The weekly synthesis of the impediment log (`Docs/impediments.md`) + drift scan issues into a structured retrospective document (`Docs/retrospectives/YYYY-MM-DD-retro.md`). Run via the `retrospective` skill. The retrospective implements quick wins inline and opens Linear issues for larger improvements. It is the sense-making layer that converts quantitative scan data into qualitative judgment.",
+      "seeAlso": [
+        {
+          "raw": "Drift Scan",
+          "termName": "Drift Scan",
+          "resolvedSlug": "process#drift-scan"
+        },
+        {
+          "raw": "Non-Functional Priority",
+          "termName": "Non-Functional Priority",
+          "resolvedSlug": "process#non-functional-priority-nfp"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Process.md#retrospective",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "process",
+      "slug": "ul-proposal",
+      "name": "UL-proposal",
+      "aliases": [
+        "UL Proposal",
+        "Terminology Proposal"
+      ],
+      "status": "canonical",
+      "oneLiner": "Linear issue label for proposed new terms or retirements; always human-approved, never auto-merged",
+      "body": "The Linear issue label used by the `ubiquitous-language` skill when proposing a new canonical term or a retirement of a stale term. Issues land in Continuous Improvement with this label. A `UL-proposal` issue must include: proposed term + definition, where/why it was encountered (with quote), its relationship to existing terms, and content-adjacency assessment. Approval is always human — no auto-merge.",
+      "seeAlso": [
+        {
+          "raw": "Ubiquitous Language",
+          "termName": "Ubiquitous Language",
+          "resolvedSlug": "process#ubiquitous-language-ul"
+        },
+        {
+          "raw": "Drift Scan",
+          "termName": "Drift Scan",
+          "resolvedSlug": "process#drift-scan"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Process.md#ul-proposal",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "process",
+      "slug": "implementation-plan",
+      "name": "Implementation Plan",
+      "aliases": [
+        "Plan Doc",
+        "Design Doc",
+        "Plan"
+      ],
+      "status": "canonical",
+      "oneLiner": "Cowork-authored design artifact in Docs/plans/; the executor's input",
+      "body": "The Cowork-authored design artifact in `Docs/plans/YYYY-MM-DD-<topic>.md` that turns a Linear issue into something an executor can implement. Each plan covers all three pillars (Engine, Content, UI), runs the NFP audit, lists constants and traces, marks fail-soft cases, and produces the wiring section that connects new modules to orchestrator phases, UI components, and trace categories. The plan-pending-commit label gates an hourly scheduled task that commits the file to `origin/main`. Distinct from the Linear state **Implementation Planning**, which is the workflow phase where the plan is being written.",
+      "seeAlso": [
+        {
+          "raw": "Design Governance",
+          "termName": "Design Governance",
+          "resolvedSlug": "process#design-governance"
+        },
+        {
+          "raw": "Definition of Done",
+          "termName": "Definition of Done",
+          "resolvedSlug": "process#definition-of-done"
+        },
+        {
+          "raw": "Coordination Block",
+          "termName": "Coordination Block",
+          "resolvedSlug": "coordination#coordination-block"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Process.md#implementation-plan",
+      "contentAdjacent": false
+    }
+  ],
+  "warnings": [
+    {
+      "kind": "unresolved_see_also",
+      "shardId": "agents",
+      "termSlug": "agent",
+      "detail": "See-Also \"NPC\" did not resolve to a known term."
+    },
+    {
+      "kind": "unresolved_see_also",
+      "shardId": "agents",
+      "termSlug": "faction",
+      "detail": "See-Also \"Member Of\" did not resolve to a known term."
+    },
+    {
+      "kind": "unresolved_see_also",
+      "shardId": "prose",
+      "termSlug": "resolver",
+      "detail": "See-Also \"Prose Pipeline\" did not resolve to a known term."
+    },
+    {
+      "kind": "unresolved_see_also",
+      "shardId": "graph",
+      "termSlug": "three-tier-position-model",
+      "detail": "See-Also \"Location\" did not resolve to a known term."
+    },
+    {
+      "kind": "unresolved_see_also",
+      "shardId": "graph",
+      "termSlug": "three-tier-position-model",
+      "detail": "See-Also \"Sublocation\" did not resolve to a known term."
+    },
+    {
+      "kind": "unresolved_see_also",
+      "shardId": "process",
+      "termSlug": "domain-canon-page",
+      "detail": "See-Also \"Documentation Ownership\" did not resolve to a known term."
+    }
+  ]
+}

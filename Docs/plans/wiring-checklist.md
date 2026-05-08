@@ -2,7 +2,7 @@
 
 > **Living document.** Every design plan must include a wiring section that maps new modules to entries on this checklist. Every implementation must verify all listed connections before marking work complete. Maintaining this checklist is part of the Definition of Done for both design and implementation phases.
 >
-> **Last updated:** 2026-05-07 (THR-326 — Added regional detection-pressure phase wiring + DebugPanel detection inspector surface). Previous: 2026-04-29 (THR-109 — Added branch-aware aftermath selection surface (`BranchAwareAftermathConfig` / `resolveAftermathVariant`). Previous: 2026-04-19 THR-174 viewport audit.)
+> **Last updated:** 2026-05-08 (THR-289 — Added UL Interactive Dashboard reference surface at `?view=ul`). Previous: 2026-05-07 (THR-326 — Added regional detection-pressure phase wiring + DebugPanel detection inspector surface). Previous: 2026-04-29 (THR-109 — Added branch-aware aftermath selection surface (`BranchAwareAftermathConfig` / `resolveAftermathVariant`). Previous: 2026-04-19 THR-174 viewport audit.)
 
 ---
 
@@ -17,6 +17,19 @@
 ---
 
 ## Integration Surfaces
+
+### Reference Surfaces — UL Interactive Dashboard (THR-289)
+
+| Surface | Path | Notes |
+|---|---|---|
+| Route | `src/App.tsx` (`?view=ul`) | Lazy-loaded `UbiquitousLanguageDashboard` mirroring the Codex/StyleGuide/CMS pattern. |
+| IA manifest entries | `src/data/ia-manifest.ts` | Three new surfaces — `ul.dashboard`, `ul.sidebar`, `ul.detail-pane` — under `view: 'ul'`. `'ul'` added to `SurfaceView` union. |
+| StartPage menu item | `src/components/StartPage/StartPage.tsx` | "Ubiquitous Language" entry that navigates to `?view=ul`. |
+| Build-time generator | `scripts/generate-ul-dashboard-data.ts` → `src/data/ul-dashboard.generated.json` | Parses the seven UL shards into a typed JSON snapshot. Wired as `npm run generate-ul-dashboard` and the `prebuild` hook so vite-build always emits a current snapshot. |
+| Drift status placeholder | `src/data/drift-scan-status.json` | Empty v1 contract; live data wired in deferral (drift-scan emits + GH Action commits). |
+| Drift constants single-source | `scripts/drift-scan/constants.ts` | Browser-safe re-export consumed by both the weekly drift-scan job and `src/data/ul-dashboard-constants.ts`. |
+| Components | `src/components/UL/` | `UbiquitousLanguageDashboard`, `ULSidebar`, `ULTermTable`, `ULDetailPane`, `ULSearchBox`, `ULDriftBadge`, `ulDashboardData`, `ulSearch`, `ulMarkdown`. |
+| Verification coverage | `scripts/__tests__/generate-ul-dashboard-data.test.ts`, `src/components/UL/__tests__/UbiquitousLanguageDashboard.test.tsx`, `src/components/UL/__tests__/ulSearch.test.ts` | Generator parse + warning shape, dashboard smoke render, search ranking ordering. |
 
 ### Encounter Experience Foundation (THR-321, Phase A2)
 

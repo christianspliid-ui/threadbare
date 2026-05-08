@@ -43,6 +43,7 @@ npm run dev    # start Vite dev server with hot reload
 | `npm run validate-model` | Validate world-model.json integrity |
 | `npm run generate-vault` | Regenerate Obsidian vault from world-model.json |
 | `npm run generate-hex` | Generate a hex tile image (requires Python + API key) |
+| `npm run generate-ul-dashboard` | Regenerate UL dashboard JSON snapshot (auto-runs on `npm run build`) |
 | `npm run rebuild-index` | Rebuild Obsidian vault Index.md from all vault pages |
 | `npm run cli` | Interactive REPL for headless game testing (see below) |
 
@@ -58,6 +59,7 @@ npm run dev    # start Vite dev server with hot reload
 | `?view=styleguide` | **Visual component reference.** All shared primitives with sample data — see what components look like before building UI. |
 | `?view=cms` | Content browser |
 | `?view=cms#ia-surfaces` | **IA manifest viewer.** Browsable Information Architecture commitment doc — all surfaces with view/mount badges, reads[] tables, and "Open this surface" links. |
+| `?view=ul` | **Ubiquitous Language dashboard.** Browseable + searchable glossary across all 7 UL shards with cross-shard search, See-Also navigation, and drift badges. Reads `src/data/ul-dashboard.generated.json` (refreshed via `npm run generate-ul-dashboard`; auto-rebuilt on `npm run build`). |
 | `?nofog` | Disable fog of war (fog is ON by default). Combinable: `?view=game&seeded&nofog` |
 
 **For all testing, use `?view=game&seeded`** — this skips the remembrance flow, ascendant selection, AND the Meet The First encounter, loading directly into a fully populated game with a bonded First agent. Only use bare `?view=game` when testing identity-less paths, and only test the worldgen/selection/remembrance screens when those screens are the subject of the test.
