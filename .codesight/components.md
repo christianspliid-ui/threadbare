@@ -231,6 +231,8 @@
 - **PlaceOfPowerInspector** — props: location, graph, tick — `src\components\ruins\PlaceOfPowerInspector.tsx`
 - **ActivityIcon** — props: kind, size, color — `src\components\shared\ActivityIcon.tsx`
 - **AnimateMount** — props: show, animation, duration — `src\components\shared\AnimateMount.tsx`
+- **DetailBreadcrumb** — props: trail, onNavigate — `src\components\shared\DetailBreadcrumb.tsx`
+- **DetailModal** — `src\components\shared\DetailModal.tsx`
 - **Divider** — props: gold — `src\components\shared\Divider.tsx`
 - **DomainCard** — props: reach, tier, agentName, gender, revealed — `src\components\shared\DomainCard.tsx`
 - **Dropdown** — props: trigger, open, onOpenChange, align — `src\components\shared\Dropdown.tsx`
@@ -243,6 +245,7 @@
 - **RarityBadge** — props: tier, opacity, className — `src\components\shared\RarityBadge.tsx`
 - **RarityBorderBox** — props: tier, className, style — `src\components\shared\RarityBorderBox.tsx`
 - **RivalIcon** — props: spheres, size, className, style, title — `src\components\shared\RivalIcon.tsx`
+- **Section** — props: section — `src\components\shared\Section.tsx`
 - **SectionHeading** — props: count, Tag, ornamental — `src\components\shared\SectionHeading.tsx`
 - **SphereIcon** — props: sphereProp, sphereName, size, className, style, title, useImage, variant — `src\components\shared\SphereIcon.tsx`
 - **StepDots** — props: totalSteps, currentStepIndex, size — `src\components\shared\StepDots.tsx`
@@ -255,3 +258,4 @@
 - **InfoPanel** — props: tile — `src\components\UI\InfoPanel.tsx`
 - **MagicGlowTiles** — `src\components\UI\MagicGlowTiles.tsx`
 - **WorldSoulIndicator** — props: aggregate — `src\components\WorldSoulIndicator.tsx`
+- **DetailModalStackProvider** — `src\contexts\DetailModalStackContext.tsx`

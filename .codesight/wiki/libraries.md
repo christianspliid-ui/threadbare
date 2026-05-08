@@ -2,9 +2,9 @@
 
 > **Navigation aid.** Library inventory extracted via AST. Read the source files listed here before modifying exported functions.
 
-**555 library files** across 16 modules
+**565 library files** across 16 modules
 
-## Engine (321 files)
+## Engine (330 files)
 
 - `src\engine\phaseProsperity.ts` — getProsperityTier, computeBaseIncome, computeEquilibriumTargetWithSphere, phaseProsperity, ProsperityTier, PopulationTrend, …
 - `src\engine\graphQueries.ts` — getAgentsAtLocation, getAllActorsAtLocation, getAgentLocation, getAgentLocationId, getSublocationsAt, getLocationsInRegion, …
@@ -31,7 +31,7 @@
 - `src\engine\plannerForecast.ts` — isPushEligible, isResistEligible, forecastStepProbabilities, forecastStepExpectedUtility, forecastEncounterExpectedUtility, EncounterForecast, …
 - `src\engine\worldSeed.ts` — seedWorld, SeedResult, INDIVIDUAL_COUNT, FACTION_COUNT, LOCATION_COUNT, LOCATION_DENSITY, …
 - `src\engine\encounterEventNode.ts` — createEncounterEventNode, createUnifiedActionEventNode, getLocationEncounterHistory, getAgentEncounterHistory, CreateEncounterEventParams, CreateUnifiedActionEventParams, …
-- _…and 296 more files_
+- _…and 305 more files_
 
 ## Components (101 files)
 
@@ -163,6 +163,11 @@
 - `src\services\narration\ServerBackend.ts` — ServerBackend
 - `src\services\narration\useNarration.ts` — useNarration
 
+## Hooks (2 files)
+
+- `src\hooks\useDetailModal.ts` — useDetailModal
+- `src\hooks\useLastViewedTick.ts` — useLastViewedTick
+
 ## Batch_hex_clip.py (1 files)
 
 - `batch_hex_clip.py` — create_hex_mask, clip_hex_tile, main
@@ -170,10 +175,6 @@
 ## Content (1 files)
 
 - `src\content\ruins\archetypes.ts` — pickRuinArchetype, RuinArchetypeDescriptor, RuinArchetype, RUIN_ARCHETYPES, ARCHETYPE_WEIGHTS
-
-## Hooks (1 files)
-
-- `src\hooks\useLastViewedTick.ts` — useLastViewedTick
 
 ## Testing (1 files)
 
