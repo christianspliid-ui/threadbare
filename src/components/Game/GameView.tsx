@@ -3439,7 +3439,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               style={{
                 width: 'var(--sidebar-width)',
                 background: 'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))',
-                borderLeft: '1px solid var(--border-gold)',
+                borderLeft: '1px solid var(--border-subtle)',
               }}
             >
               <div style={{ padding: 'var(--panel-padding)' }}>
