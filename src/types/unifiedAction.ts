@@ -516,6 +516,8 @@ export interface ActionStep {
   readonly reach: ReachDomain;
   readonly duration: { readonly min: number; readonly max: number };
   readonly difficulty: number; // 0-1
+  /** Opt-in for intel-derived difficulty reduction during resolution. */
+  readonly difficultyContext?: 'intel_sensitive';
   readonly onSuccess: readonly GraphOp[];
   readonly onFailure: readonly GraphOp[];
   readonly failBehavior: StepFailBehavior;
