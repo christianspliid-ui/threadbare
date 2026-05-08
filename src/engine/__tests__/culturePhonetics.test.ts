@@ -22,7 +22,7 @@ function makeIdentity(foundationBias: string, sphere: string): CultureIdentity {
     metaphorPalette: [],
     formativeTraitSeedIds: [],
     behavioralTraitSeedIds: [],
-    reachPreferences: { iron: 0, gold: 0, shadow: 0, veil: 0, heart: 0, eye: 0, stone: 0, star: 0, flesh: 0 },
+    reachPreferences: { iron: 0, gold: 0, shadow: 0, veil: 0, heart: 0, eye: 0, stone: 0, star: 0 },
   };
 }
 
