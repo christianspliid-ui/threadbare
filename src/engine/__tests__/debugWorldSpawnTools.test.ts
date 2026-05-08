@@ -281,7 +281,6 @@ describe('debugWorldSpawnTools', () => {
         tier: 2,
         tags: ['#disease'],
         visibility: 'discoverable',
-        domainContributions: { flesh: -0.1 },
       },
     });
 

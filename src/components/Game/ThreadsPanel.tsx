@@ -658,6 +658,23 @@ function CompactThreadRow({
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1, minWidth: 0 }}>
           {/* Row 1: name · strategic glyph · activity icon · zoom · sphere icon */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+            {/* Priority pip — visible when this thread has a pending encounter (THR-340 §5.8) */}
+            {node.category === 'agent' && agentEncounter && (
+              <span
+                data-testid="thread-priority-pip"
+                aria-label="Needs attention"
+                title="Needs attention"
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  backgroundColor: 'var(--accent-gold, #d4a040)',
+                  boxShadow: '0 0 6px var(--accent-gold, #d4a040)',
+                  flexShrink: 0,
+                  animation: 'mark-pulse 1.6s ease-in-out infinite',
+                }}
+              />
+            )}
             <span
               className="truncate"
               style={{
@@ -892,14 +909,13 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
   const totalCount = threadedNodes.length;
   if (totalCount === 0) {
     return (
-      <div>
+      <div className="panel" style={{ padding: 'var(--space-3)' }}>
         <div
           style={{
             fontFamily: 'var(--font-display)',
             fontSize: 'var(--text-lg)',
             fontWeight: 700,
             color: 'var(--text-primary)',
-            padding: 'var(--space-4)',
             paddingBottom: 'var(--space-2)',
           }}
         >
@@ -922,7 +938,7 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
 
   return (
     <>
-      <div>
+      <div className="panel" style={{ padding: 'var(--space-3)' }}>
         {/* Panel title */}
         <div
           style={{
@@ -930,7 +946,6 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
             fontSize: 'var(--text-lg)',
             fontWeight: 700,
             color: 'var(--text-primary)',
-            padding: 'var(--space-4)',
             paddingBottom: 'var(--space-2)',
           }}
         >

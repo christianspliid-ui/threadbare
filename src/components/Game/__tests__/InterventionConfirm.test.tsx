@@ -103,4 +103,26 @@ describe('InterventionConfirm', () => {
     // Confirm button should be disabled or hidden
     expect(screen.queryByRole('button', { name: /confirm/i })).toBeNull();
   });
+
+  // v7 visual elements
+  it('renders sphere and delivery label line above title', () => {
+    render(<InterventionConfirm {...baseProps} sphere="mind" deliveryMode="regional" />);
+    const line = screen.getByTestId('sphere-delivery-line');
+    expect(line).toBeTruthy();
+    // Text content before CSS text-transform: lowercase values are in the DOM
+    expect(line.textContent).toContain('mind');
+    expect(line.textContent).toContain('regional');
+  });
+
+  it('applies sphere-bright ring via boxShadow on the panel', () => {
+    render(<InterventionConfirm {...baseProps} sphere="mind" />);
+    const panel = screen.getByTestId('intervention-panel');
+    expect(panel.style.boxShadow).toContain('#44aaff'); // mind sphere color
+  });
+
+  it('renders tilts-toward line when agendaNarrativeHook present', () => {
+    render(<InterventionConfirm {...baseProps} agendaNarrativeHook="a wound or a debt" />);
+    expect(screen.getByText(/tilts toward:/)).toBeTruthy();
+    expect(screen.getByText(/a wound or a debt/)).toBeTruthy();
+  });
 });

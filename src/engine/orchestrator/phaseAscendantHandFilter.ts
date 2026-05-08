@@ -1,15 +1,35 @@
 import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
 import type { GameState } from '../../types/gameState';
 import type { SphereName } from '../../types/index';
+import type { EncounterNotification } from '../../types/encounterVisibility';
 import type { TargetCategory } from '../../types/targetContext';
 import type { TraceEntry } from '../../types/trace';
-import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import type { ForecastTier } from '../../types/traces/encounter-traces';
+import type { UnifiedAction, UnifiedActionTemplate } from '../../types/unifiedAction';
 import { adaptUnifiedActionTemplateToEncounterContract } from '../encounter-contract-adapter';
 import { filterAscendantHand } from '../encounters/handFilter';
+import { computeForecast, type ForecastModifier } from '../encounters/outcomeForecast';
+import { computeCapability } from '../domainCapability';
 import type { WorldGraph } from '../graph';
+import { computeResolutionModifiers } from '../resolutionModifiers';
 import { emitTrace } from '../traceBuffer';
+import { resolveStepDefinition } from '../unifiedActionLifecycle';
 
 const ASCENDANT_ONLY_AFFINITY = 'ascendant';
+const PROBABILITY_FLOOR = 0.05;
+const PROBABILITY_CEILING = 0.95;
+
+interface EncounterNotificationWithForecast {
+  outcomeForecast?: {
+    actionId?: string;
+    stepIndex: number;
+    baseProbability: number;
+    finalProbability: number;
+    finalTier: ForecastTier;
+    factors: string[];
+    modifiers: ForecastModifier[];
+  };
+}
 
 export interface AscendantHandFilterPhaseStats {
   filteredCount: number;
@@ -66,6 +86,96 @@ function resolveLocationNodeForAction(state: GameState, actionTargetId: string |
   return locationNode ?? null;
 }
 
+function clampProbability(value: number): number {
+  if (!Number.isFinite(value)) return PROBABILITY_FLOOR;
+  if (value < PROBABILITY_FLOOR) return PROBABILITY_FLOOR;
+  if (value > PROBABILITY_CEILING) return PROBABILITY_CEILING;
+  return value;
+}
+
+function resolveLocationId(graph: WorldGraph, actorId: string): string {
+  const edge = graph.getOutgoingEdges(actorId, 'located_at')[0];
+  return edge?.target ?? '';
+}
+
+function buildForecastModifiers(
+  modifierBreakdown: ReturnType<typeof computeResolutionModifiers>,
+): ForecastModifier[] {
+  const parts: ForecastModifier[] = [
+    { source: 'sphere_alignment', delta: modifierBreakdown.sphereAlignmentBonus },
+    { source: 'equipment', delta: modifierBreakdown.equipmentModifier },
+    { source: 'terrain', delta: modifierBreakdown.terrainModifier },
+    { source: 'traits', delta: modifierBreakdown.traitBonus },
+    { source: 'divine_intervention', delta: modifierBreakdown.divineInterventionModifier },
+    { source: 'effect_system', delta: modifierBreakdown.effectModifier },
+    { source: 'rule_override', delta: modifierBreakdown.ruleModifier },
+  ];
+  return parts.filter((part) => part.delta !== 0);
+}
+
+function maybeComputeEncounterForecast(
+  state: GameState,
+  action: UnifiedActionTemplate | null,
+  actionState: UnifiedAction | undefined,
+  notification: EncounterNotification,
+): void {
+  if (!action || !actionState) return;
+  if (notification.stepIndex === undefined) return;
+
+  const notificationWithForecast = notification as typeof notification & EncounterNotificationWithForecast;
+  const existing = notificationWithForecast.outcomeForecast;
+  if (
+    existing
+    && existing.actionId === notification.actionId
+    && existing.stepIndex === notification.stepIndex
+  ) {
+    return;
+  }
+
+  const resolvedStep = resolveStepDefinition(action, notification.stepIndex, actionState.choiceHistory);
+  const capability = computeCapability(state.graph, actionState.actorId, resolvedStep.reach);
+  const locationId = resolveLocationId(state.graph, actionState.actorId);
+  const modifierBreakdown = computeResolutionModifiers(
+    state.graph,
+    actionState.actorId,
+    locationId,
+    resolvedStep.reach,
+    action.sphereAffinity,
+    state.effectStates,
+  );
+  const modifiers = buildForecastModifiers(modifierBreakdown);
+  const baseProbability = clampProbability(capability - resolvedStep.difficulty);
+
+  const contract = adaptUnifiedActionTemplateToEncounterContract(action);
+  const beat = contract.encounter.beats[notification.stepIndex];
+  const forecast = computeForecast(
+    { forecastFactors: beat?.forecast_factors },
+    { baseProbability, modifiers },
+  );
+
+  notificationWithForecast.outcomeForecast = {
+    actionId: notification.actionId,
+    stepIndex: notification.stepIndex,
+    baseProbability: forecast.baseProbability,
+    finalProbability: forecast.finalProbability,
+    finalTier: forecast.finalTier,
+    factors: [...forecast.factors],
+    modifiers: [...modifiers],
+  };
+
+  emitTrace({
+    tick: state.tick,
+    category: 'forecast_computed',
+    summary: `Forecast computed ${notification.encounterId} step ${notification.stepIndex + 1}: ${forecast.finalTier}`,
+    encounterId: notification.encounterId,
+    beatIndex: notification.stepIndex,
+    baseProbability: forecast.baseProbability,
+    modifiers,
+    finalTier: forecast.finalTier,
+    factors: forecast.factors,
+  } as unknown as Omit<TraceEntry, 'id' | 'timestamp'>);
+}
+
 function resolvePlaceSphere(locationNode: ReturnType<typeof resolveLocationNodeForAction>): SphereName | null {
   if (!locationNode) return null;
   const raw = locationNode.properties?.sphereAlignment;
@@ -109,6 +219,7 @@ export function phaseAscendantHandFilter(
     if (!encounterTemplate) continue;
 
     const action = (state.unifiedActions ?? []).find((entry) => entry.actionId === notification.actionId);
+    maybeComputeEncounterForecast(state, encounterTemplate, action, notification);
     const encounterContract = adaptUnifiedActionTemplateToEncounterContract(encounterTemplate);
     const pinnedEligible = encounterContract.encounter.ascendant_hand_filter.eligible;
     const pinnedRarePulse = encounterContract.encounter.ascendant_hand_filter.rare_pulse;

@@ -1,3 +1,9 @@
+---
+name: ubiquitous-language
+description: Maintain the canonical glossary in `Docs/ubiquitous-language`, including proposal, retirement, and arbitration workflows.
+last_validated_against: 2026-05-08
+---
+
 # Ubiquitous Language Skill
 
 ## Purpose

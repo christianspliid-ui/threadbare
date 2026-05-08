@@ -49,6 +49,8 @@ export type EncounterAftermathChangeKind =
   | 'archetype_drift_register'
   | string;
 
+export type EncounterForecastFactors = readonly [string, string?, string?];
+
 export interface EncounterAmbientState {
   readonly time_of_day?: string;
   readonly weather?: string;
@@ -106,7 +108,7 @@ export interface EncounterChoiceContract {
 export interface EncounterBeatContract {
   readonly title: string;
   readonly invokes?: string;
-  readonly forecast_factors: readonly [string, ...string[]];
+  readonly forecast_factors: EncounterForecastFactors;
   readonly prose: string;
   readonly prose_tooltips: Readonly<Record<string, string>>;
   readonly encounter_choices: readonly EncounterChoiceContract[];

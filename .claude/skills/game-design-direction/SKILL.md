@@ -9,6 +9,7 @@ description: >
   finalization. Load alongside state-of-game-design for any In Design phase
   work on player-facing features. Skip for pure-infrastructure design passes
   where Vision premises are not in scope.
+last_validated_against: 2026-05-08
 ---
 
 # Game Design Direction

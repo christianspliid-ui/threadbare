@@ -240,6 +240,52 @@ export type EncounterAftermathReactionEffect =
     readonly when?: EffectPredicate;
   }
   | {
+    /**
+     * THR-139 — Authored "the intel paid off" chronicle line.
+     *
+     * Fires when the actor (or `targetAgentId`) holds an intelligence record
+     * matching `category` AND the action's encounter context (templateId /
+     * locationId / region). The matched record's reliability band picks
+     * which prose variant lands on `recentEvents` / `tickEvents` and is
+     * surfaced in the chronicle.
+     *
+     * Closes the consumption loop: scoring, prose enrichment, resolution
+     * match, and difficulty modifier all reference records passively. This
+     * variant adds an authored, player-visible reference. Records are read,
+     * never consumed.
+     */
+    readonly kind: 'intel_referenced_prose';
+    /** Which intelligence category this prose is conditional on. Effect no-ops if the actor has no matching record. */
+    readonly category: IntelligenceCategory;
+    /**
+     * Reliability-tiered prose variants. The matched record's reliability band
+     * (`reliable` / `uncertain` / `dubious`) picks which line is appended to
+     * `recentEvents` / `tickEvents`. Authors must supply at least `reliable`;
+     * `uncertain` and `dubious` are optional and inherit upward when absent
+     * (uncertain → reliable; dubious → uncertain → reliable).
+     *
+     * Use the same enrichment vocabulary as other aftermath prose
+     * ({name}, {location}, {intel:category}, etc.) — the message string
+     * passes through the standard prose-enrichment path before being
+     * stored on the TickEvent.
+     */
+    readonly prose: {
+      readonly reliable: string;
+      readonly uncertain?: string;
+      readonly dubious?: string;
+    };
+    /**
+     * Optional significance override (0–1). Defaults derived per band:
+     *   reliable → INTEL_REFERENCED_PROSE_SIGNIFICANCE_RELIABLE  (0.6)
+     *   uncertain → INTEL_REFERENCED_PROSE_SIGNIFICANCE_UNCERTAIN (0.45)
+     *   dubious → INTEL_REFERENCED_PROSE_SIGNIFICANCE_DUBIOUS    (0.3)
+     */
+    readonly significance?: number;
+    /** Direct the reference at a specific agent (defaults to actor). */
+    readonly targetAgentId?: string;
+    readonly when?: EffectPredicate;
+  }
+  | {
     readonly kind: 'reputation_set';
     /** Absolute reputation value to assign (clamped to 0..1). */
     readonly value: number;
@@ -404,6 +450,22 @@ export type EncounterAftermathReactionEffect =
     readonly reason?: string;
     readonly when?: EffectPredicate;
   }
+  // ─── Archetype drift surface (THR-328) ───────────────────────────────────
+  | {
+    /**
+     * UI surface trigger: register that a drift threshold is currently held
+     * on a moral axis after encounter resolution.
+     */
+    readonly kind: 'archetype_drift_register';
+    /** Moral axis the registration applies to (for example: protector_conqueror). */
+    readonly axisId: string;
+    /** Threshold band that must currently be held on the axis. */
+    readonly threshold: 'soft' | 'banner' | 'becoming';
+    /** Direct the registration at a specific agent (defaults to actor). */
+    readonly targetAgentId?: string;
+    /** Optional predicate gate — effect skips if predicate evaluates false. */
+    readonly when?: EffectPredicate;
+  }
   // ─── Ruins Layer clue effects (THR-150) ──────────────────────────────────
   | {
     /**
@@ -500,6 +562,8 @@ export interface ActionStep {
   readonly reach: ReachDomain;
   readonly duration: { readonly min: number; readonly max: number };
   readonly difficulty: number; // 0-1
+  /** Opt-in for intel-derived difficulty reduction during resolution. */
+  readonly difficultyContext?: 'intel_sensitive';
   readonly onSuccess: readonly GraphOp[];
   readonly onFailure: readonly GraphOp[];
   readonly failBehavior: StepFailBehavior;

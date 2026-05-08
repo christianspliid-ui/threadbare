@@ -24,6 +24,11 @@ import {
 import { CONDITION_DURATIONS } from '../data/condition-trait-content';
 import { CONDITION_ATTACHMENT_DEFAULT_STACK_COUNT } from '../data/attachment-slot-constants';
 import {
+  DRIFT_THRESHOLD_SOFT,
+  DRIFT_THRESHOLD_BANNER,
+  DRIFT_THRESHOLD_BECOMING,
+} from '../data/encounter-experience-constants';
+import {
   SPAWN_ARTIFACT_DEFAULT_SIGNIFICANCE_COMMON,
   SPAWN_ARTIFACT_DEFAULT_SIGNIFICANCE_SHAPING,
   SPAWN_ARTIFACT_DEFAULT_SIGNIFICANCE_LEGENDARY,
@@ -45,6 +50,18 @@ import { generateSecret, createSecretEdge, createFavorEdge } from './secretGener
 import { spawnClueFromEvent, findAnyRuinId } from './ruins/clueLifecycle';
 import { applyFactionReputationGain } from './factionReputation';
 import { REACH_DOMAINS } from '../types/traits';
+import {
+  findIntelReferencedProseMatch,
+  pickIntelReferencedProseLine,
+  reliabilityDescriptor,
+  emitIntelligenceReferenced,
+} from './intelligence';
+import {
+  INTEL_REFERENCED_PROSE_SIGNIFICANCE_RELIABLE,
+  INTEL_REFERENCED_PROSE_SIGNIFICANCE_UNCERTAIN,
+  INTEL_REFERENCED_PROSE_SIGNIFICANCE_DUBIOUS,
+  INTEL_REFERENCED_PROSE_DUBIOUS_FIRES,
+} from '../data/agent-behavior-constants';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -68,6 +85,9 @@ export const AUTO_AFTERMATH_TRACE_CATEGORY = 'cli_auto_aftermath' as const;
 
 /** Safety cap for automatic headless aftermath picks per tick. */
 export const AUTO_AFTERMATH_MAX_PICKS_PER_TICK = 8;
+
+/** Significance for drift registration events surfaced by archetype_drift_register. */
+export const ARCHETYPE_DRIFT_REGISTER_SIGNIFICANCE = 0.6;
 
 export interface ResolvedAftermathContext {
   readonly action: UnifiedAction;
@@ -957,6 +977,109 @@ export function applyEncounterAftermathReaction(
           targetRegion: effect.targetRegion,
           targetEntityId: effect.targetEntityId,
           summary: `Intelligence granted: "${effect.label}" to ${agentId} (reliability ${record.reliability.toFixed(2)})`,
+        });
+        break;
+      }
+
+      case 'intel_referenced_prose': {
+        // THR-139 — Authored "the intel paid off" chronicle line.
+        // Reads (does not consume) intelligence records of `effect.category`
+        // matching the action's encounter context. Most-recent record wins.
+        // Reliability band picks reliable / uncertain / dubious prose variant.
+        const targetAgentId = effect.targetAgentId
+          ?? (target.kind === 'agent' ? target.id : actorAgentId);
+        if (!targetAgentId) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'intel_referenced_prose',
+            effectDetail: { category: effect.category },
+            success: false, failReason: 'no_target_agent',
+            effectiveTargetId: '', effectiveTargetKind: 'actor_fallback',
+            summary: `intel_referenced_prose[${i}] skipped: no target agent`,
+          });
+          break;
+        }
+
+        const matched = findIntelReferencedProseMatch(state, targetAgentId, effect.category, action);
+        if (!matched) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'intel_referenced_prose',
+            effectDetail: { category: effect.category, targetAgentId },
+            success: false, failReason: 'no_matching_record',
+            effectiveTargetId: targetAgentId, effectiveTargetKind: 'agent',
+            summary: `intel_referenced_prose[${i}] no-op: ${targetAgentId} has no actionable ${effect.category} record for ${encounterId}`,
+          });
+          break;
+        }
+
+        const band = reliabilityDescriptor(matched.reliability);
+        if (band === 'dubious' && !INTEL_REFERENCED_PROSE_DUBIOUS_FIRES) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'intel_referenced_prose',
+            effectDetail: { category: effect.category, recordId: matched.recordId, band, targetAgentId },
+            success: false, failReason: 'skipped_dubious',
+            effectiveTargetId: targetAgentId, effectiveTargetKind: 'agent',
+            summary: `intel_referenced_prose[${i}] skipped: dubious-band suppressed by INTEL_REFERENCED_PROSE_DUBIOUS_FIRES`,
+          });
+          break;
+        }
+
+        const proseLine = pickIntelReferencedProseLine(effect.prose, band);
+        if (!proseLine) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'intel_referenced_prose',
+            effectDetail: { category: effect.category, recordId: matched.recordId, band, targetAgentId },
+            success: false, failReason: 'skipped_empty_prose',
+            effectiveTargetId: targetAgentId, effectiveTargetKind: 'agent',
+            summary: `intel_referenced_prose[${i}] skipped: empty prose for ${band} band`,
+          });
+          break;
+        }
+
+        const significance = effect.significance
+          ?? (band === 'reliable' ? INTEL_REFERENCED_PROSE_SIGNIFICANCE_RELIABLE
+            : band === 'uncertain' ? INTEL_REFERENCED_PROSE_SIGNIFICANCE_UNCERTAIN
+              : INTEL_REFERENCED_PROSE_SIGNIFICANCE_DUBIOUS);
+
+        const event: TickEvent = {
+          id: `enc_after_${reaction.id}_${tick}_${nextRecentEvents.length}`,
+          tick,
+          type: 'narrative',
+          message: proseLine,
+          significance,
+          actorId: targetAgentId,
+          encounterId,
+        };
+        nextRecentEvents = appendRecentEvent(nextRecentEvents, event);
+        nextTickEvents = [...nextTickEvents, event];
+
+        emitIntelligenceReferenced(tick, targetAgentId, matched.recordId, 'aftermath_prose', {
+          templateId: action?.templateId,
+          intelCategory: matched.category,
+        });
+
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'intel_referenced_prose',
+          effectDetail: {
+            category: effect.category,
+            recordId: matched.recordId,
+            band,
+            significance,
+            targetAgentId,
+            eventId: event.id,
+          },
+          success: true,
+          effectiveTargetId: targetAgentId, effectiveTargetKind: 'agent',
+          summary: `intel_referenced_prose[${i}]: ${targetAgentId} ${effect.category}/${band} → "${proseLine.slice(0, 60)}${proseLine.length > 60 ? '…' : ''}"`,
         });
         break;
       }
@@ -2122,6 +2245,91 @@ export function applyEncounterAftermathReaction(
           reason: effect.reason,
           summary: `thread_branch[${i}]: ${effect.ascendantId}→${effect.newMortalId} (branched from ${effect.sourceMortalId}, strength ${tbrStrength.toFixed(2)})`,
         });
+        break;
+      }
+
+      case 'archetype_drift_register': {
+        const resolvedAgentId = effect.targetAgentId
+          ?? (target.kind === 'agent' ? target.id : actorAgentId);
+
+        if (!resolvedAgentId) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'archetype_drift_register',
+            effectDetail: { axisId: effect.axisId, threshold: effect.threshold },
+            success: false, failReason: 'no_actor_id',
+            effectiveTargetId: '', effectiveTargetKind: 'actor_fallback',
+            summary: `archetype_drift_register[${i}] skipped: no actorId`,
+          } as unknown as Parameters<typeof emitTrace>[0]);
+          break;
+        }
+
+        const driftEntry = (state.archetypeDrift ?? []).find(
+          entry => entry.agentId === resolvedAgentId && entry.axisId === effect.axisId,
+        );
+        if (!driftEntry) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'archetype_drift_register',
+            effectDetail: { axisId: effect.axisId, threshold: effect.threshold, targetId: resolvedAgentId },
+            success: false, failReason: 'drift_entry_missing',
+            effectiveTargetId: resolvedAgentId, effectiveTargetKind: 'agent',
+            summary: `archetype_drift_register[${i}] skipped: no drift entry for axis '${effect.axisId}'`,
+          } as unknown as Parameters<typeof emitTrace>[0]);
+          break;
+        }
+
+        const thresholdValue = effect.threshold === 'soft'
+          ? DRIFT_THRESHOLD_SOFT
+          : effect.threshold === 'banner'
+            ? DRIFT_THRESHOLD_BANNER
+            : DRIFT_THRESHOLD_BECOMING;
+        const magnitude = Math.abs(driftEntry.toPosition);
+        if (magnitude < thresholdValue) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'archetype_drift_register',
+            effectDetail: { axisId: effect.axisId, threshold: effect.threshold, targetId: resolvedAgentId, magnitude },
+            success: false, failReason: 'threshold_not_held',
+            effectiveTargetId: resolvedAgentId, effectiveTargetKind: 'agent',
+            summary: `archetype_drift_register[${i}] skipped: |${driftEntry.toPosition.toFixed(2)}| < ${thresholdValue} on '${effect.axisId}'`,
+          } as unknown as Parameters<typeof emitTrace>[0]);
+          break;
+        }
+
+        const pole = driftEntry.toPosition >= 0 ? 'virtue' : 'flaw';
+        const event: TickEvent = {
+          id: `drift_register_${reaction.id}_${tick}_${nextRecentEvents.length}`,
+          tick,
+          type: 'narrative',
+          message: `Drift registered: ${resolvedAgentId} leans ${pole} on '${effect.axisId}' (${effect.threshold}).`,
+          significance: ARCHETYPE_DRIFT_REGISTER_SIGNIFICANCE,
+          actorId: resolvedAgentId,
+        };
+        nextRecentEvents = appendRecentEvent(nextRecentEvents, event);
+        nextTickEvents = [...nextTickEvents, event];
+
+        emitTrace({
+          tick, category: 'drift_threshold_crossed', agentId: resolvedAgentId,
+          axisId: effect.axisId,
+          fromPosition: driftEntry.fromPosition,
+          toPosition: driftEntry.toPosition,
+          thresholdCrossed: effect.threshold,
+          pole,
+          summary: `drift_threshold_crossed: ${resolvedAgentId} ${effect.axisId} ${effect.threshold} (${pole})`,
+        });
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'archetype_drift_register',
+          effectDetail: { axisId: effect.axisId, threshold: effect.threshold, targetId: resolvedAgentId, magnitude, pole },
+          success: true,
+          effectiveTargetId: resolvedAgentId, effectiveTargetKind: 'agent',
+          summary: `archetype_drift_register[${i}]: ${resolvedAgentId} ${effect.threshold} on '${effect.axisId}' (${pole})`,
+        } as unknown as Parameters<typeof emitTrace>[0]);
         break;
       }
 

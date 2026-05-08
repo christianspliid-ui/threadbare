@@ -143,12 +143,25 @@ describe('phaseAscendantHandFilter', () => {
     const state = makeState(graph, encounterTemplateId, action, 4);
     const stats = phaseAscendantHandFilter(state, deck);
     const traces = getTraces().filter((trace) => trace.category === 'hand_filtered');
+    const forecastTraces = getTraces().filter((trace) => trace.category === 'forecast_computed');
 
     expect(stats.filteredCount).toBe(1);
     expect(traces).toHaveLength(1);
+    expect(forecastTraces).toHaveLength(1);
+    expect((forecastTraces[0] as { beatIndex: number }).beatIndex).toBe(0);
+    expect((forecastTraces[0] as { finalTier: string }).finalTier).toBeTypeOf('string');
     expect((traces[0] as { playableCount: number }).playableCount).toBe(1);
     expect((traces[0] as { dimmedCount: number }).dimmedCount).toBe(1);
     expect((traces[0] as { hiddenCount: number }).hiddenCount).toBe(0);
+    const notif = state.encounterNotifications?.[0] as
+      | {
+        outcomeForecast?: {
+          stepIndex: number;
+          factors: string[];
+        };
+      }
+      | undefined;
+    expect(notif?.outcomeForecast?.stepIndex).toBe(0);
   });
 
   it('recomputes when scene-state inputs change (essence + place sphere)', () => {
@@ -211,4 +224,3 @@ describe('phaseAscendantHandFilter', () => {
     expect((traces[1] as { dimmedCount: number }).dimmedCount).toBe(2);
   });
 });
-

@@ -120,6 +120,20 @@ describe('phaseChoiceResolution', () => {
       expect(trace['agentId']).toBe('specific-agt');
     });
 
+    it('choice_resolved trace carries beatIndex, outcomeBand, and rolledD100', () => {
+      phaseChoiceResolution(
+        makeState([makeCommit({ beatIndex: 3 })]),
+        constantPrng(0.2),
+      );
+      const trace = getTraces().find(t => t.category === 'choice_resolved') as Record<string, unknown>;
+      expect(trace).toBeDefined();
+      expect(trace['beatIndex']).toBe(3);
+      expect(typeof trace['outcomeBand']).toBe('string');
+      expect(typeof trace['rolledD100']).toBe('number');
+      expect(trace['rolledD100'] as number).toBeGreaterThanOrEqual(1);
+      expect(trace['rolledD100'] as number).toBeLessThanOrEqual(100);
+    });
+
     it('emits drift_threshold_crossed traces when crossing a band', () => {
       // magnitude 0.90 from 0 crosses soft, banner, becoming thresholds
       phaseChoiceResolution(

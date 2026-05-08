@@ -100,6 +100,17 @@ export interface SpotlightChangedTrace {
   trigger: SpotlightTrigger;
 }
 
+export interface CallbackEligibilityComputedTrace {
+  category: 'callback_eligibility_computed';
+  tick: number;
+  encounterId: string;
+  beatIndex: number;
+  agentId: string;
+  authorPinnedCount: number;
+  graphDerivedCount: number;
+  selectedEventIds: string[];
+}
+
 export type EncounterExperienceTraceEntry =
   | ChoiceResolvedTrace
   | ForecastComputedTrace
@@ -107,4 +118,5 @@ export type EncounterExperienceTraceEntry =
   | DriftThresholdCrossedTrace
   | DetectionThresholdCrossedTrace
   | ItemConsumedByChoiceTrace
-  | SpotlightChangedTrace;
+  | SpotlightChangedTrace
+  | CallbackEligibilityComputedTrace;

@@ -140,5 +140,58 @@ describe('filterAscendantHand', () => {
     expect(result.playable.map((entry) => entry.template.id)).toEqual(['t.rare', 't.normal']);
     expect(result.rarePulses).toEqual(['t.rare']);
   });
-});
 
+  it('applies the full filter cascade across a mixed 7-card hand', () => {
+    const deck = [
+      makeTemplate('playable.base'),
+      makeTemplate('hidden.target', { targetCategories: ['artifact'] }),
+      makeTemplate('dim.cost', { essenceCost: 9, sphereAffinity: 'force' }),
+      makeTemplate('dim.sphere', { sphereAffinity: 'entropy' }),
+      makeTemplate('dim.bond', { requiredNodeProperties: { minBondTier: 4 } }),
+      makeTemplate('loc.consecrate', { targetCategories: ['location'], sphereAffinity: 'spirit' }),
+      makeTemplate('playable.extra', { sphereAffinity: 'spirit' }),
+    ];
+
+    const result = filterAscendantHand(deck, {
+      ...baseContext(),
+      sceneTargetCategories: ['actor', 'location'],
+      essencePool: { force: 2, spirit: 2 },
+      accessibleSpheres: ['force', 'spirit'],
+      targetBondTier: 2,
+      placeContext: { placeSphere: 'force' },
+    });
+
+    expect(result.playable.map((entry) => entry.template.id)).toEqual(['playable.base', 'playable.extra']);
+    expect(result.hidden.map((entry) => entry.template.id)).toEqual(['hidden.target']);
+    expect(result.dimmed.map((entry) => entry.template.id)).toEqual(['dim.cost', 'dim.sphere', 'dim.bond', 'loc.consecrate']);
+  });
+
+  it('distinguishes hidden target mismatches from dimmed prereq failures in one pass', () => {
+    const deck = [
+      makeTemplate('hidden', { targetCategories: ['artifact'] }),
+      makeTemplate('dimmed', { essenceCost: 5, sphereAffinity: 'force' }),
+    ];
+
+    const result = filterAscendantHand(deck, {
+      ...baseContext(),
+      sceneTargetCategories: ['actor'],
+      essencePool: { force: 1 },
+    });
+
+    expect(result.hidden).toHaveLength(1);
+    expect(result.hidden[0].template.id).toBe('hidden');
+    expect(result.hidden[0].hiddenReason.code).toBe('target_mismatch');
+
+    expect(result.dimmed).toHaveLength(1);
+    expect(result.dimmed[0].template.id).toBe('dimmed');
+    expect(result.dimmed[0].prereq.code).toBe('cost_unavailable');
+  });
+
+  it('returns empty partitions for an empty hand input', () => {
+    const result = filterAscendantHand([], baseContext());
+    expect(result.playable).toEqual([]);
+    expect(result.dimmed).toEqual([]);
+    expect(result.hidden).toEqual([]);
+    expect(result.rarePulses).toEqual([]);
+  });
+});

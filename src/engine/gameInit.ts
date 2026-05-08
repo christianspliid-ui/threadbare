@@ -328,6 +328,8 @@ export function initializeGameState(
     hiddenMarks: [],
     intelligenceRecords: [],
     archetypeDrift: [],
+    regionalDetectionPressure: [],
+    encounterSpotlight: undefined,
     regionDetection: [],
     spotlightedAgent: undefined,
     meetTheFirstAutoTriggered: false,

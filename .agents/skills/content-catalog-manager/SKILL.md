@@ -2,6 +2,7 @@
 name: content-catalog-manager
 description: Content catalog health manager. Three modes — assess (gap analysis across 5 dimensions), upgrade (add effects to legacy items), fill (create new items for remaining gaps). Wraps the attachment pipeline with gap-aware orchestration and Obsidian vault inspiration. Run with `/content-catalog assess`, `/content-catalog upgrade "<spec>"`, or `/content-catalog fill "<spec>"`.
 model: opus
+last_validated_against: 2026-05-08
 ---
 
 # Content Catalog Manager

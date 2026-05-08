@@ -1,0 +1,172 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`OutcomeForecastBand > matches the snapshot at each tier plus placeholder state in a 1920x1080 container > tier-0.1 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <div
+      data-expanded="false"
+      data-testid="encounter-outcome-forecast-band"
+      data-tier="doomed"
+      style="display: flex; flex-direction: column; gap: 4px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-raised); transition: background 200ms ease-out;"
+    >
+      <div
+        data-testid="encounter-outcome-forecast-tier"
+        style="color: var(--text-secondary); font-family: var(--font-body); font-size: 12px; font-style: italic; line-height: 1.4;"
+      >
+        the threads have already broken
+      </div>
+      <ul
+        data-testid="encounter-outcome-forecast-factors"
+        style="margin: 0px; padding: 0px; list-style: none; display: flex; flex-direction: column; gap: 2px; color: var(--text-tertiary); font-size: 11px; line-height: 1.4; transition: opacity 200ms ease-out;"
+      >
+        <li>
+          the captain remembers her name
+        </li>
+      </ul>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`OutcomeForecastBand > matches the snapshot at each tier plus placeholder state in a 1920x1080 container > tier-0.3 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <div
+      data-expanded="false"
+      data-testid="encounter-outcome-forecast-band"
+      data-tier="perilous"
+      style="display: flex; flex-direction: column; gap: 4px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-raised); transition: background 200ms ease-out;"
+    >
+      <div
+        data-testid="encounter-outcome-forecast-tier"
+        style="color: var(--text-secondary); font-family: var(--font-body); font-size: 12px; font-style: italic; line-height: 1.4;"
+      >
+        the threads are fraying
+      </div>
+      <ul
+        data-testid="encounter-outcome-forecast-factors"
+        style="margin: 0px; padding: 0px; list-style: none; display: flex; flex-direction: column; gap: 2px; color: var(--text-tertiary); font-size: 11px; line-height: 1.4; transition: opacity 200ms ease-out;"
+      >
+        <li>
+          the captain remembers her name
+        </li>
+      </ul>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`OutcomeForecastBand > matches the snapshot at each tier plus placeholder state in a 1920x1080 container > tier-0.5 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <div
+      data-expanded="false"
+      data-testid="encounter-outcome-forecast-band"
+      data-tier="uncertain"
+      style="display: flex; flex-direction: column; gap: 4px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-raised); transition: background 200ms ease-out;"
+    >
+      <div
+        data-testid="encounter-outcome-forecast-tier"
+        style="color: var(--text-secondary); font-family: var(--font-body); font-size: 12px; font-style: italic; line-height: 1.4;"
+      >
+        the threads stand uncertain
+      </div>
+      <ul
+        data-testid="encounter-outcome-forecast-factors"
+        style="margin: 0px; padding: 0px; list-style: none; display: flex; flex-direction: column; gap: 2px; color: var(--text-tertiary); font-size: 11px; line-height: 1.4; transition: opacity 200ms ease-out;"
+      >
+        <li>
+          the captain remembers her name
+        </li>
+      </ul>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`OutcomeForecastBand > matches the snapshot at each tier plus placeholder state in a 1920x1080 container > tier-0.7 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <div
+      data-expanded="false"
+      data-testid="encounter-outcome-forecast-band"
+      data-tier="favorable"
+      style="display: flex; flex-direction: column; gap: 4px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-raised); transition: background 200ms ease-out;"
+    >
+      <div
+        data-testid="encounter-outcome-forecast-tier"
+        style="color: var(--text-secondary); font-family: var(--font-body); font-size: 12px; font-style: italic; line-height: 1.4;"
+      >
+        the threads pull toward her
+      </div>
+      <ul
+        data-testid="encounter-outcome-forecast-factors"
+        style="margin: 0px; padding: 0px; list-style: none; display: flex; flex-direction: column; gap: 2px; color: var(--text-tertiary); font-size: 11px; line-height: 1.4; transition: opacity 200ms ease-out;"
+      >
+        <li>
+          the captain remembers her name
+        </li>
+      </ul>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`OutcomeForecastBand > matches the snapshot at each tier plus placeholder state in a 1920x1080 container > tier-0.9 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <div
+      data-expanded="false"
+      data-testid="encounter-outcome-forecast-band"
+      data-tier="favored"
+      style="display: flex; flex-direction: column; gap: 4px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-raised); transition: background 200ms ease-out;"
+    >
+      <div
+        data-testid="encounter-outcome-forecast-tier"
+        style="color: var(--text-secondary); font-family: var(--font-body); font-size: 12px; font-style: italic; line-height: 1.4;"
+      >
+        the threads bend in her favour
+      </div>
+      <ul
+        data-testid="encounter-outcome-forecast-factors"
+        style="margin: 0px; padding: 0px; list-style: none; display: flex; flex-direction: column; gap: 2px; color: var(--text-tertiary); font-size: 11px; line-height: 1.4; transition: opacity 200ms ease-out;"
+      >
+        <li>
+          the captain remembers her name
+        </li>
+      </ul>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`OutcomeForecastBand > matches the snapshot at each tier plus placeholder state in a 1920x1080 container > tier-placeholder-null 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <div
+      data-testid="encounter-outcome-forecast-band"
+      data-tier="unknown"
+      style="display: flex; flex-direction: column; gap: 4px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-raised);"
+    >
+      <div
+        data-testid="encounter-outcome-forecast-factors"
+        style="color: var(--text-tertiary); font-size: 12px; font-style: italic; line-height: 1.4;"
+      >
+        the threads are still gathering
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import type { PendingEncounterSeed } from '../../../types/unifiedAction';
 import type { RetinueAgent } from '../../../engine/retinue';
+import type { RegionDetectionState } from '../../../types/gameState';
+import {
+  DETECTION_THRESHOLD_ENCOUNTER,
+  DETECTION_THRESHOLD_NOTICE,
+  DETECTION_THRESHOLD_TURN,
+} from '../../../data/encounter-experience-constants';
 import { TRACE_CATEGORY_COLORS } from '../../../data/uiColorPalette';
 import { EMPTY_STATE_STYLE } from './debugPanelStyles';
 
@@ -10,6 +16,7 @@ interface EncounterSeedsTabProps {
   seeds: readonly PendingEncounterSeed[];
   currentTick: number;
   retinueAgents?: readonly RetinueAgent[];
+  regionalDetectionPressure?: readonly RegionDetectionState[];
 }
 
 type FilterMode = 'all' | 'ready' | 'waiting';
@@ -87,8 +94,24 @@ function SeedRow({ seed, currentTick, retinueAgents }: { seed: PendingEncounterS
   );
 }
 
-export function EncounterSeedsTab({ seeds, currentTick, retinueAgents }: EncounterSeedsTabProps) {
+function describeDetectionBand(pressure: number): string {
+  if (pressure >= DETECTION_THRESHOLD_ENCOUNTER) return 'encounter';
+  if (pressure >= DETECTION_THRESHOLD_TURN) return 'turn';
+  if (pressure >= DETECTION_THRESHOLD_NOTICE) return 'notice';
+  return 'quiet';
+}
+
+export function EncounterSeedsTab({
+  seeds,
+  currentTick,
+  retinueAgents,
+  regionalDetectionPressure = [],
+}: EncounterSeedsTabProps) {
   const [filter, setFilter] = useState<FilterMode>('all');
+
+  const detectionRows = regionalDetectionPressure
+    .slice()
+    .sort((a, b) => b.pressure - a.pressure || a.regionId.localeCompare(b.regionId));
 
   if (seeds.length === 0) {
     return <div style={EMPTY_STATE_STYLE}>Seed queue empty.</div>;
@@ -122,6 +145,33 @@ export function EncounterSeedsTab({ seeds, currentTick, retinueAgents }: Encount
 
   return (
     <div style={{ padding: '8px 10px' }}>
+      <div style={{ marginBottom: '10px' }}>
+        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginBottom: '4px' }}>
+          Detection pressure by region
+        </div>
+        {detectionRows.length === 0 ? (
+          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>No pressure registered yet.</div>
+        ) : (
+          detectionRows.map((entry) => (
+            <div
+              key={entry.regionId}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr auto auto',
+                gap: '8px',
+                fontSize: 'var(--text-xs)',
+                color: 'var(--text-primary)',
+                marginBottom: '3px',
+              }}
+            >
+              <span>{entry.regionId}</span>
+              <span style={{ fontFamily: 'monospace', color: 'var(--text-muted)' }}>{entry.pressure.toFixed(3)}</span>
+              <span style={{ color: 'var(--text-muted)' }}>{describeDetectionBand(entry.pressure)}</span>
+            </div>
+          ))
+        )}
+      </div>
+
       <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
         {(['all', 'ready', 'waiting'] as FilterMode[]).map(f => (
           <button key={f} style={filter === f ? chipActive : chipInactive} onClick={() => setFilter(f)}>

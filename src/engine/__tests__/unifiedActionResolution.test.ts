@@ -11,12 +11,12 @@ import {
   createUnifiedAction,
   resetUnifiedActionCounter,
 } from '../unifiedActionLifecycle';
-import type { UnifiedActionTemplate, UnifiedAction } from '../../types/unifiedAction';
+import type { UnifiedActionTemplate, UnifiedAction, IntelligenceRecord } from '../../types/unifiedAction';
 import type { GameState } from '../../types/gameState';
 import { DEFAULT_REPUTATION } from '../../types/disposition';
 import { WorldGraph } from '../graph';
 import { resetOpCounter } from '../graphOpExecutor';
-import { clearTraces } from '../traceBuffer';
+import { clearTraces, disableTracing, enableTracing, getTraces } from '../traceBuffer';
 import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
 import { clearRewardHistory, getRecentRewards } from '../rewardHistory';
 
@@ -167,6 +167,27 @@ function addFactionMembership(
       factionDefId: 'adventuring_guild',
     },
   });
+}
+
+function setActorIronRawCapability(state: GameState, raw: number): void {
+  const actor = state.graph.getNode('actor-1');
+  if (!actor) return;
+  actor.properties.domainCapabilities = { iron: raw };
+}
+
+function makeIntelRecord(overrides: Partial<IntelligenceRecord> = {}): IntelligenceRecord {
+  return {
+    recordId: 'intel-1',
+    category: 'military_position',
+    label: 'Patrol schedule',
+    detail: 'Night patrol shifts at second bell.',
+    sourceEncounterId: 'enc-1',
+    agentId: 'actor-1',
+    acquiredTick: 8,
+    reliability: 0.85,
+    targetEntityId: 'loc-1',
+    ...overrides,
+  };
 }
 
 // ─── Tests ──────────────────────────────────────────────────────
@@ -328,6 +349,184 @@ describe('unifiedActionResolution', () => {
       const result = resolveUncontestedStep(action, template, state, () => 0.52);
       expect(result.outcome).toBe('success_at_cost');
       expect(result.opsToExecute).toHaveLength(1);
+    });
+
+    describe('intel-derived difficulty bonus (THR-140)', () => {
+      it('applies full bonus for reliable intel match', () => {
+        enableTracing();
+        const template = make1StepTemplate({
+          steps: [{
+            reach: 'iron',
+            duration: { min: 1, max: 1 },
+            difficulty: 0.5,
+            difficultyContext: 'intel_sensitive',
+            onSuccess: [],
+            onFailure: [],
+            failBehavior: 'fail_action',
+          }],
+        });
+        const state = createMinimalGameState();
+        setActorIronRawCapability(state, 12);
+        state.intelligenceRecords = [makeIntelRecord({ reliability: 0.85 })];
+        const action = createUnifiedAction({
+          actorId: 'actor-1', templateId: 'action.iron.test', targetId: 'loc-1',
+          scale: 'personal', source: 'agent', tick: 0, template, rng: fixedRng,
+        });
+
+        const result = resolveUncontestedStep(action, template, state, successRng);
+        const capability = 1 / (1 + Math.exp(-0.4 * (12 - 10)));
+        expect(result.probability).toBeCloseTo(capability - 0.4, 6);
+
+        const traces = getTraces().filter(t => t.category === 'intelligence_referenced');
+        expect(traces).toHaveLength(1);
+        expect((traces[0] as { referencedBy?: string }).referencedBy).toBe('difficulty_modifier');
+        disableTracing();
+      });
+
+      it('applies half bonus for uncertain intel match', () => {
+        enableTracing();
+        const template = make1StepTemplate({
+          steps: [{
+            reach: 'iron',
+            duration: { min: 1, max: 1 },
+            difficulty: 0.5,
+            difficultyContext: 'intel_sensitive',
+            onSuccess: [],
+            onFailure: [],
+            failBehavior: 'fail_action',
+          }],
+        });
+        const state = createMinimalGameState();
+        setActorIronRawCapability(state, 12);
+        state.intelligenceRecords = [makeIntelRecord({ reliability: 0.5 })];
+        const action = createUnifiedAction({
+          actorId: 'actor-1', templateId: 'action.iron.test', targetId: 'loc-1',
+          scale: 'personal', source: 'agent', tick: 0, template, rng: fixedRng,
+        });
+
+        const result = resolveUncontestedStep(action, template, state, successRng);
+        const capability = 1 / (1 + Math.exp(-0.4 * (12 - 10)));
+        expect(result.probability).toBeCloseTo(capability - 0.45, 6);
+
+        const traces = getTraces().filter(t => t.category === 'intelligence_referenced');
+        expect(traces).toHaveLength(1);
+        expect((traces[0] as { referencedBy?: string }).referencedBy).toBe('difficulty_modifier');
+        disableTracing();
+      });
+
+      it('applies no bonus for dubious intel match', () => {
+        enableTracing();
+        const template = make1StepTemplate({
+          steps: [{
+            reach: 'iron',
+            duration: { min: 1, max: 1 },
+            difficulty: 0.5,
+            difficultyContext: 'intel_sensitive',
+            onSuccess: [],
+            onFailure: [],
+            failBehavior: 'fail_action',
+          }],
+        });
+        const state = createMinimalGameState();
+        setActorIronRawCapability(state, 12);
+        state.intelligenceRecords = [makeIntelRecord({ reliability: 0.2 })];
+        const action = createUnifiedAction({
+          actorId: 'actor-1', templateId: 'action.iron.test', targetId: 'loc-1',
+          scale: 'personal', source: 'agent', tick: 0, template, rng: fixedRng,
+        });
+
+        const result = resolveUncontestedStep(action, template, state, successRng);
+        const capability = 1 / (1 + Math.exp(-0.4 * (12 - 10)));
+        expect(result.probability).toBeCloseTo(capability - 0.5, 6);
+        expect(getTraces().filter(t => t.category === 'intelligence_referenced')).toHaveLength(0);
+        disableTracing();
+      });
+
+      it('applies no bonus when no record matches', () => {
+        enableTracing();
+        const template = make1StepTemplate({
+          steps: [{
+            reach: 'iron',
+            duration: { min: 1, max: 1 },
+            difficulty: 0.5,
+            difficultyContext: 'intel_sensitive',
+            onSuccess: [],
+            onFailure: [],
+            failBehavior: 'fail_action',
+          }],
+        });
+        const state = createMinimalGameState();
+        setActorIronRawCapability(state, 12);
+        state.intelligenceRecords = [makeIntelRecord({
+          targetEntityId: 'loc-mismatch',
+          category: 'cultural_knowledge',
+        })];
+        const action = createUnifiedAction({
+          actorId: 'actor-1', templateId: 'action.iron.test', targetId: 'loc-1',
+          scale: 'personal', source: 'agent', tick: 0, template, rng: fixedRng,
+        });
+
+        const result = resolveUncontestedStep(action, template, state, successRng);
+        const capability = 1 / (1 + Math.exp(-0.4 * (12 - 10)));
+        expect(result.probability).toBeCloseTo(capability - 0.5, 6);
+        expect(getTraces().filter(t => t.category === 'intelligence_referenced')).toHaveLength(0);
+        disableTracing();
+      });
+
+      it('is inert when step lacks the flag', () => {
+        enableTracing();
+        const template = make1StepTemplate({
+          steps: [{
+            reach: 'iron',
+            duration: { min: 1, max: 1 },
+            difficulty: 0.5,
+            onSuccess: [],
+            onFailure: [],
+            failBehavior: 'fail_action',
+          }],
+        });
+        const state = createMinimalGameState();
+        setActorIronRawCapability(state, 12);
+        state.intelligenceRecords = [makeIntelRecord({ reliability: 0.85 })];
+        const action = createUnifiedAction({
+          actorId: 'actor-1', templateId: 'action.iron.test', targetId: 'loc-1',
+          scale: 'personal', source: 'agent', tick: 0, template, rng: fixedRng,
+        });
+
+        const result = resolveUncontestedStep(action, template, state, successRng);
+        const capability = 1 / (1 + Math.exp(-0.4 * (12 - 10)));
+        expect(result.probability).toBeCloseTo(capability - 0.5, 6);
+        expect(getTraces().filter(t => t.category === 'intelligence_referenced')).toHaveLength(0);
+        disableTracing();
+      });
+
+      it('floor-clamps effective difficulty at 0', () => {
+        enableTracing();
+        const template = make1StepTemplate({
+          steps: [{
+            reach: 'iron',
+            duration: { min: 1, max: 1 },
+            difficulty: 0.05,
+            difficultyContext: 'intel_sensitive',
+            onSuccess: [],
+            onFailure: [],
+            failBehavior: 'fail_action',
+          }],
+        });
+        const state = createMinimalGameState();
+        setActorIronRawCapability(state, 12);
+        state.intelligenceRecords = [makeIntelRecord({ reliability: 0.85 })];
+        const action = createUnifiedAction({
+          actorId: 'actor-1', templateId: 'action.iron.test', targetId: 'loc-1',
+          scale: 'personal', source: 'agent', tick: 0, template, rng: fixedRng,
+        });
+
+        const result = resolveUncontestedStep(action, template, state, successRng);
+        const capability = 1 / (1 + Math.exp(-0.4 * (12 - 10)));
+        expect(result.probability).toBeCloseTo(capability, 6);
+        expect(getTraces().filter(t => t.category === 'intelligence_referenced')).toHaveLength(1);
+        disableTracing();
+      });
     });
   });
 

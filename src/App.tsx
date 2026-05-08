@@ -22,6 +22,7 @@ import { RemembranceFlow } from './components/Remembrance/RemembranceFlow';
 const ContentBrowser = lazy(() => import('./components/CMS/ContentBrowser'));
 const Codex = lazy(() => import('./components/Codex/Codex'));
 const StyleGuide = lazy(() => import('./components/StyleGuide/StyleGuide'));
+const UbiquitousLanguageDashboard = lazy(() => import('./components/UL/UbiquitousLanguageDashboard'));
 
 // V2 renderer grid dimensions: 80×120 = 9.6K hexes (dev scale — fast load)
 // Production: 200×300 = 60K hexes (full world scale)
@@ -63,6 +64,7 @@ function App() {
   if (viewParam === 'cms') return <Suspense fallback={<div className="h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-abyss)', color: 'var(--text-muted)' }}>Loading Content Browser...</div>}><ContentBrowser /></Suspense>;
   if (viewParam === 'codex') return <Suspense fallback={<div className="h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-abyss)', color: 'var(--text-muted)' }}>Loading Codex...</div>}><Codex /></Suspense>;
   if (viewParam === 'styleguide') return <Suspense fallback={<div className="h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-abyss)', color: 'var(--text-muted)' }}>Loading Style Guide...</div>}><StyleGuide /></Suspense>;
+  if (viewParam === 'ul') return <Suspense fallback={<div className="h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-abyss)', color: 'var(--text-muted)' }}>Loading Ubiquitous Language...</div>}><UbiquitousLanguageDashboard /></Suspense>;
   if (viewParam === 'terrain-lab') return <TerrainTextureLab />;
   // Three.js renderer V2 — 60K hex grid at full world scale
   if (viewParam === 'hexv2') {

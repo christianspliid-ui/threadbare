@@ -2,6 +2,7 @@
 name: encounter-pipeline
 description: Automated encounter pipeline v2. Runs draft → editorial+revision → systems+merge → implementation for complete encounter delivery. Triggers on "encounter pipeline", "draft encounter", "run encounter pipeline", "author encounter", or "/encounter-pipeline".
 model: opus
+last_validated_against: 2026-05-08
 ---
 
 # Encounter Pipeline v2
@@ -19,6 +20,12 @@ This pipeline produces **branching encounters** in `UnifiedActionTemplate` forma
 For **linear template encounters** (guild, social, tavern, combat, borderland — single-step or multi-step without player-choice branches), use the `template-encounter-rewrite` skill instead. The migration to `UnifiedActionTemplate` is complete as of THR-108; `EncounterTemplate` no longer exists. Both encounter types now use the same unified format.
 
 **Vault and documentation:** All encounter documentation lives in the Obsidian vault (`TheFantasyWorldSimulator/Systems/`). There are no Notion encounter pages; Notion content was migrated to Obsidian in April 2026.
+
+## Step 0 — Read the Canon page first
+
+Before any other reference material, read `Docs/canon/encounters.md`. It is the per-domain Step-0 entrypoint and points to the current spec, current rejected approaches, and current open questions. Everything below ("Systemic Wiring", "Game Design Direction Enforcement", etc.) is material the Canon page links to, and should be read after the Canon page, not instead of it.
+
+If `Docs/canon/encounters.md` is missing or inaccessible, fall back to the pre-read list below and log the missing Canon page as a drift signal (open a `drift-scan`-labeled Linear issue per the canonical-documentation-strategy plan).
 
 ---
 

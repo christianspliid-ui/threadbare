@@ -37,6 +37,7 @@ From `2026-05-04-encounter-experience-design-plan.md` §1 — the executor's con
 ## Active design plans
 
 - [2026-05-04-encounter-experience-design-plan.md](../plans/2026-05-04-encounter-experience-design-plan.md) — current canonical encounter experience design (THR-300). Status: `current`. This is the executor's contract for all encounter implementation work.
+- [2026-05-05-encounter-ui-implementation-phasing.md](../plans/2026-05-05-encounter-ui-implementation-phasing.md) — phased implementation plan for the encounter UI (Phases A–G). Executor's build sequence with per-phase Done-when criteria and the hybrid callback eligibility decision (§2.6).
 - [2026-05-04-encounter-experience-player-journey.md](../plans/2026-05-04-encounter-experience-player-journey.md) — player journey reference (companion to above)
 - [2026-05-04-encounter-experience-grill-me.md](../plans/2026-05-04-encounter-experience-grill-me.md) — pre-design synthesis; useful archaeology
 - [2026-05-04-encounter-toolkit-vision-audit.md](../plans/2026-05-04-encounter-toolkit-vision-audit.md) — vision audit **with one corrected row** (see note below)

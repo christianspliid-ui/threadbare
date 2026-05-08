@@ -1,6 +1,7 @@
 ---
 name: gamedocumenter
 description: Use after completing any implementation work on The Fantasy World Simulator to update all documentation layers (Docs/changelog.md + Docs/project-status.md + Docs/project-history.md, Linear closeout, and Obsidian vault system notes). Trigger whenever you finish a phase, task, or group of commits — even small ones. Also trigger when someone says "update docs", "document this", "update Linear", or "update obsidian". Linear (Threadbare team) is the single source of truth for backlog and issue state; `.planning/BACKLOG.md` was retired 2026-04-13. This skill encodes critical workarounds for Obsidian MCP API quirks that will save you from wasting time on failed API calls.
+last_validated_against: 2026-05-08
 ---
 
 # Game Documenter

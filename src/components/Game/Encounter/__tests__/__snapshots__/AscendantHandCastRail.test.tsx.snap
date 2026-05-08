@@ -1,0 +1,934 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AscendantHand + CastRail (C3) > renders 0 playable hand snapshot 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <section
+      data-testid="encounter-ascendant-hand"
+      style="display: flex; flex-direction: column; gap: 8px; padding: 12px; background: var(--bg-surface);"
+    >
+      <div
+        style="display: flex; justify-content: space-between; align-items: center;"
+      >
+        <div
+          style="display: flex; align-items: center; gap: 6px; font-family: var(--font-display); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-tertiary);"
+        >
+          Your Hand
+        </div>
+        <div
+          style="font-size: 10px; color: var(--text-muted);"
+        >
+          0 playable
+        </div>
+      </div>
+    </section>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`AscendantHand + CastRail (C3) > renders 3 playable hand snapshot 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <section
+      data-testid="encounter-ascendant-hand"
+      style="display: flex; flex-direction: column; gap: 8px; padding: 12px; background: var(--bg-surface);"
+    >
+      <div
+        style="display: flex; justify-content: space-between; align-items: center;"
+      >
+        <div
+          style="display: flex; align-items: center; gap: 6px; font-family: var(--font-display); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-tertiary);"
+        >
+          Your Hand
+          <span
+            data-testid="encounter-ascendant-hand-new-badge"
+            style="font-size: 9px; letter-spacing: 0.08em; color: var(--accent-gold); border: 1px solid var(--accent-gold-dim); border-radius: 999px; padding: 1px 6px;"
+          >
+            +1 NEW
+          </span>
+        </div>
+        <div
+          style="font-size: 10px; color: var(--text-muted);"
+        >
+          3 playable
+        </div>
+      </div>
+      <button
+        data-testid="encounter-ascendant-card-a-playable"
+        style="width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-accent); background: var(--bg-raised); text-align: left; cursor: pointer; opacity: 1;"
+        type="button"
+      >
+        <div
+          style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px;"
+        >
+          <div
+            style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+          >
+            Card a
+          </div>
+          <div
+            style="font-size: 10px; color: var(--text-muted); white-space: nowrap;"
+          >
+            2 ESS
+          </div>
+        </div>
+        <div
+          style="margin-top: 3px; font-size: 11px; line-height: 1.35; color: var(--text-tertiary);"
+        >
+          a divine nudge for this scene
+        </div>
+      </button>
+      <button
+        data-testid="encounter-ascendant-card-b-playable"
+        style="width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-accent); background: var(--bg-raised); text-align: left; cursor: pointer; opacity: 1;"
+        type="button"
+      >
+        <div
+          style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px;"
+        >
+          <div
+            style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+          >
+            Card b
+          </div>
+          <div
+            style="font-size: 10px; color: var(--text-muted); white-space: nowrap;"
+          >
+            2 ESS
+          </div>
+        </div>
+        <div
+          style="margin-top: 3px; font-size: 11px; line-height: 1.35; color: var(--text-tertiary);"
+        >
+          a divine nudge for this scene
+        </div>
+      </button>
+      <button
+        data-testid="encounter-ascendant-card-c-playable"
+        style="width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-accent); background: var(--bg-raised); text-align: left; cursor: pointer; opacity: 1;"
+        type="button"
+      >
+        <div
+          style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px;"
+        >
+          <div
+            style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+          >
+            Card c
+          </div>
+          <div
+            style="font-size: 10px; color: var(--text-muted); white-space: nowrap;"
+          >
+            2 ESS
+          </div>
+        </div>
+        <div
+          style="margin-top: 3px; font-size: 11px; line-height: 1.35; color: var(--text-tertiary);"
+        >
+          a divine nudge for this scene
+        </div>
+      </button>
+    </section>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`AscendantHand + CastRail (C3) > renders 7+ cards with disclosure and dimmed prereq snapshot 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <section
+      data-testid="encounter-ascendant-hand"
+      style="display: flex; flex-direction: column; gap: 8px; padding: 12px; background: var(--bg-surface);"
+    >
+      <div
+        style="display: flex; justify-content: space-between; align-items: center;"
+      >
+        <div
+          style="display: flex; align-items: center; gap: 6px; font-family: var(--font-display); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-tertiary);"
+        >
+          Your Hand
+        </div>
+        <div
+          style="font-size: 10px; color: var(--text-muted);"
+        >
+          5 playable
+        </div>
+      </div>
+      <button
+        data-testid="encounter-ascendant-card-a-playable"
+        style="width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-accent); background: var(--bg-raised); text-align: left; cursor: pointer; opacity: 1;"
+        type="button"
+      >
+        <div
+          style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px;"
+        >
+          <div
+            style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+          >
+            Card a
+          </div>
+          <div
+            style="font-size: 10px; color: var(--text-muted); white-space: nowrap;"
+          >
+            2 ESS
+          </div>
+        </div>
+        <div
+          style="margin-top: 3px; font-size: 11px; line-height: 1.35; color: var(--text-tertiary);"
+        >
+          a divine nudge for this scene
+        </div>
+      </button>
+      <button
+        data-testid="encounter-ascendant-card-b-playable"
+        style="width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-accent); background: var(--bg-raised); text-align: left; cursor: pointer; opacity: 1;"
+        type="button"
+      >
+        <div
+          style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px;"
+        >
+          <div
+            style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+          >
+            Card b
+          </div>
+          <div
+            style="font-size: 10px; color: var(--text-muted); white-space: nowrap;"
+          >
+            2 ESS
+          </div>
+        </div>
+        <div
+          style="margin-top: 3px; font-size: 11px; line-height: 1.35; color: var(--text-tertiary);"
+        >
+          a divine nudge for this scene
+        </div>
+      </button>
+      <button
+        data-testid="encounter-ascendant-card-c-playable"
+        style="width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-accent); background: var(--bg-raised); text-align: left; cursor: pointer; opacity: 1;"
+        type="button"
+      >
+        <div
+          style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px;"
+        >
+          <div
+            style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+          >
+            Card c
+          </div>
+          <div
+            style="font-size: 10px; color: var(--text-muted); white-space: nowrap;"
+          >
+            2 ESS
+          </div>
+        </div>
+        <div
+          style="margin-top: 3px; font-size: 11px; line-height: 1.35; color: var(--text-tertiary);"
+        >
+          a divine nudge for this scene
+        </div>
+      </button>
+      <button
+        data-testid="encounter-ascendant-hand-disclosure"
+        style="margin-top: 2px; align-self: flex-start; border: medium; background: transparent; color: var(--text-secondary); font-size: 11px; cursor: pointer;"
+        type="button"
+      >
+        + 4 more
+      </button>
+    </section>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`AscendantHand + CastRail (C3) > renders cast rail snapshots for 0/1/4/6 members > cast-0 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <section
+      data-testid="encounter-cast-rail"
+      style="display: flex; flex-direction: column; gap: 10px; padding: 12px; height: 100%; overflow-y: auto; background: var(--bg-surface);"
+    >
+      <div
+        style="display: flex; justify-content: space-between; align-items: baseline;"
+      >
+        <div
+          style="font-family: var(--font-display); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-tertiary);"
+        >
+          Cast In The Scene
+        </div>
+        <div
+          style="font-size: 10px; color: var(--text-muted);"
+        >
+          0
+        </div>
+      </div>
+      <div
+        style="margin-top: 8px; padding: 10px 12px; border-radius: 8px; border: 1px dashed var(--border-subtle); color: var(--text-muted); font-size: 12px; font-style: italic;"
+      >
+        no cast is foregrounded in this beat
+      </div>
+    </section>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`AscendantHand + CastRail (C3) > renders cast rail snapshots for 0/1/4/6 members > cast-1 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <section
+      data-testid="encounter-cast-rail"
+      style="display: flex; flex-direction: column; gap: 10px; padding: 12px; height: 100%; overflow-y: auto; background: var(--bg-surface);"
+    >
+      <div
+        style="display: flex; justify-content: space-between; align-items: baseline;"
+      >
+        <div
+          style="font-family: var(--font-display); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-tertiary);"
+        >
+          Cast In The Scene
+        </div>
+        <div
+          style="font-size: 10px; color: var(--text-muted);"
+        >
+          1
+        </div>
+      </div>
+      <div
+        data-testid="encounter-cast-group-primary"
+      >
+        <div
+          style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;"
+        >
+          <div
+            style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted);"
+          >
+            Primary
+          </div>
+        </div>
+        <div
+          style="display: flex; flex-direction: column; gap: 6px;"
+        >
+          <button
+            data-testid="encounter-cast-tile-one"
+            disabled=""
+            style="width: 100%; display: flex; gap: 10px; padding: 10px 8px; border-radius: 10px; border: 1px solid var(--border-subtle); background: var(--bg-raised); text-align: left; cursor: default; opacity: 1;"
+            type="button"
+          >
+            <div
+              aria-hidden="true"
+              style="width: 42px; height: 42px; border-radius: 999px; border: 1px solid var(--border-subtle); background: radial-gradient(circle at 35% 35%, var(--bg-hover), var(--bg-deep)); flex-shrink: 0;"
+            />
+            <div
+              style="min-width: 0px; flex: 1 1 0%;"
+            >
+              <div
+                style="display: flex; justify-content: space-between; align-items: center; gap: 8px;"
+              >
+                <div
+                  style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                >
+                  Cast one
+                </div>
+              </div>
+              <div
+                style="margin-top: 2px; font-size: 10px; color: var(--accent-gold-dim); text-transform: uppercase; letter-spacing: 0.08em;"
+              >
+                IRON · witness
+              </div>
+              <div
+                style="margin-top: 4px; font-size: 11px; color: var(--text-tertiary); line-height: 1.4;"
+              >
+                disposition: guarded
+              </div>
+              <div
+                data-testid="encounter-cast-tile-relationship-one"
+                style="margin-top: 2px; font-size: 11px; font-style: italic; color: var(--text-secondary); line-height: 1.35;"
+              >
+                to her: a measured distance
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`AscendantHand + CastRail (C3) > renders cast rail snapshots for 0/1/4/6 members > cast-4 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <section
+      data-testid="encounter-cast-rail"
+      style="display: flex; flex-direction: column; gap: 10px; padding: 12px; height: 100%; overflow-y: auto; background: var(--bg-surface);"
+    >
+      <div
+        style="display: flex; justify-content: space-between; align-items: baseline;"
+      >
+        <div
+          style="font-family: var(--font-display); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-tertiary);"
+        >
+          Cast In The Scene
+        </div>
+        <div
+          style="font-size: 10px; color: var(--text-muted);"
+        >
+          4
+        </div>
+      </div>
+      <div
+        data-testid="encounter-cast-group-primary"
+      >
+        <div
+          style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;"
+        >
+          <div
+            style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted);"
+          >
+            Primary
+          </div>
+        </div>
+        <div
+          style="display: flex; flex-direction: column; gap: 6px;"
+        >
+          <button
+            data-testid="encounter-cast-tile-a"
+            disabled=""
+            style="width: 100%; display: flex; gap: 10px; padding: 10px 8px; border-radius: 10px; border: 1px solid var(--border-subtle); background: var(--bg-raised); text-align: left; cursor: default; opacity: 1;"
+            type="button"
+          >
+            <div
+              aria-hidden="true"
+              style="width: 42px; height: 42px; border-radius: 999px; border: 1px solid var(--border-subtle); background: radial-gradient(circle at 35% 35%, var(--bg-hover), var(--bg-deep)); flex-shrink: 0;"
+            />
+            <div
+              style="min-width: 0px; flex: 1 1 0%;"
+            >
+              <div
+                style="display: flex; justify-content: space-between; align-items: center; gap: 8px;"
+              >
+                <div
+                  style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                >
+                  Cast a
+                </div>
+              </div>
+              <div
+                style="margin-top: 2px; font-size: 10px; color: var(--accent-gold-dim); text-transform: uppercase; letter-spacing: 0.08em;"
+              >
+                IRON · witness
+              </div>
+              <div
+                style="margin-top: 4px; font-size: 11px; color: var(--text-tertiary); line-height: 1.4;"
+              >
+                disposition: guarded
+              </div>
+              <div
+                data-testid="encounter-cast-tile-relationship-a"
+                style="margin-top: 2px; font-size: 11px; font-style: italic; color: var(--text-secondary); line-height: 1.35;"
+              >
+                to her: a measured distance
+              </div>
+            </div>
+          </button>
+          <button
+            data-testid="encounter-cast-tile-b"
+            disabled=""
+            style="width: 100%; display: flex; gap: 10px; padding: 10px 8px; border-radius: 10px; border: 1px solid var(--border-subtle); background: var(--bg-raised); text-align: left; cursor: default; opacity: 1;"
+            type="button"
+          >
+            <div
+              aria-hidden="true"
+              style="width: 42px; height: 42px; border-radius: 999px; border: 1px solid var(--border-subtle); background: radial-gradient(circle at 35% 35%, var(--bg-hover), var(--bg-deep)); flex-shrink: 0;"
+            />
+            <div
+              style="min-width: 0px; flex: 1 1 0%;"
+            >
+              <div
+                style="display: flex; justify-content: space-between; align-items: center; gap: 8px;"
+              >
+                <div
+                  style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                >
+                  Cast b
+                </div>
+              </div>
+              <div
+                style="margin-top: 2px; font-size: 10px; color: var(--accent-gold-dim); text-transform: uppercase; letter-spacing: 0.08em;"
+              >
+                IRON · witness
+              </div>
+              <div
+                style="margin-top: 4px; font-size: 11px; color: var(--text-tertiary); line-height: 1.4;"
+              >
+                disposition: guarded
+              </div>
+              <div
+                data-testid="encounter-cast-tile-relationship-b"
+                style="margin-top: 2px; font-size: 11px; font-style: italic; color: var(--text-secondary); line-height: 1.35;"
+              >
+                to her: a measured distance
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+      <div
+        data-testid="encounter-cast-group-background"
+      >
+        <div
+          style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;"
+        >
+          <div
+            style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted);"
+          >
+            Background
+          </div>
+        </div>
+        <div
+          style="display: flex; flex-direction: column; gap: 6px;"
+        >
+          <button
+            data-testid="encounter-cast-tile-c"
+            disabled=""
+            style="width: 100%; display: flex; gap: 10px; padding: 10px 8px; border-radius: 10px; border: 1px solid var(--border-subtle); background: var(--bg-raised); text-align: left; cursor: default; opacity: 0.85;"
+            type="button"
+          >
+            <div
+              aria-hidden="true"
+              style="width: 42px; height: 42px; border-radius: 999px; border: 1px solid var(--border-subtle); background: radial-gradient(circle at 35% 35%, var(--bg-hover), var(--bg-deep)); flex-shrink: 0;"
+            />
+            <div
+              style="min-width: 0px; flex: 1 1 0%;"
+            >
+              <div
+                style="display: flex; justify-content: space-between; align-items: center; gap: 8px;"
+              >
+                <div
+                  style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                >
+                  Cast c
+                </div>
+              </div>
+              <div
+                style="margin-top: 2px; font-size: 10px; color: var(--accent-gold-dim); text-transform: uppercase; letter-spacing: 0.08em;"
+              >
+                IRON · witness
+              </div>
+              <div
+                style="margin-top: 4px; font-size: 11px; color: var(--text-tertiary); line-height: 1.4;"
+              >
+                disposition: guarded
+              </div>
+              <div
+                data-testid="encounter-cast-tile-relationship-c"
+                style="margin-top: 2px; font-size: 11px; font-style: italic; color: var(--text-secondary); line-height: 1.35;"
+              >
+                to her: a measured distance
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+      <div
+        data-testid="encounter-cast-group-offstage"
+      >
+        <div
+          style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;"
+        >
+          <div
+            style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted);"
+          >
+            Offstage
+          </div>
+          <span
+            style="font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); border: 1px solid var(--border-subtle); border-radius: 999px; padding: 1px 6px;"
+          >
+            stakes
+          </span>
+        </div>
+        <div
+          style="display: flex; flex-direction: column; gap: 6px;"
+        >
+          <button
+            data-testid="encounter-cast-tile-d"
+            disabled=""
+            style="width: 100%; display: flex; gap: 10px; padding: 10px 8px; border-radius: 10px; border: 1px solid var(--border-subtle); background: var(--bg-raised); text-align: left; cursor: default; opacity: 0.65;"
+            type="button"
+          >
+            <div
+              aria-hidden="true"
+              style="width: 42px; height: 42px; border-radius: 999px; border: 1px solid var(--border-subtle); background: radial-gradient(circle at 35% 35%, var(--bg-hover), var(--bg-deep)); flex-shrink: 0;"
+            />
+            <div
+              style="min-width: 0px; flex: 1 1 0%;"
+            >
+              <div
+                style="display: flex; justify-content: space-between; align-items: center; gap: 8px;"
+              >
+                <div
+                  style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                >
+                  Cast d
+                </div>
+              </div>
+              <div
+                style="margin-top: 2px; font-size: 10px; color: var(--accent-gold-dim); text-transform: uppercase; letter-spacing: 0.08em;"
+              >
+                IRON · witness
+              </div>
+              <div
+                style="margin-top: 4px; font-size: 11px; color: var(--text-tertiary); line-height: 1.4;"
+              >
+                disposition: guarded
+              </div>
+              <div
+                data-testid="encounter-cast-tile-relationship-d"
+                style="margin-top: 2px; font-size: 11px; font-style: italic; color: var(--text-secondary); line-height: 1.35;"
+              >
+                to her: a measured distance
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`AscendantHand + CastRail (C3) > renders cast rail snapshots for 0/1/4/6 members > cast-6 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <section
+      data-testid="encounter-cast-rail"
+      style="display: flex; flex-direction: column; gap: 10px; padding: 12px; height: 100%; overflow-y: auto; background: var(--bg-surface);"
+    >
+      <div
+        style="display: flex; justify-content: space-between; align-items: baseline;"
+      >
+        <div
+          style="font-family: var(--font-display); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-tertiary);"
+        >
+          Cast In The Scene
+        </div>
+        <div
+          style="font-size: 10px; color: var(--text-muted);"
+        >
+          6
+        </div>
+      </div>
+      <div
+        data-testid="encounter-cast-group-primary"
+      >
+        <div
+          style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;"
+        >
+          <div
+            style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted);"
+          >
+            Primary
+          </div>
+        </div>
+        <div
+          style="display: flex; flex-direction: column; gap: 6px;"
+        >
+          <button
+            data-testid="encounter-cast-tile-a"
+            disabled=""
+            style="width: 100%; display: flex; gap: 10px; padding: 10px 8px; border-radius: 10px; border: 1px solid var(--border-subtle); background: var(--bg-raised); text-align: left; cursor: default; opacity: 1;"
+            type="button"
+          >
+            <div
+              aria-hidden="true"
+              style="width: 42px; height: 42px; border-radius: 999px; border: 1px solid var(--border-subtle); background: radial-gradient(circle at 35% 35%, var(--bg-hover), var(--bg-deep)); flex-shrink: 0;"
+            />
+            <div
+              style="min-width: 0px; flex: 1 1 0%;"
+            >
+              <div
+                style="display: flex; justify-content: space-between; align-items: center; gap: 8px;"
+              >
+                <div
+                  style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                >
+                  Cast a
+                </div>
+              </div>
+              <div
+                style="margin-top: 2px; font-size: 10px; color: var(--accent-gold-dim); text-transform: uppercase; letter-spacing: 0.08em;"
+              >
+                IRON · witness
+              </div>
+              <div
+                style="margin-top: 4px; font-size: 11px; color: var(--text-tertiary); line-height: 1.4;"
+              >
+                disposition: guarded
+              </div>
+              <div
+                data-testid="encounter-cast-tile-relationship-a"
+                style="margin-top: 2px; font-size: 11px; font-style: italic; color: var(--text-secondary); line-height: 1.35;"
+              >
+                to her: a measured distance
+              </div>
+            </div>
+          </button>
+          <button
+            data-testid="encounter-cast-tile-b"
+            disabled=""
+            style="width: 100%; display: flex; gap: 10px; padding: 10px 8px; border-radius: 10px; border: 1px solid var(--border-subtle); background: var(--bg-raised); text-align: left; cursor: default; opacity: 1;"
+            type="button"
+          >
+            <div
+              aria-hidden="true"
+              style="width: 42px; height: 42px; border-radius: 999px; border: 1px solid var(--border-subtle); background: radial-gradient(circle at 35% 35%, var(--bg-hover), var(--bg-deep)); flex-shrink: 0;"
+            />
+            <div
+              style="min-width: 0px; flex: 1 1 0%;"
+            >
+              <div
+                style="display: flex; justify-content: space-between; align-items: center; gap: 8px;"
+              >
+                <div
+                  style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                >
+                  Cast b
+                </div>
+              </div>
+              <div
+                style="margin-top: 2px; font-size: 10px; color: var(--accent-gold-dim); text-transform: uppercase; letter-spacing: 0.08em;"
+              >
+                IRON · witness
+              </div>
+              <div
+                style="margin-top: 4px; font-size: 11px; color: var(--text-tertiary); line-height: 1.4;"
+              >
+                disposition: guarded
+              </div>
+              <div
+                data-testid="encounter-cast-tile-relationship-b"
+                style="margin-top: 2px; font-size: 11px; font-style: italic; color: var(--text-secondary); line-height: 1.35;"
+              >
+                to her: a measured distance
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+      <div
+        data-testid="encounter-cast-group-background"
+      >
+        <div
+          style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;"
+        >
+          <div
+            style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted);"
+          >
+            Background
+          </div>
+        </div>
+        <div
+          style="display: flex; flex-direction: column; gap: 6px;"
+        >
+          <button
+            data-testid="encounter-cast-tile-c"
+            disabled=""
+            style="width: 100%; display: flex; gap: 10px; padding: 10px 8px; border-radius: 10px; border: 1px solid var(--border-subtle); background: var(--bg-raised); text-align: left; cursor: default; opacity: 0.85;"
+            type="button"
+          >
+            <div
+              aria-hidden="true"
+              style="width: 42px; height: 42px; border-radius: 999px; border: 1px solid var(--border-subtle); background: radial-gradient(circle at 35% 35%, var(--bg-hover), var(--bg-deep)); flex-shrink: 0;"
+            />
+            <div
+              style="min-width: 0px; flex: 1 1 0%;"
+            >
+              <div
+                style="display: flex; justify-content: space-between; align-items: center; gap: 8px;"
+              >
+                <div
+                  style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                >
+                  Cast c
+                </div>
+              </div>
+              <div
+                style="margin-top: 2px; font-size: 10px; color: var(--accent-gold-dim); text-transform: uppercase; letter-spacing: 0.08em;"
+              >
+                IRON · witness
+              </div>
+              <div
+                style="margin-top: 4px; font-size: 11px; color: var(--text-tertiary); line-height: 1.4;"
+              >
+                disposition: guarded
+              </div>
+              <div
+                data-testid="encounter-cast-tile-relationship-c"
+                style="margin-top: 2px; font-size: 11px; font-style: italic; color: var(--text-secondary); line-height: 1.35;"
+              >
+                to her: a measured distance
+              </div>
+            </div>
+          </button>
+          <button
+            data-testid="encounter-cast-tile-d"
+            disabled=""
+            style="width: 100%; display: flex; gap: 10px; padding: 10px 8px; border-radius: 10px; border: 1px solid var(--border-subtle); background: var(--bg-raised); text-align: left; cursor: default; opacity: 0.85;"
+            type="button"
+          >
+            <div
+              aria-hidden="true"
+              style="width: 42px; height: 42px; border-radius: 999px; border: 1px solid var(--border-subtle); background: radial-gradient(circle at 35% 35%, var(--bg-hover), var(--bg-deep)); flex-shrink: 0;"
+            />
+            <div
+              style="min-width: 0px; flex: 1 1 0%;"
+            >
+              <div
+                style="display: flex; justify-content: space-between; align-items: center; gap: 8px;"
+              >
+                <div
+                  style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                >
+                  Cast d
+                </div>
+              </div>
+              <div
+                style="margin-top: 2px; font-size: 10px; color: var(--accent-gold-dim); text-transform: uppercase; letter-spacing: 0.08em;"
+              >
+                IRON · witness
+              </div>
+              <div
+                style="margin-top: 4px; font-size: 11px; color: var(--text-tertiary); line-height: 1.4;"
+              >
+                disposition: guarded
+              </div>
+              <div
+                data-testid="encounter-cast-tile-relationship-d"
+                style="margin-top: 2px; font-size: 11px; font-style: italic; color: var(--text-secondary); line-height: 1.35;"
+              >
+                to her: a measured distance
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+      <div
+        data-testid="encounter-cast-group-offstage"
+      >
+        <div
+          style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;"
+        >
+          <div
+            style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted);"
+          >
+            Offstage
+          </div>
+          <span
+            style="font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); border: 1px solid var(--border-subtle); border-radius: 999px; padding: 1px 6px;"
+          >
+            stakes
+          </span>
+        </div>
+        <div
+          style="display: flex; flex-direction: column; gap: 6px;"
+        >
+          <button
+            data-testid="encounter-cast-tile-e"
+            disabled=""
+            style="width: 100%; display: flex; gap: 10px; padding: 10px 8px; border-radius: 10px; border: 1px solid var(--border-subtle); background: var(--bg-raised); text-align: left; cursor: default; opacity: 0.65;"
+            type="button"
+          >
+            <div
+              aria-hidden="true"
+              style="width: 42px; height: 42px; border-radius: 999px; border: 1px solid var(--border-subtle); background: radial-gradient(circle at 35% 35%, var(--bg-hover), var(--bg-deep)); flex-shrink: 0;"
+            />
+            <div
+              style="min-width: 0px; flex: 1 1 0%;"
+            >
+              <div
+                style="display: flex; justify-content: space-between; align-items: center; gap: 8px;"
+              >
+                <div
+                  style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                >
+                  Cast e
+                </div>
+              </div>
+              <div
+                style="margin-top: 2px; font-size: 10px; color: var(--accent-gold-dim); text-transform: uppercase; letter-spacing: 0.08em;"
+              >
+                IRON · witness
+              </div>
+              <div
+                style="margin-top: 4px; font-size: 11px; color: var(--text-tertiary); line-height: 1.4;"
+              >
+                disposition: guarded
+              </div>
+              <div
+                data-testid="encounter-cast-tile-relationship-e"
+                style="margin-top: 2px; font-size: 11px; font-style: italic; color: var(--text-secondary); line-height: 1.35;"
+              >
+                to her: a measured distance
+              </div>
+            </div>
+          </button>
+          <button
+            data-testid="encounter-cast-tile-f"
+            disabled=""
+            style="width: 100%; display: flex; gap: 10px; padding: 10px 8px; border-radius: 10px; border: 1px solid var(--border-subtle); background: var(--bg-raised); text-align: left; cursor: default; opacity: 0.65;"
+            type="button"
+          >
+            <div
+              aria-hidden="true"
+              style="width: 42px; height: 42px; border-radius: 999px; border: 1px solid var(--border-subtle); background: radial-gradient(circle at 35% 35%, var(--bg-hover), var(--bg-deep)); flex-shrink: 0;"
+            />
+            <div
+              style="min-width: 0px; flex: 1 1 0%;"
+            >
+              <div
+                style="display: flex; justify-content: space-between; align-items: center; gap: 8px;"
+              >
+                <div
+                  style="font-family: var(--font-display); font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                >
+                  Cast f
+                </div>
+              </div>
+              <div
+                style="margin-top: 2px; font-size: 10px; color: var(--accent-gold-dim); text-transform: uppercase; letter-spacing: 0.08em;"
+              >
+                IRON · witness
+              </div>
+              <div
+                style="margin-top: 4px; font-size: 11px; color: var(--text-tertiary); line-height: 1.4;"
+              >
+                disposition: guarded
+              </div>
+              <div
+                data-testid="encounter-cast-tile-relationship-f"
+                style="margin-top: 2px; font-size: 11px; font-style: italic; color: var(--text-secondary); line-height: 1.35;"
+              >
+                to her: a measured distance
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+</DocumentFragment>
+`;

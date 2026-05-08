@@ -55,21 +55,25 @@ export function WorldSoulIndicator({ aggregate }: WorldSoulIndicatorProps) {
   return (
     <div
       data-testid="world-soul-indicator"
-      className="topbar-compact-hide"
-      style={{
-        fontFamily: 'var(--font-prose, serif)',
-        fontSize: 'var(--text-xs)',
-        color: 'var(--text-secondary, #a09880)',
-        fontStyle: 'italic',
-        lineHeight: 1.4,
-        maxWidth: '320px',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap',
-      }}
+      className="topbar-tier topbar-compact-hide"
       title={proseTemplate.replace(/\*\*/g, '')}
     >
-      {renderProseWithIPK(proseTemplate)}
+      <span className="topbar-section-label">World-Soul</span>
+      <div
+        style={{
+          fontFamily: 'var(--font-prose, serif)',
+          fontSize: 'var(--text-xs)',
+          color: 'var(--text-secondary, #a09880)',
+          fontStyle: 'italic',
+          lineHeight: 1.4,
+          maxWidth: '320px',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {renderProseWithIPK(proseTemplate)}
+      </div>
     </div>
   );
 }

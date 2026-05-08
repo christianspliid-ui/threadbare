@@ -115,6 +115,32 @@ describe('resolveEncounterChoice', () => {
       );
       expect(outcome.effectiveProbability).toBe(0);
     });
+
+    it('fails soft when effectiveProbability is NaN', () => {
+      const outcome = resolveEncounterChoice(
+        makeCommit({ effectiveProbability: Number.NaN }),
+        constantPrng(0.5),
+      );
+      expect(outcome.outcomeBand).toBe('fail');
+      expect(Number.isNaN(outcome.effectiveProbability)).toBe(true);
+      expect(outcome.rolledD100).toBe(51);
+    });
+  });
+
+  describe('fail-soft: undefined fields', () => {
+    it('does not throw when reach is undefined', () => {
+      expect(() => resolveEncounterChoice(
+        makeCommit({ reach: undefined as never }),
+        constantPrng(0.5),
+      )).not.toThrow();
+    });
+
+    it('does not throw when moralAxisPole is undefined', () => {
+      expect(() => resolveEncounterChoice(
+        makeCommit({ moralAxisPole: undefined as never }),
+        constantPrng(0.5),
+      )).not.toThrow();
+    });
   });
 
   describe('output fields', () => {

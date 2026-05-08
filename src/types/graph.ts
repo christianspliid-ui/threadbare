@@ -15,17 +15,19 @@ export interface GraphNode {
 
 /** Typed node categories */
 export type NodeType =
-  | 'actor'           // individuals, groups, factions, cultures, gods
-  | 'location'        // hexes, regions, sub-locations
-  | 'trait'           // trait definitions (category: innate/mastery/scar/etc.)
-  | 'artifact'        // common artifacts
+  | 'actor'              // individuals, groups, factions, cultures, gods
+  | 'location'           // hexes, regions, sub-locations
+  | 'trait'              // trait definitions (category: innate/mastery/scar/etc.)
+  | 'artifact'           // common artifacts
   | 'artifact_legendary' // legendary artifacts (have own trait graph)
-  | 'resource'        // steady or consumable resource nodes
-  | 'action_template' // CRUD action definitions
-  | 'event'           // resolved action records
-  | 'cosmology'       // sphere/foundation nodes (imported from taxonomy)
-  | 'region'          // geographic region clusters (terrain gen Phase 2)
-  | 'ambition';       // ambition template instances assigned to actors
+  | 'resource'           // steady or consumable resource nodes
+  | 'action_template'    // CRUD action definitions
+  | 'event'              // resolved action records
+  | 'cosmology'          // sphere/foundation nodes (imported from taxonomy)
+  | 'region'             // geographic region clusters (terrain gen Phase 2)
+  | 'ambition'           // ambition template instances assigned to actors
+  | 'encounter_template' // encounter template graph node (design plan §3.8, B5)
+  | 'relationship';      // reified relationship between two actors (design plan §3.9, B5)
 
 /** Actor subtypes stored in properties.actorType */
 export type ActorType = 'god' | 'ascendant' | 'faction' | 'culture' | 'group' | 'individual';
@@ -85,6 +87,10 @@ export type EdgeType =
   | 'road'             // location ↔ location road/trail (roadType, hexPath, totalCost, pathLength)
   // Encounter
   | 'encounter_at'     // encounter_template → location (encounter available at location)
+  // Encounter template graph (THR-327, design plan §3.8)
+  | 'gates_to'         // encounter_template → encounter_template: completing source unlocks target
+  | 'spawns_from'      // encounter_template → location|actor: encounter is sourced from this node
+  | 'enables'          // encounter_template → encounter_template: soft prereq (completion scores target higher)
   // Economic
   | 'trades_with'      // actor ↔ actor trade route (volume, goodsType, controlledBy, threatened)
   // Encounter History (TB-077)
@@ -107,6 +113,33 @@ export type EdgeType =
   | 'knows_of'         // knower → location; familiarity edge created when a clue is consumed at convergence
   // Ruins layer — PoP holder (THR-153)
   | 'holds_place_of_power'; // actor | faction | ascendant → place_of_power location (HoldsPlaceOfPowerEdgeProperties)
+
+/**
+ * Typed properties for encounter_template nodes (design plan §3.8).
+ * Properties bag is Record<string, unknown> at runtime; this interface documents known fields.
+ * Callers must call touchWorld(runtime) after mutating these nodes.
+ */
+export interface EncounterTemplateNodeProperties {
+  template_id: string;               // reference to EncounterContract id
+  category: string;                  // EncounterCategory
+  rarity_tier: 1 | 2 | 3 | 4;
+  intrinsic_tier: 'background' | 'shaping' | 'story_beat';
+}
+
+/**
+ * Typed properties for relationship nodes (design plan §3.9).
+ * Symmetric between two actors; cast tile reads from this when present,
+ * falls back to relates_to edge sentiment when absent.
+ * Callers must call touchWorld(runtime) after mutating these nodes.
+ */
+export interface RelationshipNodeProperties {
+  participants: [string, string];    // [ActorId, ActorId]
+  arc: 'improving' | 'stable' | 'fraying' | 'severed';
+  tension_axis: string;              // human-readable, e.g. "loyalty under strain"
+  tension_drift: number;             // -1.0 to +1.0; positive toward repair, negative toward severance
+  history: string[];                 // EventId[]
+  last_invoked_tick: number;
+}
 
 /** Result type for graph mutations */
 export interface GraphMutation {

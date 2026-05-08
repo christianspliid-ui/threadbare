@@ -9,6 +9,7 @@ description: >
   "encounter template", "encounter seeding", "encounter aftermath", or when debugging why
   an agent is idle, stuck, choosing wrong encounters, or failing resolution unexpectedly.
   Also use when updating encounters-agents-reference.html or tick-cycle-reference.html.
+last_validated_against: 2026-05-08
 ---
 
 # Encounter & Actor Systems — Analysis, Debugging & Iteration

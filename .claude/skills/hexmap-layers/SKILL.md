@@ -10,15 +10,18 @@ description: >
   "visual verification", "hex click", "hex hover", "hex tooltip",
   "movement trail", "location icon", "border mesh", "river mesh",
   "road mesh", "label overlay".
+last_validated_against: 2026-05-08
 ---
 
 # HexMap Layers — Visual Layer Reference
 
 Feature-level guide for working on individual visual layers in HexMapV2. Load this alongside `hexmap-core` (which covers architecture, coordinates, render layers, zoom, and color system).
 
-## Step 0: Canon-First Pre-Read
+## Step 0 — Canon-First Pre-Read
 
-Before doing any work in this skill, read [`Docs/canon/hex-map.md`](../../../Docs/canon/hex-map.md) first. The Canon page is the Step-0 entrypoint for all hex-map-domain work: it picks the right hex-map skill (`hexmap-core` / `hexmap-layers` / `hexmap-renderer`), names the load-bearing decisions (raw Three.js / no R3F, three-tier position model, Y-flip, stencil clipping, hex-distance awareness), and lists current rejected approaches and open questions. Skim it once, then return here for feature-level layer guidance. If a pointer in this skill disagrees with the Canon page, the Canon page wins and this skill needs an update — open a `drift-scan`-labeled Linear issue.
+Before any other reference, read `Docs/canon/hex-map.md`. It is the live navigation layer for this domain — it lists the current spec pointers, rejected approaches, and active design plans. Linked targets are authoritative; this skill follows the Canon page's pointers, not parallel ones.
+
+If the Canon page disagrees with this skill, the Canon page wins until this skill is rewritten. File a `drift-scan`-labeled Linear issue when you see disagreement.
 
 ---
 

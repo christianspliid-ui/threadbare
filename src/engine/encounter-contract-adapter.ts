@@ -23,6 +23,7 @@ const DEFAULT_STEP_DURATION_MIN = 1;
 const DEFAULT_STEP_DURATION_MAX = 1;
 const DEFAULT_SCALE = 'personal';
 const DEFAULT_CRUD_TYPE = 'update';
+const DEFAULT_AP_COST = 1;
 const DEFAULT_MOTIVATIONS: readonly ValuePair[] = ['loyalty_ambition', 'courage_prudence'];
 const DEFAULT_ACTOR_AFFINITIES = ['individual'] as const;
 const QUINTESSENCE_REACH_FALLBACK = 'star' as const;
@@ -154,7 +155,7 @@ export function adaptEncounterContractToUnifiedActionTemplate(contract: Encounte
     crudType: CATEGORY_TO_CRUD[payload.category] ?? DEFAULT_CRUD_TYPE,
     scale: CATEGORY_TO_SCALE[payload.category] ?? DEFAULT_SCALE,
     steps,
-    apCost: 1,
+    apCost: DEFAULT_AP_COST,
     essenceCost: COST_TO_ESSENCE_COST[firstChoice.cost],
     actorAffinities: DEFAULT_ACTOR_AFFINITIES,
     locationSubtypes: [ENCOUNTER_DEFAULT_LOCATION_SUBTYPE],

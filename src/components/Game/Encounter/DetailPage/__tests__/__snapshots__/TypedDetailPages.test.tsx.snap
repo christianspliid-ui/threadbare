@@ -1,0 +1,779 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`DetailPage — actor > snapshot: actor 1`] = `
+<div
+  data-detail-depth="0"
+  style="position: fixed; inset: 0px; z-index: 70; display: flex; align-items: flex-start; justify-content: center; padding-top: 5vh; background-color: rgba(0, 0, 0, 0.55); pointer-events: auto;"
+>
+  <div
+    data-testid="detail-panel-0"
+    style="width: 720px; height: 620px; max-height: 85vh; background: linear-gradient(180deg, var(--bg-deep), var(--bg-abyss)); border: 1px solid var(--border-gold); border-radius: 10px; box-shadow: 0 8px 40px rgba(0, 0, 0, 0.7); display: flex; flex-direction: column; overflow: hidden; pointer-events: auto;"
+  >
+    <div
+      style="padding: 12px 16px 10px; border-bottom: 1px solid var(--border-gold); flex-shrink: 0;"
+    >
+      <div
+        style="display: flex; align-items: flex-start; gap: 8px;"
+      >
+        <div
+          style="flex: 1 1 0%;"
+        >
+          <div
+            style="display: flex; align-items: center; flex-wrap: wrap; gap: 0px; margin-bottom: 6px;"
+          >
+            <span
+              style="display: flex; align-items: center;"
+            >
+              <span
+                style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+              >
+                ENCOUNTER
+              </span>
+            </span>
+            <span
+              style="display: flex; align-items: center;"
+            >
+              <span
+                style="margin: 0px 4px; opacity: 0.4; user-select: none;"
+              >
+                ›
+              </span>
+              <span
+                style="cursor: default; color: var(--text-tertiary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+              >
+                CAPTAIN VEIREN
+              </span>
+            </span>
+          </div>
+        </div>
+        <div
+          style="display: flex; gap: 4px; align-items: center; flex-shrink: 0;"
+        >
+          <button
+            aria-label="Close detail"
+            style="background: none; border: medium; color: var(--text-tertiary); cursor: pointer; font-size: 1.2rem; padding: 0px 4px; line-height: 1;"
+          >
+            ×
+          </button>
+        </div>
+      </div>
+      <div
+        style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sphere-spirit-bright, var(--accent-gold)); margin-bottom: 4px;"
+      >
+        ACTOR
+      </div>
+      <div
+        style="font-family: var(--font-display); font-size: 1.25rem; color: var(--text-primary); margin-bottom: 2px; letter-spacing: 0.03em;"
+      >
+        Captain Veiren
+      </div>
+      <div
+        style="font-family: var(--font-display); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-tertiary);"
+      >
+        figure of the world
+      </div>
+    </div>
+    <div
+      style="flex: 1 1 0%; overflow-y: auto; padding: 16px;"
+    >
+      <div
+        style="margin-bottom: 20px; display: flex; gap: 16px;"
+      >
+        <div
+          style="width: 180px; height: 220px; flex-shrink: 0; background: var(--bg-deep); border: 1px solid var(--border-gold); border-radius: 4px; display: flex; align-items: center; justify-content: center; overflow: hidden;"
+        >
+          <span
+            style="color: var(--text-muted); font-size: 0.7rem;"
+          >
+            Captain Veiren
+          </span>
+        </div>
+        <div
+          style="flex: 1 1 0%;"
+        >
+          <div
+            style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-gold); margin-bottom: 6px; border-bottom: 1px solid var(--accent-gold-dim, var(--border-gold)); padding-bottom: 2px;"
+          >
+            DISPOSITION TOWARD HER
+          </div>
+          <p
+            style="color: var(--text-primary); line-height: 1.7; margin: 0px; font-size: 0.9rem;"
+          >
+            Captain Veiren has heard of you in passing.
+          </p>
+        </div>
+      </div>
+      <div
+        style="margin-bottom: 20px;"
+      >
+        <div
+          style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
+        >
+          WHAT SHE IS TO HIM
+        </div>
+        <div
+          style="color: var(--text-primary); line-height: 1.7; margin: 0px; font-size: 0.9rem;"
+        >
+          Captain Veiren is bound to you by a debt unspoken.
+        </div>
+      </div>
+      <div
+        style="margin-bottom: 20px;"
+      >
+        <div
+          style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
+        >
+          THREADS BETWEEN THEM
+        </div>
+        <div
+          style="display: flex; flex-wrap: wrap; gap: 6px;"
+        >
+          <span
+            role="button"
+            style="padding: 3px 8px; border-radius: 4px; border: 1px solid var(--sphere-force-bright, var(--border-gold)); color: var(--sphere-life-bright, var(--accent-gold)); font-size: 0.75rem; font-family: var(--font-display); cursor: pointer; letter-spacing: 0.04em; user-select: none;"
+            tabindex="0"
+          >
+            Avatar of Witness
+            <em
+              style="margin-left: 4px; opacity: 0.7;"
+            >
+              a debt unspoken
+            </em>
+          </span>
+        </div>
+      </div>
+      <div
+        role="button"
+        style="margin-bottom: 20px; border: 1px solid var(--border-gold); border-radius: 6px; padding: 10px 12px; background: var(--bg-raised); cursor: pointer;"
+        tabindex="0"
+      >
+        <div
+          style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
+        >
+          RECENT ENCOUNTERS
+        </div>
+        <div
+          style="font-size: 0.65rem; letter-spacing: 0.1em; color: var(--text-tertiary); font-family: var(--font-display); text-transform: uppercase; margin-bottom: 6px;"
+        >
+          1 TURN AGO · THE IRON MARKET
+        </div>
+        <p
+          style="color: var(--text-secondary); font-style: italic; line-height: 1.6; margin: 0px; font-size: 0.85rem;"
+        >
+          You met under the iron arch and traded a single name.
+        </p>
+      </div>
+      <div
+        style="margin-bottom: 20px;"
+      >
+        <div
+          style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
+        >
+          FACTION ALLEGIANCES
+        </div>
+        <div
+          style="display: flex; flex-wrap: wrap; gap: 6px;"
+        >
+          <span
+            role="button"
+            style="padding: 3px 8px; border-radius: 4px; border: 1px solid var(--sphere-force-bright, var(--border-gold)); color: var(--text-secondary); font-size: 0.75rem; font-family: var(--font-display); cursor: pointer; letter-spacing: 0.04em; user-select: none;"
+            tabindex="0"
+          >
+            The Iron Guard
+            <em
+              style="margin-left: 4px; opacity: 0.7;"
+            >
+              captain
+            </em>
+          </span>
+        </div>
+      </div>
+      <div
+        style="margin-bottom: 20px;"
+      >
+        <div
+          style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
+        >
+          NOTABLE CAPABILITIES
+        </div>
+        <div
+          style="display: flex; flex-wrap: wrap; gap: 6px;"
+        >
+          <span
+            style="padding: 3px 8px; border-radius: 4px; border: 1px solid var(--sphere-force-bright, var(--border-gold)); color: var(--text-secondary); font-size: 0.75rem; font-family: var(--font-display); cursor: default; letter-spacing: 0.04em; user-select: none;"
+          >
+            command
+            <em
+              style="margin-left: 4px; opacity: 0.7;"
+            >
+              mastery
+            </em>
+          </span>
+        </div>
+      </div>
+    </div>
+    <div
+      style="padding: 8px 16px; border-top: 1px solid var(--border-gold); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;"
+    >
+      <span
+        style="font-size: 0.68rem; color: var(--text-muted); font-style: italic; letter-spacing: 0.02em;"
+      >
+        ESC closes · ← steps back · the encounter remains paused
+      </span>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`DetailPage — event > snapshot: event 1`] = `
+<div
+  data-detail-depth="0"
+  style="position: fixed; inset: 0px; z-index: 70; display: flex; align-items: flex-start; justify-content: center; padding-top: 5vh; background-color: rgba(0, 0, 0, 0.55); pointer-events: auto;"
+>
+  <div
+    data-testid="detail-panel-0"
+    style="width: 800px; height: 720px; max-height: 85vh; background: linear-gradient(180deg, var(--bg-deep), var(--bg-abyss)); border: 1px solid var(--border-gold); border-radius: 10px; box-shadow: 0 8px 40px rgba(0, 0, 0, 0.7); display: flex; flex-direction: column; overflow: hidden; pointer-events: auto;"
+  >
+    <div
+      style="padding: 12px 16px 10px; border-bottom: 1px solid var(--border-gold); flex-shrink: 0;"
+    >
+      <div
+        style="display: flex; align-items: flex-start; gap: 8px;"
+      >
+        <div
+          style="flex: 1 1 0%;"
+        >
+          <div
+            style="display: flex; align-items: center; flex-wrap: wrap; gap: 0px; margin-bottom: 6px;"
+          >
+            <span
+              style="display: flex; align-items: center;"
+            >
+              <span
+                style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+              >
+                ENCOUNTER
+              </span>
+            </span>
+            <span
+              style="display: flex; align-items: center;"
+            >
+              <span
+                style="margin: 0px 4px; opacity: 0.4; user-select: none;"
+              >
+                ›
+              </span>
+              <span
+                style="cursor: default; color: var(--text-tertiary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+              >
+                A MEETING IN THE MARKET
+              </span>
+            </span>
+          </div>
+        </div>
+        <div
+          style="display: flex; gap: 4px; align-items: center; flex-shrink: 0;"
+        >
+          <button
+            aria-label="Close detail"
+            style="background: none; border: medium; color: var(--text-tertiary); cursor: pointer; font-size: 1.2rem; padding: 0px 4px; line-height: 1;"
+          >
+            ×
+          </button>
+        </div>
+      </div>
+      <div
+        style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sphere-force-bright, var(--accent-gold)); margin-bottom: 4px;"
+      >
+        EVENT
+      </div>
+      <div
+        style="font-family: var(--font-display); font-size: 1.25rem; color: var(--text-primary); margin-bottom: 2px; letter-spacing: 0.03em;"
+      >
+        A meeting in the market
+      </div>
+      <div
+        style="font-family: var(--font-display); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-tertiary);"
+      >
+        encounter_outcome
+      </div>
+    </div>
+    <div
+      style="flex: 1 1 0%; overflow-y: auto; padding: 16px;"
+    >
+      <div
+        style="margin-bottom: 20px;"
+      >
+        <div
+          style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-gold); margin-bottom: 6px; border-bottom: 1px solid var(--accent-gold-dim, var(--border-gold)); padding-bottom: 2px;"
+        >
+          WHAT HAPPENED
+        </div>
+        <div
+          style="color: var(--text-primary); line-height: 1.7; margin: 0px; font-size: 0.9rem;"
+        >
+          You met under the iron arch and traded a single name.
+        </div>
+      </div>
+      <div
+        style="margin-bottom: 20px;"
+      >
+        <div
+          style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
+        >
+          WHO WAS THERE
+        </div>
+        <div
+          style="display: flex; flex-wrap: wrap; gap: 6px;"
+        >
+          <span
+            role="button"
+            style="padding: 3px 8px; border-radius: 4px; border: 1px solid var(--sphere-force-bright, var(--border-gold)); color: var(--text-secondary); font-size: 0.75rem; font-family: var(--font-display); cursor: pointer; letter-spacing: 0.04em; user-select: none;"
+            tabindex="0"
+          >
+            Avatar of Witness
+          </span>
+          <span
+            role="button"
+            style="padding: 3px 8px; border-radius: 4px; border: 1px solid var(--sphere-spirit-bright, var(--border-gold)); color: var(--text-secondary); font-size: 0.75rem; font-family: var(--font-display); cursor: pointer; letter-spacing: 0.04em; user-select: none;"
+            tabindex="0"
+          >
+            Captain Veiren
+          </span>
+        </div>
+      </div>
+    </div>
+    <div
+      style="padding: 8px 16px; border-top: 1px solid var(--border-gold); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;"
+    >
+      <span
+        style="font-size: 0.68rem; color: var(--text-muted); font-style: italic; letter-spacing: 0.02em;"
+      >
+        ESC closes · ← steps back · the encounter remains paused
+      </span>
+      <button
+        style="background: none; border: 1px solid var(--border-gold); border-radius: 4px; color: var(--accent-gold); cursor: pointer; font-size: 0.72rem; font-family: var(--font-display); letter-spacing: 0.06em; padding: 4px 10px;"
+      >
+        open her sheet ↗
+      </button>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`DetailPage — faction > snapshot: faction 1`] = `
+<div
+  data-detail-depth="0"
+  style="position: fixed; inset: 0px; z-index: 70; display: flex; align-items: flex-start; justify-content: center; padding-top: 5vh; background-color: rgba(0, 0, 0, 0.55); pointer-events: auto;"
+>
+  <div
+    data-testid="detail-panel-0"
+    style="width: 720px; height: 620px; max-height: 85vh; background: linear-gradient(180deg, var(--bg-deep), var(--bg-abyss)); border: 1px solid var(--border-gold); border-radius: 10px; box-shadow: 0 8px 40px rgba(0, 0, 0, 0.7); display: flex; flex-direction: column; overflow: hidden; pointer-events: auto;"
+  >
+    <div
+      style="padding: 12px 16px 10px; border-bottom: 1px solid var(--border-gold); flex-shrink: 0;"
+    >
+      <div
+        style="display: flex; align-items: flex-start; gap: 8px;"
+      >
+        <div
+          style="flex: 1 1 0%;"
+        >
+          <div
+            style="display: flex; align-items: center; flex-wrap: wrap; gap: 0px; margin-bottom: 6px;"
+          >
+            <span
+              style="display: flex; align-items: center;"
+            >
+              <span
+                style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+              >
+                ENCOUNTER
+              </span>
+            </span>
+            <span
+              style="display: flex; align-items: center;"
+            >
+              <span
+                style="margin: 0px 4px; opacity: 0.4; user-select: none;"
+              >
+                ›
+              </span>
+              <span
+                style="cursor: default; color: var(--text-tertiary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+              >
+                THE IRON GUARD
+              </span>
+            </span>
+          </div>
+        </div>
+        <div
+          style="display: flex; gap: 4px; align-items: center; flex-shrink: 0;"
+        >
+          <button
+            aria-label="Close detail"
+            style="background: none; border: medium; color: var(--text-tertiary); cursor: pointer; font-size: 1.2rem; padding: 0px 4px; line-height: 1;"
+          >
+            ×
+          </button>
+        </div>
+      </div>
+      <div
+        style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sphere-force-bright, var(--accent-gold)); margin-bottom: 4px;"
+      >
+        FACTION
+      </div>
+      <div
+        style="font-family: var(--font-display); font-size: 1.25rem; color: var(--text-primary); margin-bottom: 2px; letter-spacing: 0.03em;"
+      >
+        The Iron Guard
+      </div>
+      <div
+        style="font-family: var(--font-display); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-tertiary);"
+      >
+        faction
+      </div>
+    </div>
+    <div
+      style="flex: 1 1 0%; overflow-y: auto; padding: 16px;"
+    >
+      <div
+        style="margin-bottom: 20px;"
+      >
+        <div
+          style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-gold); margin-bottom: 6px; border-bottom: 1px solid var(--accent-gold-dim, var(--border-gold)); padding-bottom: 2px;"
+        >
+          HOW THEY HOLD HER
+        </div>
+        <div
+          style="color: var(--text-primary); line-height: 1.7; margin: 0px; font-size: 0.9rem;"
+        >
+          a stranger watched closely
+        </div>
+      </div>
+      <div
+        style="margin-bottom: 20px;"
+      >
+        <div
+          style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
+        >
+          REPUTATIONS THEY HOLD
+        </div>
+        <div
+          style="display: flex; flex-direction: column; gap: 4px;"
+        >
+          <div
+            style="display: flex; justify-content: space-between; padding: 4px 0px; border-bottom: 1px solid var(--border-gold); font-size: 0.8rem;"
+          >
+            <span
+              style="color: var(--text-tertiary);"
+            >
+              Avatar of Witness
+            </span>
+            <span
+              style="color: var(--text-secondary);"
+            >
+              a stranger watched closely
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      style="padding: 8px 16px; border-top: 1px solid var(--border-gold); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;"
+    >
+      <span
+        style="font-size: 0.68rem; color: var(--text-muted); font-style: italic; letter-spacing: 0.02em;"
+      >
+        ESC closes · ← steps back · the encounter remains paused
+      </span>
+      <button
+        style="background: none; border: 1px solid var(--border-gold); border-radius: 4px; color: var(--accent-gold); cursor: pointer; font-size: 0.72rem; font-family: var(--font-display); letter-spacing: 0.06em; padding: 4px 10px;"
+      >
+        open her sheet ↗
+      </button>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`DetailPage — item > snapshot: item 1`] = `
+<div
+  data-detail-depth="0"
+  style="position: fixed; inset: 0px; z-index: 70; display: flex; align-items: flex-start; justify-content: center; padding-top: 5vh; background-color: rgba(0, 0, 0, 0.55); pointer-events: auto;"
+>
+  <div
+    data-testid="detail-panel-0"
+    style="width: 720px; height: 620px; max-height: 85vh; background: linear-gradient(180deg, var(--bg-deep), var(--bg-abyss)); border: 1px solid var(--border-gold); border-radius: 10px; box-shadow: 0 8px 40px rgba(0, 0, 0, 0.7); display: flex; flex-direction: column; overflow: hidden; pointer-events: auto;"
+  >
+    <div
+      style="padding: 12px 16px 10px; border-bottom: 1px solid var(--border-gold); flex-shrink: 0;"
+    >
+      <div
+        style="display: flex; align-items: flex-start; gap: 8px;"
+      >
+        <div
+          style="flex: 1 1 0%;"
+        >
+          <div
+            style="display: flex; align-items: center; flex-wrap: wrap; gap: 0px; margin-bottom: 6px;"
+          >
+            <span
+              style="display: flex; align-items: center;"
+            >
+              <span
+                style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+              >
+                ENCOUNTER
+              </span>
+            </span>
+            <span
+              style="display: flex; align-items: center;"
+            >
+              <span
+                style="margin: 0px 4px; opacity: 0.4; user-select: none;"
+              >
+                ›
+              </span>
+              <span
+                style="cursor: default; color: var(--text-tertiary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+              >
+                VEIRENS TOKEN
+              </span>
+            </span>
+          </div>
+        </div>
+        <div
+          style="display: flex; gap: 4px; align-items: center; flex-shrink: 0;"
+        >
+          <button
+            aria-label="Close detail"
+            style="background: none; border: medium; color: var(--text-tertiary); cursor: pointer; font-size: 1.2rem; padding: 0px 4px; line-height: 1;"
+          >
+            ×
+          </button>
+        </div>
+      </div>
+      <div
+        style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sphere-force-bright, var(--accent-gold)); margin-bottom: 4px;"
+      >
+        ITEM
+      </div>
+      <div
+        style="font-family: var(--font-display); font-size: 1.25rem; color: var(--text-primary); margin-bottom: 2px; letter-spacing: 0.03em;"
+      >
+        Veirens Token
+      </div>
+      <div
+        style="font-family: var(--font-display); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-tertiary);"
+      >
+        token
+      </div>
+    </div>
+    <div
+      style="flex: 1 1 0%; overflow-y: auto; padding: 16px;"
+    >
+      <div
+        style="margin-bottom: 20px; display: flex; gap: 16px;"
+      >
+        <div
+          style="width: 180px; height: 220px; flex-shrink: 0; background: var(--bg-deep); border: 1px solid var(--border-gold); border-radius: 4px; display: flex; align-items: center; justify-content: center; overflow: hidden;"
+        >
+          <span
+            style="color: var(--text-muted); font-size: 0.7rem;"
+          >
+            Veirens Token
+          </span>
+        </div>
+        <div
+          style="flex: 1 1 0%;"
+        >
+          <div
+            style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-gold); margin-bottom: 6px; border-bottom: 1px solid var(--accent-gold-dim, var(--border-gold)); padding-bottom: 2px;"
+          >
+            WHAT IT MEANS HERE
+          </div>
+          <p
+            style="color: var(--text-primary); line-height: 1.7; margin: 0px; font-size: 0.9rem;"
+          >
+            A token that has not yet earned a story.
+          </p>
+        </div>
+      </div>
+      <div
+        style="margin-bottom: 20px;"
+      >
+        <div
+          style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
+        >
+          HOW IT CAME TO HER
+        </div>
+        <div
+          style="color: var(--text-primary); line-height: 1.7; margin: 0px; font-size: 0.9rem;"
+        >
+          Avatar of Witness placed it in her keeping.
+        </div>
+      </div>
+    </div>
+    <div
+      style="padding: 8px 16px; border-top: 1px solid var(--border-gold); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;"
+    >
+      <span
+        style="font-size: 0.68rem; color: var(--text-muted); font-style: italic; letter-spacing: 0.02em;"
+      >
+        ESC closes · ← steps back · the encounter remains paused
+      </span>
+      <button
+        style="background: none; border: 1px solid var(--border-gold); border-radius: 4px; color: var(--accent-gold); cursor: pointer; font-size: 0.72rem; font-family: var(--font-display); letter-spacing: 0.06em; padding: 4px 10px;"
+      >
+        open her sheet ↗
+      </button>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`DetailPage — place > snapshot: place 1`] = `
+<div
+  data-detail-depth="0"
+  style="position: fixed; inset: 0px; z-index: 70; display: flex; align-items: flex-start; justify-content: center; padding-top: 5vh; background-color: rgba(0, 0, 0, 0.55); pointer-events: auto;"
+>
+  <div
+    data-testid="detail-panel-0"
+    style="width: 800px; height: 720px; max-height: 85vh; background: linear-gradient(180deg, var(--bg-deep), var(--bg-abyss)); border: 1px solid var(--border-gold); border-radius: 10px; box-shadow: 0 8px 40px rgba(0, 0, 0, 0.7); display: flex; flex-direction: column; overflow: hidden; pointer-events: auto;"
+  >
+    <div
+      style="padding: 12px 16px 10px; border-bottom: 1px solid var(--border-gold); flex-shrink: 0;"
+    >
+      <div
+        style="display: flex; align-items: flex-start; gap: 8px;"
+      >
+        <div
+          style="flex: 1 1 0%;"
+        >
+          <div
+            style="display: flex; align-items: center; flex-wrap: wrap; gap: 0px; margin-bottom: 6px;"
+          >
+            <span
+              style="display: flex; align-items: center;"
+            >
+              <span
+                style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+              >
+                ENCOUNTER
+              </span>
+            </span>
+            <span
+              style="display: flex; align-items: center;"
+            >
+              <span
+                style="margin: 0px 4px; opacity: 0.4; user-select: none;"
+              >
+                ›
+              </span>
+              <span
+                style="cursor: default; color: var(--text-tertiary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+              >
+                THE IRON MARKET
+              </span>
+            </span>
+          </div>
+        </div>
+        <div
+          style="display: flex; gap: 4px; align-items: center; flex-shrink: 0;"
+        >
+          <button
+            aria-label="Close detail"
+            style="background: none; border: medium; color: var(--text-tertiary); cursor: pointer; font-size: 1.2rem; padding: 0px 4px; line-height: 1;"
+          >
+            ×
+          </button>
+        </div>
+      </div>
+      <div
+        style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sphere-matter-bright, var(--accent-gold)); margin-bottom: 4px;"
+      >
+        PLACE
+      </div>
+      <div
+        style="font-family: var(--font-display); font-size: 1.25rem; color: var(--text-primary); margin-bottom: 2px; letter-spacing: 0.03em;"
+      >
+        The Iron Market
+      </div>
+      <div
+        style="font-family: var(--font-display); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-tertiary);"
+      >
+        place
+      </div>
+    </div>
+    <div
+      style="flex: 1 1 0%; overflow-y: auto; padding: 16px;"
+    >
+      <div
+        style="margin-bottom: 20px; display: flex; gap: 16px;"
+      >
+        <div
+          style="width: 180px; height: 220px; flex-shrink: 0; background: var(--bg-deep); border: 1px solid var(--border-gold); border-radius: 4px; display: flex; align-items: center; justify-content: center; overflow: hidden;"
+        >
+          <span
+            style="color: var(--text-muted); font-size: 0.7rem;"
+          >
+            The Iron Market
+          </span>
+        </div>
+        <div
+          style="flex: 1 1 0%;"
+        >
+          <div
+            style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
+          >
+            THE IRON MARKET
+          </div>
+        </div>
+      </div>
+      <div
+        style="margin-bottom: 20px;"
+      >
+        <div
+          style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-gold); margin-bottom: 6px; border-bottom: 1px solid var(--accent-gold-dim, var(--border-gold)); padding-bottom: 2px;"
+        >
+          WHAT THIS PLACE WANTS
+        </div>
+        <div
+          style="color: var(--text-primary); line-height: 1.7; margin: 0px; font-size: 0.9rem;"
+        >
+          The air in The Iron Market is faintly aligned with matter.
+        </div>
+      </div>
+      <div
+        style="margin-bottom: 20px;"
+      >
+        <div
+          style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
+        >
+          MEMORY
+        </div>
+        <div
+          style="color: var(--text-primary); line-height: 1.7; margin: 0px; font-size: 0.9rem;"
+        >
+          You met under the iron arch and traded a single name.
+        </div>
+      </div>
+    </div>
+    <div
+      style="padding: 8px 16px; border-top: 1px solid var(--border-gold); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;"
+    >
+      <span
+        style="font-size: 0.68rem; color: var(--text-muted); font-style: italic; letter-spacing: 0.02em;"
+      >
+        ESC closes · ← steps back · the encounter remains paused
+      </span>
+      <button
+        style="background: none; border: 1px solid var(--border-gold); border-radius: 4px; color: var(--accent-gold); cursor: pointer; font-size: 0.72rem; font-family: var(--font-display); letter-spacing: 0.06em; padding: 4px 10px;"
+      >
+        open her sheet ↗
+      </button>
+    </div>
+  </div>
+</div>
+`;

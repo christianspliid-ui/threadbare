@@ -96,7 +96,7 @@ describe('culturalGravity', () => {
     // Maximally aligned
     const aligned = makeSignature({
       spheres: ['life', 'force', 'matter', 'energy'],
-      reaches: { iron: 1, gold: 1, shadow: 1, veil: 1, heart: 1, eye: 1, stone: 1, star: 1, flesh: 1 },
+      reaches: { iron: 1, gold: 1, shadow: 1, veil: 1, heart: 1, eye: 1, stone: 1, star: 1 },
       foundation: 'Chaos',
     });
     expect(culturalGravity(aligned, aligned)).toBeGreaterThanOrEqual(-1);
@@ -105,12 +105,12 @@ describe('culturalGravity', () => {
     // Maximally opposed
     const a = makeSignature({
       spheres: ['life', 'force'],
-      reaches: { iron: 1, gold: 1, shadow: 1, veil: 1, heart: 1, eye: 1, stone: 1, star: 1, flesh: 1 },
+      reaches: { iron: 1, gold: 1, shadow: 1, veil: 1, heart: 1, eye: 1, stone: 1, star: 1 },
       foundation: 'Chaos',
     });
     const b = makeSignature({
       spheres: ['entropy', 'mind'],
-      reaches: { iron: -1, gold: -1, shadow: -1, veil: -1, heart: -1, eye: -1, stone: -1, star: -1, flesh: -1 },
+      reaches: { iron: -1, gold: -1, shadow: -1, veil: -1, heart: -1, eye: -1, stone: -1, star: -1 },
       foundation: 'Order',
     });
     expect(culturalGravity(a, b)).toBeGreaterThanOrEqual(-1);
@@ -147,7 +147,7 @@ describe('extractCultureSignature', () => {
       behavioralTraitSeedIds: [],
       reachPreferences: {
         iron: 0.2, gold: 0.5, shadow: 0, veil: 0.1, heart: 0.8,
-        eye: 0.3, stone: 0.4, star: 0.6, flesh: 0.1,
+        eye: 0.3, stone: 0.4, star: 0.6,
       },
     };
 

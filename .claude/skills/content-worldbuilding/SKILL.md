@@ -5,6 +5,7 @@ description: >
   or any content-authoring pipeline. Triggers on "content package", "graph node", "graph edge",
   "world model", "constraint layer", "category", "World-Soul", "rival gods",
   or when designing new game content or narrative systems.
+last_validated_against: 2026-05-08
 ---
 
 # Content & Worldbuilding — Domain Context

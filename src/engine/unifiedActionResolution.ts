@@ -85,6 +85,12 @@ import {
   RESIST_DOWNGRADE_CHANCE,
 } from './quintessenceActions';
 import { isProvingSliceTemplate } from './outcomeConsequences';
+import { INTEL_DIFFICULTY_BONUS } from '../data/agent-behavior-constants';
+import {
+  emitIntelligenceReferenced,
+  findActionableIntelligence,
+  reliabilityDescriptor,
+} from './intelligence';
 import {
   assembleRewardPool,
   BAD_OUTCOME_CATEGORY_WEIGHTS,
@@ -204,6 +210,37 @@ export function resolveUncontestedStep(
     return { outcome: 'success', rawOutcome: 'success', opsToExecute: step.onSuccess, capability: 1, probability: 1, roll: 0, ...noPushResist };
   }
 
+  let effectiveDifficulty = step.difficulty;
+  if (step.difficultyContext === 'intel_sensitive') {
+    const targetNode = state.graph.getNode(action.targetId);
+    const locationId = targetNode?.type === 'location'
+      ? action.targetId
+      : (getAgentLocationId(state.graph, action.actorId) ?? action.targetId);
+    const locationNode = state.graph.getNode(locationId);
+    const region = typeof locationNode?.properties?.region === 'string'
+      ? locationNode.properties.region
+      : typeof locationNode?.properties?.regionId === 'string'
+        ? locationNode.properties.regionId
+        : undefined;
+    const intelMatch = findActionableIntelligence(state, action.actorId, {
+      templateId: action.templateId,
+      locationId,
+      targetAgentId: targetNode?.type === 'actor' ? action.targetId : undefined,
+      region,
+    });
+    if (intelMatch) {
+      const band = reliabilityDescriptor(intelMatch.reliability);
+      const weight = band === 'reliable' ? 1 : band === 'uncertain' ? 0.5 : 0;
+      if (weight > 0) {
+        effectiveDifficulty = Math.max(0, step.difficulty + INTEL_DIFFICULTY_BONUS * weight);
+        emitIntelligenceReferenced(state.tick, action.actorId, intelMatch.recordId, 'difficulty_modifier', {
+          templateId: action.templateId,
+          intelCategory: intelMatch.category,
+        });
+      }
+    }
+  }
+
   // Compute actor's domain capability for this step's reach
   const capability = computeCapability(state.graph, action.actorId, step.reach);
 
@@ -243,7 +280,7 @@ export function resolveUncontestedStep(
     actorId: action.actorId,
     domain: step.reach,
     capability,
-    difficulty: step.difficulty,
+    difficulty: effectiveDifficulty,
     sphereFactor,
     actionModifiers: pushModifier + interventionBoost,
     testShapers,

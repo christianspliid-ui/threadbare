@@ -1,6 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
+last_validated_against: 2026-05-08
 ---
 
 # Pull Work

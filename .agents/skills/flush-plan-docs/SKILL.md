@@ -1,3 +1,9 @@
+---
+name: flush-plan-docs
+description: Commit Cowork-authored plan docs tagged with `plan-pending-commit` to origin/main via the scheduled flush workflow.
+last_validated_against: 2026-05-08
+---
+
 # flush-plan-docs
 
 ## Purpose

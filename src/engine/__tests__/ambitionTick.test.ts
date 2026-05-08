@@ -191,7 +191,6 @@ describe('phaseAmbitionProgress', () => {
       heart: 0.3,
       stone: 0.3,
       star: 0.3,
-      flesh: 0.3,
     });
 
     // Add a location node so the actor can be located somewhere

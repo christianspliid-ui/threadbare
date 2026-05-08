@@ -1,6 +1,7 @@
 ---
 name: retrospective
 description: Review the impediment log (Docs/impediments.md) and conduct a structured retrospective. Reads this week's drift-scan Linear issues as the first input, then analyzes patterns, proposes concrete improvements to tools, skills, CLAUDE.md, and processes. Trigger with "/retrospective" or "run a retro" or "review impediments" or "continuous improvement review".
+last_validated_against: 2026-05-08
 ---
 
 # Retrospective

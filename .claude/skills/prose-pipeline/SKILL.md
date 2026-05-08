@@ -13,6 +13,7 @@ description: >
   "prose composer", "prose pipeline", "prose architecture", "graph-walking",
   "resolver registry".
 model: opus
+last_validated_against: 2026-05-08
 ---
 
 # Prose Pipeline — Resolver Architecture Guide
@@ -21,9 +22,11 @@ This skill covers the **graph-walking prose generator architecture**: how resolv
 
 > **See also:** `Docs/plans/2026-04-16-systemic-wiring-guide.md` — explains the other side of the prose-to-graph bridge: how encounter outcomes *create* the graph state that resolvers later walk. Resolvers consume graph data; encounters produce it. Both skills together form the full loop.
 
-## Step 0: Canon-First Pre-Read
+## Step 0 — Canon-First Pre-Read
 
-Before doing any work in this skill, read [`Docs/canon/prose.md`](../../../Docs/canon/prose.md) first. The Canon page is the Step-0 entrypoint for all prose-domain authoring: it identifies the four pipelines, points to the active design plans and engine wiring, asserts the Threadbare voice rules, and lists current rejected approaches. Skim it once, then return here for resolver-architecture detail. If a pointer in this skill disagrees with the Canon page, the Canon page wins and this skill needs an update — open a `drift-scan`-labeled Linear issue.
+Before any other reference, read `Docs/canon/prose.md`. It is the live navigation layer for this domain — it lists the current spec pointers, rejected approaches, and active design plans. Linked targets are authoritative; this skill follows the Canon page's pointers, not parallel ones.
+
+If the Canon page disagrees with this skill, the Canon page wins until this skill is rewritten. File a `drift-scan`-labeled Linear issue when you see disagreement.
 
 ## Architecture Overview
 
