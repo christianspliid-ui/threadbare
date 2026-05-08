@@ -12,15 +12,27 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
-// Drift scan thresholds — tune here, rebuild, done.
-export const COUPLING_CREEP_PCT = 10; // S1: importer growth threshold
-export const BROKEN_WINDOWS_PCT = 15; // S2: broken-windows growth threshold
-export const TEST_RUNTIME_REGRESSION_PCT = 15; // S3: test runtime regression threshold
-export const TEST_FLAKE_MIN_RUNS = 3; // S3: minimum observations before flake flag
-export const UL_DRIFT_STALE_DAYS = 30; // S4: canonical term stale threshold
-export const TOP_IMPORTERS_COUNT = 20; // S1: top importers window
-export const UL_UNCANONICAL_MIN_OCCURRENCES = 4; // S4: used-uncanonical floor
-export const SUITE_HISTORY_LIMIT = 8; // S3: retained per-suite history window
+// Drift scan thresholds — tune in `./constants.ts` (browser-safe single source).
+import {
+  COUPLING_CREEP_PCT,
+  BROKEN_WINDOWS_PCT,
+  TEST_RUNTIME_REGRESSION_PCT,
+  TEST_FLAKE_MIN_RUNS,
+  UL_DRIFT_STALE_DAYS,
+  TOP_IMPORTERS_COUNT,
+  UL_UNCANONICAL_MIN_OCCURRENCES,
+  SUITE_HISTORY_LIMIT,
+} from "./constants";
+export {
+  COUPLING_CREEP_PCT,
+  BROKEN_WINDOWS_PCT,
+  TEST_RUNTIME_REGRESSION_PCT,
+  TEST_FLAKE_MIN_RUNS,
+  UL_DRIFT_STALE_DAYS,
+  TOP_IMPORTERS_COUNT,
+  UL_UNCANONICAL_MIN_OCCURRENCES,
+  SUITE_HISTORY_LIMIT,
+};
 
 const LINEAR_API_URL = "https://api.linear.app/graphql";
 const LINEAR_PROJECT_ID = "42ac1815-135e-4efb-95d8-631a17dbc9df"; // Continuous Improvement

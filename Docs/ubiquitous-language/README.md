@@ -2,6 +2,8 @@
 
 **The canonical glossary for The Fantasy World Simulator.** When docs, code comments, Obsidian, or agent output disagree on terminology, UL wins.
 
+> **In-app dashboard:** browse + search this glossary at [`?view=ul`](http://localhost:5173/?view=ul) (UL Interactive Dashboard, THR-289). Cross-shard search, See-Also navigation, drift badges. Reads a build-generated snapshot of the markdown shards.
+
 Load this file at session start (referenced from CLAUDE.md). Load specific shard files on demand when the task references their terms. The full shard files contain entry definitions; this index is the lightweight always-load footprint (~3k tokens).
 
 ---

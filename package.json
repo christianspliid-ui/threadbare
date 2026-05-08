@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "prebuild": "npm run generate-ul-dashboard",
+    "generate-ul-dashboard": "esbuild scripts/generate-ul-dashboard-data.ts --bundle --platform=node --format=esm --outfile=.cache/generate-ul-dashboard-data.mjs --external:fs --external:path --external:url && node .cache/generate-ul-dashboard-data.mjs",
+    "generate-ul-dashboard:dry": "esbuild scripts/generate-ul-dashboard-data.ts --bundle --platform=node --format=esm --outfile=.cache/generate-ul-dashboard-data.mjs --external:fs --external:path --external:url && node .cache/generate-ul-dashboard-data.mjs --dry-run",
     "typecheck": "tsc -b",
     "lint": "eslint .",
     "preview": "vite preview",

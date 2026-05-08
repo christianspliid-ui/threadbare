@@ -92,6 +92,9 @@ export function StartPage({ onNewWorld, onAdvancedNewWorld }: StartPageProps) {
             <button className="start-page__menu-item" onClick={() => { window.location.search = '?view=codex'; }}>
               Codex
             </button>
+            <button className="start-page__menu-item" onClick={() => { window.location.search = '?view=ul'; }}>
+              Ubiquitous Language
+            </button>
             <button className="start-page__menu-item" onClick={() => setSettingsOpen(true)}>
               Settings
             </button>
