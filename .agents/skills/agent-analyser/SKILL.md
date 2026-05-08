@@ -1,6 +1,7 @@
 ---
 name: agent-analyser
 description: Analyse encounter log TSV exports to assess agent behavior, encounter balance, variety, movement patterns, capability growth, and pipeline health. Use this skill whenever the user uploads encounter logs, asks to analyse agent behavior, wants to check encounter balance or tuning, mentions "encounter logs", "agent analysis", "encounter analysis", "behaviour analysis", "tuning check", or wants to compare runs across seeds or patches. Also trigger when the user mentions idle rates, encounter variety, movement patterns, or repetition problems in the simulation.
+last_validated_against: 2026-05-08
 ---
 
 # Agent Analyser — Encounter Log Analysis Skill

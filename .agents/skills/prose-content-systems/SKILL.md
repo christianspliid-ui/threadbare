@@ -13,6 +13,7 @@ description: >
   content", "sphere vocabulary", "cultural prose", "spell flavor", "effect
   prose", "movement content", "content table", "write prose".
 model: opus
+last_validated_against: 2026-05-08
 ---
 
 # Prose Content Systems — Content Authoring Reference

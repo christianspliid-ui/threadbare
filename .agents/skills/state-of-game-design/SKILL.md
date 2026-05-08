@@ -8,6 +8,7 @@ description: >
   Triggers on ANY game design work — automatically load as prerequisite for
   engine-architecture, content-worldbuilding, frontend-ui, art-direction,
   and content authoring tasks.
+last_validated_against: 2026-05-08
 ---
 
 # State of the Game Design — Source of Truth

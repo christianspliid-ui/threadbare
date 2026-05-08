@@ -6,6 +6,7 @@ description: >
   "UI", "frontend", "panel", "layout", "accessibility", "style tile", "CSS",
   "responsive", "interaction", or when the task involves visual presentation.
   Also load when designing the **UI pillar** of any feature.
+last_validated_against: 2026-05-08
 ---
 
 # Frontend & UI — Domain Context

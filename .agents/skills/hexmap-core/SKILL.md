@@ -10,6 +10,7 @@ description: >
   "hex renderer", "d3-zoom", "hex coordinate", "hex grid", "coordinate
   system", "zoom tier", "render layer", "stencil", "InstancedMesh",
   "terrain palette".
+last_validated_against: 2026-05-08
 ---
 
 # HexMap Core — Architecture & Foundation

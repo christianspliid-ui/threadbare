@@ -7,6 +7,7 @@ description: >
   src/components/HexMapV2/. Triggers on "hex map", "HexMapV2", "Three.js scene",
   "zoom", "coastline", "river overlay", "region labels", "elevation ticks",
   "InstancedMesh", "d3-zoom", or any hex renderer work.
+last_validated_against: 2026-05-08
 ---
 
 # Hex Map Renderer — Domain Context

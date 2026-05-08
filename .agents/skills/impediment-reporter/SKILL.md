@@ -1,6 +1,7 @@
 ---
 name: impediment-reporter
 description: Loaded by ALL agents on EVERY task. When an agent encounters a blocker, workaround, or unexpected friction, it MUST log the impediment to Docs/impediments.md before continuing. This is part of Definition of Done — work is not complete unless all impediments encountered during the session are logged.
+last_validated_against: 2026-05-08
 ---
 
 # Impediment Reporter

@@ -2,6 +2,7 @@
 name: encounter-pipeline
 description: Automated encounter pipeline v2. Runs draft → editorial+revision → systems+merge → implementation for complete encounter delivery. Triggers on "encounter pipeline", "draft encounter", "run encounter pipeline", "author encounter", or "/encounter-pipeline".
 model: opus
+last_validated_against: 2026-05-08
 ---
 
 # Encounter Pipeline v2

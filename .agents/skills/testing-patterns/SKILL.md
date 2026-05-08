@@ -6,6 +6,7 @@ description: >
   "movement test", "hexmap test", "regression test", or when implementing changes that touch
   3+ files across src/engine/ and src/components/. Also load when reviewing test coverage
   or diagnosing why a change broke downstream systems.
+last_validated_against: 2026-05-08
 ---
 
 # Testing Patterns — Domain Context
