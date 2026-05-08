@@ -1,0 +1,323 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`EffectRegistration components — settled snapshots > ArchetypeDriftLanding renders Heart-band dot fill + chaos particle 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <div
+      data-phase="settled"
+      data-testid="effect-registration-archetype-drift"
+      style="position: relative; padding: 8px 10px; border-radius: 8px; background: var(--bg-raised); border-left: 2px solid var(--sphere-spirit-bright);"
+    >
+      <div
+        style="font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--sphere-spirit-bright);"
+      >
+        HEART · DRIFT
+      </div>
+      <span
+        aria-hidden="true"
+        data-testid="effect-registration-archetype-drift-dot"
+        style="display: inline-block; width: 8px; height: 8px; border-radius: 999px; margin-right: 6px; margin-top: 4px; background-color: var(--sphere-spirit-bright); opacity: 1; transition: opacity 240ms ease-out;"
+      />
+      <span
+        style="font-size: 12px; color: var(--text-primary); opacity: 1; transition: opacity 240ms ease-out;"
+      >
+        the thread she lives by
+      </span>
+      <div
+        style="font-size: 11px; font-style: italic; color: var(--text-tertiary); margin-top: 2px;"
+      >
+        +1 dot · she is more this now
+      </div>
+      <span
+        aria-hidden="true"
+        style="position: absolute; top: -4px; left: 8px; width: 3px; height: 3px; border-radius: 999px; background: var(--sphere-chaos-bright); opacity: 0.45; --mark-color: var(--sphere-chaos-bright); animation: mark-pulse 480ms ease-out 1;"
+      />
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`EffectRegistration components — settled snapshots > ConditionAttachmentLanding renders spirit-violet pill 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <div
+      data-phase="settled"
+      data-testid="effect-registration-condition-attachment"
+      style="padding: 6px 10px; border-radius: 999px; border: 1px solid var(--sphere-spirit-bright); background: color-mix(in oklab, var(--sphere-spirit-bright) 12%, transparent); display: inline-flex; flex-direction: column; gap: 2px; opacity: 1; transform: translateY(0); transition: opacity 240ms ease-out, transform 240ms ease-out;"
+    >
+      <div
+        style="font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--sphere-spirit-bright);"
+      >
+        CONDITION
+      </div>
+      <div
+        style="font-size: 13px; color: var(--text-primary);"
+      >
+        Sworn-witness
+      </div>
+      <div
+        style="font-size: 11px; font-style: italic; color: var(--text-tertiary);"
+      >
+        she has spoken what she saw
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`EffectRegistration components — settled snapshots > EncounterSeedLanding renders time-orange dim seed card 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <div
+      data-phase="settled"
+      data-testid="effect-registration-encounter-seed"
+      style="position: relative; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--sphere-time-bright); background: color-mix(in oklab, var(--sphere-time-bright) 6%, transparent); opacity: 0.85; transform: translateY(0); transition: opacity 360ms ease-out, transform 360ms ease-out;"
+    >
+      <span
+        aria-hidden="true"
+        style="position: absolute; top: 4px; right: 6px; width: 6px; height: 6px; border-radius: 999px; background: var(--sphere-time-bright); --mark-color: var(--sphere-time-bright); animation: mark-pulse 360ms ease-out 1;"
+      />
+      <div
+        style="font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--sphere-time-bright);"
+      >
+        SEED · ELIGIBLE
+      </div>
+      <div
+        style="font-size: 13px; color: var(--text-primary); margin-top: 2px;"
+      >
+        A reckoning at the iron market.
+      </div>
+      <div
+        style="font-size: 11px; font-style: italic; color: var(--text-tertiary); margin-top: 2px;"
+      >
+        time · 3–7 turns from now · veiren-related
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`EffectRegistration components — settled snapshots > FactionLanding renders order-gold chip with tone swap 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <div
+      data-phase="settled"
+      data-testid="effect-registration-faction"
+      style="padding: 6px 12px; border-radius: 999px; border: 2px solid var(--sphere-order-bright); background: var(--bg-raised); display: inline-flex; flex-direction: column; gap: 2px; --mark-color: var(--sphere-order-bright); animation: mark-pulse 800ms ease-in-out 1;"
+    >
+      <div
+        style="font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--sphere-order-bright);"
+      >
+        CIVIC GUARD OF BREN
+      </div>
+      <div
+        data-testid="effect-registration-faction-tone"
+        style="font-size: 12px; color: var(--text-primary);"
+      >
+        <span
+          style="opacity: 1; transition: opacity 200ms ease-out;"
+        >
+          wary
+        </span>
+      </div>
+      <div
+        style="font-size: 11px; font-style: italic; color: var(--text-tertiary);"
+      >
+        order · because of what she said
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`EffectRegistration components — settled snapshots > HiddenMarkLanding renders dotted-outline player-only pill 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <div
+      data-phase="settled"
+      data-testid="effect-registration-hidden-mark"
+      style="position: relative; padding: 8px 10px; border-radius: 8px; border: 1px dotted var(--sphere-darkness-bright); background: color-mix(in oklab, var(--sphere-darkness-bright) 8%, transparent); opacity: 0.75; transition: opacity 700ms ease-out;"
+    >
+      <div
+        style="font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--sphere-darkness-bright);"
+      >
+        HIDDEN · ONLY YOU SEE THIS
+      </div>
+      <div
+        style="font-size: 13px; color: var(--text-primary); margin-top: 2px;"
+      >
+        Marked by coincidence
+      </div>
+      <div
+        style="font-size: 11px; font-style: italic; color: var(--text-tertiary); margin-top: 2px;"
+      >
+        this scene becomes biographical
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`EffectRegistration components — settled snapshots > IntelligenceLanding renders mind-blue clue card 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <div
+      data-phase="settled"
+      data-testid="effect-registration-intelligence"
+      style="padding: 8px 10px; border-radius: 8px; border: 1px solid var(--sphere-mind-bright); background: linear-gradient(90deg, color-mix(in oklab, var(--sphere-mind-bright) 8%, transparent), transparent); perspective: 600px; animation: none; --mark-color: var(--sphere-mind-bright);"
+    >
+      <div
+        style="font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--sphere-mind-bright);"
+      >
+        CLUE · NEW
+      </div>
+      <div
+        style="font-size: 13px; margin-top: 2px; color: var(--text-primary);"
+      >
+        The trader's satchel is sewn shut from the inside.
+      </div>
+      <div
+        style="font-size: 11px; font-style: italic; color: var(--text-tertiary); margin-top: 2px;"
+      >
+        eye · she will see it in him next time
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`EffectRegistration components — settled snapshots > RecentEventLanding renders heart-coloured echo card 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <div
+      data-phase="settled"
+      data-testid="effect-registration-recent-event"
+      style="padding: 8px 10px; border-radius: 8px; border: 1px solid var(--sphere-spirit-bright); background: linear-gradient(90deg, color-mix(in oklab, var(--sphere-spirit-bright) 8%, transparent), transparent); perspective: 600px; animation: none; --mark-color: var(--sphere-spirit-bright);"
+    >
+      <div
+        style="font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--sphere-spirit-bright);"
+      >
+        INVOKED THIS BEAT
+      </div>
+      <div
+        style="font-size: 13px; margin-top: 2px; color: var(--text-primary);"
+      >
+        She held the captain's eye and did not look away.
+      </div>
+      <div
+        style="font-size: 11px; font-style: italic; color: var(--text-tertiary); margin-top: 2px;"
+      >
+        heart-related · 0 turns ago
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`EffectRegistration components — settled snapshots > ReputationScoreLanding renders cast tile prose band swap 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <div
+      data-phase="settled"
+      data-testid="effect-registration-reputation-score"
+      style="padding: 8px 10px; border-radius: 8px; background: var(--bg-raised); border-left: 2px solid var(--sphere-force-bright); transition: transform 360ms ease-out; transform: translateX(0);"
+    >
+      <div
+        style="font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--sphere-force-bright);"
+      >
+        CIVIC GUARD OF BREN
+      </div>
+      <div
+        data-testid="effect-registration-reputation-score-bandword"
+        style="font-size: 12px; color: var(--text-primary); margin-top: 2px; position: relative;"
+      >
+        <span
+          style="opacity: 1; transition: opacity 180ms ease-out; color: var(--text-primary);"
+        >
+          a name they remember
+        </span>
+      </div>
+      <div
+        style="font-size: 11px; font-style: italic; color: var(--text-tertiary); margin-top: 2px;"
+      >
+        crossed: from useful to known
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`EffectRegistration components — settled snapshots > ReputationTallyLanding renders cast tile pulse + new disposition 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <div
+      data-phase="settled"
+      data-testid="effect-registration-reputation-tally"
+      style="position: relative; padding: 8px 10px 8px 12px; border-radius: 8px; background: var(--bg-raised); border-left: 3px solid var(--sphere-force-bright); --mark-color: var(--sphere-force-bright); animation: mark-pulse 280ms ease-out 1;"
+    >
+      <div
+        style="font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--sphere-force-bright);"
+      >
+        CAPTAIN VEIREN
+      </div>
+      <div
+        data-testid="effect-registration-reputation-tally-phrase"
+        style="font-size: 12px; color: var(--text-primary); opacity: 1; transition: opacity 160ms ease-out; min-height: 1.2em;"
+      />
+      <div
+        style="font-size: 11px; font-style: italic; color: var(--text-tertiary); margin-top: 2px;"
+      >
+        iron · he marks her now
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`EffectRegistration components — settled snapshots > SpawnArtifactLanding renders matter-umber items rail tile 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <div
+      data-phase="settled"
+      data-testid="effect-registration-spawn-artifact"
+      style="padding: 8px 10px; border-radius: 8px; border: 1px solid var(--sphere-matter-bright); background: linear-gradient(90deg, color-mix(in oklab, var(--sphere-matter-bright) 10%, transparent), transparent); perspective: 600px; animation: none; box-shadow: none; transition: box-shadow 600ms ease-out;"
+    >
+      <div
+        style="font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--sphere-matter-bright);"
+      >
+        ITEM · NEW
+      </div>
+      <div
+        style="font-size: 13px; margin-top: 2px; color: var(--text-primary);"
+      >
+        A pressed iron coin, warm.
+      </div>
+      <div
+        style="font-size: 11px; font-style: italic; color: var(--text-tertiary); margin-top: 2px;"
+      >
+        matter · favor of the captain
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

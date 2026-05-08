@@ -79,6 +79,42 @@ export const AFTERMATH_ANIMATION_SETTLE_MS = 400;
 // World-to-encounter handoff transition duration.
 export const ENCOUNTER_HANDOFF_TRANSITION_MS = 400;
 
+// ── Phase D2 — EffectRegistration sequencing (THR-335) ──────────────
+// Per-kind landing motion durations (ms). Match canonical UI spec §4.1.
+export const REGISTRATION_FLIP_INTELLIGENCE_MS = 420;
+export const REGISTRATION_FLIP_CONDITION_ATTACHMENT_MS = 240;
+export const REGISTRATION_FLIP_REPUTATION_TALLY_MS = 280;
+export const REGISTRATION_FLIP_REPUTATION_SCORE_MS = 360;
+export const REGISTRATION_FLIP_ENCOUNTER_SEED_MS = 360;
+export const REGISTRATION_FLIP_HIDDEN_MARK_MS = 700;
+export const REGISTRATION_FLIP_RECENT_EVENT_MS = 420;
+export const REGISTRATION_FLIP_SPAWN_ARTIFACT_MS = 460;
+export const REGISTRATION_FLIP_FACTION_MS = 800;
+export const REGISTRATION_FLIP_ARCHETYPE_DRIFT_MS = 240;
+
+// Pulse-ring (mark-pulse) decay window after a pulse fires; rule §4.3 #2 suppresses
+// any second pulse that would land inside this window for the same target surface.
+export const REGISTRATION_PULSE_RING_DECAY_MS = 600;
+
+// Lane time-window starts (ms from resolution) per canonical UI spec §4.2.
+export const REGISTRATION_LANE_HERO_PANEL_FIRST_MS = 600;
+export const REGISTRATION_LANE_HERO_PANEL_SECOND_MS = 1700;
+export const REGISTRATION_LANE_RIGHT_RAIL_CAST_MS = 1000;
+export const REGISTRATION_LANE_RIGHT_RAIL_STATE_MS = 1400;
+export const REGISTRATION_LANE_ECHO_STRIP_MS = 2400;
+export const REGISTRATION_LANE_PLAYER_ONLY_MS = 3200;
+
+// Discipline rule §4.3 #1: 50% overlap delay for back-to-back card-flips in the
+// same lane. Second flip is shifted by this gap when it would overlap > 50% of the first.
+export const REGISTRATION_OVERLAP_DELAY_MS = 220;
+
+// Discipline rule §4.3 #4: more than this many effects → second-breath gate.
+export const REGISTRATION_GATE_THRESHOLD = 5;
+// Pause inserted between batch 1 (first 5 effects) and batch 2 (effects 6+).
+export const REGISTRATION_GATE_PAUSE_MS = 800;
+// Prose-log line fading in when the gate fires.
+export const REGISTRATION_GATE_LINE = '… more is settling';
+
 // Outcome band cutoffs for choice resolution (THR-323, Phase B1).
 // Within the success zone (roll <= p), bottom CRITICAL_SUCCESS_ZONE_FRACTION → critical_success.
 export const OUTCOME_CRITICAL_SUCCESS_ZONE_FRACTION = 0.3;

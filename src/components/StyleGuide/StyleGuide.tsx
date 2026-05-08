@@ -36,6 +36,20 @@ import { CulturePhoneticsInspector } from '../Game/debug/CulturePhoneticsInspect
 import { EncounterScreen, ENCOUNTER_SCREEN_LAYOUT } from '../Game/Encounter/EncounterScreen';
 import type { EncounterHeroPanelData } from '../Game/Encounter/EiraHeroPanel';
 import { EncounterChoiceCard } from '../Game/Encounter/EncounterChoiceCard';
+import {
+  ArchetypeDriftLanding,
+  ConditionAttachmentLanding,
+  EncounterSeedLanding,
+  FactionLanding,
+  HiddenMarkLanding,
+  IntelligenceLanding,
+  RecentEventLanding,
+  ReputationScoreLanding,
+  ReputationTallyLanding,
+  SpawnArtifactLanding,
+} from '../Game/Encounter/EffectRegistration';
+import { computeSequencedEffects } from '../../hooks/useEffectSequencing';
+import type { EffectInput } from '../../hooks/useEffectSequencing';
 import { OutcomeForecastBand } from '../Game/Encounter/OutcomeForecastBand';
 import type { EncounterChoiceContract } from '../../types/encounter-contract';
 import { WorldGraph } from '../../engine/graph';
@@ -104,6 +118,7 @@ const SECTIONS = [
   { id: 'culture-phonetics', label: 'CulturePhoneticsInspector' },
   { id: 'encounter-screen', label: 'EncounterScreen (C1)' },
   { id: 'encounter-choice-c2', label: 'EncounterChoiceCard / OutcomeForecastBand (C2)' },
+  { id: 'encounter-effect-d2', label: 'EffectRegistration (D2)' },
 ];
 
 // ─── Sample data ──────────────────────────────────────────────────────────────
@@ -952,6 +967,23 @@ export default function StyleGuide() {
             </div>
           </section>
 
+          {/* ── EffectRegistration (Phase D2) ── */}
+          <section id="section-encounter-effect-d2" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>EffectRegistration (D2)</SectionHeading>
+            <div style={{ marginTop: '1.25rem' }}>
+              <GameErrorBoundary>
+                <Label>
+                  Moment 2 aftermath landings — nine effect kinds plus archetype_drift_register.
+                  Each component takes the common animation props (delay, suppressPulseRing,
+                  onEffectLand, skipAnimation). Click "Replay" to re-trigger the animations.
+                  Sequencing scenarios at the bottom render via useEffectSequencing's lane
+                  assignment + discipline rules.
+                </Label>
+                <EffectRegistrationDemo />
+              </GameErrorBoundary>
+            </div>
+          </section>
+
           <div style={{ height: '4rem' }} />
         </div>
       </main>
@@ -964,6 +996,274 @@ function SamplePhoneticInspector() {
   return (
     <div style={{ border: '1px solid var(--border-subtle)', borderRadius: '4px', overflow: 'hidden' }}>
       <CulturePhoneticsInspector graph={graph} />
+    </div>
+  );
+}
+
+// ─── EffectRegistration demo (Phase D2) ────────────────────────────────────────
+
+const EFFECT_DEMO_FIXTURES = {
+  intelligence: {
+    label: 'CLUE · NEW',
+    name: "The trader's satchel is sewn shut from the inside.",
+    tail: 'eye · she will see it in him next time',
+  },
+  condition: {
+    label: 'CONDITION',
+    pillName: 'Sworn-witness',
+    qualifier: 'she has spoken what she saw',
+  },
+  reputationTally: {
+    castLabel: 'CAPTAIN VEIREN',
+    oldPhrase: 'wary, watching',
+    newPhrase: 'cooled, watching',
+    tail: 'iron · he marks her now',
+  },
+  reputationScore: {
+    groupLabel: 'CIVIC GUARD OF BREN',
+    oldBandWord: 'a quiet certainty',
+    newBandWord: 'a name they remember',
+    crossingNote: 'crossed: from useful to known',
+  },
+  encounterSeed: {
+    label: 'SEED · ELIGIBLE',
+    summary: 'A reckoning at the iron market.',
+    when: 'time · 3–7 turns from now · veiren-related',
+  },
+  hiddenMark: {
+    label: 'HIDDEN · ONLY YOU SEE THIS',
+    markName: 'Marked by coincidence',
+    descriptor: 'this scene becomes biographical',
+  },
+  recentEvent: {
+    label: 'INVOKED THIS BEAT',
+    summary: "She held the captain's eye and did not look away.",
+    tail: 'heart-related · 0 turns ago',
+  },
+  spawnArtifact: {
+    label: 'ITEM · NEW',
+    name: 'A pressed iron coin, warm.',
+    tail: 'matter · favor of the captain',
+  },
+  faction: {
+    factionName: 'CIVIC GUARD OF BREN',
+    oldTone: 'allied',
+    newTone: 'wary',
+    descriptor: 'order · because of what she said',
+  },
+  archetypeDrift: {
+    bandSphere: 'spirit' as const,
+    bandLabel: 'HEART · DRIFT',
+    oldPhrase: 'her deepest thread',
+    newPhrase: 'the thread she lives by',
+    dotChangeNote: '+1 dot · she is more this now',
+  },
+} as const;
+
+const SEQUENCING_SCENARIO_INPUTS: Readonly<Record<'one' | 'three' | 'six', readonly EffectInput[]>> = {
+  one: [{ id: 'demo-intel-0', kind: 'intelligence' }],
+  three: [
+    { id: 'demo-intel-0', kind: 'intelligence' },
+    { id: 'demo-tally-0', kind: 'reputation_tally' },
+    { id: 'demo-faction-0', kind: 'faction' },
+  ],
+  six: [
+    { id: 'demo-intel-0', kind: 'intelligence' },
+    { id: 'demo-spawn-0', kind: 'spawn_artifact' },
+    { id: 'demo-tally-0', kind: 'reputation_tally' },
+    { id: 'demo-score-0', kind: 'reputation_score' },
+    { id: 'demo-faction-0', kind: 'faction' },
+    { id: 'demo-recent-0', kind: 'recent_event' },
+  ],
+};
+
+function DemoTile({ title, where, children }: { title: string; where: string; children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        padding: '12px',
+        background: 'var(--bg-deep)',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: 6,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+        minHeight: 140,
+      }}
+    >
+      <div
+        style={{
+          fontSize: 10,
+          textTransform: 'uppercase',
+          letterSpacing: '0.12em',
+          color: 'var(--accent-gold-dim)',
+        }}
+      >
+        {title}
+      </div>
+      <div style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+        lands in: {where}
+      </div>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'flex-start' }}>{children}</div>
+    </div>
+  );
+}
+
+function EffectRegistrationDemo() {
+  const [replayKey, setReplayKey] = useState(0);
+  const [scenario, setScenario] = useState<'one' | 'three' | 'six'>('three');
+
+  const sequence = useMemo(
+    () => computeSequencedEffects(SEQUENCING_SCENARIO_INPUTS[scenario]),
+    [scenario],
+  );
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+      <Row gap={12}>
+        <button
+          type="button"
+          onClick={() => setReplayKey((k) => k + 1)}
+          style={{
+            padding: '6px 14px',
+            fontSize: 12,
+            background: 'var(--bg-raised)',
+            border: '1px solid var(--accent-gold-dim)',
+            color: 'var(--accent-gold)',
+            borderRadius: 6,
+            cursor: 'pointer',
+          }}
+        >
+          Replay all landings
+        </button>
+        <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>
+          replays: <strong>{replayKey}</strong>
+        </span>
+      </Row>
+
+      {/* Per-kind grid — each component renders standalone with its own delay so
+          the user can inspect every landing. Bumping replayKey re-mounts the grid. */}
+      <div
+        key={`grid-${replayKey}`}
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}
+      >
+        <DemoTile title="01 · INTELLIGENCE" where="Items rail · hero panel">
+          <IntelligenceLanding delay={0} data={EFFECT_DEMO_FIXTURES.intelligence} />
+        </DemoTile>
+        <DemoTile title="02 · CONDITION_ATTACHMENT" where="Disposition strip · hero panel">
+          <ConditionAttachmentLanding delay={120} data={EFFECT_DEMO_FIXTURES.condition} />
+        </DemoTile>
+        <DemoTile title="03 · REPUTATION_TALLY" where="Cast tile · right rail">
+          <ReputationTallyLanding delay={240} data={EFFECT_DEMO_FIXTURES.reputationTally} />
+        </DemoTile>
+        <DemoTile title="04 · REPUTATION_SCORE" where="Cast tile · prose band">
+          <ReputationScoreLanding delay={360} data={EFFECT_DEMO_FIXTURES.reputationScore} />
+        </DemoTile>
+        <DemoTile title="05 · ENCOUNTER_SEED" where='"Moments that could echo"'>
+          <EncounterSeedLanding delay={480} data={EFFECT_DEMO_FIXTURES.encounterSeed} />
+        </DemoTile>
+        <DemoTile title="06 · HIDDEN_MARK" where="Portrait · hero panel">
+          <HiddenMarkLanding delay={1200} data={EFFECT_DEMO_FIXTURES.hiddenMark} />
+        </DemoTile>
+        <DemoTile title="07 · RECENT_EVENT" where='"Moments that could echo"'>
+          <RecentEventLanding delay={720} data={EFFECT_DEMO_FIXTURES.recentEvent} />
+        </DemoTile>
+        <DemoTile title="08 · SPAWN_ARTIFACT" where="Items rail · hero panel">
+          <SpawnArtifactLanding delay={840} data={EFFECT_DEMO_FIXTURES.spawnArtifact} />
+        </DemoTile>
+        <DemoTile title="09 · FACTION" where="Scene state · right rail">
+          <FactionLanding delay={960} data={EFFECT_DEMO_FIXTURES.faction} />
+        </DemoTile>
+        <DemoTile title="10 · ARCHETYPE_DRIFT_REGISTER" where="Capability bands · hero panel">
+          <ArchetypeDriftLanding delay={1080} data={EFFECT_DEMO_FIXTURES.archetypeDrift} />
+        </DemoTile>
+      </div>
+
+      {/* Sequencing scenarios — useEffectSequencing computes lane assignments + delays. */}
+      <div style={{ marginTop: 12 }}>
+        <Row gap={8}>
+          <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Scenario:</span>
+          {(['one', 'three', 'six'] as const).map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => {
+                setScenario(s);
+                setReplayKey((k) => k + 1);
+              }}
+              style={{
+                padding: '4px 10px',
+                fontSize: 11,
+                background: scenario === s ? 'var(--accent-gold-dim)' : 'var(--bg-raised)',
+                border: '1px solid var(--border-subtle)',
+                color: scenario === s ? 'var(--bg-abyss)' : 'var(--text-primary)',
+                borderRadius: 4,
+                cursor: 'pointer',
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+              }}
+            >
+              {s} effect{s === 'one' ? '' : 's'}
+            </button>
+          ))}
+        </Row>
+        {sequence.gateLine ? (
+          <div
+            style={{
+              marginTop: 10,
+              padding: '6px 10px',
+              fontSize: 11,
+              fontStyle: 'italic',
+              color: 'var(--text-tertiary)',
+              background: 'var(--bg-deep)',
+              borderRadius: 4,
+              borderLeft: '2px solid var(--accent-gold-dim)',
+            }}
+          >
+            prose log gate-line: <em>{sequence.gateLine}</em>
+          </div>
+        ) : null}
+        <div
+          style={{
+            marginTop: 10,
+            padding: '12px',
+            background: 'var(--bg-deep)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: 6,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 10,
+          }}
+        >
+          <Label>
+            Lane / delay table — what useEffectSequencing assigns. Lower delay = earlier.
+          </Label>
+          <table style={{ width: '100%', fontSize: 11, color: 'var(--text-secondary)', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border-subtle)' }}>
+                <th style={{ padding: '4px 8px' }}>Order</th>
+                <th style={{ padding: '4px 8px' }}>Kind</th>
+                <th style={{ padding: '4px 8px' }}>Lane</th>
+                <th style={{ padding: '4px 8px' }}>Delay (ms)</th>
+                <th style={{ padding: '4px 8px' }}>Pulse?</th>
+                <th style={{ padding: '4px 8px' }}>Gated?</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sequence.sequenced.map((s) => (
+                <tr key={s.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                  <td style={{ padding: '4px 8px' }}>{s.order}</td>
+                  <td style={{ padding: '4px 8px', fontFamily: 'var(--font-mono, monospace)' }}>{s.kind}</td>
+                  <td style={{ padding: '4px 8px', fontFamily: 'var(--font-mono, monospace)' }}>{s.lane}</td>
+                  <td style={{ padding: '4px 8px' }}>{s.delay}</td>
+                  <td style={{ padding: '4px 8px' }}>{s.enablePulseRing ? '✓' : '—'}</td>
+                  <td style={{ padding: '4px 8px' }}>{s.gated ? 'second-breath' : '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
