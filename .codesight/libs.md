@@ -1519,6 +1519,34 @@
   - function makeAllAgentsFilename: (seed) => string
   - interface ExportOptions
 - `src\engine\encounterRuntime.ts` — function collectActiveEncounterRuntimeRefs: (state, 'encounterProgress' | 'unifiedActions'>) => ActiveEncounterRuntimeRef[], interface ActiveEncounterRuntimeRef
+- `src\engine\encounters\choiceResolution.ts` — function resolveEncounterChoice: (commit, prng) => void, interface ChoiceOutcome
+- `src\engine\encounters\driftAccumulator.ts`
+  - function applyDriftMagnitude: (drift, agentId, axisId, signedMagnitude, tick) => DriftApplicationResult
+  - function decayAllDrift: (drift, decayRate, tick) => ArchetypeDrift[]
+  - interface DriftApplicationResult
+- `src\engine\encounters\handFilter.ts`
+  - function filterAscendantHand: (deck, context) => AscendantHandPartition
+  - interface HandFilterPrereqReason
+  - interface HandFilterHiddenReason
+  - interface HandFilterPlayableEntry
+  - interface HandFilterDimmedEntry
+  - interface HandFilterHiddenEntry
+  - _...5 more_
+- `src\engine\encounters\itemConsumption.ts`
+  - function consumeItemForChoice: (graph, agentId, itemId, ctx) => ItemConsumptionResult
+  - interface ItemConsumptionContext
+  - interface ItemConsumptionResult
+- `src\engine\encounters\outcomeForecast.ts`
+  - function classifyForecastTier: (probability) => ForecastTier
+  - function computeForecast: (beat, input) => OutcomeForecast
+  - interface ForecastModifier
+  - interface ForecastBeatInput
+  - interface ForecastComputationInput
+  - interface OutcomeForecast
+- `src\engine\encounters\placeGating.ts`
+  - function evaluatePlaceGate: (template, context) => PlaceGateResult
+  - interface PlaceGateContext
+  - interface PlaceGateResult
 - `src\engine\encounterScoring.ts`
   - function computeResonance: (hexAffinity, encounterSphere) => number
   - function computeEncounterResonance: (encounterSphere, fundament) => number
@@ -1807,6 +1835,9 @@
   - function assignFactionsToExistingNpcs: (graph, locationFactionMap, string[]>) => void
   - interface NpcSeededTrace
   - interface SeedNpcsResult
+- `src\engine\orchestrator\phaseAscendantHandFilter.ts` — function phaseAscendantHandFilter: (state, deckOverride?) => AscendantHandFilterPhaseStats, interface AscendantHandFilterPhaseStats
+- `src\engine\orchestrator\phaseChoiceResolution.ts` — function phaseChoiceResolution: (state, prng) => void, interface ChoiceResolutionPhaseResult
+- `src\engine\orchestrator\phaseDriftDecay.ts` — function phaseDriftDecay: (state) => DriftDecayPhaseResult, interface DriftDecayPhaseResult
 - `src\engine\orchestrator.ts`
   - function resetDecisionCache: () => void
   - function getEncounterCacheManager: () => EncounterCacheManager | null
@@ -2465,6 +2496,7 @@
   - function successRate: (m) => number
   - function critRate: (m) => number
   - _...7 more_
+- `src\hooks\useDetailModal.ts` — function useDetailModal: () => void
 - `src\hooks\useLastViewedTick.ts` — function useLastViewedTick: () => void
 - `src\lib\hexGrouping.ts` — function groupByHex: (items, sortKey?, b) => void
 - `src\lib\hexKey.ts`

@@ -2,7 +2,7 @@
 
 > **Living document.** Every design plan must include a wiring section that maps new modules to entries on this checklist. Every implementation must verify all listed connections before marking work complete. Maintaining this checklist is part of the Definition of Done for both design and implementation phases.
 >
-> **Last updated:** 2026-05-08 (THR-289 — Added UL Interactive Dashboard reference surface at `?view=ul`). Previous: 2026-05-07 (THR-326 — Added regional detection-pressure phase wiring + DebugPanel detection inspector surface). Previous: 2026-04-29 (THR-109 — Added branch-aware aftermath selection surface (`BranchAwareAftermathConfig` / `resolveAftermathVariant`). Previous: 2026-04-19 THR-174 viewport audit.)
+> **Last updated:** 2026-05-08 (THR-266 — Added UI Pillar Verification section). Previous: 2026-05-08 (THR-289 — Added UL Interactive Dashboard reference surface at `?view=ul`). Previous: 2026-05-07 (THR-326 — Added regional detection-pressure phase wiring + DebugPanel detection inspector surface). Previous: 2026-04-29 (THR-109 — Added branch-aware aftermath selection surface (`BranchAwareAftermathConfig` / `resolveAftermathVariant`). Previous: 2026-04-19 THR-174 viewport audit.)
 
 ---
 
@@ -496,6 +496,39 @@ Every player-facing modal or overlay must appear in the GameView JSX return bloc
 | `EncounterVignetteModal` | ✅ Rendered in JSX (TB-035 Phase 4) |
 
 **Verification:** For each modal/overlay in your feature, confirm `<ComponentName` appears in the JSX return block of GameView (not just in the imports).
+
+## UI Pillar Verification (THR-266, 2026-05-08)
+
+A UI surface that compiles + passes snapshot tests can still ship invisibly broken — off-viewport at 1920×1080, z-index buried, console-error spammy, or rendering nothing on a WebGL canvas Playwright cannot see. This section names the tool-of-record per surface category and the closeout artifact required for sign-off.
+
+### Tool-of-record by surface category
+
+| Surface category | Verification tool | Why |
+|------------------|-------------------|-----|
+| DOM components (panels, modals, lists, forms) | Playwright (`mcp__playwright__*`) | Fast, scriptable, reads accessibility tree; sees DOM truth. |
+| HexMapV2 / Three.js / any `<canvas>` content | Claude-in-Chrome (`mcp__Claude_in_Chrome__*`) | Playwright snapshots render `<canvas>` as a blank box. Chrome MCP `computer` `action: "screenshot"` captures actual pixels. |
+| Mixed (DOM + canvas) | Both, in this order: Chrome MCP for canvas pixels, Playwright for console + DOM-side state | Don't paper over a canvas regression by only checking the surrounding DOM. |
+| State introspection / agent-driven flows | `window.__DEBUG.*` (see CLAUDE.md §Debug Bridge) | Direct read of game state without UI traversal. Required to assert "the wiring works", not just "the page renders". |
+
+### Closeout artifact contract
+
+Every UI-pillar PR (or completion Linear comment) embeds the following three pieces, in this order:
+
+1. **Screenshot** — at 1920×1080 (preview_resize(1920, 1080) for Playwright; `mcp__Claude_in_Chrome__resize_window` for Chrome MCP). Pass `save_to_disk: true` and link the resulting file, or paste the inline image.
+2. **Console output** — errors + warnings, filtered. Empty output is valid; state `(no errors or warnings)`.
+3. **`__DEBUG` assertion** — one or more queries proving the new state field, derived value, or trace category is reachable.
+
+The artifact lives in either the closing commit body or the Linear completion comment. Snapshot test coverage *complements* the artifact; it does not replace it.
+
+### Exemption clause
+
+Types-only refactors or render-pure pruning verified by snapshot + typecheck may opt out by stating `Browser-verify exempt: <reason>` in the commit body. The reviewer is responsible for confirming the exemption holds.
+
+### Examples
+
+- **DOM-only example (encounter choice card prop change).** Run `preview_resize(1920, 1080)` → `preview_screenshot` of EncounterScreen. `browser_console_messages` filtered to errors. `window.__DEBUG.gotoAgent('Eira')` to confirm the choice card mounts on the threaded agent. Three artifacts in commit body.
+- **Canvas example (HexMapV2 signifier change).** `mcp__Claude_in_Chrome__resize_window(1920, 1080)` → `tabs_create_mcp` → `navigate('http://localhost:5173/?view=game&seeded&size=medium')` → `computer({ action: 'screenshot', save_to_disk: true })`. `read_console_messages` filtered. `window.__DEBUG.gotoAgent(...)` to confirm camera move. Playwright is *not* used because canvas content would render blank.
+- **Mixed example (encounter UI Phase D1 ThreadOverlay).** Chrome MCP screenshot for the SVG overlay over the canvas + Playwright `browser_console_messages` for state. `window.__DEBUG.fireAction(...)` to confirm trigger.
 
 ### 3. GameState Consumption (`src/types/gameState.ts` → UI components)
 
