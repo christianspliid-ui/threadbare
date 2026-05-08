@@ -68,6 +68,31 @@ function renderAtDepth(n: number) {
   return pages;
 }
 
+function renderAtDepthInViewport(n: number, width: number, height: number) {
+  const pages = Array.from({ length: n }, (_, i) =>
+    makePage({ displayName: `Page ${i + 1}` }),
+  );
+
+  function Controller() {
+    const { push } = useDetailStack();
+    return (
+      <button data-testid="push-all" onClick={() => pages.forEach(p => push(p))}>
+        push all
+      </button>
+    );
+  }
+
+  render(
+    <div style={{ width, height }}>
+      <Wrapper>
+        <Controller />
+      </Wrapper>
+    </div>,
+  );
+  fireEvent.click(screen.getByTestId('push-all'));
+  return pages;
+}
+
 // ─── Depth 1 ──────────────────────────────────────────────────────────────────
 
 describe('DetailModal — depth 1', () => {
@@ -79,6 +104,11 @@ describe('DetailModal — depth 1', () => {
   it('snapshot: depth 1', () => {
     renderAtDepth(1);
     expect(document.body).toMatchSnapshot('detail-modal-depth-1');
+  });
+
+  it('snapshot: depth 1 at 2560x1440 sample viewport', () => {
+    renderAtDepthInViewport(1, 2560, 1440);
+    expect(document.body).toMatchSnapshot('detail-modal-2560x1440');
   });
 
   it('shows display name in the panel header', () => {

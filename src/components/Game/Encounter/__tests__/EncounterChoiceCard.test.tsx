@@ -74,11 +74,36 @@ describe('EncounterChoiceCard', () => {
     ).toHaveTextContent('consumes: captain-token');
   });
 
-  it('matches the snapshot for a fully-populated choice in a 1920x1080 container', () => {
-    const { asFragment } = renderInViewport(
+  it('matches snapshots for full, selected, dimmed, and no-consume variants in a 1920x1080 container', () => {
+    const { asFragment, rerender } = renderInViewport(
       <EncounterChoiceCard choice={sampleChoice} selected={false} dimmed={false} />,
     );
-    expect(asFragment()).toMatchSnapshot();
+    expect(asFragment()).toMatchSnapshot('default');
+
+    rerender(
+      <div style={{ width: 1920, height: 1080 }}>
+        <EncounterChoiceCard choice={sampleChoice} selected dimmed={false} />
+      </div>,
+    );
+    expect(asFragment()).toMatchSnapshot('selected');
+
+    rerender(
+      <div style={{ width: 1920, height: 1080 }}>
+        <EncounterChoiceCard choice={sampleChoice} selected={false} dimmed />
+      </div>,
+    );
+    expect(asFragment()).toMatchSnapshot('dimmed');
+
+    rerender(
+      <div style={{ width: 1920, height: 1080 }}>
+        <EncounterChoiceCard
+          choice={{ ...sampleChoice, consumes_item: null }}
+          selected={false}
+          dimmed={false}
+        />
+      </div>,
+    );
+    expect(asFragment()).toMatchSnapshot('consumes-null');
   });
 
   it('activates onSelect via Enter and Space keypresses', () => {

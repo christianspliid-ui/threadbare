@@ -35,13 +35,15 @@ describe('OutcomeForecastBand', () => {
     },
   );
 
-  it('matches the snapshot at each tier in a 1920x1080 container', () => {
-    const probabilities: number[] = [0.1, 0.3, 0.5, 0.7, 0.9];
+  it('matches the snapshot at each tier plus placeholder state in a 1920x1080 container', () => {
+    const probabilities: Array<number | null> = [0.1, 0.3, 0.5, 0.7, 0.9, null];
     for (const p of probabilities) {
       const { asFragment, unmount } = renderInViewport(
         <OutcomeForecastBand successProbability={p} factors={factors} />,
       );
-      expect(asFragment()).toMatchSnapshot(`tier-${p}`);
+      expect(asFragment()).toMatchSnapshot(
+        p === null ? 'tier-placeholder-null' : `tier-${p}`,
+      );
       unmount();
     }
   });
