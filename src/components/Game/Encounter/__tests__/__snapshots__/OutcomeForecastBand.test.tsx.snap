@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`OutcomeForecastBand > matches the snapshot at each tier in a 1920x1080 container > tier-0.1 1`] = `
+exports[`OutcomeForecastBand > matches the snapshot at each tier plus placeholder state in a 1920x1080 container > tier-0.1 1`] = `
 <DocumentFragment>
   <div
     style="width: 1920px; height: 1080px;"
@@ -30,7 +30,7 @@ exports[`OutcomeForecastBand > matches the snapshot at each tier in a 1920x1080 
 </DocumentFragment>
 `;
 
-exports[`OutcomeForecastBand > matches the snapshot at each tier in a 1920x1080 container > tier-0.3 1`] = `
+exports[`OutcomeForecastBand > matches the snapshot at each tier plus placeholder state in a 1920x1080 container > tier-0.3 1`] = `
 <DocumentFragment>
   <div
     style="width: 1920px; height: 1080px;"
@@ -60,7 +60,7 @@ exports[`OutcomeForecastBand > matches the snapshot at each tier in a 1920x1080 
 </DocumentFragment>
 `;
 
-exports[`OutcomeForecastBand > matches the snapshot at each tier in a 1920x1080 container > tier-0.5 1`] = `
+exports[`OutcomeForecastBand > matches the snapshot at each tier plus placeholder state in a 1920x1080 container > tier-0.5 1`] = `
 <DocumentFragment>
   <div
     style="width: 1920px; height: 1080px;"
@@ -90,7 +90,7 @@ exports[`OutcomeForecastBand > matches the snapshot at each tier in a 1920x1080 
 </DocumentFragment>
 `;
 
-exports[`OutcomeForecastBand > matches the snapshot at each tier in a 1920x1080 container > tier-0.7 1`] = `
+exports[`OutcomeForecastBand > matches the snapshot at each tier plus placeholder state in a 1920x1080 container > tier-0.7 1`] = `
 <DocumentFragment>
   <div
     style="width: 1920px; height: 1080px;"
@@ -120,7 +120,7 @@ exports[`OutcomeForecastBand > matches the snapshot at each tier in a 1920x1080 
 </DocumentFragment>
 `;
 
-exports[`OutcomeForecastBand > matches the snapshot at each tier in a 1920x1080 container > tier-0.9 1`] = `
+exports[`OutcomeForecastBand > matches the snapshot at each tier plus placeholder state in a 1920x1080 container > tier-0.9 1`] = `
 <DocumentFragment>
   <div
     style="width: 1920px; height: 1080px;"
@@ -145,6 +145,27 @@ exports[`OutcomeForecastBand > matches the snapshot at each tier in a 1920x1080 
           the captain remembers her name
         </li>
       </ul>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`OutcomeForecastBand > matches the snapshot at each tier plus placeholder state in a 1920x1080 container > tier-placeholder-null 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <div
+      data-testid="encounter-outcome-forecast-band"
+      data-tier="unknown"
+      style="display: flex; flex-direction: column; gap: 4px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-raised);"
+    >
+      <div
+        data-testid="encounter-outcome-forecast-factors"
+        style="color: var(--text-tertiary); font-size: 12px; font-style: italic; line-height: 1.4;"
+      >
+        the threads are still gathering
+      </div>
     </div>
   </div>
 </DocumentFragment>
