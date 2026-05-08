@@ -528,6 +528,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     const retinueIds = new Set(
       getRetinueAgents(gameState.graph, gameState.ascendantId).map(r => r.id)
     );
+    const threadedAgentIds = new Set(
+      gameState.graph.getOutgoingEdges(gameState.ascendantId, 'thread').map(e => e.target)
+    );
     const result: AgentRenderData[] = [];
     for (let i = 0; i < actors.length; i++) {
       const n = actors[i];
@@ -543,6 +546,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         const commandedByEdges = gameState.graph.getIncomingEdges(n.id, 'commanded_by');
         const tier = n.properties.spotlightTier as SpotlightTier | undefined;
         if (!shouldRenderIndividualOnHexMap(tier, commandedByEdges.length)) continue;
+        // Only the avatar and agents threaded by the ascendant appear on the map.
+        if (n.id !== avatarNodeId && !threadedAgentIds.has(n.id)) continue;
       }
       let hexCol = n.properties.hexCol as number | undefined;
       let hexRow = n.properties.hexRow as number | undefined;

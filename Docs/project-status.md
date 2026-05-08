@@ -20,7 +20,7 @@
 - THR-322/321/320/315/309/307/308/306/302/305/301/299/298/297/296/294/282/238/109/79/108/107/104/103/106/290/102/280/285/286/283/287/276/284/277/281/211/243/272/212/210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
 - 2026-05-06 batch: THR-311, THR-312, THR-313, THR-314, THR-315, THR-316, THR-317, THR-320, THR-321, THR-322, THR-323, THR-336
 - 2026-05-07 batch: THR-324, THR-325, THR-329, THR-339, THR-340, THR-341, THR-349, THR-350, THR-354, THR-355, THR-356, THR-357, THR-358, THR-359
-- 2026-05-08 batch: THR-139, THR-176, THR-177, THR-178, THR-179, THR-265, THR-266, THR-289, THR-292, THR-326, THR-330, THR-331, THR-332, THR-333, THR-334, THR-335, THR-338, THR-343, THR-344, THR-345, THR-352, THR-353, THR-360, THR-361, THR-362, THR-363, THR-368
+- 2026-05-08 batch: THR-139, THR-176, THR-177, THR-178, THR-179, THR-215, THR-265, THR-266, THR-267, THR-289, THR-292, THR-326, THR-330, THR-331, THR-332, THR-333, THR-334, THR-335, THR-338, THR-343, THR-344, THR-345, THR-352, THR-353, THR-360, THR-361, THR-362, THR-363, THR-365, THR-368, THR-374, THR-387
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
@@ -35,3 +35,4 @@ Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Compl
 - ✅ 2026-05-08: THR-215 shipped — durable weekly-memory-grooming trigger active (`3 16 * * 0`), CLAUDE scheduled-task registry updated, and external weekly-memory-grooming SKILL aligned to current Cowork/CC/Codex memory paths with fail-soft missing-path behavior.
 - ✅ 2026-05-08: THR-374 shipped — Encounter UI G2.1b D2 snapshot suite tightened to exact handoff contract (10 EffectRegistration components at 1920×1080 with canonical titles/fixtures); verification trio green and `useEffectSequencing` hook tests confirmed present.
 - ✅ 2026-05-08: THR-267 shipped — CLAUDE pre-commit checklist now requires a deterministic 30-tick CLI smoke for engine-touching changes (`tick 30` + `status`) and explicit status-output evidence at closeout.
+- ✅ 2026-05-08: THR-387 shipped — hex map now only shows agents with a thread edge from the ascendant (or the avatar); non-threaded notable/spotlight NPCs are filtered in the agentRenderData useMemo in GameView.tsx.
