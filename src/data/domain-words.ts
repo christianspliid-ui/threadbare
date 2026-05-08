@@ -41,8 +41,7 @@ export const DOMAIN_WORD_SCALES: Record<ReachDomain, [string, string, string, st
 
   // Star: fate and navigation
   star: ['Lost', 'Guided', 'Fated', 'Destined', 'Cosmic'],
-  // Flesh reach removed (TB-075 Phase 1) — domain word scale preserved as comment for Quintessence lexicon in Plan 02:
-  // flesh: ['Frail', 'Hardy', 'Resilient', 'Enduring', 'Undying'],
+  // Flesh removed (TB-075 Phase 1, 2026-03-28). See Docs/canon/cosmology.md for Quintessence canon.
 };
 
 /**

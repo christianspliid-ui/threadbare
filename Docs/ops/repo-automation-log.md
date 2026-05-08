@@ -144,3 +144,4 @@
 - **work** | THR-362 shipped: extracted shared encounter-contract builder + migrated 11 faction encounter modules (encounter/social arrays) to encoded contract metadata with migration smoke test (2026-05-07T23:15+02:00)
 - **work** | THR-344 shipped: completed Encounter UI G2 snapshot hardening (1920x1080 fixture additions, new EiraHeroPanel/CapabilityStrip/EncounterScreen layout snapshot suites, 2560x1440 samples for EncounterScreen + DetailModal) and created THR-364 follow-up for deferred C4/D1/D2 snapshot coverage (2026-05-08T02:10+02:00)
 - 2026-05-08T03.13.16+02:00 | THR-345 | shipped content lint gate (R1-R5), fixtures/tests, npm script + CI wiring; verification: lint script, npm test, tsc, vite build.
+- **work** | THR-360 shipped: completed Bucket 0 source-code cleanup (removed stale `flesh` from quest hook set, StyleGuide/AgentDots fixtures, and domain-words comment residue) with full verification trio green (2026-05-08T06:08+02:00)
