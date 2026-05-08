@@ -20,16 +20,23 @@ All encounters now use `UnifiedActionTemplate`. `EncounterTemplate` was removed 
 
 **This skill is NOT for branching encounters** (the hand-authored `ActionStepBranch` format in `src/data/encounters/`). Those use the `encounter-pipeline` skill.
 
+## Step 0 — Canon-First Pre-Read
+
+Before any other reference, read `Docs/canon/encounters.md`. It is the live navigation layer for this domain — it lists the current spec pointers, rejected approaches, and active design plans. Linked targets are authoritative; this skill follows the Canon page's pointers, not parallel ones.
+
+If the Canon page disagrees with this skill, the Canon page wins until this skill is rewritten. File a `drift-scan`-labeled Linear issue when you see disagreement.
+
 ---
 
 ## Before You Write a Single Word
 
 Read these in order. Skipping any of them produces content that fails the quality bar:
 
-1. **`Docs/plans/2026-04-16-systemic-wiring-guide.md`** — The engine capabilities that should shape your creative decisions. If you don't know what encounter seeds, hidden marks, and conditional blocks can do, you'll write hardcoded fiction.
-2. **`Docs/plans/2026-04-16-design-quality-gate.md`** — Section 9 benchmark moments. Your output must meet this standard.
-3. **The file you're working on** — Read the current template to understand the TypeScript structure, step count, reaches, difficulty curve, and reward pools.
-4. **One benchmark encounter** — Read `src/data/encounters/soul-ferryman.ts` or `src/data/borderland-encounter-content.ts` (top entry) to calibrate the quality standard.
+1. **`Docs/canon/encounters.md`** — Canon Step-0 entrypoint for encounter authoring. Read this first.
+2. **`Docs/plans/2026-04-16-systemic-wiring-guide.md`** — The engine capabilities that should shape your creative decisions. If you don't know what encounter seeds, hidden marks, and conditional blocks can do, you'll write hardcoded fiction.
+3. **`Docs/plans/2026-04-16-design-quality-gate.md`** — Section 9 benchmark moments. Your output must meet this standard.
+4. **The file you're working on** — Read the current template to understand the TypeScript structure, step count, reaches, difficulty curve, and reward pools.
+5. **One benchmark encounter** — Read `src/data/encounters/soul-ferryman.ts` or `src/data/borderland-encounter-content.ts` (top entry) to calibrate the quality standard.
 
 ---
 
