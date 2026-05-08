@@ -422,25 +422,14 @@ create_scheduled_task(
 
 ### Scheduled Tasks
 
-All recurring tasks. To register a new task (must be done from an **interactive CC session**, not a scheduled-task session):
+Current recurring task registry:
 
 | Task | Cadence | Purpose | Status |
 |------|---------|---------|--------|
 | `flush-plan-docs` | Hourly at :15 | Commit `plan-pending-commit`-labeled plan docs to `origin/main` | Active |
 | Weekly drift scan | Friday 14:00 UTC | GitHub Action — drift signals → Linear `drift-scan` issues | Active (GitHub Action) |
-| `weekly-retro` | Friday ~15:00 UTC | Weekly retrospective from drift-scan issues + impediments log | Register if not active |
-| `weekly-memory-grooming` | Sunday ~21:00 local | Memory consolidation across Cowork / CC / Codex memory dirs | Register if not active |
-
-To register `weekly-memory-grooming` (run once in an interactive CC session):
-```
-create_scheduled_task(
-  taskId: "weekly-memory-grooming",
-  description: "Groom Cowork / CC / Codex memory files via consolidate-memory skill (Sunday evening local)",
-  cronExpression: "3 21 * * 0",  // Sunday 21:03 local time — adjust to preferred Sunday-evening slot
-  prompt: "Run the weekly-memory-grooming skill: use the Skill tool with skill 'weekly-memory-grooming' and follow it. Execute autonomously."
-)
-```
-The SKILL.md for this task lives at `C:\Users\chris\.claude\scheduled-tasks\weekly-memory-grooming\SKILL.md` (already created — only the cron registration remains).
+| `weekly-retro` | Friday ~15:00 UTC | Weekly retrospective from drift-scan issues + impediments log | Active |
+| `weekly-memory-grooming` | Sunday 16:03 UTC (18:03 Europe/Copenhagen on 2026-05-08) | Consolidate Cowork / CC / Codex memory files | Active |
 
 ## Skill Tree Layout
 
