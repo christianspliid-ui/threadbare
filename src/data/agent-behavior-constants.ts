@@ -812,3 +812,40 @@ export const INTEL_SCORING_BONUS = 0.25;
  * @range -0.20–-0.05
  */
 export const INTEL_DIFFICULTY_BONUS = -0.10;
+
+// ═══════════════════════════════════════════════════════════════════
+// INTELLIGENCE — Authored "intel paid off" chronicle prose (THR-139)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Default TickEvent significance for an `intel_referenced_prose` aftermath
+ * effect when the matched record's reliability band is `reliable`. Authors can
+ * override per-effect via the `significance` field.
+ * @range 0.2–0.8
+ */
+export const INTEL_REFERENCED_PROSE_SIGNIFICANCE_RELIABLE = 0.6;
+
+/**
+ * Default TickEvent significance for `intel_referenced_prose` when the matched
+ * record's reliability band is `uncertain`. Lower than reliable so uncertain
+ * lines don't crowd the chronicle.
+ * @range 0.2–0.8
+ */
+export const INTEL_REFERENCED_PROSE_SIGNIFICANCE_UNCERTAIN = 0.45;
+
+/**
+ * Default TickEvent significance for `intel_referenced_prose` when the matched
+ * record's reliability band is `dubious`. Lowest of the three so dubious lines
+ * stay visible but easy to miss — narrative effect, not loud chronicle event.
+ * @range 0.2–0.8
+ */
+export const INTEL_REFERENCED_PROSE_SIGNIFICANCE_DUBIOUS = 0.3;
+
+/**
+ * Master suppress switch for the dubious band of `intel_referenced_prose`.
+ * v1 default = true so dubious intel produces a hedged chronicle line ("a
+ * half-remembered rumor suggested..."). Flip to false to suppress dubious
+ * lines entirely if playtesting shows they produce too much noise.
+ * @range bool
+ */
+export const INTEL_REFERENCED_PROSE_DUBIOUS_FIRES = true;

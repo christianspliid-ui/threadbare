@@ -50,6 +50,18 @@ import { generateSecret, createSecretEdge, createFavorEdge } from './secretGener
 import { spawnClueFromEvent, findAnyRuinId } from './ruins/clueLifecycle';
 import { applyFactionReputationGain } from './factionReputation';
 import { REACH_DOMAINS } from '../types/traits';
+import {
+  findIntelReferencedProseMatch,
+  pickIntelReferencedProseLine,
+  reliabilityDescriptor,
+  emitIntelligenceReferenced,
+} from './intelligence';
+import {
+  INTEL_REFERENCED_PROSE_SIGNIFICANCE_RELIABLE,
+  INTEL_REFERENCED_PROSE_SIGNIFICANCE_UNCERTAIN,
+  INTEL_REFERENCED_PROSE_SIGNIFICANCE_DUBIOUS,
+  INTEL_REFERENCED_PROSE_DUBIOUS_FIRES,
+} from '../data/agent-behavior-constants';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -965,6 +977,109 @@ export function applyEncounterAftermathReaction(
           targetRegion: effect.targetRegion,
           targetEntityId: effect.targetEntityId,
           summary: `Intelligence granted: "${effect.label}" to ${agentId} (reliability ${record.reliability.toFixed(2)})`,
+        });
+        break;
+      }
+
+      case 'intel_referenced_prose': {
+        // THR-139 — Authored "the intel paid off" chronicle line.
+        // Reads (does not consume) intelligence records of `effect.category`
+        // matching the action's encounter context. Most-recent record wins.
+        // Reliability band picks reliable / uncertain / dubious prose variant.
+        const targetAgentId = effect.targetAgentId
+          ?? (target.kind === 'agent' ? target.id : actorAgentId);
+        if (!targetAgentId) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'intel_referenced_prose',
+            effectDetail: { category: effect.category },
+            success: false, failReason: 'no_target_agent',
+            effectiveTargetId: '', effectiveTargetKind: 'actor_fallback',
+            summary: `intel_referenced_prose[${i}] skipped: no target agent`,
+          });
+          break;
+        }
+
+        const matched = findIntelReferencedProseMatch(state, targetAgentId, effect.category, action);
+        if (!matched) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'intel_referenced_prose',
+            effectDetail: { category: effect.category, targetAgentId },
+            success: false, failReason: 'no_matching_record',
+            effectiveTargetId: targetAgentId, effectiveTargetKind: 'agent',
+            summary: `intel_referenced_prose[${i}] no-op: ${targetAgentId} has no actionable ${effect.category} record for ${encounterId}`,
+          });
+          break;
+        }
+
+        const band = reliabilityDescriptor(matched.reliability);
+        if (band === 'dubious' && !INTEL_REFERENCED_PROSE_DUBIOUS_FIRES) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'intel_referenced_prose',
+            effectDetail: { category: effect.category, recordId: matched.recordId, band, targetAgentId },
+            success: false, failReason: 'skipped_dubious',
+            effectiveTargetId: targetAgentId, effectiveTargetKind: 'agent',
+            summary: `intel_referenced_prose[${i}] skipped: dubious-band suppressed by INTEL_REFERENCED_PROSE_DUBIOUS_FIRES`,
+          });
+          break;
+        }
+
+        const proseLine = pickIntelReferencedProseLine(effect.prose, band);
+        if (!proseLine) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'intel_referenced_prose',
+            effectDetail: { category: effect.category, recordId: matched.recordId, band, targetAgentId },
+            success: false, failReason: 'skipped_empty_prose',
+            effectiveTargetId: targetAgentId, effectiveTargetKind: 'agent',
+            summary: `intel_referenced_prose[${i}] skipped: empty prose for ${band} band`,
+          });
+          break;
+        }
+
+        const significance = effect.significance
+          ?? (band === 'reliable' ? INTEL_REFERENCED_PROSE_SIGNIFICANCE_RELIABLE
+            : band === 'uncertain' ? INTEL_REFERENCED_PROSE_SIGNIFICANCE_UNCERTAIN
+              : INTEL_REFERENCED_PROSE_SIGNIFICANCE_DUBIOUS);
+
+        const event: TickEvent = {
+          id: `enc_after_${reaction.id}_${tick}_${nextRecentEvents.length}`,
+          tick,
+          type: 'narrative',
+          message: proseLine,
+          significance,
+          actorId: targetAgentId,
+          encounterId,
+        };
+        nextRecentEvents = appendRecentEvent(nextRecentEvents, event);
+        nextTickEvents = [...nextTickEvents, event];
+
+        emitIntelligenceReferenced(tick, targetAgentId, matched.recordId, 'aftermath_prose', {
+          templateId: action?.templateId,
+          intelCategory: matched.category,
+        });
+
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'intel_referenced_prose',
+          effectDetail: {
+            category: effect.category,
+            recordId: matched.recordId,
+            band,
+            significance,
+            targetAgentId,
+            eventId: event.id,
+          },
+          success: true,
+          effectiveTargetId: targetAgentId, effectiveTargetKind: 'agent',
+          summary: `intel_referenced_prose[${i}]: ${targetAgentId} ${effect.category}/${band} → "${proseLine.slice(0, 60)}${proseLine.length > 60 ? '…' : ''}"`,
         });
         break;
       }

@@ -1227,10 +1227,10 @@ export interface IntelligenceReferencedTrace extends TraceBase {
   recordId: string;
   agentId: string;
   /** Where the reference happened. */
-  referencedBy: 'scoring_boost' | 'prose_enrichment' | 'resolution_match' | 'difficulty_modifier';
-  /** Optional: templateId of the encounter involved (scoring/resolution only). */
+  referencedBy: 'scoring_boost' | 'prose_enrichment' | 'resolution_match' | 'difficulty_modifier' | 'aftermath_prose';
+  /** Optional: templateId of the encounter involved (scoring / resolution / aftermath_prose). */
   templateId?: string;
-  /** Optional: intelligence category (prose_enrichment only). */
+  /** Optional: intelligence category (prose_enrichment / aftermath_prose). */
   intelCategory?: string;
 }
 

@@ -1047,6 +1047,18 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                   'Useful if the object surfaces later under different circumstances.',
                 reliability: 0.8,
               },
+              {
+                // THR-139 pilot: when the actor returns to a related agent_network
+                // encounter, surface a chronicle line referencing what they already know
+                // about the network in this place.
+                kind: 'intel_referenced_prose',
+                category: 'agent_network',
+                prose: {
+                  reliable: '{name} moved through the introductions with the surety of someone who had already drawn the map of who knew whom.',
+                  uncertain: '{name} worked the introductions partly from memory, partly from the room\'s rhythm — what the dossier missed, the conversation supplied.',
+                  dubious: '{name} reached for the contacts the rumor had named, and reached past them — the network had reformed around different centers, and the old map ended in dead corners.',
+                },
+              },
               { kind: 'reputation_tally', key: 'ac.enchantment_craft', delta: 1 },
             ],
             closeAfterSelection: true,

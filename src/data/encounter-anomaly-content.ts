@@ -408,6 +408,18 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                   'The grove responds to patient, attentive approach. Urgency closes it.',
                 reliability: 0.85,
               },
+              {
+                // THR-139 pilot: returning to anomalous cultural sites surfaces what
+                // {name} already learned about the practice — useful when the grove
+                // remembers, hollow when it doesn't.
+                kind: 'intel_referenced_prose',
+                category: 'cultural_knowledge',
+                prose: {
+                  reliable: '{name} read the working with the unhurried recognition of someone who had seen its bones before — the lore came back, exactly as remembered.',
+                  uncertain: '{name} works half from instinct, half from a half-recalled fragment — the lore returned in pieces, but enough pieces lined up to carry the working.',
+                  dubious: '{name} reached for the lore they thought they knew. What surfaced was older, and stranger, and not quite what was expected.',
+                },
+              },
             ],
             closeAfterSelection: true,
           },

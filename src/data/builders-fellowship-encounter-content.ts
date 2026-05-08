@@ -161,6 +161,18 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
                   'defect, not frost alone — adjacent sections may have the same condition.',
                 reliability: 0.75,
               },
+              {
+                // THR-139 pilot: a builder returning to a politically-charged repair
+                // surfaces what they already know about hidden faults — leverage if
+                // the alignments hold, embarrassment if the secret has gone public.
+                kind: 'intel_referenced_prose',
+                category: 'political_secret',
+                prose: {
+                  reliable: '{name} read the gathering\'s hidden currents with the unhurried precision of someone who already knew which faction was bargaining and which was pretending.',
+                  uncertain: '{name} carried a partial map of who feared whom in {location} — the names were right, the urgency had shifted, and the leverage moved accordingly.',
+                  dubious: '{name} pressed where the briefing said pressing would yield, and the room laughed quietly — the secret had aged into a story everyone now told.',
+                },
+              },
             ],
             closeAfterSelection: true,
           },
