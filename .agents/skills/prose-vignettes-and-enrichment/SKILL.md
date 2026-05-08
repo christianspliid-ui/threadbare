@@ -9,6 +9,7 @@ description: >
   "backstory", "encounter history", "biography", "forecast tier",
   "prose enrichment", "{name}", "{artifact}", "{ally}", "conditional block".
 model: opus
+last_validated_against: 2026-05-08
 ---
 
 # Prose Vignettes & Enrichment — Dynamic Prose Systems

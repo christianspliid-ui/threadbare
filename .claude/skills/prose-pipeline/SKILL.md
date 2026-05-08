@@ -13,6 +13,7 @@ description: >
   "prose composer", "prose pipeline", "prose architecture", "graph-walking",
   "resolver registry".
 model: opus
+last_validated_against: 2026-05-08
 ---
 
 # Prose Pipeline — Resolver Architecture Guide

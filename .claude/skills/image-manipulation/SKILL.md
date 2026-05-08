@@ -2,6 +2,7 @@
 name: image-manipulation
 description: |
   Techniques for manipulating images with Python Pillow — clipping to shapes (hexagons, circles, polygons), creating and applying alpha masks, layer compositing, and validating transparency. Use this skill whenever a task involves cutting an image to a non-rectangular shape, removing backgrounds, applying clipping masks, compositing layers, working with alpha channels, or verifying that image transparency is correct. Also trigger when the user mentions hex tiles, hexagonal cropping, polygon masking, transparent backgrounds, alpha compositing, or layer-based image editing. If the task involves programmatic image manipulation beyond simple resize/crop, this skill likely applies.
+last_validated_against: 2026-05-08
 ---
 
 # Image Manipulation with Pillow

@@ -431,6 +431,8 @@ The repo has two skill directories; they serve different agents and do NOT have 
 
 **Shared skills (used by both audiences) exist in both trees.** Drift between copies is enforced by the THR-192 pre-commit hook that checks `.claude/skills/` ↔ `.agents/skills/` for any skill name present in both. `.claude/` is canonical for shared skills — edit there, then mirror `.agents/` by running `npm run check:skill-sync:sync`.
 
+**When you edit a skill, bump `last_validated_against` to today's date** if you changed instructions, examples, or referenced systems. Skip bumps for typo-only/format-only edits. This field records an explicit correctness affirmation, not a file-modified timestamp. If you review a skill and confirm it is still accurate without content edits, you may still bump the date in a small one-line commit.
+
 **Skills that only exist in `.agents/skills/`** are Cowork/Gemini-only by design (currently: `content-catalog-manager`, `defuddle`, `design-council`, `json-canvas`, `obsidian-bases`, `obsidian-cli`, `obsidian-markdown`, `playtest-interface`). CC cannot load these — do not route CC to them.
 
 **When adding a new skill:** decide its audience first. CC-needed → `.claude/skills/`. Cowork/Gemini-only → `.agents/skills/`. Both → `.claude/skills/` and let the hook mirror.

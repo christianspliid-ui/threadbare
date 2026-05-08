@@ -1,6 +1,7 @@
 ---
 name: vault-enrich
 description: Improve existing vault pages — add missing cross-references, expand thin sections, flag contradictions, improve summaries. Run with /kb-enrich. Can target specific pages or auto-select from lint results.
+last_validated_against: 2026-05-08
 ---
 
 # Vault Enrich — Knowledge Base Improvement

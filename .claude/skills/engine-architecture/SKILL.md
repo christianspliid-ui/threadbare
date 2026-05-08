@@ -5,6 +5,7 @@ description: >
   tracing, PRNG usage, or any code that lives in src/engine/. Triggers on "engine",
   "tick loop", "sigmoid", "resolution", "trace", "PRNG", "Maslow", "action pipeline",
   "graph op", "fail-soft", or when implementing systems described in Obsidian vault notes.
+last_validated_against: 2026-05-08
 ---
 
 # Engine Architecture — Domain Context

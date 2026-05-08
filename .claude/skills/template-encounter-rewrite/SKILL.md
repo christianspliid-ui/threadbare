@@ -9,6 +9,7 @@ description: >
   quality", "social encounter rewrite", "tavern encounter rewrite", "template
   encounter", "encounter quality pass", "prose quality pass", "write encounter".
 model: opus
+last_validated_against: 2026-05-08
 ---
 
 # Template Encounter Write/Rewrite — Prose + Systemic Wiring

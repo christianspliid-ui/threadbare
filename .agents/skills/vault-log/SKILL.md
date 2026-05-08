@@ -1,6 +1,7 @@
 ---
 name: vault-log
 description: Append an entry to TheFantasyWorldSimulator/log.md. Tries Obsidian MCP first; falls back to direct filesystem write using OBSIDIAN_VAULT_PATH if MCP is unreachable. Fails loud if neither path is available. Used by vault-ingest, vault-enrich, vault-lint, and vault-query.
+last_validated_against: 2026-05-08
 ---
 
 # Vault Log — Append with Fallback

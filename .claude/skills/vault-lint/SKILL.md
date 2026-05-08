@@ -1,6 +1,7 @@
 ---
 name: vault-lint
 description: Audit Obsidian vault health — orphan pages, broken links, stale content, missing frontmatter, cross-link gaps, index drift. Run with /kb-lint. Produces a health report in output/audits/ and logs to log.md.
+last_validated_against: 2026-05-08
 ---
 
 # Vault Lint — Knowledge Base Health Check

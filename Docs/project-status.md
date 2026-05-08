@@ -54,4 +54,4 @@ px vite build.
 Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Completed work: `Docs/project-history.md` + Linear "Done" state · Pre-Linear history: `.planning/BACKLOG_HISTORY.md`
 - ✅ 2026-05-08: THR-353 shipped (D3) — narration/TTS discovery report + encounter narration adapter contract + contract smoke test.
 - ✅ 2026-05-08: THR-292 closed (Encounter Format Migration) — vault encounter architecture pages confirmed unified-only (Systems/Encounter System.md canonical via THR-341; UL Encounters.md describes EncounterTemplate as a conceptual term, not stale TypeScript-class guidance). Closeout entry appended to vault log.md.
-
+- ✅ 2026-05-08: THR-265 shipped — skill freshness metadata + drift-scan S5 (all skill files now carry `last_validated_against`; weekly scan now reports stale/archive/bootstrap-needed skill freshness drift).

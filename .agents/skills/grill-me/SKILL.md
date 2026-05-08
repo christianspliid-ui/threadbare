@@ -5,6 +5,7 @@ description: >
   or ambiguous work, asks permission before running, and produces a synthesis
   artifact that feeds plan-doc drafting. Conversational by default, async-batch
   on request.
+last_validated_against: 2026-05-08
 ---
 
 # Grill Me
