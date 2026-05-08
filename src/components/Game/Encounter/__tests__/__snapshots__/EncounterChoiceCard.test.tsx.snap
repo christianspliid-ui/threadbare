@@ -1,5 +1,91 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`EncounterChoiceCard > matches the snapshot for a dimmed choice in a 1920x1080 container 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <div
+      aria-label="Stir her resolve."
+      aria-pressed="false"
+      class="pulse-gold-on-hover"
+      data-reach="iron"
+      data-testid="encounter-choice-card-iron"
+      role="button"
+      style="flex: 1 1 0%; padding: 14px; border-radius: 8px; background: var(--bg-surface); border: 1px solid var(--border-subtle); opacity: 0.35; transition: opacity 300ms ease-out, border-color 300ms ease-out; position: relative; cursor: pointer; display: flex; flex-direction: column; outline: none;"
+      tabindex="0"
+    >
+      <div
+        data-testid="encounter-choice-card-sphere-line"
+        style="color: var(--reach-sphere-bright); font-family: var(--font-display); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;"
+      >
+        iron · fuller breath
+      </div>
+      <div
+        data-testid="encounter-choice-card-god-verb"
+        style="font-family: var(--font-body); font-size: 18px; font-style: italic; font-weight: 400; color: var(--text-primary); margin-top: 6px;"
+      >
+        Stir her resolve.
+      </div>
+      <div
+        aria-hidden="true"
+        style="height: 1px; width: 36px; background: var(--reach-sphere); margin: 8px 0px 10px;"
+      />
+      <div
+        data-testid="encounter-choice-card-agent-reaction"
+        style="font-size: 13px; line-height: 1.55; color: var(--text-primary);"
+      >
+        Her shoulders set. She closes the distance and meets Veiren's eye.
+      </div>
+      <div
+        data-testid="encounter-choice-card-tilts-toward"
+        style="color: var(--text-tertiary); font-size: 12px; margin-top: 10px;"
+      >
+        Tilts toward: a wound, a debt, or his favour earned
+      </div>
+      <div
+        data-testid="encounter-moral-axis-tilt"
+        style="display: flex; align-items: baseline; gap: 6px; color: var(--text-tertiary); font-size: 11px; margin-top: 4px;"
+      >
+        <span
+          aria-hidden="true"
+          style="color: var(--reach-sphere-bright);"
+        >
+          ↬
+        </span>
+        <span>
+          tilts toward
+        </span>
+        <span
+          style="color: var(--reach-sphere-bright); font-family: var(--font-display); letter-spacing: 0.12em; text-transform: uppercase;"
+        >
+          conqueror
+        </span>
+      </div>
+      <div
+        data-testid="encounter-choice-card-fail-forward"
+        style="color: var(--text-tertiary); font-size: 11px; font-style: italic; margin-top: 6px;"
+      >
+        ↗ on fail — she draws steel and the queue splinters
+      </div>
+      <div
+        data-testid="encounter-choice-card-consumes-item"
+        style="display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-size: 11px; margin-top: 6px; cursor: help;"
+      >
+        <span
+          aria-hidden="true"
+        >
+          ◇
+        </span>
+        <span>
+          consumes: captain-token
+        </span>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
 exports[`EncounterChoiceCard > matches the snapshot for a fully-populated choice in a 1920x1080 container 1`] = `
 <DocumentFragment>
   <div
@@ -13,6 +99,92 @@ exports[`EncounterChoiceCard > matches the snapshot for a fully-populated choice
       data-testid="encounter-choice-card-iron"
       role="button"
       style="flex: 1 1 0%; padding: 14px; border-radius: 8px; background: var(--bg-surface); border: 1px solid var(--border-subtle); opacity: 1; transition: opacity 300ms ease-out, border-color 300ms ease-out; position: relative; cursor: pointer; display: flex; flex-direction: column; outline: none;"
+      tabindex="0"
+    >
+      <div
+        data-testid="encounter-choice-card-sphere-line"
+        style="color: var(--reach-sphere-bright); font-family: var(--font-display); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;"
+      >
+        iron · fuller breath
+      </div>
+      <div
+        data-testid="encounter-choice-card-god-verb"
+        style="font-family: var(--font-body); font-size: 18px; font-style: italic; font-weight: 400; color: var(--text-primary); margin-top: 6px;"
+      >
+        Stir her resolve.
+      </div>
+      <div
+        aria-hidden="true"
+        style="height: 1px; width: 36px; background: var(--reach-sphere); margin: 8px 0px 10px;"
+      />
+      <div
+        data-testid="encounter-choice-card-agent-reaction"
+        style="font-size: 13px; line-height: 1.55; color: var(--text-primary);"
+      >
+        Her shoulders set. She closes the distance and meets Veiren's eye.
+      </div>
+      <div
+        data-testid="encounter-choice-card-tilts-toward"
+        style="color: var(--text-tertiary); font-size: 12px; margin-top: 10px;"
+      >
+        Tilts toward: a wound, a debt, or his favour earned
+      </div>
+      <div
+        data-testid="encounter-moral-axis-tilt"
+        style="display: flex; align-items: baseline; gap: 6px; color: var(--text-tertiary); font-size: 11px; margin-top: 4px;"
+      >
+        <span
+          aria-hidden="true"
+          style="color: var(--reach-sphere-bright);"
+        >
+          ↬
+        </span>
+        <span>
+          tilts toward
+        </span>
+        <span
+          style="color: var(--reach-sphere-bright); font-family: var(--font-display); letter-spacing: 0.12em; text-transform: uppercase;"
+        >
+          conqueror
+        </span>
+      </div>
+      <div
+        data-testid="encounter-choice-card-fail-forward"
+        style="color: var(--text-tertiary); font-size: 11px; font-style: italic; margin-top: 6px;"
+      >
+        ↗ on fail — she draws steel and the queue splinters
+      </div>
+      <div
+        data-testid="encounter-choice-card-consumes-item"
+        style="display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-size: 11px; margin-top: 6px; cursor: help;"
+      >
+        <span
+          aria-hidden="true"
+        >
+          ◇
+        </span>
+        <span>
+          consumes: captain-token
+        </span>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`EncounterChoiceCard > matches the snapshot for a selected choice in a 1920x1080 container 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <div
+      aria-label="Stir her resolve."
+      aria-pressed="true"
+      class="pulse-gold-on-hover"
+      data-reach="iron"
+      data-testid="encounter-choice-card-iron"
+      role="button"
+      style="flex: 1 1 0%; padding: 14px; border-radius: 8px; background: var(--bg-surface); border: 1px solid var(--reach-sphere-bright); opacity: 1; transition: opacity 300ms ease-out, border-color 300ms ease-out; position: relative; cursor: pointer; display: flex; flex-direction: column; outline: none;"
       tabindex="0"
     >
       <div

@@ -244,6 +244,33 @@ describe('DetailModal — depth 5 (breadcrumb collapses to `…`)', () => {
   });
 });
 
+// ─── 2560×1440 sample (optimal viewport per project_viewport_target) ──────────
+
+describe('DetailModal — 2560x1440 sample', () => {
+  it('snapshot: depth 1 inside a 2560x1440 viewport wrapper', () => {
+    const page = makePage({ displayName: 'Page 1' });
+
+    function PushOne() {
+      const { push } = useDetailStack();
+      return (
+        <button data-testid="push-one" onClick={() => push(page)}>
+          push
+        </button>
+      );
+    }
+
+    render(
+      <div style={{ width: 2560, height: 1440 }}>
+        <Wrapper>
+          <PushOne />
+        </Wrapper>
+      </div>,
+    );
+    fireEvent.click(screen.getByTestId('push-one'));
+    expect(document.body).toMatchSnapshot('detail-modal-depth-1-2560x1440');
+  });
+});
+
 // ─── Section rendering ────────────────────────────────────────────────────────
 
 describe('DetailModal — section rendering', () => {

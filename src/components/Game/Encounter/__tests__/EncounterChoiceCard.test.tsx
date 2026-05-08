@@ -81,6 +81,20 @@ describe('EncounterChoiceCard', () => {
     expect(asFragment()).toMatchSnapshot();
   });
 
+  it('matches the snapshot for a selected choice in a 1920x1080 container', () => {
+    const { asFragment } = renderInViewport(
+      <EncounterChoiceCard choice={sampleChoice} selected dimmed={false} />,
+    );
+    expect(asFragment()).toMatchSnapshot();
+  });
+
+  it('matches the snapshot for a dimmed choice in a 1920x1080 container', () => {
+    const { asFragment } = renderInViewport(
+      <EncounterChoiceCard choice={sampleChoice} selected={false} dimmed />,
+    );
+    expect(asFragment()).toMatchSnapshot();
+  });
+
   it('activates onSelect via Enter and Space keypresses', () => {
     const onSelect = vi.fn();
     renderInViewport(<EncounterChoiceCard choice={sampleChoice} onSelect={onSelect} />);

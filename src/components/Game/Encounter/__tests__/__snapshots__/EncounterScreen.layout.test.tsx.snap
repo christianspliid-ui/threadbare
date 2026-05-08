@@ -1,0 +1,575 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`EncounterScreen layout > matches the full-shell snapshot at 1920x1080 (canonical viewport) > encounter-shell-1920x1080 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <section
+      data-testid="encounter-screen-shell"
+      style="height: 100dvh; display: flex; flex-direction: column; overflow: hidden; padding: 16px; gap: 16px; background: var(--bg-abyss);"
+    >
+      <div
+        data-testid="encounter-screen-header"
+      >
+        <div>
+          BEAT 2 - NOW
+        </div>
+      </div>
+      <div
+        style="min-height: 0px; flex: 1 1 0%; display: grid; grid-template-columns: 440px minmax(0, 1fr) 540px; gap: 16px; overflow: hidden;"
+      >
+        <aside
+          data-testid="encounter-eira-hero-panel"
+          style="height: 100%; min-height: 0px; display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 12px; border: 1px solid var(--border-subtle); background: linear-gradient(180deg, var(--bg-deep), var(--bg-surface)); overflow-y: auto;"
+        >
+          <header
+            style="display: flex; align-items: center; justify-content: space-between; gap: 8px;"
+          >
+            <span
+              style="color: var(--accent-gold); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.15em;"
+            >
+              The Protagonist
+            </span>
+          </header>
+          <div
+            style="display: grid; place-items: center;"
+          >
+            <div
+              aria-hidden="true"
+              style="width: 212px; height: 236px; border-radius: 8px; border: 1px solid var(--border-subtle); display: grid; place-items: center; background: radial-gradient(circle at 35% 20%, color-mix(in srgb, var(--accent-gold) 20%, transparent), transparent 35%), linear-gradient(180deg, var(--bg-raised), var(--bg-deep)); color: var(--text-muted); font-family: var(--font-display); letter-spacing: 0.12em; font-size: var(--text-sm);"
+            >
+              EO
+            </div>
+          </div>
+          <div>
+            <h2
+              style="margin: 0px; color: var(--text-primary); font-family: var(--font-display); font-size: var(--text-xl);"
+            >
+              Eira of Bren
+            </h2>
+            <div
+              style="color: var(--text-tertiary); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 2px;"
+            >
+              IRON - DRAWN BOND - 28 WINTERS
+            </div>
+            <div
+              style="color: var(--text-secondary); font-size: var(--text-xs); font-style: italic; margin-top: 4px;"
+            >
+              steady, but reading the room
+            </div>
+          </div>
+          <section>
+            <div
+              style="color: var(--text-tertiary); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px;"
+            >
+              Capability In This Scene
+            </div>
+            <div
+              style="display: grid; gap: 6px;"
+            >
+              <div
+                data-testid="capability-strip"
+                style="display: grid; grid-template-columns: 80px auto minmax(0, 1fr); align-items: center; gap: 8px;"
+              >
+                <div
+                  style="color: var(--sphere-force-bright); font-size: var(--text-xs); letter-spacing: 0.12em; text-transform: uppercase;"
+                >
+                  IRON
+                </div>
+                <div
+                  style="display: flex; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: var(--sphere-force-bright);"
+                  />
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: var(--sphere-force-bright);"
+                  />
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: var(--sphere-force-bright);"
+                  />
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: color-mix(in srgb, var(--bg-raised) 75%, var(--text-tertiary) 25%);"
+                  />
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: color-mix(in srgb, var(--bg-raised) 75%, var(--text-tertiary) 25%);"
+                  />
+                </div>
+                <div
+                  style="color: var(--text-tertiary); font-size: var(--text-xs); font-style: italic; line-height: 1.4; min-width: 0px;"
+                >
+                  a steady arm in a tight queue
+                </div>
+              </div>
+              <div
+                data-testid="capability-strip"
+                style="display: grid; grid-template-columns: 80px auto minmax(0, 1fr); align-items: center; gap: 8px;"
+              >
+                <div
+                  style="color: var(--sphere-mind-bright); font-size: var(--text-xs); letter-spacing: 0.12em; text-transform: uppercase;"
+                >
+                  EYE
+                </div>
+                <div
+                  style="display: flex; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: var(--sphere-mind-bright);"
+                  />
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: var(--sphere-mind-bright);"
+                  />
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: var(--sphere-mind-bright);"
+                  />
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: color-mix(in srgb, var(--bg-raised) 75%, var(--text-tertiary) 25%);"
+                  />
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: color-mix(in srgb, var(--bg-raised) 75%, var(--text-tertiary) 25%);"
+                  />
+                </div>
+                <div
+                  style="color: var(--text-tertiary); font-size: var(--text-xs); font-style: italic; line-height: 1.4; min-width: 0px;"
+                >
+                  she misses little
+                </div>
+              </div>
+              <div
+                data-testid="capability-strip"
+                style="display: grid; grid-template-columns: 80px auto minmax(0, 1fr); align-items: center; gap: 8px;"
+              >
+                <div
+                  style="color: var(--sphere-spirit-bright); font-size: var(--text-xs); letter-spacing: 0.12em; text-transform: uppercase;"
+                >
+                  HEART
+                </div>
+                <div
+                  style="display: flex; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: var(--sphere-spirit-bright);"
+                  />
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: var(--sphere-spirit-bright);"
+                  />
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: var(--sphere-spirit-bright);"
+                  />
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: var(--sphere-spirit-bright);"
+                  />
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: var(--sphere-spirit-bright);"
+                  />
+                </div>
+                <div
+                  style="color: var(--text-tertiary); font-size: var(--text-xs); font-style: italic; line-height: 1.4; min-width: 0px;"
+                >
+                  her deepest thread
+                </div>
+              </div>
+            </div>
+          </section>
+          <section>
+            <div
+              style="color: var(--text-tertiary); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px;"
+            >
+              She Carries Into This Scene
+            </div>
+            <div
+              style="display: grid; gap: 8px;"
+            >
+              <article
+                style="border-radius: 10px; border: 1px solid var(--border-subtle); background: var(--bg-raised); padding: 8px 10px;"
+              >
+                <div
+                  style="color: var(--text-primary); font-size: var(--text-sm);"
+                >
+                  Captain's token
+                </div>
+                <div
+                  style="color: var(--text-tertiary); font-size: var(--text-xs);"
+                >
+                  small favor - civic guard remembers her
+                </div>
+              </article>
+              <article
+                style="border-radius: 10px; border: 1px solid var(--sphere-spirit); background: linear-gradient(90deg, color-mix(in srgb, var(--sphere-spirit-bright) 18%, transparent), transparent); padding: 8px 10px;"
+              >
+                <div
+                  style="color: var(--sphere-spirit-bright); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.1em;"
+                >
+                  Vow - Active Now
+                </div>
+                <div
+                  style="color: var(--text-primary); font-size: var(--text-sm);"
+                >
+                  Vow to the small folk
+                </div>
+                <div
+                  style="color: var(--text-tertiary); font-size: var(--text-xs); font-style: italic;"
+                >
+                  she will not crush a frightened man
+                </div>
+              </article>
+            </div>
+          </section>
+          <section>
+            <div
+              style="color: var(--text-tertiary); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px;"
+            >
+              Recent Moments
+            </div>
+            <div
+              style="display: grid; gap: 6px;"
+            >
+              <article
+                style="border-radius: 10px; border: 1px solid var(--border-subtle); background: var(--bg-raised); padding: 8px 10px;"
+              >
+                <div
+                  style="color: var(--text-primary); font-size: var(--text-sm);"
+                >
+                  Iron market in winter
+                </div>
+                <div
+                  style="color: var(--text-tertiary); font-size: var(--text-xs);"
+                >
+                  Veiren tested her patience in the open queue.
+                </div>
+              </article>
+            </div>
+          </section>
+        </aside>
+        <div
+          data-testid="encounter-screen-center-column"
+          style="min-height: 0px; border-radius: 12px; border: 1px solid var(--border-subtle); background: var(--bg-surface); overflow: hidden;"
+        >
+          <div>
+            The center card
+          </div>
+        </div>
+        <div
+          data-testid="encounter-screen-right-rail"
+          style="min-height: 0px; border-radius: 12px; border: 1px solid var(--border-subtle); background: var(--bg-surface); overflow: hidden;"
+        >
+          <div>
+            Cast and hand
+          </div>
+        </div>
+      </div>
+      <div
+        data-testid="encounter-screen-bottom-strip"
+        style="min-height: 100px; max-height: 100px; border-radius: 12px; border: 1px solid var(--border-subtle); background: var(--bg-deep); overflow: hidden;"
+      >
+        <div>
+          Quintessence and watch-only
+        </div>
+      </div>
+    </section>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`EncounterScreen layout > matches the full-shell snapshot at 2560x1440 (optimal viewport sample) > encounter-shell-2560x1440 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 2560px; height: 1440px;"
+  >
+    <section
+      data-testid="encounter-screen-shell"
+      style="height: 100dvh; display: flex; flex-direction: column; overflow: hidden; padding: 16px; gap: 16px; background: var(--bg-abyss);"
+    >
+      <div
+        data-testid="encounter-screen-header"
+      >
+        <div>
+          BEAT 2 - NOW
+        </div>
+      </div>
+      <div
+        style="min-height: 0px; flex: 1 1 0%; display: grid; grid-template-columns: 440px minmax(0, 1fr) 540px; gap: 16px; overflow: hidden;"
+      >
+        <aside
+          data-testid="encounter-eira-hero-panel"
+          style="height: 100%; min-height: 0px; display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 12px; border: 1px solid var(--border-subtle); background: linear-gradient(180deg, var(--bg-deep), var(--bg-surface)); overflow-y: auto;"
+        >
+          <header
+            style="display: flex; align-items: center; justify-content: space-between; gap: 8px;"
+          >
+            <span
+              style="color: var(--accent-gold); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.15em;"
+            >
+              The Protagonist
+            </span>
+          </header>
+          <div
+            style="display: grid; place-items: center;"
+          >
+            <div
+              aria-hidden="true"
+              style="width: 212px; height: 236px; border-radius: 8px; border: 1px solid var(--border-subtle); display: grid; place-items: center; background: radial-gradient(circle at 35% 20%, color-mix(in srgb, var(--accent-gold) 20%, transparent), transparent 35%), linear-gradient(180deg, var(--bg-raised), var(--bg-deep)); color: var(--text-muted); font-family: var(--font-display); letter-spacing: 0.12em; font-size: var(--text-sm);"
+            >
+              EO
+            </div>
+          </div>
+          <div>
+            <h2
+              style="margin: 0px; color: var(--text-primary); font-family: var(--font-display); font-size: var(--text-xl);"
+            >
+              Eira of Bren
+            </h2>
+            <div
+              style="color: var(--text-tertiary); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 2px;"
+            >
+              IRON - DRAWN BOND - 28 WINTERS
+            </div>
+            <div
+              style="color: var(--text-secondary); font-size: var(--text-xs); font-style: italic; margin-top: 4px;"
+            >
+              steady, but reading the room
+            </div>
+          </div>
+          <section>
+            <div
+              style="color: var(--text-tertiary); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px;"
+            >
+              Capability In This Scene
+            </div>
+            <div
+              style="display: grid; gap: 6px;"
+            >
+              <div
+                data-testid="capability-strip"
+                style="display: grid; grid-template-columns: 80px auto minmax(0, 1fr); align-items: center; gap: 8px;"
+              >
+                <div
+                  style="color: var(--sphere-force-bright); font-size: var(--text-xs); letter-spacing: 0.12em; text-transform: uppercase;"
+                >
+                  IRON
+                </div>
+                <div
+                  style="display: flex; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: var(--sphere-force-bright);"
+                  />
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: var(--sphere-force-bright);"
+                  />
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: var(--sphere-force-bright);"
+                  />
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: color-mix(in srgb, var(--bg-raised) 75%, var(--text-tertiary) 25%);"
+                  />
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: color-mix(in srgb, var(--bg-raised) 75%, var(--text-tertiary) 25%);"
+                  />
+                </div>
+                <div
+                  style="color: var(--text-tertiary); font-size: var(--text-xs); font-style: italic; line-height: 1.4; min-width: 0px;"
+                >
+                  a steady arm in a tight queue
+                </div>
+              </div>
+              <div
+                data-testid="capability-strip"
+                style="display: grid; grid-template-columns: 80px auto minmax(0, 1fr); align-items: center; gap: 8px;"
+              >
+                <div
+                  style="color: var(--sphere-mind-bright); font-size: var(--text-xs); letter-spacing: 0.12em; text-transform: uppercase;"
+                >
+                  EYE
+                </div>
+                <div
+                  style="display: flex; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: var(--sphere-mind-bright);"
+                  />
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: var(--sphere-mind-bright);"
+                  />
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: var(--sphere-mind-bright);"
+                  />
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: color-mix(in srgb, var(--bg-raised) 75%, var(--text-tertiary) 25%);"
+                  />
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: color-mix(in srgb, var(--bg-raised) 75%, var(--text-tertiary) 25%);"
+                  />
+                </div>
+                <div
+                  style="color: var(--text-tertiary); font-size: var(--text-xs); font-style: italic; line-height: 1.4; min-width: 0px;"
+                >
+                  she misses little
+                </div>
+              </div>
+              <div
+                data-testid="capability-strip"
+                style="display: grid; grid-template-columns: 80px auto minmax(0, 1fr); align-items: center; gap: 8px;"
+              >
+                <div
+                  style="color: var(--sphere-spirit-bright); font-size: var(--text-xs); letter-spacing: 0.12em; text-transform: uppercase;"
+                >
+                  HEART
+                </div>
+                <div
+                  style="display: flex; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: var(--sphere-spirit-bright);"
+                  />
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: var(--sphere-spirit-bright);"
+                  />
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: var(--sphere-spirit-bright);"
+                  />
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: var(--sphere-spirit-bright);"
+                  />
+                  <span
+                    aria-hidden="true"
+                    style="width: 8px; height: 8px; border-radius: 999px; background: var(--sphere-spirit-bright);"
+                  />
+                </div>
+                <div
+                  style="color: var(--text-tertiary); font-size: var(--text-xs); font-style: italic; line-height: 1.4; min-width: 0px;"
+                >
+                  her deepest thread
+                </div>
+              </div>
+            </div>
+          </section>
+          <section>
+            <div
+              style="color: var(--text-tertiary); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px;"
+            >
+              She Carries Into This Scene
+            </div>
+            <div
+              style="display: grid; gap: 8px;"
+            >
+              <article
+                style="border-radius: 10px; border: 1px solid var(--border-subtle); background: var(--bg-raised); padding: 8px 10px;"
+              >
+                <div
+                  style="color: var(--text-primary); font-size: var(--text-sm);"
+                >
+                  Captain's token
+                </div>
+                <div
+                  style="color: var(--text-tertiary); font-size: var(--text-xs);"
+                >
+                  small favor - civic guard remembers her
+                </div>
+              </article>
+              <article
+                style="border-radius: 10px; border: 1px solid var(--sphere-spirit); background: linear-gradient(90deg, color-mix(in srgb, var(--sphere-spirit-bright) 18%, transparent), transparent); padding: 8px 10px;"
+              >
+                <div
+                  style="color: var(--sphere-spirit-bright); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.1em;"
+                >
+                  Vow - Active Now
+                </div>
+                <div
+                  style="color: var(--text-primary); font-size: var(--text-sm);"
+                >
+                  Vow to the small folk
+                </div>
+                <div
+                  style="color: var(--text-tertiary); font-size: var(--text-xs); font-style: italic;"
+                >
+                  she will not crush a frightened man
+                </div>
+              </article>
+            </div>
+          </section>
+          <section>
+            <div
+              style="color: var(--text-tertiary); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px;"
+            >
+              Recent Moments
+            </div>
+            <div
+              style="display: grid; gap: 6px;"
+            >
+              <article
+                style="border-radius: 10px; border: 1px solid var(--border-subtle); background: var(--bg-raised); padding: 8px 10px;"
+              >
+                <div
+                  style="color: var(--text-primary); font-size: var(--text-sm);"
+                >
+                  Iron market in winter
+                </div>
+                <div
+                  style="color: var(--text-tertiary); font-size: var(--text-xs);"
+                >
+                  Veiren tested her patience in the open queue.
+                </div>
+              </article>
+            </div>
+          </section>
+        </aside>
+        <div
+          data-testid="encounter-screen-center-column"
+          style="min-height: 0px; border-radius: 12px; border: 1px solid var(--border-subtle); background: var(--bg-surface); overflow: hidden;"
+        >
+          <div>
+            The center card
+          </div>
+        </div>
+        <div
+          data-testid="encounter-screen-right-rail"
+          style="min-height: 0px; border-radius: 12px; border: 1px solid var(--border-subtle); background: var(--bg-surface); overflow: hidden;"
+        >
+          <div>
+            Cast and hand
+          </div>
+        </div>
+      </div>
+      <div
+        data-testid="encounter-screen-bottom-strip"
+        style="min-height: 100px; max-height: 100px; border-radius: 12px; border: 1px solid var(--border-subtle); background: var(--bg-deep); overflow: hidden;"
+      >
+        <div>
+          Quintessence and watch-only
+        </div>
+      </div>
+    </section>
+  </div>
+</DocumentFragment>
+`;

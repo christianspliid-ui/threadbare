@@ -1,0 +1,227 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CapabilityStrip > matches the snapshot for 0 of 5 dots filled 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <div
+      data-testid="capability-strip"
+      style="display: grid; grid-template-columns: 80px auto minmax(0, 1fr); align-items: center; gap: 8px;"
+    >
+      <div
+        style="color: var(--accent-gold); font-size: var(--text-xs); letter-spacing: 0.12em; text-transform: uppercase;"
+      >
+        IRON
+      </div>
+      <div
+        style="display: flex; gap: 4px;"
+      >
+        <span
+          aria-hidden="true"
+          style="width: 8px; height: 8px; border-radius: 999px; background: color-mix(in srgb, var(--bg-raised) 75%, var(--text-tertiary) 25%);"
+        />
+        <span
+          aria-hidden="true"
+          style="width: 8px; height: 8px; border-radius: 999px; background: color-mix(in srgb, var(--bg-raised) 75%, var(--text-tertiary) 25%);"
+        />
+        <span
+          aria-hidden="true"
+          style="width: 8px; height: 8px; border-radius: 999px; background: color-mix(in srgb, var(--bg-raised) 75%, var(--text-tertiary) 25%);"
+        />
+        <span
+          aria-hidden="true"
+          style="width: 8px; height: 8px; border-radius: 999px; background: color-mix(in srgb, var(--bg-raised) 75%, var(--text-tertiary) 25%);"
+        />
+        <span
+          aria-hidden="true"
+          style="width: 8px; height: 8px; border-radius: 999px; background: color-mix(in srgb, var(--bg-raised) 75%, var(--text-tertiary) 25%);"
+        />
+      </div>
+      <div
+        style="color: var(--text-tertiary); font-size: var(--text-xs); font-style: normal; line-height: 1.4; min-width: 0px;"
+      />
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`CapabilityStrip > matches the snapshot for 3 of 5 dots filled at 1920x1080 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <div
+      data-testid="capability-strip"
+      style="display: grid; grid-template-columns: 80px auto minmax(0, 1fr); align-items: center; gap: 8px;"
+    >
+      <div
+        style="color: var(--accent-gold); font-size: var(--text-xs); letter-spacing: 0.12em; text-transform: uppercase;"
+      >
+        IRON
+      </div>
+      <div
+        style="display: flex; gap: 4px;"
+      >
+        <span
+          aria-hidden="true"
+          style="width: 8px; height: 8px; border-radius: 999px; background: var(--accent-gold);"
+        />
+        <span
+          aria-hidden="true"
+          style="width: 8px; height: 8px; border-radius: 999px; background: var(--accent-gold);"
+        />
+        <span
+          aria-hidden="true"
+          style="width: 8px; height: 8px; border-radius: 999px; background: var(--accent-gold);"
+        />
+        <span
+          aria-hidden="true"
+          style="width: 8px; height: 8px; border-radius: 999px; background: color-mix(in srgb, var(--bg-raised) 75%, var(--text-tertiary) 25%);"
+        />
+        <span
+          aria-hidden="true"
+          style="width: 8px; height: 8px; border-radius: 999px; background: color-mix(in srgb, var(--bg-raised) 75%, var(--text-tertiary) 25%);"
+        />
+      </div>
+      <div
+        style="color: var(--text-tertiary); font-size: var(--text-xs); font-style: italic; line-height: 1.4; min-width: 0px;"
+      >
+        a steady arm in a tight queue
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`CapabilityStrip > matches the snapshot for 5 of 5 dots filled (max) 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <div
+      data-testid="capability-strip"
+      style="display: grid; grid-template-columns: 80px auto minmax(0, 1fr); align-items: center; gap: 8px;"
+    >
+      <div
+        style="color: var(--sphere-spirit-bright); font-size: var(--text-xs); letter-spacing: 0.12em; text-transform: uppercase;"
+      >
+        HEART
+      </div>
+      <div
+        style="display: flex; gap: 4px;"
+      >
+        <span
+          aria-hidden="true"
+          style="width: 8px; height: 8px; border-radius: 999px; background: var(--sphere-spirit-bright);"
+        />
+        <span
+          aria-hidden="true"
+          style="width: 8px; height: 8px; border-radius: 999px; background: var(--sphere-spirit-bright);"
+        />
+        <span
+          aria-hidden="true"
+          style="width: 8px; height: 8px; border-radius: 999px; background: var(--sphere-spirit-bright);"
+        />
+        <span
+          aria-hidden="true"
+          style="width: 8px; height: 8px; border-radius: 999px; background: var(--sphere-spirit-bright);"
+        />
+        <span
+          aria-hidden="true"
+          style="width: 8px; height: 8px; border-radius: 999px; background: var(--sphere-spirit-bright);"
+        />
+      </div>
+      <div
+        style="color: var(--text-tertiary); font-size: var(--text-xs); font-style: italic; line-height: 1.4; min-width: 0px;"
+      >
+        her deepest thread
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`CapabilityStrip > matches the snapshot with a custom totalDots count 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <div
+      data-testid="capability-strip"
+      style="display: grid; grid-template-columns: 80px auto minmax(0, 1fr); align-items: center; gap: 8px;"
+    >
+      <div
+        style="color: var(--accent-gold); font-size: var(--text-xs); letter-spacing: 0.12em; text-transform: uppercase;"
+      >
+        IRON
+      </div>
+      <div
+        style="display: flex; gap: 4px;"
+      >
+        <span
+          aria-hidden="true"
+          style="width: 8px; height: 8px; border-radius: 999px; background: var(--accent-gold);"
+        />
+        <span
+          aria-hidden="true"
+          style="width: 8px; height: 8px; border-radius: 999px; background: var(--accent-gold);"
+        />
+        <span
+          aria-hidden="true"
+          style="width: 8px; height: 8px; border-radius: 999px; background: color-mix(in srgb, var(--bg-raised) 75%, var(--text-tertiary) 25%);"
+        />
+      </div>
+      <div
+        style="color: var(--text-tertiary); font-size: var(--text-xs); font-style: normal; line-height: 1.4; min-width: 0px;"
+      />
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`CapabilityStrip > matches the snapshot with no narrative hint 1`] = `
+<DocumentFragment>
+  <div
+    style="width: 1920px; height: 1080px;"
+  >
+    <div
+      data-testid="capability-strip"
+      style="display: grid; grid-template-columns: 80px auto minmax(0, 1fr); align-items: center; gap: 8px;"
+    >
+      <div
+        style="color: var(--accent-gold); font-size: var(--text-xs); letter-spacing: 0.12em; text-transform: uppercase;"
+      >
+        EYE
+      </div>
+      <div
+        style="display: flex; gap: 4px;"
+      >
+        <span
+          aria-hidden="true"
+          style="width: 8px; height: 8px; border-radius: 999px; background: var(--accent-gold);"
+        />
+        <span
+          aria-hidden="true"
+          style="width: 8px; height: 8px; border-radius: 999px; background: var(--accent-gold);"
+        />
+        <span
+          aria-hidden="true"
+          style="width: 8px; height: 8px; border-radius: 999px; background: color-mix(in srgb, var(--bg-raised) 75%, var(--text-tertiary) 25%);"
+        />
+        <span
+          aria-hidden="true"
+          style="width: 8px; height: 8px; border-radius: 999px; background: color-mix(in srgb, var(--bg-raised) 75%, var(--text-tertiary) 25%);"
+        />
+        <span
+          aria-hidden="true"
+          style="width: 8px; height: 8px; border-radius: 999px; background: color-mix(in srgb, var(--bg-raised) 75%, var(--text-tertiary) 25%);"
+        />
+      </div>
+      <div
+        style="color: var(--text-tertiary); font-size: var(--text-xs); font-style: normal; line-height: 1.4; min-width: 0px;"
+      />
+    </div>
+  </div>
+</DocumentFragment>
+`;
