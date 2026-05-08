@@ -14,6 +14,14 @@ import type {
   EncounterSupportActorSpec,
   EncounterSupportLocationSpec,
 } from '../../types/encounter';
+import { parseEncounterContract } from '../encounter-contract-validators';
+import type {
+  EncounterArchetypePole,
+  EncounterChoiceCost,
+  EncounterChoiceReach,
+  EncounterContract,
+} from '../../types/encounter-contract';
+import { MORAL_AXIS_POLES_BY_REACH, QUINTESSENCE_POLES } from '../../types/encounter-contract';
 
 // ─── Support Bundle ──────────────────────────────────────────────
 
@@ -71,6 +79,7 @@ const step1SignThePapers: ActionStep = {
   reach: 'gold',
   duration: { min: 2, max: 3 },
   difficulty: 0.30,
+  difficultyContext: 'intel_sensitive',
   onSuccess: [
     { op: 'update_node', nodeId: '$target', changes: { reputationDelta: 0.05 } },
   ],
@@ -98,6 +107,7 @@ const step1TakeToOwner: ActionStep = {
   reach: 'gold',
   duration: { min: 2, max: 3 },
   difficulty: 0.30,
+  difficultyContext: 'intel_sensitive',
   onSuccess: [
     { op: 'update_node', nodeId: '$target', changes: { reputationDelta: 0.05 } },
   ],
@@ -301,9 +311,187 @@ const TURN_AFTERMATH = {
   ],
 } as const;
 
+
+
+const ENCOUNTER_CONTRACT_METADATA_KEY = '__encounter_contract_v1';
+const DEFAULT_FORECAST_FACTORS = ['threads shifting'] as const;
+const DEFAULT_STATE_DESCRIPTOR = 'no descriptor';
+const DEFAULT_TILTS_TOWARD = 'uncertain';
+const DEFAULT_FALL_FORWARD = 'the threads tighten';
+const DEFAULT_AGENT_REACTION = 'the moment shifts';
+
+const EFFECTIVE_INTERVENTION_TO_COST: Record<EncounterChoiceIntervention, EncounterChoiceCost> = {
+  supportive: 'small_breath',
+  coercive: 'deep_draught',
+  withdrawn: 'small_breath',
+};
+
+type EncounterChoiceIntervention = NonNullable<
+  NonNullable<UnifiedActionTemplate['authoredChoices']>[number][number]['interventionType']
+>;
+
+type EncounterAuthoredChoice = NonNullable<NonNullable<UnifiedActionTemplate['authoredChoices']>[number]>[number];
+
+function toEncounterChoiceCost(choice: EncounterAuthoredChoice): EncounterChoiceCost {
+  if (choice.interventionType) {
+    return EFFECTIVE_INTERVENTION_TO_COST[choice.interventionType];
+  }
+
+  if (choice.essenceCost === undefined || choice.essenceCost <= 1) {
+    return 'small_breath';
+  }
+  if (choice.essenceCost === 2) {
+    return 'fuller_breath';
+  }
+  return 'deep_draught';
+}
+
+function toStepFallbackReach(template: UnifiedActionTemplate, stepIndex: number): EncounterChoiceReach {
+  const step = template.steps[stepIndex] as UnifiedActionTemplate['steps'][number] | undefined;
+  if (step && 'reach' in step && typeof step.reach === 'string') {
+    return step.reach;
+  }
+
+  if (step && 'fallback' in step && step.fallback && typeof step.fallback.reach === 'string') {
+    return step.fallback.reach;
+  }
+
+  return template.reach;
+}
+
+function toEncounterChoiceReach(
+  template: UnifiedActionTemplate,
+  stepIndex: number,
+  choice: EncounterAuthoredChoice,
+): EncounterChoiceReach {
+  const nextStep = template.steps[stepIndex + 1] as UnifiedActionTemplate['steps'][number] | undefined;
+  if (
+    nextStep &&
+    'variants' in nextStep &&
+    choice.id &&
+    typeof nextStep.variants === 'object' &&
+    nextStep.variants !== null
+  ) {
+    const matchingVariant = (nextStep.variants as Record<string, { reach?: string }>)[choice.id];
+    if (matchingVariant && typeof matchingVariant.reach === 'string') {
+      return matchingVariant.reach as EncounterChoiceReach;
+    }
+  }
+
+  return toStepFallbackReach(template, stepIndex);
+}
+
+function toEncounterArchetypePole(reach: EncounterChoiceReach, choice: EncounterAuthoredChoice): EncounterArchetypePole {
+  const poles = reach === 'quintessence' ? QUINTESSENCE_POLES : MORAL_AXIS_POLES_BY_REACH[reach];
+  if (choice.interventionType === 'coercive') {
+    return poles[1];
+  }
+  return poles[0];
+}
+
+function encodeEncounterContractMetadata(contract: EncounterContract): string {
+  return `${ENCOUNTER_CONTRACT_METADATA_KEY}:${JSON.stringify(contract)}`;
+}
+
+function buildFallbackEncounterChoice(template: UnifiedActionTemplate, stepIndex: number, reach: EncounterChoiceReach) {
+  const poles = reach === 'quintessence' ? QUINTESSENCE_POLES : MORAL_AXIS_POLES_BY_REACH[reach];
+  const step = template.steps[stepIndex] as UnifiedActionTemplate['steps'][number] | undefined;
+  return {
+    reach,
+    cost: 'small_breath' as const,
+    god_verb: `choice-${stepIndex + 1}`,
+    agent_reaction: step && 'successAfterimage' in step ? (step.successAfterimage ?? DEFAULT_AGENT_REACTION) : DEFAULT_AGENT_REACTION,
+    tilts_toward: DEFAULT_TILTS_TOWARD,
+    moral_axis_pole: poles[0],
+    fail_forward: step && 'failureAfterimage' in step ? (step.failureAfterimage ?? DEFAULT_FALL_FORWARD) : DEFAULT_FALL_FORWARD,
+  };
+}
+
+function buildLiteEncounterContract(template: UnifiedActionTemplate): EncounterContract {
+  const authoredChoices = template.authoredChoices ?? {};
+  const rawStepIndexes = Object.keys(authoredChoices).map((key) => Number(key)).filter((value) => Number.isInteger(value));
+  const stepIndexes = (rawStepIndexes.length > 0 ? rawStepIndexes : template.steps.map((_, index) => index)).sort((a, b) => a - b);
+  const capabilityAxisReach = template.reach === 'quintessence' ? 'star' : template.reach;
+
+  const beats = stepIndexes.map((stepIndex) => {
+    const encounterChoices = (authoredChoices[stepIndex] ?? []) as readonly EncounterAuthoredChoice[];
+    const stepReach = toStepFallbackReach(template, stepIndex);
+    const step = template.steps[stepIndex] as UnifiedActionTemplate['steps'][number] | undefined;
+
+    const mappedChoices = encounterChoices.map((choice) => {
+      const reach = toEncounterChoiceReach(template, stepIndex, choice);
+      return {
+        reach,
+        cost: toEncounterChoiceCost(choice),
+        god_verb: choice.label,
+        agent_reaction: choice.intent ?? DEFAULT_AGENT_REACTION,
+        tilts_toward: choice.targetLabel ?? DEFAULT_TILTS_TOWARD,
+        moral_axis_pole: toEncounterArchetypePole(reach, choice),
+        fail_forward: choice.likelyBurden ?? DEFAULT_FALL_FORWARD,
+      };
+    });
+
+    return {
+      title: `Beat ${stepIndex + 1}`,
+      forecast_factors: DEFAULT_FORECAST_FACTORS,
+      prose: step && 'narrativeTemplate' in step ? (step.narrativeTemplate ?? template.narrativeTemplates.initiation) : template.narrativeTemplates.initiation,
+      prose_tooltips: {},
+      encounter_choices: mappedChoices.length > 0
+        ? mappedChoices
+        : [buildFallbackEncounterChoice(template, stepIndex, stepReach)],
+    };
+  });
+
+  return parseEncounterContract({
+    encounter: {
+      id: template.id,
+      protagonist: 'actor.placeholder',
+      category: 'branching',
+      rarity_tier: template.rarityTier,
+      intrinsic_tier: template.intrinsicTier,
+      place: {
+        location: 'location.placeholder',
+        ambient_state: {},
+        painting: template.illustrationUrl ?? '/concept-art/encounters/placeholder.jpg',
+      },
+      cast: [],
+      scene_state: {
+        threads_in_play: [],
+        factions_here: [],
+        place_conditions: [],
+        conditions_on_protagonist: [],
+      },
+      protagonist_view: {
+        capability_axes: [capabilityAxisReach, capabilityAxisReach, capabilityAxisReach],
+        items_relevant: [],
+        vows_active_per_beat: {},
+        callback_candidates: [],
+        state_descriptor: template.description ?? DEFAULT_STATE_DESCRIPTOR,
+      },
+      beats,
+      aftermath: {
+        receipt: template.narrativeTemplates.success,
+        changes: [],
+      },
+      ascendant_hand_filter: {
+        eligible: [],
+        rare_pulse: [],
+      },
+    },
+  });
+}
+
+function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTemplate {
+  const contract = buildLiteEncounterContract(template);
+  return {
+    ...template,
+    illustrationAlt: encodeEncounterContractMetadata(contract),
+  };
+}
+
 // ─── Template ────────────────────────────────────────────────────
 
-export const THE_UNMARKED_CROSSING_TEMPLATE: UnifiedActionTemplate = {
+export const THE_UNMARKED_CROSSING_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'reputation.gold.the_unmarked_crossing',
   rarityTier: 1,
   intrinsicTier: 'shaping',
@@ -388,4 +576,6 @@ export const THE_UNMARKED_CROSSING_TEMPLATE: UnifiedActionTemplate = {
     },
     fallback: { ...SIGN_AFTERMATH },
   },
-};
+});
+
+export const THE_UNMARKED_CROSSING_TEMPLATE_CONTRACT: EncounterContract = buildLiteEncounterContract(THE_UNMARKED_CROSSING_TEMPLATE);

@@ -2,7 +2,7 @@
 
 > **Living document.** Every design plan must include a wiring section that maps new modules to entries on this checklist. Every implementation must verify all listed connections before marking work complete. Maintaining this checklist is part of the Definition of Done for both design and implementation phases.
 >
-> **Last updated:** 2026-05-08 (THR-266 — Added UI Pillar Verification section)
+> **Last updated:** 2026-05-08 (THR-266 — Added UI Pillar Verification section). Previous: 2026-05-08 (THR-289 — Added UL Interactive Dashboard reference surface at `?view=ul`). Previous: 2026-05-07 (THR-326 — Added regional detection-pressure phase wiring + DebugPanel detection inspector surface). Previous: 2026-04-29 (THR-109 — Added branch-aware aftermath selection surface (`BranchAwareAftermathConfig` / `resolveAftermathVariant`). Previous: 2026-04-19 THR-174 viewport audit.)
 
 ---
 
@@ -18,6 +18,19 @@
 
 ## Integration Surfaces
 
+### Reference Surfaces — UL Interactive Dashboard (THR-289)
+
+| Surface | Path | Notes |
+|---|---|---|
+| Route | `src/App.tsx` (`?view=ul`) | Lazy-loaded `UbiquitousLanguageDashboard` mirroring the Codex/StyleGuide/CMS pattern. |
+| IA manifest entries | `src/data/ia-manifest.ts` | Three new surfaces — `ul.dashboard`, `ul.sidebar`, `ul.detail-pane` — under `view: 'ul'`. `'ul'` added to `SurfaceView` union. |
+| StartPage menu item | `src/components/StartPage/StartPage.tsx` | "Ubiquitous Language" entry that navigates to `?view=ul`. |
+| Build-time generator | `scripts/generate-ul-dashboard-data.ts` → `src/data/ul-dashboard.generated.json` | Parses the seven UL shards into a typed JSON snapshot. Wired as `npm run generate-ul-dashboard` and the `prebuild` hook so vite-build always emits a current snapshot. |
+| Drift status placeholder | `src/data/drift-scan-status.json` | Empty v1 contract; live data wired in deferral (drift-scan emits + GH Action commits). |
+| Drift constants single-source | `scripts/drift-scan/constants.ts` | Browser-safe re-export consumed by both the weekly drift-scan job and `src/data/ul-dashboard-constants.ts`. |
+| Components | `src/components/UL/` | `UbiquitousLanguageDashboard`, `ULSidebar`, `ULTermTable`, `ULDetailPane`, `ULSearchBox`, `ULDriftBadge`, `ulDashboardData`, `ulSearch`, `ulMarkdown`. |
+| Verification coverage | `scripts/__tests__/generate-ul-dashboard-data.test.ts`, `src/components/UL/__tests__/UbiquitousLanguageDashboard.test.tsx`, `src/components/UL/__tests__/ulSearch.test.ts` | Generator parse + warning shape, dashboard smoke render, search ranking ordering. |
+
 ### Encounter Experience Foundation (THR-321, Phase A2)
 
 | Surface | Path | Notes |
@@ -25,8 +38,21 @@
 | Constants table | `src/data/encounter-experience-constants.ts` | Named defaults for choice tilts, drift thresholds, detection thresholds, forecast boundaries, cast/hand caps, and animation timings. |
 | Trace interfaces | `src/types/traces/encounter-traces.ts` | Defines `ChoiceResolvedTrace`, `ForecastComputedTrace`, `HandFilteredTrace`, `DriftThresholdCrossedTrace`, `DetectionThresholdCrossedTrace`, `ItemConsumedByChoiceTrace`, `SpotlightChangedTrace`. |
 | Trace category registration | `src/engine/traceBuffer.ts` | Adds `TRACE_CATEGORIES` entries for the encounter experience traces. |
-| GameState scaffolding | `src/types/gameState.ts` / `src/engine/gameInit.ts` | Adds and initializes `archetypeDrift`, `regionDetection`, and optional `spotlightedAgent`. |
+| GameState scaffolding | `src/types/gameState.ts` / `src/engine/gameInit.ts` | Adds and initializes `archetypeDrift`, `regionalDetectionPressure`, and optional `encounterSpotlight` (legacy aliases `regionDetection` / `spotlightedAgent` retained for compatibility). |
+| Detection pressure phase | `src/engine/encounters/detectionPressure.ts`, `src/engine/orchestrator/phaseDetectionPressure.ts`, `src/engine/orchestrator.ts` | Computes per-region pressure gain from committed choice AP cost, applies per-tick decay, emits `detection_threshold_crossed`, and enqueues rival encounter seeds on encounter-threshold crossing. |
 | Ascendant hand filter cascade | `src/engine/encounters/handFilter.ts`, `src/engine/encounters/placeGating.ts`, `src/engine/orchestrator/phaseAscendantHandFilter.ts` | Computes playable/dimmed/hidden partition for encounter-scoped ascendant hand, including author-pinned eligibility override and `hand_filtered` trace partition telemetry. |
+| Encounter handoff orchestration (THR-340 / Phase F2) | `src/components/Game/encounterHandoff.ts`, `src/components/Game/GameView.tsx` (`handleEncounterClick` + `closeEncounterModalAndResume`) | `prepareEncounterHandoff` emits a `spotlight_changed` trace and surfaces `ENCOUNTER_HANDOFF_TRANSITION_MS` (400ms) plus a silent `EncounterHandoffAudioHook` (post-v1 H1). GameView writes the next `gameState.spotlightedAgent` and clears it on modal dismiss. World-freeze inherits the existing `encounterModalOpen` effect. |
+| Agent pulse overlay (THR-340 / Phase F2) | `src/components/HexMapV2/overlay/AgentPulseOverlay.tsx`, `src/components/HexMapV2/HexMapV2.tsx` (`spotlightedAgentId`, `spotlightThreadColor` props), `src/index.css` (`@keyframes agent-pulse`, `@keyframes encounter-handoff-fade-up`) | Camera-projected hex flare on the spotlit agent (rAF, named tunable constants `PULSE_DIAMETER_PX`/`PULSE_PERIOD_S`/`PULSE_OPACITY_RANGE`). Mounted alongside RegionLabelOverlay/LocationLabelOverlay; rendered only when spotlit agent is in viewport. |
+| Retinue priority pip (THR-340 / Phase F2) | `src/components/Game/ThreadsPanel.tsx` (`CompactThreadRow`), `src/components/Game/RetinuePanel.tsx` | Small pulsing gold pip rendered next to the agent name when an active encounter exists for that thread. ThreadsPanel is the actively-rendered surface; RetinuePanel kept in sync for tests/legacy mounts. |
+
+### Encounter UI Shell (THR-330, Phase C1)
+
+| Surface | Path | Notes |
+|---|---|---|
+| Layout shell | `src/components/Game/Encounter/EncounterScreen.tsx` | Three-zone grid (440px hero rail + flex-1 center + 540px right rail) + 100px bottom strip. Exports `ENCOUNTER_SCREEN_LAYOUT` constants. **Not yet wired to GameView — C1 scope. Full data wiring in Phase F2 (THR-TBD).** |
+| Hero panel | `src/components/Game/Encounter/EiraHeroPanel.tsx` | Left-rail protagonist panel: portrait fallback, name/subtitle/status, capability strips, items, active vow, recent moments, registration slot for aftermath UI. |
+| Capability strip | `src/components/Game/Encounter/CapabilityStrip.tsx` | Single-row reach display: sphere label, dot pips (filled/empty), narrative hint. |
+| Verification coverage | `src/components/Game/Encounter/__tests__/EncounterScreen.test.tsx` | Shell zones data-testid presence, `BOTTOM_STRIP_HEIGHT_PX` constraint, protagonist panel sections. |
 
 ### Detail Pages (THR-337, Phase E1)
 
@@ -37,6 +63,19 @@
 | Encounter pause bridge hook | `src/hooks/useDetailModal.ts` | Exposes `isOpen` + pause contract outputs (`pausedBeatIndicatorOpacity`, `ambientDuckDb`) for encounter-shell wiring. |
 | Detail shell + composable primitives | `src/components/shared/DetailModal.tsx`, `src/components/shared/DetailBreadcrumb.tsx`, `src/components/shared/Section.tsx` | Portal-stacked modal shell with breadcrumb collapse, 28% per-layer dimming, section dispatcher placeholders for all five section kinds. |
 | Verification coverage | `src/components/shared/__tests__/DetailModal.test.tsx`, `src/hooks/__tests__/useDetailModal.test.tsx` | Snapshot coverage at depths 1/2/4/5, stack controls, section rendering, size constants, and pause-state hook contract. |
+
+### Detail Pages (THR-338, Phase E2 — typed instances)
+
+| Surface | Path | Notes |
+|---|---|---|
+| Section resolver registry | `src/data/detailPageTemplates.ts` | Per-kind schema entries (Actor / Item / Faction / Place / Event) wiring `defaultResolver`, `fallbackResolver`, `mandatory` floor, and `showcaseOverridable` flag. Adding a section row here is the only way to change a page's shape. |
+| Section resolvers | `src/engine/detailPageResolvers.ts` | Graph-walking resolvers per `(pageKind, typeId)` row. Each takes `SectionResolverContext`, returns `Section | null`. Includes `actorPortraitFallback`, `itemIconFallback`, `factionRepFallback`, `placeWantsFallback`, `eventSkeletalFallback` for the mandatory floor. |
+| Detail page generator | `src/engine/detailPageGenerator.ts` | `generateDetailPage(input)` entry point. Pure read of graph + encounter context. Per-tick cache (auto-evicts on tick advance), unknown-entity stub for missing/mismatched nodes, authored-showcase override path. |
+| Fallback prose templates | `src/data/detail-page-fallback-templates.ts` | Per-kind template pools (≥5 variants per slot per `DETAIL_FALLBACK_PROSE_VARIANTS`). Used by mandatory-floor fallback resolvers when graph data is sparse. |
+| Showcase authoring contract | `src/data/detail-page-showcase.ts` | Empty `SHOWCASE_AUTHORING` map for THR-318 Stream 2 to fill. `getShowcaseAuthoring(nodeId, templateId)` is the engine read path. |
+| Click-through opener context | `src/contexts/DetailPageOpenerContext.tsx` | Provides `openByRef(ref)` to all descendants of the encounter shell so chips / event-cards / `data-term` prose spans navigate without re-wiring `graph + tick + seed + push`. Section dispatcher consumes via `useDetailPageOpener()`. |
+| Typed open hooks | `src/components/Game/Encounter/DetailPage/openDetailPage.ts` | `useOpenDetailPage(gameState)` returns `{ openActor, openItem, openFaction, openPlace, openEvent, openRef }` for click handlers on cast tiles, items rail, faction chips, place captions, callback notes. Wire the encounter shell's `DetailPageOpenerProvider` value to `openRef` from this hook. |
+| Verification coverage | `src/engine/__tests__/detailPageGenerator.test.ts`, `src/components/Game/Encounter/DetailPage/__tests__/TypedDetailPages.test.tsx` | Generator unit tests across 5 kinds + fail-soft + cache invalidation. Integration snapshots at 1920×1080 for each typed instance, modal stacking 4-deep, chip-click → opener invocation. |
 
 ### 1. Orchestrator Tick Loop (`src/engine/orchestrator.ts`)
 
@@ -78,6 +117,7 @@ Slot anchor positions in `runTick`: `pre-doom`, `post-doom`, `post-resolution`, 
 | 2a.52 | `phaseEffectShells` | Non-step-outcome flip_table triggers (attachment_gained, manual); step_outcome triggers fire inline in executeStepResult (THR-53) |
 | 2a.4 | `tickEffects` (inline orchestrator block) | Generic effect runtime bookkeeping: duration, cooldown, decay, stacking, attachment removal |
 | 2a.6 | `phaseEncounterVisibility` | Encounter notifications |
+| 2a.605 | `phaseDetectionPressure` | Regional detection pressure accumulation/decay, threshold traces, and rival encounter-seed enqueue |
 | 2a.61 | `phaseChoiceResolution` | Process pending player choice commits → d100 roll, drift accumulation, item consumption, `choice_resolved` + `drift_threshold_crossed` + `item_consumed_by_choice` traces (THR-323) |
 | 2a.62 | `phaseAscendantHandFilter` | Encounter-scoped ascendant hand partition + `hand_filtered` traces |
 | 2a.55 | `phaseStrategicProjects` | Strategic project progression + control degradation |
@@ -506,6 +546,8 @@ Engine phases write to GameState fields. UI components must read them. An engine
 | `effectStates` | Orchestrator Phase 2a.4 (`tickEffects`) | No dedicated player UI; currently engine/runtime only | ⚠️ Debug visibility should improve before shell-heavy effect features land |
 | `UnifiedActionTemplate.narrativeTemplates` / `aftermathConfig` / `illustrationUrl` / `backgroundTrack` / `musicTrack` | Authored encounter templates (single unified format) | Encounter stage adapters + `useAmbientContext` consume unified template fields for prose, aftermath, concept-art, and audio overrides | ✅ (2026-04-29, THR-109 format baseline) |
 | `emittedOmens?: EmittedOmen[]` | `applyEncounterAftermathReaction` (`emit_omen` effect) + Phase 1.7a `phaseEmittedOmenDecay` | No dedicated player UI — omens influence encounter bias in `phaseAgentDecision` (invisible to player) + decay trace visible in DebugPanel feed. ⚠️ No UI readout for active emitted omens (tracked as THR-136 scope). | ⚠️ Engine-only (THR-115) |
+| `archetypeDrift: ArchetypeDrift[]` | `phaseChoiceResolution` (write), `phaseDriftDecay` (decay) | `DebugPanel` → `DriftVisualiser` (THR-339 inspector); player-facing scene-state indicators land in C4 (THR-333) | ✅ Engine + Debug (THR-339) |
+| `regionalDetectionPressure: RegionDetectionState[]` | `phaseDetectionPressure` (write + decay) | `DebugPanel` → `EncounterSeedsTab` and `DetectionStateInspector` (THR-339) | ✅ Engine + Debug (THR-339) |
 
 **Verification:** For each new GameState field in your feature, name the component that reads it and how the data reaches the player.
 
@@ -529,7 +571,7 @@ Engine phases write to GameState fields. UI components must read them. An engine
 
 Every system should emit traces for inspectability (NFP #2). A trace category that exists in the type system but is never emitted is dead code.
 
-**Current trace categories (85):** action_selection, narrative_generation, context_harvest, dilemma_resolution, tick_summary, encounter_resolution, familiarity_change, movement, intervention_effect, action_execution, modifier_resolution, prosperity_tick, wealth_delta, trade_route_volume_change, trade_route_dissolved, settlement_tier_change, target_action_filter, hex_state, unrest_tick, saturation_tick, economic_chronicle, encounter_awareness, faction_awareness, encounter_cache, encounter_filter, idle_decision, encounter_scoring, road_hex_transition, agent_reroute, return_resolution, ripple_consequence, control_effect, doom_card, mandate_checkpoint, revelation, tick_health, tick_crash, agent_revelation, interaction_depth, faction_ambition, reputation_trait, rarity_graduation, rarity_importance, encounter_promotion, curator_decision, attention_pool, story_beat_queue, slot_overflow, slot_disposal, condition_overflow, slot_expansion, meeting_sensing, meeting_testing, meeting_spark, meeting_bond, settlement_genome, settlement_reassessment, culture_generation, culture_sublocation, graph_op_execution, choice_set_player_resolved, choice_set_player_dismissed, authored_attachment_created, **cli_auto_aftermath** (THR-257), encounter_aftermath_applied, encounter_aftermath_effect, encounter_seed_planted, encounter_seed_triggered, hidden_mark_placed, hidden_mark_revealed, intelligence_granted, **intelligence_referenced** (THR-113), **complication_selection** (THR-20), **aftermath_target_resolved**, **aftermath_target_invalid**, **faction_reputation_changed**, **reputation_set_applied**, **condition_applied**, **condition_removed** (all THR-114), **artifact_spawned**, **omen_emitted**, **omen_decayed**, **faction_splintered**, **faction_absorbed**, **faction_dissolved**, **faction_war_declared**, **faction_peace_forced** (all THR-115), **tick_phase_profile** (THR-186), **encounter_cache_rebuild** (THR-187)
+**Current trace categories (85+):** action_selection, narrative_generation, context_harvest, dilemma_resolution, tick_summary, encounter_resolution, familiarity_change, movement, intervention_effect, action_execution, modifier_resolution, prosperity_tick, wealth_delta, trade_route_volume_change, trade_route_dissolved, settlement_tier_change, target_action_filter, hex_state, unrest_tick, saturation_tick, economic_chronicle, encounter_awareness, faction_awareness, encounter_cache, encounter_filter, idle_decision, encounter_scoring, road_hex_transition, agent_reroute, return_resolution, ripple_consequence, control_effect, doom_card, mandate_checkpoint, revelation, tick_health, tick_crash, agent_revelation, interaction_depth, faction_ambition, reputation_trait, rarity_graduation, rarity_importance, encounter_promotion, curator_decision, attention_pool, story_beat_queue, slot_overflow, slot_disposal, condition_overflow, slot_expansion, meeting_sensing, meeting_testing, meeting_spark, meeting_bond, settlement_genome, settlement_reassessment, culture_generation, culture_sublocation, graph_op_execution, choice_set_player_resolved, choice_set_player_dismissed, authored_attachment_created, **cli_auto_aftermath** (THR-257), encounter_aftermath_applied, encounter_aftermath_effect, encounter_seed_planted, encounter_seed_triggered, hidden_mark_placed, hidden_mark_revealed, intelligence_granted, **intelligence_referenced** (THR-113), **complication_selection** (THR-20), **aftermath_target_resolved**, **aftermath_target_invalid**, **faction_reputation_changed**, **reputation_set_applied**, **condition_applied**, **condition_removed** (all THR-114), **artifact_spawned**, **omen_emitted**, **omen_decayed**, **faction_splintered**, **faction_absorbed**, **faction_dissolved**, **faction_war_declared**, **faction_peace_forced** (all THR-115), **tick_phase_profile** (THR-186), **encounter_cache_rebuild** (THR-187), **choice_resolved**, **forecast_computed**, **hand_filtered**, **drift_threshold_crossed**, **detection_threshold_crossed**, **item_consumed_by_choice**, **spotlight_changed**, **callback_eligibility_computed** (all THR-339, registered in `TRACE_CATEGORIES`; emitters in Phase B modules)
 
 **THR-16 (2026-04-18):** `curator_decision` trace extended — `CuratorDecisionTrace` now carries `isChainStage: boolean`, `isFinalChainStage: boolean`, `factionThreadCount: number`, `matchesAmbition: boolean`. These fields are computed in `phaseAttention.ts` and flow through to every `curator_decision` emission (both `kept` and `curated_out`). Not new categories — extensions to the existing interface.
 
@@ -548,9 +590,9 @@ These are not `TraceCategory` entries in `src/types/trace.ts` — they are out-o
 
 ### 5. DebugPanel Tabs (`src/components/Game/DebugPanel.tsx`)
 
-Current ViewMode values: `feed`, `agent-follow`, `tick-inspector`, `social`, `encounters`, `encounter-seeds`, `hidden-marks`, `journey`, `webgl`, `factions`, `spheres`, `revelation-log`, `knowledge-gaps`, `armies`, `cli`, `strategic`, `omens`, `cultures`, `secrets-favors`, `clues`, `ruins`
+Current ViewMode values: `feed`, `agent-follow`, `tick-inspector`, `social`, `encounters`, `encounter-seeds`, `hidden-marks`, `journey`, `webgl`, `factions`, `spheres`, `revelation-log`, `knowledge-gaps`, `armies`, `cli`, `strategic`, `omens`, `cultures`, `secrets-favors`, `clues`, `ruins`, `recent-events`, `shells`, `compositions`, `phases`, `choices`, `drift`, `hand`, `detection`, `forecast`
 
-Sub-components: `DecisionBreakdown`, `RelationshipGraph`, `EncounterCacheView`, `WebGLDebugTab`, `HiddenMarksTab`, `EncounterSeedsTab`, `CulturePhoneticsInspector`, `CluesDebugTab` (THR-150), `RuinsDebugTab` (THR-154)
+Sub-components: `DecisionBreakdown`, `RelationshipGraph`, `EncounterCacheView`, `WebGLDebugTab`, `HiddenMarksTab`, `EncounterSeedsTab`, `CulturePhoneticsInspector`, `CluesDebugTab` (THR-150), `RuinsDebugTab` (THR-154), `EncounterChoiceInspector`, `DriftVisualiser`, `HandStateInspector`, `DetectionStateInspector`, `ForecastFactorsInspector` (all THR-339 — wire DebugPanel inspectors for Phase B encounter modules)
 
 **Debug bridge aftermath surface (THR-257):**
 

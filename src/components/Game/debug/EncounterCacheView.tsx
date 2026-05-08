@@ -236,6 +236,22 @@ export const EncounterCacheView = React.memo(function EncounterCacheView({
     });
   }, [encounterProgress, currentTick]);
 
+  // Graph node state for encounter_template and relationship nodes (THR-327)
+  const graphNodeState = useMemo(() => {
+    if (!graph) return null;
+    const templateNodes = graph.getNodesByType('encounter_template');
+    const relationshipNodes = graph.getNodesByType('relationship');
+    return {
+      templateCount: templateNodes.length,
+      relationshipCount: relationshipNodes.length,
+      templates: templateNodes.map(n => ({
+        id: n.id,
+        templateId: n.properties.template_id as string | undefined,
+        category: n.properties.category as string | undefined,
+      })),
+    };
+  }, [graph]);
+
   // Filter to followed agent if set
   const filteredActive = followAgentId
     ? activeEncounters.filter(p => p.actorId === followAgentId)
@@ -247,6 +263,30 @@ export const EncounterCacheView = React.memo(function EncounterCacheView({
 
   return (
     <div data-testid="encounter-cache-view">
+      {/* Encounter Template Graph Nodes (THR-327, Phase B5) */}
+      {graphNodeState && (graphNodeState.templateCount > 0 || graphNodeState.relationshipCount > 0) && (
+        <div style={SECTION_STYLE} data-testid="encounter-graph-node-state">
+          <div style={HEADING_STYLE}>Graph Nodes</div>
+          <div style={ROW_STYLE}>
+            <span style={LABEL_STYLE}>encounter_template</span>
+            <span style={VALUE_STYLE}>{graphNodeState.templateCount}</span>
+          </div>
+          <div style={ROW_STYLE}>
+            <span style={LABEL_STYLE}>relationship</span>
+            <span style={VALUE_STYLE}>{graphNodeState.relationshipCount}</span>
+          </div>
+          {graphNodeState.templates.length > 0 && (
+            <div style={{ marginTop: '6px' }}>
+              {graphNodeState.templates.map(t => (
+                <div key={t.id} style={{ ...ROW_STYLE, fontSize: '10px', opacity: 0.85 }}>
+                  <span style={{ ...LABEL_STYLE, minWidth: '80px' }}>{t.category ?? '—'}</span>
+                  <span style={{ ...VALUE_STYLE, wordBreak: 'break-all' }}>{t.templateId ?? t.id}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
       {/* Export Controls */}
       <div style={{ ...SECTION_STYLE, display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
         <label style={{ ...LABEL_STYLE, minWidth: 'auto', fontSize: 'var(--text-xs)' }}>Export Log:</label>

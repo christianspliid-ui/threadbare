@@ -17,6 +17,8 @@ import type { OutcomeType, ResolutionRollBreakdown } from './resolution';
 /**
  * Encounter UI Phase A contract note:
  * Canonical encounter authoring schema now lives in `encounter-contract.ts`.
+ * Runtime validation lives in `data/encounter-contract-validators.ts`.
+ * UnifiedActionTemplate bridging lives in `engine/encounter-contract-adapter.ts`.
  * This legacy runtime shape remains for backward compatibility in existing systems.
  */
 export type { EncounterContract } from './encounter-contract';

@@ -404,6 +404,22 @@ export type EncounterAftermathReactionEffect =
     readonly reason?: string;
     readonly when?: EffectPredicate;
   }
+  // ─── Archetype drift surface (THR-328) ───────────────────────────────────
+  | {
+    /**
+     * UI surface trigger: register that a drift threshold is currently held
+     * on a moral axis after encounter resolution.
+     */
+    readonly kind: 'archetype_drift_register';
+    /** Moral axis the registration applies to (for example: protector_conqueror). */
+    readonly axisId: string;
+    /** Threshold band that must currently be held on the axis. */
+    readonly threshold: 'soft' | 'banner' | 'becoming';
+    /** Direct the registration at a specific agent (defaults to actor). */
+    readonly targetAgentId?: string;
+    /** Optional predicate gate — effect skips if predicate evaluates false. */
+    readonly when?: EffectPredicate;
+  }
   // ─── Ruins Layer clue effects (THR-150) ──────────────────────────────────
   | {
     /**
@@ -500,6 +516,8 @@ export interface ActionStep {
   readonly reach: ReachDomain;
   readonly duration: { readonly min: number; readonly max: number };
   readonly difficulty: number; // 0-1
+  /** Opt-in for intel-derived difficulty reduction during resolution. */
+  readonly difficultyContext?: 'intel_sensitive';
   readonly onSuccess: readonly GraphOp[];
   readonly onFailure: readonly GraphOp[];
   readonly failBehavior: StepFailBehavior;

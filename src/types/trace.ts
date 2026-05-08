@@ -171,7 +171,16 @@ export type TraceCategory =
   | 'composition.failed'
   | 'composition.phase_eval_failed'
   // Composition dual-voice story-beat wiring (THR-254)
-  | 'composition.story_beat_template_missing';
+  | 'composition.story_beat_template_missing'
+  // Encounter Experience traces (THR-339 wiring; emitters in Phase B modules)
+  | 'choice_resolved'
+  | 'forecast_computed'
+  | 'hand_filtered'
+  | 'drift_threshold_crossed'
+  | 'detection_threshold_crossed'
+  | 'item_consumed_by_choice'
+  | 'spotlight_changed'
+  | 'callback_eligibility_computed';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -327,6 +336,15 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'composition.phase_eval_failed',
   // Composition dual-voice story-beat wiring (THR-254)
   'composition.story_beat_template_missing',
+  // Encounter Experience traces (THR-339)
+  'choice_resolved',
+  'forecast_computed',
+  'hand_filtered',
+  'drift_threshold_crossed',
+  'detection_threshold_crossed',
+  'item_consumed_by_choice',
+  'spotlight_changed',
+  'callback_eligibility_computed',
 ];
 
 /** Base shape for all trace entries */
@@ -1209,7 +1227,7 @@ export interface IntelligenceReferencedTrace extends TraceBase {
   recordId: string;
   agentId: string;
   /** Where the reference happened. */
-  referencedBy: 'scoring_boost' | 'prose_enrichment' | 'resolution_match';
+  referencedBy: 'scoring_boost' | 'prose_enrichment' | 'resolution_match' | 'difficulty_modifier';
   /** Optional: templateId of the encounter involved (scoring/resolution only). */
   templateId?: string;
   /** Optional: intelligence category (prose_enrichment only). */

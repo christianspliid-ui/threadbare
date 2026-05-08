@@ -6,11 +6,13 @@
  * nodes) and are queryable by future encounters to gate content or adjust
  * difficulty.
  *
- * v2 (THR-113): consumption loop. Three sites reference records:
+ * v2 (THR-113, THR-140): consumption loop. Four sites reference records:
  *   - scoring boost (encounterScoring.ts) — actionable intel boosts candidate score
  *   - prose enrichment (proseEnrichment.ts) — {intel:*}, {?knows_*} placeholders
  *   - resolution-match observation (GameView.tsx) — passive trace when a resolved
  *     encounter's target matches an existing record
+ *   - difficulty modifier (unifiedActionResolution.ts) — intel-sensitive steps
+ *     can reduce effective difficulty based on record reliability
  * All three emit `intelligence_referenced` traces with a `referencedBy` discriminator.
  * Consumption never removes records; decay is deferred.
  */
@@ -205,7 +207,7 @@ export function emitIntelligenceReferenced(
   tick: number,
   agentId: string,
   recordId: string,
-  referencedBy: 'scoring_boost' | 'prose_enrichment' | 'resolution_match',
+  referencedBy: 'scoring_boost' | 'prose_enrichment' | 'resolution_match' | 'difficulty_modifier',
   opts?: { templateId?: string; intelCategory?: IntelligenceCategory },
 ): void {
   try {

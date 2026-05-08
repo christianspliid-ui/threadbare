@@ -1,6 +1,7 @@
 ---
 name: design-council
 description: Orchestrate multi-agent consent-based design discussions on a shared markdown page. Agents from different perspectives (content, engine, coordination, etc.) pass the ball, propose concrete actions, and reach decisions via sociocratic consent ("good enough for now, safe enough to try"). Trigger with "/design-council", "run a council on X", "let's get multiple perspectives on this", or any ways-of-working improvement question.
+last_validated_against: 2026-05-08
 ---
 
 # Design Council

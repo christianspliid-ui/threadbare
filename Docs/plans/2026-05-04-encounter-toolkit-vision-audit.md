@@ -134,18 +134,15 @@ The long-form design plan must pick one. If (a), the AgendaPicker component is r
 
 ### 4.4 Wrong number of reaches; conflated with spheres
 
-**The drift.** The toolkit doc and several worked examples reference "8 reach domains" and use "Spirit", "Voice", "Shadow" interchangeably as if they were reaches.
+> **2026-05-05 correction.** This section originally treated "9 reaches with Flesh" as canonical. That was based on a stale `Systems/Domain Word Scales.md` page predating the 2026-03-28 Flesh→Quintessence migration. Per user verdict (`Docs/audits/2026-05-05-cosmological-canon-drift-audit.md`): canonical is **8 Reaches** (Iron, Gold, Shadow, Veil, Heart, Eye, Stone, Star) with Quintessence as a meta-property, not a 9th Reach. The toolkit's "8 reach domains" claim was correct; this audit was wrong on that point.
 
-**Canonical (Domain Word Scales):** *nine* reaches —
-**Iron · Gold · Shadow · Veil · Heart · Eye · Stone · Star · Flesh.**
+**The remaining drift (still valid):** the toolkit conflates Reaches with Spheres. "Spirit", "Voice", "Mind", "Force", "Energy", "Life", "Time", "Entropy", "Matter" are **Creation Spheres**, not Reaches. There are 12 spheres total: 4 Foundation (Chaos, Order, Light, Darkness) + 8 Creation.
 
-**Spirit, Voice, Mind, Force, Energy, Life, Time, Entropy, Matter** — these are **Creation Spheres**, not Reaches. There are 12 spheres total: 4 Foundation (Chaos, Order, Light, Darkness) + 8 Creation.
+In the ritual worked example, the toolkit's lean *"SPIRIT · open the lantern"* uses Spirit as if it were a reach. It's a sphere. Same for "Voice" in the court example.
 
-In the ritual worked example, the toolkit's lean *"SPIRIT · open the lantern"* uses Spirit as if it were a reach. It's a sphere. Same for "Voice" in the court example — it's a Creation sphere (specifically the sphere of language and binding), not a reach.
+**The fix.** Audit the toolkit's worked examples and lean card examples. Every reach reference must come from {Iron, Gold, Shadow, Veil, Heart, Eye, Stone, Star}. Sphere alignment is a separate axis — a lean card can declare both *(reach=Heart, sphere=Spirit)*, but they are not interchangeable.
 
-**The fix.** Audit the toolkit's worked examples and lean card examples. Every reach reference must come from {Iron, Gold, Shadow, Veil, Heart, Eye, Stone, Star, Flesh}. Sphere alignment is a separate axis — a lean card can declare both *(reach=Heart, sphere=Spirit)*, but they are not interchangeable.
-
-The §6 *Variety Levers* table should also be updated — *"Reach domain selection: any 3 of 8"* should read *"any 3 of 9"*.
+The §6 *Variety Levers* table should also be updated — *"Reach domain selection: any 3 of 8"* is correct as-stated; do not change it to "any 3 of 9".
 
 ### 4.5 The moral weight of leaning is under-framed
 
@@ -239,7 +236,7 @@ Concrete edits to bring the toolkit into alignment, in order of severity.
 
 | Severity | Change | Section to edit |
 |---|---|---|
-| **Critical** | Fix reach count (8 → 9) and add Flesh to reach references | §6 Variety Levers; §3.1 Eira Hero Panel; ritual worked example |
+| ~~Critical~~ ✅ Resolved | ~~Fix reach count (8 → 9) and add Flesh to reach references~~ — toolkit was correct on 8 reaches; no change needed. See §4.4 correction note. | n/a |
 | **Critical** | Replace "Spirit reach" / "Voice reach" with correct reach references (Heart/Star/Veil) and explicit sphere alignment as a separate axis | §5.3 Court intrigue; §5.4 Ritual |
 | **Critical** | Connect lean cards to canonical three intervention verbs (nudge / whisper / vision); display verb explicitly on each card | §3.2 Active Card; §4 Authoring Contract |
 | **Critical** | Reconcile lean costs with Fate Forecast vocabulary; pick (a) supersedes Forecast or (b) coexists; document | §3.2; new section bridging to Fate Forecast |

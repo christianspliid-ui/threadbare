@@ -8,6 +8,7 @@ description: >
   Triggers on "attachment pipeline", "author attachments", "create attachments",
   "new items", "new possessions", "new conditions", "new bestowed powers".
 model: opus
+last_validated_against: 2026-05-08
 ---
 
 # Attachment Pipeline

@@ -17,8 +17,8 @@ describe('agent-visual-content constants', () => {
     expect(MAX_RING_AGENTS).toBe(6);
   });
 
-  it('DOMAIN_COLORS has all 9 reaches', () => {
-    const reaches = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'flesh'];
+  it('DOMAIN_COLORS has all 8 reaches', () => {
+    const reaches = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star'];
     for (const reach of reaches) {
       expect(DOMAIN_COLORS[reach]).toBeDefined();
     }

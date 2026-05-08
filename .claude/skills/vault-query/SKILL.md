@@ -1,6 +1,7 @@
 ---
 name: vault-query
 description: Ask questions against the Obsidian vault knowledge base. Three depth tiers (quick/standard/deep). Synthesizes answers with wikilink citations and optionally files results. Run with /kb-query.
+last_validated_against: 2026-05-08
 ---
 
 # Vault Query — Knowledge Base Q&A

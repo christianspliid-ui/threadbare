@@ -17,6 +17,7 @@
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { FactionEncounterMeta } from '../types/faction';
+import { withEncounterContract } from './encounter-contract-builder';
 import {
   FACTION_PROSE_SEED_DELAY_QUEST_TICKS,
   FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS,
@@ -56,7 +57,7 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_META: ReadonlyMap<string, FactionEnc
 
 export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
-  {
+  withEncounterContract({
     id: 'lk.quest.catalogue_ruins',
     name: 'Catalogue the Ruins',
     rarityTier: 1,
@@ -166,9 +167,9 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] =
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'lk.quest.translate_text',
     name: 'Translate the Text',
     rarityTier: 1,
@@ -280,9 +281,9 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] =
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'lk.quest.recover_tome',
     name: 'Recover a Missing Tome',
     rarityTier: 1,
@@ -400,9 +401,9 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] =
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'lk.quest.map_ley_lines',
     name: 'Map the Ley Lines',
     rarityTier: 1,
@@ -501,9 +502,9 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] =
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'lk.quest.interview_elder',
     name: 'Interview an Elder',
     rarityTier: 1,
@@ -616,7 +617,7 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] =
         ],
       },
     },
-  },
+  }),
 ];
 
 // ─── Senior Quest Templates ───────────────────────────────────────────────
@@ -1292,7 +1293,7 @@ export const LOREKEEPERS_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
 
 export const LOREKEEPERS_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
-  {
+  withEncounterContract({
     id: 'lk.social.lecture_hall',
     name: 'Lecture Hall',
     rarityTier: 1,
@@ -1372,9 +1373,9 @@ export const LOREKEEPERS_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'lk.social.debate_forum',
     name: 'Debate Forum',
     rarityTier: 1,
@@ -1459,9 +1460,9 @@ export const LOREKEEPERS_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 
-  {
+  withEncounterContract({
     id: 'lk.social.manuscript_exchange',
     name: 'Manuscript Exchange',
     rarityTier: 1,
@@ -1560,7 +1561,7 @@ export const LOREKEEPERS_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         ],
       },
     },
-  },
+  }),
 ];
 
 // ─── Lifecycle Templates ──────────────────────────────────────────────────

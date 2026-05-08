@@ -12,21 +12,40 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
-// Drift scan thresholds — tune here, rebuild, done.
-export const COUPLING_CREEP_PCT = 10; // S1: importer growth threshold
-export const BROKEN_WINDOWS_PCT = 15; // S2: broken-windows growth threshold
-export const TEST_RUNTIME_REGRESSION_PCT = 15; // S3: test runtime regression threshold
-export const TEST_FLAKE_MIN_RUNS = 3; // S3: minimum observations before flake flag
-export const UL_DRIFT_STALE_DAYS = 30; // S4: canonical term stale threshold
-export const TOP_IMPORTERS_COUNT = 20; // S1: top importers window
-export const UL_UNCANONICAL_MIN_OCCURRENCES = 4; // S4: used-uncanonical floor
-export const SUITE_HISTORY_LIMIT = 8; // S3: retained per-suite history window
+// Drift scan thresholds — tune in `./constants.ts` (browser-safe single source).
+import {
+  COUPLING_CREEP_PCT,
+  BROKEN_WINDOWS_PCT,
+  TEST_RUNTIME_REGRESSION_PCT,
+  TEST_FLAKE_MIN_RUNS,
+  UL_DRIFT_STALE_DAYS,
+  SKILL_FRESHNESS_STALE_DAYS,
+  SKILL_FRESHNESS_ARCHIVE_DAYS,
+  SKILL_FRESHNESS_BOOTSTRAP_GRACE_DAYS,
+  TOP_IMPORTERS_COUNT,
+  UL_UNCANONICAL_MIN_OCCURRENCES,
+  SUITE_HISTORY_LIMIT,
+} from "./constants";
+export {
+  COUPLING_CREEP_PCT,
+  BROKEN_WINDOWS_PCT,
+  TEST_RUNTIME_REGRESSION_PCT,
+  TEST_FLAKE_MIN_RUNS,
+  UL_DRIFT_STALE_DAYS,
+  SKILL_FRESHNESS_STALE_DAYS,
+  SKILL_FRESHNESS_ARCHIVE_DAYS,
+  SKILL_FRESHNESS_BOOTSTRAP_GRACE_DAYS,
+  TOP_IMPORTERS_COUNT,
+  UL_UNCANONICAL_MIN_OCCURRENCES,
+  SUITE_HISTORY_LIMIT,
+};
 
 const LINEAR_API_URL = "https://api.linear.app/graphql";
 const LINEAR_PROJECT_ID = "42ac1815-135e-4efb-95d8-631a17dbc9df"; // Continuous Improvement
 const LINEAR_TEAM_ID = "290e931e-eb67-4565-9834-fd79c9466928"; // Threadbare
 const DRIFT_SCAN_LABEL_NAME = "drift-scan";
 const UL_SHARD_DIR = path.join("Docs", "ubiquitous-language");
+const SKILL_ROOTS = [path.join(".claude", "skills"), path.join(".agents", "skills")];
 const TEST_OUTPUT_PATH = ".cache/drift-scan-results.json";
 const DEFAULT_TEST_TIMEOUT_MS = 6 * 60 * 1000;
 
@@ -83,7 +102,7 @@ export type SignalResult =
   | { status: "red"; summary: string; body: string };
 
 export type SignalStep = {
-  id: "S1" | "S2" | "S3" | "S4";
+  id: "S1" | "S2" | "S3" | "S4" | "S5";
   name: string;
   run: () => Promise<SignalResult>;
 };
@@ -134,6 +153,7 @@ export type Baseline = {
   s3TestRuntimeMs: number;
   s3SuiteHistory: Record<string, boolean[]>;
   s4CanonicalLastSeen: Record<string, string>;
+  s5SkillFreshness: { lastValidatedAt: Record<string, string> };
 };
 
 export type S3Evaluation = {
@@ -146,8 +166,28 @@ export type S4Evaluation = {
   nextCanonicalLastSeen: Record<string, string>;
 };
 
+export type SkillFreshnessEntry = {
+  skillName: string;
+  path: string;
+  lastValidatedAt: string | null;
+  createdAt: string | null;
+};
+
+export type S5Evaluation = {
+  signal: SignalResult;
+  nextLastValidatedAt: Record<string, string>;
+};
+
 function todayDateStamp(): string {
   return new Date().toISOString().slice(0, 10);
+}
+
+function parseIsoDateOnly(value: string | null | undefined): string | null {
+  if (!value) return null;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  const millis = Date.parse(`${value}T00:00:00Z`);
+  if (Number.isNaN(millis)) return null;
+  return value;
 }
 
 function escapeRegex(value: string): string {
@@ -192,6 +232,86 @@ function collectFilesRecursive(rootAbs: string, extensions: Set<string>): string
 
 function toRepoRelative(absPath: string): string {
   return path.relative(REPO_ROOT, absPath).replaceAll("\\", "/");
+}
+
+function readFrontmatterValue(markdown: string, fieldName: string): string | null {
+  const lines = markdown.split(/\r?\n/);
+  if (lines[0]?.trim() !== "---") return null;
+
+  let closing = -1;
+  for (let i = 1; i < lines.length; i += 1) {
+    if (lines[i].trim() === "---") {
+      closing = i;
+      break;
+    }
+  }
+  if (closing < 0) return null;
+
+  const fieldPattern = new RegExp(`^${escapeRegex(fieldName)}:\\s*(.*)$`);
+  for (let i = 1; i < closing; i += 1) {
+    const line = lines[i];
+    if (/^\s/.test(line)) continue;
+    const match = line.match(fieldPattern);
+    if (!match) continue;
+    const value = match[1].trim();
+    return value.length > 0 ? value : null;
+  }
+
+  return null;
+}
+
+function readSkillCreatedDate(repoRelativePath: string): string | null {
+  const run = spawnSync(
+    "git",
+    ["log", "--follow", "--diff-filter=A", "--format=%as", "--", repoRelativePath],
+    {
+      cwd: REPO_ROOT,
+      encoding: "utf8",
+      timeout: 10_000,
+    },
+  );
+
+  const output = (run.stdout ?? "").trim();
+  if (output.length > 0) {
+    const date = output.split(/\r?\n/).find((line) => line.trim().length > 0)?.trim() ?? "";
+    const parsed = parseIsoDateOnly(date);
+    if (parsed) return parsed;
+  }
+
+  try {
+    const stat = fs.statSync(path.join(REPO_ROOT, repoRelativePath));
+    return new Date(stat.mtimeMs).toISOString().slice(0, 10);
+  } catch {
+    return null;
+  }
+}
+
+function readSkillFreshnessEntries(): SkillFreshnessEntry[] {
+  const entriesBySkill = new Map<string, SkillFreshnessEntry>();
+
+  for (const skillRoot of SKILL_ROOTS) {
+    const absRoot = path.join(REPO_ROOT, skillRoot);
+    if (!fs.existsSync(absRoot)) continue;
+    const skillFiles = collectFilesRecursive(absRoot, new Set([".md"]))
+      .filter((absPath) => path.basename(absPath) === "SKILL.md")
+      .sort((a, b) => a.localeCompare(b));
+
+    for (const absPath of skillFiles) {
+      const markdown = readFileText(absPath);
+      if (markdown === null) continue;
+      const skillName = path.basename(path.dirname(absPath));
+      if (entriesBySkill.has(skillName)) continue;
+      const repoPath = toRepoRelative(absPath);
+      entriesBySkill.set(skillName, {
+        skillName,
+        path: repoPath,
+        lastValidatedAt: readFrontmatterValue(markdown, "last_validated_against"),
+        createdAt: readSkillCreatedDate(repoPath),
+      });
+    }
+  }
+
+  return [...entriesBySkill.values()].sort((a, b) => a.skillName.localeCompare(b.skillName));
 }
 
 function countRegexMatches(text: string, regex: RegExp): number {
@@ -624,6 +744,134 @@ export function evaluateUlDrift(params: {
   };
 }
 
+export function evaluateSkillFreshness(params: {
+  runDate: string;
+  entries: SkillFreshnessEntry[];
+  priorLastValidatedAt: Record<string, string>;
+  staleDays?: number;
+  archiveDays?: number;
+  bootstrapGraceDays?: number;
+}): S5Evaluation {
+  const {
+    runDate,
+    entries,
+    priorLastValidatedAt,
+    staleDays = SKILL_FRESHNESS_STALE_DAYS,
+    archiveDays = SKILL_FRESHNESS_ARCHIVE_DAYS,
+    bootstrapGraceDays = SKILL_FRESHNESS_BOOTSTRAP_GRACE_DAYS,
+  } = params;
+
+  if (entries.length === 0) {
+    return {
+      signal: { status: "skipped", reason: "no skill files found under .claude/skills or .agents/skills" },
+      nextLastValidatedAt: { ...priorLastValidatedAt },
+    };
+  }
+
+  const nextLastValidatedAt: Record<string, string> = { ...priorLastValidatedAt };
+  const stale: Array<SkillFreshnessEntry & { parsedDate: string; daysUnvalidated: number }> = [];
+  const archive: Array<SkillFreshnessEntry & { parsedDate: string; daysUnvalidated: number }> = [];
+  const bootstrap: Array<{ skillName: string; path: string; reason: string }> = [];
+
+  for (const entry of entries) {
+    const parsedDate = parseIsoDateOnly(entry.lastValidatedAt);
+    if (parsedDate) {
+      nextLastValidatedAt[entry.skillName] = parsedDate;
+
+      const prior = parseIsoDateOnly(priorLastValidatedAt[entry.skillName]);
+      if (prior && Date.parse(`${parsedDate}T00:00:00Z`) < Date.parse(`${prior}T00:00:00Z`)) {
+        bootstrap.push({
+          skillName: entry.skillName,
+          path: entry.path,
+          reason: `validation date regressed (${prior} -> ${parsedDate})`,
+        });
+        continue;
+      }
+
+      const daysUnvalidated = dateDiffDays(runDate, parsedDate);
+      if (daysUnvalidated > staleDays) {
+        stale.push({ ...entry, parsedDate, daysUnvalidated });
+      }
+      if (daysUnvalidated > archiveDays) {
+        archive.push({ ...entry, parsedDate, daysUnvalidated });
+      }
+      continue;
+    }
+
+    nextLastValidatedAt[entry.skillName] = entry.lastValidatedAt ?? "";
+    const createdAt = parseIsoDateOnly(entry.createdAt);
+    const inGraceWindow = createdAt !== null && dateDiffDays(runDate, createdAt) <= bootstrapGraceDays;
+    if (inGraceWindow) continue;
+
+    bootstrap.push({
+      skillName: entry.skillName,
+      path: entry.path,
+      reason: entry.lastValidatedAt ? `invalid date format: ${entry.lastValidatedAt}` : "missing last_validated_against",
+    });
+  }
+
+  if (stale.length === 0 && archive.length === 0 && bootstrap.length === 0) {
+    return {
+      signal: { status: "green" },
+      nextLastValidatedAt,
+    };
+  }
+
+  const lines: string[] = ["## Skill freshness drift detected", ""];
+
+  if (stale.length > 0) {
+    lines.push(
+      `### Stale skills (>${staleDays} days unvalidated)`,
+      "",
+      "| Skill | Last validated | Days unvalidated | Path |",
+      "|---|---|---:|---|",
+    );
+    for (const entry of stale.sort((a, b) => b.daysUnvalidated - a.daysUnvalidated)) {
+      lines.push(`| \`${entry.skillName}\` | ${entry.parsedDate} | ${entry.daysUnvalidated} | \`${entry.path}\` |`);
+    }
+    lines.push("");
+  }
+
+  if (archive.length > 0) {
+    lines.push(
+      `### Archive-candidate skills (>${archiveDays} days unvalidated)`,
+      "",
+      "| Skill | Last validated | Days unvalidated | Path |",
+      "|---|---|---:|---|",
+    );
+    for (const entry of archive.sort((a, b) => b.daysUnvalidated - a.daysUnvalidated)) {
+      lines.push(`| \`${entry.skillName}\` | ${entry.parsedDate} | ${entry.daysUnvalidated} | \`${entry.path}\` |`);
+    }
+    lines.push("");
+  }
+
+  if (bootstrap.length > 0) {
+    lines.push(
+      "### Skills missing freshness metadata",
+      "",
+      "| Skill | Path | Reason |",
+      "|---|---|---|",
+    );
+    for (const entry of bootstrap.sort((a, b) => a.skillName.localeCompare(b.skillName))) {
+      lines.push(`| \`${entry.skillName}\` | \`${entry.path}\` | ${entry.reason.replaceAll("|", "\\|")} |`);
+    }
+    lines.push("");
+  }
+
+  lines.push(
+    "Convention: bump `last_validated_against` when skill instructions or referenced systems change materially.",
+  );
+
+  return {
+    signal: {
+      status: "red",
+      summary: `${stale.length} stale, ${archive.length} archive-candidate, ${bootstrap.length} bootstrap-needed`,
+      body: lines.join("\n"),
+    },
+    nextLastValidatedAt,
+  };
+}
+
 export async function executeSignalSteps(steps: SignalStep[]): Promise<SignalStepOutcome[]> {
   const outcomes: SignalStepOutcome[] = [];
   for (const step of steps) {
@@ -659,6 +907,15 @@ function loadBaseline(): Baseline | null {
         raw.s4CanonicalLastSeen && typeof raw.s4CanonicalLastSeen === "object"
           ? raw.s4CanonicalLastSeen
           : {},
+      s5SkillFreshness:
+        raw.s5SkillFreshness &&
+        typeof raw.s5SkillFreshness === "object" &&
+        raw.s5SkillFreshness.lastValidatedAt &&
+        typeof raw.s5SkillFreshness.lastValidatedAt === "object"
+          ? {
+              lastValidatedAt: raw.s5SkillFreshness.lastValidatedAt as Record<string, string>,
+            }
+          : { lastValidatedAt: {} },
     };
   } catch {
     return null;
@@ -976,6 +1233,26 @@ async function runS4(baseline: Baseline | null, runDate: string): Promise<{ sign
   };
 }
 
+async function runS5(
+  baseline: Baseline | null,
+  runDate: string,
+): Promise<{ signal: SignalResult; nextLastValidatedAt: Record<string, string> }> {
+  const entries = readSkillFreshnessEntries();
+  const evaluation = evaluateSkillFreshness({
+    runDate,
+    entries,
+    priorLastValidatedAt: baseline?.s5SkillFreshness.lastValidatedAt ?? {},
+    staleDays: SKILL_FRESHNESS_STALE_DAYS,
+    archiveDays: SKILL_FRESHNESS_ARCHIVE_DAYS,
+    bootstrapGraceDays: SKILL_FRESHNESS_BOOTSTRAP_GRACE_DAYS,
+  });
+
+  return {
+    signal: evaluation.signal,
+    nextLastValidatedAt: evaluation.nextLastValidatedAt,
+  };
+}
+
 function formatIssueTitle(runDate: string, signalName: string, summary: string): string {
   return `Drift scan [${runDate}]: ${signalName} — ${summary}`;
 }
@@ -1014,6 +1291,7 @@ async function main(): Promise<void> {
     s3TestRuntimeMs: baseline?.s3TestRuntimeMs ?? 0,
     s3SuiteHistory: baseline?.s3SuiteHistory ?? {},
     s4CanonicalLastSeen: baseline?.s4CanonicalLastSeen ?? {},
+    s5SkillFreshness: baseline?.s5SkillFreshness ?? { lastValidatedAt: {} },
   };
 
   const steps: SignalStep[] = [
@@ -1051,6 +1329,15 @@ async function main(): Promise<void> {
       run: async () => {
         const result = await runS4(baseline, runDate);
         nextBaseline.s4CanonicalLastSeen = result.nextLastSeen;
+        return result.signal;
+      },
+    },
+    {
+      id: "S5",
+      name: "Skill freshness",
+      run: async () => {
+        const result = await runS5(baseline, runDate);
+        nextBaseline.s5SkillFreshness = { lastValidatedAt: result.nextLastValidatedAt };
         return result.signal;
       },
     },

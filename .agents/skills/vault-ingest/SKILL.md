@@ -1,6 +1,7 @@
 ---
 name: vault-ingest
 description: Compile raw source material into structured wiki pages in the Obsidian vault. Reads from raw/ or user-provided sources, creates/updates wiki pages, updates Index.md, and logs the ingest. Run with /kb-ingest.
+last_validated_against: 2026-05-08
 ---
 
 # Vault Ingest — Source Compilation

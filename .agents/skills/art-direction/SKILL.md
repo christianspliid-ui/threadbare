@@ -6,6 +6,7 @@ description: >
   "art direction", "Threadbare", "STYLE.md", "style tile", "prompt construction",
   "color palette", "sphere color", "lighting", "visual asset", "terrain tile",
   or when generating or evaluating game artwork.
+last_validated_against: 2026-05-08
 ---
 
 # Art Direction — Domain Context

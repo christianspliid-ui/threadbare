@@ -87,6 +87,7 @@ import type { FollowModeState } from './camera/FollowMode';
 import { screenToHex, worldToScreen, pickAgentAtScreen, pickArmyAtScreen, INTERACTION_CONSTANTS } from './interaction/HexRaycaster';
 import { RegionLabelOverlay } from './overlay/RegionLabelOverlay';
 import { LocationLabelOverlay, type LocationLabelData } from './overlay/LocationLabelOverlay';
+import { AgentPulseOverlay } from './overlay/AgentPulseOverlay';
 import type { ScreenBBox } from './overlay/labelCollision';
 import { HexTooltip } from './interaction/HexTooltip';
 import type { LocationActivitySummary } from '../../types/locationActivity';
@@ -309,6 +310,10 @@ export interface HexMapV2Props {
   onCameraCenterHex?: (hex: HexCoord) => void;
   /** Location activity summaries keyed by locationId — drives murmur tooltips (THR-22). */
   locationActivityMap?: Map<string, LocationActivitySummary>;
+  /** Spotlighted agent id — when set, AgentPulseOverlay renders a flare on that agent's hex (THR-340). */
+  spotlightedAgentId?: string | null;
+  /** Thread/sphere color hex for the spotlight flare. Falls back to gold when omitted. */
+  spotlightThreadColor?: string;
 }
 
 export interface HexMapV2Handle {
@@ -487,7 +492,7 @@ function createSelectionOverlayMesh(size: number, color: string): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, battles, threadLines, activityIcons, strategicOverlays, activeTugs, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap },
+    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, battles, threadLines, activityIcons, strategicOverlays, activeTugs, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, spotlightedAgentId, spotlightThreadColor },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -1787,6 +1792,17 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             canvasHeight={canvasDimensions.h}
             zoomLevel={zoomLevel}
             prePlacedBBoxesRef={regionPlacedBBoxesRef}
+          />
+        )}
+        {/* Agent spotlight pulse — world view → encounter handoff (THR-340) */}
+        {!overlayOpen && spotlightedAgentId && (
+          <AgentPulseOverlay
+            spotlightedAgentId={spotlightedAgentId}
+            agents={agents}
+            threadColor={spotlightThreadColor}
+            cameraRef={cameraRef}
+            canvasWidth={canvasDimensions.w}
+            canvasHeight={canvasDimensions.h}
           />
         )}
         {/* Location murmur tooltip — shown on hex hover when location data is available (THR-22) */}

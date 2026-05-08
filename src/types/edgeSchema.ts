@@ -270,6 +270,35 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     description: 'Encounter template is available at this location.',
   },
 
+  // ── Encounter Template Graph (THR-327, design plan §3.8) ──
+  gates_to: {
+    type: 'gates_to',
+    sourceNodeType: 'encounter_template',
+    targetNodeType: 'encounter_template',
+    direction: 'directed',
+    cardinality: 'many-to-many',
+    requiredProperties: [],
+    description: 'Completing source encounter_template hard-unlocks target. Target is gated until source is done.',
+  },
+  spawns_from: {
+    type: 'spawns_from',
+    sourceNodeType: 'encounter_template',
+    targetNodeType: ['location', 'actor'],
+    direction: 'directed',
+    cardinality: 'many-to-many',
+    requiredProperties: [],
+    description: 'Encounter template is sourced from this location or actor. Used in candidate generation to match context.',
+  },
+  enables: {
+    type: 'enables',
+    sourceNodeType: 'encounter_template',
+    targetNodeType: 'encounter_template',
+    direction: 'directed',
+    cardinality: 'many-to-many',
+    requiredProperties: [],
+    description: 'Completing source encounter_template is a soft prerequisite for target (boosts eligibility score, does not hard-gate).',
+  },
+
   // ── Encounter History (TB-077) ─────────────────────────────
   participated_in: {
     type: 'participated_in',

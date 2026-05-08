@@ -90,6 +90,14 @@ describe('applyDriftMagnitude', () => {
       expect(bands).toContain('becoming');
     });
 
+    it('populates trace agentId and axisId correctly', () => {
+      const existing: ArchetypeDrift[] = [{ agentId: 'agt-x', axisId: 'heart', fromPosition: 0.25, toPosition: 0.25, lastUpdatedTick: 1 }];
+      const { traces } = applyDriftMagnitude(existing, 'agt-x', 'heart', 0.07, TICK);
+      const softTrace = traces.find(t => t.thresholdCrossed === 'soft')!;
+      expect(softTrace.agentId).toBe('agt-x');
+      expect(softTrace.axisId).toBe('heart');
+    });
+
     it('does not emit traces on decay (inward crossing)', () => {
       const existing: ArchetypeDrift[] = [{ agentId: 'agt', axisId: 'iron', fromPosition: 0.65, toPosition: 0.65, lastUpdatedTick: 1 }];
       const { traces } = applyDriftMagnitude(existing, 'agt', 'iron', -0.1, TICK);
@@ -144,5 +152,13 @@ describe('decayAllDrift', () => {
 
   it('handles empty drift array', () => {
     expect(decayAllDrift([], 0.001, TICK)).toEqual([]);
+  });
+
+  it('decays to zero over 200 ticks without floor-hunting', () => {
+    let drift: ArchetypeDrift[] = [{ agentId: 'agt', axisId: 'iron', fromPosition: 0.1, toPosition: 0.1, lastUpdatedTick: 1 }];
+    for (let tick = 2; tick <= 200; tick += 1) {
+      drift = decayAllDrift(drift, 0.001, tick);
+    }
+    expect(drift[0].toPosition).toBe(0);
   });
 });

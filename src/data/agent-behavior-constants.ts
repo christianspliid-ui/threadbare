@@ -805,3 +805,10 @@ export const MARK_REVEAL_SCORING_CAP = 0.9;
  * not scaled by reliability in v1.
  * @range 0.1–0.6 */
 export const INTEL_SCORING_BONUS = 0.25;
+
+/**
+ * Per-step difficulty modifier applied when an `intel_sensitive` action step
+ * matches actionable intelligence. Scaled by reliability in resolver logic.
+ * @range -0.20–-0.05
+ */
+export const INTEL_DIFFICULTY_BONUS = -0.10;

@@ -216,3 +216,18 @@ NFP #6 is the audit-of-record exception; the entire ticket exists to perform a d
 - The encounter authoring contract changes (THR-301 territory).
 - Adding `narrativeLayer` values beyond `'encounter'` (e.g. retiring or renaming `'land'` / `'soul'`).
 - Decomposing `unified-action-templates.ts` (4000-line file). Out-of-scope hygiene.
+
+---
+
+## 8. Decision resolved (2026-05-07, THR-342)
+
+The §2.3 three-option choice (A bulk-add / B side-table / C keep-as-is) is resolved as **Option C made permanent**. Implementation: documentation-only update in `src/components/CMS/registry.ts` clarifying the comment from "deferred" to "permanent" with rationale.
+
+Resolution doc: `Docs/plans/2026-05-07-thr-F4-cms-metadata-filter-spec.md`.
+
+Reversal triggers (when to reopen):
+- A future engine system needs runtime metadata filtering of encounter templates.
+- A new encounter package doesn't fit existing CMS category groupings.
+- An author workflow needs file-free promotion of templates to encounter status.
+
+Until one of those fires, Option C is the permanent shape.

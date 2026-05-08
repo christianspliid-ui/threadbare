@@ -6,7 +6,7 @@
  */
 
 export type SurfaceMount = 'always' | 'modal' | 'drillin';
-export type SurfaceView = 'start' | 'ascendant' | 'game' | 'codex' | 'styleguide' | 'cms';
+export type SurfaceView = 'start' | 'ascendant' | 'game' | 'codex' | 'styleguide' | 'cms' | 'ul';
 
 export interface IAReader {
   state_path: string;
@@ -948,5 +948,45 @@ export const IA_SURFACES: IASurface[] = [
       }
     ],
     "notes": "CMS item detail view.\n"
+  },
+  {
+    "surface": "ul.dashboard",
+    "view": "ul",
+    "mount": "always",
+    "reads": [
+      {
+        "state_path": "(static UL JSON snapshot)",
+        "reader": "UbiquitousLanguageDashboard",
+        "visible_when": "view === 'ul'"
+      }
+    ],
+    "notes": "Browseable Ubiquitous Language dashboard. Reads ul-dashboard.generated.json.\nDrives ULSidebar + ULTermTable + ULDetailPane + ULSearchBox + ULDriftBadge.\n",
+    "openUrl": "/?view=ul"
+  },
+  {
+    "surface": "ul.sidebar",
+    "view": "ul",
+    "mount": "drillin",
+    "reads": [
+      {
+        "state_path": "(static UL JSON snapshot)",
+        "reader": "ULSidebar",
+        "visible_when": "always"
+      }
+    ],
+    "notes": "Shard tabs and filter chips for the UL dashboard.\n"
+  },
+  {
+    "surface": "ul.detail-pane",
+    "view": "ul",
+    "mount": "drillin",
+    "reads": [
+      {
+        "state_path": "(selected term)",
+        "reader": "ULDetailPane",
+        "visible_when": "always"
+      }
+    ],
+    "notes": "Selected-term detail view with markdown body and See-Also chips.\n"
   }
 ];

@@ -362,6 +362,93 @@ describe('applyEncounterAftermathReaction', () => {
     expect(updated.recentEvents.at(-1)?.message).toContain('witness');
     expect(updated.tickEvents.at(-1)?.type).toBe('ripple_consequence');
   });
+
+  it('routes archetype_drift_register effects through the dedicated handler', () => {
+    clearTraces();
+    enableTracing();
+    const runtime = createSimulationRuntime();
+    const state = createMinimalGameState();
+    state.archetypeDrift = [
+      {
+        agentId: 'actor-1',
+        axisId: 'iron',
+        fromPosition: 0.25,
+        toPosition: 0.34,
+        lastUpdatedTick: 19,
+      },
+    ];
+    const action: UnifiedAction = {
+      actionId: 'ua_drift_reg',
+      actorId: 'actor-1',
+      templateId: 'enc.test',
+      targetId: 'actor-1',
+      scale: 'personal',
+      source: 'agent',
+      startTick: 1,
+      currentStep: 0,
+      stepProgress: 1,
+      stepDuration: 1,
+      resolved: true,
+      outcome: 'success',
+      stepOutcomes: [],
+    };
+    const reaction: EncounterAftermathReaction = {
+      id: 'react_drift_reg',
+      label: 'Register drift',
+      effects: [{ kind: 'archetype_drift_register', axisId: 'iron', threshold: 'soft' }],
+      closeAfterSelection: true,
+    };
+
+    const { state: updated } = applyEncounterAftermathReaction(state, action, reaction, 20, runtime);
+
+    const effectTrace = getTraces().find((trace) =>
+      trace.category === 'encounter_aftermath_effect'
+      && (trace as { effectKind?: string }).effectKind === 'archetype_drift_register',
+    ) as { success?: boolean } | undefined;
+    expect(effectTrace).toBeDefined();
+    expect(effectTrace?.success).toBe(true);
+    expect(updated.recentEvents.some((event) => event.message.includes('Drift registered'))).toBe(true);
+    disableTracing();
+    clearTraces();
+  });
+
+  it('fails soft when an unknown effect kind appears and still processes known effects', () => {
+    clearTraces();
+    enableTracing();
+    const runtime = createSimulationRuntime();
+    const state = createMinimalGameState();
+    const action: UnifiedAction = {
+      actionId: 'ua_unknown_effect',
+      actorId: 'actor-1',
+      templateId: 'enc.test',
+      targetId: 'actor-1',
+      scale: 'personal',
+      source: 'agent',
+      startTick: 1,
+      currentStep: 0,
+      stepProgress: 1,
+      stepDuration: 1,
+      resolved: true,
+      outcome: 'success',
+      stepOutcomes: [],
+    };
+    const reaction: EncounterAftermathReaction = {
+      id: 'react_unknown_effect',
+      label: 'Unknown effect',
+      effects: [
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        { kind: 'made_up_kind' as any },
+        { kind: 'reputation_score', delta: 0.02 },
+      ],
+      closeAfterSelection: true,
+    };
+
+    expect(() => applyEncounterAftermathReaction(state, action, reaction, 20, runtime)).not.toThrow();
+    const effectTraces = getTraces().filter((trace) => trace.category === 'encounter_aftermath_effect');
+    expect(effectTraces.length).toBeGreaterThanOrEqual(1);
+    disableTracing();
+    clearTraces();
+  });
 });
 
 // ─── THR-116 Contract Tests: when gate + thread mutations ──────────
