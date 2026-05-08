@@ -6,22 +6,22 @@ import { SPEED_STEPS } from './SimulationControls';
 import { getOmenTemplateById } from '../../data/omenTemplates';
 import { getSphereColor } from '../../data/sphereIcons';
 import type { ActiveOmen } from '../../types/omen';
-
-const OMEN_CATEGORY_GLYPHS: Record<string, string> = {
-  doom_echo: '⊘',
-  sphere_surge: '◈',
-  cultural: '⬡',
-  seasonal: '◇',
-};
+import { SectionHeading } from '../shared/SectionHeading';
 
 function OmenLine({ omen, isPrimary }: { omen: ActiveOmen; isPrimary: boolean }) {
   const template = getOmenTemplateById(omen.templateId);
-  const glyph = OMEN_CATEGORY_GLYPHS[omen.category] ?? '◇';
   const color = omen.sphere ? getSphereColor(omen.sphere) : 'var(--text-tertiary)';
   if (!template) return null;
   return (
-    <div className="flex items-center gap-1">
-      <span style={{ color, fontSize: isPrimary ? '11px' : '10px', flexShrink: 0 }}>{glyph}</span>
+    <div className="flex items-center gap-2">
+      <span style={{
+        display: 'inline-block',
+        width: isPrimary ? 14 : 10,
+        height: 2,
+        backgroundColor: color,
+        flexShrink: 0,
+        borderRadius: 1,
+      }} />
       <span
         style={{
           fontSize: 'var(--text-xs)',
@@ -93,13 +93,8 @@ export const WorldPulse = React.memo(function WorldPulse({
   }
 
   return (
-    <div className="space-y-4">
-      <h3
-        className="font-bold uppercase tracking-wider"
-        style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', fontFamily: 'var(--font-display)' }}
-      >
-        World Pulse
-      </h3>
+    <div className="panel space-y-4" style={{ padding: 'var(--space-3)' }}>
+      <SectionHeading>World Pulse</SectionHeading>
 
       {/* Season / year / speed */}
       <div className="flex items-center justify-between">
@@ -169,12 +164,7 @@ export const WorldPulse = React.memo(function WorldPulse({
       {/* Omen tracks (THR-19) */}
       {gameState.omenState?.primary && (
         <div className="pt-3 space-y-1" style={{ borderTop: `1px solid var(--border-subtle)` }}>
-          <span
-            className="uppercase tracking-wider"
-            style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', fontFamily: 'var(--font-display)' }}
-          >
-            World Omen
-          </span>
+          <SectionHeading>World Omen</SectionHeading>
           <OmenLine omen={gameState.omenState.primary} isPrimary />
           {gameState.omenState.secondary && (
             <OmenLine omen={gameState.omenState.secondary} isPrimary={false} />
