@@ -35,6 +35,9 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Lint encounter content
+        run: npm run lint:encounter-content
+
       - name: Typecheck
         run: npx tsc --noEmit
 
