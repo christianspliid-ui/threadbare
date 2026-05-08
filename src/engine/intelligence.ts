@@ -207,7 +207,7 @@ export function emitIntelligenceReferenced(
   tick: number,
   agentId: string,
   recordId: string,
-  referencedBy: 'scoring_boost' | 'prose_enrichment' | 'resolution_match' | 'difficulty_modifier',
+  referencedBy: 'scoring_boost' | 'prose_enrichment' | 'resolution_match' | 'difficulty_modifier' | 'aftermath_prose',
   opts?: { templateId?: string; intelCategory?: IntelligenceCategory },
 ): void {
   try {
@@ -405,4 +405,78 @@ export function observeResolutionIntelligence(
   // (e.g., an `intelligence_used` reaction variant). Keeping the param avoids a
   // breaking signature change when that deferral lands.
   void reaction;
+}
+
+// ─── Authored-prose match helpers (THR-139) ───────────────────────
+
+/**
+ * Find the most-recent intelligence record held by `agentId` of the given
+ * `category` that matches the action's encounter context (locationId,
+ * targetAgentId, region, or templateId via TEMPLATE_CATEGORY_MATCHERS).
+ *
+ * Mirrors {@link findActionableIntelligence} but adds a category gate so
+ * authors can scope authored prose to a specific knowledge type. Returns
+ * undefined if no record matches.
+ *
+ * Pure / fail-soft: returns undefined on graph or input errors instead of
+ * throwing.
+ *
+ * Used by the `intel_referenced_prose` aftermath effect (THR-139).
+ */
+export function findIntelReferencedProseMatch(
+  state: GameState,
+  agentId: string,
+  category: IntelligenceCategory,
+  action: UnifiedAction | undefined,
+): IntelligenceRecord | undefined {
+  try {
+    const records = getAgentIntelligence(state, agentId).filter(r => r.category === category);
+    if (records.length === 0) return undefined;
+    const sorted = [...records].sort((a, b) => b.acquiredTick - a.acquiredTick);
+
+    const targetId = action?.targetId;
+    const templateId = action?.templateId;
+
+    let targetRegion: string | undefined;
+    if (INTEL_RESOLUTION_MATCH_REGIONS && targetId) {
+      try {
+        const node = state.graph?.getNode?.(targetId);
+        const props = node?.properties as Record<string, unknown> | undefined;
+        const rawRegion = props?.region ?? props?.regionId;
+        if (typeof rawRegion === 'string') targetRegion = rawRegion;
+      } catch {
+        // graph lookup errors must never block (NFP #4)
+      }
+    }
+
+    for (const record of sorted) {
+      if (record.targetEntityId && targetId && record.targetEntityId === targetId) return record;
+      if (record.targetRegion && targetRegion && record.targetRegion === targetRegion) return record;
+      if (templateId) {
+        const matchers = TEMPLATE_CATEGORY_MATCHERS[record.category];
+        if (matchers && matchers.some(m => templateId.includes(m))) return record;
+      }
+    }
+    return undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Pick the prose line for a given reliability band, with upward inheritance:
+ * - `dubious` → `dubious` ?? `uncertain` ?? `reliable`
+ * - `uncertain` → `uncertain` ?? `reliable`
+ * - `reliable` → `reliable`
+ *
+ * Returns the empty string if `reliable` itself is empty (caller treats as
+ * skipped via the `skipped_empty_prose` failReason path).
+ */
+export function pickIntelReferencedProseLine(
+  prose: { reliable: string; uncertain?: string; dubious?: string },
+  band: ReliabilityBand,
+): string {
+  if (band === 'dubious') return prose.dubious ?? prose.uncertain ?? prose.reliable ?? '';
+  if (band === 'uncertain') return prose.uncertain ?? prose.reliable ?? '';
+  return prose.reliable ?? '';
 }

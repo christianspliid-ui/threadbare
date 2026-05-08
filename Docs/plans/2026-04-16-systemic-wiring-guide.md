@@ -203,7 +203,7 @@ The attachment and spell systems compose effects from a category pool of ~40 pri
 | `FactionManipulateEffect` | Shift relationships, transfer control, splinter, absorb, declare war, force peace |
 | `SpawnEffect` | Brings entities into existence (agents, encounters, attachments, locations) |
 
-**For encounter aftermath authoring, use the typed aftermath effect kinds in Part 5 § "Aftermath Reaction Effect Types" (19 kinds).** Raw graph-mutation primitives are not exposed to authored aftermath — propose a new typed kind if you need one.
+**For encounter aftermath authoring, use the typed aftermath effect kinds in Part 5 § "Aftermath Reaction Effect Types" (20 kinds).** Raw graph-mutation primitives are not exposed to authored aftermath — propose a new typed kind if you need one.
 
 #### Authored aftermath surface for graph mutation
 
@@ -248,9 +248,9 @@ Two aftermath reaction types give agents tangible knowledge or items:
 { kind: 'content_grant', templateId: 'patrons_backing' }
 ```
 
-#### Intelligence is consumed in four places (THR-113, THR-140)
+#### Intelligence is consumed in five places (THR-113, THR-140, THR-139)
 
-Granting intelligence without consuming it is write-only theatre. The engine now closes the loop at three sites. As an author, you get this automatically — but knowing the sites tells you what prose can reference what.
+Granting intelligence without consuming it is write-only theatre. The engine now closes the loop at five sites. As an author, you get this automatically — but knowing the sites tells you what prose can reference what.
 
 | Hook | Where it fires | What it does |
 |---|---|---|
@@ -258,8 +258,11 @@ Granting intelligence without consuming it is write-only theatre. The engine now
 | `prose_enrichment` | `enrichProse` in `proseEnrichment.ts` | `{intel:<category>}` placeholders resolve to the most recent record's label/detail/reliability. `{?knows_<category>}...{/knows_<category>}` and `{?no_<category>}...{/no_<category>}` conditionals gate whole sentences. |
 | `resolution_match` | `observeResolutionIntelligence` after `consumeMatchingMarks` in GameView | Passive observation: when a resolved action matches any of the acting agent's records, a trace fires. No game-state mutation — this is the "I noticed" hook for auditing what intel actually paid off. |
 | `difficulty_modifier` | `resolveUncontestedStep` in `unifiedActionResolution.ts` | Steps that opt in with `difficultyContext: 'intel_sensitive'` reduce effective difficulty by `INTEL_DIFFICULTY_BONUS` scaled by reliability (`reliable` full, `uncertain` half, `dubious` none). |
+| `aftermath_prose` (THR-139) | `applyEncounterAftermathReaction` case `'intel_referenced_prose'` in `encounterAftermath.ts` | Authored "the intel paid off" chronicle line. When the actor holds a matching record, picks a prose variant by reliability band (`reliable` / `uncertain` / `dubious`) and appends a `narrative` `TickEvent` to `recentEvents` / `tickEvents`. Records are read, never consumed. The `dubious` band intentionally surfaces lines where the intel betrays the agent. Authors opt in per reaction; the 72-line shared pack lives in `src/data/intelligence-referenced-prose.ts`. |
 
-Every consumption emits an `intelligence_referenced` trace with a `referencedBy` discriminator (`scoring_boost` | `prose_enrichment` | `resolution_match` | `difficulty_modifier`), the `recordId`, and the consuming context. Dedup is per-call (scoring loop and enrichProse each only emit once per unique record).
+Every consumption emits an `intelligence_referenced` trace with a `referencedBy` discriminator (`scoring_boost` | `prose_enrichment` | `resolution_match` | `difficulty_modifier` | `aftermath_prose`), the `recordId`, and the consuming context. Dedup is per-call (scoring loop and enrichProse each only emit once per unique record).
+
+**Authoring `intel_referenced_prose` (THR-139):** Add the effect to a reaction alongside the existing `intelligence` grant. On the first run there's no prior intel, so the effect no-ops silently; on subsequent runs the matching record fires the band-appropriate line. Three pilots are wired today — `arcane-circle-encounter-content.ts` (`agent_network`), `builders-fellowship-encounter-content.ts` (`political_secret`), `encounter-anomaly-content.ts` (`cultural_knowledge`). Use them as authoring templates. Voice contract (Threadbare, 18-32 words/line, dubious shows betrayal) is in the prose-pack file's header comment.
 
 **Author opt-in for resolution difficulty (THR-140):** the difficulty modifier is intentionally inert unless a step explicitly sets `difficultyContext: 'intel_sensitive'`. Use this on beats where prior reconnaissance should make execution easier (ambush prep, route interception, spy leverage). Leave it unset for beats where intelligence should shape discovery/prose only.
 
@@ -629,6 +632,7 @@ All encounters use `UnifiedActionTemplate` (migrated as of THR-108). `EncounterT
 | `encounter_seed` | Plant future encounter | `templateId` or `encounterFamily`, `delayTicks`, `seedLabel` |
 | `hidden_mark` | Track discoverable secret on an agent | `category`, `severity`, `label`, `revealFamilies`, `targetAgentId?` |
 | `intelligence` | Grant knowledge to an agent | `category`, `label`, `detail`, `targetEntityId`, `reliability`, `targetAgentId?` |
+| `intel_referenced_prose` (THR-139) | Authored "the intel paid off" chronicle line — fires when actor holds a matching record; reliability band picks one of three prose variants; record is read, not consumed | `category`, `prose: { reliable, uncertain?, dubious? }`, `significance?`, `targetAgentId?` |
 | `apply_condition` | Attach a trait condition for N ticks (full target resolution: agent, faction, sublocation) | `conditionTraitId`, `durationTicks?`, `intensity?`, `targetAgentId?`, `targetFactionId?`, `targetSublocationId?` |
 | `remove_condition` | Remove a trait condition (oldest or all) | `conditionTraitId`, `removeAll?`, `targetAgentId?`, `targetFactionId?`, `targetSublocationId?` |
 | `condition_attachment` | Apply a condition trait by template ID; auto-looks up default duration; **triggers mid-encounter tier promotion when the template is the `wounded` condition** | `templateId` (e.g. `'trait.condition.wounded'`), `targetAgentId?`, `durationOverride?`, `stackCount?` |

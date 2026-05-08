@@ -20,6 +20,7 @@ const KNOWN_AFTERMATH_EFFECT_KINDS = new Set<EncounterAftermathReactionEffect['k
   'encounter_seed',
   'hidden_mark',
   'intelligence',
+  'intel_referenced_prose',
   'reputation_set',
   'apply_condition',
   'remove_condition',
