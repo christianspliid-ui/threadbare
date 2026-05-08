@@ -628,3 +628,4 @@ px vite build).
 - ✅ 2026-05-08: THR-365 shipped — added six 1920x1080 ThreadOverlay phase snapshots (idle→settled) while preserving the existing 800x400 taut snapshot; npm test, tsc, and build all green.
 - ✅ 2026-05-08: THR-215 shipped — created durable weekly-memory-grooming schedule (Sunday 16:03 UTC), updated CLAUDE scheduled-task registry, and aligned external task skill paths/fail-soft handling for Cowork/CC/Codex memory maintenance.
 - ✅ 2026-05-08: THR-374 shipped — tightened EffectRegistration D2 snapshot coverage to the exact 10-case 1920×1080 spec (new test titles + regenerated snapshot keys), with full verification trio green and existing `useEffectSequencing` tests confirmed present.
+- ✅ 2026-05-08: THR-267 shipped — added mandatory engine-change CLI smoke step to CLAUDE Pre-commit minimum and updated closeout evidence wording to include smoke output when applicable.
