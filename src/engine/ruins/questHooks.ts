@@ -58,7 +58,7 @@ export function selectQuestTemplateForRuin(ruinMagnitude: number): string {
 
 // ─── Toast prose — 5 vignettes keyed by sphere archetype ─────────────────────
 
-const MARTIAL_SPHERES = new Set(['iron', 'stone', 'flesh']);
+const MARTIAL_SPHERES = new Set(['iron', 'stone']);
 const PROSPERITY_SPHERES = new Set(['gold', 'heart']);
 const DIVINE_SPHERES = new Set(['spirit', 'fire']);
 const ARCANE_SPHERES = new Set(['mind', 'eye', 'star']);
