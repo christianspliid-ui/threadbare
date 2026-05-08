@@ -77,6 +77,7 @@ const step1GrantDuel: ActionStep = {
   reach: 'iron',
   duration: { min: 3, max: 4 },
   difficulty: 0.35,
+  difficultyContext: 'intel_sensitive',
   onSuccess: [
     { op: 'update_node', nodeId: '$target', changes: { reputationDelta: 0.05 } },
   ],
@@ -107,6 +108,7 @@ const step1DeclineWithDignity: ActionStep = {
   reach: 'iron',
   duration: { min: 2, max: 3 },
   difficulty: 0.20,
+  difficultyContext: 'intel_sensitive',
   onSuccess: [
     { op: 'update_node', nodeId: '$target', changes: { reputationDelta: 0.00 } },
   ],

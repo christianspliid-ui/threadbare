@@ -111,6 +111,7 @@ const step1RuleAgainstCircle: ActionStep = {
   reach: 'stone',
   duration: { min: 2, max: 3 },
   difficulty: 0.45,
+  difficultyContext: 'intel_sensitive',
   onSuccess: [
     { op: 'update_node', nodeId: '$target', changes: { reputationDelta: 0.05 } },
   ],

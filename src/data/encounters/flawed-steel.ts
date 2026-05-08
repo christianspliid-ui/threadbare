@@ -189,6 +189,7 @@ const step1TemperTheNarrative: ActionStep = {
   reach: 'shadow',
   duration: { min: 3, max: 4 },
   difficulty: 0.40,
+  difficultyContext: 'intel_sensitive',
   onSuccess: [
     // Maren's reputation preserved — managed truth holds
     {

@@ -86,6 +86,7 @@ const step1RuleForOlderClaim: ActionStep = {
   reach: 'stone',
   duration: { min: 3, max: 4 },
   difficulty: 0.45,
+  difficultyContext: 'intel_sensitive',
   onSuccess: [
     {
       op: 'update_node',
@@ -129,6 +130,7 @@ const step1RuleForTransformingClaim: ActionStep = {
   reach: 'stone',
   duration: { min: 3, max: 4 },
   difficulty: 0.50,
+  difficultyContext: 'intel_sensitive',
   onSuccess: [
     {
       op: 'update_node',
