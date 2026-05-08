@@ -64,6 +64,7 @@ const step0TheNudge: ActionStep = {
   reach: 'heart',
   duration: { min: 2, max: 3 },
   difficulty: 0.35,
+  difficultyContext: 'intel_sensitive',
   onSuccess: [],
   onFailure: [],
   failBehavior: 'fail_action',

@@ -74,6 +74,7 @@ const step1Intercede: ActionStep = {
   reach: 'gold',
   duration: { min: 2, max: 3 },
   difficulty: 0.30,
+  difficultyContext: 'intel_sensitive',
   onSuccess: [
     { op: 'update_node', nodeId: '$target', changes: { reputationDelta: 0.05 } },
   ],
@@ -102,6 +103,7 @@ const step1MarkRobbers: ActionStep = {
   reach: 'gold',
   duration: { min: 2, max: 3 },
   difficulty: 0.35,
+  difficultyContext: 'intel_sensitive',
   onSuccess: [
     { op: 'update_node', nodeId: '$target', changes: { reputationDelta: -0.05 } },
   ],

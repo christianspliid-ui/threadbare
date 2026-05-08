@@ -140,6 +140,7 @@ const step1ManipulateTheTerms: ActionStep = {
   reach: 'gold',
   duration: { min: 3, max: 4 },
   difficulty: 0.45,
+  difficultyContext: 'intel_sensitive',
   onSuccess: [
     {
       op: 'update_node',

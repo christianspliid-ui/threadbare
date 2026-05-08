@@ -77,6 +77,7 @@ const step1AcceptTribute: ActionStep = {
   reach: 'iron',
   duration: { min: 3, max: 4 },
   difficulty: 0.40,
+  difficultyContext: 'intel_sensitive',
   onSuccess: [
     {
       op: 'update_node',
@@ -116,6 +117,7 @@ const step1DemandOath: ActionStep = {
   reach: 'iron',
   duration: { min: 3, max: 4 },
   difficulty: 0.55,
+  difficultyContext: 'intel_sensitive',
   onSuccess: [
     {
       op: 'update_node',

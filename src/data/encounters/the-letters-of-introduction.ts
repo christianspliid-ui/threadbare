@@ -109,6 +109,7 @@ const step1WorkTheFormalChannel: ActionStep = {
   reach: 'gold',
   duration: { min: 3, max: 4 },
   difficulty: 0.45,
+  difficultyContext: 'intel_sensitive',
   onSuccess: [
     {
       op: 'update_node',
@@ -146,6 +147,7 @@ const step1WorkTheSocialBridge: ActionStep = {
   reach: 'heart',
   duration: { min: 3, max: 4 },
   difficulty: 0.40,
+  difficultyContext: 'intel_sensitive',
   onSuccess: [
     {
       op: 'update_node',
