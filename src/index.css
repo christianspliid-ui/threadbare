@@ -351,6 +351,12 @@
     background-color: var(--bg-hover);
   }
 
+  /* Base panel container — v7 subtle sidebar sections */
+  .panel {
+    border-radius: var(--panel-radius);
+    border: 1px solid var(--border-subtle);
+  }
+
   /* ── LoL Universe Aesthetic ─────────────────────────────────────── */
 
   /* Panel with gold border accent — used on cards, sidebars, modals */

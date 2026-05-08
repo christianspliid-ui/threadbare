@@ -909,14 +909,13 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
   const totalCount = threadedNodes.length;
   if (totalCount === 0) {
     return (
-      <div>
+      <div className="panel" style={{ padding: 'var(--space-3)' }}>
         <div
           style={{
             fontFamily: 'var(--font-display)',
             fontSize: 'var(--text-lg)',
             fontWeight: 700,
             color: 'var(--text-primary)',
-            padding: 'var(--space-4)',
             paddingBottom: 'var(--space-2)',
           }}
         >
@@ -939,7 +938,7 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
 
   return (
     <>
-      <div>
+      <div className="panel" style={{ padding: 'var(--space-3)' }}>
         {/* Panel title */}
         <div
           style={{
@@ -947,7 +946,6 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
             fontSize: 'var(--text-lg)',
             fontWeight: 700,
             color: 'var(--text-primary)',
-            padding: 'var(--space-4)',
             paddingBottom: 'var(--space-2)',
           }}
         >
