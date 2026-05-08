@@ -605,3 +605,4 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - ✅ 2026-05-08: THR-342 resolved CMS metadata-filter contract as permanent Option C (registry rationale comment finalized + THR-302/phasing plan decision docs updated, no runtime behavior changes).
 - ✅ 2026-05-08: THR-344 shipped Encounter UI Phase G2 snapshot hardening (1920x1080 fixture expansion + new EiraHeroPanel/CapabilityStrip/EncounterScreen snapshot suites + 2560x1440 sample snapshots), with follow-up THR-364 created for deferred C4/D1/D2 surfaces.
 - ✅ 2026-05-08: THR-345 shipped EncounterContract content linting (R1-R4 hard errors + R5 warning), fixture/test corpus, npm `lint:encounter-content` script, and CI gate wiring.
+- ✅ 2026-05-08: THR-353 shipped TTS discovery report + `useEncounterNarration` adapter contract + smoke test for Encounter UI Phase D3 foundation.
