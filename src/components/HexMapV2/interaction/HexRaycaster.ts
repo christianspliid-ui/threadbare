@@ -15,6 +15,7 @@ export const INTERACTION_CONSTANTS = {
   HOVER_OVERLAY_OPACITY: 0.10,  // Subtle white overlay on hovered hex
   TOOLTIP_OFFSET_Y: 12,         // px: tooltip appears this many px above the screen position
   AGENT_CLICK_RADIUS_PX: 18,    // px: minimum hit radius for agent click detection (scales with zoom)
+  TOOLTIP_HOVER_DELAY_MS: 1000, // ms: delay before tooltip appears on hover (THR-388)
 } as const;
 
 /**

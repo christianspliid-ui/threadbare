@@ -631,6 +631,31 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     // Canvas dimensions for label overlays
     const [canvasDimensions, setCanvasDimensions] = useState({ w: 800, h: 600 });
 
+    // Tooltip is delayed by TOOLTIP_HOVER_DELAY_MS — tooltipHex trails hoveredHex with a debounce.
+    // hoveredHex updates instantly (for highlights); tooltipHex controls when the HTML overlay shows.
+    const [tooltipHex, setTooltipHex] = useState<HexCoord | null>(null);
+    const tooltipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    useEffect(() => {
+      if (tooltipTimerRef.current !== null) {
+        clearTimeout(tooltipTimerRef.current);
+        tooltipTimerRef.current = null;
+      }
+      if (hoveredHex === null) {
+        setTooltipHex(null);
+      } else {
+        tooltipTimerRef.current = setTimeout(() => {
+          setTooltipHex(hoveredHex);
+          tooltipTimerRef.current = null;
+        }, INTERACTION_CONSTANTS.TOOLTIP_HOVER_DELAY_MS);
+      }
+      return () => {
+        if (tooltipTimerRef.current !== null) {
+          clearTimeout(tooltipTimerRef.current);
+          tooltipTimerRef.current = null;
+        }
+      };
+    }, [hoveredHex]);
+
     // Build a fast tile lookup map: "col,row" -> HexTile
     const tileLookup = useRef<Map<string, HexTile>>(new Map());
     useEffect(() => {
@@ -1789,11 +1814,11 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             prePlacedBBoxesRef={regionPlacedBBoxesRef}
           />
         )}
-        {/* Location murmur tooltip — shown on hex hover when location data is available (THR-22) */}
-        {hoveredHex && cameraRef.current && canvasRef.current && (() => {
+        {/* Location murmur tooltip — shown after TOOLTIP_HOVER_DELAY_MS of hovering (THR-388) */}
+        {tooltipHex && cameraRef.current && canvasRef.current && (() => {
           const camera = cameraRef.current!;
           const canvas = canvasRef.current!;
-          const worldPos = hexToWorld(hoveredHex, HEX_CONSTANTS.HEX_SIZE);
+          const worldPos = hexToWorld(tooltipHex, HEX_CONSTANTS.HEX_SIZE);
           const screen = worldToScreen(
             new THREE.Vector3(worldPos.x, worldPos.y, 0),
             camera,
@@ -1801,17 +1826,17 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           );
           // Look up location activity summary by hex key ("col,row")
           const locationActivity = locationActivityMap?.get(
-            `${hoveredHex.col},${hoveredHex.row}`,
+            `${tooltipHex.col},${tooltipHex.row}`,
           );
           // Fall back to tile terrain name
           const hoveredTile = tiles.find(
-            t => t.coord.col === hoveredHex.col && t.coord.row === hoveredHex.row,
+            t => t.coord.col === tooltipHex.col && t.coord.row === tooltipHex.row,
           );
           const terrainName = String(hoveredTile?.terrain ?? '');
           return (
             <HexTooltip
               terrainName={terrainName}
-              coord={hoveredHex}
+              coord={tooltipHex}
               screenX={screen.x}
               screenY={screen.y}
               canvasWidth={canvasDimensions.w}
