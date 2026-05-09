@@ -24,6 +24,19 @@ type CommandResult = {
   error?: string;
 };
 
+type CommandRunner = (
+  command: string,
+  args: string[],
+  timeoutMs: number,
+  extraEnv?: Record<string, string>,
+) => CommandResult;
+
+type DotGitReader = () => string | null;
+
+export type BranchStalenessResult = ProbeResult & {
+  freshnessKey: string;
+};
+
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(SCRIPT_DIR, "..");
 
@@ -32,6 +45,11 @@ const RG_PROBE_PATTERN = "Session Workflow";
 const RG_TIMEOUT_MS = 5_000;
 const GIT_DRY_RUN_TIMEOUT_MS = 15_000;
 const NPM_TEST_TIMEOUT_MS = 120_000;
+
+export const STALENESS_BEHIND_THRESHOLD = 5;
+export const STALENESS_BRANCH_AGE_THRESHOLD_MS = 24 * 3600 * 1000;
+const GIT_FETCH_TIMEOUT_MS = 10_000;
+const GIT_REVLIST_TIMEOUT_MS = 5_000;
 
 const TEST_PROBE_FILE_CANDIDATES = [
   "src/testing/__tests__/contentInvariants.test.ts",
@@ -246,6 +264,180 @@ function probeComputerUseGrantStatus(): ProbeResult {
   };
 }
 
+function defaultReadDotGit(): string | null {
+  try {
+    const gitPath = path.join(REPO_ROOT, ".git");
+    const stat = fs.statSync(gitPath);
+    // A worktree has .git as a FILE containing "gitdir: ..."; the main tree has .git as a directory
+    if (stat.isFile()) {
+      return fs.readFileSync(gitPath, "utf8");
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+export function probeBranchStaleness(
+  runCmd: CommandRunner = runCommand,
+  readDotGit: DotGitReader = defaultReadDotGit,
+  nowMs: number = Date.now(),
+): BranchStalenessResult {
+  const startMs = Date.now();
+
+  // Step 1: fetch to get accurate origin/main position
+  const fetchResult = runCmd(GIT_EXECUTABLE, ["fetch", "origin", "--quiet"], GIT_FETCH_TIMEOUT_MS, {
+    GIT_TERMINAL_PROMPT: "0",
+  });
+  if (!fetchResult.ok) {
+    const detail = fetchResult.timedOut
+      ? `git fetch timed out after ${formatSeconds(fetchResult.durationMs)}`
+      : firstLine(fetchResult.stderr) || firstLine(fetchResult.error ?? "") || "git fetch failed";
+    return {
+      name: "freshness",
+      status: "unknown",
+      durationMs: Date.now() - startMs,
+      detail,
+      freshnessKey: "unknown",
+    };
+  }
+
+  // Step 2: current branch name
+  const branchResult = runCmd(GIT_EXECUTABLE, ["rev-parse", "--abbrev-ref", "HEAD"], GIT_REVLIST_TIMEOUT_MS);
+  if (!branchResult.ok || !branchResult.stdout.trim()) {
+    return {
+      name: "freshness",
+      status: "unknown",
+      durationMs: Date.now() - startMs,
+      detail: firstLine(branchResult.stderr) || "git rev-parse failed",
+      freshnessKey: "unknown",
+    };
+  }
+  const branch = branchResult.stdout.trim();
+
+  if (branch === "HEAD") {
+    return {
+      name: "freshness",
+      status: "unknown",
+      durationMs: Date.now() - startMs,
+      detail: "detached HEAD",
+      freshnessKey: "detached",
+    };
+  }
+
+  // Step 3: commits behind origin/main
+  const behindResult = runCmd(
+    GIT_EXECUTABLE,
+    ["rev-list", "--count", "HEAD..origin/main"],
+    GIT_REVLIST_TIMEOUT_MS,
+  );
+  if (!behindResult.ok) {
+    return {
+      name: "freshness",
+      status: "unknown",
+      durationMs: Date.now() - startMs,
+      detail: firstLine(behindResult.stderr) || firstLine(behindResult.error ?? "") || "git rev-list failed",
+      freshnessKey: "unknown",
+    };
+  }
+  const behind = parseInt(behindResult.stdout.trim(), 10) || 0;
+
+  // Step 4: commits ahead of origin/main (best effort — failure is non-fatal)
+  const aheadResult = runCmd(
+    GIT_EXECUTABLE,
+    ["rev-list", "--count", "origin/main..HEAD"],
+    GIT_REVLIST_TIMEOUT_MS,
+  );
+  const ahead = aheadResult.ok ? (parseInt(aheadResult.stdout.trim(), 10) || 0) : 0;
+
+  // Step 5+6: branch age and worktree detection (non-main branches only)
+  let isStale = false;
+  let branchAgeHours = 0;
+  if (branch !== "main") {
+    const dotGitContent = readDotGit();
+    // Worktree: .git is a file whose first line starts with "gitdir:". Skip age check for worktrees.
+    const isWorktree = dotGitContent !== null && dotGitContent.trim().startsWith("gitdir:");
+
+    if (!isWorktree) {
+      const logResult = runCmd(
+        GIT_EXECUTABLE,
+        ["log", "-1", "--format=%cI", `origin/${branch}`],
+        GIT_REVLIST_TIMEOUT_MS,
+      );
+      if (logResult.ok && logResult.stdout.trim()) {
+        const branchDate = new Date(logResult.stdout.trim());
+        if (!isNaN(branchDate.getTime())) {
+          const ageMs = nowMs - branchDate.getTime();
+          branchAgeHours = Math.floor(ageMs / 3600_000);
+          isStale = ageMs >= STALENESS_BRANCH_AGE_THRESHOLD_MS;
+        }
+      }
+    }
+  }
+
+  const durationMs = Date.now() - startMs;
+  const isBehind = behind >= STALENESS_BEHIND_THRESHOLD;
+
+  if (isBehind && isStale) {
+    return {
+      name: "freshness",
+      status: "no",
+      durationMs,
+      detail: `on ${branch}, behind by ${behind}, age ${branchAgeHours}h (not a worktree) — pull main and close stale branch`,
+      freshnessKey: `behind:${behind}+stale-branch:${branchAgeHours}h`,
+    };
+  }
+
+  if (isBehind) {
+    return {
+      name: "freshness",
+      status: "no",
+      durationMs,
+      detail: `on ${branch}, behind by ${behind} — pull main before designing`,
+      freshnessKey: `behind:${behind}`,
+    };
+  }
+
+  if (isStale) {
+    return {
+      name: "freshness",
+      status: "no",
+      durationMs,
+      detail: `on ${branch} (age ${branchAgeHours}h, not a worktree) — likely a stale closeout branch`,
+      freshnessKey: `stale-branch:${branchAgeHours}h`,
+    };
+  }
+
+  if (branch === "main" && ahead > 0) {
+    return {
+      name: "freshness",
+      status: "yes",
+      durationMs,
+      detail: `on main, ${ahead} commit(s) ahead (not pushed)`,
+      freshnessKey: `ahead:${ahead}`,
+    };
+  }
+
+  if (behind > 0) {
+    // Behind but below threshold — note it without warning
+    return {
+      name: "freshness",
+      status: "yes",
+      durationMs,
+      detail: `on ${branch}, behind by ${behind}`,
+      freshnessKey: `behind:${behind}`,
+    };
+  }
+
+  return {
+    name: "freshness",
+    status: "yes",
+    durationMs,
+    detail: `on ${branch}, current`,
+    freshnessKey: "current",
+  };
+}
+
 function formatFingerprintTestValue(result: ProbeResult): string {
   if (result.status === "yes" && typeof result.durationMs === "number") {
     return formatSeconds(result.durationMs);
@@ -273,27 +465,33 @@ function main(): void {
     const gitDryRun = probeGitPushDryRun();
     const npmTestTiming = probeNpmSingleTestTiming();
     const computerUse = probeComputerUseGrantStatus();
+    const branchStaleness = probeBranchStaleness();
 
     console.log("session-precheck summary");
     printProbe(ripgrep);
     printProbe(gitDryRun);
     printProbe(npmTestTiming);
     printProbe(computerUse);
+    printProbe(branchStaleness);
 
     const fingerprint = [
       `rg=${ripgrep.status}`,
       `git=${gitDryRun.status}`,
       `test=${formatFingerprintTestValue(npmTestTiming)}`,
       `cu=${formatFingerprintComputerUse(computerUse)}`,
+      `freshness=${branchStaleness.freshnessKey}`,
     ].join(" ");
     console.log(`fingerprint ${fingerprint}`);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.log(`session-precheck encountered an unexpected error: ${message}`);
-    console.log("fingerprint rg=unknown git=unknown test=unknown cu=unknown");
+    console.log("fingerprint rg=unknown git=unknown test=unknown cu=unknown freshness=unknown");
   }
 
   process.exit(0);
 }
 
-main();
+// Only run when executed directly (not when imported by tests)
+if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1] ?? "")) {
+  main();
+}
