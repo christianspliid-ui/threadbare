@@ -49,7 +49,7 @@ import { EMPTY_STATE_STYLE } from './debugPanelStyles';
 import type { KnowsClueOfEdgeProperties } from '../../../types/knowledge';
 import type { FlipTableRuntimeState } from '../../../types/contentShells';
 
-export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events' | 'shells' | 'compositions' | 'phases' | 'choices' | 'drift' | 'hand' | 'detection' | 'forecast';
+export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events' | 'shells' | 'compositions' | 'phases' | 'choices' | 'drift' | 'hand' | 'detection' | 'forecast' | 'foreshadowing';
 
 export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'feed', label: 'Feed' }, { id: 'agent-follow', label: 'Agent' },
@@ -70,6 +70,7 @@ export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'hand', label: 'Hand' },
   { id: 'detection', label: 'Detection' },
   { id: 'forecast', label: 'Forecast' },
+  { id: 'foreshadowing', label: 'Foreshadowing' },
 ];
 
 export interface DebugTabContentProps {
@@ -178,6 +179,34 @@ export function DebugTabContent({
   if (viewMode === 'hand') return <HandStateInspector traces={allTraces as TraceEntry[]} />;
   if (viewMode === 'detection') return <DetectionStateInspector regionalDetectionPressure={regionalDetectionPressure} traces={allTraces as TraceEntry[]} currentTick={currentTick} />;
   if (viewMode === 'forecast') return <ForecastFactorsInspector traces={allTraces as TraceEntry[]} />;
+  if (viewMode === 'foreshadowing') {
+    const foreshadowingTraces = (allTraces as TraceEntry[]).filter(t => t.category === 'foreshadowing');
+    if (foreshadowingTraces.length === 0) {
+      return <div style={EMPTY_STATE_STYLE}>No foreshadowing traces yet. Click an encounter row in the agent panel to resolve.</div>;
+    }
+    return (
+      <div style={{ padding: 'var(--space-3)', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', overflowY: 'auto' }}>
+        {foreshadowingTraces.map((t, i) => {
+          const ft = t as unknown as { cacheHit: boolean; agentId: string; encounterId: string; summary: string; error?: string };
+          return (
+            <div
+              key={i}
+              style={{
+                fontSize: 'var(--text-xs)',
+                fontFamily: 'var(--font-body)',
+                color: ft.error ? '#b85450' : (ft.cacheHit ? 'var(--text-muted)' : 'var(--text-secondary)'),
+                padding: '4px',
+                borderLeft: `2px solid ${ft.error ? '#b85450' : ft.cacheHit ? 'var(--border-subtle)' : 'color-mix(in srgb, var(--accent-gold) 50%, transparent)'}`,
+              }}
+            >
+              <div>{ft.summary}</div>
+              {ft.error && <div style={{ color: '#b85450', marginTop: '2px' }}>{ft.error}</div>}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
   if (viewMode === 'cli') return <CommandTab retinueAgents={retinueAgents} followAgentId={effectiveAgentId} />;
   if (viewMode === 'strategic') return <StrategicDebugTab strategicState={strategicState} graph={graph} effectiveAgentId={effectiveAgentId} currentTick={currentTick} />;
   if (viewMode === 'social') {

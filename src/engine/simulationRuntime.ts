@@ -61,8 +61,12 @@ export interface SimulationRuntime {
   /** Bumps on every balance event recorded. Allows UI/tooling memoization. */
   balanceTelemetryVersion: number;
 
-  // ── Encounter foreshadowing cache (THR-389) ──
-  /** Session-scoped cache of resolved encounter foreshadowing prose. */
+  // ── Foreshadowing cache (THR-389) ──
+  /**
+   * Per-session cache of foreshadowing results keyed by
+   * `${agentId}|${encounterId}|${intelVersion}|${interventionVersion}`.
+   * Cleared by touchStructure() and resetRuntimeCaches().
+   */
   foreshadowingCache: Map<string, ForeshadowingResult>;
 }
 
@@ -124,6 +128,8 @@ export function touchWorld(runtime: SimulationRuntime): void {
 export function touchStructure(runtime: SimulationRuntime): void {
   runtime.structuralCacheVersion++;
   runtime.worldVersion++;
+  // Structural changes may invalidate agent encounter pools — clear foreshadowing cache.
+  runtime.foreshadowingCache.clear();
 }
 
 // ─── Cache Management ─────────────────────────────────────────────
