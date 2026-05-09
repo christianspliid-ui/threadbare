@@ -296,6 +296,7 @@ Every feature touches three pillars: **Engine** (systems, tick loop, graph), **C
 ### Design workflow checklist
 
 - [ ] **Step 0 - grill-me pre-pass (if non-trivial)** — run `grill-me` before drafting when scope is large, multi-pillar, ambiguous, or explicitly requested. Auto-trigger asks permission first; synthesis lands in `Docs/plans/YYYY-MM-DD-<topic>-grill-me.md`.
+- [ ] **Step 0.5 - Codesight pre-flight (if change touches `src/`)** — before drafting, query Codesight for blast radius (who imports the affected files?) and dependency chain (what do they import?). Use `.codesight/graph.md` for the dependency graph and the codesight MCP for live queries when available. If any file in scope has **≥100 importers**, the plan doc must include a **Blast Radius** section up front (see Per-system required sections below). Skip this step entirely for process / doc-only / skill-only changes that don't touch `src/`. If `npx codesight` / `.codesight/` is unavailable in the sandbox, fall back to manual `grep -rn "from.*<path>" src/` to count importers and log the missing-tool case as an impediment.
 - [ ] **Draft** the system design — covering all three pillars (Engine, Content, UI)
 - [ ] **Draft the Brainstorm companion** alongside the plan — same pass, not retrofit. Capture considered alternatives, tensions surfaced, Vision premises invoked.
 - [ ] **Audit** against all 7 NFPs, load-bearing decisions, and rejected approaches
@@ -314,6 +315,7 @@ Every feature touches three pillars: **Engine** (systems, tick loop, graph), **C
 - [ ] **Constants table** — every tunable number named, with default and purpose (NFP #1)
 - [ ] **Tracing** — trace types emitted, with TypeScript interface definitions (NFP #2)
 - [ ] **Fail-soft table** — failure cases and fallback behavior (NFP #4)
+- [ ] **Blast Radius (only when high-impact files touched)** — required when the change touches any file with ≥100 importers (see the named list under `# Codesight — Codebase Intelligence` near the bottom of this file). For each high-impact file, list the importer count and a one-line cascade-risk note (e.g., "graph.ts — 370 importers; schema additions ripple through every node-creation site"). Surface up front in the plan doc, not in an appendix. Omit this section entirely when no high-impact file is touched.
 
 ### Maintenance and review
 

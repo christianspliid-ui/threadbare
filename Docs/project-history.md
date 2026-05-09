@@ -632,3 +632,4 @@ px vite build).
 - ✅ 2026-05-08: THR-374 shipped — tightened EffectRegistration D2 snapshot coverage to the exact 10-case 1920×1080 spec (new test titles + regenerated snapshot keys), with full verification trio green and existing `useEffectSequencing` tests confirmed present.
 - ✅ 2026-05-08: THR-267 shipped — added mandatory engine-change CLI smoke step to CLAUDE Pre-commit minimum and updated closeout evidence wording to include smoke output when applicable.
 - ✅ 2026-05-08: THR-387 shipped — hex map filtered to show only threaded agents + avatar; non-threaded notable/spotlight NPCs removed from agentRenderData in GameView.tsx useMemo.
+- ✅ 2026-05-09: THR-268 shipped — Design Governance now requires a Step 0.5 Codesight pre-flight for `src/` changes and a Blast Radius section whenever high-impact files (>=100 importers) are touched.
