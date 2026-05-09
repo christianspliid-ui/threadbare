@@ -5,6 +5,7 @@ import type { WorldGraph } from '../../engine/graph';
 import type { BalanceEvent } from '../../types/balanceEval';
 import type { DigestEntry } from '../../types/attention';
 import type { StrategicRuntimeState } from '../../types/strategicAction';
+import type { SimulationRuntime } from '../../engine/simulationRuntime';
 import { TIER_COLORS } from '../../data/uiColorPalette';
 import { getSphereColor } from '../../data/sphereIcons';
 import type { ReachDomain } from '../../types/traits';
@@ -20,6 +21,7 @@ import {
   buildIntelligenceDisplay,
   INTEL_PANEL_FOG_MIN_TIER,
 } from '../../engine/intelligence';
+import { getEncounterForeshadowing } from '../../engine/foreshadowing/encounterForeshadowing';
 import { AgentIntelligencePanel } from './AgentIntelligencePanel';
 import type { IntelligenceRecord } from '../../types/unifiedAction';
 
@@ -58,6 +60,8 @@ interface ThreadDetailViewProps {
   digestBuffer?: DigestEntry[];
   /** Current simulation tick — used to window recent digest entries. */
   currentTick?: number;
+  /** Session runtime cache ownership (foreshadowing cache + telemetry refs). */
+  runtime?: SimulationRuntime;
   /** The tick at which this agent was last viewed — used to highlight new entries. */
   lastViewedTick?: number;
   /** Strategic runtime state — enables the "Designs" section for agent nodes. */
@@ -76,6 +80,7 @@ export const ThreadDetailView = React.memo(function ThreadDetailView({
   graph,
   digestBuffer,
   currentTick,
+  runtime,
   lastViewedTick = 0,
   strategicState,
   intelligenceRecords,
@@ -184,6 +189,7 @@ export const ThreadDetailView = React.memo(function ThreadDetailView({
             agentEncounterDecision={agentEncounterDecision}
             digestBuffer={digestBuffer}
             currentTick={currentTick}
+            runtime={runtime}
             lastViewedTick={lastViewedTick}
             strategicState={strategicState}
             graph={graph}
@@ -360,7 +366,19 @@ function formatIdleReason(idleReason?: string): string | null {
   }
 }
 
-function EncounterDecisionPanel({ decision }: { decision: BalanceEvent }) {
+function EncounterDecisionPanel({
+  decision,
+  agentId,
+  graph,
+  runtime,
+  tick,
+}: {
+  decision: BalanceEvent;
+  agentId: string;
+  graph?: WorldGraph;
+  runtime?: SimulationRuntime;
+  tick?: number;
+}) {
   const visiblePool = getVisibleEncounterPool(decision);
   const stages = [
     { label: 'Cached', value: decision.filterCacheSize },
@@ -371,6 +389,28 @@ function EncounterDecisionPanel({ decision }: { decision: BalanceEvent }) {
     { label: 'Capability', value: decision.filterAfterCap },
     { label: 'Cooldown', value: decision.candidatesAfterCooldown },
   ].filter(stage => stage.value !== undefined);
+  const rankedPool = decision.rankedEncounterPool ?? [];
+
+  const foreshadowingByCandidate = useMemo(() => {
+    const results = new Map<string, string>();
+    if (!graph || !runtime || tick === undefined) return results;
+    for (const candidate of rankedPool) {
+      try {
+        const foreshadowing = getEncounterForeshadowing({
+          runtime,
+          graph,
+          tick,
+          agentId,
+          decision,
+          candidate,
+        });
+        results.set(`${candidate.rank}:${candidate.templateId}:${candidate.locationId}`, foreshadowing.prose);
+      } catch {
+        // Fail-soft: one bad candidate must not collapse the panel.
+      }
+    }
+    return results;
+  }, [agentId, decision, graph, rankedPool, runtime, tick]);
 
   const isStrategic = decision.decisionType?.startsWith('strategic_');
 
@@ -401,6 +441,31 @@ function EncounterDecisionPanel({ decision }: { decision: BalanceEvent }) {
           value={stages.map(stage => `${stage.label} ${stage.value}`).join(' -> ')}
         />
       )}
+      {!isStrategic && rankedPool.length > 0 && (
+        <div style={{ marginTop: 'var(--space-1)' }}>
+          <div style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)', marginBottom: '4px' }}>
+            Ranked options
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {rankedPool.map(candidate => {
+              const key = `${candidate.rank}:${candidate.templateId}:${candidate.locationId}`;
+              const prose = foreshadowingByCandidate.get(key);
+              return (
+                <details key={key} style={{ border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '4px 6px' }}>
+                  <summary style={{ cursor: 'pointer', color: 'var(--text-secondary)', fontSize: 'var(--text-xs)' }}>
+                    #{candidate.rank} {candidate.templateName} @ {candidate.locationName} (score {candidate.finalScore.toFixed(2)})
+                  </summary>
+                  {prose && (
+                    <div style={{ marginTop: '6px', color: 'var(--text-primary)', fontSize: 'var(--text-xs)', lineHeight: 1.4 }}>
+                      {prose}
+                    </div>
+                  )}
+                </details>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </DetailSection>
   );
 }
@@ -412,6 +477,7 @@ function AgentDetailBody({
   agentEncounterDecision,
   digestBuffer,
   currentTick,
+  runtime,
   lastViewedTick = 0,
   strategicState,
   graph,
@@ -422,6 +488,7 @@ function AgentDetailBody({
   agentEncounterDecision?: BalanceEvent | null;
   digestBuffer?: DigestEntry[];
   currentTick?: number;
+  runtime?: SimulationRuntime;
   lastViewedTick?: number;
   strategicState?: StrategicRuntimeState;
   graph?: WorldGraph;
@@ -512,7 +579,13 @@ function AgentDetailBody({
         )}
 
         {agentEncounterDecision && (
-          <EncounterDecisionPanel decision={agentEncounterDecision} />
+          <EncounterDecisionPanel
+            decision={agentEncounterDecision}
+            agentId={node.id}
+            graph={graph}
+            runtime={runtime}
+            tick={currentTick}
+          />
         )}
 
         {/* Recent Activity Log — background encounter digest for this agent */}
@@ -578,7 +651,13 @@ function AgentDetailBody({
         <DetailField label="Faction" value={node.factionName} />
       )}
       {agentEncounterDecision && (
-        <EncounterDecisionPanel decision={agentEncounterDecision} />
+        <EncounterDecisionPanel
+          decision={agentEncounterDecision}
+          agentId={node.id}
+          graph={graph}
+          runtime={runtime}
+          tick={currentTick}
+        />
       )}
 
       {/* Recent Activity Log — background encounter digest for this agent */}

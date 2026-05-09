@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import '../debug-bridge';
 
@@ -169,5 +169,107 @@ describe('debug bridge scene snapshot contract', () => {
       touchedStructure: false,
       message: 'Applied aftermath reaction.',
     });
+  });
+
+  it('getForeshadowing resolves using latest ranked candidate for matched agent', async () => {
+    vi.doMock('../engine/foreshadowing/encounterForeshadowing', () => ({
+      getEncounterForeshadowing: () => ({
+        prose: 'Serafina reads the wind and prepares the quarantine line.',
+        variantId: 'plague.briefed.eye',
+        signals: { intelligenceTier: 'briefed', topMotive: 'capability', dominantReach: 'eye' },
+        interventionAttribution: null,
+        resolvedAtTick: 12,
+      }),
+    }));
+
+    const debug = requireDebugBridge();
+    const graph = {
+      getNodesByType: () => [{ id: 'agent-1', name: 'Serafina' }],
+    } as unknown as import('../engine/graph').WorldGraph;
+    const decision = {
+      rankedEncounterPool: [{
+        rank: 1,
+        templateId: 'encounter.plague_outbreak',
+        templateName: 'Plague Outbreak',
+        locationId: 'location-1',
+        locationName: 'Ashmarket',
+        action: 'start_local',
+        reachPrimary: 'eye',
+        reachSecondary: 'heart',
+        encounterType: 'assist',
+        threatBand: 'hard',
+        stepCount: 2,
+        totalTickCost: 5,
+        rewardEstimate: 0.7,
+        completionProb: 0.62,
+        travelCost: 0,
+        finalScore: 1.23,
+        selected: true,
+      }],
+    } as unknown as import('../types/balanceEval').BalanceEvent;
+
+    debug._registerGameStateProvider(() => ({
+      graph,
+      tick: 12,
+    } as unknown as import('../types/gameState').GameState));
+    debug._registerRuntimeProvider(() => ({
+      balanceTelemetry: {
+        latestEncounterDecisionByAgent: new Map([['agent-1', decision]]),
+      },
+    } as unknown as import('../engine/simulationRuntime').SimulationRuntime));
+
+    await expect(debug.getForeshadowing('Serafina')).resolves.toMatchObject({
+      templateId: 'encounter.plague_outbreak',
+      templateName: 'Plague Outbreak',
+      locationName: 'Ashmarket',
+      variantId: 'plague.briefed.eye',
+      prose: 'Serafina reads the wind and prepares the quarantine line.',
+      resolvedAtTick: 12,
+    });
+  });
+
+  it('listForeshadowingTraces filters by agent query', async () => {
+    const debug = requireDebugBridge();
+    const { clearTraces, enableTracing, emitTrace } = await import('../engine/traceBuffer');
+    clearTraces();
+    enableTracing();
+
+    emitTrace({
+      category: 'foreshadowing',
+      tick: 8,
+      agentId: 'agent-1',
+      encounterId: 'encounter.plague_outbreak',
+      variantsConsidered: ['plague.briefed.eye'],
+      variantPicked: 'plague.briefed.eye',
+      signals: { intelligenceTier: 'briefed', topMotive: 'capability', dominantReach: 'eye' },
+      interventionAttributionId: null,
+      cacheHit: false,
+      summary: 'foreshadowing resolved for encounter.plague_outbreak',
+    });
+    emitTrace({
+      category: 'foreshadowing',
+      tick: 9,
+      agentId: 'agent-2',
+      encounterId: 'encounter.deep_descent',
+      variantsConsidered: [],
+      variantPicked: null,
+      signals: { intelligenceTier: 'rumor', topMotive: 'threat', dominantReach: 'iron' },
+      interventionAttributionId: null,
+      cacheHit: false,
+      summary: 'foreshadowing resolved for encounter.deep_descent',
+    });
+
+    debug._registerGameStateProvider(() => ({
+      graph: {
+        getNodesByType: () => [
+          { id: 'agent-1', name: 'Serafina' },
+          { id: 'agent-2', name: 'Kael' },
+        ],
+      },
+    } as unknown as import('../types/gameState').GameState));
+
+    const traces = await debug.listForeshadowingTraces('Sera');
+    expect(traces).toHaveLength(1);
+    expect(traces[0].agentId).toBe('agent-1');
   });
 });

@@ -13,6 +13,7 @@ import type { RewardPoolRecipe } from './attachments';
 import type { EncounterChoiceMemory, EncounterSupportBinding, EncounterSupportBundle } from './encounter';
 import type { ClearanceGateConfig } from './contentShells';
 import type { EffectPredicate } from './effects';
+import type { EncounterForeshadowingDefinition } from './foreshadowing';
 
 export type ActionScale = 'cosmic' | 'regional' | 'local' | 'personal';
 export type ActionSource = 'agent' | 'player' | 'system';
@@ -724,6 +725,8 @@ export interface UnifiedActionTemplate {
     readonly failure: string;
     readonly contested?: string;
   };
+  /** Optional authored foreshadowing variants for encounter-pool previews (THR-389). */
+  readonly foreshadowing?: EncounterForeshadowingDefinition;
 
   /** Evocative spell-like display name (Ars Magica style, max 3 words).
    * Replaces `name` in focused card spell-name zone.

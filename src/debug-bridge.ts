@@ -37,6 +37,18 @@ if (import.meta.env.DEV) {
     cameraFocusHex: { col: number; row: number } | null;
   }
 
+  interface ForeshadowingDebugResult {
+    templateId: string;
+    templateName: string;
+    locationId: string;
+    locationName: string;
+    prose: string;
+    variantId: string | null;
+    resolvedAtTick: number;
+    signals: import('./types/foreshadowing').ForeshadowingSignals;
+    interventionAttribution: import('./types/foreshadowing').ForeshadowingInterventionAttribution | null;
+  }
+
   const getEmptySceneSnapshot = (): SceneSnapshot => ({
     hexCount: 0,
     agentsVisible: 0,
@@ -360,6 +372,57 @@ if (import.meta.env.DEV) {
     /** Returns the last n reward events (successful draws and empty-pool misses). Default: all retained. */
     getRecentRewards: (n?: number) =>
       import('./engine/rewardHistory').then((m) => m.getRecentRewards(n)),
+    /** Resolve encounter foreshadowing prose for an agent's latest ranked encounter candidate. */
+    getForeshadowing: async (agentQuery: string, templateQuery?: string) => {
+      const state = _gameStateProvider?.();
+      const runtime = _runtimeProvider?.();
+      if (!state || !runtime?.balanceTelemetry) return null;
+
+      const actors = state.graph.getNodesByType('actor');
+      const agent = actors.find(n =>
+        n.id === agentQuery
+        || n.id.startsWith(agentQuery)
+        || n.name.toLowerCase().includes(agentQuery.toLowerCase())
+      );
+      if (!agent) return null;
+
+      const decision = runtime.balanceTelemetry.latestEncounterDecisionByAgent.get(agent.id);
+      if (!decision) return null;
+
+      const pool = decision.rankedEncounterPool ?? [];
+      if (pool.length === 0) return null;
+
+      const candidate = templateQuery
+        ? (pool.find(item =>
+          item.templateId === templateQuery
+          || item.templateId.includes(templateQuery)
+          || item.templateName.toLowerCase().includes(templateQuery.toLowerCase())
+        ) ?? null)
+        : pool[0];
+      if (!candidate) return null;
+
+      const { getEncounterForeshadowing } = await import('./engine/foreshadowing/encounterForeshadowing');
+      const result = getEncounterForeshadowing({
+        runtime,
+        graph: state.graph,
+        tick: state.tick,
+        agentId: agent.id,
+        decision,
+        candidate,
+      });
+
+      return {
+        templateId: candidate.templateId,
+        templateName: candidate.templateName,
+        locationId: candidate.locationId,
+        locationName: candidate.locationName,
+        prose: result.prose,
+        variantId: result.variantId,
+        resolvedAtTick: result.resolvedAtTick,
+        signals: result.signals,
+        interventionAttribution: result.interventionAttribution,
+      } satisfies ForeshadowingDebugResult;
+    },
 
     getTraces: () => import('./engine/traceBuffer').then((m) => m.getTraces()),
     enableTracing: () => import('./engine/traceBuffer').then((m) => m.enableTracing()),
@@ -474,6 +537,23 @@ if (import.meta.env.DEV) {
       const { getTraces } = await import('./engine/traceBuffer');
       const traces = getTraces();
       return traces.filter(t => t.category === 'encounter_cache_rebuild');
+    },
+    /** Returns all foreshadowing traces (optionally narrowed to one agent query). */
+    listForeshadowingTraces: async (agentQuery?: string) => {
+      const { getTraces } = await import('./engine/traceBuffer');
+      const traces = getTraces().filter(t => t.category === 'foreshadowing');
+      if (!agentQuery) return traces;
+
+      const state = _gameStateProvider?.();
+      if (!state) return traces.filter(t => t.agentId === agentQuery || t.agentId?.startsWith(agentQuery));
+      const actors = state.graph.getNodesByType('actor');
+      const agent = actors.find(n =>
+        n.id === agentQuery
+        || n.id.startsWith(agentQuery)
+        || n.name.toLowerCase().includes(agentQuery.toLowerCase())
+      );
+      if (!agent) return [];
+      return traces.filter(t => t.agentId === agent.id);
     },
 
     // Strategic action inspection

@@ -35,6 +35,7 @@ import type { BalanceTelemetry } from './balanceTelemetry';
 import { createBalanceTelemetry } from './balanceTelemetry';
 import { BALANCE_TARGETS_VERSION } from './balanceTargets';
 import { emitTrace } from './traceBuffer';
+import type { ForeshadowingResult } from '../types/foreshadowing';
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -59,6 +60,10 @@ export interface SimulationRuntime {
   balanceTelemetry: BalanceTelemetry | null;
   /** Bumps on every balance event recorded. Allows UI/tooling memoization. */
   balanceTelemetryVersion: number;
+
+  // ── Encounter foreshadowing cache (THR-389) ──
+  /** Session-scoped cache of resolved encounter foreshadowing prose. */
+  foreshadowingCache: Map<string, ForeshadowingResult>;
 }
 
 // ─── Factory ──────────────────────────────────────────────────────
@@ -75,6 +80,7 @@ export function createSimulationRuntime(): SimulationRuntime {
     encounterCacheRebuildCount: 0,
     balanceTelemetry: createBalanceTelemetry({ targetVersion: BALANCE_TARGETS_VERSION }),
     balanceTelemetryVersion: 0,
+    foreshadowingCache: new Map(),
   };
 }
 
@@ -221,6 +227,7 @@ export function resetRuntimeCaches(runtime: SimulationRuntime): void {
   runtime.distanceMatrix = null;
   runtime.encounterCacheBuiltAt = -1;
   runtime.distanceMatrixBuiltAt = -1;
+  runtime.foreshadowingCache.clear();
   clearTimelines();
   clearRewardHistory();
 }

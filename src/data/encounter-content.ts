@@ -124,6 +124,7 @@ type EncounterEntry = {
   intrinsicTier?: string;
   motivations?: readonly string[];
   sphereAffinity?: string;
+  foreshadowing?: import('../types/foreshadowing').EncounterForeshadowingDefinition;
   reputationPolarity?: 'positive' | 'negative';
   favorGeneration?: { onSuccess: boolean; magnitudeRange: [number, number]; context: string };
   steps: ReadonlyArray<{
@@ -215,6 +216,7 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
       success: lastStep?.onSuccess.narrative ?? `${e.name} succeeds.`,
       failure: lastStep?.onFailure.narrative ?? `${e.name} fails.`,
     },
+    foreshadowing: e.foreshadowing,
     rarityTier: 1,
     intrinsicTier: 'background',
   };
@@ -5597,6 +5599,31 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     threatRating: 'hard',
     intrinsicTier: 'shaping',
     motivations: ['mercy_ruthlessness', 'revelation_discretion'],
+    foreshadowing: {
+      fallback: '{name} has heard a fever is spreading through {encounter_location}. {They} are not sure who can be saved, but {they} will try.',
+      variants: [
+        {
+          id: 'plague.unknown.awareness',
+          when: { intelligenceTier: 'unknown', topMotive: 'awareness' },
+          template: 'Rumor reaches {name} only in fragments: streets gone quiet in {encounter_location}, doors marked in ash. {They} set out with more resolve than certainty.',
+        },
+        {
+          id: 'plague.rumor.heart',
+          when: { intelligenceTier: 'rumor', dominantReach: 'heart' },
+          template: '{name} has heard enough to fear the truth. In {encounter_location}, families are already choosing who eats and who keeps watch by the sickbed.',
+        },
+        {
+          id: 'plague.briefed.eye',
+          when: { intelligenceTier: 'briefed', dominantReach: 'eye' },
+          template: '{name} has pieced together a pattern: wells, caravans, and a single market day in {encounter_location}. {They} believe containment is still possible, if swift.',
+        },
+        {
+          id: 'plague.expert.capability',
+          when: { intelligenceTier: 'expert', topMotive: 'capability' },
+          template: '{name} knows exactly what this outbreak will demand. {They} can name the first quarantine line before reaching {encounter_location}.',
+        },
+      ],
+    },
     steps: [
       {
         id: 'plague_outbreak.diagnose',
