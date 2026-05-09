@@ -581,21 +581,5 @@ if (import.meta.env.DEV) {
       if (!state) return [];
       return state.activeCompositions ?? [];
     },
-
-    // Foreshadowing inspection (THR-389)
-    getForeshadowing: async (agentId: string, encounterId: string) => {
-      const state = _gameStateProvider?.();
-      const runtime = _runtimeProvider?.();
-      if (!state || !runtime) return null;
-      const { getEncounterForeshadowing } = await import('./engine/foreshadowing/getEncounterForeshadowing');
-      return getEncounterForeshadowing(state, agentId, encounterId, state.tick, runtime);
-    },
-    listForeshadowingTraces: async (agentId?: string) => {
-      const { getTraces } = await import('./engine/traceBuffer');
-      const traces = getTraces();
-      const filtered = traces.filter(t => t.category === 'foreshadowing');
-      if (!agentId) return filtered;
-      return filtered.filter(t => (t as unknown as { agentId?: string }).agentId === agentId);
-    },
   };
 }

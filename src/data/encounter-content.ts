@@ -146,7 +146,6 @@ type EncounterEntry = {
       reputationDelta?: number;
     };
   }>;
-  foreshadowing?: import('../types/unifiedAction').EncounterForeshadowing;
 };
 
 // ─── Converter ───────────────────────────────────────────────────
@@ -220,7 +219,6 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
     foreshadowing: e.foreshadowing,
     rarityTier: 1,
     intrinsicTier: 'background',
-    ...(e.foreshadowing !== undefined && { foreshadowing: e.foreshadowing }),
   };
 }
 
@@ -5601,31 +5599,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     threatRating: 'hard',
     intrinsicTier: 'shaping',
     motivations: ['mercy_ruthlessness', 'revelation_discretion'],
-    foreshadowing: {
-      fallback: '{name} has heard a fever is spreading through {encounter_location}. {They} are not sure who can be saved, but {they} will try.',
-      variants: [
-        {
-          id: 'plague.unknown.awareness',
-          when: { intelligenceTier: 'unknown', topMotive: 'awareness' },
-          template: 'Rumor reaches {name} only in fragments: streets gone quiet in {encounter_location}, doors marked in ash. {They} set out with more resolve than certainty.',
-        },
-        {
-          id: 'plague.rumor.heart',
-          when: { intelligenceTier: 'rumor', dominantReach: 'heart' },
-          template: '{name} has heard enough to fear the truth. In {encounter_location}, families are already choosing who eats and who keeps watch by the sickbed.',
-        },
-        {
-          id: 'plague.briefed.eye',
-          when: { intelligenceTier: 'briefed', dominantReach: 'eye' },
-          template: '{name} has pieced together a pattern: wells, caravans, and a single market day in {encounter_location}. {They} believe containment is still possible, if swift.',
-        },
-        {
-          id: 'plague.expert.capability',
-          when: { intelligenceTier: 'expert', topMotive: 'capability' },
-          template: '{name} knows exactly what this outbreak will demand. {They} can name the first quarantine line before reaching {encounter_location}.',
-        },
-      ],
-    },
     steps: [
       {
         id: 'plague_outbreak.diagnose',
@@ -5685,7 +5658,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         {
           id: 'plague_outbreak.briefed',
           when: { intelligenceTier: 'briefed' },
-          template: 'Word has reached {name.first} through the healer guilds — symptoms catalogued, the likely vector named. {pronoun.subject_capitalized} knows what needs doing. The question is how much time remains to do it.',
+          template: 'Word has reached {name.first} through the healer guilds in {encounter_location} — symptoms catalogued, the likely vector named. {pronoun.subject_capitalized} knows what needs doing. The question is how much time remains to do it.',
         },
         {
           id: 'plague_outbreak.expert',

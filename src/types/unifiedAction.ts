@@ -791,44 +791,6 @@ export interface UnifiedActionTemplate {
    * would produce the wrong sign (e.g. 'threaten' templates that are read/explore).
    */
   readonly reputationPolarity?: 'positive' | 'negative';
-
-  /**
-   * Authored foreshadowing variants for the encounter (THR-389).
-   * When present, the foreshadowing resolver selects a matching variant and
-   * enriches its template. When absent, the global generic fallback is used.
-   */
-  readonly foreshadowing?: EncounterForeshadowing;
-}
-
-// ─── Encounter Foreshadowing (THR-389) ──────────────────────────────────────
-
-/**
- * Authored foreshadowing for an encounter template.
- * The resolver selects the most-specific matching variant; falls back to
- * `fallback` when no variant matches, and to the global generic fallback
- * when the entire field is absent.
- */
-export interface EncounterForeshadowing {
-  variants: ForeshadowingVariant[];
-  /** Template string used when no variant matches `when` predicates. */
-  fallback: string;
-}
-
-export interface ForeshadowingVariant {
-  /** Stable ID for tracing and debug. */
-  id: string;
-  /** All defined clauses must be satisfied. Empty object = wildcard. */
-  when: {
-    intelligenceTier?: 'unknown' | 'rumor' | 'briefed' | 'expert' | Array<'unknown' | 'rumor' | 'briefed' | 'expert'>;
-    topMotive?: 'awareness' | 'visibility' | 'prereqs' | 'threat' | 'capability' | 'cooldown'
-      | Array<'awareness' | 'visibility' | 'prereqs' | 'threat' | 'capability' | 'cooldown'>;
-    dominantReach?: import('./traits').ReachDomain | import('./traits').ReachDomain[];
-    /** Mark template ID the agent must hold and be aware of (knownToHolder === true). */
-    hasMark?: string;
-    hasReputation?: { faction: string; min?: number; max?: number };
-  };
-  /** Graph-walking template, run through enrichProse(). */
-  template: string;
 }
 
 /**
