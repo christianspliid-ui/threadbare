@@ -1,6 +1,6 @@
 ---
 domain: encounters
-last_reviewed: 2026-05-05
+last_reviewed: 2026-05-07
 reviewer: cowork
 ul_shards: [Encounters, Prose]
 status: live
@@ -37,7 +37,6 @@ From `2026-05-04-encounter-experience-design-plan.md` §1 — the executor's con
 ## Active design plans
 
 - [2026-05-04-encounter-experience-design-plan.md](../plans/2026-05-04-encounter-experience-design-plan.md) — current canonical encounter experience design (THR-300). Status: `current`. This is the executor's contract for all encounter implementation work.
-- [2026-05-05-encounter-ui-implementation-phasing.md](../plans/2026-05-05-encounter-ui-implementation-phasing.md) — phased implementation plan for the encounter UI (Phases A–G). Executor's build sequence with per-phase Done-when criteria and the hybrid callback eligibility decision (§2.6).
 - [2026-05-04-encounter-experience-player-journey.md](../plans/2026-05-04-encounter-experience-player-journey.md) — player journey reference (companion to above)
 - [2026-05-04-encounter-experience-grill-me.md](../plans/2026-05-04-encounter-experience-grill-me.md) — pre-design synthesis; useful archaeology
 - [2026-05-04-encounter-toolkit-vision-audit.md](../plans/2026-05-04-encounter-toolkit-vision-audit.md) — vision audit **with one corrected row** (see note below)
@@ -69,6 +68,7 @@ Source: `Docs/plans/2026-05-04-encounter-experience-design-plan.md` §2.2 and `B
 - ❌ Player-as-character framing ("choose how the character responds") — the player is a god who intervenes indirectly. All choices must be *god actions* (whisper, steady, withdraw, strengthen). "Let them handle it" is always valid. Any choice that makes the mortal the agent must be reframed.
 - ❌ Spirit as a Reach — Spirit is a **Sphere** (one of the 12 Creation Spheres), not a Reach. Using "Spirit reach" in encounter authoring is a drift error. Use the correct Reach (Iron, Gold, etc.) for the action domain.
 - ❌ Voice as a Reach — Voice does not exist. The persuasion/communication domain maps to **Gold** (influence, patronage, social capital) depending on the action type.
+- ❌ Intelligence/visibility gating of encounter candidates — rejected 2026-05-07 (project-level direction from Christian, THR-138 closed). All encounter content is fully visible to the player at all times; intel never *hides* candidates. Intel may still *enrich* an encounter when present (prose recognition per THR-139, mechanical bonus per THR-140, cross-agent sharing per THR-142) — additive, never subtractive. Do not propose `requiresIntelligence` template fields, hidden-candidate filters, or "fog of intel" mechanics; the design space is closed.
 
 ## Open questions
 
@@ -77,4 +77,4 @@ Source: `Docs/plans/2026-05-04-encounter-experience-design-plan.md` §2.2 and `B
 
 ## Last-reviewed
 
-2026-05-05 by Cowork. Review trigger: monthly, or when any listed plan moves to `superseded`.
+2026-05-07 by Cowork. Review trigger: monthly, or when any listed plan moves to `superseded`. Last edit: added Rejected Approaches entry for intelligence/visibility gating (THR-138 canceled).
