@@ -1,5 +1,5 @@
 # Project Status
-> Updated 2026-05-08.
+> Updated 2026-05-09.
 
 ## Current Focus
 **THR-139 complete (2026-05-08) — Authored `intel_referenced_prose` aftermath reaction variant (Encounter Format Migration).** Closes the intelligence consumption loop's authored "intel paid off" surface, the fourth and most player-visible of the five consumption sites (after THR-113 scoring/prose/resolution and THR-140 difficulty modifier). New `EncounterAftermathReactionEffect` union variant `kind: 'intel_referenced_prose'` (`src/types/unifiedAction.ts`) with `category` + 3-band `prose: { reliable, uncertain?, dubious? }` + optional `significance`/`targetAgentId`/`when`. Engine pillar (`src/engine/encounterAftermath.ts` dispatcher case + helpers `findIntelReferencedProseMatch` / `pickIntelReferencedProseLine` exported from `intelligence.ts`): on match, picks reliability-banded prose and appends a `narrative` `TickEvent` to `recentEvents`/`tickEvents`; emits `intelligence_referenced` with new `referencedBy: 'aftermath_prose'` discriminator (widened in `trace.ts`); fail-soft with 4 skip paths (`no_target_agent` / `no_matching_record` / `skipped_dubious` / `skipped_empty_prose`). Four new tunables in `agent-behavior-constants.ts` (per-band significance defaults 0.6/0.45/0.3 + `INTEL_REFERENCED_PROSE_DUBIOUS_FIRES` master switch). Content pillar: new `src/data/intelligence-referenced-prose.ts` with the 72-line shared pack (6 categories × 3 bands × 4 lines, Threadbare voice 18-32 words/line, dubious band shows the intel betraying the agent); 3 pilot reactions wired in `arcane-circle-encounter-content.ts` (`agent_network`), `builders-fellowship-encounter-content.ts` (`political_secret`), `encounter-anomaly-content.ts` (`cultural_knowledge`). UI pillar N/A by design — the new `TickEvent.type: 'narrative'` flows through the existing chronicle/right-rail renderer (browser-verified: 3 narrative TickEvent toasts rendering on `?view=game&seeded` confirms the shared surface). Tests: 18 assertions across 3 files (`intelligence.referencedProse.test.ts` 9, `encounterAftermath.intelReferencedProse.test.ts` 7, `contracts/intel-aftermath-prose-liveness.contract.test.ts` 2). Wiring docs: `Docs/plans/wiring-checklist.md` consumption-hooks table extended (5 hooks now); `Docs/plans/2026-04-16-systemic-wiring-guide.md` Capability 6 table updated (5 sites) + Aftermath Reaction Effect Types table count bumped 19 → 20. Verification: `npx tsc --noEmit` clean, `npx vite build` 7.23s, `npm test -- --run` 723 files / 11068 tests pass (43.37s).
@@ -12,7 +12,7 @@
 - **Encounter Format Migration (Now):** ✅ Phases 0-9 complete. All guilds migrated.
 - **Content Architecture (Now):** ✅ THR-86/88/239 shipped.
 - **UI Visual Overhaul — Design System v1 (Now):** ✅ Project complete. THR-178 Deferral shipped 2026-05-08.
-- **Continuous Improvement (Now):** THR-303/305/306/307/309/311/312/313/314/315/316/354/355/356/357/358/359/266 ✅. THR-304 Phase 5 series complete (5a vault THR-356 ✅, 5b repo THR-359 ✅). THR-360 (Category B code residue) queued.
+- **Continuous Improvement (Now):** THR-303/305/306/307/309/311/312/313/314/315/316/354/355/356/357/358/359/266/268 ✅. THR-304 Phase 5 series complete (5a vault THR-356 ✅, 5b repo THR-359 ✅). THR-360 (Category B code residue) queued.
 - **Social Systems Expansion (Now):** THR-28/27/30/51/29/41/34/31/35 shipped. ✅ THR-254/253. THR-78 queued.
 - **Thematic Pressure & Living World (Next):** ✅ THR-19/122/125/126/80/128/127. THR-87 blocked by THR-116.
 
@@ -21,6 +21,7 @@
 - 2026-05-06 batch: THR-311, THR-312, THR-313, THR-314, THR-315, THR-316, THR-317, THR-320, THR-321, THR-322, THR-323, THR-336
 - 2026-05-07 batch: THR-324, THR-325, THR-329, THR-339, THR-340, THR-341, THR-349, THR-350, THR-354, THR-355, THR-356, THR-357, THR-358, THR-359
 - 2026-05-08 batch: THR-139, THR-176, THR-177, THR-178, THR-179, THR-215, THR-265, THR-266, THR-267, THR-289, THR-292, THR-326, THR-330, THR-331, THR-332, THR-333, THR-334, THR-335, THR-338, THR-343, THR-344, THR-345, THR-352, THR-353, THR-360, THR-361, THR-362, THR-363, THR-365, THR-368, THR-374, THR-387, THR-388
+- 2026-05-09 batch: THR-268
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
