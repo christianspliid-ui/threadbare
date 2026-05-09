@@ -146,6 +146,7 @@ type EncounterEntry = {
       reputationDelta?: number;
     };
   }>;
+  foreshadowing?: import('../types/unifiedAction').EncounterForeshadowing;
 };
 
 // ─── Converter ───────────────────────────────────────────────────
@@ -219,6 +220,7 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
     foreshadowing: e.foreshadowing,
     rarityTier: 1,
     intrinsicTier: 'background',
+    ...(e.foreshadowing !== undefined && { foreshadowing: e.foreshadowing }),
   };
 }
 
@@ -5667,6 +5669,41 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         },
       },
     ],
+    foreshadowing: {
+      fallback: '{name.first} has heard of the {encounter.heading} spreading through these lands. {pronoun.subject_capitalized} moves to help, though {pronoun.subject} cannot say what, exactly, awaits.',
+      variants: [
+        {
+          id: 'plague_outbreak.unknown',
+          when: { intelligenceTier: 'unknown' },
+          template: '{name.first} has caught word of sickness spreading through the settlements. {pronoun.subject_capitalized} moves toward the outbreak, uncertain what {pronoun.subject} will find — or what {pronoun.subject} can do.',
+        },
+        {
+          id: 'plague_outbreak.rumor',
+          when: { intelligenceTier: 'rumor' },
+          template: 'Rumor paints the {encounter.heading} as something fearful — shuttered doors, empty markets, quarantine fires burning through the night. {name.first} does not yet know the truth of it.',
+        },
+        {
+          id: 'plague_outbreak.briefed',
+          when: { intelligenceTier: 'briefed' },
+          template: 'Word has reached {name.first} through the healer guilds — symptoms catalogued, the likely vector named. {pronoun.subject_capitalized} knows what needs doing. The question is how much time remains to do it.',
+        },
+        {
+          id: 'plague_outbreak.expert',
+          when: { intelligenceTier: 'expert' },
+          template: '{name.first} has encountered this before. The disease has a pattern and it follows it. {pronoun.subject_capitalized} approaches with grim clarity, already planning the quarantine, already mourning what it will cost.',
+        },
+        {
+          id: 'plague_outbreak.threat',
+          when: { topMotive: 'threat' },
+          template: 'The outbreak has reached something {name.first} cannot allow to fall. {pronoun.subject_capitalized} moves fast, calculating not mercy but necessity, each hour already counted in lives.',
+        },
+        {
+          id: 'plague_outbreak.healer_curiosity',
+          when: { topMotive: 'awareness', dominantReach: 'eye' },
+          template: 'The disease fascinates {name.first} in the way that disasters do — not with pleasure, but with the need to understand. {pronoun.subject_capitalized} wants to trace the vector, read the pattern, before trying to stop it.',
+        },
+      ],
+    },
   },
 
   // ── Fort/Castle Types ─────────────────────────────────────────────

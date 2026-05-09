@@ -1493,7 +1493,9 @@ export type TraceEntry =
   | CompositionFailedTrace
   | CompositionPhaseEvalFailedTrace
   // Composition dual-voice story-beat wiring (THR-254)
-  | CompositionStoryBeatTemplateMissingTrace;
+  | CompositionStoryBeatTemplateMissingTrace
+  // Encounter foreshadowing (THR-389)
+  | ForeshadowingResolutionTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {
@@ -1834,4 +1836,28 @@ export interface CompositionPhaseEvalFailedTrace extends TraceBase {
   compositionId: string;
   phaseId: string;
   error: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Encounter Foreshadowing Traces (THR-389)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Trace: foreshadowing resolver ran for an (agentId, encounterId) pair */
+export interface ForeshadowingResolutionTrace extends TraceBase {
+  category: 'foreshadowing';
+  agentId: string;
+  encounterId: string;
+  /** Variant IDs that satisfied all `when` predicates (empty in Phase 1). */
+  variantsConsidered: string[];
+  /** The variant picked, or null when the generic fallback was used. */
+  variantPicked: string | null;
+  signals: {
+    intelligenceTier: 'unknown' | 'rumor' | 'briefed' | 'expert';
+    topMotive: 'awareness' | 'visibility' | 'prereqs' | 'threat' | 'capability' | 'cooldown';
+    dominantReach: ReachDomain;
+  };
+  interventionAttributionId: string | null;
+  cacheHit: boolean;
+  /** Populated only on resolver error (fail-soft path). */
+  error?: string;
 }
