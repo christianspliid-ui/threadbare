@@ -3418,6 +3418,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                         graph={gameState.graph}
                         digestBuffer={selectedThreadNode.category === 'agent' ? (gameState.digestBuffer ?? []) : undefined}
                         currentTick={selectedThreadNode.category === 'agent' ? gameState.tick : undefined}
+                        runtime={selectedThreadNode.category === 'agent' ? runtime : undefined}
                         lastViewedTick={selectedThreadNode.category === 'agent' ? getLastViewedTick(selectedThreadNode.nodeId) : undefined}
                         strategicState={selectedThreadNode.category === 'agent' ? gameState.strategicState : undefined}
                         intelligenceRecords={selectedThreadNode.category === 'agent' ? (gameState.intelligenceRecords ?? []) : undefined}

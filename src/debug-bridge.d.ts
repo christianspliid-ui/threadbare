@@ -104,6 +104,18 @@ export interface DebugActiveUIState {
   cameraFocusHex: { col: number; row: number } | null;
 }
 
+export interface DebugForeshadowingResult {
+  templateId: string;
+  templateName: string;
+  locationId: string;
+  locationName: string;
+  prose: string;
+  variantId: string | null;
+  resolvedAtTick: number;
+  signals: import('./types/foreshadowing').ForeshadowingSignals;
+  interventionAttribution: import('./types/foreshadowing').ForeshadowingInterventionAttribution | null;
+}
+
 export interface DebugBridge {
   openDebugPanel: () => void;
   closeDebugPanel: () => void;
@@ -150,6 +162,8 @@ export interface DebugBridge {
   getAgentAttachments: (agentIdOrName: string) => Promise<AgentAttachments | null>;
   /** Returns the last n reward events (draws and empty-pool misses). Default: all retained (up to 200). */
   getRecentRewards: (n?: number) => Promise<readonly RewardHistoryEntry[]>;
+  /** Resolve encounter foreshadowing prose for an agent's latest ranked encounter candidate. */
+  getForeshadowing: (agentQuery: string, templateQuery?: string) => Promise<DebugForeshadowingResult | null>;
   getTraces: () => Promise<ReadonlyArray<TraceEntry>>;
   enableTracing: () => Promise<void>;
   disableTracing: () => Promise<void>;
@@ -243,6 +257,8 @@ export interface DebugBridge {
   getEncounterCacheRebuildCount: () => number;
   /** Returns all encounter_cache_rebuild traces (THR-187). */
   getEncounterCacheRebuildTraces: () => Promise<ReadonlyArray<TraceEntry>>;
+  /** Returns foreshadowing traces, optionally filtered by agent query. */
+  listForeshadowingTraces: (agentQuery?: string) => Promise<ReadonlyArray<TraceEntry>>;
   /** Returns all active compositions from the current game state (THR-225). */
   getActiveCompositions: () => import('./types/gameState').ActiveComposition[];
 }

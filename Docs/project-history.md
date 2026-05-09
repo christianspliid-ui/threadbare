@@ -633,3 +633,4 @@ px vite build).
 - ✅ 2026-05-08: THR-267 shipped — added mandatory engine-change CLI smoke step to CLAUDE Pre-commit minimum and updated closeout evidence wording to include smoke output when applicable.
 - ✅ 2026-05-08: THR-387 shipped — hex map filtered to show only threaded agents + avatar; non-threaded notable/spotlight NPCs removed from agentRenderData in GameView.tsx useMemo.
 - ✅ 2026-05-09: THR-268 shipped — Design Governance now requires a Step 0.5 Codesight pre-flight for `src/` changes and a Blast Radius section whenever high-impact files (>=100 importers) are touched.
+- ✅ 2026-05-09: THR-389 shipped — encounter-pool foreshadowing added (template variants + runtime cache + `foreshadowing` traces + ThreadDetail expandable prose rows + `__DEBUG.getForeshadowing`/`listForeshadowingTraces`).

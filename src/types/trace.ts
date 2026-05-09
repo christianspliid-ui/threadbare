@@ -19,6 +19,7 @@ import type { SyllableTemplate } from './culture';
 import type { ReliabilityBand } from '../engine/intelligence';
 import type { IntelligenceCategory } from './unifiedAction';
 import type { NarrativeEventType, NarrativeTier } from './narrative';
+import type { ForeshadowingSignals } from './foreshadowing';
 
 /** Known trace categories for filtering in debug panel */
 export type TraceCategory =
@@ -166,6 +167,8 @@ export type TraceCategory =
   | 'engine_warning'
   // Effect shells (THR-53)
   | 'effect_shell'
+  // Encounter foreshadowing traces (THR-389)
+  | 'foreshadowing'
   // Composition phase runner (THR-225)
   | 'composition.phase_activated'
   | 'composition.failed'
@@ -330,6 +333,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'engine_warning',
   // Effect shells (THR-53)
   'effect_shell',
+  // Encounter foreshadowing traces (THR-389)
+  'foreshadowing',
   // Composition phase runner (THR-225)
   'composition.phase_activated',
   'composition.failed',
@@ -1355,6 +1360,18 @@ export interface ComplicationSelectionTrace extends TraceBase {
   reason: string;
 }
 
+/** Trace: encounter foreshadowing variant resolution + cache status (THR-389). */
+export interface ForeshadowingTrace extends TraceBase {
+  category: 'foreshadowing';
+  agentId: string;
+  encounterId: string;
+  variantsConsidered: string[];
+  variantPicked: string | null;
+  signals: ForeshadowingSignals;
+  interventionAttributionId: string | null;
+  cacheHit: boolean;
+}
+
 /** Discriminated union of all trace types */
 export type TraceEntry =
   | ActionSelectionTrace
@@ -1440,6 +1457,8 @@ export type TraceEntry =
   | AuthoredAttachmentCreatedTrace
   // Complication outcome traces (THR-20)
   | ComplicationSelectionTrace
+  // Encounter foreshadowing traces (THR-389)
+  | ForeshadowingTrace
   // Multi-target aftermath traces (THR-114)
   | AftermathTargetResolvedTrace
   | FactionReputationChangedTrace
