@@ -2,10 +2,6 @@
 > Updated 2026-05-09.
 
 ## Current Focus
-**THR-389 complete (2026-05-09) — Encounter Foreshadowing Phase 1.** On-click resolver `getEncounterForeshadowing` caches per `(agentId, encounterId, intelVersion, interventionVersion)` in `SimulationRuntime.foreshadowingCache`. Phase 1 signals: `intelligenceTier:'unknown'`, `topMotive:'awareness'`, `dominantReach` from template reach. Variant system: specificity-ranked AND-logic matching + PRNG tie-breaking. Clickable encounter rows in `EncounterDecisionPanel` with inline lazy prose. Foreshadowing DebugPanel tab + debug-bridge `getForeshadowing`/`listForeshadowingTraces`. `plague_outbreak` ships 6 variants. Wiring-checklist + systemic-wiring-guide Capability 10 added. PR #181.
-
-**THR-139 complete (2026-05-08) — Authored `intel_referenced_prose` aftermath reaction variant (Encounter Format Migration).** Closes the intelligence consumption loop's authored "intel paid off" surface, the fourth and most player-visible of the five consumption sites (after THR-113 scoring/prose/resolution and THR-140 difficulty modifier). New `EncounterAftermathReactionEffect` union variant `kind: 'intel_referenced_prose'` with `category` + 3-band `prose: { reliable, uncertain?, dubious? }`. Engine: dispatcher case in `encounterAftermath.ts`; 2 new helpers in `intelligence.ts`; 4 tunables in `agent-behavior-constants.ts`; `referencedBy: 'aftermath_prose'` discriminator in `trace.ts`. Content: `intelligence-referenced-prose.ts` shared pack (6 categories × 3 bands × 4 lines); 3 pilot reactions wired. Tests: 18 assertions across 3 files. Wiring docs updated (5 consumption hooks; Capability 6 widened). Verification: `npm test` 723 files / 11068 tests, tsc clean, vite build 7.23s.
-
 **Encounter Experience — active:** Phases A1–A3, B1–B7, C1–C4, D1–D3, E1–E2, F1–F2, G1–G3 ✅. Remaining is F-phase integration (mount EffectRegistration components into hero panel / cast tile / scene state surfaces) and Phase H post-v1 polish.
 
 ## Milestone Status
@@ -23,6 +19,7 @@
 - 2026-05-06 batch: THR-311, THR-312, THR-313, THR-314, THR-315, THR-316, THR-317, THR-320, THR-321, THR-322, THR-323, THR-336
 - 2026-05-07 batch: THR-324, THR-325, THR-329, THR-339, THR-340, THR-341, THR-349, THR-350, THR-354, THR-355, THR-356, THR-357, THR-358, THR-359
 - 2026-05-08 batch: THR-139, THR-176, THR-177, THR-178, THR-179, THR-215, THR-265, THR-266, THR-267, THR-289, THR-292, THR-326, THR-330, THR-331, THR-332, THR-333, THR-334, THR-335, THR-338, THR-343, THR-344, THR-345, THR-352, THR-353, THR-360, THR-361, THR-362, THR-363, THR-365, THR-368, THR-374, THR-387, THR-388
+- 2026-05-09 batch: THR-268, THR-389
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
