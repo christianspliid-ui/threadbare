@@ -3367,9 +3367,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   data-testid="thread-detail-scroll"
                   style={{
                     width: 'clamp(240px, 280px, 30vw)',
+                    height: '100%',
                     borderLeft: '1px solid var(--border-gold)',
                     background: 'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))',
-                    overflowY: 'auto',
                   }}
                 >
                   {selectedThreadNode && (() => {
@@ -3469,6 +3469,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   onEncounterClick={handleEncounterClick}
                   onToggleAttentionMode={handleToggleAttentionMode}
                   agentStrategicSummaries={agentStrategicSummaries}
+                  getForeshadowing={handleGetForeshadowing}
                 />
                 <div style={{ marginTop: 'var(--panel-padding)' }}>
                   <WorldPulse

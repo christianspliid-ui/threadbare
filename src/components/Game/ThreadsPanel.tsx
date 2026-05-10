@@ -3,6 +3,8 @@ import type { ThreadedNode, ThreadCategory } from '../../engine/retinue';
 import { groupThreadedNodes } from '../../engine/retinue';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import type { BalanceEvent, BalanceEncounterPoolCandidate } from '../../types/balanceEval';
+import type { ForeshadowingResult } from '../../engine/foreshadowing/types';
+import { Tooltip } from '../shared/Tooltip';
 import type { ActiveEncounterDisplay } from './encounterNotificationRuntime';
 import { SectionHeading } from '../shared/SectionHeading';
 import { Modal } from '../shared/Modal';
@@ -43,6 +45,7 @@ interface ThreadsPanelProps {
   onToggleAttentionMode?: (threadEdgeId: string) => void;
   /** Per-agent strategic summaries for badge display. Only agents with strategic activity will have entries. */
   agentStrategicSummaries?: Map<string, AgentStrategicSummary>;
+  getForeshadowing?: (agentId: string, encounterId: string) => ForeshadowingResult;
 }
 
 interface EncounterPoolModalState {
@@ -66,6 +69,7 @@ interface CompactThreadRowProps {
   onOpenEncounterPool?: (agentName: string, decision: BalanceEvent) => void;
   /** Strategic summary for this agent, if they have active strategic activity. */
   strategicSummary?: AgentStrategicSummary;
+  getForeshadowing?: (agentId: string, encounterId: string) => ForeshadowingResult;
 }
 
 // ─── Utility functions ────────────────────────────────────────────
@@ -514,6 +518,7 @@ function CompactThreadRow({
   onToggleAttentionMode,
   onOpenEncounterPool,
   strategicSummary,
+  getForeshadowing,
 }: CompactThreadRowProps) {
   const [hovered, setHovered] = useState(false);
   const isDormant = node.category === 'agent' && node.courtPosition === 'dormant';
@@ -565,6 +570,12 @@ function CompactThreadRow({
           ? encounterDecisionCandidate.templateName
           : node.activityLabel)
     : null;
+
+  // Foreshadowing prose for tooltip on pending encounter chip (not active encounters)
+  const foreshadowingProse: string | undefined =
+    node.category === 'agent' && encounterDecisionCandidate && getForeshadowing && !agentEncounter
+      ? getForeshadowing(node.id, encounterDecisionCandidate.templateId).prose
+      : undefined;
 
   // Strategic badge
   const familyPresentation = strategicSummary
@@ -835,7 +846,13 @@ function CompactThreadRow({
                   </button>
                 ) : (
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <ThreadActionChip label={actionChipLabel} />
+                    {foreshadowingProse ? (
+                      <Tooltip label={actionChipLabel} desc={foreshadowingProse}>
+                        <ThreadActionChip label={actionChipLabel} />
+                      </Tooltip>
+                    ) : (
+                      <ThreadActionChip label={actionChipLabel} />
+                    )}
                   </div>
                 )
               )}
@@ -886,6 +903,7 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
   onEncounterClick,
   onToggleAttentionMode,
   agentStrategicSummaries,
+  getForeshadowing,
 }: ThreadsPanelProps) {
   // Agents open by default; all other sections collapsed
   const [expandedSections, setExpandedSections] = useState<Record<ThreadCategory, boolean>>({
@@ -994,6 +1012,7 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
                       onToggleAttentionMode={onToggleAttentionMode}
                       onOpenEncounterPool={(agentName, decision) => setEncounterPoolModal({ agentName, decision })}
                       strategicSummary={node.category === 'agent' ? agentStrategicSummaries?.get(node.id) : undefined}
+                      getForeshadowing={getForeshadowing}
                     />
                   ))}
                 </div>
