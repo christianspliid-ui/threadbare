@@ -1,5 +1,7 @@
 # Project History
 
+✅ **THR-394** (2026-05-10) — Foreshadowing UI fixes: `thread-detail-scroll` container now `height:100%` so ThreadDetailView footer stays in viewport and body scrolls. `ThreadsPanel` / `CompactThreadRow` now accept `getForeshadowing` prop; pending-decision encounter chip wrapped in `<Tooltip>` showing foreshadowing prose on hover. `GameView` wires `handleGetForeshadowing` to `ThreadsPanel`. PR #239.
+
 ✅ **THR-391** (2026-05-09) — Session-start staleness gate: `probeBranchStaleness` probe added to `scripts/session-precheck.ts`. Fetches `origin/main`, counts commits behind/ahead, checks branch age (non-main non-worktree branches), emits `freshness=<value>` in fingerprint. Constants: `STALENESS_BEHIND_THRESHOLD=5`, `STALENESS_BRANCH_AGE_THRESHOLD_MS=24h`. Worktree-exempt (`.git` file detection). 15 unit tests, full dependency injection. CLAUDE.md Session Workflow: freshness-handling bullet before design work. PR #237.
 
 ✅ **THR-389** (2026-05-09) — Encounter Foreshadowing Phase 1: `getEncounterForeshadowing` on-click resolver with per-session `SimulationRuntime.foreshadowingCache`; specificity-ranked variant selection + PRNG tie-breaking; Phase 1 signals (`intelligenceTier:'unknown'`, `topMotive:'awareness'`, `dominantReach` from template reach); `plague_outbreak` 6 foreshadowing variants; clickable `EncounterDecisionPanel` rows with lazy inline prose; Foreshadowing DebugPanel tab; debug-bridge `getForeshadowing`/`listForeshadowingTraces`; wiring-checklist + systemic-wiring-guide updated. PR pending.
