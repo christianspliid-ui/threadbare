@@ -1,5 +1,5 @@
 # Project Status
-> Updated 2026-05-09.
+> Updated 2026-05-10.
 
 ## Current Focus
 **Encounter Experience — active:** Phases A1–A3, B1–B7, C1–C4, D1–D3, E1–E2, F1–F2, G1–G3 ✅. Remaining is F-phase integration (mount EffectRegistration components into hero panel / cast tile / scene state surfaces) and Phase H post-v1 polish.
@@ -20,6 +20,7 @@
 - 2026-05-07 batch: THR-324, THR-325, THR-329, THR-339, THR-340, THR-341, THR-349, THR-350, THR-354, THR-355, THR-356, THR-357, THR-358, THR-359
 - 2026-05-08 batch: THR-139, THR-176, THR-177, THR-178, THR-179, THR-215, THR-265, THR-266, THR-267, THR-289, THR-292, THR-326, THR-330, THR-331, THR-332, THR-333, THR-334, THR-335, THR-338, THR-343, THR-344, THR-345, THR-352, THR-353, THR-360, THR-361, THR-362, THR-363, THR-365, THR-368, THR-374, THR-387, THR-388
 - 2026-05-09 batch: THR-268, THR-389, THR-391
+- 2026-05-10 batch: THR-394
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
@@ -39,3 +40,4 @@ Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Compl
 - ✅ 2026-05-09: THR-268 shipped — `CLAUDE.md` Design Governance now includes Step 0.5 Codesight pre-flight (required for `src/`-touching design work, with fail-soft grep fallback) and a new Blast Radius section requirement for high-impact files (>=100 importers).
 - ✅ 2026-05-09: THR-389 shipped — ThreadDetail encounter pool now includes expandable foreshadowing prose per ranked candidate, backed by authored template variants, runtime cache, and `foreshadowing` traces (`__DEBUG.getForeshadowing` + `listForeshadowingTraces` available for inspection).
 - ✅ 2026-05-09: THR-391 shipped — session-precheck now emits `freshness=` in the fingerprint line; CLAUDE.md Session Workflow requires agents to surface stale-branch warnings before design work begins.
+- ✅ 2026-05-10: THR-394 shipped — thread detail bar now scrolls correctly (`height:100%` on container so footer stays in viewport); foreshadowing prose now shows as a tooltip on the pending-encounter chip in the ThreadsPanel retinue row.
