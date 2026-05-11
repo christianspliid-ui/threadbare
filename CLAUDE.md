@@ -303,6 +303,7 @@ Every feature touches three pillars: **Engine** (systems, tick loop, graph), **C
 - [ ] **Revise** — integrate remediations inline (not in a separate appendix)
 - [ ] **Summarize** — NFP Compliance table at the end (PASS / PASS with note per priority)
 - [ ] **Three-pillar check** — Engine section present? Content section present? UI section present? Wiring section connecting them?
+- [ ] **Step 8.5 - Intent-judge verdict** — after summarize and three-pillar check, before presenting. Spawn `intent-judge` as a Task subagent (`model: "opus"`). Author must first produce an action proposal at `Docs/plans/.intent-proposals/<slug>.md` (template at `.claude/skills/intent-judge/proposal-template.md`). Verdict gates the handoff: Allow → proceed; Revise → fix and re-run; Block → rewrite; Escalate → ping user with verbatim finding.
 - [ ] **Vision audit** — does this plan contradict or update any Vision premise? If so, the Vision edit is part of this ticket's scope, not a follow-up.
 - [ ] **Present** the finished, compliant design to the user
 
@@ -501,6 +502,7 @@ Context for specific problem types lives in on-demand skills. **Always load `sta
 | **Impediment reporting (always active)** | `impediment-reporter` | **Every session, every agent.** Log blockers and workarounds to `Docs/impediments.md` as they occur. Part of Definition of Done. |
 | Continuous improvement | `retrospective` | Review impediment log, analyze patterns, implement quick-fix improvements, backlog larger ones. Run with `/retrospective`. |
 | Multi-perspective design | `design-council` *(.agents/ only)* | Run a sociocratic, consent-based design discussion with multiple perspectives (content, engine, coordination, etc.). Forward-looking counterpart to `retrospective`. Trigger with `/design-council` or "let's get multiple perspectives on this". |
+| Pre-handoff intent check | `intent-judge` | Before applying `plan-pending-commit` to any plan doc. Auto-spawned subagent that scores the plan against the user's verbatim ask. Returns Allow / Revise / Block / Escalate. `/intent-judge <path>` for manual runs. |
 | Pickup entrypoint (CC) | `pull-work` | Canonical pickup flow for CC and Codex: safe-claim, verify-after-write, dirty-worktree fallback, mutex check. Run with `/pull-work`. |
 | Plan-doc flush (Cowork) | `flush-plan-docs` | Hourly scheduled task that commits files referenced by `plan-pending-commit` label to `origin/main` and clears the label. Cowork applies the label after writing a plan doc; do not commit plan docs directly. |
 | Pre-design grilling | `grill-me` | Optional Step 0 of the design workflow when scope is large, multi-pillar, or ambiguous. Synthesizes into `Docs/plans/YYYY-MM-DD-<topic>-grill-me.md`. |

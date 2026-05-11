@@ -21,7 +21,7 @@
 - 2026-05-08 batch: THR-139, THR-176, THR-177, THR-178, THR-179, THR-215, THR-265, THR-266, THR-267, THR-289, THR-292, THR-326, THR-330, THR-331, THR-332, THR-333, THR-334, THR-335, THR-338, THR-343, THR-344, THR-345, THR-352, THR-353, THR-360, THR-361, THR-362, THR-363, THR-365, THR-368, THR-374, THR-387, THR-388
 - 2026-05-09 batch: THR-268, THR-389, THR-391
 - 2026-05-10 batch: THR-394
-- 2026-05-11 batch: THR-393, THR-408
+- 2026-05-11 batch: THR-393, THR-408, THR-411
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
@@ -44,3 +44,4 @@ Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Compl
 - ✅ 2026-05-10: THR-394 shipped — thread detail bar now scrolls correctly (`height:100%` on container so footer stays in viewport); foreshadowing prose now shows as a tooltip on the pending-encounter chip in the ThreadsPanel retinue row.
 - ✅ 2026-05-11: THR-393 shipped — WIP=1 gate now enforced in pull-work skill (Step 1.5) and coordination protocol (CC + Codex pickup Step 4 hard-gate wording). Hourly cron now exits cleanly when a PR is in-flight. Impediment #131 logged (cron-interval UI constraint).
 - ✅ 2026-05-11: THR-408 shipped — `action-catalog-design` skill landed in both skill trees. Enforces three pre-flight checks (Substrate Honesty, Mortal-Loop Bridge, Surface-Shape Check) before any catalog-expansion design pass. Prevents the catalog-expansion drift pattern surfaced in THR-400 audit.
+- ✅ 2026-05-11: THR-411 shipped — `intent-judge` skill landed. Four-way verdict (Allow/Revise/Block/Escalate), 10 judging dimensions, deterministic aggregation rubric, anti-correlation rules. Slots into CLAUDE.md design workflow as Step 8.5 between Three-pillar check and Vision audit. `/intent-judge <path>` for manual runs.
