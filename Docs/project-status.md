@@ -10,7 +10,7 @@
 - **Encounter Format Migration (Now):** ✅ Phases 0-9 complete. All guilds migrated.
 - **Content Architecture (Now):** ✅ THR-86/88/239 shipped.
 - **UI Visual Overhaul — Design System v1 (Now):** ✅ Project complete. THR-178 Deferral shipped 2026-05-08.
-- **Continuous Improvement (Now):** THR-303/305/306/307/309/311/312/313/314/315/316/354/355/356/357/358/359/266/396 ✅. THR-304 Phase 5 series complete (5a vault THR-356 ✅, 5b repo THR-359 ✅). THR-360 (Category B code residue) queued.
+- **Continuous Improvement (Now):** THR-303/305/306/307/309/311/312/313/314/315/316/354/355/356/357/358/359/266/396/404 ✅. THR-304 Phase 5 series complete (5a vault THR-356 ✅, 5b repo THR-359 ✅). THR-360 (Category B code residue) queued.
 - **Social Systems Expansion (Now):** THR-28/27/30/51/29/41/34/31/35 shipped. ✅ THR-254/253. THR-78 queued.
 - **Thematic Pressure & Living World (Next):** ✅ THR-19/122/125/126/80/128/127. THR-87 blocked by THR-116.
 
@@ -22,6 +22,7 @@
 - 2026-05-09 batch: THR-268, THR-389, THR-391
 - 2026-05-10 batch: THR-394
 - 2026-05-11 batch: THR-393, THR-403, THR-408, THR-411
+- 2026-05-12 batch: THR-413, THR-404
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
@@ -48,4 +49,5 @@ Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Compl
 - ✅ 2026-05-11: THR-407 shipped — `classifyTrayTier` bug fix: replaced actor-affinity self-rule with target-structure rule. Added `trayTier?: 'core'|'self'|'rare'` to `UnifiedActionTemplate`. `divine.dream`, `hex.smite`, etc. now correctly classify as `core`. 7 new tests in `ascendantTray.test.ts`. Unblocks THR-396.
 - ✅ 2026-05-11: THR-396 shipped — UL drift fix: 6 templates using unsanctioned reach values (`rune`/`time`/`void`) reassigned to canonical values; 4 rune-verbs tagged `trayTier: 'core'`. `grep -rn "reach:'(rune|time|void)'" src/` → 0 results. Unblocks THR-397.
 - ✅ 2026-05-11: THR-403 shipped — Rulebook Canon Page Phase 1. New `Docs/canon/rulebook.md` (synthesis layer, 8 sections, `[IMPL]`/`[DESIGN]`/`[OPEN]` flags inline, per-section authority-boundary footers) + `Docs/canon/rulebook-quick-reference.md` (always-loaded board-game card). Wiring updates to `Docs/canon/README.md`, `state-of-game-design` SKILL (mirrored to `.agents/`), and CLAUDE.md (Canon table + Session Workflow load order + Domain Skills row). First architecture-assessment pass written to `Docs/audits/2026-05-11-rulebook-architecture-assessment.md`. Phase 2 (THR-404) and Phase 3 (THR-405) follow-ups already filed (Idea, blocked-by THR-403, will promote on close). Verification: tsc clean, vite build 9.06s, 11072 tests pass. Browser-verify exempt (docs-only).
+- ✅ 2026-05-12: THR-404 shipped — drift-scan S6-S10 (rulebook lint signals). Five new weekly signals: rulebook→UL (Definitions: shard files + terms), rulebook→Canon pages (Spec: existence), rulebook IMPL tags (identifier presence in .ts files), rulebook→Vision (Why: files in Obsidian vault), quick-ref vs rulebook (ticks/day, doom stages, reaches, verbs). New `scripts/lint-rulebook.ts` + extended `scripts/drift-scan/index.ts` + OBSIDIAN_VAULT_PATH in drift-scan.yml. PR #250.
 - ✅ 2026-05-12: THR-413 shipped — All 6 content authoring skills (encounter-pipeline, attachment-pipeline, prose-content-systems, prose-pipeline, prose-vignettes-and-enrichment, template-encounter-rewrite) now open with a `> **Load before authoring:**` blockquote directing agents to load `Docs/canon/rulebook-quick-reference.md`. Mirrored to `.agents/skills/`. `last_validated_against` bumped to 2026-05-12. PR #248.
