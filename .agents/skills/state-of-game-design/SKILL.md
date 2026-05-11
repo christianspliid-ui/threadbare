@@ -8,7 +8,7 @@ description: >
   Triggers on ANY game design work — automatically load as prerequisite for
   engine-architecture, content-worldbuilding, frontend-ui, art-direction,
   and content authoring tasks.
-last_validated_against: 2026-05-08
+last_validated_against: 2026-05-11
 ---
 
 # State of the Game Design — Source of Truth
@@ -17,6 +17,8 @@ last_validated_against: 2026-05-08
 > The player is an Ascendant (a former mortal turned demigod) shaping a procedurally generated fantasy world through indirect influence, divine interventions, and sustained control — all while a Doom Clock ticks toward the Unmaking.
 
 This skill is the canonical reference for game design context. Load it before any domain-specific skill.
+
+**Primary synthesis surface (Step 0 for rules-of-play work):** [`Docs/canon/rulebook.md`](../../../Docs/canon/rulebook.md) — the rulebook canon page synthesizes the rules of play from the player's seat across eight sections, each carrying `[IMPL] / [DESIGN] / [OPEN]` status flags. When your work touches **turn structure, action verbs, prerequisites, resources, encounters, clocks, or win/loss**, load the full rulebook alongside this skill — it is the single page that answers "how do these systems combine into a game?" without forcing you to reassemble it from five sources. The always-loaded companion is [`Docs/canon/rulebook-quick-reference.md`](../../../Docs/canon/rulebook-quick-reference.md) (the board-game card, ~80 lines, current rules only).
 
 **Obsidian world model:** `TheFantasyWorldSimulator/Index.md` via Obsidian MCP — follow wikilinks for deep dives.
 **Agent-domain cross-reference:** For actor/agent/faction/Ascendant/thread/archetype/value-pair questions, read `Docs/canon/agents.md` as Step 0 before domain implementation.
