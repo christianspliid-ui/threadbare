@@ -30,14 +30,15 @@ export const TRAY_SELF_TARGET_CATEGORIES = ['actor'] as const;
  * Rules (tunable — NFP #1):
  *   Rare tier  : rarityTier >= TRAY_RARE_RARITY_TIER_MIN
  *                OR intrinsicTier === 'story_beat'
- *   Self tier  : the template's actorAffinities are exclusively ['ascendant']
- *                OR the resolved target node is the ascendant themselves
+ *   Explicit   : template.trayTier, returned directly (after rare override)
+ *   Self tier  : targetCategories is exactly ['actor'] with no targetSubtypes
+ *                (template explicitly targets actors only, no other narrowing)
  *   Core tier  : everything else
  *
- * Throws never — pure derivation from existing template fields.
+ * Throws never — pure derivation from template fields.
  */
 export function classifyTrayTier(
-  template: Pick<UnifiedActionTemplate, 'rarityTier' | 'intrinsicTier' | 'actorAffinities' | 'targetCategories'>,
+  template: Pick<UnifiedActionTemplate, 'rarityTier' | 'intrinsicTier' | 'actorAffinities' | 'targetCategories' | 'targetSubtypes' | 'trayTier'>,
   ctx: { ascendantId: string; targetNodeId: string | null },
 ): AscendantTrayTier {
   // Rare: high rarity or story-beat attention tier
@@ -48,13 +49,21 @@ export function classifyTrayTier(
     return 'rare';
   }
 
-  // Self: ascendant-only affinity or the target is the ascendant themselves
-  const affinities = template.actorAffinities ?? [];
-  const isAscendantOnly =
-    affinities.length > 0 && affinities.every((a) => a === 'ascendant');
-  const targetsSelf = ctx.targetNodeId !== null && ctx.targetNodeId === ctx.ascendantId;
+  // Explicit tier: author intent takes precedence over inference
+  if (template.trayTier !== undefined) {
+    return template.trayTier;
+  }
 
-  if (isAscendantOnly || targetsSelf) {
+  // Self: template explicitly targets actors only, with no subtype narrowing.
+  // Absence of targetCategories means the template doesn't constrain targeting
+  // to actors — those fall through to core.
+  const cats = template.targetCategories;
+  if (
+    cats !== undefined &&
+    cats.length === 1 &&
+    cats[0] === 'actor' &&
+    (template.targetSubtypes === undefined || template.targetSubtypes.length === 0)
+  ) {
     return 'self';
   }
 
