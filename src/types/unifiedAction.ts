@@ -791,6 +791,13 @@ export interface UnifiedActionTemplate {
    * would produce the wrong sign (e.g. 'threaten' templates that are read/explore).
    */
   readonly reputationPolarity?: 'positive' | 'negative';
+
+  /**
+   * Explicit ascendant action tray tier. When present, classifyTrayTier returns
+   * this value directly (after the rare override for rarityTier >= 3 / story_beat).
+   * Omit on most templates — the fallback inference uses target structure.
+   */
+  readonly trayTier?: 'core' | 'self' | 'rare';
 }
 
 /**
