@@ -1,5 +1,5 @@
 # Project Status
-> Updated 2026-05-10.
+> Updated 2026-05-11.
 
 ## Current Focus
 **Encounter Experience — active:** Phases A1–A3, B1–B7, C1–C4, D1–D3, E1–E2, F1–F2, G1–G3 ✅. Remaining is F-phase integration (mount EffectRegistration components into hero panel / cast tile / scene state surfaces) and Phase H post-v1 polish.
@@ -21,6 +21,7 @@
 - 2026-05-08 batch: THR-139, THR-176, THR-177, THR-178, THR-179, THR-215, THR-265, THR-266, THR-267, THR-289, THR-292, THR-326, THR-330, THR-331, THR-332, THR-333, THR-334, THR-335, THR-338, THR-343, THR-344, THR-345, THR-352, THR-353, THR-360, THR-361, THR-362, THR-363, THR-365, THR-368, THR-374, THR-387, THR-388
 - 2026-05-09 batch: THR-268, THR-389, THR-391
 - 2026-05-10 batch: THR-394
+- 2026-05-11 batch: THR-393
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
@@ -41,3 +42,4 @@ Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Compl
 - ✅ 2026-05-09: THR-389 shipped — ThreadDetail encounter pool now includes expandable foreshadowing prose per ranked candidate, backed by authored template variants, runtime cache, and `foreshadowing` traces (`__DEBUG.getForeshadowing` + `listForeshadowingTraces` available for inspection).
 - ✅ 2026-05-09: THR-391 shipped — session-precheck now emits `freshness=` in the fingerprint line; CLAUDE.md Session Workflow requires agents to surface stale-branch warnings before design work begins.
 - ✅ 2026-05-10: THR-394 shipped — thread detail bar now scrolls correctly (`height:100%` on container so footer stays in viewport); foreshadowing prose now shows as a tooltip on the pending-encounter chip in the ThreadsPanel retinue row.
+- ✅ 2026-05-11: THR-393 shipped — WIP=1 gate now enforced in pull-work skill (Step 1.5) and coordination protocol (CC + Codex pickup Step 4 hard-gate wording). Hourly cron now exits cleanly when a PR is in-flight. Impediment #131 logged (cron-interval UI constraint).

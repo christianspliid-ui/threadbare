@@ -640,3 +640,5 @@ px vite build).
 - ✅ 2026-05-08: THR-387 shipped — hex map filtered to show only threaded agents + avatar; non-threaded notable/spotlight NPCs removed from agentRenderData in GameView.tsx useMemo.
 - ✅ 2026-05-09: THR-268 shipped — Design Governance now requires a Step 0.5 Codesight pre-flight for `src/` changes and a Blast Radius section whenever high-impact files (>=100 importers) are touched.
 - ✅ 2026-05-09: THR-389 shipped — encounter-pool foreshadowing added (template variants + runtime cache + `foreshadowing` traces + ThreadDetail expandable prose rows + `__DEBUG.getForeshadowing`/`listForeshadowingTraces`).
+
+- ✅ 2026-05-11: THR-393 shipped — WIP=1 gate added to pull-work skill (Step 1.5 exits cleanly when In Dev is non-empty) and coordination protocol (CC + Codex pickup Step 4 upgraded to hard-gate wording). Cron automation now skips pickup when previous PR is still in flight. Impediment #131 logged.
