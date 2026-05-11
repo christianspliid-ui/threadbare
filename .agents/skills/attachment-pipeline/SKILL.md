@@ -8,8 +8,10 @@ description: >
   Triggers on "attachment pipeline", "author attachments", "create attachments",
   "new items", "new possessions", "new conditions", "new bestowed powers".
 model: opus
-last_validated_against: 2026-05-08
+last_validated_against: 2026-05-12
 ---
+
+> **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
 
 # Attachment Pipeline
 

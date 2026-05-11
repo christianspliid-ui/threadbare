@@ -13,8 +13,10 @@ description: >
   "prose composer", "prose pipeline", "prose architecture", "graph-walking",
   "resolver registry".
 model: opus
-last_validated_against: 2026-05-08
+last_validated_against: 2026-05-12
 ---
+
+> **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
 
 # Prose Pipeline — Resolver Architecture Guide
 

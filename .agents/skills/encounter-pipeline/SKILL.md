@@ -2,8 +2,10 @@
 name: encounter-pipeline
 description: Automated encounter pipeline v2. Runs draft → editorial+revision → systems+merge → implementation for complete encounter delivery. Triggers on "encounter pipeline", "draft encounter", "run encounter pipeline", "author encounter", or "/encounter-pipeline".
 model: opus
-last_validated_against: 2026-05-08
+last_validated_against: 2026-05-12
 ---
+
+> **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
 
 # Encounter Pipeline v2
 
