@@ -261,6 +261,10 @@ export interface DebugBridge {
   listForeshadowingTraces: (agentQuery?: string) => Promise<ReadonlyArray<TraceEntry>>;
   /** Returns all active compositions from the current game state (THR-225). */
   getActiveCompositions: () => import('./types/gameState').ActiveComposition[];
+  /** Resolve encounter foreshadowing prose for an agent + encounter pair (THR-389). Returns null if state/runtime unavailable. */
+  getForeshadowing: (agentId: string, encounterId: string) => Promise<import('./engine/foreshadowing/types').ForeshadowingResult | null>;
+  /** Returns all foreshadowing resolution traces, optionally filtered to a specific agent id (THR-389). */
+  listForeshadowingTraces: (agentId?: string) => Promise<ReadonlyArray<import('./types/trace').TraceEntry>>;
 }
 
 declare global {

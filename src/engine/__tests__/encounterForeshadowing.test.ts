@@ -74,7 +74,7 @@ describe('encounter foreshadowing resolver', () => {
       candidate,
     });
 
-    expect(result.variantId).toBe('plague.briefed.eye');
+    expect(result.variantId).toBe('plague_outbreak.briefed');
     expect(result.prose).toContain('Ashmarket');
     const traces = getTraces().filter(trace => trace.category === 'foreshadowing');
     expect(traces).toHaveLength(1);

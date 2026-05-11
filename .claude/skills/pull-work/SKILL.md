@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-05-08
+last_validated_against: 2026-05-11
 ---
 
 # Pull Work
@@ -25,6 +25,7 @@ Run as `/pull-work` (auto-pick top Ready for Dev issue) or `/pull-work THR-123` 
 **Constant:** `MAX_CLAIM_RETRIES = 3`
 
 1. **Board scan** — consume the Step 1 board-scan (already built): one `list_issues(team:"Threadbare", limit:250, orderBy:"updatedAt", includeArchived:false)` call, bucket in memory by `status`. Sort Ready-for-Dev candidates by priority (1=Urgent first), then oldest `createdAt` as tie-break. Pick the top unassigned candidate.
+1.5. **WIP gate** — if the "In Dev" slice filtered to `assignee:"me"` is non-empty, exit cleanly per Step 1.5 (Rule 6: WIP=1). Do not claim.
 2. **Claim** — `save_issue(id, assignee:"me", state:"In Dev")`.
 3. **Verify** — `get_issue(id)`. Confirm both `assignee` and `state` match.
    - On mismatch (silent drop, impediment #48): release claim with `save_issue(id, assignee:null)`. Output trace line (see below). Move to the next candidate. Retry up to `MAX_CLAIM_RETRIES` total attempts.
@@ -73,6 +74,29 @@ If no issue id was provided, fire one call: `list_issues(team:"Threadbare", limi
 Sort the Ready-for-Dev candidates by priority in memory (impediment #49 rejects `orderBy:priority` at runtime); oldest `createdAt` is tie-break. Pick the top.
 
 If a specific issue id was provided, skip to Step 3.
+
+### Step 1.5 — WIP=1 gate (Rule 6 enforcement)
+
+If the Step 1 board scan's "In Dev" slice filtered to `assignee:"me"` is non-empty, refuse pickup and exit cleanly. Output one of:
+
+```
+[pull-work] Step 1.5: WIP=1 gate — already holding {issueId} (claimed at {claimedAt}, branch {gitBranchName}). Skipping pickup.
+
+[pull-work] Step 1.5: WIP=1 gate — multiple In Dev assigned to me ({issueIds}). Cross-session leak. Surface and stop.
+```
+
+If the slice has exactly one entry: this is a normal in-flight ticket; either CI is still running or the merge auto-close hasn't fired yet. Exit 0 — the next cron tick will check again.
+
+If the slice has more than one entry: this indicates a Rule 6 violation (cross-session leak — Rule 6 says WIP=1 across all sessions). Output the surface message and exit 1 so the failure is visible in cron logs. Do not attempt to claim more.
+
+**Constants:**
+
+| Constant | Default | Purpose |
+|---|---|---|
+| `WIP_GATE_EXIT_CODE_SINGLE` | 0 | Single in-flight ticket is normal; exit clean |
+| `WIP_GATE_EXIT_CODE_MULTI` | 1 | Multiple in-flight is a leak; exit red |
+
+**Fail-soft:** If the Linear API errors during the In Dev query, treat as gate-fired (refuse to pull when state is unknown). Log an impediment and exit 0.
 
 ### Step 2 - Cross-executor parallel check
 
@@ -167,6 +191,7 @@ If the issue has label `Reopened`, read all comments back to the original handof
 
 ## Refuses To Proceed When
 
+- The "In Dev" slice for the executor's own assignee (computed in Step 1) is non-empty (Rule 6: WIP=1 across all sessions).
 - The latest handoff comment is missing any required coordination line (`Suggested model`, `Parallel-safe with`, `Mutex with`).
 - Cross-executor mutex analysis indicates file-surface collision with active Codex work.
 - `save_issue` claim cannot be verified by `get_issue` after one retry.

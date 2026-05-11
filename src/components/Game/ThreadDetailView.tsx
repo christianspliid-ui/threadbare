@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import type { AgentInfoCardData } from '../../engine/agentDetail';
 import type { ThreadedNode, ThreadCategory } from '../../engine/retinue';
 import type { WorldGraph } from '../../engine/graph';
@@ -24,6 +24,7 @@ import {
 import { getEncounterForeshadowing } from '../../engine/foreshadowing/encounterForeshadowing';
 import { AgentIntelligencePanel } from './AgentIntelligencePanel';
 import type { IntelligenceRecord } from '../../types/unifiedAction';
+import type { ForeshadowingResult } from '../../engine/foreshadowing/types';
 
 // Domain display names (8 reaches after flesh removal)
 const DOMAIN_NAMES: Record<ReachDomain, string> = {
@@ -68,6 +69,8 @@ interface ThreadDetailViewProps {
   strategicState?: StrategicRuntimeState;
   /** Intelligence records — enables the "Intelligence" section for bonded agent nodes. */
   intelligenceRecords?: readonly IntelligenceRecord[];
+  /** Resolver for encounter foreshadowing prose (THR-389). Called on row click, results cached in runtime. */
+  getForeshadowing?: (agentId: string, encounterId: string) => ForeshadowingResult;
 }
 
 export const ThreadDetailView = React.memo(function ThreadDetailView({
@@ -84,6 +87,7 @@ export const ThreadDetailView = React.memo(function ThreadDetailView({
   lastViewedTick = 0,
   strategicState,
   intelligenceRecords,
+  getForeshadowing,
 }: ThreadDetailViewProps) {
   const tierColor = TIER_COLORS[node.tier] ?? '#6b7280';
   const tierBgColor = `color-mix(in srgb, ${tierColor} 20%, transparent)`;
@@ -194,6 +198,7 @@ export const ThreadDetailView = React.memo(function ThreadDetailView({
             strategicState={strategicState}
             graph={graph}
             intelligenceRecords={intelligenceRecords}
+            getForeshadowing={getForeshadowing}
           />
         )}
         {node.category === 'location' && (
@@ -482,6 +487,7 @@ function AgentDetailBody({
   strategicState,
   graph,
   intelligenceRecords,
+  getForeshadowing,
 }: {
   node: import('../../engine/retinue').ThreadedAgent;
   agentInfoCard?: AgentInfoCardData | null;
@@ -493,6 +499,7 @@ function AgentDetailBody({
   strategicState?: StrategicRuntimeState;
   graph?: WorldGraph;
   intelligenceRecords?: readonly IntelligenceRecord[];
+  getForeshadowing?: (agentId: string, encounterId: string) => ForeshadowingResult;
 }) {
   const activityLabel = node.activityLabel
     ? formatActivityLabel(node.activityLabel, agentEncounterDecision)

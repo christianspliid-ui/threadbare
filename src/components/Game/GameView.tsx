@@ -158,6 +158,7 @@ import { pinAgent as pinAgentDebug, unpinAgent as unpinAgentDebug } from '../../
 import type { UnifiedAction } from '../../types/unifiedAction';
 import type { ClearanceGateRuntimeState } from '../../types/contentShells';
 import { touchStructure, touchWorld } from '../../engine/simulationRuntime';
+import { getEncounterForeshadowing } from '../../engine/foreshadowing/getEncounterForeshadowing';
 import { executeEffect } from '../../engine/effectExecutors';
 import type { ExecutionContext } from '../../engine/effectExecutors';
 import { emitTrace } from '../../engine/traceBuffer';
@@ -495,6 +496,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     return latestThreadEncounterDecisions.get(selectedThreadNode.nodeId)
       ?? getLatestEncounterDecisionForAgent(runtime, selectedThreadNode.nodeId);
   }, [selectedThreadNode, latestThreadEncounterDecisions, runtime, runtime.balanceTelemetryVersion]);
+
+  const handleGetForeshadowing = useCallback(
+    (agentId: string, encounterId: string) =>
+      getEncounterForeshadowing(gameState, agentId, encounterId, gameState.tick, runtime),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [gameState, runtime],
+  );
 
   // When fog is disabled, create a proxy map that returns 'visible' for every key
   const effectiveVisibilityMap = useMemo(() => {
@@ -3359,9 +3367,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   data-testid="thread-detail-scroll"
                   style={{
                     width: 'clamp(240px, 280px, 30vw)',
+                    height: '100%',
                     borderLeft: '1px solid var(--border-gold)',
                     background: 'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))',
-                    overflowY: 'auto',
                   }}
                 >
                   {selectedThreadNode && (() => {
@@ -3422,6 +3430,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                         lastViewedTick={selectedThreadNode.category === 'agent' ? getLastViewedTick(selectedThreadNode.nodeId) : undefined}
                         strategicState={selectedThreadNode.category === 'agent' ? gameState.strategicState : undefined}
                         intelligenceRecords={selectedThreadNode.category === 'agent' ? (gameState.intelligenceRecords ?? []) : undefined}
+                        getForeshadowing={selectedThreadNode.category === 'agent' ? handleGetForeshadowing : undefined}
                       />
                     );
                   })()}
@@ -3460,6 +3469,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   onEncounterClick={handleEncounterClick}
                   onToggleAttentionMode={handleToggleAttentionMode}
                   agentStrategicSummaries={agentStrategicSummaries}
+                  getForeshadowing={handleGetForeshadowing}
                 />
                 <div style={{ marginTop: 'var(--panel-padding)' }}>
                   <WorldPulse

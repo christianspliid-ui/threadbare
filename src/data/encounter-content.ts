@@ -5599,31 +5599,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     threatRating: 'hard',
     intrinsicTier: 'shaping',
     motivations: ['mercy_ruthlessness', 'revelation_discretion'],
-    foreshadowing: {
-      fallback: '{name} has heard a fever is spreading through {encounter_location}. {They} are not sure who can be saved, but {they} will try.',
-      variants: [
-        {
-          id: 'plague.unknown.awareness',
-          when: { intelligenceTier: 'unknown', topMotive: 'awareness' },
-          template: 'Rumor reaches {name} only in fragments: streets gone quiet in {encounter_location}, doors marked in ash. {They} set out with more resolve than certainty.',
-        },
-        {
-          id: 'plague.rumor.heart',
-          when: { intelligenceTier: 'rumor', dominantReach: 'heart' },
-          template: '{name} has heard enough to fear the truth. In {encounter_location}, families are already choosing who eats and who keeps watch by the sickbed.',
-        },
-        {
-          id: 'plague.briefed.eye',
-          when: { intelligenceTier: 'briefed', dominantReach: 'eye' },
-          template: '{name} has pieced together a pattern: wells, caravans, and a single market day in {encounter_location}. {They} believe containment is still possible, if swift.',
-        },
-        {
-          id: 'plague.expert.capability',
-          when: { intelligenceTier: 'expert', topMotive: 'capability' },
-          template: '{name} knows exactly what this outbreak will demand. {They} can name the first quarantine line before reaching {encounter_location}.',
-        },
-      ],
-    },
     steps: [
       {
         id: 'plague_outbreak.diagnose',
@@ -5667,6 +5642,41 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         },
       },
     ],
+    foreshadowing: {
+      fallback: '{name.first} has heard of the {encounter.heading} spreading through these lands. {pronoun.subject_capitalized} moves to help, though {pronoun.subject} cannot say what, exactly, awaits.',
+      variants: [
+        {
+          id: 'plague_outbreak.unknown',
+          when: { intelligenceTier: 'unknown' },
+          template: '{name.first} has caught word of sickness spreading through the settlements. {pronoun.subject_capitalized} moves toward the outbreak, uncertain what {pronoun.subject} will find — or what {pronoun.subject} can do.',
+        },
+        {
+          id: 'plague_outbreak.rumor',
+          when: { intelligenceTier: 'rumor' },
+          template: 'Rumor paints the {encounter.heading} as something fearful — shuttered doors, empty markets, quarantine fires burning through the night. {name.first} does not yet know the truth of it.',
+        },
+        {
+          id: 'plague_outbreak.briefed',
+          when: { intelligenceTier: 'briefed' },
+          template: 'Word has reached {name.first} through the healer guilds in {encounter_location} — symptoms catalogued, the likely vector named. {pronoun.subject_capitalized} knows what needs doing. The question is how much time remains to do it.',
+        },
+        {
+          id: 'plague_outbreak.expert',
+          when: { intelligenceTier: 'expert' },
+          template: '{name.first} has encountered this before. The disease has a pattern and it follows it. {pronoun.subject_capitalized} approaches with grim clarity, already planning the quarantine, already mourning what it will cost.',
+        },
+        {
+          id: 'plague_outbreak.threat',
+          when: { topMotive: 'threat' },
+          template: 'The outbreak has reached something {name.first} cannot allow to fall. {pronoun.subject_capitalized} moves fast, calculating not mercy but necessity, each hour already counted in lives.',
+        },
+        {
+          id: 'plague_outbreak.healer_curiosity',
+          when: { topMotive: 'awareness', dominantReach: 'eye' },
+          template: 'The disease fascinates {name.first} in the way that disasters do — not with pleasure, but with the need to understand. {pronoun.subject_capitalized} wants to trace the vector, read the pattern, before trying to stop it.',
+        },
+      ],
+    },
   },
 
   // ── Fort/Castle Types ─────────────────────────────────────────────
