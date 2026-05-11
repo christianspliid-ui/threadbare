@@ -48,6 +48,7 @@ jobs:
         env:
           LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
           DRIFT_SCAN_BASELINE_PATH: drift-scan-baseline.json
+          OBSIDIAN_VAULT_PATH: ${{ secrets.OBSIDIAN_VAULT_PATH }}
         run: node --experimental-strip-types scripts/drift-scan/index.ts
 
       - name: Upload baseline snapshot

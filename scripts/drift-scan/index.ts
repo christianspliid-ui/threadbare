@@ -12,6 +12,14 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
+import {
+  lintRulebookVsUl,
+  lintRulebookVsCanon,
+  lintRulebookVsCode,
+  lintRulebookVsVision,
+  lintQuickReferenceVsRulebook,
+} from "../lint-rulebook";
+
 // Drift scan thresholds — tune in `./constants.ts` (browser-safe single source).
 import {
   COUPLING_CREEP_PCT,
@@ -54,6 +62,7 @@ const REPO_ROOT = path.resolve(SCRIPT_DIR, "..", "..");
 const BASELINE_PATH =
   process.env.DRIFT_SCAN_BASELINE_PATH ?? path.join(REPO_ROOT, "drift-scan-baseline.json");
 const LINEAR_API_KEY = process.env.LINEAR_API_KEY?.trim() ?? "";
+const OBSIDIAN_VAULT_PATH = process.env.OBSIDIAN_VAULT_PATH?.trim() ?? "";
 
 const SOURCE_FILE_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx", ".mts", ".cts"]);
 const DOC_FILE_EXTENSIONS = new Set([".md", ".markdown", ".txt", ".ts", ".tsx", ".js", ".jsx", ".json"]);
@@ -102,7 +111,7 @@ export type SignalResult =
   | { status: "red"; summary: string; body: string };
 
 export type SignalStep = {
-  id: "S1" | "S2" | "S3" | "S4" | "S5";
+  id: "S1" | "S2" | "S3" | "S4" | "S5" | "S6" | "S7" | "S8" | "S9" | "S10";
   name: string;
   run: () => Promise<SignalResult>;
 };
@@ -1294,6 +1303,11 @@ async function main(): Promise<void> {
     s5SkillFreshness: baseline?.s5SkillFreshness ?? { lastValidatedAt: {} },
   };
 
+  const rulebookText = readFileText(path.join(REPO_ROOT, "Docs", "canon", "rulebook.md"));
+  const quickRefText = readFileText(
+    path.join(REPO_ROOT, "Docs", "canon", "rulebook-quick-reference.md"),
+  );
+
   const steps: SignalStep[] = [
     {
       id: "S1",
@@ -1339,6 +1353,48 @@ async function main(): Promise<void> {
         const result = await runS5(baseline, runDate);
         nextBaseline.s5SkillFreshness = { lastValidatedAt: result.nextLastValidatedAt };
         return result.signal;
+      },
+    },
+    {
+      id: "S6",
+      name: "rulebook → UL",
+      run: async () => {
+        if (!rulebookText) return { status: "skipped", reason: "Docs/canon/rulebook.md not found" };
+        return lintRulebookVsUl(rulebookText, REPO_ROOT);
+      },
+    },
+    {
+      id: "S7",
+      name: "rulebook → Canon pages",
+      run: async () => {
+        if (!rulebookText) return { status: "skipped", reason: "Docs/canon/rulebook.md not found" };
+        return lintRulebookVsCanon(rulebookText, REPO_ROOT);
+      },
+    },
+    {
+      id: "S8",
+      name: "rulebook IMPL tags",
+      run: async () => {
+        if (!rulebookText) return { status: "skipped", reason: "Docs/canon/rulebook.md not found" };
+        return lintRulebookVsCode(rulebookText, REPO_ROOT);
+      },
+    },
+    {
+      id: "S9",
+      name: "rulebook → Vision",
+      run: async () => {
+        if (!rulebookText) return { status: "skipped", reason: "Docs/canon/rulebook.md not found" };
+        return lintRulebookVsVision(rulebookText, REPO_ROOT, OBSIDIAN_VAULT_PATH || undefined);
+      },
+    },
+    {
+      id: "S10",
+      name: "quick-ref vs rulebook",
+      run: async () => {
+        if (!rulebookText) return { status: "skipped", reason: "Docs/canon/rulebook.md not found" };
+        if (!quickRefText)
+          return { status: "skipped", reason: "Docs/canon/rulebook-quick-reference.md not found" };
+        return lintQuickReferenceVsRulebook(quickRefText, rulebookText);
       },
     },
   ];
