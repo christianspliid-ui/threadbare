@@ -437,6 +437,84 @@ Five effects reshape the faction graph:
 
 ---
 
+### Capability 10: Encounter Foreshadowing — What the Agent Believes Before They Arrive (THR-389)
+
+When the player clicks an encounter row in the agent profile panel, the engine generates 2–4 sentences of foreshadowing prose showing what the agent believes or imagines about the encounter they're moving toward. This runs **on click**, never per-tick — it's a UI-layer resolver, not an orchestrator phase.
+
+**The content surface:**
+
+```typescript
+// On UnifiedActionTemplate (src/types/unifiedAction.ts):
+foreshadowing?: {
+  variants: ForeshadowingVariant[];   // Authored per encounter
+  fallback?: string;                  // Encounter-specific fallback (uses placeholders)
+};
+
+// Each variant:
+{
+  id: string;               // e.g. 'plague_outbreak.healer_curiosity'
+  template: string;         // Prose template with {name.first}, {pronoun.subject}, {encounter.heading}
+  when: {
+    intelligenceTier?: 'unknown' | 'rumor' | 'briefed' | 'expert';
+    topMotive?: 'awareness' | 'threat' | 'opportunity' | 'duty' | 'curiosity';
+    dominantReach?: string;           // e.g. 'eye', 'heart', 'shadow'
+    hasMark?: string;                 // Phase 3 — deferred
+    hasReputation?: string;           // Phase 3 — deferred
+  };
+}
+```
+
+**Available placeholders in foreshadowing templates:**
+
+| Placeholder | Resolves to |
+|---|---|
+| `{name.first}` | First word of agent name |
+| `{encounter.heading}` | Encounter template `name` field |
+| `{pronoun.subject}` | `he` / `she` / `they` (from agent gender) |
+| `{pronoun.subject_capitalized}` | Capitalized subject pronoun |
+
+**Variant selection:** The engine picks the most-specific matching variant (most conditions specified in `when`). Ties at the same specificity are broken deterministically with PRNG seeded from `agentId + encounterId`. If no variant matches, falls back to `foreshadowing.fallback`, then to `GENERIC_FORESHADOWING_FALLBACK`.
+
+**Phase 1 signals (current):**
+- `intelligenceTier`: always `'unknown'`
+- `topMotive`: always `'awareness'`
+- `dominantReach`: encounter template's `reach` field (e.g. `'eye'` for plague_outbreak)
+
+Phase 3 will derive these from actual agent intelligence records and encounter-pool funnel scores. The variant system is already live — content authored now will automatically use real signals in Phase 3 without changes.
+
+**Why this changes what you write:** When authoring `foreshadowing` variants, you're writing inside an agent's head — what they've heard, what they fear, what they hope for. The prose should reflect the agent's epistemic state, not objective facts about the encounter. A variant for `intelligenceTier: 'rumor'` should feel uncertain and second-hand. A variant for `topMotive: 'threat'` should feel defensive. The encounter itself hasn't happened yet — the agent is projecting.
+
+**Authoring a new encounter with foreshadowing:**
+
+```typescript
+// In encounter-content.ts:
+{
+  id: 'encounter.guild_audition',
+  name: 'Guild Audition',
+  reach: 'gold',
+  // ...
+  foreshadowing: {
+    variants: [
+      {
+        id: 'guild_audition.nervous',
+        when: { intelligenceTier: 'unknown' },
+        template: "{name.first} has heard the guild judges three times — once at dawn, once at midday, once in firelight. {pronoun.subject_capitalized} rehearses {encounter.heading} the way a soldier rehearses a retreat route: not for confidence, but for the comfort of having a plan.",
+      },
+      {
+        id: 'guild_audition.confident',
+        when: { intelligenceTier: 'briefed', topMotive: 'opportunity' },
+        template: "{name.first} knows what the {encounter.heading} judges want. {pronoun.subject_capitalized} has made it their job to know. The question isn't whether {pronoun.subject} can impress them — it's which version of impressive to show.",
+      },
+    ],
+    fallback: "{name.first} thinks about {encounter.heading} the way {pronoun.subject} thinks about most things: carefully, and too much.",
+  },
+}
+```
+
+**Where to find the implementation:** `src/engine/foreshadowing/getEncounterForeshadowing.ts` for the resolver, `src/engine/foreshadowing/constants.ts` for the cache cap, `src/types/unifiedAction.ts` for the `EncounterForeshadowing` + `ForeshadowingVariant` interfaces.
+
+---
+
 ## Part 3: The Wiring Checklist — Ask These Before You Write
 
 Before writing any encounter, answer these questions. If the answer to most of them is "not applicable," you may be writing a book page, not game content.

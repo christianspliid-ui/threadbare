@@ -2,7 +2,7 @@
 
 > **Living document.** Every design plan must include a wiring section that maps new modules to entries on this checklist. Every implementation must verify all listed connections before marking work complete. Maintaining this checklist is part of the Definition of Done for both design and implementation phases.
 >
-> **Last updated:** 2026-05-08 (THR-266 — Added UI Pillar Verification section). Previous: 2026-05-08 (THR-289 — Added UL Interactive Dashboard reference surface at `?view=ul`). Previous: 2026-05-07 (THR-326 — Added regional detection-pressure phase wiring + DebugPanel detection inspector surface). Previous: 2026-04-29 (THR-109 — Added branch-aware aftermath selection surface (`BranchAwareAftermathConfig` / `resolveAftermathVariant`). Previous: 2026-04-19 THR-174 viewport audit.)
+> **Last updated:** 2026-05-09 (THR-389 — Added Encounter Foreshadowing: on-click resolver, per-session cache, `foreshadowing` field on `UnifiedActionTemplate`, Foreshadowing DebugPanel tab, debug-bridge methods. Previous: 2026-05-08 (THR-266 — Added UI Pillar Verification section). Previous: 2026-05-08 (THR-289 — Added UL Interactive Dashboard reference surface at `?view=ul`). Previous: 2026-05-07 (THR-326 — Added regional detection-pressure phase wiring + DebugPanel detection inspector surface). Previous: 2026-04-29 (THR-109 — Added branch-aware aftermath selection surface (`BranchAwareAftermathConfig` / `resolveAftermathVariant`). Previous: 2026-04-19 THR-174 viewport audit.)
 
 ---
 
@@ -30,6 +30,30 @@
 | Drift constants single-source | `scripts/drift-scan/constants.ts` | Browser-safe re-export consumed by both the weekly drift-scan job and `src/data/ul-dashboard-constants.ts`. |
 | Components | `src/components/UL/` | `UbiquitousLanguageDashboard`, `ULSidebar`, `ULTermTable`, `ULDetailPane`, `ULSearchBox`, `ULDriftBadge`, `ulDashboardData`, `ulSearch`, `ulMarkdown`. |
 | Verification coverage | `scripts/__tests__/generate-ul-dashboard-data.test.ts`, `src/components/UL/__tests__/UbiquitousLanguageDashboard.test.tsx`, `src/components/UL/__tests__/ulSearch.test.ts` | Generator parse + warning shape, dashboard smoke render, search ranking ordering. |
+
+### Encounter Foreshadowing (THR-389)
+
+On-click resolver — never per-tick. Resolves once per `(agentId, encounterId, intelligenceVersion, interventionVersion)` tuple and caches the result for the session.
+
+| Surface | Path | Notes |
+|---|---|---|
+| Resolver | `src/engine/foreshadowing/getEncounterForeshadowing.ts` | On-click resolver. Reads signals → selects variant by specificity + PRNG → resolves placeholders → caches. Fail-soft: returns `prose: '...'` on any exception. |
+| Types | `src/engine/foreshadowing/types.ts` | `ForeshadowingResult`, `ForeshadowingSignals`, `ForeshadowingVariant`, `ForeshadowingAttribution` |
+| Generic fallback | `src/engine/foreshadowing/genericFallback.ts` | `GENERIC_FORESHADOWING_FALLBACK` template + `resolveForeshadowingPlaceholders()` |
+| Attribution stub | `src/engine/foreshadowing/attributeRecentInterventions.ts` | Returns `null` in Phase 1; Phase 3 wires real attribution |
+| Constants | `src/engine/foreshadowing/constants.ts` | `FORESHADOWING_CACHE_MAX_ENTRIES` |
+| Content field | `foreshadowing?: EncounterForeshadowing` on `UnifiedActionTemplate` (`src/types/unifiedAction.ts`) | Optional variants array + fallback string. Threaded through `toUnifiedTemplate` in `encounter-content.ts`. |
+| Session cache | `SimulationRuntime.foreshadowingCache: Map<string, ForeshadowingResult>` | Owned by runtime (not module-scope). Key: `${agentId}\|${encounterId}\|${intelVersion}\|${interventionVersion}`. Cleared by `resetRuntimeCaches()`. |
+| Trace type | `ForeshadowingResolutionTrace` / `category: 'foreshadowing'` in `src/types/trace.ts` | Fields: `agentId`, `encounterId`, `variantsConsidered[]`, `variantPicked`, `signals`, `interventionAttributionId`, `cacheHit`, `error?`, `summary` |
+| UI surface | `EncounterDecisionPanel` in `src/components/Game/ThreadDetailView.tsx` | Clickable chevron rows for pool candidates. Prose lazy-loaded on first expand. Gold-bordered italic block when expanded. |
+| GameView wiring | `graph`, `runtime`, `tick` props on `ThreadDetailView` in `src/components/Game/GameView.tsx` | Pre-computed `foreshadowingByCandidate` map via `useMemo` in `ThreadDetailView`; resolver called lazily on first `<details>` expand. |
+| DebugPanel tab | `'foreshadowing'` view in `src/components/Game/debug/DebugTabContent.tsx` | Renders foreshadowing traces from `allTraces`. Color: gold = new resolution, muted = cache hit, red = error. |
+| Debug bridge | `getForeshadowing` + `listForeshadowingTraces` in `src/debug-bridge.ts` / `src/debug-bridge.d.ts` | Async bridge methods. `listForeshadowingTraces(agentId?)` filters by category + optional agentId. |
+| Tests | `src/engine/foreshadowing/__tests__/getEncounterForeshadowing.test.ts` | Covers: placeholder resolution, `attributeRecentInterventions` stub, cache hit/miss/clear, tracing, signal defaults, variant specificity selection, generic fallback template token check. |
+
+**Phase 1 deferred signals:** `dominantReach = template.reach ?? 'wilderness'` (encounter's reach, not agent's). `intelligenceTier = 'unknown'`, `topMotive = 'awareness'` (Phase 1 stubs). Phase 3 will derive these from actual intelligence records and encounter-pool funnel scores.
+
+---
 
 ### Encounter Experience Foundation (THR-321, Phase A2)
 
