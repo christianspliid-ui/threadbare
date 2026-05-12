@@ -272,6 +272,20 @@ $ npx vite build
 
 This rule supersedes the prior "use the model suggested by the `model:*` label unless you have a specific reason to override" guidance for scheduled automations. The override clause now means "the user, sitting at the keyboard," not "the automation itself."
 
+### Rule 11 — An executor must never write code for work that has already shipped
+
+**Rule:** Before reading a plan doc or writing any file in either pickup path (fresh-claim from Ready for X, or resume-from-In-Dev), the executor must run `git log origin/main --grep "Fixes <issue-id>"` (plus `Closes` / `Resolves` variants) against a freshly fetched `origin/main` and confirm the result is empty. If a matching commit exists, the work has landed and the only remaining task is to surface the auto-close failure to the human reviewer.
+
+**Why:** Linear's `assignee` claim is non-atomic; two executors can each successfully claim the same issue and verify their claim, then race on implementation. The merged commit on `origin/main` is the only sanctioned proof that the work is genuinely done. Five collisions in two weeks documented this gap (impediments #99, #114, #121, #122, #127).
+
+**How to apply:**
+- **CC fresh-claim:** `pull-work` Step 4.4 runs the check after claim verification (and the `pullNextReadyForDev` wrapper's step 3.5 mirrors it in the atomic path).
+- **CC resume:** `pull-work` Step 1.7 runs the check when Step 1.5 detects an in-flight issue.
+- **Codex fresh-claim:** Codex Pickup Protocol step 2.5 runs the check after claim verification.
+- **Codex resume:** Codex Session Start step 1.5 runs the check when step 1 detects an in-flight issue.
+- If the check finds a matching commit: do NOT write any code. Post a comment noting the commit hash and that the auto-close did not fire. On the fresh-claim path, also release the claim (`save_issue(id, assignee: null, state: "Ready for X")`). On the resume path, leave the claim in place so the audit trail is preserved; the human reviewer verifies and closes manually.
+- **Fail-soft:** a `git fetch` failure logs a warning and proceeds (resume continues to work; fresh-claim continues to coordination check). The check is best-effort and must not strand a real in-flight issue when the network is unavailable.
+
 ---
 
 ## Agent Session Protocols
@@ -285,6 +299,7 @@ This rule supersedes the prior "use the model suggested by the `model:*` label u
 > **State-filter discipline.** Every Linear query in this section is scoped to a single actionable state. Never widen a filter to include `Done` or `Canceled`, and never replace these calls with an unfiltered `list_issues(limit:N)` — the response payload alone overflows the context budget once Done accumulates (Limitations §).
 
 1. Query Linear: `list_issues state:"In Dev" assignee:"me"` → resume your own active implementation first (finish before starting).
+   **Resume-from-In-Dev safety (Rule 11):** When this query returns a single entry, the `pull-work` skill's Step 1.7 runs an upstream-shipped check (`git fetch origin main && git log origin/main --grep "Fixes <issue-id>"`) before continuing. If the commit landed but auto-close didn't fire, pickup exits cleanly with a comment on the issue. See `.claude/skills/pull-work/SKILL.md` § Step 1.7 for the exact commands and fail-soft semantics.
 2. Use **`pullNextReadyForDev`** (canonical path — see pull-work skill § Atomic Pickup Procedure, THR-247). This bundles Rules 1, 4, and 7 into one atomic sequence: board-scan → sort by priority → claim → verify → fetch latest comment. Retry on silent drops up to `MAX_CLAIM_RETRIES = 3`. The hand-rolled sequence below is the documented fallback.
    - *Fallback (hand-rolled):* `list_issues state:"Ready for Dev" assignee:null`, sort by priority in memory (impediment #49), `save_issue(id, assignee:"me", state:"In Dev")`, `get_issue(id)` to verify.
 3. **Claim immediately (Rule 1):** before reading anything but the title, the first mutating call is `save_issue(id, assignee: "me", state: "In Dev")`. Then `get_issue(id)` to verify the write stuck (Rule 7 / impediment #48). `pullNextReadyForDev` does this atomically; if hand-rolling, do it explicitly. Only after the claim is confirmed do you read the handoff comment and plan doc.
@@ -389,11 +404,25 @@ When Claude Code finishes implementation:
 5. If the merge didn't fire the auto-close (wrong keyword, merge blocked, feature branch not yet on `main`), the issue **stays** in In Dev until the merge lands. Fix the merge situation rather than force-transitioning the issue.
 
 ### Codex Session Start
-Codex is an executor agent introduced 2026-04-19 to absorb well-specified, pattern-following work. It runs as a separate automation on an hourly cycle, querying its own queue only. All nine Hard Rules above apply to Codex identically to CC — claim-before-read, verify-after-write, WIP=1, no manual Done transitions.
+Codex is an executor agent introduced 2026-04-19 to absorb well-specified, pattern-following work. It runs as a separate automation on an hourly cycle, querying its own queue only. All eleven Hard Rules above apply to Codex identically to CC — claim-before-read, verify-after-write, WIP=1, no manual Done transitions.
 
 > **State-filter discipline.** Every Linear query in this section is scoped to a single actionable state. Never widen a filter to include `Done` or `Canceled`, and never replace these calls with an unfiltered `list_issues(limit:N)` — the response payload alone overflows the context budget once Done accumulates (Limitations §).
 
 1. Query Linear: `list_issues state:"In Dev" assignee:"me"` → resume your own active implementation first (finish before starting).
+1.5. **Upstream-shipped check on the resumed issue (Rule 11).** If step 1 returned an `In Dev` issue assigned to me, before reading any handoff comment or plan doc, run:
+
+    git fetch origin main
+    git log origin/main --grep="Fixes <issue-id>" --grep="Closes <issue-id>" --grep="Resolves <issue-id>" --regexp-ignore-case --extended-regexp --oneline
+
+   If the result is non-empty, the work has already landed but Linear's auto-close did not fire. Post a comment noting the upstream commit hash + first-line message and that the auto-close did not fire. Do not call `save_issue(state: "Done")` (Rule 3). Do not continue to step 2. Exit cleanly.
+
+   If the result is empty, continue resuming. If `git fetch` errors (network down, sandbox limitation), log a warning and continue resuming — the check is best-effort and must not strand a real in-flight issue.
+
+   Surface in cron log:
+
+       [codex-pickup] Step 1.5: resume THR-XXX — upstream-clean. Continuing to step 2.
+       [codex-pickup] Step 1.5: resume THR-XXX — upstream-shipped, commit a1b2c3d. Posted comment, exit.
+
 2. Query Linear: `list_issues state:"Ready for Codex" assignee:null` → the `assignee:null` filter is **required** (Rule 2). Sort by priority in memory (impediment #49); pull from the top. **Never query Ready for Dev** — that queue belongs to CC. Expanding the filter across queues defeats the separation the two-queue design exists to provide.
 3. **Claim immediately (Rule 1):** before reading anything but the title, run `save_issue(id, assignee: "me", state: "In Dev")`. Then `get_issue(id)` to verify the write stuck (Rule 7 / impediment #48). Only after the claim is confirmed do you read the handoff comment and plan doc.
 4. **WIP check (Rule 6) — hard gate:** Query `list_issues(state:"In Dev", assignee:"me")`. If the result is non-empty, **exit cleanly without claiming.** The previous work is in flight (CI running or merge pending) and will resolve on its own. Surface a one-line cron log: `[codex-pickup] WIP=1 gate — already holding {issueId}. Skipping pickup.` For multiple In Dev issues, also surface a Rule 6 violation note. Do not attempt to finish or hand off — that creates more state mutations and higher collision risk.
@@ -447,9 +476,16 @@ When Cowork finishes a design and writes the implementation plan and determines 
 5. **No codex-review line** — the review integration (Rule 8) is separate. Reviews are requested on demand by CC or Cowork, not scheduled as part of a Codex handoff.
 
 ### Codex Pickup Protocol
-Same order as CC: **claim → verify → read → decide**. Every step mirrors the CC pickup protocol; only the source queue name differs.
+Same order as CC: **claim → verify → upstream-check → read → decide**. Every step mirrors the CC pickup protocol; only the source queue name differs.
 1. **Claim first (Rule 1).** `save_issue(id, assignee: "me", state: "In Dev")`.
 2. **Verify the claim stuck (Rule 7).** `get_issue(id)` and confirm `assignee` and `state`.
+2.5. **Upstream-shipped check (Rule 11).** Before reading the latest comment, run:
+
+    git fetch origin main
+    git log origin/main --grep="Fixes <issue-id>" --grep="Closes <issue-id>" --grep="Resolves <issue-id>" --regexp-ignore-case --extended-regexp --oneline
+
+   If the result is non-empty, the work has already landed. Release the claim (`save_issue(id, assignee: null, state: "Ready for Codex")`), post a comment noting the upstream commit, and exit cleanly. See `.claude/skills/pull-work/SKILL.md` § Step 4.4 for the equivalent path on the CC side. Fail-soft on `git fetch` errors (log warning, proceed to step 3).
+
 3. **Read the latest comment first (Rule 4).** If `Reopened` label is present (Rule 5), read all comments back to the original handoff.
 4. **Verify the handoff is complete.** All four action-item sections present (Engine, Content, UI, Wiring). If any section is missing without N/A rationale, do not start work — add a comment flagging the gap, release the claim with `assignee: null`, and move the issue back to Implementation Planning. An incomplete plan produces incomplete work regardless of which executor picks it up.
 5. **Check the Codex coordination block.** Verify `Parallel-safe with` and `Mutex with` against any In Dev issues across both executors.

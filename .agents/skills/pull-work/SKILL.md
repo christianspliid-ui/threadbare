@@ -25,11 +25,23 @@ Run as `/pull-work` (auto-pick top Ready for Dev issue) or `/pull-work THR-123` 
 **Constant:** `MAX_CLAIM_RETRIES = 3`
 
 1. **Board scan** — consume the Step 1 board-scan (already built): one `list_issues(team:"Threadbare", limit:250, orderBy:"updatedAt", includeArchived:false)` call, bucket in memory by `status`. Sort Ready-for-Dev candidates by priority (1=Urgent first), then oldest `createdAt` as tie-break. Pick the top unassigned candidate.
-1.5. **WIP gate** — if the "In Dev" slice filtered to `assignee:"me"` is non-empty, exit cleanly per Step 1.5 (Rule 6: WIP=1). Do not claim.
+1.5. **WIP gate** — if the "In Dev" slice filtered to `assignee:"me"` is empty, continue to step 2. If exactly one entry, route to Step 1.7 (resume-from-In-Dev upstream-shipped check) instead of exiting clean. If more than one entry, this is a Rule 6 violation — output the cross-session-leak trace line and exit 1.
 2. **Claim** — `save_issue(id, assignee:"me", state:"In Dev")`.
 3. **Verify** — `get_issue(id)`. Confirm both `assignee` and `state` match.
    - On mismatch (silent drop, impediment #48): release claim with `save_issue(id, assignee:null)`. Output trace line (see below). Move to the next candidate. Retry up to `MAX_CLAIM_RETRIES` total attempts.
    - On all retries exhausted: output final trace line and exit the wrapper — fall back to the hand-rolled Step 1–4 path below.
+3.5. **Upstream-shipped check (Rule 11: don't re-do shipped work)** — run:
+
+    git fetch origin main
+    git log origin/main --grep="Fixes ${id}" --grep="Closes ${id}" --grep="Resolves ${id}" --regexp-ignore-case --extended-regexp --oneline
+
+If the result is non-empty, the work has already landed but Linear's auto-close either lagged or failed. Do NOT proceed to read the plan doc or write code. Release the claim, post a one-line comment on the issue noting the upstream commit hash + first-line message, and exit cleanly.
+
+    save_issue(id, assignee: null, state: "Ready for Dev")
+    save_comment(issueId: id, body: "Upstream-shipped check found commit {sha} on origin/main: \"{first-line}\". Auto-close did not fire — please verify the keyword in the merge commit body and close manually if appropriate.")
+
+**Fail-soft:** if `git fetch origin main` errors (network down, auth issue, sandbox limitation), log the error and continue to step 4 anyway. The upstream-shipped check is best-effort — a fetch failure must not block pickup of genuinely open work. Surface a one-line warning in the session log.
+
 4. **Fetch latest comment** — `list_comments(id, orderBy:"createdAt", limit:5)`. Extract the most recent entry.
 5. **Return bundle** — `{ issueId, state, assignee, latestComment }`. Continue from Step 5 (Reopened check) using this data.
 
@@ -39,6 +51,14 @@ Happy path:
 ```
 [pullNextReadyForDev] Attempt 1/3: claiming THR-247... OK
 [pullNextReadyForDev] Verify: assignee=Christian Spliid, state=In Dev ✓ — claim confirmed
+[pullNextReadyForDev] Upstream check: clean — no matching commit on origin/main. Continuing to plan doc.
+```
+
+Upstream-shipped path:
+```
+[pullNextReadyForDev] Attempt 1/3: claiming THR-247... OK
+[pullNextReadyForDev] Verify: assignee=Christian Spliid, state=In Dev ✓ — claim confirmed
+[pullNextReadyForDev] Upstream check: found commit a1b2c3d "feat(thr-247): ..." — releasing claim, posting comment. Exiting clean.
 ```
 
 Silent-drop retry:
@@ -118,28 +138,58 @@ Sort the Ready-for-Dev candidates by priority in memory (impediment #49 rejects 
 
 If a specific issue id was provided, skip to Step 3.
 
-### Step 1.5 — WIP=1 gate (Rule 6 enforcement)
+### Step 1.5 — WIP=1 gate (Rule 6 enforcement) + resume routing
 
-If the Step 1 board scan's "In Dev" slice filtered to `assignee:"me"` is non-empty, refuse pickup and exit cleanly. Output one of:
+If the Step 1 board scan's "In Dev" slice filtered to `assignee:"me"` is empty, continue to Step 2.
+
+If the slice has more than one entry, this is a Rule 6 violation (cross-session leak — Rule 6 says WIP=1 across all sessions). Output the surface message and exit 1 so the failure is visible in cron logs. Do not attempt to claim more.
 
 ```
-[pull-work] Step 1.5: WIP=1 gate — already holding {issueId} (claimed at {claimedAt}, branch {gitBranchName}). Skipping pickup.
-
 [pull-work] Step 1.5: WIP=1 gate — multiple In Dev assigned to me ({issueIds}). Cross-session leak. Surface and stop.
 ```
 
-If the slice has exactly one entry: this is a normal in-flight ticket; either CI is still running or the merge auto-close hasn't fired yet. Exit 0 — the next cron tick will check again.
-
-If the slice has more than one entry: this indicates a Rule 6 violation (cross-session leak — Rule 6 says WIP=1 across all sessions). Output the surface message and exit 1 so the failure is visible in cron logs. Do not attempt to claim more.
+If the slice has exactly one entry, route to Step 1.7 (resume-from-In-Dev upstream-shipped check) instead of exiting clean. The resumed issue may have shipped while the session was paused; the upstream-shipped check decides whether to resume work or stand down.
 
 **Constants:**
 
 | Constant | Default | Purpose |
 |---|---|---|
-| `WIP_GATE_EXIT_CODE_SINGLE` | 0 | Single in-flight ticket is normal; exit clean |
+| `WIP_GATE_EXIT_CODE_SINGLE` | 0 | Single in-flight ticket routes to Step 1.7; exit clean only if shipped |
 | `WIP_GATE_EXIT_CODE_MULTI` | 1 | Multiple in-flight is a leak; exit red |
 
 **Fail-soft:** If the Linear API errors during the In Dev query, treat as gate-fired (refuse to pull when state is unknown). Log an impediment and exit 0.
+
+### Step 1.7 — Resume-from-In-Dev — upstream-shipped check
+
+When Step 1.5 detects exactly one In Dev issue assigned to the executor, run the upstream-shipped check on that issue before doing any other work (including reading comments or plan doc).
+
+```bash
+git fetch origin main
+git log origin/main --grep="Fixes <resumed-issue-id>" --grep="Closes <resumed-issue-id>" --grep="Resolves <resumed-issue-id>" --regexp-ignore-case --extended-regexp --oneline
+```
+
+**If the result is empty:** the work is genuinely still in flight. Continue from Step 5 (Reopened safety check) — skip Steps 2–4 (cross-executor parallel, coordination block, claim) because the claim already exists.
+
+**If the result is non-empty:** the commit landed but the auto-close did not fire.
+1. Post a comment on the issue: `Upstream-shipped check during resume found commit {sha} "{first-line}". Auto-close did not fire — please verify the merge keyword in the commit body and close manually if appropriate.`
+2. Do NOT release the claim (leaving the issue In Dev preserves the audit trail; the human reviewer can close it manually after verifying the commit). Do NOT call `save_issue(state: "Done")` — Rule 3 forbids it.
+3. Exit cleanly.
+
+**Trace lines** (NFP #2):
+
+```
+[pull-work] Step 1.7: resume THR-247 — upstream-clean. Continuing to Step 5.
+[pull-work] Step 1.7: resume THR-247 — upstream-shipped, commit a1b2c3d. Posting comment, exit.
+```
+
+**Fail-soft:** if `git fetch origin main` errors (network down, auth issue, sandbox limitation), log a warning and proceed to Step 5 (resume in flight). The check is best-effort and must not strand a real in-flight issue when the network is unavailable.
+
+**Constants:**
+
+| Constant | Default | Purpose |
+|---|---|---|
+| `UPSTREAM_GREP_KEYWORDS` | `Fixes\|Closes\|Resolves` | Auto-close keywords accepted by Linear |
+| `RESUME_UPSTREAM_FAIL_SOFT` | `true` | If `git fetch` fails, proceed to Step 5 rather than refusing resume |
 
 ### Step 2 - Cross-executor parallel check
 
@@ -165,6 +215,36 @@ If collision or uncertainty remains, refuse and ask for rerouting instead of cla
 4. On all retries exhausted: refuse to proceed, surface the write failure, log impediment.
 
 Rationale: impediment #48 documents silent state-write drops; verify-after-write is mandatory.
+
+### Step 4.4 — Upstream-shipped check (Rule 11)
+
+After the claim is verified (Step 4) and before worktree isolation (Step 4.5), run:
+
+```bash
+git fetch origin main
+git log origin/main --grep="Fixes <issue-id>" --grep="Closes <issue-id>" --grep="Resolves <issue-id>" --regexp-ignore-case --extended-regexp --oneline
+```
+
+If the result is non-empty, the work has already landed. Do not proceed.
+
+1. Release the claim: `save_issue(id, assignee: null, state: "Ready for Dev")`.
+2. Post a one-line comment on the issue noting the upstream commit hash + first-line message and that the auto-close did not fire.
+3. Exit cleanly.
+
+**Trace lines** (NFP #2):
+
+```
+[pull-work] Step 4.4: upstream-clean. Continuing to worktree isolation.
+[pull-work] Step 4.4: upstream-shipped — commit a1b2c3d "feat(thr-247): ..." on origin/main. Releasing claim, exit.
+```
+
+**Fail-soft:** if `git fetch origin main` errors (network down, auth issue, sandbox limitation), log the error and proceed to Step 4.5 anyway. The upstream-shipped check is best-effort — a fetch failure must not block pickup of genuinely open work. Surface a one-line warning in the session log.
+
+**Constants:**
+
+| Constant | Default | Purpose |
+|---|---|---|
+| `FRESH_CLAIM_UPSTREAM_FAIL_SOFT` | `true` | If `git fetch` fails, proceed to Step 4.5 rather than blocking pickup |
 
 ### Step 4.5 — Worktree isolation when home is dirty
 
@@ -238,6 +318,7 @@ If the issue has label `Reopened`, read all comments back to the original handof
 - The latest handoff comment is missing any required coordination line (`Suggested model`, `Parallel-safe with`, `Mutex with`).
 - Cross-executor mutex analysis indicates file-surface collision with active Codex work.
 - `save_issue` claim cannot be verified by `get_issue` after one retry.
+- The upstream-shipped check (Step 4.4 fresh-claim or Step 1.7 resume) finds a `Fixes <issue-id>` / `Closes <issue-id>` / `Resolves <issue-id>` commit on `origin/main`. Pickup exits with a comment noting the upstream commit hash; the human reviewer closes the issue manually if appropriate.
 
 ## Output Contract
 
