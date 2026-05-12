@@ -13,6 +13,7 @@ import type { EncounterProgress } from '../types/encounter';
 import type { OutcomeType } from '../types/resolution';
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { isActionStepBranch } from '../types/unifiedAction';
+import type { RarityTier } from '../types/rarity';
 import { RARITY_TO_THREAT, CRUD_TO_ENCOUNTER_TYPE } from './encounterCache';
 import { emitTrace } from './traceBuffer';
 import type { TraceEntry } from '../types/trace';
@@ -54,6 +55,8 @@ export interface CreateEncounterEventParams {
   tick: number;
   rewardInstanceId?: string;
   tierPromotionOccurred: boolean;
+  /** Effective rarity tier after Focus buff was applied (THR-416). */
+  effectiveRarityTier?: RarityTier;
 }
 
 /**
@@ -70,7 +73,7 @@ export function createEncounterEventNode(
 ): string | undefined {
   if (!ENCOUNTER_EVENT_ENABLED) return undefined;
 
-  const { graph, progress, template, stepIndex, outcomeType, tick, rewardInstanceId, tierPromotionOccurred } = params;
+  const { graph, progress, template, stepIndex, outcomeType, tick, rewardInstanceId, tierPromotionOccurred, effectiveRarityTier } = params;
 
   const stepOrBranch = template.steps[stepIndex];
   if (!stepOrBranch) return undefined;
@@ -94,7 +97,7 @@ export function createEncounterEventNode(
         stepName: stepLabel,
         outcome: outcomeType,
         reachTested: step.reach,
-        threatRating: RARITY_TO_THREAT[template.rarityTier] ?? 'moderate',
+        threatRating: RARITY_TO_THREAT[effectiveRarityTier ?? template.rarityTier] ?? 'moderate',
         ...(template.sphereAffinity && { sphereAffinity: template.sphereAffinity }),
         tick,
         tierPromotionOccurred,

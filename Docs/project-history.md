@@ -1,5 +1,7 @@
 # Project History
 
+✅ **THR-416** (2026-05-12) — Consume Recede/Focus buffs on next non-self action. New `applyAscendantBuffs` helper reads `nextActionDiscount`/`nextActionTierBoost` from ascendant node, applies Recede cost discount + Focus tier boost, clears both fields in-place, stamps `effectiveRarityTier` onto `UnifiedAction`, emits `BuffConsumedTrace`. Wired into both action-fire sites (GameView handleNonAgentSlotClick + useAgentInteraction handleWheelSlotClick). Four downstream read sites updated (phaseAttention, encounterEventNode, buildSimpleEncounterStageModel, buildGateDutyEncounterStageModel). 14 new tests. PR #257.
+
 ✅ **THR-399** (2026-05-12) — Add 4 self-targeting ascendant actions: Stillness (essence regen on primary sphere, rarity 1), Recede (nextActionDiscount buff, rarity 1), Focus (nextActionTierBoost buff, rarity 2), Reveal (push divineInfluences to mortals on avatar hex, rarity 3). 8 named constants in `self-action-constants.ts`, `SelfActionTrace` + `'self_action'` trace category, post-processor hook in `unifiedActionResolution`. 17 tests green. PR #254.
 
 ✅ **THR-398** (2026-05-12) — Collapse 6 hex-recon verbs to 2. Retired `hex.sense_threads`, `hex.sense_leylines`, `hex.divine_populace`, `hex.scry_factions`. Survey now reveals land+people in one cast; Read the Currents covers soul. `TEMPLATE_REVELATION_MAP` widened to support multi-layer arrays; `resolveRevelation` emits one trace per layer. `trayTier` tags added. 727 tests pass. PR #253.

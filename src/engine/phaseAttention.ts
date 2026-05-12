@@ -187,7 +187,7 @@ export function phaseAttention(
     // Look up the template for reach domain and threat rating
     const template = templateById.get(ua.templateId);
     const reachPrimary: string = template?.reach ?? 'combat';
-    const threatRating = template ? rarityToThreat(template.rarityTier) : 'moderate';
+    const threatRating = template ? rarityToThreat(ua.effectiveRarityTier ?? template.rarityTier) : 'moderate';
 
     // Chain stage classification
     const agentNode = state.graph.getNode(ua.actorId);

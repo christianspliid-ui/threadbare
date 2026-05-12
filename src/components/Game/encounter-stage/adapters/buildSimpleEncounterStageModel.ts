@@ -27,6 +27,7 @@ import { computeCapability } from '../../../../engine/domainCapability';
 import { computeResolutionModifiers } from '../../../../engine/resolutionModifiers';
 import { forecastAction } from '../../../../engine/resolutionService';
 import { RARITY_TO_THREAT } from '../../../../engine/encounterCache';
+import type { RarityTier } from '../../../../types/rarity';
 
 // ── Types ────────────────────────────────────────────────
 
@@ -43,6 +44,8 @@ export interface BuildSimpleEncounterStageModelArgs {
   /** GameState for intelligence consumption (THR-113). When omitted, `{intel:*}`
    * placeholders silently strip. */
   gameState?: GameState;
+  /** Effective rarity tier after Focus buff was applied (THR-416). */
+  effectiveRarityTier?: RarityTier;
 }
 
 // ── Prose depth ──────────────────────────────────────────
@@ -167,7 +170,7 @@ function buildResolvedResolutionChecks(
 export function buildSimpleEncounterStageModel(
   args: BuildSimpleEncounterStageModelArgs,
 ): EncounterStageModel {
-  const { notification, encounter, template, agentId, graph, threadTier, essence } = args;
+  const { notification, encounter, template, agentId, graph, threadTier, essence, effectiveRarityTier } = args;
 
   const currentIndex = Math.min(encounter.currentStepIndex, template.steps.length - 1);
   const isEncounterFinished = encounter.status === 'completed' || encounter.status === 'abandoned';
@@ -231,7 +234,7 @@ export function buildSimpleEncounterStageModel(
     header: {
       title: template.name,
       locationLabel: '',
-      threatLabel: RARITY_TO_THREAT[template.rarityTier] ?? 'moderate',
+      threatLabel: RARITY_TO_THREAT[effectiveRarityTier ?? template.rarityTier] ?? 'moderate',
       threadTier,
     },
     illustration,

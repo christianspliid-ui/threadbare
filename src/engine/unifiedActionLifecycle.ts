@@ -67,6 +67,8 @@ export interface CreateUnifiedActionParams {
   readonly essencePaid?: number;
   readonly supportBindings?: readonly EncounterSupportBinding[];
   readonly clearanceGateIds?: readonly string[];
+  /** Rarity tier after Focus buff was applied (THR-416). Omit if no buff was active. */
+  readonly effectiveRarityTier?: import('../types/rarity').RarityTier;
 }
 
 /**
@@ -76,7 +78,7 @@ export interface CreateUnifiedActionParams {
 export function createUnifiedAction(params: CreateUnifiedActionParams): UnifiedAction {
   const {
     actorId, templateId, targetId, scale, source, tick, template, rng,
-    essencePaid, supportBindings, clearanceGateIds,
+    essencePaid, supportBindings, clearanceGateIds, effectiveRarityTier,
   } = params;
   const firstStep = resolveStepDefinition(template, 0);
   const stepDuration = computeStepDuration(firstStep.duration, rng);
@@ -97,6 +99,7 @@ export function createUnifiedAction(params: CreateUnifiedActionParams): UnifiedA
     stepOutcomes: [],
     supportBindings,
     clearanceGateIds,
+    ...(effectiveRarityTier !== undefined && { effectiveRarityTier }),
   };
 }
 
