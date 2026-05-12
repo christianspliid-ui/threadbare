@@ -17,6 +17,8 @@ import type { OmenState } from '../../types/omen';
 import type { DoomIdentityMatrix } from '../../types/doomIdentity';
 import type { HiddenMark, PendingEncounterSeed } from '../../types/unifiedAction';
 import type { TickEvent, ActiveComposition, RegionDetectionState, ArchetypeDrift } from '../../types/gameState';
+import type { ControlEffect } from '../../types/controlEffect';
+import type { SphereName } from '../../types/index';
 import { DebugTabContent, TABS, type ViewMode } from './debug/DebugTabContent';
 import {
   PANEL_STYLES, CONTAINER_STYLE, HEADER_STYLE, TAB_BAR_STYLE,
@@ -67,6 +69,10 @@ export interface DebugPanelProps {
   activeCompositions?: readonly ActiveComposition[];
   /** Current doom clock stage for the Compositions inspector tab (THR-225). */
   doomClockStage?: number;
+  /** THR-418 — sustained ControlEffects for the new Sustained tab. */
+  controlEffects?: readonly ControlEffect[];
+  /** THR-418 — essence reserves for runway display in the Sustained tab. */
+  essenceReserves?: Partial<Record<SphereName, number>>;
 }
 
 export const DebugPanel = React.memo(function DebugPanel({
@@ -78,6 +84,7 @@ export const DebugPanel = React.memo(function DebugPanel({
   strategicState, omenState, doomIdentityMatrix, hiddenMarks, pendingEncounterSeeds,
   regionalDetectionPressure, archetypeDrift,
   activeDelves, getRecentEvents, flipTableStates, activeCompositions, doomClockStage,
+  controlEffects, essenceReserves,
 }: DebugPanelProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('feed');
   const [enabledCategories, setEnabledCategories] = useState<Set<TraceCategory>>(new Set(TRACE_CATEGORIES));
@@ -222,6 +229,8 @@ export const DebugPanel = React.memo(function DebugPanel({
           flipTableStates={flipTableStates}
           activeCompositions={activeCompositions}
           doomClockStage={doomClockStage}
+          controlEffects={controlEffects}
+          essenceReserves={essenceReserves}
         />
       </div>
 

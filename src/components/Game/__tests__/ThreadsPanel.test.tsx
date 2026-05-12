@@ -17,12 +17,15 @@ function makeAgent(overrides?: Partial<Extract<ThreadedNode, { category: 'agent'
     threadEdgeId: 'thread-a1',
     attentionMode: 'auto_resolve',
     courtPosition: null,
+    threadStrength: 1.0,
     locationId: 'loc-1',
     locationName: 'Thornwall',
     activityLabel: 'Idling',
     portraitUrl: null,
     primaryDomain: 'iron',
     factionName: 'Iron Brotherhood',
+    championEffectId: null,
+    championTemplateId: null,
     ...overrides,
   };
 }
@@ -484,5 +487,208 @@ describe('ThreadsPanel', () => {
     // Click to collapse again
     fireEvent.click(screen.getByText('Locations (1)'));
     expect(screen.queryByTestId('thread-entry')).toBeNull();
+  });
+});
+
+// ─── THR-418: SustainedControl sections ───────────────────────────────────────
+
+describe('ThreadsPanel sustained controls (THR-418)', () => {
+  function makeSustainedHex(overrides?: Partial<Parameters<typeof ThreadsPanel>[0]['sustainedControls']> extends (infer U)[] | undefined ? U : never) {
+    return {
+      category: 'hex' as const,
+      effectId: 'eff-hex-1',
+      templateId: 'hex.claim_dominion',
+      displayName: 'Iron Hold',
+      hexCol: 5,
+      hexRow: 3,
+      perTickCostTotal: 2,
+      perTickIncomeTotal: 0,
+      netFlow: -2,
+      ticksActive: 12,
+      lapseRisk: 'safe' as const,
+      runwayTicks: 50,
+      primarySphere: 'force' as const,
+      ...overrides,
+    };
+  }
+
+  function makeSustainedSource(overrides?: Partial<Parameters<typeof ThreadsPanel>[0]['sustainedControls']> extends (infer U)[] | undefined ? U : never) {
+    return {
+      category: 'source' as const,
+      effectId: 'eff-src-1',
+      templateId: 'sub.sanctify',
+      displayName: 'the Spring of Withered Light',
+      hexCol: 5,
+      hexRow: 3,
+      targetNodeId: 'sub.spring',
+      perTickCostTotal: 1,
+      perTickIncomeTotal: 0,
+      netFlow: -1,
+      ticksActive: 4,
+      lapseRisk: 'critical' as const,
+      runwayTicks: 1,
+      primarySphere: 'spirit' as const,
+      ...overrides,
+    };
+  }
+
+  it('renders Hexes section when sustainedControls includes a hex row', () => {
+    render(
+      <ThreadsPanel
+        threadedNodes={[makeAgent()]}
+        sustainedControls={[makeSustainedHex()]}
+        selectedNodeId={null}
+        onNodeSelect={noop}
+        onCenterOnHex={noop}
+      />
+    );
+    expect(screen.getByTestId('threads-section-header-hex')).toBeTruthy();
+    expect(screen.getByText('Hexes (1)')).toBeTruthy();
+  });
+
+  it('renders Sources section when sustainedControls includes a source row', () => {
+    render(
+      <ThreadsPanel
+        threadedNodes={[makeAgent()]}
+        sustainedControls={[makeSustainedSource()]}
+        selectedNodeId={null}
+        onNodeSelect={noop}
+        onCenterOnHex={noop}
+      />
+    );
+    expect(screen.getByTestId('threads-section-header-source')).toBeTruthy();
+  });
+
+  it('section auto-expands when any row has non-safe risk', () => {
+    render(
+      <ThreadsPanel
+        threadedNodes={[makeAgent()]}
+        sustainedControls={[makeSustainedSource()]} // critical
+        selectedNodeId={null}
+        onNodeSelect={noop}
+        onCenterOnHex={noop}
+      />
+    );
+    // Section body visible immediately because lapseRisk !== 'safe'
+    expect(screen.getByTestId('threads-section-body-source')).toBeTruthy();
+    expect(screen.getByTestId('sustained-control-row')).toBeTruthy();
+  });
+
+  it('safe-only section starts collapsed and can be expanded', () => {
+    render(
+      <ThreadsPanel
+        threadedNodes={[makeAgent()]}
+        sustainedControls={[makeSustainedHex()]} // safe
+        selectedNodeId={null}
+        onNodeSelect={noop}
+        onCenterOnHex={noop}
+      />
+    );
+    expect(screen.queryByTestId('sustained-control-row')).toBeNull();
+    fireEvent.click(screen.getByTestId('threads-section-header-hex'));
+    expect(screen.getByTestId('sustained-control-row')).toBeTruthy();
+  });
+
+  it('renders the prose status label corresponding to the lapse risk', () => {
+    render(
+      <ThreadsPanel
+        threadedNodes={[makeAgent()]}
+        sustainedControls={[makeSustainedSource()]}
+        selectedNodeId={null}
+        onNodeSelect={noop}
+        onCenterOnHex={noop}
+      />
+    );
+    // sub.sanctify + critical = 'The ground stirs against you.'
+    expect(screen.getByText(/The ground stirs against you\./)).toBeTruthy();
+  });
+
+  it('falls back to __default__ status label for unknown template ids', () => {
+    // Use a non-safe risk so the section auto-expands and we don't have to click.
+    render(
+      <ThreadsPanel
+        threadedNodes={[makeAgent()]}
+        sustainedControls={[makeSustainedHex({ templateId: 'hex.unknown_template', lapseRisk: 'tightening' as const })]}
+        selectedNodeId={null}
+        onNodeSelect={noop}
+        onCenterOnHex={noop}
+      />
+    );
+    // __default__ + tightening = 'Holding.'
+    expect(screen.getByText(/Holding\./)).toBeTruthy();
+  });
+
+  it('renders champion chip on agent rows with championTemplateId', () => {
+    render(
+      <ThreadsPanel
+        threadedNodes={[makeAgent({
+          championEffectId: 'eff-anoint-1',
+          championTemplateId: 'action.anoint-champion',
+        })]}
+        selectedNodeId={null}
+        onNodeSelect={noop}
+        onCenterOnHex={noop}
+      />
+    );
+    const chip = screen.getByTestId('champion-chip');
+    expect(chip).toBeTruthy();
+    expect(chip.textContent ?? '').toContain('Anointed');
+  });
+
+  it('champion chip click invokes onChampionChipClick with the agent id', () => {
+    const onChampion = vi.fn();
+    render(
+      <ThreadsPanel
+        threadedNodes={[makeAgent({
+          championEffectId: 'eff-anoint-1',
+          championTemplateId: 'action.anoint-champion',
+        })]}
+        selectedNodeId={null}
+        onNodeSelect={noop}
+        onCenterOnHex={noop}
+        onChampionChipClick={onChampion}
+      />
+    );
+    fireEvent.click(screen.getByTestId('champion-chip'));
+    expect(onChampion).toHaveBeenCalledWith('agent-1');
+  });
+
+  it('no champion chip when championTemplateId is null', () => {
+    render(
+      <ThreadsPanel
+        threadedNodes={[makeAgent()]}
+        selectedNodeId={null}
+        onNodeSelect={noop}
+        onCenterOnHex={noop}
+      />
+    );
+    expect(screen.queryByTestId('champion-chip')).toBeNull();
+  });
+
+  it('still shows "No Threads" empty state when both threads and sustained controls are empty', () => {
+    render(
+      <ThreadsPanel
+        threadedNodes={[]}
+        sustainedControls={[]}
+        selectedNodeId={null}
+        onNodeSelect={noop}
+        onCenterOnHex={noop}
+      />
+    );
+    expect(screen.getByText('No Threads')).toBeTruthy();
+  });
+
+  it('hides empty state when threads are empty but sustained controls exist', () => {
+    render(
+      <ThreadsPanel
+        threadedNodes={[]}
+        sustainedControls={[makeSustainedHex()]}
+        selectedNodeId={null}
+        onNodeSelect={noop}
+        onCenterOnHex={noop}
+      />
+    );
+    expect(screen.queryByText('No Threads')).toBeNull();
+    expect(screen.getByText('Hexes (1)')).toBeTruthy();
   });
 });

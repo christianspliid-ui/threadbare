@@ -109,9 +109,10 @@ export function useAgentInteraction({
   );
 
   // All threaded nodes (all 5 categories) with agent activity labels enriched
+  // and (THR-418) championEffectId populated from active control effects.
   const threadedNodes = useMemo<ThreadedNode[]>(() => {
     if (!gameState.ascendantId) return [];
-    const raw = getThreadedNodes(gameState.graph, gameState.ascendantId);
+    const raw = getThreadedNodes(gameState.graph, gameState.ascendantId, gameState.controlEffects);
     // Enrich agent activity labels
     return raw.map((node) => {
       if (node.category !== 'agent') return node;
@@ -123,7 +124,7 @@ export function useAgentInteraction({
       );
       return { ...node, activityLabel };
     });
-  }, [gameState.graph, gameState.ascendantId, gameState.unifiedActions, gameState.encounterProgress, worldVersion]);
+  }, [gameState.graph, gameState.ascendantId, gameState.unifiedActions, gameState.encounterProgress, gameState.controlEffects, worldVersion]);
 
   const agentDetail = useMemo(() => {
     if (!selectedAgentId) return null;

@@ -48,9 +48,9 @@ import {
 import type { ArmyState } from '../../types/army';
 import type { BattleState } from '../../types/battle';
 import { extractRoadPaths } from '../../engine/roadNetwork';
-import { getRetinueAgents } from '../../engine/retinue';
+import { getRetinueAgents, getSustainedControlNodes } from '../../engine/retinue';
 import { TIER_NAMES } from '../../data/influence-content';
-import type { ThreadedNode, ThreadedFaction } from '../../engine/retinue';
+import type { ThreadedNode, ThreadedFaction, SustainedControlNode } from '../../engine/retinue';
 import { getAgentPortraitUrlFromProperties } from '../../data/portrait-assets';
 import { getOriginPortraitUrl } from '../../data/avatar-portrait-assets';
 import { HEX_CONSTANTS } from '../HexMapV2/scene/HexFillMesh';
@@ -817,6 +817,28 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     }
     return result;
   }, [gameState.strategicState, gameState.graph, gameState.tick, threadedNodes]);
+
+  // ── Sustained-control rows (THR-418) ──
+  // Recomputed whenever the control-effect list or essence reserves change.
+  // worldVersion is included so that mid-tick property updates (e.g. settlement
+  // promotion changing the hex display name) are picked up.
+  const sustainedControls = useMemo<SustainedControlNode[]>(() => {
+    if (!gameState.ascendantId) return [];
+    return getSustainedControlNodes(
+      gameState.graph,
+      gameState.ascendantId,
+      gameState.controlEffects,
+      gameState.essencePool,
+      gameState.tick,
+    );
+  }, [
+    gameState.graph,
+    gameState.ascendantId,
+    gameState.controlEffects,
+    gameState.essencePool,
+    gameState.tick,
+    runtime.worldVersion,
+  ]);
 
   // ── Location render data adapter (graph → LocationNode[]) ──
   // TB-086: Key off structuralCacheVersion (not worldVersion) — locationSubtype
@@ -3393,6 +3415,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             flipTableStates={gameState.flipTableStates}
             activeCompositions={gameState.activeCompositions}
             doomClockStage={gameState.doomClock?.currentStage}
+            controlEffects={gameState.controlEffects}
+            essenceReserves={gameState.essencePool}
           />
         ) : (
           <div className="flex flex-shrink-0" style={{ alignItems: 'stretch' }}>
@@ -3506,6 +3530,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   onToggleAttentionMode={handleToggleAttentionMode}
                   agentStrategicSummaries={agentStrategicSummaries}
                   getForeshadowing={handleGetForeshadowing}
+                  sustainedControls={sustainedControls}
+                  onChampionChipClick={openAgentProfileForId}
                 />
                 <div style={{ marginTop: 'var(--panel-padding)' }}>
                   <WorldPulse

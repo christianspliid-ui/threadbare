@@ -12,6 +12,8 @@ import type { InfluenceTier, ThreadEdgeProperties, CourtPosition } from '../type
 import { TIER_NAMES } from '../types/influence';
 import { getAgentPortraitUrlFromProperties } from '../data/portrait-assets';
 import { getAgentFaction } from './graphQueries';
+import type { ControlEffect } from '../types/controlEffect';
+import type { SphereName } from '../types/index';
 
 /**
  * A single agent in the ascendant's retinue, with extracted data ready for UI rendering.
@@ -195,6 +197,16 @@ export interface ThreadedAgent extends ThreadedNodeBase {
   portraitUrl: string | null;
   primaryDomain: ReachDomain | null;
   factionName: string | null;
+  /**
+   * Effect id of an active "anoint/install champion" ControlEffect targeting this agent,
+   * or null when none. THR-418: surfaces the champion chip in ThreadsPanel.
+   */
+  championEffectId: string | null;
+  /**
+   * Template id of the champion ControlEffect (used to pick the badge label). Only
+   * meaningful when championEffectId !== null. Null when no champion effect.
+   */
+  championTemplateId: string | null;
 }
 
 export interface ThreadedLocation extends ThreadedNodeBase {
@@ -354,10 +366,35 @@ export function deriveDivinePresenceLabel(score: unknown): string | null {
  *
  * Skips: tier 0, null nodes, god/culture/ascendant actor types, and
  * group actors without armyState.
+ *
+ * @param controlEffects Optional list of active control effects. When provided, agent
+ *   rows are post-decorated with `championEffectId` for matching anoint/install_champion
+ *   effects (THR-418). Defaults to [] — agents get null championEffectId, preserving
+ *   pre-existing call sites.
  */
-export function getThreadedNodes(graph: WorldGraph, ascendantId: string): ThreadedNode[] {
+export function getThreadedNodes(
+  graph: WorldGraph,
+  ascendantId: string,
+  controlEffects: readonly ControlEffect[] = [],
+): ThreadedNode[] {
   const threadEdges = graph.getOutgoingEdges(ascendantId, 'thread');
   const results: ThreadedNode[] = [];
+
+  // Pre-index champion effects by target agent id for O(1) lookup. Only effects
+  // owned by this ascendant, active, and using an allowlisted champion template.
+  const championByAgent = new Map<string, ControlEffect>();
+  for (const effect of controlEffects) {
+    if (!effect.active) continue;
+    if (effect.ownerId !== ascendantId) continue;
+    if (!CHAMPION_TEMPLATE_IDS.includes(effect.templateId)) continue;
+    const targetId = effect.targetNodeId;
+    if (!targetId) continue;
+    // First-write-wins: deterministic on the order of controlEffects (which is
+    // appended-in-establishment-order by phaseControlEffects).
+    if (!championByAgent.has(targetId)) {
+      championByAgent.set(targetId, effect);
+    }
+  }
 
   for (const edge of threadEdges) {
     const targetNode = graph.getNode(edge.target);
@@ -422,6 +459,8 @@ export function getThreadedNodes(graph: WorldGraph, ascendantId: string): Thread
           }
         }
 
+        const championEffect = championByAgent.get(targetNode.id) ?? null;
+
         results.push({
           ...base,
           category: 'agent',
@@ -431,6 +470,8 @@ export function getThreadedNodes(graph: WorldGraph, ascendantId: string): Thread
           portraitUrl,
           primaryDomain,
           factionName,
+          championEffectId: championEffect?.effectId ?? null,
+          championTemplateId: championEffect?.templateId ?? null,
         } as ThreadedAgent);
 
       } else if (actorType === 'faction') {
@@ -588,4 +629,361 @@ export function groupThreadedNodes(nodes: ThreadedNode[]): Record<ThreadCategory
     groups[node.category].push(node);
   }
   return groups;
+}
+
+// ─── SustainedControlNodes — THR-418 ──────────────────────────────────────────
+//
+// Sustained controls are an additional surface in the right-bar threads panel:
+// hexes the ascendant holds (claim_dominion etc.), sources they sustain
+// (sanctified sublocations), and locations folded in via their existing thread
+// row. They are NOT ThreadedNodes — they are control effects (GameState.controlEffects[])
+// rendered alongside threads because both answer "what is the god holding right now?".
+
+/**
+ * Section a sustained control is rendered under in ThreadsPanel.
+ * - `hex`: target is a tile or non-location/sublocation; rendered in the new Hexes section.
+ * - `source`: target resolves to a sublocation; rendered in the new Sources section.
+ * - `location`: target resolves to a location; folded into the existing Locations section.
+ */
+export type SustainedControlCategory = 'hex' | 'source' | 'location';
+
+/**
+ * Lapse-risk tier for the sustain bar:
+ * - `safe`: net flow positive OR runway >= TIGHTENING threshold.
+ * - `tightening`: runway between CRITICAL and TIGHTENING.
+ * - `critical`: runway < CRITICAL OR (no reserves for a sphere being consumed).
+ */
+export type LapseRisk = 'safe' | 'tightening' | 'critical';
+
+/**
+ * One sustained control effect lifted to a UI-ready shape.
+ * Pure data — no React, no DOM. Produced by `getSustainedControlNodes()`.
+ */
+export interface SustainedControlNode {
+  /** Section this row renders under. */
+  category: SustainedControlCategory;
+  /** ControlEffect.effectId — stable across ticks. */
+  effectId: string;
+  /** Template id for prose lookup (`SUSTAINED_STATUS_LABELS[templateId][risk]`). */
+  templateId: string;
+  /** Display name resolved per category — sublocation/location/hex name. */
+  displayName: string;
+  /** Hex column of the target — always present. */
+  hexCol: number;
+  /** Hex row of the target — always present. */
+  hexRow: number;
+  /** Sublocation/location nodeId if the effect targets a specific node. */
+  targetNodeId?: string;
+  /** Sphere(s) consumed per tick, summed across all spheres. */
+  perTickCostTotal: number;
+  /** Sphere(s) produced per tick, summed across all spheres. */
+  perTickIncomeTotal: number;
+  /** Net flow per tick: income − cost. Negative = drain, positive = profit. */
+  netFlow: number;
+  /** Ticks since `establishedTick`. */
+  ticksActive: number;
+  /** Risk band for the sustain bar (see LapseRisk doc). */
+  lapseRisk: LapseRisk;
+  /** Estimated ticks of runway given current reserves, or Infinity if net flow >= 0. */
+  runwayTicks: number;
+  /** Primary sphere for the row's left border tint, or null if unknowable. */
+  primarySphere: SphereName | null;
+}
+
+/**
+ * Templates whose successful establishment grants champion status to the target agent.
+ * Used by `getThreadedNodes` to populate `ThreadedAgent.championEffectId`.
+ *
+ * Sourced from src/data/unified-action-templates.ts. Two templates today:
+ * - `action.anoint-champion` (hyphenated, action-prefixed) — divine anointing.
+ * - `hex.install_champion` (underscored, hex-prefixed) — political installation.
+ *
+ * Note: the plan doc referred to `action.install-champion` but the catalog id is
+ * `hex.install_champion`. Using the catalog id is canonical — diverging from the
+ * plan because that id is what the engine actually emits. Documented in the THR-418
+ * commit body.
+ */
+export const CHAMPION_TEMPLATE_IDS: readonly string[] = [
+  'action.anoint-champion',
+  'hex.install_champion',
+] as const;
+
+/** Below this many ticks of essence runway, an effect is `critical` (red bar). */
+export const SUSTAIN_LAPSE_RISK_CRITICAL_TICKS = 3;
+/** Below this many ticks of essence runway, an effect is `tightening` (amber bar). */
+export const SUSTAIN_LAPSE_RISK_TIGHTENING_TICKS = 8;
+/** Sustain bar fill at safe state (full width). */
+export const SUSTAIN_BAR_FULL_FRACTION = 1.0;
+/** Sustain bar minimum visible fraction — floor so the bar is still rendered when near-lapsed. */
+export const SUSTAIN_BAR_MIN_VISIBLE_FRACTION = 0.08;
+
+// Warn once per session per effectId for missing-node fail-soft (NFP #4).
+const _missingNodeWarnedFor = new Set<string>();
+
+/**
+ * Compute UI-ready sustained-control rows for the right-bar threads panel.
+ *
+ * Filters: only effects owned by `ascendantId` and `active === true`.
+ *
+ * Category classification:
+ * - `effect.targetNodeId` resolves to a sublocation node → `source`
+ * - `effect.targetNodeId` resolves to a location node → `location`
+ * - `effect.targetNodeId` is undefined OR resolves to a non-location/sublocation → `hex`
+ *
+ * Display name:
+ * - source/location: the target node's `name` property
+ * - hex: most-prosperous settlement on the hex (tiebreak alphabetical), or `Hex (col, row)` fallback
+ *
+ * Lapse risk:
+ * - `netFlow > 0` → forced `safe`
+ * - missing reserves for any sphere with non-zero cost → `critical`
+ * - runway < CRITICAL_TICKS → `critical`
+ * - runway < TIGHTENING_TICKS → `tightening`
+ * - else → `safe`
+ *
+ * Determinism: pure function, no PRNG. Output sorted deterministically by
+ * `(category, ticksActive desc, displayName asc, effectId asc)`.
+ *
+ * Performance: O(controlEffects × spheres × locationsOnHex). With ~30 effects ×
+ * 12 spheres × ~5 locations = ~1800 ops per call, recomputed only when the
+ * memo deps change.
+ *
+ * NFP compliance:
+ * - #1 tunability: thresholds in named constants above
+ * - #2 inspectability: pure data shape, easy to log via DebugPanel
+ * - #3 determinism: no PRNG, stable sort
+ * - #4 fail-soft: missing nodes / reserves do not throw
+ *
+ * @param graph World graph for resolving target nodes and hex display names.
+ * @param ascendantId The player's god id; effects with other owners are ignored.
+ * @param controlEffects Active and lapsed effects from `GameState.controlEffects[]`.
+ *   May be `undefined` to mean "no effects yet" — returns `[]`.
+ * @param essenceReserves Current sphere balances. Spheres absent from this map
+ *   are treated as 0 reserves (forces critical for effects consuming them).
+ *
+ * @param currentTick Optional. When provided, used to compute `ticksActive`. When
+ *   omitted, falls back to `effect.ticksActive` (which is updated each tick by
+ *   `phaseControlEffects`). Pass for fresh-tick UI; omit for tests.
+ */
+export function getSustainedControlNodes(
+  graph: WorldGraph,
+  ascendantId: string,
+  controlEffects: readonly ControlEffect[] | undefined,
+  essenceReserves: Partial<Record<SphereName, number>>,
+  currentTick?: number,
+): SustainedControlNode[] {
+  if (!controlEffects || controlEffects.length === 0) return [];
+
+  const out: SustainedControlNode[] = [];
+
+  for (const effect of controlEffects) {
+    if (!effect.active) continue;
+    if (effect.ownerId !== ascendantId) continue;
+
+    // ── Resolve target node + category ──
+    let category: SustainedControlCategory = 'hex';
+    let displayName = '';
+    let primarySphere: SphereName | null = null;
+
+    const targetNode = effect.targetNodeId ? graph.getNode(effect.targetNodeId) : null;
+
+    if (effect.targetNodeId && !targetNode) {
+      // Fail-soft: target referenced but missing (e.g., node deleted mid-game).
+      // Warn once and skip — the effect will eventually lapse via phaseControlEffects.
+      if (!_missingNodeWarnedFor.has(effect.effectId)) {
+        _missingNodeWarnedFor.add(effect.effectId);
+        // eslint-disable-next-line no-console
+        console.warn(`[getSustainedControlNodes] effect ${effect.effectId} (${effect.templateId}) references missing node ${effect.targetNodeId} — skipping`);
+      }
+      continue;
+    }
+
+    if (targetNode) {
+      // `'sublocation'` is used as a runtime node type literal in some seeded
+      // worlds (see `getNodesByType('sublocation')` in simulationRuntime.ts),
+      // even though `NodeType` doesn't list it. Cast to string so the
+      // comparison narrows correctly at runtime. Other paths also tag location
+      // nodes with `locationSubtype: 'sublocation'` on the properties bag —
+      // treat that as the same case.
+      const typeAsString = targetNode.type as string;
+      const subtype = (targetNode.properties as Record<string, unknown>).locationSubtype;
+      const isSublocationByType = typeAsString === 'sublocation';
+      const isSublocationByProperty =
+        typeAsString === 'location' && typeof subtype === 'string' && subtype === 'sublocation';
+
+      if (isSublocationByType || isSublocationByProperty) {
+        category = 'source';
+        displayName = targetNode.name || '(unnamed source)';
+      } else if (typeAsString === 'location') {
+        category = 'location';
+        displayName = targetNode.name || '(unnamed location)';
+      } else {
+        // Actor, artifact, or any other type targeted on the hex — treat as hex-level.
+        category = 'hex';
+        displayName = resolveHexDisplayName(graph, effect.targetHexCol, effect.targetHexRow);
+      }
+    } else {
+      // No targetNodeId → hex-level effect.
+      category = 'hex';
+      displayName = resolveHexDisplayName(graph, effect.targetHexCol, effect.targetHexRow);
+    }
+
+    // ── Cost / income totals ──
+    let perTickCostTotal = 0;
+    for (const v of Object.values(effect.perTickCost ?? {})) {
+      perTickCostTotal += typeof v === 'number' ? v : 0;
+    }
+
+    let perTickIncomeTotal = 0;
+    for (const v of Object.values(effect.perTickIncome ?? {})) {
+      perTickIncomeTotal += typeof v === 'number' ? v : 0;
+    }
+
+    const netFlow = perTickIncomeTotal - perTickCostTotal;
+
+    // ── Runway + lapse risk ──
+    let runwayTicks = Number.POSITIVE_INFINITY;
+    let forceCritical = false;
+
+    for (const [sphereName, costRaw] of Object.entries(effect.perTickCost ?? {})) {
+      const sphere = sphereName as SphereName;
+      const cost = typeof costRaw === 'number' ? costRaw : 0;
+      if (cost <= 0) continue;
+      const reserves = essenceReserves[sphere];
+      if (typeof reserves !== 'number') {
+        forceCritical = true;
+        runwayTicks = 0;
+        continue;
+      }
+      const ticksForSphere = reserves / cost;
+      if (ticksForSphere < runwayTicks) runwayTicks = ticksForSphere;
+    }
+
+    let lapseRisk: LapseRisk;
+    if (netFlow > 0) {
+      lapseRisk = 'safe';
+    } else if (forceCritical || runwayTicks < SUSTAIN_LAPSE_RISK_CRITICAL_TICKS) {
+      lapseRisk = 'critical';
+    } else if (runwayTicks < SUSTAIN_LAPSE_RISK_TIGHTENING_TICKS) {
+      lapseRisk = 'tightening';
+    } else {
+      lapseRisk = 'safe';
+    }
+
+    // ── Primary sphere (for border tint) ──
+    // Prefer the income sphere ("what this effect is for"); fall back to dominant cost.
+    primarySphere = pickPrimarySphere(effect.perTickCost ?? {}, effect.perTickIncome);
+
+    // ── ticksActive ──
+    const ticksActive = typeof currentTick === 'number'
+      ? Math.max(0, currentTick - effect.establishedTick)
+      : effect.ticksActive;
+
+    out.push({
+      category,
+      effectId: effect.effectId,
+      templateId: effect.templateId,
+      displayName,
+      hexCol: effect.targetHexCol,
+      hexRow: effect.targetHexRow,
+      targetNodeId: effect.targetNodeId,
+      perTickCostTotal,
+      perTickIncomeTotal,
+      netFlow,
+      ticksActive,
+      lapseRisk,
+      runwayTicks,
+      primarySphere,
+    });
+  }
+
+  // Deterministic sort: category bucket, then ticksActive desc, displayName asc, effectId asc.
+  const categoryOrder: Record<SustainedControlCategory, number> = { hex: 0, source: 1, location: 2 };
+  out.sort((a, b) => {
+    const c = categoryOrder[a.category] - categoryOrder[b.category];
+    if (c !== 0) return c;
+    if (a.ticksActive !== b.ticksActive) return b.ticksActive - a.ticksActive;
+    const n = a.displayName.localeCompare(b.displayName);
+    if (n !== 0) return n;
+    return a.effectId.localeCompare(b.effectId);
+  });
+
+  return out;
+}
+
+/**
+ * Pick the primary sphere for a sustained control row's border tint.
+ *
+ * Order of preference:
+ * 1. The single income sphere (if income is present — "what this effect is for")
+ * 2. The single cost sphere (when cost is one-sphere)
+ * 3. The largest-magnitude cost sphere when multiple
+ * 4. `null` if no spheres
+ *
+ * @internal — exported for testing in retinue.test.ts.
+ */
+export function pickPrimarySphere(
+  cost: Partial<Record<SphereName, number>>,
+  income?: Partial<Record<SphereName, number>>,
+): SphereName | null {
+  if (income) {
+    const incomeEntries = Object.entries(income).filter(([, v]) => typeof v === 'number' && v > 0);
+    if (incomeEntries.length === 1) return incomeEntries[0][0] as SphereName;
+    if (incomeEntries.length > 1) {
+      // Pick largest-magnitude income sphere.
+      let best: SphereName | null = null;
+      let bestVal = -Infinity;
+      for (const [s, v] of incomeEntries) {
+        if (typeof v === 'number' && v > bestVal) {
+          bestVal = v;
+          best = s as SphereName;
+        }
+      }
+      if (best) return best;
+    }
+  }
+
+  const costEntries = Object.entries(cost).filter(([, v]) => typeof v === 'number' && v > 0);
+  if (costEntries.length === 0) return null;
+  if (costEntries.length === 1) return costEntries[0][0] as SphereName;
+
+  let best: SphereName | null = null;
+  let bestVal = -Infinity;
+  for (const [s, v] of costEntries) {
+    if (typeof v === 'number' && v > bestVal) {
+      bestVal = v;
+      best = s as SphereName;
+    }
+  }
+  return best;
+}
+
+/**
+ * Resolve the display name for a hex-level sustained control.
+ *
+ * Prefers the most-prosperous settlement node on the hex (tiebreak alphabetical).
+ * Falls back to `Hex (col, row)` when no settlement exists — never throws.
+ */
+function resolveHexDisplayName(graph: WorldGraph, col: number, row: number): string {
+  const candidates = graph
+    .getNodesByType('location')
+    .filter((node) => {
+      const props = node.properties as Record<string, unknown>;
+      return props.hexCol === col && props.hexRow === row;
+    });
+
+  if (candidates.length === 0) {
+    return `Hex (${col}, ${row})`;
+  }
+
+  candidates.sort((a, b) => {
+    const aP = (a.properties as Record<string, unknown>).prosperityScore;
+    const bP = (b.properties as Record<string, unknown>).prosperityScore;
+    const aScore = typeof aP === 'number' ? aP : 0;
+    const bScore = typeof bP === 'number' ? bP : 0;
+    if (aScore !== bScore) return bScore - aScore;
+    return a.name.localeCompare(b.name);
+  });
+
+  return candidates[0].name || `Hex (${col}, ${row})`;
 }

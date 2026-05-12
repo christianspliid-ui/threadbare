@@ -1,4 +1,14 @@
-export type ActivityKind = 'boot' | 'swords' | 'coin' | 'hammer' | 'bandage' | 'hourglass';
+export type ActivityKind =
+  | 'boot'
+  | 'swords'
+  | 'coin'
+  | 'hammer'
+  | 'bandage'
+  | 'hourglass'
+  // THR-418 — sustained-control category icons (Hexes / Sources / folded-in Locations)
+  | 'hex-claim'
+  | 'source-bound'
+  | 'claim-flag';
 
 export interface ActivityIconProps {
   kind: ActivityKind;
@@ -49,6 +59,28 @@ export function ActivityIcon({ kind, size = 18, color = 'var(--text-secondary)' 
         <path d="M5 3 L17 3 L17 5 L13 11 L17 17 L17 19 L5 19 L5 17 L9 11 L5 5 Z"
               fillRule="evenodd"/>
         <path d="M7 5 L15 5 L11 10 Z" fill="var(--bg-deep)"/>
+      </g>
+    ),
+    // THR-418 — sustained-control icons.
+    // Pointy-top hex outline with a faint claim dot inside.
+    'hex-claim': (
+      <g fill="none" stroke={color} strokeWidth="1.6" strokeLinejoin="round">
+        <path d="M11 2 L19 7 L19 15 L11 20 L3 15 L3 7 Z" />
+        <circle cx="11" cy="11" r="1.5" fill={color} stroke="none" />
+      </g>
+    ),
+    // Wellspring/spring glyph — a node with two converging streams.
+    'source-bound': (
+      <g fill={color}>
+        <circle cx="11" cy="6" r="2.6" />
+        <path d="M11 8.5 Q5 12 5 19 L7 19 Q7 13 11 11 Q15 13 15 19 L17 19 Q17 12 11 8.5 Z" />
+      </g>
+    ),
+    // Pennant claim-flag.
+    'claim-flag': (
+      <g fill={color}>
+        <rect x="5" y="3" width="1.8" height="17" />
+        <path d="M7 3 L17 3 L13 7 L17 11 L7 11 Z" />
       </g>
     ),
   };

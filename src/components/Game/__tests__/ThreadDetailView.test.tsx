@@ -17,12 +17,15 @@ const makeAgent = (overrides?: Partial<ThreadedAgent>): ThreadedAgent => ({
   threadEdgeId: 'e1',
   attentionMode: 'auto_resolve',
   courtPosition: 'retinue',
+  threadStrength: 1.0,
   locationId: 'loc-1',
   locationName: 'Thornwall',
   activityLabel: 'Recruiting',
   portraitUrl: null,
   primaryDomain: 'iron',
   factionName: 'Iron Legion',
+  championEffectId: null,
+  championTemplateId: null,
   ...overrides,
 });
 
