@@ -1,5 +1,5 @@
 # Project Status
-> Updated 2026-05-12 (THR-418).
+> Updated 2026-05-12 (THR-424).
 
 ## Current Focus
 **Encounter Experience — active:** Phases A1–A3, B1–B7, C1–C4, D1–D3, E1–E2, F1–F2, G1–G3 ✅. Remaining is F-phase integration (mount EffectRegistration components into hero panel / cast tile / scene state surfaces) and Phase H post-v1 polish.
@@ -22,7 +22,7 @@
 - 2026-05-09 batch: THR-268, THR-389, THR-391
 - 2026-05-10 batch: THR-394
 - 2026-05-11 batch: THR-393, THR-403, THR-408, THR-411
-- 2026-05-12 batch: THR-413, THR-404, THR-397, THR-398, THR-399, THR-401, THR-405, THR-416, THR-409, THR-395, THR-412, THR-422, THR-423, THR-418
+- 2026-05-12 batch: THR-413, THR-404, THR-397, THR-398, THR-399, THR-401, THR-405, THR-416, THR-409, THR-395, THR-412, THR-422, THR-423, THR-418, THR-424
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
@@ -54,4 +54,5 @@ Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Compl
 - ✅ 2026-05-12: THR-420 shipped — repo EOL normalization baseline verified in fresh Windows worktree (git add --renormalize . no-op, 
 pm run check:skill-sync green without repair step); issue closed via Fixes-keyword commit.
 - ✅ 2026-05-12: THR-412 shipped — intent-judge cold-start calibration run produced a clean 4/4 confusion-matrix diagonal (3 good Allows, 1 bad Block). Block on THR-400 pre-audit body fired on dim 5 Vision audit, catching the same Non-Negotiable #1 violation on `sanction_mission` that the human audit named as drift #1 — without the judge ever reading the audit doc or post-audit comments. 4 reverse-engineered action proposals at `Docs/plans/.intent-proposals/*.eval.md`; write-up at `Docs/judge-metrics/eval-run-2026-05-12.md` (confusion matrix + per-dimension distribution + per-fixture analysis + honest limits §7 + watchlist for 30-day field calibration). v1.1 rubric proposal: none — no trip-wire fires. Findings posted as comment on THR-411. Discovery window for additional known-bad fixtures returned zero Reopened-labeled issues in last 30 days; proceeded with autonomous-safe floor (3 good + 1 bad) per plan doc § Verdict 1.
+- ✅ 2026-05-12: THR-424 shipped — pull-work Step 4.6 (stranded-commit zombie sweep) added between Step 4.5 and Step 5. Detects local-only commits ahead of origin/main via Fixes-keyword (Condition A) or content-match (Condition B), auto-resets when all are zombies, fail-fasts with claim release when any real WIP remains. Codex Pickup Protocol updated (step 2.6 + Stranded-commit zombie sweep prose). Impediment #126 marked resolved. PR #273.
 - ✅ 2026-05-12: THR-418 shipped — Sustained controls surfaced in the right-bar ThreadsPanel. New `getSustainedControlNodes()` lifts each active `ControlEffect` to a UI row (category hex/source/location, sphere-typed runway, lapse-risk tier). New Hexes + Sources sections in ThreadsPanel; location rows fold in a one-line claim status when a sustained effect targets a thread'd location. Agent rows render a clickable Champion chip when `championEffectId` is set (allowlist: `action.anoint-champion`, `hex.install_champion`). New Threadbare-voice prose tables (`src/data/sustained-control-status-prose.ts`): 11 templates × 3 risk tiers + `__default__` + champion badge labels + lapse-warning tooltips. Sustained sections auto-expand when any row is non-safe. DebugPanel gained a `Sustained` tab with read-only inspection table (template, target, cost, income, runway, lapse reason). 5 new named constants in `retinue.ts`. 27 ThreadsPanel + 23 new retinue tests (50 total). Verification trio green (11207 tests, tsc clean, vite 7.43s); 30-tick CLI smoke pass (379 agents); browser load + DOM snapshot + 1920×1080 screenshot + state assertion via `__DEBUG` clean. Plan: `Docs/plans/2026-05-12-sustained-controls-in-right-bar-threads.md`.
