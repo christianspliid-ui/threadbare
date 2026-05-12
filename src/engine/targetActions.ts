@@ -131,9 +131,15 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     // Hex targets are built by buildHexTargetContext which always sets properties.terrain.
     // Location targets (specific locations) never set properties.terrain.
     const isHexTarget = target.nodeType === 'location' && !!target.properties.terrain;
+    // THR-400 — faction targets are actor nodes with `actorType: 'faction'`,
+    // surfaced via buildActorTargetContext. Templates declare `'faction'` in
+    // `targetCategories` (with a structural cast — `TargetCategory` does not
+    // yet enumerate `'faction'`). Accept when target.subtype === 'faction'.
+    const isFactionTarget = target.nodeType === 'actor' && target.subtype === 'faction';
     const nodeTypeMatches = (categories as readonly string[]).includes(target.nodeType)
       || (target.nodeType === 'location' && (categories as readonly string[]).includes('sublocation') && target.subtype === 'sublocation')
-      || (isHexTarget && (categories as readonly string[]).includes('hex'));
+      || (isHexTarget && (categories as readonly string[]).includes('hex'))
+      || (isFactionTarget && (categories as readonly string[]).includes('faction'));
 
     if (!nodeTypeMatches) {
       counts.byNodeType++;

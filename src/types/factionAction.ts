@@ -144,3 +144,78 @@ export interface FactionConclaveTrace extends FactionActionTrace {
   participants: string[];
   ticksRemaining: number;
 }
+
+// ─── THR-400: Governance Verb Traces ──────────────────────────────────────────
+//
+// These four traces describe DIVINE actions cast BY the player ON a faction.
+// They are independent of FactionActionTrace (which describes faction-driven
+// autonomous actions). Each carries its own `category` discriminant so chronicle
+// + DebugPanel consumers can switch on it directly.
+
+/** Stir Dissent — player cast that raises a faction's dissentLevel. */
+export interface FactionStirDissentTrace {
+  tick: number;
+  category: 'faction_stir_dissent';
+  factionId: string;
+  factionName: string;
+  previousDissentLevel: number;
+  newDissentLevel: number;
+  /** Set when the cast crossed the threshold and seeded an encounter on a member. */
+  seededEncounterId?: string;
+  targetMortalId?: string;
+  targetMortalName?: string;
+  summary: string;
+}
+
+/** Whisper to the Leader — player cast that tilts the faction leader's next decision. */
+export interface FactionWhisperLeaderTrace {
+  tick: number;
+  category: 'faction_whisper_leader';
+  factionId: string;
+  factionName: string;
+  leaderId: string;
+  leaderName: string;
+  preferredPole: 'protector' | 'conqueror' | 'sworn' | 'renegade';
+  /** True when this whisper landed on a leader already under another whisper. */
+  conflictedWithOtherWhisper: boolean;
+  seededFollowupEncounterId?: string;
+  summary: string;
+}
+
+/** Recover Doctrine — player cast that surfaces a forgotten faction teaching. */
+export interface FactionRecoverDoctrineTrace {
+  tick: number;
+  category: 'faction_recover_doctrine';
+  factionId: string;
+  factionName: string;
+  doctrineId: string;
+  targetMortalId: string;
+  targetMortalName: string;
+  realignmentApplied: boolean;
+  seededEncounterId: string;
+  summary: string;
+}
+
+/** Surface a Doubter — player cast that names the faction's most misaligned member. */
+export interface FactionSurfaceDoubterTrace {
+  tick: number;
+  category: 'faction_surface_doubter';
+  factionId: string;
+  factionName: string;
+  doubterId: string;
+  doubterName: string;
+  /** 0..1; how far the doubter sits from the faction's reputation alignment. */
+  axisDistance: number;
+  /** True when this cast initiated a fresh ascendant→doubter thread (low tier). */
+  bondInitiated: boolean;
+  intelligenceGrantId?: string;
+  seededEncounterId: string;
+  summary: string;
+}
+
+/** Union of all THR-400 governance-verb traces, for chronicle and DebugPanel consumers. */
+export type FactionGovernanceTrace =
+  | FactionStirDissentTrace
+  | FactionWhisperLeaderTrace
+  | FactionRecoverDoctrineTrace
+  | FactionSurfaceDoubterTrace;

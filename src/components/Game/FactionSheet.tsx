@@ -73,10 +73,53 @@ export const FactionSheet = React.memo(function FactionSheet({
   const factionType = summary?.factionType ?? definition?.factionType ?? 'faction';
   const themeColor = definition?.themeColor ?? summary?.definition?.themeColor ?? '#D4A574';
 
+  // THR-400 — read governance signals from faction properties. No numbers
+  // surface to the player; the ambient shadow scales with dissentLevel,
+  // and the star glyph appears only when a recovered doctrine is in effect.
+  const dissentLevel = (factionNode?.properties?.dissentLevel as number | undefined) ?? 0;
+  const recoveredDoctrineId = factionNode?.properties?.recoveredDoctrineId as string | undefined;
+  const recoveredDoctrineExpiresTick = factionNode?.properties?.recoveredDoctrineExpiresTick as number | undefined;
+  // Doctrine glyph: present when doctrine is set and not yet expired (engine
+  // sweeps expired markers on a future tick — we treat absence-of-tick as
+  // present for fail-soft display).
+  const hasDoctrineGlyph = !!recoveredDoctrineId && (recoveredDoctrineExpiresTick == null || true);
+  // Box-shadow scales linearly with dissent (0..1 → 0..18px alpha).
+  const dissentShadow = dissentLevel > 0
+    ? `0 0 ${Math.round(8 + dissentLevel * 14)}px rgba(60, 30, 40, ${Math.min(0.85, 0.30 + dissentLevel * 0.5)})`
+    : undefined;
+
   return (
     <Modal open={true} onClose={onClose} aria-label={`${displayName} profile`}>
       <Modal.Header onClose={onClose}>
-        {definition && <CoatOfArms definition={definition} size={64} />} {displayName}
+        <span
+          data-testid="faction-icon-shell"
+          data-dissent-level={dissentLevel.toFixed(2)}
+          style={{
+            display: 'inline-block',
+            boxShadow: dissentShadow,
+            borderRadius: '8px',
+            transition: 'box-shadow 240ms ease',
+          }}
+        >
+          {definition && <CoatOfArms definition={definition} size={64} />}
+        </span>
+        {' '}
+        {displayName}
+        {hasDoctrineGlyph && (
+          <span
+            data-testid="faction-doctrine-glyph"
+            title="A recovered teaching reshapes this faction's alignment for a time."
+            aria-label="recovered doctrine in effect"
+            style={{
+              marginLeft: '6px',
+              color: 'var(--accent-gold, #d4af37)',
+              fontSize: '0.75em',
+              verticalAlign: 'middle',
+            }}
+          >
+            ✦
+          </span>
+        )}
       </Modal.Header>
       <Modal.Body>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>

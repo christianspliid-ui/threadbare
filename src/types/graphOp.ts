@@ -76,7 +76,8 @@ export type GraphOpType =
   | 'set_thread_courtposition'
   | 'reveal_secret'    // THR-30: marks actor's best knows_secret_of→target as revealed
   | 'call_in_favor'   // THR-30: marks target's best owes_favor→actor as redeemed
-  | 'plant_secret';   // THR-30: creates a fabricated knows_secret_of edge actor→target
+  | 'plant_secret'    // THR-30: creates a fabricated knows_secret_of edge actor→target
+  | 'faction_verb';   // THR-400: dispatch a faction governance verb (stir_dissent, whisper_leader, recover_doctrine, surface_doubter)
 
 /**
  * Payload for the apply_influence GraphOp.
@@ -147,6 +148,18 @@ export interface GraphOp {
 
   /** Influence payload for apply_influence operations */
   influence?: InfluencePayload;
+
+  // ─ THR-400 faction governance verbs ─
+
+  /**
+   * For `op: 'faction_verb'`: which verb to dispatch.
+   * Accepted values: 'stir_dissent' | 'whisper_leader' | 'recover_doctrine' | 'surface_doubter'
+   * (typed as string here to avoid a circular import from the engine module that
+   * declares the runtime FactionGovernanceVerbKind union).
+   */
+  factionVerbKind?: string;
+  /** For `op: 'faction_verb'` with kind 'whisper_leader': the chosen pole. */
+  factionVerbPreferredPole?: string;
 }
 
 // ─── Result Types ───────────────────────────────────────────────
