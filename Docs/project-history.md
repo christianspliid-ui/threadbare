@@ -660,3 +660,4 @@ px vite build).
 - ✅ 2026-05-09: THR-389 shipped — encounter-pool foreshadowing added (template variants + runtime cache + `foreshadowing` traces + ThreadDetail expandable prose rows + `__DEBUG.getForeshadowing`/`listForeshadowingTraces`).
 
 - ✅ 2026-05-11: THR-393 shipped — WIP=1 gate added to pull-work skill (Step 1.5 exits cleanly when In Dev is non-empty) and coordination protocol (CC + Codex pickup Step 4 upgraded to hard-gate wording). Cron automation now skips pickup when previous PR is still in flight. Impediment #131 logged.
+- ✅ 2026-05-12: THR-405 shipped — Rulebook Phase 3 maintenance cadence: `Rulebook impact?` checkbox in Design Governance, quarterly architecture-assessment template, monthly-rulebook-review scheduled task registry entry. Deferral THR-417 for task creation.
