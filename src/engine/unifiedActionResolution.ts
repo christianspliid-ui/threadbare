@@ -41,6 +41,7 @@ import { resolveAction as resolveActionShared, isSuccessOutcome } from './resolu
 import type { OutcomeType } from '../types/resolution';
 import type { ResolutionInput } from '../types/resolution';
 import { executeGraphOps } from './graphOpExecutor';
+import { applyFactionGovernanceVerb } from './factionGovernanceVerbs';
 import { emitTrace } from './traceBuffer';
 import {
   detectContestations,
@@ -996,17 +997,48 @@ export function executeStepResult(
 
   // Execute GraphOps (fail-soft)
   if (ops.length > 0) {
-    const ctx = {
-      actorId: action.actorId,
-      targetId: action.targetId,
-      locationId: action.targetId, // default — caller can override
-      tick,
-    };
+    // THR-400 — intercept `faction_verb` ops before the graph executor sees
+    // them. Faction governance verbs need full GameState (not just graph) to
+    // mutate `pendingEncounterSeeds` and read `ascendantId`. Dispatch them
+    // here, then forward the remainder to executeGraphOps as usual.
+    const factionVerbOps: GraphOp[] = [];
+    const graphOnlyOps: GraphOp[] = [];
+    for (const op of ops) {
+      if (op.op === 'faction_verb') factionVerbOps.push(op);
+      else graphOnlyOps.push(op);
+    }
 
-    try {
-      executeGraphOps(state.graph, [...ops], ctx);
-    } catch {
-      // Fail-soft: log but don't crash
+    if (factionVerbOps.length > 0) {
+      const factionId = action.targetId;
+      for (const op of factionVerbOps) {
+        const kind = op.factionVerbKind as
+          | 'stir_dissent' | 'whisper_leader' | 'recover_doctrine' | 'surface_doubter'
+          | undefined;
+        if (!kind) continue;
+        try {
+          applyFactionGovernanceVerb(state, kind, factionId, {
+            preferredPole: op.factionVerbPreferredPole as
+              | 'protector' | 'conqueror' | 'sworn' | 'renegade' | undefined,
+          });
+        } catch {
+          // Fail-soft per NFP #4: log nothing, never crash the tick.
+        }
+      }
+    }
+
+    if (graphOnlyOps.length > 0) {
+      const ctx = {
+        actorId: action.actorId,
+        targetId: action.targetId,
+        locationId: action.targetId, // default — caller can override
+        tick,
+      };
+
+      try {
+        executeGraphOps(state.graph, graphOnlyOps, ctx);
+      } catch {
+        // Fail-soft: log but don't crash
+      }
     }
   }
 

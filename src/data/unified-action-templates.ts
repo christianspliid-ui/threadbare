@@ -129,11 +129,18 @@ import {
   TS_PROMOTION_TEMPLATE,
 } from './temple-of-spheres-encounter-content';
 import { FACTION_ACTION_ENCOUNTER_TEMPLATES } from './faction-action-encounters';
+import { FACTION_GOVERNANCE_ENCOUNTER_TEMPLATES } from './faction-governance-encounters';
 import {
   DIVINE_EDICT_ESSENCE_COST,
   ANOINT_CHAMPION_ESSENCE_COST,
   ANOINT_CHAMPION_DURATION,
 } from '../types/factionAction';
+import {
+  STIR_DISSENT_ESSENCE_COST,
+  WHISPER_LEADER_ESSENCE_COST,
+  RECOVER_DOCTRINE_ESSENCE_COST,
+  SURFACE_DOUBTER_ESSENCE_COST,
+} from './faction-action-constants';
 import { RIVAL_SHRINE_BETRAYAL_TEMPLATE } from './encounters/rival-shrine-betrayal';
 import { WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE } from './encounters/wandering-healer-shrine-access';
 import { FLAWED_STEEL_TEMPLATE } from './encounters/flawed-steel';
@@ -801,6 +808,174 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       initiation: 'speaks a divine word into the chamber of debate',
       success: 'the edict lands — the conclave tilts toward the ordained position',
       failure: 'the divine word disperses unheeded; the debate continues unchanged',
+    },
+  },
+
+  // ─── THR-400: Faction Governance Verbs ──────────────────────────────────
+  //
+  // Four divine actions that operate on faction targets. Each fires a
+  // `faction_verb` op which the unified-action runner intercepts and
+  // dispatches to applyFactionGovernanceVerb (factionGovernanceVerbs.ts).
+  //
+  // Surfacing rules (drawer gating via requiredNodeProperties):
+  //   - Stir Dissent      — always
+  //   - Whisper to Leader — when faction.hasLeader is true
+  //   - Recover Doctrine  — when faction.hasRecoverableDoctrine is true
+  //   - Surface a Doubter — when faction.hasDoubter is true
+  //
+  // Reframe plan: Docs/plans/2026-05-11-thr-400-faction-action-expansion-reframe.md
+
+  {
+    id: 'action.faction.stir_dissent',
+    name: 'Stir Dissent',
+    spellName: 'Whisper of Old Grievances',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description:
+      'You press a low cold breath into the faction\'s deliberations. Old grievances surface; small slights remembered. ' +
+      'The room grows quieter than it should be — and dissent gathers, not yet voiced, in the silence between answers.',
+    reach: 'shadow',
+    crudType: 'update',
+    scale: 'regional',
+    steps: [{
+      reach: 'shadow',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [{
+        op: 'faction_verb',
+        nodeId: '$target',
+        factionVerbKind: 'stir_dissent',
+      }],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: STIR_DISSENT_ESSENCE_COST,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'mind',
+    motivations: ['honesty_cunning', 'loyalty_ambition'],
+    targetCategories: ['faction'] as unknown as readonly import('../types/targetContext').TargetCategory[],
+    narrativeTemplates: {
+      initiation: 'breathes old grievances back into the faction\'s deliberations',
+      success: 'the chamber goes still — dissent gathers like cold air under a door',
+      failure: 'the breath disperses; the faction\'s confidence holds',
+    },
+  },
+
+  {
+    id: 'action.faction.whisper_leader',
+    name: 'Whisper to the Leader',
+    spellName: 'Voice Beneath the Voice',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description:
+      'You lean close to the one who carries the faction\'s weight. Not a command — a question they were already asking themselves. ' +
+      'They will answer it in their own voice; you have only chosen which voice rises. ' +
+      'The next major decision tilts toward the pole you named.',
+    reach: 'heart',
+    crudType: 'update',
+    scale: 'personal',
+    steps: [{
+      reach: 'heart',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [{
+        op: 'faction_verb',
+        nodeId: '$target',
+        factionVerbKind: 'whisper_leader',
+        factionVerbPreferredPole: 'sworn',
+      }],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: WHISPER_LEADER_ESSENCE_COST,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'spirit',
+    motivations: ['loyalty_ambition', 'honesty_cunning'],
+    targetCategories: ['faction'] as unknown as readonly import('../types/targetContext').TargetCategory[],
+    requiredNodeProperties: { hasLeader: true },
+    narrativeTemplates: {
+      initiation: 'leans close to the one who carries the faction\'s weight',
+      success: 'the leader carries a question now that is not their own — and yet, somehow, always has been',
+      failure: 'there is no head to lean toward; the body has no name',
+    },
+  },
+
+  {
+    id: 'action.faction.recover_doctrine',
+    name: 'Recover Doctrine',
+    spellName: 'Surfaced Teaching',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description:
+      'You loose a thread of memory — older than any living member, older than the faction\'s current name. ' +
+      'Somewhere, a forgotten teaching surfaces in the minds of those who never knew they were waiting for it. ' +
+      'A recovered_doctrine clue you gathered from delving the ruins now lands inside the faction that lost it.',
+    reach: 'star',
+    crudType: 'update',
+    scale: 'regional',
+    steps: [{
+      reach: 'star',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [{
+        op: 'faction_verb',
+        nodeId: '$target',
+        factionVerbKind: 'recover_doctrine',
+      }],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: RECOVER_DOCTRINE_ESSENCE_COST,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'mind',
+    motivations: ['tradition_novelty', 'loyalty_ambition'],
+    targetCategories: ['faction'] as unknown as readonly import('../types/targetContext').TargetCategory[],
+    requiredNodeProperties: { hasRecoverableDoctrine: true },
+    narrativeTemplates: {
+      initiation: 'looses a thread of memory older than the faction\'s current name',
+      success: 'inside the faction, a teaching surfaces that was old before the faction had its name',
+      failure: 'the memory does not catch; the thread slips back into the dark',
+    },
+  },
+
+  {
+    id: 'action.faction.surface_doubter',
+    name: 'Surface a Doubter',
+    spellName: 'Seeing the Silent One',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description:
+      'You let a name rise in the room — the one whose silence has been speaking. They feel themselves seen ' +
+      'by something larger than the faction. The seeing is the cost. The seeing is the gift.',
+    reach: 'eye',
+    crudType: 'update',
+    scale: 'personal',
+    steps: [{
+      reach: 'eye',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [{
+        op: 'faction_verb',
+        nodeId: '$target',
+        factionVerbKind: 'surface_doubter',
+      }],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: SURFACE_DOUBTER_ESSENCE_COST,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'spirit',
+    motivations: ['honesty_cunning', 'mercy_ruthlessness'],
+    targetCategories: ['faction'] as unknown as readonly import('../types/targetContext').TargetCategory[],
+    requiredNodeProperties: { hasDoubter: true },
+    narrativeTemplates: {
+      initiation: 'lets a name rise in the room — the one whose silence has been speaking',
+      success: 'the doubter feels themselves seen by something larger than the faction',
+      failure: 'no one inside this faction carries the silence that would answer',
     },
   },
 
@@ -4295,6 +4470,8 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...TAVERN_UNIFIED_ENCOUNTER_TEMPLATES,
   // Faction Action encounters — THR-29 (commission quest, rivalry, bounty, conclave, etc.)
   ...FACTION_ACTION_ENCOUNTER_TEMPLATES,
+  // Faction Governance encounters — THR-400 (dissent surfaces, leader crossroads, doctrine surfaces, doubter chooses)
+  ...FACTION_GOVERNANCE_ENCOUNTER_TEMPLATES,
   RIVAL_SHRINE_BETRAYAL_TEMPLATE,
   WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE,
   FLAWED_STEEL_TEMPLATE,

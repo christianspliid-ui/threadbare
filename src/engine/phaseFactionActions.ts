@@ -46,6 +46,14 @@ import {
 } from '../types/factionAction';
 import { readWealth, applyWealthDelta } from './wealth';
 import { emitTrace } from './traceBuffer';
+import {
+  DISSENT_DECAY_PER_TICK,
+  DISSENT_ENCOUNTER_THRESHOLD,
+  STIR_DISSENT_SEEDED_ENCOUNTER_ID,
+  DIVINE_WHISPER_PENDING_CONDITION,
+} from '../data/faction-action-constants';
+import { refreshFactionDerivedFlags, getFactionLeaderId } from './factionNetwork';
+import type { FactionStirDissentTrace } from '../types/factionAction';
 
 // ─── PRNG (mulberry32 — same as all engine modules) ──────────────────────────
 
@@ -795,6 +803,14 @@ function selectWeighted(candidates: ActionCandidate[], rng: () => number): Facti
 // ─── Main Phase ───────────────────────────────────────────────────────────────
 
 export function phaseFactionActions(state: GameState): void {
+  // THR-400 — dissent decay + threshold check + derived-flag refresh run every
+  // tick, regardless of FACTION_ACTION_INTERVAL. This is intentional: the
+  // player's verbs need responsive UI feedback (the drawer should not show a
+  // verb that's no longer applicable after one tick), and dissent must drift
+  // smoothly to avoid stepwise gaps in the ambient indicator. Cost is O(F) per
+  // tick where F is the faction count (~5–20 in a run).
+  tickFactionGovernance(state);
+
   if (state.tick % FACTION_ACTION_INTERVAL !== 0) {
     // Still need to advance active conclaves on non-evaluation ticks
     advanceAllConclaves(state);
@@ -811,6 +827,146 @@ export function phaseFactionActions(state: GameState): void {
       // Fail-soft: skip this faction, don't crash the tick loop
     }
   }
+}
+
+/**
+ * THR-400 — per-tick faction governance pass:
+ *   1. Decay each faction's dissentLevel toward zero
+ *   2. When dissentLevel ≥ threshold, plant a dissent-surfaces encounter seed
+ *      on the most-threaded non-leader member and reset to zero
+ *   3. Tick down divine_whisper_pending conditions on faction leaders
+ *   4. Refresh derived flags (hasLeader, hasDoubter, doubterId,
+ *      hasRecoverableDoctrine) used by the action drawer for gating
+ *
+ * Fail-soft per NFP #4: catches throws per faction; never crashes the tick.
+ */
+function tickFactionGovernance(state: GameState): void {
+  const factionNodes = state.graph.getNodesByType('actor')
+    .filter(n => n.properties.actorType === 'faction');
+
+  for (const faction of factionNodes) {
+    try {
+      // Step 1+2: dissent decay + threshold.
+      const dissent = (faction.properties.dissentLevel as number | undefined) ?? 0;
+      if (dissent >= DISSENT_ENCOUNTER_THRESHOLD) {
+        // Plant the dissent-surfaces seed on the most-threaded non-leader
+        // member, or fall through to the leader, or the highest-rank non-leader
+        // member with axiological misalignment.
+        const targetId = pickDissentSurfacesTarget(state, faction.id);
+        if (targetId) {
+          const seedId = `seed_dissent_${faction.id}_${state.tick}`;
+          state.pendingEncounterSeeds = [
+            ...(state.pendingEncounterSeeds ?? []),
+            {
+              seedId,
+              sourceEncounterId: `tick_dissent_threshold_${state.tick}`,
+              sourceReactionId: 'faction.tick_dissent_threshold',
+              templateId: STIR_DISSENT_SEEDED_ENCOUNTER_ID,
+              targetAgentId: targetId,
+              eligibleAfterTick: state.tick + 1,
+              priority: 0.7,
+              seedLabel: `dissent surfaces inside ${faction.name}`,
+              plantedTick: state.tick,
+            },
+          ];
+          const trace: FactionStirDissentTrace = {
+            tick: state.tick,
+            category: 'faction_stir_dissent',
+            factionId: faction.id,
+            factionName: faction.name,
+            previousDissentLevel: dissent,
+            newDissentLevel: 0,
+            seededEncounterId: seedId,
+            targetMortalId: targetId,
+            summary:
+              `Dissent inside ${faction.name} crossed the threshold ` +
+              `and surfaces on a member.`,
+          };
+          emitTrace(trace);
+        }
+        state.graph.updateNode(faction.id, { properties: { dissentLevel: 0 } });
+      } else if (dissent > 0) {
+        const decayed = Math.max(0, dissent - DISSENT_DECAY_PER_TICK);
+        if (decayed !== dissent) {
+          state.graph.updateNode(faction.id, { properties: { dissentLevel: decayed } });
+        }
+      }
+
+      // Step 3: tick down divine_whisper_pending on the leader (fail-soft).
+      const leaderId = getFactionLeaderId(state.graph, faction.id);
+      if (leaderId) {
+        const leader = state.graph.getNode(leaderId);
+        if (leader) {
+          const expiresTick = leader.properties.divineWhisperExpiresTick as number | undefined;
+          const conditions = (leader.properties.conditions as string[] | undefined) ?? [];
+          if (expiresTick != null
+              && conditions.includes(DIVINE_WHISPER_PENDING_CONDITION)
+              && state.tick >= expiresTick) {
+            state.graph.updateNode(leaderId, {
+              properties: {
+                conditions: conditions.filter(c => c !== DIVINE_WHISPER_PENDING_CONDITION),
+                divineWhisperPreferredPole: null,
+                divineWhisperExpiresTick: null,
+              },
+            });
+          }
+        }
+      }
+
+      // Step 4: refresh derived flags used by the action drawer.
+      refreshFactionDerivedFlags(state.graph, faction.id);
+    } catch {
+      // Fail-soft: skip this faction.
+    }
+  }
+}
+
+/**
+ * Pick the target mortal for a dissent-surfaces encounter seed. Preference:
+ *   1. Most-threaded non-leader member (highest bond-edge tier from ascendant)
+ *   2. The leader (the dissent surfaces around them)
+ *   3. The highest-rank non-leader member
+ *
+ * Returns null when the faction has no eligible members.
+ */
+function pickDissentSurfacesTarget(state: GameState, factionId: string): string | null {
+  const memberEdges = state.graph.getIncomingEdges(factionId, 'member_of');
+  if (memberEdges.length === 0) return null;
+  const leaderId = getFactionLeaderId(state.graph, factionId);
+  const ascendantId = state.ascendantId;
+
+  // Pass 1: most-threaded non-leader member.
+  if (ascendantId) {
+    const bonds = state.graph.getOutgoingEdges(ascendantId, 'bond');
+    const bondByTarget = new Map<string, number>();
+    for (const e of bonds) {
+      bondByTarget.set(e.target, (e.properties.tier as number | undefined) ?? 1);
+    }
+    let bestMember: { id: string; score: number } | null = null;
+    for (const edge of memberEdges) {
+      const memberId = edge.source;
+      if (memberId === leaderId) continue;
+      const tier = bondByTarget.get(memberId);
+      if (tier == null) continue;
+      if (bestMember === null || tier > bestMember.score) {
+        bestMember = { id: memberId, score: tier };
+      }
+    }
+    if (bestMember) return bestMember.id;
+  }
+
+  // Pass 2: leader fallback.
+  if (leaderId) return leaderId;
+
+  // Pass 3: first non-army member.
+  for (const edge of memberEdges) {
+    const member = state.graph.getNode(edge.source);
+    if (!member || member.type !== 'actor') continue;
+    if (member.properties.actorType === 'group') continue;
+    if (member.properties.armyState != null) continue;
+    return member.id;
+  }
+  return null;
 }
 
 function advanceAllConclaves(state: GameState): void {

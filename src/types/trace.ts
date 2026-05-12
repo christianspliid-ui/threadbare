@@ -20,6 +20,12 @@ import type { ReliabilityBand } from '../engine/intelligence';
 import type { IntelligenceCategory } from './unifiedAction';
 import type { NarrativeEventType, NarrativeTier } from './narrative';
 import type { ForeshadowingSignals } from './foreshadowing';
+import type {
+  FactionStirDissentTrace,
+  FactionWhisperLeaderTrace,
+  FactionRecoverDoctrineTrace,
+  FactionSurfaceDoubterTrace,
+} from './factionAction';
 
 /** Known trace categories for filtering in debug panel */
 export type TraceCategory =
@@ -192,7 +198,12 @@ export type TraceCategory =
   | 'location_action_resolved'
   | 'location_property_decay'
   | 'location_countdown_expired'
-  | 'location_flag_consumed';
+  | 'location_flag_consumed'
+  // Faction governance verbs (THR-400)
+  | 'faction_stir_dissent'
+  | 'faction_whisper_leader'
+  | 'faction_recover_doctrine'
+  | 'faction_surface_doubter';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -368,6 +379,11 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'location_property_decay',
   'location_countdown_expired',
   'location_flag_consumed',
+  // Faction governance verbs (THR-400)
+  'faction_stir_dissent',
+  'faction_whisper_leader',
+  'faction_recover_doctrine',
+  'faction_surface_doubter',
 ];
 
 /** Base shape for all trace entries */
@@ -1516,7 +1532,12 @@ export type TraceEntry =
   // Encounter foreshadowing (THR-389)
   | ForeshadowingResolutionTrace
   // Ascendant buff consumption (THR-416)
-  | BuffConsumedTrace;
+  | BuffConsumedTrace
+  // Faction governance verbs (THR-400)
+  | FactionStirDissentTrace
+  | FactionWhisperLeaderTrace
+  | FactionRecoverDoctrineTrace
+  | FactionSurfaceDoubterTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {

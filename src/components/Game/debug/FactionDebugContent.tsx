@@ -32,6 +32,14 @@ export function FactionDebugContent({ graph, onZoomToLocation }: FactionDebugCon
       reputationTraits: Array<{ traitId: string; label: string }>;
       members: Array<{ id: string; name: string; rank: string; reputation: number; locationId: string | null; locationName: string | null }>;
       armies: Array<{ id: string; name: string; locationId: string | null; locationName: string | null }>;
+      // THR-400 governance state (debug-only — never surfaces to the player).
+      dissentLevel: number;
+      recoveredDoctrineId: string | null;
+      recoveredDoctrineExpiresTick: number | null;
+      doubterId: string | null;
+      hasLeader: boolean;
+      hasRecoverableDoctrine: boolean;
+      surfacedDoubters: Array<{ id: string; name: string }>;
     }> = [];
 
     for (const [defId, def] of FACTION_DEFINITIONS) {
@@ -89,6 +97,13 @@ export function FactionDebugContent({ graph, onZoomToLocation }: FactionDebugCon
             return { traitId: e.target, label };
           });
 
+        const surfacedDoubters = memberEdges
+          .map(edge => graph.getNode(edge.source))
+          .filter((n): n is NonNullable<typeof n> => !!n)
+          .filter(n => Array.isArray(n.properties.conditions)
+            && (n.properties.conditions as string[]).includes('surfaced_by_divine_attention'))
+          .map(n => ({ id: n.id, name: n.name }));
+
         results.push({
           defId,
           name: factionNode.name,
@@ -96,6 +111,13 @@ export function FactionDebugContent({ graph, onZoomToLocation }: FactionDebugCon
           reputationTraits,
           members,
           armies: armyMembers,
+          dissentLevel: (factionNode.properties.dissentLevel as number | undefined) ?? 0,
+          recoveredDoctrineId: (factionNode.properties.recoveredDoctrineId as string | undefined) ?? null,
+          recoveredDoctrineExpiresTick: (factionNode.properties.recoveredDoctrineExpiresTick as number | undefined) ?? null,
+          doubterId: (factionNode.properties.doubterId as string | undefined) ?? null,
+          hasLeader: (factionNode.properties.hasLeader as boolean | undefined) ?? false,
+          hasRecoverableDoctrine: (factionNode.properties.hasRecoverableDoctrine as boolean | undefined) ?? false,
+          surfacedDoubters,
         });
       }
     }
@@ -116,6 +138,44 @@ export function FactionDebugContent({ graph, onZoomToLocation }: FactionDebugCon
             </div>
             <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: '2px' }}>
               {faction.members.length} member{faction.members.length !== 1 ? 's' : ''}
+            </div>
+            {/* THR-400 — Governance state (debug-only). */}
+            <div
+              data-testid="faction-governance-debug"
+              style={{
+                marginTop: '4px',
+                padding: '4px 6px',
+                background: 'var(--bg-deep)',
+                border: '1px dashed var(--border-subtle)',
+                borderRadius: '3px',
+                fontSize: 'var(--text-xs)',
+                color: 'var(--text-tertiary)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '2px',
+              }}
+            >
+              <div data-testid="faction-debug-dissent">
+                dissentLevel: <span style={{ color: 'var(--text-primary)' }}>{faction.dissentLevel.toFixed(3)}</span>
+              </div>
+              <div data-testid="faction-debug-doctrine">
+                recoveredDoctrineId: <span style={{ color: 'var(--text-primary)' }}>{faction.recoveredDoctrineId ?? '—'}</span>
+                {faction.recoveredDoctrineExpiresTick != null && (
+                  <> · expires@<span style={{ color: 'var(--text-primary)' }}>{faction.recoveredDoctrineExpiresTick}</span></>
+                )}
+              </div>
+              <div data-testid="faction-debug-flags">
+                hasLeader: <span style={{ color: 'var(--text-primary)' }}>{String(faction.hasLeader)}</span>
+                {' · '}
+                hasRecoverableDoctrine: <span style={{ color: 'var(--text-primary)' }}>{String(faction.hasRecoverableDoctrine)}</span>
+                {' · '}
+                doubterId: <span style={{ color: 'var(--text-primary)' }}>{faction.doubterId ?? '—'}</span>
+              </div>
+              {faction.surfacedDoubters.length > 0 && (
+                <div data-testid="faction-debug-surfaced">
+                  surfaced: <span style={{ color: 'var(--text-primary)' }}>{faction.surfacedDoubters.map(d => d.name).join(', ')}</span>
+                </div>
+              )}
             </div>
             {faction.reputationTraits.length > 0 && (
               <div style={{ marginTop: '4px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
