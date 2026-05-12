@@ -77,14 +77,10 @@ const ACTION_ART: Record<string, string> = {
   'artifact.curse': '/assets/actions/malediction-bound.jpg',
 
   // ─── Hex actions — sensing / survey / reading ──────────────────────
-  'hex.sense_threads': '/assets/actions/thread-sight.jpg',
   'hex.survey': '/assets/actions/divine-survey.jpg',
   'hex.dowse_resources': '/assets/actions/earthen-dowsing.jpg',
   'hex.read_currents': '/assets/actions/current-reading.jpg',
-  'hex.sense_leylines': '/assets/actions/leyline-sensing.jpg',
   'hex.forge_seer_token': '/assets/actions/token-of-far-sight.jpg',
-  'hex.divine_populace': '/assets/actions/people-reading.jpg',
-  'hex.scry_factions': '/assets/actions/faction-scrying.jpg',
   'hex.mark_ground': '/assets/actions/questing-beacon.jpg',
   'hex.plant_dream': '/assets/actions/memory-dream.jpg',
   'hex.read_stones': '/assets/actions/stone-memory.jpg',

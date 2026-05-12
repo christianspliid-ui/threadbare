@@ -99,10 +99,6 @@ describe('resolveHexAction', () => {
     expect(resolveHexAction('hex.dowse_resources', 0, 0, 'success', 1)).toHaveLength(0);
   });
 
-  it('returns empty array for sense_leylines (observation only)', () => {
-    expect(resolveHexAction('hex.sense_leylines', 0, 0, 'success', 1)).toHaveLength(0);
-  });
-
   // TB-046: Soul one-shot mutations
   it('returns divineInfluence mutation for attune_leyline on success', () => {
     const mutations = resolveHexAction('hex.attune_leyline', 5, 3, 'success', 1);
@@ -176,9 +172,8 @@ describe('resolveHexAction', () => {
     expect(mutations[0].delta).toBe(HEX_DESECRATE_CORRUPTION_DELTA);
   });
 
-  it('returns empty array for observation-only people/ruins templates', () => {
+  it('returns empty array for observation-only ruins templates', () => {
     const observationTemplates = [
-      'hex.divine_populace', 'hex.scry_factions',
       'hex.read_stones', 'hex.whisper_intuition',
     ];
     for (const t of observationTemplates) {

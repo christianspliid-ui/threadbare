@@ -384,7 +384,7 @@ describe('divine templates', () => {
 
 describe('TB-046 hex action templates', () => {
   const TB046_LAND_IDS = [
-    'hex.raise_landmark', 'hex.dowse_resources', 'hex.sense_leylines',
+    'hex.raise_landmark', 'hex.dowse_resources',
     'hex.shift_season', 'hex.scorch_earth', 'hex.rend_earth',
   ];
 
@@ -395,7 +395,7 @@ describe('TB-046 hex action templates', () => {
 
   const ALL_TB046_IDS = [...TB046_LAND_IDS, ...TB046_SOUL_IDS];
 
-  it('all 13 new templates are registered', () => {
+  it('all 12 new templates are registered', () => {
     for (const id of ALL_TB046_IDS) {
       expect(getUnifiedTemplateById(id)).toBeDefined();
     }
@@ -437,7 +437,7 @@ describe('TB-046 hex action templates', () => {
   });
 
   it('Find actions have crudType read', () => {
-    const findIds = ['hex.dowse_resources', 'hex.sense_leylines', 'hex.read_currents'];
+    const findIds = ['hex.dowse_resources', 'hex.read_currents'];
     for (const id of findIds) {
       expect(getUnifiedTemplateById(id)!.crudType).toBe('read');
     }
@@ -452,7 +452,6 @@ describe('TB-046 hex action templates', () => {
   it('essence costs match design doc', () => {
     expect(getUnifiedTemplateById('hex.raise_landmark')!.essenceCost).toBe(8);
     expect(getUnifiedTemplateById('hex.dowse_resources')!.essenceCost).toBe(2);
-    expect(getUnifiedTemplateById('hex.sense_leylines')!.essenceCost).toBe(1);
     expect(getUnifiedTemplateById('hex.shift_season')!.essenceCost).toBe(3);
     expect(getUnifiedTemplateById('hex.scorch_earth')!.essenceCost).toBe(7);
     expect(getUnifiedTemplateById('hex.rend_earth')!.essenceCost).toBe(12);
@@ -471,7 +470,7 @@ describe('TB-046 hex action templates', () => {
 describe('TB-047 hex action templates', () => {
   const TB047_PEOPLE_IDS = [
     'hex.send_herald', 'hex.forge_instrument', 'hex.spark_encounter',
-    'hex.divine_populace', 'hex.scry_factions', 'hex.stir_people',
+    'hex.stir_people',
     'hex.summon_congregation', 'hex.bestow_vision',
     'hex.scatter', 'hex.smite', 'hex.incite_exodus',
   ];
@@ -484,7 +483,7 @@ describe('TB-047 hex action templates', () => {
 
   const ALL_TB047_IDS = [...TB047_PEOPLE_IDS, ...TB047_RUINS_IDS];
 
-  it('all 20 new templates are registered', () => {
+  it('all 18 new templates are registered', () => {
     for (const id of ALL_TB047_IDS) {
       expect(getUnifiedTemplateById(id)).toBeDefined();
     }
@@ -529,8 +528,6 @@ describe('TB-047 hex action templates', () => {
     expect(getUnifiedTemplateById('hex.send_herald')!.essenceCost).toBe(7);
     expect(getUnifiedTemplateById('hex.forge_instrument')!.essenceCost).toBe(10);
     expect(getUnifiedTemplateById('hex.spark_encounter')!.essenceCost).toBe(4);
-    expect(getUnifiedTemplateById('hex.divine_populace')!.essenceCost).toBe(3);
-    expect(getUnifiedTemplateById('hex.scry_factions')!.essenceCost).toBe(2);
     expect(getUnifiedTemplateById('hex.stir_people')!.essenceCost).toBe(3);
     expect(getUnifiedTemplateById('hex.summon_congregation')!.essenceCost).toBe(5);
     expect(getUnifiedTemplateById('hex.bestow_vision')!.essenceCost).toBe(2);

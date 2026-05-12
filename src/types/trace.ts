@@ -871,6 +871,7 @@ export interface LayerRevealedTrace extends TraceBase {
   hexCol: number;
   hexRow: number;
   layer: NarrativeLayer;
+  layers?: readonly NarrativeLayer[];  // all layers revealed in this cast (multi-layer reveals)
   revealedBy: string;  // action template ID or encounter ID
 }
 

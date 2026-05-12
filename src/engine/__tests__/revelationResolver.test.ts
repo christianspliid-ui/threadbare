@@ -17,16 +17,11 @@ beforeEach(() => {
 // ─── resolveRevelation ──────────────────────────────────────────────────────
 
 describe('resolveRevelation', () => {
-  it('returns land revelation mutation for hex.survey on success', () => {
+  it('returns land + people revelation mutations for hex.survey on success (THR-398)', () => {
     const mutations = resolveRevelation('hex.survey', 3, 5, 'success', 10);
-    expect(mutations).toHaveLength(1);
-    expect(mutations[0]).toEqual({ col: 3, row: 5, layer: 'land', source: 'hex.survey' });
-  });
-
-  it('returns soul revelation mutation for hex.sense_threads on success', () => {
-    const mutations = resolveRevelation('hex.sense_threads', 1, 2, 'success', 5);
-    expect(mutations).toHaveLength(1);
-    expect(mutations[0]).toEqual({ col: 1, row: 2, layer: 'soul', source: 'hex.sense_threads' });
+    expect(mutations).toHaveLength(2);
+    expect(mutations).toContainEqual({ col: 3, row: 5, layer: 'land', source: 'hex.survey' });
+    expect(mutations).toContainEqual({ col: 3, row: 5, layer: 'people', source: 'hex.survey' });
   });
 
   it('returns empty array on failure', () => {
@@ -39,16 +34,27 @@ describe('resolveRevelation', () => {
     expect(mutations).toHaveLength(0);
   });
 
-  it('emits LayerRevealedTrace on success', () => {
+  it('emits one LayerRevealedTrace per layer for hex.survey (two traces)', () => {
     resolveRevelation('hex.survey', 3, 5, 'success', 10);
-    const traces = getTraces();
-    expect(traces.some(t => (t as any).type === 'layer_revealed')).toBe(true);
-    const trace = traces.find(t => (t as any).type === 'layer_revealed') as any;
-    expect(trace.category).toBe('revelation');
-    expect(trace.hexCol).toBe(3);
-    expect(trace.hexRow).toBe(5);
-    expect(trace.layer).toBe('land');
-    expect(trace.revealedBy).toBe('hex.survey');
+    const traces = getTraces().filter(t => (t as any).type === 'layer_revealed');
+    expect(traces).toHaveLength(2);
+    const layers = traces.map(t => (t as any).layer);
+    expect(layers).toContain('land');
+    expect(layers).toContain('people');
+    for (const trace of traces) {
+      expect((trace as any).category).toBe('revelation');
+      expect((trace as any).hexCol).toBe(3);
+      expect((trace as any).hexRow).toBe(5);
+      expect((trace as any).revealedBy).toBe('hex.survey');
+      expect((trace as any).layers).toEqual(['land', 'people']);
+    }
+  });
+
+  it('emits a single LayerRevealedTrace for single-layer templates', () => {
+    resolveRevelation('hex.read_currents', 1, 2, 'success', 5);
+    const traces = getTraces().filter(t => (t as any).type === 'layer_revealed');
+    expect(traces).toHaveLength(1);
+    expect((traces[0] as any).layer).toBe('soul');
   });
 
   it('does not emit trace on failure', () => {
@@ -72,7 +78,7 @@ describe('applyRevelationMutations', () => {
       '3,5': { land: true, soul: false, people: false, ruins: false },
     };
     const result = applyRevelationMutations(existing, [
-      { col: 3, row: 5, layer: 'soul', source: 'hex.sense_threads' },
+      { col: 3, row: 5, layer: 'soul', source: 'hex.read_currents' },
     ]);
     expect(result['3,5']).toEqual({ land: true, soul: true, people: false, ruins: false });
   });
@@ -95,10 +101,16 @@ describe('applyRevelationMutations', () => {
   it('applies multiple mutations across different hexes', () => {
     const result = applyRevelationMutations(undefined, [
       { col: 0, row: 0, layer: 'land', source: 'hex.survey' },
-      { col: 1, row: 2, layer: 'soul', source: 'hex.sense_threads' },
+      { col: 1, row: 2, layer: 'soul', source: 'hex.read_currents' },
     ]);
     expect(result['0,0']?.land).toBe(true);
     expect(result['1,2']?.soul).toBe(true);
+  });
+
+  it('applies both land and people mutations from a Survey cast', () => {
+    const mutations = resolveRevelation('hex.survey', 4, 4, 'success', 1);
+    const result = applyRevelationMutations(undefined, mutations);
+    expect(result['4,4']).toEqual({ land: true, soul: false, people: true, ruins: false });
   });
 });
 
@@ -135,12 +147,15 @@ describe('createDefaultHexRevelation', () => {
 // ─── TEMPLATE_REVELATION_MAP ────────────────────────────────────────────────
 
 describe('TEMPLATE_REVELATION_MAP', () => {
-  it('maps hex.survey to land', () => {
-    expect(TEMPLATE_REVELATION_MAP['hex.survey']).toBe('land');
+  it('maps hex.survey to [land, people] (THR-398: unified dual-layer)', () => {
+    expect(TEMPLATE_REVELATION_MAP['hex.survey']).toEqual(['land', 'people']);
   });
 
-  it('maps hex.sense_threads to soul', () => {
-    expect(TEMPLATE_REVELATION_MAP['hex.sense_threads']).toBe('soul');
+  it('does not contain retired templates (THR-398)', () => {
+    expect(TEMPLATE_REVELATION_MAP['hex.sense_threads']).toBeUndefined();
+    expect(TEMPLATE_REVELATION_MAP['hex.sense_leylines']).toBeUndefined();
+    expect(TEMPLATE_REVELATION_MAP['hex.divine_populace']).toBeUndefined();
+    expect(TEMPLATE_REVELATION_MAP['hex.scry_factions']).toBeUndefined();
   });
 
   it('does not map bless/corrupt/seed (non-Find actions)', () => {
@@ -149,26 +164,12 @@ describe('TEMPLATE_REVELATION_MAP', () => {
     expect(TEMPLATE_REVELATION_MAP['hex.seed_life']).toBeUndefined();
   });
 
-  // TB-046: New Find action revelation mappings
   it('maps hex.dowse_resources to land', () => {
     expect(TEMPLATE_REVELATION_MAP['hex.dowse_resources']).toBe('land');
   });
 
-  it('maps hex.sense_leylines to land', () => {
-    expect(TEMPLATE_REVELATION_MAP['hex.sense_leylines']).toBe('land');
-  });
-
   it('maps hex.read_currents to soul', () => {
     expect(TEMPLATE_REVELATION_MAP['hex.read_currents']).toBe('soul');
-  });
-
-  // TB-047: People & Ruins revelation mappings (pre-registered)
-  it('maps hex.divine_populace to people', () => {
-    expect(TEMPLATE_REVELATION_MAP['hex.divine_populace']).toBe('people');
-  });
-
-  it('maps hex.scry_factions to people', () => {
-    expect(TEMPLATE_REVELATION_MAP['hex.scry_factions']).toBe('people');
   });
 
   it('maps hex.read_stones to ruins', () => {
