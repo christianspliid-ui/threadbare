@@ -1,5 +1,5 @@
 # Project Status
-> Updated 2026-05-11.
+> Updated 2026-05-12.
 
 ## Current Focus
 **Encounter Experience — active:** Phases A1–A3, B1–B7, C1–C4, D1–D3, E1–E2, F1–F2, G1–G3 ✅. Remaining is F-phase integration (mount EffectRegistration components into hero panel / cast tile / scene state surfaces) and Phase H post-v1 polish.
@@ -22,7 +22,7 @@
 - 2026-05-09 batch: THR-268, THR-389, THR-391
 - 2026-05-10 batch: THR-394
 - 2026-05-11 batch: THR-393, THR-403, THR-408, THR-411
-- 2026-05-12 batch: THR-413, THR-404, THR-397, THR-398, THR-399
+- 2026-05-12 batch: THR-413, THR-404, THR-397, THR-398, THR-399, THR-405
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
@@ -54,3 +54,4 @@ Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Compl
 - ✅ 2026-05-12: THR-397 shipped — Ascendant action rarity recurve. Re-tagged all 101 ascendant `rarityTier` values in `unified-action-templates.ts` to match spec distribution {1:32, 2:40, 3:25, 4:4}. 40 edits, data-only change. PR #251.
 - ✅ 2026-05-12: THR-398 shipped — Collapsed 6 hex-recon verbs to 2. Retired `hex.sense_threads`, `hex.sense_leylines`, `hex.divine_populace`, `hex.scry_factions`. Survey (`hex.survey`) now reveals land+people in a single cast via multi-layer `TEMPLATE_REVELATION_MAP`. `TEMPLATE_REVELATION_MAP` widened to support `NarrativeLayer | readonly NarrativeLayer[]`. `resolveRevelation` emits one `LayerRevealedTrace` per layer. `trayTier: 'core'/'rare'` added to Survey/ReadCurrents. PR #253.
 - ✅ 2026-05-12: THR-399 shipped — 4 self-targeting ascendant actions: Stillness (essence regen on primary sphere), Recede (nextActionDiscount buff), Focus (nextActionTierBoost buff), Reveal (push divineInfluences to mortals on avatar hex). 8 named constants in `self-action-constants.ts`, `SelfActionTrace` + `'self_action'` category, post-processor hook in `unifiedActionResolution`. 17 tests. PR #254.
+- ✅ 2026-05-12: THR-405 shipped — Rulebook Canon Page Phase 3 (maintenance cadence). `Rulebook impact?` checkbox added to CLAUDE.md Design Governance. `Docs/audits/_rulebook-architecture-assessment-template.md` created. `monthly-rulebook-review` scheduled task registered in CLAUDE.md (task creation deferred to THR-417 — blocked by impediment #133, create_scheduled_task blocked in scheduled sessions). PR #256.

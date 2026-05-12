@@ -307,6 +307,7 @@ Every feature touches three pillars: **Engine** (systems, tick loop, graph), **C
 - [ ] **Three-pillar check** — Engine section present? Content section present? UI section present? Wiring section connecting them?
 - [ ] **Step 8.5 - Intent-judge verdict** — after summarize and three-pillar check, before presenting. Spawn `intent-judge` as a Task subagent (`model: "opus"`). Author must first produce an action proposal at `Docs/plans/.intent-proposals/<slug>.md` (template at `.claude/skills/intent-judge/proposal-template.md`). Verdict gates the handoff: Allow → proceed; Revise → fix and re-run; Block → rewrite; Escalate → ping user with verbatim finding.
 - [ ] **Vision audit** — does this plan contradict or update any Vision premise? If so, the Vision edit is part of this ticket's scope, not a follow-up.
+- [ ] **Rulebook impact?** — does this plan change a rule of play (turn structure, action verb, prerequisite, resource, encounter, clock, win/loss)? If yes, the rulebook update is part of this ticket's scope, not a follow-up. Update `Docs/canon/rulebook.md` in the same PR and re-verdict the affected section.
 - [ ] **Present** the finished, compliant design to the user
 
 ### Per-system required sections (inline, not appendix)
@@ -445,6 +446,7 @@ Current recurring task registry:
 | Weekly drift scan | Friday 14:00 UTC | GitHub Action — drift signals → Linear `drift-scan` issues | Active (GitHub Action) |
 | `weekly-retro` | Friday ~15:00 UTC | Weekly retrospective from drift-scan issues + impediments log | Active |
 | `weekly-memory-grooming` | Sunday 16:03 UTC (18:03 Europe/Copenhagen on 2026-05-08) | Consolidate Cowork / CC / Codex memory files | Active |
+| `monthly-rulebook-review` | 1st of each month 09:00 local | Review `Docs/canon/rulebook.md` for drift, stale `[OPEN]` questions >60 days, broken pointers; post Linear issue tagged `rulebook-review` | Needs creation (THR-417 — use `mcp__scheduled-tasks__create_scheduled_task` with `taskId: monthly-rulebook-review`, `cronExpression: "0 9 1 * *"` from a non-scheduled session) |
 
 ## Skill Tree Layout
 
