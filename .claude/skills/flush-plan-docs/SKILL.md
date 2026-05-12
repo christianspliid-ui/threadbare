@@ -1,7 +1,7 @@
 ---
 name: flush-plan-docs
 description: Commit Cowork-authored plan docs tagged with `plan-pending-commit` to origin/main via the scheduled flush workflow.
-last_validated_against: 2026-05-08
+last_validated_against: 2026-05-12
 ---
 
 # flush-plan-docs
@@ -102,17 +102,86 @@ git push origin main
 
 If push succeeds: proceed to Step 3.
 
-If push is rejected (non-fast-forward / GH013 error per impediments #83/84): fall back to branch path:
-1. Create branch: `git checkout -b docs/plan-flush-<issue-identifier-lowercase>`
-2. Push branch: `git push origin docs/plan-flush-<issue-identifier-lowercase>`
-3. Open PR via `gh pr create` with title `docs(plan): <issue-identifier> <issue-title>` and
-   body `Auto-created by flush-plan-docs for plan-pending-commit label. Closes <issue-url>.`
-   Add label `docs-only` if it exists in the repo.
-4. Attempt auto-merge: `gh pr merge --auto --squash`
+If push is rejected (non-fast-forward / GH013 error per impediments #83/84/110):
+fall back to flush-branch path. The following steps are all **REQUIRED** — do not
+stop after the commit:
+
+1. Create branch:
+   ```bash
+   git checkout -b docs/plan-flush-<issue-identifier-lowercase>
+   ```
+
+2. Push branch (**REQUIRED — do not skip**):
+   ```bash
+   git push -u origin docs/plan-flush-<issue-identifier-lowercase>
+   ```
+
+3. Verify push (**REQUIRED**):
+   ```bash
+   git ls-remote --heads origin docs/plan-flush-<issue-identifier-lowercase>
+   ```
+   The remote head must equal the local commit SHA captured in Step 2e.
+   If empty or mismatched: invoke **2f.fail** — do not continue to Step 4.
+
+4. Open PR (**REQUIRED — do not skip**):
+   ```bash
+   gh pr create \
+     --title "docs(plan): batch flush <YYYY-MM-DD>" \
+     --body  "Auto-flush of plan-pending-commit labeled issues. Closes <issue-url>."
+   ```
+   Do not add `--label docs-only` — do not create labels from this skill, and omit the
+   flag if the label does not exist in the repo. Capture the PR URL from the output.
+
+5. Verify PR exists (**REQUIRED**):
+   ```bash
+   gh pr view <pr-number> --json url,state
+   ```
+   The `state` must be OPEN (or MERGED if auto-merge fired immediately).
+   If `gh pr view` returns "not found" or errors: invoke **2f.fail**.
+
+6. Enable auto-merge (best-effort, not gating):
+   ```bash
+   gh pr merge <pr-number> --auto --squash
+   ```
+   Capture the exit code. Non-zero is logged but does not block Step 3 — auto-merge
+   may not be enabled at the repo level.
+
+7. Record the PR URL in the confirmation comment posted in Step 3.
+
+**Invariant:** proceed to Step 3 (cleanup) only after Step 5 succeeds — the PR must be
+verified OPEN or MERGED. If any of Steps 2–5 fail, invoke **2f.fail** and do not proceed to
+Step 3 for this issue.
+
+### 2f.fail — Partial-publish recovery
+
+If branch push (Step 2f.2) fails:
+- Leave the local commit in place.
+- Do NOT proceed to Step 3 for this issue — label stays on.
+- Post bounce comment on the issue:
+  > "flush-plan-docs: commit `<sha>` made locally on branch `docs/plan-flush-<id>`,
+  > but branch push to origin failed. Label retained. Next flush pass will retry;
+  > if it persists, a human can push the branch manually."
+- Continue to the next issue.
+
+If push verify (Step 2f.3) fails — remote head does not match local SHA:
+- Same recovery as branch push failure.
+
+If PR creation (Step 2f.4) fails:
+- The branch is on remote but no PR exists.
+- Do NOT proceed to Step 3 for this issue — label stays on.
+- Post bounce comment:
+  > "flush-plan-docs: branch `docs/plan-flush-<id>` pushed at `<sha>`, but PR
+  > creation failed with: `<error>`. Label retained. A human can open the PR manually:
+  > `gh pr create --head docs/plan-flush-<id> --title 'docs(plan): batch flush <date>'`"
+- Continue to the next issue.
+
+If PR verify (Step 2f.5) fails — PR was created but `gh pr view` errors:
+- Treat as PR creation failure. Bounce with the same comment plus any PR URL captured in
+  Step 2f.4 so the human has a starting point.
 
 ## Step 3 — Cleanup
 
-For each successfully committed (or already-committed) issue:
+For each issue where **Step 2f succeeded** (push to main OR PR verified OPEN/MERGED):
 
 1. Remove the label:
    ```
@@ -123,11 +192,53 @@ For each successfully committed (or already-committed) issue:
    ```
    save_comment(issueId: <issue-id>, body: "Plan doc auto-committed at <sha> by flush-plan-docs. Label removed; ready for executor pickup if state is already Ready for Dev.")
    ```
+   For branch-fallback path: include the PR URL in this comment.
    For already-committed: use the confirmation message from 2c instead.
 
 3. Verify-after-write: call `get_issue(id)` and confirm `plan-pending-commit` is no longer in labels.
    If label still present (impediment #48 silent drop), retry `save_issue` once. If still stuck, post
    a second comment: `WARNING: label removal failed after two attempts. Manual removal required.`
+
+**Note:** Issues that hit **2f.fail** do NOT get label removal in Step 3 — the label is intentionally
+retained so the next flush pass retries them.
+
+## Step 4 — Stale-label sweep
+
+After all issues from Step 1 have been processed, run an independent cleanup pass:
+
+1. Re-query: `list_issues(label: "plan-pending-commit")`. This catches issues that
+   carried the label before this flush pass started, including any that weren't on
+   the Step 1 list.
+
+2. For each issue in the result:
+
+   a. If status is Done or Canceled:
+      - Remove the `plan-pending-commit` label.
+      - Post comment:
+        > "Stale plan-pending-commit label cleared by flush-plan-docs sweep —
+        > issue is in `<status>` state, plan doc is presumed already on main.
+        > No commit performed."
+      - Verify-after-write per impediment #48.
+
+   b. Otherwise, check whether the plan doc referenced in the description is already
+      in git history:
+      ```bash
+      git log --oneline -1 -- <plan-doc-path>
+      ```
+      If output is non-empty (doc already on main):
+      - Remove the `plan-pending-commit` label.
+      - Post comment:
+        > "Stale plan-pending-commit label cleared by flush-plan-docs sweep —
+        > plan doc `<path>` is already at `<sha>` on main. No commit performed."
+      - Verify-after-write.
+
+   c. Otherwise: leave the label intact. The issue will be reprocessed on the next
+      flush pass.
+
+3. Output one line per cleaned issue:
+   ```
+   [flush-plan-docs] sweep cleared THR-XXX: <reason>
+   ```
 
 ## Hard Rules
 
@@ -136,19 +247,21 @@ For each successfully committed (or already-committed) issue:
 - **Refuses to stage anything outside `Docs/plans/` or `Docs/audits/`** — scope guard exits before `git add`.
 - **Never sets issue state.** Only removes the `plan-pending-commit` label. Cowork owns state transitions.
 - **One-at-a-time processing.** If multiple issues are labeled, process sequentially. A bounce on one does not stop others.
-- **Bounce, don't crash.** Parse failures, scope-guard failures, staging anomalies all produce a comment on the issue and continue — never throw or exit-1 mid-loop.
+- **Bounce, don't crash.** Parse failures, scope-guard failures, staging anomalies, partial-publish failures all produce a comment on the issue and continue — never throw or exit-1 mid-loop.
+- **Label removed only after publish is verified.** For branch-fallback path: label removed only after Step 2f.5 (PR verify) succeeds. For direct-to-main path: label removed after push succeeds.
 
 ## Output Summary
 
 After processing all issues, output one line per issue:
 
 ```
-[flush-plan-docs] THR-280: committed docs/plan/2026-04-27-test-suite-stabilization-v2.md at abc1234. Label removed.
+[flush-plan-docs] THR-280: committed docs/plans/2026-04-27-test-suite-stabilization-v2.md at abc1234. Label removed.
 [flush-plan-docs] THR-281: bounce — multiple paths found: [path1, path2]. Label intact.
 [flush-plan-docs] THR-282: already committed at def5678. Label removed.
+[flush-plan-docs] sweep cleared THR-283: issue is Done, label was stale.
 ```
 
-Then a final summary: `[flush-plan-docs] Done. X processed, Y bounced.`
+Then a final summary: `[flush-plan-docs] Done. X processed, Y bounced, Z swept.`
 
 ## Impediment Notes
 
@@ -157,3 +270,7 @@ Then a final summary: `[flush-plan-docs] Done. X processed, Y bounced.`
 - **Impediment #48:** Linear `save_issue` state/label writes may silently drop. Always verify-after-write.
 - **Impediment #83/84:** `git push origin main` may fail with GH013 when branch protection is active.
   Use the PR fallback path described in Step 2f.
+- **Impediment #110:** Branch protection is enforced on `main` — direct push is always rejected.
+  The branch-fallback path in Step 2f is the designed behavior, not an error condition.
+- **Impediment #112:** Branch-fallback previously committed locally but never pushed or opened a PR.
+  Fixed in THR-423 (2026-05-12): push + PR are now required steps with verify-after-write.
