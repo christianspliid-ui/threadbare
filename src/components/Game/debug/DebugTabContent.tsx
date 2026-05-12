@@ -45,11 +45,12 @@ import { DriftVisualiser } from './DriftVisualiser';
 import { HandStateInspector } from './HandStateInspector';
 import { DetectionStateInspector } from './DetectionStateInspector';
 import { ForecastFactorsInspector } from './ForecastFactorsInspector';
+import { ActionUnlocksView } from './ActionUnlocksView';
 import { EMPTY_STATE_STYLE } from './debugPanelStyles';
 import type { KnowsClueOfEdgeProperties } from '../../../types/knowledge';
 import type { FlipTableRuntimeState } from '../../../types/contentShells';
 
-export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events' | 'shells' | 'compositions' | 'phases' | 'choices' | 'drift' | 'hand' | 'detection' | 'forecast' | 'foreshadowing';
+export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events' | 'shells' | 'compositions' | 'phases' | 'choices' | 'drift' | 'hand' | 'detection' | 'forecast' | 'foreshadowing' | 'action-unlocks';
 
 export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'feed', label: 'Feed' }, { id: 'agent-follow', label: 'Agent' },
@@ -71,6 +72,7 @@ export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'detection', label: 'Detection' },
   { id: 'forecast', label: 'Forecast' },
   { id: 'foreshadowing', label: 'Foreshadowing' },
+  { id: 'action-unlocks', label: 'Action Unlocks' },
 ];
 
 export interface DebugTabContentProps {
@@ -207,6 +209,7 @@ export function DebugTabContent({
       </div>
     );
   }
+  if (viewMode === 'action-unlocks') return <ActionUnlocksView />;
   if (viewMode === 'cli') return <CommandTab retinueAgents={retinueAgents} followAgentId={effectiveAgentId} />;
   if (viewMode === 'strategic') return <StrategicDebugTab strategicState={strategicState} graph={graph} effectiveAgentId={effectiveAgentId} currentTick={currentTick} />;
   if (viewMode === 'social') {

@@ -221,6 +221,8 @@ export interface GameState {
 
   // Unified Actions (replaces actionsInProgress + encounterProgress)
   unifiedActions: UnifiedAction[];
+  /** Run-scoped unlocked actions (Starter actions are always available regardless). */
+  unlockedActionIds?: readonly string[];
 
   // Pending hex mutations — accumulated by hex action resolution, consumed by phaseHexState
   pendingHexMutations?: HexMutation[];

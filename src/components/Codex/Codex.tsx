@@ -21,9 +21,18 @@ export default function Codex() {
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [starterOnly, setStarterOnly] = useState(false);
+
+  const starterCount = useMemo(
+    () => allEntries.filter((entry) => entry.isStarter === true).length,
+    [allEntries],
+  );
 
   const filteredEntries = useMemo(() => {
     let entries = allEntries.filter(e => e.category === selectedCategory);
+    if (starterOnly) {
+      entries = entries.filter(e => e.isStarter === true);
+    }
     if (selectedSubcategory) {
       entries = entries.filter(e => e.subcategory === selectedSubcategory);
     }
@@ -36,7 +45,7 @@ export default function Codex() {
       );
     }
     return entries;
-  }, [allEntries, selectedCategory, selectedSubcategory, searchQuery]);
+  }, [allEntries, selectedCategory, selectedSubcategory, searchQuery, starterOnly]);
 
   const selectedEntry = useMemo(() => {
     if (!selectedEntryId) return null;
@@ -103,6 +112,20 @@ export default function Codex() {
         <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginLeft: 'auto' }}>
           {filteredEntries.length} of {allEntries.length} entries
         </div>
+        <button
+          type="button"
+          onClick={() => setStarterOnly(prev => !prev)}
+          style={{
+            borderRadius: '999px',
+            border: '1px solid var(--border-subtle)',
+            padding: '3px 10px',
+            fontSize: 'var(--text-xs)',
+            color: starterOnly ? 'var(--accent-gold)' : 'var(--text-muted)',
+            backgroundColor: starterOnly ? 'var(--accent-gold-glow)' : 'var(--bg-surface)',
+          }}
+        >
+          Starter ({starterCount})
+        </button>
 
         {/* Back to game link */}
         <a

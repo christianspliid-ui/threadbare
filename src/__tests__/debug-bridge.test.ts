@@ -272,4 +272,34 @@ describe('debug bridge scene snapshot contract', () => {
     expect(traces).toHaveLength(1);
     expect(traces[0].agentId).toBe('agent-1');
   });
+
+  it('listStarterActions returns canonical starter IDs and listLockedActions excludes starter/unlocked IDs', async () => {
+    const debug = requireDebugBridge();
+    debug._registerGameStateProvider(() => ({
+      unlockedActionIds: ['divine.inspire'],
+    } as unknown as import('../types/gameState').GameState));
+
+    const starters = await debug.listStarterActions();
+    expect(starters).toContain('divine.dream');
+    expect(starters).toContain('hex.survey');
+
+    const locked = await debug.listLockedActions();
+    expect(locked.some((entry) => entry.id === 'divine.dream')).toBe(false);
+    expect(locked.some((entry) => entry.id === 'divine.inspire')).toBe(false);
+  });
+
+  it('grantAction delegates to action bridge callback', async () => {
+    const debug = requireDebugBridge();
+    debug._registerActionBridge({
+      listActions: () => [],
+      fireAction: () => ({ success: false, message: 'unused' }),
+      grantAction: (actionId: string) => ({ success: true, actionId, message: `Unlocked ${actionId}` }),
+    });
+
+    await expect(debug.grantAction('action.test_unlock')).resolves.toEqual({
+      success: true,
+      actionId: 'action.test_unlock',
+      message: 'Unlocked action.test_unlock',
+    });
+  });
 });

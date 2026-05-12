@@ -434,6 +434,68 @@ describe('getTargetActionSlots — revelation gate (filter 7)', () => {
   });
 });
 
+describe('getTargetActionSlots — unlock gate (filter 8)', () => {
+  it('hides non-starter templates when no unlocks are present', () => {
+    const templates = [
+      makeTemplate({ id: 'action.nonstarter', name: 'Nonstarter', targetCategories: ['actor'] }),
+    ];
+    const slots = getTargetActionSlots({
+      target: actorTarget(),
+      templates,
+      pool: BASE_POOL,
+      primarySphere: 'mind',
+      accessibleSpheres: ['mind'],
+      unlockedActionIds: [],
+    });
+    expect(slots).toHaveLength(0);
+  });
+
+  it('keeps explicit starter templates visible without unlocks', () => {
+    const templates = [
+      makeTemplate({ id: 'action.starter', name: 'Starter', targetCategories: ['actor'], starter: true }),
+    ];
+    const slots = getTargetActionSlots({
+      target: actorTarget(),
+      templates,
+      pool: BASE_POOL,
+      primarySphere: 'mind',
+      accessibleSpheres: ['mind'],
+      unlockedActionIds: [],
+    });
+    expect(slots).toHaveLength(1);
+  });
+
+  it('keeps canonical starter IDs visible as fail-soft even if starter flag is missing', () => {
+    const templates = [
+      makeTemplate({ id: 'divine.dream', name: 'Dream', targetCategories: ['actor'] }),
+    ];
+    const slots = getTargetActionSlots({
+      target: actorTarget(),
+      templates,
+      pool: BASE_POOL,
+      primarySphere: 'mind',
+      accessibleSpheres: ['mind'],
+      unlockedActionIds: [],
+    });
+    expect(slots).toHaveLength(1);
+  });
+
+  it('shows non-starter templates when explicitly unlocked', () => {
+    const templates = [
+      makeTemplate({ id: 'action.nonstarter', name: 'Nonstarter', targetCategories: ['actor'] }),
+    ];
+    const slots = getTargetActionSlots({
+      target: actorTarget(),
+      templates,
+      pool: BASE_POOL,
+      primarySphere: 'mind',
+      accessibleSpheres: ['mind'],
+      unlockedActionIds: ['action.nonstarter'],
+    });
+    expect(slots).toHaveLength(1);
+  });
+});
+
 describe('getTargetActionSlots — MAX_SLOTS cap', () => {
   it('returns at most MAX_SLOTS slots', () => {
     const templates = Array.from({ length: 30 }, (_, i) =>

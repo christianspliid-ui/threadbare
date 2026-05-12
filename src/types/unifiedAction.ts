@@ -798,6 +798,12 @@ export interface UnifiedActionTemplate {
    * Omit on most templates — the fallback inference uses target structure.
    */
   readonly trayTier?: 'core' | 'self' | 'rare';
+
+  /**
+   * Starter-floor marker (THR-419).
+   * Starter actions are always visible, even without explicit unlocks.
+   */
+  readonly starter?: boolean;
 }
 
 /**
