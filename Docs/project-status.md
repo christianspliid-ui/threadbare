@@ -22,7 +22,7 @@
 - 2026-05-09 batch: THR-268, THR-389, THR-391
 - 2026-05-10 batch: THR-394
 - 2026-05-11 batch: THR-393, THR-403, THR-408, THR-411
-- 2026-05-12 batch: THR-413, THR-404, THR-397, THR-398, THR-399, THR-405, THR-416
+- 2026-05-12 batch: THR-413, THR-404, THR-397, THR-398, THR-399, THR-405, THR-416, THR-409
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
@@ -55,3 +55,4 @@ Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Compl
 - ✅ 2026-05-12: THR-398 shipped — Collapsed 6 hex-recon verbs to 2. Retired `hex.sense_threads`, `hex.sense_leylines`, `hex.divine_populace`, `hex.scry_factions`. Survey (`hex.survey`) now reveals land+people in a single cast via multi-layer `TEMPLATE_REVELATION_MAP`. `TEMPLATE_REVELATION_MAP` widened to support `NarrativeLayer | readonly NarrativeLayer[]`. `resolveRevelation` emits one `LayerRevealedTrace` per layer. `trayTier: 'core'/'rare'` added to Survey/ReadCurrents. PR #253.
 - ✅ 2026-05-12: THR-399 shipped — 4 self-targeting ascendant actions: Stillness (essence regen on primary sphere), Recede (nextActionDiscount buff), Focus (nextActionTierBoost buff), Reveal (push divineInfluences to mortals on avatar hex). 8 named constants in `self-action-constants.ts`, `SelfActionTrace` + `'self_action'` category, post-processor hook in `unifiedActionResolution`. 17 tests. PR #254.
 - ✅ 2026-05-12: THR-405 shipped — Rulebook Canon Page Phase 3 (maintenance cadence). `Rulebook impact?` checkbox added to CLAUDE.md Design Governance. `Docs/audits/_rulebook-architecture-assessment-template.md` created. `monthly-rulebook-review` scheduled task registered in CLAUDE.md (task creation deferred to THR-417 — blocked by impediment #133, create_scheduled_task blocked in scheduled sessions). PR #256.
+- ✅ 2026-05-12: THR-409 shipped — worktree graveyard cleanup. Removed 35 of 74 registered worktrees (registry now 39); 33 tfws-pickup/resume entries kept per 14-day safety filter; 12 .claude/worktree dirs remain on disk (git-deregistered, locked by active sessions); trusting-vaughan-733101 (THR-394) preserved with 2 unmerged code commits not yet in main.
