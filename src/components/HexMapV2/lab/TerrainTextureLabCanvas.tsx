@@ -24,6 +24,8 @@ import type {
   TerrainTextureLabVignetteZoneRule,
 } from './terrainTextureLabVignettePrototype';
 import { ChunkedFillerLayer } from './vignette/ChunkedFillerLayer';
+import { ChunkedLandmarkLayer } from './vignette/ChunkedLandmarkLayer';
+import { VignetteClickRegistry } from './vignette/VignetteClickRegistry';
 import type { ResolvedHexFiller } from './vignette/VignetteResolver';
 
 interface TerrainTextureLabCanvasProps {
@@ -37,6 +39,7 @@ interface TerrainTextureLabCanvasProps {
   clickTargets: TerrainTextureLabVignetteClickTarget[];
   fillerSpec: ResolvedHexFiller[];
   showChunkBounds: boolean;
+  showLandmarkBounds: boolean;
   selectedHexId: string | null;
   selectedClickTargetId: string | null;
   seed: number;
@@ -45,6 +48,7 @@ interface TerrainTextureLabCanvasProps {
   viewSettings: TerrainTextureLabViewSettings;
   onHexSelect: (hexId: string) => void;
   onLandmarkSelect: (targetId: string, hexId: string) => void;
+  onLandmarkLayerBuilt?: (batchCount: number) => void;
   onZoom?: (delta: number) => void;
 }
 
@@ -54,7 +58,6 @@ interface SceneRefs {
   camera: THREE.PerspectiveCamera;
   mesh: THREE.InstancedMesh;
   material: THREE.ShaderMaterial;
-  modelGroup: THREE.Group;
   terrainGlbGroup: THREE.Group;
   zoneGroup: THREE.Group;
   slotAnchorGroup: THREE.Group;
@@ -329,6 +332,7 @@ export function TerrainTextureLabCanvas({
   clickTargets,
   fillerSpec,
   showChunkBounds,
+  showLandmarkBounds,
   selectedHexId,
   selectedClickTargetId,
   seed,
@@ -337,6 +341,7 @@ export function TerrainTextureLabCanvas({
   viewSettings,
   onHexSelect,
   onLandmarkSelect,
+  onLandmarkLayerBuilt,
   onZoom,
 }: TerrainTextureLabCanvasProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -353,8 +358,9 @@ export function TerrainTextureLabCanvas({
   const onZoomRef = useRef(onZoom);
   const clickTargetsRef = useRef(clickTargets);
   const loaderRef = useRef<GLTFLoader | null>(null);
-  const templateCacheRef = useRef<Map<string, Promise<THREE.Group>>>(new Map());
-  const resolvedTemplateRef = useRef<Map<string, THREE.Group>>(new Map());
+  const landmarkLayerRef = useRef<ChunkedLandmarkLayer | null>(null);
+  const clickRegistryRef = useRef(new VignetteClickRegistry());
+  const onLandmarkLayerBuiltRef = useRef(onLandmarkLayerBuilt);
   const raycasterRef = useRef(new THREE.Raycaster());
   const pointerRef = useRef(new THREE.Vector2());
   const terrainTileTemplatePromiseRef = useRef<Map<LabTerrainKey, Promise<THREE.Group>>>(new Map());
@@ -401,6 +407,10 @@ export function TerrainTextureLabCanvas({
   useEffect(() => {
     onLandmarkSelectRef.current = onLandmarkSelect;
   }, [onLandmarkSelect]);
+
+  useEffect(() => {
+    onLandmarkLayerBuiltRef.current = onLandmarkLayerBuilt;
+  }, [onLandmarkLayerBuilt]);
 
   useEffect(() => {
     onZoomRef.current = onZoom;
@@ -452,10 +462,6 @@ export function TerrainTextureLabCanvas({
     }
     scene.add(outlineGroup);
 
-    const modelGroup = new THREE.Group();
-    modelGroup.name = 'TerrainTextureLabModels';
-    scene.add(modelGroup);
-
     const terrainGlbGroup = new THREE.Group();
     terrainGlbGroup.name = 'TerrainTextureLabTerrainGlbs';
     terrainGlbGroup.visible = false;
@@ -493,7 +499,6 @@ export function TerrainTextureLabCanvas({
       camera,
       mesh,
       material,
-      modelGroup,
       terrainGlbGroup,
       zoneGroup,
       slotAnchorGroup,
@@ -586,11 +591,7 @@ export function TerrainTextureLabCanvas({
       disposeAndClearGroupChildren(fillerDotGroup);
       disposeLineLoop(selectionOutline);
       disposeLineLoop(landmarkSelectionRing);
-      clearGroupChildren(modelGroup);
       clearGroupChildren(terrainGlbGroup);
-      resolvedTemplateRef.current.forEach(template => disposeObjectResources(template));
-      resolvedTemplateRef.current.clear();
-      templateCacheRef.current.clear();
       terrainTileTemplateRef.current.forEach(template => disposeObjectResources(template));
       terrainTileTemplateRef.current.clear();
       terrainTileTemplatePromiseRef.current.clear();
@@ -602,6 +603,8 @@ export function TerrainTextureLabCanvas({
       loaderRef.current = null;
       fillerLayerRef.current?.dispose();
       fillerLayerRef.current = null;
+      landmarkLayerRef.current?.dispose();
+      landmarkLayerRef.current = null;
     };
   }, [previewHexes, sceneBounds]);
 
@@ -717,6 +720,21 @@ export function TerrainTextureLabCanvas({
   useEffect(() => {
     fillerLayerRef.current?.setChunkBoundsVisible(showChunkBounds);
   }, [showChunkBounds]);
+
+  useEffect(() => {
+    landmarkLayerRef.current?.setChunkBoundsVisible(showLandmarkBounds);
+  }, [showLandmarkBounds]);
+
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    (window as Record<string, unknown>).__TERRAIN_LAB = {
+      get clickRegistry() { return clickRegistryRef.current; },
+      get landmarkBatchCount() { return landmarkLayerRef.current?.batchCount ?? 0; },
+    };
+    return () => {
+      delete (window as Record<string, unknown>).__TERRAIN_LAB;
+    };
+  }, []);
 
   // Toggle between procedural shader hexes and Meshy-generated textured GLB hex tiles.
   // Each GLB is a complete hex tile with geometry + UV + baked PBR material, placed
@@ -834,95 +852,30 @@ export function TerrainTextureLabCanvas({
   }, [viewSettings.useImageTextures, previewHexes]);
 
   useEffect(() => {
-    const sceneRefs = sceneRef.current;
+    const scene = sceneRef.current?.scene;
     const loader = loaderRef.current;
-    if (!sceneRefs || !loader) return;
+    if (!scene || !loader) return;
 
-    let cancelled = false;
-    clearGroupChildren(sceneRefs.modelGroup);
+    const layer = new ChunkedLandmarkLayer(scene, loader);
+    landmarkLayerRef.current?.dispose();
+    landmarkLayerRef.current = layer;
 
-    async function loadTemplate(model: TerrainTextureLabModelDefinition): Promise<THREE.Group> {
-      const cached = templateCacheRef.current.get(model.id);
-      if (cached) return cached;
-
-      const promise = loader.loadAsync(model.sourceUrl).then((gltf) => {
-        const materialCache = new Map<THREE.Material, THREE.MeshBasicMaterial>();
-        gltf.scene.traverse(child => {
-          if (!(child instanceof THREE.Mesh)) return;
-          const original = Array.isArray(child.material) ? child.material[0] : child.material;
-          if (!materialCache.has(original)) {
-            const originalColor = original instanceof THREE.MeshStandardMaterial || original instanceof THREE.MeshBasicMaterial
-              ? original.color.clone()
-              : new THREE.Color('#ffffff');
-            materialCache.set(original, new THREE.MeshBasicMaterial({
-              color: originalColor,
-              side: THREE.DoubleSide,
-            }));
-          }
-          child.material = materialCache.get(original)!;
-          child.castShadow = false;
-          child.receiveShadow = false;
-        });
-
-        if (model.sourceKind !== 'builtin') {
-          const bounds = new THREE.Box3().setFromObject(gltf.scene);
-          const size = bounds.getSize(new THREE.Vector3());
-          const center = bounds.getCenter(new THREE.Vector3());
-          const footprintRadius = Math.max(size.x, size.y) * 0.5;
-          const autoScale = footprintRadius > 0
-            ? TERRAIN_TEXTURE_LAB_CONSTANTS.MODEL_TARGET_FOOTPRINT_RADIUS / footprintRadius
-            : 1;
-
-          gltf.scene.position.x -= center.x;
-          gltf.scene.position.y -= center.y;
-          gltf.scene.position.z -= bounds.min.z;
-          gltf.scene.scale.setScalar(autoScale);
-        }
-
-        resolvedTemplateRef.current.set(model.id, gltf.scene);
-        return gltf.scene;
-      });
-
-      templateCacheRef.current.set(model.id, promise);
-      return promise;
-    }
-
-    async function syncPlacements() {
-      for (const placement of placements) {
-        const model = models.find(entry => entry.id === placement.modelId);
-        const previewHex = previewHexMap.get(placement.hexId);
-        if (!model || !previewHex) continue;
-
-        try {
-          const template = await loadTemplate(model);
-          if (cancelled) return;
-
-          const clone = template.clone(true);
-          const hasPosition = placement.x != null && placement.y != null;
-          const fallback = hasPosition ? null : getTerrainTextureLabHexCenter(previewHex.col, previewHex.row, TERRAIN_TEXTURE_LAB_CONSTANTS.HEX_RADIUS);
-          const posX = hasPosition ? placement.x! : fallback!.x;
-          const posY = hasPosition ? placement.y! : fallback!.y;
-          clone.position.set(
-            posX,
-            posY,
-            TERRAIN_TEXTURE_LAB_CONSTANTS.MODEL_LAYER_Z + placement.heightOffset,
-          );
-          clone.scale.setScalar(placement.scale);
-          clone.rotation.z = THREE.MathUtils.degToRad(placement.rotationDegrees);
-          sceneRefs.modelGroup.add(clone);
-        } catch (error) {
-          console.warn(`[TerrainTextureLab] Failed to load model ${model.sourceUrl}:`, error);
-        }
-      }
-    }
-
-    void syncPlacements();
+    let active = true;
+    void layer.build(placements, models, clickTargets, clickRegistryRef.current).then(success => {
+      if (!active) { layer.dispose(); return; }
+      if (!success) layer.setVisible(false);
+      onLandmarkLayerBuiltRef.current?.(layer.batchCount);
+    });
 
     return () => {
-      cancelled = true;
-      clearGroupChildren(sceneRefs.modelGroup);
+      active = false;
+      layer.dispose();
+      if (landmarkLayerRef.current === layer) {
+        landmarkLayerRef.current = null;
+        clickRegistryRef.current.clear();
+      }
     };
-  }, [models, placements, previewHexMap]);
+  }, [placements, models, clickTargets]);
 
   return (
     <div

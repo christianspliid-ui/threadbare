@@ -172,6 +172,7 @@ export function TerrainTextureLab() {
   const [placementRotationDegrees, setPlacementRotationDegrees] = useState(TERRAIN_TEXTURE_LAB_CONSTANTS.DEFAULT_MODEL_ROTATION_DEGREES);
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
   const [selectedClickTargetId, setSelectedClickTargetId] = useState<string | null>(null);
+  const [landmarkBatchCount, setLandmarkBatchCount] = useState(0);
 
   const selectedConfig = configs[selectedTerrain];
   const selectedRecipe = getRecipeOption(selectedConfig.recipe);
@@ -213,6 +214,10 @@ export function TerrainTextureLab() {
     const allZoneRules = [...vignettePrototype.zoneRules, ...extraZones];
     return resolveAllHexFiller(fillerHexes, allZoneRules, seed, vignetteSettings.densityScale);
   }, [vignettePrototype.zoneRules, seed, vignetteSettings.densityScale]);
+  const fillerInstanceCount = useMemo(
+    () => fillerSpec.reduce((acc, h) => acc + h.instances.length, 0),
+    [fillerSpec],
+  );
   const selectedClickTarget = selectedClickTargetId
     ? vignettePrototype.clickTargets.find(target => target.id === selectedClickTargetId) ?? null
     : null;
@@ -783,8 +788,13 @@ export function TerrainTextureLab() {
 
                 <VignetteDebugOverlay
                   showChunkBounds={vignetteSettings.showChunkBounds}
+                  showLandmarkBounds={vignetteSettings.showLandmarkBounds}
                   densityScale={vignetteSettings.densityScale}
+                  fillerInstanceCount={fillerInstanceCount}
+                  landmarkInstanceCount={combinedPlacements.length}
+                  landmarkBatchCount={landmarkBatchCount}
                   onShowChunkBoundsChange={(showChunkBounds) => updateVignetteSettings({ showChunkBounds })}
+                  onShowLandmarkBoundsChange={(showLandmarkBounds) => updateVignetteSettings({ showLandmarkBounds })}
                   onDensityScaleChange={(densityScale) => updateVignetteSettings({ densityScale })}
                 />
 
@@ -1137,6 +1147,7 @@ export function TerrainTextureLab() {
             clickTargets={vignettePrototype.clickTargets}
             fillerSpec={fillerSpec}
             showChunkBounds={vignetteSettings.showChunkBounds}
+            showLandmarkBounds={vignetteSettings.showLandmarkBounds}
             selectedHexId={selectedHexId}
             selectedClickTargetId={selectedClickTargetId}
             seed={seed}
@@ -1145,6 +1156,7 @@ export function TerrainTextureLab() {
             viewSettings={viewSettings}
             onHexSelect={handleHexSelect}
             onLandmarkSelect={handleLandmarkSelect}
+            onLandmarkLayerBuilt={setLandmarkBatchCount}
             onZoom={(delta) => setViewSettings(prev => ({
               ...prev,
               zoom: clamp(

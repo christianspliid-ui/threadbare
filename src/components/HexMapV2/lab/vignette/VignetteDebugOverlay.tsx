@@ -34,15 +34,25 @@ const LABEL_STYLE: CSSProperties = {
 
 interface VignetteDebugOverlayProps {
   showChunkBounds: boolean;
+  showLandmarkBounds: boolean;
   densityScale: number;
+  fillerInstanceCount: number;
+  landmarkInstanceCount: number;
+  landmarkBatchCount: number;
   onShowChunkBoundsChange: (value: boolean) => void;
+  onShowLandmarkBoundsChange: (value: boolean) => void;
   onDensityScaleChange: (value: number) => void;
 }
 
 export function VignetteDebugOverlay({
   showChunkBounds,
+  showLandmarkBounds,
   densityScale,
+  fillerInstanceCount,
+  landmarkInstanceCount,
+  landmarkBatchCount,
   onShowChunkBoundsChange,
+  onShowLandmarkBoundsChange,
   onDensityScaleChange,
 }: VignetteDebugOverlayProps) {
   return (
@@ -54,8 +64,21 @@ export function VignetteDebugOverlay({
             checked={showChunkBounds}
             onChange={e => onShowChunkBoundsChange(e.target.checked)}
           />
-          <span style={LABEL_STYLE}>Chunk bounds</span>
+          <span style={LABEL_STYLE}>Filler bounds</span>
         </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', cursor: 'pointer' }}>
+          <input
+            type="checkbox"
+            checked={showLandmarkBounds}
+            onChange={e => onShowLandmarkBoundsChange(e.target.checked)}
+          />
+          <span style={LABEL_STYLE}>Landmark bounds</span>
+        </label>
+      </div>
+      <div style={ROW_STYLE}>
+        <span style={LABEL_STYLE}>
+          Filler: {fillerInstanceCount} · Landmarks: {landmarkInstanceCount} ({landmarkBatchCount} batches)
+        </span>
       </div>
       <div style={ROW_STYLE}>
         <span style={LABEL_STYLE}>Density:</span>
