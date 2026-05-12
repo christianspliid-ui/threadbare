@@ -1,5 +1,7 @@
 # Project History
 
+✅ **THR-399** (2026-05-12) — Add 4 self-targeting ascendant actions: Stillness (essence regen on primary sphere, rarity 1), Recede (nextActionDiscount buff, rarity 1), Focus (nextActionTierBoost buff, rarity 2), Reveal (push divineInfluences to mortals on avatar hex, rarity 3). 8 named constants in `self-action-constants.ts`, `SelfActionTrace` + `'self_action'` trace category, post-processor hook in `unifiedActionResolution`. 17 tests green. PR #254.
+
 ✅ **THR-398** (2026-05-12) — Collapse 6 hex-recon verbs to 2. Retired `hex.sense_threads`, `hex.sense_leylines`, `hex.divine_populace`, `hex.scry_factions`. Survey now reveals land+people in one cast; Read the Currents covers soul. `TEMPLATE_REVELATION_MAP` widened to support multi-layer arrays; `resolveRevelation` emits one trace per layer. `trayTier` tags added. 727 tests pass. PR #253.
 
 ✅ **THR-397** (2026-05-12) — Recurve ascendant action rarity tiers (30/40/25/5). Re-tagged `rarityTier` on all 101 ascendant action templates in `unified-action-templates.ts`. 40 edits: 21×(1→2), 12×(2→3), 5×(1→3), 2×(3→4). Final distribution: {1:32, 2:40, 3:25, 4:4}. Data-only change; no logic/prose/UI edits. PR #251.
