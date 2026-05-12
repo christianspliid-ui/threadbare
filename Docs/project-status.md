@@ -22,7 +22,7 @@
 - 2026-05-09 batch: THR-268, THR-389, THR-391
 - 2026-05-10 batch: THR-394
 - 2026-05-11 batch: THR-393, THR-403, THR-408, THR-411
-- 2026-05-12 batch: THR-413, THR-404
+- 2026-05-12 batch: THR-413, THR-404, THR-397
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
@@ -51,3 +51,4 @@ Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Compl
 - ✅ 2026-05-11: THR-403 shipped — Rulebook Canon Page Phase 1. New `Docs/canon/rulebook.md` (synthesis layer, 8 sections, `[IMPL]`/`[DESIGN]`/`[OPEN]` flags inline, per-section authority-boundary footers) + `Docs/canon/rulebook-quick-reference.md` (always-loaded board-game card). Wiring updates to `Docs/canon/README.md`, `state-of-game-design` SKILL (mirrored to `.agents/`), and CLAUDE.md (Canon table + Session Workflow load order + Domain Skills row). First architecture-assessment pass written to `Docs/audits/2026-05-11-rulebook-architecture-assessment.md`. Phase 2 (THR-404) and Phase 3 (THR-405) follow-ups already filed (Idea, blocked-by THR-403, will promote on close). Verification: tsc clean, vite build 9.06s, 11072 tests pass. Browser-verify exempt (docs-only).
 - ✅ 2026-05-12: THR-404 shipped — drift-scan S6-S10 (rulebook lint signals). Five new weekly signals: rulebook→UL (Definitions: shard files + terms), rulebook→Canon pages (Spec: existence), rulebook IMPL tags (identifier presence in .ts files), rulebook→Vision (Why: files in Obsidian vault), quick-ref vs rulebook (ticks/day, doom stages, reaches, verbs). New `scripts/lint-rulebook.ts` + extended `scripts/drift-scan/index.ts` + OBSIDIAN_VAULT_PATH in drift-scan.yml. PR #250.
 - ✅ 2026-05-12: THR-413 shipped — All 6 content authoring skills (encounter-pipeline, attachment-pipeline, prose-content-systems, prose-pipeline, prose-vignettes-and-enrichment, template-encounter-rewrite) now open with a `> **Load before authoring:**` blockquote directing agents to load `Docs/canon/rulebook-quick-reference.md`. Mirrored to `.agents/skills/`. `last_validated_against` bumped to 2026-05-12. PR #248.
+- ✅ 2026-05-12: THR-397 shipped — Ascendant action rarity recurve. Re-tagged all 101 ascendant `rarityTier` values in `unified-action-templates.ts` to match spec distribution {1:32, 2:40, 3:25, 4:4}. 40 edits, data-only change. PR #251.
