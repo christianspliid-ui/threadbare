@@ -1276,7 +1276,7 @@ export function buildGateDutyEncounterStageModel({
       subtitle: getGateDutyHeaderSubtitle(currentStepIndex),
       locationLabel,
       urgencyLabel: 'Curfew pressure',
-      threatLabel: getRarityName(template.rarityTier),
+      threatLabel: getRarityName(activeAction?.effectiveRarityTier ?? template.rarityTier),
       threadTier,
       familyLabel: 'Clearance Gate',
     },

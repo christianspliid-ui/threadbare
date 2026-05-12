@@ -889,6 +889,8 @@ export interface UnifiedAction {
   readonly disregardRemaining?: boolean;
   /** Effective attention tier — computed at action creation, may be promoted mid-encounter. */
   readonly effectiveTier?: AttentionTier | 'invisible';
+  /** Rarity tier after Focus buff was applied at action creation (THR-416). Prefer this over template.rarityTier at read sites. */
+  readonly effectiveRarityTier?: RarityTier;
   /** Reuse-first binding of encounter support cast/places resolved at action start. */
   readonly supportBindings?: readonly EncounterSupportBinding[];
   /** Persistent clearance/scrutiny shell instances bound at action start. */

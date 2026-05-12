@@ -185,7 +185,9 @@ export type TraceCategory =
   | 'spotlight_changed'
   | 'callback_eligibility_computed'
   // Ascendant self-action effects (THR-399)
-  | 'self_action';
+  | 'self_action'
+  // Ascendant buff consumption (THR-416)
+  | 'buff_consumed';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -354,6 +356,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'callback_eligibility_computed',
   // Ascendant self-action effects (THR-399)
   'self_action',
+  // Ascendant buff consumption (THR-416)
+  'buff_consumed',
 ];
 
 /** Base shape for all trace entries */
@@ -1500,7 +1504,9 @@ export type TraceEntry =
   // Composition dual-voice story-beat wiring (THR-254)
   | CompositionStoryBeatTemplateMissingTrace
   // Encounter foreshadowing (THR-389)
-  | ForeshadowingResolutionTrace;
+  | ForeshadowingResolutionTrace
+  // Ascendant buff consumption (THR-416)
+  | BuffConsumedTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {
@@ -1886,4 +1892,20 @@ export interface SelfActionTrace extends TraceBase {
   mortalsAffected?: number;
   /** For Reveal: hex coordinates of the avatar. */
   revealHex?: { col: number; row: number };
+}
+
+/** Trace: Recede/Focus buff was consumed when the next non-self action fired (THR-416) */
+export interface BuffConsumedTrace extends TraceBase {
+  category: 'buff_consumed';
+  ascendantId: string;
+  /** Template ID of the action that consumed the buff. */
+  consumingTemplateId: string;
+  /** Discount fraction applied (0 if Recede was not active). */
+  discountApplied: number;
+  /** Tier boost applied (0 if Focus was not active). */
+  tierBoostApplied: number;
+  /** Essence cost after discount. */
+  effectiveEssenceCost: number;
+  /** Rarity tier after Focus boost. */
+  effectiveRarityTier: number;
 }

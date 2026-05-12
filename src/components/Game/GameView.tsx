@@ -158,6 +158,7 @@ import { pinAgent as pinAgentDebug, unpinAgent as unpinAgentDebug } from '../../
 import type { UnifiedAction } from '../../types/unifiedAction';
 import type { ClearanceGateRuntimeState } from '../../types/contentShells';
 import { touchStructure, touchWorld } from '../../engine/simulationRuntime';
+import { applyAscendantBuffs } from '../../engine/ascendantBuffs';
 import { getEncounterForeshadowing } from '../../engine/foreshadowing/getEncounterForeshadowing';
 import { executeEffect } from '../../engine/effectExecutors';
 import type { ExecutionContext } from '../../engine/effectExecutors';
@@ -2565,7 +2566,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     }
 
     try {
-      const essenceCost = template.essenceCost ?? 0;
+      const buffResult = applyAscendantBuffs(template, gameState.graph, gameState.ascendantId, gameState.tick);
+      if (buffResult.buffsConsumed) touchWorld(runtime);
+
+      const essenceCost = buffResult.effectiveEssenceCost;
       const sphere = template.sphereAffinity ?? archetype.sphereAlignment.primary;
 
       const rng = mulberry32(gameState.seed + gameState.tick * 43);
@@ -2579,7 +2583,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         template,
         rng,
         essencePaid: essenceCost,
+        ...(buffResult.buffsConsumed && { effectiveRarityTier: buffResult.effectiveRarityTier }),
       });
+
+      const buffParenthetical = buffResult.buffsConsumed
+        ? ` (${[buffResult.discountApplied ? 'after Recede' : '', buffResult.tierBoostApplied ? 'with Focus' : ''].filter(Boolean).join(', ')})`
+        : '';
 
       setGameState(prev => {
         const newPool = { ...prev.essencePool };
@@ -2596,7 +2605,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               id: `evt_target_action_${prev.tick}_${Date.now()}`,
               tick: prev.tick,
               type: 'narrative' as const,
-              message: `The Ascendant ${template.narrativeTemplates.initiation}.`,
+              message: `The Ascendant ${template.narrativeTemplates.initiation}.${buffParenthetical}`,
               significance: 0.5,
               sphere,
               isInterventionBeat: false,
@@ -2612,7 +2621,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     } catch (err) {
       console.warn('[targetAction] failed to create action:', err);
     }
-  }, [nonAgentTargetContext, gameState.ascendantId, gameState.seed, gameState.tick, archetype, setGameState, focusedLocation, handleStartMeeting]);
+  }, [nonAgentTargetContext, gameState.ascendantId, gameState.graph, gameState.seed, gameState.tick, archetype, setGameState, focusedLocation, handleStartMeeting, runtime]);
 
   const handleOpenFactionActions = useCallback((factionId: string) => {
     const context = buildActorTargetContext(factionId, gameState.graph);

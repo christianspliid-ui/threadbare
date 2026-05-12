@@ -25,6 +25,7 @@ import type { ToastItem } from '../../../types/notification';
 import type { HexCoord } from '../../../types';
 import type { SimulationRuntime } from '../../../engine/simulationRuntime';
 import { touchWorld } from '../../../engine/simulationRuntime';
+import { applyAscendantBuffs } from '../../../engine/ascendantBuffs';
 import { getFamiliarity, getKnowledgeLevel } from '../../../engine/familiarity';
 import { generateAgendas } from '../../../engine/agendaGenerator';
 import { DIVINE_INFLUENCE_CONSTANTS } from '../../../data/intervention-feedback-content';
@@ -289,6 +290,10 @@ export function useAgentInteraction({
             return;
           }
 
+          // Apply Recede/Focus buffs before creating the action (THR-416)
+          const buffResult = applyAscendantBuffs(template, gameState.graph, gameState.ascendantId, capturedTick);
+          if (buffResult.buffsConsumed && runtime) touchWorld(runtime);
+
           const rng = mulberry32(capturedSeed + capturedTick * 43);
           const action = createUnifiedAction({
             actorId: gameState.ascendantId,
@@ -299,7 +304,8 @@ export function useAgentInteraction({
             tick: capturedTick,
             template,
             rng,
-            essencePaid: template.essenceCost ?? 0,
+            essencePaid: buffResult.effectiveEssenceCost,
+            ...(buffResult.buffsConsumed && { effectiveRarityTier: buffResult.effectiveRarityTier }),
           });
 
           // Timeline: ACTION_START for player-sourced action
@@ -346,10 +352,13 @@ export function useAgentInteraction({
 
           setGameState(prev => {
             const newPool = { ...prev.essencePool };
-            const cost = template.essenceCost ?? 0;
+            const cost = buffResult.effectiveEssenceCost;
             if (cost > 0 && capturedSphere) {
               newPool[capturedSphere] = Math.max(0, (newPool[capturedSphere] ?? 0) - cost);
             }
+            const buffParenthetical = buffResult.buffsConsumed
+              ? ` (${[buffResult.discountApplied ? 'after Recede' : '', buffResult.tierBoostApplied ? 'with Focus' : ''].filter(Boolean).join(', ')})`
+              : '';
             return {
               ...prev,
               essencePool: newPool,
@@ -360,7 +369,7 @@ export function useAgentInteraction({
                   id: `evt_action_${prev.tick}_${Date.now()}`,
                   tick: prev.tick,
                   type: 'narrative' as const,
-                  message: toastMessage,
+                  message: toastMessage + buffParenthetical,
                   significance: 0.5,
                   sphere: capturedSphere ?? undefined,
                   isInterventionBeat: true,
