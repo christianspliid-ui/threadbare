@@ -183,7 +183,9 @@ export type TraceCategory =
   | 'detection_threshold_crossed'
   | 'item_consumed_by_choice'
   | 'spotlight_changed'
-  | 'callback_eligibility_computed';
+  | 'callback_eligibility_computed'
+  // Ascendant self-action effects (THR-399)
+  | 'self_action';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -350,6 +352,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'item_consumed_by_choice',
   'spotlight_changed',
   'callback_eligibility_computed',
+  // Ascendant self-action effects (THR-399)
+  'self_action',
 ];
 
 /** Base shape for all trace entries */
@@ -1861,4 +1865,25 @@ export interface ForeshadowingResolutionTrace extends TraceBase {
   cacheHit: boolean;
   /** Populated only on resolver error (fail-soft path). */
   error?: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Ascendant Self-Action Traces (THR-399)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Trace: an ascendant self-action effect was applied */
+export interface SelfActionTrace extends TraceBase {
+  category: 'self_action';
+  templateId: string;
+  ascendantId: string;
+  /** For Stillness: sphere that received essence, and how much. */
+  essenceRegen?: { sphere: string; delta: number; newTotal: number };
+  /** For Recede: the discount fraction stored as a buff. */
+  discountStored?: number;
+  /** For Focus: the tier boost stored as a buff. */
+  tierBoostStored?: number;
+  /** For Reveal: number of mortals affected on the avatar's hex. */
+  mortalsAffected?: number;
+  /** For Reveal: hex coordinates of the avatar. */
+  revealHex?: { col: number; row: number };
 }

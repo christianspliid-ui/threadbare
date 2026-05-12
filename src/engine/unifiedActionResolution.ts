@@ -62,6 +62,18 @@ import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { ACTION_PRESSURE_SUCCESS, ACTION_PRESSURE_FAILURE } from '../types/sphereAffinity';
 import { resolveRevelationAction } from './revelationEmitter';
 import { resolvePerceiveRelayAction, PERCEIVE_RELAY_TEMPLATE_IDS } from './ruins/perceiveRelay';
+import { getAvatarsOf } from './graphQueries';
+import {
+  STILLNESS_ESSENCE_REGEN,
+  RECEDE_DISCOUNT_FRACTION,
+  FOCUS_TIER_BOOST,
+  REVEAL_DEVOTION_DELTA,
+  REVEAL_FEAR_DELTA,
+  REVEAL_AWE_DELTA,
+  REVEAL_WAKE_MARK_DURATION,
+} from '../data/self-action-constants';
+import type { SelfActionTrace } from '../types/trace';
+import type { AscendantProperties } from '../types/influence';
 import { accumulateImportance, getImportanceDelta, getRarityTier } from './rarity';
 import type { TraceEntry } from '../types/trace';
 import type { SimulationRuntime } from './simulationRuntime';
@@ -1671,6 +1683,149 @@ function describeStepOutcome(outcome: StepOutcome): string {
   }
 }
 
+// ─── Self-Action Post-Processor (THR-399) ───────────────────────
+
+const SELF_ACTION_TEMPLATE_IDS = new Set([
+  'divine.self.stillness',
+  'divine.self.recede',
+  'divine.self.focus',
+  'divine.self.reveal',
+]);
+
+/**
+ * Applies side-effects that require engine access beyond GraphOps:
+ *   - Stillness: regenerate essence on primary sphere
+ *   - Reveal: push divineInfluences onto every individual actor on the avatar's hex
+ *
+ * Recede and Focus write their buffs via onSuccess GraphOps in the template definition.
+ * Fail-soft: any error logs a warning and returns without crashing.
+ */
+function resolveSelfActionEffect(
+  templateId: string,
+  state: GameState,
+  tick: number,
+): void {
+  const ascendantNode = state.graph.getNode(state.ascendantId);
+  const props = ascendantNode?.properties as AscendantProperties | undefined;
+
+  if (templateId === 'divine.self.stillness') {
+    if (!props?.essencePool || !props.sphereAlignment) return;
+    const primarySphere = props.sphereAlignment.primary as SphereName;
+    const current = props.essencePool[primarySphere] ?? 0;
+    const max = props.maxEssence ?? Infinity;
+    const newTotal = Math.min(current + STILLNESS_ESSENCE_REGEN, max);
+    state.graph.updateNode(state.ascendantId, {
+      properties: { essencePool: { ...props.essencePool, [primarySphere]: newTotal } },
+    });
+    emitTrace({
+      category: 'self_action',
+      tick,
+      templateId,
+      ascendantId: state.ascendantId,
+      essenceRegen: { sphere: primarySphere, delta: newTotal - current, newTotal },
+      summary: `Stillness: +${newTotal - current} ${primarySphere} essence (now ${newTotal})`,
+    } as SelfActionTrace);
+    return;
+  }
+
+  if (templateId === 'divine.self.recede') {
+    const discount = props?.nextActionDiscount ?? RECEDE_DISCOUNT_FRACTION;
+    emitTrace({
+      category: 'self_action',
+      tick,
+      templateId,
+      ascendantId: state.ascendantId,
+      discountStored: discount,
+      summary: `Recede: ${Math.round(discount * 100)}% discount stored for next action`,
+    } as SelfActionTrace);
+    return;
+  }
+
+  if (templateId === 'divine.self.focus') {
+    const boost = props?.nextActionTierBoost ?? FOCUS_TIER_BOOST;
+    emitTrace({
+      category: 'self_action',
+      tick,
+      templateId,
+      ascendantId: state.ascendantId,
+      tierBoostStored: boost,
+      summary: `Focus: +${boost} tier boost stored for next action`,
+    } as SelfActionTrace);
+    return;
+  }
+
+  if (templateId === 'divine.self.reveal') {
+    const avatars = getAvatarsOf(state.graph, state.ascendantId);
+    if (avatars.length === 0) return;
+
+    // Resolve avatar hex
+    const avatar = avatars[0];
+    const avatarLocationId = avatar.properties?.locationId as string | undefined;
+    if (!avatarLocationId) return;
+    let locNode = state.graph.getNode(avatarLocationId);
+    if (!locNode) return;
+    if (locNode.type === 'sublocation') {
+      const parentId = locNode.properties?.parentLocationId as string | undefined;
+      if (!parentId) return;
+      locNode = state.graph.getNode(parentId);
+      if (!locNode) return;
+    }
+    const hexCol = locNode.properties?.hexCol as number | undefined;
+    const hexRow = locNode.properties?.hexRow as number | undefined;
+    if (hexCol === undefined || hexRow === undefined) return;
+
+    // Apply reveal influence to all individual actors on the avatar's hex
+    let mortalsAffected = 0;
+    const allActors = state.graph.getNodesByType('actor')
+      .filter(a => a.properties?.actorType === 'individual');
+
+    for (const actor of allActors) {
+      const actorLocationId = actor.properties?.locationId as string | undefined;
+      if (!actorLocationId) continue;
+      let actorLoc = state.graph.getNode(actorLocationId);
+      if (!actorLoc) continue;
+      if (actorLoc.type === 'sublocation') {
+        const parentId = actorLoc.properties?.parentLocationId as string | undefined;
+        if (!parentId) continue;
+        actorLoc = state.graph.getNode(parentId);
+        if (!actorLoc) continue;
+      }
+      const aCol = actorLoc.properties?.hexCol as number | undefined;
+      const aRow = actorLoc.properties?.hexRow as number | undefined;
+      if (aCol !== hexCol || aRow !== hexRow) continue;
+
+      const existing: unknown[] = (actor.properties?.divineInfluences as unknown[]) ?? [];
+      state.graph.updateNode(actor.id, {
+        properties: {
+          divineInfluences: [
+            ...existing,
+            {
+              id: `reveal_${actor.id}_${tick}`,
+              interventionType: 'reveal',
+              devotionDelta: REVEAL_DEVOTION_DELTA,
+              fearDelta: REVEAL_FEAR_DELTA,
+              aweDelta: REVEAL_AWE_DELTA,
+              expiresAtTick: tick + REVEAL_WAKE_MARK_DURATION,
+              tickApplied: tick,
+            },
+          ],
+        },
+      });
+      mortalsAffected++;
+    }
+
+    emitTrace({
+      category: 'self_action',
+      tick,
+      templateId,
+      ascendantId: state.ascendantId,
+      mortalsAffected,
+      revealHex: { col: hexCol, row: hexRow },
+      summary: `Reveal: divine presence shown at (${hexCol},${hexRow}), ${mortalsAffected} mortals affected`,
+    } as SelfActionTrace);
+  }
+}
+
 // ─── Orchestrator Phase: Unified Action Progress ────────────────
 
 /**
@@ -1962,6 +2117,20 @@ export function phaseUnifiedActionProgress(
         );
       } catch (perceiveRelayErr) {
         console.warn('[unifiedActionResolution] perceive/relay action error:', perceiveRelayErr);
+      }
+    }
+
+    // Self-targeting divine actions (THR-399): apply essence regen and hex influence.
+    if (
+      updatedAction.resolved &&
+      isActionSuccess(updatedAction.outcome) &&
+      completing_action.actorId === state.ascendantId &&
+      SELF_ACTION_TEMPLATE_IDS.has(completing_action.templateId)
+    ) {
+      try {
+        resolveSelfActionEffect(completing_action.templateId, state, state.tick);
+      } catch (selfActionErr) {
+        console.warn('[unifiedActionResolution] self-action post-processor error:', selfActionErr);
       }
     }
 

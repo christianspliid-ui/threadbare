@@ -117,6 +117,16 @@ export interface AscendantProperties {
   interventionHistory: Record<string, number>;
   /** Avatar node ID. */
   avatarId: string;
+  /**
+   * Fraction of the next non-self action's essence cost to refund (set by Recede).
+   * Cleared after the discount is applied. 0.5 = 50% refund.
+   */
+  nextActionDiscount?: number;
+  /**
+   * Tier bonus applied to the next non-self action's capability roll (set by Focus).
+   * Cleared after consumed. 1 = +1 effective tier.
+   */
+  nextActionTierBoost?: number;
 }
 
 /**

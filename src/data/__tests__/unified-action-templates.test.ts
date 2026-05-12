@@ -112,7 +112,11 @@ describe('UNIFIED_ACTION_TEMPLATES', () => {
 
   it('every template has at least 1 motivation OR is a divine/NPC template', () => {
     for (const t of UNIFIED_ACTION_TEMPLATES) {
-      if (t.scale !== 'cosmic' && !t.id.startsWith('npc_')) {
+      if (
+        t.scale !== 'cosmic' &&
+        !t.id.startsWith('npc_') &&
+        !t.id.startsWith('divine.self.') // self-actions are ascendant-only; motivations N/A
+      ) {
         // motivations may be undefined for some templates (e.g. migrated encounters
         // where motivations are optional); skip those
         if (t.motivations) {
@@ -322,14 +326,16 @@ describe('rarityTier — every template has a valid tier', () => {
 describe('divine templates', () => {
   const divineTemplates = UNIFIED_ACTION_TEMPLATES.filter(t => t.id.startsWith('divine.'));
 
-  it('all have scale cosmic', () => {
+  it('all have scale cosmic (except self-actions which use personal)', () => {
     for (const t of divineTemplates) {
+      if (t.id.startsWith('divine.self.')) continue; // personal scale by design
       expect(t.scale).toBe('cosmic');
     }
   });
 
-  it('all have essenceCost > 0', () => {
+  it('all have essenceCost > 0 (except self-actions which may be 0)', () => {
     for (const t of divineTemplates) {
+      if (t.id.startsWith('divine.self.')) continue; // Stillness/Recede cost 0 by design
       expect(t.essenceCost).toBeDefined();
       expect(t.essenceCost!).toBeGreaterThan(0);
     }
@@ -342,10 +348,12 @@ describe('divine templates', () => {
   });
 
   it('each step onSuccess contains exactly 1 apply_influence GraphOp (original 8 interventions)', () => {
-    // Perceive/Relay templates (divine.perceive.* and divine.relay.*) use the perceiveRelay
-    // resolver and have empty onSuccess arrays — exclude them from this invariant.
+    // Perceive/Relay templates use the perceiveRelay resolver (empty onSuccess arrays).
+    // Self-action templates use post-processor or update_node ops — exclude both.
     const interventionTemplates = divineTemplates.filter(
-      t => !t.id.startsWith('divine.perceive.') && !t.id.startsWith('divine.relay.')
+      t => !t.id.startsWith('divine.perceive.') &&
+           !t.id.startsWith('divine.relay.') &&
+           !t.id.startsWith('divine.self.')
     );
     for (const t of interventionTemplates) {
       for (const step of t.steps) {
