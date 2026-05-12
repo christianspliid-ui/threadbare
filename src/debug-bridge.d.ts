@@ -182,6 +182,38 @@ export interface DebugBridge {
    * Accepts an agent id, id prefix, or partial name (case-insensitive). Returns null if not found.
    */
   getAgentAttachments: (agentIdOrName: string) => Promise<AgentAttachments | null>;
+
+  /**
+   * THR-401: inspect a location's THR-401 properties (health, presence,
+   * countdown flags). Accepts id, id prefix, or partial name. Returns null
+   * if not found.
+   */
+  inspectLocation: (idOrName: string) => null | {
+    id: string;
+    name: string;
+    subtype: string | null;
+    prosperity: number | null;
+    unrest: number | null;
+    populationHealth: number | null;
+    divinePresence: number | null;
+    magicalSaturation: number | null;
+    routesCursedUntilTick: number | null;
+    wellsSickenedUntilTick: number | null;
+    migrationPullUntilTick: number | null;
+    placeSpiritAwakenedAtTick: number | null;
+    routesCursedActive: boolean;
+    wellsSickenedActive: boolean;
+    currentTick: number;
+  };
+
+  /**
+   * THR-401: force a location countdown property to expire immediately.
+   * Returns true if the property was present and was cleared.
+   */
+  forceLocationCountdownExpire: (
+    idOrName: string,
+    property: 'routesCursedUntilTick' | 'wellsSickenedUntilTick' | 'migrationPullUntilTick',
+  ) => boolean;
   /** Returns the last n reward events (draws and empty-pool misses). Default: all retained (up to 200). */
   getRecentRewards: (n?: number) => Promise<readonly RewardHistoryEntry[]>;
   /** Resolve encounter foreshadowing prose for an agent's latest ranked encounter candidate. */

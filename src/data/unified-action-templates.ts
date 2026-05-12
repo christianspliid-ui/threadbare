@@ -39,6 +39,22 @@ import {
   TG_PROMOTION_TEMPLATE,
 } from './thieves-guild-encounter-content';
 import {
+  LOC_BLESS_HARVEST_PROSPERITY_DELTA,
+  LOC_BLESS_HARVEST_HEALTH_DELTA,
+  LOC_BLESS_HARVEST_DURATION_TICKS,
+  LOC_OPEN_MARKETS_PROSPERITY_DELTA,
+  LOC_OPEN_MARKETS_UNREST_DELTA,
+  LOC_SANCTIFY_MAGSAT_DELTA,
+  LOC_SANCTIFY_DIVINE_PRESENCE_DELTA,
+  LOC_AWAKEN_SPIRIT_PRESENCE_DELTA,
+  LOC_SICKEN_WELLS_HEALTH_DELTA,
+  LOC_SICKEN_WELLS_UNREST_DELTA,
+  LOC_SICKEN_WELLS_MAGSAT_DELTA,
+  LOC_SICKEN_WELLS_DURATION_TICKS,
+  LOC_CURSE_ROADS_DURATION_TICKS,
+  LOC_CURSE_ROADS_UNREST_DELTA,
+} from './location-action-constants';
+import {
   ARCANE_CIRCLE_ENCOUNTER_TEMPLATES,
   ARCANE_CIRCLE_SOCIAL_TEMPLATES,
   AC_JOIN_TEMPLATE,
@@ -1322,7 +1338,243 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       failure: 'the blessing dissipates; the stones remain unchanged',
     },
   },
+
+  // ─── Location Action Expansion (THR-401) ──────────────────────────
+  // Six new settlement-scale verbs spanning economic, social, mystical, and
+  // destructive shapes. Time-bounded countdowns are applied by a tick-aware
+  // post-effect in unifiedActionResolution.applyLocationActionPostEffects.
+  // Encounter seeding deferred per plan §13.
+
+  {
+    id: 'loc.bless_harvest',
+    name: 'Bless the Harvest',
+    spellName: 'Quiet Loam',
+    rarityTier: 1,
+    intrinsicTier: 'background',
+    description: 'Pours life-essence into a settlement\'s agricultural cycle. The fields swell beyond their season; grain ripens too fast to be reasoned with. Mortals will not say it is the god who did this. They will say it was a good year.',
+    reach: 'gold',
+    crudType: 'update',
+    scale: 'local',
+    steps: [{
+      reach: 'gold',
+      duration: { min: 2, max: 3 },
+      difficulty: 0.25,
+      onSuccess: [
+        { op: 'update_node', nodeId: '$target', changes: {
+          prosperity: `+${LOC_BLESS_HARVEST_PROSPERITY_DELTA}`,
+          populationHealth: `+${LOC_BLESS_HARVEST_HEALTH_DELTA}`,
+        } },
+      ],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 4,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'life',
+    targetCategories: ['location'],
+    targetSubtypes: ['settlement', 'hamlet', 'town', 'city', 'capital'],
+    motivations: ['preservation_transformation', 'mercy_ruthlessness'],
+    narrativeTemplates: {
+      initiation: 'kneels into the loam at the field\'s edge, pressing palms to soil that has fed these people for generations',
+      success: 'grain swells in the husk before harvest is due — the miller\'s wife will say a prayer was answered; the miller will say it does not matter why',
+      failure: 'the wind shifts wrong; whatever was reached for slips between divine hands, and the field is only a field',
+    },
+  },
+
+  {
+    id: 'loc.open_markets',
+    name: 'Open the Markets',
+    spellName: 'Awning Unfurled',
+    rarityTier: 1,
+    intrinsicTier: 'background',
+    description: 'Catalyses trade through a settlement\'s public square. Stalls multiply by the hour; merchants who never knew each other shake hands. The risk is that a thieves\' guild has been waiting for the square to wake up too.',
+    reach: 'gold',
+    crudType: 'update',
+    scale: 'local',
+    steps: [{
+      reach: 'gold',
+      duration: { min: 1, max: 2 },
+      difficulty: 0.20,
+      onSuccess: [
+        { op: 'update_node', nodeId: '$target', changes: {
+          prosperity: `+${LOC_OPEN_MARKETS_PROSPERITY_DELTA}`,
+          unrest: `${LOC_OPEN_MARKETS_UNREST_DELTA}`,
+        } },
+      ],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 3,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'order',
+    targetCategories: ['location'],
+    targetSubtypes: ['settlement', 'hamlet', 'town', 'city', 'capital', 'tradehub'],
+    motivations: ['loyalty_ambition', 'tradition_novelty'],
+    narrativeTemplates: {
+      initiation: 'reaches into the empty square and unfolds it like a market awning, inviting commerce in',
+      success: 'by third bell, two new stalls; by dusk, six — and for now, no one is collecting taxes',
+      failure: 'the square stays empty; the merchants called on this morning have not yet learned to listen',
+    },
+  },
+
+  {
+    id: 'loc.sanctify_square',
+    name: 'Sanctify the Square',
+    spellName: 'Stones That Remember',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description: 'Consecrates a settlement\'s public ground to divine presence. The square ceases to be merely a place where people meet — it becomes a place where they remember to mean what they say. Faith-related encounters fire more often here; threads to mortals on this hex deepen.',
+    reach: 'star',
+    crudType: 'create',
+    scale: 'local',
+    steps: [{
+      reach: 'star',
+      duration: { min: 2, max: 3 },
+      difficulty: 0.30,
+      onSuccess: [
+        { op: 'update_node', nodeId: '$target', changes: {
+          magicalSaturation: `+${LOC_SANCTIFY_MAGSAT_DELTA}`,
+          divinePresence: `+${LOC_SANCTIFY_DIVINE_PRESENCE_DELTA}`,
+        } },
+      ],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 5,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'spirit',
+    targetCategories: ['location'],
+    targetSubtypes: ['settlement', 'hamlet', 'town', 'city', 'capital', 'shrine'],
+    motivations: ['tradition_novelty', 'loyalty_ambition'],
+    narrativeTemplates: {
+      initiation: 'steps to the centre of the square and breathes out; the breath does not return',
+      success: 'the square is no longer just a place where people meet — it is a place where they remember to mean what they say',
+      failure: 'children keep playing, carts keep rolling; whatever was pressed into the stones has not yet taken root',
+    },
+  },
+
+  {
+    id: 'loc.awaken_spirit',
+    name: 'Awaken the Spirit of the Place',
+    spellName: 'The Old Name Spoken',
+    rarityTier: 3,
+    intrinsicTier: 'shaping',
+    description: 'Stirs the spirit of the settlement itself into present awareness. The place remembers — its founders, its lost laws, its half-forgotten customs. v1 raises divine presence sharply and marks the place; spawning the embodied place_spirit actor is filed as a follow-up.',
+    reach: 'heart',
+    crudType: 'create',
+    scale: 'regional',
+    steps: [{
+      reach: 'heart',
+      duration: { min: 3, max: 5 },
+      difficulty: 0.40,
+      onSuccess: [
+        { op: 'update_node', nodeId: '$target', changes: {
+          divinePresence: `+${LOC_AWAKEN_SPIRIT_PRESENCE_DELTA}`,
+        } },
+      ],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 2,
+    essenceCost: 12,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'spirit',
+    targetCategories: ['location'],
+    targetSubtypes: ['settlement', 'hamlet', 'town', 'city', 'capital', 'ruin'],
+    motivations: ['tradition_novelty', 'preservation_transformation', 'sacrifice_survival'],
+    narrativeTemplates: {
+      initiation: 'traces the oldest stone in the foundation, finds the name carved beneath the moss, and speaks it aloud',
+      success: 'someone answers; they have always been here — now they are also here in a way that can be seen',
+      failure: 'the name is spoken into a stone that does not yet know how to listen',
+    },
+  },
+
+  {
+    id: 'loc.sicken_wells',
+    name: 'Sicken the Wells',
+    spellName: 'Hungry Water',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description: 'Folds a divine affliction into a settlement\'s water supply. Children stop drinking by the third morning; healers will call it the well-fever and not yet think to ask who taught the well to be hungry. Reversible by natural decay and counter-blessing.',
+    reach: 'veil',
+    crudType: 'update',
+    scale: 'local',
+    steps: [{
+      reach: 'veil',
+      duration: { min: 2, max: 3 },
+      difficulty: 0.35,
+      onSuccess: [
+        { op: 'update_node', nodeId: '$target', changes: {
+          populationHealth: `${LOC_SICKEN_WELLS_HEALTH_DELTA}`,
+          unrest: `+${LOC_SICKEN_WELLS_UNREST_DELTA}`,
+          magicalSaturation: `${LOC_SICKEN_WELLS_MAGSAT_DELTA}`,
+        } },
+      ],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 6,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'entropy',
+    targetCategories: ['location'],
+    targetSubtypes: ['settlement', 'hamlet', 'town', 'city', 'capital'],
+    motivations: ['mercy_ruthlessness', 'preservation_transformation'],
+    narrativeTemplates: {
+      initiation: 'folds something soft into the water — a name, a refusal, a fragment of grief; the well drinks it',
+      success: 'by the third morning, children will not drink; by the fifth, neither will mothers — the healers call it the well-fever',
+      failure: 'the water remains water; whatever was fed it has slid away',
+    },
+  },
+
+  {
+    id: 'loc.curse_roads',
+    name: 'Curse the Roads',
+    spellName: 'Line in the Dust',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description: 'Hexes the trade and travel arteries connecting a settlement to the wider region. The roads still exist — they are simply no longer to be trusted. Caravans turn back; merchants stay home; the settlement begins to starve on its own pride.',
+    reach: 'shadow',
+    crudType: 'update',
+    scale: 'regional',
+    steps: [{
+      reach: 'shadow',
+      duration: { min: 2, max: 3 },
+      difficulty: 0.35,
+      onSuccess: [
+        { op: 'update_node', nodeId: '$target', changes: {
+          unrest: `+${LOC_CURSE_ROADS_UNREST_DELTA}`,
+        } },
+      ],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 5,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'chaos',
+    targetCategories: ['location'],
+    targetSubtypes: ['settlement', 'hamlet', 'town', 'city', 'capital', 'tradehub'],
+    motivations: ['mercy_ruthlessness', 'preservation_transformation'],
+    narrativeTemplates: {
+      initiation: 'steps into the dust at the town gate and draws a line — the line is not visible; the line is the road forgetting where it goes',
+      success: 'by the third week, three caravans have turned back; by the fourth, no one will travel after dark — the roads still exist; they are simply no longer to be trusted',
+      failure: 'the dust settles, the road remembers itself; the next traveller arrives on schedule',
+    },
+  },
 ];
+
+// Sentinel for engine post-effects to identify time-bounded location-action templates (THR-401).
+// Keep this list in sync with applyLocationActionPostEffects.
+export const LOCATION_ACTION_POST_EFFECT_TEMPLATE_IDS = new Set<string>([
+  'loc.bless_harvest',
+  'loc.awaken_spirit',
+  'loc.sicken_wells',
+  'loc.curse_roads',
+]);
 
 // ─── Attachment Action Templates ───────────────────────────────────
 //

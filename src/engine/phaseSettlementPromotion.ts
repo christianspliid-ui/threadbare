@@ -31,6 +31,10 @@ import {
 import { resolveEconomicChronicle } from './economicChronicle';
 import type { SimulationRuntime } from './simulationRuntime';
 import { applyEncounterCacheUpdate } from './simulationRuntime';
+import {
+  LOC_HEALTH_DAMPENER_THRESHOLD,
+  LOC_HEALTH_DEFAULT_BASELINE,
+} from '../data/location-action-constants';
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 
@@ -82,12 +86,25 @@ export function phaseSettlementPromotion(state: GameState, runtime?: SimulationR
       ? loc.properties.prosperitySustainBelowTicks
       : 0;
 
+    // THR-401: sickened wells or low population health suppress promotion
+    // (the settlement cannot grow while it is sick). Cleared automatically
+    // when the property's tick countdown expires or health recovers.
+    const sickenedUntil = loc.properties?.wellsSickenedUntilTick;
+    const isSickened = typeof sickenedUntil === 'number' && tick < sickenedUntil;
+    const populationHealth = typeof loc.properties?.populationHealth === 'number'
+      ? loc.properties.populationHealth
+      : LOC_HEALTH_DEFAULT_BASELINE;
+    const isUnhealthy = populationHealth < LOC_HEALTH_DAMPENER_THRESHOLD;
+
     // Update counters based on current prosperity
-    if (prosperity >= SETTLEMENT_PROMOTION_PROSPERITY) {
+    if (prosperity >= SETTLEMENT_PROMOTION_PROSPERITY && !isSickened && !isUnhealthy) {
       aboveTicks += 1;
       belowTicks = 0;
     } else if (prosperity <= SETTLEMENT_DEMOTION_PROSPERITY) {
       belowTicks += 1;
+      aboveTicks = 0;
+    } else if (isSickened || isUnhealthy) {
+      // Sick settlements cannot accumulate promotion sustain; reset to be safe.
       aboveTicks = 0;
     } else {
       // Mid-range: both counters stop accumulating but aren't reset to avoid

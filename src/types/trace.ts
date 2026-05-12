@@ -187,7 +187,12 @@ export type TraceCategory =
   // Ascendant self-action effects (THR-399)
   | 'self_action'
   // Ascendant buff consumption (THR-416)
-  | 'buff_consumed';
+  | 'buff_consumed'
+  // Location action expansion (THR-401)
+  | 'location_action_resolved'
+  | 'location_property_decay'
+  | 'location_countdown_expired'
+  | 'location_flag_consumed';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -358,6 +363,11 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'self_action',
   // Ascendant buff consumption (THR-416)
   'buff_consumed',
+  // Location action expansion (THR-401)
+  'location_action_resolved',
+  'location_property_decay',
+  'location_countdown_expired',
+  'location_flag_consumed',
 ];
 
 /** Base shape for all trace entries */

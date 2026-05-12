@@ -30,7 +30,7 @@ export type NodeType =
   | 'relationship';      // reified relationship between two actors (design plan §3.9, B5)
 
 /** Actor subtypes stored in properties.actorType */
-export type ActorType = 'god' | 'ascendant' | 'faction' | 'culture' | 'group' | 'individual';
+export type ActorType = 'god' | 'ascendant' | 'faction' | 'culture' | 'group' | 'individual' | 'place_spirit';
 
 /**
  * Typed properties for actor nodes (actorType: 'individual').
@@ -112,7 +112,9 @@ export type EdgeType =
   | 'knows_clue_of'    // knower → target ruin (KnowsClueOfEdgeProperties in src/types/knowledge.ts)
   | 'knows_of'         // knower → location; familiarity edge created when a clue is consumed at convergence
   // Ruins layer — PoP holder (THR-153)
-  | 'holds_place_of_power'; // actor | faction | ascendant → place_of_power location (HoldsPlaceOfPowerEdgeProperties)
+  | 'holds_place_of_power' // actor | faction | ascendant → place_of_power location (HoldsPlaceOfPowerEdgeProperties)
+  // Place-spirit (THR-401): place_spirit actor → location it embodies
+  | 'embodies_spirit_of';
 
 /**
  * Typed properties for encounter_template nodes (design plan §3.8).
