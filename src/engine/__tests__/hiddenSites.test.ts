@@ -416,9 +416,11 @@ describe('resolveHiddenSiteReveals', () => {
 // ─── HIDDEN_SITE_REVEAL_TEMPLATES ────────────────────────────────────────────
 
 describe('HIDDEN_SITE_REVEAL_TEMPLATES', () => {
-  it('includes survey and sense_threads', () => {
+  it('includes survey and read_currents (THR-398: sense_threads retired)', () => {
     expect(HIDDEN_SITE_REVEAL_TEMPLATES.has('hex.survey')).toBe(true);
-    expect(HIDDEN_SITE_REVEAL_TEMPLATES.has('hex.sense_threads')).toBe(true);
+    expect(HIDDEN_SITE_REVEAL_TEMPLATES.has('hex.read_currents')).toBe(true);
+    expect(HIDDEN_SITE_REVEAL_TEMPLATES.has('hex.sense_threads')).toBe(false);
+    expect(HIDDEN_SITE_REVEAL_TEMPLATES.has('hex.divine_populace')).toBe(false);
   });
 
   it('does not include non-Find templates', () => {

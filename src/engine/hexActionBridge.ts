@@ -110,7 +110,6 @@ const HEX_ACTION_MUTATIONS: Readonly<Record<string, HexActionMutationDef>> = {
     failureDelta: 0,
   },
   // hex.dowse_resources — no mutation (observation only, like survey)
-  // hex.sense_leylines — no mutation (observation only)
 
   // TB-046: Soul one-shots
   'hex.attune_leyline': {
@@ -147,8 +146,6 @@ const HEX_ACTION_MUTATIONS: Readonly<Record<string, HexActionMutationDef>> = {
   // hex.send_herald — no hex mutation; GraphOp spawns agent (see HEX_ACTION_GRAPH_OPS)
   // hex.forge_instrument — no hex mutation; GraphOp creates artifact (see HEX_ACTION_GRAPH_OPS)
   // hex.spark_encounter — no hex mutation; dynamic GraphOp generator (TB-081)
-  // hex.divine_populace — no mutation (observation only)
-  // hex.scry_factions — no mutation (observation only)
   // hex.stir_people — no hex mutation; dynamic GraphOp generator (TB-081)
   // hex.summon_congregation — no hex mutation; dynamic GraphOp generator (TB-081)
   // hex.bestow_vision — no hex mutation; dynamic GraphOp generator (TB-081)

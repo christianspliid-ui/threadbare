@@ -24,24 +24,21 @@ import type { NotificationDirective } from '../types/notification';
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 /**
- * Maps template IDs to the narrative layer they reveal on success.
+ * Maps template IDs to the narrative layer(s) they reveal on success.
+ * A single layer or an array of layers may be specified.
  * Templates not in this map produce no revelation effect.
  */
-export const TEMPLATE_REVELATION_MAP: Readonly<Record<string, NarrativeLayer>> = {
+export const TEMPLATE_REVELATION_MAP: Readonly<Record<string, NarrativeLayer | readonly NarrativeLayer[]>> = {
+  // Land + People layer (THR-398: Survey unified — reveals both in one cast)
+  'hex.survey': ['land', 'people'] as const,
+
   // Land layer
-  'hex.survey': 'land',
   'hex.dowse_resources': 'land',
-  'hex.sense_leylines': 'land',    // partial — existence only, not detail
 
   // Soul layer
-  'hex.sense_threads': 'soul',
   'hex.read_currents': 'soul',     // full detail
 
-  // People layer (TB-047)
-  'hex.divine_populace': 'people', // full detail
-  'hex.scry_factions': 'people',   // partial — factions only
-
-  // Ruins layer (TB-047)
+  // Ruins layer
   'hex.read_stones': 'ruins',      // full detail — expensive direct divine action
   'hex.whisper_intuition': 'ruins', // partial — through agent encounter
 };
@@ -58,14 +55,14 @@ export interface RevelationMutation {
 // ─── Resolver ─────────────────────────────────────────────────────────────────
 
 /**
- * Determine what layer (if any) a resolved hex action should reveal.
+ * Determine what layer(s) (if any) a resolved hex action should reveal.
  *
  * @param templateId The template ID of the resolved action
  * @param col Hex column coordinate
  * @param row Hex row coordinate
  * @param outcome Whether the action succeeded or failed
  * @param tick Current tick for tracing
- * @returns Array of revelation mutations (0 or 1 items)
+ * @returns Array of revelation mutations (0 or more items)
  */
 export function resolveRevelation(
   templateId: string,
@@ -77,21 +74,26 @@ export function resolveRevelation(
   // Only successful actions reveal layers
   if (outcome !== 'success') return [];
 
-  const layer = TEMPLATE_REVELATION_MAP[templateId];
-  if (!layer) return [];
+  const target = TEMPLATE_REVELATION_MAP[templateId];
+  if (!target) return [];
 
-  emitTrace({
-    tick,
-    category: 'revelation',
-    type: 'layer_revealed',
-    summary: `Layer '${layer}' revealed at hex (${col},${row}) by ${templateId}`,
-    hexCol: col,
-    hexRow: row,
-    layer,
-    revealedBy: templateId,
-  } as any);
+  const layers: readonly NarrativeLayer[] = Array.isArray(target) ? target : [target];
 
-  return [{ col, row, layer, source: templateId }];
+  return layers.map(layer => {
+    emitTrace({
+      tick,
+      category: 'revelation',
+      type: 'layer_revealed',
+      summary: `Layer '${layer}' revealed at hex (${col},${row}) by ${templateId}`,
+      hexCol: col,
+      hexRow: row,
+      layer,
+      layers,
+      revealedBy: templateId,
+    } as any);
+
+    return { col, row, layer, source: templateId };
+  });
 }
 
 // ─── Apply Mutations ──────────────────────────────────────────────────────────
@@ -157,14 +159,12 @@ export interface HiddenSiteRevealResult {
  * NFP #1 (Tunability): add new Find templates here.
  */
 export const HIDDEN_SITE_REVEAL_TEMPLATES: ReadonlySet<string> = new Set([
-  'hex.survey',             // Land survey can find hidden ruins
-  'hex.sense_threads',      // Soul sensing can detect hidden sites
+  'hex.survey',             // Unified survey reveals hidden sites (land + people)
   'hex.explore_ruins',      // Direct ruins exploration
   'hex.divine_sight',       // Divine perception pierces all concealment
   'hex.dowse_resources',    // TB-046: Resource dowsing reveals hidden deposits
   'hex.read_currents',      // TB-046: Full soul reading detects hidden sites
   'hex.read_stones',        // TB-047: Direct divine ruins perception
-  'hex.divine_populace',    // TB-047: Full people reading detects hidden agents
 ]);
 
 /**
