@@ -22,7 +22,7 @@
 - 2026-05-09 batch: THR-268, THR-389, THR-391
 - 2026-05-10 batch: THR-394
 - 2026-05-11 batch: THR-393, THR-403, THR-408, THR-411
-- 2026-05-12 batch: THR-413, THR-404, THR-397, THR-398, THR-399, THR-401, THR-405, THR-416, THR-409, THR-395, THR-422, THR-423
+- 2026-05-12 batch: THR-413, THR-404, THR-397, THR-398, THR-399, THR-401, THR-405, THR-416, THR-409, THR-395, THR-412, THR-422, THR-423
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
@@ -30,13 +30,6 @@
 - TB-071 Economy Second Pass · TB-069 Location NPCs · TB-051 Monster Encounters residual · TB-037 Onboarding
 
 Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Completed work: `Docs/project-history.md` + Linear "Done" state · Pre-Linear history: `.planning/BACKLOG_HISTORY.md`
-- ✅ 2026-05-08: THR-353 shipped (D3) — narration/TTS discovery report + encounter narration adapter contract + contract smoke test.
-- ✅ 2026-05-08: THR-292 closed (Encounter Format Migration) — vault encounter architecture pages confirmed unified-only (Systems/Encounter System.md canonical via THR-341; UL Encounters.md describes EncounterTemplate as a conceptual term, not stale TypeScript-class guidance). Closeout entry appended to vault log.md.
-- ✅ 2026-05-08: THR-265 shipped — skill freshness metadata + drift-scan S5 (all skill files now carry `last_validated_against`; weekly scan now reports stale/archive/bootstrap-needed skill freshness drift).
-- ✅ 2026-05-08: THR-363 shipped — Phase 2b Canon Step-0 wiring for prose/hexmap/template skills (14 SKILL.md files mirrored); Canon-first pre-read now enforced before domain authoring.
-- ✅ 2026-05-08: THR-215 shipped — durable weekly-memory-grooming trigger active (`3 16 * * 0`), CLAUDE scheduled-task registry updated, and external weekly-memory-grooming SKILL aligned to current Cowork/CC/Codex memory paths with fail-soft missing-path behavior.
-- ✅ 2026-05-08: THR-374 shipped — Encounter UI G2.1b D2 snapshot suite tightened to exact handoff contract (10 EffectRegistration components at 1920×1080 with canonical titles/fixtures); verification trio green and `useEffectSequencing` hook tests confirmed present.
-- ✅ 2026-05-08: THR-267 shipped — CLAUDE pre-commit checklist now requires a deterministic 30-tick CLI smoke for engine-touching changes (`tick 30` + `status`) and explicit status-output evidence at closeout.
 - ✅ 2026-05-08: THR-387 shipped — hex map now only shows agents with a thread edge from the ascendant (or the avatar); non-threaded notable/spotlight NPCs are filtered in the agentRenderData useMemo in GameView.tsx.
 - ✅ 2026-05-08: THR-388 shipped — hexmap tooltip now shows after a 1-second hover delay (was immediate). Debounced `tooltipHex` state in HexMapV2.tsx trails `hoveredHex` with a useEffect+setTimeout; hex highlight and status bar remain instant. `TOOLTIP_HOVER_DELAY_MS: 1000` named constant in INTERACTION_CONSTANTS (HexRaycaster.ts, NFP #1).
 - ✅ 2026-05-09: THR-268 shipped — `CLAUDE.md` Design Governance now includes Step 0.5 Codesight pre-flight (required for `src/`-touching design work, with fail-soft grep fallback) and a new Blast Radius section requirement for high-impact files (>=100 importers).
@@ -60,3 +53,4 @@ Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Compl
 - ✅ 2026-05-12: THR-401 shipped — Location action expansion: 6 new settlement-scale verbs (Bless the Harvest, Open the Markets, Sanctify the Square, Awaken the Spirit of the Place, Sicken the Wells, Curse the Roads). 26 named constants in `location-action-constants.ts`, 4 new trace categories (`location_action_resolved`/`property_decay`/`countdown_expired`/`flag_consumed`), `place_spirit` ActorType + `embodies_spirit_of` EdgeType. phaseProsperity reads new properties (cursed routes, presence bonus, health dampener) + natural recovery/decay; phaseUnrest bleeds upward when health is low; phaseSettlementPromotion suppressed while sickened. ThreadDetailView surfaces 5-tier health + 3-tier presence labels and narrative-phrase flags ("The wells run wrong", "Not to be trusted"). `__DEBUG.inspectLocation` + `forceLocationCountdownExpire` available. 21 new tests. Deferred to follow-up: encounter seeding, HexMapV2 cursed_roads signifier, place_spirit actor spawning.
 - ✅ 2026-05-12: THR-420 shipped — repo EOL normalization baseline verified in fresh Windows worktree (git add --renormalize . no-op, 
 pm run check:skill-sync green without repair step); issue closed via Fixes-keyword commit.
+- ✅ 2026-05-12: THR-412 shipped — intent-judge cold-start calibration run produced a clean 4/4 confusion-matrix diagonal (3 good Allows, 1 bad Block). Block on THR-400 pre-audit body fired on dim 5 Vision audit, catching the same Non-Negotiable #1 violation on `sanction_mission` that the human audit named as drift #1 — without the judge ever reading the audit doc or post-audit comments. 4 reverse-engineered action proposals at `Docs/plans/.intent-proposals/*.eval.md`; write-up at `Docs/judge-metrics/eval-run-2026-05-12.md` (confusion matrix + per-dimension distribution + per-fixture analysis + honest limits §7 + watchlist for 30-day field calibration). v1.1 rubric proposal: none — no trip-wire fires. Findings posted as comment on THR-411. Discovery window for additional known-bad fixtures returned zero Reopened-labeled issues in last 30 days; proceeded with autonomous-safe floor (3 good + 1 bad) per plan doc § Verdict 1.
