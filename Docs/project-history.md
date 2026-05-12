@@ -665,3 +665,5 @@ px vite build).
 
 - ✅ 2026-05-11: THR-393 shipped — WIP=1 gate added to pull-work skill (Step 1.5 exits cleanly when In Dev is non-empty) and coordination protocol (CC + Codex pickup Step 4 upgraded to hard-gate wording). Cron automation now skips pickup when previous PR is still in flight. Impediment #131 logged.
 - ✅ 2026-05-12: THR-405 shipped — Rulebook Phase 3 maintenance cadence: `Rulebook impact?` checkbox in Design Governance, quarterly architecture-assessment template, monthly-rulebook-review scheduled task registry entry. Deferral THR-417 for task creation.
+
+- ✅ 2026-05-12: THR-395 shipped — pull-work skill audit + fix. Gap found: Closeout step was documented but never executed (CC sessions end before PR merge). Fix: Step 0 session-start sweep added (git worktree prune + age/cleanliness check removes tfws-pickup-*/tfws-resume-* entries older than WORKTREE_STALE_DAYS=14); Closeout updated to run git worktree remove immediately after push instead of waiting for merge-to-main. flush-plan-docs audited: no gap (does not create worktrees). Original targets (.worktrees/thr-288, .worktrees/thr-349) already removed by THR-409.
