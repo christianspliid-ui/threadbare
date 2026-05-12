@@ -50,6 +50,9 @@ function makeTemplate(overrides: Partial<UnifiedActionTemplate> = {}): UnifiedAc
       success: 'Done.',
       failure: 'Failed.',
     },
+    // THR-419 Gate 8: revelation-gate tests don't exercise the unlock gate.
+    // Default test templates to starter so Gate 8 is a no-op here.
+    starter: true,
     ...overrides,
   };
 }

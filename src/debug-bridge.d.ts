@@ -261,6 +261,29 @@ export interface DebugBridge {
   listForeshadowingTraces: (agentQuery?: string) => Promise<ReadonlyArray<TraceEntry>>;
   /** Returns all active compositions from the current game state (THR-225). */
   getActiveCompositions: () => import('./types/gameState').ActiveComposition[];
+
+  // ── Action unlocks inspection (THR-419 Starter 12) ──────────────────────
+  /** Returns the Starter 12 baseline — IDs always visible regardless of unlock state. */
+  listStarterActions: () => Promise<{
+    expectedCount: number;
+    actualCount: number;
+    entries: { id: string; name: string; starterFlagSet: boolean; live: boolean }[];
+  }>;
+  /** Returns every template currently hidden by Gate 8 (not starter and not unlocked). */
+  listLockedActions: () => Promise<{
+    totalTemplates: number;
+    unlockedCount: number;
+    lockedCount: number;
+    locked: { id: string; name: string; rarityTier: import('./types/rarity').RarityTier }[];
+  }>;
+  /** Unlock a single action by ID in this session (debug only, not persisted). */
+  grantAction: (templateId: string) => Promise<{
+    success: boolean;
+    message: string;
+    unlockedCount?: number;
+  }>;
+  /** @internal GameView registers the grant-action callback here (THR-419). Returns true if the ID was newly added. */
+  _registerGrantAction: (fn: (templateId: string) => boolean) => void;
   /** Resolve encounter foreshadowing prose for an agent + encounter pair (THR-389). Returns null if state/runtime unavailable. */
   getForeshadowing: (agentId: string, encounterId: string) => Promise<import('./engine/foreshadowing/types').ForeshadowingResult | null>;
   /** Returns all foreshadowing resolution traces, optionally filtered to a specific agent id (THR-389). */

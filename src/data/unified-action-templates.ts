@@ -273,6 +273,7 @@ export function migrateActionTemplate(old: ActionTemplateData): UnifiedActionTem
 const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'divine.dream',
+    starter: true,  // THR-419 Starter 12 — subtle persona, agent target
     name: 'Dream',
     spellName: 'Oneiric Sending',
     rarityTier: 1,
@@ -310,6 +311,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'divine.persuade',
+    starter: true,  // THR-419 Starter 12 — kind/direct persona, agent target
     name: 'Persuade',
     spellName: 'Divine Compulsion',
     rarityTier: 1,
@@ -347,6 +349,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'divine.deceive',
+    starter: true,  // THR-419 Starter 12 — devious persona, agent target
     name: 'Deceive',
     spellName: 'Veil of Falsehood',
     rarityTier: 1,
@@ -384,6 +387,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'divine.intimidate',
+    starter: true,  // THR-419 Starter 12 — wrathful persona, agent target
     name: 'Intimidate',
     spellName: 'Wrath Descending',
     rarityTier: 1,
@@ -458,6 +462,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'divine.coincidence',
+    starter: true,  // THR-419 Starter 12 — subtle signature, agent target
     name: 'Coincidence',
     spellName: 'Thread of Fate',
     rarityTier: 2,
@@ -1587,6 +1592,7 @@ const SUBLOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.bless_land',
+    starter: true,  // THR-419 Starter 12 — kind signature, hex target
     name: 'Bless the Land',
     spellName: 'Land\'s Blessing',
     rarityTier: 1,
@@ -1649,6 +1655,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.survey',
+    starter: true,  // THR-419 Starter 12 — perceiving persona, hex target (unified Survey post-THR-398)
     name: 'Survey Territory',
     spellName: 'Divine Survey',
     rarityTier: 1,
@@ -2377,6 +2384,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'hex.mark_ground',
+    starter: true,  // THR-419 Starter 12 — claiming persona, hex target
     name: 'Mark the Ground',
     spellName: 'Questing Beacon',
     rarityTier: 1,
@@ -2471,6 +2479,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.whisper_intuition',
+    starter: true,  // THR-419 Starter 12 — perceiving persona, hex target
     name: 'Whisper of Intuition',
     spellName: 'Ruin Intuition',
     rarityTier: 1,
@@ -3423,6 +3432,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 const REVELATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'observe_agent',
+    starter: true,  // THR-419 Starter 12 — perceiving persona, agent target
     name: 'Observe',
     spellName: 'Piercing Gaze',
     rarityTier: 1,
@@ -3559,6 +3569,7 @@ const REVELATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 export const THREAD_CREATION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'bind_thread_location',
+    starter: true,  // THR-419 Starter 12 — claiming persona, location/hex target
     name: 'Bind Thread — Location',
     spellName: 'Place Thread',
     rarityTier: 1,
@@ -3753,6 +3764,7 @@ export const THREAD_CREATION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'bind_thread_agent',
+    starter: true,  // THR-419 Starter 12 — claiming persona, agent target (bonding gate)
     name: 'Bind Thread — Agent',
     spellName: 'Agent Thread',
     rarityTier: 1,

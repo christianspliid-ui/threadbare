@@ -308,6 +308,7 @@ export function initializeGameState(
     essencePool: startingPool,
     mandateDefinition: mandateDef,
     mandateState: mandateStateInit,
+    unlockedActionIds: [],  // Phase 1 default — starters visible via Gate 8 fallback
     rivalDefinitions: rivalDefs,
     rivalStates,
     doomDefinition: doomDef,

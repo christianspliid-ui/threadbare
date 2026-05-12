@@ -48,6 +48,7 @@ export function useTargetActions({
       ],
       hexRevelation: gameState.hexRevelation,
       existingThreadTier,
+      unlockedActionIds: gameState.unlockedActionIds,
     });
-  }, [target, drawerOpen, gameState.essencePool, archetype, gameState.hexRevelation, gameState.graph, gameState.ascendantId]);
+  }, [target, drawerOpen, gameState.essencePool, archetype, gameState.hexRevelation, gameState.graph, gameState.ascendantId, gameState.unlockedActionIds]);
 }

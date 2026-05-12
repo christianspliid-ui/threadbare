@@ -63,6 +63,10 @@ function makeTemplate(overrides: Partial<UnifiedActionTemplate> & Pick<UnifiedAc
       success: 'it works',
       failure: 'it fails',
     },
+    // THR-419 Gate 8: default test templates to starter so existing gate
+    // tests (1–7) aren't accidentally filtered by the unlock gate. Tests
+    // exercising Gate 8 explicitly override this.
+    starter: true,
     ...overrides,
   };
 }
@@ -686,5 +690,90 @@ describe('getTargetActionSlots — node-property gate (filter 3b)', () => {
     });
     expect(passSlots).toHaveLength(1);
     expect(failSlots).toHaveLength(0);
+  });
+});
+
+// ─── Gate 8 (unlock) — THR-419 ───────────────────────────────────────────────
+
+describe('getTargetActionSlots — unlock gate (filter 8, THR-419)', () => {
+  it('hides non-starter, non-unlocked templates when unlockedActionIds is empty', () => {
+    const templates = [
+      makeTemplate({ id: 'starter.1', name: 'Starter', targetCategories: ['actor'], starter: true }),
+      makeTemplate({ id: 'locked.1', name: 'Locked', targetCategories: ['actor'], starter: false }),
+    ];
+    const slots = getTargetActionSlots({
+      target: actorTarget(),
+      templates, pool: BASE_POOL, primarySphere: 'mind', accessibleSpheres: ['mind'],
+      unlockedActionIds: [],
+    });
+    expect(slots).toHaveLength(1);
+    expect(slots[0].label).toBe('Starter');
+  });
+
+  it('hides non-starter templates when unlockedActionIds is undefined (fail-soft)', () => {
+    const templates = [
+      makeTemplate({ id: 'starter.2', name: 'Starter', targetCategories: ['actor'], starter: true }),
+      makeTemplate({ id: 'locked.2', name: 'Locked', targetCategories: ['actor'], starter: false }),
+    ];
+    const slots = getTargetActionSlots({
+      target: actorTarget(),
+      templates, pool: BASE_POOL, primarySphere: 'mind', accessibleSpheres: ['mind'],
+      // unlockedActionIds omitted
+    });
+    expect(slots).toHaveLength(1);
+    expect(slots[0].label).toBe('Starter');
+  });
+
+  it('reveals a template once its ID is in unlockedActionIds', () => {
+    const templates = [
+      makeTemplate({ id: 'locked.3', name: 'EarnedAction', targetCategories: ['actor'], starter: false }),
+    ];
+    const before = getTargetActionSlots({
+      target: actorTarget(),
+      templates, pool: BASE_POOL, primarySphere: 'mind', accessibleSpheres: ['mind'],
+      unlockedActionIds: [],
+    });
+    const after = getTargetActionSlots({
+      target: actorTarget(),
+      templates, pool: BASE_POOL, primarySphere: 'mind', accessibleSpheres: ['mind'],
+      unlockedActionIds: ['locked.3'],
+    });
+    expect(before).toHaveLength(0);
+    expect(after).toHaveLength(1);
+  });
+
+  it('keeps starters visible regardless of unlockedActionIds content', () => {
+    const templates = [
+      makeTemplate({ id: 'starter.always', name: 'AlwaysOn', targetCategories: ['actor'], starter: true }),
+    ];
+    const empty = getTargetActionSlots({
+      target: actorTarget(), templates,
+      pool: BASE_POOL, primarySphere: 'mind', accessibleSpheres: ['mind'],
+      unlockedActionIds: [],
+    });
+    const populated = getTargetActionSlots({
+      target: actorTarget(), templates,
+      pool: BASE_POOL, primarySphere: 'mind', accessibleSpheres: ['mind'],
+      unlockedActionIds: ['other.unrelated'],
+    });
+    expect(empty).toHaveLength(1);
+    expect(populated).toHaveLength(1);
+  });
+
+  it('data fail-soft: templates whose IDs are in STARTER_ACTION_IDS surface even without the flag', () => {
+    // hex.survey is in STARTER_ACTION_IDS — the predicate falls back to the
+    // ID set so the starter floor is preserved when a content editor forgets
+    // to add `starter: true` (CI test catches it; runtime never throws).
+    const templates = [
+      makeTemplate({ id: 'hex.survey', name: 'Survey', targetCategories: ['actor'], starter: false }),
+      makeTemplate({ id: 'random.id', name: 'Random', targetCategories: ['actor'], starter: false }),
+    ];
+    const slots = getTargetActionSlots({
+      target: actorTarget(),
+      templates, pool: BASE_POOL, primarySphere: 'mind', accessibleSpheres: ['mind'],
+      unlockedActionIds: [],
+    });
+    expect(slots).toHaveLength(1);
+    expect(slots[0].label).toBe('Survey');
   });
 });

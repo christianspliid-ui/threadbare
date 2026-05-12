@@ -72,6 +72,29 @@ const BASE_POOL: EssencePool = {
   order: 10, chaos: 10, time: 10, void: 10,
 };
 
+/**
+ * THR-419 Gate 8 (unlock): these reputation-trait tests exercise the trait
+ * gate (Filter 3), not the unlock gate. Pre-unlock every template referenced
+ * here so Gate 8 is a no-op and the trait assertions remain authoritative.
+ */
+const ALL_REPUTATION_TEMPLATE_IDS: readonly string[] = [
+  WARLORDS_TRIBUTE_TEMPLATE.id,
+  SHADOW_COURT_AUDIENCE_TEMPLATE.id,
+  PILGRIMS_OFFERING_TEMPLATE.id,
+  THE_VEILED_CONSULTATION_TEMPLATE.id,
+  THE_STONES_JUDGEMENT_TEMPLATE.id,
+  THE_MERCHANTS_FAVOR_TEMPLATE.id,
+  THE_ORACLE_CONSULTED_TEMPLATE.id,
+  THE_STAR_PILGRIM_TEMPLATE.id,
+  THE_INFILTRATORS_APPROACH_TEMPLATE.id,
+  THE_RENOWNED_DUEL_TEMPLATE.id,
+  THE_EXECUTIONERS_COMMISSION_TEMPLATE.id,
+  THE_UNMARKED_CROSSING_TEMPLATE.id,
+  THE_SILENT_CHAMBER_TEMPLATE.id,
+  THE_JURY_OF_THE_RUINED_TEMPLATE.id,
+  THE_BLINDED_ORACLE_TEMPLATE.id,
+];
+
 function makeGraph(): WorldGraph {
   return new WorldGraph();
 }
@@ -180,6 +203,7 @@ describe('Pattern 1 — required-positive: warlords_tribute (Iron)', () => {
       target: actorTarget({ traitIds: ['trait.reputation.iron.positive'] }),
       templates: [WARLORDS_TRIBUTE_TEMPLATE] as unknown as UnifiedActionTemplate[],
       pool: BASE_POOL,
+      unlockedActionIds: ALL_REPUTATION_TEMPLATE_IDS,
     });
     expect(withTrait).toHaveLength(1);
 
@@ -187,6 +211,7 @@ describe('Pattern 1 — required-positive: warlords_tribute (Iron)', () => {
       target: actorTarget({ traitIds: [] }),
       templates: [WARLORDS_TRIBUTE_TEMPLATE] as unknown as UnifiedActionTemplate[],
       pool: BASE_POOL,
+      unlockedActionIds: ALL_REPUTATION_TEMPLATE_IDS,
     });
     expect(withoutTrait).toHaveLength(0);
   });
@@ -267,6 +292,7 @@ describe('Pattern 3 — required+blocked: pilgrims_offering (Heart)', () => {
       target: actorTarget({ traitIds: [] }),
       templates: [PILGRIMS_OFFERING_TEMPLATE] as unknown as UnifiedActionTemplate[],
       pool: BASE_POOL,
+      unlockedActionIds: ALL_REPUTATION_TEMPLATE_IDS,
     });
     expect(result).toHaveLength(0);
   });
@@ -276,6 +302,7 @@ describe('Pattern 3 — required+blocked: pilgrims_offering (Heart)', () => {
       target: actorTarget({ traitIds: ['trait.reputation.heart.positive'] }),
       templates: [PILGRIMS_OFFERING_TEMPLATE] as unknown as UnifiedActionTemplate[],
       pool: BASE_POOL,
+      unlockedActionIds: ALL_REPUTATION_TEMPLATE_IDS,
     });
     expect(result).toHaveLength(1);
   });
@@ -306,6 +333,7 @@ describe('Pattern 4 — multi-trait AND: the_veiled_consultation (Veil + Eye)', 
       target: actorTarget({ traitIds: ['trait.reputation.veil.positive'] }),
       templates: [THE_VEILED_CONSULTATION_TEMPLATE] as unknown as UnifiedActionTemplate[],
       pool: BASE_POOL,
+      unlockedActionIds: ALL_REPUTATION_TEMPLATE_IDS,
     });
     expect(result).toHaveLength(0);
   });
@@ -315,6 +343,7 @@ describe('Pattern 4 — multi-trait AND: the_veiled_consultation (Veil + Eye)', 
       target: actorTarget({ traitIds: ['trait.reputation.eye.positive'] }),
       templates: [THE_VEILED_CONSULTATION_TEMPLATE] as unknown as UnifiedActionTemplate[],
       pool: BASE_POOL,
+      unlockedActionIds: ALL_REPUTATION_TEMPLATE_IDS,
     });
     expect(result).toHaveLength(0);
   });
@@ -326,6 +355,7 @@ describe('Pattern 4 — multi-trait AND: the_veiled_consultation (Veil + Eye)', 
       }),
       templates: [THE_VEILED_CONSULTATION_TEMPLATE] as unknown as UnifiedActionTemplate[],
       pool: BASE_POOL,
+      unlockedActionIds: ALL_REPUTATION_TEMPLATE_IDS,
     });
     expect(result).toHaveLength(1);
   });
@@ -352,6 +382,7 @@ describe('Pattern 5 — tier-sensitive: the_stones_judgement (Stone L3)', () => 
       target: actorTarget({ traitIds: [] }),
       templates: [THE_STONES_JUDGEMENT_TEMPLATE] as unknown as UnifiedActionTemplate[],
       pool: BASE_POOL,
+      unlockedActionIds: ALL_REPUTATION_TEMPLATE_IDS,
     });
     expect(result).toHaveLength(0);
   });
@@ -361,6 +392,7 @@ describe('Pattern 5 — tier-sensitive: the_stones_judgement (Stone L3)', () => 
       target: actorTarget({ traitIds: ['trait.reputation.stone.positive'] }),
       templates: [THE_STONES_JUDGEMENT_TEMPLATE] as unknown as UnifiedActionTemplate[],
       pool: BASE_POOL,
+      unlockedActionIds: ALL_REPUTATION_TEMPLATE_IDS,
     });
     expect(result).toHaveLength(1);
   });
@@ -409,6 +441,7 @@ describe('Pattern 6 — mixed-polarity: the_blinded_oracle (Eye- required, Iron+
       target: actorTarget({ traitIds: [] }),
       templates: [THE_BLINDED_ORACLE_TEMPLATE] as unknown as UnifiedActionTemplate[],
       pool: BASE_POOL,
+      unlockedActionIds: ALL_REPUTATION_TEMPLATE_IDS,
     });
     expect(result).toHaveLength(0);
   });
@@ -418,6 +451,7 @@ describe('Pattern 6 — mixed-polarity: the_blinded_oracle (Eye- required, Iron+
       target: actorTarget({ traitIds: ['trait.reputation.eye.negative'] }),
       templates: [THE_BLINDED_ORACLE_TEMPLATE] as unknown as UnifiedActionTemplate[],
       pool: BASE_POOL,
+      unlockedActionIds: ALL_REPUTATION_TEMPLATE_IDS,
     });
     expect(result).toHaveLength(1);
   });

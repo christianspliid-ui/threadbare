@@ -8,6 +8,7 @@ import { ACTION_TEMPLATES } from '../action-template-content';
 import { ENCOUNTER_TEMPLATES } from '../encounter-content';
 import type { UnifiedActionTemplate, ActionStep } from '../../types/unifiedAction';
 import { isActionStepBranch } from '../../types/unifiedAction';
+import { STARTER_ACTION_IDS, STARTER_ACTION_COUNT } from '../../engine/actionUnlock';
 
 // ─── Migration helpers ────────────────────────────────────────────
 
@@ -639,5 +640,40 @@ describe('TB-048 control templates', () => {
     for (const id of ALL_TB048_IDS) {
       expect(getUnifiedTemplateById(id)!.actorAffinities).toContain('ascendant');
     }
+  });
+});
+
+// ─── THR-419 Starter 12 ──────────────────────────────────────────
+
+describe('Starter 12 — always-available action baseline (THR-419)', () => {
+  it('STARTER_ACTION_IDS has exactly STARTER_ACTION_COUNT entries', () => {
+    expect(STARTER_ACTION_IDS).toHaveLength(STARTER_ACTION_COUNT);
+  });
+
+  it('every STARTER_ACTION_IDS entry resolves to a live template', () => {
+    for (const id of STARTER_ACTION_IDS) {
+      const t = getUnifiedTemplateById(id);
+      expect(t, `STARTER_ACTION_IDS contains '${id}' but no template with that ID exists`).toBeDefined();
+    }
+  });
+
+  it('every STARTER_ACTION_IDS template carries the starter: true flag', () => {
+    for (const id of STARTER_ACTION_IDS) {
+      const t = getUnifiedTemplateById(id);
+      expect(t?.starter, `Template '${id}' is in STARTER_ACTION_IDS but is missing 'starter: true'`).toBe(true);
+    }
+  });
+
+  it('exactly STARTER_ACTION_COUNT templates carry starter: true across the whole catalog', () => {
+    const tagged = UNIFIED_ACTION_TEMPLATES.filter(t => t.starter === true);
+    const taggedIds = tagged.map(t => t.id).sort();
+    const expectedIds = [...STARTER_ACTION_IDS].sort();
+    expect(tagged).toHaveLength(STARTER_ACTION_COUNT);
+    expect(taggedIds).toEqual(expectedIds);
+  });
+
+  it('the locked pool is non-trivially large (most catalog is hidden until earned)', () => {
+    const locked = UNIFIED_ACTION_TEMPLATES.filter(t => t.starter !== true);
+    expect(locked.length).toBeGreaterThan(STARTER_ACTION_COUNT);
   });
 });

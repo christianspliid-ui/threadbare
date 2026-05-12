@@ -7,12 +7,18 @@
  * Filtering cascade (in order):
  *   1.  Node-type gate       — template.targetCategories includes target.nodeType
  *   2.  Subtype gate         — template.targetSubtypes includes target.subtype (if specified)
+ *   2b. Thread-dedup gate    — hide bind_thread_* when ascendant already holds a thread
  *   3.  Trait gate           — all template.requiredTargetTraits present in target.traitIds
  *   3b. Node-property gate   — all template.requiredNodeProperties match target.properties
  *   4.  Sphere gate          — template.sphereAffinity is null OR in accessibleSpheres
  *   5.  Essence gate         — player can afford template.essenceCost
  *   6.  Range gate           — target in range from avatar (if positions available)
  *   7.  Revelation gate      — template.narrativeLayer revealed on target hex (if applicable)
+ *   8.  Unlock gate          — template.starter === true OR in unlockedActionIds (THR-419)
+ *
+ * Gate 8 is a hide-gate: locked actions are absent from the drawer (not shown as
+ * silhouettes). Predicate lives in actionUnlock.ts; the same fail-soft fallback to
+ * STARTER_ACTION_IDS ensures starters surface even if a template misses the flag.
  */
 
 import type { TargetContext, TargetCategory } from '../types/targetContext';
@@ -23,6 +29,7 @@ import type { EssencePool } from '../types/influence';
 import type { HexPosition } from './delivery';
 import { hexDistance } from './delivery';
 import { hexKey } from '../lib/hexKey';
+import { isActionRevealed } from './actionUnlock';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -61,6 +68,12 @@ export interface TargetActionParams {
    * or null if no thread exists. Used to suppress bind_thread_* actions when already threaded.
    */
   existingThreadTier?: number | null;
+  /**
+   * Action IDs the player has unlocked across runs (THR-419 Gate 8).
+   * Starters are always visible regardless. Omit or empty array → Gate 8
+   * falls back to STARTER_ACTION_IDS, surfacing only the Starter 12.
+   */
+  unlockedActionIds?: readonly string[];
 }
 
 // ─── Filter result (for trace) ──────────────────────────────────────────────
@@ -75,6 +88,7 @@ interface FilterCounts {
   byEssence: number;
   byRange: number;
   byRevelation: number;
+  byUnlock: number;
 }
 
 // ─── Main function ───────────────────────────────────────────────────────────
@@ -86,7 +100,7 @@ interface FilterCounts {
  * Caps output at TARGET_ACTION_CONSTANTS.MAX_SLOTS.
  */
 export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
-  const { target, templates, pool, primarySphere, avatarPos, accessibleSpheres, hexRevelation, existingThreadTier } = params;
+  const { target, templates, pool, primarySphere, avatarPos, accessibleSpheres, hexRevelation, existingThreadTier, unlockedActionIds } = params;
 
   const counts: FilterCounts = {
     considered: 0,
@@ -98,6 +112,7 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     byEssence: 0,
     byRange: 0,
     byRevelation: 0,
+    byUnlock: 0,
   };
 
   const slots: WheelSlot[] = [];
@@ -187,6 +202,14 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
         }
         // If target has no position, skip revelation gating (non-hex targets)
       }
+    }
+
+    // 8. Unlock gate (THR-419) — hide non-starter, non-unlocked templates entirely.
+    //    The drawer never shows a "?" silhouette — locked actions are simply absent.
+    //    Predicate handles undefined unlockedActionIds via STARTER_ACTION_IDS fail-soft.
+    if (!isActionRevealed(template, unlockedActionIds)) {
+      counts.byUnlock++;
+      continue;
     }
 
     // 4. Sphere gate

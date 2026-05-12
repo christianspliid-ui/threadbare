@@ -67,6 +67,10 @@ export interface DebugPanelProps {
   activeCompositions?: readonly ActiveComposition[];
   /** Current doom clock stage for the Compositions inspector tab (THR-225). */
   doomClockStage?: number;
+  /** Player's unlocked action IDs for the Action Unlocks tab (THR-419). */
+  unlockedActionIds?: readonly string[];
+  /** Grants an action by ID — wired by GameView to mutate live unlockedActionIds (THR-419). */
+  onGrantAction?: (templateId: string) => void;
 }
 
 export const DebugPanel = React.memo(function DebugPanel({
@@ -78,6 +82,7 @@ export const DebugPanel = React.memo(function DebugPanel({
   strategicState, omenState, doomIdentityMatrix, hiddenMarks, pendingEncounterSeeds,
   regionalDetectionPressure, archetypeDrift,
   activeDelves, getRecentEvents, flipTableStates, activeCompositions, doomClockStage,
+  unlockedActionIds, onGrantAction,
 }: DebugPanelProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('feed');
   const [enabledCategories, setEnabledCategories] = useState<Set<TraceCategory>>(new Set(TRACE_CATEGORIES));
@@ -222,6 +227,8 @@ export const DebugPanel = React.memo(function DebugPanel({
           flipTableStates={flipTableStates}
           activeCompositions={activeCompositions}
           doomClockStage={doomClockStage}
+          unlockedActionIds={unlockedActionIds}
+          onGrantAction={onGrantAction}
         />
       </div>
 

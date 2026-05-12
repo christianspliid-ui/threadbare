@@ -110,6 +110,8 @@ if (import.meta.env.DEV) {
   let _omniscienceToggle: ((enabled?: boolean) => boolean) | null = null;
   // AscendantBar debug: GameView registers a callback to set ascendant quintessence
   let _setQuintessenceCb: ((ratio: number) => void) | null = null;
+  // GameView registers an action-grant callback (THR-419)
+  let _grantActionCb: ((templateId: string) => boolean) | null = null;
 
   window.__DEBUG = {
     // Debug panel control — called from browser console or Playwright
@@ -581,5 +583,73 @@ if (import.meta.env.DEV) {
       if (!state) return [];
       return state.activeCompositions ?? [];
     },
+
+    // ── Action unlocks inspection (THR-419 Starter 12) ──────────────────
+    /**
+     * Returns the canonical Starter 12 IDs. These templates are always visible
+     * in the action drawer regardless of player unlock state.
+     */
+    listStarterActions: async () => {
+      const [{ STARTER_ACTION_IDS, STARTER_ACTION_COUNT }, { UNIFIED_ACTION_TEMPLATES }] = await Promise.all([
+        import('./engine/actionUnlock'),
+        import('./data/unified-action-templates'),
+      ]);
+      const templatesById = new Map(UNIFIED_ACTION_TEMPLATES.map(t => [t.id, t]));
+      const entries = STARTER_ACTION_IDS.map(id => {
+        const t = templatesById.get(id);
+        return {
+          id,
+          name: t?.name ?? '(template missing)',
+          starterFlagSet: t?.starter === true,
+          live: t != null,
+        };
+      });
+      return { expectedCount: STARTER_ACTION_COUNT, actualCount: entries.length, entries };
+    },
+    /**
+     * Returns every template currently hidden by Gate 8 (not starter and not in
+     * the player's unlockedActionIds). Used to verify the floor effect in
+     * browser-verify and CLI tests.
+     */
+    listLockedActions: async () => {
+      const [{ isActionRevealed }, { UNIFIED_ACTION_TEMPLATES }] = await Promise.all([
+        import('./engine/actionUnlock'),
+        import('./data/unified-action-templates'),
+      ]);
+      const state = _gameStateProvider?.();
+      const unlocked = state?.unlockedActionIds ?? [];
+      const locked = UNIFIED_ACTION_TEMPLATES
+        .filter(t => !isActionRevealed(t, unlocked))
+        .map(t => ({ id: t.id, name: t.name, rarityTier: t.rarityTier }));
+      return {
+        totalTemplates: UNIFIED_ACTION_TEMPLATES.length,
+        unlockedCount: unlocked.length,
+        lockedCount: locked.length,
+        locked,
+      };
+    },
+    /**
+     * Reveal a single action by ID in this session. Routes through the GameView
+     * grant callback so the change drives a React re-render of the drawer and
+     * DebugPanel. Debug only — not persisted across page reloads.
+     */
+    grantAction: async (templateId: string) => {
+      const { UNIFIED_ACTION_TEMPLATES } = await import('./data/unified-action-templates');
+      const template = UNIFIED_ACTION_TEMPLATES.find(t => t.id === templateId);
+      if (!template) {
+        return { success: false, message: `Template '${templateId}' does not exist in the catalog` };
+      }
+      if (!_grantActionCb) {
+        return { success: false, message: 'Grant callback not registered — is the game loaded?' };
+      }
+      const added = _grantActionCb(templateId);
+      const state = _gameStateProvider?.();
+      const unlockedCount = state?.unlockedActionIds?.length ?? 0;
+      return added
+        ? { success: true, message: `Unlocked '${templateId}'`, unlockedCount }
+        : { success: false, message: `Template '${templateId}' is already unlocked`, unlockedCount };
+    },
+    /** @internal GameView registers the grant-action callback here (THR-419) */
+    _registerGrantAction: (fn: (templateId: string) => boolean) => { _grantActionCb = fn; },
   };
 }

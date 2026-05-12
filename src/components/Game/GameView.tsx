@@ -1619,6 +1619,26 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── Grant action (THR-419) — debug-panel button + __DEBUG.grantAction ─────
+  const handleGrantAction = useCallback((templateId: string): boolean => {
+    let added = false;
+    setGameState(prev => {
+      const existing = prev.unlockedActionIds ?? [];
+      if (existing.includes(templateId)) {
+        added = false;
+        return prev;
+      }
+      added = true;
+      return { ...prev, unlockedActionIds: [...existing, templateId] };
+    });
+    return added;
+  }, [setGameState]);
+
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerGrantAction(handleGrantAction);
+  }, [handleGrantAction]);
+
   // ── Debug bridge: listActions / fireAction ────────────────────────────────
   // A single ref captures the mutable state slices needed by both commands.
   // setGameState is a stable React dispatcher — it doesn't need the ref treatment.
@@ -3366,6 +3386,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             flipTableStates={gameState.flipTableStates}
             activeCompositions={gameState.activeCompositions}
             doomClockStage={gameState.doomClock?.currentStage}
+            unlockedActionIds={gameState.unlockedActionIds}
+            onGrantAction={handleGrantAction}
           />
         ) : (
           <div className="flex flex-shrink-0" style={{ alignItems: 'stretch' }}>

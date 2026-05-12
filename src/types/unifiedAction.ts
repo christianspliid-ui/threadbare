@@ -695,6 +695,17 @@ export interface UnifiedActionTemplate {
    */
   readonly bypassRevelationGate?: boolean;
 
+  // ── Unlock gating (THR-419 Starter 12) ──────────────────────────
+
+  /**
+   * If true, this template is part of the always-available Starter 12 baseline.
+   * Visible to every ascendant in every run, regardless of `unlockedActionIds`.
+   * Defaults to undefined/false (template is gated by the unlock pool).
+   *
+   * Exactly STARTER_ACTION_COUNT templates carry this flag — enforced by test.
+   */
+  readonly starter?: boolean;
+
   // ── Duration mode ──────────────────────────────────────────────
 
   /** 'instant' (default) = fire-and-forget. 'sustained' = spawns ControlEffect on success. */

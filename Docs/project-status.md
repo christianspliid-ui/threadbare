@@ -1,5 +1,5 @@
 # Project Status
-> Updated 2026-05-12.
+> Updated 2026-05-12 (THR-419).
 
 ## Current Focus
 **Encounter Experience — active:** Phases A1–A3, B1–B7, C1–C4, D1–D3, E1–E2, F1–F2, G1–G3 ✅. Remaining is F-phase integration (mount EffectRegistration components into hero panel / cast tile / scene state surfaces) and Phase H post-v1 polish.
@@ -22,7 +22,7 @@
 - 2026-05-09 batch: THR-268, THR-389, THR-391
 - 2026-05-10 batch: THR-394
 - 2026-05-11 batch: THR-393, THR-403, THR-408, THR-411
-- 2026-05-12 batch: THR-413, THR-404, THR-397, THR-398, THR-399, THR-405, THR-416, THR-409, THR-395
+- 2026-05-12 batch: THR-413, THR-404, THR-397, THR-398, THR-399, THR-405, THR-416, THR-409, THR-395, THR-419
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
@@ -30,15 +30,7 @@
 - TB-071 Economy Second Pass · TB-069 Location NPCs · TB-051 Monster Encounters residual · TB-037 Onboarding
 
 Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Completed work: `Docs/project-history.md` + Linear "Done" state · Pre-Linear history: `.planning/BACKLOG_HISTORY.md`
-- ✅ 2026-05-08: THR-353 shipped (D3) — narration/TTS discovery report + encounter narration adapter contract + contract smoke test.
-- ✅ 2026-05-08: THR-292 closed (Encounter Format Migration) — vault encounter architecture pages confirmed unified-only (Systems/Encounter System.md canonical via THR-341; UL Encounters.md describes EncounterTemplate as a conceptual term, not stale TypeScript-class guidance). Closeout entry appended to vault log.md.
-- ✅ 2026-05-08: THR-265 shipped — skill freshness metadata + drift-scan S5 (all skill files now carry `last_validated_against`; weekly scan now reports stale/archive/bootstrap-needed skill freshness drift).
-- ✅ 2026-05-08: THR-363 shipped — Phase 2b Canon Step-0 wiring for prose/hexmap/template skills (14 SKILL.md files mirrored); Canon-first pre-read now enforced before domain authoring.
-- ✅ 2026-05-08: THR-215 shipped — durable weekly-memory-grooming trigger active (`3 16 * * 0`), CLAUDE scheduled-task registry updated, and external weekly-memory-grooming SKILL aligned to current Cowork/CC/Codex memory paths with fail-soft missing-path behavior.
-- ✅ 2026-05-08: THR-374 shipped — Encounter UI G2.1b D2 snapshot suite tightened to exact handoff contract (10 EffectRegistration components at 1920×1080 with canonical titles/fixtures); verification trio green and `useEffectSequencing` hook tests confirmed present.
-- ✅ 2026-05-08: THR-267 shipped — CLAUDE pre-commit checklist now requires a deterministic 30-tick CLI smoke for engine-touching changes (`tick 30` + `status`) and explicit status-output evidence at closeout.
-- ✅ 2026-05-08: THR-387 shipped — hex map now only shows agents with a thread edge from the ascendant (or the avatar); non-threaded notable/spotlight NPCs are filtered in the agentRenderData useMemo in GameView.tsx.
-- ✅ 2026-05-08: THR-388 shipped — hexmap tooltip now shows after a 1-second hover delay (was immediate). Debounced `tooltipHex` state in HexMapV2.tsx trails `hoveredHex` with a useEffect+setTimeout; hex highlight and status bar remain instant. `TOOLTIP_HOVER_DELAY_MS: 1000` named constant in INTERACTION_CONSTANTS (HexRaycaster.ts, NFP #1).
+- (2026-05-08 entries — THR-353, THR-292, THR-265, THR-363, THR-215, THR-374, THR-267, THR-387, THR-388 — see `Docs/project-history.md`)
 - ✅ 2026-05-09: THR-268 shipped — `CLAUDE.md` Design Governance now includes Step 0.5 Codesight pre-flight (required for `src/`-touching design work, with fail-soft grep fallback) and a new Blast Radius section requirement for high-impact files (>=100 importers).
 - ✅ 2026-05-09: THR-389 shipped — ThreadDetail encounter pool now includes expandable foreshadowing prose per ranked candidate, backed by authored template variants, runtime cache, and `foreshadowing` traces (`__DEBUG.getForeshadowing` + `listForeshadowingTraces` available for inspection).
 - ✅ 2026-05-09: THR-391 shipped — session-precheck now emits `freshness=` in the fingerprint line; CLAUDE.md Session Workflow requires agents to surface stale-branch warnings before design work begins.
@@ -56,3 +48,4 @@ Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Compl
 - ✅ 2026-05-12: THR-399 shipped — 4 self-targeting ascendant actions: Stillness (essence regen on primary sphere), Recede (nextActionDiscount buff), Focus (nextActionTierBoost buff), Reveal (push divineInfluences to mortals on avatar hex). 8 named constants in `self-action-constants.ts`, `SelfActionTrace` + `'self_action'` category, post-processor hook in `unifiedActionResolution`. 17 tests. PR #254.
 - ✅ 2026-05-12: THR-405 shipped — Rulebook Canon Page Phase 3 (maintenance cadence). `Rulebook impact?` checkbox added to CLAUDE.md Design Governance. `Docs/audits/_rulebook-architecture-assessment-template.md` created. `monthly-rulebook-review` scheduled task registered in CLAUDE.md (task creation deferred to THR-417 — blocked by impediment #133, create_scheduled_task blocked in scheduled sessions). PR #256.
 - ✅ 2026-05-12: THR-409 shipped — worktree graveyard cleanup. Removed 35 of 74 registered worktrees (registry now 39); 33 tfws-pickup/resume entries kept per 14-day safety filter; 12 .claude/worktree dirs remain on disk (git-deregistered, locked by active sessions); trusting-vaughan-733101 (THR-394) preserved with 2 unmerged code commits not yet in main.
+- ✅ 2026-05-12: THR-419 shipped — Starter 12 always-available action baseline. New `src/engine/actionUnlock.ts` (`STARTER_ACTION_IDS`, `STARTER_ACTION_COUNT=12`, `isActionRevealed`, `isStarterAction`). `starter?: boolean` field added to `UnifiedActionTemplate`, tagged on the 12 starter templates. New `unlockedActionIds: readonly string[]` field on `GameState`, seeded `[]` at game init. New Gate 8 in `getTargetActionSlots()` — hides non-starter, non-unlocked templates entirely (no silhouettes). DebugPanel "Action Unlocks" tab + Codex "Starter" filter chip + three `__DEBUG` methods (`listStarterActions`, `listLockedActions`, `grantAction`) wired via a registered grant callback in GameView. 30+ new tests across `actionUnlock.test.ts`, `targetActions.test.ts`, `unified-action-templates.test.ts`. Two existing test files (`revelationGate.test.ts`, `reputation-gated-encounters.test.ts`) updated to bypass Gate 8 where they exercise other gates. Browser-verify via `__DEBUG.listStarterActions()` (12/12, all flagged, all live) + `listLockedActions()` (590 locked, 0 unlocked) + DOM snapshot of `Action Unlocks` tab + Codex Starter chip toggling to "12 of 319 entries"; zero console errors. Verification: tsc clean; vite build 9.82s; npm test 11157/11157; CLI smoke 30 ticks / 379 agents / 79 events.

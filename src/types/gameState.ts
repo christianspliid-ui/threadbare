@@ -188,6 +188,16 @@ export interface GameState {
   mandateDefinition: MandateDefinition | null;
   mandateState: MandateState | null;
 
+  /**
+   * Action IDs unlocked for this player across runs (THR-419 Starter 12).
+   * Starters are NOT listed here — they are always-available regardless.
+   * Empty array = brand new account / no unlocks earned yet (Phase 1 default).
+   *
+   * Persistence layer (LocalStorage / save-shim) is Phase 3; Phase 1 ships
+   * the in-memory shape so the gate logic has a known place to read from.
+   */
+  unlockedActionIds: readonly string[];
+
   // Adversarial
   rivalDefinitions: RivalDefinition[];
   rivalStates: RivalState[];

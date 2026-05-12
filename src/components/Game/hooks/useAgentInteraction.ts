@@ -159,12 +159,13 @@ export function useAgentInteraction({
             archetype.sphereAlignment.secondary,
           ],
           hexRevelation: gameState.hexRevelation,
+          unlockedActionIds: gameState.unlockedActionIds,
         })
       : [];
 
     const combined = [...interventionSlots, ...targetSlots];
     return combined.length > 0 ? combined : null;
-  }, [selectedAgentId, drawerOpen, gameState.essencePool, gameState.graph, gameState.ascendantId, gameState.hexRevelation, retinueAgents, archetype, worldVersion]);
+  }, [selectedAgentId, drawerOpen, gameState.essencePool, gameState.graph, gameState.ascendantId, gameState.hexRevelation, gameState.unlockedActionIds, retinueAgents, archetype, worldVersion]);
 
   const strandData = useMemo(() => {
     if (!strandViewAgent) return null;

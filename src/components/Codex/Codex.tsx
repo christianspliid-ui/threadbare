@@ -8,7 +8,7 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { getAllCodexEntries, getCodexCategories } from './codexRegistry';
-import type { CodexEntry } from './codexRegistry';
+import { STARTER_ACTION_IDS, STARTER_ACTION_COUNT } from '../../engine/actionUnlock';
 import { CodexSidebar } from './CodexSidebar';
 import { CodexCard } from './CodexCard';
 import { CodexDetailPanel } from './CodexDetailPanel';
@@ -16,15 +16,19 @@ import { CodexDetailPanel } from './CodexDetailPanel';
 export default function Codex() {
   const categories = useMemo(() => getCodexCategories(), []);
   const allEntries = useMemo(() => getAllCodexEntries(), []);
+  const starterIdSet = useMemo(() => new Set<string>(STARTER_ACTION_IDS), []);
 
   const [selectedCategory, setSelectedCategory] = useState(categories[0]?.id ?? 'divine');
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [starterFilter, setStarterFilter] = useState(false);  // THR-419
 
   const filteredEntries = useMemo(() => {
-    let entries = allEntries.filter(e => e.category === selectedCategory);
-    if (selectedSubcategory) {
+    let entries = starterFilter
+      ? allEntries.filter(e => starterIdSet.has(e.id))
+      : allEntries.filter(e => e.category === selectedCategory);
+    if (!starterFilter && selectedSubcategory) {
       entries = entries.filter(e => e.subcategory === selectedSubcategory);
     }
     if (searchQuery.trim()) {
@@ -36,7 +40,7 @@ export default function Codex() {
       );
     }
     return entries;
-  }, [allEntries, selectedCategory, selectedSubcategory, searchQuery]);
+  }, [allEntries, selectedCategory, selectedSubcategory, searchQuery, starterFilter, starterIdSet]);
 
   const selectedEntry = useMemo(() => {
     if (!selectedEntryId) return null;
@@ -47,11 +51,18 @@ export default function Codex() {
     setSelectedCategory(catId);
     setSelectedSubcategory(null);
     setSelectedEntryId(null);
+    setStarterFilter(false);  // sidebar takes precedence over starter chip
   }, []);
 
   const handleSelectSubcategory = useCallback((catId: string, subId: string | null) => {
     setSelectedCategory(catId);
     setSelectedSubcategory(subId);
+    setSelectedEntryId(null);
+    setStarterFilter(false);
+  }, []);
+
+  const handleToggleStarter = useCallback(() => {
+    setStarterFilter(prev => !prev);
     setSelectedEntryId(null);
   }, []);
 
@@ -99,6 +110,27 @@ export default function Codex() {
           />
         </div>
 
+        {/* THR-419 — Starter 12 filter chip */}
+        <button
+          type="button"
+          onClick={handleToggleStarter}
+          data-testid="codex-starter-chip"
+          aria-pressed={starterFilter}
+          className="px-2.5 py-1 rounded-full"
+          style={{
+            fontSize: 'var(--text-xs)',
+            fontFamily: 'var(--font-display)',
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            backgroundColor: starterFilter ? 'var(--accent-gold)' : 'var(--bg-surface)',
+            color: starterFilter ? 'var(--bg-deep)' : 'var(--text-secondary)',
+            border: `1px solid ${starterFilter ? 'var(--accent-gold)' : 'var(--border-subtle)'}`,
+            cursor: 'pointer',
+          }}
+        >
+          Starter <span style={{ opacity: 0.7, marginLeft: '4px' }}>{STARTER_ACTION_COUNT}</span>
+        </button>
+
         {/* Stats */}
         <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginLeft: 'auto' }}>
           {filteredEntries.length} of {allEntries.length} entries
@@ -140,11 +172,22 @@ export default function Codex() {
                 letterSpacing: '0.05em',
               }}
             >
-              {categories.find(c => c.id === selectedCategory)?.label ?? selectedCategory}
-              {selectedSubcategory && (
-                <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>
-                  {' \u203A '}{filteredEntries[0]?.subtitle?.split('\u00B7')[0]?.trim() ?? selectedSubcategory}
-                </span>
+              {starterFilter ? (
+                <>
+                  Starter {STARTER_ACTION_COUNT}
+                  <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>
+                    {' \u203A '}always-available actions
+                  </span>
+                </>
+              ) : (
+                <>
+                  {categories.find(c => c.id === selectedCategory)?.label ?? selectedCategory}
+                  {selectedSubcategory && (
+                    <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>
+                      {' \u203A '}{filteredEntries[0]?.subtitle?.split('\u00B7')[0]?.trim() ?? selectedSubcategory}
+                    </span>
+                  )}
+                </>
               )}
             </h2>
           </div>

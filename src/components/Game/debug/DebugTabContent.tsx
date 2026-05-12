@@ -45,11 +45,12 @@ import { DriftVisualiser } from './DriftVisualiser';
 import { HandStateInspector } from './HandStateInspector';
 import { DetectionStateInspector } from './DetectionStateInspector';
 import { ForecastFactorsInspector } from './ForecastFactorsInspector';
+import { ActionUnlocksView } from './ActionUnlocksView';
 import { EMPTY_STATE_STYLE } from './debugPanelStyles';
 import type { KnowsClueOfEdgeProperties } from '../../../types/knowledge';
 import type { FlipTableRuntimeState } from '../../../types/contentShells';
 
-export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events' | 'shells' | 'compositions' | 'phases' | 'choices' | 'drift' | 'hand' | 'detection' | 'forecast' | 'foreshadowing';
+export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events' | 'shells' | 'compositions' | 'phases' | 'choices' | 'drift' | 'hand' | 'detection' | 'forecast' | 'foreshadowing' | 'action-unlocks';
 
 export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'feed', label: 'Feed' }, { id: 'agent-follow', label: 'Agent' },
@@ -71,6 +72,7 @@ export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'detection', label: 'Detection' },
   { id: 'forecast', label: 'Forecast' },
   { id: 'foreshadowing', label: 'Foreshadowing' },
+  { id: 'action-unlocks', label: 'Action Unlocks' },
 ];
 
 export interface DebugTabContentProps {
@@ -123,6 +125,10 @@ export interface DebugTabContentProps {
   activeCompositions?: readonly import('../../../types/gameState').ActiveComposition[];
   /** Current doom clock stage (1-5) for context in compositions tab. */
   doomClockStage?: number;
+  /** Player's unlocked action IDs for the Action Unlocks tab (THR-419). */
+  unlockedActionIds?: readonly string[];
+  /** Grants an action by ID — wired by GameView to mutate live unlockedActionIds. */
+  onGrantAction?: (templateId: string) => void;
 }
 
 export function DebugTabContent({
@@ -135,6 +141,7 @@ export function DebugTabContent({
   retinueAgents, strategicState, omenState, doomIdentityMatrix,
   hiddenMarks, pendingEncounterSeeds, regionalDetectionPressure, archetypeDrift, activeDelves,
   getRecentEvents, flipTableStates, activeCompositions, doomClockStage,
+  unlockedActionIds, onGrantAction,
 }: DebugTabContentProps) {
   if (viewMode === 'omens') return <OmenDebugTab omenState={omenState} currentTick={currentTick} doomIdentityMatrix={doomIdentityMatrix} />;
   if (viewMode === 'journey') {
@@ -206,6 +213,9 @@ export function DebugTabContent({
         })}
       </div>
     );
+  }
+  if (viewMode === 'action-unlocks') {
+    return <ActionUnlocksView unlockedActionIds={unlockedActionIds} onGrant={onGrantAction} />;
   }
   if (viewMode === 'cli') return <CommandTab retinueAgents={retinueAgents} followAgentId={effectiveAgentId} />;
   if (viewMode === 'strategic') return <StrategicDebugTab strategicState={strategicState} graph={graph} effectiveAgentId={effectiveAgentId} currentTick={currentTick} />;
