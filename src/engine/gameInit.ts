@@ -324,6 +324,7 @@ export function initializeGameState(
     encounterProgress: [],
     actionsInProgress: [],
     unifiedActions: [],
+    unlockedActionIds: [],
     pendingEncounterSeeds: [],
     hiddenMarks: [],
     intelligenceRecords: [],

@@ -14,6 +14,7 @@ import { RARITY_TIER_NAMES, RARITY_TIER_COLORS } from '../../types/rarity';
 import type { RarityTier } from '../../types/rarity';
 import type { GraphNode } from '../../types/graph';
 import { getAttachmentGlyph } from '../Game/attachmentGlyphs';
+import { isStarterActionId } from '../../engine/actionUnlock';
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -34,6 +35,8 @@ export interface CodexEntry {
   details: { label: string; value: string }[];
   /** Optional path to an art asset (relative to public/) */
   imageAssetPath?: string;
+  /** Starter-floor membership (THR-419). */
+  isStarter?: boolean;
 }
 
 // ─── Art Registries ─────────────────────────────────────────────
@@ -255,6 +258,7 @@ function mapDivineAction(template: typeof UNIFIED_ACTION_TEMPLATES[number]): Cod
     summary: template.description ?? '',
     flavorText: template.narrativeTemplates?.initiation,
     tags: [reach, template.sphereAffinity ?? '', template.crudType].filter(Boolean),
+    isStarter: template.starter === true || isStarterActionId(template.id),
     details: [
       { label: 'Reach', value: REACH_DISPLAY[reach] ?? reach },
       { label: 'Sphere', value: template.sphereAffinity ?? 'none' },
@@ -282,6 +286,7 @@ function mapMortalAction(template: typeof UNIFIED_ACTION_TEMPLATES[number]): Cod
     summary: template.description ?? '',
     flavorText: template.narrativeTemplates?.initiation,
     tags: [reach, template.crudType, template.scale, template.sphereAffinity ?? ''].filter(Boolean),
+    isStarter: template.starter === true || isStarterActionId(template.id),
     details: [
       { label: 'Reach', value: REACH_DISPLAY[reach] ?? reach },
       { label: 'CRUD', value: template.crudType },
@@ -313,6 +318,7 @@ function mapTargetAction(
     summary: template.description ?? '',
     flavorText: template.narrativeTemplates?.initiation,
     tags: [reach, template.crudType, template.scale, template.sphereAffinity ?? ''].filter(Boolean),
+    isStarter: template.starter === true || isStarterActionId(template.id),
     details: [
       { label: 'Reach', value: REACH_DISPLAY[reach] ?? reach },
       { label: 'CRUD', value: template.crudType },

@@ -41,6 +41,18 @@ export interface DebugFireResult {
   message: string;
 }
 
+export interface DebugLockedActionInfo {
+  id: string;
+  name: string;
+  rarityTier: number;
+}
+
+export interface DebugGrantActionResult {
+  success: boolean;
+  actionId?: string;
+  message: string;
+}
+
 export interface DebugAftermathReaction {
   id: string;
   label: string;
@@ -130,8 +142,18 @@ export interface DebugBridge {
   listActions: (agentId?: string) => DebugActionInfo[];
   /** Fire an action template on a target agent immediately, bypassing UI animations. agentId and templateId both accept partial matches. */
   fireAction: (agentId: string, templateId: string) => DebugFireResult;
+  /** List canonical Starter 12 action IDs. */
+  listStarterActions: () => Promise<string[]>;
+  /** List actions currently hidden by the starter/unlock gate. */
+  listLockedActions: () => Promise<DebugLockedActionInfo[]>;
+  /** Grant a non-starter action into unlockedActionIds for the current session. */
+  grantAction: (actionId: string) => Promise<DebugGrantActionResult>;
   /** @internal GameView registers action bridge callbacks here */
-  _registerActionBridge: (callbacks: { listActions: (agentId?: string) => DebugActionInfo[]; fireAction: (agentId: string, templateId: string) => DebugFireResult }) => void;
+  _registerActionBridge: (callbacks: {
+    listActions: (agentId?: string) => DebugActionInfo[];
+    fireAction: (agentId: string, templateId: string) => DebugFireResult;
+    grantAction?: (actionId: string) => DebugGrantActionResult;
+  }) => void;
   /** List pending aftermath reactions for the agent query (id, id prefix, or partial name). */
   listAftermathReactions: (agentId: string) => DebugAftermathListResult;
   /** Apply a pending aftermath reaction for the agent query. Omitting reactionId picks the first authored reaction. */

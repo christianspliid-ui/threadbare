@@ -23,6 +23,8 @@ import type { EssencePool } from '../types/influence';
 import type { HexPosition } from './delivery';
 import { hexDistance } from './delivery';
 import { hexKey } from '../lib/hexKey';
+import { isActionRevealed } from './actionUnlock';
+import { emitTrace } from './traceBuffer';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -61,6 +63,8 @@ export interface TargetActionParams {
    * or null if no thread exists. Used to suppress bind_thread_* actions when already threaded.
    */
   existingThreadTier?: number | null;
+  /** Explicitly unlocked action IDs for the current run/account. */
+  unlockedActionIds?: readonly string[];
 }
 
 // ─── Filter result (for trace) ──────────────────────────────────────────────
@@ -75,6 +79,7 @@ interface FilterCounts {
   byEssence: number;
   byRange: number;
   byRevelation: number;
+  byUnlock: number;
 }
 
 // ─── Main function ───────────────────────────────────────────────────────────
@@ -86,7 +91,17 @@ interface FilterCounts {
  * Caps output at TARGET_ACTION_CONSTANTS.MAX_SLOTS.
  */
 export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
-  const { target, templates, pool, primarySphere, avatarPos, accessibleSpheres, hexRevelation, existingThreadTier } = params;
+  const {
+    target,
+    templates,
+    pool,
+    primarySphere,
+    avatarPos,
+    accessibleSpheres,
+    hexRevelation,
+    existingThreadTier,
+    unlockedActionIds,
+  } = params;
 
   const counts: FilterCounts = {
     considered: 0,
@@ -98,6 +113,7 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     byEssence: 0,
     byRange: 0,
     byRevelation: 0,
+    byUnlock: 0,
   };
 
   const slots: WheelSlot[] = [];
@@ -189,6 +205,12 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       }
     }
 
+    // 8. Unlock gate — hide non-starter, non-unlocked templates.
+    if (!isActionRevealed(template, unlockedActionIds)) {
+      counts.byUnlock++;
+      continue;
+    }
+
     // 4. Sphere gate
     if (template.sphereAffinity) {
       const sphereAllowed = (accessibleSpheres as readonly string[]).includes(template.sphereAffinity);
@@ -263,6 +285,25 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       technicalDescription: template.description,
       narrativeLayer: template.narrativeLayer as WheelSlot['narrativeLayer'],
       rarityTier: template.rarityTier,
+    });
+  }
+
+  if (counts.byUnlock > 0) {
+    emitTrace({
+      category: 'target_action_filter',
+      summary: 'action.gate.unlock_filter',
+      tick: 0,
+      targetNodeId: target.nodeId,
+      targetNodeType: target.nodeType,
+      targetSubtype: target.subtype ?? null,
+      templatesConsidered: counts.considered,
+      filteredByNodeType: counts.byNodeType,
+      filteredBySubtype: counts.bySubtype,
+      filteredByTraits: counts.byTraits,
+      filteredBySphere: counts.bySphere,
+      filteredByEssence: counts.byEssence,
+      filteredByRange: counts.byRange,
+      slotsGenerated: slots.length,
     });
   }
 

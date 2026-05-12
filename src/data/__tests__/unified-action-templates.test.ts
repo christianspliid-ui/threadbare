@@ -8,6 +8,7 @@ import { ACTION_TEMPLATES } from '../action-template-content';
 import { ENCOUNTER_TEMPLATES } from '../encounter-content';
 import type { UnifiedActionTemplate, ActionStep } from '../../types/unifiedAction';
 import { isActionStepBranch } from '../../types/unifiedAction';
+import { STARTER_ACTION_COUNT, STARTER_ACTION_IDS } from '../../engine/actionUnlock';
 
 // ─── Migration helpers ────────────────────────────────────────────
 
@@ -193,6 +194,28 @@ describe('UNIFIED_ACTION_TEMPLATES', () => {
 
   it('total template count is substantial', () => {
     expect(UNIFIED_ACTION_TEMPLATES.length).toBeGreaterThanOrEqual(54);
+  });
+
+  it('starter action IDs resolve to live templates', () => {
+    const byId = new Map(UNIFIED_ACTION_TEMPLATES.map((template) => [template.id, template]));
+    for (const starterId of STARTER_ACTION_IDS) {
+      expect(byId.has(starterId), `starter id '${starterId}' missing from templates`).toBe(true);
+    }
+  });
+
+  it('exactly STARTER_ACTION_COUNT templates carry starter: true', () => {
+    const starters = UNIFIED_ACTION_TEMPLATES.filter((template) => template.starter === true);
+    expect(starters).toHaveLength(STARTER_ACTION_COUNT);
+  });
+
+  it('starter-flagged templates match STARTER_ACTION_IDS exactly', () => {
+    const flaggedIds = new Set(
+      UNIFIED_ACTION_TEMPLATES
+        .filter((template) => template.starter === true)
+        .map((template) => template.id),
+    );
+    const expectedIds = new Set(STARTER_ACTION_IDS);
+    expect(flaggedIds).toEqual(expectedIds);
   });
 });
 

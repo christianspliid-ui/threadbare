@@ -141,6 +141,7 @@ import { useTargetActions } from './hooks/useTargetActions';
 import { templateIdFromSlotId } from '../../engine/targetActions';
 import type { WheelSlot } from '../../engine/wheel';
 import { getUnifiedTemplateById, UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
+import { isStarterActionId } from '../../engine/actionUnlock';
 import { CRUD_TO_ENCOUNTER_TYPE } from '../../engine/encounterCache';
 import { createUnifiedAction } from '../../engine/unifiedActionLifecycle';
 import { mulberry32 } from '../../lib/prng';
@@ -1725,6 +1726,32 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           templateName: tpl.name,
           message: `Fired '${tpl.name}' on '${agentName}'`,
         };
+      },
+      grantAction: (actionId: string) => {
+        const normalized = actionId.trim();
+        if (!normalized) return { success: false, message: 'Action ID is required' };
+
+        const template = UNIFIED_ACTION_TEMPLATES.find((entry) =>
+          entry.id === normalized || entry.id.includes(normalized),
+        );
+        if (!template) {
+          return { success: false, message: `No action template matches '${normalized}'` };
+        }
+        if (template.starter === true || isStarterActionId(template.id)) {
+          return { success: false, actionId: template.id, message: `${template.id} is already a starter action` };
+        }
+
+        let wasAdded = false;
+        setGameState((prev) => {
+          const unlocked = prev.unlockedActionIds ?? [];
+          if (unlocked.includes(template.id)) return prev;
+          wasAdded = true;
+          return { ...prev, unlockedActionIds: [...unlocked, template.id] };
+        });
+
+        return wasAdded
+          ? { success: true, actionId: template.id, message: `Unlocked action '${template.id}'` }
+          : { success: false, actionId: template.id, message: `${template.id} is already unlocked` };
       },
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps

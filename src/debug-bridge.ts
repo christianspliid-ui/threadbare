@@ -82,6 +82,7 @@ if (import.meta.env.DEV) {
   interface ActionBridge {
     listActions: (agentId?: string) => import('./debug-bridge.d').DebugActionInfo[];
     fireAction: (agentId: string, templateId: string) => import('./debug-bridge.d').DebugFireResult;
+    grantAction?: (actionId: string) => import('./debug-bridge.d').DebugGrantActionResult;
   }
   interface AftermathBridge {
     listAftermathReactions: (agentId: string) => import('./debug-bridge.d').DebugAftermathListResult;
@@ -125,6 +126,28 @@ if (import.meta.env.DEV) {
     listActions: (agentId?: string) => _actionBridge?.listActions(agentId) ?? [],
     fireAction: (agentId: string, templateId: string) =>
       _actionBridge?.fireAction(agentId, templateId) ?? { success: false, message: 'Game not loaded' },
+    listStarterActions: async () => {
+      const { STARTER_ACTION_IDS } = await import('./engine/actionUnlock');
+      return [...STARTER_ACTION_IDS];
+    },
+    listLockedActions: async () => {
+      const [{ UNIFIED_ACTION_TEMPLATES }, { STARTER_ACTION_IDS }] = await Promise.all([
+        import('./data/unified-action-templates'),
+        import('./engine/actionUnlock'),
+      ]);
+      const state = _gameStateProvider?.();
+      const unlocked = new Set(state?.unlockedActionIds ?? []);
+      const starters = new Set(STARTER_ACTION_IDS);
+      return UNIFIED_ACTION_TEMPLATES
+        .filter((template) => !starters.has(template.id) && !unlocked.has(template.id))
+        .map((template) => ({
+          id: template.id,
+          name: template.name,
+          rarityTier: template.rarityTier,
+        }));
+    },
+    grantAction: async (actionId: string) =>
+      _actionBridge?.grantAction?.(actionId) ?? { success: false, message: 'Game not loaded' },
     _registerActionBridge: (cb) => { _actionBridge = cb as ActionBridge; },
     listAftermathReactions: (agentId: string) =>
       _aftermathBridge?.listAftermathReactions(agentId) ?? { reactions: [], error: 'Game not loaded' },
