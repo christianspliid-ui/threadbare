@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-05-11
+last_validated_against: 2026-05-12
 ---
 
 # Pull Work
@@ -60,7 +60,50 @@ All retries exhausted:
 
 > **Prefer `pullNextReadyForDev` above** for the canonical one-call path. These steps are the documented fallback and expand exactly what the wrapper does internally.
 
-### Step 0 — Rate-limit guard
+### Step 0 — Session-start sweep
+
+Before any pickup work, sweep for stale `tfws-pickup-*` and `tfws-resume-*` worktrees left by previous sessions. Prevents disk/grep pollution from accumulating across sessions.
+
+**Constant:** `WORKTREE_STALE_DAYS = 14`
+
+**Scope:** only worktrees whose path matches `../tfws-pickup-` or `../tfws-resume-` (created by Step 4.5). Never touch `.claude/worktrees/*` entries — those are CC-managed.
+
+**Skip if:** the current session is already running inside a `tfws-pickup-*` or `tfws-resume-*` path (self-removal edge case).
+
+**Procedure:**
+
+1. Collect orphaned entries (registered but directory gone):
+   ```bash
+   git worktree prune
+   ```
+2. List all worktrees and filter for the `tfws-pickup-*` / `tfws-resume-*` pattern:
+   ```bash
+   git worktree list --porcelain
+   ```
+3. For each matching entry, evaluate two conditions:
+   - **Clean:** `git -C <path> status --short -- ':!.codesight'` returns empty output. `.codesight/` modifications are auto-generated at session start and are not real uncommitted work.
+   - **Stale:** the most recent commit timestamp on the branch HEAD is older than `WORKTREE_STALE_DAYS` days:
+     ```bash
+     git -C <path> log -1 --format="%ct"
+     ```
+4. If **both** conditions are true, remove the worktree and delete the local branch:
+   ```bash
+   git worktree remove --force <path>
+   git branch -D <branch> 2>/dev/null || true  # branch may already be gone remotely
+   ```
+5. Log each action (one line per worktree):
+   ```
+   [pull-work] sweep: removed <path> (branch <branch>, <N>d old, clean)
+   [pull-work] sweep: kept <path> — has uncommitted changes (non-codesight files dirty)
+   [pull-work] sweep: kept <path> — <N>d old (< WORKTREE_STALE_DAYS threshold)
+   [pull-work] sweep: pruned orphaned registry entry (directory gone)
+   ```
+
+**Fail-soft:** if `git worktree prune` or `git worktree list` errors, log a single warning and continue. Sweep failure must never block pickup.
+
+---
+
+### Step 0.5 — Rate-limit guard
 
 If any Linear MCP call in this session returns a rate-limit error (HTTP 429 / MCP rate-limit response), pause 2 minutes, retry once, then if still limited log an impediment via `impediment-reporter` and exit cleanly without claiming. Do not retry in tight loops.
 
@@ -204,15 +247,14 @@ On refusal: leave the issue unclaimed when possible, post a concise bounce note,
 
 ## Closeout — remove the temporary worktree
 
-After the merge-to-main auto-close fires (or after a clean push if auto-close is
-unavailable per THR-276), remove the worktree from the home worktree:
+**Attempt cleanup immediately after push** — do not wait for the merge-to-main auto-close, because that fires on GitHub after the CC session ends and no session will be active to run the cleanup. Run cleanup from the home worktree (`$REPO_ROOT`) right after `git push` succeeds:
 
 ```bash
 cd "$REPO_ROOT"
-git worktree remove "$WORKTREE_DIR"
-git branch -D "$WORKTREE_BRANCH"
+git worktree remove --force "$WORKTREE_DIR" 2>/dev/null || true
+git branch -D "$WORKTREE_BRANCH" 2>/dev/null || true
 ```
 
-If `git worktree remove` fails (worktree not fully clean), use `--force`. Failure
-to remove is non-fatal — the merge has already landed and a future
-`git worktree prune` will collect the orphan.
+Both commands are non-fatal: if the worktree directory is still in use (e.g., we can't remove the directory we're running from), the error is swallowed and Step 0 of the next session will collect it via `git worktree prune` or the age-based sweep.
+
+**Why immediate cleanup matters:** the old "after merge-to-main fires" timing was never reliable. The CC session ends before the PR merges; the auto-close fires on GitHub with no session alive to run cleanup. Step 0 of the next pickup is the backstop — but immediate post-push cleanup reduces the graveyard before it accumulates.
