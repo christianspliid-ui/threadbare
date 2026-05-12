@@ -2,7 +2,7 @@
 
 > **Living document.** Every design plan must include a wiring section that maps new modules to entries on this checklist. Every implementation must verify all listed connections before marking work complete. Maintaining this checklist is part of the Definition of Done for both design and implementation phases.
 >
-> **Last updated:** 2026-05-12 (THR-418 — Added Sustained Controls surface in ThreadsPanel: `getSustainedControlNodes` resolver, `championEffectId`/`championTemplateId` on `ThreadedAgent`, new Hexes/Sources sections + champion chip + location claim-status fold-in, DebugPanel `Sustained` inspector tab, `src/data/sustained-control-status-prose.ts` content tables, 3 new `ActivityIcon` kinds. Previous: 2026-05-09 (THR-389 — Added Encounter Foreshadowing: on-click resolver, per-session cache, `foreshadowing` field on `UnifiedActionTemplate`, Foreshadowing DebugPanel tab, debug-bridge methods. Previous: 2026-05-08 (THR-266 — Added UI Pillar Verification section). Previous: 2026-05-08 (THR-289 — Added UL Interactive Dashboard reference surface at `?view=ul`). Previous: 2026-05-07 (THR-326 — Added regional detection-pressure phase wiring + DebugPanel detection inspector surface). Previous: 2026-04-29 (THR-109 — Added branch-aware aftermath selection surface (`BranchAwareAftermathConfig` / `resolveAftermathVariant`). Previous: 2026-04-19 THR-174 viewport audit.)
+> **Last updated:** 2026-05-12 (THR-11 — Hex Vignette Phase 3: ChunkedLandmarkLayer, VignetteClickRegistry, LandmarkExportValidator, window.__TERRAIN_LAB dev API. Previous: 2026-05-12 (THR-418 — Added Sustained Controls surface in ThreadsPanel: `getSustainedControlNodes` resolver, `championEffectId`/`championTemplateId` on `ThreadedAgent`, new Hexes/Sources sections + champion chip + location claim-status fold-in, DebugPanel `Sustained` inspector tab, `src/data/sustained-control-status-prose.ts` content tables, 3 new `ActivityIcon` kinds. Previous: 2026-05-09 (THR-389 — Added Encounter Foreshadowing: on-click resolver, per-session cache, `foreshadowing` field on `UnifiedActionTemplate`, Foreshadowing DebugPanel tab, debug-bridge methods. Previous: 2026-05-08 (THR-266 — Added UI Pillar Verification section). Previous: 2026-05-08 (THR-289 — Added UL Interactive Dashboard reference surface at `?view=ul`). Previous: 2026-05-07 (THR-326 — Added regional detection-pressure phase wiring + DebugPanel detection inspector surface). Previous: 2026-04-29 (THR-109 — Added branch-aware aftermath selection surface (`BranchAwareAftermathConfig` / `resolveAftermathVariant`). Previous: 2026-04-19 THR-174 viewport audit.)
 
 ---
 
@@ -43,6 +43,27 @@ The right-bar `ThreadsPanel` already surfaces the five existing thread categorie
 ---
 
 ## Integration Surfaces
+
+### Hex Vignette Phase 3 — Chunked Landmark Layer (THR-11)
+
+Replaces clone-based landmark placement with `InstancedMesh` batching. Each GLB is loaded once, split into submeshes, and rendered as a single `InstancedMesh` per submesh with a custom unlit shader (`VignetteInstanceMaterial`).
+
+| Surface | Path | Notes |
+|---|---|---|
+| Core layer | `src/components/HexMapV2/lab/vignette/ChunkedLandmarkLayer.ts` | Groups placements by `modelId`, loads GLTFs (cached), extracts ≤3 submeshes, builds `InstancedMesh` batches. Exposes `build()`, `batchCount`, `validationReports`, `setVisible()`, `setChunkBoundsVisible()`, `dispose()`. |
+| Validation | `src/components/HexMapV2/lab/vignette/LandmarkExportValidator.ts` | Checks submesh count against `LANDMARK_MAX_MATERIAL_SLOTS`; emits `warn` severity when truncated. Report type `vignette.landmark.validation`. |
+| Click registry | `src/components/HexMapV2/lab/vignette/VignetteClickRegistry.ts` | Stores `LandmarkClickEntry[]` (click target + `batchKey` + `instanceIndex`). Populated by `ChunkedLandmarkLayer.build()`, consumed by Phase 4 raycaster. |
+| Constants | `TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS` in `terrainTextureLabPresets.ts` | `LANDMARK_MAX_INSTANCES_PER_BATCH=256`, `LANDMARK_DEFAULT_VISIBILITY_STATE=2`, `LANDMARK_LAYER_Z_OFFSET=0.02` |
+| Canvas wiring | `src/components/HexMapV2/lab/TerrainTextureLabCanvas.tsx` | Removed `modelGroup` / `syncPlacements`. Added `landmarkLayerRef`, `clickRegistryRef`, `ChunkedLandmarkLayer` build useEffect, `showLandmarkBounds` prop, `onLandmarkLayerBuilt` callback, `window.__TERRAIN_LAB` dev API. |
+| Overlay | `src/components/HexMapV2/lab/vignette/VignetteDebugOverlay.tsx` | Added `showLandmarkBounds` toggle, filler/landmark/batch count HUD. |
+| Parent wiring | `src/components/HexMapV2/lab/TerrainTextureLab.tsx` | Added `landmarkBatchCount` state, `fillerInstanceCount` memo, new props to canvas and overlay. |
+| Art contract | `Docs/art-pipeline/blender-export-contract.md` | ≤3 submeshes, Y-up, apply transforms before export, scale reference table. |
+| Dev API | `window.__TERRAIN_LAB.clickRegistry` / `window.__TERRAIN_LAB.landmarkBatchCount` | DEV-only; tree-shaken in prod. |
+| Traces | `vignette.landmark.build`, `vignette.landmark.registry`, `vignette.landmark.validation` | DEV-only console.debug. |
+| Tests | `src/components/HexMapV2/lab/__tests__/vignetteChunkedLandmark.test.ts` | Covers: constants, `validateLandmarkExport` (severity, truncation, nested meshes, type, url), `VignetteClickRegistry` (replace, overwrite, clear, readonly list). |
+| Settings field | `TerrainTextureLabVignetteSettings.showLandmarkBounds` | Persisted to `TERRAIN_TEXTURE_LAB_VIGNETTE_STORAGE_KEY`. |
+
+---
 
 ### Reference Surfaces — UL Interactive Dashboard (THR-289)
 

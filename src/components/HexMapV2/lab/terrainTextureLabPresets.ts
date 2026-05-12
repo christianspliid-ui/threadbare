@@ -68,6 +68,10 @@ export const TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS = {
   FILLER_HIDE_ZOOM_THRESHOLD: 5,
   SHADER_REDUCED_OCTAVE_ZOOM_THRESHOLD: 5,
   SCATTER_MAX_INSTANCES_PER_BATCH: 3072,
+  // Phase 3: Chunked landmark layer constants
+  LANDMARK_MAX_INSTANCES_PER_BATCH: 256,
+  LANDMARK_DEFAULT_VISIBILITY_STATE: 2,
+  LANDMARK_LAYER_Z_OFFSET: 0.02,
 } as const;
 
 export const TERRAIN_RECIPE_OPTIONS = [
@@ -136,6 +140,7 @@ export interface TerrainTextureLabVignetteSettings {
   showZones: boolean;
   showFillerDots: boolean;
   showChunkBounds: boolean;
+  showLandmarkBounds: boolean;
 }
 
 export interface TerrainTextureLabModelDefinition {
@@ -525,6 +530,7 @@ export function getDefaultTerrainTextureLabVignetteSettings(): TerrainTextureLab
     showZones: false,
     showFillerDots: false,
     showChunkBounds: false,
+    showLandmarkBounds: false,
   };
 }
 
@@ -602,6 +608,7 @@ export function parseTerrainTextureLabVignetteSettings(raw: string): TerrainText
       showZones: parsed.showZones,
       showFillerDots: parsed.showFillerDots,
       showChunkBounds: parsed.showChunkBounds === true,
+      showLandmarkBounds: parsed.showLandmarkBounds === true,
     };
   } catch {
     return null;
