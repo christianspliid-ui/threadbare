@@ -20,7 +20,7 @@ Run as `/pull-work` (auto-pick top Ready for Dev issue) or `/pull-work THR-123` 
 
 ## pullNextReadyForDev — Atomic Pickup Procedure
 
-**Canonical path for Rules 1, 4, and 7.** Execute this 6-step sequence as a single atomic unit instead of hand-rolling claim + verify + comment-read separately. Steps 1–4 below are the documented fallback for agents that bypass the wrapper. After verified claim, runs Step 4.5 worktree-isolation if home is dirty.
+**Canonical path for Rules 1, 4, and 7.** Execute this 6-step sequence as a single atomic unit instead of hand-rolling claim + verify + comment-read separately. Steps 1–4 below are the documented fallback for agents that bypass the wrapper. After verified claim, runs Step 4.5 worktree-isolation if home is dirty, then Step 4.6 stranded-commit zombie sweep.
 
 **Constant:** `MAX_CLAIM_RETRIES = 3`
 
@@ -295,6 +295,99 @@ in the same location.
 both the path and branch name (handles a stale worktree from a prior aborted run).
 On second failure, release the claim with `save_issue(id, assignee:null)` and exit
 cleanly. Surfaced as a worktree-creation failure rather than a dirty-state failure.
+
+### Step 4.6 — Stranded-commit zombie sweep
+
+After worktree isolation (Step 4.5) and before any plan-doc read or implementation, detect local-only commits sitting ahead of `origin/main` whose content is already on `origin/main` under a different SHA ("zombie commits"). These arise when a closeout PR merges under a squash/rebase SHA, leaving the original local branch commit alive in a reused pool worktree. Step 4.5's `git status --porcelain` predicate does **not** see committed-but-unmerged state — this sweep fills that gap.
+
+**Constants:**
+
+| Constant | Default | Purpose |
+|---|---|---|
+| `ZOMBIE_DETECTION_BASE` | `origin/main` | Branch to compare stranded commits against |
+| `ZOMBIE_MAX_AGE_DAYS` | 14 | Bounds the `git log --since` window for Condition A; older zombies still classify via Condition B |
+| `MAX_STRANDED_COMMITS_TO_INSPECT` | 20 | Safety cap; >20 stranded commits triggers fail-fast instead of inspect |
+| `ZOMBIE_EXIT_CODE_FAIL_FAST` | 1 | Exit code when real WIP is detected |
+| `ZOMBIE_EXIT_CODE_NO_OP` | 0 | Exit code when sweep no-ops or auto-resets |
+
+**Algorithm:**
+
+```bash
+# Step 4.6 — Stranded-commit zombie sweep
+git fetch origin main --quiet || {
+  echo "[pull-work] Step 4.6: git fetch failed. Skipping sweep (fail-soft)."
+  return 0  # log impediment via impediment-reporter, continue
+}
+
+STRANDED=$(git rev-list "origin/main..HEAD" 2>/dev/null || true)
+if [ -z "$STRANDED" ]; then
+  echo "[pull-work] Step 4.6: no stranded commits — continuing."
+  return 0
+fi
+
+STRANDED_COUNT=$(echo "$STRANDED" | wc -l)
+if [ "$STRANDED_COUNT" -gt 20 ]; then  # MAX_STRANDED_COMMITS_TO_INSPECT
+  echo "[pull-work] Step 4.6: $STRANDED_COUNT stranded commits exceeds cap. Fail-fast."
+  # release_linear_claim; exit 1
+fi
+
+ZOMBIES=0; NON_ZOMBIES=0; ZOMBIE_SHAS=(); NON_ZOMBIE_SHAS=()
+
+for sha in $STRANDED; do
+  if is_zombie "$sha"; then
+    ZOMBIE_SHAS+=("$sha"); ZOMBIES=$((ZOMBIES+1))
+  else
+    NON_ZOMBIE_SHAS+=("$sha"); NON_ZOMBIES=$((NON_ZOMBIES+1))
+  fi
+done
+
+if [ "$NON_ZOMBIES" -gt 0 ]; then
+  echo "[pull-work] Step 4.6: $ZOMBIES zombies + $NON_ZOMBIES real WIP commits."
+  echo "  Real WIP SHAs: ${NON_ZOMBIE_SHAS[*]}"
+  echo "  Fail-fast — releasing claim and exiting. Run 'git log origin/main..HEAD' to inspect."
+  # release_linear_claim; exit 1
+fi
+
+# All stranded commits are zombies — safe to reset
+echo "[pull-work] Step 4.6: all $ZOMBIES stranded commits are zombies. Resetting to origin/main."
+echo "  Zombie SHAs: ${ZOMBIE_SHAS[*]}"
+git reset --hard origin/main
+```
+
+**`is_zombie <sha>` — classification heuristic.** Returns true if **either** condition holds:
+
+**Condition A — Fixes-keyword match on main.** Extract the first `(Fixes|Closes|Resolves) THR-\d+` token from the stranded commit's full message body (`git log --format="%B" -1 <sha>`). If found, search `git log origin/main --grep="<token>" --since="14 days ago" --oneline | head -1`. A match means the issue is already closed on `main` → zombie.
+
+**Condition B — Content match against main tip.** For each path in `git show --name-only --format= <sha>`, run `git diff --quiet <sha> origin/main -- <file>` for each changed file. If every changed file matches `origin/main`, the commit's payload is already there → zombie.
+
+Either condition is sufficient to classify a commit as zombie. Both conditions must answer "no" for the commit to be treated as real WIP.
+
+**Fail-soft table:**
+
+| Failure mode | Behavior |
+|---|---|
+| `git fetch origin main` fails (network, auth) | Skip sweep; log impediment; continue |
+| `git rev-list` returns non-zero | Skip sweep; log warning; continue |
+| `is_zombie` errors on a single SHA | Treat as non-zombie (fail-safe: surface for human review) |
+| Stranded count > `MAX_STRANDED_COMMITS_TO_INSPECT` | Fail-fast; release claim; exit 1 |
+| Sweep would reset away an uncommitted working-tree edit | Cannot happen — Step 4.5 already isolated dirty trees |
+
+**Trace lines** (NFP #2 — exactly one fires per session):
+
+```
+[pull-work] Step 4.6: no stranded commits — continuing.
+[pull-work] Step 4.6: all <N> stranded commits are zombies. Resetting to origin/main.
+  Zombie SHAs: <sha1> <sha2> ...
+[pull-work] Step 4.6: <Z> zombies + <W> real WIP commits.
+  Real WIP SHAs: <sha1> ...
+  Fail-fast — releasing claim and exiting.
+[pull-work] Step 4.6: <N> stranded commits exceeds cap. Fail-fast.
+[pull-work] Step 4.6: git fetch failed. Skipping sweep (fail-soft).
+```
+
+**Interaction with adjacent steps.** Step 4.4 verifies the *currently-claimed* issue isn't already shipped on `main`. Step 4.6 handles *prior* issues' zombie commits surviving in a reused pool worktree — an orthogonal concern. Order: Step 4.4 → Step 4.5 → **Step 4.6** → Step 5. The sweep runs even in a fresh isolation worktree (cheap no-op there; the real work happens in the in-place case when Step 4.5 continued in-place because the home tree was working-tree-clean).
+
+---
 
 ### Step 5 - Reopened safety check
 
