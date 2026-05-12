@@ -1,9 +1,19 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { WorldGraph } from '../graph';
-import { getRetinueAgents, getThreadedNodes, groupThreadedNodes } from '../retinue';
+import {
+  getRetinueAgents,
+  getThreadedNodes,
+  groupThreadedNodes,
+  getSustainedControlNodes,
+  pickPrimarySphere,
+  CHAMPION_TEMPLATE_IDS,
+  SUSTAIN_LAPSE_RISK_CRITICAL_TICKS,
+  SUSTAIN_LAPSE_RISK_TIGHTENING_TICKS,
+} from '../retinue';
 import type { RetinueAgent } from '../retinue';
 import type { AxiologicalProfile } from '../../types/agent';
 import type { ReachDomain } from '../../types/traits';
+import type { ControlEffect } from '../../types/controlEffect';
 
 describe('getRetinueAgents', () => {
   let graph: WorldGraph;
@@ -674,6 +684,407 @@ describe('getThreadedNodes', () => {
     if (result[0].category === 'faction') {
       expect(result[0].dominantSphere).toBeNull();
     }
+  });
+
+  // ── THR-418: championEffectId wiring ──────────────────────────────
+
+  describe('THR-418 championEffectId wiring', () => {
+    function makeChampionEffect(
+      effectId: string,
+      targetAgentId: string,
+      templateId: string = 'action.anoint-champion',
+      active: boolean = true,
+    ): ControlEffect {
+      return {
+        effectId,
+        templateId,
+        ownerId: ascendantId,
+        targetHexCol: 0,
+        targetHexRow: 0,
+        targetNodeId: targetAgentId,
+        establishedTick: 0,
+        ritualEssenceInvested: 10,
+        perTickCost: { spirit: 1 },
+        perTickMutations: [],
+        perTickGraphOps: [],
+        active,
+        ticksActive: 0,
+        narrativeTemplates: {
+          established: '', active: '', lapsed: '',
+        },
+      };
+    }
+
+    it('agent gets championEffectId=null when no champion effect targets them', () => {
+      graph.addNode({
+        id: 'actor.lone',
+        type: 'actor',
+        name: 'Lone Agent',
+        properties: { actorType: 'individual' },
+      });
+      makeThreadEdge('thread.lone', 'actor.lone', 2);
+
+      const result = getThreadedNodes(graph, ascendantId, []);
+      expect(result).toHaveLength(1);
+      if (result[0].category === 'agent') {
+        expect(result[0].championEffectId).toBeNull();
+        expect(result[0].championTemplateId).toBeNull();
+      }
+    });
+
+    it('agent gets championEffectId populated for anoint-champion effect', () => {
+      graph.addNode({
+        id: 'actor.chosen',
+        type: 'actor',
+        name: 'Chosen One',
+        properties: { actorType: 'individual' },
+      });
+      makeThreadEdge('thread.chosen', 'actor.chosen', 3);
+
+      const effects = [makeChampionEffect('eff.anoint.1', 'actor.chosen', 'action.anoint-champion')];
+      const result = getThreadedNodes(graph, ascendantId, effects);
+      expect(result).toHaveLength(1);
+      if (result[0].category === 'agent') {
+        expect(result[0].championEffectId).toBe('eff.anoint.1');
+        expect(result[0].championTemplateId).toBe('action.anoint-champion');
+      }
+    });
+
+    it('agent gets championEffectId populated for hex.install_champion effect', () => {
+      graph.addNode({
+        id: 'actor.installed',
+        type: 'actor',
+        name: 'Installed Lord',
+        properties: { actorType: 'individual' },
+      });
+      makeThreadEdge('thread.installed', 'actor.installed', 2);
+
+      const effects = [makeChampionEffect('eff.install.1', 'actor.installed', 'hex.install_champion')];
+      const result = getThreadedNodes(graph, ascendantId, effects);
+      expect(result).toHaveLength(1);
+      if (result[0].category === 'agent') {
+        expect(result[0].championEffectId).toBe('eff.install.1');
+        expect(result[0].championTemplateId).toBe('hex.install_champion');
+      }
+    });
+
+    it('non-champion templates do not populate championEffectId', () => {
+      graph.addNode({
+        id: 'actor.other',
+        type: 'actor',
+        name: 'Other Agent',
+        properties: { actorType: 'individual' },
+      });
+      makeThreadEdge('thread.other', 'actor.other', 1);
+
+      // Effect targets the agent, but template is not in the allowlist.
+      const effects = [makeChampionEffect('eff.curse', 'actor.other', 'action.curse')];
+      const result = getThreadedNodes(graph, ascendantId, effects);
+      if (result[0].category === 'agent') {
+        expect(result[0].championEffectId).toBeNull();
+        expect(result[0].championTemplateId).toBeNull();
+      }
+    });
+
+    it('inactive (lapsed) champion effects do not populate championEffectId', () => {
+      graph.addNode({
+        id: 'actor.former',
+        type: 'actor',
+        name: 'Former Champion',
+        properties: { actorType: 'individual' },
+      });
+      makeThreadEdge('thread.former', 'actor.former', 1);
+
+      const effects = [
+        makeChampionEffect('eff.lapsed', 'actor.former', 'action.anoint-champion', /*active*/ false),
+      ];
+      const result = getThreadedNodes(graph, ascendantId, effects);
+      if (result[0].category === 'agent') {
+        expect(result[0].championEffectId).toBeNull();
+      }
+    });
+
+    it('champion effect owned by a different ascendant does NOT pollute this row', () => {
+      graph.addNode({
+        id: 'actor.shared',
+        type: 'actor',
+        name: 'Shared Champion',
+        properties: { actorType: 'individual' },
+      });
+      makeThreadEdge('thread.shared', 'actor.shared', 1);
+
+      const effects: ControlEffect[] = [
+        {
+          ...makeChampionEffect('eff.rival', 'actor.shared'),
+          ownerId: 'rival.god',
+        },
+      ];
+      const result = getThreadedNodes(graph, ascendantId, effects);
+      if (result[0].category === 'agent') {
+        expect(result[0].championEffectId).toBeNull();
+      }
+    });
+
+    it('CHAMPION_TEMPLATE_IDS allowlist enforced: an install_champion targeting a non-allowed agent does not pollute another agent', () => {
+      graph.addNode({
+        id: 'actor.protagonist',
+        type: 'actor',
+        name: 'Protagonist',
+        properties: { actorType: 'individual' },
+      });
+      graph.addNode({
+        id: 'actor.bystander',
+        type: 'actor',
+        name: 'Bystander',
+        properties: { actorType: 'individual' },
+      });
+      makeThreadEdge('thread.prot', 'actor.protagonist', 2);
+      makeThreadEdge('thread.bys', 'actor.bystander', 1);
+
+      const effects = [makeChampionEffect('eff.only.prot', 'actor.protagonist')];
+      const result = getThreadedNodes(graph, ascendantId, effects);
+      const prot = result.find(n => n.id === 'actor.protagonist');
+      const bys = result.find(n => n.id === 'actor.bystander');
+      if (prot?.category === 'agent') expect(prot.championEffectId).toBe('eff.only.prot');
+      if (bys?.category === 'agent') expect(bys.championEffectId).toBeNull();
+    });
+
+    it('CHAMPION_TEMPLATE_IDS constant contains both champion template ids', () => {
+      expect(CHAMPION_TEMPLATE_IDS).toContain('action.anoint-champion');
+      expect(CHAMPION_TEMPLATE_IDS).toContain('hex.install_champion');
+    });
+  });
+});
+
+// ─── THR-418 getSustainedControlNodes ────────────────────────────────────────
+
+describe('getSustainedControlNodes', () => {
+  let graph: WorldGraph;
+  const ascendantId = 'ascendant.test';
+
+  beforeEach(() => {
+    graph = new WorldGraph();
+    graph.addNode({
+      id: ascendantId,
+      type: 'actor',
+      name: 'Divine Being',
+      properties: { actorType: 'ascendant' },
+    });
+  });
+
+  function makeEffect(overrides: Partial<ControlEffect> & { effectId: string }): ControlEffect {
+    return {
+      effectId: overrides.effectId,
+      templateId: overrides.templateId ?? 'hex.claim_dominion',
+      ownerId: overrides.ownerId ?? ascendantId,
+      targetHexCol: overrides.targetHexCol ?? 5,
+      targetHexRow: overrides.targetHexRow ?? 3,
+      targetNodeId: overrides.targetNodeId,
+      establishedTick: overrides.establishedTick ?? 0,
+      ritualEssenceInvested: overrides.ritualEssenceInvested ?? 10,
+      perTickCost: overrides.perTickCost ?? { spirit: 1 },
+      perTickIncome: overrides.perTickIncome,
+      sustainThreshold: overrides.sustainThreshold,
+      perTickMutations: overrides.perTickMutations ?? [],
+      perTickGraphOps: overrides.perTickGraphOps ?? [],
+      active: overrides.active ?? true,
+      ticksActive: overrides.ticksActive ?? 5,
+      lapseReason: overrides.lapseReason,
+      encounterNodeId: overrides.encounterNodeId,
+      contestPrerequisites: overrides.contestPrerequisites,
+      narrativeTemplates: overrides.narrativeTemplates ?? {
+        established: '', active: '', lapsed: '',
+      },
+    };
+  }
+
+  it('returns empty array when controlEffects is undefined', () => {
+    const result = getSustainedControlNodes(graph, ascendantId, undefined, {});
+    expect(result).toEqual([]);
+  });
+
+  it('returns empty array when controlEffects is empty', () => {
+    const result = getSustainedControlNodes(graph, ascendantId, [], {});
+    expect(result).toEqual([]);
+  });
+
+  it('classifies effect with no targetNodeId as category hex', () => {
+    const effects = [makeEffect({ effectId: 'e1', targetHexCol: 7, targetHexRow: 2 })];
+    const result = getSustainedControlNodes(graph, ascendantId, effects, { spirit: 100 });
+    expect(result).toHaveLength(1);
+    expect(result[0].category).toBe('hex');
+    expect(result[0].hexCol).toBe(7);
+    expect(result[0].hexRow).toBe(2);
+    // No settlement on hex → fallback display name
+    expect(result[0].displayName).toBe('Hex (7, 2)');
+  });
+
+  it('classifies effect targeting sublocation as category source', () => {
+    graph.addNode({
+      id: 'sub.spring',
+      type: 'location',
+      name: 'the Spring of Withered Light',
+      properties: { hexCol: 5, hexRow: 3, locationSubtype: 'sublocation' },
+    });
+    const effects = [makeEffect({ effectId: 'e2', targetNodeId: 'sub.spring' })];
+    const result = getSustainedControlNodes(graph, ascendantId, effects, { spirit: 100 });
+    expect(result).toHaveLength(1);
+    expect(result[0].category).toBe('source');
+    expect(result[0].displayName).toBe('the Spring of Withered Light');
+  });
+
+  it('classifies effect targeting location as category location', () => {
+    graph.addNode({
+      id: 'loc.tower',
+      type: 'location',
+      name: 'Iron Tower',
+      properties: { hexCol: 5, hexRow: 3 },
+    });
+    const effects = [makeEffect({ effectId: 'e3', targetNodeId: 'loc.tower' })];
+    const result = getSustainedControlNodes(graph, ascendantId, effects, { spirit: 100 });
+    expect(result).toHaveLength(1);
+    expect(result[0].category).toBe('location');
+    expect(result[0].displayName).toBe('Iron Tower');
+  });
+
+  it('resolves hex display name to most-prosperous settlement on the hex', () => {
+    graph.addNode({
+      id: 'loc.thorpe',
+      type: 'location',
+      name: 'Lesser Thorpe',
+      properties: { hexCol: 5, hexRow: 3, prosperityScore: 20 },
+    });
+    graph.addNode({
+      id: 'loc.city',
+      type: 'location',
+      name: 'Iron Hold',
+      properties: { hexCol: 5, hexRow: 3, prosperityScore: 80 },
+    });
+    const effects = [makeEffect({ effectId: 'e4', targetHexCol: 5, targetHexRow: 3 })];
+    const result = getSustainedControlNodes(graph, ascendantId, effects, { spirit: 100 });
+    expect(result[0].displayName).toBe('Iron Hold');
+  });
+
+  it('skips effects owned by other ascendants', () => {
+    const effects = [
+      makeEffect({ effectId: 'mine', ownerId: ascendantId }),
+      makeEffect({ effectId: 'rival', ownerId: 'rival.god' }),
+    ];
+    const result = getSustainedControlNodes(graph, ascendantId, effects, { spirit: 100 });
+    expect(result).toHaveLength(1);
+    expect(result[0].effectId).toBe('mine');
+  });
+
+  it('skips inactive (lapsed) effects', () => {
+    const effects = [
+      makeEffect({ effectId: 'live', active: true }),
+      makeEffect({ effectId: 'dead', active: false }),
+    ];
+    const result = getSustainedControlNodes(graph, ascendantId, effects, { spirit: 100 });
+    expect(result).toHaveLength(1);
+    expect(result[0].effectId).toBe('live');
+  });
+
+  it('fail-soft: missing target node is skipped, not thrown', () => {
+    const effects = [
+      makeEffect({ effectId: 'orphan', targetNodeId: 'does-not-exist' }),
+    ];
+    const result = getSustainedControlNodes(graph, ascendantId, effects, { spirit: 100 });
+    expect(result).toEqual([]);
+  });
+
+  it('lapseRisk safe when reserves provide >= TIGHTENING ticks of runway', () => {
+    const effects = [makeEffect({ effectId: 'e', perTickCost: { spirit: 1 } })];
+    const reserves = { spirit: SUSTAIN_LAPSE_RISK_TIGHTENING_TICKS + 10 };
+    const result = getSustainedControlNodes(graph, ascendantId, effects, reserves);
+    expect(result[0].lapseRisk).toBe('safe');
+  });
+
+  it('lapseRisk tightening when reserves provide between CRITICAL and TIGHTENING ticks', () => {
+    const reserves = { spirit: Math.floor((SUSTAIN_LAPSE_RISK_CRITICAL_TICKS + SUSTAIN_LAPSE_RISK_TIGHTENING_TICKS) / 2) };
+    const effects = [makeEffect({ effectId: 'e', perTickCost: { spirit: 1 } })];
+    const result = getSustainedControlNodes(graph, ascendantId, effects, reserves);
+    expect(result[0].lapseRisk).toBe('tightening');
+  });
+
+  it('lapseRisk critical when reserves provide < CRITICAL ticks of runway', () => {
+    const effects = [makeEffect({ effectId: 'e', perTickCost: { spirit: 1 } })];
+    const reserves = { spirit: SUSTAIN_LAPSE_RISK_CRITICAL_TICKS - 1 };
+    const result = getSustainedControlNodes(graph, ascendantId, effects, reserves);
+    expect(result[0].lapseRisk).toBe('critical');
+  });
+
+  it('lapseRisk critical when reserves missing entirely for a consumed sphere', () => {
+    const effects = [makeEffect({ effectId: 'e', perTickCost: { force: 1 } })];
+    const result = getSustainedControlNodes(graph, ascendantId, effects, { spirit: 999 });
+    expect(result[0].lapseRisk).toBe('critical');
+  });
+
+  it('lapseRisk forced to safe when netFlow > 0 regardless of reserves', () => {
+    const effects = [
+      makeEffect({
+        effectId: 'positive',
+        perTickCost: { spirit: 1 },
+        perTickIncome: { spirit: 3 },
+      }),
+    ];
+    const result = getSustainedControlNodes(graph, ascendantId, effects, { spirit: 0 });
+    expect(result[0].lapseRisk).toBe('safe');
+    expect(result[0].netFlow).toBe(2);
+  });
+
+  it('netFlow computed as income − cost across multi-sphere effects', () => {
+    const effects = [
+      makeEffect({
+        effectId: 'multi',
+        perTickCost: { spirit: 2, mind: 1 },
+        perTickIncome: { life: 1 },
+      }),
+    ];
+    const result = getSustainedControlNodes(graph, ascendantId, effects, {
+      spirit: 100, mind: 100, life: 100,
+    });
+    expect(result[0].perTickCostTotal).toBe(3);
+    expect(result[0].perTickIncomeTotal).toBe(1);
+    expect(result[0].netFlow).toBe(-2);
+  });
+
+  it('sort order: category bucket → ticksActive desc → displayName asc → effectId asc', () => {
+    // Build sublocation + location nodes for source/location category tests
+    graph.addNode({
+      id: 'sub.a', type: 'location', name: 'A Source',
+      properties: { hexCol: 0, hexRow: 0, locationSubtype: 'sublocation' },
+    });
+    graph.addNode({
+      id: 'loc.a', type: 'location', name: 'A Loc',
+      properties: { hexCol: 0, hexRow: 0 },
+    });
+
+    const effects = [
+      makeEffect({ effectId: 'src', targetNodeId: 'sub.a', ticksActive: 5 }),
+      makeEffect({ effectId: 'loc', targetNodeId: 'loc.a', ticksActive: 10 }),
+      makeEffect({ effectId: 'hex_old', targetHexCol: 1, targetHexRow: 1, ticksActive: 20 }),
+      makeEffect({ effectId: 'hex_new', targetHexCol: 1, targetHexRow: 1, ticksActive: 5 }),
+    ];
+    const result = getSustainedControlNodes(graph, ascendantId, effects, { spirit: 999 });
+    // hex bucket first (with ticksActive desc), then source, then location
+    expect(result.map(n => n.category)).toEqual(['hex', 'hex', 'source', 'location']);
+    expect(result.map(n => n.effectId)).toEqual(['hex_old', 'hex_new', 'src', 'loc']);
+  });
+
+  it('pickPrimarySphere prefers the single income sphere over the cost sphere', () => {
+    const sphere = pickPrimarySphere({ spirit: 1, mind: 1 }, { life: 2 });
+    expect(sphere).toBe('life');
+  });
+
+  it('pickPrimarySphere falls back to dominant cost sphere when no income', () => {
+    const sphere = pickPrimarySphere({ spirit: 1, mind: 5 });
+    expect(sphere).toBe('mind');
+  });
+
+  it('pickPrimarySphere returns null when nothing consumed or produced', () => {
+    const sphere = pickPrimarySphere({});
+    expect(sphere).toBeNull();
   });
 });
 

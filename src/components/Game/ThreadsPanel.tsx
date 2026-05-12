@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import type { ThreadedNode, ThreadCategory } from '../../engine/retinue';
-import { groupThreadedNodes } from '../../engine/retinue';
+import type { ThreadedNode, ThreadCategory, SustainedControlNode, SustainedControlCategory } from '../../engine/retinue';
+import { groupThreadedNodes, SUSTAIN_BAR_MIN_VISIBLE_FRACTION, SUSTAIN_LAPSE_RISK_TIGHTENING_TICKS } from '../../engine/retinue';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import type { BalanceEvent, BalanceEncounterPoolCandidate } from '../../types/balanceEval';
 import type { ForeshadowingResult } from '../../engine/foreshadowing/types';
@@ -9,8 +9,13 @@ import type { ActiveEncounterDisplay } from './encounterNotificationRuntime';
 import { SectionHeading } from '../shared/SectionHeading';
 import { Modal } from '../shared/Modal';
 import { StepDots } from '../shared/StepDots';
-import { ActivityIcon } from '../shared/ActivityIcon';
+import { ActivityIcon, type ActivityKind } from '../shared/ActivityIcon';
 import { SphereIcon, sphereFromReach } from '../shared/SphereIcon';
+import {
+  getSustainedStatusLabel,
+  getChampionBadgeLabel,
+  LAPSE_WARNING_TOOLTIPS,
+} from '../../data/sustained-control-status-prose';
 import {
   getEncounterActivityIconKey,
   getSelectedEncounterPoolCandidate,
@@ -22,13 +27,36 @@ import { getBehaviorFamilyPresentation, STRATEGIC_BADGE_BG_OPACITY } from '../..
 
 // ─── Section config ───────────────────────────────────────────────
 
-const SECTION_ORDER: ThreadCategory[] = ['agent', 'location', 'faction', 'army', 'artifact'];
-const SECTION_LABELS: Record<ThreadCategory, string> = {
+/**
+ * Keys for the right-bar threads panel sections. Includes the five existing
+ * thread categories plus two new sustained-control sections (THR-418):
+ *  - `hex`: hex-level sustained controls (claims, wards, cultivations).
+ *  - `source`: sublocation-level sustained controls (sanctified springs etc.).
+ *
+ * Location-targeted sustained controls fold into the existing `location` section
+ * via `sustainedControlsByLocationId` rather than getting their own section.
+ */
+type ThreadSectionKey = ThreadCategory | 'hex' | 'source';
+
+const SECTION_ORDER: ThreadSectionKey[] = [
+  'agent', 'location', 'faction', 'army', 'artifact',
+  'hex', 'source',
+];
+
+const SECTION_LABELS: Record<ThreadSectionKey, string> = {
   agent: 'Agents',
   location: 'Locations',
   faction: 'Factions',
   army: 'Armies',
   artifact: 'Artifacts',
+  hex: 'Hexes',
+  source: 'Sources',
+};
+
+const SUSTAINED_CATEGORY_ICON: Record<SustainedControlCategory, ActivityKind> = {
+  hex: 'hex-claim',
+  source: 'source-bound',
+  location: 'claim-flag',
 };
 
 // ─── Props ────────────────────────────────────────────────────────
@@ -46,6 +74,19 @@ interface ThreadsPanelProps {
   /** Per-agent strategic summaries for badge display. Only agents with strategic activity will have entries. */
   agentStrategicSummaries?: Map<string, AgentStrategicSummary>;
   getForeshadowing?: (agentId: string, encounterId: string) => ForeshadowingResult;
+  /**
+   * Sustained-control rows from `getSustainedControlNodes`. THR-418 — renders Hexes
+   * and Sources sections in the right-bar plus a folded "claim status" line on
+   * location rows when an effect targets a thread'd location.
+   *
+   * Optional for backward compat: when undefined, no new sections appear.
+   */
+  sustainedControls?: SustainedControlNode[];
+  /**
+   * Optional callback invoked when a champion chip is clicked (agent rows).
+   * Typically opens AgentProfileModal at the appropriate tab.
+   */
+  onChampionChipClick?: (agentId: string) => void;
 }
 
 interface EncounterPoolModalState {
@@ -70,6 +111,16 @@ interface CompactThreadRowProps {
   /** Strategic summary for this agent, if they have active strategic activity. */
   strategicSummary?: AgentStrategicSummary;
   getForeshadowing?: (agentId: string, encounterId: string) => ForeshadowingResult;
+  /**
+   * THR-418: optional click handler for the champion chip on agent rows.
+   * When omitted, the chip renders as a static badge with no click affordance.
+   */
+  onChampionChipClick?: (agentId: string) => void;
+  /**
+   * THR-418: location rows can carry a one-line "claim status" derived from
+   * any sustained controls targeting them. Optional.
+   */
+  locationClaimStatus?: string | null;
 }
 
 // ─── Utility functions ────────────────────────────────────────────
@@ -519,7 +570,12 @@ function CompactThreadRow({
   onOpenEncounterPool,
   strategicSummary,
   getForeshadowing,
+  onChampionChipClick,
+  locationClaimStatus,
 }: CompactThreadRowProps) {
+  // THR-418: champion-chip presence only matters for agent rows.
+  const championTemplateId = node.category === 'agent' ? node.championTemplateId : null;
+  const championLabel = championTemplateId ? getChampionBadgeLabel(championTemplateId) : null;
   const [hovered, setHovered] = useState(false);
   const isDormant = node.category === 'agent' && node.courtPosition === 'dormant';
 
@@ -760,6 +816,52 @@ function CompactThreadRow({
             </div>
           )}
 
+          {/* THR-418 — claim status on location rows when a sustained control targets this location */}
+          {node.category === 'location' && locationClaimStatus && (
+            <div
+              data-testid="location-claim-status"
+              className="truncate"
+              style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: 'var(--text-xs)',
+                fontStyle: 'italic',
+                color: 'var(--text-tertiary)',
+                lineHeight: 1.3,
+              }}
+            >
+              {locationClaimStatus}
+            </div>
+          )}
+
+          {/* THR-418 — champion chip on agent rows when championEffectId is set */}
+          {node.category === 'agent' && championLabel && (
+            <div>
+              <button
+                type="button"
+                data-testid="champion-chip"
+                data-champion-template-id={championTemplateId ?? ''}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (onChampionChipClick) onChampionChipClick(node.id);
+                }}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 4,
+                  padding: '1px 6px',
+                  border: '1px solid var(--accent-gold)',
+                  borderRadius: 999,
+                  fontSize: 11, fontFamily: 'var(--font-body)',
+                  fontStyle: 'italic', letterSpacing: '0.04em',
+                  color: 'var(--accent-gold)',
+                  backgroundColor: 'transparent',
+                  cursor: onChampionChipClick ? 'pointer' : 'default',
+                }}
+                aria-label={`${championLabel} — open agent profile`}
+              >
+                ✦ {championLabel}
+              </button>
+            </div>
+          )}
+
           {/* Strategic badge row (agents with active strategic activity) */}
           {node.category === 'agent' && strategicBadgeText && familyPresentation && (
             <div
@@ -890,6 +992,170 @@ function CompactThreadRow({
   );
 }
 
+// ─── SustainedControlRow (THR-418) ────────────────────────────────
+
+interface SustainedControlRowProps {
+  node: SustainedControlNode;
+  onCenterOnHex: (hexLabel: string) => void;
+}
+
+function formatRunwayTooltip(node: SustainedControlNode): string {
+  const cost = node.perTickCostTotal === 0 ? '—' : `−${node.perTickCostTotal.toFixed(0)} per tick`;
+  const income = node.perTickIncomeTotal > 0
+    ? `+${node.perTickIncomeTotal.toFixed(0)} per tick`
+    : null;
+  const net = node.netFlow >= 0
+    ? `net +${node.netFlow.toFixed(0)} per tick`
+    : `net ${node.netFlow.toFixed(0)} per tick`;
+  const runway = !Number.isFinite(node.runwayTicks)
+    ? 'Runway: indefinite'
+    : `Runway: ~${Math.max(0, Math.floor(node.runwayTicks))} ticks at current reserves`;
+  const established = `Active ${node.ticksActive} ticks`;
+  const parts = [
+    income ? `${cost} · ${income} (${net})` : `${cost} (${net})`,
+    established,
+    runway,
+  ];
+  return parts.join('\n');
+}
+
+function SustainedControlRow({ node, onCenterOnHex }: SustainedControlRowProps) {
+  const [hovered, setHovered] = useState(false);
+  const sphere = node.primarySphere;
+  const borderColor = sphere
+    ? `var(--sphere-${sphere})`
+    : 'var(--accent-gold-dim)';
+
+  // Sustain-bar fraction: runway / TIGHTENING threshold, clamped to [MIN_VISIBLE, 1].
+  let barFraction = 1;
+  if (Number.isFinite(node.runwayTicks)) {
+    barFraction = Math.max(
+      SUSTAIN_BAR_MIN_VISIBLE_FRACTION,
+      Math.min(1, node.runwayTicks / SUSTAIN_LAPSE_RISK_TIGHTENING_TICKS),
+    );
+  }
+
+  const barColor = node.lapseRisk === 'critical'
+    ? '#b03030'
+    : node.lapseRisk === 'tightening'
+      ? '#e0a020'
+      : sphere
+        ? `var(--sphere-${sphere})`
+        : 'var(--accent-gold-dim)';
+
+  const statusLabel = getSustainedStatusLabel(node.templateId, node.lapseRisk);
+  const hexLabel = `${node.hexCol},${node.hexRow}`;
+
+  const showLapseTooltip = node.lapseRisk === 'critical';
+  const lapseTooltip = LAPSE_WARNING_TOOLTIPS[node.category];
+
+  return (
+    <div
+      role="listitem"
+      data-testid="sustained-control-row"
+      data-effect-id={node.effectId}
+      data-template-id={node.templateId}
+      data-lapse-risk={node.lapseRisk}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        borderLeft: `3px solid ${borderColor}`,
+        borderTop: '1px solid var(--border-subtle)',
+        borderRight: '1px solid var(--border-subtle)',
+        borderBottom: '1px solid var(--border-subtle)',
+        borderRadius: 4,
+        background: hovered ? 'var(--bg-hover)' : 'var(--bg-surface)',
+        marginBottom: 2,
+      }}
+    >
+      <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '8px 12px 8px 9px' }}>
+        <div style={{ paddingTop: 2, flexShrink: 0 }}>
+          <ActivityIcon kind={SUSTAINED_CATEGORY_ICON[node.category]} size={16} color="var(--text-secondary)" />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+            <span
+              className="truncate"
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: 15,
+                fontWeight: 500,
+                color: 'var(--text-primary)',
+                flex: 1,
+                minWidth: 0,
+              }}
+            >
+              {node.displayName}
+            </span>
+            <button
+              type="button"
+              aria-label={`Center map on ${node.displayName}`}
+              onClick={(e) => { e.stopPropagation(); onCenterOnHex(hexLabel); }}
+              style={{
+                width: 22, height: 22, padding: 0,
+                background: 'transparent', border: 'none', cursor: 'pointer',
+                color: 'var(--text-muted)',
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0,
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="6" />
+                <path d="M11 8 L11 14 M8 11 L14 11" />
+                <path d="M20 20 L16 16" />
+              </svg>
+            </button>
+          </div>
+          <div
+            className="truncate"
+            title={showLapseTooltip ? lapseTooltip : undefined}
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: 'var(--text-xs)',
+              fontStyle: 'italic',
+              color: 'var(--text-tertiary)',
+              lineHeight: 1.3,
+            }}
+          >
+            {statusLabel}
+            {node.perTickCostTotal > 0 && (
+              <span style={{ marginLeft: 6, color: 'var(--text-muted)', fontStyle: 'normal' }}>
+                ⤓ {node.perTickCostTotal.toFixed(0)}/tick
+              </span>
+            )}
+            {node.perTickIncomeTotal > 0 && (
+              <span style={{ marginLeft: 6, color: 'var(--accent-gold)', fontStyle: 'normal' }}>
+                ⤒ {node.perTickIncomeTotal.toFixed(0)}/tick
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+      <div
+        title={formatRunwayTooltip(node)}
+        style={{
+          position: 'relative', height: 2, borderRadius: 1,
+          backgroundColor: 'rgba(255,255,255,0.07)',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          data-testid="sustain-bar-fill"
+          style={{
+            position: 'absolute', left: 0, top: 0, bottom: 0,
+            width: `${Math.round(barFraction * 100)}%`,
+            backgroundColor: barColor,
+            animation: node.lapseRisk === 'critical' ? 'mark-pulse 1.6s ease-in-out infinite' : undefined,
+            transition: 'width 0.6s ease, background-color 0.4s ease',
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
 // ─── ThreadsPanel ─────────────────────────────────────────────────
 
 export const ThreadsPanel = React.memo(function ThreadsPanel({
@@ -904,15 +1170,49 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
   onToggleAttentionMode,
   agentStrategicSummaries,
   getForeshadowing,
+  sustainedControls,
+  onChampionChipClick,
 }: ThreadsPanelProps) {
-  // Agents open by default; all other sections collapsed
-  const [expandedSections, setExpandedSections] = useState<Record<ThreadCategory, boolean>>({
-    agent: true,
-    location: false,
-    faction: false,
-    army: false,
-    artifact: false,
-  });
+  // THR-418: bucket sustained controls by category and by parent location id (for folded-in
+  // location-targeted effects). Source/hex buckets get their own sections; location targets
+  // augment the existing Locations section with a one-line claim status.
+  const sustainedByCategory = useMemo(() => {
+    const byHex: SustainedControlNode[] = [];
+    const bySource: SustainedControlNode[] = [];
+    const byLocationId = new Map<string, SustainedControlNode[]>();
+    for (const node of sustainedControls ?? []) {
+      if (node.category === 'hex') {
+        byHex.push(node);
+      } else if (node.category === 'source') {
+        bySource.push(node);
+      } else if (node.category === 'location' && node.targetNodeId) {
+        const existing = byLocationId.get(node.targetNodeId) ?? [];
+        existing.push(node);
+        byLocationId.set(node.targetNodeId, existing);
+      }
+    }
+    return { byHex, bySource, byLocationId };
+  }, [sustainedControls]);
+
+  // Section default expansion: agents always open; sustained sections open when any row is
+  // non-safe (the player needs to see at-risk controls); everything else collapsed.
+  const initialExpansion = useMemo<Record<ThreadSectionKey, boolean>>(() => {
+    const hexHasRisk = sustainedByCategory.byHex.some(n => n.lapseRisk !== 'safe');
+    const sourceHasRisk = sustainedByCategory.bySource.some(n => n.lapseRisk !== 'safe');
+    return {
+      agent: true,
+      location: false,
+      faction: false,
+      army: false,
+      artifact: false,
+      hex: hexHasRisk,
+      source: sourceHasRisk,
+    };
+  // initialExpansion is the *first-render* default; subsequent toggles are user-driven.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const [expandedSections, setExpandedSections] = useState<Record<ThreadSectionKey, boolean>>(initialExpansion);
   const [encounterPoolModal, setEncounterPoolModal] = useState<EncounterPoolModalState | null>(null);
 
   // Suppress unused-prop lint for onZoomToLocation — preserved in signature for callers
@@ -920,11 +1220,12 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
 
   const groups = groupThreadedNodes(threadedNodes);
 
-  const toggleSection = (category: ThreadCategory) => {
+  const toggleSection = (category: ThreadSectionKey) => {
     setExpandedSections(prev => ({ ...prev, [category]: !prev[category] }));
   };
 
-  const totalCount = threadedNodes.length;
+  const sustainedCount = (sustainedControls ?? []).length;
+  const totalCount = threadedNodes.length + sustainedCount;
   if (totalCount === 0) {
     return (
       <div className="panel" style={{ padding: 'var(--space-3)' }}>
@@ -972,8 +1273,19 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
 
         {/* Sections */}
         {SECTION_ORDER.map((category) => {
-          const group = groups[category];
-          if (group.length === 0) return null;
+          // For the existing 5 thread categories, source data is `groups[category]`.
+          // For the new sustained sections (`hex`, `source`), it's a SustainedControlNode[].
+          const isSustainedSection = category === 'hex' || category === 'source';
+          const sustainedGroup: SustainedControlNode[] = category === 'hex'
+            ? sustainedByCategory.byHex
+            : category === 'source'
+              ? sustainedByCategory.bySource
+              : [];
+          const threadGroup = isSustainedSection
+            ? []
+            : groups[category as ThreadCategory];
+          const groupSize = isSustainedSection ? sustainedGroup.length : threadGroup.length;
+          if (groupSize === 0) return null;
 
           const isExpanded = expandedSections[category];
           const label = SECTION_LABELS[category];
@@ -986,11 +1298,12 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
                 className="flex items-center gap-1 cursor-pointer select-none"
                 onClick={() => toggleSection(category)}
                 style={{ paddingLeft: 'var(--space-2)', paddingRight: 'var(--space-2)' }}
+                data-testid={`threads-section-header-${category}`}
               >
                 <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', flexShrink: 0 }}>
                   {chevron}
                 </span>
-                <SectionHeading ornamental count={group.length}>{label}</SectionHeading>
+                <SectionHeading ornamental count={groupSize}>{label}</SectionHeading>
               </div>
 
               {/* Rows */}
@@ -998,23 +1311,42 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
                 <div
                   role="list"
                   style={{ padding: '2px var(--space-2) 0' }}
+                  data-testid={`threads-section-body-${category}`}
                 >
-                  {group.map((node) => (
-                    <CompactThreadRow
-                      key={node.id}
-                      node={node}
-                      isSelected={node.id === selectedNodeId}
-                      onNodeSelect={onNodeSelect}
-                      onCenterOnHex={onCenterOnHex}
-                      activeEncounters={activeEncounters}
-                      agentEncounterDecision={node.category === 'agent' ? agentEncounterDecisions?.get(node.id) : undefined}
-                      onEncounterClick={onEncounterClick}
-                      onToggleAttentionMode={onToggleAttentionMode}
-                      onOpenEncounterPool={(agentName, decision) => setEncounterPoolModal({ agentName, decision })}
-                      strategicSummary={node.category === 'agent' ? agentStrategicSummaries?.get(node.id) : undefined}
-                      getForeshadowing={getForeshadowing}
-                    />
-                  ))}
+                  {isSustainedSection
+                    ? sustainedGroup.map((node) => (
+                        <SustainedControlRow
+                          key={node.effectId}
+                          node={node}
+                          onCenterOnHex={onCenterOnHex}
+                        />
+                      ))
+                    : threadGroup.map((node) => {
+                        const locationClaims = node.category === 'location'
+                          ? sustainedByCategory.byLocationId.get(node.id)
+                          : undefined;
+                        const claimStatus = locationClaims && locationClaims.length > 0
+                          ? getSustainedStatusLabel(locationClaims[0].templateId, locationClaims[0].lapseRisk)
+                          : null;
+                        return (
+                          <CompactThreadRow
+                            key={node.id}
+                            node={node}
+                            isSelected={node.id === selectedNodeId}
+                            onNodeSelect={onNodeSelect}
+                            onCenterOnHex={onCenterOnHex}
+                            activeEncounters={activeEncounters}
+                            agentEncounterDecision={node.category === 'agent' ? agentEncounterDecisions?.get(node.id) : undefined}
+                            onEncounterClick={onEncounterClick}
+                            onToggleAttentionMode={onToggleAttentionMode}
+                            onOpenEncounterPool={(agentName, decision) => setEncounterPoolModal({ agentName, decision })}
+                            strategicSummary={node.category === 'agent' ? agentStrategicSummaries?.get(node.id) : undefined}
+                            getForeshadowing={getForeshadowing}
+                            onChampionChipClick={onChampionChipClick}
+                            locationClaimStatus={claimStatus}
+                          />
+                        );
+                      })}
                 </div>
               )}
             </div>

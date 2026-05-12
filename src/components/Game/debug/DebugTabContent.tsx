@@ -14,6 +14,8 @@ import type { OmenState } from '../../../types/omen';
 import type { DoomIdentityMatrix } from '../../../types/doomIdentity';
 import type { HiddenMark, PendingEncounterSeed } from '../../../types/unifiedAction';
 import type { TickEvent, RegionDetectionState, ArchetypeDrift } from '../../../types/gameState';
+import type { ControlEffect } from '../../../types/controlEffect';
+import type { SphereName } from '../../../types/index';
 import {
   BEHAVIOR_FAMILY_PRESENTATION,
   getBehaviorFamilyPresentation,
@@ -50,7 +52,7 @@ import { EMPTY_STATE_STYLE } from './debugPanelStyles';
 import type { KnowsClueOfEdgeProperties } from '../../../types/knowledge';
 import type { FlipTableRuntimeState } from '../../../types/contentShells';
 
-export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events' | 'shells' | 'compositions' | 'phases' | 'choices' | 'drift' | 'hand' | 'detection' | 'forecast' | 'foreshadowing' | 'action-unlocks';
+export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events' | 'shells' | 'compositions' | 'phases' | 'choices' | 'drift' | 'hand' | 'detection' | 'forecast' | 'foreshadowing' | 'action-unlocks' | 'sustained-controls';
 
 export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'feed', label: 'Feed' }, { id: 'agent-follow', label: 'Agent' },
@@ -73,6 +75,7 @@ export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'forecast', label: 'Forecast' },
   { id: 'foreshadowing', label: 'Foreshadowing' },
   { id: 'action-unlocks', label: 'Action Unlocks' },
+  { id: 'sustained-controls', label: 'Sustained' },
 ];
 
 export interface DebugTabContentProps {
@@ -125,6 +128,17 @@ export interface DebugTabContentProps {
   activeCompositions?: readonly import('../../../types/gameState').ActiveComposition[];
   /** Current doom clock stage (1-5) for context in compositions tab. */
   doomClockStage?: number;
+  /**
+   * THR-418 — sustained ControlEffects to display in the Sustained tab.
+   * Defaults to empty array when not provided (debug panel may be open before
+   * the simulation runtime is ready).
+   */
+  controlEffects?: readonly ControlEffect[];
+  /**
+   * THR-418 — current essence reserves, for runway/lapse-risk display in the
+   * Sustained tab. Optional; absent reserves render as `—`.
+   */
+  essenceReserves?: Partial<Record<SphereName, number>>;
 }
 
 export function DebugTabContent({
@@ -137,6 +151,7 @@ export function DebugTabContent({
   retinueAgents, strategicState, omenState, doomIdentityMatrix,
   hiddenMarks, pendingEncounterSeeds, regionalDetectionPressure, archetypeDrift, activeDelves,
   getRecentEvents, flipTableStates, activeCompositions, doomClockStage,
+  controlEffects, essenceReserves,
 }: DebugTabContentProps) {
   if (viewMode === 'omens') return <OmenDebugTab omenState={omenState} currentTick={currentTick} doomIdentityMatrix={doomIdentityMatrix} />;
   if (viewMode === 'journey') {
@@ -210,6 +225,16 @@ export function DebugTabContent({
     );
   }
   if (viewMode === 'action-unlocks') return <ActionUnlocksView />;
+  if (viewMode === 'sustained-controls') {
+    return (
+      <SustainedControlsDebugTab
+        controlEffects={controlEffects ?? []}
+        essenceReserves={essenceReserves ?? {}}
+        graph={graph}
+        currentTick={currentTick}
+      />
+    );
+  }
   if (viewMode === 'cli') return <CommandTab retinueAgents={retinueAgents} followAgentId={effectiveAgentId} />;
   if (viewMode === 'strategic') return <StrategicDebugTab strategicState={strategicState} graph={graph} effectiveAgentId={effectiveAgentId} currentTick={currentTick} />;
   if (viewMode === 'social') {
@@ -755,6 +780,124 @@ function RuinsDebugTab({
             );
           })
       }
+    </div>
+  );
+}
+
+// ── Sustained Controls Debug Tab (THR-418) ───────────────────────────────────
+
+function SustainedControlsDebugTab({
+  controlEffects,
+  essenceReserves,
+  graph,
+  currentTick,
+}: {
+  controlEffects: readonly ControlEffect[];
+  essenceReserves: Partial<Record<SphereName, number>>;
+  graph?: WorldGraph;
+  currentTick: number;
+}) {
+  const active = controlEffects.filter(e => e.active);
+  const lapsed = controlEffects.filter(e => !e.active);
+
+  const SECTION = { color: 'var(--accent-gold)', fontWeight: 600, fontSize: 'var(--text-xs)', margin: '10px 0 4px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '3px' };
+  const ROW = { display: 'grid', gridTemplateColumns: '140px 80px 50px 80px 90px 80px 1fr', gap: '6px', alignItems: 'center', padding: '2px 0', fontSize: 'var(--text-xs)' };
+  const HEADER_ROW = { ...ROW, color: 'var(--accent-gold)', fontWeight: 600, borderBottom: '1px solid var(--border-subtle)', paddingBottom: '4px', marginBottom: '4px' };
+  const MUTED = { color: 'var(--text-muted)', fontSize: 'var(--text-xs)' };
+
+  function describeTarget(e: ControlEffect): string {
+    if (e.targetNodeId && graph) {
+      const node = graph.getNode(e.targetNodeId);
+      if (node) return `${node.name} (${node.type})`;
+      return `${e.targetNodeId} (missing)`;
+    }
+    return `hex (${e.targetHexCol}, ${e.targetHexRow})`;
+  }
+
+  function describeCost(e: ControlEffect): string {
+    const entries = Object.entries(e.perTickCost ?? {}).filter(([, v]) => typeof v === 'number' && v > 0);
+    if (entries.length === 0) return '—';
+    return entries.map(([s, v]) => `-${v} ${s}`).join(', ');
+  }
+
+  function describeIncome(e: ControlEffect): string {
+    const income = e.perTickIncome ?? {};
+    const entries = Object.entries(income).filter(([, v]) => typeof v === 'number' && v > 0);
+    if (entries.length === 0) return '—';
+    return entries.map(([s, v]) => `+${v} ${s}`).join(', ');
+  }
+
+  function describeRunway(e: ControlEffect): string {
+    let runway = Number.POSITIVE_INFINITY;
+    for (const [s, v] of Object.entries(e.perTickCost ?? {})) {
+      const cost = typeof v === 'number' ? v : 0;
+      if (cost <= 0) continue;
+      const reserves = essenceReserves[s as SphereName];
+      if (typeof reserves !== 'number') return '0 (no reserves)';
+      const ticks = reserves / cost;
+      if (ticks < runway) runway = ticks;
+    }
+    if (!Number.isFinite(runway)) return '∞';
+    return `${Math.max(0, Math.floor(runway))}`;
+  }
+
+  return (
+    <div style={{ padding: '8px', fontFamily: 'monospace', overflowY: 'auto', height: '100%' }}>
+      <div style={SECTION}>Active sustained controls ({active.length})</div>
+      {active.length === 0 ? (
+        <div style={MUTED}>No active sustained effects. Cast a `durationMode: sustained` action to establish one.</div>
+      ) : (
+        <>
+          <div style={HEADER_ROW}>
+            <span>Effect / Template</span>
+            <span>Target</span>
+            <span>Active</span>
+            <span>Cost</span>
+            <span>Income</span>
+            <span>Runway</span>
+            <span>Notes</span>
+          </div>
+          {active.map((e) => {
+            const ticksActive = Math.max(0, currentTick - e.establishedTick);
+            return (
+              <div key={e.effectId} style={ROW} data-testid="sustained-debug-row">
+                <span style={{ color: 'var(--text-primary)' }}>
+                  {e.templateId}
+                  <span style={MUTED}> {e.effectId.slice(0, 8)}</span>
+                </span>
+                <span style={{ color: 'var(--text-muted)' }}>{describeTarget(e)}</span>
+                <span>{ticksActive}</span>
+                <span>{describeCost(e)}</span>
+                <span>{describeIncome(e)}</span>
+                <span>{describeRunway(e)}</span>
+                <span style={MUTED}>
+                  {e.sustainThreshold ? `thr:${e.sustainThreshold.field}` : ''}
+                </span>
+              </div>
+            );
+          })}
+        </>
+      )}
+
+      {lapsed.length > 0 && (
+        <>
+          <div style={{ ...SECTION, marginTop: '14px' }}>Lapsed history ({lapsed.length})</div>
+          {lapsed.map((e) => (
+            <div key={e.effectId} style={{ ...ROW, opacity: 0.65 }}>
+              <span style={{ color: 'var(--text-muted)' }}>
+                {e.templateId}
+                <span style={MUTED}> {e.effectId.slice(0, 8)}</span>
+              </span>
+              <span style={{ color: 'var(--text-muted)' }}>{describeTarget(e)}</span>
+              <span>{e.ticksActive}</span>
+              <span style={MUTED}>—</span>
+              <span style={MUTED}>—</span>
+              <span style={MUTED}>—</span>
+              <span style={MUTED}>{e.lapseReason ?? 'lapsed'}</span>
+            </div>
+          ))}
+        </>
+      )}
     </div>
   );
 }
