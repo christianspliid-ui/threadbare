@@ -97,6 +97,12 @@ import {
   RESIST_DOWNGRADE_CHANCE,
 } from './quintessenceActions';
 import { isProvingSliceTemplate } from './outcomeConsequences';
+import { LOCATION_ACTION_POST_EFFECT_TEMPLATE_IDS } from '../data/unified-action-templates';
+import {
+  LOC_BLESS_HARVEST_DURATION_TICKS,
+  LOC_SICKEN_WELLS_DURATION_TICKS,
+  LOC_CURSE_ROADS_DURATION_TICKS,
+} from '../data/location-action-constants';
 import { INTEL_DIFFICULTY_BONUS } from '../data/agent-behavior-constants';
 import {
   emitIntelligenceReferenced,
@@ -879,6 +885,59 @@ function resolveUnifiedReward(
  *
  * Returns the updated action and any events generated.
  */
+/**
+ * THR-401: apply tick-bounded countdown properties and emit the
+ * location_action_resolved trace for the six new location-action templates.
+ * GraphOps cannot reference currentTick at template-author time, so these
+ * effects run after the static GraphOps batch in executeStepResult.
+ */
+function applyLocationActionPostEffects(
+  state: GameState,
+  action: UnifiedAction,
+  template: UnifiedActionTemplate,
+  tick: number,
+): void {
+  const target = state.graph.getNode(action.targetId);
+  if (!target || target.type !== 'location') return;
+
+  const effects: string[] = [];
+  switch (template.id) {
+    case 'loc.bless_harvest':
+      target.properties.migrationPullUntilTick = tick + LOC_BLESS_HARVEST_DURATION_TICKS;
+      effects.push(`migrationPullUntilTick=${target.properties.migrationPullUntilTick}`);
+      break;
+    case 'loc.sicken_wells':
+      target.properties.wellsSickenedUntilTick = tick + LOC_SICKEN_WELLS_DURATION_TICKS;
+      effects.push(`wellsSickenedUntilTick=${target.properties.wellsSickenedUntilTick}`);
+      break;
+    case 'loc.curse_roads':
+      target.properties.routesCursedUntilTick = tick + LOC_CURSE_ROADS_DURATION_TICKS;
+      effects.push(`routesCursedUntilTick=${target.properties.routesCursedUntilTick}`);
+      break;
+    case 'loc.awaken_spirit':
+      target.properties.placeSpiritAwakenedAtTick = tick;
+      effects.push(`placeSpiritAwakenedAtTick=${tick}`);
+      break;
+    default:
+      // Other location actions need no tick-bounded post-effect — only
+      // static GraphOps in the template's onSuccess apply.
+      break;
+  }
+
+  emitTrace({
+    category: 'location_action_resolved',
+    tick,
+    agentId: action.actorId,
+    summary: `${template.name} → ${target.name}: ${effects.join(', ') || 'static effects only'}`,
+    templateId: template.id,
+    locationId: target.id,
+    locationName: target.name,
+    actorId: action.actorId,
+    success: true,
+    effectsApplied: effects,
+  } as any);
+}
+
 export function executeStepResult(
   action: UnifiedAction,
   template: UnifiedActionTemplate,
@@ -949,6 +1008,14 @@ export function executeStepResult(
     } catch {
       // Fail-soft: log but don't crash
     }
+  }
+
+  // Location action post-effects (THR-401) — apply tick-bounded countdowns
+  // and emit the location_action_resolved trace. Static deltas are handled
+  // by the template's GraphOps above; only properties that depend on
+  // currentTick are set here.
+  if (LOCATION_ACTION_POST_EFFECT_TEMPLATE_IDS.has(template.id) && isStepSuccess(outcome)) {
+    applyLocationActionPostEffects(state, action, template, tick);
   }
 
   // Phase 3: Assemble ComplicationContext for failure-tier outcome enrichment (THR-20)

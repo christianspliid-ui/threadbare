@@ -27,6 +27,15 @@ import type { SphereAffinity, SpherePressureEvent } from '../types/sphereAffinit
 import { emitTrace } from './traceBuffer';
 import { getNodeSphereAffinity } from './sphereAffinity';
 import { IDENTITY_PROSPERITY_MODIFIER_CAP } from '../types/doomIdentity';
+import {
+  LOC_HEALTH_DEFAULT_BASELINE,
+  LOC_HEALTH_RECOVERY_RATE,
+  LOC_HEALTH_PROSPERITY_DAMPENER,
+  LOC_HEALTH_DAMPENER_THRESHOLD,
+  LOC_PRESENCE_DECAY_RATE,
+  LOC_PRESENCE_PROSPERITY_BONUS,
+  LOC_PRESENCE_PROSPERITY_THRESHOLD,
+} from '../data/location-action-constants';
 
 // ─── Tier Constants ──────────────────────────────────────────────────────────
 
@@ -225,16 +234,49 @@ function computeCarryingCapacity(props: Record<string, unknown>): number {
 }
 
 /**
+ * THR-401: check whether a location currently has cursed roads — used to
+ * zero out trade-route contributions while the curse is active.
+ */
+function isLocationRoutesCursed(props: Record<string, unknown> | undefined, currentTick: number): boolean {
+  const until = props?.routesCursedUntilTick;
+  return typeof until === 'number' && currentTick < until;
+}
+
+/**
  * Count active (non-threatened) trade routes at a location.
  * Returns { activeRoutes, totalTradeBonus }.
+ *
+ * THR-401: if either endpoint of a trade route has `routesCursedUntilTick`
+ * active at currentTick, the route contributes 0 to either endpoint's
+ * prosperity. Cursed status is checked per-route via the source/target node.
  */
-function computeTradeTarget(graph: WorldGraph, locationId: string): { activeRoutes: number; tradeBonus: number } {
+function computeTradeTarget(graph: WorldGraph, locationId: string, currentTick: number): { activeRoutes: number; tradeBonus: number; cursedRoutesSkipped: number } {
   const actorEdges = graph.getIncomingEdges(locationId, 'located_at');
-  if (actorEdges.length === 0) return { activeRoutes: 0, tradeBonus: 0 };
+  if (actorEdges.length === 0) return { activeRoutes: 0, tradeBonus: 0, cursedRoutesSkipped: 0 };
+
+  // THR-401: if this settlement's roads are cursed, all routes zero out.
+  const ownLocation = graph.getNode(locationId);
+  if (ownLocation && isLocationRoutesCursed(ownLocation.properties, currentTick)) {
+    // Still count routes for trace fidelity, but contribute 0 bonus.
+    let cursedRoutesSkipped = 0;
+    const seenEdgesLocal = new Set<string>();
+    for (const actorEdge of actorEdges) {
+      const tradeEdges = graph.getOutgoingEdges(actorEdge.source, 'trades_with');
+      for (const edge of tradeEdges) {
+        const edgeKey = [edge.source, edge.target].sort().join(':');
+        if (seenEdgesLocal.has(edgeKey)) continue;
+        seenEdgesLocal.add(edgeKey);
+        if (edge.properties?.threatened === true) continue;
+        cursedRoutesSkipped++;
+      }
+    }
+    return { activeRoutes: 0, tradeBonus: 0, cursedRoutesSkipped };
+  }
 
   const seenEdges = new Set<string>();
   let totalBonus = 0;
   let activeRoutes = 0;
+  let cursedRoutesSkipped = 0;
 
   for (const actorEdge of actorEdges) {
     const actorId = actorEdge.source;
@@ -247,6 +289,17 @@ function computeTradeTarget(graph: WorldGraph, locationId: string): { activeRout
       // Threatened routes don't contribute to equilibrium target
       if (edge.properties?.threatened === true) continue;
 
+      // THR-401: if the partner endpoint has cursed roads, skip too
+      const partnerId = edge.source === actorId ? edge.target : edge.source;
+      const partner = graph.getNode(partnerId);
+      // partnerId is an actor; their location lives on a `located_at` edge
+      const partnerLocEdge = partner ? graph.getOutgoingEdges(partner.id, 'located_at')[0] : undefined;
+      const partnerLoc = partnerLocEdge ? graph.getNode(partnerLocEdge.target) : undefined;
+      if (partnerLoc && isLocationRoutesCursed(partnerLoc.properties, currentTick)) {
+        cursedRoutesSkipped++;
+        continue;
+      }
+
       const volume = typeof edge.properties?.volume === 'number' ? edge.properties.volume : 1;
       const normVolume = Math.min(Math.max(volume / 10, 0), 1);
       totalBonus += PROSPERITY_TRADE_BONUS_PER_ROUTE * normVolume;
@@ -254,7 +307,7 @@ function computeTradeTarget(graph: WorldGraph, locationId: string): { activeRout
     }
   }
 
-  return { activeRoutes, tradeBonus: totalBonus };
+  return { activeRoutes, tradeBonus: totalBonus, cursedRoutesSkipped };
 }
 
 /**
@@ -311,14 +364,15 @@ function computeEquilibriumTarget(
   locationId: string,
   props: Record<string, unknown>,
   subtype: string,
+  currentTick: number,
 ): { target: number; breakdown: EquilibriumBreakdown } {
   const carryingCapacity = computeCarryingCapacity(props);
 
   // Start at carrying capacity — this is the "natural" level for the land
   let target = carryingCapacity;
 
-  // Trade routes boost target
-  const { activeRoutes, tradeBonus } = computeTradeTarget(graph, locationId);
+  // Trade routes boost target (THR-401: cursed routes contribute 0)
+  const { activeRoutes, tradeBonus, cursedRoutesSkipped } = computeTradeTarget(graph, locationId, currentTick);
   target += tradeBonus;
 
   // Faction presence boosts target
@@ -362,6 +416,23 @@ function computeEquilibriumTarget(
   // Scale fractional modifier to 0–100 target range
   target += sphereModifier * 100;
 
+  // THR-401: divinePresence above threshold adds a flat bonus
+  const divinePresence = typeof props.divinePresence === 'number' ? props.divinePresence : 0;
+  const presenceBonus = divinePresence >= LOC_PRESENCE_PROSPERITY_THRESHOLD ? LOC_PRESENCE_PROSPERITY_BONUS : 0;
+  target += presenceBonus;
+
+  // THR-401: low populationHealth dampens the equilibrium target (multiplier).
+  // Fail-soft: absent property defaults to LOC_HEALTH_DEFAULT_BASELINE.
+  const populationHealth = typeof props.populationHealth === 'number'
+    ? props.populationHealth
+    : LOC_HEALTH_DEFAULT_BASELINE;
+  let healthDampenerApplied = 0;
+  if (populationHealth < LOC_HEALTH_DAMPENER_THRESHOLD) {
+    const before = target;
+    target *= LOC_HEALTH_PROSPERITY_DAMPENER;
+    healthDampenerApplied = before - target;
+  }
+
   // Clamp target to 0–100
   target = Math.max(0, Math.min(100, target));
 
@@ -380,6 +451,10 @@ function computeEquilibriumTarget(
       unrest,
       unrestPenalty,
       upkeep,
+      cursedRoutesSkipped,
+      presenceBonus,
+      populationHealth,
+      healthDampenerApplied,
     },
   };
 }
@@ -397,6 +472,10 @@ interface EquilibriumBreakdown {
   unrest: number;
   unrestPenalty: number;
   upkeep: number;
+  cursedRoutesSkipped: number;
+  presenceBonus: number;
+  populationHealth: number;
+  healthDampenerApplied: number;
 }
 
 // ─── Phase Function ──────────────────────────────────────────────────────────
@@ -464,8 +543,89 @@ export function phaseProsperity(state: GameState): Partial<GameState> {
 
     // 1. Compute equilibrium target
     const { target, breakdown } = computeEquilibriumTarget(
-      graph, tiles, loc.id, loc.properties as Record<string, unknown>, subtype,
+      graph, tiles, loc.id, loc.properties as Record<string, unknown>, subtype, tick,
     );
+
+    // THR-401: natural recovery/decay for populationHealth and divinePresence.
+    // Both are fail-soft additive — missing properties default to neutral.
+    // Done here (not a separate phase) because we already iterate settlements.
+    const prevHealth = typeof loc.properties.populationHealth === 'number'
+      ? loc.properties.populationHealth
+      : LOC_HEALTH_DEFAULT_BASELINE;
+    if (prevHealth < LOC_HEALTH_DEFAULT_BASELINE) {
+      const nextHealth = Math.min(LOC_HEALTH_DEFAULT_BASELINE, prevHealth + LOC_HEALTH_RECOVERY_RATE);
+      if (nextHealth !== prevHealth) {
+        loc.properties.populationHealth = nextHealth;
+        emitTrace({
+          category: 'location_property_decay',
+          tick,
+          summary: `${loc.name}: populationHealth ${prevHealth.toFixed(1)} → ${nextHealth.toFixed(1)} (natural_recovery)`,
+          locationId: loc.id,
+          property: 'populationHealth',
+          previousValue: prevHealth,
+          newValue: nextHealth,
+          reason: 'natural_recovery',
+        } as any);
+      }
+    } else if (prevHealth > LOC_HEALTH_DEFAULT_BASELINE) {
+      // Clamp back down toward baseline (e.g., after Bless the Harvest boosted it)
+      const nextHealth = Math.max(LOC_HEALTH_DEFAULT_BASELINE, prevHealth - LOC_HEALTH_RECOVERY_RATE);
+      if (nextHealth !== prevHealth) {
+        loc.properties.populationHealth = nextHealth;
+      }
+    }
+    const prevPresence = typeof loc.properties.divinePresence === 'number'
+      ? loc.properties.divinePresence
+      : 0;
+    if (prevPresence > 0) {
+      const nextPresence = Math.max(0, prevPresence - LOC_PRESENCE_DECAY_RATE);
+      loc.properties.divinePresence = nextPresence;
+      if (prevPresence > 0 && nextPresence === 0) {
+        emitTrace({
+          category: 'location_property_decay',
+          tick,
+          summary: `${loc.name}: divinePresence fully decayed`,
+          locationId: loc.id,
+          property: 'divinePresence',
+          previousValue: prevPresence,
+          newValue: nextPresence,
+          reason: 'natural_decay',
+        } as any);
+      }
+    }
+
+    // THR-401: clear expired countdown properties and emit
+    // location_countdown_expired traces so UI narrative-phrase flags
+    // (routesCursed, wellsSickened) reflect current state.
+    for (const propName of ['routesCursedUntilTick', 'wellsSickenedUntilTick', 'migrationPullUntilTick'] as const) {
+      const until = loc.properties[propName];
+      if (typeof until === 'number' && tick >= until) {
+        delete loc.properties[propName];
+        emitTrace({
+          category: 'location_countdown_expired',
+          tick,
+          summary: `${loc.name}: ${propName} expired at tick ${tick} (was set to ${until})`,
+          locationId: loc.id,
+          property: propName,
+          expiredAtTick: tick,
+          setAtTick: until,
+        } as any);
+      }
+    }
+
+    // Emit a location_flag_consumed trace once per active flag while it is
+    // suppressing trade — useful for inspectability.
+    if (breakdown.cursedRoutesSkipped > 0) {
+      emitTrace({
+        category: 'location_flag_consumed',
+        tick,
+        summary: `${loc.name}: routesCursedUntilTick suppressed ${breakdown.cursedRoutesSkipped} trade route(s)`,
+        locationId: loc.id,
+        property: 'routesCursedUntilTick',
+        consumingPhase: 'phaseProsperity',
+        effect: `trade_routes_zeroed:${breakdown.cursedRoutesSkipped}`,
+      } as any);
+    }
 
     // 2. Compute drift toward target
     const gap = target - prevProsperity;

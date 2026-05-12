@@ -14,6 +14,11 @@
  */
 import type { GameState } from '../types/gameState';
 import { emitTrace } from './traceBuffer';
+import {
+  LOC_HEALTH_DAMPENER_THRESHOLD,
+  LOC_HEALTH_UNREST_BLEED,
+  LOC_HEALTH_DEFAULT_BASELINE,
+} from '../data/location-action-constants';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -47,7 +52,15 @@ export function phaseUnrest(state: GameState): Partial<GameState> {
       ? location.properties.unrest
       : 0;
 
-    if (prevUnrest === 0) continue; // Nothing to decay
+    const populationHealth = typeof location.properties.populationHealth === 'number'
+      ? location.properties.populationHealth
+      : LOC_HEALTH_DEFAULT_BASELINE;
+    const healthBleed = populationHealth < LOC_HEALTH_DAMPENER_THRESHOLD
+      ? LOC_HEALTH_UNREST_BLEED
+      : 0;
+
+    // Nothing to do if unrest is at 0 and health is healthy
+    if (prevUnrest === 0 && healthBleed === 0) continue;
 
     const prosperity = typeof location.properties.prosperity === 'number'
       ? location.properties.prosperity
@@ -59,7 +72,9 @@ export function phaseUnrest(state: GameState): Partial<GameState> {
     const prosperityDamper = prosperity > 60 ? UNREST_PROSPERITY_DAMPER : 0;
     decay += prosperityDamper;
 
-    const newUnrest = Math.max(0, Math.min(100, prevUnrest - decay));
+    // THR-401: low population health bleeds unrest upward, partially or fully
+    // counteracting natural decay
+    const newUnrest = Math.max(0, Math.min(100, prevUnrest - decay + healthBleed));
 
     // Check threshold crossings (downward — unrest is decaying, so we check if
     // it dropped below a threshold from above, not rose above)

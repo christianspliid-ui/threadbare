@@ -392,6 +392,70 @@ if (import.meta.env.DEV) {
       return getAttachments(graph, match.id);
     },
 
+    /**
+     * THR-401: inspect a location's THR-401 properties (population health,
+     * divine presence, active time-bounded flags). Accepts a location id,
+     * id prefix, or partial name. Returns null if not found.
+     */
+    inspectLocation: (idOrName: string) => {
+      const graph = _graphProvider?.();
+      const state = _gameStateProvider?.();
+      if (!graph) return null;
+      const locations = graph.getNodesByType('location');
+      const match =
+        locations.find(n => n.id === idOrName) ??
+        locations.find(n => n.id.startsWith(idOrName)) ??
+        locations.find(n =>
+          typeof n.name === 'string' && n.name.toLowerCase().includes(idOrName.toLowerCase()),
+        );
+      if (!match) return null;
+      const props = match.properties;
+      const tick = state?.tick ?? 0;
+      const numericOrNull = (v: unknown): number | null =>
+        typeof v === 'number' ? v : null;
+      return {
+        id: match.id,
+        name: match.name,
+        subtype: typeof props.locationSubtype === 'string' ? props.locationSubtype : null,
+        prosperity: numericOrNull(props.prosperity),
+        unrest: numericOrNull(props.unrest),
+        populationHealth: numericOrNull(props.populationHealth),
+        divinePresence: numericOrNull(props.divinePresence),
+        magicalSaturation: numericOrNull(props.magicalSaturation),
+        routesCursedUntilTick: numericOrNull(props.routesCursedUntilTick),
+        wellsSickenedUntilTick: numericOrNull(props.wellsSickenedUntilTick),
+        migrationPullUntilTick: numericOrNull(props.migrationPullUntilTick),
+        placeSpiritAwakenedAtTick: numericOrNull(props.placeSpiritAwakenedAtTick),
+        routesCursedActive: typeof props.routesCursedUntilTick === 'number' && tick < (props.routesCursedUntilTick as number),
+        wellsSickenedActive: typeof props.wellsSickenedUntilTick === 'number' && tick < (props.wellsSickenedUntilTick as number),
+        currentTick: tick,
+      };
+    },
+
+    /**
+     * THR-401: force a location countdown property to expire immediately
+     * (deletes the property). Used by tests and browser-verify to assert
+     * the consuming phase clears the flag.
+     */
+    forceLocationCountdownExpire: (
+      idOrName: string,
+      property: 'routesCursedUntilTick' | 'wellsSickenedUntilTick' | 'migrationPullUntilTick',
+    ): boolean => {
+      const graph = _graphProvider?.();
+      if (!graph) return false;
+      const locations = graph.getNodesByType('location');
+      const match =
+        locations.find(n => n.id === idOrName) ??
+        locations.find(n => n.id.startsWith(idOrName)) ??
+        locations.find(n =>
+          typeof n.name === 'string' && n.name.toLowerCase().includes(idOrName.toLowerCase()),
+        );
+      if (!match) return false;
+      if (match.properties[property] === undefined) return false;
+      delete match.properties[property];
+      return true;
+    },
+
     /** Returns the last n reward events (successful draws and empty-pool misses). Default: all retained. */
     getRecentRewards: (n?: number) =>
       import('./engine/rewardHistory').then((m) => m.getRecentRewards(n)),

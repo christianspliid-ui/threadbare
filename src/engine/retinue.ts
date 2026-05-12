@@ -203,6 +203,12 @@ export interface ThreadedLocation extends ThreadedNodeBase {
   hexRow: number;
   prosperityLabel: string;
   controllingFaction: string | null;
+  // THR-401: population health (5-tier text) and divine presence (3-tier text).
+  // Time-bounded flags become narrative phrases. All optional + fail-soft.
+  populationHealthLabel: string | null;
+  divinePresenceLabel: string | null;
+  routesCursed: boolean;
+  wellsSickened: boolean;
 }
 
 export interface ThreadedFaction extends ThreadedNodeBase {
@@ -312,6 +318,31 @@ function deriveProsperityLabel(score: unknown): string {
   if (num >= 40) return 'Stable';
   if (num >= 10) return 'Struggling';
   return 'Destitute';
+}
+
+/**
+ * Derive a 5-tier human-readable label from populationHealth (0-100). THR-401.
+ * Returns null when the property is absent (no UI surface needed).
+ */
+export function derivePopulationHealthLabel(score: unknown): string | null {
+  if (typeof score !== 'number') return null;
+  if (score >= 90) return 'Thriving';
+  if (score >= 70) return 'Well';
+  if (score >= 50) return 'Steady';
+  if (score >= 30) return 'Failing';
+  return 'Wasting';
+}
+
+/**
+ * Derive a 3-tier narrative label from divinePresence (0–1). THR-401.
+ * Returns null below 0.1 — players shouldn't see a panel field for the
+ * untouched default state.
+ */
+export function deriveDivinePresenceLabel(score: unknown): string | null {
+  if (typeof score !== 'number' || score < 0.1) return null;
+  if (score >= 0.7) return 'Sacred ground';
+  if (score >= 0.4) return 'A presence here';
+  return 'Touched by the divine';
 }
 
 /**
@@ -474,6 +505,12 @@ export function getThreadedNodes(graph: WorldGraph, ascendantId: string): Thread
         }
       }
 
+      // THR-401: population/presence labels + active narrative flags.
+      const populationHealthLabel = derivePopulationHealthLabel(nodeProps.populationHealth);
+      const divinePresenceLabel = deriveDivinePresenceLabel(nodeProps.divinePresence);
+      const routesCursed = typeof nodeProps.routesCursedUntilTick === 'number';
+      const wellsSickened = typeof nodeProps.wellsSickenedUntilTick === 'number';
+
       results.push({
         ...base,
         category: 'location',
@@ -481,6 +518,10 @@ export function getThreadedNodes(graph: WorldGraph, ascendantId: string): Thread
         hexRow,
         prosperityLabel,
         controllingFaction,
+        populationHealthLabel,
+        divinePresenceLabel,
+        routesCursed,
+        wellsSickened,
       } as ThreadedLocation);
 
     } else if (targetNode.type === 'artifact' || targetNode.type === 'artifact_legendary') {

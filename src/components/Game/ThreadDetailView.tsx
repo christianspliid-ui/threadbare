@@ -707,6 +707,20 @@ function LocationDetailBody({
       {node.prosperityLabel && (
         <DetailField label="Prosperity" value={node.prosperityLabel} />
       )}
+      {/* THR-401: population health + divine presence + narrative-phrase
+          flags for active sickness or cursed roads. */}
+      {node.populationHealthLabel && (
+        <DetailField label="Health" value={node.populationHealthLabel} />
+      )}
+      {node.divinePresenceLabel && (
+        <DetailField label="Presence" value={node.divinePresenceLabel} />
+      )}
+      {node.wellsSickened && (
+        <DetailField label="Affliction" value="The wells run wrong" />
+      )}
+      {node.routesCursed && (
+        <DetailField label="Roads" value="Not to be trusted" />
+      )}
       {node.controllingFaction && (
         <DetailField label="Faction" value={node.controllingFaction} />
       )}

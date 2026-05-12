@@ -22,7 +22,7 @@
 - 2026-05-09 batch: THR-268, THR-389, THR-391
 - 2026-05-10 batch: THR-394
 - 2026-05-11 batch: THR-393, THR-403, THR-408, THR-411
-- 2026-05-12 batch: THR-413, THR-404, THR-397, THR-398, THR-399, THR-405, THR-416, THR-409, THR-395
+- 2026-05-12 batch: THR-413, THR-404, THR-397, THR-398, THR-399, THR-401, THR-405, THR-416, THR-409, THR-395
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
@@ -57,3 +57,4 @@ Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Compl
 - ✅ 2026-05-12: THR-405 shipped — Rulebook Canon Page Phase 3 (maintenance cadence). `Rulebook impact?` checkbox added to CLAUDE.md Design Governance. `Docs/audits/_rulebook-architecture-assessment-template.md` created. `monthly-rulebook-review` scheduled task registered in CLAUDE.md (task creation deferred to THR-417 — blocked by impediment #133, create_scheduled_task blocked in scheduled sessions). PR #256.
 - ✅ 2026-05-12: THR-409 shipped — worktree graveyard cleanup. Removed 35 of 74 registered worktrees (registry now 39); 33 tfws-pickup/resume entries kept per 14-day safety filter; 12 .claude/worktree dirs remain on disk (git-deregistered, locked by active sessions); trusting-vaughan-733101 (THR-394) preserved with 2 unmerged code commits not yet in main.
 - ✅ 2026-05-12: THR-419 shipped — Starter 12 always-available action floor (unlock Gate 8 + starter tags), DebugPanel Action Unlocks tab/__DEBUG unlock APIs, and Codex Starter filter chip landed with tests and full verification trio green.
+- ✅ 2026-05-12: THR-401 shipped — Location action expansion: 6 new settlement-scale verbs (Bless the Harvest, Open the Markets, Sanctify the Square, Awaken the Spirit of the Place, Sicken the Wells, Curse the Roads). 26 named constants in `location-action-constants.ts`, 4 new trace categories (`location_action_resolved`/`property_decay`/`countdown_expired`/`flag_consumed`), `place_spirit` ActorType + `embodies_spirit_of` EdgeType. phaseProsperity reads new properties (cursed routes, presence bonus, health dampener) + natural recovery/decay; phaseUnrest bleeds upward when health is low; phaseSettlementPromotion suppressed while sickened. ThreadDetailView surfaces 5-tier health + 3-tier presence labels and narrative-phrase flags ("The wells run wrong", "Not to be trusted"). `__DEBUG.inspectLocation` + `forceLocationCountdownExpire` available. 21 new tests. Deferred to follow-up: encounter seeding, HexMapV2 cursed_roads signifier, place_spirit actor spawning.
