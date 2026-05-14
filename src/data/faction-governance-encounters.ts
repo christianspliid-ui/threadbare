@@ -256,6 +256,162 @@ export const FACTION_DOUBTER_CHOOSES_TEMPLATE: UnifiedActionTemplate = {
   ],
 };
 
+// ─── faction.encounter.inheritance (THR-432) ────────────────────────────────
+//
+// Planted on the new leader by phaseFactionSuccession when an anointed
+// successor inherits. The scene lets the successor accept or refuse the
+// mantle through aftermath reactions, not encounter success/failure — the
+// encounter itself always "resolves," the choice is the choice.
+//
+// Both reactions are valid endings. Accept keeps the `leads` edge (the
+// engine has already set it) and stamps a reputation tally + seeds a "first
+// act as leader" follow-on encounter scored against the faction's active
+// ambition. Refuse plants a hidden mark — the thread the successor cut —
+// queryable by later content; the engine separately re-runs succession on
+// the next phaseFactionSuccession pass, falling through to score derivation
+// (or the next-recency will_succeed candidate if one remains).
+
+export const FACTION_INHERITANCE_TEMPLATE: UnifiedActionTemplate = {
+  id: 'faction.encounter.inheritance',
+  name: 'The Mantle Settles',
+  rarityTier: 3,
+  intrinsicTier: 'story_beat',
+  reach: 'iron',
+  crudType: 'update',
+  scale: 'personal',
+  apCost: 1,
+  actorAffinities: ['individual'],
+  motivations: ['loyalty_ambition', 'courage_prudence'],
+  narrativeTemplates: {
+    initiation: 'feels the weight of a leadership they did not seek',
+    success: 'they take up the mantle their predecessor cannot carry',
+    failure: 'they hesitate; the mantle hangs unworn in the room',
+  },
+  steps: [
+    {
+      reach: 'iron',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.20,
+      failBehavior: 'continue_weakened',
+      onSuccess: [],
+      onFailure: [],
+      narrativeTemplate:
+        'The room at {location} is quieter than {name} have ever heard it. The crown — ' +
+        'the literal weight of office, or the figurative seat, or the simple unspoken ' +
+        'agreement that someone leads — has fallen. ' +
+        '{?has_ally}{ally} stands at {name}\'s shoulder, not speaking.{/has_ally}' +
+        '{?no_ally}There is no one at {name}\'s shoulder.{/no_ally} ' +
+        'And then {name} feels something settle. A thread the god wove around them, ' +
+        'long ago, has caught. The faction is looking at {name} now — every face turning, ' +
+        'one by one, as if some quiet message has already passed between them all.',
+      successAfterimage: 'The faction has named {name} without speaking. The thread holds.',
+      failureAfterimage: 'The thread is heavy. {name} did not know it was there.',
+    },
+    {
+      reach: 'iron',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.30,
+      failBehavior: 'fail_action',
+      onSuccess: [],
+      onFailure: [],
+      successMetadata: {
+        rewardPool: { categoryWeights: { condition: 0.30, possession: 0.20, bestowed_power: 0.50 } },
+        reputationDelta: 0.08,
+      },
+      failureMetadata: {
+        rewardPool: { categoryWeights: { condition: 0.70, possession: 0.30 } },
+      },
+      narrativeTemplate:
+        '{name} chooses. Take up the mantle — inherit not only the seat but the debts ' +
+        'beneath it, the alliances brokered before {name} was anyone, the rivalries waiting ' +
+        'to test the new authority. Or refuse — cut the thread, let the seat fall to whoever ' +
+        'the faction can find next, and carry the weight of a calling declined. Either choice ' +
+        'is final in its own way. The faction cannot un-look at {name}.',
+      successAfterimage: 'The mantle settles where the thread placed it. {name} is leader now.',
+      failureAfterimage: 'The thread is cut. The faction will turn to someone else.',
+    },
+  ],
+  aftermathConfig: {
+    branchOnStep: 1,
+    variants: {},
+    fallback: {
+      overview:
+        '{name} stands in the silence the predecessor left. The faction waits. ' +
+        'A thread the god wove long ago has caught, and the mantle is — for one breath — ' +
+        'still suspended between accepting hands and refusing ones.',
+      changes: [
+        {
+          id: 'inheritance_mantle_offered',
+          kind: 'item',
+          title: 'The Offered Mantle',
+          detail:
+            'The thread the god wove around {name} has caught. The faction looks at {name} ' +
+            'as the seat their predecessor cannot keep. The choice is theirs.',
+          polarity: 'info',
+        },
+      ],
+      reactionPrompt:
+        'The mantle hangs in the room between {name} and the faction. What does the god watch them choose?',
+      reactions: [
+        {
+          id: 'inheritance_accept',
+          label: 'Take up the mantle.',
+          intent:
+            '{name} accepts the leadership the thread the god wove has placed on their shoulders. ' +
+            'They inherit the faction with its current state — debts, alliances, rivalries, ambitions — ' +
+            'and the next act of governance will be their first.',
+          effects: [
+            { kind: 'reputation_tally', key: 'inheritance_accepted', delta: 1 },
+            {
+              kind: 'recent_event',
+              eventType: 'narrative',
+              message:
+                '{name} accepts the mantle. Where {predecessor_or_seat} stood, {name} stands now — ' +
+                'and the faction\'s next breath is drawn under their authority.',
+              significance: 0.75,
+            },
+            {
+              kind: 'encounter_seed',
+              encounterFamily: 'faction_internal_pressure',
+              delayTicks: 6,
+              priority: 0.70,
+              seedLabel: 'first act as leader: the faction tests its new seat',
+            },
+          ],
+          closeAfterSelection: true,
+        },
+        {
+          id: 'inheritance_refuse',
+          label: 'Refuse — the mantle is too heavy.',
+          intent:
+            '{name} steps back. The thread the god wove around them is cut. The faction ' +
+            'will turn to someone else — or to no one, and let the seat lapse to its slow ' +
+            'next decision. {name} carries a grief now that the faction will not see: ' +
+            'a calling they declined.',
+          effects: [
+            {
+              kind: 'hidden_mark',
+              category: 'concealed_action',
+              severity: 0.45,
+              label: 'refused_inheritance',
+              revealFamilies: ['faction_internal_pressure', 'social_obligation'],
+            },
+            {
+              kind: 'recent_event',
+              eventType: 'narrative',
+              message:
+                '{name} declines the mantle. The faction looks for another seat, or for none. ' +
+                'The thread the god wove around them is cut now — visibly, to anyone who knew it was there.',
+              significance: 0.75,
+            },
+          ],
+          closeAfterSelection: true,
+        },
+      ],
+    },
+  },
+};
+
 // ─── Aggregate ──────────────────────────────────────────────────────────────
 
 export const FACTION_GOVERNANCE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
@@ -263,4 +419,5 @@ export const FACTION_GOVERNANCE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   FACTION_LEADER_CROSSROADS_TEMPLATE,
   FACTION_DOCTRINE_SURFACES_TEMPLATE,
   FACTION_DOUBTER_CHOOSES_TEMPLATE,
+  FACTION_INHERITANCE_TEMPLATE,
 ];

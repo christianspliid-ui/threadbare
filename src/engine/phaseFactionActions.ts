@@ -52,7 +52,7 @@ import {
   STIR_DISSENT_SEEDED_ENCOUNTER_ID,
   DIVINE_WHISPER_PENDING_CONDITION,
 } from '../data/faction-action-constants';
-import { refreshFactionDerivedFlags, getFactionLeaderId } from './factionNetwork';
+import { refreshFactionDerivedFlags, getFactionLeaderId, getAnointedLeaderId } from './factionNetwork';
 import type { FactionStirDissentTrace } from '../types/factionAction';
 
 // ─── PRNG (mulberry32 — same as all engine modules) ──────────────────────────
@@ -160,8 +160,17 @@ function getLeaderBias(
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-/** Get the faction leader: highest reputation non-army member. Fail-soft: returns null. */
+/** Get the faction leader: anointed (via `leads` edge) when present, else
+ *  highest reputation non-army member. Fail-soft: returns null. */
 function getFactionLeader(state: GameState, factionId: string): GraphNode | null {
+  // THR-432 — `leads` edge is authoritative when present (anointed succession).
+  // Existing reputation derivation is the untouched fallback.
+  const anointedId = getAnointedLeaderId(state.graph, factionId);
+  if (anointedId) {
+    const anointed = state.graph.getNode(anointedId);
+    if (anointed) return anointed;
+  }
+
   const memberEdges = state.graph.getIncomingEdges(factionId, 'member_of');
   let best: GraphNode | null = null;
   let bestRep = -1;

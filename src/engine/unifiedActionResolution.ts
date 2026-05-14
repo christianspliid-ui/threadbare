@@ -43,6 +43,7 @@ import type { ResolutionInput } from '../types/resolution';
 import { executeGraphOps } from './graphOpExecutor';
 import { applyFactionGovernanceVerb } from './factionGovernanceVerbs';
 import { applyPlantSchism } from './schismPlant';
+import { applyAnointSuccessor } from './anointSuccessor';
 import { SCHISM_PENDING_DURATION_TICKS } from '../data/game-config';
 import { emitTrace } from './traceBuffer';
 import {
@@ -1007,10 +1008,12 @@ export function executeStepResult(
     // the live runtime for touchWorld/touchStructure invalidation.
     const factionVerbOps: GraphOp[] = [];
     const plantSchismOps: GraphOp[] = [];
+    const anointSuccessorOps: GraphOp[] = [];
     const graphOnlyOps: GraphOp[] = [];
     for (const op of ops) {
       if (op.op === 'faction_verb') factionVerbOps.push(op);
       else if (op.op === 'plant_schism') plantSchismOps.push(op);
+      else if (op.op === 'anoint_successor') anointSuccessorOps.push(op);
       else graphOnlyOps.push(op);
     }
 
@@ -1040,6 +1043,20 @@ export function executeStepResult(
           : SCHISM_PENDING_DURATION_TICKS;
         try {
           applyPlantSchism(state, runtime, factionId, action.actorId, delay, tick);
+        } catch {
+          // Fail-soft per NFP #4: log nothing, never crash the tick.
+        }
+      }
+    }
+
+    if (anointSuccessorOps.length > 0) {
+      // THR-432 — Anoint Successor targets an agent; the helper resolves the
+      // agent's faction from their `member_of` edges. Needs full GameState
+      // (for state.tick stamping and ascendantId attribution).
+      const targetAgentId = action.targetId;
+      for (let i = 0; i < anointSuccessorOps.length; i++) {
+        try {
+          applyAnointSuccessor(state, targetAgentId, state.ascendantId);
         } catch {
           // Fail-soft per NFP #4: log nothing, never crash the tick.
         }

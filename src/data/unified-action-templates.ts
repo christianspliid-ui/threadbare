@@ -140,6 +140,7 @@ import {
   WHISPER_LEADER_ESSENCE_COST,
   RECOVER_DOCTRINE_ESSENCE_COST,
   SURFACE_DOUBTER_ESSENCE_COST,
+  ANOINT_SUCCESSOR_ESSENCE_COST,
 } from './faction-action-constants';
 import { SCHISM_ESSENCE_COST } from './game-config';
 import { RIVAL_SHRINE_BETRAYAL_TEMPLATE } from './encounters/rival-shrine-betrayal';
@@ -1067,6 +1068,60 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       initiation: 'lays the mantle of divine favor on a chosen mortal',
       success: 'the blessing settles — the anointed moves with the authority of the chosen',
       failure: 'the mantle finds no purchase; this mortal is not ready for the burden',
+    },
+  },
+
+  // ─── THR-432: Anoint Successor (succession-binding divine action) ───────
+  //
+  // Companion to Anoint Champion. Where anoint-champion mantles a mortal *now*,
+  // anoint-successor weaves a silent thread that catches *later* — when the
+  // current crown falls. The verb fires on a non-leader, non-army faction
+  // member; the engine adds a `will_succeed: agent → faction` edge that survives
+  // any leader exit cause (death removes the leader's edges, but the will_succeed
+  // edge is targeted at the faction node and persists). The thread is silent
+  // until phaseFactionSuccession detects a leader exit; the resolved successor
+  // gets a `leads` edge and a planted `faction.encounter.inheritance` scene.
+  //
+  // Drawer surfacing (§8.1 of plan doc): the verb appears when the focused
+  // target is an agent who is a non-leader, non-army member of ≥1 faction.
+  // The drawer's existing targetCategories: ['agent'] filter handles surfacing;
+  // refinement (hide for current leaders) is the consumer's responsibility.
+
+  {
+    id: 'action.faction.anoint_successor',
+    name: 'Anoint Successor',
+    spellName: 'Thread of Inheritance',
+    rarityTier: 3,
+    intrinsicTier: 'shaping',
+    description:
+      'You weave an invisible thread of inheritance around a mortal. ' +
+      'When the current crown falls — and every crown falls — the thread will catch. ' +
+      'They do not know yet. The leader they will replace does not know either. ' +
+      'You have not chosen when; you have only chosen who.',
+    reach: 'iron',
+    crudType: 'create',
+    scale: 'personal',
+    steps: [{
+      reach: 'iron',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [{
+        op: 'anoint_successor',
+        nodeId: '$target',
+      }],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: ANOINT_SUCCESSOR_ESSENCE_COST,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'force',
+    motivations: ['loyalty_ambition', 'tradition_novelty'],
+    targetCategories: ['agent'] as unknown as readonly import('../types/targetContext').TargetCategory[],
+    narrativeTemplates: {
+      initiation: 'weaves a silent thread of inheritance around a chosen mortal',
+      success: 'the thread settles, unseen — it will hold until a crown falls',
+      failure: 'the thread finds no anchor; this mortal carries no future the faction will honor',
     },
   },
 

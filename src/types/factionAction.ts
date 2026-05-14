@@ -269,3 +269,55 @@ export interface FactionReformedTrace {
   expelledIds: string[];
   summary: string;
 }
+
+// ─── THR-432 Faction Succession trace ──────────────────────────────────────
+// One trace covers every outcome of phaseFactionSuccession. Each tick, the phase
+// runs across every faction and emits a trace per faction whose leader snapshot
+// changed (or first-observed). The chronicle only picks up
+// `outcome: 'anointed_inherited'` (succession the player caused); the others are
+// debug-only.
+
+/** Faction Succession — outcome of one pass of phaseFactionSuccession on a faction. */
+export interface FactionSuccessionTrace {
+  tick: number;
+  category: 'faction_succession';
+  factionId: string;
+  factionName: string;
+  outcome:
+    | 'anointed_inherited'      // a will_succeed successor took the leads edge
+    | 'natural_succession'      // leader exited, no successor resolved — fell back to derivation
+    | 'successor_self_seated'   // an anointed successor reached the seat unaided; their edge was cleared
+    | 'snapshot_bootstrapped'   // first observation of this faction
+    | 'peaceful_overtake';      // leader changed by score, no exit — snapshot re-pointed
+  exitedLeaderId: string | null;
+  exitedLeaderName: string | null;
+  newLeaderId: string | null;
+  newLeaderName: string | null;
+  /** How many will_succeed candidates were filtered through resolution. 0 on
+   *  outcomes that don't consult the will_succeed list. */
+  willSucceedCandidatesConsidered: number;
+  /** Set when outcome === 'anointed_inherited'. */
+  seededEncounterId?: string;
+  /** Set when outcome === 'anointed_inherited'. */
+  conferredVia?: 'anointment' | 'natural';
+  summary: string;
+}
+
+/** Anoint Successor — divine action cast that creates the will_succeed edge. */
+export interface FactionAnointSuccessorTrace {
+  tick: number;
+  category: 'faction_anoint_successor';
+  factionId: string;
+  factionName: string;
+  successorId: string;
+  successorName: string;
+  /** True when the target agent had multiple `member_of` memberships and the
+   *  highest-reputation one was chosen. Rare in normal play. */
+  multiFactionResolved: boolean;
+  /** True when this cast was a re-anointment — the successor already had a
+   *  will_succeed edge for this faction; the new edge supersedes via recency. */
+  reAnointment: boolean;
+  /** Tick stamped on the new will_succeed edge (= state.tick). */
+  anointedTick: number;
+  summary: string;
+}

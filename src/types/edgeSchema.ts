@@ -422,6 +422,33 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     requiredProperties: ['holderType', 'heldSinceTick'],
     description: 'Holder bond between an actor/faction/god and a place_of_power location. Properties: holderType (actor|god|faction), heldSinceTick, corruptMark, bargainFavor, sphere.',
   },
+
+  // ── Faction Succession (THR-432) ───────────────────────────────────────────
+  will_succeed: {
+    type: 'will_succeed',
+    sourceNodeType: 'actor',
+    targetNodeType: 'actor',
+    direction: 'directed',
+    cardinality: 'many-to-one',
+    requiredProperties: ['anointedTick'],
+    description: 'Agent anointed to inherit faction leadership on the next leader exit. '
+      + 'Source = the successor agent; target = the faction (actorType: faction). Survives '
+      + 'the current leader\'s death (which removes the leader node + its edges). Consumed '
+      + 'on inheritance. Optional properties: anointedBy (ascendant id), priority.',
+  },
+  leads: {
+    type: 'leads',
+    sourceNodeType: 'actor',
+    targetNodeType: 'actor',
+    direction: 'directed',
+    cardinality: 'one-to-one',
+    requiredProperties: ['seatedTick'],
+    description: 'Agent is the seated leader of this faction. Source = the leader; target = '
+      + 'the faction (actorType: faction). Authoritative when present; absent for factions '
+      + 'whose leadership has never been explicitly conferred (those fall back to '
+      + 'score-derived leadership). Set/cleared by phaseFactionSuccession. Properties: '
+      + 'seatedTick, conferredVia (anointment | natural).',
+  },
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────

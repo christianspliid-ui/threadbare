@@ -114,7 +114,10 @@ export type EdgeType =
   // Ruins layer — PoP holder (THR-153)
   | 'holds_place_of_power' // actor | faction | ascendant → place_of_power location (HoldsPlaceOfPowerEdgeProperties)
   // Place-spirit (THR-401): place_spirit actor → location it embodies
-  | 'embodies_spirit_of';
+  | 'embodies_spirit_of'
+  // Faction succession (THR-432)
+  | 'will_succeed'         // agent → faction: anointed to inherit faction leadership on next leader exit
+  | 'leads';               // agent → faction: the seated leader of this faction (authoritative when present)
 
 /**
  * Typed properties for encounter_template nodes (design plan §3.8).

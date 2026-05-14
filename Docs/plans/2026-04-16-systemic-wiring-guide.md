@@ -218,6 +218,12 @@ The following typed effects ARE callable from `aftermathConfig.reactions[].effec
 - `hidden_mark` — discoverable secret on agent (existing)
 - `encounter_seed` — plants future encounter, creates `caused_by` edge (THR-116)
 
+**Faction succession edges (THR-432):** Two new structural edge types are created by engine-side dispatch — not by authored aftermath:
+- `will_succeed: agent → faction` — created by the `action.faction.anoint_successor` divine action via the `anoint_successor` GraphOp dispatched in `unifiedActionResolution.ts`. Stamps `anointedTick`, anointed by ascendant id.
+- `leads: agent → faction` — set by `phaseFactionSuccession` (post-narrative slot) when a leader exit is detected and an anointed `will_succeed` candidate resolves. The edge is authoritative when present (read by `getAnointedLeaderId` in `factionNetwork.ts`); existing score derivation is the untouched fallback.
+
+Authored aftermath cannot create these edges directly — they are created as side effects of divine action resolution and tick-phase succession. The `faction.encounter.inheritance` template (planted by the succession phase on the new leader) uses standard aftermath effects (`reputation_tally`, `recent_event`, `hidden_mark`, `encounter_seed`) for its accept/refuse reactions.
+
 If you need a structural mutation that no typed effect covers, propose a new aftermath effect kind — do not try to smuggle engine helpers into authored aftermath.
 
 **How to verify:** Grep `src/engine/encounterAftermath.ts` for the `applyEncounterAftermathReaction` function — the polymorphic switch on `effect.kind` enumerates the actual authoring surface. The count there is the source of truth, not "40".
