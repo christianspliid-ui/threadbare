@@ -184,3 +184,34 @@ export const FACTION_MUTATION_CHRONICLE_SIGNIFICANCE = {
   absorb: 0.7,
   dissolve: 0.7,
 } as const;
+
+// ─── Schism (THR-430) ────────────────────────────────────────────────────────
+// Schism is the deferred-resolution faction action: plant a crisis now,
+// the resolution tick decides reform-or-split based on faction state.
+
+/** Action essence cost for Schism (matches THR-400 spec). */
+export const SCHISM_ESSENCE_COST = 14;
+
+/** Default ticks between plant and resolution — 2 game days @ 12 ticks/day. */
+export const SCHISM_PENDING_DURATION_TICKS = 24;
+
+/** Contribution of cohesion-drop signal to splitPressure. */
+export const SCHISM_WEIGHT_COHESION = 0.4;
+
+/** Contribution of member-axiology stddev signal to splitPressure. */
+export const SCHISM_WEIGHT_SPREAD = 0.4;
+
+/** Contribution of pre-resolution dissent signal to splitPressure. */
+export const SCHISM_WEIGHT_DISSENT = 0.2;
+
+/** Reputation lost on the faction node when a schism resolves to reform. */
+export const SCHISM_REFORM_REPUTATION_PENALTY = 0.15;
+
+/** Number of most-misaligned members expelled on reform (clamped to members.length - 1). */
+export const SCHISM_REFORM_EXPULSION_COUNT = 3;
+
+/** TickEvent significance for the resolution beat (higher than plant). */
+export const SCHISM_RESOLUTION_CHRONICLE_SIGNIFICANCE = 0.85;
+
+/** TickEvent significance for the plant beat (visible but not pop-up). */
+export const SCHISM_PLANT_CHRONICLE_SIGNIFICANCE = 0.7;

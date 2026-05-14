@@ -29,6 +29,7 @@ import { doomPhase } from './doom';
 import { ambitionProgressPhase } from './ambitionProgress';
 import { factionAmbitionsPhase } from './factionAmbitions';
 import { factionActionsPhase } from './factionActions';
+import { schismResolutionPhase } from './schismResolution';
 import { secretsFavorsPhase } from './secretsFavors';
 import { clueDecayPhase } from './clueDecay';
 import { ruinQuestHooksPhase } from './ruinQuestHooks';
@@ -49,6 +50,7 @@ export const ENGINE_PHASES: readonly EnginePhase[] = [
   ambitionProgressPhase,
   factionAmbitionsPhase,
   factionActionsPhase,
+  schismResolutionPhase,
   secretsFavorsPhase,
   clueDecayPhase,
   ruinQuestHooksPhase,

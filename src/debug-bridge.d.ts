@@ -319,6 +319,19 @@ export interface DebugBridge {
   getForeshadowing: (agentId: string, encounterId: string) => Promise<import('./engine/foreshadowing/types').ForeshadowingResult | null>;
   /** Returns all foreshadowing resolution traces, optionally filtered to a specific agent id (THR-389). */
   listForeshadowingTraces: (agentId?: string) => Promise<ReadonlyArray<import('./types/trace').TraceEntry>>;
+
+  /** THR-430 — Schism inspection: list pending schisms in the live game state. */
+  schism: {
+    list: () => ReadonlyArray<{
+      factionId: string;
+      factionName: string;
+      plantedTick?: number;
+      resolutionTick: number;
+      ticksRemaining: number;
+      actorAgentId?: string;
+      baselineCohesion?: number;
+    }>;
+  };
 }
 
 declare global {

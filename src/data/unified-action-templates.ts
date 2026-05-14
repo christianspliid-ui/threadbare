@@ -141,6 +141,7 @@ import {
   RECOVER_DOCTRINE_ESSENCE_COST,
   SURFACE_DOUBTER_ESSENCE_COST,
 } from './faction-action-constants';
+import { SCHISM_ESSENCE_COST } from './game-config';
 import { RIVAL_SHRINE_BETRAYAL_TEMPLATE } from './encounters/rival-shrine-betrayal';
 import { WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE } from './encounters/wandering-healer-shrine-access';
 import { FLAWED_STEEL_TEMPLATE } from './encounters/flawed-steel';
@@ -976,6 +977,55 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       initiation: 'lets a name rise in the room — the one whose silence has been speaking',
       success: 'the doubter feels themselves seen by something larger than the faction',
       failure: 'no one inside this faction carries the silence that would answer',
+    },
+  },
+
+  // ─── THR-430: Schism (deferred faction-split divine action) ─────────────
+  //
+  // Schism is the only faction verb with deferred resolution. The cast plants
+  // a pending-resolution marker on the faction; phaseSchismResolution decides
+  // reform-or-split SCHISM_PENDING_DURATION_TICKS later based on faction state
+  // at that moment. The player forces the crisis but does not choose the
+  // outcome — the design hook.
+  //
+  // Implementation: a `plant_schism` GraphOp is intercepted in
+  // unifiedActionResolution.ts (sibling to faction_verb) and dispatched to
+  // applyPlantSchism, which snapshots baseline cohesion + sets pending props
+  // on the faction node.
+
+  {
+    id: 'action.faction.schism',
+    name: 'Schism',
+    spellName: 'Two Truths Stand',
+    rarityTier: 3,
+    intrinsicTier: 'shaping',
+    description:
+      "You plant a doctrinal split inside the faction. Two truths surface where there was one. " +
+      "The crisis is real now — what comes next is not yours to choose.",
+    reach: 'star',
+    crudType: 'update',
+    scale: 'regional',
+    steps: [{
+      reach: 'star',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [{
+        op: 'plant_schism',
+        nodeId: '$target',
+      }],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: SCHISM_ESSENCE_COST,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'chaos',
+    motivations: ['preservation_transformation', 'loyalty_ambition'],
+    targetCategories: ['faction'] as unknown as readonly import('../types/targetContext').TargetCategory[],
+    narrativeTemplates: {
+      initiation: 'plants a schism inside the faction',
+      success: 'the faction tremors — two doctrines now, where one stood',
+      failure: 'the words pass through the faction without finding purchase',
     },
   },
 
