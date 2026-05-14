@@ -174,6 +174,10 @@ export function TerrainTextureLab() {
   const [selectedClickTargetId, setSelectedClickTargetId] = useState<string | null>(null);
   const [landmarkBatchCount, setLandmarkBatchCount] = useState(0);
   const [showClickTargetSpheres, setShowClickTargetSpheres] = useState(false);
+  const [contextRestoreKey, setContextRestoreKey] = useState(0);
+  const [lodTier, setLodTier] = useState('regional');
+  const [priorityCapEnabled, setPriorityCapEnabled] = useState(false);
+  const forceLossHandlerRef = useRef<{ forceLoss: () => void } | null>(null);
 
   const selectedConfig = configs[selectedTerrain];
   const selectedRecipe = getRecipeOption(selectedConfig.recipe);
@@ -833,10 +837,14 @@ export function TerrainTextureLab() {
                   fillerInstanceCount={fillerInstanceCount}
                   landmarkInstanceCount={combinedPlacements.length}
                   landmarkBatchCount={landmarkBatchCount}
+                  lodTier={lodTier}
+                  priorityCapEnabled={priorityCapEnabled}
                   onShowChunkBoundsChange={(showChunkBounds) => updateVignetteSettings({ showChunkBounds })}
                   onShowLandmarkBoundsChange={(showLandmarkBounds) => updateVignetteSettings({ showLandmarkBounds })}
                   onShowClickTargetSpheresChange={setShowClickTargetSpheres}
                   onDensityScaleChange={(densityScale) => updateVignetteSettings({ densityScale })}
+                  onForceLoss={() => forceLossHandlerRef.current?.forceLoss()}
+                  onPriorityCapChange={setPriorityCapEnabled}
                 />
 
                 <div
@@ -1178,6 +1186,7 @@ export function TerrainTextureLab() {
 
         <div style={{ flex: 1, minHeight: 0 }}>
           <TerrainTextureLabCanvas
+            key={contextRestoreKey}
             configs={configs}
             previewHexes={TERRAIN_TEXTURE_PREVIEW_HEXES}
             models={models}
@@ -1207,6 +1216,11 @@ export function TerrainTextureLab() {
                 TERRAIN_TEXTURE_LAB_CONSTANTS.MAX_CAMERA_ZOOM,
               ),
             }))}
+            priorityCapEnabled={priorityCapEnabled}
+            onContextLost={() => { /* canvas will remount on restore */ }}
+            onContextRestored={() => setContextRestoreKey(k => k + 1)}
+            onContextLossHandlerReady={(handler) => { forceLossHandlerRef.current = handler; }}
+            onLodTierChange={setLodTier}
           />
         </div>
       </main>

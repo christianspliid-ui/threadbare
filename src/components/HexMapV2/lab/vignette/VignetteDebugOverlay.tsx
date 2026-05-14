@@ -40,10 +40,14 @@ interface VignetteDebugOverlayProps {
   fillerInstanceCount: number;
   landmarkInstanceCount: number;
   landmarkBatchCount: number;
+  lodTier: string;
+  priorityCapEnabled: boolean;
   onShowChunkBoundsChange: (value: boolean) => void;
   onShowLandmarkBoundsChange: (value: boolean) => void;
   onShowClickTargetSpheresChange: (value: boolean) => void;
   onDensityScaleChange: (value: number) => void;
+  onForceLoss?: () => void;
+  onPriorityCapChange: (value: boolean) => void;
 }
 
 export function VignetteDebugOverlay({
@@ -54,10 +58,14 @@ export function VignetteDebugOverlay({
   fillerInstanceCount,
   landmarkInstanceCount,
   landmarkBatchCount,
+  lodTier,
+  priorityCapEnabled,
   onShowChunkBoundsChange,
   onShowLandmarkBoundsChange,
   onShowClickTargetSpheresChange,
   onDensityScaleChange,
+  onForceLoss,
+  onPriorityCapChange,
 }: VignetteDebugOverlayProps) {
   return (
     <div style={CONTAINER_STYLE}>
@@ -91,6 +99,33 @@ export function VignetteDebugOverlay({
         <span style={LABEL_STYLE}>
           Filler: {fillerInstanceCount} · Landmarks: {landmarkInstanceCount} ({landmarkBatchCount} batches)
         </span>
+      </div>
+      <div style={ROW_STYLE}>
+        <span style={LABEL_STYLE}>LOD: <strong>{lodTier}</strong></span>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', cursor: 'pointer' }}>
+          <input
+            type="checkbox"
+            checked={priorityCapEnabled}
+            onChange={e => onPriorityCapChange(e.target.checked)}
+          />
+          <span style={LABEL_STYLE}>Priority cap</span>
+        </label>
+        {onForceLoss && (
+          <button
+            onClick={onForceLoss}
+            style={{
+              padding: '2px 8px',
+              fontSize: 'var(--text-xs)',
+              background: 'var(--color-surface-2)',
+              color: 'var(--color-danger, #e05050)',
+              border: '1px solid var(--color-danger, #e05050)',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            Force context loss
+          </button>
+        )}
       </div>
       <div style={ROW_STYLE}>
         <span style={LABEL_STYLE}>Density:</span>
