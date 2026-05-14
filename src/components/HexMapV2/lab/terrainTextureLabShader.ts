@@ -45,6 +45,7 @@ export const TERRAIN_TEXTURE_LAB_VERTEX_SHADER = /* glsl */ `
 export const TERRAIN_TEXTURE_LAB_FRAGMENT_SHADER = /* glsl */ `
   uniform float uTime;
   uniform float uGlobalSeed;
+  uniform int uOctaveCount;
 
   varying vec2 vUv;
   varying vec3 vBaseColor;
@@ -85,6 +86,7 @@ export const TERRAIN_TEXTURE_LAB_FRAGMENT_SHADER = /* glsl */ `
     float amplitude = 0.5;
 
     for (int i = 0; i < 5; i++) {
+      if (i >= uOctaveCount) break;
       value += amplitude * valueNoise(p);
       p = p * 2.03 + vec2(17.1, 9.2);
       amplitude *= 0.52;
@@ -99,6 +101,7 @@ export const TERRAIN_TEXTURE_LAB_FRAGMENT_SHADER = /* glsl */ `
     float ridgePower = mix(1.2, 4.0, clamp(sharpness, 0.0, 1.0));
 
     for (int i = 0; i < 5; i++) {
+      if (i >= uOctaveCount) break;
       float n = valueNoise(p) * 2.0 - 1.0;
       n = abs(n);
       n = pow(1.0 - n, ridgePower);
@@ -216,6 +219,7 @@ export function createTerrainTextureLabMaterial(): THREE.ShaderMaterial {
     uniforms: {
       uTime: { value: 0 },
       uGlobalSeed: { value: 42 },
+      uOctaveCount: { value: 5 },
     },
     vertexShader: TERRAIN_TEXTURE_LAB_VERTEX_SHADER,
     fragmentShader: TERRAIN_TEXTURE_LAB_FRAGMENT_SHADER,

@@ -30,6 +30,10 @@ import { pickLandmark } from './vignette/LandmarkRaycaster';
 import { VignetteSelectionState } from './vignette/VignetteSelectionState';
 import type { ResolvedHexFiller } from './vignette/VignetteResolver';
 import { TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS } from './terrainTextureLabPresets';
+import { VignetteContextLossHandler } from './vignette/VignetteContextLossHandler';
+import { VignetteLodController } from './vignette/VignetteLodController';
+import type { LodTier } from './vignette/VignetteLodController';
+import { scoreAndCapFillerChunks } from './vignette/ChunkPriorityScorer';
 
 interface TerrainTextureLabCanvasProps {
   configs: Record<LabTerrainKey, TerrainTextureLabConfig>;
@@ -54,6 +58,11 @@ interface TerrainTextureLabCanvasProps {
   onLandmarkSelect: (targetId: string, hexId: string) => void;
   onLandmarkLayerBuilt?: (batchCount: number) => void;
   onZoom?: (delta: number) => void;
+  priorityCapEnabled?: boolean;
+  onContextLost?: () => void;
+  onContextRestored?: () => void;
+  onContextLossHandlerReady?: (handler: { forceLoss: () => void } | null) => void;
+  onLodTierChange?: (tier: LodTier) => void;
 }
 
 interface SceneRefs {
@@ -348,6 +357,11 @@ export function TerrainTextureLabCanvas({
   onLandmarkSelect,
   onLandmarkLayerBuilt,
   onZoom,
+  priorityCapEnabled,
+  onContextLost,
+  onContextRestored,
+  onContextLossHandlerReady,
+  onLodTierChange,
 }: TerrainTextureLabCanvasProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -373,6 +387,13 @@ export function TerrainTextureLabCanvas({
   const fillerLayerRef = useRef<ChunkedFillerLayer | null>(null);
   const selectionStateRef = useRef<VignetteSelectionState>(new VignetteSelectionState());
   const clickTargetSphereGroupRef = useRef<THREE.Group | null>(null);
+  const lodControllerRef = useRef(new VignetteLodController());
+  const onContextLostRef = useRef(onContextLost);
+  const onContextRestoredRef = useRef(onContextRestored);
+  const onContextLossHandlerReadyRef = useRef(onContextLossHandlerReady);
+  const onLodTierChangeRef = useRef(onLodTierChange);
+  const priorityCapEnabledRef = useRef(priorityCapEnabled);
+  const forceLossRef = useRef<(() => boolean) | null>(null);
 
   const sceneBounds = useMemo(() => {
     const centers = previewHexes.map(hex => getTerrainTextureLabHexCenter(hex.col, hex.row, TERRAIN_TEXTURE_LAB_CONSTANTS.HEX_RADIUS));
@@ -388,6 +409,15 @@ export function TerrainTextureLabCanvas({
 
   const previewHexMap = useMemo(() => {
     return new Map(previewHexes.map(hex => [hex.id, hex]));
+  }, [previewHexes]);
+
+  const hexCenters = useMemo(() => {
+    return new Map(
+      previewHexes.map(hex => [
+        hex.id,
+        getTerrainTextureLabHexCenter(hex.col, hex.row, TERRAIN_TEXTURE_LAB_CONSTANTS.HEX_RADIUS),
+      ]),
+    );
   }, [previewHexes]);
 
   useEffect(() => {
@@ -428,6 +458,14 @@ export function TerrainTextureLabCanvas({
   }, [clickTargets]);
 
   useEffect(() => {
+    onContextLostRef.current = onContextLost;
+    onContextRestoredRef.current = onContextRestored;
+    onContextLossHandlerReadyRef.current = onContextLossHandlerReady;
+    onLodTierChangeRef.current = onLodTierChange;
+    priorityCapEnabledRef.current = priorityCapEnabled;
+  }, [onContextLost, onContextRestored, onContextLossHandlerReady, onLodTierChange, priorityCapEnabled]);
+
+  useEffect(() => {
     const container = containerRef.current;
     const canvas = canvasRef.current;
     if (!container || !canvas) return;
@@ -440,6 +478,15 @@ export function TerrainTextureLabCanvas({
     renderer.setSize(width, height);
     renderer.toneMapping = THREE.NoToneMapping;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+    const contextLossHandler = new VignetteContextLossHandler(
+      canvas,
+      renderer,
+      () => { onContextLostRef.current?.(); },
+      () => { onContextRestoredRef.current?.(); },
+    );
+    forceLossRef.current = () => contextLossHandler.forceLoss();
+    onContextLossHandlerReadyRef.current?.({ forceLoss: () => contextLossHandler.forceLoss() });
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(TERRAIN_TEXTURE_LAB_SHADER_CONSTANTS.BACKGROUND_COLOR);
@@ -644,6 +691,9 @@ export function TerrainTextureLabCanvas({
       landmarkLayerRef.current = null;
       disposeAndClearGroupChildren(clickTargetSphereGroup);
       clickTargetSphereGroupRef.current = null;
+      contextLossHandler.dispose();
+      forceLossRef.current = null;
+      onContextLossHandlerReadyRef.current?.(null);
     };
   }, [previewHexes, sceneBounds]);
 
@@ -743,10 +793,23 @@ export function TerrainTextureLabCanvas({
     fillerLayerRef.current?.dispose();
     fillerLayerRef.current = layer;
 
+    const landmarkHexIds = new Set(placements.map(p => p.hexId));
+    const centerX = (sceneBounds.minX + sceneBounds.maxX) / 2;
+    const centerY = (sceneBounds.minY + sceneBounds.maxY) / 2;
+    const cappedSpec = priorityCapEnabledRef.current
+      ? scoreAndCapFillerChunks(fillerSpec, hexCenters, centerX, centerY, landmarkHexIds)
+      : fillerSpec;
+
     let active = true;
-    void layer.build(fillerSpec).then(success => {
+    void layer.build(cappedSpec).then(success => {
       if (!active) { layer.dispose(); return; }
-      if (!success) layer.setVisible(false);
+      if (!success) {
+        layer.setVisible(false);
+        return;
+      }
+      // Apply current LOD visibility after build completes.
+      const lod = lodControllerRef.current.evaluate(viewSettingsRef.current.zoom);
+      layer.setVisible(lod.fillerVisible);
     });
 
     return () => {
@@ -754,7 +817,7 @@ export function TerrainTextureLabCanvas({
       layer.dispose();
       if (fillerLayerRef.current === layer) fillerLayerRef.current = null;
     };
-  }, [fillerSpec]);
+  }, [fillerSpec, hexCenters, placements, sceneBounds]);
 
   useEffect(() => {
     fillerLayerRef.current?.setChunkBoundsVisible(showChunkBounds);
@@ -763,6 +826,14 @@ export function TerrainTextureLabCanvas({
   useEffect(() => {
     landmarkLayerRef.current?.setChunkBoundsVisible(showLandmarkBounds);
   }, [showLandmarkBounds]);
+
+  useEffect(() => {
+    const lod = lodControllerRef.current.evaluate(viewSettings.zoom);
+    fillerLayerRef.current?.setVisible(lod.fillerVisible);
+    const sceneRefs = sceneRef.current;
+    if (sceneRefs) sceneRefs.material.uniforms.uOctaveCount.value = lod.shaderOctaveCount;
+    onLodTierChangeRef.current?.(lod.tier);
+  }, [viewSettings.zoom]);
 
   useEffect(() => {
     const group = clickTargetSphereGroupRef.current;
@@ -788,6 +859,8 @@ export function TerrainTextureLabCanvas({
       get clickRegistry() { return clickRegistryRef.current; },
       get landmarkBatchCount() { return landmarkLayerRef.current?.batchCount ?? 0; },
       get selectionState() { return selectionStateRef.current; },
+      get lodTier() { return lodControllerRef.current.evaluate(viewSettingsRef.current.zoom).tier; },
+      forceLoss() { return forceLossRef.current?.() ?? false; },
     };
     return () => {
       delete (window as Record<string, unknown>).__TERRAIN_LAB;
