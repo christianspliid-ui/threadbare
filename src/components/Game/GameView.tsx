@@ -1356,6 +1356,20 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     worldVersion: runtime.worldVersion,
   });
 
+  // ── Survey people-layer prose — most-recent survey_completed event for the focused hex (THR-439) ──
+  const surveyPeopleEvent = useMemo(() => {
+    if (!focusedHex) return undefined;
+    const hexCol = focusedHex.col;
+    const hexRow = focusedHex.row;
+    let latest: (typeof gameState.recentEvents)[number] | undefined;
+    for (const ev of gameState.recentEvents) {
+      if (ev.type !== 'survey_completed') continue;
+      if (ev.hexCoords?.col !== hexCol || ev.hexCoords?.row !== hexRow) continue;
+      if (!latest || ev.tick > latest.tick) latest = ev;
+    }
+    return latest;
+  }, [gameState.recentEvents, focusedHex]);
+
   // ── Location activity summaries — drives murmur tooltips on hex hover (THR-22) ──
   const { summaries: locationActivitySummaries } = useLocationActivities({
     graph: gameState.graph,
@@ -3326,6 +3340,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                       controlEffects={(gameState.controlEffects ?? []).filter(
                         e => e.active && e.targetHexCol === focusedHex.col && e.targetHexRow === focusedHex.row
                       )}
+                      surveyPeopleProse={surveyPeopleEvent?.message}
+                      surveyPeopleProseTick={surveyPeopleEvent?.tick}
                     />
                   </div>
                 </div>

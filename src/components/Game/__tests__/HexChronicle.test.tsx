@@ -168,4 +168,51 @@ describe('HexChronicle', () => {
     expect(screen.getByText('The People')).toBeTruthy();
     expect(screen.queryByText('The Hollow King')).toBeNull();
   });
+
+  // THR-439: survey people-layer swap
+  it('renders dynamic survey band when surveyPeopleProse is present', () => {
+    render(
+      <HexChronicle
+        {...makeTestProps({ surveyPeopleProse: 'The marshlands hum with old grief and new hunger.' })}
+      />
+    );
+    expect(screen.getByText('The marshlands hum with old grief and new hunger.')).toBeTruthy();
+  });
+
+  it('renders attribution caption with tick when surveyPeopleProse and tick are present', () => {
+    render(
+      <HexChronicle
+        {...makeTestProps({ surveyPeopleProse: 'Wanderers pass through without settling.', surveyPeopleProseTick: 42 })}
+      />
+    );
+    expect(screen.getByText('— surveyed, turn 42')).toBeTruthy();
+  });
+
+  it('renders static fallback when surveyPeopleProse is absent', () => {
+    const props = makeTestProps({
+      cultures: [{ cultureId: 'c1', cultureName: 'The Iron Folk', foundationBias: 'order', dominantSpheres: [] }],
+    });
+    render(<HexChronicle {...props} />);
+    // Static fallback text should appear since no surveyPeopleProse
+    expect(screen.queryByText(/— surveyed, turn/)).toBeNull();
+  });
+
+  it('renders static fallback when surveyPeopleProse is empty string', () => {
+    render(<HexChronicle {...makeTestProps({ surveyPeopleProse: '' })} />);
+    // Empty string is falsy — attribution caption must not appear
+    expect(screen.queryByText(/— surveyed, turn/)).toBeNull();
+  });
+
+  it('renders structured lists in both surveyed and unsurveyed branches', () => {
+    const { rerender } = render(
+      <HexChronicle
+        {...makeTestProps({ surveyPeopleProse: 'A band of wanderers camps here.' })}
+      />
+    );
+    // The People marker must render in both branches
+    expect(screen.getByText('The People')).toBeTruthy();
+
+    rerender(<HexChronicle {...makeTestProps()} />);
+    expect(screen.getByText('The People')).toBeTruthy();
+  });
 });

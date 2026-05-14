@@ -112,6 +112,10 @@ interface HexChronicleProps {
   onReleaseEffect?: (effectId: string) => void;
   /** Hex revelation state (which narrative layers have been discovered). */
   hexRevelation?: import('../../types/unifiedAction').HexRevelation;
+  /** Most-recent survey_completed band for this hex (THR-439). Undefined ⇒ hex not surveyed ⇒ static fallback. */
+  surveyPeopleProse?: string;
+  /** Tick the survey band was composed (THR-439) — drives the snapshot attribution caption. */
+  surveyPeopleProseTick?: number;
 }
 
 export const HexChronicle = memo(function HexChronicle({
@@ -135,6 +139,8 @@ export const HexChronicle = memo(function HexChronicle({
   controlEffects,
   onReleaseEffect,
   hexRevelation,
+  surveyPeopleProse,
+  surveyPeopleProseTick,
 }: HexChronicleProps) {
   // ── Narration ─────────────────────────────────────────────────────
 
@@ -471,6 +477,15 @@ export const HexChronicle = memo(function HexChronicle({
     margin: '0 0 16px 0',
   };
 
+  const surveyAttributionStyle: React.CSSProperties = {
+    fontFamily: 'var(--font-body)',
+    fontSize: 'var(--text-xs)',
+    color: 'var(--text-muted)',
+    fontStyle: 'italic',
+    margin: '-8px 0 16px 0',
+    textAlign: 'right',
+  };
+
   const markerStyle: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
@@ -790,31 +805,43 @@ export const HexChronicle = memo(function HexChronicle({
           <div style={ruleStyle} />
         </div>
 
-        {dominantCulture && cultureProse && (
-          <p className="chronicle-prose drop-cap" style={proseStyle}>
-            {cultureProse}
-          </p>
-        )}
-        {dominantCulture && !cultureProse && (
-          <p className="chronicle-prose drop-cap" style={proseStyle}>
-            The {stripLeadingThe(dominantCulture.cultureName)} claim this land, their traditions shaping the settlement and its people.
-          </p>
+        {surveyPeopleProse ? (
+          <>
+            <p className="chronicle-prose drop-cap" style={proseStyle}>
+              {renderProseWithIPK(surveyPeopleProse)}
+            </p>
+            {surveyPeopleProseTick != null && (
+              <p style={surveyAttributionStyle}>— surveyed, turn {surveyPeopleProseTick}</p>
+            )}
+          </>
+        ) : (
+          <>
+            {dominantCulture && cultureProse && (
+              <p className="chronicle-prose drop-cap" style={proseStyle}>
+                {cultureProse}
+              </p>
+            )}
+            {dominantCulture && !cultureProse && (
+              <p className="chronicle-prose drop-cap" style={proseStyle}>
+                The {stripLeadingThe(dominantCulture.cultureName)} claim this land, their traditions shaping the settlement and its people.
+              </p>
+            )}
+            {dominantFaction && factionProse && (
+              <p className="chronicle-prose" style={proseStyle}>
+                {factionProse}
+              </p>
+            )}
+            {dominantFaction && !factionProse && (
+              <p className="chronicle-prose" style={proseStyle}>
+                Control rests with {dominantFaction.factionName}.
+              </p>
+            )}
+          </>
         )}
 
         {cultureMoresProse && (
           <p className="chronicle-prose" style={proseStyle}>
             {cultureMoresProse}
-          </p>
-        )}
-
-        {dominantFaction && factionProse && (
-          <p className="chronicle-prose" style={proseStyle}>
-            {factionProse}
-          </p>
-        )}
-        {dominantFaction && !factionProse && (
-          <p className="chronicle-prose" style={proseStyle}>
-            Control rests with {dominantFaction.factionName}.
           </p>
         )}
 
