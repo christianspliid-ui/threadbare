@@ -162,7 +162,11 @@ export function getFactionNetworkSummary(
     .filter((entry): entry is FactionNetworkMember => entry != null);
 
   const sortedMembers = [...members].sort((a, b) => leadershipScore(b) - leadershipScore(a));
-  const leaderId = sortedMembers.find(member => !member.isArmy)?.id ?? null;
+  // THR-432 — `leads` edge is authoritative when present, with score derivation
+  // as the untouched fallback. Anointed succession sets this edge.
+  const anointedId = getAnointedLeaderId(graph, factionId);
+  const fallbackLeaderId = sortedMembers.find(member => !member.isArmy)?.id ?? null;
+  const leaderId = anointedId ?? fallbackLeaderId;
 
   const normalizedMembers = sortedMembers.map(member => ({
     ...member,
@@ -514,6 +518,40 @@ export function getFactionLeaderId(
 ): string | null {
   const summary = getFactionNetworkSummary(graph, factionId);
   return summary?.leader?.id ?? null;
+}
+
+/**
+ * THR-432 — Return the explicitly-seated leader id for a faction, or null if
+ * leadership is not conferred (caller should fall back to score derivation).
+ *
+ * The `leads` edge (set by `phaseFactionSuccession` after Anoint Successor
+ * fires) is authoritative when present and points at a living non-army member
+ * of the faction. The fail-soft posture: a `leads` edge pointing at a
+ * dead/non-member/army agent is ignored, so the caller's existing derivation
+ * still names a leader.
+ *
+ * This helper is the single seam every leader-resolution call site consults
+ * before falling back. It is consumed by `getFactionNetworkSummary` and by
+ * `phaseFactionActions.getFactionLeader`, so anointed succession reads
+ * consistently across both.
+ */
+export function getAnointedLeaderId(
+  graph: WorldGraph,
+  factionId: string,
+): string | null {
+  const edge = graph.getIncomingEdges(factionId, 'leads')[0];
+  if (!edge) return null;
+  const leader = graph.getNode(edge.source);
+  if (!leader || leader.type !== 'actor') return null;
+  // Armies and group nodes cannot lead — guard against drift in the leads edge.
+  if (leader.properties.armyState != null || leader.properties.actorType === 'group') return null;
+  // The leader must still be a member of this faction. If they were expelled
+  // (e.g. by a Schism partition or excommunicate), drop the edge silently —
+  // the next phaseFactionSuccession pass will heal it.
+  const stillMember = graph
+    .getOutgoingEdges(edge.source, 'member_of')
+    .some(e => e.target === factionId);
+  return stillMember ? edge.source : null;
 }
 
 /**

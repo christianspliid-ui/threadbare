@@ -79,6 +79,22 @@ export const FactionSheet = React.memo(function FactionSheet({
   const dissentLevel = (factionNode?.properties?.dissentLevel as number | undefined) ?? 0;
   const recoveredDoctrineId = factionNode?.properties?.recoveredDoctrineId as string | undefined;
   const recoveredDoctrineExpiresTick = factionNode?.properties?.recoveredDoctrineExpiresTick as number | undefined;
+
+  // THR-432 — succession signals.
+  // `hasWovenSuccessor`: a `will_succeed` edge exists → woven-thread glyph
+  //   next to the Leader stat (tooltip: "A successor has been woven — the
+  //   thread waits for the crown to fall.").
+  // `leaderByInheritance`: a `leads` edge exists with conferredVia: 'anointment'
+  //   → "by inheritance" sublabel under Leader.
+  const hasWovenSuccessor = useMemo(() => {
+    if (!graph) return false;
+    return graph.getIncomingEdges(factionId, 'will_succeed').length > 0;
+  }, [graph, factionId]);
+  const leaderByInheritance = useMemo(() => {
+    if (!graph) return false;
+    const leads = graph.getIncomingEdges(factionId, 'leads')[0];
+    return !!leads && leads.properties.conferredVia === 'anointment';
+  }, [graph, factionId]);
   // Doctrine glyph: present when doctrine is set and not yet expired (engine
   // sweeps expired markers on a future tick — we treat absence-of-tick as
   // present for fail-soft display).
@@ -185,7 +201,13 @@ export const FactionSheet = React.memo(function FactionSheet({
                   gap: 'var(--space-2)',
                 }}
               >
-                <StatCard label="Leader" value={summary.leader?.name ?? 'Unsettled'} />
+                <StatCard
+                  label="Leader"
+                  value={summary.leader?.name ?? 'Unsettled'}
+                  glyph={hasWovenSuccessor ? '❧' : undefined}
+                  glyphTitle={hasWovenSuccessor ? 'A successor has been woven — the thread waits for the crown to fall.' : undefined}
+                  sublabel={leaderByInheritance && summary.leader ? 'by inheritance' : undefined}
+                />
                 <StatCard label="Members" value={String(summary.memberCount)} />
                 <StatCard label="Halls" value={String(summary.hallCount)} />
                 <StatCard label="Control" value={String(summary.controlledCount)} />
@@ -534,7 +556,22 @@ function LocationList({
   );
 }
 
-function StatCard({ label, value }: { label: string; value: string }) {
+function StatCard({
+  label,
+  value,
+  glyph,
+  sublabel,
+  glyphTitle,
+}: {
+  label: string;
+  value: string;
+  /** Optional small unicode glyph rendered next to the label (THR-432). */
+  glyph?: string;
+  /** Optional small italic sublabel beneath value (THR-432). */
+  sublabel?: string;
+  /** Title (hover tooltip) for the glyph. */
+  glyphTitle?: string;
+}) {
   return (
     <div
       style={{
@@ -544,12 +581,30 @@ function StatCard({ label, value }: { label: string; value: string }) {
         border: '1px solid rgba(120, 113, 108, 0.25)',
       }}
     >
-      <div style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-        {label}
+      <div style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '4px' }}>
+        <span>{label}</span>
+        {glyph != null ? (
+          <span
+            data-testid="statcard-glyph"
+            title={glyphTitle}
+            style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}
+            aria-label={glyphTitle ?? 'glyph'}
+          >
+            {glyph}
+          </span>
+        ) : null}
       </div>
       <div style={{ color: 'var(--text-primary)', fontSize: 'var(--text-base)', marginTop: '4px' }}>
         {value}
       </div>
+      {sublabel != null ? (
+        <div
+          data-testid="statcard-sublabel"
+          style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)', marginTop: '2px', fontStyle: 'italic' }}
+        >
+          {sublabel}
+        </div>
+      ) : null}
     </div>
   );
 }

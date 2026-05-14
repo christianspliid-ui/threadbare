@@ -77,3 +77,31 @@ export const SURFACED_BY_DIVINE_ATTENTION_CONDITION = 'surfaced_by_divine_attent
 
 /** Condition flag set on a leader receiving a Whisper to the Leader cast. */
 export const DIVINE_WHISPER_PENDING_CONDITION = 'divine_whisper_pending';
+
+// ─── Anoint Successor (THR-432) ──────────────────────────────────────────────
+
+/** Essence cost paid to cast Anoint Successor. */
+export const ANOINT_SUCCESSOR_ESSENCE_COST = 12;
+
+/** Ticks between succession firing and the inheritance encounter becoming eligible. */
+export const INHERITANCE_ENCOUNTER_DELAY = 3;
+
+/** Ticks the `refused_inheritance` condition persists on a successor who refused. */
+export const REFUSED_INHERITANCE_CONDITION_DURATION = 30;
+
+/** One-time `member_of` reputation bump for accepting the mantle. Keeps the seated
+ *  leader readable as leader under score derivation too, even when the `leads` edge
+ *  is the authoritative path. */
+export const ACCEPTED_INHERITANCE_REPUTATION_BUMP = 0.15;
+
+/** PRNG salt for equal-recency tiebreak in succession resolution (NFP #3). */
+export const SUCCESSION_PRIORITY_TIEBREAK_SALT = 0x5acc;
+
+/** Encounter template planted on the new leader when succession resolves. */
+export const INHERITANCE_SEEDED_ENCOUNTER_ID = 'faction.encounter.inheritance';
+
+/** Condition flag set on a successor who accepted the inheritance. */
+export const ACCEPTED_INHERITANCE_CONDITION = 'accepted_inheritance';
+
+/** Condition flag set on a successor who refused the inheritance. */
+export const REFUSED_INHERITANCE_CONDITION = 'refused_inheritance';

@@ -75,7 +75,9 @@ const EXPECTED_PHASE_IDS: readonly string[] = [
   'delve_progression',
   'delve_emergence',
   'pop_streams',
-  // post-narrative slot
+  // post-narrative slot — alphabetically ordered when no ordering constraints
+  // (Kahn's algorithm with alphabetical tie-break in phaseRegistry).
+  'faction_succession',
   'mandate',
 ];
 

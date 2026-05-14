@@ -38,6 +38,7 @@ import { delveProgressionPhase } from './delveProgression';
 import { delveEmergencePhase } from './delveEmergence';
 import { popStreamsPhase } from './popStreams';
 import { mandatePhase } from './mandate';
+import { factionSuccessionPhase } from './factionSuccession';
 
 export const ENGINE_PHASES: readonly EnginePhase[] = [
   // pre-doom
@@ -60,6 +61,7 @@ export const ENGINE_PHASES: readonly EnginePhase[] = [
   popStreamsPhase,
   // post-narrative
   mandatePhase,
+  factionSuccessionPhase,
 ];
 
 /** Slot-keyed, topo-sorted execution plan. Computed once at module load. */

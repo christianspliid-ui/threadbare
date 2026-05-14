@@ -22,6 +22,8 @@ import type { NarrativeEventType, NarrativeTier } from './narrative';
 import type { ForeshadowingSignals } from './foreshadowing';
 import type {
   FactionStirDissentTrace,
+  FactionSuccessionTrace,
+  FactionAnointSuccessorTrace,
   FactionWhisperLeaderTrace,
   FactionRecoverDoctrineTrace,
   FactionSurfaceDoubterTrace,
@@ -210,7 +212,10 @@ export type TraceCategory =
   // Schism — deferred faction-split divine action (THR-430)
   | 'schism_planted'
   | 'schism_resolved'
-  | 'faction_reformed';
+  | 'faction_reformed'
+  // Faction succession (THR-432)
+  | 'faction_succession'
+  | 'faction_anoint_successor';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -395,6 +400,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'schism_planted',
   'schism_resolved',
   'faction_reformed',
+  // Faction succession (THR-432)
+  'faction_succession',
+  'faction_anoint_successor',
 ];
 
 /** Base shape for all trace entries */
@@ -1552,7 +1560,10 @@ export type TraceEntry =
   // Schism — deferred faction-split divine action (THR-430)
   | SchismPlantedTrace
   | SchismResolvedTrace
-  | FactionReformedTrace;
+  | FactionReformedTrace
+  // Faction succession (THR-432)
+  | FactionSuccessionTrace
+  | FactionAnointSuccessorTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {
