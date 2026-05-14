@@ -52,6 +52,7 @@ import {
 } from './contestation';
 import { resolveHexActionFull, isHexTargetId, parseHexTargetId } from './hexActionBridge';
 import { buildDiscoveryTickEvent } from './revelationResolver';
+import { composeSurveyPeopleProse, buildSurveyCompletedTickEvent } from './surveyProseComposer';
 import { computeElderEssenceReward } from './elderEssenceReward';
 import { consumeTreasureMapsAtHex } from './treasureMapConsumption';
 import { appendEvent } from './encounterTimeline';
@@ -2186,6 +2187,17 @@ export function phaseUnifiedActionProgress(
             state.graph, coords.col, coords.row, state.tick, 'hidden_site_discovered',
           );
           events.push(...mapEvents);
+        }
+        // THR-415: Survey people-layer prose band — emit on Survey success
+        if (completing_action.templateId === 'hex.survey' && finalOutcome === 'success') {
+          try {
+            const band = composeSurveyPeopleProse(state.graph, coords.col, coords.row, rng, state.tick);
+            if (band) {
+              events.push(buildSurveyCompletedTickEvent(band, coords.col, coords.row, state.tick));
+            }
+          } catch (err) {
+            console.warn('[THR-415] survey prose composer error — skipping event', err);
+          }
         }
       }
     }

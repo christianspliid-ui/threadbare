@@ -218,7 +218,9 @@ export type TraceCategory =
   | 'faction_succession'
   | 'faction_anoint_successor'
   // Faction internal-pressure resolver (THR-433)
-  | 'faction_kindle_calling';
+  | 'faction_kindle_calling'
+  // Survey people-layer prose composer (THR-415)
+  | 'survey_prose_composed';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -408,6 +410,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'faction_anoint_successor',
   // Faction internal-pressure resolver (THR-433)
   'faction_kindle_calling',
+  // Survey people-layer prose composer (THR-415)
+  'survey_prose_composed',
 ];
 
 /** Base shape for all trace entries */
@@ -1972,4 +1976,18 @@ export interface BuffConsumedTrace extends TraceBase {
   effectiveEssenceCost: number;
   /** Rarity tier after Focus boost. */
   effectiveRarityTier: number;
+}
+
+/** Trace: Survey people-layer prose band composed (THR-415) */
+export interface SurveyProseComposedTrace extends TraceBase {
+  category: 'revelation';
+  type: 'survey_prose_composed';
+  hexCol: number;
+  hexRow: number;
+  /** Mood bucket that fired, or 'none' if the hex had no location unrest data. */
+  moodBucket: 'calm' | 'restless' | 'agitated' | 'boiling' | 'none';
+  /** Number of factions that cleared SURVEY_FACTION_PRESENCE_MIN. */
+  factionCount: number;
+  /** Length of the composed prose band in characters; 0 means the TickEvent was skipped. */
+  composedLength: number;
 }

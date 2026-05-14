@@ -114,3 +114,29 @@ export const SURVEY_LOCATION_DESCRIPTORS: readonly string[] = [
   'prominent landmarks',
   'the principal gathering places',
 ];
+
+// ─── People-layer composer constants (THR-415) ───────────────────────────────
+
+/** Divisor to normalise location unrest (0–100) into the 0–1 bucket scale. */
+export const UNREST_SCALE_MAX = 100;
+
+/** locationCount >= this → 'dominant' faction presence tier. */
+export const FACTION_PRESENCE_DOMINANT_MIN = 3;
+
+/** locationCount >= this → 'active' faction presence tier (below → 'minor'). */
+export const FACTION_PRESENCE_ACTIVE_MIN = 2;
+
+/** Max factions named in the faction sentence (mirrors SURVEY_LOCATIONS_LISTED_CAP). */
+export const SURVEY_FACTIONS_LISTED_CAP = 3;
+
+/** Significance on the survey_completed TickEvent — below discovery's 0.6; routine recon result. */
+export const SURVEY_EVENT_SIGNIFICANCE = 0.4;
+
+/** Connective phrases joining faction clauses in the people-layer band. */
+export const SURVEY_PEOPLE_CONNECTIVES: readonly string[] = [
+  '; ',
+  ', while ',
+  '. Nearby, ',
+  '. Elsewhere, ',
+  ', and ',
+];
