@@ -35,24 +35,28 @@ const LABEL_STYLE: CSSProperties = {
 interface VignetteDebugOverlayProps {
   showChunkBounds: boolean;
   showLandmarkBounds: boolean;
+  showClickTargetSpheres: boolean;
   densityScale: number;
   fillerInstanceCount: number;
   landmarkInstanceCount: number;
   landmarkBatchCount: number;
   onShowChunkBoundsChange: (value: boolean) => void;
   onShowLandmarkBoundsChange: (value: boolean) => void;
+  onShowClickTargetSpheresChange: (value: boolean) => void;
   onDensityScaleChange: (value: number) => void;
 }
 
 export function VignetteDebugOverlay({
   showChunkBounds,
   showLandmarkBounds,
+  showClickTargetSpheres,
   densityScale,
   fillerInstanceCount,
   landmarkInstanceCount,
   landmarkBatchCount,
   onShowChunkBoundsChange,
   onShowLandmarkBoundsChange,
+  onShowClickTargetSpheresChange,
   onDensityScaleChange,
 }: VignetteDebugOverlayProps) {
   return (
@@ -73,6 +77,14 @@ export function VignetteDebugOverlay({
             onChange={e => onShowLandmarkBoundsChange(e.target.checked)}
           />
           <span style={LABEL_STYLE}>Landmark bounds</span>
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', cursor: 'pointer' }}>
+          <input
+            type="checkbox"
+            checked={showClickTargetSpheres}
+            onChange={e => onShowClickTargetSpheresChange(e.target.checked)}
+          />
+          <span style={LABEL_STYLE}>Click target spheres</span>
         </label>
       </div>
       <div style={ROW_STYLE}>

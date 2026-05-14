@@ -26,7 +26,10 @@ import type {
 import { ChunkedFillerLayer } from './vignette/ChunkedFillerLayer';
 import { ChunkedLandmarkLayer } from './vignette/ChunkedLandmarkLayer';
 import { VignetteClickRegistry } from './vignette/VignetteClickRegistry';
+import { pickLandmark } from './vignette/LandmarkRaycaster';
+import { VignetteSelectionState } from './vignette/VignetteSelectionState';
 import type { ResolvedHexFiller } from './vignette/VignetteResolver';
+import { TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS } from './terrainTextureLabPresets';
 
 interface TerrainTextureLabCanvasProps {
   configs: Record<LabTerrainKey, TerrainTextureLabConfig>;
@@ -40,6 +43,7 @@ interface TerrainTextureLabCanvasProps {
   fillerSpec: ResolvedHexFiller[];
   showChunkBounds: boolean;
   showLandmarkBounds: boolean;
+  showClickTargetSpheres: boolean;
   selectedHexId: string | null;
   selectedClickTargetId: string | null;
   seed: number;
@@ -333,6 +337,7 @@ export function TerrainTextureLabCanvas({
   fillerSpec,
   showChunkBounds,
   showLandmarkBounds,
+  showClickTargetSpheres,
   selectedHexId,
   selectedClickTargetId,
   seed,
@@ -366,6 +371,8 @@ export function TerrainTextureLabCanvas({
   const terrainTileTemplatePromiseRef = useRef<Map<LabTerrainKey, Promise<THREE.Group>>>(new Map());
   const terrainTileTemplateRef = useRef<Map<LabTerrainKey, THREE.Group>>(new Map());
   const fillerLayerRef = useRef<ChunkedFillerLayer | null>(null);
+  const selectionStateRef = useRef<VignetteSelectionState>(new VignetteSelectionState());
+  const clickTargetSphereGroupRef = useRef<THREE.Group | null>(null);
 
   const sceneBounds = useMemo(() => {
     const centers = previewHexes.map(hex => getTerrainTextureLabHexCenter(hex.col, hex.row, TERRAIN_TEXTURE_LAB_CONSTANTS.HEX_RADIUS));
@@ -493,6 +500,12 @@ export function TerrainTextureLabCanvas({
     landmarkSelectionRing.position.z = TERRAIN_TEXTURE_LAB_CONSTANTS.MODEL_LAYER_Z + 1.25;
     scene.add(landmarkSelectionRing);
 
+    const clickTargetSphereGroup = new THREE.Group();
+    clickTargetSphereGroup.name = 'TerrainTextureLabClickTargetSpheres';
+    clickTargetSphereGroup.visible = false;
+    scene.add(clickTargetSphereGroup);
+    clickTargetSphereGroupRef.current = clickTargetSphereGroup;
+
     sceneRef.current = {
       renderer,
       scene,
@@ -513,11 +526,16 @@ export function TerrainTextureLabCanvas({
 
     fitCamera();
 
+    let lastFrameTime = performance.now();
     const animate = (time: number) => {
       frameRef.current = requestAnimationFrame(animate);
+      const deltaMs = time - lastFrameTime;
+      lastFrameTime = time;
       const elapsed = (time - startTimeRef.current) * 0.001;
       material.uniforms.uTime.value = animationEnabledRef.current ? elapsed * globalTimeScaleRef.current : 0;
       material.uniforms.uGlobalSeed.value = seedRef.current;
+      const landmark = landmarkLayerRef.current;
+      if (landmark) selectionStateRef.current.tickEasing(deltaMs, landmark);
       renderer.render(scene, camera);
     };
 
@@ -526,37 +544,29 @@ export function TerrainTextureLabCanvas({
     const resizeObserver = new ResizeObserver(() => fitCamera());
     resizeObserver.observe(container);
 
+    const toNDC = (clientX: number, clientY: number, rect: DOMRect): THREE.Vector2 => {
+      return new THREE.Vector2(
+        ((clientX - rect.left) / rect.width) * 2 - 1,
+        -(((clientY - rect.top) / rect.height) * 2 - 1),
+      );
+    };
+
     const handlePointerDown = (event: PointerEvent) => {
       const rect = canvas.getBoundingClientRect();
       if (rect.width <= 0 || rect.height <= 0) return;
 
-      let nearestTarget: TerrainTextureLabVignetteClickTarget | null = null;
-      let nearestDistanceSquared = Number.POSITIVE_INFINITY;
-      for (const target of clickTargetsRef.current) {
-        const projected = new THREE.Vector3(
-          target.position.x,
-          target.position.y,
-          TERRAIN_TEXTURE_LAB_CONSTANTS.MODEL_LAYER_Z + 1,
-        ).project(camera);
-        const screenX = rect.left + ((projected.x + 1) * 0.5) * rect.width;
-        const screenY = rect.top + ((-projected.y + 1) * 0.5) * rect.height;
-        const dx = screenX - event.clientX;
-        const dy = screenY - event.clientY;
-        const distanceSquared = dx * dx + dy * dy;
-        if (distanceSquared > target.radiusPx * target.radiusPx) continue;
-        if (distanceSquared >= nearestDistanceSquared) continue;
-        nearestTarget = target;
-        nearestDistanceSquared = distanceSquared;
+      const ndc = toNDC(event.clientX, event.clientY, rect);
+      const layer = landmarkLayerRef.current;
+      if (layer) {
+        const hit = pickLandmark(ndc, camera, layer, clickRegistryRef.current);
+        if (hit) {
+          selectionStateRef.current.setSelected(hit);
+          onLandmarkSelectRef.current(hit.id, hit.hexId);
+          return;
+        }
       }
 
-      if (nearestTarget) {
-        onLandmarkSelectRef.current(nearestTarget.id, nearestTarget.hexId);
-        return;
-      }
-
-      pointerRef.current.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      pointerRef.current.y = -(((event.clientY - rect.top) / rect.height) * 2 - 1);
-
+      pointerRef.current.copy(ndc);
       raycasterRef.current.setFromCamera(pointerRef.current, camera);
       const intersections = raycasterRef.current.intersectObject(mesh, false);
       const hit = intersections[0];
@@ -565,6 +575,29 @@ export function TerrainTextureLabCanvas({
       const previewHex = previewHexes[hit.instanceId];
       if (!previewHex) return;
       onHexSelectRef.current(previewHex.id);
+    };
+
+    const handlePointerMove = (event: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return;
+      const ndc = toNDC(event.clientX, event.clientY, rect);
+      const layer = landmarkLayerRef.current;
+      if (layer) {
+        const hit = pickLandmark(ndc, camera, layer, clickRegistryRef.current);
+        const prev = selectionStateRef.current.getHovered();
+        const changed = hit?.id !== prev?.id || hit?.instanceIndex !== prev?.instanceIndex;
+        if (changed) {
+          selectionStateRef.current.setHovered(hit ?? null);
+          canvas.style.cursor = hit ? TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.LANDMARK_HOVER_CURSOR : '';
+        }
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        selectionStateRef.current.clearAll();
+        onLandmarkSelectRef.current('', '');
+      }
     };
 
     const handleWheel = (event: WheelEvent) => {
@@ -576,12 +609,16 @@ export function TerrainTextureLabCanvas({
     };
 
     canvas.addEventListener('pointerdown', handlePointerDown);
+    canvas.addEventListener('pointermove', handlePointerMove);
     canvas.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('keydown', handleKeyDown);
 
     return () => {
       resizeObserver.disconnect();
       canvas.removeEventListener('pointerdown', handlePointerDown);
+      canvas.removeEventListener('pointermove', handlePointerMove);
       canvas.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('keydown', handleKeyDown);
       if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
       outlineGroup.children.forEach(child => {
         if (child instanceof THREE.LineLoop) disposeLineLoop(child);
@@ -605,6 +642,8 @@ export function TerrainTextureLabCanvas({
       fillerLayerRef.current = null;
       landmarkLayerRef.current?.dispose();
       landmarkLayerRef.current = null;
+      disposeAndClearGroupChildren(clickTargetSphereGroup);
+      clickTargetSphereGroupRef.current = null;
     };
   }, [previewHexes, sceneBounds]);
 
@@ -726,10 +765,29 @@ export function TerrainTextureLabCanvas({
   }, [showLandmarkBounds]);
 
   useEffect(() => {
+    const group = clickTargetSphereGroupRef.current;
+    if (!group) return;
+    disposeAndClearGroupChildren(group);
+    if (showClickTargetSpheres) {
+      for (const target of clickTargets) {
+        const sphere = createCircleFill(
+          target.radiusPx * 0.25,
+          '#ff6600',
+          TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.CLICK_DEBUG_SPHERE_OPACITY,
+        );
+        sphere.position.set(target.position.x, target.position.y, TERRAIN_TEXTURE_LAB_CONSTANTS.MODEL_LAYER_Z + 1.5);
+        group.add(sphere);
+      }
+    }
+    group.visible = showClickTargetSpheres;
+  }, [showClickTargetSpheres, clickTargets]);
+
+  useEffect(() => {
     if (!import.meta.env.DEV) return;
     (window as Record<string, unknown>).__TERRAIN_LAB = {
       get clickRegistry() { return clickRegistryRef.current; },
       get landmarkBatchCount() { return landmarkLayerRef.current?.batchCount ?? 0; },
+      get selectionState() { return selectionStateRef.current; },
     };
     return () => {
       delete (window as Record<string, unknown>).__TERRAIN_LAB;
