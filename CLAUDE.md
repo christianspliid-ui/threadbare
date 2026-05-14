@@ -447,6 +447,7 @@ Current recurring task registry:
 | `weekly-retro` | Friday ~15:00 UTC | Weekly retrospective from drift-scan issues + impediments log | Active |
 | `weekly-memory-grooming` | Sunday 16:03 UTC (18:03 Europe/Copenhagen on 2026-05-08) | Consolidate Cowork / CC / Codex memory files | Active |
 | `monthly-rulebook-review` | 1st of each month 09:00 local | Review `Docs/canon/rulebook.md` for drift, stale `[OPEN]` questions >60 days, broken pointers; post Linear issue tagged `rulebook-review` | Needs creation (THR-417 — use `mcp__scheduled-tasks__create_scheduled_task` with `taskId: monthly-rulebook-review`, `cronExpression: "0 9 1 * *"` from a non-scheduled session) |
+| `weekly-worktree-orphan-scan` | Friday 15:30 UTC (after retro) | Scan local worktrees for `.md` files not merged to main or vault; file `drift-scan`-labeled Linear issues | Needs creation from an interactive session (THR-410 — blocked in scheduled sessions; use `mcp__scheduled-tasks__create_scheduled_task` with `taskId: weekly-worktree-orphan-scan`, `cronExpression: "30 15 * * 5"`) |
 
 ## Skill Tree Layout
 
