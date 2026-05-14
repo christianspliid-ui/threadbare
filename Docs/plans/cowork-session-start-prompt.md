@@ -10,8 +10,8 @@ You are running as a Cowork PM/design agent for The Fantasy World Simulator (cod
 
 1. Check Linear for the highest-priority work (see priority order below)
 2. Do the design work — cover all three pillars: Engine, Content, UI
-3. Move the issue to "Ready for Dev" with a full coordination block
-4. Run /session-handoff to notify the channel what CC should pick up next
+3. Move the issue to "Ready for Dev" with a full coordination block — this Linear state transition plus the coordination-block comment IS the handoff; nothing else is required
+4. Write a short session summary in your final output (see "Session summary" below)
 
 ## Finding work
 
@@ -37,27 +37,19 @@ Every Ready for Dev handoff comment must include:
 
 See Docs/plans/2026-04-13-linear-coordination-protocol.md for the full protocol.
 
-## Session handoff (always last)
+## Session summary (always last)
 
-After moving the issue to Ready for Dev, run /session-handoff.
+There is no out-of-band handoff step. The handoff is the Linear state transition to "Ready for Dev" / "Ready for Codex" plus the coordination-block comment — executors poll Linear on an hourly cycle and pick up the top item from their queue. Do not post to Slack or any other channel; we no longer use Slack in this workflow.
 
-The skill is at .agents/skills/session-handoff/SKILL.md. It will:
-- Confirm what design was completed
-- Surface the next Linear item
-- Send a plain-text message to Slack channel C0AT5DYGJ8P with the suggested CC prompt
-
-Message format to produce (plain text, no markdown bold or backticks):
+After moving the issue, write a short summary in your final session output so the human has a quick read of what happened:
 ```
 Cowork done — THR-XXX: [title]
 [One-line summary of what was designed]
 Plan doc: Docs/plans/[filename]
 
-Next → THR-YYY: [title]
+Next up → THR-YYY: [title]
 State: Ready for Dev | Priority: [priority] | Model: [model]
 Mutex with: [mutex] | Parallel-safe with: [parallel-safe] | Codex review: [yes/no]
-
-Suggested Claude Code prompt:
-"pull thr YYY"
 ```
 
 ## Key references
