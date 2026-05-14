@@ -412,6 +412,153 @@ export const FACTION_INHERITANCE_TEMPLATE: UnifiedActionTemplate = {
   },
 };
 
+// ─── faction.encounter.calling_named (THR-433) ──────────────────────────────
+//
+// Planted on the faction leader when Kindle a Calling resolves. The leadership
+// gathers; the new ambition becomes named in words rather than just an engine
+// value. Two aftermath reactions: commit (the faction starts pursuing with
+// full weight) or stall (the calling fades; faction loses a small reputation
+// for indecision). The player watches the gather; they do not author it.
+
+export const FACTION_CALLING_NAMED_TEMPLATE: UnifiedActionTemplate = {
+  id: 'faction.encounter.calling_named',
+  name: 'The Calling Is Named',
+  rarityTier: 2,
+  intrinsicTier: 'story_beat',
+  reach: 'heart',
+  crudType: 'update',
+  scale: 'local',
+  apCost: 1,
+  actorAffinities: ['individual'],
+  motivations: ['loyalty_ambition', 'tradition_novelty'],
+  narrativeTemplates: {
+    initiation: 'gathers the faction\'s leadership around an ember the god has fanned',
+    success: 'the room finds a word for the want that was already there',
+    failure: 'the room finds no word — and the heat fades from the embers',
+  },
+  steps: [
+    {
+      reach: 'heart',
+      duration: { min: 1, max: 2 },
+      difficulty: 0.25,
+      failBehavior: 'continue_weakened',
+      onSuccess: [],
+      onFailure: [],
+      narrativeTemplate:
+        '{name} feels the heat first — not in the body, in the room. The faction has been ' +
+        'circling something for weeks, maybe months: not a decision, not yet. A direction. ' +
+        'A want. The god has fanned the embers; the want is closer to the surface now than it ' +
+        'has been in any meeting before this one. ' +
+        '{?has_ally}{ally} feels it too — and waits for {name} to find the word.{/has_ally}' +
+        '{?no_ally}{name} carries it alone, into a room that does not yet know what it has been carrying.{/no_ally}',
+      successAfterimage: 'The room is listening. {name} draws a breath.',
+      failureAfterimage: 'The heat is there but the words will not come. The room waits.',
+    },
+    {
+      reach: 'heart',
+      duration: { min: 1, max: 2 },
+      difficulty: 0.35,
+      failBehavior: 'fail_action',
+      onSuccess: [],
+      onFailure: [],
+      successMetadata: {
+        rewardPool: { categoryWeights: { condition: 0.40, possession: 0.20, bestowed_power: 0.40 } },
+        reputationDelta: 0.06,
+      },
+      failureMetadata: {
+        rewardPool: { categoryWeights: { condition: 0.80, possession: 0.20 } },
+        reputationDelta: -0.03,
+      },
+      narrativeTemplate:
+        'The leadership names it. Not all at once — one voice first, half-uncertain; another agreeing ' +
+        'with the kind of relief that gives away how long the room has been holding the want without ' +
+        'a name. The faction has a calling now. The word for it is theirs, not the god\'s. ' +
+        '{?has_artifact}{artifact:any} sits between {name} and the others — a reminder that the faction ' +
+        'has carried weight before.{/has_artifact} ' +
+        'The question now is whether they commit to it tonight, or let it cool for another season.',
+      successAfterimage: 'The faction has named what it wants. {name} is the first to act on it.',
+      failureAfterimage: 'They name it, then walk back. The embers go quiet.',
+    },
+  ],
+  aftermathConfig: {
+    branchOnStep: 1,
+    variants: {},
+    fallback: {
+      overview:
+        'The leadership of the faction has heard the want named. The room is waiting on ' +
+        '{name} now — to commit to the calling tonight, or to let the heat fade and the ' +
+        'embers go cold again until some later breath.',
+      changes: [
+        {
+          id: 'calling_named_in_the_room',
+          kind: 'item',
+          title: 'The Calling, Named',
+          detail:
+            'The faction has a word for what it wants. The god fanned the embers; the room found ' +
+            'the word. Now they must decide whether the word is a commitment or a passing heat.',
+          polarity: 'info',
+        },
+      ],
+      reactionPrompt:
+        'The calling has been named. Does the faction commit tonight — or let the embers cool?',
+      reactions: [
+        {
+          id: 'calling_commit',
+          label: 'Commit — act on the calling tonight.',
+          intent:
+            'The leadership commits. The calling becomes a campaign, not a thought. ' +
+            'Whatever comes next will carry the weight of the gather that named it.',
+          effects: [
+            { kind: 'reputation_tally', key: 'calling_committed', delta: 1 },
+            {
+              kind: 'recent_event',
+              eventType: 'narrative',
+              message:
+                'The leadership commits. {name} carries the named calling out of the room — ' +
+                'and the faction\'s next act is the first move toward it.',
+              significance: 0.7,
+            },
+            {
+              kind: 'encounter_seed',
+              encounterFamily: 'faction_internal_pressure',
+              delayTicks: 5,
+              priority: 0.65,
+              seedLabel: 'first move toward the named calling',
+            },
+          ],
+          closeAfterSelection: true,
+        },
+        {
+          id: 'calling_stall',
+          label: 'Stall — let the calling cool.',
+          intent:
+            'The leadership names the want but does not commit. The heat fades. The faction ' +
+            'carries a small dishonor — for one breath the room had a calling, and let it go.',
+          effects: [
+            { kind: 'reputation_tally', key: 'calling_stalled', delta: 1 },
+            {
+              kind: 'hidden_mark',
+              category: 'concealed_action',
+              severity: 0.30,
+              label: 'calling_stalled',
+              revealFamilies: ['faction_internal_pressure'],
+            },
+            {
+              kind: 'recent_event',
+              eventType: 'narrative',
+              message:
+                'The leadership names the want, then walks it back. The embers cool. ' +
+                '{name} carries the small weight of a calling that was, for one breath, named.',
+              significance: 0.6,
+            },
+          ],
+          closeAfterSelection: true,
+        },
+      ],
+    },
+  },
+};
+
 // ─── Aggregate ──────────────────────────────────────────────────────────────
 
 export const FACTION_GOVERNANCE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
@@ -420,4 +567,5 @@ export const FACTION_GOVERNANCE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   FACTION_DOCTRINE_SURFACES_TEMPLATE,
   FACTION_DOUBTER_CHOOSES_TEMPLATE,
   FACTION_INHERITANCE_TEMPLATE,
+  FACTION_CALLING_NAMED_TEMPLATE,
 ];

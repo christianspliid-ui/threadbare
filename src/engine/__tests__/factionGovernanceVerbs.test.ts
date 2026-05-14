@@ -20,6 +20,7 @@ import {
   applyWhisperLeader,
   applyRecoverDoctrine,
   applySurfaceDoubter,
+  applyKindleACalling,
 } from '../factionGovernanceVerbs';
 import {
   getDoubterCandidate,
@@ -403,5 +404,228 @@ describe('phaseFactionActions — dissent decay + threshold (THR-400)', () => {
     expect((leader?.properties.conditions as string[] | undefined) ?? [])
       .not.toContain(DIVINE_WHISPER_PENDING_CONDITION);
     expect(leader?.properties.divineWhisperPreferredPole).toBeNull();
+  });
+});
+
+// ─── applyKindleACalling (THR-433) ──────────────────────────────────────────
+
+describe('applyKindleACalling', () => {
+  let graph: WorldGraph;
+  beforeEach(() => { graph = makeGraph(); });
+
+  /** Build a faction node using a real FACTION_DEFINITIONS key so
+   *  scoreEligibleAmbitions returns non-empty candidates. */
+  function addKindleFaction(id: string, defId = 'arcane_circle'): void {
+    graph.addNode({
+      id,
+      type: 'actor',
+      name: id,
+      properties: {
+        actorType: 'faction',
+        factionDefId: defId,
+        reputationAlignment: {},
+        prosperity: 0.8,
+      },
+    });
+  }
+
+  it('returns null when the faction node is missing or non-faction', () => {
+    addAscendant(graph);
+    const state = makeState(graph);
+    expect(applyKindleACalling(state, 'no-such-faction')).toBeNull();
+  });
+
+  it('returns null when the faction has no factionDefId', () => {
+    addAscendant(graph);
+    addFaction(graph, 'faction-a'); // helper sets factionDefId=id; clear it
+    graph.updateNode('faction-a', { properties: { factionDefId: undefined } });
+    const state = makeState(graph);
+    expect(applyKindleACalling(state, 'faction-a')).toBeNull();
+  });
+
+  it('flags noEligibleCandidates when scoreEligibleAmbitions returns []', () => {
+    addAscendant(graph);
+    // factionDefId is an unknown key → FACTION_DEFINITIONS.get returns undefined
+    addFaction(graph, 'faction-a');
+    addMember(graph, 'leader', 'faction-a', { reputation: 0.9 });
+    const state = makeState(graph);
+    const trace = applyKindleACalling(state, 'faction-a');
+    expect(trace).not.toBeNull();
+    expect(trace!.noEligibleCandidates).toBe(true);
+    expect(trace!.newAmbitionType).toBeNull();
+    expect(trace!.lockedByArmy).toBe(false);
+  });
+
+  it('replaces the active ambition with a kindled one, plants the encounter', () => {
+    addAscendant(graph);
+    addKindleFaction('faction-a');
+    addMember(graph, 'leader', 'faction-a', { reputation: 0.9 });
+    const state = makeState(graph);
+    const trace = applyKindleACalling(state, 'faction-a');
+    expect(trace).not.toBeNull();
+    expect(trace!.newAmbitionType).not.toBeNull();
+    expect(trace!.lockedByArmy).toBe(false);
+    expect(trace!.noEligibleCandidates).toBe(false);
+    expect(trace!.candidates.length).toBeGreaterThan(0);
+
+    // pursues edge now points at a kindled ambition node
+    const pursues = graph.getOutgoingEdges('faction-a', 'pursues');
+    expect(pursues.length).toBe(1);
+    const ambitionNode = graph.getNode(pursues[0].target);
+    expect(ambitionNode).not.toBeNull();
+    expect(ambitionNode!.properties.kindled).toBe(true);
+    expect(ambitionNode!.properties.ambitionType).toBe(trace!.newAmbitionType);
+
+    // Encounter seed planted on the leader
+    expect(state.pendingEncounterSeeds!.length).toBe(1);
+    expect(state.pendingEncounterSeeds![0].targetAgentId).toBe('leader');
+    expect(state.pendingEncounterSeeds![0].templateId).toBe('faction.encounter.calling_named');
+
+    // Leader marked with the kindled_calling_pending condition
+    const leader = graph.getNode('leader');
+    expect(leader!.properties.conditions).toContain('kindled_calling_pending');
+    expect(leader!.properties.kindledCallingAmbitionType).toBe(trace!.newAmbitionType);
+  });
+
+  it('removes the previous ambition node when replacing', () => {
+    addAscendant(graph);
+    addKindleFaction('faction-a');
+    addMember(graph, 'leader', 'faction-a', { reputation: 0.9 });
+
+    // Pre-existing ambition
+    graph.addNode({
+      id: 'amb_old',
+      type: 'ambition',
+      name: 'old ambition',
+      properties: { ambitionType: 'revenge', priority: 0.5, createdTick: 0 },
+    });
+    graph.addEdge({
+      id: 'e_pursues_old',
+      source: 'faction-a',
+      target: 'amb_old',
+      type: 'pursues',
+      properties: { priority: 0.5, status: 'active', milestones: [] },
+    });
+
+    const state = makeState(graph);
+    const trace = applyKindleACalling(state, 'faction-a');
+    expect(trace).not.toBeNull();
+    expect(trace!.previousAmbitionType).toBe('revenge');
+    expect(graph.getNode('amb_old')).toBeUndefined();
+  });
+
+  it('refuses to replace an army-locked ambition (lockedByArmy=true)', () => {
+    addAscendant(graph);
+    addKindleFaction('faction-a');
+    addMember(graph, 'leader', 'faction-a', { reputation: 0.9 });
+
+    // Active ambition the army is committed to
+    graph.addNode({
+      id: 'amb_locked',
+      type: 'ambition',
+      name: 'territorial_expansion',
+      properties: { ambitionType: 'territorial_expansion', priority: 0.7 },
+    });
+    graph.addEdge({
+      id: 'e_pursues_faction_locked',
+      source: 'faction-a',
+      target: 'amb_locked',
+      type: 'pursues',
+      properties: { priority: 0.7, status: 'active', milestones: [] },
+    });
+
+    // Army (group actor) member of the faction, pursuing the same ambition
+    graph.addNode({
+      id: 'army-a',
+      type: 'actor',
+      name: 'Army',
+      properties: { actorType: 'group', armyState: { size: 'regiment' } },
+    });
+    graph.addEdge({
+      id: 'e_member_army',
+      source: 'army-a',
+      target: 'faction-a',
+      type: 'member_of',
+      properties: { role: 'army', rank: 'army', reputation: 0 },
+    });
+    graph.addEdge({
+      id: 'e_army_pursues',
+      source: 'army-a',
+      target: 'amb_locked',
+      type: 'pursues',
+      properties: { priority: 1.0, status: 'active', milestones: [] },
+    });
+
+    const state = makeState(graph);
+    const trace = applyKindleACalling(state, 'faction-a');
+    expect(trace).not.toBeNull();
+    expect(trace!.lockedByArmy).toBe(true);
+    expect(trace!.newAmbitionType).toBeNull();
+
+    // The previous ambition node remains untouched
+    expect(graph.getNode('amb_locked')).not.toBeNull();
+    expect(state.pendingEncounterSeeds!.length).toBe(0);
+  });
+
+  it('produces deterministic output for the same seed + faction + tick', () => {
+    addAscendant(graph);
+    addKindleFaction('faction-a');
+    addMember(graph, 'leader', 'faction-a', { reputation: 0.9 });
+    const state1 = makeState(graph);
+    const trace1 = applyKindleACalling(state1, 'faction-a');
+
+    // Fresh graph, identical setup
+    const graph2 = makeGraph();
+    addAscendant(graph2);
+    graph2.addNode({
+      id: 'faction-a',
+      type: 'actor',
+      name: 'faction-a',
+      properties: { actorType: 'faction', factionDefId: 'arcane_circle', reputationAlignment: {}, prosperity: 0.8 },
+    });
+    graph2.addNode({
+      id: 'leader',
+      type: 'actor',
+      name: 'leader',
+      properties: { actorType: 'individual', reputationAlignment: {} },
+    });
+    graph2.addEdge({
+      id: 'e_member_leader',
+      source: 'leader',
+      target: 'faction-a',
+      type: 'member_of',
+      properties: { reputation: 0.9, role: 'member', rank: 1 },
+    });
+    const state2 = makeState(graph2);
+    const trace2 = applyKindleACalling(state2, 'faction-a');
+
+    expect(trace1!.newAmbitionType).toBe(trace2!.newAmbitionType);
+  });
+
+  it('biases away from territorial_expansion when dissent is high', () => {
+    addAscendant(graph);
+    addKindleFaction('faction-a', 'arcane_circle');
+    graph.updateNode('faction-a', { properties: { dissentLevel: 0.95 } });
+    addMember(graph, 'leader', 'faction-a', { reputation: 0.9 });
+    const state = makeState(graph);
+    const trace = applyKindleACalling(state, 'faction-a');
+    expect(trace).not.toBeNull();
+    const expansionWeight = trace!.candidates.find(c => c.type === 'territorial_expansion')?.finalWeight ?? 0;
+    const defensiveWeight = trace!.candidates.find(c => c.type === 'defensive_consolidation')?.finalWeight ?? 0;
+    // Defensive must outweigh expansion under high dissent
+    expect(defensiveWeight).toBeGreaterThan(expansionWeight);
+  });
+
+  it('biases toward cultural_dominance when recoveredDoctrineId is set', () => {
+    addAscendant(graph);
+    addKindleFaction('faction-a', 'arcane_circle');
+    graph.updateNode('faction-a', { properties: { recoveredDoctrineId: 'doctrine_x' } });
+    addMember(graph, 'leader', 'faction-a', { reputation: 0.9 });
+    const state = makeState(graph);
+    const trace = applyKindleACalling(state, 'faction-a');
+    expect(trace).not.toBeNull();
+    const culturalWeight = trace!.candidates.find(c => c.type === 'cultural_dominance')?.finalWeight ?? 0;
+    // arcane_circle's base cultural_dominance is 0.4; doctrine bias adds substantially
+    expect(culturalWeight).toBeGreaterThan(0.4);
   });
 });

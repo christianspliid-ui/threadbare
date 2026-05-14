@@ -28,6 +28,8 @@ export interface FactionNetworkAmbition {
   name: string;
   priority: number;
   status: string;
+  /** True when this ambition was rolled by Kindle a Calling rather than the natural cadence. */
+  kindled?: boolean;
 }
 
 export interface FactionNetworkMember {
@@ -211,6 +213,8 @@ export function getFactionNetworkSummary(
         name: ambitionNode.name,
         priority: (edge.properties.priority as number) ?? 0,
         status: (edge.properties.status as string) ?? 'active',
+        kindled: ambitionNode.properties.kindled === true
+          || edge.properties.kindled === true,
       } satisfies FactionNetworkAmbition;
     })
     .filter((entry): entry is FactionNetworkAmbition => entry != null)

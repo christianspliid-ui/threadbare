@@ -77,7 +77,7 @@ export type GraphOpType =
   | 'reveal_secret'    // THR-30: marks actor's best knows_secret_of→target as revealed
   | 'call_in_favor'   // THR-30: marks target's best owes_favor→actor as redeemed
   | 'plant_secret'    // THR-30: creates a fabricated knows_secret_of edge actor→target
-  | 'faction_verb'    // THR-400: dispatch a faction governance verb (stir_dissent, whisper_leader, recover_doctrine, surface_doubter)
+  | 'faction_verb'    // THR-400/433: dispatch a faction governance verb (stir_dissent, whisper_leader, recover_doctrine, surface_doubter, kindle_a_calling)
   | 'plant_schism'    // THR-430: mark a faction as having a pending schism resolution
   | 'anoint_successor'; // THR-432: anoint the target agent as their faction's next heir (creates will_succeed edge)
 
