@@ -479,6 +479,59 @@ describe('enrichProse — intelligence placeholders', () => {
     expect(enrichProse('weird {intel:not_a_category} thing', ctx)).toBe('weird  thing');
     expect(enrichProse('also {intel:agent_network.bogus} here', ctx)).toBe('also  here');
   });
+
+  // THR-385 — age placeholders
+  it('resolves acquiredTicksAgo and acquiredDaysAgo for shrine_location (tick 30 - acquiredTick 10)', () => {
+    const ctx = ctxWithIntel();
+    // shrine_location acquiredTick=10, ctx.tick=30 → ticksAgo=20, daysAgo=floor(20/12)=1
+    expect(enrichProse('{intel:shrine_location.acquiredTicksAgo}', ctx)).toBe('20');
+    expect(enrichProse('{intel:shrine_location.acquiredDaysAgo}', ctx)).toBe('1');
+  });
+
+  it('resolves acquiredDaysAgo to "0" for trade_route (recently acquired, < 1 day)', () => {
+    const ctx = ctxWithIntel();
+    // trade_route acquiredTick=20, ctx.tick=30 → ticksAgo=10, daysAgo=floor(10/12)=0 (not empty string)
+    expect(enrichProse('{intel:trade_route.acquiredTicksAgo}', ctx)).toBe('10');
+    expect(enrichProse('{intel:trade_route.acquiredDaysAgo}', ctx)).toBe('0');
+  });
+
+  it('silently strips age placeholders when no matching record exists for the category', () => {
+    const ctx = ctxWithIntel();
+    expect(enrichProse('age: {intel:agent_network.acquiredDaysAgo}', ctx)).toBe('age: ');
+    expect(enrichProse('age: {intel:agent_network.acquiredTicksAgo}', ctx)).toBe('age: ');
+  });
+
+  it('silently strips age placeholders when ctx.intelligence is undefined or ctx.tick is undefined', () => {
+    // No intelligence context at all
+    const noIntelCtx = createMinimalContext();
+    expect(enrichProse('{intel:shrine_location.acquiredDaysAgo}', noIntelCtx)).toBe('');
+    // tick undefined → acquiredTicksAgo clamps to '0' via Math.max(0, (undefined??0) - acquiredTick)
+    const noTickCtx = ctxWithIntel({ tick: undefined });
+    expect(enrichProse('{intel:shrine_location.acquiredTicksAgo}', noTickCtx)).toBe('0');
+  });
+
+  it('emits intelligence_referenced trace for age-only placeholder reference', () => {
+    clearTraces();
+    enableTracing();
+    try {
+      const ctx = ctxWithIntel();
+      // Only acquiredDaysAgo — no label/detail/reliability token — must still emit the trace
+      enrichProse('{intel:shrine_location.acquiredDaysAgo}', ctx);
+      const traces = getTraces().filter(
+        t => t.category === 'intelligence_referenced' && (t as any).recordId === 'intel_001',
+      );
+      expect(traces).toHaveLength(1);
+      expect((traces[0] as any).referencedBy).toBe('prose_enrichment');
+    } finally {
+      clearTraces();
+      disableTracing();
+    }
+  });
+
+  it('strips malformed age token acquiredYearsAgo instead of leaking raw braces', () => {
+    const ctx = ctxWithIntel();
+    expect(enrichProse('old: {intel:shrine_location.acquiredYearsAgo}', ctx)).toBe('old: ');
+  });
 });
 
 // ─── generateMeetingCallback ──────────────────────────────────────
