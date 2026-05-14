@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-05-11
+last_validated_against: 2026-05-14
 ---
 
 # Pull Work
@@ -24,8 +24,15 @@ Run as `/pull-work` (auto-pick top Ready for Dev issue) or `/pull-work THR-123` 
 
 **Constant:** `MAX_CLAIM_RETRIES = 3`
 
-1. **Board scan** — consume the Step 1 board-scan (already built): one `list_issues(team:"Threadbare", limit:250, orderBy:"updatedAt", includeArchived:false)` call, bucket in memory by `status`. Sort Ready-for-Dev candidates by priority (1=Urgent first), then oldest `createdAt` as tie-break. Pick the top unassigned candidate.
-1.5. **WIP gate** — if the "In Dev" slice filtered to `assignee:"me"` is non-empty, exit cleanly per Step 1.5 (Rule 6: WIP=1). Do not claim.
+**Large-result guard:** If any Linear call produces a result too large for context (saved to a file with a "use a subagent" suggestion in the output), read it yourself with Bash python slicing — never spawn Agent to parse it. Pickup delegation is prohibited regardless of result size. Using three targeted queries below makes overflow unlikely, but this guard applies unconditionally.
+
+1. **Board scan** — three targeted queries (never a single 250-issue dump — that overflows context and the resulting "use a subagent" tool message defeats the DO NOT DELEGATE rule):
+   - `list_issues(team:"Threadbare", state:"In Dev", assignee:"me", limit:10)` → WIP slice
+   - `list_issues(team:"Threadbare", state:"In Dev", limit:50)` → cross-executor slice
+   - `list_issues(team:"Threadbare", state:"Ready for Dev", assignee:null, limit:50)` → candidate slice
+
+   Sort the candidate slice by priority in memory (1=Urgent first), oldest `createdAt` as tie-break. Pick the top unassigned candidate.
+1.5. **WIP gate** — if the WIP slice (query 1) is non-empty, exit cleanly per Step 1.5 (Rule 6: WIP=1). Do not claim.
 2. **Claim** — `save_issue(id, assignee:"me", state:"In Dev")`.
 3. **Verify** — `get_issue(id)`. Confirm both `assignee` and `state` match.
    - On mismatch (silent drop, impediment #48): release claim with `save_issue(id, assignee:null)`. Output trace line (see below). Move to the next candidate. Retry up to `MAX_CLAIM_RETRIES` total attempts.
@@ -64,20 +71,22 @@ All retries exhausted:
 
 If any Linear MCP call in this session returns a rate-limit error (HTTP 429 / MCP rate-limit response), pause 2 minutes, retry once, then if still limited log an impediment via `impediment-reporter` and exit cleanly without claiming. Do not retry in tight loops.
 
-### Step 1 — Single board scan
+### Step 1 — Three targeted queries
 
-If no issue id was provided, fire one call: `list_issues(team:"Threadbare", limit:250, orderBy:"updatedAt", includeArchived:false)`. In memory, bucket the response by `status` to produce:
-- The "In Dev" slice filtered to `assignee:"me"` — for WIP check
-- The "Ready for Dev" slice filtered to `assignee:null` — for pickup candidates
-- The "In Dev" slice across all assignees — for cross-executor parallel check (Step 2)
+**Never use a single 250-issue dump** — it produces ~290k chars, overflows the context window, and causes the tool output to suggest using a subagent, which violates the DO NOT DELEGATE rule.
 
-Sort the Ready-for-Dev candidates by priority in memory (impediment #49 rejects `orderBy:priority` at runtime); oldest `createdAt` is tie-break. Pick the top.
+If no issue id was provided, fire three small targeted calls:
+1. `list_issues(team:"Threadbare", state:"In Dev", assignee:"me", limit:10)` → WIP check slice
+2. `list_issues(team:"Threadbare", state:"In Dev", limit:50)` → cross-executor slice (all assignees)
+3. `list_issues(team:"Threadbare", state:"Ready for Dev", assignee:null, limit:50)` → candidate slice
+
+Sort the candidate slice by priority in memory (impediment #49 rejects `orderBy:priority` at runtime); oldest `createdAt` is tie-break. Pick the top.
 
 If a specific issue id was provided, skip to Step 3.
 
 ### Step 1.5 — WIP=1 gate (Rule 6 enforcement)
 
-If the Step 1 board scan's "In Dev" slice filtered to `assignee:"me"` is non-empty, refuse pickup and exit cleanly. Output one of:
+If the WIP check query result (Step 1.1, `assignee:"me"`) is non-empty, refuse pickup and exit cleanly. Output one of:
 
 ```
 [pull-work] Step 1.5: WIP=1 gate — already holding {issueId} (claimed at {claimedAt}, branch {gitBranchName}). Skipping pickup.
@@ -100,7 +109,7 @@ If the slice has more than one entry: this indicates a Rule 6 violation (cross-s
 
 ### Step 2 - Cross-executor parallel check
 
-1. From the Step 1 board scan's "In Dev" slice (all assignees), detect active Codex work.
+1. From the cross-executor query result (Step 1.2, all assignees), detect active Codex work.
 2. If a Codex issue is active, verify the candidate appears in that issue's `Parallel-safe with` line.
 3. Confirm the candidate does not collide with that issue's `Mutex with` line.
 
@@ -191,7 +200,7 @@ If the issue has label `Reopened`, read all comments back to the original handof
 
 ## Refuses To Proceed When
 
-- The "In Dev" slice for the executor's own assignee (computed in Step 1) is non-empty (Rule 6: WIP=1 across all sessions).
+- The WIP check query (Step 1.1, `assignee:"me"`) returns non-empty (Rule 6: WIP=1 across all sessions).
 - The latest handoff comment is missing any required coordination line (`Suggested model`, `Parallel-safe with`, `Mutex with`).
 - Cross-executor mutex analysis indicates file-surface collision with active Codex work.
 - `save_issue` claim cannot be verified by `get_issue` after one retry.
