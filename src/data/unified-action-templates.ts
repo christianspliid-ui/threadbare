@@ -141,6 +141,7 @@ import {
   RECOVER_DOCTRINE_ESSENCE_COST,
   SURFACE_DOUBTER_ESSENCE_COST,
   ANOINT_SUCCESSOR_ESSENCE_COST,
+  KINDLE_CALLING_ESSENCE_COST,
 } from './faction-action-constants';
 import { SCHISM_ESSENCE_COST } from './game-config';
 import { RIVAL_SHRINE_BETRAYAL_TEMPLATE } from './encounters/rival-shrine-betrayal';
@@ -978,6 +979,57 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       initiation: 'lets a name rise in the room — the one whose silence has been speaking',
       success: 'the doubter feels themselves seen by something larger than the faction',
       failure: 'no one inside this faction carries the silence that would answer',
+    },
+  },
+
+  // ─── THR-433: Kindle a Calling (internal-pressure divine action) ────────
+  //
+  // Internal-pressure resolver — the faction holds a set of latent goal
+  // candidates (drawn from member axiological pulls, leader bias, doctrine
+  // pressure, recent dissent). Essence poured into Kindle a Calling biases
+  // which candidate rises to manifest as the faction's active ambition; the
+  // player never names the candidate. A `faction.encounter.calling_named` is
+  // planted on the leader — the gather where the calling becomes named.
+  //
+  // Surfacing: target=faction, requires hasLeader (the calling-named encounter
+  // is planted on the leader). Cannot replace an army-locked ambition (the
+  // verb fires but resolves to no-op, with a trace explaining why).
+
+  {
+    id: 'action.faction.kindle_a_calling',
+    name: 'Kindle a Calling',
+    spellName: 'Heat in the Embers',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description:
+      "You pour heat into the embers the faction has been keeping. Whatever was waiting to be wanted now wants. " +
+      "You do not get to choose which want rises — you only choose to let it.",
+    reach: 'heart',
+    crudType: 'update',
+    scale: 'regional',
+    steps: [{
+      reach: 'heart',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [{
+        op: 'faction_verb',
+        nodeId: '$target',
+        factionVerbKind: 'kindle_a_calling',
+      }],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: KINDLE_CALLING_ESSENCE_COST,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'force',
+    motivations: ['loyalty_ambition', 'tradition_novelty'],
+    targetCategories: ['faction'] as unknown as readonly import('../types/targetContext').TargetCategory[],
+    requiredNodeProperties: { hasLeader: true },
+    narrativeTemplates: {
+      initiation: 'pours heat into the embers the faction has been keeping',
+      success: 'something in the faction wakes — a calling no one named is rising now',
+      failure: 'the heat passes through the faction without finding any ember to catch',
     },
   },
 

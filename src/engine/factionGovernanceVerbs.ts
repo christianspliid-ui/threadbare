@@ -25,13 +25,17 @@
  */
 
 import type { GameState } from '../types/gameState';
+import type { GraphNode } from '../types/graph';
 import type { PendingEncounterSeed } from '../types/unifiedAction';
 import type {
   FactionStirDissentTrace,
   FactionWhisperLeaderTrace,
   FactionRecoverDoctrineTrace,
   FactionSurfaceDoubterTrace,
+  FactionKindleCallingTrace,
 } from '../types/factionAction';
+import type { FactionAmbitionType } from '../types/faction';
+import type { AxiologicalProfile, ValuePair } from '../types/agent';
 import {
   STIR_DISSENT_INCREMENT,
   WHISPER_LEADER_CONDITION_DURATION,
@@ -44,6 +48,17 @@ import {
   SURFACE_DOUBTER_SEEDED_ENCOUNTER_ID,
   SURFACED_BY_DIVINE_ATTENTION_CONDITION,
   DIVINE_WHISPER_PENDING_CONDITION,
+  KINDLE_CALLING_SEEDED_ENCOUNTER_ID,
+  KINDLE_CALLING_ENCOUNTER_DELAY,
+  KINDLE_CALLING_BIAS_WEIGHT_MEMBER,
+  KINDLE_CALLING_BIAS_WEIGHT_LEADER,
+  KINDLE_CALLING_BIAS_WEIGHT_DOCTRINE,
+  KINDLE_CALLING_BIAS_WEIGHT_DISSENT,
+  KINDLE_CALLING_DISSENT_BIAS_THRESHOLD,
+  KINDLE_CALLING_ESSENCE_SHARPENING,
+  KINDLE_CALLING_PRNG_SALT,
+  KINDLED_CALLING_PENDING_CONDITION,
+  KINDLED_CALLING_PENDING_DURATION,
 } from '../data/faction-action-constants';
 import { emitTrace } from './traceBuffer';
 import {
@@ -51,6 +66,12 @@ import {
   getFactionLeaderId,
   findRecoverableDoctrineClue,
 } from './factionNetwork';
+import {
+  scoreEligibleAmbitions,
+  mulberry32,
+  hashString,
+  type AmbitionCandidate,
+} from './factionAmbitions';
 
 // ─── Shared helpers ──────────────────────────────────────────────────────────
 
@@ -74,7 +95,8 @@ export type FactionGovernanceVerbKind =
   | 'stir_dissent'
   | 'whisper_leader'
   | 'recover_doctrine'
-  | 'surface_doubter';
+  | 'surface_doubter'
+  | 'kindle_a_calling';
 
 export type LeaderWhisperPole = 'protector' | 'conqueror' | 'sworn' | 'renegade';
 
@@ -362,6 +384,338 @@ export function applySurfaceDoubter(
   return trace;
 }
 
+// ─── Kindle a Calling (THR-433) ──────────────────────────────────────────────
+//
+// Internal-pressure resolver. Reuses scoreEligibleAmbitions/selectAmbitionType
+// from factionAmbitions.ts; adds a four-signal `computeKindleBias` layer:
+//   (a) member axiological pulls — what the rank-and-file leans toward
+//   (b) leader bias — the seat's axiological profile, weighted higher
+//   (c) doctrine pressure — recoveredDoctrineId nudges toward cultural / divine
+//   (d) recent dissent — high dissentLevel pulls inward (defensive_consolidation),
+//       away from territorial_expansion
+// The essence-sharpening constant scales bias contributions before scoring.
+// Result: a seeded PRNG draws one weighted candidate; the faction's `pursues`
+// edge is replaced with the new ambition (unless army-locked); a calling-named
+// encounter is planted on the leader. The player names neither the candidate
+// nor the calling that will emerge from the gather.
+
+/**
+ * Map axiological pulls to ambition-type biases.
+ *
+ * Mortals don't pick ambitions; their values *lean* toward kinds of action.
+ * This map captures that lean — each value pair contributes to one ambition
+ * type on each pole. The signs are positive both directions because the
+ * caller scales by |profile|, not by sign of profile.
+ */
+const AMBITION_BIAS_BY_VALUE_PAIR: Record<
+  ValuePair,
+  { positive: FactionAmbitionType; negative: FactionAmbitionType }
+> = {
+  mercy_ruthlessness: { positive: 'defensive_consolidation', negative: 'territorial_expansion' },
+  asceticism_extravagance: { positive: 'cultural_dominance', negative: 'resource_acquisition' },
+  honesty_cunning: { positive: 'divine_mandate', negative: 'revenge' },
+  tradition_novelty: { positive: 'cultural_dominance', negative: 'territorial_expansion' },
+  loyalty_ambition: { positive: 'defensive_consolidation', negative: 'territorial_expansion' },
+  revelation_discretion: { positive: 'divine_mandate', negative: 'defensive_consolidation' },
+  preservation_transformation: { positive: 'defensive_consolidation', negative: 'territorial_expansion' },
+  sacrifice_survival: { positive: 'divine_mandate', negative: 'defensive_consolidation' },
+  courage_prudence: { positive: 'territorial_expansion', negative: 'defensive_consolidation' },
+};
+
+type AmbitionBias = Partial<Record<FactionAmbitionType, number>>;
+
+function applyProfileBias(
+  bias: AmbitionBias,
+  profile: AxiologicalProfile | undefined,
+  scale: number,
+): void {
+  if (!profile) return;
+  for (const pair of Object.keys(AMBITION_BIAS_BY_VALUE_PAIR) as ValuePair[]) {
+    const value = profile[pair];
+    if (value === undefined || value === 0) continue;
+    const map = AMBITION_BIAS_BY_VALUE_PAIR[pair];
+    const target = value > 0 ? map.positive : map.negative;
+    bias[target] = (bias[target] ?? 0) + Math.abs(value) * scale;
+  }
+}
+
+/**
+ * Compute the four-signal bias map for a faction's latent goal candidates.
+ * Returned biases are added to the base `scoreEligibleAmbitions` weights.
+ */
+function computeKindleBias(state: GameState, factionNode: GraphNode): AmbitionBias {
+  const bias: AmbitionBias = {};
+  const factionId = factionNode.id;
+
+  // (a) Member axiological pulls — sum profiles across living, non-army members.
+  const memberEdges = state.graph.getIncomingEdges(factionId, 'member_of');
+  let memberCount = 0;
+  for (const edge of memberEdges) {
+    const member = state.graph.getNode(edge.source);
+    if (!member) continue;
+    if (member.type !== 'actor') continue;
+    if (member.properties.actorType === 'group' || member.properties.armyState != null) continue;
+    if (member.properties.deathTick != null) continue;
+    const profile = member.properties.axiologicalProfile as AxiologicalProfile | undefined;
+    applyProfileBias(bias, profile, KINDLE_CALLING_BIAS_WEIGHT_MEMBER);
+    memberCount += 1;
+  }
+  // Normalize the member contribution so a 10-member faction doesn't dominate.
+  if (memberCount > 1) {
+    for (const key of Object.keys(bias) as FactionAmbitionType[]) {
+      bias[key] = (bias[key] ?? 0) / memberCount;
+    }
+  }
+
+  // (b) Leader bias — the seat carries weight beyond a single member.
+  const leaderId = getFactionLeaderId(state.graph, factionId);
+  if (leaderId) {
+    const leader = state.graph.getNode(leaderId);
+    if (leader) {
+      const leaderProfile = leader.properties.axiologicalProfile as AxiologicalProfile | undefined;
+      applyProfileBias(bias, leaderProfile, KINDLE_CALLING_BIAS_WEIGHT_LEADER);
+    }
+  }
+
+  // (c) Doctrine pressure — a recovered doctrine actively reshapes the faction.
+  const recoveredDoctrineId = factionNode.properties.recoveredDoctrineId as string | undefined;
+  if (recoveredDoctrineId) {
+    bias.cultural_dominance =
+      (bias.cultural_dominance ?? 0) + KINDLE_CALLING_BIAS_WEIGHT_DOCTRINE;
+    bias.divine_mandate =
+      (bias.divine_mandate ?? 0) + KINDLE_CALLING_BIAS_WEIGHT_DOCTRINE * 0.6;
+  }
+
+  // (d) Recent dissent — high dissent pulls inward.
+  const dissent = (factionNode.properties.dissentLevel as number | undefined) ?? 0;
+  if (dissent >= KINDLE_CALLING_DISSENT_BIAS_THRESHOLD) {
+    const dissentScale = (dissent - KINDLE_CALLING_DISSENT_BIAS_THRESHOLD)
+      / Math.max(1 - KINDLE_CALLING_DISSENT_BIAS_THRESHOLD, 0.001);
+    bias.defensive_consolidation =
+      (bias.defensive_consolidation ?? 0)
+      + KINDLE_CALLING_BIAS_WEIGHT_DISSENT * dissentScale;
+    // Negative bias on expansion — a fracturing faction does not march out.
+    bias.territorial_expansion =
+      (bias.territorial_expansion ?? 0)
+      - KINDLE_CALLING_BIAS_WEIGHT_DISSENT * dissentScale * 0.5;
+  }
+
+  // Apply essence sharpening — the cast pours heat; bias gets sharper.
+  for (const key of Object.keys(bias) as FactionAmbitionType[]) {
+    bias[key] = (bias[key] ?? 0) * KINDLE_CALLING_ESSENCE_SHARPENING;
+  }
+
+  return bias;
+}
+
+/**
+ * Check whether the faction's current ambition is "locked" by an army that has
+ * committed to pursuing it. An army-committed ambition cannot be overwritten —
+ * the player must end the campaign before the next calling can rise.
+ *
+ * Returns the ambition node id when locked, or null when free to replace.
+ */
+function getArmyLockedAmbitionId(state: GameState, factionId: string): string | null {
+  const factionPursues = state.graph.getOutgoingEdges(factionId, 'pursues');
+  if (factionPursues.length === 0) return null;
+  const ambitionId = factionPursues[0].target;
+
+  // Any army (group actor in this faction) with a pursues edge to the same ambition?
+  const memberEdges = state.graph.getIncomingEdges(factionId, 'member_of');
+  for (const edge of memberEdges) {
+    const member = state.graph.getNode(edge.source);
+    if (!member) continue;
+    if (member.properties.armyState == null && member.properties.actorType !== 'group') continue;
+    const armyPursues = state.graph.getOutgoingEdges(edge.source, 'pursues');
+    for (const pe of armyPursues) {
+      if (pe.target === ambitionId) return ambitionId;
+    }
+  }
+  return null;
+}
+
+function clampMin(value: number, floor: number): number {
+  return value < floor ? floor : value;
+}
+
+/**
+ * Apply Kindle a Calling: bias the faction's latent ambition candidates, draw
+ * one with seeded PRNG, replace the faction's `pursues` edge (unless army-
+ * locked), plant the calling-named encounter on the leader.
+ *
+ * Returns null when the faction node is missing, has no leader, has no
+ * faction definition, has no eligible candidates, or is army-locked.
+ * The trace is always emitted (including no-op cases) for inspectability.
+ */
+export function applyKindleACalling(
+  state: GameState,
+  factionId: string,
+): FactionKindleCallingTrace | null {
+  const factionNode = state.graph.getNode(factionId);
+  if (!factionNode || factionNode.type !== 'actor') return null;
+  if (factionNode.properties.actorType !== 'faction') return null;
+
+  const definitionId = (factionNode.properties.factionDefId
+    ?? factionNode.properties.factionDefinitionId) as string | undefined;
+  if (!definitionId) return null;
+
+  // Capture previous ambition (for trace + replacement).
+  const previousPursues = state.graph.getOutgoingEdges(factionId, 'pursues');
+  const previousAmbitionNode = previousPursues.length > 0
+    ? state.graph.getNode(previousPursues[0].target)
+    : null;
+  const previousAmbitionType = previousAmbitionNode
+    ? (previousAmbitionNode.properties.ambitionType as FactionAmbitionType | undefined) ?? null
+    : null;
+
+  // Army-lock check — refuse to overwrite a committed campaign.
+  const lockedAmbitionId = getArmyLockedAmbitionId(state, factionId);
+  if (lockedAmbitionId !== null) {
+    const trace: FactionKindleCallingTrace = {
+      tick: state.tick,
+      category: 'faction_kindle_calling',
+      factionId,
+      factionName: factionNode.name,
+      previousAmbitionType,
+      newAmbitionType: null,
+      candidates: [],
+      lockedByArmy: true,
+      noEligibleCandidates: false,
+      summary:
+        `The heat finds the ${factionNode.name}'s embers smothered — ` +
+        `their army has already marched. The calling cannot rise.`,
+    };
+    emitTrace(trace);
+    return trace;
+  }
+
+  // Score eligible candidates from the faction definition, then bias.
+  const baseCandidates = scoreEligibleAmbitions(state, factionId, definitionId);
+  if (baseCandidates.length === 0) {
+    const trace: FactionKindleCallingTrace = {
+      tick: state.tick,
+      category: 'faction_kindle_calling',
+      factionId,
+      factionName: factionNode.name,
+      previousAmbitionType,
+      newAmbitionType: null,
+      candidates: [],
+      lockedByArmy: false,
+      noEligibleCandidates: true,
+      summary:
+        `The embers in the ${factionNode.name} are cold — there is nothing ` +
+        `here that wants. The calling does not rise.`,
+    };
+    emitTrace(trace);
+    return trace;
+  }
+
+  const bias = computeKindleBias(state, factionNode);
+  const biasedCandidates: AmbitionCandidate[] = baseCandidates.map(c => ({
+    type: c.type,
+    weight: clampMin(c.weight + (bias[c.type] ?? 0), 0.01),
+  }));
+
+  // Seeded PRNG draw — same per-faction-per-tick pattern as phaseFactionActions.
+  const rng = mulberry32(
+    state.seed + state.tick * 47 + hashString(factionId) + KINDLE_CALLING_PRNG_SALT,
+  );
+  const totalWeight = biasedCandidates.reduce((sum, c) => sum + c.weight, 0);
+  const roll = rng() * totalWeight;
+  let cumulative = 0;
+  let chosenType: FactionAmbitionType = biasedCandidates[0].type;
+  for (const candidate of biasedCandidates) {
+    cumulative += candidate.weight;
+    if (roll < cumulative) {
+      chosenType = candidate.type;
+      break;
+    }
+  }
+
+  // Replace the faction's ambition. If the previous ambition was a non-army-
+  // locked node we built before, remove it (and its edges) cleanly.
+  if (previousAmbitionNode) {
+    state.graph.removeNode(previousAmbitionNode.id);
+  }
+  const ambitionId = `amb_${factionId}_${state.tick}_kindled`;
+  state.graph.addNode({
+    id: ambitionId,
+    type: 'ambition',
+    name: `${factionNode.name} — ${chosenType.replace(/_/g, ' ')} (kindled)`,
+    properties: {
+      ambitionType: chosenType,
+      priority: chosenType === 'revenge' ? 0.85 : 0.7,
+      targetNodeId: null,
+      grievanceDecay: 0,
+      createdTick: state.tick,
+      kindled: true,
+    },
+  });
+  state.graph.addEdge({
+    id: `e_pursues_${factionId}_${ambitionId}`,
+    source: factionId,
+    target: ambitionId,
+    type: 'pursues',
+    properties: {
+      priority: chosenType === 'revenge' ? 0.85 : 0.7,
+      status: 'active',
+      milestones: [],
+      kindled: true,
+    },
+  });
+
+  // Plant the calling-named encounter on the leader (already verified by
+  // surfacing — but be defensive).
+  const leaderId = getFactionLeaderId(state.graph, factionId);
+  const leaderNode = leaderId ? state.graph.getNode(leaderId) : null;
+  let seededEncounterId: string | undefined;
+  if (leaderId && leaderNode) {
+    seededEncounterId = `seed_kindled_${factionId}_${state.tick}`;
+    plantSeed(state, {
+      seedId: seededEncounterId,
+      sourceEncounterId: `divine_cast_kindle_calling_${state.tick}`,
+      sourceReactionId: 'faction.kindle_a_calling',
+      templateId: KINDLE_CALLING_SEEDED_ENCOUNTER_ID,
+      targetAgentId: leaderId,
+      eligibleAfterTick: state.tick + KINDLE_CALLING_ENCOUNTER_DELAY,
+      priority: 0.7,
+      seedLabel: `${factionNode.name} names its calling`,
+      plantedTick: state.tick,
+    });
+
+    // Mark the leader so the chronicle / UI can show the kindled state.
+    const conditions = (leaderNode.properties.conditions as string[] | undefined) ?? [];
+    state.graph.updateNode(leaderId, {
+      properties: {
+        conditions: addCondition(conditions, KINDLED_CALLING_PENDING_CONDITION),
+        kindledCallingExpiresTick: state.tick + KINDLED_CALLING_PENDING_DURATION,
+        kindledCallingAmbitionType: chosenType,
+      },
+    });
+  }
+
+  const trace: FactionKindleCallingTrace = {
+    tick: state.tick,
+    category: 'faction_kindle_calling',
+    factionId,
+    factionName: factionNode.name,
+    previousAmbitionType,
+    newAmbitionType: chosenType,
+    candidates: biasedCandidates.map(c => ({ type: c.type, finalWeight: c.weight })),
+    lockedByArmy: false,
+    noEligibleCandidates: false,
+    seededEncounterId,
+    leaderId: leaderId ?? undefined,
+    leaderName: leaderNode?.name,
+    summary:
+      `You pour heat into the embers ${factionNode.name} have been keeping. ` +
+      `${chosenType.replace(/_/g, ' ')} rises — the calling that wanted ` +
+      `to be wanted now wants.`,
+  };
+  emitTrace(trace);
+  return trace;
+}
+
 // ─── Verb dispatch ───────────────────────────────────────────────────────────
 
 /**
@@ -384,5 +738,7 @@ export function applyFactionGovernanceVerb(
       return applyRecoverDoctrine(state, factionId) !== null;
     case 'surface_doubter':
       return applySurfaceDoubter(state, factionId) !== null;
+    case 'kindle_a_calling':
+      return applyKindleACalling(state, factionId) !== null;
   }
 }

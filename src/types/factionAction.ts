@@ -303,6 +303,38 @@ export interface FactionSuccessionTrace {
   summary: string;
 }
 
+// ─── THR-433 Kindle a Calling trace ────────────────────────────────────────
+// Kindle a Calling pours essence into the faction's latent goal candidates;
+// the engine reads four bias signals and weighted-draws which candidate rises
+// to manifest as the faction's active ambition. The verb replaces the
+// existing ambition (unless army-locked); the trace captures the candidates
+// considered, their final bias-shaped weights, and the chosen one.
+
+/** Kindle a Calling — divine cast that biases a latent ambition into the foreground. */
+export interface FactionKindleCallingTrace {
+  tick: number;
+  category: 'faction_kindle_calling';
+  factionId: string;
+  factionName: string;
+  /** The ambitionType the faction held before this cast. Null when there was no active ambition. */
+  previousAmbitionType: FactionAmbitionType | null;
+  /** The ambitionType the kindle resolved to. Null when locked / no candidates / leader missing. */
+  newAmbitionType: FactionAmbitionType | null;
+  /** Candidates considered after bias was applied. Order is candidate iteration order, not draw order. */
+  candidates: Array<{ type: FactionAmbitionType; finalWeight: number }>;
+  /** True when the existing ambition was army-locked — the cast resolved to no-op. */
+  lockedByArmy: boolean;
+  /** True when there were no eligible candidates (e.g. faction definition with empty weights). */
+  noEligibleCandidates: boolean;
+  /** Set when the cast successfully planted an encounter on the leader. */
+  seededEncounterId?: string;
+  /** Set when the cast planted the encounter. */
+  leaderId?: string;
+  /** Set when the cast planted the encounter. */
+  leaderName?: string;
+  summary: string;
+}
+
 /** Anoint Successor — divine action cast that creates the will_succeed edge. */
 export interface FactionAnointSuccessorTrace {
   tick: number;

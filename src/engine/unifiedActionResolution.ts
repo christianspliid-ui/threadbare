@@ -1022,6 +1022,7 @@ export function executeStepResult(
       for (const op of factionVerbOps) {
         const kind = op.factionVerbKind as
           | 'stir_dissent' | 'whisper_leader' | 'recover_doctrine' | 'surface_doubter'
+          | 'kindle_a_calling'
           | undefined;
         if (!kind) continue;
         try {

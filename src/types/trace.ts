@@ -27,6 +27,7 @@ import type {
   FactionWhisperLeaderTrace,
   FactionRecoverDoctrineTrace,
   FactionSurfaceDoubterTrace,
+  FactionKindleCallingTrace,
   SchismPlantedTrace,
   SchismResolvedTrace,
   FactionReformedTrace,
@@ -215,7 +216,9 @@ export type TraceCategory =
   | 'faction_reformed'
   // Faction succession (THR-432)
   | 'faction_succession'
-  | 'faction_anoint_successor';
+  | 'faction_anoint_successor'
+  // Faction internal-pressure resolver (THR-433)
+  | 'faction_kindle_calling';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -403,6 +406,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // Faction succession (THR-432)
   'faction_succession',
   'faction_anoint_successor',
+  // Faction internal-pressure resolver (THR-433)
+  'faction_kindle_calling',
 ];
 
 /** Base shape for all trace entries */
@@ -1563,7 +1568,9 @@ export type TraceEntry =
   | FactionReformedTrace
   // Faction succession (THR-432)
   | FactionSuccessionTrace
-  | FactionAnointSuccessorTrace;
+  | FactionAnointSuccessorTrace
+  // Faction internal-pressure resolver (THR-433)
+  | FactionKindleCallingTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {

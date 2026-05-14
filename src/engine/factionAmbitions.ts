@@ -33,7 +33,7 @@ export const DIVINE_MANDATE_THREAD_THRESHOLD = 3;
 
 // ─── PRNG (mulberry32 — same as all other engine modules) ───────────────
 
-function mulberry32(seed: number): () => number {
+export function mulberry32(seed: number): () => number {
   let s = seed | 0;
   return () => {
     s = (s + 0x6d2b79f5) | 0;
@@ -43,7 +43,7 @@ function mulberry32(seed: number): () => number {
   };
 }
 
-function hashString(str: string): number {
+export function hashString(str: string): number {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const ch = str.charCodeAt(i);
@@ -54,7 +54,7 @@ function hashString(str: string): number {
 
 // ─── Ambition Scoring ───────────────────────────────────────────────────
 
-interface AmbitionCandidate {
+export interface AmbitionCandidate {
   type: FactionAmbitionType;
   weight: number;
 }
@@ -62,7 +62,7 @@ interface AmbitionCandidate {
 /**
  * Score eligible ambitions for a faction based on its definition weights and world context.
  */
-function scoreEligibleAmbitions(
+export function scoreEligibleAmbitions(
   state: GameState,
   factionId: string,
   definitionId: string,
@@ -110,7 +110,7 @@ function scoreEligibleAmbitions(
 /**
  * Select an ambition type from weighted candidates using seeded PRNG.
  */
-function selectAmbitionType(
+export function selectAmbitionType(
   candidates: AmbitionCandidate[],
   rng: () => number,
 ): FactionAmbitionType {

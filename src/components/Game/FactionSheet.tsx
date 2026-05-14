@@ -299,9 +299,27 @@ export const FactionSheet = React.memo(function FactionSheet({
                   <Section title="Current Agenda">
                     {summary.activeAmbition ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <span style={{ color: 'var(--text-primary)', fontSize: 'var(--text-sm)' }}>{summary.activeAmbition.name}</span>
+                        <span style={{ color: 'var(--text-primary)', fontSize: 'var(--text-sm)' }}>
+                          {summary.activeAmbition.name}
+                          {summary.activeAmbition.kindled && (
+                            <span
+                              data-testid="faction-kindled-glyph"
+                              title="A calling has been kindled — the faction names this want under divine heat."
+                              aria-label="kindled calling"
+                              style={{
+                                marginLeft: '6px',
+                                color: 'var(--accent-warm, #f59e0b)',
+                                fontSize: '0.75em',
+                                verticalAlign: 'middle',
+                              }}
+                            >
+                              ▲
+                            </span>
+                          )}
+                        </span>
                         <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
                           priority {(summary.activeAmbition.priority * 100).toFixed(0)}% · {summary.activeAmbition.status}
+                          {summary.activeAmbition.kindled ? ' · kindled' : ''}
                         </span>
                       </div>
                     ) : (

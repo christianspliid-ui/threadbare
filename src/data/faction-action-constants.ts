@@ -105,3 +105,53 @@ export const ACCEPTED_INHERITANCE_CONDITION = 'accepted_inheritance';
 
 /** Condition flag set on a successor who refused the inheritance. */
 export const REFUSED_INHERITANCE_CONDITION = 'refused_inheritance';
+
+// ─── Kindle a Calling (THR-433) ──────────────────────────────────────────────
+//
+// Internal-pressure divine action. The player pours essence into the faction's
+// latent goal candidates; engine reads (a) member axiological pulls, (b) leader
+// bias, (c) doctrine pressure, (d) recent dissent, and bias-weights the
+// candidates that `scoreEligibleAmbitions` (factionAmbitions.ts) would produce.
+// A seeded PRNG draws one weighted candidate; it replaces the faction's
+// `pursues` edge (unless the current ambition is army-locked). A
+// `faction.encounter.calling_named` is planted on the leader.
+//
+// Plan: handoff comment on THR-433 (Cowork → Ready for Dev, 2026-05-14 09:27).
+
+/** Essence cost paid to cast Kindle a Calling. */
+export const KINDLE_CALLING_ESSENCE_COST = 10;
+
+/** Encounter template planted on the leader when the calling is named. */
+export const KINDLE_CALLING_SEEDED_ENCOUNTER_ID = 'faction.encounter.calling_named';
+
+/** Tick delay before the calling-named encounter becomes eligible. */
+export const KINDLE_CALLING_ENCOUNTER_DELAY = 2;
+
+/** Bias weight added per-member when their axiological profile pulls toward an ambition pole. */
+export const KINDLE_CALLING_BIAS_WEIGHT_MEMBER = 0.6;
+
+/** Bias weight added by the leader's axiological profile (the leader is one mortal but carries the seat). */
+export const KINDLE_CALLING_BIAS_WEIGHT_LEADER = 1.2;
+
+/** Bias added toward cultural_dominance / divine_mandate when recoveredDoctrineId is set. */
+export const KINDLE_CALLING_BIAS_WEIGHT_DOCTRINE = 2.0;
+
+/** Bias added toward defensive_consolidation when dissentLevel ≥ DISSENT_BIAS_THRESHOLD. */
+export const KINDLE_CALLING_BIAS_WEIGHT_DISSENT = 2.5;
+
+/** Dissent threshold above which the dissent bias engages. */
+export const KINDLE_CALLING_DISSENT_BIAS_THRESHOLD = 0.35;
+
+/** Essence-sharpening factor — multiplies all bias contributions before scoring (the player
+ *  "pours heat into the embers"; the more they pour, the sharper the rise). With a fixed
+ *  essence cost this is effectively a constant tuning knob for how confident the bias is. */
+export const KINDLE_CALLING_ESSENCE_SHARPENING = 1.4;
+
+/** PRNG salt for the weighted candidate draw (NFP #3). */
+export const KINDLE_CALLING_PRNG_SALT = 0xc4111e;
+
+/** Condition flag set on the leader when a calling has been kindled. */
+export const KINDLED_CALLING_PENDING_CONDITION = 'kindled_calling_pending';
+
+/** Ticks the kindled_calling_pending condition persists on the leader. */
+export const KINDLED_CALLING_PENDING_DURATION = 18;
