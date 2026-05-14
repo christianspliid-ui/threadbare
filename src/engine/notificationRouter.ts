@@ -32,7 +32,8 @@ export function deriveNavigationTarget(event: TickEvent): NavigationTarget | und
   }
   // Settlement/hex/discovery events → hex navigation
   if ((event.type === 'settlement_tier_change' || event.type === 'economic_chronicle'
-    || event.type === 'hidden_site_discovered' || event.type === 'elder_site_discovered') && event.hexCoords) {
+    || event.type === 'hidden_site_discovered' || event.type === 'elder_site_discovered'
+    || event.type === 'survey_completed') && event.hexCoords) {
     return { kind: 'hex', col: event.hexCoords.col, row: event.hexCoords.row };
   }
   // Default: agent selection if actorId present
@@ -60,7 +61,8 @@ export function eventTypeToCategory(type: TickEvent['type']): NotificationCatego
   if (type === 'settlement_tier_change' || type === 'economic_chronicle') return 'economy';
   if (type === 'tier_promotion') return 'actions';
   if (type === 'return_resolved' || type === 'ripple_consequence') return 'journeys';
-  if (type === 'hidden_site_discovered' || type === 'elder_site_discovered') return 'discovery';
+  if (type === 'hidden_site_discovered' || type === 'elder_site_discovered'
+    || type === 'survey_completed') return 'discovery';
   // Default fallback
   return 'actions';
 }

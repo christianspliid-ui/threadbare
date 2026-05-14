@@ -91,6 +91,8 @@ Available conditionals: `has_artifact`, `has_ally`, `has_rival`, `has_faction`, 
 
 **Routine tier (ROUTINE_TEMPLATES) also supports enrichment:** As of THR-86, `ROUTINE_TEMPLATES` in `src/data/narrative-content.ts` uses `ShapedTemplate[]` — each template has a `shape` property (`svo | aftermath | inverted | compound | fragment`) and a `template` string that supports the same enrichment placeholders (`{name}`, `{location}`, `{?has_faction}...{/has_faction}`, etc.). When `generateRoutineProse` is called with a `graph` + `actorId`, it runs `enrichProse()` to resolve them; without graph, `applyFallbacks()` provides safe substitutions. Use `{name}` (not `{actor}`) in all new routine templates. Aim for all 5 shapes across the pool for an event type to get variety rotation.
 
+**Hex-level prose uses a separate composer — not `enrichProse`:** As of THR-415, the `hex.survey` divine action emits a `survey_completed` TickEvent whose message is built by `composeSurveyPeopleProse` in `src/engine/surveyProseComposer.ts`. This is a hex-scoped prose composer (averaging location unrest, listing controlling factions) that operates on the graph directly and does not go through `proseEnrichment.ts`. If you add other hex-scoped revelation events (e.g. a HexChronicle people-layer), write a new composer in the same pattern rather than routing through `enrichProse`.
+
 ---
 
 ### Capability 2: Encounter Seeding — Consequences That Grow Into Future Stories

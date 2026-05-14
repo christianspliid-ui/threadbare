@@ -151,6 +151,7 @@ export const TICK_EVENT_COLORS: Record<TickEvent['type'], string> = {
   stealth_alert: '#6b7280',
   dilemma_resolved: '#44aaff',
   domain_revealed: '#a78bfa',      // violet — knowledge/revelation theme
+  survey_completed: '#a78bfa',    // violet — recon result, shares revelation palette
   army_mobilization: '#f97316',    // orange — military mobilization
   army_disbanded: '#78716c',       // stone gray — army gone, low emphasis
   battle_started: '#ef4444',       // red-500 — combat starting

@@ -81,6 +81,7 @@ export interface TickEvent {
     | 'control_effect_established' | 'control_effect_lapsed'
   // Revelation events
     | 'domain_revealed'
+    | 'survey_completed'   // THR-415 — Survey people-layer prose band
   // Ruins discovery events
     | 'hidden_site_discovered' | 'elder_site_discovered'
   // Anomaly discovery events
