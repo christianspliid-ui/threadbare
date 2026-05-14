@@ -35,6 +35,7 @@ import {
   INTEL_CATEGORIES,
   type IntelligenceView,
 } from './intelligence';
+import { TICKS_PER_DAY } from '../data/attention-constants';
 
 // ─── Constants ─────────────────────────────────────────────────────
 
@@ -282,14 +283,28 @@ export function enrichProse(template: string, ctx: NarrativeContext): string {
       const detailRe = new RegExp(`\\{intel:${category}\\.detail\\}`, 'g');
       const reliabilityRe = new RegExp(`\\{intel:${category}\\.reliability\\}`, 'g');
       const labelRe = new RegExp(`\\{intel:${category}\\}`, 'g');
+      const acquiredTicksAgoRe = new RegExp(`\\{intel:${category}\\.acquiredTicksAgo\\}`, 'g');
+      const acquiredDaysAgoRe = new RegExp(`\\{intel:${category}\\.acquiredDaysAgo\\}`, 'g');
       const hadPlaceholder =
-        detailRe.test(result) || reliabilityRe.test(result) || labelRe.test(result);
+        detailRe.test(result) || reliabilityRe.test(result) || labelRe.test(result) ||
+        acquiredTicksAgoRe.test(result) || acquiredDaysAgoRe.test(result);
       const label = record?.label ?? '';
       const detail = record?.detail ?? '';
       const reliability = record ? reliabilityDescriptor(record.reliability) : '';
       result = result.replace(new RegExp(`\\{intel:${category}\\.detail\\}`, 'g'), detail);
       result = result.replace(new RegExp(`\\{intel:${category}\\.reliability\\}`, 'g'), reliability);
       result = result.replace(new RegExp(`\\{intel:${category}\\}`, 'g'), label);
+      // Age placeholders (THR-385). Silent strip when record absent.
+      const ticksAgo = record ? Math.max(0, (ctx.tick ?? 0) - record.acquiredTick) : 0;
+      const daysAgo = Math.floor(ticksAgo / TICKS_PER_DAY);
+      result = result.replace(
+        new RegExp(`\\{intel:${category}\\.acquiredTicksAgo\\}`, 'g'),
+        record ? String(ticksAgo) : '',
+      );
+      result = result.replace(
+        new RegExp(`\\{intel:${category}\\.acquiredDaysAgo\\}`, 'g'),
+        record ? String(daysAgo) : '',
+      );
       if (hadPlaceholder && record && !referenced.has(record.recordId)) {
         emitIntelligenceReferenced(
           ctx.tick ?? 0,

@@ -281,12 +281,14 @@ Every consumption emits an `intelligence_referenced` trace with a `referencedBy`
 | `{intel:shrine_location}` | Record's `label` | Whole placeholder stripped |
 | `{intel:shrine_location.detail}` | Record's `detail` | Stripped |
 | `{intel:shrine_location.reliability}` | `"reliable"` / `"uncertain"` / `"dubious"` (thresholds `0.7` / `0.4`; non-finite → `dubious`) | Stripped |
+| `{intel:shrine_location.acquiredTicksAgo}` | Ticks since the record was acquired (`tick − acquiredTick`, clamped ≥ 0). Resolves to `'0'` when acquired this tick. | Stripped |
+| `{intel:shrine_location.acquiredDaysAgo}` | Game days since acquired (ticks ÷ `TICKS_PER_DAY`, floored). Resolves to `'0'` for intel less than one day old. | Stripped |
 | `{?knows_shrine_location}…{/knows_shrine_location}` | Enclosed text if the agent has any record in that category | Enclosed text removed |
 | `{?no_shrine_location}…{/no_shrine_location}` | Enclosed text if the agent has NO record in that category | Enclosed text kept |
 
 All six `IntelligenceCategory` values are supported: `shrine_location`, `agent_network`, `trade_route`, `military_position`, `political_secret`, `cultural_knowledge`.
 
-**Why this changes what you write:** Intelligence creates asymmetric knowledge — one agent knows something others don't. Now that knowledge *ranks their next encounter higher*, *shows up in their prose*, and *is noticed when they act on it*. Write reveal beats that call out the intel by category: "What {name} knew of {intel:trade_route} had cost them years." Write scenes where an uninformed agent fumbles: "`{?no_political_secret}{name} still did not know who had sent the steward.{/no_political_secret}`" A spy encounter that grants intelligence about a rival's plans is more systemically alive than one that grants a generic sword — and the rival's plans will now *influence what the agent does next*.
+**Why this changes what you write:** Intelligence creates asymmetric knowledge — one agent knows something others don't. Now that knowledge *ranks their next encounter higher*, *shows up in their prose*, and *is noticed when they act on it*. Write reveal beats that call out the intel by category: "What {name} knew of {intel:trade_route} was already {intel:trade_route.acquiredDaysAgo} days stale." Write scenes where an uninformed agent fumbles: "`{?no_political_secret}{name} still did not know who had sent the steward.{/no_political_secret}`" A spy encounter that grants intelligence about a rival's plans is more systemically alive than one that grants a generic sword — and the rival's plans will now *influence what the agent does next*.
 
 ---
 
