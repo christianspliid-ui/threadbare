@@ -24,6 +24,12 @@ interface LandmarkBatch {
   submeshIndex: number;
 }
 
+export interface LandmarkBatchInfo {
+  mesh: THREE.InstancedMesh;
+  modelId: string;
+  submeshIndex: number;
+}
+
 const VALIDATION_REPORT_CAP = 64;
 
 export class ChunkedLandmarkLayer {
@@ -181,6 +187,7 @@ export class ChunkedLandmarkLayer {
 
     const visibilityState = new Float32Array(count);
     const hoverMix = new Float32Array(count);
+    const selectionMix = new Float32Array(count);
     const landmarkZ =
       TERRAIN_TEXTURE_LAB_CONSTANTS.MODEL_LAYER_Z +
       TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.LANDMARK_LAYER_Z_OFFSET;
@@ -196,11 +203,13 @@ export class ChunkedLandmarkLayer {
       mesh.setMatrixAt(i, matrix);
       visibilityState[i] = TERRAIN_TEXTURE_LAB_VIGNETTE_CONSTANTS.LANDMARK_DEFAULT_VISIBILITY_STATE;
       hoverMix[i] = 0;
+      selectionMix[i] = 0;
     }
 
     mesh.instanceMatrix.needsUpdate = true;
     geometry.setAttribute('aVisibilityState', new THREE.InstancedBufferAttribute(visibilityState, 1));
     geometry.setAttribute('aHoverMix', new THREE.InstancedBufferAttribute(hoverMix, 1));
+    geometry.setAttribute('aSelectionMix', new THREE.InstancedBufferAttribute(selectionMix, 1));
   }
 
   private async loadGltf(url: string): Promise<THREE.Group> {
@@ -234,6 +243,21 @@ export class ChunkedLandmarkLayer {
       submeshes.push({ geometry: geom, color });
     });
     return submeshes;
+  }
+
+  getBatchInfos(): readonly LandmarkBatchInfo[] {
+    return this.batches.map(b => ({ mesh: b.mesh, modelId: b.modelId, submeshIndex: b.submeshIndex }));
+  }
+
+  setInstanceAttribute(batchKey: string, instanceIndex: number, attrName: string, value: number): void {
+    for (const batch of this.batches) {
+      if (batch.modelId !== batchKey) continue;
+      const attr = batch.geometry.getAttribute(attrName) as THREE.InstancedBufferAttribute | undefined;
+      if (!attr) continue;
+      attr.setX(instanceIndex, value);
+      attr.updateRange = { offset: instanceIndex, count: 1 };
+      attr.needsUpdate = true;
+    }
   }
 
   setVisible(visible: boolean): void {

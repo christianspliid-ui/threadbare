@@ -173,6 +173,7 @@ export function TerrainTextureLab() {
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
   const [selectedClickTargetId, setSelectedClickTargetId] = useState<string | null>(null);
   const [landmarkBatchCount, setLandmarkBatchCount] = useState(0);
+  const [showClickTargetSpheres, setShowClickTargetSpheres] = useState(false);
 
   const selectedConfig = configs[selectedTerrain];
   const selectedRecipe = getRecipeOption(selectedConfig.recipe);
@@ -351,6 +352,40 @@ export function TerrainTextureLab() {
         return `Selected ${key}`;
       },
 
+      /** Programmatically select a landmark by its click-target id */
+      selectLandmark: (id: string) => {
+        const target = vignettePrototype.clickTargets.find(t => t.id === id);
+        if (!target) return `Landmark not found: ${id}`;
+        setSelectedClickTargetId(id);
+        setSelectedHexId(target.hexId);
+        return `Selected landmark ${id} on hex ${target.hexId}`;
+      },
+
+      /** Pan to the hex containing the landmark */
+      gotoLandmark: (id: string) => {
+        const target = vignettePrototype.clickTargets.find(t => t.id === id);
+        if (!target) return `Landmark not found: ${id}`;
+        setSelectedHexId(target.hexId);
+        return `Moved to hex ${target.hexId}`;
+      },
+
+      /** Return current hover/selection state from the canvas selection state object */
+      getSelectionState: () => {
+        const canvasApi = (window as Record<string, unknown>).__TERRAIN_LAB as Record<string, unknown> | undefined;
+        const selState = canvasApi?.selectionState as { getHovered?: () => unknown; getSelected?: () => unknown } | undefined;
+        return {
+          hovered: selState?.getHovered?.() ?? null,
+          selected: selState?.getSelected?.() ?? null,
+          selectedClickTargetId,
+        };
+      },
+
+      /** Clear current hover and selection */
+      clearSelection: () => {
+        setSelectedClickTargetId(null);
+        return 'Selection cleared';
+      },
+
       help: () => [
         '__TERRAIN_LAB commands:',
         '  .hexes()                        — list hex IDs',
@@ -364,6 +399,10 @@ export function TerrainTextureLab() {
         '  .forestVignette(hexId?, scale?) — quick forest+city vignette',
         '  .placements()                   — list current placements',
         '  .selectTerrain(key)             — select terrain for editing',
+        '  .selectLandmark(id)             — select a landmark by click-target id',
+        '  .gotoLandmark(id)               — pan to a landmark hex',
+        '  .getSelectionState()            — return current hover/selection',
+        '  .clearSelection()               — clear landmark selection',
       ].join('\n'),
     };
 
@@ -476,8 +515,8 @@ export function TerrainTextureLab() {
   }
 
   function handleLandmarkSelect(targetId: string, hexId: string) {
-    setSelectedClickTargetId(targetId);
-    setSelectedHexId(hexId);
+    setSelectedClickTargetId(targetId || null);
+    if (hexId) setSelectedHexId(hexId);
   }
 
   function clearPlacements() {
@@ -789,12 +828,14 @@ export function TerrainTextureLab() {
                 <VignetteDebugOverlay
                   showChunkBounds={vignetteSettings.showChunkBounds}
                   showLandmarkBounds={vignetteSettings.showLandmarkBounds}
+                  showClickTargetSpheres={showClickTargetSpheres}
                   densityScale={vignetteSettings.densityScale}
                   fillerInstanceCount={fillerInstanceCount}
                   landmarkInstanceCount={combinedPlacements.length}
                   landmarkBatchCount={landmarkBatchCount}
                   onShowChunkBoundsChange={(showChunkBounds) => updateVignetteSettings({ showChunkBounds })}
                   onShowLandmarkBoundsChange={(showLandmarkBounds) => updateVignetteSettings({ showLandmarkBounds })}
+                  onShowClickTargetSpheresChange={setShowClickTargetSpheres}
                   onDensityScaleChange={(densityScale) => updateVignetteSettings({ densityScale })}
                 />
 
@@ -1148,6 +1189,7 @@ export function TerrainTextureLab() {
             fillerSpec={fillerSpec}
             showChunkBounds={vignetteSettings.showChunkBounds}
             showLandmarkBounds={vignetteSettings.showLandmarkBounds}
+            showClickTargetSpheres={showClickTargetSpheres}
             selectedHexId={selectedHexId}
             selectedClickTargetId={selectedClickTargetId}
             seed={seed}
