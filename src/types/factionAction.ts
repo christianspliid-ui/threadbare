@@ -219,3 +219,53 @@ export type FactionGovernanceTrace =
   | FactionWhisperLeaderTrace
   | FactionRecoverDoctrineTrace
   | FactionSurfaceDoubterTrace;
+
+// ─── THR-430 Schism traces ─────────────────────────────────────────────────
+// Schism is a deferred-resolution divine action: the player plants a crisis
+// on a faction, then a resolution tick later the faction either reforms
+// (reputation hit + expulsion) or splits into two factions. These traces let
+// the chronicle and DebugPanel surface both the plant beat and the resolution.
+
+/** Schism Planted — divine action set the pending-resolution marker on a faction. */
+export interface SchismPlantedTrace {
+  tick: number;
+  category: 'schism_planted';
+  factionId: string;
+  factionName: string;
+  actorAgentId: string;
+  resolutionTick: number;
+  baselineCohesion: number;
+  summary: string;
+}
+
+/** Schism Resolved — the resolution phase decided reform-or-split. */
+export interface SchismResolvedTrace {
+  tick: number;
+  category: 'schism_resolved';
+  factionId: string;
+  factionName: string;
+  outcome: 'split' | 'reform' | 'noop';
+  splitPressure: number;
+  inputs: { cohesionDrop: number; spread: number; dissent: number };
+  /** Set on outcome='split'. */
+  splinterFactionId?: string;
+  /** Set on outcome='split'. */
+  splinterMemberCount?: number;
+  /** Set on outcome='reform'. */
+  expelledMemberIds?: string[];
+  failReason?: string;
+  summary: string;
+}
+
+/** Faction Reformed — sister trace to faction_splintered; fires on the reform branch. */
+export interface FactionReformedTrace {
+  tick: number;
+  category: 'faction_reformed';
+  factionId: string;
+  factionName: string;
+  reputationBefore: number;
+  reputationAfter: number;
+  expelledCount: number;
+  expelledIds: string[];
+  summary: string;
+}

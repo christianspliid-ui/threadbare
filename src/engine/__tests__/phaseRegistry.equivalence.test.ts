@@ -66,6 +66,8 @@ const EXPECTED_PHASE_IDS: readonly string[] = [
   'ambition_progress',
   'faction_ambitions',
   'faction_actions',
+  // Schism resolution runs after faction_actions so it sees same-tick dissent updates (THR-430).
+  'schism_resolution',
   'secrets_favors',
   'clue_decay',
   'ruin_quest_hooks',

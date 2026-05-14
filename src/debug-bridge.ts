@@ -166,6 +166,31 @@ if (import.meta.env.DEV) {
     setFog: (enabled: boolean) => { _fogToggle?.(enabled); },
     _registerFogToggle: (fn: (enabled?: boolean) => boolean) => { _fogToggle = fn; },
 
+    // ── Schism inspection (THR-430) ──────────────────────────────────────
+    schism: {
+      list: () => {
+        const state = _gameStateProvider?.();
+        if (!state) return [];
+        return state.graph.getNodesByType('actor')
+          .filter(n =>
+            n.properties?.actorType === 'faction' &&
+            typeof n.properties?.schismPendingResolutionTick === 'number'
+          )
+          .map(n => ({
+            factionId: n.id,
+            factionName: n.name ?? 'faction',
+            plantedTick: n.properties?.schismPlantedTick as number | undefined,
+            resolutionTick: n.properties?.schismPendingResolutionTick as number,
+            ticksRemaining: Math.max(
+              0,
+              (n.properties?.schismPendingResolutionTick as number) - state.tick,
+            ),
+            actorAgentId: n.properties?.schismActorAgentId as string | undefined,
+            baselineCohesion: n.properties?.schismBaselineCohesion as number | undefined,
+          }));
+      },
+    },
+
     // ── Scene snapshot + coordinate conversion for interface playtests ───────
     snapshotScene: async () => _sceneSnapshot?.() ?? getEmptySceneSnapshot(),
     getViewportForHex: (col: number, row: number) => _viewportForHex?.(col, row) ?? null,

@@ -25,6 +25,9 @@ import type {
   FactionWhisperLeaderTrace,
   FactionRecoverDoctrineTrace,
   FactionSurfaceDoubterTrace,
+  SchismPlantedTrace,
+  SchismResolvedTrace,
+  FactionReformedTrace,
 } from './factionAction';
 
 /** Known trace categories for filtering in debug panel */
@@ -203,7 +206,11 @@ export type TraceCategory =
   | 'faction_stir_dissent'
   | 'faction_whisper_leader'
   | 'faction_recover_doctrine'
-  | 'faction_surface_doubter';
+  | 'faction_surface_doubter'
+  // Schism — deferred faction-split divine action (THR-430)
+  | 'schism_planted'
+  | 'schism_resolved'
+  | 'faction_reformed';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -384,6 +391,10 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'faction_whisper_leader',
   'faction_recover_doctrine',
   'faction_surface_doubter',
+  // Schism — deferred faction-split divine action (THR-430)
+  'schism_planted',
+  'schism_resolved',
+  'faction_reformed',
 ];
 
 /** Base shape for all trace entries */
@@ -1537,7 +1548,11 @@ export type TraceEntry =
   | FactionStirDissentTrace
   | FactionWhisperLeaderTrace
   | FactionRecoverDoctrineTrace
-  | FactionSurfaceDoubterTrace;
+  | FactionSurfaceDoubterTrace
+  // Schism — deferred faction-split divine action (THR-430)
+  | SchismPlantedTrace
+  | SchismResolvedTrace
+  | FactionReformedTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {

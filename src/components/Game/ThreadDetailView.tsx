@@ -205,7 +205,7 @@ export const ThreadDetailView = React.memo(function ThreadDetailView({
           <LocationDetailBody node={node} graph={graph} />
         )}
         {node.category === 'faction' && (
-          <FactionDetailBody node={node} graph={graph} />
+          <FactionDetailBody node={node} graph={graph} currentTick={currentTick} />
         )}
         {node.category === 'army' && (
           <ArmyDetailBody node={node} />
@@ -732,17 +732,154 @@ function LocationDetailBody({
 }
 
 // Faction detail body — sphere alignment FIRST per CONTEXT.md locked decision
+// THR-430 — pending-schism banner surfaced at the top of FactionDetailBody.
+// Renders during the [plant, resolution] window so the player can see that
+// their cast is in flight. Uses the same panel-styled box as DetailSection
+// so it fits the existing visual language.
+function SchismPendingBanner({
+  ticksRemaining,
+  resolutionTick,
+}: {
+  ticksRemaining: number | null;
+  resolutionTick: number;
+}) {
+  const remainingText =
+    ticksRemaining === null
+      ? `resolves at tick ${resolutionTick}`
+      : ticksRemaining === 0
+        ? 'resolves this tick'
+        : `${ticksRemaining} tick${ticksRemaining === 1 ? '' : 's'} until the crisis settles`;
+  return (
+    <div
+      data-testid="schism-pending-banner"
+      style={{
+        padding: 'var(--space-2)',
+        border: '1px solid color-mix(in srgb, #c46a4a 65%, transparent)',
+        borderRadius: '8px',
+        backgroundColor: 'color-mix(in srgb, #c46a4a 12%, var(--bg-deep))',
+        marginBottom: 'var(--space-2)',
+      }}
+    >
+      <div
+        style={{
+          fontSize: 'var(--text-xs)',
+          color: '#e69a78',
+          fontFamily: 'var(--font-display)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          marginBottom: 'var(--space-1)',
+        }}
+      >
+        Schism Brewing
+      </div>
+      <div
+        style={{
+          fontSize: 'var(--text-base)',
+          color: 'var(--text-primary)',
+          fontFamily: 'var(--font-body)',
+          lineHeight: 1.4,
+        }}
+      >
+        Two truths surface where there was one. The faction tremors — {remainingText}.
+      </div>
+    </div>
+  );
+}
+
+// Reform afterimage — shows briefly after a reform resolution so the player
+// understands what happened. Reads `lastSchismReformTick` / `lastSchismExpelledCount`
+// from the faction's properties.
+function SchismReformAfterimage({
+  ticksSince,
+  expelledCount,
+}: {
+  ticksSince: number;
+  expelledCount: number;
+}) {
+  const expelledText =
+    expelledCount === 0
+      ? 'no one was expelled'
+      : `${expelledCount} voice${expelledCount === 1 ? '' : 's'} expelled`;
+  return (
+    <div
+      data-testid="schism-reform-afterimage"
+      style={{
+        padding: 'var(--space-2)',
+        border: '1px solid color-mix(in srgb, var(--border-gold) 35%, transparent)',
+        borderRadius: '8px',
+        backgroundColor: 'color-mix(in srgb, var(--bg-deep) 80%, transparent)',
+        marginBottom: 'var(--space-2)',
+      }}
+    >
+      <div
+        style={{
+          fontSize: 'var(--text-xs)',
+          color: 'var(--text-muted)',
+          fontFamily: 'var(--font-display)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          marginBottom: 'var(--space-1)',
+        }}
+      >
+        Schism Reformed — {ticksSince} tick{ticksSince === 1 ? '' : 's'} ago
+      </div>
+      <div
+        style={{
+          fontSize: 'var(--text-base)',
+          color: 'var(--text-secondary)',
+          fontFamily: 'var(--font-body)',
+          lineHeight: 1.4,
+        }}
+      >
+        The doctrine still holds — narrower than it was. {expelledText}.
+      </div>
+    </div>
+  );
+}
+
 function FactionDetailBody({
   node,
   graph,
+  currentTick,
 }: {
   node: import('../../engine/retinue').ThreadedFaction;
   graph?: WorldGraph;
+  currentTick?: number;
 }) {
   const summary = graph ? getFactionNetworkSummary(graph, node.id) : null;
   const topReaches = summary?.dominantReaches.slice(0, 3) ?? [];
+  // THR-430 — surface pending-schism state from raw graph properties.
+  const rawNode = graph?.getNode(node.id);
+  const schismResolutionTick = rawNode?.properties?.schismPendingResolutionTick as number | undefined;
+  const showSchismBanner =
+    typeof schismResolutionTick === 'number' &&
+    (currentTick === undefined || schismResolutionTick >= currentTick);
+  const ticksRemaining =
+    showSchismBanner && currentTick !== undefined && typeof schismResolutionTick === 'number'
+      ? Math.max(0, schismResolutionTick - currentTick)
+      : null;
+  // Reform afterimage — surfaces briefly after a schism resolves to reform.
+  const lastReformTick = rawNode?.properties?.lastSchismReformTick as number | undefined;
+  const lastExpelledCount = rawNode?.properties?.lastSchismExpelledCount as number | undefined;
+  const showReformAfterimage =
+    !showSchismBanner &&
+    typeof lastReformTick === 'number' &&
+    currentTick !== undefined &&
+    (currentTick - lastReformTick) <= 24;
   return (
     <>
+      {showSchismBanner && (
+        <SchismPendingBanner
+          ticksRemaining={ticksRemaining}
+          resolutionTick={schismResolutionTick}
+        />
+      )}
+      {showReformAfterimage && (
+        <SchismReformAfterimage
+          ticksSince={currentTick - lastReformTick!}
+          expelledCount={lastExpelledCount ?? 0}
+        />
+      )}
       {/* Sphere alignment FIRST per CONTEXT.md locked decision */}
       {node.dominantSphere && (
         <SphereField label="Sphere" sphereName={node.dominantSphere} />

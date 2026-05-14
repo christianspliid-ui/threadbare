@@ -42,6 +42,8 @@ import type { OutcomeType } from '../types/resolution';
 import type { ResolutionInput } from '../types/resolution';
 import { executeGraphOps } from './graphOpExecutor';
 import { applyFactionGovernanceVerb } from './factionGovernanceVerbs';
+import { applyPlantSchism } from './schismPlant';
+import { SCHISM_PENDING_DURATION_TICKS } from '../data/game-config';
 import { emitTrace } from './traceBuffer';
 import {
   detectContestations,
@@ -1001,10 +1003,14 @@ export function executeStepResult(
     // them. Faction governance verbs need full GameState (not just graph) to
     // mutate `pendingEncounterSeeds` and read `ascendantId`. Dispatch them
     // here, then forward the remainder to executeGraphOps as usual.
+    // THR-430 — same dispatch pattern for `plant_schism`: needs state.tick and
+    // the live runtime for touchWorld/touchStructure invalidation.
     const factionVerbOps: GraphOp[] = [];
+    const plantSchismOps: GraphOp[] = [];
     const graphOnlyOps: GraphOp[] = [];
     for (const op of ops) {
       if (op.op === 'faction_verb') factionVerbOps.push(op);
+      else if (op.op === 'plant_schism') plantSchismOps.push(op);
       else graphOnlyOps.push(op);
     }
 
@@ -1020,6 +1026,20 @@ export function executeStepResult(
             preferredPole: op.factionVerbPreferredPole as
               | 'protector' | 'conqueror' | 'sworn' | 'renegade' | undefined,
           });
+        } catch {
+          // Fail-soft per NFP #4: log nothing, never crash the tick.
+        }
+      }
+    }
+
+    if (plantSchismOps.length > 0) {
+      const factionId = action.targetId;
+      for (const op of plantSchismOps) {
+        const delay = typeof op.schismResolutionDelay === 'number'
+          ? op.schismResolutionDelay
+          : SCHISM_PENDING_DURATION_TICKS;
+        try {
+          applyPlantSchism(state, runtime, factionId, action.actorId, delay, tick);
         } catch {
           // Fail-soft per NFP #4: log nothing, never crash the tick.
         }
