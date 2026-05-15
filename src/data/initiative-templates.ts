@@ -3,6 +3,11 @@
 // direction: 'right' = second word in axis name (negative values, e.g. ambition, cunning, survival)
 
 import type { InitiativeTemplate } from '../types/initiative';
+import {
+  MENTORSHIP_BASE_DURATION,
+  MENTORSHIP_DURATION_VARIANCE,
+  MENTORSHIP_CHECK_INTERVAL,
+} from './mentorship-constants';
 
 export const INITIATIVE_TEMPLATES: readonly InitiativeTemplate[] = [
   {
@@ -197,6 +202,41 @@ export const INITIATIVE_TEMPLATES: readonly InitiativeTemplate[] = [
       { axis: 'revelation_discretion', direction: 'right', weight: 0.4 },
     ],
     sphereAffinity: 'shadow',
+  },
+
+  // ── Mentorship (THR-75) ─────────────────────────────────────────
+  // The Reach requirement is dynamic — generateInitiativeCandidates() applies the
+  // MENTOR_MIN_TIER check across all 8 Reaches and chooses a domain at candidate
+  // time. The `requiredReaches` field is left empty here; the candidate-gen
+  // branch handles eligibility instead.
+  {
+    id: 'initiative.train-apprentice',
+    name: 'Train Apprentice',
+    category: 'social',
+    description: 'Take on an apprentice and pass along mastery in your domain over a multi-tick training arc.',
+    minWealth: 0,
+    wealthCost: 0,
+    // No requiredReaches — handled dynamically in initiativeCandidates.ts
+    // No requiredAxiologicalBias — agents on tradition or loyalty poles are drawn in via motivations
+    baseDuration: MENTORSHIP_BASE_DURATION,
+    durationVariance: MENTORSHIP_DURATION_VARIANCE,
+    checkInterval: MENTORSHIP_CHECK_INTERVAL,
+    failureConditions: [
+      { type: 'agent_dies' },
+      // Note: apprentice-side failures (death, separation) handled by phaseMentorship,
+      // which sets the initiative status to failed when it detects them.
+    ],
+    outcomes: [
+      // Terminal arc is owned by phaseMentorship/resolveMentorship (THR-75) —
+      // it watches for status: completed and runs Graduation / Surpassing / Falling Out
+      // / Quiet Parting / Dissolution against bondQuality. The `record_intelligence`
+      // outcome is a no-op flavor marker only, not a real intelligence record.
+      { type: 'record_intelligence', intelligenceType: 'mentorship_resolved' },
+    ],
+    motivations: [
+      { axis: 'loyalty_ambition', direction: 'left', weight: 0.7 },
+      { axis: 'tradition_novelty', direction: 'left', weight: 0.5 },
+    ],
   },
 ];
 

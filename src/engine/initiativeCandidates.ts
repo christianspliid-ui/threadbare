@@ -17,9 +17,15 @@ import {
   INITIATIVE_WEALTH_SURPLUS_BONUS,
   INITIATIVE_MIN_WEALTH_FLOOR,
 } from '../data/initiative-constants';
+import {
+  ENABLE_MENTORSHIP,
+  MENTOR_MIN_TIER,
+  APPRENTICE_MIN_TIER,
+  APPRENTICE_MAX_TIER,
+} from '../data/mentorship-constants';
 import { computeCapability, computeTier } from './domainCapability';
 import { getAgentsAtLocation } from './graphQueries';
-import type { ReachDomain } from '../types/traits';
+import { REACH_DOMAINS, type ReachDomain } from '../types/traits';
 
 // ─── Settlement Hierarchy ────────────────────────────────────────────
 // Each tier includes itself and everything above it.
@@ -116,6 +122,77 @@ export function generateInitiativeCandidates(
   // Per-template evaluation.
   for (const template of INITIATIVE_TEMPLATES) {
     const reject = (reason: string) => rejections.push({ templateId: template.id, reason });
+
+    // ── Train Apprentice (THR-75) — isolated branch ───────────────
+    // Mentorship has dynamic Reach prerequisites: the mentor must be MENTOR_MIN_TIER+
+    // in *some* Reach AND have a colocated eligible apprentice in that same Reach.
+    // Domain and apprentice are selected at edge-creation time in phaseMentorship.
+    if (template.id === 'initiative.train-apprentice') {
+      if (!ENABLE_MENTORSHIP) {
+        reject('mentorship disabled (ENABLE_MENTORSHIP=false)');
+        continue;
+      }
+
+      const colocated = getAgentsAtLocation(graph, parentLocationId).filter(a => a.id !== agentId);
+      let mentorshipEligible = false;
+
+      for (const domain of REACH_DOMAINS) {
+        const mentorTier = computeTier(computeCapability(graph, agentId, domain));
+        if (mentorTier < MENTOR_MIN_TIER) continue;
+
+        // Look for an eligible apprentice colocated and not already mentored in this domain
+        for (const candidateAppr of colocated) {
+          if (candidateAppr.properties.actorType !== 'individual') continue;
+          // Ascendants are excluded from apprentice eligibility (content choice, not special-case)
+          if (candidateAppr.properties.actorType === 'ascendant') continue;
+          const apprTier = computeTier(computeCapability(graph, candidateAppr.id, domain));
+          if (apprTier < APPRENTICE_MIN_TIER || apprTier > APPRENTICE_MAX_TIER) continue;
+          // Skip if apprentice already has an active mentors edge (in any domain)
+          const existing = graph.getIncomingEdges(candidateAppr.id, 'mentors');
+          const activeExisting = existing.some(e => {
+            const phase = e.properties.phase as string | undefined;
+            return phase === 'offered' || phase === 'training';
+          });
+          if (activeExisting) continue;
+          mentorshipEligible = true;
+          break;
+        }
+        if (mentorshipEligible) break;
+      }
+
+      if (!mentorshipEligible) {
+        reject('no eligible apprentice colocated, or no Reach at MENTOR_MIN_TIER');
+        continue;
+      }
+
+      // Scoring: axiological + ambition alignment + one-time mentorship-inspire bonus
+      const axiologicalScore = computeAxiologicalScore(axiologicalProfile, template);
+      const aligned = AMBITION_CATEGORY_ALIGNMENT[template.category] ?? [];
+      const ambitionBonus = aligned.some(cat => activeAmbitionCategories.has(cat))
+        ? INITIATIVE_AMBITION_ALIGNMENT_BONUS
+        : 0;
+
+      const mentorshipInspireBonus = (props.mentorshipInspireBonus as number | undefined) ?? 0;
+      const totalInspire = inspireBonus + mentorshipInspireBonus;
+
+      const finalScore = Math.min(
+        INITIATIVE_MAX_SCORE,
+        axiologicalScore + ambitionBonus + totalInspire,
+      );
+
+      candidates.push({
+        templateId: template.id,
+        template,
+        agentId,
+        locationId: parentLocationId,
+        axiologicalScore,
+        ambitionBonus,
+        wealthSurplusBonus: 0,
+        inspireBonus: totalInspire,
+        finalScore,
+      });
+      continue;
+    }
 
     // Wealth gate.
     if (wealth < template.minWealth) {

@@ -220,7 +220,14 @@ export type TraceCategory =
   // Faction internal-pressure resolver (THR-433)
   | 'faction_kindle_calling'
   // Survey people-layer prose composer (THR-415)
-  | 'survey_prose_composed';
+  | 'survey_prose_composed'
+  // Mentor/apprentice lifecycle (THR-75)
+  | 'mentorship_offered'
+  | 'mentorship_started'
+  | 'mentorship_lesson'
+  | 'mentorship_graduated'
+  | 'mentorship_surpassed'
+  | 'mentorship_severed';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -412,6 +419,13 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'faction_kindle_calling',
   // Survey people-layer prose composer (THR-415)
   'survey_prose_composed',
+  // Mentor/apprentice lifecycle (THR-75)
+  'mentorship_offered',
+  'mentorship_started',
+  'mentorship_lesson',
+  'mentorship_graduated',
+  'mentorship_surpassed',
+  'mentorship_severed',
 ];
 
 /** Base shape for all trace entries */

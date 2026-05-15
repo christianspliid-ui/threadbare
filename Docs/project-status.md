@@ -1,8 +1,10 @@
 # Project Status
-> Updated 2026-05-15 (THR-425).
+> Updated 2026-05-15 (THR-75, THR-425).
 
 ## Current Focus
 **Encounter Experience — active:** Phases A1–A3, B1–B7, C1–C4, D1–D3, E1–E2, F1–F2, G1–G3 ✅. Remaining is F-phase integration (mount EffectRegistration components into hero panel / cast tile / scene state surfaces) and Phase H post-v1 polish.
+
+**Social Systems Expansion — active:** THR-75 (Mentor/Apprentice Relationship Chains) Phase 1 shipped 2026-05-15 — `mentors` edge, `initiative.train-apprentice`, `phaseMentorship` lifecycle, `resolveMentorship` terminal-arc decision table, 3 branching encounters (the-offer / graduation / the-falling-out), 2 divine actions, AgentDetailPanel block, 6 trace categories. Phase 2 (3 mid-chain milestone encounters + standalone Surpassing template) filed as THR-445 Deferral.
 
 ## Milestone Status
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
@@ -11,7 +13,7 @@
 - **Content Architecture (Now):** ✅ THR-86/88/239 shipped.
 - **UI Visual Overhaul — Design System v1 (Now):** ✅ Project complete. THR-178 Deferral shipped 2026-05-08.
 - **Continuous Improvement (Now):** THR-303/305/306/307/309/311/312/313/314/315/316/354/355/356/357/358/359/266/396/404 ✅. THR-304 Phase 5 series complete (5a vault THR-356 ✅, 5b repo THR-359 ✅). THR-360 (Category B code residue) queued.
-- **Social Systems Expansion (Now):** THR-28/27/30/51/29/41/34/31/35 shipped. ✅ THR-254/253. THR-78 queued.
+- **Social Systems Expansion (Now):** THR-28/27/30/51/29/41/34/31/35/75 shipped. ✅ THR-254/253. THR-78 queued.
 - **Thematic Pressure & Living World (Next):** ✅ THR-19/122/125/126/80/128/127. THR-87 blocked by THR-116.
 
 ## Archived to project-history.md
@@ -24,7 +26,7 @@
 - 2026-05-11 batch: THR-393, THR-403, THR-407, THR-408, THR-411, THR-396
 - 2026-05-12 batch: THR-413, THR-404, THR-397, THR-398, THR-399, THR-401, THR-405, THR-416, THR-409, THR-395, THR-412, THR-422, THR-423, THR-418, THR-424, THR-400, THR-11
 - 2026-05-14 batch: THR-12, THR-430, THR-432, THR-433, THR-415, THR-410, THR-385
-- 2026-05-15 batch: THR-163, THR-386, THR-425
+- 2026-05-15 batch: THR-163, THR-386, THR-425, THR-75
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)

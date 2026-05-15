@@ -1141,3 +1141,23 @@ If a `storyBeat.template` id is not in the registry, `makePhaseChronicleEntry` f
 | `STORY_BEAT_DEFAULT_MOOD` | `"ominous"` | `src/data/composition-config.ts` |
 | `STORY_BEAT_DEFAULT_SPHERE` | `"entropy"` | same |
 | `STORY_BEAT_DEFAULT_VOICE` | `"divine"` | same |
+
+---
+
+## Capability 8: Mentor/Apprentice Edges + Graduation Trait Grant (THR-75)
+
+A `mentors` edge type (`src/types/graph.ts` + schema in `src/types/edgeSchema.ts`) persists training relationships across their full lifecycle — `offered` → `training` → `graduated | estranged`. The edge carries `domain` (which Reach), `progress`, `bondQuality` (the narrative-derived value that decides the terminal arc), and `lessonsCompleted`. Graduated and estranged edges persist as *history* — future encounters can read "the one who trained under X" or "the one estranged from Y" as legible state.
+
+**Why this matters for content:**
+- **Encounters can reference a mentor's name without invention.** When an encounter targets an apprentice (`$actor`), the engine can resolve their mentor via `getMentorships(graph, agentId)` (`src/engine/graphQueries.ts`). Prose can pull `mentorName` out of the edge instead of inventing a stranger.
+- **Capability transfer is graph-native.** Graduation grants a Mastery trait in the mentor's domain via the existing `has_trait` GraphOp pattern. The trait carries `source: 'mentorship'` for queryable provenance. Future encounters can scope to "graduated mortals" by filtering on Mastery traits with `source === 'mentorship'`.
+- **The terminal arc is a `bondQuality`-keyed decision.** Failure produces *Falling Out*, not punishment. The Falling Out aftermath plants a future rivalry encounter — failure is a story turn, not a loss.
+
+**Content authoring hooks:**
+- Encounter templates targeting an apprentice can read their `mentors` edge for the mentor's id/name, the domain, and the bondQuality. Phase 1 encounter prose stays sphere-coloured (Life / Entropy / Force / Mind authored, others fall through) — see the three branching templates in `src/data/encounters/mentorship-*.ts`.
+- Three Phase 2 milestone encounters (`mentorship.first-lesson`, `mentorship.the-test`, `mentorship.the-breakthrough`) are seeded by `phaseMentorship` at `MILESTONE_THRESHOLDS` and fail soft until authored. Authoring them is pure additive content work — the engine seeds them by `templateId`.
+- The two divine actions (`action.mentorship.inspire`, `action.mentorship.sever`) use the existing property-flag pattern (`mentorshipInspireBonus`, `pendingMentorshipSever`) — no new GraphOp kind required. Author similar divine-action templates by setting a flag the consuming phase reads.
+
+**Trace categories registered:** `mentorship_offered`, `mentorship_started`, `mentorship_lesson`, `mentorship_graduated`, `mentorship_surpassed`, `mentorship_severed` — all six are inspectable in the DebugPanel Trace tab.
+
+**Constants:** all 23 tunable numbers in `src/data/mentorship-constants.ts`. Master feature flag `ENABLE_MENTORSHIP` gates the entire pipeline.

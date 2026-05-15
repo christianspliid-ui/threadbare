@@ -323,6 +323,99 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
           );
         })()}
 
+        {/* Mentorship — active and historical (THR-75) */}
+        {detail.mentorship && detail.mentorship.length > 0 && (
+          <div className="space-y-2">
+            {detail.mentorship.map((m) => {
+              const isActive = m.phase === 'offered' || m.phase === 'training';
+              const pct = Math.round(m.progress * 100);
+              const roleLine = m.role === 'mentor'
+                ? `Mentoring ${m.otherName} in ${m.domain}`
+                : `Apprenticed to ${m.otherName} in ${m.domain}`;
+              const phaseLabel = m.phase.charAt(0).toUpperCase() + m.phase.slice(1);
+
+              if (!isActive) {
+                // Quiet "Past bond" treatment for graduated/estranged history
+                return (
+                  <div
+                    key={`mentorship-${m.role}-${m.otherId}`}
+                    className="rounded px-3 py-1.5"
+                    style={{
+                      backgroundColor: 'var(--bg-raised)',
+                      border: '1px solid var(--border-subtle)',
+                      opacity: 0.7,
+                    }}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span
+                        className="text-xs uppercase tracking-wide"
+                        style={{ color: 'var(--text-tertiary)' }}
+                      >
+                        Past bond · {phaseLabel}
+                      </span>
+                    </div>
+                    <div
+                      className="text-xs"
+                      style={{ color: 'var(--text-secondary)' }}
+                    >
+                      {roleLine}
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <div
+                  key={`mentorship-${m.role}-${m.otherId}`}
+                  className="rounded px-3 py-2"
+                  style={{
+                    backgroundColor: 'var(--bg-raised)',
+                    border: '1px solid var(--border-subtle)',
+                  }}
+                  data-testid={`mentorship-block-${m.role}`}
+                >
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <span
+                      className="text-xs uppercase tracking-wide"
+                      style={{ color: 'var(--sphere-heart-bright, var(--sphere-spirit-bright))' }}
+                    >
+                      Mentorship · {phaseLabel}
+                    </span>
+                    <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{pct}%</span>
+                  </div>
+                  <div
+                    className="text-xs font-medium mb-2"
+                    style={{ color: 'var(--text-primary)' }}
+                  >
+                    {roleLine}
+                  </div>
+                  <div
+                    className="h-1.5 rounded-full overflow-hidden"
+                    style={{ background: 'var(--bg-raised)', outline: '1px solid var(--border-subtle)' }}
+                  >
+                    <div
+                      className="h-full rounded-full transition-all duration-200"
+                      style={{
+                        width: `${pct}%`,
+                        backgroundColor: 'var(--sphere-heart-bright, var(--sphere-spirit-bright))',
+                        opacity: 0.85,
+                      }}
+                    />
+                  </div>
+                  {m.lessonsCompleted > 0 && (
+                    <div
+                      className="mt-1.5 text-xs"
+                      style={{ color: 'var(--text-muted)' }}
+                    >
+                      {m.lessonsCompleted}/3 lessons reached
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         {/* Active Initiative */}
         {detail.activeInitiative && (() => {
           const ini = detail.activeInitiative!;

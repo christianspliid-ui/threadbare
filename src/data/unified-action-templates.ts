@@ -147,6 +147,13 @@ import { SCHISM_ESSENCE_COST } from './game-config';
 import { RIVAL_SHRINE_BETRAYAL_TEMPLATE } from './encounters/rival-shrine-betrayal';
 import { WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE } from './encounters/wandering-healer-shrine-access';
 import { FLAWED_STEEL_TEMPLATE } from './encounters/flawed-steel';
+import { MENTORSHIP_THE_OFFER_TEMPLATE } from './mentorship-templates/the-offer';
+import { MENTORSHIP_GRADUATION_TEMPLATE } from './mentorship-templates/graduation';
+import { MENTORSHIP_THE_FALLING_OUT_TEMPLATE } from './mentorship-templates/the-falling-out';
+import {
+  INSPIRE_MENTORSHIP_TEMPLATE,
+  SEVER_THE_BOND_TEMPLATE,
+} from './mentorship-templates/divine-actions';
 import { SOUL_FERRYMAN_TEMPLATE } from './encounters/soul-ferryman';
 import { ROAD_AMBUSH_TEMPLATE } from './encounters/road-ambush';
 import { COURTYARD_DUEL_TEMPLATE } from './encounters/the-courtyard-duel';
@@ -4632,6 +4639,12 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   RIVAL_SHRINE_BETRAYAL_TEMPLATE,
   WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE,
   FLAWED_STEEL_TEMPLATE,
+  // Mentor/apprentice encounters + divine actions (THR-75)
+  MENTORSHIP_THE_OFFER_TEMPLATE,
+  MENTORSHIP_GRADUATION_TEMPLATE,
+  MENTORSHIP_THE_FALLING_OUT_TEMPLATE,
+  INSPIRE_MENTORSHIP_TEMPLATE,
+  SEVER_THE_BOND_TEMPLATE,
   SOUL_FERRYMAN_TEMPLATE,
   ROAD_AMBUSH_TEMPLATE,
   COURTYARD_DUEL_TEMPLATE,

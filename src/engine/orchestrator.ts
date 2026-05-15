@@ -97,6 +97,7 @@ import { phaseReputationTraits, processReputationTally } from './phaseReputation
 import { processEncounterMastery, processEncounterConditions } from './phaseEncounterTraits';
 import { phaseAgentDecision } from './phaseAgentDecision';
 import { phaseInitiativeProgress } from './phaseInitiativeProgress';
+import { phaseMentorship } from './phaseMentorship';
 import { phaseStrategicProjects } from './phaseStrategicProjects';
 import { phaseDivinePremonition } from './phaseDivinePremonition';
 import { phaseControlEffects, resetControlEffectsCounter } from './phaseControlEffects';
@@ -2149,6 +2150,12 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseEventCounts['initiative_progress'] = s.tickEvents.length - prevEventCount;
   // touchStructure removed (THR-187): create_sublocation outcomes now call applyEncounterCacheUpdate
   // internally; other outcome kinds (bonds, boosts, faction) don't require cache invalidation.
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 2.33: Mentorship Lifecycle (THR-75) — couples train-apprentice initiatives to mentors edges
+  const mentorshipRng = mulberry32(state.seed + state.tick * 59);
+  s = { ...s, ...phaseMentorship(s, mentorshipRng, runtime) };
+  phaseEventCounts['mentorship'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.35: Agent Movement (goal-directed pathfinding)

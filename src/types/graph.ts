@@ -68,6 +68,7 @@ export type EdgeType =
   | 'member_of'        // individual is member of group/faction
   | 'belongs_to'       // actor/location belongs to culture (culturalStrength, cultureLayer)
   | 'thread'           // ascendant → mortal divine thread (god reaches down)
+  | 'mentors'          // mentor → apprentice training relationship (THR-75, MentorsEdgeProperties)
   // Enchantment — RESERVED: not yet implemented
   | 'enchanted'        // caster → target enchantment
   | 'warded'           // ritual site → location ward
@@ -144,6 +145,31 @@ export interface RelationshipNodeProperties {
   tension_drift: number;             // -1.0 to +1.0; positive toward repair, negative toward severance
   history: string[];                 // EventId[]
   last_invoked_tick: number;
+}
+
+/**
+ * Typed properties for `mentors` edges (THR-75).
+ * Directed mentor → apprentice. Persists past the active training phase
+ * as historical edges in `graduated` / `estranged` phase.
+ * Callers must call touchWorld(runtime) after creating or mutating these edges.
+ */
+export interface MentorsEdgeProperties {
+  /** Which of the 8 Reaches is being / was taught. ReachDomain from '../types/traits'. */
+  domain: string;
+  /** Training completion 0.0–1.0; advanced by phaseMentorship from the backing initiative. */
+  progress: number;
+  /** Lifecycle state. */
+  phase: 'offered' | 'training' | 'graduated' | 'estranged';
+  /** Tick the apprenticeship was offered. */
+  startedTick: number;
+  /** Count of milestone checkpoints crossed (0–4, includes terminal). */
+  lessonsCompleted: number;
+  /** Narrative-derived health of the bond (−1.0–+1.0). Seeds the terminal arc. */
+  bondQuality: number;
+  /** The backing `train-apprentice` initiative; undefined once graduated/estranged. */
+  initiativeId?: string;
+  /** Set to true by the Sever the Bond divine action so the next tick runs Falling Out. */
+  severedByDivineWill?: boolean;
 }
 
 /** Result type for graph mutations */

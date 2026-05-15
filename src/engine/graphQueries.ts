@@ -169,6 +169,76 @@ export function getIncomingBonds(
     .filter((b): b is { agent: GraphNode; edge: GraphEdge; sentiment: number; trust: number } => b.agent != null);
 }
 
+// ─── Mentorship (THR-75) ─────────────────────────────────────────
+
+export type MentorshipRole = 'mentor' | 'apprentice';
+
+export interface MentorshipSummary {
+  /** Whether this agent is the mentor or the apprentice in the relationship */
+  role: MentorshipRole;
+  /** The other party's node id */
+  otherId: string;
+  /** The other party's display name (or '(unknown)' if missing) */
+  otherName: string;
+  /** Which Reach is being taught */
+  domain: string;
+  /** Training completion 0–1 */
+  progress: number;
+  /** Lifecycle state */
+  phase: 'offered' | 'training' | 'graduated' | 'estranged';
+  /** Narrative bond health −1..+1 */
+  bondQuality: number;
+  /** Number of lesson milestones reached */
+  lessonsCompleted: number;
+}
+
+/**
+ * Get all `mentors` edges touching this agent, in both directions.
+ * Returns summaries that name the agent's role (mentor / apprentice) and the
+ * other party. Includes historical (`graduated` / `estranged`) edges — callers
+ * can filter by `phase` if they only want active ones.
+ *
+ * Distinct from `getAgentBonds`, which reads only `relates_to` edges.
+ */
+export function getMentorships(
+  graph: WorldGraph,
+  agentId: string,
+): MentorshipSummary[] {
+  const summaries: MentorshipSummary[] = [];
+
+  // As mentor (outgoing)
+  for (const edge of graph.getOutgoingEdges(agentId, 'mentors')) {
+    const other = graph.getNode(edge.target);
+    summaries.push({
+      role: 'mentor',
+      otherId: edge.target,
+      otherName: other?.name ?? '(unknown)',
+      domain: (edge.properties.domain as string) ?? 'heart',
+      progress: (edge.properties.progress as number) ?? 0,
+      phase: ((edge.properties.phase as MentorshipSummary['phase']) ?? 'offered'),
+      bondQuality: (edge.properties.bondQuality as number) ?? 0,
+      lessonsCompleted: (edge.properties.lessonsCompleted as number) ?? 0,
+    });
+  }
+
+  // As apprentice (incoming)
+  for (const edge of graph.getIncomingEdges(agentId, 'mentors')) {
+    const other = graph.getNode(edge.source);
+    summaries.push({
+      role: 'apprentice',
+      otherId: edge.source,
+      otherName: other?.name ?? '(unknown)',
+      domain: (edge.properties.domain as string) ?? 'heart',
+      progress: (edge.properties.progress as number) ?? 0,
+      phase: ((edge.properties.phase as MentorshipSummary['phase']) ?? 'offered'),
+      bondQuality: (edge.properties.bondQuality as number) ?? 0,
+      lessonsCompleted: (edge.properties.lessonsCompleted as number) ?? 0,
+    });
+  }
+
+  return summaries;
+}
+
 // ─── Traits ──────────────────────────────────────────────────────
 
 /** Get all traits on an actor */

@@ -8,6 +8,8 @@ import type {
   ItemConsumedByChoiceTrace,
   SpotlightChangedTrace,
 } from '../types/traces/encounter-traces';
+import type { MentorshipTraceEntry } from '../types/traces/mentorship-traces';
+import { MENTORSHIP_TRACE_CATEGORIES } from '../types/traces/mentorship-traces';
 
 const BUFFER_SIZE = 2000;
 const FALLBACK_TRACE_CATEGORY = 'engine_warning';
@@ -21,6 +23,7 @@ export const TRACE_CATEGORIES = [
   'detection_threshold_crossed',
   'item_consumed_by_choice',
   'spotlight_changed',
+  ...MENTORSHIP_TRACE_CATEGORIES,
 ] as const;
 
 export type EncounterTraceCategory = typeof TRACE_CATEGORIES[number];
@@ -32,7 +35,8 @@ export type EncounterTraceEntry =
   | DriftThresholdCrossedTrace
   | DetectionThresholdCrossedTrace
   | ItemConsumedByChoiceTrace
-  | SpotlightChangedTrace;
+  | SpotlightChangedTrace
+  | MentorshipTraceEntry;
 
 let buffer: TraceEntry[] = [];
 let nextId = 0;
