@@ -290,6 +290,18 @@ export const RANGERS_BROTHERHOOD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
                   'annually, not continuously — seasonal threat, predictable approach vector.',
                 reliability: 0.8,
               },
+              {
+                // Rangers returning to map predator territory with prior
+                // military_position intel — patrol rhythm carries across hunts.
+                kind: 'intel_referenced_prose',
+                category: 'military_position',
+                prose: {
+                  reliable: '{name} read the patrol pattern the way the intelligence had described it — rotation intact, watch hours intact, the gap at the fourth marker still a gap.',
+                  uncertain: '{name} approached the garrison with most of the schedule remembered — the rotation had drifted by an hour or so, but the structural gaps remained.',
+                  dubious:
+                    '{name} reached for the patrol pattern the rumor had described and met a different garrison — different rotation, different captains, the dossier already a season behind.',
+                },
+              },
             ],
             closeAfterSelection: true,
           },
@@ -987,6 +999,20 @@ export const RANGERS_BROTHERHOOD_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
                   'Suggests a base camp in the rough country northwest of {location} — not a ' +
                   'temporary position.',
                 reliability: 0.7,
+              },
+              {
+                // Ambush forensics carry across raids — prior military_position intel
+                // sharpens the read of where the survivor was running toward.
+                kind: 'intel_referenced_prose',
+                category: 'military_position',
+                prose: {
+                  reliable:
+                    '{name} read the survivor\'s bearing against the column structures {they} already knew — the run pointed exactly where the dossier said it would point, and the camp could be marked precisely.',
+                  uncertain:
+                    '{name} matched the survivor\'s heading against the patrols {name} had partly mapped — the general country held, but the specific waypoint required more careful tracking than the briefing implied.',
+                  dubious:
+                    '{name} expected the bearing to match the rough country northwest of {location}, and the bearing met no remembered camp at all — the raiders had reformed somewhere the intelligence had not yet found.',
+                },
               },
             ],
             closeAfterSelection: true,

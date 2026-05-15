@@ -141,6 +141,19 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                   'The vein runs approximately two meters deep before widening.',
                 reliability: 0.9,
               },
+              {
+                // Returning prospectors with prior trade_route intel read the vein
+                // through the lens of where similar seams have run in the past.
+                kind: 'intel_referenced_prose',
+                category: 'trade_route',
+                prose: {
+                  reliable: '{name} priced the goods by what {name} already knew the route would bear — the market spoke, but it spoke a language already learned.',
+                  uncertain:
+                    '{name} measured the seam\'s yield against routes {name} had partly mapped — close enough to estimate the price, off enough to require a careful note on what the buyers in {location} would actually pay.',
+                  dubious:
+                    '{name} reached for the trade arithmetic the rumor had supplied, and the rumor had aged — the route this seam fed was no longer the route the dossier had described, and the value would have to be reckoned fresh.',
+                },
+              },
             ],
             closeAfterSelection: true,
           },

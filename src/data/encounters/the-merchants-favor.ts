@@ -173,6 +173,17 @@ const INTERCEDE_AFTERMATH = {
       effects: [
         { kind: 'reputation_tally' as const, key: 'gold.positive', delta: 1 },
         {
+          // Choosing to keep a merchant thread open with prior trade_route intel —
+          // the ascendant reads this debt against caravans they already know.
+          kind: 'intel_referenced_prose' as const,
+          category: 'trade_route' as const,
+          prose: {
+            reliable: '{name} read the merchant\'s ruin against the caravans {they} already understood — the loss pattern fit a route the ledgers had marked, and the favor would compound in the directions the trade ran.',
+            uncertain: '{name} weighed the merchant\'s prospects against half-remembered routes — most aligned with where the cloth could be sold again, some required reading the road fresh.',
+            dubious: '{name} reached for the trade arithmetic the rumor had supplied, and the rumor had aged — the merchant\'s recovery would not travel along the route {name} had been told to expect.',
+          },
+        },
+        {
           kind: 'recent_event' as const,
           eventType: 'narrative' as const,
           message: 'The {title} opened the guildhall door for a ruined merchant. The cloth arrived without a note.',

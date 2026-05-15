@@ -308,6 +308,17 @@ const ACCEPT_AFTERMATH = {
           targetRegion: 'vessen_uplands',
           reliability: 0.9,
         },
+        {
+          // Receiving a shrine map after prior shrine work: the new geometry
+          // is read against every consecrated ground {name} has already learned.
+          kind: 'intel_referenced_prose' as const,
+          category: 'shrine_location' as const,
+          prose: {
+            reliable: '{name} read the shrine\'s geometry with the unhurried recognition of someone returning to a place they had never quite stopped knowing.',
+            uncertain: '{name} found half the path remembered, half worked out from instinct — the shrine\'s geometry came back in pieces, but enough pieces aligned.',
+            dubious: 'What {name} thought {location} would be was not what {location} was — the rumor of the sanctuary had drifted, and the working did not greet a stranger.',
+          },
+        },
       ],
     },
     {

@@ -692,6 +692,17 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                   'about arrest and transfer route.',
                 reliability: 0.7,
               },
+              {
+                // Filing an organized-ambush report against prior military_position
+                // intel — the watch reads the rescue as a column with structure.
+                kind: 'intel_referenced_prose',
+                category: 'military_position',
+                prose: {
+                  reliable: '{name} moved through the perimeter with the surety of someone who already knew where the eyes were, and where they were not.',
+                  uncertain: '{name} read the perimeter partly from the marked dossier, partly from the way the watchmen carried themselves — the recognition was real but partial.',
+                  dubious: '{name} expected the gap at the fourth marker; the gap had moved, or had never been where the briefing put it, and the perimeter held closed.',
+                },
+              },
               { kind: 'reputation_tally', key: 'cg.watch_work', delta: 1 },
             ],
             closeAfterSelection: true,

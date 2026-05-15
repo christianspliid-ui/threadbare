@@ -1004,6 +1004,17 @@ export const TEMPLE_OF_SPHERES_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
                 reliability: 0.75,
               },
               {
+                // A temple working surfaces leverage the celebrant already carried —
+                // forced-closure patterns ride political pressure the priest knows about.
+                kind: 'intel_referenced_prose',
+                category: 'political_secret',
+                prose: {
+                  reliable: 'The leverage {name} had been told existed at {location} was real — the threat unspoken landed exactly where the briefing said it would.',
+                  uncertain: 'The political signal {name} was meant to read came back partly clear — recognition where recognition was earned, and reserve where the briefing had grown old.',
+                  dubious: '{name} reached for the leverage the dossier had named, and reached past it — the secret had become open knowledge, or had never been a secret at all.',
+                },
+              },
+              {
                 kind: 'hidden_mark',
                 category: 'secret_knowledge',
                 severity: FACTION_PROSE_HIDDEN_MARK_DEFAULT_SEVERITY,
@@ -1324,6 +1335,17 @@ export const TEMPLE_OF_SPHERES_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
                   'the standard map shows, and which are more closed. This intelligence ' +
                   'can inform future rite placement and corruption-banishment work.',
                 reliability: 0.9,
+              },
+              {
+                // Convergence work depends on what the celebrant already knows
+                // of the regional lore — the rite recognises its precedents.
+                kind: 'intel_referenced_prose',
+                category: 'cultural_knowledge',
+                prose: {
+                  reliable: '{name} read the working with the unhurried recognition of someone who had seen its bones before — the lore came back, exactly as remembered.',
+                  uncertain: '{name} read the ceremony\'s structure partly from the lore committed to memory, partly from how the room held its breath — the recognition was real, if uneven.',
+                  dubious: '{name} read from a memory of the practice that the practice no longer matched — gestures landed in empty places, and the silences held no weight.',
+                },
               },
               {
                 kind: 'hidden_mark',

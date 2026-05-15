@@ -302,6 +302,17 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                   'but the direction is clear — someone is on the way out, and they may not know it yet.',
                 reliability: 0.6,
               },
+              {
+                // Tavern rumors land sharper when the listener already holds a map
+                // of the network the rumor describes.
+                kind: 'intel_referenced_prose',
+                category: 'agent_network',
+                prose: {
+                  reliable: 'The names {name} carried into the meeting were the right names, in the right order — the network held its shape, and the doors opened.',
+                  uncertain: 'Half the network {name} expected stood as remembered; the other half had shifted, but enough remained to bridge what no longer connected directly.',
+                  dubious: 'What {name} carried as a list of allies in {location} read as a list of strangers — the network had moved on, or the names had been wrong from the start.',
+                },
+              },
             ],
             closeAfterSelection: true,
           },

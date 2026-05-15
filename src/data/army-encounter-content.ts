@@ -217,6 +217,20 @@ export const ARMY_RAISE_TEMPLATE: UnifiedActionTemplate = {
                 'Names of houses whose contributions were generous and those whose were grudging.',
               reliability: 0.9,
             },
+            {
+              // Raising an army with prior military_position intel — the commander
+              // reads the muster against earlier columns and their drift.
+              kind: 'intel_referenced_prose',
+              category: 'military_position',
+              prose: {
+                reliable:
+                  '{name} read the muster against the columns {they} had commanded before — the rotation of houses, the predictable laggards, the predictable surplus, the same tired hour at the same crossing where discipline thinned and the column blinked.',
+                uncertain:
+                  '{name} weighed the muster against the last campaign\'s roster — most of the houses kept faith with the marked pledges, but two had drifted in ways the dossier had not yet acknowledged.',
+                dubious:
+                  '{name} expected the houses to answer the call the way the briefing had described, and the briefing had aged — the rolls came in shorter than the strategy assumed, with the wrong names absent for the wrong reasons.',
+              },
+            },
           ],
           closeAfterSelection: true,
         },

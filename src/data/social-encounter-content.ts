@@ -436,6 +436,19 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                   'These relationships are not publicly announced but influence their every decision.',
                 reliability: 0.65,
               },
+              {
+                // Reputation work compounds: prior agent_network intel sharpens
+                // the read of who really owes whom in {location}.
+                kind: 'intel_referenced_prose',
+                category: 'agent_network',
+                prose: {
+                  reliable: '{name} moved through the introductions with the surety of someone who had already drawn the map of who knew whom.',
+                  uncertain:
+                    '{name} arrived with names that had been right once — most still were, and the conversations found their way through the gaps in the map.',
+                  dubious:
+                    '{name} introduced herself by names that no longer carried weight here — the social order had shifted in ways the dossier had not been told about.',
+                },
+              },
             ],
             closeAfterSelection: true,
           },

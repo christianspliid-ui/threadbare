@@ -161,6 +161,17 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
                   'Pattern suggests a disrupted upstream route — possibly a new entrant or a stalled caravan.',
                 reliability: 0.7,
               },
+              {
+                // A consortium agent surveying a market reads the gap through
+                // the lens of routes already mapped.
+                kind: 'intel_referenced_prose',
+                category: 'trade_route',
+                prose: {
+                  reliable: 'The route through {location} unfolded for {name} the way familiar trade does — predictable bottlenecks, predicted yields, the same hands at the same crossings.',
+                  uncertain: '{name} approached the trade with notes that had been right last season — most still applied, with a few small errors that cost only the noticing.',
+                  dubious: 'What {name} carried as the caravan\'s rhythm in {location} read as a fiction — the schedule had broken, and the rumor had not kept pace.',
+                },
+              },
             ],
             closeAfterSelection: true,
           },

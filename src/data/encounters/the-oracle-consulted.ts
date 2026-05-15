@@ -183,6 +183,17 @@ const READ_AFTERMATH = {
       effects: [
         { kind: 'reputation_tally' as const, key: 'eye.positive', delta: 1 },
         {
+          // Reading a lost script in the oracle's chamber against prior
+          // cultural_knowledge intel — the script settles into a tradition known.
+          kind: 'intel_referenced_prose' as const,
+          category: 'cultural_knowledge' as const,
+          prose: {
+            reliable: 'What {name} knew of the rite at {location} proved exact — gestures in the right order, the silences kept where the silences belonged.',
+            uncertain: 'What {name} recalled of the old practice met the present — fragments lined up where they could, and the working took a familiar enough shape.',
+            dubious: 'The lore {name} had been so sure of had drifted — every other gesture met the air with the surety of practice, and every other gesture met nothing.',
+          },
+        },
+        {
           kind: 'hidden_mark' as const,
           category: 'secret_knowledge' as const,
           severity: 0.4,
