@@ -453,6 +453,17 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                   'and the mark of a captain who runs a larger band one valley over.',
                 reliability: 0.6,
               },
+              {
+                // Reading outlaw papers in firelight: prior agent_network intel
+                // turns names into a map of who answers to whom.
+                kind: 'intel_referenced_prose',
+                category: 'agent_network',
+                prose: {
+                  reliable: 'What {name} knew of the network in {location} proved exact — alliances unmoved, debts unpaid in the same direction, the right names still meaning what they meant.',
+                  uncertain: 'The names came back to {name} as faces emerged — most matched, a few had moved sideways in the social order, but the work proceeded.',
+                  dubious: 'The map of who knew whom that {name} relied on was the map of an older season — the present {location} had different alignments, and the effort showed.',
+                },
+              },
             ],
             closeAfterSelection: true,
           },

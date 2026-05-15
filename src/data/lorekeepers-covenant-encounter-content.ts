@@ -137,6 +137,18 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] =
                   'Newly catalogued site. First entry in the Covenant\'s annal — condition at survey, ' +
                   'date fixed or estimated, provenance uncertain pending cross-reference.',
               },
+              {
+                kind: 'intel_referenced_prose' as const,
+                category: 'cultural_knowledge',
+                prose: {
+                  reliable:
+                    '{name} set the margin notes against earlier entries the Covenant had carried — the cross-reference came back exact, and the first record at {location} fell into place against a precedent already known.',
+                  uncertain:
+                    '{name} reached for the earlier records this site resembled — half the analogues held, half had drifted, and the entry took the shape they could justify.',
+                  dubious:
+                    '{name} measured the ruin against the lore they thought matched it, and the match refused to settle — the precedent had been older, or wrong, or about a different ruin entirely.',
+                },
+              },
               { kind: 'reputation_tally' as const, key: 'eye.positive', delta: 1 },
             ],
             closeAfterSelection: true,
@@ -247,6 +259,18 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] =
                 detail:
                   'Hand identified, date estimated, provenance partial. Translation rendered in the Covenant\'s second hand. ' +
                   'Contents on record — subject matter and period now citable by subsequent researchers.',
+              },
+              {
+                kind: 'intel_referenced_prose' as const,
+                category: 'cultural_knowledge',
+                prose: {
+                  reliable:
+                    '{name} read the hand against the catalogue {they} already carried — the period was a known period, the regional tilt of the script familiar, and the translation settled fast.',
+                  uncertain:
+                    '{name} matched the hand to remembered exemplars where {they} could — close on the period, looser on the region, and the translation took the shape the partial match allowed.',
+                  dubious:
+                    '{name} measured the hand against the precedents {they} thought {they} knew, and the precedents refused — wrong period, or wrong region, or both, and the translation surfaced suspect against itself.',
+                },
               },
               { kind: 'reputation_tally' as const, key: 'eye.positive', delta: 1 },
             ],
@@ -363,6 +387,18 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] =
                 detail:
                   'Missing volume located and returned to the Covenant\'s vaults. ' +
                   'Contents catalogued; provenance confirmed against prior annal entry.',
+              },
+              {
+                kind: 'intel_referenced_prose' as const,
+                category: 'cultural_knowledge',
+                prose: {
+                  reliable:
+                    '{name} opened the binding and the contents fell into a context {they} already held — the related texts, the prior commentary, the shape of what this volume completed.',
+                  uncertain:
+                    '{name} read against the surrounding scholarship {they} half-remembered — most lined up, some did not, and the entry took the shape that careful annotation allowed.',
+                  dubious:
+                    '{name} reached for the context the lore had once supplied, and the context refused to hold — the recovered text spoke to a tradition {name} had been carrying wrong.',
+                },
               },
               {
                 kind: 'hidden_mark' as const,
@@ -484,6 +520,18 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] =
                 detail:
                   'Resonance lines formally walked and entered. Date fixed. Survey includes node position, ' +
                   'approximate strength, and any discrepancies with prior unverified accounts in the annal.',
+              },
+              {
+                kind: 'intel_referenced_prose' as const,
+                category: 'shrine_location',
+                prose: {
+                  reliable:
+                    '{name} walked the resonance against the shrine geometries already entered in the annal — the alignments matched the records they should have matched, and the survey closed clean.',
+                  uncertain:
+                    '{name} measured the lines against half-remembered shrine alignments — close enough to ratify the node, off enough that the margin received a careful note about which prior entry the survey resembled.',
+                  dubious:
+                    '{name} compared the resonance to the consecrated geometry {they} thought {they} knew, and the geometry had moved — the prior entry had named a sanctuary that no longer stood where it had been recorded.',
+                },
               },
               { kind: 'reputation_tally' as const, key: 'eye.positive', delta: 1 },
               { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
@@ -727,6 +775,18 @@ export const LOREKEEPERS_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
                   'Implication entered in margin: dated reference point, not active prediction. ' +
                   'Holy Order inquisitors and Civic Guard prosecutors may find the reference actionable.',
               },
+              {
+                kind: 'intel_referenced_prose' as const,
+                category: 'political_secret',
+                prose: {
+                  reliable:
+                    '{name} read the implication against the court alignments {they} already carried — the dated reference fell into a pattern of leverage {they} knew, and the margin note placed it precisely.',
+                  uncertain:
+                    '{name} weighed the implication against the political map {they} half-remembered — the central wedge still held, but several actors named in the margin had moved since the dossier was current.',
+                  dubious:
+                    '{name} reached for the courtly context the rumor had supplied, and reached past it — the implication landed in a political landscape that no longer arranged itself the way the briefing had described.',
+                },
+              },
               { kind: 'reputation_tally' as const, key: 'eye.positive', delta: 2 },
               { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
             ],
@@ -853,6 +913,18 @@ export const LOREKEEPERS_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
                 detail:
                   'Archive located below {location} — vault entrance dated from lintel inscription. ' +
                   'Documents catalogued in situ prior to removal. Contents span a period not represented elsewhere in the annal.',
+              },
+              {
+                kind: 'intel_referenced_prose' as const,
+                category: 'cultural_knowledge',
+                prose: {
+                  reliable:
+                    '{name} read the vault\'s contents against the pre-Collapse scholarship {they} had already mastered — the lintel hand was a hand the annal knew, and the period fell into place with the unhurried certainty of recognized work.',
+                  uncertain:
+                    '{name} measured the documents against the periods the annal had partially mapped — some entries closed cleanly against precedent, some required the careful margin note that meant comparable but unconfirmed.',
+                  dubious:
+                    '{name} reached for the period the lore had named, and the period refused — the sealing predated everything the Covenant had ever recorded, and what {they} carried as expertise was no longer expertise here.',
+                },
               },
               { kind: 'reputation_tally' as const, key: 'eye.positive', delta: 2 },
             ],

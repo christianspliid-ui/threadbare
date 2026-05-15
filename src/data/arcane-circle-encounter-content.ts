@@ -1703,6 +1703,20 @@ export const ARCANE_CIRCLE_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
                   'Which mages attended and how they responded.',
                 reliability: 0.7,
               },
+              {
+                // Returning to the lecture hall with prior agent_network intel: which
+                // factions of the circle's senior ranks are aligned and which are pretending.
+                kind: 'intel_referenced_prose',
+                category: 'agent_network',
+                prose: {
+                  reliable:
+                    '{name} read the room\'s alignments before the speaker had finished — who leaned toward whom, who arrived late, who would write the dissenting commentary later. The map of the circle held.',
+                  uncertain:
+                    '{name} traced the senior alignments the dossier had described and met most of them — a few had shifted since the briefing, but the central wedge still seated where it was meant to seat.',
+                  dubious:
+                    '{name} reached for the room\'s known factions and reached past them — the circle\'s alignments had reformed, and the speaker {name} expected to hear answering the speaker {name} did not expect.',
+                },
+              },
             ],
             closeAfterSelection: true,
           },

@@ -215,6 +215,17 @@ const SHIELD_ROAD_AFTERMATH = {
       intent: 'The god steps back and lets the caravan\'s survival speak for itself. Merchants will hear that the ambush failed. Trade traffic may recover. The god is remembered as a distant protector -- felt but not claimed. The road heals on its own schedule.',
       effects: [
         {
+          // Watching a broken ambush from above with prior military_position intel —
+          // the agent reads the bandit withdrawal as a column with structure.
+          kind: 'intel_referenced_prose' as const,
+          category: 'military_position' as const,
+          prose: {
+            reliable: 'What {name} knew of the patrol came back exact — same shifts, same gaps, the same tired hour when discipline thinned and the column blinked.',
+            uncertain: 'Half the patrol pattern {name} carried held; the other half required careful watching — close enough to predict, off enough to require breath held at corners.',
+            dubious: 'The military reading {name} had relied on was the reading of a settled garrison — the present force was unsettled, and the dossier had no answer for that.',
+          },
+        },
+        {
           kind: 'recent_event' as const,
           eventType: 'ripple_consequence' as const,
           message: 'Merchants along the route hear that the ambush at the waymarker stones failed. Trade traffic may recover.',

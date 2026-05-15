@@ -581,6 +581,20 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
                   'than the patron\'s budget assumes.',
                 reliability: 0.85,
               },
+              {
+                // Returning to survey a patron's land with prior political intel — the
+                // builder reads the lot through the lens of who has been hiding what.
+                kind: 'intel_referenced_prose',
+                category: 'political_secret',
+                prose: {
+                  reliable:
+                    '{name} measured the lot against the leverage {they} already carried — the patron\'s reasons for hurrying the survey lined up with the secret {name} held, and the survey closed by reading what was meant not to be read.',
+                  uncertain:
+                    '{name} weighed the patron\'s assurances against half the leverage {name} had been told existed — the central pressure still held, but the dossier on who actually wanted this lot had grown old.',
+                  dubious:
+                    '{name} pressed the survey where the rumor said pressing would yield, and the lot yielded nothing — the patron\'s real motive had moved past the leverage {name} thought {they} carried.',
+                },
+              },
             ],
             closeAfterSelection: true,
           },

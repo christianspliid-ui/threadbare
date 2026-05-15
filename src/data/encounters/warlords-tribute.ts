@@ -226,6 +226,17 @@ const ACCEPT_AFTERMATH = {
           delta: 1,
         },
         {
+          // Holding a warlord's alliance with prior military_position intel —
+          // the agent reads the war-band's shape against columns they already know.
+          kind: 'intel_referenced_prose' as const,
+          category: 'military_position' as const,
+          prose: {
+            reliable: 'The garrison at {location} ran on the schedule {name} had memorized — sergeants where sergeants were said to be, the same blind angles where they were said.',
+            uncertain: '{name} approached the garrison with most of the schedule remembered — the rotation had drifted by an hour or so, but the structural gaps remained.',
+            dubious: '{name} reached for the patrol pattern the rumor had described and met a different garrison — different rotation, different captains, the dossier already a season behind.',
+          },
+        },
+        {
           kind: 'recent_event' as const,
           eventType: 'narrative' as const,
           message: 'The warlord\'s tribute is accepted. The {title}\'s name is spoken differently in that hall now.',

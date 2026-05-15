@@ -274,6 +274,18 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 detail: 'A reliable buyer for acquired goods — no questions, reasonable splits.',
                 reliability: 0.75,
               },
+              {
+                // Returning thief building a fence relationship — reads the route's
+                // ledger through the lens of who moves what through {location}.
+                kind: 'intel_referenced_prose',
+                category: 'trade_route',
+                prose: {
+                  reliable: '{name} read the caravan\'s rhythm exactly as the route notes had described — waystation timings held, the merchants\' debts owed in the directions remembered.',
+                  uncertain: '{name} worked the caravan\'s pace partly from the marked schedule, partly from the dust on the road — the recognition was uneven but workable.',
+                  dubious:
+                    '{name} reached for the fence\'s known back-routes and found the trade had moved — different waystations, different prices, the rumor describing a season already over.',
+                },
+              },
               { kind: 'reputation_tally', key: 'tg.guild_work', delta: 1 },
             ],
             closeAfterSelection: true,
@@ -386,6 +398,17 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 label: 'Mark target profile — schedule and entry vulnerability',
                 detail: 'Guard rotation, delivery windows, structural weaknesses. Stale after ~15 ticks.',
                 reliability: 0.8,
+              },
+              {
+                // Casing a mark with prior agent_network intel — who in the social
+                // geometry around the target is bargaining, who is pretending.
+                kind: 'intel_referenced_prose',
+                category: 'agent_network',
+                prose: {
+                  reliable: '{name} found the contacts where the dossier said they would be — names accurate, schedules accurate, the social geometry of {location} unchanged.',
+                  uncertain: '{name} arrived with names that had been right once — most still were, and the introductions found their way through the gaps in the map.',
+                  dubious: '{name} reached for the contacts the rumor had named, and reached past them — the network had reformed around different centers, and the old map ended in dead corners.',
+                },
               },
               {
                 kind: 'encounter_seed',

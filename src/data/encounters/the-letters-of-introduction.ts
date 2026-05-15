@@ -249,6 +249,17 @@ const FORMAL_CHANNEL_AFTERMATH = {
           delta: 1,
         },
         {
+          // Deepening a patron relationship with prior agent_network intel —
+          // the agent sees Maevis through the map of patrons they already carry.
+          kind: 'intel_referenced_prose' as const,
+          category: 'agent_network' as const,
+          prose: {
+            reliable: '{name} found the contacts where the dossier said they would be — names accurate, schedules accurate, the social geometry of {location} unchanged.',
+            uncertain: '{name} worked the introductions partly from memory, partly from the room\'s rhythm — what the dossier missed, the conversation supplied.',
+            dubious: 'The map of who knew whom that {name} relied on was the map of an older season — the present {location} had different alignments, and the effort showed.',
+          },
+        },
+        {
           kind: 'recent_event' as const,
           eventType: 'narrative' as const,
           message: 'The god maintains attention on Maevis Drent. The formal introduction becomes the opening of a relationship rather than a transaction.',

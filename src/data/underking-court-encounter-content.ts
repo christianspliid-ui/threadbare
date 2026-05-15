@@ -404,6 +404,17 @@ export const UNDERKING_COURT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 detail: 'Two-hour overlap at the west gate between second and third watches. The west sergeant trades shifts for coin.',
                 reliability: 0.75,
               },
+              {
+                // Court-trained smuggler reads the watch through prior
+                // military_position intel — the patrol pattern is currency here.
+                kind: 'intel_referenced_prose' as const,
+                category: 'military_position',
+                prose: {
+                  reliable: 'The garrison at {location} ran on the schedule {name} had memorized — sergeants where sergeants were said to be, the same blind angles where they were said.',
+                  uncertain: 'The watch hours {name} had memorized had loosened — close enough to time the move, far enough off that the timing required a second look.',
+                  dubious: 'What {name} carried as the watch schedule in {location} matched none of the watch — the column had reformed, and the intelligence had not.',
+                },
+              },
             ],
             closeAfterSelection: true,
           },

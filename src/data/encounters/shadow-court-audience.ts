@@ -211,6 +211,17 @@ const HONEST_AFTERMATH = {
           delta: 1,
         },
         {
+          // Accepting a courtier's commission with prior political_secret intel:
+          // the agent reads the offer through what they already know of the court.
+          kind: 'intel_referenced_prose' as const,
+          category: 'political_secret' as const,
+          prose: {
+            reliable: '{name} carried the secret into the chamber the way carriers of valuable secrets do — knowing which silences would speak for it, and which would not.',
+            uncertain: '{name} entered the chamber with most of the alignments mapped — a few had shifted since the dossier was written, but the central wedge still held.',
+            dubious: 'What {name} carried as the court\'s hidden alignment in {location} read as last season\'s gossip — the room had reformed, and the threat could not land.',
+          },
+        },
+        {
           kind: 'recent_event' as const,
           eventType: 'narrative' as const,
           message: 'The courtier\'s note is answered. Whatever the commission holds, it was offered honestly and accepted honestly.',
