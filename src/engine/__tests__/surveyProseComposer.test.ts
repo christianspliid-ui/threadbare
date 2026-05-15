@@ -6,11 +6,15 @@ import {
   composeSurveyPeopleProse,
   buildSurveyCompletedTickEvent,
   resetSurveyEventCounter,
+  rankHexMortals,
+  composeNamedMortalsClause,
 } from '../surveyProseComposer';
 import {
   FACTION_PRESENCE_DOMINANT_MIN,
   FACTION_PRESENCE_ACTIVE_MIN,
   SURVEY_EVENT_SIGNIFICANCE,
+  SURVEY_NAMED_MORTALS_CAP,
+  SURVEY_NO_NAMED_MORTALS_FALLBACK,
 } from '../../data/survey-prose-tables';
 
 // Deterministic RNG using a simple LCG for test reproducibility
@@ -48,6 +52,31 @@ function addFactionControl(graph: WorldGraph, factionId: string, factionName: st
     graph.addNode({ id: factionId, type: 'actor', name: factionName, properties: {} });
   }
   graph.addEdge({ id: `edge_ctrl_${++edgeCounter}`, source: factionId, target: locationId, type: 'controls', properties: {} });
+}
+
+// Add an individual agent to a location (with optional rarityTier)
+function addAgent(
+  graph: WorldGraph,
+  agentId: string,
+  name: string,
+  locationId: string,
+  rarityTier = 1,
+): void {
+  graph.addNode({
+    id: agentId,
+    type: 'actor',
+    name,
+    properties: { actorType: 'individual', name, rarityTier },
+  });
+  graph.addEdge({ id: `edge_loc_${++edgeCounter}`, source: agentId, target: locationId, type: 'located_at', properties: {} });
+}
+
+// Add a thread (bond) edge from an ascendant to an agent
+function addThreadEdge(graph: WorldGraph, ascendantId: string, agentId: string): void {
+  if (!graph.getNode(ascendantId)) {
+    graph.addNode({ id: ascendantId, type: 'actor', name: 'Ascendant', properties: { actorType: 'ascendant' } });
+  }
+  graph.addEdge({ id: `edge_thread_${++edgeCounter}`, source: ascendantId, target: agentId, type: 'thread', properties: {} });
 }
 
 describe('deriveMoodBucket', () => {
@@ -124,9 +153,11 @@ describe('composeSurveyPeopleProse', () => {
     edgeCounter = 0;
   });
 
-  it('returns empty string for an empty hex (no locations)', () => {
+  it('returns the named-mortals fallback for an empty hex (no locations) — THR-440: never returns empty string', () => {
     const rng = makeLcgRng(42);
-    expect(composeSurveyPeopleProse(graph, HEX_COL, HEX_ROW, rng, 1)).toBe('');
+    const band = composeSurveyPeopleProse(graph, HEX_COL, HEX_ROW, rng, 1);
+    // THR-440: named-mortals fallback fires even on empty hex — band is never empty
+    expect(band).toContain('No names rise');
   });
 
   it('returns mood-only band when no factions clear the threshold', () => {
@@ -194,6 +225,212 @@ describe('composeSurveyPeopleProse', () => {
     );
     // Multiple phrase options exist per bucket — at least 2 unique outputs
     expect(bands.size).toBeGreaterThan(1);
+  });
+});
+
+describe('rankHexMortals', () => {
+  let graph: WorldGraph;
+
+  beforeEach(() => {
+    graph = new WorldGraph();
+    edgeCounter = 0;
+  });
+
+  it('returns empty array when hex has no locations', () => {
+    expect(rankHexMortals(graph, HEX_COL, HEX_ROW)).toEqual([]);
+  });
+
+  it('returns empty array when locations have no agents', () => {
+    addLocation(graph, 'loc.a');
+    expect(rankHexMortals(graph, HEX_COL, HEX_ROW)).toEqual([]);
+  });
+
+  it('skips agents with no name property', () => {
+    addLocation(graph, 'loc.a');
+    graph.addNode({ id: 'anon.1', type: 'actor', name: '', properties: { actorType: 'individual', rarityTier: 2 } });
+    graph.addEdge({ id: `edge_loc_${++edgeCounter}`, source: 'anon.1', target: 'loc.a', type: 'located_at', properties: {} });
+    expect(rankHexMortals(graph, HEX_COL, HEX_ROW)).toEqual([]);
+  });
+
+  it('places bonded mortals before unbonded regardless of rarityTier', () => {
+    addLocation(graph, 'loc.a');
+    addAgent(graph, 'agent.high', 'Zara', 'loc.a', 5); // high rarity, unbonded
+    addAgent(graph, 'agent.low', 'Kael', 'loc.a', 1);  // low rarity, bonded
+    addThreadEdge(graph, 'asc.1', 'agent.low');
+
+    const ranked = rankHexMortals(graph, HEX_COL, HEX_ROW);
+    expect(ranked[0].node.id).toBe('agent.low'); // bonded first
+    expect(ranked[0].bonded).toBe(true);
+    expect(ranked[1].node.id).toBe('agent.high');
+    expect(ranked[1].bonded).toBe(false);
+  });
+
+  it('sorts unbonded mortals by rarityTier descending', () => {
+    addLocation(graph, 'loc.a');
+    addAgent(graph, 'agent.r2', 'Bela', 'loc.a', 2);
+    addAgent(graph, 'agent.r4', 'Doru', 'loc.a', 4);
+    addAgent(graph, 'agent.r1', 'Ava', 'loc.a', 1);
+
+    const ranked = rankHexMortals(graph, HEX_COL, HEX_ROW);
+    expect(ranked.map(m => m.rarityTier)).toEqual([4, 2, 1]);
+  });
+
+  it('uses name as tie-break when rarityTiers are equal', () => {
+    addLocation(graph, 'loc.a');
+    addAgent(graph, 'agent.zed', 'Zed', 'loc.a', 3);
+    addAgent(graph, 'agent.abe', 'Abe', 'loc.a', 3);
+    addAgent(graph, 'agent.mid', 'Mira', 'loc.a', 3);
+
+    const ranked = rankHexMortals(graph, HEX_COL, HEX_ROW);
+    expect(ranked.map(m => m.node.properties.name)).toEqual(['Abe', 'Mira', 'Zed']);
+  });
+
+  it('deduplicates agents appearing in multiple locations', () => {
+    addLocation(graph, 'loc.a');
+    addLocation(graph, 'loc.b');
+    addAgent(graph, 'agent.dup', 'Duplica', 'loc.a');
+    graph.addEdge({ id: `edge_loc_${++edgeCounter}`, source: 'agent.dup', target: 'loc.b', type: 'located_at', properties: {} });
+
+    const ranked = rankHexMortals(graph, HEX_COL, HEX_ROW);
+    expect(ranked.length).toBe(1);
+  });
+
+  it('defaults rarityTier to 1 when property is missing', () => {
+    addLocation(graph, 'loc.a');
+    graph.addNode({ id: 'agent.notier', type: 'actor', name: 'Nora', properties: { actorType: 'individual', name: 'Nora' } });
+    graph.addEdge({ id: `edge_loc_${++edgeCounter}`, source: 'agent.notier', target: 'loc.a', type: 'located_at', properties: {} });
+
+    const ranked = rankHexMortals(graph, HEX_COL, HEX_ROW);
+    expect(ranked[0].rarityTier).toBe(1);
+  });
+});
+
+describe('composeNamedMortalsClause', () => {
+  it('returns the fallback string for an empty list', () => {
+    expect(composeNamedMortalsClause([], makeLcgRng(42))).toBe(SURVEY_NO_NAMED_MORTALS_FALLBACK);
+  });
+
+  it('never returns an empty string — fallback is always real prose', () => {
+    expect(composeNamedMortalsClause([], makeLcgRng(1))).not.toBe('');
+  });
+
+  it('includes the mortal name in output', () => {
+    const graph = new WorldGraph();
+    edgeCounter = 0;
+    addLocation(graph, 'loc.a');
+    addAgent(graph, 'agent.1', 'Kael Thornweaver', 'loc.a', 2);
+    const ranked = rankHexMortals(graph, HEX_COL, HEX_ROW);
+    const clause = composeNamedMortalsClause(ranked, makeLcgRng(5));
+    expect(clause).toContain('Kael Thornweaver');
+  });
+
+  it('includes a bonded marker for a bonded mortal', () => {
+    const graph = new WorldGraph();
+    edgeCounter = 0;
+    addLocation(graph, 'loc.a');
+    addAgent(graph, 'agent.1', 'Serafina', 'loc.a', 3);
+    addThreadEdge(graph, 'asc.1', 'agent.1');
+    const ranked = rankHexMortals(graph, HEX_COL, HEX_ROW);
+    const clause = composeNamedMortalsClause(ranked, makeLcgRng(7));
+    expect(clause).toContain('Serafina');
+    const bondPhrases = ['bound to you', 'a thread of yours', 'one you have touched', 'tied to your hand'];
+    expect(bondPhrases.some(p => clause.includes(p))).toBe(true);
+  });
+
+  it('caps output at SURVEY_NAMED_MORTALS_CAP even when more mortals are provided', () => {
+    const graph = new WorldGraph();
+    edgeCounter = 0;
+    addLocation(graph, 'loc.a');
+    for (let i = 0; i < 7; i++) {
+      addAgent(graph, `agent.${i}`, `Mortal${i}`, 'loc.a', i + 1);
+    }
+    const ranked = rankHexMortals(graph, HEX_COL, HEX_ROW);
+    expect(ranked.length).toBe(7);
+    const clause = composeNamedMortalsClause(ranked, makeLcgRng(3));
+    for (let i = SURVEY_NAMED_MORTALS_CAP; i < ranked.length; i++) {
+      expect(clause).not.toContain(ranked[i].node.properties.name as string);
+    }
+  });
+
+  it('produces a capitalised clause with terminal period', () => {
+    const graph = new WorldGraph();
+    edgeCounter = 0;
+    addLocation(graph, 'loc.a');
+    addAgent(graph, 'agent.1', 'Wren', 'loc.a', 2);
+    const ranked = rankHexMortals(graph, HEX_COL, HEX_ROW);
+    const clause = composeNamedMortalsClause(ranked, makeLcgRng(9));
+    expect(clause[0]).toBe(clause[0].toUpperCase());
+    expect(clause[clause.length - 1]).toBe('.');
+  });
+
+  it('is deterministic — same seed produces the same clause', () => {
+    const graph = new WorldGraph();
+    edgeCounter = 0;
+    addLocation(graph, 'loc.a');
+    addAgent(graph, 'agent.1', 'Wren', 'loc.a', 2);
+    addAgent(graph, 'agent.2', 'Doru', 'loc.a', 1);
+    const ranked = rankHexMortals(graph, HEX_COL, HEX_ROW);
+    const c1 = composeNamedMortalsClause(ranked, makeLcgRng(42));
+    const c2 = composeNamedMortalsClause(ranked, makeLcgRng(42));
+    expect(c1).toBe(c2);
+  });
+});
+
+describe('composeSurveyPeopleProse — named-mortals integration', () => {
+  let graph: WorldGraph;
+
+  beforeEach(() => {
+    graph = new WorldGraph();
+    resetSurveyEventCounter();
+    edgeCounter = 0;
+  });
+
+  it('includes named-mortals clause in band when agents exist', () => {
+    addLocation(graph, 'loc.a', 20);
+    addAgent(graph, 'agent.1', 'Kael Thornweaver', 'loc.a', 3);
+
+    const band = composeSurveyPeopleProse(graph, HEX_COL, HEX_ROW, makeLcgRng(42), 1);
+    expect(band).toContain('Kael Thornweaver');
+  });
+
+  it('includes fallback prose when hex has no named mortals', () => {
+    addLocation(graph, 'loc.a', 30);
+
+    const band = composeSurveyPeopleProse(graph, HEX_COL, HEX_ROW, makeLcgRng(1), 1);
+    expect(band).toContain('No names rise');
+  });
+
+  it('bonded mortals appear before unbonded in the band', () => {
+    addLocation(graph, 'loc.a', 20);
+    addAgent(graph, 'agent.high', 'Zara', 'loc.a', 5);
+    addAgent(graph, 'agent.bonded', 'Kael', 'loc.a', 1);
+    addThreadEdge(graph, 'asc.1', 'agent.bonded');
+
+    const band = composeSurveyPeopleProse(graph, HEX_COL, HEX_ROW, makeLcgRng(7), 1);
+    const kaelIdx = band.indexOf('Kael');
+    const zaraIdx = band.indexOf('Zara');
+    expect(kaelIdx).toBeLessThan(zaraIdx);
+  });
+
+  it('is fully deterministic — same seed + same graph → same band', () => {
+    addLocation(graph, 'loc.a', 55);
+    addAgent(graph, 'agent.1', 'Wren', 'loc.a', 2);
+    addFactionControl(graph, 'fac.a', 'The Order', 'loc.a');
+
+    const b1 = composeSurveyPeopleProse(graph, HEX_COL, HEX_ROW, makeLcgRng(42), 1);
+    const b2 = composeSurveyPeopleProse(graph, HEX_COL, HEX_ROW, makeLcgRng(42), 1);
+    expect(b1).toBe(b2);
+  });
+
+  it('produces a grammatical band: capitalised first letter, terminal period', () => {
+    addLocation(graph, 'loc.a', 40);
+    addAgent(graph, 'agent.1', 'Serafina', 'loc.a', 3);
+    addFactionControl(graph, 'fac.x', 'The Circle', 'loc.a');
+
+    const band = composeSurveyPeopleProse(graph, HEX_COL, HEX_ROW, makeLcgRng(99), 1);
+    expect(band.length).toBeGreaterThan(0);
+    expect(band[0]).toBe(band[0].toUpperCase());
+    expect(band[band.length - 1]).toBe('.');
   });
 });
 

@@ -12,6 +12,7 @@
  */
 
 import type { WorldGraph } from './graph';
+import type { GraphNode } from '../types/graph';
 import type { TickEvent } from '../types/gameState';
 import type { SurveyProseComposedTrace } from '../types/trace';
 import {
@@ -28,9 +29,14 @@ import {
   SURVEY_FACTIONS_LISTED_CAP,
   SURVEY_FACTION_PRESENCE_MIN,
   SURVEY_EVENT_SIGNIFICANCE,
+  SURVEY_NAMED_MORTALS_CAP,
+  SURVEY_NAMED_MORTALS_FRAMING,
+  SURVEY_BONDED_MORTAL_MARKERS,
+  SURVEY_NAMED_MORTALS_CONNECTIVES,
+  SURVEY_NO_NAMED_MORTALS_FALLBACK,
   type MoodBucket,
 } from '../data/survey-prose-tables';
-import { getHexFactions, getLocationsInHex } from './hexZoom';
+import { getHexFactions, getLocationsInHex, getAgentsAtLocation } from './hexZoom';
 import { emitTrace } from './traceBuffer';
 
 let surveyEventCounter = 0;
@@ -76,6 +82,92 @@ export function deriveFactionPresenceTier(locationCount: number): 'dominant' | '
 function rngPick(arr: readonly string[], rng: () => number): string {
   if (arr.length === 0) return '';
   return arr[Math.floor(rng() * arr.length)];
+}
+
+interface RankedMortal {
+  readonly node: GraphNode;
+  readonly bonded: boolean;
+  readonly rarityTier: number;
+}
+
+/**
+ * Collect and rank named mortals on a hex.
+ * Order: bonded-to-ascendant first (hard partition); then rarityTier desc; then name asc (stable).
+ * Pure over the graph snapshot — rng-free; same hex state always produces the same ranking.
+ */
+export function rankHexMortals(graph: WorldGraph, col: number, row: number): RankedMortal[] {
+  const locations = getLocationsInHex(graph, col, row);
+  const seen = new Set<string>();
+  const mortals: RankedMortal[] = [];
+
+  for (const loc of locations) {
+    const agents = getAgentsAtLocation(graph, loc.id);
+    for (const agent of agents) {
+      if (seen.has(agent.id)) continue;
+      seen.add(agent.id);
+      const name = agent.properties?.name;
+      if (typeof name !== 'string' || name.trim() === '') continue; // skip un-nameable nodes
+
+      let bonded = false;
+      try {
+        bonded = graph.getIncomingEdges(agent.id, 'thread').length > 0;
+      } catch {
+        // getIncomingEdges may throw on malformed graphs — treat as unbonded (NFP #4)
+        bonded = false;
+      }
+
+      const rarityTier = typeof agent.properties?.rarityTier === 'number'
+        ? (agent.properties.rarityTier as number)
+        : 1; // default lowest prominence (NFP #4)
+
+      mortals.push({ node: agent, bonded, rarityTier });
+    }
+  }
+
+  // Sort: bonded first (hard partition) → rarityTier desc → name asc (fully deterministic, NFP #3)
+  mortals.sort((a, b) => {
+    if (a.bonded !== b.bonded) return a.bonded ? -1 : 1;
+    if (b.rarityTier !== a.rarityTier) return b.rarityTier - a.rarityTier;
+    const nameA = (a.node.properties?.name as string) ?? '';
+    const nameB = (b.node.properties?.name as string) ?? '';
+    return nameA.localeCompare(nameB);
+  });
+
+  return mortals;
+}
+
+/**
+ * Compose the named-mortals clause from a ranked mortal list.
+ * Caps at SURVEY_NAMED_MORTALS_CAP, tags bonded mortals, opens with a framing fragment.
+ * Returns SURVEY_NO_NAMED_MORTALS_FALLBACK when the list is empty — never returns ''.
+ */
+export function composeNamedMortalsClause(ranked: RankedMortal[], rng: () => number): string {
+  if (ranked.length === 0) return SURVEY_NO_NAMED_MORTALS_FALLBACK;
+
+  const capped = ranked.slice(0, SURVEY_NAMED_MORTALS_CAP);
+
+  const nameParts = capped.map(m => {
+    const name = (m.node.properties?.name as string) ?? '';
+    if (m.bonded) {
+      const marker = rngPick(SURVEY_BONDED_MORTAL_MARKERS, rng);
+      return marker ? `${name}, ${marker}` : name;
+    }
+    return name;
+  });
+
+  // Join name parts with rng-picked connectives
+  let joined = nameParts[0];
+  for (let i = 1; i < nameParts.length; i++) {
+    const connective = rngPick(SURVEY_NAMED_MORTALS_CONNECTIVES, rng) || '; ';
+    joined += connective + nameParts[i];
+  }
+
+  const framing = rngPick(SURVEY_NAMED_MORTALS_FRAMING, rng) || 'Among them: ';
+  const clause = framing + joined;
+
+  // Ensure capitalised first letter and terminal period
+  const capitalised = clause.charAt(0).toUpperCase() + clause.slice(1);
+  return capitalised.endsWith('.') || capitalised.endsWith('—') ? capitalised : capitalised + '.';
 }
 
 /**
@@ -128,10 +220,16 @@ export function composeSurveyPeopleProse(
     }
   }
 
-  // Assemble band — mood then faction, each as its own sentence
+  // Compose named-mortals clause (THR-440)
+  const ranked = rankHexMortals(graph, col, row);
+  const namedClause = composeNamedMortalsClause(ranked, rng);
+  const namedMortalCount = Math.min(ranked.length, SURVEY_NAMED_MORTALS_CAP);
+
+  // Assemble band — mood, faction, named-mortals; each as its own sentence
   const parts: string[] = [];
   if (moodSentence) parts.push(moodSentence);
   if (factionSentence) parts.push(factionSentence);
+  if (namedClause) parts.push(namedClause); // always non-empty — fallback is real prose (§3.5)
 
   if (parts.length === 0) {
     emitTrace({
@@ -143,6 +241,7 @@ export function composeSurveyPeopleProse(
       moodBucket: 'none',
       factionCount: factions.length,
       composedLength: 0,
+      namedMortalCount: 0,
       summary: `survey prose skipped — no mood or faction data at (${col},${row})`,
     } as SurveyProseComposedTrace);
     return '';
@@ -150,8 +249,8 @@ export function composeSurveyPeopleProse(
 
   // Join sentences: capitalise first letter, ensure terminal period
   const band = parts
-    .map((p, i) => {
-      const s = i === 0 ? p.charAt(0).toUpperCase() + p.slice(1) : p.charAt(0).toUpperCase() + p.slice(1);
+    .map(p => {
+      const s = p.charAt(0).toUpperCase() + p.slice(1);
       return s.endsWith('.') || s.endsWith('—') ? s : s + '.';
     })
     .join(' ');
@@ -165,6 +264,7 @@ export function composeSurveyPeopleProse(
     moodBucket: moodBucket ?? 'none',
     factionCount: factions.length,
     composedLength: band.length,
+    namedMortalCount,
     summary: `survey prose composed at (${col},${row}): "${band.slice(0, 60)}${band.length > 60 ? '…' : ''}"`,
   } as SurveyProseComposedTrace);
 

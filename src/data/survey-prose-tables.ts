@@ -18,7 +18,11 @@ export const SURVEY_LOCATIONS_LISTED_CAP = 3;
 /** Minimum faction-presence score to show a faction in Survey output. */
 export const SURVEY_FACTION_PRESENCE_MIN = 1;
 
-/** Bond-weight multiplier when picking which named mortals to surface (bonded agents rank higher). */
+/**
+ * Kept for backward-compatibility (THR-398 shipped this constant).
+ * THR-440 uses a hard partition — bonded mortals always sort above non-bonded regardless of
+ * rarityTier — not an arithmetic weight multiplier. Do not use as a multiplier in new code.
+ */
 export const SURVEY_BOND_WEIGHT_FACTOR = 2;
 
 /** Max spheres listed in a Read-the-Currents soul-layer result. */
@@ -140,3 +144,32 @@ export const SURVEY_PEOPLE_CONNECTIVES: readonly string[] = [
   '. Elsewhere, ',
   ', and ',
 ];
+
+// ─── Named-mortals band constants (THR-440) ───────────────────────────────────
+
+/** Opening fragment for the named-mortals clause (rng-picked). */
+export const SURVEY_NAMED_MORTALS_FRAMING: readonly string[] = [
+  'Among them: ',
+  'Names surface: ',
+  'You mark a few: ',
+  'Faces stand out: ',
+];
+
+/** Short phrases tagging a bonded mortal in the named-mortals clause (rng-picked). */
+export const SURVEY_BONDED_MORTAL_MARKERS: readonly string[] = [
+  'bound to you',
+  'a thread of yours',
+  'one you have touched',
+  'tied to your hand',
+];
+
+/** Connective phrases joining named-mortal names in the people-layer clause (rng-picked). */
+export const SURVEY_NAMED_MORTALS_CONNECTIVES: readonly string[] = [
+  '; ',
+  ', ',
+  ', and ',
+  '. Alongside them, ',
+];
+
+/** Fallback prose when the hex has no named mortals — real prose, not empty string (THR-440). */
+export const SURVEY_NO_NAMED_MORTALS_FALLBACK = 'No names rise — only the press of strangers.';
