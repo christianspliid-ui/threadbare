@@ -440,14 +440,22 @@ create_scheduled_task(
 
 Current recurring task registry:
 
-| Task | Cadence | Purpose | Status |
-|------|---------|---------|--------|
-| `flush-plan-docs` | Hourly at :15 | Commit `plan-pending-commit`-labeled plan docs to `origin/main` (direct push or auto-flush PR) and sweep stale labels off Done/already-merged issues | Active |
-| Weekly drift scan | Friday 14:00 UTC | GitHub Action — drift signals → Linear `drift-scan` issues | Active (GitHub Action) |
-| `weekly-retro` | Friday ~15:00 UTC | Weekly retrospective from drift-scan issues + impediments log | Active |
-| `weekly-memory-grooming` | Sunday 16:03 UTC (18:03 Europe/Copenhagen on 2026-05-08) | Consolidate Cowork / CC / Codex memory files | Active |
-| `monthly-rulebook-review` | 1st of each month 09:00 local | Review `Docs/canon/rulebook.md` for drift, stale `[OPEN]` questions >60 days, broken pointers; post Linear issue tagged `rulebook-review` | Needs creation (THR-417 — use `mcp__scheduled-tasks__create_scheduled_task` with `taskId: monthly-rulebook-review`, `cronExpression: "0 9 1 * *"` from a non-scheduled session) |
-| `weekly-worktree-orphan-scan` | Friday 15:30 UTC (after retro) | Scan local worktrees for `.md` files not merged to main or vault; file `drift-scan`-labeled Linear issues | Needs creation from an interactive session (THR-410 — blocked in scheduled sessions; use `mcp__scheduled-tasks__create_scheduled_task` with `taskId: weekly-worktree-orphan-scan`, `cronExpression: "30 15 * * 5"`) |
+| Slot | Cadence | Task | Cron | Runtime |
+|------|---------|------|------|---------|
+| **:00** | Hourly | CC pickup (`tb---sonnet---pickup` / equivalents) | `0 * * * *` | CC automation lane |
+| **:15** | Hourly | `flush-plan-docs` | `15 * * * *` | CC automation lane |
+| **:30** | Hourly | Codex pickup | `30 * * * *` | Codex automation lane |
+| **:45** | Hourly | `keep-work-flowing` (Cowork PM) | `45 * * * *` | This machine |
+| **09:06** | Daily | `daily-backlog-grooming` | `6 9 * * *` | This machine |
+| **Wed 09:04** | Weekly | `weekly-workflow-retro` | `4 9 * * 3` | This machine |
+| **Fri 14:00** | Weekly | Drift scan (GitHub Action) | n/a (Actions cron) | GitHub Actions |
+| **Fri ~15:00** | Weekly | `weekly-retro` | `0 15 * * 5` | CC automation lane |
+| **Sun 10:04** | Weekly | `weekly-project-hygiene` | `4 10 * * 0` | This machine |
+| **Sun 10:06** | Weekly | `weekly-invoice-check` | `6 10 * * 0` | This machine |
+| **Sun 16:03** | Weekly | `weekly-memory-grooming` | `3 16 * * 0` | CC automation lane |
+| **1st 09:00** | Monthly | `monthly-rulebook-review` (needs creation — THR-417) | `0 9 1 * *` | TBD |
+
+**Slot allocation.** Hourly Linear-MCP-using tasks occupy the four quarter-hour slots: :00 (CC pickup), :15 (`flush-plan-docs`), :30 (Codex pickup), :45 (Cowork PM). Daily and weekly tasks pick non-quarter-hour minutes (e.g., :04, :06, :09). When registering a new hourly task, pick the next free 5-minute offset within a quarter-hour band and update this table in the same commit.
 
 ## Skill Tree Layout
 

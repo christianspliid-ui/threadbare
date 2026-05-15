@@ -1,5 +1,5 @@
 # Project Status
-> Updated 2026-05-14 (THR-12, THR-430, THR-432, THR-433, THR-415, THR-410, THR-385).
+> Updated 2026-05-15 (THR-425).
 
 ## Current Focus
 **Encounter Experience — active:** Phases A1–A3, B1–B7, C1–C4, D1–D3, E1–E2, F1–F2, G1–G3 ✅. Remaining is F-phase integration (mount EffectRegistration components into hero panel / cast tile / scene state surfaces) and Phase H post-v1 polish.
@@ -24,7 +24,7 @@
 - 2026-05-11 batch: THR-393, THR-403, THR-407, THR-408, THR-411, THR-396
 - 2026-05-12 batch: THR-413, THR-404, THR-397, THR-398, THR-399, THR-401, THR-405, THR-416, THR-409, THR-395, THR-412, THR-422, THR-423, THR-418, THR-424, THR-400, THR-11
 - 2026-05-14 batch: THR-12, THR-430, THR-432, THR-433, THR-415, THR-410, THR-385
-- 2026-05-15 batch: THR-163, THR-386
+- 2026-05-15 batch: THR-163, THR-386, THR-425
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
@@ -55,3 +55,4 @@ pm run check:skill-sync green without repair step); issue closed via Fixes-keywo
 - ✅ 2026-05-14: THR-433 shipped — Kindle a Calling, internal-pressure divine action. New `action.faction.kindle_a_calling` (heart/force, cost 10, tier 2) replaces a faction's `pursues` ambition with one drawn by a four-signal bias resolver: member axiological pulls, leader bias, doctrine pressure, dissent. The bias is added to `scoreEligibleAmbitions` weights (reused from `factionAmbitions.ts`), an essence-sharpening constant tilts the distribution, and a seeded PRNG draws the chosen candidate. Plants `faction.encounter.calling_named` (2 steps, 2 aftermath reactions: commit → reputation tally + follow-on encounter seed; stall → hidden mark `calling_stalled`) on the leader. Army-committed ambitions are refused (lockedByArmy trace branch). New `FactionKindleCallingTrace` with 5 inspectable fields including the bias-weighted candidate list. 11 new constants in `faction-action-constants.ts`. FactionSheet shows a ▲ glyph + "kindled" sublabel next to the active ambition. 9 new unit tests (replacement, army-lock, dissent bias, doctrine bias, determinism). Verification: 11309 tests pass, tsc clean, vite build 12.14s, 30-tick CLI smoke green (379 agents, 79 events). Plan doc: handoff comment on THR-433 (Cowork 2026-05-14, untracked locally; sibling THR-432 plan used as architectural template).
 - ✅ 2026-05-14: THR-385 shipped — `{intel:<category>.acquiredTicksAgo}` / `.acquiredDaysAgo` enrichment placeholders (THR-139 deferral). Two age placeholders added to `enrichProse` loop; `hadPlaceholder` trace gate extended; `TICKS_PER_DAY` reused from `attention-constants.ts`; 8 new unit assertions; placeholder vocab updated in `wiring-checklist.md` + `systemic-wiring-guide.md`. PR #291.
 - ✅ 2026-05-15: THR-386 shipped — `intel_referenced_prose` category lint guard (THR-139 deferral). Advisory lint that warns when an effect's category is implausibly wired. Two-rule heuristic: co-traffic (primary) + structural substring (fallback). 10 correctness tests; 0 warnings against current corpus (3 effects, 621 templates). `npm run lint:intel-prose-category`. PR #300.
+- ✅ 2026-05-15: THR-425 shipped — Stagger Linear MCP pollers. `CLAUDE.md § Scheduled Tasks` replaced with canonical 12-row quarter-hour slot table + slot-allocation principle. Coordination protocol rate-limit bullet (c) rewritten to point at CLAUDE.md instead of hardcoding :00/:30. Impediments #79 and #108 marked resolved. Out-of-repo cron edits (items 5–7) pending user confirmation in interactive session.
