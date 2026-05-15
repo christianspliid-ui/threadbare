@@ -1,8 +1,8 @@
 # Authoring Brief
 
-> **Generated:** 2026-05-06 by scripts/build-authoring-brief.ts
+> **Generated:** 2026-05-15 by scripts/build-authoring-brief.ts
 > **Sources:**
->   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 20d9555291ca7979ca2ceabd122d2b6df385f795)
+>   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 2a7959af1639d6ba43755817b2f22132e067e37d)
 >   - Docs/plans/2026-04-16-game-design-direction.md (sha1: 1444ec0943c1644f65a451a6fc1c967b930ee01d)
 > **Do not hand-edit.** Regenerate via `npm run build-authoring-brief`.
 

@@ -232,7 +232,7 @@ Work is not "done" until it is deployed and documented. Do all of these automati
 - [ ] **Update docs** — `Docs/project-status.md` (≤60 lines, move old entries to `project-history.md`), `Docs/project-history.md` (one-line `✅` entry), `Docs/changelog.md` (append rows). Add a completion comment to the Linear issue (the `Fixes THR-XX` keyword auto-closes it; the human-readable comment is still expected).
 - [ ] **Verify wiring** — Check every new module against `Docs/plans/wiring-checklist.md`. Engine modules called from orchestrator, modals rendered in GameView JSX, GameState fields consumed by UI, traces emitted, player controls connected. Update the checklist if new surfaces added.
 - [ ] **Log impediments** — Any blockers or workarounds → `Docs/impediments.md`. Load `impediment-reporter` skill for format. Mandatory — unlogged friction is invisible.
-- [ ] **Close out** — The Linear state transition IS the closeout. Cowork hands off by moving to "Ready for Dev"/"Ready for Codex" with the coordination-block comment; executors land work with `Fixes THR-XX` and let the auto-close fire. No Slack, no DM, nothing out of band.
+- [ ] **Close out** — The Linear state transition IS the closeout. Cowork hands off by moving to "Ready for Dev"/"Ready for Codex" with the coordination-block comment; executors land work with `Fixes THR-XX` and let the auto-close fire. No out-of-band notification of any kind.
 
 **Where to find completed work history:** Linear issues in "Done" state (current), `.planning/BACKLOG_HISTORY.md` (pre-Linear history), and `Docs/project-history.md` (one-line entries).
 
