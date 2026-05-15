@@ -272,6 +272,8 @@ Every consumption emits an `intelligence_referenced` trace with a `referencedBy`
 
 **Authoring `intel_referenced_prose` (THR-139):** Add the effect to a reaction alongside the existing `intelligence` grant. On the first run there's no prior intel, so the effect no-ops silently; on subsequent runs the matching record fires the band-appropriate line. Three pilots are wired today — `arcane-circle-encounter-content.ts` (`agent_network`), `builders-fellowship-encounter-content.ts` (`political_secret`), `encounter-anomaly-content.ts` (`cultural_knowledge`). Use them as authoring templates. Voice contract (Threadbare, 18-32 words/line, dubious shows betrayal) is in the prose-pack file's header comment.
 
+**Category lint guard (THR-386):** `npm run lint:intel-prose-category` warns when an `intel_referenced_prose` effect's `category` looks implausibly wired for its template — flagging likely author mis-wires before they ship. Advisory only (exits 0 on warnings — region/targetId matches are invisible to static analysis, so some flagged effects are intentional). Pure module at `src/testing/intelProseCategoryLint.ts`; correctness test at `src/testing/__tests__/intelProseCategoryLint.test.ts`. Run after any bulk `intel_referenced_prose` authoring sweep.
+
 **Author opt-in for resolution difficulty (THR-140):** the difficulty modifier is intentionally inert unless a step explicitly sets `difficultyContext: 'intel_sensitive'`. Use this on beats where prior reconnaissance should make execution easier (ambush prep, route interception, spy leverage). Leave it unset for beats where intelligence should shape discovery/prose only.
 
 **Placeholder vocabulary for prose authors:**
