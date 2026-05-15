@@ -9,7 +9,7 @@ description: >
   finalization. Load alongside state-of-game-design for any In Design phase
   work on player-facing features. Skip for pure-infrastructure design passes
   where Vision premises are not in scope.
-last_validated_against: 2026-05-08
+last_validated_against: 2026-05-15
 ---
 
 # Game Design Direction
@@ -231,7 +231,9 @@ Before marking any design Ready for Dev or Ready for Codex, run this check:
 
 > **Does this plan contradict or update any Vision premise?**
 
-Go through each of the Vision files and ask:
+Run `npm run vision-audit -- <plan-doc-path>` and read the structured report. The four-section report surfaces the *mechanical* touchpoints (which Vision files were cited, which premises were named without citation, which taste-profile entries were touched, which Vision files the plan ignored entirely) — so you can focus on qualitative judgment rather than re-reading 25 KB of Vision/ inline.
+
+Using the report as input, answer the five qualitative checks:
 1. Does this design still move sessions toward the north-star moment? (`00-north-star.md`)
 2. Does this design preserve or improve the portfolio scan → encounter → aftermath rhythm? (`01-core-loop.md`)
 3. Does this design stay inside the non-negotiables — especially god/protagonist separation and mortal sovereignty? (`02-non-negotiables.md`)
