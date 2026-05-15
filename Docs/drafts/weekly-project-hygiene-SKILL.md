@@ -9,7 +9,7 @@ This is an **audit**, not an implementation task. Default output is a report plu
 
 ## Your job this session
 
-Run six audit passes in order. Each pass produces findings. After all six passes, consolidate findings into Linear issues under the Continuous Improvement project (one issue per finding cluster, not one per individual item — group related findings together). End with `/session-handoff` to post the results to Slack.
+Run six audit passes in order. Each pass produces findings. After all six passes, consolidate findings into Linear issues under the Continuous Improvement project (one issue per finding cluster, not one per individual item — group related findings together). End by posting a summary comment on each newly filed Linear issue.
 
 Apply WSJF-style judgment to what you surface: small cosmetic drift gets batched into one "routine cleanup" issue; a recurring pattern or a protocol-breach gets its own ticket with a proposed fix.
 
@@ -136,7 +136,7 @@ End the session with a report to the user containing:
 
 ## Session handoff (always last)
 
-Run `/session-handoff` at session end. The skill lives at `.agents/skills/session-handoff/SKILL.md` and will surface the next Linear pickup and post a Slack message to channel `C0AT5DYGJ8P`. If the skill is unavailable, fall back to manual Slack: one plain-text message summarizing what was filed, using the format in `session-handoff`'s Step 4.
+Post a summary comment on the most recently filed Linear issue — one plain-text paragraph listing what was filed this session, the finding count per pass, and any anomalies. CC and Codex poll Linear hourly; no other notification is needed.
 
 ## Key references
 

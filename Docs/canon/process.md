@@ -77,7 +77,7 @@ The `pull-work` skill (CC, Codex) is the canonical pickup entrypoint and links b
 - ❌ Reading the plan doc before claiming — replaced by claim-before-read. Reading first lets two executors claim the same issue when both have it open in different windows.
 - ❌ Cowork running `git add` / `git push` — Cowork is design and Linear only. Plan-doc commits go through the `plan-pending-commit` label and the hourly `flush-plan-docs` task.
 - ❌ Triangulating canonical content across 6–12 files — replaced by Canon pages (this directory). The audit cost was the bottleneck; Canon pages collapse it to a single Step-0 read.
-- ❌ Ad-hoc handoffs (Slack DMs, file pings, out-of-band messages) — replaced by Linear state transitions plus a Coordination Block in the handoff comment. The state transition is the handoff.
+- ❌ Ad-hoc / out-of-band handoffs — replaced by Linear state transitions plus a Coordination Block in the handoff comment. The state transition is the handoff.
 - ❌ Direct `git push origin main` — replaced by branch → PR → CI → merge since 2026-05-01. Branch protection rejects direct pushes.
 - ❌ `--no-verify` / `--no-gpg-sign` to bypass hooks unless the user explicitly requests it. Investigate and fix the failing hook instead.
 
