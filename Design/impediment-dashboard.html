@@ -1,0 +1,2133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Impediment Dashboard — The Fantasy World Simulator</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #1a1a2e; color: #e2e8f0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; padding: 2rem; min-height: 100vh; }
+  h1 { font-size: 1.8rem; margin-bottom: 0.25rem; }
+  h2 { font-size: 1.3rem; margin: 2rem 0 1rem; color: #e2e8f0; border-bottom: 1px solid #334155; padding-bottom: 0.5rem; }
+  .muted { color: #94a3b8; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; }
+  .header-left h1 { color: #e2e8f0; }
+  .header-right { display: flex; gap: 1.5rem; }
+  .stat-card { background: #16213e; border-radius: 8px; padding: 1rem 1.5rem; text-align: center; min-width: 120px; }
+  .stat-card .value { font-size: 2rem; font-weight: 700; }
+  .stat-card .label { font-size: 0.8rem; color: #94a3b8; margin-top: 0.25rem; }
+  .stat-card.hot .value { color: #e94560; }
+  .stat-card.warn .value { color: #f59e0b; }
+  .stat-card.ok .value { color: #10b981; }
+
+  .alert-card { background: #16213e; border-left: 4px solid #10b981; border-radius: 8px; padding: 1rem 1.5rem; margin-bottom: 1rem; }
+  .alert-card.hot { border-left-color: #e94560; }
+  .alert-card.warn { border-left-color: #f59e0b; }
+  .alert-card .title { font-weight: 600; margin-bottom: 0.25rem; }
+  .alert-card .desc { color: #94a3b8; font-size: 0.9rem; }
+
+  table { width: 100%; border-collapse: collapse; background: #16213e; border-radius: 8px; overflow: hidden; }
+  th { background: #0f3460; color: #e2e8f0; text-align: left; padding: 0.75rem 1rem; cursor: pointer; user-select: none; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  th:hover { background: #1a4a7a; }
+  th.sorted-asc::after { content: ' \u25B2'; }
+  th.sorted-desc::after { content: ' \u25BC'; }
+  td { padding: 0.6rem 1rem; border-top: 1px solid #1a1a2e; font-size: 0.9rem; vertical-align: top; }
+  tr:hover td { background: #1a2744; }
+
+  .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+  .badge-s { background: #064e3b; color: #6ee7b7; }
+  .badge-m { background: #78350f; color: #fbbf24; }
+  .badge-l { background: #7c2d12; color: #fb923c; }
+  .badge-blocked { background: #7f1d1d; color: #fca5a5; }
+  .badge-yes { background: #064e3b; color: #6ee7b7; }
+  .badge-no { background: #7f1d1d; color: #fca5a5; }
+
+  .cat-bar-container { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+  .cat-label { width: 160px; text-align: right; font-size: 0.9rem; color: #94a3b8; }
+  .cat-bar { height: 24px; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 0.8rem; font-weight: 600; min-width: 30px; }
+
+  .impact-grid { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .impact-card { background: #16213e; border-radius: 8px; padding: 1rem 1.5rem; flex: 1; min-width: 120px; text-align: center; }
+  .impact-card .count { font-size: 1.8rem; font-weight: 700; }
+  .impact-card .lbl { font-size: 0.8rem; color: #94a3b8; margin-top: 0.25rem; }
+
+  .timeline-item { background: #16213e; border-radius: 8px; padding: 1rem 1.5rem; margin-bottom: 0.75rem; display: flex; gap: 1rem; align-items: flex-start; }
+  .timeline-date { color: #94a3b8; font-size: 0.85rem; min-width: 90px; padding-top: 2px; }
+  .timeline-content .title { font-weight: 600; margin-bottom: 0.25rem; }
+  .timeline-content .meta { color: #94a3b8; font-size: 0.85rem; }
+
+  .section-empty { color: #94a3b8; font-style: italic; padding: 1rem; }
+</style>
+</head>
+<body>
+
+<script>
+// ── Impediment data ──
+const DATA = [
+  {
+    "num": "2",
+    "id": 2,
+    "count": 1,
+    "date": "2026-03-21",
+    "category": "api-quirk",
+    "description": "d3-zoom default wheel handler assumes standard screen↔data coordinate mapping. Our syncCameraToZoom uses non-standard mapping (cx=-tx/k, cy=ty/k with Y-flip). Default zoom-toward-cursor math silently produces wrong results — zooms change scale but don't converge on cursor.",
+    "consequence": "Zoom toward cursor appeared broken. Required full manual wheel handling with correct math for our coordinate system.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "Handle ALL wheel events manually with correct zoom-toward-point math derived from our custom coordinate mapping.",
+    "session": "Phase 01 verification"
+  },
+  {
+    "num": "3",
+    "id": 3,
+    "count": 1,
+    "date": "2026-03-21",
+    "category": "api-quirk",
+    "description": "ResizeObserver callback in HexMapV2 called resizeHexScene which reset camera frustum to origin, overwriting d3-zoom's centered camera transform. Race condition: d3-zoom sets correct camera → ResizeObserver fires → camera reset to origin.",
+    "consequence": "Grid appeared in bottom-right corner instead of centered.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "resizeHexScene now only updates renderer size. Caller re-syncs d3-zoom transform via syncCameraToZoom after resize.",
+    "session": "Phase 01 verification"
+  },
+  {
+    "num": "4",
+    "id": 4,
+    "count": 3,
+    "date": "2026-03-22",
+    "category": "process-friction",
+    "description": "GSD executor subagents create new files (e.g. hexMovementPath.ts, vite-plugin-constant-writer.ts) that are imported by tracked files but don't `git add` them before committing. Files exist locally so dev server works, but Vercel build fails on deploy because the files aren't in git.",
+    "consequence": "Vercel build fails repeatedly. Requires manual fix commits to add the missing files. Three occurrences in one session.",
+    "impact": "L",
+    "workaroundFound": true,
+    "workaround": "Manual catch-up commits after subagent completes. Root fix: add pre-push hook or GSD executor post-commit check that verifies no untracked files are imported by tracked files.",
+    "session": "Phase 04 execution"
+  },
+  {
+    "num": "5",
+    "id": 5,
+    "count": 2,
+    "date": "2026-03-22",
+    "category": "api-quirk",
+    "description": "ESLint/Prettier auto-runs after Edit tool writes and reformats the file, changing indentation and line numbers before the next Read. The Edit tool reports \"file modified since read\" and rejects the edit.",
+    "consequence": "Must re-read the file on every edit attempt to get updated line positions. 2 failed edits in Phase 05 Plan 04.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Re-read the file before every Edit call using offset/limit to target the exact section. Accept that linter will reformat between reads.",
+    "session": "Phase 05 Plan 04 signifier art"
+  },
+  {
+    "num": "6",
+    "id": 6,
+    "count": 1,
+    "date": "2026-03-22",
+    "category": "code-bug",
+    "description": "CoastlineMesh rendered two filled contour polygons covering the entire landmass: a shallow band fill (light blue, z=0.01) and a land boundary fill (flat green #5a7a48, z=0.02). Both sat above HexFillMesh (z=0), completely occluding per-hex terrain colors. The land fill made ALL land hexes appear as the same green. Without it, the shallow fill made everything blue. Original impediment misdiagnosed as \"palette contrast\" — actual root cause was opaque contour fills.",
+    "consequence": "Map appeared uniformly green despite 16 distinct terrain types with correct palette colors. Only edge water hexes showed correct blue (where contour polygons had gaps).",
+    "impact": "L",
+    "workaroundFound": true,
+    "workaround": "Disabled both contour fill layers in CoastlineMesh. HexFillMesh now renders per-hex terrain colors directly. Also fixed Color.setRGB to specify SRGBColorSpace and set renderer.toneMapping = NoToneMapping. Smooth coastlines will need a stencil-mask approach in a future pass.",
+    "session": "Hex color investigation"
+  },
+  {
+    "num": "7",
+    "id": 7,
+    "count": 1,
+    "date": "2026-03-22",
+    "category": "environment",
+    "description": "jsdom test environment (vitest) does not provide the `Image` global. Any module that uses `new Image()` (e.g. portrait texture loaders) causes `ReferenceError: Image is not defined` in tests.",
+    "consequence": "Test fails with ReferenceError instead of testing the fail-soft fallback behavior.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Add `vi.stubGlobal('Image', class { ... })` mock to test file. The mock's `src` setter triggers `onerror` via microtask to simulate image load failure in test environment. Pattern established in agentPortraitTextures.test.ts.",
+    "session": "Phase 06 Plan 03 — agent portrait texture tests"
+  },
+  {
+    "num": "8",
+    "id": 8,
+    "count": 1,
+    "date": "2026-03-23",
+    "category": "dependency",
+    "description": "Plan specified `import { Volume2, VolumeX } from 'lucide-react'` but lucide-react was not in package.json. Vite build failed: \"Rollup failed to resolve import 'lucide-react'\". TypeScript did not catch this because tsconfig does not have moduleResolution strict enough to reject uninstalled packages.",
+    "consequence": "Build blocked until dependency installed.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "`npm install lucide-react`. Rule 3 auto-fix in execute-plan protocol. Root prevention: plans should explicitly list `npm install` steps for new dependencies, or executor should scan imports against package.json before writing files.",
+    "session": "Phase 09 Plan 01 — start screen"
+  },
+  {
+    "num": "1",
+    "id": 1,
+    "count": 2,
+    "date": "2026-03-25",
+    "category": "tool-failure",
+    "description": "Claude Preview preview_screenshot times out on WebGL canvas (Three.js 60K hex render). Headless browser WebGL compositing too slow for screenshot capture.",
+    "consequence": "Had to switch to Claude in Chrome for screenshots.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "Use Claude in Chrome (`mcp__Claude_in_Chrome__computer` with `action: \"screenshot\"`) for WebGL visual verification. Playwright and preview_screenshot both fail.",
+    "session": "TB-016 verification"
+  },
+  {
+    "num": "9",
+    "id": 9,
+    "count": 1,
+    "date": "2026-03-25",
+    "category": "process-friction",
+    "description": "Committed and pushed code changes without running dev server verification first. A pre-commit hook (\"Preview Required\") blocked the workflow, requiring backtracking to start the dev server and verify visually after already committing.",
+    "consequence": "Had to do post-commit verification. Wasted time re-verifying after the fact instead of catching issues before commit.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Always run preview_start and follow verification_workflow after code edits, before committing. Added to memory as feedback_preview_verify.md.",
+    "session": "TB-016 HexMapV2 improvements"
+  },
+  {
+    "num": "10",
+    "id": 10,
+    "count": 1,
+    "date": "2026-03-25",
+    "category": "tool-failure",
+    "description": "preview_eval dispatched wheel events on the Playwright headless browser canvas, but Claude in Chrome (separate browser) was being used for visual verification. The two browser contexts are completely separate — events in one don't affect the other.",
+    "consequence": "Could not programmatically zoom the hex map in Claude in Chrome for hero-local tier verification. Had to rely on regional-tier visual check only.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "When using Claude in Chrome for visual verification, use its own tools (computer action: scroll, click) for interaction — not preview_eval. Or click the eye icon in the retinue panel to trigger zoom-to-agent.",
+    "session": "TB-016 verification"
+  },
+  {
+    "num": "11",
+    "id": 11,
+    "count": 1,
+    "date": "2026-03-25",
+    "category": "environment",
+    "description": "Cowork VM file sync corrupts working tree — 15+ source files got trailing null bytes (`\\x00`), 9+ files truncated mid-expression. Corruption happened after committed sessions, so no work lost, but Vercel builds fail on the corrupted working tree.",
+    "consequence": "Vercel deployments blocked until manual `git checkout HEAD -- src/ Docs/ .planning/` reset. BACKLOG.md also truncated, losing TB-029 description and TB-034 entry.",
+    "impact": "L",
+    "workaroundFound": true,
+    "workaround": "Reset corrupted files from HEAD (`git checkout HEAD -- src/ Docs/ .planning/`). Re-apply any Cowork-only changes (BACKLOG edits) manually. Root prevention: Cowork VM sync needs integrity checks or post-sync validation.",
+    "session": "File corruption cleanup session"
+  },
+  {
+    "num": "12",
+    "id": 12,
+    "count": 1,
+    "date": "2026-03-26",
+    "category": "code-bug",
+    "description": "TB-016 InstancedMesh migration used a single shared PlaneGeometry for all 11 terrain-type InstancedMeshes. Each mesh's `geometry.setAttribute('aUvRect', ...)` overwrote the shared geometry's attribute buffer — only the last mesh's UV/fog data survived. All other terrain signifiers rendered with zero-sized UV rects (invisible). Also: `frustumCulled=true` without `computeBoundingSphere()` risked culling meshes away from origin, and fade code still checked `THREE.Sprite` instead of `THREE.InstancedMesh`.",
+    "consequence": "All terrain signifiers except the last-created terrain type were invisible. Appeared as a regression \"overnight\" since the TB-016 commit was the previous night's last change. Debugging took ~45 min because the geometry looked correct (red-quad test proved meshes rendered fine) — the bug was subtle: attribute buffers existed but contained wrong data due to shared geometry mutation.",
+    "impact": "L",
+    "workaroundFound": true,
+    "workaround": "Clone the base PlaneGeometry per InstancedMesh so each gets its own instanced buffer attributes. Set `frustumCulled=false`. Update fade code to target `THREE.InstancedMesh`. **Prevention rule: when multiple InstancedMeshes need per-instance attributes, NEVER share a single geometry — each mesh must own its geometry.**",
+    "session": "Signifier regression fix"
+  },
+  {
+    "num": "9",
+    "id": 9,
+    "count": 3,
+    "date": "2026-03-28",
+    "category": "api-quirk",
+    "description": "ESLint/linter auto-runs after Write/Edit and silently reverts new imports and code blocks added to existing files. System reminders showed older file state after each write, giving false impression of revert. Three files affected (encounterScoring.ts, sphereAffinity.ts, phaseProsperity.ts).",
+    "consequence": "Wrote files 2-3 times before realizing state was correct — system reminders showed stale state, not actual file state. Wasted ~5 minutes re-reading and re-writing.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "Use `grep` to verify key symbols exist in files after writing rather than trusting system reminder diffs. The actual on-disk content is correct; system reminders may lag.",
+    "session": "Phase 10 Plan 04 sphere modifiers"
+  },
+  {
+    "num": "13",
+    "id": 13,
+    "count": 1,
+    "date": "2026-04-02",
+    "category": "dependency",
+    "description": "`phaseQuintessence` is instrumented for balance telemetry (quintessence_changed + state_transition events) but the function is not called from the orchestrator. Quintessence events are not emitted during simulation runs.",
+    "consequence": "Balance telemetry has a telemetry gap for quintessence data — no quintessence_changed events appear in baselines. All quintessence metrics return null in evaluator (produces warning, not fail).",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "phaseQuintessence wired into orchestrator at Phase 6.6396 (hardening pass 2026-04-02). RESOLVED.",
+    "session": "Balance-Eval Phase 1 baseline"
+  },
+  {
+    "num": "14",
+    "id": 14,
+    "count": 1,
+    "date": "2026-04-02",
+    "category": "dependency",
+    "description": "`QUINTESSENCE_ENCOUNTER_FAILURE_EROSION` (0.03) is a defined constant in `src/types/quintessence.ts` but is never used by encounter resolution. `pendingQuintessenceEvents` is only populated by `phaseSpherePressure` on player overchannel actions — never in headless balance runs.",
+    "consequence": "Quintessence metrics remain 0 in all headless balance-eval runs even with phaseQuintessence wired: `q.totalDelta=0`, `q.avgLossPerEnc=0`, `q.dissolutions=0`. Evaluator reports FAIL for recovery (0 < 2.5%) and WARNING for all band-loss metrics (no data).",
+    "impact": "S",
+    "workaroundFound": false,
+    "workaround": "Phase 2 work: encounter resolution (phaseEncounterProgressionV2 or step resolution) must push a QuintessenceEvent (source: 'encounter_failure', delta: -QUINTESSENCE_ENCOUNTER_FAILURE_EROSION) to `pendingQuintessenceEvents` on encounter failure. Instrumentation is already in place — only the upstream push is missing.",
+    "session": "Balance-Eval Phase 1 hardening"
+  },
+  {
+    "num": "16",
+    "id": 16,
+    "count": 1,
+    "date": "2026-04-03",
+    "category": "environment",
+    "description": "Local PDF extraction tooling is absent in this workspace context: `pdftotext` and `mutool` are unavailable, and no Python PDF library (`pypdf`, `PyPDF2`, `fitz`, `pdfplumber`) is installed.",
+    "consequence": "Could not directly extract text from `Design/eh01_rulebook.pdf` for rule comparisons.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Use the official Fantasy Flight PDF via the web tool for searchable rule text when local PDF extraction is unavailable.",
+    "session": "Eldritch Horror component-pattern audit"
+  },
+  {
+    "num": "17",
+    "id": 17,
+    "count": 1,
+    "date": "2026-04-03",
+    "category": "api-quirk",
+    "description": "`web.open` ref IDs from earlier browsing steps were not reusable later in the session (`invalid ref_id argument`), even though the underlying pages had previously opened successfully.",
+    "consequence": "Had to abandon follow-up opens on old refs and re-open the same sources via direct URLs.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "When a stored `web` ref becomes invalid, reopen the page from its canonical URL instead of chaining from prior ref IDs.",
+    "session": "Eldritch Horror component-pattern audit"
+  },
+  {
+    "num": "18",
+    "id": 18,
+    "count": 1,
+    "date": "2026-04-03",
+    "category": "environment",
+    "description": "YouTube transcript extraction tooling is unavailable in this workspace context: `yt-dlp` is not installed, so referenced video subtitles could not be downloaded directly.",
+    "consequence": "Could not pull a first-party transcript from the linked Nikki Valens talk.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Use the episode outline plus adjacent Nikki Valens interviews and articles that cover the same design topics when direct transcript tooling is absent.",
+    "session": "Nikki Valens talk analysis"
+  },
+  {
+    "num": "19",
+    "id": 19,
+    "count": 1,
+    "date": "2026-04-03",
+    "category": "api-quirk",
+    "description": "The Notion `notion_create_pages` connector surfaced `parent` as a string in the tool schema but rejected a string at runtime, requiring an object-shaped parent payload instead.",
+    "consequence": "First write attempt failed schema validation, interrupting the documentation flow.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Retry `notion_create_pages` with `parent: { \\\"page_id\\\": \\\"...\\\" }` when the connector rejects a raw parent ID string.",
+    "session": "Nikki design-direction capture in Notion"
+  },
+  {
+    "num": "20",
+    "id": 20,
+    "count": 1,
+    "date": "2026-04-03",
+    "category": "api-quirk",
+    "description": "The Notion `notion_create_pages` connector returned a generic `validation_error` / `Failed to create block` when given a richer markdown body with links and emphasis, without identifying the offending block.",
+    "consequence": "The first content write failed even after the parent-shape workaround, forcing a second pass with simplified content.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Retry with plainer Notion markdown: shorter sections, simple bullets, and raw page URLs instead of richer embedded page tags when `create_pages` fails with generic block validation.",
+    "session": "Nikki design-direction capture in Notion"
+  },
+  {
+    "num": "21",
+    "id": 21,
+    "count": 2,
+    "date": "2026-04-03",
+    "category": "permission",
+    "description": "`npm test` failed inside the Codex sandbox with `spawn EPERM` while Vite/Vitest tried to start `esbuild` from `vitest.config.ts`.",
+    "consequence": "Could not complete the standard test verification path inside the sandbox.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Re-run Vite/Vitest-based validation with escalated permissions when the sandbox blocks child-process spawn for `esbuild`.",
+    "session": "Component-library foundation implementation verification"
+  },
+  {
+    "num": "22",
+    "id": 22,
+    "count": 1,
+    "date": "2026-04-03",
+    "category": "other",
+    "description": "Full `npm test` remains red on the current `main` worktree for pre-existing reasons unrelated to this documentation task (examples: `TRACE_CATEGORIES` count assertion drift, movement content expecting river tax `Infinity`, encounter template count drift, unified-action rarity/count assertions, and repeated `trait.reputation.power.renown` runtime failures in orchestrator-backed tests).",
+    "consequence": "Could not finish with an all-green test suite even after rerunning outside the sandbox.",
+    "impact": "S",
+    "workaroundFound": false,
+    "workaround": "",
+    "session": "Nikki design-direction capture verification"
+  },
+  {
+    "num": "23",
+    "id": 23,
+    "count": 2,
+    "date": "2026-04-03",
+    "category": "permission",
+    "description": "`git add` failed inside the Codex sandbox with `Unable to create .git/index.lock: Permission denied` while staging a scoped set of task files.",
+    "consequence": "Could not stage or commit the completed slice from inside the sandbox.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Re-run git staging/commit/push commands with escalated permissions when `.git/index.lock` cannot be created in the sandbox.",
+    "session": "Backlog capture for component-driven encounter packet follow-up"
+  },
+  {
+    "num": "24",
+    "id": 24,
+    "count": 1,
+    "date": "2026-04-03",
+    "category": "permission",
+    "description": "`git push` failed inside the Codex sandbox because outbound GitHub HTTPS could not connect (`Failed to connect to github.com port 443 via 127.0.0.1`).",
+    "consequence": "Could not complete the required remote closeout from inside the sandbox.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Re-run `git push` with escalated permissions when sandbox network routing blocks GitHub access.",
+    "session": "Backlog capture for component-driven encounter packet follow-up"
+  },
+  {
+    "num": "25",
+    "id": 25,
+    "count": 1,
+    "date": "2026-04-04",
+    "category": "dependency",
+    "description": "`UnifiedActionTemplate` has no field for authored approach cards. Encounters always get generic \"Tip the scales in their favor\" / \"Let it play out\" from `generateInterventionChoices()` in `encounterVisibility.ts`. Gate Duty works around this with a per-encounter custom adapter (`buildGateDutyEncounterStageModel.ts`), but there is no generalizable path for new encounters to surface scene-specific choices with prose bodies, cost justification, and risk text.",
+    "consequence": "New encounters (e.g. Flawed Steel) render Gate Duty-quality prose but fall back to generic binary approach cards, destroying the choice experience.",
+    "impact": "L",
+    "workaroundFound": false,
+    "workaround": "Gate Duty's per-encounter adapter is the only current workaround. Systemic fix: add an `authoredChoices` field to `UnifiedActionTemplate` that the encounter stage reads before falling back to `generateInterventionChoices()`.",
+    "session": "Encounter pipeline quality upgrade — Flawed Steel implementation"
+  },
+  {
+    "num": "26",
+    "id": 26,
+    "count": 1,
+    "date": "2026-04-04",
+    "category": "code-bug",
+    "description": "`ActionStepBranch` step re-emits its notification every tick instead of holding in \"awaiting player input\" state. Step 2 (branching) keeps firing each tick cycle, re-rendering the same scene prose and approach cards. The step resolves and re-triggers rather than waiting for player choice commitment.",
+    "consequence": "Step 2 scene keeps pushing every tick, creating a flood of repeated notifications. Player must race to interact before the next tick re-renders.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "Root cause: dedup filter in `encounterVisibility.ts` (`existingNotifKeys`) excluded resolved notifications for non-aftermath sources. When player commits a choice the notification is marked resolved; next tick it drops from dedup set and re-emits. Fix: added `",
+    "session": "| n.sourceSystem === 'unified_action'` to the filter alongside the `n.kind === 'aftermath'` clause. Resolved in commit `95f6163`. | Encounter pipeline quality upgrade — Flawed Steel testing"
+  },
+  {
+    "num": "27",
+    "id": 27,
+    "count": 1,
+    "date": "2026-04-06",
+    "category": "unclear-requirements",
+    "description": "User-provided review baseline SHAs did not resolve in the local repo (`fa6bc25`, `6dd17d2`), so the requested diff range could not be opened directly.",
+    "consequence": "Had to recover the intended review scope by searching commit messages and using the matching full commit IDs instead of the supplied SHAs.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Use `git log --grep` on the provided commit subjects to locate the actual local commits when short SHAs do not resolve.",
+    "session": "Targeted attention tier fix review"
+  },
+  {
+    "num": "28",
+    "id": 28,
+    "count": 1,
+    "date": "2026-04-06",
+    "category": "process-friction",
+    "description": "Broad PowerShell `Get-ChildItem -Recurse -File .",
+    "consequence": "Select-String ...` scans can time out in this repo because they walk generated artifacts and `.git` data in addition to source files.",
+    "impact": "Lost time on repo search and had to retry with narrower, path-scoped searches.",
+    "workaroundFound": false,
+    "workaround": "Yes",
+    "session": "Scope PowerShell searches to relevant directories/files (`src`, specific files) and avoid repo-root recursive scans unless exclusions for `.git`, `dist`, preview logs, and other generated artifacts are applied. | Dual-mode TTS design review"
+  },
+  {
+    "num": "29",
+    "id": 29,
+    "count": 1,
+    "date": "2026-04-08",
+    "category": "tool-failure",
+    "description": "`apply_patch` failed on Windows with `InvalidFilename` / `The filename or extension is too long` when attempting one large multi-file patch for the terrain texture lab.",
+    "consequence": "Had to stop the bulk edit and redo the work as smaller file-by-file patches.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Split large Windows patch operations into smaller `apply_patch` calls, especially when adding several long-path files in one step.",
+    "session": "Terrain texture playground implementation"
+  },
+  {
+    "num": "30",
+    "id": 30,
+    "count": 3,
+    "date": "2026-04-08",
+    "category": "other",
+    "description": "Full `npm test` remains red on the current `main` worktree for broad pre-existing reasons outside the objective-system slice (examples observed during this pass: movement content expectations, portrait compositor tests, sublocation integration, reward pipeline contracts, encounter stage model tests, audio helpers, revelation gate, HexMapV2 sprite tests, and encounter content/wiring assertions).",
+    "consequence": "Could not finish this session with an all-green full-suite verification even though scoped validation for the doom/journey/mandate work passed.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Use targeted verification for the touched slice (`npx tsc --noEmit`, `npx vite build`, focused vitest files) and log the repo-wide red state instead of misattributing unrelated failures to the feature.",
+    "session": "Encounter balance telemetry slice verification"
+  },
+  {
+    "num": "32",
+    "id": 32,
+    "count": 1,
+    "date": "2026-04-08",
+    "category": "other",
+    "description": "Full `npm test` remains red on the current `main` worktree for reasons unrelated to the encounter-reference page sync (examples from this rerun: `movement-content.test.ts`, `revelationGate.test.ts`, reward/retinue/sublocation/audio/portrait tests, encounter content-count drift, and repeated orchestrator crashes from missing `trait.reputation.power.renown`).",
+    "consequence": "Could not finish the documentation-only task with an all-green full suite even though `npx tsc --noEmit` and `npx vite build` passed cleanly.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Treat `npm test` as a repo-health signal here, not a regression caused by the page update; verify the touched slice with build/typecheck and log the existing baseline failures explicitly.",
+    "session": "Encounter reference page sync verification"
+  },
+  {
+    "num": "33",
+    "id": 33,
+    "count": 1,
+    "date": "2026-04-08",
+    "category": "environment",
+    "description": "Bundled `rg.exe` still cannot launch inside the Codex desktop sandbox for this repo (`Access is denied`) during routine code search.",
+    "consequence": "Had to fall back to slower PowerShell file scans again while wiring the Threads encounter-pool UI.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Keep using scoped PowerShell `Get-ChildItem` + `Select-String` searches when `rg.exe` is blocked in this environment.",
+    "session": "Threads encounter-pool readout implementation"
+  },
+  {
+    "num": "31",
+    "id": 31,
+    "count": 5,
+    "date": "2026-04-09",
+    "category": "process-friction",
+    "description": "Full `npm test` exceeded the default Codex command timeout even though the suite was still actively running.",
+    "consequence": "Had to rerun verification with a longer timeout window before I could confirm repo health.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Use a longer timeout for full-suite runs in this workspace (`npm test` with 5m+ timeout) instead of treating the timeout as a test failure.",
+    "session": "Encounter-pool modal verification"
+  },
+  {
+    "num": "34",
+    "id": 34,
+    "count": 7,
+    "date": "2026-04-09",
+    "category": "other",
+    "description": "Full `npm test` remains red on the current `main` worktree during Threads-area follow-up work as well (same broad baseline pattern: movement-content, sublocation/reward contracts, revelation gate, portrait/audio, encounter-count drift, and repeated `trait.reputation.power.renown` orchestrator crashes).",
+    "consequence": "The slice-specific verification passed, but the required full-suite check still could not finish green because of unrelated repo baseline failures.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Keep using focused verification for the touched slice (`vitest` targeted files, `npx tsc --noEmit`, `npx vite build`) and report the repo-wide `npm test` red state separately until the baseline is repaired.",
+    "session": "Encounter-pool modal verification"
+  },
+  {
+    "num": "35",
+    "id": 35,
+    "count": 1,
+    "date": "2026-04-09",
+    "category": "process-friction",
+    "description": "Scoped verification for the Threads encounter-pool UI slice did not include `src/engine/__tests__/retinue.test.ts`, even though the live sidebar depends on `getThreadedNodes()` from `retinue.ts`. A missing portrait helper call in that shared path slipped through and hid the Threads area until a user report.",
+    "consequence": "A runtime regression reached `main` despite passing slice-local UI tests, and the next session had to interrupt planned work to debug the vanished Threads panel.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "When touching thread/retinue UI, include the shared retinue engine tests alongside component tests (`npx vitest run src/engine/__tests__/retinue.test.ts ...`) so aggregation-path regressions are caught before release.",
+    "session": "Threads sidebar hotfix"
+  },
+  {
+    "num": "36",
+    "id": 36,
+    "count": 1,
+    "date": "2026-04-09",
+    "category": "dependency",
+    "description": "`vite build` surfaced a hidden cross-module dependency: `ThreadLineMesh.ts` imports `REACH_ICON_COLORS` from `ActivityIconMesh.ts`, so refactoring the activity-icon layer broke the production bundle even though typecheck and focused tests still passed.",
+    "consequence": "The first production build failed until the shared reach-color export was restored, revealing coupling that was invisible in the narrower test pass.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "After refactoring shared visual modules, run `npx vite build` before closeout and preserve any intentionally shared exports until downstream consumers are moved onto a more explicit palette module.",
+    "session": "Encounter activity icon / pool-visibility fix"
+  },
+  {
+    "num": "37",
+    "id": 37,
+    "count": 1,
+    "date": "2026-04-09",
+    "category": "environment",
+    "description": "Bundled `rg.exe` still cannot launch inside the Codex desktop sandbox for this repo (`Access is denied`) during design-document research and backlog cross-referencing.",
+    "consequence": "Had to replace the preferred fast search path with slower PowerShell file scans while tracing older initiative/ambition references.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Use scoped PowerShell `Select-String` / `Get-Content` reads when `rg.exe` is blocked in this environment.",
+    "session": "Ambition-driven strategic actions design write-up"
+  },
+  {
+    "num": "38",
+    "id": 38,
+    "count": 1,
+    "date": "2026-04-09",
+    "category": "other",
+    "description": "Full `npm test` remains red on the current `main` worktree during the strategic-actions design-doc closeout as well (examples from this rerun: `movement-content.test.ts`, `sublocation-integration.test.ts`, `revelationGate.test.ts`, reward/portrait/audio/AgentSpriteMesh assertions, encounter content-count drift, and repeated orchestrator crashes from missing `trait.reputation.power.renown`).",
+    "consequence": "The required full-suite verification still could not finish green even though `npx tsc --noEmit` and `npx vite build` passed for the docs-only slice.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Treat the full-suite result here as repo-health baseline signal, not a regression from the documentation change, and continue to report the failing groups explicitly until the baseline is repaired.",
+    "session": "Ambition-driven strategic actions design verification"
+  },
+  {
+    "num": "39",
+    "id": 39,
+    "count": 1,
+    "date": "2026-04-09",
+    "category": "other",
+    "description": "Full `npm test` remains red on the current `main` worktree during the strategic-actions implementation-plan closeout too (examples from this rerun: `movement-content.test.ts`, `revelationGate.test.ts`, `npcSeeding.test.ts`, `rewardPipeline.contract.test.ts`, `sublocation-integration.test.ts`, terrain audio/portrait/avatar tests, encounter reward/content count drift, and repeated orchestrator crashes from missing `trait.reputation.power.renown`).",
+    "consequence": "The required full-suite verification still could not finish green even though `npx tsc --noEmit` and `npx vite build` passed for the planning/docs slice.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Treat the full-suite result as repo-health baseline signal for this session as well; keep running typecheck/build plus scoped tests for touched slices until the baseline failures are repaired.",
+    "session": "Ambition-driven strategic actions implementation plan verification"
+  },
+  {
+    "num": "40",
+    "id": 40,
+    "count": 1,
+    "date": "2026-04-12",
+    "category": "code-bug",
+    "description": "Strategic action candidate generator used `actor.properties.domainCapability` (singular) but actors store the field as `domainCapabilities` (plural). The mismatch made `domains` always `undefined`, causing every reach floor check to fail and every candidate to be rejected with `reach_floor_unmet`. Three test files had the same typo in their mock actors.",
+    "consequence": "Strategic actions appeared completely non-functional despite the pipeline being structurally correct — zero candidates ever passed scoring. Diagnostic logging was required to identify the property name mismatch.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "Fixed to `domainCapabilities` in `strategicActionCandidates.ts` (2 locations) and 3 test files. Prevention: property access on actor nodes should use typed helpers or shared constants rather than raw string property paths.",
+    "session": "Merchant proving slice live testing"
+  },
+  {
+    "num": "41",
+    "id": 41,
+    "count": 1,
+    "date": "2026-04-12",
+    "category": "code-bug",
+    "description": "`phaseAgentDecision` executed strategic actions but assigned the result to a local `state` variable that was discarded at end of the agent loop iteration (`continue`). The return value at the end of the function never included `strategicState`.",
+    "consequence": "Strategic actions executed correctly but their state (projects, controls, history) was lost every tick — never persisted to GameState.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "Added `accumulatedStrategicState` variable that accumulates across the agent loop and is included in the return `Partial<GameState>`.",
+    "session": "Merchant proving slice live testing"
+  },
+  {
+    "num": "42",
+    "id": 42,
+    "count": 1,
+    "date": "2026-04-12",
+    "category": "other",
+    "description": "Browser game stalls at tick 72 with 1010+ agents. CLI with seed 42 runs to tick 75+ with 414 agents without stalling. The `?seeded` URL creates a different, larger world than CLI seed 42.",
+    "consequence": "Could not verify strategic actions in browser beyond tick ~20. Pre-existing performance issue, not caused by strategic actions.",
+    "impact": "M",
+    "workaroundFound": false,
+    "workaround": "Use CLI for engine verification. Browser performance with 1000+ agents is a known scaling issue.",
+    "session": "Merchant proving slice browser verification"
+  },
+  {
+    "num": "43",
+    "id": 43,
+    "count": 1,
+    "date": "2026-04-15",
+    "category": "process-friction",
+    "description": "Root-level `world-model.json` referenced by repo instructions was not present; the actual file is `src/data/world-model.json`, causing a schema/search command to fail before retrying with discovery.",
+    "consequence": "Had to run an extra file discovery step before validating proposed graph edge usage.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Use `Get-ChildItem -Recurse -Filter world-model.json` when the documented root path is absent, then search the discovered `src/data/world-model.json`.",
+    "session": "Thematic Pressure Linear design review"
+  },
+  {
+    "num": "44",
+    "id": 44,
+    "count": 1,
+    "date": "2026-04-16",
+    "category": "process-friction",
+    "description": "An ad hoc PowerShell regex/count command failed with a parser error because nested quote escaping around `id: ['\\\"]` was brittle.",
+    "consequence": "Had to abandon the compact one-liner and retry with simpler scoped reads/counts.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Prefer simpler PowerShell expressions or a small checked script when regex patterns include mixed single/double quotes.",
+    "session": "Encounter template migration design review"
+  },
+  {
+    "num": "45",
+    "id": 45,
+    "count": 1,
+    "date": "2026-04-17",
+    "category": "code-bug",
+    "description": "`deriveLocationActivities.ts` referenced `agentNode` (a loop variable from a `for...of` block) outside its loop scope in the `summaries.set()` call. TypeScript did not catch this because `const` in a `for...of` block is still in scope for the block body but the reference was accidentally placed after the loop closed. Also left a stray `declare const agentNode: never;` at end of file from earlier debugging.",
+    "consequence": "Type-check passed (`tsc --noEmit` clean), but runtime would have referenced stale or garbage data. Caught during code review of generated output.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Fixed: removed the out-of-scope reference and the dead `declare` line. Prevention: keep variable scope visually narrow; don't let derived values escape their `for...of` block.",
+    "session": "THR-22 session 1 implementation"
+  },
+  {
+    "num": "46",
+    "id": 46,
+    "count": 1,
+    "date": "2026-04-17",
+    "category": "dependency",
+    "description": "`LocationNode` in HexMapV2's `LocationIconMesh.ts` has no `id` field — only `hexCol`, `hexRow`, `name`, `locationType`. Initial tooltip wiring attempted `locationActivityMap.get(hexLoc.id)` which was always `undefined`. TypeScript accepted it because the prop is optional.",
+    "consequence": "Tooltips rendered terrain name but no location data, appearing silently broken. Caught during planning before the code shipped.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Keyed `locationActivityMap` by `\"col,row\"` string throughout (GameView rekeying memo + HexMapV2 lookup), eliminating the `id` dependency entirely.",
+    "session": "THR-22 session 1 implementation"
+  },
+  {
+    "num": "47",
+    "id": 47,
+    "count": 1,
+    "date": "2026-04-17",
+    "category": "dependency",
+    "description": "`omenState.activeOmens` / `OmenTrackTemplate` vocabulary tables do not exist yet — the `omenState` parameter is wired into `deriveLocationActivities()` but cannot inject vocabulary because the template registry would need to be imported, creating a dependency on content data that hasn't been authored.",
+    "consequence": "Omen vocabulary injection is a complete no-op. Murmurs never vary with active omen tracks.",
+    "impact": "S",
+    "workaroundFound": false,
+    "workaround": "Deferred as THR-128 — omen vocabulary tables need to be designed alongside the omen system. The plumbing stub is in place so the fix is purely additive when tables exist.",
+    "session": "THR-22 session 1 implementation"
+  },
+  {
+    "num": "48",
+    "id": 48,
+    "count": 1,
+    "date": "2026-04-17",
+    "category": "api-quirk",
+    "description": "Linear `save_issue` with `statusId` or `status` parameter silently returned success (200) but did not update the issue state — issue remained in \"Ready for Dev\" instead of moving to \"In Dev\". No error message surfaced.",
+    "consequence": "Had to proceed without proper state tracking in Linear; completion comment still posted manually.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Post a completion comment on the issue regardless of state-update outcome; verify the state changed by re-querying the issue after calling `save_issue`.",
+    "session": "THR-90 Phase 0 implementation"
+  },
+  {
+    "num": "49",
+    "id": 49,
+    "count": 1,
+    "date": "2026-04-17",
+    "category": "api-quirk",
+    "description": "Linear `list_issues` tool rejected `orderBy: \"priority\"` parameter at runtime — the field only accepts `\"createdAt\"` or `\"updatedAt\"`. TypeScript schema does not expose the constraint.",
+    "consequence": "Had to remove `orderBy` and sort results manually.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Omit `orderBy` from `list_issues` calls unless using `\"createdAt\"` or `\"updatedAt\"`; sort by priority manually from the returned array.",
+    "session": "THR-90 session start — issue triage"
+  },
+  {
+    "num": "50",
+    "id": 50,
+    "count": 1,
+    "date": "2026-04-17",
+    "category": "code-bug",
+    "description": "TypeScript structural typing silently accepted `UnifiedActionTemplate` where `EncounterTemplate` was expected in `buildCanonicalEncounterTemplates`. `getThievesGuildEncounterById` was called via `getFactionEncounterById` which typed its return as `EncounterTemplate",
+    "consequence": "undefined`, but the TG function now returns `UnifiedActionTemplate",
+    "impact": "undefined`. TypeScript accepted the narrower type (structural compatibility). `tsc --noEmit` was clean, but 52 test files failed at runtime when `migrateEncounterTemplate` tried to spread `old.locationTypes` (absent from `UnifiedActionTemplate`).",
+    "workaroundFound": false,
+    "workaround": "M",
+    "session": "Yes | Remove pre-migrated guilds from `getFactionEncounterById` chain entirely. Add them directly to `UNIFIED_ACTION_TEMPLATES` (bypassing `migrateEncounterTemplate`). Pattern for future guild migrations: once a file moves to UnifiedActionTemplate, immediately remove it from `getFactionEncounterById` and add to `UNIFIED_ACTION_TEMPLATES` directly. | THR-89 Phase 1 TG migration"
+  },
+  {
+    "num": "51",
+    "id": 51,
+    "count": 1,
+    "date": "2026-04-17",
+    "category": "skill-gap",
+    "description": "`emitTrace` is a no-op when `enabled=false` (default). Tests that called `clearTraces()` in `beforeEach` but not `enableTracing()` silently found 0 traces and asserted against empty arrays. Caused 3 new test files to fail on trace-emission assertions with no useful error message — just \"expected array length 1, got 0\".",
+    "consequence": "Test failures appeared to be trace-logic bugs; actual cause was that tracing was simply disabled. Required root-cause investigation against `traceBuffer.ts`.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "Always call `enableTracing()` in `beforeEach` (alongside `clearTraces()`) in any test that asserts on `getTraces()`. Pattern: `beforeEach(() => { enableTracing(); clearTraces(); })`.",
+    "session": "THR-112 trace assertion tests"
+  },
+  {
+    "num": "52",
+    "id": 52,
+    "count": 1,
+    "date": "2026-04-17",
+    "category": "code-bug",
+    "description": "`phaseHiddenMarkDecay` used `if (nextMarks.length === marks.length) return {}` as an optimization to detect \"no change\". This incorrectly returned `{}` when a mark's severity decreased but mark count was unchanged (the typical steady-state decay case). Marks appeared to not decay between the grace period and the floor — only the final floor-drop produced a visible state change.",
+    "consequence": "Decay phase unit tests failed because decayed severity was never returned (empty object merged into state, leaving original severity). Contract liveness test also failed for the same reason (trace never fired because marks never decayed to floor).",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "Replaced length comparison with a `changed` boolean flag set to `true` whenever any mark is dropped OR any mark's severity decreases. Return `{}` only when `changed` remains `false`.",
+    "session": "THR-112 phaseHiddenMarkDecay implementation"
+  },
+  {
+    "num": "53",
+    "id": 53,
+    "count": 1,
+    "date": "2026-04-17",
+    "category": "code-bug",
+    "description": "Codex review identified that `consumeMatchingMarks` ran against the post-aftermath state, which can include newly-placed marks from the same aftermath call. If a newly planted mark's `revealFamilies` prefix matched the current templateId, it would be consumed in the same event that created it — defeating the delayed-revelation mechanic entirely. TypeScript and tests did not catch this because the test marks were pre-existing.",
+    "consequence": "Hidden marks placed by encounter aftermath could self-reveal immediately in theory; the delayed-reveal guarantee was broken at creation time. Fixed before shipping.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Added `if (mark.placedTick >= tick) continue;` guard in `consumeMatchingMarks` loop — marks placed at the current tick are never eligible for same-tick consumption.",
+    "session": "THR-112 Codex review"
+  },
+  {
+    "num": "54",
+    "id": 54,
+    "count": 1,
+    "date": "2026-04-17",
+    "category": "flaky-test",
+    "description": "Pre-existing test failure on `main`: `src/engine/__tests__/unifiedActionPhases.test.ts > walks a 3-step action through the full pipeline to completion` expects `allEvents.length === 3` but gets a different count. Failure unrelated to docs-only THR-135 change. 616 test files pass, 1 fails, 9304 tests pass.",
+    "consequence": "Could not close THR-135 with a fully green `npm test` suite even though `npx tsc --noEmit` and `npx vite build` passed clean. Matches repo-health baseline pattern already documented in impediments #22, #32, #34, #38, #39.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Treat as repo-health baseline signal for docs-only work; verify touched slice with typecheck + build and log the failing test explicitly. Needs a separate repair pass (tracked under the npm-test-baseline retrospective actions).",
+    "session": "THR-135 wiring-checklist update verification"
+  },
+  {
+    "num": "56",
+    "id": 56,
+    "count": 1,
+    "date": "2026-04-18",
+    "category": "permission",
+    "description": "GitHub branch protection API returns 403 for private repos unless the account has GitHub Pro. `gh api repos/christianspliid-ui/threadbare/branches/main/protection --method PUT` fails with \"Upgrade to GitHub Pro or make this repository public to enable this feature.\" Cannot programmatically enforce CI-required checks before merge.",
+    "consequence": "Branch protection cannot be set up automatically by Claude Code. CI workflow runs and is green, but there is no server-side gate preventing a PR merge with a red CI.",
+    "impact": "Blocked",
+    "workaroundFound": false,
+    "workaround": "GitHub Pro activated by Christian. Branch protection enabled via `gh api --method PUT --input -` with JSON body. Required check: `Test · Typecheck · Build`; strict=true. THR-282 completion.",
+    "session": "THR-161 CI/CD Pipeline Setup"
+  },
+  {
+    "num": "55",
+    "id": 55,
+    "count": 3,
+    "date": "2026-04-19",
+    "category": "tool-failure",
+    "description": "`RemoteTrigger` with trigger_id `trig_012H3CEdTnrAqY4w81T4rLXz` returned HTTP 404 (trigger not found).",
+    "consequence": "Could not fire the next-agent remote trigger. Slack message covers the handoff; next agent will pick up from the hourly cron or manual prompt.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Slack DM handoff is sufficient; the hourly cron or user-initiated session will pick up the next issue. Trigger ID needs to be recreated — run RemoteTrigger(action: \"list\") to see current triggers and update session-handoff skill with the correct ID.",
+    "session": "THR-182 session closeout, THR-165 session closeout"
+  },
+  {
+    "num": "57",
+    "id": 57,
+    "count": 2,
+    "date": "2026-04-19",
+    "category": "flaky-test",
+    "description": "`traceBuffer-integration.test.ts > trace IDs are sequential after clearing` fails when `orchestrator.ts` includes the THR-29 `phaseFactionActions` call. Root cause: `phaseFactionActions` emits 3 traces per tick; 10 ticks × per-tick count exceeds `TRACE_BUFFER_SIZE=500`, causing the circular buffer to wrap and produce non-sequential IDs. Passes on clean main (without THR-29 orchestrator changes).",
+    "consequence": "Could not confirm a fully clean `npm test` run during THR-154 session — 1 test fails that is not caused by THR-154 code.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Test failure is collateral from THR-29 shipping. Fix options: (a) increase `TRACE_BUFFER_SIZE`, (b) reduce per-tick trace verbosity in `phaseFactionActions`, (c) update the sequential-IDs test to tolerate circular-buffer wrap. Assign to whoever ships THR-29.",
+    "session": "THR-24 verification"
+  },
+  {
+    "num": "60",
+    "id": 60,
+    "count": 1,
+    "date": "2026-04-19",
+    "category": "environment",
+    "description": "`Agent` tool with `model: \"haiku\"` returns \"Prompt is too long\" even for minimal prompts (under 300 tokens). The shared system prompt (CLAUDE.md + memory + codesight + session-reminder) exceeds haiku's context window, making haiku re-spawning effectively impossible in this project.",
+    "consequence": "Could not save budget by re-spawning at haiku for model:haiku issues; ran all haiku-tier work on sonnet instead.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Run model:haiku work on sonnet when system context is too large for haiku. CLAUDE.md re-spawn instruction is inapplicable in this project.",
+    "session": "THR-185 scheduled-task pickup"
+  },
+  {
+    "num": "61",
+    "id": 61,
+    "count": 1,
+    "date": "2026-04-19",
+    "category": "process-friction",
+    "description": "Scheduled sonnet session found only one Ready-for-Dev issue (THR-153) which is labeled `model:opus`. Per protocol, sonnet cannot attempt opus-level work (cross-module refactor, renderer impact, passive-effect plumbing). No mechanism exists for the scheduled task to escalate to an opus session — `Agent(model: \"opus\")` would work but risks incomplete skill context for a complex 3-pillar implementation.",
+    "consequence": "No work was performed this session; the issue remained unclaimed. The scheduled pickup slot was wasted.",
+    "impact": "Blocked",
+    "workaroundFound": false,
+    "workaround": "Human must manually trigger an Opus session (e.g., `claude --model opus`) to pick up model:opus issues. Alternatively, scheduled tasks could be enhanced to spawn opus subagents for labeled work, but domain skills (hexmap-core, engine-architecture, etc.) would be unavailable to the subagent.",
+    "session": "THR-153 scheduled pickup attempt"
+  },
+  {
+    "num": "62",
+    "id": 62,
+    "count": 1,
+    "date": "2026-04-19",
+    "category": "process-friction",
+    "description": "Used `git stash` to temporarily revert THR-153 WIP to determine if a full-suite test failure was pre-existing. `git stash` does NOT stash untracked files by default; I also `rm -f`'d the untracked new files for a clean diagnostic run. After `git stash pop`, only tracked-file modifications were restored — the ~8 newly-created modules/tests/prose files (~1200 LOC) were permanently gone.",
+    "consequence": "~40 minutes of re-authoring from transcript.",
+    "impact": "L",
+    "workaroundFound": true,
+    "workaround": "Always pass `--include-untracked` (or `-u`) when stashing to compare states. Better: use `git worktree add` to materialize HEAD in a sibling directory and run tests there — never touch the active worktree. Even better: trust that if your own unit tests + tsc + the rest of the suite are green, a separate long-standing failure is orthogonal and doesn't need an A/B comparison.",
+    "session": "THR-153 pre-commit verification"
+  },
+  {
+    "num": "63",
+    "id": 63,
+    "count": 1,
+    "date": "2026-04-19",
+    "category": "api-quirk",
+    "description": "Linear `save_issue` with `id=\"THR-183\"` (a Done issue) was called during THR-182 session to create a new Deferral issue. Passing an existing `id` updates the existing issue rather than creating a new one — the API does not distinguish \"create\" vs \"update\" by intent, only by `id` presence. Silently overwrote the closed THR-183 (Vara seed, UI Visual Overhaul) with Deferral metadata.",
+    "consequence": "A completed issue in a shipped project was mutated; its title, labels, and description were overwritten. Required a fixup: restoring THR-183 fields is impractical (history preserved in Linear), so created a new issue (THR-189) and updated the YAML reference.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "Never pass `id` when creating a new issue via `save_issue`. Omit the `id` field entirely for new issues — if you intend to reference an existing issue number for naming purposes, compute the number from the list response after creation.",
+    "session": "THR-182 Deferral issue creation"
+  },
+  {
+    "num": "64",
+    "id": 64,
+    "count": 1,
+    "date": "2026-04-19",
+    "category": "environment",
+    "description": "$CODEX_HOME was unset in the automation shell, so the required automation memory path could not be resolved from env vars.",
+    "consequence": "Initial memory read failed until fallback path discovery was used.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Use $env:USERPROFILE\\.codex\\automations\\<automation-id>\\memory.md fallback when $CODEX_HOME is null.",
+    "session": "THR-190 automation run"
+  },
+  {
+    "num": "66",
+    "id": 66,
+    "count": 2,
+    "date": "2026-04-19",
+    "category": "dependency",
+    "description": "Obsidian MCP tools unavailable — first hit in Codex THR-24 closeout (no callable connector), then reproduced in Cowork session when attempting to log THR-24/THR-190 work entries: `obsidian_append_content` returned `HTTPSConnectionPool(host='127.0.0.1', port=27124): [WinError 10061] actively refused` (Obsidian Local REST API plugin not running). Vault is not filesystem-reachable from the workspace, only `.codesight/wiki/log.md` is visible which is unrelated to the Obsidian vault.",
+    "consequence": "Closeout log entries for THR-24 and THR-190 cannot be persisted to the vault; queued in-memory until the Obsidian REST plugin is restarted.",
+    "impact": "S",
+    "workaroundFound": false,
+    "workaround": "Queue the log entry and notify the user that the Obsidian Local REST API plugin at localhost:27124 needs to be started; append once reachable. Long-term: Obsidian vault should have a filesystem-mount fallback so log writes don't depend on the plugin being up.",
+    "session": "THR-24 closeout + Cowork-side retry"
+  },
+  {
+    "num": "67",
+    "id": 67,
+    "count": 1,
+    "date": "2026-04-19",
+    "category": "environment",
+    "description": "$CODEX_HOME was unset again during Threadbearer coding automation run ( hreadbearer-coding), so memory path resolution failed until falling back to %USERPROFILE%\\\\.codex\\\\automations\\\\threadbearer-coding\\\\memory.md.",
+    "consequence": "Adds setup friction at automation start and risks skipped memory continuity if fallback is forgotten.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Keep using %USERPROFILE%\\\\.codex\\\\automations\\\\<automation-id>\\\\memory.md fallback when $CODEX_HOME is null; consider exporting $CODEX_HOME in automation shell profile.",
+    "session": "THR-25 closeout automation run"
+  },
+  {
+    "num": "68",
+    "id": 68,
+    "count": 1,
+    "date": "2026-04-19",
+    "category": "process-friction",
+    "description": "git add failed with atal: Unable to create .git/index.lock: File exists during THR-25 closeout. Repository had multiple orphaned git.exe processes from background status/rev-parse calls.",
+    "consequence": "Staging/commit flow blocked until lock was manually cleared, risking delayed closeout in automation runs.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Check for orphan git.exe processes, stop them, then remove stale .git/index.lock before retrying staging. Consider adding a pre-stage helper in automation scripts.",
+    "session": "THR-25 closeout automation run"
+  },
+  {
+    "num": "69",
+    "id": 69,
+    "count": 1,
+    "date": "2026-04-20",
+    "category": "process-friction",
+    "description": "A prior Cowork session (2026-04-19 21:13–21:16) drafted a new 7-issue \"UI Visual Overhaul\" series (THR-199..205) covering design tokens, typography, primitives, ActivityIcon, SphereIcon, Thread panel, and viewport audit — without checking the UI Visual Overhaul project's Done column, where the identical 7-issue series (THR-168..174) had already shipped on 2026-04-18. The duplicates were created in Ready for Dev / Implementation Planning at priority High. Had CC pulled the top item (THR-199) before cleanup, it would have either produced no-op commits (files already exist) or merge-conflicted with shipped code.",
+    "consequence": "Nearly routed CC to redo 7 already-shipped issues. Required a full cleanup pass: verify file existence for each issue's deliverable, diff against shipped code, post explanatory comment, transition to Duplicate with duplicateOf field, and re-route the three legitimate Ready-for-Dev mechanical items (THR-193/196/197) to Ready for Codex so the CC queue isn't falsely empty after the duplicates clear.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Add a \"check Done column\" step to the Cowork issue-creation workflow.** Before drafting any issue that looks like it could belong to an existing project, query \\`list_issues project:\"<project>\" state:\"Done\"\\` and scan the titles. If a shipped issue matches the intended scope, don't create the duplicate — either extend the shipped work via follow-up or confirm with the user that a fresh pass is needed. Stronger fix: the Cowork design workflow should start from \\`list_projects\\` → select project → verify the project isn't already effectively complete before issue creation. The UI Visual Overhaul project is still in \"Now\" state despite all 7 underlying issues being Done; stale project status misled the duplicator.",
+    "session": "Cowork keep-work-flowing session, THR-199..205 duplicate cleanup"
+  },
+  {
+    "num": "70",
+    "id": 70,
+    "count": 1,
+    "date": "2026-04-20",
+    "category": "unclear-requirements",
+    "description": "THR-222 latest handoff comment points to a local artifact path (`...outputs/codex-brief-THR-222-composition-dsl.md`) that does not exist on disk in this executor session, and the issue body/comment do not include the expected Files-to-touch and Done-when checklist block.",
+    "consequence": "Codex cannot validate execution scope against a concrete handoff contract; proceeding would require improvising acceptance criteria.",
+    "impact": "Blocked",
+    "workaroundFound": false,
+    "workaround": "Claimed issue per protocol, verified state, then paused and requested a refreshed handoff comment containing inline Plan doc link, Files to touch, and Done-when checklist.",
+    "session": "THR-222 pickup (threadbearer-coding automation)"
+  },
+  {
+    "num": "71",
+    "id": 71,
+    "count": 1,
+    "date": "2026-04-20",
+    "category": "dependency",
+    "description": "Obsidian MCP append step remains unavailable in this session (no callable Obsidian connector tools exposed), so required `log.md` closeout entry cannot be written from Codex automation.",
+    "consequence": "THR-222 closeout cannot fully satisfy the vault-log append requirement despite successful code delivery and verification.",
+    "impact": "S",
+    "workaroundFound": false,
+    "workaround": "Logged closeout in Linear/docs and queued the Obsidian `- **work**",
+    "session": "...` line for replay once Obsidian MCP is available again. | THR-222 closeout"
+  },
+  {
+    "num": "72",
+    "id": 72,
+    "count": 1,
+    "date": "2026-04-20",
+    "category": "process-friction",
+    "description": "`git add <specific files>` on main included additional untracked files (`scripts/inspiration-ingest/`, `src/data/inspiration-content.*`, `log.md`) in the resulting commit that were not listed in the add command. Root cause unclear — these files showed as `??` (untracked, unstaged) in `git status --short` immediately before the add, yet appeared in the commit output. Likely explanation: the git index already had these files staged from a prior agent session; the `??` shown in short status may have been a display artifact or the session-start `gitStatus` snapshot was stale.",
+    "consequence": "Unrelated files (inspiration-ingest pipeline) landed in the THR-233 commit alongside the plan doc. Files appear to be legitimate work from another session, not garbage.",
+    "impact": "S",
+    "workaroundFound": false,
+    "workaround": "Committed and pushed as-is — reverting would risk losing real work. Flagged to user for awareness. Future mitigation: always run `git diff --cached --name-only` before committing to verify the exact staging area contents.",
+    "session": "THR-233 commit"
+  },
+  {
+    "num": "73",
+    "id": 73,
+    "count": 1,
+    "date": "2026-04-20",
+    "category": "environment",
+    "description": "`rg.exe` is present in the Codex sandbox but fails to start with \"Access is denied\" from the packaged WindowsApps path, so normal ripgrep search commands cannot execute.",
+    "consequence": "Added friction while locating THR-223 touchpoints; direct `rg` queries aborted and had to be retried with fallback tooling.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Use PowerShell fallback: `Get-ChildItem -Recurse -Include *.ts,*.md",
+    "session": "Select-String -Pattern ...` for all repo searches when `rg` fails. | THR-223 implementation (threadbearer-coding automation)"
+  },
+  {
+    "num": "74",
+    "id": 74,
+    "count": 1,
+    "date": "2026-04-20",
+    "category": "environment",
+    "description": "`rg.exe` again failed to launch in Codex desktop (`Access is denied` from the WindowsApps packaged path) at session start for THR-224.",
+    "consequence": "Lost startup time on repository discovery; had to switch all search steps to PowerShell.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Use scoped PowerShell fallback (`Get-ChildItem` + `Select-String`) for this session and avoid invoking `rg` in this environment.",
+    "session": "THR-224 implementation (threadbearer-coding automation)"
+  },
+  {
+    "num": "77",
+    "id": 77,
+    "count": 1,
+    "date": "2026-04-21",
+    "category": "process-friction",
+    "description": "THR-235 Done-when checklist referenced `npm run check:skill-sync:check`, but the repository only defines `check:skill-sync` and `check:skill-sync:sync`.",
+    "consequence": "First verification command failed with a missing-script error and required a retry path.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Use `npm run check:skill-sync` for verification and reserve `npm run check:skill-sync:sync` for mirror regeneration.",
+    "session": "THR-235 verification (threadbearer-coding automation)"
+  },
+  {
+    "num": "67",
+    "id": 67,
+    "count": 1,
+    "date": "2026-04-23",
+    "category": "process-friction",
+    "description": "The `keep-codex-flowing` scheduled-task SKILL.md (at `C:\\Users\\chris\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\...\\uploads\\SKILL.md`) instructs Cowork to \"run /session-handoff\" after moving an issue to Ready for Codex. That skill was deleted by THR-236 (2026-04-21) and memory `feedback_handoff_linear_only` + CLAUDE.md both state Slack closeout is retired — the Linear state transition IS the handoff. The scheduled-task file sits outside the repo so Cowork cannot update it in-session, leaving future runs of the same task to re-hit this confusion.",
+    "consequence": "Forced a protocol-vs-task-file judgment call mid-session; cost a few minutes of cross-checking CLAUDE.md / memory / THR-236 to confirm the skill-invocation step should be skipped.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Trust CLAUDE.md + memory over uploaded scheduled-task SKILL.md when they conflict. Long-term: re-author the `keep-codex-flowing` scheduled task (via the `schedule` skill) to drop the `/session-handoff` step and replace with \"Linear state transition is the handoff — no further action required.\"",
+    "session": "keep-codex-flowing scheduled-task run"
+  },
+  {
+    "num": "79",
+    "id": 79,
+    "count": 1,
+    "date": "2026-04-23",
+    "category": "api-quirk",
+    "description": "Linear MCP rate limit is easy to hit with the default protocol. Session-start fan-outs (≥5 `list_issues` calls in Cowork), per-state loops in plan docs (5× per state in THR-234 backfill audit), and overlapping CC + Codex hourly pollers all compound into a query storm at the start of each hour. The rate limit is not documented in the MCP tool descriptions — symptom is tool calls silently failing or stalling.",
+    "consequence": "Agents hit the limit, sessions lose time retrying, and multiple concurrent agents compound the problem.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "(a) Collapse multi-state scans into a single `list_issues(limit:250, orderBy:\"updatedAt\", includeArchived:false)` call with client-side bucketing by `status`; (b) add a rate-limit Step 0 in pull-work and Codex pickup (pause 2 min on 429, retry once, then log impediment and exit); (c) stagger pollers: CC at :00, Codex at :30. Full rationale in `Docs/plans/2026-04-23-linear-mcp-rate-limits.md`.",
+    "session": "THR-246 implementation"
+  },
+  {
+    "num": "59",
+    "id": 59,
+    "count": 4,
+    "date": "2026-04-24",
+    "category": "process-friction",
+    "description": "Working tree contains extensive uncommitted changes from prior sessions (now across dozens of files, including `src/components/HexMapV2/lab/TerrainTextureLabCanvas.tsx` required by THR-10). These appear to belong to different issues but have no safe single-issue attribution in automation context.",
+    "consequence": "Orphan changes accumulate across automated sessions, blocking safe claim/resume because touched-file ownership is ambiguous and commits risk bundling unrelated work.",
+    "impact": "M",
+    "workaroundFound": false,
+    "workaround": "Left unstaged. Each change group needs explicit issue attribution/cleanup before automated executor pickup can safely continue on overlapping files.",
+    "session": "THR-183 session closeout; THR-10 automation resume attempt; THR-259 closeout isolation via dedicated worktree"
+  },
+  {
+    "num": "65",
+    "id": 65,
+    "count": 2,
+    "date": "2026-04-24",
+    "category": "process-friction",
+    "description": "Codex handoff comments can include stale/non-existent file references (THR-190 and THR-245). Latest recurrence: THR-245 guidance referenced `src/content/biomes.ts`, which does not exist in this repo.",
+    "consequence": "Required extra discovery pass before implementation to locate the canonical fixed-cardinality source.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Resolve handoff hook points by symbol/path existence check first and map to canonical in-repo source before editing when references drift.",
+    "session": "THR-190 pickup; THR-245 pickup"
+  },
+  {
+    "num": "75",
+    "id": 75,
+    "count": 8,
+    "date": "2026-04-24",
+    "category": "dependency",
+    "description": "Obsidian MCP connector tools were unavailable in Codex closeout sessions (no callable Obsidian methods exposed), so required vault-log append steps could not run through MCP.",
+    "consequence": "Required closeout logging had to skip the connector path and rely on local fallback notes.",
+    "impact": "S",
+    "workaroundFound": false,
+    "workaround": "Use local `log.md` fallback for the run and replay the `- **work**",
+    "session": "...` line via Obsidian MCP once the connector is reachable/exposed again. | THR-224 closeout; THR-235 closeout; THR-237 closeout; THR-242 closeout; THR-255 closeout; THR-26 closeout; THR-247 closeout; THR-273 closeout"
+  },
+  {
+    "num": "76",
+    "id": 76,
+    "count": 16,
+    "date": "2026-04-24",
+    "category": "environment",
+    "description": "`$CODEX_HOME` was unset in the Codex automation shell during Threadbearer coding runs, so the required automation memory path could not be resolved from env vars.",
+    "consequence": "Initial memory read/write step failed until path resolution was retried with `%USERPROFILE%\\\\.codex` fallback.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "When `$CODEX_HOME` is null, resolve automation memory via `%USERPROFILE%\\\\.codex\\\\automations\\\\<automation-id>\\\\memory.md` and proceed.",
+    "session": "threadbearer-coding no-work cycle; THR-242 automation run; THR-259 closeout automation run; THR-255 automation run; THR-254 closeout automation run; THR-245 automation run"
+  },
+  {
+    "num": "80",
+    "id": 80,
+    "count": 2,
+    "date": "2026-04-24",
+    "category": "api-quirk",
+    "description": "GitHub Action `claude-review` structural job fails in PR context: (a) `git fetch origin main --depth=1` with `fatal: could not read Username` when `persist-credentials:false` was set; (b) Rule 8 grep check falsely triggered on branch-protection message \"GH013: Repository rule violations\" (not matching old patterns).",
+    "consequence": "PR blocked by non-code failure; Rule 8 false positive blocked review from running.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "RESOLVED 2026-04-24: removed `persist-credentials:false` from checkout; replaced grep-based Rule 8 check with exit-code check. PR #10.",
+    "session": "THR-259 closeout + scheduled task 2026-04-24"
+  },
+  {
+    "num": "82",
+    "id": 82,
+    "count": 1,
+    "date": "2026-04-24",
+    "category": "process-friction",
+    "description": "Exact-string replacement scripting for protocol/CLAUDE doc edits failed because the target sentence had drifted from the handoff's expected text.",
+    "consequence": "First edit attempt aborted and required a second pass with line-level patching.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Read nearby context first and patch by line-level hunks instead of strict whole-line equality for long coordination docs.",
+    "session": "THR-234 documentation edits"
+  },
+  {
+    "num": "83",
+    "id": 83,
+    "count": 1,
+    "date": "2026-04-24",
+    "category": "process-friction",
+    "description": "Push to origin/main was rejected as non-fast-forward ( etch first) because remote main advanced during the automation run.",
+    "consequence": "Direct publish path failed and required an alternate landing flow before closeout could continue.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Use a clean git worktree from origin/main, cherry-pick the local commit, then push from that clean worktree to avoid stashing unrelated local changes.",
+    "session": "THR-234 closeout publish step"
+  },
+  {
+    "num": "84",
+    "id": 84,
+    "count": 1,
+    "date": "2026-04-24",
+    "category": "process-friction",
+    "description": "Direct push to main for THR-234 was rejected by active repository rules (GH013): changes must go through a pull request and required status checks are enforced.",
+    "consequence": "Required an unplanned branch/PR/merge path to complete closeout after implementation and verification were already done.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Push the work to a feature branch, open a PR, and merge after required checks are green; treat direct-to-main as unavailable in this repo.",
+    "session": "THR-234 closeout publish step"
+  },
+  {
+    "num": "85",
+    "id": 85,
+    "count": 1,
+    "date": "2026-04-24",
+    "category": "api-quirk",
+    "description": "THR-234 remained in In Dev after three merged main commits whose bodies contained `Fixes THR-234`. Root cause identified 2026-04-24: `LINEAR_API_KEY` GitHub Actions secret is not set; the `linear-autoclose.yml` workflow runs but logs \"LINEAR_API_KEY secret not set — skipping Linear auto-close\" and exits.",
+    "consequence": "Merge-gated auto-close silently skips on every push; all issues will stay In Dev permanently until the secret is configured.",
+    "impact": "M",
+    "workaroundFound": false,
+    "workaround": "User action required: add `LINEAR_API_KEY` (Linear personal API key) to GitHub repo Settings → Secrets → Actions. Until then, Cowork can manually close via Linear MCP as a workaround when work is verified shipped.",
+    "session": "THR-234 post-merge auto-close verification"
+  },
+  {
+    "num": "86",
+    "id": 86,
+    "count": 1,
+    "date": "2026-04-24",
+    "category": "dependency",
+    "description": "Obsidian MCP append tooling was unavailable during THR-251 closeout (no callable Obsidian connector tools exposed in this Codex session), so the required vault log append could not run through MCP.",
+    "consequence": "Closeout had to use direct filesystem append to `log.md` instead of the prescribed connector path.",
+    "impact": "S",
+    "workaroundFound": false,
+    "workaround": "Use direct `log.md` append as fallback for this run and replay via Obsidian MCP when connector tools are available again.",
+    "session": "THR-251 closeout logging"
+  },
+  {
+    "num": "87",
+    "id": 87,
+    "count": 1,
+    "date": "2026-04-24",
+    "category": "process-friction",
+    "description": "Codex executor pickup remains blocked by extensive pre-existing tracked/untracked workspace changes unrelated to the claimed issue, making safe scoped commits impossible under the unexpected-changes safety rule.",
+    "consequence": "Claimed Ready-for-Codex issue had to be immediately released without implementation, wasting the hourly slot.",
+    "impact": "Blocked",
+    "workaroundFound": true,
+    "workaround": "Release claim (assignee:null, state back to Ready for Codex), post blocker comment on issue, and rerun from a clean worktree or with explicit instruction to proceed in dirty state.",
+    "session": "THR-256 hourly automation pickup"
+  },
+  {
+    "num": "88",
+    "id": 88,
+    "count": 1,
+    "date": "2026-04-24",
+    "category": "process-friction",
+    "description": "Codex hourly pickup blocked again by extensive pre-existing tracked/untracked workspace changes unrelated to claimed THR-256, so safe scoped implementation could not start.",
+    "consequence": "Hourly executor cycle used for claim/release only; no implementation progress.",
+    "impact": "Blocked",
+    "workaroundFound": true,
+    "workaround": "Keep claim-release-safe fallback and require clean worktree (or explicit proceed-in-dirty-tree instruction) before attempting code edits.",
+    "session": "THR-256 hourly automation pickup (repeat blocker)"
+  },
+  {
+    "num": "68",
+    "id": 68,
+    "count": 1,
+    "date": "2026-04-25",
+    "category": "process-friction",
+    "description": "Cowork moved THR-271 and THR-274 to \"Ready for Dev\" without posting the required handover comment containing `Suggested model`, `Parallel-safe with`, and `Mutex with` lines. Design doc (§18) explicitly calls for coordination blocks, but they were never posted.",
+    "consequence": "CC scheduled pickup found two eligible issues but could not claim either — both blocked by missing coordination block. Full pickup slot wasted. Bounce notes posted on both issues with suggested coordination block text to help Cowork add them quickly.",
+    "impact": "Blocked",
+    "workaroundFound": true,
+    "workaround": "Post bounce notes on both issues with suggested coordination block text extracted from the design doc. Cowork must add the official comment before CC can claim. Long-term: add a validation check to the Cowork handoff protocol — issues should not transition to \"Ready for Dev\" without the coordination block comment already present.",
+    "session": "CC scheduled pickup (2026-04-25)"
+  },
+  {
+    "num": "82",
+    "id": 82,
+    "count": 5,
+    "date": "2026-04-25",
+    "category": "process-friction",
+    "description": "GitHub PR labeling step for automation could not apply required labels because repository labels `codex` and `codex-automation` do not exist (`gh pr edit --add-label` returned not found).",
+    "consequence": "Automation PRs cannot be tagged per protocol, reducing filterability for downstream triage and reporting.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Proceed without labels; create the missing repo labels (`codex`, `codex-automation`) so future automation runs can apply them automatically.",
+    "session": "THR-26 PR closeout (PR #18); THR-273 PR closeout (PR #36); THR-245 PR closeout (PR #37); THR-258 PR closeout (PR #40); THR-271 PR open (PR #42)"
+  },
+  {
+    "num": "89",
+    "id": 89,
+    "count": 2,
+    "date": "2026-04-25",
+    "category": "process-friction",
+    "description": "Codex hourly pickup for THR-256 was blocked again by extensive pre-existing tracked/untracked workspace changes unrelated to the issue, so safe scoped implementation could not proceed.",
+    "consequence": "Cycle consumed by claim/release and blocker reporting; no code shipped.",
+    "impact": "Blocked",
+    "workaroundFound": true,
+    "workaround": "Continue claim-release-safe fallback and require clean worktree (or explicit proceed-in-dirty-tree instruction) before attempting edits.",
+    "session": "THR-256 hourly automation pickup (repeat blocker; 2026-04-25 run)"
+  },
+  {
+    "num": "90",
+    "id": 90,
+    "count": 1,
+    "date": "2026-04-25",
+    "category": "environment",
+    "description": "`mcp__scheduled-tasks__create_scheduled_task` returns \"Cannot create scheduled tasks from within a scheduled task session\" when THR-274 implementation tried to create the `weekly-retro` scheduled task as part of the issue's acceptance criteria.",
+    "consequence": "The `weekly-retro` scheduled task (Fridays ~15:00 local, invoking the retrospective skill) could not be created automatically; it must be created manually in a non-scheduled session.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Run `create_scheduled_task` for `weekly-retro` in a regular (non-scheduled) CC session. Prompt and cron are documented in CLAUDE.md under \"Weekly continuous-improvement cycle\".",
+    "session": "THR-274 implementation"
+  },
+  {
+    "num": "91",
+    "id": 91,
+    "count": 1,
+    "date": "2026-04-25",
+    "category": "environment",
+    "description": "GitHub Actions CI failed with \"The job was not started because recent account payments have failed or your spending limit needs to be increased\" on PR #41 (THR-274). Resolved same session after user confirmed budget was updated and CI reruns completed.",
+    "consequence": "PR blocked until billing resolved; CC scheduled task stalled.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "User action required: keep GitHub Actions billing/spending limit funded. When blocked, post a comment on the relevant PR noting local verification evidence, then wait for user to restore budget.",
+    "session": "THR-274 PR CI gate; THR-271 session"
+  },
+  {
+    "num": "92",
+    "id": 92,
+    "count": 2,
+    "date": "2026-04-25",
+    "category": "process-friction",
+    "description": "CC scheduled pickup ran twice on THR-271 (model:opus) because: (a) the pull-work protocol requires a Handoff Comment with coordination block, but the issue had no standalone comment — only the issue description; (b) CC cannot switch to opus in a scheduled task context. Both sessions posted bounce notes and exited without claiming, creating a loop.",
+    "consequence": "Two scheduled task cycles wasted, no progress on the issue. Resolved when the third session proceeded with a pragmatic override (work is fully-specified extraction/compilation; sonnet-appropriate despite the opus label).",
+    "impact": "M",
+    "workaroundFound": false,
+    "workaround": "When a scheduled task cannot switch models and the issue has a complete coordination block in the description (not a comment), proceed with the current model and note the deviation in a Linear comment. Also: pull-work should treat the issue description as an acceptable fallback when no standalone comment exists.",
+    "session": "THR-271 scheduled pickup (2026-04-25 08:21 and 10:13 cycles)"
+  },
+  {
+    "num": "93",
+    "id": 93,
+    "count": 1,
+    "date": "2026-04-25",
+    "category": "api-quirk",
+    "description": "Linear `save_issue` rejected UL proposal verification issue creation with `Usage limit exceeded - You've exceeded the free issue limit for this workspace`.",
+    "consequence": "THR-271 acceptance step for end-to-end `UL-proposal` issue creation could not complete despite label setup and local implementation readiness.",
+    "impact": "M",
+    "workaroundFound": false,
+    "workaround": "User action required: increase Linear issue quota (upgrade/trial) or clear workspace limits, then rerun the proposal-creation verification step.",
+    "session": "THR-271 acceptance verification"
+  },
+  {
+    "num": "78",
+    "id": 78,
+    "count": 8,
+    "date": "2026-04-27",
+    "category": "environment",
+    "description": "`rg.exe` remained blocked in Codex desktop (`spawnSync rg.exe EPERM` / access denied from packaged WindowsApps path) during THR-241 implementation and precheck validation.",
+    "consequence": "Ripgrep probe/read commands could not run directly; repo inspection had to switch to slower fallback tooling.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Use PowerShell-native search fallback (`Get-ChildItem` + `Select-String`) when `rg.exe` fails, and treat `rg=no` in `session-precheck` fingerprint as expected for this environment.",
+    "session": "THR-241 implementation (threadbearer-coding automation); THR-242 precheck; THR-259 precheck; THR-255 precheck/search; THR-254 precheck/search; THR-26 implementation/search; THR-245 precheck/search; THR-285 precheck/search"
+  },
+  {
+    "num": "94",
+    "id": 94,
+    "count": 1,
+    "date": "2026-04-27",
+    "category": "process-friction",
+    "description": "Required status check \"Test · Typecheck · Build\" caused all PRs to hang indefinitely — the CI test step has no timeout guard and the test suite stalls in CI. No `paths-ignore` filter meant doc-only PRs (gitignore changes, plan docs) triggered the full suite. Attempts to force-merge via `--admin` failed because GitHub blocks admin bypass on in-progress checks; cancelling the run then left the check in \"cancelled\" state which also blocked merge. Required checks were ultimately removed from branch protection entirely, rolling back the intended enforcement. Root cause: test suite instability (see #22, #30, #31, #34, #57 etc.) makes required CI gates unworkable until the suite is reliable and fast.",
+    "consequence": "Branch protection upgrade (GitHub Pro) had to be rolled back after one PR. Doc-only changes can no longer be gated by CI until tests are fixed.",
+    "impact": "L",
+    "workaroundFound": false,
+    "workaround": "Remove required status checks until the test suite is stable. To re-enable: (1) fix the hanging test suite (TB-120), (2) add `paths-ignore` to `ci.yml` for `Docs/**`, `.claude/**`, `*.md`, `.gitignore`, (3) re-enable \"Test · Typecheck · Build\" as a required check in repo branch protection settings.",
+    "session": "THR-279 merge"
+  },
+  {
+    "num": "95",
+    "id": 95,
+    "count": 1,
+    "date": "2026-04-27",
+    "category": "process-friction",
+    "description": "Local `main` was tracking a non-main upstream branch (`origin/christianspliid/thr-275-hexsidebar-location-entries-have-no-click-handler`) and was diverged (`ahead 28, behind 1`), so direct branch-based publish risked bundling unrelated history.",
+    "consequence": "Required setup overhead before implementation closeout; work had to be replayed in a clean worktree.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Create a fresh `git worktree` from `origin/main` for the run and commit/push from that isolated branch; avoid publishing from the mis-tracked home branch.",
+    "session": "THR-283 automation run"
+  },
+  {
+    "num": "96",
+    "id": 96,
+    "count": 2,
+    "date": "2026-04-27",
+    "category": "dependency",
+    "description": "Obsidian MCP connector tools were still unavailable during THR-286 closeout, so required vault log append could not run through MCP.",
+    "consequence": "Closeout used direct filesystem append to log.md instead of the connector path.",
+    "impact": "S",
+    "workaroundFound": false,
+    "workaround": "Continue local log.md fallback and replay through Obsidian MCP when connector tools are exposed.",
+    "session": "THR-286 closeout; THR-285 closeout"
+  },
+  {
+    "num": "97",
+    "id": 97,
+    "count": 1,
+    "date": "2026-04-28",
+    "category": "environment",
+    "description": "npm script commands using Linux-style `/tmp/*.mjs` outfiles fail on Windows Codex shells: esbuild writes to `./tmp/*.mjs` while `node /tmp/*.mjs` resolves to `C:\\tmp\\*.mjs` and throws MODULE_NOT_FOUND.",
+    "consequence": "`mirror-ul`/`sync-vault` acceptance commands could not run as authored until path handling was changed.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Switched vault/mirror npm scripts to `.cache/*.mjs` so build output and node execution resolve consistently across Windows and Unix shells.",
+    "session": "THR-288 UL Obsidian mirror implementation"
+  },
+  {
+    "num": "98",
+    "id": 98,
+    "count": 1,
+    "date": "2026-04-28",
+    "category": "environment",
+    "description": "THR-102 run in a fresh git worktree hit two recurring setup frictions: rg.exe EPERM in this Codex desktop sandbox and missing dependencies (npm test unavailable until install).",
+    "consequence": "Repository discovery and verification startup were delayed before implementation work could proceed.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Use PowerShell Get-ChildItem + Select-String when rg fails, and run npm install once per fresh worktree before verification commands.",
+    "session": "THR-102 automation run"
+  },
+  {
+    "num": "100",
+    "id": 100,
+    "count": 1,
+    "date": "2026-04-28",
+    "category": "environment",
+    "description": "`rg.exe` remained blocked in Codex desktop (Access is denied from packaged WindowsApps path) during THR-290 orientation/protocol reads.",
+    "consequence": "Repository search steps had to switch to PowerShell-only fallbacks before implementation.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Use scoped Get-ChildItem + Select-String fallback in this environment; treat `rg` as unavailable for Threadbearer automation runs.",
+    "session": "THR-290 automation run"
+  },
+  {
+    "num": "102",
+    "id": 102,
+    "count": 1,
+    "date": "2026-04-28",
+    "category": "dependency",
+    "description": "Obsidian MCP connector tools were not available in this Codex session (no Obsidian tool surfaced via tool discovery), so the required vault `log.md` append could not be executed through MCP.",
+    "consequence": "Closeout used repository-local `log.md` append as fallback.",
+    "impact": "S",
+    "workaroundFound": false,
+    "workaround": "Keep local `log.md` fallback for this run and replay the vault entry through Obsidian MCP when the connector is exposed again.",
+    "session": "THR-106 closeout"
+  },
+  {
+    "num": "103",
+    "id": 103,
+    "count": 1,
+    "date": "2026-04-29",
+    "category": "api-quirk",
+    "description": "Linear's GitHub integration auto-moved THR-238 to Done when PR #79 (`docs(plan): THR-238 Declarative engine phase registry`) merged — the issue ID in the PR title triggered the close pattern, even though the PR only committed the plan doc, not the implementation. THR-79's PR #78 with similar title format did NOT auto-close — possibly inconsistent or race-conditioned.",
+    "consequence": "THR-238 prematurely closed despite implementation work being unstarted; required manual revert to Ready for Dev.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "When committing plan docs via flush-plan-docs (or its manual equivalent), put the issue ID in the body only, not the PR title. Use a generic title like `docs(plan): <topic>` and reference the Linear issue in the body. Verify-after-merge: re-query the issue state to catch the auto-close and revert if needed.",
+    "session": "THR-291 manual flush-plan-docs run; THR-238 plan doc commit"
+  },
+  {
+    "num": "104",
+    "id": 104,
+    "count": 1,
+    "date": "2026-04-29",
+    "category": "dependency",
+    "description": "THR-109 requires updating Obsidian vault encounter-architecture pages, but this repository snapshot only contains `TheFantasyWorldSimulator/Brainstorms` + `Vision` and no encounter architecture markdown pages; Obsidian MCP tools were also unavailable in-session.",
+    "consequence": "Could not complete the vault-architecture page updates directly in this run; only in-repo skill/docs surfaces were updated.",
+    "impact": "S",
+    "workaroundFound": false,
+    "workaround": "Track a follow-up to update the missing vault encounter architecture pages once full vault content or Obsidian MCP access is available.",
+    "session": "THR-109 documentation closeout"
+  },
+  {
+    "num": "105",
+    "id": 105,
+    "count": 1,
+    "date": "2026-04-29",
+    "category": "process-friction",
+    "description": "THR-108 latest handoff lacks Codex-required coordination sections (Engine/Content/UI/Wiring action blocks and Files-to-touch list), failing pickup gate after claim.",
+    "consequence": "Could not safely implement without guessing scope boundaries; issue had to be returned to Implementation Planning.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "Verify handoff completeness immediately after claim; if required sections are missing, release back to Implementation Planning with assignee cleared and request a revised handoff block.",
+    "session": "THR-108 automation resume"
+  },
+  {
+    "num": "15",
+    "id": 15,
+    "count": 22,
+    "date": "2026-04-30",
+    "category": "environment",
+    "description": "Bundled `rg.exe` cannot start inside the Codex desktop sandbox for this repo (`Access is denied`) even though repo search is a standard workflow.",
+    "consequence": "Had to abandon the preferred fast search path and switch to slower PowerShell `Get-ChildItem` + `Select-String` scans.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Use PowerShell recursive file enumeration with `Select-String` when `rg` fails to launch in this environment.",
+    "session": "GitHub MCP Codex setup"
+  },
+  {
+    "num": "90",
+    "id": 90,
+    "count": 2,
+    "date": "2026-04-30",
+    "category": "environment",
+    "description": "`mcp__scheduled-tasks__create_scheduled_task` returns \"Cannot create scheduled tasks from within a scheduled task session.\" when THR-291 tried to register the `flush-plan-docs` cron from inside the `check-slack-for-new-dev-work` scheduled task run.",
+    "consequence": "THR-291 (register flush-plan-docs hourly cron) cannot be completed from a scheduled task context; requires an interactive CC session. Issue left In Dev.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Run `create_scheduled_task` in a regular (non-scheduled) interactive CC session. All parameters are in the THR-291 issue body: taskId=flush-plan-docs, cronExpression=\"15 * * * *\", description and prompt both documented.",
+    "session": "THR-291 scheduled pickup attempt (2026-04-30)"
+  },
+  {
+    "num": "107",
+    "id": 107,
+    "count": 1,
+    "date": "2026-04-30",
+    "category": "process-friction",
+    "description": "Codex Threadbearer automation WIP gate (`list_issues state:\"In Dev\" assignee:\"me\"`) returned an unrelated In Dev issue (`SPL-13`) from a different team/repo (`spliidco` homepage migration).",
+    "consequence": "Hourly Threadbearer execution blocked: protocol requires resuming existing In Dev work, but this workspace cannot implement the unrelated issue safely.",
+    "impact": "Blocked",
+    "workaroundFound": true,
+    "workaround": "Treat cross-team In Dev assignments as queue contamination: do not claim new Threadbearer work; surface blocker and request reassignment/clearance of unrelated issue before next cycle.",
+    "session": "Threadbearer coding automation run (2026-04-30)"
+  },
+  {
+    "num": "108",
+    "id": 108,
+    "count": 1,
+    "date": "2026-04-30",
+    "category": "api-quirk",
+    "description": "Linear MCP rate-limit (HTTP 429) hit on both the initial `list_issues` board scan and a retry 2 minutes later in a CC scheduled task session (`check-slack-for-new-dev-work`). Both attempts returned \"The connector's server is rate-limiting requests.\"",
+    "consequence": "CC scheduled pickup could not perform board scan; no issues were claimed and no work was executed this cycle.",
+    "impact": "Blocked",
+    "workaroundFound": true,
+    "workaround": "Per pull-work Step 0 protocol: paused, retried once, still limited — logged impediment and exited cleanly. Next cycle should succeed if rate limit window resets. May compound if CC and Codex pollers run concurrently at :00. Stagger pollers or add jitter.",
+    "session": "check-slack-for-new-dev-work scheduled task (2026-04-30)"
+  },
+  {
+    "num": "110",
+    "id": 110,
+    "count": 1,
+    "date": "2026-05-01",
+    "category": "process-friction",
+    "description": "Branch protection is now active on `main` — direct `git push` to main is rejected with \"Changes must be made through a pull request.\" CLAUDE.md states branch protection is \"pending GitHub Pro\" but it is now enforced. All agents that commit directly to main (CC scheduled pickup, flush-plan-docs, etc.) will have pushes rejected.",
+    "consequence": "CC scheduled pickup could not push housekeeping commit directly to main. Required creating a feature branch → PR → merge workflow instead, adding ~12 min to a docs-only change. flush-plan-docs scheduled task will also fail when it tries `git push origin main` directly.",
+    "impact": "L",
+    "workaroundFound": false,
+    "workaround": "Create a feature branch, push it, open a PR via `gh pr create`, wait for CI (~12 min for docs-only), then `gh pr merge`. This works but is significantly slower for trivial commits. **Permanent fix needed:** (1) CLAUDE.md must be updated to reflect that all commits require PRs now. (2) flush-plan-docs scheduled task likely needs to be updated to use PR flow. (3) Consider whether auto-merge on green CI can be enabled for scheduled tasks.",
+    "session": "CC housekeeping pickup (2026-05-01) — THR-295 audit file commit"
+  },
+  {
+    "num": "58",
+    "id": 58,
+    "count": 2,
+    "date": "2026-05-04",
+    "category": "process-friction",
+    "description": "`session-handoff` skill files (`.agents/skills/session-handoff/SKILL.md` and `.claude/skills/session-handoff/SKILL.md`) were deleted from the working tree by a prior session but not committed or restored. `Skill('session-handoff')` fails with \"Unknown skill\".",
+    "consequence": "Could not invoke the session-handoff automation. Manual Slack/Linear closeout performed instead.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Linear auto-close fires from `Fixes THR-XXX` in commit body (per protocol). Manual completion comment posted. Skill files need to be restored from git or recreated.",
+    "session": "2026-05-04 CC idle cycle — session-handoff skill still absent"
+  },
+  {
+    "num": "111",
+    "id": 111,
+    "count": 3,
+    "date": "2026-05-04",
+    "category": "environment",
+    "description": "`mcp__scheduled-tasks__create_scheduled_task` blocks task creation from within a scheduled task session, so the `weekly-retro` task was never registered. Three consecutive Fridays (2026-04-17, 2026-04-24, 2026-05-01) passed with no retro output. The only newer file was `2026-04-23-retro-draft.md` — a deterministic stub, not a finished retro. Same root cause as impediment #90 (2026-04-30).",
+    "consequence": "Weekly CI signal integration is blind: impediment patterns accumulate unreviewed for 23 days. Drift-scan insights from THR-294 (2026-05-01) went into the next retro cycle instead of being synthesized promptly.",
+    "impact": "Blocked",
+    "workaroundFound": true,
+    "workaround": "Register `weekly-retro` scheduled task in an interactive (non-scheduled) CC session. Parameters: `taskId: \"weekly-retro\"`, `cronExpression: \"0 17 * * 5\"` (Friday 17:00 local = 15:00 UTC), prompt as documented in CLAUDE.md §\"Weekly continuous-improvement cycle\". Verification: run `list_scheduled_tasks` after creation to confirm `nextRunAt` is a Friday.",
+    "session": "THR-297 weekly-retro gap investigation (2026-05-04)"
+  },
+  {
+    "num": "112",
+    "id": 112,
+    "count": 1,
+    "date": "2026-05-04",
+    "category": "process-friction",
+    "description": "`flush-plan-docs` scheduled task committed the THR-300 plan doc on a local branch (`docs/plan-flush-thr-300`) but failed to push the branch to remote. The branch sat unmerged with no PR until the next CC pickup session discovered it and pushed manually. Root cause: `git push -u origin docs/plan-flush-thr-300` was never executed in the flush task's PR fallback path.",
+    "consequence": "Plan doc commit landed in a local-only branch; main didn't receive the doc for >1 hour. Also left stale `plan-pending-commit` labels on THR-296/297/298 (those were unrelated issues whose labels weren't cleaned up by the flush pass that processed THR-300).",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "Next CC pickup detected the unmerged local branch, pushed it remotely, and opened PR #116. **Resolved 2026-05-12 (THR-423):** flush-plan-docs skill restructured to make push + PR creation required steps with verify-after-write; new stale-label sweep (Step 4) added; partial-publish recovery posts bounce comments and retains the label until the PR is actually open. See `Docs/plans/2026-05-12-flush-plan-docs-branch-fallback-fix.md`.",
+    "session": "check-slack-for-new-dev-work scheduled task (2026-05-04)"
+  },
+  {
+    "num": "81",
+    "id": 81,
+    "count": 3,
+    "date": "2026-05-05",
+    "category": "dependency",
+    "description": "Fresh `git worktree` checkouts do not have dependencies installed, so `npm test` fails immediately with `'vitest' is not recognized as an internal or external command` before code verification can start.",
+    "consequence": "Verification flow paused until dependency install completed, adding setup latency to closeout runs.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Run `npm install` once in the fresh worktree before running `npm test` / `npx vite build` verification commands.",
+    "session": "THR-254 closeout automation run; THR-307 closeout automation run; THR-306 closeout automation run"
+  },
+  {
+    "num": "109",
+    "id": 109,
+    "count": 2,
+    "date": "2026-05-05",
+    "category": "config",
+    "description": "`OBSIDIAN_VAULT_PATH` is still not set in session-default env, so `npm run mirror-ul` fails unless the variable is injected manually.",
+    "consequence": "UL mirror step fails by default in unattended/scheduled and clean-worktree sessions.",
+    "impact": "Blocked (workaround available)",
+    "workaroundFound": true,
+    "workaround": "Run `OBSIDIAN_VAULT_PATH=\"C:\\\\Users\\\\chris\\\\Dev\\\\Obsidian\" npm run mirror-ul` manually. **Permanent fix:** add `{ \"env\": { \"OBSIDIAN_VAULT_PATH\": \"C:\\\\Users\\\\chris\\\\Dev\\\\Obsidian\" } }` to `.claude/settings.local.json` so sessions inherit it automatically.",
+    "session": "THR-294 + THR-309 UL mirror runs"
+  },
+  {
+    "num": "114",
+    "id": 114,
+    "count": 1,
+    "date": "2026-05-05",
+    "category": "process-friction",
+    "description": "Another agent (parallel scheduled-task or Codex automation) shipped THR-311 to main via PR #139 while this CC scheduled session had THR-311 already claimed In Dev (claim was verified stuck — `assignee=Christian Spliid`, `state=In Dev` confirmed via `get_issue` after `save_issue`). Linear's WIP=1 claim discipline was bypassed entirely: the parallel agent did not surface in any \"In Dev across all assignees\" board scan during my Step 2 cross-executor check, did not appear in the candidate's prior comments, and committed `Fixes THR-311` to a `pickup/thr-311` branch (same branch name convention I was using) ~10 min after my claim. PR #139 merged before this session could write its first file. Distinct from impediment #99: that was simultaneous claim by two queues; this is a *post-claim race* where another worker ignored the Linear claim state and shipped anyway.",
+    "consequence": "This session's worktree work (canon page draft + skill wiring) is fully redundant — origin/main already has identical content. ~30 min of Step 0–4.5 + drafting time produced no shipped artifact. Confidence in the WIP=1 invariant is broken: claiming an issue no longer guarantees exclusive authoring.",
+    "impact": "L",
+    "workaroundFound": false,
+    "workaround": "Detect-on-redundancy fallback: after claim, run `git log origin/main -- <expected-file-paths>` for the issue's `Files to create` list before drafting — if a matching commit (`Fixes <issue-id>`) is already on main, treat as already-shipped and exit cleanly without duplicate work. **Permanent fix needed:** identify which other automation pulls Ready-for-Dev work without gating on Linear assignee/state (likely a sibling scheduled-task or non-Linear-aware Codex pull); make every executor check `get_issue` for `assignee == null && state == \"Ready for Dev\"` immediately before commit, not just at claim. Bonus: dispatch lock via Linear label (e.g. `claimed-by:cc-session-XYZ`) so a second worker sees the lock even if the assignee write was racy.",
+    "session": "THR-311 scheduled CC pickup (check-slack-for-new-dev-work, 2026-05-05)"
+  },
+  {
+    "num": "106",
+    "id": 106,
+    "count": 4,
+    "date": "2026-05-07",
+    "category": "dependency",
+    "description": "Linear MCP tools in this session expose comment read/delete but no comment-create method.",
+    "consequence": "Required clarification/closeout comments could not be posted through tooling and needed fallback handling.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Use state transition + local run log as fallback, and request comment-write support in the connector.",
+    "session": "THR-108 handoff rejection closeout + THR-322 completion closeout + THR-352 closeout + THR-341 closeout"
+  },
+  {
+    "num": "113",
+    "id": 113,
+    "count": 3,
+    "date": "2026-05-07",
+    "category": "dependency",
+    "description": "THR-302 closeout required updating `Systems/Encounter System.md` in the Obsidian vault, but prior sessions lacked Obsidian MCP/path access for direct file updates.",
+    "consequence": "Vault-side documentation accuracy update was delayed across closeouts.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Completed in THR-341 via filesystem fallback in a Codex worktree (Encounter System canonical sync now landed).",
+    "session": "THR-302 closeout; THR-306 closeout; THR-341 closeout"
+  },
+  {
+    "num": "115",
+    "id": 115,
+    "count": 1,
+    "date": "2026-05-07",
+    "category": "dependency",
+    "description": "Linear MCP in this session still exposes no create-comment method (read/delete only), so required human-readable completion comments cannot be posted from automation runs.",
+    "consequence": "THR-328 closeout could not post the expected completion comment directly on Linear despite successful implementation/verification.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Use Fixes THR-328 commit-body auto-close and record completion in repo automation logs as fallback; add comment-write support to the Linear connector for executor closeout parity.",
+    "session": "THR-328 automation closeout"
+  },
+  {
+    "num": "116",
+    "id": 116,
+    "count": 1,
+    "date": "2026-05-07",
+    "category": "environment",
+    "description": "Fresh THR-359 worktree did not have dependencies installed (`vitest` missing), so `npm test` failed until local install completed.",
+    "consequence": "Verification was blocked at first test step and required setup work before closeout checks could run.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "In fresh worktrees, run `npm install` once before verification commands (`npm test`, `npx tsc --noEmit`, `npx vite build`).",
+    "session": "THR-359 automation run"
+  },
+  {
+    "num": "117",
+    "id": 117,
+    "count": 1,
+    "date": "2026-05-07",
+    "category": "tool-failure",
+    "description": "`preview_screenshot` consistently timed out (30s) on the seeded `?view=game&seeded` page during THR-176 visual verification — the WebGL hex map (~50k InstancedMesh cells + multiple overlay layers) starves the screenshot compositor. Same root cause as impediment #1 but triggered by the seeded preset instead of a smaller scene.",
+    "consequence": "Could not capture a TopBar screenshot via `preview_screenshot` for the PR.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Skip `preview_screenshot` and use `preview_eval` to read computed styles + bounding rects instead — confirmed bg color, border-bottom hairline, divider color, right-group transparency, and 5 section labels' typography directly. DOM-based verification is sufficient for non-WebGL UI overhauls; reach for Claude in Chrome MCP only when an actual rasterized image of the canvas is needed.",
+    "session": "THR-176 visual verification"
+  },
+  {
+    "num": "117",
+    "id": 117,
+    "count": 1,
+    "date": "2026-05-07",
+    "category": "environment",
+    "description": "Fresh THR-362 worktree hit recurring startup friction: rg.exe access denied in Codex desktop sandbox and dependencies absent until local install.",
+    "consequence": "Discovery and verification startup paused for fallback search + install prep before implementation.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Use PowerShell `Get-ChildItem` + `Select-String` when `rg` fails and run `npm install` once in each fresh worktree before verification.",
+    "session": "THR-362 automation run"
+  },
+  {
+    "num": "118",
+    "id": 118,
+    "count": 1,
+    "date": "2026-05-07",
+    "category": "process-friction",
+    "description": "`npm run check:skill-sync` fails on origin/main (128 line-ending mismatches across `.agents/skills/`) due to long-standing CRLF/LF drift. The pre-commit hook (`husky/pre-commit` runs only `npm run check:skill-sync`) blocks ALL commits to ANY branch until resolved. `git diff -w` confirms zero content drift — purely line-ending normalization. Identical to the structural pattern of impediments #110 (branch protection enforcement surprise) and #112 (flush-plan-docs partial fix).",
+    "consequence": "First commit attempt for THR-176 was rejected by the pre-commit hook even though no `.agents/` files were touched. Required running `npm run check:skill-sync:sync` mid-session to unblock.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Run `npm run check:skill-sync:sync` once at session start (or when the hook fails); the script's normalization is idempotent and writes only line-ending fixes. **Permanent fix needed:** either add `.gitattributes` `* text=auto` or `* eol=lf` so Windows clients commit LF, or update the skill-sync script to compare canonical newline-normalized contents instead of byte-for-byte.",
+    "session": "THR-176 commit attempt"
+  },
+  {
+    "num": "99",
+    "id": 99,
+    "count": 2,
+    "date": "2026-05-08",
+    "category": "process-friction",
+    "description": "Two automated sessions claimed and worked the same Linear issue concurrently, producing redundant PRs. Two flavors observed: (1) CC vs Codex on THR-102 — CC didn't run Step 2 cross-executor mutex check; Codex's PR #66 merged first; CC's PR #67 closed as superseded (~2k lines abandoned). (2) CC vs CC on THR-368 — Opus pickup automation A claimed at 10:23:50 UTC (verified state=\"In Dev\", assignee=\"Christian Spliid\"), Opus pickup automation B opened a parallel branch `claude/crazy-newton-9dbbcd` at ~10:50 UTC with PR #221 despite the verified claim. PR #220 (session A) merged first at 11:06:08 UTC; PR #221 left open with redundant overlapping changes that diverged on judgment-call edges (5 files where session B flagged steps session A left off, several files where flag counts differed). Both flavors share the same outcome: parallel work on one issue, abandoned/redundant PR.",
+    "consequence": "One PR's ~30 file changes abandoned per occurrence. Wasted CI minutes; user has to dispose of the redundant PR.",
+    "impact": "L",
+    "workaroundFound": true,
+    "workaround": "(a) Cross-executor: always run pull-work Step 2 mutex check (query other queue's In Dev) before claiming. (b) **Cross-CC (newly observed 2026-05-08):** the verify-after-write protocol (Step 4) protects against a single session's silent-drop, but does NOT protect against a second CC automation that claims AFTER the first session's verified claim — Linear's `assignee` field is overwritten without a soft lock. Long-term: Linear claim should be atomic (CAS-style) or pull-work should re-verify the claim immediately before commit and abort if state changed mid-work. Short-term: when discovering parallel work post-merge, comment on the redundant PR with judgment-difference summary and recommend close.",
+    "session": "THR-368 concurrent pickup (CC vs CC, 2026-05-08); originally THR-102 concurrent pickup (CC vs Codex, 2026-04-28)"
+  },
+  {
+    "num": "101",
+    "id": 101,
+    "count": 22,
+    "date": "2026-05-08",
+    "category": "environment",
+    "description": "Fresh Codex worktree runs repeatedly lack local dependencies (esbuild/test toolchain unavailable until npm install), and rg.exe is still unavailable in this desktop sandbox.",
+    "consequence": "Startup/verification delayed before implementation.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Use PowerShell Get-ChildItem + Select-String as search fallback when rg fails, and run npm install once per fresh worktree before verification commands.",
+    "session": "THR-106 + THR-309 + THR-320 + THR-322 + THR-336 + THR-313 + THR-314 + THR-337 + THR-325 + THR-350 + THR-330 + THR-351 + THR-352 + THR-329 + THR-332 + THR-341 + THR-343 automation runs + THR-333 automation run + THR-342 automation run + THR-360 automation run + THR-265 automation run + THR-363 automation run"
+  },
+  {
+    "num": "119",
+    "id": 119,
+    "count": 1,
+    "date": "2026-05-08",
+    "category": "unclear-requirements",
+    "description": "THR-177 handoff \"Done when\" criterion required visual verification by selecting an agent in `?view=game&seeded` to open AgentDetailPanel. Investigation during execution found `src/components/Game/AgentDetailPanel.tsx` is no longer consumed by the live UI — the only `import` outside its own test file is a comment reference in `src/engine/activitySummary.ts`; the live agent-panel surface is `AgentInfoCard`, which is already on v7 tokens. Clicking an agent in the seeded view opens nothing detectable in the DOM matching AgentDetailPanel structure (no `button[aria-label=\"close\"]` + `h2` close-button-with-name pattern after the click).",
+    "consequence": "\"Visual verified by selecting an agent\" path of the handoff was infeasible. The migration was completed and structurally verified (tests + tsc + build), but in-game visual confirmation could not be obtained.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "Document the dead-code finding in the closeout comment, complete the token-correctness migration so the file is ready for future re-wiring, verify AgentInfoCard (the actual live consumer) is already on v7 (zero legacy classes — confirmed). **Permanent fix needed:** decide whether `AgentDetailPanel.tsx` should be deleted or re-wired. If deleted, fold THR-177's token migration into a removal commit. If kept as a future surface, add a styleguide entry (`?view=styleguide`) so subsequent visual overhauls have a verifiable preview surface. Either way, retire the dead file or wire it back so handoff criteria can be met without ambiguity.",
+    "session": "THR-177 visual verification"
+  },
+  {
+    "num": "120",
+    "id": 120,
+    "count": 1,
+    "date": "2026-05-08",
+    "category": "tool-failure",
+    "description": "\u0007daptUnifiedActionTemplateToEncounterContract throws on a subset of UNIFIED_ACTION_TEMPLATES (e.g. non-encounter reaches / intrinsic tiers), so a strict 'adapt every template' lint pass crashes before rule evaluation.",
+    "consequence": "Encounter-content lint could not scan full template corpus without fail-soft handling, risking CI breakage on unrelated template families.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "Lint runner now catches adapter exceptions per template, records SYSTEM warnings, and continues rule checks on adapt-able contracts; exits non-zero only on true rule errors.",
+    "session": "THR-345 implementation"
+  },
+  {
+    "num": "121",
+    "id": 121,
+    "count": 1,
+    "date": "2026-05-08",
+    "category": "process-friction",
+    "description": "THR-345 was simultaneously claimed by Codex (via Ready-for-Codex queue per the original Cowork→Codex handoff comment) and by the Sonnet CC scheduled-task automation (issue had `model:sonnet` label and was assigned to \"Christian Spliid\" with state In Dev — both my queue's eligibility filter). Codex landed PR #192 at 03:27 UTC; my parallel PR #193 (clean implementation, full plan-doc + library/script split + 10 tests + THR-366 follow-up filed) opened ~1m before Codex's merge but was rendered redundant. Detected post-merge when `gh pr merge` failed with \"merge cannot be cleanly created\" — both PRs touched the same files (`scripts/lint-encounter-content.ts`, fixtures, `package.json`, `ci.yml`, `Docs/*`). Same structural pattern as impediment #114 (post-claim race) but with an additional twist: the issue carried both a Cowork→Codex handoff comment and a `model:sonnet` label, sending the same issue down two queues simultaneously.",
+    "consequence": "~45 min of CC implementation effort wasted (lint library, fixtures, tests, CI wiring, docs). PR #193 closed as superseded; THR-366 follow-up still valid as the templates-cleanup ticket regardless of who landed the lint.",
+    "impact": "L",
+    "workaroundFound": false,
+    "workaround": "Detect-on-redundancy fallback (per impediment #114): after claiming, run `git log origin/main --grep \"Fixes <issue-id>\"` before drafting; exit cleanly if a matching commit landed. Worked here only after the fact. **Permanent fix needed:** when Cowork hands an issue to Codex, do not also apply a `model:*` label that pulls it into CC's queue — the model label is a CC-lane filter and its presence on a Codex-handoff issue is the structural bug. Cowork should either (a) put the issue in `Ready for Codex` without a `model:*` label, or (b) remove the Codex handoff comment when re-routing to CC. The label and the queue-state must agree on which executor owns the work.",
+    "session": "THR-345 scheduled CC pickup, 2026-05-08"
+  },
+  {
+    "num": "122",
+    "id": 122,
+    "count": 1,
+    "date": "2026-05-08",
+    "category": "process-friction",
+    "description": "**Cross-executor collision on THR-353** (Encounter UI Phase D3: TTS integration discovery + 5-line spec). Codex committed `a2bae591 docs(narration): add encounter tts discovery seam` at 02:08:20 UTC and merged via PR #195 at 02:21:17 UTC. The Sonnet CC scheduled-task automation independently claimed THR-353 from Ready-for-Dev (no `model:*` label = eligible for any lane per Rule 10), implemented an equivalent solution (commit `bb0b174f` → cherry-picked to `pickup/thr-353-discovery` as `ccd6bc3a`), opened PR #197 at ~02:09 UTC, and only discovered the parallel Codex work when the rerun-CI / force-push sequence kept failing to register a new check on the latest SHA — at which point `git fetch origin main` revealed main had advanced 2 commits including Codex's a2bae591. Both PRs (#196, #197) closed unmerged; THR-353 already in Done state via PR #195's auto-close. Same structural class as impediment #121 (THR-345 cross-executor collision earlier the same day) and #102 (THR-102 cross-executor collision 2026-04-28): unlabeled / loosely-labeled issues passing the eligibility filter for both Sonnet CC and Codex queues.",
+    "consequence": "~45 min of CC implementation effort wasted (discovery report 212 lines, encounterNarration.ts + interface, smoke test 50 lines + 3 tests vs Codex's 26 lines + 1 test, closeout doc updates, full pre-commit gate locally green). My version was slightly more thorough (3 tests vs 1; 212-line report vs 181) but Codex shipped first and the spec is fulfilled. PR #196 + PR #197 closed as superseded.",
+    "impact": "L",
+    "workaroundFound": false,
+    "workaround": "After-the-fact detection: the rerun-on-old-SHA / new-SHA-not-triggering-CI pattern eventually surfaced the upstream advance via `git fetch`. **Permanent fix needed (tracking #114, #121, #102 escalation):** every executor must run `git fetch origin main && git log origin/main --grep \"Fixes <issue-id>\"` BEFORE writing code, immediately after the claim is verified — earlier than the current \"post-claim, post-implementation\" detection point. Detect-on-redundancy must move forward in the workflow to detect-pre-implementation. Filing this as a Continuous Improvement issue.",
+    "session": "THR-353 scheduled CC pickup, 2026-05-08"
+  },
+  {
+    "num": "123",
+    "id": 123,
+    "count": 1,
+    "date": "2026-05-08",
+    "category": "unclear-requirements",
+    "description": "THR-361 handoff mixed a global done criterion (\\zero 'flesh' matches in src/engine/__tests__/*.test.ts(x)\\) with explicit out-of-scope exclusions and anti-regression tests that intentionally still mention 'flesh'.",
+    "consequence": "Scope interpretation required manual reconciliation before execution and closeout wording.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Followed binding \\Files to touch\\ list and verified zero matches in the bound files only; documented residual global test hits as out-of-scope references.",
+    "session": "THR-361 automation run"
+  },
+  {
+    "num": "124",
+    "id": 124,
+    "count": 1,
+    "date": "2026-05-08",
+    "category": "process-friction",
+    "description": "Pre-existing `.claude/skills` ↔ `.agents/skills` CRLF/content drift on 35 shared skills blocked the THR-292 closeout commit (skill-sync pre-commit hook failed with content mismatches across ~127 mirror files). Recurrence of impediment #118 pattern (THR-176 closeout 2026-05-07 hit the same drift). The drift is mostly Windows ↔ Linux line-ending normalization plus genuine content updates in `.claude/skills` that the mirror missed; the docs-only THR-292 PR did not introduce or modify any skill content.",
+    "consequence": "Forced bundling 127 unrelated mirror-file changes into the THR-292 PR, violating plan §156's \"minimal one-changelog-row\" intent. ~5 min lost troubleshooting + reading the precedent.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "Ran `npm run check:skill-sync:sync` per the documented impediment #118 fix; bundled the resulting agent-mirror diff into the closeout commit body with a clear note. **Permanent fix needed:** add a CI step (or scheduled task) that runs `npm run check:skill-sync` on `main` and opens an auto-PR with `:sync` whenever drift is detected, so the next executor never inherits accumulated drift. Track as Continuous Improvement issue.",
+    "session": "THR-292 closeout, scheduled CC pickup"
+  },
+  {
+    "num": "126",
+    "id": 126,
+    "count": 1,
+    "date": "2026-05-08",
+    "category": "process-friction",
+    "description": "Worktree `gallant-sanderson-b282b5` arrived at session start with 3 stranded closeout commits (`ca09dc4b` THR-343, `0a3bf034` THR-356, `2f1179c2` THR-327) ahead of its diverge point from `main`, each containing edits to `Docs/project-status.md`/`project-history.md`/`changelog.md` that had since been superseded on `main` by other agents' versions of the same closeouts. Without resetting to `origin/main`, any rebase/merge would have produced conflicts on those three docs against versions already shipped under different commit messages.",
+    "consequence": "~3 min spent diagnosing whether the commits were unique (they weren't — every closeout had landed on `main` under a different commit message).",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "`git reset --hard origin/main` after confirming each stranded commit's content was already on `main` under a different commit. Stranding likely happens because the worktree's branch wasn't deleted after the prior closeout's PR merged, leaving the local-only commits as zombies. **Process improvement:** after a closeout PR merges, the same automation should `git branch -D <local-branch>` (or rename to `archive/<branch>`) so stale closeout branches don't become a startup hazard for the next executor that picks the same worktree. **Permanent fix shipped:** THR-424 added Step 4.6 (stranded-commit zombie sweep) to `pull-work` — auto-detects and resets zombie commits at every session start.",
+    "session": "THR-360 scheduled CC pickup; resolved THR-424"
+  },
+  {
+    "num": "127",
+    "id": 127,
+    "count": 1,
+    "date": "2026-05-08",
+    "category": "process-friction",
+    "description": "**Cross-executor collision on THR-360** — fourth recurrence of the pattern (after #102 THR-102, #121 THR-345, #122 THR-353). Sonnet CC scheduled-task automation claimed THR-360 from the worktree's `In Dev` resume path at ~04:00 UTC; another executor independently claimed it from a separate worktree (`tfws-pickup-thr-360`) and merged PR #201 at 04:19 UTC, just 5 minutes after my PR #202 opened (04:14) and was queued for auto-merge. CI completed for PR #202 at 04:27 UTC, by which point auto-merge transitioned to `mergeStateStatus: DIRTY` because the four binding source files had already been edited on `main` to near-identical content (only a 6-character tail difference in the `domain-words.ts` canon-pointer comment). **Detection point:** after CI finished and auto-merge entered `DIRTY`, `git fetch origin main` revealed the parallel landing — same late-detection symptom #122 documented.",
+    "consequence": "~30 min of CC implementation effort wasted on the source-file edits + closeout doc table rows that PR #201 also wrote. Salvaged the genuinely-additive parts: this impediment, #125 (skill-sync drift root-cause diagnosis), #126 (stranded-commits worktree pattern). PR #201's closeout-doc rows are shorter and lack the structural diagnoses my version carried, so the salvage is non-redundant.",
+    "impact": "L",
+    "workaroundFound": false,
+    "workaround": "After-the-fact detection (`git fetch origin main` + commit-grep) per #122's recommendation. **The `In Dev` resume-path bypassed the recommended pre-implementation `git log origin/main --grep \"Fixes <issue-id>\"` check** — the protocol step is gated to \"right after claiming,\" but a resume-from-`In Dev` pickup never re-claims, so the check never runs. **Permanent fix:** extend the resume-path session start to ALSO run the upstream-shipped check before resuming work, not just the fresh-claim path. Concretely: in `pull-work` skill / scheduled-task pickup logic, after the initial `list_issues state:\"In Dev\" assignee:\"me\"` resume read, run `git fetch origin main && git log origin/main --grep \"Fixes <issue-id>\"` for each resumed issue. If the issue is already shipped, the resume aborts with a \"work already landed, releasing claim and exiting\" path. This closes the only gap left in #122's mitigation.",
+    "session": "THR-360 scheduled CC pickup, 2026-05-08"
+  },
+  {
+    "num": "128",
+    "id": 128,
+    "count": 1,
+    "date": "2026-05-08",
+    "category": "environment",
+    "description": "`rg.exe` failed with access denied in fresh worktree (`tfws-pickup-thr-365`) during THR-365 verification checks; worktree also required one-time `npm ci` before vitest.",
+    "consequence": "Minor delay during test authoring and snapshot validation startup.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Use PowerShell `Select-String` fallback when `rg` is unavailable and run `npm ci` immediately after creating fresh worktrees.",
+    "session": "THR-365 automation run"
+  },
+  {
+    "num": "129",
+    "id": 129,
+    "count": 1,
+    "date": "2026-05-08",
+    "category": "tooling-gap",
+    "description": "Codex executor tool surface in this session did not expose scheduled-tasks MCP methods (`create_scheduled_task` / `list_scheduled_tasks`), so THR-215 scheduling had to be performed through `claude -p` CLI prompts (RemoteTrigger path) instead of first-party MCP calls.",
+    "consequence": "Added extra orchestration/verification steps outside the normal toolchain before closeout.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "When scheduled-tasks MCP is unavailable, use `claude -p` fallback to create/update trigger and immediately re-query trigger details (id, cron, enabled, nextRun) for verify-after-write evidence.",
+    "session": "THR-215 automation run"
+  },
+  {
+    "num": "130",
+    "id": 130,
+    "count": 1,
+    "date": "2026-05-08",
+    "category": "environment",
+    "description": "**`create_scheduled_task` blocked inside scheduled-task sessions** — calling `mcp__scheduled-tasks__create_scheduled_task` from within a scheduled-task session returns \"Cannot create scheduled tasks from within a scheduled task session.\"",
+    "consequence": "The weekly-memory-grooming scheduled task SKILL.md was created but the cron registration step could not complete automatically. Requires one interactive CC session.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Create SKILL.md manually; document the `create_scheduled_task` command in CLAUDE.md § Scheduled Tasks for the user to run interactively.",
+    "session": "THR-215 Sonnet scheduled pickup, 2026-05-08"
+  },
+  {
+    "num": "122",
+    "id": 122,
+    "count": 4,
+    "date": "2026-05-09",
+    "category": "environment",
+    "description": "Fresh worktrees can lack installed dependencies, so initial test runs fail (`Cannot find package 'vitest'` / `'esbuild' is not recognized`) until local install completes.",
+    "consequence": "Verification sequence pauses before tests can run.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Run `npm install` once per fresh worktree before any verification commands.",
+    "session": "THR-353 + THR-361 + THR-374 + THR-268 automation runs"
+  },
+  {
+    "num": "125",
+    "id": 125,
+    "count": 2,
+    "date": "2026-05-11",
+    "category": "process-friction",
+    "description": "Third recurrence in 24h of the `.claude/skills` ↔ `.agents/skills` drift pre-commit-hook block (#118 THR-176, #124 THR-292, this run THR-360). 128 mismatched `.agents` files at the start of THR-360. Running `npm run check:skill-sync:sync` once at the top of the worktree resolved the on-disk mismatch, but **`git`'s `core.autocrlf` then normalized the staged diff to a no-op** (CRLF→LF on stage matched the index), so a separate \"skill-sync mirror normalization\" commit never appeared in history. **This is the structural reason #118/#124's `:sync`-then-bundle workaround has not stuck across executor runs** — the bundle commit was a no-op every time, and the `.agents` working-tree files keep flipping back to CRLF on the next checkout. Each executor genuinely sees the drift fresh and must re-run `:sync`. Fourth hit (THR-411, 2026-05-11): pre-existing drift from 37 other skills (content divergence, not just CRLF) blocked the THR-411 commit. Sync fixed on-disk, but the 37 sync-changes were NOT staged — only intent-judge files were committed — so the drift persists in the committed tree and the next committer will hit the block again.",
+    "consequence": "~4 min lost re-hitting the same gate the THR-292 closeout had supposedly cleared a couple hours earlier. The \"permanent fix needed\" call-out in #124 is now urgent — at three hits in one day this is the single most-friction-causing recurring impediment.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "Same workaround as #118/#124 mid-session: `npm run check:skill-sync:sync`. When staging commits, ALSO run `git add .agents/skills/` after the sync so the mirror normalization is committed alongside the feature work. **Permanent fix paths to evaluate (Continuous Improvement ticket — and now sequenced by structural-cause-first ordering):** (a) **add `.gitattributes` `* text=auto` (or `* eol=lf`) so Windows clients commit LF and the working tree stops flipping back to CRLF on checkout** — this is the single load-bearing fix; without it, no mirror-bundle commit will ever stick because git keeps normalizing the staged diff away. (b) update `scripts/check-skill-sync.js` to compare canonical newline-normalized contents instead of byte-for-byte (eliminates the false-positive half — needed if (a) lands incrementally). (c) CI scheduled task that detects drift on `main` and opens an auto-PR with `:sync` (catches the residual content half post-(a)+(b)). (d) move the hook to `pre-push` instead of `pre-commit` so executors aren't blocked from creating intermediate commits while (a)–(c) roll out. (a) is the prerequisite — not optional.",
+    "session": "THR-360 scheduled CC pickup; THR-411 intent-judge skill (2026-05-11)"
+  },
+  {
+    "num": "131",
+    "id": 131,
+    "count": 1,
+    "date": "2026-05-11",
+    "category": "environment",
+    "description": "Scheduled-task UI exposes only hourly and daily cron presets — no intermediate intervals (e.g. every 2 hours). The CC automation fires every hour, but the test suite takes ~15 minutes, creating a window where a new pickup can claim before the previous PR has merged. User-stated constraint: \"I can only choose between hourly or daily on automated routines.\"",
+    "consequence": "Cannot tune cron cadence directly to reduce pickup-before-merge collisions. Required designing an application-layer gate (THR-393) to compensate for the unavailable platform-level tuning.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "Enforce WIP=1 at the pull-work skill / protocol layer: Step 1.5 in `.claude/skills/pull-work/SKILL.md` exits cleanly when `list_issues(state:\"In Dev\", assignee:\"me\")` is non-empty, achieving the \"only pick up when the lane is idle\" behavior the cron scheduler cannot express directly.",
+    "session": "THR-393 WIP gate design and implementation, 2026-05-09/11"
+  },
+  {
+    "num": "132",
+    "id": 132,
+    "count": 1,
+    "date": "2026-05-11",
+    "category": "process-friction",
+    "description": "**Skill-sync hook fires false positive after merge on Windows** — `check:skill-sync` pre-commit hook detects drift between `.claude/skills/` and `.agents/skills/` after merging origin/main, even when the merge itself included updated `.agents/skills/` files. Root cause: CRLF vs LF differences in the working-tree copies flagged by the hook's naive byte comparison. Running `npm run check:skill-sync:sync` fixes the working-tree files; when staged, git normalizes CRLF → LF and the staged diff vs HEAD is empty — so no extra files land in the commit.",
+    "consequence": "Pre-commit hook blocks the commit; requires running `npm run check:skill-sync:sync` before retrying.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Run `npm run check:skill-sync:sync` after any merge from origin/main on Windows before committing. The actual commit will only include semantically different files (not the CRLF-normalized ones).",
+    "session": "THR-396 pickup, 2026-05-11"
+  },
+  {
+    "num": "134",
+    "id": 134,
+    "count": 1,
+    "date": "2026-05-12",
+    "category": "process-friction",
+    "description": "**Cross-executor collision on THR-419 — fifth recurrence of the pattern (after #102, #121, #122, #127).** Scheduled `tb-opus-pickup` claimed THR-419 at 07:49Z via `save_issue assignee:\"me\", state:\"In Dev\"` + `get_issue` verify (Rule 1/Rule 7), checked the `In Dev` slice for `assignee:\"me\"` (Rule 6 WIP gate clean), and proceeded. Meanwhile a separate interactive Claude session under the same `christianspliid-ui` GitHub account authored branch `christianspliid/thr-419-starter-12-always-available-action-baseline-audit-rec-2` (its worktree `hardcore-blackburn-fec9ad` is still listed in the active worktree set) and merged PR #262 at 08:41:51Z while my PR #261's CI was running. The Rule 6 cross-executor mutex didn't trip because both executors share the GitHub author identity. **The #127 mitigation (`git log origin/main --grep \"Fixes <issue-id>\"` after claim) was not run** — that step is not encoded in any current SKILL.md or scheduled-task prompt; #127 left it as a recommendation for the pull-work skill but the wiring did not land. PR #261 was closed as duplicate after the merged version differed semantically (#262 chose `unlockedActionIds === undefined ⇒ return true` for backward-compat; the plan §5.7 said `undefined ⇒ only starters` and my PR followed it).",
+    "consequence": "~90 min of scheduled-task work shipped then closed, plus a follow-up PR (this one) to log the impediment, plus the temp worktree cleanup.",
+    "impact": "L",
+    "workaroundFound": false,
+    "workaround": "Encode the #127 mitigation as a hard step in `.claude/skills/pull-work/SKILL.md` after the claim verify (Step 4 → new Step 4.6): `git fetch origin main && git log --oneline origin/main --grep \"Fixes <issue-id>\"` — if any commit matches, release the claim and exit. This catches the case where another session shipped the issue under the same human's GitHub identity, which Rule 6 cannot see. Also worth considering: query open PRs (`gh pr list --search \"<issue-id> in:title,body\"`) at claim time to catch in-flight duplicates before they merge.",
+    "session": "THR-419 Opus scheduled pickup, 2026-05-12"
+  },
+  {
+    "num": "135",
+    "id": 135,
+    "count": 1,
+    "date": "2026-05-12",
+    "category": "process-friction",
+    "description": "**Auto-merge PR stalled at `mergeStateStatus: DIRTY` from append-only doc conflicts.** PR #269 (THR-412 calibration closeout, commit `bacdf0f4`) opened at 11:18 UTC with auto-merge enabled and CI green. By the next Opus cron tick at 12:00 UTC, three later closeouts (THR-416, THR-422, THR-423) had landed on `main` between 11:18 and 12:00 — each touching the same three append-only docs (`Docs/changelog.md`, `Docs/project-status.md`, `Docs/project-history.md`). PR #269 went DIRTY because GitHub's auto-merge does not auto-resolve textual conflicts even on append-only files. The PR would have sat indefinitely without manual rescue: WIP=1 was held by THR-412, so every subsequent Opus cron tick would refuse to claim new work, while THR-412 itself could not advance to Done because auto-close fires only on `Fixes`-keyword merge. **Detection point:** this session's pickup ran WIP gate, found THR-412 In Dev, queried `gh pr view 269` to triage the \"normal in-flight\" assumption per pull-work Step 1.5, and saw `mergeStateStatus: DIRTY`. Without that triage step the WIP-gate exit would have been clean-looking (\"normal in-flight, exit 0, next tick will check\") and the stall would have been invisible.",
+    "consequence": "This session resolved by rebasing onto origin/main in the existing `pickup-thr-412` worktree, keeping both sides of each doc conflict (no content loss), force-pushing `--force-with-lease` (`bacdf0f4 → bfbca0c1`), and letting CI re-run. ~10 min spent on rescue instead of new work. **Structural cost if undetected:** WIP slot pinned indefinitely → every hourly Opus cron tick burned on the same refuse-and-exit loop until human intervention.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Workaround (this session):** in pull-work Step 1.5 when WIP=1 fires, ALSO query `gh pr view <closeout PR> --json mergeStateStatus`. If `DIRTY`: `git fetch origin main && git rebase origin/main` in the closeout worktree, resolve append-only doc conflicts by keeping both sides, `git push --force-with-lease`, verify `Fixes <id>` keyword still in commit body. **Permanent fix paths:** (a) **encode this triage step inline in pull-work Step 1.5 — when WIP=1 fires, query the in-flight PR's `mergeStateStatus` automatically; if `DIRTY` perform the rebase-and-push rescue inline, only then exit cleanly.** Closest analogue to the existing Step 1.5 / Step 1.7 / Step 4.5 pattern. (b) Add a \"rebase-stale-PRs\" scheduled task that polls open PRs with auto-merge enabled, detects `DIRTY`, and rebases doc-only conflicts. (c) Reduce surface area: stop appending to all three docs in every closeout — fold `project-status.md` deltas into the `Fixes <id>` commit body and let an auto-generation job rebuild the surface periodically. (a) is the smallest-step landing path and the most aligned with existing pull-work structure.",
+    "session": "THR-412 closeout PR #269, Opus scheduled pickup 2026-05-12 12:00 UTC"
+  },
+  {
+    "num": "136",
+    "id": 136,
+    "count": 1,
+    "date": "2026-05-12",
+    "category": "environment",
+    "description": "**GitHub Actions CI blocked by account billing — every recent CI run failed at startup with \"recent account payments have failed or your spending limit needs to be increased.\"** THR-400 PR #276 hit this on its initial CI attempt (run 25746151174) immediately after the rebase-push at 15:56Z. Same failure pattern is visible on `main` for `Linear Auto-Close` (25741194131, 25740919103) and on the cancelled `CI` run (25741194161). The branch-protection rule on `main` requires `Test · Typecheck · Build` to be green, so the merge cannot fire while CI is blocked.",
+    "consequence": "THR-400 PR sits OPEN with auto-merge armed; the merge-to-main auto-close keyword `Fixes THR-400` is in the commit body and will fire once CI runs green. **Structural cost if undetected:** all in-flight executor PRs that depend on the merge-to-main auto-close stall in the same way (#135 was append-only doc conflicts; this one is upstream of CI itself). WIP slot pins on every affected executor until CI is restored.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Immediate:** alert the user / billing owner to restore the GitHub Actions account-payment state. Once CI runs, the existing auto-merge config will fire automatically. **Permanent:** consider a billing-failure detector on the hourly scheduled-task tick that surfaces this exact failure mode (parse `gh run list` for the account-payment string) and exits cleanly with an impediment note instead of silently leaving PRs un-merged.",
+    "session": "THR-400 Opus scheduled pickup, 2026-05-12"
+  },
+  {
+    "num": "133",
+    "id": 133,
+    "count": 3,
+    "date": "2026-05-14",
+    "category": "environment",
+    "description": "**`create_scheduled_task` blocked inside scheduled-task sessions (recurrence of #130)** — THR-405 Phase 3 requires creating the `monthly-rulebook-review` scheduled task, and THR-410 requires creating the `weekly-worktree-orphan-scan` scheduled task, but calling `mcp__scheduled-tasks__create_scheduled_task` from within a scheduled-task session returns \"Cannot create scheduled tasks from within a scheduled task session.\"",
+    "consequence": "Scheduled tasks for `monthly-rulebook-review` (THR-405-D1) and `weekly-worktree-orphan-scan` (THR-410) could not be registered automatically. Documented in CLAUDE.md § Scheduled Tasks with creation commands; requires one interactive (non-scheduled) CC session to complete each.",
+    "impact": "S",
+    "workaroundFound": false,
+    "workaround": "Document the task spec and `cronExpression` in CLAUDE.md § Scheduled Tasks table. User or an interactive CC session must run `create_scheduled_task(...)`. Deferral filed as THR-405-D1 for `monthly-rulebook-review`; see THR-410 plan doc §6.3 for `weekly-worktree-orphan-scan` parameters.",
+    "session": "THR-405 Sonnet scheduled pickup, 2026-05-12; THR-410 Sonnet scheduled pickup, 2026-05-14"
+  },
+  {
+    "num": "137",
+    "id": 137,
+    "count": 1,
+    "date": "2026-05-14",
+    "category": "process-friction",
+    "description": "**`flush-plan-docs` bounces indefinitely when a plan-doc path is broken by an embedded Linear `<issue>` mention tag — blocking executor pickup.** THR-430 (Schism — faction-split divine action, Urgent, `model:opus-4-6`) was handed off by Cowork on 2026-05-12 with a comprehensive coordination block but the issue description references the plan doc via a path that interpolates a Linear `@`-style issue mention into the filename: `Docs/plans/2026-05-11-<issue id=\"aab3a9b2-...\">THR-400</issue>-faction-action-expansion-reframe.md`. The `flush-plan-docs` skill's regex `Docs/plans/[a-z0-9-]+\\.md` cannot match across the HTML tag, so zero paths are extracted. The skill has bounced **twice** on the same issue (2026-05-12 17:21Z and 18:21Z) with explicit fix instructions in comments, but the description has remained unchanged for >36 hours and the plan-doc file (`Docs/plans/2026-05-12-thr-430-schism-faction-split.md`) has never landed on `origin/main` — `git log --all -- Docs/plans/2026-05-12-thr-430-schism-faction-split.md` returns zero commits across all branches. The Opus pickup at 2026-05-14 ~08:43Z therefore could not claim THR-430 because reading the plan doc is mandatory before implementation (per CLAUDE.md § Session Workflow + the design-governance content rules: NFP #1 requires named-constant decisions that live in the plan doc, not in the handoff comment). **The handoff is structurally complete but the plan doc is unreachable — pickup refused, issue left in Ready for Dev, unassigned.** Same author identity (Christian Spliid via Cowork) appears on the description, both bounce comments, and the handoff comment, so this is not a coordination-failure between humans; it is an authoring quirk where Cowork's plan-doc reference accidentally included a `@THR-400` parent-issue mention inside the filename.",
+    "consequence": "Opus scheduled pickup (2026-05-14) refused to claim, posted an escalation comment on THR-430, and exited cleanly with no in-flight work. **Structural cost if undetected:** every subsequent Opus cron tick would burn a refuse-and-exit cycle on THR-430 because (a) it's the only Opus-lane Ready-for-Dev candidate and (b) the description doesn't get fixed automatically. WIP slot would remain free for other Opus work but no Opus work exists, so Opus stalls until the description is fixed.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Workaround (this session):** posted an escalation comment on THR-430 quoting the original flush-plan-docs bounce verbatim, made the fix instructions explicit (\"edit the description; replace the broken `<issue>` tag path with `` `Plan doc: \\`Docs/plans/2026-05-12-thr-430-schism-faction-split.md\\`` ``\"), and left the issue in Ready for Dev unassigned. **Permanent fix paths:** (a) **harden the `flush-plan-docs` regex to strip embedded HTML/tag content before matching** — e.g., pre-process the description through a tag-stripper, then run the path regex. The current regex is too literal for Linear's @-mention HTML output. (b) Cowork-side: when authoring plan-doc references, always use a backticked path-line `` Plan doc: `Docs/plans/<filename>.md` `` near the top of the description, *not* inside running prose that may pick up @-mentions. The bounce-comment instructions already say this — encode it in the Cowork plan-doc skill so the failure mode cannot recur. (c) After two flush-plan-docs bounces on the same issue, the skill should escalate (e.g., apply a `flush-plan-docs-stuck` label, ping the user) rather than silently retrying every hour. (a) is the smallest landing fix; (b) prevents recurrence.",
+    "session": "THR-430 Opus scheduled pickup, 2026-05-14 06:43 UTC"
+  },
+  {
+    "num": "138",
+    "id": 138,
+    "count": 1,
+    "date": "2026-05-14",
+    "category": "tool-failure",
+    "description": "**`mcp__Claude_Preview__preview_screenshot` hung for 30+ seconds and timed out, even after navigation to a static page (`document.body.innerHTML` rewritten to a non-WebGL DOM tree).** The preview server started fine, `preview_eval` worked instantly, `preview_snapshot` returned the accessibility tree correctly, and `preview_console_logs` only showed pre-existing schema warnings + a Three.js Clock-deprecation warning — no errors. But `preview_screenshot` simply did not return within the 30s budget, on three consecutive attempts. Affects UI-pillar verification flows that depend on the binary screenshot artifact in CLAUDE.md §Definition of Done.",
+    "consequence": "Could not produce the required 1920×1080 banner screenshot for THR-430 closeout. Substituted DOM-structure verification via `preview_snapshot` (which returned the rendered banner shape correctly — both `Schism Brewing` and `Schism Reformed — N ticks ago` variants visible with their expected text).",
+    "impact": "M",
+    "workaroundFound": false,
+    "workaround": "**This session:** used `preview_snapshot` to capture the accessibility tree of the rendered banner shape as visual-equivalent evidence, plus the existing unit-test coverage of the conditional render. **Permanent:** investigate whether `preview_screenshot` blocks on background WebGL/asset loading from the `?view=game&seeded` init pipeline even after navigating away — the timeout suggests a worker or audio context never finishes resolving. Worth pairing this finding with impediment #1 (Three.js WebGL canvas + Playwright screenshot hangs) — possibly the same root cause but at a different surface.",
+    "session": "THR-430 Opus scheduled pickup, 2026-05-14"
+  },
+  {
+    "num": "139",
+    "id": 139,
+    "count": 1,
+    "date": "2026-05-15",
+    "category": "process-friction",
+    "description": "`Design/` is gitignored on main, so restoring and regenerating `Design/impediment-dashboard.html` for THR-434 failed standard staging (`git add` rejected ignored path).",
+    "consequence": "Blocked commit until force-add workflow was discovered.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Stage the dashboard with `git add -f Design/impediment-dashboard.html` for this migration issue; consider narrowing .gitignore so maintained design artifacts are not ignored.",
+    "session": "THR-434 Codex automation closeout"
+  }
+];
+// ── End data ──
+
+// ── Last retro ──
+const LAST_RETRO = {
+  "date": "2026-05-04",
+  "filename": "Docs/retrospectives/2026-05-04-retro.md"
+};
+// ── End last retro ──
+
+const IMPACT_MINUTES = { S: 1, M: 8, L: 20, Blocked: 30 };
+const IMPACT_COLORS = { S: '#10b981', M: '#f59e0b', L: '#fb923c', Blocked: '#e94560' };
+const CAT_COLORS = {
+  'tool-failure': '#e94560',
+  'api-quirk': '#f59e0b',
+  'permission': '#8b5cf6',
+  'environment': '#06b6d4',
+  'skill-gap': '#ec4899',
+  'process-friction': '#f97316',
+  'dependency': '#6366f1',
+  'unclear-requirements': '#14b8a6',
+  'flaky-test': '#a855f7',
+  'other': '#64748b'
+};
+
+function impactBadge(impact) {
+  return '<span class="badge badge-' + impact.toLowerCase() + '">' + impact + '</span>';
+}
+function workaroundBadge(found) {
+  return found ? '<span class="badge badge-yes">Yes</span>' : '<span class="badge badge-no">No</span>';
+}
+
+const totalItems = DATA.length;
+const totalOccurrences = DATA.reduce(function(s, d) { return s + d.count; }, 0);
+const hotItems = DATA.filter(function(d) { return d.count > 3; });
+const unresolvedItems = DATA.filter(function(d) { return !d.workaroundFound; });
+
+const impactDist = {};
+DATA.forEach(function(d) { impactDist[d.impact] = (impactDist[d.impact] || 0) + d.count; });
+const totalMinutes = DATA.reduce(function(s, d) { return s + (IMPACT_MINUTES[d.impact] || 0) * d.count; }, 0);
+const hours = Math.floor(totalMinutes / 60);
+const mins = totalMinutes % 60;
+const timeLost = hours > 0 ? hours + 'h ' + mins + 'm' : mins + 'm';
+
+const catCounts = {};
+DATA.forEach(function(d) {
+  if (!catCounts[d.category]) catCounts[d.category] = { items: 0, occurrences: 0 };
+  catCounts[d.category].items++;
+  catCounts[d.category].occurrences += d.count;
+});
+const maxCatOcc = Math.max.apply(null, Object.values(catCounts).map(function(c) { return c.occurrences; }));
+
+function render() {
+  var html = '';
+
+  // Header
+  html += '<div class="header">';
+  html += '<div class="header-left"><h1>Impediment Dashboard</h1>';
+  html += '<div class="muted">The Fantasy World Simulator \u2014 ' + new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) + '</div></div>';
+  html += '<div class="header-right">';
+  html += '<div class="stat-card ok"><div class="value">' + totalItems + '</div><div class="label">Impediments</div></div>';
+  html += '<div class="stat-card ok"><div class="value">' + totalOccurrences + '</div><div class="label">Occurrences</div></div>';
+  html += '<div class="stat-card ' + (totalMinutes > 120 ? 'hot' : totalMinutes > 60 ? 'warn' : 'ok') + '"><div class="value">~' + timeLost + '</div><div class="label">Est. Time Lost</div></div>';
+  html += '</div></div>';
+
+  // Hot items
+  if (hotItems.length > 0) {
+    html += '<h2>Hot Items (count > 3)</h2>';
+    hotItems.forEach(function(d) {
+      html += '<div class="alert-card ' + (d.count > 5 ? 'hot' : 'warn') + '">';
+      html += '<div class="title">#' + d.id + ' \u2014 ' + d.category + ' (\u00D7' + d.count + ')</div>';
+      html += '<div class="desc">' + d.description + '</div></div>';
+    });
+  } else {
+    html += '<h2>Hot Items</h2>';
+    html += '<div class="alert-card"><div class="desc">No hot items \u2014 all impediments have count \u2264 3. Nice.</div></div>';
+  }
+
+  // Table
+  html += '<h2>All Impediments</h2>';
+  html += '<table id="mainTable"><thead><tr>';
+  html += '<th data-col="id">#</th><th data-col="count">Count</th><th data-col="date">Date</th>';
+  html += '<th data-col="category">Category</th><th data-col="description">Description</th>';
+  html += '<th data-col="impact">Impact</th><th data-col="workaroundFound">Workaround?</th>';
+  html += '<th data-col="session">Session</th></tr></thead><tbody>';
+  DATA.forEach(function(d) {
+    html += '<tr><td>' + d.id + '</td><td>' + d.count + '</td><td>' + d.date + '</td>';
+    html += '<td>' + d.category + '</td><td>' + d.description + '</td>';
+    html += '<td>' + impactBadge(d.impact) + '</td><td>' + workaroundBadge(d.workaroundFound) + '</td>';
+    html += '<td>' + d.session + '</td></tr>';
+  });
+  html += '</tbody></table>';
+
+  // Category breakdown
+  html += '<h2>Category Breakdown</h2>';
+  var sortedCats = Object.entries(catCounts).sort(function(a, b) { return b[1].occurrences - a[1].occurrences; });
+  sortedCats.forEach(function(entry) {
+    var cat = entry[0], v = entry[1];
+    var width = Math.max(v.occurrences / maxCatOcc * 400, 40);
+    html += '<div class="cat-bar-container"><div class="cat-label">' + cat + '</div>';
+    html += '<div class="cat-bar" style="width:' + width + 'px;background:' + (CAT_COLORS[cat] || '#64748b') + ';">' + v.items + ' (\u00D7' + v.occurrences + ')</div></div>';
+  });
+
+  // Impact distribution
+  html += '<h2>Impact Distribution</h2><div class="impact-grid">';
+  ['S', 'M', 'L', 'Blocked'].forEach(function(level) {
+    var labels = { S: ' (~1m)', M: ' (~8m)', L: ' (~20m)', Blocked: ' (~30m)' };
+    html += '<div class="impact-card"><div class="count" style="color:' + IMPACT_COLORS[level] + '">' + (impactDist[level] || 0) + '</div>';
+    html += '<div class="lbl">' + level + labels[level] + '</div></div>';
+  });
+  html += '</div>';
+
+  // Timeline
+  html += '<h2>Timeline (Most Recent First)</h2>';
+  var sorted = DATA.slice().sort(function(a, b) { return b.date.localeCompare(a.date) || b.id - a.id; });
+  sorted.forEach(function(d) {
+    var shortDesc = d.description.length > 80 ? d.description.slice(0, 80) + '\u2026' : d.description;
+    html += '<div class="timeline-item"><div class="timeline-date">' + d.date + '</div>';
+    html += '<div class="timeline-content"><div class="title">#' + d.id + ' ' + shortDesc + '</div>';
+    html += '<div class="meta">' + d.category + ' \u00B7 ' + impactBadge(d.impact) + ' \u00B7 ' + workaroundBadge(d.workaroundFound) + '</div></div></div>';
+  });
+
+  // Unresolved
+  if (unresolvedItems.length > 0) {
+    html += '<h2>Unresolved (No Workaround)</h2>';
+    unresolvedItems.forEach(function(d) {
+      html += '<div class="alert-card hot"><div class="title">#' + d.id + ' \u2014 ' + d.category + ' (\u00D7' + d.count + ')</div>';
+      html += '<div class="desc">' + d.description + '<br><em>Consequence: ' + d.consequence + '</em></div></div>';
+    });
+  } else {
+    html += '<h2>Unresolved</h2>';
+    html += '<div class="alert-card"><div class="desc">All impediments have workarounds. Zero unresolved.</div></div>';
+  }
+
+  document.body.innerHTML = html;
+
+  // Sortable table headers
+  var sortCol = null, sortDir = 'asc';
+  document.querySelectorAll('#mainTable th').forEach(function(th) {
+    th.addEventListener('click', function() {
+      var col = th.dataset.col;
+      if (sortCol === col) { sortDir = sortDir === 'asc' ? 'desc' : 'asc'; }
+      else { sortCol = col; sortDir = 'asc'; }
+      document.querySelectorAll('#mainTable th').forEach(function(t) { t.classList.remove('sorted-asc', 'sorted-desc'); });
+      th.classList.add(sortDir === 'asc' ? 'sorted-asc' : 'sorted-desc');
+      var s = DATA.slice().sort(function(a, b) {
+        var va = a[col], vb = b[col];
+        if (typeof va === 'number') return sortDir === 'asc' ? va - vb : vb - va;
+        if (typeof va === 'boolean') return sortDir === 'asc' ? (va ? 1 : -1) : (vb ? 1 : -1);
+        return sortDir === 'asc' ? String(va).localeCompare(String(vb)) : String(vb).localeCompare(String(va));
+      });
+      var tbody = document.querySelector('#mainTable tbody');
+      var rows = '';
+      s.forEach(function(d) {
+        rows += '<tr><td>' + d.id + '</td><td>' + d.count + '</td><td>' + d.date + '</td>';
+        rows += '<td>' + d.category + '</td><td>' + d.description + '</td>';
+        rows += '<td>' + impactBadge(d.impact) + '</td><td>' + workaroundBadge(d.workaroundFound) + '</td>';
+        rows += '<td>' + d.session + '</td></tr>';
+      });
+      tbody.innerHTML = rows;
+    });
+  });
+}
+
+render();
+</script>
+
+</body>
+</html>
