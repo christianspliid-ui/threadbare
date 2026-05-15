@@ -24,6 +24,7 @@
 - 2026-05-11 batch: THR-393, THR-403, THR-407, THR-408, THR-411, THR-396
 - 2026-05-12 batch: THR-413, THR-404, THR-397, THR-398, THR-399, THR-401, THR-405, THR-416, THR-409, THR-395, THR-412, THR-422, THR-423, THR-418, THR-424, THR-400, THR-11
 - 2026-05-14 batch: THR-12, THR-430, THR-432, THR-433, THR-415, THR-410, THR-385
+- 2026-05-15 batch: THR-163
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
