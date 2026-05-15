@@ -36,6 +36,8 @@ import {
   getActorTraits,
   getActorCultures,
   getAgentAmbitions,
+  getMentorships,
+  type MentorshipSummary,
 } from './graphQueries';
 import type { SphereName } from '../types';
 import type { MemberOfEdgeProperties } from '../types/disposition';
@@ -168,6 +170,8 @@ export interface AgentDetail {
   leverage?: LeverageSummary;
   /** Active initiative in progress, if any (THR-51). */
   activeInitiative?: import('../types/initiative').InitiativeProgress;
+  /** Mentor/apprentice relationships involving this agent, in both directions (THR-75). */
+  mentorship?: MentorshipSummary[];
 }
 
 /** Display-ready trait summary for the AgentDetailPanel */
@@ -479,6 +483,10 @@ export function getAgentDetail(
     ? { secretsHeld, secretsAbout, favorsOwed, favorsOwedToMe }
     : undefined;
 
+  // ─── Mentorship data (THR-75) ──────────────────────────────────
+  const mentorshipEntries = getMentorships(graph, agentId);
+  const mentorship = mentorshipEntries.length > 0 ? mentorshipEntries : undefined;
+
   return {
     id: agentId,
     name: agentNode.name,
@@ -509,6 +517,7 @@ export function getAgentDetail(
     traits: traitSummaries.length > 0 ? traitSummaries : undefined,
     leverage,
     activeInitiative: props.activeInitiative as import('../types/initiative').InitiativeProgress | undefined,
+    mentorship,
   };
 }
 
