@@ -1990,4 +1990,6 @@ export interface SurveyProseComposedTrace extends TraceBase {
   factionCount: number;
   /** Length of the composed prose band in characters; 0 means the TickEvent was skipped. */
   composedLength: number;
+  /** Named mortals included in the people-layer clause (THR-440); 0 means the fallback fired. */
+  namedMortalCount: number;
 }
