@@ -23,7 +23,7 @@
 - 2026-05-10 batch: THR-394
 - 2026-05-11 batch: THR-393, THR-403, THR-408, THR-411
 - 2026-05-12 batch: THR-413, THR-404, THR-397, THR-398, THR-399, THR-405, THR-416, THR-409
-- 2026-05-16 batch: THR-416 (via THR-409 worktree cleanup closeout), THR-249, THR-248, THR-377
+- 2026-05-16 batch: THR-416 (via THR-409 worktree cleanup closeout), THR-249, THR-248, THR-377, THR-447
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
@@ -31,19 +31,6 @@
 - TB-071 Economy Second Pass · TB-069 Location NPCs · TB-051 Monster Encounters residual · TB-037 Onboarding
 
 Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Completed work: `Docs/project-history.md` + Linear "Done" state · Pre-Linear history: `.planning/BACKLOG_HISTORY.md`
-- ✅ 2026-05-08: THR-353 shipped (D3) — narration/TTS discovery report + encounter narration adapter contract + contract smoke test.
-- ✅ 2026-05-08: THR-292 closed (Encounter Format Migration) — vault encounter architecture pages confirmed unified-only (Systems/Encounter System.md canonical via THR-341; UL Encounters.md describes EncounterTemplate as a conceptual term, not stale TypeScript-class guidance). Closeout entry appended to vault log.md.
-- ✅ 2026-05-08: THR-265 shipped — skill freshness metadata + drift-scan S5 (all skill files now carry `last_validated_against`; weekly scan now reports stale/archive/bootstrap-needed skill freshness drift).
-- ✅ 2026-05-08: THR-363 shipped — Phase 2b Canon Step-0 wiring for prose/hexmap/template skills (14 SKILL.md files mirrored); Canon-first pre-read now enforced before domain authoring.
-- ✅ 2026-05-08: THR-215 shipped — durable weekly-memory-grooming trigger active (`3 16 * * 0`), CLAUDE scheduled-task registry updated, and external weekly-memory-grooming SKILL aligned to current Cowork/CC/Codex memory paths with fail-soft missing-path behavior.
-- ✅ 2026-05-08: THR-374 shipped — Encounter UI G2.1b D2 snapshot suite tightened to exact handoff contract (10 EffectRegistration components at 1920×1080 with canonical titles/fixtures); verification trio green and `useEffectSequencing` hook tests confirmed present.
-- ✅ 2026-05-08: THR-267 shipped — CLAUDE pre-commit checklist now requires a deterministic 30-tick CLI smoke for engine-touching changes (`tick 30` + `status`) and explicit status-output evidence at closeout.
-- ✅ 2026-05-08: THR-387 shipped — hex map now only shows agents with a thread edge from the ascendant (or the avatar); non-threaded notable/spotlight NPCs are filtered in the agentRenderData useMemo in GameView.tsx.
-- ✅ 2026-05-08: THR-388 shipped — hexmap tooltip now shows after a 1-second hover delay (was immediate). Debounced `tooltipHex` state in HexMapV2.tsx trails `hoveredHex` with a useEffect+setTimeout; hex highlight and status bar remain instant. `TOOLTIP_HOVER_DELAY_MS: 1000` named constant in INTERACTION_CONSTANTS (HexRaycaster.ts, NFP #1).
-- ✅ 2026-05-09: THR-268 shipped — `CLAUDE.md` Design Governance now includes Step 0.5 Codesight pre-flight (required for `src/`-touching design work, with fail-soft grep fallback) and a new Blast Radius section requirement for high-impact files (>=100 importers).
-- ✅ 2026-05-09: THR-389 shipped — ThreadDetail encounter pool now includes expandable foreshadowing prose per ranked candidate, backed by authored template variants, runtime cache, and `foreshadowing` traces (`__DEBUG.getForeshadowing` + `listForeshadowingTraces` available for inspection).
-- ✅ 2026-05-09: THR-391 shipped — session-precheck now emits `freshness=` in the fingerprint line; CLAUDE.md Session Workflow requires agents to surface stale-branch warnings before design work begins.
-- ✅ 2026-05-10: THR-394 shipped — thread detail bar now scrolls correctly (`height:100%` on container so footer stays in viewport); foreshadowing prose now shows as a tooltip on the pending-encounter chip in the ThreadsPanel retinue row.
 - ✅ 2026-05-11: THR-393 shipped — WIP=1 gate now enforced in pull-work skill (Step 1.5) and coordination protocol (CC + Codex pickup Step 4 hard-gate wording). Hourly cron now exits cleanly when a PR is in-flight. Impediment #131 logged (cron-interval UI constraint).
 - ✅ 2026-05-11: THR-408 shipped — `action-catalog-design` skill landed in both skill trees. Enforces three pre-flight checks (Substrate Honesty, Mortal-Loop Bridge, Surface-Shape Check) before any catalog-expansion design pass. Prevents the catalog-expansion drift pattern surfaced in THR-400 audit.
 - ✅ 2026-05-11: THR-411 shipped — `intent-judge` skill landed. Four-way verdict (Allow/Revise/Block/Escalate), 10 judging dimensions, deterministic aggregation rubric, anti-correlation rules. Slots into CLAUDE.md design workflow as Step 8.5 between Three-pillar check and Vision audit. `/intent-judge <path>` for manual runs.
@@ -60,3 +47,4 @@ Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Compl
 - ✅ 2026-05-16: THR-377 shipped — MT-1: `state-of-game-design` monolithic skill (409 lines, ~24 KB) split into a 3.7 KB router + 4 on-demand reference shards. Side-effect: 38 pre-existing `.agents/skills/` drift files normalized. PR #310.
 - ✅ 2026-05-16: THR-249 shipped — linear-autoclose.yml retargeted to In Review (Fixes THR-XX merges now land In Review, not Done); claude-review.yml skeleton wires In Review → Done on passing review. Manual review + Done transition is the flow until THR-182 ships the real review job. PR #307.
 - ✅ 2026-05-16: THR-248 shipped — Rule 5 Reopened-label now structurally reinforced. Coordination protocol updated with Linear Automation config (TRIGGER/CONDITION/ACTION 1/ACTION 2), updated How-to-apply noting automation as primary + manual as fallback, and Rule 5 audit-query for weekly-retro violation detection. Christian must configure the Automation in Linear Settings → Threadbare → Automations (config verbatim in PR description and protocol doc).
+- ✅ 2026-05-16: THR-447 shipped — signal-gated `BranchAwareAftermathConfig.variants` framework codified for linear templates. Encounters canon page updated (✅ settled-decision entry); `template-encounter-rewrite` skill (both trees) extended with S1–S5 selection signals, G1–G4 editorial gates, and authoring-cost budget tables; THR-191 plan doc updated with resolved-deferral note. Governance/docs only — N/A on all three pillars. PR #312.

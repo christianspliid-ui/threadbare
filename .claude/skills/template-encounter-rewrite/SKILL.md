@@ -9,7 +9,7 @@ description: >
   quality", "social encounter rewrite", "tavern encounter rewrite", "template
   encounter", "encounter quality pass", "prose quality pass", "write encounter".
 model: opus
-last_validated_against: 2026-05-15
+last_validated_against: 2026-05-16
 ---
 
 > **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
@@ -428,3 +428,52 @@ For each encounter file you write or rewrite:
 6. **Run the editorial checklist** — all 7 questions must pass
 7. **Preserve the TypeScript skeleton** — same IDs, same reaches, same difficulties, same reward pools unless clearly wrong. You're upgrading prose and adding wiring, not restructuring encounters.
 8. **Author `aftermathConfig`** — even simple encounters deserve 1-2 reaction choices. The aftermath is where the player-god touches the world.
+
+---
+
+## Populated `aftermathConfig.variants` — Signal model, budget, and editorial gates (THR-447)
+
+Most linear templates ship `variants: {}` (empty) + `fallback`. This is correct for the majority. A family becomes a **candidate for populated `variants`** only when **≥3 of 5 signals** below are present. See `Docs/plans/2026-05-16-thr-447-aftermath-variants-format-decision.md` for the full framework and the approved family scoring matrix.
+
+### §2.1 Selection signals (S1–S5)
+
+| # | Signal | Rationale | How to evidence |
+|---|---|---|---|
+| S1 | **Recurring thematic tension** — the family's premise contains a *named* moral/methodological fork that appears in most templates. | Without a recurring tension, choices become bespoke per template — that is the branching-encounter format, not the linear format. | Read the family's first 3–5 templates' `narrativeTemplates.initiation` and `description`. Is the same fork visible across them? |
+| S2 | **Distinct downstream graph consequences** — the choice changes *which* `EncounterAftermathChange.kind`s fire, not just the phrasing of one change. | "Same effect, different prose" is exactly the noise the format guards against. | Sketch the two paths' `changes[]` arrays. If they differ only in `title`/`detail` strings, the family fails S2. |
+| S3 | **Saga-scale weight** — at least one template in the family is `intrinsicTier: 'storyBeat'` or carries a `rarityTier` of `prominent` or higher. | Ambient connective-tissue content doesn't repay the authoring cost of player-meaningful choice. | `grep "intrinsicTier:\|rarityTier:" src/data/<family>-encounter-content.ts`. |
+| S4 | **Multi-actor reaction surface** — the family routinely reaches >1 distinct mortal whose aftermath response would plausibly diverge by the player's choice. | If the aftermath only touches one actor and one reputation track, divergent `variants` are over-engineering. | Count distinct `targetId`/`subjectId` fields and reputation polarities in 2 templates' `aftermathConfig.fallback.changes`. |
+| S5 | **Player-legible cue exists** — at the moment of choice, the player has a concrete in-scene signal that makes the fork legible and not abstract. | Choice cards with no fictional anchor produce the "two adjectives" failure mode. | Read step-0 prose. If the fork would require inventing new fiction to surface, S5 fails. |
+
+**Decision rule:** ≥3 PASS → candidate. Rank candidates by total signal count; ties broken by highest `rarityTier`/`intrinsicTier` in the family, then by smallest family (lower v1 cost). See the approved family scoring matrix in the plan doc before committing to a family.
+
+### §2.2 Authoring-cost budget (linear template w/ populated variants)
+
+| Cost surface | Linear template w/ variants | Why |
+|---|---|---|
+| `authoredChoices` count | **Exactly 2** | Two paths is the recurring-tension shape; three becomes a branching encounter. |
+| Per-choice `intent` length | **40–80 words** | Linear templates are connective tissue at higher cadence; prose matches. |
+| Per-choice `likelyBurden` | **20–40 words** | Same rationale. |
+| Variant `AftermathVariant.overview` | **30–60 words** | Same rationale. |
+| Variant `changes[]` IDs that differ from `fallback` | **≥1 per variant** (kind must differ, not just title) | Lower minimum acceptable because the *kind* must change (G2). |
+| Variant `reactions[]` count | **2 per variant, ≥1 unique to that variant** | Reactions remain the primary choice surface; variants supplement. |
+| Total authoring time per template | **~45 minutes** | Roughly an order of magnitude smaller than a branching encounter. |
+
+**v1 family pilot cap:** ≤2 families, ≤15 templates total across both families.
+
+### §2.3 Editorial gates (G1–G4 — all mandatory)
+
+Every populated-`variants` template must clear all four gates. Reject any candidate that misses one.
+
+| Gate | Requirement | Failure mode it guards against |
+|---|---|---|
+| **G1 — Two paths, not two phrasings** | The two `authoredChoices` IDs must name *different intervention shapes* (`bolster_the_younger_hand` vs. `lock_the_record`), not `gentle` vs. `firm`. | Adjective re-skinning; Rule 1 of `Docs/canon/encounters.md`. |
+| **G2 — Effect-kind divergence** | Each `AftermathVariant.changes[]` must contain ≥1 change whose `kind` differs from any change in the *other* variant or from the `fallback`. Acceptable kinds: `reputation`, `intelligence`, `encounter_seed`, `hidden_mark`, `graph_op`. NOT: same `kind` with re-worded `title`/`detail`. | "Same outcome, different paint." |
+| **G3 — Fictional anchor at step 0** | The step-0 prose names ≥1 in-scene element the player can read as the cue for the fork (an object, a posture, a named NPC's stated position, a faction symbol). The `authoredChoices.targetLabel` or `intent` must reference that anchor. | Choice cards with no diegetic referent. |
+| **G4 — Threadbare voice on burden** | `likelyBurden` is one sentence, present tense, second-person ("If the …"). Names a *concrete* cost the player can later recognize in-fiction, not an abstract risk percentage. | Risk text that reads like a stat block. |
+
+A template that cannot clear all four gates without inflating beyond the §2.2 budget is **the wrong shape for populated variants** — leave it on `fallback`-only or promote it to a branching encounter.
+
+### Procedural note
+
+When rewriting a template in a family that has been *approved for populated variants* (see canon and the family scoring matrix in `Docs/plans/2026-05-16-thr-447-aftermath-variants-format-decision.md`), populate `authoredChoices[0]` with exactly 2 choices and `aftermathConfig.variants` keyed on those choice IDs. Every populated template must clear G1–G4. When rewriting a template in a family that has *not* been approved (default), leave `variants: {}` and write the systemic depth into `fallback.reactions[]` — the same bar that THR-96 (Lorekeepers Covenant) hit.
