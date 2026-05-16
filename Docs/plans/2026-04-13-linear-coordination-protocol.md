@@ -205,9 +205,28 @@ For each result, check the issue history for the transition sequence. A violatio
 **Why:** CC had no visible signal in its list view that a reopened issue was different from a fresh one. State alone (`Ready for Dev`) didn't carry the history. The label makes the reopen visible without opening the issue.
 
 **How to apply:**
-- Cowork or human applies the `Reopened` label when reopening.
+- The Linear Automation (see Structural reinforcement below) applies the `Reopened` label automatically on Done → Started transitions. Cowork or human applies it manually as a fallback when the Automation is disabled or fails.
 - CC, when scanning Ready for Dev, treats `Reopened`-labeled issues as a flag to read all comments back to the original handoff before acting.
 - The label stays until the merge keyword closes the issue — don't strip it during implementation.
+
+**Structural reinforcement (THR-248, 2026-05-16):** Rule 5 is now structurally reinforced — not merely doctrinal. A Linear Automation in Threadbare team settings fires on any Done → Started transition and applies both the label and a reminder comment automatically. Configure once in Linear Settings → Threadbare → Automations → New Rule:
+
+```
+TRIGGER: Issue state changed
+CONDITION: previous state category = "Completed" AND new state category = "Started"
+ACTION 1: Add label "Reopened"
+ACTION 2: Post comment "This issue was reopened on {now} by {actor}. Read the latest comment and all comments back to the original handoff before acting."
+```
+
+Manual application by Cowork or humans remains the fallback for edge cases the Automation does not cover.
+
+**Audit query — Rule 5 violation detection:**
+Direct detection of missed Reopened labels requires issue-history inspection (Linear MCP does not expose state-transition history as a queryable field). Weekly proxy — run as part of the `weekly-retro`:
+```
+list_issues team:"Threadbare" state:"Ready for Dev" updatedAt:"-P7D"
+list_issues team:"Threadbare" state:"In Dev" updatedAt:"-P7D"
+```
+For each result where `startedAt` is significantly newer than `createdAt` (indicating a prior completion cycle), verify the `Reopened` label is present. A missing label on a previously-completed issue is a Rule 5 violation — most likely the Automation was disabled or failed during the transition.
 
 ### Rule 6 — WIP=1 across all sessions
 

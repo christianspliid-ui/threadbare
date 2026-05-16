@@ -23,7 +23,7 @@
 - 2026-05-10 batch: THR-394
 - 2026-05-11 batch: THR-393, THR-403, THR-408, THR-411
 - 2026-05-12 batch: THR-413, THR-404, THR-397, THR-398, THR-399, THR-405, THR-416, THR-409
-- 2026-05-16 batch: THR-416 (via THR-409 worktree cleanup closeout), THR-249
+- 2026-05-16 batch: THR-416 (via THR-409 worktree cleanup closeout), THR-249, THR-248
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
@@ -58,3 +58,4 @@ Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Compl
 - ✅ 2026-05-12: THR-405 shipped — Rulebook Canon Page Phase 3 (maintenance cadence). `Rulebook impact?` checkbox added to CLAUDE.md Design Governance. `Docs/audits/_rulebook-architecture-assessment-template.md` created. `monthly-rulebook-review` scheduled task registered in CLAUDE.md (task creation deferred to THR-417 — blocked by impediment #133, create_scheduled_task blocked in scheduled sessions). PR #256.
 - ✅ 2026-05-12: THR-409 shipped — worktree graveyard cleanup. Removed 35 of 74 registered worktrees (registry now 39); 33 tfws-pickup/resume entries kept per 14-day safety filter; 12 .claude/worktree dirs remain on disk (git-deregistered, locked by active sessions); trusting-vaughan-733101 (THR-394) preserved with 2 unmerged code commits not yet in main.
 - ✅ 2026-05-16: THR-249 shipped — linear-autoclose.yml retargeted to In Review (Fixes THR-XX merges now land In Review, not Done); claude-review.yml skeleton wires In Review → Done on passing review. Manual review + Done transition is the flow until THR-182 ships the real review job. PR #307.
+- ✅ 2026-05-16: THR-248 shipped — Rule 5 Reopened-label now structurally reinforced. Coordination protocol updated with Linear Automation config (TRIGGER/CONDITION/ACTION 1/ACTION 2), updated How-to-apply noting automation as primary + manual as fallback, and Rule 5 audit-query for weekly-retro violation detection. Christian must configure the Automation in Linear Settings → Threadbare → Automations (config verbatim in PR description and protocol doc).
