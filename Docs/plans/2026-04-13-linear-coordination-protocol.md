@@ -173,12 +173,21 @@ Each rule below maps to a specific incident that has actually happened in this p
 
 ### Rule 3 — CC never manually transitions to Done
 
-**Rule:** Claude Code does not call `save_issue(state: "Done")` directly. Closure happens through exactly two paths: (1) the `Fixes THR-XX` keyword in a commit body that lands on `main`, which Linear auto-closes; (2) explicit human or Cowork action. If CC believes an issue is wrong, malformed, or already complete, it adds a comment and stops — it does not change the state.
+**Rule:** Claude Code does not call `save_issue(state: "Done")` directly. Closure happens through exactly two paths: (1) the `Fixes THR-XX` keyword in a commit body that lands on `main`, which transitions the issue to `In Review` via `.github/workflows/linear-autoclose.yml`; (2) the `claude-review` Action transitioning `In Review → Done` after a passing review verdict. If CC believes an issue is wrong, malformed, or already complete, it adds a comment and stops — it does not change the state.
 
 **Why:** A CC instance encountered a reopened issue, interpreted the reopen as a Cowork mistake, and closed it without reading the latest comment that explained the reason for the reopen. Removing the manual-close authority makes this failure mode impossible — not merely unlikely.
 
+**Structural reinforcement (THR-249, 2026-05-16):** Rule 3 is now structurally enforced — not merely doctrinal. The `Fixes THR-XX` keyword on merge moves issues to `In Review` (not `Done`) via `linear-autoclose.yml`. The `claude-review` Action then transitions `In Review → Done` once a review passes. Any issue that lands in `Done` without passing through `In Review` is a Rule 3 violation, detectable via the audit query below. **Cowork docs-only merges** (no `src/` diff) land in `In Review` and stay there as a consistency-tax grey zone; Cowork transitions them to Done manually at next session. **THR-182 note:** until the review job in `claude-review.yml` ships, the verdict is always `skip` and issues remain in `In Review` indefinitely — human or Cowork transitions to Done.
+
+**Audit query — Rule 3 violation detection:**
+Issues that landed in `Done` without the `In Review` hop are Rule 3 violations. Run as part of the weekly retrospective (`weekly-retro`):
+```
+list_issues team:"Threadbare" state:"Done" updatedAt:"-P7D"
+```
+For each result, check the issue history for the transition sequence. A violation looks like: `In Dev → Done` with no `In Review` entry in between. Filter out issues whose resolving commit has no `src/` file changes (Cowork docs-only merges — expected to skip In Review per grey-zone resolution).
+
 **How to apply:**
-- After implementation, push the commit with `Fixes THR-XX` in the body. Don't touch the issue state — the merge to `main` triggers the close automatically.
+- After implementation, push the commit with `Fixes THR-XX` in the body. Don't touch the issue state — the merge to `main` triggers the `In Review` transition automatically.
 - If you think an issue shouldn't exist or the description is wrong: comment explaining why, leave the state as-is, surface it for human review.
 
 ### Rule 4 — Read the most recent comment before acting

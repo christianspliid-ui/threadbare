@@ -1,0 +1,164 @@
+name: Claude Review
+
+# Fires when a PR is merged to main.
+# Job 1 (placeholder): emits a review verdict. THR-182 will replace this with an
+#   actual structural review of the PR diff. Until then, verdict = 'skip', which
+#   leaves issues in In Review (they accumulate as the consistency-tax grey zone
+#   per THR-249 § Three-pillar grey zone).
+# Job 2: transitions referenced Linear issues from In Review → Done, but only
+#   when verdict = 'pass'. This enforces the merge-gated Rule 3 invariant:
+#   Done means merged AND reviewed.
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  review:
+    name: Structural review
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    outputs:
+      verdict: ${{ steps.verdict.outputs.verdict }}
+
+    steps:
+      # THR-182: replace this placeholder with the real review invocation.
+      # When the review Action ships, this step runs the review and outputs
+      # 'pass', 'minor', or 'major'. Until then it outputs 'skip' so that
+      # issues stay in In Review rather than auto-closing without a review.
+      - name: Emit review verdict
+        id: verdict
+        run: echo "verdict=skip" >> "$GITHUB_OUTPUT"
+
+  transition-to-done:
+    name: Transition reviewed issues to Done
+    needs: [review]
+    if: |
+      github.event.pull_request.merged == true &&
+      needs.review.outputs.verdict == 'pass'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Transition Linear issues In Review → Done
+        env:
+          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const apiKey = process.env.LINEAR_API_KEY;
+            if (!apiKey) {
+              console.log('LINEAR_API_KEY secret not set — skipping Linear transition');
+              return;
+            }
+
+            // Parse Fixes/Closes/Resolves THR-NNN from the merge commit body.
+            const mergeCommitSha = context.payload.pull_request.merge_commit_sha;
+            if (!mergeCommitSha) {
+              console.log('No merge commit SHA — skipping');
+              return;
+            }
+
+            const { data: commit } = await github.rest.git.getCommit({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: mergeCommitSha,
+            });
+
+            const keywords = ['fixes', 'closes', 'resolves'];
+            const pattern = /(?:fixes|closes|resolves)\s+(THR-\d+)/gi;
+            const issueIds = new Set();
+            for (const [, id] of commit.message.matchAll(pattern)) {
+              issueIds.add(id.toUpperCase());
+            }
+
+            if (!issueIds.size) {
+              console.log('No Linear issues referenced in merge commit — nothing to transition');
+              return;
+            }
+
+            console.log(`Issues to transition In Review → Done: ${[...issueIds].join(', ')}`);
+
+            async function linearGql(query, variables = {}) {
+              const res = await fetch('https://api.linear.app/graphql', {
+                method: 'POST',
+                headers: {
+                  Authorization: apiKey,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query, variables }),
+              });
+              if (!res.ok) throw new Error(`Linear API HTTP ${res.status}`);
+              return res.json();
+            }
+
+            let anyFailed = false;
+
+            for (const issueId of issueIds) {
+              // Review-action traces (per plan doc § Tracing):
+              console.log(JSON.stringify({ type: 'review-action.linear-transition.attempt', issueId, fromState: 'In Review', toState: 'Done' }));
+
+              const result = await linearGql(`
+                query GetIssue($id: String!) {
+                  issue(id: $id) {
+                    id
+                    title
+                    state { name type }
+                    team {
+                      states {
+                        nodes { id name type }
+                      }
+                    }
+                  }
+                }
+              `, { id: issueId });
+
+              const issue = result.data?.issue;
+              if (!issue) {
+                console.warn(`⚠️  ${issueId} not found in Linear`);
+                continue;
+              }
+
+              const { name: currentName } = issue.state;
+              if (currentName !== 'In Review') {
+                console.log(`ℹ️  ${issueId} is in "${currentName}", not "In Review" — skipping`);
+                continue;
+              }
+
+              // Resolve Done state ID at runtime (Option b from plan doc — robust to renames).
+              const doneState = issue.team.states.nodes.find(s => s.type === 'completed');
+              if (!doneState) {
+                console.warn(`⚠️  No completed workflow state found for team of ${issueId}`);
+                continue;
+              }
+
+              try {
+                const update = await linearGql(`
+                  mutation TransitionToDone($id: String!, $stateId: String!) {
+                    issueUpdate(id: $id, input: { stateId: $stateId }) {
+                      success
+                      issue { identifier state { name } }
+                    }
+                  }
+                `, { id: issue.id, stateId: doneState.id });
+
+                if (update.data?.issueUpdate?.success) {
+                  const newState = update.data.issueUpdate.issue.state.name;
+                  console.log(`✅ ${issueId} → ${newState}`);
+                  console.log(JSON.stringify({ type: 'review-action.linear-transition.success', issueId }));
+                } else {
+                  console.error(`❌ Failed to transition ${issueId}:`, JSON.stringify(update.errors ?? update));
+                  console.log(JSON.stringify({ type: 'review-action.linear-transition.error', issueId, errorMessage: JSON.stringify(update.errors ?? update) }));
+                  anyFailed = true;
+                }
+              } catch (err) {
+                // Idempotent on partial failures: log and continue (plan doc § Fail-soft).
+                console.error(`❌ Exception transitioning ${issueId}:`, err.message);
+                console.log(JSON.stringify({ type: 'review-action.linear-transition.error', issueId, errorMessage: err.message }));
+                anyFailed = true;
+              }
+            }
+
+            if (anyFailed) {
+              core.setFailed('One or more issues could not be transitioned — check logs above. Issues remain in In Review; Cowork or human can transition manually.');
+            }
