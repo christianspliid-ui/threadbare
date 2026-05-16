@@ -6,7 +6,7 @@ on:
 
 jobs:
   close-issues:
-    name: Close referenced Linear issues
+    name: Move referenced Linear issues to In Review
     runs-on: ubuntu-latest
 
     steps:
@@ -80,7 +80,7 @@ jobs:
                     state { name type }
                     team {
                       states {
-                        nodes { id type }
+                        nodes { id name type }
                       }
                     }
                   }
@@ -98,27 +98,53 @@ jobs:
                 console.log(`ℹ️  ${issueId} already closed (${currentName}) — skipping`);
                 continue;
               }
+              if (currentName === 'In Review') {
+                console.log(`ℹ️  ${issueId} already In Review — skipping (claude-review will close)`);
+                continue;
+              }
 
-              const doneState = issue.team.states.nodes.find(s => s.type === 'completed');
-              if (!doneState) {
-                console.warn(`⚠️  No completed workflow state found for team of ${issueId}`);
+              // THR-249: target In Review instead of Done. The claude-review workflow
+              // handles the In Review → Done transition after a passing review.
+              const inReviewState = issue.team.states.nodes.find(s => s.name === 'In Review');
+              if (!inReviewState) {
+                console.warn(`⚠️  No "In Review" workflow state found for team of ${issueId} — falling back to Done`);
+                const doneState = issue.team.states.nodes.find(s => s.type === 'completed');
+                if (!doneState) {
+                  console.warn(`⚠️  No completed workflow state found for team of ${issueId} either — skipping`);
+                  continue;
+                }
+                // Fallback: if the team has no In Review state, close to Done directly.
+                const fallback = await linearGql(`
+                  mutation CloseIssue($id: String!, $stateId: String!) {
+                    issueUpdate(id: $id, input: { stateId: $stateId }) {
+                      success
+                      issue { identifier state { name } }
+                    }
+                  }
+                `, { id: issue.id, stateId: doneState.id });
+                if (fallback.data?.issueUpdate?.success) {
+                  console.log(`✅ ${issueId} → ${fallback.data.issueUpdate.issue.state.name} (fallback — no In Review state)`);
+                } else {
+                  console.error(`❌ Failed to close ${issueId}:`, JSON.stringify(fallback.errors ?? fallback));
+                  anyFailed = true;
+                }
                 continue;
               }
 
               const update = await linearGql(`
-                mutation CloseIssue($id: String!, $stateId: String!) {
+                mutation MoveToInReview($id: String!, $stateId: String!) {
                   issueUpdate(id: $id, input: { stateId: $stateId }) {
                     success
                     issue { identifier state { name } }
                   }
                 }
-              `, { id: issue.id, stateId: doneState.id });
+              `, { id: issue.id, stateId: inReviewState.id });
 
               if (update.data?.issueUpdate?.success) {
                 const newState = update.data.issueUpdate.issue.state.name;
                 console.log(`✅ ${issueId} → ${newState}`);
               } else {
-                console.error(`❌ Failed to close ${issueId}:`, JSON.stringify(update.errors ?? update));
+                console.error(`❌ Failed to move ${issueId} to In Review:`, JSON.stringify(update.errors ?? update));
                 anyFailed = true;
               }
             }
