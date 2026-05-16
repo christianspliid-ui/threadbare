@@ -113,6 +113,8 @@ Create one Linear issue in the **Encounter Format Migration** project, label `De
 > **Title:** Format-level decision — populate `BranchAwareAftermathConfig.variants` for linear templates via `authoredChoices`
 > **Body:** Every migrated linear template ships `aftermathConfig.variants: {}` (empty) + a `fallback`. The sanctioned lever for richer *in-quest* player choice on linear templates (THR-191) is `authoredChoices` on an early step feeding `BranchAwareAftermathConfig.variants` keyed on the chosen `choiceId` — divergent aftermath *without* step-level `ActionStepBranch`. This is a **format-level** decision affecting all ~115 migrated templates, not a Lorekeepers-specific fix; it needs its own design pass (which template families benefit, authoring-cost budget, editorial guardrails). Deferred from THR-191.
 
+> **Resolved 2026-05-16 (THR-447):** Framework decision shipped — see `Docs/plans/2026-05-16-thr-447-aftermath-variants-format-decision.md`. Per-family content authoring tracked separately.
+
 ## 4. Three-pillar compliance
 
 | Pillar | Status | Rationale |
