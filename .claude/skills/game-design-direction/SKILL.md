@@ -6,15 +6,15 @@ description: >
   and the taste profile (strong opinions, soft patterns, anti-patterns),
   prompts Brainstorm-companion drafting alongside the plan, runs a pre-design
   debate when direction is uncertain, and runs a Vision audit at plan
-  finalization. Load alongside state-of-game-design for any In Design phase
-  work on player-facing features. Skip for pure-infrastructure design passes
-  where Vision premises are not in scope.
+  finalization. Load the state-of-game-design router first, then this skill,
+  for any In Design phase work on player-facing features. Skip for pure-infrastructure
+  design passes where Vision premises are not in scope.
 last_validated_against: 2026-05-15
 ---
 
 # Game Design Direction
 
-This skill runs **on top of** `state-of-game-design`. Load that skill first for cosmology, reaches, spheres, and architectural decisions. This skill assumes you already know the engine and focuses on *experience direction* — what the player feels, why each design decision matters to them, and how to keep the design coherent with the game's long-term target.
+This skill runs **on top of** `state-of-game-design`. Load the router first; for design-phase work pull in `reference/cosmology.md` (cosmology, reaches, spheres) + `reference/architectural-decisions.md` (NFP, settled decisions). This skill assumes you already know the engine and focuses on *experience direction* — what the player feels, why each design decision matters to them, and how to keep the design coherent with the game's long-term target.
 
 ---
 
@@ -248,11 +248,11 @@ Using the report as input, answer the five qualitative checks:
 
 ## Relationship to Other Skills
 
-`state-of-game-design` covers **what exists**: cosmology, reaches, spheres, graph architecture, CRUD actions, tick loop, architectural decisions. It is the mechanical foundation.
+`state-of-game-design` (router + shards) covers **what exists**: cosmology, reaches, spheres, graph architecture, CRUD actions, tick loop, architectural decisions. It is the mechanical foundation. Load the router first; the routing table directs you to `reference/cosmology.md` + `reference/architectural-decisions.md` for design-phase work.
 
 This skill covers **what we are aiming for**: the experience target, the reasoning behind the non-negotiables, the tensions that recur across designs. It assumes you already know the foundation.
 
-Load order: `state-of-game-design` first, then this skill. Never this skill alone — a design that is experience-coherent but mechanically wrong is still wrong.
+Load order: `state-of-game-design` router first (then its shards), then this skill. Never this skill alone — a design that is experience-coherent but mechanically wrong is still wrong.
 
 The Vision premises in this skill **do not duplicate** Systems/ content. They narrate the *why* behind decisions that Systems/ records as settled. If a Vision premise and a Systems/ page appear to contradict, the Systems/ page is current spec; the Vision premise may need updating. Flag it in the Vision audit.
 

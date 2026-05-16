@@ -14,7 +14,7 @@ Systematic health audit of the Obsidian vault. Checks for structural issues, con
 
 ## Prerequisites
 
-Load `state-of-game-design` first if you need cosmology/system context for cross-link analysis.
+Load the `state-of-game-design` router first if you need cosmology/system context for cross-link analysis; pull in `reference/cosmology.md` for cosmology or `reference/architectural-decisions.md` for system architecture.
 
 ## The Audit Process
 

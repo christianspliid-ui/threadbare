@@ -248,13 +248,13 @@ Work is not "done" until it is deployed and documented. Do all of these automati
 
 ## Domain Skills
 
-Context for specific problem types lives in on-demand skills. **Always load `state-of-game-design` first** — it provides the foundational cosmology, action system, and architectural context that all other skills depend on.
+Context for specific problem types lives in on-demand skills. **Always load the `state-of-game-design` router first** — it is a thin orientation file (~3 KB) that routes you to the reference shard your task needs (`reference/cosmology.md` for content/cosmology, `reference/verbs-resolution.md` for engine, `reference/architectural-decisions.md` for plan/audit, `reference/deprecated.md` when proposing a pattern that might be rejected). Load only the shard(s) you need, not all four.
 
 **For any prose, narrative, or content work** — choose the right prose skill: `prose-pipeline` for resolver architecture, `prose-content-systems` for encounter templates and day-to-day content, `prose-vignettes-and-enrichment` for enrichment placeholders and vignettes.
 
 | Domain | Skill | When to load |
 |--------|-------|-------------|
-| **Foundational (load first)** | `state-of-game-design` | Always — before any other domain skill. Cosmology, reaches, spheres, action verbs, prerequisites, architectural decisions. |
+| **Foundational (load first — router)** | `state-of-game-design` | Always — before any other domain skill. Thin router (~3 KB); follow routing table to load the specific shard(s) you need. |
 | Engine & code architecture | `engine-architecture` | Writing engine modules, tick loop work, tracing, resolution, PRNG |
 | Frontend & UI | `frontend-ui` | Building components, styling, accessibility, layout at 1920–3440px. Loads `Docs/design-system/` |
 | Prose — resolver architecture | `prose-pipeline` | Implementing new resolvers, modifying the prose pipeline, understanding graph-walking prose generation. Includes Threadbare aesthetic and authoring checklist. |
