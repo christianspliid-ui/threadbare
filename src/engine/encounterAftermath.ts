@@ -376,6 +376,44 @@ export function applyEncounterAftermathReaction(
     summary: `Aftermath reaction ${reaction.id} (${encounterId}): ${reaction.effects.map(e => e.kind).join(', ')}`,
   });
 
+  // THR-384: Per-reaction dedup pre-pass for intel_referenced_prose.
+  // Builds a winner map (recordId → winning effectIndex + significance) so the main
+  // loop can suppress duplicate record firings within a single reaction.
+  // Also memoises findIntelReferencedProseMatch so each effect resolves exactly once.
+  const intelProseMemo = new Map<number, IntelligenceRecord | undefined>();
+  const intelProseWinnerByRecordId = new Map<string, { effectIndex: number; significance: number }>();
+  for (let pi = 0; pi < reaction.effects.length; pi++) {
+    const pe = reaction.effects[pi];
+    if (pe.kind !== 'intel_referenced_prose') continue;
+    const pTarget = resolveAftermathTarget(pe, action);
+    // A when=false effect must not claim a record and suppress a sibling that would fire.
+    if (pe.when !== undefined) {
+      const pEffectiveTargetId = pTarget.kind !== 'actor_fallback' ? pTarget.id : (actorAgentId ?? '');
+      let pWhenCtx: import('../types/effects').PredicateContext | undefined;
+      if (pEffectiveTargetId) {
+        pWhenCtx = buildPredicateContext(
+          state.graph, pEffectiveTargetId, undefined,
+          action?.templateId, state.hiddenMarks, state.intelligenceRecords,
+        );
+      }
+      if (!evaluateOptionalCondition(pe.when, pWhenCtx)) continue;
+    }
+    const pTargetAgentId = pe.targetAgentId ?? (pTarget.kind === 'agent' ? pTarget.id : actorAgentId);
+    if (!pTargetAgentId) continue;
+    const pMatched = findIntelReferencedProseMatch(state, pTargetAgentId, pe.category, action);
+    intelProseMemo.set(pi, pMatched);
+    if (!pMatched) continue;
+    const pBand = reliabilityDescriptor(pMatched.reliability);
+    const pSig = pe.significance
+      ?? (pBand === 'reliable' ? INTEL_REFERENCED_PROSE_SIGNIFICANCE_RELIABLE
+        : pBand === 'uncertain' ? INTEL_REFERENCED_PROSE_SIGNIFICANCE_UNCERTAIN
+          : INTEL_REFERENCED_PROSE_SIGNIFICANCE_DUBIOUS);
+    const existing = intelProseWinnerByRecordId.get(pMatched.recordId);
+    if (!existing || pSig > existing.significance || (pSig === existing.significance && pi < existing.effectIndex)) {
+      intelProseWinnerByRecordId.set(pMatched.recordId, { effectIndex: pi, significance: pSig });
+    }
+  }
+
   for (let i = 0; i < reaction.effects.length; i++) {
     const effect = reaction.effects[i];
     const target = resolveAftermathTarget(effect, action);
@@ -1001,7 +1039,9 @@ export function applyEncounterAftermathReaction(
           break;
         }
 
-        const matched = findIntelReferencedProseMatch(state, targetAgentId, effect.category, action);
+        const matched = intelProseMemo.has(i)
+          ? intelProseMemo.get(i)
+          : findIntelReferencedProseMatch(state, targetAgentId, effect.category, action);
         if (!matched) {
           emitTrace({
             tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
@@ -1011,6 +1051,27 @@ export function applyEncounterAftermathReaction(
             success: false, failReason: 'no_matching_record',
             effectiveTargetId: targetAgentId, effectiveTargetKind: 'agent',
             summary: `intel_referenced_prose[${i}] no-op: ${targetAgentId} has no actionable ${effect.category} record for ${encounterId}`,
+          });
+          break;
+        }
+
+        // THR-384: Dedup guard — suppress this effect if a higher-significance winner
+        // for the same record was found in the pre-pass.
+        const winner = intelProseWinnerByRecordId.get(matched.recordId);
+        if (winner && winner.effectIndex !== i) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'intel_referenced_prose',
+            effectDetail: {
+              category: effect.category,
+              recordId: matched.recordId,
+              targetAgentId,
+              winningEffectIndex: winner.effectIndex,
+            },
+            success: false, failReason: 'skipped_duplicate_record',
+            effectiveTargetId: targetAgentId, effectiveTargetKind: 'agent',
+            summary: `intel_referenced_prose[${i}] skipped: record ${matched.recordId} already claimed by effect[${winner.effectIndex}] in this reaction`,
           });
           break;
         }
