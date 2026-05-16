@@ -1,5 +1,7 @@
 # THR-96 · Lorekeepers Covenant Encounters — Design Delta
 
+> **Superseded note (2026-05-15, THR-191):** The instruction in this doc to use step-level `ActionStepBranch` on ≥3 Lorekeepers templates is **superseded**. THR-191 decided `ActionStepBranch` is exclusive to branching encounters; linear-template encounters (including all Lorekeepers Covenant templates) intentionally do not use it. The 15 templates as shipped are correct. See `Docs/plans/2026-05-15-thr-191-actionstepbranch-linear-template-scope.md`.
+
 > Parent project: **Encounter Format Migration** (Now, Urgent) · Phase 2 — Remaining Guilds
 > Pattern parents: THR-89 (Thieves Guild pilot, Done) · THR-91 (Arcane Circle, Done) · THR-92 (Civic Guard, Done) · THR-93 (Builders Fellowship, Done) · THR-97 (Rangers Brotherhood, Done) · THR-95 (Holy Order of Dawn, Ready for Dev — sibling delta)
 > Skill: `.claude/skills/template-encounter-rewrite/SKILL.md`
