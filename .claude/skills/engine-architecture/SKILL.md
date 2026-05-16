@@ -12,7 +12,7 @@ last_validated_against: 2026-05-08
 
 > **Step 0 — Canon page (read first):** [`Docs/canon/engine.md`](../../../Docs/canon/engine.md). This is your single-page navigation layer — current spec pointers, NFP order, load-bearing decisions, rejected approaches, open questions. Everything else this skill teaches is the deep context behind those pointers. If the Canon page contradicts an older note in this file, the Canon page wins.
 >
-> **Prerequisite:** Load `state-of-game-design` first for foundational context.
+> **Prerequisite:** Load the `state-of-game-design` router first; for engine work pull in `reference/verbs-resolution.md` (verbs, resolution, Maslow) + `reference/architectural-decisions.md` (NFP, settled decisions).
 
 This skill provides the deep engine context that the root CLAUDE.md intentionally omits to keep context lean. Load this before writing or modifying any engine code.
 
@@ -115,7 +115,7 @@ Agents use a six-layer Maslow-inspired pipeline (survival → self-actualization
 
 ## Action System
 
-> Covered by `state-of-game-design`. Load that skill first for the full action system context (5 verbs, 119+ templates, targeting pipeline).
+> Covered by `state-of-game-design/reference/verbs-resolution.md`. Load the router first; the routing table directs engine work to that shard (5 verbs, 119+ templates, targeting pipeline, resolution, Maslow).
 
 ## Generalized Action Targeting
 

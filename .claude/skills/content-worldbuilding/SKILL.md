@@ -10,13 +10,13 @@ last_validated_against: 2026-05-08
 
 # Content & Worldbuilding — Domain Context
 
-> **Prerequisite:** Load `state-of-game-design` first for foundational context.
+> **Prerequisite:** Load the `state-of-game-design` router first; it routes to `reference/cosmology.md` for content/cosmology work.
 
 This skill provides the content system and worldbuilding context. Load this before working on content packages, graph data, narrative systems, or anything touching the game's fictional universe.
 
 ## Cosmology
 
-> Covered by `state-of-game-design`. Load that skill first.
+> Covered by `state-of-game-design/reference/cosmology.md`. Load the router first; the routing table will direct you to this shard.
 > For the canonical reference: Obsidian → `TheFantasyWorldSimulator/Cosmology/Spheres and Reaches.md`
 
 ## Action Verbs (5)
@@ -53,7 +53,7 @@ Player iteration options: regenerate, lock+regenerate, edit, parameter nudge. Pl
 
 ## Graph Data Model
 
-> Graph-first principle covered by `state-of-game-design`. Load that skill first.
+> Graph-first principle covered by `state-of-game-design/reference/architectural-decisions.md`. Load the router first; it routes to that shard for architectural context.
 
 Current stats: 244 nodes, 371 typed edges, 18 categories, 19 content packages.
 

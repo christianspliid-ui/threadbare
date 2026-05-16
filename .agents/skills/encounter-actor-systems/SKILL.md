@@ -14,7 +14,7 @@ last_validated_against: 2026-05-08
 
 # Encounter & Actor Systems — Analysis, Debugging & Iteration
 
-> **Prerequisite:** Load `state-of-game-design` first for foundational cosmology and reaches/spheres context.
+> **Prerequisite:** Load the `state-of-game-design` router first; for encounter work pull in `reference/cosmology.md` (Reaches/Spheres) + `reference/verbs-resolution.md` (verbs, resolution, prerequisites).
 > **Step 0 (Canon pre-read):** Read `Docs/canon/agents.md` and `Docs/canon/encounters.md` before using this skill. This skill spans both domains; both canon pages are required context.
 
 This skill is for **working with** the encounter and actor systems — debugging pipelines, tuning constants, understanding why agents behave a certain way, iterating on encounter design, and keeping reference documentation current. For *authoring new encounter content*, use `encounter-pipeline` instead.
@@ -419,5 +419,5 @@ Update these files whenever:
 | `attachment-pipeline` | *Authoring* new attachments using the primitive vocabulary |
 | `agent-analyser` | Post-hoc *analysis* of exported encounter log TSVs |
 | `engine-architecture` | General engine patterns (tracing, PRNG, fail-soft, graph ops) |
-| `state-of-game-design` | Foundational context (cosmology, reaches, spheres, action system) |
+| `state-of-game-design` (router) | Foundational context — routes to `reference/cosmology.md` (cosmology, reaches, spheres) + `reference/verbs-resolution.md` (action system) |
 | `testing-patterns` | Writing tests for encounter/actor changes |

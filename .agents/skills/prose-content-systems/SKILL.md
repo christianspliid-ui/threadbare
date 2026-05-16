@@ -34,7 +34,7 @@ If the Canon page disagrees with this skill, the Canon page wins until this skil
 
 ## Content Quality Enforcement — READ FIRST
 
-**Prerequisite 1:** Load `state-of-game-design` (Part 0: Game Design Direction) before authoring any content. Every template, prose line, and content table entry is a player experience, not a data record.
+**Prerequisite 1:** Load the `state-of-game-design` router, then `reference/cosmology.md` (which contains Part 0: Game Design Direction) before authoring any content. Every template, prose line, and content table entry is a player experience, not a data record.
 
 **Prerequisite 2:** Read `Docs/plans/2026-04-16-systemic-wiring-guide.md` — the systemic wiring guide. This document explains the seven engine capabilities (enrichment placeholders, encounter seeding, hidden marks, reputation flow, graph ops, intelligence, divine intervention) that should shape what you decide to write. If a narrative field contains no `{placeholder}` syntax, no conditional blocks, and the aftermath has no seeds or marks — ask whether you're writing game content or a book page. The guide includes a wiring checklist and worked example.
 
