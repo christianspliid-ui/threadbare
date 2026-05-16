@@ -229,3 +229,139 @@ describe('applyEncounterAftermathReaction — intel_referenced_prose (THR-139)',
     expect(result.state.tickEvents[0].significance).toBe(0.77);
   });
 });
+
+// ─── THR-384: Reaction-level dedup tests ──────────────────────────────────────
+
+describe('applyEncounterAftermathReaction — intel_referenced_prose dedup (THR-384)', () => {
+  let runtime: SimulationRuntime;
+  beforeEach(() => { clearTraces(); enableTracing(); runtime = createSimulationRuntime(); });
+  afterEach(() => { clearTraces(); disableTracing(); });
+
+  it('fires exactly one chronicle line when two effects resolve to the same record', () => {
+    const state = makeState([INTEL_RELIABLE]);
+    const reaction = makeReaction({
+      effects: [
+        { kind: 'intel_referenced_prose', category: 'cultural_knowledge', prose: { reliable: 'first prose' } },
+        { kind: 'intel_referenced_prose', category: 'cultural_knowledge', prose: { reliable: 'second prose' } },
+      ],
+    });
+
+    const result = applyEncounterAftermathReaction(state, makeAction(), reaction, 50, runtime);
+
+    const narrativeEvents = result.state.tickEvents.filter(e => e.type === 'narrative');
+    expect(narrativeEvents.length).toBe(1);
+  });
+
+  it('fires the higher-significance effect when two effects resolve to the same record', () => {
+    const state = makeState([INTEL_RELIABLE]);
+    const reaction = makeReaction({
+      effects: [
+        { kind: 'intel_referenced_prose', category: 'cultural_knowledge', prose: { reliable: 'low sig prose' }, significance: 0.3 },
+        { kind: 'intel_referenced_prose', category: 'cultural_knowledge', prose: { reliable: 'high sig prose' }, significance: 0.8 },
+      ],
+    });
+
+    const result = applyEncounterAftermathReaction(state, makeAction(), reaction, 50, runtime);
+
+    const narrativeEvents = result.state.tickEvents.filter(e => e.type === 'narrative');
+    expect(narrativeEvents.length).toBe(1);
+    expect(narrativeEvents[0].message).toBe('high sig prose');
+  });
+
+  it('breaks ties by lowest effect index (effect[0] wins over effect[1] at equal significance)', () => {
+    const state = makeState([INTEL_RELIABLE]);
+    // Both effects use band-default significance (0.6 for reliable) — equal, so index 0 wins.
+    const reaction = makeReaction({
+      effects: [
+        { kind: 'intel_referenced_prose', category: 'cultural_knowledge', prose: { reliable: 'first-index prose' } },
+        { kind: 'intel_referenced_prose', category: 'cultural_knowledge', prose: { reliable: 'second-index prose' } },
+      ],
+    });
+
+    const result = applyEncounterAftermathReaction(state, makeAction(), reaction, 50, runtime);
+
+    const narrativeEvents = result.state.tickEvents.filter(e => e.type === 'narrative');
+    expect(narrativeEvents.length).toBe(1);
+    expect(narrativeEvents[0].message).toBe('first-index prose');
+  });
+
+  it('emits a skipped_duplicate_record trace with winningEffectIndex for the suppressed effect', () => {
+    const state = makeState([INTEL_RELIABLE]);
+    // Effect[0] low sig (0.3), effect[1] high sig (0.8) → effect[1] is winner (index 1).
+    const reaction = makeReaction({
+      effects: [
+        { kind: 'intel_referenced_prose', category: 'cultural_knowledge', prose: { reliable: 'low sig' }, significance: 0.3 },
+        { kind: 'intel_referenced_prose', category: 'cultural_knowledge', prose: { reliable: 'high sig' }, significance: 0.8 },
+      ],
+    });
+
+    applyEncounterAftermathReaction(state, makeAction(), reaction, 50, runtime);
+
+    const skipTrace = getTraces().find(t =>
+      t.category === 'encounter_aftermath_effect'
+      && (t as { failReason?: string }).failReason === 'skipped_duplicate_record',
+    );
+    expect(skipTrace).toBeDefined();
+    const detail = (skipTrace as { effectDetail?: { winningEffectIndex?: number; recordId?: string } }).effectDetail;
+    expect(detail?.winningEffectIndex).toBe(1);
+    expect(detail?.recordId).toBe('intel_reliable_1');
+  });
+
+  it('fires both effects when they resolve to different records (no suppression)', () => {
+    const intelTerrain: IntelligenceRecord = {
+      recordId: 'intel_terrain_1',
+      agentId: 'actor-1',
+      category: 'terrain_knowledge',
+      label: 'Rocky slopes',
+      detail: 'Hard to traverse.',
+      targetEntityId: 'loc-grove',
+      sourceEncounterId: 'encounter.survey',
+      acquiredTick: 12,
+      reliability: 0.85,
+    };
+    const state = makeState([INTEL_RELIABLE, intelTerrain]);
+    const reaction = makeReaction({
+      effects: [
+        { kind: 'intel_referenced_prose', category: 'cultural_knowledge', prose: { reliable: 'cultural line' } },
+        { kind: 'intel_referenced_prose', category: 'terrain_knowledge', prose: { reliable: 'terrain line' } },
+      ],
+    });
+
+    const result = applyEncounterAftermathReaction(state, makeAction(), reaction, 50, runtime);
+
+    const narrativeEvents = result.state.tickEvents.filter(e => e.type === 'narrative');
+    expect(narrativeEvents.length).toBe(2);
+    const messages = narrativeEvents.map(e => e.message);
+    expect(messages).toContain('cultural line');
+    expect(messages).toContain('terrain line');
+  });
+
+  it('does not let a when=false effect claim a record and suppress a when=true sibling', () => {
+    const state = makeState([INTEL_RELIABLE]);
+    // Effect[0]: when=false (has_mark with nonexistent mark), high significance — must not win.
+    // Effect[1]: no when, low significance — must fire because effect[0] is excluded.
+    const reaction = makeReaction({
+      effects: [
+        {
+          kind: 'intel_referenced_prose',
+          category: 'cultural_knowledge',
+          prose: { reliable: 'when-false prose' },
+          significance: 0.9,
+          when: 'has_mark:nonexistent_mark_xyz',
+        },
+        {
+          kind: 'intel_referenced_prose',
+          category: 'cultural_knowledge',
+          prose: { reliable: 'when-true prose' },
+          significance: 0.3,
+        },
+      ],
+    });
+
+    const result = applyEncounterAftermathReaction(state, makeAction(), reaction, 50, runtime);
+
+    const narrativeEvents = result.state.tickEvents.filter(e => e.type === 'narrative');
+    expect(narrativeEvents.length).toBe(1);
+    expect(narrativeEvents[0].message).toBe('when-true prose');
+  });
+});
