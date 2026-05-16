@@ -1,5 +1,5 @@
 # Project Status
-> Updated 2026-05-15 (THR-383, THR-75, THR-425, THR-380).
+> Updated 2026-05-16 (THR-191).
 
 ## Current Focus
 **Encounter Experience — active:** Phases A1–A3, B1–B7, C1–C4, D1–D3, E1–E2, F1–F2, G1–G3 ✅. Remaining is F-phase integration (mount EffectRegistration components into hero panel / cast tile / scene state surfaces) and Phase H post-v1 polish.
@@ -27,6 +27,7 @@
 - 2026-05-12 batch: THR-413, THR-404, THR-397, THR-398, THR-399, THR-401, THR-405, THR-416, THR-409, THR-395, THR-412, THR-422, THR-423, THR-418, THR-424, THR-400, THR-11
 - 2026-05-14 batch: THR-12, THR-430, THR-432, THR-433, THR-415, THR-410, THR-385
 - 2026-05-15 batch: THR-163, THR-383, THR-386, THR-425, THR-75, THR-380, THR-384
+- 2026-05-16 batch: THR-191
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
@@ -34,6 +35,7 @@
 - TB-071 Economy Second Pass · TB-069 Location NPCs · TB-051 Monster Encounters residual · TB-037 Onboarding
 
 Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Completed work: `Docs/project-history.md` + Linear "Done" state · Pre-Linear history: `.planning/BACKLOG_HISTORY.md`
+- ✅ 2026-05-16: THR-191 shipped — ActionStepBranch scope governance (THR-96 deferral). Documented that step-level ActionStepBranch is exclusive to branching encounters; linear-template encounters (guild/social/tavern/combat/borderland, incl. 15 Lorekeepers Covenant templates) use aftermath reactions + BranchAwareAftermathConfig.variants. Five doc edits: unifiedAction.ts JSDoc, encounters.md Rejected Approaches, template-encounter-rewrite skill, encounter-building-checklist.md, THR-96 plan doc superseded note. Plan doc committed (flush-plan-docs had bounced twice). THR-447 filed as Deferral for BranchAwareAftermathConfig.variants format design. PR #306.
 - ✅ 2026-05-16: THR-384 shipped — reaction-level dedup for `intel_referenced_prose`. Pre-pass builds `Map<recordId, {effectIndex, significance}>` before the main effect loop; highest-significance wins (tie-break: lowest index). Effects claiming an already-won record skip via `skipped_duplicate_record` trace with `effectDetail.winningEffectIndex`. `when=false` effects excluded from pre-pass so they cannot suppress active siblings. `findIntelReferencedProseMatch` calls memoized per-effect to avoid double invocation. 6 new tests (dedup, tie-break, when-exclusion, different-records); 11,429 total pass, tsc clean, vite build clean. PR pending.
 - ✅ 2026-05-15: THR-386 shipped — `intel_referenced_prose` category lint guard (THR-139 deferral). Advisory lint that warns when an effect's category is implausibly wired. Two-rule heuristic: co-traffic (primary) + structural substring (fallback). 10 correctness tests; 0 warnings against current corpus (3 effects, 621 templates). `npm run lint:intel-prose-category`. PR #300.
 - ✅ 2026-05-15: THR-425 shipped — Stagger Linear MCP pollers. `CLAUDE.md § Scheduled Tasks` replaced with canonical 12-row quarter-hour slot table + slot-allocation principle. Coordination protocol rate-limit bullet (c) rewritten to point at CLAUDE.md instead of hardcoding :00/:30. Impediments #79 and #108 marked resolved. Out-of-repo cron edits (items 5–7) pending user confirmation in interactive session.

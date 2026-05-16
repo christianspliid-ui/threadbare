@@ -583,6 +583,16 @@ export interface ActionStep {
  * A branching step definition — the step to execute depends on
  * which choice the player made at a prior step.
  * Discriminated from ActionStep by the presence of `branchOnStep`.
+ *
+ * SCOPE (THR-191): step-level branching is exclusive to *branching
+ * encounters* in `src/data/encounters/` (authored via the
+ * `encounter-pipeline` skill). Linear-template encounters — guild,
+ * social, tavern, combat, borderland — must NOT use ActionStepBranch.
+ * Their player-choice surface is aftermath reactions and, optionally,
+ * `BranchAwareAftermathConfig.variants`. If a linear template needs a
+ * mid-quest fork, that is a signal it should be promoted to a branching
+ * encounter, not that the linear format should carry step branching.
+ * See `Docs/plans/2026-05-15-thr-191-actionstepbranch-linear-template-scope.md`.
  */
 export interface ActionStepBranch {
   /** Step index (0-based) whose choiceId determines the variant. */

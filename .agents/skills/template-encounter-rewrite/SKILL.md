@@ -9,7 +9,7 @@ description: >
   quality", "social encounter rewrite", "tavern encounter rewrite", "template
   encounter", "encounter quality pass", "prose quality pass", "write encounter".
 model: opus
-last_validated_against: 2026-05-12
+last_validated_against: 2026-05-15
 ---
 
 > **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
@@ -20,7 +20,7 @@ This skill is for writing or improving **linear template encounters** in `Unifie
 
 All encounters now use `UnifiedActionTemplate`. `EncounterTemplate` was removed in THR-108. If you see a file still exporting `EncounterTemplate[]`, stop — that's a type error that must be fixed before authoring prose.
 
-**This skill is NOT for branching encounters** (the hand-authored `ActionStepBranch` format in `src/data/encounters/`). Those use the `encounter-pipeline` skill.
+**This skill is NOT for branching encounters** (the hand-authored `ActionStepBranch` format in `src/data/encounters/`). Those use the `encounter-pipeline` skill. Do not add `ActionStepBranch` (step-level `branchOnStep`/`variants`) to a linear template — if a template needs a mid-quest fork, that is a signal it should be a branching encounter, not a reason to branch a linear step. The linear choice surface is aftermath reactions + optional `BranchAwareAftermathConfig.variants` (THR-191).
 
 ## Step 0 — Canon-First Pre-Read
 

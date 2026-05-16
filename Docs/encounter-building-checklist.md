@@ -479,6 +479,7 @@ If the encounter wants one of these missing primitive families, stop and mark it
 
 The following branching capabilities are now **live runtime primitives** (as of 2026-04-04):
 - **Remembered choice paths that later prose reads** — `ActionStepBranch` with `branchOnStep` + `variants` keyed by `choiceId`. Resolved via `resolveStepDefinition()` in `unifiedActionLifecycle.ts`.
+  - **Subtype scope (THR-191):** `ActionStepBranch` / `BranchAwareAftermathConfig` *step-level* branching is for **branching encounters only** (`src/data/encounters/`). Linear-template encounters use aftermath reactions + optional `BranchAwareAftermathConfig.variants`; they must not carry step-level `ActionStepBranch`.
 - **Step-specific authored choice variants depending on prior path memory** — same mechanism. Step 2 can be an entirely different `ActionStep` (different prose, reach, difficulty, outcomes) depending on the choice at step 1.
 - **Branch-aware aftermath** — `BranchAwareAftermathConfig` on `UnifiedActionTemplate`. Different overview, changes, and reaction choices per branch path. Resolved at aftermath assembly time.
 
