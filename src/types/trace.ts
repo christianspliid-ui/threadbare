@@ -835,10 +835,16 @@ export interface ScoringTrace extends TraceBase {
     resistBenefit?: number;
     /** Doom identity + omen bias applied for this encounter type (THR-81) */
     identityBiasBonus?: number;
+    /** Novelty pressure multiplier (1.0 = no pressure, <1.0 = penalized by recency/quota). THR-453 */
+    noveltyMultiplier?: number;
   }>;
   selectedTemplateId: string | null;
   selectedLocationId: string | null;
   action: 'start_local' | 'queue_movement' | 'attempt_remote' | 'idle';
+  /** True when novelty pressure changed which template was selected vs the pre-novelty winner. THR-453 */
+  noveltyChangedSelection?: boolean;
+  /** Template ID that would have won without novelty pressure (only set when noveltyChangedSelection=true). THR-453 */
+  preNoveltyWinnerId?: string | null;
 }
 
 /** Trace: agent advanced one hex along a road during movement */
