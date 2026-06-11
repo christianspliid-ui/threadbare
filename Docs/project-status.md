@@ -1,5 +1,5 @@
 # Project Status
-> Updated 2026-05-16.
+> Updated 2026-06-11.
 
 ## Current Focus
 **Encounter Experience — active:** Phases A1–A3, B1–B7, C1–C4, D1–D3, E1–E2, F1–F2, G1–G3 ✅. Remaining is F-phase integration (mount EffectRegistration components into hero panel / cast tile / scene state surfaces) and Phase H post-v1 polish.
@@ -31,6 +31,7 @@
 - TB-071 Economy Second Pass · TB-069 Location NPCs · TB-051 Monster Encounters residual · TB-037 Onboarding
 
 Full backlog: [Linear (Threadbare team)](https://linear.app/threadbare) · Completed work: `Docs/project-history.md` + Linear "Done" state · Pre-Linear history: `.planning/BACKLOG_HISTORY.md`
+- ✅ 2026-06-11: THR-406 closeout completed — canonical vault now contains `Vision/{README,00-north-star,01-core-loop,02-non-negotiables,03-design-tensions}.md` plus `Brainstorms/2026-04-20-vision-layer.md`; `Index.md` lists the Vision set and vault `log.md` records the promotion from the old `thr-308` worktree. Repo-side closeout was the missing piece.
 - ✅ 2026-05-11: THR-393 shipped — WIP=1 gate now enforced in pull-work skill (Step 1.5) and coordination protocol (CC + Codex pickup Step 4 hard-gate wording). Hourly cron now exits cleanly when a PR is in-flight. Impediment #131 logged (cron-interval UI constraint).
 - ✅ 2026-05-11: THR-408 shipped — `action-catalog-design` skill landed in both skill trees. Enforces three pre-flight checks (Substrate Honesty, Mortal-Loop Bridge, Surface-Shape Check) before any catalog-expansion design pass. Prevents the catalog-expansion drift pattern surfaced in THR-400 audit.
 - ✅ 2026-05-11: THR-411 shipped — `intent-judge` skill landed. Four-way verdict (Allow/Revise/Block/Escalate), 10 judging dimensions, deterministic aggregation rubric, anti-correlation rules. Slots into CLAUDE.md design workflow as Step 8.5 between Three-pillar check and Vision audit. `/intent-judge <path>` for manual runs.
