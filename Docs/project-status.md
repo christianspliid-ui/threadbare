@@ -1,7 +1,9 @@
 # Project Status
-> Updated 2026-05-16.
+> Updated 2026-06-11.
 
 ## Current Focus
+**THR-406 complete (2026-06-11) — Vision vault promotion closeout.** Verified the canonical Obsidian vault already contains the six artifacts promoted from the old `thr-308` Codex worktree on 2026-05-11: `Vision/00-north-star.md`, `Vision/01-core-loop.md`, `Vision/02-non-negotiables.md`, `Vision/03-design-tensions.md`, `Vision/README.md`, and `Brainstorms/2026-04-20-vision-layer.md`. Confirmed `C:\Users\chris\Dev\Obsidian\TheFantasyWorldSimulator\Index.md` lists the Vision pages and `log.md` already records the promotion verdict (`Vision/` stays vault-only). This closeout lands the missing repo audit trail only — changelog/history/status entries — so the executor side can merge-close the otherwise stranded Linear issue without redoing the vault work.
+
 **Encounter Experience — active:** Phases A1–A3, B1–B7, C1–C4, D1–D3, E1–E2, F1–F2, G1–G3 ✅. Remaining is F-phase integration (mount EffectRegistration components into hero panel / cast tile / scene state surfaces) and Phase H post-v1 polish.
 
 ## Milestone Status
