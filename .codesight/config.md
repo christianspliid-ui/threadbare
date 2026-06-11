@@ -9,6 +9,7 @@
 - `LINEAR_API_KEY` **required** — scripts\check-process.ts
 - `NANOBANANANA_API_KEY` (has default) — .env.example
 - `NODE_ENV` **required** — src\components\Game\GuildQuestPanel.tsx
+- `OBSIDIAN_VAULT_PATH` **required** — scripts\drift-scan\index.ts
 - `OBSIDIAN_VAULT_ROOT` **required** — scripts\enhance-frontmatter.ts
 - `PROCESS_CHECK_FILES` **required** — scripts\check-process.ts
 - `PROCESS_CHECK_LINEAR_LOOKBACK_DAYS` **required** — scripts\check-process.ts
@@ -17,7 +18,6 @@
 - `REVIEW_HEARTBEAT_INTERVAL_SEC` **required** — scripts\review\wrapper.ts
 - `REVIEW_SIGTERM_GRACE_SEC` **required** — scripts\review\wrapper.ts
 - `REVIEW_WALL_CLOCK_TIMEOUT_SEC` **required** — scripts\review\wrapper.ts
-- `VERCEL_OIDC_TOKEN` (has default) — .env.local
 
 ## Config Files
 

@@ -65,6 +65,7 @@ import { SPHERE_OPPOSITES } from './cosmology';
 import { SPHERE_NAMES } from '../types/index';
 import type { EffectRuntimeState } from '../types/effects';
 import { getBehaviorWeights, computeBehaviorWeightMultiplier } from './effects/effectQueries';
+import type { EligibilityFunnelCounters } from './kpi/gameplayKpi';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {
@@ -731,6 +732,11 @@ export function computeRoleAffinityMultiplier(
  * Score all candidate encounter cache entries for an agent and select
  * the highest-scoring one. Deterministic: same inputs → same output.
  */
+/** Minimal runtime view needed by encounter scoring for funnel counters. */
+interface ScoringRuntime {
+  eligibilityFunnel: EligibilityFunnelCounters | null;
+}
+
 export function scoreAndSelect(
   candidates: readonly EncounterCacheEntry[],
   agentId: string,
@@ -746,6 +752,7 @@ export function scoreAndSelect(
   hiddenMarks?: readonly HiddenMark[],
   /** Active intelligence records for this agent — actionable intel boosts scoring (THR-113). */
   intelligenceRecords?: readonly IntelligenceRecord[],
+  runtime?: ScoringRuntime,
 ): DecisionResult {
   // Fail-soft: missing agent → null result
   const agentNode = graph.getNode(agentId);
@@ -1006,6 +1013,10 @@ export function scoreAndSelect(
       finalScore,
       action,
     });
+
+    // Funnel: record scored (only if the template already has a funnel record from the filter pipeline)
+    const scoredFunnelRec = runtime?.eligibilityFunnel?.byTemplate[entry.templateId];
+    if (scoredFunnelRec) scoredFunnelRec.scored++;
   }
 
   // Sort descending by finalScore
@@ -1015,6 +1026,12 @@ export function scoreAndSelect(
   const best = scored[0];
 
   const selected = best.finalScore >= IDLE_SCORE_THRESHOLD ? best : null;
+
+  // Funnel: record selected
+  if (selected) {
+    const selectedFunnelRec = runtime?.eligibilityFunnel?.byTemplate[selected.entry.templateId];
+    if (selectedFunnelRec) selectedFunnelRec.selected++;
+  }
 
   return {
     selected,

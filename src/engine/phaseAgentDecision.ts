@@ -513,6 +513,7 @@ export function phaseAgentDecision(
         state.tick,
         mapCols,
         mapRows,
+        runtime,
       );
       const rawCandidates = filterResult.candidates;
 
@@ -567,6 +568,7 @@ export function phaseAgentDecision(
         combinedBias,
         agentHiddenMarks,
         agentIntelligence,
+        runtime,
       );
 
       // Emit scoring trace

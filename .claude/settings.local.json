@@ -96,7 +96,9 @@
       "Bash(cp \".claude/skills/vault-log/SKILL.md\" \".agents/skills/vault-log/SKILL.md\")",
       "Bash(node --experimental-strip-types scripts/session-precheck.ts)",
       "mcp__7aa97de8-78a2-4b5d-a6e0-0aabc5d0bb68__list_issues",
-      "mcp__7aa97de8-78a2-4b5d-a6e0-0aabc5d0bb68__get_issue"
+      "mcp__7aa97de8-78a2-4b5d-a6e0-0aabc5d0bb68__get_issue",
+      "Bash(python -c \"print\\(open\\('C:\\\\\\\\Users\\\\\\\\chris\\\\\\\\.claude\\\\\\\\projects\\\\\\\\C--Users-chris-Dev-Projects-TheFantasyWorldSimulator--claude-worktrees-intelligent-noyce-302009\\\\\\\\0c43e00e-158a-4e67-b074-5d36210f5ed6\\\\\\\\tool-results\\\\\\\\mcp-7aa97de8-78a2-4b5d-a6e0-0aabc5d0bb68-list_issues-1781164400039.txt'\\).read\\(\\)[0:80000]\\)\")",
+      "PowerShell($content = Get-Content 'C:\\\\Users\\\\chris\\\\.claude\\\\projects\\\\C--Users-chris-Dev-Projects-TheFantasyWorldSimulator--claude-worktrees-intelligent-noyce-302009\\\\0c43e00e-158a-4e67-b074-5d36210f5ed6\\\\tool-results\\\\mcp-7aa97de8-78a2-4b5d-a6e0-0aabc5d0bb68-list_issues-1781164400039.txt' -Raw; $content.Substring\\(0, 80000\\))"
     ]
   },
   "hooks": {

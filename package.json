@@ -46,6 +46,7 @@
     "balance:cadence": "esbuild scripts/balance-eval.ts --bundle --platform=node --format=esm --outfile=.cache/balance-eval-cadence.mjs --external:fs --external:path && node .cache/balance-eval-cadence.mjs --profile cadence",
     "balance:journey": "esbuild scripts/balance-eval.ts --bundle --platform=node --format=esm --outfile=.cache/balance-eval-journey.mjs --external:fs --external:path && node .cache/balance-eval-journey.mjs --profile journey",
     "balance:seed": "esbuild scripts/balance-eval.ts --bundle --platform=node --format=esm --outfile=.cache/balance-eval-seed.mjs --external:fs --external:path && node .cache/balance-eval-seed.mjs",
+    "gameplay-report": "esbuild scripts/gameplay-report.ts --bundle --platform=node --format=esm --outfile=.cache/gameplay-report.mjs --external:fs --external:path && node .cache/gameplay-report.mjs",
     "rebuild-index": "esbuild scripts/rebuild-index.ts --bundle --platform=node --format=esm --outfile=.cache/rebuild-index.mjs --external:fs --external:path && node .cache/rebuild-index.mjs",
     "rebuild-index:dry": "esbuild scripts/rebuild-index.ts --bundle --platform=node --format=esm --outfile=.cache/rebuild-index.mjs --external:fs --external:path && node .cache/rebuild-index.mjs --dry-run",
     "enhance-frontmatter": "esbuild scripts/enhance-frontmatter.ts --bundle --platform=node --format=esm --outfile=.cache/enhance-frontmatter.mjs --external:fs --external:path --external:child_process && node .cache/enhance-frontmatter.mjs",

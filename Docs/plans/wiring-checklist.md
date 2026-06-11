@@ -6,6 +6,28 @@
 
 ---
 
+## Gameplay KPI Harness (THR-457)
+
+Pure telemetry layer: KPI report + eligibility funnel counters + debug surfaces.
+
+| Surface | Path | Notes |
+|---|---|---|
+| KPI constants | `src/engine/kpi/kpiConstants.ts` | 11 tunable constants — thresholds, amber band, seed list, report tick count. |
+| KPI module | `src/engine/kpi/gameplayKpi.ts` | `computeGameplayKpiReport(state, runtime?)` — pure, no PRNG, fail-soft by section. Exports `EligibilityFunnelCounters`, `createEligibilityFunnelCounters`, `KpiRuntimeView`. |
+| Trace category | `src/types/trace.ts` | `'kpi'` added to `TraceCategory` union + `TRACE_CATEGORIES` array. `KpiSnapshotTrace` interface appended. |
+| SimulationRuntime | `src/engine/simulationRuntime.ts` | `eligibilityFunnel: EligibilityFunnelCounters | null` field; initialized via `createEligibilityFunnelCounters(0)` in `createSimulationRuntime()`. |
+| Filter pipeline hooks | `src/engine/encounterFilterPipeline.ts` | `FilterPipelineRuntime` duck-type; `runFilterPipeline` accepts `runtime?` as 8th param; stage-snapshot diff populates `gatedBy` per template when funnel active. |
+| Scoring hooks | `src/engine/encounterScoring.ts` | `ScoringRuntime` duck-type; `scoreAndSelect` accepts `runtime?` as 12th param; increments `scored` and `selected` funnel counters. |
+| Phase wiring | `src/engine/phaseAgentDecision.ts` | Passes `runtime` to both `runFilterPipeline` (arg 8) and `scoreAndSelect` (arg 12). |
+| CLI command | `scripts/cli.ts` | `kpi [--json]` command; `printKpi(isJson)` function. `help` updated. |
+| Debug bridge | `src/debug-bridge.ts` + `src/debug-bridge.d.ts` | `window.__DEBUG.getKpiReport()` — async, returns `GameplayKpiReport | null`. |
+| DebugPanel tab | `src/components/Game/debug/DebugTabContent.tsx` | `'kpi'` added to `ViewMode` union + `TABS` array; delegates to `<KpiDebugTab>`. |
+| KPI tab component | `src/components/Game/debug/KpiDebugTab.tsx` | On-demand compute via `__DEBUG.getKpiReport()`. Refresh button. |
+| Batch script | `scripts/gameplay-report.ts` | `npm run gameplay-report` — esbuild-bundled; seeds/ticks/map flags; outputs JSON to `Docs/playtests/kpi/`. |
+| Tests | `src/testing/__tests__/gameplayKpi.test.ts`, `eligibilityFunnel.test.ts` | 10 + 7 = 17 tests. |
+
+---
+
 ## HexChronicle Dynamic People-Layer Swap (THR-439)
 
 HexChronicle "THE PEOPLE" prose paragraph swaps to the most-recent `survey_completed` event band for the displayed hex, with an attribution caption ("— surveyed, turn N"). Falls back to static culture/faction prose for un-surveyed hexes.

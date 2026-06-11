@@ -48,6 +48,8 @@ import { getChainProgress, isChainStageUnlocked } from './encounterChains';
 import { getAnyEncounterById } from '../data/encounter-content';
 import { FACTION_ENCOUNTER_META } from '../data/faction-encounter-content';
 import { FACTION_DEFINITIONS } from '../data/faction-definitions';
+import type { EligibilityFunnelCounters } from './kpi/gameplayKpi';
+import { KPI_FUNNEL_MAX_TEMPLATES } from './kpi/kpiConstants';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {
@@ -68,6 +70,55 @@ import {
 
 /** Ordered threat tiers for index-based comparison */
 const THREAT_ORDER: ThreatRating[] = ['trivial', 'easy', 'moderate', 'hard', 'deadly'];
+
+// ─── Funnel counter helpers ──────────────────────────────────────
+
+/** Build a set of unique templateIds from a list of cache entries. */
+function templateIdSet(entries: readonly EncounterCacheEntry[]): Set<string> {
+  const s = new Set<string>();
+  for (const e of entries) s.add(e.templateId);
+  return s;
+}
+
+/**
+ * Update eligibility funnel counters from a completed pipeline run.
+ * For each template that entered the pipeline, records which stage first gated it out.
+ * Templates that survived all stages are counted as considered but not gated here;
+ * scored/selected counts are added by encounterScoring hooks.
+ */
+function updateFunnelCounters(
+  funnel: EligibilityFunnelCounters,
+  s0: Set<string>,
+  s1: Set<string>,
+  s2: Set<string>,
+  s3: Set<string>,
+  s4: Set<string>,
+  s5: Set<string>,
+): void {
+  for (const id of s0) {
+    // Bounds check
+    if (!funnel.byTemplate[id]) {
+      if (Object.keys(funnel.byTemplate).length >= KPI_FUNNEL_MAX_TEMPLATES) {
+        if (!funnel.truncated) {
+          funnel.truncated = true;
+          console.warn('[EligibilityFunnel] KPI_FUNNEL_MAX_TEMPLATES exceeded, stopping new key additions');
+        }
+        continue;
+      }
+      funnel.byTemplate[id] = { considered: 0, gatedBy: {}, scored: 0, selected: 0 };
+    }
+    const rec = funnel.byTemplate[id];
+    rec.considered++;
+
+    // Record first failing gate
+    if (!s1.has(id)) { rec.gatedBy['awareness'] = (rec.gatedBy['awareness'] ?? 0) + 1; continue; }
+    if (!s2.has(id)) { rec.gatedBy['visibility'] = (rec.gatedBy['visibility'] ?? 0) + 1; continue; }
+    if (!s3.has(id)) { rec.gatedBy['prerequisites'] = (rec.gatedBy['prerequisites'] ?? 0) + 1; continue; }
+    if (!s4.has(id)) { rec.gatedBy['threat'] = (rec.gatedBy['threat'] ?? 0) + 1; continue; }
+    if (!s5.has(id)) { rec.gatedBy['cap'] = (rec.gatedBy['cap'] ?? 0) + 1; }
+    // Survived all stages — scored/selected tracked in encounterScoring
+  }
+}
 
 // ─── Types ──────────────────────────────────────────────────────
 
@@ -438,6 +489,11 @@ export function capWithDiversity(
 
 // ─── Main Pipeline ──────────────────────────────────────────────
 
+/** Minimal runtime view needed by the filter pipeline for funnel counters. */
+interface FilterPipelineRuntime {
+  eligibilityFunnel: EligibilityFunnelCounters | null;
+}
+
 /**
  * Run the 5-stage filter pipeline to reduce encounter cache entries
  * to a manageable set of scored candidates for a single agent.
@@ -450,6 +506,7 @@ export function runFilterPipeline(
   tick: number,
   mapCols?: number,
   mapRows?: number,
+  runtime?: FilterPipelineRuntime,
 ): FilterResult {
   // Fast path: empty input
   if (allEntries.length === 0) {
@@ -467,6 +524,10 @@ export function runFilterPipeline(
     };
   }
 
+  // Capture initial template set for funnel (lazy — only when funnel is active)
+  const funnel = runtime?.eligibilityFunnel ?? null;
+  const s0 = funnel ? templateIdSet(allEntries) : null;
+
   // Stage 1: Awareness + Faction
   let current: EncounterCacheEntry[];
   try {
@@ -475,6 +536,7 @@ export function runFilterPipeline(
     current = [];
   }
   const afterAwareness = current.length;
+  const s1 = (funnel && s0) ? templateIdSet(current) : null;
 
   // Stage 2: Visibility
   try {
@@ -483,6 +545,7 @@ export function runFilterPipeline(
     // Keep previous stage's output
   }
   const afterVisibility = current.length;
+  const s2 = (funnel && s0) ? templateIdSet(current) : null;
 
   // Stage 3: Prerequisites + Reputation Gates + Outgrowth Lock
   try {
@@ -501,6 +564,7 @@ export function runFilterPipeline(
     // Keep previous stage's output
   }
   const afterPrerequisites = current.length;
+  const s3 = (funnel && s0) ? templateIdSet(current) : null;
 
   // Stage 4: Threat
   try {
@@ -509,6 +573,7 @@ export function runFilterPipeline(
     // Keep previous stage's output
   }
   const afterThreat = current.length;
+  const s4 = (funnel && s0) ? templateIdSet(current) : null;
 
   // Stage 5: Performance Cap
   try {
@@ -517,6 +582,12 @@ export function runFilterPipeline(
     // Keep previous stage's output
   }
   const afterCap = current.length;
+  const s5 = (funnel && s0) ? templateIdSet(current) : null;
+
+  // Update funnel counters (only when all snapshots are available)
+  if (funnel && s0 && s1 && s2 && s3 && s4 && s5) {
+    updateFunnelCounters(funnel, s0, s1, s2, s3, s4, s5);
+  }
 
   return {
     candidates: current,
