@@ -1,5 +1,5 @@
 # Project Status
-> Updated 2026-05-16.
+> Updated 2026-06-11.
 
 ## Current Focus
 **Encounter Experience — active:** Phases A1–A3, B1–B7, C1–C4, D1–D3, E1–E2, F1–F2, G1–G3 ✅. Remaining is F-phase integration (mount EffectRegistration components into hero panel / cast tile / scene state surfaces) and Phase H post-v1 polish.
@@ -24,6 +24,7 @@
 - 2026-05-11 batch: THR-393, THR-403, THR-408, THR-411
 - 2026-05-12 batch: THR-413, THR-404, THR-397, THR-398, THR-399, THR-405, THR-416, THR-409
 - 2026-05-16 batch: THR-416 (via THR-409 worktree cleanup closeout), THR-249, THR-248, THR-377, THR-447
+- 2026-06-11 batch: THR-406
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
