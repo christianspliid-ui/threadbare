@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+﻿import { describe, it, expect, vi } from 'vitest';
 import { WorldGraph } from '../graph';
 import type { DistanceMatrix } from '../distanceMatrix';
 import type { EncounterCacheEntry } from '../encounterCache';
@@ -47,6 +47,7 @@ function makeEntry(overrides: Partial<EncounterCacheEntry> = {}): EncounterCache
     requiresPresence: true,
     remotePenalty: 0,
     questPriority: 1.0,
+    isQuestEncounter: false,
     totalTickCost: 2,
     successRewardEstimate: 1.0,
     stepCount: 1,

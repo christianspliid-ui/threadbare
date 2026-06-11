@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
 import {
   getFactionAwarenessEntries,
@@ -93,6 +93,7 @@ function makeEntry(overrides: Partial<EncounterCacheEntry> = {}): EncounterCache
     requiresPresence: false,
     remotePenalty: 0,
     questPriority: 1.0,
+    isQuestEncounter: false,
     totalTickCost: 3,
     successRewardEstimate: 1.0,
     stepCount: 1,

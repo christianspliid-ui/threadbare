@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Social Encounter Generation — produces social encounter candidates
  * for the encounter scoring pipeline.
  *
@@ -291,6 +291,7 @@ export function generateSocialCandidates(
         remoteMaxRange: undefined,
         sphereAffinity: tmpl.sphereAffinity,
         questPriority: questPriorityMultiplier,
+        isQuestEncounter: tmpl.steps.some(s => 'branchOnStep' in s),
         totalTickCost: computeTotalTickCostUnified(tmpl),
         successRewardEstimate: computeRewardEstimateUnified(tmpl),
         stepCount: tmpl.steps.length,
@@ -325,6 +326,7 @@ export function generateSocialCandidates(
         remoteMaxRange: undefined,
         sphereAffinity: undefined,
         questPriority: questPriorityMultiplier,
+        isQuestEncounter: tmpl.steps.some(s => 'branchOnStep' in s),
         totalTickCost: computeTotalTickCostUnified(tmpl),
         successRewardEstimate: computeRewardEstimateUnified(tmpl),
         stepCount: tmpl.steps.length,
@@ -358,6 +360,7 @@ export function generateSocialCandidates(
         remoteMaxRange: undefined,
         sphereAffinity: tmpl.sphereAffinity,
         questPriority: questPriorityMultiplier,
+        isQuestEncounter: tmpl.steps.some(s => 'branchOnStep' in s),
         totalTickCost: computeTotalTickCostUnified(tmpl),
         successRewardEstimate: computeRewardEstimateUnified(tmpl),
         stepCount: tmpl.steps.length,
@@ -391,6 +394,7 @@ export function generateSocialCandidates(
         remoteMaxRange: undefined,
         sphereAffinity: undefined,
         questPriority: questPriorityMultiplier,
+        isQuestEncounter: tmpl.steps.some(s => 'branchOnStep' in s),
         totalTickCost: computeTotalTickCostUnified(tmpl),
         successRewardEstimate: computeRewardEstimateUnified(tmpl),
         stepCount: tmpl.steps.length,
@@ -424,6 +428,7 @@ export function generateSocialCandidates(
         remoteMaxRange: undefined,
         sphereAffinity: tmpl.sphereAffinity,
         questPriority: questPriorityMultiplier,
+        isQuestEncounter: tmpl.steps.some(s => 'branchOnStep' in s),
         totalTickCost: computeTotalTickCostUnified(tmpl),
         successRewardEstimate: computeRewardEstimateUnified(tmpl),
         stepCount: tmpl.steps.length,

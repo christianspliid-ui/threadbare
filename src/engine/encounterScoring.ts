@@ -66,6 +66,8 @@ import { SPHERE_NAMES } from '../types/index';
 import type { EffectRuntimeState } from '../types/effects';
 import { getBehaviorWeights, computeBehaviorWeightMultiplier } from './effects/effectQueries';
 import type { EligibilityFunnelCounters } from './kpi/gameplayKpi';
+import type { TraceBuffer } from './traceBuffer';
+import { computeBranchingCuratorMultiplier } from './encounter/branchingCurator';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {
@@ -732,9 +734,10 @@ export function computeRoleAffinityMultiplier(
  * Score all candidate encounter cache entries for an agent and select
  * the highest-scoring one. Deterministic: same inputs → same output.
  */
-/** Minimal runtime view needed by encounter scoring for funnel counters. */
+/** Minimal runtime view needed by encounter scoring for funnel counters and curator nudge traces. */
 interface ScoringRuntime {
   eligibilityFunnel: EligibilityFunnelCounters | null;
+  traceBuffer?: TraceBuffer;
 }
 
 export function scoreAndSelect(
@@ -971,8 +974,12 @@ export function scoreAndSelect(
         }
       }
     }
-    const finalScore = baseScore * rarityMultiplier * roleAffinityMultiplier * (1 - familiarityPenalty) + explorationBonus + chainBonus
+    const rawFinalScore = baseScore * rarityMultiplier * roleAffinityMultiplier * (1 - familiarityPenalty) + explorationBonus + chainBonus
       + ruinsBonus + anomalyBonus + attractionBonus + hunchBonus + identityBiasBonus + markRevealBonus + intelBonus;
+
+    // 17b. Branching curator bias (THR-452) — boost under-selected branching templates
+    const curatorMultiplier = computeBranchingCuratorMultiplier(entry, agentId, tick, runtime ?? null);
+    const finalScore = rawFinalScore * curatorMultiplier;
 
     // 17. Action classification
     let action: ScoredCandidate['action'];

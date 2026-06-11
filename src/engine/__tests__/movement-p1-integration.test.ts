@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+﻿import { describe, it, expect, beforeEach } from 'vitest';
 import { WorldGraph } from '../graph';
 import { generateMovementCandidates } from '../movementCandidates';
 import { computeHexThreatRating } from '../threatRating';
@@ -40,6 +40,7 @@ describe('P1 integration', () => {
     // Quest encounter at hexB with high priority
     g.addNode({ id: 'quest1', type: 'encounter', name: 'Epic Quest', properties: {
       questPriority: 5.0,
+      isQuestEncounter: false,
       visibleTo: ['agent:agent1'],
     }});
     g.addEdge({ id: 'enc_at', source: 'quest1', target: 'hexB', type: 'encounter_at', properties: {} });
@@ -121,6 +122,7 @@ describe('P1 integration', () => {
     // Quest visible only to a different agent
     g.addNode({ id: 'quest1', type: 'encounter', name: 'Secret Quest', properties: {
       questPriority: 10.0,
+      isQuestEncounter: false,
       visibleTo: ['agent:someone_else'],
     }});
     g.addEdge({ id: 'enc_at', source: 'quest1', target: 'hexB', type: 'encounter_at', properties: {} });

@@ -31,6 +31,8 @@
  */
 
 import * as readline from 'readline';
+import * as fs from 'fs';
+import * as path from 'path';
 
 // Game engine imports
 import { initializeGameState, MAP_SIZE_PRESETS } from '../src/engine/gameInit';
@@ -44,11 +46,13 @@ import {
   clearTraces,
   emitTrace,
 } from '../src/engine/traceBuffer';
-import { createSimulationRuntime, touchStructure, touchWorld } from '../src/engine/simulationRuntime';
+import { createSimulationRuntime, ensureEncounterCache, touchStructure, touchWorld } from '../src/engine/simulationRuntime';
 import type { SimulationRuntime } from '../src/engine/simulationRuntime';
 import { setTrackedAgents, getBalanceEvents, selectDefaultTrackedHero } from '../src/engine/balanceTelemetry';
 import { buildBalanceRunSummary, buildBalanceAgentJourneySummary } from '../src/engine/balanceSummary';
-import { computeGameplayKpiReport } from '../src/engine/kpi/gameplayKpi';
+import { computeGameplayKpiReport, isBranchingTemplate } from '../src/engine/kpi/gameplayKpi';
+import { computeGateDistance } from '../src/engine/kpi/branchingDistance';
+import { BRANCHING_AUDIT_SEEDS, BRANCHING_AUDIT_TICKS } from '../src/engine/encounter/branchingConstants';
 import { evaluateBalanceSummary, evaluateAgentJourney, formatEvaluationReport } from '../src/engine/balanceEvaluator';
 import { getDefaultBalanceTargets } from '../src/engine/balanceTargets';
 import { getAttentionVisualState } from '../src/engine/attentionPool';
@@ -583,6 +587,245 @@ function printKpi(isJson = false): void {
   }
 }
 
+// ─── Branching Audit Command ─────────────────────────────────────
+
+interface AggregatedFunnelEntry {
+  templateId: string;
+  considered: number;
+  gatedBy: Record<string, number>;
+  scored: number;
+  selected: number;
+}
+
+async function runBranchingAudit(): Promise<void> {
+  console.log(header('Branching Encounter Reachability Audit'));
+  console.log(`  Seeds: [${BRANCHING_AUDIT_SEEDS.join(', ')}]  Ticks/seed: ${BRANCHING_AUDIT_TICKS}`);
+  console.log(`  This may take a minute…\n`);
+
+  // Save current session
+  const savedState = state;
+  const savedRuntime = runtime;
+
+  // Aggregate funnel data across seeds; last state used for distance estimates
+  const aggregated = new Map<string, AggregatedFunnelEntry>();
+  let lastRunState = savedState;
+  let lastRunGraph = savedState.graph;
+
+  for (const seed of BRANCHING_AUDIT_SEEDS) {
+    console.log(`  Running seed ${seed}…`);
+    const freshRuntime = createSimulationRuntime();
+    const archetypes = generateArchetypes(4, seed);
+    const archetype = archetypes[0];
+    const cosmology = createBalancedCosmology();
+    const preset = MAP_SIZE_PRESETS['medium'];
+    const { state: initState } = initializeGameState(archetype, 'AuditBot', cosmology, seed, preset.cols, preset.rows);
+
+    let currentState = initState;
+    for (let t = 0; t < BRANCHING_AUDIT_TICKS; t++) {
+      currentState = runTick(currentState, [], freshRuntime);
+    }
+
+    lastRunState = currentState;
+    lastRunGraph = currentState.graph;
+
+    // Collect funnel data
+    const funnel = freshRuntime.eligibilityFunnel;
+    if (!funnel) {
+      console.log(`  ${YELLOW}⚠ No funnel data for seed ${seed} — THR-457 funnel may not be active${RESET}`);
+      continue;
+    }
+
+    for (const [id, rec] of Object.entries(funnel.byTemplate)) {
+      const existing = aggregated.get(id);
+      if (!existing) {
+        aggregated.set(id, {
+          templateId: id,
+          considered: rec.considered,
+          gatedBy: { ...rec.gatedBy },
+          scored: rec.scored,
+          selected: rec.selected,
+        });
+      } else {
+        existing.considered += rec.considered;
+        existing.scored += rec.scored;
+        existing.selected += rec.selected;
+        for (const [gate, count] of Object.entries(rec.gatedBy)) {
+          existing.gatedBy[gate] = (existing.gatedBy[gate] ?? 0) + count;
+        }
+      }
+    }
+
+    console.log(`  ${GREEN}✓${RESET} Seed ${seed} done — tick ${currentState.tick}, funnel entries: ${Object.keys(funnel.byTemplate).length}`);
+  }
+
+  // Restore original session
+  state = savedState;
+  runtime = savedRuntime;
+
+  // Build encounter cache for last run (for distance estimates)
+  ensureEncounterCache(savedRuntime, lastRunGraph, lastRunState.tick, lastRunState.tiles);
+
+  // Identify all branching templates from registry
+  const branchingIds = new Set<string>();
+  for (const tmpl of UNIFIED_ACTION_TEMPLATES) {
+    if (isBranchingTemplate(tmpl.id)) branchingIds.add(tmpl.id);
+  }
+  // Also check any seen in funnel
+  for (const id of aggregated.keys()) {
+    if (isBranchingTemplate(id)) branchingIds.add(id);
+  }
+
+  console.log(`\n  Branching templates found: ${branchingIds.size}`);
+
+  // Build per-template audit rows
+  interface AuditRow {
+    id: string;
+    considered: number;
+    gatedBy: Record<string, number>;
+    scored: number;
+    selected: number;
+    primaryBlocker: string;
+    distanceDetail: string;
+    suggestedLever: string;
+    agentSamples: string;
+  }
+
+  const auditRows: AuditRow[] = [];
+
+  for (const id of branchingIds) {
+    const agg = aggregated.get(id);
+    const considered = agg?.considered ?? 0;
+    const gatedBy = agg?.gatedBy ?? {};
+    const scored = agg?.scored ?? 0;
+    const selected = agg?.selected ?? 0;
+
+    // Primary blocker: gate with highest count
+    const primaryBlocker = Object.entries(gatedBy).sort((a, b) => b[1] - a[1])[0]?.[0] ?? 'never-considered';
+
+    // Find entry in cache for distance computation (any location)
+    const cacheEntries = savedRuntime.encounterCache?.getAllEntries() ?? [];
+    const matchingEntry = cacheEntries.find(e => e.templateId === id);
+
+    let distanceDetail = 'no cache entry (template may require specific locations not present in medium map)';
+    let suggestedLever = 'soften';
+    let agentSamples = '';
+
+    if (matchingEntry && primaryBlocker !== 'never-considered') {
+      try {
+        const report = computeGateDistance(primaryBlocker, matchingEntry, lastRunState, lastRunGraph);
+        distanceDetail = report.detail;
+        suggestedLever = report.suggestedLever;
+        agentSamples = report.agentSamples.slice(0, 3).map(s => `${s.agentName}: ${s.detail}`).join('; ');
+      } catch (err) {
+        distanceDetail = `distance heuristic error: ${err instanceof Error ? err.message : String(err)}`;
+      }
+    } else if (primaryBlocker === 'never-considered') {
+      distanceDetail = 'Template never entered awareness range across all seeds';
+      suggestedLever = 'ladder';
+    }
+
+    auditRows.push({
+      id,
+      considered,
+      gatedBy,
+      scored,
+      selected,
+      primaryBlocker,
+      distanceDetail,
+      suggestedLever,
+      agentSamples,
+    });
+  }
+
+  // Sort: never-selected first (most critical), then by considered desc
+  auditRows.sort((a, b) => {
+    if (a.selected === 0 && b.selected > 0) return -1;
+    if (a.selected > 0 && b.selected === 0) return 1;
+    return b.considered - a.considered;
+  });
+
+  // Print console summary
+  console.log(header('Audit Summary'));
+  const neverFired = auditRows.filter(r => r.selected === 0);
+  const everFired = auditRows.filter(r => r.selected > 0);
+  console.log(`  Never fired: ${neverFired.length}/${auditRows.length}  |  Ever fired: ${everFired.length}/${auditRows.length}\n`);
+
+  for (const r of neverFired.slice(0, 10)) {
+    const gateStr = Object.entries(r.gatedBy).sort((a, b) => b[1] - a[1]).map(([g, n]) => `${g}:${n}`).join(' ');
+    console.log(`  ${RED}✗${RESET} ${dim(r.id.slice(0, 32).padEnd(32))}  seen:${r.considered}  gate:[${gateStr || 'none'}]  lever:${CYAN}${r.suggestedLever}${RESET}`);
+  }
+  if (neverFired.length > 10) console.log(`  … and ${neverFired.length - 10} more`);
+
+  if (everFired.length > 0) {
+    console.log(`\n  ${GREEN}✓ Did fire:${RESET}`);
+    for (const r of everFired) {
+      console.log(`    ${r.id}: selected ${r.selected}x (considered ${r.considered})`);
+    }
+  }
+
+  // Write markdown audit doc
+  const today = new Date().toISOString().slice(0, 10);
+  const auditDir = path.resolve(process.cwd(), 'Docs', 'audits');
+  if (!fs.existsSync(auditDir)) fs.mkdirSync(auditDir, { recursive: true });
+  const auditPath = path.join(auditDir, `${today}-branching-encounter-reachability-audit.md`);
+
+  const lines: string[] = [
+    `# Branching Encounter Reachability Audit`,
+    ``,
+    `**Date:** ${today}  **Seeds:** [${BRANCHING_AUDIT_SEEDS.join(', ')}]  **Ticks/seed:** ${BRANCHING_AUDIT_TICKS}  **Map:** medium`,
+    ``,
+    `Generated by \`kpi:branching-audit\` CLI command (THR-452 Phase A).`,
+    ``,
+    `## Summary`,
+    ``,
+    `| Metric | Value |`,
+    `|---|---|`,
+    `| Total branching templates | ${auditRows.length} |`,
+    `| Never fired (selected=0) | ${neverFired.length} |`,
+    `| Ever fired | ${everFired.length} |`,
+    ``,
+    `## Per-Template Findings`,
+    ``,
+    `Templates sorted by severity: never-fired first, then by consideration rate.`,
+    ``,
+    `| Template ID | Considered | Gated (gate:count) | Scored | Selected | Primary Blocker | Suggested Lever |`,
+    `|---|---|---|---|---|---|---|`,
+    ...auditRows.map(r => {
+      const gateStr = Object.entries(r.gatedBy).sort((a, b) => b[1] - a[1]).map(([g, n]) => `${g}:${n}`).join(', ') || '—';
+      return `| \`${r.id}\` | ${r.considered} | ${gateStr} | ${r.scored} | ${r.selected} | ${r.primaryBlocker} | **${r.suggestedLever}** |`;
+    }),
+    ``,
+    `## Detailed Findings`,
+    ``,
+    ...auditRows.map(r => [
+      `### \`${r.id}\``,
+      ``,
+      `- **Status:** ${r.selected > 0 ? `✅ Fired ${r.selected}x` : '❌ Never fired'}`,
+      `- **Considered:** ${r.considered} across ${BRANCHING_AUDIT_SEEDS.length} seeds × ${BRANCHING_AUDIT_TICKS} ticks`,
+      `- **Primary blocker:** \`${r.primaryBlocker}\``,
+      `- **Distance detail:** ${r.distanceDetail}`,
+      `- **Agent samples:** ${r.agentSamples || '—'}`,
+      `- **Suggested lever:** **${r.suggestedLever}**`,
+      ``,
+    ].join('\n')),
+    `## Lever Guide`,
+    ``,
+    `| Lever | Action |`,
+    `|---|---|`,
+    `| \`soften\` | Lower the gate value in the template file (comment with: \`// THR-452 retune: was X, lowered to Y\`) |`,
+    `| \`ladder\` | Author intermediate encounters that mature the prerequisite (e.g., reputation-building) |`,
+    `| \`bias\` | Curator boost in \`branchingCurator.ts\` — nearly-eligible template gets 1.75× score for threaded agents |`,
+    `| \`accept-as-rare\` | Climactic encounter — confirm 0 fires is intentional; add \`expectedFireRate: 'climactic'\` to metadata |`,
+    ``,
+    `## Phase B Actions`,
+    ``,
+    `See \`Docs/plans/2026-06-11-thr-452-branching-encounter-reachability.md\` for implementation guide.`,
+  ];
+
+  fs.writeFileSync(auditPath, lines.join('\n'), 'utf8');
+  console.log(`\n  ${GREEN}✓${RESET} Audit written to ${path.relative(process.cwd(), auditPath)}`);
+}
+
 function startAutoRun(speed?: number, autoAftermath = autoAftermathDefault): void {
   if (speed !== undefined && speed > 0) autoRunSpeed = speed;
   autoAftermathEnabledForRun = autoAftermath;
@@ -653,6 +896,7 @@ function printHelp(): void {
   console.log(`  ${BOLD}balance agent${RESET} <id> Show agent journey`);
   console.log(`  ${BOLD}kpi${RESET}              Gameplay KPI report (outcomes, templates, funnel, thresholds)`);
   console.log(`  ${BOLD}kpi --json${RESET}       KPI report as raw JSON`);
+  console.log(`  ${BOLD}kpi branching-audit${RESET}  Phase A diagnostic: run ${BRANCHING_AUDIT_SEEDS.length} seeds × ${BRANCHING_AUDIT_TICKS} ticks, write Docs/audits/ report`);
   console.log(`  ${BOLD}spawn encounter${RESET} <agent|@hero> <templateId>  Spawn an encounter on an agent`);
   console.log(`  ${BOLD}spawn attachment${RESET} <agent|@hero> <templateId> Attach an item/trait to an agent`);
   console.log(`  ${BOLD}aftermath list${RESET} <agent|@hero>   List pending aftermath reactions for an agent`);
@@ -1247,7 +1491,15 @@ function handleCommand(line: string): boolean {
       break;
     }
     case 'kpi': {
-      printKpi(arg === '--json');
+      if (arg === 'branching-audit' || arg.startsWith('branching-audit')) {
+        runBranchingAudit().catch(err => console.error(`${RED}Audit error: ${err}${RESET}`));
+      } else {
+        printKpi(arg === '--json');
+      }
+      break;
+    }
+    case 'kpi:branching-audit': {
+      runBranchingAudit().catch(err => console.error(`${RED}Audit error: ${err}${RESET}`));
       break;
     }
     case 'spawn': {

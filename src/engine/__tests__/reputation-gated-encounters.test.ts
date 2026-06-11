@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Contract test: reputation-gated encounters (THR-32 first tranche + THR-146 middle tranche).
  *
  * Tests two mechanisms:
@@ -131,6 +131,7 @@ function makeEntry(overrides: Partial<EncounterCacheEntry> = {}): EncounterCache
     requiresPresence: false,
     remotePenalty: 0,
     questPriority: 1.0,
+    isQuestEncounter: false,
     totalTickCost: 3,
     successRewardEstimate: 1.0,
     stepCount: 1,

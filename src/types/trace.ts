@@ -229,7 +229,9 @@ export type TraceCategory =
   | 'mentorship_surpassed'
   | 'mentorship_severed'
   // KPI harness (THR-457)
-  | 'kpi';
+  | 'kpi'
+  // Branching encounter curator boost (THR-452)
+  | 'branching_curator_nudge';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -430,6 +432,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'mentorship_severed',
   // KPI harness (THR-457)
   'kpi',
+  // Branching encounter curator boost (THR-452)
+  'branching_curator_nudge',
 ];
 
 /** Base shape for all trace entries */
@@ -1592,7 +1596,9 @@ export type TraceEntry =
   | FactionSuccessionTrace
   | FactionAnointSuccessorTrace
   // Faction internal-pressure resolver (THR-433)
-  | FactionKindleCallingTrace;
+  | FactionKindleCallingTrace
+  // Branching encounter curator nudge (THR-452)
+  | BranchingCuratorNudgeTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {
@@ -2016,5 +2022,15 @@ export interface SurveyProseComposedTrace extends TraceBase {
 export interface KpiSnapshotTrace extends TraceBase {
   category: 'kpi';
   report: import('../engine/kpi/gameplayKpi').GameplayKpiReport;
+}
+
+/** Emitted by branchingCurator.ts when a branching template's score is boosted (THR-452). */
+export interface BranchingCuratorNudgeTrace extends TraceBase {
+  category: 'branching_curator_nudge';
+  agentId: string;
+  templateId: string;
+  /** Multiplier applied to the template's finalScore. */
+  weight: number;
+  cooldownTicks: number;
 }
 

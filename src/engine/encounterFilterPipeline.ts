@@ -50,6 +50,7 @@ import { FACTION_ENCOUNTER_META } from '../data/faction-encounter-content';
 import { FACTION_DEFINITIONS } from '../data/faction-definitions';
 import type { EligibilityFunnelCounters } from './kpi/gameplayKpi';
 import { KPI_FUNNEL_MAX_TEMPLATES } from './kpi/kpiConstants';
+import { BRANCHING_QUEST_SKIP_OUTGROWTH, BRANCHING_CAP_RESERVE } from './encounter/branchingConstants';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {
@@ -355,6 +356,10 @@ export function filterByOutgrowth(
     const capScaled = cap * 100; // Scale 0–1 to 0–100 for comparison with difficulty
     if (capScaled - avgDifficulty < OUTGROWTH_CAP_THRESHOLD) {
       result.push(entry);
+    } else if (BRANCHING_QUEST_SKIP_OUTGROWTH && entry.isQuestEncounter) {
+      // Branching quests exempt from outgrowth (THR-452): they mature narrative threads,
+      // not just test skill, so they remain accessible regardless of capability gap.
+      result.push(entry);
     }
   }
   return result;
@@ -465,6 +470,24 @@ export function capWithDiversity(
       if (!reservedKeys.has(key)) {
         reserved.push(group[i]);
         reservedKeys.add(key);
+      }
+    }
+  }
+
+  // Phase 1b: preserve at least BRANCHING_CAP_RESERVE branching quest entries (THR-452).
+  // Ensures branching templates survive the cap stage and reach scoring.
+  const branchingAlreadyReserved = reserved.filter(e => e.isQuestEncounter).length;
+  if (branchingAlreadyReserved < BRANCHING_CAP_RESERVE) {
+    const needed = BRANCHING_CAP_RESERVE - branchingAlreadyReserved;
+    let added = 0;
+    for (const entry of entries) {
+      if (!entry.isQuestEncounter) continue;
+      const key = `${entry.templateId}:${entry.locationId}`;
+      if (!reservedKeys.has(key)) {
+        reserved.push(entry);
+        reservedKeys.add(key);
+        added++;
+        if (added >= needed) break;
       }
     }
   }

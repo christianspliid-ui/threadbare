@@ -4673,6 +4673,43 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 ];
 
 /**
+ * Location-based branching encounter templates authored in src/data/encounters/.
+ *
+ * These templates have locationSubtypes and belong in the encounter cache, but
+ * are NOT included in ENCOUNTER_TEMPLATES (encounter-content.ts). They must be
+ * supplemented into the cache separately (THR-452).
+ *
+ * Excluded: mentorship / divine-action templates (no locationSubtypes; handled
+ * by attachment / divine systems) and social/tavern branching templates (handled
+ * dynamically by generateSocialCandidates).
+ */
+export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTemplate[] = [
+  RIVAL_SHRINE_BETRAYAL_TEMPLATE,
+  WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE,
+  FLAWED_STEEL_TEMPLATE,
+  SOUL_FERRYMAN_TEMPLATE,
+  ROAD_AMBUSH_TEMPLATE,
+  COURTYARD_DUEL_TEMPLATE,
+  BRINK_RESCUE_TEMPLATE,
+  LETTERS_OF_INTRODUCTION_TEMPLATE,
+  WARLORDS_TRIBUTE_TEMPLATE,
+  SHADOW_COURT_AUDIENCE_TEMPLATE,
+  PILGRIMS_OFFERING_TEMPLATE,
+  VEILED_CONSULTATION_TEMPLATE,
+  THE_STONES_JUDGEMENT_TEMPLATE,
+  THE_MERCHANTS_FAVOR_TEMPLATE,
+  THE_ORACLE_CONSULTED_TEMPLATE,
+  THE_STAR_PILGRIM_TEMPLATE,
+  THE_INFILTRATORS_APPROACH_TEMPLATE,
+  THE_RENOWNED_DUEL_TEMPLATE,
+  THE_EXECUTIONERS_COMMISSION_TEMPLATE,
+  THE_UNMARKED_CROSSING_TEMPLATE,
+  THE_SILENT_CHAMBER_TEMPLATE,
+  THE_JURY_OF_THE_RUINED_TEMPLATE,
+  THE_BLINDED_ORACLE_TEMPLATE,
+];
+
+/**
  * Look up a template by its ID. Returns undefined if not found.
  * Checks UNIFIED_ACTION_TEMPLATES first, then all encounter pools via getAnyEncounterById.
  */
