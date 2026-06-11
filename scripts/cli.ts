@@ -48,6 +48,7 @@ import { createSimulationRuntime, touchStructure, touchWorld } from '../src/engi
 import type { SimulationRuntime } from '../src/engine/simulationRuntime';
 import { setTrackedAgents, getBalanceEvents, selectDefaultTrackedHero } from '../src/engine/balanceTelemetry';
 import { buildBalanceRunSummary, buildBalanceAgentJourneySummary } from '../src/engine/balanceSummary';
+import { computeGameplayKpiReport } from '../src/engine/kpi/gameplayKpi';
 import { evaluateBalanceSummary, evaluateAgentJourney, formatEvaluationReport } from '../src/engine/balanceEvaluator';
 import { getDefaultBalanceTargets } from '../src/engine/balanceTargets';
 import { getAttentionVisualState } from '../src/engine/attentionPool';
@@ -502,6 +503,86 @@ function printBalance(subCmd?: string, subArg?: string): void {
   console.log(`${RED}Usage: balance [summary|idle|templates|eval|targets|recent [N]|agent <id>]${RESET}`);
 }
 
+// ─── KPI ─────────────────────────────────────────────────────────
+
+function printKpi(isJson = false): void {
+  const report = computeGameplayKpiReport(state, runtime);
+
+  if (isJson) {
+    console.log(JSON.stringify(report, null, 2));
+    return;
+  }
+
+  const statusColor = (s: string) => s === 'green' ? GREEN : s === 'red' ? RED : YELLOW;
+  const pct = (n: number) => `${(n * 100).toFixed(1)}%`;
+  const fix2 = (n: number) => n.toFixed(2);
+
+  console.log(header('Gameplay KPI Report'));
+  console.log(`  Tick: ${report.tick}  |  Seed: ${report.seed}`);
+
+  // Outcome distribution
+  const o = report.outcomes;
+  if (o.insufficientData) {
+    console.log(`\n  ${YELLOW}⚠ Insufficient resolved actions for outcome stats (n=${o.total})${RESET}`);
+  } else {
+    console.log(`\n  ${BOLD}Outcome Distribution${RESET}  (n=${o.total})`);
+    console.log(`    Failure rate:       ${pct(o.failureRate)}`);
+    console.log(`    Crit-fail rate:     ${pct(o.critFailRate)}`);
+    console.log(`    Clean success rate: ${pct(o.cleanSuccessRate)}`);
+  }
+
+  // Template concentration
+  const tc = report.templateConcentration;
+  console.log(`\n  ${BOLD}Template Concentration${RESET}  (n=${tc.totalSelections}${tc.insufficientData ? ', low data' : ''})`);
+  console.log(`    Top share: ${pct(tc.topShare)}  |  Entropy: ${fix2(tc.entropy)}`);
+  const topN = tc.byTemplate.slice(0, 5);
+  for (const t of topN) {
+    console.log(`    ${dim(t.templateId.slice(0, 28).padEnd(28))}  ${pct(t.share).padStart(6)}  (${t.count}x)`);
+  }
+
+  // Branching / threaded
+  const bf = report.branchingFire;
+  const tb = report.threadedBeats;
+  console.log(`\n  ${BOLD}Branching Fires${RESET}  total:${bf.totalFires}  per30t:${fix2(bf.firesPerChunk)}`);
+  console.log(`  ${BOLD}Threaded Beats${RESET}   total:${tb.totalBeats}  per10t:${fix2(tb.beatsPerChunk)}`);
+
+  // Eligibility funnel
+  const ef = report.eligibilityFunnel;
+  if (ef.available) {
+    console.log(`\n  ${BOLD}Eligibility Funnel${RESET}  (since tick ${ef.sinceTick}${ef.truncated ? ', truncated' : ''})`);
+    const topC = ef.topConsidered.slice(0, 5);
+    for (const t of topC) {
+      const gateLabel = t.topGate ? `  [gated:${t.topGate}]` : '';
+      console.log(`    ${dim(t.templateId.slice(0, 28).padEnd(28))}  seen:${t.considered}  cvr:${pct(t.conversionRate)}${gateLabel}`);
+    }
+    if (ef.mostGatedBranching.length > 0) {
+      console.log(`  ${BOLD}Most-gated branching templates${RESET}`);
+      for (const t of ef.mostGatedBranching) {
+        const gateLabel = t.topGate ? `  [${t.topGate}]` : '';
+        console.log(`    ${dim(t.templateId.slice(0, 28).padEnd(28))}  cvr:${pct(t.conversionRate)}${gateLabel}`);
+      }
+    }
+  } else {
+    console.log(`\n  ${DIM}Eligibility funnel: no data${RESET}`);
+  }
+
+  // Resolution gap
+  const rg = report.resolutionGap;
+  if (!rg.insufficientData) {
+    const sign = rg.meanCapabilityMargin >= 0 ? '+' : '';
+    console.log(`\n  ${BOLD}Resolution Gap${RESET}  steps:${rg.stepCount}  capability margin: ${sign}${fix2(rg.meanCapabilityMargin)}`);
+  }
+
+  // Threshold table
+  console.log(`\n  ${BOLD}Threshold Evaluation${RESET}`);
+  for (const t of report.thresholds) {
+    const col = statusColor(t.status);
+    const indicator = t.status === 'green' ? '✓' : t.status === 'red' ? '✗' : '~';
+    const dir = t.direction === 'above_is_bad' ? '≤' : '≥';
+    console.log(`    ${col}${indicator}${RESET} ${t.metric.padEnd(28)} val:${fix2(t.value).padStart(6)}  ${dir}${fix2(t.threshold)}`);
+  }
+}
+
 function startAutoRun(speed?: number, autoAftermath = autoAftermathDefault): void {
   if (speed !== undefined && speed > 0) autoRunSpeed = speed;
   autoAftermathEnabledForRun = autoAftermath;
@@ -570,6 +651,8 @@ function printHelp(): void {
   console.log(`  ${BOLD}balance targets${RESET}  Show target bands`);
   console.log(`  ${BOLD}balance recent${RESET} [N] Show last N balance events`);
   console.log(`  ${BOLD}balance agent${RESET} <id> Show agent journey`);
+  console.log(`  ${BOLD}kpi${RESET}              Gameplay KPI report (outcomes, templates, funnel, thresholds)`);
+  console.log(`  ${BOLD}kpi --json${RESET}       KPI report as raw JSON`);
   console.log(`  ${BOLD}spawn encounter${RESET} <agent|@hero> <templateId>  Spawn an encounter on an agent`);
   console.log(`  ${BOLD}spawn attachment${RESET} <agent|@hero> <templateId> Attach an item/trait to an agent`);
   console.log(`  ${BOLD}aftermath list${RESET} <agent|@hero>   List pending aftermath reactions for an agent`);
@@ -1161,6 +1244,10 @@ function handleCommand(line: string): boolean {
       // sub-commands: summary (default), idle, templates, eval, targets, recent [N], agent <id>
       const subParts = arg ? arg.split(/\s+/) : [];
       printBalance(subParts[0], subParts[1]);
+      break;
+    }
+    case 'kpi': {
+      printKpi(arg === '--json');
       break;
     }
     case 'spawn': {

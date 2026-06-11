@@ -693,5 +693,14 @@ if (import.meta.env.DEV) {
       if (!state) return [];
       return state.activeCompositions ?? [];
     },
+
+    // Gameplay KPI report (THR-457)
+    getKpiReport: async () => {
+      const state = _gameStateProvider?.();
+      const runtime = _runtimeProvider?.();
+      if (!state) return null;
+      const { computeGameplayKpiReport } = await import('./engine/kpi/gameplayKpi');
+      return computeGameplayKpiReport(state, runtime ?? null);
+    },
   };
 }

@@ -36,6 +36,8 @@ import { createBalanceTelemetry } from './balanceTelemetry';
 import { BALANCE_TARGETS_VERSION } from './balanceTargets';
 import { emitTrace } from './traceBuffer';
 import type { ForeshadowingResult } from '../types/foreshadowing';
+import type { EligibilityFunnelCounters } from './kpi/gameplayKpi';
+import { createEligibilityFunnelCounters } from './kpi/gameplayKpi';
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -61,6 +63,14 @@ export interface SimulationRuntime {
   /** Bumps on every balance event recorded. Allows UI/tooling memoization. */
   balanceTelemetryVersion: number;
 
+  // ── Eligibility funnel counters (THR-457) ──
+  /**
+   * Per-template eligibility funnel counters accumulated by the filter pipeline and scoring hooks.
+   * Null until `resetEligibilityFunnel()` is called or init overrides.
+   * Initialized to active counters in `createSimulationRuntime()`.
+   */
+  eligibilityFunnel: EligibilityFunnelCounters | null;
+
   // ── Foreshadowing cache (THR-389) ──
   /**
    * Per-session cache of foreshadowing results keyed by
@@ -84,6 +94,7 @@ export function createSimulationRuntime(): SimulationRuntime {
     encounterCacheRebuildCount: 0,
     balanceTelemetry: createBalanceTelemetry({ targetVersion: BALANCE_TARGETS_VERSION }),
     balanceTelemetryVersion: 0,
+    eligibilityFunnel: createEligibilityFunnelCounters(0),
     foreshadowingCache: new Map(),
   };
 }

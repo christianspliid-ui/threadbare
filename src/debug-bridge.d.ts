@@ -320,6 +320,9 @@ export interface DebugBridge {
   /** Returns all foreshadowing resolution traces, optionally filtered to a specific agent id (THR-389). */
   listForeshadowingTraces: (agentId?: string) => Promise<ReadonlyArray<import('./types/trace').TraceEntry>>;
 
+  /** Returns a KPI report for the current game state (THR-457). Returns null if state is unavailable. */
+  getKpiReport: () => Promise<import('./engine/kpi/gameplayKpi').GameplayKpiReport | null>;
+
   /** THR-430 — Schism inspection: list pending schisms in the live game state. */
   schism: {
     list: () => ReadonlyArray<{

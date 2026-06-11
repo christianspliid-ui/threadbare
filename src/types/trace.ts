@@ -227,7 +227,9 @@ export type TraceCategory =
   | 'mentorship_lesson'
   | 'mentorship_graduated'
   | 'mentorship_surpassed'
-  | 'mentorship_severed';
+  | 'mentorship_severed'
+  // KPI harness (THR-457)
+  | 'kpi';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -426,6 +428,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'mentorship_graduated',
   'mentorship_surpassed',
   'mentorship_severed',
+  // KPI harness (THR-457)
+  'kpi',
 ];
 
 /** Base shape for all trace entries */
@@ -2007,3 +2011,10 @@ export interface SurveyProseComposedTrace extends TraceBase {
   /** Named mortals included in the people-layer clause (THR-440); 0 means the fallback fired. */
   namedMortalCount: number;
 }
+
+/** Trace: KPI snapshot emitted by CLI `kpi` command or `window.__DEBUG.getKpiReport()` (THR-457) */
+export interface KpiSnapshotTrace extends TraceBase {
+  category: 'kpi';
+  report: import('../engine/kpi/gameplayKpi').GameplayKpiReport;
+}
+

@@ -1,9 +1,13 @@
 # Middleware
 
+## auth
+- authoring-brief — `Docs\authoring-brief.md`
+- 2026-05-05-canonical-documentation-strategy — `Docs\plans\2026-05-05-canonical-documentation-strategy.md`
+- 2026-05-09-auto-generated-ledgers — `Docs\plans\2026-05-09-auto-generated-ledgers.md`
+- generate-impediment-dashboard — `scripts\generate-impediment-dashboard.ts`
+- courtStrategicPack — `src\data\strategic-packs\courtStrategicPack.ts`
+
 ## custom
-- action.star.consecrate — `Actions\Star\action.star.consecrate.md`
-- action.star.desecrate — `Actions\Star\action.star.desecrate.md`
-- consent-integrate — `Design\distributions\design-council-v1.0\prompts\consent-integrate.md`
 - 2026-03-06-content-strategy — `Docs\plans\2026-03-06-content-strategy.md`
 - 2026-03-10-qa-test-strategy — `Docs\plans\2026-03-10-qa-test-strategy.md`
 - 2026-03-10-visual-asset-strategy — `Docs\plans\2026-03-10-visual-asset-strategy.md`
@@ -12,9 +16,9 @@
 - 2026-04-12-encounter-actor-test-strategy — `Docs\plans\2026-04-12-encounter-actor-test-strategy.md`
 - 2026-04-15-strategic-actions-ui-visibility-design — `Docs\plans\2026-04-15-strategic-actions-ui-visibility-design.md`
 - 2026-05-05-canonical-documentation-strategy-brainstorm — `Docs\plans\2026-05-05-canonical-documentation-strategy-brainstorm.md`
-- rel.generates — `Relationships\rel.generates.md`
-- rel.venerates — `Relationships\rel.venerates.md`
 - generate-hex-tile — `scripts\generate-hex-tile.py`
+- generate-ul-dashboard-data — `scripts\generate-ul-dashboard-data.ts`
+- generate-ul-dashboard-data.test — `scripts\__tests__\generate-ul-dashboard-data.test.ts`
 - generateVault.test — `scripts\__tests__\generateVault.test.ts`
 - StrategicMarkerMesh — `src\components\HexMapV2\scene\StrategicMarkerMesh.ts`
 - civic-guard-definition — `src\data\civic-guard-definition.ts`
@@ -24,6 +28,8 @@
 - scholarStrategicPack — `src\data\strategic-packs\scholarStrategicPack.ts`
 - warlordStrategicPack — `src\data\strategic-packs\warlordStrategicPack.ts`
 - zealotStrategicPack — `src\data\strategic-packs\zealotStrategicPack.ts`
+- generateEncounterCandidates — `src\engine\encounters\generateEncounterCandidates.ts`
+- generateEncounterCandidates.test — `src\engine\encounters\__tests__\generateEncounterCandidates.test.ts`
 - phaseStrategicProjects — `src\engine\phaseStrategicProjects.ts`
 - strategicActionCandidates — `src\engine\strategicActionCandidates.ts`
 - strategicActionLifecycle — `src\engine\strategicActionLifecycle.ts`
@@ -37,11 +43,6 @@
 - strategicActionScoring.test — `src\engine\__tests__\strategicActionScoring.test.ts`
 - strategicBehaviorFamilies.test — `src\engine\__tests__\strategicBehaviorFamilies.test.ts`
 - strategicAction — `src\types\strategicAction.ts`
-
-## auth
-- authoring-brief — `Docs\authoring-brief.md`
-- 2026-05-05-canonical-documentation-strategy — `Docs\plans\2026-05-05-canonical-documentation-strategy.md`
-- courtStrategicPack — `src\data\strategic-packs\courtStrategicPack.ts`
 
 ## rate-limit
 - 2026-04-23-linear-mcp-rate-limits — `Docs\plans\2026-04-23-linear-mcp-rate-limits.md`
