@@ -77,7 +77,8 @@ import {
   REVEAL_AWE_DELTA,
   REVEAL_WAKE_MARK_DURATION,
 } from '../data/self-action-constants';
-import type { SelfActionTrace } from '../types/trace';
+import type { SelfActionTrace, ResolutionInputTrace } from '../types/trace';
+import { applyScaleDifficultyAdjust, applyScaleCritFailureGate, MIN_PROBABILITY_BY_SCALE } from './resolutionScaleAdjust';
 import type { AscendantProperties } from '../types/influence';
 import { accumulateImportance, getImportanceDelta, getRarityTier } from './rarity';
 import type { TraceEntry } from '../types/trace';
@@ -299,6 +300,19 @@ export function resolveUncontestedStep(
 
   // Phase 2: Use shared resolution service.
   // Unified action difficulty is already normalized (0..1) — pass through directly.
+
+  // THR-451: Apply scale-based difficulty adjustments at the caller boundary.
+  // The resolver stays scale-agnostic; all scale tuning happens here.
+  const rawDifficulty = effectiveDifficulty;
+  const { adjustedDifficulty, scaleOffsetApplied, scaleFloorApplied } = applyScaleDifficultyAdjust(
+    effectiveDifficulty,
+    capability,
+    sphereFactor,
+    pushModifier + interventionBoost,
+    template.scale,
+  );
+  effectiveDifficulty = adjustedDifficulty;
+
   const resolutionInput: ResolutionInput = {
     actorId: action.actorId,
     domain: step.reach,
@@ -309,7 +323,55 @@ export function resolveUncontestedStep(
     testShapers,
   };
 
-  const result = resolveActionShared(resolutionInput, rng, undefined, 'unified_action');
+  const rawResult = resolveActionShared(resolutionInput, rng, undefined, 'unified_action');
+
+  // THR-451 Phase B: Probability floor for incapable actors.
+  // Difficulty-adjustment floor handles capable actors (cap ≥ scaleMinP).
+  // For incapable actors (cap < scaleMinP), the resolver's internal Math.max(0, diff)
+  // clamp zeroes negative adjusted difficulties, so that path has no effect.
+  // Post-process: if P < scaleMinP and the roll is a failure under P but a success under
+  // scaleMinP, upgrade 'failure'/'critical_failure' → 'success'.
+  // Only failure outcomes are upgraded — 'critical_success', 'success', 'success_at_cost'
+  // (e.g. shaper-upgraded near-miss failures) are preserved unchanged.
+  const scaleMinP = MIN_PROBABILITY_BY_SCALE[template.scale ?? 'regional'];
+  const probabilityFloorActive = rawResult.probability < scaleMinP;
+  const flooredResult = probabilityFloorActive
+    ? {
+      ...rawResult,
+      probability: scaleMinP,
+      outcome: (rawResult.roll <= Math.floor(scaleMinP * 100) &&
+                (rawResult.outcome === 'failure' || rawResult.outcome === 'critical_failure')
+                ? 'success' : rawResult.outcome) as OutcomeType,
+    }
+    : rawResult;
+
+  // THR-451 Phase B: Suppress critical_failure at personal/local scale.
+  const gatedOutcome = applyScaleCritFailureGate(flooredResult.outcome, template.scale);
+  const result = gatedOutcome === flooredResult.outcome
+    ? flooredResult
+    : { ...flooredResult, outcome: gatedOutcome };
+
+  // THR-451 Phase A: Emit full resolution input telemetry.
+  emitTrace({
+    category: 'resolution.input',
+    tick: state.tick,
+    actorId: action.actorId,
+    templateId: action.templateId,
+    scale: template.scale ?? 'regional',
+    capability,
+    difficulty: effectiveDifficulty,
+    rawDifficulty,
+    scaleOffsetApplied,
+    sphereFactor,
+    actionModifiers: pushModifier + interventionBoost,
+    influenceNudge: 0,
+    probability: flooredResult.probability,
+    scaleFloorApplied,
+    probabilityFloorApplied: probabilityFloorActive,
+    roll: rawResult.roll,
+    outcome: result.outcome,
+    summary: `resolution.input: ${action.templateId} scale=${template.scale ?? 'regional'} cap=${capability.toFixed(2)} diff=${effectiveDifficulty.toFixed(2)} P=${flooredResult.probability.toFixed(2)} roll=${rawResult.roll} → ${result.outcome}`,
+  } as ResolutionInputTrace);
 
   // Phase 3: If push was attempted, queue the spend event
   if (pushEvent && state.pendingQuintessenceEvents) {

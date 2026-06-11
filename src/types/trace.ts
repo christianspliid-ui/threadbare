@@ -3,7 +3,8 @@ import type { ReachDomain } from './traits';
 import type { ValuePair } from './agent';
 import type { ModifierResolutionTrace } from './modifiers';
 import type { LapseReason } from './controlEffect';
-import type { NarrativeLayer, StepOutcome } from './unifiedAction';
+import type { NarrativeLayer, StepOutcome, ActionScale } from './unifiedAction';
+import type { OutcomeType } from './resolution';
 import type { RarityTier } from './rarity';
 import type {
   AttentionTier,
@@ -231,7 +232,9 @@ export type TraceCategory =
   // KPI harness (THR-457)
   | 'kpi'
   // Branching encounter curator boost (THR-452)
-  | 'branching_curator_nudge';
+  | 'branching_curator_nudge'
+  // Resolution input telemetry (THR-451)
+  | 'resolution.input';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -434,6 +437,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'kpi',
   // Branching encounter curator boost (THR-452)
   'branching_curator_nudge',
+  // Resolution input telemetry (THR-451)
+  'resolution.input',
 ];
 
 /** Base shape for all trace entries */
@@ -1598,7 +1603,9 @@ export type TraceEntry =
   // Faction internal-pressure resolver (THR-433)
   | FactionKindleCallingTrace
   // Branching encounter curator nudge (THR-452)
-  | BranchingCuratorNudgeTrace;
+  | BranchingCuratorNudgeTrace
+  // Resolution input telemetry (THR-451)
+  | ResolutionInputTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {
@@ -2032,5 +2039,32 @@ export interface BranchingCuratorNudgeTrace extends TraceBase {
   /** Multiplier applied to the template's finalScore. */
   weight: number;
   cooldownTicks: number;
+}
+
+/** Full resolution input payload emitted at every NPC action resolution (THR-451 Phase A). */
+export interface ResolutionInputTrace extends TraceBase {
+  category: 'resolution.input';
+  actorId: string;
+  templateId: string;
+  scale: ActionScale;
+  capability: number;
+  /** Post-normalization, post-scale-offset difficulty fed to the resolver. */
+  difficulty: number;
+  /** Pre-scale-offset difficulty (after intel adjustment). */
+  rawDifficulty: number;
+  /** SCALE_DIFFICULTY_OFFSETS[scale] that was applied. */
+  scaleOffsetApplied: number;
+  sphereFactor: number;
+  actionModifiers: number;
+  influenceNudge: number;
+  /** Effective probability after all floor adjustments. */
+  probability: number;
+  /** True if difficulty-cap floor fired (capable actors where cap ≥ scaleMinP). */
+  scaleFloorApplied: boolean;
+  /** True if probability post-process floor fired (incapable actors where cap < scaleMinP). */
+  probabilityFloorApplied: boolean;
+  roll: number;
+  /** Final outcome after probability floor + scale-gated crit-failure downgrade. */
+  outcome: OutcomeType;
 }
 

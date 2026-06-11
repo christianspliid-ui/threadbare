@@ -507,6 +507,96 @@ function printBalance(subCmd?: string, subArg?: string): void {
   console.log(`${RED}Usage: balance [summary|idle|templates|eval|targets|recent [N]|agent <id>]${RESET}`);
 }
 
+// ─── Resolution Stats (THR-451) ───────────────────────────────────
+
+function printResolutionStats(n: number = 100): void {
+  const allTraces = getTraces().filter(t => t.category === 'resolution.input');
+  if (allTraces.length === 0) {
+    console.log(`${YELLOW}No resolution.input traces — advance ticks first (tracing must be enabled)${RESET}`);
+    return;
+  }
+  const last = allTraces.slice(-n) as unknown as Array<{
+    tick: number; actorId: string; templateId: string; scale: string;
+    capability: number; difficulty: number; rawDifficulty: number;
+    scaleOffsetApplied: number; sphereFactor: number; actionModifiers: number;
+    probability: number; scaleFloorApplied: boolean; probabilityFloorApplied: boolean; roll: number; outcome: string;
+  }>;
+
+  const total = last.length;
+  const outcomeCounts = new Map<string, number>();
+  const scaleCounts = new Map<string, Map<string, number>>();
+  let probSum = 0, diffSum = 0, rawDiffSum = 0, capSum = 0, floorHits = 0, probFloorHits = 0;
+
+  for (const t of last) {
+    outcomeCounts.set(t.outcome, (outcomeCounts.get(t.outcome) ?? 0) + 1);
+    probSum += t.probability ?? 0;
+    diffSum += t.difficulty ?? 0;
+    rawDiffSum += t.rawDifficulty ?? 0;
+    capSum += t.capability ?? 0;
+    if (t.scaleFloorApplied) floorHits++;
+    if (t.probabilityFloorApplied) probFloorHits++;
+    const scale = t.scale ?? 'unknown';
+    if (!scaleCounts.has(scale)) scaleCounts.set(scale, new Map());
+    const sm = scaleCounts.get(scale)!;
+    sm.set(t.outcome, (sm.get(t.outcome) ?? 0) + 1);
+  }
+
+  console.log(header(`Resolution Stats (last ${total} of ${allTraces.length})`));
+
+  console.log(`\n  ${BOLD}Outcome Distribution${RESET}  (n=${total})`);
+  const sortedOutcomes = [...outcomeCounts.entries()].sort((a, b) => b[1] - a[1]);
+  for (const [outcome, count] of sortedOutcomes) {
+    const pct = (count / total * 100).toFixed(1);
+    const bar = '█'.repeat(Math.round(count / total * 20));
+    console.log(`    ${outcome.padEnd(20)} ${count.toString().padStart(4)} (${pct.padStart(5)}%)  ${bar}`);
+  }
+
+  const failN = (outcomeCounts.get('failure') ?? 0) + (outcomeCounts.get('critical_failure') ?? 0);
+  const critFailN = outcomeCounts.get('critical_failure') ?? 0;
+  console.log(`\n  ${BOLD}Acceptance Check${RESET}`);
+  const failPct = failN / total * 100;
+  const critFailPct = critFailN / total * 100;
+  console.log(`    failure + critical_failure: ${failPct.toFixed(1)}%  (target ≤35%)  ${failPct <= 35 ? GREEN + '✓' : RED + '✗'}${RESET}`);
+  console.log(`    critical_failure only:      ${critFailPct.toFixed(1)}%  (target ≤5%)   ${critFailPct <= 5 ? GREEN + '✓' : RED + '✗'}${RESET}`);
+
+  console.log(`\n  ${BOLD}Averages${RESET}`);
+  console.log(`    capability:      ${(capSum / total).toFixed(3)}`);
+  console.log(`    raw difficulty:  ${(rawDiffSum / total).toFixed(3)}`);
+  console.log(`    adj difficulty:  ${(diffSum / total).toFixed(3)}`);
+  console.log(`    probability:     ${(probSum / total).toFixed(3)}`);
+  console.log(`    diff floor hit:  ${floorHits}/${total} (${(floorHits / total * 100).toFixed(1)}%)  (capable actors)`);
+  console.log(`    prob floor hit:  ${probFloorHits}/${total} (${(probFloorHits / total * 100).toFixed(1)}%)  (incapable actors)`);
+
+  console.log(`\n  ${BOLD}By Scale${RESET}`);
+  for (const [scale, outcomes] of scaleCounts.entries()) {
+    const scaleTotal = [...outcomes.values()].reduce((a, b) => a + b, 0);
+    const scaleFail = (outcomes.get('failure') ?? 0) + (outcomes.get('critical_failure') ?? 0);
+    const scaleSucc = (outcomes.get('success') ?? 0) + (outcomes.get('critical_success') ?? 0);
+    const failRate = (scaleFail / scaleTotal * 100).toFixed(1);
+    const succRate = (scaleSucc / scaleTotal * 100).toFixed(1);
+    console.log(`    ${scale.padEnd(10)} n=${scaleTotal}  fail=${failRate}%  clean-success=${succRate}%`);
+  }
+
+  console.log(`\n  ${BOLD}TSV (last ${total} rows)${RESET}`);
+  console.log(`  tick\tactor\ttemplate\tscale\tcap\trawDiff\tadjDiff\tP\troll\toutcome\tdiffFloor\tprobFloor`);
+  for (const t of last) {
+    console.log([
+      t.tick,
+      (t.actorId ?? '').slice(0, 12),
+      (t.templateId ?? '').slice(0, 32),
+      t.scale ?? '',
+      (t.capability ?? 0).toFixed(3),
+      (t.rawDifficulty ?? 0).toFixed(3),
+      (t.difficulty ?? 0).toFixed(3),
+      (t.probability ?? 0).toFixed(3),
+      t.roll ?? 0,
+      t.outcome ?? '',
+      t.scaleFloorApplied ? '1' : '0',
+      t.probabilityFloorApplied ? '1' : '0',
+    ].join('\t'));
+  }
+}
+
 // ─── KPI ─────────────────────────────────────────────────────────
 
 function printKpi(isJson = false): void {
@@ -894,6 +984,7 @@ function printHelp(): void {
   console.log(`  ${BOLD}balance targets${RESET}  Show target bands`);
   console.log(`  ${BOLD}balance recent${RESET} [N] Show last N balance events`);
   console.log(`  ${BOLD}balance agent${RESET} <id> Show agent journey`);
+  console.log(`  ${BOLD}resolution-stats${RESET} [N]  Resolution input diagnostic: last N resolutions as TSV+summary (THR-451)`);
   console.log(`  ${BOLD}kpi${RESET}              Gameplay KPI report (outcomes, templates, funnel, thresholds)`);
   console.log(`  ${BOLD}kpi --json${RESET}       KPI report as raw JSON`);
   console.log(`  ${BOLD}kpi branching-audit${RESET}  Phase A diagnostic: run ${BRANCHING_AUDIT_SEEDS.length} seeds × ${BRANCHING_AUDIT_TICKS} ticks, write Docs/audits/ report`);
@@ -1488,6 +1579,12 @@ function handleCommand(line: string): boolean {
       // sub-commands: summary (default), idle, templates, eval, targets, recent [N], agent <id>
       const subParts = arg ? arg.split(/\s+/) : [];
       printBalance(subParts[0], subParts[1]);
+      break;
+    }
+    case 'resolution-stats':
+    case 'res-stats': {
+      const n = parseInt(arg, 10);
+      printResolutionStats(isNaN(n) ? 100 : n);
       break;
     }
     case 'kpi': {

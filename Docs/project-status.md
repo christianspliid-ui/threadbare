@@ -1,5 +1,5 @@
 # Project Status
-> Updated 2026-06-11.
+> Updated 2026-06-12.
 
 ## Current Focus
 **Encounter Experience — active:** Phases A1–A3, B1–B7, C1–C4, D1–D3, E1–E2, F1–F2, G1–G3 ✅. Remaining is F-phase integration (mount EffectRegistration components into hero panel / cast tile / scene state surfaces) and Phase H post-v1 polish.
@@ -14,6 +14,7 @@
 - **Social Systems Expansion (Now):** THR-28/27/30/51/29/41/34/31/35 shipped. ✅ THR-254/253. THR-78 queued.
 - **Thematic Pressure & Living World (Next):** ✅ THR-19/122/125/126/80/128/127. THR-87 blocked by THR-116.
 
+- ✅ 2026-06-12: THR-451 shipped — Outcome Economy Retune: eliminate failure-dominant world. Two-tier probability floor in `resolutionScaleAdjust.ts` (personal 0.70, local 0.65). `ResolutionInputTrace` + `resolution-stats` CLI command. Reduces overall failure from 96% → 34.6% avg across 3 seeds. Critical failure at personal/local gated to 0%. Critical success preserved. PR #319.
 - ✅ 2026-06-11: THR-452 shipped — Branching encounter reachability. Curator bias (1.75× for under-selected branching templates), outgrowth exemption (`BRANCHING_QUEST_SKIP_OUTGROWTH`), cap preservation (`BRANCHING_CAP_RESERVE=1`). 27 of 28 branching templates were never firing; now reachable. 24 files, `branchingCurator.ts` + `branchingConstants.ts` (new), `BranchingCuratorNudgeTrace`.
 - ✅ 2026-06-11: THR-457 shipped — Gameplay observability KPI harness. `src/engine/kpi/` (gameplayKpi.ts + kpiConstants.ts), `EligibilityFunnelCounters` on SimulationRuntime, filter pipeline + scoring hooks, CLI `kpi` command, `window.__DEBUG.getKpiReport()`, DebugPanel KPI tab, `scripts/gameplay-report.ts` + `npm run gameplay-report`. 17 KPI tests. Confirmed: 96% failure + 0 branching fires at seed 42 tick 120.
 - ✅ 2026-06-11: THR-450 shipped — retrospective path reconciliation. `Design/retros/` is now the canonical output/archive location for live retros; active skills, scripts, CLAUDE/AGENTS/process docs, and the 2026-05-04 finalized retro were updated accordingly. Verification: skill-sync + retro-draft + test/typecheck/build all green.
