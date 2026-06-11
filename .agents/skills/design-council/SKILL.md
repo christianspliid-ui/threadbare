@@ -156,13 +156,13 @@ Context files: `CLAUDE.md`, `.agents/skills/engine-architecture/SKILL.md`, `.age
 
 Framing: "You are the agent that watches the Cowork → CC → Codex pipeline end to end. Your job is to notice handoff friction, Linear discipline gaps, review overhead, and protocol bugs — anything that slows the journey from 'idea' to 'merged PR'."
 
-Context files: `Docs/plans/2026-04-13-linear-coordination-protocol.md`, `Docs/plans/2026-04-19-cc-review-replacement.md`, `Docs/impediments.md` (recent entries), most recent file in `Docs/retrospectives/`.
+Context files: `Docs/plans/2026-04-13-linear-coordination-protocol.md`, `Docs/plans/2026-04-19-cc-review-replacement.md`, `Docs/impediments.md` (recent entries), most recent file in `Design/retros/`.
 
 ### State-of-the-product perspective (for readiness questions)
 
 Framing: "You are the agent that knows what is shipped, what is partly shipped, and what is planned. Your job is to assess current state against upcoming work demands and surface preparation gaps."
 
-Context files: `Docs/project-status.md`, Linear projects (via MCP), recent `Docs/retrospectives/`, and `.planning/ROADMAP.md`.
+Context files: `Docs/project-status.md`, Linear projects (via MCP), recent `Design/retros/`, and `.planning/ROADMAP.md`.
 
 ## Termination Rules
 

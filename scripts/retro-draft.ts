@@ -37,7 +37,7 @@ type ClusterBucket = {
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(SCRIPT_DIR, "..");
 const IMPEDIMENT_LOG_PATH = path.join(REPO_ROOT, "Docs", "impediments.md");
-const RETRO_DIR = path.join(REPO_ROOT, "Docs", "retrospectives");
+const RETRO_DIR = path.join(REPO_ROOT, "Design", "retros");
 
 const IMPACT_MINUTES: Record<Impact, number> = {
   S: 1,
@@ -400,7 +400,7 @@ function main(): void {
   );
 
   fs.mkdirSync(RETRO_DIR, { recursive: true });
-  const outputPath = path.join(RETRO_DIR, `${outputDate}-retro-draft.md`);
+  const outputPath = path.join(RETRO_DIR, `retro-${outputDate}-draft.md`);
   fs.writeFileSync(outputPath, output, "utf8");
   console.log(`retro-draft wrote ${path.relative(REPO_ROOT, outputPath)} (${filteredEntries.length} entries)`);
 }

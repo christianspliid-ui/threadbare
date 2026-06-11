@@ -75,7 +75,7 @@ Read `Docs/impediments.md` end-to-end, then:
 
 ### Pass 5 — Retrospectives directory
 
-Read `Docs/retrospectives/` and identify:
+Read `Design/retros/` and identify:
 
 1. **Most recent retro:** What date, what was the #1 systemic issue, what immediate/short-term actions were committed?
 2. **Dangling actions:** Cross-reference each committed action against Linear. Any action without a corresponding Linear issue (open or closed) = dangling. File a finding.
@@ -144,7 +144,7 @@ Post a summary comment on the most recently filed Linear issue — one plain-tex
 - `Docs/plans/2026-04-13-linear-coordination-protocol.md` — handoff protocol, coordination block template, the two-queue design
 - `Docs/plans/2026-04-16-systemic-wiring-guide.md` — content-pillar reference (useful when a finding touches content authoring)
 - `Docs/impediments.md` — the log you're auditing
-- `Docs/retrospectives/` — retro cadence and dangling actions
+- `Design/retros/` — retro cadence and dangling actions
 - Linear "Continuous Improvement" project — where findings land
 
 ## What this skill does NOT do

@@ -4,7 +4,7 @@
  *
  * Reads .claude/hooks/.retro-pending.txt written by the Stop hook,
  * parses friction entries, appends them to Docs/impediments.md,
- * and optionally drafts a retro stub in Docs/retrospectives/.
+ * and optionally drafts a retro stub in Design/retros/.
  *
  * Called by .claude/hooks/stop-retro.sh on the second Stop invocation.
  * Must exit 0 in all cases (fail-soft: hook crash must never block session close).
@@ -45,7 +45,7 @@ const HOOKS_DIR = path.join(REPO_ROOT, ".claude", "hooks");
 const PENDING_FILE = path.join(HOOKS_DIR, ".retro-pending.txt");
 const LOG_FILE = path.join(HOOKS_DIR, "stop-retro.log");
 const IMPEDIMENT_LOG = path.join(REPO_ROOT, "Docs", "impediments.md");
-const RETRO_DIR = path.join(REPO_ROOT, "Docs", "retrospectives");
+const RETRO_DIR = path.join(REPO_ROOT, "Design", "retros");
 
 // --- Types ---
 

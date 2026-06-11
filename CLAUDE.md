@@ -229,7 +229,7 @@ updated: YYYY-MM-DD
 - Obsidian vault index: read via Obsidian MCP → `TheFantasyWorldSimulator/Index.md`
 - Documentation ownership: `Docs/documentation-ownership.md`
 - Integration wiring checklist: `Docs/plans/wiring-checklist.md`
-- Impediment log: `Docs/impediments.md` · Retrospectives: `Docs/retrospectives/`
+- Impediment log: `Docs/impediments.md` · Retrospectives: `Design/retros/`
 
 Design docs live in `Docs/plans/` (named `YYYY-MM-DD-topic.md`). Find them by browsing the directory or loading the relevant domain skill.
 
@@ -432,7 +432,7 @@ create_scheduled_task(
   taskId: "weekly-retro",
   description: "Run weekly retrospective reading drift-scan issues + impediments log (Fridays ~1 hour after drift scan)",
   cronExpression: "0 17 * * 5",  // adjust to your local time equivalent of 15:00 UTC
-  prompt: "Run the weekly retrospective. Invoke the retrospective skill via the Skill tool and follow it exactly. It will load this week's drift-scan-labeled Linear issues from Continuous Improvement as Step 0, then synthesize with Docs/impediments.md. Write output to Docs/retrospectives/YYYY-MM-DD-retro.md. Implement quick wins. Open Linear issues for larger improvements. Execute autonomously."
+  prompt: "Run the weekly retrospective. Invoke the retrospective skill via the Skill tool and follow it exactly. It will load this week's drift-scan-labeled Linear issues from Continuous Improvement as Step 0, then synthesize with Docs/impediments.md. Write output to Design/retros/retro-YYYY-MM-DD.md. Implement quick wins. Open Linear issues for larger improvements. Execute autonomously."
 )
 ```
 
@@ -527,7 +527,7 @@ Context for specific problem types lives in on-demand skills. **Always load the 
 Two skills form a feedback loop:
 
 1. **`impediment-reporter`** — Every agent logs friction as it happens → `Docs/impediments.md`
-2. **`retrospective`** — Periodically analyze the log, implement quick wins, backlog bigger fixes → `Docs/retrospectives/`
+2. **`retrospective`** — Periodically analyze the log, implement quick wins, backlog bigger fixes → `Design/retros/`
 
 Repetitive workflows → propose a skill. Use `anthropic-skills:skill-creator` to build and eval 
 
