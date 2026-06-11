@@ -1,7 +1,7 @@
 ---
 name: retrospective
 description: Review the impediment log (Docs/impediments.md) and conduct a structured retrospective. Reads this week's drift-scan Linear issues as the first input, then analyzes patterns, proposes concrete improvements to tools, skills, CLAUDE.md, and processes. Trigger with "/retrospective" or "run a retro" or "review impediments" or "continuous improvement review".
-last_validated_against: 2026-05-08
+last_validated_against: 2026-06-11
 ---
 
 # Retrospective
@@ -43,7 +43,7 @@ Record which scan issue IDs were consumed; include them in the retro report.
 
 ### Step 1: Generate Deterministic Draft, Then Validate
 
-Run `npm run retro-draft` first. This writes `Docs/retrospectives/YYYY-MM-DD-retro-draft.md` from `Docs/impediments.md` using deterministic parsing and stable ordering.
+Run `npm run retro-draft` first. This writes `Design/retros/retro-YYYY-MM-DD-draft.md` from `Docs/impediments.md` using deterministic parsing and stable ordering.
 
 Open the generated draft and cross-check it against `Docs/impediments.md` before writing narrative conclusions. Treat the impediment log as the source of truth if anything disagrees.
 
@@ -116,7 +116,7 @@ If there are undocumented capabilities, flag them as a quick-win improvement (ed
 
 ### Step 6: Write the Retrospective Report
 
-Create a dated file: `Docs/retrospectives/YYYY-MM-DD-retro.md`
+Create a dated file: `Design/retros/retro-YYYY-MM-DD.md`
 
 Structure:
 ```markdown
@@ -165,7 +165,7 @@ Add a horizontal rule and note at the bottom of `Docs/impediments.md`:
 
 ```markdown
 ---
-**Retrospective conducted: YYYY-MM-DD** — N impediments reviewed, N improvements implemented, N backlogged. Scan issues consumed: <IDs or "none">. Report: `Docs/retrospectives/YYYY-MM-DD-retro.md`
+**Retrospective conducted: YYYY-MM-DD** — N impediments reviewed, N improvements implemented, N backlogged. Scan issues consumed: <IDs or "none">. Report: `Design/retros/retro-YYYY-MM-DD.md`
 ---
 ```
 

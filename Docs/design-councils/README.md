@@ -35,7 +35,7 @@ Or implicitly by triggering phrases ("let's get multiple perspectives on X", "ho
 ## Relationship to other surfaces
 
 - Councils are **prospective** — they deliberate changes before they're made.
-- `Docs/retrospectives/` is **retrospective** — it processes past friction from `Docs/impediments.md`.
+- `Design/retros/` is **retrospective** — it processes past friction from `Docs/impediments.md`.
 - Together, the two surfaces form the continuous-improvement loop: retros surface friction, councils decide how to address it.
 
 ## What counts as a council-worthy question

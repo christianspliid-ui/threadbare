@@ -110,7 +110,7 @@ The weekly GitHub Action (`.github/workflows/drift-scan.yml`) that runs four sig
 **Also see:** `[[Drift Scan]]`, `[[Non-Functional Priority]]`
 **Status:** canonical
 
-The weekly synthesis of the impediment log (`Docs/impediments.md`) + drift scan issues into a structured retrospective document (`Docs/retrospectives/YYYY-MM-DD-retro.md`). Run via the `retrospective` skill. The retrospective implements quick wins inline and opens Linear issues for larger improvements. It is the sense-making layer that converts quantitative scan data into qualitative judgment.
+The weekly synthesis of the impediment log (`Docs/impediments.md`) + drift scan issues into a structured retrospective document (`Design/retros/retro-YYYY-MM-DD.md`). Run via the `retrospective` skill. The retrospective implements quick wins inline and opens Linear issues for larger improvements. It is the sense-making layer that converts quantitative scan data into qualitative judgment.
 
 ---
 

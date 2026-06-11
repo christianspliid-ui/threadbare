@@ -123,7 +123,7 @@ Three surfaces, each with a distinct purpose. Full ownership rules and duplicati
 - Obsidian vault index: read via Obsidian MCP → `TheFantasyWorldSimulator/Index.md`
 - Documentation ownership: `Docs/documentation-ownership.md`
 - Integration wiring checklist: `Docs/plans/wiring-checklist.md`
-- Impediment log: `Docs/impediments.md` · Retrospectives: `Docs/retrospectives/`
+- Impediment log: `Docs/impediments.md` · Retrospectives: `Design/retros/`
 
 Design docs live in `Docs/plans/` (named `YYYY-MM-DD-topic.md`). Find them by browsing the directory or loading the relevant domain skill.
 
@@ -280,6 +280,6 @@ Context for specific problem types lives in on-demand skills. **Always load the 
 Two skills form a feedback loop:
 
 1. **`impediment-reporter`** — Every agent logs friction as it happens → `Docs/impediments.md`
-2. **`retrospective`** — Periodically analyze the log, implement quick wins, backlog bigger fixes → `Docs/retrospectives/`
+2. **`retrospective`** — Periodically analyze the log, implement quick wins, backlog bigger fixes → `Design/retros/`
 
 Repetitive workflows → propose a skill. Use `skill-creator` to build and eval 
