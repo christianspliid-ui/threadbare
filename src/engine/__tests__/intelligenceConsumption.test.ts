@@ -1,4 +1,4 @@
-/**
+﻿/**
  * End-to-end consumption tests for intelligence records (THR-113).
  * Verifies scoring bonus + trace emission for scoring_boost, and that
  * non-matching candidates do not emit traces.
@@ -58,6 +58,7 @@ function mkCandidate(overrides: Partial<EncounterCacheEntry>): EncounterCacheEnt
     requiresPresence: true,
     remotePenalty: 0,
     questPriority: 1.0,
+    isQuestEncounter: false,
     totalTickCost: 3,
     successRewardEstimate: 2.0,
     stepCount: 1,

@@ -171,6 +171,7 @@ function buildCacheEntry(
     remotePenalty: 0,
     sphereAffinity: template.sphereAffinity,
     questPriority: 3.0,
+    isQuestEncounter: template.steps.some(s => isActionStepBranch(s)),
     totalTickCost,
     successRewardEstimate: 0.04,
     stepCount: template.steps.length,

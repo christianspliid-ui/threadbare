@@ -29,6 +29,7 @@ import type { HexTile, SphereName } from '../types/index';
 import type { GraphNode } from '../types/graph';
 import type { WorldGraph } from './graph';
 import { getEncountersByLocationType, getEncountersBySublocationAndLocation } from '../data/encounter-content';
+import { LOCATION_BRANCHING_ENCOUNTER_TEMPLATES } from '../data/unified-action-templates';
 import { hexKey } from '../lib/hexKey';
 import { hexDistance } from '../lib/hexMath';
 import { DANGER_DIFFICULTY_SCALE } from './worldgen/constants';
@@ -96,6 +97,9 @@ export interface EncounterCacheEntry {
   questPriority: number;
   /** Target agent ID for social encounters (agent-to-agent). Undefined for location encounters. */
   targetAgentId?: string;
+  /** True when the template contains at least one branching step (ActionStepBranch).
+   *  Used by the curator pipeline (THR-452) to boost and preserve branching encounters. */
+  isQuestEncounter: boolean;
   // Pre-computed for scoring:
   totalTickCost: number;
   successRewardEstimate: number;
@@ -208,6 +212,7 @@ function buildEntryUnified(
     totalTickCost: computeTotalTickCostUnified(tmpl),
     successRewardEstimate: computeRewardEstimateUnified(tmpl),
     stepCount: tmpl.steps.length,
+    isQuestEncounter: tmpl.steps.some(s => isActionStepBranch(s)),
     // UAT difficulty is 0-1; convert to legacy 0-100 scale for scoring compatibility.
     stepDifficulties: tmpl.steps.map(sb => {
       const s = isActionStepBranch(sb) ? sb.fallback : sb;
@@ -242,10 +247,22 @@ function buildEntriesForLocationAndSublocations(
         entries.push(buildEntryUnified(tmpl, locationId, sub.id, subTypeId, difficultyMultiplier));
       }
     }
+    // Also include branching quest templates matched by location type (THR-452)
+    for (const tmpl of LOCATION_BRANCHING_ENCOUNTER_TEMPLATES) {
+      if (tmpl.locationSubtypes?.includes(locationType as never)) {
+        entries.push(buildEntryUnified(tmpl, locationId, null, null, difficultyMultiplier));
+      }
+    }
   } else {
     const templates = getEncountersByLocationType(locationType);
     for (const tmpl of templates) {
       entries.push(buildEntryUnified(tmpl, locationId, null, null, difficultyMultiplier));
+    }
+    // Also include branching quest templates matched by location type (THR-452)
+    for (const tmpl of LOCATION_BRANCHING_ENCOUNTER_TEMPLATES) {
+      if (tmpl.locationSubtypes?.includes(locationType as never)) {
+        entries.push(buildEntryUnified(tmpl, locationId, null, null, difficultyMultiplier));
+      }
     }
   }
 

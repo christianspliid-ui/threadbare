@@ -10,7 +10,26 @@ import {
 } from '../encounterCache';
 import { getEncountersByLocationType } from '../../data/encounter-content';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import { isActionStepBranch } from '../../types/unifiedAction';
 import { DIFFICULTY_TIER_MULTIPLIERS } from '../../data/agent-behavior-constants';
+import { LOCATION_BRANCHING_ENCOUNTER_TEMPLATES } from '../../data/unified-action-templates';
+
+/** Count of branching encounter templates whose locationSubtypes include the given type. */
+function branchingCountForType(locationType: string): number {
+  return LOCATION_BRANCHING_ENCOUNTER_TEMPLATES.filter(
+    t => t.locationSubtypes?.includes(locationType as never),
+  ).length;
+}
+
+/** All templates (standard + branching) for a given location type. */
+function allTemplatesForType(locationType: string): UnifiedActionTemplate[] {
+  return [
+    ...getEncountersByLocationType(locationType),
+    ...LOCATION_BRANCHING_ENCOUNTER_TEMPLATES.filter(
+      t => t.locationSubtypes?.includes(locationType as never),
+    ),
+  ];
+}
 
 // ─── Helpers ────────────────────────────────────────────────────
 
@@ -92,7 +111,7 @@ describe('EncounterCacheManager', () => {
     cache.buildFullCache(graph);
 
     const entries = cache.getEntriesForLocation('loc.1');
-    const expectedTemplates = getEncountersByLocationType('town');
+    const expectedTemplates = allTemplatesForType('town');
     expect(entries.length).toBe(expectedTemplates.length);
     expect(entries.length).toBeGreaterThan(0);
 
@@ -149,7 +168,7 @@ describe('EncounterCacheManager', () => {
     cache.onLocationCreated(graph, 'loc.new');
 
     const entries = cache.getEntriesForLocation('loc.new');
-    const expected = getEncountersByLocationType('town');
+    const expected = allTemplatesForType('town');
     expect(entries.length).toBe(expected.length);
     expect(entries.length).toBeGreaterThan(0);
   });
@@ -179,7 +198,7 @@ describe('EncounterCacheManager', () => {
     cache.onLocationTypeChanged(graph, 'loc.1');
 
     const ruinsCount = cache.getEntriesForLocation('loc.1').length;
-    const expectedRuins = getEncountersByLocationType('ruins');
+    const expectedRuins = allTemplatesForType('ruins');
     expect(ruinsCount).toBe(expectedRuins.length);
 
     // Town and ruins have different template sets
@@ -201,7 +220,7 @@ describe('EncounterCacheManager', () => {
     addLocation(graph, 'loc.b', 'Town B', 'town');
     cache.buildFullCache(graph);
 
-    const townTemplateCount = getEncountersByLocationType('town').length;
+    const townTemplateCount = allTemplatesForType('town').length;
     expect(cache.getEntryCount()).toBe(townTemplateCount * 2);
   });
 
@@ -215,7 +234,7 @@ describe('EncounterCacheManager', () => {
     const before = cache.getEntryCount();
     addLocation(graph, 'loc.wild2', 'Wilderness 2', 'wilderness');
     cache.onLocationCreated(graph, 'loc.wild2');
-    const wildEntries = getEncountersByLocationType('wilderness');
+    const wildEntries = allTemplatesForType('wilderness');
     expect(cache.getEntriesForLocation('loc.wild2').length).toBe(wildEntries.length);
   });
 });
@@ -331,7 +350,7 @@ describe('EncounterCacheEntry field correctness', () => {
     cache.buildFullCache(graph);
 
     const entries = cache.getEntriesForLocation('loc.1');
-    const templates = getEncountersByLocationType('town');
+    const templates = allTemplatesForType('town');
     const templateMap = new Map(templates.map(t => [t.id, t]));
 
     for (const entry of entries) {
@@ -340,8 +359,12 @@ describe('EncounterCacheEntry field correctness', () => {
       expect(entry.stepCount).toBe(tmpl.steps.length);
       // C.1: Difficulty tier scaling — at tick 0 (default), tier is 'early'
       // UAT difficulty is 0-1; cache stores 0-100 scale (multiply by 100 for scoring compatibility)
-      expect(entry.stepDifficulties).toEqual(tmpl.steps.map(s => Math.round(s.difficulty * 100 * DIFFICULTY_TIER_MULTIPLIERS.early)));
-      expect(entry.stepReaches).toEqual(tmpl.steps.map(s => s.reach));
+      // Branching steps use their fallback step's difficulty and reach.
+      expect(entry.stepDifficulties).toEqual(tmpl.steps.map(s => {
+        const step = isActionStepBranch(s) ? s.fallback : s;
+        return Math.round(step.difficulty * 100 * DIFFICULTY_TIER_MULTIPLIERS.early);
+      }));
+      expect(entry.stepReaches).toEqual(tmpl.steps.map(s => isActionStepBranch(s) ? s.fallback.reach : s.reach));
     }
   });
 

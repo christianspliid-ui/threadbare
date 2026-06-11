@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import {
   resolveIdleBehavior,
   deriveAmbitionTarget,
@@ -51,6 +51,7 @@ function makeTrivialEntry(
     requiresPresence: true,
     remotePenalty: 0,
     questPriority: 1,
+    isQuestEncounter: false,
     totalTickCost: 1,
     successRewardEstimate: 0.5,
     stepCount: 1,

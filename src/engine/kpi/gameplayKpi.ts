@@ -15,6 +15,7 @@
 
 import type { GameState } from '../../types/gameState';
 import { getAnyEncounterById } from '../../data/encounter-content';
+import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 import {
   KPI_FAILURE_RATE_MAX,
   KPI_CRITFAIL_RATE_MAX,
@@ -176,10 +177,12 @@ function evalThreshold(
 
 const BRANCHING_TEMPLATE_CACHE = new Map<string, boolean>();
 
-function isBranchingTemplate(templateId: string): boolean {
+export function isBranchingTemplate(templateId: string): boolean {
   const cached = BRANCHING_TEMPLATE_CACHE.get(templateId);
   if (cached !== undefined) return cached;
-  const tmpl = getAnyEncounterById(templateId);
+  // Use getUnifiedTemplateById: checks UNIFIED_ACTION_TEMPLATES (includes src/data/encounters/
+  // branching templates) before falling back to getAnyEncounterById for legacy templates.
+  const tmpl = getUnifiedTemplateById(templateId) ?? getAnyEncounterById(templateId);
   const result = tmpl ? tmpl.steps.some(s => 'branchOnStep' in s) : false;
   BRANCHING_TEMPLATE_CACHE.set(templateId, result);
   return result;
