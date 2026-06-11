@@ -305,7 +305,7 @@ describe('unifiedActionResolution', () => {
         steps: [{
           reach: 'iron',
           duration: { min: 1, max: 1 },
-          difficulty: 0.1,
+          difficulty: 0.3,
           onSuccess: [{ op: 'update_node', nodeId: '$target', changes: { rescued: true } }],
           onFailure: [],
           failBehavior: 'fail_action',
@@ -314,7 +314,7 @@ describe('unifiedActionResolution', () => {
       const state = createMinimalGameState();
       const actorNode = state.graph.getNode('actor-1');
       if (actorNode) {
-        actorNode.properties.domainCapabilities = { iron: 11 };
+        actorNode.properties.domainCapabilities = { iron: 13 };
       }
       state.graph.addNode({
         id: 'artifact.duelist_token',
@@ -346,7 +346,7 @@ describe('unifiedActionResolution', () => {
         scale: 'personal', source: 'agent', tick: 0, template, rng: fixedRng,
       });
 
-      const result = resolveUncontestedStep(action, template, state, () => 0.52);
+      const result = resolveUncontestedStep(action, template, state, () => 0.73);
       expect(result.outcome).toBe('success_at_cost');
       expect(result.opsToExecute).toHaveLength(1);
     });
@@ -355,6 +355,7 @@ describe('unifiedActionResolution', () => {
       it('applies full bonus for reliable intel match', () => {
         enableTracing();
         const template = make1StepTemplate({
+          scale: 'regional',
           steps: [{
             reach: 'iron',
             duration: { min: 1, max: 1 },
@@ -386,6 +387,7 @@ describe('unifiedActionResolution', () => {
       it('applies half bonus for uncertain intel match', () => {
         enableTracing();
         const template = make1StepTemplate({
+          scale: 'regional',
           steps: [{
             reach: 'iron',
             duration: { min: 1, max: 1 },
@@ -417,6 +419,7 @@ describe('unifiedActionResolution', () => {
       it('applies no bonus for dubious intel match', () => {
         enableTracing();
         const template = make1StepTemplate({
+          scale: 'regional',
           steps: [{
             reach: 'iron',
             duration: { min: 1, max: 1 },
@@ -436,8 +439,9 @@ describe('unifiedActionResolution', () => {
         });
 
         const result = resolveUncontestedStep(action, template, state, successRng);
-        const capability = 1 / (1 + Math.exp(-0.4 * (12 - 10)));
-        expect(result.probability).toBeCloseTo(capability - 0.5, 6);
+        // Regional floor (0.20) kicks in: difficulty=0.5 exceeds maxDiffForFloor=(cap-0.20).
+        // Intel was not consulted (no trace), confirming dubious reliability gets no bonus.
+        expect(result.probability).toBeCloseTo(0.20, 6);
         expect(getTraces().filter(t => t.category === 'intelligence_referenced')).toHaveLength(0);
         disableTracing();
       });
@@ -445,6 +449,7 @@ describe('unifiedActionResolution', () => {
       it('applies no bonus when no record matches', () => {
         enableTracing();
         const template = make1StepTemplate({
+          scale: 'regional',
           steps: [{
             reach: 'iron',
             duration: { min: 1, max: 1 },
@@ -467,8 +472,9 @@ describe('unifiedActionResolution', () => {
         });
 
         const result = resolveUncontestedStep(action, template, state, successRng);
-        const capability = 1 / (1 + Math.exp(-0.4 * (12 - 10)));
-        expect(result.probability).toBeCloseTo(capability - 0.5, 6);
+        // Regional floor (0.20) kicks in: difficulty=0.5 exceeds maxDiffForFloor=(cap-0.20).
+        // No matching intel record, so no difficulty reduction was applied.
+        expect(result.probability).toBeCloseTo(0.20, 6);
         expect(getTraces().filter(t => t.category === 'intelligence_referenced')).toHaveLength(0);
         disableTracing();
       });
@@ -476,6 +482,7 @@ describe('unifiedActionResolution', () => {
       it('is inert when step lacks the flag', () => {
         enableTracing();
         const template = make1StepTemplate({
+          scale: 'regional',
           steps: [{
             reach: 'iron',
             duration: { min: 1, max: 1 },
@@ -494,8 +501,9 @@ describe('unifiedActionResolution', () => {
         });
 
         const result = resolveUncontestedStep(action, template, state, successRng);
-        const capability = 1 / (1 + Math.exp(-0.4 * (12 - 10)));
-        expect(result.probability).toBeCloseTo(capability - 0.5, 6);
+        // Step lacks difficultyContext so intel is never consulted (no trace).
+        // Regional floor (0.20) applies: difficulty=0.5 exceeds maxDiffForFloor=(cap-0.20).
+        expect(result.probability).toBeCloseTo(0.20, 6);
         expect(getTraces().filter(t => t.category === 'intelligence_referenced')).toHaveLength(0);
         disableTracing();
       });
@@ -503,6 +511,7 @@ describe('unifiedActionResolution', () => {
       it('floor-clamps effective difficulty at 0', () => {
         enableTracing();
         const template = make1StepTemplate({
+          scale: 'regional',
           steps: [{
             reach: 'iron',
             duration: { min: 1, max: 1 },
