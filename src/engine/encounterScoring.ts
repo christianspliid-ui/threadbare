@@ -86,6 +86,14 @@ export {
   WANDERLUST_PAIR,
   ROLE_PRIMARY_AFFINITY_BONUS,
   ROLE_SECONDARY_AFFINITY_BONUS,
+  NOVELTY_GLOBAL_HALF_LIFE,
+  NOVELTY_GLOBAL_MAX_PENALTY,
+  NOVELTY_AGENT_HALF_LIFE,
+  NOVELTY_AGENT_MAX_PENALTY,
+  NOVELTY_CATEGORY_WINDOW_TICKS,
+  NOVELTY_CATEGORY_QUOTA_SOFT,
+  NOVELTY_CATEGORY_QUOTA_MAX_PENALTY,
+  NOVELTY_COMBINED_CAP,
 } from '../data/agent-behavior-constants';
 
 import {
@@ -114,6 +122,14 @@ import {
   ANOMALY_EYE_THRESHOLD,
   ROLE_PRIMARY_AFFINITY_BONUS,
   ROLE_SECONDARY_AFFINITY_BONUS,
+  NOVELTY_GLOBAL_HALF_LIFE,
+  NOVELTY_GLOBAL_MAX_PENALTY,
+  NOVELTY_AGENT_HALF_LIFE,
+  NOVELTY_AGENT_MAX_PENALTY,
+  NOVELTY_CATEGORY_WINDOW_TICKS,
+  NOVELTY_CATEGORY_QUOTA_SOFT,
+  NOVELTY_CATEGORY_QUOTA_MAX_PENALTY,
+  NOVELTY_COMBINED_CAP,
 } from '../data/agent-behavior-constants';
 import { ANOMALY_RESOURCE_MAP } from '../data/resource-content';
 import { NPC_ROLE_REACH_MAP } from '../types/npc';
@@ -489,6 +505,8 @@ export interface ScoredCandidate {
   intelBonus: number;
   /** Flat additive bias from doom identity + active omen state for this encounter type (THR-81). */
   identityBiasBonus: number;
+  /** Novelty pressure multiplier applied after curator bias (1.0 = no pressure, <1.0 = penalized). */
+  noveltyMultiplier: number;
   finalScore: number;
   action: 'start_local' | 'queue_movement' | 'attempt_remote';
 }
@@ -498,6 +516,85 @@ export interface DecisionResult {
   rankedCandidates: ScoredCandidate[];
   topCandidates: ScoredCandidate[];
   trace: ScoringTrace;
+}
+
+// ─── Novelty Tracking ──────────────────────────────────────────
+
+/** Global novelty state stored in GameState and updated per tick when agents commit to encounters. */
+export interface EncounterNoveltyRecord {
+  /** Last tick each template was selected globally (across all agents). templateId → tick */
+  globalLastSelected: Record<string, number>;
+  /** Selection count per reach-category within the current rolling window. */
+  categoryWindowCounts: Record<string, number>;
+  /** Total selections in the current rolling window. */
+  categoryWindowTotal: number;
+  /** Tick when the current category window started. */
+  categoryWindowStart: number;
+}
+
+/**
+ * Global recency penalty: exponential decay since last global selection of this template.
+ * Returns 0 when the template has never been selected.
+ */
+export function computeGlobalNoveltyPenalty(
+  record: EncounterNoveltyRecord | undefined,
+  templateId: string,
+  currentTick: number,
+): number {
+  if (!record) return 0;
+  const lastTick = record.globalLastSelected[templateId];
+  if (lastTick === undefined) return 0;
+  const ticksSince = Math.max(0, currentTick - lastTick);
+  return NOVELTY_GLOBAL_MAX_PENALTY * Math.exp(-Math.LN2 * ticksSince / NOVELTY_GLOBAL_HALF_LIFE);
+}
+
+/**
+ * Per-agent recency penalty: exponential decay since this agent last selected this template.
+ * Returns 0 when the agent has never selected this template.
+ */
+export function computeAgentNoveltyPenalty(
+  agentLastSelected: Record<string, number> | undefined,
+  templateId: string,
+  currentTick: number,
+): number {
+  if (!agentLastSelected) return 0;
+  const lastTick = agentLastSelected[templateId];
+  if (lastTick === undefined) return 0;
+  const ticksSince = Math.max(0, currentTick - lastTick);
+  return NOVELTY_AGENT_MAX_PENALTY * Math.exp(-Math.LN2 * ticksSince / NOVELTY_AGENT_HALF_LIFE);
+}
+
+/**
+ * Combined novelty multiplier: 1 minus the capped sum of global recency, agent recency,
+ * and category quota penalties. Returns a value in [1 - NOVELTY_COMBINED_CAP, 1.0].
+ * Deterministic: same inputs → same output (no PRNG).
+ */
+export function computeNoveltyMultiplier(
+  globalRecord: EncounterNoveltyRecord | undefined,
+  agentLastSelected: Record<string, number> | undefined,
+  templateId: string,
+  category: string,
+  currentTick: number,
+): number {
+  const globalPenalty = computeGlobalNoveltyPenalty(globalRecord, templateId, currentTick);
+  const agentPenalty = computeAgentNoveltyPenalty(agentLastSelected, templateId, currentTick);
+
+  let quotaPenalty = 0;
+  if (globalRecord && globalRecord.categoryWindowTotal > 0) {
+    const categoryCount = globalRecord.categoryWindowCounts[category] ?? 0;
+    const categoryFraction = categoryCount / globalRecord.categoryWindowTotal;
+    if (categoryFraction > NOVELTY_CATEGORY_QUOTA_SOFT) {
+      const excess = categoryFraction - NOVELTY_CATEGORY_QUOTA_SOFT;
+      const maxExcess = 1 - NOVELTY_CATEGORY_QUOTA_SOFT;
+      quotaPenalty = NOVELTY_CATEGORY_QUOTA_MAX_PENALTY * Math.min(1, excess / maxExcess);
+    }
+  }
+
+  const combinedPenalty = Math.min(
+    NOVELTY_COMBINED_CAP,
+    globalPenalty + agentPenalty + quotaPenalty,
+  );
+  return 1 - combinedPenalty;
 }
 
 // ─── Step Probability ───────────────────────────────────────────
@@ -756,6 +853,8 @@ export function scoreAndSelect(
   /** Active intelligence records for this agent — actionable intel boosts scoring (THR-113). */
   intelligenceRecords?: readonly IntelligenceRecord[],
   runtime?: ScoringRuntime,
+  /** Global novelty record from GameState — penalizes recently over-selected templates (THR-453). */
+  noveltyRecord?: EncounterNoveltyRecord,
 ): DecisionResult {
   // Fail-soft: missing agent → null result
   const agentNode = graph.getNode(agentId);
@@ -788,6 +887,7 @@ export function scoreAndSelect(
   // Read agent tracking records (fail-soft: treat missing as empty)
   const familiarityRecord = agentNode.properties?.familiarityRecord as FamiliarityRecord | undefined;
   const explorationRecord = agentNode.properties?.explorationRecord as ExplorationRecord | undefined;
+  const agentNoveltyLastSelected = agentNode.properties?.agentNoveltyLastSelected as Record<string, number> | undefined;
   const chainProgress = getChainProgress(agentNode.properties as Record<string, unknown>);
 
   const scored: ScoredCandidate[] = [];
@@ -795,6 +895,9 @@ export function scoreAndSelect(
   // many candidates in one scoreAndSelect call, but we only want one audit trace
   // per (record, scoring_boost) pair per call.
   const emittedIntelRecords = new Set<string>();
+  // Track pre-novelty winner to detect novelty-driven selection changes (NFP #2 inspectability).
+  let preNoveltyBestScore = -Infinity;
+  let preNoveltyBestId: string | null = null;
 
   for (const entry of candidates) {
     // 1. Completion probability (kept for backward compat / trace output)
@@ -979,7 +1082,14 @@ export function scoreAndSelect(
 
     // 17b. Branching curator bias (THR-452) — boost under-selected branching templates
     const curatorMultiplier = computeBranchingCuratorMultiplier(entry, agentId, tick, runtime ?? null);
-    const finalScore = rawFinalScore * curatorMultiplier;
+    const preNoveltyScore = rawFinalScore * curatorMultiplier;
+    if (preNoveltyScore > preNoveltyBestScore) {
+      preNoveltyBestScore = preNoveltyScore;
+      preNoveltyBestId = entry.templateId;
+    }
+    // 17c. Novelty pressure (THR-453) — penalise recently over-selected templates
+    const noveltyMultiplier = computeNoveltyMultiplier(noveltyRecord, agentNoveltyLastSelected, entry.templateId, entry.reachPrimary, tick);
+    const finalScore = preNoveltyScore * noveltyMultiplier;
 
     // 17. Action classification
     let action: ScoredCandidate['action'];
@@ -1017,6 +1127,7 @@ export function scoreAndSelect(
       markRevealBonus,
       intelBonus,
       identityBiasBonus,
+      noveltyMultiplier,
       finalScore,
       action,
     });
@@ -1040,11 +1151,18 @@ export function scoreAndSelect(
     if (selectedFunnelRec) selectedFunnelRec.selected++;
   }
 
+  // Detect if novelty pressure changed which template won (NFP #2 — emit trace for inspectability)
+  const noveltyChangedSelection =
+    selected !== null &&
+    preNoveltyBestId !== null &&
+    selected.entry.templateId !== preNoveltyBestId;
+  const preNoveltyWinnerId = noveltyChangedSelection ? preNoveltyBestId : null;
+
   return {
     selected,
     rankedCandidates: scored,
     topCandidates: top5,
-    trace: buildTrace(agentId, tick, selected, top5),
+    trace: buildTrace(agentId, tick, selected, top5, noveltyChangedSelection, preNoveltyWinnerId),
   };
 }
 
@@ -1055,6 +1173,8 @@ function buildTrace(
   tick: number,
   selected: ScoredCandidate | null,
   top5: ScoredCandidate[],
+  noveltyChangedSelection?: boolean,
+  preNoveltyWinnerId?: string | null,
 ): ScoringTrace {
   return {
     id: 0,
@@ -1078,6 +1198,7 @@ function buildTrace(
       globalResonance: c.globalResonance,
       rarityMultiplier: c.rarityMultiplier,
       roleAffinityMultiplier: c.roleAffinityMultiplier,
+      noveltyMultiplier: c.noveltyMultiplier,
       // Phase 4: rich forecast fields
       expectedUtility: c.expectedUtility,
       pushBenefit: c.pushBenefit,
@@ -1087,6 +1208,8 @@ function buildTrace(
     selectedTemplateId: selected?.entry.templateId ?? null,
     selectedLocationId: selected?.entry.locationId ?? null,
     action: selected ? selected.action : 'idle',
+    noveltyChangedSelection: noveltyChangedSelection ?? false,
+    preNoveltyWinnerId: preNoveltyWinnerId ?? null,
     summary: selected
       ? `Agent ${agentId} chose ${selected.entry.templateId} (score=${selected.finalScore.toFixed(3)})`
       : `Agent ${agentId} idles (no candidates above threshold)`,

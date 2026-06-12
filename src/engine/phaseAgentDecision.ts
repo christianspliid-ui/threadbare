@@ -27,7 +27,7 @@ import {
   ENCOUNTER_COMPLETION_COOLDOWN,
 } from '../types/encounter';
 import { runFilterPipeline } from './encounterFilterPipeline';
-import { scoreAndSelect, type FamiliarityRecord, type ScoredCandidate } from './encounterScoring';
+import { scoreAndSelect, NOVELTY_CATEGORY_WINDOW_TICKS, type FamiliarityRecord, type ScoredCandidate, type EncounterNoveltyRecord } from './encounterScoring';
 import { resolveIdleBehavior } from './idleBehavior';
 import { isEncounterOccupied } from './encounter';
 import { getAnyEncounterById } from '../data/encounter-content';
@@ -50,6 +50,7 @@ import { resolveLocationToHex } from './encounterAwareness';
 import { hexDistance } from '../lib/hexMath';
 import { MAX_AWARENESS_HOPS, EDGE_HEX_AWARENESS_BONUS } from '../data/agent-behavior-constants';
 import type { SimulationRuntime } from './simulationRuntime';
+import { touchWorld } from './simulationRuntime';
 import { recordBalanceEvent } from './balanceTelemetry';
 import { prepareEncounterSupportBundle } from './encounterSupportBundle';
 import { initializeClearanceGates } from './clearanceGate';
@@ -228,6 +229,22 @@ export function phaseAgentDecision(
     ? new Map(state.clearanceGateStates)
     : undefined;
   let accumulatedStrategicState = state.strategicState;
+
+  // Mutable novelty record for this tick — updated as agents commit to encounters (THR-453).
+  // Clone shallowly so we don't mutate the previous state's object.
+  const noveltyRecord: EncounterNoveltyRecord = state.encounterNoveltyRecord
+    ? {
+        globalLastSelected: { ...state.encounterNoveltyRecord.globalLastSelected },
+        categoryWindowCounts: { ...state.encounterNoveltyRecord.categoryWindowCounts },
+        categoryWindowTotal: state.encounterNoveltyRecord.categoryWindowTotal,
+        categoryWindowStart: state.encounterNoveltyRecord.categoryWindowStart,
+      }
+    : {
+        globalLastSelected: {},
+        categoryWindowCounts: {},
+        categoryWindowTotal: 0,
+        categoryWindowStart: state.tick,
+      };
 
   // Derive map dimensions for edge hex awareness bonus
   let mapCols = 0;
@@ -569,6 +586,7 @@ export function phaseAgentDecision(
         agentHiddenMarks,
         agentIntelligence,
         runtime,
+        noveltyRecord,
       );
 
       // Emit scoring trace
@@ -961,7 +979,29 @@ export function phaseAgentDecision(
                   },
                 };
                 freshForFamiliarity.properties.consecutiveIdleTicks = 0;
+
+                // THR-453: Track per-agent novelty — which templates this agent recently selected.
+                const existingAgentNovelty = (freshForFamiliarity.properties?.agentNoveltyLastSelected as Record<string, number> | undefined) ?? {};
+                freshForFamiliarity.properties.agentNoveltyLastSelected = {
+                  ...existingAgentNovelty,
+                  [sel.entry.templateId]: state.tick,
+                };
               }
+            }
+
+            // THR-453: Update global novelty record — tracks recency and category quotas.
+            {
+              // Roll category window forward if it has expired.
+              if (state.tick - noveltyRecord.categoryWindowStart >= NOVELTY_CATEGORY_WINDOW_TICKS) {
+                noveltyRecord.categoryWindowCounts = {};
+                noveltyRecord.categoryWindowTotal = 0;
+                noveltyRecord.categoryWindowStart = state.tick;
+              }
+              noveltyRecord.globalLastSelected[sel.entry.templateId] = state.tick;
+              const cat = sel.entry.reachPrimary;
+              noveltyRecord.categoryWindowCounts[cat] = (noveltyRecord.categoryWindowCounts[cat] ?? 0) + 1;
+              noveltyRecord.categoryWindowTotal += 1;
+              if (runtime) touchWorld(runtime);
             }
             // Reset whisperAvailable — non-generic encounters consume the Whisper.
             // Generic encounters (questPriority <= 1.0) do NOT reset the flag.
@@ -1386,6 +1426,7 @@ export function phaseAgentDecision(
     unifiedActions: [...state.unifiedActions, ...newUnifiedActions],
     clearanceGateStates: nextClearanceGateStates ?? state.clearanceGateStates,
     premonitionQueue: [...existingPremonitions, ...newPremonitions],
+    encounterNoveltyRecord: noveltyRecord,
     ...(accumulatedStrategicState ? { strategicState: accumulatedStrategicState } : {}),
   };
 }

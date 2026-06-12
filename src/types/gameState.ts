@@ -35,6 +35,7 @@ import type { AgentKnowledge } from './agentKnowledge';
 import type { DigestEntry, ThreadTug, QueuedStoryBeat } from './attention';
 import type { StrategicRuntimeState } from './strategicAction';
 import type { OmenState, EmittedOmen } from './omen';
+import type { EncounterNoveltyRecord } from '../engine/encounterScoring';
 
 // ─── Active Composition ─────────────────────────────────────────
 
@@ -324,6 +325,9 @@ export interface GameState {
 
   // Onboarding — one-shot flags for auto-triggered encounters
   meetTheFirstAutoTriggered?: boolean;
+
+  // Template novelty pressure — global recency/quota tracking to prevent template monopoly (THR-453)
+  encounterNoveltyRecord?: EncounterNoveltyRecord;
 
   // Metaprogression (persists across cycles)
   worldSoul: WorldSoulState;

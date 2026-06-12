@@ -849,3 +849,45 @@ export const INTEL_REFERENCED_PROSE_SIGNIFICANCE_DUBIOUS = 0.3;
  * @range bool
  */
 export const INTEL_REFERENCED_PROSE_DUBIOUS_FIRES = true;
+
+// ═══════════════════════════════════════════════════════════════════
+// NOVELTY PRESSURE — Template recency penalty + category quotas (encounterScoring.ts, THR-453)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Ticks for global recency penalty to halve (8 game-hours at 12 ticks/day).
+ * Controls how quickly a globally over-selected template recovers its full score.
+ * @range 2–10 */
+export const NOVELTY_GLOBAL_HALF_LIFE = 4;
+
+/** Maximum global recency penalty (multiplied into finalScore via 1-penalty factor).
+ * Applied when a template was just selected by any agent this tick.
+ * @range 0.3–0.8 */
+export const NOVELTY_GLOBAL_MAX_PENALTY = 0.55;
+
+/** Ticks for per-agent recency penalty to halve (decays faster than global).
+ * Controls how quickly an agent's own repeat-selection penalty clears.
+ * @range 1–6 */
+export const NOVELTY_AGENT_HALF_LIFE = 3;
+
+/** Maximum per-agent recency penalty. Stacks with global recency, capped by NOVELTY_COMBINED_CAP.
+ * @range 0.2–0.6 */
+export const NOVELTY_AGENT_MAX_PENALTY = 0.45;
+
+/** Rolling window size in ticks for category quota counting (1 game-day = 12 ticks).
+ * Counts how many times each reach-category was selected within this window.
+ * @range 6–24 */
+export const NOVELTY_CATEGORY_WINDOW_TICKS = 12;
+
+/** Fraction of window selections above which category quota penalty begins.
+ * At 0.18 with 9 reaches, any reach taking >18% of selections triggers a penalty.
+ * @range 0.12–0.30 */
+export const NOVELTY_CATEGORY_QUOTA_SOFT = 0.18;
+
+/** Maximum category quota penalty when a single category heavily dominates the window.
+ * @range 0.20–0.50 */
+export const NOVELTY_CATEGORY_QUOTA_MAX_PENALTY = 0.35;
+
+/** Maximum combined novelty penalty across all three signals (global + agent + quota).
+ * Ensures even over-selected templates still score at ≥25% of their raw value.
+ * @range 0.60–0.90 */
+export const NOVELTY_COMBINED_CAP = 0.75;
