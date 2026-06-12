@@ -3,7 +3,7 @@
 ## Most Imported Files (change these carefully)
 
 - `src\engine\graph.ts` — imported by **497** files
-- `src\types\gameState.ts` — imported by **313** files
+- `src\types\gameState.ts` — imported by **314** files
 - `src\types\unifiedAction.ts` — imported by **238** files
 - `src\types\index.ts` — imported by **210** files
 - `src\types\traits.ts` — imported by **207** files
@@ -26,7 +26,7 @@
 ## Import Map (who imports what)
 
 - `src\engine\graph.ts` ← `src\components\AgentInfoCard\AgentInfoCard.tsx`, `src\components\Game\AgentInfoCard.tsx`, `src\components\Game\debug\ArmiesTabContent.tsx`, `src\components\Game\debug\BondOverlay.tsx`, `src\components\Game\debug\CulturePhoneticsInspector.tsx` +492 more
-- `src\types\gameState.ts` ← `scripts\cli.ts`, `scripts\playtest-format.ts`, `scripts\playtest.ts`, `scripts\__tests__\playtest-format.test.ts`, `src\components\Game\ascendant-bar\AscendantBar.tsx` +308 more
+- `src\types\gameState.ts` ← `scripts\cli.ts`, `scripts\playtest-format.ts`, `scripts\playtest.ts`, `scripts\__tests__\playtest-format.test.ts`, `src\components\Game\ascendant-bar\AscendantBar.tsx` +309 more
 - `src\types\unifiedAction.ts` ← `scripts\cli.ts`, `src\components\Game\ActionDrawer.tsx`, `src\components\Game\ActionDrawer.tsx`, `src\components\Game\ascendant-bar\selectors.ts`, `src\components\Game\debug\DebugTabContent.tsx` +233 more
 - `src\types\index.ts` ← `scripts\cli.ts`, `scripts\playtest.ts`, `src\components\Game\ActionCard.tsx`, `src\components\Game\debug\DebugTabContent.tsx`, `src\components\Game\DebugPanel.tsx` +205 more
 - `src\types\traits.ts` ← `src\components\CMS\registry.ts`, `src\components\Game\AgentDetailPanel.tsx`, `src\components\Game\AgentInfoCard.tsx`, `src\components\Game\AscendantSheet.tsx`, `src\components\Game\AscendantSheet.tsx` +202 more

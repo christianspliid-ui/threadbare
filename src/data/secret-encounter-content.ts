@@ -41,6 +41,9 @@ type SecretEntry = {
     narrative: string;
     onSuccess: { narrative: string; reputationDelta?: number };
     onFailure: { narrative: string; reputationDelta?: number };
+    criticalSuccessAfterimage?: string;
+    successAtCostAfterimage?: string;
+    criticalFailureAfterimage?: string;
   }>;
 };
 
@@ -76,6 +79,11 @@ function toSecretTemplate(e: SecretEntry): UnifiedActionTemplate {
         onFailure: [],
         failBehavior: (index < e.steps.length - 1 ? 'continue_weakened' : 'fail_action') as 'continue_weakened' | 'fail_action',
         narrativeTemplate: step.narrative,
+        successAfterimage: step.onSuccess.narrative,
+        failureAfterimage: step.onFailure.narrative,
+        criticalSuccessAfterimage: step.criticalSuccessAfterimage,
+        successAtCostAfterimage: step.successAtCostAfterimage,
+        criticalFailureAfterimage: step.criticalFailureAfterimage,
         successMetadata: step.onSuccess.reputationDelta !== undefined ? { reputationDelta: step.onSuccess.reputationDelta } : undefined,
         failureMetadata: step.onFailure.reputationDelta !== undefined ? { reputationDelta: step.onFailure.reputationDelta } : undefined,
       };
@@ -134,6 +142,17 @@ const SECRET_DISCOVERY_ENCOUNTER_TEMPLATES_RAW: SecretEntry[] = [
           narrative: '{targetAgent} considers {actor} for a long moment, then looks back at their drink. "You seem like a decent sort," they say. "But some things stay in the cup."',
           reputationDelta: -0.01,
         },
+        criticalSuccessAfterimage:
+          'What comes out is not a fragment but the whole shape of the thing — the names, the when, the why. ' +
+          '{targetAgent} talks until they are empty of it, and {actor} receives everything they came for ' +
+          'and more than they were prepared to hold.',
+        successAtCostAfterimage:
+          'The words come, and they are true. But in the telling, {targetAgent} looks up once with sudden clarity — ' +
+          'they know they have said too much, and they know to whom. The secret is given. The goodwill around it is not.',
+        criticalFailureAfterimage:
+          '{targetAgent} does not just keep the secret — they withdraw the warmth that made this hour possible. ' +
+          'Whatever {actor} said or did not say, the cup stays sealed and the chair across from {targetAgent} ' +
+          'is now occupied by someone who has been weighed and found wanting.',
       },
     ],
   },
@@ -166,6 +185,18 @@ const SECRET_DISCOVERY_ENCOUNTER_TEMPLATES_RAW: SecretEntry[] = [
           narrative: '{actor} watches, but {targetAgent} gives nothing away. Whatever was there to see, the angle was wrong, or the light was bad, or {actor} was not looking at the right moment.',
           reputationDelta: 0,
         },
+        criticalSuccessAfterimage:
+          'The understanding is complete and specific: not just that something is wrong, but what it is, and who else knows. ' +
+          '{actor} sits very still because moving would break the clarity — and because what {they} just understood ' +
+          'carries weight they were not prepared for.',
+        successAtCostAfterimage:
+          '{actor} understood something, and then {targetAgent} looked their way. ' +
+          'The moment lasted less than a heartbeat, but that kind of eye contact does not leave both parties unchanged. ' +
+          'The observation succeeded. The observer has been observed.',
+        criticalFailureAfterimage:
+          '{targetAgent} does not just give nothing away — they register {actor}\'s attention and catalogue it. ' +
+          'The watching was noticed in the moment it happened, which means that whatever {actor} hoped to learn ' +
+          'from observation will now have to be earned some other way.',
       },
     ],
   },
@@ -199,6 +230,16 @@ const SECRET_DISCOVERY_ENCOUNTER_TEMPLATES_RAW: SecretEntry[] = [
           narrative: 'The words were there, but the noise of the room swallowed the parts that would have mattered. {actor} caught tone, not content — and tone proves nothing.',
           reputationDelta: 0,
         },
+        criticalSuccessAfterimage:
+          'More than enough. The voices did not drop quickly enough, and what {actor} heard was specific: ' +
+          'names, a decision, the thing that cannot be unsaid once it has been said. The shape of it is complete.',
+        successAtCostAfterimage:
+          'Enough to understand the shape of it — but {actor} heard their own name once, unmistakably, before the voices dropped. ' +
+          'The eavesdropping succeeded. The question of what {targetAgent} knows about {actor} opened at the same moment.',
+        criticalFailureAfterimage:
+          '{actor} leaned slightly too close at the wrong moment. {targetAgent}\'s voice cut off, and both of them knew why. ' +
+          'The argument continued somewhere {actor} could not follow, and the look {targetAgent} gave on the way out ' +
+          'was the most informative thing {actor} witnessed all evening.',
       },
     ],
   },
@@ -232,6 +273,18 @@ const SECRET_DISCOVERY_ENCOUNTER_TEMPLATES_RAW: SecretEntry[] = [
           narrative: '{targetAgent} talks a great deal, as people in this state tend to, but nothing that rises above the level of complaint. {actor} leaves knowing less than they hoped.',
           reputationDelta: 0,
         },
+        criticalSuccessAfterimage:
+          'Not just the truth, but the entire architecture behind it — the sequence of events, the name at the center, the years it has been sitting unsaid. ' +
+          '{targetAgent} will wake up tomorrow with the particular dread of someone who cannot remember exactly what they disclosed, ' +
+          'but knows it was more than they should have.',
+        successAtCostAfterimage:
+          'The truth comes out, and then {targetAgent} comes partially back to themselves — enough to see {actor} clearly ' +
+          'and to want to know who they are and how well they will keep what they have just heard. ' +
+          'The secret was given. The silence around it was not.',
+        criticalFailureAfterimage:
+          '{targetAgent} talks a great deal, and then they stop. Not drunk-stops — decides-to-stop. ' +
+          '"You\'re asking about something," they say, with a clarity that was not there three drinks ago. ' +
+          'Whatever window existed has closed, and the person across from {actor} is alert now in a way they were not before.',
       },
     ],
   },
@@ -264,6 +317,17 @@ const SECRET_DISCOVERY_ENCOUNTER_TEMPLATES_RAW: SecretEntry[] = [
           narrative: 'The contact is apologetic. They have pieces, but not enough. Whatever {targetAgent} is concealing, they have been careful, and careful is hard to break from the outside.',
           reputationDelta: 0,
         },
+        criticalSuccessAfterimage:
+          'The contact brought more than expected — not just observations but corroborated dates, a second source, ' +
+          'and one piece the contact had considered burying. The shape of it is complete, and the second source makes it actionable.',
+        successAtCostAfterimage:
+          'The information adds up. So does the meeting: the contact was not alone in keeping it, ' +
+          'and {actor} recognized one of the watchers. What was learned today was worth the risk. ' +
+          'Whether the risk is still contained is a different question.',
+        criticalFailureAfterimage:
+          'The contact has nothing because someone has been managing what the contact could see. ' +
+          'The careful work around {targetAgent} is not just concealment — it is a counter-surveillance operation ' +
+          'that has been running long enough to account for exactly this kind of inquiry.',
       },
     ],
   },

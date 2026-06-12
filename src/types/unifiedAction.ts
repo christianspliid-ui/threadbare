@@ -575,6 +575,13 @@ export interface ActionStep {
   readonly successAfterimage?: string;
   /** Narrative afterimage shown in Scene So Far on failure (replaces bare "Failed"). */
   readonly failureAfterimage?: string;
+  /** Band-specific afterimage overrides. When present, these take priority over
+   *  successAfterimage/failureAfterimage for the named outcome band.
+   *  When absent, falls back to successAfterimage or failureAfterimage with a
+   *  `[band]` debug prefix so missing content is visible without breaking players. */
+  readonly successAtCostAfterimage?: string;
+  readonly criticalSuccessAfterimage?: string;
+  readonly criticalFailureAfterimage?: string;
 }
 
 // ─── Branching step support ────────────────────────────────────

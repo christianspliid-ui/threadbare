@@ -23,7 +23,7 @@ import {
   getAnyEncounterById,
 } from '../data/encounter-content';
 import { computeCapability } from './domainCapability';
-import { resolveAction as resolveActionShared, normalizeLegacyDifficulty, isSuccessOutcome, isFailureOutcome } from './resolutionService';
+import { resolveAction as resolveActionShared, isSuccessOutcome, isFailureOutcome } from './resolutionService';
 import type { ResolutionInput, OutcomeType, ResolutionResult } from '../types/resolution';
 import { computeResolutionModifiers } from './resolutionModifiers';
 import { createEncounterFailureErosion } from './quintessenceActions';
@@ -77,7 +77,7 @@ function getStepDuration(stepOrBranch: ActionStepOrBranch): number {
   return (dur as number | undefined) ?? 1;
 }
 
-function buildOutcomeCompat(step: ActionStep, success: boolean): EncounterOutcome {
+function buildOutcomeCompat(step: ActionStep, success: boolean, outcomeType?: OutcomeType): EncounterOutcome {
   // Legacy EncounterStep mocks have onSuccess/onFailure as EncounterOutcome objects.
   // UAT ActionStep has onSuccess/onFailure as readonly GraphOp[] (arrays).
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -86,13 +86,23 @@ function buildOutcomeCompat(step: ActionStep, success: boolean): EncounterOutcom
     return legacyOn as EncounterOutcome;
   }
   const meta = success ? step.successMetadata : step.failureMetadata;
+  const narrative = selectBandAfterimage(step, outcomeType, success);
   return {
-    narrative: (success ? step.successAfterimage : step.failureAfterimage) ?? '',
+    narrative,
     reputationDelta: meta?.reputationDelta,
     tierPromotionEligible: meta?.tierPromotionEligible,
     rewardPool: meta?.rewardPool,
     appliesWound: false,
   };
+}
+
+function selectBandAfterimage(step: ActionStep, outcomeType: OutcomeType | undefined, success: boolean): string {
+  if (outcomeType === 'critical_success' && step.criticalSuccessAfterimage) return step.criticalSuccessAfterimage;
+  if (outcomeType === 'success_at_cost' && step.successAtCostAfterimage) return step.successAtCostAfterimage;
+  if (outcomeType === 'critical_failure' && step.criticalFailureAfterimage) return step.criticalFailureAfterimage;
+  const base = success ? step.successAfterimage : step.failureAfterimage;
+  if (base) return base;
+  return outcomeType ? `[${outcomeType}]` : '';
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -456,16 +466,11 @@ export function resolveEncounter(
     effectiveDifficulty = applyCounterModifier(effectiveDifficulty, counter);
   }
 
-  // UAT ActionStep.duration is {min,max}; legacy EncounterStep.duration is number/absent.
-  // Apply normalizeLegacyDifficulty (÷100) only for legacy-style difficulty (0-100 scale).
-  const isUATStep = step.duration !== null && typeof step.duration === 'object';
-  const normalizedDifficulty = isUATStep ? effectiveDifficulty : normalizeLegacyDifficulty(effectiveDifficulty);
-
   const resolutionInput: ResolutionInput = {
     actorId: progress.actorId,
     domain: step.reach,
     capability,
-    difficulty: normalizedDifficulty,
+    difficulty: effectiveDifficulty,
     sphereFactor: 0,
     actionModifiers: modifiers.totalModifier,
     testShapers: modifiers.testShapers,
@@ -488,7 +493,7 @@ export function resolveEncounter(
     stepName: makeStepName(step, progress.currentEncounterIndex),
     reach: step.reach,
     difficulty: effectiveDifficulty,
-    normalizedDifficulty,
+    normalizedDifficulty: effectiveDifficulty,
     capability,
     modifierTotal: modifiers.totalModifier,
     probability: resolution.probability,
@@ -522,7 +527,7 @@ export function resolveEncounter(
   }
 
   // Build EncounterOutcome from ActionStep metadata
-  const outcome = buildOutcomeCompat(step, success);
+  const outcome = buildOutcomeCompat(step, success, resolution.outcome);
 
   const _syntheticStepId = makeStepId(progress.encounterId, progress.currentEncounterIndex);
   const trace: Omit<EncounterResolutionTrace, 'id' | 'timestamp'> = {
@@ -574,12 +579,13 @@ export function resolveEncounter(
   }
 
   // Apply capability growth from encounter step resolution
+  // step.difficulty is 0-1 (UAT scale); scale to 0-100 for difficultyScaling thresholds.
   const tierPromotionEligible = (success && outcome.tierPromotionEligible) ?? false;
   const growth = applyEncounterGrowth(
     state.graph,
     progress.actorId,
     step.reach,
-    step.difficulty,
+    step.difficulty * 100,
     success,
     tierPromotionEligible,
   );

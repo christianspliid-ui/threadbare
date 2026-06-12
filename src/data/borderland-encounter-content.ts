@@ -116,6 +116,15 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         failureAfterimage:
           'The alders close behind {them} and the trail goes cold inside fifty paces. ' +
           'Roads have a way of remembering who walked away with what.',
+        criticalSuccessAfterimage:
+          'The man drops the purse and, before he runs, says three words {name} did not expect — a captain\'s name. ' +
+          'The fear of empty pockets, it turns out, is less than the fear of being found here by someone {name} has yet to meet.',
+        successAtCostAfterimage:
+          'The purse comes free but so does the knife — a line across {name}\'s forearm, shallow and clean. ' +
+          'A fair trade. The man disappears into the alders, and the wound, minor as it is, will remember the morning.',
+        criticalFailureAfterimage:
+          'The trail doubles back. {name} steps out of the brush into a different man — bigger, quieter, the one who waits. ' +
+          'What began as a chase ends as an accounting. The road at {location} keeps a new tally, and {name} is on the wrong side of it.',
       },
     ],
     narrativeTemplates: {
@@ -227,6 +236,15 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         failureAfterimage:
           'The scouts disengage on their own terms — they have what they came for, which was a face. ' +
           '{name} has been seen, and the seeing has been carried back somewhere with walls.',
+        criticalSuccessAfterimage:
+          'Both scouts accounted for. The pack torn open yields a charcoal map of this stretch of road — ' +
+          'patrol spacing, a circled name, a cache marker. The band was scouting {name}, not the road.',
+        successAtCostAfterimage:
+          'The watcher caught, the runner gone — but not before the signal cut through the trees: one short, one long. ' +
+          'Someone has a count now. The fight was won. The intelligence was not.',
+        criticalFailureAfterimage:
+          'There were three, not two. The third came from the other direction — the reserve, the quiet one. ' +
+          '{name} pulls back with a new wound and a revised estimate. The band runs deeper than the surface count suggested.',
       },
     ],
     narrativeTemplates: {
@@ -334,6 +352,18 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         failureAfterimage:
           'The blow connects worse than expected. {name} retreats off the bridge and crosses at the ford ' +
           'a half-mile north, boots wet, dignity wetter.',
+        criticalSuccessAfterimage:
+          'The bully goes in hard and comes up smaller. By the time he reaches the far bank, ' +
+          'the people at the mill have already decided he will not try this bridge again. ' +
+          '{name} does not need to say anything. The river did it.',
+        successAtCostAfterimage:
+          'The bully goes over, but so does {name} — a last grab, two in the current together. ' +
+          '{name} surfaces first, which is the only count that matters, but the toll purse is gone downstream ' +
+          'and the dignity loss belongs to both of them equally.',
+        criticalFailureAfterimage:
+          'The bully was not drunk, as it turns out — just patient. {name} goes off the bridge from a trip ' +
+          'that read as accidental to everyone watching. The crossing costs double, with witnesses, ' +
+          'and the bully is already collecting.',
       },
     ],
     narrativeTemplates: {
@@ -412,6 +442,16 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         failureAfterimage:
           'The third one came from behind a tree {name} did not check. ' +
           '{name} withdraws bleeding, and the camp moves before sundown to a hollow {they} will not find again.',
+        criticalSuccessAfterimage:
+          'Two fled; one stayed. Not a hostage — someone who decided surrender was the only way through this morning alive. ' +
+          'The name they give, unprompted, answers a question {name} had been carrying since {location} was first marked on the road.',
+        successAtCostAfterimage:
+          'Two gone into the trees, one on the ground — but {name} was slower than {they} should have been. ' +
+          'The camp is taken. The body will remember taking it: a cut that will need minding, a rib that will ache through the week.',
+        criticalFailureAfterimage:
+          'There were four, not three. {name} counted the voices and missed the one by the water. ' +
+          'Retreat costs blood, and the camp burns behind {them} — the outlaws clearing evidence before they move. ' +
+          'The hollow is empty by morning and will not be found again.',
       },
     ],
     narrativeTemplates: {
