@@ -5,7 +5,6 @@
  * - threshold computation from inputs
  * - doubles-based crit classification (replaces flat roll >= 96)
  * - forecast/live agreement
- * - difficulty normalization
  * - edge cases (very low/high capability, NaN, extremes)
  * - crit frequency scaling with competence
  * - outcome helpers
@@ -18,12 +17,10 @@ import {
   forecastAction,
   resolveAction,
   computeOutcomeProbabilities,
-  normalizeLegacyDifficulty,
   isSuccessOutcome,
   isFailureOutcome,
   PROBABILITY_FLOOR,
   PROBABILITY_CEILING,
-  LEGACY_DIFFICULTY_DIVISOR,
 } from '../resolutionService';
 import type { ResolutionInput } from '../../types/resolution';
 
@@ -283,34 +280,6 @@ describe('test shapers', () => {
     const result = resolveAction(input, () => 0, 53);
     expect(result.outcome).toBe('failure');
     expect(result.appliedShaper).toBeUndefined();
-  });
-});
-
-// ─── Difficulty Normalization ───────────────────────────────────────
-
-describe('normalizeLegacyDifficulty', () => {
-  test('legacy 50 → 0.5', () => {
-    expect(normalizeLegacyDifficulty(50)).toBe(0.5);
-  });
-
-  test('legacy 12 → 0.12', () => {
-    expect(normalizeLegacyDifficulty(12)).toBeCloseTo(0.12, 4);
-  });
-
-  test('legacy 100 → 1.0', () => {
-    expect(normalizeLegacyDifficulty(100)).toBe(1.0);
-  });
-
-  test('legacy 0 → 0.0', () => {
-    expect(normalizeLegacyDifficulty(0)).toBe(0.0);
-  });
-
-  test('clamps negative to 0', () => {
-    expect(normalizeLegacyDifficulty(-10)).toBe(0);
-  });
-
-  test('clamps over 100 to 1', () => {
-    expect(normalizeLegacyDifficulty(150)).toBe(1);
   });
 });
 

@@ -175,7 +175,7 @@ function buildCacheEntry(
     totalTickCost,
     successRewardEstimate: 0.04,
     stepCount: template.steps.length,
-    stepDifficulties: template.steps.map(s => isActionStepBranch(s) ? s.fallback.difficulty : s.difficulty),
+    stepDifficulties: template.steps.map(s => isActionStepBranch(s) ? s.fallback.difficulty : s.difficulty), // 0..1 scale per EncounterCacheEntry contract
     stepReaches: template.steps.map(s => isActionStepBranch(s) ? s.fallback.reach : s.reach),
     ...overrides,
   };

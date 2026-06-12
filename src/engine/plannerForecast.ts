@@ -40,7 +40,6 @@
 
 import {
   computeOutcomeProbabilities,
-  normalizeLegacyDifficulty,
   NEAR_MISS_MARGIN,
 } from './resolutionService';
 import type { ResolutionProbabilitySummary } from '../types/resolution';
@@ -95,6 +94,9 @@ export const Q_LOW_THRESHOLD = 0.25;
 /** Q ratio below which the planner never spends (critical/broken) */
 export const Q_CRITICAL_THRESHOLD = 0.10;
 
+/** Minimum step difficulty (0..1) for the planner to consider a push modifier worthwhile */
+export const HARD_STEP_DIFFICULTY_THRESHOLD = 0.3;
+
 // ─── Push/Resist Eligibility (mirrors unifiedActionResolution.ts) ──
 
 const PUSH_ELIGIBLE_PREFIXES = [
@@ -125,7 +127,7 @@ export function isResistEligible(templateId: string): boolean {
  * shared resolution service. Returns the full probability summary.
  *
  * @param capability - Agent's domain capability (0-1)
- * @param difficulty - Legacy difficulty (0-100) — normalized at this boundary
+ * @param difficulty - Normalized difficulty (0-1) per EncounterCacheEntry contract
  * @param modifiers - Optional action modifiers
  */
 export function forecastStepProbabilities(
@@ -137,7 +139,7 @@ export function forecastStepProbabilities(
     actorId: '',
     domain: 'iron', // Not used for threshold computation
     capability,
-    difficulty: normalizeLegacyDifficulty(difficulty),
+    difficulty,
     sphereFactor: 0,
     actionModifiers: modifiers ?? 0,
   });
@@ -159,7 +161,7 @@ export function forecastStepProbabilities(
  * so they are subtracted. Formula: (min(6, threshold) - doublesInZone) / 100.
  *
  * @param capability - Agent's domain capability (0-1)
- * @param difficulty - Legacy difficulty (0-100)
+ * @param difficulty - Normalized difficulty (0-1) per EncounterCacheEntry contract
  * @param rewardScale - Base reward value to scale utility against (default 1.0)
  * @param modifiers - Optional action modifiers (e.g., push bonus)
  */
@@ -341,8 +343,7 @@ function estimatePushBenefit(
     }
     const stepReward = rewardScale / entry.stepCount;
 
-    // Only push on hard steps (difficulty >= 30, matching runtime's >= 0.3 normalized)
-    if (entry.stepDifficulties[i] >= 30) {
+    if (entry.stepDifficulties[i] >= HARD_STEP_DIFFICULTY_THRESHOLD) {
       euWithout += forecastStepExpectedUtility(cap, entry.stepDifficulties[i], stepReward);
       euWith += forecastStepExpectedUtility(cap, entry.stepDifficulties[i], stepReward, PUSH_MODIFIER);
     } else {

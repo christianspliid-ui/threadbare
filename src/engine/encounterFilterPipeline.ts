@@ -353,8 +353,9 @@ export function filterByOutgrowth(
       cap = 0.5; // Fail-soft: unknown capability → neutral
     }
 
-    const capScaled = cap * 100; // Scale 0–1 to 0–100 for comparison with difficulty
-    if (capScaled - avgDifficulty < OUTGROWTH_CAP_THRESHOLD) {
+    const capScaled = cap * 100; // Scale 0–1 to 0–100 for comparison with OUTGROWTH_CAP_THRESHOLD
+    const avgDifficultyScaled = avgDifficulty * 100; // Scale 0–1 difficulty to 0–100
+    if (capScaled - avgDifficultyScaled < OUTGROWTH_CAP_THRESHOLD) {
       result.push(entry);
     } else if (BRANCHING_QUEST_SKIP_OUTGROWTH && entry.isQuestEncounter) {
       // Branching quests exempt from outgrowth (THR-452): they mature narrative threads,

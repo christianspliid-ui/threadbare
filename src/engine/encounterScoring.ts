@@ -47,7 +47,7 @@ import type { SphereName } from '../types/index';
 import type { SphereAffinity } from '../types/sphereAffinity';
 import type { FundamentState } from '../types/worldSoul';
 import { computeCapability, computeTier } from './domainCapability';
-import { computeResolutionThreshold, normalizeLegacyDifficulty } from './resolutionService';
+import { computeResolutionThreshold } from './resolutionService';
 // Distance matrix removed — hex distance used for travel cost estimation
 import { getDivineInfluences, buildValueOverlay } from './interventionEffects';
 import { BASE_ENCOUNTER_GROWTH, difficultyScaling, PROMOTION_ELIGIBLE_MULTIPLIER } from './capabilityGrowth';
@@ -617,12 +617,11 @@ export function estimateStepProbability(
   difficulty: number,
   modifierTotal?: number,
 ): number {
-  // Phase 2: Use shared resolver math. Normalize legacy difficulty at boundary.
   return computeResolutionThreshold({
     actorId: '', // not needed for threshold computation
     domain: 'iron', // not needed for threshold computation
     capability,
-    difficulty: normalizeLegacyDifficulty(difficulty),
+    difficulty,
     sphereFactor: 0,
     actionModifiers: modifierTotal ?? 0,
   });

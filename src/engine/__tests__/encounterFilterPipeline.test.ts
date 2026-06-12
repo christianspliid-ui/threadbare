@@ -51,7 +51,7 @@ function makeEntry(overrides: Partial<EncounterCacheEntry> = {}): EncounterCache
     totalTickCost: 2,
     successRewardEstimate: 1.0,
     stepCount: 1,
-    stepDifficulties: [40],
+    stepDifficulties: [0.4],
     stepReaches: ['iron' as ReachDomain],
     ...overrides,
   };
@@ -484,34 +484,34 @@ describe('filterByOutgrowth', () => {
    * Outgrown when: capScaled - avgDifficulty >= 35
    */
 
-  it('filters out encounters when agent capability far exceeds difficulty (cap 98, diff 20 → gap 78 > 35)', () => {
-    // raw=20 → cap ≈ 0.982 → scaled ≈ 98; diff=20 → gap=78 > 35 → outgrown
+  it('filters out encounters when agent capability far exceeds difficulty (cap 98, diff 0.2 → gap 78 > 55)', () => {
+    // raw=20 → cap ≈ 0.982 → scaled ≈ 98; diff=0.2 → scaled=20 → gap=78 > 55 → outgrown
     const graph = buildAgentGraph('agent-1', { iron: 20 });
-    const entries = [makeEntry({ reachPrimary: 'iron' as ReachDomain, stepDifficulties: [20], stepCount: 1 })];
+    const entries = [makeEntry({ reachPrimary: 'iron' as ReachDomain, stepDifficulties: [0.2], stepCount: 1 })];
     const result = filterByOutgrowth(entries, 'agent-1', graph);
     expect(result).toHaveLength(0);
   });
 
-  it('does NOT filter encounters when agent capability is only slightly above difficulty (cap 50, diff 20 → gap 30 < 35)', () => {
-    // raw=10 → cap = 0.5 → scaled = 50; diff=20 → gap=30 < 35 → not outgrown
+  it('does NOT filter encounters when agent capability is only slightly above difficulty (cap 50, diff 0.2 → gap 30 < 55)', () => {
+    // raw=10 → cap = 0.5 → scaled = 50; diff=0.2 → scaled=20 → gap=30 < 55 → not outgrown
     const graph = buildAgentGraph('agent-1', { iron: 10 });
-    const entries = [makeEntry({ reachPrimary: 'iron' as ReachDomain, stepDifficulties: [20], stepCount: 1 })];
+    const entries = [makeEntry({ reachPrimary: 'iron' as ReachDomain, stepDifficulties: [0.2], stepCount: 1 })];
     const result = filterByOutgrowth(entries, 'agent-1', graph);
     expect(result).toHaveLength(1);
   });
 
-  it('does NOT filter encounters when agent capability is low (cap 12, diff 20 → gap negative)', () => {
-    // raw=5 → cap ≈ 0.119 → scaled ≈ 11.9; diff=20 → gap=-8 < 35 → not outgrown
+  it('does NOT filter encounters when agent capability is low (cap 12, diff 0.2 → gap negative)', () => {
+    // raw=5 → cap ≈ 0.119 → scaled ≈ 11.9; diff=0.2 → scaled=20 → gap=-8 < 55 → not outgrown
     const graph = buildAgentGraph('agent-1', { iron: 5 });
-    const entries = [makeEntry({ reachPrimary: 'iron' as ReachDomain, stepDifficulties: [20], stepCount: 1 })];
+    const entries = [makeEntry({ reachPrimary: 'iron' as ReachDomain, stepDifficulties: [0.2], stepCount: 1 })];
     const result = filterByOutgrowth(entries, 'agent-1', graph);
     expect(result).toHaveLength(1);
   });
 
   it('uses average difficulty across multiple steps', () => {
-    // raw=20 → cap ≈ 98; steps [60, 80] avg=70 → gap=28 < 35 → NOT outgrown
+    // raw=20 → cap ≈ 98; steps [0.6, 0.8] avg=0.7 → scaled=70 → gap=28 < 55 → NOT outgrown
     const graph = buildAgentGraph('agent-1', { iron: 20 });
-    const entries = [makeEntry({ reachPrimary: 'iron' as ReachDomain, stepDifficulties: [60, 80], stepCount: 2 })];
+    const entries = [makeEntry({ reachPrimary: 'iron' as ReachDomain, stepDifficulties: [0.6, 0.8], stepCount: 2 })];
     const result = filterByOutgrowth(entries, 'agent-1', graph);
     expect(result).toHaveLength(1);
   });
@@ -523,9 +523,9 @@ describe('filterByOutgrowth', () => {
     const graph = buildAgentGraph('agent-1', { iron: 20 });
     // 3 entries that would all be filtered if outgrowth were active
     const entries = [
-      makeEntry({ templateId: 'a', reachPrimary: 'iron' as ReachDomain, stepDifficulties: [20], stepCount: 1 }),
-      makeEntry({ templateId: 'b', reachPrimary: 'iron' as ReachDomain, stepDifficulties: [20], stepCount: 1 }),
-      makeEntry({ templateId: 'c', reachPrimary: 'iron' as ReachDomain, stepDifficulties: [20], stepCount: 1 }),
+      makeEntry({ templateId: 'a', reachPrimary: 'iron' as ReachDomain, stepDifficulties: [0.2], stepCount: 1 }),
+      makeEntry({ templateId: 'b', reachPrimary: 'iron' as ReachDomain, stepDifficulties: [0.2], stepCount: 1 }),
+      makeEntry({ templateId: 'c', reachPrimary: 'iron' as ReachDomain, stepDifficulties: [0.2], stepCount: 1 }),
     ];
     // When OUTGROWTH_FILTER_ENABLED is false, all should pass through
     const result = filterByOutgrowth(entries, 'agent-1', graph, false);

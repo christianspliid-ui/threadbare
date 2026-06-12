@@ -21,7 +21,7 @@ function makeEntry(templateId: string, locationId = 'loc-1'): EncounterCacheEntr
     threatRating: 'easy',
     reachPrimary: 'exploration',
     stepCount: 1,
-    stepDifficulties: [50],
+    stepDifficulties: [0.5],
     requiresPresence: false,
     visibleTo: [],
   } as EncounterCacheEntry;
