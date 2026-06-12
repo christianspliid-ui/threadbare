@@ -231,7 +231,7 @@ updated: YYYY-MM-DD
 - Integration wiring checklist: `Docs/plans/wiring-checklist.md`
 - Impediment log: `Docs/impediments.md` · Retrospectives: `Design/retros/`
 
-Design docs live in `Docs/plans/` (named `YYYY-MM-DD-topic.md`). Find them by browsing the directory or loading the relevant domain skill.
+Design docs live in `Docs/plans/` (named `YYYY-MM-DD-topic.md`). New plans copy `Docs/plans/_template.md` as a skeleton. Find existing plans by browsing the directory or loading the relevant domain skill.
 
 ## Non-Functional Priorities (in order)
 
