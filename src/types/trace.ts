@@ -236,7 +236,9 @@ export type TraceCategory =
   // Branching encounter curator boost (THR-452)
   | 'branching_curator_nudge'
   // Resolution input telemetry (THR-451)
-  | 'resolution.input';
+  | 'resolution.input'
+  // Doom identity milestone crossing (THR-293)
+  | 'doom_milestone';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -442,6 +444,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'branching_curator_nudge',
   // Resolution input telemetry (THR-451)
   'resolution.input',
+  // Doom identity milestone crossing (THR-293)
+  'doom_milestone',
 ];
 
 /** Base shape for all trace entries */
@@ -1622,7 +1626,9 @@ export type TraceEntry =
   | NamingConstrainedRejectTrace
   | NamingFatalFallbackTrace
   | ProseRepetitionSkipTrace
-  | ChronicleAggregateFailedTrace;
+  | ChronicleAggregateFailedTrace
+  // Doom identity milestone (THR-293)
+  | MilestoneTriggeredTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {
@@ -2123,5 +2129,14 @@ export interface ProseRepetitionSkipTrace extends TraceBase {
 export interface ChronicleAggregateFailedTrace extends TraceBase {
   category: 'chronicle.aggregate_failed';
   errorMessage: string;
+}
+
+/** Trace: doom identity milestone threshold crossed for the first time (THR-293) */
+export interface MilestoneTriggeredTrace extends TraceBase {
+  category: 'doom_milestone';
+  archetype: import('./doomClock').DoomClockArchetype;
+  label: string;
+  threshold: number;
+  progress: number;
 }
 

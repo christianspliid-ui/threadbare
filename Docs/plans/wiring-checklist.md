@@ -756,6 +756,7 @@ Engine phases write to GameState fields. UI components must read them. An engine
 | `doomClock.resolvedEvents` | `phaseDoom` | `DoomClockDetail` | ✅ Connected |
 | `doomClock.counterOmens` / `doomClock.nextEscalationSeverityModifier` | `phaseMandate` + `phaseDoom` | `DoomBar`, `DoomClockDetail`, `MandateTracker`, `MandateDetail` | ✅ Connected |
 | `doomIdentityMatrix` | `gameInit` (once) | `DebugTabContent` (milestone display), `buildUnifiedEncounterStageModel` (prose), `GameView` (pass-through) | ✅ Connected (THR-21) |
+| `doomIdentityMatrix.identityMilestones[].triggered` | `evaluateIdentityMilestones` (called from `phaseDoom` each tick, post-advance) | `DebugTabContent` (milestone triggered badges) | ✅ Connected (THR-293) |
 | `mandateState.primaryDelta` / `secondaryDelta` / `checkpointResults` / `secondaryObjectiveCurrent` | `phaseMandate` | `MandateTracker`, `MandateDetail` | ✅ Connected |
 | `pendingHexMutations` | `phaseHexState` | Cleared after use (internal) | ✅ Internal |
 | `prosperityShocks` | `phaseProsperity` | Cleared after use (internal) | ✅ Internal |

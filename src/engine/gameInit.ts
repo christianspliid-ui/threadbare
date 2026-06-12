@@ -19,6 +19,7 @@ import { createAscendant } from './ascendant';
 import { seedWorld } from './worldSeed';
 import { generateRivals, createRivalState } from './rival';
 import { generateDoomClock, createDoomClockState } from './doomClock';
+import type { DoomClockArchetype } from '../types/doomClock';
 import { createGreatChronicle } from './chronicle';
 import { createDefaultFundament, createResonanceState } from './worldSoul';
 import { createStartingEssencePool } from './influence';
@@ -102,6 +103,7 @@ export function initializeGameState(
   seed: number,
   cols: number = DEFAULT_COLS,
   rows: number = DEFAULT_ROWS,
+  doomArchetype?: DoomClockArchetype,
 ): { state: GameState; tiles: HexTile[]; riverPaths: RiverPath[]; lakeIds: Int16Array; regionData?: RegionData } {
   // 1. Generate culture identities BEFORE worldgen (needed for province seeding)
   const cultureRng = mulberry32(seed + CULTURE_SEED_OFFSET);
@@ -265,9 +267,10 @@ export function initializeGameState(
   const rivalDefs = generateRivals(cosmology, seed);
   const rivalStates = rivalDefs.map(r => createRivalState(r.id));
 
-  // Generate doom clock
-  const doomDef = generateDoomClock('breach', DEFAULT_DOOM_TICKS, seed);
-  const doomState = createDoomClockState('breach', DEFAULT_DOOM_TICKS);
+  // Generate doom clock (doomArchetype param pins the archetype for testing; defaults to 'breach')
+  const resolvedDoomArchetype = doomArchetype ?? 'breach';
+  const doomDef = generateDoomClock(resolvedDoomArchetype, DEFAULT_DOOM_TICKS, seed);
+  const doomState = createDoomClockState(resolvedDoomArchetype, DEFAULT_DOOM_TICKS);
 
   // Initialize starting essence pool (50 per sphere)
   const startingPool = createStartingEssencePool();
