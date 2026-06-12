@@ -23,6 +23,7 @@ export const TRACE_CATEGORIES = [
   'detection_threshold_crossed',
   'item_consumed_by_choice',
   'spotlight_changed',
+  'consequence_applied',
   ...MENTORSHIP_TRACE_CATEGORIES,
 ] as const;
 

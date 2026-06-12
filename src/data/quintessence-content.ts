@@ -69,6 +69,22 @@ export const QUINTESSENCE_WORD_SCALE: readonly string[] = [
   'absolute',       // 0.9–1.0
 ] as const;
 
+// ─── Outcome-Band Q Delta Flavor (Phase 6) ──────────────────────────────────
+
+/**
+ * Short prose description of a quintessence delta, keyed by outcome narrativeTag.
+ * Used to annotate event messages and enrichProse() contexts with band-specific Q flavor.
+ * Minimum-viable entries for Slice A; full prose pass in Slice B.
+ */
+export const OUTCOME_BAND_Q_FLAVOR: Record<string, string> = {
+  surge: 'a surge',
+  neutral: 'a steady exchange',
+  strained: 'a strained recovery',
+  fortunate: 'barely held the thread',
+  setback: 'no change',
+  catastrophe: 'a hollow loss',
+};
+
 // ─── Validation Constants ────────────────────────────────────────────────────
 
 /**

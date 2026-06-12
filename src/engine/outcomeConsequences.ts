@@ -1,32 +1,35 @@
 /**
- * Outcome Consequences — Phase 3 proving slice.
+ * Outcome Consequences — Phase 6 universal band differentiation.
  *
- * Applies differentiated consequences based on the rich outcome ladder
- * for a narrow set of representative action families.
+ * Applies differentiated consequences based on the six-band outcome ladder
+ * for ALL action templates (proving-slice gate removed in Phase 6).
  *
- * Design: The shared resolver produces 5 outcome tiers. This module
- * translates those tiers into concrete game state effects (quintessence
- * changes, growth modifiers, narrative signals) for the proving slice.
+ * Design: The shared resolver produces 6 outcome tiers (Phase 6 adds near_miss).
+ * This module translates those tiers into concrete game state effects
+ * (quintessence changes, growth modifiers, attachment drop intent, narrative signals).
  *
- * Proving slice families:
- * - Social/influence: action.heart.* and action.shadow.recruit-agent
- * - Information/exploration: action.eye.* and npc_ask_information
- * - Risky/coercive: action.shadow.assassinate, action.iron.conquer, action.gold.commission-assassination
+ * ─── Constants (NFP #1: Tunability) ─────────────────────────────────────────
+ * | Name                                   | Default | Purpose                                     |
+ * |----------------------------------------|---------|---------------------------------------------|
+ * | CRITICAL_SUCCESS_GROWTH_MULTIPLIER     | 1.5     | Growth bonus on critical success             |
+ * | SUCCESS_AT_COST_GROWTH_MULTIPLIER      | 0.5     | Reduced growth on success at cost            |
+ * | NEAR_MISS_GROWTH_MULTIPLIER            | 0.25    | Partial growth credit on near_miss           |
+ * | NEAR_MISS_PROGRESS_COUNTER_DELTA       | 0.5     | Progress toward eventual success on near_miss |
+ * | CRITICAL_FAILURE_QUINTESSENCE_PENALTY  | 0.04    | Extra Q erosion on critical failure          |
+ * | SUCCESS_AT_COST_QUINTESSENCE_PENALTY   | 0.02    | Q erosion on success at cost                 |
+ * | CRITICAL_SUCCESS_QUINTESSENCE_REWARD   | 0.02    | Q recovery on critical success               |
+ * | CRITICAL_SUCCESS_DROP_WEIGHT           | 1.5     | Drop-table weight on critical success        |
+ * | SUCCESS_DROP_WEIGHT                    | 1.0     | Drop-table weight on success (baseline)      |
+ * | SUCCESS_AT_COST_DROP_WEIGHT            | 0.4     | Drop weight on success_at_cost (curse/debt)  |
+ * | NEAR_MISS_DROP_WEIGHT                  | 0.0     | No drop on near_miss; progress counter instead |
  *
- * ─── Constants (NFP #1: Tunability) ─────────────────────────────────
- * | Name                                  | Default | Purpose                                    |
- * |---------------------------------------|---------|--------------------------------------------|
- * | CRITICAL_SUCCESS_GROWTH_MULTIPLIER    | 1.5     | Growth bonus on crit success               |
- * | SUCCESS_AT_COST_GROWTH_MULTIPLIER     | 0.5     | Reduced growth on success at cost          |
- * | CRITICAL_FAILURE_QUINTESSENCE_PENALTY | 0.04    | Extra Q erosion on crit failure            |
- * | SUCCESS_AT_COST_QUINTESSENCE_PENALTY  | 0.02    | Q erosion on success at cost               |
- * | CRITICAL_SUCCESS_QUINTESSENCE_REWARD  | 0.02    | Q recovery on crit success                 |
- *
- * ─── Fail-soft ──────────────────────────────────────────────────────
- * | Failure case                    | Fallback                           |
- * |---------------------------------|------------------------------------|
- * | Unknown template ID             | No-op, returns default consequence |
- * | Missing node properties         | Skip quintessence effect           |
+ * ─── Fail-soft ───────────────────────────────────────────────────────────────
+ * | Failure case                    | Fallback                                  |
+ * |---------------------------------|-------------------------------------------|
+ * | Unknown template ID             | Universal band rates applied (no risky-family flavor) |
+ * | Missing node properties         | Skip quintessence effect                  |
+ * | Drop pipeline rejects intent    | Trace consequence_drop_rejected; Q/growth still applies |
+ * | near_miss on no progressCounter | Treat as failure for Q/growth; trace near_miss_unsupported |
  */
 
 import type { StepOutcome } from '../types/unifiedAction';
@@ -43,6 +46,12 @@ export const CRITICAL_SUCCESS_GROWTH_MULTIPLIER = 1.5;
 /** Growth multiplier applied to capability growth on success at cost */
 export const SUCCESS_AT_COST_GROWTH_MULTIPLIER = 0.5;
 
+/** Partial growth credit on near_miss — agent learns from almost-succeeding */
+export const NEAR_MISS_GROWTH_MULTIPLIER = 0.25;
+
+/** Progress counter delta on near_miss — accumulates toward eventual success */
+export const NEAR_MISS_PROGRESS_COUNTER_DELTA = 0.5;
+
 /** Extra quintessence erosion on critical failure */
 export const CRITICAL_FAILURE_QUINTESSENCE_PENALTY = 0.04;
 
@@ -52,15 +61,37 @@ export const SUCCESS_AT_COST_QUINTESSENCE_PENALTY = 0.02;
 /** Quintessence recovery on critical success (surge of power) */
 export const CRITICAL_SUCCESS_QUINTESSENCE_REWARD = 0.02;
 
-// ─── Proving Slice Template Sets ──────────────────────────────────
+/** Attachment drop-table weight on critical success */
+export const CRITICAL_SUCCESS_DROP_WEIGHT = 1.5;
 
-/** Social/influence actions — proving slice family 1 */
+/** Attachment drop-table weight on success (baseline) */
+export const SUCCESS_DROP_WEIGHT = 1.0;
+
+/** Attachment drop-table weight on success_at_cost; biased toward curse/debt tiers */
+export const SUCCESS_AT_COST_DROP_WEIGHT = 0.4;
+
+/** No attachment drop on near_miss — progress counter instead */
+export const NEAR_MISS_DROP_WEIGHT = 0.0;
+
+/** Band → loot tier hint for the attachment drop pipeline */
+export const LOOT_TIER_BY_BAND: Record<StepOutcome, string> = {
+  critical_success: 'mythic',
+  success: 'rare',
+  success_at_cost: 'curse',
+  near_miss: 'none',
+  failure: 'none',
+  critical_failure: 'none',
+};
+
+// ─── Risky-action Template Sets ──────────────────────────────────
+
+/** Social/influence actions — for flavor differences */
 const SOCIAL_INFLUENCE_PREFIXES = ['action.heart.', 'action.shadow.recruit'];
 
-/** Information/exploration actions — proving slice family 2 */
+/** Information/exploration actions */
 const INFORMATION_PREFIXES = ['action.eye.', 'npc_ask_information', 'npc_eavesdrop'];
 
-/** Risky/coercive actions — proving slice family 3 */
+/** Risky/coercive actions — steeper penalties on failure tiers */
 const RISKY_COERCIVE_IDS = [
   'action.shadow.assassinate',
   'action.iron.conquer',
@@ -68,8 +99,16 @@ const RISKY_COERCIVE_IDS = [
 ];
 
 /**
+ * Check if a template ID is in the risky/coercive family.
+ * These templates apply a 1.5× penalty multiplier on failure-tier Q costs.
+ */
+export function isRiskyTemplate(templateId: string): boolean {
+  return RISKY_COERCIVE_IDS.includes(templateId);
+}
+
+/**
  * Check if a template ID is in the Phase 3 proving slice.
- * Templates outside this set use default (no-op) consequence behavior.
+ * Kept for backward compatibility and test introspection — no longer gates consequences.
  */
 export function isProvingSliceTemplate(templateId: string): boolean {
   for (const prefix of SOCIAL_INFLUENCE_PREFIXES) {
@@ -81,6 +120,17 @@ export function isProvingSliceTemplate(templateId: string): boolean {
   return RISKY_COERCIVE_IDS.includes(templateId);
 }
 
+// ─── Attachment Drop Intent ──────────────────────────────────────
+
+export interface AttachmentDropIntent {
+  /** The outcome band that produced this drop intent */
+  band: StepOutcome;
+  /** Weight multiplier on the base drop probability */
+  weight: number;
+  /** Tier hint for the attachment pipeline (e.g. 'mythic', 'rare', 'curse', 'none') */
+  tierHint: string;
+}
+
 // ─── Consequence Results ──────────────────────────────────────────
 
 export interface OutcomeConsequence {
@@ -90,7 +140,7 @@ export interface OutcomeConsequence {
   quintessenceEvent: QuintessenceEvent | null;
   /**
    * Narrative tag for prose system (e.g., 'surge', 'strained', 'catastrophe').
-   * @deferred — No live prose consumer in Phase 3. Scaffolded for Phase 4+ enrichProse() integration.
+   * Flows to enrichProse() for band-flavored prose variant selection.
    */
   narrativeTag: string;
   /** Extra significance boost for tick events. Added to base significance. */
@@ -101,6 +151,17 @@ export interface OutcomeConsequence {
    * ComplicationContext is provided. (THR-20)
    */
   complication: ComplicationResult | null;
+  /**
+   * Progress counter delta for near_miss outcomes.
+   * Encounter authors use this to register progress toward eventual success.
+   * 0 for all non-near_miss bands.
+   */
+  progressCounterDelta: number;
+  /**
+   * Attachment drop intent for success bands; null for failure bands.
+   * Consumed by the attachment grant pipeline to roll on the drop table.
+   */
+  attachmentDropIntent: AttachmentDropIntent | null;
 }
 
 const DEFAULT_CONSEQUENCE: OutcomeConsequence = {
@@ -109,6 +170,8 @@ const DEFAULT_CONSEQUENCE: OutcomeConsequence = {
   narrativeTag: 'neutral',
   significanceBoost: 0,
   complication: null,
+  progressCounterDelta: 0,
+  attachmentDropIntent: null,
 };
 
 // ─── Consequence Computation ──────────────────────────────────────
@@ -116,10 +179,9 @@ const DEFAULT_CONSEQUENCE: OutcomeConsequence = {
 /**
  * Compute differentiated consequences for a step outcome.
  *
- * Success-tier consequences (growth multiplier, quintessence events) are still
- * restricted to the proving-slice families. Failure-tier complications now apply
- * to ALL templates when a ComplicationContext is provided — the proving-slice gate
- * is removed for failure tiers (THR-20).
+ * Phase 6: All templates receive band-differentiated Q deltas, growth multipliers,
+ * and drop intents across all six bands. The proving-slice gate is removed.
+ * Risky-action flavor (1.5× penalty) is preserved for RISKY_COERCIVE_IDS templates.
  *
  * @param templateId - The action template ID
  * @param outcome - The step outcome from the shared resolver
@@ -136,20 +198,14 @@ export function computeOutcomeConsequence(
   tick: number,
   context?: ComplicationContext,
 ): OutcomeConsequence {
-  // Run complication selection for all failure tiers (not gated by proving slice).
-  // Includes success_at_cost — isStepFailure() excludes that tier, so we check explicitly.
+  // Complication selection: failure tiers only. near_miss never triggers a complication.
+  // success_at_cost: probabilistic via COMPLICATION_MINOR_WEIGHT in selectComplication.
   const isFailureTier = isStepFailure(outcome) || outcome === 'success_at_cost';
   const complication = (context && isFailureTier)
     ? selectComplication(outcome, context)
     : null;
 
-  // Success-tier consequences: still restricted to proving-slice families
-  if (!isProvingSliceTemplate(templateId)) {
-    return { ...DEFAULT_CONSEQUENCE, complication };
-  }
-
-  // Determine which family for flavor differences
-  const isRisky = RISKY_COERCIVE_IDS.includes(templateId);
+  const isRisky = isRiskyTemplate(templateId);
 
   switch (outcome) {
     case 'critical_success':
@@ -164,13 +220,27 @@ export function computeOutcomeConsequence(
         narrativeTag: 'surge',
         significanceBoost: 0.2,
         complication: null,
+        progressCounterDelta: 0,
+        attachmentDropIntent: {
+          band: 'critical_success',
+          weight: CRITICAL_SUCCESS_DROP_WEIGHT,
+          tierHint: LOOT_TIER_BY_BAND.critical_success,
+        },
       };
 
     case 'success':
-      return { ...DEFAULT_CONSEQUENCE, complication: null };
+      return {
+        ...DEFAULT_CONSEQUENCE,
+        narrativeTag: 'neutral',
+        attachmentDropIntent: {
+          band: 'success',
+          weight: SUCCESS_DROP_WEIGHT,
+          tierHint: LOOT_TIER_BY_BAND.success,
+        },
+        complication: null,
+      };
 
     case 'success_at_cost': {
-      // Risky actions charge a steeper cost
       const penalty = isRisky
         ? SUCCESS_AT_COST_QUINTESSENCE_PENALTY * 1.5
         : SUCCESS_AT_COST_QUINTESSENCE_PENALTY;
@@ -185,8 +255,25 @@ export function computeOutcomeConsequence(
         narrativeTag: 'strained',
         significanceBoost: 0.05,
         complication,
+        progressCounterDelta: 0,
+        attachmentDropIntent: {
+          band: 'success_at_cost',
+          weight: SUCCESS_AT_COST_DROP_WEIGHT,
+          tierHint: LOOT_TIER_BY_BAND.success_at_cost,
+        },
       };
     }
+
+    case 'near_miss':
+      return {
+        growthMultiplier: NEAR_MISS_GROWTH_MULTIPLIER,
+        quintessenceEvent: null,
+        narrativeTag: 'fortunate',
+        significanceBoost: 0,
+        complication: null,
+        progressCounterDelta: NEAR_MISS_PROGRESS_COUNTER_DELTA,
+        attachmentDropIntent: null,
+      };
 
     case 'failure':
       return {
@@ -195,10 +282,11 @@ export function computeOutcomeConsequence(
         narrativeTag: 'setback',
         significanceBoost: 0,
         complication,
+        progressCounterDelta: 0,
+        attachmentDropIntent: null,
       };
 
     case 'critical_failure': {
-      // Critical failures on risky actions are especially punishing
       const penalty = isRisky
         ? CRITICAL_FAILURE_QUINTESSENCE_PENALTY * 1.5
         : CRITICAL_FAILURE_QUINTESSENCE_PENALTY;
@@ -215,6 +303,8 @@ export function computeOutcomeConsequence(
         // we do not merge complication.significanceBoost here (THR-20)
         significanceBoost: 0.1,
         complication,
+        progressCounterDelta: 0,
+        attachmentDropIntent: null,
       };
     }
   }

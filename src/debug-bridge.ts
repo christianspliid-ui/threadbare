@@ -708,5 +708,33 @@ if (import.meta.env.DEV) {
       const { computeGameplayKpiReport } = await import('./engine/kpi/gameplayKpi');
       return computeGameplayKpiReport(state, runtime ?? null);
     },
+
+    // Phase 6: consequence inspection (THR-63)
+    consequencesFor: async (actorRef: string, last = 10) => {
+      const { getTraces } = await import('./engine/traceBuffer');
+      const state = _gameStateProvider?.();
+      const allTraces = getTraces();
+      // Resolve actorRef: exact id or partial name match
+      let actorId = actorRef;
+      if (state) {
+        const node = state.graph.getNode(actorRef) ?? state.graph.getAllNodes()
+          .filter(n => n.type === 'actor')
+          .find(n => n.name?.toLowerCase().includes(actorRef.toLowerCase()));
+        if (node) actorId = node.id;
+      }
+      return allTraces
+        .filter(t => t.category === 'consequence_applied' && t.actorId === actorId)
+        .slice(-last)
+        .map(t => ({
+          tick: (t as Record<string, unknown>).tick,
+          templateId: (t as Record<string, unknown>).templateId,
+          band: (t as Record<string, unknown>).band,
+          qDelta: (t as Record<string, unknown>).qDelta,
+          growthMultiplier: (t as Record<string, unknown>).growthMultiplier,
+          progressCounterDelta: (t as Record<string, unknown>).progressCounterDelta,
+          dropIntent: (t as Record<string, unknown>).dropIntent,
+          complicationId: (t as Record<string, unknown>).complicationId,
+        }));
+    },
   };
 }

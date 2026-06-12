@@ -2,7 +2,7 @@
  * Phase 3: Unified Action Outcome Expansion — Tests
  *
  * Proves:
- * 1. Step outcomes preserve the full 5-tier ladder
+ * 1. Step outcomes preserve the full 6-tier ladder (Phase 6 adds near_miss)
  * 2. Proving-slice templates produce differentiated consequences
  * 3. Push spend works and applies modifier
  * 4. Resist spend works and can downgrade outcomes
@@ -23,6 +23,8 @@ import {
   CRITICAL_FAILURE_QUINTESSENCE_PENALTY,
   SUCCESS_AT_COST_QUINTESSENCE_PENALTY,
   CRITICAL_SUCCESS_QUINTESSENCE_REWARD,
+  NEAR_MISS_GROWTH_MULTIPLIER,
+  NEAR_MISS_PROGRESS_COUNTER_DELTA,
 } from '../outcomeConsequences';
 import {
   mapResolverOutcomeToStep,
@@ -105,6 +107,7 @@ describe('StepOutcome type helpers', () => {
     expect(isStepSuccess('critical_success')).toBe(true);
     expect(isStepSuccess('success')).toBe(true);
     expect(isStepSuccess('success_at_cost')).toBe(true);
+    expect(isStepSuccess('near_miss')).toBe(true);
     expect(isStepSuccess('failure')).toBe(false);
     expect(isStepSuccess('critical_failure')).toBe(false);
   });
@@ -114,6 +117,7 @@ describe('StepOutcome type helpers', () => {
     expect(isStepFailure('critical_failure')).toBe(true);
     expect(isStepFailure('success')).toBe(false);
     expect(isStepFailure('success_at_cost')).toBe(false);
+    expect(isStepFailure('near_miss')).toBe(false);
     expect(isStepFailure('critical_success')).toBe(false);
   });
 });
@@ -130,8 +134,8 @@ describe('mapResolverOutcomeToStep', () => {
     expect(mapResolverOutcomeToStep('success', false)).toBe('success');
   });
 
-  it('maps success to success_at_cost when near-miss', () => {
-    expect(mapResolverOutcomeToStep('success', true)).toBe('success_at_cost');
+  it('maps success to near_miss when near-miss (Phase 6: near_miss is its own band)', () => {
+    expect(mapResolverOutcomeToStep('success', true)).toBe('near_miss');
   });
 
   it('maps failure to failure', () => {
@@ -169,6 +173,24 @@ describe('advanceStep with rich outcomes', () => {
     expect(result.resolved).toBe(false);
     expect(result.currentStep).toBe(1);
     expect(result.stepOutcomes).toEqual(['success_at_cost']);
+  });
+
+  it('near_miss with continue_weakened advances to next step', () => {
+    const action = makeAction();
+    const result = advanceStep(action, 'near_miss', template, makeRng(0.5));
+    expect(result.resolved).toBe(false);
+    expect(result.currentStep).toBe(1);
+    expect(result.stepOutcomes).toEqual(['near_miss']);
+  });
+
+  it('final step with near_miss in history produces success_at_cost', () => {
+    const action = makeAction({
+      currentStep: 1,
+      stepOutcomes: ['near_miss'],
+    });
+    const result = advanceStep(action, 'success', template, makeRng(0.5));
+    expect(result.resolved).toBe(true);
+    expect(result.outcome).toBe('success_at_cost');
   });
 
   it('final step with mixed outcomes produces success_at_cost', () => {
@@ -276,16 +298,46 @@ describe('computeOutcomeConsequence', () => {
     expect(Math.abs(risky.quintessenceEvent!.delta)).toBeGreaterThan(Math.abs(normal.quintessenceEvent!.delta));
   });
 
-  it('non-proving-slice templates get default consequence', () => {
+  it('all templates receive band-differentiated consequences (proving-slice gate removed)', () => {
     const c = computeOutcomeConsequence('action.gold.trade', 'critical_success', 'actor1', 10);
-    expect(c.growthMultiplier).toBe(1.0);
+    expect(c.growthMultiplier).toBe(CRITICAL_SUCCESS_GROWTH_MULTIPLIER);
+    expect(c.quintessenceEvent).not.toBeNull();
+    expect(c.narrativeTag).toBe('surge');
+  });
+
+  it('near_miss grants partial growth and progress counter with no Q effect', () => {
+    const c = computeOutcomeConsequence('action.heart.inspire', 'near_miss', 'actor1', 10);
+    expect(c.growthMultiplier).toBe(NEAR_MISS_GROWTH_MULTIPLIER);
     expect(c.quintessenceEvent).toBeNull();
+    expect(c.narrativeTag).toBe('fortunate');
+    expect(c.progressCounterDelta).toBe(NEAR_MISS_PROGRESS_COUNTER_DELTA);
+    expect(c.attachmentDropIntent).toBeNull();
+    expect(c.complication).toBeNull();
+  });
+
+  it('success band provides non-null attachmentDropIntent with rare tier hint', () => {
+    const c = computeOutcomeConsequence('action.heart.inspire', 'success', 'actor1', 10);
+    expect(c.attachmentDropIntent).not.toBeNull();
+    expect(c.attachmentDropIntent!.band).toBe('success');
+    expect(c.attachmentDropIntent!.tierHint).toBe('rare');
+  });
+
+  it('critical_success band provides mythic-tier attachmentDropIntent', () => {
+    const c = computeOutcomeConsequence('action.heart.inspire', 'critical_success', 'actor1', 10);
+    expect(c.attachmentDropIntent).not.toBeNull();
+    expect(c.attachmentDropIntent!.band).toBe('critical_success');
+    expect(c.attachmentDropIntent!.tierHint).toBe('mythic');
+  });
+
+  it('failure band has null attachmentDropIntent', () => {
+    const c = computeOutcomeConsequence('action.heart.inspire', 'failure', 'actor1', 10);
+    expect(c.attachmentDropIntent).toBeNull();
   });
 });
 
-// ─── 6. Near-miss generates success_at_cost ─────────────────────
+// ─── 6. Near-miss generates near_miss step outcome ──────────────────────────
 
-describe('near-miss → success_at_cost', () => {
+describe('near-miss → near_miss step outcome (Phase 6)', () => {
   it('roll just under threshold is near-miss', () => {
     // probability 0.50 → threshold 50. Roll 48 = margin -2, near-miss.
     const breakdown = classifyResolutionRoll(0.50, 48);
@@ -293,7 +345,7 @@ describe('near-miss → success_at_cost', () => {
     expect(breakdown.margin).toBe(-2);
   });
 
-  it('shared resolver + near-miss success maps to success_at_cost', () => {
+  it('shared resolver + near-miss success maps to near_miss (its own Phase 6 band)', () => {
     // Roll that succeeds within near-miss margin (margin <= 5, roll <= threshold)
     const input: ResolutionInput = {
       actorId: 'test',
@@ -308,9 +360,9 @@ describe('near-miss → success_at_cost', () => {
     const result = resolveAction(input, () => 0, 18, 'unified_action');
     expect(result.outcome).toBe('success');
     expect(result.rollBreakdown?.nearMiss).toBe(true);
-    // The mapResolverOutcomeToStep would turn this into success_at_cost
+    // Phase 6: mapResolverOutcomeToStep maps near-miss success to near_miss (not success_at_cost)
     const mapped = mapResolverOutcomeToStep(result.outcome, result.rollBreakdown!.nearMiss);
-    expect(mapped).toBe('success_at_cost');
+    expect(mapped).toBe('near_miss');
   });
 });
 

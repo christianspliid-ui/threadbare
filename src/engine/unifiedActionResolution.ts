@@ -202,8 +202,8 @@ export function mapResolverOutcomeToStep(resolverOutcome: OutcomeType, nearMiss:
   switch (resolverOutcome) {
     case 'critical_success': return 'critical_success';
     case 'success':
-      // Near-miss success → success_at_cost (barely made it, complications follow)
-      return nearMiss ? 'success_at_cost' : 'success';
+      // Near-miss success → near_miss band (Phase 6: distinct from shaper-shifted success_at_cost)
+      return nearMiss ? 'near_miss' : 'success';
     case 'success_at_cost': return 'success_at_cost';
     case 'failure': return 'failure';
     case 'critical_failure': return 'critical_failure';
@@ -840,6 +840,7 @@ function mapStepOutcomeToRewardOutcome(outcome: StepOutcome): OutcomeType {
       return 'failure';
     case 'success':
     case 'success_at_cost':
+    case 'near_miss':
       return 'success';
   }
 }
@@ -1192,9 +1193,27 @@ export function executeStepResult(
   };
 
   // Phase 3: Compute differentiated consequences (all templates for failure tiers; THR-20)
+  // Phase 6: Gate removed for success tiers — all templates receive band-differentiated consequences
   const consequence = computeOutcomeConsequence(
     action.templateId, outcome, action.actorId, tick, complicationContext,
   );
+
+  // Phase 6: Emit consequence_applied trace (NFP #2 inspectability)
+  emitTrace({
+    category: 'consequence_applied',
+    summary: `consequence:${outcome} t=${tick} actor=${action.actorId}`,
+    tick,
+    actorId: action.actorId,
+    templateId: action.templateId,
+    band: outcome,
+    qDelta: consequence.quintessenceEvent?.delta ?? 0,
+    growthMultiplier: consequence.growthMultiplier,
+    progressCounterDelta: consequence.progressCounterDelta,
+    dropIntent: consequence.attachmentDropIntent
+      ? { tierHint: consequence.attachmentDropIntent.tierHint, weight: consequence.attachmentDropIntent.weight }
+      : null,
+    complicationId: consequence.complication?.templateId ?? null,
+  });
 
   // Phase 3: Queue quintessence effect from outcome consequence
   if (consequence.quintessenceEvent && state.pendingQuintessenceEvents) {
@@ -1706,11 +1725,16 @@ export function executeStepResult(
       isActionSuccess(finalAction.outcome),
       rewardName,
     );
+    // Phase 6: Q delta annotation for chronicle/toast visibility
+    const qDelta = consequence.quintessenceEvent?.delta ?? 0;
+    const qSuffix = qDelta !== 0
+      ? ` (${qDelta > 0 ? '+' : ''}${qDelta.toFixed(2)}Q)`
+      : '';
     events.push({
       id: `ua_${action.actionId}_resolved`,
       tick,
       type: 'agent_action_resolved',
-      message: `${currentActorName} ${outcomeMsg} ${template.name}${metadataSuffix}${clearanceSuffix}.`,
+      message: `${currentActorName} ${outcomeMsg} ${template.name}${metadataSuffix}${clearanceSuffix}${qSuffix}.`,
       significance,
       actorId: action.actorId,
     });
@@ -1722,11 +1746,16 @@ export function executeStepResult(
     // Phase 3: critical_success gets 0.7; other tiers get base 0.5 + consequence boost
     const stepSignificance = outcome === 'critical_success' ? 0.7 : 0.5 + consequence.significanceBoost;
     const metadataSuffix = summarizeMetadataConsequences(stepMetadata, isStepSuccess(outcome), rewardName);
+    // Phase 6: Q delta annotation for chronicle/toast visibility
+    const stepQDelta = consequence.quintessenceEvent?.delta ?? 0;
+    const stepQSuffix = stepQDelta !== 0
+      ? ` (${stepQDelta > 0 ? '+' : ''}${stepQDelta.toFixed(2)}Q)`
+      : '';
     events.push({
       id: `ua_${action.actionId}_step${stepNum}`,
       tick,
       type: 'agent_action_resolved',
-      message: `${actorName} ${stepVerb} in ${template.name} (step ${stepNum}/${totalSteps})${metadataSuffix}${clearanceSuffix}.`,
+      message: `${actorName} ${stepVerb} in ${template.name} (step ${stepNum}/${totalSteps})${metadataSuffix}${clearanceSuffix}${stepQSuffix}.`,
       significance: stepSignificance,
       actorId: action.actorId,
     });
@@ -1878,6 +1907,7 @@ function describeStepOutcome(outcome: StepOutcome): string {
     case 'critical_success': return 'excels';
     case 'success': return 'progresses';
     case 'success_at_cost': return 'pushes through at cost';
+    case 'near_miss': return 'nearly has it';
     case 'failure': return 'stumbles';
     case 'critical_failure': return 'falters badly';
   }

@@ -1276,3 +1276,43 @@ export const SPHERE_WONDER_FLAVORS: Record<string, string[]> = {
   ],
 };
 
+// ─── Outcome-Band Narrative Tag Flavors (Phase 6) ─────────────────────────────
+
+/**
+ * Prose fragments keyed by outcome narrativeTag.
+ * Used by enrichProse() to inject band-specific flavor into encounter prose.
+ * Minimum-viable entries for Slice A; full rewrite in Slice B.
+ */
+export const OUTCOME_BAND_PROSE: Record<string, string[]> = {
+  surge: [
+    'a pulse of certainty, clean and absolute',
+    'momentum gathered like a tide answering the moon',
+    'something essential clicking into place',
+  ],
+  neutral: [
+    'steady progress, no more and no less',
+    'the work moving forward as work does',
+    'a step taken, a step completed',
+  ],
+  strained: [
+    'ground held at a price already spent',
+    'success tasting of effort and scrape',
+    'progress won through gritted persistence',
+  ],
+  fortunate: [
+    'a near-miss that teaches more than a clean win',
+    'the thread held — barely, but held',
+    'almost, and almost counts for something',
+  ],
+  setback: [
+    'the moment passing before it could be seized',
+    'effort meeting resistance that would not yield',
+    'a gap between reaching and grasping',
+  ],
+  catastrophe: [
+    'something fundamental coming apart',
+    'a cost that compounds beyond the immediate',
+    'the kind of failure that leaves marks',
+  ],
+};
+

@@ -6,6 +6,25 @@
 
 ---
 
+## Phase 6 — Reward & Attachment Economy Expansion, Slice A (THR-63)
+
+Universal band differentiation for all action templates; `near_miss` as 6th StepOutcome band.
+
+| Surface | Path | Notes |
+|---|---|---|
+| Types | `src/types/unifiedAction.ts` | `near_miss` added to `StepOutcome` union; `isStepSuccess` extended to include `near_miss`. |
+| Types | `src/engine/outcomeConsequences.ts` | `AttachmentDropIntent` interface; `progressCounterDelta` + `attachmentDropIntent` fields on `OutcomeConsequence`; proving-slice gate removed — all 6 bands differentiated for all templates. |
+| Constants (11) | `src/engine/outcomeConsequences.ts` | `NEAR_MISS_GROWTH_MULTIPLIER` (0.25), `NEAR_MISS_PROGRESS_COUNTER_DELTA` (0.5), `CRITICAL_SUCCESS_DROP_WEIGHT` (1.5), `SUCCESS_DROP_WEIGHT` (1.0), `SUCCESS_AT_COST_DROP_WEIGHT` (0.4), `NEAR_MISS_DROP_WEIGHT` (0.0), `LOOT_TIER_BY_BAND` record; previous constants retained. |
+| Resolution | `src/engine/unifiedActionResolution.ts` | `mapResolverOutcomeToStep`: near-miss success → `near_miss` (was `success_at_cost`). `mapStepOutcomeToRewardOutcome`: `near_miss` case added. `describeStepOutcome`: `near_miss` → "nearly has it". Q delta suffix `(±0.00Q)` appended to `agent_action_resolved` message. `consequence_applied` trace emitted after `computeOutcomeConsequence`. |
+| Lifecycle | `src/engine/unifiedActionLifecycle.ts` | `hasAnyCost` in `computeFinalActionOutcome` extended to include `near_miss`. |
+| Trace category | `src/engine/traceBuffer.ts` | `consequence_applied` added to `TRACE_CATEGORIES`. |
+| Content — narrative | `src/data/narrative-content.ts` | `OUTCOME_BAND_PROSE` record (6 narrative-tag keys: surge/neutral/strained/fortunate/setback/catastrophe). |
+| Content — Q flavor | `src/data/quintessence-content.ts` | `OUTCOME_BAND_Q_FLAVOR` record (6 narrative-tag keys). |
+| Debug bridge | `src/debug-bridge.ts` + `src/debug-bridge.d.ts` | `window.__DEBUG.consequencesFor(actorRef, last?)` returns last N `consequence_applied` traces for an actor. |
+| Tests | `src/engine/__tests__/phase3-outcomeExpansion.test.ts` | 35 tests: updated near_miss/StepOutcome type assertions, advanceStep near_miss propagation, universal band differentiation, attachmentDropIntent shape. |
+
+---
+
 ## Event Feed Hygiene — Phase 2.361 Aggregation + Prose Dedup (THR-456)
 
 Same-hex same-tick `agent_encounter` colocation aggregation; phonetic name constraints; prose repetition guard.
