@@ -9,6 +9,7 @@ import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { DOOM_PRESSURE_PER_TIER } from '../types/sphereAffinity';
 import type { HexMutation } from '../types/hexMutation';
 import { advanceDoomClock } from './doomClock';
+import { evaluateIdentityMilestones } from './doomIdentityMilestones';
 import { processEffectEvent, applyEffectEventResult } from './effects/effectEvents';
 import { executeEffect } from './effectExecutors';
 import { instantiateReward } from './rewardPool';
@@ -307,6 +308,7 @@ export function phaseDoom(state: GameState): Partial<GameState> {
     : state.doomClock;
 
   const newDoom = advanceDoomClock(clockForAdvance);
+  evaluateIdentityMilestones(state, newDoom.progress);
   const newStage = newDoom.currentStage;
   const events: TickEvent[] = [];
   const pressures: SpherePressureEvent[] = [...(state.pendingSpherePressures ?? [])];

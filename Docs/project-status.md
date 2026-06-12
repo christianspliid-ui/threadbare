@@ -1,5 +1,5 @@
 # Project Status
-> Updated 2026-06-12.
+> Updated 2026-06-12 (THR-293).
 
 ## Current Focus
 **Encounter Experience — active:** Phases A1–A3, B1–B7, C1–C4, D1–D3, E1–E2, F1–F2, G1–G3 ✅. Remaining is F-phase integration (mount EffectRegistration components into hero panel / cast tile / scene state surfaces) and Phase H post-v1 polish.
@@ -14,6 +14,7 @@
 - **Social Systems Expansion (Now):** THR-28/27/30/51/29/41/34/31/35 shipped. ✅ THR-254/253. THR-78 queued.
 - **Thematic Pressure & Living World (Next):** ✅ THR-19/122/125/126/80/128/127. THR-87 blocked by THR-116.
 
+- ✅ 2026-06-12: THR-293 shipped — Doom identity milestone evaluator. `evaluateIdentityMilestones()` in `doomIdentityMilestones.ts` walks per-archetype milestones, sets `triggered=true` on first progress crossing, emits `doom_milestone` trace. Wired into `phaseDoom` after `advanceDoomClock`. Optional `doomArchetype` param on `initializeGameState`. `MilestoneTriggeredTrace` in trace union. 8 new tests (7 archetypes × 30 ticks + idempotency). PR #336.
 - ✅ 2026-06-12: THR-446 shipped — UL canonicalization: 9 mentorship-domain terms added to `Docs/ubiquitous-language/Agents.md` (mentor, apprentice, mentors edge, bondQuality, Train Apprentice, The Surpassing, Falling Out, Quiet Parting, Dissolution). Cross-shard See-Also hooks in Cosmology.md + Encounters.md. Dashboard regenerated (89 terms, 7 shards). Closeout from THR-75.
 - ✅ 2026-06-12: THR-381 shipped — `grill-me` and `design-council` now externalize role prompts into `agents/` files, leaving thin SKILL orchestrators with stable prompt-file paths for downstream design-loop reuse. PR pending.
 - ✅ 2026-06-12: THR-63 shipped — Phase 6 Reward & Attachment Economy Expansion, Slice A. `near_miss` added as 6th StepOutcome band. Proving-slice gate removed — all templates receive universal band-differentiated consequences (Q delta, growthMultiplier, attachmentDropIntent, progressCounterDelta, narrativeTag). `consequence_applied` trace category. Q delta suffix on `agent_action_resolved` events `(±0.00Q)`. `OUTCOME_BAND_PROSE` + `OUTCOME_BAND_Q_FLAVOR` content tables. `window.__DEBUG.consequencesFor()` debug API. 35 updated tests across 3 test files. PR #332.
