@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-05-08T05:12:42.798Z",
+  "generatedAt": "2026-06-12T16:15:51.522Z",
   "shards": [
     {
       "id": "cosmology",
@@ -15,7 +15,7 @@
       "filename": "Agents.md",
       "title": "Agents",
       "contentAdjacent": true,
-      "termCount": 12,
+      "termCount": 21,
       "blurb": "Content-adjacent shard. Terms covering entities in the simulation: agents, actors, Ascendant, factions, and their relationships."
     },
     {
@@ -82,6 +82,11 @@
           "raw": "Sphere",
           "termName": "Sphere",
           "resolvedSlug": "cosmology#sphere"
+        },
+        {
+          "raw": "mentor",
+          "termName": "mentor",
+          "resolvedSlug": "agents#mentor"
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Cosmology.md#reach",
@@ -645,6 +650,351 @@
       "contentAdjacent": true
     },
     {
+      "shardId": "agents",
+      "slug": "mentor",
+      "name": "mentor",
+      "aliases": [
+        "Mentor Agent"
+      ],
+      "status": "canonical",
+      "oneLiner": "An agent at Domain Capability tier ≥ `MENTOR_MIN_TIER` (currently 6) in any Reach, on the source end of an active `mentors` graph edge.",
+      "body": "An agent at Domain Capability tier ≥ `MENTOR_MIN_TIER` (currently 6) in any Reach, on the source end of an active `mentors` graph edge. A mentor actively teaches an apprentice through the Train Apprentice initiative. The minimum tier ensures the mentor has genuine mastery to pass on rather than shallow familiarity.\n\nCode anchor: `src/data/mentorship-constants.ts:17`.",
+      "seeAlso": [
+        {
+          "raw": "apprentice",
+          "termName": "apprentice",
+          "resolvedSlug": "agents#apprentice"
+        },
+        {
+          "raw": "mentors (edge)",
+          "termName": "mentors (edge)",
+          "resolvedSlug": "agents#mentors-edge"
+        },
+        {
+          "raw": "Train Apprentice",
+          "termName": "Train Apprentice",
+          "resolvedSlug": "agents#train-apprentice"
+        },
+        {
+          "raw": "Domain Capability",
+          "termName": "Domain Capability",
+          "resolvedSlug": "cosmology#domain-capability"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#mentor",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "apprentice",
+      "name": "apprentice",
+      "aliases": [
+        "Apprentice Agent"
+      ],
+      "status": "canonical",
+      "oneLiner": "An agent at Domain Capability tier between `APPRENTICE_MIN_TIER` and `APPRENTICE_MAX_TIER` (currently 2–4) in the taught Reach, on the target end of a `mentors` edge in `offered` or `training` phase.",
+      "body": "An agent at Domain Capability tier between `APPRENTICE_MIN_TIER` and `APPRENTICE_MAX_TIER` (currently 2–4) in the taught Reach, on the target end of a `mentors` edge in `offered` or `training` phase. The tier window ensures the apprentice has enough foundation to learn but still needs a mentor's guidance.\n\nCode anchor: `src/data/mentorship-constants.ts:21,25`.",
+      "seeAlso": [
+        {
+          "raw": "mentor",
+          "termName": "mentor",
+          "resolvedSlug": "agents#mentor"
+        },
+        {
+          "raw": "mentors (edge)",
+          "termName": "mentors (edge)",
+          "resolvedSlug": "agents#mentors-edge"
+        },
+        {
+          "raw": "Train Apprentice",
+          "termName": "Train Apprentice",
+          "resolvedSlug": "agents#train-apprentice"
+        },
+        {
+          "raw": "Domain Capability",
+          "termName": "Domain Capability",
+          "resolvedSlug": "cosmology#domain-capability"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#apprentice",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "mentors-edge",
+      "name": "mentors (edge)",
+      "aliases": [
+        "Mentors Edge",
+        "MentorsEdgeProperties"
+      ],
+      "status": "canonical",
+      "oneLiner": "Directed graph edge from `mentor → apprentice` carrying the persistent mentorship relationship.",
+      "body": "Directed graph edge from `mentor → apprentice` carrying the persistent mentorship relationship. Required properties: `domain` (ReachDomain), `progress` (0–1), `phase` (`offered` | `training` | `graduated` | `estranged`), `startedTick`, `lessonsCompleted` (0–4), `bondQuality` (−1..+1). Optional: `initiativeId`, `severedByDivineWill`. The edge persists even after the backing initiative ends — a `graduated` or `estranged` phase is the lasting record of the relationship.\n\nCode anchors: `src/types/graph.ts` `MentorsEdgeProperties`, `src/types/edgeSchema.ts`.",
+      "seeAlso": [
+        {
+          "raw": "mentor",
+          "termName": "mentor",
+          "resolvedSlug": "agents#mentor"
+        },
+        {
+          "raw": "apprentice",
+          "termName": "apprentice",
+          "resolvedSlug": "agents#apprentice"
+        },
+        {
+          "raw": "bondQuality",
+          "termName": "bondQuality",
+          "resolvedSlug": "agents#bondquality"
+        },
+        {
+          "raw": "Train Apprentice",
+          "termName": "Train Apprentice",
+          "resolvedSlug": "agents#train-apprentice"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#mentors-edge",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "bondquality",
+      "name": "bondQuality",
+      "aliases": [
+        "Bond Quality",
+        "Bond Health"
+      ],
+      "status": "canonical",
+      "oneLiner": "The narrative-derived health of a mentor↔apprentice bond, clamped to `[−1, +1]`.",
+      "body": "The narrative-derived health of a mentor↔apprentice bond, clamped to `[−1, +1]`. Initial value `BOND_QUALITY_INITIAL` (currently 0.0). Drifts on backing-initiative checkpoints: `BOND_DRIFT_ON_SUCCESS` (currently +0.15) on pass, `BOND_DRIFT_ON_FAILURE` (currently −0.20) on fail. Failures cut deeper than successes heal, reflecting the asymmetry of trust. Decides the terminal arc at graduation: ≥ `GRADUATION_BOND_THRESHOLD` → Graduation or The Surpassing; < `FALLING_OUT_BOND_THRESHOLD` → Falling Out; between the thresholds → Quiet Parting. Force-floored to `SEVER_BOND_QUALITY_FLOOR` (currently −1.0) by the Sever the Bond divine action.\n\nCode anchor: `src/data/mentorship-constants.ts:47–55,59,63,94`.",
+      "seeAlso": [
+        {
+          "raw": "mentors (edge)",
+          "termName": "mentors (edge)",
+          "resolvedSlug": "agents#mentors-edge"
+        },
+        {
+          "raw": "Train Apprentice",
+          "termName": "Train Apprentice",
+          "resolvedSlug": "agents#train-apprentice"
+        },
+        {
+          "raw": "Falling Out",
+          "termName": "Falling Out",
+          "resolvedSlug": "agents#falling-out"
+        },
+        {
+          "raw": "The Surpassing",
+          "termName": "The Surpassing",
+          "resolvedSlug": "agents#the-surpassing"
+        },
+        {
+          "raw": "Quiet Parting",
+          "termName": "Quiet Parting",
+          "resolvedSlug": "agents#quiet-parting"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#bondquality",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "train-apprentice",
+      "name": "Train Apprentice",
+      "aliases": [
+        "initiative.train-apprentice",
+        "Apprenticeship Initiative"
+      ],
+      "status": "canonical",
+      "oneLiner": "A multi-tick `social`-category initiative of type `initiative.train-apprentice` that wraps the mentorship relationship.",
+      "body": "A multi-tick `social`-category initiative of type `initiative.train-apprentice` that wraps the mentorship relationship. The `mentors` edge is the persistent relationship; the initiative is the occupation wrapper that drives `progress` toward 1.0 over `MENTORSHIP_BASE_DURATION ± MENTORSHIP_DURATION_VARIANCE` (currently 8 ± 3) ticks, with `MENTORSHIP_CHECK_INTERVAL`-tick (currently 2) checkpoints. An apprentice straying beyond `MENTORSHIP_MAX_SEPARATION_HEXES` hexes (currently 3) fails the initiative.\n\nCode anchor: `src/data/mentorship-constants.ts:29–41`.",
+      "seeAlso": [
+        {
+          "raw": "mentor",
+          "termName": "mentor",
+          "resolvedSlug": "agents#mentor"
+        },
+        {
+          "raw": "apprentice",
+          "termName": "apprentice",
+          "resolvedSlug": "agents#apprentice"
+        },
+        {
+          "raw": "mentors (edge)",
+          "termName": "mentors (edge)",
+          "resolvedSlug": "agents#mentors-edge"
+        },
+        {
+          "raw": "bondQuality",
+          "termName": "bondQuality",
+          "resolvedSlug": "agents#bondquality"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#train-apprentice",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "the-surpassing",
+      "name": "The Surpassing",
+      "aliases": [
+        "Surpassing Arc",
+        "mentorship.the-surpassing"
+      ],
+      "status": "canonical",
+      "oneLiner": "Terminal mentorship arc reached when the apprentice's Domain Capability tier in the trained Reach meets or exceeds the mentor's (by `SURPASSING_TIER_DELTA`, currently 0 — equal-or-greater triggers) AND `bondQuality ≥ GRADUATION_BOND_THRESHOLD`.",
+      "body": "Terminal mentorship arc reached when the apprentice's Domain Capability tier in the trained Reach meets or exceeds the mentor's (by `SURPASSING_TIER_DELTA`, currently 0 — equal-or-greater triggers) AND `bondQuality ≥ GRADUATION_BOND_THRESHOLD`. Bittersweet: pride and loss in the same breath. Resolved via `mentorship.graduation` encounter seed with the `mentorship_surpassing` flavor in Phase 1; promoted to its own template `mentorship.the-surpassing` in Phase 2.\n\nCode anchor: `src/engine/mentorshipOutcomes.ts:82–88`.",
+      "seeAlso": [
+        {
+          "raw": "bondQuality",
+          "termName": "bondQuality",
+          "resolvedSlug": "agents#bondquality"
+        },
+        {
+          "raw": "Train Apprentice",
+          "termName": "Train Apprentice",
+          "resolvedSlug": "agents#train-apprentice"
+        },
+        {
+          "raw": "Falling Out",
+          "termName": "Falling Out",
+          "resolvedSlug": "agents#falling-out"
+        },
+        {
+          "raw": "Quiet Parting",
+          "termName": "Quiet Parting",
+          "resolvedSlug": "agents#quiet-parting"
+        },
+        {
+          "raw": "Dissolution",
+          "termName": "Dissolution",
+          "resolvedSlug": "agents#dissolution"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#the-surpassing",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "falling-out",
+      "name": "Falling Out",
+      "aliases": [
+        "Falling Out Arc",
+        "mentorship.the-falling-out"
+      ],
+      "status": "canonical",
+      "oneLiner": "Terminal mentorship arc reached when `bondQuality < FALLING_OUT_BOND_THRESHOLD` (currently −0.3) at resolution time.",
+      "body": "Terminal mentorship arc reached when `bondQuality < FALLING_OUT_BOND_THRESHOLD` (currently −0.3) at resolution time. Cool failure: seeds the `mentorship.the-falling-out` encounter and creates a `hostile_to` edge if sentiment is below `HOSTILE_THRESHOLD` (currently −0.6), or a negative `relates_to` edge otherwise. The apprentice retains `FALLING_OUT_TRANSFER_FRACTION` (currently 0.5) of the partial Mastery gain — the learning was real even when the relationship wasn't.\n\nCode anchor: `src/engine/mentorshipOutcomes.ts:89–90, 182–204`.",
+      "seeAlso": [
+        {
+          "raw": "bondQuality",
+          "termName": "bondQuality",
+          "resolvedSlug": "agents#bondquality"
+        },
+        {
+          "raw": "Train Apprentice",
+          "termName": "Train Apprentice",
+          "resolvedSlug": "agents#train-apprentice"
+        },
+        {
+          "raw": "The Surpassing",
+          "termName": "The Surpassing",
+          "resolvedSlug": "agents#the-surpassing"
+        },
+        {
+          "raw": "Quiet Parting",
+          "termName": "Quiet Parting",
+          "resolvedSlug": "agents#quiet-parting"
+        },
+        {
+          "raw": "Dissolution",
+          "termName": "Dissolution",
+          "resolvedSlug": "agents#dissolution"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#falling-out",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "quiet-parting",
+      "name": "Quiet Parting",
+      "aliases": [
+        "Quiet Parting Arc"
+      ],
+      "status": "canonical",
+      "oneLiner": "Terminal mentorship arc reached when the Train Apprentice initiative completes (`progress ≥ 1.0`) AND `bondQuality` falls between `FALLING_OUT_BOND_THRESHOLD` and `GRADUATION_BOND_THRESHOLD` — neither a proud graduation nor a dramatic rupture.",
+      "body": "Terminal mentorship arc reached when the Train Apprentice initiative completes (`progress ≥ 1.0`) AND `bondQuality` falls between `FALLING_OUT_BOND_THRESHOLD` and `GRADUATION_BOND_THRESHOLD` — neither a proud graduation nor a dramatic rupture. The default \"neither great nor terrible\" outcome: a competent professional relationship that simply ran its course. The apprentice graduates with partial Mastery gain.\n\nCode anchor: `src/engine/mentorshipOutcomes.ts:92, 218`.",
+      "seeAlso": [
+        {
+          "raw": "bondQuality",
+          "termName": "bondQuality",
+          "resolvedSlug": "agents#bondquality"
+        },
+        {
+          "raw": "Train Apprentice",
+          "termName": "Train Apprentice",
+          "resolvedSlug": "agents#train-apprentice"
+        },
+        {
+          "raw": "The Surpassing",
+          "termName": "The Surpassing",
+          "resolvedSlug": "agents#the-surpassing"
+        },
+        {
+          "raw": "Falling Out",
+          "termName": "Falling Out",
+          "resolvedSlug": "agents#falling-out"
+        },
+        {
+          "raw": "Dissolution",
+          "termName": "Dissolution",
+          "resolvedSlug": "agents#dissolution"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#quiet-parting",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "dissolution",
+      "name": "Dissolution",
+      "aliases": [
+        "Dissolution Arc"
+      ],
+      "status": "canonical",
+      "oneLiner": "Terminal mentorship arc reached when the backing `train-apprentice` initiative status is `failed`.",
+      "body": "Terminal mentorship arc reached when the backing `train-apprentice` initiative status is `failed`. Bond dissolved by external cause — death, exile, or separation beyond `MENTORSHIP_MAX_SEPARATION_HEXES` tolerance — rather than a natural completion. Unlike Falling Out, Dissolution carries no hostility; both parties were willing but circumstance intervened.\n\nCode anchor: `src/engine/mentorshipOutcomes.ts:79–80, 241`.",
+      "seeAlso": [
+        {
+          "raw": "bondQuality",
+          "termName": "bondQuality",
+          "resolvedSlug": "agents#bondquality"
+        },
+        {
+          "raw": "Train Apprentice",
+          "termName": "Train Apprentice",
+          "resolvedSlug": "agents#train-apprentice"
+        },
+        {
+          "raw": "The Surpassing",
+          "termName": "The Surpassing",
+          "resolvedSlug": "agents#the-surpassing"
+        },
+        {
+          "raw": "Falling Out",
+          "termName": "Falling Out",
+          "resolvedSlug": "agents#falling-out"
+        },
+        {
+          "raw": "Quiet Parting",
+          "termName": "Quiet Parting",
+          "resolvedSlug": "agents#quiet-parting"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#dissolution",
+      "contentAdjacent": true
+    },
+    {
       "shardId": "encounters",
       "slug": "encounter",
       "name": "Encounter",
@@ -695,6 +1045,16 @@
           "raw": "UnifiedActionTemplate",
           "termName": "UnifiedActionTemplate",
           "resolvedSlug": "encounters#unifiedactiontemplate"
+        },
+        {
+          "raw": "mentorship.graduation",
+          "termName": "mentorship.graduation",
+          "resolvedSlug": null
+        },
+        {
+          "raw": "mentorship.the-falling-out",
+          "termName": "mentorship.the-falling-out",
+          "resolvedSlug": "agents#falling-out"
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#encountertemplate",
@@ -2188,7 +2548,7 @@
       ],
       "status": "canonical",
       "oneLiner": "weekly synthesis of impediment log + drift scan issues; run via `retrospective` skill",
-      "body": "The weekly synthesis of the impediment log (`Docs/impediments.md`) + drift scan issues into a structured retrospective document (`Docs/retrospectives/YYYY-MM-DD-retro.md`). Run via the `retrospective` skill. The retrospective implements quick wins inline and opens Linear issues for larger improvements. It is the sense-making layer that converts quantitative scan data into qualitative judgment.",
+      "body": "The weekly synthesis of the impediment log (`Docs/impediments.md`) + drift scan issues into a structured retrospective document (`Design/retros/retro-YYYY-MM-DD.md`). Run via the `retrospective` skill. The retrospective implements quick wins inline and opens Linear issues for larger improvements. It is the sense-making layer that converts quantitative scan data into qualitative judgment.",
       "seeAlso": [
         {
           "raw": "Drift Scan",
@@ -2275,6 +2635,12 @@
       "shardId": "agents",
       "termSlug": "faction",
       "detail": "See-Also \"Member Of\" did not resolve to a known term."
+    },
+    {
+      "kind": "unresolved_see_also",
+      "shardId": "encounters",
+      "termSlug": "encountertemplate",
+      "detail": "See-Also \"mentorship.graduation\" did not resolve to a known term."
     },
     {
       "kind": "unresolved_see_also",
