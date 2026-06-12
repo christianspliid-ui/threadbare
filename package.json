@@ -25,6 +25,7 @@
     "check:canon-staleness": "node --experimental-strip-types scripts/check-canon-staleness.ts",
     "vision-audit": "node --experimental-strip-types scripts/vision-audit.ts",
     "lint:encounter-content": "esbuild scripts/lint-encounter-content.ts --bundle --platform=node --format=esm --outfile=.cache/lint-encounter-content.mjs --external:fs --external:path --external:process --external:url && node .cache/lint-encounter-content.mjs",
+    "lint:plan-doc": "esbuild scripts/lint-plan-doc.ts --bundle --platform=node --format=esm --outfile=.cache/lint-plan-doc.mjs --external:child_process --external:fs --external:path --external:process --external:url && node .cache/lint-plan-doc.mjs",
     "lint:intel-prose-category": "esbuild scripts/lint-intel-prose-category.ts --bundle --platform=node --format=esm --outfile=.cache/lint-intel-prose-category.mjs --external:fs --external:path --external:process --external:url && node .cache/lint-intel-prose-category.mjs",
     "check:process": "esbuild scripts/check-process.ts --bundle --platform=node --format=esm --outfile=.cache/check-process.mjs --external:child_process --external:fs --external:path --external:process --external:url && node .cache/check-process.mjs && npm run check:authoring-brief",
     "generate-vault": "esbuild scripts/generate-vault.ts --bundle --platform=node --format=esm --outfile=.cache/generate-vault.mjs --external:fs --external:path && node .cache/generate-vault.mjs",
