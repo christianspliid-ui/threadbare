@@ -5,7 +5,7 @@ description: >
   or ambiguous work, asks permission before running, and produces a synthesis
   artifact that feeds plan-doc drafting. Conversational by default, async-batch
   on request.
-last_validated_against: 2026-05-08
+last_validated_against: 2026-06-12
 ---
 
 # Grill Me
@@ -72,47 +72,15 @@ Both modes end with the same synthesis artifact.
 
 ## Question Design Rules
 
-1. Prioritize unknowns and tradeoffs over obvious structure
-2. Skip inferable questions when adjacent answers already imply the answer
-3. Err on the side of more questions
-4. Mark strong recommendations with `⚡`
-5. Ask for "why not" alternatives, not only preferred paths
-
-Use `⚡` only when you have a real lean and want pushback.
+See: `agents/grill-question-patterns.md`
 
 ## "I Don't Know" Handling
 
-Track each question with an attempt counter.
-
-First `I don't know` on a question:
-
-- Park the question
-- Continue with questions that can unlock context
-- Loop back later in the same session
-
-Second `I don't know` on the revisited question:
-
-- Mark unresolved as a grey zone in synthesis
-- Do not retry again in the same session
-- Continue without stalling
+See: `agents/grill-question-patterns.md`
 
 ## Synthesis Artifact
 
-Write synthesis to:
-
-`Docs/plans/YYYY-MM-DD-<topic>-grill-me.md`
-
-Minimum sections:
-
-1. Scope under interrogation
-2. Confirmed decisions
-3. Agent recommendations (`⚡` items)
-4. Parked-then-resolved questions
-5. Unresolved grey zones (including second-pass "I don't know")
-6. Open risks and assumptions
-7. Inputs for the upcoming design doc
-
-This file is an input artifact for plan-doc drafting.
+See: `agents/synthesis-prompt.md`
 
 ## Procedure
 
