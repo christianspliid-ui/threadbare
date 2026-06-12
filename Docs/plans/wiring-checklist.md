@@ -6,6 +6,28 @@
 
 ---
 
+## Event Feed Hygiene — Phase 2.361 Aggregation + Prose Dedup (THR-456)
+
+Same-hex same-tick `agent_encounter` colocation aggregation; phonetic name constraints; prose repetition guard.
+
+| Surface | Path | Notes |
+|---|---|---|
+| Constants | `src/engine/eventAggregation.ts` | `EVENT_AGGREGATE_MIN_GROUP_SIZE` (3), `AGGREGATE_SIGNIFICANCE_BOOST` (0.1). |
+| Types | `src/types/gameState.ts` | `aggregatedFromIds?: readonly string[]` on `TickEvent` — omitted on non-aggregated events. |
+| Trace types | `src/types/trace.ts` | `EventAggregationTrace`, `AggregationSkippedTrace`, `PhoneticConstraintRejectTrace`, `WandererFallbackTrace`, `EliteNamingTrace` interfaces + union entries. |
+| Phrase pool | `src/data/event-aggregation-content.ts` | `AGGREGATE_PHRASE_POOL_MIN` (15), `ALL_AGGREGATE_PHRASES` (19 entries across small/medium/large crowd-size pools), `getAggregatePhrasePool(size)`. |
+| Aggregation module | `src/engine/eventAggregation.ts` | `aggregateColocationEvents(events, rng, tick, resolveLocationName)` — O(n) group-by-hex, collapses groups ≥ `MIN_GROUP_SIZE` into one synthesised event. Fail-soft: returns original array on any error. |
+| Orchestrator wiring | `src/engine/orchestrator.ts` | Phase 2.361 registered immediately after Phase 2.36; aggregation RNG seeded from `state.tick * 59` (prime to avoid harmonic aliasing); hex-location index built once per tick; `aggregateColocationEvents` called on `tickEvents` before push. |
+| Phonetic constraints | `src/engine/culturePhonetics.ts` | `NAME_MAX_SYLLABLES` (4), `NAME_MAX_CONSONANT_CLUSTER` (2), `NAME_MAX_VOWEL_RUN` (2). `countSyllables`, `hasConsonantClusterLongerThan`, `hasVowelRunLongerThan` guard functions; checks applied in `generatePhoneticName` before returning. |
+| Name fallback | `src/data/culture-name-pools.ts` | `WANDERER_FALLBACK_BANNED_PATTERNS` regex, `FATAL_FALLBACK_NAMES` (5 safe names), `synthesizeFallbackName(sphere, rng)` replaces `Wanderer-N` last resort. `pickCulturalName` validates output against banned patterns. |
+| Elite naming | `src/engine/lairEscalation.ts` | `createNamedElite` uses `pickCulturalName('chaos', sphere, mulberry32(hashStringSeed(lairId)), usedNames)` — deterministic per lair, never `Elite of Lair N`. `roleLabel: 'Elite'` added to node properties. |
+| Prose repetition guard | `src/engine/proseSelection.ts` | `PhraseEntry { phraseId, text }` type; `PROSE_REPETITION_GUARD_WINDOW` (6); `pickWithRepetitionGuard(pool, rng, usedIds)` — prefers fresh entries, falls back to full pool when all used. |
+| Dilemma prose | `src/data/narrative-content.ts` | `DilemmaProseEntry` type replaces `string[]`. 12 entries/sub-pool (was 2), unique `phraseId` per entry. Sentence-start casing bug fixed. |
+| Orchestrator dilemma pick | `src/engine/orchestrator.ts` | `dilemmaProseUsed: Set<string>` created per `phaseDilemmaDetection` invocation; `pickWithRepetitionGuard` used instead of random index. |
+| Tests | `src/engine/__tests__/eventAggregation.test.ts`, `culturePhonetics.constraints.test.ts`, `src/data/__tests__/culture-name-pools.fallback.test.ts`, `src/engine/__tests__/proseSelection.test.ts`, `src/testing/__tests__/narrativeContent.casing.test.ts`, `src/testing/__tests__/event-aggregation-content.lint.test.ts` | 8 + 10 + 6 + 8 + 1 + 4 = 37 tests. |
+
+---
+
 ## Story-so-far Digest (THR-455)
 
 "Story so far" narrative panel in ThreadDetailView, replacing RecentActivityLog when `STORY_SO_FAR_DIGEST_ENABLED`.

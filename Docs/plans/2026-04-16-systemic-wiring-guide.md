@@ -1086,6 +1086,37 @@ Every link in this chain matters. Great prose without systemic wiring is a book 
 
 ---
 
+## Part 9: Prose Repetition Prevention — `pickWithRepetitionGuard` (THR-456)
+
+When a tick might resolve multiple events using the same phrase pool (e.g. multiple `dilemma_resolved` events in one tick), naive random selection repeats the same phrase. Use `pickWithRepetitionGuard` from `src/engine/proseSelection.ts` to prevent this.
+
+```ts
+import { pickWithRepetitionGuard, type PhraseEntry } from '../proseSelection';
+
+// Define your pool as PhraseEntry[] (phraseId + text, not bare strings):
+const POOL: PhraseEntry[] = [
+  { phraseId: 'my_pool.drama.01', text: 'The {noun} fractures.' },
+  { phraseId: 'my_pool.drama.02', text: 'Something shifts between them.' },
+  // ...
+];
+
+// Create one Set per tick-phase (not per-game), reset each tick:
+const usedIds = new Set<string>();
+
+// Pick — automatically avoids usedIds, falls back to full pool when exhausted:
+const entry = pickWithRepetitionGuard(POOL, rng, usedIds);
+// entry.text → the prose template string
+// usedIds now contains entry.phraseId — next call skips it
+```
+
+**Key invariants:**
+- `PhraseEntry.phraseId` must be unique across the whole pool (content-lint test enforces this).
+- The `usedIds` set is created fresh at the start of each phase, not stored in GameState. This prevents same-tick repeats without persisting state across ticks.
+- Pool must be non-empty — `pickWithRepetitionGuard` throws on empty pool (caught by the caller's fail-soft wrapper).
+- `PROSE_REPETITION_GUARD_WINDOW` (6) is exported for callers that want to manually track window size, but the Set-based API doesn't enforce a window — it avoids *all* entries in the Set.
+
+---
+
 ## Appendix: Culture-Seeded Naming (THR-15, 2026-04-18)
 
 **Location names, agent names, demonyms, and homeland names are now culture-phonetic.** Each culture at worldgen time builds a deterministic `CulturePhoneticSignature` (vowel inventory, onset/coda consonants, syllable templates, orthography style) seeded from its foundation + sphere + demonym hash. All name generation routes through the layered picker in `pickCulturalName()`:
@@ -1093,7 +1124,9 @@ Every link in this chain matters. Great prose without systemic wiring is a book 
 1. 35% chance: phonetic generator first
 2. Curated pool (foundation + sphere flavor words)
 3. Phonetic fallback (if pool exhausted)
-4. Generic fallback, then `Wanderer-N`
+4. `synthesizeFallbackName(sphere, rng)` — culturally seeded safe name (replaced `Wanderer-N` in THR-456)
+
+**Phonetic constraint guards (THR-456):** `generatePhoneticName` applies three output guards before returning — `countSyllables ≤ NAME_MAX_SYLLABLES (4)`, no consonant cluster longer than `NAME_MAX_CONSONANT_CLUSTER (2)`, no vowel run longer than `NAME_MAX_VOWEL_RUN (2)`. Names that fail after 10 attempts fall through to the curated pool. This eliminates `Saawhaiahaiiawhuiel`-class outputs.
 
 **What this means for content authors:**
 - Agent names will be audibly distinct per culture — Chaos/Force cultures sound harsh and percussive; Light/Spirit cultures are vowel-rich and open-syllable.
