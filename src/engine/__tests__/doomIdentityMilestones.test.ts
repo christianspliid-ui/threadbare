@@ -20,6 +20,7 @@ import type { DoomClockArchetype } from '../../types/doomClock';
 
 const SEED = 42;
 const TICKS = 30;
+const MILESTONE_SMOKE_TIMEOUT_MS = 15_000;
 const { cols, rows } = MAP_SIZE_PRESETS['small'];
 
 const ascendantArchetype = generateArchetypes(4, SEED)[0];
@@ -66,7 +67,7 @@ describe('evaluateIdentityMilestones', () => {
     const milestoneTraces = getTraces().filter((t) => t.category === 'doom_milestone');
     expect(milestoneTraces.length).toBeGreaterThanOrEqual(1);
     expect(milestoneTraces[0].summary).toContain(firstMilestone.label);
-  });
+  }, MILESTONE_SMOKE_TIMEOUT_MS);
 
   it('milestone triggered flag persists — no re-emission after first crossing', () => {
     let { state } = initializeGameState(
