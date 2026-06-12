@@ -294,9 +294,9 @@ describe('unifiedActionResolution', () => {
       });
 
       // Use a very low roll (likely success)
-      // Phase 3: outcome may be 'success' or 'success_at_cost' (near-miss)
+      // Phase 6: outcome may be 'success', 'near_miss', 'success_at_cost', or 'critical_success'
       const result = resolveUncontestedStep(action, template, state, successRng);
-      expect(['success', 'success_at_cost', 'critical_success']).toContain(result.outcome);
+      expect(['success', 'near_miss', 'success_at_cost', 'critical_success']).toContain(result.outcome);
       expect(result.opsToExecute).toHaveLength(1);
     });
 
@@ -839,8 +839,9 @@ describe('unifiedActionResolution', () => {
       expect(resolved!.significance).toBeCloseTo(0.65, 5);
     });
 
-    it('non-proving-slice success_at_cost gets baseline significance (0.60)', () => {
-      // action.iron.test is NOT a proving-slice template — no boost
+    it('non-proving-slice success_at_cost gets band-differentiated significance (0.65)', () => {
+      // Phase 6: proving-slice gate removed — all templates receive band-differentiated consequences.
+      // success_at_cost significanceBoost = 0.05 for all templates.
       const template = make1StepTemplate();
       const state = createMinimalGameState();
       const action = createUnifiedAction({
@@ -854,8 +855,8 @@ describe('unifiedActionResolution', () => {
 
       const resolved = events.find(e => e.type === 'agent_action_resolved');
       expect(resolved).toBeDefined();
-      // base 0.6 (success) + significanceBoost 0.0 = 0.60
-      expect(resolved!.significance).toBeCloseTo(0.60, 5);
+      // base 0.6 (success) + significanceBoost 0.05 (success_at_cost, universal) = 0.65
+      expect(resolved!.significance).toBeCloseTo(0.65, 5);
     });
 
     it('proving-slice critical_failure boosts significance above failure baseline (0.50)', () => {
@@ -1098,9 +1099,9 @@ describe('unifiedActionResolution', () => {
       result = phaseUnifiedActionProgress(state, [template], successRng);
       actions = result.unifiedActions!;
       expect(actions[0].resolved).toBe(true);
-      // Phase 3: action may complete with 'success', 'success_at_cost', or 'critical_success'
+      // Phase 6: action may complete with 'success', 'success_at_cost', 'near_miss', or 'critical_success'
       // depending on near-miss and crit rolls from the fixed RNG
-      const successOutcomes = ['success', 'success_at_cost', 'critical_success'];
+      const successOutcomes = ['success', 'success_at_cost', 'near_miss', 'critical_success'];
       expect(successOutcomes).toContain(actions[0].outcome);
       // All steps should be some form of success
       for (const so of actions[0].stepOutcomes) {

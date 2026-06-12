@@ -275,7 +275,7 @@ function computeFinalActionOutcome(stepOutcomes: readonly StepOutcome[]): Unifie
   if (stepOutcomes.length === 0) return 'failure';
 
   const hasAnyFailure = stepOutcomes.some(isStepFailure);
-  const hasAnyCost = stepOutcomes.includes('success_at_cost');
+  const hasAnyCost = stepOutcomes.includes('success_at_cost') || stepOutcomes.includes('near_miss');
   const allCritSuccess = stepOutcomes.every(o => o === 'critical_success');
   const lastOutcome = stepOutcomes[stepOutcomes.length - 1];
 

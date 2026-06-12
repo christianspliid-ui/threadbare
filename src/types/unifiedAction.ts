@@ -864,7 +864,7 @@ export type UnifiedActionOutcome =
 
 /** Phase 3: Check if a step outcome is any form of success (including at cost). */
 export function isStepSuccess(outcome: StepOutcome): boolean {
-  return outcome === 'critical_success' || outcome === 'success' || outcome === 'success_at_cost';
+  return outcome === 'critical_success' || outcome === 'success' || outcome === 'success_at_cost' || outcome === 'near_miss';
 }
 
 /** Phase 3: Check if a step outcome is any form of failure. */
@@ -876,8 +876,10 @@ export function isStepFailure(outcome: StepOutcome): boolean {
  * Step-level outcome from the shared resolution service.
  * Phase 3: expanded from binary success/failure to the full outcome ladder.
  * `success_at_cost` means the step completed but with a penalty attached.
+ * `near_miss` (Phase 6): dice success in the near-miss zone — step advances but with
+ *   partial growth credit and no Q delta. Distinct from shaper-shifted `success_at_cost`.
  */
-export type StepOutcome = 'critical_success' | 'success' | 'success_at_cost' | 'failure' | 'critical_failure';
+export type StepOutcome = 'critical_success' | 'success' | 'success_at_cost' | 'near_miss' | 'failure' | 'critical_failure';
 
 export interface UnifiedAction {
   readonly actionId: string;

@@ -171,9 +171,9 @@ describe('unifiedActionPhases — multi-step integration', () => {
 
     const finalAction = finalState.unifiedActions[0];
     expect(finalAction.resolved).toBe(true);
-    // Phase 3: outcome may be 'success', 'success_at_cost', or 'critical_success'
+    // Phase 6: outcome may be 'success', 'near_miss', 'success_at_cost', or 'critical_success'
     // depending on near-miss and crit rolls from the fixed RNG
-    const successOutcomes = ['success', 'success_at_cost', 'critical_success'];
+    const successOutcomes = ['success', 'near_miss', 'success_at_cost', 'critical_success'];
     expect(successOutcomes).toContain(finalAction.outcome);
     // All steps should be some form of success
     for (const so of finalAction.stepOutcomes) {
@@ -213,9 +213,9 @@ describe('unifiedActionPhases — multi-step integration', () => {
     const finalAction = current.unifiedActions[0];
     expect(finalAction.resolved).toBe(true);
     expect(finalAction.outcome).toBe('failure');
-    // Phase 3: first step may be success or success_at_cost (near-miss)
+    // Phase 6: first step may be success, near_miss, success_at_cost, or critical_success
     expect(finalAction.stepOutcomes).toHaveLength(2);
-    expect(['success', 'success_at_cost', 'critical_success']).toContain(finalAction.stepOutcomes[0]);
+    expect(['success', 'near_miss', 'success_at_cost', 'critical_success']).toContain(finalAction.stepOutcomes[0]);
     expect(finalAction.stepOutcomes[1]).toBe('failure');
     // Never reached step 2
     expect(finalAction.currentStep).toBe(1);

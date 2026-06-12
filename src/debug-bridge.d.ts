@@ -323,6 +323,21 @@ export interface DebugBridge {
   /** Returns a KPI report for the current game state (THR-457). Returns null if state is unavailable. */
   getKpiReport: () => Promise<import('./engine/kpi/gameplayKpi').GameplayKpiReport | null>;
 
+  /** Phase 6: Returns the last N consequence_applied traces for an actor (THR-63).
+   *  @param actorRef - exact actor id or partial name match
+   *  @param last - number of records to return (default 10)
+   */
+  consequencesFor: (actorRef: string, last?: number) => Promise<Array<{
+    tick: unknown;
+    templateId: unknown;
+    band: unknown;
+    qDelta: unknown;
+    growthMultiplier: unknown;
+    progressCounterDelta: unknown;
+    dropIntent: unknown;
+    complicationId: unknown;
+  }>>;
+
   /** Compose and return the story-so-far for an agent by id, id prefix, or partial name (THR-455). Returns null if not available. */
   getThreadStory(agentRef: string): import('./engine/threadDigest').ThreadStoryComposition | null;
   /** @internal GameView registers the thread story provider here */
