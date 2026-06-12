@@ -14,6 +14,39 @@ import type { CulturePhoneticSignature } from '../types/culture';
 import { PHONETIC_GENERATOR_ENABLED, PHONETIC_PRIMARY_CHANCE } from '../types/culture';
 import { generatePhoneticName } from '../engine/culturePhonetics';
 
+/** Patterns that must never appear as a final agent name (THR-456) */
+export const WANDERER_FALLBACK_BANNED_PATTERNS: RegExp[] = [
+  /^Wanderer-\d+$/,
+  /^Elite of Lair /,
+];
+
+/** Fixed canon list used when all dynamic paths are exhausted (THR-456) */
+const FATAL_FALLBACK_NAMES = [
+  'Stranger of the Eastern Road',
+  'Walker of the Unnamed Path',
+  'Pilgrim of the Far Shore',
+  'Wanderer of the Empty Hills',
+  'Traveller Without Clan',
+];
+
+/**
+ * Synthesize a fallback name from GENERIC_NAMES with a deterministic ordinal,
+ * ensuring the result is never a banned placeholder pattern.
+ */
+function synthesizeFallbackName(rng: () => number, index: number): string {
+  // Try GENERIC_NAMES pool first with the ordinal as the pick anchor
+  const pool = GENERIC_NAMES;
+  if (pool.length > 0) {
+    const pick = pool[index % pool.length];
+    if (!WANDERER_FALLBACK_BANNED_PATTERNS.some(p => p.test(pick))) {
+      return pick;
+    }
+  }
+  // Fall back to canon list
+  const _ = rng; // consume rng for determinism if caller passes one
+  return FATAL_FALLBACK_NAMES[index % FATAL_FALLBACK_NAMES.length];
+}
+
 // ─── Foundation-Keyed Names ──────────────────────────────────────
 // These set the broad cultural naming tradition.
 
@@ -234,9 +267,9 @@ export function pickCulturalName(
     }
   }
 
-  // Last resort
-  const suffix = usedNames.size;
-  const fallback = `Wanderer-${suffix}`;
+  // Last resort — synthesize a fallback that passes the banned-pattern guard (THR-456)
+  const index = usedNames.size;
+  const fallback = synthesizeFallbackName(rng, index);
   usedNames.add(fallback);
   return fallback;
 }

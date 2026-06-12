@@ -304,9 +304,9 @@
   - function getSettlementCultureSuffixes: (foundationBias) => string[]
   - function buildCultureNamePool: (foundationBias, primarySphere) => string[]
   - function pickCulturalName: (foundationBias, primarySphere, rng) => void
+  - const WANDERER_FALLBACK_BANNED_PATTERNS: RegExp[]
   - const FOUNDATION_NAMES: Record<string, string[]>
-  - const SPHERE_NAMES_POOL: Record<string, string[]>
-  - _...4 more_
+  - _...5 more_
 - `src\data\detail-page-showcase.ts`
   - function getShowcaseAuthoring: (nodeId, templateId?) => ShowcaseAuthoring | undefined
   - interface AuthoredSection
@@ -353,6 +353,14 @@
   - function parseEncounterContract: (contract) => EncounterContract
   - function isEncounterContract: (contract) => contract is EncounterContract
   - const encounterContractSchema: z.ZodType<EncounterContract>
+- `src\data\event-aggregation-content.ts`
+  - function getAggregatePhrasePool: (size) => AggregatePhraseEntry[]
+  - function crowdSizeCategory: (n) => AggregateCrowdSize
+  - interface AggregatePhraseEntry
+  - type AggregateCrowdSize
+  - const AGGREGATE_PHRASE_POOL_MIN
+  - const AGGREGATE_PHRASES_SMALL: AggregatePhraseEntry[]
+  - _...3 more_
 - `src\data\faction-encounter-content.ts`
   - function getFactionEncounterById: (id) => UnifiedActionTemplate | undefined
   - function getFactionTemplateIds: (factionDefId) => string[]
@@ -922,7 +930,14 @@
   - function generateCultureIdentities: (cosmology, rng) => void
   - _...4 more_
 - `src\engine\cultureMores.ts` — function composeCultureMores: (identity, seed) => string | null
-- `src\engine\culturePhonetics.ts` — function buildPhoneticSignature: (identity, cultureSeed, cultureId) => CulturePhoneticSignature, function generatePhoneticName: (signature, mode, rng) => void
+- `src\engine\culturePhonetics.ts`
+  - function countSyllables: (word) => number
+  - function hasConsonantClusterLongerThan: (word, max) => boolean
+  - function hasVowelRunLongerThan: (word, max) => boolean
+  - function buildPhoneticSignature: (identity, cultureSeed, cultureId) => CulturePhoneticSignature
+  - function generatePhoneticName: (signature, mode, rng) => void
+  - const NAME_MAX_SYLLABLES
+  - _...3 more_
 - `src\engine\curator.ts`
   - function scoreCurationCandidates: (candidates, lastTugAgentTicks, number>, lastTugReach, currentTick, sustainableRate, rng) => void
   - interface CurationCandidate
@@ -1277,6 +1292,11 @@
   - function toggleAttentionMode: (graph, threadEdgeId, ascendantId, tick) => void
   - _...1 more_
 - `src\engine\essenceIncome.ts` — function computeEssenceIncome: (graph, ascendantId, controlEffects?) => EssencePool
+- `src\engine\eventAggregation.ts`
+  - function aggregateColocationEvents: (events, rng) => void
+  - const EVENT_AGGREGATE_MIN_GROUP_SIZE
+  - const AGGREGATE_SIGNIFICANCE_BUMP
+  - const EVENT_AGGREGATE_GROUP_WINDOW_TICKS
 - `src\engine\factionAmbitions.ts`
   - function mulberry32: (seed) => () => number
   - function hashString: (str) => number
@@ -2109,6 +2129,14 @@
   - const TEMP
   - const MOIST
   - const VOLCANO_CHANCE
+- `src\engine\threadDigest.ts`
+  - function seededPickFromPool: (pool, ...seeds) => void
+  - function selectBeats: (agentId, buffer, currentTick, lookbackTicks) => SelectedBeat[]
+  - function resolveCurrentTension: (graph, agentId, currentTick) => CurrentTension
+  - function composeThreadStory: (graph, agentId, digestBuffer, currentTick, traceBuffer?) => ThreadStoryComposition
+  - interface SelectedBeat
+  - interface CurrentTension
+  - _...2 more_
 - `src\engine\threatRating.ts` — function computeHexThreatRating: (graph, locationId) => number
 - `src\engine\tickHealthMonitor.ts`
   - function validateTickOutput: (prev, next) => TickHealthReport

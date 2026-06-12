@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Component inventory and prop signatures extracted via AST. Read the source files before adding props or modifying component logic.
 
-**248 components** (react)
+**249 components** (react)
 
 ## Components
 
@@ -166,6 +166,7 @@
 - **SettingsPanel** — props: open, onClose, fogDisabled, onToggleFog, debugPanelOpen, onToggleDebug, showOrganicShore, onToggleOrganicShore, notificationPrefs, onToggleNotificationCategory — `src\components\Game\SettingsPanel.tsx`
 - **SimulationControls** — props: tick, season, year, running, speed, onToggle, onStep, onSpeedChange, compact — `src\components\Game\SimulationControls.tsx`
 - **StoryBeatModal** — props: open, onDismiss, template, agentName — `src\components\Game\StoryBeatModal.tsx`
+- **StorySoFarPanel** — props: composition — `src\components\Game\StorySoFarPanel.tsx`
 - **StrandView** — props: agentName, strands, onClose — `src\components\Game\StrandView.tsx`
 - **AttachmentsTab** — props: card, onAttachmentClick — `src\components\Game\tabs\AttachmentsTab.tsx`
 - **BondsTab** — props: card, knowledge — `src\components\Game\tabs\BondsTab.tsx`

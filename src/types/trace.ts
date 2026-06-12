@@ -1616,7 +1616,13 @@ export type TraceEntry =
   // Resolution input telemetry (THR-451)
   | ResolutionInputTrace
   // Story-so-far digest (THR-455)
-  | ThreadStoryComposedTrace;
+  | ThreadStoryComposedTrace
+  // Event feed hygiene (THR-456)
+  | ChronicleAggregatedTrace
+  | NamingConstrainedRejectTrace
+  | NamingFatalFallbackTrace
+  | ProseRepetitionSkipTrace
+  | ChronicleAggregateFailedTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {
@@ -2077,5 +2083,45 @@ export interface ResolutionInputTrace extends TraceBase {
   roll: number;
   /** Final outcome after probability floor + scale-gated crit-failure downgrade. */
   outcome: OutcomeType;
+}
+
+// ─── THR-456: Event Feed Hygiene trace types ──────────────────────────────────
+
+/** Trace: same-hex same-tick agent_encounter cluster collapsed into one event */
+export interface ChronicleAggregatedTrace extends TraceBase {
+  category: 'chronicle.aggregated';
+  hexCoords: { col: number; row: number };
+  memberCount: number;
+  memberIds: string[];
+  phraseId: string;
+}
+
+/** Trace: phonetic name candidate rejected by constraint (syllables/consonants/vowels) */
+export interface NamingConstrainedRejectTrace extends TraceBase {
+  category: 'naming.constrained_reject';
+  cultureId: string;
+  rejectedCandidate: string;
+  reason: 'syllables' | 'consonants' | 'vowels';
+  attempt: number;
+}
+
+/** Trace: all naming paths exhausted; using fixed canon fallback */
+export interface NamingFatalFallbackTrace extends TraceBase {
+  category: 'naming.fatal_fallback';
+  cultureId: string;
+  fallbackName: string;
+}
+
+/** Trace: phrase skipped in repetition guard; using least-recently-used alternative */
+export interface ProseRepetitionSkipTrace extends TraceBase {
+  category: 'prose.repetition_skip';
+  phraseId: string;
+  lastUseTick: number;
+}
+
+/** Trace: event aggregation threw; raw events returned unchanged */
+export interface ChronicleAggregateFailedTrace extends TraceBase {
+  category: 'chronicle.aggregate_failed';
+  errorMessage: string;
 }
 

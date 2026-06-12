@@ -33,7 +33,7 @@ import {
   ORTHOGRAPHY_WEIGHTS_BY_FOUNDATION,
 } from '../data/culture-phonetic-pools';
 import { emitTrace } from './traceBuffer';
-import type { CulturePhoneticSignatureBuiltTrace, PhoneticNameGeneratedTrace } from '../types/trace';
+import type { CulturePhoneticSignatureBuiltTrace, PhoneticNameGeneratedTrace, NamingConstrainedRejectTrace } from '../types/trace';
 
 // ─── Seeded PRNG (mulberry32) ────────────────────────────────────
 
@@ -45,6 +45,60 @@ function mulberry32(seed: number): () => number {
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
+}
+
+// ─── Name Constraint Constants (THR-456) ─────────────────────────
+
+/** Hard cap on syllables in a generated personal name */
+export const NAME_MAX_SYLLABLES = 4;
+/** Maximum run of consecutive consonant characters */
+export const NAME_MAX_CONSONANT_CLUSTER = 2;
+/** Maximum run of consecutive vowel characters */
+export const NAME_MAX_VOWEL_RUN = 2;
+/** How many times to retry before falling back to curated pool */
+export const NAME_RETRY_BUDGET = 6;
+
+const VOWELS = new Set('aeiouAEIOU');
+
+export function countSyllables(word: string): number {
+  const lower = word.toLowerCase();
+  // Count vowel groups (each contiguous vowel run = one syllable nucleus)
+  let count = 0;
+  let inVowel = false;
+  for (const ch of lower) {
+    if (VOWELS.has(ch)) {
+      if (!inVowel) { count++; inVowel = true; }
+    } else {
+      inVowel = false;
+    }
+  }
+  return Math.max(1, count);
+}
+
+export function hasConsonantClusterLongerThan(word: string, max: number): boolean {
+  let run = 0;
+  for (const ch of word.toLowerCase()) {
+    if (!VOWELS.has(ch) && /[a-z]/.test(ch)) {
+      run++;
+      if (run > max) return true;
+    } else {
+      run = 0;
+    }
+  }
+  return false;
+}
+
+export function hasVowelRunLongerThan(word: string, max: number): boolean {
+  let run = 0;
+  for (const ch of word.toLowerCase()) {
+    if (VOWELS.has(ch)) {
+      run++;
+      if (run > max) return true;
+    } else {
+      run = 0;
+    }
+  }
+  return false;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────
@@ -327,6 +381,30 @@ export function generatePhoneticName(
 
     const candidate = applyOrthography(raw, signature);
     if (candidate.length < 2) continue;
+
+    // Constraint checks (THR-456)
+    if (mode === 'personal') {
+      let constraintReason: 'syllables' | 'consonants' | 'vowels' | null = null;
+      if (countSyllables(candidate) > NAME_MAX_SYLLABLES) {
+        constraintReason = 'syllables';
+      } else if (hasConsonantClusterLongerThan(candidate, NAME_MAX_CONSONANT_CLUSTER)) {
+        constraintReason = 'consonants';
+      } else if (hasVowelRunLongerThan(candidate, NAME_MAX_VOWEL_RUN)) {
+        constraintReason = 'vowels';
+      }
+      if (constraintReason !== null) {
+        emitTrace({
+          tick,
+          category: 'naming.constrained_reject',
+          summary: `Rejected "${candidate}" for ${cultureId}: ${constraintReason} (attempt ${attempt + 1})`,
+          cultureId,
+          rejectedCandidate: candidate,
+          reason: constraintReason,
+          attempt: attempt + 1,
+        } as NamingConstrainedRejectTrace);
+        continue;
+      }
+    }
 
     if (!usedNames.has(candidate)) {
       usedNames.add(candidate);
