@@ -63,6 +63,8 @@ const TODO_CHECK_EXTENSIONS = new Set([
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const findings: Finding[] = [];
+const NPM_EXECUTABLE = process.execPath;
+const NPM_RUNNER = process.env.npm_execpath;
 
 function addFinding(finding: Finding): void {
   findings.push(finding);
@@ -454,6 +456,19 @@ async function main(): Promise<void> {
   checkTodoAndDeferredReferences(files);
   const unresolvedPlanFiles = checkPlanFilesForInlineLinearLinks(files);
   await runLinearChecks(unresolvedPlanFiles);
+  if (!NPM_RUNNER) {
+    addFinding({
+      check: "lint-plan-doc",
+      severity: "warn",
+      message: "npm_execpath is unavailable; skipped nested lint:plan-doc invocation.",
+    });
+    printFindingsAndExit();
+  }
+
+  execFileSync(NPM_EXECUTABLE, [NPM_RUNNER, "run", "lint:plan-doc", "--", "--staged"], {
+    cwd: repoRoot,
+    stdio: "inherit",
+  });
   printFindingsAndExit();
 }
 
