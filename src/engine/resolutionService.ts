@@ -79,7 +79,7 @@ export const LEGACY_DIFFICULTY_DIVISOR = 100;
  * @internal No production encounter resolution caller remains — only used by
  * resolutionService.test.ts and the encounterScoring/plannerForecast paths that
  * read from encounterCache (which still stores stepDifficulties in 0-100 scale).
- * TODO(THR-419): migrate encounterCache stepDifficulties to 0-1 scale and
+ * TODO(THR-459): migrate encounterCache stepDifficulties to 0-1 scale and
  * remove the remaining scoring/forecast callers.
  *
  * @param rawDifficulty - Legacy difficulty value (e.g., 12, 25, 30)
