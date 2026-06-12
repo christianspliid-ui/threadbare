@@ -2,9 +2,9 @@
 
 > **Navigation aid.** Library inventory extracted via AST. Read the source files listed here before modifying exported functions.
 
-**507 library files** across 15 modules
+**508 library files** across 15 modules
 
-## Engine (358 files)
+## Engine (359 files)
 
 - `src\engine\phaseProsperity.ts` — getProsperityTier, computeBaseIncome, computeEquilibriumTargetWithSphere, phaseProsperity, ProsperityTier, PopulationTrend, …
 - `src\engine\graphQueries.ts` — getAgentsAtLocation, getAllActorsAtLocation, getAgentLocation, getAgentLocationId, getSublocationsAt, getLocationsInRegion, …
@@ -31,7 +31,7 @@
 - `src\engine\guildSeeding.ts` — determineGuildType, deriveReachPreferences, generateGuildDomainCapabilities, generateGuildAxiologicalProfile, seedGuilds, GuildType, …
 - `src\engine\meetingEncounter.ts` — resetMeetingCounter, getFilteredIntentOptions, generateCandidates, selectDilemmas, applyDilemmaChoice, applyAxiologicalShifts, …
 - `src\engine\orchestrator.ts` — resetDecisionCache, getEncounterCacheManager, resetEventCounter, phaseEncounterProgressionV2, phaseDilemmaDetection, runDivineProximityPhase, …
-- _…and 333 more files_
+- _…and 334 more files_
 
 ## Data (77 files)
 

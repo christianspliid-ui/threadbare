@@ -1785,6 +1785,10 @@
   - function factionResolver: (nodeId, graph, seed) => ProseLayer[]
   - function populationResolver: (nodeId, graph, seed) => ProseLayer[]
   - _...16 more_
+- `src\engine\proseSelection.ts`
+  - function pickWithRepetitionGuard: (pool, rng) => void
+  - interface PhraseEntry
+  - const PROSE_REPETITION_GUARD_WINDOW
 - `src\engine\questVisibility.ts` — function isEncounterVisibleToAgent: (graph, agentId, visibleTo) => boolean
 - `src\engine\quintessenceActions.ts`
   - function canSpendQuintessence: (node, spendKind) => boolean

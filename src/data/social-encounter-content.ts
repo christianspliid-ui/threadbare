@@ -106,6 +106,18 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'The terms prove too different. Not enemies — just two parties whose interests ' +
           'don\'t overlap enough for a binding agreement. {name} walk{s} out with the sense ' +
           'that the problem is solvable, but not today.',
+        criticalSuccessAfterimage:
+          'The pact is written in the hour rather than across weeks. Both parties find more overlap than expected — ' +
+          'the terms settle not just into agreement but into something warmer: a mutual recognition that this was useful, ' +
+          'which is the foundation everything else gets built on.',
+        successAtCostAfterimage:
+          'The alliance holds, but one concession was larger than it should have been. ' +
+          '{name} gave something away in the closing that the other party will not forget they gave. ' +
+          'The pact is real. The leverage inside it is not equally distributed.',
+        criticalFailureAfterimage:
+          'The terms do not just fail to overlap — they actively contradict. The other party leaves with the clear impression ' +
+          'that {name}\'s interests and theirs will eventually require choosing between them. ' +
+          'That impression will travel.',
       },
     ],
     narrativeTemplates: {
@@ -237,6 +249,17 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'At the final commitment, something closes in the prospect\'s expression. ' +
           'Not anger — doubt, which is worse. {They} decline{s} and it is the right call. ' +
           '{name} can see that now and wish{s} {they} had seen it twenty minutes earlier.',
+        criticalSuccessAfterimage:
+          'The new member joins with more conviction than the script called for. ' +
+          'By the end they are not just committed — they are eager, which is a different resource entirely. ' +
+          '{name} notes the particular quality of their readiness.',
+        successAtCostAfterimage:
+          'The oath is spoken, but the new member asked one question at the end that revealed how much they understood ' +
+          'about what they were joining. The answer {name} gave was honest. The cost of that honesty will arrive later.',
+        criticalFailureAfterimage:
+          'The prospect does not simply decline — they say why, plainly, in a way that captures ' +
+          'something real about the offer\'s weakness. {name} has heard a critique they will have to carry ' +
+          'for a while before they can set it down.',
       },
     ],
     narrativeTemplates: {
@@ -373,6 +396,18 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         failureAfterimage:
           'The cross-reference produces more questions than answers. ' +
           'The subject is either genuinely complicated or very careful — {name} can\'t yet say which.',
+        criticalSuccessAfterimage:
+          'The gap is larger than {name} expected, and the managed version more actively maintained. ' +
+          'The subject is not complicated — they are careful in a way that requires daily effort. ' +
+          '{name} now holds something they will have to decide what to do with.',
+        successAtCostAfterimage:
+          '{name} now has the picture — but the asking left traces. One source hesitated before speaking; ' +
+          'another glanced toward the wrong part of the room. The investigation was productive. ' +
+          'The subject may know it was conducted.',
+        criticalFailureAfterimage:
+          'The cross-reference does not just fail — it reveals that the subject is aware of being examined. ' +
+          'The accounts are too consistent, too clean. Someone has been preparing this version ' +
+          'for exactly this kind of inquiry, and {name} has announced the inquiry by conducting it.',
       },
     ],
     narrativeTemplates: {
@@ -530,6 +565,18 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         failureAfterimage:
           'The intelligence is thin — suggestive but not actionable. {name} has observations ' +
           'but not conclusions. Something important happened that {they} was{s} not positioned to see.',
+        criticalSuccessAfterimage:
+          '{name} depart{s} with something the target could not afford to have seen: not a name or a location, ' +
+          'but the relationship between them — the weight of obligation in the way they said goodbye, ' +
+          'the direction they looked before leaving. The intelligence maps a structure, not just a fact.',
+        successAtCostAfterimage:
+          '{name} has the intelligence, but the extraction was not clean. ' +
+          'The position {they} chose left a trace — a face noticed, a moment too long in a doorway. ' +
+          'The data is good. The cover may not be.',
+        criticalFailureAfterimage:
+          'The target changed their pattern because they saw {name} first — not just spotted: assessed and catalogued. ' +
+          '{name} now appears in whatever account the target is building, ' +
+          'and that account is being built with more care than the surveillance that triggered it.',
       },
     ],
     narrativeTemplates: {
@@ -728,6 +775,18 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             'The deal collapses on the final clause. The counterparty is not angry — ' +
             'they are simply done. {name} is left holding terms that worked in theory ' +
             'but couldn\'t cross the last gap.',
+          criticalSuccessAfterimage:
+            'The deal closes on terms better than the opening justified — the counterparty moved more than expected ' +
+            'and did so willingly. {name} note{s} the quality of their need: this deal was worth more to them ' +
+            'than the terms they accepted reflect.',
+          successAtCostAfterimage:
+            'The deal closes, but the final clause cost more than the whole negotiation should have. ' +
+            '{name} gave ground on a point that will be inconvenient to have given. ' +
+            'The agreement is real. The terms favor the counterparty at the margin.',
+          criticalFailureAfterimage:
+            'The deal collapses, and the counterparty does not attempt to salvage it. ' +
+            'What {name} reads in their departure is not disappointment but a decision already made — ' +
+            'they had an alternative, and the failed negotiation confirmed they should use it.',
         },
       },
     ],
@@ -910,6 +969,18 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             'The target\'s final objection is the real one: not a procedural hesitation ' +
             'but a genuine disagreement that the conversation did not resolve. ' +
             '{name} can see that now. The argument did not reach far enough.',
+          criticalSuccessAfterimage:
+            'The target not only decides as {name} hoped — they become the argument\'s advocate. ' +
+            'The conviction is genuine enough to spread on its own. {name} persuaded one person ' +
+            'and will get the work of several.',
+          successAtCostAfterimage:
+            'The target decides as {name} intended, but the process surfaced a condition — they want something specific ' +
+            'in return, unstated but clearly implied. The persuasion succeeded. ' +
+            'The obligation it created will follow.',
+          criticalFailureAfterimage:
+            'The argument did not just fail to reach — it confirmed the target\'s existing doubt about {name}\'s judgment. ' +
+            'They leave with a clearer version of their prior position, fortified by the reasons they resisted. ' +
+            'The attempt made the work harder, not easier.',
         },
       },
     ],
@@ -1066,6 +1137,18 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'The target finds somewhere in themselves what they came in thinking they didn\'t have. ' +
           'Not bravery exactly — more like a calculus that decided the cost of yielding ' +
           'was higher than the cost of refusing. {name} did not account for that arithmetic.',
+        criticalSuccessAfterimage:
+          'The target does not just agree — they volunteer more than {name} asked for, in the way that people do ' +
+          'when they have decided that the safest path is to become useful. ' +
+          '{name} now has more leverage than the encounter was designed to produce.',
+        successAtCostAfterimage:
+          'The target agrees, but the compliance comes with defiance underneath it — ' +
+          'provisional, conditional, already looking for the clause that voids it. ' +
+          '{name} got what {they} asked for. Holding it will require more work.',
+        criticalFailureAfterimage:
+          'The target refuses and does not leave quietly. Whatever they found in themselves ' +
+          'in the moment of refusal has named {name} an enemy in terms they were not previously using. ' +
+          'The intimidation attempt created a relationship it did not intend to create.',
       },
     ],
     narrativeTemplates: {

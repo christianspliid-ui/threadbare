@@ -16,7 +16,18 @@ import type { BalanceTargets, BalanceMetricBand } from '../types/balanceEval';
 // ─── Version ──────────────────────────────────────────────────────
 
 /** Bump when target bands change materially. Stored in run summaries and exports. */
-export const BALANCE_TARGETS_VERSION = '0.1.0-phase1';
+export const BALANCE_TARGETS_VERSION = '0.2.0-phase5';
+
+// ─── Early-Game Tuning Constants (NFP #1: Tunability) ─────────────
+
+/** Number of ticks considered "early game" for balance evaluation purposes. */
+export const EARLY_GAME_TICK_WINDOW = 50;
+
+/** Target step success rate for agents in the early-game window (ticks 0–EARLY_GAME_TICK_WINDOW). */
+export const EARLY_GAME_SUCCESS_RATE_TARGET = 0.55;
+
+/** Hard cap on failure rate for early-game agents — above this is considered hostile for new players. */
+export const EARLY_GAME_FAILURE_RATE_CAP = 0.25;
 
 // ─── Helpers ──────────────────────────────────────────────────────
 
@@ -94,6 +105,13 @@ export const DEFAULT_BALANCE_TARGETS: BalanceTargets = {
     band('durable_rewards_per_100_encounters', 'Durable rewards per 100 encounters', 1.5, 9, 2, 8, undefined),
     band('consumable_rewards_per_100_encounters', 'Consumable rewards per 100 encounters', 12, 55, 15, 50, undefined),
     band('conditions_per_100_encounters', 'Conditions per 100 encounters', 3, 30, 5, 25, undefined),
+
+    // ── Early-game success / failure rates ──
+    // Source: THR-62 Phase 5 early-game retune. Applies to ticks 0–EARLY_GAME_TICK_WINDOW.
+    // New agents (capability ~0.05–0.15) should succeed often enough to feel agency,
+    // not so often as to eliminate tension. Failure cap prevents hostile starts.
+    band('step_success_rate', 'Step success rate (early-game window)', 0.45, 0.65, 0.50, 0.60, 'early_game'),
+    band('step_failure_rate', 'Step failure rate (early-game cap)', 0.0, EARLY_GAME_FAILURE_RATE_CAP, undefined, 0.22, 'early_game', true),
 
     // ── Pacing milestones (in ticks) ──
     // Source: encounter-redesign-guidelines.md §3 "Target milestone cadence"
