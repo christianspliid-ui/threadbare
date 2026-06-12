@@ -23,6 +23,7 @@ import type { SphereName } from '../types/index';
 import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { seedMonsterFaction } from './monsterFactionSeed';
 import { emitTrace } from './traceBuffer';
+import { pickCulturalName } from '../data/culture-name-pools';
 
 // ─── Constants (NFP #1: Tunability) ──────────────────────────────────────────
 
@@ -140,6 +141,16 @@ function lairExistsNearby(
   });
 }
 
+// ─── Helper: deterministic hash seed from a string ───────────────────────────
+
+function hashStringSeed(s: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+  }
+  return h >>> 0;
+}
+
 // ─── Helper: create named elite actor node ────────────────────────────────────
 
 function createNamedElite(state: GameState, lairNode: GraphNode): string {
@@ -147,14 +158,19 @@ function createNamedElite(state: GameState, lairNode: GraphNode): string {
   const sphere = lairNode.properties.dominantSphere as SphereName;
   const lairId = lairNode.id;
 
+  // Deterministic name: 'chaos' foundation + lair's dominant sphere, seeded from lairId
+  const eliteRng = mulberry32(hashStringSeed(lairId));
+  const eliteName = pickCulturalName('chaos', sphere, eliteRng, new Set());
+
   const eliteId = `elite_${lairId}_${tick}`;
   graph.addNode({
     id: eliteId,
     type: 'actor',
-    name: `Elite of ${lairNode.name}`,
+    name: eliteName,
     properties: {
       actorType: 'individual',
       isMonsterElite: true,
+      roleLabel: 'Elite',
       dominantSphere: sphere,
       lairId,
       spawnedAtTick: tick,

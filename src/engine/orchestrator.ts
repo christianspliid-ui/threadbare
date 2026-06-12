@@ -38,6 +38,7 @@ import {
   DILEMMA_NOUN_POOL,
   DILEMMA_VERB_POOL,
 } from '../data/narrative-content';
+import { pickWithRepetitionGuard } from './proseSelection';
 import { phaseAgentLifecycle, resetLifecycleCounter } from './agentLifecycle';
 import { emitTrace } from './traceBuffer';
 import { runRegisteredPhases, type PhaseContext } from './phaseRegistry';
@@ -64,6 +65,7 @@ import { phaseMovement, resetMovementEventCounter } from './phaseMovement';
 import { checkAndFireActionTriggers, type ActionTriggerContext } from './effects/actionTrigger';
 import { collectAttachmentEffects } from './effects/effectWalker';
 import { phaseColocationDetection, resetColocationEventCounter } from './phaseColocationDetection';
+import { aggregateColocationEvents } from './eventAggregation';
 import { phaseInteractionDepth } from './phaseInteractionDepth';
 import { emitEncounterRevelations, emitDilemmaRevelations, emitColocationRevelations, resetRevEventCounter } from './revelationEmitter';
 import { phaseUnifiedActionProgress } from './unifiedActionResolution';
@@ -1237,6 +1239,9 @@ export function phaseDilemmaDetection(state: GameState): Partial<GameState> {
   // Scan tick events for agent_action_resolved events
   const resolvedEvents = state.tickEvents.filter(e => e.type === 'agent_action_resolved');
 
+  // Within-tick deduplication guard for dilemma prose (THR-456)
+  const dilemmaProseUsed = new Set<string>();
+
   for (const event of resolvedEvents) {
     // Get all individual actors from the graph
     const allActors = graph.getNodesByType('actor')
@@ -1330,13 +1335,14 @@ export function phaseDilemmaDetection(state: GameState): Partial<GameState> {
       targetNode.properties.reputationScore = newRep;
     }
 
-    // Generate varied dilemma message using prose templates
+    // Generate varied dilemma message using prose templates (with repetition guard — THR-456)
     const stakesLevel = stakes > 0.6 ? 'high' : stakes > 0.3 ? 'medium' : 'low';
     const templateKey = `${dilemma.outcome}.${stakesLevel}`;
     const proseOptions = DILEMMA_STAKES_PROSE[templateKey];
-    const template = Array.isArray(proseOptions)
-      ? proseOptions[Math.floor(rng() * proseOptions.length)]
-      : proseOptions;
+    const picked = proseOptions && proseOptions.length > 0
+      ? pickWithRepetitionGuard(proseOptions, rng, dilemmaProseUsed)
+      : null;
+    const template = picked?.text ?? null;
 
     let message = template || `${actor.name} and ${targetActor.name}: ${dilemma.outcome.replace(/_/g, ' ')}`;
 
@@ -2185,6 +2191,31 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 2.36: Colocation Detection (after movement, before sublocation dissolution)
   s = { ...s, ...phaseColocationDetection(s) };
   phaseEventCounts['colocation_detection'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 2.361: Colocation Aggregation — collapse same-hex same-tick encounter storms (THR-456)
+  {
+    const aggRng = mulberry32(s.seed + s.tick * 59);
+    const locationNodes = s.graph.getNodesByType('location');
+    const hexLocationIndex = new Map<string, string>();
+    for (const n of locationNodes) {
+      const col = n.properties?.hexCol;
+      const row = n.properties?.hexRow;
+      if (col != null && row != null) {
+        const k = `${col},${row}`;
+        if (!hexLocationIndex.has(k)) hexLocationIndex.set(k, n.name);
+      }
+    }
+    const aggregated = aggregateColocationEvents(
+      s.tickEvents,
+      aggRng,
+      s.tick,
+      (col, row) => hexLocationIndex.get(`${col},${row}`) ?? null,
+    );
+    if (aggregated !== s.tickEvents) {
+      s = { ...s, tickEvents: aggregated };
+    }
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.37: Colocation Revelations (first-sighting possession reveals, faction bond auto-reveals)

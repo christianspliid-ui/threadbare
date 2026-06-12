@@ -127,6 +127,8 @@ export interface TickEvent {
   journeyId?: string;
   /** Agent IDs that also witnessed this event (for chronicle attribution). */
   witnessAgentIds?: readonly string[];
+  /** IDs of the raw events this event was synthesized from (colocation aggregation). */
+  aggregatedFromIds?: readonly string[];
 }
 
 export interface ArchetypeDrift {

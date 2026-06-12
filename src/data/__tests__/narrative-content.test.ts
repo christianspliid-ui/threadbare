@@ -270,14 +270,27 @@ describe('narrative-content expanded', () => {
       expect(stakeKeys.length).toBeGreaterThan(0);
     });
 
-    it('each entry should be a non-empty array of prose strings', () => {
+    it('each entry should be a non-empty array of PhraseEntry objects', () => {
       for (const [key, variants] of Object.entries(DILEMMA_STAKES_PROSE)) {
         expect(Array.isArray(variants), `${key} should be an array`).toBe(true);
-        expect(variants.length, `${key} should have at least 2 variants`).toBeGreaterThanOrEqual(2);
-        for (const prose of variants) {
-          expect(prose.length, `${key} variant empty`).toBeGreaterThan(10);
+        expect(variants.length, `${key} should have at least 12 variants`).toBeGreaterThanOrEqual(12);
+        for (const entry of variants) {
+          expect(typeof entry.phraseId, `${key} entry missing phraseId`).toBe('string');
+          expect(entry.phraseId.length, `${key} phraseId empty`).toBeGreaterThan(0);
+          expect(entry.text.length, `${key} text empty`).toBeGreaterThan(10);
         }
       }
+    });
+
+    it('all phraseIds should be unique across the entire pool', () => {
+      const allIds: string[] = [];
+      for (const variants of Object.values(DILEMMA_STAKES_PROSE)) {
+        for (const entry of variants) {
+          allIds.push(entry.phraseId);
+        }
+      }
+      const unique = new Set(allIds);
+      expect(unique.size).toBe(allIds.length);
     });
 
     it('should have entries for all 4 dilemma outcomes at low/medium/high stakes', () => {
@@ -293,22 +306,22 @@ describe('narrative-content expanded', () => {
 
     it('all prose variants should contain at least one placeholder', () => {
       for (const [key, variants] of Object.entries(DILEMMA_STAKES_PROSE)) {
-        for (const prose of variants) {
-          const hasPlaceholder = /\{[a-zA-Z_]+\}/.test(prose);
-          expect(hasPlaceholder, `${key} variant missing placeholders`).toBe(true);
+        for (const entry of variants) {
+          const hasPlaceholder = /\{[a-zA-Z_]+\}/.test(entry.text);
+          expect(hasPlaceholder, `${key} entry "${entry.phraseId}" missing placeholders`).toBe(true);
         }
       }
     });
 
     it('high stakes prose should feel more dramatic than low stakes', () => {
-      // Low stakes should use lighter language
-      const lowProse = DILEMMA_STAKES_PROSE['mutual_trust.low'].join(' ').toLowerCase();
-      const highProse = DILEMMA_STAKES_PROSE['mutual_trust.high'].join(' ').toLowerCase();
+      const lowProse = DILEMMA_STAKES_PROSE['mutual_trust.low'].map(e => e.text).join(' ').toLowerCase();
+      const highProse = DILEMMA_STAKES_PROSE['mutual_trust.high'].map(e => e.text).join(' ').toLowerCase();
 
-      // High stakes should have more dramatic words (this is a soft check)
+      // High stakes should have more dramatic words (soft check)
       const dramaticWords = ['shattered', 'eternal', 'transcendent', 'profound', 'desperate', 'legendary'];
       const highDramaticCount = dramaticWords.filter(w => highProse.includes(w)).length;
       expect(highDramaticCount).toBeGreaterThanOrEqual(0); // Will at least exist
+      void lowProse; // referenced to satisfy linter
     });
   });
 
