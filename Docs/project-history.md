@@ -1,5 +1,7 @@
 # Project History
 
+✅ **THR-293** (2026-06-12) — Doom identity milestone evaluator. `evaluateIdentityMilestones(state, progress)` in `doomIdentityMilestones.ts` walks the active archetype matrix milestones, flips `triggered=true` on first progress crossing, emits `doom_milestone` trace. Wired into `phaseDoom` after `advanceDoomClock`. Optional `doomArchetype?` 7th param on `initializeGameState` (defaults `'breach'`, all callers unchanged). `MilestoneTriggeredTrace` + `doom_milestone` category added to `trace.ts`. 8 new tests: 7 archetypes × 30 ticks + idempotency. PR #336.
+
 ✅ **THR-446** (2026-06-12) — UL canonicalization: 9 mentorship-domain terms added to `Docs/ubiquitous-language/Agents.md` (mentor, apprentice, mentors edge, bondQuality, Train Apprentice, The Surpassing, Falling Out, Quiet Parting, Dissolution). Cross-shard See-Also hooks in Cosmology.md (Reach) and Encounters.md (EncounterTemplate). Dashboard regenerated (89 terms, 7 shards). Closeout from THR-75 (Mentor/Apprentice Relationship Chains, shipped 2026-05-15).
 
 ✅ **THR-459** (2026-06-12) — Normalized `stepDifficulties` to uniform 0-1 scale. Root cause: encounterCache.ts emitted 0-100 while factionQuestGeneration/socialEncounterGeneration emitted 0-1; `normalizeLegacyDifficulty(÷100)` in all consumers caused faction/social difficulty to score as 0-0.01. Deleted `normalizeLegacyDifficulty` + `LEGACY_DIFFICULTY_DIVISOR` from resolutionService.ts. Added `HARD_STEP_DIFFICULTY_THRESHOLD=0.3`. Fixed filterByOutgrowth scale bug. 14 test files updated. PR #331.
