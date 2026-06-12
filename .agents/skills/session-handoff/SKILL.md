@@ -1,7 +1,7 @@
 ---
 name: session-handoff
 description: End-of-session closeout summary aligned with Linear handoff protocol (no Slack trigger flow).
-last_validated_against: 2026-05-12
+last_validated_against: 2026-06-12
 ---
 
 # Session Handoff
@@ -55,6 +55,7 @@ Session handoff summary
 - Do not manually force `Done` from executor sessions.
 - Do not send Slack messages from this skill.
 - Do not fire remote triggers from this skill.
+- When invoked from the scheduled `keep-work-flowing` task, post the produced summary to Linear as a comment on the handed-off issue (or the active project when no issue was handed off).
 
 ## Notes
 

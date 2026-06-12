@@ -732,6 +732,7 @@ px vite build).
 
 - ✅ 2026-05-12: THR-422 shipped — restored `.claude/.agents` `session-handoff` shared skill, replaced retired Slack-trigger instructions with current Linear-first closeout protocol, and re-synced mirrors (`npm run check:skill-sync:sync` + `check:skill-sync` clean).
 - ✅ 2026-06-12: THR-379 shipped — advisory `lint:plan-doc` now checks `Docs/plans/*.md` structure, runs from `.husky/pre-commit`, and chains through `check:process`.
+- ✅ 2026-06-12: THR-442 shipped — `keep-work-flowing` now lives in-repo as a Cowork-only skill, drops the stale Slack step, and posts `/session-handoff` summaries back to Linear comments instead.
 
 - ✅ 2026-05-08: THR-387 shipped — hex map now only shows agents with a thread edge from the ascendant (or the avatar); non-threaded notable/spotlight NPCs are filtered in the agentRenderData useMemo in GameView.tsx.
 - ✅ 2026-05-08: THR-388 shipped — hexmap tooltip now shows after a 1-second hover delay (was immediate). Debounced `tooltipHex` state in HexMapV2.tsx trails `hoveredHex` with a useEffect+setTimeout; hex highlight and status bar remain instant. `TOOLTIP_HOVER_DELAY_MS: 1000` named constant in INTERACTION_CONSTANTS (HexRaycaster.ts, NFP #1).
