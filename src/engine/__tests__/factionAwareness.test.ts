@@ -97,7 +97,7 @@ function makeEntry(overrides: Partial<EncounterCacheEntry> = {}): EncounterCache
     totalTickCost: 3,
     successRewardEstimate: 1.0,
     stepCount: 1,
-    stepDifficulties: [40],
+    stepDifficulties: [0.4],
     stepReaches: ['gold' as ReachDomain],
     ...overrides,
   };

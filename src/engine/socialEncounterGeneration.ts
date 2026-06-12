@@ -272,7 +272,7 @@ export function generateSocialCandidates(
         (isActionStepBranch(s) ? s.fallback.reach : s.reach),
       );
       const stepDifficulties = tmpl.steps.map(s =>
-        (isActionStepBranch(s) ? s.fallback.difficulty : s.difficulty),
+        (isActionStepBranch(s) ? s.fallback.difficulty : s.difficulty), // 0..1 scale per EncounterCacheEntry contract
       );
       candidates.push({
         templateId: tmpl.id,
@@ -307,7 +307,7 @@ export function generateSocialCandidates(
         (isActionStepBranch(s) ? s.fallback.reach : s.reach),
       );
       const stepDifficulties = tmpl.steps.map(s =>
-        (isActionStepBranch(s) ? s.fallback.difficulty : s.difficulty),
+        (isActionStepBranch(s) ? s.fallback.difficulty : s.difficulty), // 0..1 scale per EncounterCacheEntry contract
       );
       candidates.push({
         templateId: tmpl.id,
@@ -341,7 +341,7 @@ export function generateSocialCandidates(
         (isActionStepBranch(s) ? s.fallback.reach : s.reach),
       );
       const stepDifficulties = tmpl.steps.map(s =>
-        (isActionStepBranch(s) ? s.fallback.difficulty : s.difficulty),
+        (isActionStepBranch(s) ? s.fallback.difficulty : s.difficulty), // 0..1 scale per EncounterCacheEntry contract
       );
       candidates.push({
         templateId: tmpl.id,
@@ -375,7 +375,7 @@ export function generateSocialCandidates(
         (isActionStepBranch(s) ? s.fallback.reach : s.reach),
       );
       const stepDifficulties = tmpl.steps.map(s =>
-        (isActionStepBranch(s) ? s.fallback.difficulty : s.difficulty),
+        (isActionStepBranch(s) ? s.fallback.difficulty : s.difficulty), // 0..1 scale per EncounterCacheEntry contract
       );
       candidates.push({
         templateId: tmpl.id,
@@ -409,7 +409,7 @@ export function generateSocialCandidates(
         (isActionStepBranch(s) ? s.fallback.reach : s.reach),
       );
       const stepDifficulties = tmpl.steps.map(s =>
-        (isActionStepBranch(s) ? s.fallback.difficulty : s.difficulty),
+        (isActionStepBranch(s) ? s.fallback.difficulty : s.difficulty), // 0..1 scale per EncounterCacheEntry contract
       );
       candidates.push({
         templateId: tmpl.id,

@@ -62,7 +62,7 @@ function mkCandidate(overrides: Partial<EncounterCacheEntry>): EncounterCacheEnt
     totalTickCost: 3,
     successRewardEstimate: 2.0,
     stepCount: 1,
-    stepDifficulties: [50],
+    stepDifficulties: [0.5],
     stepReaches: ['iron'] as ReachDomain[],
     ...overrides,
   };
@@ -159,7 +159,7 @@ describe('scoreAndSelect — intelligence consumption', () => {
     const unrelated = mkCandidate({
       templateId: 'combat.skirmish',
       locationId: 'loc-other',
-      stepDifficulties: [40],
+      stepDifficulties: [0.4],
     });
 
     const result = scoreAndSelect(

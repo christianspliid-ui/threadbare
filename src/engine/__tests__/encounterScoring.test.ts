@@ -69,7 +69,7 @@ function makeEntry(overrides: Partial<EncounterCacheEntry> = {}): EncounterCache
     totalTickCost: 3,
     successRewardEstimate: 2.0,
     stepCount: 1,
-    stepDifficulties: [50],
+    stepDifficulties: [0.5],
     stepReaches: ['iron'] as ReachDomain[],
     ...overrides,
   };
@@ -178,21 +178,21 @@ function buildTestGraph(opts: {
 // ─── estimateStepProbability ────────────────────────────────────
 
 describe('estimateStepProbability', () => {
-  it('returns floor when capability matches difficulty/100 (Phase 2: no planner offset)', () => {
-    // Phase 2: capability=0.5, difficulty=50 → 0.5 - 0.5 + 0 = 0.0 → clamped to 0.05
+  it('returns floor when capability matches difficulty (Phase 2: no planner offset)', () => {
+    // Phase 2: capability=0.5, difficulty=0.5 → 0.5 - 0.5 + 0 = 0.0 → clamped to 0.05
     // (Old: had +STEP_PROBABILITY_OFFSET → 0.7. That planner-only offset is removed.)
-    const p = estimateStepProbability(0.5, 50);
+    const p = estimateStepProbability(0.5, 0.5);
     expect(p).toBe(0.05);
   });
 
   it('returns higher probability for high capability vs low difficulty', () => {
     // Phase 2: 0.9 - 0.2 = 0.7
-    const p = estimateStepProbability(0.9, 20);
+    const p = estimateStepProbability(0.9, 0.2);
     expect(p).toBeCloseTo(0.7, 2);
   });
 
   it('returns lower probability for low capability vs high difficulty', () => {
-    const p = estimateStepProbability(0.1, 90);
+    const p = estimateStepProbability(0.1, 0.9);
     expect(p).toBeLessThan(0.2);
   });
 
@@ -202,13 +202,13 @@ describe('estimateStepProbability', () => {
     expect(high).toBe(0.95);
 
     // Very low capability, very high difficulty
-    const low = estimateStepProbability(0.0, 100);
+    const low = estimateStepProbability(0.0, 1.0);
     expect(low).toBe(0.05);
   });
 
   it('uses same math as shared resolver (Phase 2 parity)', () => {
     // Verify planner and live use the same formula
-    const p = estimateStepProbability(0.7, 30); // 0.7 - 0.3 = 0.4
+    const p = estimateStepProbability(0.7, 0.3); // 0.7 - 0.3 = 0.4
     expect(p).toBeCloseTo(0.4, 2);
   });
 });
@@ -220,7 +220,7 @@ describe('estimateCompletionProb', () => {
     const graph = buildTestGraph({});
     const entry = makeEntry({
       stepCount: 2,
-      stepDifficulties: [50, 50],
+      stepDifficulties: [0.5, 0.5],
       stepReaches: ['iron', 'iron'],
     });
 
@@ -228,7 +228,6 @@ describe('estimateCompletionProb', () => {
     // Phase 2: Each step: computeCapability(no traits) → sigmoid(0) ≈ 0.018
     // Step prob = 0.018 - 0.5 + 0 = -0.482 → clamped to 0.05 (floor)
     // Product of 2 steps: 0.05 * 0.05 = 0.0025
-    // (Old: had +0.7 offset → higher prob. Offset removed in Phase 2.)
     expect(prob).toBeGreaterThan(0);
     expect(prob).toBeLessThan(0.01);
   });
@@ -239,7 +238,7 @@ describe('estimateCompletionProb', () => {
 
     const entry = makeEntry({
       stepCount: 1,
-      stepDifficulties: [50],
+      stepDifficulties: [0.5],
       stepReaches: ['iron'],
     });
 

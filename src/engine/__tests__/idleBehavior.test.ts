@@ -55,7 +55,7 @@ function makeTrivialEntry(
     totalTickCost: 1,
     successRewardEstimate: 0.5,
     stepCount: 1,
-    stepDifficulties: [1],
+    stepDifficulties: [0.01],
     stepReaches: ['heart'],
   } as EncounterCacheEntry;
 }

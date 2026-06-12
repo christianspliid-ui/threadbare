@@ -358,11 +358,11 @@ describe('EncounterCacheEntry field correctness', () => {
       expect(tmpl).toBeDefined();
       expect(entry.stepCount).toBe(tmpl.steps.length);
       // C.1: Difficulty tier scaling — at tick 0 (default), tier is 'early'
-      // UAT difficulty is 0-1; cache stores 0-100 scale (multiply by 100 for scoring compatibility)
+      // UAT difficulty is 0-1; cache stores normalized 0-1 scale.
       // Branching steps use their fallback step's difficulty and reach.
       expect(entry.stepDifficulties).toEqual(tmpl.steps.map(s => {
         const step = isActionStepBranch(s) ? s.fallback : s;
-        return Math.round(step.difficulty * 100 * DIFFICULTY_TIER_MULTIPLIERS.early);
+        return step.difficulty * DIFFICULTY_TIER_MULTIPLIERS.early;
       }));
       expect(entry.stepReaches).toEqual(tmpl.steps.map(s => isActionStepBranch(s) ? s.fallback.reach : s.reach));
     }

@@ -9,8 +9,7 @@
  *
  * Canonical difficulty normalization rule:
  * All callers must provide `difficulty` in the range 0..1.
- * Legacy encounter callers normalize at their boundary via normalizeLegacyDifficulty().
- * Unified actions already operate in normalized form and pass through directly.
+ * All encounter cache entries store stepDifficulties in normalized 0..1 form.
  *
  * Crit model (Phase 2 — replaces flat roll >= 96 tail):
  * - Doubles (11, 22, 33, ..., 99) determine crits
@@ -24,7 +23,6 @@
  * | PROBABILITY_FLOOR              | 0.05    | Minimum success probability          |
  * | PROBABILITY_CEILING            | 0.95    | Maximum success probability          |
  * | NEAR_MISS_MARGIN               | 5       | |margin| <= this = near miss         |
- * | LEGACY_DIFFICULTY_DIVISOR      | 100     | Divides legacy integer difficulty     |
  *
  * ─── Tracing ────────────────────────────────────────────────────────
  * The service itself is pure math — callers emit traces with the results.
@@ -63,31 +61,6 @@ export const PROBABILITY_CEILING = 0.95;
 
 /** Margin within which an outcome is classified as a near miss */
 export const NEAR_MISS_MARGIN = 5;
-
-/**
- * Divisor for normalizing legacy encounter integer difficulty to 0..1.
- * Legacy encounters use difficulty values like 12, 25, 30 which must be
- * divided by this constant to produce the canonical 0..1 range.
- */
-export const LEGACY_DIFFICULTY_DIVISOR = 100;
-
-// ─── Difficulty Normalization ──────────────────────────────────────
-
-/**
- * Normalize a legacy integer-like difficulty value to the canonical 0..1 range.
- *
- * @internal No production encounter resolution caller remains — only used by
- * resolutionService.test.ts and the encounterScoring/plannerForecast paths that
- * read from encounterCache (which still stores stepDifficulties in 0-100 scale).
- * TODO(THR-459): migrate encounterCache stepDifficulties to 0-1 scale and
- * remove the remaining scoring/forecast callers.
- *
- * @param rawDifficulty - Legacy difficulty value (e.g., 12, 25, 30)
- * @returns Normalized difficulty in 0..1
- */
-export function normalizeLegacyDifficulty(rawDifficulty: number): number {
-  return Math.max(0, Math.min(1, rawDifficulty / LEGACY_DIFFICULTY_DIVISOR));
-}
 
 // ─── Core Threshold Computation ────────────────────────────────────
 

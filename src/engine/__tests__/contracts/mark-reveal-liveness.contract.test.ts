@@ -231,7 +231,7 @@ describe('Mark reveal scoring: matching encounters score higher', () => {
       totalTickCost: 3,
       successRewardEstimate: 2.0,
       stepCount: 1,
-      stepDifficulties: [50],
+      stepDifficulties: [0.5],
       stepReaches: ['iron'] as ReachDomain[],
     };
 
@@ -276,7 +276,7 @@ describe('Mark reveal scoring: matching encounters score higher', () => {
       totalTickCost: 3,
       successRewardEstimate: 2.0,
       stepCount: 1,
-      stepDifficulties: [50],
+      stepDifficulties: [0.5],
       stepReaches: ['iron'] as ReachDomain[],
     };
 

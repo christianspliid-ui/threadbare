@@ -104,6 +104,7 @@ export interface EncounterCacheEntry {
   totalTickCost: number;
   successRewardEstimate: number;
   stepCount: number;
+  /** Normalized 0..1 difficulty for each step, matching the resolver contract. */
   stepDifficulties: number[];
   stepReaches: ReachDomain[];
 }
@@ -213,10 +214,9 @@ function buildEntryUnified(
     successRewardEstimate: computeRewardEstimateUnified(tmpl),
     stepCount: tmpl.steps.length,
     isQuestEncounter: tmpl.steps.some(s => isActionStepBranch(s)),
-    // UAT difficulty is 0-1; convert to legacy 0-100 scale for scoring compatibility.
     stepDifficulties: tmpl.steps.map(sb => {
       const s = isActionStepBranch(sb) ? sb.fallback : sb;
-      return Math.round(s.difficulty * 100 * difficultyMultiplier);
+      return s.difficulty * difficultyMultiplier;
     }),
     stepReaches: tmpl.steps.map(sb => {
       const s = isActionStepBranch(sb) ? sb.fallback : sb;
