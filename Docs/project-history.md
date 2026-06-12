@@ -1,5 +1,7 @@
 # Project History
 
+✅ **THR-446** (2026-06-12) — UL canonicalization: 9 mentorship-domain terms added to `Docs/ubiquitous-language/Agents.md` (mentor, apprentice, mentors edge, bondQuality, Train Apprentice, The Surpassing, Falling Out, Quiet Parting, Dissolution). Cross-shard See-Also hooks in Cosmology.md (Reach) and Encounters.md (EncounterTemplate). Dashboard regenerated (89 terms, 7 shards). Closeout from THR-75 (Mentor/Apprentice Relationship Chains, shipped 2026-05-15).
+
 ✅ **THR-459** (2026-06-12) — Normalized `stepDifficulties` to uniform 0-1 scale. Root cause: encounterCache.ts emitted 0-100 while factionQuestGeneration/socialEncounterGeneration emitted 0-1; `normalizeLegacyDifficulty(÷100)` in all consumers caused faction/social difficulty to score as 0-0.01. Deleted `normalizeLegacyDifficulty` + `LEGACY_DIFFICULTY_DIVISOR` from resolutionService.ts. Added `HARD_STEP_DIFFICULTY_THRESHOLD=0.3`. Fixed filterByOutgrowth scale bug. 14 test files updated. PR #331.
 
 ✅ **THR-62** (2026-06-12) — Phase 5 encounter migration & early-game retune. Dead `isUATStep` branch removed. `buildOutcomeCompat()` + `selectBandAfterimage()` dispatch band-specific prose (criticalSuccess/successAtCost/criticalFailure). 48 afterimage strings across 16 reference templates (4 borderland, 7 social, 5 secret). `toSecretTemplate()` converter auto-populates success/failureAfterimage. 3 early-game constants + 2 balance bands. `BALANCE_TARGETS_VERSION` 0.2.0-phase5. PR #328.

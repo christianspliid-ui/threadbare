@@ -17,7 +17,7 @@ A narrative event resolved through the encounter pipeline. Encounters are instan
 ### EncounterTemplate
 
 **Aliases:** Encounter Definition, Template
-**Also see:** `[[Encounter]]`, `[[UnifiedActionTemplate]]`
+**Also see:** `[[Encounter]]`, `[[UnifiedActionTemplate]]`, `[[mentorship.graduation]]`, `[[mentorship.the-falling-out]]` (mentorship terminal-arc templates)
 **Status:** canonical
 
 A data-driven definition specifying an encounter's structure: premise, steps, reactions, outcome branches, scope, scale, and prerequisite checks. Templates are the authored unit of encounter content. A template becomes an Encounter when instantiated at a location for a specific agent. Stored as `action_template` nodes with encounter-specific properties.

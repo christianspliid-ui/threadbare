@@ -121,3 +121,111 @@ An actor's signed score across every `ValuePair` — `Record<ValuePair, number>`
 **Status:** canonical
 
 A single virtue-flaw axis composing an `AxiologicalProfile`. The eight Reach-bound pairs are: `mercy_ruthlessness` (Iron), `asceticism_extravagance` (Gold), `honesty_cunning` (Shadow), `tradition_novelty` (Veil), `loyalty_ambition` (Heart), `revelation_discretion` (Eye), `preservation_transformation` (Stone), `sacrifice_survival` (Star). Plus one meta pair: `courage_prudence`. Convention: +1.0 = first pole (virtue), −1.0 = second pole (flaw). The pre-TB-075 pairs `frankness_propriety`, `humility_pride`, and `stoicism_passion` are deprecated; do not reintroduce them.
+
+---
+
+### mentor
+
+**Aliases:** Mentor Agent
+**Also see:** `[[apprentice]]`, `[[mentors (edge)]]`, `[[Train Apprentice]]`, `[[Domain Capability]]`
+**Status:** canonical
+
+An agent at Domain Capability tier ≥ `MENTOR_MIN_TIER` (currently 6) in any Reach, on the source end of an active `mentors` graph edge. A mentor actively teaches an apprentice through the Train Apprentice initiative. The minimum tier ensures the mentor has genuine mastery to pass on rather than shallow familiarity.
+
+Code anchor: `src/data/mentorship-constants.ts:17`.
+
+---
+
+### apprentice
+
+**Aliases:** Apprentice Agent
+**Also see:** `[[mentor]]`, `[[mentors (edge)]]`, `[[Train Apprentice]]`, `[[Domain Capability]]`
+**Status:** canonical
+
+An agent at Domain Capability tier between `APPRENTICE_MIN_TIER` and `APPRENTICE_MAX_TIER` (currently 2–4) in the taught Reach, on the target end of a `mentors` edge in `offered` or `training` phase. The tier window ensures the apprentice has enough foundation to learn but still needs a mentor's guidance.
+
+Code anchor: `src/data/mentorship-constants.ts:21,25`.
+
+---
+
+### mentors (edge)
+
+**Aliases:** Mentors Edge, MentorsEdgeProperties
+**Also see:** `[[mentor]]`, `[[apprentice]]`, `[[bondQuality]]`, `[[Train Apprentice]]`
+**Status:** canonical
+
+Directed graph edge from `mentor → apprentice` carrying the persistent mentorship relationship. Required properties: `domain` (ReachDomain), `progress` (0–1), `phase` (`offered` | `training` | `graduated` | `estranged`), `startedTick`, `lessonsCompleted` (0–4), `bondQuality` (−1..+1). Optional: `initiativeId`, `severedByDivineWill`. The edge persists even after the backing initiative ends — a `graduated` or `estranged` phase is the lasting record of the relationship.
+
+Code anchors: `src/types/graph.ts` `MentorsEdgeProperties`, `src/types/edgeSchema.ts`.
+
+---
+
+### bondQuality
+
+**Aliases:** Bond Quality, Bond Health
+**Also see:** `[[mentors (edge)]]`, `[[Train Apprentice]]`, `[[Falling Out]]`, `[[The Surpassing]]`, `[[Quiet Parting]]`
+**Status:** canonical
+
+The narrative-derived health of a mentor↔apprentice bond, clamped to `[−1, +1]`. Initial value `BOND_QUALITY_INITIAL` (currently 0.0). Drifts on backing-initiative checkpoints: `BOND_DRIFT_ON_SUCCESS` (currently +0.15) on pass, `BOND_DRIFT_ON_FAILURE` (currently −0.20) on fail. Failures cut deeper than successes heal, reflecting the asymmetry of trust. Decides the terminal arc at graduation: ≥ `GRADUATION_BOND_THRESHOLD` → Graduation or The Surpassing; < `FALLING_OUT_BOND_THRESHOLD` → Falling Out; between the thresholds → Quiet Parting. Force-floored to `SEVER_BOND_QUALITY_FLOOR` (currently −1.0) by the Sever the Bond divine action.
+
+Code anchor: `src/data/mentorship-constants.ts:47–55,59,63,94`.
+
+---
+
+### Train Apprentice
+
+**Aliases:** initiative.train-apprentice, Apprenticeship Initiative
+**Also see:** `[[mentor]]`, `[[apprentice]]`, `[[mentors (edge)]]`, `[[bondQuality]]`
+**Status:** canonical
+
+A multi-tick `social`-category initiative of type `initiative.train-apprentice` that wraps the mentorship relationship. The `mentors` edge is the persistent relationship; the initiative is the occupation wrapper that drives `progress` toward 1.0 over `MENTORSHIP_BASE_DURATION ± MENTORSHIP_DURATION_VARIANCE` (currently 8 ± 3) ticks, with `MENTORSHIP_CHECK_INTERVAL`-tick (currently 2) checkpoints. An apprentice straying beyond `MENTORSHIP_MAX_SEPARATION_HEXES` hexes (currently 3) fails the initiative.
+
+Code anchor: `src/data/mentorship-constants.ts:29–41`.
+
+---
+
+### The Surpassing
+
+**Aliases:** Surpassing Arc, mentorship.the-surpassing
+**Also see:** `[[bondQuality]]`, `[[Train Apprentice]]`, `[[Falling Out]]`, `[[Quiet Parting]]`, `[[Dissolution]]`
+**Status:** canonical
+
+Terminal mentorship arc reached when the apprentice's Domain Capability tier in the trained Reach meets or exceeds the mentor's (by `SURPASSING_TIER_DELTA`, currently 0 — equal-or-greater triggers) AND `bondQuality ≥ GRADUATION_BOND_THRESHOLD`. Bittersweet: pride and loss in the same breath. Resolved via `mentorship.graduation` encounter seed with the `mentorship_surpassing` flavor in Phase 1; promoted to its own template `mentorship.the-surpassing` in Phase 2.
+
+Code anchor: `src/engine/mentorshipOutcomes.ts:82–88`.
+
+---
+
+### Falling Out
+
+**Aliases:** Falling Out Arc, mentorship.the-falling-out
+**Also see:** `[[bondQuality]]`, `[[Train Apprentice]]`, `[[The Surpassing]]`, `[[Quiet Parting]]`, `[[Dissolution]]`
+**Status:** canonical
+
+Terminal mentorship arc reached when `bondQuality < FALLING_OUT_BOND_THRESHOLD` (currently −0.3) at resolution time. Cool failure: seeds the `mentorship.the-falling-out` encounter and creates a `hostile_to` edge if sentiment is below `HOSTILE_THRESHOLD` (currently −0.6), or a negative `relates_to` edge otherwise. The apprentice retains `FALLING_OUT_TRANSFER_FRACTION` (currently 0.5) of the partial Mastery gain — the learning was real even when the relationship wasn't.
+
+Code anchor: `src/engine/mentorshipOutcomes.ts:89–90, 182–204`.
+
+---
+
+### Quiet Parting
+
+**Aliases:** Quiet Parting Arc
+**Also see:** `[[bondQuality]]`, `[[Train Apprentice]]`, `[[The Surpassing]]`, `[[Falling Out]]`, `[[Dissolution]]`
+**Status:** canonical
+
+Terminal mentorship arc reached when the Train Apprentice initiative completes (`progress ≥ 1.0`) AND `bondQuality` falls between `FALLING_OUT_BOND_THRESHOLD` and `GRADUATION_BOND_THRESHOLD` — neither a proud graduation nor a dramatic rupture. The default "neither great nor terrible" outcome: a competent professional relationship that simply ran its course. The apprentice graduates with partial Mastery gain.
+
+Code anchor: `src/engine/mentorshipOutcomes.ts:92, 218`.
+
+---
+
+### Dissolution
+
+**Aliases:** Dissolution Arc
+**Also see:** `[[bondQuality]]`, `[[Train Apprentice]]`, `[[The Surpassing]]`, `[[Falling Out]]`, `[[Quiet Parting]]`
+**Status:** canonical
+
+Terminal mentorship arc reached when the backing `train-apprentice` initiative status is `failed`. Bond dissolved by external cause — death, exile, or separation beyond `MENTORSHIP_MAX_SEPARATION_HEXES` tolerance — rather than a natural completion. Unlike Falling Out, Dissolution carries no hostility; both parties were willing but circumstance intervened.
+
+Code anchor: `src/engine/mentorshipOutcomes.ts:79–80, 241`.

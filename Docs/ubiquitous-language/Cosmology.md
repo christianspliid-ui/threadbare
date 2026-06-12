@@ -7,7 +7,7 @@ Content-adjacent shard. Terms covering the cosmic system: Reaches, Spheres, doma
 ### Reach
 
 **Aliases:** Action Domain, Domain, ReachDomain
-**Also see:** `[[Domain Capability]]`, `[[Sphere]]`
+**Also see:** `[[Domain Capability]]`, `[[Sphere]]`, `[[mentor]]` (domain-specific teaching)
 **Status:** canonical
 
 One of eight axes along which actors develop capability. Reaches classify *what* an actor does, not what fuels it.
