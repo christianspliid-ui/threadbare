@@ -78,6 +78,13 @@ export interface SimulationRuntime {
    * Cleared by touchStructure() and resetRuntimeCaches().
    */
   foreshadowingCache: Map<string, ForeshadowingResult>;
+
+  // ── Story-so-far Digest Cache (THR-455) ──
+  /**
+   * Per-session LRU cache of composed thread stories keyed by `${agentId}|${worldVersion}`.
+   * Not cleared by touchStructure() — worldVersion keys auto-expire stale entries.
+   */
+  threadStoryCache: Map<string, import('../engine/threadDigest').ThreadStoryComposition>;
 }
 
 // ─── Factory ──────────────────────────────────────────────────────
@@ -96,6 +103,7 @@ export function createSimulationRuntime(): SimulationRuntime {
     balanceTelemetryVersion: 0,
     eligibilityFunnel: createEligibilityFunnelCounters(0),
     foreshadowingCache: new Map(),
+    threadStoryCache: new Map(),
   };
 }
 

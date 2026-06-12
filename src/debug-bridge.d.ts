@@ -323,6 +323,11 @@ export interface DebugBridge {
   /** Returns a KPI report for the current game state (THR-457). Returns null if state is unavailable. */
   getKpiReport: () => Promise<import('./engine/kpi/gameplayKpi').GameplayKpiReport | null>;
 
+  /** Compose and return the story-so-far for an agent by id, id prefix, or partial name (THR-455). Returns null if not available. */
+  getThreadStory(agentRef: string): import('./engine/threadDigest').ThreadStoryComposition | null;
+  /** @internal GameView registers the thread story provider here */
+  _registerThreadStoryProvider(fn: (agentRef: string) => import('./engine/threadDigest').ThreadStoryComposition | null): void;
+
   /** THR-430 — Schism inspection: list pending schisms in the live game state. */
   schism: {
     list: () => ReadonlyArray<{

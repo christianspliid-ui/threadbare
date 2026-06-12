@@ -111,6 +111,8 @@ if (import.meta.env.DEV) {
   let _omniscienceToggle: ((enabled?: boolean) => boolean) | null = null;
   // AscendantBar debug: GameView registers a callback to set ascendant quintessence
   let _setQuintessenceCb: ((ratio: number) => void) | null = null;
+  // Thread story provider (THR-455)
+  let _threadStoryProvider: ((agentRef: string) => import('./engine/threadDigest').ThreadStoryComposition | null) | null = null;
 
   window.__DEBUG = {
     // Debug panel control — called from browser console or Playwright
@@ -160,6 +162,10 @@ if (import.meta.env.DEV) {
     _registerGameStateProvider: (fn: () => import('./types/gameState').GameState | null) => { _gameStateProvider = fn; },
     /** @internal GameView registers the SimulationRuntime provider for balance telemetry access */
     _registerRuntimeProvider: (fn: () => import('./engine/simulationRuntime').SimulationRuntime | null) => { _runtimeProvider = fn; },
+    /** Compose and return the story-so-far for an agent by id, id prefix, or partial name (THR-455). Returns null if not available. */
+    getThreadStory: (agentRef: string) => _threadStoryProvider?.(agentRef) ?? null,
+    /** @internal GameView registers the thread story provider here */
+    _registerThreadStoryProvider: (fn: (agentRef: string) => import('./engine/threadDigest').ThreadStoryComposition | null) => { _threadStoryProvider = fn; },
     /** @internal GameView registers encounter spawn / world-spawn callbacks here */
     _registerEncounterBridge: (cb: Record<string, (...args: unknown[]) => unknown>) => { _encounterBridge = cb; },
     toggleFog: () => _fogToggle?.() ?? false,

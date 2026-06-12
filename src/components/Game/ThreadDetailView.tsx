@@ -12,6 +12,9 @@ import type { ReachDomain } from '../../types/traits';
 import { getFactionNetworkSummary } from '../../engine/factionNetwork';
 import { queryDigest } from '../../engine/digestBuffer';
 import { RecentActivityLog } from './RecentActivityLog';
+import { StorySoFarPanel } from './StorySoFarPanel';
+import { useThreadStorySoFar } from './hooks/useThreadStorySoFar';
+import { STORY_SO_FAR_DIGEST_ENABLED } from '../../data/attention-constants';
 import {
   getAgentStrategicSummary,
   getAgentStrategicHistory,
@@ -524,6 +527,14 @@ function AgentDetailBody({
     });
   }, [digestBuffer, currentTick, node.id]);
 
+  const threadStory = useThreadStorySoFar(
+    graph ?? null,
+    node.id,
+    currentTick ?? 0,
+    digestBuffer ?? null,
+    runtime ?? null,
+  );
+
   const intelligenceEntries = useMemo(
     () => buildIntelligenceDisplay(intelligenceRecords, node.id, graph, currentTick),
     [intelligenceRecords, node.id, graph, currentTick],
@@ -595,11 +606,19 @@ function AgentDetailBody({
           />
         )}
 
-        {/* Recent Activity Log — background encounter digest for this agent */}
-        {recentEntries.length > 0 && (
-          <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
-            <RecentActivityLog entries={recentEntries} lastViewedTick={lastViewedTick} />
-          </div>
+        {/* Story so far / Recent Activity Log — background encounter digest for this agent */}
+        {STORY_SO_FAR_DIGEST_ENABLED ? (
+          threadStory && (
+            <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
+              <StorySoFarPanel composition={threadStory} lastViewedTick={lastViewedTick ?? 0} />
+            </div>
+          )
+        ) : (
+          recentEntries.length > 0 && (
+            <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
+              <RecentActivityLog entries={recentEntries} lastViewedTick={lastViewedTick} />
+            </div>
+          )
         )}
 
         {/* Designs — strategic activity for this agent */}
@@ -667,11 +686,19 @@ function AgentDetailBody({
         />
       )}
 
-      {/* Recent Activity Log — background encounter digest for this agent */}
-      {recentEntries.length > 0 && (
-        <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
-          <RecentActivityLog entries={recentEntries} lastViewedTick={lastViewedTick} />
-        </div>
+      {/* Story so far / Recent Activity Log — background encounter digest for this agent */}
+      {STORY_SO_FAR_DIGEST_ENABLED ? (
+        threadStory && (
+          <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
+            <StorySoFarPanel composition={threadStory} lastViewedTick={lastViewedTick ?? 0} />
+          </div>
+        )
+      ) : (
+        recentEntries.length > 0 && (
+          <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
+            <RecentActivityLog entries={recentEntries} lastViewedTick={lastViewedTick} />
+          </div>
+        )
       )}
 
       {/* Intelligence — what this agent knows */}
