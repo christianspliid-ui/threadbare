@@ -14,6 +14,7 @@
 - **Social Systems Expansion (Now):** THR-28/27/30/51/29/41/34/31/35 shipped. ✅ THR-254/253. THR-78 queued.
 - **Thematic Pressure & Living World (Next):** ✅ THR-19/122/125/126/80/128/127. THR-87 blocked by THR-116.
 
+- ✅ 2026-06-12: THR-459 shipped — stepDifficulties scale normalized 0-1 throughout. Deleted `normalizeLegacyDifficulty` + `LEGACY_DIFFICULTY_DIVISOR` from resolutionService.ts. Fixed encounterCache.ts producer (was ×100), encounterFilterPipeline.ts filterByOutgrowth scale bug. Added `HARD_STEP_DIFFICULTY_THRESHOLD=0.3`. 14 test files updated. PR #331.
 - ✅ 2026-06-12: THR-458 shipped — Compiled `Docs/plans/_template.md` (205-line plan-doc skeleton, THR-376 QW-2 partial-ship gap). 9 lint-keyed headings verbatim per §2.3. N/A escape hatches on Engine/Content/UI. CLAUDE.md pointer updated. Unblocks THR-379. PR #326.
 - ✅ 2026-06-12: THR-379 shipped — advisory `lint:plan-doc` landed. `scripts/lint-plan-doc.ts` checks plan-doc frontmatter, pillar sections, wiring reference, constants/tracing/fail-soft/NFP/coordination blocks, and runs from `.husky/pre-commit` plus `check:process`. Canary self-pass + 3-finding broken-fixture check verified. PR pending.
 - ✅ 2026-06-12: THR-449 shipped — Compiled `Docs/design-brief.md` (≤2-page orientation: logline, core fantasy, three-beat loop, 5 verbs + Reach×Sphere model, Doom/Mandate clocks, six principles, pointer matrix). Wired into `state-of-game-design` router as Always (first read). Closes THR-376 partial-ship gap. PR #324.
