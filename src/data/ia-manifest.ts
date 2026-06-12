@@ -585,9 +585,19 @@ export const IA_SURFACES: IASurface[] = [
         "state_path": "graph",
         "reader": "ThreadDetailView",
         "visible_when": "always"
+      },
+      {
+        "state_path": "digestBuffer",
+        "reader": "StorySoFarPanel",
+        "visible_when": "STORY_SO_FAR_DIGEST_ENABLED"
+      },
+      {
+        "state_path": "runtime.threadStoryCache",
+        "reader": "useThreadStorySoFar",
+        "visible_when": "STORY_SO_FAR_DIGEST_ENABLED"
       }
     ],
-    "notes": "Single thread detail: participants, stakes, history.\n"
+    "notes": "Single thread detail: participants, stakes, history. THR-455: story-so-far digest via StorySoFarPanel when STORY_SO_FAR_DIGEST_ENABLED.\n"
   },
   {
     "surface": "game.strand-view",

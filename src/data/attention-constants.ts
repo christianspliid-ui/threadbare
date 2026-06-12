@@ -154,3 +154,41 @@ export const ACTIVITY_ICON_PULSE_PERIOD = 1.75;
 
 /** Camera zoom level below which activity icons are hidden. Regional zoom keeps them readable without map spam. */
 export const ACTIVITY_ICON_ZOOM_HIDE_THRESHOLD = 5;
+
+// ── Story-so-far Digest ───────────────────────────────────────────────────────
+
+/** Lookback window in ticks for the story-so-far digest composition (3 game days). */
+export const STORY_DIGEST_LOOKBACK_TICKS = 36;
+
+/** Maximum beats included in a composed story digest. */
+export const STORY_DIGEST_MAX_BEATS = 5;
+
+/** Minimum beats required to render a story (below this shows empty state). */
+export const STORY_DIGEST_MIN_BEATS = 2;
+
+/** Maximum cached ThreadStoryComposition entries per runtime (LRU). */
+export const STORY_DIGEST_CACHE_SIZE = 32;
+
+/** Beat significance weight: isNotable flag. */
+export const BEAT_SIG_NOTABLE = 0.40;
+
+/** Beat significance weight: capability delta magnitude. */
+export const BEAT_SIG_CAPABILITY = 0.15;
+
+/** Beat significance weight: attachment gained/lost. */
+export const BEAT_SIG_ATTACHMENT = 0.15;
+
+/** Beat significance weight: quintessence delta magnitude. */
+export const BEAT_SIG_QUINTESSENCE = 0.15;
+
+/** Beat significance weight: recency boost (decays linearly over lookback window). */
+export const BEAT_SIG_RECENCY = 0.15;
+
+/** Minimum significance score to classify a beat as `pivot` (else `compound`). */
+export const BEAT_SIG_PIVOT_MIN = 0.55;
+
+/** Faction obligation older than this tick count becomes a `faction_debt` tension. */
+export const TENSION_DEBT_AGE_TICKS = 24;
+
+/** Master feature flag: false reverts ThreadDetailView to RecentActivityLog. */
+export const STORY_SO_FAR_DIGEST_ENABLED = true;

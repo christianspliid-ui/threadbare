@@ -6,6 +6,27 @@
 
 ---
 
+## Story-so-far Digest (THR-455)
+
+"Story so far" narrative panel in ThreadDetailView, replacing RecentActivityLog when `STORY_SO_FAR_DIGEST_ENABLED`.
+
+| Surface | Path | Notes |
+|---|---|---|
+| Constants (12) | `src/data/attention-constants.ts` | `STORY_DIGEST_LOOKBACK_TICKS`, `STORY_DIGEST_MAX_BEATS`, `STORY_DIGEST_MIN_BEATS`, `STORY_DIGEST_CACHE_SIZE`, 5 `BEAT_SIG_*` weights, `BEAT_SIG_PIVOT_MIN`, `TENSION_DEBT_AGE_TICKS`, `STORY_SO_FAR_DIGEST_ENABLED`. |
+| Types | `src/types/attention.ts` | `TensionKind` union (6 values); `ThreadStoryComposedTrace` interface. |
+| Engine module | `src/engine/threadDigest.ts` | `selectBeats`, `resolveCurrentTension`, `composeThreadStory`, `seededPickFromPool`. `BeatRole`, `SelectedBeat`, `CurrentTension`, `ThreadStoryComposition` types. |
+| Content tables | `src/data/thread-digest-content.ts` | `BEAT_TEMPLATES` (192 templates), `TENSION_TEMPLATES` (18), `TRANSITION_PHRASES` (16), `EMPTY_THREAD_LINES` (3). |
+| SimulationRuntime | `src/engine/simulationRuntime.ts` | `threadStoryCache: Map<string, ThreadStoryComposition>` — LRU keyed by `agentId\|worldVersion`. Not cleared by `touchStructure()` (worldVersion key auto-expires stale entries). |
+| Hook | `src/components/Game/hooks/useThreadStorySoFar.ts` | `useThreadStorySoFar(graph, agentId, tick, digestBuffer, runtime?)` — useMemo on `[agentId, worldVersion, currentTick]`; reads/writes `runtime.threadStoryCache` with LRU eviction at `STORY_DIGEST_CACHE_SIZE`. |
+| UI component | `src/components/Game/StorySoFarPanel.tsx` | Renders tension line + "Story so far" divider + beat rows. Empty state shown when `isEmpty`. |
+| ThreadDetailView wiring | `src/components/Game/ThreadDetailView.tsx` | `useThreadStorySoFar` hook call after `recentEntries` memo; both `RecentActivityLog` mounts swapped to `StorySoFarPanel` behind `STORY_SO_FAR_DIGEST_ENABLED` flag. |
+| Debug bridge | `src/debug-bridge.ts` + `src/debug-bridge.d.ts` | `window.__DEBUG.getThreadStory(agentRef)` + `_registerThreadStoryProvider`. |
+| CMS tunable constants | `src/components/CMS/tunableConstants.ts` | All 12 constants registered in Attention group. |
+| IA manifest | `src/data/ia-manifest.ts` | `game.thread-detail-view` reads[] extended with `digestBuffer` and `runtime.threadStoryCache`. |
+| Tests | `src/engine/__tests__/threadDigest.test.ts`, `threadDigest-content.test.ts`, `src/components/Game/__tests__/StorySoFarPanel.test.tsx` | Engine unit tests, content integrity tests (192+18 templates), panel render tests. |
+
+---
+
 ## Template Novelty Pressure (THR-453)
 
 Multiplicative novelty penalty applied in `scoreAndSelect` to break template-repetition monopolies. Transparent to content authors — no template fields added.

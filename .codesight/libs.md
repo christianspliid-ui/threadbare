@@ -594,7 +594,7 @@
   - const LOCATION_ACTION_POST_EFFECT_TEMPLATE_IDS
   - const THREAD_CREATION_TEMPLATES: UnifiedActionTemplate[]
   - const THREAD_MANAGEMENT_TEMPLATES: UnifiedActionTemplate[]
-  - _...1 more_
+  - _...2 more_
 - `src\engine\actionCandidates.ts` — function generateActionCandidates: (graph, actorId, locationId) => ActionCandidate[]
 - `src\engine\actionLifecycle.ts`
   - function resetActionCounter: () => void
@@ -1129,6 +1129,7 @@
   - interface AwardElderEssenceInput
   - type EssenceDistributionMode
   - type EssenceAwardSource
+- `src\engine\encounter\branchingCurator.ts` — function computeBranchingCuratorMultiplier: (entry, agentId, tick, runtime) => number, interface BranchingCuratorRuntime
 - `src\engine\encounter-contract-adapter.ts`
   - function adaptEncounterContractToUnifiedActionTemplate: (contract) => UnifiedActionTemplate
   - function adaptUnifiedActionTemplateToEncounterContract: (template) => EncounterContract
@@ -1254,7 +1255,7 @@
   - function computeFamiliarityPenalty: (record, templateId) => number
   - function computeExplorationBonus: (record, locationId, currentTick) => number
   - function computeRuinsBonus: (graph, locationId, agentId) => number
-  - _...22 more_
+  - _...26 more_
 - `src\engine\encounterSeeding.ts` — function evaluateEncounterSeeds: (state, tick, rng) => void
 - `src\engine\encounterSupportBundle.ts`
   - function prepareEncounterSupportBundle: (state, template, targetId, fallbackLocationId?) => EncounterSupportBinding[]
@@ -1483,14 +1484,19 @@
   - function shouldBeatFire: (doomProgress, prevDoomProgress, storyPhase, beatHistory) => void
   - function selectTemplate: (templates, phase, snapshot, seed) => void
   - _...4 more_
+- `src\engine\kpi\branchingDistance.ts`
+  - function computeGateDistance: (gate, entry, _state, graph, sampleSize) => GateDistanceReport
+  - interface AgentDistanceSample
+  - interface GateDistanceReport
+  - type SuggestedLever
 - `src\engine\kpi\gameplayKpi.ts`
   - function createEligibilityFunnelCounters: (sinceTick) => EligibilityFunnelCounters
+  - function isBranchingTemplate: (templateId) => boolean
   - function computeGameplayKpiReport: (state, runtime?) => GameplayKpiReport
   - interface EligibilityFunnelCounters
   - interface OutcomeDistribution
   - interface TemplateEntry
-  - interface TemplateConcentration
-  - _...9 more_
+  - _...10 more_
 - `src\engine\lairEscalation.ts`
   - function phaseLairEscalation: (state) => void
   - const LAIR_ESCALATION_INTERVAL
@@ -1814,6 +1820,12 @@
   - function computeDivineInterventionModifier: (graph, agentId) => number
   - function computeResolutionModifiers: (graph, agentId, locationId, stepReach, encounterSphereAffinity, effectStates?, EffectRuntimeState>) => ModifierBreakdown
   - _...1 more_
+- `src\engine\resolutionScaleAdjust.ts`
+  - function applyScaleDifficultyAdjust: (difficulty, capability, sphereFactor, mods, scale) => void
+  - function applyScaleCritFailureGate: (outcome, scale) => OutcomeType
+  - const SCALE_DIFFICULTY_OFFSETS: Record<ActionScale, number>
+  - const MIN_PROBABILITY_BY_SCALE: Record<ActionScale, number>
+  - const CRIT_FAILURE_PERMITTED_BY_SCALE: Record<ActionScale, boolean>
 - `src\engine\resolutionService.ts`
   - function normalizeLegacyDifficulty: (rawDifficulty) => number
   - function computeResolutionThreshold: (inputs) => number

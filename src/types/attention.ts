@@ -139,6 +139,20 @@ export interface AscendantAttentionState {
 /** UI state reflecting how stretched the ascendant's attention is. */
 export type AttentionVisualState = 'focused' | 'busy' | 'strained' | 'overwhelmed';
 
+// ─── Story-so-far Digest ──────────────────────────────────────────────
+
+/**
+ * What is the dominant tension thread for an agent right now?
+ * Used by the story-so-far digest to frame the opening tension line.
+ */
+export type TensionKind =
+  | 'active_encounter'    // TODO(THR-455): requires GameState — not yet detected
+  | 'open_wound'          // has_trait edges with category='condition'
+  | 'faction_debt'        // owes_favor edges aged past TENSION_DEBT_AGE_TICKS
+  | 'pending_obligation'  // TODO(THR-455): requires GameState — not yet detected
+  | 'doom_pressure'       // TODO(THR-455): requires GameState — not yet detected
+  | 'idle';               // fallback: no tension detected
+
 // ─── Trace Types ──────────────────────────────────────────────────────
 // All extend TraceBase so they can join the TraceEntry discriminated union.
 
@@ -184,4 +198,14 @@ export interface StoryBeatQueueTrace extends TraceBase {
   action: 'enqueued' | 'dequeued' | 'expired';
   priority: StoryBeatPriority;
   queueDepth: number;
+}
+
+/** Trace emitted when a ThreadStoryComposition is assembled for an agent (THR-455). */
+export interface ThreadStoryComposedTrace extends TraceBase {
+  category: 'thread_story_composed';
+  agentId: string;
+  tensionKind: TensionKind;
+  beatCount: number;
+  lookbackTicks: number;
+  emptyState: boolean;
 }

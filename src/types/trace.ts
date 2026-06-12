@@ -12,6 +12,7 @@ import type {
   CuratorDecisionTrace,
   AttentionPoolTrace,
   StoryBeatQueueTrace,
+  ThreadStoryComposedTrace,
 } from './attention';
 import type { CourtPosition } from './influence';
 import type { BehaviorFamily, StrategicVerb, StrategicExecutionMode } from './strategicAction';
@@ -62,6 +63,7 @@ export type TraceCategory =
   | 'curator_decision'
   | 'attention_pool'
   | 'story_beat_queue'
+  | 'thread_story_composed'
   | 'slot_overflow'
   | 'slot_disposal'
   | 'condition_overflow'
@@ -263,6 +265,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'curator_decision',
   'attention_pool',
   'story_beat_queue',
+  'thread_story_composed',
   'slot_overflow',
   'slot_disposal',
   'condition_overflow',
@@ -1611,7 +1614,9 @@ export type TraceEntry =
   // Branching encounter curator nudge (THR-452)
   | BranchingCuratorNudgeTrace
   // Resolution input telemetry (THR-451)
-  | ResolutionInputTrace;
+  | ResolutionInputTrace
+  // Story-so-far digest (THR-455)
+  | ThreadStoryComposedTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {
