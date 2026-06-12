@@ -1161,3 +1161,27 @@ A `mentors` edge type (`src/types/graph.ts` + schema in `src/types/edgeSchema.ts
 **Trace categories registered:** `mentorship_offered`, `mentorship_started`, `mentorship_lesson`, `mentorship_graduated`, `mentorship_surpassed`, `mentorship_severed` — all six are inspectable in the DebugPanel Trace tab.
 
 **Constants:** all 23 tunable numbers in `src/data/mentorship-constants.ts`. Master feature flag `ENABLE_MENTORSHIP` gates the entire pipeline.
+
+---
+
+## Capability 9: Template Novelty Pressure — The Engine Fights Monopolies for You (THR-453)
+
+The scoring engine automatically applies a recency penalty to templates that have been selected recently. Content authors do not need to wire anything — novelty pressure is on by default and transparent to templates. What authors need to understand is *why writing diverse content across categories matters more than they might think*.
+
+**What the engine does:**
+- **Global recency penalty:** a template selected N ticks ago scores at `1 - (maxPenalty × e^(−λN))`. With a 4-tick half-life and max penalty 0.55, a template selected last tick scores at ~72% of its raw score; at tick 10 it's back to ~99%. Penalty decays exponentially — it's not a cooldown, it's a gradient.
+- **Per-agent recency penalty:** same exponential decay tracked per agent (3-tick half-life, max 0.45). An agent who just experienced a template sees it much less often, even if global novelty has decayed.
+- **Category quota penalty:** if one Reach domain fills >18% of the rolling 12-tick selection window for an agent, templates from that domain face an additional linear ramp penalty. This breaks one-reach monopolies (e.g. `wilderness` dominating `spirit` or `society`).
+- **Combined floor:** the product of all penalties is capped at `NOVELTY_COMBINED_CAP = 0.75`. No template can be penalized below 25% of its raw score. Over-selected templates remain competitive — novelty pressure shifts the distribution, not the eligibility.
+
+**Why this matters for content:**
+- **Template diversity across Reach domains is mechanically rewarded.** A rich pool of `spirit`, `society`, `trade`, and `wilderness` templates means the quota mechanism rarely fires; a sparse pool triggers it every 12 ticks. When the quota fires, the best-scoring templates from underrepresented domains get a relative boost — so having authored them matters.
+- **Unique first-encounter prose is no longer wasted.** Templates that would have been crowded out by high-scoring monopoly templates now surface through natural decay of their competitors. Early-arc, low-probability templates accumulate real selection time across a playthrough.
+- **Template variety serves storytelling, not just coverage.** The system was designed to produce "nomadic stories, not busy-ness." Novelty pressure is one of the mechanisms that makes individual encounter selections feel authored rather than weighted by a single dominant template. When you write a scene that only makes sense once (a first meeting, a pivotal confrontation), trust the decay to ensure it doesn't repeat.
+
+**What you do NOT need to do:**
+- Do not set any novelty-related field on templates — there is no such field.
+- Do not worry about adjacent templates "drowning out" your new content — the decay mechanism gives new templates fair air time as it suppresses repeated ones.
+- Do not tune the constants per template — the 8 `NOVELTY_*` constants in `agent-behavior-constants.ts` are world-level tuning, not per-template.
+
+**Inspectability:** `noveltyMultiplier` is emitted per top-candidate entry in `ScoringTrace`. `noveltyChangedSelection` and `preNoveltyWinnerId` are set when novelty pressure flipped the winner — visible in the DebugPanel Trace tab filtered on `encounter_scoring`.
