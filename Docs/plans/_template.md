@@ -203,3 +203,20 @@ interface <TraceName>Trace {
 *Use for clarifications that don't fit the spec — what NOT to do, scope traps, judgment calls already made.*
 
 - <note>
+
+## Forked-audit verdicts
+
+<!-- populated by design-audit-pipeline — /design-audit <plan-doc-path> -->
+<!-- OPTIONAL: only present after design-audit-pipeline has run at plan finalization -->
+
+### NFP audit
+
+<!-- NFP-auditor verdict (≤300 words) inserted here by orchestrator -->
+
+### Three-pillar audit
+
+<!-- Pillar-auditor verdict (≤300 words) inserted here by orchestrator -->
+
+### Vision audit
+
+<!-- Vision-auditor verdict (≤300 words) inserted here by orchestrator -->

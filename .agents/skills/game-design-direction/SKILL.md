@@ -227,6 +227,8 @@ named choices with named rejection reasons.]
 
 ## Vision Audit at Plan Finalization
 
+After intent-judge returns Allow, also invoke the **forked structural audit** via `.claude/skills/design-audit-pipeline/SKILL.md` (or `/design-audit <plan-doc-path>`) — three independent subagents (NFP / three-pillar / Vision) run in one message and write verdicts into the plan-doc tail. Only proceed to `plan-pending-commit` after all three return PASS or PASS-with-notes.
+
 Before marking any design Ready for Dev or Ready for Codex, run this check:
 
 > **Does this plan contradict or update any Vision premise?**
