@@ -1218,3 +1218,49 @@ The scoring engine automatically applies a recency penalty to templates that hav
 - Do not tune the constants per template — the 8 `NOVELTY_*` constants in `agent-behavior-constants.ts` are world-level tuning, not per-template.
 
 **Inspectability:** `noveltyMultiplier` is emitted per top-candidate entry in `ScoringTrace`. `noveltyChangedSelection` and `preNoveltyWinnerId` are set when novelty pressure flipped the winner — visible in the DebugPanel Trace tab filtered on `encounter_scoring`.
+
+---
+
+## Capability 10: Outcome-Band Prose Bands — Six-Register Afterimage Differentiation (THR-460)
+
+Step afterimage fields (`successAfterimage`, `failureAfterimage`) support two new enrichment placeholders that resolve to band-differentiated phrases. The six bands map to the six `StepOutcome` values and give the player prose that *reads* differently depending on how well an action resolved — not just what the fiction says happened.
+
+| Placeholder | Resolves from | Availability |
+|---|---|---|
+| `{outcome_phrase}` | `OUTCOME_BAND_PROSE[band]` — adverbial/adjectival phrase for the resolution quality | `successAfterimage`, `failureAfterimage` only |
+| `{q_flavor}` | `OUTCOME_BAND_Q_FLAVOR[band]` — quintessential flavor phrase (cosmic/spiritual register) | `successAfterimage`, `failureAfterimage` only |
+
+**The six bands and their register:**
+
+| OutcomeBand | StepOutcome | Prose register |
+|---|---|---|
+| `surge` | `critical_success` | Triumphant, heightened — "with a surge of certainty" |
+| `neutral` | `success` | Clean, matter-of-fact — "well enough" |
+| `strained` | `success_at_cost` | Grimy, costly — "at considerable cost" |
+| `fortunate` | `near_miss` | Lucky, barely-held — "skirting the edge of failure" |
+| `setback` | `failure` | Deflated, collapsed — "but the thread did not hold" |
+| `catastrophe` | `critical_failure` | Dire, sweeping — "with devastating consequence" |
+
+**How to use:**
+
+```typescript
+// In a UnifiedActionTemplate step:
+successAfterimage: "{name} crossed the threshold {outcome_phrase}. The wards hold.",
+failureAfterimage: "The attempt ended {outcome_phrase} — the wards are weaker than they appeared.",
+```
+
+At render time, `buildUnifiedEncounterStageModel` spreads `outcomeBand: stepOutcomeToOutcomeBand(outcome)` into the per-step `NarrativeContext` before calling `enrichProse`. Both `{outcome_phrase}` and `{q_flavor}` resolve from their band-keyed phrase pool.
+
+**Fail-soft:** If no `outcomeBand` is set (prose used outside an afterimage context), both placeholders strip silently. If no `SimulationRuntime` is available, the first pool entry is used deterministically (engine-test paths and non-runtime contexts).
+
+**Dedup guard:** The `SimulationRuntime.outcomeBandPhraseHistory` map tracks recently-used phraseIds per actor (keyed `agentId` for `outcome_phrase`, `agentId + '__q'` for `q_flavor`). A 12-entry eviction window (`OUTCOME_BAND_PHRASE_HISTORY_WINDOW`) prevents the same phrase appearing twice in a short series. This requires no authoring effort — it's automatic.
+
+**Content table:** `src/data/outcome-band-content.ts` — `OUTCOME_BAND_PROSE` and `OUTCOME_BAND_Q_FLAVOR`, 5 entries per band, 30 phrases per table. To add more variety: append to any band's array with a globally unique `phraseId` (e.g. `'surge.6'`, `'q.neutral.6'`). The lint test `src/engine/__tests__/outcomeBandProse.test.ts` enforces uniqueness across bands.
+
+**Debug surface:** `window.__DEBUG.bandPhraseUsage()` returns the full `outcomeBandPhraseHistory` Map. `window.__DEBUG.bandPhraseUsage(agentId)` returns the used-ids Set for one actor. Filter DebugPanel Trace tab on `outcome_band_prose_selected` to see every band/phrase pick with its `phraseTable` discriminator.
+
+**What this changes for content authors:** When writing step afterimages, you no longer need to write separate success/failure text for the "degree" of outcome. Write one template that uses `{outcome_phrase}` and the engine supplies the register. The prose shifts naturally: a surge success reads triumphant; a strained success reads costly; a catastrophe failure reads dire — without you writing 6 variants.
+
+**Scope:** Afterimage fields only. `narrativeTemplate` (step bodies) and aftermath prose (`recent_event.message`) do not receive `outcomeBand` — they are authored to a fixed voice. If you want band-aware body prose, route it through the afterimage fields or propose an extension.
+
+**Trace verification:** `outcome_band_prose_selected` trace type, defined in `src/types/trace.ts`. Fields: `band`, `phraseId`, `phraseTable: 'outcome_phrase' | 'q_flavor'`.

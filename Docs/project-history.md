@@ -1,5 +1,7 @@
 # Project History
 
+✅ **THR-460** (2026-06-13) — Outcome-band prose differentiation (Slice B). `OutcomeBand` type + `{outcome_phrase}` / `{q_flavor}` placeholders in `enrichProse()`; six-band OUTCOME_BAND_PROSE + Q_FLAVOR tables (30 phrases each); dedup guard via `outcomeBandPhraseHistory` on SimulationRuntime; `outcome_band_prose_selected` trace; `runtime` wired into `buildUnifiedEncounterStageModel`; `__DEBUG.bandPhraseUsage()`. 14 new tests. PR #339.
+
 ✅ **THR-293** (2026-06-12) — Doom identity milestone evaluator. `evaluateIdentityMilestones(state, progress)` in `doomIdentityMilestones.ts` walks the active archetype matrix milestones, flips `triggered=true` on first progress crossing, emits `doom_milestone` trace. Wired into `phaseDoom` after `advanceDoomClock`. Optional `doomArchetype?` 7th param on `initializeGameState` (defaults `'breach'`, all callers unchanged). `MilestoneTriggeredTrace` + `doom_milestone` category added to `trace.ts`. 8 new tests: 7 archetypes × 30 ticks + idempotency. PR #336.
 
 ✅ **THR-446** (2026-06-12) — UL canonicalization: 9 mentorship-domain terms added to `Docs/ubiquitous-language/Agents.md` (mentor, apprentice, mentors edge, bondQuality, Train Apprentice, The Surpassing, Falling Out, Quiet Parting, Dissolution). Cross-shard See-Also hooks in Cosmology.md (Reach) and Encounters.md (EncounterTemplate). Dashboard regenerated (89 terms, 7 shards). Closeout from THR-75 (Mentor/Apprentice Relationship Chains, shipped 2026-05-15).

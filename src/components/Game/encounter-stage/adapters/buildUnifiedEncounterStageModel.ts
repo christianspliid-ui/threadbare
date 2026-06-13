@@ -13,6 +13,8 @@ import type { WorldGraph } from '../../../../engine/graph';
 import type { GameState } from '../../../../types/gameState';
 import { enrichProse, gatherNarrativeContext } from '../../../../engine/proseEnrichment';
 import type { NarrativeContext } from '../../../../engine/proseEnrichment';
+import type { SimulationRuntime } from '../../../../engine/simulationRuntime';
+import { stepOutcomeToOutcomeBand } from '../../../../data/outcome-band-content';
 import { autoLinkNarrative, collectSupportBundleEntities } from '../narrativeLinker';
 import { resolveStepDefinition } from '../../../../engine/unifiedActionLifecycle';
 import { getPortraitUrl } from '../../../../data/portrait-assets';
@@ -63,6 +65,9 @@ export interface BuildUnifiedEncounterStageModelArgs {
   gameState?: GameState;
   /** Current tick — paired with `gameState` for intelligence trace emission. */
   tick?: number;
+  /** SimulationRuntime for outcome-band phrase dedup history (THR-460).
+   * When omitted, {outcome_phrase} / {q_flavor} use pool[0] deterministically. */
+  runtime?: SimulationRuntime;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────
@@ -291,7 +296,9 @@ function buildHistory(
       const rawAfterimage = success
         ? (resolvedStep.successAfterimage ?? 'Succeeded')
         : (resolvedStep.failureAfterimage ?? 'Failed');
-      afterimage = enrichProse(rawAfterimage, ctx);
+      // Spread ctx to inject per-step outcomeBand without mutating the shared context (THR-460)
+      const stepCtx = { ...ctx, outcomeBand: stepOutcomeToOutcomeBand(outcome) };
+      afterimage = enrichProse(rawAfterimage, stepCtx, { runtime: args.runtime });
 
       // Attach complication prose if a complication fired on this step (THR-20)
       const complicationSlot = activeAction.stepComplications?.[index];

@@ -1136,6 +1136,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         doomIdentityMatrix: gameState.doomIdentityMatrix,
         gameState,
         tick: gameState.tick,
+        runtime,
       });
     }
 

@@ -22,6 +22,8 @@ import type { BeatOutcome } from '../types/journeyEngine';
 import type { ReachDomain } from '../types/traits';
 import type { DoomIdentityMatrix } from '../types/doomIdentity';
 import type { GameState } from '../types/gameState';
+import type { OutcomeBand } from './outcomeConsequences';
+import type { SimulationRuntime } from './simulationRuntime';
 import {
   getActorTraits,
   getAgentBonds,
@@ -36,6 +38,13 @@ import {
   type IntelligenceView,
 } from './intelligence';
 import { TICKS_PER_DAY } from '../data/attention-constants';
+import {
+  OUTCOME_BAND_PROSE,
+  OUTCOME_BAND_Q_FLAVOR,
+  OUTCOME_BAND_PHRASE_HISTORY_WINDOW,
+} from '../data/outcome-band-content';
+import { pickWithRepetitionGuard } from './proseSelection';
+import { emitTrace } from './traceBuffer';
 
 // ─── Constants ─────────────────────────────────────────────────────
 
@@ -105,6 +114,11 @@ export interface NarrativeContext {
   /** Causal predecessor — populated when this encounter was seeded by another (THR-116).
    * Enables `{cause:label}` and `{cause:ticksAgo}` placeholders. */
   cause?: { label: string; ticksAgo: number };
+
+  /** Outcome band for band-flavored phrase injection (THR-460).
+   * Enables `{outcome_phrase}` and `{q_flavor}` placeholders.
+   * Populated by callers that have a resolved step outcome (UI adapters, engine resolvers). */
+  outcomeBand?: OutcomeBand;
 }
 
 /**
@@ -221,12 +235,78 @@ export function gatherNarrativeContext(
   };
 }
 
+// ─── Outcome Band Phrase Helper ────────────────────────────────────
+
+/**
+ * Resolve one occurrence of `placeholder` in `result` using a band-keyed phrase pool.
+ * Uses pickWithRepetitionGuard when runtime is available; falls back to pool[0] otherwise.
+ * Emits an outcome_band_prose_selected trace on each successful pick.
+ */
+function resolveBandPhrase(
+  result: string,
+  placeholder: string,
+  pool: Record<string, import('../engine/proseSelection').PhraseEntry[]>,
+  ctx: NarrativeContext,
+  opts?: { runtime?: SimulationRuntime; rng?: () => number },
+): string {
+  const re = new RegExp(placeholder.replace(/[{}]/g, '\\$&'), 'g');
+  if (!re.test(result)) return result;
+  // Re-create the regex because .test() consumed it
+  const replaceRe = new RegExp(placeholder.replace(/[{}]/g, '\\$&'), 'g');
+
+  const band = ctx.outcomeBand!;
+  const entries = pool[band] ?? [];
+  if (entries.length === 0) return result.replace(replaceRe, '');
+
+  const phraseTable = placeholder === '{outcome_phrase}' ? 'outcome_phrase' : 'q_flavor';
+  const runtime = opts?.runtime;
+  const rng = opts?.rng ?? Math.random;
+
+  let picked: import('../engine/proseSelection').PhraseEntry;
+
+  if (runtime) {
+    const historyKey = ctx.agentId + (phraseTable === 'q_flavor' ? '__q' : '');
+    if (!runtime.outcomeBandPhraseHistory.has(historyKey)) {
+      runtime.outcomeBandPhraseHistory.set(historyKey, new Set());
+    }
+    const usedIds = runtime.outcomeBandPhraseHistory.get(historyKey)!;
+    picked = pickWithRepetitionGuard(entries, rng, usedIds);
+    if (usedIds.size > OUTCOME_BAND_PHRASE_HISTORY_WINDOW) {
+      const oldest = usedIds.values().next().value;
+      if (oldest !== undefined) usedIds.delete(oldest);
+    }
+  } else {
+    picked = entries[0];
+  }
+
+  emitTrace({
+    category: 'outcome_band_prose_selected',
+    tick: ctx.tick ?? 0,
+    agentId: ctx.agentId,
+    band,
+    phraseId: picked.phraseId,
+    phraseTable,
+    summary: `outcome_band_prose[${phraseTable}]: ${band} → ${picked.phraseId}`,
+  });
+
+  return result.replace(replaceRe, picked.text);
+}
+
 // ─── Placeholder Resolution ────────────────────────────────────────
 
 /**
  * Resolve all placeholders in a prose template using narrative context.
+ *
+ * opts.runtime — SimulationRuntime holding the per-actor phrase dedup history.
+ *   Required for {outcome_phrase} / {q_flavor} repetition guarding; without it,
+ *   the first pool entry is used deterministically (fail-soft, never throws).
+ * opts.rng — Seeded PRNG for phrase selection. Falls back to Math.random when absent.
  */
-export function enrichProse(template: string, ctx: NarrativeContext): string {
+export function enrichProse(
+  template: string,
+  ctx: NarrativeContext,
+  opts?: { runtime?: SimulationRuntime; rng?: () => number },
+): string {
   let result = template;
 
   // Simple replacements
@@ -331,6 +411,16 @@ export function enrichProse(template: string, ctx: NarrativeContext): string {
 
   // Conditional blocks: {?has_X}...{/has_X} and {?no_X}...{/no_X}
   result = resolveConditionals(result, ctx);
+
+  // Outcome band phrases (THR-460) — {outcome_phrase} and {q_flavor}.
+  // Requires ctx.outcomeBand; silently strips when absent (fail-soft).
+  if (ctx.outcomeBand) {
+    result = resolveBandPhrase(result, '{outcome_phrase}', OUTCOME_BAND_PROSE, ctx, opts);
+    result = resolveBandPhrase(result, '{q_flavor}', OUTCOME_BAND_Q_FLAVOR, ctx, opts);
+  } else {
+    result = result.replace(/\{outcome_phrase\}/g, '');
+    result = result.replace(/\{q_flavor\}/g, '');
+  }
 
   return result;
 }
