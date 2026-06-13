@@ -891,3 +891,12 @@ Before marking implementation complete, verify:
 - [ ] Every new player-facing action has a UI trigger (button, menu item, click handler)
 - [ ] Every prose display path calls `enrichProse()` if using templates with placeholders
 - [ ] DebugPanel can inspect new feature state (existing tab or new tab)
+
+## Agent-invocation surfaces
+
+Process steps that spawn subagents as part of the Cowork design workflow. When adding a new agent-invocation step: (a) document it in CLAUDE.md § Design Governance, (b) document it in `game-design-direction/SKILL.md` § Finalization or the relevant skill, (c) add a row here.
+
+| Agent step | Skill | Trigger | Sequencing | Notes |
+|---|---|---|---|---|
+| intent-judge | `.claude/skills/intent-judge/SKILL.md` | Auto at plan-doc finalization; manual `/intent-judge <path>` | After summarize + three-pillar check, before presenting | Gates the handoff: Allow → proceed; Revise/Block/Escalate → fix and re-run |
+| design-audit-pipeline | `.claude/skills/design-audit-pipeline/SKILL.md` | Auto after intent-judge Allow; manual `/design-audit <path>` | After intent-judge Allow, before `plan-pending-commit` | Three parallel subagents (NFP / pillar / vision); verdicts merged into plan-doc tail under `## Forked-audit verdicts` |
