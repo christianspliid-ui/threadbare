@@ -74,6 +74,8 @@ export interface EncounterNotification {
   viewed: boolean;
   /** Whether this notification has been resolved */
   resolved: boolean;
+  /** Outcome band tag (e.g. 'fortunate') — populated by engine when propagation is wired (THR-461 follow-up). */
+  narrativeTag?: string;
 }
 
 /**

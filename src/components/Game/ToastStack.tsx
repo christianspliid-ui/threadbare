@@ -4,6 +4,16 @@ import type { ToastItem } from '../../types/notification';
 import type { NavigationTarget } from '../../types/notification';
 import { getSphereColor } from '../../data/sphereIcons';
 
+/** Band → left-border accent colour mapping. Fail-soft: unknown band → undefined (falls through to sphere/gold). */
+const BAND_ACCENT: Record<string, string> = {
+  surge:       'var(--positive)',
+  fortunate:   'var(--accent-near-miss)',
+  neutral:     'var(--text-tertiary)',
+  strained:    'var(--warning)',
+  setback:     'var(--negative)',
+  catastrophe: '#b91c1c',
+};
+
 /** Glyph indicating what clicking a notification navigates to */
 const NAV_GLYPHS: Record<NavigationTarget['kind'], string> = {
   agent:     '→',
@@ -76,7 +86,8 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate }: Toa
       aria-label="Notifications"
     >
       {toasts.slice(-MAX_VISIBLE_TOASTS).map(toast => {
-        const accentColor = toast.sphere ? getSphereColor(toast.sphere) : 'var(--accent-gold-dim)';
+        const accentColor = (toast.band && BAND_ACCENT[toast.band])
+          ?? (toast.sphere ? getSphereColor(toast.sphere) : 'var(--accent-gold-dim)');
         const navTarget = toast.navigationTarget;
         const isNavigable = Boolean(navTarget && onNavigate) || Boolean(toast.onClick) || Boolean(toast.actorId && onSelectAgent);
         const isDismissing = dismissingIds.has(toast.id);

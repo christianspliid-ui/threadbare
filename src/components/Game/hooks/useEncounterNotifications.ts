@@ -65,6 +65,7 @@ export function useEncounterNotifications({
         expiresAt: now + TOAST_DURATION_MS * 2, // Encounter toasts last longer
         actorId: notif.agentId,
         onClick: onOpenEncounter ? makeOnClick(notif) : undefined,
+        band: notif.narrativeTag,
       });
     }
 

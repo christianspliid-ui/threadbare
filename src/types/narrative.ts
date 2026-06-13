@@ -152,6 +152,8 @@ export interface ChronicleEntry {
     previousEvents?: string[];
   };
   tick: number;
+  /** Quintessence delta for this entry (positive = gain, negative = loss, 0 = neutral). Absent → no annotation rendered. */
+  quintessenceDelta?: number;
 }
 
 // ─── Sphere Vocabulary ───────────────────────────────────────────

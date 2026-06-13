@@ -1283,6 +1283,16 @@ export const SPHERE_WONDER_FLAVORS: Record<string, string[]> = {
  * Used by enrichProse() to inject band-specific flavor into encounter prose.
  * Minimum-viable entries for Slice A; full rewrite in Slice B.
  */
+/** Short single-line flavor text shown on the MTG-style outcome card face per band. */
+export const OUTCOME_BAND_CARD_FLAVOR: Partial<Record<string, string>> = {
+  surge:       'The thread answers, full and clear.',
+  fortunate:   'The thread held — barely, but held.',
+  neutral:     'The work continues.',
+  strained:    'Progress won at a price already spent.',
+  setback:     'The moment passes before it can be seized.',
+  catastrophe: 'Something fundamental comes apart.',
+};
+
 export const OUTCOME_BAND_PROSE: Record<string, string[]> = {
   surge: [
     'a pulse of certainty, clean and absolute',
