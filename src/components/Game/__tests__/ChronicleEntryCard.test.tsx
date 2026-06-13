@@ -72,6 +72,35 @@ describe('ChronicleEntryCard', () => {
     expect(screen.getByText(/t42/)).toBeDefined();
     expect(screen.getByText(/The Fall of Iron Gate/)).toBeDefined();
   });
+
+  it('renders positive Q-delta annotation in green', () => {
+    const entry: ChronicleEntry = { ...legacyEntry, quintessenceDelta: 0.5 };
+    render(<ChronicleEntryCard entry={entry} voiceMode="witness" />);
+    const annotation = screen.getByText(/\+0\.50Q/);
+    expect(annotation).toBeDefined();
+    expect(annotation.style.color).toBe('var(--positive)');
+  });
+
+  it('renders negative Q-delta annotation in red', () => {
+    const entry: ChronicleEntry = { ...legacyEntry, quintessenceDelta: -1.25 };
+    render(<ChronicleEntryCard entry={entry} voiceMode="witness" />);
+    const annotation = screen.getByText(/-1\.25Q/);
+    expect(annotation).toBeDefined();
+    expect(annotation.style.color).toBe('var(--negative)');
+  });
+
+  it('renders zero Q-delta in tertiary color', () => {
+    const entry: ChronicleEntry = { ...legacyEntry, quintessenceDelta: 0 };
+    render(<ChronicleEntryCard entry={entry} voiceMode="witness" />);
+    const annotation = screen.getByText(/0\.00Q/);
+    expect(annotation).toBeDefined();
+    expect(annotation.style.color).toBe('var(--text-tertiary)');
+  });
+
+  it('renders no Q-delta annotation when quintessenceDelta is absent', () => {
+    render(<ChronicleEntryCard entry={legacyEntry} voiceMode="witness" />);
+    expect(screen.queryByText(/Q$/)).toBeNull();
+  });
 });
 
 // ── ChroniclePanel ────────────────────────────────────────────────

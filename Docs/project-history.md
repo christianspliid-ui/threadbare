@@ -1,5 +1,7 @@
 # Project History
 
+✅ **THR-461** (2026-06-13) — Near-miss band UI treatment (Slice C). `--accent-near-miss: #c9a14a` CSS token. `band?` on `ToastItem` + `narrativeTag?` stub on `EncounterNotification` (propagation deferred to THR-462). `BAND_ACCENT` table in `ToastStack` for band-keyed left-border color. `quintessenceDelta?` on `ChronicleEntry` + color-coded `±Q` suffix in `ChronicleEntryCard`. `outcomeBand?` prop on `ActionCard` + band-keyed outcome overlay with icon + flavor text. `OUTCOME_BAND_CARD_FLAVOR` table. 8 new tests; 11580 total passing.
+
 ✅ **THR-460** (2026-06-13) — Outcome-band prose differentiation (Slice B). `OutcomeBand` type + `{outcome_phrase}` / `{q_flavor}` placeholders in `enrichProse()`; six-band OUTCOME_BAND_PROSE + Q_FLAVOR tables (30 phrases each); dedup guard via `outcomeBandPhraseHistory` on SimulationRuntime; `outcome_band_prose_selected` trace; `runtime` wired into `buildUnifiedEncounterStageModel`; `__DEBUG.bandPhraseUsage()`. 14 new tests. PR #339.
 
 ✅ **THR-293** (2026-06-12) — Doom identity milestone evaluator. `evaluateIdentityMilestones(state, progress)` in `doomIdentityMilestones.ts` walks the active archetype matrix milestones, flips `triggered=true` on first progress crossing, emits `doom_milestone` trace. Wired into `phaseDoom` after `advanceDoomClock`. Optional `doomArchetype?` 7th param on `initializeGameState` (defaults `'breach'`, all callers unchanged). `MilestoneTriggeredTrace` + `doom_milestone` category added to `trace.ts`. 8 new tests: 7 archetypes × 30 ticks + idempotency. PR #336.

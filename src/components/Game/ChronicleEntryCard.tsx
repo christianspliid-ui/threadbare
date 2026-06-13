@@ -38,6 +38,20 @@ export function ChronicleEntryCard({ entry, voiceMode }: ChronicleEntryCardProps
         }}
       >
         t{entry.tick} · {entry.title}
+        {entry.quintessenceDelta != null && (
+          <span
+            style={{
+              marginLeft: '6px',
+              color: entry.quintessenceDelta > 0
+                ? 'var(--positive)'
+                : entry.quintessenceDelta < 0
+                  ? 'var(--negative)'
+                  : 'var(--text-tertiary)',
+            }}
+          >
+            {entry.quintessenceDelta > 0 ? '+' : ''}{entry.quintessenceDelta.toFixed(2)}Q
+          </span>
+        )}
       </div>
 
       {showPoet && poetText && (

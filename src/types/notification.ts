@@ -106,6 +106,8 @@ export interface ToastItem {
   onClick?: () => void;
   /** Where clicking should navigate — preferred over actorId/onClick when present */
   navigationTarget?: NavigationTarget;
+  /** Outcome band for band-keyed accent styling (e.g. 'fortunate', 'setback'). Absent → default gold accent. */
+  band?: string;
 }
 
 export interface AlertItem {

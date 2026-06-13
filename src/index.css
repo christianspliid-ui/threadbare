@@ -65,6 +65,8 @@
     --accent-gold: #d4a040;
     --accent-gold-dim: #d4a04060;
     --accent-gold-glow: #d4a04030;
+    /* Near-miss band — desaturated amber, distinct from success (green) and failure (red) */
+    --accent-near-miss: #c9a14a;
 
     /* Borders — subtle warmth with gold threading */
     --border-subtle: #2a2520;

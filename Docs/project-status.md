@@ -1,5 +1,5 @@
 # Project Status
-> Updated 2026-06-13 (THR-250).
+> Updated 2026-06-13 (THR-461).
 
 ## Current Focus
 **Encounter Experience — active:** Phases A1–A3, B1–B7, C1–C4, D1–D3, E1–E2, F1–F2, G1–G3 ✅. Remaining is F-phase integration (mount EffectRegistration components into hero panel / cast tile / scene state surfaces) and Phase H post-v1 polish.
@@ -14,6 +14,7 @@
 - **Social Systems Expansion (Now):** THR-28/27/30/51/29/41/34/31/35 shipped. ✅ THR-254/253. THR-78 queued.
 - **Thematic Pressure & Living World (Next):** ✅ THR-19/122/125/126/80/128/127. THR-87 blocked by THR-116.
 
+- ✅ 2026-06-13: THR-461 shipped — near_miss band UI treatment (Slice C). `--accent-near-miss: #c9a14a` token. `band?` on `ToastItem`; `narrativeTag?` on `EncounterNotification` (forward-compatible stub, engine propagation deferred to THR-462). `BAND_ACCENT` table in `ToastStack` keys left-border color to band. `quintessenceDelta?` on `ChronicleEntry`; color-coded `+/-0.00Q` suffix in `ChronicleEntryCard`. `outcomeBand?` prop on `ActionCard`; band-keyed outcome overlay (icon + flavor text from `OUTCOME_BAND_CARD_FLAVOR`). `OUTCOME_BAND_CARD_FLAVOR` table in `narrative-content.ts`. 4 new ChronicleEntryCard tests + 4 new ActionCard tests. All 11580 tests pass.
 - ✅ 2026-06-13: THR-460 shipped — outcome-band prose differentiation (Slice B). `OutcomeBand` type exported; `{outcome_phrase}` + `{q_flavor}` placeholders in `enrichProse()`; six-band phrase tables in `outcome-band-content.ts`; `outcomeBandPhraseHistory` on SimulationRuntime (dedup window 12); `outcome_band_prose_selected` trace; `runtime` wired into `buildUnifiedEncounterStageModel` → `GameView`; `__DEBUG.bandPhraseUsage()`. 14 new tests. PR #339.
 - ✅ 2026-06-13: THR-250 shipped — stale-claim auto-release sweep. GitHub Action (cron `0 */12 * * *`) detects `In Dev` issues idle >48h, posts warning comment, releases claim after 24h grace if no activity. `Parked` label opt-out. `scripts/stale-claim-sweep/{index.ts,constants.ts}` + `.github/workflows/stale-claim-sweep.yml`. Coordination protocol doc updated with sweep cadence + `Parked` convention. PR #338.
 - ✅ 2026-06-13: THR-378 shipped — design-audit-pipeline skill: three independent audit subagents (NFP / three-pillar / Vision) run in one message at plan-doc finalization after intent-judge Allow. New `design-audit-pipeline/SKILL.md` + three `agents/` role-prompt files. `.agents/` mirror via skill-sync. `/design-audit` slash command. CLAUDE.md Step 8.6, `_template.md` `## Forked-audit verdicts` tail, `game-design-direction` finalization pointer, wiring-checklist agent-invocation table. 39 shared skills (was 38).

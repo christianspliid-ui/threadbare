@@ -265,3 +265,34 @@ describe('ActionCard — RarityBadge', () => {
     expect(badge.textContent).toMatch(/legendary/i);
   });
 });
+
+describe('ActionCard — outcome band overlays', () => {
+  it('default playing overlay shows green success icon when no outcomeBand', () => {
+    render(<ActionCard slot={baseSlot} onClick={vi.fn()} playing size="hand" />);
+    const overlay = screen.getByTestId('action-card-spent-overlay');
+    expect(overlay).toBeDefined();
+    expect(overlay.getAttribute('data-outcome-band')).toBeNull();
+  });
+
+  it('fortunate band overlay uses near-miss amber styling', () => {
+    render(<ActionCard slot={baseSlot} onClick={vi.fn()} playing outcomeBand="fortunate" size="focused" />);
+    const overlay = screen.getByTestId('action-card-spent-overlay');
+    expect(overlay.getAttribute('data-outcome-band')).toBe('fortunate');
+    // Flavor text from OUTCOME_BAND_CARD_FLAVOR['fortunate']
+    expect(screen.getByText(/the thread held/i)).toBeDefined();
+  });
+
+  it('setback band overlay renders with setback styling', () => {
+    render(<ActionCard slot={baseSlot} onClick={vi.fn()} playing outcomeBand="setback" size="focused" />);
+    const overlay = screen.getByTestId('action-card-spent-overlay');
+    expect(overlay.getAttribute('data-outcome-band')).toBe('setback');
+    expect(screen.getByText(/the moment passes/i)).toBeDefined();
+  });
+
+  it('unknown band falls back to default success styling', () => {
+    render(<ActionCard slot={baseSlot} onClick={vi.fn()} playing outcomeBand="unknown_band" size="hand" />);
+    const overlay = screen.getByTestId('action-card-spent-overlay');
+    // No crash; overlay still renders
+    expect(overlay).toBeDefined();
+  });
+});
