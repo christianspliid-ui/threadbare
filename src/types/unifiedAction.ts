@@ -551,6 +551,8 @@ export interface EncounterAftermathSummary {
   readonly outcome: UnifiedActionOutcome;
   readonly overview: string;
   readonly changes: readonly EncounterAftermathChange[];
+  /** Outcome band tag (e.g. 'fortunate' for near_miss). Propagated into EncounterNotification.narrativeTag for toast styling (THR-462). */
+  readonly narrativeTag?: string;
   /**
    * Reserved for future "react to what you learned" follow-up options.
    * Gate Duty does not use them yet, but the ending model can.

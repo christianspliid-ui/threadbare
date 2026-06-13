@@ -1699,6 +1699,7 @@ export function executeStepResult(
       changes: aftermathVariant
         ? [...changes, ...aftermathVariant.changes]
         : changes,
+      narrativeTag: consequence.narrativeTag,
       reactionPrompt: aftermathVariant?.reactionPrompt
         ?? (reactions && reactions.length > 0
           ? 'Choose which consequence thread you keep alive now that the encounter itself is over.'

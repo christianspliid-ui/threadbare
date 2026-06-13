@@ -130,7 +130,7 @@ export function buildEncounterNotification(
   courtPosition: CourtPosition | null,
   attentionMode: 'pause' | 'auto_resolve',
   tick: number,
-  metadata?: Partial<Pick<EncounterNotification, 'kind' | 'sourceSystem' | 'stepIndex' | 'actionId' | 'stepId'>>,
+  metadata?: Partial<Pick<EncounterNotification, 'kind' | 'sourceSystem' | 'stepIndex' | 'actionId' | 'stepId' | 'narrativeTag'>>,
 ): EncounterNotification | null {
   const depth = getVisibilityDepth(courtPosition);
   if (depth === 'none') return null;
@@ -537,6 +537,7 @@ export function phaseEncounterVisibility(
         sourceSystem: 'unified_action',
         stepIndex: action.currentStep,
         actionId: action.actionId,
+        narrativeTag: action.aftermathSummary.narrativeTag,
       },
     );
 
