@@ -323,6 +323,14 @@ export interface DebugBridge {
   /** Returns a KPI report for the current game state (THR-457). Returns null if state is unavailable. */
   getKpiReport: () => Promise<import('./engine/kpi/gameplayKpi').GameplayKpiReport | null>;
 
+  /**
+   * THR-460: Returns outcome-band phrase usage history from the runtime.
+   * - With actorId: returns the Set<phraseId> for that actor (key format: actorId or actorId+'__q').
+   * - Without actorId: returns the full Map<actorId, Set<phraseId>> for all actors.
+   * Returns null when no runtime is available.
+   */
+  bandPhraseUsage: (actorId?: string) => Map<string, Set<string>> | Set<string> | null;
+
   /** Phase 6: Returns the last N consequence_applied traces for an actor (THR-63).
    *  @param actorRef - exact actor id or partial name match
    *  @param last - number of records to return (default 10)

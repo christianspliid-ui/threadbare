@@ -709,6 +709,14 @@ if (import.meta.env.DEV) {
       return computeGameplayKpiReport(state, runtime ?? null);
     },
 
+    // THR-460: outcome band phrase usage inspection
+    bandPhraseUsage: (actorId?: string) => {
+      const runtime = _runtimeProvider?.();
+      if (!runtime) return null;
+      if (actorId) return runtime.outcomeBandPhraseHistory.get(actorId) ?? null;
+      return runtime.outcomeBandPhraseHistory;
+    },
+
     // Phase 6: consequence inspection (THR-63)
     consequencesFor: async (actorRef: string, last = 10) => {
       const { getTraces } = await import('./engine/traceBuffer');

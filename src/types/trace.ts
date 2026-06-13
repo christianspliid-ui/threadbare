@@ -238,7 +238,9 @@ export type TraceCategory =
   // Resolution input telemetry (THR-451)
   | 'resolution.input'
   // Doom identity milestone crossing (THR-293)
-  | 'doom_milestone';
+  | 'doom_milestone'
+  // Outcome band prose selection (THR-460)
+  | 'outcome_band_prose_selected';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -446,6 +448,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'resolution.input',
   // Doom identity milestone crossing (THR-293)
   'doom_milestone',
+  // Outcome band prose selection (THR-460)
+  'outcome_band_prose_selected',
 ];
 
 /** Base shape for all trace entries */
@@ -1628,7 +1632,9 @@ export type TraceEntry =
   | ProseRepetitionSkipTrace
   | ChronicleAggregateFailedTrace
   // Doom identity milestone (THR-293)
-  | MilestoneTriggeredTrace;
+  | MilestoneTriggeredTrace
+  // Outcome band prose selection (THR-460)
+  | OutcomeBandProseSelectedTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {
@@ -2138,5 +2144,16 @@ export interface MilestoneTriggeredTrace extends TraceBase {
   label: string;
   threshold: number;
   progress: number;
+}
+
+/** Trace: enrichProse selected a band-flavored phrase for {outcome_phrase} or {q_flavor} (THR-460) */
+export interface OutcomeBandProseSelectedTrace extends TraceBase {
+  category: 'outcome_band_prose_selected';
+  /** The outcome band that drove the selection (e.g. 'surge', 'catastrophe'). */
+  band: string;
+  /** The phraseId that was chosen from the pool. */
+  phraseId: string;
+  /** Which placeholder table was used. */
+  phraseTable: 'outcome_phrase' | 'q_flavor';
 }
 

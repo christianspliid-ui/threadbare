@@ -38,6 +38,12 @@ import { isStepSuccess, isStepFailure } from '../types/unifiedAction';
 import type { ComplicationContext, ComplicationResult } from '../types/complication';
 import { selectComplication } from './complicationSelection';
 
+/**
+ * The six narrative bands that outcome consequences map to.
+ * Used by enrichProse() for {outcome_phrase} / {q_flavor} placeholder resolution.
+ */
+export type OutcomeBand = 'surge' | 'neutral' | 'strained' | 'fortunate' | 'setback' | 'catastrophe';
+
 // ─── Constants (NFP #1: Tunability) ────────────────────────────────
 
 /** Growth multiplier applied to capability growth on critical success */
@@ -139,10 +145,10 @@ export interface OutcomeConsequence {
   /** Quintessence event to add to pending queue, or null for no Q effect. */
   quintessenceEvent: QuintessenceEvent | null;
   /**
-   * Narrative tag for prose system (e.g., 'surge', 'strained', 'catastrophe').
-   * Flows to enrichProse() for band-flavored prose variant selection.
+   * Narrative band for prose system.
+   * Flows to enrichProse() for {outcome_phrase} / {q_flavor} placeholder resolution.
    */
-  narrativeTag: string;
+  narrativeTag: OutcomeBand;
   /** Extra significance boost for tick events. Added to base significance. */
   significanceBoost: number;
   /**

@@ -85,6 +85,15 @@ export interface SimulationRuntime {
    * Not cleared by touchStructure() — worldVersion keys auto-expire stale entries.
    */
   threadStoryCache: Map<string, import('../engine/threadDigest').ThreadStoryComposition>;
+
+  // ── Outcome-band phrase dedup history (THR-460) ──
+  /**
+   * Per-actor sliding window of recently-used outcome-band phrase IDs.
+   * Key: actorId (with '__q' suffix for q_flavor pool).
+   * Value: Set of phraseIds used recently (bounded by OUTCOME_BAND_PHRASE_HISTORY_WINDOW).
+   * Consumed by enrichProse() when resolving {outcome_phrase} / {q_flavor}.
+   */
+  outcomeBandPhraseHistory: Map<string, Set<string>>;
 }
 
 // ─── Factory ──────────────────────────────────────────────────────
@@ -104,6 +113,7 @@ export function createSimulationRuntime(): SimulationRuntime {
     eligibilityFunnel: createEligibilityFunnelCounters(0),
     foreshadowingCache: new Map(),
     threadStoryCache: new Map(),
+    outcomeBandPhraseHistory: new Map(),
   };
 }
 
