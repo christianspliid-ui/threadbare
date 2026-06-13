@@ -1,0 +1,69 @@
+name: Stale Claim Sweep
+
+on:
+  schedule:
+    # Twice daily — detect stale In Dev claims and release after a grace period.
+    - cron: "0 */12 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (true = log planned actions only, no writes to Linear)"
+        required: false
+        default: "true"
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stale-claim-sweep
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    name: Stale claim sweep
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Restore tracked-list from most recent prior run. Unique key guarantees
+      # each run writes a new snapshot; restore-keys pulls the previous one.
+      - name: Restore tracked-list cache
+        uses: actions/cache@v4
+        with:
+          path: stale-claim-tracked.json
+          key: stale-claim-tracked-${{ github.run_id }}
+          restore-keys: |
+            stale-claim-tracked-
+
+      - name: Run stale-claim sweep
+        env:
+          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+          # Scheduled runs: wet (DRY_RUN=false) — that's the operational purpose.
+          # workflow_dispatch: respect the `dry_run` input (default true for safety).
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true && 'true' || 'false' }}
+          STALE_CLAIM_TRACKED_LIST_PATH: stale-claim-tracked.json
+        run: node --experimental-strip-types scripts/stale-claim-sweep/index.ts
+
+      - name: Upload tracked-list artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stale-claim-tracked
+          path: stale-claim-tracked.json
+          retention-days: 30
+          if-no-files-found: ignore
