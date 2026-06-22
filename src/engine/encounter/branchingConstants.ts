@@ -1,5 +1,5 @@
 /**
- * Branching Encounter Reachability — tunable constants (THR-452).
+ * Branching Encounter Reachability — tunable constants (THR-452, THR-465).
  *
  * Phase A (diagnostic):
  *   BRANCHING_AUDIT_SEEDS, BRANCHING_AUDIT_TICKS
@@ -8,6 +8,12 @@
  * Phase B (curator bias):
  *   BRANCHING_CURATOR_NUDGE_RADIUS, BRANCHING_CURATOR_BIAS_WEIGHT,
  *   BRANCHING_CURATOR_COOLDOWN, BRANCHING_TARGET_FIRE_PER_30T
+ *
+ * THR-465: BRANCHING_CAP_RESERVE raised 1→3 to lift fire rate from 0.25–0.5/30t
+ *   to ≥1/30t on seeds 42 and 7. BRANCHING_CURATOR_BIAS_WEIGHT left at 1.75 —
+ *   raising it above 2.0 causes a smoke-test regression (curator dominates short
+ *   simulations, suppressing non-branching resolutions). Seed 99 remains upstream-
+ *   limited by awareness gating; see THR-465 Deferral issue.
  */
 
 /** Seeds used for the Phase A diagnostic audit run (3 diverse seeds). */
@@ -44,5 +50,6 @@ export const BRANCHING_NEARLY_ELIGIBLE_SAMPLE_SIZE = 5;
 export const BRANCHING_QUEST_SKIP_OUTGROWTH = true;
 
 /** Minimum branching encounters to preserve in the per-agent performance cap stage.
- *  Ensures at least one branching template survives to scoring even when candidates > MAX_SCORED_CANDIDATES. */
-export const BRANCHING_CAP_RESERVE = 1;
+ *  Ensures at least N branching templates survive to scoring even when candidates > MAX_SCORED_CANDIDATES.
+ *  Tuned from 1→3 in THR-465 to lift branching fire rate from 0.25–0.5/30t toward ≥1/30t. */
+export const BRANCHING_CAP_RESERVE = 3;
