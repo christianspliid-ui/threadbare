@@ -87,7 +87,7 @@ interface ConditionalSublocationSpec {
   eligibleSubtypes: string[];
 }
 
-const GOLD_SUBLOCATION_SPECS: ConditionalSublocationSpec[] = [
+export const GOLD_SUBLOCATION_SPECS: ConditionalSublocationSpec[] = [
   {
     sublocationTypeId: 'sublocation-type.market-district',
     name: 'Market District',
