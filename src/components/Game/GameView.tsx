@@ -66,6 +66,7 @@ import { RetinuePanel } from './RetinuePanel';
 import { AgentInfoCard } from './AgentInfoCard';
 import { ThreadsPanel } from './ThreadsPanel';
 import { prepareEncounterHandoff } from './encounterHandoff';
+import { shouldCenterOnAgentMove } from './cameraInteractionGate';
 import { REACH_TO_SPHERE, SPHERE_COLORS } from '../icons/constants';
 import type { ReachDomain } from '../../types/traits';
 import { ThreadDetailView } from './ThreadDetailView';
@@ -532,6 +533,25 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     () => actors.filter(node => node.properties.actorType === 'faction'),
     [actors],
   );
+
+  // ── Camera interaction gate (THR-463) ──
+  // Stable callback that the HexMapV2 follow-mode checks on every hex change.
+  // Re-computed only when the inputs that affect the decision change.
+  const cameraGateCallback = useMemo(() => {
+    const inputs = {
+      graph: gameState.graph,
+      encounterNotifications: gameState.encounterNotifications,
+      encounterProgress: gameState.encounterProgress,
+      tick: gameState.tick,
+    };
+    return (agentId: string) => shouldCenterOnAgentMove(agentId, inputs).center;
+  }, [
+    gameState.graph,
+    runtime.worldVersion,
+    gameState.encounterNotifications,
+    gameState.encounterProgress,
+    gameState.tick,
+  ]);
 
   // ── Agent render data adapter (graph → AgentRenderData[]) ──
   const agentRenderData = useMemo<AgentRenderData[]>(() => {
@@ -3144,6 +3164,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   locationActivityMap={locationActivityByHex}
                   spotlightedAgentId={gameState.spotlightedAgent}
                   spotlightThreadColor={spotlightThreadColor}
+                  shouldCenterOnAgent={cameraGateCallback}
                 />
 
                 {/* AvatarHUD superseded by AscendantBar (THR-184) */}

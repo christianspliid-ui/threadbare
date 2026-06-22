@@ -240,7 +240,9 @@ export type TraceCategory =
   // Doom identity milestone crossing (THR-293)
   | 'doom_milestone'
   // Outcome band prose selection (THR-460)
-  | 'outcome_band_prose_selected';
+  | 'outcome_band_prose_selected'
+  // Interaction-gated camera centering (THR-463)
+  | 'camera_center';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -450,6 +452,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'doom_milestone',
   // Outcome band prose selection (THR-460)
   'outcome_band_prose_selected',
+  // Interaction-gated camera centering (THR-463)
+  'camera_center',
 ];
 
 /** Base shape for all trace entries */
@@ -1634,7 +1638,9 @@ export type TraceEntry =
   // Doom identity milestone (THR-293)
   | MilestoneTriggeredTrace
   // Outcome band prose selection (THR-460)
-  | OutcomeBandProseSelectedTrace;
+  | OutcomeBandProseSelectedTrace
+  // Interaction-gated camera centering (THR-463)
+  | CameraCenterTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {
@@ -2155,5 +2161,15 @@ export interface OutcomeBandProseSelectedTrace extends TraceBase {
   phraseId: string;
   /** Which placeholder table was used. */
   phraseTable: 'outcome_phrase' | 'q_flavor';
+}
+
+/** Trace: camera center decision for interaction-gated follow mode (THR-463). */
+export interface CameraCenterTrace extends TraceBase {
+  category: 'camera_center';
+  agentId: string;
+  hexCol: number;
+  hexRow: number;
+  centered: boolean;
+  reason: 'pending_encounter' | 'populated_arrival' | 'suppressed';
 }
 
