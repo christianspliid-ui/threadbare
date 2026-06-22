@@ -314,6 +314,12 @@ export interface HexMapV2Props {
   spotlightedAgentId?: string | null;
   /** Thread/sphere color hex for the spotlight flare. Falls back to gold when omitted. */
   spotlightThreadColor?: string;
+  /**
+   * Interaction gate for follow-mode camera centering (THR-463).
+   * Called on every hex change for the followed agent. Returns true to pan,
+   * false to hold the camera. When omitted, camera always pans (legacy behaviour).
+   */
+  shouldCenterOnAgent?: (agentId: string) => boolean;
 }
 
 export interface HexMapV2Handle {
@@ -492,7 +498,7 @@ function createSelectionOverlayMesh(size: number, color: string): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, battles, threadLines, activityIcons, strategicOverlays, activeTugs, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, spotlightedAgentId, spotlightThreadColor },
+    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, battles, threadLines, activityIcons, strategicOverlays, activeTugs, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, spotlightedAgentId, spotlightThreadColor, shouldCenterOnAgent },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -616,6 +622,11 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
 
     // Follow mode ref — mutable state, does not trigger re-renders
     const followModeRef = useRef<FollowModeState>(createFollowMode());
+
+    // Camera interaction gate — stable ref updated each render so the animation hook
+    // always sees the current predicate without being in its dependency array.
+    const shouldCenterOnAgentRef = useRef<((agentId: string) => boolean) | null>(null);
+    shouldCenterOnAgentRef.current = shouldCenterOnAgent ?? null;
 
     // WebGL diagnostics — captures render stats, context events, error log
     const diagnosticsRef = useRef<WebGLDiagnostics>(new WebGLDiagnostics());
@@ -1642,6 +1653,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       zoomRef,
       canvasRef,
       cameraRef,
+      shouldCenterOnAgent: shouldCenterOnAgentRef,
     });
 
     // ── Thread line layer rebuild when threadLines prop changes ──

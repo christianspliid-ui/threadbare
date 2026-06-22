@@ -55,6 +55,8 @@ export interface UseAgentAnimationsParams {
   zoomRef: React.MutableRefObject<d3.ZoomBehavior<HTMLCanvasElement, unknown> | null>;
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
   cameraRef: React.MutableRefObject<THREE.OrthographicCamera | null>;
+  /** Optional gate: returns true when centering on this agent is warranted. */
+  shouldCenterOnAgent: React.MutableRefObject<((agentId: string) => boolean) | null>;
 }
 
 // ── Hook ─────────────────────────────────────────────────────────────────────
@@ -76,6 +78,7 @@ export function useAgentAnimations({
   zoomRef,
   canvasRef,
   cameraRef,
+  shouldCenterOnAgent,
 }: UseAgentAnimationsParams): void {
   useEffect(() => {
     const spriteGroup = agentSpriteGroup.current;
@@ -186,7 +189,7 @@ export function useAgentAnimations({
       console.log(`[HexMapV2] ${movedCount} agent(s) moved hex — animations triggered, trailGroup children: ${trailGrp?.children.length ?? 'N/A'}`);
     }
 
-    // Follow mode: pan camera when followed agent changes hex
+    // Follow mode: pan camera when followed agent changes hex (gated by shouldCenterOnAgent)
     const follow = followMode.current;
     if (follow.active && follow.agentId) {
       const followedAgent = agents.find(a => a.id === follow.agentId);
@@ -194,12 +197,15 @@ export function useAgentAnimations({
         const newKey = hexKey(followedAgent.hexCol, followedAgent.hexRow);
         if (newKey !== follow.lastHexKey) {
           follow.lastHexKey = newKey;
-          const followWorld = hexToWorld(
-            { col: followedAgent.hexCol, row: followedAgent.hexRow },
-            HEX_CONSTANTS.HEX_SIZE,
-          );
-          if (zoomRef.current && canvasRef.current) {
-            animateCameraTo(canvasRef.current, zoomRef.current, followWorld.x, followWorld.y, undefined, 500);
+          const gate = shouldCenterOnAgent.current;
+          if (!gate || gate(followedAgent.id)) {
+            const followWorld = hexToWorld(
+              { col: followedAgent.hexCol, row: followedAgent.hexRow },
+              HEX_CONSTANTS.HEX_SIZE,
+            );
+            if (zoomRef.current && canvasRef.current) {
+              animateCameraTo(canvasRef.current, zoomRef.current, followWorld.x, followWorld.y, undefined, 500);
+            }
           }
         }
       }
