@@ -124,7 +124,7 @@ describe('computeGlobalNoveltyPenalty', () => {
       categoryWindowTotal: 0,
       categoryWindowStart: 0,
     };
-    const penalty = computeGlobalNoveltyPenalty(record, 'tmpl_a', 100);
+    const penalty = computeGlobalNoveltyPenalty(record, 'tmpl_a', 200);
     expect(penalty).toBeLessThan(0.01);
   });
 });

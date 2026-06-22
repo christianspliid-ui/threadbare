@@ -40,7 +40,7 @@ import { findShortestPath } from './pathfinding';
 import { computeEdgeCost } from './movementCost';
 import { emitTrace } from './traceBuffer';
 import type { TraceEntry, IdleDecisionTrace } from '../types/trace';
-import { IDLE_SCORE_THRESHOLD, COOLDOWN_FULL_POOL_SIZE, COOLDOWN_MINIMUM, MAX_COMPLETIONS_PER_TEMPLATE, IDLE_FORCED_TRAVEL_THRESHOLD } from '../data/agent-behavior-constants';
+import { IDLE_SCORE_THRESHOLD, COOLDOWN_FULL_POOL_SIZE, COOLDOWN_MINIMUM, MAX_COMPLETIONS_PER_TEMPLATE, IDLE_FORCED_TRAVEL_THRESHOLD, NOVELTY_EMA_DECAY } from '../data/agent-behavior-constants';
 import { REROUTE_SCORE_MULTIPLIER, DECISION_REEVALUATION_TICKS } from '../data/movement-content';
 import type { MovementState } from '../types/movement';
 import type { AgentRerouteTrace } from '../types/trace';
@@ -236,14 +236,18 @@ export function phaseAgentDecision(
     ? {
         globalLastSelected: { ...state.encounterNoveltyRecord.globalLastSelected },
         categoryWindowCounts: { ...state.encounterNoveltyRecord.categoryWindowCounts },
+        templateWindowCounts: { ...(state.encounterNoveltyRecord.templateWindowCounts ?? {}) },
         categoryWindowTotal: state.encounterNoveltyRecord.categoryWindowTotal,
         categoryWindowStart: state.encounterNoveltyRecord.categoryWindowStart,
+        selectionEMA: { ...(state.encounterNoveltyRecord.selectionEMA ?? {}) },
       }
     : {
         globalLastSelected: {},
         categoryWindowCounts: {},
+        templateWindowCounts: {},
         categoryWindowTotal: 0,
         categoryWindowStart: state.tick,
+        selectionEMA: {},
       };
 
   // Derive map dimensions for edge hex awareness bonus
@@ -994,13 +998,19 @@ export function phaseAgentDecision(
               // Roll category window forward if it has expired.
               if (state.tick - noveltyRecord.categoryWindowStart >= NOVELTY_CATEGORY_WINDOW_TICKS) {
                 noveltyRecord.categoryWindowCounts = {};
+                noveltyRecord.templateWindowCounts = {};
                 noveltyRecord.categoryWindowTotal = 0;
                 noveltyRecord.categoryWindowStart = state.tick;
               }
               noveltyRecord.globalLastSelected[sel.entry.templateId] = state.tick;
               const cat = sel.entry.reachPrimary;
               noveltyRecord.categoryWindowCounts[cat] = (noveltyRecord.categoryWindowCounts[cat] ?? 0) + 1;
+              noveltyRecord.templateWindowCounts[sel.entry.templateId] = (noveltyRecord.templateWindowCounts[sel.entry.templateId] ?? 0) + 1;
               noveltyRecord.categoryWindowTotal += 1;
+              // THR-464 rung 5: Update per-template EMA frequency signal.
+              const prevEntry = noveltyRecord.selectionEMA[sel.entry.templateId];
+              const prevEMA = prevEntry ? prevEntry.ema * Math.pow(NOVELTY_EMA_DECAY, Math.max(0, state.tick - prevEntry.lastTick)) : 0;
+              noveltyRecord.selectionEMA[sel.entry.templateId] = { ema: prevEMA + 1, lastTick: state.tick };
               if (runtime) touchWorld(runtime);
             }
             // Reset whisperAvailable — non-generic encounters consume the Whisper.
@@ -1169,6 +1179,41 @@ export function phaseAgentDecision(
                 courtPosition: threadContext.courtPosition,
               });
             }
+
+          }
+
+          // THR-464: Update novelty for queue_movement regardless of pathfinding outcome.
+          // The KPI funnel counts scoreAndSelect winners (including failed-path attempts), so
+          // novelty must update here too — otherwise agents for whom pathfinding fails keep
+          // re-selecting the same template every tick with zero recency penalty, inflating
+          // concentration without bound.  Updating even on movState=null also penalises the
+          // agent so subsequent ticks explore other options.
+          {
+            const freshForNovelty = graph.getNode(agentId);
+            if (freshForNovelty) {
+              const existingAgentNovelty = (freshForNovelty.properties?.agentNoveltyLastSelected as Record<string, number> | undefined) ?? {};
+              freshForNovelty.properties.agentNoveltyLastSelected = {
+                ...existingAgentNovelty,
+                [sel.entry.templateId]: state.tick,
+              };
+            }
+          }
+          if (state.tick - noveltyRecord.categoryWindowStart >= NOVELTY_CATEGORY_WINDOW_TICKS) {
+            noveltyRecord.categoryWindowCounts = {};
+            noveltyRecord.templateWindowCounts = {};
+            noveltyRecord.categoryWindowTotal = 0;
+            noveltyRecord.categoryWindowStart = state.tick;
+          }
+          noveltyRecord.globalLastSelected[sel.entry.templateId] = state.tick;
+          {
+            const cat = sel.entry.reachPrimary;
+            noveltyRecord.categoryWindowCounts[cat] = (noveltyRecord.categoryWindowCounts[cat] ?? 0) + 1;
+            noveltyRecord.templateWindowCounts[sel.entry.templateId] = (noveltyRecord.templateWindowCounts[sel.entry.templateId] ?? 0) + 1;
+            noveltyRecord.categoryWindowTotal += 1;
+            // THR-464 rung 5: Update per-template EMA frequency signal.
+            const prevEntryQM = noveltyRecord.selectionEMA[sel.entry.templateId];
+            const prevEMAQM = prevEntryQM ? prevEntryQM.ema * Math.pow(NOVELTY_EMA_DECAY, Math.max(0, state.tick - prevEntryQM.lastTick)) : 0;
+            noveltyRecord.selectionEMA[sel.entry.templateId] = { ema: prevEMAQM + 1, lastTick: state.tick };
           }
         }
       } else {

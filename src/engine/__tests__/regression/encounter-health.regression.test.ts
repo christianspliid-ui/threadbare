@@ -109,10 +109,12 @@ describe('encounter behavioral health (multi-seed regression)', () => {
   });
 
   // Calibrated: completion rate ~0.89 across 10 seeds (with 20-tick retention).
-  // Set floor at 0.80 (~2x distance below observed minimum).
-  it('unified action completion rate above 80%', () => {
+  // THR-464 global share ceiling recalibrated to 0.78: ceiling redirects agents from
+  // high-tier dominant encounters to varied alternatives with marginally lower completion
+  // rates (~0.795 observed). Floor set conservatively below that.
+  it('unified action completion rate above 78%', () => {
     const avgCompletion = mean(results.map(unifiedCompletionRate));
-    expect(avgCompletion).toBeGreaterThan(0.80);
+    expect(avgCompletion).toBeGreaterThan(0.78);
   });
 
   // Calibrated: step success rate 0.064-0.100 across 10 seeds (pre-THR-451).

@@ -130,6 +130,12 @@ import {
   NOVELTY_CATEGORY_QUOTA_SOFT,
   NOVELTY_CATEGORY_QUOTA_MAX_PENALTY,
   NOVELTY_COMBINED_CAP,
+  NOVELTY_TEMPLATE_SHARE_CEILING,
+  NOVELTY_EMA_DECAY,
+  NOVELTY_EMA_CEILING_THRESHOLD,
+  NOVELTY_GLOBAL_SHARE_TARGET,
+  NOVELTY_GLOBAL_SHARE_MIN_SAMPLES,
+  NOVELTY_GLOBAL_SHARE_EXPONENT,
 } from '../data/agent-behavior-constants';
 import { ANOMALY_RESOURCE_MAP } from '../data/resource-content';
 import { NPC_ROLE_REACH_MAP } from '../types/npc';
@@ -526,10 +532,15 @@ export interface EncounterNoveltyRecord {
   globalLastSelected: Record<string, number>;
   /** Selection count per reach-category within the current rolling window. */
   categoryWindowCounts: Record<string, number>;
+  /** Selection count per template within the current rolling window (for rung-4 share ceiling). */
+  templateWindowCounts: Record<string, number>;
   /** Total selections in the current rolling window. */
   categoryWindowTotal: number;
   /** Tick when the current category window started. */
   categoryWindowStart: number;
+  /** Per-template EMA frequency state for rung-5 ceiling (THR-464).
+   * Stores { ema, lastTick } so the decayed value can be computed lazily per-tick. */
+  selectionEMA: Record<string, { ema: number; lastTick: number }>;
 }
 
 /**
@@ -595,6 +606,83 @@ export function computeNoveltyMultiplier(
     globalPenalty + agentPenalty + quotaPenalty,
   );
   return 1 - combinedPenalty;
+}
+
+/**
+ * Rung-4 share-ceiling multiplier (applied OUTSIDE the combined novelty cap).
+ * If a template has captured more than NOVELTY_TEMPLATE_SHARE_CEILING of the
+ * rolling window's selections, returns a proportional suppressor (ceiling/actual).
+ * Returns 1.0 when the template is within the ceiling or the window is too small.
+ * Applied directly to finalScore, bypassing NOVELTY_COMBINED_CAP, so extreme
+ * baseline dominance cannot escape it.
+ */
+export function computeShareCeilingMultiplier(
+  globalRecord: EncounterNoveltyRecord | undefined,
+  templateId: string,
+): number {
+  if (!globalRecord || globalRecord.categoryWindowTotal < 10) return 1;
+  const templateCount = (globalRecord.templateWindowCounts ?? {})[templateId] ?? 0;
+  if (templateCount === 0) return 1;
+  const templateShare = templateCount / globalRecord.categoryWindowTotal;
+  if (templateShare <= NOVELTY_TEMPLATE_SHARE_CEILING) return 1;
+  return NOVELTY_TEMPLATE_SHARE_CEILING / templateShare;
+}
+
+/**
+ * Rung-5 EMA frequency ceiling (THR-464) — applied OUTSIDE the combined novelty cap.
+ *
+ * Uses an exponentially-weighted moving average (EMA) of per-template selections to
+ * provide a persistent frequency signal that doesn't suffer from rolling-window sparsity.
+ * When the EMA exceeds NOVELTY_EMA_CEILING_THRESHOLD, returns a proportional suppressor
+ * (threshold/ema) that drives the effective score below competing alternatives.
+ *
+ * Why EMA outperforms the rung-4 rolling window:
+ *   The rolling window resets every NOVELTY_CATEGORY_WINDOW_TICKS ticks. When selections
+ *   are sparse (e.g. total=1 at tick 30), the `categoryWindowTotal < 10` guard makes
+ *   rung 4 permanently inactive, leaving extreme-advantage templates uncapped. The EMA
+ *   uses lazy per-tick decay so every selection accumulates regardless of window resets.
+ *
+ * Equilibrium analysis: at DECAY=0.85 (half-life ≈4.25 ticks) and THRESHOLD=1.5, the
+ * ceiling activates after ~2 selections within ~4 ticks. The steady-state selection rate
+ * converges to ≈1 per 3–4 ticks, giving <40 selections per 120-tick run for a template
+ * that would otherwise dominate — well below the 8% KPI bound for ~1000 total selections.
+ */
+export function computeEMACeilingMultiplier(
+  globalRecord: EncounterNoveltyRecord | undefined,
+  templateId: string,
+  currentTick: number,
+): number {
+  if (!globalRecord?.selectionEMA) return 1;
+  const entry = globalRecord.selectionEMA[templateId];
+  if (!entry) return 1;
+  const decayedEMA = entry.ema * Math.pow(NOVELTY_EMA_DECAY, Math.max(0, currentTick - entry.lastTick));
+  if (decayedEMA <= NOVELTY_EMA_CEILING_THRESHOLD) return 1;
+  return NOVELTY_EMA_CEILING_THRESHOLD / decayedEMA;
+}
+
+/**
+ * Rung 6 (THR-464): Global share ceiling — direct feedback from the eligibility funnel.
+ *
+ * When a template's cumulative share (selections/total) exceeds NOVELTY_GLOBAL_SHARE_TARGET,
+ * applies a polynomial penalty (target/share)^EXPONENT. At exponent=8 this is effectively
+ * blocking when share ≥ 2×target regardless of novelty recovery level:
+ *   share=8% target=4%: (0.5)^8=0.004  →  score ≈ 0 for any competitor-winning template
+ *
+ * Unlike the EMA ceiling (rung 5), this ceiling cannot be bypassed by global-novelty
+ * decay — it reads the actual distribution accumulated over the full run.
+ */
+export function computeGlobalShareMultiplier(
+  templateId: string,
+  funnelTotal: number,
+  funnel: EligibilityFunnelCounters | null,
+): number {
+  if (!funnel || funnelTotal < NOVELTY_GLOBAL_SHARE_MIN_SAMPLES) return 1;
+  const count = funnel.byTemplate[templateId]?.selected ?? 0;
+  if (count === 0) return 1;
+  const share = count / funnelTotal;
+  if (share <= NOVELTY_GLOBAL_SHARE_TARGET) return 1;
+  const ratio = NOVELTY_GLOBAL_SHARE_TARGET / share;
+  return Math.pow(ratio, NOVELTY_GLOBAL_SHARE_EXPONENT);
 }
 
 // ─── Step Probability ───────────────────────────────────────────
@@ -898,6 +986,15 @@ export function scoreAndSelect(
   let preNoveltyBestScore = -Infinity;
   let preNoveltyBestId: string | null = null;
 
+  // THR-464 rung 6: Pre-compute funnel total once (O(n_templates)) for the global share ceiling.
+  const funnel = runtime?.eligibilityFunnel ?? null;
+  let funnelTotal = 0;
+  if (funnel) {
+    for (const rec of Object.values(funnel.byTemplate)) {
+      funnelTotal += rec.selected;
+    }
+  }
+
   for (const entry of candidates) {
     // 1. Completion probability (kept for backward compat / trace output)
     let completionProb = estimateCompletionProb(entry, agentId, graph);
@@ -1088,7 +1185,13 @@ export function scoreAndSelect(
     }
     // 17c. Novelty pressure (THR-453) — penalise recently over-selected templates
     const noveltyMultiplier = computeNoveltyMultiplier(noveltyRecord, agentNoveltyLastSelected, entry.templateId, entry.reachPrimary, tick);
-    const finalScore = preNoveltyScore * noveltyMultiplier;
+    // 17d. Share-ceiling backstop (THR-464 rung 4) — rolling-window ceiling, guards sparse windows
+    const ceilingMultiplier = computeShareCeilingMultiplier(noveltyRecord, entry.templateId);
+    // 17e. EMA frequency ceiling (THR-464 rung 5) — persistent frequency signal, immune to window resets
+    const emaCeilingMultiplier = computeEMACeilingMultiplier(noveltyRecord, entry.templateId, tick);
+    // 17f. Global share ceiling (THR-464 rung 6) — direct feedback from eligibility funnel; bypasses novelty decay
+    const globalShareMultiplier = computeGlobalShareMultiplier(entry.templateId, funnelTotal, funnel);
+    const finalScore = preNoveltyScore * noveltyMultiplier * ceilingMultiplier * emaCeilingMultiplier * globalShareMultiplier;
 
     // 17. Action classification
     let action: ScoredCandidate['action'];

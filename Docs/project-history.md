@@ -1,5 +1,7 @@
 # Project History
 
+✅ **THR-464** (2026-06-22) — Rung-6 global share ceiling: `computeGlobalShareMultiplier` reads `eligibilityFunnel` directly, applies `(NOVELTY_GLOBAL_SHARE_TARGET/share)^NOVELTY_GLOBAL_SHARE_EXPONENT` penalty. Root cause of 20% concentration was EMA ceiling being mathematically bypassed once global novelty decays. Direct funnel feedback is immune to novelty decay. KPI: seeds 42/99/7 → 5.4%/5.5%/4.3% (was 14%/20%/5%), all ≤8% target. PR #372.
+
 ✅ **THR-465** (2026-06-22) — Raise `BRANCHING_CAP_RESERVE` 1→3 in `branchingConstants.ts` to lift branching encounter fire rate from 0.25/30t baseline to ≥1/30t on seeds 42 and 7. `BRANCHING_CURATOR_BIAS_WEIGHT` unchanged at 1.75 (raising above 2.0 causes encounter-smoke test regression). Seed 99 stuck at 0.75/30t due to upstream awareness gating; deferred as THR-470. KPI report (`Docs/playtests/kpi/2026-06-22-kpi-report.json`) updated. PR #370.
 
 ✅ **THR-462** (2026-06-13) — Propagate `narrativeTag` into `EncounterNotification` for near-miss amber toast. Added `narrativeTag?` to `EncounterAftermathSummary`; stored from `consequence.narrativeTag` during action resolution; passed into `buildEncounterNotification` via metadata Pick expansion. Completes the THR-461 Slice C toast-border chain. PR #341.
