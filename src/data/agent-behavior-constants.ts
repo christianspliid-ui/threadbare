@@ -854,15 +854,20 @@ export const INTEL_REFERENCED_PROSE_DUBIOUS_FIRES = true;
 // NOVELTY PRESSURE — Template recency penalty + category quotas (encounterScoring.ts, THR-453)
 // ═══════════════════════════════════════════════════════════════════
 
-/** Ticks for global recency penalty to halve (8 game-hours at 12 ticks/day).
+/** Ticks for global recency penalty to halve (~1.7 game-days at 12 ticks/day).
  * Controls how quickly a globally over-selected template recovers its full score.
- * @range 2–10 */
-export const NOVELTY_GLOBAL_HALF_LIFE = 4;
+ * Raised to 20 (THR-464) so high-base-advantage templates stay suppressed long enough
+ * that their share per 120-tick run can't exceed the 8% acceptance threshold.
+ * @range 2–30 */
+export const NOVELTY_GLOBAL_HALF_LIFE = 20;
 
 /** Maximum global recency penalty (multiplied into finalScore via 1-penalty factor).
  * Applied when a template was just selected by any agent this tick.
- * @range 0.3–0.8 */
-export const NOVELTY_GLOBAL_MAX_PENALTY = 0.55;
+ * At 0.95 the first agent to select a template in a tick is the only one who can win
+ * at full score; subsequent agents in the same tick see it at ≤5% of its raw value.
+ * Raised from 0.70 (THR-464) to suppress templates with base-score advantages up to ~15×.
+ * @range 0.3–0.98 */
+export const NOVELTY_GLOBAL_MAX_PENALTY = 0.95;
 
 /** Ticks for per-agent recency penalty to halve (decays faster than global).
  * Controls how quickly an agent's own repeat-selection penalty clears.
@@ -888,6 +893,68 @@ export const NOVELTY_CATEGORY_QUOTA_SOFT = 0.18;
 export const NOVELTY_CATEGORY_QUOTA_MAX_PENALTY = 0.35;
 
 /** Maximum combined novelty penalty across all three signals (global + agent + quota).
- * Ensures even over-selected templates still score at ≥25% of their raw value.
- * @range 0.60–0.90 */
-export const NOVELTY_COMBINED_CAP = 0.75;
+ * Ensures even over-selected templates still score at ≥5% of their raw value.
+ * Raised to 0.95 (THR-464) to match the new NOVELTY_GLOBAL_MAX_PENALTY ceiling.
+ * @range 0.60–0.98 */
+export const NOVELTY_COMBINED_CAP = 0.95;
+
+/** Per-template rolling-window share ceiling (legacy rung 4 — kept for backward compatibility).
+ * Superseded by the EMA ceiling (NOVELTY_EMA_CEILING_THRESHOLD) which is always active.
+ * @range 0.05–0.20 */
+export const NOVELTY_TEMPLATE_SHARE_CEILING = 0.08;
+
+// ─── EMA Frequency Ceiling (rung 5) ───────────────────────────────────────────
+// Tracks per-template selection frequency via an exponentially-weighted moving
+// average (EMA). Applied OUTSIDE NOVELTY_COMBINED_CAP so it can suppress templates
+// with extreme baseline-score advantages that would otherwise saturate the cap.
+//
+// Why EMA instead of a rolling window (rung 4):
+//   The rolling window resets every NOVELTY_CATEGORY_WINDOW_TICKS and has insufficient
+//   data when selections are sparse (e.g. total=1 at tick 30 on seed 99). The EMA uses
+//   lazy per-tick decay so every selection accumulates regardless of window resets.
+//
+// Mechanics:
+//   EMA[t] = EMA[t-1] * DECAY^(ticks_since_last_update) + 1  (when selected)
+//   ceilingMultiplier = min(1, THRESHOLD / EMA[t])
+//   finalScore *= ceilingMultiplier  (applied outside combined cap)
+//
+// At DECAY=0.85 the EMA half-life is ≈4.25 ticks (≈8.5 game-hours).
+// At THRESHOLD=1.5 the ceiling fires when a template accumulates >1.5 EMA units —
+// roughly 2 selections within the past ~4 ticks.
+// Equilibrium selection rate ≈ 1 per 3–4 ticks → ~30–40 selections/120 ticks.
+// For 1000 total selections that is 3–4% — well below the 8% acceptance bound.
+
+/** Per-tick EMA decay factor for the frequency ceiling.
+ * Half-life ≈ 4.25 ticks at 0.85. Lower value → ceiling decays faster (less persistent).
+ * @range 0.70–0.95 */
+export const NOVELTY_EMA_DECAY = 0.85;
+
+/** EMA threshold above which the frequency ceiling activates.
+ * Templates that accumulate more than this many "recent" selections (EMA-weighted)
+ * receive a proportional multiplier (threshold/ema) applied to finalScore.
+ * At 0.5 the ceiling fires immediately after the first selection (EMA=1.0 > 0.5),
+ * suppressing subsequent selections for ~4 ticks until EMA decays below threshold.
+ * This limits dominant templates to ≈40–50 selections per 120-tick run (~4–5% of
+ * ~1000 total), well below the 8% KPI bound, while leaving rare templates unaffected
+ * (their EMA decays below 0.5 long before the next win attempt).
+ * @range 0.2–2.0 */
+export const NOVELTY_EMA_CEILING_THRESHOLD = 0.5;
+
+/** Target share (fraction of total selections) above which the global share ceiling fires.
+ * When a template's cumulative share exceeds this value, a polynomial multiplier is applied.
+ * At 0.04 the ceiling starts pressing at 4% share and becomes effectively blocking at ≈8%
+ * (where the multiplier = (4/8)^8 = 0.004, putting score below any competitor).
+ * @range 0.02–0.10 */
+export const NOVELTY_GLOBAL_SHARE_TARGET = 0.04;
+
+/** Minimum total selections before the global share ceiling activates.
+ * Below this count the share estimate is too noisy to trust.
+ * @range 20–100 */
+export const NOVELTY_GLOBAL_SHARE_MIN_SAMPLES = 30;
+
+/** Exponent for the global share ceiling polynomial (target/share)^n.
+ * Higher exponent = steeper, more concentrated suppression near the cap.
+ * At 8: when share=2×target the multiplier is (0.5)^8 = 0.004, reliably below
+ * any competitor score even when global novelty has fully decayed.
+ * @range 4–12 */
+export const NOVELTY_GLOBAL_SHARE_EXPONENT = 8;
