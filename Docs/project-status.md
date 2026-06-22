@@ -1,5 +1,5 @@
 # Project Status
-> Updated 2026-06-22 (THR-465).
+> Updated 2026-06-22 (THR-464).
 
 ## Current Focus
 **Encounter Experience — active:** Phases A1–A3, B1–B7, C1–C4, D1–D3, E1–E2, F1–F2, G1–G3 ✅. Remaining is F-phase integration (mount EffectRegistration components into hero panel / cast tile / scene state surfaces) and Phase H post-v1 polish.
@@ -14,6 +14,7 @@
 - **Social Systems Expansion (Now):** THR-28/27/30/51/29/41/34/31/35 shipped. ✅ THR-254/253. THR-78 queued.
 - **Thematic Pressure & Living World (Next):** ✅ THR-19/122/125/126/80/128/127. THR-87 blocked by THR-116.
 
+- ✅ 2026-06-22: THR-464 shipped — rung-6 global share ceiling enforces `template_top_share ≤ 8%`. `computeGlobalShareMultiplier` reads eligibilityFunnel directly, applies `(target/share)^8` penalty. Constants: `NOVELTY_GLOBAL_SHARE_TARGET=0.04`, `NOVELTY_GLOBAL_SHARE_EXPONENT=8`. KPI: seeds 42/99/7 → 5.4%/5.5%/4.3% (was 14%/20%/5%). PR #372.
 - ✅ 2026-06-22: THR-465 shipped — raise `BRANCHING_CAP_RESERVE` 1→3; branching fire rate lifts from 0.25/30t → 1.00/30t on seeds 42+7. `BRANCHING_CURATOR_BIAS_WEIGHT` left at 1.75 (raising above 2.0 breaks encounter-smoke test). Seed 99 stuck at 0.75/30t (awareness-gated, deferred THR-470). KPI harness report updated. PR #370.
 - ✅ 2026-06-22: THR-463 shipped — interaction-gated camera centering. `cameraInteractionGate.ts` pure predicate; camera pans to followed agent only when pending encounter/aftermath OR populated arrival (≥1 co-located agent). Wired through `useAgentAnimations` → `HexMapV2` prop → `GameView` useMemo. `'camera_center'` TraceCategory + `CameraCenterTrace`. PR #368.
 - ✅ 2026-06-13: THR-462 shipped — propagate `narrativeTag` into `EncounterNotification` for near-miss amber toast. `EncounterAftermathSummary.narrativeTag` field; stored from `consequence.narrativeTag` in resolution; passed via `buildEncounterNotification` metadata. Activates `band → --accent-near-miss` toast border added in THR-461 Slice C. PR #341.
@@ -37,8 +38,6 @@
 - ✅ 2026-06-12: THR-62 shipped — Phase 5 encounter migration & early-game retune. Dead `isUATStep` branch removed. `buildOutcomeCompat()` + `selectBandAfterimage()` dispatch band-specific prose (criticalSuccess/successAtCost/criticalFailure). 48 new afterimage strings across 16 reference templates (4 borderland, 7 social, 5 secret). `toSecretTemplate()` converter auto-populates success/failureAfterimage. `EARLY_GAME_TICK_WINDOW=50`, `EARLY_GAME_SUCCESS_RATE_TARGET=0.55`, `EARLY_GAME_FAILURE_RATE_CAP=0.25`; 2 early_game balance bands; `BALANCE_TARGETS_VERSION` → 0.2.0-phase5. THR-459 deferred (cache scale). PR #328.
 - ✅ 2026-06-11: THR-452 shipped — Branching encounter reachability. Curator bias (1.75× for under-selected branching templates), outgrowth exemption (`BRANCHING_QUEST_SKIP_OUTGROWTH`), cap preservation (`BRANCHING_CAP_RESERVE=1`). 27 of 28 branching templates were never firing; now reachable. 24 files, `branchingCurator.ts` + `branchingConstants.ts` (new), `BranchingCuratorNudgeTrace`.
 - ✅ 2026-06-11: THR-457 shipped — Gameplay observability KPI harness. `src/engine/kpi/` (gameplayKpi.ts + kpiConstants.ts), `EligibilityFunnelCounters` on SimulationRuntime, filter pipeline + scoring hooks, CLI `kpi` command, `window.__DEBUG.getKpiReport()`, DebugPanel KPI tab, `scripts/gameplay-report.ts` + `npm run gameplay-report`. 17 KPI tests. Confirmed: 96% failure + 0 branching fires at seed 42 tick 120.
-- ✅ 2026-06-11: THR-450 shipped — retrospective path reconciliation. `Design/retros/` is now the canonical output/archive location for live retros; active skills, scripts, CLAUDE/AGENTS/process docs, and the 2026-05-04 finalized retro were updated accordingly. Verification: skill-sync + retro-draft + test/typecheck/build all green.
-
 ## Archived to project-history.md
 - THR-322/321/320/315/309/307/308/306/302/305/301/299/298/297/296/294/282/238/109/79/108/107/104/103/106/290/102/280/285/286/283/287/276/284/277/281/211/243/272/212/210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
 - 2026-05-06 batch: THR-311, THR-312, THR-313, THR-314, THR-315, THR-316, THR-317, THR-320, THR-321, THR-322, THR-323, THR-336
@@ -49,7 +48,7 @@
 - 2026-05-11 batch: THR-393, THR-403, THR-408, THR-411
 - 2026-05-12 batch: THR-413, THR-404, THR-397, THR-398, THR-399, THR-405, THR-416, THR-409
 - 2026-05-16 batch: THR-416 (via THR-409 worktree cleanup closeout), THR-249, THR-248, THR-377, THR-447
-- 2026-06-11 batch: THR-406
+- 2026-06-11 batch: THR-406, THR-450
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)
