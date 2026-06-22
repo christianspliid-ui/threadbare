@@ -1,0 +1,4553 @@
+{
+  "date": "2026-06-22",
+  "report": {
+    "date": "2026-06-22",
+    "matrices": [
+      {
+        "contentType": "encounters",
+        "cells": [
+          {
+            "reach": "iron",
+            "scale": "cosmic",
+            "count": 1,
+            "status": "desert"
+          },
+          {
+            "reach": "iron",
+            "scale": "regional",
+            "count": 7,
+            "status": "filled"
+          },
+          {
+            "reach": "iron",
+            "scale": "local",
+            "count": 79,
+            "status": "filled"
+          },
+          {
+            "reach": "iron",
+            "scale": "personal",
+            "count": 3,
+            "status": "desert"
+          },
+          {
+            "reach": "gold",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "regional",
+            "count": 6,
+            "status": "filled"
+          },
+          {
+            "reach": "gold",
+            "scale": "local",
+            "count": 56,
+            "status": "filled"
+          },
+          {
+            "reach": "gold",
+            "scale": "personal",
+            "count": 3,
+            "status": "desert"
+          },
+          {
+            "reach": "shadow",
+            "scale": "cosmic",
+            "count": 1,
+            "status": "desert"
+          },
+          {
+            "reach": "shadow",
+            "scale": "regional",
+            "count": 6,
+            "status": "filled"
+          },
+          {
+            "reach": "shadow",
+            "scale": "local",
+            "count": 55,
+            "status": "filled"
+          },
+          {
+            "reach": "shadow",
+            "scale": "personal",
+            "count": 1,
+            "status": "desert"
+          },
+          {
+            "reach": "veil",
+            "scale": "cosmic",
+            "count": 1,
+            "status": "desert"
+          },
+          {
+            "reach": "veil",
+            "scale": "regional",
+            "count": 12,
+            "status": "filled"
+          },
+          {
+            "reach": "veil",
+            "scale": "local",
+            "count": 36,
+            "status": "filled"
+          },
+          {
+            "reach": "veil",
+            "scale": "personal",
+            "count": 3,
+            "status": "desert"
+          },
+          {
+            "reach": "heart",
+            "scale": "cosmic",
+            "count": 5,
+            "status": "filled"
+          },
+          {
+            "reach": "heart",
+            "scale": "regional",
+            "count": 8,
+            "status": "filled"
+          },
+          {
+            "reach": "heart",
+            "scale": "local",
+            "count": 52,
+            "status": "filled"
+          },
+          {
+            "reach": "heart",
+            "scale": "personal",
+            "count": 12,
+            "status": "filled"
+          },
+          {
+            "reach": "eye",
+            "scale": "cosmic",
+            "count": 7,
+            "status": "filled"
+          },
+          {
+            "reach": "eye",
+            "scale": "regional",
+            "count": 6,
+            "status": "filled"
+          },
+          {
+            "reach": "eye",
+            "scale": "local",
+            "count": 80,
+            "status": "filled"
+          },
+          {
+            "reach": "eye",
+            "scale": "personal",
+            "count": 10,
+            "status": "filled"
+          },
+          {
+            "reach": "stone",
+            "scale": "cosmic",
+            "count": 1,
+            "status": "desert"
+          },
+          {
+            "reach": "stone",
+            "scale": "regional",
+            "count": 7,
+            "status": "filled"
+          },
+          {
+            "reach": "stone",
+            "scale": "local",
+            "count": 35,
+            "status": "filled"
+          },
+          {
+            "reach": "stone",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "cosmic",
+            "count": 10,
+            "status": "filled"
+          },
+          {
+            "reach": "star",
+            "scale": "regional",
+            "count": 4,
+            "status": "desert"
+          },
+          {
+            "reach": "star",
+            "scale": "local",
+            "count": 29,
+            "status": "filled"
+          },
+          {
+            "reach": "star",
+            "scale": "personal",
+            "count": 8,
+            "status": "filled"
+          }
+        ],
+        "untaggedEntries": [],
+        "totalEntries": 564,
+        "applicableScales": [
+          "local",
+          "regional",
+          "cosmic",
+          "personal"
+        ]
+      },
+      {
+        "contentType": "actions",
+        "cells": [
+          {
+            "reach": "iron",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "iron",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "iron",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "iron",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          }
+        ],
+        "untaggedEntries": [
+          {
+            "id": "action.iron.raise-force",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.iron.assess-threat",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.iron.fortify",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.iron.conquer",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.establish-trade",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.survey-resources",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.trade",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.disrupt-trade",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.negotiate-agreement",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.tax-trade-route",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.break-agreement",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.hire-mercenaries",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.commission-assassination",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.buy-influence",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.fund-construction",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.establish-monopoly",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.shadow.establish-network",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.shadow.spy",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.shadow.recruit-agent",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.shadow.assassinate",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.veil.cast-spell",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.veil.detect-magic",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.veil.modify-enchantment",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.veil.dispel",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.heart.forge-alliance",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.heart.assess-loyalty",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.heart.inspire",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.heart.betray",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.eye.research",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.eye.investigate",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.eye.refine-knowledge",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.eye.suppress-knowledge",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.stone.build",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.stone.assess-structure",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.stone.repair",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.stone.demolish",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.star.consecrate",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.star.divine",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.star.deepen-faith",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.star.desecrate",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.flesh.heal",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.flesh.diagnose",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.flesh.cultivate",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.flesh.plague",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          }
+        ],
+        "totalEntries": 44,
+        "applicableScales": [
+          "local",
+          "regional",
+          "cosmic",
+          "personal"
+        ]
+      },
+      {
+        "contentType": "attachments",
+        "cells": [
+          {
+            "reach": "iron",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "iron",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "iron",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "iron",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "gold",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "shadow",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "veil",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "heart",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "eye",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "stone",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "star",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          }
+        ],
+        "untaggedEntries": [
+          {
+            "id": "reward_arms_bronze_spear",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_hunting_bow",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_rusted_mace",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_bone_knife",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_blackiron_blade",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_crossbow_of_the_watch",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_gate_seal_case",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_thornwood_staff",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_hollowfang",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_starfall_longbow",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_the_quiet_blade",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_grave_robbers_stiletto",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_cracked_brass_horn",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_spotters_marking_bolt",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_basalt_maul",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_stranglers_cord",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_hazel_switch",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_banner_of_the_lost_company",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_lens_sighted_arbalest",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_petrified_ironwood_glaive",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_assessors_weighted_scales",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_vestments_padded_jerkin",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_vestments_merchant_silks",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_vestments_pilgrim_robe",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_vestments_chainmail_hauberk",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_vestments_shadowweave_cloak",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_vestments_mantle_of_the_unremembered",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_vestments_the_woven_sky",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tomes_scrolls_field_journal",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tomes_scrolls_prayer_scroll",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tomes_scrolls_merchants_ledger",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tomes_scrolls_letters_of_introduction",
+            "reason": "no reach found in effects[]"
+          },
+          {
+            "id": "reward_tomes_scrolls_chronicle_of_the_falling",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tomes_scrolls_veilscript_fragment",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tomes_scrolls_the_silent_testament",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tomes_scrolls_codex_of_unmaking",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_iron_tongs",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_herbalists_pouch",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_surveyors_glass",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_alchemists_crucible",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_master_chisel",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_chronoscope",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_the_astrolabe_of_yven",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_wayfarers_charm",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_bone_ward",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_duelists_luck_token",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_ember_sigil",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_shadowglass_pendant",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_hearthglass_ward",
+            "reason": "no reach found in effects[]"
+          },
+          {
+            "id": "reward_relics_talismans_stasis_pearl",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_heart_of_the_barrow",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_the_weeping_icon",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_hourglass_of_the_unraveling",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_the_fulcrum",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_mounts_beasts_draft_pony",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_mounts_beasts_hound",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_mounts_beasts_pack_goat",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_mounts_beasts_war_hound",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_mounts_beasts_steppe_mare",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_mounts_beasts_ashenmane_destrier",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_mounts_beasts_dustwalker",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_mounts_beasts_smoke_tooth",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_mounts_beasts_shimmer_hart",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_mounts_beasts_glimmermoth",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_mounts_beasts_hearthbound_hound",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_mounts_beasts_sorrowheart_mare",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_mounts_beasts_dawnfeather_kestrel",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_mounts_beasts_pale_pilgrim",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_hardtack_and_salt",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_waterskin",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_firestarter_kit",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_travelers_wine",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_berserker_draught",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_healing_poultice",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_sanctuary_incense",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_timekeepers_last_vial",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_intelligence_shrine_map",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_intelligence_trade_route_dossier",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_veilwater_flask",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_ember_edge",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_moonstone_pendant",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_veterans_shield",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_battle_salve",
+            "reason": "no reach found in effects[]"
+          },
+          {
+            "id": "reward_tomes_scrolls_fading_ward",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_double_edged_blade",
+            "reason": "no reach found in effects[]"
+          },
+          {
+            "id": "reward_relics_talismans_the_hush_stone",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_gamblers_last_copper",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_null_circlet",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_wardwright_compass",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_fatesight_lens",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_ward_incense",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tomes_scrolls_book_of_sealing",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_spring_water_vial",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_meditation_stones",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_the_quiet_cup",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_the_last_harvest",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_the_black_mead",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_river_clay_bead",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_tarnished_draw_tube",
+            "reason": "no reach found in effects[]"
+          },
+          {
+            "id": "reward_relics_talismans_the_sweating_vessel",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_leather_bandolier",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_scroll_case",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_quartermasters_harness",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_salvage_kit",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_bag_of_conveyance",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_the_trembling_needle",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_the_anvilbone",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tomes_scrolls_sealed_bounty_scroll",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tomes_scrolls_tithe_box",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_talisman_pilgrims_wayfinding_stone",
+            "reason": "no reach found in effects[]"
+          },
+          {
+            "id": "reward_charm_battle_spoils_talisman",
+            "reason": "no reach found in effects[]"
+          },
+          {
+            "id": "starter_iron_blade",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "starter_ashenmane_fang",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "starter_road_worn_mule",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "starter_ashenmane_horse",
+            "reason": "no reach found in effects[]"
+          },
+          {
+            "id": "starter_traveler_cloak",
+            "reason": "no reach found in effects[]"
+          },
+          {
+            "id": "starter_copper_market_rations",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "starter_whispering_eye",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "starter_burned_codex",
+            "reason": "scale not authored (schema backfill needed)"
+          }
+        ],
+        "totalEntries": 119,
+        "applicableScales": [
+          "local",
+          "regional",
+          "cosmic"
+        ]
+      },
+      {
+        "contentType": "artifacts",
+        "cells": [
+          {
+            "reach": "iron",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "iron",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "iron",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "iron",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "gold",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "shadow",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "veil",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "heart",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "eye",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "stone",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "star",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          }
+        ],
+        "untaggedEntries": [
+          {
+            "id": "worldforge_anvil",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "heartseed_first_garden",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "voidgate_shard",
+            "reason": "scale not authored (schema backfill needed)"
+          }
+        ],
+        "totalEntries": 3,
+        "applicableScales": [
+          "local",
+          "regional",
+          "cosmic"
+        ]
+      },
+      {
+        "contentType": "conditions",
+        "cells": [
+          {
+            "reach": "iron",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "iron",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "iron",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "iron",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "gold",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "gold",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "shadow",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "shadow",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "veil",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "veil",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "heart",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "heart",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "eye",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "eye",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "stone",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "stone",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "star",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "star",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          }
+        ],
+        "untaggedEntries": [
+          {
+            "id": "trait.condition.wounded",
+            "reason": "no reach/scale axis in condition schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "trait.condition.inspired",
+            "reason": "no reach/scale axis in condition schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "trait.condition.terrified",
+            "reason": "no reach/scale axis in condition schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "trait.condition.blessed",
+            "reason": "no reach/scale axis in condition schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "trait.condition.cursed",
+            "reason": "no reach/scale axis in condition schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "trait.condition.exhausted",
+            "reason": "no reach/scale axis in condition schema (finding: schema backfill needed)"
+          }
+        ],
+        "totalEntries": 6,
+        "applicableScales": [
+          "personal",
+          "local"
+        ]
+      },
+      {
+        "contentType": "spells",
+        "cells": [
+          {
+            "reach": "iron",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "iron",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "iron",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "iron",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "gold",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "shadow",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "veil",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "heart",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "eye",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "stone",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "star",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          }
+        ],
+        "untaggedEntries": [
+          {
+            "id": "spell_veilwalk",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "spell_soulfire",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "spell_hollow_crown",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "spell_crystal_gate",
+            "reason": "no reach found in effects[]"
+          },
+          {
+            "id": "spell_last_breath",
+            "reason": "scale not authored (schema backfill needed)"
+          }
+        ],
+        "totalEntries": 5,
+        "applicableScales": [
+          "local",
+          "regional",
+          "cosmic"
+        ]
+      },
+      {
+        "contentType": "omens",
+        "cells": [
+          {
+            "reach": "iron",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "iron",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "iron",
+            "scale": "local",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "iron",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "gold",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "local",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "gold",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "shadow",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "local",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "shadow",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "veil",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "local",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "veil",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "heart",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "local",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "heart",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "eye",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "local",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "eye",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "stone",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "local",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "stone",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "star",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "local",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "star",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          }
+        ],
+        "untaggedEntries": [
+          {
+            "id": "omen.breach.thin_places",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.breach.borrowed_voices",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.breach.fissure_winds",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.breach.the_hemorrhage",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.convergence.geometric_dreams",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.convergence.the_humming",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.convergence.gravity_wells",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.convergence.the_singularity_approaches",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.reckoning.old_debts",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.reckoning.the_witnesses",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.reckoning.echo_walk",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.reckoning.the_accounting",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.changing.restless_forms",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.changing.the_slipping",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.changing.cascade_of_forms",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.changing.the_great_unmaking",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.sundering.hairline_fractures",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.sundering.the_severance",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.sundering.violent_partition",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.sundering.the_final_division",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.failing.rust_and_forgetting",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.failing.the_forgetting",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.failing.things_fall_apart",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.failing.exhaustion_of_the_age",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.ascension.luminous_hunger",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.ascension.the_rising",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.ascension.departure",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.ascension.the_hollow_world",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.sphere.verdant_surge",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.sphere.entropic_tide",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.sphere.iron_season",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.sphere.crystal_clarity",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.sphere.the_veil_thins",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.sphere.temporal_drift",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.cultural.war_drums",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.cultural.lean_harvest",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.cultural.festival_season",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.cultural.the_unquiet",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.cultural.season_of_grief",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.cultural.age_of_discovery",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.seasonal.the_quiet_before",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.seasonal.the_turning",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.seasonal.the_long_dark",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.seasonal.the_reckoning_hour",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          }
+        ],
+        "totalEntries": 44,
+        "applicableScales": [
+          "regional",
+          "cosmic"
+        ]
+      },
+      {
+        "contentType": "sublocations",
+        "cells": [
+          {
+            "reach": "iron",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "iron",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "iron",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "iron",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "gold",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "gold",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "gold",
+            "scale": "local",
+            "count": 7,
+            "status": "filled"
+          },
+          {
+            "reach": "gold",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "shadow",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "shadow",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "shadow",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "veil",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "veil",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "veil",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "heart",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "heart",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "heart",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "eye",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "eye",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "eye",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "stone",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "stone",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "stone",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "star",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "star",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "star",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          }
+        ],
+        "untaggedEntries": [],
+        "totalEntries": 7,
+        "applicableScales": [
+          "local"
+        ]
+      }
+    ],
+    "summary": [
+      {
+        "contentType": "encounters",
+        "totalEntries": 564,
+        "applicableCells": 32,
+        "filledCells": 21,
+        "desertCells": 9,
+        "emptyCells": 2,
+        "untaggedCount": 0,
+        "resolvabilityPct": 1,
+        "fillPct": 0.65625
+      },
+      {
+        "contentType": "actions",
+        "totalEntries": 44,
+        "applicableCells": 32,
+        "filledCells": 0,
+        "desertCells": 0,
+        "emptyCells": 32,
+        "untaggedCount": 44,
+        "resolvabilityPct": 0,
+        "fillPct": 0
+      },
+      {
+        "contentType": "attachments",
+        "totalEntries": 119,
+        "applicableCells": 24,
+        "filledCells": 0,
+        "desertCells": 0,
+        "emptyCells": 24,
+        "untaggedCount": 119,
+        "resolvabilityPct": 0,
+        "fillPct": 0
+      },
+      {
+        "contentType": "artifacts",
+        "totalEntries": 3,
+        "applicableCells": 24,
+        "filledCells": 0,
+        "desertCells": 0,
+        "emptyCells": 24,
+        "untaggedCount": 3,
+        "resolvabilityPct": 0,
+        "fillPct": 0
+      },
+      {
+        "contentType": "conditions",
+        "totalEntries": 6,
+        "applicableCells": 16,
+        "filledCells": 0,
+        "desertCells": 0,
+        "emptyCells": 16,
+        "untaggedCount": 6,
+        "resolvabilityPct": 0,
+        "fillPct": 0
+      },
+      {
+        "contentType": "spells",
+        "totalEntries": 5,
+        "applicableCells": 24,
+        "filledCells": 0,
+        "desertCells": 0,
+        "emptyCells": 24,
+        "untaggedCount": 5,
+        "resolvabilityPct": 0,
+        "fillPct": 0
+      },
+      {
+        "contentType": "omens",
+        "totalEntries": 44,
+        "applicableCells": 16,
+        "filledCells": 0,
+        "desertCells": 0,
+        "emptyCells": 16,
+        "untaggedCount": 44,
+        "resolvabilityPct": 0,
+        "fillPct": 0
+      },
+      {
+        "contentType": "sublocations",
+        "totalEntries": 7,
+        "applicableCells": 8,
+        "filledCells": 1,
+        "desertCells": 0,
+        "emptyCells": 7,
+        "untaggedCount": 0,
+        "resolvabilityPct": 1,
+        "fillPct": 0.125
+      }
+    ],
+    "desertList": [
+      {
+        "contentType": "encounters",
+        "reach": "iron",
+        "scale": "cosmic",
+        "count": 1,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "encounters",
+        "reach": "shadow",
+        "scale": "cosmic",
+        "count": 1,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "encounters",
+        "reach": "shadow",
+        "scale": "personal",
+        "count": 1,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "encounters",
+        "reach": "veil",
+        "scale": "cosmic",
+        "count": 1,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "encounters",
+        "reach": "stone",
+        "scale": "cosmic",
+        "count": 1,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "encounters",
+        "reach": "iron",
+        "scale": "personal",
+        "count": 3,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "encounters",
+        "reach": "gold",
+        "scale": "personal",
+        "count": 3,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "encounters",
+        "reach": "veil",
+        "scale": "personal",
+        "count": 3,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "encounters",
+        "reach": "star",
+        "scale": "regional",
+        "count": 4,
+        "priorityScore": 1
+      }
+    ],
+    "emptyList": [
+      {
+        "contentType": "encounters",
+        "reach": "gold",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "encounters",
+        "reach": "stone",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "iron",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "iron",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "iron",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "iron",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "gold",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "gold",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "gold",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "gold",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "shadow",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "shadow",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "shadow",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "shadow",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "veil",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "veil",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "veil",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "veil",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "heart",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "heart",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "heart",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "heart",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "eye",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "eye",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "eye",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "eye",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "stone",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "stone",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "stone",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "stone",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "star",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "star",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "star",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "star",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "iron",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "iron",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "iron",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "gold",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "gold",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "gold",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "shadow",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "shadow",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "shadow",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "veil",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "veil",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "veil",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "heart",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "heart",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "heart",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "eye",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "eye",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "eye",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "stone",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "stone",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "stone",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "star",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "star",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "star",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "iron",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "iron",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "iron",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "gold",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "gold",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "gold",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "shadow",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "shadow",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "shadow",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "veil",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "veil",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "veil",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "heart",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "heart",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "heart",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "eye",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "eye",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "eye",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "stone",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "stone",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "stone",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "star",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "star",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "star",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "iron",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "iron",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "gold",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "gold",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "shadow",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "shadow",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "veil",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "veil",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "heart",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "heart",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "eye",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "eye",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "stone",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "stone",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "star",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "star",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "iron",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "iron",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "iron",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "gold",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "gold",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "gold",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "shadow",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "shadow",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "shadow",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "veil",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "veil",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "veil",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "heart",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "heart",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "heart",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "eye",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "eye",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "eye",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "stone",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "stone",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "stone",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "star",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "star",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "star",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "omens",
+        "reach": "iron",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "omens",
+        "reach": "iron",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "omens",
+        "reach": "gold",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "omens",
+        "reach": "gold",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "omens",
+        "reach": "shadow",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "omens",
+        "reach": "shadow",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "omens",
+        "reach": "veil",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "omens",
+        "reach": "veil",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "omens",
+        "reach": "heart",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "omens",
+        "reach": "heart",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "omens",
+        "reach": "eye",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "omens",
+        "reach": "eye",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "omens",
+        "reach": "stone",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "omens",
+        "reach": "stone",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "omens",
+        "reach": "star",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "omens",
+        "reach": "star",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "sublocations",
+        "reach": "iron",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "sublocations",
+        "reach": "shadow",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "sublocations",
+        "reach": "veil",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "sublocations",
+        "reach": "heart",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "sublocations",
+        "reach": "eye",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "sublocations",
+        "reach": "stone",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "sublocations",
+        "reach": "star",
+        "scale": "local",
+        "priorityScore": 1
+      }
+    ],
+    "untaggedList": [
+      {
+        "contentType": "actions",
+        "entries": [
+          {
+            "id": "action.iron.raise-force",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.iron.assess-threat",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.iron.fortify",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.iron.conquer",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.establish-trade",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.survey-resources",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.trade",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.disrupt-trade",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.negotiate-agreement",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.tax-trade-route",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.break-agreement",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.hire-mercenaries",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.commission-assassination",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.buy-influence",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.fund-construction",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.establish-monopoly",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.shadow.establish-network",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.shadow.spy",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.shadow.recruit-agent",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.shadow.assassinate",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.veil.cast-spell",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.veil.detect-magic",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.veil.modify-enchantment",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.veil.dispel",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.heart.forge-alliance",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.heart.assess-loyalty",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.heart.inspire",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.heart.betray",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.eye.research",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.eye.investigate",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.eye.refine-knowledge",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.eye.suppress-knowledge",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.stone.build",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.stone.assess-structure",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.stone.repair",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.stone.demolish",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.star.consecrate",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.star.divine",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.star.deepen-faith",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.star.desecrate",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.flesh.heal",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.flesh.diagnose",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.flesh.cultivate",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.flesh.plague",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          }
+        ]
+      },
+      {
+        "contentType": "attachments",
+        "entries": [
+          {
+            "id": "reward_arms_bronze_spear",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_hunting_bow",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_rusted_mace",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_bone_knife",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_blackiron_blade",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_crossbow_of_the_watch",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_gate_seal_case",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_thornwood_staff",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_hollowfang",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_starfall_longbow",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_the_quiet_blade",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_grave_robbers_stiletto",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_cracked_brass_horn",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_spotters_marking_bolt",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_basalt_maul",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_stranglers_cord",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_hazel_switch",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_banner_of_the_lost_company",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_lens_sighted_arbalest",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_petrified_ironwood_glaive",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_assessors_weighted_scales",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_vestments_padded_jerkin",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_vestments_merchant_silks",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_vestments_pilgrim_robe",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_vestments_chainmail_hauberk",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_vestments_shadowweave_cloak",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_vestments_mantle_of_the_unremembered",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_vestments_the_woven_sky",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tomes_scrolls_field_journal",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tomes_scrolls_prayer_scroll",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tomes_scrolls_merchants_ledger",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tomes_scrolls_letters_of_introduction",
+            "reason": "no reach found in effects[]"
+          },
+          {
+            "id": "reward_tomes_scrolls_chronicle_of_the_falling",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tomes_scrolls_veilscript_fragment",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tomes_scrolls_the_silent_testament",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tomes_scrolls_codex_of_unmaking",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_iron_tongs",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_herbalists_pouch",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_surveyors_glass",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_alchemists_crucible",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_master_chisel",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_chronoscope",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_the_astrolabe_of_yven",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_wayfarers_charm",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_bone_ward",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_duelists_luck_token",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_ember_sigil",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_shadowglass_pendant",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_hearthglass_ward",
+            "reason": "no reach found in effects[]"
+          },
+          {
+            "id": "reward_relics_talismans_stasis_pearl",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_heart_of_the_barrow",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_the_weeping_icon",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_hourglass_of_the_unraveling",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_the_fulcrum",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_mounts_beasts_draft_pony",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_mounts_beasts_hound",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_mounts_beasts_pack_goat",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_mounts_beasts_war_hound",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_mounts_beasts_steppe_mare",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_mounts_beasts_ashenmane_destrier",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_mounts_beasts_dustwalker",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_mounts_beasts_smoke_tooth",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_mounts_beasts_shimmer_hart",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_mounts_beasts_glimmermoth",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_mounts_beasts_hearthbound_hound",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_mounts_beasts_sorrowheart_mare",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_mounts_beasts_dawnfeather_kestrel",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_mounts_beasts_pale_pilgrim",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_hardtack_and_salt",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_waterskin",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_firestarter_kit",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_travelers_wine",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_berserker_draught",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_healing_poultice",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_sanctuary_incense",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_timekeepers_last_vial",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_intelligence_shrine_map",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_intelligence_trade_route_dossier",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_veilwater_flask",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_ember_edge",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_moonstone_pendant",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_veterans_shield",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_battle_salve",
+            "reason": "no reach found in effects[]"
+          },
+          {
+            "id": "reward_tomes_scrolls_fading_ward",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_arms_double_edged_blade",
+            "reason": "no reach found in effects[]"
+          },
+          {
+            "id": "reward_relics_talismans_the_hush_stone",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_gamblers_last_copper",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_null_circlet",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_wardwright_compass",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_fatesight_lens",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_ward_incense",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tomes_scrolls_book_of_sealing",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_spring_water_vial",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_meditation_stones",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_the_quiet_cup",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_the_last_harvest",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_provisions_the_black_mead",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_river_clay_bead",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_relics_talismans_tarnished_draw_tube",
+            "reason": "no reach found in effects[]"
+          },
+          {
+            "id": "reward_relics_talismans_the_sweating_vessel",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_leather_bandolier",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_scroll_case",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_quartermasters_harness",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_salvage_kit",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_bag_of_conveyance",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_the_trembling_needle",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tools_instruments_the_anvilbone",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tomes_scrolls_sealed_bounty_scroll",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_tomes_scrolls_tithe_box",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "reward_talisman_pilgrims_wayfinding_stone",
+            "reason": "no reach found in effects[]"
+          },
+          {
+            "id": "reward_charm_battle_spoils_talisman",
+            "reason": "no reach found in effects[]"
+          },
+          {
+            "id": "starter_iron_blade",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "starter_ashenmane_fang",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "starter_road_worn_mule",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "starter_ashenmane_horse",
+            "reason": "no reach found in effects[]"
+          },
+          {
+            "id": "starter_traveler_cloak",
+            "reason": "no reach found in effects[]"
+          },
+          {
+            "id": "starter_copper_market_rations",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "starter_whispering_eye",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "starter_burned_codex",
+            "reason": "scale not authored (schema backfill needed)"
+          }
+        ]
+      },
+      {
+        "contentType": "artifacts",
+        "entries": [
+          {
+            "id": "worldforge_anvil",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "heartseed_first_garden",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "voidgate_shard",
+            "reason": "scale not authored (schema backfill needed)"
+          }
+        ]
+      },
+      {
+        "contentType": "conditions",
+        "entries": [
+          {
+            "id": "trait.condition.wounded",
+            "reason": "no reach/scale axis in condition schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "trait.condition.inspired",
+            "reason": "no reach/scale axis in condition schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "trait.condition.terrified",
+            "reason": "no reach/scale axis in condition schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "trait.condition.blessed",
+            "reason": "no reach/scale axis in condition schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "trait.condition.cursed",
+            "reason": "no reach/scale axis in condition schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "trait.condition.exhausted",
+            "reason": "no reach/scale axis in condition schema (finding: schema backfill needed)"
+          }
+        ]
+      },
+      {
+        "contentType": "spells",
+        "entries": [
+          {
+            "id": "spell_veilwalk",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "spell_soulfire",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "spell_hollow_crown",
+            "reason": "scale not authored (schema backfill needed)"
+          },
+          {
+            "id": "spell_crystal_gate",
+            "reason": "no reach found in effects[]"
+          },
+          {
+            "id": "spell_last_breath",
+            "reason": "scale not authored (schema backfill needed)"
+          }
+        ]
+      },
+      {
+        "contentType": "omens",
+        "entries": [
+          {
+            "id": "omen.breach.thin_places",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.breach.borrowed_voices",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.breach.fissure_winds",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.breach.the_hemorrhage",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.convergence.geometric_dreams",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.convergence.the_humming",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.convergence.gravity_wells",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.convergence.the_singularity_approaches",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.reckoning.old_debts",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.reckoning.the_witnesses",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.reckoning.echo_walk",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.reckoning.the_accounting",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.changing.restless_forms",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.changing.the_slipping",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.changing.cascade_of_forms",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.changing.the_great_unmaking",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.sundering.hairline_fractures",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.sundering.the_severance",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.sundering.violent_partition",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.sundering.the_final_division",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.failing.rust_and_forgetting",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.failing.the_forgetting",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.failing.things_fall_apart",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.failing.exhaustion_of_the_age",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.ascension.luminous_hunger",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.ascension.the_rising",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.ascension.departure",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.ascension.the_hollow_world",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.sphere.verdant_surge",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.sphere.entropic_tide",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.sphere.iron_season",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.sphere.crystal_clarity",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.sphere.the_veil_thins",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.sphere.temporal_drift",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.cultural.war_drums",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.cultural.lean_harvest",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.cultural.festival_season",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.cultural.the_unquiet",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.cultural.season_of_grief",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.cultural.age_of_discovery",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.seasonal.the_quiet_before",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.seasonal.the_turning",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.seasonal.the_long_dark",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          },
+          {
+            "id": "omen.seasonal.the_reckoning_hour",
+            "reason": "no reach/scale axis in omen schema (finding: schema backfill needed)"
+          }
+        ]
+      }
+    ]
+  },
+  "resolvability": [
+    {
+      "contentType": "encounters",
+      "total": 564,
+      "reachResolved": 564,
+      "scaleResolved": 564,
+      "bothResolved": 564,
+      "reachPct": 1,
+      "scalePct": 1,
+      "bothPct": 1
+    },
+    {
+      "contentType": "actions",
+      "total": 44,
+      "reachResolved": 44,
+      "scaleResolved": 0,
+      "bothResolved": 0,
+      "reachPct": 1,
+      "scalePct": 0,
+      "bothPct": 0
+    },
+    {
+      "contentType": "attachments",
+      "total": 119,
+      "reachResolved": 110,
+      "scaleResolved": 0,
+      "bothResolved": 0,
+      "reachPct": 0.9243697478991597,
+      "scalePct": 0,
+      "bothPct": 0
+    },
+    {
+      "contentType": "artifacts",
+      "total": 3,
+      "reachResolved": 3,
+      "scaleResolved": 0,
+      "bothResolved": 0,
+      "reachPct": 1,
+      "scalePct": 0,
+      "bothPct": 0
+    },
+    {
+      "contentType": "conditions",
+      "total": 6,
+      "reachResolved": 0,
+      "scaleResolved": 0,
+      "bothResolved": 0,
+      "reachPct": 0,
+      "scalePct": 0,
+      "bothPct": 0
+    },
+    {
+      "contentType": "spells",
+      "total": 5,
+      "reachResolved": 4,
+      "scaleResolved": 0,
+      "bothResolved": 0,
+      "reachPct": 0.8,
+      "scalePct": 0,
+      "bothPct": 0
+    },
+    {
+      "contentType": "omens",
+      "total": 44,
+      "reachResolved": 0,
+      "scaleResolved": 0,
+      "bothResolved": 0,
+      "reachPct": 0,
+      "scalePct": 0,
+      "bothPct": 0
+    },
+    {
+      "contentType": "sublocations",
+      "total": 7,
+      "reachResolved": 7,
+      "scaleResolved": 7,
+      "bothResolved": 7,
+      "reachPct": 1,
+      "scalePct": 1,
+      "bothPct": 1
+    }
+  ]
+}
