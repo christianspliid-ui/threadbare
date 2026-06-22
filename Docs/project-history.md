@@ -1,5 +1,7 @@
 # Project History
 
+✅ **THR-465** (2026-06-22) — Raise `BRANCHING_CAP_RESERVE` 1→3 in `branchingConstants.ts` to lift branching encounter fire rate from 0.25/30t baseline to ≥1/30t on seeds 42 and 7. `BRANCHING_CURATOR_BIAS_WEIGHT` unchanged at 1.75 (raising above 2.0 causes encounter-smoke test regression). Seed 99 stuck at 0.75/30t due to upstream awareness gating; deferred as THR-470. KPI report (`Docs/playtests/kpi/2026-06-22-kpi-report.json`) updated. PR #370.
+
 ✅ **THR-462** (2026-06-13) — Propagate `narrativeTag` into `EncounterNotification` for near-miss amber toast. Added `narrativeTag?` to `EncounterAftermathSummary`; stored from `consequence.narrativeTag` during action resolution; passed into `buildEncounterNotification` via metadata Pick expansion. Completes the THR-461 Slice C toast-border chain. PR #341.
 
 ✅ **THR-461** (2026-06-13) — Near-miss band UI treatment (Slice C). `--accent-near-miss: #c9a14a` CSS token. `band?` on `ToastItem` + `narrativeTag?` stub on `EncounterNotification` (propagation deferred to THR-462). `BAND_ACCENT` table in `ToastStack` for band-keyed left-border color. `quintessenceDelta?` on `ChronicleEntry` + color-coded `±Q` suffix in `ChronicleEntryCard`. `outcomeBand?` prop on `ActionCard` + band-keyed outcome overlay with icon + flavor text. `OUTCOME_BAND_CARD_FLAVOR` table. 8 new tests; 11580 total passing.

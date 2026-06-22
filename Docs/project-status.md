@@ -1,5 +1,5 @@
 # Project Status
-> Updated 2026-06-22 (THR-463).
+> Updated 2026-06-22 (THR-465).
 
 ## Current Focus
 **Encounter Experience — active:** Phases A1–A3, B1–B7, C1–C4, D1–D3, E1–E2, F1–F2, G1–G3 ✅. Remaining is F-phase integration (mount EffectRegistration components into hero panel / cast tile / scene state surfaces) and Phase H post-v1 polish.
@@ -14,6 +14,7 @@
 - **Social Systems Expansion (Now):** THR-28/27/30/51/29/41/34/31/35 shipped. ✅ THR-254/253. THR-78 queued.
 - **Thematic Pressure & Living World (Next):** ✅ THR-19/122/125/126/80/128/127. THR-87 blocked by THR-116.
 
+- ✅ 2026-06-22: THR-465 shipped — raise `BRANCHING_CAP_RESERVE` 1→3; branching fire rate lifts from 0.25/30t → 1.00/30t on seeds 42+7. `BRANCHING_CURATOR_BIAS_WEIGHT` left at 1.75 (raising above 2.0 breaks encounter-smoke test). Seed 99 stuck at 0.75/30t (awareness-gated, deferred THR-470). KPI harness report updated. PR #370.
 - ✅ 2026-06-22: THR-463 shipped — interaction-gated camera centering. `cameraInteractionGate.ts` pure predicate; camera pans to followed agent only when pending encounter/aftermath OR populated arrival (≥1 co-located agent). Wired through `useAgentAnimations` → `HexMapV2` prop → `GameView` useMemo. `'camera_center'` TraceCategory + `CameraCenterTrace`. PR #368.
 - ✅ 2026-06-13: THR-462 shipped — propagate `narrativeTag` into `EncounterNotification` for near-miss amber toast. `EncounterAftermathSummary.narrativeTag` field; stored from `consequence.narrativeTag` in resolution; passed via `buildEncounterNotification` metadata. Activates `band → --accent-near-miss` toast border added in THR-461 Slice C. PR #341.
 - ✅ 2026-06-13: THR-461 shipped — near_miss band UI treatment (Slice C). `--accent-near-miss: #c9a14a` token. `band?` on `ToastItem`; `narrativeTag?` on `EncounterNotification` (forward-compatible stub, engine propagation deferred to THR-462). `BAND_ACCENT` table in `ToastStack` keys left-border color to band. `quintessenceDelta?` on `ChronicleEntry`; color-coded `+/-0.00Q` suffix in `ChronicleEntryCard`. `outcomeBand?` prop on `ActionCard`; band-keyed outcome overlay (icon + flavor text from `OUTCOME_BAND_CARD_FLAVOR`). `OUTCOME_BAND_CARD_FLAVOR` table in `narrative-content.ts`. 4 new ChronicleEntryCard tests + 4 new ActionCard tests. All 11580 tests pass.
