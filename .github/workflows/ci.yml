@@ -10,9 +10,37 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# paths-filter reads the PR's changed-files list via the GitHub API, which
+# needs pull-requests: read. The repo's default GITHUB_TOKEN is restricted,
+# so grant it explicitly here (contents: read covers checkout + push-mode diff).
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
+  detect:
+    name: Detect code changes
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          # 'code' is true if ANY changed file is not a doc.
+          filters: |
+            code:
+              - '**'
+              - '!**/*.md'
+              - '!Docs/**'
+              - '!.planning/**'
+              - '!Design/**'
+
   check:
     name: Test · Typecheck · Build
+    needs: detect
+    if: needs.detect.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
