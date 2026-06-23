@@ -1,12 +1,27 @@
 name: Linear Auto-Close
 
+# Merge = Done (THR-487). A merged PR (or a push to main) carrying
+# `Fixes|Closes|Resolves THR-XX` transitions the referenced Linear issue
+# straight to Done. The dead claude-review.yml In Review → Done gate was
+# deleted — anything reaching In Review used to stall forever.
+#
+# Two trigger paths, both idempotent (a merged PR fires both; whichever runs
+# first moves the issue to Done, the other sees it already completed and skips):
+#   - pull_request closed+merged → scans PR title + body. Survives non-squash
+#     merge commits that drop the keyword from the commit message (impediment #140).
+#   - push to main → scans the pushed commits' messages. Fallback that also
+#     catches direct pushes and squash-commit bodies.
+
 on:
   push:
+    branches: [main]
+  pull_request:
+    types: [closed]
     branches: [main]
 
 jobs:
   close-issues:
-    name: Move referenced Linear issues to In Review
+    name: Move referenced Linear issues to Done
     runs-on: ubuntu-latest
 
     steps:
@@ -21,39 +36,53 @@ jobs:
               return;
             }
 
-            // Collect commit messages from this push
-            const before = context.payload.before;
-            const after = context.payload.after;
-
-            let commitMessages = [];
-            if (before === '0000000000000000000000000000000000000000') {
-              // First push to branch — use commits from the payload directly
-              commitMessages = (context.payload.commits || []).map(c => c.message);
-            } else {
-              const { data } = await github.rest.repos.compareCommits({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                base: before,
-                head: after,
-              });
-              commitMessages = data.commits.map(c => c.commit.message);
-            }
-
             // Extract issue IDs from "Fixes/Closes/Resolves THR-XX" patterns
             const pattern = /(?:Fixes|Closes|Resolves)\s+(THR-\d+)/gi;
             const issueIds = new Set();
-            for (const msg of commitMessages) {
-              for (const [, id] of msg.matchAll(pattern)) {
+            const addFrom = (text) => {
+              if (!text) return;
+              for (const [, id] of text.matchAll(pattern)) {
                 issueIds.add(id.toUpperCase());
               }
+            };
+
+            if (context.eventName === 'pull_request') {
+              const pr = context.payload.pull_request;
+              if (!pr || pr.merged !== true) {
+                console.log('PR closed without merge — nothing to close');
+                return;
+              }
+              // PR title + body survive non-squash merge commits (impediment #140).
+              addFrom(pr.title);
+              addFrom(pr.body);
+            } else {
+              // push to main — scan the pushed commits' messages (fallback path).
+              const before = context.payload.before;
+              const after = context.payload.after;
+
+              let commitMessages = [];
+              if (before === '0000000000000000000000000000000000000000') {
+                // First push to branch — use commits from the payload directly
+                commitMessages = (context.payload.commits || []).map(c => c.message);
+              } else {
+                const { data } = await github.rest.repos.compareCommits({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  base: before,
+                  head: after,
+                });
+                commitMessages = data.commits.map(c => c.commit.message);
+              }
+
+              for (const msg of commitMessages) addFrom(msg);
             }
 
             if (!issueIds.size) {
-              console.log('No Linear issues referenced in this push — nothing to close');
+              console.log('No Linear issues referenced — nothing to close');
               return;
             }
 
-            console.log(`Issues to close: ${[...issueIds].join(', ')}`);
+            console.log(`Issues to close (→ Done): ${[...issueIds].join(', ')}`);
 
             async function linearGql(query, variables = {}) {
               const res = await fetch('https://api.linear.app/graphql', {
@@ -71,6 +100,8 @@ jobs:
             let anyFailed = false;
 
             for (const issueId of issueIds) {
+              console.log(JSON.stringify({ type: 'autoclose.linear-transition.attempt', issueId, toState: 'Done' }));
+
               // Fetch issue UUID + current state + team's completed state in one round-trip
               const result = await linearGql(`
                 query GetIssue($id: String!) {
@@ -98,23 +129,16 @@ jobs:
                 console.log(`ℹ️  ${issueId} already closed (${currentName}) — skipping`);
                 continue;
               }
-              if (currentName === 'In Review') {
-                console.log(`ℹ️  ${issueId} already In Review — skipping (claude-review will close)`);
+
+              // Resolve the team's Done state at runtime (robust to renames).
+              const doneState = issue.team.states.nodes.find(s => s.type === 'completed');
+              if (!doneState) {
+                console.warn(`⚠️  No completed workflow state found for team of ${issueId} — skipping`);
                 continue;
               }
 
-              // THR-249: target In Review instead of Done. The claude-review workflow
-              // handles the In Review → Done transition after a passing review.
-              const inReviewState = issue.team.states.nodes.find(s => s.name === 'In Review');
-              if (!inReviewState) {
-                console.warn(`⚠️  No "In Review" workflow state found for team of ${issueId} — falling back to Done`);
-                const doneState = issue.team.states.nodes.find(s => s.type === 'completed');
-                if (!doneState) {
-                  console.warn(`⚠️  No completed workflow state found for team of ${issueId} either — skipping`);
-                  continue;
-                }
-                // Fallback: if the team has no In Review state, close to Done directly.
-                const fallback = await linearGql(`
+              try {
+                const update = await linearGql(`
                   mutation CloseIssue($id: String!, $stateId: String!) {
                     issueUpdate(id: $id, input: { stateId: $stateId }) {
                       success
@@ -122,29 +146,20 @@ jobs:
                     }
                   }
                 `, { id: issue.id, stateId: doneState.id });
-                if (fallback.data?.issueUpdate?.success) {
-                  console.log(`✅ ${issueId} → ${fallback.data.issueUpdate.issue.state.name} (fallback — no In Review state)`);
+
+                if (update.data?.issueUpdate?.success) {
+                  const newState = update.data.issueUpdate.issue.state.name;
+                  console.log(`✅ ${issueId} → ${newState}`);
+                  console.log(JSON.stringify({ type: 'autoclose.linear-transition.success', issueId }));
                 } else {
-                  console.error(`❌ Failed to close ${issueId}:`, JSON.stringify(fallback.errors ?? fallback));
+                  console.error(`❌ Failed to close ${issueId}:`, JSON.stringify(update.errors ?? update));
+                  console.log(JSON.stringify({ type: 'autoclose.linear-transition.error', issueId, errorMessage: JSON.stringify(update.errors ?? update) }));
                   anyFailed = true;
                 }
-                continue;
-              }
-
-              const update = await linearGql(`
-                mutation MoveToInReview($id: String!, $stateId: String!) {
-                  issueUpdate(id: $id, input: { stateId: $stateId }) {
-                    success
-                    issue { identifier state { name } }
-                  }
-                }
-              `, { id: issue.id, stateId: inReviewState.id });
-
-              if (update.data?.issueUpdate?.success) {
-                const newState = update.data.issueUpdate.issue.state.name;
-                console.log(`✅ ${issueId} → ${newState}`);
-              } else {
-                console.error(`❌ Failed to move ${issueId} to In Review:`, JSON.stringify(update.errors ?? update));
+              } catch (err) {
+                // Idempotent on partial failures: log and continue.
+                console.error(`❌ Exception closing ${issueId}:`, err.message);
+                console.log(JSON.stringify({ type: 'autoclose.linear-transition.error', issueId, errorMessage: err.message }));
                 anyFailed = true;
               }
             }
