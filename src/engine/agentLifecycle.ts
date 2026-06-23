@@ -22,6 +22,7 @@ import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 import { validateAgentIntegrity } from './agentValidation';
 import { emitTrace } from './traceBuffer';
 import { getAvatarsOf, getAgentLocation, getAgentsAtLocation, getActorCultures } from './graphQueries';
+import { markAspectEchoOnDeath } from './aspects';
 import type { EncounterCacheManager } from './encounterCache';
 import { BORN_LATER_PREFER_CONTENT_LOCATIONS, BORN_LATER_MIN_TEMPLATES } from '../data/agent-behavior-constants';
 
@@ -107,6 +108,8 @@ export function phaseAgentLifecycle(
 
   const actors = graph.getNodesByType('actor').filter(
     n => n.properties.actorType === 'individual' && !avatarNodeIds.has(n.id)
+    // THR-479: retained mythic-echo nodes are deceased — never re-process them.
+    && n.properties.deceased !== true
   );
 
   let deathOccurred = false;
@@ -137,24 +140,42 @@ export function phaseAgentLifecycle(
         deathLocNode.properties.deathCount = prev + 1;
       }
 
-      // Remove all edges connected to this actor
-      const allEdges = graph.getAllEdgesForNode(actor.id);
-      for (const edge of allEdges) {
-        graph.removeEdge(edge.id);
-      }
-      graph.removeNode(actor.id);
-      deadActorIds.add(actor.id);
+      // THR-479: an Aspect of the god is never unmade. If this mortal is an
+      // Aspect, retain the node + aspect_of edge as a mythic echo (the conduit
+      // closes, the bond endures); otherwise remove the node normally.
+      const echo = markAspectEchoOnDeath(graph, actor.id, state.tick);
+      if (echo.isEcho) {
+        deadActorIds.add(actor.id); // prune in-flight actions; node retained as echo
+        events.push({
+          id: nextEventId(),
+          tick: state.tick,
+          type: 'agent_death' as any,
+          message: `${actor.name} has died — but an aspect of the god does not end. The bond endures as myth.`,
+          significance: 0.85,
+          actorId: actor.id,
+          notification: { channel: 'toast' },
+          hexCoords: deathHexCoords,
+        });
+      } else {
+        // Remove all edges connected to this actor
+        const allEdges = graph.getAllEdgesForNode(actor.id);
+        for (const edge of allEdges) {
+          graph.removeEdge(edge.id);
+        }
+        graph.removeNode(actor.id);
+        deadActorIds.add(actor.id);
 
-      events.push({
-        id: nextEventId(),
-        tick: state.tick,
-        type: 'agent_death' as any,
-        message: `${actor.name} has departed from the world.`,
-        significance: 0.7,
-        actorId: actor.id,
-        notification: { channel: 'toast' },
-        hexCoords: deathHexCoords,
-      });
+        events.push({
+          id: nextEventId(),
+          tick: state.tick,
+          type: 'agent_death' as any,
+          message: `${actor.name} has departed from the world.`,
+          significance: 0.7,
+          actorId: actor.id,
+          notification: { channel: 'toast' },
+          hexCoords: deathHexCoords,
+        });
+      }
 
       deathOccurred = true;
     }

@@ -521,6 +521,24 @@ export type EncounterAftermathReactionEffect =
     /** Reputation delta. Applied as-is; clamped to [-1.0, +1.0] at runtime. */
     readonly amount: number;
     readonly when?: EffectPredicate;
+  }
+  // ─── Aspect apex grant (THR-479) ──────────────────────────────────────────
+  | {
+    /**
+     * Grant the *Aspect* apex milestone to a mortal: create an `aspect_of`
+     * edge (ascendant → mortal), bump narrative gravity, and emit the
+     * attainment beat. Idempotent — a no-op if the pair is already an Aspect.
+     * Resolves the mortal from the encounter actor and the ascendant from
+     * the mortal's incoming `thread` edge when ids are omitted.
+     */
+    readonly kind: 'grant_aspect';
+    /** Explicit ascendant id. Defaults to the source of the mortal's thread edge. */
+    readonly ascendantId?: string;
+    /** Explicit mortal id. Defaults to the encounter actor. */
+    readonly mortalId?: string;
+    /** Narrative label stored on the aspect_of edge / chronicle beat. */
+    readonly reason?: string;
+    readonly when?: EffectPredicate;
   };
 
 export interface PendingEncounterSeed {

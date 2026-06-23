@@ -242,7 +242,10 @@ export type TraceCategory =
   // Outcome band prose selection (THR-460)
   | 'outcome_band_prose_selected'
   // Interaction-gated camera centering (THR-463)
-  | 'camera_center';
+  | 'camera_center'
+  // Aspect apex milestone (THR-479)
+  | 'aspect_attained'
+  | 'aspect_echoed';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -454,6 +457,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'outcome_band_prose_selected',
   // Interaction-gated camera centering (THR-463)
   'camera_center',
+  // Aspect apex milestone (THR-479)
+  'aspect_attained',
+  'aspect_echoed',
 ];
 
 /** Base shape for all trace entries */
@@ -1264,7 +1270,8 @@ export interface EncounterAftermathEffectTrace extends TraceBase {
   effectKind:
     | 'reputation_score' | 'reputation_tally' | 'clearance_gate_tag'
     | 'recent_event' | 'encounter_seed' | 'hidden_mark' | 'intelligence'
-    | 'reputation_set' | 'apply_condition' | 'remove_condition' | 'condition_attachment';
+    | 'reputation_set' | 'apply_condition' | 'remove_condition' | 'condition_attachment'
+    | 'grant_aspect';
   /** Kind-specific payload for inspection */
   effectDetail: Readonly<Record<string, unknown>>;
   success: boolean;
@@ -1648,7 +1655,26 @@ export type TraceEntry =
   // Outcome band prose selection (THR-460)
   | OutcomeBandProseSelectedTrace
   // Interaction-gated camera centering (THR-463)
-  | CameraCenterTrace;
+  | CameraCenterTrace
+  // Aspect apex milestone (THR-479)
+  | AspectAttainedTrace
+  | AspectEchoedTrace;
+
+/** Trace: a mortal became an Aspect of the god (apex milestone grant). THR-479 */
+export interface AspectAttainedTrace extends TraceBase {
+  category: 'aspect_attained';
+  ascendantId: string;
+  mortalId: string;
+  originEncounterId: string;
+  sourceTier: number;
+}
+
+/** Trace: an Aspect's mortal body died — the bond persists as mythic echo. THR-479 */
+export interface AspectEchoedTrace extends TraceBase {
+  category: 'aspect_echoed';
+  ascendantId: string;
+  mortalId: string;
+}
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {

@@ -818,6 +818,22 @@ Four new effect kinds directly mutate thread-bond edges:
 
 Thread strength is visible in `ThreadsPanel` as a thin animated bar (only shown when `< 1.0`). Mutations are inspectable via `thread_mutation_applied` / `thread_mutation_skipped` trace categories in the DebugPanel.
 
+#### Aspect apex grant — `grant_aspect` (THR-479)
+
+The capstone of divine influence. When a mortal has been an Enthralled (tier-4) thread long enough, the engine seeds the bespoke `encounter.apotheosis.ascension`; the **accept** branch's aftermath carries `grant_aspect`, which raises the mortal into a partial *Aspect of the god* — the apex milestone **beyond** the five Influence tiers (not a sixth rung).
+
+| Kind | What it does |
+|------|-------------|
+| `grant_aspect` | Creates a permanent `aspect_of` edge (ascendant → mortal), bumps the mortal's `importance` (narrative gravity), queues a chronicle beat, emits `aspect_attained`. Idempotent — a no-op if the pair is already an Aspect. |
+
+```typescript
+// On the accept branch of an apotheosis covenant — ids omitted resolve from
+// the encounter actor (mortal) + that mortal's incoming thread (ascendant).
+{ kind: 'grant_aspect', reason: 'apotheosis' }
+```
+
+The `aspect_of` edge is **never garbage-collected**: when the mortal dies, the death phase retains the node + edge as a *mythic echo* (`mythicEcho: true`, `aspect_echoed` trace) instead of removing them — the bond outlasts the body. A living Aspect contributes `ASPECT_ESSENCE_PER_TICK` essence (a conduit); a mythic echo contributes nothing. Surfaced as the "❂ Aspect" badge in `ThreadsPanel` (reads the edge, not the tier) and via `window.__DEBUG.getAspects()`. Tuning lives in `src/data/aspect-content.ts`.
+
 #### The `{cause:*}` prose placeholders
 
 If a seeded encounter carries a `sourceEncounterId`, prose can reference the causing encounter:

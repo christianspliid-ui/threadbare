@@ -20,6 +20,7 @@ import {
 import type { WorldGraph } from './graph';
 import type { ControlEffect } from '../types/controlEffect';
 import { assignTrait } from './traits';
+import { ASPECT_ESSENCE_PER_TICK } from '../data/aspect-content';
 
 // ─── Pool Operations ─────────────────────────────────────────────────
 
@@ -128,6 +129,15 @@ export function computeEssenceGeneration(
     const loc = graph.getNode(edge.target);
     if (loc && loc.properties.isPlaceOfPower) {
       totalRate += ESSENCE_PER_PLACE_OF_POWER;
+    }
+  }
+
+  // 3b. Aspect conduit bonus (THR-479) — each LIVING aspect channels a trickle.
+  // Mythic echoes (dead aspects) no longer channel.
+  const aspectEdges = graph.getOutgoingEdges(ascendantId, 'aspect_of');
+  for (const edge of aspectEdges) {
+    if (edge.properties.mythicEcho !== true) {
+      totalRate += ASPECT_ESSENCE_PER_TICK;
     }
   }
 

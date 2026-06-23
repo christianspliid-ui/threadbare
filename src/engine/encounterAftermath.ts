@@ -11,6 +11,13 @@ import type {
   UnifiedAction,
 } from '../types/unifiedAction';
 import { emitTrace } from './traceBuffer';
+import { grantAspect } from './aspects';
+import {
+  ASPECT_CHRONICLE_TITLE,
+  ASPECT_CHRONICLE_PROSE,
+} from '../data/aspect-content';
+import type { ChronicleEntry } from '../types/narrative';
+import type { SphereName } from '../types';
 import type { SimulationRuntime } from './simulationRuntime';
 import { touchWorld, touchStructure } from './simulationRuntime';
 import { buildPredicateContext, evaluateOptionalCondition } from './effects/effectPredicates';
@@ -356,6 +363,7 @@ export function applyEncounterAftermathReaction(
   let nextHiddenMarks: HiddenMark[] = [];
   let nextIntelligenceRecords: IntelligenceRecord[] = [];
   let nextEmittedOmens: EmittedOmen[] | undefined = undefined;
+  let nextChronicleEntries: ChronicleEntry[] | undefined = undefined;
 
   let mutationSummary: AftermathMutationSummary = { touchedWorld: false, touchedStructure: false, woundApplied: false };
 
@@ -2309,6 +2317,77 @@ export function applyEncounterAftermathReaction(
         break;
       }
 
+      case 'grant_aspect': {
+        // Resolve the mortal (encounter actor by default) and ascendant (the
+        // mortal's thread source by default). Grant is idempotent.
+        const gaMortalId = effect.mortalId ?? actorAgentId;
+        if (!gaMortalId) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'grant_aspect', effectDetail: { reason: 'no_mortal' },
+            success: false, failReason: 'no_mortal',
+            summary: `grant_aspect[${i}] skipped: no mortal id`,
+          });
+          break;
+        }
+        const gaResult = grantAspect(
+          state.graph,
+          { mortalId: gaMortalId, tick, originEncounterId: encounterId, ascendantId: effect.ascendantId, reason: effect.reason },
+          runtime,
+        );
+        if (gaResult.granted) {
+          mutationSummary.touchedWorld = true;
+          const gaMortal = state.graph.getNode(gaMortalId);
+          const gaMortalName = gaMortal?.name ?? 'A mortal';
+          const gaAscendant = gaResult.ascendantId ? state.graph.getNode(gaResult.ascendantId) : undefined;
+          const gaSphere = (((gaAscendant?.properties.sphereAlignment as { primary?: SphereName } | undefined)?.primary)
+            ?? 'gold') as SphereName;
+          const gaProse = ASPECT_CHRONICLE_PROSE.replace(/\{name\}/g, gaMortalName);
+
+          const gaEvent: TickEvent = {
+            id: `aspect_attained_${gaMortalId}_${tick}`,
+            tick,
+            type: 'narrative',
+            message: `${gaMortalName} has become an aspect of the god.`,
+            significance: 0.95,
+            actorId: gaMortalId,
+            notification: { channel: 'toast' },
+          };
+          nextTickEvents = [...nextTickEvents, gaEvent];
+          nextRecentEvents = appendRecentEvent(nextRecentEvents, gaEvent);
+
+          const gaChronicle: ChronicleEntry = {
+            id: `aspect_attained_chronicle_${gaMortalId}_${tick}`,
+            tier: 'chronicle',
+            title: ASPECT_CHRONICLE_TITLE,
+            prose: gaProse,
+            promptContext: { actors: [gaMortalId], location: '', sphere: gaSphere, mood: 'mythic' },
+            tick,
+          };
+          nextChronicleEntries = [...(nextChronicleEntries ?? state.chronicleEntries ?? []), gaChronicle];
+
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'grant_aspect',
+            effectDetail: { ascendantId: gaResult.ascendantId, mortalId: gaMortalId, edgeId: gaResult.edgeId },
+            success: true, effectiveTargetId: gaMortalId, effectiveTargetKind: 'agent',
+            summary: `grant_aspect[${i}]: ${gaResult.ascendantId} → ${gaMortalId} (aspect created)`,
+          });
+        } else {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'grant_aspect',
+            effectDetail: { ascendantId: gaResult.ascendantId, mortalId: gaMortalId, reason: gaResult.reason },
+            success: false, failReason: gaResult.reason,
+            summary: `grant_aspect[${i}] no-op: ${gaResult.reason} (${gaMortalId})`,
+          });
+        }
+        break;
+      }
+
       case 'archetype_drift_register': {
         const resolvedAgentId = effect.targetAgentId
           ?? (target.kind === 'agent' ? target.id : actorAgentId);
@@ -2543,6 +2622,7 @@ export function applyEncounterAftermathReaction(
       ? [...(state.intelligenceRecords ?? []), ...nextIntelligenceRecords]
       : state.intelligenceRecords,
     emittedOmens: nextEmittedOmens !== undefined ? nextEmittedOmens : state.emittedOmens,
+    chronicleEntries: nextChronicleEntries !== undefined ? nextChronicleEntries : state.chronicleEntries,
   };
 
   return { state: nextState, mutationSummary };

@@ -1,5 +1,5 @@
 # Project Status
-> Updated 2026-06-23 (THR-475).
+> Updated 2026-06-23 (THR-479).
 
 ## Current Focus
 **Encounter Experience — active:** Phases A1–A3, B1–B7, C1–C4, D1–D3, E1–E2, F1–F2, G1–G3 ✅. Remaining is F-phase integration (mount EffectRegistration components into hero panel / cast tile / scene state surfaces) and Phase H post-v1 polish.
@@ -14,6 +14,7 @@
 - **Social Systems Expansion (Now):** THR-28/27/30/51/29/41/34/31/35 shipped. ✅ THR-254/253. THR-78 queued.
 - **Thematic Pressure & Living World (Next):** ✅ THR-19/122/125/126/80/128/127. THR-87 blocked by THR-116.
 
+- ✅ 2026-06-23: THR-479 shipped — Influence "Aspect" apex state. New `aspect_of` graph edge (ascendant→mortal, never GC'd) + `AspectEdgeProperties`; idempotent `grant_aspect` aftermath effect (`aspects.ts` `grantAspect` + bump importance + `aspect_attained` trace); `seedApotheosisEncounters` tick phase (tier-4 held ≥`ASPECT_ELIGIBILITY_TICKS` → seed capstone, cooldown-gated); per-living-aspect essence trickle in both `computeEssenceGeneration` + `computeEssenceIncome`; death→mythic-echo handling in `agentLifecycle` (retain node + edge, set `mythicEcho`, `aspect_echoed` trace). Content: bespoke `encounter.apotheosis.ascension` (accept/refuse). UI: ThreadsPanel "❂ Aspect" badge + `__DEBUG.getAspects()`/`grantAspectDebug()`. 19 new tests; full suite green (11607). Deferrals: THR-484 (unmade branch + echo surfacing), THR-485 (retained-node cross-system audit). PR pending.
 - ✅ 2026-06-23: THR-475 shipped — Encounter surface foundation. Added `src/engine/encounterSurface.ts` (`computeSurfaceKey`, `getSurfaceAxisValues`, surface-volume constants), re-keyed novelty tracking from `templateId` to `surfaceKey`, pre-resolved `targetAgentRole` for social candidates, surfaced selected surface metadata in DebugPanel + `__DEBUG.getEncounterNoveltyRecord()`, and added deterministic `npm run volume-model` output (`Docs/playtests/coverage/2026-06-23-encounter-volume-model.{md,json}` hash-identical across reruns).
 - ✅ 2026-06-23: THR-473 shipped — Content Census P1 instrument. `src/engine/contentCensus/` (constants, types, per-registry adapters, matrix builder, resolvability ranker) + `scripts/content-census.ts` + `npm run content-census`. Per-registry adapter table resolves all 8 in-scope content types; encounters (564) fully tagged (reach+scale); actions (44) reach-only (scale untagged — schema backfill needed); attachments/spells/artifacts reach-from-effects; conditions/omens fully untagged. Deterministic: two-run identical. Output: `Docs/playtests/coverage/YYYY-MM-DD-content-census.{md,json}`.
 - ✅ 2026-06-22: THR-464 shipped — rung-6 global share ceiling enforces `template_top_share ≤ 8%`. `computeGlobalShareMultiplier` reads eligibilityFunnel directly, applies `(target/share)^8` penalty. Constants: `NOVELTY_GLOBAL_SHARE_TARGET=0.04`, `NOVELTY_GLOBAL_SHARE_EXPONENT=8`. KPI: seeds 42/99/7 → 5.4%/5.5%/4.3% (was 14%/20%/5%). PR #372.
@@ -38,8 +39,6 @@
 - ✅ 2026-06-12: THR-453 shipped — Template novelty pressure: recency penalty + category quotas in `encounterScoring.ts`. `EncounterNoveltyRecord` in GameState. `computeGlobalNoveltyPenalty`, `computeAgentNoveltyPenalty`, `computeNoveltyMultiplier`. `noveltyChangedSelection`/`preNoveltyWinnerId` in ScoringTrace. 15 new tests. PR #320.
 - ✅ 2026-06-12: THR-451 shipped — Outcome Economy Retune: eliminate failure-dominant world. Two-tier probability floor in `resolutionScaleAdjust.ts` (personal 0.70, local 0.65). `ResolutionInputTrace` + `resolution-stats` CLI command. Reduces overall failure from 96% → 34.6% avg across 3 seeds. Critical failure at personal/local gated to 0%. Critical success preserved. PR #319.
 - ✅ 2026-06-12: THR-62 shipped — Phase 5 encounter migration & early-game retune. Dead `isUATStep` branch removed. `buildOutcomeCompat()` + `selectBandAfterimage()` dispatch band-specific prose (criticalSuccess/successAtCost/criticalFailure). 48 new afterimage strings across 16 reference templates (4 borderland, 7 social, 5 secret). `toSecretTemplate()` converter auto-populates success/failureAfterimage. `EARLY_GAME_TICK_WINDOW=50`, `EARLY_GAME_SUCCESS_RATE_TARGET=0.55`, `EARLY_GAME_FAILURE_RATE_CAP=0.25`; 2 early_game balance bands; `BALANCE_TARGETS_VERSION` → 0.2.0-phase5. THR-459 deferred (cache scale). PR #328.
-- ✅ 2026-06-11: THR-452 shipped — Branching encounter reachability. Curator bias (1.75× for under-selected branching templates), outgrowth exemption (`BRANCHING_QUEST_SKIP_OUTGROWTH`), cap preservation (`BRANCHING_CAP_RESERVE=1`). 27 of 28 branching templates were never firing; now reachable. 24 files, `branchingCurator.ts` + `branchingConstants.ts` (new), `BranchingCuratorNudgeTrace`.
-- ✅ 2026-06-11: THR-457 shipped — Gameplay observability KPI harness. `src/engine/kpi/` (gameplayKpi.ts + kpiConstants.ts), `EligibilityFunnelCounters` on SimulationRuntime, filter pipeline + scoring hooks, CLI `kpi` command, `window.__DEBUG.getKpiReport()`, DebugPanel KPI tab, `scripts/gameplay-report.ts` + `npm run gameplay-report`. 17 KPI tests. Confirmed: 96% failure + 0 branching fires at seed 42 tick 120.
 ## Archived to project-history.md
 - THR-322/321/320/315/309/307/308/306/302/305/301/299/298/297/296/294/282/238/109/79/108/107/104/103/106/290/102/280/285/286/283/287/276/284/277/281/211/243/272/212/210/247/253/26/101/254/259/257/36/134/100/182/252/225/164/99/10/246/95/233/188/153/187/96/165/88/185/186/180/34/125/80/128/127/184/94/174/162/152/167/126/122/81/172/183/170/181/156/18/155/151/29/154/166/150/35/31/173 and earlier — see project-history.md
 - 2026-05-06 batch: THR-311, THR-312, THR-313, THR-314, THR-315, THR-316, THR-317, THR-320, THR-321, THR-322, THR-323, THR-336
@@ -50,7 +49,7 @@
 - 2026-05-11 batch: THR-393, THR-403, THR-408, THR-411
 - 2026-05-12 batch: THR-413, THR-404, THR-397, THR-398, THR-399, THR-405, THR-416, THR-409
 - 2026-05-16 batch: THR-416 (via THR-409 worktree cleanup closeout), THR-249, THR-248, THR-377, THR-447
-- 2026-06-11 batch: THR-406, THR-450
+- 2026-06-11 batch: THR-406, THR-450, THR-452, THR-457
 
 ## Active Backlog Ideas
 - **TB-105–108 Thematic Pressure & Living World Pass** (omen agendas, cool failure, doom identity, intent/activity visibility)

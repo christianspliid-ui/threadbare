@@ -862,6 +862,29 @@ function CompactThreadRow({
             </div>
           )}
 
+          {/* THR-479 — Aspect badge on agent rows for living Aspects of the god */}
+          {node.category === 'agent' && node.isAspect && (
+            <div>
+              <span
+                data-testid="aspect-badge"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 4,
+                  padding: '1px 6px',
+                  border: '1px solid var(--sphere-star-bright, var(--accent-gold))',
+                  borderRadius: 999,
+                  fontSize: 11, fontFamily: 'var(--font-body)',
+                  fontStyle: 'italic', letterSpacing: '0.04em',
+                  color: 'var(--sphere-star-bright, var(--accent-gold))',
+                  backgroundColor: 'transparent',
+                }}
+                aria-label="An aspect of the god — the apex beyond the five tiers"
+                title="An aspect of the god. Beyond the five tiers; permanent; will outlast the body that holds it."
+              >
+                ❂ Aspect
+              </span>
+            </div>
+          )}
+
           {/* Strategic badge row (agents with active strategic activity) */}
           {node.category === 'agent' && strategicBadgeText && familyPresentation && (
             <div

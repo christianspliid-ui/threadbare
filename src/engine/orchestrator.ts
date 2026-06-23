@@ -123,6 +123,7 @@ import { phaseDetectionPressure } from './orchestrator/phaseDetectionPressure';
 import { phaseDriftDecay } from './orchestrator/phaseDriftDecay';
 import { mulberry32 as libMulberry32 } from '../lib/prng';
 import { evaluateEncounterSeeds } from './encounterSeeding';
+import { seedApotheosisEncounters } from './aspects';
 import { EncounterCacheManager, buildDangerMap } from './encounterCache';
 import { resolveLocationToHex } from './encounterAwareness';
 import { phaseNpcGraduation } from './npcGraduation';
@@ -2113,6 +2114,15 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   {
     const attentionRng = mulberry32(state.seed + state.tick * 71);
     s = { ...s, ...phaseAttention(s, UNIFIED_ACTION_TEMPLATES, attentionRng) };
+  }
+
+  // Phase 2a.78: Apotheosis Eligibility — seed the capstone onto tier-4 mortals
+  // that have held the top rung long enough (THR-479). Runs before seed
+  // evaluation so a freshly-seeded apotheosis is picked up the same tick.
+  {
+    s = { ...s, ...seedApotheosisEncounters(s, s.tick, runtime) };
+    phaseEventCounts['apotheosis_seeding'] = s.tickEvents.length - prevEventCount;
+    prevEventCount = s.tickEvents.length;
   }
 
   // Phase 2a.8: Evaluate encounter seeds planted by aftermath reactions

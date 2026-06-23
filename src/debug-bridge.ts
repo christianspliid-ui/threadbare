@@ -424,6 +424,51 @@ if (import.meta.env.DEV) {
     },
 
     /**
+     * THR-479: list the ascendant's Aspects (apex milestone beyond the five
+     * tiers). Returns living Aspects and mythic echoes (dead Aspects whose bond
+     * endures). Empty array if the game isn't loaded or there are none.
+     */
+    getAspects: () => {
+      const graph = _graphProvider?.();
+      const state = _gameStateProvider?.();
+      if (!graph || !state) return [];
+      return graph.getOutgoingEdges(state.ascendantId, 'aspect_of').map(edge => {
+        const mortal = graph.getNode(edge.target);
+        const props = edge.properties as Record<string, unknown>;
+        return {
+          ascendantId: edge.source,
+          mortalId: edge.target,
+          mortalName: mortal?.name ?? '(removed)',
+          attainedTick: (props.attainedTick as number) ?? null,
+          sourceTier: (props.sourceTier as number) ?? null,
+          mythicEcho: props.mythicEcho === true,
+          echoedTick: (props.echoedTick as number) ?? null,
+        };
+      });
+    },
+
+    /**
+     * THR-479 (dev/QA only): grant the Aspect apex to a threaded mortal without
+     * waiting for the natural apotheosis. Accepts an agent id, id prefix, or
+     * partial name. Touches the world so the UI badge refreshes. Returns the
+     * grant result, or null if the game isn't loaded / mortal not found.
+     */
+    grantAspectDebug: async (mortalIdOrName: string) => {
+      const graph = _graphProvider?.();
+      const state = _gameStateProvider?.();
+      const runtime = _runtimeProvider?.();
+      if (!graph || !state) return null;
+      const actors = graph.getNodesByType('actor');
+      const match =
+        actors.find(n => n.id === mortalIdOrName) ??
+        actors.find(n => n.id.startsWith(mortalIdOrName)) ??
+        actors.find(n => typeof n.name === 'string' && n.name.toLowerCase().includes(mortalIdOrName.toLowerCase()));
+      if (!match) return null;
+      const { grantAspect } = await import('./engine/aspects');
+      return grantAspect(graph, { mortalId: match.id, tick: state.tick, originEncounterId: 'debug.grant' }, runtime ?? undefined);
+    },
+
+    /**
      * THR-401: inspect a location's THR-401 properties (population health,
      * divine presence, active time-bounded flags). Accepts a location id,
      * id prefix, or partial name. Returns null if not found.
