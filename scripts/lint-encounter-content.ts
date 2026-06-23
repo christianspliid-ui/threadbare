@@ -13,51 +13,20 @@ import {
 } from '../src/data/__fixtures__/encounter-content-lint/index';
 import { UNIFIED_ACTION_TEMPLATES } from '../src/data/unified-action-templates';
 import { adaptUnifiedActionTemplateToEncounterContract } from '../src/engine/encounter-contract-adapter';
+import {
+  FLOWERY_PHRASES,
+  FORECAST_DIGIT_PATTERN,
+  PROBABILITY_PHRASES,
+  PROSE_LOUD_WARNING_THRESHOLD,
+  PROSE_WARNING_THRESHOLD,
+} from '../src/engine/content-eval/detectors';
 import type { EncounterContract } from '../src/types/encounter-contract';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WORLD_MODEL_PATH = path.join(repoRoot, 'src', 'data', 'world-model.json');
 const DATA_ROOT = path.join(repoRoot, 'src', 'data');
 
-const FORECAST_DIGIT_PATTERN = /\d/u;
-const PROBABILITY_PHRASES = [
-  'likely',
-  'unlikely',
-  'probably',
-  'chance',
-  'odds',
-  'percent',
-  '%',
-  'probability',
-] as const;
-
-const FLOWERY_PHRASES = [
-  'inexorable',
-  'ineffable',
-  'transcendent',
-  'sublime',
-  'eldritch',
-  'otherworldly',
-  'gossamer',
-  'ephemeral',
-  'ethereal',
-  'primordial',
-  'ancient beyond reckoning',
-  'shimmering',
-  'gleaming',
-  'glistening',
-  'glittering',
-  'scintillating',
-  'whisper of fate',
-  'hand of destiny',
-  'weaver of threads',
-  'mortal coil',
-  'sea of stars',
-  'tapestry of',
-] as const;
-
-export const PROSE_WARNING_THRESHOLD = 3;
-export const PROSE_LOUD_WARNING_THRESHOLD = 6;
+export { PROSE_WARNING_THRESHOLD, PROSE_LOUD_WARNING_THRESHOLD };
 
 export type EncounterLintSeverity = 'error' | 'warning';
 export type EncounterLintRuleId = 'R1' | 'R2' | 'R3' | 'R4' | 'R5' | 'SCHEMA' | 'SYSTEM';

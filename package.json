@@ -59,6 +59,7 @@
     "review:test:clean": "npm run review:build && node .cache/review-wrapper.mjs node .cache/review-test-clean.mjs",
     "review:test:stall": "npm run review:build && node .cache/review-wrapper.mjs node .cache/review-test-stall.mjs",
     "audit-ia": "esbuild scripts/audit-ia-manifest.ts --bundle --platform=node --format=esm --outfile=.cache/audit-ia-manifest.mjs --external:fs --external:path --external:url && node .cache/audit-ia-manifest.mjs",
+    "eval:prose": "esbuild scripts/eval-prose-quality.ts --bundle --platform=node --format=esm --outfile=.cache/eval-prose-quality.mjs --external:fs --external:path --external:process --external:url && node .cache/eval-prose-quality.mjs",
     "prepare": "husky"
   },
   "dependencies": {
