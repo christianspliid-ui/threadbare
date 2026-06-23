@@ -27,6 +27,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#iron', '#weapon', '#melee', '#combat'],
       mechanicalSummary: '+0.03 Iron, +0.02 Iron in combat',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Pitted and green with age, but the point still bites.',
       effects: [
@@ -44,6 +45,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#iron', '#weapon', '#ranged', '#combat'],
       mechanicalSummary: '+0.04 Iron, +0.01 Iron per combat success (max +0.03, decays 1/tick)',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Sinew-strung and warped from damp, but deadly enough at close range.',
       effects: [
@@ -61,6 +63,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#iron', '#weapon', '#melee', '#combat'],
       mechanicalSummary: '+0.04 Iron, +0.02 Iron / -0.01 Heart (blunt instrument)',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'The rust is mostly cosmetic. Mostly.',
       effects: [
@@ -78,6 +81,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#iron', '#weapon', '#melee', '#survival', '#combat', '#wilderness'],
       mechanicalSummary: '+0.03 Iron, 3 charges of +0.04 Iron burst (desperate strikes)',
+      censusTag: { scale: 'local' },
       lossCondition: 'consumable',
       flavorText: 'Carved from the rib of something large. It will not last.',
       effects: [
@@ -97,6 +101,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#iron', '#weapon', '#melee', '#combat'],
       mechanicalSummary: '+0.08 Iron, +0.01 Iron per combat success (max +0.04, decays 1 stack/tick)',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Forged in a dead forge-town. The metal remembers heat it should not.',
       effects: [
@@ -114,6 +119,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#iron', '#weapon', '#ranged', '#eye', '#combat'],
       mechanicalSummary: "+0.07 Iron, +0.03 Eye, +1 awareness range (watchman's vigil)",
+      censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'Issued to border watchers. The sighting marks are worn smooth by anxious thumbs.',
       effects: [
@@ -132,6 +138,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#checkpoint', '#order', '#eye', '#gold'],
       mechanicalSummary: '+0.03 Eye, +0.02 Gold, +0.02 Gold in social (official authority)',
+      censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'Wax seals, chalk, and a customs stamp wrapped in oilcloth. Boring to everyone except the people who know how power hides in paperwork.',
       effects: [
@@ -150,6 +157,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#iron', '#weapon', '#melee', '#stone', '#combat'],
       mechanicalSummary: '+0.06 Iron, +0.03 Stone, thorns emerge when attacked (+0.03 Iron for 6 ticks, 12-tick cooldown)',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'The wood is alive. It sprouts small leaves in spring, thorns in winter.',
       effects: [
@@ -170,6 +178,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 3,
       tags: ['#iron', '#weapon', '#melee', '#cursed', '#combat'],
       mechanicalSummary: '+0.12 Iron, -0.05 Heart, when damaged: +0.05 Iron burst decaying over 5 ticks (12-tick cooldown), grants dark_ferocity trait',
+      censusTag: { scale: 'local' },
       lossCondition: 'cursed',
       flavorText: 'The blade is hollow and whistles when swung. The sound makes children weep.',
       effects: [
@@ -191,6 +200,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 3,
       tags: ['#iron', '#weapon', '#ranged', '#star', '#combat'],
       mechanicalSummary: '+0.10 Iron, +0.05 Star, stellar alignment: +0.03 Star for 6 ticks then dormant 12 ticks',
+      censusTag: { scale: 'local' },
       lossCondition: 'permanent',
       flavorText: 'The string hums a note too low to hear. Arrows fly straighter than physics allows.',
       effects: [
@@ -214,6 +224,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 4,
       tags: ['#iron', '#weapon', '#melee', '#shadow', '#ancient', '#combat'],
       mechanicalSummary: '+0.18 Iron, +0.08 Shadow, blocks fear/intimidation conditions, when attacked: 20% faster movement for 6 ticks (12-tick cooldown), shadow focus persists until combat ends (+0.02 Shadow)',
+      censusTag: { scale: 'local' },
       lossCondition: 'permanent',
       flavorText: 'It makes no sound when it cuts. Neither does the one it cuts.',
       effects: [
@@ -238,6 +249,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#shadow', '#weapon', '#melee', '#stealth', '#assassination'],
       mechanicalSummary: '+0.03 Shadow, +0.02 Shadow when alone (ambush bonus)',
+      censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'Thin as a finger bone and just as cold. The grip is wrapped in linen from a burial shroud.',
       effects: [
@@ -255,6 +267,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#heart', '#weapon', '#instrument', '#command', '#social'],
       mechanicalSummary: '+0.03 Heart, +0.02 Heart in social encounters, +0.3 cooperation with allies (rallying call)',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Dented brass with a cracked bell. It still carries across a valley when the wind is right.',
       effects: [
@@ -273,6 +286,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#eye', '#weapon', '#ranged', '#precision', '#reconnaissance'],
       mechanicalSummary: '+0.03 Eye, +1 awareness range (surveyor sight), 4 charges of +0.03 Eye burst (mark target)',
+      censusTag: { scale: 'local' },
       lossCondition: 'consumable',
       flavorText: 'Crossbow quarrels with red-dyed fletching. The spotter who carried them marked enemy positions, not map edges.',
       effects: [
@@ -291,6 +305,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#stone', '#weapon', '#melee', '#heavy', '#combat'],
       mechanicalSummary: '+0.04 Stone, +0.02 Stone / -0.01 Eye (heavy and unwieldy), blocks bruise conditions',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'A column of black stone lashed to a shaft of green oak. Whoever swings it does not swing it twice in quick succession.',
       effects: [
@@ -309,6 +324,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#shadow', '#weapon', '#melee', '#stealth', '#assassination'],
       mechanicalSummary: '+0.05 Shadow, +0.03 Shadow / -0.02 Heart (silent killer), +0.01 Shadow per combat success (max 3 stacks, decays 1/tick)',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Braided from horsehair and treated with tallow. It leaves no mark on the throat if you know the twist.',
       effects: [
@@ -327,6 +343,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#veil', '#weapon', '#implement', '#mystical'],
       mechanicalSummary: '+0.04 Veil, +0.03 Veil in mystical encounters, when attacked: +0.03 Veil for 4 ticks (10-tick cooldown)',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Hazel wood stripped white by moonlight. Someone carved a name into the base and then scraped it out.',
       effects: [
@@ -345,6 +362,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#heart', '#iron', '#weapon', '#command', '#combat'],
       mechanicalSummary: '+0.05 Heart, +0.03 Iron in combat, +0.5 cooperation with same-faction allies, drives wielder toward combat encounters (1.3x behavior weight)',
+      censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'The pole is splintered and re-bound with wire. The cloth shows a sigil no living heraldist recognizes.',
       effects: [
@@ -364,6 +382,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#eye', '#iron', '#weapon', '#ranged', '#precision', '#combat'],
       mechanicalSummary: '+0.05 Eye, +0.02 Iron, on near-miss Eye tests (within 2 margin): +1 step, +1 awareness range',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'The lens is ground from quartz and sits in a brass cradle. The crossbow itself is unremarkable. The lens is everything.',
       effects: [
@@ -383,6 +402,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#stone', '#iron', '#weapon', '#melee', '#heavy', '#combat', '#ancient'],
       mechanicalSummary: '+0.05 Stone, +0.03 Iron, when attacked: +0.03 Stone for 6 ticks (12-tick cooldown), 20% slower movement (weight penalty)',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'The wood turned to stone a thousand years ago. The blade edge is a geological accident. It cuts like a bad intention.',
       effects: [
@@ -402,6 +422,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#gold', '#weapon', '#melee', '#commercial', '#social'],
       mechanicalSummary: '+0.05 Gold, +0.03 Gold in social encounters, -0.02 Iron (not a fighting weapon), -0.2 cooperation with enemies (economic intimidation)',
+      censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'Brass pans on a chain, with lead weights sewn into the handle. The Assessors Guild calls it a tool. The people they assess call it a weapon.',
       effects: [
@@ -423,6 +444,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#iron', '#armor', '#cloth', '#combat'],
       mechanicalSummary: '+0.03 Iron, blocks bruise conditions',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Quilted linen stuffed with horsehair. Better than bare skin.',
       effects: [
@@ -440,6 +462,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#gold', '#cloth', '#commercial', '#trade'],
       mechanicalSummary: '+0.04 Gold, +0.02 Gold in social encounters',
+      censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'Dyed in the saffron of the eastern markets. Wealth worn on the sleeve.',
       effects: [
@@ -457,6 +480,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#star', '#cloth', '#divine'],
       mechanicalSummary: '+0.03 Star, +0.02 Star in mystical encounters (pilgrim devotion)',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Threadbare and sun-bleached. It smells of incense and long roads.',
       effects: [
@@ -476,6 +500,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#iron', '#armor', '#combat'],
       mechanicalSummary: '+0.08 Iron, when attacked: +0.03 Iron for 4 ticks (8-tick cooldown)',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Each ring was closed by hand. Someone cared enough to do it right.',
       effects: [
@@ -497,6 +522,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       // CAVEAT: 3 effects at T2 norm 1–2. All are utility (zero reach).
       // Accepted as-is — see systems audit.
       mechanicalSummary: '+0.07 Shadow, +1 awareness range, blocks tracking conditions',
+      censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'The fabric drinks light. Corners seem deeper when you wear it.',
       effects: [
@@ -517,6 +543,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 3,
       tags: ['#shadow', '#cloth', '#veil', '#cursed', '#stealth'],
       mechanicalSummary: '+0.12 Shadow, -0.06 Heart, entering new hex: +0.04 Shadow burst decaying over 4 ticks (8-tick cooldown), amplifies shadow encounter desire x1.5',
+      censusTag: { scale: 'local' },
       lossCondition: 'cursed',
       flavorText: 'Those who wear it become harder to recall. Even by those who love them.',
       effects: [
@@ -542,6 +569,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 4,
       tags: ['#star', '#cloth', '#divine', '#ancient'],
       mechanicalSummary: '+0.15 Star, +0.08 Veil, in mystical contexts: +0.03 Star, blocks curse/corruption/blight conditions, when damaged: +0.04 Veil ward for 6 ticks (12-tick cooldown)',
+      censusTag: { scale: 'local' },
       lossCondition: 'permanent',
       flavorText: 'A robe of impossible blue, stitched with constellations that move. It weighs nothing.',
       effects: [
@@ -566,6 +594,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#eye', '#tome', '#knowledge'],
       mechanicalSummary: '+0.03 Eye, +0.02 Eye in exploration',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'A naturalist\'s notes. The handwriting degrades toward the end.',
       effects: [
@@ -583,6 +612,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#star', '#scroll', '#divine'],
       mechanicalSummary: '+0.04 Star, 2 charges of +0.04 Star burst (divine invocation)',
+      censusTag: { scale: 'local' },
       lossCondition: 'consumable',
       flavorText: 'The words are old and the ink fading. One reading left, perhaps.',
       effects: [
@@ -600,6 +630,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#gold', '#tome', '#commercial'],
       mechanicalSummary: '+0.04 Gold, +0.02 Gold in social (trade leverage)',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Columns of numbers, trade routes inked in margins. Knowledge is currency.',
       effects: [
@@ -617,6 +648,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#gold', '#scroll', '#service', '#social', '#patronage'],
       mechanicalSummary: 'Service reward: immediately grants Patron\'s Backing.',
+      censusTag: { reach: 'gold', scale: 'local' },
       rewardMode: 'service',
       effects: [
         {
@@ -640,6 +672,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#eye', '#tome', '#knowledge'],
       mechanicalSummary: '+0.08 Eye, rescue near-miss Eye tests (+1 step, margin 5)',
+      censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'A history of empires that collapsed. The final chapter is blank.',
       effects: [
@@ -657,6 +690,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#veil', '#scroll', '#knowledge', '#arcane'],
       mechanicalSummary: '+0.06 Veil, +0.03 Eye, +0.01 Veil per encounter (max +0.03, decays 1/tick)',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'The letters rearrange themselves when you look away.',
       effects: [
@@ -677,6 +711,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 3,
       tags: ['#star', '#tome', '#knowledge', '#ancient', '#ruins'],
       mechanicalSummary: '+0.10 Star, +0.05 Eye, prevents 1 condition loss, +0.03 Star at low health',
+      censusTag: { scale: 'regional' },
       lossCondition: 'permanent',
       flavorText: 'Written by a god who chose to die. Every page is a eulogy for a truth.',
       effects: [
@@ -698,6 +733,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 4,
       tags: ['#veil', '#tome', '#knowledge', '#ancient', '#cursed', '#arcane', '#ruins'],
       mechanicalSummary: '+0.15 Veil, -0.08 Heart, blocks Heart actions (too detached to empathize), reveals all encounters, drifts toward ruthlessness',
+      censusTag: { scale: 'cosmic' },
       lossCondition: 'cursed',
       flavorText: 'The pages are blank until you bleed on them. Then they show you how everything ends.',
       effects: [
@@ -720,6 +756,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#stone', '#tool', '#craft'],
       mechanicalSummary: '+0.03 Stone, +0.02 Stone at home territory (workshop access)',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Blacksmith\'s tongs, well-used. The handles are polished smooth by grip.',
       effects: [
@@ -737,6 +774,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#heart', '#tool', '#survival', '#craft', '#wilderness', '#healing'],
       mechanicalSummary: '+0.04 Heart, 3 charges of +0.03 Heart burst (field dressing)',
+      censusTag: { scale: 'local' },
       lossCondition: 'consumable',
       flavorText: 'Dried leaves, crushed roots, and a mortar small enough to carry. The smell is medicinal.',
       effects: [
@@ -754,6 +792,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#eye', '#tool', '#craft'],
       mechanicalSummary: '+0.04 Eye, +1 awareness range',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'A single cracked lens in a brass tube. It magnifies, but distorts at the edges.',
       effects: [
@@ -773,6 +812,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#veil', '#tool', '#knowledge', '#craft', '#arcane'],
       mechanicalSummary: '+0.07 Veil, +0.03 Eye, +0.03 Veil for 6 ticks then dormant 12 ticks (distillation cycle)',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Stained with substances that should not exist in nature. The inside glows faintly at dusk.',
       effects: [
@@ -791,6 +831,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#stone', '#tool', '#craft', '#ruins'],
       mechanicalSummary: '+0.08 Stone, +0.01 Stone per encounter success (max +0.04)',
+      censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'Engraved with the mark of a guild that no longer exists. The edge never dulls.',
       effects: [
@@ -809,6 +850,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#eye', '#veil', '#temporal', '#tool'],
       mechanicalSummary: '+0.04 Eye, +0.03 Veil, freezes divine/blessing buff countdowns for 6 ticks, +1 awareness range',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'A lens ground from something that is not glass. When you look through it, moments stack upon each other like pages.',
       effects: [
@@ -830,6 +872,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 3,
       tags: ['#star', '#tool', '#ancient', '#knowledge', '#craft'],
       mechanicalSummary: '+0.10 Star, +0.05 Eye, reveals agents within 3 hexes, +0.03 Star in mystical',
+      censusTag: { scale: 'local' },
       lossCondition: 'permanent',
       flavorText: 'The rings spin of their own accord. It does not measure the stars — it speaks with them.',
       effects: [
@@ -851,6 +894,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#heart', '#talisman', '#travel'],
       mechanicalSummary: '+0.03 Heart, +0.02 Heart in social encounters',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'A knot of twine and feathers, blessed by a roadside saint. It smells of campfire.',
       effects: [
@@ -868,6 +912,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#iron', '#talisman', '#survival'],
       mechanicalSummary: '+0.04 Iron, blocks poison conditions',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Carved from a knucklebone and hung on gut string. Old magic, close to the body.',
       effects: [
@@ -885,6 +930,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#iron', '#talisman', '#combat', '#precision'],
       mechanicalSummary: 'Upgrade one close Iron failure by 1 step during combat.',
+      censusTag: { scale: 'local' },
       effects: [
         {
           type: 'test_shaper',
@@ -910,6 +956,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#star', '#relic', '#divine'],
       mechanicalSummary: '+0.06 Star, +0.03 Heart, when blessed: +0.03 Star for 6 ticks',
+      censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'A disc of fired clay stamped with a burning eye. Warm to the touch, always.',
       effects: [
@@ -930,6 +977,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#shadow', '#relic', '#stealth'],
       mechanicalSummary: '+0.07 Shadow, reveals encounters within 2 hex range',
+      censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'The glass is black but not opaque. Something moves inside when no one watches.',
       effects: [
@@ -947,6 +995,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#star', '#relic', '#ward', '#quintessence', '#survival'],
       mechanicalSummary: 'Prevent up to 0.08 quintessence loss once, then shatter.',
+      censusTag: { reach: 'star', scale: 'local' },
       effects: [
         {
           type: 'prevent_loss',
@@ -968,6 +1017,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#veil', '#temporal', '#relic', '#preservation'],
       mechanicalSummary: '+0.05 Veil, +0.02 Veil during active phase, freezes debuff countdowns for 6 ticks (active 6 ticks, dormant 18 ticks — cooldown cycle)',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'A pearl the color of frozen smoke. Hold it to your chest and feel time hesitate.',
       effects: [
@@ -988,6 +1038,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 3,
       tags: ['#stone', '#relic', '#ancient', '#ruins'],
       mechanicalSummary: '+0.12 Stone, -0.04 Shadow, 1-hex aura: +0.02 Stone to allies, +0.01 Stone per encounter (max +0.03)',
+      censusTag: { scale: 'regional' },
       lossCondition: 'permanent',
       flavorText: 'A stone pulled from a king\'s grave. It pulses like a heartbeat when pressed to earth.',
       effects: [
@@ -1007,6 +1058,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 3,
       tags: ['#heart', '#relic', '#divine', '#cursed'],
       mechanicalSummary: '+0.10 Heart, -0.05 Eye, when damaged: +0.04 Heart for 6 ticks (12-tick cd), drifts toward mercy',
+      censusTag: { scale: 'regional' },
       lossCondition: 'cursed',
       flavorText: 'A small wooden saint that cries real tears. You feel what others feel, whether you wish to or not.',
       effects: [
@@ -1028,6 +1080,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 3,
       tags: ['#veil', '#shadow', '#temporal', '#relic', '#ancient'],
       mechanicalSummary: '+0.08 Veil, +0.04 Shadow, -0.03 Heart, slows one nearby enemy (skip actions for 3 ticks), freezes own condition countdowns for 6 ticks.',
+      censusTag: { scale: 'regional' },
       lossCondition: 'cursed',
       flavorText: 'The sand flows upward. The glass is warm to the touch, as if something inside is still dying.',
       effects: [
@@ -1050,6 +1103,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 4,
       tags: ['#veil', '#relic', '#ancient', '#divine', '#arcane', '#ruins'],
       mechanicalSummary: '+0.15 Veil, +0.08 Star, 1-hex aura: +0.03 Veil to all, mystical encounter bonus +0.04 Veil, outcome shift in mystical (+1 step)',
+      censusTag: { scale: 'cosmic' },
       lossCondition: 'permanent',
       flavorText: 'A sphere of perfect obsidian that balances on any surface. Reality bends toward it.',
       effects: [
@@ -1072,6 +1126,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#beast', '#mount', '#travel', '#wilderness'],
       mechanicalSummary: '+0.03 Gold, 10% reduced movement cost (pack animal)',
+      censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'Short-legged and ill-tempered, but carries twice its weight without complaint.',
       effects: [
@@ -1089,6 +1144,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#beast', '#eye', '#survival', '#wilderness'],
       mechanicalSummary: '+0.04 Eye, amplifies exploration encounters (1.3x)',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Scarred ears and a cold nose. It finds things you did not know were lost.',
       effects: [
@@ -1106,6 +1162,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#beast', '#travel', '#survival', '#wilderness'],
       mechanicalSummary: '+0.03 Stone, +1 consumable slot (pack carrier)',
+      censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'It eats anything. It climbs anything. It judges you constantly.',
       effects: [
@@ -1125,6 +1182,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#beast', '#iron', '#weapon', '#combat', '#wilderness'],
       mechanicalSummary: '+0.06 Iron, +0.03 Eye, +0.03 Iron in combat, cooperation bias toward enemies: -0.2 (the hound snarls)',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Bred for violence and trained to silence. Its loyalty is absolute and terrifying.',
       effects: [
@@ -1144,6 +1202,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#beast', '#mount', '#travel', '#wilderness'],
       mechanicalSummary: '+0.05 Gold, +0.03 Iron, 20% reduced movement cost, flee on damage (+0.04 Gold for 4 ticks, 12-tick cd)',
+      censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'Long-legged and wind-quick. She runs like she remembers open grassland.',
       effects: [
@@ -1167,6 +1226,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 3,
       tags: ['#beast', '#mount', '#iron', '#combat', '#wilderness'],
       mechanicalSummary: '+0.10 Iron, +0.05 Gold, 20% reduced movement cost, grants cavalry_charge trait, amplifies combat encounters (1.4x)',
+      censusTag: { scale: 'regional' },
       lossCondition: 'permanent',
       flavorText: 'Grey as smoke and fearless in battle. It was born on a battlefield and has never left one.',
       effects: [
@@ -1189,6 +1249,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#beast', '#mount', '#shadow', '#stealth', '#wilderness'],
       mechanicalSummary: '+0.04 Shadow, 15% reduced movement cost, +0.03 Shadow in enemy territory (ambush positioning)',
+      censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'A gaunt grey thing with hooves wrapped in rags. It makes no sound on any surface and will not approach firelight.',
       effects: [
@@ -1207,6 +1268,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 3,
       tags: ['#beast', '#mount', '#shadow', '#combat', '#intimidation'],
       mechanicalSummary: '+0.07 Shadow, +0.03 Iron, 15% reduced movement cost, grants shadow_strike trait, enemies in 1 hex: -0.03 Eye (shroud aura)',
+      censusTag: { scale: 'regional' },
       lossCondition: 'permanent',
       flavorText: 'A wolf the size of a yearling calf, black as wet charcoal. Smoke leaks from between its teeth when it breathes. It chose you. You did not choose it.',
       effects: [
@@ -1227,6 +1289,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#beast', '#mount', '#veil', '#mystical', '#exploration'],
       mechanicalSummary: '+0.04 Veil, 10% reduced movement cost, +1 awareness hex range, +0.03 Veil in mystical encounters',
+      censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'A white hart with too many antler points. Its hooves leave no prints but the air shimmers where it stepped, as if heat were rising from snow.',
       effects: [
@@ -1245,6 +1308,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 3,
       tags: ['#beast', '#mount', '#veil', '#mystical', '#arcane'],
       mechanicalSummary: '+0.06 Veil, +0.03 Eye, 15% reduced movement cost, +2 awareness hex range, immune to fear/illusion tags, amplifies mystical encounters (1.3x)',
+      censusTag: { scale: 'regional' },
       lossCondition: 'permanent',
       flavorText: 'Larger than any moth should be and luminous at the wing-edges. It navigates by ley-lines that no cartographer has mapped. When it lands on your shoulder the weight is barely there, but the world looks different.',
       effects: [
@@ -1265,6 +1329,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#beast', '#heart', '#loyalty', '#social', '#companion'],
       mechanicalSummary: '+0.04 Heart, +0.02 Iron, cooperation +0.15 toward allies, when damaged: +0.04 Heart for 3 ticks (8-tick cooldown, protective instinct)',
+      censusTag: { scale: 'local' },
       lossCondition: 'permanent',
       flavorText: 'It followed a dead woman for nine days before it found you. Now it sleeps across your doorway and will not let strangers pass without your word.',
       effects: [
@@ -1286,6 +1351,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 3,
       tags: ['#beast', '#mount', '#heart', '#empathy', '#social', '#healing'],
       mechanicalSummary: '+0.08 Heart, +0.03 Gold, 20% reduced movement cost, allies in 1 hex: +0.02 Heart (calming aura), grants empathic_bond trait',
+      censusTag: { scale: 'regional' },
       lossCondition: 'permanent',
       flavorText: 'She carries grief the way other horses carry weight -- steadily, without stumbling. Wounded soldiers stop screaming when she walks through camp. No one knows why.',
       effects: [
@@ -1306,6 +1372,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 3,
       tags: ['#beast', '#star', '#prophecy', '#awareness', '#companion'],
       mechanicalSummary: '+0.06 Star, +0.04 Eye, +3 awareness hex range, amplifies exploration encounters (1.2x), when encounter starts: +0.03 Star for 4 ticks (6-tick cooldown, prescient warning)',
+      censusTag: { scale: 'regional' },
       lossCondition: 'permanent',
       flavorText: 'It perches on your shoulder at dawn and screams at things that have not happened yet. By the time you understand its warning, you are already moving.',
       effects: [
@@ -1328,6 +1395,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 4,
       tags: ['#beast', '#mount', '#star', '#veil', '#legendary', '#celestial'],
       mechanicalSummary: '+0.06 Star, +0.04 Veil, +0.03 Eye, 25% reduced movement cost, +2 awareness hex range, allies in 1 hex: +0.02 Star (fate-touched aura), grants starborne_rider trait',
+      censusTag: { scale: 'cosmic' },
       lossCondition: 'permanent',
       flavorText: 'No breed anyone can name. Coat like moonlight on still water. It appeared at the crossroads on the longest night and waited, as though it had always known you would come. The old woman at the wayshrine said it had been waiting for a century.',
       effects: [
@@ -1351,6 +1419,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#food', '#provision', '#survival', '#wilderness', '#trade'],
       mechanicalSummary: '+0.03 Iron, +0.02 Iron in wilderness (trail sustenance)',
+      censusTag: { scale: 'local' },
       lossCondition: 'consumable',
       flavorText: 'It will not spoil. It will also not taste like food.',
       effects: [
@@ -1368,6 +1437,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#drink', '#provision', '#survival', '#wilderness'],
       mechanicalSummary: '+0.03 Iron, decays -0.003/tick to 0 (water runs out)',
+      censusTag: { scale: 'local' },
       lossCondition: 'consumable',
       flavorText: 'Clean water. Worth more than gold in the dry places.',
       effects: [
@@ -1384,6 +1454,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#tool', '#provision', '#survival', '#wilderness'],
       mechanicalSummary: '+0.03 Stone, 3 charges of +0.03 Stone burst (fire-making)',
+      censusTag: { scale: 'local' },
       lossCondition: 'consumable',
       flavorText: 'Flint, steel, and a bundle of tinder wrapped in oilcloth. The difference between living and dying.',
       effects: [
@@ -1401,6 +1472,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#drink', '#provision', '#heart', '#trade'],
       mechanicalSummary: '+0.04 Heart, decays -0.005/tick to 0 (wine runs out)',
+      censusTag: { scale: 'local' },
       lossCondition: 'consumable',
       flavorText: 'Cheap and sour, but it loosens tongues and lightens burdens.',
       effects: [
@@ -1417,6 +1489,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#iron', '#consumable', '#combat', '#alchemy'],
       mechanicalSummary: 'Grants 1 extra action for 4 ticks, +0.02 Iron per use, but -0.03 Heart for 6 ticks (fades). Consumable, 2 charges, destroyed when empty.',
+      censusTag: { scale: 'local' },
       lossCondition: 'consumable',
       flavorText: 'Thick as tar and smells worse. The old soldiers swear by it. The young ones vomit first, then swear by it.',
       effects: [
@@ -1437,6 +1510,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#potion', '#provision', '#heart', '#healing', '#wilderness'],
       mechanicalSummary: '+0.07 Heart, decays -0.007/tick to 0 (poultice absorbed)',
+      censusTag: { scale: 'local' },
       lossCondition: 'consumable',
       flavorText: 'Moss, spider silk, and something bitter. Applied to wounds, it numbs and knits.',
       effects: [
@@ -1453,6 +1527,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#star', '#provision', '#divine', '#healing'],
       mechanicalSummary: '+0.06 Star, +0.03 Heart, lasts until rest (sanctuary ends when you move on)',
+      censusTag: { scale: 'local' },
       lossCondition: 'consumable',
       flavorText: 'When burned, the smoke forms shapes that soothe the troubled spirit.',
       effects: [
@@ -1470,6 +1545,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#veil', '#consumable', '#temporal', '#alchemy'],
       mechanicalSummary: 'Freezes all buff countdowns for 8 ticks. 3 charges, destroyed when empty. +0.04 Veil passive while held.',
+      censusTag: { scale: 'local' },
       lossCondition: 'consumable',
       flavorText: 'The liquid inside does not slosh when shaken. It remembers where it was.',
       effects: [
@@ -1490,6 +1566,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#shadow', '#intelligence', '#shrine_location', '#rival_god'],
       mechanicalSummary: '+0.03 Shadow, reveals encounters within 2 hexes, +0.02 Shadow in exploration',
+      censusTag: { scale: 'local' },
       lossCondition: 'permanent',
       flavorText:
         'Six pages of careful hand — route notes, guardian schedules, a margin sketch ' +
@@ -1514,6 +1591,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#shadow', '#intelligence', '#trade', '#economic'],
       mechanicalSummary: '+0.03 Shadow, +0.02 Gold, +1 awareness range, +0.02 Gold in social encounters',
+      censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText:
         'A broker\'s working file — commodity flows, caravan schedules, price spreads ' +
@@ -1539,6 +1617,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 3,
       tags: ['#veil', '#potion', '#provision', '#arcane'],
       mechanicalSummary: '+0.10 Veil (decays -0.008/tick), +0.05 Eye (decays -0.004/tick), reveals all hexes while active',
+      censusTag: { scale: 'regional' },
       lossCondition: 'consumable',
       flavorText: 'The liquid is perfectly clear but casts no reflection. Those who drink it see the world peeled back.',
       effects: [
@@ -1559,6 +1638,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#iron', '#weapon', '#melee', '#combat', '#force'],
       mechanicalSummary: '+0.06 Iron in combat only, fades if unused',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'The blade glows faintly at the edge. It cools between fights.',
       effects: [
@@ -1575,6 +1655,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#veil', '#relic', '#magic', '#spirit'],
       mechanicalSummary: '+0.08 Veil for 3 ticks, then dormant 7 ticks',
+      censusTag: { scale: 'local' },
       lossCondition: 'permanent',
       flavorText: 'It pulses with a rhythm that has nothing to do with your heartbeat.',
       effects: [
@@ -1591,6 +1672,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#iron', '#weapon', '#shield', '#combat'],
       mechanicalSummary: '+0.015 Iron per combat survived, max 4 stacks',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Each dent tells a story. The shield remembers what you survived.',
       effects: [
@@ -1607,6 +1689,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#flesh', '#consumable', '#healing', '#life'],
       mechanicalSummary: '3 charges: +0.10 Flesh per use, destroyed when empty',
+      censusTag: { reach: 'stone', scale: 'local' },
       lossCondition: 'consumable',
       flavorText: 'Smells of pine tar and something sharper. Three doses, no more.',
       effects: [
@@ -1623,6 +1706,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#veil', '#scroll', '#magic', '#ward', '#entropy'],
       mechanicalSummary: '+0.10 Veil decaying 0.01/tick to floor of 0.03',
+      censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'The ink is already lifting from the page. Use it before the words forget themselves.',
       effects: [
@@ -1639,6 +1723,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 3,
       tags: ['#iron', '#shadow', '#weapon', '#melee', '#combat'],
       mechanicalSummary: '+0.08 Iron, -0.04 Heart (cuts both ways)',
+      censusTag: { reach: 'iron', scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'The grip is wrapped in black leather. It draws blood from the wielder as easily as the target.',
       effects: [
@@ -1659,6 +1744,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#veil', '#talisman', '#ward', '#anti-magic'],
       mechanicalSummary: '+0.03 Veil, +0.02 Veil in mystical encounters, suppresses spells on self for 4 ticks',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'A river stone worn smooth and cold. When sorcery gathers, it drinks the sound from the air.',
       effects: [
@@ -1679,6 +1765,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#star', '#talisman', '#luck', '#fate'],
       mechanicalSummary: '+0.04 Star, 3 encounter rerolls, upgrades near-miss outcomes by 1 step',
+      censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'A copper coin so old the face has worn away. The last thing a dead gambler held. It feels warm when odds turn.',
       effects: [
@@ -1699,6 +1786,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 3,
       tags: ['#veil', '#shadow', '#relic', '#anti-magic', '#ancient'],
       mechanicalSummary: '+0.08 Veil, +0.04 Shadow, -0.04 Star, suppresses all effects in 1-hex radius for 6 ticks, creates awareness barrier on adjacent hexes for 8 ticks',
+      censusTag: { scale: 'regional' },
       lossCondition: 'cursed',
       flavorText: 'A band of grey iron that sits above the brow like a wound. Nothing magical survives within arm\'s reach. Including prayers.',
       effects: [
@@ -1721,6 +1809,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#stone', '#tool', '#ward', '#craft', '#territorial'],
       mechanicalSummary: '+0.05 Stone, creates movement barrier between self hex and adjacent for 10 ticks, +0.03 Stone at home territory',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'The needle does not point north. It points toward the boundary of what is yours and what is not.',
       effects: [
@@ -1741,6 +1830,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 3,
       tags: ['#eye', '#star', '#tool', '#divination', '#fate'],
       mechanicalSummary: '+0.06 Eye, +0.04 Star, -0.03 Shadow, 4 encounter rerolls, reveals encounters within 2 hexes',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'A lens of polished quartz set in brass so old it has turned green. Through it, the future is not one line but many, and some of them are kind.',
       effects: [
@@ -1763,6 +1853,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#stone', '#consumable', '#ward', '#territorial'],
       mechanicalSummary: '+0.02 Stone (always), 3 charges of +0.03 Stone burst, creates movement barrier on adjacent hexes for 6 ticks (while held)',
+      censusTag: { scale: 'local' },
       lossCondition: 'consumable',
       flavorText: 'Resinous sticks that burn with a bitter smoke. The old folk plant them at doorsteps and say nothing crosses the threshold while the ash is warm.',
       effects: [
@@ -1783,6 +1874,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#veil', '#stone', '#tome', '#ward', '#ritual'],
       mechanicalSummary: '+0.04 Veil, +0.03 Stone, suppresses auras on self hex for 8 ticks, creates both-type barrier on adjacent hexes for 8 ticks',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'The pages are blank until held near something enchanted. Then the ink rises like veins beneath skin, spelling out how to cage it.',
       effects: [
@@ -1804,6 +1896,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#star', '#provision', '#divine', '#restoration'],
       mechanicalSummary: '+0.02 Star near water, restores 1 essence (one-shot)',
+      censusTag: { scale: 'local' },
       lossCondition: 'consumable',
       flavorText: 'Drawn from a spring that remembers its source. Drink it near somewhere holy and feel the world lean closer.',
       effects: [
@@ -1821,6 +1914,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#star', '#provision', '#divine', '#calm', '#restoration'],
       mechanicalSummary: '+0.03 Star, restores 1 essence (one-shot) when alone',
+      censusTag: { scale: 'local' },
       lossCondition: 'consumable',
       flavorText: 'Five flat stones, each a different shade of grey. Arranged in the right order, they settle the mind like still water.',
       effects: [
@@ -1840,6 +1934,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 4,
       tags: ['#star', '#heart', '#provision', '#divine', '#ancient', '#healing', '#celestial'],
       mechanicalSummary: '+0.08 Star, +0.06 Heart, restores 1 essence per tick (requires Star > 0.10), 1-hex aura: +0.02 Heart to allies, blocks Iron actions (too peaceful to fight)',
+      censusTag: { scale: 'cosmic' },
       lossCondition: 'permanent',
       flavorText: 'The cup is always full. It tastes like the first meal you remember, like the last drink before sleep. Those who share it speak more softly afterward.',
       effects: [
@@ -1860,6 +1955,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 4,
       tags: ['#iron', '#stone', '#provision', '#ancient', '#cursed', '#survival', '#fortification'],
       mechanicalSummary: '+0.07 Iron, +0.06 Stone, blocks poison/disease/blight conditions, -0.04 Heart (numbing), modifies death_prevented rule (cannot die while held)',
+      censusTag: { scale: 'cosmic' },
       lossCondition: 'cursed',
       flavorText: 'The grain is pale and heavy as lead. It tastes of nothing. After the third handful you stop noticing hunger, and after the tenth you stop noticing most things.',
       effects: [
@@ -1880,6 +1976,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 4,
       tags: ['#veil', '#shadow', '#provision', '#cursed', '#arcane', '#ancient', '#prophecy'],
       mechanicalSummary: '+0.09 Veil, +0.05 Shadow, reveals all encounters (unlimited range), +0.04 Veil / -0.02 Star tradeoff (clarity at the cost of faith), drifts toward ruthlessness',
+      censusTag: { scale: 'cosmic' },
       lossCondition: 'cursed',
       flavorText: 'The mead is black and tastes of smoke and thyme. After the first draught the world looks thin — you can see the seams where it was stitched together. You pull at them.',
       effects: [
@@ -1902,6 +1999,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#star', '#relic', '#divine', '#restoration', '#faith'],
       mechanicalSummary: '+0.04 Star, restores 1 essence per tick during mystical encounters',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'A thumb-worn bead of river clay, shaped by a hundred thousand whispered prayers. It hums when the veil thins.',
       effects: [
@@ -1919,6 +2017,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#veil', '#relic', '#arcane', '#parasitic'],
       mechanicalSummary: '+0.06 Veil / -0.03 Star (tradeoff), drains 1 quintessence from other agent per tick',
+      censusTag: { reach: 'veil', scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'A glass tube bound in tarnished silver. It draws something out of the air near living things. They seem not to notice.',
       effects: [
@@ -1936,6 +2035,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 3,
       tags: ['#veil', '#relic', '#arcane', '#ancient', '#restoration'],
       mechanicalSummary: 'Veil bonus decays from +0.08 to +0.02 over ~20 ticks, -0.04 Star, restores 2 quintessence per tick',
+      censusTag: { scale: 'regional' },
       lossCondition: 'cursed',
       flavorText: 'A vessel of fused obsidian, warm to the touch. It sweats a clear liquid that smells of lightning. The priests who made it did not survive the process.',
       effects: [
@@ -1956,6 +2056,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#iron', '#tool', '#equipment', '#carrying'],
       mechanicalSummary: '+0.02 Iron, +1 weapon slot',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Cracked leather and brass buckles, fitted to cross the chest. Room enough for one more blade.',
       effects: [
@@ -1973,6 +2074,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#veil', '#tool', '#equipment', '#carrying', '#scholarly'],
       mechanicalSummary: '+0.02 Veil, +1 tome slot',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Oiled leather, sealed with wax. Keeps the rain off what matters.',
       effects: [
@@ -1990,6 +2092,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#stone', '#gold', '#tool', '#equipment', '#carrying', '#trade'],
       mechanicalSummary: '+0.04 Stone, +1 consumable slot, +1 utility slot, 20% slower movement',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Canvas and ironwork, distributing weight across shoulders and hips. You carry more. You carry it slower.',
       effects: [
@@ -2009,6 +2112,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#stone', '#tool', '#scavenging', '#discovery', '#wilderness'],
       mechanicalSummary: '+0.04 Stone, grants a random provision or tool on use, +0.02 Stone in wilderness',
+      censusTag: { scale: 'local' },
       lossCondition: 'consumable',
       flavorText: 'Wire cutters, a pry bar, three sizes of bag. Everything you need to take apart what someone else put together.',
       effects: [
@@ -2038,6 +2142,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 3,
       tags: ['#gold', '#veil', '#arcane', '#equipment', '#carrying', '#ancient'],
       mechanicalSummary: '+0.06 Gold, +0.04 Veil, +2 consumable slots, +1 wealth slot, restores 1 essence (one-shot)',
+      censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'A leather satchel with seams that do not line up with its edges. You reach in past the elbow and your hand keeps going. The stitching hums when you find what you were looking for.',
       effects: [
@@ -2060,6 +2165,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 4,
       tags: ['#eye', '#veil', '#tool', '#divination', '#ancient', '#exploration'],
       mechanicalSummary: '+0.08 Eye, +0.05 Veil, reveals all encounters within 3 hexes, +0.03 Eye in exploration, modifies awareness range +2 (permanent, self only)',
+      censusTag: { scale: 'local' },
       lossCondition: 'permanent',
       flavorText: 'It trembles when you face a direction no one has walked. Carved from the world\'s first boundary stone. It has never pointed north.',
       effects: [
@@ -2080,6 +2186,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 4,
       tags: ['#stone', '#star', '#tool', '#craft', '#ancient', '#divine', '#creation'],
       mechanicalSummary: '+0.10 Stone, +0.04 Star, +0.03 Stone at home territory, creates a shrine on the wielder\'s hex (permanent), drifts toward ambition',
+      censusTag: { scale: 'local' },
       lossCondition: 'permanent',
       flavorText: 'The bones hum when they touch raw stone. Where you set them down, the ground remembers how to hold weight. Cities begin where you rest.',
       effects: [
@@ -2102,6 +2209,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#gold', '#scroll', '#reward', '#discovery'],
       mechanicalSummary: '+0.04 Gold, 2 charges — each use grants a random item from a curated pool',
+      censusTag: { scale: 'local' },
       lossCondition: 'consumable',
       flavorText: 'Heavy parchment sealed with a merchant-guild stamp. Break the wax, and something of value falls out. Twice.',
       effects: [
@@ -2132,6 +2240,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#heart', '#star', '#offering', '#divine', '#discovery'],
       mechanicalSummary: '+0.03 Heart, restores 1 essence (one-shot), grants a random item: prayer scroll, healing poultice, or Fortune-Kissed blessing',
+      censusTag: { scale: 'local' },
       lossCondition: 'consumable',
       flavorText: "A wooden box carved with a saint's face, left at a crossroads shrine. Someone filled it. Someone always fills it.",
       effects: [
@@ -2162,6 +2271,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#quintessence', '#travel', '#mystical'],
       mechanicalSummary: '+3 quintessence on movement arrival (6-tick cooldown)',
+      censusTag: { reach: 'star', scale: 'personal' },
       lossCondition: 'durable',
       flavorText: 'The stone hums faintly when you arrive somewhere new, as though approving of the journey.',
       effects: [
@@ -2183,6 +2293,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#essence', '#combat', '#consumable'],
       mechanicalSummary: '+5 essence on encounter success (10 uses total)',
+      censusTag: { reach: 'iron', scale: 'personal' },
       lossCondition: 'consumable',
       flavorText: 'A leather pouch threaded with bone beads \u2014 each bead cracks and darkens after a victory, feeding you its stored warmth.',
       effects: [

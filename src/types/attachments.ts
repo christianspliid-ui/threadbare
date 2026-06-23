@@ -10,6 +10,7 @@
  */
 
 import type { AttachmentEffect, ActivatedAbility } from './effects';
+import type { ContentCensusTag } from './contentCensus';
 import type { RarityTier } from './rarity';
 import { RARITY_TIER_NAMES, RARITY_TIER_COLORS } from './rarity';
 
@@ -115,6 +116,8 @@ export interface PossessionNodeProperties {
    * - service: resolve effects immediately at reward time without persisting an item
    */
   rewardMode?: 'persist' | 'service';
+  /** Content Census coverage classification (THR-474 schema / THR-477 values). Metadata only. */
+  censusTag?: ContentCensusTag;
 }
 
 // ─── Possession Edge Properties ─────────────────────────────────

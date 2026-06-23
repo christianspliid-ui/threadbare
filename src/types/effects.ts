@@ -21,6 +21,7 @@
 
 import type { ReachDomain } from './traits';
 import type { AttachmentTier } from './attachments';
+import type { ContentCensusTag } from './contentCensus';
 
 // ═══════════════════════════════════════════════════════════════════
 // Condition Predicates — finite, enumerable set for conditional effects
@@ -855,6 +856,9 @@ export interface SpellTemplate {
 
   /** How the spell picks its target */
   readonly targeting: SpellTargeting;
+
+  /** Content Census coverage classification (THR-474 schema / THR-477 values). Metadata only. */
+  censusTag?: ContentCensusTag;
 }
 
 /** Activated ability on an artifact/relic (non-spell activatable) */

@@ -7,6 +7,7 @@
 
 import type { CulturalStrengthRange } from '../data/culture-content';
 import type { AttachmentEffect } from './effects';
+import type { ContentCensusTag } from './contentCensus';
 
 export type TraitCategory = 'innate' | 'mastery' | 'reputation' | 'scar' | 'condition' | 'destiny' | 'cultural' | 'bestowed';
 
@@ -83,6 +84,8 @@ export interface TraitDefinitionProperties {
   reputationEffects?: ReputationEffects;
   /** Generic effect system payload for bestowed/condition traits and future content families. */
   effects?: AttachmentEffect[];
+  /** Content Census coverage classification (THR-474 schema / THR-477 values). Metadata only. */
+  censusTag?: ContentCensusTag;
 }
 
 /** Properties stored on a has_trait edge (edge.properties) */

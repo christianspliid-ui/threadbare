@@ -8,6 +8,7 @@
  */
 
 import type { SphereName } from './index';
+import type { ContentCensusTag } from './contentCensus';
 import type { DoomClockArchetype } from './doomClock';
 import type { EncounterType } from './encounter';
 
@@ -93,6 +94,9 @@ export interface OmenTrackTemplate {
 
   /** Significance for omen_started / omen_expired TickEvents (0–1) */
   chronicleSignificance: number;
+
+  /** Content Census coverage classification (THR-474 schema / THR-477 values). Metadata only. */
+  censusTag?: ContentCensusTag;
 }
 
 // ─── Active Omen (runtime) ──────────────────────────────────────

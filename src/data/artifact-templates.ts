@@ -9,6 +9,7 @@
 
 import type { AttachmentEffect, ActivatedAbility } from '../types/effects';
 import type { AttachmentTier, LossCondition } from '../types/attachments';
+import type { ContentCensusTag } from '../types/contentCensus';
 
 export interface ArtifactTemplate {
   readonly id: string;
@@ -20,6 +21,8 @@ export interface ArtifactTemplate {
   readonly effects: AttachmentEffect[];
   /** Activatable abilities with costs and cooldowns */
   readonly activatedEffects: ActivatedAbility[];
+  /** Content Census coverage classification (THR-474 schema / THR-477 values). Metadata only. */
+  censusTag?: ContentCensusTag;
 }
 
 export const ARTIFACT_TEMPLATES: ArtifactTemplate[] = [
@@ -28,6 +31,7 @@ export const ARTIFACT_TEMPLATES: ArtifactTemplate[] = [
     id: 'worldforge_anvil',
     name: 'The Worldforge Anvil',
     tier: 4,
+    censusTag: { scale: 'cosmic' },
     tags: ['legendary', 'creation', 'cursed'],
     lossCondition: 'cursed',
     effects: [
@@ -73,6 +77,7 @@ export const ARTIFACT_TEMPLATES: ArtifactTemplate[] = [
     id: 'heartseed_first_garden',
     name: 'Heartseed of the First Garden',
     tier: 4,
+    censusTag: { scale: 'cosmic' },
     tags: ['legendary', 'creation', 'blessed', 'nature'],
     lossCondition: 'permanent',
     effects: [
@@ -129,6 +134,7 @@ export const ARTIFACT_TEMPLATES: ArtifactTemplate[] = [
     id: 'voidgate_shard',
     name: 'The Voidgate Shard',
     tier: 4,
+    censusTag: { scale: 'cosmic' },
     tags: ['legendary', 'destruction', 'cursed', 'void'],
     lossCondition: 'cursed',
     effects: [

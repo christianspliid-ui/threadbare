@@ -37,6 +37,7 @@ import { OMEN_TEMPLATES } from '../../data/omenTemplates';
 import { GOLD_SUBLOCATION_SPECS } from '../phaseSublocations';
 import type { GraphNode } from '../../types/graph';
 import type { PossessionNodeProperties } from '../../types/attachments';
+import type { TraitDefinitionProperties } from '../../types/traits';
 
 // ─── Internal helpers ─────────────────────────────────────────────────────────
 
@@ -69,6 +70,30 @@ function dominantReachFromEffects(effects: readonly unknown[]): ReachDomain | nu
   let bestCount = 0;
   for (const [r, count] of counts) {
     if (count > bestCount) { best = r; bestCount = count; }
+  }
+  return best;
+}
+
+/**
+ * Extract dominant reach from a domainContributions map (e.g. condition traits)
+ * by largest ABSOLUTE magnitude — a negative dominant still names the reach the
+ * entry operates in (e.g. `wounded` { iron: -0.08, stone: -0.04 } → iron).
+ * Tie-break: first-encountered key wins (stable insertion order). Returns null
+ * when the map is empty or unreadable. Fail-soft: unreadable values are skipped.
+ */
+function dominantReachFromContributions(
+  contributions: Partial<Record<ReachDomain, number>> | undefined,
+): ReachDomain | null {
+  if (!contributions) return null;
+  let best: ReachDomain | null = null;
+  let bestMag = 0;
+  for (const [r, v] of Object.entries(contributions)) {
+    try {
+      const mag = Math.abs(v as number);
+      if (mag > bestMag) { best = r as ReachDomain; bestMag = mag; }
+    } catch {
+      // skip unreadable contribution
+    }
   }
   return best;
 }
@@ -123,13 +148,16 @@ export function resolveAttachments(): CensusEntry[] {
     try {
       const props = node.properties as PossessionNodeProperties | undefined;
       const effects: readonly unknown[] = props?.effects ?? [];
-      const reach = dominantReachFromEffects(effects);
+      // Authored censusTag.reach wins; else derive dominant reach from effects[].
+      const reach = props?.censusTag?.reach ?? dominantReachFromEffects(effects);
+      // Scale has no derivation path — authored only (THR-477).
+      const scale = props?.censusTag?.scale ?? null;
       results.push(makeEntry(
         node.id,
         'attachments',
         reach,
-        null,
-        reach ? 'scale not authored (schema backfill needed)' : 'no reach found in effects[]',
+        scale,
+        reach ? (scale ? undefined : 'scale not authored') : 'no reach found in effects[]',
       ));
     } catch {
       results.push(makeEntry(node.id, 'attachments', null, null, 'failed to read node properties'));
@@ -146,13 +174,14 @@ export function resolveSpells(): CensusEntry[] {
   const results: CensusEntry[] = [];
   for (const t of SPELL_TEMPLATES) {
     try {
-      const reach = dominantReachFromEffects(t.effects);
+      const reach = t.censusTag?.reach ?? dominantReachFromEffects(t.effects);
+      const scale = t.censusTag?.scale ?? null;
       results.push(makeEntry(
         t.id,
         'spells',
         reach,
-        null,
-        reach ? 'scale not authored (schema backfill needed)' : 'no reach found in effects[]',
+        scale,
+        reach ? (scale ? undefined : 'scale not authored') : 'no reach found in effects[]',
       ));
     } catch {
       results.push(makeEntry(t.id, 'spells', null, null, 'failed to read spell template'));
@@ -169,13 +198,14 @@ export function resolveArtifacts(): CensusEntry[] {
   const results: CensusEntry[] = [];
   for (const t of ARTIFACT_TEMPLATES) {
     try {
-      const reach = dominantReachFromEffects(t.effects);
+      const reach = t.censusTag?.reach ?? dominantReachFromEffects(t.effects);
+      const scale = t.censusTag?.scale ?? null;
       results.push(makeEntry(
         t.id,
         'artifacts',
         reach,
-        null,
-        reach ? 'scale not authored (schema backfill needed)' : 'no reach found in effects[]',
+        scale,
+        reach ? (scale ? undefined : 'scale not authored') : 'no reach found in effects[]',
       ));
     } catch {
       results.push(makeEntry(t.id, 'artifacts', null, null, 'failed to read artifact template'));
@@ -192,12 +222,17 @@ export function resolveConditions(): CensusEntry[] {
   const results: CensusEntry[] = [];
   for (const node of CONDITION_TRAIT_DEFINITIONS) {
     try {
+      const props = node.properties as unknown as TraitDefinitionProperties | undefined;
+      // Reach derives from domainContributions (largest |magnitude|); authored tag wins.
+      const reach = props?.censusTag?.reach ?? dominantReachFromContributions(props?.domainContributions);
+      // Scale has no derivation path — authored only (THR-477).
+      const scale = props?.censusTag?.scale ?? null;
       results.push(makeEntry(
         node.id,
         'conditions',
-        null,
-        null,
-        'no reach/scale axis in condition schema (finding: schema backfill needed)',
+        reach,
+        scale,
+        reach ? (scale ? undefined : 'scale not authored') : 'no reach derivable from domainContributions',
       ));
     } catch {
       results.push(makeEntry(node.id, 'conditions', null, null, 'failed to read condition node'));
@@ -214,12 +249,15 @@ export function resolveOmens(): CensusEntry[] {
   const results: CensusEntry[] = [];
   for (const t of OMEN_TEMPLATES) {
     try {
+      // Omens carry no derivable reach/scale — both axes are authored (THR-477).
+      const reach = t.censusTag?.reach ?? null;
+      const scale = t.censusTag?.scale ?? null;
       results.push(makeEntry(
         t.id,
         'omens',
-        null,
-        null,
-        'no reach/scale axis in omen schema (finding: schema backfill needed)',
+        reach,
+        scale,
+        reach && scale ? undefined : 'reach/scale not authored',
       ));
     } catch {
       results.push(makeEntry(t.id, 'omens', null, null, 'failed to read omen template'));
@@ -237,7 +275,12 @@ export function resolveSublocations(): CensusEntry[] {
   const results: CensusEntry[] = [];
   for (const spec of GOLD_SUBLOCATION_SPECS) {
     try {
-      results.push(makeEntry(spec.sublocationTypeId, 'sublocations', 'gold', 'local'));
+      results.push(makeEntry(
+        spec.sublocationTypeId,
+        'sublocations',
+        spec.censusTag?.reach ?? 'gold',
+        spec.censusTag?.scale ?? 'local',
+      ));
     } catch {
       results.push(makeEntry(
         String((spec as Record<string, unknown>).sublocationTypeId ?? 'unknown'),
