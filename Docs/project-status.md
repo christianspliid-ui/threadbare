@@ -1,5 +1,5 @@
 # Project Status
-> Updated 2026-06-23 (THR-473).
+> Updated 2026-06-23 (THR-475).
 
 ## Current Focus
 **Encounter Experience — active:** Phases A1–A3, B1–B7, C1–C4, D1–D3, E1–E2, F1–F2, G1–G3 ✅. Remaining is F-phase integration (mount EffectRegistration components into hero panel / cast tile / scene state surfaces) and Phase H post-v1 polish.
@@ -14,6 +14,7 @@
 - **Social Systems Expansion (Now):** THR-28/27/30/51/29/41/34/31/35 shipped. ✅ THR-254/253. THR-78 queued.
 - **Thematic Pressure & Living World (Next):** ✅ THR-19/122/125/126/80/128/127. THR-87 blocked by THR-116.
 
+- ✅ 2026-06-23: THR-475 shipped — Encounter surface foundation. Added `src/engine/encounterSurface.ts` (`computeSurfaceKey`, `getSurfaceAxisValues`, surface-volume constants), re-keyed novelty tracking from `templateId` to `surfaceKey`, pre-resolved `targetAgentRole` for social candidates, surfaced selected surface metadata in DebugPanel + `__DEBUG.getEncounterNoveltyRecord()`, and added deterministic `npm run volume-model` output (`Docs/playtests/coverage/2026-06-23-encounter-volume-model.{md,json}` hash-identical across reruns).
 - ✅ 2026-06-23: THR-473 shipped — Content Census P1 instrument. `src/engine/contentCensus/` (constants, types, per-registry adapters, matrix builder, resolvability ranker) + `scripts/content-census.ts` + `npm run content-census`. Per-registry adapter table resolves all 8 in-scope content types; encounters (564) fully tagged (reach+scale); actions (44) reach-only (scale untagged — schema backfill needed); attachments/spells/artifacts reach-from-effects; conditions/omens fully untagged. Deterministic: two-run identical. Output: `Docs/playtests/coverage/YYYY-MM-DD-content-census.{md,json}`.
 - ✅ 2026-06-22: THR-464 shipped — rung-6 global share ceiling enforces `template_top_share ≤ 8%`. `computeGlobalShareMultiplier` reads eligibilityFunnel directly, applies `(target/share)^8` penalty. Constants: `NOVELTY_GLOBAL_SHARE_TARGET=0.04`, `NOVELTY_GLOBAL_SHARE_EXPONENT=8`. KPI: seeds 42/99/7 → 5.4%/5.5%/4.3% (was 14%/20%/5%). PR #372.
 - ✅ 2026-06-22: THR-465 shipped — raise `BRANCHING_CAP_RESERVE` 1→3; branching fire rate lifts from 0.25/30t → 1.00/30t on seeds 42+7. `BRANCHING_CURATOR_BIAS_WEIGHT` left at 1.75 (raising above 2.0 breaks encounter-smoke test). Seed 99 stuck at 0.75/30t (awareness-gated, deferred THR-470). KPI harness report updated. PR #370.

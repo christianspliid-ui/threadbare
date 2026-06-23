@@ -542,6 +542,12 @@ if (import.meta.env.DEV) {
       } satisfies ForeshadowingDebugResult;
     },
 
+    /** Returns the current encounter novelty record (surface-keyed since THR-475). Keys are surfaceKeys; values are last-selected tick. */
+    getEncounterNoveltyRecord: () => {
+      const state = _gameStateProvider?.();
+      return state?.encounterNoveltyRecord ?? null;
+    },
+
     getTraces: () => import('./engine/traceBuffer').then((m) => m.getTraces()),
     enableTracing: () => import('./engine/traceBuffer').then((m) => m.enableTracing()),
     disableTracing: () => import('./engine/traceBuffer').then((m) => m.disableTracing()),

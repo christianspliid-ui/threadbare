@@ -97,6 +97,9 @@ export interface EncounterCacheEntry {
   questPriority: number;
   /** Target agent ID for social encounters (agent-to-agent). Undefined for location encounters. */
   targetAgentId?: string;
+  /** NPC role of the social target (e.g. 'merchant', 'guard'). Null for non-social encounters.
+   *  Used as the 'socialRole' axis in computeSurfaceKey (THR-475). */
+  targetAgentRole?: string | null;
   /** True when the template contains at least one branching step (ActionStepBranch).
    *  Used by the curator pipeline (THR-452) to boost and preserve branching encounters. */
   isQuestEncounter: boolean;

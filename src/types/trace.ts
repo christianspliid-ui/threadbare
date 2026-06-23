@@ -852,9 +852,17 @@ export interface ScoringTrace extends TraceBase {
     identityBiasBonus?: number;
     /** Novelty pressure multiplier (1.0 = no pressure, <1.0 = penalized by recency/quota). THR-453 */
     noveltyMultiplier?: number;
+    /** Surface key used for novelty/recency tracking (templateId + sorted context axes). THR-475 */
+    surfaceKey?: string;
   }>;
   selectedTemplateId: string | null;
   selectedLocationId: string | null;
+  /** Surface key of the selected encounter (undefined when idle). THR-475 */
+  selectedSurfaceKey?: string | null;
+  /** Axis values that produced the selected surface key, for Debug Panel inspectability. THR-475 */
+  selectedSurfaceAxes?: Partial<Record<'reachPrimary' | 'socialRole' | 'sublocationTypeId', string>>;
+  /** Novelty multiplier applied to the selected encounter. THR-475 */
+  selectedNoveltyMultiplier?: number | null;
   action: 'start_local' | 'queue_movement' | 'attempt_remote' | 'idle';
   /** True when novelty pressure changed which template was selected vs the pre-novelty winner. THR-453 */
   noveltyChangedSelection?: boolean;
@@ -2172,4 +2180,3 @@ export interface CameraCenterTrace extends TraceBase {
   centered: boolean;
   reason: 'pending_encounter' | 'populated_arrival' | 'suppressed';
 }
-

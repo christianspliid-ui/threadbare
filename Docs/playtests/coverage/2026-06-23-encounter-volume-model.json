@@ -1,0 +1,31 @@
+{
+  "date": "2026-06-23",
+  "inputs": {
+    "SURFACES_PER_RUN_TARGET": 88,
+    "RELEVANT_FRACTION": 0.5,
+    "RUNS_BEFORE_REPETITION": 9,
+    "SURFACE_KEY_AXES": [
+      "sublocationTypeId",
+      "reachPrimary",
+      "socialRole"
+    ],
+    "axisCardinality": {
+      "reachPrimary": 8,
+      "sublocationTypeId": 8,
+      "socialRole": 6
+    }
+  },
+  "derived": {
+    "runPoolMinEligible": 176,
+    "totalLibraryTarget": 1584,
+    "axisCeilingProduct": 384
+  },
+  "interpretation": {
+    "note": [
+      "Run pool: need ≥176 unique surfaces eligible per run to hit the 88 target at 50% relevance.",
+      "Library target: ~1584 total surfaces for 9-run replayability.",
+      "Axis ceiling: product of axis cardinalities = 384 (ceiling before template count bounds it).",
+      "Phase 0 delivers the naming layer. Surface production (multiplication) begins Phase 1+."
+    ]
+  }
+}

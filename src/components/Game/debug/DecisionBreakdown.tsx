@@ -46,6 +46,12 @@ const VALUE_STYLE: React.CSSProperties = {
   flex: 1,
 };
 
+const SURFACE_AXIS_LABELS: Record<'reachPrimary' | 'socialRole' | 'sublocationTypeId', string> = {
+  reachPrimary: 'Reach',
+  socialRole: 'Role',
+  sublocationTypeId: 'Sublocation',
+};
+
 const BAR_BG_STYLE: React.CSSProperties = {
   width: '100%',
   height: '4px',
@@ -135,6 +141,26 @@ export const DecisionBreakdown = React.memo(function DecisionBreakdown({
             <span style={VALUE_STYLE}>{latestScoring.selectedLocationId}</span>
           </div>
         )}
+        {latestScoring?.selectedSurfaceKey && (
+          <div style={ROW_STYLE}>
+            <span style={LABEL_STYLE}>Surface key</span>
+            <span style={{ ...VALUE_STYLE, wordBreak: 'break-all', fontSize: 'var(--text-xs)' }} data-testid="surface-key">{latestScoring.selectedSurfaceKey}</span>
+          </div>
+        )}
+        {latestScoring?.selectedSurfaceAxes && Object.keys(latestScoring.selectedSurfaceAxes).length > 0 && (
+          <div style={ROW_STYLE}>
+            <span style={LABEL_STYLE}>Surface axes</span>
+            <span style={{ ...VALUE_STYLE, fontSize: 'var(--text-xs)' }} data-testid="surface-axes">
+              {formatSurfaceAxes(latestScoring.selectedSurfaceAxes)}
+            </span>
+          </div>
+        )}
+        {latestScoring?.selectedNoveltyMultiplier !== undefined && latestScoring.selectedNoveltyMultiplier !== null && (
+          <div style={ROW_STYLE}>
+            <span style={LABEL_STYLE}>Novelty ×</span>
+            <span style={VALUE_STYLE}>{latestScoring.selectedNoveltyMultiplier.toFixed(3)}</span>
+          </div>
+        )}
       </div>
 
       {/* Filter Pipeline Breakdown */}
@@ -217,4 +243,10 @@ function FilterPipelineRow({ label, value, max }: { label: string; value: number
       </div>
     </div>
   );
+}
+
+function formatSurfaceAxes(axes: Partial<Record<'reachPrimary' | 'socialRole' | 'sublocationTypeId', string>>) {
+  return Object.entries(axes)
+    .map(([axis, value]) => `${SURFACE_AXIS_LABELS[axis as keyof typeof SURFACE_AXIS_LABELS]}=${value}`)
+    .join(' | ');
 }

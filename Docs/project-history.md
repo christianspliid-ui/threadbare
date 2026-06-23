@@ -1,5 +1,7 @@
 # Project History
 
+✅ **THR-475** (2026-06-23) — Encounter surface foundation shipped. Added `src/engine/encounterSurface.ts` (`computeSurfaceKey`, `getSurfaceAxisValues`, surface-volume constants), re-keyed novelty tracking from `templateId` to `surfaceKey` in `encounterScoring.ts` + `phaseAgentDecision.ts`, pre-resolved `targetAgentRole` in social candidate generation, surfaced selected surface metadata in `DecisionBreakdown` + `window.__DEBUG.getEncounterNoveltyRecord()`, and added deterministic `npm run volume-model` output under `Docs/playtests/coverage/2026-06-23-encounter-volume-model.{md,json}`.
+
 ✅ **THR-464** (2026-06-22) — Rung-6 global share ceiling: `computeGlobalShareMultiplier` reads `eligibilityFunnel` directly, applies `(NOVELTY_GLOBAL_SHARE_TARGET/share)^NOVELTY_GLOBAL_SHARE_EXPONENT` penalty. Root cause of 20% concentration was EMA ceiling being mathematically bypassed once global novelty decays. Direct funnel feedback is immune to novelty decay. KPI: seeds 42/99/7 → 5.4%/5.5%/4.3% (was 14%/20%/5%), all ≤8% target. PR #372.
 
 ✅ **THR-465** (2026-06-22) — Raise `BRANCHING_CAP_RESERVE` 1→3 in `branchingConstants.ts` to lift branching encounter fire rate from 0.25/30t baseline to ≥1/30t on seeds 42 and 7. `BRANCHING_CURATOR_BIAS_WEIGHT` unchanged at 1.75 (raising above 2.0 causes encounter-smoke test regression). Seed 99 stuck at 0.75/30t due to upstream awareness gating; deferred as THR-470. KPI report (`Docs/playtests/kpi/2026-06-22-kpi-report.json`) updated. PR #370.
@@ -769,4 +771,3 @@ px vite build).
 
 - ✅ 2026-06-12: THR-63 shipped — Phase 6 Reward & Attachment Economy Expansion, Slice A. `near_miss` as 6th StepOutcome band; proving-slice gate removed; universal band differentiation for all templates. `consequence_applied` trace. Q delta suffix on resolved events. Content tables OUTCOME_BAND_PROSE + OUTCOME_BAND_Q_FLAVOR. `window.__DEBUG.consequencesFor()` debug API. 35 tests across 3 files. PR #332.
 - ✅ 2026-06-23: THR-473 shipped — Content Census P1. `src/engine/contentCensus/` + `scripts/content-census.ts` + `npm run content-census`. Per-registry adapter across 8 content types; 792 entries total; encounters fully tagged (564); untagged worklist produced. Deterministic CLI output to `Docs/playtests/coverage/`.
-
