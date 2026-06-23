@@ -1,7 +1,7 @@
 ---
 name: design-council
 description: Orchestrate multi-agent consent-based design discussions on a shared markdown page. Agents from different perspectives (content, engine, coordination, etc.) pass the ball, propose concrete actions, and reach decisions via sociocratic consent ("good enough for now, safe enough to try"). Trigger with "/design-council", "run a council on X", "let's get multiple perspectives on this", or any ways-of-working improvement question.
-last_validated_against: 2026-06-12
+last_validated_against: 2026-06-23
 ---
 # Design Council
 ## Purpose
@@ -38,7 +38,7 @@ An objection must cite which half fails. Seeking the optimum is perfectionism, n
 2. Pick 2–4 perspectives. Typical frames:
    - **Content iteration** (authoring pipelines, prose, encounter/attachment speed)
    - **Engine / architecture** (change-amplification in code, coupling, testing)
-   - **Coordination / process** (Cowork ↔ CC ↔ Codex, Linear discipline, review)
+   - **Coordination / process** (Cowork ↔ CC, Linear discipline, review)
    - **Game-feel / player experience** (when the question touches design direction)
    - **State-of-the-product** (Linear, backlog, roadmap, release readiness)
 3. Create the council page using the template at the bottom of this SKILL.

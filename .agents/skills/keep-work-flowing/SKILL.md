@@ -1,7 +1,7 @@
 ---
 name: keep-work-flowing
 description: Scheduled Cowork PM run that scans Linear, advances one high-leverage planning item, and leaves the next executor handoff in Linear comments instead of Slack.
-last_validated_against: 2026-06-12
+last_validated_against: 2026-06-23
 ---
 
 # Keep Work Flowing
@@ -16,10 +16,10 @@ Linear is the only coordination surface. Do not send Slack messages from this sk
 
 1. Scan the board using the current Linear coordination protocol and pick the highest-leverage planning move available.
 2. Do the planning work: design, research, or implementation-plan authoring only. Do not write product code or run git commands in Cowork mode.
-3. If work is ready to hand off, move the issue to `Ready for Dev` or `Ready for Codex` and post the full coordination-block handoff comment on that issue.
+3. If work is ready to hand off, move the issue to `Ready for Dev` and post the full coordination-block handoff comment on that issue.
 4. Run `/session-handoff` to produce the concise end-of-session summary.
 5. Post that summary as a Linear comment:
-   - If this run handed off an issue, post it on the issue you just moved to `Ready for Dev` or `Ready for Codex`.
+   - If this run handed off an issue, post it on the issue you just moved to `Ready for Dev`.
    - If no issue was handed off this cycle, post it on the most relevant active project as a coordination note.
 
 ## Linear Comment Template
@@ -31,11 +31,11 @@ Post the `/session-handoff` output in this shape:
 
 - **Mode:** Cowork planning
 - **Issue:** THR-XXX — <title>
-- **State now:** <Ready for Dev | Ready for Codex | In Design | Implementation Planning>
+- **State now:** <Ready for Dev | In Design | Implementation Planning>
 - **Handoff:** <one-line summary>
 - **Verification:** <N/A or what was verified>
 - **Commit/PR:** N/A — planning session
-- **Next action:** <what CC, Codex, or Christian should do next>
+- **Next action:** <what CC or Christian should do next>
 ```
 
 ## Guardrails
