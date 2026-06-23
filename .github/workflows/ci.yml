@@ -11,8 +11,29 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  detect:
+    name: Detect code changes
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          # 'code' is true if ANY changed file is not a doc.
+          filters: |
+            code:
+              - '**'
+              - '!**/*.md'
+              - '!Docs/**'
+              - '!.planning/**'
+              - '!Design/**'
+
   check:
     name: Test · Typecheck · Build
+    needs: detect
+    if: needs.detect.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
