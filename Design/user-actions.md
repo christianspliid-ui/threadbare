@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-06-23 (full rebuild from the 2026-06-23 retro — replaces the 2026-04-27 seed that went 57 days stale)
+**Last updated:** 2026-06-23 (full rebuild from the 2026-06-23 retro — replaces the 2026-04-27 seed that went 57 days stale; `LINEAR_API_KEY` for Codex confirmed set same day, moved to Resolved)
 **Owner of items below:** Christian. Everyone else's blockers go in Linear or `Docs/impediments.md`.
 **Refresh cadence:** Cowork rebuilds this on retro day from the active impediment log. Items are removed when resolved.
 
@@ -19,20 +19,7 @@ When an item resolves: delete it from this file, mark the corresponding impedime
 
 ---
 
-## 1. Set `LINEAR_API_KEY` in the Codex automation environment · BLOCKING · RECURRING
-
-**Status:** Blocked, no workaround · 17 recurrences
-**Source:** Impediment #141
-
-**Fix.** Set `LINEAR_API_KEY` in the Codex automation session environment (the same key CC/Cowork use). This is the single highest-leverage action on the board.
-
-**What breaks if not done.** The entire Codex executor lane is dark. Codex automation sessions expose no callable Linear pickup tools and the repo-side fallback is dead because the key is unset — Codex cannot run the WIP gate, scan `Ready for Codex`, claim, or post closeouts. This is compounding: live Linear shows issues stranded in `Ready for Codex` (e.g. THR-481/478/476) that no executor can pick up, and Cowork keeps routing mechanical work into a lane with no consumer. An entire queue is stalled and growing.
-
-**Reversibility.** Unset the key.
-
----
-
-## 2. Refresh the home worktree + confirm "This machine" scheduled tasks are firing · WILL NOT SELF-HEAL
+## 1. Refresh the home worktree + confirm "This machine" scheduled tasks are firing · WILL NOT SELF-HEAL
 
 **Status:** Open · home tree ~11 days / 38 commits stale; no retro fired for ~4 weeks (3 missed weekly runs: 06-03, 06-10, 06-17)
 **Source:** This retro (home-tree precheck `behind:38 + stale-branch:265h`; retro automation gap)
@@ -45,7 +32,7 @@ When an item resolves: delete it from this file, mark the corresponding impedime
 
 ---
 
-## 3. Decide the Obsidian MCP path · RECURRING
+## 2. Decide the Obsidian MCP path · RECURRING
 
 **Status:** Open · ~60 days · ~12 occurrences
 **Source:** Impediments #66, #71, #75, #86
@@ -58,7 +45,7 @@ When an item resolves: delete it from this file, mark the corresponding impedime
 
 ---
 
-## 4. Triage 8+ orphan uncommitted changes in working trees · WILL NOT SELF-HEAL
+## 3. Triage 8+ orphan uncommitted changes in working trees · WILL NOT SELF-HEAL
 
 **Status:** Open · ~60 days
 **Source:** Impediment #59
@@ -71,7 +58,7 @@ When an item resolves: delete it from this file, mark the corresponding impedime
 
 ---
 
-## 5. Confirm whether Linear-from-scheduled-context is now reliable · INFORMATIONAL
+## 4. Confirm whether Linear-from-scheduled-context is now reliable · INFORMATIONAL
 
 **Status:** Open question · Linear MCP was reachable from the scheduled retro context on 2026-06-23 (first time in four retros)
 **Source:** This retro (Ask #4)
@@ -84,6 +71,7 @@ When an item resolves: delete it from this file, mark the corresponding impedime
 
 ## Resolved this period
 
+- **2026-06-23 — `LINEAR_API_KEY` set in the Codex automation environment** (was item #1; impediment #141, 17 recurrences). Confirmed by Christian same day the retro surfaced it. Unblocks the entire Codex executor lane — Codex can now run the WIP gate, scan `Ready for Codex`, claim, and post closeouts, and the stranded backlog (THR-481/478/476 etc.) can drain on the next pickup cycle. To be removed on next retro day.
 - **2026-06-23 — GitHub Pro / branch protection resolved** (was item #4 in the prior seed; impediment #56). Branch protection is now active on `main` with `Test · Typecheck · Build` as a required status check (THR-282 shipped 2026-04-30). The "CI stays advisory because branch protection can't be enforced" concern is closed. To be removed on next retro day.
 
 ---
