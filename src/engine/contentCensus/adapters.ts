@@ -34,7 +34,8 @@ import { SPELL_TEMPLATES } from '../../data/spell-templates';
 import { ARTIFACT_TEMPLATES } from '../../data/artifact-templates';
 import { CONDITION_TRAIT_DEFINITIONS } from '../../data/condition-trait-content';
 import { OMEN_TEMPLATES } from '../../data/omenTemplates';
-import { GOLD_SUBLOCATION_SPECS } from '../phaseSublocations';
+import { SUBLOCATION_FAMILIES } from '../phaseSublocations';
+import { REACH_DOMAINS } from '../../types/traits';
 import type { GraphNode } from '../../types/graph';
 import type { PossessionNodeProperties } from '../../types/attachments';
 import type { TraitDefinitionProperties } from '../../types/traits';
@@ -267,28 +268,31 @@ export function resolveOmens(): CensusEntry[] {
 }
 
 // ─── Sublocation adapter ──────────────────────────────────────────────────────
-// Source: GOLD_SUBLOCATION_SPECS (phaseSublocations.ts — src/engine/)
-// Gold reach only (only Gold phase sublocations currently exist → 7-reach hole).
-// Scale: local (SCALE_APPLICABILITY says sublocations: ['local']).
+// Source: SUBLOCATION_FAMILIES (phaseSublocations.ts — src/engine/), keyed by reach.
+// Today only the `gold` family carries specs (THR-469 P2b authors the other 7 →
+// the registry key is the authoritative reach, so new families are picked up here
+// automatically). Scale: local (SCALE_APPLICABILITY says sublocations: ['local']).
 
 export function resolveSublocations(): CensusEntry[] {
   const results: CensusEntry[] = [];
-  for (const spec of GOLD_SUBLOCATION_SPECS) {
-    try {
-      results.push(makeEntry(
-        spec.sublocationTypeId,
-        'sublocations',
-        spec.censusTag?.reach ?? 'gold',
-        spec.censusTag?.scale ?? 'local',
-      ));
-    } catch {
-      results.push(makeEntry(
-        String((spec as Record<string, unknown>).sublocationTypeId ?? 'unknown'),
-        'sublocations',
-        null,
-        null,
-        'failed to read sublocation spec',
-      ));
+  for (const reach of REACH_DOMAINS) {
+    for (const spec of SUBLOCATION_FAMILIES[reach]) {
+      try {
+        results.push(makeEntry(
+          spec.sublocationTypeId,
+          'sublocations',
+          spec.censusTag?.reach ?? reach,
+          spec.censusTag?.scale ?? 'local',
+        ));
+      } catch {
+        results.push(makeEntry(
+          String((spec as Record<string, unknown>).sublocationTypeId ?? 'unknown'),
+          'sublocations',
+          null,
+          null,
+          'failed to read sublocation spec',
+        ));
+      }
     }
   }
   return results;

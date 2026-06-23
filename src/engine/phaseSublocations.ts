@@ -1,12 +1,18 @@
 /**
- * Phase: Gold Sublocations
+ * Phase: Sublocations
  *
- * Manages conditional spawn and dissolution of Gold Reach sublocation types.
+ * Manages conditional spawn and dissolution of reach-keyed sublocation families.
  * Each tick, settlement locations are inspected and missing conditional
  * sublocations are created (when predicate holds) or existing ones dissolved
  * (via checkDissolutions, which now evaluates conditional predicates).
  *
- * New sublocation types (System 5):
+ * Specs live in `SUBLOCATION_FAMILIES`, a registry keyed by `ReachDomain`. Today
+ * only the `gold` family is populated (System 5); the other 7 reaches start empty
+ * and are authored in THR-469 P2b. The spawn/dissolve machinery is reach-agnostic —
+ * generalizing from Gold-only to the registry is a pure relocation (THR-481 P2a):
+ * Gold sublocations spawn byte-for-byte identically to before.
+ *
+ * Gold sublocation types (System 5):
  *   market-district  — conditional: prosperity >= SUBLOC_MARKET_SPAWN_PROSPERITY
  *   mine             — conditional: has ore or stone resource
  *   harbor           — conditional: location is coastal
@@ -15,8 +21,8 @@
  *   smugglers-den    — conditional: prosperity < SUBLOC_SMUGGLER_SPAWN_PROSPERITY
  *   caravan-rest     — conditional: trade route present at location
  *
- * Design doc: Docs/plans/2026-03-17-gold-reach-economic-systems-design.md
- * System 5 — Gold Sublocations
+ * Design docs: Docs/plans/2026-03-17-gold-reach-economic-systems-design.md (System 5),
+ *              Docs/plans/2026-06-23-thr469-p2-sublocation-families.md (registry split)
  * NFP priorities: Tunability, Inspectability, Fail-soft
  */
 
@@ -25,6 +31,7 @@ import type { GraphNode } from '../types/graph';
 import type { WorldGraph } from './graph';
 import type { SublocationProperties } from '../types/sublocation';
 import type { ContentCensusTag } from '../types/contentCensus';
+import { REACH_DOMAINS, type ReachDomain } from '../types/traits';
 import { evaluateConditionalPredicate, checkDissolutions } from './sublocation';
 import { mulberry32 } from '../lib/prng';
 import type { EncounterCacheManager } from './encounterCache';
@@ -73,7 +80,7 @@ export const GUILD_COUNTING_HOUSE_THRESHOLD = 50;
  *
  * Hysteresis: spawn and dissolve thresholds can differ (e.g. Market District).
  */
-interface ConditionalSublocationSpec {
+export interface ConditionalSublocationSpec {
   /** Sublocation type node ID */
   sublocationTypeId: string;
   /** Display name */
@@ -86,6 +93,11 @@ interface ConditionalSublocationSpec {
   dissolvePredicate: string;
   /** Which location subtypes can host this sublocation */
   eligibleSubtypes: string[];
+  /**
+   * Owning reach. Optional — when omitted it is derivable from the registry key
+   * in `SUBLOCATION_FAMILIES`. Present for census tagging on standalone specs.
+   */
+  reach?: ReachDomain;
   /** Content Census coverage classification (THR-474 schema / THR-477 values). Metadata only. */
   censusTag?: ContentCensusTag;
 }
@@ -178,6 +190,32 @@ export const GOLD_SUBLOCATION_SPECS: ConditionalSublocationSpec[] = [
   },
 ];
 
+// ─── Reach-keyed sublocation family registry (THR-481 P2a) ──────────────────
+
+/**
+ * Sublocation specs grouped by owning Reach.
+ *
+ * `phaseSublocations` iterates every family each tick. Today only `gold` is
+ * populated (relocated from the former Gold-only array); the other 7 reaches
+ * start empty and are authored in THR-469 P2b (Iron→fortifications,
+ * Shadow→hideouts, Veil→arcane sites, Eye→watchposts, Heart→sanctuaries,
+ * Stone→quarries/halls, Star→shrines/observatories).
+ *
+ * Behavior is byte-for-byte identical to the Gold-only phase while only `gold`
+ * carries specs: the spawn/dissolve machinery is reach-agnostic, so this is a
+ * pure relocation plus loop generalization (additive — NFP #6).
+ */
+export const SUBLOCATION_FAMILIES: Record<ReachDomain, ConditionalSublocationSpec[]> = {
+  iron: [],
+  gold: GOLD_SUBLOCATION_SPECS,
+  shadow: [],
+  veil: [],
+  heart: [],
+  eye: [],
+  stone: [],
+  star: [],
+};
+
 // ─── Settlement subtypes that participate in sublocation evaluation ─────────
 
 const SETTLEMENT_SUBTYPES = new Set([
@@ -227,6 +265,14 @@ export function phaseSublocations(
   // ── Pass 2: Spawn ───────────────────────────────────────────────────────
   const allLocations = graph.getNodesByType('location');
 
+  // Flatten every reach family into a single ordered spec list. Iterating
+  // REACH_DOMAINS preserves a stable, deterministic order; while only `gold`
+  // is populated this is exactly the former Gold-only spec sequence.
+  const allSpecs: ConditionalSublocationSpec[] = [];
+  for (const reach of REACH_DOMAINS) {
+    for (const spec of SUBLOCATION_FAMILIES[reach]) allSpecs.push(spec);
+  }
+
   for (const loc of allLocations) {
     const subtype = typeof loc.properties.locationSubtype === 'string'
       ? loc.properties.locationSubtype
@@ -234,7 +280,7 @@ export function phaseSublocations(
 
     if (!SETTLEMENT_SUBTYPES.has(subtype)) continue;
 
-    for (const spec of GOLD_SUBLOCATION_SPECS) {
+    for (const spec of allSpecs) {
       if (!spec.eligibleSubtypes.includes(subtype)) continue;
 
       // Check if an instance of this type already exists at this location
@@ -262,6 +308,23 @@ export function phaseSublocations(
   }
 
   return {};
+}
+
+// ─── Debug reads ───────────────────────────────────────────────────────────
+
+/**
+ * Reports how many sublocation specs each reach family carries.
+ *
+ * Inspectability aid (NFP #2): lets the census and P2b verification confirm the
+ * 7-reach "sublocation desert" is filling as families are authored. While only
+ * `gold` is populated this returns `{ iron: 0, gold: 7, ... }`.
+ */
+export function getSublocationFamilyCounts(): Record<ReachDomain, number> {
+  const counts = {} as Record<ReachDomain, number>;
+  for (const reach of REACH_DOMAINS) {
+    counts[reach] = SUBLOCATION_FAMILIES[reach].length;
+  }
+  return counts;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────
