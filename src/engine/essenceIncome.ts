@@ -15,6 +15,7 @@ import {
   ESSENCE_PER_PLACE_OF_POWER,
   TIER_MAINTENANCE,
 } from '../types/influence';
+import { ASPECT_ESSENCE_PER_TICK } from '../data/aspect-content';
 import type { WorldGraph } from './graph';
 import type { ControlEffect } from '../types/controlEffect';
 
@@ -64,6 +65,15 @@ export function computeEssenceIncome(
     const loc = graph.getNode(edge.target);
     if (loc?.properties.isPlaceOfPower) {
       totalRate += ESSENCE_PER_PLACE_OF_POWER;
+    }
+  }
+
+  // Aspect conduit bonus (THR-479) — mirrors computeEssenceGeneration. Living
+  // aspects only; mythic echoes no longer channel.
+  const aspectEdges = graph.getOutgoingEdges(ascendantId, 'aspect_of');
+  for (const edge of aspectEdges) {
+    if (edge.properties.mythicEcho !== true) {
+      totalRate += ASPECT_ESSENCE_PER_TICK;
     }
   }
 

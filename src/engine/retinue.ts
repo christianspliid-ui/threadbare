@@ -66,6 +66,13 @@ export interface RetinueAgent {
 
   /** Thread edge ID — needed for toggling attention mode */
   threadEdgeId: string;
+
+  /**
+   * THR-479: true when this mortal has been raised to an Aspect of the god —
+   * the apex milestone beyond the five tiers (an `aspect_of` edge exists).
+   * Drives the "Aspect" badge in the threads/retinue panel.
+   */
+  isAspect: boolean;
 }
 
 /**
@@ -150,6 +157,8 @@ export function getRetinueAgents(graph: WorldGraph, ascendantId: string): Retinu
       courtPosition: (influenceProps.courtPosition as import('../types/influence').CourtPosition) ?? null,
       attentionMode: (influenceProps.attentionMode as 'pause' | 'auto_resolve') ?? 'auto_resolve',
       threadEdgeId: edge.id,
+      // THR-479: living Aspect if an aspect_of edge targets this mortal.
+      isAspect: graph.getIncomingEdges(agentId, 'aspect_of').some(e => e.properties.mythicEcho !== true),
     });
   }
 
@@ -207,6 +216,11 @@ export interface ThreadedAgent extends ThreadedNodeBase {
    * meaningful when championEffectId !== null. Null when no champion effect.
    */
   championTemplateId: string | null;
+  /**
+   * THR-479: true when this mortal is a living Aspect of the god (the apex
+   * milestone beyond the five tiers). Drives the "Aspect" badge.
+   */
+  isAspect: boolean;
 }
 
 export interface ThreadedLocation extends ThreadedNodeBase {
@@ -472,6 +486,7 @@ export function getThreadedNodes(
           factionName,
           championEffectId: championEffect?.effectId ?? null,
           championTemplateId: championEffect?.templateId ?? null,
+          isAspect: graph.getIncomingEdges(targetNode.id, 'aspect_of').some(e => e.properties.mythicEcho !== true),
         } as ThreadedAgent);
 
       } else if (actorType === 'faction') {

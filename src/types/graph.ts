@@ -68,6 +68,7 @@ export type EdgeType =
   | 'member_of'        // individual is member of group/faction
   | 'belongs_to'       // actor/location belongs to culture (culturalStrength, cultureLayer)
   | 'thread'           // ascendant → mortal divine thread (god reaches down)
+  | 'aspect_of'        // ascendant → mortal apex milestone (THR-479, AspectEdgeProperties; never GC'd)
   | 'mentors'          // mentor → apprentice training relationship (THR-75, MentorsEdgeProperties)
   // Enchantment — RESERVED: not yet implemented
   | 'enchanted'        // caster → target enchantment

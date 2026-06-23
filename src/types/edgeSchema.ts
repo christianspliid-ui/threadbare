@@ -147,6 +147,15 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     requiredProperties: [],
     description: 'Divine thread from ascendant to any invested node. Source = ascendant, target = mortal agent, location, faction, army, or artifact. The god reaches down and invests divine attention.',
   },
+  aspect_of: {
+    type: 'aspect_of',
+    sourceNodeType: 'actor',
+    targetNodeType: 'actor',
+    direction: 'directed',
+    cardinality: 'one-to-many',
+    requiredProperties: ['attainedTick', 'originEncounterId', 'sourceTier', 'survivesDeath'],
+    description: 'Apex milestone from ascendant to mortal (THR-479). The mortal has become a partial aspect of the god — beyond the five Influence tiers, not a sixth rung. Permanent and never garbage-collected; survives the mortal\'s death as a mythic echo (mythicEcho=true). Properties: attainedTick, originEncounterId, sourceTier, survivesDeath, mythicEcho?, echoedTick?.',
+  },
   mentors: {
     type: 'mentors',
     sourceNodeType: 'actor',

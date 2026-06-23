@@ -92,6 +92,34 @@ export interface ThreadEdgeProperties {
 /** @deprecated Use ThreadEdgeProperties instead. Alias for backward compatibility. */
 export type InfluenceRelationshipProperties = ThreadEdgeProperties;
 
+// ─── Aspect apex state (THR-479) ─────────────────────────────────────
+
+/**
+ * Properties stored on an `aspect_of` edge (ascendant → mortal).
+ *
+ * "Aspect" is the apex milestone *beyond* the five Influence tiers — a
+ * mortal who has become a partial aspect of the god. It is a distinct
+ * relationship, not a sixth tier, and is modelled as its own edge so it
+ * can survive the mortal's death (the edge is never garbage-collected).
+ */
+export interface AspectEdgeProperties {
+  /** Tick the Aspect was attained. */
+  attainedTick: number;
+  /** Encounter instance id of the apotheosis capstone that granted it. */
+  originEncounterId: string;
+  /** Influence tier at the moment of grant (always 4; recorded for audit). */
+  sourceTier: InfluenceTier;
+  /** Invariant marker: an Aspect is permanent and survives death. */
+  survivesDeath: true;
+  /**
+   * Set true when the Aspect's mortal body dies. The relationship persists
+   * as lasting myth; a mythic echo no longer channels essence.
+   */
+  mythicEcho?: boolean;
+  /** Tick the mortal died and the Aspect became a mythic echo. */
+  echoedTick?: number;
+}
+
 // ─── Ascendant ───────────────────────────────────────────────────────
 
 /** Sphere alignment for an Ascendant — primary and secondary. */

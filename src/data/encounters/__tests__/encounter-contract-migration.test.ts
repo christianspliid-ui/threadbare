@@ -22,7 +22,8 @@ describe('branching encounters migrate to encoded EncounterContract metadata', (
   const templates = collectTemplates();
 
   it('loads all branching encounter templates in src/data/encounters', () => {
-    expect(templates).toHaveLength(23);
+    // 24th: apotheosis-ascension (THR-479).
+    expect(templates).toHaveLength(24);
   });
 
   it('encodes contract metadata and exposes authored poles for every choice', () => {
