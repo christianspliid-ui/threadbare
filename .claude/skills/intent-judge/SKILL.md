@@ -2,13 +2,13 @@
 name: intent-judge
 description: >
   Verifier subagent that scores design and implementation plan docs against
-  the originating user intent before they hand off to CC or Codex. Returns
+  the originating user intent before they hand off to CC. Returns
   one of four verdicts — Allow / Revise / Block / Escalate — with structured
   per-dimension findings. The judge boots cold (no shared context with the
   author), reads the structured action proposal first, then the plan doc,
   then the originating intent (Linear issue + verbatim user ask). Auto-invoked
   by Cowork after writing any plan doc in Docs/plans/ or Docs/audits/ and
-  before the Linear state transitions to Ready for Dev or Ready for Codex.
+  before the Linear state transitions to Ready for Dev.
   Also callable manually via `/intent-judge <plan-doc-path>`.
 last_validated_against: 2026-05-11
 ---
@@ -34,7 +34,7 @@ principal whose intent the manager guards.
 ## Why this exists
 
 The plan-doc handoff is the action boundary in Threadbearer's workflow. Once
-a doc moves to Ready for Dev or Ready for Codex, an executor picks it up on
+a doc moves to Ready for Dev, the executor picks it up on
 an hourly cycle and starts coding. That handoff is irreversible in any
 useful sense — bouncing a plan back wastes executor cycles, pollutes Linear,
 and erodes trust in the design governance checklist. The historical signal
@@ -59,7 +59,7 @@ All active:
 
 1. **Auto** — Cowork has just finished a plan doc in `Docs/plans/` or
    `Docs/audits/` and is about to apply the `plan-pending-commit` label
-   and move the Linear issue to Ready for Dev or Ready for Codex. Run BEFORE
+   and move the Linear issue to Ready for Dev. Run BEFORE
    the state transition.
 2. **Manual** — `/intent-judge <plan-doc-path>` from any agent or user.
 3. **On reopen** — A Linear issue with the `Reopened` label whose plan doc
@@ -101,7 +101,7 @@ Binary is too simple — humans learn to bypass yes/no gates. The middle paths
 
 | Verdict   | Meaning                                                                                | What Cowork does next                                                                                                  |
 |-----------|----------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------|
-| Allow     | Plan faithfully serves intent and respects governance.                                 | Apply `plan-pending-commit` label; move Linear to Ready for Dev/Codex.                                                  |
+| Allow     | Plan faithfully serves intent and respects governance.                                 | Apply `plan-pending-commit` label; move Linear to Ready for Dev.                                                        |
 | Revise    | Specific gaps; author can fix without re-checking with user.                           | Cowork edits the doc inline, re-runs the judge. No user ping.                                                          |
 | Block     | Plan misses intent, violates a load-bearing decision, or reintroduces rejected approach. | Cowork rewrites materially, re-runs judge. Third Block on the same plan forces Escalate.                                |
 | Escalate  | Judgment requires the user — ambiguous intent, contested premise, or high-risk class.  | Cowork pings user with the judge's finding verbatim before any state transition.                                       |

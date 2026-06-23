@@ -4,14 +4,14 @@
 
 ## Cowork's Role
 
-**Strategic advisor + domain knowledge keeper.** Cowork does exploration, design, brainstorming, and documentation. Claude Code and Codex do coding, testing, committing, and deploying.
+**Strategic advisor + domain knowledge keeper.** Cowork does exploration, design, brainstorming, and documentation. Claude Code (the single executor) does coding, testing, committing, and deploying.
 
 **Cowork does not write production code. Cowork does not touch git.**
 
 ## What Cowork Does
 
 - Architecture and design docs (save to `Docs/plans/`)
-- Implementation plans detailed enough for Claude Code or Codex to execute
+- Implementation plans detailed enough for Claude Code to execute
 - Codebase research and analysis (read-only)
 - Game design brainstorming and critique
 - Obsidian vault updates (MCP access works)
@@ -32,22 +32,20 @@ When a Cowork session produces something an executor should act on, **use Linear
 
 1. Create or update the Linear issue with a complete design
 2. Post a handoff comment with the coordination block (see `Docs/plans/2026-04-13-linear-coordination-protocol.md`)
-3. Move the issue to **Ready for Dev** (CC queue) or **Ready for Codex** (Codex queue) based on work fit
+3. Move the issue to **Ready for Dev** (the executor queue)
 4. The state transition plus the handoff comment IS the handoff — nothing else required
 
-**CC handoff coordination block must include:** `Suggested model` (with matching `model:*` label), `Parallel-safe with`, and `Mutex with` lines.
+**Handoff coordination block must include:** `Suggested model` (advisory — the CC automation runs Opus regardless), `Parallel-safe with`, and `Mutex with` lines.
 
-**Codex handoff coordination block must include:** `Parallel-safe with`, `Mutex with`, `Files to touch` block, and `Done when` checklist.
-
-See the full templates in `Docs/plans/2026-04-13-linear-coordination-protocol.md`.
+See the full template in `Docs/plans/2026-04-13-linear-coordination-protocol.md`.
 
 ## When the User Asks Cowork to Build Something
 
 1. Write a design doc + implementation plan (save to `Docs/plans/`)
 2. Create a Linear issue with the plan reference
 3. Post the coordination-block handoff comment
-4. Move to Ready for Dev or Ready for Codex
-5. Tell the user: *"Ready for [CC/Codex] — Linear issue [THR-XXX] moved to [queue]."*
+4. Move to Ready for Dev
+5. Tell the user: *"Ready for Dev — Linear issue [THR-XXX] moved to the executor queue."*
 6. Do NOT start writing the code yourself
 
 ## Coordination File Versioning

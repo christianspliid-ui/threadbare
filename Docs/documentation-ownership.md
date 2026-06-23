@@ -51,8 +51,8 @@
 - `output/` — LLM-generated reports, query results, audit outputs
 
 ### Linear
-- All issue tracking (states: Todo, In Design, Implementation Planning, Ready for Dev, Ready for Codex, In Dev, Done)
-- Handoff coordination blocks (CC and Codex pickup via comments)
+- All issue tracking (states: Todo, In Design, Implementation Planning, Ready for Dev, In Dev, Done)
+- Handoff coordination blocks (CC pickup via comments)
 - Project milestones and lifecycle status
 - Agent coordination state (claims, WIP, parallel-safe/mutex)
 
