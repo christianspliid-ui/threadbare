@@ -155,6 +155,7 @@ import {
   SEVER_THE_BOND_TEMPLATE,
 } from './mentorship-templates/divine-actions';
 import { SOUL_FERRYMAN_TEMPLATE } from './encounters/soul-ferryman';
+import { APOTHEOSIS_ASCENSION_TEMPLATE } from './encounters/apotheosis-ascension';
 import { ROAD_AMBUSH_TEMPLATE } from './encounters/road-ambush';
 import { COURTYARD_DUEL_TEMPLATE } from './encounters/the-courtyard-duel';
 import { BRINK_RESCUE_TEMPLATE } from './encounters/the-brink-rescue';
@@ -4646,6 +4647,8 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   INSPIRE_MENTORSHIP_TEMPLATE,
   SEVER_THE_BOND_TEMPLATE,
   SOUL_FERRYMAN_TEMPLATE,
+  // Apotheosis capstone — Aspect apex milestone (THR-479)
+  APOTHEOSIS_ASCENSION_TEMPLATE,
   ROAD_AMBUSH_TEMPLATE,
   COURTYARD_DUEL_TEMPLATE,
   BRINK_RESCUE_TEMPLATE,

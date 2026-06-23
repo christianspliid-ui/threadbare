@@ -184,6 +184,32 @@ export interface DebugBridge {
   getAgentAttachments: (agentIdOrName: string) => Promise<AgentAttachments | null>;
 
   /**
+   * THR-479: list the ascendant's Aspects (apex milestone beyond the five tiers),
+   * including living Aspects and mythic echoes. Empty array if none / not loaded.
+   */
+  getAspects: () => Array<{
+    ascendantId: string;
+    mortalId: string;
+    mortalName: string;
+    attainedTick: number | null;
+    sourceTier: number | null;
+    mythicEcho: boolean;
+    echoedTick: number | null;
+  }>;
+
+  /**
+   * THR-479 (dev/QA only): grant the Aspect apex to a threaded mortal by id,
+   * id prefix, or partial name. Returns the grant result, or null if not found.
+   */
+  grantAspectDebug: (mortalIdOrName: string) => Promise<{
+    granted: boolean;
+    reason: string;
+    ascendantId?: string;
+    mortalId: string;
+    edgeId?: string;
+  } | null>;
+
+  /**
    * THR-401: inspect a location's THR-401 properties (health, presence,
    * countdown flags). Accepts id, id prefix, or partial name. Returns null
    * if not found.
