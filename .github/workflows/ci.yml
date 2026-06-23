@@ -10,6 +10,13 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# paths-filter reads the PR's changed-files list via the GitHub API, which
+# needs pull-requests: read. The repo's default GITHUB_TOKEN is restricted,
+# so grant it explicitly here (contents: read covers checkout + push-mode diff).
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   detect:
     name: Detect code changes
