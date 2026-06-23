@@ -70,6 +70,7 @@ import type { DecisionFamily } from '../types/strategicAction';
 import { ENABLE_INITIATIVES } from '../data/initiative-constants';
 import { generateInitiativeCandidates } from './initiativeCandidates';
 import { startInitiative } from './initiativeLifecycle';
+import { computeSurfaceKey } from './encounterSurface';
 
 /**
  * Compute effective cooldown scaled by available template pool size.
@@ -984,11 +985,11 @@ export function phaseAgentDecision(
                 };
                 freshForFamiliarity.properties.consecutiveIdleTicks = 0;
 
-                // THR-453: Track per-agent novelty — which templates this agent recently selected.
+                // THR-453: Track per-agent novelty — which surfaces this agent recently selected. (Re-keyed to surfaceKey, THR-475.)
                 const existingAgentNovelty = (freshForFamiliarity.properties?.agentNoveltyLastSelected as Record<string, number> | undefined) ?? {};
                 freshForFamiliarity.properties.agentNoveltyLastSelected = {
                   ...existingAgentNovelty,
-                  [sel.entry.templateId]: state.tick,
+                  [computeSurfaceKey(sel.entry)]: state.tick,
                 };
               }
             }
@@ -1002,7 +1003,7 @@ export function phaseAgentDecision(
                 noveltyRecord.categoryWindowTotal = 0;
                 noveltyRecord.categoryWindowStart = state.tick;
               }
-              noveltyRecord.globalLastSelected[sel.entry.templateId] = state.tick;
+              noveltyRecord.globalLastSelected[computeSurfaceKey(sel.entry)] = state.tick;
               const cat = sel.entry.reachPrimary;
               noveltyRecord.categoryWindowCounts[cat] = (noveltyRecord.categoryWindowCounts[cat] ?? 0) + 1;
               noveltyRecord.templateWindowCounts[sel.entry.templateId] = (noveltyRecord.templateWindowCounts[sel.entry.templateId] ?? 0) + 1;

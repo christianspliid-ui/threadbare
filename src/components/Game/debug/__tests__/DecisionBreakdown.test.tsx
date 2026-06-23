@@ -54,6 +54,12 @@ function makeScoringTrace(agentId: string, tick: number, overrides?: Partial<Sco
     ],
     selectedTemplateId: 'trade_deal',
     selectedLocationId: 'market',
+    selectedSurfaceKey: 'trade_deal|reachPrimary=gold|sublocationTypeId=market-stall',
+    selectedSurfaceAxes: {
+      reachPrimary: 'gold',
+      sublocationTypeId: 'market-stall',
+    },
+    selectedNoveltyMultiplier: 0.875,
     action: 'start_local',
     ...overrides,
   };
@@ -109,6 +115,17 @@ describe('DecisionBreakdown', () => {
     expect(breakdown.textContent).toContain('trade_deal');
     expect(breakdown.textContent).toContain('deep_descent');
     expect(breakdown.textContent).toContain('0.95');
+  });
+
+  it('shows selected surface metadata from scoring trace', () => {
+    const traces: TraceEntry[] = [
+      makeScoringTrace('agent-1', 5),
+    ];
+    render(<DecisionBreakdown agentId="agent-1" traces={traces} />);
+    expect(screen.getByTestId('surface-key').textContent).toContain('trade_deal|reachPrimary=gold');
+    expect(screen.getByTestId('surface-axes').textContent).toContain('Reach=gold');
+    expect(screen.getByTestId('surface-axes').textContent).toContain('Sublocation=market-stall');
+    expect(screen.getByText('0.875')).toBeTruthy();
   });
 
   it('renders awareness range per reach', () => {

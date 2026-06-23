@@ -183,6 +183,9 @@ export function generateSocialCandidates(
   const candidates: EncounterCacheEntry[] = [];
 
   for (const { agentId: targetAgentId, locationId: targetLocationId } of visibleAgents) {
+    // Pre-resolve target agent's NPC role for the surface key (THR-475). Fail-soft: null if absent.
+    const targetAgentRole = (graph.getNode(targetAgentId)?.properties?.npcRole as string | undefined) ?? null;
+
     // Get location type for template filtering.
     // If target is at a sublocation, walk up to parent for the locationType.
     const locationNode = graph.getNode(targetLocationId);
@@ -280,6 +283,7 @@ export function generateSocialCandidates(
         sublocationId: atTavern ? agentLocationId : null,
         sublocationTypeId: atTavern ? TAVERN_SUBLOCATION_TYPE_ID : null,
         targetAgentId,
+        targetAgentRole,
         reachPrimary: tmpl.reach,
         reachSecondary: tmpl.reach,
         threatRating: RARITY_TO_THREAT[tmpl.rarityTier] ?? 'trivial',
@@ -315,6 +319,7 @@ export function generateSocialCandidates(
         sublocationId: atTavern ? agentLocationId : null,
         sublocationTypeId: atTavern ? TAVERN_SUBLOCATION_TYPE_ID : null,
         targetAgentId,
+        targetAgentRole,
         reachPrimary: tmpl.reach,
         reachSecondary: tmpl.reach,
         threatRating: RARITY_TO_THREAT[tmpl.rarityTier] ?? 'trivial',
@@ -349,6 +354,7 @@ export function generateSocialCandidates(
         sublocationId: atTavern ? agentLocationId : null,
         sublocationTypeId: atTavern ? TAVERN_SUBLOCATION_TYPE_ID : null,
         targetAgentId,
+        targetAgentRole,
         reachPrimary: tmpl.reach,
         reachSecondary: tmpl.reach,
         threatRating: RARITY_TO_THREAT[tmpl.rarityTier] ?? 'trivial',
@@ -383,6 +389,7 @@ export function generateSocialCandidates(
         sublocationId: atTavern ? agentLocationId : null,
         sublocationTypeId: atTavern ? TAVERN_SUBLOCATION_TYPE_ID : null,
         targetAgentId,
+        targetAgentRole,
         reachPrimary: tmpl.reach,
         reachSecondary: tmpl.reach,
         threatRating: RARITY_TO_THREAT[tmpl.rarityTier] ?? 'trivial',
@@ -417,6 +424,7 @@ export function generateSocialCandidates(
         sublocationId: atTavern ? agentLocationId : null,
         sublocationTypeId: atTavern ? TAVERN_SUBLOCATION_TYPE_ID : null,
         targetAgentId,
+        targetAgentRole,
         reachPrimary: tmpl.reach,
         reachSecondary: tmpl.reach,
         threatRating: RARITY_TO_THREAT[tmpl.rarityTier] ?? 'trivial',

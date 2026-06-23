@@ -218,6 +218,8 @@ export interface DebugBridge {
   getRecentRewards: (n?: number) => Promise<readonly RewardHistoryEntry[]>;
   /** Resolve encounter foreshadowing prose for an agent's latest ranked encounter candidate. */
   getForeshadowing: (agentQuery: string, templateQuery?: string) => Promise<DebugForeshadowingResult | null>;
+  /** Returns the current encounter novelty record (surface-keyed since THR-475). Keys are surfaceKeys; values are last-selected tick. Null if no game state. */
+  getEncounterNoveltyRecord: () => Record<string, number> | null;
   getTraces: () => Promise<ReadonlyArray<TraceEntry>>;
   enableTracing: () => Promise<void>;
   disableTracing: () => Promise<void>;

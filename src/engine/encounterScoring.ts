@@ -68,6 +68,7 @@ import { getBehaviorWeights, computeBehaviorWeightMultiplier } from './effects/e
 import type { EligibilityFunnelCounters } from './kpi/gameplayKpi';
 import type { TraceBuffer } from './traceBuffer';
 import { computeBranchingCuratorMultiplier } from './encounter/branchingCurator';
+import { computeSurfaceKey, getSurfaceAxisValues } from './encounterSurface';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {
@@ -513,6 +514,8 @@ export interface ScoredCandidate {
   identityBiasBonus: number;
   /** Novelty pressure multiplier applied after curator bias (1.0 = no pressure, <1.0 = penalized). */
   noveltyMultiplier: number;
+  /** Surface key used for novelty/recency tracking (THR-475). Stable, sorted, deterministic. */
+  surfaceKey: string;
   finalScore: number;
   action: 'start_local' | 'queue_movement' | 'attempt_remote';
 }
@@ -1183,8 +1186,9 @@ export function scoreAndSelect(
       preNoveltyBestScore = preNoveltyScore;
       preNoveltyBestId = entry.templateId;
     }
-    // 17c. Novelty pressure (THR-453) — penalise recently over-selected templates
-    const noveltyMultiplier = computeNoveltyMultiplier(noveltyRecord, agentNoveltyLastSelected, entry.templateId, entry.reachPrimary, tick);
+    // 17c. Novelty pressure (THR-453) — penalise recently over-selected surfaces (re-keyed to surfaceKey, THR-475)
+    const surfaceKey = computeSurfaceKey(entry);
+    const noveltyMultiplier = computeNoveltyMultiplier(noveltyRecord, agentNoveltyLastSelected, surfaceKey, entry.reachPrimary, tick);
     // 17d. Share-ceiling backstop (THR-464 rung 4) — rolling-window ceiling, guards sparse windows
     const ceilingMultiplier = computeShareCeilingMultiplier(noveltyRecord, entry.templateId);
     // 17e. EMA frequency ceiling (THR-464 rung 5) — persistent frequency signal, immune to window resets
@@ -1230,6 +1234,7 @@ export function scoreAndSelect(
       intelBonus,
       identityBiasBonus,
       noveltyMultiplier,
+      surfaceKey,
       finalScore,
       action,
     });
@@ -1301,6 +1306,7 @@ function buildTrace(
       rarityMultiplier: c.rarityMultiplier,
       roleAffinityMultiplier: c.roleAffinityMultiplier,
       noveltyMultiplier: c.noveltyMultiplier,
+      surfaceKey: c.surfaceKey,
       // Phase 4: rich forecast fields
       expectedUtility: c.expectedUtility,
       pushBenefit: c.pushBenefit,
@@ -1309,6 +1315,9 @@ function buildTrace(
     })),
     selectedTemplateId: selected?.entry.templateId ?? null,
     selectedLocationId: selected?.entry.locationId ?? null,
+    selectedSurfaceKey: selected?.surfaceKey ?? null,
+    selectedSurfaceAxes: selected ? getSurfaceAxisValues(selected.entry) : undefined,
+    selectedNoveltyMultiplier: selected?.noveltyMultiplier ?? null,
     action: selected ? selected.action : 'idle',
     noveltyChangedSelection: noveltyChangedSelection ?? false,
     preNoveltyWinnerId: preNoveltyWinnerId ?? null,

@@ -15,6 +15,7 @@ import {
   scoreAndSelect,
   type EncounterNoveltyRecord,
 } from '../encounterScoring';
+import { computeSurfaceKey } from '../encounterSurface';
 import {
   NOVELTY_GLOBAL_MAX_PENALTY,
   NOVELTY_GLOBAL_HALF_LIFE,
@@ -205,9 +206,9 @@ describe('scoreAndSelect novelty integration', () => {
     const hotTemplate = makeEntry({ templateId: 'tmpl_hot', locationId: 'loc_a', requiresPresence: false });
     const freshTemplate = makeEntry({ templateId: 'tmpl_fresh', locationId: 'loc_a', requiresPresence: false });
 
-    // noveltyRecord with tmpl_hot selected THIS tick
+    // noveltyRecord with tmpl_hot selected THIS tick — keyed by surfaceKey (THR-475)
     const noveltyRecord: EncounterNoveltyRecord = {
-      globalLastSelected: { 'tmpl_hot': 5 },
+      globalLastSelected: { [computeSurfaceKey(hotTemplate)]: 5 },
       categoryWindowCounts: {},
       categoryWindowTotal: 0,
       categoryWindowStart: 0,
@@ -254,9 +255,9 @@ describe('scoreAndSelect novelty integration', () => {
       successRewardEstimate: 2.0,
     });
 
-    // dominant was selected this tick — maximum novelty penalty
+    // dominant was selected this tick — maximum novelty penalty. Keyed by surfaceKey (THR-475).
     const noveltyRecord: EncounterNoveltyRecord = {
-      globalLastSelected: { 'tmpl_dominant': 5 },
+      globalLastSelected: { [computeSurfaceKey(dominant)]: 5 },
       categoryWindowCounts: {},
       categoryWindowTotal: 0,
       categoryWindowStart: 0,
