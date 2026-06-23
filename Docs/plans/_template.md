@@ -184,15 +184,13 @@ interface <TraceName>Trace {
 
 ## Coordination block
 
-*These five fields are the handoff. Filling them turns this plan into a Ready-for-Dev candidate.*
+*These three fields are the handoff. Filling them turns this plan into a Ready-for-Dev candidate.*
 
-**Suggested model:** `<sonnet | haiku | opus>` — <one-line rationale for model choice>
+**Suggested model:** `<sonnet | haiku | opus>` — <one-line rationale; advisory only, the CC automation runs Opus regardless>
 
 **Parallel-safe with:** <THR-XXX — brief reason why no file-level collision>
 
 **Mutex with:** <THR-XXX — brief reason why files or shared state would conflict>
-
-**Codex review:** `<yes | no>` — <reason; no = doc-only or pattern-following; yes = novel logic requiring review>
 
 **Files to touch:**
 - Create: `<path/to/new/file>`

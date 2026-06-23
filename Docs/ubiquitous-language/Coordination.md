@@ -7,32 +7,32 @@ Not content-adjacent. Terms covering the multi-agent coordination protocol: role
 ### Cowork
 
 **Aliases:** Cowork Agent, Design Agent
-**Also see:** `[[Claude Code]]`, `[[Codex]]`, `[[Handoff Comment]]`
+**Also see:** `[[Claude Code]]`, `[[Handoff Comment]]`
 **Status:** canonical
 
-The design and planning agent. Cowork produces plans, manages Linear issues, updates documentation, and authors design docs. Cowork does not write code or run git commands. Its output is design artifacts and Linear state transitions. When a design is complete, Cowork posts a Handoff Comment and moves the issue to Ready for Dev or Ready for Codex.
+The design and planning agent. Cowork produces plans, manages Linear issues, updates documentation, and authors design docs. Cowork does not write code or run git commands. Its output is design artifacts and Linear state transitions. When a design is complete, Cowork posts a Handoff Comment and moves the issue to Ready for Dev.
 
 ---
 
 ### Claude Code (CC)
 
 **Aliases:** CC, Claude Code Agent
-**Also see:** `[[Cowork]]`, `[[Codex]]`, `[[Ready for Dev]]`
+**Also see:** `[[Cowork]]`, `[[Ready for Dev]]`
 **Status:** canonical
 
-The primary executor agent. CC claims Ready for Dev issues, implements them, commits with `Fixes THR-XX`, and follows the full Definition of Done. CC's queue is Ready for Dev exclusively — never Ready for Codex. CC handles judgment-heavy, prose, and novel-system work. WIP limit: 1 In Dev issue per session.
+The single executor agent. CC claims Ready for Dev issues, implements them, commits with `Fixes THR-XX`, and follows the full Definition of Done. CC's queue is Ready for Dev — the only executor queue. WIP limit: 1 In Dev issue per session.
 
 ---
 
 ### Codex
 
 **Aliases:** Codex Agent, Codex Executor
-**Also see:** `[[Claude Code]]`, `[[Ready for Codex]]`
-**Status:** canonical
+**Also see:** `[[Claude Code]]`
+**Status:** deprecated
 
-The secondary executor agent. Codex claims Ready for Codex issues — mechanical, pattern-following work. Codex's queue is Ready for Codex exclusively — never Ready for Dev. The separation exists to prevent queue conflicts between executors. Codex and CC are parallel-safe when their active issues don't share Mutex files.
+*Retired 2026-06-23 (THR-486).* Codex was a secondary executor agent that pulled mechanical, pattern-following work from the `Ready for Codex` queue. The two-executor / two-queue model was collapsed to a single Claude Code executor; the queue and the agent were retired. The term is preserved here so it resolves when it appears in historical plan docs, retros, and changelog entries.
 
-Note: The `/codex:*` skill integration is a code review tool only, distinct from Codex-the-executor.
+Note: The `/codex:*` code-review skill integration is a separate tool — distinct from Codex-the-executor — and is not part of the coordination workflow.
 
 ---
 
@@ -52,7 +52,7 @@ The single source of truth for all issues, states, and dependencies in the Threa
 **Also see:** `[[Claude Code]]`, `[[In Dev]]`, `[[WIP Limit]]`
 **Status:** canonical
 
-The protocol requiring `save_issue(state: "In Dev", assignee: "me")` as the first mutating action after selecting an issue — before reading the plan doc or any other implementation detail. Immediately followed by `get_issue(id)` to verify the write stuck. This prevents two executors from working the same issue concurrently. Silent state drops (impediment #48) make the verify step mandatory.
+The protocol requiring `save_issue(state: "In Dev", assignee: "me")` as the first mutating action after selecting an issue — before reading the plan doc or any other implementation detail. Immediately followed by `get_issue(id)` to verify the write stuck. This prevents two sessions from working the same issue concurrently. Silent state drops (impediment #48) make the verify step mandatory.
 
 ---
 
@@ -62,7 +62,7 @@ The protocol requiring `save_issue(state: "In Dev", assignee: "me")` as the firs
 **Also see:** `[[Claim-before-read]]`, `[[In Dev]]`
 **Status:** canonical
 
-Maximum 1 In Dev issue per executor at a time, across all sessions and worktrees. Parallel work happens on different issues by different executors — never two executors on the same issue. Before claiming, verify no other In Dev issue is already assigned to you.
+Maximum 1 In Dev issue at a time, across all sessions and worktrees. Parallel work happens on different issues — never two sessions on the same issue. Before claiming, verify no other In Dev issue is already assigned to you.
 
 ---
 
@@ -72,7 +72,7 @@ Maximum 1 In Dev issue per executor at a time, across all sessions and worktrees
 **Also see:** `[[Cowork]]`, `[[Coordination Block]]`, `[[Ready for Dev]]`
 **Status:** canonical
 
-The final comment posted by Cowork when moving an issue to Ready for Dev or Ready for Codex. The Handoff Comment is the authoritative statement of what to build — it supersedes the original description when it diverges. Must contain the full Coordination Block. For reopened issues, read ALL comments back to the original handoff before acting.
+The final comment posted by Cowork when moving an issue to Ready for Dev. The Handoff Comment is the authoritative statement of what to build — it supersedes the original description when it diverges. Must contain the full Coordination Block. For reopened issues, read ALL comments back to the original handoff before acting.
 
 ---
 
@@ -82,17 +82,17 @@ The final comment posted by Cowork when moving an issue to Ready for Dev or Read
 **Also see:** `[[Claude Code]]`, `[[Handoff Comment]]`
 **Status:** canonical
 
-The Linear state indicating an issue is designed, planned, and ready for Claude Code to claim. CC polls for `state: "Ready for Dev", assignee: null` as its pickup queue. Never query Ready for Codex — that queue belongs to Codex.
+The Linear state indicating an issue is designed, planned, and ready for Claude Code to claim. CC polls for `state: "Ready for Dev", assignee: null` as its pickup queue. It is the only executor queue.
 
 ---
 
 ### Ready for Codex
 
 **Aliases:** RFC
-**Also see:** `[[Codex]]`, `[[Handoff Comment]]`
-**Status:** canonical
+**Also see:** `[[Codex]]`
+**Status:** deprecated
 
-The Linear state indicating an issue is ready for Codex to claim. Codex polls for `state: "Ready for Codex", assignee: null`. Never query Ready for Dev — that queue belongs to CC.
+*Retired 2026-06-23 (THR-486).* The Linear state that fed the Codex executor queue. Retired with the single-executor consolidation — confirm the queue is empty, then archive the state in Linear team settings. The term is preserved here so it resolves when it appears in historical records.
 
 ---
 
@@ -112,7 +112,7 @@ The Linear state indicating an issue has been claimed and is being implemented. 
 **Also see:** `[[Handoff Comment]]`, `[[Parallel-safe]]`, `[[Mutex]]`
 **Status:** canonical
 
-The mandatory fields in every Handoff Comment: `Suggested model`, `Parallel-safe with`, `Mutex with`. CC's coordination block also requires `model:*` label. Codex's block additionally requires `Files to touch` and `Done when` checklist. Missing coordination block = don't claim; post a bounce note and stop.
+The mandatory fields in every Handoff Comment: `Suggested model`, `Parallel-safe with`, `Mutex with`. The `Suggested model` line (and its matching `model:*` label) is advisory — the single CC automation runs Opus regardless. Missing coordination block = don't claim; post a bounce note and stop.
 
 ---
 
@@ -122,7 +122,7 @@ The mandatory fields in every Handoff Comment: `Suggested model`, `Parallel-safe
 **Also see:** `[[Coordination Block]]`, `[[Mutex]]`
 **Status:** canonical
 
-Issues that can be worked simultaneously by different executors without file surface conflicts. Listed in the Coordination Block as `Parallel-safe with: THR-XXX`. Before claiming, verify your candidate appears in the active Codex issue's Parallel-safe list and does not appear in its Mutex list.
+Issues that can be worked simultaneously in separate sessions or worktrees without file surface conflicts. Listed in the Coordination Block as `Parallel-safe with: THR-XXX`. Before running a second issue concurrently, verify your candidate appears in the other active issue's Parallel-safe list and does not appear in its Mutex list.
 
 ---
 
@@ -132,7 +132,7 @@ Issues that can be worked simultaneously by different executors without file sur
 **Also see:** `[[Coordination Block]]`, `[[Parallel-safe]]`
 **Status:** canonical
 
-Issues that cannot be worked simultaneously because they share file surfaces and would produce merge conflicts. Listed in the Coordination Block as `Mutex with: THR-XXX`. If your candidate collides with an active Codex issue's Mutex list, do not claim — pick a different issue.
+Issues that cannot be worked simultaneously because they share file surfaces and would produce merge conflicts. Listed in the Coordination Block as `Mutex with: THR-XXX`. If your candidate collides with another active issue's Mutex list, do not run them concurrently — work them serially.
 
 ---
 
@@ -142,4 +142,4 @@ Issues that cannot be worked simultaneously because they share file surfaces and
 **Also see:** `[[In Dev]]`, `[[Definition of Done]]`
 **Status:** canonical
 
-The commit body keyword (`Fixes THR-XX`, `Closes THR-XX`, or `Resolves THR-XX`) that triggers Linear's auto-close workflow when the commit merges to main. This is the only valid way to mark an issue Done — never call `save_issue(state: "Done")` manually. The merge-to-main auto-close is the merge-gated invariant that Done means shipped.
+The keyword (`Fixes THR-XX`, `Closes THR-XX`, or `Resolves THR-XX`) that triggers Linear's auto-close workflow when the PR merges to main. Place it in **both** the commit body and the PR description body (impediment #140 — a squash/merge commit can drop the keyword from the commit body, but the PR body is always read). This is the only valid way to mark an issue Done — never call `save_issue(state: "Done")` manually. The merge-to-main auto-close transitions the issue straight to Done — the merge-gated invariant that Done means shipped.

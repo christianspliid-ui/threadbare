@@ -28,7 +28,7 @@ Run only after implementation is complete and closeout work is done:
 
 1. Confirm the issue state reflects reality:
 - Executor sessions: issue is `In Dev` until merge-to-main auto-close fires from a commit body containing `Fixes THR-XX` (or `Closes` / `Resolves`).
-- Planning sessions: issue moved to `Ready for Dev` or `Ready for Codex` with the coordination block in the latest comment.
+- Planning sessions: issue moved to `Ready for Dev` with the coordination block in the latest comment.
 
 2. Confirm closeout artifacts:
 - Completion or handoff comment exists on the Linear issue.
@@ -40,9 +40,9 @@ Run only after implementation is complete and closeout work is done:
 
 ```
 Session handoff summary
-- Mode: <Codex executor | Cowork planning | Claude Code executor>
+- Mode: <Cowork planning | Claude Code executor>
 - Issue: <THR-XXX title>
-- State now: <In Dev | Ready for Dev | Ready for Codex | Done (if auto-closed already)>
+- State now: <In Dev | Ready for Dev | Done (if auto-closed already)>
 - Shipped/Handoff: <one line>
 - Verification: <commands run or N/A>
 - Commit/PR: <sha and/or PR link, or N/A for planning>

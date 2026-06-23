@@ -29,28 +29,28 @@ Load this page once at session start instead of re-reading the corresponding CLA
 ## Current spec — coordination
 
 - **Coordination protocol (canonical):** [`Docs/plans/2026-04-13-linear-coordination-protocol.md`](../plans/2026-04-13-linear-coordination-protocol.md). The "Coordination Failure Modes — Hard Rules" section (Rules 1–9) explains why each constraint below is non-negotiable.
-- **Three agents, two executor queues:** [CLAUDE.md → Cowork vs Claude Code](../../CLAUDE.md). Cowork designs and plans (no code, no git). CC and Codex are executors; both implement, both commit with `Fixes THR-XX`, both rely on the merge-to-main auto-close.
-- **Queue separation (hard rule):** CC pulls **only** from Ready for Dev; Codex pulls **only** from Ready for Codex. Never query the other queue. Cowork chooses which queue an issue lands in based on fit (mechanical → Codex; judgment-heavy → CC). UL: [`Coordination` → Ready for Dev](../ubiquitous-language/Coordination.md), [`Coordination` → Ready for Codex](../ubiquitous-language/Coordination.md).
+- **Two agents, one executor queue:** [CLAUDE.md → Cowork vs Claude Code](../../CLAUDE.md). Cowork designs and plans (no code, no git). Claude Code is the single executor; it implements, commits with `Fixes THR-XX`, and relies on the merge-to-main auto-close. (Codex and the second `Ready for Codex` queue were retired 2026-06-23, THR-486.)
+- **One executor queue:** CC pulls from Ready for Dev (`assignee:null`, sorted by priority in memory). UL: [`Coordination` → Ready for Dev](../ubiquitous-language/Coordination.md).
 - **Claim-before-read:** [`UL/Coordination` → Claim-before-read](../ubiquitous-language/Coordination.md). First mutating call after selecting an issue is `save_issue(state: "In Dev", assignee: "me")`, then `get_issue(id)` to verify the write stuck (impediment #48 — silent state drops).
-- **WIP limit = 1:** [`UL/Coordination` → WIP Limit](../ubiquitous-language/Coordination.md). Maximum 1 In Dev issue per executor across all sessions and worktrees. Parallel work happens on different issues.
+- **WIP limit = 1:** [`UL/Coordination` → WIP Limit](../ubiquitous-language/Coordination.md). Maximum 1 In Dev issue across all sessions and worktrees. Parallel work happens on different issues.
 - **Read latest comment first:** Reopened issues require reading all comments back to the original handoff before acting. The `Reopened` label is the explicit signal.
-- **Cross-executor parallel:** before claiming, verify your candidate is in the other executor's `Parallel-safe with` list and not in their `Mutex with` list. UL: [`Coordination` → Parallel-safe](../ubiquitous-language/Coordination.md), [`Coordination` → Mutex](../ubiquitous-language/Coordination.md).
-- **Merge-gated Done:** [`UL/Coordination` → Fixes THR-XX](../ubiquitous-language/Coordination.md), [`UL/Coordination` → In Dev](../ubiquitous-language/Coordination.md). Never call `save_issue(state: "Done")` manually. The commit body keyword `Fixes THR-XX` (or `Closes`/`Resolves`) on the merge to main is the only valid Done transition. Manual Done has caused premature closes of reopened issues.
-- **Coordination Block (in every handoff):** [`UL/Coordination` → Coordination Block](../ubiquitous-language/Coordination.md). CC handoffs need `Suggested model` (with matching `model:*` label), `Parallel-safe with`, `Mutex with`. Codex handoffs additionally need `Files to touch` and `Done when`. Missing block = don't claim; bounce.
-- **Pickup entrypoint (CC and Codex):** [`.claude/skills/pull-work/SKILL.md`](../../.claude/skills/pull-work/SKILL.md). Run `/pull-work` for the canonical safe-claim flow with verify-after-write, dirty-worktree fallback, and mutex check.
+- **Concurrent-session parallel:** before running a second issue alongside an active one, verify your candidate is in the other issue's `Parallel-safe with` list and not in its `Mutex with` list. UL: [`Coordination` → Parallel-safe](../ubiquitous-language/Coordination.md), [`Coordination` → Mutex](../ubiquitous-language/Coordination.md).
+- **Merge-gated Done:** [`UL/Coordination` → Fixes THR-XX](../ubiquitous-language/Coordination.md), [`UL/Coordination` → In Dev](../ubiquitous-language/Coordination.md). Never call `save_issue(state: "Done")` manually. The `Fixes THR-XX` (or `Closes`/`Resolves`) keyword in the commit body **and PR body** on the merge to main transitions the issue straight to Done — the only valid Done transition (THR-487). Manual Done has caused premature closes of reopened issues.
+- **Coordination Block (in every handoff):** [`UL/Coordination` → Coordination Block](../ubiquitous-language/Coordination.md). Every handoff needs `Suggested model` (advisory — the CC automation runs Opus regardless), `Parallel-safe with`, `Mutex with`. Missing block = don't claim; bounce.
+- **Pickup entrypoint (CC):** [`.claude/skills/pull-work/SKILL.md`](../../.claude/skills/pull-work/SKILL.md). Run `/pull-work` for the canonical safe-claim flow with verify-after-write and dirty-worktree fallback.
 
 ## Continuous improvement loop
 
 - **Drift Scan:** [`UL/Process` → Drift Scan](../ubiquitous-language/Process.md). Weekly GitHub Action (`.github/workflows/drift-scan.yml`) runs four signals against `main` (coupling creep, broken-windows tally, test suite health, UL drift) and posts per-signal Linear issues with the `drift-scan` label in Continuous Improvement. Runs Fridays ~14:00 UTC.
 - **Retrospective:** [`UL/Process` → Retrospective](../ubiquitous-language/Process.md). Weekly synthesis of `Docs/impediments.md` + `drift-scan`-labeled issues into `Design/retros/retro-YYYY-MM-DD.md`. Runs Fridays ~15:00 UTC, ~1 hour after drift scan, via the `weekly-retro` scheduled task or `/retrospective`. Implements quick wins inline; opens Linear issues for larger improvements.
 - **Impediment log:** [`Docs/impediments.md`](../impediments.md). Mandatory for every session, every agent. Load `impediment-reporter` skill for format. Unlogged friction is invisible.
-- **Sandbox limitations reference:** [CLAUDE.md → Known Sandbox Limitations](../../CLAUDE.md). Read before debugging environment failures — `rg` blocked in Codex, PowerShell scope leaks, `npm test` timeouts, Linear `save_issue` silent drops, Obsidian MCP unreachable, etc.
+- **Sandbox limitations reference:** [CLAUDE.md → Known Sandbox Limitations](../../CLAUDE.md). Read before debugging environment failures — `rg` blocked/absent in the agent sandbox, PowerShell scope leaks, `npm test` timeouts, Linear `save_issue` silent drops, Obsidian MCP unreachable, etc.
 - **UL-proposal flow:** [`UL/Process` → UL-proposal](../ubiquitous-language/Process.md). When you encounter an undeclared concept or a UL-vs-source disagreement, open a Linear issue in Continuous Improvement labeled `UL-proposal` containing: proposed term + definition, where/why it was encountered (with quote), relationship to existing terms, content-adjacency assessment. Approval is always human — no auto-merge. UL wins on terminology disagreements.
 
 ## Plan-doc lifecycle
 
 - **Plan authoring (Cowork):** plan docs land in `Docs/plans/YYYY-MM-DD-<topic>.md` with frontmatter `status: proposal | current | implementation-log | superseded | historical`. Cowork applies `plan-pending-commit` label to the corresponding Linear issue immediately after writing the file. The hourly `flush-plan-docs` scheduled task commits the file and removes the label — typically within 1 hour.
-- **Cowork does not commit plan docs directly.** Move the issue to Ready for Dev / Ready for Codex as soon as the plan doc is written and the label is applied. Do not delay the handoff waiting for the commit.
+- **Cowork does not commit plan docs directly.** Move the issue to Ready for Dev as soon as the plan doc is written and the label is applied. Do not delay the handoff waiting for the commit.
 - **Strategy plan:** [`Docs/plans/2026-05-05-canonical-documentation-strategy.md`](../plans/2026-05-05-canonical-documentation-strategy.md) — the three-layer canonicality model (UL → Canon → Plans) this page is part of.
 - **Domain Canon Page convention:** [`Docs/canon/README.md`](README.md). Schema, ownership, when to update.
 
@@ -62,19 +62,19 @@ This Canon page has no domain-specific authoring skill — process is everyone's
 2. This page — `Docs/canon/process.md` (process Step 0)
 3. CLAUDE.md sections only when this page's pointer is not enough
 
-The `pull-work` skill (CC, Codex) is the canonical pickup entrypoint and links back to this page.
+The `pull-work` skill (CC) is the canonical pickup entrypoint and links back to this page.
 
 ## Active design plans
 
 - [`2026-05-05-canonical-documentation-strategy.md`](../plans/2026-05-05-canonical-documentation-strategy.md) — three-layer model (UL → Canon → Plans), Phase 2b in progress (THR-312/313/314/316).
-- [`2026-04-13-linear-coordination-protocol.md`](../plans/2026-04-13-linear-coordination-protocol.md) — multi-executor coordination contract; the source-of-truth for the rules summarized above.
+- [`2026-04-13-linear-coordination-protocol.md`](../plans/2026-04-13-linear-coordination-protocol.md) — single-executor coordination contract; the source-of-truth for the rules summarized above.
 - [`2026-04-16-systemic-wiring-guide.md`](../plans/2026-04-16-systemic-wiring-guide.md) — engine capabilities every content author must know about; cited from Design Governance.
 
 ## Rejected approaches (do not reintroduce)
 
 - ❌ Manual `save_issue(state: "Done")` from an executor — replaced by merge-to-main auto-close on `Fixes THR-XX`. Manual Done caused premature closes of reopened issues and bypassed the merge-gated invariant.
-- ❌ Cross-queue pickup — CC pulling Ready for Codex or Codex pulling Ready for Dev. Defeats the queue separation that exists to prevent collisions.
-- ❌ Reading the plan doc before claiming — replaced by claim-before-read. Reading first lets two executors claim the same issue when both have it open in different windows.
+- ❌ Two-executor / two-queue model (CC + Codex, Ready for Dev + Ready for Codex) — retired 2026-06-23 (THR-486). The coordination tax dominated the friction log; collapsed to a single CC executor pulling one queue.
+- ❌ Reading the plan doc before claiming — replaced by claim-before-read. Reading first lets two sessions claim the same issue when both have it open in different windows.
 - ❌ Cowork running `git add` / `git push` — Cowork is design and Linear only. Plan-doc commits go through the `plan-pending-commit` label and the hourly `flush-plan-docs` task.
 - ❌ Triangulating canonical content across 6–12 files — replaced by Canon pages (this directory). The audit cost was the bottleneck; Canon pages collapse it to a single Step-0 read.
 - ❌ Ad-hoc / out-of-band handoffs — replaced by Linear state transitions plus a Coordination Block in the handoff comment. The state transition is the handoff.

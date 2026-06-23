@@ -30,7 +30,7 @@ Run as `/pull-work` (auto-pick top Ready for Dev issue) or `/pull-work THR-123` 
 3. **Verify** — `get_issue(id)`. Confirm both `assignee` and `state` match.
    - On mismatch (silent drop, impediment #48): release claim with `save_issue(id, assignee:null)`. Output trace line (see below). Move to the next candidate. Retry up to `MAX_CLAIM_RETRIES` total attempts.
    - On all retries exhausted: output final trace line and exit the wrapper — fall back to the hand-rolled Step 1–4 path below.
-3.5. **Upstream-shipped check (Rule 11: don't re-do shipped work)** — run:
+3.5. **Upstream-shipped check (Rule 9: don't re-do shipped work)** — run:
 
     git fetch origin main
     git log origin/main --grep="Fixes ${id}" --grep="Closes ${id}" --grep="Resolves ${id}" --regexp-ignore-case --extended-regexp --oneline
@@ -132,7 +132,7 @@ If any Linear MCP call in this session returns a rate-limit error (HTTP 429 / MC
 If no issue id was provided, fire one call: `list_issues(team:"Threadbare", limit:250, orderBy:"updatedAt", includeArchived:false)`. In memory, bucket the response by `status` to produce:
 - The "In Dev" slice filtered to `assignee:"me"` — for WIP check
 - The "Ready for Dev" slice filtered to `assignee:null` — for pickup candidates
-- The "In Dev" slice across all assignees — for cross-executor parallel check (Step 2)
+- The "In Dev" slice across all assignees — for the concurrent-session parallel check (Step 2)
 
 Sort the Ready-for-Dev candidates by priority in memory (impediment #49 rejects `orderBy:priority` at runtime); oldest `createdAt` is tie-break. Pick the top.
 
@@ -168,7 +168,7 @@ git fetch origin main
 git log origin/main --grep="Fixes <resumed-issue-id>" --grep="Closes <resumed-issue-id>" --grep="Resolves <resumed-issue-id>" --regexp-ignore-case --extended-regexp --oneline
 ```
 
-**If the result is empty:** the work is genuinely still in flight. Continue from Step 5 (Reopened safety check) — skip Steps 2–4 (cross-executor parallel, coordination block, claim) because the claim already exists.
+**If the result is empty:** the work is genuinely still in flight. Continue from Step 5 (Reopened safety check) — skip Steps 2–4 (concurrent-session parallel, coordination block, claim) because the claim already exists.
 
 **If the result is non-empty:** the commit landed but the auto-close did not fire.
 1. Post a comment on the issue: `Upstream-shipped check during resume found commit {sha} "{first-line}". Auto-close did not fire — please verify the merge keyword in the commit body and close manually if appropriate.`
@@ -191,13 +191,15 @@ git log origin/main --grep="Fixes <resumed-issue-id>" --grep="Closes <resumed-is
 | `UPSTREAM_GREP_KEYWORDS` | `Fixes\|Closes\|Resolves` | Auto-close keywords accepted by Linear |
 | `RESUME_UPSTREAM_FAIL_SOFT` | `true` | If `git fetch` fails, proceed to Step 5 rather than refusing resume |
 
-### Step 2 - Cross-executor parallel check
+### Step 2 - Concurrent-session parallel check
 
-1. From the Step 1 board scan's "In Dev" slice (all assignees), detect active Codex work.
-2. If a Codex issue is active, verify the candidate appears in that issue's `Parallel-safe with` line.
+Only relevant when another CC session (an interactive session, or a second worktree) already holds an In Dev issue and you are considering running this one alongside it.
+
+1. From the Step 1 board scan's "In Dev" slice, detect any other active CC work.
+2. If another issue is active, verify the candidate appears in that issue's `Parallel-safe with` line.
 3. Confirm the candidate does not collide with that issue's `Mutex with` line.
 
-If collision or uncertainty remains, refuse and ask for rerouting instead of claiming.
+If collision or uncertainty remains, run serially instead of claiming concurrently. (The hourly automation is WIP=1 per Step 1.5; this check matters only for hand-driven multi-worktree work.)
 
 ### Step 3 - Validate coordination block on latest comment
 
@@ -216,7 +218,7 @@ If collision or uncertainty remains, refuse and ask for rerouting instead of cla
 
 Rationale: impediment #48 documents silent state-write drops; verify-after-write is mandatory.
 
-### Step 4.4 — Upstream-shipped check (Rule 11)
+### Step 4.4 — Upstream-shipped check (Rule 9)
 
 After the claim is verified (Step 4) and before worktree isolation (Step 4.5), run:
 
@@ -399,17 +401,16 @@ If the issue has label `Reopened`, read all comments back to the original handof
 2. If absent, search `Docs/plans/` for a likely match by issue/topic.
 3. Read the plan doc before touching code.
 
-### Step 7 - Surface model suggestion
+### Step 7 - Surface model suggestion (advisory)
 
-1. Read `model:*` labels and `Suggested model:` from the handoff block.
-2. Use that model unless there is a concrete reason to override.
-3. If overriding, note the rationale in the session.
+1. Read the `model:*` label and `Suggested model:` line from the handoff block.
+2. They are advisory only — the scheduled CC automation always runs Opus, and the label does not gate pickup. Treat the suggestion as a signal of the work type Cowork sized the issue for.
+3. An interactive session started by the user may run any model — the user's judgment supersedes the suggestion.
 
 ## Refuses To Proceed When
 
 - The "In Dev" slice for the executor's own assignee (computed in Step 1) is non-empty (Rule 6: WIP=1 across all sessions).
 - The latest handoff comment is missing any required coordination line (`Suggested model`, `Parallel-safe with`, `Mutex with`).
-- Cross-executor mutex analysis indicates file-surface collision with active Codex work.
 - `save_issue` claim cannot be verified by `get_issue` after one retry.
 - The upstream-shipped check (Step 4.4 fresh-claim or Step 1.7 resume) finds a `Fixes <issue-id>` / `Closes <issue-id>` / `Resolves <issue-id>` commit on `origin/main`. Pickup exits with a comment noting the upstream commit hash; the human reviewer closes the issue manually if appropriate.
 
