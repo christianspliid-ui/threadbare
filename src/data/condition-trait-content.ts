@@ -55,6 +55,7 @@ export const CONDITION_TRAIT_DEFINITIONS: GraphNode[] = [
       domainContributions: { iron: -0.08, stone: -0.04 },
       tags: ['#condition', '#combat', '#negative'],
       flavorText: 'Blood seeps through hastily bound cloth, a reminder that flesh is fragile.',
+      censusTag: { scale: 'personal' },
     } as TraitDefinitionProperties,
   },
   {
@@ -70,6 +71,7 @@ export const CONDITION_TRAIT_DEFINITIONS: GraphNode[] = [
       domainContributions: { heart: 0.08, star: 0.04 },
       tags: ['#condition', '#social', '#positive'],
       flavorText: 'A fire burns behind their eyes — the kind that lights other fires.',
+      censusTag: { scale: 'personal' },
     } as TraitDefinitionProperties,
   },
   {
@@ -85,6 +87,7 @@ export const CONDITION_TRAIT_DEFINITIONS: GraphNode[] = [
       domainContributions: { iron: -0.06, shadow: 0.04 },
       tags: ['#condition', '#combat', '#negative'],
       flavorText: 'Every shadow hides a threat. Every silence hides a scream.',
+      censusTag: { scale: 'personal' },
     } as TraitDefinitionProperties,
   },
   {
@@ -100,6 +103,7 @@ export const CONDITION_TRAIT_DEFINITIONS: GraphNode[] = [
       domainContributions: { star: 0.10, heart: 0.04 },
       tags: ['#condition', '#divine', '#positive'],
       flavorText: 'Light follows them — not the blinding kind, but the kind that opens doors.',
+      censusTag: { scale: 'personal' },
     } as TraitDefinitionProperties,
   },
   {
@@ -115,6 +119,7 @@ export const CONDITION_TRAIT_DEFINITIONS: GraphNode[] = [
       domainContributions: { star: -0.08, gold: -0.06 },
       tags: ['#condition', '#mystical', '#negative'],
       flavorText: 'The world tilts against them in small, cruel ways.',
+      censusTag: { scale: 'personal' },
     } as TraitDefinitionProperties,
   },
   {
@@ -130,6 +135,7 @@ export const CONDITION_TRAIT_DEFINITIONS: GraphNode[] = [
       domainContributions: { iron: -0.04, eye: -0.04, stone: -0.04 },
       tags: ['#condition', '#general', '#negative'],
       flavorText: 'Their limbs carry the weight of a world that will not let them rest.',
+      censusTag: { scale: 'personal' },
     } as TraitDefinitionProperties,
   },
 ];

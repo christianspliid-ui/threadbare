@@ -30,6 +30,7 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#iron', '#weapon', '#melee'],
       mechanicalSummary: '+0.05 Iron, rescues near-miss combat rolls (+1 step, within 1 margin)',
+      censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'A well-worn blade of folded steel, simple and reliable.',
       effects: [
@@ -57,6 +58,7 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#iron', '#weapon', '#legendary_beast'],
       mechanicalSummary: '+0.08 Iron, +0.04 Iron in combat (beast fury)',
+      censusTag: { scale: 'local' },
       lossCondition: 'permanent',
       flavorText:
         'Pulled from the jaw of the beast that terrorized the Ashen Vale for three generations.',
@@ -77,6 +79,7 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#beast', '#mount', '#travel'],
       mechanicalSummary: '+0.03 Gold, 10% reduced movement cost (pack carrier)',
+      censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'A stubborn creature with strong legs and stronger opinions.',
       effects: [
@@ -94,6 +97,7 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#beast', '#mount', '#cavalry'],
       mechanicalSummary: '20% reduced movement cost, grants cavalry_charge trait',
+      censusTag: { reach: 'star', scale: 'local' },
       lossCondition: 'breakable',
       flavorText:
         'Bred in the western reaches, these horses run until their hearts give out.',
@@ -114,6 +118,7 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#cloth', '#travel', '#weather'],
       mechanicalSummary: '10% reduced movement cost, blocks cold conditions',
+      censusTag: { reach: 'star', scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Dyed with muddy hues, designed to shed rain as much as attention.',
       effects: [
@@ -133,6 +138,7 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#food', '#consumable', '#travel'],
       mechanicalSummary: '+0.03 Iron, decays -0.003/tick to 0 (rations consumed)',
+      censusTag: { scale: 'local' },
       lossCondition: 'consumable',
       flavorText: 'Dried meat, hard bread, and a waterskin. Simple sustenance for the road.',
       effects: [
@@ -151,6 +157,7 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       tier: 3,
       tags: ['#eye', '#cursed', '#supernatural'],
       mechanicalSummary: '+0.08 Eye, -0.04 Heart, reveals attachments within 2 hexes, when cursed: -0.03 Heart for 6 ticks (12-tick cd)',
+      censusTag: { scale: 'regional' },
       lossCondition: 'cursed',
       flavorText: 'It sees what you cannot. It shows what you must not know.',
       effects: [
@@ -187,6 +194,7 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#star', '#tome', '#knowledge'],
       mechanicalSummary: '+0.06 Star, +0.03 Eye in exploration (fragment research), on first use: revelation condition',
+      censusTag: { scale: 'local' },
       lossCondition: 'permanent',
       flavorText: 'Half the pages are ash. The rest are worse.',
       effects: [

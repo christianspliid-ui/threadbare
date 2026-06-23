@@ -1,0 +1,3048 @@
+{
+  "date": "2026-06-23",
+  "report": {
+    "date": "2026-06-23",
+    "matrices": [
+      {
+        "contentType": "encounters",
+        "cells": [
+          {
+            "reach": "iron",
+            "scale": "cosmic",
+            "count": 1,
+            "status": "desert"
+          },
+          {
+            "reach": "iron",
+            "scale": "regional",
+            "count": 7,
+            "status": "filled"
+          },
+          {
+            "reach": "iron",
+            "scale": "local",
+            "count": 79,
+            "status": "filled"
+          },
+          {
+            "reach": "iron",
+            "scale": "personal",
+            "count": 3,
+            "status": "desert"
+          },
+          {
+            "reach": "gold",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "regional",
+            "count": 6,
+            "status": "filled"
+          },
+          {
+            "reach": "gold",
+            "scale": "local",
+            "count": 56,
+            "status": "filled"
+          },
+          {
+            "reach": "gold",
+            "scale": "personal",
+            "count": 3,
+            "status": "desert"
+          },
+          {
+            "reach": "shadow",
+            "scale": "cosmic",
+            "count": 1,
+            "status": "desert"
+          },
+          {
+            "reach": "shadow",
+            "scale": "regional",
+            "count": 6,
+            "status": "filled"
+          },
+          {
+            "reach": "shadow",
+            "scale": "local",
+            "count": 55,
+            "status": "filled"
+          },
+          {
+            "reach": "shadow",
+            "scale": "personal",
+            "count": 1,
+            "status": "desert"
+          },
+          {
+            "reach": "veil",
+            "scale": "cosmic",
+            "count": 1,
+            "status": "desert"
+          },
+          {
+            "reach": "veil",
+            "scale": "regional",
+            "count": 12,
+            "status": "filled"
+          },
+          {
+            "reach": "veil",
+            "scale": "local",
+            "count": 36,
+            "status": "filled"
+          },
+          {
+            "reach": "veil",
+            "scale": "personal",
+            "count": 3,
+            "status": "desert"
+          },
+          {
+            "reach": "heart",
+            "scale": "cosmic",
+            "count": 5,
+            "status": "filled"
+          },
+          {
+            "reach": "heart",
+            "scale": "regional",
+            "count": 8,
+            "status": "filled"
+          },
+          {
+            "reach": "heart",
+            "scale": "local",
+            "count": 52,
+            "status": "filled"
+          },
+          {
+            "reach": "heart",
+            "scale": "personal",
+            "count": 12,
+            "status": "filled"
+          },
+          {
+            "reach": "eye",
+            "scale": "cosmic",
+            "count": 7,
+            "status": "filled"
+          },
+          {
+            "reach": "eye",
+            "scale": "regional",
+            "count": 6,
+            "status": "filled"
+          },
+          {
+            "reach": "eye",
+            "scale": "local",
+            "count": 80,
+            "status": "filled"
+          },
+          {
+            "reach": "eye",
+            "scale": "personal",
+            "count": 10,
+            "status": "filled"
+          },
+          {
+            "reach": "stone",
+            "scale": "cosmic",
+            "count": 1,
+            "status": "desert"
+          },
+          {
+            "reach": "stone",
+            "scale": "regional",
+            "count": 7,
+            "status": "filled"
+          },
+          {
+            "reach": "stone",
+            "scale": "local",
+            "count": 35,
+            "status": "filled"
+          },
+          {
+            "reach": "stone",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "cosmic",
+            "count": 10,
+            "status": "filled"
+          },
+          {
+            "reach": "star",
+            "scale": "regional",
+            "count": 4,
+            "status": "desert"
+          },
+          {
+            "reach": "star",
+            "scale": "local",
+            "count": 30,
+            "status": "filled"
+          },
+          {
+            "reach": "star",
+            "scale": "personal",
+            "count": 8,
+            "status": "filled"
+          }
+        ],
+        "untaggedEntries": [],
+        "totalEntries": 565,
+        "applicableScales": [
+          "local",
+          "regional",
+          "cosmic",
+          "personal"
+        ]
+      },
+      {
+        "contentType": "actions",
+        "cells": [
+          {
+            "reach": "iron",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "iron",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "iron",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "iron",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          }
+        ],
+        "untaggedEntries": [
+          {
+            "id": "action.iron.raise-force",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.iron.assess-threat",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.iron.fortify",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.iron.conquer",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.establish-trade",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.survey-resources",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.trade",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.disrupt-trade",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.negotiate-agreement",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.tax-trade-route",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.break-agreement",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.hire-mercenaries",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.commission-assassination",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.buy-influence",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.fund-construction",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.establish-monopoly",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.shadow.establish-network",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.shadow.spy",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.shadow.recruit-agent",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.shadow.assassinate",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.veil.cast-spell",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.veil.detect-magic",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.veil.modify-enchantment",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.veil.dispel",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.heart.forge-alliance",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.heart.assess-loyalty",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.heart.inspire",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.heart.betray",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.eye.research",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.eye.investigate",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.eye.refine-knowledge",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.eye.suppress-knowledge",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.stone.build",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.stone.assess-structure",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.stone.repair",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.stone.demolish",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.star.consecrate",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.star.divine",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.star.deepen-faith",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.star.desecrate",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.flesh.heal",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.flesh.diagnose",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.flesh.cultivate",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.flesh.plague",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          }
+        ],
+        "totalEntries": 44,
+        "applicableScales": [
+          "local",
+          "regional",
+          "cosmic",
+          "personal"
+        ]
+      },
+      {
+        "contentType": "attachments",
+        "cells": [
+          {
+            "reach": "iron",
+            "scale": "cosmic",
+            "count": 1,
+            "status": "desert"
+          },
+          {
+            "reach": "iron",
+            "scale": "regional",
+            "count": 1,
+            "status": "desert"
+          },
+          {
+            "reach": "iron",
+            "scale": "local",
+            "count": 23,
+            "status": "filled"
+          },
+          {
+            "reach": "iron",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "gold",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "local",
+            "count": 11,
+            "status": "filled"
+          },
+          {
+            "reach": "gold",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "shadow",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "regional",
+            "count": 1,
+            "status": "desert"
+          },
+          {
+            "reach": "shadow",
+            "scale": "local",
+            "count": 8,
+            "status": "filled"
+          },
+          {
+            "reach": "shadow",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "veil",
+            "scale": "cosmic",
+            "count": 2,
+            "status": "desert"
+          },
+          {
+            "reach": "veil",
+            "scale": "regional",
+            "count": 5,
+            "status": "filled"
+          },
+          {
+            "reach": "veil",
+            "scale": "local",
+            "count": 12,
+            "status": "filled"
+          },
+          {
+            "reach": "veil",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "heart",
+            "scale": "cosmic",
+            "count": 2,
+            "status": "desert"
+          },
+          {
+            "reach": "heart",
+            "scale": "regional",
+            "count": 2,
+            "status": "desert"
+          },
+          {
+            "reach": "heart",
+            "scale": "local",
+            "count": 8,
+            "status": "filled"
+          },
+          {
+            "reach": "heart",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "eye",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "regional",
+            "count": 2,
+            "status": "desert"
+          },
+          {
+            "reach": "eye",
+            "scale": "local",
+            "count": 9,
+            "status": "filled"
+          },
+          {
+            "reach": "eye",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "stone",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "regional",
+            "count": 1,
+            "status": "desert"
+          },
+          {
+            "reach": "stone",
+            "scale": "local",
+            "count": 12,
+            "status": "filled"
+          },
+          {
+            "reach": "stone",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "star",
+            "scale": "cosmic",
+            "count": 1,
+            "status": "desert"
+          },
+          {
+            "reach": "star",
+            "scale": "regional",
+            "count": 1,
+            "status": "desert"
+          },
+          {
+            "reach": "star",
+            "scale": "local",
+            "count": 15,
+            "status": "filled"
+          },
+          {
+            "reach": "star",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          }
+        ],
+        "untaggedEntries": [],
+        "totalEntries": 119,
+        "applicableScales": [
+          "local",
+          "regional",
+          "cosmic"
+        ]
+      },
+      {
+        "contentType": "artifacts",
+        "cells": [
+          {
+            "reach": "iron",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "iron",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "iron",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "iron",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "gold",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "shadow",
+            "scale": "cosmic",
+            "count": 1,
+            "status": "desert"
+          },
+          {
+            "reach": "shadow",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "veil",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "heart",
+            "scale": "cosmic",
+            "count": 2,
+            "status": "desert"
+          },
+          {
+            "reach": "heart",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "eye",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "stone",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "star",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          }
+        ],
+        "untaggedEntries": [],
+        "totalEntries": 3,
+        "applicableScales": [
+          "local",
+          "regional",
+          "cosmic"
+        ]
+      },
+      {
+        "contentType": "conditions",
+        "cells": [
+          {
+            "reach": "iron",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "iron",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "iron",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "iron",
+            "scale": "personal",
+            "count": 3,
+            "status": "desert"
+          },
+          {
+            "reach": "gold",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "gold",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "gold",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "shadow",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "shadow",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "veil",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "veil",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "heart",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "heart",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "personal",
+            "count": 1,
+            "status": "desert"
+          },
+          {
+            "reach": "eye",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "eye",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "eye",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "stone",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "stone",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "personal",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "star",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "star",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "personal",
+            "count": 2,
+            "status": "desert"
+          }
+        ],
+        "untaggedEntries": [],
+        "totalEntries": 6,
+        "applicableScales": [
+          "personal",
+          "local"
+        ]
+      },
+      {
+        "contentType": "spells",
+        "cells": [
+          {
+            "reach": "iron",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "iron",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "iron",
+            "scale": "local",
+            "count": 1,
+            "status": "desert"
+          },
+          {
+            "reach": "iron",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "gold",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "local",
+            "count": 1,
+            "status": "desert"
+          },
+          {
+            "reach": "gold",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "shadow",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "local",
+            "count": 1,
+            "status": "desert"
+          },
+          {
+            "reach": "shadow",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "veil",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "regional",
+            "count": 1,
+            "status": "desert"
+          },
+          {
+            "reach": "veil",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "heart",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "eye",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "stone",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "star",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "regional",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          }
+        ],
+        "untaggedEntries": [],
+        "totalEntries": 5,
+        "applicableScales": [
+          "local",
+          "regional",
+          "cosmic"
+        ]
+      },
+      {
+        "contentType": "omens",
+        "cells": [
+          {
+            "reach": "iron",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "iron",
+            "scale": "regional",
+            "count": 4,
+            "status": "desert"
+          },
+          {
+            "reach": "iron",
+            "scale": "local",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "iron",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "gold",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "gold",
+            "scale": "regional",
+            "count": 2,
+            "status": "desert"
+          },
+          {
+            "reach": "gold",
+            "scale": "local",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "gold",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "shadow",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "regional",
+            "count": 2,
+            "status": "desert"
+          },
+          {
+            "reach": "shadow",
+            "scale": "local",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "shadow",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "veil",
+            "scale": "cosmic",
+            "count": 5,
+            "status": "filled"
+          },
+          {
+            "reach": "veil",
+            "scale": "regional",
+            "count": 6,
+            "status": "filled"
+          },
+          {
+            "reach": "veil",
+            "scale": "local",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "veil",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "heart",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "regional",
+            "count": 4,
+            "status": "desert"
+          },
+          {
+            "reach": "heart",
+            "scale": "local",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "heart",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "eye",
+            "scale": "cosmic",
+            "count": 1,
+            "status": "desert"
+          },
+          {
+            "reach": "eye",
+            "scale": "regional",
+            "count": 5,
+            "status": "filled"
+          },
+          {
+            "reach": "eye",
+            "scale": "local",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "eye",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "stone",
+            "scale": "cosmic",
+            "count": 1,
+            "status": "desert"
+          },
+          {
+            "reach": "stone",
+            "scale": "regional",
+            "count": 8,
+            "status": "filled"
+          },
+          {
+            "reach": "stone",
+            "scale": "local",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "stone",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "star",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "regional",
+            "count": 6,
+            "status": "filled"
+          },
+          {
+            "reach": "star",
+            "scale": "local",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "star",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          }
+        ],
+        "untaggedEntries": [],
+        "totalEntries": 44,
+        "applicableScales": [
+          "regional",
+          "cosmic"
+        ]
+      },
+      {
+        "contentType": "sublocations",
+        "cells": [
+          {
+            "reach": "iron",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "iron",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "iron",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "iron",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "gold",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "gold",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "gold",
+            "scale": "local",
+            "count": 7,
+            "status": "filled"
+          },
+          {
+            "reach": "gold",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "shadow",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "shadow",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "shadow",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "shadow",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "veil",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "veil",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "veil",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "veil",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "heart",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "heart",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "heart",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "heart",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "eye",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "eye",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "eye",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "eye",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "stone",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "stone",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "stone",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "stone",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "star",
+            "scale": "cosmic",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "star",
+            "scale": "regional",
+            "count": 0,
+            "status": "na"
+          },
+          {
+            "reach": "star",
+            "scale": "local",
+            "count": 0,
+            "status": "empty"
+          },
+          {
+            "reach": "star",
+            "scale": "personal",
+            "count": 0,
+            "status": "na"
+          }
+        ],
+        "untaggedEntries": [],
+        "totalEntries": 7,
+        "applicableScales": [
+          "local"
+        ]
+      }
+    ],
+    "summary": [
+      {
+        "contentType": "encounters",
+        "totalEntries": 565,
+        "applicableCells": 32,
+        "filledCells": 21,
+        "desertCells": 9,
+        "emptyCells": 2,
+        "untaggedCount": 0,
+        "resolvabilityPct": 1,
+        "fillPct": 0.65625
+      },
+      {
+        "contentType": "actions",
+        "totalEntries": 44,
+        "applicableCells": 32,
+        "filledCells": 0,
+        "desertCells": 0,
+        "emptyCells": 32,
+        "untaggedCount": 44,
+        "resolvabilityPct": 0,
+        "fillPct": 0
+      },
+      {
+        "contentType": "attachments",
+        "totalEntries": 119,
+        "applicableCells": 24,
+        "filledCells": 9,
+        "desertCells": 10,
+        "emptyCells": 5,
+        "untaggedCount": 0,
+        "resolvabilityPct": 1,
+        "fillPct": 0.375
+      },
+      {
+        "contentType": "artifacts",
+        "totalEntries": 3,
+        "applicableCells": 24,
+        "filledCells": 0,
+        "desertCells": 2,
+        "emptyCells": 22,
+        "untaggedCount": 0,
+        "resolvabilityPct": 1,
+        "fillPct": 0
+      },
+      {
+        "contentType": "conditions",
+        "totalEntries": 6,
+        "applicableCells": 16,
+        "filledCells": 0,
+        "desertCells": 3,
+        "emptyCells": 13,
+        "untaggedCount": 0,
+        "resolvabilityPct": 1,
+        "fillPct": 0
+      },
+      {
+        "contentType": "spells",
+        "totalEntries": 5,
+        "applicableCells": 24,
+        "filledCells": 0,
+        "desertCells": 4,
+        "emptyCells": 20,
+        "untaggedCount": 0,
+        "resolvabilityPct": 1,
+        "fillPct": 0
+      },
+      {
+        "contentType": "omens",
+        "totalEntries": 44,
+        "applicableCells": 16,
+        "filledCells": 5,
+        "desertCells": 6,
+        "emptyCells": 5,
+        "untaggedCount": 0,
+        "resolvabilityPct": 1,
+        "fillPct": 0.3125
+      },
+      {
+        "contentType": "sublocations",
+        "totalEntries": 7,
+        "applicableCells": 8,
+        "filledCells": 1,
+        "desertCells": 0,
+        "emptyCells": 7,
+        "untaggedCount": 0,
+        "resolvabilityPct": 1,
+        "fillPct": 0.125
+      }
+    ],
+    "desertList": [
+      {
+        "contentType": "encounters",
+        "reach": "iron",
+        "scale": "cosmic",
+        "count": 1,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "encounters",
+        "reach": "shadow",
+        "scale": "cosmic",
+        "count": 1,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "encounters",
+        "reach": "shadow",
+        "scale": "personal",
+        "count": 1,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "encounters",
+        "reach": "veil",
+        "scale": "cosmic",
+        "count": 1,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "encounters",
+        "reach": "stone",
+        "scale": "cosmic",
+        "count": 1,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "iron",
+        "scale": "cosmic",
+        "count": 1,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "iron",
+        "scale": "regional",
+        "count": 1,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "shadow",
+        "scale": "regional",
+        "count": 1,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "stone",
+        "scale": "regional",
+        "count": 1,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "star",
+        "scale": "cosmic",
+        "count": 1,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "star",
+        "scale": "regional",
+        "count": 1,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "shadow",
+        "scale": "cosmic",
+        "count": 1,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "heart",
+        "scale": "personal",
+        "count": 1,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "iron",
+        "scale": "local",
+        "count": 1,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "gold",
+        "scale": "local",
+        "count": 1,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "shadow",
+        "scale": "local",
+        "count": 1,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "veil",
+        "scale": "regional",
+        "count": 1,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "omens",
+        "reach": "eye",
+        "scale": "cosmic",
+        "count": 1,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "omens",
+        "reach": "stone",
+        "scale": "cosmic",
+        "count": 1,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "veil",
+        "scale": "cosmic",
+        "count": 2,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "heart",
+        "scale": "cosmic",
+        "count": 2,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "heart",
+        "scale": "regional",
+        "count": 2,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "eye",
+        "scale": "regional",
+        "count": 2,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "heart",
+        "scale": "cosmic",
+        "count": 2,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "star",
+        "scale": "personal",
+        "count": 2,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "omens",
+        "reach": "gold",
+        "scale": "regional",
+        "count": 2,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "omens",
+        "reach": "shadow",
+        "scale": "regional",
+        "count": 2,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "encounters",
+        "reach": "iron",
+        "scale": "personal",
+        "count": 3,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "encounters",
+        "reach": "gold",
+        "scale": "personal",
+        "count": 3,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "encounters",
+        "reach": "veil",
+        "scale": "personal",
+        "count": 3,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "iron",
+        "scale": "personal",
+        "count": 3,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "encounters",
+        "reach": "star",
+        "scale": "regional",
+        "count": 4,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "omens",
+        "reach": "iron",
+        "scale": "regional",
+        "count": 4,
+        "priorityScore": 1
+      },
+      {
+        "contentType": "omens",
+        "reach": "heart",
+        "scale": "regional",
+        "count": 4,
+        "priorityScore": 1
+      }
+    ],
+    "emptyList": [
+      {
+        "contentType": "encounters",
+        "reach": "gold",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "encounters",
+        "reach": "stone",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "iron",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "iron",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "iron",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "iron",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "gold",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "gold",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "gold",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "gold",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "shadow",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "shadow",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "shadow",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "shadow",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "veil",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "veil",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "veil",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "veil",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "heart",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "heart",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "heart",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "heart",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "eye",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "eye",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "eye",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "eye",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "stone",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "stone",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "stone",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "stone",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "star",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "star",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "star",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "actions",
+        "reach": "star",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "gold",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "gold",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "shadow",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "eye",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "attachments",
+        "reach": "stone",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "iron",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "iron",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "iron",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "gold",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "gold",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "gold",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "shadow",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "shadow",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "veil",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "veil",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "veil",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "heart",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "heart",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "eye",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "eye",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "eye",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "stone",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "stone",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "stone",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "star",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "star",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "artifacts",
+        "reach": "star",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "iron",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "gold",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "gold",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "shadow",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "shadow",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "veil",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "veil",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "heart",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "eye",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "eye",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "stone",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "stone",
+        "scale": "personal",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "conditions",
+        "reach": "star",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "iron",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "iron",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "gold",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "gold",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "shadow",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "shadow",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "veil",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "veil",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "heart",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "heart",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "heart",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "eye",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "eye",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "eye",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "stone",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "stone",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "stone",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "star",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "star",
+        "scale": "regional",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "spells",
+        "reach": "star",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "omens",
+        "reach": "iron",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "omens",
+        "reach": "gold",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "omens",
+        "reach": "shadow",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "omens",
+        "reach": "heart",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "omens",
+        "reach": "star",
+        "scale": "cosmic",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "sublocations",
+        "reach": "iron",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "sublocations",
+        "reach": "shadow",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "sublocations",
+        "reach": "veil",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "sublocations",
+        "reach": "heart",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "sublocations",
+        "reach": "eye",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "sublocations",
+        "reach": "stone",
+        "scale": "local",
+        "priorityScore": 1
+      },
+      {
+        "contentType": "sublocations",
+        "reach": "star",
+        "scale": "local",
+        "priorityScore": 1
+      }
+    ],
+    "untaggedList": [
+      {
+        "contentType": "actions",
+        "entries": [
+          {
+            "id": "action.iron.raise-force",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.iron.assess-threat",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.iron.fortify",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.iron.conquer",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.establish-trade",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.survey-resources",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.trade",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.disrupt-trade",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.negotiate-agreement",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.tax-trade-route",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.break-agreement",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.hire-mercenaries",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.commission-assassination",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.buy-influence",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.fund-construction",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.gold.establish-monopoly",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.shadow.establish-network",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.shadow.spy",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.shadow.recruit-agent",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.shadow.assassinate",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.veil.cast-spell",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.veil.detect-magic",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.veil.modify-enchantment",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.veil.dispel",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.heart.forge-alliance",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.heart.assess-loyalty",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.heart.inspire",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.heart.betray",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.eye.research",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.eye.investigate",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.eye.refine-knowledge",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.eye.suppress-knowledge",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.stone.build",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.stone.assess-structure",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.stone.repair",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.stone.demolish",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.star.consecrate",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.star.divine",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.star.deepen-faith",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.star.desecrate",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.flesh.heal",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.flesh.diagnose",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.flesh.cultivate",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          },
+          {
+            "id": "action.flesh.plague",
+            "reason": "scale not authored — inferred from actor affinities in migration"
+          }
+        ]
+      }
+    ]
+  },
+  "resolvability": [
+    {
+      "contentType": "encounters",
+      "total": 565,
+      "reachResolved": 565,
+      "scaleResolved": 565,
+      "bothResolved": 565,
+      "reachPct": 1,
+      "scalePct": 1,
+      "bothPct": 1
+    },
+    {
+      "contentType": "actions",
+      "total": 44,
+      "reachResolved": 44,
+      "scaleResolved": 0,
+      "bothResolved": 0,
+      "reachPct": 1,
+      "scalePct": 0,
+      "bothPct": 0
+    },
+    {
+      "contentType": "attachments",
+      "total": 119,
+      "reachResolved": 119,
+      "scaleResolved": 119,
+      "bothResolved": 119,
+      "reachPct": 1,
+      "scalePct": 1,
+      "bothPct": 1
+    },
+    {
+      "contentType": "artifacts",
+      "total": 3,
+      "reachResolved": 3,
+      "scaleResolved": 3,
+      "bothResolved": 3,
+      "reachPct": 1,
+      "scalePct": 1,
+      "bothPct": 1
+    },
+    {
+      "contentType": "conditions",
+      "total": 6,
+      "reachResolved": 6,
+      "scaleResolved": 6,
+      "bothResolved": 6,
+      "reachPct": 1,
+      "scalePct": 1,
+      "bothPct": 1
+    },
+    {
+      "contentType": "spells",
+      "total": 5,
+      "reachResolved": 5,
+      "scaleResolved": 5,
+      "bothResolved": 5,
+      "reachPct": 1,
+      "scalePct": 1,
+      "bothPct": 1
+    },
+    {
+      "contentType": "omens",
+      "total": 44,
+      "reachResolved": 44,
+      "scaleResolved": 44,
+      "bothResolved": 44,
+      "reachPct": 1,
+      "scalePct": 1,
+      "bothPct": 1
+    },
+    {
+      "contentType": "sublocations",
+      "total": 7,
+      "reachResolved": 7,
+      "scaleResolved": 7,
+      "bothResolved": 7,
+      "reachPct": 1,
+      "scalePct": 1,
+      "bothPct": 1
+    }
+  ]
+}

@@ -19,6 +19,7 @@ export const SPELL_TEMPLATES: SpellTemplate[] = [
     sphereAffinity: 'spirit',
     flavorText: 'The caster slips between the folds of reality, emerging elsewhere.',
     mechanicalSummary: 'Teleport 3 hexes + brief shadow bonus. Costs veil drain. Backlash: random displacement.',
+    censusTag: { scale: 'local' },
     prerequisites: { minReach: { veil: 0.20 } },
     effects: [
       { type: 'teleport', target: 'self', range: 3 },
@@ -45,6 +46,7 @@ export const SPELL_TEMPLATES: SpellTemplate[] = [
     sphereAffinity: 'energy',
     flavorText: 'Cosmic fire courses through the caster, turning martial skill into stellar wrath.',
     mechanicalSummary: 'Swap iron→star for combat + stacking star bonus. Costs doom + heart drain. Backlash: star decay.',
+    censusTag: { scale: 'personal' },
     prerequisites: { minReach: { star: 0.30, iron: 0.15 } },
     effects: [
       { type: 'swap_reach', from: 'iron', to: 'star', ticks: 8 },
@@ -74,6 +76,7 @@ export const SPELL_TEMPLATES: SpellTemplate[] = [
     sphereAffinity: 'mind',
     flavorText: 'Dark charisma radiates outward, weakening rivals and empowering the caster in negotiations.',
     mechanicalSummary: 'Aura -gold on enemies + conditional +gold in social. Costs relationship + paranoia. Backlash: blessings transferred.',
+    censusTag: { scale: 'local' },
     prerequisites: { minReach: { gold: 0.25, shadow: 0.20 } },
     effects: [
       { type: 'aura', radius: 1, target: 'enemies', reach: 'gold', value: -0.08 },
@@ -103,6 +106,7 @@ export const SPELL_TEMPLATES: SpellTemplate[] = [
     sphereAffinity: 'spirit',
     flavorText: 'A wayfinder crystal shatters, opening a portal to any point on the map.',
     mechanicalSummary: 'Unlimited-range teleport. Consumes a wayfinder crystal. Backlash: random destination.',
+    censusTag: { reach: 'veil', scale: 'regional' },
     prerequisites: { minReach: { veil: 0.35 }, requiredAttachment: 'wayfinder_crystal' },
     effects: [
       { type: 'teleport', target: 'self', range: 'unlimited', destination: 'target_hex' },
@@ -128,6 +132,7 @@ export const SPELL_TEMPLATES: SpellTemplate[] = [
     sphereAffinity: 'life',
     flavorText: 'The caster reaches across the threshold of death to pull an ally back.',
     mechanicalSummary: 'Dispel death condition + temporary iron weakness. Costs doom + star drain + exhaustion. Backlash: star decay.',
+    censusTag: { scale: 'local' },
     prerequisites: { minReach: { star: 0.40, heart: 0.30 } },
     effects: [
       { type: 'dispel', target: 'condition', tags: ['dead'] },

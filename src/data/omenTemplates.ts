@@ -50,6 +50,7 @@ const BREACH_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.65,
+    censusTag: { reach: 'veil', scale: 'regional' },
   },
   {
     id: 'omen.breach.borrowed_voices',
@@ -82,6 +83,7 @@ const BREACH_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.65,
+    censusTag: { reach: 'shadow', scale: 'regional' },
   },
   {
     id: 'omen.breach.fissure_winds',
@@ -114,6 +116,7 @@ const BREACH_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.7,
+    censusTag: { reach: 'veil', scale: 'regional' },
   },
   {
     id: 'omen.breach.the_hemorrhage',
@@ -146,6 +149,7 @@ const BREACH_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.8,
+    censusTag: { reach: 'veil', scale: 'cosmic' },
   },
 ];
 
@@ -185,6 +189,7 @@ const CONVERGENCE_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.6,
+    censusTag: { reach: 'eye', scale: 'regional' },
   },
   {
     id: 'omen.convergence.the_humming',
@@ -217,6 +222,7 @@ const CONVERGENCE_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.65,
+    censusTag: { reach: 'star', scale: 'regional' },
   },
   {
     id: 'omen.convergence.gravity_wells',
@@ -249,6 +255,7 @@ const CONVERGENCE_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.7,
+    censusTag: { reach: 'stone', scale: 'regional' },
   },
   {
     id: 'omen.convergence.the_singularity_approaches',
@@ -281,6 +288,7 @@ const CONVERGENCE_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.85,
+    censusTag: { reach: 'veil', scale: 'cosmic' },
   },
 ];
 
@@ -320,6 +328,7 @@ const RECKONING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.6,
+    censusTag: { reach: 'gold', scale: 'regional' },
   },
   {
     id: 'omen.reckoning.the_witnesses',
@@ -352,6 +361,7 @@ const RECKONING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.65,
+    censusTag: { reach: 'eye', scale: 'regional' },
   },
   {
     id: 'omen.reckoning.echo_walk',
@@ -384,6 +394,7 @@ const RECKONING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.7,
+    censusTag: { reach: 'star', scale: 'regional' },
   },
   {
     id: 'omen.reckoning.the_accounting',
@@ -416,6 +427,7 @@ const RECKONING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.85,
+    censusTag: { reach: 'eye', scale: 'cosmic' },
   },
 ];
 
@@ -455,6 +467,7 @@ const SPHERE_SURGE_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.55,
+    censusTag: { reach: 'stone', scale: 'regional' },
   },
   {
     id: 'omen.sphere.entropic_tide',
@@ -487,6 +500,7 @@ const SPHERE_SURGE_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.55,
+    censusTag: { reach: 'stone', scale: 'regional' },
   },
   {
     id: 'omen.sphere.iron_season',
@@ -519,6 +533,7 @@ const SPHERE_SURGE_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.6,
+    censusTag: { reach: 'iron', scale: 'regional' },
   },
   {
     id: 'omen.sphere.crystal_clarity',
@@ -551,6 +566,7 @@ const SPHERE_SURGE_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.55,
+    censusTag: { reach: 'eye', scale: 'regional' },
   },
   {
     id: 'omen.sphere.the_veil_thins',
@@ -583,6 +599,7 @@ const SPHERE_SURGE_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.55,
+    censusTag: { reach: 'veil', scale: 'regional' },
   },
   {
     id: 'omen.sphere.temporal_drift',
@@ -615,6 +632,7 @@ const SPHERE_SURGE_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.55,
+    censusTag: { reach: 'star', scale: 'regional' },
   },
 ];
 
@@ -653,6 +671,7 @@ const CULTURAL_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.65,
+    censusTag: { reach: 'iron', scale: 'regional' },
   },
   {
     id: 'omen.cultural.lean_harvest',
@@ -684,6 +703,7 @@ const CULTURAL_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.6,
+    censusTag: { reach: 'stone', scale: 'regional' },
   },
   {
     id: 'omen.cultural.festival_season',
@@ -715,6 +735,7 @@ const CULTURAL_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.5,
+    censusTag: { reach: 'gold', scale: 'regional' },
   },
   {
     id: 'omen.cultural.the_unquiet',
@@ -746,6 +767,7 @@ const CULTURAL_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.65,
+    censusTag: { reach: 'heart', scale: 'regional' },
   },
   {
     id: 'omen.cultural.season_of_grief',
@@ -777,6 +799,7 @@ const CULTURAL_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.65,
+    censusTag: { reach: 'heart', scale: 'regional' },
   },
   {
     id: 'omen.cultural.age_of_discovery',
@@ -808,6 +831,7 @@ const CULTURAL_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.55,
+    censusTag: { reach: 'star', scale: 'regional' },
   },
 ];
 
@@ -845,6 +869,7 @@ const SEASONAL_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.5,
+    censusTag: { reach: 'eye', scale: 'regional' },
   },
   {
     id: 'omen.seasonal.the_turning',
@@ -875,6 +900,7 @@ const SEASONAL_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.5,
+    censusTag: { reach: 'star', scale: 'regional' },
   },
   {
     id: 'omen.seasonal.the_long_dark',
@@ -905,6 +931,7 @@ const SEASONAL_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.5,
+    censusTag: { reach: 'stone', scale: 'regional' },
   },
   {
     id: 'omen.seasonal.the_reckoning_hour',
@@ -935,6 +962,7 @@ const SEASONAL_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.6,
+    censusTag: { reach: 'iron', scale: 'regional' },
   },
 ];
 
@@ -975,6 +1003,7 @@ const CHANGING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.55,
+    censusTag: { reach: 'veil', scale: 'regional' },
   },
   {
     id: 'omen.changing.the_slipping',
@@ -1007,6 +1036,7 @@ const CHANGING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.65,
+    censusTag: { reach: 'shadow', scale: 'regional' },
   },
   {
     id: 'omen.changing.cascade_of_forms',
@@ -1039,6 +1069,7 @@ const CHANGING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.75,
+    censusTag: { reach: 'veil', scale: 'regional' },
   },
   {
     id: 'omen.changing.the_great_unmaking',
@@ -1071,6 +1102,7 @@ const CHANGING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.9,
+    censusTag: { reach: 'veil', scale: 'cosmic' },
   },
 ];
 
@@ -1111,6 +1143,7 @@ const SUNDERING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.55,
+    censusTag: { reach: 'stone', scale: 'regional' },
   },
   {
     id: 'omen.sundering.the_severance',
@@ -1143,6 +1176,7 @@ const SUNDERING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.65,
+    censusTag: { reach: 'heart', scale: 'regional' },
   },
   {
     id: 'omen.sundering.violent_partition',
@@ -1175,6 +1209,7 @@ const SUNDERING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.75,
+    censusTag: { reach: 'iron', scale: 'regional' },
   },
   {
     id: 'omen.sundering.the_final_division',
@@ -1207,6 +1242,7 @@ const SUNDERING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.9,
+    censusTag: { reach: 'stone', scale: 'cosmic' },
   },
 ];
 
@@ -1247,6 +1283,7 @@ const FAILING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.55,
+    censusTag: { reach: 'stone', scale: 'regional' },
   },
   {
     id: 'omen.failing.the_forgetting',
@@ -1279,6 +1316,7 @@ const FAILING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.65,
+    censusTag: { reach: 'eye', scale: 'regional' },
   },
   {
     id: 'omen.failing.things_fall_apart',
@@ -1311,6 +1349,7 @@ const FAILING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.75,
+    censusTag: { reach: 'stone', scale: 'regional' },
   },
   {
     id: 'omen.failing.exhaustion_of_the_age',
@@ -1343,6 +1382,7 @@ const FAILING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.9,
+    censusTag: { reach: 'veil', scale: 'cosmic' },
   },
 ];
 
@@ -1383,6 +1423,7 @@ const ASCENSION_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.55,
+    censusTag: { reach: 'heart', scale: 'regional' },
   },
   {
     id: 'omen.ascension.the_rising',
@@ -1415,6 +1456,7 @@ const ASCENSION_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.65,
+    censusTag: { reach: 'veil', scale: 'regional' },
   },
   {
     id: 'omen.ascension.departure',
@@ -1447,6 +1489,7 @@ const ASCENSION_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.75,
+    censusTag: { reach: 'star', scale: 'regional' },
   },
   {
     id: 'omen.ascension.the_hollow_world',
@@ -1479,6 +1522,7 @@ const ASCENSION_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.9,
+    censusTag: { reach: 'veil', scale: 'cosmic' },
   },
 ];
 
