@@ -29,6 +29,12 @@ jobs:
         id: filter
         with:
           # 'code' is true if ANY changed file is not a doc.
+          # predicate-quantifier: every is REQUIRED — under the default 'some'
+          # (OR) quantifier the leading '**' matches every file, so the
+          # negations never subtract and 'code' is always true (a doc-only PR
+          # would still run the full suite). 'every' requires each file to
+          # match '**' AND none of the negations, so only non-doc files qualify.
+          predicate-quantifier: 'every'
           filters: |
             code:
               - '**'
