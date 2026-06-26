@@ -15,10 +15,13 @@ import * as path from 'path';
 
 import { initializeGameState, MAP_SIZE_PRESETS } from '../src/engine/gameInit';
 import type { MapSizePreset } from '../src/engine/gameInit';
-import { runTick, resetEventCounter } from '../src/engine/orchestrator';
+import { runTick, resetEventCounter, resetDecisionCache } from '../src/engine/orchestrator';
 import { createBalancedCosmology } from '../src/engine/cosmology';
 import { generateArchetypes } from '../src/engine/ascendant';
 import { createSimulationRuntime } from '../src/engine/simulationRuntime';
+import { buildAscendantReachState } from '../src/testing/ascendantReachHarness';
+import { REPORT_ASCENDANT_REACHES, getAscendantReachIdentity } from '../src/data/__fixtures__/ascendant-reach-fixtures';
+import type { ReachDomain } from '../src/types/traits';
 import { resetReputationTraitInit } from '../src/engine/phaseReputationTraits';
 import { computeGameplayKpiReport } from '../src/engine/kpi/gameplayKpi';
 import { KPI_REPORT_SEEDS, KPI_REPORT_TICKS } from '../src/engine/kpi/kpiConstants';
@@ -32,6 +35,8 @@ interface Args {
   mapSize: MapSizePreset;
   outDir: string;
   jsonOnly: boolean;
+  /** Pinned-reach ascendants to run; null = random-archetype path (default). */
+  ascendants: ReachDomain[] | null;
 }
 
 function parseArgs(): Args {
@@ -41,6 +46,7 @@ function parseArgs(): Args {
   let mapSize: MapSizePreset = 'medium';
   let outDir = 'Docs/playtests/kpi';
   let jsonOnly = false;
+  let ascendants: ReachDomain[] | null = null;
 
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -59,6 +65,16 @@ function parseArgs(): Args {
       outDir = argv[++i];
     } else if (a === '--json') {
       jsonOnly = true;
+    } else if ((a === '--ascendant' || a === '--ascendants') && i + 1 < argv.length) {
+      const raw = a === '--ascendants'
+        ? argv[++i].split(',').map(s => s.trim()).filter(Boolean)
+        : [argv[++i].trim()];
+      // Fail-soft: validate each reach now so a typo errors with a usable
+      // message instead of producing an empty/undefined run later.
+      for (const r of raw) getAscendantReachIdentity(r);
+      ascendants = raw as ReachDomain[];
+    } else if (a === '--all-ascendants') {
+      ascendants = [...REPORT_ASCENDANT_REACHES];
     }
   }
 
@@ -68,28 +84,46 @@ function parseArgs(): Args {
     mapSize,
     outDir,
     jsonOnly,
+    ascendants,
   };
 }
 
 // ─── Single run ───────────────────────────────────────────────────
 
-function runOnce(seed: number, ticks: number, mapSize: MapSizePreset): GameplayKpiReport {
+function runOnce(
+  seed: number,
+  ticks: number,
+  mapSize: MapSizePreset,
+  ascendant?: ReachDomain,
+): GameplayKpiReport {
+  // Reset all persistent + ephemeral module ID counters so each run is
+  // deterministic regardless of order (NFP #3). resetDecisionCache covers the
+  // persistent graph-node counters (npc, lifecycle, action, …).
+  resetDecisionCache();
   resetEventCounter();
   resetReputationTraitInit();
   const runtime = createSimulationRuntime();
-  const cosmology = createBalancedCosmology();
-  const preset = MAP_SIZE_PRESETS[mapSize];
-  const archetypes = generateArchetypes(4, seed);
-  const archetype = archetypes[0];
 
-  const { state: initialState } = initializeGameState(
-    archetype,
-    'KpiReport',
-    cosmology,
-    seed,
-    preset.cols,
-    preset.rows,
-  );
+  let initialState;
+  if (ascendant) {
+    // Identity path: a pinned-reach god from the fixtures. Cosmology is derived
+    // from the identity; map size honors the harness --map flag.
+    ({ state: initialState } = buildAscendantReachState(ascendant, seed, { mapSize }));
+  } else {
+    // Default path: random archetype + balanced cosmology.
+    const cosmology = createBalancedCosmology();
+    const preset = MAP_SIZE_PRESETS[mapSize];
+    const archetypes = generateArchetypes(4, seed);
+    const archetype = archetypes[0];
+    ({ state: initialState } = initializeGameState(
+      archetype,
+      'KpiReport',
+      cosmology,
+      seed,
+      preset.cols,
+      preset.rows,
+    ));
+  }
 
   let state = initialState;
   for (let i = 0; i < ticks; i++) {
@@ -97,6 +131,18 @@ function runOnce(seed: number, ticks: number, mapSize: MapSizePreset): GameplayK
   }
 
   return computeGameplayKpiReport(state, runtime);
+}
+
+/** Resolve the dominant reach from a built state's stamped identity (acceptance check). */
+function resolvePrimaryReach(reach: ReachDomain): ReachDomain {
+  const identity = getAscendantReachIdentity(reach);
+  const affinities = identity.domainAffinities;
+  let top: ReachDomain = reach;
+  let topScore = -Infinity;
+  for (const [r, score] of Object.entries(affinities) as [ReachDomain, number][]) {
+    if (score > topScore) { topScore = score; top = r; }
+  }
+  return top;
 }
 
 // ─── Output helpers ───────────────────────────────────────────────
@@ -120,9 +166,10 @@ function fix2(n: number): string {
   return n.toFixed(2);
 }
 
-function printReport(report: GameplayKpiReport): void {
+function printReport(report: GameplayKpiReport, ascendant?: ReachDomain): void {
   const o = report.outcomes;
-  console.log(`\n  ${BOLD}Seed ${report.seed}  tick ${report.tick}${RESET}`);
+  const tag = ascendant ? `  ${DIM}ascendant:${ascendant}${RESET}` : '';
+  console.log(`\n  ${BOLD}Seed ${report.seed}  tick ${report.tick}${RESET}${tag}`);
 
   if (o.insufficientData) {
     console.log(`    ${YELLOW}⚠ low data (n=${o.total})${RESET}`);
@@ -144,42 +191,55 @@ function printReport(report: GameplayKpiReport): void {
 
 // ─── Main ─────────────────────────────────────────────────────────
 
+interface RunResult {
+  ascendant: ReachDomain | null;
+  report: GameplayKpiReport;
+}
+
 function main(): void {
   const args = parseArgs();
-  const reports: GameplayKpiReport[] = [];
+  const results: RunResult[] = [];
+
+  // Expand the run matrix: ascendants × seeds, or [null] × seeds for the default path.
+  const ascendantAxis: (ReachDomain | null)[] = args.ascendants ?? [null];
 
   if (!args.jsonOnly) {
-    console.log(`\n${BOLD}Gameplay KPI Report${RESET}  seeds:[${args.seeds.join(',')}]  ticks:${args.ticks}  map:${args.mapSize}`);
+    const ascLabel = args.ascendants ? `  ascendants:[${args.ascendants.join(',')}]` : '';
+    console.log(`\n${BOLD}Gameplay KPI Report${RESET}  seeds:[${args.seeds.join(',')}]  ticks:${args.ticks}  map:${args.mapSize}${ascLabel}`);
   }
 
-  for (const seed of args.seeds) {
-    if (!args.jsonOnly) process.stdout.write(`  Running seed ${seed}... `);
-    const start = Date.now();
-    const report = runOnce(seed, args.ticks, args.mapSize);
-    const elapsed = ((Date.now() - start) / 1000).toFixed(1);
-    reports.push(report);
-    if (!args.jsonOnly) {
-      const allGreen = report.thresholds.every(t => t.status === 'green');
-      const hasRed = report.thresholds.some(t => t.status === 'red');
-      const overall = hasRed ? `${RED}FAIL${RESET}` : allGreen ? `${GREEN}PASS${RESET}` : `${YELLOW}WARN${RESET}`;
-      console.log(`${overall}  ${DIM}${elapsed}s${RESET}`);
+  for (const ascendant of ascendantAxis) {
+    for (const seed of args.seeds) {
+      const label = ascendant ? `${ascendant}/seed ${seed}` : `seed ${seed}`;
+      if (!args.jsonOnly) process.stdout.write(`  Running ${label}... `);
+      const start = Date.now();
+      const report = runOnce(seed, args.ticks, args.mapSize, ascendant ?? undefined);
+      const elapsed = ((Date.now() - start) / 1000).toFixed(1);
+      results.push({ ascendant, report });
+      if (!args.jsonOnly) {
+        const allGreen = report.thresholds.every(t => t.status === 'green');
+        const hasRed = report.thresholds.some(t => t.status === 'red');
+        const overall = hasRed ? `${RED}FAIL${RESET}` : allGreen ? `${GREEN}PASS${RESET}` : `${YELLOW}WARN${RESET}`;
+        const reachNote = ascendant ? `  ${DIM}primaryReach=${resolvePrimaryReach(ascendant)}${RESET}` : '';
+        console.log(`${overall}  ${DIM}${elapsed}s${RESET}${reachNote}`);
+      }
     }
   }
 
   if (args.jsonOnly) {
-    console.log(JSON.stringify(reports, null, 2));
+    console.log(JSON.stringify(results, null, 2));
     return;
   }
 
-  for (const report of reports) {
-    printReport(report);
+  for (const { ascendant, report } of results) {
+    printReport(report, ascendant ?? undefined);
   }
 
   // Write JSON output
   const dateStr = new Date().toISOString().slice(0, 10);
   const outFile = path.join(args.outDir, `${dateStr}-kpi-report.json`);
   if (!fs.existsSync(args.outDir)) fs.mkdirSync(args.outDir, { recursive: true });
-  fs.writeFileSync(outFile, JSON.stringify({ date: dateStr, seeds: args.seeds, ticks: args.ticks, reports }, null, 2), 'utf-8');
+  fs.writeFileSync(outFile, JSON.stringify({ date: dateStr, seeds: args.seeds, ticks: args.ticks, ascendants: args.ascendants, results }, null, 2), 'utf-8');
   console.log(`\n  Wrote: ${outFile}`);
 }
 
