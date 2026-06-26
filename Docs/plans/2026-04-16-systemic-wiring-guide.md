@@ -834,6 +834,22 @@ The capstone of divine influence. When a mortal has been an Enthralled (tier-4) 
 
 The `aspect_of` edge is **never garbage-collected**: when the mortal dies, the death phase retains the node + edge as a *mythic echo* (`mythicEcho: true`, `aspect_echoed` trace) instead of removing them — the bond outlasts the body. A living Aspect contributes `ASPECT_ESSENCE_PER_TICK` essence (a conduit); a mythic echo contributes nothing. Surfaced as the "❂ Aspect" badge in `ThreadsPanel` (reads the edge, not the tier) and via `window.__DEBUG.getAspects()`. Tuning lives in `src/data/aspect-content.ts`.
 
+#### Action unlock — `unlock_action` (THR-500)
+
+Hands the **player** a new action card as the aftermath of a resolved beat (or any encounter). This is how *Ascendant Beats* deliver capabilities as earned story moments instead of a wall of cards at turn 1.
+
+| Kind | What it does |
+|------|-------------|
+| `unlock_action` | Pushes `actionId` into the run-scoped `unlockedActionIds` set, emits `action.unlock.granted`. The action drawer already filters on that set via `isActionRevealed()`, so the granted card simply appears — **no drawer wiring needed**. Idempotent (granting an already-unlocked id is a no-op). Fail-soft: an unknown `actionId` is pushed harmlessly (no template matches, so nothing reveals). |
+
+```typescript
+// On the resolving branch of a beat that teaches a new verb:
+{ kind: 'unlock_action', actionId: 'invest.endow_artifact', revealStyle: 'card_flight' }
+// revealStyle: 'card_flight' (default) animates the reveal; 'silent' grants without interrupting.
+```
+
+Starter actions (`STARTER_ACTION_IDS` / `starter: true`) are always available and do not need unlocking. Use `unlock_action` for the *unlockable-generic* and *reach-gated* buckets — the cards a beat or selection grants over the course of a run.
+
 #### The `{cause:*}` prose placeholders
 
 If a seeded encounter carries a `sourceEncounterId`, prose can reference the causing encounter:

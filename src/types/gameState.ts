@@ -20,6 +20,7 @@ import type { NotificationDirective } from './notification';
 import type { PendingVignette } from './journeyEngine';
 import type { ControlEffect } from './controlEffect';
 import type { AscendantIdentity } from './remembrance';
+import type { AscendantBeatState } from './ascendantBeat';
 import type { HexRevelation } from './unifiedAction';
 import type { SpherePressureEvent } from './sphereAffinity';
 import type { QuintessenceEvent } from './quintessence';
@@ -225,8 +226,13 @@ export interface GameState {
 
   // Unified Actions (replaces actionsInProgress + encounterProgress)
   unifiedActions: UnifiedAction[];
-  /** Run-scoped unlocked actions (Starter actions are always available regardless). */
+  /** Run-scoped unlocked actions (Starter actions are always available regardless).
+   *  Grown by the `unlock_action` aftermath effect when a beat is resolved (THR-500). */
   unlockedActionIds?: readonly string[];
+
+  /** Ascendant Beat Director state — scheduling for encounters addressed to the
+   *  player-god. Optional/additive (THR-500); the Director no-ops when absent. */
+  ascendantBeats?: AscendantBeatState;
 
   // Pending hex mutations — accumulated by hex action resolution, consumed by phaseHexState
   pendingHexMutations?: HexMutation[];
