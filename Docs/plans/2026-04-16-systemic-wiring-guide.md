@@ -683,6 +683,7 @@ All encounters use `UnifiedActionTemplate` (migrated as of THR-108). `EncounterT
 | `motivations` | `ValuePair[]` | Which axiological value pairs drive agent interest |
 | `rarityTier` | `1\|2\|3\|4` | Narrative significance (1=common, 4=legendary); drives visual treatment and unlock logic |
 | `reach` | `ReachDomain` | Primary capability domain tested across all steps |
+| `requiresReach` | `ReachDomain` | **Reach gate (THR-503).** Player-action cards only: hides this template in the ActionDrawer unless the ascendant's affinity in this reach ≥ `REACH_GATE_MIN_AFFINITY`. A **permanent** filter — the ascendant's primary+secondary reach is fixed for the whole run, so an off-reach card is never shown (not even dimmed as aspiration). Omit → no reach restriction. Use for reach-flavored investment cards. |
 | `sphereAffinity` | `SphereName` | Resonance scoring with hex sphere and world-soul |
 | `intrinsicTier` | `AttentionTier` | `'background'` / `'shaping'` / `'story_beat'` attention tier |
 | `reputationPolarity` | `'positive' \| 'negative'` | Optional explicit override; if omitted, derived from `crudType` |

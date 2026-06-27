@@ -20,10 +20,13 @@ import type { WheelSlot } from './wheel';
 import type { UnifiedActionTemplate, HexRevelation } from '../types/unifiedAction';
 import type { SphereName } from '../types/index';
 import type { EssencePool } from '../types/influence';
+import type { ReachDomain } from '../types/traits';
+import { REACH_DOMAINS } from '../types/traits';
 import type { HexPosition } from './delivery';
 import { hexDistance } from './delivery';
 import { hexKey } from '../lib/hexKey';
 import { isActionRevealed } from './actionUnlock';
+import { REACH_GATE_MIN_AFFINITY } from '../data/influence-content';
 import { emitTrace } from './traceBuffer';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
@@ -65,6 +68,13 @@ export interface TargetActionParams {
   existingThreadTier?: number | null;
   /** Explicitly unlocked action IDs for the current run/account. */
   unlockedActionIds?: readonly string[];
+  /**
+   * The ascendant's fixed reach affinities (THR-503). Drives the reach gate:
+   * templates declaring `requiresReach` are hidden unless the ascendant's affinity
+   * in that reach is ≥ REACH_GATE_MIN_AFFINITY. Omit to disable reach gating
+   * (fail-open — contexts without an ascendant, e.g. tests, see all reach cards).
+   */
+  ascendantDomainAffinities?: Partial<Record<ReachDomain, number>>;
 }
 
 // ─── Filter result (for trace) ──────────────────────────────────────────────
@@ -80,6 +90,7 @@ interface FilterCounts {
   byRange: number;
   byRevelation: number;
   byUnlock: number;
+  byReach: number;
 }
 
 // ─── Main function ───────────────────────────────────────────────────────────
@@ -101,6 +112,7 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     hexRevelation,
     existingThreadTier,
     unlockedActionIds,
+    ascendantDomainAffinities,
   } = params;
 
   const counts: FilterCounts = {
@@ -114,6 +126,7 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     byRange: 0,
     byRevelation: 0,
     byUnlock: 0,
+    byReach: 0,
   };
 
   const slots: WheelSlot[] = [];
@@ -217,6 +230,25 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       continue;
     }
 
+    // 9. Reach gate (THR-503) — permanent two-domain membership filter.
+    //    Every ascendant holds a fixed primary + secondary reach for the whole
+    //    run, so a card requiring a reach outside that set is hidden entirely
+    //    (like the unlock gate), never surfaced as aspiration. Skipped when no
+    //    affinities are supplied (e.g. tests) → fail-open for visibility.
+    if (template.requiresReach && ascendantDomainAffinities) {
+      const reachIsKnown = (REACH_DOMAINS as readonly string[]).includes(template.requiresReach);
+      if (!reachIsKnown) {
+        // Fail-soft (NFP #4): unknown reach → treat as ungated rather than hiding.
+        console.warn(`[targetActions] template ${template.id} declares unknown requiresReach "${template.requiresReach}" — ungating.`);
+      } else {
+        const affinity = ascendantDomainAffinities[template.requiresReach] ?? 0;
+        if (affinity < REACH_GATE_MIN_AFFINITY) {
+          counts.byReach++;
+          continue;
+        }
+      }
+    }
+
     // 4. Sphere gate
     if (template.sphereAffinity) {
       const sphereAllowed = (accessibleSpheres as readonly string[]).includes(template.sphereAffinity);
@@ -294,7 +326,7 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     });
   }
 
-  if (counts.byUnlock > 0) {
+  if (counts.byUnlock > 0 || counts.byReach > 0) {
     emitTrace({
       category: 'target_action_filter',
       summary: 'action.gate.unlock_filter',
@@ -309,6 +341,7 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       filteredBySphere: counts.bySphere,
       filteredByEssence: counts.byEssence,
       filteredByRange: counts.byRange,
+      filteredByReach: counts.byReach,
       slotsGenerated: slots.length,
     });
   }

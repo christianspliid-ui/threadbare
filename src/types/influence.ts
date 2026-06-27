@@ -141,6 +141,12 @@ export interface AscendantProperties {
   maxEssence: number;
   /** The archetype chosen at creation. */
   archetypeId: string;
+  /**
+   * Reach affinities persisted at creation (THR-503). Fixed for the whole run —
+   * the ascendant's primary + secondary reach. Read by the reach gate in
+   * getTargetActionSlots() to hide cards requiring a reach this god lacks.
+   */
+  domainAffinities?: Partial<Record<ReachDomain, number>>;
   /** Identity drift tracking: running tally of intervention types used. */
   interventionHistory: Record<string, number>;
   /** Avatar node ID. */

@@ -3,6 +3,7 @@ import { WorldGraph } from '../graph';
 import {
   generateArchetypes,
   createAscendant,
+  getAscendantDomainAffinities,
 } from '../ascendant';
 import type { AscendantArchetype, AscendantCreationConfig, AscendantProperties } from '../../types/influence';
 import { SPHERE_NAMES } from '../../types/index';
@@ -158,5 +159,27 @@ describe('Ascendant Creation', () => {
     const props = ascNode.properties as AscendantProperties;
 
     expect(props.interventionHistory).toEqual({});
+  });
+
+  it('persists the archetype reach affinities on the node (THR-503)', () => {
+    const config: AscendantCreationConfig = {
+      archetype,
+      avatar: {
+        name: 'The Wandering Sage',
+        startLocationId: 'loc.start',
+        formDescription: 'An old wizard',
+      },
+    };
+
+    const result = createAscendant(graph, config);
+
+    // Assert through the public reader (avoids a raw properties cast).
+    expect(getAscendantDomainAffinities(graph, result.ascendantId)).toEqual(
+      archetype.startingDomainAffinities,
+    );
+  });
+
+  it('getAscendantDomainAffinities returns undefined for a missing node (fail-soft)', () => {
+    expect(getAscendantDomainAffinities(graph, 'asc.does-not-exist')).toBeUndefined();
   });
 });

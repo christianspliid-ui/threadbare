@@ -697,6 +697,8 @@ export interface TargetActionFilterTrace extends TraceBase {
   filteredBySphere: number;
   filteredByEssence: number;
   filteredByRange: number;
+  /** Templates hidden by the reach gate (THR-503). Optional — older traces omit it. */
+  filteredByReach?: number;
   slotsGenerated: number;
 }
 

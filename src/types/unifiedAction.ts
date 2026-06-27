@@ -703,6 +703,15 @@ export interface UnifiedActionTemplate {
   readonly locationSubtypes?: readonly string[];
   readonly sphereAffinity?: SphereName;
 
+  /**
+   * Reach domain this template requires (THR-503). When set, the reach gate in
+   * getTargetActionSlots() hides the card unless the ascendant holds this reach
+   * (affinity ≥ REACH_GATE_MIN_AFFINITY). Because an ascendant's reaches are
+   * fixed at creation, this is a permanent filter — never surfaced as aspiration.
+   * Omit → no reach restriction (backward compatible).
+   */
+  readonly requiresReach?: ReachDomain;
+
   // ── Target filtering ──────────────────────────────────────────────
 
   /**

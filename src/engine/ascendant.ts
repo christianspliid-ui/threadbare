@@ -132,6 +132,7 @@ export function createAscendant(
     essencePool: startingPool,
     maxEssence: BASE_MAX_ESSENCE,
     archetypeId: config.archetype.id,
+    domainAffinities: config.archetype.startingDomainAffinities,
     interventionHistory: {},
     avatarId,
   };
@@ -208,6 +209,7 @@ export function createAscendantFromIdentity(
     essencePool: startingPool,
     maxEssence: BASE_MAX_ESSENCE,
     archetypeId: identity.hungerId,
+    domainAffinities: identity.domainAffinities,
     interventionHistory: {},
     avatarId,
   };
@@ -251,4 +253,22 @@ export function createAscendantFromIdentity(
   });
 
   return { ascendantId, avatarId };
+}
+
+/**
+ * Read the reach affinities persisted on the ascendant node (THR-503).
+ *
+ * The reach gate (`getTargetActionSlots`) and any other reach-aware system
+ * should source the ascendant's fixed domains from the node — the single
+ * source of truth after creation — rather than from the creation-time archetype.
+ * Returns undefined if the node is missing or carries no affinities (fail-soft:
+ * the reach gate then fails open, showing reach-gated cards rather than hiding all).
+ */
+export function getAscendantDomainAffinities(
+  graph: WorldGraph,
+  ascendantId: string,
+): Partial<Record<ReachDomain, number>> | undefined {
+  const node = graph.getNode(ascendantId);
+  const props = node?.properties as Partial<AscendantProperties> | undefined;
+  return props?.domainAffinities;
 }
