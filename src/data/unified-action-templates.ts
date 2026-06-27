@@ -144,7 +144,8 @@ import {
   KINDLE_CALLING_ESSENCE_COST,
 } from './faction-action-constants';
 import { SCHISM_ESSENCE_COST } from './game-config';
-import { IMBUE_ESSENCE_COST } from './ascendant-expression-constants';
+import { IMBUE_ESSENCE_COST, CONSECRATE_ESTABLISH_COST, CONSECRATE_PERTICK } from './ascendant-expression-constants';
+import { CONSECRATE_DEVOTION_PER_TICK } from '../types/ascendantPrimitives';
 import { RIVAL_SHRINE_BETRAYAL_TEMPLATE } from './encounters/rival-shrine-betrayal';
 import { WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE } from './encounters/wandering-healer-shrine-access';
 import { FLAWED_STEEL_TEMPLATE } from './encounters/flawed-steel';
@@ -1960,6 +1961,63 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       initiation: 'presses a sliver of divine nature into this artifact',
       success: 'the artifact wakes — a power shaped by your sphere now lives in it',
       failure: 'the breath dissipates; the object will not take the imprint',
+    },
+  },
+  // ─── THR-511: Consecrate — early expression card (unlockable-generic) ─────────
+  // A generic divine verb (one per graph type: this one for locations). Converts
+  // a temple/shrine into a faith-spreading site via a SUSTAINED ControlEffect: a
+  // location-targeted control whose `perTickThreadAuras` advance every co-located
+  // thread toward tier promotion (THR-509 `co_located_thread_aura`). The
+  // establishment bridge (`spawnControlEffect`, THR-511) resolves the location's
+  // hex coords and sets `targetNodeId` so the aura targets the right node; the
+  // consumer side (`phaseControlEffects` → `applyCoLocatedThreadAura`) already
+  // ships. A high-upfront relic variant that waives upkeep is a follow-up
+  // (TODO(THR-518) — relic-mint + dynamic `upkeepArtifactId` injection).
+  {
+    id: 'action.consecrate',
+    name: 'Consecrate',
+    spellName: 'Hallowing of the Ground',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description:
+      'You sink your presence into the stones of a holy place until the ground itself ' +
+      'remembers you. Those who keep faith here are drawn steadily closer to your design — ' +
+      'so long as you sustain the devotion that holds the site.',
+    reach: 'star',
+    trayTier: 'core',
+    crudType: 'update',
+    scale: 'local',
+    steps: [{
+      reach: 'star',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: CONSECRATE_ESTABLISH_COST,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'spirit',
+    targetCategories: ['location'],
+    targetSubtypes: ['temple', 'shrine'],
+    motivations: ['tradition_novelty', 'loyalty_ambition'],
+    durationMode: 'sustained',
+    controlSpec: {
+      perTickCost: { spirit: CONSECRATE_PERTICK },
+      // Faith-spread: each tick, advance every co-located thread's tier-promotion
+      // clock. Reuses the THR-509 co_located_thread_aura primitive end-to-end.
+      perTickThreadAuras: [{ magnitude: CONSECRATE_DEVOTION_PER_TICK }],
+      narrativeTemplates: {
+        established: 'the site is hallowed — your devotion takes root in the stone',
+        active: 'the consecration holds — the faithful who gather here are drawn closer to your design',
+        lapsed: 'the hallowing fades; the ground forgets the shape of your presence',
+      },
+    },
+    narrativeTemplates: {
+      initiation: 'consecrates this holy place, sinking divine presence into its foundations',
+      success: 'the ground is hallowed — a font of devotion now spreads your design to the faithful',
+      failure: 'the consecration will not hold; the site resists your presence',
     },
   },
   {
