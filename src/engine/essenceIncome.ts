@@ -13,6 +13,7 @@ import {
   BASE_ESSENCE_PER_TICK,
   ESSENCE_PER_THREAD,
   ESSENCE_PER_PLACE_OF_POWER,
+  ESSENCE_PER_SEAT,
   TIER_MAINTENANCE,
 } from '../types/influence';
 import { ASPECT_ESSENCE_PER_TICK } from '../data/aspect-content';
@@ -60,12 +61,20 @@ export function computeEssenceIncome(
   const threadEdges = graph.getOutgoingEdges(ascendantId, 'thread');
   totalRate += threadEdges.length * ESSENCE_PER_THREAD;
 
+  // Home seat is a named higher-yield place of power — excluded from the
+  // place-of-power loop and added once as ESSENCE_PER_SEAT (mirrors
+  // computeEssenceGeneration in influence.ts, THR-502).
+  const homeSeatLocationId = node.properties.homeSeatLocationId as string | undefined;
   const controlEdges = graph.getOutgoingEdges(ascendantId, 'controls');
   for (const edge of controlEdges) {
+    if (edge.target === homeSeatLocationId) continue;
     const loc = graph.getNode(edge.target);
     if (loc?.properties.isPlaceOfPower) {
       totalRate += ESSENCE_PER_PLACE_OF_POWER;
     }
+  }
+  if (homeSeatLocationId && graph.getNode(homeSeatLocationId)) {
+    totalRate += ESSENCE_PER_SEAT;
   }
 
   // Aspect conduit bonus (THR-479) — mirrors computeEssenceGeneration. Living

@@ -118,6 +118,24 @@ Foundation for *Ascendant Beats* — encounters addressed to the player-god. The
 
 ---
 
+## Home Seat / Throne (THR-502)
+
+The ascendant's seat of power — a location flagged on the god that yields a higher-yield place-of-power essence term and a hex signifier. The *setting* of the seat in normal play is the spine beat's job (#5); this is the field, income, signifier, and a debug/CLI setter.
+
+| Surface | Path | Notes |
+|---|---|---|
+| Ascendant field | `AscendantProperties.homeSeatLocationId?: string` in `src/types/influence.ts` | Optional/additive; a run without a seat omits it. |
+| Constant | `ESSENCE_PER_SEAT` (1.0) in `src/data/influence-content.ts` | Re-exported from `influence.ts`; registered in both CMS surfaces (`registry.ts`, `tunableConstants.ts`). |
+| Income term | `computeEssenceGeneration` (`src/engine/influence.ts`) + `computeEssenceIncome` (`src/engine/essenceIncome.ts`) | Both add `ESSENCE_PER_SEAT` for the live `homeSeatLocationId` location and **exclude that location from the place-of-power loop** (named higher-yield place of power — replaces, not stacks). Fail-soft: missing location → 0. The HUD reflects it automatically via `essenceIncome`. |
+| Throne model | `location` node + `controls` edge (ascendant → location) | **Not** a new node type. **No** `thread`-to-location edge (actor-targeting; deferred to spine beat #5). |
+| Engine helper | `setHomeSeat(graph, ascendantId, locationRef?)` (`src/engine/influence.ts`) | Sets the property + ensures the controls edge (deterministic id, dup-guarded). Resolves ref by id/prefix/name; auto-picks capital→city→first when omitted. Returns `SetHomeSeatResult`. |
+| Debug control | `__DEBUG.setHomeSeat(locationRef?)` (`src/debug-bridge.ts` + `.d.ts`) → encounter bridge `setHomeSeat` in `GameView` (calls `touchStructure`) | Until the spine beat sets the seat, this is the canonical way to establish one. |
+| Signifier | `LocationNode.isHomeSeat` + `buildSeatMarkerTexture`/`addSeatMarker` in `src/components/HexMapV2/scene/LocationIconMesh.ts` | Gold ring + crown, above base icon and capital ring. `isHomeSeat` set in GameView's `locationNodes` memo (now also keyed on `gameState.ascendantId`; refreshed via `structuralCacheVersion`). |
+| Tests | `src/engine/__tests__/{influence,essenceIncome}.test.ts`, `src/components/HexMapV2/scene/__tests__/LocationIconMesh.test.ts` | Seat income on both paths (exact-delta / no-stack / fail-soft), `setHomeSeat` (property+edge+default+no-locations), `LocationIconMesh` +1 seat sprite. |
+| Deferred (spine beat #5) | seat assignment in normal play; whether to also add a `thread`-to-location edge | Out of scope here. |
+
+---
+
 ## Ascendant Action Primitives (THR-509)
 
 Four reusable building blocks the expression cards (THR-508) and future ascendant verbs sit on — built *before* the cards so they are cheap to author. The verb is universal; the magic is flavored by the ascendant's domain + sphere. All pure, fail-soft, traced (`ascendant_primitive`).

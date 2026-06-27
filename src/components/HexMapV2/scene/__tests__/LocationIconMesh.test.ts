@@ -36,6 +36,9 @@ vi.stubGlobal('document', {
           beginPath: vi.fn(),
           arc: vi.fn(),
           stroke: vi.fn(),
+          moveTo: vi.fn(),
+          lineTo: vi.fn(),
+          closePath: vi.fn(),
         }),
       };
     }
@@ -117,6 +120,26 @@ describe('createLocationIconMesh', () => {
     const group = createLocationIconMesh(locations);
     // capital gets icon sprite + red ring sprite = at least 2 children
     expect(group.children.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('adds an extra seat marker sprite for the home seat (THR-502)', () => {
+    const plain: LocationNode[] = [
+      { locationType: 'town', hexCol: 4, hexRow: 4, name: 'Hearthold' },
+    ];
+    const seat: LocationNode[] = [
+      { locationType: 'town', hexCol: 4, hexRow: 4, name: 'Hearthold', isHomeSeat: true },
+    ];
+    const plainGroup = createLocationIconMesh(plain);
+    const seatGroup = createLocationIconMesh(seat);
+    // The seat gets its base icon plus a seat marker overlay → one extra child.
+    expect(seatGroup.children.length).toBe(plainGroup.children.length + 1);
+  });
+
+  it('does not throw building the seat marker texture (crown path)', () => {
+    const seat: LocationNode[] = [
+      { locationType: 'capital', hexCol: 1, hexRow: 1, name: 'Throne', isCapital: true, isHomeSeat: true },
+    ];
+    expect(() => createLocationIconMesh(seat)).not.toThrow();
   });
 });
 

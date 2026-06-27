@@ -1163,6 +1163,7 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
       ['BASE_ESSENCE_PER_TICK', influence.BASE_ESSENCE_PER_TICK, 'Base essence generated per tick'],
       ['ESSENCE_PER_WORSHIPPER', influence.ESSENCE_PER_WORSHIPPER, 'Additional essence per worshipper per tick'],
       ['ESSENCE_PER_PLACE_OF_POWER', influence.ESSENCE_PER_PLACE_OF_POWER, 'Essence from each place of power per tick'],
+      ['ESSENCE_PER_SEAT', influence.ESSENCE_PER_SEAT, 'Essence per tick from the ascendant home seat (throne)'],
       ['BASE_MAX_ESSENCE', influence.BASE_MAX_ESSENCE, 'Starting max essence capacity'],
       ['MAX_ESSENCE_PER_WORSHIPPER', influence.MAX_ESSENCE_PER_WORSHIPPER, 'Max essence increase per worshipper'],
       ['RECRUIT_COST', influence.RECRUIT_COST, 'Essence cost to recruit a new worshipper'],

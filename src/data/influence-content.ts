@@ -22,6 +22,16 @@ export const ESSENCE_PER_WORSHIPPER = ESSENCE_PER_THREAD;
 /** Essence bonus per controlled place of power per tick. */
 export const ESSENCE_PER_PLACE_OF_POWER = 0.5;
 
+/**
+ * Essence per tick from the ascendant's home seat (throne) — THR-502.
+ * The seat is a named, higher-yield place of power: the location identified by
+ * `AscendantProperties.homeSeatLocationId`. It replaces (does not stack with)
+ * the ordinary place-of-power bonus for that one location, so threading a fresh
+ * (non-place-of-power) location as the seat raises per-tick essence by exactly
+ * this amount.
+ */
+export const ESSENCE_PER_SEAT = 1.0;
+
 /** Maximum essence pool scales with total influence level. */
 export const BASE_MAX_ESSENCE = 50;
 export const MAX_ESSENCE_PER_THREAD = 5;

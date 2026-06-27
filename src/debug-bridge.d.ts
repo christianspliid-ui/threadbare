@@ -6,6 +6,7 @@ import type { TickEvent } from './types/gameState';
 import type { DebugSpawnEncounterResult, DebugSpawnEncounterContextResult, DebugSpawnEncounterOptions, DebugSpawnEncounterContextOptions } from './engine/debugEncounterTools';
 import type { DebugWorldSpawnResult, DebugSpawnLocationOptions, DebugSpawnSublocationOptions, DebugSpawnNpcOptions, DebugMoveAgentOptions, DebugSpawnAttachmentOptions } from './engine/debugWorldSpawnTools';
 import type { PortfolioPinResult } from './engine/portfolioManager';
+import type { SetHomeSeatResult } from './engine/influence';
 
 export interface EncounterLogExportResult {
   allAgentsTsv: string;
@@ -332,6 +333,13 @@ export interface DebugBridge {
   pinAgent: (agentQuery: string) => PortfolioPinResult;
   /** Remove an agent from the player's protagonist portfolio. */
   unpinAgent: (agentQuery: string) => PortfolioPinResult;
+  /**
+   * Designate a location as the ascendant's home seat (throne) — THR-502.
+   * Sets `homeSeatLocationId` + a `controls` edge; the seat then yields one
+   * ESSENCE_PER_SEAT term and renders a seat signifier. `locationRef` resolves
+   * by id / id-prefix / name; omit to auto-pick the top settlement.
+   */
+  setHomeSeat: (locationRef?: string) => SetHomeSeatResult;
 
   getEncounterLogAll: () => Promise<EncounterLogSummary>;
   exportEncounterLogAll: (agentNames?: Record<string, string>, seed?: string) => Promise<EncounterLogExportResult>;

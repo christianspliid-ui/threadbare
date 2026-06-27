@@ -275,6 +275,10 @@ if (import.meta.env.DEV) {
       (_encounterBridge?.unpinAgent as ((...a: unknown[]) => unknown) | undefined)?.(agentQuery)
       ?? { success: false, message: 'Encounter bridge not registered', pinnedCount: 0 },
 
+    setHomeSeat: (locationRef?: string): import('./engine/influence').SetHomeSeatResult =>
+      (_encounterBridge?.setHomeSeat as ((...a: unknown[]) => import('./engine/influence').SetHomeSeatResult) | undefined)?.(locationRef)
+      ?? { success: false, locationId: null, locationName: null, message: 'Encounter bridge not registered' },
+
     /**
      * Inspect the encounter notification pipeline for a threaded agent.
      * Pass an agent name/id fragment to filter, or omit to see all threaded agents.

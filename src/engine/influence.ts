@@ -12,6 +12,7 @@ import {
   BASE_ESSENCE_PER_TICK,
   ESSENCE_PER_THREAD,
   ESSENCE_PER_PLACE_OF_POWER,
+  ESSENCE_PER_SEAT,
   BASE_MAX_ESSENCE,
   MAX_ESSENCE_PER_THREAD,
   TIER_MAINTENANCE,
@@ -123,13 +124,24 @@ export function computeEssenceGeneration(
   const threadEdges = graph.getOutgoingEdges(ascendantId, 'thread');
   totalRate += threadEdges.length * ESSENCE_PER_THREAD;
 
-  // 3. Places of power bonus
+  // 3. Places of power bonus. The home seat (see step 3a below) is a named
+  //    higher-yield place of power, so it is excluded here to avoid stacking —
+  //    it contributes ESSENCE_PER_SEAT instead of ESSENCE_PER_PLACE_OF_POWER.
+  const homeSeatLocationId = node.properties.homeSeatLocationId as string | undefined;
   const controlEdges = graph.getOutgoingEdges(ascendantId, 'controls');
   for (const edge of controlEdges) {
+    if (edge.target === homeSeatLocationId) continue;
     const loc = graph.getNode(edge.target);
     if (loc && loc.properties.isPlaceOfPower) {
       totalRate += ESSENCE_PER_PLACE_OF_POWER;
     }
+  }
+
+  // 3a. Home seat (throne) bonus (THR-502). One ESSENCE_PER_SEAT term for the
+  //     location identified by homeSeatLocationId. Fail-soft (§3.8): a seat
+  //     pointing at a destroyed location contributes 0.
+  if (homeSeatLocationId && graph.getNode(homeSeatLocationId)) {
+    totalRate += ESSENCE_PER_SEAT;
   }
 
   // 3b. Aspect conduit bonus (THR-479) — each LIVING aspect channels a trickle.
@@ -345,5 +357,92 @@ export function dropAgent(
     tierWhenDropped: tier,
     narrativeConsequence: consequence,
     scarTraitAssigned: scarAssigned,
+  };
+}
+
+// ─── Home Seat (throne) ──────────────────────────────────────────────
+
+export interface SetHomeSeatResult {
+  success: boolean;
+  locationId: string | null;
+  locationName: string | null;
+  message: string;
+}
+
+/**
+ * Designate a location as the ascendant's home seat (throne) — THR-502.
+ *
+ * Sets `homeSeatLocationId` on the ascendant node and ensures a `controls`
+ * edge (ascendant → location) exists so the seat reads as owned. The seat then
+ * contributes one ESSENCE_PER_SEAT term to essence generation and renders a
+ * seat signifier on the hex map.
+ *
+ * `locationRef` resolves against location nodes by exact id, then id prefix,
+ * then case-insensitive name. When omitted, the highest-importance settlement
+ * (capital → city → first location) is chosen deterministically.
+ *
+ * Until the scripted spine beat (#5) sets the seat in normal play, this is the
+ * canonical way to establish a seat (debug bridge / CLI). It does NOT add a
+ * `thread` edge to the location: thread edges are actor-targeting and rippling
+ * them onto location nodes is deferred to the spine-beat work (#5).
+ */
+export function setHomeSeat(
+  graph: WorldGraph,
+  ascendantId: string,
+  locationRef?: string,
+): SetHomeSeatResult {
+  const ascendant = graph.getNode(ascendantId);
+  if (!ascendant) {
+    return { success: false, locationId: null, locationName: null, message: `Ascendant not found: ${ascendantId}` };
+  }
+
+  const locations = graph.getNodesByType('location');
+  if (locations.length === 0) {
+    return { success: false, locationId: null, locationName: null, message: 'No location nodes exist to seat the ascendant.' };
+  }
+
+  let target;
+  if (locationRef) {
+    const ref = locationRef.toLowerCase();
+    target =
+      graph.getNode(locationRef) ??
+      locations.find((l) => l.id.toLowerCase().startsWith(ref)) ??
+      locations.find((l) => l.name.toLowerCase() === ref) ??
+      locations.find((l) => l.name.toLowerCase().includes(ref));
+    if (!target) {
+      return { success: false, locationId: null, locationName: null, message: `No location matching '${locationRef}'.` };
+    }
+  } else {
+    // Deterministic default: prefer a capital, then a city, then the first location.
+    const isType = (l: typeof locations[number], t: string) =>
+      l.properties.locationType === t || l.properties.locationSubtype === t;
+    target =
+      locations.find((l) => isType(l, 'capital')) ??
+      locations.find((l) => isType(l, 'city')) ??
+      locations[0];
+  }
+
+  // Set the seat property.
+  graph.updateNode(ascendantId, {
+    properties: { ...ascendant.properties, homeSeatLocationId: target.id },
+  });
+
+  // Ensure a controls edge exists (ascendant → seat location).
+  const hasControl = graph.getOutgoingEdges(ascendantId, 'controls').some((e) => e.target === target.id);
+  if (!hasControl) {
+    graph.addEdge({
+      id: `edge.seat.controls.${ascendantId}.${target.id}`,
+      source: ascendantId,
+      target: target.id,
+      type: 'controls',
+      properties: { homeSeat: true },
+    });
+  }
+
+  return {
+    success: true,
+    locationId: target.id,
+    locationName: target.name,
+    message: `Home seat set to "${target.name}" (${target.id}); +${ESSENCE_PER_SEAT} essence/tick.`,
   };
 }
