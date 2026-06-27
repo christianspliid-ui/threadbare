@@ -892,7 +892,15 @@ const effect = pickSphereFlavoredEffect(ascendantPrimarySphere, mulberry32(seed)
 applyChosenStatusGrant(graph, factionId, ascendantPrimaryReach, ascendantId, tick);
 ```
 
-Tuning constants: `CONSECRATE_DEVOTION_PER_TICK`, `SPHERE_FLAVOR_PASSIVE_VALUE` (and the lookup tables themselves) are the authoring surface — change the number/table entry, not the logic.
+**Authoring a sustained-control expression card on a location (the consecrate pattern, THR-511).** Unlike imbue (a one-shot GraphOp intercept), `consecrate` is a **sustained control card**: there is *no* custom GraphOp and *no* `executeStepResult` intercept. You author it entirely as data — `durationMode: 'sustained'` + a `controlSpec` — and the existing pipeline does the rest:
+
+1. Set `targetCategories: ['location']` + `targetSubtypes: ['temple','shrine']` (or whichever location subtypes). The card targets a **location node**, not a hex.
+2. Put the per-tick behavior in `controlSpec`: `perTickCost` (sphere drain), `perTickThreadAuras` (faith-spread), optionally `upkeepArtifactId` (relic-backed; relic-mint variant deferred to THR-518).
+3. On success, `spawnControlEffect` (THR-511) **resolves the location's `hexCol`/`hexRow`, sets `targetNodeId = locationId`, and carries `perTickThreadAuras` + `upkeepArtifactId` onto the `ControlEffect`.** `phaseControlEffects` then applies the aura against `targetNodeId` every tick via `applyCoLocatedThreadAura`. No new consumer wiring.
+
+The location-target path is the only way to anchor a sustained control on a node rather than a bare hex — every other sustained control (`hex.claim_dominion`, `hex.cultivate`) is hex-targeted and leaves `targetNodeId` undefined.
+
+Tuning constants: `CONSECRATE_ESTABLISH_COST` / `CONSECRATE_PERTICK` (`ascendant-expression-constants.ts`), `CONSECRATE_DEVOTION_PER_TICK`, `SPHERE_FLAVOR_PASSIVE_VALUE` (and the lookup tables themselves) are the authoring surface — change the number/table entry, not the logic.
 
 #### Home seat (throne) — `homeSeatLocationId` + `ESSENCE_PER_SEAT` (THR-502)
 

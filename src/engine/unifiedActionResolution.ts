@@ -2159,14 +2159,14 @@ export function phaseUnifiedActionProgress(
 
     // Spawn ControlEffect for contested winners (TB-044)
     if (updAtk.resolved && isActionSuccess(updAtk.outcome) && atkTemplate.durationMode === 'sustained') {
-      const spawnResult = spawnControlEffect(updAtk, atkTemplate, state.tick);
+      const spawnResult = spawnControlEffect(updAtk, atkTemplate, state.tick, state.graph);
       if (spawnResult) {
         spawnedEffects.push(spawnResult.effect);
         events.push(spawnResult.event);
       }
     }
     if (updDef.resolved && isActionSuccess(updDef.outcome) && defTemplate.durationMode === 'sustained') {
-      const spawnResult = spawnControlEffect(updDef, defTemplate, state.tick);
+      const spawnResult = spawnControlEffect(updDef, defTemplate, state.tick, state.graph);
       if (spawnResult) {
         spawnedEffects.push(spawnResult.effect);
         events.push(spawnResult.event);
@@ -2350,7 +2350,7 @@ export function phaseUnifiedActionProgress(
 
     // Spawn ControlEffect for successful sustained actions (TB-044)
     if (updatedAction.resolved && isActionSuccess(updatedAction.outcome)) {
-      const spawnResult = spawnControlEffect(updatedAction, template, state.tick);
+      const spawnResult = spawnControlEffect(updatedAction, template, state.tick, state.graph);
       if (spawnResult) {
         spawnedEffects.push(spawnResult.effect);
         events.push(spawnResult.event);

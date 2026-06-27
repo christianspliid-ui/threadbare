@@ -23,3 +23,19 @@
  * domain-flavored sibling that actually mutates the artifact's effects.
  */
 export const IMBUE_ESSENCE_COST = 4;
+
+/**
+ * Upfront essence to establish a `consecrate` site (THR-511). Charged once when
+ * the sustained control effect is spawned; mirrors `hex.cultivate`'s upfront tier.
+ * The ongoing devotion is `CONSECRATE_PERTICK`; the per-tick faith-spread
+ * magnitude reuses `CONSECRATE_DEVOTION_PER_TICK` (src/types/ascendantPrimitives.ts).
+ */
+export const CONSECRATE_ESTABLISH_COST = 4;
+
+/**
+ * Per-tick spirit essence to sustain a consecrated site (THR-511). Mirrors
+ * `hex.claim_dominion`'s 0.3/tick sustain cost — consecration is a held presence,
+ * not a one-shot. While paid, the site's `perTickThreadAuras` advance every
+ * co-located thread toward tier promotion (faith-spread).
+ */
+export const CONSECRATE_PERTICK = 0.3;

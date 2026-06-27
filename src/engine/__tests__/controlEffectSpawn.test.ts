@@ -270,6 +270,125 @@ describe('controlEffectSpawn', () => {
       expect(result!.effect.contestPrerequisites?.usurp?.reach?.domain).toBe('gold');
       expect(result!.effect.contestPrerequisites?.destroy?.reach?.domain).toBe('iron');
     });
+
+    it('carries perTickThreadAuras + upkeepArtifactId through (THR-509 fields)', () => {
+      const template = makeSustainedTemplate({
+        controlSpec: {
+          perTickCost: { spirit: 0.3 },
+          perTickThreadAuras: [{ magnitude: 1 }],
+          upkeepArtifactId: 'relic-1',
+          narrativeTemplates: { established: 'Est.', active: 'Act.', lapsed: 'Lap.' },
+        },
+      });
+      const action = makeResolvedAction();
+
+      const result = spawnControlEffect(action, template, 10);
+      expect(result!.effect.perTickThreadAuras).toEqual([{ magnitude: 1 }]);
+      expect(result!.effect.upkeepArtifactId).toBe('relic-1');
+    });
+  });
+
+  // ─── THR-511: location-targeted sustained control (consecrate) ────────────────
+  describe('spawnControlEffect — location targets (THR-511)', () => {
+    function makeGraphWithTemple(): WorldGraph {
+      const graph = new WorldGraph();
+      graph.addNode({
+        id: 'asc-1', type: 'actor', name: 'Player God',
+        properties: { actorType: 'ascendant' },
+      });
+      graph.addNode({
+        id: 'temple-1', type: 'location', name: 'Sun Temple',
+        properties: { locationSubtype: 'temple', hexCol: 7, hexRow: 4 },
+      });
+      return graph;
+    }
+
+    it('resolves a location target to its hex coords and sets targetNodeId', () => {
+      const graph = makeGraphWithTemple();
+      const template = makeSustainedTemplate({
+        controlSpec: {
+          perTickCost: { spirit: 0.3 },
+          perTickThreadAuras: [{ magnitude: 1 }],
+          narrativeTemplates: { established: 'Est.', active: 'Act.', lapsed: 'Lap.' },
+        },
+      });
+      const action = makeResolvedAction({ targetId: 'temple-1' });
+
+      const result = spawnControlEffect(action, template, 10, graph);
+      expect(result).not.toBeNull();
+      expect(result!.effect.targetHexCol).toBe(7);
+      expect(result!.effect.targetHexRow).toBe(4);
+      expect(result!.effect.targetNodeId).toBe('temple-1');
+      expect(result!.effect.perTickThreadAuras).toEqual([{ magnitude: 1 }]);
+    });
+
+    it('returns null for a non-hex target when no graph is supplied (fail-soft)', () => {
+      const template = makeSustainedTemplate();
+      const action = makeResolvedAction({ targetId: 'temple-1' });
+      // No graph → can't resolve location coords → no effect.
+      expect(spawnControlEffect(action, template, 10)).toBeNull();
+    });
+
+    it('returns null when the location lacks hex coords (fail-soft)', () => {
+      const graph = new WorldGraph();
+      graph.addNode({
+        id: 'temple-2', type: 'location', name: 'Floating Shrine',
+        properties: { locationSubtype: 'shrine' }, // no hexCol/hexRow
+      });
+      const template = makeSustainedTemplate();
+      const action = makeResolvedAction({ targetId: 'temple-2' });
+      expect(spawnControlEffect(action, template, 10, graph)).toBeNull();
+    });
+
+    it('returns null when the target node is not a location', () => {
+      const graph = makeGraphWithTemple();
+      const template = makeSustainedTemplate();
+      const action = makeResolvedAction({ targetId: 'asc-1' }); // actor, not location
+      expect(spawnControlEffect(action, template, 10, graph)).toBeNull();
+    });
+
+    it('end-to-end: a consecrated site advances a co-located thread each tick', () => {
+      const graph = makeGraphWithTemple();
+      // A threaded mortal standing in the temple.
+      graph.addNode({
+        id: 'mortal-1', type: 'actor', name: 'Pilgrim',
+        properties: { actorType: 'individual' },
+      });
+      graph.addEdge({
+        id: 'edge-loc', source: 'mortal-1', target: 'temple-1',
+        type: 'located_at', properties: {},
+      });
+      graph.addEdge({
+        id: 'edge-thread', source: 'asc-1', target: 'mortal-1',
+        type: 'thread', properties: { tier: 1, ticksAtCurrentTier: 0 },
+      });
+
+      const template = makeSustainedTemplate({
+        controlSpec: {
+          perTickCost: { spirit: 0.3 },
+          perTickThreadAuras: [{ magnitude: 1 }],
+          narrativeTemplates: { established: 'Est.', active: 'Act.', lapsed: 'Lap.' },
+        },
+      });
+      const action = makeResolvedAction({ targetId: 'temple-1' });
+
+      const result = spawnControlEffect(action, template, 10, graph);
+      expect(result).not.toBeNull();
+
+      // Tick the effect through phaseControlEffects against the same graph.
+      const state = createMinimalGameState();
+      // Swap in our temple graph (with the threaded pilgrim).
+      (state as { graph: WorldGraph }).graph = graph;
+      state.essencePool.spirit = 10;
+      state.controlEffects = [result!.effect];
+
+      phaseControlEffects(state);
+
+      // The pilgrim's thread devotion clock advanced by the aura magnitude.
+      const thread = graph.getNode('mortal-1') && graph.getOutgoingEdges('asc-1', 'thread')[0];
+      expect(thread).toBeDefined();
+      expect((thread!.properties.ticksAtCurrentTier as number)).toBe(1);
+    });
   });
 
   describe('contract: spawnControlEffect output → phaseControlEffects input', () => {
