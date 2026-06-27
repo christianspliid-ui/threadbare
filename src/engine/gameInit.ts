@@ -16,6 +16,7 @@ import { generateWorld } from './hexGrid';
 import type { RiverPath } from './worldGenData';
 import type { RegionData } from './regionTypes';
 import { createAscendant } from './ascendant';
+import { createInitialAscendantBeatState } from './ascendantBeat';
 import { seedWorld } from './worldSeed';
 import { generateRivals, createRivalState } from './rival';
 import { generateDoomClock, createDoomClockState } from './doomClock';
@@ -328,6 +329,7 @@ export function initializeGameState(
     actionsInProgress: [],
     unifiedActions: [],
     unlockedActionIds: [],
+    ascendantBeats: createInitialAscendantBeatState(),
     pendingEncounterSeeds: [],
     hiddenMarks: [],
     intelligenceRecords: [],

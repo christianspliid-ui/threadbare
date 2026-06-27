@@ -116,6 +116,7 @@ import { phaseJourneyBeat } from './journeyEngine';
 import { JOURNEY_BEAT_TEMPLATES } from '../data/journey-content';
 import { phaseOmenAgenda, resetOmenCounter } from './phaseOmenAgenda';
 import { phaseComposition } from './phaseComposition';
+import { phaseAscendantBeatDirector } from './ascendantBeat';
 import { phaseEncounterVisibility } from './encounterVisibility';
 import { phaseAscendantHandFilter } from './orchestrator/phaseAscendantHandFilter';
 import { phaseChoiceResolution } from './orchestrator/phaseChoiceResolution';
@@ -1958,6 +1959,14 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Placement preserves byte-equivalent ordering for phaseEmittedOmenDecay (THR-238 Land 2).
   // Future post-doom phases run AFTER phaseDoom/Journey/Omen and BEFORE phaseComposition.
   s = runRegisteredPhases(s, phaseCtx, 'post-doom', PHASE_PLAN);
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 1.75: Ascendant Beat Director — decide which beat (if any) to OFFER this
+  // turn (spine-first, then cadence-gated pool). Runs after the world settles and
+  // before encounter resolution; only offers, never resolves. (THR-500)
+  const beatRng = mulberry32(state.seed + state.tick * 59 + 503);
+  s = { ...s, ...phaseAscendantBeatDirector(s, beatRng) };
+  phaseEventCounts['ascendant_beat_director'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 1.8: Composition phase runner — advance phased event recipes tied to doom clock (THR-225)

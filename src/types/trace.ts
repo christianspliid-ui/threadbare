@@ -15,6 +15,7 @@ import type {
   ThreadStoryComposedTrace,
 } from './attention';
 import type { CourtPosition } from './influence';
+import type { BeatKind, BeatTrigger } from './ascendantBeat';
 import type { BehaviorFamily, StrategicVerb, StrategicExecutionMode } from './strategicAction';
 import type { ComplicationSeverity } from './complication';
 import type { SyllableTemplate } from './culture';
@@ -245,7 +246,13 @@ export type TraceCategory =
   | 'camera_center'
   // Aspect apex milestone (THR-479)
   | 'aspect_attained'
-  | 'aspect_echoed';
+  | 'aspect_echoed'
+  // Ascendant Beats — Divine Cadence (THR-500)
+  | 'ascendant.beat.scheduled'
+  | 'ascendant.beat.offered'
+  | 'ascendant.beat.skipped'
+  | 'ascendant.beat.resolved'
+  | 'action.unlock.granted';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -460,6 +467,12 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // Aspect apex milestone (THR-479)
   'aspect_attained',
   'aspect_echoed',
+  // Ascendant Beats — Divine Cadence (THR-500)
+  'ascendant.beat.scheduled',
+  'ascendant.beat.offered',
+  'ascendant.beat.skipped',
+  'ascendant.beat.resolved',
+  'action.unlock.granted',
 ];
 
 /** Base shape for all trace entries */
@@ -1658,7 +1671,57 @@ export type TraceEntry =
   | CameraCenterTrace
   // Aspect apex milestone (THR-479)
   | AspectAttainedTrace
-  | AspectEchoedTrace;
+  | AspectEchoedTrace
+  // Ascendant Beats — Divine Cadence (THR-500)
+  | BeatScheduledTrace
+  | BeatOfferedTrace
+  | BeatSkippedTrace
+  | BeatResolvedTrace
+  | ActionUnlockGrantedTrace;
+
+/** Trace: the Director scheduled an ascendant beat to offer this turn. THR-500 */
+export interface BeatScheduledTrace extends TraceBase {
+  category: 'ascendant.beat.scheduled';
+  turn: number;
+  beatId: string;
+  kind: BeatKind;
+  trigger: BeatTrigger;
+  poolSize: number;
+}
+
+/** Trace: an ascendant beat was offered to the player. THR-500 */
+export interface BeatOfferedTrace extends TraceBase {
+  category: 'ascendant.beat.offered';
+  turn: number;
+  beatId: string;
+  boundNodeIds: string[];
+}
+
+/** Trace: the Director declined to offer a beat this turn. THR-500 */
+export interface BeatSkippedTrace extends TraceBase {
+  category: 'ascendant.beat.skipped';
+  turn: number;
+  reason: 'pending' | 'cadence' | 'empty_pool';
+  beatId?: string;
+}
+
+/** Trace: a pending ascendant beat resolved. THR-500 */
+export interface BeatResolvedTrace extends TraceBase {
+  category: 'ascendant.beat.resolved';
+  turn: number;
+  beatId: string;
+  outcome: string;
+  grantedActionIds: string[];
+  seededNodeIds: string[];
+}
+
+/** Trace: an action was unlocked into the run-scoped unlock set. THR-500 */
+export interface ActionUnlockGrantedTrace extends TraceBase {
+  category: 'action.unlock.granted';
+  turn: number;
+  actionId: string;
+  via: 'beat' | 'debug';
+}
 
 /** Trace: a mortal became an Aspect of the god (apex milestone grant). THR-479 */
 export interface AspectAttainedTrace extends TraceBase {

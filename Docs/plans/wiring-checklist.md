@@ -100,6 +100,24 @@ Multiplicative novelty penalty applied in `scoreAndSelect` to break template-rep
 
 ---
 
+## Ascendant Beat Director (THR-500)
+
+Foundation for *Ascendant Beats* — encounters addressed to the player-god. The Director decides which beat to **offer** each turn (spine-first, then cadence-gated seeded pool); it never resolves. Resolution flows through the existing encounter pipeline; the `unlock_action` aftermath effect turns a resolved beat into a revealed player action card.
+
+| Surface | Path | Notes |
+|---|---|---|
+| Orchestrator phase | `phaseAscendantBeatDirector` in `src/engine/ascendantBeat.ts`, called inline in `runTick` (`orchestrator.ts`) after the `post-doom` slot, before `phaseComposition`/encounter resolution | Pure `(state, rng)` → `Partial<GameState>`; `beatRng = mulberry32(seed + tick*59 + 503)`. No-ops to `{}` when `ascendantBeats` is absent (fail-soft). |
+| GameState field | `ascendantBeats?: AscendantBeatState` in `src/types/gameState.ts` | Optional/additive; init `createInitialAscendantBeatState()` in `gameInit.ts`. |
+| Types | `src/types/ascendantBeat.ts` | `AscendantBeatState`, `PendingBeat`, `BeatRecord`, `BeatKind`, `BeatTrigger`, `BeatDefinition`. |
+| Constants + catalogue | `src/data/ascendant-beat-content.ts` | `BEAT_BASE_INTERVAL`, `BEAT_INTERVAL_JITTER`, `BEAT_MIN_GAP`, `BEAT_MAX_PENDING`, `SPINE_TRIGGER_TURNS`, `BEAT_KIND_WEIGHTS`; `ASCENDANT_SPINE` (minimal turn-gated) + empty `ASCENDANT_BEAT_POOL` (foundation). |
+| Aftermath effect | `unlock_action` in `EncounterAftermathReactionEffect` (`src/types/unifiedAction.ts`); resolved in `encounterAftermath.ts` | Grows the existing run-scoped `unlockedActionIds` (reused, **not** renamed); drawer reveals it via `isActionRevealed()` — no drawer change. Idempotent; fail-soft on unknown id. |
+| Trace categories | `src/types/trace.ts` | `ascendant.beat.scheduled` / `.offered` / `.skipped` / `.resolved` + `action.unlock.granted` — in `TraceCategory`, `TRACE_CATEGORIES`, and `TraceEntry` union with typed interfaces. |
+| Resolution helper | `resolveAscendantBeat()` (exported) | Clears `pending`, appends `BeatRecord`, emits `ascendant.beat.resolved`. Called by the encounter/UI resolution path wired in follow-up issues. |
+| Tests | `src/engine/__tests__/ascendantBeat.test.ts` | 11 tests: offer/skip/fail-soft/spine-hold, trigger eval, `drawFromPool`, `resolveAscendantBeat`, `unlock_action` grow + idempotency, trace registration. |
+| Deferred (later child issues) | UI pillar | World-view beat notification, card-flight unlock reveal, selection picker, DebugPanel beat tab, hex throne signifier/pulse — not in this foundation. |
+
+---
+
 ## Gameplay KPI Harness (THR-457)
 
 Pure telemetry layer: KPI report + eligibility funnel counters + debug surfaces.
@@ -332,6 +350,7 @@ Slot anchor positions in `runTick`: `pre-doom`, `post-doom`, `post-resolution`, 
 | Phase | Function | What it does |
 |-------|----------|-------------|
 | 1.5 | `phaseJourneyBeat` | Journey beat progression |
+| 1.75 | `phaseAscendantBeatDirector` | Offer ascendant beats (spine-first → cadence-gated pool); only offers, never resolves (THR-500) |
 | 2a | `phaseUnifiedActionProgress` | Action execution & resolution |
 | 2a.3 | `phaseEncounterProgressionV2` | Encounter step advancement |
 | 2a.52 | `phaseEffectShells` | Non-step-outcome flip_table triggers (attachment_gained, manual); step_outcome triggers fire inline in executeStepResult (THR-53) |

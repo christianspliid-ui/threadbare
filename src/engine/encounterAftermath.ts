@@ -364,6 +364,8 @@ export function applyEncounterAftermathReaction(
   let nextIntelligenceRecords: IntelligenceRecord[] = [];
   let nextEmittedOmens: EmittedOmen[] | undefined = undefined;
   let nextChronicleEntries: ChronicleEntry[] | undefined = undefined;
+  // THR-500: run-scoped action unlocks grown by `unlock_action` effects.
+  let nextUnlockedActionIds: readonly string[] | undefined = undefined;
 
   let mutationSummary: AftermathMutationSummary = { touchedWorld: false, touchedStructure: false, woundApplied: false };
 
@@ -2388,6 +2390,39 @@ export function applyEncounterAftermathReaction(
         break;
       }
 
+      case 'unlock_action': {
+        const current = nextUnlockedActionIds ?? state.unlockedActionIds ?? [];
+        if (current.includes(effect.actionId)) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'unlock_action',
+            effectDetail: { actionId: effect.actionId, revealStyle: effect.revealStyle ?? 'card_flight' },
+            success: true, effectiveTargetId: effect.actionId, effectiveTargetKind: 'actor_fallback',
+            summary: `unlock_action[${i}] no-op: ${effect.actionId} already unlocked`,
+          } as unknown as Parameters<typeof emitTrace>[0]);
+          break;
+        }
+        // Fail-soft: an unknown actionId is pushed harmlessly — no template matches,
+        // so isActionRevealed never reveals a non-existent card. (THR-500 §3.8)
+        nextUnlockedActionIds = [...current, effect.actionId];
+        mutationSummary.touchedWorld = true;
+        emitTrace({
+          tick, category: 'action.unlock.granted', turn: tick,
+          actionId: effect.actionId, via: 'beat',
+          summary: `action.unlock.granted: ${effect.actionId} (${effect.revealStyle ?? 'card_flight'})`,
+        } as unknown as Parameters<typeof emitTrace>[0]);
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'unlock_action',
+          effectDetail: { actionId: effect.actionId, revealStyle: effect.revealStyle ?? 'card_flight' },
+          success: true, effectiveTargetId: effect.actionId, effectiveTargetKind: 'actor_fallback',
+          summary: `unlock_action[${i}]: granted ${effect.actionId}`,
+        } as unknown as Parameters<typeof emitTrace>[0]);
+        break;
+      }
+
       case 'archetype_drift_register': {
         const resolvedAgentId = effect.targetAgentId
           ?? (target.kind === 'agent' ? target.id : actorAgentId);
@@ -2623,6 +2658,7 @@ export function applyEncounterAftermathReaction(
       : state.intelligenceRecords,
     emittedOmens: nextEmittedOmens !== undefined ? nextEmittedOmens : state.emittedOmens,
     chronicleEntries: nextChronicleEntries !== undefined ? nextChronicleEntries : state.chronicleEntries,
+    unlockedActionIds: nextUnlockedActionIds !== undefined ? nextUnlockedActionIds : state.unlockedActionIds,
   };
 
   return { state: nextState, mutationSummary };

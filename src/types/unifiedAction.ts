@@ -539,6 +539,23 @@ export type EncounterAftermathReactionEffect =
     /** Narrative label stored on the aspect_of edge / chronicle beat. */
     readonly reason?: string;
     readonly when?: EffectPredicate;
+  }
+  // ─── Ascendant beat action unlock (THR-500) ───────────────────────────────
+  | {
+    /**
+     * Unlock a player action into the run-scoped unlock set
+     * (`GameState.unlockedActionIds`). The action drawer already filters on this
+     * set via `isActionRevealed`, so a granted action simply appears — no drawer
+     * change is needed. Idempotent: granting an already-unlocked id is a no-op.
+     * Fail-soft: an unknown `actionId` is pushed harmlessly (no template matches,
+     * so nothing reveals) rather than throwing.
+     */
+    readonly kind: 'unlock_action';
+    /** Action template id to reveal. */
+    readonly actionId: string;
+    /** How the unlock should present in the UI (card-flight reveal vs. silent). */
+    readonly revealStyle?: 'card_flight' | 'silent';
+    readonly when?: EffectPredicate;
   };
 
 export interface PendingEncounterSeed {
