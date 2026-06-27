@@ -22,7 +22,9 @@ vi.mock('../hooks/useInterventionAudio', () => ({
 // Mock unified-action-templates
 vi.mock('../../../data/unified-action-templates', () => ({
   getUnifiedTemplateById: vi.fn(),
-  THREAD_CREATION_TEMPLATES: [],
+  // THR-501: the agent hand now draws from AGENT_INTERVENTION_TEMPLATES via
+  // getTargetActionSlots (mocked below to return []), so the contents are irrelevant here.
+  AGENT_INTERVENTION_TEMPLATES: [],
 }));
 
 // Mock targetActions module

@@ -19,6 +19,7 @@ import {
 import { getOriginPortraitUrl } from '../../../data/avatar-portrait-assets';
 import { UNIFIED_ACTION_TEMPLATES } from '../../../data/unified-action-templates';
 import { classifyTrayTier, type AscendantTrayTier } from '../../../engine/ascendantTray';
+import { isActionRevealed } from '../../../engine/actionUnlock';
 import type { UnifiedActionTemplate } from '../../../types/unifiedAction';
 
 // ─── Identity view ───────────────────────────────────────────────────────────
@@ -173,9 +174,19 @@ export function selectActionTray(
     gated: false,
   }));
 
+  // THR-501: gate the Self and Rare tiers behind the run's unlock set so the turn-1
+  // floor is Core only (Move + Investiture, hardcoded on the bar). The innate self-actions
+  // (Meditate, Withdraw, Concentrate, Manifest, …) arrive as earned capabilities via
+  // Ascendant Beats — `unlock_action` pushes their ids into `unlockedActionIds`. Core stays
+  // always-on. Locked tiers are filtered out entirely (hidden, consistent with the unlock
+  // gate on every other action surface), not shown dimmed.
   const core = items.filter((i) => i.tier === 'core');
-  const self = items.filter((i) => i.tier === 'self');
-  const rare = items.filter((i) => i.tier === 'rare');
+  const self = items.filter(
+    (i) => i.tier === 'self' && isActionRevealed(i.template, gameState.unlockedActionIds),
+  );
+  const rare = items.filter(
+    (i) => i.tier === 'rare' && isActionRevealed(i.template, gameState.unlockedActionIds),
+  );
 
   return { core, self, rare, isEmpty: items.length === 0 };
 }

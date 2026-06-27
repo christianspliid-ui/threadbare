@@ -10,12 +10,11 @@ import type { ThreadCategory, ThreadedNode } from '../../../engine/retinue';
 import { enrichRetinueWithActivity } from '../../../engine/agentActivity';
 import { getAgentActivityLabel } from '../../../engine/agentActivity';
 import { getAgentDetail, getAgentInfoCard, getAgentFullProfile } from '../../../engine/agentDetail';
-import { getAgentWheelSlots } from '../../../engine/wheel';
 import { executeIntervention } from '../../../engine/dream';
 import { applyInterventionEffects } from '../../../engine/interventionEffects';
 import { applyAscendantFeedback } from '../../../engine/ascendantFeedback';
 import { createUnifiedAction } from '../../../engine/unifiedActionLifecycle';
-import { getUnifiedTemplateById, THREAD_CREATION_TEMPLATES } from '../../../data/unified-action-templates';
+import { getUnifiedTemplateById, AGENT_INTERVENTION_TEMPLATES } from '../../../data/unified-action-templates';
 import { templateIdFromSlotId, getTargetActionSlots } from '../../../engine/targetActions';
 import { getAscendantDomainAffinities } from '../../../engine/ascendant';
 import { buildActorTargetContext } from '../../../engine/targetContextBuilders';
@@ -138,21 +137,17 @@ export function useAgentInteraction({
     // tier: use retinue tier if available, fall back to 0 for unthreaded agents
     const tier = agent?.tier ?? 0;
 
-    // Intervention slots only for threaded (retinue) agents
-    const interventionSlots = agent
-      ? getAgentWheelSlots({
-          tier: agent.tier,
-          pool: gameState.essencePool,
-          primarySphere: archetype.sphereAlignment.primary,
-        })
-      : [];
-
-    // Thread-creation templates work for any agent — surface "Bind Thread", "Observe", etc.
+    // THR-501: the legacy tier-based intervention wheel (getAgentWheelSlots) is retired.
+    // The agent hand's interventions now come from the unified divine.* templates (plus
+    // observe + thread-creation) surfaced through getTargetActionSlots — the same
+    // unlock-gated, sphere/reach/context-filtered path every other action surface uses.
+    // Passing `unlockedActionIds` is what makes the turn-1 floor (only Move + Investiture)
+    // hold here: without it the gate's backward-compat branch revealed all cards.
     const actorCtx = buildActorTargetContext(selectedAgentId, gameState.graph, tier);
     const targetSlots = actorCtx
       ? getTargetActionSlots({
           target: actorCtx,
-          templates: THREAD_CREATION_TEMPLATES,
+          templates: AGENT_INTERVENTION_TEMPLATES,
           pool: gameState.essencePool,
           primarySphere: archetype.sphereAlignment.primary,
           avatarPos: getAvatarHexPosition(gameState.graph, gameState.ascendantId) ?? undefined,
@@ -161,13 +156,13 @@ export function useAgentInteraction({
             archetype.sphereAlignment.secondary,
           ],
           hexRevelation: gameState.hexRevelation,
+          unlockedActionIds: gameState.unlockedActionIds,
           ascendantDomainAffinities: getAscendantDomainAffinities(gameState.graph, gameState.ascendantId),
         })
       : [];
 
-    const combined = [...interventionSlots, ...targetSlots];
-    return combined.length > 0 ? combined : null;
-  }, [selectedAgentId, drawerOpen, gameState.essencePool, gameState.graph, gameState.ascendantId, gameState.hexRevelation, retinueAgents, archetype, worldVersion]);
+    return targetSlots.length > 0 ? targetSlots : null;
+  }, [selectedAgentId, drawerOpen, gameState.essencePool, gameState.graph, gameState.ascendantId, gameState.hexRevelation, gameState.unlockedActionIds, retinueAgents, archetype, worldVersion]);
 
   const strandData = useMemo(() => {
     if (!strandViewAgent) return null;

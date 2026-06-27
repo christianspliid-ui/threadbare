@@ -465,7 +465,10 @@ describe('getTargetActionSlots — unlock gate (filter 8)', () => {
     expect(slots).toHaveLength(1);
   });
 
-  it('keeps canonical starter IDs visible as fail-soft even if starter flag is missing', () => {
+  it('hides former-starter IDs when not unlocked (THR-501 — empty starter floor)', () => {
+    // The Starter-12 floor was retired in THR-501 (STARTER_ACTION_IDS = []), so a
+    // former starter like divine.dream is hidden until a beat unlocks it. With no
+    // starter flag and no unlock, it must not surface.
     const templates = [
       makeTemplate({ id: 'divine.dream', name: 'Dream', targetCategories: ['actor'] }),
     ];
@@ -477,7 +480,7 @@ describe('getTargetActionSlots — unlock gate (filter 8)', () => {
       accessibleSpheres: ['mind'],
       unlockedActionIds: [],
     });
-    expect(slots).toHaveLength(1);
+    expect(slots).toHaveLength(0);
   });
 
   it('shows non-starter templates when explicitly unlocked', () => {
