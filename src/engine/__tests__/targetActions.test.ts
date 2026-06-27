@@ -496,6 +496,90 @@ describe('getTargetActionSlots — unlock gate (filter 8)', () => {
   });
 });
 
+describe('getTargetActionSlots — reach gate (filter 9, THR-503)', () => {
+  // Reach-gated cards are unlocked (starter:true) so the unlock gate (filter 8)
+  // does not pre-empt the reach gate under test.
+  const reachCard = () =>
+    makeTemplate({
+      id: 'invest.iron.fortify',
+      name: 'Fortify Bloodline',
+      targetCategories: ['actor'],
+      starter: true,
+      requiresReach: 'iron',
+    });
+
+  it('hides a reach-locked card for an off-reach ascendant', () => {
+    const slots = getTargetActionSlots({
+      target: actorTarget(),
+      templates: [reachCard()],
+      pool: BASE_POOL,
+      primarySphere: 'mind',
+      accessibleSpheres: ['mind'],
+      unlockedActionIds: [],
+      ascendantDomainAffinities: { veil: 4, shadow: 3 }, // no iron
+    });
+    expect(slots).toHaveLength(0);
+  });
+
+  it('shows a reach-locked card for an on-reach ascendant', () => {
+    const slots = getTargetActionSlots({
+      target: actorTarget(),
+      templates: [reachCard()],
+      pool: BASE_POOL,
+      primarySphere: 'mind',
+      accessibleSpheres: ['mind'],
+      unlockedActionIds: [],
+      ascendantDomainAffinities: { iron: 4, gold: 3 }, // has iron
+    });
+    expect(slots).toHaveLength(1);
+  });
+
+  it('hides when affinity is below REACH_GATE_MIN_AFFINITY', () => {
+    const slots = getTargetActionSlots({
+      target: actorTarget(),
+      templates: [reachCard()],
+      pool: BASE_POOL,
+      primarySphere: 'mind',
+      accessibleSpheres: ['mind'],
+      unlockedActionIds: [],
+      ascendantDomainAffinities: { iron: 0.1 }, // below the 0.2 floor
+    });
+    expect(slots).toHaveLength(0);
+  });
+
+  it('fails open when no affinities are supplied (e.g. tests / no ascendant)', () => {
+    const slots = getTargetActionSlots({
+      target: actorTarget(),
+      templates: [reachCard()],
+      pool: BASE_POOL,
+      primarySphere: 'mind',
+      accessibleSpheres: ['mind'],
+      unlockedActionIds: [],
+      // ascendantDomainAffinities omitted
+    });
+    expect(slots).toHaveLength(1);
+  });
+
+  it('leaves ungated cards (no requiresReach) visible regardless of affinities', () => {
+    const ungated = makeTemplate({
+      id: 'invest.generic',
+      name: 'Generic Invest',
+      targetCategories: ['actor'],
+      starter: true,
+    });
+    const slots = getTargetActionSlots({
+      target: actorTarget(),
+      templates: [ungated],
+      pool: BASE_POOL,
+      primarySphere: 'mind',
+      accessibleSpheres: ['mind'],
+      unlockedActionIds: [],
+      ascendantDomainAffinities: { veil: 4 },
+    });
+    expect(slots).toHaveLength(1);
+  });
+});
+
 describe('getTargetActionSlots — MAX_SLOTS cap', () => {
   it('returns at most MAX_SLOTS slots', () => {
     const templates = Array.from({ length: 30 }, (_, i) =>

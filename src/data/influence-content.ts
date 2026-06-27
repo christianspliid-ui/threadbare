@@ -67,3 +67,16 @@ export const DISCOVER_COST = 1;
 
 /** Cost to observe (reveal hidden properties). */
 export const OBSERVE_COST = 0.5;
+
+// ─── Reach Gate (THR-503) ─────────────────────────────────────────
+
+/**
+ * Minimum reach affinity an ascendant must have in a template's `requiresReach`
+ * domain for that card to be shown. The reach gate is a permanent two-domain
+ * membership filter: an ascendant holds a fixed primary + secondary reach for
+ * the whole game, so a card requiring any other reach is hidden for the entire
+ * run (never surfaced as aspiration). Since an ascendant's domain affinities only
+ * carry entries for its actual reaches (raw scores 2–5) and absent reaches resolve
+ * to 0, this floor acts as a fixed set-membership check.
+ */
+export const REACH_GATE_MIN_AFFINITY = 0.2;

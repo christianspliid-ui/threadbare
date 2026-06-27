@@ -4,6 +4,7 @@ import type { GameState } from '../../../types/gameState';
 import type { AscendantArchetype } from '../../../types/influence';
 import type { WheelSlot } from '../../../engine/wheel';
 import { getTargetActionSlots } from '../../../engine/targetActions';
+import { getAscendantDomainAffinities } from '../../../engine/ascendant';
 import { getAvatarHexPosition } from '../../../engine/visibility';
 import { UNIFIED_ACTION_TEMPLATES } from '../../../data/unified-action-templates';
 
@@ -49,6 +50,7 @@ export function useTargetActions({
       hexRevelation: gameState.hexRevelation,
       existingThreadTier,
       unlockedActionIds: gameState.unlockedActionIds,
+      ascendantDomainAffinities: getAscendantDomainAffinities(gameState.graph, gameState.ascendantId),
     });
   }, [
     target,

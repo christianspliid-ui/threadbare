@@ -17,6 +17,7 @@ import { applyAscendantFeedback } from '../../../engine/ascendantFeedback';
 import { createUnifiedAction } from '../../../engine/unifiedActionLifecycle';
 import { getUnifiedTemplateById, THREAD_CREATION_TEMPLATES } from '../../../data/unified-action-templates';
 import { templateIdFromSlotId, getTargetActionSlots } from '../../../engine/targetActions';
+import { getAscendantDomainAffinities } from '../../../engine/ascendant';
 import { buildActorTargetContext } from '../../../engine/targetContextBuilders';
 import { getAvatarHexPosition } from '../../../engine/visibility';
 import { appendEvent } from '../../../engine/encounterTimeline';
@@ -160,6 +161,7 @@ export function useAgentInteraction({
             archetype.sphereAlignment.secondary,
           ],
           hexRevelation: gameState.hexRevelation,
+          ascendantDomainAffinities: getAscendantDomainAffinities(gameState.graph, gameState.ascendantId),
         })
       : [];
 
