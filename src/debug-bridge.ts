@@ -206,9 +206,10 @@ if (import.meta.env.DEV) {
     // ── Ascendant Beats — Divine Cadence (THR-507) ──────────────────────────
     listBeats: async () => {
       const { ASCENDANT_SPINE, ASCENDANT_BEAT_POOL } = await import('./data/ascendant-beat-content');
+      const { ALL_DELIVERY_BEATS } = await import('./engine/deliveryBeatAdapter');
       const map = (
         defs: readonly import('./types/ascendantBeat').BeatDefinition[],
-        source: 'spine' | 'pool',
+        source: 'spine' | 'pool' | 'delivery',
       ) =>
         defs.map((d) => ({
           beatId: d.beatId,
@@ -216,13 +217,19 @@ if (import.meta.env.DEV) {
           source,
           triggerKind: d.trigger.kind,
           minTurn: d.trigger.minTurn ?? null,
+          templateId: d.templateId ?? null,
           grantsActionIds: [...(d.grantsActionIds ?? [])],
           weight: d.weight ?? null,
         }));
-      return [...map(ASCENDANT_SPINE, 'spine'), ...map(ASCENDANT_BEAT_POOL, 'pool')];
+      return [
+        ...map(ASCENDANT_SPINE, 'spine'),
+        ...map(ASCENDANT_BEAT_POOL, 'pool'),
+        ...map(ALL_DELIVERY_BEATS, 'delivery'),
+      ];
     },
     beatSchedule: async () => {
       const { ASCENDANT_SPINE, ASCENDANT_BEAT_POOL } = await import('./data/ascendant-beat-content');
+      const { eligibleDeliveryBeats } = await import('./engine/deliveryBeatAdapter');
       const state = _gameStateProvider?.();
       const beats = state?.ascendantBeats;
       if (!state || !beats) {
@@ -244,6 +251,12 @@ if (import.meta.env.DEV) {
         beats.spineCursor >= 0 && beats.spineCursor < ASCENDANT_SPINE.length
           ? ASCENDANT_SPINE[beats.spineCursor].beatId
           : null;
+      // The Director draws from the base pool merged with delivery beats not yet
+      // delivered this run (THR-506) — reflect that combined set honestly.
+      const eligiblePoolIds = [
+        ...ASCENDANT_BEAT_POOL.map((b) => b.beatId),
+        ...eligibleDeliveryBeats(beats.history.map((h) => h.beatId)).map((b) => b.beatId),
+      ];
       return {
         available: true,
         turn: state.tick,
@@ -259,8 +272,8 @@ if (import.meta.env.DEV) {
             triggerKind: beats.pending.trigger.kind,
           }
           : null,
-        eligiblePool: ASCENDANT_BEAT_POOL.map((b) => b.beatId),
-        poolSize: ASCENDANT_BEAT_POOL.length,
+        eligiblePool: eligiblePoolIds,
+        poolSize: eligiblePoolIds.length,
         runUnlockedActionIds: [...(state.unlockedActionIds ?? [])],
         history: beats.history.map((h) => ({
           beatId: h.beatId,

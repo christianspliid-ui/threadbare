@@ -51,6 +51,9 @@ import type { SimulationRuntime } from '../src/engine/simulationRuntime';
 import { setTrackedAgents, getBalanceEvents, selectDefaultTrackedHero } from '../src/engine/balanceTelemetry';
 import { buildBalanceRunSummary, buildBalanceAgentJourneySummary } from '../src/engine/balanceSummary';
 import { computeGameplayKpiReport, isBranchingTemplate } from '../src/engine/kpi/gameplayKpi';
+import { forceOfferBeatById } from '../src/engine/ascendantBeat';
+import { ASCENDANT_SPINE, ASCENDANT_BEAT_POOL } from '../src/data/ascendant-beat-content';
+import { ALL_DELIVERY_BEATS, eligibleDeliveryBeats, sourceTemplateIdOf } from '../src/engine/deliveryBeatAdapter';
 import { computeGateDistance } from '../src/engine/kpi/branchingDistance';
 import { BRANCHING_AUDIT_SEEDS, BRANCHING_AUDIT_TICKS } from '../src/engine/encounter/branchingConstants';
 import { evaluateBalanceSummary, evaluateAgentJourney, formatEvaluationReport } from '../src/engine/balanceEvaluator';
@@ -976,6 +979,9 @@ function printHelp(): void {
   console.log(`  ${BOLD}digest${RESET} [N]       Last N digest buffer entries (default 10)`);
   console.log(`  ${BOLD}tugs${RESET}             Active thread tugs`);
   console.log(`  ${BOLD}storybeats${RESET}       Story beat queue (alias: beats)`);
+  console.log(`  ${BOLD}beat${RESET}             Ascendant Beat Director status (alias: beat status)`);
+  console.log(`  ${BOLD}beat list${RESET} [delivery]  List spine/pool beats, or all delivery beats`);
+  console.log(`  ${BOLD}beat fire${RESET} <beatId>    Force-offer a beat (e.g. beat.delivery.enc.courtyard_duel) — shows source template id`);
   console.log(`  ${BOLD}threads${RESET}          Divine thread edges by court position`);
   console.log(`  ${BOLD}balance${RESET}          Balance summary (alias: bal)`);
   console.log(`  ${BOLD}balance idle${RESET}     Idle reasons + subtype starvation hotspots`);
@@ -1455,6 +1461,66 @@ function handleAftermathCommand(args: string[]): void {
   console.log(`${RED}Usage: aftermath list <agent|@hero> | aftermath pick <agent|@hero> [reactionId]${RESET}`);
 }
 
+// ─── Ascendant Beats (THR-506) ────────────────────────────────────
+
+function printBeatStatus(): void {
+  const beats = state.ascendantBeats;
+  if (!beats) { console.log(`${YELLOW}No ascendant beat state${RESET}`); return; }
+  const eligibleDelivery = eligibleDeliveryBeats(beats.history.map(h => h.beatId));
+  console.log(header('Ascendant Beat Director'));
+  console.log(`  turn:          ${state.tick}`);
+  console.log(`  spineCursor:   ${beats.spineCursor}${beats.spineCursor < 0 ? dim(' (spine exhausted)') : ` / ${ASCENDANT_SPINE.length}`}`);
+  console.log(`  lastBeatTurn:  ${beats.lastBeatTurn}`);
+  if (beats.pending) {
+    const src = sourceTemplateIdOf(beats.pending.beatId);
+    console.log(`  pending:       ${CYAN}${beats.pending.beatId}${RESET} (${beats.pending.kind})${src ? dim(` → ${src}`) : ''}`);
+  } else {
+    console.log(`  pending:       ${dim('none')}`);
+  }
+  console.log(`  history:       ${beats.history.length} resolved`);
+  console.log(`  delivery pool: ${eligibleDelivery.length} eligible / ${ALL_DELIVERY_BEATS.length} total`);
+}
+
+function printBeatList(filter?: string): void {
+  if (filter === 'delivery') {
+    console.log(header(`Delivery beats (${ALL_DELIVERY_BEATS.length})`));
+    for (const b of ALL_DELIVERY_BEATS) {
+      console.log(`  ${b.beatId} ${dim(`→ ${b.templateId}`)}`);
+    }
+    return;
+  }
+  console.log(header('Ascendant beats'));
+  console.log(`  ${BOLD}spine${RESET} (${ASCENDANT_SPINE.length}): ${ASCENDANT_SPINE.map(b => b.beatId).join(', ')}`);
+  console.log(`  ${BOLD}pool${RESET} (${ASCENDANT_BEAT_POOL.length}): ${ASCENDANT_BEAT_POOL.map(b => b.beatId).join(', ')}`);
+  console.log(`  ${BOLD}delivery${RESET} (${ALL_DELIVERY_BEATS.length}): use ${CYAN}beat list delivery${RESET} for the full list`);
+}
+
+function handleBeatCommand(args: string[]): void {
+  const [subcommand, ...rest] = args;
+  if (!subcommand || subcommand === 'status') { printBeatStatus(); return; }
+  if (subcommand === 'list') { printBeatList(rest[0]); return; }
+  if (subcommand === 'fire') {
+    const beatId = rest.join(' ').trim();
+    if (!beatId) { console.log(`${RED}Usage: beat fire <beatId>${RESET}`); return; }
+    const beats = state.ascendantBeats;
+    if (!beats) { console.log(`${RED}No ascendant beat state${RESET}`); return; }
+    const result = forceOfferBeatById(beats, beatId, state.tick);
+    if (!result) {
+      console.log(`${RED}No beat matching "${beatId}"${RESET}. Try ${CYAN}beat list${RESET} or ${CYAN}beat list delivery${RESET}.`);
+      return;
+    }
+    state = { ...state, ascendantBeats: result.next };
+    const src = result.def.templateId;
+    console.log(`${GREEN}✓${RESET} offered ${CYAN}${result.def.beatId}${RESET} (${result.def.kind})`);
+    if (src) console.log(`  source template: ${BOLD}${src}${RESET}`);
+    // Show the scheduled/offered traces just emitted — they carry the source id.
+    const beatTraces = getTraces().filter(t => t.category.startsWith('ascendant.beat.')).slice(-2);
+    for (const t of beatTraces) console.log(`  ${dim(`t${t.tick}`)} [${t.category}] ${t.summary}`);
+    return;
+  }
+  console.log(`${RED}Usage: beat [status] | beat list [delivery] | beat fire <beatId>${RESET}`);
+}
+
 // ─── REPL ─────────────────────────────────────────────────────────
 
 function handleCommand(line: string): boolean {
@@ -1554,6 +1620,9 @@ function handleCommand(line: string): boolean {
     }
     case 'tugs':
       printTugs();
+      break;
+    case 'beat':
+      handleBeatCommand(rest);
       break;
     case 'storybeats':
     case 'beats':

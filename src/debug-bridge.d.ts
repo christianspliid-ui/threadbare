@@ -138,11 +138,13 @@ export interface DebugBeatCatalogueEntry {
   beatId: string;
   kind: BeatKind;
   /** Which catalogue the beat lives in. */
-  source: 'spine' | 'pool';
+  source: 'spine' | 'pool' | 'delivery';
   /** Trigger discriminant (turn / first_bonded / settlement_visited / cadence). */
   triggerKind: string;
   /** Earliest turn the trigger may fire, or null if unbounded. */
   minTurn: number | null;
+  /** Source template the beat resolves into (delivery beats: the branching encounter). THR-506 */
+  templateId?: string | null;
   /** Action ids the beat is expected to unlock on resolution. */
   grantsActionIds: string[];
   /** Per-beat draw weight (pool beats only); null for spine beats. */
