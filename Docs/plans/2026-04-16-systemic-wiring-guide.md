@@ -851,6 +851,14 @@ Hands the **player** a new action card as the aftermath of a resolved beat (or a
 
 Starter actions (`STARTER_ACTION_IDS` / `starter: true`) are always available and do not need unlocking. Use `unlock_action` for the *unlockable-generic* and *reach-gated* buckets — the cards a beat or selection grants over the course of a run.
 
+#### Delivery beats — host a branching encounter as a divine vision (THR-506)
+
+If you author a **branching encounter** (`UnifiedActionTemplate` in `src/data/encounters/`, registered in `LOCATION_BRANCHING_ENCOUNTER_TEMPLATES`), you do **not** need to also solve "how does a mortal ever reach this?" — the *delivery-beat adapter* (`src/engine/deliveryBeatAdapter.ts`) automatically wraps every such template into a `delivery` Ascendant Beat the Director can offer the player directly, **as a divine vision that sidesteps the encounter's reputation/mark/court prereqs**. This is the answer to THR-452: rich branching content that ambient simulation never matures the preconditions for is still reachable, because the god is shown it rather than a mortal walking into it.
+
+- Authoring a new branching encounter and registering it in `LOCATION_BRANCHING_ENCOUNTER_TEMPLATES` is enough — `ALL_DELIVERY_BEATS` picks it up at module load (id `beat.delivery.<templateId>`). No per-encounter beat wiring.
+- A delivery beat is the **host shell**; its `templateId` points at your encounter, so its content (steps, authored choices, aftermath) is the same content that runs anywhere else — no duplication.
+- The Director draws delivery beats at `DELIVERY_BEAT_WEIGHT × BEAT_KIND_WEIGHTS.delivery`, deduped against already-delivered beats. The offer→enter→resolve player path is THR-514; until then, fire one headlessly with the CLI (`beat fire beat.delivery.<templateId>`) or `__DEBUG.fireBeat`.
+
 #### Ascendant action primitives — the per-graph investment toolkit (THR-509)
 
 Four reusable building blocks live in `src/engine/ascendantPrimitives.ts`. They exist so the early *expression cards* (imbue / consecrate / bestow / anoint — THR-508) and future ascendant verbs are cheap to author: the verb is universal, the magic it produces is flavored by the ascendant's domain + sphere. **Reach for these instead of hardcoding card-specific effect logic.** All four are pure, unit-tested in isolation, fail-soft (unknown node/sphere/artifact → no-op + warn), and emit an `ascendant_primitive` trace.

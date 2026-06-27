@@ -44,6 +44,7 @@ import {
   BEAT_KIND_WEIGHTS,
   BEAT_INIT_LAST_BEAT_TURN,
 } from '../data/ascendant-beat-content';
+import { eligibleDeliveryBeats, getDeliveryBeatById } from './deliveryBeatAdapter';
 
 /**
  * Beat-trace emit wrapper. `emitTrace`'s parameter collapses a discriminated
@@ -156,6 +157,9 @@ function offer(
     boundNodeIds: [],
     trigger,
   };
+  // Delivery beats wrap a branching encounter; `def.templateId` names it so the
+  // trace identifies the otherwise-unreachable content the vision hosts (THR-506).
+  const templateId = def.templateId ? { templateId: def.templateId } : {};
   emitBeatTrace({
     tick: turn,
     category: 'ascendant.beat.scheduled',
@@ -164,7 +168,8 @@ function offer(
     kind: def.kind,
     trigger,
     poolSize,
-    summary: `ascendant beat scheduled: ${def.beatId} (${def.kind}) via ${trigger.kind}`,
+    ...templateId,
+    summary: `ascendant beat scheduled: ${def.beatId} (${def.kind})${def.templateId ? ` → ${def.templateId}` : ''} via ${trigger.kind}`,
   });
   emitBeatTrace({
     tick: turn,
@@ -172,6 +177,7 @@ function offer(
     turn,
     beatId: def.beatId,
     boundNodeIds: [...pending.boundNodeIds],
+    ...templateId,
     summary: `ascendant beat offered: ${def.beatId}`,
   });
   const nextCursor = advanceSpine
@@ -207,6 +213,15 @@ export function forceOfferBeatById(
     return {
       next: offer(beats, poolDef, { kind: 'cadence' }, turn, ASCENDANT_BEAT_POOL.length, /*advanceSpine*/ false),
       def: poolDef,
+    };
+  }
+  // Delivery beats (THR-506) wrap branching encounters and are not in the static
+  // pool; resolve them from the adapter so force-offer can host a divine vision.
+  const deliveryDef = getDeliveryBeatById(beatId);
+  if (deliveryDef) {
+    return {
+      next: offer(beats, deliveryDef, { kind: 'cadence' }, turn, ASCENDANT_BEAT_POOL.length, /*advanceSpine*/ false),
+      def: deliveryDef,
     };
   }
   return null;
@@ -248,13 +263,18 @@ export function phaseAscendantBeatDirector(
       emitSkipped(turn, 'cadence');
       return {};
     }
-    const def = drawFromPool(ASCENDANT_BEAT_POOL, rng);
+    // Merge the static base pool (intro/invest/select) with the delivery beats that
+    // are still eligible — branching encounters not yet delivered this run (THR-506).
+    // The base pool stays delivery-free; eligibility (dedup against history) is applied
+    // here, where the Director has access to state.
+    const pool = [...ASCENDANT_BEAT_POOL, ...eligibleDeliveryBeats(beats.history.map(h => h.beatId))];
+    const def = drawFromPool(pool, rng);
     if (!def) {
       emitSkipped(turn, 'empty_pool');
       return {};
     }
     return {
-      ascendantBeats: offer(beats, def, { kind: 'cadence' }, turn, ASCENDANT_BEAT_POOL.length, /*advanceSpine*/ false),
+      ascendantBeats: offer(beats, def, { kind: 'cadence' }, turn, pool.length, /*advanceSpine*/ false),
     };
   } catch (err) {
     // NFP #4: the tick loop must never crash.

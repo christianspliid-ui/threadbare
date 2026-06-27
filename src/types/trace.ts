@@ -1693,6 +1693,12 @@ export interface BeatScheduledTrace extends TraceBase {
   kind: BeatKind;
   trigger: BeatTrigger;
   poolSize: number;
+  /**
+   * Source `UnifiedActionTemplate` id the beat resolves into, when the beat
+   * declares one. For `delivery` beats this is the wrapped branching-encounter
+   * id (THR-506) — the trace then names the otherwise-unreachable content a
+   * divine vision is hosting. Absent for beats with no bound template. */
+  templateId?: string;
 }
 
 /** Trace: an ascendant beat was offered to the player. THR-500 */
@@ -1701,6 +1707,8 @@ export interface BeatOfferedTrace extends TraceBase {
   turn: number;
   beatId: string;
   boundNodeIds: string[];
+  /** Source template id (delivery beats: the wrapped branching encounter). THR-506 */
+  templateId?: string;
 }
 
 /** Trace: the Director declined to offer a beat this turn. THR-500 */

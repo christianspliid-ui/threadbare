@@ -132,6 +132,23 @@ The inspection/test surface for the Director — headless `window.__DEBUG` contr
 
 ---
 
+## Delivery-beat adapter (THR-506)
+
+Hosts THR-452's normally-unreachable branching encounters as `delivery` beats — divine visions the Director offers directly, sidestepping the encounter's mortal-pathing prereqs. The adapter is the bridge from the registered branching catalogue to the Director's draw pool.
+
+| Surface | Path | Notes |
+|---|---|---|
+| Adapter module | `src/engine/deliveryBeatAdapter.ts` | `branchingEncounterToDeliveryBeat()` maps a branching `UnifiedActionTemplate` → `delivery` `BeatDefinition` (`beat.delivery.<sourceId>`, `templateId`=source, cadence trigger, `DELIVERY_BEAT_WEIGHT`). `ALL_DELIVERY_BEATS` built from `LOCATION_BRANCHING_ENCOUNTER_TEMPLATES`. `eligibleDeliveryBeats(deliveredBeatIds)` = dedup-against-history gate. `deliveryBeatIdFor` / `sourceTemplateIdOf` / `getDeliveryBeatById` helpers. |
+| Constant | `DELIVERY_BEAT_WEIGHT` (0.1) in `deliveryBeatAdapter.ts` | Per-beat draw weight (× `BEAT_KIND_WEIGHTS.delivery`); normalises the 23-entry group to ~10% of pool draws. |
+| Director draw | `phaseAscendantBeatDirector` cadence branch (`src/engine/ascendantBeat.ts`) | Draws from `[...ASCENDANT_BEAT_POOL, ...eligibleDeliveryBeats(history.map(h=>h.beatId))]`. Base pool stays delivery-free (THR-505 tests unchanged). `forceOfferBeatById` extended to host delivery beats. |
+| Trace field | optional `templateId` on `BeatScheduledTrace` / `BeatOfferedTrace` (`src/types/trace.ts`); emitted in `offer()` | Names the wrapped branching encounter so traces (and the future resolve path) identify the divine vision's source. |
+| Debug bridge | `__DEBUG.listBeats()` adds `source: 'delivery'` + `templateId`; `beatSchedule().eligiblePool` includes eligible delivery beats (`src/debug-bridge.ts` + `.d.ts`) | Honest snapshot of the merged draw set. |
+| CLI control | `beat` command in `scripts/cli.ts` (`status` / `list [delivery]` / `fire <beatId>`) | Headless equivalent of `__DEBUG.fireBeat`; `beat fire` prints the offered beat's source `templateId` + traces (the Done-when demonstration). |
+| Tests | `src/engine/__tests__/deliveryBeatAdapter.test.ts` | 9: mapping, id round-trip, eligibility dedup, merged-pool reachability, force-offer trace carries source `templateId`. |
+| Deferred | offer→enter→resolve path (THR-514); draw-time identity bias + per-beat eligibility predicates (THR-516) | Until THR-514, delivery beats fire via force-offer (CLI/`__DEBUG`); the merged-pool wiring means they fire naturally once resolution lands. |
+
+---
+
 ## Home Seat / Throne (THR-502)
 
 The ascendant's seat of power — a location flagged on the god that yields a higher-yield place-of-power essence term and a hex signifier. The *setting* of the seat in normal play is the spine beat's job (#5); this is the field, income, signifier, and a debug/CLI setter.
