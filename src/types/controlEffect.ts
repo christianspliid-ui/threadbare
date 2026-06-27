@@ -19,6 +19,7 @@
 import type { SphereName } from './index';
 import type { ReachDomain } from './traits';
 import type { GraphOp } from './graphOp';
+import type { CoLocatedThreadAuraSpec } from './ascendantPrimitives';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -101,6 +102,20 @@ export interface ControlSpec {
   /** Per-tick graph operations applied while active (node property changes). */
   readonly perTickGraphOps?: readonly GraphOp[];
 
+  /**
+   * Per-tick co-located thread auras (THR-509 `co_located_thread_aura`).
+   * Each spec mutates every threaded agent co-located with `targetNodeId`.
+   * First consumer: consecrate's faith-spread. Undefined = no aura.
+   */
+  readonly perTickThreadAuras?: readonly CoLocatedThreadAuraSpec[];
+
+  /**
+   * Relic-upkeep substitute (THR-509 `relic_upkeep_substitute`). When set, the
+   * effect's `perTickCost` is waived for as long as this artifact node exists;
+   * if the artifact is destroyed, the effect lapses (`upkeep_relic_destroyed`).
+   */
+  readonly upkeepArtifactId?: string;
+
   /** Prerequisites for rivals to contest this effect. */
   readonly contestPrerequisites?: {
     readonly usurp?: ActorPrerequisites;
@@ -124,7 +139,9 @@ export type LapseReason =
   | 'threshold_failed'
   | 'usurped'
   | 'destroyed'
-  | 'voluntarily_released';
+  | 'voluntarily_released'
+  // THR-509: a relic_upkeep_substitute effect's sustaining artifact was destroyed
+  | 'upkeep_relic_destroyed';
 
 // ─── ControlEffect ────────────────────────────────────────────────────────────
 
@@ -155,6 +172,10 @@ export interface ControlEffect {
   // ── Ongoing effects ──
   readonly perTickMutations: readonly HexMutationSpec[];
   readonly perTickGraphOps: readonly GraphOp[];
+  /** Per-tick co-located thread auras (THR-509). Undefined = none. */
+  readonly perTickThreadAuras?: readonly CoLocatedThreadAuraSpec[];
+  /** Sustaining relic that waives `perTickCost` while it exists (THR-509). */
+  readonly upkeepArtifactId?: string;
 
   // ── State ──
   readonly active: boolean;

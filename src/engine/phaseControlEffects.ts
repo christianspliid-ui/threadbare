@@ -36,6 +36,7 @@ import type { SphereName } from '../types/index';
 import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { CONTROL_PRESSURE_PER_TICK } from '../types/sphereAffinity';
 import { emitTrace } from './traceBuffer';
+import { getUpkeepStatus, applyCoLocatedThreadAura } from './ascendantPrimitives';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -181,25 +182,64 @@ export function phaseControlEffects(state: GameState): Partial<GameState> {
       }
     }
 
+    // ─── Step 3a': Relic-upkeep substitute (THR-509) ───
+    // A sustaining relic waives per-tick cost while it exists; if the relic was
+    // destroyed, the effect lapses (no charge, like a threshold failure).
+    const upkeepStatus = getUpkeepStatus(effect, state.graph);
+    if (upkeepStatus === 'relic_lost') {
+      updatedEffects.push({
+        ...effect,
+        active: false,
+        lapseReason: 'upkeep_relic_destroyed',
+      });
+
+      emitTrace({
+        tick: state.tick,
+        category: 'control_effect',
+        type: 'control_effect_lapsed',
+        summary: `Control effect ${effect.templateId} lapsed: upkeep relic destroyed`,
+        effectId: effect.effectId,
+        templateId: effect.templateId,
+        targetHex: { col: effect.targetHexCol, row: effect.targetHexRow },
+        lapseReason: 'upkeep_relic_destroyed' as LapseReason,
+        totalTicksActive: effect.ticksActive,
+        totalEssenceDrained: effect.perTickCost,
+      } as any);
+
+      newEvents.push({
+        id: nextEventId(state.tick),
+        tick: state.tick,
+        type: 'control_effect_lapsed',
+        message: effect.narrativeTemplates.lapsed,
+        significance: 0.7,
+        hexCoords: { col: effect.targetHexCol, row: effect.targetHexRow },
+      });
+
+      continue;
+    }
+    const upkeepWaived = upkeepStatus === 'waived';
+
     // ─── Step 3b: Essence payment ───
     let canPay = true;
     const drained: Partial<Record<SphereName, number>> = {};
 
-    for (const [sphere, cost] of Object.entries(effect.perTickCost)) {
-      const s = sphere as SphereName;
-      const amount = cost as number;
-      if (amount <= 0) continue;
+    if (!upkeepWaived) {
+      for (const [sphere, cost] of Object.entries(effect.perTickCost)) {
+        const s = sphere as SphereName;
+        const amount = cost as number;
+        if (amount <= 0) continue;
 
-      if ((pool[s] ?? 0) >= amount) {
-        pool[s] = (pool[s] ?? 0) - amount;
-        drained[s] = amount;
-      } else {
-        canPay = false;
-        // Refund any already-debited spheres this tick
-        for (const [refundSphere, refundAmount] of Object.entries(drained)) {
-          pool[refundSphere as SphereName] = (pool[refundSphere as SphereName] ?? 0) + (refundAmount as number);
+        if ((pool[s] ?? 0) >= amount) {
+          pool[s] = (pool[s] ?? 0) - amount;
+          drained[s] = amount;
+        } else {
+          canPay = false;
+          // Refund any already-debited spheres this tick
+          for (const [refundSphere, refundAmount] of Object.entries(drained)) {
+            pool[refundSphere as SphereName] = (pool[refundSphere as SphereName] ?? 0) + (refundAmount as number);
+          }
+          break;
         }
-        break;
       }
     }
 
@@ -232,6 +272,15 @@ export function phaseControlEffects(state: GameState): Partial<GameState> {
         tick: state.tick,
         emitTrace: true,
       });
+    }
+
+    // ─── Step 3d': Apply per-tick co-located thread auras (THR-509) ───
+    // Faith-spread and kin: advance every threaded agent co-located with the
+    // effect's target node. No-op when the effect has no specific target node.
+    if (effect.perTickThreadAuras && effect.perTickThreadAuras.length > 0 && effect.targetNodeId) {
+      for (const aura of effect.perTickThreadAuras) {
+        applyCoLocatedThreadAura(state.graph, effect.targetNodeId, effect.ownerId, aura, state.tick);
+      }
     }
 
     // ─── Step 3e: Credit per-tick income ───

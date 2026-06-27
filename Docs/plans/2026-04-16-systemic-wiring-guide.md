@@ -850,6 +850,32 @@ Hands the **player** a new action card as the aftermath of a resolved beat (or a
 
 Starter actions (`STARTER_ACTION_IDS` / `starter: true`) are always available and do not need unlocking. Use `unlock_action` for the *unlockable-generic* and *reach-gated* buckets — the cards a beat or selection grants over the course of a run.
 
+#### Ascendant action primitives — the per-graph investment toolkit (THR-509)
+
+Four reusable building blocks live in `src/engine/ascendantPrimitives.ts`. They exist so the early *expression cards* (imbue / consecrate / bestow / anoint — THR-508) and future ascendant verbs are cheap to author: the verb is universal, the magic it produces is flavored by the ascendant's domain + sphere. **Reach for these instead of hardcoding card-specific effect logic.** All four are pure, unit-tested in isolation, fail-soft (unknown node/sphere/artifact → no-op + warn), and emit an `ascendant_primitive` trace.
+
+| Primitive | Helper | What it does |
+|-----------|--------|-------------|
+| `relic_upkeep_substitute` | `getUpkeepStatus(effect, graph)` | A sustained `ControlEffect` whose `perTickCost` is **waived** while a designated artifact exists. Set `ControlEffect.upkeepArtifactId` at mint time (point it at a `lossCondition:'permanent'` artifact). `phaseControlEffects` waives the cost each tick while the relic lives, and lapses the effect (`upkeep_relic_destroyed`) if the relic is destroyed. *Use it for:* "pay a high one-time cost to mint a relic that sustains a consecration with zero ongoing upkeep." |
+| `co_located_thread_aura` | `applyCoLocatedThreadAura(graph, locationId, ascendantId, spec, tick)` | A **location-scoped per-tick** mutation: for every threaded agent co-located with `locationId` (and, by default, its contained sublocations), add `spec.magnitude` to a thread-edge field (default `ticksAtCurrentTier`, which drives tier promotion). Carry it on `ControlEffect.perTickThreadAuras` and the control phase applies it every tick. *First consumer:* consecrate's faith-spread (`+CONSECRATE_DEVOTION_PER_TICK`). |
+| `chosen_status_grant` | `applyChosenStatusGrant(graph, nodeId, domain, byAscendantId, tick)` | Flags a node `chosen` (writes `node.properties.chosen`) and records a power picked from the `(nodeType × ascendant domain)` `CHOSEN_POWER_TABLE`. *First consumer:* anoint (faction — faction nodes are `actor` type). Re-granting overwrites (latest patron wins) and reports `alreadyChosen`. Extend `CHOSEN_POWER_TABLE` as you author new chosen powers. |
+| `sphere_flavored_effect` | `pickSphereFlavoredEffect(sphere, rng, tick?)` | Given a sphere, picks a concrete `AttachmentEffect` from `SPHERE_EFFECT_TABLE` via an **injected seeded PRNG** (`mulberry32(seed)` from `src/lib/prng.ts`) so one verb yields domain-appropriate magic. *First consumer:* imbue. Extend `SPHERE_EFFECT_TABLE` to widen the flavor pool. |
+
+```typescript
+// Consecrate: a sustained site that spreads faith, optionally relic-backed.
+const consecration: ControlSpec = {
+  perTickCost: { spirit: CONSECRATE_PERTICK },        // waived if upkeepArtifactId is set
+  perTickThreadAuras: [{ magnitude: CONSECRATE_DEVOTION_PER_TICK }], // faith-spread
+  // ...narrativeTemplates etc.
+};
+// Imbue: domain-appropriate magic for the ascendant's sphere.
+const effect = pickSphereFlavoredEffect(ascendantPrimarySphere, mulberry32(seed));
+// Anoint: make a threaded faction chosen.
+applyChosenStatusGrant(graph, factionId, ascendantPrimaryReach, ascendantId, tick);
+```
+
+Tuning constants: `CONSECRATE_DEVOTION_PER_TICK`, `SPHERE_FLAVOR_PASSIVE_VALUE` (and the lookup tables themselves) are the authoring surface — change the number/table entry, not the logic.
+
 #### The `{cause:*}` prose placeholders
 
 If a seeded encounter carries a `sourceEncounterId`, prose can reference the causing encounter:

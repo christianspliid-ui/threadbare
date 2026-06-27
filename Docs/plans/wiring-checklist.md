@@ -118,6 +118,24 @@ Foundation for *Ascendant Beats* — encounters addressed to the player-god. The
 
 ---
 
+## Ascendant Action Primitives (THR-509)
+
+Four reusable building blocks the expression cards (THR-508) and future ascendant verbs sit on — built *before* the cards so they are cheap to author. The verb is universal; the magic is flavored by the ascendant's domain + sphere. All pure, fail-soft, traced (`ascendant_primitive`).
+
+| Surface | Path | Notes |
+|---|---|---|
+| Resolvers | `src/engine/ascendantPrimitives.ts` | `getUpkeepStatus` (relic_upkeep_substitute), `applyCoLocatedThreadAura` (co_located_thread_aura), `applyChosenStatusGrant` + `CHOSEN_POWER_TABLE` (chosen_status_grant), `pickSphereFlavoredEffect` + `SPHERE_EFFECT_TABLE` (sphere_flavored_effect). Re-exports `CoLocatedThreadAuraSpec`, `CO_LOCATED_AURA_DEFAULT_FIELD`, `CONSECRATE_DEVOTION_PER_TICK`. |
+| Spec types | `src/types/ascendantPrimitives.ts` | `CoLocatedThreadAuraSpec`; constants `CO_LOCATED_AURA_DEFAULT_FIELD`, `CONSECRATE_DEVOTION_PER_TICK` (kept in the types module to avoid an engine→types cycle from controlEffect.ts). |
+| Control-effect fields | `src/types/controlEffect.ts` | Additive: `ControlSpec`/`ControlEffect` gain `upkeepArtifactId?` + `perTickThreadAuras?`; `LapseReason` gains `'upkeep_relic_destroyed'`. |
+| Phase wiring | `src/engine/phaseControlEffects.ts` | Per tick: waive `perTickCost` while the upkeep relic exists; lapse (`upkeep_relic_destroyed`) when it's gone; apply each `perTickThreadAuras` spec against `targetNodeId`. |
+| Constants | `src/engine/ascendantPrimitives.ts` + `src/types/ascendantPrimitives.ts` | `CONSECRATE_DEVOTION_PER_TICK`, `SPHERE_FLAVOR_PASSIVE_VALUE`; lookup tables `CHOSEN_POWER_TABLE`, `SPHERE_EFFECT_TABLE` are the authoring surface. |
+| Trace category | `ascendant_primitive` (loose, via `as never`, like `control_effect`) | Each resolver emits one trace incl. fail-soft markers. |
+| Tests | `src/engine/__tests__/ascendantPrimitives.test.ts` | 18 tests: each primitive in isolation + faith-spread→tier-promotion integration + relic waive/lapse through `phaseControlEffects`. |
+| Content-facing docs | `Docs/plans/2026-04-16-systemic-wiring-guide.md` | New subsection under THR-500 documenting all four primitives for content authors. |
+| Deferred (THR-508) | Card authoring | The imbue/consecrate/bestow/anoint cards that consume these primitives + any thin aftermath `kind` wrappers — not in this foundation. |
+
+---
+
 ## Gameplay KPI Harness (THR-457)
 
 Pure telemetry layer: KPI report + eligibility funnel counters + debug surfaces.
