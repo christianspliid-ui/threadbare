@@ -169,6 +169,13 @@ const WHEEL_LAYOUT: SlotDefinition[] = [
 /**
  * Get the list of wheel slots available to the player for a given agent.
  *
+ * @deprecated THR-501 — the tier-based intervention wheel is retired. The agent action
+ * hand no longer calls this; its interventions come from the unified `divine.*` templates
+ * (`AGENT_INTERVENTION_TEMPLATES`) via `getTargetActionSlots`, which is unlock-gated and
+ * context-filtered like every other action surface. This radial wheel had no unlock concept
+ * and is on the rejected-approaches list ("AgentWheel replaced by ActionDrawer"). Retained
+ * only for `wheel.test.ts`; remove once the test is migrated. Do not wire this into new UI.
+ *
  * Availability is determined by:
  * 1. Center is always available
  * 2. Scry is available if tier >= 1 (free, no essence cost)
@@ -180,9 +187,6 @@ const WHEEL_LAYOUT: SlotDefinition[] = [
  *
  * @param params - { tier, pool, primarySphere, avatarPos?, targetPos? }
  * @returns Array of 10 WheelSlot objects (9 actions + 1 center)
- *
- * NOTE: Slots built via getAgentWheelSlots (legacy radial wheel) do not populate rarityTier.
- * If that path is still active, add rarityTier pass-through matching targetActions.ts:263.
  */
 export function getAgentWheelSlots(params: {
   tier: InfluenceTier;

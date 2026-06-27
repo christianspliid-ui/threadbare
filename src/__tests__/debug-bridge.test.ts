@@ -273,18 +273,20 @@ describe('debug bridge scene snapshot contract', () => {
     expect(traces[0].agentId).toBe('agent-1');
   });
 
-  it('listStarterActions returns canonical starter IDs and listLockedActions excludes starter/unlocked IDs', async () => {
+  it('listStarterActions is empty (THR-501) and listLockedActions excludes unlocked IDs', async () => {
     const debug = requireDebugBridge();
     debug._registerGameStateProvider(() => ({
       unlockedActionIds: ['divine.inspire'],
     } as unknown as import('../types/gameState').GameState));
 
+    // THR-501 retired the Starter-12 floor — STARTER_ACTION_IDS is now empty.
     const starters = await debug.listStarterActions();
-    expect(starters).toContain('divine.dream');
-    expect(starters).toContain('hex.survey');
+    expect(starters).toHaveLength(0);
 
     const locked = await debug.listLockedActions();
-    expect(locked.some((entry) => entry.id === 'divine.dream')).toBe(false);
+    // Former starters are now locked until a beat unlocks them.
+    expect(locked.some((entry) => entry.id === 'divine.dream')).toBe(true);
+    // Explicitly-unlocked IDs are still excluded from the locked list.
     expect(locked.some((entry) => entry.id === 'divine.inspire')).toBe(false);
   });
 

@@ -311,7 +311,6 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     spellName: 'Oneiric Sending',
     rarityTier: 1,
     intrinsicTier: 'background',
-    starter: true,
     description: 'Reaches into the sleeping mind of a mortal and reshapes their dreaming landscape with divine intent. Desires and motivations shift beneath the surface, nudging the sleeper toward choices the deity favors. The effect lingers as a quiet conviction long after waking.',
     reach: 'heart',
     crudType: 'update',
@@ -349,7 +348,6 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     spellName: 'Divine Compulsion',
     rarityTier: 1,
     intrinsicTier: 'background',
-    starter: true,
     description: 'Whispers an irresistible conviction into a mortal\'s soul, making the deity\'s preferred course feel like the only sensible choice. The mortal acts with sudden certainty, unaware of the divine origin of their resolve. The compulsion fades over time as natural doubt reasserts itself.',
     reach: 'heart',
     crudType: 'update',
@@ -387,7 +385,6 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     spellName: 'Veil of Falsehood',
     rarityTier: 1,
     intrinsicTier: 'background',
-    starter: true,
     description: 'Drapes a divine illusion over mortal perception, causing the target to see and believe what the deity wills rather than what is real. The deceived mortal acts on false information with absolute confidence in its truth. The veil persists until the divine will withdraws or evidence overwhelms it.',
     reach: 'shadow',
     crudType: 'update',
@@ -425,7 +422,6 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     spellName: 'Wrath Descending',
     rarityTier: 1,
     intrinsicTier: 'background',
-    starter: true,
     description: 'Presses divine force and terrible authority upon a mortal will, making resistance feel futile against a power that cannot be reasoned with. Fear runs cold through the target as the weight of the divine bears down. The intimidated mortal complies but carries resentment that may later surface.',
     reach: 'iron',
     crudType: 'update',
@@ -500,7 +496,6 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     spellName: 'Thread of Fate',
     rarityTier: 2,
     intrinsicTier: 'background',
-    starter: true,
     description: 'Arranges the threads of probability with divine precision so that events align in a way that seems like mere chance to mortal eyes. Opportunities appear at exactly the right moment, and obstacles dissolve without visible cause. The mortal never suspects the hand behind their good fortune.',
     reach: 'star',
     crudType: 'update',
@@ -2188,7 +2183,6 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     spellName: 'Land\'s Blessing',
     rarityTier: 1,
     intrinsicTier: 'background',
-    starter: true,
     description: 'Extends divine favor over an entire hex, infusing the soil with benevolent energy that encourages growth and prosperity. The land responds with increased fertility and improved conditions for those who dwell there. The blessing persists as a gentle background influence that enriches the territory.',
     reach: 'star',
     crudType: 'create',
@@ -2251,7 +2245,6 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     spellName: 'Divine Survey',
     rarityTier: 1,
     intrinsicTier: 'background',
-    starter: true,
     trayTier: 'core',
     description: 'Casts divine sight across a territory to catalogue its features, resources, inhabitants, and notable characteristics. The survey reveals both the land layer and the people layer in a single act of divine perception — terrain, resources, faction presence, and mortal mood all become legible. Partial failures still yield fragments of useful information.',
     reach: 'eye',
@@ -2980,7 +2973,6 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     spellName: 'Questing Beacon',
     rarityTier: 1,
     intrinsicTier: 'background',
-    starter: true,
     description: 'Inscribes a subtle divine mark into the earth of a ruined site that is invisible to casual observers but irresistible to curious and questing minds. Agents who pass through the area feel an unexplained pull toward investigation that overrides other priorities. The mark fades if the ground rejects the inscription before it sets.',
     reach: 'eye',
     crudType: 'create',
@@ -3075,7 +3067,6 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     spellName: 'Ruin Intuition',
     rarityTier: 1,
     intrinsicTier: 'background',
-    starter: true,
     description: 'Sends a divine hunch along a thread to an agent, nudging their instincts toward the hidden dangers and rewards of a nearby ruin site. The agent proceeds with an uncanny sense of what to avoid and where to look, as if they have been here before. The whisper is subtle enough that most mortals mistake it for their own cleverness.',
     reach: 'eye',
     crudType: 'read',
@@ -4028,7 +4019,6 @@ const REVELATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     spellName: 'Piercing Gaze',
     rarityTier: 1,
     intrinsicTier: 'background',
-    starter: true,
     description: 'Focuses divine sight upon a mortal to read the surface layer of their capabilities and current situation with clarity. A glimpse of what this individual can truly do becomes available, cutting through the ambiguity of casual observation. The gaze is quick and efficient, suited to initial assessment rather than deep understanding.',
     reach: 'eye',
     crudType: 'read',
@@ -4165,7 +4155,6 @@ export const THREAD_CREATION_TEMPLATES: UnifiedActionTemplate[] = [
     spellName: 'Place Thread',
     rarityTier: 1,
     intrinsicTier: 'background',
-    starter: true,
     description: 'Extends a thread of divine awareness to a location, binding the place\'s fate to the deity\'s attention and enabling ongoing observation and action at a distance. The thread carries information about events at the location back to the deity continuously. Without the thread, divine actions at this location remain blind to its evolving state.',
     reach: 'star',
     crudType: 'create',
@@ -4360,7 +4349,6 @@ export const THREAD_CREATION_TEMPLATES: UnifiedActionTemplate[] = [
     spellName: 'Agent Thread',
     rarityTier: 1,
     intrinsicTier: 'background',
-    starter: true,
     description: 'Reaches out to a mortal and draws a slender thread of divine attention through the veil between worlds, anchoring the agent to the deity\'s awareness. The mortal feels nothing — a faint warmth, perhaps, quickly forgotten. The thread is delicate but real, carrying the shape of their fate back to divine sight and opening the path for deeper intervention.',
     reach: 'star',
     crudType: 'create',
@@ -4533,6 +4521,22 @@ export const THREAD_MANAGEMENT_TEMPLATES: UnifiedActionTemplate[] = [
 ];
 
 // ─── Unified Template Registry ────────────────────────────────────
+
+/**
+ * Templates surfaced on the agent action hand (THR-501).
+ *
+ * The legacy tier-based intervention wheel (`engine/wheel.ts::getAgentWheelSlots`) is
+ * retired; the agent hand now draws its interventions from these unified templates via
+ * `getTargetActionSlots`, so they pass the same unlock + sphere + reach + context filters
+ * as every other action surface. Curated (not the full `UNIFIED_ACTION_TEMPLATES`) so the
+ * divine action rail does not surface mortal guild/social encounter templates: the eight
+ * divine interventions, revelation (observe), and thread-creation cards only.
+ */
+export const AGENT_INTERVENTION_TEMPLATES: UnifiedActionTemplate[] = [
+  ...DIVINE_ACTION_TEMPLATES,
+  ...REVELATION_ACTION_TEMPLATES,
+  ...THREAD_CREATION_TEMPLATES,
+];
 
 /**
  * All templates in unified format.

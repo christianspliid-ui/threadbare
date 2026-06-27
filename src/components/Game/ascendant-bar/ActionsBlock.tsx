@@ -198,8 +198,15 @@ export function ActionsBlock({ tray, onFire, onMove, onInvestiture }: ActionsBlo
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       <CoreTierGroup onMove={onMove} onInvestiture={onInvestiture} />
-      <ActionTierGroup tier="self" items={tray.self} defaultOpen={true} onFire={onFire} />
-      <ActionTierGroup tier="rare" items={tray.rare} defaultOpen={false} onFire={onFire} />
+      {/* THR-501: Self/Rare tiers are unlock-gated in selectActionTray. When a tier holds
+          no revealed actions (e.g. the turn-1 floor) its group is hidden entirely, so the
+          opening shows Core only. The group reappears once a beat unlocks an action in it. */}
+      {tray.self.length > 0 && (
+        <ActionTierGroup tier="self" items={tray.self} defaultOpen={true} onFire={onFire} />
+      )}
+      {tray.rare.length > 0 && (
+        <ActionTierGroup tier="rare" items={tray.rare} defaultOpen={false} onFire={onFire} />
+      )}
       <div style={{
         fontFamily: 'var(--font-body)', fontSize: 11, fontStyle: 'italic',
         color: 'var(--text-muted)', lineHeight: 1.4,

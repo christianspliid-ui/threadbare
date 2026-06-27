@@ -1,23 +1,20 @@
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
 
-/** Always-available baseline size (THR-419). */
-export const STARTER_ACTION_COUNT = 12;
+/**
+ * Always-available baseline size.
+ *
+ * THR-501 — Turn-1 floor reduced to the two generic Core verbs (Move + Investiture),
+ * which are hardcoded on the AscendantBar Core tier and therefore never live in this
+ * action-template floor. The starter-template floor is now empty: every other capability
+ * (the former Starter 12 — divine interventions, hex verbs, thread binding, observe) is
+ * delivered as an earned story moment via Ascendant Beats (`unlock_action`), not surfaced
+ * on the opening screen. The `isStarterActionId` mechanism is retained for a future
+ * data-driven floor; today it matches nothing.
+ */
+export const STARTER_ACTION_COUNT = 0;
 
-/** Canonical Starter 12 action IDs. */
-export const STARTER_ACTION_IDS: readonly string[] = [
-  'bind_thread_agent',
-  'bind_thread_location',
-  'hex.survey',
-  'observe_agent',
-  'hex.whisper_intuition',
-  'divine.dream',
-  'divine.persuade',
-  'divine.deceive',
-  'divine.intimidate',
-  'divine.coincidence',
-  'hex.bless_land',
-  'hex.mark_ground',
-] as const;
+/** Canonical starter action IDs. Empty since THR-501 (see STARTER_ACTION_COUNT). */
+export const STARTER_ACTION_IDS: readonly string[] = [] as const;
 
 const STARTER_ID_SET: ReadonlySet<string> = new Set(STARTER_ACTION_IDS);
 
