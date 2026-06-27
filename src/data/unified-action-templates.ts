@@ -144,6 +144,7 @@ import {
   KINDLE_CALLING_ESSENCE_COST,
 } from './faction-action-constants';
 import { SCHISM_ESSENCE_COST } from './game-config';
+import { IMBUE_ESSENCE_COST } from './ascendant-expression-constants';
 import { RIVAL_SHRINE_BETRAYAL_TEMPLATE } from './encounters/rival-shrine-betrayal';
 import { WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE } from './encounters/wandering-healer-shrine-access';
 import { FLAWED_STEEL_TEMPLATE } from './encounters/flawed-steel';
@@ -1917,6 +1918,50 @@ export const LOCATION_ACTION_POST_EFFECT_TEMPLATE_IDS = new Set<string>([
 // targetCategories: ['artifact'] or ['artifact_legendary'].
 
 const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
+  // ─── THR-508: Imbue — early expression card (unlockable-generic) ─────────────
+  // A generic divine verb unlocked early via Ascendant Beats. The verb is
+  // universal; the power it produces is flavored by the ascendant's PRIMARY
+  // SPHERE (two-domain lock, THR-503). On success an `imbue_item` GraphOp is
+  // intercepted in unifiedActionResolution.ts and dispatched to applyImbueItem,
+  // which appends a sphere-flavored passive effect to the artifact's `effects`.
+  // That effect is read by collectAttachmentEffects for whichever agent holds
+  // the artifact — so the imbued power genuinely applies, no new consumer.
+  {
+    id: 'action.imbue',
+    name: 'Imbue',
+    spellName: 'Breath of the Sphere',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description:
+      'You press a fragment of your own nature into the object until it holds. ' +
+      'The artifact wakes with a power shaped by your dominant sphere — and whoever ' +
+      'carries it carries a sliver of you, whether they know it or not.',
+    reach: 'star',
+    trayTier: 'core',
+    crudType: 'update',
+    scale: 'local',
+    steps: [{
+      reach: 'star',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [{
+        op: 'imbue_item',
+        nodeId: '$target',
+      }],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: IMBUE_ESSENCE_COST,
+    actorAffinities: ['ascendant'],
+    targetCategories: ['artifact', 'artifact_legendary'],
+    motivations: ['loyalty_ambition', 'tradition_novelty'],
+    narrativeTemplates: {
+      initiation: 'presses a sliver of divine nature into this artifact',
+      success: 'the artifact wakes — a power shaped by your sphere now lives in it',
+      failure: 'the breath dissipates; the object will not take the imprint',
+    },
+  },
   {
     id: 'artifact.enchant',
     name: 'Enchant',

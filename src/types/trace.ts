@@ -252,7 +252,9 @@ export type TraceCategory =
   | 'ascendant.beat.offered'
   | 'ascendant.beat.skipped'
   | 'ascendant.beat.resolved'
-  | 'action.unlock.granted';
+  | 'action.unlock.granted'
+  // Ascendant expression cards (THR-508)
+  | 'ascendant_expression';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -473,6 +475,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'ascendant.beat.skipped',
   'ascendant.beat.resolved',
   'action.unlock.granted',
+  // Ascendant expression cards (THR-508)
+  'ascendant_expression',
 ];
 
 /** Base shape for all trace entries */

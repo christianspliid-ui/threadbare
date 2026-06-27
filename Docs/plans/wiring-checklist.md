@@ -164,7 +164,25 @@ Four reusable building blocks the expression cards (THR-508) and future ascendan
 | Trace category | `ascendant_primitive` (loose, via `as never`, like `control_effect`) | Each resolver emits one trace incl. fail-soft markers. |
 | Tests | `src/engine/__tests__/ascendantPrimitives.test.ts` | 18 tests: each primitive in isolation + faith-spread→tier-promotion integration + relic waive/lapse through `phaseControlEffects`. |
 | Content-facing docs | `Docs/plans/2026-04-16-systemic-wiring-guide.md` | New subsection under THR-500 documenting all four primitives for content authors. |
-| Deferred (THR-508) | Card authoring | The imbue/consecrate/bestow/anoint cards that consume these primitives + any thin aftermath `kind` wrappers — not in this foundation. |
+| First card consumer | THR-508 (`imbue`) | The imbue card ships against `sphere_flavored_effect`; see the Ascendant Expression Cards section below. consecrate/bestow/anoint split → THR-511/512/513. |
+
+---
+
+## Ascendant Expression Cards (THR-508)
+
+The `imbue` expression card — the one §4.4 verb that composes the THR-509 primitives end-to-end with zero new consumer wiring. The other three verbs (consecrate/bestow/anoint) split to THR-511/512/513 (each needs a new consumer subsystem).
+
+| Surface | Path | Notes |
+|---|---|---|
+| GraphOp verb | `src/types/graphOp.ts` | New `'imbue_item'` `GraphOpType`. |
+| Dispatch | `src/engine/unifiedActionResolution.ts` | `imbue_item` filtered out of the `executeGraphOps` batch in `executeStepResult` and dispatched to `applyImbueItem` with a locally-derived seeded `mulberry32` PRNG (sibling block to `anoint_successor` / `faction_verb` / `plant_schism`). |
+| Resolver | `src/engine/ascendantExpression.ts` | `applyImbueItem(graph, ascendantId, artifactId, rng, tick)` + `getAscendantPrimarySphere`. Reads the ascendant's primary sphere → `pickSphereFlavoredEffect` (THR-509) → appends the effect to the artifact's `properties.effects`. Fail-soft + traced. |
+| Consumer (proof of wiring) | `src/engine/effects/effectWalker.ts` | `collectAttachmentEffects` reads `properties.effects` off `possesses`-edge artifacts → the imbued power applies to the holder. Asserted by an integration test. |
+| Template | `src/data/unified-action-templates.ts` | `action.imbue` in `ATTACHMENT_ACTION_TEMPLATES` (`targetCategories:['artifact','artifact_legendary']`, `onSuccess:[{op:'imbue_item',nodeId:'$target'}]`). Hidden until unlocked (no `starter`). |
+| Constant | `src/data/ascendant-expression-constants.ts` | `IMBUE_ESSENCE_COST` (4). |
+| Trace category | `src/types/trace.ts` | `'ascendant_expression'` registered in the `TraceCategory` union + `TRACE_CATEGORIES` array (properly registered, unlike THR-509's loose `ascendant_primitive`). |
+| Tests | `src/engine/__tests__/ascendantExpression.test.ts` | 10 tests: sphere-match, append-not-replace, determinism, 3 fail-soft cases, effect-walker integration. |
+| Content-facing docs | `Docs/plans/2026-04-16-systemic-wiring-guide.md` | "Authoring an ascendant verb card (the imbue pattern)" subsection under the THR-509 primitives. |
 
 ---
 

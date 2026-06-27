@@ -44,6 +44,7 @@ import { executeGraphOps } from './graphOpExecutor';
 import { applyFactionGovernanceVerb } from './factionGovernanceVerbs';
 import { applyPlantSchism } from './schismPlant';
 import { applyAnointSuccessor } from './anointSuccessor';
+import { applyImbueItem } from './ascendantExpression';
 import { SCHISM_PENDING_DURATION_TICKS } from '../data/game-config';
 import { emitTrace } from './traceBuffer';
 import {
@@ -1073,11 +1074,13 @@ export function executeStepResult(
     const factionVerbOps: GraphOp[] = [];
     const plantSchismOps: GraphOp[] = [];
     const anointSuccessorOps: GraphOp[] = [];
+    const imbueItemOps: GraphOp[] = [];
     const graphOnlyOps: GraphOp[] = [];
     for (const op of ops) {
       if (op.op === 'faction_verb') factionVerbOps.push(op);
       else if (op.op === 'plant_schism') plantSchismOps.push(op);
       else if (op.op === 'anoint_successor') anointSuccessorOps.push(op);
+      else if (op.op === 'imbue_item') imbueItemOps.push(op);
       else graphOnlyOps.push(op);
     }
 
@@ -1122,6 +1125,26 @@ export function executeStepResult(
       for (let i = 0; i < anointSuccessorOps.length; i++) {
         try {
           applyAnointSuccessor(state, targetAgentId, state.ascendantId);
+        } catch {
+          // Fail-soft per NFP #4: log nothing, never crash the tick.
+        }
+      }
+    }
+
+    if (imbueItemOps.length > 0) {
+      // THR-508 — Imbue targets an artifact; the helper reads the ascendant's
+      // primary sphere, picks a sphere-flavored effect (seeded PRNG), and
+      // appends it to the artifact's `effects`. The acting ascendant is the
+      // player-god (action.actorId). A locally-derived seeded PRNG keeps the
+      // pick deterministic without disturbing the resolution rng stream.
+      const imbueRng = mulberry32(
+        state.seed + tick * 53 + hashString(action.actorId) + hashString(action.targetId),
+      );
+      for (const op of imbueItemOps) {
+        const artifactId = op.nodeId ? op.nodeId : action.targetId;
+        const resolvedArtifactId = artifactId === '$target' ? action.targetId : artifactId;
+        try {
+          applyImbueItem(state.graph, action.actorId, resolvedArtifactId, imbueRng, tick);
         } catch {
           // Fail-soft per NFP #4: log nothing, never crash the tick.
         }

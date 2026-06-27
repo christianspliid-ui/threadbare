@@ -862,6 +862,13 @@ Four reusable building blocks live in `src/engine/ascendantPrimitives.ts`. They 
 | `chosen_status_grant` | `applyChosenStatusGrant(graph, nodeId, domain, byAscendantId, tick)` | Flags a node `chosen` (writes `node.properties.chosen`) and records a power picked from the `(nodeType × ascendant domain)` `CHOSEN_POWER_TABLE`. *First consumer:* anoint (faction — faction nodes are `actor` type). Re-granting overwrites (latest patron wins) and reports `alreadyChosen`. Extend `CHOSEN_POWER_TABLE` as you author new chosen powers. |
 | `sphere_flavored_effect` | `pickSphereFlavoredEffect(sphere, rng, tick?)` | Given a sphere, picks a concrete `AttachmentEffect` from `SPHERE_EFFECT_TABLE` via an **injected seeded PRNG** (`mulberry32(seed)` from `src/lib/prng.ts`) so one verb yields domain-appropriate magic. *First consumer:* imbue. Extend `SPHERE_EFFECT_TABLE` to widen the flavor pool. |
 
+**Authoring an ascendant verb card (the imbue pattern, THR-508).** `imbue` is the first shipped expression card and the reference for the rest. To add an ascendant verb whose effect needs the ascendant's sphere/reach + a graph mutation:
+
+1. Add a custom `GraphOpType` (e.g. `'imbue_item'`) in `src/types/graphOp.ts`.
+2. Intercept it in `unifiedActionResolution.ts`'s `executeStepResult` — filter it out of the `executeGraphOps` batch and dispatch to your engine helper (sibling block to `anoint_successor` / `faction_verb`). This is where you have `state`, `tick`, and a seeded `rng` in scope, which the plain `graphOpExecutor` does not.
+3. Put the helper in `src/engine/ascendantExpression.ts`. Read the ascendant's sphere via `getAscendantPrimarySphere` (or reach affinities via `getAscendantDomainAffinities`, THR-503), call the relevant THR-509 primitive, mutate the graph, emit an `ascendant_expression` trace. Fail-soft (no-op + trace) on missing/wrong-type targets — never throw.
+4. Author the `UnifiedActionTemplate` with `onSuccess: [{ op: 'imbue_item', nodeId: '$target' }]` and the right `targetCategories`. **Verify the mutation is actually read** by a consumer (imbue appends to an artifact's `properties.effects`, which `collectAttachmentEffects` reads off `possesses`-edge artifacts) — granting an effect nothing reads is dead content.
+
 ```typescript
 // Consecrate: a sustained site that spreads faith, optionally relic-backed.
 const consecration: ControlSpec = {
