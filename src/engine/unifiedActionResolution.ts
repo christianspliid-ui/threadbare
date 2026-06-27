@@ -44,7 +44,7 @@ import { executeGraphOps } from './graphOpExecutor';
 import { applyFactionGovernanceVerb } from './factionGovernanceVerbs';
 import { applyPlantSchism } from './schismPlant';
 import { applyAnointSuccessor } from './anointSuccessor';
-import { applyImbueItem } from './ascendantExpression';
+import { applyImbueItem, applyBestowPower } from './ascendantExpression';
 import { SCHISM_PENDING_DURATION_TICKS } from '../data/game-config';
 import { emitTrace } from './traceBuffer';
 import {
@@ -1075,12 +1075,14 @@ export function executeStepResult(
     const plantSchismOps: GraphOp[] = [];
     const anointSuccessorOps: GraphOp[] = [];
     const imbueItemOps: GraphOp[] = [];
+    const bestowPowerOps: GraphOp[] = [];
     const graphOnlyOps: GraphOp[] = [];
     for (const op of ops) {
       if (op.op === 'faction_verb') factionVerbOps.push(op);
       else if (op.op === 'plant_schism') plantSchismOps.push(op);
       else if (op.op === 'anoint_successor') anointSuccessorOps.push(op);
       else if (op.op === 'imbue_item') imbueItemOps.push(op);
+      else if (op.op === 'bestow_power') bestowPowerOps.push(op);
       else graphOnlyOps.push(op);
     }
 
@@ -1145,6 +1147,23 @@ export function executeStepResult(
         const resolvedArtifactId = artifactId === '$target' ? action.targetId : artifactId;
         try {
           applyImbueItem(state.graph, action.actorId, resolvedArtifactId, imbueRng, tick);
+        } catch {
+          // Fail-soft per NFP #4: log nothing, never crash the tick.
+        }
+      }
+    }
+
+    if (bestowPowerOps.length > 0) {
+      // THR-512 — Bestow targets a threaded agent; the helper gates on the
+      // thread's awareness, reads the ascendant's primary reach, and mints a
+      // "divine gift" artifact (reach bonus + per-tick quintessence regen) the
+      // agent possesses. Deterministic — no PRNG. The acting ascendant is the
+      // player-god (action.actorId).
+      for (const op of bestowPowerOps) {
+        const agentRef = op.nodeId ? op.nodeId : action.targetId;
+        const resolvedAgentId = agentRef === '$target' ? action.targetId : agentRef;
+        try {
+          applyBestowPower(state.graph, action.actorId, resolvedAgentId, tick);
         } catch {
           // Fail-soft per NFP #4: log nothing, never crash the tick.
         }

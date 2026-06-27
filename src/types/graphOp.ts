@@ -80,7 +80,8 @@ export type GraphOpType =
   | 'faction_verb'    // THR-400/433: dispatch a faction governance verb (stir_dissent, whisper_leader, recover_doctrine, surface_doubter, kindle_a_calling)
   | 'plant_schism'    // THR-430: mark a faction as having a pending schism resolution
   | 'anoint_successor' // THR-432: anoint the target agent as their faction's next heir (creates will_succeed edge)
-  | 'imbue_item';     // THR-508: append a sphere-flavored power to a target artifact node
+  | 'imbue_item'     // THR-508: append a sphere-flavored power to a target artifact node
+  | 'bestow_power';  // THR-512: grant a threaded agent a divine-gift artifact (reach bonus + quintessence regen)
 
 /**
  * Payload for the apply_influence GraphOp.

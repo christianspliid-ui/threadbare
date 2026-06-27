@@ -902,6 +902,13 @@ The location-target path is the only way to anchor a sustained control on a node
 
 Tuning constants: `CONSECRATE_ESTABLISH_COST` / `CONSECRATE_PERTICK` (`ascendant-expression-constants.ts`), `CONSECRATE_DEVOTION_PER_TICK`, `SPHERE_FLAVOR_PASSIVE_VALUE` (and the lookup tables themselves) are the authoring surface — change the number/table entry, not the logic.
 
+**Authoring an agent-targeting expression card that grants persistent boons (the bestow pattern, THR-512).** `bestow` follows the imbue GraphOp-intercept shape (custom `'bestow_power'` op → `unifiedActionResolution.ts` dispatch → `applyBestowPower` in `ascendantExpression.ts`), but its "no new consumer" trick is different: instead of mutating an existing node, it **mints a "divine gift" artifact and binds it to the agent with a `possesses` edge**, then leans on *two* effect walkers that already ship to read the gift's `properties.effects`:
+
+1. A `passive` reach bonus (in the ascendant's primary reach via `getAscendantPrimaryReach`) — summed by `collectAttachmentEffects` / `effectResolver` into the holder's reach modifiers.
+2. A per-tick `resource_manipulate` (resource `'quintessence'`, `mode: 'per_tick'`) — applied each tick by `tickEffects`/`tickResourceManipulate` (`effectTick.ts`), **clamped to the holder's `quintessenceMax`** so a regen boon never overfills. This is the resolved semantic for "generate quintessence over time": a regen-rate boost, not an accumulator.
+
+The card gates on the **thread edge's `awareness`** (`unaware < intuition < faith < communion`), not a node property: read the `thread` edge (`graph.getOutgoingEdges(ascendantId, 'thread').find(e => e.target === agentId)`) and no-op fail-soft when `awareness < BESTOW_MIN_AWARENESS` (`'faith'`). The lesson: **to grant a living agent a persistent effect, mint a possessed artifact carrying `AttachmentEffect`s — the `possesses`/`bonded_to`/`has_trait` walkers in `effectResolver` and `effectTick` already apply them, so there is no agent-side ability store to build.** Tuning: `BESTOW_COST` / `BESTOW_REACH_BONUS` / `BESTOW_QUINTESSENCE_REGEN` / `BESTOW_MIN_AWARENESS` (`ascendant-expression-constants.ts`).
+
 #### Home seat (throne) — `homeSeatLocationId` + `ESSENCE_PER_SEAT` (THR-502)
 
 The ascendant's **home seat** is a location flagged on the god that yields a higher-yield place-of-power essence term and a hex signifier. **To make a location the seat, call `setHomeSeat(graph, ascendantId, locationRef?)` (`src/engine/influence.ts`)** — don't hand-write `homeSeatLocationId` + a `controls` edge. It sets `AscendantProperties.homeSeatLocationId`, ensures a `controls` edge (ascendant → location), and is what the scripted spine beat (#5) and the `__DEBUG.setHomeSeat()` bridge both use.

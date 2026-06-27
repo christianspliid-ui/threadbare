@@ -144,7 +144,7 @@ import {
   KINDLE_CALLING_ESSENCE_COST,
 } from './faction-action-constants';
 import { SCHISM_ESSENCE_COST } from './game-config';
-import { IMBUE_ESSENCE_COST, CONSECRATE_ESTABLISH_COST, CONSECRATE_PERTICK } from './ascendant-expression-constants';
+import { IMBUE_ESSENCE_COST, CONSECRATE_ESTABLISH_COST, CONSECRATE_PERTICK, BESTOW_COST } from './ascendant-expression-constants';
 import { CONSECRATE_DEVOTION_PER_TICK } from '../types/ascendantPrimitives';
 import { RIVAL_SHRINE_BETRAYAL_TEMPLATE } from './encounters/rival-shrine-betrayal';
 import { WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE } from './encounters/wandering-healer-shrine-access';
@@ -2018,6 +2018,51 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       initiation: 'consecrates this holy place, sinking divine presence into its foundations',
       success: 'the ground is hallowed — a font of devotion now spreads your design to the faithful',
       failure: 'the consecration will not hold; the site resists your presence',
+    },
+  },
+  // ─── THR-512: Bestow Power — early expression card (unlockable-generic) ───────
+  // A generic divine verb (one per graph type: this one for agents). On success a
+  // `bestow_power` GraphOp is intercepted in unifiedActionResolution.ts and
+  // dispatched to applyBestowPower, which — gated on the thread's awareness (≥
+  // faith) — mints a "divine gift" artifact the agent possesses, carrying a
+  // passive reach bonus in the ascendant's PRIMARY DOMAIN (two-domain lock,
+  // THR-503) plus a per-tick quintessence regen. Both effects are read by the
+  // existing effect walkers (effectResolver / effectTick) for the holder — so the
+  // gift genuinely applies, no new consumer subsystem.
+  {
+    id: 'action.bestow',
+    name: 'Bestow Power',
+    spellName: 'Gift of the Divine',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description:
+      'You reach into a soul that already knows your touch and leave a portion of your ' +
+      'strength behind. The mortal wakes changed — quicker in your chosen art, and quietly ' +
+      'replenished by a wellspring that is, in truth, a sliver of you.',
+    reach: 'star',
+    trayTier: 'core',
+    crudType: 'update',
+    scale: 'personal',
+    steps: [{
+      reach: 'star',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [{
+        op: 'bestow_power',
+        nodeId: '$target',
+      }],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: BESTOW_COST,
+    actorAffinities: ['ascendant'],
+    targetCategories: ['agent'] as unknown as readonly import('../types/targetContext').TargetCategory[],
+    motivations: ['loyalty_ambition', 'tradition_novelty'],
+    narrativeTemplates: {
+      initiation: 'reaches into a faithful soul to leave a portion of divine strength behind',
+      success: 'the gift takes — the mortal carries your power now, quicker in your art and quietly replenished',
+      failure: 'the gift will not settle; this soul does not yet hold your connection deeply enough',
     },
   },
   {
