@@ -260,13 +260,16 @@ describe('applyChosenStatusGrant (chosen_status_grant)', () => {
     expect(status.power.id).toBe('chosen.iron.leadership_aura');
   });
 
-  it('still flags chosen with a null power for an unmapped domain', () => {
+  it('still flags chosen with a null power for a node type with no table row', () => {
+    // All eight reaches now map for `actor` (THR-513), so the null-power
+    // fail-soft path is exercised via a node type CHOSEN_POWER_TABLE has no
+    // row for (only `actor` carries entries) — e.g. a location.
     const g = new WorldGraph();
-    addActor(g, 'faction.x', { actorType: 'faction' });
-    const result = applyChosenStatusGrant(g, 'faction.x', 'star', 'asc', 1);
+    g.addNode({ id: 'loc.x', type: 'location', name: 'loc.x', properties: {} });
+    const result = applyChosenStatusGrant(g, 'loc.x', 'star', 'asc', 1);
     expect(result.granted).toBe(true);
     expect(result.power).toBeNull();
-    expect((g.getNode('faction.x')!.properties.chosen as { power: unknown }).power).toBeNull();
+    expect((g.getNode('loc.x')!.properties.chosen as { power: unknown }).power).toBeNull();
   });
 
   it('reports alreadyChosen and overwrites on re-grant', () => {

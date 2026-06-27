@@ -30,7 +30,8 @@ import type { SphereName } from '../types/index';
 import type { ReachDomain } from '../types/traits';
 import type { AttachmentEffect } from '../types/effects';
 import type { AscendantProperties } from '../types/influence';
-import { pickSphereFlavoredEffect } from './ascendantPrimitives';
+import { pickSphereFlavoredEffect, applyChosenStatusGrant } from './ascendantPrimitives';
+import type { ChosenPower } from './ascendantPrimitives';
 import {
   BESTOW_REACH_BONUS,
   BESTOW_QUINTESSENCE_REGEN,
@@ -323,6 +324,97 @@ function emitBestowNoOp(
     summary: `bestow no-op: ${reason} (agent ${agentId})`,
     ascendantId,
     agentId,
+    failSoft: reason,
+  } as never);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// THR-513: Anoint Faction
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface AnointFactionResult {
+  readonly success: boolean;
+  /** The chosen power recorded on the faction (null when the (actor × domain)
+   *  lookup had no entry — the faction is still flagged chosen). */
+  readonly power: ChosenPower | null;
+  /** True when the faction already carried a chosen status (latest patron wins). */
+  readonly alreadyChosen: boolean;
+  /** Why the action no-opped, when it did. */
+  readonly failSoft?: 'missing_faction' | 'not_faction' | 'missing_reach';
+}
+
+/**
+ * Anoint a threaded faction as the ascendant's **chosen faction**.
+ *
+ * Reads the ascendant's primary reach (two-domain lock, THR-503) and stamps a
+ * `chosen` status on the faction node via the shipped THR-509 primitive
+ * (`applyChosenStatusGrant`), which records the (nodeType × domain) power from
+ * `CHOSEN_POWER_TABLE`. The recorded power is no longer dead content: the
+ * per-tick consumer `phaseChosenFactionPowers` (chosenFactionPowers.ts) reads
+ * `faction.properties.chosen.power` and grants the faction's members a
+ * power-keyed reputation gain each tick — so anointing genuinely strengthens the
+ * faction through the existing reputation system.
+ *
+ * Fail-soft: a missing faction, a non-faction target, or a missing ascendant
+ * reach no-ops + warns, never throws.
+ *
+ * @param graph        World graph (mutated in place).
+ * @param ascendantId  The player-god firing the verb (reach source + patron).
+ * @param factionId    Target faction node (`actor` with `actorType: 'faction'`).
+ * @param tick         Current tick (status stamp + trace).
+ */
+export function applyAnointFaction(
+  graph: WorldGraph,
+  ascendantId: string,
+  factionId: string,
+  tick: number,
+): AnointFactionResult {
+  const faction = graph.getNode(factionId);
+  if (!faction) {
+    emitAnointNoOp(ascendantId, factionId, 'missing_faction', tick);
+    return { success: false, power: null, alreadyChosen: false, failSoft: 'missing_faction' };
+  }
+  if (faction.type !== 'actor' || faction.properties.actorType !== 'faction') {
+    emitAnointNoOp(ascendantId, factionId, 'not_faction', tick);
+    return { success: false, power: null, alreadyChosen: false, failSoft: 'not_faction' };
+  }
+
+  const reach = getAscendantPrimaryReach(graph, ascendantId);
+  if (!reach) {
+    emitAnointNoOp(ascendantId, factionId, 'missing_reach', tick);
+    return { success: false, power: null, alreadyChosen: false, failSoft: 'missing_reach' };
+  }
+
+  const grant = applyChosenStatusGrant(graph, factionId, reach, ascendantId, tick);
+
+  emitTrace({
+    tick,
+    category: ASCENDANT_EXPRESSION_TRACE_CATEGORY,
+    type: 'anoint_faction',
+    summary: `anoint: ${faction.name ?? factionId} becomes a chosen faction (${reach} → ${grant.power?.label ?? 'no-power'})`,
+    ascendantId,
+    factionId,
+    reach,
+    powerId: grant.power?.id ?? null,
+    alreadyChosen: grant.alreadyChosen,
+  } as never);
+
+  return { success: true, power: grant.power, alreadyChosen: grant.alreadyChosen };
+}
+
+function emitAnointNoOp(
+  ascendantId: string,
+  factionId: string,
+  reason: NonNullable<AnointFactionResult['failSoft']>,
+  tick: number,
+): void {
+  emitTrace({
+    tick,
+    category: ASCENDANT_EXPRESSION_TRACE_CATEGORY,
+    type: 'anoint_faction',
+    summary: `anoint no-op: ${reason} (faction ${factionId})`,
+    ascendantId,
+    factionId,
     failSoft: reason,
   } as never);
 }

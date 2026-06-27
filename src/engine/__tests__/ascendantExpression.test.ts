@@ -17,7 +17,9 @@ import {
   getAscendantPrimaryReach,
   applyImbueItem,
   applyBestowPower,
+  applyAnointFaction,
 } from '../ascendantExpression';
+import type { ChosenStatus } from '../ascendantPrimitives';
 import { SPHERE_EFFECT_TABLE } from '../ascendantPrimitives';
 import {
   BESTOW_REACH_BONUS,
@@ -60,6 +62,10 @@ function addAscendantWithReach(
 
 function addMortal(g: WorldGraph, id: string, props: Record<string, unknown> = {}): void {
   g.addNode({ id, type: 'actor', name: id, properties: { actorType: 'individual', ...props } });
+}
+
+function addFaction(g: WorldGraph, id: string, props: Record<string, unknown> = {}): void {
+  g.addNode({ id, type: 'actor', name: id, properties: { actorType: 'faction', ...props } });
 }
 
 function thread(
@@ -362,5 +368,92 @@ describe('bestow wiring: both boons reach the agent', () => {
     tickEffects(g, 'mortal', 2, new Map());
 
     expect(g.getNode('mortal')!.properties.quintessence).toBe(1.0);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// applyAnointFaction (THR-513)
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('applyAnointFaction', () => {
+  it('flags the faction chosen with the (actor × primary-reach) power', () => {
+    const g = new WorldGraph();
+    addAscendantWithReach(g, 'asc', { iron: 3, gold: 5 }); // primary reach = gold
+    addFaction(g, 'guild');
+
+    const result = applyAnointFaction(g, 'asc', 'guild', 7);
+
+    expect(result.success).toBe(true);
+    expect(result.alreadyChosen).toBe(false);
+    expect(result.power?.id).toBe('chosen.gold.reputation');
+
+    const chosen = g.getNode('guild')!.properties.chosen as ChosenStatus;
+    expect(chosen.byAscendantId).toBe('asc');
+    expect(chosen.domain).toBe('gold');
+    expect(chosen.grantedTick).toBe(7);
+    expect(chosen.power?.id).toBe('chosen.gold.reputation');
+  });
+
+  it('selects the power by the ascendant primary reach (iron → leadership aura)', () => {
+    const g = new WorldGraph();
+    addAscendantWithReach(g, 'asc', { iron: 9, heart: 2 });
+    addFaction(g, 'legion');
+    const result = applyAnointFaction(g, 'asc', 'legion', 1);
+    expect(result.power?.id).toBe('chosen.iron.leadership_aura');
+  });
+
+  it('re-anointing reports alreadyChosen and the latest patron wins', () => {
+    const g = new WorldGraph();
+    addAscendantWithReach(g, 'asc1', { gold: 5 });
+    addAscendantWithReach(g, 'asc2', { iron: 5 });
+    addFaction(g, 'guild');
+
+    applyAnointFaction(g, 'asc1', 'guild', 1);
+    const second = applyAnointFaction(g, 'asc2', 'guild', 2);
+
+    expect(second.alreadyChosen).toBe(true);
+    const chosen = g.getNode('guild')!.properties.chosen as ChosenStatus;
+    expect(chosen.byAscendantId).toBe('asc2');
+    expect(chosen.domain).toBe('iron');
+  });
+
+  it('all eight reaches resolve to a non-null faction power (THR-513 completed the table)', () => {
+    const reaches: ReachDomain[] = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star'];
+    for (const reach of reaches) {
+      const g = new WorldGraph();
+      addAscendantWithReach(g, 'asc', { [reach]: 5 });
+      addFaction(g, 'fac');
+      const result = applyAnointFaction(g, 'asc', 'fac', 1);
+      expect(result.power, `reach ${reach} should map to a power`).not.toBeNull();
+    }
+  });
+
+  // ─── Fail-soft (NFP #4) ───────────────────────────────────────────────────
+
+  it('no-ops on a missing faction', () => {
+    const g = new WorldGraph();
+    addAscendantWithReach(g, 'asc', { gold: 5 });
+    const result = applyAnointFaction(g, 'asc', 'gone', 1);
+    expect(result.success).toBe(false);
+    expect(result.failSoft).toBe('missing_faction');
+  });
+
+  it('no-ops when the target is not a faction (an individual actor)', () => {
+    const g = new WorldGraph();
+    addAscendantWithReach(g, 'asc', { gold: 5 });
+    addMortal(g, 'mortal');
+    const result = applyAnointFaction(g, 'asc', 'mortal', 1);
+    expect(result.success).toBe(false);
+    expect(result.failSoft).toBe('not_faction');
+    expect(g.getNode('mortal')!.properties.chosen).toBeUndefined();
+  });
+
+  it('no-ops when the ascendant has no reach affinities', () => {
+    const g = new WorldGraph();
+    g.addNode({ id: 'asc', type: 'actor', name: 'asc', properties: { actorType: 'ascendant' } });
+    addFaction(g, 'guild');
+    const result = applyAnointFaction(g, 'asc', 'guild', 1);
+    expect(result.success).toBe(false);
+    expect(result.failSoft).toBe('missing_reach');
   });
 });

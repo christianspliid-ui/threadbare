@@ -44,7 +44,7 @@ import { executeGraphOps } from './graphOpExecutor';
 import { applyFactionGovernanceVerb } from './factionGovernanceVerbs';
 import { applyPlantSchism } from './schismPlant';
 import { applyAnointSuccessor } from './anointSuccessor';
-import { applyImbueItem, applyBestowPower } from './ascendantExpression';
+import { applyImbueItem, applyBestowPower, applyAnointFaction } from './ascendantExpression';
 import { SCHISM_PENDING_DURATION_TICKS } from '../data/game-config';
 import { emitTrace } from './traceBuffer';
 import {
@@ -1076,6 +1076,7 @@ export function executeStepResult(
     const anointSuccessorOps: GraphOp[] = [];
     const imbueItemOps: GraphOp[] = [];
     const bestowPowerOps: GraphOp[] = [];
+    const anointFactionOps: GraphOp[] = [];
     const graphOnlyOps: GraphOp[] = [];
     for (const op of ops) {
       if (op.op === 'faction_verb') factionVerbOps.push(op);
@@ -1083,6 +1084,7 @@ export function executeStepResult(
       else if (op.op === 'anoint_successor') anointSuccessorOps.push(op);
       else if (op.op === 'imbue_item') imbueItemOps.push(op);
       else if (op.op === 'bestow_power') bestowPowerOps.push(op);
+      else if (op.op === 'anoint_faction') anointFactionOps.push(op);
       else graphOnlyOps.push(op);
     }
 
@@ -1164,6 +1166,24 @@ export function executeStepResult(
         const resolvedAgentId = agentRef === '$target' ? action.targetId : agentRef;
         try {
           applyBestowPower(state.graph, action.actorId, resolvedAgentId, tick);
+        } catch {
+          // Fail-soft per NFP #4: log nothing, never crash the tick.
+        }
+      }
+    }
+
+    if (anointFactionOps.length > 0) {
+      // THR-513 — Anoint targets a faction node; the helper reads the
+      // ascendant's primary reach (two-domain lock) and stamps a `chosen` status
+      // carrying a domain-keyed power (THR-509 primitive). The per-tick consumer
+      // phaseChosenFactionPowers then grants that faction's members reputation —
+      // so the chosen status is no longer dead content. Deterministic — no PRNG.
+      // The acting ascendant is the player-god (action.actorId).
+      for (const op of anointFactionOps) {
+        const factionRef = op.nodeId ? op.nodeId : action.targetId;
+        const resolvedFactionId = factionRef === '$target' ? action.targetId : factionRef;
+        try {
+          applyAnointFaction(state.graph, action.actorId, resolvedFactionId, tick);
         } catch {
           // Fail-soft per NFP #4: log nothing, never crash the tick.
         }

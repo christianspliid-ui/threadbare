@@ -78,3 +78,27 @@ export const BESTOW_QUINTESSENCE_REGEN = 0.01;
  * thread below this tier no-ops without consuming the grant.
  */
 export const BESTOW_MIN_AWARENESS = 'faith' as const;
+
+// ─── THR-513: Anoint Faction ──────────────────────────────────────────────────
+// `[anoint] <faction>` flags a threaded faction as the ascendant's CHOSEN
+// faction (two-domain lock, THR-503): the chosen power is keyed by the
+// ascendant's primary reach (CHOSEN_POWER_TABLE, THR-509). The per-tick consumer
+// `phaseChosenFactionPowers` (chosenFactionPowers.ts) then grants the faction's
+// members a power-keyed reputation gain — making the previously-dead `chosen`
+// status mechanically live.
+
+/**
+ * One-time essence to anoint a faction. One tier above bestow (`BESTOW_COST` = 5):
+ * anoint is a standing grant that lifts an entire faction's members every tick,
+ * not a single mortal's one-shot boon.
+ */
+export const ANOINT_COST = 6;
+
+/**
+ * Default per-tick reputation a chosen faction's members gain (0–1 scale), used
+ * when a chosen power has no explicit magnitude in CHOSEN_POWER_EFFECT_TABLE
+ * (chosenFactionPowers.ts). Sized to net positive against typical faction
+ * `reputationDecayPerTick` so a chosen faction's members steadily rise in
+ * standing (which drives rank, access, and bonuses — see factionReputation.ts).
+ */
+export const CHOSEN_FACTION_REPUTATION_PER_TICK = 0.003;

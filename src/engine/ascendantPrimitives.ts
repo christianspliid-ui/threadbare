@@ -198,9 +198,10 @@ export interface ChosenStatus {
 /**
  * (nodeType × ascendant domain) → power scaffold.
  *
- * Factions are `actor` nodes; the first consumer (anoint) reads the `actor`
- * row. Reaches without an entry resolve to a null power (fail-soft) — the node
- * is still flagged chosen. Extend this table as cards are authored (THR-508).
+ * Factions are `actor` nodes; the consumer (anoint, THR-513) reads the `actor`
+ * row. All eight reaches now carry an entry (THR-513 completed the table the
+ * THR-509 scaffold left partial). Reaches without an entry still resolve to a
+ * null power (fail-soft) — the node is flagged chosen regardless.
  */
 export const CHOSEN_POWER_TABLE: Partial<Record<NodeType, Partial<Record<ReachDomain, ChosenPower>>>> = {
   actor: {
@@ -223,6 +224,26 @@ export const CHOSEN_POWER_TABLE: Partial<Record<NodeType, Partial<Record<ReachDo
       id: 'chosen.shadow.veiled_reach',
       label: 'Veiled Mandate',
       summary: 'A clandestine faction operates under cover of the chosen — its reach goes unseen.',
+    },
+    veil: {
+      id: 'chosen.veil.whispered_sanction',
+      label: 'Whispered Sanction',
+      summary: 'A secretive faction acts under whispered sanction — its dealings pass unrecorded.',
+    },
+    eye: {
+      id: 'chosen.eye.illumined_charter',
+      label: 'Illumined Charter',
+      summary: 'A learned faction reads the world under divine illumination — its insight sharpens.',
+    },
+    stone: {
+      id: 'chosen.stone.enduring_foundation',
+      label: 'Enduring Foundation',
+      summary: 'A rooted faction stands on chosen ground — its holdings and standing endure.',
+    },
+    star: {
+      id: 'chosen.star.fated_banner',
+      label: 'Fated Banner',
+      summary: 'A faction marked by destiny rises under a fated banner — providence lifts its standing.',
     },
   },
 };
