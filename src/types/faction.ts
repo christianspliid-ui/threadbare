@@ -189,7 +189,7 @@ export interface FactionReputationTrace {
   factionId: string;
   oldReputation: number;
   newReputation: number;
-  cause: 'quest_step' | 'quest_complete' | 'decay' | 'promotion' | 'encounter_aftermath';
+  cause: 'quest_step' | 'quest_complete' | 'decay' | 'promotion' | 'encounter_aftermath' | 'chosen_power';
   rankChanged: boolean;
   oldRank: string;
   newRank: string;

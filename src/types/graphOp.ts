@@ -81,7 +81,8 @@ export type GraphOpType =
   | 'plant_schism'    // THR-430: mark a faction as having a pending schism resolution
   | 'anoint_successor' // THR-432: anoint the target agent as their faction's next heir (creates will_succeed edge)
   | 'imbue_item'     // THR-508: append a sphere-flavored power to a target artifact node
-  | 'bestow_power';  // THR-512: grant a threaded agent a divine-gift artifact (reach bonus + quintessence regen)
+  | 'bestow_power'   // THR-512: grant a threaded agent a divine-gift artifact (reach bonus + quintessence regen)
+  | 'anoint_faction'; // THR-513: flag a target faction as the ascendant's chosen — grants a domain-keyed chosen power (consumed by phaseChosenFactionPowers)
 
 /**
  * Payload for the apply_influence GraphOp.

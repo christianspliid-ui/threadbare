@@ -144,7 +144,7 @@ import {
   KINDLE_CALLING_ESSENCE_COST,
 } from './faction-action-constants';
 import { SCHISM_ESSENCE_COST } from './game-config';
-import { IMBUE_ESSENCE_COST, CONSECRATE_ESTABLISH_COST, CONSECRATE_PERTICK, BESTOW_COST } from './ascendant-expression-constants';
+import { IMBUE_ESSENCE_COST, CONSECRATE_ESTABLISH_COST, CONSECRATE_PERTICK, BESTOW_COST, ANOINT_COST } from './ascendant-expression-constants';
 import { CONSECRATE_DEVOTION_PER_TICK } from '../types/ascendantPrimitives';
 import { RIVAL_SHRINE_BETRAYAL_TEMPLATE } from './encounters/rival-shrine-betrayal';
 import { WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE } from './encounters/wandering-healer-shrine-access';
@@ -2063,6 +2063,51 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       initiation: 'reaches into a faithful soul to leave a portion of divine strength behind',
       success: 'the gift takes — the mortal carries your power now, quicker in your art and quietly replenished',
       failure: 'the gift will not settle; this soul does not yet hold your connection deeply enough',
+    },
+  },
+  // ─── THR-513: Anoint — early expression card (unlockable-generic) ─────────────
+  // A generic divine verb (one per graph type: this one for factions). On
+  // success an `anoint_faction` GraphOp is intercepted in unifiedActionResolution.ts
+  // and dispatched to applyAnointFaction, which reads the ascendant's PRIMARY
+  // DOMAIN (two-domain lock, THR-503) and stamps a `chosen` status carrying a
+  // domain-keyed power (THR-509 CHOSEN_POWER_TABLE). The per-tick consumer
+  // phaseChosenFactionPowers (chosenFactionPowers.ts) reads that status and
+  // grants the faction's members a power-keyed reputation gain — so the chosen
+  // faction genuinely strengthens, no longer dead content.
+  {
+    id: 'action.anoint',
+    name: 'Anoint',
+    spellName: 'Mark of the Chosen',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description:
+      'You set your mark upon a whole order at once — not a soul but a banner, a charter, a creed. ' +
+      'The faction becomes yours in the eyes of the world, and the favour you pour out lifts every ' +
+      'hand that serves under it, steadily, for as long as your regard endures.',
+    reach: 'star',
+    trayTier: 'core',
+    crudType: 'update',
+    scale: 'regional',
+    steps: [{
+      reach: 'star',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [{
+        op: 'anoint_faction',
+        nodeId: '$target',
+      }],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: ANOINT_COST,
+    actorAffinities: ['ascendant'],
+    motivations: ['loyalty_ambition', 'tradition_novelty'],
+    targetCategories: ['faction'] as unknown as readonly import('../types/targetContext').TargetCategory[],
+    narrativeTemplates: {
+      initiation: 'sets a divine mark upon a whole faction, naming it chosen',
+      success: 'the mark settles — the faction is chosen now, and your favour lifts all who serve it',
+      failure: 'the mark will not hold; the faction does not yet stand close enough to you',
     },
   },
   {

@@ -254,7 +254,10 @@ export type TraceCategory =
   | 'ascendant.beat.resolved'
   | 'action.unlock.granted'
   // Ascendant expression cards (THR-508)
-  | 'ascendant_expression';
+  | 'ascendant_expression'
+  // Ascendant action primitives (THR-509) + chosen-faction consumer (THR-513)
+  | 'ascendant_primitive'
+  | 'chosen_faction_power';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -477,6 +480,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'action.unlock.granted',
   // Ascendant expression cards (THR-508)
   'ascendant_expression',
+  // Ascendant action primitives (THR-509) + chosen-faction consumer (THR-513)
+  'ascendant_primitive',
+  'chosen_faction_power',
 ];
 
 /** Base shape for all trace entries */

@@ -221,6 +221,27 @@ The `imbue` expression card — the one §4.4 verb that composes the THR-509 pri
 
 ---
 
+## Anoint Expression Card + Chosen-Faction Consumer (THR-513)
+
+The `anoint` expression card (per-graph-type verb for **factions**) + the consumer that makes the THR-509 `chosen` status mechanically live. Completes the four-card §4.4 toolkit. The card stamps the status; a new per-tick phase reads it and grants the faction's members a power-keyed reputation gain.
+
+| Surface | Path | Notes |
+|---|---|---|
+| GraphOp verb | `src/types/graphOp.ts` | New `'anoint_faction'` `GraphOpType`. |
+| Dispatch | `src/engine/unifiedActionResolution.ts` | `anoint_faction` filtered out of the `executeGraphOps` batch in `executeStepResult` and dispatched to `applyAnointFaction` (sibling block to `bestow_power` / `imbue_item`; deterministic — no PRNG). |
+| Resolver | `src/engine/ascendantExpression.ts` | `applyAnointFaction(graph, ascendantId, factionId, tick)`. Validates `actor`+`actorType:'faction'`, reads the ascendant's primary reach (`getAscendantPrimaryReach`/`domainAffinities`, THR-503), stamps `chosen` via THR-509 `applyChosenStatusGrant`. Fail-soft (missing_faction / not_faction / missing_reach) + `ascendant_expression` trace. |
+| **Consumer (the new phase)** | `src/engine/chosenFactionPowers.ts` | `phaseChosenFactionPowers(state)` — walks `getFactionNodes`, and for each non-dissolved faction with `chosen.power` grants every `member_of` member a per-tick reputation gain via `applyFactionReputationGain` (cause `'chosen_power'`). Per-power magnitude `CHOSEN_POWER_EFFECT_TABLE`, default `CHOSEN_FACTION_REPUTATION_PER_TICK`. This is what reads `node.properties.chosen` (closing the THR-509 dead-content gap). |
+| Phase wiring | `src/engine/orchestrator.ts` | Phase **6.56**, registered immediately after `phaseFactionReputationDecay` (6.55) so chosen members net upward. |
+| Power table | `src/engine/ascendantPrimitives.ts` | `CHOSEN_POWER_TABLE` extended from 4 → all 8 reaches (added veil/eye/stone/star faction powers). |
+| Template | `src/data/unified-action-templates.ts` | `action.anoint` (`targetCategories:['faction']`, `onSuccess:[{op:'anoint_faction',nodeId:'$target'}]`, cost `ANOINT_COST`). Hidden until unlocked (no `starter`). |
+| Constants | `src/data/ascendant-expression-constants.ts` | `ANOINT_COST` (6), `CHOSEN_FACTION_REPUTATION_PER_TICK` (0.003); per-power `CHOSEN_POWER_EFFECT_TABLE` in `chosenFactionPowers.ts`. |
+| Reputation cause | `src/types/faction.ts` | `FactionReputationTrace['cause']` gains `'chosen_power'`. |
+| Trace categories | `src/types/trace.ts` | `'chosen_faction_power'` (one summary trace per chosen faction per tick) + backfilled `'ascendant_primitive'` (THR-509) registered in the `TraceCategory` union + `TRACE_CATEGORIES` array. |
+| Tests | `src/engine/__tests__/ascendantExpression.test.ts` (+8), `src/engine/__tests__/chosenFactionPowers.test.ts` (new, 8) | Resolver: power-by-reach, all-8-reaches, re-anoint, fail-soft. Consumer: gain applied, per-power magnitude, accumulation, clamp, default fallback, un-anointed no-op, dissolved skip, no-members. |
+| Content-facing docs | `Docs/plans/2026-04-16-systemic-wiring-guide.md` | The anoint pattern (status stamp + per-tick consumer), distinct from imbue (GraphOp-intercept) / consecrate (sustained-control) / bestow (possessed-gift). |
+
+---
+
 ## Gameplay KPI Harness (THR-457)
 
 Pure telemetry layer: KPI report + eligibility funnel counters + debug surfaces.

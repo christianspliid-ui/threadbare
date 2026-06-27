@@ -138,6 +138,7 @@ import {
 } from './rewardPool';
 import { validateTickOutput, appendCrashLog } from './tickHealthMonitor';
 import { phaseFactionReputationDecay, processFactionEncounterReputation } from './factionReputation';
+import { phaseChosenFactionPowers } from './chosenFactionPowers';
 import { phaseHiddenMarkDecay } from './phaseHiddenMarkDecay';
 import { phaseIntelligenceDecay } from './phaseIntelligenceDecay';
 import { generateSecret, createSecretEdge, createFavorEdge } from './secretGeneration';
@@ -2344,6 +2345,13 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 6.55: Faction Reputation Decay (TB-060)
   s = { ...s, ...phaseFactionReputationDecay(s) };
   phaseEventCounts['faction_reputation_decay'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.56: Chosen Faction Powers (THR-513) — the consumer for `anoint`.
+  // Runs right after decay so a chosen faction's members net upward: members
+  // gain a power-keyed reputation bonus each tick from `faction.chosen.power`.
+  s = { ...s, ...phaseChosenFactionPowers(s) };
+  phaseEventCounts['chosen_faction_powers'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.6: Divine Influence Decay
