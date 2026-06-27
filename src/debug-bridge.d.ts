@@ -198,6 +198,17 @@ export interface DebugGrantUnlockResult {
   message: string;
 }
 
+/** Result of resolving the currently-pending beat via `resolveBeat()`. THR-517 */
+export interface DebugResolveBeatResult {
+  /** True only when a beat actually resolved (grants applied, pending cleared). */
+  success: boolean;
+  /** The beat id acted on (resolved or skipped), if any. */
+  beatId?: string;
+  /** Action ids unlocked by this resolution. */
+  grantedActionIds?: string[];
+  message: string;
+}
+
 export interface DebugBridge {
   openDebugPanel: () => void;
   closeDebugPanel: () => void;
@@ -465,10 +476,13 @@ export interface DebugBridge {
   fireBeat: (beatId: string) => DebugFireBeatResult;
   /** Push an action id into the run-scoped unlock set (the path beats use), emitting an `action.unlock.granted` (via: 'debug') trace. */
   grantUnlock: (actionId: string) => DebugGrantUnlockResult;
+  /** Resolve the currently-pending beat: apply its grants to the unlock set + clear `pending`. For selection beats pass the chosen action id. THR-517 */
+  resolveBeat: (chosenActionId?: string) => DebugResolveBeatResult;
   /** @internal GameView registers beat bridge callbacks here */
   _registerBeatBridge: (callbacks: {
     fireBeat: (beatId: string) => DebugFireBeatResult;
     grantUnlock: (actionId: string) => DebugGrantUnlockResult;
+    resolveBeat: (chosenActionId?: string) => DebugResolveBeatResult;
   }) => void;
 
   /** THR-430 — Schism inspection: list pending schisms in the live game state. */

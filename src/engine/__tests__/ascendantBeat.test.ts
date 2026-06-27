@@ -6,8 +6,10 @@ import {
   isTriggerSatisfied,
   drawFromPool,
   resolveAscendantBeat,
+  resolvePendingBeat,
   forceOfferBeatById,
 } from '../ascendantBeat';
+import { ALL_DELIVERY_BEATS } from '../deliveryBeatAdapter';
 import { ASCENDANT_SPINE } from '../../data/ascendant-beat-content';
 import { applyEncounterAftermathReaction } from '../encounterAftermath';
 import { clearTraces, enableTracing, disableTracing, getTraces } from '../traceBuffer';
@@ -201,6 +203,112 @@ describe('Ascendant Beat Director (THR-500)', () => {
   it('resolveAscendantBeat is a no-op when nothing is pending', () => {
     const beats = createInitialAscendantBeatState();
     expect(resolveAscendantBeat(beats, { outcome: 'x', turn: 1 })).toBe(beats);
+  });
+});
+
+describe('resolvePendingBeat — running-sim resolve path (THR-517)', () => {
+  beforeEach(() => {
+    clearTraces();
+    enableTracing();
+  });
+  afterEach(() => {
+    clearTraces();
+    disableTracing();
+  });
+
+  /** Build a GameState with the named beat already offered (pending) + an unlock set. */
+  function pendingState(beatId: string, tick = 5, unlocked: readonly string[] = []): GameState {
+    const offered = forceOfferBeatById(createInitialAscendantBeatState(), beatId, tick)!.next;
+    const s = directorState(tick, offered);
+    (s as { unlockedActionIds?: readonly string[] }).unlockedActionIds = unlocked;
+    return s;
+  }
+
+  it('grants all of a non-selection beat, clears pending, records history + emits traces', () => {
+    // beat.spine.opening grants bind_thread_agent + observe_agent
+    const result = resolvePendingBeat(pendingState('beat.spine.opening', 5));
+    expect(result.resolved).toBe(true);
+    expect(result.state.unlockedActionIds).toEqual(
+      expect.arrayContaining(['bind_thread_agent', 'observe_agent']),
+    );
+    expect(result.state.ascendantBeats?.pending).toBeNull();
+    expect(result.state.ascendantBeats?.history).toHaveLength(1);
+    expect(result.state.ascendantBeats?.history[0].grantedActionIds).toEqual([
+      'bind_thread_agent',
+      'observe_agent',
+    ]);
+    expect(result.state.ascendantBeats?.history[0].outcome).toBe('received');
+
+    const cats = getTraces().map(t => t.category);
+    expect(cats).toContain('action.unlock.granted');
+    expect(cats).toContain('ascendant.beat.resolved');
+  });
+
+  it('selection beat: no choice is a no-op; a valid choice grants exactly that one', () => {
+    // beat.pool.select.first_true_gift offers [bind_thread_agent, bind_thread_location, action.imbue]
+    const state = pendingState('beat.pool.select.first_true_gift', 12);
+
+    const noChoice = resolvePendingBeat(state);
+    expect(noChoice.resolved).toBe(false);
+    expect(noChoice.state.ascendantBeats?.pending).not.toBeNull(); // still pending — player must choose
+
+    const chosen = resolvePendingBeat(state, { chosenActionId: 'action.imbue' });
+    expect(chosen.resolved).toBe(true);
+    expect(chosen.grantedActionIds).toEqual(['action.imbue']);
+    expect(chosen.state.unlockedActionIds).toEqual(['action.imbue']);
+    expect(chosen.state.ascendantBeats?.history[0].outcome).toBe('chosen');
+  });
+
+  it('selection beat rejects a choice outside the offered options', () => {
+    const bad = resolvePendingBeat(
+      pendingState('beat.pool.select.first_true_gift', 12),
+      { chosenActionId: 'not.an.option' },
+    );
+    expect(bad.resolved).toBe(false);
+    expect(bad.state.ascendantBeats?.pending).not.toBeNull();
+  });
+
+  it('does not duplicate an already-unlocked grant', () => {
+    const result = resolvePendingBeat(pendingState('beat.spine.opening', 5, ['bind_thread_agent']));
+    const count = (result.state.unlockedActionIds ?? []).filter(id => id === 'bind_thread_agent').length;
+    expect(count).toBe(1);
+  });
+
+  it('no-ops cleanly when nothing is pending', () => {
+    const state = directorState(3, createInitialAscendantBeatState());
+    const result = resolvePendingBeat(state);
+    expect(result.resolved).toBe(false);
+    expect(result.beatId).toBeNull();
+    expect(result.state).toBe(state);
+  });
+
+  it('fail-soft: an unknown pending beat clears + emits a missing_template skip (never wedges)', () => {
+    const offered = forceOfferBeatById(createInitialAscendantBeatState(), 'beat.spine.opening', 5)!.next;
+    const corrupted: AscendantBeatState = {
+      ...offered,
+      pending: { ...offered.pending!, beatId: 'beat.gone.missing' },
+    };
+    clearTraces();
+    const result = resolvePendingBeat(directorState(5, corrupted));
+    expect(result.resolved).toBe(false);
+    expect(result.state.ascendantBeats?.pending).toBeNull(); // cleared, not wedged
+    const skip = getTraces().find(t => t.category === 'ascendant.beat.skipped') as
+      | { reason?: string } | undefined;
+    expect(skip?.reason).toBe('missing_template');
+  });
+
+  it('fail-soft: a template-backed beat whose templateId fails the resolver is skipped', () => {
+    // Delivery beats carry a templateId; simulate a missing source template via the resolver.
+    if (ALL_DELIVERY_BEATS.length === 0) return; // no branching catalogue → nothing to assert
+    const deliveryId = ALL_DELIVERY_BEATS[0].beatId;
+    const state = pendingState(deliveryId, 20);
+    clearTraces();
+    const result = resolvePendingBeat(state, {}, () => false);
+    expect(result.resolved).toBe(false);
+    expect(result.state.ascendantBeats?.pending).toBeNull();
+    const skip = getTraces().find(t => t.category === 'ascendant.beat.skipped') as
+      | { reason?: string } | undefined;
+    expect(skip?.reason).toBe('missing_template');
   });
 });
 

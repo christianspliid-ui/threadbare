@@ -130,7 +130,11 @@ export function drawFromPool(
   return pool[pool.length - 1];
 }
 
-function emitSkipped(turn: number, reason: 'pending' | 'cadence' | 'empty_pool', beatId?: string): void {
+function emitSkipped(
+  turn: number,
+  reason: 'pending' | 'cadence' | 'empty_pool' | 'missing_template',
+  beatId?: string,
+): void {
   emitBeatTrace({
     tick: turn,
     category: 'ascendant.beat.skipped',
@@ -322,4 +326,157 @@ export function resolveAscendantBeat(
     summary: `ascendant beat resolved: ${record.beatId} → ${record.outcome}`,
   });
   return { ...beats, pending: null, history: [...beats.history, record] };
+}
+
+/** Look a beat up across all three catalogues (spine, static pool, delivery adapter). */
+function findBeatDefinition(beatId: string): BeatDefinition | null {
+  return (
+    ASCENDANT_SPINE.find(b => b.beatId === beatId) ??
+    ASCENDANT_BEAT_POOL.find(b => b.beatId === beatId) ??
+    getDeliveryBeatById(beatId) ??
+    null
+  );
+}
+
+/**
+ * Public catalogue lookup for a beat by id (spine ∪ pool ∪ delivery). The UI
+ * (`AscendantBeatModal`) needs a pending beat's `grantsActionIds` to render a
+ * selection beat's choose-1-of-N options; the `PendingBeat` only carries id + kind.
+ */
+export function getBeatDefinitionById(beatId: string): BeatDefinition | null {
+  return findBeatDefinition(beatId);
+}
+
+/** Result of {@link resolvePendingBeat}. `state` is the input state unchanged on no-op. */
+export interface PendingBeatResolution {
+  /** Next state: grants applied to `unlockedActionIds`, `pending` cleared. */
+  readonly state: GameState;
+  /** True only when a beat actually resolved (grants applied + history recorded). */
+  readonly resolved: boolean;
+  /** The beat id acted on (resolved or skipped), or null when nothing was pending. */
+  readonly beatId: string | null;
+  /** Action ids unlocked by this resolution (the chosen one for selection beats). */
+  readonly grantedActionIds: readonly string[];
+  /** Outcome-ladder rung recorded against the beat (`''` on no-op). */
+  readonly outcome: string;
+  /** Human-readable summary for the debug bridge / status surfaces. */
+  readonly message: string;
+}
+
+/**
+ * Resolve the currently-pending ascendant beat against full `GameState` — the
+ * "offer → enter → resolve" loop's closing half (THR-517). The Director only
+ * *offers* (`phaseAscendantBeatDirector` sets `pending`); this is what clears it in
+ * the running sim once the player enters and finishes the beat.
+ *
+ * Looks the pending beat up in the catalogue, applies its grants into
+ * `state.unlockedActionIds` (dedup; emits `action.unlock.granted` via `'beat'` per
+ * newly-granted id), then records the `BeatRecord` + clears `pending` via
+ * {@link resolveAscendantBeat}.
+ *
+ * - **Non-selection beats** grant *all* of the definition's `grantsActionIds`.
+ * - **Selection beats** (`kind: 'selection'`) grant exactly one option — pass
+ *   `opts.chosenActionId`. Omitting it (or passing one outside the beat's options)
+ *   is a no-op that returns `resolved: false` with a message: the player must choose.
+ *
+ * Fail-soft (NFP #4): nothing pending → no-op; a pending beat whose definition is
+ * unknown, or whose declared `templateId` fails `templateResolver`, clears
+ * gracefully (emits `ascendant.beat.skipped` reason `missing_template`) so the queue
+ * never wedges. The whole body is wrapped so a thrown resolver can never crash a tick.
+ *
+ * Pure over its inputs aside from trace emission; returns a fresh state — callers
+ * (`GameView` / the `__DEBUG.resolveBeat` bridge) swap it in via `setGameState`.
+ *
+ * @param templateResolver optional predicate the UI injects (`id => getUnifiedTemplateById(id) !== undefined`)
+ *   so the engine can honor the missing-template fail-soft without importing the
+ *   template registry. When omitted, a declared `templateId` is assumed valid.
+ */
+export function resolvePendingBeat(
+  state: GameState,
+  opts: { chosenActionId?: string; outcome?: string } = {},
+  templateResolver?: (templateId: string) => boolean,
+): PendingBeatResolution {
+  const beats = state.ascendantBeats;
+  if (!beats?.pending) {
+    return { state, resolved: false, beatId: null, grantedActionIds: [], outcome: '', message: 'No beat pending.' };
+  }
+  const pending = beats.pending;
+  const turn = state.tick;
+  try {
+    const def = findBeatDefinition(pending.beatId);
+    // Fail-soft: unknown beat (stale save / removed catalogue entry), or a declared
+    // template the UI can't resolve → clear pending gracefully, never wedge the queue.
+    if (!def || (def.templateId && templateResolver && !templateResolver(def.templateId))) {
+      emitSkipped(turn, 'missing_template', pending.beatId);
+      return {
+        state: { ...state, ascendantBeats: { ...beats, pending: null } },
+        resolved: false,
+        beatId: pending.beatId,
+        grantedActionIds: [],
+        outcome: 'skipped',
+        message: `Beat '${pending.beatId}' skipped: definition or template missing/invalid.`,
+      };
+    }
+
+    const allGrants = def.grantsActionIds ?? [];
+    let granted: readonly string[];
+    if (pending.kind === 'selection') {
+      const chosen = opts.chosenActionId;
+      if (!chosen || !allGrants.includes(chosen)) {
+        return {
+          state,
+          resolved: false,
+          beatId: pending.beatId,
+          grantedActionIds: [],
+          outcome: '',
+          message: `Selection beat '${pending.beatId}' needs a choice from [${allGrants.join(', ')}].`,
+        };
+      }
+      granted = [chosen];
+    } else {
+      granted = allGrants;
+    }
+
+    // Apply grants → unlockedActionIds (dedup; one trace per newly-revealed id).
+    const current = state.unlockedActionIds ?? [];
+    const nextUnlocked = [...current];
+    for (const id of granted) {
+      if (nextUnlocked.includes(id)) continue;
+      nextUnlocked.push(id);
+      emitTrace({
+        tick: turn,
+        category: 'action.unlock.granted',
+        turn,
+        actionId: id,
+        via: 'beat',
+        summary: `action.unlock.granted: ${id} (via beat ${pending.beatId})`,
+      } as unknown as Parameters<typeof emitTrace>[0]);
+    }
+
+    const outcome = opts.outcome ?? (pending.kind === 'selection' ? 'chosen' : 'received');
+    const resolvedBeats = resolveAscendantBeat(beats, { outcome, grantedActionIds: granted, turn });
+    return {
+      state: { ...state, unlockedActionIds: nextUnlocked, ascendantBeats: resolvedBeats },
+      resolved: true,
+      beatId: pending.beatId,
+      grantedActionIds: granted,
+      outcome,
+      message: `Resolved '${pending.beatId}' → ${outcome}${granted.length ? ` (+${granted.join(', ')})` : ''}`,
+    };
+  } catch (err) {
+    // NFP #4: the resolve path must never crash a tick or wedge the queue.
+    emitTrace({
+      tick: turn,
+      category: 'engine_warning',
+      summary: `resolvePendingBeat error (${pending.beatId}, turn ${turn}): ${err instanceof Error ? err.message : String(err)}`,
+    });
+    return {
+      state,
+      resolved: false,
+      beatId: pending.beatId,
+      grantedActionIds: [],
+      outcome: '',
+      message: `Beat '${pending.beatId}' resolution errored — left pending.`,
+    };
+  }
 }

@@ -138,7 +138,8 @@ import { toggleAttentionMode } from '../../engine/encounterVisibility';
 import { useTopBarHotkeys } from './hooks/useTopBarHotkeys';
 import { computeEssenceIncome } from '../../engine/essenceIncome';
 import { setHomeSeat as setHomeSeatEngine } from '../../engine/influence';
-import { forceOfferBeatById } from '../../engine/ascendantBeat';
+import { forceOfferBeatById, resolvePendingBeat } from '../../engine/ascendantBeat';
+import { AscendantBeatModal, AscendantBeatOfferBanner } from './AscendantBeatModal';
 import { buildActorTargetContext, buildHexTargetContext, buildLocationTargetContext } from '../../engine/targetContextBuilders';
 import { useTargetActions } from './hooks/useTargetActions';
 import { templateIdFromSlotId } from '../../engine/targetActions';
@@ -303,6 +304,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
   // ── Ascendant sheet modal state ──
   const [ascendantSheetOpen, setAscendantSheetOpen] = useState(false);
+
+  // ── Ascendant beat: whether the player has "entered" the pending beat (THR-517) ──
+  const [beatEntered, setBeatEntered] = useState(false);
 
   // ── Doom clock and mandate detail modals ──
   const [doomDetailOpen, setDoomDetailOpen] = useState(false);
@@ -2035,9 +2039,56 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         });
         return { success: true, actionId: normalized, message: `Unlocked '${normalized}' (via debug)` };
       },
+      // Resolve the currently-pending beat headlessly (THR-517) — the running-sim
+      // closing half of offer → enter → resolve. Mirrors what the modal's resolve does.
+      resolveBeat: (chosenActionId?: string) => {
+        const state = _gameStateRef.current;
+        if (!state) return { success: false, message: 'Game not loaded' };
+        if (!state.ascendantBeats?.pending) {
+          return { success: false, message: 'No beat is pending — fire one first.' };
+        }
+        const result = resolvePendingBeat(
+          state,
+          chosenActionId ? { chosenActionId } : {},
+          (id) => getUnifiedTemplateById(id) !== undefined,
+        );
+        if (result.resolved || result.state !== state) {
+          setGameState(() => result.state);
+          setBeatEntered(false);
+        }
+        return {
+          success: result.resolved,
+          beatId: result.beatId ?? undefined,
+          grantedActionIds: [...result.grantedActionIds],
+          message: result.message,
+        };
+      },
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // ^ Runs once — live state via _gameStateRef; setGameState is a stable dispatcher
+
+  // ── Ascendant beat: offer → enter → resolve (THR-517) ─────────────────────
+  const pendingBeat = gameState.ascendantBeats?.pending ?? null;
+
+  /**
+   * Resolve the pending beat: apply its grants into `unlockedActionIds` and clear
+   * `pending` (engine `resolvePendingBeat`). For selection beats `chosenActionId`
+   * names the picked card. A template resolver wires the missing-template fail-soft.
+   */
+  const handleResolveBeat = useCallback((chosenActionId?: string) => {
+    setGameState(prev => resolvePendingBeat(
+      prev,
+      { chosenActionId },
+      (id) => getUnifiedTemplateById(id) !== undefined,
+    ).state);
+    setBeatEntered(false);
+  }, [setGameState]);
+
+  // Spine beats present modally so the opening is not missable; pool beats wait behind
+  // the offer affordance. Gated by interrupt suppression (debug/playtest can silence).
+  useEffect(() => {
+    if (pendingBeat?.kind === 'spine' && !interruptsSuppressed) setBeatEntered(true);
+  }, [pendingBeat?.beatId, pendingBeat?.kind, interruptsSuppressed]);
 
   const retinueActiveEncounters = useMemo(() => {
     const map = new Map<string, { encounter: ActiveEncounterDisplay; template: UnifiedActionTemplate }>();
@@ -3862,6 +3913,20 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           onDismiss={handleStoryBeatDismiss}
           template={activeStoryBeatTemplate}
           agentName={activeStoryBeatAgentName}
+        />
+      )}
+
+      {/* Ascendant beat: thread-tug offer affordance + entered-beat modal (THR-517) */}
+      {pendingBeat && !beatEntered && !interruptsSuppressed && (
+        <AscendantBeatOfferBanner pending={pendingBeat} onEnter={() => setBeatEntered(true)} />
+      )}
+      {pendingBeat && beatEntered && (
+        <AscendantBeatModal
+          open={true}
+          pending={pendingBeat}
+          onResolve={handleResolveBeat}
+          // Spine beats are not dismissable (onboarding); pool beats can be deferred.
+          onClose={pendingBeat.kind === 'spine' ? undefined : () => setBeatEntered(false)}
         />
       )}
 
