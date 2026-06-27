@@ -132,6 +132,24 @@ The inspection/test surface for the Director — headless `window.__DEBUG` contr
 
 ---
 
+## Beat resolve path — offer→enter→resolve (THR-517)
+
+Closes the loop the Director (THR-500) left open: the Director only *offers* (`pending`); this is what resolves it in the running sim — apply grants → `unlockedActionIds`, record `BeatRecord`, clear `pending`. Plus the player-facing enter surface + selection picker + a headless resolve control.
+
+| Surface | Where | Notes |
+|---|---|---|
+| Engine resolve fn | `resolvePendingBeat(state, {chosenActionId?, outcome?}, templateResolver?)` in `src/engine/ascendantBeat.ts` | Looks pending beat up (spine∪pool∪delivery via new exported `getBeatDefinitionById`); applies grants into `unlockedActionIds` (dedup, `action.unlock.granted` via beat per id); records `BeatRecord` + clears `pending` via the existing pure `resolveAscendantBeat`. Selection → exactly one `chosenActionId`; else all grants. Returns `{state, resolved, beatId, grantedActionIds, outcome, message}`. Engine stays registry-free — `templateResolver` injected by the UI. |
+| Fail-soft | `ascendant.beat.skipped` reason `'missing_template'` (union extended in `src/types/trace.ts`) | Unknown beat def / unresolvable `templateId` → clears `pending` gracefully (no wedge). Whole body try/caught → `engine_warning`, leaves pending on throw. |
+| UI modal | `src/components/Game/AscendantBeatModal.tsx` (new) — `AscendantBeatModal` + `AscendantBeatOfferBanner` | Rendered in `GameView` JSX (near `StoryBeatModal`). Spine beats auto-open (`useEffect` on `pendingBeat?.beatId`, gated by `interruptsSuppressed`, non-dismissable); pool beats show the top-center offer banner (z-40) → click `setBeatEntered(true)`. Modal: kind-derived prose + Receive CTA (non-selection) or choose-1-of-N picker (selection). `data-testid`: `beat-resolve-button`, `beat-selection-picker`, `beat-offer-banner`. |
+| GameState consumer | `gameState.ascendantBeats.pending` → `pendingBeat` in `GameView`; `handleResolveBeat(chosenActionId?)` → `resolvePendingBeat` → `setGameState` | Grants land in the drawer automatically (it already filters on `unlockedActionIds`). |
+| Debug control | `__DEBUG.resolveBeat(chosenActionId?)` (`DebugResolveBeatResult` in `src/debug-bridge.{ts,d.ts}`, `BeatBridge` + `_registerBeatBridge` shapes) → GameView beat bridge | Headless resolve of the pending beat (same engine path). BeatsDebugTab adds an "Enter & Resolve" control (chosen-action input for selection beats). |
+| Tests | `src/engine/__tests__/ascendantBeat.test.ts` | +7: grant-all + history + traces, selection needs-choice / grants-one / rejects-bad-choice, no-duplicate-grant, no-op-when-empty, fail-soft unknown-beat + templateId-resolver-false → `missing_template`. |
+| Deferred | prose-rich encounter-screen handoff for template-backed beats (THR-514) | Today the modal renders kind-derived placeholder prose; delivery/template beats resolve as grant-only/acknowledge until the encounter-screen path lands. |
+
+This delivers the THR-500 "Deferred (UI pillar)" items: world-view beat notification, selection picker, resolve path. Remaining deferred there: card-flight unlock reveal (the drawer simply updates today) + hex throne signifier/pulse (THR-502 shipped the seat signifier; beat-bound hex pulse is THR-514).
+
+---
+
 ## Delivery-beat adapter (THR-506)
 
 Hosts THR-452's normally-unreachable branching encounters as `delivery` beats — divine visions the Director offers directly, sidestepping the encounter's mortal-pathing prereqs. The adapter is the bridge from the registered branching catalogue to the Director's draw pool.

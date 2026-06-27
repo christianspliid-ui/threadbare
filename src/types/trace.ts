@@ -1711,11 +1711,15 @@ export interface BeatOfferedTrace extends TraceBase {
   templateId?: string;
 }
 
-/** Trace: the Director declined to offer a beat this turn. THR-500 */
+/**
+ * Trace: a beat was declined this turn — either the Director chose not to offer one
+ * (`pending` / `cadence` / `empty_pool`), or the resolve path cleared a pending beat
+ * whose definition/template could not be resolved (`missing_template`, THR-517).
+ */
 export interface BeatSkippedTrace extends TraceBase {
   category: 'ascendant.beat.skipped';
   turn: number;
-  reason: 'pending' | 'cadence' | 'empty_pool';
+  reason: 'pending' | 'cadence' | 'empty_pool' | 'missing_template';
   beatId?: string;
 }
 

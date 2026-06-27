@@ -78,6 +78,7 @@ export function BeatsDebugTab({ currentTick }: BeatsDebugTabProps) {
   const [schedule, setSchedule] = useState<BeatSchedule | null>(null);
   const [fireBeatId, setFireBeatId] = useState('');
   const [grantId, setGrantId] = useState('');
+  const [resolveChoice, setResolveChoice] = useState('');
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -126,6 +127,17 @@ export function BeatsDebugTab({ currentTick }: BeatsDebugTabProps) {
     }
   }, [grantId, refresh]);
 
+  const handleResolve = useCallback(async () => {
+    if (!window.__DEBUG) return;
+    const choice = resolveChoice.trim();
+    const result = window.__DEBUG.resolveBeat(choice || undefined);
+    setStatusMessage(result.message);
+    if (result.success) {
+      setResolveChoice('');
+      await refresh();
+    }
+  }, [resolveChoice, refresh]);
+
   if (!window.__DEBUG) {
     return <div style={PANEL_STYLE}>Debug bridge not available.</div>;
   }
@@ -153,10 +165,25 @@ export function BeatsDebugTab({ currentTick }: BeatsDebugTabProps) {
       <div style={BLOCK_STYLE}>
         <div style={TITLE_STYLE}>Pending Beat</div>
         {schedule?.pending ? (
-          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--accent-gold)' }}>
-            <strong>{schedule.pending.beatId}</strong> ({schedule.pending.kind}) — offered turn{' '}
-            {schedule.pending.offeredTurn}, via {schedule.pending.triggerKind}
-          </div>
+          <>
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--accent-gold)', marginBottom: '6px' }}>
+              <strong>{schedule.pending.beatId}</strong> ({schedule.pending.kind}) — offered turn{' '}
+              {schedule.pending.offeredTurn}, via {schedule.pending.triggerKind}
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {schedule.pending.kind === 'selection' && (
+                <input
+                  value={resolveChoice}
+                  onChange={(e) => setResolveChoice(e.target.value)}
+                  placeholder="chosen action id (selection beat)"
+                  style={INPUT_STYLE}
+                />
+              )}
+              <button type="button" onClick={() => void handleResolve()} style={BUTTON_STYLE}>
+                Enter &amp; Resolve
+              </button>
+            </div>
+          </>
         ) : (
           <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>None pending.</div>
         )}

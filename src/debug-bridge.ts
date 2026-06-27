@@ -91,6 +91,7 @@ if (import.meta.env.DEV) {
   interface BeatBridge {
     fireBeat: (beatId: string) => import('./debug-bridge.d').DebugFireBeatResult;
     grantUnlock: (actionId: string) => import('./debug-bridge.d').DebugGrantUnlockResult;
+    resolveBeat: (chosenActionId?: string) => import('./debug-bridge.d').DebugResolveBeatResult;
   }
   let _actionBridge: ActionBridge | null = null;
   let _aftermathBridge: AftermathBridge | null = null;
@@ -288,6 +289,8 @@ if (import.meta.env.DEV) {
       _beatBridge?.fireBeat(beatId) ?? { success: false, message: 'Game not loaded' },
     grantUnlock: (actionId: string) =>
       _beatBridge?.grantUnlock(actionId) ?? { success: false, message: 'Game not loaded' },
+    resolveBeat: (chosenActionId?: string) =>
+      _beatBridge?.resolveBeat(chosenActionId) ?? { success: false, message: 'Game not loaded' },
     /** @internal GameView registers its beat bridge here */
     _registerBeatBridge: (cb) => { _beatBridge = cb as BeatBridge; },
 
