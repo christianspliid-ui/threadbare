@@ -114,7 +114,21 @@ Foundation for *Ascendant Beats* — encounters addressed to the player-god. The
 | Trace categories | `src/types/trace.ts` | `ascendant.beat.scheduled` / `.offered` / `.skipped` / `.resolved` + `action.unlock.granted` — in `TraceCategory`, `TRACE_CATEGORIES`, and `TraceEntry` union with typed interfaces. |
 | Resolution helper | `resolveAscendantBeat()` (exported) | Clears `pending`, appends `BeatRecord`, emits `ascendant.beat.resolved`. Called by the encounter/UI resolution path wired in follow-up issues. |
 | Tests | `src/engine/__tests__/ascendantBeat.test.ts` | 11 tests: offer/skip/fail-soft/spine-hold, trigger eval, `drawFromPool`, `resolveAscendantBeat`, `unlock_action` grow + idempotency, trace registration. |
-| Deferred (later child issues) | UI pillar | World-view beat notification, card-flight unlock reveal, selection picker, DebugPanel beat tab, hex throne signifier/pulse — not in this foundation. |
+| Deferred (later child issues) | UI pillar | World-view beat notification, card-flight unlock reveal, selection picker, ~~DebugPanel beat tab~~ (delivered THR-507, below), hex throne signifier/pulse — not in this foundation. |
+
+---
+
+## Ascendant Beat debug controls + Beats tab (THR-507)
+
+The inspection/test surface for the Director — headless `window.__DEBUG` controls plus a live DebugPanel tab. Delivers the deferred "DebugPanel beat tab" from THR-500. Self-contained: the tab reads via the four `__DEBUG` fns (mirrors `ActionUnlocksView`), so no GameState prop plumbing through `DebugPanel`/`DebugTabContent`.
+
+| Surface | Path | Notes |
+|---|---|---|
+| Engine helper | `forceOfferBeatById(beats, beatId, turn)` in `src/engine/ascendantBeat.ts` | Reuses the Director's internal `offer()` (same scheduled/offered traces). Advances `spineCursor` only when firing the cursor's beat; pool beats fire with a `cadence` trigger. Returns `null` for unknown ids. |
+| Debug bridge (read-only) | `__DEBUG.listBeats()` + `__DEBUG.beatSchedule()` (`src/debug-bridge.ts` + `.d.ts`) | `listBeats` = catalogue (spine+pool, kind/trigger/grants/weight). `beatSchedule` = live snapshot (turn, spineCursor/length, nextSpineBeatId, lastBeatTurn, pending, eligible pool, `runUnlockedActionIds`, history) via `_gameStateProvider` + dynamic `ascendant-beat-content` import. |
+| Debug bridge (mutating) | `__DEBUG.fireBeat(beatId)` + `__DEBUG.grantUnlock(actionId)` → new `_beatBridge` registered by `GameView` (`_registerBeatBridge`) | `fireBeat` → `forceOfferBeatById` + `setGameState`. `grantUnlock` pushes into existing `unlockedActionIds` + emits `action.unlock.granted` (`via: 'debug'`). No-op fail-soft when game not loaded. |
+| DebugPanel tab | `'beats'` added to `ViewMode` + `TABS` (label `Beats`) in `src/components/Game/debug/DebugTabContent.tsx`; component `src/components/Game/debug/BeatsDebugTab.tsx` | Renders Director state / pending beat / fire+grant controls / run-unlock list / spine catalogue (▶ cursor marker) / pool / history. Re-reads on `currentTick` change. `data-testid="beats-debug-tab"`. |
+| Tests | `src/engine/__tests__/ascendantBeat.test.ts` | +3: force-offer + trace emission, cursor-advance-only-at-cursor, unknown-id → null. |
 
 ---
 
