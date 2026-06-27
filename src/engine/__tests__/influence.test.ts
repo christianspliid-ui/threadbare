@@ -11,9 +11,10 @@ import {
   processInfluenceMaintenance,
   checkTierPromotion,
   dropAgent,
+  setHomeSeat,
 } from '../influence';
 import type { SphereAlignment } from '../../types/influence';
-import { TIER_PROMOTION_THRESHOLDS } from '../../types/influence';
+import { TIER_PROMOTION_THRESHOLDS, ESSENCE_PER_SEAT, ESSENCE_PER_PLACE_OF_POWER } from '../../types/influence';
 import { SPHERE_NAMES } from '../../types/index';
 
 describe('Essence Pool', () => {
@@ -139,6 +140,66 @@ describe('Essence Generation', () => {
     const boostedGen = computeEssenceGeneration(graph, ascendantId);
     const boostedTotal = SPHERE_NAMES.reduce((sum, s) => sum + boostedGen[s], 0);
     expect(boostedTotal).toBeGreaterThan(baseTotal);
+  });
+
+  // ── Home seat (throne) — THR-502 ──
+  const sumGen = (g = computeEssenceGeneration(graph, ascendantId)) =>
+    SPHERE_NAMES.reduce((sum, s) => sum + g[s], 0);
+
+  const addSeatLocation = (id: string, props: Record<string, unknown> = {}) => {
+    graph.addNode({ id, type: 'location', name: id, properties: { locationType: 'location', ...props } });
+  };
+
+  it('home seat raises generation by exactly ESSENCE_PER_SEAT', () => {
+    addSeatLocation('loc.throne');
+    const baseTotal = sumGen();
+    graph.updateNode(ascendantId, {
+      properties: { ...graph.getNode(ascendantId)!.properties, homeSeatLocationId: 'loc.throne' },
+    });
+    expect(sumGen()).toBeCloseTo(baseTotal + ESSENCE_PER_SEAT, 5);
+  });
+
+  it('home seat does not stack with place-of-power (named higher-yield case)', () => {
+    addSeatLocation('loc.throne', { isPlaceOfPower: true });
+    graph.addEdge({ id: 'edge.controls_throne', source: ascendantId, target: 'loc.throne', type: 'controls', properties: {} });
+    const baseTotal = sumGen();
+    graph.updateNode(ascendantId, {
+      properties: { ...graph.getNode(ascendantId)!.properties, homeSeatLocationId: 'loc.throne' },
+    });
+    // Only the seat term applies — the place-of-power bonus is replaced, not added.
+    expect(sumGen()).toBeCloseTo(baseTotal + ESSENCE_PER_SEAT - ESSENCE_PER_PLACE_OF_POWER, 5);
+  });
+
+  it('home seat pointing at a missing location contributes nothing (fail-soft)', () => {
+    const baseTotal = sumGen();
+    graph.updateNode(ascendantId, {
+      properties: { ...graph.getNode(ascendantId)!.properties, homeSeatLocationId: 'loc.ghost' },
+    });
+    expect(sumGen()).toBeCloseTo(baseTotal, 5);
+  });
+
+  it('setHomeSeat sets the property + a controls edge and raises generation', () => {
+    addSeatLocation('loc.throne');
+    const baseTotal = sumGen();
+    const result = setHomeSeat(graph, ascendantId, 'loc.throne');
+    expect(result.success).toBe(true);
+    expect(result.locationId).toBe('loc.throne');
+    expect(graph.getNode(ascendantId)!.properties.homeSeatLocationId).toBe('loc.throne');
+    expect(graph.getOutgoingEdges(ascendantId, 'controls').some(e => e.target === 'loc.throne')).toBe(true);
+    expect(sumGen()).toBeCloseTo(baseTotal + ESSENCE_PER_SEAT, 5);
+  });
+
+  it('setHomeSeat with no ref prefers a capital, then falls back', () => {
+    addSeatLocation('loc.hamlet', { locationType: 'hamlet' });
+    addSeatLocation('loc.capital', { locationType: 'capital' });
+    const result = setHomeSeat(graph, ascendantId);
+    expect(result.success).toBe(true);
+    expect(result.locationId).toBe('loc.capital');
+  });
+
+  it('setHomeSeat fails soft when no locations exist', () => {
+    const result = setHomeSeat(graph, ascendantId, 'loc.nope');
+    expect(result.success).toBe(false);
   });
 
   it('generateEssence adds to pool respecting max', () => {

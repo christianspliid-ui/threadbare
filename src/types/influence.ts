@@ -152,6 +152,14 @@ export interface AscendantProperties {
   /** Avatar node ID. */
   avatarId: string;
   /**
+   * Home seat (throne) location id (THR-502). The location flagged as the
+   * ascendant's seat — a named, higher-yield place of power. Set by a spine
+   * beat (or the `setHomeSeat` debug helper). When it resolves to a live
+   * location node, essence generation gains one `ESSENCE_PER_SEAT` term and
+   * the hex map renders a seat signifier. Optional: a run without a seat omits it.
+   */
+  homeSeatLocationId?: string;
+  /**
    * Fraction of the next non-self action's essence cost to refund (set by Recede).
    * Cleared after the discount is applied. 0.5 = 50% refund.
    */
@@ -214,6 +222,7 @@ export {
   ESSENCE_PER_THREAD,
   ESSENCE_PER_WORSHIPPER,
   ESSENCE_PER_PLACE_OF_POWER,
+  ESSENCE_PER_SEAT,
   BASE_MAX_ESSENCE,
   MAX_ESSENCE_PER_THREAD,
   MAX_ESSENCE_PER_WORSHIPPER,

@@ -877,6 +877,20 @@ applyChosenStatusGrant(graph, factionId, ascendantPrimaryReach, ascendantId, tic
 
 Tuning constants: `CONSECRATE_DEVOTION_PER_TICK`, `SPHERE_FLAVOR_PASSIVE_VALUE` (and the lookup tables themselves) are the authoring surface — change the number/table entry, not the logic.
 
+#### Home seat (throne) — `homeSeatLocationId` + `ESSENCE_PER_SEAT` (THR-502)
+
+The ascendant's **home seat** is a location flagged on the god that yields a higher-yield place-of-power essence term and a hex signifier. **To make a location the seat, call `setHomeSeat(graph, ascendantId, locationRef?)` (`src/engine/influence.ts`)** — don't hand-write `homeSeatLocationId` + a `controls` edge. It sets `AscendantProperties.homeSeatLocationId`, ensures a `controls` edge (ascendant → location), and is what the scripted spine beat (#5) and the `__DEBUG.setHomeSeat()` bridge both use.
+
+- **Income:** both `computeEssenceGeneration` (engine) and `computeEssenceIncome` (HUD mirror) add one `ESSENCE_PER_SEAT` (default 1.0, tunable in `influence-content.ts`) term for the live seat location, and **exclude that location from the place-of-power loop** — the seat is a *named higher-yield place of power* (replaces, not stacks). Fail-soft: a seat pointing at a destroyed location contributes 0.
+- **Signifier:** flagging the location's `LocationNode.isHomeSeat` (done automatically by GameView's `locationNodes` memo from `homeSeatLocationId`) renders a gold ring + crown on the hex via `LocationIconMesh`.
+- **Not done here:** a `thread`-to-location edge. Thread edges are actor-targeting; if a seat should also count as a threaded location for `ESSENCE_PER_THREAD`, that's the spine beat's call (#5), not implied by the seat.
+
+```typescript
+// Make the capital the ascendant's throne (auto-picks capital→city→first if ref omitted).
+const result = setHomeSeat(graph, ascendantId, 'Ardenmor Keep');
+// result.success, result.locationId, result.message ("...; +1 essence/tick.")
+```
+
 #### The `{cause:*}` prose placeholders
 
 If a seeded encounter carries a `sourceEncounterId`, prose can reference the causing encounter:

@@ -60,6 +60,18 @@ const CAPITAL_RING_COLOR_DEFAULT = '#cc3333';
 /** Canvas size for the capital ring texture. */
 const CAPITAL_RING_SIZE = 128;
 
+/** Gold color for the home-seat (throne) marker — THR-502. */
+const SEAT_MARKER_COLOR = '#d4af37';
+
+/** Canvas size for the seat marker texture. */
+const SEAT_MARKER_SIZE = 128;
+
+/**
+ * Scale of the seat marker relative to its location icon sprite. The marker
+ * (gold ring + crown) sits slightly larger than the icon so it reads as a halo.
+ */
+const SEAT_MARKER_SCALE = 1.15;
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 /**
@@ -81,6 +93,8 @@ export interface LocationNode {
   isAnomalyLocation?: boolean;
   /** True if the anomaly has been discovered through exploration. */
   discoveredByExploration?: boolean;
+  /** True if this location is the ascendant's home seat (throne) — THR-502. */
+  isHomeSeat?: boolean;
 }
 
 /**
@@ -119,6 +133,52 @@ function buildCapitalRingTexture(): THREE.CanvasTexture {
     ctx.strokeStyle = getActivePalette().capitalRingColor;
     ctx.lineWidth = 6;
     ctx.stroke();
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.needsUpdate = true;
+  return tex;
+}
+
+// ── Home-seat marker texture (built once) ─────────────────────────────────────
+
+/**
+ * Builds the home-seat (throne) marker texture — THR-502: a gold ring with a
+ * small crown above, on a transparent background. Distinct from the red capital
+ * ring so a seat reads unambiguously as the player's throne.
+ *
+ * NFP #4: If canvas context unavailable (jsdom), returns a plain CanvasTexture.
+ */
+function buildSeatMarkerTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = SEAT_MARKER_SIZE;
+  canvas.height = SEAT_MARKER_SIZE;
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    const c = SEAT_MARKER_SIZE / 2;
+    // Gold ring
+    ctx.beginPath();
+    ctx.arc(c, c, c - 8, 0, Math.PI * 2);
+    ctx.strokeStyle = SEAT_MARKER_COLOR;
+    ctx.lineWidth = 6;
+    ctx.stroke();
+    // Crown above the ring — three points on a base bar
+    ctx.fillStyle = SEAT_MARKER_COLOR;
+    const cw = SEAT_MARKER_SIZE * 0.30; // crown width
+    const ch = SEAT_MARKER_SIZE * 0.16; // crown height
+    const left = c - cw / 2;
+    const right = c + cw / 2;
+    const baseY = SEAT_MARKER_SIZE * 0.18;
+    const topY = baseY - ch;
+    ctx.beginPath();
+    ctx.moveTo(left, baseY);
+    ctx.lineTo(left, topY);
+    ctx.lineTo(left + cw * 0.25, baseY - ch * 0.4);
+    ctx.lineTo(c, topY - ch * 0.25);
+    ctx.lineTo(right - cw * 0.25, baseY - ch * 0.4);
+    ctx.lineTo(right, topY);
+    ctx.lineTo(right, baseY);
+    ctx.closePath();
+    ctx.fill();
   }
   const tex = new THREE.CanvasTexture(canvas);
   tex.needsUpdate = true;
@@ -183,6 +243,8 @@ export function createLocationIconMesh(locations: LocationNode[]): THREE.Group {
 
   // Build capital ring texture lazily (shared across all capitals)
   let capitalRingTexture: THREE.CanvasTexture | null = null;
+  // Build seat marker texture lazily (shared across seats — usually exactly one)
+  let seatMarkerTexture: THREE.CanvasTexture | null = null;
 
   // Group locations by hex key for ring layout computation
   const hexGroups = new Map<string, LocationNode[]>();
@@ -227,6 +289,10 @@ export function createLocationIconMesh(locations: LocationNode[]): THREE.Group {
         if (!capitalRingTexture) capitalRingTexture = buildCapitalRingTexture();
         addCapitalRing(group, loc, textureCache, capitalRingTexture, 0, 0);
       }
+      if (loc.isHomeSeat) {
+        if (!seatMarkerTexture) seatMarkerTexture = buildSeatMarkerTexture();
+        addSeatMarker(group, loc, seatMarkerTexture, 0, 0, 1.0);
+      }
     }
 
     // ── Render ring locations (distributed around hex center, downscaled) ──
@@ -240,6 +306,10 @@ export function createLocationIconMesh(locations: LocationNode[]): THREE.Group {
       if (loc.isCapital) {
         if (!capitalRingTexture) capitalRingTexture = buildCapitalRingTexture();
         addCapitalRing(group, loc, textureCache, capitalRingTexture, offset.x, offset.y);
+      }
+      if (loc.isHomeSeat) {
+        if (!seatMarkerTexture) seatMarkerTexture = buildSeatMarkerTexture();
+        addSeatMarker(group, loc, seatMarkerTexture, offset.x, offset.y, LOCATION_RING_SCALE_FACTOR);
       }
     }
   }
@@ -334,4 +404,36 @@ function addCapitalRing(
   ringSprite.position.set(wx + offsetX, wy - offsetY, LOCATION_ICON_Z + 0.001);
   ringSprite.scale.set(spriteSize, spriteSize, 1);
   group.add(ringSprite);
+}
+
+/**
+ * Adds a home-seat (throne) marker overlay sprite at the same position as the
+ * location icon — THR-502. Rendered above the base icon (and above the capital
+ * ring) so the gold ring + crown reads as the player's throne.
+ */
+function addSeatMarker(
+  group: THREE.Group,
+  loc: LocationNode,
+  seatMarkerTexture: THREE.CanvasTexture,
+  offsetX: number,
+  offsetY: number,
+  scaleFactor: number,
+): void {
+  const iconDef = LOCATION_ICON_REGISTRY[loc.locationType as keyof typeof LOCATION_ICON_REGISTRY];
+  if (!iconDef) return;
+
+  const spriteSize =
+    HEX_CONSTANTS.HEX_SIZE * LOCATION_SIZE_SCALE[iconDef.sizeClass] * scaleFactor * SEAT_MARKER_SCALE;
+  const { x: wx, y: wy } = hexToWorld({ col: loc.hexCol, row: loc.hexRow }, HEX_CONSTANTS.HEX_SIZE);
+
+  const markerMaterial = new THREE.SpriteMaterial({
+    map: seatMarkerTexture,
+    transparent: true,
+    depthWrite: false,
+  });
+  const markerSprite = new THREE.Sprite(markerMaterial);
+  // Above base icon and capital ring (which sits at +0.001).
+  markerSprite.position.set(wx + offsetX, wy - offsetY, LOCATION_ICON_Z + 0.002);
+  markerSprite.scale.set(spriteSize, spriteSize, 1);
+  group.add(markerSprite);
 }

@@ -137,6 +137,7 @@ import { useEncounterNotifications } from './hooks/useEncounterNotifications';
 import { toggleAttentionMode } from '../../engine/encounterVisibility';
 import { useTopBarHotkeys } from './hooks/useTopBarHotkeys';
 import { computeEssenceIncome } from '../../engine/essenceIncome';
+import { setHomeSeat as setHomeSeatEngine } from '../../engine/influence';
 import { buildActorTargetContext, buildHexTargetContext, buildLocationTargetContext } from '../../engine/targetContextBuilders';
 import { useTargetActions } from './hooks/useTargetActions';
 import { templateIdFromSlotId } from '../../engine/targetActions';
@@ -866,6 +867,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // is the correct dependency. worldVersion bumps every tick and would rebuild the
   // entire Three.js scene on each tick (zoom reset + visual artifacts).
   const locationNodes = useMemo<LocationNode[]>(() => {
+    // Home seat (throne) — flag the matching location so HexMapV2 renders the
+    // seat signifier (THR-502). Read from the ascendant node's properties.
+    const homeSeatLocationId = gameState.graph.getNode(gameState.ascendantId)
+      ?.properties.homeSeatLocationId as string | undefined;
     return gameState.graph.getNodesByType('location')
       .filter(n => n.properties.hexCol != null && n.properties.hexRow != null)
       .filter(n => !n.properties.sublocationTypeId)
@@ -878,8 +883,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         isCapital: n.properties.locationType === 'capital' || n.properties.locationSubtype === 'capital',
         isAnomalyLocation: n.properties.isAnomalyLocation === true,
         discoveredByExploration: n.properties.discoveredByExploration === true,
+        isHomeSeat: homeSeatLocationId != null && n.id === homeSeatLocationId,
       }));
-  }, [gameState.graph, runtime.structuralCacheVersion]);
+  }, [gameState.graph, gameState.ascendantId, runtime.structuralCacheVersion]);
 
   // ── Anomaly shimmer data (all anomalies including undiscovered) ──
   const anomalyNodes = useMemo(() => {
@@ -1955,6 +1961,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         if (!node) return { success: false, message: `No actor matching '${agentQuery}'.`, pinnedCount: 0 };
         const result = unpinAgentDebug(state.graph, node.id, state.tick);
         if (result.success) setGameState(prev => ({ ...prev, graph: prev.graph }));
+        return result;
+      },
+      setHomeSeat: (locationRef) => {
+        const state = _gameStateRef.current;
+        const result = setHomeSeatEngine(state.graph, state.ascendantId, locationRef as string | undefined);
+        if (result.success) {
+          touchStructure(runtime);
+          setGameState(prev => ({ ...prev, graph: prev.graph }));
+        }
         return result;
       },
     });
