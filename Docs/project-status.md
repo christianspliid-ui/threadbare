@@ -1,8 +1,8 @@
 # Project Status
-> Updated 2026-06-27 (THR-502).
+> Updated 2026-06-27 (THR-507).
 
 ## Current Focus
-**Ascendant Beats — Divine Cadence (new):** THR-500 Director foundation + THR-509 action primitives + THR-503 reach gate + THR-502 home seat shipped. Remaining: expression cards (THR-508, now unblocked), spine/pool authoring, debug tab.
+**Ascendant Beats — Divine Cadence (new):** THR-500 Director foundation + THR-509 action primitives + THR-503 reach gate + THR-502 home seat + THR-507 debug controls/Beats tab shipped. Remaining: expression cards (THR-508, now unblocked), spine/pool authoring (THR-505/506).
 **Encounter Experience — active:** Phases A1–A3, B1–B7, C1–C4, D1–D3, E1–E2, F1–F2, G1–G3 ✅. Remaining is F-phase integration (mount EffectRegistration components into hero panel / cast tile / scene state surfaces) and Phase H post-v1 polish.
 
 ## Milestone Status

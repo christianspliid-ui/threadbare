@@ -138,6 +138,7 @@ import { toggleAttentionMode } from '../../engine/encounterVisibility';
 import { useTopBarHotkeys } from './hooks/useTopBarHotkeys';
 import { computeEssenceIncome } from '../../engine/essenceIncome';
 import { setHomeSeat as setHomeSeatEngine } from '../../engine/influence';
+import { forceOfferBeatById } from '../../engine/ascendantBeat';
 import { buildActorTargetContext, buildHexTargetContext, buildLocationTargetContext } from '../../engine/targetContextBuilders';
 import { useTargetActions } from './hooks/useTargetActions';
 import { templateIdFromSlotId } from '../../engine/targetActions';
@@ -1990,6 +1991,53 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (!import.meta.env.DEV || !window.__DEBUG) return;
     window.__DEBUG._registerGameStateProvider(() => _gameStateRef.current);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Debug bridge: Ascendant Beat Director controls (THR-507) ──────────────
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerBeatBridge({
+      fireBeat: (beatId: string) => {
+        const state = _gameStateRef.current;
+        if (!state) return { success: false, message: 'Game not loaded' };
+        if (!state.ascendantBeats) return { success: false, message: 'Ascendant beat state not initialized' };
+        const result = forceOfferBeatById(state.ascendantBeats, beatId.trim(), state.tick);
+        if (!result) return { success: false, message: `No beat matching '${beatId}'` };
+        setGameState(prev =>
+          prev.ascendantBeats ? { ...prev, ascendantBeats: result.next } : prev,
+        );
+        return {
+          success: true,
+          beatId: result.def.beatId,
+          kind: result.def.kind,
+          message: `Offered beat '${result.def.beatId}' (${result.def.kind})`,
+        };
+      },
+      grantUnlock: (actionId: string) => {
+        const normalized = actionId.trim();
+        if (!normalized) return { success: false, message: 'Action ID is required' };
+        const state = _gameStateRef.current;
+        if (!state) return { success: false, message: 'Game not loaded' };
+        if ((state.unlockedActionIds ?? []).includes(normalized)) {
+          return { success: false, actionId: normalized, message: `'${normalized}' is already unlocked` };
+        }
+        emitTrace({
+          tick: state.tick,
+          category: 'action.unlock.granted',
+          turn: state.tick,
+          actionId: normalized,
+          via: 'debug',
+          summary: `action.unlock.granted: ${normalized} (via debug)`,
+        } as unknown as Parameters<typeof emitTrace>[0]);
+        setGameState(prev => {
+          const unlocked = prev.unlockedActionIds ?? [];
+          if (unlocked.includes(normalized)) return prev;
+          return { ...prev, unlockedActionIds: [...unlocked, normalized] };
+        });
+        return { success: true, actionId: normalized, message: `Unlocked '${normalized}' (via debug)` };
+      },
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // ^ Runs once — live state via _gameStateRef; setGameState is a stable dispatcher
 
   const retinueActiveEncounters = useMemo(() => {
     const map = new Map<string, { encounter: ActiveEncounterDisplay; template: UnifiedActionTemplate }>();

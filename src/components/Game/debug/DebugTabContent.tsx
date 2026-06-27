@@ -48,12 +48,13 @@ import { HandStateInspector } from './HandStateInspector';
 import { DetectionStateInspector } from './DetectionStateInspector';
 import { ForecastFactorsInspector } from './ForecastFactorsInspector';
 import { ActionUnlocksView } from './ActionUnlocksView';
+import { BeatsDebugTab } from './BeatsDebugTab';
 import { KpiDebugTab } from './KpiDebugTab';
 import { EMPTY_STATE_STYLE } from './debugPanelStyles';
 import type { KnowsClueOfEdgeProperties } from '../../../types/knowledge';
 import type { FlipTableRuntimeState } from '../../../types/contentShells';
 
-export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events' | 'shells' | 'compositions' | 'phases' | 'choices' | 'drift' | 'hand' | 'detection' | 'forecast' | 'foreshadowing' | 'action-unlocks' | 'sustained-controls' | 'kpi';
+export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events' | 'shells' | 'compositions' | 'phases' | 'choices' | 'drift' | 'hand' | 'detection' | 'forecast' | 'foreshadowing' | 'action-unlocks' | 'beats' | 'sustained-controls' | 'kpi';
 
 export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'feed', label: 'Feed' }, { id: 'agent-follow', label: 'Agent' },
@@ -76,6 +77,7 @@ export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'forecast', label: 'Forecast' },
   { id: 'foreshadowing', label: 'Foreshadowing' },
   { id: 'action-unlocks', label: 'Action Unlocks' },
+  { id: 'beats', label: 'Beats' },
   { id: 'sustained-controls', label: 'Sustained' },
   { id: 'kpi', label: 'KPI' },
 ];
@@ -227,6 +229,7 @@ export function DebugTabContent({
     );
   }
   if (viewMode === 'action-unlocks') return <ActionUnlocksView />;
+  if (viewMode === 'beats') return <BeatsDebugTab currentTick={currentTick} />;
   if (viewMode === 'kpi') return <KpiDebugTab currentTick={currentTick} />;
   if (viewMode === 'sustained-controls') {
     return (

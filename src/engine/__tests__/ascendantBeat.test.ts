@@ -6,6 +6,7 @@ import {
   isTriggerSatisfied,
   drawFromPool,
   resolveAscendantBeat,
+  forceOfferBeatById,
 } from '../ascendantBeat';
 import { ASCENDANT_SPINE } from '../../data/ascendant-beat-content';
 import { applyEncounterAftermathReaction } from '../encounterAftermath';
@@ -200,6 +201,42 @@ describe('Ascendant Beat Director (THR-500)', () => {
   it('resolveAscendantBeat is a no-op when nothing is pending', () => {
     const beats = createInitialAscendantBeatState();
     expect(resolveAscendantBeat(beats, { outcome: 'x', turn: 1 })).toBe(beats);
+  });
+});
+
+describe('forceOfferBeatById — debug fireBeat (THR-507)', () => {
+  beforeEach(() => {
+    clearTraces();
+    enableTracing();
+  });
+  afterEach(() => {
+    clearTraces();
+    disableTracing();
+  });
+
+  it('force-offers a spine beat headlessly and emits scheduled + offered traces', () => {
+    const beats = createInitialAscendantBeatState();
+    const result = forceOfferBeatById(beats, ASCENDANT_SPINE[0].beatId, 5);
+    expect(result).not.toBeNull();
+    expect(result!.next.pending?.beatId).toBe(ASCENDANT_SPINE[0].beatId);
+    expect(result!.next.lastBeatTurn).toBe(5);
+    const cats = getTraces().map(t => t.category);
+    expect(cats).toContain('ascendant.beat.scheduled');
+    expect(cats).toContain('ascendant.beat.offered');
+  });
+
+  it('advances the spine cursor only when firing the beat the cursor points at', () => {
+    const atCursor = forceOfferBeatById(createInitialAscendantBeatState(), ASCENDANT_SPINE[0].beatId, 1);
+    expect(atCursor!.next.spineCursor).toBe(1); // advanced past offered beat
+
+    // Firing a later spine beat while the cursor is still at 0 must not corrupt the cursor.
+    const aheadOfCursor = forceOfferBeatById(createInitialAscendantBeatState(), ASCENDANT_SPINE[2].beatId, 1);
+    expect(aheadOfCursor!.next.pending?.beatId).toBe(ASCENDANT_SPINE[2].beatId);
+    expect(aheadOfCursor!.next.spineCursor).toBe(0); // unchanged
+  });
+
+  it('returns null for an unknown beat id', () => {
+    expect(forceOfferBeatById(createInitialAscendantBeatState(), 'beat.does.not.exist', 1)).toBeNull();
   });
 });
 

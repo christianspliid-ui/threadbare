@@ -181,6 +181,38 @@ function offer(
 }
 
 /**
+ * Force-offer a specific beat by id, bypassing the cadence/spine gates. Dev/QA only
+ * (the `__DEBUG.fireBeat` bridge, THR-507): looks the beat up in the spine and pool
+ * catalogues, emits the same scheduled/offered traces the Director would, and returns
+ * the next Director state. Replaces any currently-pending beat (debug override). When
+ * the targeted beat is the spine cursor's beat, the cursor advances exactly as a
+ * natural offer would; otherwise the cursor is left untouched. Returns `null` if no
+ * beat matches. Exported for the debug bridge + unit testing.
+ */
+export function forceOfferBeatById(
+  beats: AscendantBeatState,
+  beatId: string,
+  turn: number,
+): { next: AscendantBeatState; def: BeatDefinition } | null {
+  const spineIdx = ASCENDANT_SPINE.findIndex(b => b.beatId === beatId);
+  if (spineIdx >= 0) {
+    const def = ASCENDANT_SPINE[spineIdx];
+    // Advance the cursor only when firing the beat the cursor currently points at,
+    // so a debug fire of an already-passed or future spine beat never corrupts the cursor.
+    const advanceSpine = spineIdx === beats.spineCursor;
+    return { next: offer(beats, def, def.trigger, turn, 0, advanceSpine), def };
+  }
+  const poolDef = ASCENDANT_BEAT_POOL.find(b => b.beatId === beatId);
+  if (poolDef) {
+    return {
+      next: offer(beats, poolDef, { kind: 'cadence' }, turn, ASCENDANT_BEAT_POOL.length, /*advanceSpine*/ false),
+      def: poolDef,
+    };
+  }
+  return null;
+}
+
+/**
  * The Director phase. Returns a partial GameState (merged by the orchestrator).
  * No-ops to `{}` when there is no beat to offer or when the state is uninitialized
  * (old saves / fixtures without `ascendantBeats`).

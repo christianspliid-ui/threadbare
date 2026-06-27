@@ -88,8 +88,14 @@ if (import.meta.env.DEV) {
     listAftermathReactions: (agentId: string) => import('./debug-bridge.d').DebugAftermathListResult;
     pickAftermathReaction: (agentId: string, reactionId?: string) => import('./debug-bridge.d').DebugAftermathPickResult;
   }
+  interface BeatBridge {
+    fireBeat: (beatId: string) => import('./debug-bridge.d').DebugFireBeatResult;
+    grantUnlock: (actionId: string) => import('./debug-bridge.d').DebugGrantUnlockResult;
+  }
   let _actionBridge: ActionBridge | null = null;
   let _aftermathBridge: AftermathBridge | null = null;
+  // GameView registers beat-director mutation callbacks here (THR-507)
+  let _beatBridge: BeatBridge | null = null;
   // GameView registers a provider for the live WorldGraph
   let _graphProvider: (() => import('./engine/graph').WorldGraph | null) | null = null;
   // GameView registers a provider for the live GameState
@@ -196,6 +202,81 @@ if (import.meta.env.DEV) {
           }));
       },
     },
+
+    // ── Ascendant Beats — Divine Cadence (THR-507) ──────────────────────────
+    listBeats: async () => {
+      const { ASCENDANT_SPINE, ASCENDANT_BEAT_POOL } = await import('./data/ascendant-beat-content');
+      const map = (
+        defs: readonly import('./types/ascendantBeat').BeatDefinition[],
+        source: 'spine' | 'pool',
+      ) =>
+        defs.map((d) => ({
+          beatId: d.beatId,
+          kind: d.kind,
+          source,
+          triggerKind: d.trigger.kind,
+          minTurn: d.trigger.minTurn ?? null,
+          grantsActionIds: [...(d.grantsActionIds ?? [])],
+          weight: d.weight ?? null,
+        }));
+      return [...map(ASCENDANT_SPINE, 'spine'), ...map(ASCENDANT_BEAT_POOL, 'pool')];
+    },
+    beatSchedule: async () => {
+      const { ASCENDANT_SPINE, ASCENDANT_BEAT_POOL } = await import('./data/ascendant-beat-content');
+      const state = _gameStateProvider?.();
+      const beats = state?.ascendantBeats;
+      if (!state || !beats) {
+        return {
+          available: false,
+          turn: state?.tick ?? 0,
+          spineCursor: -1,
+          spineLength: ASCENDANT_SPINE.length,
+          nextSpineBeatId: null,
+          lastBeatTurn: 0,
+          pending: null,
+          eligiblePool: ASCENDANT_BEAT_POOL.map((b) => b.beatId),
+          poolSize: ASCENDANT_BEAT_POOL.length,
+          runUnlockedActionIds: [...(state?.unlockedActionIds ?? [])],
+          history: [],
+        };
+      }
+      const nextSpineBeatId =
+        beats.spineCursor >= 0 && beats.spineCursor < ASCENDANT_SPINE.length
+          ? ASCENDANT_SPINE[beats.spineCursor].beatId
+          : null;
+      return {
+        available: true,
+        turn: state.tick,
+        spineCursor: beats.spineCursor,
+        spineLength: ASCENDANT_SPINE.length,
+        nextSpineBeatId,
+        lastBeatTurn: beats.lastBeatTurn,
+        pending: beats.pending
+          ? {
+            beatId: beats.pending.beatId,
+            kind: beats.pending.kind,
+            offeredTurn: beats.pending.offeredTurn,
+            triggerKind: beats.pending.trigger.kind,
+          }
+          : null,
+        eligiblePool: ASCENDANT_BEAT_POOL.map((b) => b.beatId),
+        poolSize: ASCENDANT_BEAT_POOL.length,
+        runUnlockedActionIds: [...(state.unlockedActionIds ?? [])],
+        history: beats.history.map((h) => ({
+          beatId: h.beatId,
+          kind: h.kind,
+          resolvedTurn: h.resolvedTurn,
+          outcome: h.outcome,
+          grantedActionIds: [...h.grantedActionIds],
+        })),
+      };
+    },
+    fireBeat: (beatId: string) =>
+      _beatBridge?.fireBeat(beatId) ?? { success: false, message: 'Game not loaded' },
+    grantUnlock: (actionId: string) =>
+      _beatBridge?.grantUnlock(actionId) ?? { success: false, message: 'Game not loaded' },
+    /** @internal GameView registers its beat bridge here */
+    _registerBeatBridge: (cb) => { _beatBridge = cb as BeatBridge; },
 
     // ── Scene snapshot + coordinate conversion for interface playtests ───────
     snapshotScene: async () => _sceneSnapshot?.() ?? getEmptySceneSnapshot(),

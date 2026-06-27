@@ -129,6 +129,73 @@ export interface DebugForeshadowingResult {
   interventionAttribution: import('./types/foreshadowing').ForeshadowingInterventionAttribution | null;
 }
 
+// ── Ascendant Beats — Divine Cadence debug surface (THR-507) ────────────────
+
+import type { BeatKind } from './types/ascendantBeat';
+
+/** One catalogue entry returned by `listBeats()` — a beat the Director can schedule. */
+export interface DebugBeatCatalogueEntry {
+  beatId: string;
+  kind: BeatKind;
+  /** Which catalogue the beat lives in. */
+  source: 'spine' | 'pool';
+  /** Trigger discriminant (turn / first_bonded / settlement_visited / cadence). */
+  triggerKind: string;
+  /** Earliest turn the trigger may fire, or null if unbounded. */
+  minTurn: number | null;
+  /** Action ids the beat is expected to unlock on resolution. */
+  grantsActionIds: string[];
+  /** Per-beat draw weight (pool beats only); null for spine beats. */
+  weight: number | null;
+}
+
+/** One resolved beat as recorded in the Director history. */
+export interface DebugBeatHistoryEntry {
+  beatId: string;
+  kind: BeatKind;
+  resolvedTurn: number;
+  outcome: string;
+  grantedActionIds: string[];
+}
+
+/** Live Director snapshot returned by `beatSchedule()`. */
+export interface DebugBeatScheduleResult {
+  /** False when the game / beat state is not loaded; all other fields are zeroed. */
+  available: boolean;
+  turn: number;
+  spineCursor: number;
+  spineLength: number;
+  /** beatId the spine cursor points at, or null once the spine is exhausted. */
+  nextSpineBeatId: string | null;
+  lastBeatTurn: number;
+  /** The currently-offered beat, or null. */
+  pending: {
+    beatId: string;
+    kind: BeatKind;
+    offeredTurn: number;
+    triggerKind: string;
+  } | null;
+  /** Pool beat ids the Director may currently draw from. */
+  eligiblePool: string[];
+  poolSize: number;
+  /** The within-run action unlock set the beats push into. */
+  runUnlockedActionIds: string[];
+  history: DebugBeatHistoryEntry[];
+}
+
+export interface DebugFireBeatResult {
+  success: boolean;
+  beatId?: string;
+  kind?: BeatKind;
+  message: string;
+}
+
+export interface DebugGrantUnlockResult {
+  success: boolean;
+  actionId?: string;
+  message: string;
+}
+
 export interface DebugBridge {
   openDebugPanel: () => void;
   closeDebugPanel: () => void;
@@ -386,6 +453,21 @@ export interface DebugBridge {
   getThreadStory(agentRef: string): import('./engine/threadDigest').ThreadStoryComposition | null;
   /** @internal GameView registers the thread story provider here */
   _registerThreadStoryProvider(fn: (agentRef: string) => import('./engine/threadDigest').ThreadStoryComposition | null): void;
+
+  // ── Ascendant Beats — Divine Cadence (THR-507) ──────────────────────────
+  /** List the Director's beat catalogue (scripted spine + cadence pool). */
+  listBeats: () => Promise<DebugBeatCatalogueEntry[]>;
+  /** Live snapshot of the Director: spine cursor, pending beat, eligible pool, run-unlock set. */
+  beatSchedule: () => Promise<DebugBeatScheduleResult>;
+  /** Force-offer a beat by id (exact or partial match), bypassing cadence/spine gates. Replaces any pending beat. */
+  fireBeat: (beatId: string) => DebugFireBeatResult;
+  /** Push an action id into the run-scoped unlock set (the path beats use), emitting an `action.unlock.granted` (via: 'debug') trace. */
+  grantUnlock: (actionId: string) => DebugGrantUnlockResult;
+  /** @internal GameView registers beat bridge callbacks here */
+  _registerBeatBridge: (callbacks: {
+    fireBeat: (beatId: string) => DebugFireBeatResult;
+    grantUnlock: (actionId: string) => DebugGrantUnlockResult;
+  }) => void;
 
   /** THR-430 — Schism inspection: list pending schisms in the live game state. */
   schism: {
