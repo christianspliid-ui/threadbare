@@ -39,3 +39,42 @@ export const CONSECRATE_ESTABLISH_COST = 4;
  * co-located thread toward tier promotion (faith-spread).
  */
 export const CONSECRATE_PERTICK = 0.3;
+
+// ─── THR-512: Bestow Power ────────────────────────────────────────────────────
+// `[bestow power] <threaded agent>` grants a threaded mortal two persistent
+// boons via a "divine gift" artifact the agent possesses (option (a) — reuses
+// the imbue/effect-walker path end-to-end; no new consumer subsystem). The gift
+// carries two AttachmentEffects read by the existing walkers:
+//   1. a `passive` reach bonus in the ascendant's primary domain (effectResolver),
+//   2. a per-tick `resource_manipulate` quintessence restore (effectTick).
+// Awareness is gated at resolution against the thread edge.
+
+/**
+ * One-time essence to bestow power on a threaded agent. One tier above imbue
+ * (`IMBUE_ESSENCE_COST` = 4): bestow grants *two* persistent boons to a living
+ * mortal rather than one passive to an item.
+ */
+export const BESTOW_COST = 5;
+
+/**
+ * Magnitude of the passive reach bonus the divine gift grants in the ascendant's
+ * primary domain. Mirrors `SPHERE_FLAVOR_PASSIVE_VALUE` (the imbue passive) so a
+ * bestowed reach bonus is balanced against an imbued one.
+ */
+export const BESTOW_REACH_BONUS = 2;
+
+/**
+ * Per-tick quintessence the divine gift restores to its holder. Quintessence is
+ * a 0–1 health-scale value (NOT an accumulator), so this is a regen-rate boost
+ * applied via a per-tick `resource_manipulate` effect and clamped to the agent's
+ * `quintessenceMax` by `tickResourceManipulate` (effectTick.ts) — never overfills.
+ */
+export const BESTOW_QUINTESSENCE_REGEN = 0.01;
+
+/**
+ * Minimum thread `awareness` tier required to bestow power. The mortal must
+ * perceive the divine connection at least as `faith` (tiers, ascending:
+ * unaware < intuition < faith < communion). Gated fail-soft at resolution — a
+ * thread below this tier no-ops without consuming the grant.
+ */
+export const BESTOW_MIN_AWARENESS = 'faith' as const;
