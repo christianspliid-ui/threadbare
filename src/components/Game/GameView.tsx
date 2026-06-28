@@ -140,6 +140,7 @@ import { computeEssenceIncome } from '../../engine/essenceIncome';
 import { setHomeSeat as setHomeSeatEngine } from '../../engine/influence';
 import { forceOfferBeatById, resolvePendingBeat } from '../../engine/ascendantBeat';
 import { isSpineBeatId } from '../../data/ascendant-beat-content';
+import { gatherNarrativeContext, enrichProse } from '../../engine/proseEnrichment';
 import { AscendantBeatModal, AscendantBeatOfferBanner } from './AscendantBeatModal';
 import { buildActorTargetContext, buildHexTargetContext, buildLocationTargetContext } from '../../engine/targetContextBuilders';
 import { useTargetActions } from './hooks/useTargetActions';
@@ -2072,6 +2073,41 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const pendingBeat = gameState.ascendantBeats?.pending ?? null;
 
   /**
+   * Run-specific title + body for a template-backed pool beat (THR-514). Resolves the
+   * beat's content template (`ASCENDANT_POOL_BEAT_TEMPLATES`, via `getUnifiedTemplateById`)
+   * and runs its `name` + `description` through `enrichProse` against the god's anchor
+   * mortal — The First (the `thread` edge with `courtPosition: 'the_first'`), falling back
+   * to any threaded actor — so placeholders read as run-specific names. Returns undefined
+   * for spine beats (they keep their authored `SPINE_BEAT_PRESENTATION`) and whenever no
+   * subject can be resolved, so the modal falls back to safe kind-derived copy rather than
+   * leaking raw `{placeholders}`. Fail-soft (NFP #4): any enrichment error → undefined.
+   */
+  const beatProseOverride = useMemo((): { title: string; prose: string } | undefined => {
+    if (!pendingBeat || isSpineBeatId(pendingBeat.beatId)) return undefined;
+    const template = getUnifiedTemplateById(pendingBeat.beatId);
+    const body = template?.description ?? template?.narrativeTemplates.initiation;
+    if (!template || !body) return undefined;
+    try {
+      const ascendantId = gameState.ascendantId;
+      if (!ascendantId) return undefined;
+      const threads = gameState.graph.getOutgoingEdges(ascendantId, 'thread');
+      const actorThread =
+        threads.find(e =>
+          (e.properties as { courtPosition?: string }).courtPosition === 'the_first' &&
+          gameState.graph.getNode(e.target)?.type === 'actor',
+        ) ?? threads.find(e => gameState.graph.getNode(e.target)?.type === 'actor');
+      const subjectId = actorThread?.target;
+      if (!subjectId) return undefined; // no anchor mortal → fall back to kind copy
+      const ctx = gatherNarrativeContext(
+        gameState.graph, subjectId, undefined, undefined, null, gameState, gameState.tick,
+      );
+      return { title: enrichProse(template.name, ctx), prose: enrichProse(body, ctx) };
+    } catch {
+      return undefined; // fail-soft: never crash the beat surface over prose
+    }
+  }, [pendingBeat, gameState]);
+
+  /**
    * Resolve the pending beat: apply its grants into `unlockedActionIds` and clear
    * `pending` (engine `resolvePendingBeat`). For selection beats `chosenActionId`
    * names the picked card. A template resolver wires the missing-template fail-soft.
@@ -3927,6 +3963,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           open={true}
           pending={pendingBeat}
           onResolve={handleResolveBeat}
+          // Enriched, run-specific prose for template-backed pool beats (THR-514).
+          proseOverride={beatProseOverride}
           // Spine beats are not dismissable (onboarding); pool beats can be deferred.
           onClose={isSpineBeatId(pendingBeat.beatId) ? undefined : () => setBeatEntered(false)}
         />

@@ -41,6 +41,14 @@ interface AscendantBeatModalProps {
    * offer affordance reappears. Omitted for spine beats (onboarding is not missable).
    */
   onClose?: () => void;
+  /**
+   * Run-specific title + body for template-backed pool beats (THR-514). `GameView`
+   * resolves the beat's `templateId` to its content template and runs the prose through
+   * `enrichProse` against the god's anchor mortal, so names read bespoke each run. When
+   * present, overrides the kind-derived placeholder copy. Spine beats keep their authored
+   * `SPINE_BEAT_PRESENTATION` and never pass this.
+   */
+  proseOverride?: { title: string; prose: string };
 }
 
 // ─── Kind-derived presentation (placeholder until THR-514 prose) ─────
@@ -137,14 +145,19 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
   pending,
   onResolve,
   onClose,
+  proseOverride,
 }: AscendantBeatModalProps) {
   const def = useMemo(() => getBeatDefinitionById(pending.beatId), [pending.beatId]);
-  // Prefer the scripted spine's authored copy (THR-504); fall back to kind-derived placeholder.
+  // Presentation precedence: spine authored copy (THR-504) → enriched template prose for
+  // pool beats (THR-514, supplied by GameView) → kind-derived placeholder. Eyebrow + CTA
+  // always come from the spine/kind table (templates carry only title + body).
   const spine = SPINE_BEAT_PRESENTATION[pending.beatId];
-  const presentation = spine ?? KIND_PRESENTATION[pending.kind] ?? KIND_PRESENTATION.spine;
+  const kindPresentation = KIND_PRESENTATION[pending.kind] ?? KIND_PRESENTATION.spine;
+  const presentation = spine ?? kindPresentation;
   const grants = def?.grantsActionIds ?? [];
   const isSelection = pending.kind === 'selection';
-  const title = spine?.title ?? humanizeBeatId(pending.beatId);
+  const title = proseOverride?.title ?? spine?.title ?? humanizeBeatId(pending.beatId);
+  const prose = proseOverride?.prose ?? presentation.prose;
 
   // Backdrop / Esc → dismiss for optional beats; for spine (no onClose) it stays put.
   const handleClose = onClose ?? (() => { /* spine beats are not dismissable */ });
@@ -187,7 +200,7 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
             margin: '0 0 var(--space-4)',
           }}
         >
-          {presentation.prose}
+          {prose}
         </p>
 
         {isSelection ? (

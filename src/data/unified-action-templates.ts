@@ -20,6 +20,7 @@ import type {
 import type { ActorType } from '../types/graph';
 import { ACTION_TEMPLATES, type ActionTemplateData } from './action-template-content';
 import { ENCOUNTER_TEMPLATES, getAnyEncounterById } from './encounter-content';
+import { ASCENDANT_POOL_BEAT_TEMPLATES } from './ascendant-pool-beat-templates';
 import { ANOMALY_ENCOUNTER_TEMPLATES } from './encounter-anomaly-content';
 import { SOCIAL_ENCOUNTER_TEMPLATES } from './social-encounter-content';
 import { TAVERN_UNIFIED_ENCOUNTER_TEMPLATES } from './tavern-encounter-content';
@@ -4911,8 +4912,12 @@ export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTempl
 
 /**
  * Look up a template by its ID. Returns undefined if not found.
- * Checks UNIFIED_ACTION_TEMPLATES first, then all encounter pools via getAnyEncounterById.
+ * Checks UNIFIED_ACTION_TEMPLATES first, then the ascendant pool-beat templates
+ * (THR-514 — intentionally not in UNIFIED_ACTION_TEMPLATES so beats never surface as
+ * hand/codex cards), then all encounter pools via getAnyEncounterById.
  */
 export function getUnifiedTemplateById(id: string): UnifiedActionTemplate | undefined {
-  return UNIFIED_ACTION_TEMPLATES.find(t => t.id === id) ?? getAnyEncounterById(id);
+  return UNIFIED_ACTION_TEMPLATES.find(t => t.id === id)
+    ?? ASCENDANT_POOL_BEAT_TEMPLATES.find(t => t.id === id)
+    ?? getAnyEncounterById(id);
 }
