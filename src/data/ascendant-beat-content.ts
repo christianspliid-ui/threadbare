@@ -49,6 +49,30 @@ export const BEAT_KIND_WEIGHTS: Partial<Record<BeatKind, number>> = {
  */
 export const BEAT_INIT_LAST_BEAT_TURN = 0;
 
+// ─── Identity-bias tuning (THR-516, plan §3.2) ────────────────────────────────
+
+/**
+ * The cadence pool draw multiplies a beat's base weight (`BEAT_KIND_WEIGHTS[kind] ×
+ * weight`) by the ascendant's affinity for the beat's declared reach/sphere
+ * (`BeatDefinition.identity`), so a god draws its identity-aligned beats more often
+ * (plan §3.2/§4.2). A beat that declares no `identity` is unbiased (multiplier 1).
+ *
+ * Reach: multiplier = `BEAT_REACH_BIAS_BASE + BEAT_REACH_BIAS_SLOPE × affinity`, where
+ * affinity is `domainAffinities[reach]` (∈ [0..1] in practice). At affinity 0 the beat
+ * is neither boosted nor penalised; at affinity 1 it draws ×(base+slope) more.
+ * Sphere: a flat bonus when the beat's sphere matches the ascendant's primary/secondary.
+ */
+/** Floor reach multiplier at zero affinity (no boost, no penalty). */
+export const BEAT_REACH_BIAS_BASE = 1;
+/** Extra reach multiplier per unit of reach affinity (affinity 1 → ×(base+slope)). */
+export const BEAT_REACH_BIAS_SLOPE = 2;
+/** Sphere multiplier when the beat's sphere is the ascendant's primary. */
+export const BEAT_SPHERE_BIAS_PRIMARY = 1.5;
+/** Sphere multiplier when the beat's sphere is the ascendant's secondary. */
+export const BEAT_SPHERE_BIAS_SECONDARY = 1.25;
+/** Sphere multiplier when the beat's sphere matches neither (or no ascendant). */
+export const BEAT_SPHERE_BIAS_NONE = 1;
+
 // ─── The scripted spine (FOUNDATION placeholder — full authoring in follow-ups) ─
 
 /**
@@ -195,12 +219,14 @@ export function isSpineBeatId(beatId: string): boolean {
  * never reveals a card with no template), but seeding vapor ids is avoided so the
  * unlock catalogue stays a truthful map of what actually unlocks.
  *
- * DRAW vs. ELIGIBILITY. The shipped `drawFromPool(pool, rng)` takes no world state,
- * so per-beat *eligibility* predicates (e.g. "an un-introduced culture exists") and
- * *identity* (reach/sphere) biasing from plan §3.2/§4.2 cannot be applied at draw
- * time yet — that is an engine change to the Director's draw signature, deferred to
- * TODO(THR-516). Until then the world may offer an introduction beat with nothing
- * new to introduce; the beat's own prose/aftermath fail-soft (a follow-up concern).
+ * DRAW vs. ELIGIBILITY. As of THR-516 the Director filters this pool by each beat's
+ * `eligibility` predicate against world state before drawing, and `drawFromPool` scales
+ * each beat's weight by the ascendant's `identity` (reach/sphere) affinity — so an
+ * introduction beat is never offered with no un-introduced group to surface, and a god
+ * draws its identity-aligned beats more often (plan §3.2/§4.2). Introduction beats carry
+ * `{ eligibility: unintroduced_group }`; investment beats carry `{ unthreaded_target }`.
+ * Per-beat `identity` reach/sphere tags are a content decision authored alongside the
+ * pool-beat templates (TODO(THR-514)); the draw honours them the moment they are set.
  */
 export const ASCENDANT_BEAT_POOL: readonly BeatDefinition[] = [
   // — Introduction beats (BEAT_KIND_WEIGHTS.introduction): surface a generated
@@ -209,36 +235,42 @@ export const ASCENDANT_BEAT_POOL: readonly BeatDefinition[] = [
     beatId: 'beat.pool.intro.first_stirring',
     kind: 'introduction',
     trigger: { kind: 'cadence' },
+    eligibility: { kind: 'unintroduced_group' },
     // A generated culture first crosses into the god's awareness.
   },
   {
     beatId: 'beat.pool.intro.rising_faction',
     kind: 'introduction',
     trigger: { kind: 'cadence' },
+    eligibility: { kind: 'unintroduced_group' },
     // A faction's ambition grows loud enough to reach the god.
   },
   {
     beatId: 'beat.pool.intro.distant_people',
     kind: 'introduction',
     trigger: { kind: 'cadence' },
+    eligibility: { kind: 'unintroduced_group' },
     // A far-flung culture's rite calls upward, asking to be known.
   },
   {
     beatId: 'beat.pool.intro.zealous_order',
     kind: 'introduction',
     trigger: { kind: 'cadence' },
+    eligibility: { kind: 'unintroduced_group' },
     // A religious faction seeks a patron among the powers.
   },
   {
     beatId: 'beat.pool.intro.sundered_court',
     kind: 'introduction',
     trigger: { kind: 'cadence' },
+    eligibility: { kind: 'unintroduced_group' },
     // A fractured faction begs the god to adjudicate its split.
   },
   {
     beatId: 'beat.pool.intro.old_power',
     kind: 'introduction',
     trigger: { kind: 'cadence' },
+    eligibility: { kind: 'unintroduced_group' },
     // An ancient culture's buried memory stirs and surfaces.
   },
 
@@ -248,36 +280,42 @@ export const ASCENDANT_BEAT_POOL: readonly BeatDefinition[] = [
     beatId: 'beat.pool.invest.the_worthy_mortal',
     kind: 'investment',
     trigger: { kind: 'cadence' },
+    eligibility: { kind: 'unthreaded_target' },
     grantsActionIds: ['bind_thread_agent'],
   },
   {
     beatId: 'beat.pool.invest.a_place_of_power',
     kind: 'investment',
     trigger: { kind: 'cadence' },
+    eligibility: { kind: 'unthreaded_target' },
     grantsActionIds: ['bind_thread_location'],
   },
   {
     beatId: 'beat.pool.invest.raw_relic',
     kind: 'investment',
     trigger: { kind: 'cadence' },
+    eligibility: { kind: 'unthreaded_target' },
     grantsActionIds: ['action.imbue'],
   },
   {
     beatId: 'beat.pool.invest.the_restless_soul',
     kind: 'investment',
     trigger: { kind: 'cadence' },
+    eligibility: { kind: 'unthreaded_target' },
     grantsActionIds: ['observe_agent'],
   },
   {
     beatId: 'beat.pool.invest.the_half_faithful',
     kind: 'investment',
     trigger: { kind: 'cadence' },
+    eligibility: { kind: 'unthreaded_target' },
     grantsActionIds: ['bind_thread_agent'],
   },
   {
     beatId: 'beat.pool.invest.claim_the_wild',
     kind: 'investment',
     trigger: { kind: 'cadence' },
+    eligibility: { kind: 'unthreaded_target' },
     grantsActionIds: ['bind_thread_location'],
   },
 

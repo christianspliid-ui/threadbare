@@ -13,6 +13,9 @@
  * existing encounter pipeline.
  */
 
+import type { ReachDomain } from './traits';
+import type { SphereName } from './index';
+
 export type BeatKind =
   | 'spine'            // scripted onboarding
   | 'introduction'     // surface a generated culture/faction
@@ -34,6 +37,43 @@ export interface BeatTrigger {
 }
 
 /**
+ * A serializable eligibility predicate (THR-516, plan §4.2). The Director drops a
+ * beat from the cadence pool draw when this evaluates false against current world
+ * state, so the world never offers a beat with nothing to say (an introduction beat
+ * with no un-introduced group, an investment beat with no unthreaded target).
+ *
+ * Kept as a tagged descriptor rather than a closure so the catalogue stays plain
+ * data, the schedule stays deterministic (NFP #3), and each predicate is unit-testable
+ * in isolation. Evaluated by `isBeatEligible()` in `src/engine/ascendantBeat.ts`.
+ *
+ * - `always`              — no gate (default when `eligibility` is omitted).
+ * - `unintroduced_group`  — a culture/faction the god has not yet been introduced to
+ *                           exists (more culture+faction actors than resolved
+ *                           introduction beats).
+ * - `unthreaded_target`   — a notable actor/location the god has not yet threaded
+ *                           exists (more threadable nodes than ascendant `thread` edges).
+ */
+export type BeatEligibility =
+  | { readonly kind: 'always' }
+  | { readonly kind: 'unintroduced_group' }
+  | { readonly kind: 'unthreaded_target' };
+
+/**
+ * Identity-bias descriptor (THR-516, plan §3.2). Declares the reach and/or sphere a
+ * beat *expresses*; the pool draw multiplies the beat's base weight by the ascendant's
+ * affinity for that reach (from `domainAffinities`) and a bonus when the sphere matches
+ * the ascendant's primary/secondary alignment — so a god draws its identity-aligned
+ * beats more often. A beat that declares neither is unbiased (multiplier 1). Computed
+ * by `computeIdentityBias()` in `src/engine/ascendantBeat.ts`.
+ */
+export interface BeatIdentityBias {
+  /** Reach this beat aligns with; weight ×= base + slope × ascendant reach affinity. */
+  readonly reach?: ReachDomain;
+  /** Sphere this beat aligns with; weight ×= a primary/secondary-match bonus. */
+  readonly sphere?: SphereName;
+}
+
+/**
  * A lightweight catalogue entry the Director can schedule. The rich, player-facing
  * content (prose, choice cards, aftermath effects) lives on the matching
  * `UnifiedActionTemplate` (`templateId`); this descriptor carries only what the
@@ -49,6 +89,12 @@ export interface BeatDefinition {
   readonly grantsActionIds?: readonly string[];
   /** Relative draw weight within the pool (pool beats only; multiplies the kind weight; default 1). */
   readonly weight?: number;
+  /** Optional eligibility predicate (THR-516). When set, the cadence draw drops the beat
+   *  unless it evaluates true against world state. Omitted = always eligible. */
+  readonly eligibility?: BeatEligibility;
+  /** Optional identity-bias descriptor (THR-516). When set, the cadence draw scales the
+   *  beat's weight by the ascendant's reach/sphere affinity. Omitted = unbiased. */
+  readonly identity?: BeatIdentityBias;
 }
 
 export interface PendingBeat {
