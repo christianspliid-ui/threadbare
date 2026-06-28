@@ -1,7 +1,7 @@
 ---
 name: flush-plan-docs
 description: Commit Cowork-authored plan docs tagged with `plan-pending-commit` to origin/main via the scheduled flush workflow.
-last_validated_against: 2026-05-12
+last_validated_against: 2026-06-28
 ---
 
 # flush-plan-docs
@@ -87,10 +87,14 @@ abort, unstage (`git reset HEAD`), bounce with comment. This is the final safety
 ### 2e. Commit
 
 ```bash
-git commit -m "docs(plan): <issue-identifier> <issue-title>"
+git commit -m "docs(plan): commit <plan-doc-basename>"
 ```
 
-Where `<issue-identifier>` is e.g. `THR-280` and `<issue-title>` is the full title from `get_issue`.
+Where `<plan-doc-basename>` is the plan-doc filename without the `.md` extension
+(e.g. `2026-06-28-some-topic`). **Do NOT put the issue identifier in the commit subject**
+(THR-510): committing a plan doc never resolves its issue, and a bare `THR-XXX` token in a
+commit/PR/branch is treated by GitHub→Linear as a closing reference, sweeping the issue to Done.
+The issue↔commit link is preserved by the Step 3 confirmation comment instead.
 
 Capture the commit SHA from the output.
 
@@ -106,19 +110,21 @@ If push is rejected (non-fast-forward / GH013 error per impediments #83/84/110):
 fall back to flush-branch path. The following steps are all **REQUIRED** — do not
 stop after the commit:
 
-1. Create branch:
+1. Create branch (**branch name MUST NOT contain the issue identifier** — THR-510):
    ```bash
-   git checkout -b docs/plan-flush-<issue-identifier-lowercase>
+   git checkout -b docs/plan-flush-<plan-doc-basename>
    ```
+   Use the plan-doc basename (ID-free, e.g. `docs/plan-flush-2026-06-28-some-topic`). A
+   `THR-XXX` token in the branch name links the issue to the PR and closes it on merge.
 
 2. Push branch (**REQUIRED — do not skip**):
    ```bash
-   git push -u origin docs/plan-flush-<issue-identifier-lowercase>
+   git push -u origin docs/plan-flush-<plan-doc-basename>
    ```
 
 3. Verify push (**REQUIRED**):
    ```bash
-   git ls-remote --heads origin docs/plan-flush-<issue-identifier-lowercase>
+   git ls-remote --heads origin docs/plan-flush-<plan-doc-basename>
    ```
    The remote head must equal the local commit SHA captured in Step 2e.
    If empty or mismatched: invoke **2f.fail** — do not continue to Step 4.
@@ -127,8 +133,11 @@ stop after the commit:
    ```bash
    gh pr create \
      --title "docs(plan): batch flush <YYYY-MM-DD>" \
-     --body  "Auto-flush of plan-pending-commit labeled issues. Closes <issue-url>."
+     --body  "Auto-flush of plan doc \`<plan-doc-path>\` (issue: <issue-title>). Commits a design doc only — does NOT resolve any Linear issue. Issue identifiers are intentionally omitted from this PR body/commit/branch to avoid GitHub→Linear auto-close (THR-510); the issue link lives in the Step 3 confirmation comment."
    ```
+   **Never put `Fixes`/`Closes`/`Resolves`, a bare `THR-XXX`, or a `linear.app/.../issue/THR-XXX`
+   URL in the title or body** (THR-510). The title must keep the literal `docs(plan): batch flush`
+   prefix — the `linear-autoclose.yml` guard (`isDocsFlushContext`) relies on it.
    Do not add `--label docs-only` — do not create labels from this skill, and omit the
    flag if the label does not exist in the repo. Capture the PR URL from the output.
 
@@ -158,7 +167,7 @@ If branch push (Step 2f.2) fails:
 - Leave the local commit in place.
 - Do NOT proceed to Step 3 for this issue — label stays on.
 - Post bounce comment on the issue:
-  > "flush-plan-docs: commit `<sha>` made locally on branch `docs/plan-flush-<id>`,
+  > "flush-plan-docs: commit `<sha>` made locally on branch `docs/plan-flush-<plan-doc-basename>`,
   > but branch push to origin failed. Label retained. Next flush pass will retry;
   > if it persists, a human can push the branch manually."
 - Continue to the next issue.
@@ -170,9 +179,9 @@ If PR creation (Step 2f.4) fails:
 - The branch is on remote but no PR exists.
 - Do NOT proceed to Step 3 for this issue — label stays on.
 - Post bounce comment:
-  > "flush-plan-docs: branch `docs/plan-flush-<id>` pushed at `<sha>`, but PR
+  > "flush-plan-docs: branch `docs/plan-flush-<plan-doc-basename>` pushed at `<sha>`, but PR
   > creation failed with: `<error>`. Label retained. A human can open the PR manually:
-  > `gh pr create --head docs/plan-flush-<id> --title 'docs(plan): batch flush <date>'`"
+  > `gh pr create --head docs/plan-flush-<plan-doc-basename> --title 'docs(plan): batch flush <date>'`"
 - Continue to the next issue.
 
 If PR verify (Step 2f.5) fails — PR was created but `gh pr view` errors:
@@ -242,6 +251,11 @@ After all issues from Step 1 have been processed, run an independent cleanup pas
 
 ## Hard Rules
 
+- **Never emits a closeable issue reference (THR-510).** A flush commit, PR title, PR body, and
+  branch name MUST NOT contain a `Fixes`/`Closes`/`Resolves` keyword, a bare `THR-XXX` token, or a
+  `linear.app/.../issue/THR-XXX` URL. Committing a plan doc never resolves its issue — emitting any
+  of these makes GitHub→Linear sweep the referenced issue(s) to Done (the recurring bug this skill
+  caused 3×). The only issue↔PR link is the Step 3 confirmation comment posted *on the issue*.
 - **Never edits any file.** Only `git add` + `git commit` + `git push`. No `Write`, `Edit`, or file mutations.
 - **Refuses to run if staging area is non-empty** at skill entry (Step 0).
 - **Refuses to stage anything outside `Docs/plans/` or `Docs/audits/`** — scope guard exits before `git add`.
@@ -274,3 +288,8 @@ Then a final summary: `[flush-plan-docs] Done. X processed, Y bounced, Z swept.`
   The branch-fallback path in Step 2f is the designed behavior, not an error condition.
 - **Impediment #112:** Branch-fallback previously committed locally but never pushed or opened a PR.
   Fixed in THR-423 (2026-05-12): push + PR are now required steps with verify-after-write.
+- **Impediment #140 family / THR-510:** flush commits/PRs/branches that carried a `THR-XXX` token
+  (bare, as a `Closes <url>` line, or in the branch name) made GitHub→Linear auto-close every
+  referenced issue on merge. Fixed in THR-510 (2026-06-28): issue identifiers are now scrubbed from
+  the commit subject, PR title/body, and branch name (Steps 2e/2f). The `linear-autoclose.yml`
+  action also exempts `docs(plan): batch flush` / `docs/plan-flush-*` PRs as a deterministic belt.

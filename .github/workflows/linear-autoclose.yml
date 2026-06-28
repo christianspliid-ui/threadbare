@@ -11,6 +11,11 @@ name: Linear Auto-Close
 #     merge commits that drop the keyword from the commit message (impediment #140).
 #   - push to main → scans the pushed commits' messages. Fallback that also
 #     catches direct pushes and squash-commit bodies.
+#
+# THR-510: plan-doc flush PRs (branch `docs/plan-flush-*`, title `docs(plan): batch flush`)
+# are exempted via isDocsFlushContext — committing a design doc never resolves its issue, so
+# such PRs must never auto-close anything. Keyword extraction + guard live in the shared,
+# unit-tested helper scripts/linearAutoclose.mjs.
 
 on:
   push:
@@ -25,6 +30,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout so the inline script can import the shared, unit-tested helpers (THR-510).
+      - uses: actions/checkout@v4
       - uses: actions/github-script@v7
         env:
           LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
@@ -36,15 +43,13 @@ jobs:
               return;
             }
 
-            // Extract issue IDs from "Fixes/Closes/Resolves THR-XX" patterns
-            const pattern = /(?:Fixes|Closes|Resolves)\s+(THR-\d+)/gi;
-            const issueIds = new Set();
-            const addFrom = (text) => {
-              if (!text) return;
-              for (const [, id] of text.matchAll(pattern)) {
-                issueIds.add(id.toUpperCase());
-              }
-            };
+            // Shared keyword extraction + docs-flush guard (scripts/linearAutoclose.mjs).
+            // Extracted from inline JS so the close decision is deterministic + unit-tested (THR-510).
+            const { extractCloseableIssueIds, isDocsFlushContext } =
+              await import(`${process.env.GITHUB_WORKSPACE}/scripts/linearAutoclose.mjs`);
+
+            // Texts scanned for "Fixes/Closes/Resolves THR-XX" patterns.
+            const texts = [];
 
             if (context.eventName === 'pull_request') {
               const pr = context.payload.pull_request;
@@ -52,9 +57,14 @@ jobs:
                 console.log('PR closed without merge — nothing to close');
                 return;
               }
+              // THR-510: plan-doc flush PRs only commit design docs — they never resolve the
+              // referenced issues. Skip them so they cannot sweep the whole batch to Done.
+              if (isDocsFlushContext({ branch: pr.head?.ref, title: pr.title })) {
+                console.log(`Docs-flush PR (${pr.head?.ref} / "${pr.title}") — skipping auto-close (THR-510)`);
+                return;
+              }
               // PR title + body survive non-squash merge commits (impediment #140).
-              addFrom(pr.title);
-              addFrom(pr.body);
+              texts.push(pr.title, pr.body);
             } else {
               // push to main — scan the pushed commits' messages (fallback path).
               const before = context.payload.before;
@@ -74,8 +84,10 @@ jobs:
                 commitMessages = data.commits.map(c => c.commit.message);
               }
 
-              for (const msg of commitMessages) addFrom(msg);
+              texts.push(...commitMessages);
             }
+
+            const issueIds = new Set(extractCloseableIssueIds(texts));
 
             if (!issueIds.size) {
               console.log('No Linear issues referenced — nothing to close');
