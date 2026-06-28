@@ -9,7 +9,7 @@ description: >
   "encounter template", "encounter seeding", "encounter aftermath", or when debugging why
   an agent is idle, stuck, choosing wrong encounters, or failing resolution unexpectedly.
   Also use when updating encounters-agents-reference.html or tick-cycle-reference.html.
-last_validated_against: 2026-05-08
+last_validated_against: 2026-06-28
 ---
 
 # Encounter & Actor Systems — Analysis, Debugging & Iteration
@@ -377,6 +377,8 @@ All live in `src/data/agent-behavior-constants.ts`. Edit here to tune behavior.
 ---
 
 ## 10. Reference HTML Maintenance
+
+Both pages are part of the **Design Reference Wiki** and are registered in `public/wiki-manifest.json`. The shared top-of-page nav is **generator-owned**: `scripts/generate-design-wiki.ts` (run via `npm run build`) regenerates the hub and re-injects the nav between `<!--WIKI-NAV-->` / `<!--/WIKI-NAV-->` markers on every build. **Do not hand-write the nav** — you may leave the markers in place, but anything you write between them is overwritten on the next build. When editing a page's content, edit only the JS data arrays below; leave the marker block alone. See `Docs/design-reference-wiki.md` for the pattern. If you ever add a new served reference page, register it in `wiki-manifest.json` (the `check:design-wiki` guardrail fails otherwise).
 
 This skill owns the accuracy of two public reference documents:
 
