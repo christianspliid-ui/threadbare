@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "prebuild": "npm run generate-ul-dashboard && npm run generate-impediment-dashboard && npm run generate-design-wiki",
+    "prebuild": "npm run generate-ul-dashboard && npm run generate-impediment-dashboard && npm run generate-action-catalog && npm run generate-design-wiki",
+    "generate-action-catalog": "esbuild scripts/generate-action-catalog.ts --bundle --platform=node --format=esm --outfile=.cache/generate-action-catalog.mjs --external:fs --external:path --external:url && node .cache/generate-action-catalog.mjs",
+    "generate-action-catalog:dry": "esbuild scripts/generate-action-catalog.ts --bundle --platform=node --format=esm --outfile=.cache/generate-action-catalog.mjs --external:fs --external:path --external:url && node .cache/generate-action-catalog.mjs --dry-run",
     "generate-ul-dashboard": "esbuild scripts/generate-ul-dashboard-data.ts --bundle --platform=node --format=esm --outfile=.cache/generate-ul-dashboard-data.mjs --external:fs --external:path --external:url && node .cache/generate-ul-dashboard-data.mjs",
     "generate-ul-dashboard:dry": "esbuild scripts/generate-ul-dashboard-data.ts --bundle --platform=node --format=esm --outfile=.cache/generate-ul-dashboard-data.mjs --external:fs --external:path --external:url && node .cache/generate-ul-dashboard-data.mjs --dry-run",
     "generate-impediment-dashboard": "esbuild scripts/generate-impediment-dashboard.ts --bundle --platform=node --format=esm --outfile=.cache/generate-impediment-dashboard.mjs --external:fs --external:path --external:url && node .cache/generate-impediment-dashboard.mjs",

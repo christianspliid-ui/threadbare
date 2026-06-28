@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Fantasy World Simulator — Action Catalog</title>
+<!--
+  Action Catalog — browsable, code-true catalog of ascendant-facing action templates.
+  Renders entirely from public/action-catalog.generated.json (built by
+  scripts/generate-action-catalog.ts on `npm run build`). Do NOT hand-edit the
+  card data here — re-run `npm run generate-action-catalog` instead. The shared wiki
+  nav between the WIKI-NAV markers is injected by scripts/generate-design-wiki.ts.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --parchment: #f4edd8;
+    --parchment-dark: #e8dfc8;
+    --ink: #2c1810;
+    --ink-light: #5a3d2b;
+    --ink-faint: #8a7060;
+    --gold: #b8860b;
+    --gold-light: #daa520;
+    --card-bg: #fff8e7;
+
+    --reach-iron: #6b6b6b;
+    --reach-gold: #b8860b;
+    --reach-shadow: #4a2d6a;
+    --reach-veil: #2d5f8a;
+    --reach-heart: #a23a4a;
+    --reach-eye: #1a5a5a;
+    --reach-stone: #7a5a3a;
+    --reach-star: #3a1a6b;
+    --reach-fallback: #8a7060;
+
+    --rarity-1: #9a9a9a;
+    --rarity-2: #c87533;
+    --rarity-3: #6a3aa0;
+    --rarity-4: #c9971a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.5;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(184,134,11,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 30%, rgba(74,45,106,0.03) 0%, transparent 50%);
+  }
+
+  .catalog-main { max-width: 1280px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  .catalog-hero h1 { font-family: 'Cinzel', Georgia, serif; font-size: 2.2rem; letter-spacing: 0.02em; margin-bottom: 0.3rem; }
+  .catalog-hero p { color: var(--ink-light); max-width: 75ch; margin-bottom: 0.4rem; }
+  .catalog-stats { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink-faint); margin-bottom: 1.4rem; }
+
+  /* ── Filter bar ─────────────────────────────────────────── */
+  .filter-bar {
+    display: flex; flex-wrap: wrap; gap: 0.8rem 1.1rem; align-items: flex-end;
+    background: var(--card-bg); border: 1px solid var(--parchment-dark);
+    border-left: 4px solid var(--gold); border-radius: 4px; padding: 0.9rem 1.1rem;
+    margin-bottom: 1.4rem; position: sticky; top: 0; z-index: 5;
+  }
+  .filter-field { display: flex; flex-direction: column; gap: 0.25rem; }
+  .filter-field label { font-family: 'Cinzel', Georgia, serif; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); }
+  .filter-field input, .filter-field select {
+    font-family: 'Crimson Text', Georgia, serif; font-size: 0.9rem; color: var(--ink);
+    background: #fffdf5; border: 1px solid var(--parchment-dark); border-radius: 3px; padding: 0.35rem 0.5rem;
+  }
+  .filter-field input:focus, .filter-field select:focus { outline: 2px solid var(--gold-light); outline-offset: 0; }
+  #search { min-width: 220px; }
+  .filter-reset {
+    font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.04em; cursor: pointer;
+    background: transparent; border: 1px solid var(--ink-faint); color: var(--ink-light); border-radius: 3px; padding: 0.4rem 0.7rem;
+  }
+  .filter-reset:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ── Card grid ──────────────────────────────────────────── */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.9rem; }
+  .action-card {
+    background: var(--card-bg); border: 1px solid var(--parchment-dark);
+    border-left: 4px solid var(--reach-fallback); border-radius: 4px; padding: 0.85rem 1rem;
+    cursor: pointer; transition: box-shadow 0.15s, transform 0.15s; text-align: left; position: relative;
+  }
+  .action-card:hover { box-shadow: 0 4px 14px rgba(44,24,16,0.15); transform: translateY(-2px); }
+  .action-card:focus-visible { outline: 2px solid var(--gold-light); outline-offset: 2px; }
+  .action-card__spell { font-family: 'Cinzel', Georgia, serif; font-size: 1.02rem; color: var(--ink); margin-bottom: 0.1rem; }
+  .action-card__name { font-size: 0.82rem; font-style: italic; color: var(--ink-light); margin-bottom: 0.5rem; }
+  .action-card__id { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; color: var(--ink-faint); margin-bottom: 0.55rem; word-break: break-all; }
+  .action-card__badges { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+
+  .badge {
+    font-family: 'Cinzel', Georgia, serif; font-size: 0.6rem; letter-spacing: 0.05em; text-transform: uppercase;
+    padding: 0.12rem 0.42rem; border-radius: 3px; border: 1px solid currentColor; white-space: nowrap;
+  }
+  .badge--reach { color: #fff; border-color: transparent; }
+  .badge--rarity { color: #fff; border-color: transparent; }
+  .badge--bucket { color: var(--ink-light); background: #f0e9d4; }
+  .badge--beat { color: var(--gold); border-color: var(--gold); background: rgba(184,134,11,0.08); }
+  .badge--essence { font-family: 'JetBrains Mono', monospace; color: var(--reach-veil); border-color: var(--reach-veil); }
+
+  .empty-state { text-align: center; color: var(--ink-faint); padding: 3rem 1rem; font-style: italic; }
+
+  /* ── Detail drawer ──────────────────────────────────────── */
+  .drawer-backdrop { position: fixed; inset: 0; background: rgba(44,24,16,0.45); display: none; z-index: 20; }
+  .drawer-backdrop.is-open { display: block; }
+  .drawer {
+    position: fixed; top: 0; right: 0; height: 100vh; width: min(440px, 92vw);
+    background: var(--parchment); border-left: 3px solid var(--gold);
+    box-shadow: -6px 0 24px rgba(44,24,16,0.3); transform: translateX(100%);
+    transition: transform 0.22s ease; z-index: 21; overflow-y: auto; padding: 1.6rem 1.5rem 3rem;
+  }
+  .drawer.is-open { transform: translateX(0); }
+  .drawer__close { position: absolute; top: 1rem; right: 1.1rem; background: transparent; border: none; font-size: 1.6rem; color: var(--ink-faint); cursor: pointer; line-height: 1; }
+  .drawer__close:hover { color: var(--ink); }
+  .drawer__spell { font-family: 'Cinzel', Georgia, serif; font-size: 1.5rem; margin-bottom: 0.15rem; padding-right: 1.5rem; }
+  .drawer__name { font-size: 0.95rem; font-style: italic; color: var(--ink-light); margin-bottom: 0.4rem; }
+  .drawer__id { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--ink-faint); margin-bottom: 1rem; word-break: break-all; }
+  .drawer__badges { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 1.2rem; }
+  .drawer__desc { font-size: 1rem; line-height: 1.55; color: var(--ink); margin-bottom: 1.3rem; }
+  .drawer__table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  .drawer__table th { text-align: left; font-family: 'Cinzel', Georgia, serif; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); padding: 0.4rem 0.6rem 0.4rem 0; vertical-align: top; width: 42%; }
+  .drawer__table td { padding: 0.4rem 0; border-bottom: 1px solid var(--parchment-dark); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink); }
+</style>
+</head>
+<body>
+<!--WIKI-NAV-->
+<style>
+  .wiki-nav { font-family: 'Cinzel', Georgia, serif; background: #2c1810; border-bottom: 2px solid #b8860b; padding: 0.6rem 1.2rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.1rem; }
+  .wiki-nav__brand { color: #daa520; font-weight: 700; letter-spacing: 0.04em; margin-right: 0.6rem; font-size: 0.95rem; }
+  .wiki-nav__link { color: #f4edd8; text-decoration: none; font-size: 0.85rem; letter-spacing: 0.02em; padding: 0.15rem 0.1rem; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; }
+  .wiki-nav__link:hover { color: #daa520; }
+  .wiki-nav__link.is-active { color: #daa520; border-bottom-color: #b8860b; font-weight: 700; }
+</style>
+<nav class="wiki-nav" aria-label="Design Reference Wiki">
+  <span class="wiki-nav__brand">⌖ Design Reference Wiki</span>
+  <a class="wiki-nav__link" href="design-wiki.html">Design Wiki</a>
+  <a class="wiki-nav__link" href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>
+      <a class="wiki-nav__link" href="tick-cycle-reference.html">Tick Cycle Reference</a>
+      <a class="wiki-nav__link is-active" href="action-catalog.html" aria-current="page">Action Catalog</a>
+</nav>
+<!--/WIKI-NAV-->
+<main class="catalog-main">
+  <header class="catalog-hero">
+    <h1>Action Catalog</h1>
+    <p>Every ascendant-facing action template in the live registry — spheres, reaches, costs, and real availability buckets. Generated from code (<code>UNIFIED_ACTION_TEMPLATES</code> + <code>ASCENDANT_ACTION_BUCKETS</code>), so it always reflects what actually ships, including the Ascendant Beats verbs.</p>
+    <p class="catalog-stats" id="stats">Loading the grimoire…</p>
+  </header>
+
+  <div class="filter-bar" id="filter-bar" hidden>
+    <div class="filter-field">
+      <label for="search">Search</label>
+      <input type="search" id="search" placeholder="name, spell, or id…" autocomplete="off">
+    </div>
+    <div class="filter-field">
+      <label for="f-category">Category</label>
+      <select id="f-category"><option value="">All</option></select>
+    </div>
+    <div class="filter-field">
+      <label for="f-reach">Reach</label>
+      <select id="f-reach"><option value="">All</option></select>
+    </div>
+    <div class="filter-field">
+      <label for="f-rarity">Rarity</label>
+      <select id="f-rarity"><option value="">All</option></select>
+    </div>
+    <div class="filter-field">
+      <label for="f-bucket">Availability</label>
+      <select id="f-bucket"><option value="">All</option></select>
+    </div>
+    <div class="filter-field">
+      <label for="f-sort">Sort by</label>
+      <select id="f-sort">
+        <option value="spell">Spell name</option>
+        <option value="reach">Reach</option>
+        <option value="rarity">Rarity (high→low)</option>
+        <option value="essence">Essence cost</option>
+        <option value="id">Template id</option>
+      </select>
+    </div>
+    <button class="filter-reset" id="reset">Reset</button>
+  </div>
+
+  <div class="card-grid" id="grid"></div>
+  <p class="empty-state" id="empty" hidden>No actions match these filters.</p>
+</main>
+
+<div class="drawer-backdrop" id="backdrop"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Action detail"></aside>
+
+<script>
+  const REACH_COLORS = {
+    iron: 'var(--reach-iron)', gold: 'var(--reach-gold)', shadow: 'var(--reach-shadow)',
+    veil: 'var(--reach-veil)', heart: 'var(--reach-heart)', eye: 'var(--reach-eye)',
+    stone: 'var(--reach-stone)', star: 'var(--reach-star)',
+  };
+  const RARITY_COLORS = { 1: 'var(--rarity-1)', 2: 'var(--rarity-2)', 3: 'var(--rarity-3)', 4: 'var(--rarity-4)' };
+  const reachColor = (r) => REACH_COLORS[r] || 'var(--reach-fallback)';
+  const cap = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  let DATA = null;
+  const el = (id) => document.getElementById(id);
+
+  function uniqueSorted(entries, key) {
+    return [...new Set(entries.map((e) => e[key]).filter(Boolean))].sort();
+  }
+
+  function populateSelect(select, values, labeller) {
+    for (const v of values) {
+      const opt = document.createElement('option');
+      opt.value = v; opt.textContent = labeller ? labeller(v) : v;
+      select.appendChild(opt);
+    }
+  }
+
+  function badge(text, cls, color) {
+    const style = color ? ` style="background:${color}"` : '';
+    return `<span class="badge ${cls}"${style}>${esc(text)}</span>`;
+  }
+
+  function cardHtml(e) {
+    const badges = [
+      badge(cap(e.reach), 'badge--reach', reachColor(e.reach)),
+      badge(e.rarityName, 'badge--rarity', RARITY_COLORS[e.rarityTier]),
+      e.essenceCost != null ? badge('◈ ' + e.essenceCost, 'badge--essence') : '',
+      badge(e.bucket, 'badge--bucket'),
+      e.beatGranted ? badge('beat', 'badge--beat') : '',
+    ].filter(Boolean).join('');
+    return `<button class="action-card" data-id="${esc(e.id)}" style="border-left-color:${reachColor(e.reach)}">
+      <div class="action-card__spell">${esc(e.spellName || e.name)}</div>
+      <div class="action-card__name">${esc(e.spellName ? e.name : e.crudType + ' · ' + e.scale)}</div>
+      <div class="action-card__id">${esc(e.id)}</div>
+      <div class="action-card__badges">${badges}</div>
+    </button>`;
+  }
+
+  function applyFilters() {
+    const q = el('search').value.trim().toLowerCase();
+    const fc = el('f-category').value, fr = el('f-reach').value, fra = el('f-rarity').value, fb = el('f-bucket').value;
+    const sort = el('f-sort').value;
+
+    let rows = DATA.entries.filter((e) => {
+      if (fc && e.category !== fc) return false;
+      if (fr && e.reach !== fr) return false;
+      if (fra && String(e.rarityTier) !== fra) return false;
+      if (fb && e.bucket !== fb) return false;
+      if (q) {
+        const hay = (e.id + ' ' + e.name + ' ' + (e.spellName || '')).toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+
+    rows = rows.slice().sort((a, b) => {
+      switch (sort) {
+        case 'reach': return a.reach.localeCompare(b.reach) || (a.spellName || a.name).localeCompare(b.spellName || b.name);
+        case 'rarity': return b.rarityTier - a.rarityTier || (a.spellName || a.name).localeCompare(b.spellName || b.name);
+        case 'essence': return (b.essenceCost ?? -1) - (a.essenceCost ?? -1);
+        case 'id': return a.id.localeCompare(b.id);
+        default: return (a.spellName || a.name).localeCompare(b.spellName || b.name);
+      }
+    });
+
+    el('grid').innerHTML = rows.map(cardHtml).join('');
+    el('empty').hidden = rows.length > 0;
+    el('stats').textContent =
+      `Showing ${rows.length} of ${DATA.totals.total} templates · ${DATA.totals.beatGranted} beat-granted · ` +
+      Object.entries(DATA.totals.byBucket).map(([k, v]) => `${v} ${k}`).join(' · ');
+  }
+
+  function openDrawer(id) {
+    const e = DATA.entries.find((x) => x.id === id);
+    if (!e) return;
+    const rows = [
+      ['Template id', e.id],
+      ['Category', e.category],
+      ['Reach', cap(e.reach)],
+      ['Sphere affinity', e.sphereAffinity ? cap(e.sphereAffinity) : '—'],
+      ['CRUD type', e.crudType],
+      ['Scale', e.scale],
+      ['Rarity', `${e.rarityName} (${e.rarityTier})`],
+      ['Intrinsic tier', e.intrinsicTier],
+      ['AP cost', e.apCost],
+      ['Essence cost', e.essenceCost != null ? e.essenceCost : '—'],
+      ['Duration mode', e.durationMode + (e.hasControlSpec ? ' (control spec)' : '')],
+      ['Target categories', e.targetCategories.length ? e.targetCategories.join(', ') : '—'],
+      ['Target subtypes', e.targetSubtypes.length ? e.targetSubtypes.join(', ') : '—'],
+      ['Requires reach', e.requiresReach ? cap(e.requiresReach) : '—'],
+      ['Availability bucket', e.bucket + (e.bucketDeclared ? ' (declared)' : ' (derived)')],
+      ['Beat-granted', e.beatGranted ? 'yes' : 'no'],
+      ['Starter floor', e.starter ? 'yes' : 'no'],
+    ].map(([k, v]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join('');
+
+    el('drawer').innerHTML = `
+      <button class="drawer__close" id="drawer-close" aria-label="Close">×</button>
+      <div class="drawer__spell">${esc(e.spellName || e.name)}</div>
+      <div class="drawer__name">${esc(e.name)}</div>
+      <div class="drawer__id">${esc(e.id)}</div>
+      <div class="drawer__badges">
+        ${badge(cap(e.reach), 'badge--reach', reachColor(e.reach))}
+        ${badge(e.rarityName, 'badge--rarity', RARITY_COLORS[e.rarityTier])}
+        ${badge(e.bucket, 'badge--bucket')}
+        ${e.beatGranted ? badge('beat-granted', 'badge--beat') : ''}
+      </div>
+      ${e.description ? `<p class="drawer__desc">${esc(e.description)}</p>` : ''}
+      <table class="drawer__table"><tbody>${rows}</tbody></table>`;
+    el('drawer').classList.add('is-open');
+    el('backdrop').classList.add('is-open');
+    el('drawer-close').addEventListener('click', closeDrawer);
+  }
+
+  function closeDrawer() {
+    el('drawer').classList.remove('is-open');
+    el('backdrop').classList.remove('is-open');
+  }
+
+  function init(data) {
+    DATA = data;
+    populateSelect(el('f-category'), uniqueSorted(data.entries, 'category'), cap);
+    populateSelect(el('f-reach'), uniqueSorted(data.entries, 'reach'), cap);
+    populateSelect(el('f-rarity'), [...new Set(data.entries.map((e) => e.rarityTier))].sort(), (t) => `${data.entries.find((e) => e.rarityTier === t).rarityName} (${t})`);
+    populateSelect(el('f-bucket'), uniqueSorted(data.entries, 'bucket'));
+
+    el('filter-bar').hidden = false;
+    ['search', 'f-category', 'f-reach', 'f-rarity', 'f-bucket', 'f-sort'].forEach((id) => {
+      el(id).addEventListener('input', applyFilters);
+    });
+    el('reset').addEventListener('click', () => {
+      ['search', 'f-category', 'f-reach', 'f-rarity', 'f-bucket'].forEach((id) => { el(id).value = ''; });
+      el('f-sort').value = 'spell';
+      applyFilters();
+    });
+    el('grid').addEventListener('click', (ev) => {
+      const card = ev.target.closest('.action-card');
+      if (card) openDrawer(card.dataset.id);
+    });
+    el('backdrop').addEventListener('click', closeDrawer);
+    document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') closeDrawer(); });
+
+    applyFilters();
+  }
+
+  fetch('action-catalog.generated.json')
+    .then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(init)
+    .catch((err) => {
+      el('stats').textContent = 'Failed to load action-catalog.generated.json — run `npm run generate-action-catalog`. (' + err.message + ')';
+    });
+</script>
+</body>
+</html>
