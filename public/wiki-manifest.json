@@ -1,0 +1,34 @@
+{
+  "home": "design-wiki.html",
+  "title": "The Fantasy World Simulator — Design Reference Wiki",
+  "pages": [
+    {
+      "id": "encounters-agents-reference",
+      "file": "encounters-agents-reference.html",
+      "title": "Encounters, Agents & Resolution",
+      "blurb": "Nine Reaches, Domain Capability, species, traits, attachments, the encounter types, the resolution pipeline, divine intervention, and the agent decision pipeline.",
+      "section": "Systems"
+    },
+    {
+      "id": "tick-cycle-reference",
+      "file": "tick-cycle-reference.html",
+      "title": "Tick Cycle Reference",
+      "blurb": "All 12 orchestrator acts and 40+ phases in tick order, each with its reads, writes, and RNG tags.",
+      "section": "Systems"
+    }
+  ],
+  "backlog": [
+    {
+      "id": "opening-system",
+      "title": "Opening & Availability",
+      "blurb": "How a run opens: ascendant identity, the First, availability gates, and the first turns.",
+      "section": "Systems"
+    },
+    {
+      "id": "action-catalog",
+      "title": "Action Catalog",
+      "blurb": "Browsable catalog of divine and mortal action templates — spheres, reaches, costs, and steps.",
+      "section": "Systems"
+    }
+  ]
+}
