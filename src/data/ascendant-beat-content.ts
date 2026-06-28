@@ -4,11 +4,20 @@
  * The cadence constants (NFP #1 — every magic number is a named constant) plus the
  * Director's beat catalogue: the scripted spine and the cadence-gated pool.
  *
- * FOUNDATION SCOPE (THR-500): the spine here is a minimal, turn-gated placeholder
- * that proves the Director schedules beats; the pool is intentionally empty. The
- * full, prose-rich spine (Beats 0–4) and the starter pool library are authored in
- * the follow-up content issues (plan §4.1–§4.3). Keeping the catalogue here means
- * "what fires when" is a single, tunable authoring surface.
+ * SPINE SCOPE (THR-504): the scripted onboarding spine is the full five-beat arc
+ * (Beats 0–4) — each a turn-gated `spine`/`selection` beat granting the run's first
+ * action cards, with authored Threadbare-voice presentation in
+ * {@link SPINE_BEAT_PRESENTATION}. The cadence-gated pool library lives below
+ * (THR-505). Keeping the catalogue here means "what fires when" is a single, tunable
+ * authoring surface.
+ *
+ * GRAPH-SEEDING NOTE. The shipped resolve path (`resolvePendingBeat`, THR-517) is
+ * catalogue-driven: a beat *grants action cards*; the threaded actor / throne /
+ * artifact the onboarding promises are produced when the player *fires* those granted
+ * cards (`bind_thread_agent`, `bind_thread_location`, `action.imbue`). The plan's
+ * richer §4.1 vision — beat resolution itself running `add_node`/`setHomeSeat`
+ * aftermath to auto-seed those nodes — is deferred to TODO(THR-520); it is an engine
+ * change to the resolve contract, out of this content issue's scope.
  */
 
 import type { BeatDefinition, BeatKind } from '../types/ascendantBeat';
@@ -43,32 +52,121 @@ export const BEAT_INIT_LAST_BEAT_TURN = 0;
 // ─── The scripted spine (FOUNDATION placeholder — full authoring in follow-ups) ─
 
 /**
- * Ordered spine beats. The Director offers each in turn once its trigger is
- * satisfied, advancing the cursor. These foundation entries use pure turn-gated
- * triggers so the Director demonstrably fires regardless of seed/map; the
- * narrative content + the `first_bonded` / `settlement_visited` triggers for the
- * real opening land in the spine-authoring issue (plan §4.1).
+ * Ordered spine beats (Beats 0–4 — plan §4.1). The Director offers each in turn once
+ * its turn trigger is satisfied, advancing the cursor; the max-one-pending invariant
+ * paces the arc at the player's resolution speed, floored by {@link SPINE_TRIGGER_TURNS}.
+ * Each beat grants the run's next action card(s); Beat 4 is a `selection` that forks
+ * the opening into one of three god-paths. Authored presentation lives in
+ * {@link SPINE_BEAT_PRESENTATION}.
+ *
+ * Every `grantsActionIds` entry is a real, shipping `UnifiedActionTemplate` id (asserted
+ * in tests). The threaded actor / throne / artifact the arc narrates are produced when
+ * the player fires these granted cards — see the GRAPH-SEEDING NOTE in the module header.
  */
 export const ASCENDANT_SPINE: readonly BeatDefinition[] = [
+  // Beat 0 — The First: the god's first thread to a single mortal soul.
   {
     beatId: 'beat.spine.opening',
     kind: 'spine',
     trigger: { kind: 'turn', minTurn: SPINE_TRIGGER_TURNS[0] },
     grantsActionIds: ['bind_thread_agent', 'observe_agent'],
   },
+  // Beat 1 — The Seat: a place in the world to stand and gather faith into power.
   {
     beatId: 'beat.spine.the_seat',
     kind: 'spine',
     trigger: { kind: 'turn', minTurn: SPINE_TRIGGER_TURNS[1] },
     grantsActionIds: ['bind_thread_location'],
   },
+  // Beat 2 — A Thing Left Behind: the god's first artifact, carrying its will onward.
   {
     beatId: 'beat.spine.thing_left_behind',
     kind: 'spine',
     trigger: { kind: 'turn', minTurn: SPINE_TRIGGER_TURNS[2] },
-    grantsActionIds: [],
+    grantsActionIds: ['action.imbue'],
+  },
+  // Beat 3 — The First Word: the god's first expressive verb, spoken into a mortal mind.
+  {
+    beatId: 'beat.spine.the_first_word',
+    kind: 'spine',
+    trigger: { kind: 'turn', minTurn: SPINE_TRIGGER_TURNS[3] },
+    grantsActionIds: ['divine.persuade'],
+  },
+  // Beat 4 — A Path Opens: choose one of three god-paths (dreamer / prophet / patron).
+  {
+    beatId: 'beat.spine.a_path_opens',
+    kind: 'selection',
+    trigger: { kind: 'turn', minTurn: SPINE_TRIGGER_TURNS[4] },
+    grantsActionIds: ['divine.dream', 'divine.omen', 'divine.inspire'],
   },
 ];
+
+// ─── Scripted-spine presentation (plan §4.1, §5.1 — authored Threadbare prose) ──
+
+/** Authored per-beat copy for the scripted spine, surfaced in `AscendantBeatModal`. */
+export interface SpineBeatPresentation {
+  /** Small uppercase kicker above the title. */
+  readonly eyebrow: string;
+  /** The beat's display title (overrides the humanized beat id). */
+  readonly title: string;
+  /** Long-form welcome body — Threadbare voice, player-as-god, read + TTS. */
+  readonly prose: string;
+  /** Primary-button label for non-selection beats (selection beats use card buttons). */
+  readonly cta: string;
+}
+
+/**
+ * The scripted onboarding spine's authored presentation, keyed by `beatId`. The modal
+ * prefers this over the generic kind-derived placeholder copy so the opening reads as a
+ * bespoke, voiced arc rather than five identical "the weave is yours to touch" cards.
+ *
+ * Voice: second-person, player-as-god, indirect intervention (you lean, you press, you
+ * speak a pressure — never command). The spine is deterministic and identical every run,
+ * so the prose carries no `enrichProse` placeholders; per-run generated names enter via
+ * the pool beats (TODO(THR-514)), not the scripted spine.
+ */
+export const SPINE_BEAT_PRESENTATION: Readonly<Record<string, SpineBeatPresentation>> = {
+  'beat.spine.opening': {
+    eyebrow: 'The First Thread',
+    title: 'The First',
+    prose:
+      'Of all the souls below, one burns at a pitch only you can hear. You do not seize it — you lean close, and a single thread spins out between your attention and the mortal world. Watch this one. Whatever kind of god you become, it will be answered first in them.',
+    cta: 'Reach Down',
+  },
+  'beat.spine.the_seat': {
+    eyebrow: 'A Place to Stand',
+    title: 'The Seat',
+    prose:
+      'A god adrift is only weather. But the world has left a hollow shaped to your absence — these stones, this height, this hush between walls. Bind a place to yourself and call it your seat, and the faith that gathers there will rise back to you as power, tide after patient tide.',
+    cta: 'Take the Seat',
+  },
+  'beat.spine.thing_left_behind': {
+    eyebrow: 'An Object of Power',
+    title: 'A Thing Left Behind',
+    prose:
+      'Mortals outlast themselves through the things they make. Press a sliver of your nature into some humble object and it wakes — carrying your will into hands you will never touch, into years you will not stay to watch. Whoever bears it bears a little of you, knowing or not.',
+    cta: 'Leave Your Mark',
+  },
+  'beat.spine.the_first_word': {
+    eyebrow: 'The First Word',
+    title: 'The First Word',
+    prose:
+      'Until now you have only watched. But a god is known by what it asks of the world. Choose your first word and let it fall into a mortal mind — not a command, but a pressure, a leaning, a dream they will mistake for their own. This is how gods are made: one whisper at a time.',
+    cta: 'Speak',
+  },
+  'beat.spine.a_path_opens': {
+    eyebrow: 'A Path Opens',
+    title: 'A Path Opens',
+    prose:
+      'Three shapes of devotion lie before you, and the world is still soft enough to take any of them. The dreamer reads the deep water of sleeping minds; the prophet writes warnings across the waking sky; the patron lifts the worthy higher than they could ever climb alone. Choose what kind of god you will be — for now.',
+    cta: 'Choose',
+  },
+};
+
+/** True for any beat belonging to the scripted onboarding spine (modal: present modally, non-dismissable). */
+export function isSpineBeatId(beatId: string): boolean {
+  return beatId.startsWith('beat.spine.');
+}
 
 // ─── The pool (starter library — THR-505) ────────────────────────────────────
 
@@ -226,13 +324,21 @@ export interface ActionBucketEntry {
  *
  * Only real, shipping `UnifiedActionTemplate` ids appear. No `reach-gated` entries
  * yet — the reach-gated investment cards are not authored (TODO(THR-515)); the
- * bucket value + `requiresReach` field exist for when they land.
+ * bucket value + `requiresReach` field exist for when they land. The expressive
+ * `divine.*` verbs the scripted spine grants (THR-504, Beats 3–4) are
+ * `unlockable-generic`: every run can earn them via the opening arc; they are not
+ * gated on the ascendant's two domains.
  */
 export const ASCENDANT_ACTION_BUCKETS: Readonly<Record<string, ActionBucketEntry>> = {
   bind_thread_agent: { bucket: 'generic' },
   bind_thread_location: { bucket: 'generic' },
   observe_agent: { bucket: 'generic' },
   'action.imbue': { bucket: 'unlockable-generic' },
+  // Spine-granted expressive verbs (THR-504): The First Word + the three god-paths.
+  'divine.persuade': { bucket: 'unlockable-generic' },
+  'divine.dream': { bucket: 'unlockable-generic' },
+  'divine.omen': { bucket: 'unlockable-generic' },
+  'divine.inspire': { bucket: 'unlockable-generic' },
 };
 
 /**

@@ -139,6 +139,7 @@ import { useTopBarHotkeys } from './hooks/useTopBarHotkeys';
 import { computeEssenceIncome } from '../../engine/essenceIncome';
 import { setHomeSeat as setHomeSeatEngine } from '../../engine/influence';
 import { forceOfferBeatById, resolvePendingBeat } from '../../engine/ascendantBeat';
+import { isSpineBeatId } from '../../data/ascendant-beat-content';
 import { AscendantBeatModal, AscendantBeatOfferBanner } from './AscendantBeatModal';
 import { buildActorTargetContext, buildHexTargetContext, buildLocationTargetContext } from '../../engine/targetContextBuilders';
 import { useTargetActions } from './hooks/useTargetActions';
@@ -2085,10 +2086,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [setGameState]);
 
   // Spine beats present modally so the opening is not missable; pool beats wait behind
-  // the offer affordance. Gated by interrupt suppression (debug/playtest can silence).
+  // the offer affordance. Keyed on the spine id prefix so the closing selection beat
+  // (Beat 4, kind 'selection') auto-opens too. Gated by interrupt suppression.
   useEffect(() => {
-    if (pendingBeat?.kind === 'spine' && !interruptsSuppressed) setBeatEntered(true);
-  }, [pendingBeat?.beatId, pendingBeat?.kind, interruptsSuppressed]);
+    if (pendingBeat && isSpineBeatId(pendingBeat.beatId) && !interruptsSuppressed) setBeatEntered(true);
+  }, [pendingBeat?.beatId, pendingBeat, interruptsSuppressed]);
 
   const retinueActiveEncounters = useMemo(() => {
     const map = new Map<string, { encounter: ActiveEncounterDisplay; template: UnifiedActionTemplate }>();
@@ -3926,7 +3928,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           pending={pendingBeat}
           onResolve={handleResolveBeat}
           // Spine beats are not dismissable (onboarding); pool beats can be deferred.
-          onClose={pendingBeat.kind === 'spine' ? undefined : () => setBeatEntered(false)}
+          onClose={isSpineBeatId(pendingBeat.beatId) ? undefined : () => setBeatEntered(false)}
         />
       )}
 

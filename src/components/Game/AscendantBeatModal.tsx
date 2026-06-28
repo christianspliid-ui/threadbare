@@ -13,17 +13,20 @@
  *  - **Selection beats** render a generic **choose-1-of-N** picker over the beat's
  *    `grantsActionIds`; `onResolve(chosenActionId)` grants exactly the chosen card.
  *
- * SCOPE NOTE (THR-517). This is the plumbing surface. The rich, prose-authored
- * encounter-screen path for template-backed beats (Threadbare voice, choice cards,
- * `enrichProse` placeholders) is content work — TODO(THR-514). Until a beat declares
- * a real `templateId` + prose, this modal renders kind-derived placeholder copy so
- * the loop is playable and inspectable end-to-end.
+ * SCOPE NOTE. The scripted onboarding spine (Beats 0–4) ships authored Threadbare-voice
+ * copy via `SPINE_BEAT_PRESENTATION` (THR-504), preferred over the generic kind-derived
+ * placeholder below. The rich, prose-authored encounter-screen path for the *pool*
+ * (template-backed beats with `enrichProse` placeholders for generated culture/faction
+ * names) remains content work — TODO(THR-514). Until a pool beat declares a real
+ * `templateId` + prose, those still render kind-derived copy so the loop stays playable
+ * and inspectable end-to-end.
  */
 
 import { memo, useMemo } from 'react';
 import { Modal } from '../shared/Modal';
 import type { PendingBeat, BeatKind } from '../../types/ascendantBeat';
 import { getBeatDefinitionById } from '../../engine/ascendantBeat';
+import { SPINE_BEAT_PRESENTATION } from '../../data/ascendant-beat-content';
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 
 // ─── Props ──────────────────────────────────────────────────────────
@@ -136,10 +139,12 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
   onClose,
 }: AscendantBeatModalProps) {
   const def = useMemo(() => getBeatDefinitionById(pending.beatId), [pending.beatId]);
-  const presentation = KIND_PRESENTATION[pending.kind] ?? KIND_PRESENTATION.spine;
+  // Prefer the scripted spine's authored copy (THR-504); fall back to kind-derived placeholder.
+  const spine = SPINE_BEAT_PRESENTATION[pending.beatId];
+  const presentation = spine ?? KIND_PRESENTATION[pending.kind] ?? KIND_PRESENTATION.spine;
   const grants = def?.grantsActionIds ?? [];
   const isSelection = pending.kind === 'selection';
-  const title = humanizeBeatId(pending.beatId);
+  const title = spine?.title ?? humanizeBeatId(pending.beatId);
 
   // Backdrop / Esc → dismiss for optional beats; for spine (no onClose) it stays put.
   const handleClose = onClose ?? (() => { /* spine beats are not dismissable */ });
