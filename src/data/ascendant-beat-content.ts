@@ -225,8 +225,16 @@ export function isSpineBeatId(beatId: string): boolean {
  * introduction beat is never offered with no un-introduced group to surface, and a god
  * draws its identity-aligned beats more often (plan §3.2/§4.2). Introduction beats carry
  * `{ eligibility: unintroduced_group }`; investment beats carry `{ unthreaded_target }`.
- * Per-beat `identity` reach/sphere tags are a content decision authored alongside the
- * pool-beat templates (TODO(THR-514)); the draw honours them the moment they are set.
+ * Per-beat `identity` reach/sphere tags remain unauthored (a separate content decision);
+ * the draw honours them the moment they are set, and falls back to unbiased until then.
+ *
+ * TEMPLATE-BACKED (THR-514). Each pool beat now sets `templateId === beatId`, naming the
+ * matching content template in `ASCENDANT_POOL_BEAT_TEMPLATES`
+ * (`ascendant-pool-beat-templates.ts`). `resolvePendingBeat`'s template resolver uses it
+ * for the missing-template fail-soft, and `AscendantBeatModal` renders the template's
+ * `enrichProse`-laden prose so each beat reads bespoke per run. The unlock itself is still
+ * carried by `grantsActionIds` below (the THR-517 resolve contract grants from the
+ * descriptor, not template aftermath).
  */
 export const ASCENDANT_BEAT_POOL: readonly BeatDefinition[] = [
   // — Introduction beats (BEAT_KIND_WEIGHTS.introduction): surface a generated
@@ -236,6 +244,7 @@ export const ASCENDANT_BEAT_POOL: readonly BeatDefinition[] = [
     kind: 'introduction',
     trigger: { kind: 'cadence' },
     eligibility: { kind: 'unintroduced_group' },
+    templateId: 'beat.pool.intro.first_stirring',
     // A generated culture first crosses into the god's awareness.
   },
   {
@@ -243,6 +252,7 @@ export const ASCENDANT_BEAT_POOL: readonly BeatDefinition[] = [
     kind: 'introduction',
     trigger: { kind: 'cadence' },
     eligibility: { kind: 'unintroduced_group' },
+    templateId: 'beat.pool.intro.rising_faction',
     // A faction's ambition grows loud enough to reach the god.
   },
   {
@@ -250,6 +260,7 @@ export const ASCENDANT_BEAT_POOL: readonly BeatDefinition[] = [
     kind: 'introduction',
     trigger: { kind: 'cadence' },
     eligibility: { kind: 'unintroduced_group' },
+    templateId: 'beat.pool.intro.distant_people',
     // A far-flung culture's rite calls upward, asking to be known.
   },
   {
@@ -257,6 +268,7 @@ export const ASCENDANT_BEAT_POOL: readonly BeatDefinition[] = [
     kind: 'introduction',
     trigger: { kind: 'cadence' },
     eligibility: { kind: 'unintroduced_group' },
+    templateId: 'beat.pool.intro.zealous_order',
     // A religious faction seeks a patron among the powers.
   },
   {
@@ -264,6 +276,7 @@ export const ASCENDANT_BEAT_POOL: readonly BeatDefinition[] = [
     kind: 'introduction',
     trigger: { kind: 'cadence' },
     eligibility: { kind: 'unintroduced_group' },
+    templateId: 'beat.pool.intro.sundered_court',
     // A fractured faction begs the god to adjudicate its split.
   },
   {
@@ -271,6 +284,7 @@ export const ASCENDANT_BEAT_POOL: readonly BeatDefinition[] = [
     kind: 'introduction',
     trigger: { kind: 'cadence' },
     eligibility: { kind: 'unintroduced_group' },
+    templateId: 'beat.pool.intro.old_power',
     // An ancient culture's buried memory stirs and surfaces.
   },
 
@@ -281,6 +295,7 @@ export const ASCENDANT_BEAT_POOL: readonly BeatDefinition[] = [
     kind: 'investment',
     trigger: { kind: 'cadence' },
     eligibility: { kind: 'unthreaded_target' },
+    templateId: 'beat.pool.invest.the_worthy_mortal',
     grantsActionIds: ['bind_thread_agent'],
   },
   {
@@ -288,6 +303,7 @@ export const ASCENDANT_BEAT_POOL: readonly BeatDefinition[] = [
     kind: 'investment',
     trigger: { kind: 'cadence' },
     eligibility: { kind: 'unthreaded_target' },
+    templateId: 'beat.pool.invest.a_place_of_power',
     grantsActionIds: ['bind_thread_location'],
   },
   {
@@ -295,6 +311,7 @@ export const ASCENDANT_BEAT_POOL: readonly BeatDefinition[] = [
     kind: 'investment',
     trigger: { kind: 'cadence' },
     eligibility: { kind: 'unthreaded_target' },
+    templateId: 'beat.pool.invest.raw_relic',
     grantsActionIds: ['action.imbue'],
   },
   {
@@ -302,6 +319,7 @@ export const ASCENDANT_BEAT_POOL: readonly BeatDefinition[] = [
     kind: 'investment',
     trigger: { kind: 'cadence' },
     eligibility: { kind: 'unthreaded_target' },
+    templateId: 'beat.pool.invest.the_restless_soul',
     grantsActionIds: ['observe_agent'],
   },
   {
@@ -309,6 +327,7 @@ export const ASCENDANT_BEAT_POOL: readonly BeatDefinition[] = [
     kind: 'investment',
     trigger: { kind: 'cadence' },
     eligibility: { kind: 'unthreaded_target' },
+    templateId: 'beat.pool.invest.the_half_faithful',
     grantsActionIds: ['bind_thread_agent'],
   },
   {
@@ -316,21 +335,24 @@ export const ASCENDANT_BEAT_POOL: readonly BeatDefinition[] = [
     kind: 'investment',
     trigger: { kind: 'cadence' },
     eligibility: { kind: 'unthreaded_target' },
+    templateId: 'beat.pool.invest.claim_the_wild',
     grantsActionIds: ['bind_thread_location'],
   },
 
   // — Selection beats (BEAT_KIND_WEIGHTS.selection): choose 1-of-N within-run. The
-  //   picker (UI follow-up) offers the listed cards; resolution unlocks the chosen. —
+  //   picker offers the listed cards; resolution unlocks the chosen one. —
   {
     beatId: 'beat.pool.select.first_true_gift',
     kind: 'selection',
     trigger: { kind: 'cadence' },
+    templateId: 'beat.pool.select.first_true_gift',
     grantsActionIds: ['bind_thread_agent', 'bind_thread_location', 'action.imbue'],
   },
   {
     beatId: 'beat.pool.select.shape_of_devotion',
     kind: 'selection',
     trigger: { kind: 'cadence' },
+    templateId: 'beat.pool.select.shape_of_devotion',
     grantsActionIds: ['action.imbue', 'observe_agent'],
   },
 ];
