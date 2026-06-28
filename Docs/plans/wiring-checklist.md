@@ -163,7 +163,24 @@ Hosts THR-452's normally-unreachable branching encounters as `delivery` beats �
 | Debug bridge | `__DEBUG.listBeats()` adds `source: 'delivery'` + `templateId`; `beatSchedule().eligiblePool` includes eligible delivery beats (`src/debug-bridge.ts` + `.d.ts`) | Honest snapshot of the merged draw set. |
 | CLI control | `beat` command in `scripts/cli.ts` (`status` / `list [delivery]` / `fire <beatId>`) | Headless equivalent of `__DEBUG.fireBeat`; `beat fire` prints the offered beat's source `templateId` + traces (the Done-when demonstration). |
 | Tests | `src/engine/__tests__/deliveryBeatAdapter.test.ts` | 9: mapping, id round-trip, eligibility dedup, merged-pool reachability, force-offer trace carries source `templateId`. |
-| Deferred | offer→enter→resolve path (THR-514); draw-time identity bias + per-beat eligibility predicates (THR-516) | Until THR-514, delivery beats fire via force-offer (CLI/`__DEBUG`); the merged-pool wiring means they fire naturally once resolution lands. |
+| Deferred | offer→enter→resolve path (THR-514) | Until THR-514, delivery beats fire via force-offer (CLI/`__DEBUG`); the merged-pool wiring means they fire naturally once resolution lands. Draw-time identity bias + per-beat eligibility predicates landed in THR-516 (below). |
+
+---
+
+## Director pool draw — eligibility predicates + identity bias (THR-516)
+
+Closes the THR-505 deferral: the shipped `drawFromPool(pool, rng)` took no world state, so the Director could neither drop a beat with nothing to say nor weight toward the god's identity. The cadence branch now **filters by eligibility then draws weighted by ascendant identity**.
+
+| Surface | Path | Notes |
+|---|---|---|
+| Type fields | `BeatEligibility`, `BeatIdentityBias`, + optional `eligibility?` / `identity?` on `BeatDefinition` (`src/types/ascendantBeat.ts`) | Serializable descriptors (NFP #3). Omitted = always eligible / unbiased — fully backward-compatible. |
+| Eligibility eval | `isBeatEligible(beat, state)` (exported, `src/engine/ascendantBeat.ts`) | `unintroduced_group` = #culture/faction actors > #resolved introduction beats; `unthreaded_target` = #actor+location nodes > #ascendant `thread` edges; `always`/omitted = true. Fail-open on throw/unknown kind (NFP #4). |
+| Identity bias | `computeIdentityBias(beat, state)` (exported) | reach: `BEAT_REACH_BIAS_BASE + BEAT_REACH_BIAS_SLOPE × domainAffinities[reach]`; sphere: `BEAT_SPHERE_BIAS_PRIMARY`/`_SECONDARY`/`_NONE` on `sphereAlignment` match. Reach×sphere multiplicative; 1 when no `identity` / no ascendant. |
+| Draw | `drawFromPool(pool, rng, identityBias?)` (third arg optional) | weight = `BEAT_KIND_WEIGHTS[kind] × weight × bias`. Existing two-arg callers unaffected. |
+| Director wiring | `phaseAscendantBeatDirector` cadence branch | `pool.filter(isBeatEligible)` → `drawFromPool(eligible, rng, b => computeIdentityBias(b, state))`; `poolSize` trace now reflects the **eligible** pool. |
+| Constants | `BEAT_REACH_BIAS_BASE/SLOPE`, `BEAT_SPHERE_BIAS_PRIMARY/SECONDARY/NONE` (`src/data/ascendant-beat-content.ts`) | NFP #1. Pool beats tagged: introduction → `unintroduced_group`, investment → `unthreaded_target`. |
+| Tests | `src/engine/__tests__/ascendantBeatIdentity.test.ts` (16) | eligibility per predicate + fail-open + "Director never offers ineligible beat"; identity multipliers + "draws aligned beat more often" (deterministic). |
+| Deferred | per-beat `identity` reach/sphere tags on the shipping pool (content) → TODO(THR-514) | Mechanism is live; the starter pool ships untagged, so bias is neutral until THR-514 authors the tags. |
 
 ---
 

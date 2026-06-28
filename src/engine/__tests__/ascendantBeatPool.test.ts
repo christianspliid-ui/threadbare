@@ -29,12 +29,31 @@ function mulberry32(seed: number): () => number {
   };
 }
 
-function directorState(tick: number, beats: AscendantBeatState): GameState {
+/**
+ * Build a graph with enough world state for the pool's eligibility predicates (THR-516)
+ * to pass: a few un-introduced culture/faction groups (so `introduction` beats are
+ * eligible) and some unthreaded actors/locations (so `investment` beats are eligible).
+ */
+function seededGraph(): WorldGraph {
+  const g = new WorldGraph();
+  g.addNode({ id: 'asc-1', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
+  g.addNode({ id: 'culture-1', type: 'actor', name: 'Culture A', properties: { actorType: 'culture' } });
+  g.addNode({ id: 'culture-2', type: 'actor', name: 'Culture B', properties: { actorType: 'culture' } });
+  g.addNode({ id: 'faction-1', type: 'actor', name: 'Faction A', properties: { actorType: 'faction' } });
+  g.addNode({ id: 'faction-2', type: 'actor', name: 'Faction B', properties: { actorType: 'faction' } });
+  g.addNode({ id: 'mortal-1', type: 'actor', name: 'Mortal A', properties: { actorType: 'individual' } });
+  g.addNode({ id: 'mortal-2', type: 'actor', name: 'Mortal B', properties: { actorType: 'individual' } });
+  g.addNode({ id: 'loc-1', type: 'location', name: 'Place A', properties: {} });
+  g.addNode({ id: 'loc-2', type: 'location', name: 'Place B', properties: {} });
+  return g;
+}
+
+function directorState(tick: number, beats: AscendantBeatState, graph: WorldGraph = seededGraph()): GameState {
   return {
     tick,
     seed: 42,
     ascendantId: 'asc-1',
-    graph: new WorldGraph(),
+    graph,
     ascendantBeats: beats,
   } as unknown as GameState;
 }

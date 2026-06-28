@@ -28,6 +28,7 @@ import type {
   BeatTrigger,
   PendingBeat,
 } from '../types/ascendantBeat';
+import type { AscendantProperties } from '../types/influence';
 import { emitTrace } from './traceBuffer';
 import type {
   BeatScheduledTrace,
@@ -43,6 +44,11 @@ import {
   BEAT_MIN_GAP,
   BEAT_KIND_WEIGHTS,
   BEAT_INIT_LAST_BEAT_TURN,
+  BEAT_REACH_BIAS_BASE,
+  BEAT_REACH_BIAS_SLOPE,
+  BEAT_SPHERE_BIAS_PRIMARY,
+  BEAT_SPHERE_BIAS_SECONDARY,
+  BEAT_SPHERE_BIAS_NONE,
 } from '../data/ascendant-beat-content';
 import { eligibleDeliveryBeats, getDeliveryBeatById } from './deliveryBeatAdapter';
 
@@ -111,15 +117,109 @@ export function isTriggerSatisfied(trigger: BeatTrigger, state: GameState, turn:
 }
 
 /**
- * Deterministic weighted draw from a beat pool. Weight = kind weight × per-beat
- * weight. Returns null for an empty pool. Exported for unit testing.
+ * Read the ascendant's persisted properties (reach affinities + sphere alignment) for
+ * identity biasing. Fail-soft: returns null when there is no ascendant, no node, or the
+ * graph lookup throws — the draw then treats every beat as unbiased (NFP #4).
+ */
+function getAscendantProps(state: GameState): AscendantProperties | null {
+  const id = state.ascendantId;
+  if (!id) return null;
+  try {
+    const node = state.graph.getNode(id);
+    return (node?.properties as AscendantProperties | undefined) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Identity-bias multiplier for a beat (THR-516, plan §3.2). A beat declaring an aligned
+ * `reach` is scaled by the ascendant's `domainAffinities[reach]`; one declaring a
+ * `sphere` gets a flat bonus when that sphere is the ascendant's primary/secondary.
+ * Reach and sphere combine multiplicatively. A beat with no `identity`, or when there is
+ * no ascendant, returns 1 (unbiased). Pure over its inputs; exported for unit testing.
+ */
+export function computeIdentityBias(beat: BeatDefinition, state: GameState): number {
+  const identity = beat.identity;
+  if (!identity) return 1;
+  const props = getAscendantProps(state);
+  let mult = 1;
+  if (identity.reach) {
+    const affinity = props?.domainAffinities?.[identity.reach] ?? 0;
+    mult *= BEAT_REACH_BIAS_BASE + BEAT_REACH_BIAS_SLOPE * Math.max(0, affinity);
+  }
+  if (identity.sphere) {
+    const sphere = props?.sphereAlignment;
+    if (sphere?.primary === identity.sphere) mult *= BEAT_SPHERE_BIAS_PRIMARY;
+    else if (sphere?.secondary === identity.sphere) mult *= BEAT_SPHERE_BIAS_SECONDARY;
+    else mult *= BEAT_SPHERE_BIAS_NONE;
+  }
+  return mult;
+}
+
+/** Count culture/faction actor nodes the god has not yet been introduced to (THR-516). */
+function countUnintroducedGroups(state: GameState): number {
+  const groups = state.graph.getNodesByType('actor').filter(n => {
+    const t = (n.properties as { actorType?: string }).actorType;
+    return t === 'culture' || t === 'faction';
+  }).length;
+  const introduced = state.ascendantBeats
+    ? state.ascendantBeats.history.filter(h => h.kind === 'introduction').length
+    : 0;
+  return groups - introduced;
+}
+
+/** True if a threadable actor/location the god has not yet threaded exists (THR-516). */
+function hasUnthreadedTarget(state: GameState): boolean {
+  const id = state.ascendantId;
+  if (!id) return false;
+  const threadable =
+    state.graph.getNodesByType('actor').length + state.graph.getNodesByType('location').length;
+  const threads = state.graph.getOutgoingEdges(id, 'thread').length;
+  return threads < threadable;
+}
+
+/**
+ * Whether a beat's eligibility predicate holds against current world state (THR-516,
+ * plan §4.2). A beat with no `eligibility` (or `{ kind: 'always' }`) is always eligible.
+ * Fail-soft (NFP #4): an unknown predicate kind or a thrown evaluation fails *open*
+ * (treated as eligible) so a predicate bug never silences the living world — the same
+ * fail-open posture the plan's §3.8 fallback table takes for the reach gate. Exported
+ * for unit testing.
+ */
+export function isBeatEligible(beat: BeatDefinition, state: GameState): boolean {
+  const e = beat.eligibility;
+  if (!e || e.kind === 'always') return true;
+  try {
+    switch (e.kind) {
+      case 'unintroduced_group':
+        return countUnintroducedGroups(state) > 0;
+      case 'unthreaded_target':
+        return hasUnthreadedTarget(state);
+      default:
+        return true; // fail-open for an unrecognized predicate
+    }
+  } catch {
+    return true; // fail-open: an eligibility error must never mute the world
+  }
+}
+
+/**
+ * Deterministic weighted draw from a beat pool. Weight = kind weight × per-beat weight ×
+ * identity bias (THR-516; `identityBias` defaults to neutral so existing two-arg callers
+ * are unaffected). Returns null for an empty pool. Exported for unit testing.
  */
 export function drawFromPool(
   pool: readonly BeatDefinition[],
   rng: () => number,
+  identityBias?: (beat: BeatDefinition) => number,
 ): BeatDefinition | null {
   if (pool.length === 0) return null;
-  const weights = pool.map(b => Math.max(0, (BEAT_KIND_WEIGHTS[b.kind] ?? 1) * (b.weight ?? 1)));
+  const weights = pool.map(b => {
+    const base = Math.max(0, (BEAT_KIND_WEIGHTS[b.kind] ?? 1) * (b.weight ?? 1));
+    const bias = identityBias ? Math.max(0, identityBias(b)) : 1;
+    return base * bias;
+  });
   const total = weights.reduce((a, b) => a + b, 0);
   if (total <= 0) return pool[0];
   let roll = rng() * total;
@@ -269,16 +369,24 @@ export function phaseAscendantBeatDirector(
     }
     // Merge the static base pool (intro/invest/select) with the delivery beats that
     // are still eligible — branching encounters not yet delivered this run (THR-506).
-    // The base pool stays delivery-free; eligibility (dedup against history) is applied
-    // here, where the Director has access to state.
+    // The base pool stays delivery-free; delivery dedup against history happens in the
+    // adapter, per-beat eligibility predicates (THR-516) are applied below.
     const pool = [...ASCENDANT_BEAT_POOL, ...eligibleDeliveryBeats(beats.history.map(h => h.beatId))];
-    const def = drawFromPool(pool, rng);
+    // Drop beats whose eligibility predicate fails against current world state, then draw
+    // weighted by ascendant identity (reach/sphere) on top of the kind-mix weights.
+    const eligible = pool.filter(b => isBeatEligible(b, state));
+    if (eligible.length === 0) {
+      emitSkipped(turn, 'empty_pool');
+      return {};
+    }
+    const def = drawFromPool(eligible, rng, b => computeIdentityBias(b, state));
     if (!def) {
       emitSkipped(turn, 'empty_pool');
       return {};
     }
+    // poolSize reflects the *eligible* pool (plan §3.2) for inspectability.
     return {
-      ascendantBeats: offer(beats, def, { kind: 'cadence' }, turn, pool.length, /*advanceSpine*/ false),
+      ascendantBeats: offer(beats, def, { kind: 'cadence' }, turn, eligible.length, /*advanceSpine*/ false),
     };
   } catch (err) {
     // NFP #4: the tick loop must never crash.
