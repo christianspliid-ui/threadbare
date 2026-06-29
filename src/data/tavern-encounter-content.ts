@@ -82,7 +82,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'The room draws its breath all at once. Somewhere behind {name}, a mug breaks.',
       },
       {
-        reach: 'flesh',
+        reach: 'iron',
         duration: { min: 1, max: 1 },
         difficulty: TD_MOD,
         failBehavior: 'fail_action',
@@ -328,7 +328,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     name: 'Drinking Contest',
     rarityTier: 1,
     intrinsicTier: 'background',
-    reach: 'flesh',
+    reach: 'iron',
     crudType: 'update',
     scale: 'local',
     locationSubtypes: TAVERN_SUBLOCATION,
@@ -337,7 +337,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     steps: [
       {
-        reach: 'flesh',
+        reach: 'iron',
         duration: { min: 1, max: 1 },
         difficulty: TD_EASY,
         failBehavior: 'continue_weakened',
@@ -355,7 +355,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'The first cup is sharper than {name} expected. The room tilts by a handspan. The trapper already knows how this ends.',
       },
       {
-        reach: 'flesh',
+        reach: 'iron',
         duration: { min: 1, max: 1 },
         difficulty: TD_MOD,
         failBehavior: 'fail_action',
@@ -1333,7 +1333,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           '{name} thank{s} the watcher with the specific care a real gift calls for — no questions, no names asked in return. ' +
           'The watcher leaves by the side door. In a week the warning will have saved {name} something specific.',
         failureAfterimage:
-          '{name} shrug{s} the warning off, and the watcher\'s face does not change — the particular politeness of someone who expected this. ' +
+          '{name} shrug{s} the warning off, and the watcher\'s face does not change — the politeness of someone who expected this.' +
           'They stand, finish their drink, and leave. In a week, the thing they warned of will happen anyway.',
       },
     ],

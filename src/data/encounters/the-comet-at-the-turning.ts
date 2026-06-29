@@ -45,7 +45,7 @@ const step0TheSkyOpens: ActionStep = {
   narrativeTemplate:
     'For three nights the comet had hung in the western sky like a wound that would not close, and on the ' +
     'third night the prophet climbed above the rooftops to read it. Below, the whole settlement had gone ' +
-    'quiet in the particular way of people who have stopped pretending the sky is ordinary. Couriers waited ' +
+    'quiet in the way of people who have stopped pretending the sky is ordinary. Couriers waited ' +
     'at the foot of the hill with horses already saddled; whatever the prophet said by morning would be ' +
     'carried to the capitals before the comet rose again, and the capitals would carry it to the nations, ' +
     'and the nations would decide — on the strength of one mortal\'s upturned face — whether this was the ' +

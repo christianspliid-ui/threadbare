@@ -264,7 +264,7 @@ const HAMMER_WITHHELD_AFTERMATH = {
     'did not revolt; the kin-towns did not rise; the children of the next decade were born because the bad ' +
     'years did not come round. But the burial pit at the fords had been witnessed and never answered, and ' +
     'everyone who knew — and because of the record, everyone would always be able to know — carried the ' +
-    'particular weight of a justice seen clearly and set deliberately aside. The lord lived out his years a ' +
+    'weight of a justice seen clearly and set deliberately aside. The lord lived out his years a ' +
     'free man with the truth of him written down where no one could deny it, which is a strange half-sentence: ' +
     'unpunished and unable, ever, to be innocent. The region chose its living children over its dead ones. ' +
     'The record will outlast everyone who made the choice.',

@@ -108,7 +108,7 @@ const step0TheReckoning: ActionStep = {
     'into her bones like cold iron.\n\n' +
     'Maren stood with her back to the shed door. She had not turned around since locking ' +
     'it. Her hands, scarred and calloused from three decades of metalwork, hung at her ' +
-    'sides with the particular stillness of someone who did not trust what they might do ' +
+    'sides with the stillness of someone who did not trust what they might do ' +
     'if they moved. Outside the eastern gate, the Greycloaks\' cook-fires sent thin smoke ' +
     'above the tree line — fifty-odd professional soldiers who had marched here not for ' +
     'conquest but for the simple, terrible reason that the weapons they had paid for would ' +
@@ -152,7 +152,7 @@ const step1ForgeTheTruth: ActionStep = {
   failBehavior: 'fail_action',
   narrativeTemplate:
     'Something shifted in the forge-master\'s bearing — not confidence, not yet, but ' +
-    'the particular resolve of someone who has decided that the worst thing is not the ' +
+    'the resolve of someone who has decided that the worst thing is not the ' +
     'truth but the silence around it. Maren Ironhewn crossed to the coal shed, drew the ' +
     'bolt, and told Dalla to stand up. The girl rose with the stiffness of someone who ' +
     'had been sitting in the dark for two days, blinking against the morning light as if ' +
@@ -302,7 +302,7 @@ const FORGE_TRUTH_AFTERMATH = {
     'By evening the Greycloaks had a schedule and the settlement had a wound that would ' +
     'scar cleanly. Maren Ironhewn sat on the step outside her forge with a cup of something ' +
     'she was not drinking, watching the Greycloak camp\'s fires settle into their nighttime ' +
-    'rhythm. The replacement work would take three weeks. Her hands ached with the particular ' +
+    'rhythm. The replacement work would take three weeks. Her hands ached with the ' +
     'fatigue of someone who had carried a weight with her body that should have been carried ' +
     'by a structure. Dalla was gone — walked out through the eastern gate under Torve\'s ' +
     'supervision, to begin the season of labor that would become the shape of her debt. The ' +

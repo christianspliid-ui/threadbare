@@ -70,7 +70,7 @@ const step1Ascend: ActionStep = {
     'The god leaned through the doorway. There was no thunder. Apotheosis is not an explosion; it is a ' +
     'filling, the way a dry riverbed fills when the rains finally come — first a darkening of the dust, ' +
     'then a thread of water, then the whole channel running with something that was always meant to be ' +
-    'there and had only been waiting. The mortal did not cry out. They went still in the particular way ' +
+    'there and had only been waiting. The mortal did not cry out. They went still in the way ' +
     'of a held breath that does not need to end, and when they moved again they moved like someone who ' +
     'has remembered a language they were never taught. The god did not take them; gods do not take. The ' +
     'god *joined* — kept a portion of itself here now, in this walking, breathing, finite frame, knowing ' +

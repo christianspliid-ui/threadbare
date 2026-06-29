@@ -136,7 +136,7 @@ const step1Branch: ActionStepBranch = {
 const WALL_RAISED_AFTERMATH = {
   overview:
     'The wall changed the map and then it changed the people on either side of it. Behind the stone, the ' +
-    'valley learned the particular ease of the protected — and the particular forgetting that comes with ' +
+    'valley learned the ease of the protected — and the forgetting that comes with ' +
     'it, until within a generation the children could not say what was on the far side, only that the wall ' +
     'had always been there and had always been wise. Beyond the stone, the shut-out lands learned the wall ' +
     'as the herders learn weather: a fact, immovable, with a god\'s name behind it. Some of them cursed the ' +

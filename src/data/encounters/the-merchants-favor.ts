@@ -83,7 +83,7 @@ const step1Intercede: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god set the agent in motion toward the guildhall with the particular quality of ' +
+    'The god set the agent in motion toward the guildhall with the quality of ' +
     'presence that makes doors open before a hand reaches them. The guildmaster was in the ' +
     'middle of something — ledgers, a heated exchange about a border tariff — and he stopped ' +
     'when {title} entered, the way men stop when they have learned that certain interruptions ' +
@@ -114,7 +114,7 @@ const step1MarkRobbers: ActionStep = {
   narrativeTemplate:
     'The god said nothing about the guildhall. The guildhall was a lobby of an argument ' +
     'that would resolve itself when it was ready. What was useful was the description of ' +
-    'the road, the point where the caravan had stopped, the particular pattern of a robbery ' +
+    'the road, the point where the caravan had stopped, the pattern of a robbery ' +
     'that left drivers alive — and the agent filed all of this in the part of awareness ' +
     'that tracks things for later.\n\n' +
     'The merchant left without a commitment and understood he was not getting one. What he ' +

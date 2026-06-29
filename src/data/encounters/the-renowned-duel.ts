@@ -60,7 +60,7 @@ const step0ThePlant: ActionStep = {
     'The contender planted themselves in the agent\'s path the way someone plants themselves ' +
     'when they have been rehearsing the moment and want the blocking to be legible. A wooden ' +
     'practice blade strapped to their back — not concealed, which was also a statement. ' +
-    'The stance was technically correct and carried in it the particular quality of someone ' +
+    'The stance was technically correct and carried in it the quality of someone ' +
     'who has been technically correct for long enough to have developed their own variations.\n\n' +
     'Their hands were steady. People\'s hands are steady when they have made a decision and ' +
     'are past the point where the decision is reversible. They had made this decision some ' +
@@ -93,7 +93,7 @@ const step1GrantDuel: ActionStep = {
     'real exchange.\n\n' +
     'The bout lasted long enough for the contender to discover three things about ' +
     'themselves they had not known before. When it ended — on a disarm, clean, the ' +
-    'practice blade in the yard dust — the contender stood with the particular ' +
+    'practice blade in the yard dust — the contender stood with the ' +
     'expression of someone who has been fully met for the first time and understood ' +
     'what that costs and what it means. The {title} had fought them honestly. ' +
     'That was the recognition they had asked for, and they had received it.',

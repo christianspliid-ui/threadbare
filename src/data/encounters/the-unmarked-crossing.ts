@@ -57,7 +57,7 @@ const step0TheManifests: ActionStep = {
   onFailure: [],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The wharf had the particular quality of places that exist to move things across ' +
+    'The wharf had the quality of places that exist to move things across ' +
     'boundaries — the specific energy of transit, of cargo that has not yet been ' +
     'declared and may not be declared at all. A barge at the dock. A distant ' +
     'customs house, lit, watching the wrong direction.\n\n' +
@@ -88,7 +88,7 @@ const step1SignThePapers: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god settled a particular gravity through the agent\'s hands — the weight ' +
+    'The god settled a gravity through the agent\'s hands — the weight ' +
     'of commerce conducted in the space that legitimate commerce leaves behind, ' +
     'the recognition that the {title}\'s seal has value precisely because it is ' +
     'not worth authenticating. The smuggler had understood this correctly.\n\n' +
@@ -538,7 +538,7 @@ export const THE_UNMARKED_CROSSING_TEMPLATE: UnifiedActionTemplate = withEncount
         id: 'sign_the_papers',
         label: 'Press the seal. Take the cut.',
         intent:
-          'The god settles the agent into the particular gravity of commerce conducted ' +
+          'The god settles the agent into the gravity of commerce conducted ' +
           'in the space that legitimate commerce leaves behind. {title}\'s seal has ' +
           'value on this document precisely because it is expected to carry weight ' +
           'without scrutiny — the customs house has already learned to expect this ' +

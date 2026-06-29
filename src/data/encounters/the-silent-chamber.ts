@@ -56,7 +56,7 @@ const step0TheDoor: ActionStep = {
   narrativeTemplate:
     'The guild had been censured three years ago. The ruin was the specific kind that ' +
     'comes from institutional dissolution rather than fire or siege — walls intact, ' +
-    'roof partially standing, but the particular vacancy of a place whose purpose ' +
+    'roof partially standing, but the vacancy of a place whose purpose ' +
     'had been officially removed. The guild\'s sign was still mounted above the main ' +
     'arch, because nobody had been assigned to take it down.\n\n' +
     'The chamber was at the end of the inner corridor, behind a door that had not ' +
@@ -87,7 +87,7 @@ const step1ReadTheLore: ActionStep = {
   narrativeTemplate:
     'The god settled the cost of attention through the agent and let the knowledge ' +
     'arrive. Not gently — the manuscript was forbidden because it was true, and ' +
-    'true things of this kind arrive with the particular weight of information ' +
+    'true things of this kind arrive with the weight of information ' +
     'that changes the shape of what you knew before. The {title} paid the essence ' +
     'that the chamber demanded and let the text in.\n\n' +
     'The lantern held for as long as the reading took. When the agent rose from the ' +
@@ -243,7 +243,7 @@ const DESTROY_AFTERMATH = {
     'come in and done the thing the guild\'s censurers had decided not to do, which ' +
     'was simply end it. The remnant guild, when they learned the chamber had been ' +
     'entered and the manuscript destroyed, would have a reaction that was more ' +
-    'complicated than relief and more complicated than grief — the particular ' +
+    'complicated than relief and more complicated than grief — the ' +
     'response of people who had watched their institution collapse and had held ' +
     'onto one buried thing as a last record of what they had been, and now ' +
     'did not have even that. Whether they would forgive the {title} for taking it ' +
