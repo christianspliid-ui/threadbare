@@ -391,6 +391,129 @@ describe('controlEffectSpawn', () => {
     });
   });
 
+  // ─── THR-518: relic variant — mint + dynamic upkeepArtifactId injection ───────
+  describe('spawnControlEffect — relic variant (THR-518)', () => {
+    function makeGraphWithTemple(): WorldGraph {
+      const graph = new WorldGraph();
+      graph.addNode({
+        id: 'asc-1', type: 'actor', name: 'Player God',
+        properties: { actorType: 'ascendant' },
+      });
+      graph.addNode({
+        id: 'temple-1', type: 'location', name: 'Sun Temple',
+        properties: { locationSubtype: 'temple', hexCol: 7, hexRow: 4 },
+      });
+      return graph;
+    }
+
+    function makeRelicTemplate(): UnifiedActionTemplate {
+      return makeSustainedTemplate({
+        controlSpec: {
+          // A real per-tick cost so the waive is observable end-to-end.
+          perTickCost: { spirit: 0.3 },
+          perTickThreadAuras: [{ magnitude: 1 }],
+          mintUpkeepRelic: { relicName: 'Hallowed Reliquary', tags: ['consecration_relic'] },
+          narrativeTemplates: { established: 'Est.', active: 'Act.', lapsed: 'Lap.' },
+        },
+      });
+    }
+
+    it('mints a permanent relic and sets upkeepArtifactId to the new node id', () => {
+      const graph = makeGraphWithTemple();
+      const action = makeResolvedAction({ targetId: 'temple-1' });
+
+      const result = spawnControlEffect(action, makeRelicTemplate(), 10, graph);
+      expect(result).not.toBeNull();
+
+      const relicId = result!.effect.upkeepArtifactId;
+      expect(relicId).toBeDefined();
+      expect(relicId).toContain('relic_consecrate_');
+
+      const relic = graph.getNode(relicId!);
+      expect(relic).toBeDefined();
+      expect(relic!.type).toBe('artifact');
+      expect(relic!.name).toBe('Hallowed Reliquary');
+      expect(relic!.properties.lossCondition).toBe('permanent');
+      expect(relic!.properties.source).toBe('consecrate_relic');
+      expect(relic!.properties.consecratedBy).toBe('asc-1');
+      expect(relic!.properties.consecratedNodeId).toBe('temple-1');
+
+      // Bound to the establishing ascendant via a possesses edge.
+      const possesses = graph.getOutgoingEdges('asc-1', 'possesses');
+      expect(possesses.some((e) => e.target === relicId)).toBe(true);
+    });
+
+    it('mints deterministically — same owner/target/tick yields the same relic id', () => {
+      const action = makeResolvedAction({ targetId: 'temple-1' });
+      const a = spawnControlEffect(action, makeRelicTemplate(), 10, makeGraphWithTemple());
+      const b = spawnControlEffect(action, makeRelicTemplate(), 10, makeGraphWithTemple());
+      expect(a!.effect.upkeepArtifactId).toBe(b!.effect.upkeepArtifactId);
+    });
+
+    it('a freshly-minted relic overrides any static upkeepArtifactId', () => {
+      const graph = makeGraphWithTemple();
+      const template = makeSustainedTemplate({
+        controlSpec: {
+          perTickCost: {},
+          upkeepArtifactId: 'static-relic',
+          mintUpkeepRelic: { relicName: 'Hallowed Reliquary' },
+          narrativeTemplates: { established: 'Est.', active: 'Act.', lapsed: 'Lap.' },
+        },
+      });
+      const action = makeResolvedAction({ targetId: 'temple-1' });
+
+      const result = spawnControlEffect(action, template, 10, graph);
+      expect(result!.effect.upkeepArtifactId).not.toBe('static-relic');
+      expect(result!.effect.upkeepArtifactId).toContain('relic_consecrate_');
+    });
+
+    it('does not mint without a graph (fail-soft) — falls back to static id', () => {
+      // Hex target needs no graph to resolve, so the effect still spawns; the
+      // mint requires a graph, so no relic is created and the static id stands.
+      const template = makeSustainedTemplate({
+        controlSpec: {
+          perTickCost: {},
+          mintUpkeepRelic: { relicName: 'Hallowed Reliquary' },
+          narrativeTemplates: { established: 'Est.', active: 'Act.', lapsed: 'Lap.' },
+        },
+      });
+      const action = makeResolvedAction({ targetId: 'hex_5_3' });
+
+      const result = spawnControlEffect(action, template, 10); // no graph
+      expect(result).not.toBeNull();
+      expect(result!.effect.upkeepArtifactId).toBeUndefined();
+    });
+
+    it('end-to-end: the relic waives per-tick cost while it lives, then lapses when destroyed', () => {
+      const graph = makeGraphWithTemple();
+      const action = makeResolvedAction({ targetId: 'temple-1' });
+      const result = spawnControlEffect(action, makeRelicTemplate(), 10, graph);
+      const relicId = result!.effect.upkeepArtifactId!;
+
+      const state = createMinimalGameState();
+      (state as { graph: WorldGraph }).graph = graph;
+      state.essencePool.spirit = 10;
+      state.controlEffects = [result!.effect];
+
+      // phaseControlEffects returns a patch (it does not mutate state in place);
+      // apply it each tick the way the orchestrator would.
+      // Tick once: relic exists → cost waived → spirit pool untouched (would be
+      // 9.7 if the 0.3/tick spirit cost were charged).
+      const patch1 = phaseControlEffects(state);
+      state.controlEffects = patch1.controlEffects!;
+      state.essencePool = patch1.essencePool!;
+      expect(state.essencePool.spirit).toBe(10);
+      expect(state.controlEffects[0].active).toBe(true);
+
+      // Destroy the relic → next tick the effect lapses with the relic reason.
+      graph.removeNode(relicId);
+      const patch2 = phaseControlEffects(state);
+      state.controlEffects = patch2.controlEffects!;
+      expect(state.controlEffects[0].active).toBe(false);
+      expect(state.controlEffects[0].lapseReason).toBe('upkeep_relic_destroyed');
+    });
+  });
+
   describe('contract: spawnControlEffect output → phaseControlEffects input', () => {
     it('spawned ControlEffect is valid for phaseControlEffects ticking', () => {
       const template = makeSustainedTemplate();

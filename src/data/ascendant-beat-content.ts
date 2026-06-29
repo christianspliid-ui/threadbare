@@ -357,7 +357,9 @@ export const ASCENDANT_BEAT_POOL: readonly BeatDefinition[] = [
     trigger: { kind: 'cadence' },
     eligibility: { kind: 'unthreaded_target' },
     templateId: 'beat.pool.invest.the_hallowed_place',
-    grantsActionIds: ['action.consecrate'],
+    // Learning to hallow ground teaches both ways to sustain it: the steady
+    // devotion (`action.consecrate`) and the enshrined relic (`action.consecrate-relic`, THR-518).
+    grantsActionIds: ['action.consecrate', 'action.consecrate-relic'],
   },
   {
     beatId: 'beat.pool.invest.the_favored_soul',
@@ -437,6 +439,8 @@ export const ASCENDANT_ACTION_BUCKETS: Readonly<Record<string, ActionBucketEntry
   // Per-graph expression verbs (THR-511/512/513, granted by the deeper-expression
   // investment beats — THR-515): location / agent / faction analogues of imbue.
   'action.consecrate': { bucket: 'unlockable-generic' },
+  // THR-518: the relic variant of consecrate — same bucket, granted by the same beat.
+  'action.consecrate-relic': { bucket: 'unlockable-generic' },
   'action.bestow': { bucket: 'unlockable-generic' },
   'action.anoint': { bucket: 'unlockable-generic' },
   // Spine-granted expressive verbs (THR-504): The First Word + the three god-paths.

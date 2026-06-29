@@ -8,13 +8,15 @@
  *
  * NFP compliance:
  *   #1 Tunability: no magic numbers — all values come from ControlSpec
- *   #2 Inspectability: emits ControlEffectEstablishedTrace
- *   #3 Determinism: pure function, no PRNG
- *   #4 Fail-soft: returns null if template lacks controlSpec
+ *   #2 Inspectability: emits ControlEffectEstablishedTrace (+ a relic-mint trace)
+ *   #3 Determinism: no PRNG. The THR-518 relic mint is a deterministic graph
+ *      mutation (id + content derived from owner/target/tick).
+ *   #4 Fail-soft: returns null if template lacks controlSpec; relic mint no-ops
+ *      without a graph.
  */
 
 import type { UnifiedAction, UnifiedActionTemplate } from '../types/unifiedAction';
-import type { ControlEffect, ControlSpec } from '../types/controlEffect';
+import type { ControlEffect, ControlSpec, MintUpkeepRelicSpec } from '../types/controlEffect';
 import type { TickEvent } from '../types/gameState';
 import type { WorldGraph } from './graph';
 import { emitTrace } from './traceBuffer';
@@ -96,6 +98,16 @@ export function spawnControlEffect(
   const spec: ControlSpec = template.controlSpec;
   const effectId = `ctrl_${++effectCounter}`;
 
+  // THR-518 relic variant: mint a permanent relic and bind it as this effect's
+  // dynamic upkeep substitute. A static `spec.upkeepArtifactId` cannot reference
+  // a not-yet-created node, so the mint happens here (effect construction time,
+  // where the graph is in scope) and overrides the static id. Deterministic id +
+  // content (no PRNG). Requires a graph; fail-soft to no mint without one.
+  const mintedRelicId =
+    spec.mintUpkeepRelic && graph
+      ? mintUpkeepRelicArtifact(graph, spec.mintUpkeepRelic, action.actorId, targetNodeId, col, row, tick)
+      : undefined;
+
   const effect: ControlEffect = {
     effectId,
     templateId: action.templateId,
@@ -119,7 +131,8 @@ export function spawnControlEffect(
     // THR-509 spec fields — carried through so consecrate's faith-spread and the
     // relic-upkeep substitute resolve at tick time (phaseControlEffects reads them).
     perTickThreadAuras: spec.perTickThreadAuras,
-    upkeepArtifactId: spec.upkeepArtifactId,
+    // THR-518: a freshly-minted relic overrides any static upkeep artifact id.
+    upkeepArtifactId: mintedRelicId ?? spec.upkeepArtifactId,
 
     // State — starts active
     active: true,
@@ -158,4 +171,69 @@ export function spawnControlEffect(
   };
 
   return { effect, event };
+}
+
+// ─── Relic mint (THR-518) ─────────────────────────────────────────────────────
+
+/**
+ * Mint a permanent relic artifact to serve as a control effect's upkeep
+ * substitute, and bind it to the establishing ascendant via a `possesses` edge.
+ * Returns the new node's id so `spawnControlEffect` can set `upkeepArtifactId`.
+ *
+ * The relic is a *load-bearing* node, not dead content: its existence is read
+ * every tick by `getUpkeepStatus` (it waives the effect's `perTickCost`), and
+ * its destruction lapses the effect (`upkeep_relic_destroyed`) — the rival
+ * contestation vector. `lossCondition: 'permanent'` keeps ambient decay/theft
+ * systems from reaping it, so only deliberate destruction ends the consecration.
+ *
+ * Deterministic: the id and properties derive from owner/target/tick — no PRNG.
+ */
+function mintUpkeepRelicArtifact(
+  graph: WorldGraph,
+  spec: MintUpkeepRelicSpec,
+  ownerId: string,
+  targetNodeId: string | undefined,
+  col: number,
+  row: number,
+  tick: number,
+): string {
+  const anchor = targetNodeId ?? `hex_${col}_${row}`;
+  const relicId = `relic_consecrate_${ownerId}_${anchor}_${tick}`;
+
+  graph.addNode({
+    id: relicId,
+    type: 'artifact',
+    name: spec.relicName,
+    properties: {
+      source: 'consecrate_relic',
+      lossCondition: 'permanent',
+      consecratedBy: ownerId,
+      consecratedNodeId: targetNodeId,
+      consecratedHex: { col, row },
+      createdTick: tick,
+      effects: [],
+    },
+  });
+  graph.addEdge({
+    id: `${relicId}_edge`,
+    source: ownerId,
+    target: relicId,
+    type: 'possesses',
+    properties: { modifiers: {}, grants: [], tags: spec.tags ?? ['consecration_relic'] },
+  });
+
+  emitTrace({
+    id: 0,
+    category: 'control_effect',
+    tick,
+    timestamp: tick,
+    summary: `relic "${spec.relicName}" minted to sustain consecration on ${anchor} (zero upkeep)`,
+    type: 'control_effect_relic_minted',
+    relicId,
+    ownerId,
+    targetNodeId,
+    targetHex: { col, row },
+  } as any);
+
+  return relicId;
 }
