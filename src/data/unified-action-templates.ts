@@ -150,6 +150,9 @@ import { CONSECRATE_DEVOTION_PER_TICK } from '../types/ascendantPrimitives';
 import { RIVAL_SHRINE_BETRAYAL_TEMPLATE } from './encounters/rival-shrine-betrayal';
 import { WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE } from './encounters/wandering-healer-shrine-access';
 import { FLAWED_STEEL_TEMPLATE } from './encounters/flawed-steel';
+// Non-local-scale branching encounters — THR-466 (cosmic Star, regional Stone)
+import { COMET_AT_THE_TURNING_TEMPLATE } from './encounters/the-comet-at-the-turning';
+import { WALL_OF_THE_MASON_LORD_TEMPLATE } from './encounters/the-wall-of-the-mason-lord';
 import { MENTORSHIP_THE_OFFER_TEMPLATE } from './mentorship-templates/the-offer';
 import { MENTORSHIP_GRADUATION_TEMPLATE } from './mentorship-templates/graduation';
 import { MENTORSHIP_THE_FALLING_OUT_TEMPLATE } from './mentorship-templates/the-falling-out';
@@ -4898,6 +4901,9 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   RIVAL_SHRINE_BETRAYAL_TEMPLATE,
   WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE,
   FLAWED_STEEL_TEMPLATE,
+  // Non-local-scale branching encounters — THR-466 (cosmic Star, regional Stone)
+  COMET_AT_THE_TURNING_TEMPLATE,
+  WALL_OF_THE_MASON_LORD_TEMPLATE,
   // Mentor/apprentice encounters + divine actions (THR-75)
   MENTORSHIP_THE_OFFER_TEMPLATE,
   MENTORSHIP_GRADUATION_TEMPLATE,
@@ -4948,6 +4954,9 @@ export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTempl
   RIVAL_SHRINE_BETRAYAL_TEMPLATE,
   WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE,
   FLAWED_STEEL_TEMPLATE,
+  // Non-local-scale branching encounters — THR-466 (cosmic Star, regional Stone)
+  COMET_AT_THE_TURNING_TEMPLATE,
+  WALL_OF_THE_MASON_LORD_TEMPLATE,
   SOUL_FERRYMAN_TEMPLATE,
   ROAD_AMBUSH_TEMPLATE,
   COURTYARD_DUEL_TEMPLATE,
