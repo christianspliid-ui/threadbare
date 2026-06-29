@@ -66,10 +66,14 @@ For the flush-branch target:
    If empty or mismatched: bounce — see Failure handling below.
 
 4. Open PR (REQUIRED — do not skip):
+   > **SUPERSEDED (2026-06-29, THR-534/THR-510): the `Closes <issue-url>` body below is UNSAFE — do not copy it.**
+   > GitHub's native Linear integration auto-closes on `Closes <linear-url>`, which re-closed an
+   > unimplemented issue (PR #428 → THR-525). The flush PR body must carry **no** closing keyword,
+   > bare `THR-XXX`, or issue URL. Use the keyword-free template in
+   > `.claude/skills/flush-plan-docs/SKILL.md` Step 2f.4 (the authoritative source) instead.
      gh pr create \
        --title "docs(plan): batch flush <YYYY-MM-DD>" \
-       --body  "Auto-flush of plan-pending-commit labeled issues. Closes <issue-url>." \
-       --label docs-only  (omit --label if the label does not exist)
+       --body  "Auto-flush of plan doc. Commits a design doc only — does NOT resolve any Linear issue. Issue identifiers intentionally omitted to avoid GitHub→Linear auto-close." \
    Capture the PR URL from the output.
 
 5. Verify PR exists (REQUIRED):

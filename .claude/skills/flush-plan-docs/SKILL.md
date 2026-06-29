@@ -1,7 +1,7 @@
 ---
 name: flush-plan-docs
 description: Commit Cowork-authored plan docs tagged with `plan-pending-commit` to origin/main via the scheduled flush workflow.
-last_validated_against: 2026-06-28
+last_validated_against: 2026-06-29
 ---
 
 # flush-plan-docs
@@ -136,8 +136,12 @@ stop after the commit:
      --body  "Auto-flush of plan doc \`<plan-doc-path>\` (issue: <issue-title>). Commits a design doc only — does NOT resolve any Linear issue. Issue identifiers are intentionally omitted from this PR body/commit/branch to avoid GitHub→Linear auto-close (THR-510); the issue link lives in the Step 3 confirmation comment."
    ```
    **Never put `Fixes`/`Closes`/`Resolves`, a bare `THR-XXX`, or a `linear.app/.../issue/THR-XXX`
-   URL in the title or body** (THR-510). The title must keep the literal `docs(plan): batch flush`
-   prefix — the `linear-autoclose.yml` guard (`isDocsFlushContext`) relies on it.
+   URL in the title or body** (THR-510). GitHub's **native** Linear integration closes on the
+   `Closes <linear-url>` form regardless of the `linear-autoclose.yml` guard — the guard only
+   governs the custom `Fixes THR-NNN` merge=Done action, it cannot stop native URL-keyword closing.
+   So scrubbing the body is the *only* effective defense; a single leaked `Closes <url>` line
+   re-closed an unimplemented issue via this exact vector (THR-534, PR #428 → THR-525). The title
+   must keep the literal `docs(plan): batch flush` prefix — the guard (`isDocsFlushContext`) relies on it.
    Do not add `--label docs-only` — do not create labels from this skill, and omit the
    flag if the label does not exist in the repo. Capture the PR URL from the output.
 
