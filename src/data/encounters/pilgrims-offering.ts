@@ -61,7 +61,7 @@ const step0ThePilgrim: ActionStep = {
   narrativeTemplate:
     'The shrine was nothing elaborate: a cairn of white stones beside the road, cloth ' +
     'strips tied to the branches above them — faded saffron, rain-washed blue — and the ' +
-    'particular quality of a place that people had been stopping at for long enough that ' +
+    'quality of a place that people had been stopping at for long enough that ' +
     'stopping there had become something different from simply stopping. The ground ' +
     'around the cairn was worn smooth by knees and feet, which meant the stopping was ' +
     'regular and had been regular for some time.\n\n' +
@@ -257,7 +257,7 @@ const BLESS_AFTERMATH = {
     'them at any shrine. They went instead to the elder\'s house and asked to speak privately, ' +
     'which was unusual for a pilgrim, and the elder, who had been doing this long enough to ' +
     'recognize when something has shifted in a person\'s posture, agreed. What was said in ' +
-    'that room was not recorded. But the pilgrim\'s face afterward had the particular quality ' +
+    'that room was not recorded. But the pilgrim\'s face afterward had the quality ' +
     'of someone who has resolved a question they had been carrying for a long time — not by ' +
     'finding the answer, but by finally saying the question aloud to someone who listened.',
   changes: [

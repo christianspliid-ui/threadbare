@@ -58,7 +58,7 @@ const step0TheHall: ActionStep = {
   narrativeTemplate:
     'The warlord\'s hall smelled of tallow smoke and old iron. Banners hung from the ' +
     'rafters — war-bands that had bled for him, factions that owed their survival to his ' +
-    'blade — and the men on the benches had the particular stillness of soldiers who have ' +
+    'blade — and the men on the benches had the stillness of soldiers who have ' +
     'learned to read a room before they move. When the agent entered, the stillness deepened. ' +
     'Not from fear. From recognition.\n\n' +
     'The warlord himself sat on a raised chair at the hall\'s far end, not a throne but close ' +
@@ -67,7 +67,7 @@ const step0TheHall: ActionStep = {
     'enough to develop a taxonomy of dangerous people. He had clearly placed the agent in a ' +
     'specific category of that taxonomy. The placement, from his expression, was not unflattering.\n\n' +
     '{title}. The guards at the door had parted without being asked. That was how it started ' +
-    'with the ones who carried that particular weight. The warlord set down the cup he was ' +
+    'with the ones who carried that weight. The warlord set down the cup he was ' +
     'holding and made a small gesture that sent most of the room away.',
   successAfterimage: 'The hall fell quiet around the two of them. A recognition between dangerous people.',
   failureAfterimage: 'The hall fell quiet, but the recognition felt different — calculation rather than respect.',
@@ -95,7 +95,7 @@ const step1AcceptTribute: ActionStep = {
   failBehavior: 'continue_weakened',
   narrativeTemplate:
     'The god settled a current of gravitas through the agent — not heat, not force, but ' +
-    'the particular weight of someone who has earned the right to receive what is being ' +
+    'the weight of someone who has earned the right to receive what is being ' +
     'offered. The warlord rose from his chair, which he would not have done for most people ' +
     'in that room. He crossed to a locked chest behind the dais and unlocked it with a key ' +
     'he wore at his belt.\n\n' +
@@ -104,7 +104,7 @@ const step1AcceptTribute: ActionStep = {
     'placed it on the table between them with both hands and stepped back. The men on the ' +
     'benches watched without watching. Everyone understood what was happening. The {title} ' +
     'had walked into their hall and their leader had acknowledged the weight.\n\n' +
-    'The agent accepted. Not eagerly — that would have been wrong — but with the particular ' +
+    'The agent accepted. Not eagerly — that would have been wrong — but with the ' +
     'economy of someone for whom this kind of recognition is not new, and for whom the blade ' +
     'means what the warlord intended it to mean.',
   successMetadata: { reputationDelta: 0.05 },
@@ -166,7 +166,7 @@ const step1WithdrawHand: ActionStep = {
     'offered what he had prepared — the coin, the blade, the formal words — and the agent ' +
     'received them with the measured courtesy of someone who neither needed the tribute ' +
     'nor wanted to make its inadequacy visible. A clean exchange. Both parties preserved.\n\n' +
-    'The warlord\'s men relaxed in stages, the way soldiers do when the particular kind of ' +
+    'The warlord\'s men relaxed in stages, the way soldiers do when the kind of ' +
     'tension that means somebody might die has resolved without dying. Someone near the back ' +
     'of the hall let out a breath that the person next to them pretended not to hear.',
   successMetadata: { reputationDelta: 0 },
@@ -617,7 +617,7 @@ export const WARLORDS_TRIBUTE_TEMPLATE: UnifiedActionTemplate = withEncounterCon
   narrativeTemplates: {
     initiation:
       'A warlord recognizes the {title} and offers tribute — coin and blade, the language ' +
-      'of professional respect. The hall has gone quiet in the particular way halls do when ' +
+      'of professional respect. The hall has gone quiet in the way halls do when ' +
       'dangerous people are deciding what they mean to each other.',
     success:
       'The exchange concluded with both parties knowing something about the other they did ' +

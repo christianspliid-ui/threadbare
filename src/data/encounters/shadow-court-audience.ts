@@ -57,7 +57,7 @@ const step0TheReception: ActionStep = {
   onFailure: [],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The audience chamber had the particular quality of rooms that exist to make people ' +
+    'The audience chamber had the quality of rooms that exist to make people ' +
     'feel the weight of institutional attention: high ceilings, narrow windows admitting ' +
     'cold light in measured portions, marble floors that made every footstep audible to ' +
     'everyone who mattered. The court functionary who met the agent at the door was polished ' +
@@ -100,7 +100,7 @@ const step1PresentHonestly: ActionStep = {
   narrativeTemplate:
     'The god\'s touch was the simplest possible one: a settling of the agent into their own ' +
     'honesty. Not a revelation, not a confession — the court was not a confessional — but ' +
-    'the particular alignment of saying what one means without excess and meaning what one ' +
+    'the alignment of saying what one means without excess and meaning what one ' +
     'says without apology. The courtier watched with professional attention as the agent ' +
     'spoke, and what she heard was someone who was not performing anything.\n\n' +
     'This was unusual enough to be interesting. Courts are fluent in performance. They run ' +
@@ -144,7 +144,7 @@ const step1VeiledThreat: ActionStep = {
     'I have said. The implication of: I have not yet decided what to do with what I know. ' +
     'Neither of these things was said. Both of them were present.\n\n' +
     'The senior courtier heard it. Of course she heard it. This was her room. She had been ' +
-    'having versions of this conversation for fifteen years, and she recognized the particular ' +
+    'having versions of this conversation for fifteen years, and she recognized the ' +
     'register of politely framed leverage as fluently as she recognized her own name. Her ' +
     'expression changed in a way that was technically imperceptible but practically obvious ' +
     'to anyone who knew what to look for: a slight increase in stillness, a very small ' +
@@ -558,7 +558,7 @@ export const SHADOW_COURT_AUDIENCE_TEMPLATE: UnifiedActionTemplate = withEncount
         label: 'Let them see what is actually there.',
         intent:
           'The god steadies the agent into their own honest register — not vulnerability, ' +
-          'but the particular alignment of saying what one means. In a court where everyone ' +
+          'but the alignment of saying what one means. In a court where everyone ' +
           'performs, someone who is genuinely not performing is a rarity worth paying attention to.',
         essenceCost: 1,
         likelyBurden:
@@ -570,7 +570,7 @@ export const SHADOW_COURT_AUDIENCE_TEMPLATE: UnifiedActionTemplate = withEncount
         id: 'drop_a_veiled_threat',
         label: 'Let the implication do the work.',
         intent:
-          'The god loads the space beneath the agent\'s words with the particular pressure ' +
+          'The god loads the space beneath the agent\'s words with the pressure ' +
           'of: I know things I have not said. Not a declaration, not a demand — just the ' +
           'professional register of someone who is choosing, in this moment, to be polite. ' +
           'Courts understand this language. Whether they appreciate it depends on the day and ' +

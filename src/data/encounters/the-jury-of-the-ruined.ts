@@ -59,12 +59,12 @@ const step0TheCircle: ActionStep = {
   narrativeTemplate:
     'The grange had burned two winters ago. What remained was the stone walls and ' +
     'the sky. The roof was gone and the overcast light came in evenly, the way light ' +
-    'comes in when there is nothing left to obstruct it — which had a particular ' +
-    'flatness, a particular absence of shadow that made everything visible equally.\n\n' +
+    'comes in when there is nothing left to obstruct it — a ' +
+    'flat light, an absence of shadow that made everything visible equally.\n\n' +
     'The circle sat on salvaged stones arranged around the approximate center of ' +
     'what had been the grange\'s floor. Seven people, maybe eight. The accused ' +
     'stood in the middle of the circle: two neighbors, both of them looking at ' +
-    'the ground with the particular attention of people who have considered running ' +
+    'the ground with the attention of people who have considered running ' +
     'and decided against it. The charge was water rights sold that were not theirs ' +
     'to sell — which was a precise kind of theft, the kind that takes from ' +
     'everyone downstream.\n\n' +
@@ -237,13 +237,13 @@ const VERDICT_AFTERMATH = {
 
 const CIRCLE_CENSURE_AFTERMATH = {
   overview:
-    'The circle had not expected to be ruled against. This was the particular failure ' +
+    'The circle had not expected to be ruled against. This was the failure ' +
     'mode of a court convened by grief: the people in it had been certain enough of ' +
     'their case that calling a judge felt like a formality, not a risk. They had ' +
     'wanted validation, and the {title} had given them the evidence instead. The ' +
     'circle\'s censure would find its way to the agent through whatever channels ' +
     'a circle of the dispossessed used — which was mainly word of mouth and the ' +
-    'particular weight of every conversation in the settlement that began with a ' +
+    'weight of every conversation in the settlement that began with a ' +
     'reference to what had happened at the ruined grange.',
   changes: [
     {

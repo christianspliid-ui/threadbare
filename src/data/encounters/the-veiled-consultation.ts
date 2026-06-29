@@ -59,7 +59,7 @@ const step0TheApproach: ActionStep = {
   failBehavior: 'continue_weakened',
   narrativeTemplate:
     'The study was the kind of room that accumulated — not cluttered, but dense with the ' +
-    'particular layering of someone who has been thinking in the same space for a long time. ' +
+    'layering of someone who has been thinking in the same space for a long time. ' +
     'Ink on the table\'s edge. Shelves where the organization made sense only to the person ' +
     'who had made it, which was fine because no one else needed it to make sense. A single ' +
     'oil lamp that cast the room in amber and made the shadows architectural.\n\n' +
@@ -148,7 +148,7 @@ const step1WithholdHalf: ActionStep = {
     'structural interpretation was offered in full. The living consequence was offered ' +
     'in half. Not a lie: a strategic partial truth, the kind that is technically complete ' +
     'and practically incomplete in the specific places where incompleteness creates leverage.\n\n' +
-    'The sage was a professional. They listened to the interpretation with the particular ' +
+    'The sage was a professional. They listened to the interpretation with the ' +
     'quality of attention that involves checking internal notes as you go — running the ' +
     'stated interpretation against what you already know, watching for the places where ' +
     'the surface smooths over something that should have a texture. They found the place ' +

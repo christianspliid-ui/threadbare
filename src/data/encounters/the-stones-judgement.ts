@@ -163,7 +163,7 @@ const step1RuleForTransformingClaim: ActionStep = {
     'remain open for a generation.',
   successMetadata: { reputationDelta: 0.05 },
   failureMetadata: { reputationDelta: -0.05 },
-  successAfterimage: 'The transforming claim upheld. The settlement has what it needs. The older party is quiet in the particular way of people who have not yet decided what to do.',
+  successAfterimage: 'The transforming claim upheld. The settlement has what it needs. The older party is quiet in the way of people who have not yet decided what to do.',
   failureAfterimage: 'The ruling reached for the future but the past pulled back — the newer party\'s position looked weaker coming out than going in.',
 };
 

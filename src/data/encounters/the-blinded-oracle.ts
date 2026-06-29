@@ -105,7 +105,7 @@ const step1TakeProphecy: ActionStep = {
   narrativeTemplate:
     'The god settled the cost of receiving through the agent and let the prophecy ' +
     'arrive. Not gently — the seer had been keeping this for long enough that it ' +
-    'had accumulated the particular density of words that have been held rather than ' +
+    'had accumulated the density of words that have been held rather than ' +
     'spoken, and it arrived in the {title}\'s awareness with the weight of a thing ' +
     'that has been waited for.\n\n' +
     'The seer spoke for a long time. Not all of it was immediately comprehensible. ' +

@@ -122,7 +122,7 @@ const step1LetTheMarketClose: ActionStep = {
     'foreseen: it bought them the region a piece at a time. A farm signed over in the second month so the ' +
     'family could buy the flour to last the third. A village\'s commons taken as surety. The strong young ' +
     'backs bonded for a term that would outlast the famine by fifteen years. No law was broken. Every ' +
-    'transaction was willing in the particular way that a transaction is willing when one party is holding ' +
+    'transaction was willing in the way that a transaction is willing when one party is holding ' +
     'the only food. By spring the region was fed — most of it — and sold, all of it, and the merchant-prince ' +
     'was the richest house the region had ever produced, with a generation of people who owed them their ' +
     'lives and would raise their own children inside that debt. The merchant slept well. They had done ' +

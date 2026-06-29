@@ -72,7 +72,7 @@ const step0TheChild: ActionStep = {
     'The father had walked seven days with the child on his shoulders, which was visible ' +
     'in the set of his neck and the way he moved — not tired exactly, but past the point ' +
     'where tired was the word that applied. The child\'s breathing was shallow in the ' +
-    'particular way that means the body is working at something the rest of the system ' +
+    'way that means the body is working at something the rest of the system ' +
     'is not being told about.\n\n' +
     'The father did not speak first. He stopped when the agent appeared and stood in the ' +
     'road and waited. Then he unwrapped the blanket from around the child\'s shoulders — ' +

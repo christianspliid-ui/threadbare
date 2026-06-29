@@ -58,7 +58,7 @@ const step0TheOffer: ActionStep = {
   failBehavior: 'continue_weakened',
   narrativeTemplate:
     'The cloister was not a place people came unless they had already decided something. ' +
-    'Stone arches, lamplight pooled on flagstones, the particular cold that courthouses ' +
+    'Stone arches, lamplight pooled on flagstones, the cold that courthouses ' +
     'hold even in summer — the kind of cold that is not weather but architecture, the ' +
     'accumulated chill of proceedings that had been conducted here for longer than anyone ' +
     'now living could remember.\n\n' +
@@ -67,7 +67,7 @@ const step0TheOffer: ActionStep = {
     'visible from the door. They looked up when the agent entered. Not surprised. The ' +
     'magistrate had arranged for this meeting to happen in the way people arrange for ' +
     'meetings when they cannot be seen to have arranged them.\n\n' +
-    'The offer was wrapped in the particular language of plausible deniability: ' +
+    'The offer was wrapped in the language of plausible deniability: ' +
     'assistance with a civic matter, compensation for a service rendered, an arrangement ' +
     'that the law would not need to know about because the law had put the magistrate in ' +
     'a position where it could not know about it. A name was named. The date was ' +
@@ -100,7 +100,7 @@ const step1CarryOut: ActionStep = {
     'there was no name, in the official record, to thank. The debt was erased quietly, ' +
     'through channels the magistrate had not explained and did not need to explain. ' +
     'The coin arrived the following evening, counted, no note. The courthouse had ' +
-    'the particular stillness of a building that has gotten what it needed.',
+    'the stillness of a building that has gotten what it needed.',
   successMetadata: { reputationDelta: 0.05 },
   failureMetadata: { reputationDelta: 0.00 },
   successAfterimage: 'Carried. The debt erased. The magistrate did not look up when the agent left.',
@@ -120,7 +120,7 @@ const step1WarnTheCondemned: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god did not press for compliance. It pressed for the opposite: the particular ' +
+    'The god did not press for compliance. It pressed for the opposite: the ' +
     'kind of resolve that turns away from a clean exit and chooses the expensive one ' +
     'instead. The agent left the magistrate waiting in the cloister. Word went ' +
     'out by a different path — not official, not traceable — that the blade was coming ' +
@@ -543,7 +543,7 @@ export const THE_EXECUTIONERS_COMMISSION_TEMPLATE: UnifiedActionTemplate = withE
         id: 'carry_out_the_commission',
         label: 'Carry out the commission.',
         intent:
-          'The god does not soften the weight. It settles the agent into the particular ' +
+          'The god does not soften the weight. It settles the agent into the ' +
           'cold purpose of work accepted under the law\'s underside: the magistrate ' +
           'needs a hand already stained because the law cannot afford one that isn\'t, ' +
           'and {title} is the hand the courthouse found in the dark. The debt is ' +
