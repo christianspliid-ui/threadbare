@@ -24,7 +24,8 @@ describe('branching encounters migrate to encoded EncounterContract metadata', (
   it('loads all branching encounter templates in src/data/encounters', () => {
     // 24th: apotheosis-ascension (THR-479).
     // 25th + 26th: the-comet-at-the-turning (cosmic) + the-wall-of-the-mason-lord (regional), THR-466.
-    expect(templates).toHaveLength(26);
+    // 27th–29th: the-page-beneath-the-saint (veil) + the-verdict-that-burns (eye) + the-granaries-in-the-famine-year (gold), regional, THR-466.
+    expect(templates).toHaveLength(29);
   });
 
   it('encodes contract metadata and exposes authored poles for every choice', () => {

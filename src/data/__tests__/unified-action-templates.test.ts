@@ -312,10 +312,12 @@ describe('rarityTier — every template has a valid tier', () => {
     }
   });
 
-  it('at most 12 Legendary (tier 4) templates', () => {
-    // 2 divine hex legendaries + up to 1 capstone story beat per guild (10 guilds) = ~12 max
+  it('at most 16 Legendary (tier 4) templates', () => {
+    // 2 divine hex legendaries + up to 1 capstone story beat per guild (10 guilds) = ~12 base,
+    // + the THR-466 non-local-scale marquee branching batch (5 story_beats: cosmic Star, regional
+    // Stone/Veil/Eye/Gold — each rarityTier 4) = ~17 ceiling; cap at 16 with light headroom.
     const legendaryCount = UNIFIED_ACTION_TEMPLATES.filter(t => t.rarityTier === 4).length;
-    expect(legendaryCount).toBeLessThanOrEqual(12);
+    expect(legendaryCount).toBeLessThanOrEqual(16);
   });
 
   it('at least 50% of templates are tier 1 (Mundane)', () => {
