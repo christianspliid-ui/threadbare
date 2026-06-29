@@ -11,13 +11,13 @@
  * (THR-505). Keeping the catalogue here means "what fires when" is a single, tunable
  * authoring surface.
  *
- * GRAPH-SEEDING NOTE. The shipped resolve path (`resolvePendingBeat`, THR-517) is
- * catalogue-driven: a beat *grants action cards*; the threaded actor / throne /
- * artifact the onboarding promises are produced when the player *fires* those granted
- * cards (`bind_thread_agent`, `bind_thread_location`, `action.imbue`). The plan's
- * richer §4.1 vision — beat resolution itself running `add_node`/`setHomeSeat`
- * aftermath to auto-seed those nodes — is deferred to TODO(THR-520); it is an engine
- * change to the resolve contract, out of this content issue's scope.
+ * GRAPH-SEEDING NOTE. The resolve path (`resolvePendingBeat`, THR-517) grants action
+ * cards; THR-520 added the plan's §4.1 vision on top — a beat carrying a `seedsGraph`
+ * tag *also* seeds the promised graph state on resolution, so the opening hands the
+ * player a live throne and a threaded artifact without firing the granted card manually.
+ * Beat 1 ("The Seat") tags `home_seat`; Beat 2 ("A Thing Left Behind") tags
+ * `threaded_artifact`. The seeding logic lives in `src/engine/ascendantBeatSeeding.ts`;
+ * Beat 0 deliberately carries no tag — `MeetingEncounter` already threads The First.
  */
 
 import type { BeatDefinition, BeatKind } from '../types/ascendantBeat';
@@ -96,18 +96,22 @@ export const ASCENDANT_SPINE: readonly BeatDefinition[] = [
     grantsActionIds: ['bind_thread_agent', 'observe_agent'],
   },
   // Beat 1 — The Seat: a place in the world to stand and gather faith into power.
+  // Seeds the throne on resolution (THR-520): home seat at The First's settlement.
   {
     beatId: 'beat.spine.the_seat',
     kind: 'spine',
     trigger: { kind: 'turn', minTurn: SPINE_TRIGGER_TURNS[1] },
     grantsActionIds: ['bind_thread_location'],
+    seedsGraph: { kind: 'home_seat' },
   },
   // Beat 2 — A Thing Left Behind: the god's first artifact, carrying its will onward.
+  // Seeds a sphere-flavored artifact on resolution (THR-520): threaded + borne by The First.
   {
     beatId: 'beat.spine.thing_left_behind',
     kind: 'spine',
     trigger: { kind: 'turn', minTurn: SPINE_TRIGGER_TURNS[2] },
     grantsActionIds: ['action.imbue'],
+    seedsGraph: { kind: 'threaded_artifact' },
   },
   // Beat 3 — The First Word: the god's first expressive verb, spoken into a mortal mind.
   {

@@ -74,6 +74,25 @@ export interface BeatIdentityBias {
 }
 
 /**
+ * Graph-seed descriptor for a scripted spine beat (THR-520, plan §4.1). When a beat
+ * carries one, `resolvePendingBeat` runs the matching seeding aftermath on resolution —
+ * turning the narrated promise (a throne, an artifact) into actual graph state, instead
+ * of waiting for the player to fire the granted card. Kept as a tagged descriptor (like
+ * {@link BeatEligibility} / {@link BeatIdentityBias}) so the catalogue stays plain data,
+ * the seed is deterministic (NFP #3), and each variant is unit-testable in isolation. The
+ * seeding logic lives in `src/engine/ascendantBeatSeeding.ts`; this carries only the tag.
+ *
+ * - `home_seat`         — designate the ascendant's home seat (throne) at the settlement
+ *                         where The First was met (falls back to the deterministic default
+ *                         in `setHomeSeat`), beginning `ESSENCE_PER_SEAT` income.
+ * - `threaded_artifact` — mint a sphere-flavored artifact node, `thread` it (ascendant →
+ *                         artifact), and grant it to the bonded First via a `possesses` edge.
+ */
+export type BeatGraphSeed =
+  | { readonly kind: 'home_seat' }
+  | { readonly kind: 'threaded_artifact' };
+
+/**
  * A lightweight catalogue entry the Director can schedule. The rich, player-facing
  * content (prose, choice cards, aftermath effects) lives on the matching
  * `UnifiedActionTemplate` (`templateId`); this descriptor carries only what the
@@ -95,6 +114,10 @@ export interface BeatDefinition {
   /** Optional identity-bias descriptor (THR-516). When set, the cadence draw scales the
    *  beat's weight by the ascendant's reach/sphere affinity. Omitted = unbiased. */
   readonly identity?: BeatIdentityBias;
+  /** Optional graph-seed descriptor (THR-520). When set, beat resolution seeds the
+   *  promised graph state (throne / artifact) rather than waiting on a fired card.
+   *  Omitted = the beat only grants action cards (the THR-517 resolve contract). */
+  readonly seedsGraph?: BeatGraphSeed;
 }
 
 export interface PendingBeat {
