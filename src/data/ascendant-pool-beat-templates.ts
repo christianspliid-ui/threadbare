@@ -211,6 +211,37 @@ const INVESTMENT_TEMPLATES: UnifiedActionTemplate[] = [
     success: 'you set your seat in the wild; its quiet strength begins to gather for you',
     failure: 'the wilderness shrugs off your claim and stays no one\'s',
   }),
+
+  // — Deeper-expression beats (THR-515): grant the per-graph expression verbs that
+  //   landed after the starter pool. Each frames a fuller way to spend the god on the
+  //   world it has already begun to touch through {name} and the threads alongside. —
+  poolBeatTemplate({
+    id: 'beat.pool.invest.the_hallowed_place',
+    name: 'The Hallowed Place',
+    description:
+      'There is a holy place in the world where mortals already kneel — a shrine, a temple, stones worn smooth by the press of hopeful hands. Their devotion gathers there and then disperses, unspent, the way {name}\'s first prayers nearly did before your thread caught them. You could sink your presence into that ground until it remembers you, and every faith kept there would be drawn, patiently, into the shape of your design.',
+    initiation: 'a holy place gathers devotion that disperses unspent, asking to be hallowed',
+    success: 'you learn to hallow the ground; consecrated sites will spread your design',
+    failure: 'the impulse passes; the stones keep their borrowed faith a while longer',
+  }),
+  poolBeatTemplate({
+    id: 'beat.pool.invest.the_favored_soul',
+    name: 'The Favored Soul',
+    description:
+      'One of the souls you have threaded has come to know your touch the way {name} does — past intuition, into something like faith. A soul that close can hold more than your attention; it can hold a portion of your strength. You could leave a gift inside it — a quickness in your chosen art, a wellspring that is, in truth, a sliver of you — and send that power walking through the world on mortal feet.',
+    initiation: 'a threaded soul knows your touch deeply enough to carry a portion of your strength',
+    success: 'you learn to bestow power; your gift can walk the world on mortal feet',
+    failure: 'the moment closes; the soul keeps only your attention, not your strength',
+  }),
+  poolBeatTemplate({
+    id: 'beat.pool.invest.the_chosen_banner',
+    name: 'The Chosen Banner',
+    description:
+      'A faction has bound its fortunes to you — its banners lifted in your name, its quarrels argued as though you were watching, which you are. You could do more than watch. Mark one such people as chosen, and a power fitted to what they already are settles over them: the soldiers steadier, the faithful louder, the makers richer. To anoint is to stop being a rumor among them and become a weight in the scales of their cause.',
+    initiation: 'a faction lifts its banners in your name, ready to be marked as chosen',
+    success: 'you learn to anoint the chosen; a faction\'s cause now carries your weight',
+    failure: 'the moment passes ungiven; the banners stay only banners',
+  }),
 ];
 
 // ─── Selection beats — choose 1-of-N within-run (picker resolves the grant) ────
