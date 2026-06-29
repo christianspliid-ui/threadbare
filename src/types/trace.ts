@@ -252,6 +252,7 @@ export type TraceCategory =
   | 'ascendant.beat.offered'
   | 'ascendant.beat.skipped'
   | 'ascendant.beat.resolved'
+  | 'ascendant.beat.seeded'
   | 'action.unlock.granted'
   // Ascendant expression cards (THR-508)
   | 'ascendant_expression'
@@ -477,6 +478,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'ascendant.beat.offered',
   'ascendant.beat.skipped',
   'ascendant.beat.resolved',
+  'ascendant.beat.seeded',
   'action.unlock.granted',
   // Ascendant expression cards (THR-508)
   'ascendant_expression',
@@ -1689,6 +1691,7 @@ export type TraceEntry =
   | BeatOfferedTrace
   | BeatSkippedTrace
   | BeatResolvedTrace
+  | BeatSeededTrace
   | ActionUnlockGrantedTrace;
 
 /** Trace: the Director scheduled an ascendant beat to offer this turn. THR-500 */
@@ -1737,6 +1740,27 @@ export interface BeatResolvedTrace extends TraceBase {
   outcome: string;
   grantedActionIds: string[];
   seededNodeIds: string[];
+}
+
+/**
+ * Trace: a spine beat seeded graph state on resolution (THR-520, plan §4.1). One
+ * trace per seeding beat records what was minted/mutated — the `add_node`/`add_edge`
+ * surface for the throne/artifact the onboarding promises. `failSoft` names the reason
+ * a seed no-opped (e.g. no location to seat, no ascendant sphere) so a soft skip is
+ * inspectable rather than silent.
+ */
+export interface BeatSeededTrace extends TraceBase {
+  category: 'ascendant.beat.seeded';
+  turn: number;
+  beatId: string;
+  /** The seed variant that ran (`home_seat` | `threaded_artifact`). */
+  seed: string;
+  /** Node ids created or designated by this seed (the throne location, the new artifact). */
+  seededNodeIds: string[];
+  /** Edge ids created by this seed (`thread` / `possesses` / `controls`). */
+  seededEdgeIds: string[];
+  /** Set when the seed soft-skipped; absent on success. */
+  failSoft?: string;
 }
 
 /** Trace: an action was unlocked into the run-scoped unlock set. THR-500 */

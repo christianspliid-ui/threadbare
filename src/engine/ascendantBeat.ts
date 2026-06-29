@@ -51,6 +51,7 @@ import {
   BEAT_SPHERE_BIAS_NONE,
 } from '../data/ascendant-beat-content';
 import { eligibleDeliveryBeats, getDeliveryBeatById } from './deliveryBeatAdapter';
+import { seedBeatGraph } from './ascendantBeatSeeding';
 
 /**
  * Beat-trace emit wrapper. `emitTrace`'s parameter collapses a discriminated
@@ -561,15 +562,26 @@ export function resolvePendingBeat(
       } as unknown as Parameters<typeof emitTrace>[0]);
     }
 
+    // Seed the promised graph state (throne / artifact) for beats that carry a
+    // `seedsGraph` tag (THR-520, plan §4.1). Mutates `state.graph` in place (shared
+    // mutable world graph) and reports the touched node ids for the BeatRecord. Beats
+    // without the tag — the pre-THR-520 contract — seed nothing here.
+    const seededNodeIds = def.seedsGraph ? seedBeatGraph(state, def, turn).seededNodeIds : [];
+
     const outcome = opts.outcome ?? (pending.kind === 'selection' ? 'chosen' : 'received');
-    const resolvedBeats = resolveAscendantBeat(beats, { outcome, grantedActionIds: granted, turn });
+    const resolvedBeats = resolveAscendantBeat(beats, {
+      outcome,
+      grantedActionIds: granted,
+      seededNodeIds,
+      turn,
+    });
     return {
       state: { ...state, unlockedActionIds: nextUnlocked, ascendantBeats: resolvedBeats },
       resolved: true,
       beatId: pending.beatId,
       grantedActionIds: granted,
       outcome,
-      message: `Resolved '${pending.beatId}' → ${outcome}${granted.length ? ` (+${granted.join(', ')})` : ''}`,
+      message: `Resolved '${pending.beatId}' → ${outcome}${granted.length ? ` (+${granted.join(', ')})` : ''}${seededNodeIds.length ? ` [seeded ${seededNodeIds.join(', ')}]` : ''}`,
     };
   } catch (err) {
     // NFP #4: the resolve path must never crash a tick or wedge the queue.

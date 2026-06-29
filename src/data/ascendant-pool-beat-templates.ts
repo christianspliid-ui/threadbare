@@ -33,13 +33,15 @@
  * it does NOT execute template aftermath. So the unlock for each pool beat is carried by
  * `grantsActionIds` on the descriptor, not by an `unlock_action` aftermath effect on this
  * template (which the resolve path would never run). The richer "beat resolution runs the
- * template's aftermath / GraphOps" contract is the deferred engine change TODO(THR-520).
+ * template's aftermath / GraphOps" contract for *pool* beats is the deferred engine change
+ * TODO(THR-522). (THR-520 shipped resolve-time seeding for the *spine* via a fixed
+ * `seedsGraph` tag — a different, narrower mechanism than running arbitrary pool-template aftermath.)
  *
  * VOICE. Threadbare, second person, player-as-god, indirect intervention (you lean, you
  * offer, you do not seize). Long-form `description` (read + TTS). Introduction beats end
  * on an investment hook; they anchor enrichment on The First + the world the god already
  * knows (the un-introduced group itself is not bound until the Director seeds it —
- * TODO(THR-520)).
+ * TODO(THR-522)).
  */
 
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
