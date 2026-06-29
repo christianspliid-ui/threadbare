@@ -40,6 +40,18 @@ export const CONSECRATE_ESTABLISH_COST = 4;
  */
 export const CONSECRATE_PERTICK = 0.3;
 
+/**
+ * One-time essence to consecrate via the *relic* variant (THR-518). The player
+ * pays this high upfront cost to mint a permanent relic artifact that sustains
+ * the consecration with **zero ongoing upkeep** — the spawned control effect's
+ * `perTickCost` is waived for as long as the relic exists (THR-509
+ * `relic_upkeep_substitute`). Destroying the relic lapses the effect, giving
+ * rivals a contestation vector. Sized as ~30 ticks of `CONSECRATE_PERTICK`
+ * (0.3 × ~30 ≈ 9) plus the base `CONSECRATE_ESTABLISH_COST` (4): paying it pays
+ * off only for a consecration the player intends to hold long-term.
+ */
+export const CONSECRATE_RELIC_UPFRONT = 13;
+
 // ─── THR-512: Bestow Power ────────────────────────────────────────────────────
 // `[bestow power] <threaded agent>` grants a threaded mortal two persistent
 // boons via a "divine gift" artifact the agent possesses (option (a) — reuses

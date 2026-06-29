@@ -83,6 +83,23 @@ export interface ActorPrerequisites {
 // ─── ControlSpec ──────────────────────────────────────────────────────────────
 
 /**
+ * Mint-a-sustaining-relic spec (THR-518). When a `ControlSpec` carries this,
+ * `spawnControlEffect` mints a permanent relic artifact at establishment time
+ * and sets the spawned effect's `upkeepArtifactId` to the *freshly-minted*
+ * artifact's id — the dynamic counterpart to a static `upkeepArtifactId`, which
+ * cannot reference a not-yet-created node. While the relic exists, the effect's
+ * `perTickCost` is waived (`relic_upkeep_substitute`, THR-509); destroying it
+ * lapses the effect (`upkeep_relic_destroyed`), giving rivals a contestation
+ * vector. First consumer: consecrate's relic variant (`action.consecrate-relic`).
+ */
+export interface MintUpkeepRelicSpec {
+  /** Display name for the minted relic node (e.g. "Hallowed Reliquary"). */
+  readonly relicName: string;
+  /** Tags written onto the minted artifact's possesses edge. */
+  readonly tags?: readonly string[];
+}
+
+/**
  * Specification for a sustained control effect, stored on UnifiedActionTemplate.
  * Copied to ControlEffect at creation time.
  */
@@ -115,6 +132,14 @@ export interface ControlSpec {
    * if the artifact is destroyed, the effect lapses (`upkeep_relic_destroyed`).
    */
   readonly upkeepArtifactId?: string;
+
+  /**
+   * Mint a permanent relic at establishment and bind it as this effect's
+   * upkeep substitute (THR-518). Mutually exclusive in practice with a static
+   * `upkeepArtifactId`: when set, `spawnControlEffect` mints the relic and
+   * overrides `upkeepArtifactId` with the new node's id. Undefined = no mint.
+   */
+  readonly mintUpkeepRelic?: MintUpkeepRelicSpec;
 
   /** Prerequisites for rivals to contest this effect. */
   readonly contestPrerequisites?: {

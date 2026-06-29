@@ -145,7 +145,7 @@ import {
   KINDLE_CALLING_ESSENCE_COST,
 } from './faction-action-constants';
 import { SCHISM_ESSENCE_COST } from './game-config';
-import { IMBUE_ESSENCE_COST, CONSECRATE_ESTABLISH_COST, CONSECRATE_PERTICK, BESTOW_COST, ANOINT_COST } from './ascendant-expression-constants';
+import { IMBUE_ESSENCE_COST, CONSECRATE_ESTABLISH_COST, CONSECRATE_PERTICK, CONSECRATE_RELIC_UPFRONT, BESTOW_COST, ANOINT_COST } from './ascendant-expression-constants';
 import { CONSECRATE_DEVOTION_PER_TICK } from '../types/ascendantPrimitives';
 import { RIVAL_SHRINE_BETRAYAL_TEMPLATE } from './encounters/rival-shrine-betrayal';
 import { WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE } from './encounters/wandering-healer-shrine-access';
@@ -1972,8 +1972,8 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   // establishment bridge (`spawnControlEffect`, THR-511) resolves the location's
   // hex coords and sets `targetNodeId` so the aura targets the right node; the
   // consumer side (`phaseControlEffects` → `applyCoLocatedThreadAura`) already
-  // ships. A high-upfront relic variant that waives upkeep is a follow-up
-  // (TODO(THR-518) — relic-mint + dynamic `upkeepArtifactId` injection).
+  // ships. The high-upfront relic variant that waives upkeep is `action.consecrate-relic`
+  // (THR-518), immediately below.
   {
     id: 'action.consecrate',
     name: 'Consecrate',
@@ -2019,6 +2019,66 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       initiation: 'consecrates this holy place, sinking divine presence into its foundations',
       success: 'the ground is hallowed — a font of devotion now spreads your design to the faithful',
       failure: 'the consecration will not hold; the site resists your presence',
+    },
+  },
+  // ─── THR-518: Consecrate (relic variant) — early expression card (unlockable-generic) ─
+  // The §4.4 alternative to the sustained-upkeep `action.consecrate`: pay a high
+  // ONE-TIME cost to mint a permanent relic that sustains the consecration with
+  // ZERO ongoing upkeep. Mechanically identical (same faith-spread aura) except
+  // `perTickCost` is empty and the controlSpec carries `mintUpkeepRelic`. At
+  // establishment, `spawnControlEffect` (THR-518) mints the relic artifact and
+  // sets the spawned effect's `upkeepArtifactId` to the new node's id; while the
+  // relic exists `getUpkeepStatus` → 'waived', and destroying it lapses the
+  // effect (`upkeep_relic_destroyed`) — the rival contestation vector.
+  {
+    id: 'action.consecrate-relic',
+    name: 'Enshrine Relic',
+    spellName: 'Reliquary of Hallowing',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description:
+      'Rather than feed the consecration with a steady stream of devotion, you bind ' +
+      'your presence into an enduring relic and enshrine it here. The ground stays ' +
+      'hallowed for as long as the relic endures — at no further cost to you — but ' +
+      'should it ever be destroyed, the hallowing dies with it.',
+    reach: 'star',
+    trayTier: 'core',
+    crudType: 'update',
+    scale: 'local',
+    steps: [{
+      reach: 'star',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: CONSECRATE_RELIC_UPFRONT,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'spirit',
+    targetCategories: ['location'],
+    targetSubtypes: ['temple', 'shrine'],
+    motivations: ['tradition_novelty', 'loyalty_ambition'],
+    durationMode: 'sustained',
+    controlSpec: {
+      // No per-tick essence drain — the relic waives upkeep entirely. The
+      // faith-spread aura is unchanged from the sustained-upkeep variant.
+      perTickCost: {},
+      perTickThreadAuras: [{ magnitude: CONSECRATE_DEVOTION_PER_TICK }],
+      // THR-518: mint a permanent relic at establishment and bind it as this
+      // effect's dynamic upkeep substitute (spawnControlEffect handles the mint).
+      mintUpkeepRelic: { relicName: 'Hallowed Reliquary', tags: ['consecration_relic'] },
+      narrativeTemplates: {
+        established: 'the relic is enshrined — its presence holds the hallowing without your steady hand',
+        active: 'the consecration holds — the relic sustains the faithful drawn to your design',
+        lapsed: 'the relic is undone; the hallowing dies with it and the ground forgets your presence',
+      },
+    },
+    narrativeTemplates: {
+      initiation: 'enshrines an enduring relic, binding the consecration into the holy place itself',
+      success: 'the relic is set — the ground stays hallowed at no further cost while it endures',
+      failure: 'the relic will not hold your presence; the enshrinement fails',
     },
   },
   // ─── THR-512: Bestow Power — early expression card (unlockable-generic) ───────
