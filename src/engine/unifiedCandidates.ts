@@ -82,7 +82,12 @@ export function generateUnifiedCandidates(
     if (blockedReaches.has(template.reach)) {
       continue;
     }
-    // Scale gate: skip cosmic/regional templates — agents only do personal/local
+    // Scale gate: skip cosmic/regional templates — agents only self-initiate
+    // personal/local actions through the array-scored path. This does NOT gate
+    // branching encounters: those surface via the encounter cache → scoring →
+    // phaseAgentDecision path (encounterCache.ts / encounterFilterPipeline.ts),
+    // which is scale-agnostic, so cosmic/regional branching encounters (THR-466)
+    // still fire. The two paths are independent — this gate is orthogonal.
     if (template.scale === 'cosmic' || template.scale === 'regional') {
       continue;
     }
