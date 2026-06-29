@@ -215,13 +215,16 @@ export function isSpineBeatId(beatId: string): boolean {
  * (convention: `templateId === beatId`).
  *
  * GRANT GROUNDING. Every id in `grantsActionIds` is a *real* `UnifiedActionTemplate`
- * id that ships today (`bind_thread_agent`, `bind_thread_location`, `observe_agent`,
- * `action.imbue`). The plan's richer investment vocabulary (consecrate / bestow /
- * anoint as ascendant cards, and the reach-gated `invest.*` set) is not authored
- * yet — TODO(THR-515) expands the pool + `ASCENDANT_ACTION_BUCKETS` as those cards
- * land. Granting an unknown id would be fail-soft (the `unlock_action` aftermath
- * never reveals a card with no template), but seeding vapor ids is avoided so the
- * unlock catalogue stays a truthful map of what actually unlocks.
+ * id that ships today: the early basics (`bind_thread_agent`, `bind_thread_location`,
+ * `observe_agent`, `action.imbue`) plus the §4.4 per-graph expression verbs that have
+ * since landed — `action.consecrate` (THR-511, location), `action.bestow` (THR-512,
+ * agent), `action.anoint` (THR-513, faction). THR-515 added the three deeper-expression
+ * investment beats that grant them. The remaining reach-gated `invest.*` set is still
+ * unauthored (no templates exist), so it is NOT granted here — TODO(THR-523) expands the
+ * pool + `ASCENDANT_ACTION_BUCKETS` with `reach-gated` entries once those cards ship.
+ * Granting an unknown id would be fail-soft (the `unlock_action` aftermath never reveals
+ * a card with no template), but seeding vapor ids is avoided so the unlock catalogue
+ * stays a truthful map of what actually unlocks.
  *
  * DRAW vs. ELIGIBILITY. As of THR-516 the Director filters this pool by each beat's
  * `eligibility` predicate against world state before drawing, and `drawFromPool` scales
@@ -343,6 +346,36 @@ export const ASCENDANT_BEAT_POOL: readonly BeatDefinition[] = [
     grantsActionIds: ['bind_thread_location'],
   },
 
+  // — Deeper-expression investment beats (THR-515): grant the §4.4 per-graph
+  //   expression verbs that landed after the starter pool (consecrate/bestow/anoint).
+  //   These mirror `raw_relic`'s treatment of `action.imbue` — each of the four
+  //   per-graph verbs gets its own investment beat. `unlockable-generic` bucket; the
+  //   card's own target filters (subtype / awareness / faction) gate when it surfaces. —
+  {
+    beatId: 'beat.pool.invest.the_hallowed_place',
+    kind: 'investment',
+    trigger: { kind: 'cadence' },
+    eligibility: { kind: 'unthreaded_target' },
+    templateId: 'beat.pool.invest.the_hallowed_place',
+    grantsActionIds: ['action.consecrate'],
+  },
+  {
+    beatId: 'beat.pool.invest.the_favored_soul',
+    kind: 'investment',
+    trigger: { kind: 'cadence' },
+    eligibility: { kind: 'unthreaded_target' },
+    templateId: 'beat.pool.invest.the_favored_soul',
+    grantsActionIds: ['action.bestow'],
+  },
+  {
+    beatId: 'beat.pool.invest.the_chosen_banner',
+    kind: 'investment',
+    trigger: { kind: 'cadence' },
+    eligibility: { kind: 'unthreaded_target' },
+    templateId: 'beat.pool.invest.the_chosen_banner',
+    grantsActionIds: ['action.anoint'],
+  },
+
   // — Selection beats (BEAT_KIND_WEIGHTS.selection): choose 1-of-N within-run. The
   //   picker offers the listed cards; resolution unlocks the chosen one. —
   {
@@ -387,17 +420,25 @@ export interface ActionBucketEntry {
  * {@link collectGrantedActionIds} rather than maintaining a second, drift-prone map).
  *
  * Only real, shipping `UnifiedActionTemplate` ids appear. No `reach-gated` entries
- * yet — the reach-gated investment cards are not authored (TODO(THR-515)); the
+ * yet — the reach-gated investment cards are not authored (TODO(THR-523)); the
  * bucket value + `requiresReach` field exist for when they land. The expressive
  * `divine.*` verbs the scripted spine grants (THR-504, Beats 3–4) are
  * `unlockable-generic`: every run can earn them via the opening arc; they are not
- * gated on the ascendant's two domains.
+ * gated on the ascendant's two domains. The §4.4 per-graph expression verbs
+ * (`action.imbue` / `consecrate` / `bestow` / `anoint`, THR-508/511/512/513, granted
+ * by their investment beats) are likewise `unlockable-generic` — universal verbs whose
+ * power is flavored by the ascendant's domain/sphere, not gated on the two-domain lock.
  */
 export const ASCENDANT_ACTION_BUCKETS: Readonly<Record<string, ActionBucketEntry>> = {
   bind_thread_agent: { bucket: 'generic' },
   bind_thread_location: { bucket: 'generic' },
   observe_agent: { bucket: 'generic' },
   'action.imbue': { bucket: 'unlockable-generic' },
+  // Per-graph expression verbs (THR-511/512/513, granted by the deeper-expression
+  // investment beats — THR-515): location / agent / faction analogues of imbue.
+  'action.consecrate': { bucket: 'unlockable-generic' },
+  'action.bestow': { bucket: 'unlockable-generic' },
+  'action.anoint': { bucket: 'unlockable-generic' },
   // Spine-granted expressive verbs (THR-504): The First Word + the three god-paths.
   'divine.persuade': { bucket: 'unlockable-generic' },
   'divine.dream': { bucket: 'unlockable-generic' },
