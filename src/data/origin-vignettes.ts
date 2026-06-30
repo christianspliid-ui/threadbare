@@ -26,7 +26,7 @@ import type { ReachDomain } from '../types/traits';
  *   heart  — Loyal/Sworn          / Disloyal/Renegade
  *   eye    — Perceptive/Seer      / Judgemental/Inquisitor
  *   stone  — Dependable/Keeper     / Reckless/Destroyer
- *   star   — Inspiring/Beacon      / Discouraging/Anchor
+ *   star   — Guiding/Beacon        / Misleading/Wrecker
  *
  * Voice: Threadbare house style (`Docs/canon/prose.md`) — plain, concrete,
  * one-line pre-history circumstances. Show the soil, not the flower. Every
@@ -214,24 +214,27 @@ export const ORIGIN_VIGNETTES: readonly OriginVignette[] = [
   { id: 'origin.stone.vice.bridge-relied-on', text: 'Burned a bridge the whole village relied on, over an insult no one else remembered.', reach: 'stone', pole: 'vice', magnitude: 0.2 },
 
   // ─────────────────────────────── STAR ───────────────────────────────
-  // Virtue: Inspiring / Beacon
-  { id: 'origin.star.virtue.dull-chore', text: 'Could make the other children believe a dull chore was an adventure.', reach: 'star', pole: 'virtue', magnitude: 0.05 },
-  { id: 'origin.star.virtue.whole-room-laughing', text: 'Was the one whose laugh started the whole room laughing.', reach: 'star', pole: 'virtue', magnitude: 0.05 },
-  { id: 'origin.star.virtue.up-the-cliff', text: 'Talked a frightened friend up a cliff they had sworn they could not climb.', reach: 'star', pole: 'virtue', magnitude: 0.05 },
-  { id: 'origin.star.virtue.a-little-brighter', text: 'Left every room a little brighter than they found it.', reach: 'star', pole: 'virtue', magnitude: 0.05 },
-  { id: 'origin.star.virtue.steady-voice', text: 'Rallied the discouraged with nothing but words and a steady voice.', reach: 'star', pole: 'virtue', magnitude: 0.1 },
-  { id: 'origin.star.virtue.worth-staying-awake', text: 'Made a hungry winter bearable by telling stories worth staying awake for.', reach: 'star', pole: 'virtue', magnitude: 0.1 },
-  { id: 'origin.star.virtue.back-on-its-feet', text: 'Got a beaten team back on its feet with a single stubborn refusal to quit.', reach: 'star', pole: 'virtue', magnitude: 0.1 },
-  { id: 'origin.star.virtue.calm-they-didnt-feel', text: 'Led a frightened crowd to safety on the strength of a calm they did not feel.', reach: 'star', pole: 'virtue', magnitude: 0.15 },
-  { id: 'origin.star.virtue.hope-alone', text: 'Kept a doomed effort alive on hope alone, and turned it around.', reach: 'star', pole: 'virtue', magnitude: 0.2 },
-  // Vice: Discouraging / Anchor
-  { id: 'origin.star.vice.flat-word', text: 'Had a flat word ready for every bright idea the others brought.', reach: 'star', pole: 'vice', magnitude: 0.05 },
-  { id: 'origin.star.vice.a-sigh', text: 'Learned that a sigh could deflate a room faster than a shout.', reach: 'star', pole: 'vice', magnitude: 0.05 },
-  { id: 'origin.star.vice.last-time-wrong', text: 'Reminded everyone of the last time it went wrong.', reach: 'star', pole: 'vice', magnitude: 0.05 },
-  { id: 'origin.star.vice.reasons-it-fails', text: 'Met every plan with the reasons it would fail.', reach: 'star', pole: 'vice', magnitude: 0.05 },
-  { id: 'origin.star.vice.weary-doubt', text: 'Talked friends out of trying, one weary doubt at a time.', reach: 'star', pole: 'vice', magnitude: 0.1 },
-  { id: 'origin.star.vice.leaving-the-ground', text: 'Was the weight that kept every hopeful scheme from leaving the ground.', reach: 'star', pole: 'vice', magnitude: 0.1 },
-  { id: 'origin.star.vice.expecting-nothing', text: 'Found that nothing was safer than expecting nothing, and taught it to others.', reach: 'star', pole: 'vice', magnitude: 0.1 },
-  { id: 'origin.star.vice.gift-to-waste', text: 'Convinced a gifted friend to give up, and watched the gift go to waste.', reach: 'star', pole: 'vice', magnitude: 0.15 },
-  { id: 'origin.star.vice.quietly-fell-apart', text: 'Drained the will from a whole effort until it quietly fell apart.', reach: 'star', pole: 'vice', magnitude: 0.2 },
+  // Re-scoped THR-545: Star is wayfinding/fate (guiding others' journeys), not
+  // inner outlook — the Inspiring/Discouraging morale reading moved to the Core
+  // layer's Hopeful↔Bitter continuum (see core-origin-vignettes.ts).
+  // Virtue: Guiding / Beacon
+  { id: 'origin.star.virtue.knew-the-fork', text: 'Always knew which fork in the trail led home, even after dark.', reach: 'star', pole: 'virtue', magnitude: 0.05 },
+  { id: 'origin.star.virtue.through-the-woods', text: 'Could find the way back through woods that swallowed everyone else.', reach: 'star', pole: 'virtue', magnitude: 0.05 },
+  { id: 'origin.star.virtue.followed-without-telling', text: 'Was the one the younger children followed without being told to.', reach: 'star', pole: 'virtue', magnitude: 0.05 },
+  { id: 'origin.star.virtue.marks-on-the-trees', text: 'Left small marks on the trees so the next traveller would not get lost.', reach: 'star', pole: 'virtue', magnitude: 0.05 },
+  { id: 'origin.star.virtue.walk-a-stranger-home', text: 'Read the stars well enough to walk a lost stranger home in the dark.', reach: 'star', pole: 'virtue', magnitude: 0.1 },
+  { id: 'origin.star.virtue.caravan-to-water', text: 'Steered a parched caravan to water by the lean of the land alone.', reach: 'star', pole: 'virtue', magnitude: 0.1 },
+  { id: 'origin.star.virtue.every-safe-ford', text: 'Knew every safe ford on the river and never sent anyone wrong.', reach: 'star', pole: 'virtue', magnitude: 0.1 },
+  { id: 'origin.star.virtue.down-off-the-mountain', text: 'Brought a snowbound party down off the mountain by feel when the path was gone.', reach: 'star', pole: 'virtue', magnitude: 0.15 },
+  { id: 'origin.star.virtue.light-in-the-window', text: 'Set a steady light in the window through every storm, and ships came home by it.', reach: 'star', pole: 'virtue', magnitude: 0.2 },
+  // Vice: Misleading / Wrecker
+  { id: 'origin.star.vice.wrong-directions', text: 'Gave wrong directions for the small pleasure of watching them set off sure.', reach: 'star', pole: 'vice', magnitude: 0.05 },
+  { id: 'origin.star.vice.the-longer-road', text: 'Pointed every lost traveller down the longer road.', reach: 'star', pole: 'vice', magnitude: 0.05 },
+  { id: 'origin.star.vice.said-nothing', text: 'Watched a stranger walk past the turn they needed, and said nothing.', reach: 'star', pole: 'vice', magnitude: 0.05 },
+  { id: 'origin.star.vice.moved-the-markers', text: 'Moved the trail-markers a little, just to see who would notice.', reach: 'star', pole: 'vice', magnitude: 0.05 },
+  { id: 'origin.star.vice.maps-wrong-where-it-mattered', text: 'Sold maps that were close enough to trust and wrong where it mattered.', reach: 'star', pole: 'vice', magnitude: 0.1 },
+  { id: 'origin.star.vice.false-light', text: 'Hung a false light on the wrong headland and let the rocks do the rest.', reach: 'star', pole: 'vice', magnitude: 0.1 },
+  { id: 'origin.star.vice.a-slow-circle', text: 'Led a trusting party in a slow circle and called it the way through.', reach: 'star', pole: 'vice', magnitude: 0.1 },
+  { id: 'origin.star.vice.road-that-did-not-come-back', text: 'Talked a whole expedition onto a road that did not come back.', reach: 'star', pole: 'vice', magnitude: 0.15 },
+  { id: 'origin.star.vice.living-off-the-lost', text: 'Made a living off the lost, and quietly saw to it they stayed that way.', reach: 'star', pole: 'vice', magnitude: 0.2 },
 ] as const;

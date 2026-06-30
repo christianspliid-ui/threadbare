@@ -23,7 +23,7 @@ The behavioral words are deliberately plain rather than literary — the user fl
 | Heart | Sworn (Loyal) | Renegade (Disloyal) |
 | Eye | Seer (Perceptive) | Inquisitor (Judgemental) |
 | Stone | Keeper (Dependable) | Destroyer (Reckless) |
-| Star | Beacon (Inspiring) | Anchor (Discouraging) |
+| Star | Beacon (Guiding) | Wrecker (Misleading) |
 
 Convention: left pole = virtue (positive), right pole = vice (negative).
 
@@ -34,7 +34,7 @@ Pole names revised (the original set was Iron Protector↔Conqueror, Gold Patron
 - **Shadow: Saboteur → Broker, Deceiver → Manipulator.** Shadow is redefined around covert *social leverage* — reading people and either dealing straight (Broker, the chaotic-good thieves-guild fixer) or exploiting them (Manipulator). This intentionally moves Shadow's flavor from pure stealth/sabotage toward hidden influence. Broker retains a covert read so Shadow stays distinct from Heart (open bonds) and Gold (open influence).
 - **Veil: Seer → Weaver, Manipulator → Unraveller.** Pulls the game's thread motif into the cosmology — weaving vs unravelling the threads of fate/magic. Patience vs impatience fits ritual craft.
 - **Eye: Witness → Seer, Judge → Inquisitor.** Inquisitor is a sharper vice-archetype (knowledge weaponized into persecution) than a neutral arbiter.
-- **Star: Wanderer → Beacon.** Shifts the virtue from "one who journeys" to "one who guides others' journeys"; pairs with Anchor (a weight that holds others back).
+- **Star: Wanderer → Beacon.** Shifts the virtue from "one who journeys" to "one who guides others' journeys". *Superseded by THR-545 (2026-06-30):* the vice re-scoped from Anchor (Discouraging) to **Wrecker (Misleading)** and the virtue word from Inspiring to **Guiding** — the inner-outlook reading (Inspiring↔Discouraging) was an inner disposition masquerading as a reach behavior, so it moved to the Core layer's Hopeful↔Bitter continuum and Star's reach axis now points purely at wayfinding/fate (a beacon guides ships home; a wrecker's false lantern lures them onto the rocks).
 
 **Two terms relocate between reaches — the load-bearing wiring risk:**
 - **`Manipulator` moves Veil → Shadow.**

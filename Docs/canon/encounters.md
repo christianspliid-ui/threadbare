@@ -56,7 +56,7 @@ Each encounter's primary reach maps to an archetype-axis in the Cosmological Pat
 | Heart | Sworn ↔ Renegade |
 | Eye | Witness ↔ Judge |
 | Stone | Keeper ↔ Destroyer |
-| Star | Wanderer ↔ Anchor |
+| Star | Beacon ↔ Wrecker |
 
 Source: `Docs/plans/2026-05-04-encounter-experience-design-plan.md` §2.2 and `Brainstorms/brainstorm-cosmological-symmetry.md`.
 

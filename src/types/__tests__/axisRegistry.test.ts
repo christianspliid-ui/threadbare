@@ -24,7 +24,7 @@ const APPROVED = {
   heart: { virtue: { role: 'Sworn', word: 'Loyal' }, vice: { role: 'Renegade', word: 'Disloyal' } },
   eye: { virtue: { role: 'Seer', word: 'Perceptive' }, vice: { role: 'Inquisitor', word: 'Judgemental' } },
   stone: { virtue: { role: 'Keeper', word: 'Dependable' }, vice: { role: 'Destroyer', word: 'Reckless' } },
-  star: { virtue: { role: 'Beacon', word: 'Inspiring' }, vice: { role: 'Anchor', word: 'Discouraging' } },
+  star: { virtue: { role: 'Beacon', word: 'Guiding' }, vice: { role: 'Wrecker', word: 'Misleading' } }, // re-scoped THR-545: wayfinding/fate, not inner outlook
 } as const;
 
 describe('axisRegistry — canonical scale', () => {
