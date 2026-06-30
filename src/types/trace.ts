@@ -56,6 +56,7 @@ export type TraceCategory =
   | 'faction_ambition'
   | 'reputation_trait'
   | 'personality_trait_emerged'
+  | 'reaction_selected'
   | 'rarity_graduation'
   | 'rarity_importance'
   | 'divine_proximity_phase'
@@ -488,6 +489,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'chosen_faction_power',
   // Emergent personality traits (THR-527)
   'personality_trait_emerged',
+  // Autonomous in-encounter choice (THR-530)
+  'reaction_selected',
 ];
 
 /** Base shape for all trace entries */
