@@ -81,14 +81,18 @@ describe('processCorePersonality — seeding', () => {
     expect(after.coreProfile).toBeDefined();
   });
 
-  it('emits a core_personality/seeded trace per agent', () => {
+  it('emits ONE aggregate core_personality/seeded trace per tick (not one per agent)', () => {
     enableTracing();
     makeActor(graph, 'a');
+    makeActor(graph, 'b');
+    makeActor(graph, 'c');
     processCorePersonality(makeState(graph));
     const seeded = getTraces().filter(
       (t) => t.category === 'core_personality' && (t.details as { kind?: string })?.kind === 'seeded',
     );
+    // One trace covering all three agents — keeps the tick-1 burst off the ring buffer.
     expect(seeded).toHaveLength(1);
+    expect((seeded[0] as { details?: { count?: number } }).details?.count).toBe(3);
     disableTracing();
   });
 });

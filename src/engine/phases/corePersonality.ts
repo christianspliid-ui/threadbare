@@ -9,7 +9,12 @@
  *     deterministically from `hash(worldSeed, agentId)`, so the same world seed
  *     reproduces the same Core regardless of *when* the agent is first seen
  *     (worldgen agents at tick 1, born-later agents at their first tick).
- *     Emits a `core_personality` / `seeded` trace once per agent.
+ *     Emits ONE aggregate `core_personality` / `seeded` trace per tick carrying
+ *     the count — never one-per-agent. The bulk tick-1 seeding touches every
+ *     mortal at once (~hundreds); a per-agent trace there would flood the 2000-
+ *     entry trace ring buffer and evict unrelated traces (the buffer-overflow
+ *     flakiness class — see `Docs/impediments.md`). Per-agent `coreProfile`
+ *     stays inspectable on the node itself.
  *  2. **Emergence** — per continuum, tracks a hysteresis held-state on
  *     `node.properties.coreEmergent` and emits `emerge` / `fade` traces on
  *     crossings. (Granting actual Core emergent *traits* is the content slice;
@@ -117,15 +122,36 @@ export function processCorePersonality(state: GameState): CorePersonalityResult 
       const actorName = (actor.name as string | undefined) ?? actor.id;
 
       // ── 1. Seed (idempotent) ──
+      // No per-agent trace here — the bulk tick-1 seeding would emit hundreds at
+      // once and wrap the trace ring buffer (buffer-overflow flakiness class).
+      // One aggregate `seeded` trace is emitted after the loop instead.
       let core = props.coreProfile as CoreProfile | undefined;
+      let justSeeded = false;
       if (!core) {
         core = seedCoreProfile(mulberry32(agentSeed(state.seed, actor.id)));
         props.coreProfile = core;
         result.seeded++;
-        trace(tick, actor.id, 'seeded', `${actorName} Core baseline drawn`, { core });
+        justSeeded = true;
       }
 
       // ── 2. Emergence hysteresis ──
+      // On the seeding tick, *initialize* the held set from the born position
+      // silently: an agent born at an extreme isn't "becoming" anything, and
+      // emitting a per-agent emerge trace for every born-extreme agent would
+      // re-introduce a tick-1 trace burst. Only genuine later transitions (from
+      // drift/marks in subsequent slices) emit emerge/fade traces.
+      if (justSeeded) {
+        const born: string[] = [];
+        for (const continuum of CORE_CONTINUA) {
+          const pos = coreValue(core, continuum.continuumId);
+          if (pos >= CORE_EMERGENCE_VIRTUE_THRESHOLD) born.push(`${continuum.continuumId}:virtue`);
+          else if (pos <= CORE_EMERGENCE_VICE_THRESHOLD) born.push(`${continuum.continuumId}:vice`);
+        }
+        if (born.length > 0) props.coreEmergent = born;
+        // Skip bend on the seeding tick too — first transition window opens next tick.
+        continue;
+      }
+
       const held = new Set<string>(
         Array.isArray(props.coreEmergent) ? (props.coreEmergent as string[]) : [],
       );
@@ -176,6 +202,13 @@ export function processCorePersonality(state: GameState): CorePersonalityResult 
     } catch {
       // fail-soft — never break the tick loop on one agent's Core processing.
     }
+  }
+
+  // One aggregate seeded trace per tick (keeps the burst off the ring buffer).
+  if (result.seeded > 0) {
+    trace(tick, 'core_personality', 'seeded', `Core baselines drawn for ${result.seeded} agent(s)`, {
+      count: result.seeded,
+    });
   }
 
   return result;
