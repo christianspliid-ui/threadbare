@@ -1,9 +1,11 @@
 # Test-Suite Stabilization — Triage & Repair Plan (THR-489)
 
+> **STATUS: RESOLVED 2026-06-30 (CC execution).** The full `npm test` suite is **green on `main`** — 783 files / 11966 tests, 0 failed, stable across 3 consecutive runs. The months-long red baseline was cleared by the WS1–WS3 single-executor consolidation (THR-486/487/488) plus accumulated intervening fixes; **no code change was required** to reach green. The triage plan below (authored by the Cowork keep-work-flowing pass) is preserved as designed; the **Closure** section at the end records the live reconciliation that closed the issue.
+
 **Date:** 2026-06-30
 **Issue:** THR-489 (Repo Health, P2, Infrastructure)
-**Author:** Cowork (keep-work-flowing scheduled PM pass)
-**Status:** Ready for Dev handoff
+**Author:** Cowork (keep-work-flowing scheduled PM pass); closure by CC execution
+**Status:** Resolved — suite green, reconciled, closed
 
 ## Gate check — satisfied
 
@@ -81,3 +83,43 @@ No new tunable constants. One possible existing-constant bump in scope: `TRACE_B
 
 - Re-enable the required `Test · Typecheck · Build` branch-protection check with a `paths-ignore` filter for `Docs/**`, `.claude/**`, `*.md`, `.gitignore` (impediment #94 prerequisite — only after the suite is reliably green AND fast).
 - Suite runtime / sharding so CI doesn't hang (impediment #31, #94).
+
+---
+
+## Closure — reconciliation & evidence (CC, 2026-06-30 @ `ab305729`)
+
+Ran the full suite first per the execution order. **The live run is green** — the months-long red baseline had already been resolved by the WS1–WS3 consolidation + intervening fixes, so no bucket-a/b/c repair work was needed. Every historically-named failing surface reconciled clean:
+
+| Historical failure (known-failing checklist) | Status on live run | Notes |
+|---|---|---|
+| `movement-content` contract | ✅ pass | `src/data/__tests__/movement-content.test.ts` present, green |
+| `revelationGate` | ✅ pass | `src/engine/__tests__/revelationGate.test.ts` present, green |
+| sublocation / reward / portrait / audio contracts | ✅ pass | in the 11966 green; no `.skip` masking |
+| encounter-count drift | ✅ pass | no count-assertion failures in the run |
+| `trait.reputation.power.renown` orchestrator crash (bucket b) | ✅ absent | **0 occurrences** of the crash string in the full-run log; 0 unhandled rejections / uncaught exceptions |
+| #54 `unifiedActionPhases` event-count (bucket c) | ✅ pass | targeted re-run green; green in all 3 full runs |
+| #57 `traceBuffer-integration` sequential IDs (bucket c) | ✅ pass | targeted re-run green; green in all 3 full runs |
+
+No tests are silently quarantined: `grep -rE "(it|test|describe)\.(skip|only)\(" src/**/*.test.ts*` returns nothing. The green is genuine, not a `.skip` mirage.
+
+### Verification evidence
+
+```
+# npm test (vitest run) — 3 consecutive runs
+PASS 1:  Test Files 783 passed (783)   Tests 11966 passed (11966)   Duration 69.69s
+PASS 2:  Test Files 783 passed (783)   Tests 11966 passed (11966)   Duration 69.75s
+PASS 3:  Test Files 783 passed (783)   Tests 11966 passed (11966)   Duration 69.36s
+
+# npx tsc --noEmit  -> exit 0 (clean)
+# npx vite build    -> exit 0, "✓ built in 10.12s"
+# 30-tick CLI smoke: printf "tick 30\nstatus\nexit\n" | npm run cli -- --seed 42 --map medium
+#   -> Tick 30, 390 agents, 50 events this tick / 100 recent, no thrown exceptions
+```
+
+### Scope note — `tsc -b` is a separate baseline, out of scope
+
+THR-489's Done-when is scoped to **`npm test`** (the vitest suite) plus `tsc --noEmit` (effectively a no-op given the root `tsconfig` `files:[]`, exit 0) and `vite build`. The real project-references typecheck `tsc -b` carries a large pre-existing error baseline (~3494, referenced as "THR-489 baseline" in recent changelog entries only as a shorthand). That baseline is **not** part of getting the test suite green and is not addressed here — CC's real CI gates are `npm test` + `vite build`, both green.
+
+### Keep it green
+
+The suite is green and the CI required check ("Test · Typecheck · Build") is trustworthy — merge=Done is fully load-bearing again. To keep it green: prefer invariants over literal counts; fail-soft over throw in tick phases (a throw can cascade into a wall of reds); never silent `.skip` (a flaky test gets a tracking issue); and trust the CI gate as the backstop now that the baseline is green — a new red is a real signal, not noise.
