@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { applyDriftMagnitude, decayAllDrift } from '../driftAccumulator';
+import {
+  applyDriftMagnitude,
+  decayAllDrift,
+  liveAxisPosition,
+  driftDeltaFor,
+} from '../driftAccumulator';
 import type { ArchetypeDrift } from '../../../types/gameState';
 
 const TICK = 10;
@@ -160,5 +165,44 @@ describe('decayAllDrift', () => {
       drift = decayAllDrift(drift, 0.001, tick);
     }
     expect(drift[0].toPosition).toBe(0);
+  });
+});
+
+describe('liveAxisPosition (THR-528)', () => {
+  it('is baseline + drift delta', () => {
+    expect(liveAxisPosition(0.3, 0.15)).toBeCloseTo(0.45, 10);
+    expect(liveAxisPosition(0.3, -0.2)).toBeCloseTo(0.1, 10);
+  });
+
+  it('clamps to the ±1 axis bounds', () => {
+    expect(liveAxisPosition(0.9, 0.5)).toBe(1.0);
+    expect(liveAxisPosition(-0.9, -0.5)).toBe(-1.0);
+  });
+
+  it('equals the baseline when there is no drift (rests at baseline, not neutral)', () => {
+    expect(liveAxisPosition(0.4, 0)).toBeCloseTo(0.4, 10);
+  });
+
+  it('returns to the baseline as drift decays toward zero', () => {
+    const baseline = 0.4;
+    let drift = applyDriftMagnitude(emptyDrift(), 'agt', 'iron', 0.2, TICK).drift;
+    expect(liveAxisPosition(baseline, driftDeltaFor(drift, 'agt', 'iron'))).toBeCloseTo(0.6, 10);
+    for (let tick = TICK + 1; tick <= TICK + 500; tick += 1) {
+      drift = decayAllDrift(drift, 0.001, tick);
+    }
+    // Drift delta has decayed to zero, so the live position is back at the baseline.
+    expect(driftDeltaFor(drift, 'agt', 'iron')).toBe(0);
+    expect(liveAxisPosition(baseline, driftDeltaFor(drift, 'agt', 'iron'))).toBeCloseTo(baseline, 10);
+  });
+});
+
+describe('driftDeltaFor (THR-528)', () => {
+  it('returns the recorded delta for an agent×axis', () => {
+    const drift = applyDriftMagnitude(emptyDrift(), 'agt', 'heart', 0.12, TICK).drift;
+    expect(driftDeltaFor(drift, 'agt', 'heart')).toBeCloseTo(0.12, 10);
+  });
+
+  it('returns 0 when no entry exists', () => {
+    expect(driftDeltaFor([], 'nobody', 'iron')).toBe(0);
   });
 });

@@ -888,6 +888,24 @@ export interface AuthoredChoiceCard {
   readonly likelyBurden?: string;
   /** Maps to interventionType for backend compatibility. */
   readonly interventionType: 'supportive' | 'coercive' | 'withdrawn';
+
+  /**
+   * Authored moral-axis tilt (THR-528). Declares which canonical axis this choice
+   * pushes the actor along, toward which pole, and how hard — replacing the
+   * inferred `toEncounterArchetypePole` heuristic (interventionType → pole). When
+   * omitted, the contract/drift resolvers fall back to that heuristic so
+   * un-migrated cards keep working.
+   *
+   * - `moralAxis` — the Reach whose virtue/vice axis the choice tilts. Defaults to
+   *   the step/template reach when omitted.
+   * - `pole` — `'virtue'` tilts toward the reach's virtue pole, `'vice'` toward the
+   *   vice pole. (Canonical THR-524 vocabulary; mapped to the legacy `virtue|flaw`
+   *   drift sign at the commit boundary.)
+   * - `magnitude` — unsigned drift strength on the canonical 0.05–0.20 scale.
+   */
+  readonly moralAxis?: ReachDomain;
+  readonly pole?: 'virtue' | 'vice';
+  readonly magnitude?: number;
 }
 
 // Scale priority for tick resolution ordering (lower = resolves first)

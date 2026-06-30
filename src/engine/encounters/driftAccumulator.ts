@@ -93,8 +93,35 @@ export function applyDriftMagnitude(
 }
 
 /**
- * Decays all drift entries by `decayRate` per tick toward zero.
- * Entries that reach exactly zero are kept (zeroed out) — they record axis history.
+ * The **live axis position** is the clamped sum of an agent's *baseline* (their
+ * standing `AxiologicalProfile` value — set at birth, moved only by permanent
+ * marks) and their current *temporary drift delta* (this accumulator). Because
+ * the drift delta decays toward zero (see `decayAllDrift`), the live position
+ * relaxes back to the baseline when choices stop reinforcing a direction — it
+ * rests at the baseline, never at neutral. This is the "live position = clamp(
+ * baseline + drift)" model from the personality plan. (THR-528)
+ *
+ * Operates on the legacy ±1 axis scale (virtue +1, vice −1) shared by the profile
+ * and the drift accumulator; the 0–1 canonical migration is THR-537/538's job.
+ */
+export function liveAxisPosition(baseline: number, driftDelta: number): number {
+  return clampDrift(baseline + driftDelta);
+}
+
+/** Current temporary drift delta for an agent×axis, or 0 if none is recorded. */
+export function driftDeltaFor(
+  drift: ArchetypeDrift[],
+  agentId: string,
+  axisId: string,
+): number {
+  return drift.find((d) => d.agentId === agentId && d.axisId === axisId)?.toPosition ?? 0;
+}
+
+/**
+ * Decays all drift entries by `decayRate` per tick toward zero — which, composed
+ * with the baseline via `liveAxisPosition`, pulls each agent's live position back
+ * toward their baseline (NOT toward neutral). Entries that reach exactly zero are
+ * kept (zeroed out) — they record axis history.
  */
 export function decayAllDrift(
   drift: ArchetypeDrift[],

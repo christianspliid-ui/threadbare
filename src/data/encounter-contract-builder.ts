@@ -1,6 +1,12 @@
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { parseEncounterContract } from './encounter-contract-validators';
 import {
+  CHOICE_DRIFT_MAGNITUDE_SMALL,
+  CHOICE_DRIFT_MAGNITUDE_FULLER,
+  CHOICE_DRIFT_MAGNITUDE_DEEP,
+  PERSONALITY_DRIFT_DELTA_DEFAULT,
+} from './encounter-experience-constants';
+import {
   ENCOUNTER_CHOICE_REACH_VALUES,
   ENCOUNTER_CATEGORY_VALUES,
   MORAL_AXIS_POLES_BY_REACH,
@@ -94,6 +100,12 @@ export function toEncounterChoiceReach(
   return toStepFallbackReach(template, stepIndex);
 }
 
+/**
+ * Inferred archetype-pole heuristic (legacy fallback, THR-318). Maps a choice's
+ * `interventionType` to the reach's virtue/vice pole. Retired as the *primary*
+ * path by THR-528 — prefer `resolveEncounterArchetypePole`, which honors an
+ * authored `pole` on the card and only falls back here when none is declared.
+ */
 export function toEncounterArchetypePole(
   reach: EncounterChoiceReach,
   choice: EncounterAuthoredChoice,
@@ -103,6 +115,65 @@ export function toEncounterArchetypePole(
     return poles[1];
   }
   return poles[0];
+}
+
+/**
+ * Resolve a choice's display archetype pole, preferring the **authored** `pole`
+ * declared on the card (THR-528) over the inferred `interventionType` heuristic.
+ * Authored `'virtue'` → the reach's virtue pole, `'vice'` → its vice pole.
+ */
+export function resolveEncounterArchetypePole(
+  reach: EncounterChoiceReach,
+  choice: EncounterAuthoredChoice,
+): EncounterArchetypePole {
+  if (choice.pole) {
+    const poles = reach === 'quintessence' ? QUINTESSENCE_POLES : MORAL_AXIS_POLES_BY_REACH[reach];
+    return choice.pole === 'vice' ? poles[1] : poles[0];
+  }
+  return toEncounterArchetypePole(reach, choice);
+}
+
+/** Cost-tier drift magnitude — the fallback when a choice declares no `magnitude`. */
+function heuristicDriftMagnitude(choice: EncounterAuthoredChoice): number {
+  const cost = toEncounterChoiceCost(choice);
+  if (cost === 'small_breath') return CHOICE_DRIFT_MAGNITUDE_SMALL;
+  if (cost === 'fuller_breath') return CHOICE_DRIFT_MAGNITUDE_FULLER;
+  return CHOICE_DRIFT_MAGNITUDE_DEEP;
+}
+
+/** The drift parameters a choice applies to the actor's live axis position. */
+export interface ResolvedChoiceDrift {
+  /** The reach whose axis the drift applies to (authored `moralAxis`, else the choice reach). */
+  readonly axisReach: EncounterChoiceReach;
+  /** Legacy drift sign: virtue → positive, flaw → negative. */
+  readonly moralAxisPole: 'virtue' | 'flaw';
+  /** Unsigned drift magnitude. */
+  readonly driftMagnitude: number;
+}
+
+/**
+ * Resolve the personality-drift a choice should apply when committed (THR-528),
+ * preferring the authored `moralAxis` / `pole` / `magnitude` on the card over the
+ * inferred `interventionType` heuristic + cost-tier magnitude. This is the
+ * canonical mapping a `PendingChoiceCommit` builder consumes — the authored path
+ * supersedes the heuristic; the heuristic remains only for un-migrated cards.
+ */
+export function resolveChoiceDrift(
+  reach: EncounterChoiceReach,
+  choice: EncounterAuthoredChoice,
+): ResolvedChoiceDrift {
+  const axisReach = (choice.moralAxis as EncounterChoiceReach | undefined) ?? reach;
+  const moralAxisPole: 'virtue' | 'flaw' = choice.pole
+    ? choice.pole === 'vice'
+      ? 'flaw'
+      : 'virtue'
+    : choice.interventionType === 'coercive'
+      ? 'flaw'
+      : 'virtue';
+  const driftMagnitude =
+    choice.magnitude ??
+    (choice.pole || choice.moralAxis ? PERSONALITY_DRIFT_DELTA_DEFAULT : heuristicDriftMagnitude(choice));
+  return { axisReach, moralAxisPole, driftMagnitude };
 }
 
 export function encodeEncounterContractMetadata(contract: EncounterContract): string {
@@ -210,7 +281,7 @@ export function buildLiteEncounterContract(template: UnifiedActionTemplate): Enc
         god_verb: choice.label,
         agent_reaction: choice.intent ?? DEFAULT_AGENT_REACTION,
         tilts_toward: choice.targetLabel ?? DEFAULT_TILTS_TOWARD,
-        moral_axis_pole: toEncounterArchetypePole(reach, choice),
+        moral_axis_pole: resolveEncounterArchetypePole(reach, choice),
         fail_forward: choice.likelyBurden ?? DEFAULT_FALL_FORWARD,
       };
     });

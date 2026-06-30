@@ -8,9 +8,12 @@ import {
   CHOICE_PROBABILITY_TILT_DEEP,
 } from '../../data/encounter-experience-constants';
 import { resolveEncounterChoice } from '../encounters/choiceResolution';
-import { applyDriftMagnitude } from '../encounters/driftAccumulator';
+import { applyDriftMagnitude, liveAxisPosition, driftDeltaFor } from '../encounters/driftAccumulator';
 import { consumeItemForChoice } from '../encounters/itemConsumption';
 import { emitTrace } from '../traceBuffer';
+import { getAxisByReach } from '../../types/axisRegistry';
+import type { AxiologicalProfile } from '../../types/agent';
+import type { ReachDomain } from '../../types/traits';
 
 export interface ChoiceResolutionPhaseResult {
   archetypeDrift: GameState['archetypeDrift'];
@@ -22,6 +25,21 @@ function probabilityTiltForCost(cost: PendingChoiceCommit['cost']): number {
   if (cost === 'small_breath') return CHOICE_PROBABILITY_TILT_SMALL;
   if (cost === 'fuller_breath') return CHOICE_PROBABILITY_TILT_FULLER;
   return CHOICE_PROBABILITY_TILT_DEEP;
+}
+
+/**
+ * Read an agent's *baseline* axis position — their standing `AxiologicalProfile`
+ * value for the choice's reach (±1 scale), or `undefined` when no profile/axis is
+ * present. Fail-soft (THR-528): missing profile → neutral, no live position.
+ */
+function readBaseline(state: GameState, agentId: string, reach: string): number | undefined {
+  const node = state.graph.getNode(agentId);
+  const profile = node?.properties?.axiologicalProfile as AxiologicalProfile | undefined;
+  if (!profile) return undefined;
+  const axis = getAxisByReach(reach as ReachDomain);
+  if (!axis) return undefined;
+  const value = profile[axis.valuePair];
+  return typeof value === 'number' ? value : undefined;
 }
 
 /**
@@ -64,6 +82,14 @@ export function phaseChoiceResolution(
     );
     drift = driftResult.drift;
 
+    // Live position = clamp(baseline + drift delta) — where the choice moved the
+    // agent on the axis. Undefined when the actor has no baseline profile. (THR-528)
+    const baseline = readBaseline(state, commit.agentId, commit.reach);
+    const livePosition =
+      baseline === undefined
+        ? undefined
+        : liveAxisPosition(baseline, driftDeltaFor(drift, commit.agentId, commit.reach));
+
     // Item consumption (atomic with choice commit, same tick).
     if (commit.consumesItemId) {
       const consumption = consumeItemForChoice(state.graph, commit.agentId, commit.consumesItemId, {
@@ -95,6 +121,7 @@ export function phaseChoiceResolution(
       outcomeBand: outcome.outcomeBand,
       rolledD100: outcome.rolledD100,
       effectiveProbability: outcome.effectiveProbability,
+      livePosition,
     } as unknown as Omit<TraceEntry, 'id' | 'timestamp'>);
 
     for (const driftTrace of driftResult.traces) {

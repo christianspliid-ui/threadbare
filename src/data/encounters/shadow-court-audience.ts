@@ -405,6 +405,10 @@ function toEncounterChoiceReach(
 
 function toEncounterArchetypePole(reach: EncounterChoiceReach, choice: EncounterAuthoredChoice): EncounterArchetypePole {
   const poles = reach === 'quintessence' ? QUINTESSENCE_POLES : MORAL_AXIS_POLES_BY_REACH[reach];
+  // THR-528: an authored pole on the card wins over the interventionType heuristic.
+  if (choice.pole) {
+    return choice.pole === 'vice' ? poles[1] : poles[0];
+  }
   if (choice.interventionType === 'coercive') {
     return poles[1];
   }
@@ -565,6 +569,10 @@ export const SHADOW_COURT_AUDIENCE_TEMPLATE: UnifiedActionTemplate = withEncount
           'Honest reception is not automatic. The court will probe what it is given, and ' +
           'honest answers to good questions carry their own weight.',
         interventionType: 'supportive',
+        // THR-528: dealing straight in a room built on performance — the Shadow virtue (Broker/Fair).
+        moralAxis: 'shadow',
+        pole: 'virtue',
+        magnitude: 0.1,
       },
       {
         id: 'drop_a_veiled_threat',
@@ -581,6 +589,10 @@ export const SHADOW_COURT_AUDIENCE_TEMPLATE: UnifiedActionTemplate = withEncount
           'has a cost, and she will set the cost herself, at the number that settles the account ' +
           'and no higher.',
         interventionType: 'coercive',
+        // THR-528: leverage by implication, leaving the threat unspoken — the Shadow vice (Manipulator/Scheming).
+        moralAxis: 'shadow',
+        pole: 'vice',
+        magnitude: 0.1,
       },
     ],
   },
