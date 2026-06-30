@@ -17,6 +17,7 @@ import {
   MINIMUM_DESIRE,
   IDLE_SCORE_THRESHOLD,
   AMBITION_REACH_BOOST,
+  PERSONALITY_SELECTION_WEIGHT,
   STEP_PROBABILITY_OFFSET,
   FAMILIARITY_DECAY_PER_ATTEMPT,
   FAMILIARITY_MAX_PENALTY,
@@ -380,6 +381,47 @@ describe('scoreAndSelect', () => {
     );
     expect(alignedResult.topCandidates[0].finalScore).toBeGreaterThan(
       neutralResult.topCandidates[0].finalScore,
+    );
+  });
+
+  it('personalityBias equals axiologicalScore × PERSONALITY_SELECTION_WEIGHT (THR-531)', () => {
+    const alignedProfile = makeProfile({ mercy_ruthlessness: 0.9 });
+    const graph = buildTestGraph({ profile: alignedProfile });
+
+    const entry = makeEntry({
+      locationId: 'loc_a',
+      motivations: ['mercy_ruthlessness'],
+    });
+
+    const result = scoreAndSelect([entry], 'agent_1', 'loc_a', graph, 1);
+    const candidate = result.topCandidates[0];
+
+    // The labeled signal is surfaced and is the amplified alignment term.
+    expect(candidate.personalityBias).toBeCloseTo(
+      candidate.axiologicalScore * PERSONALITY_SELECTION_WEIGHT,
+      6,
+    );
+    // Strong & legible: the weight amplifies a positively-aligned agent's signal.
+    expect(PERSONALITY_SELECTION_WEIGHT).toBeGreaterThan(1.0);
+    expect(candidate.personalityBias).toBeGreaterThan(candidate.axiologicalScore);
+  });
+
+  it('personalityBias is surfaced on the ScoringTrace top candidate (THR-531)', () => {
+    const alignedProfile = makeProfile({ mercy_ruthlessness: 0.9 });
+    const graph = buildTestGraph({ profile: alignedProfile });
+
+    const entry = makeEntry({
+      locationId: 'loc_a',
+      motivations: ['mercy_ruthlessness'],
+    });
+
+    const result = scoreAndSelect([entry], 'agent_1', 'loc_a', graph, 1);
+    const traced = result.trace.topCandidates[0];
+
+    expect(traced.personalityBias).toBeDefined();
+    expect(traced.personalityBias).toBeCloseTo(
+      result.topCandidates[0].personalityBias,
+      6,
     );
   });
 

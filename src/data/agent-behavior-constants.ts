@@ -408,6 +408,14 @@ export const WANDERLUST_PAIR: 'tradition_progress' = 'tradition_progress';
  * @range 1.0–2.0 */
 export const PERSONALITY_SCORE_EXPONENT = 1.5;
 
+/** Weight applied to the agent's axiological alignment before it feeds the desire multiplier (THR-531).
+ * This is the "strong & legible" lever: >1.0 makes agents clearly gravitate toward encounters that
+ * match their dominant personality axes. 1.0 reproduces the pre-THR-531 baseline (no amplification).
+ * Per the plan's kill-criteria, if selection reads as scripted (encounter variety collapsing), dial
+ * this down first before any redesign.
+ * @range 1.0–3.0 (higher = personality dominates selection more strongly) */
+export const PERSONALITY_SELECTION_WEIGHT = 2.0;
+
 // ═══════════════════════════════════════════════════════════════════
 // ENCOUNTER RETIREMENT — Template exhaustion + outgrowth (phaseAgentDecision.ts, encounterFilterPipeline.ts)
 // ═══════════════════════════════════════════════════════════════════

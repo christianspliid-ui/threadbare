@@ -83,6 +83,7 @@ export {
   EXPLORATION_BONUS_DECAY_TICKS,
   TRAVEL_COST_WEIGHT,
   PERSONALITY_SCORE_EXPONENT,
+  PERSONALITY_SELECTION_WEIGHT,
   WANDERLUST_MAX_DISCOUNT,
   WANDERLUST_PAIR,
   ROLE_PRIMARY_AFFINITY_BONUS,
@@ -109,6 +110,7 @@ import {
   EXPLORATION_BONUS_DECAY_TICKS,
   TRAVEL_COST_WEIGHT,
   PERSONALITY_SCORE_EXPONENT,
+  PERSONALITY_SELECTION_WEIGHT,
   WANDERLUST_MAX_DISCOUNT,
   WANDERLUST_PAIR,
   RUIN_LOCATION_SUBTYPES,
@@ -495,6 +497,9 @@ export interface ScoredCandidate {
   totalCost: number;
   valuePerTick: number;
   axiologicalScore: number;
+  /** THR-531: axiologicalScore × PERSONALITY_SELECTION_WEIGHT — the amplified personality
+   * alignment term that feeds the desire multiplier. Labeled for inspectability (NFP #2). */
+  personalityBias: number;
   ambitionBoost: number;
   desireMultiplier: number;
   familiarityPenalty: number;
@@ -1067,8 +1072,13 @@ export function scoreAndSelect(
     const euRanking = expectedUtility > 0 ? expectedUtility : expectedReward;
     const valuePerTick = (euRanking + pushBenefit + resistBenefit) / totalCost;
 
-    // 7. Axiological score
+    // 7. Axiological score — raw signed alignment over the encounter's motivation pairs.
     const axiologicalScore = computeDesireScore(entry.motivations, profile);
+
+    // 7b. Personality bias (THR-531) — amplify the axiological alignment so agents clearly
+    // gravitate toward encounters matching their dominant axes ("strong & legible"). At
+    // PERSONALITY_SELECTION_WEIGHT = 1.0 this reproduces the pre-THR-531 baseline.
+    const personalityBias = axiologicalScore * PERSONALITY_SELECTION_WEIGHT;
 
     // 8. Ambition boost
     const ambitionBoost = getAmbitionBoostForEntry(
@@ -1079,7 +1089,7 @@ export function scoreAndSelect(
 
     // 9. Desire multiplier (D.1: personality exponent + social bond)
     let desireMultiplier = Math.max(
-      axiologicalScore + ambitionBoost,
+      personalityBias + ambitionBoost,
       MINIMUM_DESIRE,
     );
 
@@ -1218,6 +1228,7 @@ export function scoreAndSelect(
       totalCost,
       valuePerTick,
       axiologicalScore,
+      personalityBias,
       ambitionBoost,
       desireMultiplier,
       familiarityPenalty,
@@ -1295,6 +1306,8 @@ function buildTrace(
       isLocal: c.action === 'start_local',
       valuePerTick: c.valuePerTick,
       desireMultiplier: c.desireMultiplier,
+      personalityBias: c.personalityBias,
+      axiologicalScore: c.axiologicalScore,
       familiarityPenalty: c.familiarityPenalty,
       explorationBonus: c.explorationBonus,
       chainBonus: c.chainBonus,
