@@ -271,6 +271,10 @@ if (import.meta.env.DEV) {
             kind: beats.pending.kind,
             offeredTurn: beats.pending.offeredTurn,
             triggerKind: beats.pending.trigger.kind,
+            // THR-522: the Director-bound subject(s) (e.g. the introduced culture/faction),
+            // with resolved names so the inspector can show what the beat will name.
+            boundNodeIds: [...beats.pending.boundNodeIds],
+            boundNames: beats.pending.boundNodeIds.map((id) => state.graph.getNode(id)?.name ?? id),
           }
           : null,
         eligiblePool: eligiblePoolIds,

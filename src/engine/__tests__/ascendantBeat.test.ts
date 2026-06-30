@@ -8,7 +8,9 @@ import {
   resolveAscendantBeat,
   resolvePendingBeat,
   forceOfferBeatById,
+  bindBeatSubject,
 } from '../ascendantBeat';
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { ALL_DELIVERY_BEATS } from '../deliveryBeatAdapter';
 import { ASCENDANT_SPINE } from '../../data/ascendant-beat-content';
 import { applyEncounterAftermathReaction } from '../encounterAftermath';
@@ -309,6 +311,125 @@ describe('resolvePendingBeat — running-sim resolve path (THR-517)', () => {
     const skip = getTraces().find(t => t.category === 'ascendant.beat.skipped') as
       | { reason?: string } | undefined;
     expect(skip?.reason).toBe('missing_template');
+  });
+});
+
+describe('introduction-group binding + template aftermath (THR-522)', () => {
+  beforeEach(() => {
+    clearTraces();
+    enableTracing();
+  });
+  afterEach(() => {
+    clearTraces();
+    disableTracing();
+  });
+
+  function graphWithGroups(n: number): WorldGraph {
+    const g = new WorldGraph();
+    g.addNode({ id: 'asc-1', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
+    for (let i = 0; i < n; i++) {
+      const actorType = i % 2 === 0 ? 'culture' : 'faction';
+      g.addNode({ id: `group-${i}`, type: 'actor', name: `Group ${i}`, properties: { actorType } });
+    }
+    return g;
+  }
+
+  const introBeat: BeatDefinition = {
+    beatId: 'beat.pool.intro.first_stirring',
+    kind: 'introduction',
+    trigger: { kind: 'cadence' },
+    eligibility: { kind: 'unintroduced_group' },
+    templateId: 'beat.pool.intro.first_stirring',
+  };
+
+  it('bindBeatSubject picks the first un-introduced group; non-intro beats bind nothing', () => {
+    const state = directorState(30, createInitialAscendantBeatState(), graphWithGroups(2));
+    expect(bindBeatSubject(introBeat, state)).toEqual(['group-0']);
+    // An investment beat (different eligibility) binds nothing.
+    const investBeat: BeatDefinition = {
+      beatId: 'b.invest', kind: 'investment', trigger: { kind: 'cadence' },
+      eligibility: { kind: 'unthreaded_target' },
+    };
+    expect(bindBeatSubject(investBeat, state)).toEqual([]);
+  });
+
+  it('bindBeatSubject excludes a group already introduced in history', () => {
+    const beats: AscendantBeatState = {
+      spineCursor: -1, pending: null, lastBeatTurn: 0,
+      history: [
+        { beatId: 'x', kind: 'introduction', resolvedTurn: 1, outcome: 'ok', grantedActionIds: [], seededNodeIds: [], boundNodeIds: ['group-0'] },
+      ],
+    };
+    const state = directorState(30, beats, graphWithGroups(2));
+    expect(bindBeatSubject(introBeat, state)).toEqual(['group-1']);
+  });
+
+  it('a force-offered introduction beat carries the bound subject into PendingBeat.boundNodeIds', () => {
+    const state = directorState(30, createInitialAscendantBeatState(), graphWithGroups(2));
+    const offered = forceOfferBeatById(createInitialAscendantBeatState(), introBeat.beatId, 30, state);
+    expect(offered!.next.pending?.boundNodeIds).toEqual(['group-0']);
+  });
+
+  it('resolution records the bound subject in the BeatRecord so later draws exclude it', () => {
+    const graph = graphWithGroups(2);
+    const offered = forceOfferBeatById(
+      createInitialAscendantBeatState(), introBeat.beatId, 30,
+      directorState(30, createInitialAscendantBeatState(), graph),
+    )!.next;
+    const state = directorState(30, offered, graph);
+    const result = resolvePendingBeat(state);
+    expect(result.resolved).toBe(true);
+    expect(result.state.ascendantBeats?.history[0].boundNodeIds).toEqual(['group-0']);
+    // The next bind now skips group-0.
+    expect(bindBeatSubject(introBeat, result.state)).toEqual(['group-1']);
+  });
+
+  // ── Concern #1: matched-template aftermath runs on resolution ──────────────
+  const aftermathTemplate = {
+    aftermathConfig: {
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview: '', changes: [],
+        reactions: [{
+          id: 'rx-beat-aftermath', label: 'x',
+          effects: [{ kind: 'unlock_action', actionId: 'beat.aftermath.extra' }],
+        }],
+      },
+    },
+  } as unknown as UnifiedActionTemplate;
+
+  function pendingAftermathState(beatId: string, tick: number): GameState {
+    const base = buildAftermathState();
+    const offered = forceOfferBeatById(createInitialAscendantBeatState(), beatId, tick)!.next;
+    return { ...base, tick, ascendantBeats: offered } as GameState;
+  }
+
+  it('runs the matched template aftermath (unlock_action) on resolution when runtime + provider supplied', () => {
+    const runtime = createSimulationRuntime();
+    const provider = (id: string) =>
+      id === 'beat.pool.invest.the_worthy_mortal' ? aftermathTemplate : undefined;
+    const result = resolvePendingBeat(
+      pendingAftermathState('beat.pool.invest.the_worthy_mortal', 30),
+      { runtime, templateProvider: provider },
+    );
+    expect(result.resolved).toBe(true);
+    // Descriptor grant + template-aftermath unlock both applied.
+    expect(result.state.unlockedActionIds).toEqual(
+      expect.arrayContaining(['bind_thread_agent', 'beat.aftermath.extra']),
+    );
+  });
+
+  it('documented fallback: without a runtime, template aftermath does NOT run (grant-only)', () => {
+    const provider = (id: string) =>
+      id === 'beat.pool.invest.the_worthy_mortal' ? aftermathTemplate : undefined;
+    const result = resolvePendingBeat(
+      pendingAftermathState('beat.pool.invest.the_worthy_mortal', 30),
+      { templateProvider: provider }, // no runtime
+    );
+    expect(result.resolved).toBe(true);
+    expect(result.state.unlockedActionIds).toContain('bind_thread_agent');
+    expect(result.state.unlockedActionIds).not.toContain('beat.aftermath.extra');
   });
 });
 

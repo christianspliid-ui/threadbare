@@ -2006,7 +2006,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         const state = _gameStateRef.current;
         if (!state) return { success: false, message: 'Game not loaded' };
         if (!state.ascendantBeats) return { success: false, message: 'Ascendant beat state not initialized' };
-        const result = forceOfferBeatById(state.ascendantBeats, beatId.trim(), state.tick);
+        const result = forceOfferBeatById(state.ascendantBeats, beatId.trim(), state.tick, state);
         if (!result) return { success: false, message: `No beat matching '${beatId}'` };
         setGameState(prev =>
           prev.ascendantBeats ? { ...prev, ascendantBeats: result.next } : prev,
@@ -2051,7 +2051,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         }
         const result = resolvePendingBeat(
           state,
-          chosenActionId ? { chosenActionId } : {},
+          {
+            ...(chosenActionId ? { chosenActionId } : {}),
+            // THR-522: run the matched template's aftermath (if any) through the resolver.
+            runtime,
+            templateProvider: getUnifiedTemplateById,
+          },
           (id) => getUnifiedTemplateById(id) !== undefined,
         );
         if (result.resolved || result.state !== state) {
@@ -2101,6 +2106,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       const ctx = gatherNarrativeContext(
         gameState.graph, subjectId, undefined, undefined, null, gameState, gameState.tick,
       );
+      // THR-522: name the Director-bound introduction subject via the {group} placeholder.
+      const boundGroupId = pendingBeat.boundNodeIds?.[0];
+      if (boundGroupId) {
+        const groupName = gameState.graph.getNode(boundGroupId)?.name;
+        if (groupName) ctx.boundGroupName = groupName;
+      }
       return { title: enrichProse(template.name, ctx), prose: enrichProse(body, ctx) };
     } catch {
       return undefined; // fail-soft: never crash the beat surface over prose
@@ -2115,11 +2126,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const handleResolveBeat = useCallback((chosenActionId?: string) => {
     setGameState(prev => resolvePendingBeat(
       prev,
-      { chosenActionId },
+      // THR-522: pass runtime + template provider so a beat template's aftermath reactions
+      // (unlock_action / encounter_seed / graph ops) run on resolution; no-op when the
+      // template declares none (the documented grant-only fallback).
+      { chosenActionId, runtime, templateProvider: getUnifiedTemplateById },
       (id) => getUnifiedTemplateById(id) !== undefined,
     ).state);
     setBeatEntered(false);
-  }, [setGameState]);
+  }, [setGameState, runtime]);
 
   // Spine beats present modally so the opening is not missable; pool beats wait behind
   // the offer affordance. Keyed on the spine id prefix so the closing selection beat

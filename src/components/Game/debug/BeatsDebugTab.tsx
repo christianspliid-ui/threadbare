@@ -170,6 +170,12 @@ export function BeatsDebugTab({ currentTick }: BeatsDebugTabProps) {
               <strong>{schedule.pending.beatId}</strong> ({schedule.pending.kind}) — offered turn{' '}
               {schedule.pending.offeredTurn}, via {schedule.pending.triggerKind}
             </div>
+            {schedule.pending.boundNodeIds.length > 0 && (
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginBottom: '6px' }}>
+                Bound subject: <strong>{schedule.pending.boundNames.join(', ')}</strong>{' '}
+                <span style={{ opacity: 0.6 }}>({schedule.pending.boundNodeIds.join(', ')})</span>
+              </div>
+            )}
             <div style={{ display: 'flex', gap: '8px' }}>
               {schedule.pending.kind === 'selection' && (
                 <input

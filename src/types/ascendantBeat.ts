@@ -138,6 +138,15 @@ export interface BeatRecord {
   readonly outcome: string;
   readonly grantedActionIds: readonly string[];
   readonly seededNodeIds: readonly string[];
+  /**
+   * Subject node ids the resolved beat operated on, carried over from
+   * {@link PendingBeat.boundNodeIds} (THR-522). For an `introduction` beat this is the
+   * specific culture/faction the Director surfaced — recorded so later draws never
+   * re-introduce the same group and the debug surface can name what each beat touched.
+   * Optional for back-compat with pre-THR-522 records (old saves / fixtures); treat
+   * absent as `[]`.
+   */
+  readonly boundNodeIds?: readonly string[];
 }
 
 export interface AscendantBeatState {

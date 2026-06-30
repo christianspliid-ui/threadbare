@@ -176,6 +176,10 @@ export interface DebugBeatScheduleResult {
     kind: BeatKind;
     offeredTurn: number;
     triggerKind: string;
+    /** Subject node ids the Director bound at offer time (THR-522), e.g. the introduced group. */
+    boundNodeIds: string[];
+    /** Resolved display names for `boundNodeIds` (id used as fallback when the node is gone). */
+    boundNames: string[];
   } | null;
   /** Pool beat ids the Director may currently draw from. */
   eligiblePool: string[];
