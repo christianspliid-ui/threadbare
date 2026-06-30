@@ -24,6 +24,16 @@ export const CORE_SEED_DRAW_COUNT = 6;
  */
 export const CORE_SEED_DRAW_MAGNITUDE = 0.08;
 
+/**
+ * How many authored Core origin-vignettes are drawn per agent at birth and laid
+ * on top of the central-limit PRNG baseline (THR-544). Each drawn vignette adds
+ * its signed magnitude (virtue +, vice −) to one continuum, so a handful of
+ * draws gives an agent an authored character pull without overwhelming the
+ * random spread. Distinct vignettes only — duplicates are skipped. Tunable: more
+ * draws = stronger, more legible authored character; fewer = closer to neutral.
+ */
+export const CORE_ORIGIN_VIGNETTE_DRAW_COUNT = 3;
+
 // ─── Emergence thresholds (hysteresis) ──────────────────────────────────────
 // Mirror the reach-axis emergent-trait thresholds (personality-trait-content.ts)
 // so the two personality layers read consistently.
