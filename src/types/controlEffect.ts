@@ -80,6 +80,41 @@ export interface ActorPrerequisites {
   readonly sphere?: { name: SphereName; relation: 'aligned' | 'opposing' };
 }
 
+// ─── SphereInfluenceSpec / ControlLeakSpec (THR-551 — sphere rift) ─────────────
+
+/**
+ * Per-tick sphere-influence amplification (THR-551 `sphere_influence_amplify`).
+ * While the effect is active, it pushes `magnitude` sphere pressure onto its
+ * `targetNodeId` for `sphere` every tick — via the canonical pressure system, so
+ * triangle-leveling and `MAX_SPHERE_SCORE` apply — until the node's score reaches
+ * `cap`. Distinct from (and additive to) the generic `CONTROL_PRESSURE_PER_TICK`
+ * a sphere-costed effect already pushes: a rift amplifies its sphere *faster*,
+ * with its own ceiling. Deterministic (pressure only, no PRNG).
+ */
+export interface SphereInfluenceSpec {
+  /** Which sphere to amplify on the target node. */
+  readonly sphere: SphereName;
+  /** Pressure magnitude pushed per tick (already sphere-power-scaled at spawn). */
+  readonly magnitude: number;
+  /** Stop amplifying once the node's score reaches this (clamped to MAX_SPHERE_SCORE). */
+  readonly cap: number;
+}
+
+/**
+ * Per-tick hostile leak (THR-551 rift downside). Each active tick a seeded roll
+ * (`chance`) may spill a chaos pulse into the effect's hex/location: hex
+ * corruption plus an entropy sphere pressure. The roll uses the session PRNG
+ * derived from seed+tick+effectId, so it is deterministic and replayable.
+ */
+export interface ControlLeakSpec {
+  /** Per-tick probability the leak fires, in [0,1] (already sphere-power-scaled at spawn). */
+  readonly chance: number;
+  /** Hex `corruption` added on a leak. */
+  readonly corruption: number;
+  /** Entropy sphere pressure pushed onto the location on a leak. */
+  readonly entropyPressure: number;
+}
+
 // ─── ControlSpec ──────────────────────────────────────────────────────────────
 
 /**
@@ -118,6 +153,18 @@ export interface ControlSpec {
 
   /** Per-tick graph operations applied while active (node property changes). */
   readonly perTickGraphOps?: readonly GraphOp[];
+
+  /**
+   * Per-tick sphere-influence amplification (THR-551 rift). Pushes scaled sphere
+   * pressure onto `targetNodeId` each tick up to a cap. Undefined = none.
+   */
+  readonly perTickSphereInfluence?: SphereInfluenceSpec;
+
+  /**
+   * Per-tick hostile leak (THR-551 rift downside). Seeded per-tick chaos-pulse
+   * roll while active. Undefined = no leak.
+   */
+  readonly perTickLeak?: ControlLeakSpec;
 
   /**
    * Per-tick co-located thread auras (THR-509 `co_located_thread_aura`).
@@ -199,6 +246,10 @@ export interface ControlEffect {
   readonly perTickGraphOps: readonly GraphOp[];
   /** Per-tick co-located thread auras (THR-509). Undefined = none. */
   readonly perTickThreadAuras?: readonly CoLocatedThreadAuraSpec[];
+  /** Per-tick sphere-influence amplification (THR-551 rift). Undefined = none. */
+  readonly perTickSphereInfluence?: SphereInfluenceSpec;
+  /** Per-tick hostile leak (THR-551 rift downside). Undefined = no leak. */
+  readonly perTickLeak?: ControlLeakSpec;
   /** Sustaining relic that waives `perTickCost` while it exists (THR-509). */
   readonly upkeepArtifactId?: string;
 

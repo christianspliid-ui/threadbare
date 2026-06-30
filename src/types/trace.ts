@@ -264,7 +264,10 @@ export type TraceCategory =
   | 'ascendant_primitive'
   | 'chosen_faction_power'
   // Reach signature: Iron / Warhost (THR-550)
-  | 'ascendant.signature.warhost';
+  | 'ascendant.signature.warhost'
+  // Reach signature: Veil / Rend the Gate (THR-551)
+  | 'ascendant.signature.rift'
+  | 'ascendant.signature.rift_leak';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -500,6 +503,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'reaction_selected',
   // Reach signature: Iron / Warhost (THR-550)
   'ascendant.signature.warhost',
+  // Reach signature: Veil / Rend the Gate (THR-551)
+  'ascendant.signature.rift',
+  'ascendant.signature.rift_leak',
 ];
 
 /** Base shape for all trace entries */

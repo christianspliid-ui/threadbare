@@ -58,7 +58,18 @@ import { mulberry32 } from '../lib/prng';
 import { generateSecret, createSecretEdge, createFavorEdge } from './secretGeneration';
 import { spawnClueFromEvent, findAnyRuinId } from './ruins/clueLifecycle';
 import { applyFactionReputationGain } from './factionReputation';
-import { spherePowerMultiplier, scaledEffect } from './sphereScaling';
+import { spherePowerMultiplier, scaledEffect, scaledCost } from './sphereScaling';
+import type { ControlEffect } from '../types/controlEffect';
+import { MAX_SPHERE_SCORE } from '../types/sphereAffinity';
+import {
+  RIFT_INFLUENCE_PER_TICK,
+  RIFT_INFLUENCE_CAP,
+  RIFT_PERTICK_COST,
+  RIFT_LEAK_CHANCE,
+  RIFT_LEAK_CORRUPTION,
+  RIFT_LEAK_ENTROPY_PRESSURE,
+  RIFT_ESTABLISHED_SIGNIFICANCE,
+} from '../data/game-config';
 import { getAscendantPrimarySphere } from './ascendantExpression';
 import { raiseWarhostForce, selectCommander } from './armySpawning';
 import { REACH_DOMAINS } from '../types/traits';
@@ -402,6 +413,8 @@ export function applyEncounterAftermathReaction(
   let nextChronicleEntries: ChronicleEntry[] | undefined = undefined;
   // THR-500: run-scoped action unlocks grown by `unlock_action` effects.
   let nextUnlockedActionIds: readonly string[] | undefined = undefined;
+  // THR-551: ControlEffects spawned by `sphere_influence_amplify` (rift) effects.
+  const nextControlEffects: ControlEffect[] = [];
 
   let mutationSummary: AftermathMutationSummary = { touchedWorld: false, touchedStructure: false, woundApplied: false };
 
@@ -2296,6 +2309,126 @@ export function applyEncounterAftermathReaction(
         break;
       }
 
+      // ─── Reach signature: Veil / Rend the Gate (THR-551) ───────────────────
+      case 'sphere_influence_amplify': {
+        try {
+          // Resolve the rift's anchor location and its hex coords.
+          const riftLoc = state.graph.getNode(effect.locationId);
+          const riftFailReason = !riftLoc
+            ? 'location_missing'
+            : riftLoc.type !== 'location'
+              ? 'not_a_location'
+              : !actorAgentId
+                ? 'no_owner'
+                : undefined;
+          const riftCol = riftLoc?.properties.hexCol;
+          const riftRow = riftLoc?.properties.hexRow;
+          const coordsOk = typeof riftCol === 'number' && typeof riftRow === 'number';
+          if (!riftLoc || riftFailReason || !coordsOk) {
+            const fr = riftFailReason ?? 'location_no_hex';
+            emitTrace({
+              tick, category: 'ascendant.signature.rift', agentId: actorAgentId,
+              locationId: effect.locationId, success: false, failReason: fr,
+              summary: `sphere_influence_amplify[${i}] skipped: ${fr}`,
+            });
+            emitTrace({
+              tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+              encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+              effectKind: 'sphere_influence_amplify', effectDetail: { locationId: effect.locationId },
+              success: false, failReason: fr,
+              effectiveTargetId: effect.locationId, effectiveTargetKind: 'location',
+              summary: `sphere_influence_amplify[${i}] skipped: ${fr}`,
+            });
+            break;
+          }
+
+          // Magnitude, cost, AND leak chance scale with the actor's primary-sphere
+          // power (THR-548). The downside scales with the upside — individualization.
+          const riftActor = state.graph.getNode(actorAgentId!);
+          const riftPrimary = getAscendantPrimarySphere(state.graph, actorAgentId!);
+          const riftScore = riftPrimary
+            ? ((riftActor?.properties.sphereAffinity as { scores?: Record<string, number> } | undefined)?.scores?.[riftPrimary] ?? 0)
+            : 0;
+          const riftMult = spherePowerMultiplier(riftScore);
+          const riftMagnitude = scaledEffect(effect.perTick ?? RIFT_INFLUENCE_PER_TICK, riftMult);
+          const riftCost = scaledCost(RIFT_PERTICK_COST, riftMult);
+          const riftLeakChance = Math.min(1, RIFT_LEAK_CHANCE * riftMult);
+          const riftCap = Math.min(RIFT_INFLUENCE_CAP, MAX_SPHERE_SCORE);
+
+          // Deterministic id (no counter) — same shape as signature_warhost.
+          const riftEffectId = `rift_${encounterId}_${reaction.id}_${i}_${tick}`;
+          const riftEffect: ControlEffect = {
+            effectId: riftEffectId,
+            templateId: encounterId,
+            ownerId: actorAgentId!,
+            targetHexCol: riftCol as number,
+            targetHexRow: riftRow as number,
+            targetNodeId: effect.locationId,
+            establishedTick: tick,
+            ritualEssenceInvested: action?.essencePaid ?? 0,
+            perTickCost: { [effect.sphere]: riftCost },
+            perTickMutations: [],
+            perTickGraphOps: [],
+            perTickSphereInfluence: { sphere: effect.sphere, magnitude: riftMagnitude, cap: riftCap },
+            perTickLeak: {
+              chance: riftLeakChance,
+              corruption: RIFT_LEAK_CORRUPTION,
+              entropyPressure: RIFT_LEAK_ENTROPY_PRESSURE,
+            },
+            active: true,
+            ticksActive: 0,
+            narrativeTemplates: {
+              established: `A rift tears open at ${riftLoc.name}, flooding the land with ${effect.sphere}.`,
+              active: `The ${effect.sphere} rift at ${riftLoc.name} thrums, widening its hold.`,
+              lapsed: `The rift at ${riftLoc.name} seals, its borrowed power draining away.`,
+            },
+          };
+          nextControlEffects.push(riftEffect);
+
+          mutationSummary.touchedWorld = true;
+          mutationSummary.touchedStructure = true;
+          touchWorld(runtime);
+          touchStructure(runtime);
+
+          const riftEvent: TickEvent = {
+            id: `sphere_influence_amplify_${encounterId}_${reaction.id}_${i}_${tick}`,
+            tick,
+            type: 'narrative',
+            message: `A rift opens at ${riftLoc.name}, strengthening ${effect.sphere}.`,
+            significance: RIFT_ESTABLISHED_SIGNIFICANCE,
+            actorId: actorAgentId,
+          };
+          nextTickEvents = [...nextTickEvents, riftEvent];
+          nextRecentEvents = appendRecentEvent(nextRecentEvents, riftEvent);
+
+          emitTrace({
+            tick, category: 'ascendant.signature.rift', agentId: actorAgentId,
+            locationId: effect.locationId, effectId: riftEffectId,
+            sphere: effect.sphere, primarySphere: riftPrimary ?? 'none', sphereScore: riftScore,
+            multiplier: riftMult, magnitude: riftMagnitude, perTickCost: riftCost,
+            leakChance: riftLeakChance, cap: riftCap, success: true,
+            summary: `sphere_influence_amplify[${i}]: rift on ${riftLoc.name} (mag ${riftMagnitude.toFixed(2)}, cost ${riftCost.toFixed(2)}, leak ${(riftLeakChance * 100).toFixed(1)}%)`,
+          });
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'sphere_influence_amplify',
+            effectDetail: { locationId: effect.locationId, sphere: effect.sphere, magnitude: riftMagnitude, effectId: riftEffectId },
+            success: true, effectiveTargetId: effect.locationId, effectiveTargetKind: 'location',
+            summary: `sphere_influence_amplify[${i}]: rift established on ${riftLoc.name}`,
+          });
+        } catch (riftErr) {
+          // Fail-soft (NFP #4): resolver-boundary catch — a rift failure is non-fatal.
+          emitTrace({
+            tick, category: 'ascendant.signature.rift', agentId: actorAgentId,
+            locationId: effect.locationId, success: false,
+            failReason: riftErr instanceof Error ? riftErr.message : 'unknown_error',
+            summary: `sphere_influence_amplify[${i}] errored: ${riftErr instanceof Error ? riftErr.message : 'unknown'}`,
+          });
+        }
+        break;
+      }
+
       // ─── Thread mutation effects (THR-116) ─────────────────────────────────
 
       case 'thread_strengthen': {
@@ -2889,6 +3022,9 @@ export function applyEncounterAftermathReaction(
     emittedOmens: nextEmittedOmens !== undefined ? nextEmittedOmens : state.emittedOmens,
     chronicleEntries: nextChronicleEntries !== undefined ? nextChronicleEntries : state.chronicleEntries,
     unlockedActionIds: nextUnlockedActionIds !== undefined ? nextUnlockedActionIds : state.unlockedActionIds,
+    controlEffects: nextControlEffects.length > 0
+      ? [...(state.controlEffects ?? []), ...nextControlEffects]
+      : state.controlEffects,
   };
 
   return { state: nextState, mutationSummary };

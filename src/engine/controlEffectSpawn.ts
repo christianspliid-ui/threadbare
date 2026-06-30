@@ -131,6 +131,12 @@ export function spawnControlEffect(
     // THR-509 spec fields — carried through so consecrate's faith-spread and the
     // relic-upkeep substitute resolve at tick time (phaseControlEffects reads them).
     perTickThreadAuras: spec.perTickThreadAuras,
+    // THR-551 rift spec fields — carried through so a sustained sphere-amplify
+    // template (if one is ever authored) ticks correctly. The THR-551 aftermath
+    // effect builds its ControlEffect directly (no template), but keeping the
+    // spawn path complete avoids a silent drop for future template consumers.
+    perTickSphereInfluence: spec.perTickSphereInfluence,
+    perTickLeak: spec.perTickLeak,
     // THR-518: a freshly-minted relic overrides any static upkeep artifact id.
     upkeepArtifactId: mintedRelicId ?? spec.upkeepArtifactId,
 

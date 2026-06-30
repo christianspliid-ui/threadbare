@@ -1,6 +1,6 @@
 // src/types/unifiedAction.ts
 import type { ReachDomain } from './traits';
-import type { SphereName } from './index';
+import type { SphereName, CreationSphereName } from './index';
 import type { OmenCategory, EmittedOmenScope } from './omen';
 import type { ActorType } from './graph';
 import type { ValuePair } from './agent';
@@ -436,6 +436,36 @@ export type EncounterAftermathReactionEffect =
      * strongest Iron member (`selectCommander`) when omitted or invalid.
      */
     readonly leaderAgentId?: string;
+    readonly when?: EffectPredicate;
+  }
+  // ─── Reach signature: Veil / Rend the Gate (THR-551) ──────────────────────
+  | {
+    /**
+     * Veil's reach-signature aftermath — "Rend the Gate". Opens a sustained rift
+     * onto a Creation Sphere at a location: while held it amplifies that sphere's
+     * local influence each tick (pushed through the canonical pressure system, up
+     * to a cap) at a per-tick essence cost, but each tick risks a hostile chaos
+     * pulse leaking through (hex corruption + entropy pressure). Magnitude, cost,
+     * AND leak chance all scale with the actor's primary-sphere power via
+     * `spherePowerMultiplier` (THR-548) — the downside scales with the upside, so
+     * it is the individualization, not a flat tax. Resolves into a `ControlEffect`
+     * on `GameState.controlEffects[]`, ticked by `phaseControlEffects`.
+     */
+    readonly kind: 'sphere_influence_amplify';
+    /** Location node id the rift anchors to (resolves to the rift's hex). */
+    readonly locationId: string;
+    /**
+     * Sphere the rift amplifies — set by the content layer to the ascendant's
+     * primary Creation Sphere, so individualization is intrinsic.
+     */
+    readonly sphere: CreationSphereName;
+    /**
+     * Authored base per-tick sphere influence before sphere-power scaling.
+     * Defaults to `RIFT_INFLUENCE_PER_TICK` when omitted.
+     */
+    readonly perTick?: number;
+    /** Sustained-effect marker (a rift persists until it lapses). */
+    readonly durationMode: 'sustained';
     readonly when?: EffectPredicate;
   }
   // ─── Thread mutation effects (THR-116) ────────────────────────────────────
