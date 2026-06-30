@@ -863,6 +863,11 @@ export interface ScoringTrace extends TraceBase {
     isLocal: boolean;
     valuePerTick: number;
     desireMultiplier: number;
+    /** THR-531: amplified personality alignment (axiologicalScore × PERSONALITY_SELECTION_WEIGHT)
+     * that drives the desire multiplier. Higher = encounter matches the agent's dominant axes. */
+    personalityBias?: number;
+    /** THR-531: raw signed axiological alignment over the encounter's motivation pairs (pre-weight). */
+    axiologicalScore?: number;
     familiarityPenalty?: number;
     explorationBonus?: number;
     finalScore: number;
