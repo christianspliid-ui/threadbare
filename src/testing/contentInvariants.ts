@@ -40,6 +40,7 @@ const KNOWN_AFTERMATH_EFFECT_KINDS = new Set<EncounterAftermathReactionEffect['k
   'secret_discovery',
   'favor_creation',
   'faction_reputation_gain',
+  'axiological_mark_apply',
 ]);
 
 function isNonEmptyString(value: unknown): value is string {

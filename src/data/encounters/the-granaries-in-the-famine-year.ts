@@ -221,6 +221,14 @@ const GRANARIES_OPENED_AFTERMATH = {
           priority: 1.1,
           seedLabel: 'The open-handed house becomes an institution',
         },
+        {
+          // THR-529: opening the granaries to feed a starving region — and rooting that mercy into
+          // a standing patronage — is a defining moment. A permanent shift toward the Gold virtue
+          // (Patron/Generous), moving the merchant-prince's baseline. Author-gated, rare by design.
+          kind: 'axiological_mark_apply' as const,
+          reach: 'gold' as const,
+          signedMagnitude: 0.15,
+        },
       ],
     },
     {
@@ -329,6 +337,14 @@ const MARKET_CLOSED_AFTERMATH = {
           delayTicks: 16,
           priority: 1.1,
           seedLabel: 'The generation bonded into the merchant\'s ledger',
+        },
+        {
+          // THR-529: cornering a region's food in a famine for a generation's bonded labor is a
+          // defining moment. A permanent shift toward the Gold vice (Extractor/Greedy), moving the
+          // merchant-prince's baseline — opposite the open-granaries mark. Author-gated, rare by design.
+          kind: 'axiological_mark_apply' as const,
+          reach: 'gold' as const,
+          signedMagnitude: -0.15,
         },
       ],
     },

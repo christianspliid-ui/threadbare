@@ -206,6 +206,14 @@ const CARRY_AFTERMATH = {
           priority: 0.8,
           seedLabel: 'The family of the executed seeks the hand that fell',
         },
+        {
+          // THR-529: carrying an unnamed execution for coin is a defining moment — it marks the
+          // hand that fell. A permanent shift toward the Iron vice (Conqueror/ruthlessness), moving
+          // the baseline itself, not the decaying drift layer. Author-gated, rare by design.
+          kind: 'axiological_mark_apply' as const,
+          reach: 'iron' as const,
+          signedMagnitude: -0.15,
+        },
       ],
     },
     {
@@ -290,6 +298,14 @@ const WARN_AFTERMATH = {
           eventType: 'narrative' as const,
           message: 'The {title} refused the commission and warned the condemned. The magistrate waited alone in the cloister.',
           significance: 0.6,
+        },
+        {
+          // THR-529: turning from the clean exit to save a condemned life, at cost, is a defining
+          // moment — a permanent shift toward the Iron virtue (Protector/mercy). Moves the baseline,
+          // the opposite pole from the carry-out branch's mark. Author-gated, rare by design.
+          kind: 'axiological_mark_apply' as const,
+          reach: 'iron' as const,
+          signedMagnitude: 0.15,
         },
       ],
     },

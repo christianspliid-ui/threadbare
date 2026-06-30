@@ -556,6 +556,32 @@ export type EncounterAftermathReactionEffect =
     /** How the unlock should present in the UI (card-flight reveal vs. silent). */
     readonly revealStyle?: 'card_flight' | 'silent';
     readonly when?: EffectPredicate;
+  }
+  // ─── Formative-mark primitive (THR-529) ───────────────────────────────────
+  | {
+    /**
+     * Apply a *permanent* formative mark: a rare, author-gated shift to the
+     * actor's standing moral **baseline** on one reach's virtue↔vice axis. This
+     * moves the baseline itself — the `AxiologicalProfile` value seeded at birth
+     * by origin vignettes — not the temporary drift layer (THR-528) that decays
+     * back toward it. Reserve for defining-moment encounters; rarity is enforced
+     * by content discipline, magnitude by `FORMATIVE_MARK_MAX_MAGNITUDE`.
+     *
+     * Operates on the legacy ±1 axis scale (virtue toward +1, vice toward −1),
+     * the scale shared by `AxiologicalProfile` and the drift accumulator. The
+     * resulting baseline is clamped to [−1, +1].
+     */
+    readonly kind: 'axiological_mark_apply';
+    /** Reach whose virtue↔vice axis the mark moves (e.g. 'iron', 'gold'). */
+    readonly reach: ReachDomain;
+    /**
+     * Signed shift on the ±1 axis scale: positive tilts toward the reach's
+     * virtue pole, negative toward the vice pole. Clamped to ±`FORMATIVE_MARK_MAX_MAGNITUDE`.
+     */
+    readonly signedMagnitude: number;
+    /** Direct the mark at a specific agent (defaults to the encounter actor). */
+    readonly targetAgentId?: string;
+    readonly when?: EffectPredicate;
   };
 
 export interface PendingEncounterSeed {
