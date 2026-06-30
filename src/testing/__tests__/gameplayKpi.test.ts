@@ -174,6 +174,32 @@ describe('computeGameplayKpiReport', () => {
     expect(report.eligibilityFunnel.topConsidered[0].conversionRate).toBeCloseTo(2 / 10, 3);
   });
 
+  it('prefers the runtime lifetime branching-fire counter over the pruned action snapshot (THR-470)', () => {
+    // unifiedActions is pruned after RESOLVED_ACTION_RETENTION_TICKS, so at tick 120 it may
+    // hold only a handful of recently-resolved branching actions. The lifetime counter is the
+    // honest numerator for the per-30t rate.
+    const state = makeState({
+      tick: 120,
+      unifiedActions: [makeResolvedAction('reputation.star.the_star_pilgrim', 'success')] as any,
+    });
+    const report = computeGameplayKpiReport(state, { eligibilityFunnel: null, branchingFiresTotal: 20 });
+    expect(report.branchingFire.totalFires).toBe(20);
+    expect(report.branchingFire.firesPerChunk).toBeCloseTo((20 / 120) * 30, 3); // 5.0, not 0.25
+  });
+
+  it('falls back to the windowed action count when no lifetime counter is supplied (THR-470)', () => {
+    const state = makeState({
+      tick: 120,
+      unifiedActions: [
+        makeResolvedAction('reputation.star.the_star_pilgrim', 'success'),
+        makeResolvedAction('reputation.heart.pilgrims_offering', 'success'),
+      ] as any,
+    });
+    const report = computeGameplayKpiReport(state);
+    expect(report.branchingFire.totalFires).toBe(2);
+    expect(report.branchingFire.firesPerChunk).toBeCloseTo((2 / 120) * 30, 3); // 0.5
+  });
+
   it('produces 7 threshold evaluations', () => {
     const report = computeGameplayKpiReport(makeState());
     expect(report.thresholds).toHaveLength(7);

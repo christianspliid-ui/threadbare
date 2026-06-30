@@ -152,6 +152,7 @@ import { ANOMALY_RESOURCE_MAP, RESOURCE_DEFINITIONS } from '../data/resource-con
 import type { ResourceInstance } from '../types/resource';
 import { createEncounterEventNode } from './encounterEventNode';
 import type { SimulationRuntime } from './simulationRuntime';
+import { isBranchingTemplate } from './kpi/gameplayKpi';
 import { accumulateImportance, checkGraduationThreshold, graduateRarity, getImportanceDelta, getRarityTier } from './rarity';
 import {
   DIVINE_PROXIMITY_RADIUS_HEXES,
@@ -2595,9 +2596,16 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
 
   // Stamp completedAtTick on newly-resolved actions, then prune old resolved ones
   if (s.unifiedActions && s.unifiedActions.length > 0) {
-    const stamped = s.unifiedActions.map(a =>
-      a.resolved && a.completedAtTick == null ? { ...a, completedAtTick: s.tick } : a,
-    );
+    const stamped = s.unifiedActions.map(a => {
+      if (a.resolved && a.completedAtTick == null) {
+        // THR-470: count each branching fire exactly once, here at the newly-resolved
+        // transition — BEFORE the prune below drops it. The KPI rate reads this lifetime
+        // counter instead of the pruned snapshot, which otherwise undercounts long runs.
+        if (runtime && isBranchingTemplate(a.templateId)) runtime.branchingFiresTotal++;
+        return { ...a, completedAtTick: s.tick };
+      }
+      return a;
+    });
     s = {
       ...s,
       unifiedActions: stamped.filter(a =>
