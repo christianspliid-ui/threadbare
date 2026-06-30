@@ -43,6 +43,7 @@ import * as trade from '../../engine/tradeRoute';
 import * as vignetteProse from '../../engine/vignetteProse';
 import * as effectConst from '../../data/effect-constants';
 import * as attn from '../../data/attention-constants';
+import * as reachSig from '../../data/reach-signature-content';
 
 // ── Helper ──────────────────────────────────────────────────────────────
 
@@ -890,6 +891,15 @@ export const TUNABLE_GROUPS: TunableGroup[] = [
         'Saturation level at which magical effects become visible.',
         'src/engine/phaseMagicalSaturation.ts', [0.1, 0.8],
         'phaseMagicalSaturation → visibility gate'),
+      // Sphere-power scaling (signatures)
+      n('SIGNATURE_SCALE_FLOOR', reachSig.SIGNATURE_SCALE_FLOOR,
+        'Effect/cost multiplier at sphere score 0. Below 1.0: weak-sphere actions have diminished effect (cost is still floored at base).',
+        'src/data/reach-signature-content.ts', [0.1, 1.0],
+        'sphereScaling → spherePowerMultiplier floor'),
+      n('SIGNATURE_SCALE_CEIL', reachSig.SIGNATURE_SCALE_CEIL,
+        'Effect/cost multiplier at MAX_SPHERE_SCORE. Above 1.0: maxed-sphere actions have larger effect at higher cost.',
+        'src/data/reach-signature-content.ts', [1.0, 5.0],
+        'sphereScaling → spherePowerMultiplier ceil'),
     ],
   },
 
