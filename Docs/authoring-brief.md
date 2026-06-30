@@ -1,8 +1,8 @@
 # Authoring Brief
 
-> **Generated:** 2026-06-29 by scripts/build-authoring-brief.ts
+> **Generated:** 2026-06-30 by scripts/build-authoring-brief.ts
 > **Sources:**
->   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 03f0fa80bd2da4cd389e5c0b267d085bbc12fd96)
+>   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 6f0825824108690b2b0686e44f1084e7da59b564)
 >   - Docs/plans/2026-04-16-game-design-direction.md (sha1: 1444ec0943c1644f65a451a6fc1c967b930ee01d)
 > **Do not hand-edit.** Regenerate via `npm run build-authoring-brief`.
 
@@ -24,6 +24,7 @@ Every `narrative` field in steps and outcomes supports dynamic text substitution
 | `{location}` | Current location name | "Thornhaven Market" |
 | `{culture}` | Agent's culture | "Coastfolk" |
 | `{faction}` | Agent's faction name | "The Weavers' Circle" |
+| `{group}` | Caller-bound subject group (THR-522) — an Ascendant introduction beat's Director-bound culture/faction | "Children of the Shadow-Kept Timberlands" |
 | `{title}` | First reputation trait | "the Resolute" |
 | `{artifact:weapon}` | Notable weapon (tier ≥ storied) | "Ashenmourne" |
 | `{artifact:any}` | Any notable artifact | "the Covenant Seal" |

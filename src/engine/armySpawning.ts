@@ -242,3 +242,113 @@ export function spawnArmy(
     return null;
   }
 }
+
+// ─── Warhost Force (THR-550) ──────────────────────────────────────────────
+
+/**
+ * Map a sphere-scaled warhost strength to an army size category, reusing the
+ * existing army quintessence-base values as the thresholds (no new size constants).
+ */
+function warhostSizeForStrength(strength: number): ArmySizeCategory {
+  if (strength >= ARMY_QUINTESSENCE_BASE.host) return 'host';
+  if (strength >= ARMY_QUINTESSENCE_BASE.regiment) return 'regiment';
+  return 'warband';
+}
+
+/**
+ * Raise a warhost force for a faction — the aftermath of Iron's Warhost signature
+ * (THR-550, "Call to Arms").
+ *
+ * Reuses the existing army node form (an `actor` node with `actorType: 'group'` and
+ * an `armyState` bag, wired by `commanded_by` / `member_of` / `located_at` edges) —
+ * NOT a new node type (load-bearing rule). It differs from {@link spawnArmy} only in
+ * that the force is divinely commanded: no faction-ambition coupling (no `pursues`
+ * edge), no eligibility/Gold-tier gate, and its quintessence is set from the
+ * sphere-scaled warhost strength rather than the faction's Gold tier. The army carries
+ * `objective: null` (a supported idle state — `armyMovement` skips null-objective
+ * armies) and a `warhost: true` marker for inspection.
+ *
+ * Determinism (NFP #3): no PRNG — id, size, and quintessence derive only from inputs.
+ * Fail-soft (NFP #4): returns null on missing faction/leader, a leader with no
+ * location, or any graph error (caller falls back to a faction property + sentiment
+ * shift). Never throws.
+ *
+ * @returns the warhost army node id, or null when no force could be raised.
+ */
+export function raiseWarhostForce(
+  state: GameState,
+  factionId: string,
+  leaderId: string,
+  strength: number,
+  tick: number,
+): string | null {
+  const graph = state.graph;
+  const factionNode = graph.getNode(factionId);
+  const leaderNode = graph.getNode(leaderId);
+  if (!factionNode || !leaderNode) return null;
+
+  // Spawn point: the leader's current location.
+  const leaderLocEdges = graph.getOutgoingEdges(leaderId, 'located_at');
+  const locationId = leaderLocEdges[0]?.target;
+  if (!locationId) return null;
+
+  const size = warhostSizeForStrength(strength);
+  const quintessence = Math.max(1, Math.round(strength));
+  const armyId = `warhost_${factionId}_${tick}`;
+  const armyName = `${factionNode.name} — Warhost`;
+
+  try {
+    graph.addNode({
+      id: armyId,
+      type: 'actor',
+      name: armyName,
+      properties: {
+        actorType: 'group',
+        warhost: true,
+        armyState: {
+          size,
+          headcount: ARMY_SIZE_HEADCOUNT[size],
+          objective: null,
+          quintessence,
+          quintessenceMax: quintessence,
+          raisedTick: tick,
+          maintenanceCost: ARMY_MAINTENANCE_COST[size],
+          thresholdsFired: [],
+        },
+      },
+    });
+
+    // commanded_by: warhost → leader
+    graph.addEdge({
+      id: `e_commanded_by_${armyId}`,
+      source: armyId,
+      target: leaderId,
+      type: 'commanded_by',
+      properties: { assignedTick: tick },
+    });
+
+    // member_of: warhost → faction (faction-owned force)
+    graph.addEdge({
+      id: `e_member_of_${armyId}`,
+      source: armyId,
+      target: factionId,
+      type: 'member_of',
+      properties: { role: 'army', rank: 'army', joinedTick: tick },
+    });
+
+    // located_at: warhost → location
+    graph.addEdge({
+      id: `e_located_at_${armyId}`,
+      source: armyId,
+      target: locationId,
+      type: 'located_at',
+      properties: {},
+    });
+
+    return armyId;
+  } catch {
+    // Fail-soft: clean up a partially-created node and let the caller fall back.
+    try { graph.removeNode(armyId); } catch { /* already cleaned up */ }
+    return null;
+  }
+}

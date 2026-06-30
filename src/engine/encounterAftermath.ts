@@ -49,6 +49,8 @@ import {
   FACTION_WAR_SENTIMENT_FLOOR,
   FACTION_DRIFT_TO_RIVAL_INITIAL_REPUTATION,
   FACTION_MUTATION_CHRONICLE_SIGNIFICANCE,
+  WARHOST_BASE_STRENGTH,
+  WARHOST_FALLBACK_SENTIMENT_SHIFT,
 } from '../data/game-config';
 import type { EmittedOmen } from '../types/omen';
 import type { ArtifactTier, FactionMemberSelection } from '../types/unifiedAction';
@@ -56,6 +58,9 @@ import { mulberry32 } from '../lib/prng';
 import { generateSecret, createSecretEdge, createFavorEdge } from './secretGeneration';
 import { spawnClueFromEvent, findAnyRuinId } from './ruins/clueLifecycle';
 import { applyFactionReputationGain } from './factionReputation';
+import { spherePowerMultiplier, scaledEffect } from './sphereScaling';
+import { getAscendantPrimarySphere } from './ascendantExpression';
+import { raiseWarhostForce, selectCommander } from './armySpawning';
 import { REACH_DOMAINS } from '../types/traits';
 import {
   findIntelReferencedProseMatch,
@@ -2178,6 +2183,116 @@ export function applyEncounterAftermathReaction(
           success: true,
           summary: `faction_force_peace[${i}]: peace between ${effect.factionA} and ${effect.factionB}`,
         });
+        break;
+      }
+
+      // ─── Reach signature: Iron / Warhost (THR-550) ─────────────────────────
+
+      case 'signature_warhost': {
+        try {
+          const whFaction = state.graph.getNode(effect.factionId);
+          const whFailReason = !whFaction
+            ? 'faction_missing'
+            : whFaction.properties.actorType !== 'faction'
+              ? 'not_a_faction'
+              : whFaction.properties.actorStatus === 'dissolved'
+                ? 'faction_dissolved'
+                : undefined;
+          if (!whFaction || whFailReason) {
+            emitTrace({
+              tick, category: 'ascendant.signature.warhost', agentId: actorAgentId,
+              factionId: effect.factionId, success: false, failReason: whFailReason,
+              summary: `signature_warhost[${i}] skipped: faction ${effect.factionId} (${whFailReason})`,
+            });
+            emitTrace({
+              tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+              encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+              effectKind: 'signature_warhost', effectDetail: { factionId: effect.factionId },
+              success: false, failReason: whFailReason,
+              effectiveTargetId: effect.factionId, effectiveTargetKind: 'faction',
+              summary: `signature_warhost[${i}] skipped: ${whFailReason}`,
+            });
+            break;
+          }
+
+          // Strength scales with the actor's primary-sphere power (THR-548).
+          const whActor = actorAgentId ? state.graph.getNode(actorAgentId) : undefined;
+          const whSphere = actorAgentId ? getAscendantPrimarySphere(state.graph, actorAgentId) : undefined;
+          const whScore = whSphere
+            ? ((whActor?.properties.sphereAffinity as { scores?: Record<string, number> } | undefined)?.scores?.[whSphere] ?? 0)
+            : 0;
+          const whMult = spherePowerMultiplier(whScore);
+          const whStrength = scaledEffect(effect.baseStrength ?? WARHOST_BASE_STRENGTH, whMult);
+
+          // Mark the faction mobilized (faction property).
+          whFaction.properties.mobilized = true;
+          whFaction.properties.mobilizedTick = tick;
+          whFaction.properties.mobilizedStrength = whStrength;
+
+          // Model the force on the existing army node form (armySpawning.raiseWarhostForce).
+          // Prefer the authored leader (any individual), else the faction's strongest Iron member.
+          const whLeaderId =
+            (effect.leaderAgentId && state.graph.getNode(effect.leaderAgentId)?.properties.actorType === 'individual')
+              ? effect.leaderAgentId
+              : selectCommander(state, effect.factionId);
+          const whArmyId = whLeaderId
+            ? raiseWarhostForce(state, effect.factionId, whLeaderId, whStrength, tick)
+            : null;
+
+          // Fallback (no force raised): sour the faction's existing rival relations.
+          let whSentimentShifted = 0;
+          if (!whArmyId) {
+            const whRivals = state.graph.getOutgoingEdges(effect.factionId, 'relates_to')
+              .filter(rel => ((rel.properties?.sentiment as number | undefined) ?? 0) < 0);
+            for (const rel of whRivals) {
+              const prev = (rel.properties.sentiment as number | undefined) ?? 0;
+              rel.properties.sentiment = Math.max(FACTION_WAR_SENTIMENT_FLOOR, prev + WARHOST_FALLBACK_SENTIMENT_SHIFT);
+              whSentimentShifted++;
+            }
+          }
+
+          mutationSummary.touchedWorld = true;
+          mutationSummary.touchedStructure = true;
+          touchWorld(runtime);
+          touchStructure(runtime);
+
+          const whEvent: TickEvent = {
+            id: `signature_warhost_${encounterId}_${reaction.id}_${i}_${tick}`,
+            tick,
+            type: 'narrative',
+            message: `${whFaction.name} musters for war.`,
+            significance: FACTION_MUTATION_CHRONICLE_SIGNIFICANCE.declare_war,
+            actorId: actorAgentId,
+          };
+          nextTickEvents = [...nextTickEvents, whEvent];
+          nextRecentEvents = appendRecentEvent(nextRecentEvents, whEvent);
+
+          emitTrace({
+            tick, category: 'ascendant.signature.warhost', agentId: actorAgentId,
+            factionId: effect.factionId, sphere: whSphere ?? 'none', sphereScore: whScore,
+            multiplier: whMult, strength: whStrength,
+            forceMode: whArmyId ? 'army' : 'sentiment_fallback',
+            armyId: whArmyId ?? undefined, leaderId: whLeaderId ?? undefined,
+            sentimentShiftedRelations: whSentimentShifted, success: true,
+            summary: `signature_warhost[${i}]: ${whFaction.name} mobilized (strength ${whStrength.toFixed(1)}, ${whArmyId ? `force ${whArmyId}` : `${whSentimentShifted} rival relation(s) soured`})`,
+          });
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'signature_warhost',
+            effectDetail: { factionId: effect.factionId, strength: whStrength, forceMode: whArmyId ? 'army' : 'sentiment_fallback', armyId: whArmyId ?? null },
+            success: true, effectiveTargetId: effect.factionId, effectiveTargetKind: 'faction',
+            summary: `signature_warhost[${i}]: ${whFaction.name} mobilized`,
+          });
+        } catch (whErr) {
+          // Fail-soft (NFP #4): resolver-boundary catch — a warhost failure is non-fatal.
+          emitTrace({
+            tick, category: 'ascendant.signature.warhost', agentId: actorAgentId,
+            factionId: effect.factionId, success: false,
+            failReason: whErr instanceof Error ? whErr.message : 'unknown_error',
+            summary: `signature_warhost[${i}] errored: ${whErr instanceof Error ? whErr.message : 'unknown'}`,
+          });
+        }
         break;
       }
 
