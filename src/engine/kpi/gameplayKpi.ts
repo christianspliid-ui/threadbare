@@ -131,6 +131,8 @@ export interface GameplayKpiReport {
 /** Minimal runtime view needed by the KPI report — avoids circular import with simulationRuntime.ts */
 export interface KpiRuntimeView {
   eligibilityFunnel: EligibilityFunnelCounters | null;
+  /** Cumulative branching-fire count for the session (THR-470). Survives unifiedActions pruning. */
+  branchingFiresTotal?: number;
 }
 
 /** Create a fresh set of funnel counters for a new session. */
@@ -245,6 +247,7 @@ function buildTemplateConcentration(
 function buildBranchingFire(
   actions: readonly { resolved: boolean; templateId: string }[],
   tick: number,
+  cumulativeFires?: number,
 ): BranchingFireStats {
   const fireCounts = new Map<string, number>();
   for (const a of actions) {
@@ -253,7 +256,14 @@ function buildBranchingFire(
       fireCounts.set(a.templateId, (fireCounts.get(a.templateId) ?? 0) + 1);
     }
   }
-  const totalFires = [...fireCounts.values()].reduce((s, c) => s + c, 0);
+  // THR-470: prefer the runtime's lifetime counter for the rate. `actions`
+  // (state.unifiedActions) is pruned after RESOLVED_ACTION_RETENTION_TICKS, so counting
+  // fires from it windows the numerator while `tick` is the full run length — the rate
+  // then undercounts long runs (~9× at 180t with a 20t window). The cumulative counter
+  // is incremented once per fire at the resolved transition, before pruning. Falls back
+  // to the windowed count when no runtime is supplied (e.g. pure-state unit tests).
+  const windowedFires = [...fireCounts.values()].reduce((s, c) => s + c, 0);
+  const totalFires = cumulativeFires ?? windowedFires;
   const topBranchingTemplates = [...fireCounts.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5)
@@ -380,7 +390,7 @@ export function computeGameplayKpiReport(
   const outcomes = buildOutcomes(actions);
   const funnel = runtime?.eligibilityFunnel ?? null;
   const concentration = buildTemplateConcentration(actions, funnel);
-  const branchingFire = buildBranchingFire(actions, tick);
+  const branchingFire = buildBranchingFire(actions, tick, runtime?.branchingFiresTotal);
   const threadedBeats = buildThreadedBeats(actions, tick);
   const eligibilityFunnel = buildFunnelSummary(funnel);
   const resolutionGap = buildResolutionGap(actions);

@@ -71,6 +71,18 @@ export interface SimulationRuntime {
    */
   eligibilityFunnel: EligibilityFunnelCounters | null;
 
+  // ── Branching fire counter (THR-470) ──
+  /**
+   * Cumulative count of branching encounters that have resolved this session.
+   * Incremented once per newly-resolved branching action in the orchestrator's
+   * resolved-action cleanup, BEFORE `unifiedActions` is pruned (resolved actions are
+   * dropped after RESOLVED_ACTION_RETENTION_TICKS). The KPI `firesPerChunk` rate reads
+   * this lifetime total — counting from the pruned `unifiedActions` snapshot systematically
+   * undercounts long runs (the numerator is windowed but the denominator is the full tick),
+   * which is what made seed 99 read 0.5–0.75/30t when its true rate is ~3/30t (THR-470).
+   */
+  branchingFiresTotal: number;
+
   // ── Foreshadowing cache (THR-389) ──
   /**
    * Per-session cache of foreshadowing results keyed by
@@ -111,6 +123,7 @@ export function createSimulationRuntime(): SimulationRuntime {
     balanceTelemetry: createBalanceTelemetry({ targetVersion: BALANCE_TARGETS_VERSION }),
     balanceTelemetryVersion: 0,
     eligibilityFunnel: createEligibilityFunnelCounters(0),
+    branchingFiresTotal: 0,
     foreshadowingCache: new Map(),
     threadStoryCache: new Map(),
     outcomeBandPhraseHistory: new Map(),
