@@ -37,6 +37,7 @@ import { delveAdmissionPhase } from './delveAdmission';
 import { delveProgressionPhase } from './delveProgression';
 import { delveEmergencePhase } from './delveEmergence';
 import { popStreamsPhase } from './popStreams';
+import { personalityTraitEmergePhase } from './personalityTraitEmerge';
 import { mandatePhase } from './mandate';
 import { factionSuccessionPhase } from './factionSuccession';
 
@@ -59,6 +60,7 @@ export const ENGINE_PHASES: readonly EnginePhase[] = [
   delveProgressionPhase,
   delveEmergencePhase,
   popStreamsPhase,
+  personalityTraitEmergePhase,
   // post-narrative
   mandatePhase,
   factionSuccessionPhase,
