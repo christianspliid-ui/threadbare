@@ -208,7 +208,7 @@ The attachment and spell systems compose effects from a category pool of ~40 pri
 | `FactionManipulateEffect` | Shift relationships, transfer control, splinter, absorb, declare war, force peace |
 | `SpawnEffect` | Brings entities into existence (agents, encounters, attachments, locations) |
 
-**For encounter aftermath authoring, use the typed aftermath effect kinds in Part 5 § "Aftermath Reaction Effect Types" (21 kinds).** Raw graph-mutation primitives are not exposed to authored aftermath — propose a new typed kind if you need one.
+**For encounter aftermath authoring, use the typed aftermath effect kinds in Part 5 § "Aftermath Reaction Effect Types" (22 kinds).** Raw graph-mutation primitives are not exposed to authored aftermath — propose a new typed kind if you need one.
 
 #### Authored aftermath surface for graph mutation
 
@@ -455,9 +455,17 @@ Five effects reshape the faction graph:
 { kind: 'signature_warhost', factionId: 'faction_iron_pact',
   baseStrength: 30,             // optional; defaults to WARHOST_BASE_STRENGTH
   leaderAgentId: 'agent_kael' } // optional; else strongest Iron member
+
+// Veil / Rend the Gate reach signature (THR-551): open a sustained sphere rift
+{ kind: 'sphere_influence_amplify', locationId: 'loc_riftmouth',
+  sphere: 'entropy',            // content sets this to the ascendant's primary sphere
+  perTick: 2,                   // optional; defaults to RIFT_INFLUENCE_PER_TICK
+  durationMode: 'sustained' }
 ```
 
 **`signature_warhost`** marks the faction `mobilized` and raises a force on the *existing army node form* (`armySpawning.raiseWarhostForce` — an `actor`/`group` node with an `armyState` bag, wired by `commanded_by` / `member_of` / `located_at`; **not** a new node type). Force strength = `scaledEffect(baseStrength ?? WARHOST_BASE_STRENGTH, spherePowerMultiplier(actor primary-sphere score))` (THR-548) — a maxed-sphere god raises a bigger host. When no leader/location is available it falls back to a faction property plus a belligerent shift on the faction's rival `relates_to` sentiment. Trace: `ascendant.signature.warhost`. Fail-soft no-op on a missing/dissolved/non-faction target.
+
+**`sphere_influence_amplify`** opens a *sustained rift* at a location — resolving into a `ControlEffect` on `GameState.controlEffects[]` (ticked by `phaseControlEffects`), not a one-shot mutation. While held, each tick it (a) pushes scaled sphere pressure onto the location for `sphere` up to a cap (`perTickSphereInfluence`, via the canonical pressure system — additive to the generic `CONTROL_PRESSURE_PER_TICK`), (b) charges `scaledCost(RIFT_PERTICK_COST, mult)` essence in that sphere, and (c) rolls a seeded `perTickLeak` chance to spill a hostile chaos pulse (hex `corruption` + `entropy` pressure). Magnitude, cost, **and** leak chance all scale with the actor's primary-sphere power via `spherePowerMultiplier` (THR-548) — the downside scales with the upside, so it's the individualization, not a flat tax. The rift's `perTickCost` can be waived by binding an upkeep relic (`upkeepArtifactId`, THR-509). Traces: `ascendant.signature.rift` (establishment) + `ascendant.signature.rift_leak` (per-tick leak). Fail-soft no-op on a missing/non-location target or no acting ascendant.
 
 **Member selection strategies** (`faction_splinter` / `faction_absorb`):
 - `all_matching_trait` — all members who have a specific trait
@@ -764,6 +772,7 @@ All encounters use `UnifiedActionTemplate` (migrated as of THR-108). `EncounterT
 | `faction_force_peace` | Create bidirectional treaty edges; clamp sentiment above floor | `factionAId`, `factionBId`, `sentimentFloor?` |
 | `signature_warhost` (THR-550) | Iron / Warhost reach signature. Marks the faction `mobilized` and raises a force on the existing army node form (`raiseWarhostForce`; not a new node type); strength scales with the actor's primary-sphere power (THR-548). Falls back to a rival-sentiment shift when no leader/location is available. Fail-soft no-op on missing/dissolved/non-faction target. | `factionId`, `baseStrength?` (defaults to `WARHOST_BASE_STRENGTH`), `leaderAgentId?` |
 | `axiological_mark_apply` (THR-529) | **Permanent** formative mark — shift the actor's moral **baseline** on one reach's virtue↔vice axis. Moves the standing `AxiologicalProfile` value itself (not the decaying drift layer), clamped to ±`FORMATIVE_MARK_MAX_MAGNITUDE` and to [−1,+1]. Emits a "becoming" chronicle beat + `axiological_mark_applied` trace. **Author-gated, rare by design** — defining-moment encounters only. | `reach`, `signedMagnitude` (±, virtue +/vice −), `targetAgentId?` |
+| `sphere_influence_amplify` (THR-551) | Veil / Rend the Gate reach signature. Opens a **sustained rift** at a location → spawns a `ControlEffect` (ticked by `phaseControlEffects`). Each tick amplifies the location's `sphere` via scaled pressure up to a cap (`perTickSphereInfluence`), charges `scaledCost(RIFT_PERTICK_COST, mult)` essence, and rolls a seeded `perTickLeak` chaos pulse (hex corruption + entropy pressure). Magnitude, cost, and leak chance all scale with the actor's primary-sphere power (THR-548) — the downside is the individualization. Relic-buyout of upkeep via `upkeepArtifactId` (THR-509). Traces `ascendant.signature.rift` + `ascendant.signature.rift_leak`. Fail-soft no-op on missing/non-location target or no actor. | `locationId`, `sphere`, `perTick?` (defaults to `RIFT_INFLUENCE_PER_TICK`), `durationMode: 'sustained'` |
 
 **Multi-target note (THR-114):** Effects that accept `targetAgentId` / `targetFactionId` / `targetSublocationId` use priority resolution: explicit agent > explicit faction > explicit sublocation > action actor (fallback). Use `role:` prefix for participant substitution (e.g. `targetAgentId: 'role:victim'`). See `src/data/encounters/examples/` for gold-standard patterns: `example.betrayal_multi_target.ts` (hidden_mark + apply_condition on victim), `example.council_disowns.ts` (reputation_set on faction), `example.shrine_consecration.ts` (apply_condition + remove_condition on sublocation).
 

@@ -194,6 +194,56 @@ export const WARHOST_BASE_STRENGTH = 30;
  */
 export const WARHOST_FALLBACK_SENTIMENT_SHIFT = -0.15;
 
+// ─── Reach signature: Veil / Rend the Gate (THR-551) ───────────────────────
+//
+// The `sphere_influence_amplify` aftermath opens a sustained rift onto the
+// ascendant's primary Creation Sphere at a location: while held, it amplifies
+// that sphere's local influence at a per-tick essence cost, but each tick risks
+// a hostile chaos pulse leaking through the gate. Both magnitude and cost scale
+// with the actor's sphere power via `spherePowerMultiplier` (THR-548): a maxed
+// rift amplifies harder, costs more, and — because the leak chance also scales —
+// spills chaos more often. The downside is the individualization, not a flat tax.
+
+/**
+ * Base per-tick sphere-influence the rift pushes onto its location, before
+ * sphere-power scaling. Pushed through the canonical pressure system as a
+ * `control_effect` SpherePressureEvent of magnitude `scaledEffect(this, mult)` —
+ * larger than the generic `CONTROL_PRESSURE_PER_TICK` so a rift amplifies faster.
+ */
+export const RIFT_INFLUENCE_PER_TICK = 2;
+
+/**
+ * Sphere-score cap at/above which a rift stops adding influence. Clamped to
+ * `MAX_SPHERE_SCORE` (10) by the consumer, so a value ≥ 10 means "no early cap".
+ */
+export const RIFT_INFLUENCE_CAP = 10;
+
+/**
+ * Base per-tick essence cost to sustain a rift, before sphere-power scaling.
+ * `scaledCost(this, mult)` floors the multiplier at 1× — sphere mastery makes a
+ * rift more potent, never cheaper. Charged in the rift's primary sphere.
+ */
+export const RIFT_PERTICK_COST = 0.4;
+
+/**
+ * Base per-tick probability the rift leaks a hostile chaos pulse, before
+ * sphere-power scaling. The resolver stores `min(1, this × mult)` on the effect,
+ * so a maxed rift (mult 2.0) leaks roughly twice as often as a no-mastery one.
+ */
+export const RIFT_LEAK_CHANCE = 0.08;
+
+/** Hex `corruption` added when a rift leaks (a chaos pulse staining the land). */
+export const RIFT_LEAK_CORRUPTION = 6;
+
+/** Entropy sphere pressure pushed onto the rift's location when it leaks. */
+export const RIFT_LEAK_ENTROPY_PRESSURE = 2;
+
+/** Chronicle significance for a rift-leak chaos-pulse tick event. */
+export const RIFT_LEAK_SIGNIFICANCE = 0.6;
+
+/** Chronicle significance for establishing a rift. */
+export const RIFT_ESTABLISHED_SIGNIFICANCE = 0.7;
+
 /** Chronicle significance for faction topology effects. */
 export const FACTION_MUTATION_CHRONICLE_SIGNIFICANCE = {
   declare_war: 0.85,

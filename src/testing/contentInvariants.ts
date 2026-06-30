@@ -42,6 +42,7 @@ const KNOWN_AFTERMATH_EFFECT_KINDS = new Set<EncounterAftermathReactionEffect['k
   'faction_reputation_gain',
   'axiological_mark_apply',
   'signature_warhost',
+  'sphere_influence_amplify',
 ]);
 
 function isNonEmptyString(value: unknown): value is string {
