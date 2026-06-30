@@ -9,7 +9,7 @@ import type { CulturalStrengthRange } from '../data/culture-content';
 import type { AttachmentEffect } from './effects';
 import type { ContentCensusTag } from './contentCensus';
 
-export type TraitCategory = 'innate' | 'mastery' | 'reputation' | 'personality' | 'scar' | 'condition' | 'destiny' | 'cultural' | 'bestowed';
+export type TraitCategory = 'innate' | 'mastery' | 'reputation' | 'personality' | 'core' | 'scar' | 'condition' | 'destiny' | 'cultural' | 'bestowed';
 
 // ─── Reputation Trait Effects (parseable payload) ──────────────────
 

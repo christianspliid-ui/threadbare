@@ -23,9 +23,11 @@
 import type { ReachDomain } from '../../types/traits';
 import type { CoreProfile } from '../../types/coreRegistry';
 import { CORE_CONTINUA, CORE_NEUTRAL } from '../../types/coreRegistry';
+import { CORE_ORIGIN_VIGNETTES } from '../../data/core-origin-vignettes';
 import {
   CORE_SEED_DRAW_COUNT,
   CORE_SEED_DRAW_MAGNITUDE,
+  CORE_ORIGIN_VIGNETTE_DRAW_COUNT,
   CORE_EMERGENCE_VIRTUE_THRESHOLD,
   CORE_EMERGENCE_VICE_THRESHOLD,
   CORE_BEND_QUINTESSENCE_THRESHOLD,
@@ -62,6 +64,48 @@ export function seedCoreProfile(rng: () => number): CoreProfile {
     profile[continuum.continuumId] = clamp01(CORE_NEUTRAL + sum);
   }
   return profile;
+}
+
+/** A seeded Core baseline plus the authored origin-vignettes that shaped it. */
+export interface SeededCore {
+  readonly profile: CoreProfile;
+  /** Ids of the authored Core origin-vignettes applied, for inspectability/prose. */
+  readonly vignetteIds: string[];
+}
+
+/**
+ * Draw a Core baseline (the central-limit PRNG spread from `seedCoreProfile`)
+ * and lay `CORE_ORIGIN_VIGNETTE_DRAW_COUNT` authored origin-vignettes on top:
+ * each drawn vignette adds its *signed* magnitude (virtue +, vice −) to its
+ * continuum, then the result is re-clamped to [0,1]. This is the THR-544 wiring
+ * the slice-1 constants doc anticipated — authored character over the random
+ * spread, never replacing it.
+ *
+ * Determinism (NFP #3): consumes `rng` first for the baseline (an identical
+ * sequence to bare `seedCoreProfile`), then for vignette selection — so the
+ * baseline is unchanged from slice 1 and the vignettes layer on deterministically.
+ *
+ * Fail-soft (NFP #4): if the vignette pool is empty, returns the pure baseline.
+ * Distinct vignettes only (a duplicate draw is skipped, not double-applied).
+ */
+export function seedCoreProfileWithVignettes(rng: () => number): SeededCore {
+  const profile = seedCoreProfile(rng);
+  const vignetteIds: string[] = [];
+  const pool = CORE_ORIGIN_VIGNETTES;
+  if (pool.length === 0) return { profile, vignetteIds };
+
+  const drawn = new Set<string>();
+  const maxAttempts = CORE_ORIGIN_VIGNETTE_DRAW_COUNT * 4;
+  for (let attempt = 0; drawn.size < CORE_ORIGIN_VIGNETTE_DRAW_COUNT && attempt < maxAttempts; attempt++) {
+    const v = pool[Math.floor(rng() * pool.length)];
+    if (!v || drawn.has(v.id)) continue;
+    drawn.add(v.id);
+    vignetteIds.push(v.id);
+    const signed = v.pole === 'virtue' ? v.magnitude : -v.magnitude;
+    const current = profile[v.continuumId] ?? CORE_NEUTRAL;
+    profile[v.continuumId] = clamp01(current + signed);
+  }
+  return { profile, vignetteIds };
 }
 
 // ─── Colour ───────────────────────────────────────────────────────────────────

@@ -4,6 +4,12 @@ import type { GameState } from '../../../types/gameState';
 import { enableTracing, disableTracing, clearTraces, getTraces } from '../../traceBuffer';
 import { processCorePersonality } from '../corePersonality';
 import { CORE_CONTINUUM_IDS } from '../../../types/coreRegistry';
+import { getTraitsForNode } from '../../traits';
+import { CORE_TRAIT_BY_CONTINUUM } from '../../../data/core-trait-content';
+
+function heldTraitIds(graph: WorldGraph, actorId: string): Set<string> {
+  return new Set(getTraitsForNode(graph, actorId).map((e) => e.target));
+}
 
 const ASCENDANT_ID = 'ascendant';
 
@@ -121,6 +127,74 @@ describe('processCorePersonality — emergence hysteresis', () => {
       (t) => t.category === 'core_personality' && (t.details as { kind?: string })?.kind === 'emerge',
     );
     expect(again).toHaveLength(0);
+    disableTracing();
+  });
+});
+
+describe('processCorePersonality — Core trait granting (THR-544)', () => {
+  let graph: WorldGraph;
+  beforeEach(() => {
+    graph = new WorldGraph();
+    clearTraces();
+  });
+
+  it('grants the matching Core trait node when a continuum emerges', () => {
+    makeActor(graph, 'a', { coreProfile: { core_warmth: 0.95 } });
+    processCorePersonality(makeState(graph));
+    const held = heldTraitIds(graph, 'a');
+    expect(held.has(CORE_TRAIT_BY_CONTINUUM['core_warmth'].virtue)).toBe(true);
+    // Vice trait must NOT be granted.
+    expect(held.has(CORE_TRAIT_BY_CONTINUUM['core_warmth'].vice)).toBe(false);
+  });
+
+  it('releases the Core trait node when the continuum fades back inside hysteresis', () => {
+    makeActor(graph, 'a', { coreProfile: { core_warmth: 0.95 } });
+    processCorePersonality(makeState(graph, 1));
+    expect(heldTraitIds(graph, 'a').has(CORE_TRAIT_BY_CONTINUUM['core_warmth'].virtue)).toBe(true);
+
+    // Drop well below the release floor → fade → trait removed.
+    graph.getNode('a')!.properties!.coreProfile = { core_warmth: 0.5 };
+    processCorePersonality(makeState(graph, 2));
+    expect(heldTraitIds(graph, 'a').has(CORE_TRAIT_BY_CONTINUUM['core_warmth'].virtue)).toBe(false);
+  });
+
+  it('grants a born-extreme Core trait silently (no per-agent emerge trace)', () => {
+    // No coreProfile → the phase seeds; force the seeded value to an extreme by
+    // pre-running, then asserting the held set mirrors the coreEmergent set.
+    enableTracing();
+    makeActor(graph, 'a');
+    processCorePersonality(makeState(graph));
+    const emergent = (graph.getNode('a')!.properties!.coreEmergent as string[] | undefined) ?? [];
+    const held = heldTraitIds(graph, 'a');
+    // Every born-extreme continuum must have its trait granted...
+    for (const key of emergent) {
+      const sep = key.lastIndexOf(':');
+      const continuumId = key.slice(0, sep);
+      const side = key.slice(sep + 1) as 'virtue' | 'vice';
+      expect(held.has(CORE_TRAIT_BY_CONTINUUM[continuumId][side])).toBe(true);
+    }
+    // ...and the held trait count equals the born-extreme count (no extras).
+    expect(held.size).toBe(emergent.length);
+    // No per-agent emerge trace on the seeding tick (silent born grant).
+    const emergeTraces = getTraces().filter(
+      (t) => t.category === 'core_personality' && (t.details as { kind?: string })?.kind === 'emerge',
+    );
+    expect(emergeTraces).toHaveLength(0);
+    disableTracing();
+  });
+
+  it('still emits exactly ONE aggregate seeded trace carrying the vignette count', () => {
+    enableTracing();
+    makeActor(graph, 'a');
+    makeActor(graph, 'b');
+    processCorePersonality(makeState(graph));
+    const seeded = getTraces().filter(
+      (t) => t.category === 'core_personality' && (t.details as { kind?: string })?.kind === 'seeded',
+    );
+    expect(seeded).toHaveLength(1);
+    const details = (seeded[0] as { details?: { count?: number; vignettesApplied?: number } }).details!;
+    expect(details.count).toBe(2);
+    expect(typeof details.vignettesApplied).toBe('number');
     disableTracing();
   });
 });

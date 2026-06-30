@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   seedCoreProfile,
+  seedCoreProfileWithVignettes,
   colourReachExpression,
   coreBendContributions,
   coreEmergentSignal,
@@ -11,7 +12,9 @@ import {
   CORE_BEND_QUINTESSENCE_THRESHOLD,
   CORE_EMERGENCE_VIRTUE_THRESHOLD,
   CORE_EMERGENCE_VICE_THRESHOLD,
+  CORE_ORIGIN_VIGNETTE_DRAW_COUNT,
 } from '../coreConstants';
+import { CORE_ORIGIN_VIGNETTES } from '../../../data/core-origin-vignettes';
 
 // Simple deterministic PRNG matching the engine's mulberry32.
 function mulberry32(seed: number): () => number {
@@ -51,6 +54,72 @@ describe('seedCoreProfile', () => {
       for (const id of CORE_CONTINUUM_IDS) { sum += p[id]!; n++; }
     }
     expect(Math.abs(sum / n - CORE_NEUTRAL)).toBeLessThan(0.05);
+  });
+});
+
+describe('seedCoreProfileWithVignettes', () => {
+  it('produces a value per continuum, all within [0,1]', () => {
+    const { profile } = seedCoreProfileWithVignettes(mulberry32(42));
+    expect(Object.keys(profile).sort()).toEqual([...CORE_CONTINUUM_IDS].sort());
+    for (const id of CORE_CONTINUUM_IDS) {
+      const v = profile[id]!;
+      expect(v).toBeGreaterThanOrEqual(0);
+      expect(v).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('is deterministic for the same seed (profile and vignette ids)', () => {
+    const a = seedCoreProfileWithVignettes(mulberry32(7));
+    const b = seedCoreProfileWithVignettes(mulberry32(7));
+    expect(a.profile).toEqual(b.profile);
+    expect(a.vignetteIds).toEqual(b.vignetteIds);
+  });
+
+  it('draws up to CORE_ORIGIN_VIGNETTE_DRAW_COUNT distinct, real vignettes', () => {
+    const knownIds = new Set(CORE_ORIGIN_VIGNETTES.map((v) => v.id));
+    for (let seed = 0; seed < 25; seed++) {
+      const { vignetteIds } = seedCoreProfileWithVignettes(mulberry32(seed));
+      expect(vignetteIds.length).toBeLessThanOrEqual(CORE_ORIGIN_VIGNETTE_DRAW_COUNT);
+      expect(new Set(vignetteIds).size).toBe(vignetteIds.length); // distinct
+      for (const id of vignetteIds) expect(knownIds.has(id)).toBe(true);
+    }
+  });
+
+  it('keeps the PRNG baseline identical to seedCoreProfile (vignettes layer on top)', () => {
+    // Same seed: the baseline is drawn first from the same rng sequence, so the
+    // pure baseline must be recoverable by subtracting the applied vignette pulls.
+    const baseline = seedCoreProfile(mulberry32(99));
+    const { profile, vignetteIds } = seedCoreProfileWithVignettes(mulberry32(99));
+    // Continuums with no drawn vignette are untouched from the baseline.
+    const touched = new Set(
+      vignetteIds.map((id) => CORE_ORIGIN_VIGNETTES.find((v) => v.id === id)!.continuumId),
+    );
+    for (const id of CORE_CONTINUUM_IDS) {
+      if (!touched.has(id)) expect(profile[id]).toBeCloseTo(baseline[id]!, 10);
+    }
+  });
+
+  it('applies an authored pull in the vignette pole direction', () => {
+    // Find a seed whose first drawn vignette is a virtue pull, and confirm the
+    // continuum moved up from its baseline.
+    for (let seed = 0; seed < 200; seed++) {
+      const baseline = seedCoreProfile(mulberry32(seed));
+      const { profile, vignetteIds } = seedCoreProfileWithVignettes(mulberry32(seed));
+      const v = CORE_ORIGIN_VIGNETTES.find((x) => x.id === vignetteIds[0]);
+      if (!v) continue;
+      // Only assert on continuums touched by exactly one vignette this draw.
+      const onSame = vignetteIds.filter(
+        (id) => CORE_ORIGIN_VIGNETTES.find((x) => x.id === id)!.continuumId === v.continuumId,
+      );
+      if (onSame.length !== 1) continue;
+      const base = baseline[v.continuumId]!;
+      const got = profile[v.continuumId]!;
+      if (v.pole === 'virtue' && base < 1) {
+        expect(got).toBeGreaterThanOrEqual(base);
+        return;
+      }
+    }
+    throw new Error('no single-virtue-pull draw found in 200 seeds');
   });
 });
 
