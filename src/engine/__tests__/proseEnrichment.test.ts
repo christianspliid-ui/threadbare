@@ -590,3 +590,25 @@ describe('generateMeetingCallback', () => {
     }
   });
 });
+
+describe('{group} placeholder — bound introduction subject (THR-522)', () => {
+  it('resolves {group} to the bound group name when present', () => {
+    const ctx = createMinimalContext({ boundGroupName: 'the Vaerin Hold' });
+    expect(enrichProse('{group} lifts its first prayer toward you', ctx)).toBe(
+      'the Vaerin Hold lifts its first prayer toward you',
+    );
+  });
+
+  it('falls back to neutral phrasing when no group is bound (never leaks a raw token)', () => {
+    const ctx = createMinimalContext(); // boundGroupName undefined
+    const out = enrichProse('{group} lifts its first prayer toward you', ctx);
+    expect(out).not.toContain('{group}');
+    expect(out).toBe('a people you have not yet named lifts its first prayer toward you');
+  });
+
+  it('is distinct from {culture}/{faction} (anchor agent vs. bound group)', () => {
+    const ctx = createMinimalContext({ boundGroupName: 'the Salt Choir' });
+    const out = enrichProse('{culture} hears that {group} now stirs', ctx);
+    expect(out).toBe('The Aurelians hears that the Salt Choir now stirs');
+  });
+});

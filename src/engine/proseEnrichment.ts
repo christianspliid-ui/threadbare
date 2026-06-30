@@ -119,6 +119,13 @@ export interface NarrativeContext {
    * Enables `{outcome_phrase}` and `{q_flavor}` placeholders.
    * Populated by callers that have a resolved step outcome (UI adapters, engine resolvers). */
   outcomeBand?: OutcomeBand;
+
+  /** Name of a bound subject group injected by the caller (THR-522). Enables the `{group}`
+   * placeholder so an Ascendant introduction beat can name the specific generated
+   * culture/faction the Director bound at offer time, instead of generic phrasing. Absent →
+   * `{group}` resolves to a neutral fallback. Distinct from `{culture}`/`{faction}`, which
+   * resolve the *anchor agent's* own culture/faction, not an arbitrary bound group. */
+  boundGroupName?: string;
 }
 
 /**
@@ -336,6 +343,12 @@ export function enrichProse(
   // Faction
   result = result.replace(/{faction}/g,
     ctx.factionRank?.factionName ?? 'their people');
+
+  // Bound subject group (THR-522) — the specific culture/faction an Ascendant introduction
+  // beat surfaces. Resolves to the Director-bound name when present, else a neutral fallback
+  // so unbound/fail-soft offers never leak a raw token.
+  result = result.replace(/{group}/g,
+    ctx.boundGroupName ?? 'a people you have not yet named');
 
   // Title
   result = result.replace(/{title}/g,

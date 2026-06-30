@@ -28,20 +28,22 @@
  * the resolver + modal need.
  *
  * ── Unlock representation ──────────────────────────────────────────────────────
- * The shipped resolve contract (`resolvePendingBeat`, THR-517) grants a beat's action
- * cards from `BeatDefinition.grantsActionIds` and emits `action.unlock.granted` per id —
- * it does NOT execute template aftermath. So the unlock for each pool beat is carried by
- * `grantsActionIds` on the descriptor, not by an `unlock_action` aftermath effect on this
- * template (which the resolve path would never run). The richer "beat resolution runs the
- * template's aftermath / GraphOps" contract for *pool* beats is the deferred engine change
- * TODO(THR-522). (THR-520 shipped resolve-time seeding for the *spine* via a fixed
- * `seedsGraph` tag — a different, narrower mechanism than running arbitrary pool-template aftermath.)
+ * The base resolve contract (`resolvePendingBeat`, THR-517) grants a beat's action cards
+ * from `BeatDefinition.grantsActionIds` and emits `action.unlock.granted` per id. THR-522
+ * added the richer path on top: when a beat template carries aftermath reactions
+ * (`aftermathConfig.fallback.reactions`), `resolvePendingBeat` *also* runs them through the
+ * existing encounter aftermath resolver on resolution — so a beat can express
+ * `unlock_action` / `encounter_seed` / structural graph ops via its template, not only via
+ * the descriptor. The templates below declare no `aftermathConfig` yet (the grant-only
+ * fallback stands), but the contract is live for future content. (THR-520 shipped
+ * resolve-time seeding for the *spine* via a fixed `seedsGraph` tag — a narrower mechanism
+ * than running arbitrary template aftermath; both now coexist.)
  *
  * VOICE. Threadbare, second person, player-as-god, indirect intervention (you lean, you
  * offer, you do not seize). Long-form `description` (read + TTS). Introduction beats end
  * on an investment hook; they anchor enrichment on The First + the world the god already
- * knows (the un-introduced group itself is not bound until the Director seeds it —
- * TODO(THR-522)).
+ * knows, and name the specific un-introduced culture/faction via the `{group}` placeholder,
+ * which the Director binds into `PendingBeat.boundNodeIds` at offer time (THR-522).
  */
 
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
@@ -93,15 +95,17 @@ function poolBeatTemplate(args: {
 }
 
 // ─── Introduction beats — surface a generated culture/faction (no grant) ───────
-// Enrichment anchors on The First ({name}) + the world the god already knows; the
-// un-introduced group is referred to generically until the Director binds it (THR-520).
+// Enrichment anchors on The First ({name}) + the world the god already knows, and names the
+// specific generated culture/faction via {group} — bound by the Director into
+// PendingBeat.boundNodeIds at offer time (THR-522). {group} falls back to neutral phrasing
+// when no group was bound (fail-soft), so the prose never leaks a raw token.
 
 const INTRODUCTION_TEMPLATES: UnifiedActionTemplate[] = [
   poolBeatTemplate({
     id: 'beat.pool.intro.first_stirring',
     name: 'The First Stirring',
     description:
-      'Far past the reach of {name} and everything {name} knows, a people you have never named lifts its first prayer toward you — not to you by name, for they have no name for you yet, but upward, into the dark where gods are said to wait. It is faint, the way a single candle is faint across a valley. But you heard it. Lean toward that light, and it will learn to call you something.',
+      'Far past the reach of {name} and everything {name} knows, {group} lifts its first prayer toward you — not to you by name, for they have no name for you yet, but upward, into the dark where gods are said to wait. It is faint, the way a single candle is faint across a valley. But you heard it. Lean toward that light, and it will learn to call you something.',
     initiation: 'a people beyond {name}\'s horizon lifts its first prayer into the dark',
     success: 'you turn your face toward the stirring; a new people enters your awareness',
     failure: 'the prayer thins to nothing before you can answer it',
@@ -110,7 +114,7 @@ const INTRODUCTION_TEMPLATES: UnifiedActionTemplate[] = [
     id: 'beat.pool.intro.rising_faction',
     name: 'A Rising Ambition',
     description:
-      'Somewhere out past {name}, an ambition has grown loud enough to crack the quiet of the heavens. A banner is rising — a faction gathering strength, certain it is owed more than the world has given it. They do not yet know you are listening. You could let them rise alone, as most do. Or you could let them feel, just once, that something vast has noticed them.',
+      'Somewhere out past {name}, an ambition has grown loud enough to crack the quiet of the heavens. A banner is rising — {group}, gathering strength, certain it is owed more than the world has given it. They do not yet know you are listening. You could let them rise alone, as most do. Or you could let them feel, just once, that something vast has noticed them.',
     initiation: 'a gathering ambition grows loud enough to reach your stillness',
     success: 'you let the rising faction feel your notice settle over it',
     failure: 'the ambition burns itself low before you choose to answer',
@@ -119,7 +123,7 @@ const INTRODUCTION_TEMPLATES: UnifiedActionTemplate[] = [
     id: 'beat.pool.intro.distant_people',
     name: 'A Distant Rite',
     description:
-      'On the far edge of the map {name} will never walk, a rite is being kept — old hands, old words, a fire tended in the same hollow for longer than anyone alive remembers why. The smoke of it rises differently tonight: it bends toward you. A distant people is asking, in the only grammar it has, to be known by something larger than itself. You may answer that asking, or let the smoke disperse.',
+      'On the far edge of the map {name} will never walk, a rite is being kept — old hands, old words, a fire tended in the same hollow for longer than anyone alive remembers why. The smoke of it rises differently tonight: it bends toward you. {group} is asking, in the only grammar it has, to be known by something larger than itself. You may answer that asking, or let the smoke disperse.',
     initiation: 'a far people\'s rite bends its smoke toward you, asking to be known',
     success: 'you accept the distant rite; its people pass into your sight',
     failure: 'the fire gutters and the rite folds back into its own silence',
@@ -128,7 +132,7 @@ const INTRODUCTION_TEMPLATES: UnifiedActionTemplate[] = [
     id: 'beat.pool.intro.zealous_order',
     name: 'A Patronless Order',
     description:
-      'A devout order has spent itself for years on faith with no face to receive it. Now its zealots kneel and demand — not beg, demand — a patron worthy of their fervor. Their certainty is a heat you can feel from here, brighter even than {name}\'s steadier flame. Such devotion is a tool and a danger both. Claim it, and it is yours; ignore it, and it will find another sky to shout at.',
+      '{group} has spent itself for years on faith with no face to receive it. Now its zealots kneel and demand — not beg, demand — a patron worthy of their fervor. Their certainty is a heat you can feel from here, brighter even than {name}\'s steadier flame. Such devotion is a tool and a danger both. Claim it, and it is yours; ignore it, and it will find another sky to shout at.',
     initiation: 'a zealous order kneels and demands a patron worthy of its fervor',
     success: 'you let the order\'s fervor find you; it has its patron now',
     failure: 'the zealots\' certainty curdles toward some other, nearer power',
@@ -137,7 +141,7 @@ const INTRODUCTION_TEMPLATES: UnifiedActionTemplate[] = [
     id: 'beat.pool.intro.sundered_court',
     name: 'A Sundered Court',
     description:
-      'A faction has split itself down the middle, and both halves have looked up at the same moment — each begging you to declare the other false. They want a verdict, an end to the question of who is owed the throne of their cause. You are not bound to give one. But silence, too, is an answer, and they will read whatever you do as judgment. Attend the sundered court, or let it tear at itself unwatched.',
+      '{group} has split itself down the middle, and both halves have looked up at the same moment — each begging you to declare the other false. They want a verdict, an end to the question of who is owed the throne of their cause. You are not bound to give one. But silence, too, is an answer, and they will read whatever you do as judgment. Attend the sundered court, or let it tear at itself unwatched.',
     initiation: 'a fractured faction begs you to declare which of its halves is true',
     success: 'you turn your attention on the sundered court; both halves fall quiet',
     failure: 'the split widens past the point where any verdict would matter',
@@ -146,7 +150,7 @@ const INTRODUCTION_TEMPLATES: UnifiedActionTemplate[] = [
     id: 'beat.pool.intro.old_power',
     name: 'An Old Power Wakes',
     description:
-      'Something far older than {name}\'s people has begun to remember itself. A buried culture — sunken, salted-over, half-myth even to those who descend from it — is surfacing a memory it should not still hold: the shape of a god who walked before you. You are not that god. But you are the one who is here. Lean close to the old power as it wakes, and what it remembers may yet become what it worships.',
+      'Something far older than {name}\'s people has begun to remember itself. {group} — sunken, salted-over, half-myth even to those who descend from it — is surfacing a memory it should not still hold: the shape of a god who walked before you. You are not that god. But you are the one who is here. Lean close to the old power as it wakes, and what it remembers may yet become what it worships.',
     initiation: 'a buried culture surfaces the memory of a god who walked before you',
     success: 'you meet the old power as it wakes; its memory turns toward you',
     failure: 'the ancient thing sinks back beneath its own salt and silence',

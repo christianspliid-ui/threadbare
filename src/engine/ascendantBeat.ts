@@ -52,6 +52,13 @@ import {
 } from '../data/ascendant-beat-content';
 import { eligibleDeliveryBeats, getDeliveryBeatById } from './deliveryBeatAdapter';
 import { seedBeatGraph } from './ascendantBeatSeeding';
+import { applyEncounterAftermathReaction } from './encounterAftermath';
+import { touchWorld, touchStructure, type SimulationRuntime } from './simulationRuntime';
+import type {
+  UnifiedAction,
+  UnifiedActionTemplate,
+  EncounterAftermathReaction,
+} from '../types/unifiedAction';
 
 /**
  * Beat-trace emit wrapper. `emitTrace`'s parameter collapses a discriminated
@@ -170,6 +177,46 @@ function countUnintroducedGroups(state: GameState): number {
   return groups - introduced;
 }
 
+/**
+ * Culture/faction actor ids the god has already been introduced to (THR-522): the union
+ * of `boundNodeIds` recorded against resolved `introduction` beats. Pre-THR-522 records
+ * carry no `boundNodeIds`, so they contribute nothing — binding then falls to graph order
+ * while the count-proxy eligibility gate ({@link countUnintroducedGroups}) keeps pacing how
+ * many introduction beats fire. Returns a Set for O(1) exclusion in {@link bindBeatSubject}.
+ */
+function getIntroducedGroupIds(state: GameState): Set<string> {
+  const ids = new Set<string>();
+  const history = state.ascendantBeats?.history ?? [];
+  for (const rec of history) {
+    if (rec.kind !== 'introduction') continue;
+    for (const id of rec.boundNodeIds ?? []) ids.add(id);
+  }
+  return ids;
+}
+
+/**
+ * Resolve the specific subject node(s) a beat operates on at offer time (THR-522). For an
+ * `unintroduced_group`-eligible beat this is the first culture/faction actor the god has
+ * not yet been introduced to (graph iteration order — deterministic, NFP #3), so the
+ * offered beat can name the exact group instead of generic phrasing. Every other beat binds
+ * nothing (`[]`) — the existing pure-flavor / grant contract is unchanged. Fail-soft
+ * (NFP #4): any graph error yields `[]` and the beat falls back to generic prose. Exported
+ * for unit testing.
+ */
+export function bindBeatSubject(beat: BeatDefinition, state: GameState): readonly string[] {
+  if (beat.eligibility?.kind !== 'unintroduced_group') return [];
+  try {
+    const introduced = getIntroducedGroupIds(state);
+    const group = state.graph.getNodesByType('actor').find(n => {
+      const t = (n.properties as { actorType?: string }).actorType;
+      return (t === 'culture' || t === 'faction') && !introduced.has(n.id);
+    });
+    return group ? [group.id] : [];
+  } catch {
+    return [];
+  }
+}
+
 /** True if a threadable actor/location the god has not yet threaded exists (THR-516). */
 function hasUnthreadedTarget(state: GameState): boolean {
   const id = state.ascendantId;
@@ -253,13 +300,14 @@ function offer(
   trigger: BeatTrigger,
   turn: number,
   poolSize: number,
+  boundNodeIds: readonly string[],
   advanceSpine: boolean,
 ): AscendantBeatState {
   const pending: PendingBeat = {
     beatId: def.beatId,
     kind: def.kind,
     offeredTurn: turn,
-    boundNodeIds: [],
+    boundNodeIds: [...boundNodeIds],
     trigger,
   };
   // Delivery beats wrap a branching encounter; `def.templateId` names it so the
@@ -304,19 +352,24 @@ export function forceOfferBeatById(
   beats: AscendantBeatState,
   beatId: string,
   turn: number,
+  state?: GameState,
 ): { next: AscendantBeatState; def: BeatDefinition } | null {
+  // Bind the subject when state is supplied (the debug bridge passes it) so a force-fired
+  // introduction beat names its group exactly as a natural offer would (THR-522). Headless
+  // unit callers omit state → no binding, same as before.
+  const bound = (def: BeatDefinition) => (state ? bindBeatSubject(def, state) : []);
   const spineIdx = ASCENDANT_SPINE.findIndex(b => b.beatId === beatId);
   if (spineIdx >= 0) {
     const def = ASCENDANT_SPINE[spineIdx];
     // Advance the cursor only when firing the beat the cursor currently points at,
     // so a debug fire of an already-passed or future spine beat never corrupts the cursor.
     const advanceSpine = spineIdx === beats.spineCursor;
-    return { next: offer(beats, def, def.trigger, turn, 0, advanceSpine), def };
+    return { next: offer(beats, def, def.trigger, turn, 0, bound(def), advanceSpine), def };
   }
   const poolDef = ASCENDANT_BEAT_POOL.find(b => b.beatId === beatId);
   if (poolDef) {
     return {
-      next: offer(beats, poolDef, { kind: 'cadence' }, turn, ASCENDANT_BEAT_POOL.length, /*advanceSpine*/ false),
+      next: offer(beats, poolDef, { kind: 'cadence' }, turn, ASCENDANT_BEAT_POOL.length, bound(poolDef), /*advanceSpine*/ false),
       def: poolDef,
     };
   }
@@ -325,7 +378,7 @@ export function forceOfferBeatById(
   const deliveryDef = getDeliveryBeatById(beatId);
   if (deliveryDef) {
     return {
-      next: offer(beats, deliveryDef, { kind: 'cadence' }, turn, ASCENDANT_BEAT_POOL.length, /*advanceSpine*/ false),
+      next: offer(beats, deliveryDef, { kind: 'cadence' }, turn, ASCENDANT_BEAT_POOL.length, bound(deliveryDef), /*advanceSpine*/ false),
       def: deliveryDef,
     };
   }
@@ -355,7 +408,9 @@ export function phaseAscendantBeatDirector(
     if (beats.spineCursor >= 0 && beats.spineCursor < ASCENDANT_SPINE.length) {
       const def = ASCENDANT_SPINE[beats.spineCursor];
       if (isTriggerSatisfied(def.trigger, state, turn)) {
-        return { ascendantBeats: offer(beats, def, def.trigger, turn, 0, /*advanceSpine*/ true) };
+        // Spine beats are not `unintroduced_group`-eligible, so binding is empty — but
+        // route through `bindBeatSubject` for one offer path (THR-522).
+        return { ascendantBeats: offer(beats, def, def.trigger, turn, 0, bindBeatSubject(def, state), /*advanceSpine*/ true) };
       }
       // Spine waiting on its trigger — keep the opening clean, do not interleave pool beats.
       return {};
@@ -385,9 +440,12 @@ export function phaseAscendantBeatDirector(
       emitSkipped(turn, 'empty_pool');
       return {};
     }
+    // Bind the specific subject (the un-introduced culture/faction for introduction beats)
+    // so the offered beat can name it; other beats bind nothing (THR-522).
+    const boundNodeIds = bindBeatSubject(def, state);
     // poolSize reflects the *eligible* pool (plan §3.2) for inspectability.
     return {
-      ascendantBeats: offer(beats, def, { kind: 'cadence' }, turn, eligible.length, /*advanceSpine*/ false),
+      ascendantBeats: offer(beats, def, { kind: 'cadence' }, turn, eligible.length, boundNodeIds, /*advanceSpine*/ false),
     };
   } catch (err) {
     // NFP #4: the tick loop must never crash.
@@ -423,6 +481,9 @@ export function resolveAscendantBeat(
     outcome: args.outcome,
     grantedActionIds: args.grantedActionIds ?? [],
     seededNodeIds: args.seededNodeIds ?? [],
+    // Carry the subject the beat operated on so later introduction draws exclude an
+    // already-introduced group and the debug surface can name what each beat touched (THR-522).
+    boundNodeIds: [...beats.pending.boundNodeIds],
   };
   emitBeatTrace({
     tick: args.turn,
@@ -454,6 +515,78 @@ function findBeatDefinition(beatId: string): BeatDefinition | null {
  */
 export function getBeatDefinitionById(beatId: string): BeatDefinition | null {
   return findBeatDefinition(beatId);
+}
+
+/**
+ * Run a resolved beat's matched `UnifiedActionTemplate` aftermath through the existing
+ * encounter aftermath resolver (THR-522, plan §4.1–§4.2). This is the "richer contract" the
+ * THR-517 resolve path lacked: a beat template can now carry `unlock_action` /
+ * `encounter_seed` / structural graph-op aftermath on its `aftermathConfig.fallback.reactions`,
+ * and beat resolution executes it — instead of capability being expressible only through the
+ * descriptor `grantsActionIds`. The systemic-wiring-guide thesis applied to beats: content
+ * reaches the engine's dynamic capabilities rather than hardcoding.
+ *
+ * A beat is addressed to the god, not a mortal encounter, so we synthesize a minimal,
+ * already-resolved `UnifiedAction` whose actor is the bound subject (the introduced group,
+ * when present) and fall back to the ascendant — aftermath effects that resolve a target
+ * relative to the actor (e.g. faction reputation on the introduced group) then land on the
+ * right node. The synthesized action is never stored in `state.unifiedActions`; it exists
+ * only to give the resolver an encounter context.
+ *
+ * Additive: a template with no `aftermathConfig` reactions is a no-op (the documented
+ * fallback), so every shipping beat keeps its prior grant-only behavior. Fail-soft (NFP #4):
+ * wrapped so a thrown resolver never wedges the beat — returns the input state + a
+ * touched-nothing summary on error.
+ */
+function runBeatTemplateAftermath(
+  state: GameState,
+  beatId: string,
+  boundNodeIds: readonly string[],
+  template: UnifiedActionTemplate,
+  runtime: SimulationRuntime,
+  turn: number,
+): { state: GameState; touchedWorld: boolean; touchedStructure: boolean } {
+  const reactions: readonly EncounterAftermathReaction[] = template.aftermathConfig?.fallback.reactions ?? [];
+  if (reactions.length === 0) return { state, touchedWorld: false, touchedStructure: false };
+  const subjectId = boundNodeIds[0] ?? state.ascendantId ?? '';
+  const action: UnifiedAction = {
+    actionId: `beat:${beatId}`,
+    actorId: subjectId,
+    templateId: beatId,
+    targetId: subjectId,
+    scale: 'cosmic',
+    source: 'system',
+    startTick: turn,
+    currentStep: 0,
+    stepProgress: 1,
+    stepDuration: 1,
+    resolved: true,
+    outcome: 'success',
+    stepOutcomes: [],
+  };
+  let working = state;
+  let touchedWorld = false;
+  let touchedStructure = false;
+  try {
+    for (const reaction of reactions) {
+      const { state: next, mutationSummary } = applyEncounterAftermathReaction(
+        working, action, reaction, turn, runtime,
+      );
+      working = next;
+      touchedWorld = touchedWorld || mutationSummary.touchedWorld;
+      touchedStructure = touchedStructure || mutationSummary.touchedStructure;
+    }
+  } catch (err) {
+    emitTrace({
+      tick: turn,
+      category: 'engine_warning',
+      summary: `runBeatTemplateAftermath error (${beatId}, turn ${turn}): ${
+        err instanceof Error ? err.message : String(err)
+      }`,
+    });
+    return { state, touchedWorld: false, touchedStructure: false };
+  }
+  return { state: working, touchedWorld, touchedStructure };
 }
 
 /** Result of {@link resolvePendingBeat}. `state` is the input state unchanged on no-op. */
@@ -502,7 +635,15 @@ export interface PendingBeatResolution {
  */
 export function resolvePendingBeat(
   state: GameState,
-  opts: { chosenActionId?: string; outcome?: string } = {},
+  opts: {
+    chosenActionId?: string;
+    outcome?: string;
+    /** Runtime for the template-aftermath path (THR-522). Omitted by headless callers → no aftermath runs. */
+    runtime?: SimulationRuntime;
+    /** Injected `getUnifiedTemplateById` so the engine can fetch the matched content template
+     *  for its aftermath without importing the template registry (mirrors `templateResolver`). */
+    templateProvider?: (templateId: string) => UnifiedActionTemplate | undefined;
+  } = {},
   templateResolver?: (templateId: string) => boolean,
 ): PendingBeatResolution {
   const beats = state.ascendantBeats;
@@ -568,6 +709,25 @@ export function resolvePendingBeat(
     // without the tag — the pre-THR-520 contract — seed nothing here.
     const seededNodeIds = def.seedsGraph ? seedBeatGraph(state, def, turn).seededNodeIds : [];
 
+    // Run the matched content template's aftermath (THR-522): the richer resolve contract
+    // where a beat template carries `unlock_action` / `encounter_seed` / structural graph-op
+    // aftermath on its `aftermathConfig.fallback.reactions`, executed through the existing
+    // encounter aftermath resolver. Additive + fail-soft: only fires when a `runtime` +
+    // `templateProvider` are supplied (the UI/debug path) and the template declares aftermath
+    // reactions; every shipping beat declares none, so the grant-only fallback stands.
+    let workingState: GameState = { ...state, unlockedActionIds: nextUnlocked };
+    const contentTemplate = def.templateId && opts.templateProvider
+      ? opts.templateProvider(def.templateId)
+      : undefined;
+    if (opts.runtime && contentTemplate) {
+      const after = runBeatTemplateAftermath(
+        workingState, def.beatId, pending.boundNodeIds, contentTemplate, opts.runtime, turn,
+      );
+      workingState = after.state;
+      if (after.touchedWorld) touchWorld(opts.runtime);
+      if (after.touchedStructure) touchStructure(opts.runtime);
+    }
+
     const outcome = opts.outcome ?? (pending.kind === 'selection' ? 'chosen' : 'received');
     const resolvedBeats = resolveAscendantBeat(beats, {
       outcome,
@@ -576,7 +736,7 @@ export function resolvePendingBeat(
       turn,
     });
     return {
-      state: { ...state, unlockedActionIds: nextUnlocked, ascendantBeats: resolvedBeats },
+      state: { ...workingState, ascendantBeats: resolvedBeats },
       resolved: true,
       beatId: pending.beatId,
       grantedActionIds: granted,
