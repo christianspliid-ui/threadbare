@@ -392,6 +392,10 @@ function toEncounterChoiceReach(
 
 function toEncounterArchetypePole(reach: EncounterChoiceReach, choice: EncounterAuthoredChoice): EncounterArchetypePole {
   const poles = reach === 'quintessence' ? QUINTESSENCE_POLES : MORAL_AXIS_POLES_BY_REACH[reach];
+  // THR-528: an authored pole on the card wins over the interventionType heuristic.
+  if (choice.pole) {
+    return choice.pole === 'vice' ? poles[1] : poles[0];
+  }
   if (choice.interventionType === 'coercive') {
     return poles[1];
   }
@@ -547,6 +551,10 @@ export const ROAD_AMBUSH_TEMPLATE: UnifiedActionTemplate = withEncounterContract
           'The bandits are defeated but not addressed -- their desperation remains, pushed down the road to someone else. ' +
           'If the intervention is clumsy, the amplified defense becomes amplified violence. Iron reach does not always allow for nuance.',
         interventionType: 'supportive',
+        // THR-528: standing between the strong and the weak — the Iron virtue (Protector/Brave).
+        moralAxis: 'iron',
+        pole: 'virtue',
+        magnitude: 0.15,
       },
       {
         id: 'turn_the_chaos',
@@ -559,6 +567,10 @@ export const ROAD_AMBUSH_TEMPLATE: UnifiedActionTemplate = withEncounterContract
           'The manufactured pause is fragile. If it collapses, the fight resumes worse than before, and both sides may perceive the manipulation. ' +
           'A god caught exploiting mortals earns a specific kind of enmity.',
         interventionType: 'coercive',
+        // THR-528: harvesting the violence as raw force to exploit — the Iron vice (Conqueror/Power-Hungry).
+        moralAxis: 'iron',
+        pole: 'vice',
+        magnitude: 0.15,
       },
     ],
     1: [
@@ -571,6 +583,10 @@ export const ROAD_AMBUSH_TEMPLATE: UnifiedActionTemplate = withEncounterContract
         likelyBurden:
           'The subtle approach may not be enough. If the young soldier reaches the driver before the tide turns, light-touch fails and the god must escalate or accept the loss.',
         interventionType: 'supportive',
+        // THR-528: shoring up the defenders so the road holds — the Iron virtue (Protector/Brave).
+        moralAxis: 'iron',
+        pole: 'virtue',
+        magnitude: 0.1,
       },
       {
         id: 'break_their_nerve',
@@ -581,6 +597,10 @@ export const ROAD_AMBUSH_TEMPLATE: UnifiedActionTemplate = withEncounterContract
         likelyBurden:
           'If the morale break is too sudden, panic replaces discipline. Panicked soldiers with weapons are more dangerous than disciplined ones. The youngest might lash out instead of retreat.',
         interventionType: 'coercive',
+        // THR-528: breaking their will through dominance and fear — the Iron vice (Conqueror/Power-Hungry).
+        moralAxis: 'iron',
+        pole: 'vice',
+        magnitude: 0.1,
       },
     ],
   },

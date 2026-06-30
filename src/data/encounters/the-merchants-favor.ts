@@ -353,6 +353,10 @@ function toEncounterChoiceReach(
 
 function toEncounterArchetypePole(reach: EncounterChoiceReach, choice: EncounterAuthoredChoice): EncounterArchetypePole {
   const poles = reach === 'quintessence' ? QUINTESSENCE_POLES : MORAL_AXIS_POLES_BY_REACH[reach];
+  // THR-528: an authored pole on the card wins over the interventionType heuristic.
+  if (choice.pole) {
+    return choice.pole === 'vice' ? poles[1] : poles[0];
+  }
   if (choice.interventionType === 'coercive') {
     return poles[1];
   }
@@ -513,6 +517,10 @@ export const THE_MERCHANTS_FAVOR_TEMPLATE: UnifiedActionTemplate = withEncounter
           'The guildmaster\'s obligation is to the agent now, not the merchant. Whatever ' +
           'the merchant does with the door that was opened becomes part of the agent\'s record.',
         interventionType: 'supportive',
+        // THR-528: spending standing to lift someone up — the Gold virtue (Patron/Generous).
+        moralAxis: 'gold',
+        pole: 'virtue',
+        magnitude: 0.1,
       },
       {
         id: 'mark_the_robbers',
@@ -527,6 +535,12 @@ export const THE_MERCHANTS_FAVOR_TEMPLATE: UnifiedActionTemplate = withEncounter
           'The merchant did not get his guildhall meeting. The patron reputation takes a small cost. ' +
           'Something shadow-inclined moves instead.',
         interventionType: 'withdrawn',
+        // THR-528: turning away from the plea to extract value for oneself — the Gold vice
+        // (Extractor/Greedy). Authored 'vice' deliberately overrides the heuristic, which would
+        // read 'withdrawn' as the virtue pole.
+        moralAxis: 'gold',
+        pole: 'vice',
+        magnitude: 0.1,
       },
     ],
   },

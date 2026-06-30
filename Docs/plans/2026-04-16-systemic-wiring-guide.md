@@ -313,6 +313,20 @@ The player is a god. Their choices are always divine interventions, never direct
 
 **Why this changes what you write:** You're not writing choices for a character — you're writing moments where divine observation creates tension. The god sees the agent struggling and must decide: pour power in, or let them find their own way? **Write moments where the intervention decision is genuinely difficult — where supporting has a cost beyond essence, and withdrawing has consequences beyond failure probability.** The intervention ratio is tracked. A god who always meddles creates a different story than one who watches.
 
+**Authored moral-axis poles on choice cards (THR-528).** An `AuthoredChoiceCard` (the cards under a template's `authoredChoices`) can now *declare* which way a choice tilts the acting agent's personality, instead of letting the engine infer it from `interventionType`:
+
+```ts
+{
+  id: 'turn_the_chaos', label: 'Turn the Chaos', /* …prose… */
+  interventionType: 'coercive',
+  moralAxis: 'iron',     // which Reach's virtue↔vice axis this choice moves (defaults to the choice's reach)
+  pole: 'vice',          // 'virtue' tilts toward the reach's virtue pole, 'vice' toward the vice pole
+  magnitude: 0.15,       // unsigned drift strength, canonical 0.05–0.20 (PERSONALITY_DRIFT_DELTA_*)
+}
+```
+
+When committed, the choice nudges the agent's *live axis position* by `±magnitude` (virtue +, vice −); a streak of like choices visibly moves them, then **decays back toward their baseline** (born/marked standing) when unreinforced — `liveAxisPosition(baseline, drift)`, decay in `phaseDriftDecay`. The grant/release of emergent personality traits (THR-527) reads that standing position. **Author the pole deliberately** — it lets a "supportive"-typed choice still be a *vice* (e.g. declining a plea to extract value is Gold-vice even though it's `withdrawn`), which the old `interventionType` heuristic could not express. Omit the fields and the legacy heuristic still applies, so un-migrated cards keep working. Resolvers: `resolveEncounterArchetypePole` / `resolveChoiceDrift` in `encounter-contract-builder.ts`.
+
 ---
 
 ### Capability 8: Complication System — Failure Has Texture (THR-20)

@@ -566,7 +566,7 @@ Slot anchor positions in `runTick`: `pre-doom`, `post-doom`, `post-resolution`, 
 | 10.5 | `phaseEconomicChronicle` | Economic state records |
 | 12 | `phaseAgentLifecycle` | Birth, death, migration |
 | 13 | `phaseDoomExpiry` | Doom conclusion (kept inline — depends on module-local `nextEventId`) |
-| end | `phaseDriftDecay` | Per-tick passive archetype drift decay toward zero (`DRIFT_DECAY_RATE_PER_TICK`). Consumes `state.archetypeDrift`. (THR-323) |
+| end | `phaseDriftDecay` | Per-tick passive personality-drift decay (`PERSONALITY_DRIFT_DECAY_PER_TICK`, formerly `DRIFT_DECAY_RATE_PER_TICK`). Drift is a temporary delta decaying to zero → the live position (`liveAxisPosition(baseline, drift)`) rests at the agent's baseline, not neutral. Consumes `state.archetypeDrift`. (THR-323 / THR-528) |
 
 | 6.6396 | `phaseQuintessence` | Quintessence event processing, regen, dissolution |
 

@@ -39,6 +39,12 @@ export interface ChoiceResolvedTrace {
   outcomeBand: EncounterOutcomeBand;
   rolledD100: number;
   effectiveProbability: number;
+  /**
+   * Resulting live axis position after the choice's drift is applied (THR-528):
+   * clamp(baseline + drift) on the ±1 axis scale. Undefined when the actor has no
+   * baseline profile. Lets an inspector see where the choice *moved* the agent.
+   */
+  livePosition?: number;
 }
 
 export interface ForecastComputedTrace {

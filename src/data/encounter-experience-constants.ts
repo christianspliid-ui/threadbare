@@ -30,8 +30,26 @@ export const DRIFT_THRESHOLD_SOFT = 0.3;
 export const DRIFT_THRESHOLD_BANNER = 0.6;
 // Drift threshold for becoming-event signaling.
 export const DRIFT_THRESHOLD_BECOMING = 0.85;
-// Passive drift decay when choices do not reinforce direction.
-export const DRIFT_DECAY_RATE_PER_TICK = 0.001;
+
+// ── Personality drift from authored choices (THR-528) ───────────────
+// Authored per-choice drift magnitudes (unsigned), declared on the choice card.
+// A choice nudges the actor's live axis position by this much, toward the
+// authored pole. Skewed small so streaks of behavior accumulate gradually.
+export const PERSONALITY_DRIFT_DELTA_SUBTLE = 0.05;
+export const PERSONALITY_DRIFT_DELTA_MODERATE = 0.1;
+export const PERSONALITY_DRIFT_DELTA_STRONG = 0.15;
+export const PERSONALITY_DRIFT_DELTA_DEFINING = 0.2;
+// Fallback magnitude when a choice declares a pole/axis but omits an explicit
+// magnitude (and the default for heuristic-inferred, un-migrated choices).
+export const PERSONALITY_DRIFT_DELTA_DEFAULT = PERSONALITY_DRIFT_DELTA_MODERATE;
+
+// Passive drift decay when choices do not reinforce direction. Drift is a
+// *temporary delta*; because the live position = clamp(baseline + drift), pulling
+// the delta toward zero relaxes the live position back to the agent's (mutable)
+// baseline — it rests at the baseline, never at neutral. (THR-528)
+export const PERSONALITY_DRIFT_DECAY_PER_TICK = 0.001;
+/** @deprecated Renamed to PERSONALITY_DRIFT_DECAY_PER_TICK (THR-528). Kept as an alias. */
+export const DRIFT_DECAY_RATE_PER_TICK = PERSONALITY_DRIFT_DECAY_PER_TICK;
 
 // Detection threshold for notice-level rival pressure.
 export const DETECTION_THRESHOLD_NOTICE = 0.5;

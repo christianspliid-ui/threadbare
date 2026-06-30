@@ -364,6 +364,10 @@ function toEncounterChoiceReach(
 
 function toEncounterArchetypePole(reach: EncounterChoiceReach, choice: EncounterAuthoredChoice): EncounterArchetypePole {
   const poles = reach === 'quintessence' ? QUINTESSENCE_POLES : MORAL_AXIS_POLES_BY_REACH[reach];
+  // THR-528: an authored pole on the card wins over the interventionType heuristic.
+  if (choice.pole) {
+    return choice.pole === 'vice' ? poles[1] : poles[0];
+  }
   if (choice.interventionType === 'coercive') {
     return poles[1];
   }
@@ -526,6 +530,10 @@ export const THE_STAR_PILGRIM_TEMPLATE: UnifiedActionTemplate = withEncounterCon
           'What happens to the child will be described as a miracle. The story will move ' +
           'faster than the father. The next valley is already waiting for something.',
         interventionType: 'supportive',
+        // THR-528: pouring out radiance to lift a desperate pilgrim — the Star virtue (Beacon/Inspiring).
+        moralAxis: 'star',
+        pole: 'virtue',
+        magnitude: 0.15,
       },
       {
         id: 'bless_and_send_onward',
@@ -540,6 +548,10 @@ export const THE_STAR_PILGRIM_TEMPLATE: UnifiedActionTemplate = withEncounterCon
           'The father will walk three more hours. What happens at the shrine is the ' +
           'keeper\'s work, not the god\'s. The outcome is less certain but not absent.',
         interventionType: 'supportive',
+        // THR-528: a quieter blessing that still sends them on with hope — the Star virtue (Beacon/Inspiring).
+        moralAxis: 'star',
+        pole: 'virtue',
+        magnitude: 0.1,
       },
     ],
   },
