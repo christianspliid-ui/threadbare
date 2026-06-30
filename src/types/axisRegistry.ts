@@ -138,8 +138,11 @@ export const CANONICAL_AXES: readonly CanonicalAxis[] = [
     reachDomain: 'star',
     axisId: axisIdForReach('star'),
     valuePair: REACH_VALUE_PAIR.star,
-    virtue: { role: 'Beacon', word: 'Inspiring' },
-    vice: { role: 'Anchor', word: 'Discouraging' },
+    // Star re-scoped (THR-545): wayfinding/fate, not inner outlook. The inner
+    // outlook (Hopeful↔Bitter) moved to the Core layer; Star's reach axis now
+    // points at its real domain — guiding others' journeys vs leading them astray.
+    virtue: { role: 'Beacon', word: 'Guiding' },
+    vice: { role: 'Wrecker', word: 'Misleading' },
   },
 ];
 

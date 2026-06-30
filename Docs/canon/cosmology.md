@@ -110,7 +110,7 @@ Each of the 8 Reaches maps to an archetype-pair axis (the moral dimension in the
 | Heart | Sworn ↔ Renegade |
 | Eye | Witness ↔ Judge |
 | Stone | Keeper ↔ Destroyer |
-| Star | Wanderer ↔ Anchor |
+| Star | Beacon ↔ Wrecker |
 
 **Source:** `Brainstorms/brainstorm-cosmological-symmetry.md` (2026-03-28).
 

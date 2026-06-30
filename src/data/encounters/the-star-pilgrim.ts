@@ -530,7 +530,7 @@ export const THE_STAR_PILGRIM_TEMPLATE: UnifiedActionTemplate = withEncounterCon
           'What happens to the child will be described as a miracle. The story will move ' +
           'faster than the father. The next valley is already waiting for something.',
         interventionType: 'supportive',
-        // THR-528: pouring out radiance to lift a desperate pilgrim — the Star virtue (Beacon/Inspiring).
+        // THR-528: pouring out radiance to lift a desperate pilgrim — the Star virtue (Beacon/Guiding).
         moralAxis: 'star',
         pole: 'virtue',
         magnitude: 0.15,
@@ -548,7 +548,7 @@ export const THE_STAR_PILGRIM_TEMPLATE: UnifiedActionTemplate = withEncounterCon
           'The father will walk three more hours. What happens at the shrine is the ' +
           'keeper\'s work, not the god\'s. The outcome is less certain but not absent.',
         interventionType: 'supportive',
-        // THR-528: a quieter blessing that still sends them on with hope — the Star virtue (Beacon/Inspiring).
+        // THR-528: a quieter blessing that still sends them on with hope — the Star virtue (Beacon/Guiding).
         moralAxis: 'star',
         pole: 'virtue',
         magnitude: 0.1,
