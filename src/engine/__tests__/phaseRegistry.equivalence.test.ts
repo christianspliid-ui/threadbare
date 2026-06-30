@@ -66,6 +66,9 @@ const EXPECTED_PHASE_IDS: readonly string[] = [
   'reputation_decay',
   // post-economy slot (afterPhase chain preserves inline ordering)
   'ambition_progress',
+  // Core personality foundation phase (THR-542): no ordering constraints, so the
+  // alphabetical tie-break places it after ambition_progress, before faction_ambitions.
+  'core_personality',
   'faction_ambitions',
   'faction_actions',
   // Emergent personality-trait phase (THR-527): no ordering constraints, so the

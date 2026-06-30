@@ -56,6 +56,7 @@ export type TraceCategory =
   | 'faction_ambition'
   | 'reputation_trait'
   | 'personality_trait_emerged'
+  | 'core_personality'
   | 'reaction_selected'
   | 'rarity_graduation'
   | 'rarity_importance'
@@ -491,6 +492,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'chosen_faction_power',
   // Emergent personality traits (THR-527)
   'personality_trait_emerged',
+  // Core personality foundation layer (THR-542)
+  'core_personality',
   // Autonomous in-encounter choice (THR-530)
   'reaction_selected',
 ];
@@ -1551,6 +1554,27 @@ export interface PersonalityTraitEmergedTrace extends TraceBase {
 }
 
 /**
+ * Trace: an event in the **Core** personality foundation layer (THR-542). One
+ * category covers all three Core mechanics, discriminated by `details.kind`:
+ *
+ *  - `seeded`    — a fresh Core baseline was drawn for an agent at birth.
+ *  - `emerge` / `fade` — a continuum crossed (or fell back inside) an emergence
+ *                  threshold (hysteresis), `details.continuumId` + `side` + `position`.
+ *  - `bend`      — under low Quintessence, the Core nudged a coupled reach axis;
+ *                  `details.reach` + `continuumId` + `nudge` + `quintessenceNorm`.
+ *  - `unknown_continuum` — fail-soft: a stored Core value referenced no known
+ *                  continuum and was skipped.
+ *
+ * The Core is character (who the agent is), kept distinct from the Quintessence
+ * scalar (how bendable they are) — see `coreRegistry.ts` canon-safe framing.
+ */
+export interface CorePersonalityTrace extends TraceBase {
+  category: 'core_personality';
+  actorId?: string;
+  details?: Record<string, unknown>;
+}
+
+/**
  * Trace: a permanent formative mark moved an agent's moral **baseline** on one axis
  * (THR-529). Unlike `drift_threshold_crossed` (a held temporary drift band), this records
  * a permanent shift to the standing `AxiologicalProfile` value. Fields capture the reach,
@@ -1576,6 +1600,7 @@ export interface AxiologicalMarkAppliedTrace extends TraceBase {
 
 export type TraceEntry =
   | PersonalityTraitEmergedTrace
+  | CorePersonalityTrace
   | AxiologicalMarkAppliedTrace
   | ActionSelectionTrace
   | NarrativeGenerationTrace

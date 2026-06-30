@@ -1160,12 +1160,26 @@ Content authoring often needs to verify "did my effect actually fire?" DebugPane
 | Complication outcomes (THR-20) | `complication_selection` |
 | Effect shell transitions (THR-53) | `effect_shell` (subkind: `flip_revealed`, `gate_transition`, `band_selected`, `duplicate_policy_applied`) |
 | Emergent personality traits (THR-527) | `personality_trait_emerged` (grant + release; `details.kind`, `details.axisId`, `details.position`) |
+| Core personality foundation (THR-542) | `core_personality` (`details.kind`: `seeded` \| `emerge` \| `fade` \| `bend`) |
 
 **How to use:** Open DebugPanel (backtick or F1), select the Trace tab, check the category filter chips. Full TypeScript interface definitions for each trace type live in `src/types/trace.ts`.
 
 ### Personality as a behavior signal (THR-527)
 
 Each mortal agent's standing moral position per axis (`axiologicalProfile`) crystallizes into a `personality`-subcategory trait once it crosses a hysteresis threshold — a "becoming" `personality_trait_emerged` event ("Kael has become Greedy"). These emergent traits carry a per-reach `scoringModifiers` payload (new optional field on `TraitDefinitionProperties`) consumed by the same scoring-bonus path as reputation traits (`computeReputationScoringBonus`), nudging the agent toward encounters in their own Reach. **For content authors:** you don't author these traits (they generate from the canonical axis registry), but you *do* feed them — encounter choices that push an agent's axis position (the drift system, THR-528) are what eventually make a personality crystallize and bias which of your encounters that agent seeks out. The `scoringModifiers` field is also available on any trait def if you want a trait to steer encounter selection by Reach without touching Domain Capability.
+
+### The Core — foundation personality layer (THR-542)
+
+Beneath the 8 reach moral axes sits a second, more fundamental layer: the **Core** — five plain virtue↔vice continuums of *who an agent fundamentally is* (`src/types/coreRegistry.ts`): `core_warmth` (Warm↔Cold), `core_hope` (Hopeful↔Bitter), `core_forgiveness` (Forgiving↔Vengeful), `core_humility` (Humble↔Proud), `core_integrity` (True↔False). Stored as `node.properties.coreProfile` on the 0–1 / 0.5-neutral scale, **kept entirely separate** from `axiologicalProfile` (reach) and `domainCapabilities` (capability) — Core ≠ reach ≠ capability.
+
+**Load-bearing canon-safe framing (do not "fix" away):** the Core and Quintessence are co-resident on the foundation layer but distinct — Quintessence = *how bendable* the agent is; the Core = *which way* they bend. They couple **directionally, not evaluatively**; goodness is never a pole of the Quintessence scalar. Never label the Core "Quintessence traits" in UI/UL.
+
+**Three mechanics** (`src/engine/core/coreMechanics.ts`, tuned by `coreConstants.ts`), driven each tick by the `core_personality` phase:
+- **seed** — every mortal agent gets a Core baseline drawn deterministically from `hash(worldSeed, agentId)` (central-limit → clustered near neutral). Emits `core_personality`/`seeded`.
+- **colour** — `colourReachExpression(core, word)` tints how a reach act *reads* (a Brave act is *courage* on a True/Humble self, *swagger* on a False/Proud one) without touching competence. Pure read for the prose layer to consume.
+- **bend** — under low normalized Quintessence, the Core nudges coupled reach axes toward a pole (`coreBendContributions`). A nudge that is *added* to reach drift, **never a cap** (the cold philanthropist stays possible). Emits `core_personality`/`bend`.
+
+**Slice status (THR-542):** this is the Engine foundation (slice 1 of 4). The Core **origin-vignette library** + emergent-trait defs (Content), the **Star re-scope** (Beacon/Wrecker), and the **character-sheet Core section** (UI) are tracked as separate deferral issues. Today seeding draws from a PRNG; the content slice will add authored Core vignette contributions. The colour read and the bend nudge are wired as mechanics + traces; their *consumption* (prose tone, reach-drift application) lands with their respective slices.
 
 ---
 
