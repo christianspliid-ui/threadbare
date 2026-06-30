@@ -275,6 +275,25 @@ The `anoint` expression card (per-graph-type verb for **factions**) + the consum
 
 ---
 
+## Emergent Personality Traits (THR-527)
+
+The "who they currently are" layer of the personality stack. A new per-tick phase reads each mortal agent's standing axis position and grants/releases a `personality`-subcategory trait at the hysteresis thresholds, firing a "becoming" beat on crystallization.
+
+| Surface | Path | Notes |
+|---|---|---|
+| **Registered phase** | `src/engine/phases/personalityTraitEmerge.ts` | `personalityTraitEmergePhase` (slot `post-economy`) + `processPersonalityTraitEmergence(state)`. Individual actors only (`actorType:'individual'`, non-deceased, not the ascendant). Reads `node.properties.axiologicalProfile[axis.valuePair]` (legacy ±1), normalizes to the canonical 0–1 axis position (`0.5 + 0.5·v`), and grants the virtue trait at ≥0.8 / vice at ≤0.2, releasing inside the `0.65`/`0.35` hysteresis band. Mutates `has_trait` edges in place via `assignTrait`/`removeTrait`; returns "becoming" `tickEvents`. |
+| Trait definitions | `src/data/personality-trait-content.ts` | 16 trait nodes (8 axes × virtue/vice), `subcategory:'personality'`, **empty `domainContributions`** (capability invariant — personality steers selection, never competence) carrying per-reach `scoringModifiers`. Generated from `CANONICAL_AXES` so pole labels/reach bindings can't drift. Exports `PERSONALITY_TRAIT_DEFINITIONS` + `PERSONALITY_TRAIT_BY_AXIS`. |
+| Behavior bias consumer | `src/engine/encounterScoring.ts` | `computeReputationScoringBonus` generalized to also read `subcategory:'personality'` traits' top-level `scoringModifiers` (alongside `reputation` traits' nested `reputationEffects.scoringModifiers`), scaled by `REPUTATION_SCORING_WEIGHT`. |
+| Schema field | `src/types/traits.ts` | `'personality'` added to `TraitCategory`; new optional `scoringModifiers?: Partial<Record<ReachDomain, number>>` on `TraitDefinitionProperties`. |
+| Player event | `src/types/gameState.ts` | `'personality_trait_emerged'` added to the `TickEvent` `type` union ("becoming" beat — `"<name> has become <Word>."`). |
+| Trace category | `src/types/trace.ts` | `'personality_trait_emerged'` registered in `TraceCategory` + `TRACE_CATEGORIES` + a typed `PersonalityTraitEmergedTrace` member of `TraceEntry` (grant + release). |
+| Constants (NFP #1) | `src/data/personality-trait-content.ts` | `PERSONALITY_TRAIT_VIRTUE_THRESHOLD` (0.8), `PERSONALITY_TRAIT_VICE_THRESHOLD` (0.2), `PERSONALITY_TRAIT_RELEASE_BAND` (0.15), derived `*_RELEASE` floors, `PERSONALITY_TRAIT_SCORING_MODIFIER` (0.15). |
+| Tests | `src/engine/phases/__tests__/personalityTraitEmerge.test.ts` (new, 10) | Grant/release at thresholds, hysteresis hold-then-release, idempotency, ascendant exclusion, missing-profile fail-soft, trace emission, opposite-pole release. Plus the `phaseRegistry.equivalence` baseline updated for the new phase. |
+
+UI note: the character-sheet personality rows ("who they were born / what marked them / who they are") are **THR-532** (later wave). This slice ships the engine + content + the "becoming" event; full sheet rendering is deferred.
+
+---
+
 ## Gameplay KPI Harness (THR-457)
 
 Pure telemetry layer: KPI report + eligibility funnel counters + debug surfaces.
@@ -498,6 +517,7 @@ Phases below ship as descriptors and are picked up automatically by `runRegister
 | `post-economy` | `delve_progression` (after `delve_admission`) | `src/engine/phases/delveProgression.ts` | `src/engine/ruins/delveVariant.ts` |
 | `post-economy` | `delve_emergence` (after `delve_progression`, reads `ctx.runtime`) | `src/engine/phases/delveEmergence.ts` | `src/engine/ruins/delveVariant.ts` |
 | `post-economy` | `pop_streams` (after `delve_emergence`) | `src/engine/phases/popStreams.ts` | `src/engine/ruins/placeOfPowerStreams.ts` |
+| `post-economy` | `personality_trait_emerge` (THR-527) | `src/engine/phases/personalityTraitEmerge.ts` | (same file — `processPersonalityTraitEmergence`) |
 | `post-narrative` | `mandate` | `src/engine/phases/mandate.ts` | `src/engine/phaseMandate.ts` |
 
 Slot anchor positions in `runTick`: `pre-doom`, `post-doom`, `post-resolution`, `post-decision`, `pre-economy`, `post-economy`, `pre-lifecycle`, `post-narrative`. See `src/engine/phaseRegistry.ts` for slot semantics.

@@ -1135,8 +1135,13 @@ Content authoring often needs to verify "did my effect actually fire?" DebugPane
 | Graph mutation & UI choice flow | `graph_op_execution`, `choice_set_player_resolved`, `choice_set_player_dismissed` |
 | Complication outcomes (THR-20) | `complication_selection` |
 | Effect shell transitions (THR-53) | `effect_shell` (subkind: `flip_revealed`, `gate_transition`, `band_selected`, `duplicate_policy_applied`) |
+| Emergent personality traits (THR-527) | `personality_trait_emerged` (grant + release; `details.kind`, `details.axisId`, `details.position`) |
 
 **How to use:** Open DebugPanel (backtick or F1), select the Trace tab, check the category filter chips. Full TypeScript interface definitions for each trace type live in `src/types/trace.ts`.
+
+### Personality as a behavior signal (THR-527)
+
+Each mortal agent's standing moral position per axis (`axiologicalProfile`) crystallizes into a `personality`-subcategory trait once it crosses a hysteresis threshold — a "becoming" `personality_trait_emerged` event ("Kael has become Greedy"). These emergent traits carry a per-reach `scoringModifiers` payload (new optional field on `TraitDefinitionProperties`) consumed by the same scoring-bonus path as reputation traits (`computeReputationScoringBonus`), nudging the agent toward encounters in their own Reach. **For content authors:** you don't author these traits (they generate from the canonical axis registry), but you *do* feed them — encounter choices that push an agent's axis position (the drift system, THR-528) are what eventually make a personality crystallize and bias which of your encounters that agent seeks out. The `scoringModifiers` field is also available on any trait def if you want a trait to steer encounter selection by Reach without touching Domain Capability.
 
 ---
 

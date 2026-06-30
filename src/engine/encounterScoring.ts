@@ -856,9 +856,12 @@ function resolveProfile(
 // ─── Reputation Scoring Bonus ──────────────────────────────────
 
 /**
- * Compute additive scoring bonus from agent's reputation traits.
- * Reads reputation traits with reputationEffects.scoringModifiers and
- * sums the modifier for the encounter's primary reach, scaled by trait level.
+ * Compute additive scoring bonus from an agent's trait scoring-modifiers, for the
+ * encounter's primary reach, scaled by trait level. Two trait families contribute:
+ *  - `reputation` traits — modifier nested under `reputationEffects.scoringModifiers`
+ *    (how the world reacts to the bearer).
+ *  - `personality` traits (THR-527) — modifier on the top-level `scoringModifiers`
+ *    field (what the agent reaches for as their personality crystallizes).
  */
 export function computeReputationScoringBonus(
   graph: WorldGraph,
@@ -873,12 +876,18 @@ export function computeReputationScoringBonus(
     if (!traitNode) continue;
 
     const props = traitNode.properties as unknown as TraitDefinitionProperties;
-    if (props.subcategory !== 'reputation') continue;
 
-    const effects = props.reputationEffects as ReputationEffects | undefined;
-    if (!effects?.scoringModifiers) continue;
+    let modifiers: Partial<Record<ReachDomain, number>> | undefined;
+    if (props.subcategory === 'reputation') {
+      modifiers = (props.reputationEffects as ReputationEffects | undefined)?.scoringModifiers;
+    } else if (props.subcategory === 'personality') {
+      modifiers = props.scoringModifiers;
+    } else {
+      continue;
+    }
+    if (!modifiers) continue;
 
-    const modifier = effects.scoringModifiers[entry.reachPrimary as ReachDomain] ?? 0;
+    const modifier = modifiers[entry.reachPrimary as ReachDomain] ?? 0;
     if (modifier === 0) continue;
 
     const level = (edge.properties as { level?: number }).level ?? 1;

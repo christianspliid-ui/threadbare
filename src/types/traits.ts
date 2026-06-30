@@ -9,7 +9,7 @@ import type { CulturalStrengthRange } from '../data/culture-content';
 import type { AttachmentEffect } from './effects';
 import type { ContentCensusTag } from './contentCensus';
 
-export type TraitCategory = 'innate' | 'mastery' | 'reputation' | 'scar' | 'condition' | 'destiny' | 'cultural' | 'bestowed';
+export type TraitCategory = 'innate' | 'mastery' | 'reputation' | 'personality' | 'scar' | 'condition' | 'destiny' | 'cultural' | 'bestowed';
 
 // ─── Reputation Trait Effects (parseable payload) ──────────────────
 
@@ -82,6 +82,13 @@ export interface TraitDefinitionProperties {
   strengthThresholds?: Partial<Record<CulturalStrengthRange, string>>; // cultural trait strength expressions
   /** Parseable reputation effects — only present on subcategory: 'reputation' traits with reach-polarity structure */
   reputationEffects?: ReputationEffects;
+  /**
+   * Per-reach additive scoring modifiers (behavior bias), consumed by the encounter
+   * scoring-bonus path. Used by `subcategory: 'personality'` emergent traits to nudge
+   * an agent toward the encounters their personality reaches for. Distinct from
+   * `domainContributions` (capability) — these only steer *selection*, never competence.
+   */
+  scoringModifiers?: Partial<Record<ReachDomain, number>>;
   /** Generic effect system payload for bestowed/condition traits and future content families. */
   effects?: AttachmentEffect[];
   /** Content Census coverage classification (THR-474 schema / THR-477 values). Metadata only. */

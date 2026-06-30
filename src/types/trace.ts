@@ -55,6 +55,7 @@ export type TraceCategory =
   | 'agent_revelation' | 'interaction_depth'
   | 'faction_ambition'
   | 'reputation_trait'
+  | 'personality_trait_emerged'
   | 'rarity_graduation'
   | 'rarity_importance'
   | 'divine_proximity_phase'
@@ -485,6 +486,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // Ascendant action primitives (THR-509) + chosen-faction consumer (THR-513)
   'ascendant_primitive',
   'chosen_faction_power',
+  // Emergent personality traits (THR-527)
+  'personality_trait_emerged',
 ];
 
 /** Base shape for all trace entries */
@@ -1531,7 +1534,19 @@ export interface ForeshadowingTrace extends TraceBase {
 }
 
 /** Discriminated union of all trace types */
+/**
+ * Trace: an emergent personality trait crystallized (grant) or dissolved (release)
+ * at the hysteresis thresholds (THR-527). `details` carries the axis id, pole word,
+ * grant/release kind, live position, and the underlying ±1 profile value.
+ */
+export interface PersonalityTraitEmergedTrace extends TraceBase {
+  category: 'personality_trait_emerged';
+  actorId?: string;
+  details?: Record<string, unknown>;
+}
+
 export type TraceEntry =
+  | PersonalityTraitEmergedTrace
   | ActionSelectionTrace
   | NarrativeGenerationTrace
   | ContextHarvestTrace

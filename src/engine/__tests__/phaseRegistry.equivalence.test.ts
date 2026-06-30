@@ -66,6 +66,9 @@ const EXPECTED_PHASE_IDS: readonly string[] = [
   'ambition_progress',
   'faction_ambitions',
   'faction_actions',
+  // Emergent personality-trait phase (THR-527): no ordering constraints, so the
+  // alphabetical tie-break places it after faction_actions, before schism_resolution.
+  'personality_trait_emerge',
   // Schism resolution runs after faction_actions so it sees same-tick dissent updates (THR-430).
   'schism_resolution',
   'secrets_favors',
@@ -99,10 +102,13 @@ function captureRegisteredPhaseSequence(seed: number): string[][] {
 
   let state = initialState;
   for (let i = 0; i < TICKS; i++) {
-    const before = getTraces().length;
+    // Clear per tick so capture is robust to trace-buffer eviction. The 2000-entry
+    // ring buffer can wrap within a 10-tick window once enough phases/agents emit
+    // traces (e.g. the THR-527 personality-emergence burst), which would otherwise
+    // silently drop early `tick_phase_profile` entries and corrupt the slice.
+    clearTraces();
     state = runTick(state);
-    const after = getTraces().length;
-    const tickProfiles = (getTraces().slice(before, after) as TraceEntry[])
+    const tickProfiles = (getTraces() as readonly TraceEntry[])
       .filter(t => t.category === 'tick_phase_profile')
       .map(t => (t as TraceEntry & { phase?: string }).phase ?? '')
       .filter(id => registeredIds.has(id));

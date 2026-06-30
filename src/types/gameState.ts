@@ -107,7 +107,9 @@ export interface TickEvent {
   // Intelligence reliability decay events (THR-137)
     | 'intelligence_decay'
   // Ruins quest hook events (THR-156)
-    | 'quest_hook_issued';
+    | 'quest_hook_issued'
+  // Emergent personality trait events (THR-527)
+    | 'personality_trait_emerged';
   message: string;
   /** Optional sphere coloring for UI */
   sphere?: SphereName;
