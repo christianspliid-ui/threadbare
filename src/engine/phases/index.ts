@@ -38,12 +38,15 @@ import { delveProgressionPhase } from './delveProgression';
 import { delveEmergencePhase } from './delveEmergence';
 import { popStreamsPhase } from './popStreams';
 import { personalityTraitEmergePhase } from './personalityTraitEmerge';
+import { autonomousAftermathPhase } from './phaseAutonomousAftermath';
 import { mandatePhase } from './mandate';
 import { factionSuccessionPhase } from './factionSuccession';
 
 export const ENGINE_PHASES: readonly EnginePhase[] = [
   // pre-doom
   doomPhase,
+  // post-resolution
+  autonomousAftermathPhase,
   // post-doom
   emittedOmenDecayPhase,
   // pre-economy

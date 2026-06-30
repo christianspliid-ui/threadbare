@@ -60,6 +60,8 @@ const EXPECTED_PHASE_IDS: readonly string[] = [
   'doom',
   // post-doom slot
   'emitted_omen_decay',
+  // post-resolution slot — autonomous in-encounter aftermath chooser (THR-530)
+  'autonomous_aftermath',
   // pre-economy slot
   'reputation_decay',
   // post-economy slot (afterPhase chain preserves inline ordering)

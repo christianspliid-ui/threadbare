@@ -989,6 +989,14 @@ export interface UnifiedAction {
   /** World-facing summary of what changed because this encounter resolved. */
   readonly aftermathSummary?: EncounterAftermathSummary;
   /**
+   * THR-530: set once the autonomous in-encounter chooser has applied this
+   * action's aftermath for a non-player, non-threaded actor. Idempotency guard
+   * so `phaseAutonomousAftermath` does not re-apply the same reaction every tick
+   * (non-hero agents receive no `encounterNotification` to mark resolved). The
+   * player/threaded path is unaffected — it resolves via notifications.
+   */
+  readonly autonomousAftermathApplied?: boolean;
+  /**
    * Per-step complication results (parallel to stepOutcomes).
    * Null entries indicate the step had no complication or was a success tier.
    * Used by the UI to display complication prose alongside step narratives. (THR-20)

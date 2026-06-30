@@ -417,6 +417,33 @@ export const PERSONALITY_SCORE_EXPONENT = 1.5;
 export const PERSONALITY_SELECTION_WEIGHT = 2.0;
 
 // ═══════════════════════════════════════════════════════════════════
+// PERSONALITY — Autonomous in-encounter choice (THR-530)
+//   reactionChooser.ts + phaseAutonomousAftermath.ts
+// ═══════════════════════════════════════════════════════════════════
+
+/** Weight applied to a reaction's profile-alignment score before argmax selection (THR-530).
+ * This is the in-encounter twin of PERSONALITY_SELECTION_WEIGHT: >0 makes non-hero agents pick the
+ * authored aftermath reaction that best matches their live moral axes ("strong & legible"). It scales
+ * every option's score equally, so it does not change the argmax ranking — its operational role is the
+ * kill-criteria lever: drive it toward 0 to collapse all scores below the signal floor and fall back to
+ * the authored reactions[0] (today's behavior), de-amplifying personality if the world reads as scripted.
+ * @range 0–3.0 (0 = personality off, fall back to reactions[0]; higher = stronger in-character bias) */
+export const PERSONALITY_REACTION_WEIGHT = 2.0;
+
+/** Unsigned temporary drift applied to the chosen reaction's dominant axis when an aligned reaction is
+ * picked (THR-530). Mirrors the player branch-choice drift (THR-528) for non-hero agents: their choices
+ * push their leanings, then decay toward baseline. Kept at the small end of the 0.05–0.20 authored band
+ * so a single autonomous choice nudges rather than redefines.
+ * @range 0.0–0.20 (0 disables reaction-driven drift entirely) */
+export const PERSONALITY_REACTION_DRIFT_DELTA = 0.05;
+
+/** Max non-hero aftermaths the autonomous phase applies per tick (THR-530). Bounds the per-tick cost of
+ * the scan-and-apply loop the same way AUTO_AFTERMATH_MAX_PICKS_PER_TICK bounds the CLI path; the
+ * remainder carry to the next tick (their actions persist until cleanup).
+ * @range 4–32 */
+export const PERSONALITY_AUTONOMOUS_AFTERMATH_MAX_PER_TICK = 12;
+
+// ═══════════════════════════════════════════════════════════════════
 // ENCOUNTER RETIREMENT — Template exhaustion + outgrowth (phaseAgentDecision.ts, encounterFilterPipeline.ts)
 // ═══════════════════════════════════════════════════════════════════
 

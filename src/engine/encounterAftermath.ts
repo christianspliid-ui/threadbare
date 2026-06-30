@@ -68,7 +68,9 @@ import {
   INTEL_REFERENCED_PROSE_SIGNIFICANCE_UNCERTAIN,
   INTEL_REFERENCED_PROSE_SIGNIFICANCE_DUBIOUS,
   INTEL_REFERENCED_PROSE_DUBIOUS_FIRES,
+  PERSONALITY_REACTION_WEIGHT,
 } from '../data/agent-behavior-constants';
+import { computeAxisLeans, chooseAlignedReaction } from './encounters/reactionChooser';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -202,12 +204,34 @@ function resolveActionFromNotification(
 }
 
 /**
+ * Pick the default reaction when no explicit `reactionId` is supplied (THR-530).
+ *
+ * Replaces the bare `reactions[0]` default with the profile-aligned chooser: the
+ * agent's live moral axes rank the authored reactions, and the best-aligned one is
+ * returned. Fail-soft — a profile-less agent, a morally-neutral agent, or reactions
+ * with no inferable moral signal all fall back to `reactions[0]` (prior behavior).
+ * `primaryReach` is left undefined here (the CLI/debug callers do not thread the
+ * encounter reach); the reach-tally signal still applies. The autonomous tick-loop
+ * phase passes the encounter reach for the fuller signal.
+ */
+function selectAutonomousDefaultReaction(
+  state: GameState,
+  agentId: string,
+  reactions: readonly EncounterAftermathReaction[],
+): EncounterAftermathReaction {
+  const leans = computeAxisLeans(state.graph, state.archetypeDrift ?? [], agentId);
+  if (!leans) return reactions[0];
+  const choice = chooseAlignedReaction(reactions, leans, undefined, PERSONALITY_REACTION_WEIGHT);
+  return choice.aligned ? choice.reaction : reactions[0];
+}
+
+/**
  * Resolve the current pending aftermath action + reaction for an agent.
  *
  * Deterministic selection rules:
  * 1) Prefer unresolved encounter notifications for the agent (actionId match first, then encounterId/templateId)
  * 2) If no notifications exist for the agent, fall back to latest candidate action by startTick
- * 3) If reactionId omitted, pick the first authored reaction in array order
+ * 3) If reactionId omitted, pick the profile-aligned reaction (THR-530), else the first authored reaction
  */
 export function resolveAftermathContextForAgent(
   state: GameState,
@@ -237,7 +261,7 @@ export function resolveAftermathContextForAgent(
       }
       return { action: fallbackAction, reaction: explicitReaction };
     }
-    return { action: fallbackAction, reaction: reactions[0] };
+    return { action: fallbackAction, reaction: selectAutonomousDefaultReaction(state, agentId, reactions) };
   }
 
   if (notificationSelectedAction === null) {
@@ -257,7 +281,7 @@ export function resolveAftermathContextForAgent(
     }
     return { action: notificationSelectedAction, reaction: explicitReaction };
   }
-  return { action: notificationSelectedAction, reaction: reactions[0] };
+  return { action: notificationSelectedAction, reaction: selectAutonomousDefaultReaction(state, agentId, reactions) };
 }
 
 // ─── World-shaping helpers ────────────────────────────────────────────────────
