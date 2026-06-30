@@ -412,6 +412,32 @@ export type EncounterAftermathReactionEffect =
     readonly narrativeHook?: string;
     readonly when?: EffectPredicate;
   }
+  // ─── Reach signature: Iron / Warhost (THR-550) ────────────────────────────
+  | {
+    /**
+     * Iron's reach-signature aftermath — a divine "Call to Arms". Mobilizes a
+     * faction for conflict: marks the faction `mobilized` and raises a force on
+     * the existing army node form (`armySpawning.raiseWarhostForce` — NOT a new
+     * node type) when a leader is available, falling back to a faction property
+     * plus a rival-sentiment shift otherwise. Force strength scales with the
+     * actor's primary-sphere power via `spherePowerMultiplier` (THR-548).
+     */
+    readonly kind: 'signature_warhost';
+    /** Faction node id to rally. */
+    readonly factionId: string;
+    /**
+     * Authored base force strength before sphere scaling. Defaults to
+     * `WARHOST_BASE_STRENGTH` when omitted — the `scaledEffect(WARHOST_BASE_STRENGTH, mult)`
+     * base from the plan.
+     */
+    readonly baseStrength?: number;
+    /**
+     * Preferred commander for the raised force. Falls back to the faction's
+     * strongest Iron member (`selectCommander`) when omitted or invalid.
+     */
+    readonly leaderAgentId?: string;
+    readonly when?: EffectPredicate;
+  }
   // ─── Thread mutation effects (THR-116) ────────────────────────────────────
   | {
     readonly kind: 'thread_strengthen';

@@ -262,7 +262,9 @@ export type TraceCategory =
   | 'ascendant_expression'
   // Ascendant action primitives (THR-509) + chosen-faction consumer (THR-513)
   | 'ascendant_primitive'
-  | 'chosen_faction_power';
+  | 'chosen_faction_power'
+  // Reach signature: Iron / Warhost (THR-550)
+  | 'ascendant.signature.warhost';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -496,6 +498,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'core_personality',
   // Autonomous in-encounter choice (THR-530)
   'reaction_selected',
+  // Reach signature: Iron / Warhost (THR-550)
+  'ascendant.signature.warhost',
 ];
 
 /** Base shape for all trace entries */
@@ -1314,7 +1318,7 @@ export interface EncounterAftermathEffectTrace extends TraceBase {
     | 'reputation_score' | 'reputation_tally' | 'clearance_gate_tag'
     | 'recent_event' | 'encounter_seed' | 'hidden_mark' | 'intelligence'
     | 'reputation_set' | 'apply_condition' | 'remove_condition' | 'condition_attachment'
-    | 'grant_aspect';
+    | 'grant_aspect' | 'signature_warhost';
   /** Kind-specific payload for inspection */
   effectDetail: Readonly<Record<string, unknown>>;
   success: boolean;

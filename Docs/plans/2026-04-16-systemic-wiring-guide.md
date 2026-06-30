@@ -208,7 +208,7 @@ The attachment and spell systems compose effects from a category pool of ~40 pri
 | `FactionManipulateEffect` | Shift relationships, transfer control, splinter, absorb, declare war, force peace |
 | `SpawnEffect` | Brings entities into existence (agents, encounters, attachments, locations) |
 
-**For encounter aftermath authoring, use the typed aftermath effect kinds in Part 5 § "Aftermath Reaction Effect Types" (20 kinds).** Raw graph-mutation primitives are not exposed to authored aftermath — propose a new typed kind if you need one.
+**For encounter aftermath authoring, use the typed aftermath effect kinds in Part 5 § "Aftermath Reaction Effect Types" (21 kinds).** Raw graph-mutation primitives are not exposed to authored aftermath — propose a new typed kind if you need one.
 
 #### Authored aftermath surface for graph mutation
 
@@ -450,7 +450,14 @@ Five effects reshape the faction graph:
 { kind: 'faction_force_peace',
   factionAId: 'faction_iron_pact', factionBId: 'faction_weavers_circle',
   sentimentFloor: 0.1 }
+
+// Iron / Warhost reach signature (THR-550): rally a faction to war
+{ kind: 'signature_warhost', factionId: 'faction_iron_pact',
+  baseStrength: 30,             // optional; defaults to WARHOST_BASE_STRENGTH
+  leaderAgentId: 'agent_kael' } // optional; else strongest Iron member
 ```
+
+**`signature_warhost`** marks the faction `mobilized` and raises a force on the *existing army node form* (`armySpawning.raiseWarhostForce` — an `actor`/`group` node with an `armyState` bag, wired by `commanded_by` / `member_of` / `located_at`; **not** a new node type). Force strength = `scaledEffect(baseStrength ?? WARHOST_BASE_STRENGTH, spherePowerMultiplier(actor primary-sphere score))` (THR-548) — a maxed-sphere god raises a bigger host. When no leader/location is available it falls back to a faction property plus a belligerent shift on the faction's rival `relates_to` sentiment. Trace: `ascendant.signature.warhost`. Fail-soft no-op on a missing/dissolved/non-faction target.
 
 **Member selection strategies** (`faction_splinter` / `faction_absorb`):
 - `all_matching_trait` — all members who have a specific trait
@@ -755,6 +762,7 @@ All encounters use `UnifiedActionTemplate` (migrated as of THR-108). `EncounterT
 | `faction_dissolve` | Mark faction dissolved; disperse members to independent or drift_to_rival | `factionId`, `memberDisposition` (`independent`/`drift_to_rival`), `rivalFactionId?` |
 | `faction_declare_war` | Create bidirectional war_sentiment edges between two factions | `factionAId`, `factionBId` |
 | `faction_force_peace` | Create bidirectional treaty edges; clamp sentiment above floor | `factionAId`, `factionBId`, `sentimentFloor?` |
+| `signature_warhost` (THR-550) | Iron / Warhost reach signature. Marks the faction `mobilized` and raises a force on the existing army node form (`raiseWarhostForce`; not a new node type); strength scales with the actor's primary-sphere power (THR-548). Falls back to a rival-sentiment shift when no leader/location is available. Fail-soft no-op on missing/dissolved/non-faction target. | `factionId`, `baseStrength?` (defaults to `WARHOST_BASE_STRENGTH`), `leaderAgentId?` |
 | `axiological_mark_apply` (THR-529) | **Permanent** formative mark — shift the actor's moral **baseline** on one reach's virtue↔vice axis. Moves the standing `AxiologicalProfile` value itself (not the decaying drift layer), clamped to ±`FORMATIVE_MARK_MAX_MAGNITUDE` and to [−1,+1]. Emits a "becoming" chronicle beat + `axiological_mark_applied` trace. **Author-gated, rare by design** — defining-moment encounters only. | `reach`, `signedMagnitude` (±, virtue +/vice −), `targetAgentId?` |
 
 **Multi-target note (THR-114):** Effects that accept `targetAgentId` / `targetFactionId` / `targetSublocationId` use priority resolution: explicit agent > explicit faction > explicit sublocation > action actor (fallback). Use `role:` prefix for participant substitution (e.g. `targetAgentId: 'role:victim'`). See `src/data/encounters/examples/` for gold-standard patterns: `example.betrayal_multi_target.ts` (hidden_mark + apply_condition on victim), `example.council_disowns.ts` (reputation_set on faction), `example.shrine_consecration.ts` (apply_condition + remove_condition on sublocation).

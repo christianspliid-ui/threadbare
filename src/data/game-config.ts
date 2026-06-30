@@ -176,6 +176,24 @@ export const FACTION_WAR_SENTIMENT_FLOOR = -0.8;
 /** Starting reputation when memberFallback='drift_to_rival' in faction_dissolve. */
 export const FACTION_DRIFT_TO_RIVAL_INITIAL_REPUTATION = 0.1;
 
+// ─── Reach signature: Iron / Warhost (THR-550) ─────────────────────────────
+/**
+ * Base warhost force strength before sphere-power scaling (NFP #1). The
+ * `signature_warhost` aftermath computes `scaledEffect(WARHOST_BASE_STRENGTH, mult)`
+ * where `mult = spherePowerMultiplier(score) ∈ [SIGNATURE_SCALE_FLOOR, SIGNATURE_SCALE_CEIL]`.
+ * Default 30 matches a warband's base quintessence (ARMY_QUINTESSENCE_BASE.warband),
+ * so a no-mastery warhost (mult 0.6) raises a weak warband and a maxed one (mult 2.0)
+ * raises a regiment-scale host.
+ */
+export const WARHOST_BASE_STRENGTH = 30;
+
+/**
+ * Sentiment delta applied to a mobilized faction's existing rival relations when no
+ * force can be raised (no valid leader/location — the fallback path). Negative =
+ * more belligerent; clamped at FACTION_WAR_SENTIMENT_FLOOR.
+ */
+export const WARHOST_FALLBACK_SENTIMENT_SHIFT = -0.15;
+
 /** Chronicle significance for faction topology effects. */
 export const FACTION_MUTATION_CHRONICLE_SIGNIFICANCE = {
   declare_war: 0.85,
