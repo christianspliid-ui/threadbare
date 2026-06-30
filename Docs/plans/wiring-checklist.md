@@ -313,6 +313,22 @@ Content note: broad in-world choice variety scales with **authored reaction pole
 
 ---
 
+## Formative-Mark Primitive (THR-529)
+
+Permanent, author-gated aftermath effect that moves an agent's moral **baseline** on one axis — the standing `AxiologicalProfile` value origin vignettes seed at birth — rather than the decaying drift layer (THR-528).
+
+| Surface | Path | Notes |
+|---|---|---|
+| Aftermath effect kind | `axiological_mark_apply` in `EncounterAftermathReactionEffect` (`src/types/unifiedAction.ts`); handled in `applyEncounterAftermathReaction` (`src/engine/encounterAftermath.ts`) | Resolves agent (defaults to actor), clamps `signedMagnitude` to ±`FORMATIVE_MARK_MAX_MAGNITUDE`, shifts `node.properties.axiologicalProfile[valuePair]` in place (inits a profile for born-neutral agents), clamps baseline to [−1,+1], `mutationSummary.touchedWorld = true`. Reach→ValuePair via `getAxisByReach`. |
+| Trace category | `src/types/trace.ts` | `'axiological_mark_applied'` registered in `TraceCategory` + `TRACE_CATEGORIES` + typed `AxiologicalMarkAppliedTrace` member of `TraceEntry` (reach, valuePair, signedMagnitude, previous/new baseline). |
+| Constant (NFP #1) | `src/data/agent-behavior-constants.ts` | `FORMATIVE_MARK_MAX_MAGNITUDE` (0.15) + `FORMATIVE_MARK_EVENT_SIGNIFICANCE` (0.75, in `encounterAftermath.ts`). |
+| UI surfacing | chronicle/event feed | "Becoming" `narrative` `TickEvent` ("A defining moment marks {name}: lastingly more {poleWord}.") appended to `recentEvents`/`tickEvents`. Rich character-sheet "mark rows" are THR-532. |
+| Content allowlist | `src/testing/contentInvariants.ts` | `'axiological_mark_apply'` added to `KNOWN_AFTERMATH_EFFECT_KINDS`. |
+| Content (starter set) | `the-executioners-commission.ts` (Iron, both poles), `the-granaries-in-the-famine-year.ts` (Gold, both poles) | One mark on the most-committed reaction per branch — rare by design. |
+| Tests | `src/engine/__tests__/encounterAftermath-axiological_mark_apply.test.ts` (new, 7) | virtue/vice shift, magnitude clamp, baseline clamp, born-neutral init, explicit target, missing-target fail-soft. |
+
+---
+
 ## Gameplay KPI Harness (THR-457)
 
 Pure telemetry layer: KPI report + eligibility funnel counters + debug surfaces.

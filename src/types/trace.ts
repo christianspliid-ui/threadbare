@@ -198,6 +198,7 @@ export type TraceCategory =
   | 'forecast_computed'
   | 'hand_filtered'
   | 'drift_threshold_crossed'
+  | 'axiological_mark_applied'
   | 'detection_threshold_crossed'
   | 'item_consumed_by_choice'
   | 'spotlight_changed'
@@ -424,6 +425,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'forecast_computed',
   'hand_filtered',
   'drift_threshold_crossed',
+  'axiological_mark_applied',
   'detection_threshold_crossed',
   'item_consumed_by_choice',
   'spotlight_changed',
@@ -1548,8 +1550,33 @@ export interface PersonalityTraitEmergedTrace extends TraceBase {
   details?: Record<string, unknown>;
 }
 
+/**
+ * Trace: a permanent formative mark moved an agent's moral **baseline** on one axis
+ * (THR-529). Unlike `drift_threshold_crossed` (a held temporary drift band), this records
+ * a permanent shift to the standing `AxiologicalProfile` value. Fields capture the reach,
+ * the legacy ValuePair key mutated, the (clamped) signed magnitude, and the before/after
+ * baseline on the ±1 axis scale.
+ */
+export interface AxiologicalMarkAppliedTrace extends TraceBase {
+  category: 'axiological_mark_applied';
+  agentId?: string;
+  /** Reach whose axis was marked (e.g. 'iron'). */
+  reach: string;
+  /** Legacy `AxiologicalProfile` ValuePair storage key mutated (e.g. 'mercy_ruthlessness'). */
+  valuePair: string;
+  /** Signed magnitude actually applied after clamping to ±FORMATIVE_MARK_MAX_MAGNITUDE. */
+  signedMagnitude: number;
+  /** Baseline before the mark, on the ±1 axis scale. */
+  previousBaseline: number;
+  /** Baseline after the mark, clamped to [−1, +1]. */
+  newBaseline: number;
+  encounterId?: string;
+  reactionId?: string;
+}
+
 export type TraceEntry =
   | PersonalityTraitEmergedTrace
+  | AxiologicalMarkAppliedTrace
   | ActionSelectionTrace
   | NarrativeGenerationTrace
   | ContextHarvestTrace

@@ -444,6 +444,21 @@ export const PERSONALITY_REACTION_DRIFT_DELTA = 0.05;
 export const PERSONALITY_AUTONOMOUS_AFTERMATH_MAX_PER_TICK = 12;
 
 // ═══════════════════════════════════════════════════════════════════
+// PERSONALITY — Formative marks (THR-529)
+//   encounterAftermath.ts case 'axiological_mark_apply'
+// ═══════════════════════════════════════════════════════════════════
+
+/** Maximum magnitude of a single formative mark — the permanent baseline shift a defining-moment
+ * encounter can apply to one moral axis (THR-529). The applied `signedMagnitude` is clamped to
+ * ±this before it moves the actor's standing `AxiologicalProfile` value (legacy ±1 axis scale).
+ * Bounds how far one authored mark can swing a baseline so a single moment can't override a lifetime
+ * of origin vignettes; layered marks still accumulate (each is clamped, the baseline is not reset).
+ * Sits at the top of the authored drift band (PERSONALITY_REACTION_DRIFT_DELTA … 0.20) because a
+ * *permanent* mark should weigh more than a single decaying choice, but still less than the full pole.
+ * @range 0.05–0.30 (higher = a defining moment reshapes the baseline more sharply) */
+export const FORMATIVE_MARK_MAX_MAGNITUDE = 0.15;
+
+// ═══════════════════════════════════════════════════════════════════
 // ENCOUNTER RETIREMENT — Template exhaustion + outgrowth (phaseAgentDecision.ts, encounterFilterPipeline.ts)
 // ═══════════════════════════════════════════════════════════════════
 

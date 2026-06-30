@@ -69,8 +69,11 @@ import {
   INTEL_REFERENCED_PROSE_SIGNIFICANCE_DUBIOUS,
   INTEL_REFERENCED_PROSE_DUBIOUS_FIRES,
   PERSONALITY_REACTION_WEIGHT,
+  FORMATIVE_MARK_MAX_MAGNITUDE,
 } from '../data/agent-behavior-constants';
 import { computeAxisLeans, chooseAlignedReaction } from './encounters/reactionChooser';
+import { getAxisByReach } from '../types/axisRegistry';
+import type { AxiologicalProfile } from '../types/agent';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -97,6 +100,10 @@ export const AUTO_AFTERMATH_MAX_PICKS_PER_TICK = 8;
 
 /** Significance for drift registration events surfaced by archetype_drift_register. */
 export const ARCHETYPE_DRIFT_REGISTER_SIGNIFICANCE = 0.6;
+
+/** Significance for the "becoming" chronicle beat emitted when a formative mark lands (THR-529).
+ * Higher than ordinary drift registration — a permanent baseline shift is a defining moment. */
+export const FORMATIVE_MARK_EVENT_SIGNIFICANCE = 0.75;
 
 export interface ResolvedAftermathContext {
   readonly action: UnifiedAction;
@@ -2528,6 +2535,90 @@ export function applyEncounterAftermathReaction(
           success: true,
           effectiveTargetId: resolvedAgentId, effectiveTargetKind: 'agent',
           summary: `archetype_drift_register[${i}]: ${resolvedAgentId} ${effect.threshold} on '${effect.axisId}' (${pole})`,
+        } as unknown as Parameters<typeof emitTrace>[0]);
+        break;
+      }
+
+      case 'axiological_mark_apply': {
+        // THR-529: a rare, permanent shift to the actor's standing moral baseline on one axis.
+        // Unlike archetype_drift_register (surfaces a held *temporary* drift band) this moves the
+        // baseline itself — the AxiologicalProfile value origin vignettes seed at birth — so the
+        // mark persists where decaying drift would relax back. Author-gated; rare by content discipline.
+        const resolvedAgentId = effect.targetAgentId
+          ?? (target.kind === 'agent' ? target.id : actorAgentId);
+        if (!resolvedAgentId) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'axiological_mark_apply',
+            effectDetail: { reach: effect.reach, signedMagnitude: effect.signedMagnitude },
+            success: false, failReason: 'no_actor_id',
+            effectiveTargetId: '', effectiveTargetKind: 'actor_fallback',
+            summary: `axiological_mark_apply[${i}] skipped: no actorId`,
+          } as unknown as Parameters<typeof emitTrace>[0]);
+          break;
+        }
+        const markNode = state.graph.getNode(resolvedAgentId);
+        if (!markNode) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'axiological_mark_apply',
+            effectDetail: { reach: effect.reach, targetId: resolvedAgentId },
+            success: false, failReason: 'target_node_missing',
+            effectiveTargetId: resolvedAgentId, effectiveTargetKind: 'agent',
+            summary: `axiological_mark_apply[${i}] skipped: target node not found (${resolvedAgentId})`,
+          } as unknown as Parameters<typeof emitTrace>[0]);
+          break;
+        }
+        const markAxis = getAxisByReach(effect.reach);
+        const markValuePair = markAxis.valuePair;
+        // Clamp the authored shift to the per-mark cap so one moment can't override a lifetime.
+        const clampedMag = Math.max(
+          -FORMATIVE_MARK_MAX_MAGNITUDE,
+          Math.min(FORMATIVE_MARK_MAX_MAGNITUDE, effect.signedMagnitude),
+        );
+        const markProfile = markNode.properties.axiologicalProfile as AxiologicalProfile | undefined;
+        const previousBaseline = markProfile?.[markValuePair] ?? 0;
+        const newBaseline = Math.max(-1, Math.min(1, previousBaseline + clampedMag));
+        // Move the baseline in place (init a profile if the agent was born neutral). Same in-place
+        // node-property mutation pattern as effectTick.tickAxiologicalDrift; touchedWorld bumps the
+        // world version so sheet/selectors recompute.
+        if (markProfile) {
+          markProfile[markValuePair] = newBaseline;
+        } else {
+          markNode.properties.axiologicalProfile = { [markValuePair]: newBaseline } as AxiologicalProfile;
+        }
+        mutationSummary.touchedWorld = true;
+
+        // "Becoming" chronicle beat — a permanent change is a defining moment, surfaced low-noise.
+        const markName = (markNode.properties?.name as string | undefined) ?? resolvedAgentId;
+        const poleWord = clampedMag >= 0 ? markAxis.virtue.word : markAxis.vice.word;
+        const markEvent: TickEvent = {
+          id: `formative_mark_${reaction.id}_${tick}_${nextRecentEvents.length}`,
+          tick,
+          type: 'narrative',
+          message: `A defining moment marks ${markName}: lastingly more ${poleWord}.`,
+          significance: FORMATIVE_MARK_EVENT_SIGNIFICANCE,
+          actorId: resolvedAgentId,
+        };
+        nextRecentEvents = appendRecentEvent(nextRecentEvents, markEvent);
+        nextTickEvents = [...nextTickEvents, markEvent];
+
+        emitTrace({
+          tick, category: 'axiological_mark_applied', agentId: resolvedAgentId,
+          reach: effect.reach, valuePair: markValuePair, signedMagnitude: clampedMag,
+          previousBaseline, newBaseline, encounterId, reactionId: reaction.id,
+          summary: `axiological_mark_applied: ${resolvedAgentId} ${markValuePair} ${clampedMag >= 0 ? '+' : ''}${clampedMag.toFixed(2)} → baseline ${newBaseline.toFixed(2)} (${poleWord})`,
+        });
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'axiological_mark_apply',
+          effectDetail: { reach: effect.reach, valuePair: markValuePair, signedMagnitude: clampedMag, previousBaseline, newBaseline, targetId: resolvedAgentId },
+          success: true,
+          effectiveTargetId: resolvedAgentId, effectiveTargetKind: 'agent',
+          summary: `axiological_mark_apply[${i}]: ${resolvedAgentId} ${markValuePair} → ${newBaseline.toFixed(2)}`,
         } as unknown as Parameters<typeof emitTrace>[0]);
         break;
       }
