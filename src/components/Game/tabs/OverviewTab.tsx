@@ -7,6 +7,15 @@ import {
 import { SectionHeading } from '../../shared/SectionHeading';
 import { Tooltip } from '../../shared/Tooltip';
 import { getSphereColor } from '../../../data/sphereIcons';
+import { CORE_CONTINUA, CORE_NEUTRAL } from '../../../types/coreRegistry';
+
+// ─── Core continuum rendering ─────────────────────────────────────
+
+/**
+ * A position within ±CORE_LEAN_EPSILON of neutral reads as "balanced" — neither
+ * pole word is emphasized. Purely visual; does not affect engine mechanics.
+ */
+const CORE_LEAN_EPSILON = 0.05;
 
 // ─── Knowledge level helpers ──────────────────────────────────────
 
@@ -20,6 +29,50 @@ const KNOWLEDGE_RANK: Record<string, number> = {
 
 function hasKnowledge(level: string, minimum: string): boolean {
   return (KNOWLEDGE_RANK[level] ?? 0) >= (KNOWLEDGE_RANK[minimum] ?? 0);
+}
+
+/**
+ * One Core continuum as a labelled track with a marker at the agent's position.
+ * Scale: virtue pole = 1.0 (left), vice pole = 0.0 (right), 0.5 neutral (centre).
+ * The leaning pole word is brightened; a near-neutral value brightens neither.
+ */
+function CoreContinuumRow({ virtue, vice, value }: { virtue: string; vice: string; value: number }) {
+  const v = Math.max(0, Math.min(1, value));
+  // Marker offset from the left edge: virtue (1.0) sits left, vice (0.0) sits right.
+  const markerLeftPct = (1 - v) * 100;
+  const leansVirtue = v > CORE_NEUTRAL + CORE_LEAN_EPSILON;
+  const leansVice = v < CORE_NEUTRAL - CORE_LEAN_EPSILON;
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between text-xs">
+        <span style={{ color: leansVirtue ? 'var(--accent-gold)' : 'var(--text-tertiary)' }}>
+          {virtue}
+        </span>
+        <span style={{ color: leansVice ? 'var(--accent-gold)' : 'var(--text-tertiary)' }}>
+          {vice}
+        </span>
+      </div>
+      <div className="relative h-1.5 rounded-full" style={{ backgroundColor: 'var(--border-subtle)' }}>
+        {/* Neutral centre reference tick */}
+        <div
+          className="absolute top-0 bottom-0"
+          style={{ left: '50%', width: '1px', backgroundColor: 'var(--text-tertiary)', opacity: 0.4 }}
+        />
+        {/* Position marker */}
+        <div
+          className="absolute rounded-full"
+          style={{
+            top: '50%',
+            left: `${markerLeftPct}%`,
+            width: '8px',
+            height: '8px',
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: 'var(--accent-gold)',
+          }}
+        />
+      </div>
+    </div>
+  );
 }
 
 // ─── Component ───────────────────────────────────────────────────
@@ -138,6 +191,28 @@ export function OverviewTab({ card, profile: _profile, knowledge }: OverviewTabP
                 </span>
               </div>
             )}
+          </div>
+        </section>
+      )}
+
+      {/* Core — the 5 foundation continuums (who they fundamentally are).
+          Sits above Nature/reach so the layering reads bedrock → expression.
+          Gated at intimate+ (card.coreProfile is only populated then). */}
+      {card.coreProfile && (
+        <section>
+          <SectionHeading as="h2">Core</SectionHeading>
+          <p className="text-xs italic mb-2" style={{ color: 'var(--text-tertiary)' }}>
+            Who {card.name} fundamentally is — beneath how they act.
+          </p>
+          <div className="space-y-2">
+            {CORE_CONTINUA.map((c) => (
+              <CoreContinuumRow
+                key={c.continuumId}
+                virtue={c.virtue.word}
+                vice={c.vice.word}
+                value={card.coreProfile![c.continuumId] ?? CORE_NEUTRAL}
+              />
+            ))}
           </div>
         </section>
       )}

@@ -10,6 +10,7 @@
 
 import type { WorldGraph } from './graph';
 import type { AxiologicalProfile, ValuePair } from '../types/agent';
+import type { CoreProfile } from '../types/coreRegistry';
 import { getAgentAttachments, type AttachmentSummary, type AttachmentFullEntry } from './agentAttachments';
 import type { ReachDomain, TraitDefinitionProperties, TraitAssignmentProperties } from '../types/traits';
 import type { InfluenceTier } from '../types/influence';
@@ -265,6 +266,13 @@ export interface AgentInfoCardData {
   activeEffects?: ActiveEffect[];
   /** Axiological profile — only populated at intimate+ knowledge (for archetype epithet) */
   axiologicalProfile?: AxiologicalProfile;
+  /**
+   * Core personality profile (the 5 foundation continuums) — only populated at
+   * intimate+ knowledge, same gate as `axiologicalProfile`. Read from
+   * `node.properties.coreProfile` (THR-542 slice 1). Partial: absent continuums
+   * read as neutral (0.5). Drives the character-sheet Core section.
+   */
+  coreProfile?: CoreProfile;
   /** Rarity tier for this agent (1–4). Populated from node.properties.rarityTier. */
   rarityTier?: number;
 }
@@ -856,6 +864,12 @@ export function getAgentInfoCard(
     const axioProfile = (agentNode.properties as Record<string, unknown>).axiologicalProfile as AxiologicalProfile | undefined;
     if (axioProfile) {
       card.axiologicalProfile = axioProfile;
+    }
+
+    // Expose Core profile for the character-sheet Core section (intimate+)
+    const coreProfile = (agentNode.properties as Record<string, unknown>).coreProfile as CoreProfile | undefined;
+    if (coreProfile) {
+      card.coreProfile = coreProfile;
     }
   }
 
