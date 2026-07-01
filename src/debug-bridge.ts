@@ -1039,5 +1039,27 @@ if (import.meta.env.DEV) {
           complicationId: (t as Record<string, unknown>).complicationId,
         }));
     },
+
+    // THR-490: prose-quality audit over the static authored-content library.
+    // Pure + deterministic — no GameState, no runtime. Mirrors the DebugPanel
+    // "Prose QA" tab so the same report is scriptable from preview_eval / CLI.
+    proseQualityReport: async () => {
+      const [{ collectAuthoredProse }, { scoreProseBatch }] = await Promise.all([
+        import('./engine/content-eval/collectAuthoredProse'),
+        import('./engine/content-eval/proseQualityScore'),
+      ]);
+      return scoreProseBatch(collectAuthoredProse());
+    },
+    scoreProseEntry: async (entryId: string) => {
+      const [{ collectAuthoredProse }, { scoreProseEntry: scoreOne }] = await Promise.all([
+        import('./engine/content-eval/collectAuthoredProse'),
+        import('./engine/content-eval/proseQualityScore'),
+      ]);
+      const corpus = collectAuthoredProse();
+      const match = corpus.find((e) => e.entryId === entryId)
+        ?? corpus.find((e) => e.entryId.toLowerCase().includes(entryId.toLowerCase()));
+      if (!match) return { error: `no authored entry matching "${entryId}"` };
+      return scoreOne(match);
+    },
   };
 }

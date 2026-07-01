@@ -533,6 +533,14 @@ export interface DebugBridge {
   /** THR-554 — grant a reach signature's unlock + materialize a minimal on-map footprint (engine-backed reaches only). */
   fireSignature: (reach: string) => Promise<DebugFireSignatureResult>;
 
+  /** THR-490 — Prose-quality audit over the static authored-content library.
+   *  Returns the full batch report ({ entries, summary, bottomTail, marqueeEntries }).
+   *  Pure + deterministic; independent of any live session. */
+  proseQualityReport: () => Promise<import('./engine/content-eval/proseQualityScore').ProseQualityBatchResult>;
+  /** THR-490 — Score a single authored entry by exact id or partial-id match.
+   *  Returns the entry's ProseQualityResult, or { error } if no entry matches. */
+  scoreProseEntry: (entryId: string) => Promise<import('./engine/content-eval/proseQualityScore').ProseQualityResult | { error: string }>;
+
   /** THR-430 — Schism inspection: list pending schisms in the live game state. */
   schism: {
     list: () => ReadonlyArray<{

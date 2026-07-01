@@ -134,6 +134,11 @@ window.__DEBUG.setFog(false)              // explicitly disable fog
 // Encounter log export (returns TSV strings):
 const summary = await window.__DEBUG.getEncounterLogAll()   // { trackedAgentCount, totalEvents, agentIds }
 const logs = await window.__DEBUG.exportEncounterLogAll()    // { allAgentsTsv, perAgent: [{ tsv, filename }] }
+
+// Prose-quality audit over the static authored-content library (THR-490).
+// Pure + deterministic; independent of any live session. Mirrors the DebugPanel "Prose QA" tab.
+const report = await window.__DEBUG.proseQualityReport()     // { entries, summary{total,pass,warn,fail,error}, bottomTail, marqueeEntries }
+const one = await window.__DEBUG.scoreProseEntry('divine.coincidence')  // ProseQualityResult, or { error } if no id match (exact or partial)
 ```
 
 See `src/debug-bridge.ts` for the full API and `src/debug-bridge.d.ts` for types.
