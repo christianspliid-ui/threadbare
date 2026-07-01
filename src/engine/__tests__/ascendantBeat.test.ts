@@ -9,7 +9,10 @@ import {
   resolvePendingBeat,
   forceOfferBeatById,
   bindBeatSubject,
+  resolveReachSignatureGrant,
+  isBeatEligible,
 } from '../ascendantBeat';
+import type { ReachDomain } from '../../types/traits';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { ALL_DELIVERY_BEATS } from '../deliveryBeatAdapter';
 import { ASCENDANT_SPINE } from '../../data/ascendant-beat-content';
@@ -523,5 +526,132 @@ describe('TRACE_CATEGORIES registration (THR-500)', () => {
     ]) {
       expect(TRACE_CATEGORIES).toContain(cat);
     }
+  });
+});
+
+describe('reach-signature acquisition beats (THR-523)', () => {
+  beforeEach(() => {
+    clearTraces();
+    enableTracing();
+  });
+  afterEach(() => {
+    clearTraces();
+    disableTracing();
+  });
+
+  function graphWithAscendant(affinities: Partial<Record<ReachDomain, number>>): WorldGraph {
+    const g = new WorldGraph();
+    g.addNode({
+      id: 'asc-1',
+      type: 'actor',
+      name: 'God',
+      properties: { actorType: 'ascendant', domainAffinities: affinities },
+    });
+    return g;
+  }
+
+  /** Build a GameState with `beatId` pending, an ascendant carrying `affinities`, + an unlock set. */
+  function pendingWithAscendant(
+    beatId: string,
+    affinities: Partial<Record<ReachDomain, number>>,
+    unlocked: readonly string[] = [],
+    tick = 8,
+  ): GameState {
+    const graph = graphWithAscendant(affinities);
+    const offered = forceOfferBeatById(
+      createInitialAscendantBeatState(), beatId, tick,
+      directorState(tick, createInitialAscendantBeatState(), graph),
+    )!.next;
+    const s = directorState(tick, offered, graph);
+    (s as { unlockedActionIds?: readonly string[] }).unlockedActionIds = unlocked;
+    return s;
+  }
+
+  describe('resolveReachSignatureGrant — per-run primary/secondary ranking', () => {
+    it('picks the highest-affinity reach signature for primary, second-highest for secondary', () => {
+      const state = directorState(8, undefined, graphWithAscendant({ iron: 5, gold: 3, stone: 2 }));
+      expect(resolveReachSignatureGrant(state, 'primary')).toBe('invest.iron.warhost');
+      expect(resolveReachSignatureGrant(state, 'secondary')).toBe('invest.gold.patronage_network');
+    });
+
+    it('breaks affinity ties deterministically by REACH_DOMAINS order', () => {
+      // iron precedes gold in REACH_DOMAINS, so equal affinity → iron primary, gold secondary.
+      const state = directorState(8, undefined, graphWithAscendant({ gold: 3, iron: 3 }));
+      expect(resolveReachSignatureGrant(state, 'primary')).toBe('invest.iron.warhost');
+      expect(resolveReachSignatureGrant(state, 'secondary')).toBe('invest.gold.patronage_network');
+    });
+
+    it('fail-soft: a single-domain ascendant has no secondary; no ascendant → null', () => {
+      const single = directorState(8, undefined, graphWithAscendant({ veil: 4 }));
+      expect(resolveReachSignatureGrant(single, 'primary')).toBe('invest.veil.rend_the_gate');
+      expect(resolveReachSignatureGrant(single, 'secondary')).toBeNull();
+      // No ascendant node in the graph → both slots null.
+      const none = directorState(8, undefined, new WorldGraph());
+      expect(resolveReachSignatureGrant(none, 'primary')).toBeNull();
+    });
+  });
+
+  describe('resolvePendingBeat — dynamic signature grant', () => {
+    it('Beat 4 grants the chosen god-path AND the primary-reach signature', () => {
+      const state = pendingWithAscendant('beat.spine.a_path_opens', { veil: 5, heart: 3 });
+      const result = resolvePendingBeat(state, { chosenActionId: 'divine.dream' });
+      expect(result.resolved).toBe(true);
+      // Both the selected god-path and the run's primary (veil) signature land.
+      expect(result.grantedActionIds).toEqual(
+        expect.arrayContaining(['divine.dream', 'invest.veil.rend_the_gate']),
+      );
+      expect(result.state.unlockedActionIds).toEqual(
+        expect.arrayContaining(['divine.dream', 'invest.veil.rend_the_gate']),
+      );
+      // The un-chosen god-paths and the secondary signature are NOT granted here.
+      expect(result.state.unlockedActionIds).not.toContain('divine.omen');
+      expect(result.state.unlockedActionIds).not.toContain('invest.heart.sworn_oath');
+    });
+
+    it('the reach-signature pool beat grants the secondary-reach signature', () => {
+      const state = pendingWithAscendant('beat.pool.invest.reach_signature', { veil: 5, heart: 3 });
+      const result = resolvePendingBeat(state);
+      expect(result.resolved).toBe(true);
+      expect(result.state.unlockedActionIds).toContain('invest.heart.sworn_oath');
+      expect(result.state.unlockedActionIds).not.toContain('invest.veil.rend_the_gate');
+    });
+
+    it('fail-soft: no signature grant when the ascendant has no reach for the slot', () => {
+      // Single-domain ascendant → no secondary; the pool beat resolves as a clean no-op grant.
+      const state = pendingWithAscendant('beat.pool.invest.reach_signature', { veil: 5 });
+      const result = resolvePendingBeat(state);
+      expect(result.resolved).toBe(true);
+      expect(result.state.unlockedActionIds ?? []).not.toContain('invest.veil.rend_the_gate');
+    });
+  });
+
+  describe('isBeatEligible — unacquired_reach_signature predicate', () => {
+    const beat: BeatDefinition = {
+      beatId: 'beat.pool.invest.reach_signature',
+      kind: 'investment',
+      trigger: { kind: 'cadence' },
+      eligibility: { kind: 'unacquired_reach_signature' },
+      grantsReachSignature: 'secondary',
+    };
+
+    it('is eligible while any in-domain signature is unlearned, retires once all are', () => {
+      const graph = graphWithAscendant({ iron: 5, gold: 3 });
+      const none = directorState(30, undefined, graph);
+      expect(isBeatEligible(beat, none)).toBe(true);
+
+      const one = directorState(30, undefined, graph);
+      (one as { unlockedActionIds?: readonly string[] }).unlockedActionIds = ['invest.iron.warhost'];
+      expect(isBeatEligible(beat, one)).toBe(true); // gold still unlearned
+
+      const both = directorState(30, undefined, graph);
+      (both as { unlockedActionIds?: readonly string[] }).unlockedActionIds = [
+        'invest.iron.warhost', 'invest.gold.patronage_network',
+      ];
+      expect(isBeatEligible(beat, both)).toBe(false);
+    });
+
+    it('fail-soft: ineligible when there is no ascendant to acquire for', () => {
+      expect(isBeatEligible(beat, directorState(30, undefined, new WorldGraph()))).toBe(false);
+    });
   });
 });

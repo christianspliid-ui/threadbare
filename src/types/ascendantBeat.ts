@@ -52,11 +52,16 @@ export interface BeatTrigger {
  *                           introduction beats).
  * - `unthreaded_target`   — a notable actor/location the god has not yet threaded
  *                           exists (more threadable nodes than ascendant `thread` edges).
+ * - `unacquired_reach_signature` — the ascendant holds an in-domain reach whose reach
+ *                           signature is not yet unlocked (THR-523). Gates the secondary
+ *                           signature acquisition beat so it stops offering once every
+ *                           in-domain signature has been learned.
  */
 export type BeatEligibility =
   | { readonly kind: 'always' }
   | { readonly kind: 'unintroduced_group' }
-  | { readonly kind: 'unthreaded_target' };
+  | { readonly kind: 'unthreaded_target' }
+  | { readonly kind: 'unacquired_reach_signature' };
 
 /**
  * Identity-bias descriptor (THR-516, plan §3.2). Declares the reach and/or sphere a
@@ -118,6 +123,16 @@ export interface BeatDefinition {
    *  promised graph state (throne / artifact) rather than waiting on a fired card.
    *  Omitted = the beat only grants action cards (the THR-517 resolve contract). */
   readonly seedsGraph?: BeatGraphSeed;
+  /**
+   * Dynamic reach-signature grant (THR-523). When set, beat resolution *also* unlocks the
+   * ascendant's reach signature for its `'primary'` or `'secondary'` reach — resolved
+   * per-run from the ascendant's ranked domain affinities, because *which* of the eight
+   * `invest.<reach>.<name>` signatures is "primary" depends on the run (the two-domain
+   * lock fixes the reaches, but the catalogue is static). Orthogonal to `grantsActionIds`:
+   * a `selection` beat can carry a god-path choice *and* unconditionally grant a reach
+   * signature. Applied by `resolvePendingBeat`; resolves to a no-op (fail-soft) when the
+   * ascendant has no reach for the requested slot. Omitted = no signature grant. */
+  readonly grantsReachSignature?: 'primary' | 'secondary';
 }
 
 export interface PendingBeat {
