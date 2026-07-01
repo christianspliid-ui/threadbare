@@ -20,6 +20,7 @@ import type { AttachmentEffect } from '../types/effects';
 import { SPHERE_EFFECT_TABLE } from '../engine/ascendantPrimitives';
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import type { TargetCategory } from '../types/targetContext';
+import { GREAT_WORK_ARTIFACT_TIER } from './game-config';
 
 // ─── Sphere-Power Scaling (NFP #1: Tunability) ────────────────────
 
@@ -103,6 +104,15 @@ export type SignatureMatrix = Record<ReachDomain, Partial<Record<CreationSphereN
  */
 export const SIGNATURE_DEFAULT_BASE_VALUE = 3;
 
+/**
+ * Reach-base passive value for a bespoke (reach × primary-sphere) signature cell
+ * (NFP #1). Higher than {@link SIGNATURE_DEFAULT_BASE_VALUE}: the headline
+ * intersection of a reach with its own Creation Sphere is the ascendant's most
+ * individual cell (the "bespoke veneer", THR-555), so it hits harder than a
+ * composed default. Bespoke cells are exempt from the default's floor assertion.
+ */
+export const SIGNATURE_BESPOKE_BASE_VALUE = 5;
+
 /** Per-reach default name stem, prose stem, and characteristic trigger phrase. */
 interface ReachSignatureDefault {
   /** Name stem; the sphere is appended ("{stem} of {Sphere}"). */
@@ -162,9 +172,66 @@ export const REACH_SIGNATURE_DEFAULTS: Record<ReachDomain, ReachSignatureDefault
   },
 };
 
-/** Empty authored matrix — all reaches present, no bespoke cells yet (skeleton). */
+/**
+ * Authored matrix. All reaches present; the three engine-backed signatures
+ * (THR-555) carry a bespoke cell at their reach × *primary* Creation Sphere —
+ * the highest-value intersection under the two-domain lock (REACH_TO_SPHERE:
+ * iron→force, veil→mind, stone→matter). Every other cell falls back to
+ * {@link composeDefaultSignature}. The bespoke twist is the individualization
+ * bar: an authored trigger + a richer reach base ({@link SIGNATURE_BESPOKE_BASE_VALUE})
+ * layered with the sphere-flavored passive, plus a distinct name + prose key.
+ */
 export const SIGNATURE_MATRIX: SignatureMatrix = {
-  iron: {}, gold: {}, shadow: {}, veil: {}, heart: {}, eye: {}, stone: {}, star: {},
+  iron: {
+    // The muster that answers before the banner is even raised — force made loyal.
+    force: {
+      twist: {
+        id: 'signature.iron.force',
+        trigger: 'when the host first takes the field, or a rival banner rises against it',
+        payload: [
+          { type: 'passive', reach: 'iron', value: SIGNATURE_BESPOKE_BASE_VALUE },
+          ...(SPHERE_EFFECT_TABLE.force ?? []),
+        ],
+      },
+      nameFragment: 'Warhost of the Unbroken Line',
+      proseKey: 'signature.iron.force',
+    },
+  },
+  gold: {},
+  shadow: {},
+  veil: {
+    // The gate torn onto thought itself — every secret on the far side laid bare.
+    mind: {
+      twist: {
+        id: 'signature.veil.mind',
+        trigger: 'while the rift stands open over a place of learning, memory, or secrets',
+        payload: [
+          { type: 'passive', reach: 'veil', value: SIGNATURE_BESPOKE_BASE_VALUE },
+          ...(SPHERE_EFFECT_TABLE.mind ?? []),
+        ],
+      },
+      nameFragment: 'The Unshuttered Gate',
+      proseKey: 'signature.veil.mind',
+    },
+  },
+  heart: {},
+  eye: {},
+  stone: {
+    // A work of matter so true it forgets how to fall — the forge that outlasts the age.
+    matter: {
+      twist: {
+        id: 'signature.stone.matter',
+        trigger: 'when the Great Work is raised, and again each age it stands unbroken',
+        payload: [
+          { type: 'passive', reach: 'stone', value: SIGNATURE_BESPOKE_BASE_VALUE },
+          ...(SPHERE_EFFECT_TABLE.matter ?? []),
+        ],
+      },
+      nameFragment: 'The Imperishable Forge',
+      proseKey: 'signature.stone.matter',
+    },
+  },
+  star: {},
 };
 
 /** Title-case a lowercase sphere name for display ("force" → "Force"). */
@@ -298,6 +365,36 @@ export const SWORN_OATH_LOYALTY_PER_TICK = 0.02;
 // 'sublocation' | 'hex' | 'artifact' | 'artifact_legendary' | 'resource'), so a
 // faction-targeting template casts, matching the shipped `action.anoint` idiom.
 const FACTION_TARGET = ['faction'] as unknown as readonly TargetCategory[];
+
+// ─── Engine-backed signatures (THR-555): sentinels + constants ────────────────
+//
+// The three engine-backed reach signatures (Iron / Warhost, Veil / Rend the
+// Gate, Stone / The Great Work) consume the aftermath effect kinds shipped by
+// THR-550/551/552 (`signature_warhost`, `sphere_influence_amplify`,
+// `spawn_unique_location`). Those resolvers read a literal id off the effect, so
+// a static template declares a sentinel here and the aftermath dispatch binds it
+// to the card's resolved target at fire time (`bindReachSignatureTargets` in
+// `encounterAftermath.ts`) — mirroring the shipped `$target` idiom the step-level
+// imbue / anoint ops already use. Kept in the content layer (not the engine) so
+// `encounterAftermath.ts` → here is a one-way import, no cycle.
+
+/** Bind an effect's target-id field to the card's resolved `action.targetId`. */
+export const AFTERMATH_TARGET_SENTINEL = '$target';
+
+/**
+ * Bind a rift's amplified sphere to the *caster's* primary Creation Sphere. A
+ * static Veil template cannot know which sphere the ascendant leads with, but the
+ * rift is meant to amplify the ascendant's own primary (§ effect doc: "set to the
+ * ascendant's primary Creation Sphere, so individualization is intrinsic").
+ */
+export const AFTERMATH_PRIMARY_SPHERE_SENTINEL = '$primary';
+
+/**
+ * Run-unique tag for the Stone / Great Work location (NFP #1). One location
+ * carrying this tag exists per run — the `spawn_unique_location` resolver dedups
+ * on it, so a second cast is a no-op. A single tag ⇒ one Great Work per game.
+ */
+export const GREAT_WORK_UNIQUE_TAG = 'ascendant.great_work';
 
 export const REACH_SIGNATURE_CONTENT_TEMPLATES: UnifiedActionTemplate[] = [
   // ─── Gold — Patronage Network ───────────────────────────────────────────────
@@ -629,6 +726,211 @@ export const REACH_SIGNATURE_CONTENT_TEMPLATES: UnifiedActionTemplate[] = [
       initiation: 'lays a binding oath upon this place and all who keep faith within it',
       success: 'the oath is sworn — a devoted inner circle begins to take shape around the ground',
       failure: 'the word will not bind; the oath falls silent',
+    },
+  },
+  // ─── Iron — Warhost (engine-backed, THR-555) ────────────────────────────────
+  // Consumes the shipped `signature_warhost` aftermath effect (THR-550): mobilize
+  // the target faction and raise a force on the army node form, strength
+  // sphere-scaled (THR-548) inside the resolver. The step also anoints the faction
+  // a chosen banner (the shipped `anoint_faction` op → `chosen_status_grant`
+  // primitive, THR-509/513), so the muster rallies under the ascendant's mark.
+  {
+    id: 'invest.iron.warhost',
+    name: 'Warhost',
+    spellName: 'The Call to Arms',
+    rarityTier: 3,
+    intrinsicTier: 'story_beat',
+    description:
+      'You reach into a faction\'s marrow and wake the old hunger for war. Banners you never sewed ' +
+      'rise in your name; blades you never forged are drawn toward a cause suddenly, terribly clear. ' +
+      'An army musters where a moment ago there was only a people — and it musters for you.',
+    reach: 'iron',
+    requiresReach: 'iron',
+    trayTier: 'rare',
+    crudType: 'update',
+    scale: 'regional',
+    steps: [{
+      reach: 'iron',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      // Mark the faction a chosen banner (shipped anoint_faction → chosen_status_grant).
+      onSuccess: [{ op: 'anoint_faction', nodeId: '$target' }],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: SIGNATURE_BASE_COST.iron,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'force',
+    targetCategories: FACTION_TARGET,
+    motivations: ['mercy_ruthlessness', 'loyalty_ambition'],
+    narrativeTemplates: {
+      initiation: 'wakes the old hunger for war in the faction\'s marrow',
+      success: 'the muster answers — an army rises under your banner',
+      failure: 'the call goes unanswered; no host gathers to your name',
+    },
+    aftermathConfig: {
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'The faction is roused. Somewhere a horn sounds that no living hand lifted, and the first ' +
+          'of the host begins to gather beneath your mark.',
+        changes: [],
+        reactionPrompt: 'The people are willing. Decide what you make of them.',
+        reactions: [
+          {
+            id: 'warhost_muster',
+            label: 'Sound the muster.',
+            intent:
+              'Raise the faction as a warhost — mobilize it for conflict and gather a force under a ' +
+              'chosen commander, its strength swelling with the reach you pour into it.',
+            effects: [
+              { kind: 'signature_warhost' as const, factionId: AFTERMATH_TARGET_SENTINEL },
+            ],
+          },
+        ],
+      },
+    },
+  },
+  // ─── Veil — Rend the Gate (engine-backed, THR-555) ──────────────────────────
+  // Consumes the shipped `sphere_influence_amplify` aftermath effect (THR-551): a
+  // sustained rift at the target location amplifying the ascendant's *primary*
+  // Creation Sphere each tick (bound at fire time via $primary), with a seeded
+  // chaos-pulse downside. Magnitude, cost, and leak chance all sphere-scale
+  // (THR-548) inside the resolver; it resolves into a ControlEffect ticked by
+  // phaseControlEffects.
+  {
+    id: 'invest.veil.rend_the_gate',
+    name: 'Rend the Gate',
+    spellName: 'The Opened Way',
+    rarityTier: 3,
+    intrinsicTier: 'story_beat',
+    description:
+      'You set your hands to the seam between what is and what waits behind it, and you pull. The ' +
+      'world tears. Through the wound your own sphere comes flooding into the land — a standing tide ' +
+      'of power you have opened, and must now hold against whatever else the tear lets slip through.',
+    reach: 'veil',
+    requiresReach: 'veil',
+    trayTier: 'rare',
+    crudType: 'update',
+    scale: 'regional',
+    steps: [{
+      reach: 'veil',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: SIGNATURE_BASE_COST.veil,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'mind',
+    targetCategories: ['location'],
+    motivations: ['tradition_novelty', 'sacrifice_survival'],
+    narrativeTemplates: {
+      initiation: 'sets its hands to the seam of the world and pulls it wide',
+      success: 'the gate is rent — your sphere floods the land through the wound',
+      failure: 'the seam holds; the world will not tear at your touch',
+    },
+    aftermathConfig: {
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'The tear hangs open in the air, and through it the sphere you command pours into the land. ' +
+          'It will hold as long as you feed it — and leak as long as it holds.',
+        changes: [],
+        reactionPrompt: 'The way is open. Decide whether to hold it wide.',
+        reactions: [
+          {
+            id: 'rend_the_gate_open',
+            label: 'Hold the rift open.',
+            intent:
+              'Sustain the rift — each tick it strengthens your sphere across the surrounding land, ' +
+              'at a standing essence cost and the risk of a hostile pulse leaking through.',
+            effects: [
+              {
+                kind: 'sphere_influence_amplify' as const,
+                locationId: AFTERMATH_TARGET_SENTINEL,
+                sphere: AFTERMATH_PRIMARY_SPHERE_SENTINEL as unknown as CreationSphereName,
+                durationMode: 'sustained' as const,
+              },
+            ],
+          },
+        ],
+      },
+    },
+  },
+  // ─── Stone — The Great Work (engine-backed, THR-555) ────────────────────────
+  // Consumes the shipped `spawn_unique_location` aftermath effect (THR-552): mint a
+  // one-of-a-kind master forge at the target location's hex (dedup by
+  // GREAT_WORK_UNIQUE_TAG — one per run), and forge a legendary relic inside it by
+  // reusing the spawn_artifact legendary path (artifactForgeTier). NOT a new node
+  // type — a `location` flagged unique + a `controls` edge from the ascendant.
+  {
+    id: 'invest.stone.great_work',
+    name: 'The Great Work',
+    spellName: 'The Deep Foundation',
+    rarityTier: 3,
+    intrinsicTier: 'story_beat',
+    description:
+      'You lay a foundation the age itself will not outlive. Stone answers stone; the land gives up ' +
+      'its deep bones to your design, and a work rises that mortals will name a wonder and ascribe to ' +
+      'no god — the last and greatest of your makings, and cradled within it, a relic to match.',
+    reach: 'stone',
+    requiresReach: 'stone',
+    trayTier: 'rare',
+    crudType: 'create',
+    scale: 'regional',
+    steps: [{
+      reach: 'stone',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: SIGNATURE_BASE_COST.stone,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'matter',
+    targetCategories: ['location'],
+    motivations: ['preservation_transformation', 'loyalty_ambition'],
+    narrativeTemplates: {
+      initiation: 'lays a foundation the age itself will not outlive',
+      success: 'the Great Work rises — a wonder of stone that will outlast its makers',
+      failure: 'the foundation will not take; the land keeps its deep bones',
+    },
+    aftermathConfig: {
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'The ground is ready and the design is set. What rises here will stand when the names of ' +
+          'everyone who saw it built are long forgotten.',
+        changes: [],
+        reactionPrompt: 'The site is prepared. Decide what you raise upon it.',
+        reactions: [
+          {
+            id: 'great_work_raise',
+            label: 'Raise the Great Work.',
+            intent:
+              'Mint an enduring master forge at this place — one of a kind for the whole run — and ' +
+              'forge within it a legendary relic bound to your hand.',
+            effects: [
+              {
+                kind: 'spawn_unique_location' as const,
+                subtype: 'master_forge',
+                uniqueTag: GREAT_WORK_UNIQUE_TAG,
+                nearAgentId: AFTERMATH_TARGET_SENTINEL,
+                artifactForgeTier: GREAT_WORK_ARTIFACT_TIER,
+              },
+            ],
+          },
+        ],
+      },
     },
   },
 ];
