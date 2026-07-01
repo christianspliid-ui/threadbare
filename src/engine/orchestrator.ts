@@ -152,7 +152,7 @@ import { ANOMALY_RESOURCE_MAP, RESOURCE_DEFINITIONS } from '../data/resource-con
 import type { ResourceInstance } from '../types/resource';
 import { createEncounterEventNode } from './encounterEventNode';
 import type { SimulationRuntime } from './simulationRuntime';
-import { isBranchingTemplate } from './kpi/gameplayKpi';
+import { isBranchingTemplate, isRichTemplate } from './kpi/gameplayKpi';
 import { accumulateImportance, checkGraduationThreshold, graduateRarity, getImportanceDelta, getRarityTier } from './rarity';
 import {
   DIVINE_PROXIMITY_RADIUS_HEXES,
@@ -2602,6 +2602,8 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
         // transition — BEFORE the prune below drops it. The KPI rate reads this lifetime
         // counter instead of the pruned snapshot, which otherwise undercounts long runs.
         if (runtime && isBranchingTemplate(a.templateId)) runtime.branchingFiresTotal++;
+        // THR-541: same pattern for threaded beats (rich = multi-step or branching).
+        if (runtime && isRichTemplate(a.templateId)) runtime.threadedBeatsTotal++;
         return { ...a, completedAtTick: s.tick };
       }
       return a;
