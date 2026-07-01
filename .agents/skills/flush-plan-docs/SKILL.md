@@ -142,6 +142,11 @@ stop after the commit:
    So scrubbing the body is the *only* effective defense; a single leaked `Closes <url>` line
    re-closed an unimplemented issue via this exact vector (THR-534, PR #428 → THR-525). The title
    must keep the literal `docs(plan): batch flush` prefix — the guard (`isDocsFlushContext`) relies on it.
+   **Backstop (THR-535):** a *blocking* CI check (`.github/workflows/flush-close-guard.yml`,
+   `evaluateFlushCloseGuard` in `scripts/linearAutoclose.mjs`) fails any flush-pattern PR whose
+   title/body/commits carry `Closes|Fixes|Resolves THR-NNN` **or** a `Closes <linear-url>` form —
+   so a leaked keyword can no longer reach `main` even if this scrub step drifts again. If your
+   flush PR fails that check, remove the keyword and push/edit; the check re-runs on `edited`.
    Do not add `--label docs-only` — do not create labels from this skill, and omit the
    flag if the label does not exist in the repo. Capture the PR URL from the output.
 

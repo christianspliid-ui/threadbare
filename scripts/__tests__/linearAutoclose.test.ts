@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  evaluateFlushCloseGuard,
   extractCloseableIssueIds,
+  extractNativeCloseableIssueIds,
   isDocsFlushContext,
 } from "../linearAutoclose.mjs";
 
@@ -83,5 +85,112 @@ describe("isDocsFlushContext", () => {
   it("returns false for empty context", () => {
     expect(isDocsFlushContext({})).toBe(false);
     expect(isDocsFlushContext()).toBe(false);
+  });
+});
+
+describe("extractNativeCloseableIssueIds", () => {
+  it("matches the bare-id form (same as the custom action)", () => {
+    expect(extractNativeCloseableIssueIds(["Closes THR-12"])).toEqual(["THR-12"]);
+  });
+
+  it("matches the Linear issue-URL form (native integration closes from this)", () => {
+    // The exact vector that falsely closed THR-525: `Closes <linear-issue-url>` in a flush PR body.
+    expect(
+      extractNativeCloseableIssueIds([
+        "Closes https://linear.app/threadbare/issue/THR-525/canonical-axis-registry-scalar-unification",
+      ]),
+    ).toEqual(["THR-525"]);
+  });
+
+  it("de-dupes across bare-id and URL forms of the same issue", () => {
+    expect(
+      extractNativeCloseableIssueIds([
+        "Fixes THR-7",
+        "Closes https://linear.app/threadbare/issue/THR-7/foo",
+      ]),
+    ).toEqual(["THR-7"]);
+  });
+
+  it("ignores a plain issue URL with no closing keyword", () => {
+    expect(
+      extractNativeCloseableIssueIds([
+        "See https://linear.app/threadbare/issue/THR-8/foo for context.",
+      ]),
+    ).toEqual([]);
+  });
+
+  it("ignores a bare THR identifier", () => {
+    expect(extractNativeCloseableIssueIds(["docs(plan): THR-9 kickoff"])).toEqual([]);
+  });
+});
+
+describe("evaluateFlushCloseGuard", () => {
+  it("blocks: batch-flush title + `Closes THR-NNN` in body", () => {
+    expect(
+      evaluateFlushCloseGuard({
+        title: "docs(plan): batch flush 2026-06-28",
+        body: "Auto-flush of plan doc. Closes THR-501",
+      }),
+    ).toEqual({ blocked: true, isFlush: true, offendingIds: ["THR-501"] });
+  });
+
+  it("blocks: `docs/plan-flush-*` branch + `Closes <issue-url>` in body", () => {
+    const verdict = evaluateFlushCloseGuard({
+      branch: "docs/plan-flush-2026-06-28",
+      body: "Closes https://linear.app/threadbare/issue/THR-525/canonical-axis",
+    });
+    expect(verdict.blocked).toBe(true);
+    expect(verdict.offendingIds).toEqual(["THR-525"]);
+  });
+
+  it("blocks: flush PR carrying a closing keyword only in a commit message", () => {
+    const verdict = evaluateFlushCloseGuard({
+      branch: "docs/plan-flush-2026-06-28",
+      commitMessages: ["docs(plan): flush", "Fixes THR-333"],
+    });
+    expect(verdict.blocked).toBe(true);
+    expect(verdict.offendingIds).toEqual(["THR-333"]);
+  });
+
+  it("passes: flush PR with only a bare `THR-NNN` reference (no keyword)", () => {
+    expect(
+      evaluateFlushCloseGuard({
+        title: "docs(plan): batch flush 2026-06-28",
+        body: "Commits plan docs for THR-499 and THR-500.",
+      }),
+    ).toEqual({ blocked: false, isFlush: true, offendingIds: [] });
+  });
+
+  it("passes: legit `docs: closeout THR-NN` PR (not a flush) even with `Fixes THR-NN`", () => {
+    // A real closeout SHOULD close its issue — the guard must not apply to non-flush PRs.
+    expect(
+      evaluateFlushCloseGuard({
+        branch: "claude/wizardly-moore",
+        title: "docs: closeout THR-458 — project-status, history, changelog",
+        body: "Fixes THR-458",
+      }),
+    ).toEqual({ blocked: false, isFlush: false, offendingIds: [] });
+  });
+
+  it("passes: flush PR carrying only a plain issue URL (no keyword)", () => {
+    expect(
+      evaluateFlushCloseGuard({
+        branch: "docs/plan-flush-2026-06-28",
+        body: "See https://linear.app/threadbare/issue/THR-525/foo for context.",
+      }).blocked,
+    ).toBe(false);
+  });
+
+  it("returns a not-flush verdict for empty context", () => {
+    expect(evaluateFlushCloseGuard({})).toEqual({
+      blocked: false,
+      isFlush: false,
+      offendingIds: [],
+    });
+    expect(evaluateFlushCloseGuard()).toEqual({
+      blocked: false,
+      isFlush: false,
+      offendingIds: [],
+    });
   });
 });
