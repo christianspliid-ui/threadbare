@@ -50,6 +50,8 @@ import {
   BEAT_SPHERE_BIAS_SECONDARY,
   BEAT_SPHERE_BIAS_NONE,
 } from '../data/ascendant-beat-content';
+import { REACH_DOMAINS, type ReachDomain } from '../types/traits';
+import { REACH_SIGNATURE_ID_BY_REACH } from '../data/reach-signature-content';
 import { eligibleDeliveryBeats, getDeliveryBeatById } from './deliveryBeatAdapter';
 import { seedBeatGraph } from './ascendantBeatSeeding';
 import { applyEncounterAftermathReaction } from './encounterAftermath';
@@ -165,6 +167,59 @@ export function computeIdentityBias(beat: BeatDefinition, state: GameState): num
   return mult;
 }
 
+/**
+ * Rank the ascendant's reaches by affinity, descending (THR-523). The generator persists
+ * an unordered `domainAffinities` bag (2–3 reaches), not an explicit primary/secondary
+ * pair, so "primary" = highest affinity and "secondary" = second-highest are derived here.
+ * Deterministic (NFP #3): affinity descending, ties broken by fixed `REACH_DOMAINS` order.
+ * Fail-soft: returns `[]` when there is no ascendant / no affinities.
+ */
+function rankAscendantReaches(state: GameState): ReachDomain[] {
+  const affinities = getAscendantProps(state)?.domainAffinities;
+  if (!affinities) return [];
+  return (Object.entries(affinities) as [ReachDomain, number][])
+    .filter(([, v]) => typeof v === 'number' && v > 0)
+    .sort((a, b) =>
+      b[1] !== a[1] ? b[1] - a[1] : REACH_DOMAINS.indexOf(a[0]) - REACH_DOMAINS.indexOf(b[0]),
+    )
+    .map(([reach]) => reach);
+}
+
+/**
+ * The `invest.<reach>.<name>` signature id the ascendant should receive for an acquisition
+ * slot (THR-523). `'primary'` → the highest-affinity reach's signature, `'secondary'` →
+ * the second-highest. Resolves per-run because *which* of the eight signatures is primary
+ * depends on the ascendant, so a static `grantsActionIds` id cannot name it. Returns null
+ * (fail-soft): a slot with no ranked reach (e.g. a single-domain ascendant asked for
+ * `'secondary'`), or a reach with no authored signature. Exported for unit testing.
+ */
+export function resolveReachSignatureGrant(
+  state: GameState,
+  slot: 'primary' | 'secondary',
+): string | null {
+  const ranked = rankAscendantReaches(state);
+  const reach = slot === 'primary' ? ranked[0] : ranked[1];
+  if (!reach) return null;
+  return REACH_SIGNATURE_ID_BY_REACH[reach] ?? null;
+}
+
+/**
+ * True when the ascendant holds an in-domain reach whose reach signature is not yet in
+ * `unlockedActionIds` (THR-523). Gates the secondary-signature acquisition beat so it
+ * retires from the pool draw once every in-domain signature has been learned. Fail-soft:
+ * no ascendant / no affinities → false (nothing to acquire, so the beat is ineligible).
+ */
+function hasUnacquiredReachSignature(state: GameState): boolean {
+  const ranked = rankAscendantReaches(state);
+  if (ranked.length === 0) return false;
+  const unlocked = new Set(state.unlockedActionIds ?? []);
+  for (const reach of ranked) {
+    const sig = REACH_SIGNATURE_ID_BY_REACH[reach];
+    if (sig && !unlocked.has(sig)) return true;
+  }
+  return false;
+}
+
 /** Count culture/faction actor nodes the god has not yet been introduced to (THR-516). */
 function countUnintroducedGroups(state: GameState): number {
   const groups = state.graph.getNodesByType('actor').filter(n => {
@@ -244,6 +299,8 @@ export function isBeatEligible(beat: BeatDefinition, state: GameState): boolean 
         return countUnintroducedGroups(state) > 0;
       case 'unthreaded_target':
         return hasUnthreadedTarget(state);
+      case 'unacquired_reach_signature':
+        return hasUnacquiredReachSignature(state);
       default:
         return true; // fail-open for an unrecognized predicate
     }
@@ -685,6 +742,19 @@ export function resolvePendingBeat(
       granted = [chosen];
     } else {
       granted = allGrants;
+    }
+
+    // THR-523: dynamic reach-signature grant. Beat 4 carries `grantsReachSignature:
+    // 'primary'`, the reach-signature pool beat carries `'secondary'`; the id is resolved
+    // per-run from the ascendant's ranked domain affinities (a static grant can't name it).
+    // Orthogonal to the static grants above and unconditional for a `selection` beat — the
+    // player's god-path choice and their signature both land. Fail-soft no-op when the slot
+    // has no ranked reach or no authored signature.
+    if (def.grantsReachSignature) {
+      const signatureId = resolveReachSignatureGrant(state, def.grantsReachSignature);
+      if (signatureId && !granted.includes(signatureId)) {
+        granted = [...granted, signatureId];
+      }
     }
 
     // Apply grants → unlockedActionIds (dedup; one trace per newly-revealed id).

@@ -120,12 +120,19 @@ export const ASCENDANT_SPINE: readonly BeatDefinition[] = [
     trigger: { kind: 'turn', minTurn: SPINE_TRIGGER_TURNS[3] },
     grantsActionIds: ['divine.persuade'],
   },
-  // Beat 4 — A Path Opens: choose one of three god-paths (dreamer / prophet / patron).
+  // Beat 4 — A Path Opens: choose one of three god-paths (dreamer / prophet / patron)
+  // AND receive your primary-reach signature (THR-523). The god-path is the 1-of-N
+  // `selection` choice; the signature grant is unconditional (`grantsReachSignature:
+  // 'primary'`) — "the choice is which face of devotion, not whether to receive your
+  // domain's headline power" (plan §4.4). The two grants are orthogonal: the selection
+  // grants exactly the chosen god-path, the signature slot grants the run's primary
+  // signature on top.
   {
     beatId: 'beat.spine.a_path_opens',
     kind: 'selection',
     trigger: { kind: 'turn', minTurn: SPINE_TRIGGER_TURNS[4] },
     grantsActionIds: ['divine.dream', 'divine.omen', 'divine.inspire'],
+    grantsReachSignature: 'primary',
   },
 ];
 
@@ -219,12 +226,13 @@ export function isSpineBeatId(beatId: string): boolean {
  * `observe_agent`, `action.imbue`) plus the §4.4 per-graph expression verbs that have
  * since landed — `action.consecrate` (THR-511, location), `action.bestow` (THR-512,
  * agent), `action.anoint` (THR-513, faction). THR-515 added the three deeper-expression
- * investment beats that grant them. The remaining reach-gated `invest.*` set is still
- * unauthored (no templates exist), so it is NOT granted here — TODO(THR-523) expands the
- * pool + `ASCENDANT_ACTION_BUCKETS` with `reach-gated` entries once those cards ship.
- * Granting an unknown id would be fail-soft (the `unlock_action` aftermath never reveals
- * a card with no template), but seeding vapor ids is avoided so the unlock catalogue
- * stays a truthful map of what actually unlocks.
+ * investment beats that grant them. The eight reach-gated `invest.<reach>.<name>`
+ * signatures (THR-553/THR-555) are catalogued in `ASCENDANT_ACTION_BUCKETS` and acquired
+ * via the acquisition beats (THR-523): Beat 4 grants the primary-reach signature and the
+ * reach-signature pool beat grants the secondary. Those grants ride the per-run
+ * `grantsReachSignature` slot (resolved from the ascendant's ranked domain affinities),
+ * NOT a static `grantsActionIds` id — because which of the eight is "primary" depends on
+ * the run, so a static grant can't name it.
  *
  * DRAW vs. ELIGIBILITY. As of THR-516 the Director filters this pool by each beat's
  * `eligibility` predicate against world state before drawing, and `drawFromPool` scales
@@ -394,6 +402,23 @@ export const ASCENDANT_BEAT_POOL: readonly BeatDefinition[] = [
     templateId: 'beat.pool.select.shape_of_devotion',
     grantsActionIds: ['action.imbue', 'observe_agent'],
   },
+
+  // — Reach-signature acquisition (THR-523): the second of the two acquisition beats.
+  //   Beat 4 (spine) grants the *primary*-reach signature; this pool beat grants the
+  //   *secondary*. Modeled as a dynamic `grantsReachSignature` grant rather than a
+  //   `grantsActionIds` `selection`, because the secondary signature is determined by
+  //   the ascendant's ranked domain affinities (nothing to pick — "not whether to
+  //   receive"). The `unacquired_reach_signature` eligibility retires the beat from the
+  //   draw once every in-domain signature is learned, so it never offers an empty grant.
+  //   `templateId === beatId` names its content template (Threadbare prose, §4.5). —
+  {
+    beatId: 'beat.pool.invest.reach_signature',
+    kind: 'investment',
+    trigger: { kind: 'cadence' },
+    eligibility: { kind: 'unacquired_reach_signature' },
+    templateId: 'beat.pool.invest.reach_signature',
+    grantsReachSignature: 'secondary',
+  },
 ];
 
 // ─── Unlock catalogue (plan §4.3) ─────────────────────────────────────────────
@@ -421,15 +446,21 @@ export interface ActionBucketEntry {
  * is carried directly on each `BeatDefinition.grantsActionIds` (derive it via
  * {@link collectGrantedActionIds} rather than maintaining a second, drift-prone map).
  *
- * Only real, shipping `UnifiedActionTemplate` ids appear. No `reach-gated` entries
- * yet — the reach-gated investment cards are not authored (TODO(THR-523)); the
- * bucket value + `requiresReach` field exist for when they land. The expressive
+ * Only real, shipping `UnifiedActionTemplate` ids appear. The eight `reach-gated`
+ * `invest.<reach>.<name>` signatures landed with THR-553 (content-only) + THR-555
+ * (engine-backed) and are catalogued here (THR-523); each declares `requiresReach` so
+ * the shipped `getTargetActionSlots` reach gate hides it for runs whose two domains
+ * exclude that reach (the permanent two-domain lock, plan §3.10). The expressive
  * `divine.*` verbs the scripted spine grants (THR-504, Beats 3–4) are
  * `unlockable-generic`: every run can earn them via the opening arc; they are not
  * gated on the ascendant's two domains. The §4.4 per-graph expression verbs
  * (`action.imbue` / `consecrate` / `bestow` / `anoint`, THR-508/511/512/513, granted
  * by their investment beats) are likewise `unlockable-generic` — universal verbs whose
  * power is flavored by the ascendant's domain/sphere, not gated on the two-domain lock.
+ *
+ * The reach-gated set below MUST stay in lock-step with `REACH_SIGNATURE_CONTENT_TEMPLATES`
+ * (`reach-signature-content.ts`) — a drift-guard test asserts the two agree on ids +
+ * `requiresReach`.
  */
 export const ASCENDANT_ACTION_BUCKETS: Readonly<Record<string, ActionBucketEntry>> = {
   bind_thread_agent: { bucket: 'generic' },
@@ -448,6 +479,18 @@ export const ASCENDANT_ACTION_BUCKETS: Readonly<Record<string, ActionBucketEntry
   'divine.dream': { bucket: 'unlockable-generic' },
   'divine.omen': { bucket: 'unlockable-generic' },
   'divine.inspire': { bucket: 'unlockable-generic' },
+  // ─── Reach signatures (THR-523) — one per Reach, `reach-gated` on `requiresReach`.
+  //     Acquired via the acquisition beats (Beat 4 = primary, the reach-signature
+  //     pool beat = secondary); hidden entirely for out-of-domain reaches. Ids +
+  //     reaches mirror `REACH_SIGNATURE_CONTENT_TEMPLATES` (drift-guarded in tests). —
+  'invest.gold.patronage_network': { bucket: 'reach-gated', requiresReach: 'gold' },
+  'invest.shadow.brokers_web': { bucket: 'reach-gated', requiresReach: 'shadow' },
+  'invest.star.beacon_of_fate': { bucket: 'reach-gated', requiresReach: 'star' },
+  'invest.eye.deep_eye': { bucket: 'reach-gated', requiresReach: 'eye' },
+  'invest.heart.sworn_oath': { bucket: 'reach-gated', requiresReach: 'heart' },
+  'invest.iron.warhost': { bucket: 'reach-gated', requiresReach: 'iron' },
+  'invest.veil.rend_the_gate': { bucket: 'reach-gated', requiresReach: 'veil' },
+  'invest.stone.great_work': { bucket: 'reach-gated', requiresReach: 'stone' },
 };
 
 /**

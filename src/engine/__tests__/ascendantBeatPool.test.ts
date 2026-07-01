@@ -13,6 +13,7 @@ import {
   BEAT_KIND_WEIGHTS,
 } from '../../data/ascendant-beat-content';
 import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
+import { REACH_SIGNATURE_CONTENT_TEMPLATES } from '../../data/reach-signature-content';
 import { clearTraces, enableTracing, disableTracing } from '../traceBuffer';
 import type { GameState } from '../../types/gameState';
 import type { AscendantBeatState } from '../../types/ascendantBeat';
@@ -174,5 +175,22 @@ describe('Ascendant Beat starter pool + unlock catalogue (THR-505)', () => {
         expect(entry.requiresReach, `reach-gated "${id}" needs requiresReach`).toBeDefined();
       }
     }
+  });
+
+  // THR-523: the reach-gated bucket set is the catalogue view of the shipped reach
+  // signatures. It must stay in lock-step with REACH_SIGNATURE_CONTENT_TEMPLATES — a
+  // drift here means either a bucketed signature has no template (reach gate over a
+  // phantom card) or a shipped signature is un-catalogued (invisible to bucket consumers).
+  it('the reach-gated bucket set exactly mirrors the shipped reach signatures (id + requiresReach)', () => {
+    const bucketReachGated = Object.entries(ASCENDANT_ACTION_BUCKETS)
+      .filter(([, e]) => e.bucket === 'reach-gated')
+      .map(([id, e]) => `${id}:${e.requiresReach}`)
+      .sort();
+    const templateSignatures = REACH_SIGNATURE_CONTENT_TEMPLATES
+      .map(t => `${t.id}:${t.requiresReach}`)
+      .sort();
+    expect(bucketReachGated).toEqual(templateSignatures);
+    // Sanity: all eight reaches represented, none missing.
+    expect(bucketReachGated).toHaveLength(8);
   });
 });

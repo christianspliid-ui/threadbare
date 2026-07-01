@@ -934,3 +934,16 @@ export const REACH_SIGNATURE_CONTENT_TEMPLATES: UnifiedActionTemplate[] = [
     },
   },
 ];
+
+/**
+ * `reach → signature template id`, derived from the templates above so the map can
+ * never drift from what actually ships (THR-523). Exactly one signature per Reach
+ * (the two-domain lock, `project_ascendant_two_domains`), so the mapping is total over
+ * every reach that has a signature. Consumers: the acquisition-beat dynamic grant
+ * (`resolveReachSignatureGrant`) and the reach-gated bucket catalogue
+ * (`ASCENDANT_ACTION_BUCKETS`) — both read this instead of hard-coding the eight ids.
+ */
+export const REACH_SIGNATURE_ID_BY_REACH: Readonly<Partial<Record<ReachDomain, string>>> =
+  Object.fromEntries(
+    REACH_SIGNATURE_CONTENT_TEMPLATES.map((t) => [t.reach, t.id]),
+  ) as Partial<Record<ReachDomain, string>>;

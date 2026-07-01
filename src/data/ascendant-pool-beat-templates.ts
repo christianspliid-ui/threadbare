@@ -246,6 +246,20 @@ const INVESTMENT_TEMPLATES: UnifiedActionTemplate[] = [
     success: 'you learn to anoint the chosen; a faction\'s cause now carries your weight',
     failure: 'the moment passes ungiven; the banners stay only banners',
   }),
+
+  // — Reach-signature acquisition (THR-523): the *secondary* signature. The specific
+  //   power depends on the ascendant's second domain, so the prose names no reach — it
+  //   frames the moment a second face of the god's nature deepens from habit into a
+  //   headline art. The revealed signature card carries its own reach×sphere name. —
+  poolBeatTemplate({
+    id: 'beat.pool.invest.reach_signature',
+    name: 'A Second Mastery',
+    description:
+      'You have led with one hand for long enough that the world has learned its weight. But there is a second current in you — quieter, always there beneath the first, the way {name} carries a second nature under the one they show the daylight. It has waited. Now it asks to be more than an undertone: to sharpen into a power the world will name and fear and pray toward in its own right. Let your second domain rise, and you will strike the world in two voices instead of one.',
+    initiation: 'a second current in your nature asks to sharpen into a power of its own',
+    success: 'your second domain rises into a signature the world will learn to name',
+    failure: 'the deeper current settles back beneath the first, unspent a while longer',
+  }),
 ];
 
 // ─── Selection beats — choose 1-of-N within-run (picker resolves the grant) ────
