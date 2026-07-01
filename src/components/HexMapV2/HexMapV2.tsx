@@ -52,6 +52,12 @@ import {
   tickLocationRaritySignifiers,
 } from './scene/LocationRaritySignifierMesh';
 import type { LocationRaritySignifierLayerGroup } from './scene/LocationRaritySignifierMesh';
+import {
+  createReachSignatureSignifierLayer,
+  tickReachSignatureSignifiers,
+} from './scene/ReachSignatureSignifierMesh';
+import type { ReachSignatureSignifierLayerGroup } from './scene/ReachSignatureSignifierMesh';
+import type { ReachSignatureMarker } from '../../engine/reachSignatureMarkers';
 import { tickAgentAnimations } from './agents/agentAnimationState';
 import type { AgentAnimState } from './agents/agentAnimationState';
 import { createMovementTrailMesh, updateTrails } from './scene/MovementTrailMesh';
@@ -278,6 +284,8 @@ export interface HexMapV2Props {
   agents?: AgentRenderData[];
   /** Army render data for army indicator sprites (Plan 12-07+) */
   armies?: ArmyRenderData[];
+  /** Ascendant reach-signature footprints (warhost/rift/wonder) — THR-554. */
+  reachSignatureMarkers?: ReachSignatureMarker[];
   /** Battle/siege indicator data for combat overlays (Plan 12-07+) */
   battles?: BattleIndicatorData[];
   /** Thread line data — avatar-to-agent relationship lines (Attention UI) */
@@ -498,7 +506,7 @@ function createSelectionOverlayMesh(size: number, color: string): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, battles, threadLines, activityIcons, strategicOverlays, activeTugs, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, spotlightedAgentId, spotlightThreadColor, shouldCenterOnAgent },
+    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, reachSignatureMarkers, battles, threadLines, activityIcons, strategicOverlays, activeTugs, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, spotlightedAgentId, spotlightThreadColor, shouldCenterOnAgent },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -524,6 +532,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const battleIndicatorLayerRef = useRef<BattleIndicatorLayerGroup | null>(null);
     const anomalyShimmerLayerRef = useRef<AnomalyShimmerLayerGroup | null>(null);
     const locationRaritySignifierLayerRef = useRef<LocationRaritySignifierLayerGroup | null>(null);
+    const reachSignatureSignifierLayerRef = useRef<ReachSignatureSignifierLayerGroup | null>(null);
 
     // Thread line and activity icon layer refs (Attention UI)
     const threadLineLayerRef = useRef<ThreadLineLayer | null>(null);
@@ -1254,6 +1263,11 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           if (rarityLayer) {
             tickLocationRaritySignifiers(rarityLayer, clock.getElapsedTime());
           }
+          // Pulse the rift signature glyph (warhost/wonder are static) — THR-554
+          const reachSigLayer = reachSignatureSignifierLayerRef.current;
+          if (reachSigLayer) {
+            tickReachSignatureSignifiers(reachSigLayer, clock.getElapsedTime());
+          }
           // Tick thread lines, activity icons, and strategic markers (Attention UI)
           const threadLineLayer = threadLineLayerRef.current;
           const activityIconLayer = activityIconLayerRef.current;
@@ -1456,6 +1470,10 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             locationRaritySignifierLayerRef.current.dispose();
             locationRaritySignifierLayerRef.current = null;
           }
+          if (reachSignatureSignifierLayerRef.current) {
+            reachSignatureSignifierLayerRef.current.dispose();
+            reachSignatureSignifierLayerRef.current = null;
+          }
           if (threadLineLayerRef.current) {
             threadLineLayerRef.current.dispose();
             threadLineLayerRef.current = null;
@@ -1570,6 +1588,14 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       rarityLayer.signifierGroup.visible = locGroup?.visible ?? false;
     }, [zoomTier]);
 
+    // Reach-signature signifier zoom sync — same visibility tier as locations (THR-554)
+    useEffect(() => {
+      const layer = reachSignatureSignifierLayerRef.current;
+      const locGroup = locationGroupRef.current;
+      if (!layer) return;
+      layer.signifierGroup.visible = locGroup?.visible ?? false;
+    }, [zoomTier]);
+
     // Toggle organic shore (coastline) mesh visibility
     useEffect(() => {
       if (coastlineRef.current) {
@@ -1607,6 +1633,31 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         armyLayerRef.current = armyLayerGroup;
       });
     }, [armies]);
+
+    // ── Incremental reach-signature signifier rebuild (THR-554) ──
+    // Keyed on markers (not the scene build) so warhost/rift footprints appear
+    // as their effects resolve mid-run — a rift/warhost never touches the
+    // `locations` prop, so the main scene effect would not rebuild for them.
+    useEffect(() => {
+      const scene = sceneRef.current;
+      if (!scene) return;
+
+      if (reachSignatureSignifierLayerRef.current) {
+        scene.remove(reachSignatureSignifierLayerRef.current.signifierGroup);
+        reachSignatureSignifierLayerRef.current.dispose();
+        reachSignatureSignifierLayerRef.current = null;
+      }
+
+      const markers = reachSignatureMarkers ?? [];
+      if (markers.length === 0) return;
+
+      const layer = createReachSignatureSignifierLayer(markers);
+      // Every marker implies a location exists (rift/warhost anchor on one,
+      // wonder is one), so the location group's visibility is the correct gate.
+      layer.signifierGroup.visible = locationGroupRef.current?.visible ?? false;
+      scene.add(layer.signifierGroup);
+      reachSignatureSignifierLayerRef.current = layer;
+    }, [reachSignatureMarkers]);
 
     // Update selection ring + zoom target when selectedHex prop changes
     useEffect(() => {

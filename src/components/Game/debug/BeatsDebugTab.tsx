@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'r
 
 type BeatCatalogueEntry = import('../../../debug-bridge.d').DebugBeatCatalogueEntry;
 type BeatSchedule = import('../../../debug-bridge.d').DebugBeatScheduleResult;
+type SignaturesResult = import('../../../debug-bridge.d').DebugListSignaturesResult;
 
 const PANEL_STYLE: CSSProperties = {
   padding: '10px 12px',
@@ -76,6 +77,8 @@ interface BeatsDebugTabProps {
 export function BeatsDebugTab({ currentTick }: BeatsDebugTabProps) {
   const [catalogue, setCatalogue] = useState<BeatCatalogueEntry[]>([]);
   const [schedule, setSchedule] = useState<BeatSchedule | null>(null);
+  const [signatures, setSignatures] = useState<SignaturesResult | null>(null);
+  const [fireReach, setFireReach] = useState('');
   const [fireBeatId, setFireBeatId] = useState('');
   const [grantId, setGrantId] = useState('');
   const [resolveChoice, setResolveChoice] = useState('');
@@ -86,12 +89,14 @@ export function BeatsDebugTab({ currentTick }: BeatsDebugTabProps) {
     if (!window.__DEBUG) return;
     setLoading(true);
     try {
-      const [beats, sched] = await Promise.all([
+      const [beats, sched, sigs] = await Promise.all([
         window.__DEBUG.listBeats(),
         window.__DEBUG.beatSchedule(),
+        window.__DEBUG.listSignatures(),
       ]);
       setCatalogue(beats);
       setSchedule(sched);
+      setSignatures(sigs);
     } finally {
       setLoading(false);
     }
@@ -126,6 +131,21 @@ export function BeatsDebugTab({ currentTick }: BeatsDebugTabProps) {
       await refresh();
     }
   }, [grantId, refresh]);
+
+  const handleFireSignature = useCallback(async () => {
+    const reach = fireReach.trim();
+    if (!reach || !window.__DEBUG) return;
+    const result = await window.__DEBUG.fireSignature(reach);
+    setStatusMessage(
+      result.success
+        ? `${result.templateId} unlocked=${result.unlocked} ×${result.multiplier?.toFixed(2)} → mag ${result.scaledMagnitude?.toFixed(2)}${result.materialized ? ` (${result.materialized.kind} @ ${result.materialized.hexCol},${result.materialized.hexRow})` : ''}`
+        : (result.message ?? 'fireSignature failed'),
+    );
+    if (result.success) {
+      setFireReach('');
+      await refresh();
+    }
+  }, [fireReach, refresh]);
 
   const handleResolve = useCallback(async () => {
     if (!window.__DEBUG) return;
@@ -232,6 +252,44 @@ export function BeatsDebugTab({ currentTick }: BeatsDebugTabProps) {
         ) : (
           <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>None unlocked yet.</div>
         )}
+      </div>
+
+      <div style={BLOCK_STYLE} data-testid="reach-signatures-block">
+        <div style={TITLE_STYLE}>Reach Signatures</div>
+        <div style={{ ...ROW_STYLE, marginBottom: '6px' }}>
+          <span>
+            Primary sphere: <strong>{signatures?.primarySphere ?? '—'}</strong>
+          </span>
+          <span>
+            Sphere score: <strong>{signatures?.sphereScore?.toFixed(1) ?? '—'}</strong>
+          </span>
+          <span>
+            Power multiplier: <strong>×{signatures?.primaryMultiplier?.toFixed(2) ?? '—'}</strong>
+          </span>
+        </div>
+        {signatures && signatures.signatures.length > 0 ? (
+          <ul style={LIST_STYLE}>
+            {signatures.signatures.map((s) => (
+              <li key={s.templateId}>
+                <strong>{s.reach}</strong> — {s.name}
+                {s.engineBacked ? ' ⚙' : ''} {s.unlocked ? '✓ unlocked' : '· locked'}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>No signatures loaded.</div>
+        )}
+        <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+          <input
+            value={fireReach}
+            onChange={(e) => setFireReach(e.target.value)}
+            placeholder="reach to fire (iron / veil / stone …)"
+            style={INPUT_STYLE}
+          />
+          <button type="button" onClick={() => void handleFireSignature()} style={BUTTON_STYLE}>
+            Fire Signature
+          </button>
+        </div>
       </div>
 
       <div style={BLOCK_STYLE}>
