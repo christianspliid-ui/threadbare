@@ -7,8 +7,14 @@ import {
   REACH_SIGNATURE_DEFAULTS,
   SIGNATURE_MATRIX,
   SIGNATURE_DEFAULT_BASE_VALUE,
+  SIGNATURE_BESPOKE_BASE_VALUE,
+  REACH_SIGNATURE_CONTENT_TEMPLATES,
+  GREAT_WORK_UNIQUE_TAG,
+  AFTERMATH_TARGET_SENTINEL,
+  AFTERMATH_PRIMARY_SPHERE_SENTINEL,
   type SignatureIndividualization,
 } from '../reach-signature-content';
+import { GREAT_WORK_ARTIFACT_TIER } from '../game-config';
 
 describe('reach-signature-content — individualization layer (THR-549)', () => {
   it('has a composed-default seed for every ReachDomain', () => {
@@ -52,7 +58,10 @@ describe('reach-signature-content — individualization layer (THR-549)', () => 
         );
         expect(basePassive, `${reach} × ${sphere} base passive`).toBeDefined();
         if (basePassive && basePassive.type === 'passive') {
-          expect(basePassive.value).toBe(SIGNATURE_DEFAULT_BASE_VALUE);
+          // Composed-default cells carry exactly the floor; bespoke cells authored
+          // in SIGNATURE_MATRIX (THR-555) may carry a richer base value.
+          const isBespoke = SIGNATURE_MATRIX[reach]?.[sphere] !== undefined;
+          if (!isBespoke) expect(basePassive.value).toBe(SIGNATURE_DEFAULT_BASE_VALUE);
         }
       }
     }
@@ -83,8 +92,9 @@ describe('reach-signature-content — individualization layer (THR-549)', () => 
   });
 
   it('prefers a bespoke matrix cell over the composed default', () => {
-    // Inject a bespoke cell locally to prove the resolver branch (matrix is an
-    // empty skeleton on main, so we patch a copy here, not the export).
+    // Inject a distinct bespoke cell locally to prove the resolver branch (iron ×
+    // force is a real bespoke cell now (THR-555); we patch it to a fresh object,
+    // assert identity, then restore the authored cell in `finally`).
     const bespoke: SignatureIndividualization = {
       twist: { id: 'test.bespoke', trigger: 'test trigger', payload: [] },
       nameFragment: 'Bespoke',
@@ -97,6 +107,81 @@ describe('reach-signature-content — individualization layer (THR-549)', () => 
     } finally {
       if (original === undefined) delete SIGNATURE_MATRIX.iron.force;
       else SIGNATURE_MATRIX.iron.force = original;
+    }
+  });
+});
+
+describe('reach-signature-content — engine-backed signatures (THR-555)', () => {
+  const byId = (id: string) => REACH_SIGNATURE_CONTENT_TEMPLATES.find(t => t.id === id);
+
+  it('ships the three engine-backed signature templates, each reach-gated', () => {
+    for (const [id, reach] of [
+      ['invest.iron.warhost', 'iron'],
+      ['invest.veil.rend_the_gate', 'veil'],
+      ['invest.stone.great_work', 'stone'],
+    ] as const) {
+      const t = byId(id);
+      expect(t, id).toBeDefined();
+      expect(t!.reach, `${id} reach`).toBe(reach);
+      // Reach-gated by the shipped requiresReach field (THR-503 getTargetActionSlots).
+      expect(t!.requiresReach, `${id} requiresReach`).toBe(reach);
+      expect(t!.actorAffinities, `${id} ascendant-only`).toContain('ascendant');
+    }
+  });
+
+  it('Iron / Warhost fires signature_warhost bound to the card target + anoints a chosen banner', () => {
+    const t = byId('invest.iron.warhost')!;
+    // Aftermath: the shipped signature_warhost effect, faction bound via $target.
+    const effect = t.aftermathConfig!.fallback.reactions![0].effects[0];
+    expect(effect.kind).toBe('signature_warhost');
+    expect((effect as { factionId: string }).factionId).toBe(AFTERMATH_TARGET_SENTINEL);
+    // Step: the shipped anoint_faction op (→ chosen_status_grant primitive), $target-bound.
+    const step = t.steps[0] as { onSuccess: readonly { op: string; nodeId: string }[] };
+    const op = step.onSuccess[0];
+    expect(op.op).toBe('anoint_faction');
+    expect(op.nodeId).toBe('$target');
+  });
+
+  it('Veil / Rend the Gate opens a sustained rift on the target, amplifying the caster primary sphere', () => {
+    const t = byId('invest.veil.rend_the_gate')!;
+    const effect = t.aftermathConfig!.fallback.reactions![0].effects[0] as {
+      kind: string; locationId: string; sphere: string; durationMode: string;
+    };
+    expect(effect.kind).toBe('sphere_influence_amplify');
+    expect(effect.locationId).toBe(AFTERMATH_TARGET_SENTINEL);
+    expect(effect.sphere).toBe(AFTERMATH_PRIMARY_SPHERE_SENTINEL);
+    expect(effect.durationMode).toBe('sustained');
+  });
+
+  it('Stone / The Great Work mints one unique master forge + a legendary relic at the target', () => {
+    const t = byId('invest.stone.great_work')!;
+    const effect = t.aftermathConfig!.fallback.reactions![0].effects[0] as {
+      kind: string; subtype: string; uniqueTag: string; nearAgentId: string; artifactForgeTier: string;
+    };
+    expect(effect.kind).toBe('spawn_unique_location');
+    expect(effect.subtype).toBe('master_forge');
+    expect(effect.uniqueTag).toBe(GREAT_WORK_UNIQUE_TAG);
+    expect(effect.nearAgentId).toBe(AFTERMATH_TARGET_SENTINEL);
+    expect(effect.artifactForgeTier).toBe(GREAT_WORK_ARTIFACT_TIER);
+  });
+
+  it('authors a bespoke matrix cell at each signature reach × its primary Creation Sphere', () => {
+    // REACH_TO_SPHERE: iron→force, veil→mind, stone→matter — the bespoke veneer.
+    for (const [reach, sphere] of [
+      ['iron', 'force'],
+      ['veil', 'mind'],
+      ['stone', 'matter'],
+    ] as const) {
+      const ind = resolveSignatureIndividualization(reach, sphere);
+      // A bespoke cell, not the composed default: authored proseKey + richer base.
+      expect(ind.proseKey, `${reach}×${sphere}`).toBe(`signature.${reach}.${sphere}`);
+      const basePassive = ind.twist.payload.find(
+        e => e.type === 'passive' && e.reach === reach,
+      );
+      expect(basePassive, `${reach}×${sphere} base`).toBeDefined();
+      if (basePassive && basePassive.type === 'passive') {
+        expect(basePassive.value).toBe(SIGNATURE_BESPOKE_BASE_VALUE);
+      }
     }
   });
 });

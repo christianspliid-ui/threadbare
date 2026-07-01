@@ -17,7 +17,8 @@ import {
   ASPECT_CHRONICLE_PROSE,
 } from '../data/aspect-content';
 import type { ChronicleEntry } from '../types/narrative';
-import type { SphereName } from '../types';
+import type { SphereName, CreationSphereName } from '../types';
+import { CREATION_SPHERE_NAMES } from '../types';
 import type { SimulationRuntime } from './simulationRuntime';
 import { touchWorld, touchStructure } from './simulationRuntime';
 import { buildPredicateContext, evaluateOptionalCondition } from './effects/effectPredicates';
@@ -75,6 +76,11 @@ import {
 import { resolveLocationToHex } from './encounterAwareness';
 import { getAscendantPrimarySphere } from './ascendantExpression';
 import { raiseWarhostForce, selectCommander } from './armySpawning';
+import type { WorldGraph } from './graph';
+import {
+  AFTERMATH_TARGET_SENTINEL,
+  AFTERMATH_PRIMARY_SPHERE_SENTINEL,
+} from '../data/reach-signature-content';
 import { REACH_DOMAINS } from '../types/traits';
 import {
   findIntelReferencedProseMatch,
@@ -392,6 +398,66 @@ export interface AftermathMutationSummary {
 
 // ─── Main function ────────────────────────────────────────────────────────────
 
+/**
+ * Bind the reach-signature aftermath effects (THR-555) to the card's resolved
+ * target before dispatch. The engine-backed signatures (THR-550/551/552) address
+ * a graph node the player-god's card was played *on* — the target faction
+ * (warhost), the target location (rift, Great Work) — but their resolvers read a
+ * literal id off the effect, so a static content template declares a sentinel that
+ * this pass resolves against `action.targetId`. Mirrors the `$target` idiom the
+ * step-level imbue / anoint ops already use (unifiedActionResolution.ts).
+ *
+ *  • `signature_warhost.factionId === '$target'`   → `action.targetId`
+ *  • `sphere_influence_amplify.locationId === '$target'` → `action.targetId`
+ *  • `sphere_influence_amplify.sphere === '$primary'`    → caster's primary Creation Sphere
+ *  • `spawn_unique_location.nearAgentId === '$target'`   → target location's hex
+ *
+ * Fail-soft (NFP #4): a missing action / unresolvable target or non-Creation
+ * primary sphere leaves the effect unbound and the effect's own resolver no-ops
+ * on the bad value. Non-signature effects and effects without a sentinel pass
+ * through untouched — a no-op for every effect kind authored before THR-555.
+ */
+export function bindReachSignatureTargets(
+  effect: EncounterAftermathReactionEffect,
+  action: UnifiedAction | undefined,
+  graph: WorldGraph,
+): EncounterAftermathReactionEffect {
+  const targetId = action?.targetId;
+  const actorId = action?.actorId;
+  switch (effect.kind) {
+    case 'signature_warhost':
+      return effect.factionId === AFTERMATH_TARGET_SENTINEL && targetId
+        ? { ...effect, factionId: targetId }
+        : effect;
+    case 'sphere_influence_amplify': {
+      let bound = effect;
+      if (bound.locationId === AFTERMATH_TARGET_SENTINEL && targetId) {
+        bound = { ...bound, locationId: targetId };
+      }
+      if ((bound.sphere as string) === AFTERMATH_PRIMARY_SPHERE_SENTINEL) {
+        const primary = actorId ? getAscendantPrimarySphere(graph, actorId) : undefined;
+        // The rift amplifies a Creation Sphere; only bind when the caster's
+        // primary is a Creation Sphere (SphereName ⊇ CreationSphereName).
+        if (primary && (CREATION_SPHERE_NAMES as readonly string[]).includes(primary)) {
+          bound = { ...bound, sphere: primary as CreationSphereName };
+        }
+      }
+      return bound;
+    }
+    case 'spawn_unique_location': {
+      // A location id is not an agent id: content marks placement intent with
+      // `nearAgentId: '$target'`; resolve the target location → hex so the mint
+      // lands on the targeted tile. Sentinel dropped either way.
+      if (effect.nearAgentId !== AFTERMATH_TARGET_SENTINEL) return effect;
+      const hex = targetId ? resolveLocationToHex(graph, targetId) : null;
+      const unbound: EncounterAftermathReactionEffect = { ...effect, nearAgentId: undefined };
+      return hex ? { ...unbound, hex: { col: hex.col, row: hex.row } } : unbound;
+    }
+    default:
+      return effect;
+  }
+}
+
 export function applyEncounterAftermathReaction(
   state: GameState,
   action: UnifiedAction | undefined,
@@ -477,7 +543,9 @@ export function applyEncounterAftermathReaction(
   }
 
   for (let i = 0; i < reaction.effects.length; i++) {
-    const effect = reaction.effects[i];
+    // THR-555: bind reach-signature target sentinels ($target / $primary) to the
+    // card's resolved target before dispatch. No-op for every other effect kind.
+    const effect = bindReachSignatureTargets(reaction.effects[i], action, state.graph);
     const target = resolveAftermathTarget(effect, action);
 
     // Check for ambiguous multi-target specification
