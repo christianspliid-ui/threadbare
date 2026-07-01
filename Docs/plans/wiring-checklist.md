@@ -384,6 +384,25 @@ Stone's reach-signature aftermath effect — mints a one-of-a-kind wonder (a leg
 
 ---
 
+## Reach-Signature Hex Signifiers + DebugPanel Surfacing (THR-554)
+
+The UI pillar for the engine-backed reach-signature trio (THR-550/551/552 effects, THR-555 templates). A HexMapV2 signifier layer marks each signature's on-map footprint, plus `__DEBUG`/DebugPanel inspection. Blocked-by THR-550/551/552 (all shipped). Parent epic THR-499.
+
+| Surface | Path | Notes |
+|---|---|---|
+| Marker selector (engine) | `buildReachSignatureMarkers(graph, controlEffects)` in `src/engine/reachSignatureMarkers.ts` (new) | Pure, deterministic (id-sorted), fail-soft. Detects warhost (`actor.properties.warhost===true` → hex via `located_at`), rift (`ControlEffect.perTickSphereInfluence` at `targetHexCol/Row`, carries `sphere`), wonder (`location.generatedBy==='spawn_unique_location'`). Exports `ReachSignatureMarker` + the detection-contract constants (`WARHOST_MARKER_PROP`, `UNIQUE_LOCATION_GENERATOR`). |
+| Render layer | `RENDER_ORDER.REACH_SIGNATURE_SIGNIFIER` (8.8) + `LAYER_Z` (0.078) in `scene/RenderLayers.ts` | Between the rarity ring (8.7) and locations (9) — a ground-level footprint under the entity, like the rarity halo. |
+| Mesh factory | `createReachSignatureSignifierLayer(markers)` + `tickReachSignatureSignifiers(layer, elapsedS)` in `scene/ReachSignatureSignifierMesh.ts` (new) | Mirrors `LocationRaritySignifierMesh`: one canvas-drawn glyph sprite per marker (Iron muster-ring+crossed-blades red / Veil vesica tinted to the amplified sphere, pulsing / Stone monument tan), cached CanvasTexture, additive blending, `dispose()`. Colours from `SPHERE_COLORS` + `reachSignatureVisualConstants.ts`. |
+| Constants (NFP #1) | `scene/reachSignatureVisualConstants.ts` (new) | Colours, texture size, per-kind sprite scales, static opacity, rift pulse bounds/period, zoom threshold. |
+| HexMapV2 lifecycle | `src/components/HexMapV2/HexMapV2.tsx` | New `reachSignatureMarkers?` prop + `reachSignatureSignifierLayerRef`; dedicated marker-keyed rebuild `useEffect` (against `sceneRef.current`, mirrors the army layer); render-loop pulse tick; `[zoomTier]` visibility sync (gated on the location group, regional+); unmount disposal. |
+| GameState → renderer | `GameView.tsx` memo `reachSignatureMarkers` (keyed on `graph`/`controlEffects`/`worldVersion`) → `<HexMapV2 reachSignatureMarkers=…>` | Projects live state via `buildReachSignatureMarkers`; no `LocationNode` extension needed (wonder detected from graph nodes directly). |
+| Debug bridge (read) | `__DEBUG.listSignatures()` (`src/debug-bridge.ts` + `.d.ts`, `DebugListSignaturesResult`) | The 8 reach signatures × run-unlock status + the ascendant's primary Creation Sphere, score, and `spherePowerMultiplier`. |
+| Debug bridge (mutating) | `__DEBUG.fireSignature(reach)` (`DebugFireSignatureResult`) | Grants the signature unlock via `_beatBridge.grantUnlock` (→ `runUnlockedActionIds`), materializes a minimal DEV footprint for the 3 engine-backed reaches (warhost actor / rift `ControlEffect` / unique location — matching the selector's detection contract), returns the sphere-scaled magnitude. `touchWorld`/`touchStructure` so the memo recomputes. |
+| Debug UI | `src/components/Game/debug/BeatsDebugTab.tsx` | New **Reach Signatures** block: primary sphere + score + power multiplier, the 8 signatures with lock/unlock (⚙ = engine-backed), and a `fireSignature` control. `runUnlockedActionIds` already surfaced by the existing Run-Unlocked block. |
+| Tests | `src/engine/__tests__/reachSignatureMarkers.test.ts` (new, 10) + `scene/__tests__/ReachSignatureSignifierMesh.test.ts` (new, 7) | Selector detection/fail-soft/determinism; mesh build/positions/pulse/dispose. |
+
+---
+
 ## Gameplay KPI Harness (THR-457)
 
 Pure telemetry layer: KPI report + eligibility funnel counters + debug surfaces.

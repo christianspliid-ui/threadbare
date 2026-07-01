@@ -21,6 +21,7 @@ export const RENDER_ORDER = {
   ANOMALY_SHIMMER:8.2,   // Between signifiers and locations — undiscovered hint glow
   ANOMALY_HALO:   8.5,   // Between shimmer and locations — discovered ground ring
   LOCATION_RARITY_SIGNIFIER: 8.7, // Between anomaly halo and locations — rarity halo ring
+  REACH_SIGNATURE_SIGNIFIER: 8.8, // Ascendant reach-signature footprints (warhost/rift/wonder) — above rarity ring, below locations
   LOCATIONS:      9,
   THREADS:           9.5,   // Relationship thread lines — below agent sprites
   AGENTS:            10,
@@ -50,6 +51,7 @@ export const LAYER_Z = {
   ANOMALY_SHIMMER: 0.071,   // Just above signifiers — undiscovered hint glow
   ANOMALY_HALO:    0.075,   // Between signifiers and locations — discovered ground ring
   LOCATION_RARITY_SIGNIFIER: 0.077, // Between anomaly halo and locations — rarity halo ring
+  REACH_SIGNATURE_SIGNIFIER: 0.078, // Ascendant reach-signature footprints — above rarity ring, below locations
   LOCATIONS:       0.080,
   TRAILS:          0.085,
   THREADS:           5.500,  // Relationship thread lines — below agent sprites

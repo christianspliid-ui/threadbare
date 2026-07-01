@@ -298,6 +298,145 @@ if (import.meta.env.DEV) {
     /** @internal GameView registers its beat bridge here */
     _registerBeatBridge: (cb) => { _beatBridge = cb as BeatBridge; },
 
+    // ── Reach signatures — map signifiers + surfacing (THR-554) ─────────────
+    /**
+     * List the eight reach signatures with their run-unlock status and the
+     * ascendant's primary-sphere power multiplier. The three engine-backed
+     * signatures (iron/warhost, veil/rift, stone/wonder) leave an on-map
+     * footprint rendered by the reach-signature signifier layer.
+     */
+    listSignatures: async () => {
+      const [{ REACH_SIGNATURE_CONTENT_TEMPLATES }, { spherePowerMultiplier }, { getAscendantPrimarySphere }] =
+        await Promise.all([
+          import('./data/reach-signature-content'),
+          import('./engine/sphereScaling'),
+          import('./engine/ascendantExpression'),
+        ]);
+      const state = _gameStateProvider?.();
+      const graph = _graphProvider?.();
+      const unlocked = new Set(state?.unlockedActionIds ?? []);
+      const ENGINE_BACKED = new Set(['iron', 'veil', 'stone']);
+      const primarySphere = state && graph ? getAscendantPrimarySphere(graph, state.ascendantId) : undefined;
+      const scores = state && graph
+        ? (graph.getNode(state.ascendantId)?.properties.sphereAffinity as { scores?: Record<string, number> } | undefined)?.scores
+        : undefined;
+      const sphereScore = (primarySphere && scores?.[primarySphere]) ?? 0;
+      const primaryMultiplier = spherePowerMultiplier(sphereScore);
+      return {
+        primarySphere: primarySphere ?? null,
+        sphereScore,
+        primaryMultiplier,
+        runUnlockedActionIds: [...unlocked],
+        signatures: REACH_SIGNATURE_CONTENT_TEMPLATES.map((t) => ({
+          reach: t.reach,
+          templateId: t.id,
+          name: t.name,
+          unlocked: unlocked.has(t.id),
+          engineBacked: ENGINE_BACKED.has(t.reach),
+        })),
+      };
+    },
+    /**
+     * Fire a reach signature (dev/QA): grant its unlock so it enters
+     * runUnlockedActionIds, and — for the three engine-backed reaches — mint a
+     * minimal on-map footprint (warhost actor / rift control effect / unique
+     * location) matching the reach-signature marker detection contract, so the
+     * signifier renders for visual verification. Returns the sphere-scaled
+     * magnitude the signature would resolve with. Advance one tick to force a
+     * re-render if the sim is paused.
+     */
+    fireSignature: async (reach: string) => {
+      const state = _gameStateProvider?.();
+      const graph = _graphProvider?.();
+      const runtime = _runtimeProvider?.();
+      if (!state || !graph) return { success: false, message: 'Game not loaded' };
+
+      const [
+        { REACH_SIGNATURE_CONTENT_TEMPLATES, SIGNATURE_BESPOKE_BASE_VALUE, GREAT_WORK_UNIQUE_TAG },
+        { spherePowerMultiplier },
+        { getAscendantPrimarySphere },
+        { touchWorld, touchStructure },
+        { UNIQUE_LOCATION_GENERATOR },
+      ] = await Promise.all([
+        import('./data/reach-signature-content'),
+        import('./engine/sphereScaling'),
+        import('./engine/ascendantExpression'),
+        import('./engine/simulationRuntime'),
+        import('./engine/reachSignatureMarkers'),
+      ]);
+
+      const template = REACH_SIGNATURE_CONTENT_TEMPLATES.find((t) => t.reach === reach);
+      if (!template) return { success: false, message: `No reach signature for reach '${reach}'` };
+
+      // 1. Grant the unlock → runUnlockedActionIds. The grant applies via a
+      //    React state update, so `state.unlockedActionIds` read synchronously
+      //    below is stale — trust the grant result for the `unlocked` field.
+      const grant = _beatBridge?.grantUnlock(template.id);
+
+      // 2. Sphere-scaled magnitude (real scaling).
+      const primarySphere = getAscendantPrimarySphere(graph, state.ascendantId);
+      const scores = (graph.getNode(state.ascendantId)?.properties.sphereAffinity as { scores?: Record<string, number> } | undefined)?.scores;
+      const sphereScore = (primarySphere && scores?.[primarySphere]) ?? 0;
+      const multiplier = spherePowerMultiplier(sphereScore);
+      const scaledMagnitude = multiplier * SIGNATURE_BESPOKE_BASE_VALUE;
+
+      // 3. Materialize a minimal footprint for the engine-backed reaches (DEV only).
+      const baseLoc = graph.getNodesByType('location').find(
+        (n) => typeof n.properties.hexCol === 'number' && typeof n.properties.hexRow === 'number',
+      );
+      let materialized: { kind: string; id: string; hexCol: number; hexRow: number } | null = null;
+      if (baseLoc && (reach === 'iron' || reach === 'veil' || reach === 'stone')) {
+        const baseCol = baseLoc.properties.hexCol as number;
+        const baseRow = baseLoc.properties.hexRow as number;
+        if (reach === 'iron') {
+          const armyId = `debug_warhost_${state.tick}`;
+          if (!graph.getNode(armyId)) {
+            graph.addNode({ id: armyId, type: 'actor', name: 'Debug Warhost', properties: { actorType: 'group', warhost: true } });
+            graph.addEdge({ id: `located_at_${armyId}`, source: armyId, target: baseLoc.id, type: 'located_at', properties: {} });
+          }
+          materialized = { kind: 'warhost', id: armyId, hexCol: baseCol, hexRow: baseRow };
+        } else if (reach === 'veil') {
+          const effectId = `debug_rift_${state.tick}`;
+          const riftEffect = {
+            effectId, templateId: template.id, ownerId: state.ascendantId,
+            targetHexCol: baseCol, targetHexRow: baseRow + 2, targetNodeId: baseLoc.id,
+            establishedTick: state.tick, ritualEssenceInvested: 0,
+            perTickCost: {}, perTickMutations: [], perTickGraphOps: [],
+            perTickSphereInfluence: { sphere: primarySphere ?? 'mind', magnitude: scaledMagnitude, cap: 100 },
+            active: true, ticksActive: 0,
+            narrativeTemplates: { established: 'Debug rift.', active: 'Debug rift.', lapsed: 'Debug rift.' },
+          } as import('./types/controlEffect').ControlEffect;
+          state.controlEffects = [...(state.controlEffects ?? []).filter((e) => e.effectId !== effectId), riftEffect];
+          materialized = { kind: 'rift', id: effectId, hexCol: baseCol, hexRow: baseRow + 2 };
+        } else {
+          const wonderId = `debug_wonder_${state.tick}`;
+          if (!graph.getNode(wonderId)) {
+            graph.addNode({
+              id: wonderId, type: 'location', name: 'The Great Work (debug)',
+              properties: {
+                hexCol: baseCol + 2, hexRow: baseRow, locationSubtype: 'master_forge', locationType: 'master_forge',
+                unique: true, uniqueTag: GREAT_WORK_UNIQUE_TAG, generatedBy: UNIQUE_LOCATION_GENERATOR,
+              },
+            });
+          }
+          materialized = { kind: 'wonder', id: wonderId, hexCol: baseCol + 2, hexRow: baseRow };
+        }
+        if (runtime) { touchWorld(runtime); touchStructure(runtime); }
+      }
+
+      return {
+        success: true,
+        reach,
+        templateId: template.id,
+        unlocked: grant?.success === true || (state.unlockedActionIds ?? []).includes(template.id),
+        primarySphere: primarySphere ?? null,
+        sphereScore,
+        multiplier,
+        scaledMagnitude,
+        materialized,
+      };
+    },
+
     // ── Scene snapshot + coordinate conversion for interface playtests ───────
     snapshotScene: async () => _sceneSnapshot?.() ?? getEmptySceneSnapshot(),
     getViewportForHex: (col: number, row: number) => _viewportForHex?.(col, row) ?? null,

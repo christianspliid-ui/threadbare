@@ -213,6 +213,45 @@ export interface DebugResolveBeatResult {
   message: string;
 }
 
+/** One reach-signature entry returned by `listSignatures()`. THR-554 */
+export interface DebugSignatureInfo {
+  reach: string;
+  templateId: string;
+  name: string;
+  /** True when the signature's action id is in the run-scoped unlock set. */
+  unlocked: boolean;
+  /** True for the three engine-backed signatures that leave an on-map footprint. */
+  engineBacked: boolean;
+}
+
+/** Result of `listSignatures()`. THR-554 */
+export interface DebugListSignaturesResult {
+  /** The ascendant's primary Creation Sphere, or null if unresolved. */
+  primarySphere: string | null;
+  sphereScore: number;
+  /** spherePowerMultiplier(sphereScore) — the primary-sphere effect/cost multiplier. */
+  primaryMultiplier: number;
+  runUnlockedActionIds: string[];
+  signatures: DebugSignatureInfo[];
+}
+
+/** Result of `fireSignature()`. THR-554 */
+export interface DebugFireSignatureResult {
+  success: boolean;
+  message?: string;
+  reach?: string;
+  templateId?: string;
+  /** True once the signature's action id is in the run-scoped unlock set. */
+  unlocked?: boolean;
+  primarySphere?: string | null;
+  sphereScore?: number;
+  multiplier?: number;
+  /** multiplier × the signature reach base — the sphere-scaled magnitude it resolves with. */
+  scaledMagnitude?: number;
+  /** The on-map footprint minted for engine-backed reaches (null otherwise). */
+  materialized?: { kind: string; id: string; hexCol: number; hexRow: number } | null;
+}
+
 export interface DebugBridge {
   openDebugPanel: () => void;
   closeDebugPanel: () => void;
@@ -488,6 +527,11 @@ export interface DebugBridge {
     grantUnlock: (actionId: string) => DebugGrantUnlockResult;
     resolveBeat: (chosenActionId?: string) => DebugResolveBeatResult;
   }) => void;
+
+  /** THR-554 — list the eight reach signatures, their run-unlock status, and the ascendant's primary-sphere multiplier. */
+  listSignatures: () => Promise<DebugListSignaturesResult>;
+  /** THR-554 — grant a reach signature's unlock + materialize a minimal on-map footprint (engine-backed reaches only). */
+  fireSignature: (reach: string) => Promise<DebugFireSignatureResult>;
 
   /** THR-430 — Schism inspection: list pending schisms in the live game state. */
   schism: {

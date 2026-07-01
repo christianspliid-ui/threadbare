@@ -48,6 +48,7 @@ import {
 import type { ArmyState } from '../../types/army';
 import type { BattleState } from '../../types/battle';
 import { extractRoadPaths } from '../../engine/roadNetwork';
+import { buildReachSignatureMarkers } from '../../engine/reachSignatureMarkers';
 import { getRetinueAgents, getSustainedControlNodes } from '../../engine/retinue';
 import { TIER_NAMES } from '../../data/influence-content';
 import type { ThreadedNode, ThreadedFaction, SustainedControlNode } from '../../engine/retinue';
@@ -907,6 +908,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [locationNodes]);
 
   const roadPaths = useMemo(() => extractRoadPaths(gameState.graph), [gameState.graph, runtime.structuralCacheVersion]);
+
+  // Ascendant reach-signature footprints (warhost/rift/wonder) → map signifiers (THR-554).
+  // Recomputed on graph mutation (new army/wonder) or a new rift control effect.
+  const reachSignatureMarkers = useMemo(
+    () => buildReachSignatureMarkers(gameState.graph, gameState.controlEffects),
+    [gameState.graph, gameState.controlEffects, runtime.worldVersion],
+  );
 
   // ── Military render data adapters (graph → ArmyRenderData[], BattleRenderData[], SiegeRenderData[]) ──
   // Single pass over actors for army + battle + siege data (was 3 separate getNodesByType calls)
@@ -3309,6 +3317,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   roadPaths={roadPaths}
                   agents={agentRenderDataWithActivity}
                   armies={armyRenderData}
+                  reachSignatureMarkers={reachSignatureMarkers}
                   battles={battleRenderData}
                   sieges={siegeRenderData}
                   threadLines={threadLineData}
