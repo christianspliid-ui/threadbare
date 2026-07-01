@@ -146,6 +146,9 @@ import {
 } from './faction-action-constants';
 import { SCHISM_ESSENCE_COST } from './game-config';
 import { IMBUE_ESSENCE_COST, CONSECRATE_ESTABLISH_COST, CONSECRATE_PERTICK, CONSECRATE_RELIC_UPFRONT, BESTOW_COST, ANOINT_COST } from './ascendant-expression-constants';
+// THR-553: content-only reach signatures (Gold/Shadow/Star/Eye/Heart-stub),
+// authored on shipped primitives; reach-gated via each template's `requiresReach`.
+import { REACH_SIGNATURE_CONTENT_TEMPLATES } from './reach-signature-content';
 import { CONSECRATE_DEVOTION_PER_TICK } from '../types/ascendantPrimitives';
 import { RIVAL_SHRINE_BETRAYAL_TEMPLATE } from './encounters/rival-shrine-betrayal';
 import { WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE } from './encounters/wandering-healer-shrine-access';
@@ -4806,6 +4809,8 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...ACTION_TEMPLATES.map(migrateActionTemplate),
   ...ENCOUNTER_TEMPLATES,
   ...DIVINE_ACTION_TEMPLATES,
+  // THR-553: reach-gated content-only signatures (Gold/Shadow/Star/Eye/Heart-stub).
+  ...REACH_SIGNATURE_CONTENT_TEMPLATES,
   ...LOCATION_ACTION_TEMPLATES,
   ...ATTACHMENT_ACTION_TEMPLATES,
   ...SUBLOCATION_ACTION_TEMPLATES,

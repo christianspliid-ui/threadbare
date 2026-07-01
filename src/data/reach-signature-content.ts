@@ -18,6 +18,8 @@ import type { CreationSphereName } from '../types/index';
 import { CREATION_SPHERE_NAMES } from '../types/index';
 import type { AttachmentEffect } from '../types/effects';
 import { SPHERE_EFFECT_TABLE } from '../engine/ascendantPrimitives';
+import type { UnifiedActionTemplate } from '../types/unifiedAction';
+import type { TargetCategory } from '../types/targetContext';
 
 // ─── Sphere-Power Scaling (NFP #1: Tunability) ────────────────────
 
@@ -217,3 +219,416 @@ export function resolveSignatureIndividualization(
 export { REACH_DOMAINS };
 /** All Creation Sphere names — re-exported for consumers iterating the matrix. */
 export { CREATION_SPHERE_NAMES };
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Content-only reach signatures (THR-553)
+//
+// The five reach signatures that sit ENTIRELY on shipped primitives/effects —
+// pure content authoring, no new engine effect (plan §3.7, §4.1). Gold & Heart
+// compose the shipped sustained `ControlSpec` path (perTickIncome / co-located
+// thread aura); Shadow, Star & Eye compose shipped `EncounterAftermathReaction`
+// effect kinds (`hidden_mark`, `intelligence`, `encounter_seed`, `spawn_clue`)
+// on `aftermathConfig.fallback.reactions`.
+//
+// The engine-backed signatures (Iron `signature_warhost`, Veil
+// `sphere_influence_amplify`, Stone `spawn_unique_location`) are THR-555. The
+// `ASCENDANT_ACTION_BUCKETS` reach-gated entries + acquisition beats are THR-523
+// (plan §4.3–§4.4) — NOT authored here. These templates are made reach-gated by
+// the shipped `requiresReach` field (THR-503): `getTargetActionSlots()` hides a
+// card unless the ascendant holds that reach.
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── Signature constants (NFP #1: Tunability, plan §3.8) ──────────────────────
+
+/**
+ * One-time essence base cost per reach signature, pre-sphere-scale. Higher than
+ * the generic expression verbs (imbue 4, anoint 6) — a signature is the headline
+ * reach-gated power of an identity. The runtime multiplies this by
+ * {@link spherePowerMultiplier} (floored at 1× for cost) so a strong-sphere god
+ * pays more for a more dramatic effect; the template carries the base.
+ */
+export const SIGNATURE_BASE_COST: Record<ReachDomain, number> = {
+  iron: 8, gold: 8, shadow: 8, veil: 8, heart: 8, eye: 8, stone: 8, star: 8,
+};
+
+/**
+ * Gold — Patronage Network. Per-tick `order`-sphere essence the sustained
+ * patronage control yields (the economic snowball). Net positive: the control
+ * carries no per-tick drain, so a patronage network is a standing income engine
+ * until a rival contests the site.
+ */
+export const PATRONAGE_INCOME_PER_TICK = 0.15;
+
+/**
+ * Shadow — Broker's Web. Severity (0–1) of the concealed-operation `hidden_mark`
+ * the web plants, and the reliability (0–1) of the `agent_network` intelligence
+ * it yields to the god. Mid-severity: a real, revealable covert footprint that a
+ * later investigation encounter can surface.
+ */
+export const BROKERS_WEB_MARK_SEVERITY = 0.5;
+export const BROKERS_WEB_INTEL_RELIABILITY = 0.8;
+
+/**
+ * Star — Beacon of Fate. `encounter_seed.delayTicks` for the fated quest the
+ * beacon lights (plan §3.8) — a short delay so the long-distance call resolves
+ * within a play arc rather than a distant future.
+ */
+export const BEACON_QUEST_DELAY = 6;
+
+/**
+ * Eye — The Deep Eye. Precision of the `spawn_clue` the Deep Eye grants toward
+ * the elder layer (plan §3.8: the sharpest band), and the reliability of the
+ * `cultural_knowledge` intelligence it reveals.
+ */
+export const DEEP_EYE_CLUE_PRECISION = 'located' as const;
+export const DEEP_EYE_INTEL_RELIABILITY = 0.85;
+
+/**
+ * Heart — Sworn Oath (stub). Per-tick loyalty magnitude of the
+ * `co_located_thread_aura` the oath radiates over its site (plan §3.8). Reuses
+ * the shipped THR-509 aura primitive (same field as consecrate's faith-spread —
+ * advancing every co-located thread's tier-promotion clock). The full retinue is
+ * deferred (Heart Deferral, plan §10).
+ */
+export const SWORN_OATH_LOYALTY_PER_TICK = 0.02;
+
+// ─── The five content-only signature templates (plan §3.7) ────────────────────
+//
+// `faction` is not a `TargetCategory` literal (it is 'actor' | 'location' |
+// 'sublocation' | 'hex' | 'artifact' | 'artifact_legendary' | 'resource'), so a
+// faction-targeting template casts, matching the shipped `action.anoint` idiom.
+const FACTION_TARGET = ['faction'] as unknown as readonly TargetCategory[];
+
+export const REACH_SIGNATURE_CONTENT_TEMPLATES: UnifiedActionTemplate[] = [
+  // ─── Gold — Patronage Network ───────────────────────────────────────────────
+  // Sustained ControlSpec that yields per-tick essence (the economic snowball).
+  // Reuses the shipped sustained-control path end-to-end (spawnControlEffect
+  // resolves the target settlement's hex; phaseControlEffects pays out income).
+  {
+    id: 'invest.gold.patronage_network',
+    name: 'Patronage Network',
+    spellName: 'The Golden Charter',
+    rarityTier: 3,
+    intrinsicTier: 'story_beat',
+    description:
+      'You weave your regard through a settlement\'s ledgers and loyalties until wealth ' +
+      'itself learns to flow toward your design. Every deal struck beneath your patronage ' +
+      'returns a tithe of its prosperity to you — a standing engine of essence for as long ' +
+      'as the network holds.',
+    reach: 'gold',
+    requiresReach: 'gold',
+    trayTier: 'rare',
+    crudType: 'update',
+    scale: 'regional',
+    steps: [{
+      reach: 'gold',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: SIGNATURE_BASE_COST.gold,
+    actorAffinities: ['ascendant'],
+    targetCategories: ['location'],
+    targetSubtypes: ['settlement'],
+    motivations: ['asceticism_extravagance', 'loyalty_ambition'],
+    durationMode: 'sustained',
+    controlSpec: {
+      // A patronage network is a net-income engine: no essence drain, a steady
+      // per-tick `order`-sphere yield (structured wealth — charters, trade, tithe).
+      perTickCost: {},
+      perTickIncome: { order: PATRONAGE_INCOME_PER_TICK },
+      narrativeTemplates: {
+        established: 'the network takes hold — coin and favour begin to bend toward your design',
+        active: 'the patronage holds — a steady tithe of the settlement\'s prosperity flows up to you',
+        lapsed: 'the network unravels; the ledgers forget your name and the flow of coin runs dry',
+      },
+    },
+    narrativeTemplates: {
+      initiation: 'weaves a patronage network through the settlement\'s ledgers and loyalties',
+      success: 'the network is woven — prosperity itself now returns a tithe to your design',
+      failure: 'the network will not hold; the settlement\'s wealth slips through your regard',
+    },
+  },
+  // ─── Shadow — Broker's Web ───────────────────────────────────────────────────
+  // Information asymmetry + covert nudging. On success the aftermath offers to
+  // establish the web: a concealed-operation `hidden_mark` (a revealable covert
+  // footprint) plus `agent_network` intelligence granted to the god (the web's
+  // informants map the faction). Both are shipped `EncounterAftermathReaction`
+  // effect kinds; the reaction surfaces via `aftermathConfig.fallback`.
+  {
+    id: 'invest.shadow.brokers_web',
+    name: "Broker's Web",
+    spellName: 'The Whispering Ledger',
+    rarityTier: 3,
+    intrinsicTier: 'story_beat',
+    description:
+      'You spin a lattice of informants and quiet debts through a faction until its secrets ' +
+      'run to you like water downhill. What the faction whispers, you hear; what it hides, you ' +
+      'hold — a concealed hand on the levers no one knows to look for.',
+    reach: 'shadow',
+    requiresReach: 'shadow',
+    trayTier: 'rare',
+    crudType: 'update',
+    scale: 'regional',
+    steps: [{
+      reach: 'shadow',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: SIGNATURE_BASE_COST.shadow,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'darkness',
+    targetCategories: FACTION_TARGET,
+    motivations: ['honesty_cunning', 'loyalty_ambition'],
+    narrativeTemplates: {
+      initiation: 'spins a web of informants and quiet debts through the faction',
+      success: 'the web is spun — the faction\'s secrets now run to you unseen',
+      failure: 'the web tears; the faction\'s confidences stay beyond your reach',
+    },
+    aftermathConfig: {
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'The lattice is laid. Threads of obligation and rumour now run from the faction\'s ' +
+          'quietest rooms to your hand.',
+        changes: [],
+        reactionPrompt: 'The web is spun. Decide what you draw from it now.',
+        reactions: [
+          {
+            id: 'brokers_web_establish',
+            label: 'Draw the threads tight.',
+            intent:
+              'Consolidate the informant lattice: plant a concealed covert footprint on the ' +
+              'operation and take in the faction\'s network of contacts as usable intelligence.',
+            effects: [
+              {
+                kind: 'hidden_mark' as const,
+                category: 'concealed_action' as const,
+                severity: BROKERS_WEB_MARK_SEVERITY,
+                label: 'A broker\'s web of informants and quiet debts, run unseen through the faction',
+                revealFamilies: ['investigation', 'shadow', 'faction'],
+              },
+              {
+                kind: 'intelligence' as const,
+                category: 'agent_network' as const,
+                label: 'The faction\'s informant network',
+                detail:
+                  'A map of who carries word for whom inside the faction — the couriers, the ' +
+                  'quiet debts, the rooms where its secrets are kept.',
+                reliability: BROKERS_WEB_INTEL_RELIABILITY,
+              },
+            ],
+          },
+        ],
+      },
+    },
+  },
+  // ─── Star — Beacon of Fate ───────────────────────────────────────────────────
+  // Long-distance influence; breaks locality. On success the aftermath lights the
+  // beacon: an `encounter_seed` planting a fated quest at a short delay
+  // (BEACON_QUEST_DELAY). The "ranged reach-bonus" half of the §3.7 skeleton is a
+  // sphere/reach passive that belongs to the individualization layer (matrix) and
+  // the engine-backed scaling pass; the content-only card ships the shipped
+  // `encounter_seed` core here (no new engine effect).
+  {
+    id: 'invest.star.beacon_of_fate',
+    name: 'Beacon of Fate',
+    spellName: 'The Far Light',
+    rarityTier: 3,
+    intrinsicTier: 'story_beat',
+    description:
+      'You kindle a light that no distance can dim and set it in a mortal\'s path, far beyond ' +
+      'your usual reach. Fate bends toward the beacon: a calling takes shape around them, and ' +
+      'the road they did not know they were on begins to open.',
+    reach: 'star',
+    requiresReach: 'star',
+    trayTier: 'rare',
+    crudType: 'update',
+    scale: 'cosmic',
+    steps: [{
+      reach: 'star',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: SIGNATURE_BASE_COST.star,
+    actorAffinities: ['ascendant'],
+    targetCategories: ['actor'],
+    motivations: ['sacrifice_survival', 'tradition_novelty'],
+    narrativeTemplates: {
+      initiation: 'kindles a beacon of fate in a distant mortal\'s path',
+      success: 'the far light catches — a fated calling begins to take shape around them',
+      failure: 'the light gutters out before it can catch; fate holds its course',
+    },
+    aftermathConfig: {
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'The beacon is lit. Far off, a mortal lifts their head toward a light they cannot ' +
+          'name, and the shape of a calling gathers around them.',
+        changes: [],
+        reactionPrompt: 'The beacon burns. Let fate answer it.',
+        reactions: [
+          {
+            id: 'beacon_of_fate_seed_quest',
+            label: 'Set the calling in motion.',
+            intent:
+              'Let the beacon draw a fated quest toward the one it lights — a road that opens ' +
+              'for them a few turns hence.',
+            effects: [
+              {
+                kind: 'encounter_seed' as const,
+                encounterFamily: 'fate.quest',
+                delayTicks: BEACON_QUEST_DELAY,
+                priority: 1.2,
+                seedLabel: 'A fated calling answers the beacon',
+              },
+            ],
+          },
+        ],
+      },
+    },
+  },
+  // ─── Eye — The Deep Eye ──────────────────────────────────────────────────────
+  // Discovery/understanding of the elder layer. On success the aftermath opens
+  // the Deep Eye: `cultural_knowledge` intelligence granted to the god (the Eye
+  // reads the region's deep memory) plus a `spawn_clue` toward the nearest ruin
+  // at the sharpest precision (DEEP_EYE_CLUE_PRECISION). Both shipped effect kinds.
+  {
+    id: 'invest.eye.deep_eye',
+    name: 'The Deep Eye',
+    spellName: 'The Unclouded Sight',
+    rarityTier: 3,
+    intrinsicTier: 'story_beat',
+    description:
+      'You open an eye that sees past the surface of a place into the strata beneath it — the ' +
+      'buried memory of a people, the elder work half-swallowed by the earth. What was lost to ' +
+      'the age becomes legible to you, and a path toward it takes shape.',
+    reach: 'eye',
+    requiresReach: 'eye',
+    trayTier: 'rare',
+    crudType: 'read',
+    scale: 'regional',
+    steps: [{
+      reach: 'eye',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: SIGNATURE_BASE_COST.eye,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'mind',
+    targetCategories: ['location'],
+    motivations: ['revelation_discretion', 'tradition_novelty'],
+    narrativeTemplates: {
+      initiation: 'opens the Deep Eye upon the strata beneath this place',
+      success: 'the sight comes unclouded — the region\'s buried memory becomes legible to you',
+      failure: 'the depths stay dark; the elder layer keeps its silence',
+    },
+    aftermathConfig: {
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'The Deep Eye opens. The region\'s buried strata lie legible before you, and a path ' +
+          'toward the elder work half-swallowed by the earth begins to clear.',
+        changes: [],
+        reactionPrompt: 'The sight is yours. Follow where it leads.',
+        reactions: [
+          {
+            id: 'deep_eye_reveal',
+            label: 'Read the deep memory.',
+            intent:
+              'Take in the region\'s elder-layer knowledge and let the sight sharpen into a ' +
+              'located path toward the nearest buried work.',
+            effects: [
+              {
+                kind: 'intelligence' as const,
+                category: 'cultural_knowledge' as const,
+                label: 'The elder memory of this region',
+                detail:
+                  'The buried history of the people who held this land before — their rites, ' +
+                  'their ruins, the shape of what they left half-swallowed by the earth.',
+                reliability: DEEP_EYE_INTEL_RELIABILITY,
+              },
+              {
+                kind: 'spawn_clue' as const,
+                source: 'library_research' as const,
+                precision: DEEP_EYE_CLUE_PRECISION,
+                targetRuinId: '$nearest_ruin',
+              },
+            ],
+          },
+        ],
+      },
+    },
+  },
+  // ─── Heart — Sworn Oath (stub) ───────────────────────────────────────────────
+  // Devoted inner circle (full retinue deferred, plan §10). A sustained
+  // ControlSpec whose `perTickThreadAuras` radiate loyalty over a site — reuses
+  // the shipped THR-509 co_located_thread_aura primitive exactly (same default
+  // field as consecrate's faith-spread: advancing every co-located thread's
+  // tier-promotion clock, here read as deepening devotion).
+  {
+    id: 'invest.heart.sworn_oath',
+    name: 'Sworn Oath',
+    spellName: 'The Binding Word',
+    rarityTier: 3,
+    intrinsicTier: 'story_beat',
+    description:
+      'You lay a binding word upon a place and all who keep faith within it, and the oath ' +
+      'answers. Those bound to you who gather here are drawn steadily deeper into your service — ' +
+      'a devoted inner circle taking shape around the ground you have claimed.',
+    reach: 'heart',
+    requiresReach: 'heart',
+    trayTier: 'rare',
+    crudType: 'update',
+    scale: 'local',
+    steps: [{
+      reach: 'heart',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: SIGNATURE_BASE_COST.heart,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'spirit',
+    targetCategories: ['location'],
+    motivations: ['loyalty_ambition', 'tradition_novelty'],
+    durationMode: 'sustained',
+    controlSpec: {
+      perTickCost: { spirit: PATRONAGE_INCOME_PER_TICK },
+      // Loyalty aura: each tick, deepen every co-located thread's bond (the
+      // shipped co_located_thread_aura, default `ticksAtCurrentTier` field).
+      perTickThreadAuras: [{ magnitude: SWORN_OATH_LOYALTY_PER_TICK }],
+      narrativeTemplates: {
+        established: 'the oath is sworn — the ground holds your binding word',
+        active: 'the oath holds — the faithful who gather here are drawn deeper into your service',
+        lapsed: 'the binding word fails; the oath loosens and the circle drifts apart',
+      },
+    },
+    narrativeTemplates: {
+      initiation: 'lays a binding oath upon this place and all who keep faith within it',
+      success: 'the oath is sworn — a devoted inner circle begins to take shape around the ground',
+      failure: 'the word will not bind; the oath falls silent',
+    },
+  },
+];
