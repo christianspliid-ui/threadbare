@@ -244,6 +244,33 @@ export const RIFT_LEAK_SIGNIFICANCE = 0.6;
 /** Chronicle significance for establishing a rift. */
 export const RIFT_ESTABLISHED_SIGNIFICANCE = 0.7;
 
+// ─── Reach signature: Stone / The Great Work (THR-552) ─────────────────────
+//
+// The `spawn_unique_location` aftermath mints a one-of-a-kind location (a
+// legendary forge / deep mine) flagged `unique`, de-duplicated by `uniqueTag`
+// so only one exists per run, and optionally forges an extra-powerful artifact
+// by reusing the `spawn_artifact` path at `GREAT_WORK_ARTIFACT_TIER`. The build
+// is one-time (no per-tick cost), so the only scaling is the reuse of the
+// legendary artifact tier — the sphere twist is supplied by the individualization
+// matrix (THR-549), not by a number here.
+
+/**
+ * Location subtype minted by `spawn_unique_location` when the effect omits an
+ * explicit subtype fallback isn't needed (the effect always carries `subtype`),
+ * but this documents the canonical Great Work form for content authors.
+ */
+export const GREAT_WORK_DEFAULT_SUBTYPE = 'monument';
+
+/**
+ * Artifact tier forged by a Great Work's optional artifact path. Reuses the
+ * shipped `spawn_artifact` legendary path (node type `artifact_legendary`,
+ * `bonded_to` edge) — no new artifact code (THR-552 scope).
+ */
+export const GREAT_WORK_ARTIFACT_TIER = 'legendary' as const;
+
+/** Chronicle significance for raising a unique Great Work location. */
+export const GREAT_WORK_ESTABLISHED_SIGNIFICANCE = 0.85;
+
 /** Chronicle significance for faction topology effects. */
 export const FACTION_MUTATION_CHRONICLE_SIGNIFICANCE = {
   declare_war: 0.85,

@@ -1,6 +1,6 @@
 // src/types/unifiedAction.ts
 import type { ReachDomain } from './traits';
-import type { SphereName, CreationSphereName } from './index';
+import type { SphereName, CreationSphereName, HexCoord, LocationSubtype } from './index';
 import type { OmenCategory, EmittedOmenScope } from './omen';
 import type { ActorType } from './graph';
 import type { ValuePair } from './agent';
@@ -466,6 +466,41 @@ export type EncounterAftermathReactionEffect =
     readonly perTick?: number;
     /** Sustained-effect marker (a rift persists until it lapses). */
     readonly durationMode: 'sustained';
+    readonly when?: EffectPredicate;
+  }
+  // ─── Reach signature: Stone / The Great Work (THR-552) ────────────────────
+  | {
+    /**
+     * Stone's reach-signature aftermath — "The Great Work". Mints a one-of-a-kind
+     * `location` node (a legendary forge / deep mine) flagged `unique` (a property
+     * + a `controls` edge from the actor — NOT a new node type, per the
+     * everything-is-a-graph-node rule), de-duplicated by `uniqueTag` so only one
+     * ever exists per run. Optionally forges an "extra-powerful artifact" by
+     * reusing `spawn_artifact` with `tier: 'legendary'` (`GREAT_WORK_ARTIFACT_TIER`)
+     * placed in the new location — no new artifact path. The sphere twist
+     * (matter→inexhaustible mine, order→unbreakable forge, time→early completion)
+     * comes from the individualization matrix (THR-549); this effect ships the
+     * mint + dedup + legendary-forge reuse.
+     */
+    readonly kind: 'spawn_unique_location';
+    /** Location subtype for the minted node (e.g. 'forge', 'mine', 'monument'). */
+    readonly subtype: LocationSubtype;
+    /**
+     * Run-unique tag. Only one location carrying this tag exists per run — a
+     * second cast with the same tag is a no-op (dedup, §3.10).
+     */
+    readonly uniqueTag: string;
+    /** Explicit hex placement. Falls back to `nearAgentId`, then the actor's hex. */
+    readonly hex?: HexCoord;
+    /** Place the Great Work at this agent's hex when `hex` is omitted. */
+    readonly nearAgentId?: string;
+    /**
+     * When set, also forge a legendary artifact inside the new location by reusing
+     * the `spawn_artifact` path at this tier. Defaults to no artifact when omitted.
+     */
+    readonly artifactForgeTier?: ArtifactTier;
+    /** Override display name for the minted location. */
+    readonly nameOverride?: string;
     readonly when?: EffectPredicate;
   }
   // ─── Thread mutation effects (THR-116) ────────────────────────────────────

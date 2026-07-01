@@ -69,7 +69,10 @@ import {
   RIFT_LEAK_CORRUPTION,
   RIFT_LEAK_ENTROPY_PRESSURE,
   RIFT_ESTABLISHED_SIGNIFICANCE,
+  GREAT_WORK_ARTIFACT_TIER,
+  GREAT_WORK_ESTABLISHED_SIGNIFICANCE,
 } from '../data/game-config';
+import { resolveLocationToHex } from './encounterAwareness';
 import { getAscendantPrimarySphere } from './ascendantExpression';
 import { raiseWarhostForce, selectCommander } from './armySpawning';
 import { REACH_DOMAINS } from '../types/traits';
@@ -2424,6 +2427,164 @@ export function applyEncounterAftermathReaction(
             locationId: effect.locationId, success: false,
             failReason: riftErr instanceof Error ? riftErr.message : 'unknown_error',
             summary: `sphere_influence_amplify[${i}] errored: ${riftErr instanceof Error ? riftErr.message : 'unknown'}`,
+          });
+        }
+        break;
+      }
+
+      // ─── Reach signature: Stone / The Great Work (THR-552) ─────────────────
+      case 'spawn_unique_location': {
+        try {
+          // Dedup by uniqueTag — only one Great Work with this tag exists per run.
+          // A second cast with the same tag is a no-op (§3.10), so the effect is
+          // idempotent regardless of how many times its card is played.
+          const gwExisting = state.graph.getNodesByType('location')
+            .find(n => n.properties.uniqueTag === effect.uniqueTag);
+          if (gwExisting) {
+            emitTrace({
+              tick, category: 'ascendant.signature.unique_location', agentId: actorAgentId,
+              locationId: gwExisting.id, uniqueTag: effect.uniqueTag, success: false,
+              failReason: 'duplicate_tag',
+              summary: `spawn_unique_location[${i}] no-op: "${effect.uniqueTag}" already exists as ${gwExisting.id}`,
+            });
+            emitTrace({
+              tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+              encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+              effectKind: 'spawn_unique_location', effectDetail: { uniqueTag: effect.uniqueTag, existingId: gwExisting.id },
+              success: false, failReason: 'duplicate_tag',
+              effectiveTargetId: gwExisting.id, effectiveTargetKind: 'location',
+              summary: `spawn_unique_location[${i}] no-op: "${effect.uniqueTag}" already exists`,
+            });
+            break;
+          }
+
+          // Resolve placement: explicit hex > nearAgentId's hex > actor's hex.
+          const resolveAgentHexCoords = (agentId: string | undefined): { col: number; row: number } | null => {
+            if (!agentId) return null;
+            const locEdges = state.graph.getOutgoingEdges(agentId, 'located_at');
+            if (locEdges.length === 0) return null;
+            return resolveLocationToHex(state.graph, locEdges[0].target);
+          };
+          const gwHex = effect.hex
+            ? { col: effect.hex.col, row: effect.hex.row }
+            : (resolveAgentHexCoords(effect.nearAgentId) ?? resolveAgentHexCoords(actorAgentId));
+          if (!gwHex) {
+            const fr = 'no_hex';
+            emitTrace({
+              tick, category: 'ascendant.signature.unique_location', agentId: actorAgentId,
+              locationId: '', uniqueTag: effect.uniqueTag, success: false, failReason: fr,
+              summary: `spawn_unique_location[${i}] skipped: ${fr}`,
+            });
+            emitTrace({
+              tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+              encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+              effectKind: 'spawn_unique_location', effectDetail: { uniqueTag: effect.uniqueTag },
+              success: false, failReason: fr,
+              summary: `spawn_unique_location[${i}] skipped: ${fr}`,
+            });
+            break;
+          }
+
+          // Mint the unique location node (NOT a new node type — a `location` flagged
+          // `unique`). A `controls` edge from the actor models ownership as a graph
+          // edge, not a property (load-bearing decision).
+          const gwName = effect.nameOverride ?? `The Great Work (${effect.subtype})`;
+          const gwLocationId = `unique_location_${encounterId}_${reaction.id}_${i}_${tick}`;
+          state.graph.addNode({
+            id: gwLocationId,
+            type: 'location',
+            name: gwName,
+            properties: {
+              hexCol: gwHex.col,
+              hexRow: gwHex.row,
+              locationSubtype: effect.subtype,
+              locationType: effect.subtype,
+              unique: true,
+              uniqueTag: effect.uniqueTag,
+              generatedBy: 'spawn_unique_location',
+              sourceEncounterId: encounterId,
+              spawnedAtTick: tick,
+            },
+          });
+          if (actorAgentId) {
+            state.graph.addEdge({
+              id: `controls_${actorAgentId}_${gwLocationId}`,
+              source: actorAgentId,
+              target: gwLocationId,
+              type: 'controls',
+              properties: { spawnedAtTick: tick, sourceEncounterId: encounterId },
+            });
+          }
+
+          // Optional "extra-powerful artifact" — reuse the spawn_artifact tier path
+          // (legendary → node `artifact_legendary` + `bonded_to`; else `artifact` +
+          // `possesses`), bonding the forged relic to its maker. No new artifact
+          // code: the exact node/edge shape spawn_artifact mints for an agent target.
+          let gwArtifactId: string | undefined;
+          if (effect.artifactForgeTier && actorAgentId) {
+            const gwTier = effect.artifactForgeTier;
+            const gwIsLegendary = gwTier === GREAT_WORK_ARTIFACT_TIER;
+            gwArtifactId = `artifact_greatwork_${encounterId}_${reaction.id}_${i}_${tick}`;
+            state.graph.addNode({
+              id: gwArtifactId,
+              type: gwIsLegendary ? 'artifact_legendary' : 'artifact',
+              name: `${gwName} Relic`,
+              properties: {
+                tier: gwTier,
+                tags: ['great_work'],
+                sourceEncounterId: encounterId,
+                spawnedAtTick: tick,
+              },
+            });
+            state.graph.addEdge({
+              id: `${gwIsLegendary ? 'bonded_to' : 'possesses'}_${actorAgentId}_${gwArtifactId}`,
+              source: actorAgentId,
+              target: gwArtifactId,
+              type: gwIsLegendary ? 'bonded_to' : 'possesses',
+              properties: { spawnedAtTick: tick, sourceEncounterId: encounterId },
+            });
+          }
+
+          // A new location shifts spatial structure (distance matrix + encounter
+          // scoring), so both version counters bump (mutated-in-place rule).
+          mutationSummary.touchedWorld = true;
+          mutationSummary.touchedStructure = true;
+          touchWorld(runtime);
+          touchStructure(runtime);
+
+          const gwEvent: TickEvent = {
+            id: `spawn_unique_location_${encounterId}_${reaction.id}_${i}_${tick}`,
+            tick,
+            type: 'narrative',
+            message: `${gwName} rises, an enduring work of the age.`,
+            significance: GREAT_WORK_ESTABLISHED_SIGNIFICANCE,
+            actorId: actorAgentId,
+          };
+          nextTickEvents = [...nextTickEvents, gwEvent];
+          nextRecentEvents = appendRecentEvent(nextRecentEvents, gwEvent);
+
+          emitTrace({
+            tick, category: 'ascendant.signature.unique_location', agentId: actorAgentId,
+            locationId: gwLocationId, uniqueTag: effect.uniqueTag,
+            subtype: effect.subtype, hexCol: gwHex.col, hexRow: gwHex.row,
+            artifactId: gwArtifactId, artifactTier: effect.artifactForgeTier, success: true,
+            summary: `spawn_unique_location[${i}]: "${gwName}" at (${gwHex.col}, ${gwHex.row})${gwArtifactId ? ` + ${effect.artifactForgeTier} relic` : ''}`,
+          });
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'spawn_unique_location',
+            effectDetail: { locationId: gwLocationId, uniqueTag: effect.uniqueTag, subtype: effect.subtype, artifactId: gwArtifactId ?? null },
+            success: true, effectiveTargetId: gwLocationId, effectiveTargetKind: 'location',
+            summary: `spawn_unique_location[${i}]: "${gwName}" minted`,
+          });
+        } catch (gwErr) {
+          // Fail-soft (NFP #4): resolver-boundary catch — a Great Work failure is non-fatal.
+          emitTrace({
+            tick, category: 'ascendant.signature.unique_location', agentId: actorAgentId,
+            locationId: '', uniqueTag: effect.uniqueTag, success: false,
+            failReason: gwErr instanceof Error ? gwErr.message : 'unknown_error',
+            summary: `spawn_unique_location[${i}] errored: ${gwErr instanceof Error ? gwErr.message : 'unknown'}`,
           });
         }
         break;

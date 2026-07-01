@@ -267,7 +267,9 @@ export type TraceCategory =
   | 'ascendant.signature.warhost'
   // Reach signature: Veil / Rend the Gate (THR-551)
   | 'ascendant.signature.rift'
-  | 'ascendant.signature.rift_leak';
+  | 'ascendant.signature.rift_leak'
+  // Reach signature: Stone / The Great Work (THR-552)
+  | 'ascendant.signature.unique_location';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -506,6 +508,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // Reach signature: Veil / Rend the Gate (THR-551)
   'ascendant.signature.rift',
   'ascendant.signature.rift_leak',
+  // Reach signature: Stone / The Great Work (THR-552)
+  'ascendant.signature.unique_location',
 ];
 
 /** Base shape for all trace entries */
