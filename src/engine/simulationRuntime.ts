@@ -83,6 +83,16 @@ export interface SimulationRuntime {
    */
   branchingFiresTotal: number;
 
+  // ── Threaded beat counter (THR-541) ──
+  /**
+   * Cumulative count of "rich" encounters (multi-step or branching — see isRichTemplate)
+   * that have resolved this session. Incremented once per newly-resolved rich action in
+   * the orchestrator's resolved-action cleanup, BEFORE `unifiedActions` is pruned. The KPI
+   * `beatsPerChunk` rate reads this lifetime total to avoid the same windowed-numerator /
+   * full-tick-denominator undercount THR-470 fixed for branching fires.
+   */
+  threadedBeatsTotal: number;
+
   // ── Foreshadowing cache (THR-389) ──
   /**
    * Per-session cache of foreshadowing results keyed by
@@ -124,6 +134,7 @@ export function createSimulationRuntime(): SimulationRuntime {
     balanceTelemetryVersion: 0,
     eligibilityFunnel: createEligibilityFunnelCounters(0),
     branchingFiresTotal: 0,
+    threadedBeatsTotal: 0,
     foreshadowingCache: new Map(),
     threadStoryCache: new Map(),
     outcomeBandPhraseHistory: new Map(),

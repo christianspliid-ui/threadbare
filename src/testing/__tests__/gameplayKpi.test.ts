@@ -200,6 +200,34 @@ describe('computeGameplayKpiReport', () => {
     expect(report.branchingFire.firesPerChunk).toBeCloseTo((2 / 120) * 30, 3); // 0.5
   });
 
+  it('prefers the runtime lifetime threaded-beat counter over the pruned action snapshot (THR-541)', () => {
+    // Same windowing artifact as branching fires: unifiedActions is pruned after
+    // RESOLVED_ACTION_RETENTION_TICKS, so counting rich beats from it undercounts long runs.
+    // The lifetime counter is the honest numerator for the per-10t rate.
+    const state = makeState({
+      tick: 120,
+      unifiedActions: [makeResolvedAction('encounter.deep_descent', 'success')] as any,
+    });
+    const report = computeGameplayKpiReport(state, { eligibilityFunnel: null, threadedBeatsTotal: 24 });
+    expect(report.threadedBeats.totalBeats).toBe(24);
+    expect(report.threadedBeats.beatsPerChunk).toBeCloseTo((24 / 120) * 10, 3); // 2.0, not the windowed ~0.08
+  });
+
+  it('falls back to the windowed rich-beat count when no lifetime counter is supplied (THR-541)', () => {
+    // encounter.deep_descent is a 3-step (rich) legacy template; a non-rich id must not count.
+    const state = makeState({
+      tick: 120,
+      unifiedActions: [
+        makeResolvedAction('encounter.deep_descent', 'success'),
+        makeResolvedAction('encounter.deep_descent', 'success'),
+        makeResolvedAction('tmpl-not-an-encounter', 'success'),
+      ] as any,
+    });
+    const report = computeGameplayKpiReport(state);
+    expect(report.threadedBeats.totalBeats).toBe(2);
+    expect(report.threadedBeats.beatsPerChunk).toBeCloseTo((2 / 120) * 10, 3);
+  });
+
   it('produces 7 threshold evaluations', () => {
     const report = computeGameplayKpiReport(makeState());
     expect(report.thresholds).toHaveLength(7);

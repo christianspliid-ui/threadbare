@@ -133,6 +133,8 @@ export interface KpiRuntimeView {
   eligibilityFunnel: EligibilityFunnelCounters | null;
   /** Cumulative branching-fire count for the session (THR-470). Survives unifiedActions pruning. */
   branchingFiresTotal?: number;
+  /** Cumulative threaded-beat count for the session (THR-541). Survives unifiedActions pruning. */
+  threadedBeatsTotal?: number;
 }
 
 /** Create a fresh set of funnel counters for a new session. */
@@ -187,6 +189,22 @@ export function isBranchingTemplate(templateId: string): boolean {
   const tmpl = getUnifiedTemplateById(templateId) ?? getAnyEncounterById(templateId);
   const result = tmpl ? tmpl.steps.some(s => 'branchOnStep' in s) : false;
   BRANCHING_TEMPLATE_CACHE.set(templateId, result);
+  return result;
+}
+
+const RICH_TEMPLATE_CACHE = new Map<string, boolean>();
+
+/**
+ * A resolved encounter counts as a "threaded beat" when its template is rich enough to
+ * read as a story beat: multi-step (steps ≥ 3) or branching. Shared by buildThreadedBeats
+ * (windowed fallback) and the orchestrator's cumulative counter so both classify identically.
+ */
+export function isRichTemplate(templateId: string): boolean {
+  const cached = RICH_TEMPLATE_CACHE.get(templateId);
+  if (cached !== undefined) return cached;
+  const tmpl = getAnyEncounterById(templateId);
+  const result = tmpl ? (tmpl.steps.length >= 3 || tmpl.steps.some(s => 'branchOnStep' in s)) : false;
+  RICH_TEMPLATE_CACHE.set(templateId, result);
   return result;
 }
 
@@ -278,15 +296,20 @@ function buildBranchingFire(
 function buildThreadedBeats(
   actions: readonly { resolved: boolean; templateId: string; actorId: string }[],
   tick: number,
+  cumulativeBeats?: number,
 ): ThreadedBeatStats {
-  // Count resolved actions where the template has aftermathConfig or supportBundle (indicating richer encounters)
-  // V1: count encounters with branching or multi-step templates on agents with an established encounter history
-  const branchingOrRich = actions.filter(a => {
-    if (!a.resolved) return false;
-    const tmpl = getAnyEncounterById(a.templateId);
-    return tmpl && (tmpl.steps.length >= 3 || tmpl.steps.some(s => 'branchOnStep' in s));
-  });
-  const total = branchingOrRich.length;
+  // A "threaded beat" is a resolved rich encounter (multi-step or branching) — see isRichTemplate.
+  const windowedBeats = actions.reduce(
+    (n, a) => (a.resolved && isRichTemplate(a.templateId) ? n + 1 : n),
+    0,
+  );
+  // THR-541: prefer the runtime's lifetime counter for the rate. `actions`
+  // (state.unifiedActions) is pruned after RESOLVED_ACTION_RETENTION_TICKS, so counting
+  // beats from it windows the numerator while `tick` is the full run length — the rate
+  // then undercounts long runs (the same artifact THR-470 fixed for branching fires). The
+  // cumulative counter is incremented once per beat at the resolved transition, before
+  // pruning. Falls back to the windowed count when no runtime is supplied (pure-state unit tests).
+  const total = cumulativeBeats ?? windowedBeats;
   return {
     totalBeats: total,
     beatsPerChunk: tick > 0 ? (total / tick) * 10 : 0,
@@ -391,7 +414,7 @@ export function computeGameplayKpiReport(
   const funnel = runtime?.eligibilityFunnel ?? null;
   const concentration = buildTemplateConcentration(actions, funnel);
   const branchingFire = buildBranchingFire(actions, tick, runtime?.branchingFiresTotal);
-  const threadedBeats = buildThreadedBeats(actions, tick);
+  const threadedBeats = buildThreadedBeats(actions, tick, runtime?.threadedBeatsTotal);
   const eligibilityFunnel = buildFunnelSummary(funnel);
   const resolutionGap = buildResolutionGap(actions);
   const thresholds = buildThresholds(outcomes, concentration, branchingFire, threadedBeats);
