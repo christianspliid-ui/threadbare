@@ -194,9 +194,12 @@ describe('encounter-experience contract', { timeout: 120000 }, () => {
     const runtime = createSimulationRuntime();
     const state = createAftermathState();
 
+    // THR-559: drift is keyed by the canonical axis id (`iron_axis`); the choice
+    // pipeline accumulates onto this entry. The register effect below authors the
+    // bare reach `'iron'` on purpose — the handler canonicalizes it to match.
     state.archetypeDrift = [{
       agentId: AGENT_ID,
-      axisId: 'iron',
+      axisId: 'iron_axis',
       fromPosition: 0.29,
       toPosition: 0.29,
       lastUpdatedTick: 19,

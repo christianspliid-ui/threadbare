@@ -97,7 +97,7 @@ import {
   FORMATIVE_MARK_MAX_MAGNITUDE,
 } from '../data/agent-behavior-constants';
 import { computeAxisLeans, chooseAlignedReaction } from './encounters/reactionChooser';
-import { getAxisByReach } from '../types/axisRegistry';
+import { getAxisByReach, reachToAxisId } from '../types/axisRegistry';
 import type { AxiologicalProfile } from '../types/agent';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -2934,6 +2934,10 @@ export function applyEncounterAftermathReaction(
       case 'archetype_drift_register': {
         const resolvedAgentId = effect.targetAgentId
           ?? (target.kind === 'agent' ? target.id : actorAgentId);
+        // THR-559: canonicalize the authored axis id (a bare reach or the
+        // `${reach}_axis` id both resolve to the canonical drift-store key) so
+        // authored effects match the drift entries written by the choice pipeline.
+        const axisId = reachToAxisId(effect.axisId);
 
         if (!resolvedAgentId) {
           emitTrace({
@@ -2949,7 +2953,7 @@ export function applyEncounterAftermathReaction(
         }
 
         const driftEntry = (state.archetypeDrift ?? []).find(
-          entry => entry.agentId === resolvedAgentId && entry.axisId === effect.axisId,
+          entry => entry.agentId === resolvedAgentId && entry.axisId === axisId,
         );
         if (!driftEntry) {
           emitTrace({
@@ -2997,12 +3001,12 @@ export function applyEncounterAftermathReaction(
 
         emitTrace({
           tick, category: 'drift_threshold_crossed', agentId: resolvedAgentId,
-          axisId: effect.axisId,
+          axisId,
           fromPosition: driftEntry.fromPosition,
           toPosition: driftEntry.toPosition,
           thresholdCrossed: effect.threshold,
           pole,
-          summary: `drift_threshold_crossed: ${resolvedAgentId} ${effect.axisId} ${effect.threshold} (${pole})`,
+          summary: `drift_threshold_crossed: ${resolvedAgentId} ${axisId} ${effect.threshold} (${pole})`,
         });
         emitTrace({
           tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,

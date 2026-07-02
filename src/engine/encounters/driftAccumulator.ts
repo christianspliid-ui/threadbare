@@ -101,8 +101,10 @@ export function applyDriftMagnitude(
  * rests at the baseline, never at neutral. This is the "live position = clamp(
  * baseline + drift)" model from the personality plan. (THR-528)
  *
- * Operates on the legacy ±1 axis scale (virtue +1, vice −1) shared by the profile
- * and the drift accumulator; the 0–1 canonical migration is THR-537/538's job.
+ * Operates on the signed ±1 axis scale (virtue +1, vice −1) shared by the profile
+ * and the drift accumulator — the canonical *internal* storage scale (THR-559).
+ * The canonical *author/UI* 0–1 view is obtained via `signedToCanonical01` in the
+ * axis registry; storage stays signed by design (personality-plan grey-zone).
  */
 export function liveAxisPosition(baseline: number, driftDelta: number): number {
   return clampDrift(baseline + driftDelta);

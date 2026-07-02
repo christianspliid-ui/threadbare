@@ -8,13 +8,14 @@
  * ("Kael has become Greedy.").
  *
  * ─── Live position (verify-the-noun) ───────────────────────────
- * The plan's §Scalar-unification states the threshold/announce layer **reads the
- * profile**. Today the standing per-axis position lives on the legacy
- * `AxiologicalProfile` (`node.properties.axiologicalProfile`) on a ±1 scale
- * (virtue +1, vice −1), which birth-seeding populates and selection consumes. We
- * normalize it to the canonical 0–1 axis scale (0.5 neutral) and express the
- * thresholds there, so this phase survives the THR-537/538 scale migration
- * untouched — only the read changes, not the constants.
+ * Reads the **unified live position** = clamp(baseline + drift) per axis (THR-559),
+ * the single canonical formula shared with the reaction chooser — not the baseline
+ * alone. Baseline lives on the `AxiologicalProfile` (`node.properties`) on the
+ * signed ±1 scale (virtue +1, vice −1); temporary drift lives in
+ * `state.archetypeDrift`, keyed by the canonical axis id. The signed live value is
+ * converted to the canonical 0–1 axis scale (0.5 neutral) via the registry's
+ * `signedToCanonical01`, and the thresholds are expressed there — so this phase is
+ * scale-stable if internal storage ever migrates.
  *
  * ─── Constants (NFP #1) ─────────────────────────────────────────
  * Imported from `personality-trait-content.ts`.
@@ -38,7 +39,8 @@ import type { GameState, TickEvent } from '../../types/gameState';
 import type { EnginePhase } from '../phaseRegistry';
 import type { WorldGraph } from '../graph';
 import type { AxiologicalProfile } from '../../types/agent';
-import { CANONICAL_AXES } from '../../types/axisRegistry';
+import { CANONICAL_AXES, reachToAxisId, signedToCanonical01 } from '../../types/axisRegistry';
+import { driftDeltaFor, liveAxisPosition } from '../encounters/driftAccumulator';
 import { assignTrait, removeTrait, getTraitsForNode } from '../traits';
 import { emitTrace } from '../traceBuffer';
 import type { PersonalityTraitEmergedTrace } from '../../types/trace';
@@ -67,21 +69,6 @@ function ensurePersonalityTraitNodes(graph: WorldGraph): void {
   }
 }
 
-// ─── Scale conversion ──────────────────────────────────────────────
-
-function clamp01(v: number): number {
-  return Math.max(0, Math.min(1, v));
-}
-
-/**
- * Convert a legacy ±1 `AxiologicalProfile` value (virtue +1, vice −1) to the
- * canonical 0–1 axis position (0.5 neutral). When the profile itself migrates to
- * 0–1 (THR-537/538), only this read changes.
- */
-function toLivePosition(profileValue: number): number {
-  return clamp01(0.5 + 0.5 * profileValue);
-}
-
 // ─── Core processing ───────────────────────────────────────────────
 
 export interface PersonalityEmergenceResult {
@@ -98,6 +85,7 @@ export interface PersonalityEmergenceResult {
 export function processPersonalityTraitEmergence(state: GameState): PersonalityEmergenceResult {
   const graph = state.graph;
   const tick = state.tick;
+  const drift = state.archetypeDrift ?? []; // fail-soft: no drift array → baseline-only live position
   const events: TickEvent[] = [];
   let granted = 0;
   let released = 0;
@@ -126,8 +114,11 @@ export function processPersonalityTraitEmergence(state: GameState): PersonalityE
       const ids = PERSONALITY_TRAIT_BY_AXIS[axis.axisId];
       if (!ids) continue;
 
-      const value = profile[axis.valuePair] ?? 0;
-      const pos = toLivePosition(value);
+      // Unified live position = clamp(baseline + drift), converted to canonical
+      // 0–1 (THR-559). Baseline from the profile; drift keyed by canonical axis id.
+      const baseline = profile[axis.valuePair] ?? 0;
+      const signed = liveAxisPosition(baseline, driftDeltaFor(drift, actor.id, reachToAxisId(axis.reachDomain)));
+      const pos = signedToCanonical01(signed);
 
       const hasVirtue = heldTraitIds.has(ids.virtue);
       const hasVice = heldTraitIds.has(ids.vice);
@@ -140,13 +131,13 @@ export function processPersonalityTraitEmergence(state: GameState): PersonalityE
           events.push(
             becomingEvent(tick, actor.id, actorName, axis.axisId, axis.virtue.word, 'virtue'),
           );
-          trace(tick, actor.id, actorName, axis.axisId, axis.virtue.word, 'grant', pos, value, ids.virtue);
+          trace(tick, actor.id, actorName, axis.axisId, axis.virtue.word, 'grant', pos, signed, ids.virtue);
         }
       } else if (hasVirtue && pos < PERSONALITY_TRAIT_VIRTUE_RELEASE) {
         removeTrait(graph, actor.id, ids.virtue);
         heldTraitIds.delete(ids.virtue);
         released++;
-        trace(tick, actor.id, actorName, axis.axisId, axis.virtue.word, 'release', pos, value, ids.virtue);
+        trace(tick, actor.id, actorName, axis.axisId, axis.virtue.word, 'release', pos, signed, ids.virtue);
       }
 
       // ── Vice pole ──
@@ -157,13 +148,13 @@ export function processPersonalityTraitEmergence(state: GameState): PersonalityE
           events.push(
             becomingEvent(tick, actor.id, actorName, axis.axisId, axis.vice.word, 'vice'),
           );
-          trace(tick, actor.id, actorName, axis.axisId, axis.vice.word, 'grant', pos, value, ids.vice);
+          trace(tick, actor.id, actorName, axis.axisId, axis.vice.word, 'grant', pos, signed, ids.vice);
         }
       } else if (hasVice && pos > PERSONALITY_TRAIT_VICE_RELEASE) {
         removeTrait(graph, actor.id, ids.vice);
         heldTraitIds.delete(ids.vice);
         released++;
-        trace(tick, actor.id, actorName, axis.axisId, axis.vice.word, 'release', pos, value, ids.vice);
+        trace(tick, actor.id, actorName, axis.axisId, axis.vice.word, 'release', pos, signed, ids.vice);
       }
     }
   }

@@ -160,6 +160,10 @@ const AXIS_BY_ID: ReadonlyMap<string, CanonicalAxis> = new Map(
   CANONICAL_AXES.map((axis) => [axis.axisId, axis]),
 );
 
+const AXIS_BY_VALUE_PAIR: ReadonlyMap<ValuePair, CanonicalAxis> = new Map(
+  CANONICAL_AXES.map((axis) => [axis.valuePair, axis]),
+);
+
 // ─── Helper getters ─────────────────────────────────────────────────────────
 
 /**
@@ -185,5 +189,54 @@ export function getPoleLabel(axisId: string, side: AxisPoleSide): AxisPole | und
   return side === 'virtue' ? axis.virtue : axis.vice;
 }
 
+/** Get the canonical axis for a legacy `AxiologicalProfile` ValuePair key, or undefined. */
+export function getAxisByValuePair(valuePair: ValuePair): CanonicalAxis | undefined {
+  return AXIS_BY_VALUE_PAIR.get(valuePair);
+}
+
+/**
+ * The canonical drift/threshold storage key for a reach — the single naming site
+ * for the moral-axis `axisId`. Returns the canonical axis id (`${reach}_axis`)
+ * for the 8 moral reaches, and passes any non-moral reach through unchanged
+ * (e.g. `'quintessence'`, which has no moral axis and whose drift entries no axis
+ * reader consumes). Use this everywhere the drift accumulator / threshold layer
+ * needs an `axisId`, instead of passing a bare reach or an ad-hoc string (THR-559).
+ */
+export function reachToAxisId(reach: string): string {
+  const axis = AXIS_BY_REACH[reach as ReachDomain];
+  return axis ? axis.axisId : reach;
+}
+
+/**
+ * Reverse of {@link reachToAxisId}: the reach that owns a canonical axis id, or
+ * undefined if the id is unknown (fail-soft — callers skip unknown axes).
+ */
+export function axisIdToReach(axisId: string): ReachDomain | undefined {
+  return AXIS_BY_ID.get(axisId)?.reachDomain;
+}
+
 /** All canonical axis ids, in `REACH_DOMAINS` order. */
 export const CANONICAL_AXIS_IDS: readonly string[] = REACH_DOMAINS.map(axisIdForReach);
+
+// ─── Canonical scale conversion (THR-559) ───────────────────────────────────
+//
+// The moral-axis scalar has one canonical *author/UI* scale — **0–1, 0.5
+// neutral, virtue 1.0, vice 0.0** (see the module doc). Internal engine storage
+// (`AxiologicalProfile`, `ArchetypeDrift`) remains on the legacy **signed ±1**
+// scale (virtue +1, vice −1) — the grey-zone in the personality plan explicitly
+// permits signed internal storage as long as the canonical author/UI scale is
+// 0–1. These two functions are the single, canonical bridge between the scales;
+// every place that needs the 0–1 view converts here rather than open-coding
+// `0.5 + 0.5 * v` (which previously lived duplicated in `personalityTraitEmerge`).
+
+/** Convert a signed ±1 axis value (virtue +1, vice −1) to the canonical 0–1 scale (0.5 neutral). */
+export function signedToCanonical01(signed: number): number {
+  const v = 0.5 + 0.5 * signed;
+  return v < 0 ? 0 : v > 1 ? 1 : v;
+}
+
+/** Convert a canonical 0–1 axis value (0.5 neutral) back to the signed ±1 scale. */
+export function canonical01ToSigned(canonical: number): number {
+  const v = 2 * canonical - 1;
+  return v < -1 ? -1 : v > 1 ? 1 : v;
+}

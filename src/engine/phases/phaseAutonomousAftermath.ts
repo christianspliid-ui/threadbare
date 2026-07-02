@@ -44,6 +44,7 @@ import type { EnginePhase, PhaseContext, PhaseResult } from '../phaseRegistry';
 import type { TraceEntry } from '../../types/trace';
 import { applyEncounterAftermathReaction } from '../encounterAftermath';
 import { computeAxisLeans, chooseAlignedReaction } from '../encounters/reactionChooser';
+import { reachToAxisId } from '../../types/axisRegistry';
 import { applyDriftMagnitude } from '../encounters/driftAccumulator';
 import { getThreadedAgents, getAvatarsOf } from '../graphQueries';
 import { emitTrace } from '../traceBuffer';
@@ -150,7 +151,7 @@ export function processAutonomousAftermath(state: GameState, ctx: PhaseContext):
         choice.dominant.pole === 'virtue'
           ? PERSONALITY_REACTION_DRIFT_DELTA
           : -PERSONALITY_REACTION_DRIFT_DELTA;
-      const driftResult = applyDriftMagnitude(nextDrift, agentId, choice.dominant.reach, signed, s.tick);
+      const driftResult = applyDriftMagnitude(nextDrift, agentId, reachToAxisId(choice.dominant.reach), signed, s.tick);
       nextDrift = driftResult.drift;
       for (const driftTrace of driftResult.traces) {
         emitTrace({

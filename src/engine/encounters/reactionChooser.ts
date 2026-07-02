@@ -38,7 +38,7 @@ import type { EncounterAftermathReaction } from '../../types/unifiedAction';
 import type { ArchetypeDrift } from '../../types/gameState';
 import type { AxiologicalProfile } from '../../types/agent';
 import type { WorldGraph } from '../graph';
-import { CANONICAL_AXES } from '../../types/axisRegistry';
+import { CANONICAL_AXES, reachToAxisId } from '../../types/axisRegistry';
 import { driftDeltaFor, liveAxisPosition } from './driftAccumulator';
 
 /** Strictly-positive alignment below this magnitude counts as "no signal" (float-noise floor). */
@@ -94,7 +94,7 @@ export function computeAxisLeans(
   for (const axis of CANONICAL_AXES) {
     const baseline = profile[axis.valuePair];
     if (typeof baseline !== 'number') continue;
-    const delta = driftDeltaFor(archetypeDrift as ArchetypeDrift[], agentId, axis.reachDomain);
+    const delta = driftDeltaFor(archetypeDrift as ArchetypeDrift[], agentId, reachToAxisId(axis.reachDomain));
     leans[axis.reachDomain] = liveAxisPosition(baseline, delta);
     any = true;
   }

@@ -87,7 +87,7 @@ describe('phaseChoiceResolution', () => {
         makeState([makeCommit({ moralAxisPole: 'virtue', driftMagnitude: 0.05, reach: 'iron' })]),
         constantPrng(0.3),
       );
-      const entry = result.archetypeDrift.find(d => d.agentId === 'agt' && d.axisId === 'iron');
+      const entry = result.archetypeDrift.find(d => d.agentId === 'agt' && d.axisId === 'iron_axis');
       expect(entry?.toPosition).toBeCloseTo(0.05, 10);
     });
 
@@ -96,7 +96,7 @@ describe('phaseChoiceResolution', () => {
         makeState([makeCommit({ moralAxisPole: 'flaw', driftMagnitude: 0.05, reach: 'iron' })]),
         constantPrng(0.3),
       );
-      const entry = result.archetypeDrift.find(d => d.agentId === 'agt' && d.axisId === 'iron');
+      const entry = result.archetypeDrift.find(d => d.agentId === 'agt' && d.axisId === 'iron_axis');
       expect(entry?.toPosition).toBeCloseTo(-0.05, 10);
     });
   });
@@ -190,7 +190,7 @@ describe('phaseChoiceResolution', () => {
         makeCommit({ agentId: 'agt', reach: 'iron', driftMagnitude: 0.03, moralAxisPole: 'virtue' }),
       ];
       const result = phaseChoiceResolution(makeState(commits), constantPrng(0.2));
-      const entry = result.archetypeDrift.find(d => d.agentId === 'agt' && d.axisId === 'iron');
+      const entry = result.archetypeDrift.find(d => d.agentId === 'agt' && d.axisId === 'iron_axis');
       expect(entry?.toPosition).toBeCloseTo(0.08, 10);
     });
 
