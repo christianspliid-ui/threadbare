@@ -178,6 +178,23 @@ describe('AgentProfileModal', () => {
     expect(screen.getByText('Cursed')).toBeTruthy();
   });
 
+  // THR-562 — emergent personality traits render in their own distinguished section.
+  it('shows the Personality section with emergent traits in Overview tab at intimate level', () => {
+    const cardWithPersonality: AgentInfoCardData = {
+      ...intimateCard,
+      personalityTraits: [
+        { id: 'trait.personality.gold.vice', name: 'Greedy', pole: 'vice', reach: 'gold', flavorText: 'Weighs a friendship by what it can yield.' },
+        { id: 'trait.personality.iron.virtue', name: 'Brave', pole: 'virtue', reach: 'iron' },
+      ],
+    };
+    render(<AgentProfileModal card={cardWithPersonality} profile={intimateProfile} onClose={vi.fn()} />);
+    expect(screen.getByText('Personality')).toBeTruthy();
+    const chips = screen.getAllByTestId('personality-trait');
+    expect(chips).toHaveLength(2);
+    expect(screen.getByText('Greedy')).toBeTruthy();
+    expect(screen.getByText('Brave')).toBeTruthy();
+  });
+
   it('clicking Prowess tab shows domain grid', () => {
     render(<AgentProfileModal card={intimateCard} profile={intimateProfile} onClose={vi.fn()} />);
     clickTab('Prowess');

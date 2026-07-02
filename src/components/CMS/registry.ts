@@ -276,6 +276,7 @@ const TRAIT_CATEGORY_COLORS: Record<string, string> = {
   mastery: '#166534',    // green
   reputation: '#92400e', // amber
   core: '#0f766e',       // deep teal — the foundation character layer
+  personality: '#a21caf', // fuchsia — emergent moral-axis traits (THR-562)
   scar: '#991b1b',       // red
   condition: '#6b21a8',  // purple
   destiny: '#7c2d12',    // orange

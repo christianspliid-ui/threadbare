@@ -63,6 +63,7 @@ export function eventTypeToCategory(type: TickEvent['type']): NotificationCatego
   if (type === 'return_resolved' || type === 'ripple_consequence') return 'journeys';
   if (type === 'hidden_site_discovered' || type === 'elder_site_discovered'
     || type === 'survey_completed') return 'discovery';
+  if (type === 'personality_trait_emerged') return 'lifecycle'; // THR-562 — a character-defining "becoming"
   // Default fallback
   return 'actions';
 }

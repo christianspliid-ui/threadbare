@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import type { TickEvent } from '../../types/gameState';
 import type { NotificationState } from '../../types/notification';
 import { TOAST_MAX_VISIBLE, ALERT_MAX_VISIBLE } from '../../types/notification';
-import { routeNotifications } from '../notificationRouter';
+import { routeNotifications, eventTypeToCategory } from '../notificationRouter';
 
 function makeEvent(overrides: Partial<TickEvent> & { id: string; tick: number }): TickEvent {
   return {
@@ -225,5 +225,28 @@ describe('routeNotifications', () => {
     expect(result.alerts[result.alerts.length - 1].message).toBe(
       `Alert ${ALERT_MAX_VISIBLE + 2}`,
     );
+  });
+
+  // THR-562 — the "becoming" personality beat surfaces as a lifecycle toast.
+  it('routes a personality_trait_emerged toast into the toasts array under the lifecycle category', () => {
+    expect(eventTypeToCategory('personality_trait_emerged')).toBe('lifecycle');
+
+    const events: TickEvent[] = [
+      makeEvent({
+        id: 'p1',
+        tick: 3,
+        type: 'personality_trait_emerged',
+        message: 'Kael has become Greedy.',
+        actorId: 'kael',
+        notification: { channel: 'toast' },
+      }),
+    ];
+    const result = routeNotifications(events, EMPTY_STATE, NOW);
+    expect(result.toasts).toHaveLength(1);
+    expect(result.toasts[0]).toMatchObject({
+      message: 'Kael has become Greedy.',
+      actorId: 'kael',
+      navigationTarget: { kind: 'agent', agentId: 'kael' },
+    });
   });
 });

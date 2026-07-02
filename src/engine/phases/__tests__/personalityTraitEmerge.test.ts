@@ -69,6 +69,9 @@ describe('processPersonalityTraitEmergence', () => {
     expect(result.events[0].type).toBe('personality_trait_emerged');
     expect(result.events[0].message).toBe('Thorin has become Brave.');
     expect(result.events[0].actorId).toBe('a1');
+    // THR-562 — the becoming beat must carry a notification directive or the
+    // notification router silently drops it (never reaching the player).
+    expect(result.events[0].notification).toEqual({ channel: 'toast' });
   });
 
   it('grants the vice trait when the live position crosses the vice threshold', () => {

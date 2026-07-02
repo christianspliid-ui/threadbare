@@ -17,6 +17,17 @@ import { CORE_CONTINUA, CORE_NEUTRAL } from '../../../types/coreRegistry';
  */
 const CORE_LEAN_EPSILON = 0.05;
 
+// ─── Personality trait rendering (THR-562) ────────────────────────
+
+/**
+ * Pole accent colors for the emergent Personality section. Virtue leans on the
+ * sheet's gold accent (a positive cast); vice uses a muted rose that reads as
+ * cautionary without the alarm of the scar-red used for wounds. The distinction
+ * makes "who they've become" legible at a glance.
+ */
+const PERSONALITY_VIRTUE_COLOR = 'var(--accent-gold)';
+const PERSONALITY_VICE_COLOR = '#c77b7b';
+
 // ─── Knowledge level helpers ──────────────────────────────────────
 
 const KNOWLEDGE_RANK: Record<string, number> = {
@@ -115,6 +126,7 @@ export function OverviewTab({ card, profile: _profile, knowledge }: OverviewTabP
 
   const showNatureSection = knowledge != null || hasKnowledge(card.knowledgeLevel, 'recognised');
   const showTraits = hasKnowledge(card.knowledgeLevel, 'intimate') && (card.allTraits?.length ?? 0) > 0;
+  const showPersonality = hasKnowledge(card.knowledgeLevel, 'intimate') && (card.personalityTraits?.length ?? 0) > 0;
   const showQuotes = quoteCount > 0 && (card.quotes?.length ?? 0) > 0;
   const showDisposedRecord = !showNatureSection && false; // unused path
 
@@ -253,6 +265,33 @@ export function OverviewTab({ card, profile: _profile, knowledge }: OverviewTabP
           </p>
         </section>
       ) : null}
+
+      {/* Personality — emergent moral-axis traits ("who they've become"), intimate+.
+          Distinguished from the generic Traits chips: virtue/vice-tinted, flavor on hover. */}
+      {showPersonality && (
+        <section>
+          <SectionHeading as="h2">Personality</SectionHeading>
+          <p className="text-xs italic mb-2" style={{ color: 'var(--text-tertiary)' }}>
+            Who {card.name} has become — the mark of their choices.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {card.personalityTraits!.map((t) => {
+              const color = t.pole === 'virtue' ? PERSONALITY_VIRTUE_COLOR : PERSONALITY_VICE_COLOR;
+              return (
+                <span
+                  key={t.id}
+                  data-testid="personality-trait"
+                  title={t.flavorText || t.description || undefined}
+                  className="px-2 py-0.5 rounded text-xs border"
+                  style={{ borderColor: color, color }}
+                >
+                  {t.name}
+                </span>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Traits — KnowledgeLevel-gated (intimate+) */}
       {showTraits && (
