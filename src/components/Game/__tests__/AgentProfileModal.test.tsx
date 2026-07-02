@@ -195,6 +195,36 @@ describe('AgentProfileModal', () => {
     expect(screen.getByText('Brave')).toBeTruthy();
   });
 
+  // THR-567 — the Personality section renders the layered story: live per-axis
+  // position bars plus the origin/mark contributors grouped under their axis.
+  it('shows per-axis position bars and contributor rows in the Personality section (intimate)', () => {
+    const cardWithLayers: AgentInfoCardData = {
+      ...intimateCard,
+      allTraits: undefined, // avoid unrelated chips; focus on the Personality section
+      axiologicalProfile: {
+        mercy_ruthlessness: 0.4,          // iron → leans virtue (Brave)
+        asceticism_extravagance: -0.3,    // gold → leans vice (Greedy)
+        honesty_cunning: 0, tradition_novelty: 0, loyalty_ambition: 0,
+        revelation_discretion: 0, preservation_transformation: 0,
+        sacrifice_survival: 0, courage_prudence: 0,
+      },
+      personalityContributors: [
+        { id: 'origin.iron.virtue.doorway', source: 'origin', axisId: 'iron_axis', reach: 'iron', pole: 'virtue', text: 'Stood in the doorway anyway.' },
+        { id: 'trait.mark.betrayal.gold_axis', source: 'mark', axisId: 'gold_axis', reach: 'gold', pole: 'vice', text: 'The Betrayal', detail: 'A trust broken that never mended.' },
+      ],
+    };
+    render(<AgentProfileModal card={cardWithLayers} profile={intimateProfile} onClose={vi.fn()} />);
+    expect(screen.getByText('Personality')).toBeTruthy();
+    // Axis bars: iron (Brave/Power-Hungry) and gold (Generous/Greedy) qualify.
+    expect(screen.getByText('Brave')).toBeTruthy();
+    expect(screen.getByText('Greedy')).toBeTruthy();
+    // Contributor rows: one origin, one mark.
+    const rows = screen.getAllByTestId('personality-contributor');
+    expect(rows).toHaveLength(2);
+    expect(screen.getByText('Stood in the doorway anyway.')).toBeTruthy();
+    expect(screen.getByText('The Betrayal')).toBeTruthy();
+  });
+
   it('clicking Prowess tab shows domain grid', () => {
     render(<AgentProfileModal card={intimateCard} profile={intimateProfile} onClose={vi.fn()} />);
     clickTab('Prowess');

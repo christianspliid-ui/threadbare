@@ -26,6 +26,8 @@ import { generateTieredBackstory } from './backstoryGenerator';
 import type { BackstoryResult } from '../types/prose';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 import { getAgentPortraitUrlFromProperties } from '../data/portrait-assets';
+import { getOriginVignetteById } from '../data/origin-vignettes';
+import { getAxisByReach, getAxisById } from '../types/axisRegistry';
 import { getDivineInfluences } from './interventionEffects';
 import { getCurrentStrength } from './decayCurve';
 import type { InterventionType, DivineInfluenceEntry } from '../types/dream';
@@ -281,6 +283,16 @@ export interface AgentInfoCardData {
    * Personality section rather than the generic trait chips.
    */
   personalityTraits?: PersonalityTraitDisplay[];
+  /**
+   * The permanent contributors that shaped this agent's moral baseline — the
+   * "born as → marked by" layer beneath the emergent `personalityTraits`
+   * ("becoming") and the live `axiologicalProfile` ("now"). Populated at
+   * intimate+ (same gate as `personalityTraits`). Two sources, each keyed to the
+   * axis it pushed on: drawn origin vignettes (`node.originVignettes`, THR-561)
+   * and permanent traits carrying `axisContributions` (the slot formative-mark
+   * traits use, THR-529). Empty/absent when the agent was born neutral.
+   */
+  personalityContributors?: PersonalityContributorDisplay[];
   /** Rarity tier for this agent (1–4). Populated from node.properties.rarityTier. */
   rarityTier?: number;
 }
@@ -298,6 +310,29 @@ export interface PersonalityTraitDisplay {
   reach: string;
   flavorText?: string;
   description?: string;
+}
+
+/**
+ * One permanent contributor to an agent's moral baseline, shaped for the
+ * character-sheet Personality section (THR-567). Each row is keyed to the canonical
+ * axis it pushed on so the UI can group contributors under their axis, ordered as
+ * the born→marked story.
+ */
+export interface PersonalityContributorDisplay {
+  /** Stable id for React keys — vignette id, or `${traitId}.${axisId}`. */
+  id: string;
+  /** Which layer this contributor belongs to: an origin vignette or a permanent mark trait. */
+  source: 'origin' | 'mark';
+  /** Canonical axis id (`${reach}_axis`) this contributor pushes on. */
+  axisId: string;
+  /** Reach owning the axis, e.g. "gold" — for grouping + sphere colour. */
+  reach: string;
+  /** Which pole the contribution leans toward (sign of its delta). */
+  pole: 'virtue' | 'vice';
+  /** Primary display line — the vignette prose, or the trait name. */
+  text: string;
+  /** Optional secondary line — a trait's flavour/description (vignettes carry none). */
+  detail?: string;
 }
 
 // ─── Familiarity-gated Full Profile (Tier 3) ──────────────────────
@@ -593,6 +628,80 @@ function getPersonalityTraitDisplays(graph: WorldGraph, agentId: string): Person
 }
 
 /**
+ * Permanent contributors to an agent's moral baseline (THR-567) — the enumerable
+ * "born as → marked by" provenance beneath the emergent personality traits. Two
+ * sources, each mapped to the canonical axis it pushed on:
+ *
+ *   1. **Origin vignettes** ("born as") — the ids the birth-seeding phase drew and
+ *      recorded on `node.properties.originVignettes` (THR-561), resolved back to
+ *      their content via `getOriginVignetteById`. An unknown id is skipped fail-soft.
+ *   2. **Permanent axis-contributing traits** ("marked by") — the agent's standing
+ *      traits (non-decaying `has_trait` edges) whose definition carries
+ *      `axisContributions`. This is the slot a formative-mark trait (THR-529) uses;
+ *      one row per (trait × axis) so a multi-axis trait groups under each axis.
+ *
+ * Note the landed formative-mark effect (`axiological_mark_apply`) currently moves
+ * the baseline *in place* without leaving a trait, so its provenance is not
+ * enumerable here — only the resulting live position (`axiologicalProfile`) reflects
+ * it. Marks authored as permanent axis-contributing traits surface automatically.
+ *
+ * A contribution referencing an axis id absent from the registry is skipped (the
+ * same fail-soft the baseline computation applies). Sorted origin-first, then by
+ * axis order, so the UI reads born→marked per axis.
+ * @private
+ */
+function getPersonalityContributorDisplays(graph: WorldGraph, agentId: string): PersonalityContributorDisplay[] {
+  const node = graph.getNode(agentId);
+  if (!node) return [];
+  const out: PersonalityContributorDisplay[] = [];
+
+  // 1. Origin vignettes — provenance ids on the node.
+  const vignetteIds = (node.properties as Record<string, unknown>).originVignettes;
+  if (Array.isArray(vignetteIds)) {
+    for (const vid of vignetteIds) {
+      if (typeof vid !== 'string') continue;
+      const v = getOriginVignetteById(vid);
+      if (!v) continue; // unknown id — skip fail-soft.
+      const axis = getAxisByReach(v.reach);
+      out.push({
+        id: v.id,
+        source: 'origin',
+        axisId: axis.axisId,
+        reach: axis.reachDomain,
+        pole: v.pole,
+        text: v.text,
+      });
+    }
+  }
+
+  // 2. Permanent traits carrying axisContributions — one row per (trait × axis).
+  for (const { trait, edge } of getActorTraits(graph, agentId)) {
+    const assignment = edge.properties as unknown as TraitAssignmentProperties;
+    // Temporary assignments (a finite tick countdown) are not part of the standing baseline.
+    if (typeof assignment.ticksRemaining === 'number') continue;
+    const def = trait.properties as unknown as TraitDefinitionProperties;
+    const contribs = def.axisContributions;
+    if (!contribs) continue;
+    for (const [axisId, delta] of Object.entries(contribs)) {
+      if (typeof delta !== 'number' || delta === 0) continue;
+      const axis = getAxisById(axisId);
+      if (!axis) continue; // unknown axis — skip fail-soft.
+      out.push({
+        id: `${trait.id}.${axisId}`,
+        source: 'mark',
+        axisId,
+        reach: axis.reachDomain,
+        pole: delta >= 0 ? 'virtue' : 'vice',
+        text: trait.name,
+        detail: def.flavorText || def.description || undefined,
+      });
+    }
+  }
+
+  return out;
+}
+
+/**
  * Build display-ready trait summaries from an agent's has_trait edges.
  * Excludes condition traits (shown separately in Conditions section).
  * Only includes 'public' visibility traits for the standard detail panel.
@@ -883,6 +992,13 @@ export function getAgentInfoCard(
       card.personalityTraits = personalityTraits;
     }
     const personalityNames = new Set(personalityTraits.map(t => t.name));
+
+    // Permanent baseline contributors ("born as → marked by") — the layer beneath
+    // the emergent traits and the live axis position (THR-567).
+    const personalityContributors = getPersonalityContributorDisplays(graph, agentId);
+    if (personalityContributors.length > 0) {
+      card.personalityContributors = personalityContributors;
+    }
 
     // All (non-personality) traits
     const genericTraitNames = traitNames.filter(n => !personalityNames.has(n));
