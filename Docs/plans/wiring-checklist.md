@@ -299,7 +299,7 @@ The "who they currently are" layer of the personality stack. A new per-tick phas
 
 | Surface | Path | Notes |
 |---|---|---|
-| **Registered phase** | `src/engine/phases/personalityTraitEmerge.ts` | `personalityTraitEmergePhase` (slot `post-economy`) + `processPersonalityTraitEmergence(state)`. Individual actors only (`actorType:'individual'`, non-deceased, not the ascendant). Reads `node.properties.axiologicalProfile[axis.valuePair]` (legacy ±1), normalizes to the canonical 0–1 axis position (`0.5 + 0.5·v`), and grants the virtue trait at ≥0.8 / vice at ≤0.2, releasing inside the `0.65`/`0.35` hysteresis band. Mutates `has_trait` edges in place via `assignTrait`/`removeTrait`; returns "becoming" `tickEvents`. |
+| **Registered phase** | `src/engine/phases/personalityTraitEmerge.ts` | `personalityTraitEmergePhase` (slot `post-economy`) + `processPersonalityTraitEmergence(state)`. Individual actors only (`actorType:'individual'`, non-deceased, not the ascendant). **THR-559:** reads the *unified live position* = `clamp(baseline + drift)` — baseline from `node.properties.axiologicalProfile[axis.valuePair]` (signed ±1) plus temporary drift via `driftDeltaFor(state.archetypeDrift, id, reachToAxisId(reach))` — the same accessor the reaction chooser uses (not baseline alone). Converts the signed live value to the canonical 0–1 scale via the registry's `signedToCanonical01` (the local `toLivePosition` duplicate was retired), and grants the virtue trait at ≥0.8 / vice at ≤0.2, releasing inside the `0.65`/`0.35` hysteresis band. Mutates `has_trait` edges in place via `assignTrait`/`removeTrait`; returns "becoming" `tickEvents`. |
 | Trait definitions | `src/data/personality-trait-content.ts` | 16 trait nodes (8 axes × virtue/vice), `subcategory:'personality'`, **empty `domainContributions`** (capability invariant — personality steers selection, never competence) carrying per-reach `scoringModifiers`. Generated from `CANONICAL_AXES` so pole labels/reach bindings can't drift. Exports `PERSONALITY_TRAIT_DEFINITIONS` + `PERSONALITY_TRAIT_BY_AXIS`. |
 | Behavior bias consumer | `src/engine/encounterScoring.ts` | `computeReputationScoringBonus` generalized to also read `subcategory:'personality'` traits' top-level `scoringModifiers` (alongside `reputation` traits' nested `reputationEffects.scoringModifiers`), scaled by `REPUTATION_SCORING_WEIGHT`. |
 | Schema field | `src/types/traits.ts` | `'personality'` added to `TraitCategory`; new optional `scoringModifiers?: Partial<Record<ReachDomain, number>>` on `TraitDefinitionProperties`. |
@@ -309,6 +309,21 @@ The "who they currently are" layer of the personality stack. A new per-tick phas
 | Tests | `src/engine/phases/__tests__/personalityTraitEmerge.test.ts` (new, 10) | Grant/release at thresholds, hysteresis hold-then-release, idempotency, ascendant exclusion, missing-profile fail-soft, trace emission, opposite-pole release. Plus the `phaseRegistry.equivalence` baseline updated for the new phase. |
 
 UI note: the character-sheet personality rows ("who they were born / what marked them / who they are") are **THR-532** (later wave). This slice ships the engine + content + the "becoming" event; full sheet rendering is deferred.
+
+---
+
+## Canonical Axis Registry — keying + scale unification (THR-559)
+
+Foundation of the Agent Personality & Moral Drift project — the scalar-unification pass. Makes the axis registry the single source of truth for the moral-axis **key** and the **canonical scale**, and unifies the two previously-divergent live-position computations onto one accessor.
+
+| Surface | Path | Notes |
+|---|---|---|
+| **Registry keying helpers** | `src/types/axisRegistry.ts` | `reachToAxisId(reach)` → canonical `${reach}_axis` id for the 8 moral reaches (non-moral reaches like `quintessence` pass through unchanged); `axisIdToReach(axisId)` reverses it; `getAxisByValuePair(valuePair)` reverses the legacy ValuePair bridge. Single naming site for the `ArchetypeDrift.axisId`. |
+| **Canonical scale conversion** | `src/types/axisRegistry.ts` | `signedToCanonical01(signed)` / `canonical01ToSigned(v)` — the one bridge between signed ±1 *internal storage* and the canonical 0–1 *author/UI* scale (0.5 neutral, virtue 1.0, vice 0.0). Internal storage stays signed by design (personality-plan grey-zone); the 0–1 view is obtained here. Retires the duplicated `0.5 + 0.5·v` that lived in `personalityTraitEmerge`. |
+| **Drift keying reconciled** | `src/engine/orchestrator/phaseChoiceResolution.ts`, `src/engine/phases/phaseAutonomousAftermath.ts`, `src/engine/encounters/reactionChooser.ts` | `applyDriftMagnitude` / `driftDeltaFor` production call sites now key `ArchetypeDrift.axisId` by the canonical `reachToAxisId(reach)` (`iron_axis`), not a bare reach. Writers + readers move together, so live behavior is unchanged; the stored key is now honest to the field name. No content authors `archetype_drift_register`, so no content migration. |
+| **Unified live-position read** | `src/engine/phases/personalityTraitEmerge.ts` | Emergence now reads `clamp(baseline + drift)` via the shared `liveAxisPosition` + `driftDeltaFor` accessor — the same one the reaction chooser uses — retiring the parallel baseline-only computation (the "duplicated standing representation"). |
+| Scale decision (documented, NFP) | — | Internal storage (`AxiologicalProfile`, `ArchetypeDrift`) and engine thresholds remain on the signed ±1 scale; the canonical 0–1 conversion is centralized in the registry for the author/UI layers (character sheet is THR-532). A full ±1→0–1 *storage* migration and the EncounterArchetypePole/ARCHETYPE_NAMES *content-vocabulary* rename are optional destructive follow-ups (not required for this foundation). |
+| Reconciliation guard (tests) | `src/types/__tests__/axisRegistry.test.ts` | Asserts the legacy naming sites agree with the registry: `REACH_VALUE_PAIR` == registry `valuePair` bridge; `MORAL_AXIS_POLES_BY_REACH` (EncounterArchetypePole) covers exactly the 8 registry reaches with two distinct poles each; `reachToAxisId`/`axisIdToReach` round-trip; `signedToCanonical01`/`canonical01ToSigned` anchors, clamping, and round-trip. |
 
 ---
 

@@ -57,7 +57,7 @@ describe('computeAxisLeans', () => {
 
   it('adds temporary drift to the baseline', () => {
     const drift: ArchetypeDrift[] = [
-      { agentId: 'a1', axisId: 'heart', fromPosition: 0, toPosition: 0.1, lastUpdatedTick: 1 },
+      { agentId: 'a1', axisId: 'heart_axis', fromPosition: 0, toPosition: 0.1, lastUpdatedTick: 1 },
     ];
     const leans = computeAxisLeans(agent({ loyalty_ambition: 0.7 }), drift, 'a1');
     expect(leans?.heart).toBeCloseTo(0.8);

@@ -125,7 +125,7 @@ describe('phaseAutonomousAftermath', () => {
   it('applies drift toward the chosen pole', () => {
     const state = makeState({ profile: { loyalty_ambition: 0.8 } });
     const next = processAutonomousAftermath(state, { runtime }) as GameState;
-    const drift = next.archetypeDrift.find(d => d.agentId === 'mortal-1' && d.axisId === 'heart');
+    const drift = next.archetypeDrift.find(d => d.agentId === 'mortal-1' && d.axisId === 'heart_axis');
     expect(drift).toBeTruthy();
     expect(drift!.toPosition).toBeGreaterThan(0); // pushed toward virtue
   });

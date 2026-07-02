@@ -11,9 +11,8 @@ import { resolveEncounterChoice } from '../encounters/choiceResolution';
 import { applyDriftMagnitude, liveAxisPosition, driftDeltaFor } from '../encounters/driftAccumulator';
 import { consumeItemForChoice } from '../encounters/itemConsumption';
 import { emitTrace } from '../traceBuffer';
-import { getAxisByReach } from '../../types/axisRegistry';
+import { getAxisByReach, reachToAxisId } from '../../types/axisRegistry';
 import type { AxiologicalProfile } from '../../types/agent';
-import type { ReachDomain } from '../../types/traits';
 
 export interface ChoiceResolutionPhaseResult {
   archetypeDrift: GameState['archetypeDrift'];
@@ -73,10 +72,14 @@ export function phaseChoiceResolution(
     const signedMagnitude =
       commit.moralAxisPole === 'virtue' ? commit.driftMagnitude : -commit.driftMagnitude;
 
+    // Canonical moral-axis key (THR-559): the registry's `${reach}_axis` id, not a
+    // bare reach. Both the write and the subsequent read use the same key.
+    const axisId = reachToAxisId(commit.reach);
+
     const driftResult = applyDriftMagnitude(
       drift,
       commit.agentId,
-      commit.reach,
+      axisId,
       signedMagnitude,
       state.tick,
     );
@@ -88,7 +91,7 @@ export function phaseChoiceResolution(
     const livePosition =
       baseline === undefined
         ? undefined
-        : liveAxisPosition(baseline, driftDeltaFor(drift, commit.agentId, commit.reach));
+        : liveAxisPosition(baseline, driftDeltaFor(drift, commit.agentId, axisId));
 
     // Item consumption (atomic with choice commit, same tick).
     if (commit.consumesItemId) {

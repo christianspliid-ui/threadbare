@@ -370,8 +370,10 @@ describe('applyEncounterAftermathReaction', () => {
     const state = createMinimalGameState();
     state.archetypeDrift = [
       {
+        // THR-559: drift is keyed by the canonical axis id; the effect below
+        // authors the bare reach 'iron', which the handler canonicalizes to match.
         agentId: 'actor-1',
-        axisId: 'iron',
+        axisId: 'iron_axis',
         fromPosition: 0.25,
         toPosition: 0.34,
         lastUpdatedTick: 19,

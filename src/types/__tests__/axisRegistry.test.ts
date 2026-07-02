@@ -7,10 +7,16 @@ import {
   AXIS_VICE,
   getAxisByReach,
   getAxisById,
+  getAxisByValuePair,
   getPoleLabel,
+  reachToAxisId,
+  axisIdToReach,
+  signedToCanonical01,
+  canonical01ToSigned,
 } from '../axisRegistry';
 import { REACH_DOMAINS } from '../traits';
 import { REACH_VALUE_PAIR } from '../agent';
+import { MORAL_AXIS_POLES_BY_REACH } from '../encounter-contract';
 
 /**
  * The THR-524-approved table, restated independently here as the test oracle so a
@@ -105,5 +111,84 @@ describe('axisRegistry — helper getters', () => {
 
   it('getPoleLabel returns undefined for an unknown id', () => {
     expect(getPoleLabel('nonexistent_axis', 'virtue')).toBeUndefined();
+  });
+
+  it('getAxisByValuePair round-trips every legacy ValuePair to its axis', () => {
+    for (const axis of CANONICAL_AXES) {
+      expect(getAxisByValuePair(axis.valuePair)).toBe(axis);
+    }
+  });
+});
+
+// ─── THR-559: canonical keying + scale conversion ───────────────────────────
+
+describe('axisRegistry — reach ↔ axisId keying (THR-559)', () => {
+  it('reachToAxisId returns the canonical `${reach}_axis` id for every moral reach', () => {
+    for (const reach of REACH_DOMAINS) {
+      expect(reachToAxisId(reach)).toBe(`${reach}_axis`);
+      expect(getAxisById(reachToAxisId(reach))).toBe(getAxisByReach(reach));
+    }
+  });
+
+  it('reachToAxisId passes non-moral reaches through unchanged (e.g. quintessence)', () => {
+    // quintessence has no moral axis; its drift entries are inert and keep their key.
+    expect(reachToAxisId('quintessence')).toBe('quintessence');
+  });
+
+  it('axisIdToReach reverses reachToAxisId for every moral reach', () => {
+    for (const reach of REACH_DOMAINS) {
+      expect(axisIdToReach(reachToAxisId(reach))).toBe(reach);
+    }
+  });
+
+  it('axisIdToReach returns undefined for a non-canonical id', () => {
+    expect(axisIdToReach('quintessence')).toBeUndefined();
+    expect(axisIdToReach('nonexistent_axis')).toBeUndefined();
+  });
+});
+
+describe('axisRegistry — signed ±1 ↔ canonical 0–1 conversion (THR-559)', () => {
+  it('maps the three canonical anchors', () => {
+    expect(signedToCanonical01(-1)).toBe(AXIS_VICE); // 0.0
+    expect(signedToCanonical01(0)).toBe(AXIS_NEUTRAL); // 0.5
+    expect(signedToCanonical01(1)).toBe(AXIS_VIRTUE); // 1.0
+    expect(canonical01ToSigned(0)).toBe(-1);
+    expect(canonical01ToSigned(0.5)).toBe(0);
+    expect(canonical01ToSigned(1)).toBe(1);
+  });
+
+  it('clamps out-of-range inputs to the scale bounds', () => {
+    expect(signedToCanonical01(-2)).toBe(0);
+    expect(signedToCanonical01(2)).toBe(1);
+    expect(canonical01ToSigned(-0.5)).toBe(-1);
+    expect(canonical01ToSigned(1.5)).toBe(1);
+  });
+
+  it('round-trips signed values through the canonical scale', () => {
+    for (const v of [-1, -0.6, -0.05, 0, 0.05, 0.6, 1]) {
+      expect(canonical01ToSigned(signedToCanonical01(v))).toBeCloseTo(v, 10);
+    }
+  });
+});
+
+// ─── THR-559: legacy naming sites reconciled to the registry ────────────────
+
+describe('axisRegistry — legacy tables agree with the registry (THR-559)', () => {
+  it('MORAL_AXIS_POLES_BY_REACH (EncounterArchetypePole) covers exactly the 8 registry reaches', () => {
+    expect(Object.keys(MORAL_AXIS_POLES_BY_REACH).sort()).toEqual([...REACH_DOMAINS].sort());
+  });
+
+  it('each reach in MORAL_AXIS_POLES_BY_REACH has exactly two distinct poles (virtue, vice)', () => {
+    for (const reach of REACH_DOMAINS) {
+      const poles = MORAL_AXIS_POLES_BY_REACH[reach];
+      expect(poles).toHaveLength(2);
+      expect(poles[0]).not.toBe(poles[1]);
+    }
+  });
+
+  it('REACH_VALUE_PAIR (AxiologicalProfile keys) is exactly the registry valuePair bridge', () => {
+    for (const reach of REACH_DOMAINS) {
+      expect(REACH_VALUE_PAIR[reach]).toBe(getAxisByReach(reach).valuePair);
+    }
   });
 });
