@@ -71,8 +71,12 @@ const EXPECTED_PHASE_IDS: readonly string[] = [
   'core_personality',
   'faction_ambitions',
   'faction_actions',
-  // Emergent personality-trait phase (THR-527): no ordering constraints, so the
-  // alphabetical tie-break places it after faction_actions, before schism_resolution.
+  // Origin-vignette birth-seeding phase (THR-561): `beforePhase: personality_trait_emerge`
+  // forces it ahead of the emergence phase; the alphabetical tie-break then places it
+  // after faction_actions.
+  'personality_origin_seed',
+  // Emergent personality-trait phase (THR-527): constrained after personality_origin_seed
+  // (which declares `beforePhase` it), before schism_resolution by alphabetical tie-break.
   'personality_trait_emerge',
   // Schism resolution runs after faction_actions so it sees same-tick dissent updates (THR-430).
   'schism_resolution',

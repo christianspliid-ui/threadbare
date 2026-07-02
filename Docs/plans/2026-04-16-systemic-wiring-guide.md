@@ -1194,6 +1194,7 @@ Content authoring often needs to verify "did my effect actually fire?" DebugPane
 | Complication outcomes (THR-20) | `complication_selection` |
 | Effect shell transitions (THR-53) | `effect_shell` (subkind: `flip_revealed`, `gate_transition`, `band_selected`, `duplicate_policy_applied`) |
 | Emergent personality traits (THR-527) | `personality_trait_emerged` (grant + release; `details.kind`, `details.axisId`, `details.position`) |
+| Origin-vignette birth seeding (THR-561) | `personality_origin_seeded` (aggregate per tick; `details.kind`: `seeded` \| `unknown_axis`, `details.count`, `details.vignettesApplied`) |
 | Core personality foundation (THR-542) | `core_personality` (`details.kind`: `seeded` \| `emerge` \| `fade` \| `bend`) |
 
 **How to use:** Open DebugPanel (backtick or F1), select the Trace tab, check the category filter chips. Full TypeScript interface definitions for each trace type live in `src/types/trace.ts`.
@@ -1201,6 +1202,8 @@ Content authoring often needs to verify "did my effect actually fire?" DebugPane
 ### Personality as a behavior signal (THR-527)
 
 Each mortal agent's standing moral position per axis (`axiologicalProfile`) crystallizes into a `personality`-subcategory trait once it crosses a hysteresis threshold — a "becoming" `personality_trait_emerged` event ("Kael has become Greedy"). These emergent traits carry a per-reach `scoringModifiers` payload (new optional field on `TraitDefinitionProperties`) consumed by the same scoring-bonus path as reputation traits (`computeReputationScoringBonus`), nudging the agent toward encounters in their own Reach. **For content authors:** you don't author these traits (they generate from the canonical axis registry), but you *do* feed them — encounter choices that push an agent's axis position (the drift system, THR-528) are what eventually make a personality crystallize and bias which of your encounters that agent seeks out. The `scoringModifiers` field is also available on any trait def if you want a trait to steer encounter selection by Reach without touching Domain Capability.
+
+**Where the baseline comes from — origin vignettes (THR-561).** The standing `axiologicalProfile` an agent crystallizes from isn't random: at birth the `personality_origin_seed` phase draws a handful of one-line pre-history vignettes from `src/data/origin-vignettes.ts` (keyed `(reach, pole, magnitude)`) and lays their signed contributions onto the agent's baseline (recorded on `node.properties.originVignettes` for the sheet/prose). **For content authors:** add vignettes to that library to widen the pool of pre-histories agents can be born with — plain, generic, reusable one-liners (no proper nouns). Separately, any **trait def** may now carry an `axisContributions` map (per canonical axis id, signed 0–1 delta, e.g. `{ iron_axis: 0.1 }`); it is folded into the baseline at seeding and is the intended carrier for *permanent* axis-contributing traits (formative marks). It is kept entirely separate from `domainContributions` — `axisContributions` moves the moral baseline, never Domain Capability.
 
 ### The Core — foundation personality layer (THR-542)
 
