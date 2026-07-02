@@ -89,6 +89,20 @@ export interface TraitDefinitionProperties {
    * `domainContributions` (capability) — these only steer *selection*, never competence.
    */
   scoringModifiers?: Partial<Record<ReachDomain, number>>;
+  /**
+   * Per-axis signed **personality** contribution, keyed by canonical axis id
+   * (`${reach}_axis`, see `axisRegistry.ts`). A value is a signed delta on the
+   * canonical 0–1 axis scale (0.5 neutral): positive nudges the agent's *baseline*
+   * moral position toward the axis virtue pole (1.0), negative toward the vice pole
+   * (0.0). Summed by the personality **baseline computation** (`personality/originBaseline.ts`)
+   * at birth alongside the drawn origin-vignette contributions (THR-561).
+   *
+   * LOAD-BEARING INVARIANT: kept entirely separate from `domainContributions`
+   * (capability). Personality axis ≠ domain capability — this field steers the
+   * *moral flavor* of the baseline, never competence. Consumed only by the baseline
+   * computation; nothing reads it for prerequisites or resolution.
+   */
+  axisContributions?: Partial<Record<string, number>>;
   /** Generic effect system payload for bestowed/condition traits and future content families. */
   effects?: AttachmentEffect[];
   /** Content Census coverage classification (THR-474 schema / THR-477 values). Metadata only. */

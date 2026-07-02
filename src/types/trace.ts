@@ -56,6 +56,7 @@ export type TraceCategory =
   | 'faction_ambition'
   | 'reputation_trait'
   | 'personality_trait_emerged'
+  | 'personality_origin_seeded'
   | 'core_personality'
   | 'reaction_selected'
   | 'rarity_graduation'
@@ -499,6 +500,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'chosen_faction_power',
   // Emergent personality traits (THR-527)
   'personality_trait_emerged',
+  // Origin-vignette birth seeding of the personality baseline (THR-561)
+  'personality_origin_seeded',
   // Core personality foundation layer (THR-542)
   'core_personality',
   // Autonomous in-encounter choice (THR-530)
@@ -1589,6 +1592,26 @@ export interface CorePersonalityTrace extends TraceBase {
 }
 
 /**
+ * Trace: the origin-vignette birth-seeding pass drew pre-history vignettes and laid
+ * their signed axis contributions onto agents' personality **baselines** (THR-561).
+ *
+ * Emitted as ONE aggregate entry per tick (never one-per-agent) — the bulk tick-1
+ * seeding touches every mortal at once and a per-agent burst would wrap the 2000-entry
+ * trace ring buffer (the buffer-overflow flakiness class — see `Docs/impediments.md`).
+ * Per-agent provenance stays inspectable on `node.properties.originVignettes`.
+ *
+ * `details.kind` discriminates:
+ *  - `seeded`        — `count` agents seeded this tick, `vignettesApplied` total draws.
+ *  - `unknown_axis`  — fail-soft: `count` vignette contributions referenced an axis id
+ *                      absent from the registry and were skipped.
+ */
+export interface PersonalityOriginSeededTrace extends TraceBase {
+  category: 'personality_origin_seeded';
+  actorId?: string;
+  details?: Record<string, unknown>;
+}
+
+/**
  * Trace: a permanent formative mark moved an agent's moral **baseline** on one axis
  * (THR-529). Unlike `drift_threshold_crossed` (a held temporary drift band), this records
  * a permanent shift to the standing `AxiologicalProfile` value. Fields capture the reach,
@@ -1614,6 +1637,7 @@ export interface AxiologicalMarkAppliedTrace extends TraceBase {
 
 export type TraceEntry =
   | PersonalityTraitEmergedTrace
+  | PersonalityOriginSeededTrace
   | CorePersonalityTrace
   | AxiologicalMarkAppliedTrace
   | ActionSelectionTrace

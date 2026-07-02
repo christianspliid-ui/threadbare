@@ -312,6 +312,25 @@ UI note: the character-sheet personality rows ("who they were born / what marked
 
 ---
 
+## Origin-Vignette Birth Seeding (THR-561)
+
+The "who they were born as" layer — the consumer the origin-vignette content library (THR-539) was authored for (it previously had none). A new per-tick phase draws pre-history vignettes for each unseeded mortal individual and lays their signed axis contributions — plus any permanent-trait `axisContributions` — onto the reach-axis **baseline** (`AxiologicalProfile`).
+
+| Surface | Path | Notes |
+|---|---|---|
+| **Registered phase** | `src/engine/phases/personalityOriginSeed.ts` | `personalityOriginSeedPhase` (slot `post-economy`, `beforePhase: ['personality_trait_emerge']` so the seeded baseline is visible the tick it's drawn) + `processPersonalityOriginSeed(state)`. Individual actors only (non-deceased, not the ascendant). Idempotent via `node.properties.originVignettesSeeded`. Per-agent `mulberry32(hash(worldSeed, agentId))` so seeding is reproducible regardless of *when* an agent is first seen. |
+| **Baseline computation** | `src/engine/personality/originBaseline.ts` | Pure functions: `drawOriginVignettes` (distinct, seeded), `vignetteAxisContribution` (reach→axisId + pole→sign), `sumAxisContributions` (folds contribution maps, skips+counts unknown axis ids), `computeOriginBaseline` (draws + folds trait `axisContributions`, lays the summed canonical delta onto the existing signed baseline via `signedToCanonical01`/`canonical01ToSigned`). **Additive, not destructive** — vignettes nudge the generated baseline, mirroring the Core layer's "authored character over the generated spread" (`coreMechanics.ts`). |
+| **`axisContributions` schema field** | `src/types/traits.ts` | New optional `axisContributions?: Partial<Record<string, number>>` on `TraitDefinitionProperties` — per-axis signed **canonical 0–1 delta** keyed by canonical axis id, kept entirely separate from `domainContributions` (capability). **Consumed only by the baseline computation** — nothing reads it for prerequisites/resolution. Forward-compatible carrier for permanent formative-mark traits. |
+| Provenance (inspectability) | node property | `node.properties.originVignettes` = the drawn vignette ids (per-agent, for the character sheet + prose); `originVignettesSeeded` = idempotency marker. |
+| Content library (pre-existing) | `src/data/origin-vignettes.ts` | 144 vignettes (18/reach × 8 reaches, 72 virtue / 72 vice), keyed on `(reach, pole, magnitude∈{0.05,0.1,0.15,0.2})`. Authored THR-539; this slice is its consumer. |
+| Trace category | `src/types/trace.ts` | `'personality_origin_seeded'` registered in `TraceCategory` + `TRACE_CATEGORIES` + typed `PersonalityOriginSeededTrace` member of `TraceEntry`. **ONE aggregate trace per tick** (`details.kind`: `seeded` \| `unknown_axis`) — never one-per-agent (tick-1 bulk-seed burst would wrap the trace ring buffer). Auto-surfaces as a DebugPanel filter checkbox (default-enabled) via `TRACE_CATEGORIES`. |
+| Constants (NFP #1) | `src/engine/personality/originConstants.ts` | `ORIGIN_VIGNETTES_PER_AGENT` (5) — draw count / baseline spread. |
+| Tests | `src/engine/personality/__tests__/originBaseline.test.ts` (11) + `src/engine/phases/__tests__/personalityOriginSeed.test.ts` (10) | Distinct+deterministic draws, sign/scale, unknown-axis skip, additive layering, clamp; phase idempotency, ascendant/deceased exclusion, aggregate-trace-not-per-agent, `axisContributions` folding + unknown-axis trace. Plus the `phaseRegistry.equivalence` baseline updated for the new phase. |
+
+Fail-soft: empty pool → mark seeded, baseline unchanged; unknown axis id → skip contribution + count `unknown_axis`; no vignettes for an axis → that axis's generated baseline untouched.
+
+---
+
 ## Canonical Axis Registry — keying + scale unification (THR-559)
 
 Foundation of the Agent Personality & Moral Drift project — the scalar-unification pass. Makes the axis registry the single source of truth for the moral-axis **key** and the **canonical scale**, and unifies the two previously-divergent live-position computations onto one accessor.
