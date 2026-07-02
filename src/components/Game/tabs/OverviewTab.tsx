@@ -1,4 +1,5 @@
-import type { AgentInfoCardData, AgentFullProfileData } from '../../../engine/agentDetail';
+import type { ReactNode } from 'react';
+import type { AgentInfoCardData, AgentFullProfileData, PersonalityContributorDisplay } from '../../../engine/agentDetail';
 import type { AgentKnowledge } from '../../../types/agentKnowledge';
 import {
   OVERVIEW_GOSSIP_THRESHOLD,
@@ -8,6 +9,7 @@ import { SectionHeading } from '../../shared/SectionHeading';
 import { Tooltip } from '../../shared/Tooltip';
 import { getSphereColor } from '../../../data/sphereIcons';
 import { CORE_CONTINUA, CORE_NEUTRAL } from '../../../types/coreRegistry';
+import { CANONICAL_AXES, signedToCanonical01 } from '../../../types/axisRegistry';
 
 // ─── Core continuum rendering ─────────────────────────────────────
 
@@ -27,6 +29,13 @@ const CORE_LEAN_EPSILON = 0.05;
  */
 const PERSONALITY_VIRTUE_COLOR = 'var(--accent-gold)';
 const PERSONALITY_VICE_COLOR = '#c77b7b';
+
+/**
+ * Signed ±1 threshold below which a moral-axis position reads as neutral. An axis with
+ * |position| under this and no contributors shows no "now" bar, so a near-neutral agent
+ * isn't padded with eight flat tracks — only the axes their story actually touched.
+ */
+const AXIS_SIGNAL_EPSILON = 0.1;
 
 // ─── Knowledge level helpers ──────────────────────────────────────
 
@@ -86,6 +95,66 @@ function CoreContinuumRow({ virtue, vice, value }: { virtue: string; vice: strin
   );
 }
 
+/**
+ * One moral axis as a labelled track with a marker at the agent's *live* position
+ * (THR-567 "now"), with its permanent contributors ("born as → marked by") listed
+ * beneath as `children`. Scale mirrors CoreContinuumRow: virtue pole = 1.0 (left),
+ * vice pole = 0.0 (right), 0.5 neutral. The agent value arrives signed ±1 and is
+ * converted to that 0–1 scale via the canonical bridge. The leaning pole word +
+ * marker take the virtue (gold) / vice (rose) personality palette.
+ */
+function MoralAxisRow({
+  virtue,
+  vice,
+  signed,
+  children,
+}: {
+  virtue: string;
+  vice: string;
+  signed: number;
+  children?: ReactNode;
+}) {
+  const v = signedToCanonical01(signed);
+  const markerLeftPct = (1 - v) * 100;
+  const leansVirtue = v > CORE_NEUTRAL + CORE_LEAN_EPSILON;
+  const leansVice = v < CORE_NEUTRAL - CORE_LEAN_EPSILON;
+  const markerColor = leansVirtue
+    ? PERSONALITY_VIRTUE_COLOR
+    : leansVice
+      ? PERSONALITY_VICE_COLOR
+      : 'var(--text-tertiary)';
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between text-xs">
+        <span style={{ color: leansVirtue ? PERSONALITY_VIRTUE_COLOR : 'var(--text-tertiary)' }}>
+          {virtue}
+        </span>
+        <span style={{ color: leansVice ? PERSONALITY_VICE_COLOR : 'var(--text-tertiary)' }}>
+          {vice}
+        </span>
+      </div>
+      <div className="relative h-1.5 rounded-full" style={{ backgroundColor: 'var(--border-subtle)' }}>
+        <div
+          className="absolute top-0 bottom-0"
+          style={{ left: '50%', width: '1px', backgroundColor: 'var(--text-tertiary)', opacity: 0.4 }}
+        />
+        <div
+          className="absolute rounded-full"
+          style={{
+            top: '50%',
+            left: `${markerLeftPct}%`,
+            width: '8px',
+            height: '8px',
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: markerColor,
+          }}
+        />
+      </div>
+      {children}
+    </div>
+  );
+}
+
 // ─── Component ───────────────────────────────────────────────────
 
 interface OverviewTabProps {
@@ -126,7 +195,24 @@ export function OverviewTab({ card, profile: _profile, knowledge }: OverviewTabP
 
   const showNatureSection = knowledge != null || hasKnowledge(card.knowledgeLevel, 'recognised');
   const showTraits = hasKnowledge(card.knowledgeLevel, 'intimate') && (card.allTraits?.length ?? 0) > 0;
-  const showPersonality = hasKnowledge(card.knowledgeLevel, 'intimate') && (card.personalityTraits?.length ?? 0) > 0;
+
+  // Personality section (intimate+): the layered born→marked→becoming→now story.
+  const isIntimate = hasKnowledge(card.knowledgeLevel, 'intimate');
+  const emergentTraits = card.personalityTraits ?? [];
+  const contributorsByAxis = new Map<string, PersonalityContributorDisplay[]>();
+  for (const c of card.personalityContributors ?? []) {
+    const arr = contributorsByAxis.get(c.axisId);
+    if (arr) arr.push(c);
+    else contributorsByAxis.set(c.axisId, [c]);
+  }
+  // Axes worth showing a live-position bar for: a non-neutral standing position, or
+  // at least one permanent contributor. Keeps a near-neutral agent from padding the
+  // sheet with eight flat tracks while still surfacing every axis their story touched.
+  const axisRows = CANONICAL_AXES.filter((axis) => {
+    const signed = card.axiologicalProfile?.[axis.valuePair] ?? 0;
+    return Math.abs(signed) >= AXIS_SIGNAL_EPSILON || contributorsByAxis.has(axis.axisId);
+  });
+  const showPersonality = isIntimate && (emergentTraits.length > 0 || axisRows.length > 0);
   const showQuotes = quoteCount > 0 && (card.quotes?.length ?? 0) > 0;
   const showDisposedRecord = !showNatureSection && false; // unused path
 
@@ -266,30 +352,83 @@ export function OverviewTab({ card, profile: _profile, knowledge }: OverviewTabP
         </section>
       ) : null}
 
-      {/* Personality — emergent moral-axis traits ("who they've become"), intimate+.
-          Distinguished from the generic Traits chips: virtue/vice-tinted, flavor on hover. */}
+      {/* Personality — the layered moral story, intimate+:
+            born as (origin vignettes) → marked by (permanent marks) → becoming
+            (emergent traits) → now (live per-axis position). Contributors group
+            beneath the axis they pushed on; the emergent chips stay as THR-562
+            shipped them. Distinguished from the generic Traits chips. */}
       {showPersonality && (
         <section>
           <SectionHeading as="h2">Personality</SectionHeading>
           <p className="text-xs italic mb-2" style={{ color: 'var(--text-tertiary)' }}>
-            Who {card.name} has become — the mark of their choices.
+            How {card.name} came to be — and who they are now.
           </p>
-          <div className="flex flex-wrap gap-2">
-            {card.personalityTraits!.map((t) => {
-              const color = t.pole === 'virtue' ? PERSONALITY_VIRTUE_COLOR : PERSONALITY_VICE_COLOR;
-              return (
-                <span
-                  key={t.id}
-                  data-testid="personality-trait"
-                  title={t.flavorText || t.description || undefined}
-                  className="px-2 py-0.5 rounded text-xs border"
-                  style={{ borderColor: color, color }}
-                >
-                  {t.name}
-                </span>
-              );
-            })}
-          </div>
+
+          {/* Where they stand now — each moral axis's live position, grounded in the
+              origin vignettes ("born") and permanent marks ("marked") that shaped it. */}
+          {axisRows.length > 0 && (
+            <div className="space-y-3 mb-3">
+              {axisRows.map((axis) => {
+                const signed = card.axiologicalProfile?.[axis.valuePair] ?? 0;
+                const rows = contributorsByAxis.get(axis.axisId) ?? [];
+                return (
+                  <MoralAxisRow
+                    key={axis.axisId}
+                    virtue={axis.virtue.word}
+                    vice={axis.vice.word}
+                    signed={signed}
+                  >
+                    {rows.length > 0 && (
+                      <div className="space-y-0.5 pl-1 pt-0.5">
+                        {rows.map((c) => {
+                          const poleColor = c.pole === 'virtue' ? PERSONALITY_VIRTUE_COLOR : PERSONALITY_VICE_COLOR;
+                          const poleWord = c.pole === 'virtue' ? axis.virtue.word : axis.vice.word;
+                          const label = c.source === 'origin' ? 'Origin' : 'Mark';
+                          const tip = c.source === 'mark' && c.detail
+                            ? `${label} — leans ${poleWord}: ${c.detail}`
+                            : `${label} — leans ${poleWord}`;
+                          return (
+                            <div
+                              key={c.id}
+                              data-testid="personality-contributor"
+                              title={tip}
+                              className="flex items-start gap-1.5 text-xs"
+                              style={{ color: 'var(--text-secondary)' }}
+                            >
+                              <span aria-hidden="true" style={{ color: poleColor, lineHeight: 1.4 }}>
+                                {c.source === 'origin' ? '◦' : '✦'}
+                              </span>
+                              <span>{c.text}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </MoralAxisRow>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Becoming — emergent moral-axis traits (THR-562), kept as shipped. */}
+          {emergentTraits.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {emergentTraits.map((t) => {
+                const color = t.pole === 'virtue' ? PERSONALITY_VIRTUE_COLOR : PERSONALITY_VICE_COLOR;
+                return (
+                  <span
+                    key={t.id}
+                    data-testid="personality-trait"
+                    title={t.flavorText || t.description || undefined}
+                    className="px-2 py-0.5 rounded text-xs border"
+                    style={{ borderColor: color, color }}
+                  >
+                    {t.name}
+                  </span>
+                );
+              })}
+            </div>
+          )}
         </section>
       )}
 

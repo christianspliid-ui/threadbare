@@ -238,3 +238,17 @@ export const ORIGIN_VIGNETTES: readonly OriginVignette[] = [
   { id: 'origin.star.vice.road-that-did-not-come-back', text: 'Talked a whole expedition onto a road that did not come back.', reach: 'star', pole: 'vice', magnitude: 0.15 },
   { id: 'origin.star.vice.living-off-the-lost', text: 'Made a living off the lost, and quietly saw to it they stayed that way.', reach: 'star', pole: 'vice', magnitude: 0.2 },
 ] as const;
+
+/** By-id index built once at module load, for provenance lookups. */
+const ORIGIN_VIGNETTES_BY_ID: ReadonlyMap<string, OriginVignette> = new Map(
+  ORIGIN_VIGNETTES.map((v) => [v.id, v]),
+);
+
+/**
+ * Resolve a drawn origin-vignette id (stored on `node.properties.originVignettes`
+ * by the birth-seeding phase, THR-561) back to its content. Returns undefined for
+ * an unknown id so consumers skip it fail-soft rather than throwing.
+ */
+export function getOriginVignetteById(id: string): OriginVignette | undefined {
+  return ORIGIN_VIGNETTES_BY_ID.get(id);
+}

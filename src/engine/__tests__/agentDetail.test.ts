@@ -401,6 +401,76 @@ describe('getAgentInfoCard (familiarity-gated)', () => {
     expect(card!.allTraits).not.toContain('Greedy');
   });
 
+  // THR-567 — permanent baseline contributors ("born as → marked by") surface on
+  // their own card field at intimate+, keyed to the axis they pushed on.
+  it('at intimate level: exposes personalityContributors from origin vignettes + axis-contributing traits', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'asc', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
+    graph.addNode({
+      id: 'agent.1', type: 'actor', name: 'Kael',
+      properties: {
+        actorType: 'individual',
+        axiologicalProfile: makeProfile({ mercy_ruthlessness: 0.4, asceticism_extravagance: -0.3 }),
+        domainCapabilities: makeDomainCaps({ iron: 5 }),
+        primarySphere: 'iron',
+        // Origin-vignette provenance recorded by the birth-seeding phase (THR-561).
+        originVignettes: ['origin.iron.virtue.doorway'],
+      },
+    });
+    // A permanent mark trait carrying an axis contribution (the formative-mark slot, THR-529).
+    graph.addNode({
+      id: 'trait.mark.betrayal', type: 'trait', name: 'The Betrayal',
+      properties: { subcategory: 'scar', flavorText: 'A trust broken that never mended.', axisContributions: { gold_axis: -0.1 } },
+    });
+    graph.addEdge({ id: 't.1', source: 'asc', target: 'agent.1', type: 'thread', properties: { tier: 1 } });
+    graph.addEdge({ id: 'ht.mark', source: 'agent.1', target: 'trait.mark.betrayal', type: 'has_trait', properties: {} });
+
+    const card = getAgentInfoCard(graph, 'agent.1', 'asc', 'intimate');
+    expect(card).not.toBeNull();
+    expect(card!.personalityContributors).toBeDefined();
+
+    const origin = card!.personalityContributors!.find(c => c.source === 'origin');
+    expect(origin).toMatchObject({
+      id: 'origin.iron.virtue.doorway',
+      source: 'origin',
+      axisId: 'iron_axis',
+      reach: 'iron',
+      pole: 'virtue',
+    });
+    expect(origin!.text.length).toBeGreaterThan(0);
+
+    const mark = card!.personalityContributors!.find(c => c.source === 'mark');
+    expect(mark).toMatchObject({
+      id: 'trait.mark.betrayal.gold_axis',
+      source: 'mark',
+      axisId: 'gold_axis',
+      reach: 'gold',
+      pole: 'vice',
+      text: 'The Betrayal',
+      detail: 'A trust broken that never mended.',
+    });
+  });
+
+  it('below intimate level: personalityContributors is not populated', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'asc', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
+    graph.addNode({
+      id: 'agent.1', type: 'actor', name: 'Kael',
+      properties: {
+        actorType: 'individual',
+        axiologicalProfile: makeProfile(),
+        domainCapabilities: makeDomainCaps({ iron: 5 }),
+        primarySphere: 'iron',
+        originVignettes: ['origin.iron.virtue.doorway'],
+      },
+    });
+    graph.addEdge({ id: 't.1', source: 'asc', target: 'agent.1', type: 'thread', properties: { tier: 1 } });
+
+    const card = getAgentInfoCard(graph, 'agent.1', 'asc', 'known');
+    expect(card).not.toBeNull();
+    expect(card!.personalityContributors).toBeUndefined();
+  });
+
   it('at transparent level: includes full backstory + history', () => {
     const graph = new WorldGraph();
     graph.addNode({ id: 'asc', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
