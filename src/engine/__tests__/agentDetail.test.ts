@@ -361,6 +361,46 @@ describe('getAgentInfoCard (familiarity-gated)', () => {
     expect(card!.cultureName).toBe('The Ironborn');
   });
 
+  // THR-562 — emergent personality traits surface in their own card field and are
+  // pulled out of the generic allTraits chips so the sheet can distinguish them.
+  it('at intimate level: exposes personalityTraits (subcategory) separately from allTraits', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'asc', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
+    graph.addNode({
+      id: 'agent.1', type: 'actor', name: 'Kael',
+      properties: {
+        actorType: 'individual',
+        axiologicalProfile: makeProfile({ mercy_ruthlessness: -0.7 }),
+        domainCapabilities: makeDomainCaps({ iron: 5 }),
+        primarySphere: 'iron',
+      },
+    });
+    graph.addNode({ id: 'trait.1', type: 'trait', name: 'Resilient', properties: {} });
+    graph.addNode({
+      id: 'trait.personality.gold.vice', type: 'trait', name: 'Greedy',
+      properties: { subcategory: 'personality', flavorText: 'Weighs a friendship by what it can yield.' },
+    });
+    graph.addEdge({ id: 't.1', source: 'asc', target: 'agent.1', type: 'thread', properties: { tier: 1 } });
+    graph.addEdge({ id: 'ht.1', source: 'agent.1', target: 'trait.1', type: 'has_trait', properties: {} });
+    graph.addEdge({ id: 'ht.2', source: 'agent.1', target: 'trait.personality.gold.vice', type: 'has_trait', properties: {} });
+
+    const card = getAgentInfoCard(graph, 'agent.1', 'asc', 'intimate');
+    expect(card).not.toBeNull();
+    // Personality trait exposed on its own field with parsed pole/reach + flavor.
+    expect(card!.personalityTraits).toBeDefined();
+    expect(card!.personalityTraits).toHaveLength(1);
+    expect(card!.personalityTraits![0]).toMatchObject({
+      id: 'trait.personality.gold.vice',
+      name: 'Greedy',
+      pole: 'vice',
+      reach: 'gold',
+      flavorText: 'Weighs a friendship by what it can yield.',
+    });
+    // Excluded from the generic chips; the non-personality trait still shows there.
+    expect(card!.allTraits).toContain('Resilient');
+    expect(card!.allTraits).not.toContain('Greedy');
+  });
+
   it('at transparent level: includes full backstory + history', () => {
     const graph = new WorldGraph();
     graph.addNode({ id: 'asc', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });

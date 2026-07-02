@@ -273,8 +273,31 @@ export interface AgentInfoCardData {
    * read as neutral (0.5). Drives the character-sheet Core section.
    */
   coreProfile?: CoreProfile;
+  /**
+   * Emergent personality traits (`subcategory: 'personality'`) — the "who they
+   * currently are" layer that crystallizes when a live moral-axis position crosses
+   * a threshold (THR-527 phase / THR-562 sheet row). Populated at intimate+ and
+   * excluded from `allTraits` so the sheet renders them in their own distinguished
+   * Personality section rather than the generic trait chips.
+   */
+  personalityTraits?: PersonalityTraitDisplay[];
   /** Rarity tier for this agent (1–4). Populated from node.properties.rarityTier. */
   rarityTier?: number;
+}
+
+/**
+ * One emergent personality trait, shaped for the character-sheet Personality section
+ * (THR-562). Pole/reach are parsed from the canonical id `trait.personality.<reach>.<pole>`.
+ */
+export interface PersonalityTraitDisplay {
+  id: string;
+  /** Pole word, e.g. "Greedy" / "Generous". */
+  name: string;
+  pole: 'virtue' | 'vice';
+  /** Reach the axis belongs to, e.g. "gold". */
+  reach: string;
+  flavorText?: string;
+  description?: string;
 }
 
 // ─── Familiarity-gated Full Profile (Tier 3) ──────────────────────
@@ -537,6 +560,36 @@ export function getAgentDetail(
  */
 function getAgentTraitNames(graph: WorldGraph, agentId: string): string[] {
   return getActorTraits(graph, agentId).map(t => t.trait.name);
+}
+
+/**
+ * Emergent personality traits, shaped for the character-sheet Personality section
+ * (THR-562). Filters the agent's has_trait edges to the `personality` subcategory and
+ * parses pole/reach from the canonical id `trait.personality.<reach>.<pole>`. A malformed
+ * id (missing pole segment) is skipped fail-soft rather than mislabelled.
+ * @private
+ */
+function getPersonalityTraitDisplays(graph: WorldGraph, agentId: string): PersonalityTraitDisplay[] {
+  return getActorTraits(graph, agentId)
+    .map(({ trait }): PersonalityTraitDisplay | null => {
+      const def = trait.properties as unknown as TraitDefinitionProperties;
+      if (def.subcategory !== 'personality') return null;
+      // id shape: trait.personality.<reach>.<pole>
+      const parts = trait.id.split('.');
+      const reach = parts[2];
+      const pole = parts[3];
+      if (pole !== 'virtue' && pole !== 'vice') return null;
+      return {
+        id: trait.id,
+        name: trait.name,
+        pole,
+        reach: reach ?? 'unknown',
+        flavorText: def.flavorText ?? undefined,
+        description: def.description ?? undefined,
+      };
+    })
+    .filter((t): t is PersonalityTraitDisplay => t != null)
+    .sort((a, b) => a.name.localeCompare(b.name));
 }
 
 /**
@@ -822,9 +875,19 @@ export function getAgentInfoCard(
     card.cooperationStrategy = detail.cooperationStrategy ?? undefined;
     card.reputationWord = getReputationWord(detail.reputationScore);
 
-    // All traits
-    if (traitNames.length > 0) {
-      card.allTraits = traitNames;
+    // Emergent personality traits render in their own distinguished Personality
+    // section (THR-562); pull them out of the generic trait chips so they aren't
+    // shown twice.
+    const personalityTraits = getPersonalityTraitDisplays(graph, agentId);
+    if (personalityTraits.length > 0) {
+      card.personalityTraits = personalityTraits;
+    }
+    const personalityNames = new Set(personalityTraits.map(t => t.name));
+
+    // All (non-personality) traits
+    const genericTraitNames = traitNames.filter(n => !personalityNames.has(n));
+    if (genericTraitNames.length > 0) {
+      card.allTraits = genericTraitNames;
     }
 
     // Generate backstory paragraph 1

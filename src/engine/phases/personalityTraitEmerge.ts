@@ -206,6 +206,12 @@ function becomingEvent(
     message: `${actorName} has become ${word}.`,
     significance: 0.5,
     actorId,
+    // Surface the "becoming" beat to the player. A toast (not an alert) so distinct
+    // becomings on the same tick are not collapsed by the alert icon+tick dedup, and
+    // clicking it navigates to the agent (actorId → agent nav target). Routed to the
+    // 'lifecycle' category (a character-defining milestone). Without this directive the
+    // notification router silently drops the event (notificationRouter.ts).
+    notification: { channel: 'toast' },
   };
 }
 

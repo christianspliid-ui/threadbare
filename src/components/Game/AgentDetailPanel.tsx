@@ -38,6 +38,11 @@ const TRAIT_CATEGORY_COLORS: Record<string, string> = {
   destiny: '#c084fc',  // purple-400
   mastery: '#34d399',  // emerald-400
   reputation: '#60a5fa', // blue-400
+  // Emergent moral-axis traits (THR-562). NOTE: the live character sheet is
+  // AgentProfileModal/OverviewTab, which renders personality traits in its own
+  // Personality section; this panel is currently unmounted. Kept in sync so the
+  // canonical category map stays complete.
+  personality: '#f472b6', // pink-400
   scar: '#f87171',     // red-400
 };
 
@@ -49,6 +54,7 @@ const TRAIT_CATEGORY_LABELS: Record<string, string> = {
   destiny: 'Destiny',
   mastery: 'Mastery',
   reputation: 'Reputation',
+  personality: 'Personality',
   scar: 'Scar',
 };
 
