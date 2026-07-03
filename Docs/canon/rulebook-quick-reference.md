@@ -1,6 +1,6 @@
 ---
 domain: rulebook
-last_reviewed: 2026-05-11
+last_reviewed: 2026-06-23
 reviewer: cowork
 ul_shards: [Cosmology, Agents, Encounters, Prose, Graph]
 status: live
@@ -43,7 +43,7 @@ Reaches and Spheres are **orthogonal**. The same Reach at different Sphere align
 
 - **Influence Essence** — per-sphere pools. Regenerates from worshippers / places of power / portfolio depth. Spent on actions, sustained on Control.
 - **Control slots** — sustained-effect cap, scales with Domain Capability tier.
-- **Influence Tiers** — depth of a thread (0–4 in code; six narrative names in design).
+- **Influence Tiers** — depth of a thread (0–4 in code; five narrative names — Unaware → Curious → Recognized → Devoted → Enthralled — plus 'Aspect' as a separate apex milestone).
 - **Court positions** — `the_first`, `retinue`, `watched`, `dormant`.
 - **Stealth** — detection profile against two audiences: mortals (whose disbelief turns to faith) and rival gods (who scan for divine signatures).
 
