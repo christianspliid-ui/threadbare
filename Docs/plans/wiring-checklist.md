@@ -1292,3 +1292,13 @@ Process steps that spawn subagents as part of the Cowork design workflow. When a
 |---|---|---|---|---|
 | intent-judge | `.claude/skills/intent-judge/SKILL.md` | Auto at plan-doc finalization; manual `/intent-judge <path>` | After summarize + three-pillar check, before presenting | Gates the handoff: Allow → proceed; Revise/Block/Escalate → fix and re-run |
 | design-audit-pipeline | `.claude/skills/design-audit-pipeline/SKILL.md` | Auto after intent-judge Allow; manual `/design-audit <path>` | After intent-judge Allow, before `plan-pending-commit` | Three parallel subagents (NFP / pillar / vision); verdicts merged into plan-doc tail under `## Forked-audit verdicts` |
+
+---
+
+## GameView decomposition (THR-572 → phase 2)
+
+Leaf-first extraction of `GameView.tsx` (god-component) into presentational subcomponents under `src/components/Game/GameView/`. Pure props-down — no `gameState` reshape, all state stays owned by `GameView.tsx`, zero behavior change per step. New subcomponents register in the table below as each step lands.
+
+| Surface | File | Wiring |
+|---|---|---|
+| Top-bar / HUD strip (THR-579) | `src/components/Game/GameView/GameViewTopBar.tsx` (new) | Extracted the header cluster (SimulationControls, WorldSoulIndicator, AttentionPoolIndicator, DoomBar, OmenIndicator, RivalsButton, Read-the-Threads `IconButton`, Settings gear + `SettingsPanel`) verbatim. `GameView.tsx` renders `<GameViewTopBar … />` at the top of its return, passing `gameState` + discrete values/setters as props (`GameViewTopBarProps`). The 8 top-bar-only component imports moved from `GameView.tsx` into the leaf. Browser-verified at 1920×1080: full-width bar renders (1920×94), settings-toggle opens `SettingsPanel`, 0 console errors. |

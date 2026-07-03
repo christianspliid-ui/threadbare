@@ -27,7 +27,6 @@ export type { ViewLevel } from './hooks/useViewNavigation';
 
 import { useDebugOpenModal } from './useDebugOpenModal';
 import { GameErrorBoundary } from '../shared/GameErrorBoundary';
-import { IconButton } from '../shared/IconButton';
 import { AnimateMount } from '../shared/AnimateMount';
 import HexMapV2 from '../HexMapV2/HexMapV2';
 import type { AgentRenderData } from '../HexMapV2/agents/agentSpriteTypes';
@@ -56,9 +55,7 @@ import { getAgentPortraitUrlFromProperties } from '../../data/portrait-assets';
 import { getOriginPortraitUrl } from '../../data/avatar-portrait-assets';
 import { HEX_CONSTANTS } from '../HexMapV2/scene/HexFillMesh';
 import { EssencePanel } from './EssencePanel';
-import { SimulationControls } from './SimulationControls';
-import { DoomBar } from './DoomBar';
-import { OmenIndicator } from './OmenIndicator';
+import { GameViewTopBar } from './GameView/GameViewTopBar';
 import { DoomClockDetail } from './DoomClockDetail';
 import { MandateDetail } from './MandateDetail';
 import { ActionDrawer } from './ActionDrawer';
@@ -100,12 +97,10 @@ import { ToastStack } from './ToastStack';
 import { AlertBar } from './AlertBar';
 import { useNotificationNavigation } from './hooks/useNotificationNavigation';
 import { useNotificationPreferences } from './hooks/useNotificationPreferences';
-import { RivalsButton } from './RivalsButton';
 import { IdentityChip } from './IdentityChip';
 import { AscendantBar } from './ascendant-bar/AscendantBar';
 import { AscendantSheet } from './AscendantSheet';
 import { EventPopup } from './EventPopup';
-import { SettingsPanel } from './SettingsPanel';
 import { courtPositionToThreadTier } from './encounter-stage/types';
 import { MeetTheFirstFlow } from '../MeetTheFirst/MeetTheFirstFlow';
 import { JourneyVignetteModal } from './JourneyVignetteModal';
@@ -153,7 +148,6 @@ import { CRUD_TO_ENCOUNTER_TYPE } from '../../engine/encounterCache';
 import { createUnifiedAction } from '../../engine/unifiedActionLifecycle';
 import { mulberry32 } from '../../lib/prng';
 import { DIVINE_INFLUENCE_CONSTANTS } from '../../data/intervention-feedback-content';
-import { WorldSoulIndicator } from '../WorldSoulIndicator';
 import { prepareDebugEncounterContext, prepareDebugEncounterSpawn } from '../../engine/debugEncounterTools';
 import {
   moveDebugAgent,
@@ -185,7 +179,6 @@ import {
   recordEncounterChoiceMemory,
   recordUnifiedActionChoiceMemory,
 } from '../../engine/encounterChoiceMemory';
-import { AttentionPoolIndicator } from './AttentionPoolIndicator';
 import { ReadTheThreadsPanel } from './ReadTheThreadsPanel';
 import { DelveProgressPanel } from '../ruins/DelveProgressPanel';
 import { EmergenceDilemmaModal } from '../ruins/EmergenceDilemmaModal';
@@ -3131,148 +3124,43 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   return (
     <GameErrorBoundary>
       <div className="h-screen flex flex-col overflow-hidden relative grain" style={{ backgroundColor: 'var(--bg-abyss)' }}>
-      {/* ═══ Top bar — v7 visual language: solid bg, hairline border, two-tier label/value pattern ═══ */}
-      <div
-        className="w-full flex items-center relative z-30 flex-shrink-0"
-        style={{
-          background: 'var(--bg-deep)',
-          borderBottom: '1px solid var(--border-subtle)',
-          minHeight: 'var(--topbar-height)',
-          paddingTop: '4px',
-          paddingBottom: '4px',
-          paddingLeft: 'var(--topbar-padding-x)',
-          paddingRight: 'var(--topbar-padding-x)',
-          gap: 'var(--topbar-gap)',
-        }}
-      >
-        {/* LEFT GROUP: identity · time · essence */}
-        <div className="flex items-center flex-1 min-w-0" style={{ gap: 'var(--topbar-gap)' }}>
-          {/* IdentityChip superseded by AscendantBar (THR-184) */}
-
-          {/* Time controls */}
-          <SimulationControls
-            tick={gameState.tick}
-            season={seasonName}
-            year={year}
-            running={running}
-            speed={speed}
-            onToggle={handleToggleRunning}
-            onStep={doTick}
-            onSpeedChange={setSpeed}
-            compact
-          />
-
-          {/* EssencePanel superseded by AscendantBar (THR-184) */}
-
-          {/* WorldSoulIndicator — prose description of dominant sphere */}
-          {gameState.worldSoul?.aggregate && (
-            <>
-              <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
-              <WorldSoulIndicator aggregate={gameState.worldSoul.aggregate} />
-            </>
-          )}
-
-          {/* Attention pool indicator — shows how much focused attention the ascendant has left */}
-          {(() => {
-            const ascNode = gameState.graph.getNode(gameState.ascendantId);
-            const attentionRegen = (ascNode?.properties?.attentionRegen as number) ?? 0.4;
-            return (
-              <>
-                <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
-                <AttentionPoolIndicator
-                  attentionPool={attentionPool}
-                  attentionCapacity={attentionCapacity}
-                  attentionRegen={attentionRegen}
-                />
-              </>
-            );
-          })()}
-        </div>
-
-        {/* Group divider — hairline, neutral; gold reserved for active states */}
-        <div
-          className="w-px self-stretch ml-auto flex-shrink-0"
-          style={{ background: 'var(--border-subtle)' }}
-        />
-
-        {/* RIGHT GROUP: doom · mandate · alerts · rivals · debug — spacing-only separation */}
-        <div
-          className="flex items-center flex-shrink-0"
-          style={{
-            gap: 'var(--topbar-gap)',
-          }}
-        >
-          <div
-            role="button" tabIndex={0}
-            onClick={() => setDoomDetailOpen(true)}
-            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setDoomDetailOpen(true); } }}
-            className="cursor-pointer"
-            style={{ minWidth: '140px' }}
-            aria-label="View doom clock details"
-          >
-            <DoomBar
-              definition={gameState.doomDefinition}
-              state={gameState.doomClock}
-              journeyLabel={doomJourneyLabel}
-            />
-          </div>
-          {gameState.omenState?.primary && (
-            <>
-              <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
-              <OmenIndicator
-                omenState={gameState.omenState}
-                currentTick={gameState.tick}
-              />
-            </>
-          )}
-          {/* MandateTracker superseded by AscendantBar (THR-184) */}
-          {/* AlertBar disabled */}
-          <RivalsButton
-            definitions={gameState.rivalDefinitions}
-            states={gameState.rivalStates}
-          />
-          {/* Read the Threads — divine digest review */}
-          <IconButton
-            icon={<span>📖</span>}
-            active={readThreadsOpen}
-            onClick={() => setReadThreadsOpen(true)}
-            title="Read the Threads"
-            aria-label="Read the Threads"
-          />
-          <div className="flex items-center gap-1" style={{ position: 'relative' }}>
-            <IconButton
-              data-testid="settings-toggle"
-              icon={<span>⚙</span>}
-              active={settingsPanelOpen}
-              onClick={() => setSettingsPanelOpen(v => !v)}
-              title="Settings"
-              aria-label="Settings"
-            />
-            <SettingsPanel
-              open={settingsPanelOpen}
-              onClose={() => setSettingsPanelOpen(false)}
-              fogDisabled={fogDisabled}
-              onToggleFog={() => setFogDisabled(v => !v)}
-              debugPanelOpen={debugPanelOpen}
-              onToggleDebug={handleToggleDebug}
-              showOrganicShore={showOrganicShore}
-              onToggleOrganicShore={() => setShowOrganicShore(v => !v)}
-              notificationPrefs={notificationPrefs}
-              onToggleNotificationCategory={toggleNotifCategory}
-              onSetNotificationMode={setNotifMode}
-              onResetNotificationPrefs={resetNotifPrefs}
-              musicVolume={musicVolume}
-              onMusicVolume={handleMusicVolume}
-              bgVolume={bgVolume}
-              onBgVolume={handleBgVolume}
-              uiVolume={uiVolume}
-              onUiVolume={handleUiVolume}
-              audioMuted={audioMuted}
-              onToggleAudioMute={handleToggleAudioMute}
-            />
-          </div>
-        </div>
-      </div>
+      {/* ═══ Top bar — extracted to GameViewTopBar (THR-579) ═══ */}
+      <GameViewTopBar
+        gameState={gameState}
+        seasonName={seasonName}
+        year={year}
+        running={running}
+        speed={speed}
+        handleToggleRunning={handleToggleRunning}
+        doTick={doTick}
+        setSpeed={setSpeed}
+        attentionPool={attentionPool}
+        attentionCapacity={attentionCapacity}
+        doomJourneyLabel={doomJourneyLabel}
+        setDoomDetailOpen={setDoomDetailOpen}
+        readThreadsOpen={readThreadsOpen}
+        setReadThreadsOpen={setReadThreadsOpen}
+        settingsPanelOpen={settingsPanelOpen}
+        setSettingsPanelOpen={setSettingsPanelOpen}
+        fogDisabled={fogDisabled}
+        setFogDisabled={setFogDisabled}
+        debugPanelOpen={debugPanelOpen}
+        handleToggleDebug={handleToggleDebug}
+        showOrganicShore={showOrganicShore}
+        setShowOrganicShore={setShowOrganicShore}
+        notificationPrefs={notificationPrefs}
+        toggleNotifCategory={toggleNotifCategory}
+        setNotifMode={setNotifMode}
+        resetNotifPrefs={resetNotifPrefs}
+        musicVolume={musicVolume}
+        handleMusicVolume={handleMusicVolume}
+        bgVolume={bgVolume}
+        handleBgVolume={handleBgVolume}
+        uiVolume={uiVolume}
+        handleUiVolume={handleUiVolume}
+        audioMuted={audioMuted}
+        handleToggleAudioMute={handleToggleAudioMute}
+      />
 
       {/* ═══ Main content area ═══ */}
       <div className="flex flex-1 overflow-hidden">
