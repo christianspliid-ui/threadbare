@@ -174,7 +174,9 @@ function printReport(report: GameplayKpiReport, ascendant?: ReachDomain): void {
   if (o.insufficientData) {
     console.log(`    ${YELLOW}⚠ low data (n=${o.total})${RESET}`);
   } else {
-    console.log(`    failure:${pct(o.failureRate)}  critfail:${pct(o.critFailRate)}  clean_success:${pct(o.cleanSuccessRate)}`);
+    console.log(`    total_success:${pct(o.totalSuccessRate)}  clean:${pct(o.cleanSuccessRate)}  at_cost:${pct(o.atCostShare)}  failure:${pct(o.failureRate)}`);
+    const fsr = o.failureStoryRate === null ? 'n/a' : pct(o.failureStoryRate);
+    console.log(`    crit_success:${pct(o.critSuccessRate)}  crit_failure:${pct(o.critFailRate)}  failure→story:${fsr}`);
   }
 
   const tc = report.templateConcentration;

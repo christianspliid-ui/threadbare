@@ -26,6 +26,12 @@ import {
   KPI_THREADED_BEAT_MIN_PER_10T,
   KPI_AMBER_BAND,
   KPI_FUNNEL_MAX_TEMPLATES,
+  KPI_TOTAL_SUCCESS_MIN,
+  KPI_TOTAL_SUCCESS_MAX,
+  KPI_AT_COST_SHARE_MIN,
+  KPI_AT_COST_SHARE_MAX,
+  KPI_CRIT_TAIL_MIN,
+  KPI_FAILURE_STORY_MIN,
 } from './kpiConstants';
 
 // ─── Types ────────────────────────────────────────────────────────
@@ -50,6 +56,19 @@ export interface OutcomeDistribution {
   failureRate: number;
   critFailRate: number;
   cleanSuccessRate: number;
+  // ─── THR-571: outcome-ladder rows ───
+  /** success + success_at_cost + critical_success, over total. The verdict's headline metric. */
+  totalSuccessRate: number;
+  /** success_at_cost / total — the texture band. */
+  atCostShare: number;
+  /** critical_success / total — the top tail (must fire). */
+  critSuccessRate: number;
+  /**
+   * Share of failure/critical_failure outcomes that left ≥1 story artifact.
+   * null when the C1 counters are absent (old runs / pre-C1 builds) — the threshold
+   * is then skipped rather than falsely reddened (fail-soft, plan §Fail-soft table).
+   */
+  failureStoryRate: number | null;
   /** True when total resolved < 10 — stats unreliable */
   insufficientData: boolean;
 }
@@ -135,6 +154,14 @@ export interface KpiRuntimeView {
   branchingFiresTotal?: number;
   /** Cumulative threaded-beat count for the session (THR-541). Survives unifiedActions pruning. */
   threadedBeatsTotal?: number;
+  /**
+   * THR-571 C1: cumulative count of resolved actions whose final outcome was
+   * failure/critical_failure. Survives unifiedActions pruning — the honest denominator
+   * for failure_story_rate over a full run. Absent on pre-C1 builds → rate is null.
+   */
+  failureOutcomesTotal?: number;
+  /** THR-571 C1: cumulative count of those failures that left ≥1 story artifact. Numerator for failure_story_rate. */
+  failureStoryArtifactsTotal?: number;
 }
 
 /** Create a fresh set of funnel counters for a new session. */
@@ -219,7 +246,10 @@ export function isRichTemplate(templateId: string): boolean {
 
 // ─── Section builders ─────────────────────────────────────────────
 
-function buildOutcomes(actions: readonly { resolved: boolean; outcome?: string }[]): OutcomeDistribution {
+function buildOutcomes(
+  actions: readonly { resolved: boolean; outcome?: string }[],
+  runtime?: KpiRuntimeView | null,
+): OutcomeDistribution {
   const resolved = actions.filter(a => a.resolved);
   const total = resolved.length;
   const byOutcome: Record<string, number> = {};
@@ -230,12 +260,29 @@ function buildOutcomes(actions: readonly { resolved: boolean; outcome?: string }
   const failureCount = (byOutcome['failure'] ?? 0) + (byOutcome['critical_failure'] ?? 0);
   const critFailCount = byOutcome['critical_failure'] ?? 0;
   const cleanSuccessCount = byOutcome['success'] ?? 0;
+  const atCostCount = byOutcome['success_at_cost'] ?? 0;
+  const critSuccessCount = byOutcome['critical_success'] ?? 0;
+  const totalSuccessCount = cleanSuccessCount + atCostCount + critSuccessCount;
+
+  // THR-571: failure_story_rate uses cumulative runtime counters (survives pruning);
+  // null when the C1 counters are absent so the threshold is skipped, not falsely red.
+  const failureOutcomesTotal = runtime?.failureOutcomesTotal;
+  const failureStoryArtifactsTotal = runtime?.failureStoryArtifactsTotal;
+  const failureStoryRate =
+    failureOutcomesTotal !== undefined && failureStoryArtifactsTotal !== undefined
+      ? (failureOutcomesTotal > 0 ? failureStoryArtifactsTotal / failureOutcomesTotal : 1)
+      : null;
+
   return {
     total,
     byOutcome,
     failureRate: total > 0 ? failureCount / total : 0,
     critFailRate: total > 0 ? critFailCount / total : 0,
     cleanSuccessRate: total > 0 ? cleanSuccessCount / total : 0,
+    totalSuccessRate: total > 0 ? totalSuccessCount / total : 0,
+    atCostShare: total > 0 ? atCostCount / total : 0,
+    critSuccessRate: total > 0 ? critSuccessCount / total : 0,
+    failureStoryRate,
     insufficientData: total < 10,
   };
 }
@@ -394,15 +441,28 @@ function buildThresholds(
   branching: BranchingFireStats,
   threaded: ThreadedBeatStats,
 ): KpiThresholdEvaluation[] {
-  return [
+  const rows: KpiThresholdEvaluation[] = [
     evalThreshold('failure_rate', 'Failure Rate', outcomes.failureRate, KPI_FAILURE_RATE_MAX, 'above_is_bad'),
-    evalThreshold('critfail_rate', 'Crit-Fail Rate', outcomes.critFailRate, KPI_CRITFAIL_RATE_MAX, 'above_is_bad'),
+    evalThreshold('critfail_rate', 'Crit-Fail Rate (ceiling)', outcomes.critFailRate, KPI_CRITFAIL_RATE_MAX, 'above_is_bad'),
     evalThreshold('clean_success_rate', 'Clean Success Rate', outcomes.cleanSuccessRate, KPI_CLEAN_SUCCESS_MIN, 'below_is_bad'),
+    // THR-571 outcome-ladder verdict rows. Bands are expressed as min/max pairs so the
+    // existing single-threshold evaluator + debug UI render them with no schema change.
+    evalThreshold('total_success_min', 'Total Success ≥', outcomes.totalSuccessRate, KPI_TOTAL_SUCCESS_MIN, 'below_is_bad'),
+    evalThreshold('total_success_max', 'Total Success ≤', outcomes.totalSuccessRate, KPI_TOTAL_SUCCESS_MAX, 'above_is_bad'),
+    evalThreshold('at_cost_min', 'At-Cost Share ≥', outcomes.atCostShare, KPI_AT_COST_SHARE_MIN, 'below_is_bad'),
+    evalThreshold('at_cost_max', 'At-Cost Share ≤', outcomes.atCostShare, KPI_AT_COST_SHARE_MAX, 'above_is_bad'),
+    evalThreshold('crit_success_rate', 'Crit-Success Tail', outcomes.critSuccessRate, KPI_CRIT_TAIL_MIN, 'below_is_bad'),
+    evalThreshold('crit_failure_rate', 'Crit-Failure Tail', outcomes.critFailRate, KPI_CRIT_TAIL_MIN, 'below_is_bad'),
     evalThreshold('template_top_share', 'Top Template Share', concentration.topShare, KPI_TEMPLATE_TOP_SHARE_MAX, 'above_is_bad'),
     evalThreshold('template_entropy', 'Template Entropy', concentration.entropy, KPI_TEMPLATE_ENTROPY_MIN, 'below_is_bad'),
     evalThreshold('branching_fire_per_30t', 'Branching Fires/30t', branching.firesPerChunk, KPI_BRANCHING_FIRE_MIN_PER_30T, 'below_is_bad'),
     evalThreshold('threaded_beats_per_10t', 'Threaded Beats/10t', threaded.beatsPerChunk, KPI_THREADED_BEAT_MIN_PER_10T, 'below_is_bad'),
   ];
+  // failure_story_rate is skipped (not falsely red) until the C1 counters exist.
+  if (outcomes.failureStoryRate !== null) {
+    rows.push(evalThreshold('failure_story_rate', 'Failure→Story Rate', outcomes.failureStoryRate, KPI_FAILURE_STORY_MIN, 'below_is_bad'));
+  }
+  return rows;
 }
 
 // ─── Main export ──────────────────────────────────────────────────
@@ -419,7 +479,7 @@ export function computeGameplayKpiReport(
   const tick = state.tick ?? 0;
   const seed = state.seed ?? 0;
 
-  const outcomes = buildOutcomes(actions);
+  const outcomes = buildOutcomes(actions, runtime);
   const funnel = runtime?.eligibilityFunnel ?? null;
   const concentration = buildTemplateConcentration(actions, funnel);
   const branchingFire = buildBranchingFire(actions, tick, runtime?.branchingFiresTotal);

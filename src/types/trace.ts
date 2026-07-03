@@ -2428,6 +2428,19 @@ export interface ResolutionInputTrace extends TraceBase {
   roll: number;
   /** Final outcome after probability floor + scale-gated crit-failure downgrade. */
   outcome: OutcomeType;
+  /**
+   * THR-571: Raw resolver outcome BEFORE any floor upgrade or scale severity mapping.
+   * Makes the exact outcome-ladder erasure the floor/gate used to perform observable forever.
+   */
+  rawOutcome?: OutcomeType;
+  /** THR-571: Whether the raw roll classified as a critical (doubles) outcome, pre-erasure. */
+  critClassification?: 'critical_success' | 'critical_failure' | 'none';
+  /**
+   * THR-571: True when the probability floor rewrote a sub-floor failure/critical_failure
+   * into a floored success band (now success_at_cost, was 'success'). Distinct from
+   * probabilityFloorApplied, which only reports that P itself was raised to the floor.
+   */
+  floorUpgradeApplied?: boolean;
 }
 
 // ─── THR-456: Event Feed Hygiene trace types ──────────────────────────────────
