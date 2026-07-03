@@ -139,6 +139,10 @@ const logs = await window.__DEBUG.exportEncounterLogAll()    // { allAgentsTsv, 
 // Pure + deterministic; independent of any live session. Mirrors the DebugPanel "Prose QA" tab.
 const report = await window.__DEBUG.proseQualityReport()     // { entries, summary{total,pass,warn,fail,error}, bottomTail, marqueeEntries }
 const one = await window.__DEBUG.scoreProseEntry('divine.coincidence')  // ProseQualityResult, or { error } if no id match (exact or partial)
+
+// Outcome-ladder distribution + KPI threshold verdicts (THR-571 U1):
+const dist = await window.__DEBUG.getOutcomeDistribution()   // { tick, seed, outcomes, thresholds } — live resolution split + green/amber/red bands
+const windowed = await window.__DEBUG.getOutcomeDistribution(30)  // histogram restricted to actions completed in the last 30 ticks
 ```
 
 See `src/debug-bridge.ts` for the full API and `src/debug-bridge.d.ts` for types.

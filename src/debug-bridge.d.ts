@@ -395,6 +395,17 @@ export interface DebugBridge {
   getBalanceEvaluation: (endTick?: number) => Promise<{ summary: BalanceRunSummary; result: BalanceEvaluationResult } | null>;
   /** Exports raw balance telemetry as a JSON-serializable snapshot. */
   exportBalanceTelemetry: () => Promise<Record<string, unknown> | null>;
+  /**
+   * THR-571 U1: live outcome-ladder distribution + KPI threshold verdicts.
+   * `windowTicks` (optional) restricts the histogram to actions completed within the last
+   * N ticks; cumulative rows (branching fires, failure→story) stay lifetime.
+   */
+  getOutcomeDistribution: (windowTicks?: number) => Promise<{
+    tick: number;
+    seed: number;
+    outcomes: import('./engine/kpi/gameplayKpi').OutcomeDistribution;
+    thresholds: import('./engine/kpi/gameplayKpi').KpiThresholdEvaluation[];
+  } | null>;
   /** @internal GameView registers the SimulationRuntime provider for balance telemetry access */
   _registerRuntimeProvider: (fn: () => import('./engine/simulationRuntime').SimulationRuntime | null) => void;
   /** @internal GameView registers encounter spawn / world-spawn callbacks here */

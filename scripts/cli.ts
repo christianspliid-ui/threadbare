@@ -216,6 +216,16 @@ function printStatus(): void {
   console.log(`  Unified actions:  ${state.unifiedActions.length}`);
   console.log(`  Doom stage:       ${state.doomClock.currentStage}`);
   console.log(`  Stealth:          ${(state.stealthExposure * 100).toFixed(1)}%`);
+
+  // THR-571 U1: outcome-ladder distribution line — the resolution split at a glance.
+  const kpi = computeGameplayKpiReport(state, runtime);
+  const o = kpi.outcomes;
+  const pct = (n: number) => `${(n * 100).toFixed(1)}%`;
+  const story = o.failureStoryRate === null ? 'n/a' : pct(o.failureStoryRate);
+  console.log(
+    `  Outcomes (N=${o.total}): clean ${pct(o.cleanSuccessRate)} | at-cost ${pct(o.atCostShare)} | ` +
+    `fail ${pct(o.failureRate)} | crit-succ ${pct(o.critSuccessRate)} | crit-fail ${pct(o.critFailRate)} | story ${story}`,
+  );
 }
 
 function printAgents(): void {

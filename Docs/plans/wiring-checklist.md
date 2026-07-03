@@ -1316,3 +1316,13 @@ Every resolved `failure` / `critical_failure` action must leave ≥1 persistent 
 | `src/engine/failureStoryArtifact.ts` (`guaranteeFailureStoryArtifact`) | Called in the resolved-action cleanup at the newly-resolved transition (same site as `branchingFiresTotal`), before the prune — `orchestrator.ts` | Fallback marks are discoverable by future encounters via the existing hidden-mark reveal loop (`consumeMatchingMarks`); the `failure_story_rate` row surfaces in `gameplay-report` / CLI KPI | Appends to `GameState.hiddenMarks` + a low-significance `TickEvent`; increments `SimulationRuntime.failureOutcomesTotal` / `failureStoryArtifactsTotal` (flow through `KpiRuntimeView` into `computeGameplayKpiReport`) | `outcome_story_artifact` (new — `source: existing\|fallback`, `artifactKind: complication\|seed\|mark\|none`) + reuses `hidden_mark_placed` for fallbacks | `failure_story_rate` KPI threshold (live once counters exist); `outcome_story_artifact` traces in the trace buffer |
 
 **Trace registry:** `outcome_story_artifact` added to `TraceCategory` union, `TRACE_CATEGORIES` array, and `TraceEntry` union with a typed `OutcomeStoryArtifactTrace` interface in `src/types/trace.ts`.
+
+---
+
+## Outcome-ladder distribution surfacing (THR-571 U1 — data layer)
+
+The outcome ladder made observable: a live histogram of the resolution split plus each KPI band's green/amber/red verdict, so the design-blocked band call can be made from data. Pure surfacing over `computeGameplayKpiReport` — no new outcome logic.
+
+| Module | Orchestrator phase | UI / read site | GameState flow | Trace categories | Debug visibility |
+|---|---|---|---|---|---|
+| `computeGameplayKpiReport` (existing) | n/a — read-only over `state.unifiedActions` + `SimulationRuntime` counters | CLI `status` line (`scripts/cli.ts` `printStatus`); DebugPanel outcome-distribution row + chronicle band **deferred to a browser-capable run** | none (read-only) | none new | `__DEBUG.getOutcomeDistribution(windowTicks?)` → `{ tick, seed, outcomes, thresholds }` (`src/debug-bridge.ts` + `.d.ts`); `windowTicks` filters the histogram by `completedAtTick`, cumulative rows stay lifetime |
