@@ -45,7 +45,12 @@ import {
   getTraces,
   clearTraces,
   emitTrace,
+  enableProfiling,
+  clearTimingTraces,
+  getTimingTraces,
+  aggregatePhaseTimings,
 } from '../src/engine/traceBuffer';
+import type { TickProfileTrace } from '../src/types/trace';
 import { createSimulationRuntime, ensureEncounterCache, touchStructure, touchWorld } from '../src/engine/simulationRuntime';
 import type { SimulationRuntime } from '../src/engine/simulationRuntime';
 import { setTrackedAgents, getBalanceEvents, selectDefaultTrackedHero } from '../src/engine/balanceTelemetry';
@@ -138,6 +143,48 @@ let autoAftermathEnabledForRun = false;
 let ticksSinceLastSummary = 0;
 
 // ─── Commands ─────────────────────────────────────────────────────
+
+/** THR-580: run N ticks with profiling on, then print per-phase avg/max/p95 + slowest ticks. */
+function handleProfileCommand(args: string[]): void {
+  const sub = args[0]?.toLowerCase();
+  if (sub === 'phases') {
+    printProfileTable();
+    return;
+  }
+  const n = parseInt(args[0] ?? '', 10);
+  const ticks = isNaN(n) || n < 1 ? 30 : n; // PROFILE_DEFAULT_WINDOW_TICKS
+  enableProfiling();
+  clearTimingTraces();
+  console.log(`${DIM}Profiling ${ticks} ticks…${RESET}`);
+  doTick(ticks);
+  printProfileTable();
+}
+
+function printProfileTable(): void {
+  const timing = getTimingTraces();
+  const aggregates = aggregatePhaseTimings(timing);
+  if (aggregates.length === 0) {
+    console.log(`${YELLOW}No timing data. Run 'profile [N]' first.${RESET}`);
+    return;
+  }
+  const fmt = (v: number) => v.toFixed(2).padStart(7);
+  console.log(`\n${BOLD}Per-phase timing (avg desc, ms)${RESET}`);
+  console.log(`${DIM}  phase                            avg     max     p95    last    n${RESET}`);
+  for (const a of aggregates) {
+    const name = a.phase.padEnd(30).slice(0, 30);
+    const color = a.avgMs >= 8 ? YELLOW : RESET; // SLOW_PHASE_WARN_MS
+    console.log(`  ${color}${name}${RESET} ${fmt(a.avgMs)} ${fmt(a.maxMs)} ${fmt(a.p95Ms)} ${fmt(a.lastMs)} ${String(a.samples).padStart(4)}`);
+  }
+  const tickProfiles = timing.filter(t => t.category === 'tick_profile') as TickProfileTrace[];
+  if (tickProfiles.length > 0) {
+    const slowest = [...tickProfiles].sort((a, b) => b.totalMs - a.totalMs).slice(0, 3);
+    console.log(`\n${BOLD}Slowest ticks${RESET}`);
+    for (const t of slowest) {
+      const flags = `${t.distanceMatrixRebuilt ? ', DM-rebuild' : ''}${t.encounterCacheRebuilt ? ', EC-rebuild' : ''}`;
+      console.log(`  tick ${t.tick}: ${t.totalMs.toFixed(1)}ms total · slowest ${t.slowestPhase} ${t.slowestPhaseMs.toFixed(1)}ms · ${t.agentCount} agents${flags}`);
+    }
+  }
+}
 
 function doTick(n: number = 1): void {
   for (let i = 0; i < n; i++) {
@@ -1003,6 +1050,8 @@ function printHelp(): void {
   console.log(`  ${BOLD}history${RESET} [agent]   Strategic action history`);
   console.log(`  ${BOLD}seed${RESET}             Print current seed`);
   console.log(`  ${BOLD}eval${RESET} <expr>      Evaluate JS with 'state' in scope`);
+  console.log(`  ${BOLD}profile${RESET} [N]      Run N ticks (default 30) with profiling, print per-phase avg/max/p95 + slowest ticks`);
+  console.log(`  ${BOLD}profile phases${RESET}   Print the timing aggregate for ticks already profiled`);
   console.log(`  ${BOLD}help${RESET}             This help`);
   console.log(`  ${BOLD}quit${RESET} / ${BOLD}exit${RESET}     Exit`);
 }
@@ -1561,6 +1610,9 @@ function handleCommand(line: string): boolean {
     case 'status':
     case 's':
       printStatus();
+      break;
+    case 'profile':
+      handleProfileCommand(rest);
       break;
     case 'agents':
       printAgents();

@@ -9,7 +9,14 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { initializeGameState } from '../../gameInit';
 import { phaseFamiliarityGain } from '../../orchestrator';
-import { getTraces, clearTraces, enableTracing } from '../../traceBuffer';
+import {
+  getTraces,
+  clearTraces,
+  enableTracing,
+  enableProfiling,
+  clearTimingTraces,
+  getTimingTraces,
+} from '../../traceBuffer';
 import type { GameState } from '../../../types/gameState';
 import { FAMILIARITY_GAINS } from '../../../types/familiarity';
 
@@ -82,6 +89,10 @@ describe('familiarityPhase contract — determinism', () => {
   beforeEach(() => {
     clearTraces();
     enableTracing();
+    // THR-580: tick_phase_profile (incl. the legacy familiarity_gain actor-counter
+    // payload) now routes to the profiling-gated timing ring.
+    clearTimingTraces();
+    enableProfiling();
     state = buildState();
   });
 
@@ -117,13 +128,13 @@ describe('familiarityPhase contract — determinism', () => {
   });
 
   it('tick_phase_profile totalActors is stable across calls', () => {
-    clearTraces();
+    clearTimingTraces();
     phaseFamiliarityGain(state);
-    const profile1 = getTraces().find((t: any) => t.category === 'tick_phase_profile' && t.phase === 'familiarity_gain') as any;
+    const profile1 = getTimingTraces().find((t: any) => t.category === 'tick_phase_profile' && t.phase === 'familiarity_gain') as any;
 
-    clearTraces();
+    clearTimingTraces();
     phaseFamiliarityGain(state);
-    const profile2 = getTraces().find((t: any) => t.category === 'tick_phase_profile' && t.phase === 'familiarity_gain') as any;
+    const profile2 = getTimingTraces().find((t: any) => t.category === 'tick_phase_profile' && t.phase === 'familiarity_gain') as any;
 
     expect(profile1).toBeDefined();
     expect(profile2).toBeDefined();
@@ -133,9 +144,9 @@ describe('familiarityPhase contract — determinism', () => {
   });
 
   it('processedActors is much smaller than totalActors on a populated map', () => {
-    clearTraces();
+    clearTimingTraces();
     phaseFamiliarityGain(state);
-    const profile = getTraces().find((t: any) => t.category === 'tick_phase_profile' && t.phase === 'familiarity_gain') as any;
+    const profile = getTimingTraces().find((t: any) => t.category === 'tick_phase_profile' && t.phase === 'familiarity_gain') as any;
 
     expect(profile).toBeDefined();
     // On a 20x15 map with seed 42, there are many actors but only a tiny subset on the avatar's hex

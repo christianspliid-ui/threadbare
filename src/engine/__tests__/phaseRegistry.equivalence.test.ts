@@ -15,7 +15,13 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initializeGameState } from '../gameInit';
 import { runTick, resetDecisionCache, resetEventCounter } from '../orchestrator';
 import { ENGINE_PHASES } from '../phases';
-import { enableTracing, clearTraces, getTraces } from '../traceBuffer';
+import {
+  enableTracing,
+  clearTraces,
+  enableProfiling,
+  clearTimingTraces,
+  getTimingTraces,
+} from '../traceBuffer';
 import type { TraceEntry } from '../../types/trace';
 import type { AscendantArchetype, CosmologyProfile } from '../../types';
 
@@ -98,6 +104,9 @@ function captureRegisteredPhaseSequence(seed: number): string[][] {
   resetEventCounter();
   enableTracing();
   clearTraces();
+  // THR-580: tick_phase_profile now routes to the profiling-gated timing ring.
+  enableProfiling();
+  clearTimingTraces();
 
   const { state: initialState } = initializeGameState(
     testArchetype,
@@ -115,9 +124,9 @@ function captureRegisteredPhaseSequence(seed: number): string[][] {
     // ring buffer can wrap within a 10-tick window once enough phases/agents emit
     // traces (e.g. the THR-527 personality-emergence burst), which would otherwise
     // silently drop early `tick_phase_profile` entries and corrupt the slice.
-    clearTraces();
+    clearTimingTraces();
     state = runTick(state);
-    const tickProfiles = (getTraces() as readonly TraceEntry[])
+    const tickProfiles = (getTimingTraces() as readonly TraceEntry[])
       .filter(t => t.category === 'tick_phase_profile')
       .map(t => (t as TraceEntry & { phase?: string }).phase ?? '')
       .filter(id => registeredIds.has(id));
