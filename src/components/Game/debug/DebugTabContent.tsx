@@ -196,7 +196,7 @@ export function DebugTabContent({
   if (viewMode === 'recent-events') return <RecentEventsView getRecentEvents={getRecentEvents} />;
   if (viewMode === 'shells') return <ShellsDebugTab flipTableStates={flipTableStates} currentTick={currentTick} focusedAgentId={effectiveAgentId} />;
   if (viewMode === 'compositions') return <CompositionView activeCompositions={activeCompositions} currentTick={currentTick} doomClockStage={doomClockStage} />;
-  if (viewMode === 'phases') return <PhasesDebugTab traces={allTraces as TraceEntry[]} />;
+  if (viewMode === 'phases') return <PhasesDebugTab traces={allTraces as TraceEntry[]} currentTick={currentTick} />;
   if (viewMode === 'choices') return <EncounterChoiceInspector traces={allTraces as TraceEntry[]} retinueAgents={retinueAgents} />;
   if (viewMode === 'drift') return <DriftVisualiser archetypeDrift={archetypeDrift} traces={allTraces as TraceEntry[]} retinueAgents={retinueAgents} />;
   if (viewMode === 'hand') return <HandStateInspector traces={allTraces as TraceEntry[]} />;

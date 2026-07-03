@@ -34,7 +34,7 @@ import { clearRewardHistory } from './rewardHistory';
 import type { BalanceTelemetry } from './balanceTelemetry';
 import { createBalanceTelemetry } from './balanceTelemetry';
 import { BALANCE_TARGETS_VERSION } from './balanceTargets';
-import { emitTrace } from './traceBuffer';
+import { emitTrace, emitTiming } from './traceBuffer';
 import type { ForeshadowingResult } from '../types/foreshadowing';
 import type { DetailPage } from '../types/detailPage';
 import type { EligibilityFunnelCounters } from './kpi/gameplayKpi';
@@ -57,6 +57,8 @@ export interface SimulationRuntime {
   distanceMatrixBuiltAt: number;
   /** Total full-rebuild count this session. Exposed via debug bridge for profiling. */
   encounterCacheRebuildCount: number;
+  /** Total distance-matrix full-rebuild count this session. Exposed for profiling (THR-580). */
+  distanceMatrixRebuildCount: number;
 
   // ── Balance Telemetry (phase 1 eval foundation) ──
   /** Session-owned balance telemetry. Owned here to prevent module-global bleed. */
@@ -154,6 +156,7 @@ export function createSimulationRuntime(): SimulationRuntime {
     encounterCacheBuiltAt: -1,
     distanceMatrixBuiltAt: -1,
     encounterCacheRebuildCount: 0,
+    distanceMatrixRebuildCount: 0,
     balanceTelemetry: createBalanceTelemetry({ targetVersion: BALANCE_TARGETS_VERSION }),
     balanceTelemetryVersion: 0,
     eligibilityFunnel: createEligibilityFunnelCounters(0),
@@ -289,17 +292,34 @@ export function ensureEncounterCache(
 /**
  * Ensure the distance matrix is up-to-date. Rebuilds if structuralCacheVersion
  * has advanced since the last build.
+ *
+ * THR-580: previously dark — now traces every rebuild (`distance_matrix_rebuild`,
+ * timing ring) and counts them so the large-map stall's rebuild-storm hypothesis
+ * is evidenceable. `tick` is threaded in solely to stamp the trace; it never feeds
+ * the matrix computation, preserving determinism (NFP #3).
  */
 export function ensureDistanceMatrix(
   runtime: SimulationRuntime,
   graph: WorldGraph,
+  tick: number,
 ): DistanceMatrix {
   if (
     !runtime.distanceMatrix ||
     runtime.distanceMatrixBuiltAt < runtime.structuralCacheVersion
   ) {
+    const t0 = typeof performance !== 'undefined' ? performance.now() : 0;
     runtime.distanceMatrix = buildDistanceMatrix(graph);
     runtime.distanceMatrixBuiltAt = runtime.structuralCacheVersion;
+    runtime.distanceMatrixRebuildCount++;
+    const durationMs = typeof performance !== 'undefined' ? performance.now() - t0 : undefined;
+    emitTiming({
+      category: 'distance_matrix_rebuild',
+      tick,
+      locationCount: runtime.distanceMatrix.locationCount,
+      totalRebuildsThisSession: runtime.distanceMatrixRebuildCount,
+      durationMs,
+      summary: `distance matrix rebuilt: ${runtime.distanceMatrix.locationCount} locations in ${durationMs?.toFixed(1) ?? '?'}ms`,
+    });
   }
   return runtime.distanceMatrix;
 }

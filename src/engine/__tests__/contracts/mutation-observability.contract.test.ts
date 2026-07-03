@@ -101,17 +101,17 @@ describe('Mutation Observability — Cache Invalidation Contracts', () => {
     const { state } = createTestWorld();
 
     // First build
-    const matrix1 = ensureDistanceMatrix(runtime, state.graph);
+    const matrix1 = ensureDistanceMatrix(runtime, state.graph, state.tick);
     expect(matrix1).toBeDefined();
     expect(matrix1.locationCount).toBeGreaterThan(0);
 
     // Same version — should return same instance
-    const matrix2 = ensureDistanceMatrix(runtime, state.graph);
+    const matrix2 = ensureDistanceMatrix(runtime, state.graph, state.tick);
     expect(matrix2).toBe(matrix1);
 
     // Bump structural version → should rebuild
     touchStructure(runtime);
-    const matrix3 = ensureDistanceMatrix(runtime, state.graph);
+    const matrix3 = ensureDistanceMatrix(runtime, state.graph, state.tick);
     expect(matrix3).not.toBe(matrix1);
   });
 
@@ -121,7 +121,7 @@ describe('Mutation Observability — Cache Invalidation Contracts', () => {
 
     // Build caches and bump versions
     ensureEncounterCache(runtime, state.graph, state.tick, state.tiles);
-    ensureDistanceMatrix(runtime, state.graph);
+    ensureDistanceMatrix(runtime, state.graph, state.tick);
     touchWorld(runtime);
     touchStructure(runtime);
     const wv = runtime.worldVersion;

@@ -183,6 +183,9 @@ export type TraceCategory =
   | 'tick_phase_profile'
   // Encounter cache rebuild tracking (THR-187)
   | 'encounter_cache_rebuild'
+  // Tick-loop observability (THR-580)
+  | 'tick_profile'
+  | 'distance_matrix_rebuild'
   // Hex→actor index unresolved actors warning (THR-188)
   | 'engine_warning'
   // Effect shells (THR-53)
@@ -417,6 +420,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'tick_phase_profile',
   // Encounter cache rebuild tracking (THR-187)
   'encounter_cache_rebuild',
+  // Tick-loop observability (THR-580)
+  'tick_profile',
+  'distance_matrix_rebuild',
   // Hex→actor index unresolved actors warning (THR-188)
   'engine_warning',
   // Effect shells (THR-53)
@@ -1747,6 +1753,9 @@ export type TraceEntry =
   | TickPhaseProfileTrace
   // Encounter cache rebuild tracking (THR-187)
   | EncounterCacheRebuildTrace
+  // Tick-loop observability (THR-580)
+  | TickProfileTrace
+  | DistanceMatrixRebuildTrace
   // Hex→actor index engine warning (THR-188)
   | EngineWarningTrace
   // Effect shell traces (THR-53)
@@ -2130,6 +2139,46 @@ export interface EncounterCacheRebuildTrace extends TraceBase {
   locationCount: number;
   totalRebuildsThisSession: number;
   durationMs?: number;
+}
+
+/**
+ * Trace: the distance matrix was rebuilt from scratch (THR-580).
+ *
+ * Mirrors `encounter_cache_rebuild` for the previously-dark distance matrix.
+ * `buildDistanceMatrix` is O(L·(L+E)) BFS-per-location; if this fires most ticks
+ * past the stall point, the driver is `structuralCacheVersion` over-invalidation
+ * (see the load-bearing decision on structuralCacheVersion), not raw agent count.
+ * Routes to the dedicated timing ring (profiling-gated), not the shared buffer.
+ */
+export interface DistanceMatrixRebuildTrace extends TraceBase {
+  category: 'distance_matrix_rebuild';
+  locationCount: number;
+  totalRebuildsThisSession: number;
+  durationMs?: number;
+}
+
+/**
+ * Trace: per-tick rollup summarizing the whole `runTick` (THR-580).
+ *
+ * The "which tick got slow and why" record. Emitted once at the end of `runTick`
+ * when profiling is enabled; routes to the dedicated timing ring. `slowestPhase`
+ * is computed from the `tick_phase_profile` traces collected this tick.
+ */
+export interface TickProfileTrace extends TraceBase {
+  category: 'tick_profile';
+  /** Wall-clock for the whole runTick body, in milliseconds. */
+  totalMs: number;
+  /** Phases timed this tick (registered + inline). */
+  phaseCount: number;
+  /** Phase id with the maximum `durationMs` this tick. */
+  slowestPhase: string;
+  slowestPhaseMs: number;
+  /** Actor-node count from the graph — the stall's independent variable. */
+  agentCount: number;
+  /** True if the encounter cache rebuilt this tick. */
+  encounterCacheRebuilt: boolean;
+  /** True if the distance matrix rebuilt this tick. */
+  distanceMatrixRebuilt: boolean;
 }
 
 /** Trace: hex→actor index found actors whose location could not be resolved (THR-188). Rate-limited to once per session. */

@@ -40,13 +40,13 @@ import {
 } from '../data/narrative-content';
 import { pickWithRepetitionGuard } from './proseSelection';
 import { phaseAgentLifecycle, resetLifecycleCounter } from './agentLifecycle';
-import { emitTrace } from './traceBuffer';
+import { emitTrace, emitTiming, emitPhaseTiming, getTimingTraces, isProfilingEnabled } from './traceBuffer';
 import { runRegisteredPhases, type PhaseContext } from './phaseRegistry';
 import { PHASE_PLAN } from './phases';
 import { tickEffects } from './effectTick';
 import { processEffectEvent, applyEffectEventResult } from './effects/effectEvents';
 import { executeEffect } from './effectExecutors';
-import type { TraceEntry } from '../types/trace';
+import type { TraceEntry, TickPhaseProfileTrace } from '../types/trace';
 import {
   resolveEncounter,
   advanceEncounter,
@@ -1590,7 +1590,9 @@ export function phaseFamiliarityGain(state: GameState): Partial<GameState> {
     map = newMap;
   }
 
-  emitTrace({
+  // THR-580: legacy actor-counter profile — routed to the timing ring alongside
+  // the duration-based phase profiles (profiling-gated; single home for the category).
+  emitTiming({
     tick: state.tick,
     category: 'tick_phase_profile',
     phase: 'familiarity_gain',
@@ -1891,6 +1893,44 @@ export function phaseDoomExpiry(state: GameState): Partial<GameState> {
 
 // ─── Master Tick ──────────────────────────────────────────────────
 
+/**
+ * THR-580: cached per-tick profiling flag. Set once at the top of `runTick` from
+ * `isProfilingEnabled()` so the ~65 inline-phase calls per tick don't each pay a
+ * module round-trip. When false, `runInlinePhase` adds only one boolean check.
+ */
+let tickProfilingEnabled = false;
+
+/**
+ * THR-580: wrap an inline phase so it gets the same `tick_phase_profile` timing the
+ * registered phases already emit — without restructuring `runTick`. Mirrors the legacy
+ * `{ ...s, ...phaseX(s) }` merge and returns the event delta so callers keep populating
+ * `phaseEventCounts` unchanged (additive — NFP #6). Timing is measured around the thunk
+ * only; it never feeds a seed/branch/state (determinism — NFP #3). Crash semantics are
+ * unchanged: inline phases are not try/caught today, and this helper does not add one.
+ */
+function runInlinePhase(
+  phaseId: string,
+  s: GameState,
+  run: () => Partial<GameState>,
+): { next: GameState; eventDelta: number } {
+  const start = tickProfilingEnabled ? performance.now() : 0;
+  const prevEvents = s.tickEvents.length;
+  const delta = run();
+  const next = { ...s, ...delta } as GameState;
+  const eventDelta = next.tickEvents.length - prevEvents;
+  if (tickProfilingEnabled) {
+    const durationMs = performance.now() - start;
+    emitPhaseTiming({
+      tick: next.tick,
+      phase: phaseId,
+      summary: `${phaseId}: ${eventDelta} events in ${durationMs.toFixed(2)}ms`,
+      durationMs,
+      eventDelta,
+    });
+  }
+  return { next, eventDelta };
+}
+
 export function runTick(state: GameState, scryTargets: import('../types').HexCoord[] = [], runtime?: SimulationRuntime): GameState {
   try {
   // Start with clean tick events
@@ -1903,12 +1943,22 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Must happen before any phase runs so all IDs use fresh sequences for this tick.
   resetEventCounters();
 
+  // THR-580: cache the profiling flag once per tick (avoid a module round-trip in the
+  // hot inline-phase loop) and bracket the whole tick body for the `tick_profile`
+  // rollup. Snapshot cache-rebuild counters BEFORE the ensure* calls below so the
+  // rollup can report whether a rebuild fired this tick. All gated on profiling —
+  // zero cost when off (NFP #7).
+  tickProfilingEnabled = isProfilingEnabled();
+  const tickStart = tickProfilingEnabled ? performance.now() : 0;
+  const ecRebuildsBefore = runtime?.encounterCacheRebuildCount ?? 0;
+  const dmRebuildsBefore = runtime?.distanceMatrixRebuildCount ?? 0;
+
   // TB-087: Use runtime-owned caches when available, fall back to legacy module globals for tests
   let activeEncounterCache: EncounterCacheManager;
   let activeDistanceMatrix: DistanceMatrix;
   if (runtime) {
     activeEncounterCache = ensureEncounterCache(runtime, s.graph, s.tick, s.tiles);
-    activeDistanceMatrix = ensureDistanceMatrix(runtime, s.graph);
+    activeDistanceMatrix = ensureDistanceMatrix(runtime, s.graph, s.tick);
     // Keep legacy pointer in sync for getEncounterCacheManager()
     legacyRuntime = runtime;
   } else {
@@ -1979,8 +2029,12 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // ─── Unified Action Pipeline (replaces old phaseAgentActions + phaseEncounterProgression + phaseActionProgress) ───
   // Phase 2a: Progress + resolve existing unified actions (Phases 1-6 of unified pipeline)
   const uaRng = mulberry32(state.seed + state.tick * 31);
-  s = { ...s, ...phaseUnifiedActionProgress(s, UNIFIED_ACTION_TEMPLATES, uaRng, runtime) };
-  phaseEventCounts['unified_action_progress'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('unified_action_progress', s, () =>
+      phaseUnifiedActionProgress(s, UNIFIED_ACTION_TEMPLATES, uaRng, runtime));
+    s = r.next;
+    phaseEventCounts['unified_action_progress'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 2a.1: Thread-bind familiarity grant — when a bind_thread_* action resolves
@@ -2044,7 +2098,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
         emitTrace(trace as unknown as TraceEntry);
       }
     }
-    emitTrace({
+    emitTiming({
       tick: s.tick,
       category: 'tick_phase_profile',
       phase: 'effect_tick',
@@ -2059,8 +2113,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   }
 
   // Phase 2a.5: Encounter Progression — advance active encounters whose current step has elapsed
-  s = { ...s, ...phaseEncounterProgressionV2(s, runtime) };
-  phaseEventCounts['encounter_progression'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('encounter_progression', s, () => phaseEncounterProgressionV2(s, runtime));
+    s = r.next;
+    phaseEventCounts['encounter_progression'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 2a.52: Effect Shells — process non-step-outcome flip_table triggers (THR-53)
@@ -2165,8 +2222,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 2b: Agent Decision — unified encounter-driven decision pipeline (replaces phaseIdleSelection)
   // @deprecated — phaseIdleSelection replaced by phaseAgentDecision
   const decisionRng = mulberry32(state.seed + state.tick * 37);
-  s = { ...s, ...phaseAgentDecision(s, activeEncounterCache, activeDistanceMatrix, decisionRng, runtime) };
-  const decisionEvents = s.tickEvents.length - prevEventCount;
+  const decisionResult = runInlinePhase('agent_decision', s, () =>
+    phaseAgentDecision(s, activeEncounterCache, activeDistanceMatrix, decisionRng, runtime));
+  s = decisionResult.next;
+  const decisionEvents = decisionResult.eventDelta;
   phaseEventCounts['agent_decision'] = decisionEvents;
   agentsProcessed += decisionEvents;
   prevEventCount = s.tickEvents.length;
@@ -2186,9 +2245,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.35: Agent Movement (goal-directed pathfinding)
-
-  s = { ...s, ...phaseMovement(s) };
-  phaseEventCounts['agent_movement'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('agent_movement', s, () => phaseMovement(s));
+    s = r.next;
+    phaseEventCounts['agent_movement'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.352: Army Movement (TB-073 — armies advance toward objectives)
@@ -2397,7 +2458,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
       processedMasteryActors++;
       processTraitDecay(s.graph, agent.id, s.tick);
     }
-    emitTrace({
+    emitTiming({
       tick: s.tick,
       category: 'tick_phase_profile',
       phase: 'mastery_decay',
@@ -2641,6 +2702,38 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
       summary: `Health check failed: ${report.findings.map(f => f.check).join(', ')}`,
       findings: report.findings,
     } as TraceEntry);
+  }
+
+  // THR-580: per-tick rollup — "which tick got slow and why". Profiling-gated, so
+  // zero cost on the default path. `slowestPhase` is derived from the `tick_phase_profile`
+  // entries this tick already emitted to the timing ring (registered + inline).
+  if (tickProfilingEnabled) {
+    const totalMs = performance.now() - tickStart;
+    const tickTimings = getTimingTraces().filter(
+      (t): t is TickPhaseProfileTrace =>
+        t.category === 'tick_phase_profile' && t.tick === s.tick,
+    );
+    let slowestPhase = 'none';
+    let slowestPhaseMs = 0;
+    for (const t of tickTimings) {
+      const d = t.durationMs ?? 0;
+      if (d > slowestPhaseMs) {
+        slowestPhaseMs = d;
+        slowestPhase = t.phase;
+      }
+    }
+    emitTiming({
+      category: 'tick_profile',
+      tick: s.tick,
+      totalMs,
+      phaseCount: tickTimings.length,
+      slowestPhase,
+      slowestPhaseMs,
+      agentCount: s.graph.getNodesByType('actor').length,
+      encounterCacheRebuilt: (runtime?.encounterCacheRebuildCount ?? 0) > ecRebuildsBefore,
+      distanceMatrixRebuilt: (runtime?.distanceMatrixRebuildCount ?? 0) > dmRebuildsBefore,
+      summary: `tick ${s.tick}: ${totalMs.toFixed(1)}ms total, slowest ${slowestPhase} ${slowestPhaseMs.toFixed(1)}ms`,
+    });
   }
 
   return s;

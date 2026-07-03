@@ -13,7 +13,7 @@
  */
 import type { GameState } from '../types/gameState';
 import type { SimulationRuntime } from './simulationRuntime';
-import { emitTrace } from './traceBuffer';
+import { emitTrace, emitPhaseTiming } from './traceBuffer';
 
 /** Inputs every registered phase receives. */
 export interface PhaseContext {
@@ -277,12 +277,15 @@ export function runRegisteredPhases(
       continue;
     }
     const eventDelta = s.tickEvents.length - prevEventCount;
-    emitTrace({
+    // THR-580: route registered-phase timing to the dedicated timing ring (no-op
+    // unless profiling is enabled) so it lands alongside inline-phase timings and
+    // stops evicting semantic traces from the shared buffer.
+    const durationMs = performance.now() - phaseStart;
+    emitPhaseTiming({
       tick: s.tick,
-      category: 'tick_phase_profile',
-      summary: `${phase.id}: ${eventDelta} events in ${(performance.now() - phaseStart).toFixed(2)}ms`,
+      summary: `${phase.id}: ${eventDelta} events in ${durationMs.toFixed(2)}ms`,
       phase: phase.id,
-      durationMs: performance.now() - phaseStart,
+      durationMs,
       eventDelta,
     });
     prevEventCount = s.tickEvents.length;

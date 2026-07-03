@@ -842,6 +842,11 @@ if (import.meta.env.DEV) {
     disableTracing: () => import('./engine/traceBuffer').then((m) => m.disableTracing()),
     isTracingEnabled: () => import('./engine/traceBuffer').then((m) => m.isTracingEnabled()),
     clearTraces: () => import('./engine/traceBuffer').then((m) => m.clearTraces()),
+    // Tick-loop profiling (THR-580): timing ring + per-phase aggregate.
+    enableProfiling: () => import('./engine/traceBuffer').then((m) => m.enableProfiling()),
+    disableProfiling: () => import('./engine/traceBuffer').then((m) => m.disableProfiling()),
+    getPhaseTimings: (windowTicks?: number) =>
+      import('./engine/traceBuffer').then((m) => m.aggregatePhaseTimings(m.getTimingTraces(), windowTicks)),
     getCrashLog: () => import('./engine/tickHealthMonitor').then((m) => m.getCrashLog()),
     clearCrashLog: () => import('./engine/tickHealthMonitor').then((m) => m.clearCrashLog()),
     getHealthReport: () => import('./engine/tickHealthMonitor').then((m) => m.getLatestReport()),

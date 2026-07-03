@@ -7,7 +7,14 @@ import {
   type PhaseSlot,
 } from '../phaseRegistry';
 import type { GameState } from '../../types/gameState';
-import { enableTracing, clearTraces, getTraces } from '../traceBuffer';
+import {
+  enableTracing,
+  clearTraces,
+  getTraces,
+  enableProfiling,
+  clearTimingTraces,
+  getTimingTraces,
+} from '../traceBuffer';
 
 // Minimal GameState shim for unit tests — registry only touches `tick` and `tickEvents`.
 function makeState(): GameState {
@@ -132,6 +139,10 @@ describe('phaseRegistry — runRegisteredPhases runtime', () => {
   beforeEach(() => {
     enableTracing();
     clearTraces();
+    // THR-580: tick_phase_profile now routes to the dedicated timing ring, which is
+    // gated by profiling (independent of tracing) and read via getTimingTraces().
+    enableProfiling();
+    clearTimingTraces();
   });
 
   it('returns the input state unchanged for an empty plan (Land 1 ship state)', () => {
@@ -188,7 +199,7 @@ describe('phaseRegistry — runRegisteredPhases runtime', () => {
     const b = makePhase('b', 'pre-doom', { run: () => ({}) });
     const plan = buildPhasePlan([a, b]);
     runRegisteredPhases(makeState(), {}, 'pre-doom', plan);
-    const profiles = getTraces().filter(t => t.category === 'tick_phase_profile');
+    const profiles = getTimingTraces().filter(t => t.category === 'tick_phase_profile');
     expect(profiles.length).toBe(2);
     expect(new Set(profiles.map(p => (p as { phase?: string }).phase))).toEqual(new Set(['a', 'b']));
   });
@@ -199,7 +210,7 @@ describe('phaseRegistry — runRegisteredPhases runtime', () => {
     });
     const plan = buildPhasePlan([exploder]);
     runRegisteredPhases(makeState(), {}, 'pre-doom', plan);
-    const profiles = getTraces().filter(t => t.category === 'tick_phase_profile');
+    const profiles = getTimingTraces().filter(t => t.category === 'tick_phase_profile');
     expect(profiles.length).toBe(0);
     const crashes = getTraces().filter(t => t.category === 'tick_crash');
     expect(crashes.length).toBe(1);

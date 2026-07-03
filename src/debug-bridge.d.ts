@@ -375,6 +375,12 @@ export interface DebugBridge {
   disableTracing: () => Promise<void>;
   isTracingEnabled: () => Promise<boolean>;
   clearTraces: () => Promise<void>;
+  /** Enable the tick-loop profiling/timing stream (THR-580). Independent of tracing. */
+  enableProfiling: () => Promise<void>;
+  /** Disable the profiling/timing stream (THR-580). */
+  disableProfiling: () => Promise<void>;
+  /** Per-phase avg/max/p95 timing aggregate over the last `windowTicks` (default 30) of profiling (THR-580). */
+  getPhaseTimings: (windowTicks?: number) => Promise<import('./engine/traceBuffer').PhaseTimingAggregate[]>;
   getCrashLog: () => Promise<unknown>;
   clearCrashLog: () => Promise<void>;
   getHealthReport: () => Promise<unknown>;
