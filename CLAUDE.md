@@ -4,23 +4,27 @@ This folder contains The Fantasy World Simulator — a systemic god-game/rogue-l
 
 ## Cowork vs Claude Code — Read This First
 
-**Two agents, one executor queue.** Cowork designs and plans. **Claude Code (CC)** is the single executor — it implements, commits with `Fixes THR-XX`, and relies on the merge-to-main auto-close. There is one executor queue, **Ready for Dev**; CC pulls from it. (Codex and the second `Ready for Codex` queue were retired 2026-06-23, THR-486.)
+**Two agents, one executor queue.** Cowork designs and plans (no code, no git). **Claude Code (CC)** is the single executor — it implements, commits with `Fixes THR-XX`, and lets the merge-to-main auto-close fire. One queue: **Ready for Dev**, which CC pulls from. (Codex and the second `Ready for Codex` queue were retired 2026-06-23, THR-486.)
 
-**If you are running in Cowork mode:** You must NOT write code or run git commands. Your job is design, research, documentation (via MCP), and implementation plans. Use **Linear** (Threadbare team) for all issue tracking — query and update issue states via the Linear MCP. **Plan doc authoring:** When you write a plan doc into `Docs/plans/` or `Docs/audits/`, apply the `plan-pending-commit` label to the corresponding Linear issue immediately after writing the file. The hourly `flush-plan-docs` scheduled task commits the file — directly to `origin/main` when possible, or via an auto-flush PR if branch protection rejects the direct push — and removes the label, typically within 1 hour (longer when CI gates the PR). Do NOT manually commit plan docs; do NOT delay the Linear handoff waiting for the commit — move the issue to Ready for Dev as soon as the plan doc is written and the label is applied. When a design is complete, move the issue to **Ready for Dev** and add the handoff comment with the plan doc link and action items. **Every handoff must include a coordination block** — `Suggested model` (advisory; the matching `model:*` label is a convenience signal of work type, not a queue filter — the single CC automation runs Opus regardless), `Parallel-safe with`, and `Mutex with` lines. See the handoff template in `Docs/plans/2026-04-13-linear-coordination-protocol.md`. **The state transition plus the handoff comment is the handoff.** CC polls Linear on an hourly cycle and picks up the top item from Ready for Dev; no out-of-band notification of any kind — the Linear state transition is the handoff.
+This is the reference card. The full protocol — and the rationale for why each rule is non-negotiable — lives in three authoritative places; read them, don't re-derive from this card:
 
-**If you are running in Claude Code:** Start pickup with `/pull-work` (see `.claude/skills/pull-work/SKILL.md`) as the canonical entrypoint, then follow the fallback prose protocol below if needed. You do the coding, testing, committing, and pushing. Check **Linear** for issues in **"Ready for Dev"** state with `assignee:null` — the filter is required; it excludes issues an already-running session has claimed. Sort by priority in memory (the API rejects `orderBy:priority` at runtime, impediment #49) and **pull from the top.** **Claim before you read:** first tool call after selecting an issue is `save_issue(id, assignee: "me", state: "In Dev")`, then `get_issue(id)` to confirm the write stuck (Linear can silently drop state writes — impediment #48). Only after the claim is verified do you read the plan doc. **Read the latest comment first** — it supersedes the original handoff when an issue has been reopened. **Issues with the `Reopened` label** require reading all comments back to the original handoff before acting. **Never `save_issue(state: "Done")` from CC** — commit with `Fixes THR-XX` in the body, put `Fixes THR-XX` in the PR body too, and let the merge-to-main auto-close fire straight to Done. Manual Done transitions have caused premature closes of reopened issues and bypass the merge-gated invariant that Done means shipped. **The `Suggested model` line is advisory** — the scheduled automation always runs Opus; interactive sessions may use any model. **WIP limit: 1 In Dev issue at a time**, across all sessions and worktrees — parallel work happens on *different* issues, never the same one. Check `Docs/plans/` for design docs before starting work. See `Docs/plans/2026-04-13-linear-coordination-protocol.md` for the full protocol — the "Coordination Failure Modes — Hard Rules" section (Rules 1–9) explains why each of these is non-negotiable.
+- **`Docs/canon/process.md`** — session Step 0; the pointer surface for every rule below.
+- **`Docs/plans/2026-04-13-linear-coordination-protocol.md`** — canonical detail. The "Coordination Failure Modes — Hard Rules" section (Rules 1–9) explains why each rule exists.
+- **`.claude/skills/pull-work/SKILL.md`** — CC's `/pull-work` pickup flow as an executable checklist.
+
+**If you are running in Cowork (design only):** No code, no git. Track everything in **Linear** (Threadbare team). Write plan docs into `Docs/plans/` or `Docs/audits/`, apply the `plan-pending-commit` label (the hourly `flush-plan-docs` task commits them — never commit plan docs by hand), then move the issue to **Ready for Dev** with a **coordination block** in the handoff comment: `Suggested model` (advisory — the `model:*` label is a work-type signal, not a queue filter; CC always runs Opus), `Parallel-safe with`, `Mutex with`. Do not wait for the commit before handing off. The Linear state transition *is* the handoff — there is no out-of-band signal.
+
+**If you are running in Claude Code (execution):** Start with `/pull-work`. Pull the top **Ready for Dev** / `assignee:null` issue (sort by priority in memory — `orderBy:priority` errors, impediment #49). **Claim before you read:** `save_issue(id, assignee:"me", state:"In Dev")`, then `get_issue(id)` to confirm the write stuck (silent drops, impediment #48); only then read the plan doc. **Read the latest comment first** — the `Reopened` label means read all comments back to the original handoff. **WIP = 1** In Dev across all sessions and worktrees — parallel work happens on *different* issues. **Never `save_issue(state:"Done")` from CC** — put `Fixes THR-XX` in the commit body *and* the PR body (impediment #140) and let the merge auto-close fire. Check `Docs/plans/` for the design doc before writing code.
 
 ### Prioritization: Finish Before You Start
 
-**Deferrals and completions before new development.** When choosing what to work on, apply this priority order:
+Choose work in this order — finish projects before starting new ones:
 
-1. **Deferrals from in-progress projects** — issues labeled `Deferral` that belong to a project with active work. Finish what you started before moving on. Query: `list_issues label:"Deferral" state:"Ready for Dev"`.
-2. **Remaining issues in active projects** — if a project has issues in Ready for Dev, complete them before pulling issues from a different project.
-3. **New work by priority** — only start a fresh project's issues when active projects have no remaining Implementation Planning items.
+1. **Deferrals in active projects** — `Deferral`-labeled issues belonging to a project with active work (`list_issues label:"Deferral" state:"Ready for Dev"`).
+2. **Remaining issues in active projects** — clear a project's Ready-for-Dev backlog before pulling from a different project.
+3. **New work by priority** — only start a fresh project once active ones have no remaining items.
 
-This ensures projects get completed rather than accumulating half-finished work across many fronts. Check `list_projects` to see which projects have open issues.
-
-**Every Linear issue must belong to a project.** No orphan issues — if work doesn't fit an existing project, ask the user which project it belongs to or whether a new project is needed. Deferrals inherit the project of the parent issue they were deferred from.
+**Every Linear issue belongs to a project** — no orphans. Deferrals inherit their parent issue's project.
 
 ## Running the Prototype
 
@@ -543,14 +547,14 @@ Codesight is installed as both a **static analysis output** (`.codesight/`) and 
 **Use codesight actively:**
 - Before touching unfamiliar code, check `.codesight/wiki/index.md` for orientation (WHERE things live), then read actual source files.
 - Use `.codesight/CODESIGHT.md` for the full context map: components, libraries, config, middleware, dependency graph.
-- Use `.codesight/components.md` for the component catalog with props (166 components).
+- Use `.codesight/components.md` for the component catalog with props (253 components).
 - Use `.codesight/graph.md` for the import dependency graph and high-impact files.
 - Use the codesight MCP tools when available for live queries (blast radius, dependency chains).
 - To refresh mid-session after significant changes: `npx codesight --wiki`
 
 **High-impact files** (changes here affect many other files — all ≥100 importers; counts refreshed via codesight 2026-07-03):
 - `src/engine/graph.ts` (imported by 531 files)
-- `src/types/gameState.ts` (imported by 345 files)
+- `src/types/gameState.ts` (imported by 346 files)
 - `src/types/unifiedAction.ts` (imported by 278 files)
 - `src/types/traits.ts` (imported by 250 files)
 - `src/engine/traceBuffer.ts` (imported by 232 files)
