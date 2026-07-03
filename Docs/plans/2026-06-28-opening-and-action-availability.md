@@ -10,7 +10,7 @@
 
 Player action availability is the product of two independent questions:
 
-1. **Does the action exist?** — the **catalog**: ~114 ascendant action templates today (+ the Ascendant Beats verbs). See the visual catalog (`Docs/visuals/action-catalog.html`).
+1. **Does the action exist?** — the **catalog**: ~114 ascendant action templates today (+ the Ascendant Beats verbs). See the visual catalog (`public/action-catalog.html`).
 2. **Is it available *right now*?** — the **availability system**: floor → unlocks → gates → surfaces. This doc.
 
 We tune the *opening* almost entirely on axis 2. The catalog grows slowly; availability is where game-feel is dialed in.
@@ -113,5 +113,6 @@ These are **playtest questions** — the whole point of making availability data
 - Targeting cascade: `src/engine/targetActions.ts`
 - Action audit (catalog, partly stale): `Docs/audits/2026-05-09-ascendant-actions-audit.md`
 - In-game catalog: `?view=codex`
-- Visual catalog: `Docs/visuals/action-catalog.html`
-- Visual of this system: `Docs/visuals/opening-system.html`
+- **Design wiki home: `public/design-wiki.html`** — served at `http://localhost:5173/design-wiki.html`; a shared top-nav links this system, the Action Catalog, the Tick Cycle, and Encounters &amp; Agents into one reference wiki
+- Visual catalog: `public/action-catalog.html`
+- Visual of this system: `public/opening-system.html`

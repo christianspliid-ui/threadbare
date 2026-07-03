@@ -1,6 +1,6 @@
 ---
 domain: rulebook
-last_reviewed: 2026-05-11
+last_reviewed: 2026-06-23
 reviewer: cowork
 ul_shards: [Cosmology, Agents, Encounters, Prose, Graph, Process]
 status: live
@@ -98,7 +98,7 @@ Every action you take is one of **five verbs**: Create, Find, Change, Destroy, C
 - **Destroy** removes, corrupts, scatters, or erases.
 - **Control** is the god-game signature — a *sustained* commitment, with ongoing essence drain or upkeep, contestable by rival gods who meet the prerequisites [DESIGN — Control sustain models (essence drain, state threshold, ritual investment) in [Docs/plans/2026-03-17-world-state-and-hex-actions-design.md](../plans/2026-03-17-world-state-and-hex-actions-design.md); contestation via `usurp`/`destroy` reactions partially specified].
 
-**You can't Update what you haven't Read.** Find gates Change/Control. The natural chain is Find → Change/Create → Control [DESIGN — gating partially enforced via template prerequisites; not yet a hard runtime invariant].
+**You can't Update what you haven't Read.** Find gates Change/Control. The natural chain is Find → Change/Create → Control [DESIGN — kept deliberately **soft**: per-template prerequisites + layer-revelation gating (tunable), with an advisory content-lint to catch Change/Control templates that aren't Find-gated; **not** a hard runtime invariant (verdict 2026-06-23, THR-414). Lint: THR-476].
 
 Every node you focus on in a detail view — actor, location, sublocation, hex, artifact — becomes an **action target**. The ActionDrawer fills with templates filtered for that target through the **Generalized Action Targeting** cascade: node-type → subtype → traits → sphere → essence → range [IMPL — `getTargetActionSlots()` in [src/engine/](../../src/engine/) (search for the function); 119+ unified templates across CRUD, encounters, divine, location, attachment, sublocation, hex categories]. No fixed slot count. No capped action list. The space of "what is doable here" is data-driven and open-ended [IMPL — rejected approach: AgentWheel and fixed action slots, see [CLAUDE.md](../../CLAUDE.md) Rejected Approaches].
 
@@ -120,7 +120,29 @@ Why: TheFantasyWorldSimulator/Vision/02-non-negotiables.md (§1 — divine remov
 
 ---
 
-## 5. Your Resources
+## 5. The Cosmology
+
+Two orthogonal axes govern every divine action — neither subsumes the other [IMPL — load-bearing decision, see [CLAUDE.md](../../CLAUDE.md) Load-Bearing Architectural Decisions; full spec in [Docs/canon/cosmology.md](cosmology.md)].
+
+**Eight Reaches** — *what you do*, the activity domains: Iron, Gold, Shadow, Veil, Heart, Eye, Stone, Star [IMPL — `ReachDomain` in [src/types/traits.ts](../../src/types/traits.ts); the eight-Reach roster is settled canon — see [Docs/canon/cosmology.md](cosmology.md) for the authoritative names].
+
+**Twelve Spheres** — *what fuels it*, the cosmic energies, in six opposed pairs [IMPL — `SphereName` in [src/types/influence.ts](../../src/types/influence.ts)]:
+
+- *Foundation:* Chaos ↔ Order, Light ↔ Darkness — "elder magic," discovered through ruins, not chosen at chargen.
+- *Creation:* Force ↔ Mind, Matter ↔ Time, Energy ↔ Spirit, Life ↔ Entropy.
+
+Reaches and Spheres combine freely: the same Reach at different Sphere alignments produces different narrative textures — the combinatorial core of the action system [IMPL — load-bearing decision, [CLAUDE.md](../../CLAUDE.md)]. **Quintessence** is a separate meta-property (narrative centrality / threadbare-ness), **not** a ninth Reach [IMPL — see [Docs/canon/cosmology.md](cosmology.md)].
+
+```
+Owns: synthesis only.
+Definitions: Docs/ubiquitous-language/Cosmology.md (Reach, Sphere, Sphere Alignment, Quintessence)
+Spec: Docs/canon/cosmology.md
+Why: TheFantasyWorldSimulator/Vision/02-non-negotiables.md (§1 — divine domains and cosmic energies)
+```
+
+---
+
+## 6. Your Resources
 
 You have three currencies, all sphere-coloured, all limited, all visible:
 
@@ -128,7 +150,7 @@ You have three currencies, all sphere-coloured, all limited, all visible:
 
 **Control slots** cap how many sustained effects you can hold at once. The cap scales with your Domain Capability tier [DESIGN — Control mechanic in [Docs/plans/2026-03-17-world-state-and-hex-actions-design.md](../plans/2026-03-17-world-state-and-hex-actions-design.md); slot cap formula not yet finalised in code]. Each active Control effect spawns a visible encounter node that rival gods with the prerequisites can **usurp** (take over) or **destroy** (shatter) [DESIGN — contestation reactions specified, not all wired].
 
-**Influence Tiers** measure how deeply a mortal is connected to you. The implementation uses a 0–4 numeric tier — investment depth — measured on each `thread` edge [IMPL — `InfluenceTier = 0 | 1 | 2 | 3 | 4` in [src/types/influence.ts:35](../../src/types/influence.ts)]. The design target is a six-step ladder of *narrative* tier names — Unaware → Curious → Recognized → Devoted → Enthralled → Aspect — that maps to and refines the integer tier [DESIGN — six-tier ladder named in `state-of-game-design` SKILL Part 2; not yet a code enum]. The thread also tracks the mortal's *experience* of the connection, separately from your investment: `unaware | intuition | faith | communion` [IMPL — `awareness` field on `ThreadEdgeProperties` in [src/types/influence.ts](../../src/types/influence.ts)]. The mortal's response is the other half of the thread, and the game refuses to let you forget that there *is* another half [DESIGN — Agent Feedback System in [Docs/plans/2026-05-11-agent-feedback-system.md](../plans/2026-05-11-agent-feedback-system.md), THR-402].
+**Influence Tiers** measure how deeply a mortal is connected to you. The implementation uses a 0–4 numeric tier — investment depth — measured on each `thread` edge [IMPL — `InfluenceTier = 0 | 1 | 2 | 3 | 4` in [src/types/influence.ts:35](../../src/types/influence.ts)]. Five narrative tier names — Unaware → Curious → Recognized → Devoted → Enthralled — map one-to-one onto the five integer tiers; **'Aspect' is a separate apex milestone** (the mortal becomes an aspect of the god), not a sixth influence rung [IMPL — five integer tiers; narrative-name mapping + Aspect-as-apex resolved 2026-06-23 (THR-414). A small code ticket for the name-map + Aspect flag is a follow-up]. The thread also tracks the mortal's *experience* of the connection, separately from your investment: `unaware | intuition | faith | communion` [IMPL — `awareness` field on `ThreadEdgeProperties` in [src/types/influence.ts](../../src/types/influence.ts)]. The mortal's response is the other half of the thread, and the game refuses to let you forget that there *is* another half [DESIGN — Agent Feedback System in [Docs/plans/2026-05-11-agent-feedback-system.md](../plans/2026-05-11-agent-feedback-system.md), THR-402].
 
 **Court positions** organise your portfolio: `the_first` (the bonded mortal who anchors your divine presence), `retinue` (close-held), `watched`, `dormant` [IMPL — `CourtPosition` in [src/types/influence.ts:40](../../src/types/influence.ts)]. The First is the protagonist of your first arc — a Campbellian hero journey playing out through five phases (call → road of trials → crisis → ordeal → return) [IMPL — `CampbellianPhase` in [src/types/influence.ts:43](../../src/types/influence.ts); journey wiring partially implemented].
 
@@ -143,7 +165,7 @@ Why: TheFantasyWorldSimulator/Vision/00-north-star.md (the player hesitates and 
 
 ---
 
-## 6. Encounters and Aftermath
+## 7. Encounters and Aftermath
 
 An encounter is not a flat success/fail roll. It is a **framed chapter** — a curated moment where one threaded mortal's situation crystallises and the game pulls the camera onto it [IMPL — `UnifiedActionTemplate` is the single format since THR-108; full pipeline in `src/engine/encounter*` and aftermath in `phaseEncounterAftermath.ts`]. Encounters come in two shapes that share a format but split on pipeline:
 
@@ -174,7 +196,7 @@ Why: TheFantasyWorldSimulator/Vision/00-north-star.md (the unfolding is why they
 
 ---
 
-## 7. The Clocks
+## 8. The Clocks
 
 Two clocks pressure the run from opposite directions.
 
@@ -197,7 +219,7 @@ Why: TheFantasyWorldSimulator/Vision/00-north-star.md (cosmic melancholy as base
 
 ---
 
-## 8. Winning and Losing
+## 9. Winning and Losing
 
 A run ends one of two ways. **The Mandate completes** — your declared win-state is satisfied. The Doom Clock had not yet culminated, so the world survives and *you* shaped what survives. **The Doom Clock culminates** — the Unmaking arrives before the Mandate is satisfied. The world is remade or unmade, depending on the archetype.
 
@@ -218,19 +240,27 @@ Why: TheFantasyWorldSimulator/Vision/00-north-star.md (a story the player can te
 
 ## Open questions
 
-These are rules the rulebook surfaced during drafting that do not yet have a clean verdict. They live here so the quarterly architecture-assessment pass can see them and the user can verdict them in batch. Each entry is referenced inline above with `[OPEN]` or `[DESIGN]` and a brief note. None of these is currently considered a *blocker* on Phase 1 — they are the natural surface area of synthesising eight sections from scattered sources. Per the THR-403 refinement (2026-05-11), only blocking `[OPEN]`s warrant separate Linear issues; non-blocking ones live here.
+The Phase 1 review pass (THR-414) verdicted all six on **2026-06-23**. Resolved items are folded into the sections above with upgraded inline flags; deferred items remain here with rationale and a `last_considered` date; spawned items link their follow-up issue. New questions surfaced by future drafting append below.
 
-1. **Influence Tier — six-name ladder vs. five-integer code.** State-of-game-design names a six-step narrative ladder (Unaware → Curious → Recognized → Devoted → Enthralled → Aspect). Code stores `InfluenceTier = 0 | 1 | 2 | 3 | 4` (five integers). Whether the ladder is a planned refinement of the integer scale, a deliberate divergence, or an aspirational shorthand is undecided. *Surfaced in §5.*
-2. **Five verbs vs. CRUD-ish surface.** The rulebook teaches Create / Find / Change / Destroy / Control as the five player verbs. The code's `UnifiedActionTemplate` uses CRUD-ish verb fields but does not consistently expose a `verb: 'find' | 'change' | …` discriminator the player ever sees by that name. Whether to surface the five verbs explicitly in the ActionDrawer (e.g. as filter chips) is an open UX question. *Surfaced in §4.*
-3. **Find gates Change/Control — hard or soft?** The "you can't Update what you haven't Read" rule appears in design docs as foundational. In code, gating is enforced via template prerequisites case-by-case rather than as a runtime invariant. Whether the gate should be hardened (engine-level refusal) or kept soft (per-template design discipline) is undecided. *Surfaced in §4.*
-4. **Session length.** Vision §`01-core-loop` keeps "three to six encounters per session" alive as a *suspicion*. The number is not yet tuned, the game does not signal a stopping point, and the relationship between encounters and ticks is intentionally flexible. *Surfaced in §3.*
-5. **Doom + Mandate dual-clock interplay.** The two clocks pressure each other in design, but the specific exchange rate — how much Mandate progress decelerates Doom, how much Doom escalation can be deflected by an active intervention — is not yet a tuned formula. *Surfaced in §7.*
-6. **Twilight authorship vs. emergence.** Twilight Phase is the most authored beat of the loop (the run's closing chapter) but harvests echoes from emergent play. The split between authored Twilight beats and procedural echo selection is not fully specified. *Surfaced in §7.*
+**Resolved (2026-06-23):**
 
-When the next quarterly architecture-assessment runs, these are the candidates to verdict, harden into rules, or move to per-domain canon pages. New questions surfaced by future drafting should append below.
+1. **Influence Tier — six-name ladder vs. five-integer code → RESOLVED.** Engine keeps the five integer tiers; the names Unaware → Curious → Recognized → Devoted → Enthralled map onto them one-to-one; **'Aspect' is a separate apex milestone, not a sixth rung.** Folded into §6. Follow-up: a small code ticket for the name-map + Aspect flag.
+2. **Five verbs vs. CRUD-ish surface → RESOLVED.** The five verbs stay **implicit substrate** — taught through encounter prose, **not** surfaced as ActionDrawer filter chips (prose-first UI). No code change. Folded into §4.
+
+**Spawned (tracked as issues):**
+
+3. **Find gates Change/Control → soft + lint.** Kept soft (per-template prerequisites + layer-revelation gating), with an advisory content-lint to catch violations — **not** a hard runtime invariant. Lint: **THR-476** (Ready for Codex). Surfaced in §4.
+6. **Twilight authorship vs. emergence → specify a lightweight split.** Verdict: define authored closing beats + a procedural echo-selection rule (which emergent threads get harvested into the finale). Spec task to be filed as a follow-up. Surfaced in §8.
+
+**Deferred to KPI data (revisit post-THR-457 harness):**
+
+4. **Session length.** "Three to six encounters per session" held as design *discipline*, not a tuned target; add a soft stopping-point signal once the KPI harness yields real session data. Surfaced in §3. `last_considered: 2026-06-23`.
+5. **Doom + Mandate dual-clock interplay.** No tuned exchange-rate formula before playtest data — design discipline for now. Surfaced in §8. `last_considered: 2026-06-23`.
+
+When the next quarterly architecture-assessment runs, the deferred items (4, 5) are the candidates to revisit. New questions surfaced by future drafting append below.
 
 ---
 
 ## Last-reviewed
 
-2026-05-11 by Cowork (Opus 4.6 executor pass on THR-403 Phase 1). Review trigger: monthly (or when [`monthly-rulebook-review`](https://linear.app/threadbare/issue/THR-405) lands and runs), and whenever a plan touches rules of play and updates a section.
+2026-06-23 by Cowork (THR-414 Phase 1 review pass — verdicted all 6 open questions + the manual↔card Cosmology drift; added §5 The Cosmology, renumbered former §5–§8 to §6–§9, folded resolved verdicts inline, spawned THR-476). Previous: 2026-05-11 by Cowork (Opus 4.6 executor pass on THR-403 Phase 1). Review trigger: monthly (or when [`monthly-rulebook-review`](https://linear.app/threadbare/issue/THR-405) lands and runs), and whenever a plan touches rules of play and updates a section.
