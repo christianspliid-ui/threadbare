@@ -11,10 +11,10 @@
 import { describe, test, expect } from 'vitest';
 import {
   applyScaleDifficultyAdjust,
-  applyScaleCritFailureGate,
+  resolveCritFailureSeverity,
   SCALE_DIFFICULTY_OFFSETS,
   MIN_PROBABILITY_BY_SCALE,
-  CRIT_FAILURE_PERMITTED_BY_SCALE,
+  CRIT_FAILURE_SEVERITY_BY_SCALE,
 } from '../resolutionScaleAdjust';
 
 // ─── Constants shape ────────────────────────────────────────────────
@@ -37,15 +37,12 @@ describe('SCALE_DIFFICULTY_OFFSETS', () => {
   });
 });
 
-describe('CRIT_FAILURE_PERMITTED_BY_SCALE', () => {
-  test('personal and local do not permit crit failure', () => {
-    expect(CRIT_FAILURE_PERMITTED_BY_SCALE.personal).toBe(false);
-    expect(CRIT_FAILURE_PERMITTED_BY_SCALE.local).toBe(false);
-  });
-
-  test('regional and cosmic permit crit failure', () => {
-    expect(CRIT_FAILURE_PERMITTED_BY_SCALE.regional).toBe(true);
-    expect(CRIT_FAILURE_PERMITTED_BY_SCALE.cosmic).toBe(true);
+describe('CRIT_FAILURE_SEVERITY_BY_SCALE', () => {
+  test('severity escalates with scale (personal/local minor → regional standard → cosmic severe)', () => {
+    expect(CRIT_FAILURE_SEVERITY_BY_SCALE.personal).toBe('minor');
+    expect(CRIT_FAILURE_SEVERITY_BY_SCALE.local).toBe('minor');
+    expect(CRIT_FAILURE_SEVERITY_BY_SCALE.regional).toBe('standard');
+    expect(CRIT_FAILURE_SEVERITY_BY_SCALE.cosmic).toBe('severe');
   });
 });
 
@@ -120,35 +117,27 @@ describe('applyScaleDifficultyAdjust', () => {
   });
 });
 
-// ─── applyScaleCritFailureGate ──────────────────────────────────────
+// ─── resolveCritFailureSeverity (THR-571 E2) ────────────────────────
 
-describe('applyScaleCritFailureGate', () => {
-  test('personal scale: critical_failure → failure', () => {
-    expect(applyScaleCritFailureGate('critical_failure', 'personal')).toBe('failure');
+describe('resolveCritFailureSeverity', () => {
+  test('personal scale → minor consequence tier', () => {
+    expect(resolveCritFailureSeverity('personal')).toBe('minor');
   });
 
-  test('local scale: critical_failure → failure', () => {
-    expect(applyScaleCritFailureGate('critical_failure', 'local')).toBe('failure');
+  test('local scale → minor consequence tier', () => {
+    expect(resolveCritFailureSeverity('local')).toBe('minor');
   });
 
-  test('regional scale: critical_failure preserved', () => {
-    expect(applyScaleCritFailureGate('critical_failure', 'regional')).toBe('critical_failure');
+  test('regional scale → standard consequence tier', () => {
+    expect(resolveCritFailureSeverity('regional')).toBe('standard');
   });
 
-  test('cosmic scale: critical_failure preserved', () => {
-    expect(applyScaleCritFailureGate('critical_failure', 'cosmic')).toBe('critical_failure');
+  test('cosmic scale → severe consequence tier', () => {
+    expect(resolveCritFailureSeverity('cosmic')).toBe('severe');
   });
 
-  test('undefined scale treated as regional: critical_failure preserved', () => {
-    expect(applyScaleCritFailureGate('critical_failure', undefined)).toBe('critical_failure');
-  });
-
-  test('non-crit-failure outcomes are always unchanged', () => {
-    const outcomes = ['failure', 'success', 'critical_success', 'success_at_cost'] as const;
-    for (const o of outcomes) {
-      expect(applyScaleCritFailureGate(o, 'personal')).toBe(o);
-      expect(applyScaleCritFailureGate(o, 'local')).toBe(o);
-    }
+  test('undefined scale treated as regional → standard', () => {
+    expect(resolveCritFailureSeverity(undefined)).toBe('standard');
   });
 });
 

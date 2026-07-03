@@ -79,7 +79,7 @@ import {
   REVEAL_WAKE_MARK_DURATION,
 } from '../data/self-action-constants';
 import type { SelfActionTrace, ResolutionInputTrace } from '../types/trace';
-import { applyScaleDifficultyAdjust, applyScaleCritFailureGate, MIN_PROBABILITY_BY_SCALE } from './resolutionScaleAdjust';
+import { applyScaleDifficultyAdjust, resolveCritFailureSeverity, MIN_PROBABILITY_BY_SCALE } from './resolutionScaleAdjust';
 import type { AscendantProperties } from '../types/influence';
 import { accumulateImportance, getImportanceDelta, getRarityTier } from './rarity';
 import type { TraceEntry } from '../types/trace';
@@ -374,11 +374,12 @@ export function resolveUncontestedStep(
     }
     : rawResult;
 
-  // THR-451 Phase B: Suppress critical_failure at personal/local scale.
-  const gatedOutcome = applyScaleCritFailureGate(flooredResult.outcome, template.scale);
-  const result = gatedOutcome === flooredResult.outcome
-    ? flooredResult
-    : { ...flooredResult, outcome: gatedOutcome };
+  // THR-571 E2: The critical_failure classification is no longer gated by scale.
+  // It survives to prose/aftermath/KPI/chronicle at every scale; only the
+  // downstream complication *severity* scales (resolveCritFailureSeverity →
+  // ComplicationContext.critFailureSeverity). The floor upgrade above still
+  // guarantees progress for sub-floor incapable actors.
+  const result = flooredResult;
 
   // THR-451 Phase A: Emit full resolution input telemetry.
   emitTrace({
@@ -1283,6 +1284,8 @@ export function executeStepResult(
     rng,
     graph: state.graph,
     doomIdentityComplicationBias: state.doomIdentityMatrix?.complicationBias,
+    // THR-571 E2: scale-appropriate consequence tier for critical_failure.
+    critFailureSeverity: resolveCritFailureSeverity(template.scale),
   };
 
   // Phase 3: Compute differentiated consequences (all templates for failure tiers; THR-20)

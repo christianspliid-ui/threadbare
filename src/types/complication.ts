@@ -198,4 +198,12 @@ export interface ComplicationContext {
    * Optional: absent when no doom identity matrix is loaded.
    */
   doomIdentityComplicationBias?: Partial<Record<ComplicationCategory, number>>;
+  /**
+   * THR-571 E2: scale-derived consequence tier for a critical_failure outcome.
+   * When present, the crit-failure branch of the selector uses this instead of
+   * the flat `'severe'` — a personal-scale crit-failure becomes a `'minor'`
+   * complication, a cosmic-scale one stays `'severe'`. Absent → back-compat
+   * `'severe'` (the old un-scaled behaviour). Only read for critical_failure.
+   */
+  critFailureSeverity?: ComplicationSeverity;
 }
