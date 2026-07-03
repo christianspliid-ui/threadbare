@@ -323,7 +323,7 @@ Every feature touches three pillars: **Engine** (systems, tick loop, graph), **C
 - [ ] **Constants table** — every tunable number named, with default and purpose (NFP #1)
 - [ ] **Tracing** — trace types emitted, with TypeScript interface definitions (NFP #2)
 - [ ] **Fail-soft table** — failure cases and fallback behavior (NFP #4)
-- [ ] **Blast Radius (only when high-impact files touched)** — required when the change touches any file with ≥100 importers (see the named list under `# Codesight — Codebase Intelligence` near the bottom of this file). For each high-impact file, list the importer count and a one-line cascade-risk note (e.g., "graph.ts — 370 importers; schema additions ripple through every node-creation site"). Surface up front in the plan doc, not in an appendix. Omit this section entirely when no high-impact file is touched.
+- [ ] **Blast Radius (only when high-impact files touched)** — required when the change touches any file with ≥100 importers (see the named list under `# Codesight — Codebase Intelligence` near the bottom of this file). For each high-impact file, list the importer count and a one-line cascade-risk note (e.g., "graph.ts — 531 importers; schema additions ripple through every node-creation site"). Surface up front in the plan doc, not in an appendix. Omit this section entirely when no high-impact file is touched.
 
 ### Maintenance and review
 
@@ -548,11 +548,16 @@ Codesight is installed as both a **static analysis output** (`.codesight/`) and 
 - Use the codesight MCP tools when available for live queries (blast radius, dependency chains).
 - To refresh mid-session after significant changes: `npx codesight --wiki`
 
-**High-impact files** (changes here affect many other files):
-- `src/engine/graph.ts` (imported by 370 files)
-- `src/types/index.ts` (imported by 186 files)
-- `src/types/gameState.ts` (imported by 176 files)
-- `src/types/traits.ts` (imported by 156 files)
-- `src/engine/traceBuffer.ts` (imported by 106 files)
+**High-impact files** (changes here affect many other files — all ≥100 importers; counts refreshed via codesight 2026-07-03):
+- `src/engine/graph.ts` (imported by 531 files)
+- `src/types/gameState.ts` (imported by 345 files)
+- `src/types/unifiedAction.ts` (imported by 278 files)
+- `src/types/traits.ts` (imported by 250 files)
+- `src/engine/traceBuffer.ts` (imported by 232 files)
+- `src/types/index.ts` (imported by 225 files)
+- `src/types/agent.ts` (imported by 129 files)
+- `src/types/graph.ts` (imported by 125 files)
+- `src/types/influence.ts` (imported by 107 files)
+- `src/engine/simulationRuntime.ts` (imported by 106 files)
 
 Wiki articles are navigation aids, not implementation guides — always read source files before implementing.
