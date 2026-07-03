@@ -918,6 +918,40 @@ if (import.meta.env.DEV) {
       return { count: records.length, records };
     },
 
+    /**
+     * THR-571 U1: live outcome-ladder distribution + KPI threshold verdicts.
+     * The instrument for the outcome-ladder design call — see the live clean/at-cost/
+     * crit split and each band's green/amber/red status without a screenshot.
+     *
+     * `windowTicks` (optional) restricts the resolved-action histogram to actions
+     * completed within the last N ticks (via `completedAtTick`). Cumulative-counter rows
+     * (branching fires, failure→story rate) stay lifetime — mirroring computeGameplayKpiReport,
+     * which already prefers the runtime's session counters over the pruned action window.
+     */
+    getOutcomeDistribution: async (windowTicks?: number) => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      const runtime = _runtimeProvider?.() ?? null;
+      const { computeGameplayKpiReport } = await import('./engine/kpi/gameplayKpi');
+      let view = state;
+      if (windowTicks !== undefined && windowTicks > 0) {
+        const cutoff = (state.tick ?? 0) - windowTicks;
+        view = {
+          ...state,
+          unifiedActions: (state.unifiedActions ?? []).filter(
+            a => !a.resolved || (a.completedAtTick ?? a.startTick) >= cutoff,
+          ),
+        };
+      }
+      const report = computeGameplayKpiReport(view, runtime);
+      return {
+        tick: report.tick,
+        seed: report.seed,
+        outcomes: report.outcomes,
+        thresholds: report.thresholds,
+      };
+    },
+
     // Encounter log exports — returns TSV strings for writing to disk
     getEncounterLogAll: () =>
       Promise.all([
