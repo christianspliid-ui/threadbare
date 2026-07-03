@@ -228,9 +228,10 @@ describe('computeGameplayKpiReport', () => {
     expect(report.threadedBeats.beatsPerChunk).toBeCloseTo((2 / 120) * 10, 3);
   });
 
-  it('produces 7 threshold evaluations', () => {
+  it('produces the base threshold suite including THR-571 outcome-ladder rows', () => {
     const report = computeGameplayKpiReport(makeState());
-    expect(report.thresholds).toHaveLength(7);
+    // 13 rows without failure_story (skipped when C1 counters absent).
+    expect(report.thresholds).toHaveLength(13);
     const metrics = report.thresholds.map(t => t.metric);
     expect(metrics).toContain('failure_rate');
     expect(metrics).toContain('critfail_rate');
@@ -239,6 +240,46 @@ describe('computeGameplayKpiReport', () => {
     expect(metrics).toContain('template_entropy');
     expect(metrics).toContain('branching_fire_per_30t');
     expect(metrics).toContain('threaded_beats_per_10t');
+    // THR-571 verdict rows
+    expect(metrics).toContain('total_success_min');
+    expect(metrics).toContain('total_success_max');
+    expect(metrics).toContain('at_cost_min');
+    expect(metrics).toContain('at_cost_max');
+    expect(metrics).toContain('crit_success_rate');
+    expect(metrics).toContain('crit_failure_rate');
+    // failure_story_rate is skipped until the C1 counters exist
+    expect(metrics).not.toContain('failure_story_rate');
+  });
+
+  it('THR-571: computes outcome-ladder rates (total success, at-cost, crit tails)', () => {
+    const actions = [
+      ...Array(20).fill(null).map((_, i) => makeResolvedAction(`t-${i}`, 'success')),
+      ...Array(40).fill(null).map((_, i) => makeResolvedAction(`t-${20 + i}`, 'success_at_cost')),
+      ...Array(3).fill(null).map((_, i) => makeResolvedAction(`t-${60 + i}`, 'critical_success')),
+      ...Array(2).fill(null).map((_, i) => makeResolvedAction(`t-${63 + i}`, 'critical_failure')),
+      ...Array(35).fill(null).map((_, i) => makeResolvedAction(`t-${65 + i}`, 'failure')),
+    ];
+    const report = computeGameplayKpiReport(makeState({ unifiedActions: actions as any }));
+    const o = report.outcomes;
+    expect(o.total).toBe(100);
+    expect(o.totalSuccessRate).toBeCloseTo((20 + 40 + 3) / 100, 3);
+    expect(o.atCostShare).toBeCloseTo(40 / 100, 3);
+    expect(o.critSuccessRate).toBeCloseTo(3 / 100, 3);
+    expect(o.critFailRate).toBeCloseTo(2 / 100, 3);
+    // No C1 counters supplied → failure_story is null and its threshold is skipped.
+    expect(o.failureStoryRate).toBeNull();
+  });
+
+  it('THR-571: failure_story_rate becomes a live threshold once the C1 counters are supplied', () => {
+    const report = computeGameplayKpiReport(makeState(), {
+      eligibilityFunnel: null,
+      failureOutcomesTotal: 50,
+      failureStoryArtifactsTotal: 48,
+    });
+    expect(report.outcomes.failureStoryRate).toBeCloseTo(48 / 50, 3);
+    const fsr = report.thresholds.find(t => t.metric === 'failure_story_rate');
+    expect(fsr).toBeDefined();
+    expect(fsr?.status).toBe('green'); // 0.96 ≥ 0.90
   });
 });
 

@@ -1089,6 +1089,14 @@ export interface UnifiedAction {
   readonly outcome?: UnifiedActionOutcome;
   readonly completedAtTick?: number; // tick when resolved became true (set by orchestrator cleanup)
   readonly stepOutcomes: readonly StepOutcome[]; // per-step results
+  /**
+   * THR-571: the polarity of any mid-action critical step, preserved through final-outcome
+   * aggregation so prose/aftermath can reference a fluke of brilliance (or a disaster survived)
+   * even when the final outcome collapses to success_at_cost. 'failure' wins over 'success' when
+   * both are present; null when no step classified as a critical. Additive/optional — old saves
+   * and externally-completed actions (contestation) simply omit it.
+   */
+  readonly hadCriticalStep?: 'success' | 'failure' | null;
   /** Remembered player-facing encounter interventions keyed by step. */
   readonly choiceHistory?: readonly EncounterChoiceMemory[];
   /** Player has chosen to stop interfering; remaining beats resolve on mortal terms. */

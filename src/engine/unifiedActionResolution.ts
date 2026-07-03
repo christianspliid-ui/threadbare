@@ -138,6 +138,19 @@ import type { DigestEntry } from '../types/attention';
 import { checkAndFireActionTriggers, type ActionTriggerContext } from './effects/actionTrigger';
 import { collectAttachmentEffects } from './effects/effectWalker';
 
+// ─── THR-571: Outcome-ladder constants ──────────────────────────
+/**
+ * What a probability-floor upgrade turns a sub-floor failure into.
+ *
+ * Was `'success'` (THR-451): an incapable actor scraping through on a guaranteed
+ * floor was rendered as a clean win, which flattened the curve and erased the
+ * signal that clean success is supposed to carry (genuine capability). An
+ * incapable actor guaranteed progress by the floor *is* the definition of
+ * success-at-cost — they got through, but not cleanly. Clean `success` now again
+ * means the roll landed on capability, not on the floor. (NFP #1 Tunability.)
+ */
+const FLOOR_UPGRADE_OUTCOME: OutcomeType = 'success_at_cost';
+
 // ─── Phase 1: Progress ──────────────────────────────────────────
 
 /**
@@ -334,15 +347,30 @@ export function resolveUncontestedStep(
   // scaleMinP, upgrade 'failure'/'critical_failure' → 'success'.
   // Only failure outcomes are upgraded — 'critical_success', 'success', 'success_at_cost'
   // (e.g. shaper-upgraded near-miss failures) are preserved unchanged.
+  // THR-571: the raw resolver outcome, captured before any floor upgrade or scale
+  // severity mapping — the observable "before" of the erasure this plan fixes.
+  const rawOutcome = rawResult.outcome;
+  const critClassification: 'critical_success' | 'critical_failure' | 'none' =
+    rawOutcome === 'critical_success' ? 'critical_success'
+      : rawOutcome === 'critical_failure' ? 'critical_failure'
+        : 'none';
+
   const scaleMinP = MIN_PROBABILITY_BY_SCALE[template.scale ?? 'regional'];
   const probabilityFloorActive = rawResult.probability < scaleMinP;
+  // THR-571: A sub-floor failing roll that the floor guarantees through becomes
+  // success_at_cost, not a clean 'success' — the actor scraped through on the floor,
+  // they did not earn a clean win. Doubles that classified critical_success against
+  // raw P are preserved (rare brilliance from the incapable is desirable drama);
+  // doubles that classified critical_failure upgrade to success_at_cost like any
+  // other floored failure (the floor still guarantees progress).
+  const floorUpgradeApplied = probabilityFloorActive &&
+    rawResult.roll <= Math.floor(scaleMinP * 100) &&
+    (rawOutcome === 'failure' || rawOutcome === 'critical_failure');
   const flooredResult = probabilityFloorActive
     ? {
       ...rawResult,
       probability: scaleMinP,
-      outcome: (rawResult.roll <= Math.floor(scaleMinP * 100) &&
-                (rawResult.outcome === 'failure' || rawResult.outcome === 'critical_failure')
-                ? 'success' : rawResult.outcome) as OutcomeType,
+      outcome: (floorUpgradeApplied ? FLOOR_UPGRADE_OUTCOME : rawResult.outcome) as OutcomeType,
     }
     : rawResult;
 
@@ -371,7 +399,10 @@ export function resolveUncontestedStep(
     probabilityFloorApplied: probabilityFloorActive,
     roll: rawResult.roll,
     outcome: result.outcome,
-    summary: `resolution.input: ${action.templateId} scale=${template.scale ?? 'regional'} cap=${capability.toFixed(2)} diff=${effectiveDifficulty.toFixed(2)} P=${flooredResult.probability.toFixed(2)} roll=${rawResult.roll} → ${result.outcome}`,
+    rawOutcome,
+    critClassification,
+    floorUpgradeApplied,
+    summary: `resolution.input: ${action.templateId} scale=${template.scale ?? 'regional'} cap=${capability.toFixed(2)} diff=${effectiveDifficulty.toFixed(2)} P=${flooredResult.probability.toFixed(2)} roll=${rawResult.roll} raw=${rawOutcome}${floorUpgradeApplied ? ' [floor↑]' : ''} → ${result.outcome}`,
   } as ResolutionInputTrace);
 
   // Phase 3: If push was attempted, queue the spend event
