@@ -24,6 +24,7 @@ import {
   DETAIL_FAILSOFT_STUB_SPHERE,
 } from '../types/detailPage';
 import type { WorldGraph } from './graph';
+import type { SimulationRuntime } from './simulationRuntime';
 import {
   DETAIL_PAGE_REGISTRY,
   DETAIL_PROSE_CACHE_TTL_TICKS,
@@ -42,18 +43,11 @@ import { UNKNOWN_ENTITY_PROSE } from '../data/detail-page-fallback-templates';
 
 // ─── Cache ────────────────────────────────────────────────────────────────────
 //
-// Module-scoped per-runtime cache. Per Load-Bearing Decisions, this should
-// migrate to SimulationRuntime ownership when a runtime exists. Until then,
-// `clearDetailPageCache()` is exposed for test isolation and session resets.
-
-const _detailCache = new Map<string, DetailPage>();
-let _lastCachedTick = -Infinity;
-
-/** Reset the detail page cache. Use between test cases or when the world resets. */
-export function clearDetailPageCache(): void {
-  _detailCache.clear();
-  _lastCachedTick = -Infinity;
-}
+// THR-577: cache ownership lives on `SimulationRuntime` (per the load-bearing
+// decision "engine caches must be owned per session, not stored at module scope").
+// Callers thread `runtime` through `GenerateDetailPageInput`; when it is absent
+// (tests, isolated previews) the page is composed fresh without caching. Session
+// reset clears it via `resetRuntimeCaches()`.
 
 function cacheKey(nodeId: string, pageKind: DetailPageKind, tick: number): string {
   return `${pageKind}:${nodeId}:${tick}`;
@@ -78,6 +72,12 @@ export interface GenerateDetailPageInput {
   encounterContext?: SectionResolverContext['encounterContext'];
   /** Initial breadcrumb root, default ['ENCOUNTER']. */
   breadcrumbRoot?: string[];
+  /**
+   * Session runtime that owns the per-session detail-page cache (THR-577). When
+   * present, same-tick re-opens return the cached page; when absent, the page is
+   * composed fresh (no cross-session bleed).
+   */
+  runtime?: SimulationRuntime | null;
 }
 
 /**
@@ -96,17 +96,22 @@ export function generateDetailPage(input: GenerateDetailPageInput): DetailPage {
     protagonistId,
     encounterContext,
     breadcrumbRoot = ['ENCOUNTER'],
+    runtime,
   } = input;
 
-  // Auto-evict on tick advance.
-  if (tick - _lastCachedTick >= DETAIL_PROSE_CACHE_TTL_TICKS) {
-    _detailCache.clear();
-    _lastCachedTick = tick;
+  const cache = runtime?.detailPageCache ?? null;
+
+  // Auto-evict on tick advance (TTL). Runtime-owned so it never bleeds across sessions.
+  if (cache && runtime && tick - runtime.detailPageCacheTick >= DETAIL_PROSE_CACHE_TTL_TICKS) {
+    cache.clear();
+    runtime.detailPageCacheTick = tick;
   }
 
   const key = cacheKey(nodeId, pageKind, tick);
-  const cached = _detailCache.get(key);
-  if (cached) return cached;
+  if (cache) {
+    const cached = cache.get(key);
+    if (cached) return cached;
+  }
 
   const node = graph.getNode(nodeId);
   if (!node) {
@@ -166,7 +171,7 @@ export function generateDetailPage(input: GenerateDetailPageInput): DetailPage {
     hasFullSheet: hasFullSheetFor(pageKind, node, protagonistId),
   };
 
-  _detailCache.set(key, page);
+  if (cache) cache.set(key, page);
   return page;
 }
 

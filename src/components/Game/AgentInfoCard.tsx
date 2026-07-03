@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import type { AgentInfoCardData } from '../../engine/agentDetail';
 import type { WorldGraph } from '../../engine/graph';
+import type { SimulationRuntime } from '../../engine/simulationRuntime';
 import type { ReachDomain } from '../../types/traits';
 import type { StrategicRuntimeState } from '../../types/strategicAction';
 import { ReachIcon } from '../icons';
@@ -25,6 +26,8 @@ interface AgentInfoCardProps {
   seed?: number;
   /** Current game tick — enables tick-based prose cache (PERF-01) */
   tick?: number;
+  /** Session runtime owning the prose cache (THR-577). Absent ⇒ prose composed uncached. */
+  runtime?: SimulationRuntime | null;
   /** Strategic runtime state — enables the "Designs" section showing agent strategic activity. */
   strategicState?: StrategicRuntimeState;
 }
@@ -59,6 +62,7 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
   graph,
   seed,
   tick,
+  runtime,
   strategicState,
 }: AgentInfoCardProps) {
   const knowledgeLevelLabel = KNOWLEDGE_LEVEL_DISPLAY[card.knowledgeLevel] || card.knowledgeLevel;
@@ -67,8 +71,8 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
   // RC-004: Fixed card.agentId → card.id (agentId doesn't exist on AgentInfoCardData)
   const agentProse = useMemo(() => {
     if (!graph || seed === undefined || tick === undefined) return '';
-    return generateEntityProse(card.id, graph, seed, 'summary', tick);
-  }, [card.id, graph, seed, tick]);
+    return generateEntityProse(card.id, graph, seed, 'summary', tick, runtime);
+  }, [card.id, graph, seed, tick, runtime]);
 
   // Strategic summary — only computed when strategicState + graph + tick are available
   const strategicSummary = useMemo(() => {

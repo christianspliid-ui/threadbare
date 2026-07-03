@@ -36,6 +36,7 @@ import { createBalanceTelemetry } from './balanceTelemetry';
 import { BALANCE_TARGETS_VERSION } from './balanceTargets';
 import { emitTrace } from './traceBuffer';
 import type { ForeshadowingResult } from '../types/foreshadowing';
+import type { DetailPage } from '../types/detailPage';
 import type { EligibilityFunnelCounters } from './kpi/gameplayKpi';
 import { createEligibilityFunnelCounters } from './kpi/gameplayKpi';
 
@@ -116,6 +117,29 @@ export interface SimulationRuntime {
    * Consumed by enrichProse() when resolving {outcome_phrase} / {q_flavor}.
    */
   outcomeBandPhraseHistory: Map<string, Set<string>>;
+
+  // ── Detail-page render cache (THR-577; migrated from module scope) ──
+  /**
+   * Per-session cache of fully resolved DetailPages keyed by
+   * `${pageKind}:${nodeId}:${tick}`. TTL-evicts when the tick advances by
+   * DETAIL_PROSE_CACHE_TTL_TICKS (see detailPageCacheTick). Owned here — not at
+   * detailPageGenerator module scope — to prevent cross-session bleed.
+   * Cleared by resetRuntimeCaches().
+   */
+  detailPageCache: Map<string, DetailPage>;
+  /** Tick at which detailPageCache was last TTL-evicted. Starts at -Infinity. */
+  detailPageCacheTick: number;
+
+  // ── Entity-prose cache (THR-577; migrated from module scope) ──
+  /**
+   * Per-session cache of composed entity prose keyed by `${nodeId}:${tick}:${mode}`.
+   * Evicts all entries when the tick advances (see proseCacheTick). Owned here —
+   * not at proseGenerator module scope — to prevent cross-session bleed.
+   * Cleared by resetRuntimeCaches().
+   */
+  proseCache: Map<string, string>;
+  /** Tick at which proseCache was last evicted. Starts at -1. */
+  proseCacheTick: number;
 }
 
 // ─── Factory ──────────────────────────────────────────────────────
@@ -138,6 +162,10 @@ export function createSimulationRuntime(): SimulationRuntime {
     foreshadowingCache: new Map(),
     threadStoryCache: new Map(),
     outcomeBandPhraseHistory: new Map(),
+    detailPageCache: new Map(),
+    detailPageCacheTick: -Infinity,
+    proseCache: new Map(),
+    proseCacheTick: -1,
   };
 }
 
@@ -287,6 +315,10 @@ export function resetRuntimeCaches(runtime: SimulationRuntime): void {
   runtime.encounterCacheBuiltAt = -1;
   runtime.distanceMatrixBuiltAt = -1;
   runtime.foreshadowingCache.clear();
+  runtime.detailPageCache.clear();
+  runtime.detailPageCacheTick = -Infinity;
+  runtime.proseCache.clear();
+  runtime.proseCacheTick = -1;
   clearTimelines();
   clearRewardHistory();
 }

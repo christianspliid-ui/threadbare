@@ -4,6 +4,7 @@ import type { TerrainType, SphereName } from '../../types';
 import type { LineOfSight, SphereInfluence, HexCultureSummary, HexFactionSummary } from '../../engine/hexZoom';
 import type { HexRegionData } from '../../engine/hexRegion';
 import type { WorldGraph } from '../../engine/graph';
+import type { SimulationRuntime } from '../../engine/simulationRuntime';
 import type { GraphNode } from '../../types/graph';
 import { getSphereColor } from '../../data/sphereIcons';
 import { FACTION_DEFINITIONS } from '../../data/faction-definitions';
@@ -106,6 +107,8 @@ interface HexChronicleProps {
   seed: number;
   /** Current game tick — enables tick-based prose cache (PERF-01) */
   tick?: number;
+  /** Session runtime owning the prose cache (THR-577). Absent ⇒ prose composed uncached. */
+  runtime?: SimulationRuntime | null;
   /** Active control effects on this hex (TB-049). */
   controlEffects?: readonly ControlEffect[];
   /** Callback to voluntarily release a control effect (TB-049). */
@@ -136,6 +139,7 @@ export const HexChronicle = memo(function HexChronicle({
   graph,
   seed,
   tick,
+  runtime,
   controlEffects,
   onReleaseEffect,
   hexRevelation,
@@ -333,11 +337,11 @@ export const HexChronicle = memo(function HexChronicle({
   const locationProse = useMemo(() => {
     const result: Record<string, string> = {};
     for (const loc of locations) {
-      const prose = generateEntityProse(loc.id, graph, seed, 'full', tick);
+      const prose = generateEntityProse(loc.id, graph, seed, 'full', tick, runtime);
       if (prose) result[loc.id] = prose;
     }
     return result;
-  }, [locations, graph, seed, tick]);
+  }, [locations, graph, seed, tick, runtime]);
 
   // ── Separate parent locations from sublocations ─────────────
   const { parentLocations, sublocationsByParent, orphanSublocations, transientLocations } = useMemo(() => {
@@ -402,11 +406,11 @@ export const HexChronicle = memo(function HexChronicle({
   const agentProse = useMemo(() => {
     const result: Record<string, string> = {};
     for (const agent of allAgents) {
-      const prose = generateEntityProse(agent.id, graph, seed, 'summary', tick);
+      const prose = generateEntityProse(agent.id, graph, seed, 'summary', tick, runtime);
       if (prose) result[agent.id] = prose;
     }
     return result;
-  }, [allAgents, graph, seed, tick]);
+  }, [allAgents, graph, seed, tick, runtime]);
 
   // ── RUINS: Historical culture resolvers ────────────────────────
 

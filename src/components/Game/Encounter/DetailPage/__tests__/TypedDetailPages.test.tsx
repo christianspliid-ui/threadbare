@@ -14,10 +14,7 @@ import {
   useDetailStack,
 } from '../../../../../contexts/DetailModalStackContext';
 import { DetailPageOpenerProvider } from '../../../../../contexts/DetailPageOpenerContext';
-import {
-  clearDetailPageCache,
-  generateDetailPage,
-} from '../../../../../engine/detailPageGenerator';
+import { generateDetailPage } from '../../../../../engine/detailPageGenerator';
 import { WorldGraph } from '../../../../../engine/graph';
 import type { GraphEdge, GraphNode } from '../../../../../types/graph';
 import type { DetailPageKind, NodeRef } from '../../../../../types/detailPage';
@@ -183,7 +180,8 @@ beforeAll(() => {
   Object.defineProperty(window, 'innerHeight', { configurable: true, value: 1080 });
 });
 
-beforeEach(() => clearDetailPageCache());
+// THR-577: detail-page cache ownership moved to SimulationRuntime; these render tests
+// pass no runtime, so each generateDetailPage call composes fresh — no isolation reset needed.
 
 const KINDS: { kind: DetailPageKind; nodeId: string; expected: string }[] = [
   { kind: 'actor', nodeId: 'veiren', expected: 'Captain Veiren' },
