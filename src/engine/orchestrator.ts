@@ -153,6 +153,8 @@ import type { ResourceInstance } from '../types/resource';
 import { createEncounterEventNode } from './encounterEventNode';
 import type { SimulationRuntime } from './simulationRuntime';
 import { isBranchingTemplate, isRichTemplate } from './kpi/gameplayKpi';
+import { guaranteeFailureStoryArtifact } from './failureStoryArtifact';
+import type { UnifiedAction } from '../types/unifiedAction';
 import { accumulateImportance, checkGraduationThreshold, graduateRarity, getImportanceDelta, getRarityTier } from './rarity';
 import {
   DIVINE_PROXIMITY_RADIUS_HEXES,
@@ -2657,6 +2659,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
 
   // Stamp completedAtTick on newly-resolved actions, then prune old resolved ones
   if (s.unifiedActions && s.unifiedActions.length > 0) {
+    const newlyResolved: UnifiedAction[] = [];
     const stamped = s.unifiedActions.map(a => {
       if (a.resolved && a.completedAtTick == null) {
         // THR-470: count each branching fire exactly once, here at the newly-resolved
@@ -2665,13 +2668,23 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
         if (runtime && isBranchingTemplate(a.templateId)) runtime.branchingFiresTotal++;
         // THR-541: same pattern for threaded beats (rich = multi-step or branching).
         if (runtime && isRichTemplate(a.templateId)) runtime.threadedBeatsTotal++;
-        return { ...a, completedAtTick: s.tick };
+        const stampedAction = { ...a, completedAtTick: s.tick };
+        newlyResolved.push(stampedAction);
+        return stampedAction;
       }
       return a;
     });
+    s = { ...s, unifiedActions: stamped };
+    // THR-571 C1: every newly-resolved failure/critical_failure must leave ≥1 story artifact
+    // (a fallback hidden mark when none is present) and count toward failure_story_rate.
+    // Runs at the same newly-resolved transition as the branching counter, before the prune,
+    // so the lifetime counters are honest and each fallback mark is placed exactly once.
+    for (const a of newlyResolved) {
+      s = guaranteeFailureStoryArtifact(s, a, s.tick, runtime);
+    }
     s = {
       ...s,
-      unifiedActions: stamped.filter(a =>
+      unifiedActions: s.unifiedActions.filter(a =>
         !a.resolved || a.completedAtTick == null || s.tick - a.completedAtTick < RESOLVED_ACTION_RETENTION_TICKS,
       ),
     };

@@ -3,7 +3,7 @@ import type { ReachDomain } from './traits';
 import type { ValuePair } from './agent';
 import type { ModifierResolutionTrace } from './modifiers';
 import type { LapseReason } from './controlEffect';
-import type { NarrativeLayer, StepOutcome, ActionScale } from './unifiedAction';
+import type { NarrativeLayer, StepOutcome, ActionScale, UnifiedActionOutcome } from './unifiedAction';
 import type { OutcomeType } from './resolution';
 import type { RarityTier } from './rarity';
 import type {
@@ -250,6 +250,8 @@ export type TraceCategory =
   | 'doom_milestone'
   // Outcome band prose selection (THR-460)
   | 'outcome_band_prose_selected'
+  // Cool-failure story-artifact guarantee (THR-571 C1)
+  | 'outcome_story_artifact'
   // Interaction-gated camera centering (THR-463)
   | 'camera_center'
   // Aspect apex milestone (THR-479)
@@ -487,6 +489,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'doom_milestone',
   // Outcome band prose selection (THR-460)
   'outcome_band_prose_selected',
+  // Cool-failure story-artifact guarantee (THR-571 C1)
+  'outcome_story_artifact',
   // Interaction-gated camera centering (THR-463)
   'camera_center',
   // Aspect apex milestone (THR-479)
@@ -1395,6 +1399,25 @@ export interface HiddenMarkPlacedTrace extends TraceBase {
   sourceFactionId?: string;
 }
 
+/**
+ * Trace: THR-571 C1 — a failure-band resolution left (or was guaranteed) a story artifact.
+ * Emitted once per resolved failure/critical_failure action by the cool-failure post-pass.
+ * `artifactKind` is the concrete persistence kind: an already-present complication/seed/mark,
+ * or the fallback hidden mark the post-pass planted. `'none'` only appears on the fail-soft
+ * path (artifact placement threw) — the failure still resolved, but left nothing.
+ */
+export interface OutcomeStoryArtifactTrace extends TraceBase {
+  category: 'outcome_story_artifact';
+  actionId: string;
+  actorId: string;
+  outcome: UnifiedActionOutcome;
+  /** Whether the artifact was already present or planted as the guaranteed fallback. */
+  source: 'existing' | 'fallback';
+  artifactKind: 'complication' | 'seed' | 'mark' | 'none';
+  /** Reference to the concrete artifact (markId, complication templateId, seed hook id). */
+  refId?: string;
+}
+
 /** Trace: hidden mark revealed (consumed) by a matching encounter or action */
 export interface HiddenMarkRevealedTrace extends TraceBase {
   category: 'hidden_mark_revealed';
@@ -1723,6 +1746,8 @@ export type TraceEntry =
   | EncounterSeedTriggeredTrace
   | HiddenMarkPlacedTrace
   | HiddenMarkRevealedTrace
+  // Cool-failure story-artifact guarantee (THR-571 C1)
+  | OutcomeStoryArtifactTrace
   | IntelligenceGrantedTrace
   | IntelligenceReferencedTrace
   | IntelligenceDecayedTrace

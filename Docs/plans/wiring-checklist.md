@@ -1304,3 +1304,15 @@ Leaf-first extraction of `GameView.tsx` (god-component) into presentational subc
 | Surface | File | Wiring |
 |---|---|---|
 | Top-bar / HUD strip (THR-579) | `src/components/Game/GameView/GameViewTopBar.tsx` (new) | Extracted the header cluster (SimulationControls, WorldSoulIndicator, AttentionPoolIndicator, DoomBar, OmenIndicator, RivalsButton, Read-the-Threads `IconButton`, Settings gear + `SettingsPanel`) verbatim. `GameView.tsx` renders `<GameViewTopBar … />` at the top of its return, passing `gameState` + discrete values/setters as props (`GameViewTopBarProps`). The 8 top-bar-only component imports moved from `GameView.tsx` into the leaf. Browser-verified at 1920×1080: full-width bar renders (1920×94), settings-toggle opens `SettingsPanel`, 0 console errors. |
+
+---
+
+## Cool-failure story-artifact guarantee (THR-571 C1)
+
+Every resolved `failure` / `critical_failure` action must leave ≥1 persistent story artifact so no failure reads as dead air. A post-pass detects an already-present artifact (step complication, aftermath-planted hidden mark, or `future_hook` encounter seed) and, when none exists, plants a scale-appropriate fallback hidden mark. Two lifetime counters back the KPI `failure_story_rate`.
+
+| Module | Orchestrator phase | UI / read site | GameState flow | Trace categories | Debug visibility |
+|---|---|---|---|---|---|
+| `src/engine/failureStoryArtifact.ts` (`guaranteeFailureStoryArtifact`) | Called in the resolved-action cleanup at the newly-resolved transition (same site as `branchingFiresTotal`), before the prune — `orchestrator.ts` | Fallback marks are discoverable by future encounters via the existing hidden-mark reveal loop (`consumeMatchingMarks`); the `failure_story_rate` row surfaces in `gameplay-report` / CLI KPI | Appends to `GameState.hiddenMarks` + a low-significance `TickEvent`; increments `SimulationRuntime.failureOutcomesTotal` / `failureStoryArtifactsTotal` (flow through `KpiRuntimeView` into `computeGameplayKpiReport`) | `outcome_story_artifact` (new — `source: existing\|fallback`, `artifactKind: complication\|seed\|mark\|none`) + reuses `hidden_mark_placed` for fallbacks | `failure_story_rate` KPI threshold (live once counters exist); `outcome_story_artifact` traces in the trace buffer |
+
+**Trace registry:** `outcome_story_artifact` added to `TraceCategory` union, `TRACE_CATEGORIES` array, and `TraceEntry` union with a typed `OutcomeStoryArtifactTrace` interface in `src/types/trace.ts`.
