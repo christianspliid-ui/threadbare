@@ -248,10 +248,19 @@ export function selectComplication(
   outcome: StepOutcome,
   ctx: ComplicationContext,
 ): ComplicationResult | null {
-  const severity = determineSeverity(outcome);
-  if (!severity) return null;
+  const baseSeverity = determineSeverity(outcome);
+  if (!baseSeverity) return null;
 
-  // success_at_cost: probabilistic — only COMPLICATION_MINOR_WEIGHT fraction of the time
+  // THR-571 E2: a critical_failure's consequence tier scales with action scale.
+  // The classification already survived (the scale gate is gone); here we pick a
+  // scale-appropriate complication pool — personal crit-fails draw from 'minor',
+  // cosmic from 'severe'. Absent context → back-compat flat 'severe'.
+  const severity = outcome === 'critical_failure'
+    ? (ctx.critFailureSeverity ?? baseSeverity)
+    : baseSeverity;
+
+  // minor-tier complications are probabilistic — only COMPLICATION_MINOR_WEIGHT
+  // fraction of the time (applies to success_at_cost and now scale-minor crit-fails)
   if (severity === 'minor' && ctx.rng() > COMPLICATION_MINOR_WEIGHT) {
     return null;
   }
