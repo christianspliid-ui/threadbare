@@ -179,6 +179,14 @@ function evalThreshold(
   return { metric, label, value, threshold, direction, status };
 }
 
+// THR-577: These two template caches are intentionally left at module scope (unlike
+// the detail-page / prose caches migrated to SimulationRuntime). Their value is a pure
+// function of the compile-time template registry (getUnifiedTemplateById / getAnyEncounterById
+// read immutable module constants): a given templateId always classifies identically
+// regardless of session. There is therefore no cross-session bleed to prevent — the cache is
+// provably static across sessions, so per-session ownership would add threading cost with zero
+// correctness benefit. Keys are template ids (bounded by the static template count), so the
+// cache cannot grow unboundedly either.
 const BRANCHING_TEMPLATE_CACHE = new Map<string, boolean>();
 
 export function isBranchingTemplate(templateId: string): boolean {
@@ -192,6 +200,7 @@ export function isBranchingTemplate(templateId: string): boolean {
   return result;
 }
 
+// THR-577: provably static across sessions — see the BRANCHING_TEMPLATE_CACHE note above.
 const RICH_TEMPLATE_CACHE = new Map<string, boolean>();
 
 /**

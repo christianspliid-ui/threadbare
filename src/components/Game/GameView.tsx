@@ -3534,6 +3534,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                       graph={gameState.graph}
                       seed={gameState.seed}
                       tick={gameState.tick}
+                      runtime={runtime}
                       controlEffects={(gameState.controlEffects ?? []).filter(
                         e => e.active && e.targetHexCol === focusedHex.col && e.targetHexRow === focusedHex.row
                       )}
@@ -3562,6 +3563,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                 graph={gameState.graph}
                 seed={gameState.seed}
                 tick={gameState.tick}
+                runtime={runtime}
                 onNavigateToRuin={handleZoomToLocation}
               />
             )}

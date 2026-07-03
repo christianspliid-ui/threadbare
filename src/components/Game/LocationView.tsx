@@ -1,6 +1,7 @@
 import { memo, useMemo, useState, useCallback, useRef } from 'react';
 import type { GraphNode } from '../../types/graph';
 import type { WorldGraph } from '../../engine/graph';
+import type { SimulationRuntime } from '../../engine/simulationRuntime';
 import { PlaceOfPowerInspector } from '../ruins/PlaceOfPowerInspector';
 import type { EncounterProgress } from '../../types/encounter';
 import type { SublocationProperties, SublocationPersistence } from '../../types/sublocation';
@@ -44,6 +45,8 @@ interface LocationViewProps {
   seed?: number;
   /** Current game tick — enables tick-based prose cache (PERF-01) */
   tick?: number;
+  /** Session runtime owning the prose cache (THR-577). Absent ⇒ prose composed uncached. */
+  runtime?: SimulationRuntime | null;
   /** Navigate to a ruin location on the map (reuses handleZoomToLocation from GameView) */
   onNavigateToRuin?: (locationId: string) => void;
 }
@@ -460,6 +463,8 @@ interface SublocationDetailViewProps {
   seed?: number;
   /** Current game tick — enables tick-based prose cache (PERF-01) */
   tick?: number;
+  /** Session runtime owning the prose cache (THR-577). Absent ⇒ prose composed uncached. */
+  runtime?: SimulationRuntime | null;
 }
 
 const SublocationDetailView = memo(function SublocationDetailView({
@@ -478,6 +483,7 @@ const SublocationDetailView = memo(function SublocationDetailView({
   graph,
   seed,
   tick,
+  runtime,
 }: SublocationDetailViewProps) {
   // Concept art for this sublocation type
   const detailSubProps = (sublocation.properties ?? {}) as Partial<SublocationProperties>;
@@ -486,8 +492,8 @@ const SublocationDetailView = memo(function SublocationDetailView({
   // Generate prose for sublocation
   const sublocationProse = useMemo(() => {
     if (!graph || seed === undefined || tick === undefined) return '';
-    return generateEntityProse(sublocation.id, graph, seed, 'full', tick);
-  }, [sublocation.id, graph, seed, tick]);
+    return generateEntityProse(sublocation.id, graph, seed, 'full', tick, runtime);
+  }, [sublocation.id, graph, seed, tick, runtime]);
 
   return (
     <div className="flex flex-col h-full overflow-y-auto">
@@ -793,6 +799,7 @@ export const LocationView = memo(function LocationView({
   graph,
   seed,
   tick,
+  runtime,
   onNavigateToRuin,
 }: LocationViewProps) {
   const terrainLabel = hexTerrain.charAt(0).toUpperCase() + hexTerrain.slice(1).replace(/_/g, ' ');
@@ -816,8 +823,8 @@ export const LocationView = memo(function LocationView({
   // Generate prose for location (memoized — tick enables tick-based prose cache PERF-01)
   const locationProse = useMemo(() => {
     if (!graph || seed === undefined) return '';
-    return generateEntityProse(location.id, graph, seed, 'full', tick);
-  }, [location.id, graph, seed, tick]);
+    return generateEntityProse(location.id, graph, seed, 'full', tick, runtime);
+  }, [location.id, graph, seed, tick, runtime]);
 
   // ── TTS narration ──
   const proseRef = useRef<HTMLDivElement>(null);
@@ -921,6 +928,7 @@ export const LocationView = memo(function LocationView({
         graph={graph}
         seed={seed}
         tick={tick}
+        runtime={runtime}
       />
     );
   }

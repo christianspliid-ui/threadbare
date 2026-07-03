@@ -6,10 +6,8 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { WorldGraph } from '../graph';
-import {
-  clearDetailPageCache,
-  generateDetailPage,
-} from '../detailPageGenerator';
+import { generateDetailPage } from '../detailPageGenerator';
+import { createSimulationRuntime, type SimulationRuntime } from '../simulationRuntime';
 import type { GraphNode, GraphEdge } from '../../types/graph';
 
 function node(partial: Partial<GraphNode> & Pick<GraphNode, 'id' | 'type' | 'name'>): GraphNode {
@@ -139,7 +137,12 @@ function fixtureGraph() {
   return g;
 }
 
-beforeEach(() => clearDetailPageCache());
+// THR-577: cache ownership moved to SimulationRuntime. A fresh runtime per test gives
+// the same isolation the module-scope clear used to provide.
+let runtime: SimulationRuntime;
+beforeEach(() => {
+  runtime = createSimulationRuntime();
+});
 
 describe('generateDetailPage — Actor', () => {
   it('renders mandatory portrait + at least one optional section', () => {
@@ -361,7 +364,7 @@ describe('generateDetailPage — fail-soft', () => {
   });
 });
 
-describe('generateDetailPage — caching', () => {
+describe('generateDetailPage — caching (runtime-owned, THR-577)', () => {
   it('returns the same page reference for repeated same-tick calls', () => {
     const graph = fixtureGraph();
     const a = generateDetailPage({
@@ -371,6 +374,7 @@ describe('generateDetailPage — caching', () => {
       tick: 6,
       seed: 42,
       protagonistId: 'protag',
+      runtime,
     });
     const b = generateDetailPage({
       nodeId: 'veiren',
@@ -379,6 +383,7 @@ describe('generateDetailPage — caching', () => {
       tick: 6,
       seed: 42,
       protagonistId: 'protag',
+      runtime,
     });
     expect(a).toBe(b);
   });
@@ -392,6 +397,7 @@ describe('generateDetailPage — caching', () => {
       tick: 6,
       seed: 42,
       protagonistId: 'protag',
+      runtime,
     });
     const b = generateDetailPage({
       nodeId: 'veiren',
@@ -400,7 +406,31 @@ describe('generateDetailPage — caching', () => {
       tick: 7,
       seed: 42,
       protagonistId: 'protag',
+      runtime,
     });
     expect(a).not.toBe(b);
+  });
+
+  it('composes fresh (no shared reference) when no runtime is threaded', () => {
+    const graph = fixtureGraph();
+    const a = generateDetailPage({
+      nodeId: 'veiren',
+      pageKind: 'actor',
+      graph,
+      tick: 6,
+      seed: 42,
+      protagonistId: 'protag',
+    });
+    const b = generateDetailPage({
+      nodeId: 'veiren',
+      pageKind: 'actor',
+      graph,
+      tick: 6,
+      seed: 42,
+      protagonistId: 'protag',
+    });
+    // No runtime → no cache → distinct object each call (but equal content).
+    expect(a).not.toBe(b);
+    expect(a.displayName).toBe(b.displayName);
   });
 });

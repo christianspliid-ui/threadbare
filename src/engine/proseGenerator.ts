@@ -7,6 +7,7 @@
  * Design doc: Docs/plans/2026-03-09-prose-generator-framework-design.md
  */
 import type { WorldGraph } from './graph';
+import type { SimulationRuntime } from './simulationRuntime';
 import type { ProseMode, ProseResolver } from '../types/prose';
 import { composeProse, composeSummary } from './proseComposer';
 import { emitTrace } from './traceBuffer';
@@ -66,20 +67,14 @@ const RESOLVER_REGISTRY: Record<string, ProseResolver[]> = {
 };
 
 // ─── Prose Cache ────────────────────────────────────────────────────
-
-/**
- * Module-level prose cache. Key format: "${nodeId}:${tick}:${mode}"
- * Auto-evicts all entries when the tick advances — bounded by (agents × modes).
- * PERF-01: Skips 20+ resolver calls on same-tick panel re-opens.
- */
-const _proseCache = new Map<string, string>();
-let _lastCachedTick = -1;
-
-/** Reset cache state — use between test cases or game sessions. */
-export function clearProseCache(): void {
-  _proseCache.clear();
-  _lastCachedTick = -1;
-}
+//
+// THR-577: cache ownership lives on `SimulationRuntime.proseCache` (per the
+// load-bearing decision "engine caches must be owned per session, not stored at
+// module scope"). Callers thread `runtime` through `generateEntityProse`; when it
+// is absent (tests, isolated previews) prose is composed fresh without caching.
+// Key format: "${nodeId}:${tick}:${mode}", auto-evicting when the tick advances.
+// PERF-01: skips 20+ resolver calls on same-tick panel re-opens when a runtime is
+// threaded. Session reset clears it via `resetRuntimeCaches()`.
 
 // ─── Public API ─────────────────────────────────────────────────────
 
@@ -94,6 +89,8 @@ export function clearProseCache(): void {
  * @param seed - World seed for deterministic PRNG
  * @param mode - 'summary' (1 paragraph) or 'full' (multi-paragraph)
  * @param tick - Current game tick for cache invalidation (defaults to 0)
+ * @param runtime - Session runtime owning the prose cache (THR-577). When present,
+ *   same-tick re-calls hit the cache; when absent, prose is composed fresh.
  */
 export function generateEntityProse(
   nodeId: string,
@@ -101,16 +98,21 @@ export function generateEntityProse(
   seed: number,
   mode: ProseMode,
   tick: number = 0,
+  runtime?: SimulationRuntime | null,
 ): string {
-  // Auto-evict all entries when tick advances
-  if (tick !== _lastCachedTick) {
-    _proseCache.clear();
-    _lastCachedTick = tick;
+  const cache = runtime?.proseCache ?? null;
+
+  // Auto-evict all entries when tick advances. Runtime-owned — never bleeds across sessions.
+  if (cache && runtime && tick !== runtime.proseCacheTick) {
+    cache.clear();
+    runtime.proseCacheTick = tick;
   }
 
   const cacheKey = `${nodeId}:${tick}:${mode}`;
-  const cached = _proseCache.get(cacheKey);
-  if (cached !== undefined) return cached;
+  if (cache) {
+    const cached = cache.get(cacheKey);
+    if (cached !== undefined) return cached;
+  }
 
   const node = graph.getNode(nodeId);
   if (!node) return '';
@@ -156,6 +158,6 @@ export function generateEntityProse(
     finalProse: result.slice(0, 120),
   });
 
-  _proseCache.set(cacheKey, result);
+  if (cache) cache.set(cacheKey, result);
   return result;
 }

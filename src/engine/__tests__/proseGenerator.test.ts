@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { WorldGraph } from '../graph';
-import { generateEntityProse, clearProseCache } from '../proseGenerator';
+import { generateEntityProse } from '../proseGenerator';
+import { createSimulationRuntime, resetRuntimeCaches, type SimulationRuntime } from '../simulationRuntime';
 
 function buildFullGraph(): WorldGraph {
   const graph = new WorldGraph();
@@ -79,57 +80,67 @@ function buildFullGraph(): WorldGraph {
   return graph;
 }
 
-describe('prose cache', () => {
+describe('prose cache (runtime-owned, THR-577)', () => {
+  let runtime: SimulationRuntime;
+
   beforeEach(() => {
-    clearProseCache();
+    runtime = createSimulationRuntime();
   });
 
-  it('returns cached result on second call with same (nodeId, tick, mode)', () => {
+  it('populates the runtime cache and serves same (nodeId, tick, mode) from it', () => {
     const graph = buildFullGraph();
-    const first = generateEntityProse('loc_0', graph, 42, 'summary', 1);
-    const second = generateEntityProse('loc_0', graph, 42, 'summary', 1);
+    const first = generateEntityProse('loc_0', graph, 42, 'summary', 1, runtime);
     expect(first).toBeTruthy();
-    expect(first).toBe(second);
+    expect(runtime.proseCache.size).toBe(1);
+    const second = generateEntityProse('loc_0', graph, 42, 'summary', 1, runtime);
+    expect(second).toBe(first);
+    // No new entry — the second call was a cache hit, not a recompute.
+    expect(runtime.proseCache.size).toBe(1);
   });
 
-  it('produces fresh result when tick changes (cache miss)', () => {
+  it('evicts all entries when the tick advances', () => {
     const graph = buildFullGraph();
-    // tick 1 — first call, computes and caches
-    const result1 = generateEntityProse('loc_0', graph, 42, 'summary', 1);
-    // Same tick, same args — should return same string (cache hit)
-    const result1Again = generateEntityProse('loc_0', graph, 42, 'summary', 1);
-    expect(result1Again).toBe(result1);
-    // Different tick — different cache key, forces fresh compute
-    // The result should still be a valid string (deterministic output)
-    const result2 = generateEntityProse('loc_0', graph, 42, 'summary', 2);
+    generateEntityProse('loc_0', graph, 42, 'summary', 1, runtime);
+    generateEntityProse('ind_0', graph, 42, 'summary', 1, runtime);
+    expect(runtime.proseCache.size).toBe(2);
+    // Different tick — cache clears, then repopulates with the new entry only.
+    const result2 = generateEntityProse('loc_0', graph, 42, 'summary', 2, runtime);
     expect(result2).toBeTruthy();
-    // Both ticks produce valid prose (same seed → same content)
+    // Same seed → same content across ticks (deterministic output).
+    const result1 = generateEntityProse('loc_0', graph, 42, 'summary', 1, runtime);
     expect(result2).toBe(result1);
   });
 
   it('keeps separate cache entries for different modes on same entity and tick', () => {
     const graph = buildFullGraph();
-    const summary = generateEntityProse('loc_0', graph, 42, 'summary', 5);
-    const full = generateEntityProse('loc_0', graph, 42, 'full', 5);
+    const summary = generateEntityProse('loc_0', graph, 42, 'summary', 5, runtime);
+    const full = generateEntityProse('loc_0', graph, 42, 'full', 5, runtime);
     expect(summary).toBeTruthy();
     expect(full).toBeTruthy();
     // Full prose should be longer than summary (more paragraphs)
     expect(full.length).toBeGreaterThan(summary.length);
+    expect(runtime.proseCache.size).toBe(2);
   });
 
-  it('clearProseCache() resets all cached entries', () => {
+  it('resetRuntimeCaches() clears all cached prose entries', () => {
     const graph = buildFullGraph();
-    // Fill cache with entries at tick 1
-    const result1 = generateEntityProse('loc_0', graph, 42, 'summary', 1);
-    // Clear cache — now the internal state is reset
-    clearProseCache();
-    // Same call after clear should still produce the same result (deterministic)
-    const result2 = generateEntityProse('loc_0', graph, 42, 'summary', 1);
-    expect(result2).toBeTruthy();
+    const result1 = generateEntityProse('loc_0', graph, 42, 'summary', 1, runtime);
+    expect(runtime.proseCache.size).toBeGreaterThan(0);
+    // Session reset — cache emptied.
+    resetRuntimeCaches(runtime);
+    expect(runtime.proseCache.size).toBe(0);
+    // Same call after reset still produces the same result (deterministic) and re-caches.
+    const result2 = generateEntityProse('loc_0', graph, 42, 'summary', 1, runtime);
     expect(result2).toBe(result1);
-    // Verify cache works again after clear: a new entity at same tick
-    const agentResult = generateEntityProse('ind_0', graph, 42, 'summary', 1);
-    expect(agentResult).toBeTruthy();
+    expect(runtime.proseCache.size).toBe(1);
+  });
+
+  it('composes fresh (uncached) when no runtime is threaded', () => {
+    const graph = buildFullGraph();
+    const result = generateEntityProse('loc_0', graph, 42, 'summary', 1);
+    expect(result).toBeTruthy();
+    // Deterministic — a second uncached call returns identical content.
+    expect(generateEntityProse('loc_0', graph, 42, 'summary', 1)).toBe(result);
   });
 
   it('works correctly with tick=0 default (backward compat)', () => {

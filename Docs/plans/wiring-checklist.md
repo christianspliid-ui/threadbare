@@ -607,6 +607,18 @@ On-click resolver — never per-tick. Resolves once per `(agentId, encounterId, 
 | Debug bridge | `getForeshadowing` + `listForeshadowingTraces` in `src/debug-bridge.ts` / `src/debug-bridge.d.ts` | Async bridge methods. `listForeshadowingTraces(agentId?)` filters by category + optional agentId. |
 | Tests | `src/engine/foreshadowing/__tests__/getEncounterForeshadowing.test.ts` | Covers: placeholder resolution, `attributeRecentInterventions` stub, cache hit/miss/clear, tracing, signal defaults, variant specificity selection, generic fallback template token check. |
 
+### Runtime-owned render caches (THR-577 — detail page + entity prose)
+
+| Piece | Where | Notes |
+|---|---|---|
+| Session cache | `SimulationRuntime.detailPageCache: Map<string, DetailPage>` + `detailPageCacheTick` (`src/engine/simulationRuntime.ts`) | Owned by runtime (not module-scope). Key: `${pageKind}:${nodeId}:${tick}`. TTL-evicts on tick advance by `DETAIL_PROSE_CACHE_TTL_TICKS`. Cleared by `resetRuntimeCaches()`. |
+| Session cache | `SimulationRuntime.proseCache: Map<string, string>` + `proseCacheTick` (`src/engine/simulationRuntime.ts`) | Owned by runtime. Key: `${nodeId}:${tick}:${mode}`. Evicts all entries on tick advance. Cleared by `resetRuntimeCaches()`. |
+| Accessor | `generateDetailPage(input)` (`src/engine/detailPageGenerator.ts`) | Optional `input.runtime` — present ⇒ uses `runtime.detailPageCache`; absent ⇒ composes fresh (no module cache). |
+| Accessor | `generateEntityProse(nodeId, graph, seed, mode, tick, runtime?)` (`src/engine/proseGenerator.ts`) | Optional trailing `runtime` — present ⇒ uses `runtime.proseCache`; absent ⇒ composes fresh. |
+| GameView wiring | `runtime` prop threaded to `<LocationView>` (+ `SublocationDetailView`), `<HexChronicle>`, `<AgentInfoCard>` (`src/components/Game/GameView.tsx`) | Passed into their `generateEntityProse` calls + useMemo deps. |
+| Intentional exception | `BRANCHING_TEMPLATE_CACHE` / `RICH_TEMPLATE_CACHE` (`src/engine/kpi/gameplayKpi.ts`) | Kept module-scope with a justification comment — provably static across sessions (pure function of the compile-time template registry; no cross-session bleed). |
+| Tests | `proseGenerator.test.ts`, `detailPageGenerator.test.ts`, `TypedDetailPages.test.tsx` | Assert cache population + hit on a per-test `createSimulationRuntime()`, `resetRuntimeCaches()` clears, and no-runtime ⇒ uncached-but-deterministic. |
+
 **Phase 1 deferred signals:** `dominantReach = template.reach ?? 'wilderness'` (encounter's reach, not agent's). `intelligenceTier = 'unknown'`, `topMotive = 'awareness'` (Phase 1 stubs). Phase 3 will derive these from actual intelligence records and encounter-pool funnel scores.
 
 ---
