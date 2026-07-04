@@ -107,6 +107,14 @@
       "sources": ["src/engine/phaseSublocations.ts", "src/engine/phaseSettlementPromotion.ts", "src/engine/phaseSettlementReassessment.ts", "src/engine/phaseProsperity.ts", "src/engine/phaseUnrest.ts", "src/engine/phaseTradeRouteDecay.ts", "src/engine/tradeRoute.ts", "src/engine/phaseEconomicTraits.ts", "src/engine/phaseEconomicChronicle.ts", "src/engine/economicChronicle.ts", "src/engine/resourceSeeding.ts"]
     },
     {
+      "id": "armies-battles-reference",
+      "file": "armies-battles-reference.html",
+      "title": "Armies, Battles & Lairs",
+      "blurb": "War as a story generator, not a wargame — armies that factions raise for conquest or revenge (three sizes, terrain-punished marches, Quintessence-cohesion attrition and its four threshold encounters); field battles that resolve as a momentum struggle over several turns, tilted by thread-gated spotlights and leaving destruction, captured commanders, and refugees in their wake; sieges as an accelerating battle subtype where walls favour the defender and starvation the attacker; and monster lairs that escalate minor → major (named elite) → legendary (monster faction), poison the land, and reinfest if cleared ground is left untended.",
+      "section": "Manual",
+      "sources": ["src/engine/armyMovement.ts", "src/engine/armyAttrition.ts", "src/engine/armySpawning.ts", "src/engine/armyNotifications.ts", "src/engine/battleResolution.ts", "src/engine/battleAftermath.ts", "src/engine/battleSpotlights.ts", "src/engine/siegeResolution.ts", "src/engine/lairEscalation.ts", "src/engine/lairSeeding.ts", "src/types/army.ts", "src/types/battle.ts", "src/data/army-encounter-content.ts", "src/data/siege-encounter-content.ts", "src/data/battle-spotlight-content.ts"]
+    },
+    {
       "id": "encounters-agents-reference",
       "file": "encounters-agents-reference.html",
       "title": "Encounters, Agents & Resolution",
