@@ -177,6 +177,8 @@ const step1ForgeTheTruth: ActionStep = {
   },
   successAfterimage: 'Maren faced the Greycloaks with a full accounting. The truth was painful, but Torve respected the honesty.',
   failureAfterimage: 'Maren tried to face the Greycloaks openly, but the negotiation collapsed under the weight of the full disclosure.',
+  criticalSuccessAfterimage: 'The accounting is so complete, so unflinching, that Torve stands and offers her own hand first. The Greycloaks leave as something better than satisfied — as people who will speak the forge\'s name with respect in other towns.',
+  criticalFailureAfterimage: 'The whole truth, spoken aloud, is worse than anyone braced for. Torve\'s respect curdles into something colder, and a contract that might have survived a lie does not survive the sum of it. The forge keeps its honesty and loses everything else.',
 };
 
 /**
@@ -237,6 +239,8 @@ const step1TemperTheNarrative: ActionStep = {
   },
   successAfterimage: 'The managed truth held. Torve accepted the framing and the forge survived without burning the relationship.',
   failureAfterimage: 'Torve saw through the managed truth. The attempted deception stung worse than the original fraud.',
+  criticalSuccessAfterimage: 'The managed truth does not merely hold — Torve leaves believing the forge did her a favor by catching the flaw at all. The concealment seals so cleanly that even Maren half-believes the kinder version of events.',
+  criticalFailureAfterimage: 'Torve sees through it at the worst moment — mid-handshake — and understands she has been handled. A single fraud she might have forgiven. Being taken for a fool she will not, and she says so where the whole settlement can hear.',
 };
 
 /**
@@ -283,6 +287,8 @@ const step1KeepYourHandFolded: ActionStep = {
   },
   successAfterimage: 'The settlement resolved its own crisis — messily, but without divine interference.',
   failureAfterimage: 'Without divine guidance, the negotiation collapsed into recrimination and armed tension.',
+  criticalSuccessAfterimage: 'Left alone, the settlement surprises itself. Maren finds words no god put in her mouth, and the reckoning she builds without help is rougher and truer than any a god could have shaped. It belongs to them entirely.',
+  criticalFailureAfterimage: 'Without a hand on the scales, the worst nerve in the room wins. Old grievances the crisis had nothing to do with come loose, and by nightfall the forge is not the only thing in the settlement that has gone cold.',
 };
 
 const step1Branch: ActionStepBranch = {

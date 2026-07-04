@@ -81,6 +81,16 @@ const step1ProclaimTheTurning: ActionStep = {
   failureAfterimage:
     'The vastness came too fast; the prophet spoke the turning in a voice that shook, and half the couriers ' +
     'rode out carrying a prophecy and half carrying a rumor that the seer had lost their nerve.',
+  criticalSuccessAfterimage:
+    'The prophet did not merely speak the turning — they became it. The words landed in the couriers like a ' +
+    'struck bell, and the couriers carried that certainty into every hall they entered. Thrones that had ' +
+    'stood for generations began, quietly, to plan for their own endings. An age did not just get announced. ' +
+    'It turned.',
+  criticalFailureAfterimage:
+    'The height took more of the prophet than it gave back. They came down speaking of an ending in a voice ' +
+    'stripped of all comfort, and named ruins that were never in the reading — a war here, a drowned city ' +
+    'there. The couriers rode with it anyway. Somewhere a peace that would have held is unravelling now on ' +
+    'the strength of a word the god let slip too far.',
   successMetadata: { reputationDelta: 0.18 },
   failureMetadata: { reputationDelta: -0.12 },
 };
@@ -111,6 +121,16 @@ const step1LetThemReadIt: ActionStep = {
   failureAfterimage:
     'The prophet reached for reassurance and could not quite close their hand on it; the reading came out ' +
     'hedged, and the nations were left to argue over what the hedging meant.',
+  criticalSuccessAfterimage:
+    'The prophet found the meaning that lets everyone sleep, and found it so true that it outlived the comet. ' +
+    'Priests would recite the reading for a generation as proof the heavens keep their old appointments. The ' +
+    'world did not merely hold fast. It settled, deep and sure, into the version of itself the prophet had ' +
+    'blessed.',
+  criticalFailureAfterimage:
+    'Reaching for comfort, the prophet closed their hand on exactly the wrong meaning and spoke it with a ' +
+    'mortal\'s full conviction. Hold fast, they told a world that should have been running. The nations ' +
+    'obeyed. What is coming will find them where they stood, reassured, and the prophet\'s name will be ' +
+    'fixed to the stillness that cost them.',
   successMetadata: { reputationDelta: 0.1 },
   failureMetadata: { reputationDelta: -0.08 },
 };

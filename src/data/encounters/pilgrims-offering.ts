@@ -115,6 +115,8 @@ const step1AcceptGraciously: ActionStep = {
   failureMetadata: { reputationDelta: 0.00 },
   successAfterimage: 'The offering accepted. The pilgrim\'s hands were empty and their face was not.',
   failureAfterimage: 'The acceptance was real but something in the moment slipped — the pilgrim felt it too.',
+  criticalSuccessAfterimage: 'The pilgrim will tell this at their own hearth for years — the day the offering was taken as if it mattered, because it did. They walk down from the cairn lighter than they climbed, carrying nothing and everything.',
+  criticalFailureAfterimage: 'The bundle changes hands and something in the pilgrim closes instead of opening. They climbed for grace and carry back a small cold certainty that no one was really listening. That certainty travels home with them, and it speaks.',
 };
 
 const step1BlessInstead: ActionStep = {
@@ -156,6 +158,8 @@ const step1BlessInstead: ActionStep = {
   failureMetadata: { reputationDelta: 0.00 },
   successAfterimage: 'A blessing returned. The pilgrim kept the herbs — carried what they had meant to leave.',
   failureAfterimage: 'The gesture was real but diffuse — the pilgrim felt something pass through them without fully landing.',
+  criticalSuccessAfterimage: 'The blessing does not just land — it takes root. The pilgrim goes home carrying the herbs and something steadier under them, and by spring three neighbors have made the climb to a cairn no one used to visit.',
+  criticalFailureAfterimage: 'The blessing goes sideways — gentle turning to strange as it reaches the pilgrim. They keep the herbs, but they keep a question too, and at the next shrine they pass they do not stop. Something that had been simple faith is complicated now.',
 };
 
 const step1Branch: ActionStepBranch = {
