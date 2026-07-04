@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threadbearer — The Mortals</title>
+<!--
+  The Mortals (Game Manual Wiki, W10 / THR-595) — dual-layer manual page.
+  Player-manual prose first ("How it plays"), Designer Notes second.
+  Spec: Docs/plans/2026-07-03-game-manual-wiki.md §5 W10; template §3.
+  Terminology authority is the UL (Docs/ubiquitous-language/Agents.md); the
+  rulebook (Docs/canon/rulebook.md §2 "What the World Is") is the synthesis
+  spine. The shared wiki nav between the WIKI-NAV markers is injected by
+  scripts/generate-design-wiki.ts — do not hand-write it.
+
+  Accuracy notes (verified against code this pass, do not "correct" back):
+  - The decision pipeline is Maslow-*inspired*, not a literal six-tier ladder.
+    The six-layer framing (survival→…→transcendence) is rulebook narration;
+    the code is a survival-override + axiological-alignment seeded selection
+    (src/engine/agentSelection.ts header "Maslow-inspired pipeline";
+    survivalThreshold 0.8 in src/engine/unifiedActionPhases.ts:38) plus the
+    per-tick encounter selection (phaseAgentDecision.ts + encounterScoring.ts).
+    Utility AI and behavior trees are the REJECTED approaches (absent in code).
+  - Decision-phase large-map perf: THR-580 shipped the instrumentation + stall
+    diagnosis [IMPL]; THR-581 (the fix) is OPEN — no commit on any branch.
+    Referenced, not minted as a new open question.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --parchment: #f4edd8;
+    --parchment-dark: #e8dfc8;
+    --ink: #2c1810;
+    --ink-light: #5a3d2b;
+    --ink-faint: #8a7060;
+    --gold: #b8860b;
+    --gold-light: #daa520;
+    --card-bg: #fff8e7;
+    --red: #8b2500;
+    --blue: #1a3a5c;
+    --blue-light: #2d5f8a;
+    --purple: #4a2d6a;
+    --green: #2d5a27;
+
+    --flag-impl: #2d5a27;
+    --flag-design: #8a4a00;
+    --flag-open: #4a2d6a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(26,58,92,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 30%, rgba(184,134,11,0.04) 0%, transparent 50%);
+  }
+
+  .page-wrapper { max-width: 900px; margin: 0 auto; padding: 40px 32px 72px; }
+
+  /* ── Header ── */
+  .header { text-align: center; margin-bottom: 40px; padding-bottom: 28px; border-bottom: 2px solid var(--gold); position: relative; }
+  .header::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 55%; height: 1px; background: var(--gold-light); }
+  .header .eyebrow { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+  .header h1 { font-family: 'Cinzel', Georgia, serif; font-weight: 700; font-size: 2.4rem; color: var(--ink); letter-spacing: 0.05em; margin-bottom: 12px; }
+  .header .tagline { font-size: 1.12rem; color: var(--ink-light); max-width: 64ch; margin: 0 auto; font-style: italic; }
+
+  /* ── Sections ── */
+  .section { margin-bottom: 34px; }
+  .section > h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.25rem; color: var(--ink); letter-spacing: 0.03em; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid var(--parchment-dark); }
+  .section > h2 .lead { display: block; font-family: 'Crimson Text', Georgia, serif; font-size: 0.95rem; font-style: italic; font-weight: 400; color: var(--ink-faint); letter-spacing: 0; margin-top: 4px; }
+  .section h3 { font-family: 'Cinzel', Georgia, serif; font-size: 1rem; color: var(--ink-light); letter-spacing: 0.02em; margin: 20px 0 6px; }
+  .section p { margin-bottom: 12px; }
+  .section p .term { font-weight: 600; color: var(--ink); }
+  .section ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .section ul li { position: relative; padding-left: 1.3rem; margin-bottom: 8px; }
+  .section ul li::before { content: '◆'; position: absolute; left: 0; top: 0.05rem; color: var(--gold); font-size: 0.7rem; }
+
+  /* ── Value-pair axes ── */
+  .axes { margin: 12px 0 18px; }
+  .axis { display: grid; grid-template-columns: 5.2rem 1fr 1fr; gap: 0 10px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--parchment-dark); }
+  .axis .reach { font-family: 'Cinzel', Georgia, serif; font-size: 0.82rem; color: var(--gold); letter-spacing: 0.04em; }
+  .axis .pole { font-size: 0.92rem; color: var(--ink-light); }
+  .axis .pole .who { font-weight: 600; color: var(--ink); }
+  .axis .pole.vice { text-align: right; }
+  .axis .pole .dir { font-size: 0.72rem; color: var(--ink-faint); font-style: italic; }
+  @media (max-width: 620px) { .axis { grid-template-columns: 1fr; gap: 2px; } .axis .pole.vice { text-align: left; } }
+
+  /* ── Card grid (ambitions, arcs) ── */
+  .card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0 18px; }
+  .card { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 11px 14px; border-left: 3px solid var(--gold); }
+  .card.blue { border-left-color: var(--blue-light); }
+  .card.red { border-left-color: var(--red); }
+  .card.green { border-left-color: var(--green); }
+  .card h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.84rem; color: var(--ink); margin: 0 0 2px; }
+  .card p { font-size: 0.8rem; color: var(--ink-light); margin: 0; }
+  @media (max-width: 620px) { .card-grid { grid-template-columns: 1fr; } }
+
+  /* ── Ladder (needs / drift) ── */
+  .ladder { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 14px; align-items: center; }
+  .ladder .step { font-family: 'Cinzel', Georgia, serif; font-size: 0.74rem; color: var(--ink-light); background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 3px; padding: 3px 9px; white-space: nowrap; }
+  .ladder .arrow { color: var(--gold); font-size: 0.8rem; }
+
+  /* ── Callouts ── */
+  .callout { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-left: 4px solid var(--gold); border-radius: 4px; padding: 14px 18px; margin: 4px 0 18px; }
+  .callout.blue { border-left-color: var(--blue-light); }
+  .callout.purple { border-left-color: var(--purple); }
+  .callout.red { border-left-color: var(--red); }
+  .callout.green { border-left-color: var(--green); }
+  .callout .callout-title { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* ── Designer notes ── */
+  .designer { margin-top: 48px; border-top: 2px solid var(--gold); padding-top: 8px; }
+  .designer > summary { list-style: none; cursor: pointer; padding: 16px 4px; display: flex; align-items: baseline; gap: 12px; }
+  .designer > summary::-webkit-details-marker { display: none; }
+  .designer > summary .chev { font-size: 0.8rem; color: var(--gold); transition: transform 0.15s; }
+  .designer[open] > summary .chev { transform: rotate(90deg); }
+  .designer > summary h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.3rem; color: var(--ink); letter-spacing: 0.03em; }
+  .designer > summary .sub { font-size: 0.9rem; color: var(--ink-faint); font-style: italic; }
+  .designer-body { padding: 4px 4px 8px; }
+  .designer-body h3 { font-family: 'Cinzel', Georgia, serif; font-size: 0.98rem; color: var(--ink-light); margin: 22px 0 8px; }
+  .designer-body p { margin-bottom: 12px; font-size: 0.97rem; }
+  .designer-body ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .designer-body ul li { position: relative; padding-left: 1.2rem; margin-bottom: 7px; font-size: 0.97rem; }
+  .designer-body ul li::before { content: '›'; position: absolute; left: 0.15rem; top: 0; color: var(--ink-faint); }
+  code, .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.84em; color: var(--ink); background: rgba(184,134,11,0.10); padding: 0.05rem 0.32rem; border-radius: 3px; word-break: break-word; }
+
+  .flag { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.04em; font-weight: 500; padding: 0.08rem 0.4rem; border-radius: 3px; color: #fff; white-space: nowrap; }
+  .flag.impl { background: var(--flag-impl); }
+  .flag.design { background: var(--flag-design); }
+  .flag.open { background: var(--flag-open); }
+
+  table.tunables { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 4px 0 18px; }
+  table.tunables th { text-align: left; font-family: 'Cinzel', Georgia, serif; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); padding: 6px 10px 6px 0; border-bottom: 1px solid var(--parchment-dark); }
+  table.tunables td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--parchment-dark); vertical-align: top; color: var(--ink-light); }
+  table.tunables td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink); white-space: nowrap; }
+
+  .foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--parchment-dark); font-size: 0.85rem; color: var(--ink-faint); font-style: italic; }
+  a { color: var(--blue-light); text-decoration: none; border-bottom: 1px solid rgba(45,95,138,0.35); }
+  a:hover { color: var(--blue); border-bottom-color: var(--blue); }
+</style>
+</head>
+<body>
+<!--WIKI-NAV-->
+<style>
+  .wiki-nav { font-family: 'Cinzel', Georgia, serif; background: #2c1810; border-bottom: 2px solid #b8860b; padding: 0.6rem 1.2rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.1rem; }
+  .wiki-nav__brand { color: #daa520; font-weight: 700; letter-spacing: 0.04em; margin-right: 0.6rem; font-size: 0.95rem; }
+  .wiki-nav__link { color: #f4edd8; text-decoration: none; font-size: 0.85rem; letter-spacing: 0.02em; padding: 0.15rem 0.1rem; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; }
+  .wiki-nav__link:hover { color: #daa520; }
+  .wiki-nav__link.is-active { color: #daa520; border-bottom-color: #b8860b; font-weight: 700; }
+</style>
+<nav class="wiki-nav" aria-label="Design Reference Wiki">
+  <span class="wiki-nav__brand">⌖ Design Reference Wiki</span>
+  <a class="wiki-nav__link" href="design-wiki.html">Design Wiki</a>
+  <a class="wiki-nav__link" href="run-lifecycle-reference.html">A Run, Start to Finish</a>
+      <a class="wiki-nav__link" href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a>
+      <a class="wiki-nav__link" href="turn-structure-reference.html">The Three-Beat Turn</a>
+      <a class="wiki-nav__link" href="divine-actions-reference.html">Divine Actions &amp; Prerequisites</a>
+      <a class="wiki-nav__link" href="threads-court-reference.html">Threads, the Court &amp; The First</a>
+      <a class="wiki-nav__link" href="essence-control-reference.html">Essence, Control &amp; Sustained Power</a>
+      <a class="wiki-nav__link" href="encounters-manual-reference.html">Encounters &amp; Aftermath</a>
+      <a class="wiki-nav__link" href="clocks-reference.html">Doom, the Mandate &amp; Omens</a>
+      <a class="wiki-nav__link" href="interface-reference.html">Reading the Interface</a>
+      <a class="wiki-nav__link is-active" href="agents-reference.html" aria-current="page">The Mortals</a>
+      <a class="wiki-nav__link" href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>
+      <a class="wiki-nav__link" href="tick-cycle-reference.html">Tick Cycle Reference</a>
+      <a class="wiki-nav__link" href="action-catalog.html">Action Catalog</a>
+</nav>
+<!--/WIKI-NAV-->
+<div class="page-wrapper">
+
+  <header class="header">
+    <div class="eyebrow">Game Manual · The Living World</div>
+    <h1>The Mortals</h1>
+    <p class="tagline">The world is full of people who are not yours. They wake with their own needs, chase their own ambitions, and become who their choices make them. You do not move them like pieces — you tend the ones you can reach, and watch the rest live.</p>
+  </header>
+
+  <!-- ══════════════════ HOW IT PLAYS ══════════════════ -->
+
+  <section class="section">
+    <h2>People, not pieces<span class="lead">Every mortal is an individual with a life of their own. You are a god who nudges; you are never a puppeteer.</span></h2>
+    <p>Threadbearer is not a world of tokens waiting for your command. It is populated by <span class="term">mortals</span> — living individuals, each with a place on the map, a set of values, things they want, and the capacity to grow. They act whether or not you are watching. You touch their lives through <a href="threads-court-reference.html">threads</a> and the occasional divine <a href="divine-actions-reference.html">nudge</a>, but the choices remain theirs. A mortal you shaped toward mercy can still choose cruelty; that friction — a god's will meeting a person's own nature — is where the story lives.</p>
+    <p>Because you cannot puppet them, understanding <em>how</em> a mortal chooses is how you learn to steer one. The rest of this page is that: how they decide, who they are, what they want, how they change, and how they live and die.</p>
+  </section>
+
+  <section class="section">
+    <h2>How a mortal chooses<span class="lead">Each mortal weighs what they could do against who they are and what they need — survival first, then their values. The choosing is quiet arithmetic, never a visible die.</span></h2>
+    <p>When a mortal is free to act, they look at what is within reach — the places, people, and unfolding moments around them — and weigh each one. The weighing runs in a fixed order of priority, a <span class="term">needs-first</span> shape: a mortal in danger attends to survival before anything else, and only a mortal who is safe and settled spends their attention on ambition, mastery, or meaning. Above that floor, what tips the balance is <em>who they are</em> — their values pull them toward some acts and away from others.</p>
+    <div class="ladder" role="img" aria-label="Needs ordering, most urgent first: survival, then safety, belonging, esteem, self-actualization, transcendence.">
+      <span class="step">Survival</span><span class="arrow">→</span>
+      <span class="step">Safety</span><span class="arrow">→</span>
+      <span class="step">Belonging</span><span class="arrow">→</span>
+      <span class="step">Esteem</span><span class="arrow">→</span>
+      <span class="step">Self-actualization</span><span class="arrow">→</span>
+      <span class="step">Meaning</span>
+    </div>
+    <p>The choice is <em>probabilistic</em>, not mechanical. A mortal does not always take the single best option — the strongest pulls are the most likely, but there is room for the surprising choice, so two mortals with the same values in the same place will not march in lockstep. And crucially, <strong>doing nothing is always a valid choice for them too</strong>: when nothing in reach calls loudly enough, a mortal simply carries on — drifting toward a distant goal if they are restless, or staying close to home if they are content. Idleness is a person at peace, not a broken agent.</p>
+    <div class="callout blue">
+      <div class="callout-title">The same seed, the same world</div>
+      <p>None of this is random in the loose sense. Every weighing is deterministic — the same world, the same mortal, the same moment produces the same choice, every time. The "surprise" is a seeded roll, not true chance, so a run can be replayed exactly. What feels like free will is really a very consistent set of preferences meeting a very consistent world.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Who they are — values and their moral axis<span class="lead">Every mortal carries a signed reading on nine virtue-and-flaw scales. Eight are bound to the Eight Reaches; each Reach has a saint at one end and a monster at the other.</span></h2>
+    <p>A mortal's character is not a bag of stats but a set of <span class="term">continuums</span> — nine paired values, each running from a virtue at one pole to its shadow at the other. Eight of the nine belong to the <a href="cosmology-reference.html">Eight Reaches</a>: the same axis that describes what a mortal <em>does</em> also describes the moral shape of <em>how</em> they do it. A ninth, courage against caution, sits across them all. A mortal sits somewhere along each scale, and where they sit is who they are.</p>
+    <div class="axes">
+      <div class="axis"><span class="reach">Iron</span><span class="pole virtue"><span class="who">Protector</span> <span class="dir">mercy</span></span><span class="pole vice"><span class="dir">ruthlessness</span> <span class="who">Conqueror</span></span></div>
+      <div class="axis"><span class="reach">Gold</span><span class="pole virtue"><span class="who">Mender</span> <span class="dir">asceticism</span></span><span class="pole vice"><span class="dir">extravagance</span> <span class="who">Magnate</span></span></div>
+      <div class="axis"><span class="reach">Shadow</span><span class="pole virtue"><span class="who">Confessor</span> <span class="dir">honesty</span></span><span class="pole vice"><span class="dir">cunning</span> <span class="who">Puppeteer</span></span></div>
+      <div class="axis"><span class="reach">Veil</span><span class="pole virtue"><span class="who">Archivist</span> <span class="dir">tradition</span></span><span class="pole vice"><span class="dir">novelty</span> <span class="who">Heretic</span></span></div>
+      <div class="axis"><span class="reach">Heart</span><span class="pole virtue"><span class="who">Sworn</span> <span class="dir">loyalty</span></span><span class="pole vice"><span class="dir">ambition</span> <span class="who">Renegade</span></span></div>
+      <div class="axis"><span class="reach">Eye</span><span class="pole virtue"><span class="who">Seeker</span> <span class="dir">revelation</span></span><span class="pole vice"><span class="dir">discretion</span> <span class="who">Sentinel</span></span></div>
+      <div class="axis"><span class="reach">Stone</span><span class="pole virtue"><span class="who">Guardian</span> <span class="dir">preservation</span></span><span class="pole vice"><span class="dir">transformation</span> <span class="who">Shaper</span></span></div>
+      <div class="axis"><span class="reach">Star</span><span class="pole virtue"><span class="who">Martyr</span> <span class="dir">sacrifice</span></span><span class="pole vice"><span class="dir">survival</span> <span class="who">Survivor</span></span></div>
+      <div class="axis"><span class="reach">— across all —</span><span class="pole virtue"><span class="who">Vanguard</span> <span class="dir">courage</span></span><span class="pole vice"><span class="dir">prudence</span> <span class="who">Watcher</span></span></div>
+    </div>
+    <p>Neither pole is "bad." A Conqueror is not a villain and a Protector is not a hero — they are two honest ways of holding the Iron Reach, and the world needs both. When you read a mortal's dossier, these scales are the truth of them, and they are what a wise god learns to work <em>with</em> rather than against.</p>
+  </section>
+
+  <section class="section">
+    <h2>How they change — the slow tilt<span class="lead">A mortal is not fixed. Every meaningful choice tilts them a little along their Reach's axis, and enough tilts in one direction crystallize into a named trait.</span></h2>
+    <p>Character is set at birth — seeded from the world's own logic and the mortal's origin story — but it is not frozen. Each meaningful choice a mortal makes nudges them along the matching axis: choose ruthlessness often enough and a mortal drifts toward the Conqueror pole; choose mercy and they drift back. Most of these nudges are small and <em>fade</em> — a single cruel act does not remake a soul, and drift decays back toward who a mortal fundamentally is. But a rare, defining moment can leave a <span class="term">formative mark</span>: a permanent shift in the baseline, the kind of experience a person never quite returns from.</p>
+    <p>When a mortal drifts far enough along an axis and <em>stays</em> there, the tendency crystallizes into a visible <span class="term">emergent trait</span> — the world stops describing them as "leaning ruthless" and starts calling them, plainly, ruthless. The trait sticks until they drift well back the other way, so a mortal's reputation lags their behavior slightly, the way a real reputation does. This is the engine of moral drift: not a slider you push, but a life accumulating into a character.</p>
+    <div class="callout purple">
+      <div class="callout-title">Your hand on the tiller</div>
+      <p>This is where a god's influence actually bites. You rarely command a mortal outright — but every <a href="encounters-manual-reference.html">encounter</a> you steer, every choice you tilt, adds one more small pull in a direction. Tend a thread patiently and you can, over many turns, bend a mortal toward the person you need them to be — or watch, helpless and fascinated, as they become someone else entirely.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>What they want — ambitions<span class="lead">Beyond the moment, most mortals carry a long arc they are quietly working toward. It colours everything they choose.</span></h2>
+    <p>A mortal is not only reacting to the day in front of them; many carry an <span class="term">ambition</span> — a long-term goal that gives their small choices a direction. A mortal might hold one or two of these at once, or none at all, and each falls into one of a handful of shapes:</p>
+    <div class="card-grid">
+      <div class="card"><h4>Dominion</h4><p>To rule — to hold power over people and place.</p></div>
+      <div class="card"><h4>Mastery</h4><p>To become the finest at their craft or Reach.</p></div>
+      <div class="card red"><h4>Vengeance</h4><p>To answer a wrong done to them or theirs.</p></div>
+      <div class="card"><h4>Legacy</h4><p>To leave something that outlasts them.</p></div>
+      <div class="card green"><h4>Survival</h4><p>Simply to endure — to see another season.</p></div>
+      <div class="card blue"><h4>Discovery</h4><p>To find what is hidden — knowledge, ruin, truth.</p></div>
+      <div class="card"><h4>Devotion</h4><p>To serve a person, a faith, or a cause utterly.</p></div>
+    </div>
+    <p>An ambition is not a quest marker for you to complete — it is <em>theirs</em>. It advances through milestones as the mortal lives toward it, and it quietly weights their choices: a mortal chasing Mastery leans harder into the work of their Reach; one bent on Vengeance is drawn toward the object of it. Ambitions can be fulfilled, abandoned when circumstances turn, or dashed. Knowing what a mortal is reaching for is the single best clue to what they will do next — and the easiest lever a god has, because helping a mortal toward their own ambition costs you far less resistance than pushing them off it.</p>
+  </section>
+
+  <section class="section">
+    <h2>How they grow — skill and mentorship<span class="lead">Mortals get better at what they do by doing it, and the best of them pass their craft to the next generation.</span></h2>
+    <p>A mortal's <a href="cosmology-reference.html">Domain Capability</a> — their competence across the Reaches — is not fixed at birth either. It <em>grows through doing</em>: every encounter a mortal survives leaves them a little more capable, with harder trials teaching more than easy ones, and each Reach getting harder to improve the higher they climb. Failure still teaches — a botched attempt yields a fraction of the growth of a success — so a mortal's story of getting better is written in their scars as much as their triumphs.</p>
+    <p>Growth also passes between people. A mortal of real mastery can take an <span class="term">apprentice</span>, forming a bond that plays out over many turns and ends in one of several ways — and how it ends is a story in itself:</p>
+    <div class="card-grid">
+      <div class="card green"><h4>Graduation</h4><p>The bond held; the apprentice steps out competent and grateful.</p></div>
+      <div class="card"><h4>The Surpassing</h4><p>The student outgrows the master — pride and loss in one breath.</p></div>
+      <div class="card red"><h4>Falling Out</h4><p>The bond soured; they part as rivals, sometimes as enemies.</p></div>
+      <div class="card"><h4>Quiet Parting</h4><p>Neither proud nor bitter — a professional bond that simply ran its course.</p></div>
+      <div class="card"><h4>Dissolution</h4><p>Circumstance — death, exile, distance — ended it before it could resolve.</p></div>
+    </div>
+    <p>A god can intervene here too: bless a fraying bond, or sever one with divine will. Mentorship is one of the clearest places to watch a lineage form across a run — a master's values and craft flowing down into an apprentice who will one day teach their own.</p>
+  </section>
+
+  <section class="section">
+    <h2>Birth, death, and becoming named<span class="lead">Mortals are born, age, and die. And some — through their own deeds or your attention — rise from the background to become people the world tells stories about.</span></h2>
+    <p>The population lives and turns over. New mortals are <span class="term">born</span> where people gather thickly enough to sustain them, and mortals <span class="term">die</span> — most quietly, when their fortunes have fallen far enough, some in the course of the world's violence. Death is not always an ending: a mortal bound closely enough to a god can be preserved as an echo rather than simply lost.</p>
+    <p>Not every mortal is simulated in full. The world holds far more people than any run could animate, so they exist at three <span class="term">tiers of attention</span>:</p>
+    <div class="ladder" role="img" aria-label="Three tiers of attention, from least to most detailed: ambient, then notable, then spotlight.">
+      <span class="step">Ambient</span><span class="arrow">→</span>
+      <span class="step">Notable</span><span class="arrow">→</span>
+      <span class="step">Spotlight</span>
+    </div>
+    <ul>
+      <li><span class="term">Ambient</span> — the background population. Real enough to fill a settlement, but not individually simulated: they have no personal goals of their own yet.</li>
+      <li><span class="term">Notable</span> — a named person the world is tracking, worth interacting with, carrying a genuine identity and capabilities.</li>
+      <li><span class="term">Spotlight</span> — a fully living individual: their own values, ambitions, and autonomous choices, run every turn. These are the mortals this whole page describes.</li>
+    </ul>
+    <p>A background face <em>graduates</em> upward as they accumulate <span class="term">importance</span> — and importance is earned by mattering. Every time you act on a mortal directly, every time they are named in a moment, gain a defining trait, or become the centre of a contested place, they matter a little more — until a nobody becomes a somebody the game fully brings to life. You can also spend divine essence to elevate a mortal deliberately, pulling a face out of the crowd because <em>you</em> have decided they are important. This is exactly how <a href="threads-court-reference.html">The First</a> begins — an ordinary person your attention raised into the anchor of your whole presence in the world.</p>
+    <div class="callout">
+      <div class="callout-title">The lesson of the tiers</div>
+      <p>You will never watch everyone, and you are not meant to. The tier system is the world's honest answer to a god's limited <a href="attention-story-reference.html">attention</a>: it keeps thousands of lives plausible in the background and spends its real simulation on the handful you have chosen to care about. Choosing <em>who</em> to raise into the light is one of the quiet, load-bearing decisions of a run.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════ DESIGNER NOTES ══════════════════ -->
+
+  <details class="designer" open>
+    <summary>
+      <span class="chev">▶</span>
+      <span>
+        <h2>Designer Notes</h2>
+        <span class="sub">The real decision pipeline (Maslow-inspired, not a literal ladder), the shipped personality wave, ambitions, growth &amp; mentorship, the spotlight-tier graduation model, and the honest state of large-map decision performance.</span>
+      </span>
+    </summary>
+    <div class="designer-body">
+
+      <p>Status flags follow the rulebook convention: <span class="flag impl">IMPL</span> shipped and wired, <span class="flag design">DESIGN</span> specified but partially or not yet wired, <span class="flag open">OPEN</span> an unresolved question (referenced, never minted here). Terminology authority is the UL — <code>Docs/ubiquitous-language/Agents.md</code>; where a term here and the UL disagree, the UL wins. The synthesis spine is <code>Docs/canon/rulebook.md</code> §2 "What the World Is."</p>
+
+      <h3>How a mortal decides <span class="flag impl">IMPL</span></h3>
+      <p>Two pipelines drive mortal behaviour, and it is worth keeping them distinct:</p>
+      <ul>
+        <li><strong>Per-tick encounter selection</strong> — <code>phaseAgentDecision.ts</code> uses <code>encounterScoring.ts</code> (<code>scoreAndSelect</code>) to pick which framed moment a free mortal engages. Candidates are spatially pre-filtered by hex awareness (<code>MAX_AWARENESS_HOPS = 5</code> + <code>EDGE_HEX_AWARENESS_BONUS = 1</code>), capped at <code>MAX_SCORED_CANDIDATES = 40</code>, scored (<code>valuePerTick × desireMultiplier + resonance</code>, with axiological amplification <code>PERSONALITY_SELECTION_WEIGHT = 2.0</code> / <code>PERSONALITY_SCORE_EXPONENT = 1.5</code>), and anything below <code>IDLE_SCORE_THRESHOLD = 0.0001</code> falls through to <code>idleBehavior.ts</code>.</li>
+        <li><strong>Action-completion selection</strong> — when an actor's action frees up their AP, <code>agentSelection.ts</code> (header: "Maslow-inspired pipeline") scores candidates by axiological alignment (<code>scoreByGoalAlignment</code>), applies ambition/personality weights, takes top-N, and does a <em>seeded</em> weighted random pick (<code>probabilisticSelect</code>). Its <code>SELECTION_CONFIG</code> carries <code>survivalThreshold: 0.8</code> (<code>unifiedActionPhases.ts:38</code>) — the survival override that makes a threatened mortal drop everything.</li>
+      </ul>
+      <div class="callout red">
+        <div class="callout-title">Accuracy note — "six-layer Maslow" is framing, not code</div>
+        <p>The rulebook narrates decision-making as a "six-layer Maslow pipeline (survival → safety → belonging → esteem → self-actualization → transcendence)." The player layer above uses that framing because it is a faithful <em>description</em> of the felt behaviour — but the code implements a <strong>Maslow-<em>inspired</em></strong> shape (a survival override at 0.8 plus axiological-alignment scoring), <strong>not</strong> six discretely-named tiers. The named layers <code>safety/belonging/esteem/self-actualization</code> appear only in prose content, never in the decision loop. Utility-function AI and behaviour trees are the <strong>rejected</strong> approaches and are correctly absent. Determinism (NFP #3) holds: scoring is pure, and the "surprise" is a seeded roll (a deprecated <code>Math.random()</code> fallback exists in <code>agentSelection.ts</code> but all production callers pass a seeded roll).</p>
+      </div>
+
+      <h3>Personality &amp; moral drift <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><strong>The nine value pairs</strong> — <code>AxiologicalProfile</code> is <code>Record&lt;ValuePair, number&gt;</code> on <code>−1.0</code> (flaw pole) … <code>+1.0</code> (virtue pole), <code>src/types/agent.ts</code>. Eight Reach-bound pairs (<code>mercy_ruthlessness</code> Iron, <code>asceticism_extravagance</code> Gold, <code>honesty_cunning</code> Shadow, <code>tradition_novelty</code> Veil, <code>loyalty_ambition</code> Heart, <code>revelation_discretion</code> Eye, <code>preservation_transformation</code> Stone, <code>sacrifice_survival</code> Star) plus the meta pair <code>courage_prudence</code>. Archetype pole names live in <code>ARCHETYPE_NAMES</code>.</li>
+        <li><strong>The shipped personality wave</strong> — origin baseline seeded once at birth (THR-561, <code>phases/personalityOriginSeed.ts</code>: deterministic hash + additive origin-vignette deltas recorded on <code>originVignettes</code>); emergent traits granted/released at hysteresis thresholds off live position <code>clamp(baseline + drift)</code> (THR-527, <code>phases/personalityTraitEmerge.ts</code>); and the separate five-continuum Core layer (THR-542, <code>phases/corePersonality.ts</code>).</li>
+        <li><strong>Drift</strong> — choices apply signed drift to the dominant axis (<code>PERSONALITY_REACTION_DRIFT_DELTA = 0.05</code>); rare defining moments write a permanent baseline shift up to <code>FORMATIVE_MARK_MAX_MAGNITUDE = 0.15</code>; ordinary drift decays back toward baseline (<code>encounters/driftAccumulator.ts</code>). The lagging emergent trait is why reputation trails behaviour.</li>
+      </ul>
+
+      <h3>Ambitions <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>Seven categories (<code>src/types/ambition.ts</code>): <code>dominion | mastery | vengeance | legacy | survival | discovery | devotion</code>. Assigned 0–2 per mortal at birth (1 primary + 0–1 secondary) via a seeded selection funnel (<code>ambitionAssignment.ts</code>, <code>ambitionSelection.ts</code>), stored as <code>pursues</code> edges with <code>priority</code>/<code>status</code>/<code>completedMilestones</code>.</li>
+        <li>Progress checked each tick (<code>phases/ambitionProgress.ts</code>, <code>ambitionTick.ts</code>) against milestone graph conditions; active ambitions bias encounter scoring by <code>AMBITION_REACH_BOOST = 0.5</code> when the encounter's reach matches. Ambitions complete, abandon (on failed triggers), or persist.</li>
+      </ul>
+
+      <h3>Growth &amp; mentorship <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><strong>Capability growth</strong> (<code>capabilityGrowth.ts</code>) accrues from encounter steps: <code>BASE_ENCOUNTER_GROWTH = 0.5</code>, doubled on promotion-eligible steps (<code>PROMOTION_ELIGIBLE_MULTIPLIER = 2.0</code>), scaled by step difficulty, with diminishing returns <code>1 − cap × DIMINISHING_RETURNS_FACTOR (0.7)</code> (floored at 0.1); failure still yields <code>FAILURE_GROWTH_FRACTION = 0.2</code>. Tiers 0–8 map from the score in <code>domainCapability.ts</code>.</li>
+        <li><strong>Mentorship</strong> (THR-75, <code>phaseMentorship.ts</code> / <code>mentorshipOutcomes.ts</code>, constants in <code>src/data/mentorship-constants.ts</code>): mentor tier ≥ <code>MENTOR_MIN_TIER (6)</code>, apprentice <code>2–4</code>; a <code>mentors</code> edge carries <code>bondQuality ∈ [−1,+1]</code> drifting <code>+0.15</code>/<code>−0.20</code> per checkpoint over <code>MENTORSHIP_BASE_DURATION 8 ± 3</code> ticks. Terminal arcs: <em>Graduation</em>/<em>The Surpassing</em> (bond ≥ <code>GRADUATION_BOND_THRESHOLD 0.2</code>), <em>Falling Out</em> (&lt; <code>FALLING_OUT_BOND_THRESHOLD −0.3</code>), <em>Quiet Parting</em>, <em>Dissolution</em>. The Sever-the-Bond divine action floors bondQuality.</li>
+      </ul>
+
+      <h3>Lifecycle &amp; spotlight graduation <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><strong>Birth/death</strong> (<code>agentLifecycle.ts</code>): <code>BIRTH_CHANCE = 0.01</code> per tick at locations with ≥ <code>BIRTH_DENSITY_THRESHOLD (3)</code> agents; low-reputation death <code>DEATH_CHANCE_LOW_REP = 0.02</code> below <code>LOW_REP_THRESHOLD (0.1)</code>. Aspect echoes preserve a god's Aspect on death (THR-479).</li>
+        <li><strong>Three tiers</strong> (<code>SpotlightTier</code> in <code>src/types/npc.ts</code>): <code>ambient</code> (no individual AI) → <code>notable</code> (named, tracked) → <code>spotlight</code> (full autonomous agent). Promotion by importance: <code>NOTABLE_THRESHOLD = 10</code>, <code>SPOTLIGHT_THRESHOLD = 25</code> AND <code>SPOTLIGHT_MIN_EDGES = 3</code>. Importance increments: player action <code>+3</code>, trait gained <code>+4</code>, edge created <code>+2</code>, encounter reference <code>+1</code>, location contested <code>+1</code> (<code>npcGraduation.ts</code>). Player-driven promotion costs <code>max(1, PROMOTE_ESSENCE_BASE 8 − importance × PROMOTE_IMPORTANCE_DISCOUNT 0.5)</code> essence.</li>
+      </ul>
+
+      <h3>Decision-phase performance <span class="flag impl">IMPL</span> instrumentation · <span class="flag open">OPEN</span> fix</h3>
+      <ul>
+        <li>Standing optimizations in <code>phaseAgentDecision.ts</code> are shipped: a pre-computed busy-agent <code>Set</code> for O(1) lookup, moving-agent re-evaluation gating (only re-decide every <code>DECISION_REEVALUATION_TICKS</code>), hex-spatial pre-filtering before scoring, and per-location incremental encounter-cache invalidation.</li>
+        <li><strong>THR-580</strong> shipped the tick-loop observability layer (per-phase timing ring + rollup, <code>orchestrator.ts</code>, DebugPanel Phases tab) and the <em>diagnosis</em> that <code>phaseAgentDecision</code> cost goes super-linear on <code>large</code>+ maps. <strong>THR-581 (the fix) is OPEN</strong> — no commit lands it on any branch yet; the large-map decision stall is a known, tracked performance issue, not a resolved one. (This is why CLAUDE.md steers dev testing to <code>?view=game&amp;seeded&amp;size=medium</code>.)</li>
+      </ul>
+
+      <h3>Constants</h3>
+      <table class="tunables">
+        <thead><tr><th>Constant</th><th>Value</th><th>Purpose · file</th></tr></thead>
+        <tbody>
+          <tr><td>IDLE_SCORE_THRESHOLD</td><td>0.0001</td><td>Below → idle fallback · <code>agent-behavior-constants.ts:35</code></td></tr>
+          <tr><td>PERSONALITY_SELECTION_WEIGHT</td><td>2.0</td><td>Axiological bias on encounter pick · <code>:417</code></td></tr>
+          <tr><td>survivalThreshold</td><td>0.8</td><td>Maslow-inspired survival override · <code>unifiedActionPhases.ts:38</code></td></tr>
+          <tr><td>AxiologicalProfile</td><td>9 pairs</td><td>8 Reach-bound + <code>courage_prudence</code> · <code>types/agent.ts</code></td></tr>
+          <tr><td>PERSONALITY_REACTION_DRIFT_DELTA</td><td>0.05</td><td>Signed drift per aligned choice · <code>:438</code></td></tr>
+          <tr><td>FORMATIVE_MARK_MAX_MAGNITUDE</td><td>0.15</td><td>Max permanent baseline shift · <code>:459</code></td></tr>
+          <tr><td>AMBITION_REACH_BOOST</td><td>0.5</td><td>Encounter boost on reach match · <code>:39</code></td></tr>
+          <tr><td>BASE_ENCOUNTER_GROWTH</td><td>0.5</td><td>Capability gain per step · <code>:168</code></td></tr>
+          <tr><td>MENTOR_MIN_TIER</td><td>6</td><td>Mentor eligibility floor · <code>mentorship-constants.ts:17</code></td></tr>
+          <tr><td>NOTABLE / SPOTLIGHT_THRESHOLD</td><td>10 / 25</td><td>Spotlight promotion by importance · <code>types/npc.ts</code></td></tr>
+          <tr><td>BIRTH_CHANCE / DEATH_CHANCE_LOW_REP</td><td>0.01 / 0.02</td><td>Per-tick lifecycle rolls · <code>agentLifecycle.ts:44,50</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Canon &amp; terminology</h3>
+      <ul>
+        <li>Terminology authority: the UL Agents shard (<code>Docs/ubiquitous-language/Agents.md</code>) — <em>Agent</em>, <em>Actor</em>, <em>ActorType</em>, <em>AxiologicalProfile</em>, <em>ValuePair</em>, <em>mentor</em>/<em>apprentice</em>, the mentorship arcs. Reach names and archetype axes: <code>Docs/canon/cosmology.md</code> and the <a href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a> page.</li>
+        <li>Deep dive: the systems here — reaches, capability, traits, resolution, and the full decision pipeline — are documented at implementation depth in <a href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>. Adjacent Manual pages: <a href="threads-court-reference.html">Threads, the Court &amp; The First</a> (bonds and The First), <a href="encounters-manual-reference.html">Encounters &amp; Aftermath</a> (the trajectory shift a choice causes), <a href="attention-story-reference.html">Attention, the Digest &amp; the Chronicle</a> (why you cannot watch them all). Game title in player copy: <strong>Threadbearer</strong>.</li>
+      </ul>
+
+      <h3>Open questions <span class="flag open">OPEN</span></h3>
+      <ul>
+        <li>None minted here. The live decision-phase performance gap is tracked as <strong>THR-581</strong> (fix pending after the THR-580 diagnosis), not as a design open question. The rulebook's six-layer Maslow phrasing versus the code's Maslow-<em>inspired</em> shape is a framing gap flagged above for a future rulebook/UL reconciliation, not a new open question opened by this page.</li>
+      </ul>
+
+    </div>
+  </details>
+
+  <div class="foot">
+    Game Manual Wiki · W10 (THR-595). Player layer describes current shipped behaviour; anything not yet wired is flagged <span class="flag design">DESIGN</span> or <span class="flag open">OPEN</span>. Terminology is UL-exact; where this page and the UL disagree, the UL wins and this page is a drift bug. The decision pipeline is Maslow-<em>inspired</em> (survival override + axiological alignment), not a literal six-tier ladder — see the accuracy note above.
+  </div>
+
+</div>
+</body>
+</html>

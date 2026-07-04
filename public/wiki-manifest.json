@@ -75,6 +75,14 @@
       "sources": ["src/data/ia-manifest.ts"]
     },
     {
+      "id": "agents-reference",
+      "file": "agents-reference.html",
+      "title": "The Mortals",
+      "blurb": "The mortals who fill the world and pursue their own goals — how a free mortal chooses (a Maslow-inspired, survival-first, values-driven seeded selection, not a literal six-tier ladder); the nine virtue↔flaw value pairs (eight Reach-bound plus courage/prudence) and the slow moral drift a god can bend; ambitions in seven shapes; growth through doing and the five ways a mentorship ends; and the lifecycle from birth to death and the ambient→notable→spotlight graduation that turns a background face into a named individual.",
+      "section": "Manual",
+      "sources": ["src/engine/phaseAgentDecision*.ts", "src/engine/agentSelection.ts", "src/engine/encounterScoring.ts", "src/engine/idleBehavior.ts", "src/engine/ambition*.ts", "src/engine/agentLifecycle.ts", "src/engine/npcGraduation.ts", "src/engine/capabilityGrowth.ts", "src/engine/mentorshipOutcomes.ts", "src/engine/phaseMentorship.ts", "src/engine/phases/personality*.ts", "src/engine/phases/corePersonality.ts", "src/engine/phases/ambitionProgress.ts", "src/data/agent-behavior-constants.ts", "src/data/mentorship-constants.ts", "src/types/agent.ts", "src/types/ambition.ts", "src/types/npc.ts"]
+    },
+    {
       "id": "encounters-agents-reference",
       "file": "encounters-agents-reference.html",
       "title": "Encounters, Agents & Resolution",
