@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threadbearer — Factions, Cultures &amp; Secrets</title>
+<!--
+  Factions, Cultures & Secrets (Game Manual Wiki, W11 / THR-596) — dual-layer
+  manual page. Player-manual prose first ("How it plays"), Designer Notes second.
+  Spec: Docs/plans/2026-07-03-game-manual-wiki.md §5 W11; template §3.
+  Terminology authority is the UL (Docs/ubiquitous-language/Agents.md "Faction",
+  Graph.md edge types); the rulebook (Docs/canon/rulebook.md §2 "What the World
+  Is") is the synthesis spine. The shared wiki nav between the WIKI-NAV markers is
+  injected by scripts/generate-design-wiki.ts — do not hand-write it.
+
+  Accuracy notes (verified against code this pass — do not "correct" back):
+  - Schism weights ARE defined and wired: SCHISM_WEIGHT_COHESION 0.4 /
+    SCHISM_WEIGHT_SPREAD 0.4 / SCHISM_WEIGHT_DISSENT 0.2 (src/data/game-config.ts:294-300),
+    consumed by phaseSchismResolution.ts. Schism is IMPL, not DESIGN.
+  - Secrets & favors are real social leverage: socialLeverage.ts (THR-30) adds
+    secretMagnitude × SECRET_LEVERAGE_MULTIPLIER 0.30 and favorMagnitude ×
+    FAVOR_LEVERAGE_MULTIPLIER 0.25 at encounter start; divine actions
+    action.secrets.reveal_secret / plant_secret / call_in_favor are wired via
+    graphOpExecutor.ts. IMPL, not OPEN.
+  - "Clue decay" in the plan title is a misnomer: secret decay is a binary fade
+    of minor stale secrets (phaseSecretsFavors). The clue_decay orchestrator phase
+    is the RUIN/mystery clue lifecycle (ruins/clueLifecycle.ts) — a different
+    subsystem, not covered here.
+  - The rulebook §2 line still names a stale `agentDecision.ts` + "six-layer
+    Maslow"; that is a W10-flagged framing gap, not this page's concern.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --parchment: #f4edd8;
+    --parchment-dark: #e8dfc8;
+    --ink: #2c1810;
+    --ink-light: #5a3d2b;
+    --ink-faint: #8a7060;
+    --gold: #b8860b;
+    --gold-light: #daa520;
+    --card-bg: #fff8e7;
+    --red: #8b2500;
+    --blue: #1a3a5c;
+    --blue-light: #2d5f8a;
+    --purple: #4a2d6a;
+    --green: #2d5a27;
+
+    --flag-impl: #2d5a27;
+    --flag-design: #8a4a00;
+    --flag-open: #4a2d6a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(26,58,92,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 30%, rgba(184,134,11,0.04) 0%, transparent 50%);
+  }
+
+  .page-wrapper { max-width: 900px; margin: 0 auto; padding: 40px 32px 72px; }
+
+  /* ── Header ── */
+  .header { text-align: center; margin-bottom: 40px; padding-bottom: 28px; border-bottom: 2px solid var(--gold); position: relative; }
+  .header::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 55%; height: 1px; background: var(--gold-light); }
+  .header .eyebrow { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+  .header h1 { font-family: 'Cinzel', Georgia, serif; font-weight: 700; font-size: 2.4rem; color: var(--ink); letter-spacing: 0.05em; margin-bottom: 12px; }
+  .header .tagline { font-size: 1.12rem; color: var(--ink-light); max-width: 64ch; margin: 0 auto; font-style: italic; }
+
+  /* ── Sections ── */
+  .section { margin-bottom: 34px; }
+  .section > h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.25rem; color: var(--ink); letter-spacing: 0.03em; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid var(--parchment-dark); }
+  .section > h2 .lead { display: block; font-family: 'Crimson Text', Georgia, serif; font-size: 0.95rem; font-style: italic; font-weight: 400; color: var(--ink-faint); letter-spacing: 0; margin-top: 4px; }
+  .section h3 { font-family: 'Cinzel', Georgia, serif; font-size: 1rem; color: var(--ink-light); letter-spacing: 0.02em; margin: 20px 0 6px; }
+  .section p { margin-bottom: 12px; }
+  .section p .term { font-weight: 600; color: var(--ink); }
+  .section ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .section ul li { position: relative; padding-left: 1.3rem; margin-bottom: 8px; }
+  .section ul li::before { content: '◆'; position: absolute; left: 0; top: 0.05rem; color: var(--gold); font-size: 0.7rem; }
+
+  /* ── Faction-type / tension axes ── */
+  .axes { margin: 12px 0 18px; }
+  .axis { display: grid; grid-template-columns: 6.4rem 1fr; gap: 0 12px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--parchment-dark); }
+  .axis .reach { font-family: 'Cinzel', Georgia, serif; font-size: 0.82rem; color: var(--gold); letter-spacing: 0.04em; }
+  .axis .pole { font-size: 0.92rem; color: var(--ink-light); }
+  .axis .pole .who { font-weight: 600; color: var(--ink); }
+  @media (max-width: 620px) { .axis { grid-template-columns: 1fr; gap: 2px; } }
+
+  /* ── Card grid (factions, ambitions, actions) ── */
+  .card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0 18px; }
+  .card-grid.three { grid-template-columns: repeat(3, 1fr); }
+  .card { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 11px 14px; border-left: 3px solid var(--gold); }
+  .card.blue { border-left-color: var(--blue-light); }
+  .card.red { border-left-color: var(--red); }
+  .card.green { border-left-color: var(--green); }
+  .card.purple { border-left-color: var(--purple); }
+  .card h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.84rem; color: var(--ink); margin: 0 0 2px; }
+  .card p { font-size: 0.8rem; color: var(--ink-light); margin: 0; }
+  @media (max-width: 620px) { .card-grid, .card-grid.three { grid-template-columns: 1fr; } }
+
+  /* ── Ladder (ranks / tiers) ── */
+  .ladder { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 14px; align-items: center; }
+  .ladder .step { font-family: 'Cinzel', Georgia, serif; font-size: 0.74rem; color: var(--ink-light); background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 3px; padding: 3px 9px; white-space: nowrap; }
+  .ladder .arrow { color: var(--gold); font-size: 0.8rem; }
+
+  /* ── Callouts ── */
+  .callout { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-left: 4px solid var(--gold); border-radius: 4px; padding: 14px 18px; margin: 4px 0 18px; }
+  .callout.blue { border-left-color: var(--blue-light); }
+  .callout.purple { border-left-color: var(--purple); }
+  .callout.red { border-left-color: var(--red); }
+  .callout.green { border-left-color: var(--green); }
+  .callout .callout-title { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* ── Designer notes ── */
+  .designer { margin-top: 48px; border-top: 2px solid var(--gold); padding-top: 8px; }
+  .designer > summary { list-style: none; cursor: pointer; padding: 16px 4px; display: flex; align-items: baseline; gap: 12px; }
+  .designer > summary::-webkit-details-marker { display: none; }
+  .designer > summary .chev { font-size: 0.8rem; color: var(--gold); transition: transform 0.15s; }
+  .designer[open] > summary .chev { transform: rotate(90deg); }
+  .designer > summary h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.3rem; color: var(--ink); letter-spacing: 0.03em; }
+  .designer > summary .sub { font-size: 0.9rem; color: var(--ink-faint); font-style: italic; }
+  .designer-body { padding: 4px 4px 8px; }
+  .designer-body h3 { font-family: 'Cinzel', Georgia, serif; font-size: 0.98rem; color: var(--ink-light); margin: 22px 0 8px; }
+  .designer-body p { margin-bottom: 12px; font-size: 0.97rem; }
+  .designer-body ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .designer-body ul li { position: relative; padding-left: 1.2rem; margin-bottom: 7px; font-size: 0.97rem; }
+  .designer-body ul li::before { content: '›'; position: absolute; left: 0.15rem; top: 0; color: var(--ink-faint); }
+  code, .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.84em; color: var(--ink); background: rgba(184,134,11,0.10); padding: 0.05rem 0.32rem; border-radius: 3px; word-break: break-word; }
+
+  .flag { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.04em; font-weight: 500; padding: 0.08rem 0.4rem; border-radius: 3px; color: #fff; white-space: nowrap; }
+  .flag.impl { background: var(--flag-impl); }
+  .flag.design { background: var(--flag-design); }
+  .flag.open { background: var(--flag-open); }
+
+  table.tunables { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 4px 0 18px; }
+  table.tunables th { text-align: left; font-family: 'Cinzel', Georgia, serif; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); padding: 6px 10px 6px 0; border-bottom: 1px solid var(--parchment-dark); }
+  table.tunables td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--parchment-dark); vertical-align: top; color: var(--ink-light); }
+  table.tunables td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink); white-space: nowrap; }
+
+  .foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--parchment-dark); font-size: 0.85rem; color: var(--ink-faint); font-style: italic; }
+  a { color: var(--blue-light); text-decoration: none; border-bottom: 1px solid rgba(45,95,138,0.35); }
+  a:hover { color: var(--blue); border-bottom-color: var(--blue); }
+</style>
+</head>
+<body>
+<!--WIKI-NAV-->
+<style>
+  .wiki-nav { font-family: 'Cinzel', Georgia, serif; background: #2c1810; border-bottom: 2px solid #b8860b; padding: 0.6rem 1.2rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.1rem; }
+  .wiki-nav__brand { color: #daa520; font-weight: 700; letter-spacing: 0.04em; margin-right: 0.6rem; font-size: 0.95rem; }
+  .wiki-nav__link { color: #f4edd8; text-decoration: none; font-size: 0.85rem; letter-spacing: 0.02em; padding: 0.15rem 0.1rem; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; }
+  .wiki-nav__link:hover { color: #daa520; }
+  .wiki-nav__link.is-active { color: #daa520; border-bottom-color: #b8860b; font-weight: 700; }
+</style>
+<nav class="wiki-nav" aria-label="Design Reference Wiki">
+  <span class="wiki-nav__brand">⌖ Design Reference Wiki</span>
+  <a class="wiki-nav__link" href="design-wiki.html">Design Wiki</a>
+  <a class="wiki-nav__link" href="run-lifecycle-reference.html">A Run, Start to Finish</a>
+      <a class="wiki-nav__link" href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a>
+      <a class="wiki-nav__link" href="turn-structure-reference.html">The Three-Beat Turn</a>
+      <a class="wiki-nav__link" href="divine-actions-reference.html">Divine Actions &amp; Prerequisites</a>
+      <a class="wiki-nav__link" href="threads-court-reference.html">Threads, the Court &amp; The First</a>
+      <a class="wiki-nav__link" href="essence-control-reference.html">Essence, Control &amp; Sustained Power</a>
+      <a class="wiki-nav__link" href="encounters-manual-reference.html">Encounters &amp; Aftermath</a>
+      <a class="wiki-nav__link" href="clocks-reference.html">Doom, the Mandate &amp; Omens</a>
+      <a class="wiki-nav__link" href="interface-reference.html">Reading the Interface</a>
+      <a class="wiki-nav__link" href="agents-reference.html">The Mortals</a>
+      <a class="wiki-nav__link is-active" href="factions-cultures-reference.html" aria-current="page">Factions, Cultures &amp; Secrets</a>
+      <a class="wiki-nav__link" href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>
+      <a class="wiki-nav__link" href="tick-cycle-reference.html">Tick Cycle Reference</a>
+      <a class="wiki-nav__link" href="action-catalog.html">Action Catalog</a>
+</nav>
+<!--/WIKI-NAV-->
+<div class="page-wrapper">
+
+  <header class="header">
+    <div class="eyebrow">Game Manual · The Living World</div>
+    <h1>Factions, Cultures &amp; Secrets</h1>
+    <p class="tagline">The world is not a crowd of strangers. Mortals band into guilds and orders with designs of their own, inherit the gravity of the cultures they were born into, and carry private debts and buried truths. This is the social fabric a god learns to read — and to pull.</p>
+  </header>
+
+  <!-- ══════════════════ HOW IT PLAYS ══════════════════ -->
+
+  <section class="section">
+    <h2>The world organizes itself<span class="lead">Over the individual <a href="agents-reference.html">mortals</a> lie three social layers — factions, cultures, and loose groups — and each one bends the choices its members make.</span></h2>
+    <p>Every mortal is a person in their own right, but almost none of them stand alone. They are <span class="term">organized</span>: sworn into a guild, born into a culture, drawn into a passing band. These layers are not decoration — each one changes what its members want, who they trust, and how they act. A god who reads only individuals reads half the world. The other half is written in the shape of the groups they belong to.</p>
+    <p>You do not command these organizations any more than you command a single mortal. A faction is not a unit you move; it is a living body with its own ambitions, and the most you can do is earn standing within it, anoint it as favored, or set a crisis loose inside it and watch how it breaks. This page is how those layers work — and how a patient god turns them into levers.</p>
+  </section>
+
+  <section class="section">
+    <h2>Factions — organizations with their own designs<span class="lead">A faction is a structured body with goals of its own. It recruits, ranks its members by their standing, pursues long ambitions, and acts on the world without waiting for you.</span></h2>
+    <p>A <span class="term">faction</span> is a guild, order, company, court, or criminal network — a social entity that exists independently of any one member. The world is seeded with a dozen of them, spanning five kinds: the martial (mercenary companies, a civic guard), the mercantile (a merchant consortium, a builders' fellowship), the devout (a temple, a holy order), the arcane and lettered (an arcane circle, a lorekeepers' covenant), the shadowed (a thieves' guild, an underking's court), and the broad adventuring and ranging guilds between.</p>
+    <p>Your relationship with a faction is <span class="term">reputation</span> — a standing you build by serving its ends. Complete the quests it commissions and your standing rises; drift away and it decays over time. Standing is not a single number in the eyes of the faction: each one has its own <span class="term">rank ladder</span>, and crossing a threshold promotes a member up it. A thieves' guild recruit climbs from pickpocket to footpad to shadowblade to guildmaster; each rung unlocks richer rewards and, at the top, a seat that only one can hold.</p>
+    <div class="callout blue">
+      <div class="callout-title">Standing runs both ways</div>
+      <p>Whether a mortal rises fast or slowly depends on whether they <em>fit</em>. A faction quietly favors members whose nature matches its character and disfavors those who cut against it — a thieves' guild rewards the shadowed and the greedy, and gives the honest a colder welcome. Reputation is a mirror of alignment as much as effort.</p>
+    </div>
+    <h3>Factions act on their own</h3>
+    <p>The load-bearing truth about factions is that they are <em>not</em> hand-scripted set dressing. Each one carries a long <span class="term">ambition</span> — to expand its territory, to hoard resources, to fortify, to spread its culture, to avenge an old grievance, or to carry out a god's declared will — and that ambition colors everything it does. Driven by it, a faction takes real action in the world: commissioning quests, declaring rivalries, proposing alliances, excommunicating a member, calling a conclave, or posting a bounty. Which action it reaches for is shaded by the temperament of whoever leads it — a rash leader declares rivalries, a merciful one seeks alliances.</p>
+    <p>And leadership itself is mortal. When a faction's head dies or is cast down, <span class="term">succession</span> resolves: a named heir inherits, or the highest-standing member rises to fill the seat. A faction can even <span class="term">splinter</span> — a schism, once seeded, resolves into either a clean break (a breakaway faction carrying off its share of members) or a bitter reunification that expels the dissenters. All of this happens whether or not you are watching.</p>
+    <div class="callout purple">
+      <div class="callout-title">Anointing a chosen faction</div>
+      <p>You have one deeper move here. Through a domain-locked divine act you can <span class="term">anoint</span> a faction as your <em>chosen</em> — and from then on, every one of its members gains standing a little faster each turn, the exact flavor of the blessing set by the Sphere it flows through. A god who lifts a faction into favor gives it a slow, structural advantage no amount of ordinary questing can match. Sowing a schism and anointing a champion are the two ends of the same power: you can raise a faction up, or set it against itself.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Cultures — the gravity of belonging<span class="lead">A culture is a whole civilization's worth of shared values, names, and customs. It is less a thing a mortal joins than a pull they are born inside of.</span></h2>
+    <p>Where a faction is a body one enlists in, a <span class="term">culture</span> is a gravity well one is born into. Each culture has its own venerated Spheres, its leanings across the <a href="cosmology-reference.html">Eight Reaches</a>, and a deep foundational cast — and from those it grows a full identity: generated names that sound like they belong together, its own customs and mores, a banner, and a texture the world describes it in. A mortal carries their culture the way they carry their homeland — it shapes what they revere and how they are seen far more than it dictates any single act.</p>
+    <p>Cultures relate to one another by <span class="term">gravity</span> — a measure of how alike or opposed two of them are, drawn from their Spheres, their Reaches, and their foundations. Kindred cultures share a pull; opposed ones repel. And where cultures meet unevenly, <span class="term">tension</span> surfaces — not as a war mechanic, but as narrative texture that colors the encounters between people who do not share a world:</p>
+    <div class="card-grid">
+      <div class="card blue"><h4>Mismatch</h4><p>A stranger among a settlement's own culture — the friction of the outsider.</p></div>
+      <div class="card red"><h4>Conquest</h4><p>A place whose living culture was imposed over an older one — grief and quiet resistance.</p></div>
+      <div class="card purple"><h4>Dual identity</h4><p>A mortal pulled evenly between two cultures — the ache of divided belonging.</p></div>
+      <div class="card"><h4>Fanaticism</h4><p>A mortal steeped so deeply in their culture that meeting another turns to zeal.</p></div>
+    </div>
+    <p>None of these are penalties you manage. They are seams the story finds — the reasons a moment between two mortals carries weight a bare description would miss. Culture is the game's answer to <em>why these people, in this place, feel the way they do about each other.</em></p>
+  </section>
+
+  <section class="section">
+    <h2>Secrets &amp; favors — the currency you can't see<span class="lead">Beneath the public order runs a private economy: what one mortal knows about another, and what one mortal owes another. Both are leverage.</span></h2>
+    <p>Not all power is rank and reputation. Every mortal walks around with things they would rather were not known and debts they have not repaid, and these are as real a currency as coin. A <span class="term">secret</span> is a true, damaging fact one mortal has learned about another — a hidden allegiance, a past crime, a forbidden bond, a private weakness, a concealed ambition, a buried debt, knowledge of your own divine hand, or word of a coming betrayal. A <span class="term">favor</span> is the opposite ledger: a debt of gratitude, from a small kindness to a life owed.</p>
+    <p>Secrets are not sprinkled at random — a mortal can only hold a secret that is <em>plausibly true</em> given who the subject actually is, and how damaging it is depends on how it was learned. A wrung confession cuts deeper than a scrap of tavern gossip. The same goes for favors: they are earned in the doing, and weigh as much as the deed behind them.</p>
+    <div class="callout green">
+      <div class="callout-title">Why they matter — leverage</div>
+      <p>When two mortals enter a <a href="encounters-manual-reference.html">social encounter</a>, what they hold over each other tilts the ground before a word is spoken. A mortal who knows a damaging secret about the other, or is owed a favor by them, walks in with an advantage — and a god who has been quietly seeding secrets and banking favors is arranging the board turns before the play. There are divine acts for each: to <em>reveal</em> a secret and detonate it, to <em>plant</em> one where none existed, or to <em>call in</em> a favor and spend the debt.</p>
+    </div>
+    <p>This economy also decays, the way real leverage does. A minor secret that is never used quietly fades once it is old enough — small truths lose their teeth. And a favor left unpaid too long first <em>sours</em> the relationship between debtor and creditor, then, if it lingers past all patience, is simply forgiven and forgotten. Leverage is perishable: what you do not spend, you may lose.</p>
+  </section>
+
+  <!-- ══════════════════ DESIGNER NOTES ══════════════════ -->
+
+  <details class="designer" open>
+    <summary>
+      <span class="chev">▶</span>
+      <span>
+        <h2>Designer Notes</h2>
+        <span class="sub">The faction reputation ladder and the twelve seeded definitions, autonomous ambitions/actions/succession/schism, chosen-faction powers, cultural gravity &amp; tension, and the secrets-and-favors social-leverage economy — with the honest IMPL/DESIGN status of each.</span>
+      </span>
+    </summary>
+    <div class="designer-body">
+
+      <p>Status flags follow the rulebook convention: <span class="flag impl">IMPL</span> shipped and wired, <span class="flag design">DESIGN</span> specified but partially or not yet wired, <span class="flag open">OPEN</span> an unresolved question (referenced, never minted here). Terminology authority is the UL — <code>Docs/ubiquitous-language/Agents.md</code> (<em>Faction</em>, <em>Actor</em>, <em>ActorType</em>) and <code>Docs/ubiquitous-language/Graph.md</code> (edge types); where a term here and the UL disagree, the UL wins. Synthesis spine: <code>Docs/canon/rulebook.md</code> §2 "What the World Is." Factions and cultures are <strong>graph nodes</strong> (<code>actor</code> nodes with <code>actorType: 'faction' | 'culture'</code>); relationships are typed edges, never property bags.</p>
+
+      <h3>Faction reputation &amp; the twelve definitions <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><strong>Reputation</strong> lives on the <code>member_of</code> edge (agent → faction) as a <code>0.0–1.0</code> score. Quest steps grant <code>FACTION_REPUTATION_GAIN_PER_STEP = 0.04</code>; full completion adds <code>FACTION_REPUTATION_COMPLETION_BONUS = 0.08</code> (<code>src/data/faction-constants.ts</code>). An alignment multiplier (<code>FACTION_ALIGNMENT_BONUS</code> / <code>FACTION_ALIGNMENT_PENALTY</code>, <code>agent-behavior-constants.ts</code>) scales gains by how well the agent's traits match the faction's <code>reputationAlignment</code>. Decay is <code>FACTION_REPUTATION_DECAY_PER_TICK = 0.001</code> after <code>FACTION_REPUTATION_INACTIVITY_GRACE_TICKS = 36</code> ticks of inactivity, clamped at 0 (<code>factionReputation.ts</code>, phase <code>faction_reputation_decay</code>, orchestrator Phase 6.55, pre-economy).</li>
+        <li><strong>Rank tiers are per-faction</strong>, not global — each <code>FactionDefinition</code> declares an ordered <code>rankTiers[]</code> with a <code>minReputation</code> threshold, optional <code>maxSlots</code> (e.g. one guildmaster), and per-tier bonuses. Crossing a threshold sets <code>promotionPending</code> and injects a promotion encounter; a drop emits <code>faction_rank_changed</code>.</li>
+        <li><strong>Twelve seeded factions</strong> (<code>FACTION_DEFINITIONS</code>, <code>src/data/faction-definitions.ts:165</code>), five <code>factionType</code>s (guild / military / religious / political / criminal): Adventuring Guild, Mercenary Company, Thieves Guild, Merchant Consortium, Temple of Spheres, Arcane Circle, Rangers Brotherhood, Civic Guard, Underking Court, Holy Order of the Dawn, Builders Fellowship, Lorekeepers Covenant. The Adventuring Guild is defined inline in <code>faction-definitions.ts</code>; the other eleven are one-per-file <code>src/data/*-definition.ts</code>. A definition carries id / name / motto / glyph / theme, <code>reachWeights</code>, <code>rankTiers</code>, join &amp; promotion encounter ids, quest/social template ids, dispositions, and <code>ambitionWeights</code>.</li>
+        <li>Members join via <code>member_of</code> (properties: <code>reputation</code>, <code>role</code>, <code>rank</code>, <code>factionDefId</code>, <code>joinedTick</code>, <code>lastFactionActivityTick</code>, <code>promotionPending</code>). Factions are dynamic — created and dissolved during simulation (<code>dissolved</code> flag), exactly as the UL Faction entry asserts.</li>
+      </ul>
+
+      <h3>Faction autonomy — ambitions, actions, succession, schism <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><strong>Ambitions</strong> (<code>factionAmbitions.ts</code>, phase <code>faction_ambitions</code>, post-economy): six categories in <code>src/types/faction.ts:141</code> — <code>territorial_expansion</code>, <code>resource_acquisition</code>, <code>defensive_consolidation</code>, <code>cultural_dominance</code>, <code>revenge</code>, <code>divine_mandate</code>. Re-evaluated every <code>FACTION_AMBITION_EVALUATION_INTERVAL = 5</code> ticks; territorial expansion gates on <code>prosperity ≥ EXPANSION_PROSPERITY_THRESHOLD = 0.6</code>; revenge grievances decay at <code>REVENGE_GRIEVANCE_DECAY = 0.02</code>/tick; divine mandate needs <code>DIVINE_MANDATE_THREAD_THRESHOLD = 3</code> threads. Stored as ambition nodes on <code>pursues</code> edges.</li>
+        <li><strong>Actions</strong> (<code>phaseFactionActions.ts</code>, phase <code>faction_actions</code>, post-economy, after <code>faction_ambitions</code>): six v1 action types (<code>src/types/factionAction.ts</code>) — <code>commission_quest</code>, <code>declare_rivalry</code>, <code>propose_alliance</code>, <code>excommunicate</code>, <code>hold_conclave</code>, <code>issue_bounty</code> — each with a treasury cost, cooldown, and minimum membership. The leader's axiological profile biases the action weights (e.g. <code>declare_rivalry</code> scales with <code>courage_prudence</code>, <code>propose_alliance</code> with <code>mercy_ruthlessness</code>).</li>
+        <li><strong>Succession</strong> (THR-432, <code>phaseFactionSuccession.ts</code>, phase <code>faction_succession</code>, post-narrative): a <code>leaderSnapshotId</code> detects when the current leader (anointed via a <code>leads</code> edge, else highest-reputation member) exits. The most-recently-anointed <code>will_succeed</code> candidate inherits a fresh <code>leads</code> edge; absent one, score-derivation fills the seat silently.</li>
+        <li><strong>Schism</strong> (THR-430): planted by the divine act <code>action.faction.schism</code>, resolved by <code>phaseSchismResolution.ts</code> (phase <code>schism_resolution</code>, post-economy, after <code>faction_actions</code>). <code>decideSchismOutcome()</code> in <code>factionTopology.ts</code> computes <code>splitPressure</code> from cohesion-drop, dissent, and spread, weighted <code>SCHISM_WEIGHT_COHESION = 0.4</code> / <code>SCHISM_WEIGHT_SPREAD = 0.4</code> / <code>SCHISM_WEIGHT_DISSENT = 0.2</code> (<code>src/data/game-config.ts:294</code>) — <em>these weights are defined and consumed; schism is fully wired, not a stub.</em> Outcome is either <code>performFactionSplit</code> (a breakaway faction) or <code>performFactionReform</code> (expel the dissenters).</li>
+      </ul>
+
+      <h3>Chosen faction powers <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>THR-513, <code>chosenFactionPowers.ts</code>, phase <code>chosen_faction_powers</code> (orchestrator Phase 6.56, right after reputation decay). A domain-locked <code>anoint</code> act flags the faction <code>chosen: { power, domain, byAscendantId }</code>; each tick every member gains a power-keyed reputation bonus via <code>CHOSEN_POWER_EFFECT_TABLE</code> — <code>chosen.gold.reputation 0.005</code>, <code>iron.leadership_aura</code> / <code>heart.faith_spread</code> / <code>star.fated_banner 0.004</code>, <code>eye.illumined_charter</code> / <code>stone.enduring_foundation 0.003</code>, <code>shadow.veiled_reach</code> / <code>veil.whispered_sanction 0.002</code> — applied with <code>cause: 'chosen_power'</code> (bypasses the alignment multiplier).</li>
+      </ul>
+
+      <h3>Cultures — gravity, tension, generation <span class="flag impl">IMPL</span> (narrative-context)</h3>
+      <ul>
+        <li><strong>Culture nodes</strong> are <code>actor</code> nodes with <code>actorType: 'culture'</code>. Agents and locations link by <code>belongs_to</code> edges (a location carries a <code>cultureLayer: 'current' | 'historical'</code> to model conquest). A <code>CultureIdentity</code> holds venerated Spheres, reach preferences, an optional foundation bias, and traits.</li>
+        <li><strong>Cultural gravity</strong> (<code>culturalGravity.ts</code>): a symmetric similarity in <code>[-1, 1]</code> = <code>GRAVITY_SPHERE_WEIGHT 0.4 × sphere + GRAVITY_REACH_WEIGHT 0.4 × reach + GRAVITY_FOUNDATION_WEIGHT 0.2 × foundation</code>, with a sphere-opposition map (life↔entropy, force↔mind, matter↔spirit, energy↔time).</li>
+        <li><strong>Cultural tension</strong> (<code>culturalTension.ts</code>): four types surfaced at encounter time for prose — <code>mismatch</code> (severity 3), <code>conquest</code> (4), <code>dual</code> (2, when two cultures sit within <code>DUAL_CULTURE_THRESHOLD = 0.15</code>), <code>fanaticism</code> (3, at strength ≥ <code>FANATICISM_THRESHOLD = 0.8</code>), scored by <code>CULTURAL_TENSION_SCORES</code>.</li>
+        <li><strong>Generation</strong> is static at worldgen: <code>culturePhonetics.ts</code> (names), <code>cultureMores.ts</code> (customs), <code>cultureFlag.ts</code> (banner), <code>cultureDetail.ts</code> / <code>culturalProse.ts</code> (flavor), orchestrated by <code>cultureGenerator.ts</code>. <strong>Honest scope:</strong> there is no dedicated culture <em>tick phase</em> — gravity and tension are computed inline during encounter scoring and prose enrichment. Cultures shape narrative texture and settlement identity today; a mechanical culture-drift lever on agent decision-making is the <span class="flag design">DESIGN</span> edge, not yet wired.</li>
+      </ul>
+
+      <h3>Secrets &amp; favors — the social-leverage economy <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><strong>Model</strong>: a secret is a <code>knows_secret_of</code> edge (holder → subject); a favor is an <code>owes_favor</code> edge (debtor → creditor). Both carry <code>magnitude ∈ [0,1]</code>, source/context, and revealed/redeemed/broken flags (<code>src/types/secretsFavors.ts</code>). Caps: <code>MAX_SECRETS_PER_AGENT = 10</code>, <code>MAX_FAVORS_PER_AGENT = 8</code>.</li>
+        <li><strong>Eight secret types</strong>: <code>hidden_allegiance</code>, <code>past_crime</code>, <code>forbidden_relationship</code>, <code>hidden_weakness</code>, <code>secret_ambition</code>, <code>financial_secret</code>, <code>divine_mark</code>, <code>betrayal_planned</code>. Generated at discovery from real graph state (<code>secretGeneration.ts</code>) so only plausible secrets exist; magnitude is scaled by a <code>SOURCE_QUALITY</code> table (confession 0.80 … tavern_gossip 0.35).</li>
+        <li><strong>Leverage</strong> (THR-30, <code>socialLeverage.ts</code>): at social-encounter start a mortal's advantage sums a power bonus, a faction-rank-gap bonus, <code>secretMagnitude × SECRET_LEVERAGE_MULTIPLIER 0.30</code> (an unrevealed secret about the target), and <code>favorMagnitude × FAVOR_LEVERAGE_MULTIPLIER 0.25</code> (a favor the target owes), clamped to <code>LEVERAGE_INITIAL_CAP</code>. Divine consumers are wired: <code>action.secrets.reveal_secret</code>, <code>action.secrets.plant_secret</code>, <code>action.secrets.call_in_favor</code> (graph ops in <code>graphOpExecutor.ts</code>).</li>
+        <li><strong>Decay</strong> (<code>phaseSecretsFavors.ts</code>, phase <code>secrets_favors</code>, every <code>SECRET_FAVOR_CHECK_INTERVAL = 10</code> ticks): a minor secret (<code>magnitude &lt; SECRET_DECAY_THRESHOLD 0.20</code>) is removed once older than <code>SECRET_MAX_AGE_TICKS = 100</code>; an unpaid favor drifts sentiment by <code>FAVOR_TENSION_SENTIMENT_DELTA −0.02</code> after <code>FAVOR_TENSION_THRESHOLD_TICKS = 30</code>, and is forgiven (removed) after <code>FAVOR_MAX_AGE_TICKS = 80</code>.</li>
+      </ul>
+      <div class="callout red">
+        <div class="callout-title">Accuracy note — "clue decay" is a different subsystem</div>
+        <p>The W11 plan titles this domain "secret generation + clue decay," but secret decay in code is a <strong>binary fade</strong> of minor stale secrets — there is no per-tick magnitude erosion; magnitude is fixed once at discovery by source quality. The orchestrator's separate <code>clue_decay</code> phase (<code>ruins/clueLifecycle.ts</code>) is the <em>ruin/mystery</em> clue lifecycle — an unrelated subsystem, not the secrets economy, and not documented on this page.</p>
+      </div>
+
+      <h3>Tick placement <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>Pre-economy: <code>faction_reputation_decay</code> (6.55) → <code>chosen_faction_powers</code> (6.56). Post-economy cluster (registry-ordered): <code>… → faction_ambitions → faction_actions → secrets_favors → schism_resolution → …</code>. Post-narrative: <code>faction_succession</code>. Cultural gravity/tension are helper calls at encounter scoring, not a scheduled phase.</li>
+      </ul>
+
+      <h3>Constants</h3>
+      <table class="tunables">
+        <thead><tr><th>Constant</th><th>Value</th><th>Purpose · file</th></tr></thead>
+        <tbody>
+          <tr><td>FACTION_REPUTATION_GAIN_PER_STEP</td><td>0.04</td><td>Reputation per quest step · <code>faction-constants.ts:48</code></td></tr>
+          <tr><td>FACTION_REPUTATION_COMPLETION_BONUS</td><td>0.08</td><td>Reputation for a full quest · <code>:51</code></td></tr>
+          <tr><td>FACTION_REPUTATION_DECAY_PER_TICK</td><td>0.001</td><td>Baseline standing fade · <code>:12</code></td></tr>
+          <tr><td>FACTION_REPUTATION_INACTIVITY_GRACE_TICKS</td><td>36</td><td>Ticks before decay begins · <code>:15</code></td></tr>
+          <tr><td>FACTION_AMBITION_EVALUATION_INTERVAL</td><td>5</td><td>Ticks between ambition re-eval · <code>factionAmbitions.ts:23</code></td></tr>
+          <tr><td>EXPANSION_PROSPERITY_THRESHOLD</td><td>0.6</td><td>Min prosperity for expansion · <code>:26</code></td></tr>
+          <tr><td>SCHISM_WEIGHT_COHESION / SPREAD / DISSENT</td><td>0.4 / 0.4 / 0.2</td><td>Split-pressure weights · <code>game-config.ts:294</code></td></tr>
+          <tr><td>CHOSEN_POWER_EFFECT_TABLE</td><td>0.002–0.005</td><td>Per-tick chosen-faction reputation · <code>chosenFactionPowers.ts:46</code></td></tr>
+          <tr><td>GRAVITY_SPHERE / REACH / FOUNDATION_WEIGHT</td><td>0.4 / 0.4 / 0.2</td><td>Cultural gravity mix · <code>culturalGravity.ts:23</code></td></tr>
+          <tr><td>DUAL_CULTURE_THRESHOLD / FANATICISM_THRESHOLD</td><td>0.15 / 0.8</td><td>Cultural-tension triggers · <code>culturalTension.ts:34</code></td></tr>
+          <tr><td>SECRET_LEVERAGE_MULTIPLIER / FAVOR_LEVERAGE_MULTIPLIER</td><td>0.30 / 0.25</td><td>Magnitude → encounter leverage · <code>socialLeverage.ts</code></td></tr>
+          <tr><td>SECRET_DECAY_THRESHOLD / SECRET_MAX_AGE_TICKS</td><td>0.20 / 100</td><td>Minor-secret fade · <code>secretsFavors.ts:128</code></td></tr>
+          <tr><td>FAVOR_TENSION_THRESHOLD_TICKS / FAVOR_MAX_AGE_TICKS</td><td>30 / 80</td><td>Favor sours, then is forgiven · <code>:134</code></td></tr>
+          <tr><td>MAX_SECRETS / MAX_FAVORS_PER_AGENT</td><td>10 / 8</td><td>Per-agent edge caps · <code>:155</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Canon &amp; terminology</h3>
+      <ul>
+        <li>Terminology authority: UL <code>Docs/ubiquitous-language/Agents.md</code> (<em>Faction</em>, <em>Actor</em>, <em>ActorType</em> — the <code>faction</code>/<code>culture</code> subtypes) and <code>Docs/ubiquitous-language/Graph.md</code> (<code>member_of</code>, <code>knows_secret_of</code>). Minor UL doc-debt: Graph.md's EdgeType examples do not yet list <code>owes_favor</code> though the edge is live — a reconciliation note, not a rule gap.</li>
+        <li>Adjacent Manual pages: <a href="agents-reference.html">The Mortals</a> (the individuals who fill these factions), <a href="threads-court-reference.html">Threads, the Court &amp; The First</a> (your bonds and divine standing), <a href="world-map-reference.html">The World: Hexes, Terrain &amp; Sight</a> (where cultures sit on the map), <a href="encounters-manual-reference.html">Encounters &amp; Aftermath</a> (where leverage and tension are spent), <a href="divine-actions-reference.html">Divine Actions &amp; Prerequisites</a> (anoint, schism, reveal/plant/call-in). Deep dive: <a href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>. Game title in player copy: <strong>Threadbearer</strong>.</li>
+      </ul>
+
+      <h3>Open questions <span class="flag open">OPEN</span></h3>
+      <ul>
+        <li>None minted here. A mechanical culture-drift lever on agent decision-making (beyond gravity/tension as narrative context) is the honest <span class="flag design">DESIGN</span> edge of the culture system, flagged above rather than opened as a new question. The rulebook §2 line that still names a stale <code>agentDecision.ts</code> and "six-layer Maslow" is a W10-flagged framing gap for a future rulebook/UL reconciliation, not this page's concern.</li>
+      </ul>
+
+    </div>
+  </details>
+
+  <div class="foot">
+    Game Manual Wiki · W11 (THR-596). Player layer describes current shipped behaviour; anything not yet wired is flagged <span class="flag design">DESIGN</span> or <span class="flag open">OPEN</span>. Terminology is UL-exact; where this page and the UL disagree, the UL wins and this page is a drift bug. Schism, chosen-faction powers, and the secrets-and-favors leverage economy are all wired systems — the only DESIGN edge is a mechanical culture-drift lever on agent choice.
+  </div>
+
+</div>
+</body>
+</html>

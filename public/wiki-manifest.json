@@ -83,6 +83,14 @@
       "sources": ["src/engine/phaseAgentDecision*.ts", "src/engine/agentSelection.ts", "src/engine/encounterScoring.ts", "src/engine/idleBehavior.ts", "src/engine/ambition*.ts", "src/engine/agentLifecycle.ts", "src/engine/npcGraduation.ts", "src/engine/capabilityGrowth.ts", "src/engine/mentorshipOutcomes.ts", "src/engine/phaseMentorship.ts", "src/engine/phases/personality*.ts", "src/engine/phases/corePersonality.ts", "src/engine/phases/ambitionProgress.ts", "src/data/agent-behavior-constants.ts", "src/data/mentorship-constants.ts", "src/types/agent.ts", "src/types/ambition.ts", "src/types/npc.ts"]
     },
     {
+      "id": "factions-cultures-reference",
+      "file": "factions-cultures-reference.html",
+      "title": "Factions, Cultures & Secrets",
+      "blurb": "The social fabric over the mortals — factions as bodies with their own designs (per-faction reputation ladders, autonomous ambitions and actions, mortal succession, schism, and the chosen-faction anointing); cultures as gravity wells you are born inside of (venerated Spheres, generated names and mores, cultural gravity and the four tensions); and the unseen currency of secrets and favors that tilt a social encounter before a word is spoken.",
+      "section": "Manual",
+      "sources": ["src/engine/factionReputation.ts", "src/engine/factionAmbitions.ts", "src/engine/factionTopology.ts", "src/engine/chosenFactionPowers.ts", "src/engine/phaseFactionActions.ts", "src/engine/phaseFactionSuccession.ts", "src/engine/phaseSchismResolution.ts", "src/engine/phaseSecretsFavors.ts", "src/engine/secretGeneration.ts", "src/engine/socialLeverage.ts", "src/engine/phases/faction*.ts", "src/engine/phases/schism*.ts", "src/engine/cultur*.ts", "src/data/faction-constants.ts", "src/data/faction-definitions.ts", "src/data/*-definition.ts", "src/types/faction.ts", "src/types/secretsFavors.ts"]
+    },
+    {
       "id": "encounters-agents-reference",
       "file": "encounters-agents-reference.html",
       "title": "Encounters, Agents & Resolution",
