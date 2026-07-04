@@ -43,6 +43,14 @@
       "sources": ["src/engine/influence.ts", "src/engine/familiarity.ts", "src/engine/journeyEngine.ts", "src/engine/returnEngine.ts", "src/types/influence.ts", "src/types/familiarity.ts", "src/types/journeyEngine.ts", "src/data/influence-content.ts", "src/data/journey-content.ts"]
     },
     {
+      "id": "essence-control-reference",
+      "file": "essence-control-reference.html",
+      "title": "Essence, Control & Sustained Power",
+      "blurb": "Divine fuel is per-Sphere and tight on purpose — where essence comes from (a baseline flow, worshippers, places of power, an Aspect's conduit) and how it splits along your alignment (0.35/0.25/0.40); Control as sustained commitment (upkeep, the slot cap, the three ways a working lapses); the usurp/destroy contestation trade where age is the defence; and the long strategic works that erode when neglected.",
+      "section": "Manual",
+      "sources": ["src/engine/essenceIncome.ts", "src/engine/phaseControlEffects.ts", "src/engine/controlContestationResolver.ts", "src/engine/phaseStrategicProjects.ts", "src/engine/strategicActionLifecycle.ts", "src/types/influence.ts", "src/data/influence-content.ts", "src/data/strategic-action-constants.ts", "src/data/aspect-content.ts"]
+    },
+    {
       "id": "encounters-agents-reference",
       "file": "encounters-agents-reference.html",
       "title": "Encounters, Agents & Resolution",
